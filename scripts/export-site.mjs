@@ -89,13 +89,12 @@ function outputPathForUrl(pageUrl) {
 
 function injectApiOriginOverride(html, origin) {
   const override = `<script>window.getRootPath=function(){return ${JSON.stringify(origin)};};</script>`;
-  if (html.includes(override)) {
-    return html;
+  const getRootPathPattern = /(?:var\s+)?(?:window\.)?getRootPath\s*=\s*function\s*\(\)\s*\{\s*return\s*['"][^'"]*['"];\s*\};/g;
+  const rewritten = html.replace(getRootPathPattern, `window.getRootPath=function(){return ${JSON.stringify(origin)};};`);
+  if (rewritten.includes(override)) {
+    return rewritten;
   }
-  if (html.match(/window\.getRootPath\s*=\s*function/g)) {
-    return html.replace(/<\/head>/i, `${override}\n</head>`);
-  }
-  return html.replace(/<\/head>/i, `${override}\n</head>`);
+  return rewritten.replace(/<\/head>/i, `${override}\n</head>`);
 }
 
 function rewriteBaseDomain(html, from, to) {
