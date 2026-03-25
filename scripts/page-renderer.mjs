@@ -216,7 +216,10 @@ export function renderPageDocument({ route, siteOrigin, apiOrigin, shortenDomain
   const lang = resolveAttr(pageAttrs.lang) || 'en';
   const hasSettingsAttr = resolveAttr(pageAttrs.hasSettings);
   const hasSettings = hasSettingsAttr === 'true' || hasSettingsAttr === 'TRUE' || pageData.pageHasSettings;
-  const hasUpload = /id=['"]hasUploadFunc['"]/.test(bodyHtml) || /uploadContainerSecond/.test(bodyHtml) || /uploadContainer/.test(bodyHtml);
+  const hasUpload = /<freetoolonline:upload(?:-startup(?:-second)?|-second)?\b/i.test(bodyHtml)
+    || /id=['"]hasUploadFunc['"]/.test(bodyHtml)
+    || /uploadContainerSecond/.test(bodyHtml)
+    || /uploadContainer/.test(bodyHtml);
   const showAds = !isHome && !isInfoRoute(normalizedRoute) && normalizedRoute !== '/alternatead.html';
   const canonicalUrl = pageData.canonicalUrl || canonicalForRoute(siteOrigin, normalizedRoute);
   const jsonLd = showAds
