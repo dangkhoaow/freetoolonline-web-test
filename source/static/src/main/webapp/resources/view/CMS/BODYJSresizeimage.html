@@ -1,0 +1,239 @@
+<script src="https://dkbg1jftzfsd2.cloudfront.net/script/lib/jszip.min.js"></script>
+	
+<script>
+    web.localUpload = true;
+    var oriW = 0,
+        oriH = 0;
+    
+    
+    function resample_single(canvas, width, height, resize_canvas) {
+        var width_source = canvas.width;
+        var height_source = canvas.height;
+        width = Math.round(width);
+        height = Math.round(height);
+
+        var ratio_w = width_source / width;
+        var ratio_h = height_source / height;
+        var ratio_w_half = Math.ceil(ratio_w / 2);
+        var ratio_h_half = Math.ceil(ratio_h / 2);
+
+        var ctx = canvas.getContext("2d");
+        var img = ctx.getImageData(0, 0, width_source, height_source);
+        var img2 = ctx.createImageData(width, height);
+        var data = img.data;
+        var data2 = img2.data;
+
+        for (var j = 0; j < height; j++) {
+            for (var i = 0; i < width; i++) {
+                var x2 = (i + j * width) * 4;
+                var weight = 0;
+                var weights = 0;
+                var weights_alpha = 0;
+                var gx_r = 0;
+                var gx_g = 0;
+                var gx_b = 0;
+                var gx_a = 0;
+                var center_y = (j + 0.5) * ratio_h;
+                var yy_start = Math.floor(j * ratio_h);
+                var yy_stop = Math.ceil((j + 1) * ratio_h);
+                for (var yy = yy_start; yy < yy_stop; yy++) {
+                    var dy = Math.abs(center_y - (yy + 0.5)) / ratio_h_half;
+                    var center_x = (i + 0.5) * ratio_w;
+                    var w0 = dy * dy; //pre-calc part of w
+                    var xx_start = Math.floor(i * ratio_w);
+                    var xx_stop = Math.ceil((i + 1) * ratio_w);
+                    for (var xx = xx_start; xx < xx_stop; xx++) {
+                        var dx = Math.abs(center_x - (xx + 0.5)) / ratio_w_half;
+                        var w = Math.sqrt(w0 + dx * dx);
+                        if (w >= 1) {
+                            continue;
+                        }
+                        weight = 2 * w * w * w - 3 * w * w + 1;
+                        var pos_x = 4 * (xx + yy * width_source);
+                        gx_a += weight * data[pos_x + 3];
+                        weights_alpha += weight;
+                        if (data[pos_x + 3] < 255)
+                            weight = weight * data[pos_x + 3] / 250;
+                        gx_r += weight * data[pos_x];
+                        gx_g += weight * data[pos_x + 1];
+                        gx_b += weight * data[pos_x + 2];
+                        weights += weight;
+                    }
+                }
+                data2[x2] = gx_r / weights;
+                data2[x2 + 1] = gx_g / weights;
+                data2[x2 + 2] = gx_b / weights;
+                data2[x2 + 3] = gx_a / weights_alpha;
+            }
+        }
+        if (resize_canvas === true) {
+            canvas.width = width;
+            canvas.height = height;
+        } else {
+            ctx.clearRect(0, 0, width_source, height_source);
+        }
+
+        ctx.putImageData(img2, 0, 0);
+        return canvas;
+    };
+    
+    var blobToBase64 = function(blob, callback) {
+        var reader = new FileReader();
+        reader.onload = function() {
+            callback(reader.result);
+        };
+        reader.readAsDataURL(blob);
+    };
+    
+    var saveData = function (blob, fileName) {
+        blobToBase64(blob, function(base64){
+            var link = document.createElement('a');
+              link.download = fileName;
+              link.href = base64;
+              link.target = '_blank';
+              link.click();
+        });
+    };
+    
+    function loadUploadHandlersByPage(){
+        var onFileCompleteOrigin = onFileComplete;
+        onFileComplete = function(e, file, response) {
+            onFileCompleteOrigin.call(this, e, file, response);
+            file = file.file;
+            $('.downloadC').addClass('w3-hide');
+            try{
+                if(file.type.match(/image.*/)) {
+                    console.log('An image has been loaded');
+
+                    var reader = new FileReader();
+                    reader.onload = function (readerEvent) {
+                        var image = new Image();
+                        image.onload = function (imageEvent) {
+
+                            var canvas = document.createElement('canvas'),
+                                 ctx = canvas.getContext("2d"),
+                                max_size_w = parseInt($('#nWidth').val()),
+                                max_size_h = parseInt($('#nHeight').val()),
+                                width = image.width,
+                                height = image.height;
+                            if (width > height) {
+                                if (width > max_size_w) {
+                                    height *= max_size_w / width;
+                                    width = max_size_w;
+                                }
+                            } else {
+                                if (height > max_size_h) {
+                                    width *= max_size_h / height;
+                                    height = max_size_h;
+                                }
+                            }
+
+                            
+                            
+                            canvas.width = image.width;
+                            canvas.height = image.height;
+                            
+                            canvas = resample_single(canvas, width, height, true);
+                            
+                            canvas.getContext('2d').drawImage(image, 0, 0, width, height);
+                            
+                            var dataUrl = canvas.toDataURL(file['type']);
+                            var resizedImage = dataURLToBlob(dataUrl);
+                            var res = {
+                                downloadUrl: dataUrl,
+                                name: file.name
+                            };
+                            generateImgThumbs(res);
+                        }
+                        image.src = readerEvent.target.result;
+                    }
+                    reader.readAsDataURL(file);
+                }
+            } catch(e){}
+        };
+        
+        var onCompleteOrigin = onComplete;
+        onComplete = function(e) {
+            onCompleteOrigin.call(this, e);
+            try{
+                setTimeout(function(){
+                    if ($('.imageOut').length > 1) {
+                        $('.downloadC').removeClass('w3-hide');
+                    }
+                }, 500);
+                
+            } catch(e){}
+        };
+    };
+    
+    var dataURLToBlob = function(dataURL) {
+        var BASE64_MARKER = ';base64,';
+        if (dataURL.indexOf(BASE64_MARKER) == -1) {
+            var parts = dataURL.split(',');
+            var contentType = parts[0].split(':')[1];
+            var raw = parts[1];
+
+            return new Blob([raw], {type: contentType});
+        }
+
+        var parts = dataURL.split(BASE64_MARKER);
+        var contentType = parts[0].split(':')[1];
+        var raw = window.atob(parts[1]);
+        var rawLength = raw.length;
+
+        var uInt8Array = new Uint8Array(rawLength);
+
+        for (var i = 0; i < rawLength; ++i) {
+            uInt8Array[i] = raw.charCodeAt(i);
+        }
+
+        return new Blob([uInt8Array], {type: contentType});
+    };
+    
+    function edit(el){
+        var $parent = $(el).closest('.imageOut');
+        var t = (new Date()).getTime();
+        localStorage[t] = $parent.find('img').attr('src');
+        window.open("https://freetoolonline.com/photo-editor.html?from-camera=" + t + "&utm_source=internal&utm_medium=page&utm_content=function", '_blank');
+    };
+    
+    function downloadImg(el){
+        var $parent = $(el).closest('.imageOut');
+        saveData(dataURLToBlob($parent.find('img').attr('src')), $parent.find('.fname').text());
+    };
+    
+    var recentCol = 0,
+        temp = '<div title="Click here to download" id="{0}" class="imageOut retouch"><img loading="lazy" src="{1}"><div class="w3-white imgOutDownBtn"><a class="w3-button w3-light-grey imageDownloadBtn" href="javascript:void(0)" onclick="downloadImg(event.currentTarget)"><span>Download<br> <span class="fname">{2}</span></span></a></div><a title="Click here to retouch with photo editor" href="javascript:void(0)" onclick="edit(event.currentTarget)"><span><i class="fa fa-photo"></i> Retouch</span></a></div>';
+        
+    function generateImgThumbs(result){
+        if (recentCol < $('.outputImgs .w3-col').length){
+            recentCol = recentCol + 1;
+        } else {
+            recentCol = 1;
+        }
+        $('.col' + recentCol).append(String.format(temp, 'imgOut-' + recentCol, result.downloadUrl, result.name));
+    };
+
+
+    function doAfterJqueryUILoadToolTip(){
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/image/resize-image.css');
+        $('#downloadLink').removeAttr('target').attr('href', 'javascript:void(0)');
+        $('#downloadLink').bind('click', function(){
+            if($('.imageOut').length > 0){
+                var zip = new JSZip();
+                for (var i = 0; i < $('.imageOut').length; i++) {
+                    var $item = $($('.imageOut')[i]);
+                    try {
+                        zip.file($item.find('.fname').text(), $item.find('img').attr('src').split('base64,')[1], {base64: true});
+                    } catch (e) {}
+                }
+                $('#downloadLink').css('pointer-events', 'none').css('opacity', '0.6');
+                zip.generateAsync({type:"blob"})
+                .then(function(content) {
+                    saveData(content, getCurrentDateTime() + ".zip");
+                    $('#downloadLink').css('pointer-events', 'initial').css('opacity', '1');
+                });
+            }
+        });
+    };
+</script>

@@ -1,0 +1,171 @@
+<script>
+    var isAnotherUploadIsDone = false,
+        isImgsUploadDone = false,
+         inputAudioDir = "input-audio";
+    function loadUploadHandlersByPage(){
+        function showStep2(){
+            $('.step2').show();
+            $('#includeAudio').attr('disabled', 'disabled');
+        };
+        
+        onComplete = function(e, file, response) {
+            try{
+                if(!$('#includeAudio').is(':checked') || isAnotherUploadIsDone){
+                    var fileStatus = $(this).parents("div").find(".filelistSecond.queueSecond").find("li[data-index=0]").find(".progress").text();
+                    if(fileStatus.indexOf('Failed') < 0 && web.fileInfoResult.length > 0){
+                        isImgsUploadDone = true;
+                        showStep2();
+                    } else {
+                        if (clickDel) {
+                            if (!callingAjax){
+                                clickDel = !clickDel;
+                            }
+                        } else {
+                            $('.errorMsgAction').text('Error has occured').show();
+                        }
+                    }
+                } else {
+                    isImgsUploadDone = true;
+                    isAnotherUploadIsDone = true;
+                }
+            } catch(e){
+                $('.errorMsgAction').text('Error has occured').show();
+                isImgsUploadDone = true;
+            }
+        };
+        
+        onCompleteSecond = function(e, file, response) {
+            try{
+                if(isAnotherUploadIsDone){
+                    var fileStatus = $(this).parents("div").find(".filelistSecond.queueSecond").find("li[data-index=0]").find(".progress").text();
+                    if(fileStatus.indexOf('Failed') < 0 && web.fileInfoResult.length > 0){
+                        showStep2();
+                    } else {
+                        if (clickDelSecond) {
+                            if (!callingAjax){
+                                clickDelSecond = !clickDelSecond;
+                            }
+                        } else {
+                            $('.errorMsgActionSecond').text('Error has occured').show();
+                        }
+                    }
+                } else {
+                    isAnotherUploadIsDone = true;
+                }
+            } catch(e){
+                $('.errorMsgAction').text('Error has occured').show();
+                isAnotherUploadIsDone = true;
+            }
+        };
+        
+        buildInputObjBeforeSend = function(inputObj) {
+            inputObj["inputFolder"] = "input-image";
+            return inputObj;
+        };
+        
+        buildInputObjBeforeSendSecond = function(inputObj){
+            inputObj["inputFolder"] = inputAudioDir;
+            return inputObj;
+        };
+        
+        popularUploaderFromPageId = function(callback){
+            if (typeof initUploaderLoad === "function" || typeof initUploaderLoadSecond === "function") { 
+                $(".target").upload("destroy");
+                initUploaderLoad(mainUploaderUrl + uploadPath, web.maxFileUploadParallel);
+                $('.target .fs-upload-target').text('Drag and drop source IMAGE files or click to select');
+                
+                $(".targetSecond").upload("destroy");
+                initUploaderLoadSecond(mainUploaderUrl + uploadPath, web.maxFileUploadParallel);
+                $('.targetSecond .fs-upload-target').text('Drag and drop source AUDIO file or click to select');
+            }
+        };
+        
+        var $step2 = $('.step2');
+        
+        $(document).on('click','#copyDirectLinkButton',function() {
+            copyToClipboard(document.getElementById("copyDirectLinkTarget"));
+        });	
+        
+        $("#includeAudio").change(function(){
+            if(!isImgsUploadDone){
+                if(!$(this).is(':checked')){
+                    $('.uploadContainerSecond').hide();
+                    $(".targetSecond").upload("disable");
+                    $('.uploadImgSection').removeClass('w3-half');
+                } else {
+                    $('.uploadContainerSecond').show();
+                    $(".targetSecond").upload("enable");
+                    $('.uploadImgSection').addClass('w3-half');
+                }
+            } else {
+                $('.uploadContainerSecond').hide();
+                $(".targetSecond").upload("disable");
+                showStep2();
+            }
+        });
+           
+        $("#outputSize").change(function(){
+            if(!$(this).is(':checked')){
+                $('#outputResolution').attr('disabled', 'disabled');
+            } else {
+                $('#outputResolution').attr('disabled', false);
+            }
+        });
+        
+        $(document).on('click','#convertBtn',function() {
+            var fileBase = web.fileInfoResult[web.fileInfoResult.length - 1];
+            fileBase['customInputString'] = inputAudioDir;
+            if($('#outputSize').is(':checked')){
+                fileBase['customInputString2'] = $.trim($('#outputResolution').val());
+            } else {
+                fileBase['customInputString2'] = "";
+            }
+            fileBase['customInputString3'] = $('#frameDuration').val();
+            fileBase['customInputString4'] = $('#effect').val();
+            fileBase['inputFolder'] = "input-image";
+            var $this = $(this);
+            $this.text('Making');
+            $('.errorMsgAction').hide();
+            $(".targetSecond").upload("disable");
+            callAjax(fileBase, 
+                    function(result){
+                        $('.links').show();
+                        generateGifReview(result);
+                        $(".target").upload("enable");
+                        $(".targetSecond").upload("enable");
+                    },
+                    function(){
+                        $this.text('Make');
+                        $(".target").upload("enable");
+                        $(".targetSecond").upload("enable");
+                    }
+            );
+        });
+        
+        $('#outputFormat').change(function(){
+            if(audioFormats.indexOf($(this).val()) > -1 ) {
+                $('.sizeContainer').find('input, button').attr('disabled', 'disabled');
+                isNotVideo = true;
+            } else {
+                $('.sizeContainer').find('input, button').attr('disabled', false);
+                isNotVideo = false;
+            }
+        });
+        
+        function generateGifReview(response){
+            $('#convertBtn').text('Make');
+            var imgsOut = '', url = setOutputUrl(response, true);
+            url = url.replace(response.customInputString, '.gif');
+            $('.sourceImage').find('img').attr('src', url);
+            $('#sizeC').text(response.fileSizeMb);
+            var fileSizeMB = parseFloat($('#sizeC').text()).toFixed(2);
+            $('#sizeC').text(fileSizeMB + 'KB');
+            
+            var directLnk = qualifyURL(url.replace('.gif', response.customInputString));
+            $('.directLink').val(directLnk);
+            $('#downloadButton').attr('href', directLnk);
+            
+        };
+    };	
+    function doAfterPageRendered(){};
+</script>

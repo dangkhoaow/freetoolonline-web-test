@@ -1,0 +1,139 @@
+<script>
+function doAfterJqueryUILoadToolTip(){
+    copyToClipboard = function(elem) {
+            var targetId = "_hiddenCopyText_";
+            var isInput = elem.tagName === "INPUT" || elem.tagName === "TEXTAREA";
+            var origSelectionStart, origSelectionEnd;
+            if (isInput) {
+                target = elem;
+                origSelectionStart = elem.selectionStart;
+                origSelectionEnd = elem.selectionEnd;
+            } else {
+                target = document.getElementById(targetId);
+                if (!target) {
+                    var target = document.createElement("textarea");
+                    target.style.position = "absolute";
+                    target.style.left = "-9999px";
+                    target.style.top = "0";
+                    target.id = targetId;
+                    document.body.appendChild(target);
+                }
+                target.textContent = elem.textContent;
+            }
+            var currentFocus = document.activeElement;
+            target.focus();
+            target.setSelectionRange(0, target.value.length);
+            var succeed;
+            try {
+                succeed = document.execCommand("copy");
+            } catch (e) {
+                succeed = false;
+            }
+            if (currentFocus && typeof currentFocus.focus === "function") {
+                currentFocus.focus();
+            }
+            if (isInput) {
+                elem.setSelectionRange(origSelectionStart, origSelectionEnd);
+            } else {
+                target.textContent = "";
+            }
+            try{
+                if ($('.ui-tooltip').length > 0) {
+                    $('.ui-tooltip').css('opacity', '1');
+                    setTimeout(function(){
+                        $('.ui-tooltip').css('opacity', '0');
+                    }, 1000);
+                } else {
+                    $('#copyButton').attr('title', '');
+                    $('#copyButton').tooltip({
+                        content: function() {
+                            return 'Copied to clipboard';
+                        },
+                        open: function(event, ui) {
+                            ui.tooltip.delay(500).fadeTo(1000, 0)
+                        }
+                    });	
+                }
+            } catch(e){console.log(e)}
+            return succeed;
+        };
+        var oldToNew = true;
+        function convert(text) {
+            var map = [
+                    ["k(h|H)", "x"],
+                    ["K(h|H)", "X"],
+                    ["c(?!(h|H))|q", "k"],
+                    ["C(?!(h|H))|Q", "K"],
+                    ["t(r|R)|c(h|H)", "c"],
+                    ["T(r|R)|C(h|H)", "C"],
+                    ["d|g(i|I)|r", "z"],
+                    ["D|G(i|I)|R", "Z"],
+                    ["g(i|ì|í|ỉ|ĩ|ị|I|Ì|Í|Ỉ|Ĩ|Ị)", "z$1"],
+                    ["G(i|ì|í|ỉ|ĩ|ị|I|Ì|Í|Ỉ|Ĩ|Ị)", "Z$1"],
+                    ["đ", "d"],
+                    ["Đ", "D"],
+                    ["p(h|H)", "f"],
+                    ["P(h|H)", "F"],
+                    ["n(g|G)(h|H)?", "q"],
+                    ["N(g|G)(h|H)?", "Q"],
+                    ["(g|G)(h|H)", "$1"],
+                    ["t(h|H)", "w"],
+                    ["T(h|H)", "W"],
+                    ["(n|N)(h|H)", "$1'"]
+                ],
+            reverse_map = [
+            ["c", "ch"],
+            ["C", "Ch"],
+            ["k", "c"],
+            ["K", "C"],
+            ["d", "đ"],
+            ["D", "Đ"],
+            ["z(i|í|ì|ĩ|ỉ|ị)", "g$1"],
+            ["Z(i|í|ì|ĩ|ỉ|ị)", "G$1"],
+            ["z", "d"],
+            ["Z", "D"],
+            ["f", "ph"],
+            ["F", "Ph"],
+            ["q", "ng"],
+            ["Q", "Ng"],
+            ["x", "kh"],
+            ["X", "Kh"],
+            ["W", "Th"],
+            ["w", "th"],
+            ["n('|`|’)", "nh"],
+            ["N('|`|’)", "Nh"]];
+
+    if(oldToNew){
+            for(var i = 0; i < map.length; i++){
+                text = text + "";
+                text = text.replace(new RegExp(map[i][0], "g"), map[i][1]);
+            }
+        } else {
+            for(var i = 0; i < reverse_map.length; i++){
+                text = text + "";
+                text = text.replace(new RegExp(reverse_map[i][0], "g"), reverse_map[i][1]);
+            }
+        }
+        return text;
+    };
+        
+    $(document).on('click','#copyButton',function() {
+        copyToClipboard(document.getElementById("copyTarget"));
+    });
+
+    $(document).on('click','#transTypeBtn',function() {
+        oldToNew = !oldToNew;
+        $('#transType').text(oldToNew ? 'Tiếng Việt -> Tiếq Việt' : 'Tiếq Việt -> Tiếng Việt (beta)');
+            var inputText = $('#input').val();
+            $('#copyTarget').text(convert(inputText));
+    });
+
+    $('#input').on('keyup click change', function(){
+        var inputText = $(this).val();
+        $('#copyTarget').text(convert(inputText));
+    });
+    
+    $('#input').focus();
+    $('#currentYear').text((new Date()).getFullYear());
+};
+</script>

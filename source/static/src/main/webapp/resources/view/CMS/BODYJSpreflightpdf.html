@@ -1,0 +1,50 @@
+<script>
+    function doAfterPageRendered(){
+        var $step1 = $('.step1'),
+            $step2 = $('.step2'),
+            $step3 = $('.step3');
+        
+        $(document).on('click','#preflightBtn',function() {
+            if(web.fileInfoResult.length <= 0){
+                $step3.show();
+                $step3.find('#downloadLink').text('Error has occur').css('color', 'red').removeAttr('href').removeAttr('target');
+            }
+            var oPreFlight = web.fileInfoResult[web.fileInfoResult.length - 1];
+            oPreFlight['format'] = $('input[name=format]:checked').val();
+            if($('input[name=format]:checked').val() === 'dimension'){
+                oPreFlight['customInputString'] = $('#dimensionOpts').val();
+            }
+            var $btn = $('#preflightBtn');
+            $btn.text('PreFlighting');
+            
+            callAjax(oPreFlight, 
+                    function(result){
+                        $btn.text('PreFlight');
+                        $step3.show();
+                        $('.downloadTitle').text('Errors are listed below');
+                        if(result.errorMessages.length > 0){
+                            var sMessages = '<ol>';
+                            for(var i = 0; i < result.errorMessages.length; i++){
+                                sMessages = sMessages + '<li title=\''+ result.errorMessages[i] +'\'>' + result.errorMessages[i] + '</li>';
+                            }
+                            sMessages = sMessages + '</ol>';
+                            $step3.find('.downloadContainer').html(sMessages);
+                        } else {
+                            $step3.find('.downloadContainer').html("<span style='color: #3b73af;'>Your PDF is OK, not exisitng any error on this.</span>");
+                        }				
+                    },
+                    function(){
+                        $btn.text('PreFlight');
+                    }
+            );
+        });
+        
+        $("input[name='format']").change(function(){
+            if($('input[name=format]:checked').val() === 'dimension'){
+                $('#dimensionOpts').attr('disabled', false);
+            } else {
+                $('#dimensionOpts').attr('disabled', 'disabled');
+            }
+        });
+    };
+</script>

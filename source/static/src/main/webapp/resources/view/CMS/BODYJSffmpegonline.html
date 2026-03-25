@@ -1,0 +1,75 @@
+<script>
+    function loadUploadHandlersByPage(){
+        buildInputObjBeforeSend = function(inputObj) {
+            inputObj["inputFolder"] = "input";
+            return inputObj;
+        };
+        
+        var onCompleteOrigin = onComplete;
+        onComplete = function(e) {
+            onCompleteOrigin.call(this, e);
+            try{
+                if(web.fileInfoResult.length > 0){
+                    $('.inputFile').text(web.fileInfoResult[web.fileInfoResult.length - 1].name);
+                    $('#finalCmd').text($('#rootCmd').val() + ' -i ' + $('.inputFile').text());
+                } else {
+                    $('.errorMsgAction').text('Error has occured').show();
+                }
+            } catch(e){
+                $('.errorMsgAction').text('Error has occured').show();
+            }
+        };
+        
+        var $step1 = $('.step1'),
+        $step2 = $('.step2'),
+        $step3 = $('.step3'),
+        $execBtn = $('#execBtn');
+    
+        $('.w3-input').on('change', function(){
+            $('#finalCmd').text($('#rootCmd').val() + ' ' + $('#params1').val() + ' ' + $('.inputFile').text() + ' ' + $('#params2').val() + ' ' + $('#outFileName').val());
+        });
+        
+        $('#rootCmd').on('change', function(){
+            $('#params1,#params2').val('');
+            $('#finalCmd').text($('#rootCmd').val() + ' ' + $('.inputFile').text());
+        });
+        
+        $(document).on('click','#execBtn',function() {
+            if(web.fileInfoResult.length <= 0){
+                $step3.show();
+                $step3.find('#downloadLink').text('Error has occur').css('color', 'red').removeAttr('href').removeAttr('target');
+            }
+            var $this = $(this),
+                oExecInput = web.fileInfoResult[web.fileInfoResult.length - 1];
+            
+            oExecInput['customInputString'] = $('#params1').val();
+            oExecInput['customInputString2'] = $('#params2').val();
+            oExecInput['outputFileName'] = $('#outFileName').val();
+            oExecInput['pageName'] = pageName;
+            oExecInput['cmd'] = $('#rootCmd').val() + '';
+            $step3.hide();
+            $this.text('Executing');
+            
+            callAjax(oExecInput, 
+                    function(result){
+                        $this.text('Executed');
+                        $step3.show();
+                        if($('#outFileName').val() !== ''){
+                            $step3.find('#downloadLink').attr('href', setOutputUrl(result, false));
+                        } else {
+                            $step3.find('.downloadContainer').hide();
+                            $step3.find('.downloadTitle').hide();
+                        }
+                        $step3.find('#consoleOut').val(result.customOutputString);
+                        $step3.find('#downloadLink').text('Click here to download');				
+                    },
+                    function(){
+                        $this.text('Execute');
+                    }
+            );
+        });
+    };
+    function doAfterPageRendered(){
+
+    };
+</script>

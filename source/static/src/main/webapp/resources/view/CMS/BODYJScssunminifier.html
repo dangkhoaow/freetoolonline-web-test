@@ -1,0 +1,74 @@
+<script>
+    var editor, viewer, formatId;
+    function doAfterJqueryUILoadToolTip(){
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/lib/codemirror.min.css?v=' + APP_VERSION);
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/utility/css-unminifier-v3.css?v=' + APP_VERSION);
+        loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/codemirror.min.js?v=' + APP_VERSION, function(){
+            loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/css.min.js?v=' + APP_VERSION, function(){
+                loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/cssbeautify.min.js?v=' + APP_VERSION, function(){
+                    $('.loading-tmp').hide();
+                    editor = CodeMirror.fromTextArea(document.getElementById("cssInput"), {
+                        lineNumbers: true,
+                        matchBrackets: false,
+                        lineWrapping: true,
+                        tabSize: 8
+                    });
+
+                    viewer = CodeMirror.fromTextArea(document.getElementById("cssMinifiedResult"), {
+                        lineNumbers: true,
+                        matchBrackets: false,
+                        lineWrapping: true,
+                        readOnly: true
+                    });
+                    
+                    var heightAdjust = parseInt($(window).outerHeight() - ($('.ccInfo').outerHeight() + $('.tagsTag').outerHeight() + $('.welcomeTag').outerHeight() + $('.shareBtns').outerHeight() + $('header').outerHeight() + $('#copyButton').outerHeight() + 30 ));
+
+                    if(heightAdjust < 480){
+                        heightAdjust = 480;
+                    }
+                    viewer.setSize(null, parseInt(heightAdjust));
+                    editor.setSize(null, parseInt(heightAdjust));
+                    $('#formatEditor').css('opacity', 1);
+                    
+                    editor.focus();
+                    
+                    $(document).on('click','#copyButton',function() {
+                        $('#cssMinifiedResult').show();
+                        copyToClipboard(document.getElementById("cssMinifiedResult"));
+                        $('#cssMinifiedResult').hide();
+                    });
+                    
+                    $(document).on('click','#minifyButton',function() {
+                        var $this = $(this);
+                        $this.text('UnMinifying');
+                        $this.attr('disabled','disabled');
+                        
+                        var options, raw, beautified;
+
+                        options = {
+                            indent: '    '
+                        };
+                        
+                        if (typeof editor === undefined) {
+                            raw = document.getElementById('raw').value;
+                        } else {
+                            raw = editor.getValue();
+                        }
+
+                        beautified = cssbeautify(raw, options);
+
+                        if (typeof viewer === undefined) {
+                            document.getElementById('beautified').value = beautified;
+                        } else {
+                            viewer.setValue(beautified);
+                        }
+                        
+                        $this.attr('disabled',false);
+                        $this.text('UnMinified');
+                        $('#cssMinifiedResult').val(beautified);
+                    });
+                });
+            });
+        });
+    };
+</script>

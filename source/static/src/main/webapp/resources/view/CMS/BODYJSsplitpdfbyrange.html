@@ -1,0 +1,69 @@
+<script>
+    function loadUploadHandlersByPage(){
+        var onCompleteOrigin = onComplete;
+        onComplete = function(e) {
+            onCompleteOrigin.call(this, e);
+            try{
+                if(web.fileInfoResult.length > 0){
+                    $('#startPage').val('1');
+                    $('#endPage').val(web.fileInfoResult[web.fileInfoResult.length - 1].numberOfPages);
+                } else {
+                    $('.errorMsgAction').text('Error has occured').show();
+                }
+            } catch(e){
+                $('.errorMsgAction').text('Error has occured').show();
+            }
+        };
+    };
+    function doAfterPageRendered(){
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/pdf/split-by-range.css');
+        var $step1 = $('.step1'),
+            $step2 = $('.step2'),
+            $step3 = $('.step3');
+        
+        $(document).on('click','#splitBtn',function() {
+            if(web.fileInfoResult.length <= 0){
+                $step3.show();
+                $step3.find('#downloadLink').text('Error has occur').css('color', 'red').removeAttr('href').removeAttr('target');
+            }
+            var oSplitInfo = web.fileInfoResult[web.fileInfoResult.length - 1];
+            oSplitInfo['startPage'] = $('#startPage').val();
+            oSplitInfo['endPage'] = $('#endPage').val();
+            oSplitInfo['pageName'] = pageName;
+            var $this = $(this);
+            $this.text('Spliting');
+            $step3.hide();
+            
+            callAjax(oSplitInfo, 
+                    function(result){
+                        $this.text('Split');
+                        $step3.show();
+                        $step3.find('#downloadLink').attr('href', setOutputUrl(result, false));
+                        $step3.find('#downloadLink').text('Click here to download');				
+                    },
+                    function(){
+                        $this.text('Split');
+                    }
+            );
+        });
+        
+        $('.inputPageRange').on('change keyup', function(){
+            var $step2 = $('.step2'),
+                startPage = parseInt($('#startPage').val()),
+                endPage = parseInt($('#endPage').val()),
+                totalPage = parseInt($('#numberOfPages').text());
+            if(0 < startPage && startPage <= totalPage && 0 < endPage && endPage <= totalPage){
+                if(startPage > endPage){
+                    $('.errorMsgAction').text('Invalid start page and end page value').show();
+                    $step2.find('button').attr('disabled', 'disabled');
+                } else {
+                    $('.errorMsgAction').text('').hide();
+                    $step2.find('button').attr('disabled', false);
+                }
+            } else {
+                $('.errorMsgAction').text('Invalid start page and end page value').show();
+                $step2.find('button').attr('disabled', 'disabled');
+            }
+        })
+    };
+</script>

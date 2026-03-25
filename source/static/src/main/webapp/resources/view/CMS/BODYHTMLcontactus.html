@@ -1,0 +1,124 @@
+<div class='w3-container w3-padding-16' style='opacity: 0' id='contact'>
+    <p style="margin: 0;">We are always happy to receive feedback and suggestions from our visitors. If you have any advertising or outsourcing requests or if you simply want to share your thoughts about our website, please don't hesitate to contact us using the form below. We value your input and will get back to you as soon as possible. Thank you for your interest in our website!</p>
+  <div class='w3-row '>
+      <form id='contactForm' action='.contact-us/submit' method='post'>
+        <div class='w3-row' style='min-height: 200px;'>
+            <div class='w3-row-padding' style='margin:0 -16px 8px -16px'>
+              <div class='w3-half'>
+                <input class='w3-input w3-border' type='text' id='name' maxlength="250" placeholder='Name' style='margin-top: 10px;' data-validation='required' name='name'>
+              </div>
+              <div class='w3-half'>
+                <input class='w3-input w3-border' type='text' id='email' maxlength="250" placeholder='Email' style='margin-top: 10px;'  data-validation='email' data-validation='required' name='email'>
+              </div>
+            </div>
+            <div class='w3-row' style="padding-right: 2px;">
+                  <textarea class='w3-input w3-border' id='message' name='message'></textarea>
+            </div>
+            <div class='w3-row' style="min-height: 20px">
+                  <span style='opacity: 0;color: red;' class='errorMsgAction'>Message</span>
+            </div>
+            <div class='w3-row'>
+                <button class='w3-button w3-red w3-right' id='btnSend'><i class="fa fa-paper-plane"></i>&nbspSend</button>
+            </div>
+        </div>
+      </form>
+  </div>
+</div>
+<script>
+    var MAX_MSG_CHAR = 2000;
+    var MAX_EMAIL_NAME_CHAR = 250;
+  function getInfosHook(){
+      loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/jquery/jquery.form-validator.min.js', function(){
+          loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/jquery/tinymce/jquery.tinymce.min.js', function(){
+              loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/jquery/tinymce/tinymce.min.js', function(){
+                  var heightAdjust = parseInt($(window).height()) - ($('.ccInfo').outerHeight() + 490);
+                  if(heightAdjust < 100){
+                      heightAdjust = 100;
+                  }
+                  tinymce.init({
+                        max_chars: MAX_MSG_CHAR,
+                        force_br_newlines : true,
+                        force_p_newlines : false,
+                        forced_root_block : 'div', 
+                        forced_root_block_attrs: { "style": "margin: 5px 0;" },
+                        selector: 'textarea',
+                        height: heightAdjust,
+                        theme: 'modern',
+                        plugins: [
+                              'advlist autolink lists link image charmap print preview hr pagebreak',
+                              'searchreplace wordcount visualblocks visualchars',
+                              'insertdatetime media nonbreaking save table contextmenu directionality',
+                              'template paste textcolor colorpicker textpattern imagetools codesample toc help'
+                            ],
+                            toolbar1: 'undo redo | insert | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',
+                            toolbar2: 'print media | forecolor backcolor pagebreak | codesample removeformat',
+                        image_advtab: true,
+                        content_css: [
+                          'https://dkbg1jftzfsd2.cloudfront.net/style/lib/fonts.css',
+                          'https://dkbg1jftzfsd2.cloudfront.net/style/lib/codepen.min.css'
+                        ],
+                        branding: false,
+                        setup: function (ed) {
+                              ed.on('init', function(args) {
+                                  $('.loading-tmp').hide();
+                                  $('#contact').css('opacity', 1);
+                                  $('#name').focus();
+                              }),
+                              ed.on('change', function(e) {
+                                  $('.errorMsgAction').text('&nbsp').css('opacity', '0').css('color', 'red');
+                              })
+                        }
+                  });
+              });
+          });
+          
+          $.validate({});
+
+          $('#btnSend').on('click', function(){
+              $('.errorMsgAction').text('&nbsp').css('opacity', '0').css('color', 'red');
+              if ($.trim(document.getElementById('message_ifr').contentWindow.document.body.textContent) === ''){
+                  $('.errorMsgAction').text('Message can not be empty').css('opacity', '1');
+              }
+              $('#contactForm').submit();
+          });
+          $('#contactForm').on('submit', function(e) { 
+              if ($.trim(document.getElementById('message_ifr').contentWindow.document.body.textContent) === ''){
+                  return false;
+              }
+              tinymce.activeEditor.getBody().setAttribute('contenteditable', false);
+              tinymce.activeEditor.getBody().style.backgroundColor = "rgb(235, 235, 228)";
+              $('#contactForm').find('input, button, textarea').attr('disabled', 'disabled').css('background-color', 'rgb(235, 235, 228)');
+              
+              var $btn = $('#btnSend'),
+                  msgContent = $.trim(document.getElementById('message_ifr').contentWindow.document.body.innerHTML),
+                  $form = {
+                      id: web.id,
+                      email: $('#email').val().substr(0, MAX_EMAIL_NAME_CHAR),
+                      name: $('#name').val().substr(0, MAX_EMAIL_NAME_CHAR),
+                      message: msgContent.substr(0, MAX_MSG_CHAR)
+                  };
+              $btn.html('<i class="fa fa-paper-plane"></i>&nbspSending');
+              callAjax($form, 
+                      function(result){
+                          $btn.html('<i class="fa fa-paper-plane"></i>&nbspSent').attr('disabled', true);
+                          if(result.success){
+                              $('.errorMsgAction').text('Your message has been sent successfully, thank you for your interest!').css('opacity', '1').css('color', '#1a73e8').show();
+                          } else{
+                              $('.errorMsgAction').text('We are already received your message and will response to you ASAP.').css('opacity', '1').show();
+                          }				
+                      },
+                      function(){
+                          $btn.html('<i class="fa fa-paper-plane"></i>&nbspSend');
+                          $('.errorMsgAction').text('Failed to send the message, please try again').css('opacity', '1').css('color', 'red').show();
+                          $('#contactForm').find('input, button, textarea').attr('disabled', false);
+                          tinymce.activeEditor.getBody().setAttribute('contenteditable', true);
+                          tinymce.activeEditor.getBody().style.backgroundColor = "#fff";
+                          $('#contactForm').find('input, button, textarea').attr('disabled', false).css('background-color', '#ffffff');
+                      },
+                      getRootPath() + "ajax/contact-us.html/process"
+              );
+              return false;
+          });
+      });
+  };
+</script>

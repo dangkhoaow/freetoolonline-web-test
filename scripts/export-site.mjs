@@ -191,6 +191,7 @@ async function writeGeneratedSitemap(routes) {
 
 async function resolveSourceRepoRoot() {
   const candidates = [
+    path.resolve(repoRoot, 'source'),
     process.env.SOURCE_REPO_ROOT,
     path.resolve(repoRoot, '..', 'freetoolonline'),
   ].filter(Boolean);
@@ -204,7 +205,7 @@ async function resolveSourceRepoRoot() {
     }
   }
 
-  throw new Error('Unable to locate the freetoolonline source repo. Set SOURCE_REPO_ROOT or check out the source repo beside this project.');
+  throw new Error('Unable to locate the freetoolonline source snapshot. Populate ./source, set SOURCE_REPO_ROOT, or check out the source repo beside this project.');
 }
 
 function ensureTrailingSlash(value) {

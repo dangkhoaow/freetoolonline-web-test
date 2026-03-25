@@ -1,0 +1,94 @@
+<script>
+    var editor, tinymce;
+    function doAfterJqueryUILoadToolTip(){
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/lib/codemirror.min.css');
+        
+        loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/beautify/beautify.js', function(){
+            loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/beautify/beautify-css.js', function(){
+                loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/beautify/beautify-html.js', function(){});
+            });
+        });
+        
+        loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/codemirror.min.js', function(){
+            loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/css.min.js', function(){
+                loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/jquery/tinymce/jquery.tinymce.min.js', function(){
+                    loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/jquery/tinymce/tinymce.min.js', function(){
+                        var cmF = false;
+                        editor = CodeMirror.fromTextArea(document.getElementById("htmlInput"), {
+                            lineNumbers: true,
+                            matchBrackets: false,
+                            lineWrapping: true,
+                            tabSize: 8,
+                            onChange: function (cm) {
+                                if (cmF) 
+                                    tinymce.activeEditor.setContent(editor.getValue());
+                            },
+                            onFocus: function(cm){
+                                cmF = true;
+                            }
+                        });
+                        var heightAdjust = parseInt($(window).outerHeight() - ($('.ccInfo').outerHeight() + $('.tagsTag').outerHeight() + $('.welcomeTag').outerHeight() + $('.shareBtns').outerHeight() + $('header').outerHeight() + $('#copyButton').outerHeight() + 30 ));
+
+                        if(heightAdjust < 480){
+                            heightAdjust = 480;
+                        }
+                        editor.setSize(null, parseInt(heightAdjust));
+                        editor.focus();
+                        tinymce.init({
+                              force_br_newlines : true,
+                              force_p_newlines : false,
+                              forced_root_block : 'div', 
+                              forced_root_block_attrs: { "style": "margin: 5px 0;" },
+                              selector: '.editor',
+                              height: heightAdjust-173,
+                              theme: 'modern',
+                              plugins: [
+                                    'advlist autolink lists link image charmap print preview hr pagebreak',
+                                    'searchreplace wordcount visualblocks visualchars',
+                                    'insertdatetime media nonbreaking save table contextmenu directionality',
+                                    'template paste textcolor colorpicker textpattern imagetools codesample toc help'
+                                  ],
+                                  toolbar1: 'undo redo | insert | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',
+                                  toolbar2: 'print media | forecolor backcolor pagebreak | codesample removeformat',
+                              image_advtab: true,
+                              content_css: [
+                                'https://dkbg1jftzfsd2.cloudfront.net/style/lib/fonts.css',
+                                'https://dkbg1jftzfsd2.cloudfront.net/style/lib/codepen.min.css'
+                              ],
+                              branding: false,
+                              setup: function (ed) {
+                                    ed.on('init', function(args) {
+                                        $('.loading-tmp').hide();
+                                        $('.mainContent').css('opacity', 1);
+                                        editor.setValue('<div style="margin: 5px 0;">My HTML contents are from <strong><span style="color: #009485;" data-mce-style="color: #009485;">freetoolonline.com</span></strong></div>');
+                                    }),
+                                    ed.on('change', function(e) {
+                                        if (!cmF){
+                                            editor.setValue(html_beautify(tinymce.activeEditor.getContent(), { indent_size: 2, space_in_empty_paren: true }));
+                                        }
+                                    }),
+                                    ed.on('keyup', function(e) {
+                                        if (!cmF){
+                                            editor.setValue(html_beautify(tinymce.activeEditor.getContent(), { indent_size: 2, space_in_empty_paren: true }));
+                                        }
+                                    }),
+                                    ed.on('focus', function(e) {
+                                        cmF = false;
+                                    });
+                              }
+                        });
+                        
+                        $('#toggleEditorLayoutButton').click(function(){
+                            if($('.mainContent > .w3-row:first-child > .w3-container').hasClass('w3-half')){
+                                $('.mainContent > .w3-row:first-child > .w3-container').removeClass('w3-half');
+                            } else {
+                                $('.mainContent > .w3-row:first-child > .w3-container').addClass('w3-half');
+                            }
+                            $("html, body").stop().animate({scrollTop:0}, 100, 'swing', function() {});
+                        });
+                    });
+                });
+            });
+        });
+    };
+</script>

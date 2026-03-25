@@ -1,0 +1,89 @@
+<script type="text/javascript" defer src="https://dkbg1jftzfsd2.cloudfront.net/script/lib/csso.js?v=200910.v1756"></script>
+<script>
+    var editor, viewer, formatId;
+    function doAfterJqueryUILoadToolTip(){
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/lib/codemirror.min.css');
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/utility/css-minifier-v3.css');
+        loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/codemirror.min.js', function(){
+            loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/css.min.js?v=' + APP_VERSION, function(){
+                $('.loading-tmp').hide();
+                editor = CodeMirror.fromTextArea(document.getElementById("cssInput"), {
+                    lineNumbers: true,
+                    matchBrackets: false,
+                    lineWrapping: true,
+                    tabSize: 8
+                });
+
+                viewer = CodeMirror.fromTextArea(document.getElementById("cssMinifiedResult"), {
+                    lineNumbers: true,
+                    matchBrackets: false,
+                    lineWrapping: true,
+                    readOnly: true
+                });
+                
+                var heightAdjust = parseInt($(window).outerHeight() - ($('.ccInfo').outerHeight() + $('.tagsTag').outerHeight() + $('.welcomeTag').outerHeight() + $('.shareBtns').outerHeight() + $('header').outerHeight() + $('#copyButton').outerHeight() + 30 ));
+                if(heightAdjust < 480){
+                    heightAdjust = 480;
+                }
+                viewer.setSize(null, parseInt(heightAdjust));
+                editor.setSize(null, parseInt(heightAdjust));
+                $('#formatEditor').css('opacity', 1);
+                
+                editor.focus();
+                
+                $(document).on('click','#copyButton',function() {
+                    $("#cssMinifiedResult").show();
+                    copyToClipboard(document.getElementById("cssMinifiedResult"));
+                    $("#cssMinifiedResult").hide();
+                });
+
+                function minifyCSS(code) {
+                    return csso.minify(code, {restructure: true}).css;
+                };
+
+                function updateStats(oriLen, minLen) {
+                    $('.stats').removeClass('w3-hide');
+                    function percent(value) {
+                        return value ? (100 * value).toFixed(2) : '';
+                    };
+                    $('#oriSize').text(Math.round(oriLen/1024 * 100) / 100);
+                    
+                    $('#comSize').text(Math.round(minLen/1024 * 100) / 100);
+                    $('#comPer').text(percent(minLen/oriLen));
+                    
+                    var delta = oriLen - minLen;
+                    $('#savSize').text(Math.round(delta/1024 * 100) / 100);
+                    $('#savPer').text(percent(delta/oriLen));
+                };
+                
+                $(document).on('click','#minifyButton',function() {
+                    var $this = $(this);
+                    $this.text('Minifying');
+                    $this.attr('disabled','disabled');
+
+                    var outputS = minifyCSS(editor.getValue());
+
+                    updateStats(editor.getValue().length, outputS.length)
+
+                    $("#cssMinifiedResult").val(outputS);
+                    viewer.setValue(outputS);
+
+                    $this.attr('disabled',false);
+                    $this.text('Minified');
+
+                    $("#cssMinifiedResult").focus();
+                });
+                
+                $("#cssMinifiedResult").focus(function() {
+                    var $this = $(this);
+                    $this.select();
+
+                    $this.mouseup(function() {
+                        $this.unbind("mouseup");
+                        return false;
+                    });
+                });
+            });
+        });
+    };
+</script>

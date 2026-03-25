@@ -1,0 +1,85 @@
+<script>
+    var setOutputUrlWithoutFileBase = function(result, viewAble){
+        var output = result + "",
+            fileExtension = getFileExtensionFromName(output);
+        if(!fileExtension || web.fileTypeInBlackList.indexOf('.' + fileExtension) != -1){
+            return false;
+        }
+        return output;
+    };
+    function doAfterPageRendered(){
+        loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/jquery/easy-tree/jquery.easytree.min.js', function(){
+            var $step1 = $('.step1'),
+                $step2 = $('.step2'),
+                $step3 = $('.step3'),
+                $password = $('#password');
+            
+            $(document).on('click','#unzipBtn',function() {
+                if(web.fileInfoResult.length <= 0){
+                    $step3.show();
+                    $step3.find('#downloadLink').text('Error has occur').css('color', 'red').removeAttr('href').removeAttr('target');
+                }
+                var $this = $(this),
+                    oUnZipInfo = web.fileInfoResult[web.fileInfoResult.length - 1];
+                if ($password.val() !== ''){
+                    oUnZipInfo['password'] = $password.val();
+                }
+                $step3.hide();
+                $this.text('UnZipping');
+                
+                callAjax(oUnZipInfo, 
+                        function(result){
+                            $this.text('UnZip');
+                            $step3.show();
+                            
+                            $step3.find('.downloadContainer').easytree({
+                                data: result.fileInfosString,
+                                allowActivate: false
+                            });
+                            
+                            $('.easytree-container').find('img').each(function(){
+                                var $img = $(this);
+                                imgUrl = $img.attr("src");
+                                $img.attr("src", imgUrl.replace('./image/file-type/', 'https://dkbg1jftzfsd2.cloudfront.net/image/file-type/'));
+                            });
+                            
+                            $('.easytree-title').find('a').each(function(){
+                                var url = setOutputUrlWithoutFileBase($(this).attr('href'), false);
+                                if(!url){
+                                    $(this).attr('disabled', 'disabled');
+                                    $(this).attr('title', 'Disabled, because this file type in black list');
+                                    $(this).attr('href', 'javascript:void(0);');
+                                    $(this).css('opacity', '0.2');
+                                    $(this).parent().parent().find('img').css('opacity', '0.2');
+                                } else {
+                                    $(this).attr('href', setOutputUrlWithoutFileBase($(this).attr('href'), false));
+                                }
+                            });
+                            
+                            $('.easytree-title').on('click', function(){
+                                var $parent = $(this).parent(),
+                                    $expander = $parent.find('.easytree-expander');
+                                if($expander.length > 0){
+                                    $expander.click();
+                                }
+                            });
+                            $('.easytree-title').prev().on('click', function(){
+                                var $parent = $(this).parent(),
+                                    $expander = $parent.find('.easytree-expander');
+                                if($expander.length > 0){
+                                    $expander.click();
+                                }
+                            });
+                            $step3.show();
+                            $step3.find('#downloadLink').text('Click here to download');				
+                        },
+                        function(){
+                            $this.text('UnZip');
+                        }
+                );
+            });
+        });
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/file/zip-file.css');
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/script/lib/jquery/easy-tree/skin-lion/ui.easytree.css');
+    };
+</script>

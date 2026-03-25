@@ -1,0 +1,32 @@
+<script>
+    function loadUploadHandlersByPage(){
+        web.includesProcess = true;
+        buildInputObjBeforeSend = function(inputObj) {
+            inputObj["includeProcess"] = "true";
+            return inputObj;
+        };
+        
+        var onCompleteOrigin = onComplete;
+        onComplete = function(e) {
+            onCompleteOrigin.call(this, e);
+            try{
+                if(web.fileInfoResult.length > 0){
+                    var $step3 = $('.step3');
+                    if(web.fileInfoResult[web.fileInfoResult.length - 1].downloadUrl === 'HUGEPAGES'){
+                        $step3.find('#downloadLink').text('Number of pages can not more than ' + web.fileInfoResult[web.fileInfoResult.length - 1].startPage + ', total pages:' + web.fileInfoResult[web.fileInfoResult.length - 1].numberOfPages).css('color', 'red').removeAttr('href').removeAttr('target');
+                    } else {
+                        $step3.find('#downloadLink').attr('href', setOutputUrl(web.fileInfoResult[web.fileInfoResult.length - 1], false));
+                    }
+                    $step3.show();
+                } else {
+                    $('.errorMsgAction').text('Error has occured').show();
+                }
+            } catch(e){
+                $('.errorMsgAction').text('Error has occured').show();
+            }
+        };
+    };
+    function doAfterPageRendered(){
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/pdf/split-to-single-pages.css');
+    };
+</script>

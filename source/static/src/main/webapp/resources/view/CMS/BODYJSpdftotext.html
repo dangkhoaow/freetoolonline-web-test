@@ -1,0 +1,32 @@
+<script>
+    function doAfterPageRendered(){
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/convert/pdf-to-text.css');
+        var $step1 = $('.step1'),
+            $step2 = $('.step2'),
+            $step3 = $('.step3');
+        
+            
+        $(document).on('click','#convertBtn',function() {
+            if(web.fileInfoResult.length <= 0){
+                $step3.show();
+                $step3.find('#downloadLink').text('Error has occur').css('color', 'red').removeAttr('href').removeAttr('target');
+            }
+            var oFileInfo = web.fileInfoResult[web.fileInfoResult.length - 1];
+            var $btn = $(this);
+            $btn.text('Converting');
+            $step3.hide();
+            
+            callAjax(oFileInfo, 
+                    function(result){
+                        $btn.text('Convert');
+                        $step3.show();
+                        $step3.find('#downloadLink').attr('href', setOutputUrl(result, false));
+                        $step3.find('#downloadLink').text('Click here to download');				
+                    },
+                    function(){
+                        $btn.text('Convert');
+                    }
+            );
+        });
+    };
+</script>

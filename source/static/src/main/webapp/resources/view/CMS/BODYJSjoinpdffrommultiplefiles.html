@@ -1,0 +1,37 @@
+<script>
+    function doAfterPageRendered(){
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/pdf/merge-from-multi-files.css');
+        $('#mergedName').val('merged-' + getCurrentDateTime())
+        var $step1 = $('.step1'),
+            $step2 = $('.step2'),
+            $step3 = $('.step3');
+        
+        $(document).on('click','#mergeBtn',function() {
+            if(web.fileInfoResult.length <= 0){
+                $step3.show();
+                $step3.find('#downloadLink').text('Error has occur').css('color', 'red').removeAttr('href').removeAttr('target');
+            }
+            var oMergeInfo = {
+                name: $('#mergedName').val() + '.pdf',
+                fileInfos: web.fileInfoResult,
+                id: web.id,
+                pageName: pageName
+            };
+            var $mergeBtn = $('#mergeBtn');
+            $mergeBtn.text('Merging');
+            $step3.hide();
+            
+            callAjax(oMergeInfo, 
+                    function(result){
+                        $mergeBtn.text('Merged');
+                        $step3.show();
+                        $step3.find('#downloadLink').attr('href', setOutputUrl(result, false));
+                        $step3.find('#downloadLink').text('Click here to download');				
+                    },
+                    function(){
+                        $mergeBtn.text('Merge');
+                    }
+            );
+        });
+    };
+</script>

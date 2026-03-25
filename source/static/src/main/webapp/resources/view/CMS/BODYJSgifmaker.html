@@ -1,0 +1,207 @@
+<script>
+    var cTS = '';
+     Image.prototype.load = function(url, timestamp){
+        var thisImg = this;
+        var xmlHTTP = new XMLHttpRequest();
+        xmlHTTP.open('GET', url, true);
+        xmlHTTP.responseType = 'arraybuffer';
+        xmlHTTP.onload = function(e) {
+            $('.loadingGifProgress').hide();
+            var blob = new Blob([this.response]);
+            thisImg.src = window.URL.createObjectURL(blob);
+        };
+        xmlHTTP.onprogress = function(e) {
+            if ((cTS + '') === (timestamp + '')) {
+                var completedPercentage = parseInt((e.loaded / e.total) * 100);
+                $('.sourceImage').find('img').remove();
+                $('.loadingGifProgress').html('');
+                if (parseInt(completedPercentage) < 100) {
+                    $('.loadingGifProgress').html('Loading <b>' + completedPercentage + '%</b>');
+                    $('.loadingGifProgress').show();
+                } else {
+                    $('.loadingGifProgress').hide();
+                    $('.sourceImage').find('img').remove();
+                    $(thisImg).appendTo('.sourceImage');
+                }
+            }
+        };
+        xmlHTTP.onloadstart = function() {};
+        xmlHTTP.send();
+    };
+    
+    var originalFileName = null;
+    var newDurationCached = 0;
+    var generateGifReview = function(){};
+    function loadUploadHandlersByPage(){
+        web.includesProcess = true;
+        var onFileCompleteOrigin = onFileComplete;
+        onFileComplete = function(e, file, response) {
+            var response = onFileCompleteOrigin.call(this, e, file, response);
+            try{
+                if(web.fileInfoResult.length > 0){
+                    originalFileName = null;
+                    
+                    popularSliders(response, true);
+                    
+                    generateGifReview(response);
+                    var $step2 = $('.step2'),
+                        $step3 = $('.step3');
+                    $step3.show();
+                    $step2.hide();
+                } else {
+                    $('.errorMsgAction').text('Error has occured').show();
+                }
+            } catch(e){
+                $('.errorMsgAction').text('Error has occured').show();
+            }
+        };
+        
+        buildInputObjBeforeSend = function(inputObj) {
+            inputObj["includeProcess"] = "true";
+            return inputObj;
+        };
+        
+        function popularSliders(response, reset){
+            var duration = $("#duration"),
+                durationOut = $("#durationValue"),
+                durationVal = response.duration,
+                startPoint = $("#startPoint"),
+                startPointOut = $("#startPointValue"),
+                startPointVal = response.startPoint;
+            duration.prop({'min' : 1, 'max' : (!reset && newDurationCached != 0 ? newDurationCached : durationVal)});
+            
+            if (reset){
+                newDurationCached = 0;
+            }
+            
+            startPoint.prop({'min' : startPointVal, 'max' : durationVal});
+            
+            if(reset || ($(duration).attr('oMax') === '' || typeof $(duration).attr('oMax') === 'undefined')){
+                $(duration).attr('oMax', durationVal)
+                duration.val(durationVal);
+                durationOut.text(msToTime(durationVal));
+                startPoint.val(startPointVal);
+                startPointOut.text(msToTime(startPointVal));
+            }			
+        };
+        
+        generateGifReview = function(response){
+            if(originalFileName == null){
+                originalFileName = response.originalName;
+            }
+            $('#convertBtn').text('Make');
+           
+            var url = setOutputUrl(response, true);
+            var imgPreview = new Image();
+            var timestamp = getCurrentDateTime();
+            cTS = timestamp;
+            imgPreview.load(url + "?t=" + timestamp, timestamp);
+
+            $('#sizeC').text(response.fileSizeMb);
+            var fileSizeMB = parseFloat($('#sizeC').text()).toFixed(2);
+            $('#sizeC').text(fileSizeMB + 'KB');
+
+            popularSliders(response, false);
+            
+            var directLnk = qualifyURL(url);
+            $('.directLink').val(directLnk);
+            $('#downloadButton').attr('href', directLnk);
+            
+            $('#nWidth').val(response.nWidth);
+            $('#nHeight').val(response.nHeight);
+            
+            $('#fpsVal').text(response.customInputString);
+            $('#fps').val(response.customInputString);
+            
+            $('#autoHeight').prop('checked', false);
+            $('#autoWidth').prop('checked', false);
+        };
+        
+        var $step1 = $('.step1'),
+        $step2 = $('.step2'),
+        $step3 = $('.step3');
+    
+        $(document).on('click','#copyDirectLinkButton',function() {
+            copyToClipboard(document.getElementById("copyDirectLinkTarget"));
+        });
+        
+        var duration = document.getElementById("duration"),
+            durationOut = document.getElementById("durationValue");
+        var startPoint = document.getElementById("startPoint"),
+            startPointOut = document.getElementById("startPointValue");
+
+        duration.oninput = function() {
+            durationOut.innerHTML = msToTime(this.value);
+        }	
+        
+        startPoint.oninput = function() {
+            startPointOut.innerHTML = msToTime(this.value);
+            var newDuration = parseInt($(duration).attr('oMax')) - this.value;
+            if(newDuration <= 0){
+                newDuration = 100;
+            }
+            $(duration).prop({'max': newDuration});
+            $(duration).val(newDuration);
+            newDurationCached = newDuration;
+            durationOut.innerHTML = msToTime(newDuration);
+        }	
+        
+        $(document).on('click','#convertBtn',function() {
+            $step3.find('input, button').attr('disabled', 'disabled');
+            var fileGifmaker = web.fileInfoResult[web.fileInfoResult.length - 1];
+            fileGifmaker['nWidth'] = $.trim($('#nWidth').val());
+            fileGifmaker['nHeight'] = $.trim($('#nHeight').val());
+            fileGifmaker['inputDuration'] = $('#duration').val();
+            fileGifmaker['inputStartPoint'] = $('#startPoint').val();
+            fileGifmaker['customInputString'] = $('#fps').val();
+            if(originalFileName != null){
+                fileGifmaker['name'] = replaceSpecialChars(originalFileName);
+            }
+            var $this = $(this);
+            $this.text('Making');
+            $('.errorMsgAction').hide();
+            
+            callAjax(fileGifmaker, 
+                    function(result){
+                        $step3.find('input, button').attr('disabled', false);
+                        generateGifReview(result);				
+                    },
+                    function(){
+                        $this.text('Make');
+                        $step3.find('input, button').attr('disabled', false);
+                    }
+            );
+        });
+        
+        $('#fps')[0].oninput = function() {
+            $('#fpsVal').text(this.value);
+        };
+        
+        $("#autoWidth").change(function(){
+            if($(this).is(':checked')){
+                $('#nWidth').val('0').attr('disabled', 'disabled');
+                $('#autoHeight').attr('disabled', 'disabled');
+            } else {
+                $('#nWidth').val(web.fileInfoResult[web.fileInfoResult.length - 1].nWidth).attr('disabled', false);
+                $('#autoHeight').attr('disabled', false);
+            }
+        });
+        
+        $("#autoHeight").change(function(){
+            if($(this).is(':checked')){
+                $('#nHeight').val('0').attr('disabled', 'disabled');
+                $('#autoWidth').attr('disabled', 'disabled');
+            } else {
+                $('#nHeight').val(web.fileInfoResult[web.fileInfoResult.length - 1].nHeight).attr('disabled', false);
+                $('#autoWidth').attr('disabled', false);
+            }
+        });
+        $('#currentYear').text((new Date()).getFullYear());
+    };
+    function doAfterPageRendered(){
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/image/gif-maker.css');
+        getTimeToDelFileInfo(function(delInfo){
+            $('#minsToDelFile').text(delInfo);
+        });
+    };
+</script>

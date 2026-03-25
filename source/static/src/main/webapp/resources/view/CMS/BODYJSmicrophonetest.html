@@ -1,0 +1,114 @@
+<script>
+    function doAfterPageRendered(){
+        loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/volume-meter.js', function(){
+            var sourceNode;
+            var analyser;
+            var javascriptNode;
+            var canvas = $("#canvas");
+            var context = null;
+            var ctx = canvas.get()[0].getContext("2d");
+            var video = document.querySelector('video');
+            var localMediaStream = null;
+            ctx.canvas.width  = $('.canvasContainer').width();
+            var gradient = ctx.createLinearGradient(0,0,0,300);
+            gradient.addColorStop(1,'#000000');
+            gradient.addColorStop(0.75,'#ff0000');
+            gradient.addColorStop(0.25,'#ffff00');
+            gradient.addColorStop(0,'#ffffff');
+            
+            $('#playSoundFromMic').on('click', function(){
+                video.srcObject = localMediaStream;
+                if($(this).is(':checked')){
+                    video.muted = false;
+                } else {
+                    video.muted = true;
+                }
+            });
+            
+            function beginAudioCapture() {
+                if ($('#playSoundFromMic').is(':checked')){
+                    video.muted = false;
+                }
+                $('#startBtn').attr('disabled', 'disabled');
+                analyser = context.createAnalyser();
+                analyser.smoothingTimeConstant = 0.9;
+                analyser.fftSize = 512;
+                loadSound();
+            }
+            
+            function loadSound() {
+                try {
+                    navigator.getUserMedia = (
+                        navigator.getUserMedia ||
+                        navigator.webkitGetUserMedia ||
+                        navigator.mozGetUserMedia ||
+                        navigator.msGetUserMedia
+                    );
+                    var constraints = {
+                        audio: {
+                            mandatory: {
+                                googEchoCancellation: false,
+                                googAutoGainControl: false,
+                                googNoiseSuppression: false,
+                                googHighpassFilter: false
+                            },
+                            optional: []
+                         }
+                    };
+                    if (typeof navigator.mediaDevices.getUserMedia === 'undefined') {
+                        navigator.getUserMedia(constraints, gotStream, didntGetStream);
+                    } else {
+                        navigator.mediaDevices.getUserMedia(constraints).then(gotStream).catch(didntGetStream);
+                    }
+                } catch (e) {
+                    alert('getUserMedia threw exception :' + e);
+                }
+            }
+            
+            function gotStream(stream) {
+                localMediaStream = stream;
+                window.stream = stream;
+                video.srcObject = stream;
+                sourceNode = context.createMediaStreamSource(stream);
+                sourceNode.connect(analyser);
+                $('#startBtn > i').addClass('fa-ok');
+                $('.resultOK').removeClass('hideEl');
+                drawLoop();
+            }
+            
+            function didntGetStream(){
+                $('#startBtn > i').addClass('fa-error');
+                alert('Your Microphone Cant Works :(');
+            }
+            
+            function drawLoop() {
+                var array =  new Uint8Array(analyser.frequencyBinCount);
+                analyser.getByteFrequencyData(array);
+            
+                ctx.clearRect(0, 0, ctx.canvas.width, 325);
+            
+                ctx.fillStyle=gradient;
+                drawSpectrum(array);
+                rafID = window.requestAnimationFrame( drawLoop );
+            }
+            
+            
+            function drawSpectrum(array) {
+                for ( var i = 0; i < (array.length); i++ ){
+                    var value = array[i];
+                    ctx.fillRect(i*5,325-value,1,325);
+                }
+            };
+            
+            var AudioContext = window.AudioContext || window.webkitAudioContext;    
+            context = new AudioContext();
+            $('#startBtn').on('click', function() {
+                 context.resume().then(() => {
+                        beginAudioCapture();
+                 });
+            });
+            $('.loading-tmp').hide();
+            $('.micTestContainer').css('opacity', 1);
+        });
+    };
+</script>

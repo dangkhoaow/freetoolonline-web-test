@@ -1,0 +1,64 @@
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.bundle.min.js"></script>
+<script>
+    web.localUpload = true;
+    function loadUploadHandlersByPage(){
+        $(".loading-tmp").hide();
+        var onCompleteOrigin = onComplete;
+        onComplete = function(e) {
+            onCompleteOrigin.call(this, e);
+            try{
+                if(web.fileInfoResult.length > 0){
+                    var file = web.fileInfoResult[web.fileInfoResult.length - 1];
+                    getBase64(file, function(result){
+                        var imgUrl = result,
+                            $image = $('#image'),
+                            name = file.name;
+                        $image.attr('src', imgUrl);
+                        $('#aspectRatio3').click();
+                        $('#aspectRatio4').click();
+                        if(name.substring(name.lastIndexOf('.'), name.length).toLowerCase() === '.jpg'){
+                            $('#outputFormat option[value=jpg]').attr('selected','selected');
+                        } else if(name.substring(name.lastIndexOf('.'), name.length).toLowerCase() === '.png'){
+                            $('#outputFormat option[value=png]').attr('selected','selected');
+                        } else if(name.substring(name.lastIndexOf('.'), name.length).toLowerCase() === '.webp'){
+                            $('#outputFormat option[value=webp]').attr('selected','selected');
+                        }
+                        var bootstrap_enabled = (typeof $().emulateTransitionEnd == 'function');
+                        if(!bootstrap_enabled){
+                            loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/bootstrap.bundle.min.js', function(){
+                                loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/lib/bootstrap.min.css');
+                                initCrop();
+                            });
+                        } else {
+                            initCrop();
+                        }
+                    });
+                    
+                } else {
+                    $('.errorMsgAction').text('Error has occured').show();
+                }
+            } catch(e){
+                $('.errorMsgAction').text('Error has occured').show();
+            }
+        };
+        
+        function initCrop(){
+            loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/image/crop-image.css');
+            loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/image/crop-image/cropper.js', function(){
+                loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/image/crop-image/jquery-cropper.js', function(){
+                    loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/image/crop-image/crop-image-v4.js', function(){});
+                });
+            });
+            var $step3 = $('.step3');
+            $step3.show();
+        };
+        
+        $('.ratio .w3-button').on('click', function(){
+            $('.ratio .w3-button').removeClass('active');
+            $(this).addClass('active');
+        });
+    };
+    function doAfterPageRendered(){
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/lib/bootstrap.min.css');
+    };
+</script>

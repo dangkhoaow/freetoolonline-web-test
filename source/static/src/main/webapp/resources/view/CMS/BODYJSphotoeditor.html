@@ -1,0 +1,87 @@
+<script async src="https://dkbg1jftzfsd2.cloudfront.net/image-editor/js/photo-editor-v27.min.js"></script>
+<script>
+    var switchMode = function(){};
+
+    function doAfterPageRendered(){  
+        function runInitAfterLoad() {
+            $('.editor-c').removeClass('opacity-0');
+            $('.loading-tmp').hide();
+            doStuffWhenOnload();
+            $('.editor-c #home, .editor-c #workspace').removeClass('height-1');
+            if (w_winds < 1000) {
+                var otherHei = $('.navBarContainer').outerHeight() + ($('.w3-rest.page-main-content>.ad-section.top-ad:visible').length == 1 ? $('.w3-rest.page-main-content>.ad-section.top-ad').outerHeight() : 0) + 20;
+                if (localStorage.getItem('ccdimiss') !== 'true' && $('.ccInfo').length > 0) {
+                    otherHei+= $('.ccInfo').outerHeight();
+                }
+                $('#editor-c.editor-c').css('height', window.innerHeight - otherHei);
+            } else {
+                $('#editor-c.editor-c').on('click', '#liquify-close', function(){
+                    $('#editor-c.editor-c #liquify, #editor-c.editor-c #tool-menu-liquify').removeClass('active');
+                    $('#editor-c.editor-c #tool-menu-liquify').trigger('click');
+                });
+            }
+            $('.navBarContainer > .w3-bar').append('<button onclick="switchMode(false, true)" class="switch-view settingsBtn w3-right new-style-donateBtn w3-hide-small"><i class="fa fa-expand"></i>&nbsp;Switch to full view</button>');
+            loadScript('https://dkbg1jftzfsd2.cloudfront.net/image-editor/js/b64A.js?v=' + APP_VERSION, function(){});
+            loadScript('https://dkbg1jftzfsd2.cloudfront.net/image-editor/js/exif-js.min.js?v=' + APP_VERSION, function(){});
+            loadScript('https://dkbg1jftzfsd2.cloudfront.net/image-editor/js/ffo.min.js?v=' + APP_VERSION, function(){});
+
+            $(window).keydown(function(event) {
+                if ((event.ctrlKey || event.metaKey) && (event.which == "61" || event.which == "107" || event.which == "173" || event.which == "109" || event.which == "187" || event.which == "189"))
+                    event.preventDefault();
+                window.addEventListener("mousewheel", function(event) {
+                    if (event.ctrlKey || event.metaKey)
+                        event.preventDefault()
+                }, {
+                    passive: false
+                })
+            });
+        };
+
+        function checkIfMainLoaded() {
+            setTimeout(function(){
+                if (typeof IS_MAIN_PT_LOADED === 'undefined' || !IS_MAIN_PT_LOADED) {
+                    checkIfMainLoaded();
+                } else {
+                    runInitAfterLoad();
+                }
+            }, 200);
+        };
+
+        checkIfMainLoaded();
+        
+        switchMode = function(isFull){
+            if (isFull || !$('html').hasClass('mobile-mode')) {
+                $('html,body').addClass('overflow-hidden');
+                  $(".navBarContainer").addClass("w3-card-4").addClass("w3-animate-opacity");
+                  $(".w3-content").css("margin-top", 40);
+                  
+                $('#editor-c').addClass('editor-c-overplay-mobile');
+                $('html').addClass('mobile-mode');
+                if ($('.switch-view').length > 0){
+                    $('.switch-view').html('<i class="fa fa-compress"></i>&nbsp;Back to normal view');
+                    $('#raster').resize();
+                }
+            } else {
+                $('html,body').removeClass('overflow-hidden');
+                $(".w3-content").css("margin-top", 50);
+                $(".navBarContainer").removeClass("w3-card-4").removeClass("w3-animate-opacity");
+                $(document).scrollTop(0)
+                
+                if ($('.switch-view').length > 0){
+                    $('.switch-view').html('<i class="fa fa-expand"></i>&nbsp;Switch to full view');
+                    setTimeout(function(){
+                        $('#raster').resize();
+                    }, 2);
+                }
+                $('#editor-c').removeClass('editor-c-overplay-mobile');
+                $('html').removeClass('mobile-mode');
+            }
+            
+            if (w_winds < 1300){
+                fixIOSOverplayScrolling('home');
+                fixIOSOverplayScrolling('workspace');
+                fixIOSOverplayScrolling('modal');
+            }
+        };
+    };
+</script>	

@@ -1,0 +1,125 @@
+<script src="https://dkbg1jftzfsd2.cloudfront.net/script/lib/terser-bundle.min.js"></script>
+<script>
+    const terser = Terser;
+
+    function minifyJSBackup(code) {
+        // Remove comments (multiline and single line)
+        code = code.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '');
+        
+        // Remove whitespace and newlines
+        code = code.replace(/\s+/g, ' ');
+        
+        // Remove unnecessary semicolons
+        code = code.replace(/;\s*;/g, ';');
+        
+        // Remove empty statements
+        code = code.replace(/;}/g, '}');
+        
+        // Remove leading and trailing whitespace
+        code = code.trim();
+        
+        return code;
+    }
+
+    function minifyVK(code) {
+        try {
+            return vkbeautify.jsonmin(code);
+        } catch (e) {
+            return minifyJSBackup(code);
+        }
+    }
+
+    function minifyJS(code, callback) {
+        terser.minify(code).then(result => {callback(result.code)}).catch(error => {callback(minifyVK(code))});
+    }
+
+    var editor, viewer, formatId;
+    function doAfterJqueryUILoadToolTip(){
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/lib/codemirror.min.css');
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/utility/js-minifier-v3.css');
+        loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/codemirror.min.js', function(){
+            loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/css.min.js', function(){
+                loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/vkbeautify.0.99.00.beta.js', function(){
+                    $('.loading-tmp').hide();
+                    editor = CodeMirror.fromTextArea(document.getElementById("javascriptInput"), {
+                        lineNumbers: true,
+                        matchBrackets: false,
+                        lineWrapping: true,
+                        tabSize: 8
+                    });
+
+                    viewer = CodeMirror.fromTextArea(document.getElementById("javascriptMinifiedResult"), {
+                        lineNumbers: true,
+                        matchBrackets: false,
+                        lineWrapping: true,
+                        readOnly: true
+                    });
+                    
+                    var heightAdjust = parseInt($(window).outerHeight() - ($('.ccInfo').outerHeight() + $('.tagsTag').outerHeight() + $('.welcomeTag').outerHeight() + $('.shareBtns').outerHeight() + $('header').outerHeight() + $('#copyButton').outerHeight() + 30 ));
+
+                    if(heightAdjust < 480){
+                        heightAdjust = 480;
+                    }
+                    viewer.setSize(null, parseInt(heightAdjust));
+                    editor.setSize(null, parseInt(heightAdjust));
+                    $('#formatEditor').css('opacity', 1);
+                    
+                    editor.focus();
+                    
+                    $(document).on('click','#copyButton',function() {
+                        $('#javascriptMinifiedResult').show();
+                        copyToClipboard(document.getElementById("javascriptMinifiedResult"));
+                        $('#javascriptMinifiedResult').hide();
+                    });
+
+                    function updateStats(oriLen, minLen) {
+                        $('.stats').removeClass('w3-hide');
+                        function percent(value) {
+                            return value ? (100 * value).toFixed(2) : '';
+                        };
+                        $('#oriSize').text(Math.round(oriLen/1024 * 100) / 100);
+                        
+                        $('#comSize').text(Math.round(minLen/1024 * 100) / 100);
+                        $('#comPer').text(percent(minLen/oriLen));
+                        
+                        var delta = oriLen - minLen;
+                        $('#savSize').text(Math.round(delta/1024 * 100) / 100);
+                        $('#savPer').text(percent(delta/oriLen));
+                    };
+                    
+                    $(document).on('click','#minifyButton',function() {
+                        var $this = $(this);
+                        $this.text('Minifying');
+                        $this.attr('disabled','disabled');
+                        
+                        var outputS = minifyJS(editor.getValue(), function(outputS){
+                            if (outputS === '') {
+                                outputS = minifyVK(editor.getValue());
+                            } 
+                            updateStats(editor.getValue().length, outputS.length);
+                            viewer.setValue(outputS);
+                            $('#javascriptMinifiedResult').val(outputS);
+
+                            $this.attr('disabled',false);
+                            $this.text('Minified');
+
+                            $('.errorMsgAction').hide();
+                            $("#javascriptMinifiedResult").focus();	
+                        });
+                        
+                    });
+                    
+                    $("#javascriptMinifiedResult").focus(function() {
+                        var $this = $(this);
+                        $this.select();
+
+                        $this.mouseup(function() {
+                            $this.unbind("mouseup");
+                            return false;
+                        });
+                    });
+                });
+            });
+        });
+    };
+</script>

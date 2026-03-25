@@ -1,0 +1,41 @@
+<script>
+    function doAfterPageRendered(){
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/convert/images-to-pdf.css');
+        var $step1 = $('.step1'),
+            $step2 = $('.step2'),
+            $step3 = $('.step3'),
+            $pdfName = $('#pdfName');
+        
+        $pdfName.val('pdfname-' + getCurrentDateTime());
+        
+        $(document).on('click','#convertBtn',function() {
+            if(web.fileInfoResult.length <= 0){
+                $step3.show();
+                $step3.find('#downloadLink').text('Error has occur').css('color', 'red').removeAttr('href').removeAttr('target');
+            }
+            var oFileInfo = {
+                name: $pdfName.val() + '.pdf',
+                fileInfos: web.fileInfoResult,
+                id: web.id,
+                pageName: pageName,
+                customInputString: $('#dimensionOpts').val().split('x')[0],
+                customInputString2: $('#dimensionOpts').val().split('x')[1]
+            };
+            var $convertBtn = $(this);
+            $convertBtn.text('Converting');
+            $step3.hide();
+            
+            callAjax(oFileInfo, 
+                    function(result){
+                        $convertBtn.text('Convert');
+                        $step3.show();
+                        $step3.find('#downloadLink').attr('href', setOutputUrl(result, false));
+                        $step3.find('#downloadLink').text('Click here to download');				
+                    },
+                    function(){
+                        $convertBtn.text('Convert');
+                    }
+            );
+        });
+    };
+</script>

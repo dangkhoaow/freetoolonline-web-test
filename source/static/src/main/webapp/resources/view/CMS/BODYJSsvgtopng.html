@@ -1,0 +1,178 @@
+<script>
+    web.localUpload = true;
+    
+    var blobToBase64 = function(blob, callback) {
+        var reader = new FileReader();
+        reader.onload = function() {
+            callback(reader.result);
+        };
+        reader.readAsDataURL(blob);
+    };
+    
+    var saveData = function (blob, fileName) {
+        blobToBase64(blob, function(base64){
+            var link = document.createElement('a');
+            link.download = fileName;
+            link.href = base64;
+            link.target = '_blank';
+            link.click();
+        });
+    };
+    
+    function loadUploadHandlersByPage(){
+        var onFileCompleteOrigin = onFileComplete;
+        onFileComplete = function(e, file, response) {
+            onFileCompleteOrigin.call(this, e, file, response);
+            file = file.file;
+            $('.downloadC').addClass('w3-hide');
+            try{
+                if(file.type.match(/image.*/)) {
+                    console.log('An image has been loaded');
+
+                    var reader = new FileReader();
+                    reader.onload = function (readerEvent) {
+                        var image = new Image();
+                        image.onload = function (imageEvent) {
+
+                            var canvas = document.createElement('canvas'),
+                                ctx = canvas.getContext("2d"),
+                                max_size_w = parseInt($('#nWidth').val()),
+                                max_size_h = parseInt($('#nHeight').val()),
+                                width = image.width,
+                                height = image.height;
+                            if (width > height) {
+                                if (width < max_size_w) {
+                                    height *= max_size_w / width;
+                                    width = max_size_w;
+                                }
+                            } else {
+                                if (height < max_size_h) {
+                                    width *= max_size_h / height;
+                                    height = max_size_h;
+                                }
+                            }
+
+                            
+                            
+                            canvas.width = width; 
+                            canvas.height = height;
+                            
+                            var ctx = canvas.getContext('2d');
+                            
+                            if ($('#outputFormat').val() !== 'png' && $('#outputFormat').val() !== 'webp') {
+                                ctx.fillStyle = "#ffffff";
+                                ctx.fillRect(0, 0, width, height);
+                            }
+                            
+                            ctx.drawImage(image, 0, 0, width, height);
+                            
+                            var desContentType = 'image/' + $('#outputFormat').val();
+                            var dataUrl = canvas.toDataURL(desContentType);
+                            var resizedImage = dataURLToBlob(dataUrl, desContentType);
+                            var res = {
+                                downloadUrl: dataUrl,
+                                name: file.name.substring(0, file.name.lastIndexOf('.') + 1) + $('#outputFormat').val().toLowerCase()
+                            };
+                            generateImgThumbs(res);
+                        }
+                        image.src = readerEvent.target.result;
+                    }
+                    reader.readAsDataURL(file);
+                }
+            } catch(e){}
+        };
+        
+        var onCompleteOrigin = onComplete;
+        onComplete = function(e) {
+            onCompleteOrigin.call(this, e);
+            try{
+                setTimeout(function(){
+                    if ($('.imageOut').length > 1) {
+                        $('.downloadC').removeClass('w3-hide');
+                    }
+                }, 500);
+                
+            } catch(e){}
+        };
+    };
+    
+    var dataURLToBlob = function(dataURL, contentType) {
+        var BASE64_MARKER = ';base64,';
+        if (dataURL.indexOf(BASE64_MARKER) == -1) {
+            var parts = dataURL.split(',');
+            var contentType = !contentType ? parts[0].split(':')[1] : contentType;
+            var raw = parts[1];
+
+            return new Blob([raw], {type: contentType});
+        }
+
+        var parts = dataURL.split(BASE64_MARKER);
+        var contentType = !contentType ? parts[0].split(':')[1] : contentType;
+        var raw = window.atob(parts[1]);
+        var rawLength = raw.length;
+
+        var uInt8Array = new Uint8Array(rawLength);
+
+        for (var i = 0; i < rawLength; ++i) {
+            uInt8Array[i] = raw.charCodeAt(i);
+        }
+
+        return new Blob([uInt8Array], {type: contentType});
+    };
+    
+    function edit(el){
+        var $parent = $(el).closest('.imageOut');
+        var t = (new Date()).getTime();
+        localStorage[t] = $parent.find('img').attr('src');
+        window.open("https://freetoolonline.com/photo-editor.html?from-camera=" + t + "&utm_source=internal&utm_medium=page&utm_content=function", '_blank');
+    };
+    
+    function downloadImg(el){
+        var $parent = $(el).closest('.imageOut');
+        saveData(dataURLToBlob($parent.find('img').attr('src')), $parent.find('.fname').text());
+    };
+    
+    var recentCol = 0,
+        temp = '<div title="Click here to download" id="{0}" class="imageOut retouch"><img loading="lazy" src="{1}"><div class="w3-white imgOutDownBtn"><a class="w3-button w3-light-grey imageDownloadBtn" href="javascript:void(0)" onclick="downloadImg(event.currentTarget)"><span>Download<br> <span class="fname">{2}</span></span></a></div><a title="Click here to retouch with photo editor" href="javascript:void(0)" onclick="edit(event.currentTarget)"><span><i class="fa fa-photo"></i> Retouch</span></a></div>';
+        
+    function generateImgThumbs(result){
+        if (recentCol < $('.outputImgs .w3-col').length){ 
+            recentCol = recentCol + 1;
+        } else {
+            recentCol = 1;
+        }
+        $('.col' + recentCol).append(String.format(temp, 'imgOut-' + recentCol, result.downloadUrl, result.name));
+    };
+
+
+    function doAfterPageRendered(){
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/convert/svg-to-png.css');
+        $('#downloadLink').removeAttr('target').attr('href', 'javascript:void(0)');
+        $('#downloadLink').bind('click', function(){
+            if($('.imageOut').length > 0){
+                var zip = new JSZip();
+                for (var i = 0; i < $('.imageOut').length; i++) {
+                    var $item = $($('.imageOut')[i]);
+                    try {
+                        zip.file($item.find('.fname').text(), $item.find('img').attr('src').split('base64,')[1], {base64: true});
+                    } catch (e) {}
+                }
+                $('#downloadLink').css('pointer-events', 'none').css('opacity', '0.6');
+                zip.generateAsync({type:"blob"})
+                .then(function(content) {
+                    saveData(content, getCurrentDateTime() + ".zip");
+                    $('#downloadLink').css('pointer-events', 'initial').css('opacity', '1');
+                });
+            }
+        });
+        function checkDownBtn() {
+            setTimeout(function(){
+                if ($('.imageOut').length > 1) {
+                    $('.downloadC').removeClass('w3-hide');
+                }
+                checkDownBtn();
+            }, 1000);
+        };
+        checkDownBtn();
+    };
+</script>

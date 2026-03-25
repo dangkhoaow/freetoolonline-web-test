@@ -1,0 +1,30 @@
+<%@ taglib tagdir='/WEB-INF/tags/' prefix='freetoolonline' %>
+<%@ taglib uri='http://java.sun.com/jsp/jstl/functions' prefix='fn' %>
+<freetoolonline:page 
+	hasSettings='${pageHasSettings}'
+	browserTitle='${pageBodyTitle}' 
+	keyword='${pageBodyKeyword}' 
+	description='${pageBodyDesc}'>
+	
+	<div class='step step1 w3-container'>
+	    <freetoolonline:upload/>
+	</div>
+	<div class='w3-container'>
+	    <div class='step step3 w3-container'>
+	        <freetoolonline:download/>
+	        <p>The converting process has completed.</p>
+	    </div>
+	</div>
+	
+	<!-- BODYHTML -->
+	${pageBodyHTML}
+	
+	<freetoolonline:welcome welcomeTest='${pageBodyWelcome}'/>
+	<freetoolonline:share-btns></freetoolonline:share-btns>
+	
+	<!-- BODYJS -->
+	${pageBodyJS}
+	
+
+	<freetoolonline:upload-startup multiple='false' fileType='${pageBodyFileType}'/>
+</freetoolonline:page>

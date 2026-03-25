@@ -4,13 +4,13 @@ Static GitHub Pages site for FreeToolOnline.
 
 ## What this repo does
 
-- Reads JSPs and shared fragments from a checked-out `freetoolonline` source repo and exports rendered HTML into `dist/`.
+- Reads JSPs and shared fragments from the committed `source/` snapshot and exports rendered HTML into `dist/`.
 - Keeps the site origin as `https://freetoolonline.com` while routing AJAX calls to the API origin.
 - Deploys the static output to GitHub Pages through GitHub Actions.
 
 ## Environment
 
-- `SOURCE_REPO_ROOT`: path to the `freetoolonline` source checkout, default `../freetoolonline` when present
+- `SOURCE_REPO_ROOT`: optional override for the `source/` snapshot root, default `./source` when present
 - `SITE_URL`: public site origin, default `https://freetoolonline.com`
 - `API_ORIGIN`: API root injected into `getRootPath()`, default `https://service.us-east-1a.freetool.online/`
 - `SHORTEN_DOMAIN`: share-link origin used by the page shell, default `https://freetool.online`
@@ -30,12 +30,18 @@ npm install
 npm run export
 ```
 
-The exporter reads `web/src/main/webapp/static/sitemap.xml`, JSPs from `web/src/main/webapp/WEB-INF/jsp/`, and shared fragments from `static/src/main/webapp/resources/view/`. If your source checkout lives somewhere else, set `SOURCE_REPO_ROOT` before running the build.
+The exporter reads `source/web/src/main/webapp/static/sitemap.xml`, JSPs from `source/web/src/main/webapp/WEB-INF/jsp/`, and shared fragments from `source/static/src/main/webapp/resources/view/`. If you want to build from a different snapshot path, set `SOURCE_REPO_ROOT` before running the build.
 
 ## Deploy
 
 GitHub Actions publishes the generated `dist/` directory to GitHub Pages.
-It also checks out the `freetoolonline` source repo alongside this project so the exporter can render from the JSP and shared-fragment sources. The Pages workflow expects a repository secret named `SOURCE_REPO_TOKEN` with read access to `dangkhoaow/freetoolonline`.
+It uses the committed `source/` snapshot in this repository, so no cross-repo checkout or `SOURCE_REPO_TOKEN` secret is required.
+
+## Updating content
+
+- Edit page content under `source/static/src/main/webapp/resources/view/**`, especially `source/static/src/main/webapp/resources/view/CMS/**`.
+- If a page route, JSP shell, or sitemap entry changes, update `source/web/src/main/webapp/WEB-INF/jsp/**` or `source/web/src/main/webapp/static/sitemap.xml` as needed.
+- Push the change and let GitHub Actions rebuild Pages; this replaces the old S3 upload plus `/admin/update-configs` refresh flow.
 
 ## Cutover notes
 

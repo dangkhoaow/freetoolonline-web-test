@@ -1,0 +1,62 @@
+<script>
+    web.localUpload = true;		
+    function loadUploadHandlersByPage(){
+        var onCompleteOrigin = onComplete;
+        onComplete = function(e) {
+            onCompleteOrigin.call(this, e);
+            console.log(web.fileInfoResult);
+            if (web.fileInfoResult.length > 0) {
+                var file = web.fileInfoResult[web.fileInfoResult.length - 1];
+                getBase64(file, function(result){
+                    if (result.startsWith('Error:')) {
+                        $('.errorMsgAction').text('Error has occured').show();
+                    } else {
+                        try{
+                            $('.sourceImage').find('img').attr('src', result);
+                            var $step2 = $('.step2'),
+                                $step3 = $('.step3');
+                            
+                            if (result.indexOf('heic') > -1 || result.indexOf('heif') > -1) {
+                                $step3.hide();
+                                $('.browser-support').hide();
+                                $('.base64CSS').val("");
+                                $('.base64IMG').val(""); 
+                            } else {
+                                $step3.show();
+                                $('.browser-support').show();
+                                $('.base64CSS').val("url(" + result + ")");
+                                $('.base64IMG').val("<img src=\"" + result + "\"/>"); 
+                            }
+                            
+                            $step2.show();
+                            $('.base64').val(result);
+                           
+                        } catch(e){
+                            $('.errorMsgAction').text('Error has occured').show();
+                        }
+                    }
+                });
+            }
+        };
+    }
+    
+    function doAfterJqueryUILoadToolTip(){
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/convert/image-to-base64.css');
+        var $step1 = $('.step1'),
+            $step2 = $('.step2'),
+            $step3 = $('.step3');
+        
+        
+        $('#copyDirectLinkButton').on('click',function() {
+            copyToClipboard(document.getElementById("base64"), '', $(this));
+        });
+        
+        $('#copyDirectLinkButtonCSS').on('click',function() {
+            copyToClipboard(document.getElementById("base64CSS"), '', $(this));
+        });
+        
+        $('#copyDirectLinkButtonIMG').on('click',function() {
+            copyToClipboard(document.getElementById("base64IMG"), '', $(this)); 
+        });
+    };
+</script>

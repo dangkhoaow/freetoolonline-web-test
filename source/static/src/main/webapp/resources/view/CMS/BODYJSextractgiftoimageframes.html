@@ -1,0 +1,69 @@
+<script>
+    function loadUploadHandlersByPage(){
+        web.includesProcess = true;
+        var onCompleteOrigin = onComplete;
+        var onFileCompleteOrigin = onFileComplete;
+        var responseJ = {};
+        onFileComplete = function(e, file, response) {
+            responseJ = onFileCompleteOrigin.call(this, e, file, response);
+            
+        };
+
+        onComplete = function(e) {
+            onCompleteOrigin.call(this, e);
+            try{
+                if(web.fileInfoResult.length > 0){
+                    var $step3 = $('.step3');
+                    $step3.find('#downloadLink').attr('href', setOutputUrl(web.fileInfoResult[web.fileInfoResult.length - 1], false));
+                    
+                    try{
+                        addOutputFrames(responseJ);
+                    } catch(e){}
+
+                    $step3.show();
+                } else {
+                    $('.errorMsgAction').text('Error has occured').show();
+                }
+            } catch(e){
+                $('.errorMsgAction').text('Error has occured').show();
+            }	
+        };
+        
+        buildInputObjBeforeSend = function(inputObj) {
+            inputObj["includeProcess"] = "true";
+            inputObj["customInputString"] = $('#outputFormat').val();
+            inputObj["customInputString2"] = $('#fps').val();
+            return inputObj;
+        };
+
+        var outputTmp = '<div class="w3-container outputTmp"><br/><div class="w3-row outputImgs"><div class="w3-col m2 col1"></div><div class="w3-col m2 col2"></div><div class="w3-col m2 col3"></div><div class="w3-col m2 col4"></div><div class="w3-col m2 col5"></div><div class="w3-col m2 col6"></div></div></div>',
+            recentCol = 0,
+            temp = '<div title="Click here to download" id="{0}" class="imageOut retouch"><img loading="lazy" src="{1}"><div class="w3-white imgOutDownBtn"><a class="w3-button w3-light-grey imageDownloadBtn" target="_blank" href="{2}"><span>Download<br> {3}</span></a></div><a title="Click here to retouch with photo editor" target="_blank" href="https://freetoolonline.com/photo-editor.html?img-url={4}&utm_source=internal&utm_medium=page&utm_content=function"><span><i class="fa fa-photo"></i> Retouch</span></a></div>';
+           
+        function addOutputFrames(result) {
+            recentCol = 0;
+            $('.outputTmp').remove();
+            $(outputTmp).appendTo($('.step3').parent());
+
+            var imgName = result.customOutputString;
+            var downloadUrlRool = result.downloadUrl.substr(0, result.downloadUrl.lastIndexOf('/')) + '/';
+            for (var i = 1; i <= result.customOutputInt; i++) {
+                var imgName = result.customOutputString + i.toString().padStart(5, '0') + result.customInputString;
+                var frameUrl = downloadUrlRool + 'output/' + imgName;
+                var imgsOut =  String.format(temp, imgName, frameUrl, frameUrl, imgName, frameUrl);
+                if (imgsOut !== '') {
+                    if (recentCol < $('.outputImgs .w3-col').length){
+                        recentCol = recentCol + 1;
+                    } else {
+                        recentCol = 1;
+                    }
+                    $('.col' + recentCol).append(imgsOut);
+                }
+            }
+        };
+    };
+
+    function doAfterPageRendered(){
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/convert/extract-gif-to-image-frames.css');
+    };
+</script>

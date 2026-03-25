@@ -1,0 +1,63 @@
+<script>
+    function waitForElementToDisplay(selector, time, callback) {
+        if(selector.attr('src')) {
+            callback();
+        }
+        else {
+            setTimeout(function() {
+                waitForElementToDisplay(selector, time, callback);
+            }, time);
+        }
+    };
+    function doAfterPageRendered(){
+        var $step1 = $('.step1'),
+            $step3 = $('.step3');
+    
+        $step3.show();
+        
+        $('#text').val('https://freetoolonline.com/qr-code-generator.html');
+        $('#text').focus();
+        $('.sourceImage').hide();
+        loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/qrcode.min.js', function(){
+            var qrcode = new QRCode(document.getElementById("qrcode"), {
+                width : 240,
+                height : 240
+            });
+            
+            function makeCode () {	
+                qrcode.clear();
+                var elText = document.getElementById("text");
+                $('.sourceImage').hide();
+                if (elText.value) {
+                    try{
+                        $('.errorMsgAction').text('').hide();
+                        qrcode.makeCode(elText.value);
+                        $('.sourceImage').show();
+                        $('#download').show();
+                    } catch(e){
+                        $('.sourceImage').hide();
+                        $('.errorMsgAction').text('Error has occured').show();
+                        $('#download').hide();
+                    }
+                } else{
+                    $('.sourceImage').hide();
+                    $('#download').hide();
+                }
+                
+            }
+            makeCode();
+            $("#download").on("click", function () {
+                 var base64 = $('#qrcode').find('img').attr('src');
+                  var link = document.createElement('a');
+                  link.download = 'qr-' + getCurrentDateTime() + '.png';
+                  link.href = base64;
+                  link.target = '_blank';
+                  link.click();
+            });
+            
+            $('#text').on('change keyup', function(){
+                makeCode();
+            });
+        });
+    };
+</script>

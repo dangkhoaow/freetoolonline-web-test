@@ -1,0 +1,76 @@
+<script>
+    function doAfterJqueryUILoadToolTip(){
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/lib/codemirror.min.css');
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/utility/js-unminifier-v3.css');
+        loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/codemirror.min.js', function(){
+            loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/css.min.js', function(){
+                loadScript("https://dkbg1jftzfsd2.cloudfront.net/script/lib/beautify.min.js", function(){
+                    $('.loading-tmp').hide();
+                    editor = CodeMirror.fromTextArea(document.getElementById("javascriptInput"), {
+                        lineNumbers: true,
+                        matchBrackets: false,
+                        lineWrapping: true,
+                        tabSize: 8
+                    });
+
+                    viewer = CodeMirror.fromTextArea(document.getElementById("javascriptUnMinifiedResult"), {
+                        lineNumbers: true,
+                        matchBrackets: false,
+                        lineWrapping: true,
+                        readOnly: true
+                    });
+                    
+                    var heightAdjust = parseInt($(window).outerHeight() - ($('.ccInfo').outerHeight() + $('.tagsTag').outerHeight() + $('.welcomeTag').outerHeight() + $('.shareBtns').outerHeight() + $('header').outerHeight() + $('#copyButton').outerHeight() + 30 ));
+                    
+                    if(heightAdjust < 480){
+                        heightAdjust = 480;
+                    }
+                    viewer.setSize(null, parseInt(heightAdjust));
+                    editor.setSize(null, parseInt(heightAdjust));
+                    $('#formatEditor').css('opacity', 1);
+                    
+                    editor.focus();
+                    
+                    $(document).on('click','#copyButton',function() {
+                        $('#javascriptUnMinifiedResult').show();
+                        copyToClipboard(document.getElementById("javascriptUnMinifiedResult"));
+                        $('#javascriptUnMinifiedResult').hide();
+                    });
+                    
+                    $(document).on('click','#unminifyButton',function() {
+                        var $this = $(this);
+                        $this.text('UnMinifying');
+                        $this.attr('disabled','disabled');
+
+		                var outputS = js_beautify(editor.getValue(), {
+                                                                        indent_size: 2,
+                                                                        space_in_empty_paren: true,
+                                                                        preserve_newlines: true,
+                                                                        max_preserve_newlines: 2,
+                                                                        end_with_newline: true
+                                                                    });
+
+                        $('#javascriptUnMinifiedResult').val(outputS);
+                        viewer.setValue(outputS);
+
+                        $this.attr('disabled',false);
+                        $this.text('UnMinified');
+
+                        $('.errorMsgAction').hide();
+                        $("#javascriptUnMinifiedResult").focus();	
+                    });
+                    
+                    $("#javascriptUnMinifiedResult").focus(function() {
+                        var $this = $(this);
+                        $this.select();
+
+                        $this.mouseup(function() {
+                            $this.unbind("mouseup");
+                            return false;
+                        });
+                    });
+                });
+            });
+        });
+    };
+</script>

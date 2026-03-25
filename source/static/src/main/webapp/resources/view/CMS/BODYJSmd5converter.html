@@ -1,0 +1,184 @@
+<script>
+    function doAfterJqueryUILoadToolTip(){
+        $('#toMd5Btn').on('click', function(){
+            $('.error1').hide();
+            $('#md5ResultContainer').hide();
+            if ($('#pureString').val().length > 0) {
+                var oMd5 = {};
+                const plainText = $('#pureString').val();
+                oMd5['customInputString2'] = plainText;
+                oMd5['customInputString'] = 'EN';
+                oMd5["pageName"] = pageName;
+                oMd5['id'] = web.id;
+                var $btn = $('#toMd5Btn');
+                $btn.text('Processing To MD5');
+                
+                try {
+                    ga('send', {
+                        hitType: 'event',
+                        eventCategory: 'Explore',
+                        eventAction: minifyPageName(pageName) + 'clk MD5 hash',
+                        eventLabel: pageName
+                    });
+                } catch (e) {}
+
+                callAjax(oMd5, 
+                        function(result){
+                            $btn.text('To MD5');
+
+                            var md5TextServer = result.customOutputString;
+
+                            $('#md5Result').html('<p>Your text has been hashed to the MD5 format <b>' + md5TextServer + '</b></p>');				
+                            $('#md5ResultContainer').show();
+
+                            localStorage.setItem(md5TextServer, plainText);
+
+                            $('.error1').hide();
+                                
+                            if ($('.w3-row.resultSection').is(':visible')) {
+                                $('.error2').hide();
+                            } else if ($('.error2').text().trim() !== '') {
+                                $('.error2').show();
+                            }
+
+                            try {
+                                ga('send', {
+                                    hitType: 'event',
+                                    eventCategory: 'Explore',
+                                    eventAction: minifyPageName(pageName) + 'MD5 hashed',
+                                    eventLabel: pageName
+                                });
+                            } catch (e) {}
+                        },
+                        function(){
+                            $btn.text('To MD5');
+                            try {
+                                var md5TextLocal = md5(plainText);
+
+                                $('#md5Result').html('<p>Your text has been hashed to the MD5 format <b>' + md5TextLocal + '</b></p>');				
+                                $('#md5ResultContainer').show();
+
+                                localStorage.setItem(md5TextLocal, plainText);
+
+                                $('.error1').hide();
+                                
+                                if ($('.w3-row.resultSection').is(':visible')) {
+                                    $('.error2').hide();
+                                } else if ($('.error2').text().trim() !== '') {
+                                    $('.error2').show();
+                                }
+
+                                ga('send', {
+                                    hitType: 'event',
+                                    eventCategory: 'Explore',
+                                    eventAction: minifyPageName(pageName) + 'MD5 hashed on browser',
+                                    eventLabel: pageName
+                                });
+                            } catch(e) {
+                                $('.error1').text('Error has occured').show();
+                                $('#md5ResultContainer').hide();
+
+                                if ($('.w3-row.resultSection').is(':visible')) {
+                                    $('.error2').hide();
+                                }
+                            }
+                        }
+                );
+            } else {
+                $('.error1').text('The input plain text must have a length between 1 and 990 characters').show();
+            }
+        });
+        
+        $('#toTextBtn').on('click', function(){
+            $('.error2').hide();
+            $('.w3-row.resultSection').hide();
+            if ($('#hashedString').val().length == 32) {
+                const md5Input = $('#hashedString').val();
+                const cachedOutput = localStorage.getItem(md5Input);
+                if (cachedOutput != null) {
+                    console.log("Got Decrypt info from localStorage");
+                    $('.w3-row.resultSection').show();
+                    $('#textResult').html('Congratulations! Your hashed text <b>' + md5Input + '</b> has been decrypted to:<br/><textarea class="decryptedText" readonly style="height: 100px;width: 100%;float: left;">' + cachedOutput + '</textarea>');				
+                    
+                    if ($('#pureString').val() !== cachedOutput) {
+                        try {
+                            ga('send', {
+                                hitType: 'event',
+                                eventCategory: 'Explore',
+                                eventAction: minifyPageName(pageName) + 'MD5 decrypt succ from LS',
+                                eventLabel: pageName
+                            });
+                        } catch (e) {}
+                    }
+                } else {
+                    var oMd5 = {};
+                    oMd5['customInputString2'] = md5Input;
+                    oMd5['customInputString'] = 'DE';
+                    oMd5["pageName"] = pageName;
+                    oMd5['id'] = web.id;
+                    var $btn = $('#toTextBtn');
+                    $btn.text('Processing To Text');
+
+                    try {
+                        ga('send', {
+                            hitType: 'event',
+                            eventCategory: 'Explore',
+                            eventAction: minifyPageName(pageName) + 'clk MD5 decrypt',
+                            eventLabel: pageName
+                        });
+                    } catch (e) {}
+
+                    callAjax(oMd5, 
+                            function(result){
+                                $btn.text('To Text');
+                                $('.w3-row.resultSection').show();
+                                $('#textResult').html('Congratulations! Your hashed text <b>' + md5Input + '</b> has been decrypted to:<br/><textarea class="decryptedText" readonly style="height: 100px;width: 100%;float: left;">' + result.customOutputString + '</textarea>');				
+                                localStorage.setItem(md5Input, result.customOutputString);
+                                
+                                if ($('#pureString').val() !== result.customOutputString) {
+                                    try {
+                                        ga('send', {
+                                            hitType: 'event',
+                                            eventCategory: 'Explore',
+                                            eventAction: minifyPageName(pageName) + 'MD5 decrypt succ',
+                                            eventLabel: pageName
+                                        });
+                                    } catch (e) {}
+
+                                    if (sessionStorage.getItem("md5DescSuccessDonateDlgOpened") !== 'true') {
+                                        donateAsk();
+                                        sessionStorage.setItem("md5DescSuccessDonateDlgOpened", true);
+                                    }
+                                }
+
+                            },
+                            function(){
+                                $btn.text('To Text');
+                                $('.error2').text('Cannot decrypt your MD5 to text').show();
+                                $('.w3-row.resultSection').hide();
+
+                                $('.error1').hide();
+                            }
+                    );
+                }
+            } else {
+                $('.error2').text('The MD5 format must have a length of 32 characters').show();
+            }
+        });
+
+        $(document).on('click','#copyCBHashed',function() {
+            copyToClipboard($("#md5Result b")[0]);
+        });
+
+        $(document).on('click','#copyCB',function() {
+            copyToClipboard($(".decryptedText")[0]);
+        });
+    };
+
+    function getInfosHook(){
+        $('#toMd5Btn, #toTextBtn').attr('disabled', false);
+
+        $('#pureString').attr('placeholder', 'The input plain text should have a length between 1 and 990 characters');
+        $('#hashedString').attr('placeholder', 'The MD5 format must have a length of 32 characters');
+    };
+</script>

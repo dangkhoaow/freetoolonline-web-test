@@ -1,0 +1,167 @@
+<script>
+    var captureCam = function(){};
+    const constraints = {
+            video: { 
+                facingMode: "environment",
+                width: { 
+                    ideal: 999999 
+                },
+                height: { 
+                    ideal: 999999 
+                },
+                frameRate: { 
+                    ideal: 60,
+                    min: 10 
+                }
+            }
+        },
+        constraintsS = {
+            video: {
+                facingMode: "user",
+                width: { 
+                    ideal: 999999 
+                },
+                height: { 
+                    ideal: 999999 
+                },
+                frameRate: { 
+                    ideal: 60,
+                    min: 10 
+                }
+            }
+        };
+    function doAfterPageRendered(){
+        function beginCameraCapture(){
+            $('#startBtn').attr('disabled', 'disabled');
+            var isDefault = true;
+            var video = document.querySelector('video');
+            var localMediaStream = null;
+            const switchCam = document.querySelector('#switch');
+            const screenshotButton = document.querySelector('#capture');
+            const img = document.querySelector('#img-review');
+            const canvas = document.createElement('canvas');
+            const cssFiltersButton = document.querySelector('#filters');
+            const downButton = document.querySelector('#download');
+            const editButton = document.querySelector('#edit');
+            const flipButton = document.querySelector('#flip');
+            
+            var filterIndex = 0;
+            const filters = [
+              'grayscale',
+              'sepia',
+              'blur',
+              'brightness',
+              'contrast',
+              'hue-rotate',
+              'hue-rotate2',
+              'hue-rotate3',
+              'saturate',
+              'invert',
+              ''
+            ];
+            
+            flip.onclick = video.onclick = function() {
+                $(video).toggleClass('flip');
+            };
+            
+            switchCam.onclick = video.onclick = function() {
+                try{video.pause();localMediaStream.stop();}catch(e){}
+                
+                isDefault = !isDefault;
+                if (isDefault){
+                    captureCam(constraints);
+                } else {
+                    captureCam(constraintsS);
+                }
+            };
+
+            screenshotButton.onclick = video.onclick = function() {
+                  canvas.width = video.videoWidth;
+                  canvas.height = video.videoHeight;
+                  var ctx = canvas.getContext('2d');
+                  if ($(video).hasClass('flip')) {
+                      ctx.translate(canvas.width, 0);
+                      ctx.scale(-1, 1);
+                  }
+                  ctx.drawImage(video, 0, 0);
+                  img.src = canvas.toDataURL("image/jpeg");
+                  img.className = video.className;
+                  $(img).removeClass('flip');
+                  $('.img-review-c').removeClass('hideEl');
+                  $('#download, #edit').attr('disabled', false);
+            };
+            
+            editButton.onclick = video.onclick = function() {
+                if (web.id != null){
+                    localStorage[web.id] = img.src;
+                    window.open("https://freetoolonline.com/photo-editor.html?from-camera=" + web.id + "&utm_source=internal&utm_medium=page&utm_content=function", '_blank');
+                }
+            };
+            
+            cssFiltersButton.onclick = video.onclick = function() {
+                video.className = filters[filterIndex++ % filters.length];
+            };
+            
+            downButton.onclick = video.onclick = function() {
+                 var base64 = img.src;
+                  var link = document.createElement('a');
+                  link.download = 'captured-' + getCurrentDateTime() + '.jpg';
+                  link.href = base64;
+                  link.target = '_blank';
+                  link.click();
+            };
+            
+            video.onplaying = function() {
+                setTimeout(function(){
+                    $('.resolutionInfo').text(video.videoWidth + "x" + video.videoHeight);
+                }, 500);
+            };
+                
+            function handleSuccess(stream) {
+                  $('.resultC').removeClass('height-zero');
+                  localMediaStream = stream;
+                  window.stream = stream; 
+                  video.srcObject = stream;
+                  $('.resolutionInfo').text("Detecting...");
+                  $('.resultOK').removeClass('hideEl');
+                  $('.camTestContainer').addClass('ok');
+                  $('#startBtn').hide();
+                  $('#capture').attr('disabled', false);
+                  $('#filters').attr('disabled', false);
+                  $('#switch').attr('disabled', false);
+                  $(flip).attr('disabled', false);
+            };
+
+            function handleError(error) {
+                $('#startBtn > i').addClass('fa-error');
+                alert('Your Camera Cant Works :(');
+            };
+
+            captureCam = function(config){
+                try {
+                    navigator.getUserMedia = (
+                        navigator.getUserMedia ||
+                        navigator.webkitGetUserMedia ||
+                        navigator.mozGetUserMedia ||
+                        navigator.msGetUserMedia
+                    );
+    
+                    if (typeof navigator.mediaDevices.getUserMedia === 'undefined') {
+                        navigator.getUserMedia(config, handleSuccess, handleError);
+                    } else {
+                        navigator.mediaDevices.getUserMedia(config).then(handleSuccess).catch(handleError);
+                    }
+                } catch (e) {
+                    alert('getUserMedia threw exception :' + e);
+                }			    	
+            };
+        };
+        
+        startBtn.addEventListener('click', function() {
+            video.muted = false;
+            beginCameraCapture();
+            captureCam(constraints);
+        });
+        $('.loading-tmp').hide();
+    };
+</script>

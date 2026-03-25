@@ -1,0 +1,55 @@
+<script>
+    function loadUploadHandlersByPage(){
+        web.folderUpload = true;
+        
+        buildInputObjBeforeSend = function(inputObj) {
+            inputObj["inputFolder"] = "input";
+            return inputObj;
+        };
+        
+        var $step1 = $('.step1'),
+        $step2 = $('.step2'),
+        $step3 = $('.step3'),
+        $zipName = $('#zipName'),
+        $password = $('#password');
+    
+        $zipName.val('myzipped-' + getCurrentDateTime());
+        
+        $(document).on('click','#zipBtn',function() {
+            if(web.fileInfoResult.length <= 0){
+                $step3.show();
+                $step3.find('#downloadLink').text('Error has occur').css('color', 'red').removeAttr('href').removeAttr('target');
+            }
+            var $this = $(this),
+                oZipInfo = {};
+            
+            oZipInfo['fileInfos'] = web.fileInfoResult;
+            oZipInfo['id'] = web.id;	
+            oZipInfo['name'] = replaceSpecialChars($('#zipName').val());	
+            if ($password.val() !== '') {
+                oZipInfo['password'] = $password.val();
+            }	
+            oZipInfo['pageName'] = pageName;	
+            oZipInfo['customInputString'] = $('#enMethod').val();	
+            oZipInfo['inputFolder'] = "input";
+            $step3.hide();
+            $this.text('Zipping');
+            
+            callAjax(oZipInfo, 
+                    function(result){
+                        $this.text('Zip');
+                        $step3.show();
+                        $step3.find('#downloadLink').attr('href', setOutputUrl(result, false));
+                        $step3.find('#downloadLink').text('Click here to download');				
+                    },
+                    function(){
+                        $this.text('Zip');
+                    }
+            );
+        });
+    };
+    
+    function doAfterPageRendered(){
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/file/zip-file.css');
+    };
+</script>

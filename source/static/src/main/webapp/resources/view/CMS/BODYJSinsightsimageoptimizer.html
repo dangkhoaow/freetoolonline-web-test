@@ -1,0 +1,93 @@
+<script>
+    function loadUploadHandlersByPage(){
+        web.includesProcess = true;
+        var onFileCompleteOrigin = onFileComplete;
+        onFileComplete = function(e, file, response) {
+            var response = onFileCompleteOrigin.call(this, e, file, response);
+            try{
+                if(typeof response != 'undefined' && response){
+                    generateImgThumbs(response);
+                }
+            } catch(e){}
+        };
+        
+        var onCompleteOrigin = onComplete;
+        onComplete = function(e) {
+            onCompleteOrigin.call(this, e);
+            try{
+                if(web.fileInfoResult.length > 1){
+                    web.fileInfoResult[0]["pageName"] = "combine-output";
+                    web.fileInfoResult[0]["outPutfileType"] = ".zip";
+                    getStatus(web.fileInfoResult[0]);
+                } else if(web.fileInfoResult.length == 0){
+                    $('.errorMsgAction').text('Error has occured').show();
+                }
+            } catch(e){
+                $('.errorMsgAction').text('Error has occured').show();
+            }
+        };
+        
+        web.folderUpload = true;
+
+        buildInputObjBeforeSend = function(fileBase) {
+            fileBase["inputFolder"] = "input";
+            fileBase["includeProcess"] = "true";
+            fileBase["quality"] = parseInt($('#quality').val());
+            fileBase["outputFolder"] = "output";
+            fileBase['outputType'] = $('#outputFormat').val();
+            fileBase["outPutfileType"] = ".zip";
+            $('.downloadBtnContainer').hide();
+            return fileBase;
+        };
+        
+        function getStatus(fileBase){
+            callAjax(fileBase, 
+                function(result){
+                    generateDownloadZip(result);			
+                },
+                function(){}
+            );
+        };
+        
+        function generateDownloadZip(result){
+            if (result && result.downloadUrl && result.downloadUrl !== '') {
+                $('.downloadBtnContainer').show().find('#downloadLink').attr('href', setOutputUrl(result, false));
+                $('.downloadBtnContainer').show().find('#downloadLink').text('Download all optimized images');
+            } 
+        };
+        
+        var recentCol = 0,
+               temp = "<div title='Click here to download' id='imgOut-{0}' class='imageOut'><img loading='lazy' src='{1}'><div class='w3-white imgOutDownBtn'><a class='w3-button w3-light-grey imageDownloadBtn' target='_blank' href='{2}'><span>Download<br/><i class='fa fa-photo'></i> {3}</span></button></div></div>";
+        function generateImgThumbs(result){
+                var imgsOut = '',
+                    imgName = result.name,
+                    viewUrl = result.thumbUrl + "";
+                
+                imgsOut = imgsOut + String.format(temp, imgName, result.thumbUrl, result.downloadUrl, result.name);
+                
+                if (imgsOut !== '') {
+                    if (recentCol < $('.outputImgs .w3-col').length){
+                        recentCol = recentCol + 1;
+                    } else {
+                        recentCol = 1;
+                    }
+                    $('.col' + recentCol).append(imgsOut);
+                }
+        };
+        
+        var slider = document.getElementById("quality");
+        var output = document.getElementById("qualityValue");
+        output.innerHTML = slider.value + "-<b>max</b>";
+        slider.value = slider.max;
+        slider.oninput = function() {
+          output.innerHTML = this.value;
+          if(parseInt(this.value) == slider.max){
+              output.innerHTML = output.innerHTML + "-<b>max</b>";
+          }
+        };
+    };
+    function doAfterPageRendered(){
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/image/insights-optimize-image.css');
+        $('.downloadBtnContainer').hide();
+    };
+</script>

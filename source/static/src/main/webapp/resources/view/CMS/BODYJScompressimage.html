@@ -1,0 +1,86 @@
+<script>
+    var pureDownUrl = "",
+        oriSize = 0;
+    function loadUploadHandlersByPage(){
+        var onCompleteOrigin = onComplete;
+        onComplete = function(e) {
+            onCompleteOrigin.call(this, e);
+            try{
+                $('#width').text(web.fileInfoResult[web.fileInfoResult.length - 1].width);
+                $('#height').text(web.fileInfoResult[web.fileInfoResult.length - 1].height);
+                $('#nWidth').val(web.fileInfoResult[web.fileInfoResult.length - 1].width);
+                $('#nHeight').val(web.fileInfoResult[web.fileInfoResult.length - 1].height);
+                var pureUrl = setOutputUrl(web.fileInfoResult[web.fileInfoResult.length - 1], true);
+                $('.sourceImage').find('img').attr('src', pureUrl);
+                $('.directLink').val(qualifyURL(setOutputUrl(web.fileInfoResult[web.fileInfoResult.length - 1], true)).replace('/view?','/download?'));
+                pureDownUrl = pureUrl;
+                oriSize = web.fileInfoResult[web.fileInfoResult.length - 1].fileSizeMb;
+                $('.outImageC, .autoResultC').hide();
+                $('.outImageC .outImage').html('<div class="juxtapose"><img data-label="Original JPEG"><img data-label="Compressed JPEG"></div>');
+                $('.sourceImageC').show();
+                var $step2 = $('.step2'),
+                    $step3 = $('.step3');
+                $step3.show();
+                $step2.hide();
+                $('#compressRatio').val(100);
+            } catch(e){
+                $('.errorMsgAction').text('Error has occured').show();
+            }
+        };
+    };
+    function doAfterPageRendered(){
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/script/lib/juxtapose/juxtapose.min.css');
+        loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/image/resize-image.css');
+        
+        var $step1 = $('.step1'),
+            $step2 = $('.step2'),
+            $step3 = $('.step3');
+        
+        $(document).on('click','#copyDirectLinkButton',function() {
+            copyToClipboard(document.getElementById("copyDirectLinkTarget"));
+        });
+        
+        $(document).on('click','#compressBtn',function() {
+            var oCompressInfo = web.fileInfoResult[web.fileInfoResult.length - 1];
+            oCompressInfo['compressRatio'] = $('#compressRatio').val();
+            oCompressInfo['customName'] = true;
+            oCompressInfo['imgCompressKeepOri'] = true;
+            oCompressInfo["outputFolder"] = "output";
+            oCompressInfo["customInputString3"] = $('#autoCompress').is(':checked');
+            var $this = $(this);
+            $this.text('Compressing');
+            $step2.hide();
+            
+            callAjax(oCompressInfo, 
+                    function(result){
+                        $('#compressRatio').attr('disabled', $('#autoCompress').is(':checked'));
+                        $this.text('Compress');
+                        var directLnk = qualifyURL(setOutputUrl(result, true));
+                        $('.directLink').val(directLnk);
+                        $('#downloadButton').attr('href', directLnk);
+                        $step2.show();
+                        $('.outImageC .outImage').html('<div class="juxtapose"><img data-label="Original JPEG"><img data-label="Compressed JPEG"></div>');
+                        $('.outImageC .juxtapose').find('img:first-child').attr('src', pureDownUrl + "?t=" + getCurrentDateTime());
+                        $('.outImageC .juxtapose').find('img:last-child').attr('src', setOutputUrl(result, true) + "?t=" + getCurrentDateTime());
+                        loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/juxtapose/juxtapose.min.js', function(){});
+                        $('.autoResultC').show();
+                        if ($('#autoCompress').is(':checked')){
+                            $('#autoResult').text(result.customOutputString);
+                        } else {
+                            var compressedRatio = (parseFloat(result.fileSizeMb)/parseFloat(oriSize)).toFixed(2);
+                            $('#autoResult').text(result.fileSizeMb + ' MB (ratio:' + compressedRatio + '%)');
+                        }
+                        $('.outImageC').show();
+                        $('.sourceImageC').hide();
+                    },
+                    function(){
+                        $this.text('Compress');
+                    }
+            );
+        });
+        
+        $('#autoCompress').change(function(){
+            $('#compressRatio').attr('disabled', $(this).is(':checked'));
+        });
+    };
+</script>

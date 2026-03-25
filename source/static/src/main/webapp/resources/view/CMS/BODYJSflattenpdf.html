@@ -1,0 +1,55 @@
+<script>
+    function doAfterPageRendered(){
+        var $step1 = $('.step1'),
+            $step2 = $('.step2'),
+            $step3 = $('.step3');
+        $('.gsOptsContainer').hide();
+        $(document).on('click','#flatten',function() {
+            if(web.fileInfoResult.length <= 0){
+                $step3.show();
+                $step3.find('#downloadLink').text('Error has occur').css('color', 'red').removeAttr('href').removeAttr('target');
+            }
+            var oBaseFile = web.fileInfoResult[web.fileInfoResult.length - 1];
+            oBaseFile['format'] = $('input[name=tool]:checked').val();
+            if($('input[name=tool]:checked').val() === 'gs'){
+                oBaseFile['customInputString'] = $('#dAutoFilterColorImages').is(':checked');
+                oBaseFile['customInputString2'] = $('#dAutoFilterGrayImages').is(':checked');
+                oBaseFile['customInputString3'] = $('#dDownsampleMonoImages').is(':checked');
+                oBaseFile['customInputString4'] = $('#dDownsampleGrayImages').is(':checked');
+                oBaseFile['customInputString5'] = $('#dDownsampleColorImages').is(':checked');
+                oBaseFile['customInputString6'] = $('#dConvertCMYKImagesToRGB').is(':checked');
+            } else {
+                oBaseFile['customInputString'] = $('#outputDensityIM').val();
+            }
+            var $btn = $('#flatten');
+            $btn.text('Flattening');
+            $step3.hide();
+            
+            callAjax(oBaseFile, 
+                    function(result){
+                        $btn.text('Flatten');
+                        $step3.show();
+                        $step3.find('#downloadLink').attr('href', setOutputUrl(result, false));
+                        $step3.find('#downloadLink').text('Click here to download');				
+                    },
+                    function(){
+                        $btn.text('Flatten');
+                    }
+            );
+        });
+        
+        $("input[name='tool']").change(function(){
+            if($('input[name=tool]:checked').val() === 'gs'){
+                $('.gsOpts').attr('disabled', false);
+                $('.gsOptsContainer').show();
+                $('.imOptsContainer').hide();
+            } else {
+                $('.gsOpts').attr('disabled', 'disabled');
+                $('.gsOptsContainer').hide();
+                $('.imOptsContainer').show();
+            }
+        });
+
+        $('input[name=tool][value=gs]').click();
+    };
+</script>

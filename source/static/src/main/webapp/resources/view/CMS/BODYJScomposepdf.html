@@ -1,0 +1,75 @@
+<script>
+    function doAfterPageRendered(){
+        loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/jquery/tinymce/jquery.tinymce.min.js', function(){
+            loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/jquery/tinymce/tinymce.min.js', function(){
+                var $step1 = $('.step1'),
+                    $step2 = $('.step2');
+            
+                $('#pdfName').val('pdfname-' + getCurrentDateTime());
+                $("#pdfName").val($("#pdfName").val().replace(/\s/g, "-"))
+                var heightAdjust = parseInt($(window).outerHeight() - ($('.ccInfo').outerHeight() + $('.tagsTag').outerHeight() + $('.welcomeTag').outerHeight() + $('.shareBtns').outerHeight() + $('header').outerHeight() + $('#submitContent').outerHeight() + 160 ));
+                if(heightAdjust < 380){
+                    heightAdjust = 380;
+                }
+                tinymce.init({
+                      force_br_newlines : true,
+                      force_p_newlines : false,
+                      forced_root_block : 'div', 
+                      forced_root_block_attrs: { "style": "margin: 5px 0;" },
+                      selector: 'textarea',
+                      height: heightAdjust,
+                      theme: 'modern',
+                      plugins: [
+                        'advlist autolink lists link image charmap print preview hr pagebreak',
+                        'searchreplace wordcount visualblocks visualchars',
+                        'insertdatetime media nonbreaking save table contextmenu directionality',
+                        'template paste textcolor colorpicker textpattern imagetools codesample toc help'
+                      ],
+                      toolbar1: 'undo redo | insert | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',
+                      toolbar2: 'print media | forecolor backcolor pagebreak | codesample removeformat',
+                      image_advtab: true,
+                      content_css: [
+                        'https://dkbg1jftzfsd2.cloudfront.net/style/lib/fonts.css',
+                        'https://dkbg1jftzfsd2.cloudfront.net/style/lib/codepen.min.css'
+                      ],
+                      branding: false,
+                      setup: function (ed) {
+                            ed.on('init', function(args) {
+                                $('.loading-tmp').hide();
+                                $('.actionBtns').show();
+                            });
+                      }
+                });
+
+                $('#submitContent').on('click', function(){
+                    var html = document.getElementById('editor_ifr').contentWindow.document.body.innerHTML;
+                    html = html.replaceAll('<img loading="lazy" class="mce-pagebreak" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-mce-resize="false" data-mce-placeholder="">',
+                    '<img loading="lazy" style="page-break-before:always" class="mce-pagebreak" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-mce-resize="false" data-mce-placeholder="">');
+                    var $this = $(this),
+                        oMyForm = {pageName: pageName, id: web.id, name:$('#pdfName').val(), customInputString: html};
+                    $step1.find('input, button').attr('disabled', 'disabled');
+                    $this.text('Submiting');
+                    tinymce.activeEditor.getBody().setAttribute('contenteditable', false);
+                    $step2.hide();
+                    
+                    callAjax(oMyForm, 
+                            function(result){
+                                $step2.show();
+                                $step2.find('#downloadLink').attr('href', setOutputUrl(result)).text('Click here to download').css('color', '#000000');
+                                $step1.find('input, button').attr('disabled', false);
+                                $this.text('Submit');
+                                tinymce.activeEditor.getBody().setAttribute('contenteditable', true);				
+                            },
+                            function(){
+                                $step1.find('input, button').attr('disabled', false);
+                                $this.text('Submit');
+                                $step2.show();
+                                $step2.find('#downloadLink').text('Error has occur').css('color', 'red').removeAttr('href').removeAttr('target');
+                                tinymce.activeEditor.getBody().setAttribute('contenteditable', true);
+                            }
+                    );
+                });
+            });
+        });
+    };
+</script>
