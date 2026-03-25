@@ -361,27 +361,27 @@ html {
 }
 
 h1 {
-    font-size: 36px
+    font-size: 22px
 }
 
 h2 {
-    font-size: 30px
+    font-size: 19px
 }
 
 h3 {
-    font-size: 24px
-}
-
-h4 {
-    font-size: 20px
-}
-
-h5 {
     font-size: 18px
 }
 
-h6 {
+h4 {
+    font-size: 17px
+}
+
+h5 {
     font-size: 16px
+}
+
+h6 {
+    font-size: 15px
 }
 
 .w3-serif {
@@ -2044,7 +2044,7 @@ header .new-style-nav-bar {
     border-right-color: #c3c6c9;
     border-bottom-color: #b5b9bd;
     border-left-color: #c3c6c9;
-    padding: 10px;
+    padding: 20px;
 }
 
 .ad-section,.page-section,header.navBarContainer{
@@ -2194,17 +2194,6 @@ footer.page-footer .footer-inner *{
 
 footer.page-footer .footer-inner {
     max-width: 1240px!important;
-}
-
-@media(max-width: 1550px) {
-	footer.page-footer .footer-inner {
-    		text-align: left !important;
-	    	max-width: calc(100% - 20px)!important;
-	}
-    .page-section, .ad-section:not(.ad-panel) {
-		margin-left: 10px!important;
-        max-width: unset;
-	}
 }
 
 @media (max-width: 599px){

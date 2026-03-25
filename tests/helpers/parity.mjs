@@ -64,13 +64,16 @@ export async function prepareParityContext(context) {
 
   const forcedOrigin = process.env.PARITY_ALLOWED_REQUEST_ORIGIN?.trim();
   if (forcedOrigin) {
-    await context.route('**/service.us-east-1a.freetool.online/**', async (route) => {
+    const applyForcedOrigin = async (route) => {
       const headers = {
         ...route.request().headers(),
         origin: forcedOrigin,
       };
       await route.continue({ headers });
-    });
+    };
+
+    await context.route('**/service.us-east-1a.freetool.online/**', applyForcedOrigin);
+    await context.route('**/downloader*.us-east-1a.freetool.online/**', applyForcedOrigin);
   }
 
   await context.addInitScript(() => {
@@ -125,11 +128,27 @@ export async function captureSnapshot(page) {
       const text = (selector) => document.querySelector(selector)?.textContent ?? '';
       const html = (selector) => document.querySelector(selector)?.innerHTML ?? '';
       const count = (selector) => document.querySelectorAll(selector).length;
+      const layoutSelectors = ['#content', '.page-main-content', '.page-section', '#editor-c', '#wrap', '#home', '#home-box', '.navBarContainer'];
+      const layoutMetrics = {};
+
+      for (const selector of layoutSelectors) {
+        const el = document.querySelector(selector);
+        if (!el) {
+          continue;
+        }
+
+        const rect = el.getBoundingClientRect();
+        layoutMetrics[selector] = {
+          width: Math.round(rect.width),
+          x: Math.round(rect.x),
+        };
+      }
 
       return {
         h1Text: text('h1'),
         canonicalHref: document.querySelector('link[rel="canonical"]')?.getAttribute('href') ?? '',
         contentHtml: html('#content'),
+        layoutMetrics,
         popularToolsCount: count('#popularToolsList li'),
         searchOptionCount: count('#combobox option'),
         uploadText: text('.target .fs-upload-target'),
@@ -146,6 +165,7 @@ export async function captureSnapshot(page) {
     canonicalHref: normalizeText(pageState.canonicalHref),
     fullHtml: normalizeHtml(fullHtml),
     contentHtml: normalizeHtml(pageState.contentHtml),
+    layoutMetrics: pageState.layoutMetrics,
     popularToolsCount: pageState.popularToolsCount,
     searchOptionCount: pageState.searchOptionCount,
     uploadText: normalizeUploadText(pageState.uploadText),
@@ -155,15 +175,17 @@ export async function captureSnapshot(page) {
 }
 
 export function compareSnapshots(oldSnapshot, newSnapshot) {
-  const fields = ['title', 'finalUrl', 'h1Text', 'canonicalHref', 'popularToolsCount', 'searchOptionCount', 'uploadText', 'uploadSecondText'];
+  const fields = ['title', 'finalUrl', 'h1Text', 'canonicalHref', 'layoutMetrics', 'popularToolsCount', 'searchOptionCount', 'uploadText', 'uploadSecondText'];
   const diffs = [];
 
   for (const field of fields) {
-    if (oldSnapshot[field] !== newSnapshot[field]) {
+    const oldValue = field === 'layoutMetrics' ? JSON.stringify(oldSnapshot[field]) : oldSnapshot[field];
+    const newValue = field === 'layoutMetrics' ? JSON.stringify(newSnapshot[field]) : newSnapshot[field];
+    if (oldValue !== newValue) {
       diffs.push({
         field,
-        oldValue: oldSnapshot[field],
-        newValue: newSnapshot[field],
+        oldValue,
+        newValue,
       });
     }
   }
