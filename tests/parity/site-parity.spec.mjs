@@ -197,3 +197,102 @@ test('hr margin + color matches old site (zip-file)', async ({ browser }, testIn
     await context.close();
   }
 });
+
+test('tags position matches old site (heic-to-jpg)', async ({ browser }, testInfo) => {
+  const context = await browser.newContext();
+
+  try {
+    await prepareParityContext(context);
+
+    const route = '/heic-to-jpg.html';
+    const oldPage = await context.newPage();
+    const newPage = await context.newPage();
+
+    await Promise.all([
+      oldPage.goto(buildRouteUrl(OLD_ORIGIN, route), { waitUntil: 'load' }),
+      newPage.goto(buildRouteUrl(NEW_ORIGIN, route), { waitUntil: 'load' }),
+    ]);
+
+    const ensureTagsRendered = async (page) => {
+      await page.waitForFunction(() => typeof window.loadRelatedTools === 'function', null, { timeout: 15000 }).catch(() => {});
+      await page.evaluate(() => {
+        try {
+          window.loadRelatedTools?.();
+        } catch {}
+      });
+      await page.waitForTimeout(4000);
+      await page.waitForFunction(() => document.body.textContent?.includes('Tags:'), null, { timeout: 15000 }).catch(() => {});
+    };
+
+    await Promise.all([ensureTagsRendered(oldPage), ensureTagsRendered(newPage)]);
+
+    const readTagsMetrics = async (page) => {
+      return await page.evaluate(() => {
+        const section = document.querySelector('.relatedToolsSection');
+        const relatedTools = section?.querySelector('.relatedTools') ?? null;
+        const ul = relatedTools?.querySelector('ul') ?? null;
+
+        const tagsNode = (() => {
+          const root = section || document.body;
+          const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+          let node;
+          while ((node = walker.nextNode())) {
+            if (node.nodeValue && node.nodeValue.includes('Tags:')) {
+              return node;
+            }
+          }
+          return null;
+        })();
+        const tagsEl = tagsNode?.parentElement ?? null;
+
+        const relatedToolsStyle = relatedTools ? getComputedStyle(relatedTools) : null;
+        const gapUlToTags = (() => {
+          if (!ul || !tagsEl) {
+            return null;
+          }
+          const u = ul.getBoundingClientRect();
+          const t = tagsEl.getBoundingClientRect();
+          return Math.round(t.y - (u.y + u.height));
+        })();
+
+        return {
+          gapUlToTags,
+          relatedToolsMinHeight: relatedToolsStyle?.minHeight ?? '',
+          relatedToolsMaxHeight: relatedToolsStyle?.maxHeight ?? '',
+          relatedToolsOverflow: relatedToolsStyle?.overflow ?? '',
+          relatedToolsOverflowY: relatedToolsStyle?.overflowY ?? '',
+        };
+      });
+    };
+
+    const [oldMetrics, newMetrics] = await Promise.all([readTagsMetrics(oldPage), readTagsMetrics(newPage)]);
+
+    if (JSON.stringify(oldMetrics) !== JSON.stringify(newMetrics)) {
+      await testInfo.attach('tags-old-screenshot.png', {
+        body: await oldPage.screenshot({ fullPage: true }),
+        contentType: 'image/png',
+      });
+      await testInfo.attach('tags-new-screenshot.png', {
+        body: await newPage.screenshot({ fullPage: true }),
+        contentType: 'image/png',
+      });
+      await testInfo.attach('tags-metrics.json', {
+        body: JSON.stringify({ oldMetrics, newMetrics }, null, 2),
+        contentType: 'application/json',
+      });
+    }
+
+    expect(oldMetrics.gapUlToTags, 'Old site should compute a Tags gap.').not.toBeNull();
+    expect(newMetrics.gapUlToTags, 'New site should compute a Tags gap.').not.toBeNull();
+
+    // This catches the regression: static build was forcing a fixed relatedTools height,
+    // pushing Tags down even though it's immediately after the list.
+    expect(newMetrics.gapUlToTags, 'New site gap between related tools list and Tags should match old site.').toBe(oldMetrics.gapUlToTags);
+    expect(newMetrics.relatedToolsMinHeight, 'New site relatedTools min-height should match old site.').toBe(oldMetrics.relatedToolsMinHeight);
+    expect(newMetrics.relatedToolsMaxHeight, 'New site relatedTools max-height should match old site.').toBe(oldMetrics.relatedToolsMaxHeight);
+    expect(newMetrics.relatedToolsOverflow, 'New site relatedTools overflow should match old site.').toBe(oldMetrics.relatedToolsOverflow);
+    expect(newMetrics.relatedToolsOverflowY, 'New site relatedTools overflow-y should match old site.').toBe(oldMetrics.relatedToolsOverflowY);
+  } finally {
+    await context.close();
+  }
+});

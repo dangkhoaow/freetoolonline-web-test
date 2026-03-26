@@ -2203,13 +2203,13 @@ footer.page-footer .footer-inner {
 }
 
 .page-section.relatedToolsSection {
-    height: 240px;
+    height: auto;
 }
 
 .page-section.relatedToolsSection .relatedTools{
-    max-height: 170px;
-    min-height: 170px;
-    overflow: hidden;
+    max-height: none;
+    min-height: 0;
+    overflow: visible;
 }
 
 .page-section.relatedToolsSection .relatedTools::-webkit-scrollbar {
