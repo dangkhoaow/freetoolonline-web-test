@@ -2206,6 +2206,22 @@ footer.page-footer .footer-inner {
     height: auto;
 }
 
+/* Index hero: BODYHTML reuses .page-section on Popular tools for shared hooks; strip article "card" chrome
+   (box-shadow + opaque panel) that applies to real content sections via .page-section, .ad-section. */
+header#home.bgimg-1 .page-section.relatedToolsSection,
+#home.bgimg-1 .page-section.relatedToolsSection {
+    -webkit-box-shadow: none !important;
+    -moz-box-shadow: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+    background: transparent !important;
+    max-width: none;
+    width: auto;
+    margin: 0;
+    margin-bottom: 0;
+    overflow: visible;
+}
+
 .page-section.relatedToolsSection .relatedTools{
     max-height: none;
     min-height: 0;

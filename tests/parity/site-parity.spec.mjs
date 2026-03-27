@@ -296,3 +296,57 @@ test('tags position matches old site (heic-to-jpg)', async ({ browser }, testInf
     await context.close();
   }
 });
+
+// Targets built CSS (PARITY_INDEX_ORIGIN, e.g. local `serve dist`) until GitHub Pages picks up the export.
+test('home popular tools section has no page-section card shadow (index)', async ({ browser }, testInfo) => {
+  const context = await browser.newContext();
+
+  try {
+    await prepareParityContext(context);
+
+    const route = '/';
+    const newBase = process.env.PARITY_INDEX_ORIGIN?.trim() || NEW_ORIGIN;
+    const page = await context.newPage();
+
+    await page.goto(buildRouteUrl(newBase, route), { waitUntil: 'load' });
+    await page.waitForSelector('#home .page-section.relatedToolsSection', { timeout: 15000 });
+
+    const newStyle = await page.evaluate(() => {
+      const el = document.querySelector('#home .page-section.relatedToolsSection');
+      if (!el) {
+        return null;
+      }
+      const s = getComputedStyle(el);
+      return {
+        boxShadow: s.boxShadow,
+        backgroundColor: s.backgroundColor,
+        maxWidth: s.maxWidth,
+      };
+    });
+
+    if (
+      !newStyle ||
+      newStyle.boxShadow !== 'none' ||
+      newStyle.maxWidth !== 'none' ||
+      !/rgba\(0, 0, 0, 0\)|transparent/i.test(newStyle.backgroundColor)
+    ) {
+      await testInfo.attach('home-popular-screenshot.png', {
+        body: await page.screenshot({ fullPage: true }),
+        contentType: 'image/png',
+      });
+      await testInfo.attach('home-popular-styles.json', {
+        body: JSON.stringify({ newBase, newStyle }, null, 2),
+        contentType: 'application/json',
+      });
+    }
+
+    expect(newStyle, 'Index should expose #home .page-section.relatedToolsSection.').toBeTruthy();
+    expect(newStyle.boxShadow, 'Home popular tools must not inherit .page-section card shadow.').toBe('none');
+    expect(newStyle.maxWidth, 'Home popular tools must not use article max-width.').toBe('none');
+    expect(newStyle.backgroundColor, 'Home popular tools background should stay transparent.').toMatch(
+      /rgba\(0, 0, 0, 0\)|transparent/i,
+    );
+  } finally {
+    await context.close();
+  }
+});
