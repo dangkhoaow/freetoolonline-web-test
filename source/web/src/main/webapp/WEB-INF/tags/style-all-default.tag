@@ -2365,35 +2365,44 @@ html.main-html.dark:not([style*="background-color"]) .page-main-content .page-se
     font-weight: 600;
 }
 
-/* Header: ensure Settings stays accessible on mobile tool pages. */
+/* Mobile header actions: keep the real Settings button visible without un-hiding #disableAds. */
 @media (max-width: 599px) {
-    header.navBarContainer .settingsBtn {
+    header.navBarContainer .settingsBtn[title*="tool settings"] {
         display: inline-flex !important;
         align-items: center;
         justify-content: center;
-    }
-}
-
-/* Very small screens: compact right-side actions so Settings fits. */
-@media (max-width: 420px) {
-    header.navBarContainer .settingsBtn {
-        font-size: 0 !important;
+        margin-top: 0 !important;
+        height: 24px !important;
+        min-height: 24px;
         padding: 2px 8px !important;
-        min-width: 34px;
+        box-sizing: border-box;
+        font-size: 0 !important;
+        line-height: 1 !important;
     }
-    header.navBarContainer .settingsBtn i {
+
+    header.navBarContainer .settingsBtn[title*="tool settings"] i {
         font-size: 14px;
         margin: 0 !important;
+        line-height: 1;
     }
 
     #buyMeACoffeeBtnID {
-        font-size: 0 !important;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        margin-top: 0 !important;
+        height: 24px !important;
+        min-height: 24px;
         padding: 2px 8px !important;
-        min-width: 34px;
+        box-sizing: border-box;
+        font-size: 0 !important;
+        line-height: 1 !important;
     }
+
     #buyMeACoffeeBtnID i {
         font-size: 14px;
         margin: 0 !important;
+        line-height: 1;
     }
 }
 
