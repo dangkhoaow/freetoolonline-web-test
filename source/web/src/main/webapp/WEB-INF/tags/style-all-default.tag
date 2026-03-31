@@ -2220,7 +2220,8 @@ footer.page-footer .footer-inner {
 
 @media (max-width: 599px){
 	footer.page-footer .footer-inner {
-	    padding: 0!important;
+	    padding: 0 10px 20px!important;
+	    box-sizing: border-box;
 	}
 }
 
@@ -2335,6 +2336,71 @@ html.main-html.dark:not([style*="background-color"]) .page-main-content .page-se
     background-color: #2F3437 !important;
     border: 1px solid #37352F !important;
     color: #FFFFFF !important;
+}
+
+/* Mobile polish (menu + header + dialogs) */
+
+/* Drawer menu: fix corrupted hover/focus/active states (especially iOS "stuck" focus). */
+#nav_menu .menu-btn,
+#nav_menu .menuGroup .w3-bar-item.w3-button {
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+#nav_menu .menu-btn:hover,
+#nav_menu .menu-btn:focus,
+#nav_menu .menu-btn:active,
+#nav_menu .menuGroup .w3-bar-item.w3-button:hover,
+#nav_menu .menuGroup .w3-bar-item.w3-button:focus,
+#nav_menu .menuGroup .w3-bar-item.w3-button:active {
+    background-color: rgba(0,0,0,0.06) !important;
+    color: #000 !important;
+    outline: 0 !important;
+}
+
+#nav_menu .menuGroup .w3-bar-item.w3-button.active {
+    background-color: rgba(0,0,0,0.12) !important;
+    color: #000 !important;
+    font-weight: 600;
+}
+
+/* Header: ensure Settings stays accessible on mobile tool pages. */
+@media (max-width: 599px) {
+    header.navBarContainer .settingsBtn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* Very small screens: compact right-side actions so Settings fits. */
+@media (max-width: 420px) {
+    header.navBarContainer .settingsBtn {
+        font-size: 0 !important;
+        padding: 2px 8px !important;
+        min-width: 34px;
+    }
+    header.navBarContainer .settingsBtn i {
+        font-size: 14px;
+        margin: 0 !important;
+    }
+
+    #buyMeACoffeeBtnID {
+        font-size: 0 !important;
+        padding: 2px 8px !important;
+        min-width: 34px;
+    }
+    #buyMeACoffeeBtnID i {
+        font-size: 14px;
+        margin: 0 !important;
+    }
+}
+
+/* Dialogs: keep radius consistent with button style. */
+.w3-modal-content {
+    border-radius: 8px !important;
+    overflow: hidden;
 }
 
 .ad-section.top-ad, .bg-credit, .bg-credit-des{
