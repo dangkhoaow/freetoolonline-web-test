@@ -2367,38 +2367,32 @@ html.main-html.dark:not([style*="background-color"]) .page-main-content .page-se
 
 /* Mobile header actions: keep the real Settings button visible without un-hiding #disableAds. */
 @media (max-width: 599px) {
-    header.navBarContainer .settingsBtn[title*="tool settings"] {
-        display: inline-flex !important;
-        align-items: center;
-        justify-content: center;
-        margin-top: 0 !important;
-        height: 24px !important;
-        min-height: 24px;
-        padding: 2px 8px !important;
-        box-sizing: border-box;
-        font-size: 0 !important;
-        line-height: 1 !important;
+    header.navBarContainer .pageNameContainer {
+        display: none !important;
     }
 
-    header.navBarContainer .settingsBtn[title*="tool settings"] i {
-        font-size: 14px;
-        margin: 0 !important;
-        line-height: 1;
-    }
-
+    header.navBarContainer #disableAds,
+    header.navBarContainer .settingsBtn[title*="tool settings"],
     #buyMeACoffeeBtnID {
         display: inline-flex !important;
         align-items: center;
         justify-content: center;
-        margin-top: 0 !important;
+        margin-top: 8.5px !important;
+        margin-bottom: 0 !important;
         height: 24px !important;
         min-height: 24px;
-        padding: 2px 8px !important;
+        margin-right: 6px !important;
+        padding: 2px 7px !important;
         box-sizing: border-box;
         font-size: 0 !important;
         line-height: 1 !important;
+        overflow: hidden;
+        white-space: nowrap;
+        vertical-align: middle;
     }
 
+    header.navBarContainer #disableAds i,
+    header.navBarContainer .settingsBtn[title*="tool settings"] i,
     #buyMeACoffeeBtnID i {
         font-size: 14px;
         margin: 0 !important;
