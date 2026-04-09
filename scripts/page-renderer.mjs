@@ -65,7 +65,10 @@ function renderToolSections(ctx) {
   if (!ctx.showAds) {
     return '';
   }
-  return `<!-- SEO_BLOCK:RELATED_TOOLS --><div class="w3-row page-section relatedToolsSection"><p style="margin-bottom: 0px;">Related tools:</p><div class="relatedTools"></div><script>loadRelatedTools = function(){ loadScript('${ctx.relatedToolsScriptPath}?v=' + APP_VERSION, function(){}); };</script></div><div class="w3-row page-section"><div id="star-rating-container">Loading reviews...</div></div>${ctx.pageFaq ? ctx.pageFaq : ''}${ctx.bottomPageBannerAd || ''}<!-- END_SEO_BLOCK:RELATED_TOOLS -->`;
+  const ratingBlock = ctx.showRating === false
+    ? ''
+    : `<div class="w3-row page-section"><div id="star-rating-container">Loading reviews...</div></div>`;
+  return `<!-- SEO_BLOCK:RELATED_TOOLS --><div class="w3-row page-section relatedToolsSection"><p style="margin-bottom: 0px;">Related tools:</p><div class="relatedTools"></div><script>loadRelatedTools = function(){ loadScript('${ctx.relatedToolsScriptPath}?v=' + APP_VERSION, function(){}); };</script></div>${ratingBlock}${ctx.pageFaq ? ctx.pageFaq : ''}${ctx.bottomPageBannerAd || ''}<!-- END_SEO_BLOCK:RELATED_TOOLS -->`;
 }
 
 export function parseJspPageSource(jspSource) {
@@ -133,6 +136,10 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     || /uploadContainerSecond/.test(bodyHtml)
     || /uploadContainer/.test(bodyHtml);
   const showAds = !isHome && !isInfoRoute(normalizedRoute) && normalizedRoute !== '/alternatead.html';
+  const isHubPage = normalizedRoute.endsWith('-tools.html');
+  if (isHubPage) {
+    console.log(`[render] hub page detected; suppressing rating block: ${normalizedRoute}`);
+  }
   const canonicalUrl = resolveCanonicalUrl({
     canonicalOrigin,
     route: normalizedRoute,
@@ -195,6 +202,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   });
   const toolSections = renderToolSections({
     showAds,
+    showRating: !isHubPage,
     pageFaq: pageData.faq,
     bottomPageBannerAd: sharedFragments.bottomPageBannerAd,
     relatedToolsScriptPath,
