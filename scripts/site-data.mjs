@@ -55,6 +55,7 @@ export const JSP_BY_ROUTE = {
   '/zip-file.html': 'file/zip-file.jsp',
   '/unzip-file.html': 'file/unzip-file.jsp',
   '/remove-zip-password.html': 'file/remove-zip-password.jsp',
+  '/zip-tools.html': 'utility/zip-tools.jsp',
   '/resize-image.html': 'image/resize-image.jsp',
   '/crop-image.html': 'image/crop-image.jsp',
   '/compress-image.html': 'image/compress-image.jsp',

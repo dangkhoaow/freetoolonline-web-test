@@ -6,7 +6,7 @@ import { ALIAS_ROUTES, JSP_BY_ROUTE, SPECIAL_ROUTES, normalizeRoute, parseSitema
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 export const OLD_ORIGIN = process.env.OLD_ORIGIN ?? 'https://freetoolonline.com';
-export const NEW_ORIGIN = process.env.NEW_ORIGIN ?? 'https://dangkhoaow.github.io/freetoolonline-web';
+export const NEW_ORIGIN = process.env.NEW_ORIGIN ?? 'https://dangkhoaow.github.io/freetoolonline-web-test';
 
 export async function resolveSourceRoot() {
   const candidates = [

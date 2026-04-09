@@ -12,6 +12,9 @@ Static GitHub Pages site for FreeToolOnline.
 
 - `SOURCE_REPO_ROOT`: optional override for the `source/` snapshot root, default `./source` when present
 - `SITE_URL`: public site origin, default `https://freetoolonline.com`
+- `CANONICAL_ORIGIN`: canonical origin used in `<link rel="canonical">`, `og:url`, and JSON-LD `url`
+- `BASE_PATH`: project subpath for GitHub Pages project sites, default empty string
+- `STAGING`: set to `true` to emit `noindex`, disallow-all `robots.txt`, and skip sitemap/CNAME output
 - `API_ORIGIN`: API root injected into `getRootPath()`, default `https://service.us-east-1a.freetool.online/`
 - `SHORTEN_DOMAIN`: share-link origin used by the page shell, default `https://freetool.online`
 - `APP_VERSION`: cache-busting version for CDN assets

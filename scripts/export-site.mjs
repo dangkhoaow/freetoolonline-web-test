@@ -1,4 +1,4 @@
-import { access, mkdir, writeFile } from 'node:fs/promises';
+import { access, copyFile, mkdir, readFile, readdir, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -26,10 +26,14 @@ import {
   stripTrailingSlash,
 } from './site-data.mjs';
 import { parseJspPageSource, renderAlternateAdPage, renderPageDocument, renderRedirectPage } from './page-renderer.mjs';
+import { createInternalContentRewriter, normalizeBasePath } from './staging-utils.mjs';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const distDir = path.resolve(repoRoot, process.env.DIST_DIR ?? 'dist');
+const isStaging = /^(1|true|yes)$/i.test(process.env.STAGING ?? '');
 const siteOrigin = stripTrailingSlash(process.env.SITE_URL ?? DEFAULT_SITE_ORIGIN);
+const canonicalOrigin = stripTrailingSlash(process.env.CANONICAL_ORIGIN ?? DEFAULT_SITE_ORIGIN);
+const basePath = normalizeBasePath(process.env.BASE_PATH ?? '');
 const apiOrigin = ensureTrailingSlash(process.env.API_ORIGIN ?? DEFAULT_API_ORIGIN);
 const shortenDomain = stripTrailingSlash(process.env.SHORTEN_DOMAIN ?? DEFAULT_SHORTEN_DOMAIN);
 
@@ -48,6 +52,7 @@ const runtimeConfig = await loadRuntimeConfig(staticAssetsRoot);
 
 async function main() {
   await mkdir(distDir, { recursive: true });
+  await copyStaticAssets(staticAssetsRoot, distDir);
 
   const jspIndex = await buildJspIndex(jspRoot);
   const sharedFragments = await loadSharedFragments(staticViewRoot, themeCssPath);
@@ -60,10 +65,18 @@ async function main() {
   ])
     .map(normalizeRoute)
     .filter((route) => route === '/' || route.endsWith('.html'));
+  const rewriteInternalContent = createInternalContentRewriter({ siteOrigin, basePath, routeCandidates });
 
   const canonicalRoutes = [];
   for (const route of routeCandidates) {
-    const { html, canonical } = await renderRoute(route, { jspIndex, sharedFragments });
+    const { html, canonical } = await renderRoute(route, {
+      jspIndex,
+      sharedFragments,
+      canonicalOrigin,
+      basePath,
+      isStaging,
+      rewriteInternalContent,
+    });
     await writeOutput(outputPathForRoute(route), html);
     if (canonical) {
       canonicalRoutes.push(route);
@@ -74,28 +87,67 @@ async function main() {
   const sourceRobotsTxt = (await loadTextIfExists(robotsPath)).trim();
   const sourceAdsTxt = (await loadTextIfExists(adsPath)).trim();
 
-  await writeGeneratedSitemap(unique(canonicalRoutes));
-  await writeRootTextFile('robots.txt', buildRobotsTxt(sourceRobotsTxt));
+  if (!isStaging) {
+    await writeGeneratedSitemap(unique(canonicalRoutes), canonicalOrigin);
+  } else {
+    await unlink(path.join(distDir, 'sitemap.xml')).catch(() => {});
+  }
+
+  await writeRootTextFile('robots.txt', buildRobotsTxt(sourceRobotsTxt, { isStaging, siteOrigin }));
   await writeRootTextFile('ads.txt', sourceAdsTxt ? `${sourceAdsTxt}\n` : '');
   await writeFile(path.join(distDir, '.nojekyll'), '');
-  await writeFile(path.join(distDir, 'CNAME'), `${new URL(siteOrigin).hostname}\n`);
+  if (!isStaging) {
+    await writeFile(path.join(distDir, 'CNAME'), `${new URL(siteOrigin).hostname}\n`);
+  }
+
+  if (isStaging) {
+    await rewriteStaticAsset(path.join(distDir, 'script', 'related-tools.js'), rewriteInternalContent);
+  }
 
   console.log(`Rendered ${routeCandidates.length} routes and published ${canonicalRoutes.length} pages to ${distDir}`);
 }
 
-async function renderRoute(route, { jspIndex, sharedFragments }) {
+async function copyStaticAssets(sourceDir, targetDir) {
+  const entries = await readdir(sourceDir, { withFileTypes: true });
+  for (const entry of entries) {
+    if (entry.name.startsWith('.')) {
+      continue;
+    }
+
+    const sourcePath = path.join(sourceDir, entry.name);
+    const targetPath = path.join(targetDir, entry.name);
+
+    if (entry.isDirectory()) {
+      await mkdir(targetPath, { recursive: true });
+      await copyStaticAssets(sourcePath, targetPath);
+      continue;
+    }
+
+    if (entry.isFile()) {
+      await mkdir(path.dirname(targetPath), { recursive: true });
+      await copyFile(sourcePath, targetPath);
+    }
+  }
+}
+
+async function renderRoute(route, { jspIndex, sharedFragments, canonicalOrigin, basePath, isStaging, rewriteInternalContent }) {
   const normalizedRoute = normalizeRoute(route);
 
   if (Object.prototype.hasOwnProperty.call(ALIAS_ROUTES, normalizedRoute)) {
     return {
-      html: renderRedirectPage({ siteOrigin, sourceRoute: normalizedRoute, targetRoute: ALIAS_ROUTES[normalizedRoute] }),
+      html: renderRedirectPage({
+        siteOrigin,
+        canonicalOrigin,
+        sourceRoute: normalizedRoute,
+        targetRoute: ALIAS_ROUTES[normalizedRoute],
+      }),
       canonical: false,
     };
   }
 
   if (SPECIAL_ROUTES.has(normalizedRoute)) {
     return {
-      html: renderAlternateAdPage({ siteOrigin }),
+      html: renderAlternateAdPage({ canonicalOrigin }),
       canonical: false,
     };
   }
@@ -117,6 +169,10 @@ async function renderRoute(route, { jspIndex, sharedFragments }) {
     html: renderPageDocument({
       route: normalizedRoute,
       siteOrigin,
+      canonicalOrigin,
+      basePath,
+      isStaging,
+      rewriteInternalContent,
       apiOrigin,
       shortenDomain,
       appVersion: runtimeConfig.appVersion,
@@ -157,7 +213,16 @@ async function writeRootTextFile(name, content) {
   await writeFile(path.join(distDir, name), content, 'utf8');
 }
 
-function buildRobotsTxt(sourceRobotsTxt) {
+async function rewriteStaticAsset(assetPath, rewriteInternalContent) {
+  const contents = await readFile(assetPath, 'utf8');
+  await writeFile(assetPath, rewriteInternalContent(contents), 'utf8');
+}
+
+function buildRobotsTxt(sourceRobotsTxt, { isStaging, siteOrigin }) {
+  if (isStaging) {
+    return 'User-agent: *\nDisallow: /\n';
+  }
+
   const sitemapUrl = new URL('/sitemap.xml', siteOrigin).href;
   if (!sourceRobotsTxt) {
     return `User-agent: *\nAllow: /\nSitemap: ${sitemapUrl}\n`;
@@ -170,11 +235,11 @@ function buildRobotsTxt(sourceRobotsTxt) {
   return `${sourceRobotsTxt.trim()}\nSitemap: ${sitemapUrl}\n`;
 }
 
-async function writeGeneratedSitemap(routes) {
+async function writeGeneratedSitemap(routes, origin) {
   const xml = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    ...routes.map((route) => `  <url><loc>${canonicalForRoute(siteOrigin, route)}</loc></url>`),
+    ...routes.map((route) => `  <url><loc>${canonicalForRoute(origin, route)}</loc></url>`),
     '</urlset>',
     '',
   ].join('\n');
