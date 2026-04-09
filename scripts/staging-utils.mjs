@@ -51,6 +51,10 @@ export function resolveCanonicalUrl({ canonicalOrigin, route, canonicalUrl, base
   }
 }
 
+function escapeRegExp(value) {
+  return String(value ?? '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 export function createInternalContentRewriter({ siteOrigin, basePath = '', routeCandidates = [] }) {
   const normalizedOrigin = stripTrailingSlash(siteOrigin);
   const normalizedBasePath = normalizeBasePath(basePath);
@@ -63,7 +67,11 @@ export function createInternalContentRewriter({ siteOrigin, basePath = '', route
     }
 
     seen.add(source);
-    replacements.push([source, target]);
+    replacements.push({
+      source,
+      target,
+      pattern: new RegExp(`(^|[^A-Za-z0-9_-])(${escapeRegExp(source)})(?=$|[^A-Za-z0-9_-])`, 'g'),
+    });
   };
 
   register(
@@ -96,19 +104,8 @@ export function createInternalContentRewriter({ siteOrigin, basePath = '', route
       return text;
     }
 
-    const tokens = [];
-    for (const [source, target] of replacements) {
-      if (!text.includes(source)) {
-        continue;
-      }
-
-      const token = `__SEO_REWRITE_${tokens.length}__`;
-      text = text.split(source).join(token);
-      tokens.push([token, target]);
-    }
-
-    for (const [token, target] of tokens) {
-      text = text.split(token).join(target);
+    for (const { pattern, target } of replacements) {
+      text = text.replace(pattern, (_, prefix) => `${prefix}${target}`);
     }
 
     return text;
