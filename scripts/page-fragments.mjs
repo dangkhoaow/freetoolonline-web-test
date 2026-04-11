@@ -29,7 +29,7 @@ export function renderExpression(name, ctx) {
     pageBodyKeyword: ctx.pageBodyKeyword,
     pageBodyHTML: ctx.pageBodyHTML,
     pageBodyJS: ctx.pageBodyJS,
-    pageBodyWelcome: ctx.pageBodyWelcome,
+    pageBodyWelcome: encodeWelcomeContent(ctx.pageBodyWelcome),
     pageBodyFileType: ctx.pageBodyFileType,
     pageBodyFileType2: ctx.pageBodyFileType2,
     pageFaq: ctx.pageFaq,
@@ -48,6 +48,23 @@ export function replaceExpressions(text, ctx) {
   return String(text ?? '').replace(/\$\{([^}]+)\}/g, (_, key) => renderExpression(key, ctx));
 }
 
+function encodeWelcomeContent(value) {
+  return `b64:${Buffer.from(String(value ?? ''), 'utf8').toString('base64')}`;
+}
+
+function decodeWelcomeContent(value) {
+  const text = String(value ?? '');
+  if (!text.startsWith('b64:')) {
+    return text;
+  }
+
+  try {
+    return Buffer.from(text.slice(4), 'base64').toString('utf8');
+  } catch {
+    return text;
+  }
+}
+
 export function renderLoadingTag() {
   return `<style>.loading-tmp { line-height: 60px; text-align: center; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #ffffff; } .loading-tmp>i.fa-cog { font-size: 40px; opacity: .4; display: block; margin-top: 20px }</style><div class="loading-tmp"><i class="fa fa-cog fa-spin"></i><span style="color: #455a64;position: relative;top: -15px;">Initializing, please wait a moment</span></div>`;
 }
@@ -57,7 +74,7 @@ export function renderDownloadTag() {
 }
 
 export function renderWelcomeTag(content) {
-  return `<div class='w3-container welcomeTag'><div class='w3-row'><div class='w3-container'>${content ?? ''}</div></div></div>`;
+  return `<div class='w3-container welcomeTag'><div class='w3-row'><div class='w3-container'>${decodeWelcomeContent(content)}</div></div></div>`;
 }
 
 export function renderShareButtons(ctx) {
