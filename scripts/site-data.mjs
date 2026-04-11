@@ -3,7 +3,7 @@ import path from 'node:path';
 
 export const DEFAULT_SITE_ORIGIN = 'https://freetoolonline.com';
 export const DEFAULT_API_ORIGIN = 'https://service.us-east-1a.freetool.online/';
-export const DEFAULT_SHORTEN_DOMAIN = 'https://freetool.online';
+export const DEFAULT_SHORTEN_DOMAIN = 'https://freetoolonline.com';
 export const DEFAULT_APP_VERSION = new Date().toISOString().slice(0, 10).replaceAll('-', '');
 export const DEFAULT_IO_VERSION = '1';
 export const DEFAULT_ALTER_UPLOADER_DELAY_MS = '100';
