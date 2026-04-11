@@ -68,7 +68,7 @@ function renderToolSections(ctx) {
   const ratingBlock = ctx.showRating === false
     ? ''
     : `<div class="w3-row page-section"><div id="star-rating-container">Loading reviews...</div></div>`;
-  return `<!-- SEO_BLOCK:RELATED_TOOLS --><div class="w3-row page-section relatedToolsSection"><p style="margin-bottom: 0px;">Related tools:</p><div class="relatedTools"></div><script>loadRelatedTools = function(){ loadScript('${ctx.relatedToolsScriptPath}?v=' + APP_VERSION, function(){}); };</script></div>${ratingBlock}${ctx.pageFaq ? ctx.pageFaq : ''}${ctx.bottomPageBannerAd || ''}<!-- END_SEO_BLOCK:RELATED_TOOLS -->`;
+  return `<!-- SEO_BLOCK:RELATED_TOOLS --><div class="w3-row page-section relatedToolsSection"><p style="margin-bottom: 0px;">Related tools:</p><div class="relatedTools"></div><script>loadRelatedTools = function(){ loadScript('${ctx.relatedToolsScriptPath}?v=' + APP_VERSION, function(){}); };document.addEventListener('DOMContentLoaded',function(){try{if(window.__relatedToolsBootstrapped)return;window.__relatedToolsBootstrapped=!0;loadRelatedTools();}catch(e){}});</script></div>${ratingBlock}${ctx.pageFaq ? ctx.pageFaq : ''}${ctx.bottomPageBannerAd || ''}<!-- END_SEO_BLOCK:RELATED_TOOLS -->`;
 }
 
 export function parseJspPageSource(jspSource) {
