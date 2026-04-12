@@ -78,6 +78,9 @@ export function createInternalContentRewriter({ siteOrigin, basePath = '', route
     '/script/related-tools.js',
     normalizedBasePath ? `${normalizedBasePath}/script/related-tools.js` : '/script/related-tools.js',
   );
+  register('/view/donate.html', normalizedBasePath ? `${normalizedBasePath}/view/donate.html` : '/view/donate.html');
+  register('/view/rating.html', normalizedBasePath ? `${normalizedBasePath}/view/rating.html` : '/view/rating.html');
+  register('/view/top-page-banner-ad.html', normalizedBasePath ? `${normalizedBasePath}/view/top-page-banner-ad.html` : '/view/top-page-banner-ad.html');
 
   for (const candidate of routeCandidates) {
     const sourceRoute = normalizeRoute(candidate);

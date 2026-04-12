@@ -228,12 +228,12 @@ export async function loadFirstExistingText(baseDir, candidates) {
   return '';
 }
 
-export async function loadSharedFragments(viewRoot, themeCssPath) {
+export async function loadSharedFragments(viewRoot, runtimeViewRoot = viewRoot, themeCssPath) {
   return {
     topBodyContent: await loadTextIfExists(path.join(viewRoot, 'top-body-content.html')),
     pageSvgLogo: await loadTextIfExists(path.join(viewRoot, 'page-svg-logo.html')),
     rightBannerAd: await loadTextIfExists(path.join(viewRoot, 'right-banner-ad.html')),
-    topPageBannerAd: await loadTextIfExists(path.join(viewRoot, 'top-page-banner-ad.html')),
+    topPageBannerAd: await loadTextIfExists(path.join(runtimeViewRoot, 'top-page-banner-ad.html')),
     inContentBannerAd: await loadTextIfExists(path.join(viewRoot, 'in-content-banner-ad.html')),
     bottomPageBannerAd: await loadTextIfExists(path.join(viewRoot, 'bottom-page-banner-ad.html')),
     footer: await loadTextIfExists(path.join(viewRoot, 'footer.html')),
@@ -244,8 +244,6 @@ export async function loadSharedFragments(viewRoot, themeCssPath) {
     privacyContent: await loadTextIfExists(path.join(viewRoot, 'privacy-content.html')),
     cookieInfo: await loadTextIfExists(path.join(viewRoot, 'cookie-info.html')),
     clearAdConfirm: await loadTextIfExists(path.join(viewRoot, 'clear-ad-confirm.html')),
-    donate: await loadTextIfExists(path.join(viewRoot, 'donate.html')),
-    rating: await loadTextIfExists(path.join(viewRoot, 'rating.html')),
     themeCss: themeCssPath ? await loadTextIfExists(themeCssPath) : '',
   };
 }

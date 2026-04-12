@@ -43,6 +43,7 @@ const jspRoot = path.join(sourceWebRoot, 'WEB-INF', 'jsp');
 const tagsRoot = path.join(sourceWebRoot, 'WEB-INF', 'tags');
 const staticViewRoot = path.join(sourceRepoRoot, 'static', 'src', 'main', 'webapp', 'resources', 'view');
 const staticAssetsRoot = path.join(sourceWebRoot, 'static');
+const runtimeViewRoot = path.join(staticAssetsRoot, 'view');
 const cmsRoot = path.join(staticViewRoot, 'CMS');
 const sitemapPath = path.join(staticAssetsRoot, 'sitemap.xml');
 const robotsPath = path.join(staticAssetsRoot, 'robots.txt');
@@ -55,7 +56,7 @@ async function main() {
   await copyStaticAssets(staticAssetsRoot, distDir);
 
   const jspIndex = await buildJspIndex(jspRoot);
-  const sharedFragments = await loadSharedFragments(staticViewRoot, themeCssPath);
+  const sharedFragments = await loadSharedFragments(staticViewRoot, runtimeViewRoot, themeCssPath);
   const sitemapRoutes = await parseSitemapRoutes(sitemapPath);
   const routeCandidates = unique([
     ...sitemapRoutes,
