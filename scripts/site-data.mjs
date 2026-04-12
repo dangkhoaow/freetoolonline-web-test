@@ -1,5 +1,6 @@
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
+import { resolveHubBacklink } from './seo-clusters.mjs';
 
 export const DEFAULT_SITE_ORIGIN = 'https://freetoolonline.com';
 export const DEFAULT_API_ORIGIN = 'https://service.us-east-1a.freetool.online/';
@@ -57,6 +58,12 @@ export const JSP_BY_ROUTE = {
   '/remove-zip-password.html': 'file/remove-zip-password.jsp',
   '/zip-tools.html': 'utility/zip-tools.jsp',
   '/image-converter-tools.html': 'utility/image-converter-tools.jsp',
+  '/image-tools.html': 'utility/image-tools.jsp',
+  '/pdf-tools.html': 'utility/pdf-tools.jsp',
+  '/developer-tools.html': 'utility/developer-tools.jsp',
+  '/video-tools.html': 'utility/video-tools.jsp',
+  '/device-test-tools.html': 'utility/device-test-tools.jsp',
+  '/utility-tools.html': 'utility/utility-tools.jsp',
   '/resize-image.html': 'image/resize-image.jsp',
   '/crop-image.html': 'image/crop-image.jsp',
   '/compress-image.html': 'image/compress-image.jsp',
@@ -243,6 +250,14 @@ export async function loadSharedFragments(viewRoot, themeCssPath) {
   };
 }
 
+function appendHubBacklink(content, backlink) {
+  if (!content || !backlink || content.includes(backlink.href)) {
+    return content;
+  }
+
+  return `${content}\n\n<p><a href="${backlink.href}">&larr; ${backlink.label}</a></p>`;
+}
+
 export async function loadCmsPageData(cmsRoot, route) {
   const slug = routeToSlug(route);
   const suffix = slug ? slug : '';
@@ -272,6 +287,9 @@ export async function loadCmsPageData(cmsRoot, route) {
   const pageBrowserTitle = await read('PAGEBROWSERTITLE', 'txt', bodyTitle);
   const pageHasSettings = await read('PAGEHASSETTINGS', 'txt');
   const canonicalUrl = await read('PAGECANO', 'txt');
+  const hubBacklink = resolveHubBacklink(route);
+  const resolvedBodyWelcome = hubBacklink ? appendHubBacklink(bodyWelcome, hubBacklink) : bodyWelcome;
+  const resolvedBodyHtml = hubBacklink && !resolvedBodyWelcome ? appendHubBacklink(bodyHtml, hubBacklink) : bodyHtml;
 
   return {
     route: normalizeRoute(route),
@@ -281,9 +299,9 @@ export async function loadCmsPageData(cmsRoot, route) {
     bodyTitle,
     bodyDesc,
     bodyKeyword,
-    bodyHtml,
+    bodyHtml: resolvedBodyHtml,
     bodyJs,
-    bodyWelcome,
+    bodyWelcome: resolvedBodyWelcome,
     bodyFileType,
     bodyFileType2,
     faq,

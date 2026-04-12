@@ -137,9 +137,6 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     || /uploadContainer/.test(bodyHtml);
   const showAds = !isHome && !isInfoRoute(normalizedRoute) && normalizedRoute !== '/alternatead.html';
   const isHubPage = normalizedRoute.endsWith('-tools.html');
-  if (isHubPage) {
-    console.log(`[render] hub page detected; suppressing rating block: ${normalizedRoute}`);
-  }
   const canonicalUrl = resolveCanonicalUrl({
     canonicalOrigin,
     route: normalizedRoute,

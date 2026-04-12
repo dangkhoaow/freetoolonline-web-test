@@ -1,4 +1,4 @@
-import { access, copyFile, mkdir, readFile, readdir, unlink, writeFile } from 'node:fs/promises';
+import { access, copyFile, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -16,7 +16,6 @@ import {
   JSP_BY_ROUTE,
   SPECIAL_ROUTES,
   buildJspIndex,
-  canonicalForRoute,
   loadCmsPageData,
   loadSharedFragments,
   loadTextIfExists,
@@ -27,6 +26,7 @@ import {
 } from './site-data.mjs';
 import { parseJspPageSource, renderAlternateAdPage, renderPageDocument, renderRedirectPage } from './page-renderer.mjs';
 import { createInternalContentRewriter, normalizeBasePath } from './staging-utils.mjs';
+import { writeSplitSitemaps } from './sitemap-writer.mjs';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const distDir = path.resolve(repoRoot, process.env.DIST_DIR ?? 'dist');
@@ -87,11 +87,7 @@ async function main() {
   const sourceRobotsTxt = (await loadTextIfExists(robotsPath)).trim();
   const sourceAdsTxt = (await loadTextIfExists(adsPath)).trim();
 
-  if (!isStaging) {
-    await writeGeneratedSitemap(unique(canonicalRoutes), canonicalOrigin);
-  } else {
-    await unlink(path.join(distDir, 'sitemap.xml')).catch(() => {});
-  }
+  await writeSplitSitemaps({ distDir, routes: unique(canonicalRoutes), origin: canonicalOrigin, isStaging });
 
   await writeRootTextFile('robots.txt', buildRobotsTxt(sourceRobotsTxt, { isStaging, siteOrigin }));
   await writeRootTextFile('ads.txt', sourceAdsTxt ? `${sourceAdsTxt}\n` : '');
@@ -233,17 +229,6 @@ function buildRobotsTxt(sourceRobotsTxt, { isStaging, siteOrigin }) {
   }
 
   return `${sourceRobotsTxt.trim()}\nSitemap: ${sitemapUrl}\n`;
-}
-
-async function writeGeneratedSitemap(routes, origin) {
-  const xml = [
-    '<?xml version="1.0" encoding="UTF-8"?>',
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    ...routes.map((route) => `  <url><loc>${canonicalForRoute(origin, route)}</loc></url>`),
-    '</urlset>',
-    '',
-  ].join('\n');
-  await writeFile(path.join(distDir, 'sitemap.xml'), xml, 'utf8');
 }
 
 async function loadRuntimeConfig(staticAssetsRoot) {
