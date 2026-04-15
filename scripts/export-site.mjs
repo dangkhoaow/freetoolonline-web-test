@@ -89,7 +89,13 @@ async function main() {
   const sourceRobotsTxt = (await loadTextIfExists(robotsPath)).trim();
   const sourceAdsTxt = (await loadTextIfExists(adsPath)).trim();
 
-  await writeSplitSitemaps({ distDir, routes: unique(canonicalRoutes), origin: canonicalOrigin, isStaging });
+  await writeSplitSitemaps({
+    distDir,
+    routes: unique(canonicalRoutes),
+    origin: canonicalOrigin,
+    isStaging,
+    cmsRoot,
+  });
 
   await writeRootTextFile('robots.txt', buildRobotsTxt(sourceRobotsTxt, { isStaging, siteOrigin }));
   await writeRootTextFile('ads.txt', sourceAdsTxt ? `${sourceAdsTxt}\n` : '');

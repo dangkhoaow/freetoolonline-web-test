@@ -1,21 +1,82 @@
-import { unlink, writeFile } from 'node:fs/promises';
+import { stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { INFO_ROUTES, canonicalForRoute, normalizeRoute } from './site-data.mjs';
+import { INFO_ROUTES, canonicalForRoute, normalizeRoute, routeToSlug } from './site-data.mjs';
 
 const SITEMAP_FILES = ['sitemap.xml', 'sitemap-tools.xml', 'sitemap-hubs.xml', 'sitemap-pages.xml'];
+const CMS_FILE_DEFINITIONS = [
+  { prefix: 'BODYTITLE', extension: 'txt' },
+  { prefix: 'BODYDESC', extension: 'txt' },
+  { prefix: 'BODYKW', extension: 'txt' },
+  { prefix: 'BODYHTML', extension: 'html' },
+  { prefix: 'BODYJS', extension: 'html' },
+  { prefix: 'BODYWELCOME', extension: 'html' },
+  { prefix: 'BODYFILETYPE', extension: 'txt' },
+  { prefix: 'BODYFILETYPE2', extension: 'txt' },
+  { prefix: 'FAQ', extension: 'html' },
+  { prefix: 'PAGESTYLE', extension: 'css' },
+  { prefix: 'PAGEBROWSERTITLE', extension: 'txt' },
+  { prefix: 'PAGEHASSETTINGS', extension: 'txt' },
+  { prefix: 'PAGECANO', extension: 'txt' },
+];
 
 function unique(values) {
   return [...new Set(values)];
 }
 
-function buildUrlSetXml(routes, origin) {
+function buildUrlSetXml(routes, origin, lastmodByRoute) {
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    ...routes.map((route) => `  <url><loc>${canonicalForRoute(origin, route)}</loc></url>`),
+    ...routes.map((route) => {
+      const normalizedRoute = normalizeRoute(route);
+      const lastmod = lastmodByRoute?.get(normalizedRoute);
+      const lastmodTag = lastmod ? `<lastmod>${lastmod}</lastmod>` : '';
+      return `  <url><loc>${canonicalForRoute(origin, normalizedRoute)}</loc>${lastmodTag}</url>`;
+    }),
     '</urlset>',
     '',
   ].join('\n');
+}
+
+function buildCmsFileCandidates(route) {
+  const slug = routeToSlug(route);
+  return CMS_FILE_DEFINITIONS.map(({ prefix, extension }) => (
+    slug ? `${prefix}${slug}.${extension}` : `${prefix}.${extension}`
+  ));
+}
+
+async function resolveLastmodForRoute({ route, cmsRoot, fallbackLastmod }) {
+  const normalizedRoute = normalizeRoute(route);
+  if (!cmsRoot) {
+    console.log(`[sitemap] lastmod fallback for ${normalizedRoute}: cmsRoot missing.`);
+    return fallbackLastmod;
+  }
+
+  const candidates = buildCmsFileCandidates(normalizedRoute);
+  let newestMtimeMs = 0;
+  let matchedCount = 0;
+
+  for (const candidate of candidates) {
+    const candidatePath = path.join(cmsRoot, candidate);
+    try {
+      const stats = await stat(candidatePath);
+      matchedCount += 1;
+      if (stats.mtimeMs > newestMtimeMs) {
+        newestMtimeMs = stats.mtimeMs;
+      }
+    } catch {
+      // Ignore missing files.
+    }
+  }
+
+  if (!matchedCount) {
+    console.log(`[sitemap] lastmod fallback for ${normalizedRoute}: no CMS files.`);
+    return fallbackLastmod;
+  }
+
+  const lastmod = new Date(newestMtimeMs).toISOString();
+  console.log(`[sitemap] lastmod for ${normalizedRoute}: ${lastmod} (sources=${matchedCount}).`);
+  return lastmod;
 }
 
 function buildSitemapIndexXml(origin) {
@@ -37,7 +98,7 @@ async function removeSitemapFiles(distDir) {
   await Promise.all(SITEMAP_FILES.map((filename) => unlink(path.join(distDir, filename)).catch(() => {})));
 }
 
-export async function writeSplitSitemaps({ distDir, routes, origin, isStaging }) {
+export async function writeSplitSitemaps({ distDir, routes, origin, isStaging, cmsRoot }) {
   if (isStaging) {
     await removeSitemapFiles(distDir);
     return;
@@ -47,9 +108,18 @@ export async function writeSplitSitemaps({ distDir, routes, origin, isStaging })
   const hubRoutes = normalizedRoutes.filter((route) => route.endsWith('-tools.html'));
   const pageRoutes = [...INFO_ROUTES].filter((route) => normalizedRoutes.includes(route));
   const toolRoutes = normalizedRoutes.filter((route) => route !== '/' && !INFO_ROUTES.has(route) && !route.endsWith('-tools.html'));
+  const fallbackLastmod = new Date().toISOString();
+  const lastmodByRoute = new Map();
 
-  await writeTextFile(distDir, 'sitemap-tools.xml', buildUrlSetXml(toolRoutes, origin));
-  await writeTextFile(distDir, 'sitemap-hubs.xml', buildUrlSetXml(hubRoutes, origin));
-  await writeTextFile(distDir, 'sitemap-pages.xml', buildUrlSetXml(pageRoutes, origin));
+  for (const route of normalizedRoutes) {
+    const lastmod = await resolveLastmodForRoute({ route, cmsRoot, fallbackLastmod });
+    if (lastmod) {
+      lastmodByRoute.set(normalizeRoute(route), lastmod);
+    }
+  }
+
+  await writeTextFile(distDir, 'sitemap-tools.xml', buildUrlSetXml(toolRoutes, origin, lastmodByRoute));
+  await writeTextFile(distDir, 'sitemap-hubs.xml', buildUrlSetXml(hubRoutes, origin, lastmodByRoute));
+  await writeTextFile(distDir, 'sitemap-pages.xml', buildUrlSetXml(pageRoutes, origin, lastmodByRoute));
   await writeTextFile(distDir, 'sitemap.xml', buildSitemapIndexXml(origin));
 }
