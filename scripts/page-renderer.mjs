@@ -112,20 +112,42 @@ function stripHtml(value) {
     .trim();
 }
 
-function extractFaqItems(faqHtml) {
+function extractFaqItems(faqHtml, pageName = '') {
   const raw = String(faqHtml ?? '').trim();
   if (!raw) {
     return [];
   }
 
-  const lower = raw.toLowerCase();
-  const faqIndex = lower.indexOf('frequently asked questions');
-  if (faqIndex < 0) {
+  const logPrefix = pageName ? `[faq:${pageName}]` : '[faq]';
+  const headerRegex = /<h2[^>]*>[\s\S]*?frequently asked questions[\s\S]*?<\/h2>/i;
+  let headerIndex = -1;
+  let headerHtml = '';
+  const headerMatch = raw.match(headerRegex);
+
+  if (headerMatch && typeof headerMatch.index === 'number') {
+    headerIndex = headerMatch.index;
+    headerHtml = headerMatch[0];
+    console.log(`${logPrefix} FAQ header matched with <h2> tag.`);
+  } else {
+    const lower = raw.toLowerCase();
+    const textIndex = lower.indexOf('frequently asked questions');
+    if (textIndex >= 0) {
+      const startIndex = raw.lastIndexOf('<h2', textIndex);
+      const endIndex = raw.indexOf('</h2>', textIndex);
+      if (startIndex >= 0 && endIndex >= 0) {
+        headerIndex = startIndex;
+        headerHtml = raw.slice(startIndex, endIndex + 5);
+        console.log(`${logPrefix} FAQ header matched via fallback slice.`);
+      }
+    }
+  }
+
+  if (headerIndex < 0) {
+    console.log(`${logPrefix} FAQ header not found; skipping JSON-LD.`);
     return [];
   }
 
-  const sectionHtml = raw.slice(faqIndex);
-  const afterHeader = sectionHtml.replace(/^[\s\S]*?<h2[^>]*>[\s\S]*?<\/h2>/i, '');
+  const afterHeader = raw.slice(headerIndex + headerHtml.length);
   const nextHeaderIndex = afterHeader.search(/<h2[^>]*>/i);
   const faqSection = nextHeaderIndex >= 0 ? afterHeader.slice(0, nextHeaderIndex) : afterHeader;
   const qaRegex = /<h3[^>]*>([\s\S]*?)<\/h3>\s*<p[^>]*>([\s\S]*?)<\/p>/gi;
@@ -138,6 +160,10 @@ function extractFaqItems(faqHtml) {
     if (question && answer) {
       items.push({ question, answer });
     }
+  }
+
+  if (items.length === 0) {
+    console.log(`${logPrefix} FAQ header found but no Q/A pairs extracted.`);
   }
 
   return items;
@@ -225,7 +251,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   const showAds = !isHome && !isInfoRoute(normalizedRoute) && normalizedRoute !== '/alternatead.html';
   const isHubPage = normalizedRoute.endsWith('-tools.html');
   const showRating = showAds && !isHubPage;
-  const faqItems = extractFaqItems(pageData.faq);
+  const faqItems = extractFaqItems(pageData.faq, pageName);
   if (pageData.faq) {
     console.log(`[faq] Parsed ${faqItems.length} FAQ entries for ${pageName}.`);
   }
