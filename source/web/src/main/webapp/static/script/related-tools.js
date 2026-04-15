@@ -61,7 +61,9 @@ try {
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
-    isAddedAll = !1;
+    isAddedAll = !1,
+    relatedToolsRoot = $(".relatedTools"),
+    hasSsrRelatedTools = relatedToolsRoot && relatedToolsRoot.children().length > 0;
 
   function getTagsFromCurrentPage(t) {
     for (var e = 0; e < urlMaps.length; e++) {
@@ -192,8 +194,12 @@ try {
 
       if ("" !== list) {
         list = '<ul style="margin-top: 0px;display: block;padding-inline-start: 40px;list-style-type: disc;">' + list + "</ul>";
-        $(".relatedTools").html(list);
-        "" !== allCurrentTags && $(".relatedTools").after("<p>Tags: " + allCurrentTags + "</p>");
+        if (!hasSsrRelatedTools) {
+          relatedToolsRoot.html(list);
+          "" !== allCurrentTags && relatedToolsRoot.after("<p>Tags: " + allCurrentTags + "</p>");
+        } else {
+          console.log("[related-tools] SSR detected; skipping client injection.");
+        }
       }
     } else {
       var tagFromQuery = getParameterByName("tag");

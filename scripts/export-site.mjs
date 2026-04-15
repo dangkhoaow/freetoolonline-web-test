@@ -58,6 +58,7 @@ async function main() {
 
   const jspIndex = await buildJspIndex(jspRoot);
   const sharedFragments = await loadSharedFragments(staticViewRoot, runtimeViewRoot, themeCssPath);
+  const relatedToolsData = await loadRelatedToolsData(staticAssetsRoot);
   const sitemapRoutes = await parseSitemapRoutes(sitemapPath);
   const routeCandidates = unique([
     ...sitemapRoutes,
@@ -74,6 +75,7 @@ async function main() {
     const { html, canonical } = await renderRoute(route, {
       jspIndex,
       sharedFragments,
+      relatedToolsData,
       canonicalOrigin,
       basePath,
       isStaging,
@@ -134,7 +136,35 @@ async function copyStaticAssets(sourceDir, targetDir) {
   }
 }
 
-async function renderRoute(route, { jspIndex, sharedFragments, canonicalOrigin, basePath, isStaging, rewriteInternalContent }) {
+async function loadRelatedToolsData(staticAssetsRootPath) {
+  const relatedToolsPath = path.join(staticAssetsRootPath, 'script', 'related-tools.js');
+  const scriptSource = await loadTextIfExists(relatedToolsPath);
+  if (!scriptSource) {
+    console.log(`[related-tools:ssr] Missing related-tools.js at ${relatedToolsPath}.`);
+    return null;
+  }
+
+  const match = scriptSource.match(/var urlMaps\s*=\s*(\[[\s\S]*?\])\s*,\s*currentTitle/);
+  if (!match) {
+    console.log('[related-tools:ssr] Failed to locate urlMaps array in related-tools.js.');
+    return null;
+  }
+
+  try {
+    const urlMaps = new Function(`return (${match[1]});`)();
+    if (!Array.isArray(urlMaps)) {
+      console.log('[related-tools:ssr] urlMaps payload is not an array.');
+      return null;
+    }
+    console.log(`[related-tools:ssr] Loaded ${urlMaps.length} urlMaps entries from related-tools.js.`);
+    return { urlMaps, sourcePath: relatedToolsPath };
+  } catch (error) {
+    console.log(`[related-tools:ssr] Failed to parse urlMaps: ${error?.message || error}.`);
+    return null;
+  }
+}
+
+async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData, canonicalOrigin, basePath, isStaging, rewriteInternalContent }) {
   const normalizedRoute = normalizeRoute(route);
 
   if (Object.prototype.hasOwnProperty.call(ALIAS_ROUTES, normalizedRoute)) {
@@ -200,6 +230,7 @@ async function renderRoute(route, { jspIndex, sharedFragments, canonicalOrigin, 
       bodyHtml,
       themeCss: sharedFragments.themeCss,
       aggregateRating,
+      relatedToolsData,
     }),
     canonical: true,
   };

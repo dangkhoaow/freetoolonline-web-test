@@ -1,6 +1,12 @@
 import { canonicalForRoute, isInfoRoute } from './site-data.mjs';
+import { getSeoClusterGroups, resolveHubBacklink } from './seo-clusters.mjs';
 import { DEFAULT_PAGE_SVG_LOGO, escapeHtml, renderBaseScript, renderDownloadTag, renderLoadingTag, renderShareButtons, renderUploadSecondTag, renderUploadStartupSecondTag, renderUploadStartupTag, renderUploadTag, renderWelcomeTag, replaceExpressions, unwrapStyleBlock } from './page-fragments.mjs';
 import { buildStagingBannerHtml, normalizeBasePath, resolveCanonicalUrl } from './staging-utils.mjs';
+
+const SEO_CLUSTER_GROUPS = getSeoClusterGroups();
+const RELATED_TOOLS_LIST_STYLE = 'margin-top: 0px;display: block;padding-inline-start: 40px;list-style-type: disc;';
+const RELATED_TOOLS_STOP_WORDS = new Set(['free', 'tool', 'online', 'convert', 'converter', 'in', 'editor', 'maker', 'by', 'and']);
+const RELATED_TOOLS_TAGS_PAGE_TITLES = new Set(['tags collection', 'tags cloud:']);
 
 function renderMetaTags(ctx) {
   const canonicalUrl = ctx.canonicalUrl;
@@ -21,7 +27,7 @@ function renderMetaTags(ctx) {
     `<meta name='description' content='${description}' />`,
     `<meta name='keywords' content='${keywords}'/>`,
     `<meta name="author" content='freetoolonline.com' />`,
-    `<meta rel="author" href="https://www.linkedin.com/in/ktran1991/" />`,
+    `<link rel="author" href="https://www.linkedin.com/in/ktran1991/" />`,
     `<meta name="copyright" content="Copyright 2017 freetoolonline.com" />`,
     `<meta name='msvalidate.01' content='505D81A78DC4F7E37C1BD2E1092B4420' />`,
     `<meta name="baidu-site-verification" content="swIR2wbBvq" />`,
@@ -68,7 +74,9 @@ function renderToolSections(ctx) {
   const ratingBlock = ctx.showRating === false
     ? ''
     : `<div class="w3-row page-section"><div id="star-rating-container">Loading reviews...</div></div>`;
-  return `<!-- SEO_BLOCK:RELATED_TOOLS --><div class="w3-row page-section relatedToolsSection"><p style="margin-bottom: 0px;">Related tools:</p><div class="relatedTools"></div><script>loadRelatedTools = function(){try{if(window.__relatedToolsRequested)return;if(document.querySelector('script[src*="related-tools.js"]')){window.__relatedToolsRequested=!0;return;}window.__relatedToolsRequested=!0;loadScript('${ctx.relatedToolsScriptPath}?v=' + APP_VERSION, function(){});}catch(e){}};document.addEventListener('DOMContentLoaded',function(){try{if(window.__relatedToolsBootstrapped)return;window.__relatedToolsBootstrapped=!0;loadRelatedTools();}catch(e){}});</script></div>${ratingBlock}${ctx.pageFaq ? ctx.pageFaq : ''}${ctx.bottomPageBannerAd || ''}<!-- END_SEO_BLOCK:RELATED_TOOLS -->`;
+  const relatedToolsHtml = ctx.relatedToolsHtml ?? '';
+  const relatedToolsTagsHtml = ctx.relatedToolsTagsHtml ?? '';
+  return `<!-- SEO_BLOCK:RELATED_TOOLS --><div class="w3-row page-section relatedToolsSection"><p style="margin-bottom: 0px;">Related tools:</p><div class="relatedTools">${relatedToolsHtml}</div>${relatedToolsTagsHtml}<script>loadRelatedTools = function(){try{var relatedEl=document.querySelector('.relatedTools');if(relatedEl&&relatedEl.children&&relatedEl.children.length>0){window.__relatedToolsRequested=!0;return;}if(window.__relatedToolsRequested)return;if(document.querySelector('script[src*="related-tools.js"]')){window.__relatedToolsRequested=!0;return;}window.__relatedToolsRequested=!0;loadScript('${ctx.relatedToolsScriptPath}?v=' + APP_VERSION, function(){});}catch(e){}};document.addEventListener('DOMContentLoaded',function(){try{if(window.__relatedToolsBootstrapped)return;window.__relatedToolsBootstrapped=!0;loadRelatedTools();}catch(e){}});</script></div>${ratingBlock}${ctx.pageFaq ? ctx.pageFaq : ''}${ctx.bottomPageBannerAd || ''}<!-- END_SEO_BLOCK:RELATED_TOOLS -->`;
 }
 
 function buildJsonLdScript(payload) {
@@ -77,7 +85,7 @@ function buildJsonLdScript(payload) {
 
 function buildWebApplicationJsonLd({ browserTitle, canonicalUrl, aggregateRating }) {
   const jsonLd = {
-    '@context': 'http://schema.org/',
+    '@context': 'https://schema.org',
     '@type': 'WebApplication',
     name: `Free Tool Online - ${browserTitle}`,
     url: canonicalUrl,
@@ -96,11 +104,148 @@ function buildWebApplicationJsonLd({ browserTitle, canonicalUrl, aggregateRating
 
 function buildWebSiteJsonLd({ canonicalUrl, name }) {
   return buildJsonLdScript({
-    '@context': 'http://schema.org/',
+    '@context': 'https://schema.org',
     '@type': 'WebSite',
     name,
     url: canonicalUrl,
   });
+}
+
+function normalizeBreadcrumbLabel(label) {
+  const raw = String(label ?? '').trim();
+  if (!raw) {
+    return '';
+  }
+  const normalized = raw.replace(/^back to\s+/i, '').trim();
+  return normalized || raw;
+}
+
+function buildCollectionPageJsonLd({ canonicalOrigin, canonicalUrl, name, itemRoutes }) {
+  const itemListElement = (itemRoutes ?? []).map((route, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    url: canonicalForRoute(canonicalOrigin, route),
+  }));
+  return buildJsonLdScript({
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name,
+    url: canonicalUrl,
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement,
+    },
+  });
+}
+
+function buildBreadcrumbJsonLd({ canonicalOrigin, items }) {
+  const itemListElement = items.map((item, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: item.name,
+    item: canonicalForRoute(canonicalOrigin, item.route),
+  }));
+  return buildJsonLdScript({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement,
+  });
+}
+
+function buildRelatedToolsSsr({ navTitle, urlMaps }) {
+  const currentTitle = String(navTitle ?? '').trim();
+  if (!currentTitle || RELATED_TOOLS_TAGS_PAGE_TITLES.has(currentTitle.toLowerCase())) {
+    return { listHtml: '', tagsHtml: '', linkCount: 0, tagsCount: 0 };
+  }
+
+  const items = (urlMaps ?? []).map((item) => ({
+    title: String(item?.title ?? ''),
+    url: String(item?.url ?? ''),
+    tags: String(item?.tags ?? ''),
+    include: false,
+  }));
+  let allCurrentTags = '';
+  let isAddedAll = false;
+
+  const getTagsFromCurrentPage = () => {
+    for (const item of items) {
+      if (item.title.toLowerCase() === currentTitle.toLowerCase()) {
+        const tagList = item.tags.split(',');
+        if (!isAddedAll) {
+          for (const tag of tagList) {
+            allCurrentTags =
+              (allCurrentTags !== '' ? `${allCurrentTags}, ` : allCurrentTags) +
+              `<a target="_blank" style="color: #4caf50" href="https://freetoolonline.com/tags.html?tag=${tag.toLowerCase()}">#${tag.toLowerCase()}</a>`;
+          }
+        }
+        isAddedAll = true;
+        return tagList;
+      }
+    }
+    return [];
+  };
+
+  const addPagesHasTheSameTag = (candidateTags, currentTags) => {
+    if (!candidateTags || !currentTags || !currentTags.length) {
+      return '';
+    }
+    let matchedTags = '';
+    for (const candidateTag of candidateTags) {
+      for (const currentTag of currentTags) {
+        if (
+          candidateTag.toLowerCase() !== '' &&
+          candidateTag.toLowerCase() !== 'null' &&
+          candidateTag.toLowerCase() === currentTag.toLowerCase()
+        ) {
+          matchedTags = `${matchedTags} #${candidateTag.toLowerCase()}`;
+        }
+      }
+    }
+    return matchedTags;
+  };
+
+  const currentTags = getTagsFromCurrentPage();
+  const listItems = [];
+
+  for (const item of items) {
+    if (!item.include && item.title.toLowerCase() !== currentTitle.toLowerCase()) {
+      const matchedTags = addPagesHasTheSameTag(item.tags.split(','), currentTags);
+      if (matchedTags !== '') {
+        item.include = true;
+        listItems.push(
+          `<li class="d-inline"><a title="This tool has the same tag(s): ${matchedTags}" style="color: #4caf50;" href="${item.url}">${item.title}</a></li>`,
+        );
+      }
+    }
+  }
+
+  const currentTitleWords = currentTitle.toLowerCase().replace(/,/g, '').split(' ');
+  for (const item of items) {
+    let firstMatchedWord = false;
+    const titleLower = item.title.toLowerCase();
+    for (const word of currentTitleWords) {
+      if (
+        !item.include &&
+        titleLower !== currentTitle.toLowerCase() &&
+        !RELATED_TOOLS_STOP_WORDS.has(word) &&
+        titleLower.indexOf(word) > -1
+      ) {
+        if (firstMatchedWord) {
+          item.include = true;
+          listItems.push(
+            `<li class="d-inline"><a title="Go to ${item.title}" style="color: #3b73af;" href="${item.url}">${item.title}</a></li>`,
+          );
+        } else {
+          firstMatchedWord = true;
+        }
+      }
+    }
+  }
+
+  const hasList = listItems.length > 0;
+  const listHtml = hasList ? `<ul style="${RELATED_TOOLS_LIST_STYLE}">${listItems.join('')}</ul>` : '';
+  const tagsHtml = hasList && allCurrentTags !== '' ? `<p>Tags: ${allCurrentTags}</p>` : '';
+  return { listHtml, tagsHtml, linkCount: listItems.length, tagsCount: tagsHtml ? currentTags.length : 0 };
 }
 
 function stripHtml(value) {
@@ -209,7 +354,7 @@ export function renderJspBody(innerHtml, ctx) {
   return html;
 }
 
-export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePath, isStaging, rewriteInternalContent, apiOrigin, shortenDomain, appVersion, ioVersion, getAlterUploaderDelayMs, bgsCollection, ioInfos, unsplashKey, randomString, sharedFragments, pageData, pageAttrs, bodyHtml, themeCss, aggregateRating }) {
+export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePath, isStaging, rewriteInternalContent, apiOrigin, shortenDomain, appVersion, ioVersion, getAlterUploaderDelayMs, bgsCollection, ioInfos, unsplashKey, randomString, sharedFragments, pageData, pageAttrs, bodyHtml, themeCss, aggregateRating, relatedToolsData }) {
   const normalizedRoute = route;
   const normalizedBasePath = normalizeBasePath(basePath);
   const pageName = pageData.pageName;
@@ -262,6 +407,30 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     basePath: normalizedBasePath,
   });
   const relatedToolsScriptPath = `${normalizedBasePath}/script/related-tools.js`;
+  const navTitle = pageTitle || browserTitle;
+  const hubBacklink = resolveHubBacklink(normalizedRoute);
+  const hubGroup = SEO_CLUSTER_GROUPS.find((group) => group.hubRoute === normalizedRoute) ?? null;
+  const hubLabelFromGroup = hubGroup ? normalizeBreadcrumbLabel(hubGroup.hubLabel) : '';
+  const hubLabelFromBacklink = hubBacklink ? normalizeBreadcrumbLabel(hubBacklink.label) : '';
+  const hubLabel = hubLabelFromBacklink || hubLabelFromGroup || (isHubPage ? browserTitle : '');
+  const hubRoute = hubBacklink?.href || (isHubPage ? normalizedRoute : '');
+  const hubItemRoutes = hubGroup ? hubGroup.routes : [];
+  if (isHubPage) {
+    console.log(`[schema] Hub ${normalizedRoute} item routes=${hubItemRoutes.length}.`);
+  }
+  const breadcrumbItems = [];
+  if (!isHome) {
+    breadcrumbItems.push({ name: 'Home', route: '/' });
+    if (hubLabel && hubRoute) {
+      breadcrumbItems.push({ name: hubLabel, route: hubRoute });
+    }
+    if (!isHubPage) {
+      breadcrumbItems.push({ name: browserTitle, route: normalizedRoute });
+    }
+  }
+  if (breadcrumbItems.length > 0) {
+    console.log(`[schema] Breadcrumbs for ${normalizedRoute}: ${breadcrumbItems.length} items.`);
+  }
   const aggregateRatingPayload = showRating && aggregateRating
     ? {
       '@type': 'AggregateRating',
@@ -272,12 +441,17 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     }
     : null;
   const jsonLd = showAds
-    ? buildWebApplicationJsonLd({ browserTitle, canonicalUrl, aggregateRating: aggregateRatingPayload })
+    ? isHubPage
+      ? buildCollectionPageJsonLd({ canonicalOrigin, canonicalUrl, name: browserTitle, itemRoutes: hubItemRoutes })
+      : buildWebApplicationJsonLd({ browserTitle, canonicalUrl, aggregateRating: aggregateRatingPayload })
     : isHome
       ? buildWebSiteJsonLd({ canonicalUrl, name: 'Home Page - Free Tool Online' })
       : buildWebSiteJsonLd({ canonicalUrl, name: `Free Tool Online - ${browserTitle}` });
   const faqJsonLd = faqItems.length > 0 ? buildFaqJsonLd(faqItems) : '';
-  const jsonLdBlock = [jsonLd, faqJsonLd].filter(Boolean).join('\n');
+  const breadcrumbJsonLd = breadcrumbItems.length > 0
+    ? buildBreadcrumbJsonLd({ canonicalOrigin, items: breadcrumbItems })
+    : '';
+  const jsonLdBlock = [jsonLd, breadcrumbJsonLd, faqJsonLd].filter(Boolean).join('\n');
   const head = renderMetaTags({
     siteOrigin,
     route: normalizedRoute,
@@ -297,7 +471,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     jsonLd: jsonLdBlock,
     appVersion,
   });
-  const titleText = pageTitle || browserTitle;
+  const titleText = navTitle;
   const body = renderJspBody(bodyHtml, {
     siteOrigin,
     apiOrigin,
@@ -326,12 +500,20 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     bgsCollection,
     ioInfos,
   });
+  const relatedToolsState = showAds && relatedToolsData?.urlMaps
+    ? buildRelatedToolsSsr({ navTitle, urlMaps: relatedToolsData.urlMaps })
+    : { listHtml: '', tagsHtml: '', linkCount: 0, tagsCount: 0 };
+  if (showAds && relatedToolsData?.urlMaps) {
+    console.log(`[related-tools:ssr] ${normalizedRoute} links=${relatedToolsState.linkCount} tags=${relatedToolsState.tagsCount}.`);
+  }
   const toolSections = renderToolSections({
     showAds,
     showRating,
     pageFaq: pageData.faq,
     bottomPageBannerAd: sharedFragments.bottomPageBannerAd,
     relatedToolsScriptPath,
+    relatedToolsHtml: relatedToolsState.listHtml,
+    relatedToolsTagsHtml: relatedToolsState.tagsHtml,
   });
   const relatedStyles = !hasUpload ? `<style>#content.w3-content { margin-top: 50px; }</style>` : '';
   const showDisableAdsScript = showAds ? `<script>isLoadAds = true;</script>` : '';

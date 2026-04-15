@@ -297,6 +297,100 @@ test('tags position matches old site (heic-to-jpg)', async ({ browser }, testInf
   }
 });
 
+test('related tools SSR matches client output (zip-file)', async ({ browser }, testInfo) => {
+  const context = await browser.newContext();
+
+  try {
+    await prepareParityContext(context);
+
+    const route = '/zip-file.html';
+    const page = await context.newPage();
+    await page.goto(buildRouteUrl(NEW_ORIGIN, route), { waitUntil: 'load' });
+    await page.waitForFunction(() => typeof window.$ === 'function', null, { timeout: 15000 }).catch(() => {});
+    await page.waitForFunction(() => typeof window.loadRelatedTools === 'function', null, { timeout: 15000 }).catch(() => {});
+
+    const readRelatedToolsState = async () => {
+      return await page.evaluate(() => {
+        const relatedTools = document.querySelector('.relatedTools');
+        const listHtml = relatedTools?.innerHTML ?? '';
+        const tagsNode = (() => {
+          const root = document.querySelector('.relatedToolsSection') || document.body;
+          const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+          let node;
+          while ((node = walker.nextNode())) {
+            if (node.nodeValue && node.nodeValue.includes('Tags:')) {
+              return node;
+            }
+          }
+          return null;
+        })();
+        const tagsEl = tagsNode?.parentElement ?? null;
+        return { listHtml, tagsHtml: tagsEl?.outerHTML ?? '' };
+      });
+    };
+
+    const ssrState = await readRelatedToolsState();
+
+    await page.evaluate(() => {
+      const relatedTools = document.querySelector('.relatedTools');
+      if (relatedTools) {
+        relatedTools.innerHTML = '';
+      }
+      const tagsNode = (() => {
+        const root = document.querySelector('.relatedToolsSection') || document.body;
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+        let node;
+        while ((node = walker.nextNode())) {
+          if (node.nodeValue && node.nodeValue.includes('Tags:')) {
+            return node;
+          }
+        }
+        return null;
+      })();
+      const tagsEl = tagsNode?.parentElement ?? null;
+      if (tagsEl) {
+        tagsEl.remove();
+      }
+      window.__relatedToolsRequested = false;
+      const script = document.querySelector('script[src*="related-tools.js"]');
+      if (script) {
+        script.remove();
+      }
+    });
+
+    await page.evaluate(() => {
+      try {
+        window.loadRelatedTools?.();
+      } catch {}
+    });
+
+    await page.waitForTimeout(4000);
+    await page.waitForFunction(() => document.body.textContent?.includes('Tags:'), null, { timeout: 15000 }).catch(() => {});
+
+    const clientState = await readRelatedToolsState();
+
+    if (JSON.stringify(ssrState) !== JSON.stringify(clientState)) {
+      await testInfo.attach('relatedtools-ssr.html', {
+        body: ssrState.listHtml + ssrState.tagsHtml,
+        contentType: 'text/html',
+      });
+      await testInfo.attach('relatedtools-client.html', {
+        body: clientState.listHtml + clientState.tagsHtml,
+        contentType: 'text/html',
+      });
+      await testInfo.attach('relatedtools-screenshot.png', {
+        body: await page.screenshot({ fullPage: true }),
+        contentType: 'image/png',
+      });
+    }
+
+    expect(clientState.listHtml, 'Client list should match SSR list.').toBe(ssrState.listHtml);
+    expect(clientState.tagsHtml, 'Client tags should match SSR tags.').toBe(ssrState.tagsHtml);
+  } finally {
+    await context.close();
+  }
+});
+
 // Targets built CSS (PARITY_INDEX_ORIGIN, e.g. local `serve dist`) until GitHub Pages picks up the export.
 test('home popular tools section has no page-section card shadow (index)', async ({ browser }, testInfo) => {
   const context = await browser.newContext();
