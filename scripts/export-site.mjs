@@ -214,7 +214,14 @@ async function loadAggregateRating({ apiOrigin, pageName, route }) {
 
   try {
     const response = await fetch(ratingUrl, {
-      headers: { Accept: 'application/json, text/javascript, */*; q=0.01' },
+      method: 'POST',
+      headers: {
+        Accept: 'application/json, text/javascript, */*; q=0.01',
+        'Content-Type': 'application/json; charset=UTF-8',
+        Origin: siteOrigin,
+        Referer: `${siteOrigin}/`,
+      },
+      body: '{}',
       signal: controller.signal,
     });
     if (!response.ok) {
@@ -229,7 +236,7 @@ async function loadAggregateRating({ apiOrigin, pageName, route }) {
     const ratingValue = Number.parseFloat(ratingValueRaw);
 
     if (!Number.isFinite(ratingCount) || !Number.isFinite(ratingValue)) {
-      console.log(`[ratings] Omit rating for ${pageName}: invalid numeric payload.`);
+      console.log(`[ratings] Omit rating for ${pageName}: invalid numeric payload ${JSON.stringify(payload).slice(0, 200)}.`);
       return null;
     }
 
