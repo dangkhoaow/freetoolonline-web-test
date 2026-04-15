@@ -73,7 +73,7 @@ try {
               ("" !== allCurrentTags ? allCurrentTags + ", " : allCurrentTags) +
               '<a target="_blank" style="color: #4caf50" href="https://freetoolonline.com/tags.html?tag=' +
               l[o].toLowerCase() +
-              '&utm_source=internal&utm_medium=relatedtools&utm_content=tag">#' +
+              '">#' +
               l[o].toLowerCase() +
               "</a>";
           }
@@ -146,7 +146,7 @@ try {
               matchedTags +
               '" style="color: #4caf50;" href="' +
               urlMaps[i].url +
-              '?utm_source=internal&utm_medium=relatedtools&utm_content=sametag">' +
+              '">' +
               title +
               "</a></li>";
           }
@@ -180,7 +180,7 @@ try {
                 title +
                 '" style="color: #3b73af;" href="' +
                 urlMaps[i].url +
-                '?utm_source=internal&utm_medium=relatedtools&utm_content=matchedword">' +
+                '">' +
                 title +
                 "</a></li>";
             } else {
@@ -214,7 +214,7 @@ try {
                 title +
                 '" style="color: #4caf50;" href="' +
                 urlMaps[i].url +
-                '?utm_source=internal&utm_medium=tagcloud&utm_content=sametag">' +
+                '">' +
                 title +
                 "</a></li>";
             }
@@ -230,7 +230,7 @@ try {
         var item = {
           text: allTags[i],
           weight: tagsCollection[allTags[i]],
-          link: "https://freetoolonline.com/tags.html?tag=" + allTags[i] + "&utm_source=internal&utm_medium=tagcloud&utm_content=tagscollection",
+          link: "https://freetoolonline.com/tags.html?tag=" + allTags[i],
         };
         getRandomInt(0, allTags.length) % 2 == 0 && (item.html = { class: "vertical" });
         wordsList.push(item);

@@ -15,6 +15,7 @@ import {
   DEFAULT_UNSPLASH_KEY,
   JSP_BY_ROUTE,
   SPECIAL_ROUTES,
+  isInfoRoute,
   buildJspIndex,
   loadCmsPageData,
   loadSharedFragments,
@@ -161,6 +162,14 @@ async function renderRoute(route, { jspIndex, sharedFragments, canonicalOrigin, 
 
   const { attrs: pageAttrs, innerHtml: bodyHtml } = parseJspPageSource(jspSource);
   const pageData = await loadCmsPageData(cmsRoot, normalizedRoute);
+  const isHubPage = normalizedRoute.endsWith('-tools.html');
+  const showRating = !isHubPage && !isInfoRoute(normalizedRoute) && normalizedRoute !== '/' && normalizedRoute !== '/alternatead.html';
+  const aggregateRating = showRating
+    ? await loadAggregateRating({ apiOrigin, pageName: pageData.pageName, route: normalizedRoute })
+    : null;
+  if (!showRating) {
+    console.log(`[ratings] Skip rating fetch for ${normalizedRoute} (showRating=false).`);
+  }
 
   return {
     html: renderPageDocument({
@@ -184,9 +193,60 @@ async function renderRoute(route, { jspIndex, sharedFragments, canonicalOrigin, 
       pageAttrs,
       bodyHtml,
       themeCss: sharedFragments.themeCss,
+      aggregateRating,
     }),
     canonical: true,
   };
+}
+
+async function loadAggregateRating({ apiOrigin, pageName, route }) {
+  if (!pageName) {
+    console.log(`[ratings] Omit rating for ${route}: missing pageName.`);
+    return null;
+  }
+
+  const ratingUrl = new URL('ajax/get-rating', apiOrigin);
+  ratingUrl.searchParams.set('pageName', pageName);
+  const timeoutMs = Number.parseInt(process.env.RATING_FETCH_TIMEOUT_MS ?? '5000', 10);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  console.log(`[ratings] Fetching rating for ${pageName} (${route}) from ${ratingUrl.href}`);
+
+  try {
+    const response = await fetch(ratingUrl, {
+      headers: { Accept: 'application/json, text/javascript, */*; q=0.01' },
+      signal: controller.signal,
+    });
+    if (!response.ok) {
+      console.log(`[ratings] Omit rating for ${pageName}: HTTP ${response.status}.`);
+      return null;
+    }
+
+    const payload = await response.json();
+    const ratingCountRaw = payload?.total ?? payload?.ratingCount ?? payload?.reviewCount;
+    const ratingValueRaw = payload?.avg ?? payload?.ratingValue;
+    const ratingCount = Number.parseInt(ratingCountRaw, 10);
+    const ratingValue = Number.parseFloat(ratingValueRaw);
+
+    if (!Number.isFinite(ratingCount) || !Number.isFinite(ratingValue)) {
+      console.log(`[ratings] Omit rating for ${pageName}: invalid numeric payload.`);
+      return null;
+    }
+
+    if (ratingCount < 1 || ratingValue < 1 || ratingValue > 5) {
+      console.log(`[ratings] Omit rating for ${pageName}: out-of-range avg=${ratingValue}, total=${ratingCount}.`);
+      return null;
+    }
+
+    const normalizedRatingValue = Number.parseFloat(ratingValue.toFixed(1));
+    console.log(`[ratings] Using rating for ${pageName}: avg=${normalizedRatingValue}, total=${ratingCount}.`);
+    return { ratingValue: normalizedRatingValue, ratingCount };
+  } catch (error) {
+    console.log(`[ratings] Omit rating for ${pageName}: ${error instanceof Error ? error.message : 'unknown error'}.`);
+    return null;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
 
 async function writeOutput(outputPath, contents) {

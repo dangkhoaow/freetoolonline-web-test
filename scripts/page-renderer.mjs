@@ -58,7 +58,7 @@ function renderMetaTags(ctx) {
 function renderHeader(ctx) {
   const pageTitleText = ctx.pageTitle || ctx.browserTitle;
   const logo = ctx.pageSvgLogo || DEFAULT_PAGE_SVG_LOGO;
-  return `<header class="w3-top navBarContainer"><div class='w3-bar w3-card-2 new-style-nav-bar' id="mainNavBar"><label title="Toggle Dark Mode/Light Mode" class="dark-ctn toggle-switch"><input id="dark-tgl" class="w3-check" type="checkbox"><span class="slider"></span><span class="mode-icon"><i class="fas fa-sun sun-icon"></i><i class="fas fa-moon moon-icon"></i></span></label><button title="Show or hide the menu" class='w3-bar-item w3-button fa fa-bars menuToogle hide' href='javascript:void(0);' style='width: 40px' onclick='toggleMenu()'> <i class="fa fa-caret-down" style="display: inline;opacity: 0;"></i><i class="fa fa-caret-up" style="display: none;opacity: 0;"></i></button><div id='paypalDonateContainer'><form title="Donate via PayPal" class="w3-right paypalBtn" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank"><input type="hidden" name="cmd" value="_s-xclick" /><input type="hidden" name="hosted_button_id" value="W56TRR5BUFEGQ" /><input type="hidden" name="currency_code" value="USD" /><button id="donateBtnID" name="submit" alt="PayPal - The safer, easier way to pay online!" class="w3-button w3-orange donateBtn new-style-donateBtn"><i class="fa fa-paypal"></i> Donate </button></form></div><a id="buyMeACoffeeBtnID" target="_blank" href="https://www.buymeacoffee.com/freetoolonline.com" alt="Buy Me A Coffee" class="w3-button w3-orange donateBtn new-style-donateBtn buy-me-a-coffee" style="margin-top: 8.5px;float: right;margin-right: 10px;"><i class="fa fa-coffee"></i> Buy Me A Coffee</a><a class="w3-bar-item w3-button headerLogo color" href="${escapeHtml(ctx.siteOrigin)}?utm_source=internal&utm_medium=page&utm_content=header" title="Go to Home page">${logo}</a><a title='Click to reload this page' href='${escapeHtml(ctx.siteOrigin)}${escapeHtml(ctx.pageUrl)}' class='w3-dropdown-hover pageNameContainer' ${ctx.hasSettings ? '' : "style='max-width: calc(100% - 100px)'"}>${pageTitleText ? `<h1 class='w3-padding-large w3-button navPageName'>${escapeHtml(pageTitleText)}</h1>` : ''}</a>${ctx.showAds ? `<button style="display: none" id="disableAds" title='Click to disable ads' onclick="disableAds()" class="settingsBtn w3-right new-style-donateBtn"><i class="fa fa-file-image"></i>&nbsp;Disable Ads</button>` : ''}${ctx.hasSettings ? `<button title='Click to open the tool settings' onclick="document.getElementById('settings').style.display='block'" class="settingsBtn w3-right new-style-donateBtn"><i class="fa fa-cog"></i>&nbsp;Settings</button>` : ''}</div></header>`;
+  return `<header class="w3-top navBarContainer"><div class='w3-bar w3-card-2 new-style-nav-bar' id="mainNavBar"><label title="Toggle Dark Mode/Light Mode" class="dark-ctn toggle-switch"><input id="dark-tgl" class="w3-check" type="checkbox"><span class="slider"></span><span class="mode-icon"><i class="fas fa-sun sun-icon"></i><i class="fas fa-moon moon-icon"></i></span></label><button title="Show or hide the menu" class='w3-bar-item w3-button fa fa-bars menuToogle hide' href='javascript:void(0);' style='width: 40px' onclick='toggleMenu()'> <i class="fa fa-caret-down" style="display: inline;opacity: 0;"></i><i class="fa fa-caret-up" style="display: none;opacity: 0;"></i></button><div id='paypalDonateContainer'><form title="Donate via PayPal" class="w3-right paypalBtn" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank"><input type="hidden" name="cmd" value="_s-xclick" /><input type="hidden" name="hosted_button_id" value="W56TRR5BUFEGQ" /><input type="hidden" name="currency_code" value="USD" /><button id="donateBtnID" name="submit" alt="PayPal - The safer, easier way to pay online!" class="w3-button w3-orange donateBtn new-style-donateBtn"><i class="fa fa-paypal"></i> Donate </button></form></div><a id="buyMeACoffeeBtnID" target="_blank" href="https://www.buymeacoffee.com/freetoolonline.com" alt="Buy Me A Coffee" class="w3-button w3-orange donateBtn new-style-donateBtn buy-me-a-coffee" style="margin-top: 8.5px;float: right;margin-right: 10px;"><i class="fa fa-coffee"></i> Buy Me A Coffee</a><a class="w3-bar-item w3-button headerLogo color" href="${escapeHtml(ctx.siteOrigin)}" title="Go to Home page">${logo}</a><a title='Click to reload this page' href='${escapeHtml(ctx.siteOrigin)}${escapeHtml(ctx.pageUrl)}' class='w3-dropdown-hover pageNameContainer' ${ctx.hasSettings ? '' : "style='max-width: calc(100% - 100px)'"}>${pageTitleText ? `<h1 class='w3-padding-large w3-button navPageName'>${escapeHtml(pageTitleText)}</h1>` : ''}</a>${ctx.showAds ? `<button style="display: none" id="disableAds" title='Click to disable ads' onclick="disableAds()" class="settingsBtn w3-right new-style-donateBtn"><i class="fa fa-file-image"></i>&nbsp;Disable Ads</button>` : ''}${ctx.hasSettings ? `<button title='Click to open the tool settings' onclick="document.getElementById('settings').style.display='block'" class="settingsBtn w3-right new-style-donateBtn"><i class="fa fa-cog"></i>&nbsp;Settings</button>` : ''}</div></header>`;
 }
 
 function renderToolSections(ctx) {
@@ -69,6 +69,93 @@ function renderToolSections(ctx) {
     ? ''
     : `<div class="w3-row page-section"><div id="star-rating-container">Loading reviews...</div></div>`;
   return `<!-- SEO_BLOCK:RELATED_TOOLS --><div class="w3-row page-section relatedToolsSection"><p style="margin-bottom: 0px;">Related tools:</p><div class="relatedTools"></div><script>loadRelatedTools = function(){try{if(window.__relatedToolsRequested)return;if(document.querySelector('script[src*="related-tools.js"]')){window.__relatedToolsRequested=!0;return;}window.__relatedToolsRequested=!0;loadScript('${ctx.relatedToolsScriptPath}?v=' + APP_VERSION, function(){});}catch(e){}};document.addEventListener('DOMContentLoaded',function(){try{if(window.__relatedToolsBootstrapped)return;window.__relatedToolsBootstrapped=!0;loadRelatedTools();}catch(e){}});</script></div>${ratingBlock}${ctx.pageFaq ? ctx.pageFaq : ''}${ctx.bottomPageBannerAd || ''}<!-- END_SEO_BLOCK:RELATED_TOOLS -->`;
+}
+
+function buildJsonLdScript(payload) {
+  return `<script type="application/ld+json">${JSON.stringify(payload)}</script>`;
+}
+
+function buildWebApplicationJsonLd({ browserTitle, canonicalUrl, aggregateRating }) {
+  const jsonLd = {
+    '@context': 'http://schema.org/',
+    '@type': 'WebApplication',
+    name: `Free Tool Online - ${browserTitle}`,
+    url: canonicalUrl,
+    operatingSystem: 'All',
+    applicationSuite: 'Online',
+    applicationCategory: 'Online',
+    offers: {
+      '@type': 'Offer',
+      priceCurrency: 'USD',
+      price: '0.0',
+    },
+    ...(aggregateRating ? { aggregateRating } : {}),
+  };
+  return buildJsonLdScript(jsonLd);
+}
+
+function buildWebSiteJsonLd({ canonicalUrl, name }) {
+  return buildJsonLdScript({
+    '@context': 'http://schema.org/',
+    '@type': 'WebSite',
+    name,
+    url: canonicalUrl,
+  });
+}
+
+function stripHtml(value) {
+  return String(value ?? '')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function extractFaqItems(faqHtml) {
+  const raw = String(faqHtml ?? '').trim();
+  if (!raw) {
+    return [];
+  }
+
+  const lower = raw.toLowerCase();
+  const faqIndex = lower.indexOf('frequently asked questions');
+  if (faqIndex < 0) {
+    return [];
+  }
+
+  const sectionHtml = raw.slice(faqIndex);
+  const afterHeader = sectionHtml.replace(/^[\s\S]*?<h2[^>]*>[\s\S]*?<\/h2>/i, '');
+  const nextHeaderIndex = afterHeader.search(/<h2[^>]*>/i);
+  const faqSection = nextHeaderIndex >= 0 ? afterHeader.slice(0, nextHeaderIndex) : afterHeader;
+  const qaRegex = /<h3[^>]*>([\s\S]*?)<\/h3>\s*<p[^>]*>([\s\S]*?)<\/p>/gi;
+  const items = [];
+  let match = null;
+
+  while ((match = qaRegex.exec(faqSection)) !== null) {
+    const question = stripHtml(match[1]);
+    const answer = stripHtml(match[2]);
+    if (question && answer) {
+      items.push({ question, answer });
+    }
+  }
+
+  return items;
+}
+
+function buildFaqJsonLd(faqItems) {
+  return buildJsonLdScript({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((item) => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.answer,
+      },
+    })),
+  });
 }
 
 export function parseJspPageSource(jspSource) {
@@ -96,7 +183,7 @@ export function renderJspBody(innerHtml, ctx) {
   return html;
 }
 
-export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePath, isStaging, rewriteInternalContent, apiOrigin, shortenDomain, appVersion, ioVersion, getAlterUploaderDelayMs, bgsCollection, ioInfos, unsplashKey, randomString, sharedFragments, pageData, pageAttrs, bodyHtml, themeCss }) {
+export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePath, isStaging, rewriteInternalContent, apiOrigin, shortenDomain, appVersion, ioVersion, getAlterUploaderDelayMs, bgsCollection, ioInfos, unsplashKey, randomString, sharedFragments, pageData, pageAttrs, bodyHtml, themeCss, aggregateRating }) {
   const normalizedRoute = route;
   const normalizedBasePath = normalizeBasePath(basePath);
   const pageName = pageData.pageName;
@@ -137,6 +224,11 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     || /uploadContainer/.test(bodyHtml);
   const showAds = !isHome && !isInfoRoute(normalizedRoute) && normalizedRoute !== '/alternatead.html';
   const isHubPage = normalizedRoute.endsWith('-tools.html');
+  const showRating = showAds && !isHubPage;
+  const faqItems = extractFaqItems(pageData.faq);
+  if (pageData.faq) {
+    console.log(`[faq] Parsed ${faqItems.length} FAQ entries for ${pageName}.`);
+  }
   const canonicalUrl = resolveCanonicalUrl({
     canonicalOrigin,
     route: normalizedRoute,
@@ -144,11 +236,22 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     basePath: normalizedBasePath,
   });
   const relatedToolsScriptPath = `${normalizedBasePath}/script/related-tools.js`;
+  const aggregateRatingPayload = showRating && aggregateRating
+    ? {
+      '@type': 'AggregateRating',
+      worstRating: 1,
+      bestRating: 5,
+      ratingValue: aggregateRating.ratingValue,
+      ratingCount: aggregateRating.ratingCount,
+    }
+    : null;
   const jsonLd = showAds
-    ? `<script type="application/ld+json">{"@context":"http://schema.org/","@type":"WebApplication","name":"Free Tool Online - ${escapeHtml(browserTitle)}","url":"${escapeHtml(canonicalUrl)}","operatingSystem":"All","applicationSuite":"Online","applicationCategory":"Online","offers":{"@type":"Offer","priceCurrency":"USD","price":"0.0"},"aggregateRating":{"@context":"http://schema.org","@type":"AggregateRating","worstRating":"1","bestRating":"5","ratingValue":"5","ratingCount":"1"}}</script>`
+    ? buildWebApplicationJsonLd({ browserTitle, canonicalUrl, aggregateRating: aggregateRatingPayload })
     : isHome
-      ? `<script type="application/ld+json">{"@context":"http://schema.org/","@type":"WebSite","name":"Home Page - Free Tool Online","url":"${escapeHtml(canonicalUrl)}"}</script>`
-      : `<script type="application/ld+json">{"@context":"http://schema.org/","@type":"WebSite","name":"Free Tool Online - ${escapeHtml(browserTitle)}","url":"${escapeHtml(canonicalUrl)}"}</script>`;
+      ? buildWebSiteJsonLd({ canonicalUrl, name: 'Home Page - Free Tool Online' })
+      : buildWebSiteJsonLd({ canonicalUrl, name: `Free Tool Online - ${browserTitle}` });
+  const faqJsonLd = faqItems.length > 0 ? buildFaqJsonLd(faqItems) : '';
+  const jsonLdBlock = [jsonLd, faqJsonLd].filter(Boolean).join('\n');
   const head = renderMetaTags({
     siteOrigin,
     route: normalizedRoute,
@@ -165,7 +268,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     themeCss,
     customStyle,
     pageStyle,
-    jsonLd,
+    jsonLd: jsonLdBlock,
     appVersion,
   });
   const titleText = pageTitle || browserTitle;
@@ -199,7 +302,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   });
   const toolSections = renderToolSections({
     showAds,
-    showRating: !isHubPage,
+    showRating,
     pageFaq: pageData.faq,
     bottomPageBannerAd: sharedFragments.bottomPageBannerAd,
     relatedToolsScriptPath,
