@@ -89,11 +89,25 @@ async function captureHomepage({ browser, origin, label, contextOptions, screens
     expect(popularCount, `${label} should show popular tools list`).toBeGreaterThan(0);
 
     const layout = await page.evaluate(() => {
+      const content = document.querySelector('#content.w3-content');
+      const contentStyle = content ? getComputedStyle(content) : null;
+      const contentOverflowY = contentStyle?.overflowY ?? '';
+      const contentScrollHeight = content?.scrollHeight ?? 0;
+      const contentClientHeight = content?.clientHeight ?? 0;
+      const contentIsScrollable = Boolean(
+        content
+        && (contentScrollHeight > contentClientHeight + 1)
+        && (contentOverflowY === 'auto' || contentOverflowY === 'scroll')
+      );
       return {
         scrollHeight: document.documentElement.scrollHeight,
         scrollWidth: document.documentElement.scrollWidth,
         clientWidth: document.documentElement.clientWidth,
         innerHeight: window.innerHeight,
+        contentOverflowY,
+        contentScrollHeight,
+        contentClientHeight,
+        contentIsScrollable,
         buttonOverflowCount: Array.from(document.querySelectorAll('.main-text .w3-card .w3-button')).filter((button) => button.scrollWidth > button.clientWidth + 1).length,
       };
     });
@@ -101,6 +115,10 @@ async function captureHomepage({ browser, origin, label, contextOptions, screens
     expect(layout.scrollHeight, `${label} should be scrollable`).toBeGreaterThan(layout.innerHeight);
     expect(layout.scrollWidth, `${label} should not overflow horizontally`).toBeLessThanOrEqual(layout.clientWidth);
     expect(layout.buttonOverflowCount, `${label} category buttons should not clip text`).toBe(0);
+    if (label === '1024' || label === '1440') {
+      console.log(`[homepage-test] ${label} contentOverflowY=${layout.contentOverflowY} contentScrollHeight=${layout.contentScrollHeight} contentClientHeight=${layout.contentClientHeight} contentIsScrollable=${layout.contentIsScrollable}`);
+      expect(layout.contentIsScrollable, `${label} should not create an inner scrollbar (#content)`).toBe(false);
+    }
 
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
     await page.waitForTimeout(300);

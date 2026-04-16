@@ -571,7 +571,7 @@ ${sharedFragments.extendedBodyContent ? '' : ''}
 ${sharedFragments.extendedBodyContent || ''}
 </body>`);
   return `<!DOCTYPE html>
-<html lang="${escapeHtml(lang)}" class="main-html ads-init ads-disabled page-${escapeHtml(pageName)}root">
+<html lang="${escapeHtml(lang)}" class="main-html ads-init ads-disabled page-${escapeHtml(pageName)}root${hasUpload ? ' has-upload' : ''}">
 <head>
 ${sharedFragments.firstLoadJsThirdParty || ''}
 ${head}

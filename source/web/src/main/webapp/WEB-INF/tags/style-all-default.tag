@@ -1587,6 +1587,13 @@ b,strong {
     margin: 0!important;
 }
 
+@media (min-width: 1000px) {
+    html.has-upload .pageNameContainer > .navPageName {
+        font-size: 18px !important;
+        padding: 11px 6px !important;
+    }
+}
+
 .w3-bar .w3-button {
     background-color: transparent
 }
