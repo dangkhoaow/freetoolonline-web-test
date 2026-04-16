@@ -1,7 +1,7 @@
 # HOME PAGE REVAMP — PROGRESS TRACKING
 
 ## 1. Overview
-- Last Updated: 2026-04-16 15:53
+- Last Updated: 2026-04-16 16:21
 - Overall Status: Completed
 - Completion: 100%
 
@@ -51,7 +51,7 @@
 ### Screenshot Path
 ```
 
-./freetoolonline-web-test/test/homepage/screenshoot/2026-04-16T08-53-15-135Z/
+./freetoolonline-web-test/test/homepage/screenshoot/2026-04-16T09-21-09-513Z/
 
 ```
 
@@ -65,6 +65,7 @@
 ### Live Staging Recheck
 - Live GitHub Pages deployment verified at: `https://dangkhoaow.github.io/freetoolonline-web-test/`
 - Result: Pass at 320/390/768/1024/1440 with consistent padding/alignment, no button clipping, and no horizontal overflow.
+- Mobile hero alignment: Pass (Browse-by-category card aligns with Popular tools at 320/390).
 - Cookie banner overlap: Pass (cookie does not cover homepage copy at 1024/1440).
 - Background under footer: Pass (footer is transparent on homepage background).
 - Desktop alignment: Pass (homepage hero/cards/footer left edges align at 1024/1440).
@@ -85,6 +86,7 @@
 | 7 | Mobile padding/section edges were inconsistent | Mixed container + row padding produced different left/right gutters between sections | Unified homepage mobile padding and removed extra section wrapper chrome | Fixed |
 | 8 | Homepage background did not extend under the footer | Background was applied only to the hero header; footer had its own opaque background | Apply background on `html.page-root` and make homepage footer transparent | Fixed |
 | 9 | Desktop sections and footer were not left-aligned | Homepage container max-width differed from footer; hero `w3-row-padding` added extra desktop gutter | Match homepage width to footer and normalize desktop hero gutters; add Playwright alignment assertion | Fixed |
+| 10 | Mobile “Browse by category” card was slightly indented vs other sections | `w3-row-padding` applies padding to the row itself (8px), shifting the stacked hero cards on small screens | Remove mobile hero-row padding for `.main-text > .w3-row-padding` and assert alignment at 320/390 in Playwright | Fixed |
 
 ---
 
@@ -100,6 +102,7 @@
 | 6 | Cookie overlap fix + live verify | Pass | Verified on live staging with an automated cookie-overlap regression check and reran full-site crawl. |
 | 7 | Mobile padding alignment + full-page background under footer | Pass | Verified on live staging at 320/390/768/1024/1440 and reran full-site crawl (63 pages). |
 | 8 | Desktop alignment fix (sections + footer) + live verify | Pass | Verified on live staging at 1024/1440 with automated alignment assertions. |
+| 9 | Mobile Browse-by-category alignment fix + live verify | Pass | Verified on live staging at 320/390 with automated alignment assertions. |
 
 ---
 
