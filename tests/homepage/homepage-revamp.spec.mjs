@@ -140,6 +140,42 @@ async function captureHomepage({ browser, origin, label, contextOptions, screens
     }
 
     if (label === '1024' || label === '1440') {
+      const alignment = await page.evaluate(() => {
+        const box = (el) => {
+          if (!el) return null;
+          const r = el.getBoundingClientRect();
+          return { x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height) };
+        };
+
+        const mainText = document.querySelector('#home .main-text');
+        const leftCol = document.querySelector('#home .main-text > .w3-row-padding > .w3-col.l7');
+        const popularCard = document.querySelector('#home .relatedToolsSection .w3-card');
+        const footerInner = document.querySelector('footer.page-footer .footer-inner');
+
+        return {
+          mainText: box(mainText),
+          leftCol: box(leftCol),
+          popularCard: box(popularCard),
+          footerInner: box(footerInner),
+        };
+      });
+
+      console.log(`[homepage-test] ${label} alignment=${JSON.stringify(alignment)}`);
+      if (alignment.mainText && alignment.footerInner) {
+        const delta = Math.abs(alignment.mainText.x - alignment.footerInner.x);
+        expect(delta, `${label} sections should align with footer (delta=${delta})`).toBeLessThanOrEqual(1);
+      }
+      if (alignment.leftCol && alignment.mainText) {
+        const delta = Math.abs(alignment.leftCol.x - alignment.mainText.x);
+        expect(delta, `${label} hero left column should align with section cards (delta=${delta})`).toBeLessThanOrEqual(1);
+      }
+      if (alignment.popularCard && alignment.mainText) {
+        const delta = Math.abs(alignment.popularCard.x - alignment.mainText.x);
+        expect(delta, `${label} section cards should align with main-text (delta=${delta})`).toBeLessThanOrEqual(1);
+      }
+    }
+
+    if (label === '1024' || label === '1440') {
       const cookieReady = await page.locator('.ccInfo').first().waitFor({ state: 'attached', timeout: 5000 }).then(() => true).catch(() => false);
       if (!cookieReady) {
         console.log(`[homepage-test] ${label} cookieBanner=missing`);
