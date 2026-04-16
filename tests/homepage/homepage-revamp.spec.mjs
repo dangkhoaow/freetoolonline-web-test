@@ -139,6 +139,36 @@ async function captureHomepage({ browser, origin, label, contextOptions, screens
       expect(backgroundCheck.footerBgColor, `${label} footer should be transparent on homepage background`).toBe('rgba(0, 0, 0, 0)');
     }
 
+    if (label === '320' || label === '390') {
+      const alignment = await page.evaluate(() => {
+        const box = (el) => {
+          if (!el) return null;
+          const r = el.getBoundingClientRect();
+          return { x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height) };
+        };
+
+        const heroLeftCol = document.querySelector('#home .main-text > .w3-row-padding > .w3-col.l7');
+        const browseCard = document.querySelector('#home .w3-col.l5 .w3-card');
+        const popularCard = document.querySelector('#home .relatedToolsSection .w3-card');
+
+        return {
+          heroLeftCol: box(heroLeftCol),
+          browseCard: box(browseCard),
+          popularCard: box(popularCard),
+        };
+      });
+
+      console.log(`[homepage-test] ${label} mobileAlignment=${JSON.stringify(alignment)}`);
+      if (alignment.popularCard && alignment.browseCard) {
+        const delta = Math.abs(alignment.popularCard.x - alignment.browseCard.x);
+        expect(delta, `${label} browse card should align with popular card (delta=${delta})`).toBeLessThanOrEqual(1);
+      }
+      if (alignment.popularCard && alignment.heroLeftCol) {
+        const delta = Math.abs(alignment.popularCard.x - alignment.heroLeftCol.x);
+        expect(delta, `${label} hero content should align with cards (delta=${delta})`).toBeLessThanOrEqual(1);
+      }
+    }
+
     if (label === '1024' || label === '1440') {
       const alignment = await page.evaluate(() => {
         const box = (el) => {
