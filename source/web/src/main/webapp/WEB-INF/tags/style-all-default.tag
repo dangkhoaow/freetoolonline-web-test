@@ -1589,7 +1589,7 @@ b,strong {
 
 @media (min-width: 1000px) {
     html.has-upload .pageNameContainer > .navPageName {
-        font-size: 18px !important;
+        font-size: 24px !important;
         padding: 11px 6px !important;
     }
 }
