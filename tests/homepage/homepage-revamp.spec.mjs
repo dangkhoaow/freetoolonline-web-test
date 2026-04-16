@@ -108,15 +108,35 @@ async function captureHomepage({ browser, origin, label, contextOptions, screens
     console.log(`[homepage-test] ${label} scrollY=${scrollY}`);
     expect(scrollY, `${label} should allow vertical scrolling`).toBeGreaterThan(0);
 
+    const finalScrollHeight = await page.evaluate(() => document.documentElement.scrollHeight);
+    const effectiveScrollHeight = Math.max(layout.scrollHeight, finalScrollHeight);
+    console.log(`[homepage-test] ${label} effectiveScrollHeight=${effectiveScrollHeight}`);
+
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.waitForTimeout(150);
 
     const viewport = page.viewportSize();
-    const screenshotHeight = Math.min(layout.scrollHeight, 6000);
+    const screenshotHeight = Math.min(effectiveScrollHeight, 6000);
     if (viewport && viewport.height !== screenshotHeight) {
       console.log(`[homepage-test] ${label} resizeViewport height=${viewport.height} -> ${screenshotHeight}`);
       await page.setViewportSize({ width: viewport.width, height: screenshotHeight });
       await page.waitForTimeout(150);
+    }
+
+    const backgroundCheck = await page.evaluate(() => {
+      const html = document.documentElement;
+      const footer = document.querySelector('footer.page-footer');
+      const htmlStyle = getComputedStyle(html);
+      const footerStyle = footer ? getComputedStyle(footer) : null;
+      return {
+        isHome: html.classList.contains('page-root'),
+        htmlBgColor: htmlStyle.backgroundColor,
+        footerBgColor: footerStyle?.backgroundColor ?? null,
+      };
+    });
+    if (backgroundCheck.isHome) {
+      console.log(`[homepage-test] ${label} htmlBgColor=${backgroundCheck.htmlBgColor} footerBgColor=${backgroundCheck.footerBgColor}`);
+      expect(backgroundCheck.footerBgColor, `${label} footer should be transparent on homepage background`).toBe('rgba(0, 0, 0, 0)');
     }
 
     if (label === '1024' || label === '1440') {
