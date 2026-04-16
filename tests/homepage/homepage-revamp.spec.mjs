@@ -119,6 +119,44 @@ async function captureHomepage({ browser, origin, label, contextOptions, screens
       await page.waitForTimeout(150);
     }
 
+    if (label === '1024' || label === '1440') {
+      const cookieReady = await page.locator('.ccInfo').first().waitFor({ state: 'attached', timeout: 5000 }).then(() => true).catch(() => false);
+      if (!cookieReady) {
+        console.log(`[homepage-test] ${label} cookieBanner=missing`);
+      } else {
+        const cookieOverlap = await page.evaluate(() => {
+          const cookie = document.querySelector('.ccInfo');
+          const copyCard = Array.from(document.querySelectorAll('.main-text .w3-card.w3-white')).find((el) => (el.textContent || '').includes('Get more done in one place'));
+          if (!cookie || !copyCard) return { ok: false, overlappingTextCount: 0 };
+
+          const toRect = (el) => {
+            const r = el.getBoundingClientRect();
+            return { x: r.x, y: r.y, w: r.width, h: r.height };
+          };
+          const intersects = (a, b) => {
+            const ax2 = a.x + a.w;
+            const ay2 = a.y + a.h;
+            const bx2 = b.x + b.w;
+            const by2 = b.y + b.h;
+            return a.x < bx2 && ax2 > b.x && a.y < by2 && ay2 > b.y;
+          };
+
+          const cookieRect = toRect(cookie);
+          const texts = Array.from(copyCard.querySelectorAll('p, li')).map((el) => ({ rect: toRect(el) }));
+          const overlappingTextCount = texts.filter((t) => intersects(cookieRect, t.rect)).length;
+
+          return {
+            ok: true,
+            cookieRect: { x: Math.round(cookieRect.x), y: Math.round(cookieRect.y), w: Math.round(cookieRect.w), h: Math.round(cookieRect.h) },
+            overlappingTextCount,
+          };
+        });
+
+        console.log(`[homepage-test] ${label} cookieOverlapTextCount=${cookieOverlap.overlappingTextCount} cookieRect=${cookieOverlap.cookieRect ? JSON.stringify(cookieOverlap.cookieRect) : 'n/a'}`);
+        expect(cookieOverlap.overlappingTextCount, `${label} cookie banner should not cover homepage copy`).toBe(0);
+      }
+    }
+
     const screenshotPath = path.join(screenshotDir, `homepage-${label}.png`);
     console.log(`[homepage-test] ${label} screenshot=${screenshotPath}`);
     await page.screenshot({ path: screenshotPath, fullPage: false });
