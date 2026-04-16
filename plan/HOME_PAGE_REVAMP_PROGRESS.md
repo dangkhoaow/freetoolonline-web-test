@@ -1,7 +1,7 @@
 # HOME PAGE REVAMP — PROGRESS TRACKING
 
 ## 1. Overview
-- Last Updated: 2026-04-16 20:21
+- Last Updated: 2026-04-16 20:49
 - Overall Status: Completed
 - Completion: 100%
 
@@ -90,6 +90,7 @@
 | 11 | Homepage header action buttons were inconsistent (top vs scrolled) and dark mode tones were off | Global header/dark-mode CSS overrode homepage scroll-state styling; light-mode contrast overrides applied in dark mode | Add homepage scroll-state header styles (`:not(.w3-white)` vs `.w3-white`), keep dark-mode header actions outlined, and scope contrast to light-only with dark-mode overrides | Fixed |
 | 12 | Homepage footer links were misaligned on ultra-wide screens (≥1920px) | Footer container max-width expanded (e.g. 1540px at 1920px), so its left edge no longer matched the homepage content container (1240px) | Add homepage-only override to force `footer.page-footer .footer-inner` to `max-width: 1240px` and center it | Fixed |
 | 13 | Dark mode “Popular tools” showed an extra solid dark block + visible shadow seams | Wrapper `relatedToolsSection` background was forced to dark gray in dark mode while the popular card was narrowed (cookie gutter); global `header { box-shadow: ... }` applied to `header#home` | Force dark-mode `relatedToolsSection` background transparent and remove `box-shadow` from `header#home` on homepage | Fixed |
+| 14 | Homepage background showed thin “seam” bands above and below the hero (top/bottom) | Fixed header had `margin-bottom: 10px` and footer had `margin-top: 20px`, creating transparent gap bands between sections | Remove homepage header/footer margin gaps and set homepage nav height to 51px to match previous total offset | Fixed |
 
 ---
 
@@ -109,6 +110,7 @@
 | 10 | Header action button consistency + dark mode tone fix | Pass | Verified top vs scrolled button borders and dark-mode colors; ensured background continues under footer. |
 | 11 | Ultra-wide (1920px) footer alignment fix | Pass | Verified `footer-inner` aligns with `.main-text` at 1920px on staging + production. |
 | 12 | Dark mode Popular tools block + shadow seam fix | Pass | Verified `relatedToolsSection` is transparent in dark mode and `header#home` has no box-shadow (no top/bottom seam lines). |
+| 13 | Header/footer seam gap removal + 51px homepage nav height | Pass | Verified footer touches `#home` (no 20px gap) and homepage header no longer leaves a margin band gap; nav height is 51px on homepage. |
 
 ---
 
