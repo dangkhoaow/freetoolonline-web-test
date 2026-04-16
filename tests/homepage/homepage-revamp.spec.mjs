@@ -89,6 +89,8 @@ async function captureHomepage({ browser, origin, label, contextOptions, screens
     expect(popularCount, `${label} should show popular tools list`).toBeGreaterThan(0);
 
     const layout = await page.evaluate(() => {
+      const html = document.documentElement;
+      const body = document.body;
       const content = document.querySelector('#content.w3-content');
       const contentStyle = content ? getComputedStyle(content) : null;
       const contentOverflowY = contentStyle?.overflowY ?? '';
@@ -99,6 +101,17 @@ async function captureHomepage({ browser, origin, label, contextOptions, screens
         && (contentScrollHeight > contentClientHeight + 1)
         && (contentOverflowY === 'auto' || contentOverflowY === 'scroll')
       );
+      const bodyStyle = body ? getComputedStyle(body) : null;
+      const bodyOverflowY = bodyStyle?.overflowY ?? '';
+      const bodyScrollHeight = body?.scrollHeight ?? 0;
+      const bodyClientHeight = body?.clientHeight ?? 0;
+      const bodyIsScrollable = Boolean(
+        body
+        && (bodyScrollHeight > bodyClientHeight + 1)
+        && (bodyOverflowY === 'auto' || bodyOverflowY === 'scroll')
+      );
+      const htmlStyle = html ? getComputedStyle(html) : null;
+      const htmlOverflowY = htmlStyle?.overflowY ?? '';
       return {
         scrollHeight: document.documentElement.scrollHeight,
         scrollWidth: document.documentElement.scrollWidth,
@@ -108,6 +121,11 @@ async function captureHomepage({ browser, origin, label, contextOptions, screens
         contentScrollHeight,
         contentClientHeight,
         contentIsScrollable,
+        bodyOverflowY,
+        bodyScrollHeight,
+        bodyClientHeight,
+        bodyIsScrollable,
+        htmlOverflowY,
         buttonOverflowCount: Array.from(document.querySelectorAll('.main-text .w3-card .w3-button')).filter((button) => button.scrollWidth > button.clientWidth + 1).length,
       };
     });
@@ -116,7 +134,8 @@ async function captureHomepage({ browser, origin, label, contextOptions, screens
     expect(layout.scrollWidth, `${label} should not overflow horizontally`).toBeLessThanOrEqual(layout.clientWidth);
     expect(layout.buttonOverflowCount, `${label} category buttons should not clip text`).toBe(0);
     if (label === '1024' || label === '1440') {
-      console.log(`[homepage-test] ${label} contentOverflowY=${layout.contentOverflowY} contentScrollHeight=${layout.contentScrollHeight} contentClientHeight=${layout.contentClientHeight} contentIsScrollable=${layout.contentIsScrollable}`);
+      console.log(`[homepage-test] ${label} htmlOverflowY=${layout.htmlOverflowY} bodyOverflowY=${layout.bodyOverflowY} bodyScrollHeight=${layout.bodyScrollHeight} bodyClientHeight=${layout.bodyClientHeight} bodyIsScrollable=${layout.bodyIsScrollable} contentOverflowY=${layout.contentOverflowY} contentScrollHeight=${layout.contentScrollHeight} contentClientHeight=${layout.contentClientHeight} contentIsScrollable=${layout.contentIsScrollable}`);
+      expect(layout.bodyIsScrollable, `${label} should not create an inner scrollbar (BODY)`).toBe(false);
       expect(layout.contentIsScrollable, `${label} should not create an inner scrollbar (#content)`).toBe(false);
     }
 
