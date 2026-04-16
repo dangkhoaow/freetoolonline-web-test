@@ -1,7 +1,7 @@
 # HOME PAGE REVAMP — PROGRESS TRACKING
 
 ## 1. Overview
-- Last Updated: 2026-04-16 12:33
+- Last Updated: 2026-04-16 14:34
 - Overall Status: Completed
 - Completion: 100%
 
@@ -17,7 +17,7 @@
 | 4  | Modernize “Popular tools” section + CLS guardrails | Done | Wrapped list in card and reserved min-height with loading item. | 2026-04-16 10:29 |
 | 5  | Rewrite extended home copy for readability | Done | Replaced legacy copy with scannable paragraphs + bullets. | 2026-04-16 10:29 |
 | 6  | Mobile scrolling + responsive polish | Done | Removed fixed footer/overflow traps; refreshed padding + section widths; mobile category cards now stack cleanly. | 2026-04-16 12:12 |
-| 7  | Playwright-rendered validation + screenshot automation | Done | Added homepage Playwright test with 320/390/768/1024/1440 breakpoint coverage and screenshot captures. | 2026-04-16 12:12 |
+| 7  | Playwright-rendered validation + screenshot automation | Done | Added homepage Playwright test with 320/390/768/1024/1440 breakpoint coverage; screenshots now capture the full page reliably at all breakpoints. | 2026-04-16 14:34 |
 | 8  | Progress file creation + ongoing updates | Done | Progress log created, audited, and updated after the latest visual QA recheck. | 2026-04-16 12:12 |
 
 > Status: Not Started / In Progress / Done / Blocked
@@ -49,13 +49,21 @@
 ### Screenshot Path
 ```
 
-./freetoolonline-web-test/test/homepage/screenshoot/2026-04-16T05-32-20-831Z/
+./freetoolonline-web-test/test/homepage/screenshoot/2026-04-16T07-26-06-838Z/
+
+```
+
+### Full-site crawl screenshots
+```
+
+./freetoolonline-web-test/test/homepage/screenshoot/2026-04-16T07-26-06-838Z/fullcrawl/
 
 ```
 
 ### Live Staging Recheck
 - Live GitHub Pages deployment verified at: `https://dangkhoaow.github.io/freetoolonline-web-test/`
 - Result: Pass at 320/390/768/1024/1440 with no button clipping or horizontal overflow.
+- Full-site crawl: Pass (63 pages). Report: `SEO_ANALYSIS_Haiku4.5_2026-04-16_0734_7GMT24H.md`.
 
 ---
 
@@ -67,6 +75,7 @@
 | 2 | Full crawl could stall on `flatten-pdf.html` network idle | Crawler waited for strict `networkidle` on pages with long-lived requests | Switched to `domcontentloaded` with soft load/networkidle waits in `seo-audit-crawler.mjs` | Fixed |
 | 3 | Mobile category quick links clipped longer labels | Category cards stayed two-column on narrow widths, and button labels could not wrap | Switched the card grid to `s12 m6` and allowed button labels to wrap in `PAGESTYLE.css` | Fixed |
 | 4 | Desktop cookie notice still crowded the bottom card | Cookie banner width was too narrow, making it taller than necessary | Widened the desktop cookie banner to reduce its vertical footprint | Fixed |
+| 5 | Playwright full-page screenshots could be blank below the fold on 320/390 | Chromium “fullPage” capture on narrow viewports did not reliably paint below-the-fold content | Capture full-page screenshots by resizing the viewport to the page `scrollHeight` and screenshotting the viewport | Fixed |
 
 ---
 
@@ -78,6 +87,7 @@
 | 2 | Contrast fix + resilient full-site crawl | Pass | Re-ran homepage render and full crawl successfully after code fixes. |
 | 3 | Verified live GitHub Pages staging deploy | Pass | Remote staging URL rendered the updated homepage layout and content. |
 | 4 | Mobile category wrapping + desktop cookie-banner resize | Pass | Re-ran the homepage browser audit locally, then confirmed the live GitHub Pages deploy at 320/390/768/1024/1440 with no button clipping. |
+| 5 | Breakpoint screenshots + full-site crawl rerun | Pass | Saved the latest homepage breakpoint screenshots and a full-site Playwright crawl into the same timestamp folder. |
 
 ---
 

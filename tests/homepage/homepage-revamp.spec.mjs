@@ -108,9 +108,20 @@ async function captureHomepage({ browser, origin, label, contextOptions, screens
     console.log(`[homepage-test] ${label} scrollY=${scrollY}`);
     expect(scrollY, `${label} should allow vertical scrolling`).toBeGreaterThan(0);
 
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.waitForTimeout(150);
+
+    const viewport = page.viewportSize();
+    const screenshotHeight = Math.min(layout.scrollHeight, 6000);
+    if (viewport && viewport.height !== screenshotHeight) {
+      console.log(`[homepage-test] ${label} resizeViewport height=${viewport.height} -> ${screenshotHeight}`);
+      await page.setViewportSize({ width: viewport.width, height: screenshotHeight });
+      await page.waitForTimeout(150);
+    }
+
     const screenshotPath = path.join(screenshotDir, `homepage-${label}.png`);
     console.log(`[homepage-test] ${label} screenshot=${screenshotPath}`);
-    await page.screenshot({ path: screenshotPath, fullPage: true });
+    await page.screenshot({ path: screenshotPath, fullPage: false });
   } finally {
     await context.close();
   }
