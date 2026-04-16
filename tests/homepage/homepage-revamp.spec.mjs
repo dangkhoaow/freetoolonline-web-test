@@ -1,4 +1,4 @@
-import { expect, test, devices } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { createReadStream } from 'node:fs';
 import { access, mkdir, stat } from 'node:fs/promises';
 import http from 'node:http';
@@ -9,6 +9,13 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..', '..');
 const distDir = path.join(repoRoot, 'dist');
 const screenshotBaseDir = path.join(repoRoot, 'test', 'homepage', 'screenshoot');
+const VIEWPORTS = [
+  { label: '320', viewport: { width: 320, height: 844 } },
+  { label: '390', viewport: { width: 390, height: 844 } },
+  { label: '768', viewport: { width: 768, height: 1024 } },
+  { label: '1024', viewport: { width: 1024, height: 900 } },
+  { label: '1440', viewport: { width: 1440, height: 900 } },
+];
 
 const MIME_TYPES = {
   '.css': 'text/css; charset=utf-8',
@@ -84,11 +91,16 @@ async function captureHomepage({ browser, origin, label, contextOptions, screens
     const layout = await page.evaluate(() => {
       return {
         scrollHeight: document.documentElement.scrollHeight,
+        scrollWidth: document.documentElement.scrollWidth,
+        clientWidth: document.documentElement.clientWidth,
         innerHeight: window.innerHeight,
+        buttonOverflowCount: Array.from(document.querySelectorAll('.main-text .w3-card .w3-button')).filter((button) => button.scrollWidth > button.clientWidth + 1).length,
       };
     });
-    console.log(`[homepage-test] ${label} scrollHeight=${layout.scrollHeight} innerHeight=${layout.innerHeight}`);
+    console.log(`[homepage-test] ${label} scrollHeight=${layout.scrollHeight} scrollWidth=${layout.scrollWidth} clientWidth=${layout.clientWidth} innerHeight=${layout.innerHeight} buttonOverflowCount=${layout.buttonOverflowCount}`);
     expect(layout.scrollHeight, `${label} should be scrollable`).toBeGreaterThan(layout.innerHeight);
+    expect(layout.scrollWidth, `${label} should not overflow horizontally`).toBeLessThanOrEqual(layout.clientWidth);
+    expect(layout.buttonOverflowCount, `${label} category buttons should not clip text`).toBe(0);
 
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
     await page.waitForTimeout(300);
@@ -125,32 +137,15 @@ test('homepage revamp renders + captures screenshots', async ({ browser }) => {
   }
 
   try {
-    await captureHomepage({
-      browser,
-      origin,
-      label: 'desktop',
-      contextOptions: { viewport: { width: 1440, height: 900 } },
-      screenshotDir,
-    });
-
-    const mobileDevice = devices['iPhone 14']
-      ?? devices['iPhone 13']
-      ?? {
-        viewport: { width: 390, height: 844 },
-        deviceScaleFactor: 3,
-        isMobile: true,
-        hasTouch: true,
-        userAgent:
-          'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
-      };
-    console.log(`[homepage-test] mobileDevice=${JSON.stringify(mobileDevice)}`);
-    await captureHomepage({
-      browser,
-      origin,
-      label: 'mobile',
-      contextOptions: mobileDevice,
-      screenshotDir,
-    });
+    for (const { label, viewport } of VIEWPORTS) {
+      await captureHomepage({
+        browser,
+        origin,
+        label,
+        contextOptions: { viewport },
+        screenshotDir,
+      });
+    }
   } finally {
     if (server) {
       await new Promise((resolve) => server.close(resolve));
