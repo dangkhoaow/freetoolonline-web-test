@@ -1,7 +1,7 @@
 # HOME PAGE REVAMP — PROGRESS TRACKING
 
 ## 1. Overview
-- Last Updated: 2026-04-16 14:34
+- Last Updated: 2026-04-16 14:53
 - Overall Status: Completed
 - Completion: 100%
 
@@ -17,7 +17,7 @@
 | 4  | Modernize “Popular tools” section + CLS guardrails | Done | Wrapped list in card and reserved min-height with loading item. | 2026-04-16 10:29 |
 | 5  | Rewrite extended home copy for readability | Done | Replaced legacy copy with scannable paragraphs + bullets. | 2026-04-16 10:29 |
 | 6  | Mobile scrolling + responsive polish | Done | Removed fixed footer/overflow traps; refreshed padding + section widths; mobile category cards now stack cleanly. | 2026-04-16 12:12 |
-| 7  | Playwright-rendered validation + screenshot automation | Done | Added homepage Playwright test with 320/390/768/1024/1440 breakpoint coverage; screenshots now capture the full page reliably at all breakpoints. | 2026-04-16 14:34 |
+| 7  | Playwright-rendered validation + screenshot automation | Done | Added homepage Playwright test with 320/390/768/1024/1440 breakpoint coverage; screenshots now capture the full page reliably at all breakpoints; added cookie-overlap regression check. | 2026-04-16 14:53 |
 | 8  | Progress file creation + ongoing updates | Done | Progress log created, audited, and updated after the latest visual QA recheck. | 2026-04-16 12:12 |
 
 > Status: Not Started / In Progress / Done / Blocked
@@ -49,21 +49,22 @@
 ### Screenshot Path
 ```
 
-./freetoolonline-web-test/test/homepage/screenshoot/2026-04-16T07-26-06-838Z/
+./freetoolonline-web-test/test/homepage/screenshoot/2026-04-16T07-45-39-328Z/
 
 ```
 
 ### Full-site crawl screenshots
 ```
 
-./freetoolonline-web-test/test/homepage/screenshoot/2026-04-16T07-26-06-838Z/fullcrawl/
+./freetoolonline-web-test/test/homepage/screenshoot/2026-04-16T07-45-39-328Z/fullcrawl/
 
 ```
 
 ### Live Staging Recheck
 - Live GitHub Pages deployment verified at: `https://dangkhoaow.github.io/freetoolonline-web-test/`
 - Result: Pass at 320/390/768/1024/1440 with no button clipping or horizontal overflow.
-- Full-site crawl: Pass (63 pages). Report: `SEO_ANALYSIS_Haiku4.5_2026-04-16_0734_7GMT24H.md`.
+- Cookie banner overlap: Pass (cookie does not cover homepage copy at 1024/1440).
+- Full-site crawl: Pass (63 pages). Report: `SEO_ANALYSIS_Haiku4.5_2026-04-16_0753_7GMT24H.md`.
 
 ---
 
@@ -76,6 +77,7 @@
 | 3 | Mobile category quick links clipped longer labels | Category cards stayed two-column on narrow widths, and button labels could not wrap | Switched the card grid to `s12 m6` and allowed button labels to wrap in `PAGESTYLE.css` | Fixed |
 | 4 | Desktop cookie notice still crowded the bottom card | Cookie banner width was too narrow, making it taller than necessary | Widened the desktop cookie banner to reduce its vertical footprint | Fixed |
 | 5 | Playwright full-page screenshots could be blank below the fold on 320/390 | Chromium “fullPage” capture on narrow viewports did not reliably paint below-the-fold content | Capture full-page screenshots by resizing the viewport to the page `scrollHeight` and screenshotting the viewport | Fixed |
+| 6 | Cookie banner overlapped the homepage copy card on desktop | Desktop cookie banner is fixed and could cover the right side of the copy card | Reserved a right-side gutter for the homepage cards when cookie banner is present (desktop) | Fixed |
 
 ---
 
@@ -88,6 +90,7 @@
 | 3 | Verified live GitHub Pages staging deploy | Pass | Remote staging URL rendered the updated homepage layout and content. |
 | 4 | Mobile category wrapping + desktop cookie-banner resize | Pass | Re-ran the homepage browser audit locally, then confirmed the live GitHub Pages deploy at 320/390/768/1024/1440 with no button clipping. |
 | 5 | Breakpoint screenshots + full-site crawl rerun | Pass | Saved the latest homepage breakpoint screenshots and a full-site Playwright crawl into the same timestamp folder. |
+| 6 | Cookie overlap fix + live verify | Pass | Verified on live staging with an automated cookie-overlap regression check and reran full-site crawl. |
 
 ---
 
