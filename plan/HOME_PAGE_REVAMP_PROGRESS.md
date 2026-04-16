@@ -1,7 +1,7 @@
 # HOME PAGE REVAMP — PROGRESS TRACKING
 
 ## 1. Overview
-- Last Updated: 2026-04-16 18:38
+- Last Updated: 2026-04-16 20:05
 - Overall Status: Completed
 - Completion: 100%
 
@@ -88,6 +88,7 @@
 | 9 | Desktop sections and footer were not left-aligned | Homepage container max-width differed from footer; hero `w3-row-padding` added extra desktop gutter | Match homepage width to footer and normalize desktop hero gutters; add Playwright alignment assertion | Fixed |
 | 10 | Mobile “Browse by category” card was slightly indented vs other sections | `w3-row-padding` applies padding to the row itself (8px), shifting the stacked hero cards on small screens | Remove mobile hero-row padding for `.main-text > .w3-row-padding` and assert alignment at 320/390 in Playwright | Fixed |
 | 11 | Homepage header action buttons were inconsistent (top vs scrolled) and dark mode tones were off | Global header/dark-mode CSS overrode homepage scroll-state styling; light-mode contrast overrides applied in dark mode | Add homepage scroll-state header styles (`:not(.w3-white)` vs `.w3-white`), keep dark-mode header actions outlined, and scope contrast to light-only with dark-mode overrides | Fixed |
+| 12 | Homepage footer links were misaligned on ultra-wide screens (≥1920px) | Footer container max-width expanded (e.g. 1540px at 1920px), so its left edge no longer matched the homepage content container (1240px) | Add homepage-only override to force `footer.page-footer .footer-inner` to `max-width: 1240px` and center it | Fixed |
 
 ---
 
@@ -105,6 +106,7 @@
 | 8 | Desktop alignment fix (sections + footer) + live verify | Pass | Verified on live staging at 1024/1440 with automated alignment assertions. |
 | 9 | Mobile Browse-by-category alignment fix + live verify | Pass | Verified on live staging at 320/390 with automated alignment assertions. |
 | 10 | Header action button consistency + dark mode tone fix | Pass | Verified top vs scrolled button borders and dark-mode colors; ensured background continues under footer. |
+| 11 | Ultra-wide (1920px) footer alignment fix | Pass | Verified `footer-inner` aligns with `.main-text` at 1920px on staging + production. |
 
 ---
 
