@@ -1019,7 +1019,7 @@ a {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0,0,0,0.5);
+    background-color: #7558e9;
     z-index: 2
 }
 

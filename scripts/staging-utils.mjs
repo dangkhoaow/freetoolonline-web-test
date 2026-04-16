@@ -116,5 +116,5 @@ export function createInternalContentRewriter({ siteOrigin, basePath = '', route
 }
 
 export function buildStagingBannerHtml() {
-  return `<!-- SEO_BLOCK:STAGING_BANNER -->\n<div class="staging-banner" style="margin: 0 0 12px; padding: 6px 12px; background: #b00020; color: #fff; font-size: 12px; font-weight: 700; letter-spacing: 0.02em; text-align: center;">STAGING ENVIRONMENT - Not for production use.</div>\n<!-- END_SEO_BLOCK:STAGING_BANNER -->`;
+  return `<!-- SEO_BLOCK:STAGING_BANNER -->\n<div class="staging-banner" style="margin: 0 0 12px;padding: 6px 12px;background: #b00020;color: #fff;font-size: 12px;font-weight: 700;letter-spacing: 0.02em;text-align: center;position: fixed;top: 0;left: 0;width: 100vw;z-index: 999999;opacity: 0.2;height: 42px;">STAGING ENVIRONMENT - Not for production use.</div>\n<!-- END_SEO_BLOCK:STAGING_BANNER -->`;
 }
