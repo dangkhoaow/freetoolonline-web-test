@@ -1,7 +1,7 @@
 # HOME PAGE REVAMP — PROGRESS TRACKING
 
 ## 1. Overview
-- Last Updated: 2026-04-16 16:21
+- Last Updated: 2026-04-16 18:38
 - Overall Status: Completed
 - Completion: 100%
 
@@ -87,6 +87,7 @@
 | 8 | Homepage background did not extend under the footer | Background was applied only to the hero header; footer had its own opaque background | Apply background on `html.page-root` and make homepage footer transparent | Fixed |
 | 9 | Desktop sections and footer were not left-aligned | Homepage container max-width differed from footer; hero `w3-row-padding` added extra desktop gutter | Match homepage width to footer and normalize desktop hero gutters; add Playwright alignment assertion | Fixed |
 | 10 | Mobile “Browse by category” card was slightly indented vs other sections | `w3-row-padding` applies padding to the row itself (8px), shifting the stacked hero cards on small screens | Remove mobile hero-row padding for `.main-text > .w3-row-padding` and assert alignment at 320/390 in Playwright | Fixed |
+| 11 | Homepage header action buttons were inconsistent (top vs scrolled) and dark mode tones were off | Global header/dark-mode CSS overrode homepage scroll-state styling; light-mode contrast overrides applied in dark mode | Add homepage scroll-state header styles (`:not(.w3-white)` vs `.w3-white`), keep dark-mode header actions outlined, and scope contrast to light-only with dark-mode overrides | Fixed |
 
 ---
 
@@ -103,6 +104,7 @@
 | 7 | Mobile padding alignment + full-page background under footer | Pass | Verified on live staging at 320/390/768/1024/1440 and reran full-site crawl (63 pages). |
 | 8 | Desktop alignment fix (sections + footer) + live verify | Pass | Verified on live staging at 1024/1440 with automated alignment assertions. |
 | 9 | Mobile Browse-by-category alignment fix + live verify | Pass | Verified on live staging at 320/390 with automated alignment assertions. |
+| 10 | Header action button consistency + dark mode tone fix | Pass | Verified top vs scrolled button borders and dark-mode colors; ensured background continues under footer. |
 
 ---
 
