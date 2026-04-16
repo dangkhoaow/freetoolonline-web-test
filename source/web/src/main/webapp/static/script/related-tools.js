@@ -37,16 +37,16 @@ try {
     { title: "Remove PDF Password", url: "https://freetoolonline.com/remove-pdf-password.html", include: !1, tags: "pdf,password" },
     { title: "Split PDF By Range, Start And End Page", url: "https://freetoolonline.com/split-pdf-by-range.html", include: !1, tags: "pdf,split" },
     { title: "Split PDF To Single PDF Pages", url: "https://freetoolonline.com/split-pdf-to-each-pages.html", include: !1, tags: "pdf,split" },
-    { title: "Camera Test", url: "https://freetoolonline.com/camera-test.html", include: !1, tags: "hardwaretest" },
+    { title: "Camera Test", url: "https://freetoolonline.com/camera-test.html", include: !1, tags: "device-test" },
     { title: "CSS Gradient Animator Generator", url: "https://freetoolonline.com/css-gradient-generator.html", include: !1, tags: "generator,css,developer" },
     { title: "CSS Minifier", url: "https://freetoolonline.com/css-minifier.html", include: !1, tags: "pagespeed,minifier,css,developer" },
     { title: "CSS UnMinifier", url: "https://freetoolonline.com/css-unminifier.html", include: !1, tags: "beautifier,css,developer" },
     { title: "JavaScript Minifier", url: "https://freetoolonline.com/js-minifier.html", include: !1, tags: "pagespeed,minifier,javascript,developer" },
     { title: "JSON Parser By Tree View", url: "https://freetoolonline.com/json-parser.html", include: !1, tags: "beautifier,parser,javascript,json,developer" },
     { title: "JavaScript UnMinifier", url: "https://freetoolonline.com/js-unminifier.html", include: !1, tags: "beautifier,javascript,developer" },
-    { title: "Keyboard Test", url: "https://freetoolonline.com/keyboard-test.html", include: !1, tags: "hardwaretest" },
-    { title: "LCD Test", url: "https://freetoolonline.com/lcd-test.html", include: !1, tags: "hardwaretest" },
-    { title: "Microphone Test", url: "https://freetoolonline.com/microphone-test.html", include: !1, tags: "hardwaretest" },
+    { title: "Keyboard Test", url: "https://freetoolonline.com/keyboard-test.html", include: !1, tags: "device-test" },
+    { title: "LCD Test", url: "https://freetoolonline.com/lcd-test.html", include: !1, tags: "device-test" },
+    { title: "Microphone Test", url: "https://freetoolonline.com/microphone-test.html", include: !1, tags: "device-test" },
     { title: "Text Diff", url: "https://freetoolonline.com/text-diff.html", include: !1, tags: "compare,text,developer" },
     { title: "Video And SlideShow Maker", url: "https://freetoolonline.com/video-maker.html", include: !1, tags: "video,maker,editor" },
     { title: "Total Photo Editor", url: "https://freetoolonline.com/photo-editor.html", include: !1, tags: "png,jpg,editor,image-editing" },
@@ -56,7 +56,7 @@ try {
     { title: "PDF Tools", url: "https://freetoolonline.com/pdf-tools.html", include: !1, tags: "pdf,zip" },
     { title: "Developer Tools", url: "https://freetoolonline.com/developer-tools.html", include: !1, tags: "developer" },
     { title: "Video Tools", url: "https://freetoolonline.com/video-tools.html", include: !1, tags: "video" },
-    { title: "Device Test Tools", url: "https://freetoolonline.com/device-test-tools.html", include: !1, tags: "hardwaretest" },
+    { title: "Device Test Tools", url: "https://freetoolonline.com/device-test-tools.html", include: !1, tags: "device-test" },
     { title: "Utility Tools", url: "https://freetoolonline.com/utility-tools.html", include: !1, tags: "utility" }
   ],
     currentTitle = $.trim($(".navPageName").text()),
@@ -203,6 +203,10 @@ try {
       }
     } else {
       var tagFromQuery = getParameterByName("tag");
+      if (tagFromQuery && tagFromQuery.toLowerCase() === "hardwaretest") {
+        tagFromQuery = "device-test";
+        console.log("[related-tools] Alias tag hardwaretest -> device-test.");
+      }
       list = "";
       if ("" !== tagFromQuery && tagFromQuery) {
         for (i = 0; i < urlMaps.length; i++) {

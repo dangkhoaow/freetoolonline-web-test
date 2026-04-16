@@ -11,12 +11,26 @@ const RELATED_TOOLS_TAGS_PAGE_TITLES = new Set(['tags collection', 'tags cloud:'
 function renderMetaTags(ctx) {
   const canonicalUrl = ctx.canonicalUrl;
   const siteUrl = canonicalForRoute(ctx.siteOrigin, ctx.route);
-  const hreflang = ctx.lang === 'vi' ? 'vi-vn' : 'en-us';
+  const isVietnamese = ctx.lang === 'vi';
+  const selfHreflang = isVietnamese ? 'vi-vn' : 'en-us';
   const title = ctx.isHome ? 'Home Page - Free Tool Online' : `${ctx.browserTitle} - Free Tool Online`;
   const ogTitle = ctx.isHome ? 'Free Tool Online - Home Page' : `Free Tool Online - ${ctx.browserTitle}`;
   const description = escapeHtml(ctx.description || '');
   const keywords = escapeHtml(ctx.keyword || '');
-  const canonical = escapeHtml(canonicalUrl || siteUrl);
+  const resolvedCanonical = canonicalUrl || siteUrl;
+  const canonical = escapeHtml(resolvedCanonical);
+  let canonicalOrigin = '';
+  try {
+    canonicalOrigin = new URL(resolvedCanonical).origin;
+  } catch {
+    canonicalOrigin = '';
+  }
+  const xDefaultHref = isVietnamese ? canonicalOrigin : '';
+  console.log(`[seo:hreflang] route=${ctx.route} lang=${ctx.lang} canonical=${resolvedCanonical} self=${selfHreflang} x-default=${xDefaultHref || 'none'}.`);
+  const alternateLinks = [
+    `<link rel='alternate' href='${canonical}' hreflang='${selfHreflang}' />`,
+    xDefaultHref ? `<link rel='alternate' href='${escapeHtml(xDefaultHref)}' hreflang='x-default' />` : '',
+  ].filter(Boolean);
   return [
     `<title>${escapeHtml(title)}</title>`,
     `<meta http-equiv='cache-control' content='max-age=0, public'/>`,
@@ -33,7 +47,9 @@ function renderMetaTags(ctx) {
     `<meta name="baidu-site-verification" content="swIR2wbBvq" />`,
     `<meta name="yandex-verification" content="efeeb1a14a628297" />`,
     `<meta name="google-site-verification" content="G2vSQjrnGdjMgxsydPFQBuLffcKtZyo4f7VSzefzvQ4" />`,
-    `<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">`,
+    `<meta name="viewport" content="width=device-width, initial-scale=1">`,
+    `<link rel="preconnect" href="https://dkbg1jftzfsd2.cloudfront.net" crossorigin>`,
+    `<link rel="dns-prefetch" href="https://dkbg1jftzfsd2.cloudfront.net">`,
     `<meta name='apple-mobile-web-app-capable' content='yes'>`,
     `<meta name='mobile-web-app-capable' content='yes'>`,
     `<meta name='HandheldFriendly' content='True'>`,
@@ -52,7 +68,7 @@ function renderMetaTags(ctx) {
     `<meta name="twitter:description" content='${description}'>`,
     `<meta name="twitter:image:src" content="https://dkbg1jftzfsd2.cloudfront.net/image/logo.200x200.png"/>`,
     `<meta name="twitter:url" content='${canonical}'/>`,
-    `<link rel='alternate' href='${canonical}' hreflang='${hreflang}' />`,
+    ...alternateLinks,
     `<link rel="canonical" href="${canonical}" />`,
     `<link rel='shortcut icon' type='image/png' href='https://dkbg1jftzfsd2.cloudfront.net/favicon.32x32.png'/>`,
     ctx.jsonLd,
