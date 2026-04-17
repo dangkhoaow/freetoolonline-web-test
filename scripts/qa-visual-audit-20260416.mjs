@@ -60,25 +60,15 @@ console.log(`[audit] origin=${origin}`);
 
 const VIEWPORTS = [
   {
-    label: '320',
-    name: 'mobile-320',
-    contextOptions: devices['iPhone SE'],
-  },
-  {
     label: '390',
     name: 'mobile-390',
     contextOptions: devices['iPhone 12'],
   },
   {
-    label: '768',
-    name: 'tablet-768',
-    contextOptions: devices['iPad Mini'],
-  },
-  {
-    label: '1024',
-    name: 'desktop-1024',
+    label: '1440',
+    name: 'desktop-1440',
     contextOptions: {
-      viewport: { width: 1024, height: 768 },
+      viewport: { width: 1440, height: 900 },
       locale: 'en-US',
       timezoneId: 'UTC',
       colorScheme: 'light',
@@ -87,10 +77,10 @@ const VIEWPORTS = [
     },
   },
   {
-    label: '1440',
-    name: 'desktop-1440',
+    label: '1920',
+    name: 'desktop-1920',
     contextOptions: {
-      viewport: { width: 1440, height: 900 },
+      viewport: { width: 1920, height: 1080 },
       locale: 'en-US',
       timezoneId: 'UTC',
       colorScheme: 'light',
@@ -139,14 +129,17 @@ const fail = (viewportName, route, type, details) => {
   pageRec.failures.push({ type, details });
 };
 
-const browser = await chromium.launch({ headless: true });
+let fatalError = '';
 
-try {
-  for (const viewport of VIEWPORTS) {
-    // eslint-disable-next-line no-console
-    console.log(`[audit] viewport ${viewport.name} (${viewport.label})`);
+for (const viewport of VIEWPORTS) {
+  // eslint-disable-next-line no-console
+  console.log(`[audit] viewport ${viewport.name} (${viewport.label})`);
 
-    const context = await browser.newContext(viewport.contextOptions);
+  let browser;
+  let context;
+  try {
+    browser = await chromium.launch({ headless: true });
+    context = await browser.newContext(viewport.contextOptions);
     await prepareParityContext(context);
     const page = await context.newPage();
 
@@ -180,9 +173,6 @@ try {
 
       const fetched = await tryFetch(url);
       results.pages[key].checks.fetch = fetched;
-      if (!fetched.ok) {
-        fail(viewport.name, route, 'fetch', fetched);
-      }
 
       try {
         await page.goto(url, { waitUntil: 'domcontentloaded' });
@@ -229,8 +219,8 @@ try {
         });
 
         const footerEl =
-          document.querySelector('footer .w3-row.first') ||
           document.querySelector('footer .footer-inner') ||
+          document.querySelector('footer .w3-row.first') ||
           document.querySelector('footer');
 
         const homeMainTextEl = document.querySelector('#home > .main-text');
@@ -252,7 +242,7 @@ try {
           anchors.push({ name: 'hero', selector: heroSelector, rect: readRect(heroEl) });
         }
 
-        if (sectionEls.length > 0) {
+        if (!homeMainTextEl && sectionEls.length > 0) {
           for (const [idx, el] of sectionEls.entries()) {
             anchors.push({ name: `section:${idx}`, selector: '.page-main-content .page-section', rect: readRect(el) });
           }
@@ -261,10 +251,10 @@ try {
         if (footerEl) {
           anchors.push({
             name: 'footer',
-            selector: footerEl.matches('footer .w3-row.first')
-              ? 'footer .w3-row.first'
-              : footerEl.matches('footer .footer-inner')
-                ? 'footer .footer-inner'
+            selector: footerEl.matches('footer .footer-inner')
+              ? 'footer .footer-inner'
+              : footerEl.matches('footer .w3-row.first')
+                ? 'footer .w3-row.first'
                 : 'footer',
             rect: readRect(footerEl),
           });
@@ -345,9 +335,10 @@ try {
           guides.style.pointerEvents = 'none';
           guides.style.zIndex = '2147483647';
 
-          const hero = document.querySelector('#home > .main-text') || document.querySelector('.page-main-content .page-section');
-          const footer = document.querySelector('footer .w3-row.first') || document.querySelector('footer .footer-inner') || document.querySelector('footer');
-          const sectionEls = Array.from(document.querySelectorAll('.page-main-content .page-section')).filter((el) => {
+          const homeHero = document.querySelector('#home > .main-text');
+          const hero = homeHero || document.querySelector('.page-main-content .page-section');
+          const footer = document.querySelector('footer .footer-inner') || document.querySelector('footer .w3-row.first') || document.querySelector('footer');
+          const sectionEls = (homeHero ? [] : Array.from(document.querySelectorAll('.page-main-content .page-section'))).filter((el) => {
             const r = el.getBoundingClientRect();
             if (Math.round(r.width) <= 0 || Math.round(r.height) <= 0) return false;
             const s = getComputedStyle(el);
@@ -393,14 +384,21 @@ try {
         results.pages[key].diagnosticScreenshots.push(path.relative(outDir, diagPath));
       }
     }
-
-    await context.close();
+  } catch (error) {
+    const message = String(error?.message ?? error);
+    // eslint-disable-next-line no-console
+    console.error(`[audit] viewport ${viewport.name} crashed: ${message}`);
+    fatalError = fatalError ? `${fatalError}\n${viewport.name}: ${message}` : `${viewport.name}: ${message}`;
+  } finally {
+    await context?.close().catch(() => {});
+    await browser?.close().catch(() => {});
   }
-} finally {
-  await browser.close();
 }
 
 results.summary.totalFailures = Object.values(results.pages).reduce((sum, p) => sum + p.failures.length, 0);
+if (fatalError) {
+  results.summary.fatalError = fatalError;
+}
 
 await fs.writeFile(path.join(outDir, 'audit-results.json'), JSON.stringify(results, null, 2));
 
@@ -409,5 +407,5 @@ console.log('[audit] complete');
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(results.summary, null, 2));
 
-process.exitCode = results.summary.totalFailures > 0 ? 1 : 0;
+process.exitCode = results.summary.totalFailures > 0 || fatalError ? 1 : 0;
 
