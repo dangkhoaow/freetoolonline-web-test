@@ -583,7 +583,7 @@ ${bodyMarkup}
 export function renderRedirectPage({ siteOrigin, canonicalOrigin, sourceRoute, targetRoute }) {
   const targetUrl = canonicalForRoute(siteOrigin, targetRoute);
   const canonicalUrl = canonicalForRoute(canonicalOrigin, targetRoute);
-  return `<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8"/>\n<meta name="robots" content="noindex, nofollow"/>\n<meta http-equiv="refresh" content="0; url=${escapeHtml(targetUrl)}"/>\n<link rel="canonical" href="${escapeHtml(canonicalUrl)}"/>\n<title>Redirecting...</title>\n<script>window.location.replace(${JSON.stringify(targetUrl)});</script>\n</head>\n<body>\n<p>Redirecting from ${escapeHtml(sourceRoute)} to <a href="${escapeHtml(targetUrl)}">${escapeHtml(targetUrl)}</a>.</p>\n</body>\n</html>`;
+  return `<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8"/>\n<meta name="robots" content="noindex, nofollow"/>\n<meta http-equiv="refresh" content="0; url=${escapeHtml(targetUrl)}"/>\n<link rel="canonical" href="${escapeHtml(canonicalUrl)}"/>\n<title>Redirecting...</title>\n<script>\n(function(){\n  var target = ${JSON.stringify(targetUrl)};\n  var suffix = (window.location.search || '') + (window.location.hash || '');\n  window.location.replace(target + suffix);\n})();\n</script>\n</head>\n<body>\n<p>Redirecting from ${escapeHtml(sourceRoute)} to <a href="${escapeHtml(targetUrl)}">${escapeHtml(targetUrl)}</a>.</p>\n</body>\n</html>`;
 }
 
 export function renderAlternateAdPage({ canonicalOrigin }) {

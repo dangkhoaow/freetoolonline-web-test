@@ -188,7 +188,10 @@ try {
         await page.goto(url, { waitUntil: 'domcontentloaded' });
         await page.waitForLoadState('load', { timeout: 15000 }).catch(() => {});
         await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-        await page.waitForTimeout(600);
+        await page
+          .waitForFunction(() => window.__QA_NOADS_READY__ === true, null, { timeout: 4000 })
+          .catch(() => {});
+        await page.waitForTimeout(200);
       } catch (error) {
         navOk = false;
         navError = String(error?.message ?? error);
