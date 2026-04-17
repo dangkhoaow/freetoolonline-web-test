@@ -64,6 +64,20 @@
         return "";
     };
 
+    // QA / audit support: when `?noads=1` is present, remove ad containers immediately
+    // (the legacy flow only removes them after the first user interaction).
+    try {
+        var __qaNoAds = false;
+        try {
+            __qaNoAds = new URLSearchParams(window.location.search).has('noads');
+        } catch (e) {}
+        if (__qaNoAds) {
+            isLoadAds = false;
+            try { htmlRoot && htmlRoot.classList && htmlRoot.classList.add('qa-noads'); } catch (e) {}
+            console.log('[qa:noads] noads param detected; forcing ads off at load.');
+        }
+    } catch (e) {}
+
     isLoadAds = isLoadAds && (getCookie('disableAd') === '' || getCookie('disableAd') === 'false');
 
     if (!isLoadAds) {
