@@ -131,23 +131,24 @@ const fail = (viewportName, route, type, details) => {
 
 let fatalError = '';
 
-for (const viewport of VIEWPORTS) {
-  // eslint-disable-next-line no-console
-  console.log(`[audit] viewport ${viewport.name} (${viewport.label})`);
+const browser = await chromium.launch({ headless: true });
 
-  let browser;
-  let context;
-  try {
-    browser = await chromium.launch({ headless: true });
-    context = await browser.newContext(viewport.contextOptions);
-    await prepareParityContext(context);
-    const page = await context.newPage();
+try {
+  for (const viewport of VIEWPORTS) {
+    // eslint-disable-next-line no-console
+    console.log(`[audit] viewport ${viewport.name} (${viewport.label})`);
 
-    for (const route of routes) {
-      const url = buildRouteUrl(origin, route);
-      const key = `${viewport.name}:${route}`;
-      const baseName = sanitizeRoute(route);
-      const screenshotPath = path.join(outDir, 'screenshots', viewport.name, `${baseName}.png`);
+    let context;
+    try {
+      context = await browser.newContext(viewport.contextOptions);
+      await prepareParityContext(context);
+      const page = await context.newPage();
+
+      for (const route of routes) {
+        const url = buildRouteUrl(origin, route);
+        const key = `${viewport.name}:${route}`;
+        const baseName = sanitizeRoute(route);
+        const screenshotPath = path.join(outDir, 'screenshots', viewport.name, `${baseName}.png`);
 
       results.pages[key] = {
         viewport: viewport.name,
@@ -384,15 +385,17 @@ for (const viewport of VIEWPORTS) {
         results.pages[key].diagnosticScreenshots.push(path.relative(outDir, diagPath));
       }
     }
-  } catch (error) {
-    const message = String(error?.message ?? error);
-    // eslint-disable-next-line no-console
-    console.error(`[audit] viewport ${viewport.name} crashed: ${message}`);
-    fatalError = fatalError ? `${fatalError}\n${viewport.name}: ${message}` : `${viewport.name}: ${message}`;
-  } finally {
-    await context?.close().catch(() => {});
-    await browser?.close().catch(() => {});
+    } catch (error) {
+      const message = String(error?.message ?? error);
+      // eslint-disable-next-line no-console
+      console.error(`[audit] viewport ${viewport.name} crashed: ${message}`);
+      fatalError = fatalError ? `${fatalError}\n${viewport.name}: ${message}` : `${viewport.name}: ${message}`;
+    } finally {
+      await context?.close().catch(() => {});
+    }
   }
+} finally {
+  await browser.close().catch(() => {});
 }
 
 results.summary.totalFailures = Object.values(results.pages).reduce((sum, p) => sum + p.failures.length, 0);
