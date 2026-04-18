@@ -311,7 +311,14 @@ export async function loadCmsPageData(cmsRoot, route) {
 }
 
 export async function parseSitemapRoutes(sitemapPath) {
-  const xml = await readFile(sitemapPath, 'utf8');
+  let xml = '';
+  try {
+    xml = await readFile(sitemapPath, 'utf8');
+  } catch (error) {
+    const message = typeof error?.message === 'string' ? error.message : String(error);
+    console.log(`[sitemap] Unable to read sitemap source at ${sitemapPath}: ${message}. Using empty route list.`);
+    return [];
+  }
   const routes = [];
   for (const match of xml.matchAll(/<loc>(.*?)<\/loc>/gims)) {
     try {
