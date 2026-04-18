@@ -741,7 +741,7 @@ ${stagingBanner}
 <div class='w3-content' id='content'>
 <div class='w3-row'>
 ${sharedFragments.rightBannerAd || ''}
-<div class="w3-rest w3-container page-main-content">
+<main class="w3-rest w3-container page-main-content" role="main">
 ${sharedFragments.topPageBannerAd || ''}
 <style>@media(max-width: 999px) {.ad-section.top-ad>ins:after { content: '${escapeHtml(titleText)}'; }}</style>
 <div class='w3-row page-section'>
@@ -752,7 +752,7 @@ ${relatedStyles}
 </div>
 ${sharedFragments.inContentBannerAd || ''}
 ${toolContent}
-</div>
+</main>
 <div id="cookieConsent"></div>
 </div>
 </div>
