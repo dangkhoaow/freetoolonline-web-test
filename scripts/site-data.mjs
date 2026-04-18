@@ -283,6 +283,10 @@ export async function loadCmsPageData(cmsRoot, route) {
   const faq = await read('FAQ', 'html');
   const pageStyle = await read('PAGESTYLE', 'css');
   const pageBrowserTitle = await read('PAGEBROWSERTITLE', 'txt', bodyTitle);
+  const pageBrowserTitleMobile = (await loadFirstExistingText(
+    cmsRoot,
+    suffix ? [`PAGEBROWSERTITLE${suffix}-mobile.txt`] : ['PAGEBROWSERTITLE-mobile.txt'],
+  )).trim();
   const pageHasSettings = await read('PAGEHASSETTINGS', 'txt');
   const canonicalUrl = await read('PAGECANO', 'txt');
   const hubBacklink = resolveHubBacklink(route);
@@ -305,6 +309,7 @@ export async function loadCmsPageData(cmsRoot, route) {
     faq,
     pageStyle,
     pageBrowserTitle,
+    pageBrowserTitleMobile,
     pageHasSettings: /^true$/i.test(pageHasSettings),
     canonicalUrl,
   };

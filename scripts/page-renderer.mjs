@@ -54,6 +54,8 @@ function renderMetaTags(ctx) {
   const selfHreflang = isVietnamese ? 'vi-vn' : 'en-us';
   const title = ctx.isHome ? 'Home Page - Free Tool Online' : `${ctx.browserTitle} - Free Tool Online`;
   const ogTitle = ctx.isHome ? 'Free Tool Online - Home Page' : `Free Tool Online - ${ctx.browserTitle}`;
+  const mobileTitleBase = String(ctx.mobileBrowserTitle ?? '').trim();
+  const mobileTitle = mobileTitleBase ? `${mobileTitleBase} - Free Tool Online` : '';
   const description = escapeHtml(ctx.description || '');
   const keywords = escapeHtml(ctx.keyword || '');
   const resolvedCanonical = canonicalUrl || siteUrl;
@@ -69,12 +71,19 @@ function renderMetaTags(ctx) {
   // where the EN equivalent slug is unknown, fall back to the site origin.
   const xDefaultHref = isVietnamese ? canonicalOrigin : resolvedCanonical;
   console.log(`[seo:hreflang] route=${ctx.route} lang=${ctx.lang} canonical=${resolvedCanonical} self=${selfHreflang} x-default=${xDefaultHref || 'none'}.`);
+  if (ctx.isStaging && !ctx.isHome && mobileTitleBase) {
+    console.log(`[seo:mobile-title] route=${ctx.route} mobileTitle="${mobileTitleBase}".`);
+  }
   const alternateLinks = [
     `<link rel='alternate' href='${canonical}' hreflang='${selfHreflang}' />`,
     xDefaultHref ? `<link rel='alternate' href='${escapeHtml(xDefaultHref)}' hreflang='x-default' />` : '',
   ].filter(Boolean);
+  const mobileTitleScript = ctx.isStaging && !ctx.isHome && mobileTitle
+    ? `<script>(function(){try{var t=${JSON.stringify(mobileTitle)};var m=(window.matchMedia?window.matchMedia('(max-width: 480px)').matches:((window.innerWidth||0)<=480));if(m&&t){document.title=t;}}catch(e){}})();</script>`
+    : '';
   return [
     `<title>${escapeHtml(title)}</title>`,
+    mobileTitleScript,
     `<meta http-equiv='cache-control' content='max-age=0, public'/>`,
     `<meta http-equiv='expires' content='0'/>`,
     `<meta http-equiv='pragma' content='no-cache'/>`,
@@ -672,6 +681,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     isHome,
     isStaging,
     browserTitle,
+    mobileBrowserTitle: pageData.pageBrowserTitleMobile,
     description,
     keyword,
     canonicalUrl,
