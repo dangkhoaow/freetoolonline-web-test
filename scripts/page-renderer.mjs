@@ -168,37 +168,71 @@ function buildBreadcrumbJsonLd({ canonicalOrigin, items }) {
   });
 }
 
-function buildRelatedToolsSsr({ navTitle, urlMaps }) {
+function buildRelatedToolsSsr({ route, navTitle, urlMaps }) {
   const currentTitle = String(navTitle ?? '').trim();
-  if (!currentTitle || RELATED_TOOLS_TAGS_PAGE_TITLES.has(currentTitle.toLowerCase())) {
+  const currentTitleLower = currentTitle.toLowerCase();
+  const currentRoute = String(route ?? '').trim();
+  const currentRouteKey = (() => {
+    if (!currentRoute || currentRoute === '/') return '/';
+    const clean = currentRoute.split('?')[0].split('#')[0];
+    const parts = clean.split('/').filter(Boolean);
+    const leaf = parts[parts.length - 1] || '';
+    if (!leaf || leaf === 'index.html') return '/';
+    return leaf.startsWith('/') ? leaf : `/${leaf}`;
+  })();
+
+  if (!currentTitle || RELATED_TOOLS_TAGS_PAGE_TITLES.has(currentTitleLower)) {
     return { listHtml: '', tagsHtml: '', linkCount: 0, tagsCount: 0 };
   }
 
-  const items = (urlMaps ?? []).map((item) => ({
-    title: String(item?.title ?? ''),
-    url: String(item?.url ?? ''),
-    tags: String(item?.tags ?? ''),
-    include: false,
-  }));
+  const items = (urlMaps ?? []).map((item) => {
+    const url = String(item?.url ?? '');
+    let routeKey = '';
+    try {
+      const parsed = new URL(url);
+      const pathname = String(parsed.pathname ?? '');
+      const parts = pathname.split('/').filter(Boolean);
+      const leaf = parts[parts.length - 1] || '';
+      routeKey = !leaf || leaf === 'index.html' ? '/' : `/${leaf.replace(/^\//, '')}`;
+    } catch {
+      routeKey = '';
+    }
+    return {
+      title: String(item?.title ?? ''),
+      url,
+      tags: String(item?.tags ?? ''),
+      include: false,
+      routeKey,
+    };
+  });
   let allCurrentTags = '';
   let isAddedAll = false;
 
   const getTagsFromCurrentPage = () => {
-    for (const item of items) {
-      if (item.title.toLowerCase() === currentTitle.toLowerCase()) {
-        const tagList = item.tags.split(',');
-        if (!isAddedAll) {
-          for (const tag of tagList) {
-            allCurrentTags =
-              (allCurrentTags !== '' ? `${allCurrentTags}, ` : allCurrentTags) +
-              `<a target="_blank" style="color: #4caf50" href="https://freetoolonline.com/tags.html?tag=${tag.toLowerCase()}">#${tag.toLowerCase()}</a>`;
-          }
-        }
-        isAddedAll = true;
-        return tagList;
+    const currentItem =
+      items.find((item) => item.routeKey && item.routeKey === currentRouteKey) ||
+      items.find((item) => item.title.toLowerCase() === currentTitleLower) ||
+      null;
+
+    if (!currentItem) {
+      console.log(`[related-tools:ssr] Unable to match current page (route=${currentRoute}, title=${currentTitle}).`);
+      return [];
+    }
+
+    const tagList = currentItem.tags
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter(Boolean);
+    if (!isAddedAll) {
+      for (const tag of tagList) {
+        const lower = tag.toLowerCase();
+        allCurrentTags =
+          (allCurrentTags !== '' ? `${allCurrentTags}, ` : allCurrentTags) +
+          `<a target="_blank" style="color: #4caf50" href="https://freetoolonline.com/tags.html?tag=${lower}">#${lower}</a>`;
       }
     }
-    return [];
+    isAddedAll = true;
+    return tagList;
   };
 
   const addPagesHasTheSameTag = (candidateTags, currentTags) => {
@@ -224,7 +258,7 @@ function buildRelatedToolsSsr({ navTitle, urlMaps }) {
   const listItems = [];
 
   for (const item of items) {
-    if (!item.include && item.title.toLowerCase() !== currentTitle.toLowerCase()) {
+    if (!item.include && item.routeKey !== currentRouteKey) {
       const matchedTags = addPagesHasTheSameTag(item.tags.split(','), currentTags);
       if (matchedTags !== '') {
         item.include = true;
@@ -242,7 +276,7 @@ function buildRelatedToolsSsr({ navTitle, urlMaps }) {
     for (const word of currentTitleWords) {
       if (
         !item.include &&
-        titleLower !== currentTitle.toLowerCase() &&
+        item.routeKey !== currentRouteKey &&
         !RELATED_TOOLS_STOP_WORDS.has(word) &&
         titleLower.indexOf(word) > -1
       ) {
@@ -517,7 +551,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     ioInfos,
   });
   const relatedToolsState = showAds && relatedToolsData?.urlMaps
-    ? buildRelatedToolsSsr({ navTitle, urlMaps: relatedToolsData.urlMaps })
+    ? buildRelatedToolsSsr({ route: normalizedRoute, navTitle, urlMaps: relatedToolsData.urlMaps })
     : { listHtml: '', tagsHtml: '', linkCount: 0, tagsCount: 0 };
   if (showAds && relatedToolsData?.urlMaps) {
     console.log(`[related-tools:ssr] ${normalizedRoute} links=${relatedToolsState.linkCount} tags=${relatedToolsState.tagsCount}.`);

@@ -63,14 +63,61 @@ try {
     allCurrentTags = "",
     isAddedAll = !1,
     relatedToolsRoot = $(".relatedTools"),
-    hasSsrRelatedTools = relatedToolsRoot && relatedToolsRoot.children().length > 0;
+    hasSsrRelatedTools = relatedToolsRoot && relatedToolsRoot.children().length > 0,
+    currentRouteKey = (function () {
+      try {
+        var t = window.location.pathname || "",
+          e = t.split("/"),
+          l = e[e.length - 1] || "";
+        return "" === l || "index.html" === l ? "/" : "/" + l.replace(/^\//, "");
+      } catch (t) {
+        return "";
+      }
+    })();
+
+  function routeKeyFromUrl(t) {
+    try {
+      var e = new URL(t, window.location.origin).pathname || "",
+        l = e.split("/"),
+        o = l[l.length - 1] || "";
+      return "" === o || "index.html" === o ? "/" : "/" + o.replace(/^\//, "");
+    } catch (t) {
+      return "";
+    }
+  }
+
+  function isCurrentMapItem(t) {
+    try {
+      return !!currentRouteKey && routeKeyFromUrl(t.url) === currentRouteKey;
+    } catch (t) {
+      return !1;
+    }
+  }
 
   function getTagsFromCurrentPage(t) {
     for (var e = 0; e < urlMaps.length; e++) {
-      if (urlMaps[e].title.toLowerCase() === t.toLowerCase()) {
+      if (isCurrentMapItem(urlMaps[e])) {
         var l = urlMaps[e].tags.split(",");
         if (!isAddedAll) {
           for (var o = 0; o < l.length; o++) {
+            allCurrentTags =
+              ("" !== allCurrentTags ? allCurrentTags + ", " : allCurrentTags) +
+              '<a target="_blank" style="color: #4caf50" href="https://freetoolonline.com/tags.html?tag=' +
+              l[o].toLowerCase() +
+              '">#' +
+              l[o].toLowerCase() +
+              "</a>";
+          }
+        }
+        isAddedAll = !0;
+        return l;
+      }
+    }
+    for (e = 0; e < urlMaps.length; e++) {
+      if (urlMaps[e].title.toLowerCase() === t.toLowerCase()) {
+        l = urlMaps[e].tags.split(",");
+        if (!isAddedAll) {
+          for (o = 0; o < l.length; o++) {
             allCurrentTags =
               ("" !== allCurrentTags ? allCurrentTags + ", " : allCurrentTags) +
               '<a target="_blank" style="color: #4caf50" href="https://freetoolonline.com/tags.html?tag=' +
@@ -138,7 +185,7 @@ try {
     if (currentTitle.toLowerCase() !== "Tags Collection".toLowerCase() && currentTitle.toLowerCase() !== "Tags cloud:".toLowerCase()) {
       for (var currentTitleWords = currentTitle.toLowerCase().replace(/,/g, "").split(" "), list = "", i = 0; i < urlMaps.length; i++) {
         var title = urlMaps[i].title;
-        if (!urlMaps[i].include && title.toLowerCase() !== currentTitle.toLowerCase()) {
+        if (!urlMaps[i].include && !isCurrentMapItem(urlMaps[i])) {
           var matchedTags = addPagesHasTheSameTag((tags = urlMaps[i].tags.split(",")), (currentTags = getTagsFromCurrentPage(currentTitle)));
           if ("" !== matchedTags) {
             urlMaps[i].include = !0;
@@ -161,7 +208,7 @@ try {
           title = urlMaps[i].title;
           if (
             !urlMaps[i].include &&
-            title.toLowerCase() !== currentTitle.toLowerCase() &&
+            !isCurrentMapItem(urlMaps[i]) &&
             "free" !== word &&
             "tool" !== word &&
             "online" !== word &&
@@ -214,7 +261,7 @@ try {
             currentTags,
             matchedTags;
           title = urlMaps[i].title;
-          if (!urlMaps[i].include && title.toLowerCase() !== currentTitle.toLowerCase()) {
+          if (!urlMaps[i].include && !isCurrentMapItem(urlMaps[i])) {
             matchedTags = addPagesHasTheSameTag((tags = urlMaps[i].tags.split(",")), (currentTags = [tagFromQuery]));
             if ("" !== matchedTags) {
               urlMaps[i].include = !0;

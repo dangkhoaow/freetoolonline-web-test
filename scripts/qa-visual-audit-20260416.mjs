@@ -29,8 +29,10 @@ function sanitizeRoute(route) {
 }
 
 async function tryFetch(url) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
   try {
-    const res = await fetch(url, { redirect: 'follow' });
+    const res = await fetch(url, { redirect: 'follow', signal: controller.signal });
     const text = await res.text();
     return {
       ok: res.ok,
@@ -40,6 +42,8 @@ async function tryFetch(url) {
     };
   } catch (error) {
     return { ok: false, status: 0, finalUrl: url, length: 0, error: String(error?.message ?? error) };
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
@@ -52,13 +56,43 @@ if (!outDirArg) {
 
 const outDir = path.resolve(outDirArg);
 const origin = (readArg('--origin') ?? NEW_ORIGIN).replace(/\/$/, '');
+const mode = String(readArg('--mode') ?? 'noads').trim().toLowerCase();
+const viewportFilterRaw = String(readArg('--viewport') ?? '').trim();
+const routesFilterRaw = String(readArg('--routes') ?? '').trim();
+
+if (mode !== 'noads' && mode !== 'ads') {
+  // eslint-disable-next-line no-console
+  console.error(`Invalid --mode ${JSON.stringify(mode)} (expected "noads" or "ads")`);
+  process.exit(2);
+}
+
+function normalizeRouteArg(value) {
+  const raw = String(value ?? '').trim();
+  if (!raw) return '';
+  if (raw === 'home') return '/';
+  if (raw === '/') return '/';
+  return raw.startsWith('/') ? raw : `/${raw}`;
+}
+
+function buildUrlForMode(originValue, routeValue) {
+  const raw = buildRouteUrl(originValue, routeValue);
+  const url = new URL(raw);
+  if (mode === 'ads') {
+    url.searchParams.delete('noads');
+  } else {
+    url.searchParams.set('noads', '1');
+  }
+  return url.toString();
+}
 
 // eslint-disable-next-line no-console
 console.log(`[audit] outDir=${outDir}`);
 // eslint-disable-next-line no-console
 console.log(`[audit] origin=${origin}`);
+// eslint-disable-next-line no-console
+console.log(`[audit] mode=${mode}`);
 
-const VIEWPORTS = [
+const ALL_VIEWPORTS = [
   {
     label: '390',
     name: 'mobile-390',
@@ -89,6 +123,15 @@ const VIEWPORTS = [
     },
   },
 ];
+const VIEWPORTS = viewportFilterRaw
+  ? ALL_VIEWPORTS.filter((viewport) => viewport.label === viewportFilterRaw || viewport.name === viewportFilterRaw)
+  : ALL_VIEWPORTS;
+
+if (!VIEWPORTS.length) {
+  // eslint-disable-next-line no-console
+  console.error(`No viewports matched --viewport ${JSON.stringify(viewportFilterRaw)}.`);
+  process.exit(2);
+}
 
 const startedAtIso = new Date().toISOString();
 
@@ -101,14 +144,22 @@ for (const viewport of VIEWPORTS) {
   await fs.mkdir(path.join(outDir, 'diagnostic', viewport.name), { recursive: true });
 }
 
-const routes = await loadParityRoutes();
+const allRoutes = await loadParityRoutes();
+const routesFilter = routesFilterRaw
+  ? routesFilterRaw
+    .split(',')
+    .map((route) => normalizeRouteArg(route))
+    .filter(Boolean)
+  : null;
+const routes = routesFilter ? allRoutes.filter((route) => routesFilter.includes(route)) : allRoutes;
 
 // eslint-disable-next-line no-console
-console.log(`[audit] routes=${routes.length}`);
+console.log(`[audit] routes=${routes.length}${routesFilter ? ` (filtered from ${allRoutes.length})` : ''}`);
 
 const results = {
   startedAt: startedAtIso,
   origin,
+  mode,
   routeCount: routes.length,
   viewports: VIEWPORTS.map((v) => ({ label: v.label, name: v.name })),
   pages: {},
@@ -130,6 +181,7 @@ const fail = (viewportName, route, type, details) => {
 };
 
 let fatalError = '';
+const enforceChecks = mode === 'noads';
 
 const browser = await chromium.launch({ headless: true });
 
@@ -143,9 +195,11 @@ try {
       context = await browser.newContext(viewport.contextOptions);
       await prepareParityContext(context);
       const page = await context.newPage();
+      page.setDefaultTimeout(15000);
+      page.setDefaultNavigationTimeout(25000);
 
       for (const route of routes) {
-        const url = buildRouteUrl(origin, route);
+        const url = buildUrlForMode(origin, route);
         const key = `${viewport.name}:${route}`;
         const baseName = sanitizeRoute(route);
         const screenshotPath = path.join(outDir, 'screenshots', viewport.name, `${baseName}.png`);
@@ -176,12 +230,14 @@ try {
       results.pages[key].checks.fetch = fetched;
 
       try {
-        await page.goto(url, { waitUntil: 'domcontentloaded' });
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 25000 });
         await page.waitForLoadState('load', { timeout: 15000 }).catch(() => {});
         await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-        await page
-          .waitForFunction(() => window.__QA_NOADS_READY__ === true, null, { timeout: 4000 })
-          .catch(() => {});
+        if (mode === 'noads') {
+          await page
+            .waitForFunction(() => window.__QA_NOADS_READY__ === true, null, { timeout: 4000 })
+            .catch(() => {});
+        }
         await page.waitForTimeout(200);
       } catch (error) {
         navOk = false;
@@ -287,21 +343,24 @@ try {
       results.pages[key].title = pageState.title;
       results.pages[key].checks.navigation = { ok: true };
       results.pages[key].checks.horizontalScroll = { ok: !pageState.hasHorizontalScroll };
-      results.pages[key].checks.qaNoAds = { ok: Boolean(pageState.qaNoAds) };
-      results.pages[key].checks.adSectionsRemoved = { ok: (pageState.visibleAdSectionsCount ?? 0) === 0, count: pageState.visibleAdSectionsCount ?? 0 };
+      results.pages[key].checks.qaNoAds = { ok: enforceChecks ? Boolean(pageState.qaNoAds) : true, actual: Boolean(pageState.qaNoAds) };
+      results.pages[key].checks.adSectionsRemoved = {
+        ok: enforceChecks ? (pageState.visibleAdSectionsCount ?? 0) === 0 : true,
+        count: pageState.visibleAdSectionsCount ?? 0,
+      };
       results.pages[key].layout.anchors = pageState.anchors;
       results.pages[key].layout.deltas = pageState.deltas;
       results.pages[key].layout.hero = pageState.hero;
 
-      if (!pageState.qaNoAds) {
+      if (enforceChecks && !pageState.qaNoAds) {
         fail(viewport.name, route, 'qa-noads-missing', { expected: true, actual: Boolean(pageState.qaNoAds) });
       }
 
-      if ((pageState.visibleAdSectionsCount ?? 0) !== 0) {
+      if (enforceChecks && (pageState.visibleAdSectionsCount ?? 0) !== 0) {
         fail(viewport.name, route, 'ads-not-removed', { count: pageState.visibleAdSectionsCount ?? 0 });
       }
 
-      if (pageState.hasHorizontalScroll) {
+      if (enforceChecks && pageState.hasHorizontalScroll) {
         fail(viewport.name, route, 'horizontal-scroll', {
           scrollWidth: 'documentElement/body exceeds clientWidth',
         });
@@ -312,13 +371,13 @@ try {
       const alignmentOk = deltaLeft <= 1 && deltaRight <= 1;
       results.pages[key].checks.alignment = { ok: alignmentOk, deltaLeft, deltaRight };
 
-      if (!alignmentOk) {
+      if (enforceChecks && !alignmentOk) {
         fail(viewport.name, route, 'alignment', { deltaLeft, deltaRight, anchors: pageState.anchors });
       }
 
       await page.screenshot({ path: screenshotPath, fullPage: true });
 
-      if (!alignmentOk || pageState.hasHorizontalScroll) {
+      if (enforceChecks && (!alignmentOk || pageState.hasHorizontalScroll)) {
         const diagPath = path.join(outDir, 'diagnostic', viewport.name, `${baseName}.png`);
         await page.evaluate(() => {
           const existing = document.getElementById('__qa_guides__');
