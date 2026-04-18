@@ -2223,6 +2223,10 @@ footer.page-footer .footer-inner *{
 
 footer.page-footer .footer-inner {
     max-width: 1240px!important;
+    width: calc(100% - 20px) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    box-sizing: border-box;
 }
 
 /* Large desktop: align footer with the main content container on key static pages. */
