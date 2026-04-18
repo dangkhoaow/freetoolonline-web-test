@@ -7,6 +7,25 @@ const SEO_CLUSTER_GROUPS = getSeoClusterGroups();
 const RELATED_TOOLS_LIST_STYLE = 'margin-top: 0px;display: block;padding-inline-start: 40px;list-style-type: disc;';
 const RELATED_TOOLS_STOP_WORDS = new Set(['free', 'tool', 'online', 'convert', 'converter', 'in', 'editor', 'maker', 'by', 'and']);
 const RELATED_TOOLS_TAGS_PAGE_TITLES = new Set(['tags collection', 'tags cloud:']);
+const HOWTO_ROUTES = new Set([
+  '/heic-to-jpg.html',
+  '/camera-test.html',
+  '/microphone-test.html',
+  '/keyboard-test.html',
+  '/lcd-test.html',
+  '/js-minifier.html',
+  '/css-minifier.html',
+  '/json-parser.html',
+  '/md5-converter.html',
+  '/pdf-to-text.html',
+  '/images-to-pdf.html',
+  '/compose-pdf.html',
+  '/compress-image.html',
+  '/video-converter.html',
+  '/convert-time-in-millisecond-to-date.html',
+  '/pdf-to-images.html',
+  '/extract-gif-to-image-frames.html',
+]);
 
 function renderMetaTags(ctx) {
   const canonicalUrl = ctx.canonicalUrl;
@@ -124,6 +143,32 @@ function buildWebSiteJsonLd({ canonicalUrl, name }) {
     '@type': 'WebSite',
     name,
     url: canonicalUrl,
+  });
+}
+
+function buildOrganizationJsonLd({ canonicalOrigin }) {
+  const siteUrl = canonicalForRoute(canonicalOrigin, '/');
+  const orgId = `${siteUrl}#organization`;
+  return buildJsonLdScript({
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    '@id': orgId,
+    name: 'Free Tool Online',
+    url: siteUrl,
+    logo: 'https://dkbg1jftzfsd2.cloudfront.net/image/logo.200x200.png',
+    sameAs: [
+      'https://twitter.com/freetoolonline1',
+      'https://www.buymeacoffee.com/freetoolonline.com',
+      'https://www.trustpilot.com/review/freetoolonline.com',
+    ],
+    contactPoint: [
+      {
+        '@type': 'ContactPoint',
+        contactType: 'customer support',
+        url: canonicalForRoute(canonicalOrigin, '/contact-us.html'),
+        availableLanguage: ['en', 'vi'],
+      },
+    ],
   });
 }
 
@@ -379,6 +424,82 @@ function buildFaqJsonLd(faqItems) {
   });
 }
 
+function deriveHowToStepName(text) {
+  const cleaned = String(text ?? '').trim();
+  if (!cleaned) {
+    return '';
+  }
+  const firstSentence = cleaned.split(/[.!?]/)[0].trim();
+  const base = firstSentence || cleaned;
+  return base.length > 80 ? `${base.slice(0, 77)}…` : base;
+}
+
+function extractHowToSteps(bodyHtml, pageName = '', route = '') {
+  const raw = String(bodyHtml ?? '').trim();
+  if (!raw) {
+    return [];
+  }
+
+  const logPrefix = pageName ? `[howto:${pageName}]` : '[howto]';
+  const headSlice = raw.slice(0, 8000);
+  const panelMatch = headSlice.match(/<div[^>]*class=['"][^'"]*w3-pale-green[^'"]*['"][^>]*>[\s\S]*?<\/div>/i);
+  const scopeHtml = panelMatch ? panelMatch[0] : headSlice;
+  const olMatch = scopeHtml.match(/<ol[^>]*>([\s\S]*?)<\/ol>/i);
+
+  if (!olMatch) {
+    console.log(`${logPrefix} No <ol> steps found for ${route || '(unknown route)'}.`);
+    return [];
+  }
+
+  const steps = [];
+  const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+  let match = null;
+  while ((match = liRegex.exec(olMatch[1])) !== null) {
+    const stepText = stripHtml(match[1]);
+    if (stepText) {
+      steps.push(stepText);
+    }
+  }
+
+  if (steps.length === 0) {
+    console.log(`${logPrefix} <ol> found but no <li> steps extracted for ${route || '(unknown route)'}.`);
+  } else {
+    console.log(`${logPrefix} Extracted ${steps.length} steps for ${route || '(unknown route)'}.`);
+  }
+
+  return steps;
+}
+
+function buildHowToJsonLd({ canonicalUrl, name, description, steps }) {
+  const safeSteps = (steps ?? [])
+    .map((text) => {
+      const cleaned = String(text ?? '').trim();
+      if (!cleaned) {
+        return null;
+      }
+      const stepName = deriveHowToStepName(cleaned);
+      return {
+        '@type': 'HowToStep',
+        ...(stepName ? { name: stepName } : {}),
+        text: cleaned,
+      };
+    })
+    .filter(Boolean);
+
+  if (safeSteps.length === 0) {
+    return '';
+  }
+
+  return buildJsonLdScript({
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name,
+    url: canonicalUrl,
+    ...(description ? { description } : {}),
+    step: safeSteps,
+  });
+}
+
 export function parseJspPageSource(jspSource) {
   const match = String(jspSource ?? '').match(/<freetoolonline:page\b([^>]*)>([\s\S]*)<\/freetoolonline:page>/i);
   if (!match) {
@@ -501,7 +622,19 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   const breadcrumbJsonLd = breadcrumbItems.length > 0
     ? buildBreadcrumbJsonLd({ canonicalOrigin, items: breadcrumbItems })
     : '';
-  const jsonLdBlock = [jsonLd, breadcrumbJsonLd, faqJsonLd].filter(Boolean).join('\n');
+  const organizationJsonLd = (isHome || isHubPage) ? buildOrganizationJsonLd({ canonicalOrigin }) : '';
+  if (organizationJsonLd) {
+    console.log(`[schema:org] Injected Organization JSON-LD on ${normalizedRoute}.`);
+  }
+  const shouldIncludeHowTo = showAds && !isHubPage && HOWTO_ROUTES.has(normalizedRoute);
+  const howToSteps = shouldIncludeHowTo ? extractHowToSteps(pageData.bodyHtml, pageName, normalizedRoute) : [];
+  const howToJsonLd = shouldIncludeHowTo
+    ? buildHowToJsonLd({ canonicalUrl, name: browserTitle, description, steps: howToSteps })
+    : '';
+  if (shouldIncludeHowTo) {
+    console.log(`[schema:howto] ${normalizedRoute} steps=${howToSteps.length}.`);
+  }
+  const jsonLdBlock = [jsonLd, organizationJsonLd, breadcrumbJsonLd, howToJsonLd, faqJsonLd].filter(Boolean).join('\n');
   const head = renderMetaTags({
     siteOrigin,
     route: normalizedRoute,

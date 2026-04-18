@@ -226,6 +226,25 @@
     </div>
 </div>
 <script>
+    function resolveApiOrigin() {
+        try {
+            var origin = '';
+            if (typeof API_ORIGIN !== 'undefined' && API_ORIGIN) {
+                origin = API_ORIGIN;
+            }
+            origin = (origin || '').toString().trim();
+            if (origin === '' || origin.indexOf('http') !== 0) {
+                origin = 'https://service.us-east-1a.freetool.online/';
+            }
+            if (origin.charAt(origin.length - 1) !== '/') {
+                origin = origin + '/';
+            }
+            return origin;
+        } catch (e) {
+            return 'https://service.us-east-1a.freetool.online/';
+        }
+    }
+
     setTimeout(function() {
         callAjax({},
             function(ratingInfo) {
@@ -293,7 +312,7 @@
                                 sessionStorage[proName] = false;
                                 $('#star-rating-container .stars').css('opacity', '1');
                             },
-                            getRootPath() + "ajax/do-rating?pageName=" + pageName + "&ratingLevel=" + ratingLevel + "&sessionId=" + web.id
+                            resolveApiOrigin() + "ajax/do-rating?pageName=" + pageName + "&ratingLevel=" + ratingLevel + "&sessionId=" + web.id
                         );
                     }
                 });
@@ -301,7 +320,7 @@
             function() {
                 $('#star-rating-container').parent().remove();
             },
-            getRootPath() + 'ajax/get-rating?pageName=' + pageName
+            resolveApiOrigin() + 'ajax/get-rating?pageName=' + pageName
         );
     }, 1000);
 
