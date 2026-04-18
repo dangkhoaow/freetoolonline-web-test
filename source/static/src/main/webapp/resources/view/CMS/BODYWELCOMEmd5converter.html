@@ -3,6 +3,32 @@
 <hr/>
 <p>Looking for a quick, secure way to create MD5 hashes from text or decode MD5 hashes back to text? This free online MD5 generator provides dual functionality, allowing you to both convert text into a unique MD5 hash and attempt to retrieve text from an MD5 hash directly in your browser, no downloads required. Ideal for developers, security professionals, and anyone needing secure data hashing or decryption, this tool provides an easy, browser-based solution.</p>
 
+<br/><h2 class="text-uppercase"><b>What MD5 is good for (and what it isn&rsquo;t)</b></h2>
+<p>MD5 produces a 128-bit fingerprint (32 hex characters) for any input. The same input always yields the same hash, and two different inputs almost never collide in everyday use. That makes MD5 a reliable shortcut for <i>identity</i> checks: caches, ETags, dedup keys, and file-integrity comparisons. It is <b>not</b> a secure password hash &mdash; researchers have demonstrated practical collision attacks since 2004, and the speed that makes MD5 attractive for checksums is exactly what makes it cheap to brute-force when used for credentials. Pick MD5 when you need a fast, deterministic fingerprint for non-adversarial work; reach for bcrypt, scrypt, or Argon2 when a human secret is involved.</p>
+
+<br/><h2 class="text-uppercase"><b>Common MD5 use cases</b></h2>
+<ul>
+    <li><b>Cache and dedup keys.</b> Hash a long URL, query string, or payload to produce a fixed-length key you can safely use in memcached, Redis, or a filename.</li>
+    <li><b>File-integrity checks.</b> Compare the MD5 of a downloaded file against a published value to confirm the bytes match &mdash; many Linux mirrors still publish MD5 alongside SHA-256 for compatibility.</li>
+    <li><b>ETag-like lookups.</b> Emit the MD5 of a resource body as an ETag header; the client can revalidate without re-downloading.</li>
+    <li><b>Test fixtures and snapshot IDs.</b> Hash a canonical JSON blob to produce deterministic IDs for fixture data in unit tests.</li>
+    <li><b>Data deduplication.</b> Fingerprint incoming uploads to detect duplicates before you persist them to storage.</li>
+</ul>
+
+<br/><h2 class="text-uppercase"><b>MD5 vs SHA-256 vs bcrypt &mdash; when to pick which</b></h2>
+<div class="w3-responsive">
+    <table class="w3-table-all w3-small">
+        <tr><th>Algorithm</th><th>Output size</th><th>Typical use</th><th>Safe for passwords?</th></tr>
+        <tr><td>MD5</td><td>128 bits (32 hex chars)</td><td>Cache keys, ETags, checksums, dedup</td><td>No &mdash; brute-force in seconds</td></tr>
+        <tr><td>SHA-256</td><td>256 bits (64 hex chars)</td><td>Digital signatures, TLS, content addressing</td><td>No alone &mdash; still too fast; use with HMAC or KDF</td></tr>
+        <tr><td>bcrypt</td><td>184 bits + salt + cost</td><td>Password storage</td><td>Yes &mdash; tuneable work factor</td></tr>
+        <tr><td>Argon2id</td><td>Configurable</td><td>Password storage, key derivation</td><td>Yes &mdash; current OWASP recommendation</td></tr>
+    </table>
+</div>
+
+<br/><h2 class="text-uppercase"><b>Why not to use MD5 for password storage</b></h2>
+<p>MD5 can hash hundreds of millions of candidate passwords per second on a single GPU. That speed defeats any credential-storage scheme that relies on MD5 alone, even with a salt. If you inherited a database of MD5 password hashes, treat every account as compromised, enforce a password reset, and migrate new hashes to bcrypt or Argon2id with an appropriate cost factor. For non-credential hashing, MD5 remains fine &mdash; the guidance here is specifically about storing human secrets.</p>
+
 <br/><h2 class="text-uppercase"><b>Key features of this MD5 hash generator include:</b></h2>
 <ul>
     <li><b>Instant Text-to-MD5 Conversion:</b> Quickly generate an MD5 hash for any text input with a single click.</li>
