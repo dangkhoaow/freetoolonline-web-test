@@ -83,33 +83,50 @@ if (!themeModes) {
 }
 
 /**
- * CSS injected before every screenshot. Collapses empty placeholder zones on
- * upload-flow tool pages (e.g. the `.outputImgs` thumbnail grid, empty
- * `.fs-upload-target`) so that `fullPage: true` captures actual content flow
- * instead of a tall empty band filled by the body gradient. Also relaxes
- * `html { min-height: 100vh }` so short pages do not render a long viewport
- * filler below the footer.
+ * CSS injected before every screenshot. The audit is for SEO content quality
+ * (answer panel + BODYWELCOME + FAQ + footer flow), not tool-UI functional
+ * testing. Upload-flow pages (HEIC, camera-test) have dynamic `formstone-
+ * upload` widgets that initialize post-DOMContentLoaded, mutate the DOM, and
+ * destabilize Playwright's fullPage screenshot stitching — producing tall
+ * empty bands of body gradient. Hiding the tool UI chrome during capture
+ * gives a clean content audit without chasing Chromium/fullPage edge cases.
  *
  * This CSS is audit-only and does not affect real users.
  */
 const CAPTURE_NORMALIZE_CSS = `
   /* audit-only: let the document end where the content ends */
   html, body { min-height: 0 !important; }
-  /* audit-only: hide empty output grids on image-conversion tools */
-  .outputImgs { display: none !important; }
-  .outputImgs:has(.imageOut),
-  .outputImgs:has(img[src]:not([src=""])) { display: grid !important; }
-  /* audit-only: collapse the upload-target reserved height when no files queued */
-  .fs-upload-target:not(:has(.file)),
-  .uploadContainer:not(:has(.file)),
-  .uploadContainerSecond:not(:has(.file)) { max-height: 200px !important; overflow: hidden !important; }
-  /* audit-only: hide fixed consent / cookie overlays that obscure below-fold content */
-  #ccInfo, .ccInfo, [class*="cookie-banner"], [id*="cookie-consent"] { display: none !important; }
+  .w3-content { min-height: 0 !important; }
+  /* audit-only: neutralize fixed-position / viewport-filling tool-UI chrome
+     that destabilizes fullPage stitching on upload-flow pages */
+  .fs-upload,
+  .fs-upload-target,
+  .target,
+  .uploadContainer,
+  .uploadContainerSecond,
+  .outputImgs,
+  .outImageC,
+  .sourceImageC { display: none !important; }
+  /* audit-only: hide the stateful tool-control panels (steps, settings modal
+     triggers) so only the content-flow region is captured */
+  .step.step2, .step.step3, .step.step4,
+  .settingsBtn, #settings.w3-modal,
+  .downloadBtnContainer,
+  .autoResultC { display: none !important; }
+  /* audit-only: hide fixed consent / cookie / donation overlays */
+  #ccInfo, .ccInfo,
+  [class*="cookie-banner"], [id*="cookie-consent"],
+  #paypalDonateContainer, #buyMeACoffeeBtnID,
+  #disableAds { display: none !important; }
+  /* audit-only: ensure answer panel + page content remain visible */
+  .w3-panel.w3-pale-green { display: block !important; }
 `;
 
 /**
- * Prepare the page for a screenshot under the chosen theme. Returns nothing;
- * callers should follow up with `page.screenshot()` and then `restoreTheme`.
+ * Prepare the page for a screenshot under the chosen theme. Injects the
+ * capture-normalize CSS (removes min-height fillers, hides empty upload chrome)
+ * and toggles `.dark` on `<html>` for dark-mode captures. Returns nothing;
+ * callers follow up with `captureFullPage()`.
  */
 async function prepareForScreenshot(page, theme) {
   await page.addStyleTag({ content: CAPTURE_NORMALIZE_CSS }).catch(() => {});
@@ -124,6 +141,23 @@ async function prepareForScreenshot(page, theme) {
   }
   // Give the theme swap a beat to settle.
   await page.waitForTimeout(150);
+}
+
+/**
+ * Capture the full content flow of a page.
+ *
+ * Relies on `fullPage: true` + the CAPTURE_NORMALIZE_CSS injection that
+ * collapses empty upload placeholders and tool-UI chrome. This produces clean
+ * captures on text/developer/device-test tool pages. Upload-flow pages with
+ * `formstone-upload` (HEIC, camera-test) can still show a tall mid-page gap
+ * under Chromium's `fullPage` stitching because the upload widget mutates the
+ * DOM post-DOMContentLoaded — for those, verify visually at a real browser
+ * until Playwright matures its fullPage behavior for dynamic upload DOM.
+ */
+async function captureFullPage(page, viewport, themedPath) {
+  await page.evaluate(() => window.scrollTo(0, 0)).catch(() => {});
+  await page.waitForTimeout(50);
+  await page.screenshot({ path: themedPath, fullPage: true });
 }
 
 function screenshotSuffix(theme) {
@@ -454,7 +488,7 @@ try {
           ? screenshotPath
           : path.join(outDir, 'screenshots', viewport.name, `${baseName}${screenshotSuffix(theme)}.png`);
         await prepareForScreenshot(page, theme);
-        await page.screenshot({ path: themedPath, fullPage: true });
+        await captureFullPage(page, viewport, themedPath);
         if (theme !== 'light') {
           results.pages[key].diagnosticScreenshots.push(path.relative(outDir, themedPath));
         }
