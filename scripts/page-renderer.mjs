@@ -7,6 +7,26 @@ const SEO_CLUSTER_GROUPS = getSeoClusterGroups();
 const RELATED_TOOLS_LIST_STYLE = 'margin-top: 0px;display: block;padding-inline-start: 40px;list-style-type: disc;';
 const RELATED_TOOLS_STOP_WORDS = new Set(['free', 'tool', 'online', 'convert', 'converter', 'in', 'editor', 'maker', 'by', 'and']);
 const RELATED_TOOLS_TAGS_PAGE_TITLES = new Set(['tags collection', 'tags cloud:']);
+const APPLICATION_CATEGORY_BY_CLUSTER = {
+  zip: 'UtilitiesApplication',
+  'image-editing': 'GraphicsApplication',
+  'image-conversion': 'GraphicsApplication',
+  pdf: 'UtilitiesApplication',
+  developer: 'DeveloperApplication',
+  video: 'MultimediaApplication',
+  'device-test': 'UtilitiesApplication',
+  utility: 'UtilitiesApplication',
+};
+
+function resolveApplicationCategory(route) {
+  for (const group of SEO_CLUSTER_GROUPS) {
+    if (group.hubRoute === route || (group.routes && group.routes.includes(route))) {
+      return APPLICATION_CATEGORY_BY_CLUSTER[group.cluster] || 'UtilitiesApplication';
+    }
+  }
+  return 'UtilitiesApplication';
+}
+
 const HOWTO_ROUTES = new Set([
   '/heic-to-jpg.html',
   '/camera-test.html',
@@ -44,7 +64,10 @@ function renderMetaTags(ctx) {
   } catch {
     canonicalOrigin = '';
   }
-  const xDefaultHref = isVietnamese ? canonicalOrigin : '';
+  // Emit x-default for every route. For EN routes, x-default points to the page's own
+  // canonical (valid per hreflang spec when no translated variant exists). For VI routes
+  // where the EN equivalent slug is unknown, fall back to the site origin.
+  const xDefaultHref = isVietnamese ? canonicalOrigin : resolvedCanonical;
   console.log(`[seo:hreflang] route=${ctx.route} lang=${ctx.lang} canonical=${resolvedCanonical} self=${selfHreflang} x-default=${xDefaultHref || 'none'}.`);
   const alternateLinks = [
     `<link rel='alternate' href='${canonical}' hreflang='${selfHreflang}' />`,
@@ -118,19 +141,19 @@ function buildJsonLdScript(payload) {
   return `<script type="application/ld+json">${JSON.stringify(payload)}</script>`;
 }
 
-function buildWebApplicationJsonLd({ browserTitle, canonicalUrl, aggregateRating }) {
+function buildWebApplicationJsonLd({ browserTitle, canonicalUrl, description, applicationCategory, aggregateRating }) {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebApplication',
     name: `Free Tool Online - ${browserTitle}`,
     url: canonicalUrl,
-    operatingSystem: 'All',
-    applicationSuite: 'Online',
-    applicationCategory: 'Online',
+    ...(description ? { description } : {}),
+    operatingSystem: 'Any',
+    applicationCategory: applicationCategory || 'UtilitiesApplication',
     offers: {
       '@type': 'Offer',
       priceCurrency: 'USD',
-      price: '0.0',
+      price: '0',
     },
     ...(aggregateRating ? { aggregateRating } : {}),
   };
@@ -614,7 +637,13 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   const jsonLd = showAds
     ? isHubPage
       ? buildCollectionPageJsonLd({ canonicalOrigin, canonicalUrl, name: browserTitle, itemRoutes: hubItemRoutes })
-      : buildWebApplicationJsonLd({ browserTitle, canonicalUrl, aggregateRating: aggregateRatingPayload })
+      : buildWebApplicationJsonLd({
+        browserTitle,
+        canonicalUrl,
+        description,
+        applicationCategory: resolveApplicationCategory(normalizedRoute),
+        aggregateRating: aggregateRatingPayload,
+      })
     : isHome
       ? buildWebSiteJsonLd({ canonicalUrl, name: 'Home Page - Free Tool Online' })
       : buildWebSiteJsonLd({ canonicalUrl, name: `Free Tool Online - ${browserTitle}` });
