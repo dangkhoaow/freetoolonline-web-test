@@ -66,7 +66,15 @@ function decodeWelcomeContent(value) {
 }
 
 export function renderLoadingTag() {
-  return `<style>.loading-tmp { line-height: 60px; text-align: center; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #ffffff; } .loading-tmp>i.fa-cog { font-size: 40px; opacity: .4; display: block; margin-top: 20px }</style><div class="loading-tmp"><i class="fa fa-cog fa-spin"></i><span style="color: #455a64;position: relative;top: -15px;">Initializing, please wait a moment</span></div>`;
+  // The .loading-tmp overlay is shown during page hydration. Previously each
+  // page's own content was responsible for dismissing it (hub BODYHTMLs had
+  // a trailing <script>; tool pages relied on downstream base-script.js;
+  // guide pages had no dismiss logic). That divergence caused the April 2026
+  // /guides/ incident — guide pages stayed stuck on the overlay forever.
+  // Category A fix: embed the dismiss script inline in the loading-tag so
+  // every page — tool, hub, guide, or any future kind — dismisses the
+  // overlay uniformly on DOMContentLoaded.
+  return `<style>.loading-tmp { line-height: 60px; text-align: center; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #ffffff; } .loading-tmp>i.fa-cog { font-size: 40px; opacity: .4; display: block; margin-top: 20px }</style><div class="loading-tmp"><i class="fa fa-cog fa-spin"></i><span style="color: #455a64;position: relative;top: -15px;">Initializing, please wait a moment</span></div><script>(function(){function h(){var o=document.querySelector('.loading-tmp');if(o){o.style.display='none';}}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',h);}else{h();}})();</script>`;
 }
 
 export function renderDownloadTag() {
