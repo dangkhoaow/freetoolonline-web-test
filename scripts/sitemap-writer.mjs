@@ -1,8 +1,8 @@
 import { stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { INFO_ROUTES, canonicalForRoute, normalizeRoute, routeToSlug } from './site-data.mjs';
+import { INFO_ROUTES, GUIDE_ROUTES, canonicalForRoute, normalizeRoute, routeToSlug } from './site-data.mjs';
 
-const SITEMAP_FILES = ['sitemap.xml', 'sitemap-tools.xml', 'sitemap-hubs.xml', 'sitemap-pages.xml'];
+const SITEMAP_FILES = ['sitemap.xml', 'sitemap-tools.xml', 'sitemap-hubs.xml', 'sitemap-guides.xml', 'sitemap-pages.xml'];
 const CMS_FILE_DEFINITIONS = [
   { prefix: 'BODYTITLE', extension: 'txt' },
   { prefix: 'BODYDESC', extension: 'txt' },
@@ -80,7 +80,11 @@ async function resolveLastmodForRoute({ route, cmsRoot, fallbackLastmod }) {
 }
 
 function buildSitemapIndexXml(origin) {
-  const sitemapFiles = ['sitemap-tools.xml', 'sitemap-hubs.xml', 'sitemap-pages.xml'];
+  // Order: tools (largest, most crawled) → hubs → guides (long-form editorial,
+  // distinct content kind) → pages (home + info: about, contact, privacy, tags).
+  // Each child sitemap groups a homogeneous content kind so search engines see
+  // focused <lastmod> changes per kind rather than mixed updates.
+  const sitemapFiles = ['sitemap-tools.xml', 'sitemap-hubs.xml', 'sitemap-guides.xml', 'sitemap-pages.xml'];
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
@@ -106,7 +110,16 @@ export async function writeSplitSitemaps({ distDir, routes, origin, isStaging, c
 
   const normalizedRoutes = unique(routes.map(normalizeRoute));
   const hubRoutes = normalizedRoutes.filter((route) => route.endsWith('-tools.html'));
-  const pageRoutes = [...INFO_ROUTES].filter((route) => normalizedRoutes.includes(route));
+  // Guides are a subset of INFO_ROUTES but represent a distinct content kind
+  // (long-form editorial). Split them into their own sitemap group so search
+  // engines can see guide-group <lastmod> changes separately from info-page
+  // updates and so the guide group can scale independently as more pillars
+  // land. GUIDE_ROUTES is the source of truth (site-data.mjs §3.3).
+  const guideRoutes = [...GUIDE_ROUTES].filter((route) => normalizedRoutes.includes(route));
+  const guideRouteSet = new Set(guideRoutes);
+  const pageRoutes = [...INFO_ROUTES]
+    .filter((route) => normalizedRoutes.includes(route))
+    .filter((route) => !guideRouteSet.has(route));
   const toolRoutes = normalizedRoutes.filter((route) => route !== '/' && !INFO_ROUTES.has(route) && !route.endsWith('-tools.html'));
   const fallbackLastmod = new Date().toISOString();
   const lastmodByRoute = new Map();
@@ -120,6 +133,7 @@ export async function writeSplitSitemaps({ distDir, routes, origin, isStaging, c
 
   await writeTextFile(distDir, 'sitemap-tools.xml', buildUrlSetXml(toolRoutes, origin, lastmodByRoute));
   await writeTextFile(distDir, 'sitemap-hubs.xml', buildUrlSetXml(hubRoutes, origin, lastmodByRoute));
+  await writeTextFile(distDir, 'sitemap-guides.xml', buildUrlSetXml(guideRoutes, origin, lastmodByRoute));
   await writeTextFile(distDir, 'sitemap-pages.xml', buildUrlSetXml(pageRoutes, origin, lastmodByRoute));
   await writeTextFile(distDir, 'sitemap.xml', buildSitemapIndexXml(origin));
 }
