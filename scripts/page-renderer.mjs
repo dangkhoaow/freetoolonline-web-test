@@ -47,6 +47,8 @@ const HOWTO_ROUTES = new Set([
   '/extract-gif-to-image-frames.html',
   '/remove-pdf-password.html',
   '/protect-pdf-by-password.html',
+  '/video-maker.html',
+  '/ffmpeg-online.html',
 ]);
 
 function renderMetaTags(ctx) {
