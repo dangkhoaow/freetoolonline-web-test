@@ -777,11 +777,11 @@ ${sharedFragments.topPageBannerAd || ''}
 <div class='w3-row page-section'>
 <div class='w3-container w3-padding-0'>
 ${body}
-${editorialByline}
-${editorialTrust}
 ${relatedStyles}
 </div>
 </div>
+${editorialByline}
+${editorialTrust}
 ${sharedFragments.inContentBannerAd || ''}
 ${toolContent}
 </main>
