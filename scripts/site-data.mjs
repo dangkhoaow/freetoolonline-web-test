@@ -25,6 +25,9 @@ export const INFO_ROUTES = new Set([
   '/guides/dead-pixel-testing-guide.html',
   '/guides/unix-timestamps-explained.html',
   '/guides/pdf-password-types-owner-vs-user.html',
+  // §3.5 comparison guides (Cycle 4).
+  '/guides/png-vs-svg-when-to-use.html',
+  '/guides/css-minifier-vs-compressor.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES — used by page-renderer.mjs to emit Article
@@ -34,6 +37,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/dead-pixel-testing-guide.html',
   '/guides/unix-timestamps-explained.html',
   '/guides/pdf-password-types-owner-vs-user.html',
+  '/guides/png-vs-svg-when-to-use.html',
+  '/guides/css-minifier-vs-compressor.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -67,6 +72,9 @@ export const JSP_BY_ROUTE = {
   '/guides/dead-pixel-testing-guide.html': 'guide/dead-pixel-testing-guide.jsp',
   '/guides/unix-timestamps-explained.html': 'guide/unix-timestamps-explained.jsp',
   '/guides/pdf-password-types-owner-vs-user.html': 'guide/pdf-password-types-owner-vs-user.jsp',
+  // §3.5 comparison guides (Cycle 4).
+  '/guides/png-vs-svg-when-to-use.html': 'guide/png-vs-svg-when-to-use.jsp',
+  '/guides/css-minifier-vs-compressor.html': 'guide/css-minifier-vs-compressor.jsp',
   '/compose-pdf.html': 'pdf/compose-pdf.jsp',
   '/split-pdf-by-range.html': 'pdf/split-by-range.jsp',
   '/split-pdf-to-each-pages.html': 'pdf/split-to-single-pages.jsp',
