@@ -462,7 +462,10 @@ function extractFaqItems(faqHtml, pageName = '') {
   }
 
   const logPrefix = pageName ? `[faq:${pageName}]` : '[faq]';
-  const headerRegex = /<h2[^>]*>[\s\S]*?frequently asked questions[\s\S]*?<\/h2>/i;
+  // Primary: canonical "Frequently Asked Questions" header.
+  // Extended: also accept FAQ-variant headers ("FAQ:", "FAQs", or "FAQ <topic>")
+  // so fragments whose H2 uses a non-canonical phrasing still emit FAQPage JSON-LD.
+  const headerRegex = /<h2[^>]*>[\s\S]*?(?:frequently asked questions|\bfaqs?\b[:\s][\s\S]*?)[\s\S]*?<\/h2>/i;
   let headerIndex = -1;
   let headerHtml = '';
   const headerMatch = raw.match(headerRegex);
@@ -473,7 +476,12 @@ function extractFaqItems(faqHtml, pageName = '') {
     console.log(`${logPrefix} FAQ header matched with <h2> tag.`);
   } else {
     const lower = raw.toLowerCase();
-    const textIndex = lower.indexOf('frequently asked questions');
+    const probes = ['frequently asked questions', 'faq:', 'faqs:', 'faqs '];
+    let textIndex = -1;
+    for (const needle of probes) {
+      const idx = lower.indexOf(needle);
+      if (idx >= 0 && (textIndex < 0 || idx < textIndex)) textIndex = idx;
+    }
     if (textIndex >= 0) {
       const startIndex = raw.lastIndexOf('<h2', textIndex);
       const endIndex = raw.indexOf('</h2>', textIndex);
