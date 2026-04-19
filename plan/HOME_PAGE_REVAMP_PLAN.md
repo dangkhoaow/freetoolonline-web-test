@@ -31,37 +31,37 @@ Files (current):
 - Changing global shared CSS for non-home pages.
 
 ## PLAN tasks (IDs used by the PROGRESS file)
-- **1 — Unify header/footer with site while preserving hero**
+- **1 - Unify header/footer with site while preserving hero**
   - **Change**: remove the custom in-body top bar from `BODYHTML.html` and stop hiding the standard `navBarContainer` in `PAGESTYLE.css`.
   - **Accept**: site header matches other pages; hero still renders with background; no duplicated nav.
 
-- **2 — Hero layout redesign (W3.CSS-only markup)**
+- **2 - Hero layout redesign (W3.CSS-only markup)**
   - **Change**: restructure hero content to a clean hierarchy (H1 → short subheadline → search → quick links), using W3 grid utilities.
   - **Keep**: `.searchAutoCmp` element present and visible.
   - **Accept**: content is readable on desktop + mobile; no horizontal scroll.
 
-- **3 — Add “Browse by category” quick access (hub links)**
+- **3 - Add “Browse by category” quick access (hub links)**
   - **Change**: add a compact W3 card/grid section linking to existing hub routes (ZIP/PDF/Image/Conversion/Developer/Video/Device Test/Utilities).
   - **Accept**: links work; layout stacks correctly on mobile; uses W3 classes.
 
-- **4 — Modernize “Popular tools” section + CLS guardrails**
+- **4 - Modernize “Popular tools” section + CLS guardrails**
   - **Change**: style `#popularToolsList` for a modern look and reserve space (min-height / layout constraints) so late population doesn’t cause large CLS.
   - **Keep**: backend-driven population via existing AJAX call.
   - **Accept**: section looks good empty/loading and after population; minimal visual shift.
 
-- **5 — Rewrite extended home copy for readability (remove outdated content)**
+- **5 - Rewrite extended home copy for readability (remove outdated content)**
   - **Change**: replace/remove outdated statements (e.g., legacy browser references) and rewrite as scannable blocks (short paragraphs + bullets, optional H2/H3).
   - **Accept**: copy is easy to read; still clearly explains tool categories + privacy.
 
-- **6 — Mobile scrolling + responsive polish**
+- **6 - Mobile scrolling + responsive polish**
   - **Change**: ensure no scroll-lock patterns remain; ensure `overflow-y` allows full-page scroll; ensure hero + footer don’t trap scrolling.
   - **Accept**: on iOS/Android viewports the page scrolls to the bottom reliably.
 
-- **7 — Playwright-rendered validation + screenshot automation**
+- **7 - Playwright-rendered validation + screenshot automation**
   - **Change**: add a dedicated Playwright test (new) that renders the built site and captures **desktop + mobile full-page** screenshots into `freetoolonline-web-test/test/homepage/screenshoot/[TIMESTAMP]/`.
   - **Accept**: test runs locally; screenshots are produced; basic assertions pass (H1 present, search visible, scrolling works).
 
-- **8 — Progress file creation + ongoing updates**
+- **8 - Progress file creation + ongoing updates**
   - **Change**: create `HOME_PAGE_REVAMP_PROGRESS.md` if missing (using the provided template) or update in-place if it exists; keep statuses/notes updated after each task.
   - **Accept**: every PLAN item has a row with status + notes + timestamp; testing evidence logged.
 

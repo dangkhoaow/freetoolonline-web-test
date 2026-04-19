@@ -1,4 +1,4 @@
-// qa-visual-audit-20260419.mjs — forwards to qa-visual-audit-20260418.mjs (identical logic).
+// qa-visual-audit-20260419.mjs - forwards to qa-visual-audit-20260418.mjs (identical logic).
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

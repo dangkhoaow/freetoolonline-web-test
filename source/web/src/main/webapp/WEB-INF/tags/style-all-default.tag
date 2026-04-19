@@ -2208,7 +2208,7 @@ footer.page-footer .footer-inner *{
     background-color: rgba(255,255,255,0.93);
 }
 
-/* Ad slots only: match common.css — do not use the page-section card fill (breaks dark mode + mobile top-ad title band). */
+/* Ad slots only: match common.css - do not use the page-section card fill (breaks dark mode + mobile top-ad title band). */
 .ad-section:not(.ad-panel) {
     overflow: hidden;
     position: relative;

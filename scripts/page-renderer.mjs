@@ -148,7 +148,7 @@ function renderToolSections(ctx) {
     : `<div class="w3-row page-section"><div id="star-rating-container">Loading reviews...</div></div>`;
   const relatedToolsHtml = ctx.relatedToolsHtml ?? '';
   const relatedToolsTagsHtml = ctx.relatedToolsTagsHtml ?? '';
-  // Cluster-hub callout — single anchor above the related-tools band. Cluster-aware
+  // Cluster-hub callout - single anchor above the related-tools band. Cluster-aware
   // via seo-clusters.mjs::resolveHubBacklink. Renders only for tool pages that have
   // a resolvable cluster hub (§3.12).
   const clusterHubLink = ctx.clusterHubLink;

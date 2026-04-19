@@ -1,4 +1,4 @@
-// qa-visual-audit-20260418.mjs — same as 20260416; referenced by SEO audit 2026-04-18.
+// qa-visual-audit-20260418.mjs - same as 20260416; referenced by SEO audit 2026-04-18.
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { chromium, devices } from '@playwright/test';
@@ -87,7 +87,7 @@ if (!themeModes) {
  * (answer panel + BODYWELCOME + FAQ + footer flow), not tool-UI functional
  * testing. Upload-flow pages (HEIC, camera-test) have dynamic `formstone-
  * upload` widgets that initialize post-DOMContentLoaded, mutate the DOM, and
- * destabilize Playwright's fullPage screenshot stitching — producing tall
+ * destabilize Playwright's fullPage screenshot stitching - producing tall
  * empty bands of body gradient. Hiding the tool UI chrome during capture
  * gives a clean content audit without chasing Chromium/fullPage edge cases.
  *
@@ -151,7 +151,7 @@ async function prepareForScreenshot(page, theme) {
  * captures on text/developer/device-test tool pages. Upload-flow pages with
  * `formstone-upload` (HEIC, camera-test) can still show a tall mid-page gap
  * under Chromium's `fullPage` stitching because the upload widget mutates the
- * DOM post-DOMContentLoaded — for those, verify visually at a real browser
+ * DOM post-DOMContentLoaded - for those, verify visually at a real browser
  * until Playwright matures its fullPage behavior for dynamic upload DOM.
  */
 async function captureFullPage(page, viewport, themedPath) {
