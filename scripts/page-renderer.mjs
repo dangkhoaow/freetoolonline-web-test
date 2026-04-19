@@ -849,7 +849,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   const bodyMarkup = rewriteInternalContent(`
 <body class="new-style-body">
 ${sharedFragments.topBodyContent || ''}
-${renderBaseScript({ siteOrigin, apiOrigin, pageUrl, pageName, appVersion, ioVersion, getAlterUploaderDelayMs, bgsCollection, ioInfos, unsplashKey, randomString })}
+${renderBaseScript({ siteOrigin, apiOrigin, pageUrl, pageName, appVersion, ioVersion, getAlterUploaderDelayMs, bgsCollection, ioInfos, unsplashKey, randomString, basePath: normalizedBasePath })}
 ${showDisableAdsScript}
 ${renderHeader({ siteOrigin, pageUrl, pageName, browserTitle, pageTitle, hasSettings, showAds, pageSvgLogo: sharedFragments.pageSvgLogo, })}
 ${stagingBanner}
