@@ -186,12 +186,26 @@ function buildOrganizationJsonLd({ canonicalOrigin }) {
     '@type': 'Organization',
     '@id': orgId,
     name: 'Free Tool Online',
+    alternateName: 'freetoolonline',
     url: siteUrl,
     logo: 'https://dkbg1jftzfsd2.cloudfront.net/image/logo.200x200.png',
+    foundingDate: '2015',
+    description: 'A collection of 100+ free, in-browser online tools (ZIP, PDF, image conversion, device tests, developer utilities, video) curated by the freetoolonline editorial team since 2015.',
+    slogan: 'In-browser tools, no upload, no install.',
     sameAs: [
       'https://twitter.com/freetoolonline1',
       'https://www.buymeacoffee.com/freetoolonline.com',
       'https://www.trustpilot.com/review/freetoolonline.com',
+      'https://github.com/dangkhoaow/freetoolonline-web',
+    ],
+    knowsAbout: [
+      'file compression',
+      'image conversion',
+      'PDF tools',
+      'HEIC to JPG conversion',
+      'browser-based hardware diagnostics',
+      'JavaScript and CSS minification',
+      'video format conversion',
     ],
     contactPoint: [
       {
@@ -740,6 +754,12 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   const relatedStyles = !hasUpload ? `<style>#content.w3-content { margin-top: 50px; }</style>` : '';
   const showDisableAdsScript = showAds ? `<script>isLoadAds = true;</script>` : '';
   const toolContent = showAds ? toolSections : '';
+  const showEditorialSurface = isHome || isHubPage;
+  const editorialByline = showEditorialSurface ? (sharedFragments.editorialByline || '') : '';
+  const editorialTrust = showEditorialSurface ? (sharedFragments.editorialTrust || '') : '';
+  if (showEditorialSurface && (editorialByline || editorialTrust)) {
+    console.log(`[seo:editorial] Injected byline/trust on ${normalizedRoute}.`);
+  }
   const stagingBanner = isStaging ? buildStagingBannerHtml() : '';
   const bodyMarkup = rewriteInternalContent(`
 <body class="new-style-body">
@@ -757,6 +777,8 @@ ${sharedFragments.topPageBannerAd || ''}
 <div class='w3-row page-section'>
 <div class='w3-container w3-padding-0'>
 ${body}
+${editorialByline}
+${editorialTrust}
 ${relatedStyles}
 </div>
 </div>

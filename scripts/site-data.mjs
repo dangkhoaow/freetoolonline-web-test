@@ -244,6 +244,8 @@ export async function loadSharedFragments(viewRoot, runtimeViewRoot = viewRoot, 
     privacyContent: await loadTextIfExists(path.join(viewRoot, 'privacy-content.html')),
     cookieInfo: await loadTextIfExists(path.join(viewRoot, 'cookie-info.html')),
     clearAdConfirm: await loadTextIfExists(path.join(viewRoot, 'clear-ad-confirm.html')),
+    editorialByline: await loadTextIfExists(path.join(viewRoot, 'editorial-byline.html')),
+    editorialTrust: await loadTextIfExists(path.join(viewRoot, 'editorial-trust.html')),
     themeCss: themeCssPath ? await loadTextIfExists(themeCssPath) : '',
   };
 }
