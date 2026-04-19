@@ -45,6 +45,8 @@ const HOWTO_ROUTES = new Set([
   '/convert-time-in-millisecond-to-date.html',
   '/pdf-to-images.html',
   '/extract-gif-to-image-frames.html',
+  '/remove-pdf-password.html',
+  '/protect-pdf-by-password.html',
 ]);
 
 function renderMetaTags(ctx) {
