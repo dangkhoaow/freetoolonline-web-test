@@ -1,0 +1,63 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>What we learned running free in-browser image tools for 100K monthly users</b></h1>
+<time itemprop="datePublished" datetime="2026-04-20T08:00:00Z"><b>Published April 20, 2026</b></time>
+<hr/>
+
+<p class="lead">freetoolonline.com ships ~100 web utilities &mdash; HEIC converters, PDF tools, device tests, developer utilities &mdash; as static HTML pages with WebAssembly for the heavy lifting. No sign-up, no upload, no server-side processing. In a representative recent month, the site served ~100,000 monthly users across ~130 countries, ~1.35 million page impressions, and a few terabytes of browser-side wasm processing. This piece covers the architectural decisions that hold at that scale, the things we got wrong and fixed, and the surprises that don&rsquo;t show up in any tutorial.</p>
+
+<br/><h2 class="text-uppercase"><b>The shape of the traffic</b></h2>
+<p>Cluster by cluster, traffic is hugely uneven. <b>ZIP tools</b> alone account for ~81% of site clicks &mdash; one specific tool, <b>unzip file</b>, is the single biggest source of inbound search traffic, dwarfing the other 99 tools combined. The second tier is <b>image conversion</b> (HEIC to JPG leads), <b>device tests</b> (LCD test leads), and <b>PDF tools</b> (remove-password leads). Developer tools and video tools are long-tail. See our <a href="/tags.html">tags index</a> for the full cluster breakdown.</p>
+<p>Geographic distribution is similarly skewed. India produces ~35% of clicks at ~12% CTR; the US produces ~30% of impressions but only ~1% CTR. The same tool &mdash; HEIC to JPG &mdash; behaves completely differently in US SERPs (where iPhone users expect premium-looking answers) vs Indian SERPs (where utility and speed wins).</p>
+
+<br/><h2 class="text-uppercase"><b>Why everything runs in the browser</b></h2>
+<p>Every tool is implemented in-browser via WebAssembly + JavaScript. There&rsquo;s no backend that processes user files. The reasons are practical, not ideological:</p>
+<p><b>Privacy is the marketing.</b> &ldquo;Your files never leave your device&rdquo; is a promise a server-backed tool cannot make at any scale. Users landing on a HEIC-to-JPG page with photos of their ID card, their lease, their medical bills &mdash; they read that claim before they click.</p>
+<p><b>Cost scaling is the opposite of what you&rsquo;d think.</b> A server-backed conversion service at 100K monthly users would require non-trivial compute, storage, and bandwidth. The in-browser architecture has fixed cost (the static HTML + JS + wasm bundles served from GitHub Pages CDN, approximately $0/month). The user&rsquo;s device does the work.</p>
+<p><b>Scale-to-zero is the default.</b> Zero traffic = zero cost, zero running services, zero security surface. Millions of impressions = same zero cost because it&rsquo;s all CDN-cached static files plus user CPU.</p>
+
+<br/><h2 class="text-uppercase"><b>What breaks at each traffic tier</b></h2>
+<p>At <b>~1,000 monthly users</b>, nothing breaks. The wasm bundles fit in the browser, tools work, the site deploys with GitHub Actions. Rapid iteration matters more than anything else.</p>
+<p>At <b>~10,000 monthly users</b>, SEO starts to matter. The tools are good; nobody finds them. Title and meta description rewrites (lead with the exact query the user typed) move traffic by 2&ndash;5&times;. See our <a href="/guides/jpg-vs-png-for-web.html">JPG vs PNG</a> and other comparison guides for the pattern &mdash; each is a sibling to a tool, authored to capture the upper-funnel query that the tool alone doesn&rsquo;t rank for.</p>
+<p>At <b>~100,000 monthly users</b>, schema and E-E-A-T signals start showing up in the traffic data. Pages with HowTo or FAQPage JSON-LD have measurably higher CTR than pages without. An editorial byline and &ldquo;Why trust us&rdquo; block on hubs feed the E-E-A-T side of Google&rsquo;s Helpful Content posture; monthly cluster impressions rose ~15% after we added that surface.</p>
+<p>At <b>higher scales</b>, the growth ceiling is no longer SEO; it&rsquo;s cross-cluster link equity and external backlinks. We haven&rsquo;t hit that ceiling; Semrush shows us at ~30 referring domains, most organic, none from active outreach. The next phase for us is that outreach.</p>
+
+<br/><h2 class="text-uppercase"><b>The five things we got wrong and fixed</b></h2>
+<p><b>1. First-paint was hidden behind a loading overlay.</b> Our base template put a full-screen &ldquo;Initializing, please wait&rdquo; overlay on every page until the JS finished loading. On /guides/* pages (which don&rsquo;t need tool-UI JS), the overlay stayed forever &mdash; users saw a blank page. The fix: make overlay-dismiss logic live in the base template, not in each tool&rsquo;s script, so every page kind dismisses the overlay uniformly.</p>
+<p><b>2. Heading hierarchy leaked from tool-UI widgets.</b> Several tool pages (LCD test, MD5 converter, GIF maker) had <code>&lt;h3&gt;</code> or <code>&lt;h6&gt;</code> widget labels rendered before the page&rsquo;s <code>&lt;h1&gt;</code>. Accessibility tools flagged it as a hierarchy error; SEO audit tools flagged it as topical-signal weakness. The fix: demote widget labels to <code>&lt;p&gt;</code> with CSS to preserve visual weight. Simple but widely overlooked.</p>
+<p><b>3. FAQ JSON-LD silently dropped on some pages.</b> Our schema extractor matched FAQ sections by the literal heading &ldquo;Frequently Asked Questions.&rdquo; A few FAQ sections used &ldquo;FAQ:&rdquo; or &ldquo;FAQs&rdquo; instead; their FAQPage schema never emitted. The fix: broaden the extractor regex. The bug was a single-character-class change; the impact was 4 tool pages regaining rich-result eligibility.</p>
+<p><b>4. Alias routes leaked into GSC as &ldquo;duplicate content.&rdquo;</b> Short alias URLs (e.g., <code>/mov-to-mp4.html</code> &rarr; <code>/video-converter.html</code>) emitted a <code>noindex, nofollow</code>, which is technically correct but wastes the alias&rsquo;s link equity. Switching to <code>noindex, follow</code> passed the equity to the canonical without risking duplicate indexing. Small change; material equity recovery.</p>
+<p><b>5. Staging and production drifted.</b> Our staging repo lives on GitHub Pages (<code>dangkhoaow.github.io/freetoolonline-web-test</code>); production lives on <code>freetoolonline.com</code> backed by a separate GitHub repo. A dedicated mirror process keeps the two in sync. At one point we had 20+ commits on staging not mirrored to production &mdash; the site was serving pre-release content. The fix: a written mirror contract (which files, which branches, which never-copy rules) and a regular audit.</p>
+
+<br/><h2 class="text-uppercase"><b>What the wasm budget actually looks like</b></h2>
+<p>Modern browsers give a tab ~4 GB of heap on desktop and ~1&ndash;2 GB on mobile. After the wasm code, JIT, and UI consume their share, a wasm tool has ~1&ndash;2 GB to work with. Reality for each tool family:</p>
+<ul>
+<li><b>HEIC conversion:</b> 40 MP photo decodes in ~150 MB of working memory; dozens of files per batch fit comfortably. 500 files in one batch can OOM.</li>
+<li><b>PDF manipulation:</b> A 100-page PDF rendered page-by-page is fine; a 500-page PDF loaded into a single buffer for re-encoding frequently fails on mobile.</li>
+<li><b>FFmpeg video conversion:</b> 1080p 60-second clip transcodes in ~600 MB; anything longer or higher-resolution is the limit.</li>
+<li><b>Image minification / compression:</b> Essentially no limit &mdash; the CPU is the bottleneck.</li>
+</ul>
+<p>We message these limits clearly on each tool page. A user who picks a 5 GB video and sees &ldquo;this may fail&rdquo; warnings before clicking Start is a user who doesn&rsquo;t file a support request.</p>
+
+<br/><h2 class="text-uppercase"><b>Three counter-intuitive observations</b></h2>
+<p><b>Mobile CTR is higher than desktop, not lower.</b> The common web wisdom is that mobile users skim and don&rsquo;t click. Our data shows the opposite on tool pages: mobile CTR is ~6.7% vs desktop&rsquo;s ~5.6%. The hypothesis: mobile searchers are more often in a &ldquo;solve this now&rdquo; mindset (just snapped an iPhone photo, needs it as JPG) vs desktop searchers in exploration mode.</p>
+<p><b>Long-tail is most of the value, even for a tools site.</b> The top 10 tools account for 80% of impressions but only ~60% of clicks. The long tail (50 tools at 500&ndash;5,000 impressions each) converts at higher CTR because the query specificity is higher. Do not deprecate a tool because it&rsquo;s low-impression.</p>
+<p><b>Schema improvements pay off in weeks, not months.</b> HowTo JSON-LD, FAQPage, BreadcrumbList &mdash; adding these to a page consistently moves CTR by 0.3&ndash;0.8pp within 2&ndash;3 weeks of Google re-crawling. The same content without schema waits 2&ndash;3 months for SERP position improvement to translate to click volume.</p>
+
+<br/><h2 class="text-uppercase"><b>What we still haven&rsquo;t solved</b></h2>
+<p>US CTR (1.09%) remains an order of magnitude behind India (12%). We&rsquo;ve rewritten titles and descriptions in US-first language; the gap narrows slowly. We suspect the US SERP is more competitive &mdash; more tools competing for the same query &mdash; not that our pages are worse in absolute terms.</p>
+<p>AdSense RPM varies 50% month-to-month with no visible cause. Geographic mix shifts, cluster mix shifts, placement experiments &mdash; none fully explain the variance. The revenue side of the site is less predictable than the traffic side.</p>
+<p>Referring-domain growth is stuck at ~30 domains. Outreach has not been a priority; the next phase for the site is changing that.</p>
+
+<br/><h2 class="text-uppercase"><b>What we&rsquo;d recommend to anyone building similar</b></h2>
+<p>Ship static pages with wasm for the heavy lifting. Reject the urge to add accounts, quotas, or premium tiers &mdash; they&rsquo;re usability tax without matching revenue. Do privacy with the architecture (nothing uploads) rather than marketing (&ldquo;we don&rsquo;t log&rdquo;). Write the SEO content as if you&rsquo;re the user&rsquo;s friend explaining the task, not as if you&rsquo;re the tool&rsquo;s marketing department. Measure cold-start, parse time, and first-paint on real devices, not local dev.</p>
+
+<br/><h2 class="text-uppercase"><b>Related guides</b></h2>
+<ul>
+    <li><a href="/guides/jpg-vs-png-for-web.html">JPG vs PNG for web</a></li>
+    <li><a href="/guides/heic-vs-jpg-vs-webp.html">HEIC vs JPG vs WebP</a></li>
+    <li><a href="/guides/mp4-vs-webm-for-web.html">MP4 vs WebM for web</a></li>
+    <li><a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs local</a></li>
+</ul>
+
+<p><br/><a href="/">&larr; Back to Home</a></p>
+</div>

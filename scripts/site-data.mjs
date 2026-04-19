@@ -28,6 +28,20 @@ export const INFO_ROUTES = new Set([
   // §3.5 comparison guides (Cycle 4).
   '/guides/png-vs-svg-when-to-use.html',
   '/guides/css-minifier-vs-compressor.html',
+  // Phase 8 Cycle 3 §3.4 greenfield guides — 4 pillar + 2 comparison + 6 how-to + 1 case-study.
+  '/guides/mp4-vs-webm-for-web.html',
+  '/guides/jpg-vs-png-for-web.html',
+  '/guides/md5-vs-sha256-when-to-hash.html',
+  '/guides/csv-vs-json-data-formats.html',
+  '/guides/pdf-vs-heic-for-document-archival.html',
+  '/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html',
+  '/guides/how-to-convert-100-heic-photos-to-jpg.html',
+  '/guides/how-to-test-for-dead-pixels-before-returning-a-monitor.html',
+  '/guides/how-to-sign-pdf-after-removing-a-password.html',
+  '/guides/how-to-extract-frames-from-a-gif-for-a-social-post.html',
+  '/guides/how-to-check-webcam-and-microphone-before-an-interview.html',
+  '/guides/how-to-minify-css-js-for-cloud-run-cold-start.html',
+  '/guides/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -39,6 +53,20 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pdf-password-types-owner-vs-user.html',
   '/guides/png-vs-svg-when-to-use.html',
   '/guides/css-minifier-vs-compressor.html',
+  // Phase 8 Cycle 3 §3.4 greenfield guides.
+  '/guides/mp4-vs-webm-for-web.html',
+  '/guides/jpg-vs-png-for-web.html',
+  '/guides/md5-vs-sha256-when-to-hash.html',
+  '/guides/csv-vs-json-data-formats.html',
+  '/guides/pdf-vs-heic-for-document-archival.html',
+  '/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html',
+  '/guides/how-to-convert-100-heic-photos-to-jpg.html',
+  '/guides/how-to-test-for-dead-pixels-before-returning-a-monitor.html',
+  '/guides/how-to-sign-pdf-after-removing-a-password.html',
+  '/guides/how-to-extract-frames-from-a-gif-for-a-social-post.html',
+  '/guides/how-to-check-webcam-and-microphone-before-an-interview.html',
+  '/guides/how-to-minify-css-js-for-cloud-run-cold-start.html',
+  '/guides/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -75,6 +103,20 @@ export const JSP_BY_ROUTE = {
   // §3.5 comparison guides (Cycle 4).
   '/guides/png-vs-svg-when-to-use.html': 'guide/png-vs-svg-when-to-use.jsp',
   '/guides/css-minifier-vs-compressor.html': 'guide/css-minifier-vs-compressor.jsp',
+  // Phase 8 Cycle 3 §3.4 greenfield guides.
+  '/guides/mp4-vs-webm-for-web.html': 'guide/mp4-vs-webm-for-web.jsp',
+  '/guides/jpg-vs-png-for-web.html': 'guide/jpg-vs-png-for-web.jsp',
+  '/guides/md5-vs-sha256-when-to-hash.html': 'guide/md5-vs-sha256-when-to-hash.jsp',
+  '/guides/csv-vs-json-data-formats.html': 'guide/csv-vs-json-data-formats.jsp',
+  '/guides/pdf-vs-heic-for-document-archival.html': 'guide/pdf-vs-heic-for-document-archival.jsp',
+  '/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html': 'guide/ffmpeg-online-vs-local-ffmpeg-when-each-wins.jsp',
+  '/guides/how-to-convert-100-heic-photos-to-jpg.html': 'guide/how-to-convert-100-heic-photos-to-jpg.jsp',
+  '/guides/how-to-test-for-dead-pixels-before-returning-a-monitor.html': 'guide/how-to-test-for-dead-pixels-before-returning-a-monitor.jsp',
+  '/guides/how-to-sign-pdf-after-removing-a-password.html': 'guide/how-to-sign-pdf-after-removing-a-password.jsp',
+  '/guides/how-to-extract-frames-from-a-gif-for-a-social-post.html': 'guide/how-to-extract-frames-from-a-gif-for-a-social-post.jsp',
+  '/guides/how-to-check-webcam-and-microphone-before-an-interview.html': 'guide/how-to-check-webcam-and-microphone-before-an-interview.jsp',
+  '/guides/how-to-minify-css-js-for-cloud-run-cold-start.html': 'guide/how-to-minify-css-js-for-cloud-run-cold-start.jsp',
+  '/guides/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html': 'guide/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.jsp',
   '/compose-pdf.html': 'pdf/compose-pdf.jsp',
   '/split-pdf-by-range.html': 'pdf/split-by-range.jsp',
   '/split-pdf-to-each-pages.html': 'pdf/split-to-single-pages.jsp',

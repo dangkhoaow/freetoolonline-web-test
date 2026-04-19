@@ -175,6 +175,13 @@ function buildWebApplicationJsonLd({ browserTitle, canonicalUrl, description, ap
     ...(description ? { description } : {}),
     operatingSystem: 'Any',
     applicationCategory: applicationCategory || 'UtilitiesApplication',
+    // P8.2.4 schema-polish additions (Phase 8 Cycle 3): browserRequirements,
+    // inLanguage, and a brand-logo screenshot so Google has a canonical visual
+    // asset for SoftwareApp rich results. Per-tool screenshot upgrade deferred
+    // to a dedicated CDN pipeline (P8.4.6 interim — default logo).
+    browserRequirements: 'Requires JavaScript. Requires HTML5.',
+    inLanguage: 'en-US',
+    screenshot: 'https://dkbg1jftzfsd2.cloudfront.net/image/logo.200x200.png',
     offers: {
       '@type': 'Offer',
       priceCurrency: 'USD',
