@@ -1,4 +1,4 @@
-import { canonicalForRoute, isInfoRoute } from './site-data.mjs';
+import { canonicalForRoute, isInfoRoute, isGuideRoute } from './site-data.mjs';
 import { getSeoClusterGroups, resolveHubBacklink } from './seo-clusters.mjs';
 import { DEFAULT_PAGE_SVG_LOGO, escapeHtml, renderBaseScript, renderDownloadTag, renderLoadingTag, renderShareButtons, renderUploadSecondTag, renderUploadStartupSecondTag, renderUploadStartupTag, renderUploadTag, renderWelcomeTag, replaceExpressions, unwrapStyleBlock } from './page-fragments.mjs';
 import { buildStagingBannerHtml, normalizeBasePath, resolveCanonicalUrl } from './staging-utils.mjs';
@@ -49,6 +49,7 @@ const HOWTO_ROUTES = new Set([
   '/protect-pdf-by-password.html',
   '/video-maker.html',
   '/ffmpeg-online.html',
+  '/pdf-to-html.html',
 ]);
 
 function renderMetaTags(ctx) {
@@ -147,7 +148,14 @@ function renderToolSections(ctx) {
     : `<div class="w3-row page-section"><div id="star-rating-container">Loading reviews...</div></div>`;
   const relatedToolsHtml = ctx.relatedToolsHtml ?? '';
   const relatedToolsTagsHtml = ctx.relatedToolsTagsHtml ?? '';
-  return `<!-- SEO_BLOCK:RELATED_TOOLS --><div class="w3-row page-section relatedToolsSection"><p style="margin-bottom: 0px;">Related tools:</p><div class="relatedTools">${relatedToolsHtml}</div>${relatedToolsTagsHtml}<script>loadRelatedTools = function(){try{var relatedEl=document.querySelector('.relatedTools');if(relatedEl&&relatedEl.children&&relatedEl.children.length>0){window.__relatedToolsRequested=!0;return;}if(window.__relatedToolsRequested)return;if(document.querySelector('script[src*="related-tools.js"]')){window.__relatedToolsRequested=!0;return;}window.__relatedToolsRequested=!0;loadScript('${ctx.relatedToolsScriptPath}?v=' + APP_VERSION, function(){});}catch(e){}};document.addEventListener('DOMContentLoaded',function(){try{if(window.__relatedToolsBootstrapped)return;window.__relatedToolsBootstrapped=!0;loadRelatedTools();}catch(e){}});</script></div>${ratingBlock}${ctx.pageFaq ? ctx.pageFaq : ''}${ctx.bottomPageBannerAd || ''}<!-- END_SEO_BLOCK:RELATED_TOOLS -->`;
+  // Cluster-hub callout — single anchor above the related-tools band. Cluster-aware
+  // via seo-clusters.mjs::resolveHubBacklink. Renders only for tool pages that have
+  // a resolvable cluster hub (§3.12).
+  const clusterHubLink = ctx.clusterHubLink;
+  const clusterHubBlock = clusterHubLink && clusterHubLink.href && clusterHubLink.label
+    ? `<div class="w3-row page-section clusterHubCallout"><p style="margin: 0 0 8px;"><a href="${escapeHtml(clusterHubLink.href)}" style="color: #4caf50; font-weight: 600;">See all ${escapeHtml(clusterHubLink.label)} &rarr;</a></p></div>`
+    : '';
+  return `<!-- SEO_BLOCK:RELATED_TOOLS -->${clusterHubBlock}<div class="w3-row page-section relatedToolsSection"><p style="margin-bottom: 0px;">Related tools:</p><div class="relatedTools">${relatedToolsHtml}</div>${relatedToolsTagsHtml}<script>loadRelatedTools = function(){try{var relatedEl=document.querySelector('.relatedTools');if(relatedEl&&relatedEl.children&&relatedEl.children.length>0){window.__relatedToolsRequested=!0;return;}if(window.__relatedToolsRequested)return;if(document.querySelector('script[src*="related-tools.js"]')){window.__relatedToolsRequested=!0;return;}window.__relatedToolsRequested=!0;loadScript('${ctx.relatedToolsScriptPath}?v=' + APP_VERSION, function(){});}catch(e){}};document.addEventListener('DOMContentLoaded',function(){try{if(window.__relatedToolsBootstrapped)return;window.__relatedToolsBootstrapped=!0;loadRelatedTools();}catch(e){}});</script></div>${ratingBlock}${ctx.pageFaq ? ctx.pageFaq : ''}${ctx.bottomPageBannerAd || ''}<!-- END_SEO_BLOCK:RELATED_TOOLS -->`;
 }
 
 function buildJsonLdScript(payload) {
@@ -173,6 +181,30 @@ function buildWebApplicationJsonLd({ browserTitle, canonicalUrl, description, ap
   return buildJsonLdScript(jsonLd);
 }
 
+// Article JSON-LD for /guides/* routes. Attributes the article to the
+// freetoolonline editorial team (Person schema added to Organization) and
+// records the publication/modified date for freshness signals.
+function buildArticleJsonLd({ canonicalUrl, canonicalOrigin, headline, description, datePublished, dateModified }) {
+  const siteUrl = canonicalForRoute(canonicalOrigin, '/');
+  const orgId = `${siteUrl}#organization`;
+  const editorialTeamId = `${siteUrl}#editorial-team`;
+  return buildJsonLdScript({
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline,
+    ...(description ? { description } : {}),
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': canonicalUrl,
+    },
+    author: { '@id': editorialTeamId },
+    publisher: { '@id': orgId },
+    ...(datePublished ? { datePublished } : {}),
+    ...(dateModified ? { dateModified } : {}),
+    image: 'https://dkbg1jftzfsd2.cloudfront.net/image/logo.200x200.png',
+  });
+}
+
 function buildWebSiteJsonLd({ canonicalUrl, name }) {
   return buildJsonLdScript({
     '@context': 'https://schema.org',
@@ -185,6 +217,7 @@ function buildWebSiteJsonLd({ canonicalUrl, name }) {
 function buildOrganizationJsonLd({ canonicalOrigin }) {
   const siteUrl = canonicalForRoute(canonicalOrigin, '/');
   const orgId = `${siteUrl}#organization`;
+  const editorialTeamId = `${siteUrl}#editorial-team`;
   return buildJsonLdScript({
     '@context': 'https://schema.org',
     '@type': 'Organization',
@@ -217,6 +250,26 @@ function buildOrganizationJsonLd({ canonicalOrigin }) {
         contactType: 'customer support',
         url: canonicalForRoute(canonicalOrigin, '/contact-us.html'),
         availableLanguage: ['en', 'vi'],
+      },
+    ],
+    // Editorial team surfaced as a named Person for E-E-A-T reinforcement.
+    // Matches the editorial-byline.html fragment shipped in Phase 7 HIGH PRIORITY.
+    employee: [
+      {
+        '@type': 'Person',
+        '@id': editorialTeamId,
+        name: 'freetoolonline editorial team',
+        jobTitle: 'Editorial team',
+        worksFor: { '@id': orgId },
+        description: 'The freetoolonline editorial team has shipped browser-based utilities since 2015. Each tool is audited for privacy (no upload), accuracy (vs native reference tools), and readability (US English, plain-language steps).',
+        knowsAbout: [
+          'in-browser file processing',
+          'image and video conversion',
+          'PDF manipulation',
+          'browser hardware diagnostics',
+          'JavaScript and CSS minification',
+          'technical SEO',
+        ],
       },
     ],
   });
@@ -678,9 +731,28 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   const breadcrumbJsonLd = breadcrumbItems.length > 0
     ? buildBreadcrumbJsonLd({ canonicalOrigin, items: breadcrumbItems })
     : '';
-  const organizationJsonLd = (isHome || isHubPage) ? buildOrganizationJsonLd({ canonicalOrigin }) : '';
+  const isGuide = isGuideRoute(normalizedRoute);
+  // Organization JSON-LD: emit on home, hub pages, AND guide pages (guide Article
+  // schema references the Organization and its editorial-team Person by @id).
+  const organizationJsonLd = (isHome || isHubPage || isGuide) ? buildOrganizationJsonLd({ canonicalOrigin }) : '';
   if (organizationJsonLd) {
     console.log(`[schema:org] Injected Organization JSON-LD on ${normalizedRoute}.`);
+  }
+  // Article JSON-LD for /guides/* routes. Uses the page's browserTitle as headline,
+  // meta description as abstract, and the hardcoded 2026-04-19 publish date (matches
+  // the <time> element in each guide BODYHTML).
+  const articleJsonLd = isGuide
+    ? buildArticleJsonLd({
+        canonicalUrl,
+        canonicalOrigin,
+        headline: browserTitle,
+        description,
+        datePublished: '2026-04-19T08:00:00Z',
+        dateModified: '2026-04-19T08:00:00Z',
+      })
+    : '';
+  if (articleJsonLd) {
+    console.log(`[schema:article] ${normalizedRoute} headline="${browserTitle}".`);
   }
   const shouldIncludeHowTo = showAds && !isHubPage && HOWTO_ROUTES.has(normalizedRoute);
   const howToSteps = shouldIncludeHowTo ? extractHowToSteps(pageData.bodyHtml, pageName, normalizedRoute) : [];
@@ -690,7 +762,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   if (shouldIncludeHowTo) {
     console.log(`[schema:howto] ${normalizedRoute} steps=${howToSteps.length}.`);
   }
-  const jsonLdBlock = [jsonLd, organizationJsonLd, breadcrumbJsonLd, howToJsonLd, faqJsonLd].filter(Boolean).join('\n');
+  const jsonLdBlock = [jsonLd, organizationJsonLd, articleJsonLd, breadcrumbJsonLd, howToJsonLd, faqJsonLd].filter(Boolean).join('\n');
   const head = renderMetaTags({
     siteOrigin,
     route: normalizedRoute,
@@ -746,6 +818,14 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   if (showAds && relatedToolsData?.urlMaps) {
     console.log(`[related-tools:ssr] ${normalizedRoute} links=${relatedToolsState.linkCount} tags=${relatedToolsState.tagsCount}.`);
   }
+  // Cluster-hub link above related-tools on tool pages (not hubs/home/info).
+  // resolveHubBacklink returns { href, label } for tool pages in a cluster; null otherwise.
+  const clusterHubLink = !isHubPage && !isHome && !isInfoRoute(normalizedRoute)
+    ? resolveHubBacklink(normalizedRoute)
+    : null;
+  if (clusterHubLink) {
+    console.log(`[seo:cluster-hub] ${normalizedRoute} → ${clusterHubLink.href} (${clusterHubLink.label}).`);
+  }
   const toolSections = renderToolSections({
     showAds,
     showRating,
@@ -754,11 +834,12 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     relatedToolsScriptPath,
     relatedToolsHtml: relatedToolsState.listHtml,
     relatedToolsTagsHtml: relatedToolsState.tagsHtml,
+    clusterHubLink,
   });
   const relatedStyles = !hasUpload ? `<style>#content.w3-content { margin-top: 50px; }</style>` : '';
   const showDisableAdsScript = showAds ? `<script>isLoadAds = true;</script>` : '';
   const toolContent = showAds ? toolSections : '';
-  const showEditorialSurface = isHome || isHubPage;
+  const showEditorialSurface = isHome || isHubPage || isGuide;
   const editorialByline = showEditorialSurface ? (sharedFragments.editorialByline || '') : '';
   const editorialTrust = showEditorialSurface ? (sharedFragments.editorialTrust || '') : '';
   if (showEditorialSurface && (editorialByline || editorialTrust)) {

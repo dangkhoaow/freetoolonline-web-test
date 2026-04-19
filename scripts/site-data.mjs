@@ -19,7 +19,26 @@ export const INFO_ROUTES = new Set([
   '/contact-us.html',
   '/privacy-policy.html',
   '/tags.html',
+  // Guides — plan §3.3. Treated as informational (no related-tools, no rating,
+  // no HowTo; Article JSON-LD emitted separately by page-renderer.mjs).
+  '/guides/heic-vs-jpg-vs-webp.html',
+  '/guides/dead-pixel-testing-guide.html',
+  '/guides/unix-timestamps-explained.html',
+  '/guides/pdf-password-types-owner-vs-user.html',
 ]);
+
+// Guide routes subset of INFO_ROUTES — used by page-renderer.mjs to emit Article
+// JSON-LD and to inject editorial-byline/trust surface on guide pages.
+export const GUIDE_ROUTES = new Set([
+  '/guides/heic-vs-jpg-vs-webp.html',
+  '/guides/dead-pixel-testing-guide.html',
+  '/guides/unix-timestamps-explained.html',
+  '/guides/pdf-password-types-owner-vs-user.html',
+]);
+
+export function isGuideRoute(route) {
+  return GUIDE_ROUTES.has(route && route.startsWith('/') ? route : `/${route ?? ''}`);
+}
 
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
@@ -43,6 +62,11 @@ export const JSP_BY_ROUTE = {
   '/privacy-policy.html': 'privacy-policy.jsp',
   '/tags.html': 'tags.jsp',
   '/alternatead.html': 'alternatead.jsp',
+  // Guides — plan §3.3 greenfield /guides/ subpath for long-form content.
+  '/guides/heic-vs-jpg-vs-webp.html': 'guide/heic-vs-jpg-vs-webp.jsp',
+  '/guides/dead-pixel-testing-guide.html': 'guide/dead-pixel-testing-guide.jsp',
+  '/guides/unix-timestamps-explained.html': 'guide/unix-timestamps-explained.jsp',
+  '/guides/pdf-password-types-owner-vs-user.html': 'guide/pdf-password-types-owner-vs-user.jsp',
   '/compose-pdf.html': 'pdf/compose-pdf.jsp',
   '/split-pdf-by-range.html': 'pdf/split-by-range.jsp',
   '/split-pdf-to-each-pages.html': 'pdf/split-to-single-pages.jsp',
@@ -118,7 +142,10 @@ export function routeToSlug(route) {
   if (normalized === '/') {
     return '';
   }
-  return normalized.replace(/^\//, '').replace(/\.html$/i, '').toLowerCase().replace(/-/g, '');
+  // Remove leading slash, .html suffix, hyphens, AND interior slashes so that
+  // subpath routes (e.g., /guides/heic-vs-jpg-vs-webp.html) map to a single CMS
+  // fragment suffix (guidesheicvsjpgvswebp) — no filesystem conflict.
+  return normalized.replace(/^\//, '').replace(/\.html$/i, '').toLowerCase().replace(/[-/]/g, '');
 }
 
 export function routeToPageName(route) {
