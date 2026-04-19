@@ -115,7 +115,11 @@ function renderMetaTags(ctx) {
     `<meta property='og:title' content='${escapeHtml(ogTitle)}'/>`,
     `<meta property='og:description' content='${description}'/>`,
     `<meta property='og:image' content='https://dkbg1jftzfsd2.cloudfront.net/image/logo.200x200.png'/>`,
-    `<meta property='og:type' content='website'/>`,
+    `<meta property='og:type' content='${ctx.isGuide ? 'article' : 'website'}'/>`,
+    ctx.isGuide ? `<meta property='article:author' content='freetoolonline editorial team'/>` : '',
+    ctx.isGuide ? `<meta property='article:publisher' content='${escapeHtml(ctx.siteOrigin)}'/>` : '',
+    ctx.isGuide && ctx.articlePublishedAt ? `<meta property='article:published_time' content='${escapeHtml(ctx.articlePublishedAt)}'/>` : '',
+    ctx.isGuide && ctx.articleModifiedAt ? `<meta property='article:modified_time' content='${escapeHtml(ctx.articleModifiedAt)}'/>` : '',
     `<meta property='og:url' content='${canonical}'/>`,
     `<meta name="twitter:card" content="summary_large_image"/>`,
     `<meta name="twitter:site" content="@freetoolonline1"/>`,
@@ -205,13 +209,29 @@ function buildArticleJsonLd({ canonicalUrl, canonicalOrigin, headline, descripti
   });
 }
 
-function buildWebSiteJsonLd({ canonicalUrl, name }) {
-  return buildJsonLdScript({
+function buildWebSiteJsonLd({ canonicalUrl, name, includeSearchAction = false }) {
+  const payload = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name,
     url: canonicalUrl,
-  });
+    inLanguage: 'en-US',
+  };
+  // SearchAction is only meaningful on the home route - enables the SERP
+  // sitelinks-searchbox rich feature. The target uses the /tags.html route
+  // because freetoolonline.com does not operate a dedicated /search endpoint;
+  // the tag index is the closest canonical match for a query-driven browse.
+  if (includeSearchAction) {
+    payload.potentialAction = {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: `${canonicalUrl.replace(/\/$/, '')}/tags.html?q={search_term_string}`,
+      },
+      'query-input': 'required name=search_term_string',
+    };
+  }
+  return buildJsonLdScript(payload);
 }
 
 function buildOrganizationJsonLd({ canonicalOrigin }) {
@@ -733,7 +753,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
         aggregateRating: aggregateRatingPayload,
       })
     : isHome
-      ? buildWebSiteJsonLd({ canonicalUrl, name: 'Home Page - Free Tool Online' })
+      ? buildWebSiteJsonLd({ canonicalUrl, name: 'Home Page - Free Tool Online', includeSearchAction: true })
       : buildWebSiteJsonLd({ canonicalUrl, name: `Free Tool Online - ${browserTitle}` });
   const faqJsonLd = faqItems.length > 0 ? buildFaqJsonLd(faqItems) : '';
   const breadcrumbJsonLd = breadcrumbItems.length > 0
@@ -756,7 +776,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
         headline: browserTitle,
         description,
         datePublished: '2026-04-19T08:00:00Z',
-        dateModified: '2026-04-19T08:00:00Z',
+        dateModified: '2026-04-20T08:00:00Z',
       })
     : '';
   if (articleJsonLd) {
@@ -778,6 +798,9 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     pageUrl,
     isHome,
     isStaging,
+    isGuide,
+    articlePublishedAt: isGuide ? '2026-04-19T08:00:00Z' : '',
+    articleModifiedAt: isGuide ? '2026-04-20T08:00:00Z' : '',
     browserTitle,
     mobileBrowserTitle: pageData.pageBrowserTitleMobile,
     description,
