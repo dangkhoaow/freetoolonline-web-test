@@ -213,6 +213,10 @@ function buildArticleJsonLd({ canonicalUrl, canonicalOrigin, headline, descripti
     ...(datePublished ? { datePublished } : {}),
     ...(dateModified ? { dateModified } : {}),
     image: 'https://dkbg1jftzfsd2.cloudfront.net/image/logo.200x200.png',
+    speakable: {
+      '@type': 'SpeakableSpecification',
+      cssSelector: ['h1', '.answer', '.w3-pale-green'],
+    },
   });
 }
 
@@ -252,7 +256,13 @@ function buildOrganizationJsonLd({ canonicalOrigin }) {
     name: 'Free Tool Online',
     alternateName: 'freetoolonline',
     url: siteUrl,
-    logo: 'https://dkbg1jftzfsd2.cloudfront.net/image/logo.200x200.png',
+    logo: {
+      '@type': 'ImageObject',
+      url: 'https://dkbg1jftzfsd2.cloudfront.net/image/logo.200x200.png',
+      caption: 'Free Tool Online',
+      width: 200,
+      height: 200,
+    },
     foundingDate: '2015',
     description: 'A collection of 100+ free, in-browser online tools (ZIP, PDF, image conversion, device tests, developer utilities, video) curated by the freetoolonline editorial team since 2015.',
     slogan: 'In-browser tools, no upload, no install.',
@@ -322,6 +332,8 @@ function buildCollectionPageJsonLd({ canonicalOrigin, canonicalUrl, name, itemRo
     '@type': 'CollectionPage',
     name,
     url: canonicalUrl,
+    inLanguage: 'en-US',
+    lastReviewed: '2026-04-21',
     mainEntity: {
       '@type': 'ItemList',
       itemListElement,
@@ -783,7 +795,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
         headline: browserTitle,
         description,
         datePublished: '2026-04-19T08:00:00Z',
-        dateModified: '2026-04-20T08:00:00Z',
+        dateModified: '2026-04-21T08:00:00Z',
       })
     : '';
   if (articleJsonLd) {
@@ -807,7 +819,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     isStaging,
     isGuide,
     articlePublishedAt: isGuide ? '2026-04-19T08:00:00Z' : '',
-    articleModifiedAt: isGuide ? '2026-04-20T08:00:00Z' : '',
+    articleModifiedAt: isGuide ? '2026-04-21T08:00:00Z' : '',
     browserTitle,
     mobileBrowserTitle: pageData.pageBrowserTitleMobile,
     description,

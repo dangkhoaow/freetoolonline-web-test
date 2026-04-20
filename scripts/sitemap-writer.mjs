@@ -23,7 +23,37 @@ function unique(values) {
   return [...new Set(values)];
 }
 
-function buildUrlSetXml(routes, origin, lastmodByRoute) {
+// Sitemap crawl-budget hints. Google treats priority as a relative signal within
+// this sitemap (not absolute), and changefreq is informational - both nudge the
+// crawler toward hubs/guides while letting long-tail tool pages settle to
+// monthly crawl cadence. Home wins at 1.0; hubs 0.9 (entry points + largest
+// internal-link aggregators); top-tier transactional tools 0.8; long-tail
+// tools 0.6; guides 0.7 (stable editorial content); info pages 0.4.
+function changefreqForKind(kind) {
+  switch (kind) {
+    case 'home': return 'daily';
+    case 'hub': return 'weekly';
+    case 'tool': return 'monthly';
+    case 'guide': return 'monthly';
+    case 'page': return 'yearly';
+    default: return 'monthly';
+  }
+}
+
+function priorityForKind(kind) {
+  switch (kind) {
+    case 'home': return '1.0';
+    case 'hub': return '0.9';
+    case 'tool': return '0.7';
+    case 'guide': return '0.7';
+    case 'page': return '0.4';
+    default: return '0.5';
+  }
+}
+
+function buildUrlSetXml(routes, origin, lastmodByRoute, kind = 'tool') {
+  const priority = priorityForKind(kind);
+  const changefreq = changefreqForKind(kind);
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
@@ -31,7 +61,10 @@ function buildUrlSetXml(routes, origin, lastmodByRoute) {
       const normalizedRoute = normalizeRoute(route);
       const lastmod = lastmodByRoute?.get(normalizedRoute);
       const lastmodTag = lastmod ? `<lastmod>${lastmod}</lastmod>` : '';
-      return `  <url><loc>${canonicalForRoute(origin, normalizedRoute)}</loc>${lastmodTag}</url>`;
+      const isHomeRoute = normalizedRoute === '/';
+      const urlPriority = isHomeRoute ? priorityForKind('home') : priority;
+      const urlChangefreq = isHomeRoute ? changefreqForKind('home') : changefreq;
+      return `  <url><loc>${canonicalForRoute(origin, normalizedRoute)}</loc>${lastmodTag}<changefreq>${urlChangefreq}</changefreq><priority>${urlPriority}</priority></url>`;
     }),
     '</urlset>',
     '',
@@ -131,9 +164,9 @@ export async function writeSplitSitemaps({ distDir, routes, origin, isStaging, c
     }
   }
 
-  await writeTextFile(distDir, 'sitemap-tools.xml', buildUrlSetXml(toolRoutes, origin, lastmodByRoute));
-  await writeTextFile(distDir, 'sitemap-hubs.xml', buildUrlSetXml(hubRoutes, origin, lastmodByRoute));
-  await writeTextFile(distDir, 'sitemap-guides.xml', buildUrlSetXml(guideRoutes, origin, lastmodByRoute));
-  await writeTextFile(distDir, 'sitemap-pages.xml', buildUrlSetXml(pageRoutes, origin, lastmodByRoute));
+  await writeTextFile(distDir, 'sitemap-tools.xml', buildUrlSetXml(toolRoutes, origin, lastmodByRoute, 'tool'));
+  await writeTextFile(distDir, 'sitemap-hubs.xml', buildUrlSetXml(hubRoutes, origin, lastmodByRoute, 'hub'));
+  await writeTextFile(distDir, 'sitemap-guides.xml', buildUrlSetXml(guideRoutes, origin, lastmodByRoute, 'guide'));
+  await writeTextFile(distDir, 'sitemap-pages.xml', buildUrlSetXml(pageRoutes, origin, lastmodByRoute, 'page'));
   await writeTextFile(distDir, 'sitemap.xml', buildSitemapIndexXml(origin));
 }
