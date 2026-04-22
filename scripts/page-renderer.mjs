@@ -333,7 +333,7 @@ function buildCollectionPageJsonLd({ canonicalOrigin, canonicalUrl, name, itemRo
     name,
     url: canonicalUrl,
     inLanguage: 'en-US',
-    lastReviewed: '2026-04-21',
+    lastReviewed: '2026-04-23',
     mainEntity: {
       '@type': 'ItemList',
       itemListElement,
@@ -795,7 +795,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
         headline: browserTitle,
         description,
         datePublished: '2026-04-19T08:00:00Z',
-        dateModified: '2026-04-21T08:00:00Z',
+        dateModified: '2026-04-23T08:00:00Z',
       })
     : '';
   if (articleJsonLd) {
@@ -819,7 +819,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     isStaging,
     isGuide,
     articlePublishedAt: isGuide ? '2026-04-19T08:00:00Z' : '',
-    articleModifiedAt: isGuide ? '2026-04-21T08:00:00Z' : '',
+    articleModifiedAt: isGuide ? '2026-04-23T08:00:00Z' : '',
     browserTitle,
     mobileBrowserTitle: pageData.pageBrowserTitleMobile,
     description,
