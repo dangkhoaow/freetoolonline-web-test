@@ -896,9 +896,21 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     console.log(`[seo:editorial] Injected byline/trust on ${normalizedRoute}.`);
   }
   const stagingBanner = isStaging ? buildStagingBannerHtml() : '';
+  // P10.1.2 — Staging GA4 isolation. Staging must not emit the prod GA4/GTM
+  // property; `noindex` does not suppress GA event transmission. Default ON for
+  // production builds (isStaging=false). Flip GA4_DISABLED=1 for any build to
+  // suppress all GTM + GA injection (used by staging CI to prevent prod GA4
+  // property pollution from `/freetoolonline-web-test/*` pageviews).
+  const ga4Disabled = isStaging || process.env.GA4_DISABLED === '1';
+  const gtmHead = ga4Disabled ? '' : (sharedFragments.firstLoadJsThirdParty || '');
+  const gtmNoscript = ga4Disabled ? '' : (sharedFragments.topBodyContent || '');
+  const gaExtendedScript = ga4Disabled ? '' : (sharedFragments.extendedJsThirdParty || '');
+  if (ga4Disabled) {
+    console.log(`[seo:ga4] disabled route=${normalizedRoute} reason=${isStaging ? 'staging' : 'env-flag'}.`);
+  }
   const bodyMarkup = rewriteInternalContent(`
 <body class="new-style-body">
-${sharedFragments.topBodyContent || ''}
+${gtmNoscript}
 ${renderBaseScript({ siteOrigin, apiOrigin, pageUrl, pageName, appVersion, ioVersion, getAlterUploaderDelayMs, bgsCollection, ioInfos, unsplashKey, randomString, basePath: normalizedBasePath })}
 ${showDisableAdsScript}
 ${renderHeader({ siteOrigin, pageUrl, pageName, browserTitle, pageTitle, hasSettings, showAds, pageSvgLogo: sharedFragments.pageSvgLogo, })}
@@ -927,7 +939,7 @@ ${sharedFragments.footer || ''}
 <div id='nav_menu' class='w3-sidebar w3-bar-block new-style-nav_menu w3-hide-small' style="display: none">
 ${sharedFragments.lMenu || ''}
 </div>
-<script>${sharedFragments.extendedJsThirdParty || ''}</script>
+<script>${gaExtendedScript}</script>
 <style type="text/css">
 ${sharedFragments.extendedBodyContent ? '' : ''}
 </style>
@@ -936,7 +948,7 @@ ${sharedFragments.extendedBodyContent || ''}
   return `<!DOCTYPE html>
 <html lang="${escapeHtml(lang)}" class="main-html ads-init ads-disabled page-${escapeHtml(pageName)}root${hasUpload ? ' has-upload' : ''}">
 <head>
-${sharedFragments.firstLoadJsThirdParty || ''}
+${gtmHead}
 ${head}
 </head>
 ${bodyMarkup}

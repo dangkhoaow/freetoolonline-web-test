@@ -200,11 +200,18 @@ async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData,
   const pageData = await loadCmsPageData(cmsRoot, normalizedRoute);
   const isHubPage = normalizedRoute.endsWith('-tools.html');
   const showRating = !isHubPage && !isInfoRoute(normalizedRoute) && normalizedRoute !== '/' && normalizedRoute !== '/alternatead.html';
-  const aggregateRating = showRating
+  // P10.1.1 — AggregateRating emission gate (Path A). Until a visible rating UI
+  // renders on the tool page, JSON-LD rating data violates Google's structured-data
+  // visibility policy (March 2026 spam update exposure). Emission defaults OFF; flip
+  // EMIT_AGGREGATE_RATING=true once a visible on-page rating block ships.
+  const emitAggregateRating = process.env.EMIT_AGGREGATE_RATING === 'true';
+  const aggregateRating = showRating && emitAggregateRating
     ? await loadAggregateRating({ apiOrigin, pageName: pageData.pageName, route: normalizedRoute })
     : null;
   if (!showRating) {
     console.log(`[ratings] Skip rating fetch for ${normalizedRoute} (showRating=false).`);
+  } else if (!emitAggregateRating) {
+    console.log(`[seo:rating] emit=false route=${normalizedRoute} reason=gated-P10.1.1.`);
   }
 
   return {
