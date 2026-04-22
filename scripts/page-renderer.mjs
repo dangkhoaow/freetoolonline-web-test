@@ -214,8 +214,12 @@ function buildArticleJsonLd({ canonicalUrl, canonicalOrigin, headline, descripti
     ...(dateModified ? { dateModified } : {}),
     image: 'https://dkbg1jftzfsd2.cloudfront.net/image/logo.200x200.png',
     speakable: {
+      // P10.3.7 — `.answer` selector was a dead match on guides (0/19 guide
+      // pages emit that class; it's a tool-page idiom). Drop it and keep the
+      // two selectors that resolve reliably on every guide: the H1 and the
+      // pale-green answer/definition panel.
       '@type': 'SpeakableSpecification',
-      cssSelector: ['h1', '.answer', '.w3-pale-green'],
+      cssSelector: ['h1', '.w3-pale-green'],
     },
   });
 }
