@@ -50,7 +50,42 @@ const HOWTO_ROUTES = new Set([
   '/video-maker.html',
   '/ffmpeg-online.html',
   '/pdf-to-html.html',
+  // P10.2.5 Phase 10 Cycle 4 — HowTo +3. (html-to-pdf.html route does not
+  // exist in JSP_BY_ROUTE; base64-to-image.html substituted as the
+  // developer-cluster peer.) Each slug listed here has a w3-pale-green
+  // answer panel with a 3-step <ol> that extractHowToSteps picks up.
+  '/gif-maker.html',
+  '/qr-code-generator.html',
+  '/base64-to-image.html',
 ]);
+
+// P10.3.1 — Per-tool og:image differentiation (Phase 10 Cycle 4).
+// The default og:image (CloudFront logo) is identical across 82 URLs which
+// produces zero Discover / Twitter / LinkedIn preview differentiation. This
+// map targets the top 5 non-ZIP URLs with per-tool 1200×630 PNGs once the
+// assets are uploaded to the existing CloudFront bucket under
+// `image/og/<slug>-1200x630.png`. Until the assets exist, the lookup is
+// gated behind USE_TOOL_OG_IMAGES so stale references never reach prod.
+//
+// Owner action remaining: produce the 5 PNGs (heic-to-jpg, lcd-test,
+// md5-converter, camera-test, css-minifier) + upload to CDN + flip
+// USE_TOOL_OG_IMAGES=true in the build env. No site-level changes required.
+const TOOL_OG_IMAGE_MAP = {
+  '/heic-to-jpg.html': 'https://dkbg1jftzfsd2.cloudfront.net/image/og/heic-to-jpg-1200x630.png',
+  '/lcd-test.html': 'https://dkbg1jftzfsd2.cloudfront.net/image/og/lcd-test-1200x630.png',
+  '/md5-converter.html': 'https://dkbg1jftzfsd2.cloudfront.net/image/og/md5-converter-1200x630.png',
+  '/camera-test.html': 'https://dkbg1jftzfsd2.cloudfront.net/image/og/camera-test-1200x630.png',
+  '/css-minifier.html': 'https://dkbg1jftzfsd2.cloudfront.net/image/og/css-minifier-1200x630.png',
+};
+const DEFAULT_OG_IMAGE = 'https://dkbg1jftzfsd2.cloudfront.net/image/logo.200x200.png';
+
+function resolveOgImage(route) {
+  const useToolOgImages = process.env.USE_TOOL_OG_IMAGES === 'true';
+  if (!useToolOgImages) {
+    return DEFAULT_OG_IMAGE;
+  }
+  return TOOL_OG_IMAGE_MAP[route] ?? DEFAULT_OG_IMAGE;
+}
 
 function renderMetaTags(ctx) {
   const canonicalUrl = ctx.canonicalUrl;
@@ -114,7 +149,7 @@ function renderMetaTags(ctx) {
     ctx.isStaging ? `<meta name="robots" content="noindex, nofollow">` : '',
     `<meta property='og:title' content='${escapeHtml(ogTitle)}'/>`,
     `<meta property='og:description' content='${description}'/>`,
-    `<meta property='og:image' content='https://dkbg1jftzfsd2.cloudfront.net/image/logo.200x200.png'/>`,
+    `<meta property='og:image' content='${resolveOgImage(ctx.route)}'/>`,
     `<meta property='og:type' content='${ctx.isGuide ? 'article' : 'website'}'/>`,
     ctx.isGuide ? `<meta property='article:author' content='freetoolonline editorial team'/>` : '',
     ctx.isGuide ? `<meta property='article:publisher' content='${escapeHtml(ctx.siteOrigin)}'/>` : '',

@@ -42,6 +42,9 @@ export const INFO_ROUTES = new Set([
   '/guides/how-to-check-webcam-and-microphone-before-an-interview.html',
   '/guides/how-to-minify-css-js-for-cloud-run-cold-start.html',
   '/guides/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html',
+  // Phase 10 Cycle 4 P10.3.4 — cluster-disambiguation guide (compress vs convert
+  // intent router; upper-funnel capture for "file compressor" / "image compressor" queries).
+  '/guides/when-to-compress-vs-convert-an-image.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -67,6 +70,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/how-to-check-webcam-and-microphone-before-an-interview.html',
   '/guides/how-to-minify-css-js-for-cloud-run-cold-start.html',
   '/guides/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html',
+  // Phase 10 Cycle 4 P10.3.4.
+  '/guides/when-to-compress-vs-convert-an-image.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -117,6 +122,8 @@ export const JSP_BY_ROUTE = {
   '/guides/how-to-check-webcam-and-microphone-before-an-interview.html': 'guide/how-to-check-webcam-and-microphone-before-an-interview.jsp',
   '/guides/how-to-minify-css-js-for-cloud-run-cold-start.html': 'guide/how-to-minify-css-js-for-cloud-run-cold-start.jsp',
   '/guides/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html': 'guide/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.jsp',
+  // Phase 10 Cycle 4 P10.3.4.
+  '/guides/when-to-compress-vs-convert-an-image.html': 'guide/when-to-compress-vs-convert-an-image.jsp',
   '/compose-pdf.html': 'pdf/compose-pdf.jsp',
   '/split-pdf-by-range.html': 'pdf/split-by-range.jsp',
   '/split-pdf-to-each-pages.html': 'pdf/split-to-single-pages.jsp',
