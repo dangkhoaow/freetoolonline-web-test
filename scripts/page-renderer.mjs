@@ -57,6 +57,21 @@ const HOWTO_ROUTES = new Set([
   '/gif-maker.html',
   '/qr-code-generator.html',
   '/base64-to-image.html',
+  // P11.2.2 Phase 11 Cycle 2 — PDF cluster HowTo backfill. Plan called for
+  // /pdf-to-word.html but that route does not exist in JSP_BY_ROUTE; substituted
+  // /join-pdf-from-multiple-files.html (PDF cluster peer with an existing
+  // FAQ file and a clean merge-workflow intent). HowTo 25/51 → 26/51.
+  '/join-pdf-from-multiple-files.html',
+  // P11.2.5 Phase 11 Cycle 3 — HowTo wave 3 (+4 → 30/51). Plan originally
+  // listed pdf-to-images + pdf-to-html which were already in HOWTO_ROUTES
+  // (Phase 8/9 carryover); substituted /split-pdf-by-range.html (PDF peer)
+  // and /svg-to-png.html (image-conversion peer) to keep the +4 count with
+  // non-overlapping additions. Each new slug has a w3-pale-green answer
+  // panel with a 3-step <ol> authored via seo-content-writer.
+  '/image-to-base64.html',
+  '/css-gradient-generator.html',
+  '/split-pdf-by-range.html',
+  '/svg-to-png.html',
 ]);
 
 // P10.3.1 — Per-tool og:image differentiation (Phase 10 Cycle 4).

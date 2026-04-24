@@ -1,0 +1,85 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>How to Compress a Folder for Email - Step by Step (2026)</b></h1>
+    <p><em>Last reviewed 2026-04-24. Works on Windows 10/11, macOS 13+ (Ventura and later), and in-browser via <a href="/zip-file.html">Zip File</a> when a native shell-zip flow is not available.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> Right-click the folder → <b>"Send to ZIP (compressed) folder"</b> on Windows (or <b>"Compress"</b> on macOS). Attach the resulting <code>.zip</code> to the email. If the ZIP exceeds the provider's limit (typically 20-25 MB, see <a href="#email-size-limits">email-size table below</a>), either (a) split the source into two folders and ZIP each, or (b) upload to a file-transfer service and paste the link into the email body.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Why compress a folder for email at all?</b></h2>
+    <p>Email attachments are byte-metered. Uncompressed folders cannot be attached at all - email clients require a single file, not a directory. Compressing collapses the folder into one ZIP archive that preserves the internal structure, file names, and modification dates, while shrinking the total size through LZ77 / DEFLATE compression. For mixed-content folders (documents, images, spreadsheets), expect 20-50% size reduction; for folders already dominated by compressed formats (JPG, MP3, MP4), expect only a few percent because those formats are already entropy-coded.</p>
+    <p>The three practical reasons to ZIP before sending:</p>
+    <ul>
+        <li><b>Provider size limits.</b> Gmail, Outlook, and iCloud all cap individual attachments. A ZIP can fit under the limit when the raw folder cannot.</li>
+        <li><b>Structure preservation.</b> The recipient gets the folder tree intact after unzipping - not 47 loose files at the root of their Downloads folder.</li>
+        <li><b>In-flight integrity.</b> ZIP stores CRC-32 per file; corrupted downloads flag themselves on extract so you can retry rather than silently receive broken bytes.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Step-by-step on Windows 10 and 11</b></h2>
+    <ol>
+        <li><b>Locate the folder</b> in File Explorer. If you are compressing a <em>subset</em> of files rather than the whole folder, create a new empty folder and copy the files into it first - ZIP cannot natively "select-and-archive" loose files without grouping them.</li>
+        <li><b>Right-click the folder</b>. On Windows 11 the new shell menu appears; if you do not see the ZIP option immediately, click <b>"Show more options"</b> at the bottom to reveal the classic menu.</li>
+        <li><b>Choose "Send to" → "Compressed (zipped) folder"</b>. Windows creates <code>&lt;folder-name&gt;.zip</code> in the same directory.</li>
+        <li><b>Rename</b> the ZIP if desired (the default inherits the folder name).</li>
+        <li><b>Attach</b> the ZIP to your email. Drag-drop into the compose window or use the paperclip / "Attach file" button.</li>
+    </ol>
+    <p>Windows 11 added native 7z and tar support in 2023; for ZIP attachments specifically, stick with <code>.zip</code> because macOS and every webmail preview pane decode it without a download. If the recipient confirms 7-Zip or equivalent is installed, switching to <code>.7z</code> with LZMA2 can shave another 10-20% off the size at the cost of a slower compress step.</p>
+
+    <h2 class="text-uppercase"><b>Step-by-step on macOS 13+ (Ventura, Sonoma, Sequoia)</b></h2>
+    <ol>
+        <li><b>Select the folder</b> in Finder.</li>
+        <li><b>Right-click (or Control-click)</b> → <b>"Compress '&lt;folder-name&gt;'"</b>. macOS creates <code>&lt;folder-name&gt;.zip</code> in the same directory.</li>
+        <li><b>Rename</b> the archive if needed. macOS preserves file metadata and resource forks inside <code>__MACOSX</code> folders, which some Windows recipients consider clutter; see the FAQ on removing those below.</li>
+        <li><b>Attach</b> to the email via the standard drag-drop or Attach File action.</li>
+    </ol>
+    <p>macOS also supports Terminal-based archiving with <code>zip -r archive.zip folder/</code> (BSD zip) or <code>ditto -c -k --sequesterRsrc folder archive.zip</code> (Apple's ditto command). Ditto is what Finder invokes under the hood and is preferable for any folder that contains macOS-specific resource forks.</p>
+
+    <h2 id="email-size-limits" class="text-uppercase"><b>What email attachment limits actually apply in 2026</b></h2>
+    <p>Provider-specific limits drive most "my ZIP won't send" errors. Know the ceiling for both ends of the conversation - not just your sending limit, but also the recipient's receiving limit, which is often the actual blocker.</p>
+    <ul>
+        <li><b>Gmail:</b> 25 MB send / 50 MB receive. Larger attachments are auto-redirected through Google Drive.</li>
+        <li><b>Outlook (Microsoft 365):</b> 20 MB default send; 25 MB receive for most plans. Enterprise tenants can be configured up to 150 MB but recipients outside the tenant often still see 25 MB.</li>
+        <li><b>Outlook.com (free):</b> 10 MB send cap before OneDrive redirection.</li>
+        <li><b>iCloud Mail:</b> 20 MB; Apple's Mail Drop kicks in for larger attachments (iCloud server hosts the file for 30 days).</li>
+        <li><b>Yahoo Mail:</b> 25 MB.</li>
+        <li><b>Corporate / custom SMTP:</b> varies wildly (10-150 MB). Ask your admin or do a test send with a ~15 MB file.</li>
+    </ul>
+    <p>When the ZIP exceeds the recipient's limit, the bounce message usually says "message too large" or "554 5.7.1." If you see that error, do not resend with the same ZIP - switch to a file-transfer link strategy.</p>
+
+    <h2 class="text-uppercase"><b>When to add a password to the ZIP</b></h2>
+    <p>Add a password when the folder contains any of: legal documents, signed contracts, HR data, financial records, login credentials, or anything subject to a confidentiality agreement. Password-protected ZIP encrypts file contents with AES-256 (the ZIP 2.0 "traditional" cipher is broken and should not be used). The recipient needs the password via a separate channel - do not put the password in the same email as the attachment.</p>
+    <p>The fastest in-browser path is <a href="/zip-file.html">Zip File</a> which creates password-protected ZIPs without software install. If you only need to <em>open</em> an already-password-protected ZIP that you control, the matching tool is <a href="/remove-zip-password.html">Remove ZIP Password</a>. For the shorthand decision matrix on who should know what, see the related guide on <a href="/guides/pdf-password-types-owner-vs-user.html">PDF password types: owner vs user</a> - the same taxonomy applies to ZIP access vs edit permissions.</p>
+
+    <h2 class="text-uppercase"><b>When to skip ZIP and use a file-transfer service</b></h2>
+    <p>ZIP is the right answer for folders under the recipient's attachment ceiling. Above that, attachment-based workflows become fragile - recipients bounce, spam filters flag, corporate inbox quotas fill up. Three signals that a file-transfer service (Google Drive, OneDrive, Dropbox, WeTransfer, or your own hosting) beats an attachment:</p>
+    <ul>
+        <li><b>ZIP larger than 20 MB</b> going to any consumer email account.</li>
+        <li><b>Recipients on restrictive corporate email</b> (legal, finance, healthcare often have aggressive size and content filters).</li>
+        <li><b>Media-heavy folders</b> (video, raw photos) where compression won't reduce the size meaningfully - hosting is more efficient than attaching.</li>
+    </ul>
+    <p>If you need the recipient to be able to view the content without downloading first (read-only review), a shareable link to a cloud folder beats a ZIP attachment on every axis: previewable, always up-to-date, and individually revocable.</p>
+
+    <h2 class="text-uppercase"><b>Reducing ZIP size before sending</b></h2>
+    <p>If your folder ZIPs to just above the size limit, four pragmatic reductions before switching to file transfer:</p>
+    <ul>
+        <li><b>Compress images first.</b> JPG at quality 85 is usually indistinguishable from the source and 30-50% smaller. Run the loose images through <a href="/compress-image.html">Compress Image</a> before ZIPing.</li>
+        <li><b>Convert HEIC photos from iPhone.</b> HEIC files, once inside a ZIP, cannot be previewed on many Windows recipients. Convert via <a href="/heic-to-jpg.html">HEIC to JPG</a> first - JPG is larger per-file but opens everywhere without a codec install. See <a href="/guides/heic-vs-jpg-vs-webp.html">HEIC vs JPG vs WebP</a> for the full format decision.</li>
+        <li><b>Remove macOS metadata.</b> On macOS, Finder archives include <code>__MACOSX</code> and <code>.DS_Store</code> noise. The <code>ditto</code> command strips these; alternatively, compress on a Linux / Windows machine that never produces them.</li>
+        <li><b>Split into multiple ZIPs.</b> Many email clients accept 2-3 attachments more gracefully than one oversized ZIP. Group by topic (documents.zip + photos.zip) rather than by arbitrary byte boundary.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Frequently Asked Questions</b></h2>
+
+    <h3><b>Why does my ZIP still exceed the limit after compression?</b></h3>
+    <p>Because the source folder is dominated by already-compressed content. JPG, PNG, MP3, MP4, DOCX, and XLSX are all pre-compressed internally; ZIP's DEFLATE algorithm has little additional entropy to remove. For folders where 80%+ of the bytes come from these formats, expect only a few percent reduction. In those cases, switch to a file-transfer service rather than trying to squeeze the ZIP below the limit.</p>
+
+    <h3><b>Can I password-protect a folder-ZIP on Windows without extra software?</b></h3>
+    <p>The Windows shell "Send to → Compressed folder" command does not support password-protect natively. You have three options: (a) use our browser-based <a href="/zip-file.html">Zip File</a> tool to create a password-protected ZIP, (b) install 7-Zip and choose "Add to archive..." with a password, or (c) use PowerShell with the <code>Compress-Archive</code> cmdlet plus a third-party encryption step. The browser tool is the lowest-friction option because no install is required.</p>
+
+    <h3><b>What if the recipient says "the ZIP is corrupted" or "extract failed"?</b></h3>
+    <p>Three common causes: (1) email provider's virus scanner modified the archive in transit (unusual but happens with older anti-virus gateways); (2) the ZIP was created with Windows Explorer and contains non-ASCII filenames that the recipient's extractor cannot decode; (3) the download was truncated (less likely on modern HTTP but still possible on flaky mobile networks). Fix: re-compress the folder on a different OS (if macOS-created, try again on Windows or use <code>ditto</code> with <code>--sequesterRsrc</code>), or re-upload via a file-transfer service that verifies checksums server-side before exposing the download link.</p>
+
+    <h2 class="text-uppercase"><b>Summary</b></h2>
+    <p>Compressing a folder for email is a 10-second native shell operation on Windows and macOS. The real decision is whether the resulting ZIP fits under the recipient's attachment ceiling - if yes, ship it with the right-click shell menu; if no, pick between splitting into smaller ZIPs and switching to a file-transfer link. Add a password whenever the folder contains anything regulated or confidential, and remember that HEIC and already-compressed media will not shrink much - convert or host those separately.</p>
+    <p>Ready to create your ZIP? Start with <a href="/zip-file.html">Zip File</a> for browser-based compression with optional password protection. For the reverse direction, the <a href="/remove-zip-password.html">Remove ZIP Password</a> tool unlocks archives you already have permission to open.</p>
+</div>

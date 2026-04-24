@@ -45,6 +45,11 @@ export const INFO_ROUTES = new Set([
   // Phase 10 Cycle 4 P10.3.4 — cluster-disambiguation guide (compress vs convert
   // intent router; upper-funnel capture for "file compressor" / "image compressor" queries).
   '/guides/when-to-compress-vs-convert-an-image.html',
+  // Phase 11 Cycle 4 P11.3.3 — how-to guide targeting the 9,737-impression
+  // `how to compress a folder` keyword opportunity (0.14% CTR / pos 6.10).
+  // Upper-funnel routing to the frozen ZIP cluster without modifying any
+  // zip satellite.
+  '/guides/how-to-compress-a-folder-for-email.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -72,6 +77,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html',
   // Phase 10 Cycle 4 P10.3.4.
   '/guides/when-to-compress-vs-convert-an-image.html',
+  // Phase 11 Cycle 4 P11.3.3.
+  '/guides/how-to-compress-a-folder-for-email.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -124,6 +131,8 @@ export const JSP_BY_ROUTE = {
   '/guides/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html': 'guide/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.jsp',
   // Phase 10 Cycle 4 P10.3.4.
   '/guides/when-to-compress-vs-convert-an-image.html': 'guide/when-to-compress-vs-convert-an-image.jsp',
+  // Phase 11 Cycle 4 P11.3.3.
+  '/guides/how-to-compress-a-folder-for-email.html': 'guide/how-to-compress-a-folder-for-email.jsp',
   '/compose-pdf.html': 'pdf/compose-pdf.jsp',
   '/split-pdf-by-range.html': 'pdf/split-by-range.jsp',
   '/split-pdf-to-each-pages.html': 'pdf/split-to-single-pages.jsp',
