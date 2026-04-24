@@ -19,6 +19,8 @@ export const INFO_ROUTES = new Set([
   '/contact-us.html',
   '/privacy-policy.html',
   '/tags.html',
+  // Phase 11 Cycle 5 P11.4.1 — author bio / editorial team (E-E-A-T surface).
+  '/editorial-team.html',
   // Guides - plan §3.3. Treated as informational (no related-tools, no rating,
   // no HowTo; Article JSON-LD emitted separately by page-renderer.mjs).
   '/guides/heic-vs-jpg-vs-webp.html',
@@ -50,6 +52,12 @@ export const INFO_ROUTES = new Set([
   // Upper-funnel routing to the frozen ZIP cluster without modifying any
   // zip satellite.
   '/guides/how-to-compress-a-folder-for-email.html',
+  // Phase 11 Cycle 5 P11.2.1 — device-test-checklist guide (Phase 10 P10.3.5
+  // carryover; upper-funnel routing for device-test cluster).
+  '/guides/device-test-checklist-for-remote-work.html',
+  // Phase 11 Cycle 5 P11.3.5 — PDF cluster disambiguation ladder (routes
+  // users across 12 PDF tools by intent).
+  '/guides/pdf-editing-ladder.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -79,6 +87,9 @@ export const GUIDE_ROUTES = new Set([
   '/guides/when-to-compress-vs-convert-an-image.html',
   // Phase 11 Cycle 4 P11.3.3.
   '/guides/how-to-compress-a-folder-for-email.html',
+  // Phase 11 Cycle 5 P11.2.1 + P11.3.5.
+  '/guides/device-test-checklist-for-remote-work.html',
+  '/guides/pdf-editing-ladder.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -106,6 +117,8 @@ export const JSP_BY_ROUTE = {
   '/contact-us.html': 'contact-us.jsp',
   '/privacy-policy.html': 'privacy-policy.jsp',
   '/tags.html': 'tags.jsp',
+  // Phase 11 Cycle 5 P11.4.1.
+  '/editorial-team.html': 'editorial-team.jsp',
   '/alternatead.html': 'alternatead.jsp',
   // Guides - plan §3.3 greenfield /guides/ subpath for long-form content.
   '/guides/heic-vs-jpg-vs-webp.html': 'guide/heic-vs-jpg-vs-webp.jsp',
@@ -133,6 +146,9 @@ export const JSP_BY_ROUTE = {
   '/guides/when-to-compress-vs-convert-an-image.html': 'guide/when-to-compress-vs-convert-an-image.jsp',
   // Phase 11 Cycle 4 P11.3.3.
   '/guides/how-to-compress-a-folder-for-email.html': 'guide/how-to-compress-a-folder-for-email.jsp',
+  // Phase 11 Cycle 5 P11.2.1 + P11.3.5.
+  '/guides/device-test-checklist-for-remote-work.html': 'guide/device-test-checklist-for-remote-work.jsp',
+  '/guides/pdf-editing-ladder.html': 'guide/pdf-editing-ladder.jsp',
   '/compose-pdf.html': 'pdf/compose-pdf.jsp',
   '/split-pdf-by-range.html': 'pdf/split-by-range.jsp',
   '/split-pdf-to-each-pages.html': 'pdf/split-to-single-pages.jsp',
