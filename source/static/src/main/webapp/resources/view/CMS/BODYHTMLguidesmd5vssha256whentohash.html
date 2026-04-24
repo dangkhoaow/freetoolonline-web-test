@@ -25,30 +25,30 @@
 </div>
 
 <br/><h2 class="text-uppercase"><b>Why MD5 is broken and what that actually means</b></h2>
-<p>A collision is two different inputs that produce the same digest. MD5&rsquo;s collision resistance was theoretically broken in 2004 and practically broken by 2008  -  a researcher can craft two files with identical MD5 digests in seconds on consumer hardware. This broke MD5&rsquo;s use in digital signatures (the Flame malware forged a Windows Update signature in 2012), TLS certificates (all major CAs stopped issuing MD5-signed certs by 2014), and any context where an adversary can influence the inputs.</p>
-<p>MD5&rsquo;s second-preimage resistance is weaker than SHA-256&rsquo;s but has no known practical attack against arbitrary already-existing inputs. That&rsquo;s the narrow window where MD5 is still safe: confirming that an already-computed digest matches a file you downloaded, when no adversary had the chance to craft a collision against that specific file.</p>
+<p>A collision is two different inputs that produce the same digest. MD5's collision resistance was theoretically broken in 2004 and practically broken by 2008  -  a researcher can craft two files with identical MD5 digests in seconds on consumer hardware. This broke MD5's use in digital signatures (the Flame malware forged a Windows Update signature in 2012), TLS certificates (all major CAs stopped issuing MD5-signed certs by 2014), and any context where an adversary can influence the inputs.</p>
+<p>MD5's second-preimage resistance is weaker than SHA-256's but has no known practical attack against arbitrary already-existing inputs. That's the narrow window where MD5 is still safe: confirming that an already-computed digest matches a file you downloaded, when no adversary had the chance to craft a collision against that specific file.</p>
 
 <br/><h2 class="text-uppercase"><b>When MD5 is still fine</b></h2>
-<p><b>File integrity for non-adversarial environments.</b> A Linux ISO download publishes an MD5 alongside the image; if the hash matches, your download wasn&rsquo;t corrupted in transit. There&rsquo;s no adversary crafting a forged ISO against that specific MD5  -  they&rsquo;d need to get their file published on the upstream site first.</p>
+<p><b>File integrity for non-adversarial environments.</b> A Linux ISO download publishes an MD5 alongside the image; if the hash matches, your download wasn't corrupted in transit. There's no adversary crafting a forged ISO against that specific MD5  -  they'd need to get their file published on the upstream site first.</p>
 <p><b>De-duplication caches.</b> A caching proxy keys objects by MD5 of their content to detect repeats. Collisions in this context are benign  -  two different objects with the same MD5 means one cache miss, no security consequence.</p>
-<p><b>Database row fingerprinting.</b> &ldquo;Has this record changed since last sync?&rdquo;  -  MD5 the row, compare to stored digest. Faster than SHA-256; the adversary model is absent.</p>
-<p><b>Git content addressing.</b> Git uses SHA-1 (soon SHA-256), not MD5  -  but the design rationale applies: for a content-addressed store where you trust the writer, a 128-bit hash is sufficient if collision isn&rsquo;t an attack vector.</p>
+<p><b>Database row fingerprinting.</b> "Has this record changed since last sync?"  -  MD5 the row, compare to stored digest. Faster than SHA-256; the adversary model is absent.</p>
+<p><b>Git content addressing.</b> Git uses SHA-1 (soon SHA-256), not MD5  -  but the design rationale applies: for a content-addressed store where you trust the writer, a 128-bit hash is sufficient if collision isn't an attack vector.</p>
 
 <br/><h2 class="text-uppercase"><b>When SHA-256 is the correct choice</b></h2>
 <p><b>Digital signatures.</b> TLS certificates, code signing, JWT signing  -  anywhere an attacker gains from forging a signature, use SHA-256 or stronger.</p>
-<p><b>Cert pinning and public-key fingerprints.</b> The SHA-256 fingerprint of a certificate&rsquo;s public key is the standard for pinning.</p>
+<p><b>Cert pinning and public-key fingerprints.</b> The SHA-256 fingerprint of a certificate's public key is the standard for pinning.</p>
 <p><b>Blockchain and content-addressable storage where adversaries participate.</b> Bitcoin uses SHA-256 twice (SHA-256d) for block headers and transaction identifiers. Any store where users contribute content and collisions could be exploited needs SHA-256.</p>
 <p><b>HMAC for message authentication.</b> HMAC-SHA-256 is the baseline for API request signing (AWS Signature v4, GitHub webhooks, Stripe). HMAC-MD5 is still used in some legacy protocols but is increasingly flagged by compliance scanners.</p>
 
 <br/><h2 class="text-uppercase"><b>What to use for passwords (spoiler: neither)</b></h2>
-<p>Do not use MD5 or SHA-256 directly for password storage. Both are fast  -  that&rsquo;s bad for passwords. An attacker with a leaked digest can test billions of candidate passwords per second on a GPU. Use a <b>password hashing function</b>: <b>Argon2id</b> (OWASP 2025 recommendation), <b>bcrypt</b>, or <b>scrypt</b>. These functions are intentionally slow and memory-hard, so an attacker can test only thousands of candidates per second, not billions.</p>
+<p>Do not use MD5 or SHA-256 directly for password storage. Both are fast  -  that's bad for passwords. An attacker with a leaked digest can test billions of candidate passwords per second on a GPU. Use a <b>password hashing function</b>: <b>Argon2id</b> (OWASP 2025 recommendation), <b>bcrypt</b>, or <b>scrypt</b>. These functions are intentionally slow and memory-hard, so an attacker can test only thousands of candidates per second, not billions.</p>
 
 <br/><h2 class="text-uppercase"><b>Performance reality in 2026</b></h2>
 <p>MD5 is still ~1.7&times; faster than SHA-256 on a CPU without SHA-NI. On CPUs with Intel SHA-NI (Goldmont+, 2017) or ARMv8 crypto extensions (Cortex-A53 onward), SHA-256 actually matches or exceeds MD5 throughput  -  the speed gap that motivated choosing MD5 in the 2000s no longer holds.</p>
 <p>In-browser JavaScript with WebCrypto (<code>crypto.subtle.digest('SHA-256', data)</code>) reaches ~200 MB/s on a modern laptop. Our <a href="/md5-converter.html">MD5 converter</a> runs MD5 at similar speed via a wasm implementation.</p>
 
 <br/><h2 class="text-uppercase"><b>The decision rule in one sentence</b></h2>
-<p>If an adversary can influence the inputs, use SHA-256 (or SHA-3, or BLAKE3). If you&rsquo;re fingerprinting your own data for caching, de-duplication, or change detection, MD5 is fine and slightly faster.</p>
+<p>If an adversary can influence the inputs, use SHA-256 (or SHA-3, or BLAKE3). If you're fingerprinting your own data for caching, de-duplication, or change detection, MD5 is fine and slightly faster.</p>
 
 <br/><h2 class="text-uppercase"><b>Related tools</b></h2>
 <ul>

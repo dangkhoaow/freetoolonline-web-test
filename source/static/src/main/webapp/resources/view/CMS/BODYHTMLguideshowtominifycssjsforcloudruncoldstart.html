@@ -7,18 +7,18 @@
 
 <br/><h2 class="text-uppercase"><b>Why minification specifically helps cold-start</b></h2>
 <p><b>Network transfer.</b> Serverless platforms pull your container image or bundle to the runtime on cold start. Smaller bundle &rarr; faster pull. On Cloud Run, the container image layer pull can be the biggest single cold-start contributor for a tiny service (~300 ms for a 50 MB image). Cloudflare Workers has a 1 MB bundle cap at the free tier and 10 MB at paid  -  minification is often the difference between fitting and not.</p>
-<p><b>Parse time.</b> V8 (Node / Workers / Deno) parses JavaScript once per isolate. Minified JS has fewer tokens, less whitespace, and shorter identifiers  -  V8 parses ~30% faster. Parse is a sync operation that blocks the first request; on cold start it&rsquo;s the difference between 120 ms and 160 ms on a 500 KB bundle.</p>
-<p><b>Compression efficiency.</b> Minified JS compresses better under gzip/brotli because repeated whitespace and comments don&rsquo;t consume the compressor&rsquo;s dictionary. Net-on-the-wire savings are ~15&ndash;25% beyond unminified+gzip.</p>
+<p><b>Parse time.</b> V8 (Node / Workers / Deno) parses JavaScript once per isolate. Minified JS has fewer tokens, less whitespace, and shorter identifiers  -  V8 parses ~30% faster. Parse is a sync operation that blocks the first request; on cold start it's the difference between 120 ms and 160 ms on a 500 KB bundle.</p>
+<p><b>Compression efficiency.</b> Minified JS compresses better under gzip/brotli because repeated whitespace and comments don't consume the compressor's dictionary. Net-on-the-wire savings are ~15-25% beyond unminified+gzip.</p>
 
 <br/><h2 class="text-uppercase"><b>Minify online for a one-off check</b></h2>
 <p>For a single file or a quick before/after measurement, paste into our browser tools:</p>
 <ul>
-<li><a href="/css-minifier.html">CSS Minifier</a>  -  paste, minify, download. ~60&ndash;70% reduction on typical CSS.</li>
-<li><a href="/js-minifier.html">JavaScript Minifier</a>  -  paste, minify, download. ~40&ndash;50% reduction on typical JS (more if your source has heavy comments).</li>
+<li><a href="/css-minifier.html">CSS Minifier</a>  -  paste, minify, download. ~60-70% reduction on typical CSS.</li>
+<li><a href="/js-minifier.html">JavaScript Minifier</a>  -  paste, minify, download. ~40-50% reduction on typical JS (more if your source has heavy comments).</li>
 <li><a href="/css-unminifier.html">CSS Unminifier</a>  -  for reading a production bundle.</li>
 <li><a href="/js-unminifier.html">JavaScript Unminifier</a>  -  reverse of the above.</li>
 </ul>
-<p>These run in-browser  -  nothing uploads. Useful for measuring a specific file or verifying a third-party SDK&rsquo;s compressed form.</p>
+<p>These run in-browser  -  nothing uploads. Useful for measuring a specific file or verifying a third-party SDK's compressed form.</p>
 
 <br/><h2 class="text-uppercase"><b>Minify in the build step (the actual production answer)</b></h2>
 <p>For a real service, minification is a build-step, not a one-off paste. Three common setups:</p>
@@ -30,7 +30,7 @@
   --target=node20 \
   --platform=node \
   --outfile=dist/index.js</code></pre>
-<p>esbuild&rsquo;s <code>--minify</code> flag does identifier renaming, dead-code elimination, and whitespace removal. Add <code>--tree-shaking=true</code> (default when bundling) to drop unreferenced exports. Minify-only (no bundle) via <code>npx esbuild in.js --minify &gt; out.js</code>.</p>
+<p>esbuild's <code>--minify</code> flag does identifier renaming, dead-code elimination, and whitespace removal. Add <code>--tree-shaking=true</code> (default when bundling) to drop unreferenced exports. Minify-only (no bundle) via <code>npx esbuild in.js --minify &gt; out.js</code>.</p>
 
 <p><b>Terser (mature; produces the smallest JS output).</b></p>
 <pre style="background:#0b1220;color:#dbe3f5;padding:12px;border-radius:4px;overflow:auto"><code>npx terser dist/index.js \
@@ -38,7 +38,7 @@
   -c passes=3,pure_getters,unsafe_arrows=true \
   -m toplevel=true \
   --source-map content=inline,url=dist/index.min.js.map</code></pre>
-<p>Three compress passes + top-level mangling + <code>unsafe_arrows</code> (convert named function expressions to arrow functions where equivalent) can shave another 5&ndash;10% vs esbuild. Slower to run  -  use on final production builds only.</p>
+<p>Three compress passes + top-level mangling + <code>unsafe_arrows</code> (convert named function expressions to arrow functions where equivalent) can shave another 5-10% vs esbuild. Slower to run  -  use on final production builds only.</p>
 
 <p><b>cssnano / lightningcss for CSS.</b></p>
 <pre style="background:#0b1220;color:#dbe3f5;padding:12px;border-radius:4px;overflow:auto"><code>npx lightningcss \
@@ -48,9 +48,9 @@
 <p>lightningcss combines transpilation (autoprefixer) and minification in one step; Rust-based, ~20&times; faster than postcss+cssnano.</p>
 
 <br/><h2 class="text-uppercase"><b>Runtime-specific flags</b></h2>
-<p><b>Cloud Run (container-based).</b> The main lever is the container image size. Use a multi-stage Dockerfile: build the bundle in a Node builder stage, then copy the minified output into a distroless runtime stage. Skip source maps in production. Target 20&ndash;50 MB images.</p>
+<p><b>Cloud Run (container-based).</b> The main lever is the container image size. Use a multi-stage Dockerfile: build the bundle in a Node builder stage, then copy the minified output into a distroless runtime stage. Skip source maps in production. Target 20-50 MB images.</p>
 <p><b>AWS Lambda.</b> Lambda layers ship unminified for debuggability, the handler ships minified. The 50 MB zipped / 250 MB unzipped limit rarely binds on JS services, but the cold-start parse cost still benefits from minification.</p>
-<p><b>Cloudflare Workers.</b> The 1 MB (free) / 10 MB (paid) bundle cap often forces minification. Workers uses V8 isolates; minification shaves both the transfer and parse steps. Use wrangler&rsquo;s built-in esbuild config: <code>wrangler deploy --minify</code>.</p>
+<p><b>Cloudflare Workers.</b> The 1 MB (free) / 10 MB (paid) bundle cap often forces minification. Workers uses V8 isolates; minification shaves both the transfer and parse steps. Use wrangler's built-in esbuild config: <code>wrangler deploy --minify</code>.</p>
 <p><b>Deno Deploy / Vercel Edge.</b> Similar to Cloudflare Workers  -  V8 isolate, bundle-size-sensitive. Both run esbuild internally with <code>--minify</code> by default.</p>
 
 <br/><h2 class="text-uppercase"><b>Measured impact  -  typical web service</b></h2>
@@ -65,20 +65,20 @@
 <tr><td>Warm request (p50)</td><td>18 ms</td><td>17 ms</td><td>-1 ms (noise)</td></tr>
 </table>
 </div>
-<p>Minification helps cold-start disproportionately  -  warm requests don&rsquo;t re-parse the bundle, so the savings concentrate on cold invocations. For a service that sees steady traffic, the cold-start gain is subtle; for a spiky or low-traffic service, the gain is meaningful.</p>
+<p>Minification helps cold-start disproportionately  -  warm requests don't re-parse the bundle, so the savings concentrate on cold invocations. For a service that sees steady traffic, the cold-start gain is subtle; for a spiky or low-traffic service, the gain is meaningful.</p>
 
 <br/><h2 class="text-uppercase"><b>What NOT to do</b></h2>
-<p><b>Don&rsquo;t ship unminified and rely on gzip.</b> Gzip helps but doesn&rsquo;t touch parse time. Minify first, then compress.</p>
-<p><b>Don&rsquo;t minify inline scripts in HTML at runtime.</b> Minify at build. Runtime minification burns CPU on every request.</p>
-<p><b>Don&rsquo;t strip source maps in development.</b> Error stack traces become unreadable. Ship maps as separate <code>.map</code> files, excluded from the bundle, served with the <code>SourceMap</code> HTTP header only when requested.</p>
-<p><b>Don&rsquo;t use <code>unsafe</code> minifier flags on third-party SDK code.</b> Some SDKs (Sentry, Stripe.js) rely on specific function-name introspection; aggressive mangling breaks them. Keep vendor bundles unmangled.</p>
+<p><b>Don't ship unminified and rely on gzip.</b> Gzip helps but doesn't touch parse time. Minify first, then compress.</p>
+<p><b>Don't minify inline scripts in HTML at runtime.</b> Minify at build. Runtime minification burns CPU on every request.</p>
+<p><b>Don't strip source maps in development.</b> Error stack traces become unreadable. Ship maps as separate <code>.map</code> files, excluded from the bundle, served with the <code>SourceMap</code> HTTP header only when requested.</p>
+<p><b>Don't use <code>unsafe</code> minifier flags on third-party SDK code.</b> Some SDKs (Sentry, Stripe.js) rely on specific function-name introspection; aggressive mangling breaks them. Keep vendor bundles unmangled.</p>
 
 <br/><h2 class="text-uppercase"><b>Related tools</b></h2>
 <ul>
     <li><a href="/css-minifier.html">CSS Minifier</a>  -  paste-and-go CSS minification.</li>
     <li><a href="/js-minifier.html">JavaScript Minifier</a>  -  paste-and-go JS minification.</li>
     <li><a href="/guides/css-minifier-vs-compressor.html">CSS Minifier vs Compressor</a>  -  which approach fits when.</li>
-    <li><a href="/text-diff.html">Text Diff</a>  -  compare minified output to verify the minifier didn&rsquo;t drop a block.</li>
+    <li><a href="/text-diff.html">Text Diff</a>  -  compare minified output to verify the minifier didn't drop a block.</li>
 </ul>
 
 <p><br/><a href="/developer-tools.html">&larr; Back to Developer Tools</a></p>

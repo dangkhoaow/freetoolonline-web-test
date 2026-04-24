@@ -3,7 +3,7 @@
 <time itemprop="datePublished" datetime="2026-04-20T08:00:00Z"><b>Published April 20, 2026</b></time>
 <hr/>
 
-<p class="lead">JPG and PNG were the two dominant web image formats from 1996 to the 2010s, and they&rsquo;re still the formats every browser, every image library, and every stock site supports without reservation. The split is simple in principle  -  JPG for photos, PNG for anything with sharp edges or transparency  -  but the real decisions today involve file size, a modern WebP/AVIF fallback chain, and whether a PNG screenshot is too heavy to ship. This guide covers the encoding mechanics, the decision rules that hold in 2026, and the upgrade path to modern formats.</p>
+<p class="lead">JPG and PNG were the two dominant web image formats from 1996 to the 2010s, and they're still the formats every browser, every image library, and every stock site supports without reservation. The split is simple in principle  -  JPG for photos, PNG for anything with sharp edges or transparency  -  but the real decisions today involve file size, a modern WebP/AVIF fallback chain, and whether a PNG screenshot is too heavy to ship. This guide covers the encoding mechanics, the decision rules that hold in 2026, and the upgrade path to modern formats.</p>
 
 <br/><h2 class="text-uppercase"><b>How each format compresses pixels</b></h2>
 <p><b>JPG (also written JPEG)</b> is a <b>lossy</b> format. The encoder converts pixels to the frequency domain (DCT), quantises high-frequency coefficients, and throws away the detail that the human eye is least likely to notice. The quality knob (0-100, where higher is better) controls how aggressively that quantisation removes detail. JPG is brilliant at photos and terrible at sharp edges  -  text, UI chrome, and line art acquire visible halo artefacts at typical web quality settings.</p>
@@ -21,19 +21,19 @@
 </div>
 
 <br/><h2 class="text-uppercase"><b>The decision rules that hold in 2026</b></h2>
-<p><b>Photograph, full bleed, no transparency needed.</b> &rarr; <b>JPG</b> (quality 80-85) as the baseline; WebP/AVIF as enhanced variants. A JPG at q=82 is visually indistinguishable from the lossless original for all but the most trained eyes. The file is 5&ndash;10&times; smaller than a PNG of the same photo.</p>
+<p><b>Photograph, full bleed, no transparency needed.</b> &rarr; <b>JPG</b> (quality 80-85) as the baseline; WebP/AVIF as enhanced variants. A JPG at q=82 is visually indistinguishable from the lossless original for all but the most trained eyes. The file is 5-10&times; smaller than a PNG of the same photo.</p>
 <p><b>Photograph with transparency (cut-out subject on a transparent background).</b> &rarr; <b>PNG</b>  -  JPG cannot represent alpha. Prefer WebP if your audience excludes legacy email clients and older Android WebViews.</p>
 <p><b>Screenshot of UI, code, or text.</b> &rarr; <b>PNG</b> as the canonical; WebP lossless as enhanced. Sharp pixel edges (text anti-aliasing, UI borders) reveal JPG compression artefacts at any quality below 90, and quality 90 JPGs are larger than the equivalent PNG.</p>
 <p><b>Logo or simple graphic.</b> &rarr; <b>SVG</b> if you have the vector source (see <a href="/guides/png-vs-svg-when-to-use.html">PNG vs SVG guide</a>). If only a raster exists, PNG wins on sharpness; WebP lossless as enhanced.</p>
-<p><b>Email newsletter header.</b> &rarr; <b>JPG</b> or <b>PNG</b> only. Many email clients don&rsquo;t render WebP/AVIF. Use the universal format even when a modern codec would save bytes.</p>
+<p><b>Email newsletter header.</b> &rarr; <b>JPG</b> or <b>PNG</b> only. Many email clients don't render WebP/AVIF. Use the universal format even when a modern codec would save bytes.</p>
 
 <br/><h2 class="text-uppercase"><b>Quality-vs-size sweet spots</b></h2>
 <p><b>JPG quality 82</b> is the web default that worked for a decade. Below 75, compression artefacts become visible on detail-rich photos; above 90, file size grows fast with minimal visual gain.</p>
 <p><b>Progressive JPG</b> is a re-ordering of the same image data  -  same quality, same size, but the browser can show a low-res preview as soon as the first scanline group downloads. Use progressive encoding for any above-the-fold hero photo.</p>
-<p><b>PNG optimisers</b> (pngquant, oxipng, zopflipng) can shave 30&ndash;70% from a default PNG export with no quality loss  -  they search for better filter/compression parameters than the encoder tried. Always run optimisation before shipping a large PNG to production.</p>
+<p><b>PNG optimisers</b> (pngquant, oxipng, zopflipng) can shave 30-70% from a default PNG export with no quality loss  -  they search for better filter/compression parameters than the encoder tried. Always run optimisation before shipping a large PNG to production.</p>
 
 <br/><h2 class="text-uppercase"><b>Picking quality: a concrete target</b></h2>
-<p>Our <a href="/get-jpeg-compression-level.html">JPEG compression level checker</a> inspects an existing JPG and reports its quantisation table. Use it to reverse-engineer what quality a photo was saved at before re-encoding. Rule of thumb: a photo re-encoded more than twice at quality 82 loses visible detail; if you&rsquo;re the third hop in a chain, bump the quality to 90 to preserve headroom for a future re-save.</p>
+<p>Our <a href="/get-jpeg-compression-level.html">JPEG compression level checker</a> inspects an existing JPG and reports its quantisation table. Use it to reverse-engineer what quality a photo was saved at before re-encoding. Rule of thumb: a photo re-encoded more than twice at quality 82 loses visible detail; if you're the third hop in a chain, bump the quality to 90 to preserve headroom for a future re-save.</p>
 
 <br/><h2 class="text-uppercase"><b>The &lt;picture&gt; fallback chain</b></h2>
 <p>Modern sites serve an AVIF or WebP variant to browsers that can decode it and fall back to JPG or PNG for the rest:</p>
@@ -45,8 +45,8 @@
 <p>The browser picks the first <code>source</code> it can decode. The <code>&lt;img&gt;</code> is the universal fallback. Always include <code>width</code> and <code>height</code> to prevent cumulative layout shift.</p>
 
 <br/><h2 class="text-uppercase"><b>When to upgrade PNG to WebP or AVIF</b></h2>
-<p>WebP lossless is a drop-in replacement for PNG with ~25&ndash;35% file size savings on most content. Browser support is universal since Safari 14 (2020). If your audience is browser-only (not email-heavy), a single WebP lossless file replaces the PNG with no visual difference. AVIF lossless compresses further but has slower encode times and was only added to Safari in 16 (2022).</p>
-<p>For photographs, AVIF at quality 50-60 typically matches JPG quality 85 at half the file size. The trade-off is encode time (AVIF is 10&ndash;30&times; slower than JPG to encode) and hardware decode support on older devices.</p>
+<p>WebP lossless is a drop-in replacement for PNG with ~25-35% file size savings on most content. Browser support is universal since Safari 14 (2020). If your audience is browser-only (not email-heavy), a single WebP lossless file replaces the PNG with no visual difference. AVIF lossless compresses further but has slower encode times and was only added to Safari in 16 (2022).</p>
+<p>For photographs, AVIF at quality 50-60 typically matches JPG quality 85 at half the file size. The trade-off is encode time (AVIF is 10-30&times; slower than JPG to encode) and hardware decode support on older devices.</p>
 
 <br/><h2 class="text-uppercase"><b>Converting between formats</b></h2>
 <p>Use our <a href="/compress-image.html">compress image</a> tool for JPG re-encoding with AI-tuned quality. For format conversion in the other direction, <a href="/png-to-svg.html">PNG to SVG</a> traces PNG logos into vectors; <a href="/svg-to-png.html">SVG to PNG</a> rasterises a vector at an explicit pixel size. All conversions run in-browser  -  nothing uploads.</p>

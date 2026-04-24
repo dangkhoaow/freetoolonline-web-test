@@ -3,11 +3,11 @@
 <time itemprop="datePublished" datetime="2026-04-20T08:00:00Z"><b>Published April 20, 2026</b></time>
 <hr/>
 
-<p class="lead">MP4 and WebM are the two container formats that matter on the modern web. MP4 almost always carries H.264 (AVC) video with AAC audio; WebM almost always carries VP9 or AV1 video with Opus audio. The right choice depends on where your video plays, how much bandwidth it consumes, and how long you&rsquo;re willing to wait for the encode. This guide covers the codec economics, the browser-support reality in 2026, and the three real production decisions that determine which container ships.</p>
+<p class="lead">MP4 and WebM are the two container formats that matter on the modern web. MP4 almost always carries H.264 (AVC) video with AAC audio; WebM almost always carries VP9 or AV1 video with Opus audio. The right choice depends on where your video plays, how much bandwidth it consumes, and how long you're willing to wait for the encode. This guide covers the codec economics, the browser-support reality in 2026, and the three real production decisions that determine which container ships.</p>
 
 <br/><h2 class="text-uppercase"><b>Container vs codec  -  what each file actually holds</b></h2>
 <p>A <b>container</b> wraps video, audio, and metadata into a single file that a player can read. MP4 (ISO base media) and WebM (a restricted Matroska profile) are both containers. The <b>codec</b> is how the video pixels and audio samples are compressed. An MP4 can, in theory, carry almost any codec, but in practice the web ecosystem treats MP4 as an H.264 file. WebM is purpose-built for royalty-free codecs  -  VP8 (rare in 2026), VP9 (mainstream), and AV1 (newest, highest compression).</p>
-<p>When the decision is framed as &ldquo;MP4 or WebM,&rdquo; the real decision is H.264 vs VP9 vs AV1  -  which codec to encode. The container follows the codec. H.264 ships in MP4; VP9 and AV1 ship in WebM on the web.</p>
+<p>When the decision is framed as "MP4 or WebM," the real decision is H.264 vs VP9 vs AV1  -  which codec to encode. The container follows the codec. H.264 ships in MP4; VP9 and AV1 ship in WebM on the web.</p>
 
 <br/><h2 class="text-uppercase"><b>Codec size comparison for the same visual quality</b></h2>
 <div class="w3-responsive">
@@ -16,7 +16,7 @@
 <tr><td>1080p 30fps 60-second clip</td><td>~12&nbsp;MB</td><td>~7&nbsp;MB</td><td>~5&nbsp;MB</td></tr>
 <tr><td>720p 30fps 60-second clip</td><td>~6&nbsp;MB</td><td>~3.5&nbsp;MB</td><td>~2.5&nbsp;MB</td></tr>
 <tr><td>Relative bitrate savings vs H.264</td><td>0% (baseline)</td><td>~40% smaller</td><td>~55% smaller</td></tr>
-<tr><td>Encode time for 1 minute of 1080p</td><td>~15 seconds</td><td>~2&ndash;3 minutes</td><td>~8&ndash;15 minutes</td></tr>
+<tr><td>Encode time for 1 minute of 1080p</td><td>~15 seconds</td><td>~2-3 minutes</td><td>~8-15 minutes</td></tr>
 <tr><td>Playback CPU on mid-range laptop</td><td>Low (hardware decode)</td><td>Low (hardware decode)</td><td>Moderate (hardware decode patchy pre-2023 GPUs)</td></tr>
 </table>
 </div>
@@ -37,9 +37,9 @@
 <p>The browser walks the <code>&lt;source&gt;</code> list top-down, picks the first <code>type</code> it recognises, and ignores the rest. Serving AV1 first captures the ~60% of 2026 devices that have hardware AV1 decode; VP9 catches most of the rest; H.264 guarantees 100% fallback.</p>
 
 <br/><h2 class="text-uppercase"><b>The three real production decisions</b></h2>
-<p><b>Decision 1  -  Short social clip for broadest reach.</b> &rarr; <b>MP4 (H.264)</b> only. Encode once. Every browser, every social platform, every email client plays it. Bandwidth savings of VP9/AV1 do not justify the encode time and the edge-case devices you&rsquo;d miss.</p>
-<p><b>Decision 2  -  Background hero video on a marketing site at 1080p, 15-second loop.</b> &rarr; <b>MP4 (H.264) + WebM (VP9)</b>. The VP9 file ships at ~60% of the H.264 size, helping Core Web Vitals on users with slow connections. The H.264 file is the fallback for anyone whose browser skips WebM. Encode time is small (one-time, 15-second clip).</p>
-<p><b>Decision 3  -  Long-form streaming library (VOD service, course platform, 30+ minute videos).</b> &rarr; <b>AV1 (WebM) + VP9 (WebM) + H.264 (MP4)</b>. The AV1 files save substantial CDN egress at scale. The VP9 files cover every modern browser. The H.264 files are the universal fallback. Encode on GPU hardware or a batch pipeline; AV1&rsquo;s 10&times; encode time matters when the library has thousands of videos.</p>
+<p><b>Decision 1  -  Short social clip for broadest reach.</b> &rarr; <b>MP4 (H.264)</b> only. Encode once. Every browser, every social platform, every email client plays it. Bandwidth savings of VP9/AV1 do not justify the encode time and the edge-case devices you'd miss.</p>
+<p><b>Decision 2  -  Background hero video on a marketing site at 1080p, 15-second loop.</b> &rarr; <b>MP4 (H.264) + WebM (VP9)</b>. The VP9 file ships at ~60% of the H.264 size, which means a faster page load for visitors on slow connections. The H.264 file is the fallback for anyone whose browser skips WebM. Encode time is small (one-time, 15-second clip).</p>
+<p><b>Decision 3  -  Long-form streaming library (VOD service, course platform, 30+ minute videos).</b> &rarr; <b>AV1 (WebM) + VP9 (WebM) + H.264 (MP4)</b>. The AV1 files save substantial CDN egress at scale. The VP9 files cover every modern browser. The H.264 files are the universal fallback. Encode on GPU hardware or a batch pipeline; AV1's 10&times; encode time matters when the library has thousands of videos.</p>
 
 <br/><h2 class="text-uppercase"><b>Encoding recipes</b></h2>
 <p><b>H.264 (MP4)  -  the safe universal.</b> A single FFmpeg one-liner hits the sweet spot for web delivery: <code>ffmpeg -i in.mov -c:v libx264 -crf 23 -preset medium -c:a aac -b:a 128k -movflags +faststart out.mp4</code>. The <code>+faststart</code> flag puts the <code>moov</code> atom at the start of the file so a browser can begin playback before the full file downloads.</p>
@@ -51,7 +51,7 @@
 <p>Email clients almost never render <code>&lt;video&gt;</code> natively. If the video is in an email newsletter, export a short animated <b>GIF</b> or an MP4 link to a landing page  -  neither WebM nor an inline HTML5 video tag help.</p>
 
 <br/><h2 class="text-uppercase"><b>Converting between formats</b></h2>
-<p>Our <a href="/video-converter.html">video converter</a> handles MP4 &harr; WebM in the browser with FFmpeg.wasm  -  no upload, no install. For long-form batch conversion, install FFmpeg locally and use the recipes above; the in-browser converter is bounded by your available RAM (typically 2&ndash;4 GB per tab), which works for individual clips but not a 50-video catalog. See our <a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs local comparison guide</a> for when each wins.</p>
+<p>Our <a href="/video-converter.html">video converter</a> handles MP4 &harr; WebM in the browser with FFmpeg.wasm  -  no upload, no install. For long-form batch conversion, install FFmpeg locally and use the recipes above; the in-browser converter is bounded by your available RAM (typically 2-4 GB per tab), which works for individual clips but not a 50-video catalog. See our <a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs local comparison guide</a> for when each wins.</p>
 
 <br/><h2 class="text-uppercase"><b>Related tools</b></h2>
 <ul>

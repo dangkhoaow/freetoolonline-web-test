@@ -15,8 +15,8 @@
 <tr><th>Attribute</th><th>CSV</th><th>JSON</th></tr>
 <tr><td>Data shape</td><td>Flat: rows and columns</td><td>Nested: arbitrary object/array trees</td></tr>
 <tr><td>Typing</td><td>Everything is a string; numeric / date types inferred at parse</td><td>Native string, number, boolean, null; arrays and objects</td></tr>
-<tr><td>File size (1M simple records)</td><td>~60&ndash;80&nbsp;MB</td><td>~120&ndash;180&nbsp;MB (keys repeated per record)</td></tr>
-<tr><td>Parse speed (same data)</td><td>~200&ndash;400 MB/s streaming</td><td>~80&ndash;150 MB/s streaming (stricter tokenisation)</td></tr>
+<tr><td>File size (1M simple records)</td><td>~60-80&nbsp;MB</td><td>~120-180&nbsp;MB (keys repeated per record)</td></tr>
+<tr><td>Parse speed (same data)</td><td>~200-400 MB/s streaming</td><td>~80-150 MB/s streaming (stricter tokenisation)</td></tr>
 <tr><td>Streaming-friendly</td><td>Yes  -  line-by-line</td><td>Only with JSON Lines (one object per line)</td></tr>
 <tr><td>Schema</td><td>Implicit via header row</td><td>Optional (JSON Schema) or implicit</td></tr>
 <tr><td>Nested data</td><td>Awkward (flatten to columns or embed JSON in a cell)</td><td>Native</td></tr>
@@ -26,28 +26,28 @@
 </div>
 
 <br/><h2 class="text-uppercase"><b>When CSV wins</b></h2>
-<p><b>Tabular data with a stable schema.</b> User exports from a database, transaction logs, census records, analytics dumps  -  anything that&rsquo;s naturally rows and columns ships smaller and parses faster as CSV.</p>
+<p><b>Tabular data with a stable schema.</b> User exports from a database, transaction logs, census records, analytics dumps  -  anything that's naturally rows and columns ships smaller and parses faster as CSV.</p>
 <p><b>Spreadsheet round-trips.</b> If a stakeholder is going to open the file in Excel, Google Sheets, or Numbers, CSV is the format that round-trips without surprises. JSON opens in a text editor; few non-developers can read a 5,000-line JSON file.</p>
 <p><b>Streaming large datasets.</b> Processing a 10 GB file one row at a time is idiomatic in CSV: read a line, parse, emit, discard. JSON Lines achieves the same, but plain JSON (a single top-level array) requires the whole file in memory to parse correctly.</p>
 <p><b>Data warehouse loads.</b> Every warehouse (BigQuery, Snowflake, Redshift, DuckDB) has an optimised CSV loader. JSON loaders exist but are typically slower because of the shape ambiguity.</p>
 
 <br/><h2 class="text-uppercase"><b>When JSON wins</b></h2>
 <p><b>Nested or hierarchical data.</b> A user record with a list of past orders, each order with a list of line items, each line item with a list of variants  -  JSON expresses this in one object; CSV requires either denormalisation (one row per line item, repeated header) or embedded JSON strings in cells (the worst of both formats).</p>
-<p><b>HTTP APIs.</b> Every REST and GraphQL API in the modern web returns JSON. It&rsquo;s the default. Don&rsquo;t return CSV from an API unless the caller explicitly asks.</p>
+<p><b>HTTP APIs.</b> Every REST and GraphQL API in the modern web returns JSON. It's the default. Don't return CSV from an API unless the caller explicitly asks.</p>
 <p><b>Configuration files.</b> Typed values (booleans, nulls, numbers) matter in config  -  CSV would require parsing every field as string and casting, inviting type bugs. JSON preserves types. YAML preserves types and adds comments  -  often the better choice for human-edited config.</p>
-<p><b>Heterogeneous records.</b> If your data has optional fields, polymorphic shapes, or records with different schemas, JSON&rsquo;s freedom maps naturally; CSV forces the union of all columns with blanks where a field is absent.</p>
+<p><b>Heterogeneous records.</b> If your data has optional fields, polymorphic shapes, or records with different schemas, JSON's freedom maps naturally; CSV forces the union of all columns with blanks where a field is absent.</p>
 
 <br/><h2 class="text-uppercase"><b>The in-between: JSON Lines (NDJSON)</b></h2>
 <p><b>JSON Lines</b> (also called NDJSON) is one JSON object per line of a text file:</p>
 <pre style="background:#0b1220;color:#dbe3f5;padding:12px;border-radius:4px;overflow:auto"><code>{"user":"alice","age":30,"tags":["admin","paid"]}
 {"user":"bob","age":25,"tags":["free"]}
 {"user":"carol","age":42,"tags":["paid"]}</code></pre>
-<p>It retains JSON&rsquo;s typing and nesting while allowing line-by-line streaming like CSV. Most log-processing tools, data warehouses, and stream processors accept it natively. Choose JSON Lines when you need JSON&rsquo;s shape flexibility and CSV&rsquo;s streaming friendliness.</p>
+<p>It retains JSON's typing and nesting while allowing line-by-line streaming like CSV. Most log-processing tools, data warehouses, and stream processors accept it natively. Choose JSON Lines when you need JSON's shape flexibility and CSV's streaming friendliness.</p>
 
 <br/><h2 class="text-uppercase"><b>Common gotchas when picking CSV</b></h2>
 <p><b>Commas in fields.</b> If any field can contain a comma (addresses, descriptions, product names), the field must be quoted. Naive <code>split(',')</code> parsers break immediately. Use a real CSV parser (Python <code>csv</code>, Node <code>fast-csv</code>, Go <code>encoding/csv</code>).</p>
 <p><b>Encoding.</b> Excel on Windows defaults to UTF-16 LE with BOM; most tools expect UTF-8. Always specify encoding when exporting; add a UTF-8 BOM if Excel interop matters.</p>
-<p><b>Date formats.</b> &ldquo;2026-04-20&rdquo; and &ldquo;04/20/2026&rdquo; are both ambiguous without region. Prefer ISO 8601 (<code>YYYY-MM-DDTHH:mm:ss.sssZ</code>) and document the timezone. See our <a href="/guides/unix-timestamps-explained.html">unix timestamps guide</a> for the epoch alternative.</p>
+<p><b>Date formats.</b> "2026-04-20" and "04/20/2026" are both ambiguous without region. Prefer ISO 8601 (<code>YYYY-MM-DDTHH:mm:ss.sssZ</code>) and document the timezone. See our <a href="/guides/unix-timestamps-explained.html">unix timestamps guide</a> for the epoch alternative.</p>
 <p><b>Trailing newlines + BOM.</b> Some CSV writers add both; some parsers silently add a blank record or an unreadable field. Test round-trip on a representative sample.</p>
 
 <br/><h2 class="text-uppercase"><b>Converting between formats</b></h2>

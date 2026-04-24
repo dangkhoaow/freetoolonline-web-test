@@ -3,7 +3,7 @@
 <time itemprop="datePublished" datetime="2026-04-20T08:00:00Z"><b>Published April 20, 2026</b></time>
 <hr/>
 
-<p class="lead">FFmpeg is the universal video and audio toolkit that every streaming service, every content creator, and every backend pipeline quietly depends on. You can run it in a browser tab via WebAssembly (our <a href="/ffmpeg-online.html">FFmpeg online</a> is one such implementation) or install it locally and invoke from a terminal. The &ldquo;right&rdquo; choice depends on file size, privacy posture, codec coverage, and whether you want to learn the CLI. This guide covers what each surface can and cannot do, with concrete recipes for when each wins.</p>
+<p class="lead">FFmpeg is the universal video and audio toolkit that every streaming service, every content creator, and every backend pipeline quietly depends on. You can run it in a browser tab via WebAssembly (our <a href="/ffmpeg-online.html">FFmpeg online</a> is one such implementation) or install it locally and invoke from a terminal. The "right" choice depends on file size, privacy posture, codec coverage, and whether you want to learn the CLI. This guide covers what each surface can and cannot do, with concrete recipes for when each wins.</p>
 
 <br/><h2 class="text-uppercase"><b>What each surface actually is</b></h2>
 <p><b>FFmpeg online (ffmpeg.wasm)</b> is a port of FFmpeg compiled to WebAssembly that runs inside a browser tab. The video file you pick is read into an in-memory file system inside the tab; FFmpeg runs against that virtual file system; the output is written back to memory and offered as a download. Nothing leaves your device.</p>
@@ -14,9 +14,9 @@
 <table class="w3-table-all w3-small">
 <tr><th>Attribute</th><th>FFmpeg online (browser wasm)</th><th>Local FFmpeg</th></tr>
 <tr><td>Install effort</td><td>Zero  -  open the page</td><td>Moderate  -  package manager + PATH</td></tr>
-<tr><td>Maximum input size</td><td>~1&ndash;2&nbsp;GB in practice (browser tab RAM cap)</td><td>Limited only by disk</td></tr>
+<tr><td>Maximum input size</td><td>~1-2&nbsp;GB in practice (browser tab RAM cap)</td><td>Limited only by disk</td></tr>
 <tr><td>Privacy</td><td>Files never leave the device (nothing uploaded)</td><td>Files never leave the device</td></tr>
-<tr><td>Encode speed (1080p H.264, 1-minute clip)</td><td>~60&ndash;90 seconds (wasm, single-threaded or SharedArrayBuffer)</td><td>~15 seconds (multi-core) or ~3 seconds (hardware encoder)</td></tr>
+<tr><td>Encode speed (1080p H.264, 1-minute clip)</td><td>~60-90 seconds (wasm, single-threaded or SharedArrayBuffer)</td><td>~15 seconds (multi-core) or ~3 seconds (hardware encoder)</td></tr>
 <tr><td>Hardware acceleration</td><td>No (runs in software via wasm)</td><td>Yes (NVENC, QSV, VideoToolbox, AMD AMF)</td></tr>
 <tr><td>Codec coverage</td><td>Wide but limited by build (H.264, VP9, AAC, Opus, AV1 in newer builds)</td><td>Every codec FFmpeg supports (depends on build flags)</td></tr>
 <tr><td>Filters / effects</td><td>Most common filters work</td><td>All FFmpeg filters</td></tr>
@@ -26,19 +26,19 @@
 </div>
 
 <br/><h2 class="text-uppercase"><b>When FFmpeg online wins</b></h2>
-<p><b>One-off conversion of a single file under 2 GB.</b> You have a single MOV from your phone that needs to be MP4 for an email. Opening the browser page is faster than installing a CLI tool you&rsquo;ll use once this year.</p>
-<p><b>Privacy-sensitive content.</b> A draft video you don&rsquo;t want to upload to a free online converter. In-browser wasm is the only way to guarantee the file stays on your device short of installing FFmpeg locally.</p>
-<p><b>Using a machine where you can&rsquo;t install software.</b> A work laptop with locked-down install permissions, a school lab, a library kiosk. If the browser can load the page, FFmpeg runs.</p>
+<p><b>One-off conversion of a single file under 2 GB.</b> You have a single MOV from your phone that needs to be MP4 for an email. Opening the browser page is faster than installing a CLI tool you'll use once this year.</p>
+<p><b>Privacy-sensitive content.</b> A draft video you don't want to upload to a free online converter. In-browser wasm is the only way to guarantee the file stays on your device short of installing FFmpeg locally.</p>
+<p><b>Using a machine where you can't install software.</b> A work laptop with locked-down install permissions, a school lab, a library kiosk. If the browser can load the page, FFmpeg runs.</p>
 <p><b>Teaching or demonstrating a specific FFmpeg command.</b> The in-browser console shows the FFmpeg log output in real time; students can see the same pipeline that runs locally.</p>
 
 <br/><h2 class="text-uppercase"><b>When local FFmpeg wins</b></h2>
-<p><b>Files over 2 GB.</b> A browser tab&rsquo;s heap is capped at 4 GB on most platforms; ffmpeg.wasm running inside that tab typically has 1.5&ndash;2 GB headroom after the code and metadata. Longer 4K footage, concatenating multiple source files, or high-bitrate source video will blow past that limit. Local FFmpeg streams from disk and never loads the full file into RAM.</p>
+<p><b>Files over 2 GB.</b> A browser tab's heap is capped at 4 GB on most platforms; ffmpeg.wasm running inside that tab typically has 1.5-2 GB headroom after the code and metadata. Longer 4K footage, concatenating multiple source files, or high-bitrate source video will blow past that limit. Local FFmpeg streams from disk and never loads the full file into RAM.</p>
 <p><b>Batch processing.</b> A folder of 200 videos to re-encode, a cron job that transcodes uploaded footage, a CI pipeline that generates thumbnails. Shell scripts + <code>xargs</code> or <code>find -exec</code> handle batches trivially; the browser UI handles one file at a time.</p>
-<p><b>Hardware encoders.</b> Encoding an hour of 1080p H.264 with NVENC takes 2&ndash;5 minutes on a modern NVIDIA GPU. The same hour via wasm takes 1&ndash;2 hours. For anyone processing more than a few minutes of video regularly, local FFmpeg with hardware acceleration is 20&ndash;30&times; faster.</p>
+<p><b>Hardware encoders.</b> Encoding an hour of 1080p H.264 with NVENC takes 2-5 minutes on a modern NVIDIA GPU. The same hour via wasm takes 1-2 hours. For anyone processing more than a few minutes of video regularly, local FFmpeg with hardware acceleration is 20-30&times; faster.</p>
 <p><b>Uncommon codecs or experimental filters.</b> If you need a filter that requires a specific FFmpeg build flag (<code>libx265</code> with x265 tuning, <code>libfdk_aac</code>, <code>libaom-av1</code>), local FFmpeg installed from source with the required flags is the only path.</p>
 
-<br/><h2 class="text-uppercase"><b>What &ldquo;online&rdquo; means in our tool</b></h2>
-<p>Our <a href="/ffmpeg-online.html">FFmpeg online</a> runs entirely in your browser. The FFmpeg code is WebAssembly compiled from the same source as the CLI. When you pick a file, it&rsquo;s read into an emscripten-emulated file system inside the tab. When FFmpeg runs, it reads from that virtual file system and writes to it. When it finishes, the output file is handed to you as a download via a Blob URL. At no point does the file travel over the network.</p>
+<br/><h2 class="text-uppercase"><b>What "online" means in our tool</b></h2>
+<p>Our <a href="/ffmpeg-online.html">FFmpeg online</a> runs entirely in your browser. The FFmpeg code is WebAssembly compiled from the same source as the CLI. When you pick a file, it's read into an emscripten-emulated file system inside the tab. When FFmpeg runs, it reads from that virtual file system and writes to it. When it finishes, the output file is handed to you as a download via a Blob URL. At no point does the file travel over the network.</p>
 <p>The page shows the actual FFmpeg command line and the live FFmpeg log  -  so you can copy the exact command to run it later on the CLI for larger files, see our <a href="/guides/mp4-vs-webm-for-web.html">MP4 vs WebM guide</a> for format-level decisions.</p>
 
 <br/><h2 class="text-uppercase"><b>Five concrete recipes that work on both surfaces</b></h2>
@@ -49,14 +49,14 @@
 <p><b>Generate a thumbnail at 5 seconds.</b> <code>ffmpeg -ss 00:00:05 -i in.mp4 -vframes 1 -q:v 2 thumb.jpg</code>.</p>
 
 <br/><h2 class="text-uppercase"><b>The decision rule in one sentence</b></h2>
-<p>If the file is under ~1&nbsp;GB, you need it converted right now, and you don&rsquo;t process video regularly  -  use FFmpeg online. If you&rsquo;re processing batches, large files, or regularly touching video  -  install local FFmpeg.</p>
+<p>If the file is under ~1&nbsp;GB, you need it converted right now, and you don't process video regularly  -  use FFmpeg online. If you're processing batches, large files, or regularly touching video  -  install local FFmpeg.</p>
 
 <br/><h2 class="text-uppercase"><b>Related tools</b></h2>
 <ul>
     <li><a href="/ffmpeg-online.html">FFmpeg Online</a>  -  in-browser FFmpeg for quick single-file work.</li>
     <li><a href="/video-converter.html">Video Converter</a>  -  higher-level MP4/WebM/MOV swaps without writing commands.</li>
     <li><a href="/video-maker.html">Video Maker</a>  -  stitch images into a video sequence.</li>
-    <li><a href="/extract-gif-to-image-frames.html">GIF Frame Extractor</a>  -  the reverse of FFmpeg&rsquo;s <code>image2</code> muxer.</li>
+    <li><a href="/extract-gif-to-image-frames.html">GIF Frame Extractor</a>  -  the reverse of FFmpeg's <code>image2</code> muxer.</li>
 </ul>
 
 <p><br/><a href="/video-tools.html">&larr; Back to Video Tools</a></p>
