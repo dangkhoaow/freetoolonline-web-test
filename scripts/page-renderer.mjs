@@ -387,7 +387,7 @@ function buildCollectionPageJsonLd({ canonicalOrigin, canonicalUrl, name, itemRo
     name,
     url: canonicalUrl,
     inLanguage: 'en-US',
-    lastReviewed: '2026-04-23',
+    lastReviewed: '2026-04-25',
     mainEntity: {
       '@type': 'ItemList',
       itemListElement,
@@ -849,7 +849,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
         headline: browserTitle,
         description,
         datePublished: '2026-04-19T08:00:00Z',
-        dateModified: '2026-04-23T08:00:00Z',
+        dateModified: '2026-04-25T08:00:00Z',
       })
     : '';
   if (articleJsonLd) {
