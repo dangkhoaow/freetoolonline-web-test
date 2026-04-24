@@ -50,19 +50,19 @@ const HOWTO_ROUTES = new Set([
   '/video-maker.html',
   '/ffmpeg-online.html',
   '/pdf-to-html.html',
-  // P10.2.5 Phase 10 Cycle 4 — HowTo +3. (html-to-pdf.html route does not
+  // P10.2.5 Phase 10 Cycle 4 - HowTo +3. (html-to-pdf.html route does not
   // exist in JSP_BY_ROUTE; base64-to-image.html substituted as the
   // developer-cluster peer.) Each slug listed here has a w3-pale-green
   // answer panel with a 3-step <ol> that extractHowToSteps picks up.
   '/gif-maker.html',
   '/qr-code-generator.html',
   '/base64-to-image.html',
-  // P11.2.2 Phase 11 Cycle 2 — PDF cluster HowTo backfill. Plan called for
+  // P11.2.2 Phase 11 Cycle 2 - PDF cluster HowTo backfill. Plan called for
   // /pdf-to-word.html but that route does not exist in JSP_BY_ROUTE; substituted
   // /join-pdf-from-multiple-files.html (PDF cluster peer with an existing
   // FAQ file and a clean merge-workflow intent). HowTo 25/51 → 26/51.
   '/join-pdf-from-multiple-files.html',
-  // P11.2.5 Phase 11 Cycle 3 — HowTo wave 3 (+4 → 30/51). Plan originally
+  // P11.2.5 Phase 11 Cycle 3 - HowTo wave 3 (+4 → 30/51). Plan originally
   // listed pdf-to-images + pdf-to-html which were already in HOWTO_ROUTES
   // (Phase 8/9 carryover); substituted /split-pdf-by-range.html (PDF peer)
   // and /svg-to-png.html (image-conversion peer) to keep the +4 count with
@@ -74,7 +74,7 @@ const HOWTO_ROUTES = new Set([
   '/svg-to-png.html',
 ]);
 
-// P10.3.1 — Per-tool og:image differentiation (Phase 10 Cycle 4).
+// P10.3.1 - Per-tool og:image differentiation (Phase 10 Cycle 4).
 // The default og:image (CloudFront logo) is identical across 82 URLs which
 // produces zero Discover / Twitter / LinkedIn preview differentiation. This
 // map targets the top 5 non-ZIP URLs with per-tool 1200×630 PNGs once the
@@ -228,7 +228,7 @@ function buildWebApplicationJsonLd({ browserTitle, canonicalUrl, description, ap
     // P8.2.4 schema-polish additions (Phase 8 Cycle 3): browserRequirements,
     // inLanguage, and a brand-logo screenshot so Google has a canonical visual
     // asset for SoftwareApp rich results. Per-tool screenshot upgrade deferred
-    // to a dedicated CDN pipeline (P8.4.6 interim — default logo).
+    // to a dedicated CDN pipeline (P8.4.6 interim - default logo).
     browserRequirements: 'Requires JavaScript. Requires HTML5.',
     inLanguage: 'en-US',
     screenshot: 'https://dkbg1jftzfsd2.cloudfront.net/image/logo.200x200.png',
@@ -264,7 +264,7 @@ function buildArticleJsonLd({ canonicalUrl, canonicalOrigin, headline, descripti
     ...(dateModified ? { dateModified } : {}),
     image: 'https://dkbg1jftzfsd2.cloudfront.net/image/logo.200x200.png',
     speakable: {
-      // P10.3.7 — `.answer` selector was a dead match on guides (0/19 guide
+      // P10.3.7 - `.answer` selector was a dead match on guides (0/19 guide
       // pages emit that class; it's a tool-page idiom). Drop it and keep the
       // two selectors that resolve reliably on every guide: the H1 and the
       // pale-green answer/definition panel.
@@ -950,7 +950,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     console.log(`[seo:editorial] Injected byline/trust on ${normalizedRoute}.`);
   }
   const stagingBanner = isStaging ? buildStagingBannerHtml() : '';
-  // P10.1.2 — Staging GA4 isolation. Staging must not emit the prod GA4/GTM
+  // P10.1.2 - Staging GA4 isolation. Staging must not emit the prod GA4/GTM
   // property; `noindex` does not suppress GA event transmission. Default ON for
   // production builds (isStaging=false). Flip GA4_DISABLED=1 for any build to
   // suppress all GTM + GA injection (used by staging CI to prevent prod GA4

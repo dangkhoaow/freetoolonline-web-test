@@ -19,10 +19,10 @@ export const INFO_ROUTES = new Set([
   '/contact-us.html',
   '/privacy-policy.html',
   '/tags.html',
-  // Phase 11 Cycle 5 P11.4.1 — author bio / editorial team (E-E-A-T surface).
+  // Phase 11 Cycle 5 P11.4.1 - author bio / editorial team (E-E-A-T surface).
   '/editorial-team.html',
-  // Phase 11 Cycle 6 P11.4.8 — HTML sitemap UX / trust / crawl-insurance page.
-  // Title uses suffix pattern ("Site Map — ... | Free Tool Online") to avoid
+  // Phase 11 Cycle 6 P11.4.8 - HTML sitemap UX / trust / crawl-insurance page.
+  // Title uses suffix pattern ("Site Map - ... | Free Tool Online") to avoid
   // brand-query cannibalization at decayed pos 7.25. No JSON-LD deliberately.
   '/sitemap.html',
   // Guides - plan §3.3. Treated as informational (no related-tools, no rating,
@@ -34,7 +34,7 @@ export const INFO_ROUTES = new Set([
   // §3.5 comparison guides (Cycle 4).
   '/guides/png-vs-svg-when-to-use.html',
   '/guides/css-minifier-vs-compressor.html',
-  // Phase 8 Cycle 3 §3.4 greenfield guides — 4 pillar + 2 comparison + 6 how-to + 1 case-study.
+  // Phase 8 Cycle 3 §3.4 greenfield guides - 4 pillar + 2 comparison + 6 how-to + 1 case-study.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
   '/guides/md5-vs-sha256-when-to-hash.html',
@@ -48,18 +48,18 @@ export const INFO_ROUTES = new Set([
   '/guides/how-to-check-webcam-and-microphone-before-an-interview.html',
   '/guides/how-to-minify-css-js-for-cloud-run-cold-start.html',
   '/guides/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html',
-  // Phase 10 Cycle 4 P10.3.4 — cluster-disambiguation guide (compress vs convert
+  // Phase 10 Cycle 4 P10.3.4 - cluster-disambiguation guide (compress vs convert
   // intent router; upper-funnel capture for "file compressor" / "image compressor" queries).
   '/guides/when-to-compress-vs-convert-an-image.html',
-  // Phase 11 Cycle 4 P11.3.3 — how-to guide targeting the 9,737-impression
+  // Phase 11 Cycle 4 P11.3.3 - how-to guide targeting the 9,737-impression
   // `how to compress a folder` keyword opportunity (0.14% CTR / pos 6.10).
   // Upper-funnel routing to the frozen ZIP cluster without modifying any
   // zip satellite.
   '/guides/how-to-compress-a-folder-for-email.html',
-  // Phase 11 Cycle 5 P11.2.1 — device-test-checklist guide (Phase 10 P10.3.5
+  // Phase 11 Cycle 5 P11.2.1 - device-test-checklist guide (Phase 10 P10.3.5
   // carryover; upper-funnel routing for device-test cluster).
   '/guides/device-test-checklist-for-remote-work.html',
-  // Phase 11 Cycle 5 P11.3.5 — PDF cluster disambiguation ladder (routes
+  // Phase 11 Cycle 5 P11.3.5 - PDF cluster disambiguation ladder (routes
   // users across 12 PDF tools by intent).
   '/guides/pdf-editing-ladder.html',
 ]);
