@@ -21,6 +21,10 @@ export const INFO_ROUTES = new Set([
   '/tags.html',
   // Phase 11 Cycle 5 P11.4.1 — author bio / editorial team (E-E-A-T surface).
   '/editorial-team.html',
+  // Phase 11 Cycle 6 P11.4.8 — HTML sitemap UX / trust / crawl-insurance page.
+  // Title uses suffix pattern ("Site Map — ... | Free Tool Online") to avoid
+  // brand-query cannibalization at decayed pos 7.25. No JSON-LD deliberately.
+  '/sitemap.html',
   // Guides - plan §3.3. Treated as informational (no related-tools, no rating,
   // no HowTo; Article JSON-LD emitted separately by page-renderer.mjs).
   '/guides/heic-vs-jpg-vs-webp.html',
@@ -119,6 +123,8 @@ export const JSP_BY_ROUTE = {
   '/tags.html': 'tags.jsp',
   // Phase 11 Cycle 5 P11.4.1.
   '/editorial-team.html': 'editorial-team.jsp',
+  // Phase 11 Cycle 6 P11.4.8.
+  '/sitemap.html': 'sitemap.jsp',
   '/alternatead.html': 'alternatead.jsp',
   // Guides - plan §3.3 greenfield /guides/ subpath for long-form content.
   '/guides/heic-vs-jpg-vs-webp.html': 'guide/heic-vs-jpg-vs-webp.jsp',
