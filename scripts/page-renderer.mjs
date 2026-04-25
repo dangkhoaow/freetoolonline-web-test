@@ -80,6 +80,12 @@ const HOWTO_ROUTES = new Set([
   '/resize-image.html',
   '/photo-editor.html',
   '/insights-image-optimizer.html',
+  // P12.2.6 Phase 12 Cycle 3 - HowTo backfill image-conversion. Plan called
+  // for png-to-svg + extract-gif-to-image-frames; extract-gif was already in
+  // HOWTO_ROUTES + already had a w3-pale-green answer panel from a prior
+  // phase, so net addition is +1 -> 35/51. Answer panel authored via
+  // seo-content-writer (raster-to-vector tracing 3-step).
+  '/png-to-svg.html',
 ]);
 
 // P10.3.1 - Per-tool og:image differentiation (Phase 10 Cycle 4).
