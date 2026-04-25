@@ -72,6 +72,14 @@ const HOWTO_ROUTES = new Set([
   '/css-gradient-generator.html',
   '/split-pdf-by-range.html',
   '/svg-to-png.html',
+  // P12.2.2 Phase 12 Cycle 2 - HowTo wave 4 (+4 -> 34/51 = 67%). Image-editing
+  // cluster backfill: existing 2/8 (compress-image, gif-maker) -> 6/8 with these
+  // additions. Each tool gets a w3-pale-green answer panel with a 3-step <ol>
+  // authored via seo-content-writer.
+  '/crop-image.html',
+  '/resize-image.html',
+  '/photo-editor.html',
+  '/insights-image-optimizer.html',
 ]);
 
 // P10.3.1 - Per-tool og:image differentiation (Phase 10 Cycle 4).
