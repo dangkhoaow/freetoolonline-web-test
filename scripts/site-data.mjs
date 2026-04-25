@@ -62,6 +62,11 @@ export const INFO_ROUTES = new Set([
   // Phase 11 Cycle 5 P11.3.5 - PDF cluster disambiguation ladder (routes
   // users across 12 PDF tools by intent).
   '/guides/pdf-editing-ladder.html',
+  // Phase 13 Cycle 2.1 P13.2.1 - file-compressor head-query recovery
+  // (252,050 monthly impressions @ 0.04% CTR, pos 9.94 - leak target).
+  // Routes upper-funnel "file compressor" intent into the right tool by file
+  // type without modifying any ZIP satellite.
+  '/guides/file-compressor-vs-zip-what-to-pick.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -94,6 +99,8 @@ export const GUIDE_ROUTES = new Set([
   // Phase 11 Cycle 5 P11.2.1 + P11.3.5.
   '/guides/device-test-checklist-for-remote-work.html',
   '/guides/pdf-editing-ladder.html',
+  // Phase 13 Cycle 2.1 P13.2.1.
+  '/guides/file-compressor-vs-zip-what-to-pick.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -155,6 +162,7 @@ export const JSP_BY_ROUTE = {
   // Phase 11 Cycle 5 P11.2.1 + P11.3.5.
   '/guides/device-test-checklist-for-remote-work.html': 'guide/device-test-checklist-for-remote-work.jsp',
   '/guides/pdf-editing-ladder.html': 'guide/pdf-editing-ladder.jsp',
+  '/guides/file-compressor-vs-zip-what-to-pick.html': 'guide/file-compressor-vs-zip-what-to-pick.jsp',
   '/compose-pdf.html': 'pdf/compose-pdf.jsp',
   '/split-pdf-by-range.html': 'pdf/split-by-range.jsp',
   '/split-pdf-to-each-pages.html': 'pdf/split-to-single-pages.jsp',
