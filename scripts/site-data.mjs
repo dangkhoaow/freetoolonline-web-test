@@ -67,6 +67,10 @@ export const INFO_ROUTES = new Set([
   // Routes upper-funnel "file compressor" intent into the right tool by file
   // type without modifying any ZIP satellite.
   '/guides/file-compressor-vs-zip-what-to-pick.html',
+  // Phase 13 Cycle 2.2 P13.2.2 - HEIC vs JPG converter decision guide.
+  // Pairs with /heic-to-jpg.html (Cycle 1 verb-first recovery) to absorb
+  // top-of-funnel "convert HEIC?" intent into a destination-quality page.
+  '/guides/heic-vs-jpg-converter-when-each-wins.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -101,6 +105,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pdf-editing-ladder.html',
   // Phase 13 Cycle 2.1 P13.2.1.
   '/guides/file-compressor-vs-zip-what-to-pick.html',
+  // Phase 13 Cycle 2.2 P13.2.2.
+  '/guides/heic-vs-jpg-converter-when-each-wins.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -163,6 +169,7 @@ export const JSP_BY_ROUTE = {
   '/guides/device-test-checklist-for-remote-work.html': 'guide/device-test-checklist-for-remote-work.jsp',
   '/guides/pdf-editing-ladder.html': 'guide/pdf-editing-ladder.jsp',
   '/guides/file-compressor-vs-zip-what-to-pick.html': 'guide/file-compressor-vs-zip-what-to-pick.jsp',
+  '/guides/heic-vs-jpg-converter-when-each-wins.html': 'guide/heic-vs-jpg-converter-when-each-wins.jsp',
   '/compose-pdf.html': 'pdf/compose-pdf.jsp',
   '/split-pdf-by-range.html': 'pdf/split-by-range.jsp',
   '/split-pdf-to-each-pages.html': 'pdf/split-to-single-pages.jsp',
