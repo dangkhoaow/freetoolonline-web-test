@@ -168,6 +168,7 @@ function renderMetaTags(ctx) {
     `<meta name="yandex-verification" content="efeeb1a14a628297" />`,
     `<meta name="google-site-verification" content="G2vSQjrnGdjMgxsydPFQBuLffcKtZyo4f7VSzefzvQ4" />`,
     `<meta name="viewport" content="width=device-width, initial-scale=1">`,
+    ctx.deploySha ? `<meta name="deploy-sha" content="${escapeHtml(ctx.deploySha)}">` : '',
     `<link rel="preconnect" href="https://dkbg1jftzfsd2.cloudfront.net" crossorigin>`,
     `<link rel="dns-prefetch" href="https://dkbg1jftzfsd2.cloudfront.net">`,
     `<meta name='apple-mobile-web-app-capable' content='yes'>`,
@@ -743,7 +744,7 @@ export function renderJspBody(innerHtml, ctx) {
   return html;
 }
 
-export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePath, isStaging, rewriteInternalContent, apiOrigin, shortenDomain, appVersion, ioVersion, getAlterUploaderDelayMs, bgsCollection, ioInfos, unsplashKey, randomString, sharedFragments, pageData, pageAttrs, bodyHtml, themeCss, aggregateRating, relatedToolsData }) {
+export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePath, isStaging, rewriteInternalContent, apiOrigin, shortenDomain, appVersion, ioVersion, deploySha, getAlterUploaderDelayMs, bgsCollection, ioInfos, unsplashKey, randomString, sharedFragments, pageData, pageAttrs, bodyHtml, themeCss, aggregateRating, relatedToolsData }) {
   const normalizedRoute = route;
   const normalizedBasePath = normalizeBasePath(basePath);
   const pageName = pageData.pageName;
@@ -900,6 +901,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     pageStyle,
     jsonLd: jsonLdBlock,
     appVersion,
+    deploySha,
   });
   const titleText = navTitle;
   const body = renderJspBody(bodyHtml, {

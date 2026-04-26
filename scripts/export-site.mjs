@@ -1,6 +1,7 @@
 import { access, copyFile, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { execSync } from 'node:child_process';
 import {
   ALIAS_ROUTES,
   DEFAULT_ALTER_UPLOADER_DELAY_MS,
@@ -51,6 +52,16 @@ const robotsPath = path.join(staticAssetsRoot, 'robots.txt');
 const adsPath = path.join(staticAssetsRoot, 'ads.txt');
 const themeCssPath = path.join(tagsRoot, 'style-all-default.tag');
 const runtimeConfig = await loadRuntimeConfig(staticAssetsRoot);
+const deploySha = resolveDeploySha();
+
+function resolveDeploySha() {
+  if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA.slice(0, 12);
+  try {
+    return execSync('git rev-parse HEAD', { cwd: repoRoot, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim().slice(0, 12);
+  } catch {
+    return 'local-dev';
+  }
+}
 
 async function main() {
   await mkdir(distDir, { recursive: true });
@@ -226,6 +237,7 @@ async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData,
       shortenDomain,
       appVersion: runtimeConfig.appVersion,
       ioVersion: runtimeConfig.ioVersion,
+      deploySha,
       getAlterUploaderDelayMs: runtimeConfig.getAlterUploaderDelayMs,
       bgsCollection: runtimeConfig.bgsCollection,
       ioInfos: runtimeConfig.ioInfos,
