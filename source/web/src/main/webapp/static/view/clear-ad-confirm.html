@@ -1,0 +1,165 @@
+<style>
+    .w3-white {
+        color: #000!important;
+        background-color: #fff!important;
+    }
+
+    .w3-black {
+        color: #fff!important;
+        background-color: #202124!important
+    }
+
+
+	@media (max-width: 767px) {
+		#clear-ad-confirm button:first-child {
+			margin-right: 0!important;
+			margin-bottom: 10px!important;
+		}
+	}
+</style>
+<div class="w3-modal" id="clear-ad-confirm" style="display: block">
+    <div class="w3-modal-content" style="padding: 10px; padding-top: 40px">
+        <div class='w3-container'>
+            <div class="w3-display-topleft" style="left: 10px;top: 10px;color: #0066b3;">Disable ads message</div>
+            <div class='w3-row'>
+                <p>Could you possibly *consider* when wiping out all of Ads? The server cost is enormous for delivering to you the best experience.</p>
+                <p>
+                    <b>NOTE:</b>
+                    <br/>
+                    This page will reload when you chose to disable ads.<br/>The disabling duration is one day.
+                </p>
+            </div>
+            <br/>
+            <div class="w3-row w3-right-align">
+                <button class="w3-btn w3-black disable-ad-btn buy-me-a-coffee-btn" style="margin-left: 10px; margin-top: 10px;margin-bottom: 0px !important;" onclick="window.open($('#buyMeACoffeeBtnID').attr('href'), '_blank');setCookie('disableAd', true, 1);localStorage[pageName + '-downloaded'] = true;window.location.reload()">Stop Ads &amp; Donate via Buy Me A Coffee</button>
+                <button class="w3-btn w3-black disable-ad-btn" style="margin-left: 10px; margin-top: 10px;" onclick="$('#donateBtnID').click();setCookie('disableAd', true, 1);localStorage[pageName + '-downloaded'] = true;window.location.reload()">Stop Ads &amp; Donate via PayPal</button>
+                <button class="w3-btn w3-black disable-ad-btn" style="margin-left: 10px; margin-top: 10px;" onclick="setCookie('disableAd', true, 1);window.location.reload();">Stop Ads</button>
+                <button class="w3-btn w3-white w3-border" style="margin-left: 10px; margin-top: 10px;" onclick="document.getElementById('clear-ad-confirm').style.display='none'">Still keep Ads</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function sendClearAdsDlgEv() {
+        try {
+            ga('send', {
+                hitType: 'event',
+                eventCategory: 'CVR',
+                eventAction: minifyPageName(pageName) + 'clr ADs dlg opened',
+                eventLabel: pageName
+            });
+        } catch (e) {}
+    };
+
+    function appendClearAdBannerAd() {
+        try {
+            var clearAdBannerAdState = window.__clearAdBannerAdState = window.__clearAdBannerAdState || { loading: false, loaded: false };
+            var noadsParam = typeof getParamValue === 'function' ? getParamValue('noads') : null;
+            var disableAdCookie = typeof getCookie === 'function' ? getCookie('disableAd') : '';
+            var existingSlotCount = $('#clear-ad-confirm .clear-ad-banner-ad-slot').length;
+            console.log('[clear-ad] appendClearAdBannerAd start', {
+                pageName: typeof pageName === 'undefined' ? '' : pageName,
+                noadsParam: noadsParam,
+                disableAdCookie: disableAdCookie,
+                existingSlotCount: existingSlotCount,
+                htmlAdsDisabled: $('html').hasClass('ads-disabled'),
+                loading: clearAdBannerAdState.loading,
+                loaded: clearAdBannerAdState.loaded
+            });
+            if (clearAdBannerAdState.loaded) {
+                console.log('[clear-ad] appendClearAdBannerAd skipped because banner already loaded');
+                return;
+            }
+            if (clearAdBannerAdState.loading) {
+                console.log('[clear-ad] appendClearAdBannerAd skipped because load is already in progress');
+                return;
+            }
+            if ((typeof getParamValue === 'function' && getParamValue('noads') != null) || (typeof getCookie === 'function' && getCookie('disableAd') !== '' && getCookie('disableAd') !== 'false')) {
+                console.log('[clear-ad] appendClearAdBannerAd skipped because ads are disabled', {
+                    noadsParam: noadsParam,
+                    disableAdCookie: disableAdCookie
+                });
+                return;
+            }
+            if (existingSlotCount > 0) {
+                clearAdBannerAdState.loaded = true;
+                console.log('[clear-ad] appendClearAdBannerAd skipped because slot already exists');
+                return;
+            }
+            clearAdBannerAdState.loading = true;
+            var adFragmentUrl = 'view/top-page-banner-ad.html?v=' + APP_VERSION;
+            console.log('[clear-ad] loading clear-ad banner ad fragment', { url: adFragmentUrl });
+            $.ajax({
+                context: this,
+                dataType: "html",
+                url: adFragmentUrl,
+                success: function(result) {
+                    try {
+                        console.log('[clear-ad] clear-ad banner ad fragment loaded', {
+                            length: result ? result.length : 0
+                        });
+                        clearAdBannerAdState.loading = false;
+                        if ($('#clear-ad-confirm .clear-ad-banner-ad-slot').length > 0) {
+                            clearAdBannerAdState.loaded = true;
+                            console.log('[clear-ad] appendClearAdBannerAd skipped after load because slot already exists');
+                            return;
+                        }
+                        var $adContainer = $('<div class="clear-ad-banner-ad-slot" style="margin-top: 12px;"></div>');
+                        $('#clear-ad-confirm .w3-modal-content').append($adContainer);
+                        $adContainer.append(result);
+                        clearAdBannerAdState.loaded = true;
+                        console.log('[clear-ad] clear-ad banner ad appended; preparing adsbygoogle push');
+                        var pushAd = function() {
+                            try {
+                                console.log('[clear-ad] adsbygoogle push invoked');
+                                (adsbygoogle = window.adsbygoogle || []).push({});
+                            } catch (e) {
+                                console.log('[clear-ad] adsbygoogle push error', e);
+                            }
+                        };
+                        if (document.querySelector('script[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]')) {
+                            console.log('[clear-ad] adsbygoogle script already present');
+                            pushAd();
+                        } else if (typeof loadScript === 'function') {
+                            console.log('[clear-ad] loading adsbygoogle script before push');
+                            loadScript('https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js', function() {
+                                console.log('[clear-ad] adsbygoogle script loaded');
+                                pushAd();
+                            });
+                        } else {
+                            console.log('[clear-ad] loadScript unavailable; pushing adsbygoogle directly');
+                            pushAd();
+                        }
+                    } catch (e) {
+                        clearAdBannerAdState.loading = false;
+                        console.log('[clear-ad] appendClearAdBannerAd success handler error', e);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    clearAdBannerAdState.loading = false;
+                    console.log('[clear-ad] failed to load clear-ad banner ad fragment', {
+                        status: status,
+                        error: error
+                    });
+                }
+            });
+        } catch (e) {
+            console.log('[clear-ad] appendClearAdBannerAd outer error', e);
+        }
+    }
+
+    window.__appendClearAdBannerAd = appendClearAdBannerAd;
+    sendClearAdsDlgEv();
+    appendClearAdBannerAd();
+
+    $('.disable-ad-btn').on('click', function() {
+        try {
+            ga('send', {
+                hitType: 'event',
+                eventCategory: 'CVR',
+                eventAction: minifyPageName(pageName) + 'clk disable ADs',
+                eventLabel: pageName
+            });
+        } catch (e) {}
+    });
+</script>
