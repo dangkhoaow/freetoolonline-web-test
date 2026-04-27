@@ -71,6 +71,16 @@ export const INFO_ROUTES = new Set([
   // Pairs with /heic-to-jpg.html (Cycle 1 verb-first recovery) to absorb
   // top-of-funnel "convert HEIC?" intent into a destination-quality page.
   '/guides/heic-vs-jpg-converter-when-each-wins.html',
+  // Phase 16 Cycle A P16.N1 - "file compressor" head-query (259,581 impr /
+  // 0.04% CTR / pos 9.9). Greenfield explainer + routing guide. Touches
+  // no existing tool / hub / guide URL; ZIP-CRITICAL-CARE compliant.
+  '/guides/what-is-a-file-compressor-and-which-to-use.html',
+  // Phase 16 Cycle A P16.N2 - "how to compress a file" + variants
+  // (~10K impr / 0.02% CTR / pos 10.5). Greenfield how-to guide.
+  '/guides/how-to-compress-a-file-online.html',
+  // Phase 16 Cycle A P16.N4 - "how to reduce zip file size" cluster
+  // (~2.2K impr / 10-16% CTR / pos 4). Greenfield how-to guide.
+  '/guides/how-to-reduce-zip-file-size-online.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -107,6 +117,10 @@ export const GUIDE_ROUTES = new Set([
   '/guides/file-compressor-vs-zip-what-to-pick.html',
   // Phase 13 Cycle 2.2 P13.2.2.
   '/guides/heic-vs-jpg-converter-when-each-wins.html',
+  // Phase 16 Cycle A P16.N1 / P16.N2 / P16.N4.
+  '/guides/what-is-a-file-compressor-and-which-to-use.html',
+  '/guides/how-to-compress-a-file-online.html',
+  '/guides/how-to-reduce-zip-file-size-online.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -170,6 +184,10 @@ export const JSP_BY_ROUTE = {
   '/guides/pdf-editing-ladder.html': 'guide/pdf-editing-ladder.jsp',
   '/guides/file-compressor-vs-zip-what-to-pick.html': 'guide/file-compressor-vs-zip-what-to-pick.jsp',
   '/guides/heic-vs-jpg-converter-when-each-wins.html': 'guide/heic-vs-jpg-converter-when-each-wins.jsp',
+  // Phase 16 Cycle A P16.N1 / P16.N2 / P16.N4.
+  '/guides/what-is-a-file-compressor-and-which-to-use.html': 'guide/what-is-a-file-compressor-and-which-to-use.jsp',
+  '/guides/how-to-compress-a-file-online.html': 'guide/how-to-compress-a-file-online.jsp',
+  '/guides/how-to-reduce-zip-file-size-online.html': 'guide/how-to-reduce-zip-file-size-online.jsp',
   '/compose-pdf.html': 'pdf/compose-pdf.jsp',
   '/split-pdf-by-range.html': 'pdf/split-by-range.jsp',
   '/split-pdf-to-each-pages.html': 'pdf/split-to-single-pages.jsp',
