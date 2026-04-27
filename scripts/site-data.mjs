@@ -81,6 +81,13 @@ export const INFO_ROUTES = new Set([
   // Phase 16 Cycle A P16.N4 - "how to reduce zip file size" cluster
   // (~2.2K impr / 10-16% CTR / pos 4). Greenfield how-to guide.
   '/guides/how-to-reduce-zip-file-size-online.html',
+  // Phase 16 Cycle B P16.N11 - "convert heic to jpg" head query
+  // (5,500+ impr / <2% CTR / pos 11-24). Pure step-by-step how-to;
+  // pairs with existing heic-vs-jpg-vs-webp (which covers the WHEN).
+  '/guides/how-to-convert-heic-to-jpg-step-by-step.html',
+  // Phase 16 Cycle B P16.N16 - "lcd test" head query (28K aggregate
+  // impr / 1.10% CTR / pos 6.1). Explainer + when-to-run + boundary.
+  '/guides/what-an-lcd-test-does-and-when-to-run-one.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -121,6 +128,9 @@ export const GUIDE_ROUTES = new Set([
   '/guides/what-is-a-file-compressor-and-which-to-use.html',
   '/guides/how-to-compress-a-file-online.html',
   '/guides/how-to-reduce-zip-file-size-online.html',
+  // Phase 16 Cycle B P16.N11 / P16.N16.
+  '/guides/how-to-convert-heic-to-jpg-step-by-step.html',
+  '/guides/what-an-lcd-test-does-and-when-to-run-one.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -188,6 +198,10 @@ export const JSP_BY_ROUTE = {
   '/guides/what-is-a-file-compressor-and-which-to-use.html': 'guide/what-is-a-file-compressor-and-which-to-use.jsp',
   '/guides/how-to-compress-a-file-online.html': 'guide/how-to-compress-a-file-online.jsp',
   '/guides/how-to-reduce-zip-file-size-online.html': 'guide/how-to-reduce-zip-file-size-online.jsp',
+  // Phase 16 Cycle B P16.G1 hub + P16.N11 + P16.N16.
+  '/guides.html': 'utility/guides.jsp',
+  '/guides/how-to-convert-heic-to-jpg-step-by-step.html': 'guide/how-to-convert-heic-to-jpg-step-by-step.jsp',
+  '/guides/what-an-lcd-test-does-and-when-to-run-one.html': 'guide/what-an-lcd-test-does-and-when-to-run-one.jsp',
   '/compose-pdf.html': 'pdf/compose-pdf.jsp',
   '/split-pdf-by-range.html': 'pdf/split-by-range.jsp',
   '/split-pdf-to-each-pages.html': 'pdf/split-to-single-pages.jsp',

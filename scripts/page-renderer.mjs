@@ -784,7 +784,12 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     || /uploadContainerSecond/.test(bodyHtml)
     || /uploadContainer/.test(bodyHtml);
   const showAds = !isHome && !isInfoRoute(normalizedRoute) && normalizedRoute !== '/alternatead.html';
-  const isHubPage = normalizedRoute.endsWith('-tools.html');
+  // Phase 16 Cycle B: detect hub pages either by suffix (existing
+  // /<X>-tools.html convention) or by explicit hubRoute registration in
+  // SEO_CLUSTER_GROUPS (added so /guides.html participates in the same
+  // hub treatment without renaming it to /guide-tools.html).
+  const isHubPage = normalizedRoute.endsWith('-tools.html')
+    || SEO_CLUSTER_GROUPS.some((group) => group.hubRoute === normalizedRoute);
   const showRating = showAds && !isHubPage;
   const faqItems = extractFaqItems(pageData.faq, pageName);
   if (pageData.faq) {

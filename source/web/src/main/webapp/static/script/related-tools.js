@@ -85,7 +85,10 @@ try {
     { title: "HEIC vs JPG Converter - When Each Wins", url: "https://freetoolonline.com/guides/heic-vs-jpg-converter-when-each-wins.html", include: !1, tags: "guide,image-conversion,heic,jpg" },
     { title: "What Is a File Compressor and Which to Use", url: "https://freetoolonline.com/guides/what-is-a-file-compressor-and-which-to-use.html", include: !1, tags: "guide,zip,compress,image-editing,image-conversion,pdf" },
     { title: "How to Compress a File Online (Step by Step)", url: "https://freetoolonline.com/guides/how-to-compress-a-file-online.html", include: !1, tags: "guide,zip,compress,image-editing,pdf,video" },
-    { title: "How to Reduce Zip File Size Online (Free)", url: "https://freetoolonline.com/guides/how-to-reduce-zip-file-size-online.html", include: !1, tags: "guide,zip,compress" }
+    { title: "How to Reduce Zip File Size Online (Free)", url: "https://freetoolonline.com/guides/how-to-reduce-zip-file-size-online.html", include: !1, tags: "guide,zip,compress" },
+    { title: "How to Convert HEIC to JPG Step by Step", url: "https://freetoolonline.com/guides/how-to-convert-heic-to-jpg-step-by-step.html", include: !1, tags: "guide,image-conversion,heic,jpg" },
+    { title: "What an LCD Test Does (and When to Run One)", url: "https://freetoolonline.com/guides/what-an-lcd-test-does-and-when-to-run-one.html", include: !1, tags: "guide,device-test,lcd" },
+    { title: "All Guides - Browser Tool Library", url: "https://freetoolonline.com/guides.html", include: !1, tags: "guide" }
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
