@@ -1,0 +1,35 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>JSON vs YAML vs TOML, Explained</b></h1>
+    <p><em>Last reviewed 2026-04-27. Open <a href="/json-parser.html">the JSON parser</a> or <a href="/json-to-csv.html">JSON to CSV</a> for in-browser JSON work.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> JSON is for machines - strict syntax, easy to parse, ugly to read. YAML is for humans - whitespace-significant, supports anchors and references, prone to subtle parse errors. TOML is a middle ground - clean for shallow config, awkward for deep nesting. Pick by who edits the file and how complex the data is.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>The three formats side by side</b></h2>
+    <p>Same config, three ways:</p>
+    <pre style="background:#f4f4f4;padding:12px;border-left:4px solid #4caf50;overflow-x:auto;">
+JSON                        YAML                  TOML
+{                           server:               [server]
+  "server": {                 host: "localhost"   host = "localhost"
+    "host": "localhost",      port: 8080          port = 8080
+    "port": 8080
+  }
+}                                                 </pre>
+
+    <h2 class="text-uppercase"><b>JSON - strict and unambiguous</b></h2>
+    <p>JSON's design goal was a format that any language could parse identically. The grammar is small (six data types, well-defined whitespace rules). Every parser produces the same tree. That uniformity is why JSON dominates APIs, configuration files for tools that ship with a JSON parser, and machine-to-machine serialization.</p>
+    <p>Where JSON is awkward: comments are not allowed, trailing commas are syntax errors, and nested deep config gets unreadable for humans. The fix is JSON5 (JSON with comments and trailing commas) for human-edited config, while keeping pure JSON for transport.</p>
+
+    <h2 class="text-uppercase"><b>YAML - readable, sometimes too clever</b></h2>
+    <p>YAML reads like outline notes. Indentation creates structure; lists use dashes; values do not need quotes. The fields are short and the file is dense. That is why YAML dominates Kubernetes, GitHub Actions, Docker Compose, and CI configs - all places where humans edit the file daily.</p>
+    <p>Where YAML hurts: whitespace is significant and tabs break the parser. The string "yes" parses as the boolean true. Norway country code "NO" parses as false. Numbers with leading zeros parse as octal. Multi-line strings have four different syntaxes. The format is human-readable but not human-safe; subtle parse bugs are common in production. The fix is to lint every YAML file in CI and to quote any string that looks like it could be misinterpreted.</p>
+
+    <h2 class="text-uppercase"><b>TOML - simple, shallow</b></h2>
+    <p>TOML targets the config-file niche where YAML is too loose and JSON is too verbose. Sections in square brackets, key-value pairs with equals signs, native date and time types. Cargo (Rust's package manager), pyproject.toml in modern Python, and several config tools use it.</p>
+    <p>Where TOML is awkward: deeply nested data. The syntax for arrays of tables is verbose and not visually obvious. For nesting more than 2-3 levels, YAML or JSON read better. TOML wins when the config is naturally flat - a list of dependencies, a list of build settings, a small set of named sections.</p>
+
+    <h2 class="text-uppercase"><b>Decision rule</b></h2>
+    <p>Machine-to-machine: JSON. Human config edited daily, with mostly-flat structure: TOML. Human config edited daily, with deeply nested structure: YAML, with linting in CI. When in doubt, JSON - the strictness is cheap insurance.</p>
+    <p>For converting between formats, see <a href="/json-to-csv.html">JSON to CSV</a> or <a href="/json-parser.html">the JSON parser</a>. For other developer tooling, <a href="/developer-tools.html">the developer tools hub</a>.</p>
+</div>

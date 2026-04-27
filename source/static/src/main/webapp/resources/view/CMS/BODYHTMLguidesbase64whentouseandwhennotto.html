@@ -1,0 +1,32 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Base64 - When to Use and When Not To</b></h1>
+    <p><em>Last reviewed 2026-04-27. Open <a href="/base64-to-image.html">Base64 to Image</a> or <a href="/image-to-base64.html">Image to Base64</a> for in-browser conversion.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> Base64 makes binary data text-safe by encoding three bytes as four ASCII characters. The cost: a 33% size increase. Right call for small inline assets in HTML/CSS data URLs (icons under a few KB), email attachments inside MIME, and JSON payloads carrying binary. Wrong call for anything over a few kilobytes - the size penalty hurts and a real binary path is faster.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>What base64 actually does</b></h2>
+    <p>Take three bytes of binary input - 24 bits. Group them as four 6-bit chunks. Map each 6-bit chunk to one of 64 ASCII characters (A-Z, a-z, 0-9, +, /). Output is now safe to put in an email body, a URL, a JSON string, or a JavaScript source file - none of which handle raw binary cleanly.</p>
+    <p>The price is the encoding's expansion: every 3 bytes in becomes 4 bytes out. Plus padding (the "=" signs at the end) for inputs whose length is not a multiple of 3. The math is exact: encoded size = ⌈input/3⌉ × 4 bytes.</p>
+
+    <h2 class="text-uppercase"><b>When base64 is the right call</b></h2>
+    <ul>
+        <li><b>Small inline images.</b> A 1 KB icon in a data URL inside CSS avoids a separate HTTP request. The 33% bloat costs 300 bytes; the saved request costs at least 1 RTT plus headers. Below ~4 KB, inline wins. Above that, a separate file with HTTP/2 multiplexing is faster.</li>
+        <li><b>Email attachments.</b> SMTP and email bodies are 7-bit ASCII by tradition. MIME wraps binary attachments in base64 specifically to fit the protocol. You almost never see this directly - mail clients encode and decode automatically.</li>
+        <li><b>Binary in JSON.</b> JSON only stores strings, numbers, booleans, arrays, and objects. To put binary in a JSON field, you base64 it. APIs that return image bytes inside JSON, OAuth tokens with binary signatures, and protobuf-over-JSON all use this pattern.</li>
+        <li><b>URL parameters with binary.</b> URL-safe base64 (using <code>-</code> and <code>_</code> instead of <code>+</code> and <code>/</code>) lets you put short binary identifiers in query strings without percent-encoding.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>When base64 is the wrong call</b></h2>
+    <ul>
+        <li><b>Embedding large images in CSS or HTML.</b> A 500 KB photo as a data URL becomes 670 KB of base64 plus the parser overhead, plus it cannot be cached separately, plus it blocks the parser. Just link the image file.</li>
+        <li><b>"Encoding" sensitive data.</b> Base64 is reversible by anyone. It is encoding, not encryption. Putting a password or API key through base64 obfuscates nothing - the decode is one click.</li>
+        <li><b>Storing files in a database.</b> Most databases have native binary types (BLOB, BYTEA). Storing binary as base64 in a TEXT column wastes 33% of the disk and forces a decode on every read.</li>
+        <li><b>Long-running data transfer.</b> If the binary is multi-megabyte, every byte of overhead matters. Stream the binary directly with the right Content-Type header.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Tools and decision rules</b></h2>
+    <p>Convert in the browser - <a href="/image-to-base64.html">Image to Base64</a> for outgoing, <a href="/base64-to-image.html">Base64 to Image</a> for incoming. Both work without uploading the file.</p>
+    <p>The simple decision rule: under 4 KB and inline-friendly destination → base64 is fine. Over that or anywhere with a real binary path available → use the binary path. The full developer set is at <a href="/developer-tools.html">the developer tools hub</a>.</p>
+</div>

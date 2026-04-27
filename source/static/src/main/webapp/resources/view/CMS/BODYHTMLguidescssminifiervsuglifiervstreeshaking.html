@@ -1,0 +1,26 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>CSS Minifier vs Uglifier vs Tree-Shaking</b></h1>
+    <p><em>Last reviewed 2026-04-27. Open <a href="/css-minifier.html">the CSS minifier</a> for in-browser minification without uploading the source.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> Three different size-reduction techniques target the same goal but work on different layers. Minifier strips whitespace and comments. Uglifier renames symbols (variables, function names) to shorter forms. Tree-shaking removes code that the rest of the bundle never uses. They stack: a minified-and-uglified bundle that has been tree-shaken is smaller than any single technique alone.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Minifier - whitespace and comments</b></h2>
+    <p>The simplest tactic: take 10 KB of formatted CSS or JS and strip every space, newline, and comment that does not affect parsing. The output works identically to the input but takes 30-50% less space. This is what <a href="/css-minifier.html">the CSS minifier</a> does for stylesheets.</p>
+    <p>Modern CSS minifiers go further than whitespace: collapse <code>0px</code> to <code>0</code>, replace <code>#ffffff</code> with <code>#fff</code>, remove redundant default values, merge adjacent selectors with identical rules. Each one shaves a small percentage; the cumulative effect is meaningful.</p>
+
+    <h2 class="text-uppercase"><b>Uglifier - rename to save bytes</b></h2>
+    <p>Specific to JavaScript. Takes <code>const calculateMonthlyTotal = ...</code> and renames it to <code>const a = ...</code>. The shorter name is smaller. Repeated across thousands of identifiers, the savings stack.</p>
+    <p>Uglifier requires understanding the code's scope rules - you can rename a local variable freely, but renaming a global breaks anything that depends on the name. Tools like Terser, esbuild, and SWC do this safely by analyzing the scope graph.</p>
+    <p>For CSS, the equivalent is renaming class names. Build pipelines that hash CSS classes to <code>.a</code>, <code>.b</code>, <code>.c</code> save bytes the same way - but only work when the HTML is built with the same pipeline so the references match.</p>
+
+    <h2 class="text-uppercase"><b>Tree-shaking - delete what nothing uses</b></h2>
+    <p>The big one. When you import a library and use one function out of fifty, naive bundling ships all fifty. Tree-shaking analyzes the import graph and includes only the functions actually called by your app's entry point. Forty-nine functions disappear from the output bundle.</p>
+    <p>Tree-shaking requires the source code to be in a format that supports the analysis - native ES modules ("import" / "export") rather than CommonJS ("require"). Library authors have spent years migrating to ESM specifically to make tree-shaking effective for their consumers.</p>
+    <p>For CSS, tree-shaking has a parallel called PurgeCSS or TailwindCSS's JIT mode: scan the HTML and only include CSS rules that match an actual class name in the markup. Tailwind ships with thousands of utility classes; the production build includes only the ones in use.</p>
+
+    <h2 class="text-uppercase"><b>What to reach for first</b></h2>
+    <p>Use all three when the build pipeline supports them. The order: tree-shake first (eliminates the biggest chunks), then minify and uglify the result. Modern bundlers (Vite, esbuild, Rollup, Webpack 5+) do all three in one pass with a single config flag.</p>
+    <p>For a non-bundled project where you just want a smaller stylesheet, run <a href="/css-minifier.html">the CSS minifier</a> on the final CSS. For broader content on these techniques, see <a href="/guides/css-minifier-vs-compressor.html">CSS minifier vs compressor</a> or <a href="/guides/how-to-minify-css-js-for-cloud-run-cold-start.html">how to minify CSS and JS for Cloud Run cold start</a>. The full set: <a href="/developer-tools.html">developer tools hub</a>.</p>
+</div>

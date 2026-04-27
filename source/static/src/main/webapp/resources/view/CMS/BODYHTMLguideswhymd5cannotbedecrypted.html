@@ -1,0 +1,24 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Why MD5 Cannot Be Decrypted</b></h1>
+    <p><em>Last reviewed 2026-04-27. Use <a href="/md5-converter.html">the MD5 converter</a> to hash text or files in your browser without uploading them.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> MD5 is a hash, not encryption. There is no decrypt key because no encryption ever happened. A hash is a one-way function: input goes in, a fixed-size fingerprint comes out, the input cannot be reversed from the fingerprint. "MD5 decrypt" tools are actually rainbow-table lookups - they store known input-to-hash pairs and look the hash up. They work for short, common inputs (passwords like "123456") and fail on anything unique.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Hashing vs encryption - the actual difference</b></h2>
+    <p>Encryption is a two-way operation: <code>plaintext + key → ciphertext</code>, and <code>ciphertext + key → plaintext</code>. The same key reverses the process. Encryption is what AES, ChaCha20, and RSA do.</p>
+    <p>Hashing is one-way: <code>input → fixed-size digest</code>. There is no key, and no operation that takes the digest back to the input. The function deliberately throws information away. MD5 produces a 128-bit digest from any input - 1 byte or 1 GB. The original input cannot be recovered from those 128 bits because they are too few to encode the input.</p>
+    <p>The lossy nature is on purpose. Hashes exist to verify integrity ("the file you received matches the file I sent"), to fingerprint content for caches and deduplication, and historically to store password verifiers without storing the password itself.</p>
+
+    <h2 class="text-uppercase"><b>What "MD5 decrypt" services actually do</b></h2>
+    <p>They look the hash up in a table. The table contains pre-computed hashes for billions of common inputs - dictionary words, dates, common passwords ("password", "qwerty", "123456"), common phrases. If your hash matches one of those entries, the service returns the input. If it does not, the service returns nothing.</p>
+    <p>For unique inputs, the table approach fails completely. The MD5 of "my-laptop-2026-04-27-file-checksum-abc" is not in any table because nobody hashed that exact string before you. The hash is recoverable only by guessing inputs and hashing them yourself - which is a brute-force search through a space too large to exhaust.</p>
+
+    <h2 class="text-uppercase"><b>Why MD5 is unsafe for passwords</b></h2>
+    <p>The brute-force search above is feasible for short or low-entropy passwords. A modern GPU computes billions of MD5 hashes per second. Common passwords fall in milliseconds; 8-character random passwords fall in hours. That is why MD5 stopped being safe for password storage 15 years ago.</p>
+    <p>The right primitives for passwords in 2026 are bcrypt, scrypt, Argon2, or PBKDF2 with high iteration counts. They are designed to be slow and memory-hungry on purpose, so the brute-force search does not fit on a GPU. None of them work like MD5; you store a salted, slow-hashed verifier, and you compare new login attempts to the verifier. See <a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - when to hash</a> for the broader picture.</p>
+
+    <h2 class="text-uppercase"><b>Where MD5 is still fine</b></h2>
+    <p>Integrity checking on non-adversarial data: did this file download cleanly, did this build artifact change, are these two files byte-identical. The collision attacks against MD5 require crafted inputs; for natural data, MD5 is still a working fingerprint. <a href="/md5-converter.html">The MD5 tool</a> handles those cases. For anything security-sensitive, use SHA-256 or stronger via <a href="/sha256-converter.html">the SHA-256 tool</a>. The full set is at <a href="/developer-tools.html">the developer tools hub</a>.</p>
+</div>

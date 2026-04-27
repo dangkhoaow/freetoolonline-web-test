@@ -1,0 +1,31 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Text vs Line vs Word vs Git Diff</b></h1>
+    <p><em>Last reviewed 2026-04-27. Open <a href="/text-diff.html">the text-diff tool</a> to compare two strings, files, or pasted blocks in your browser.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> Four kinds of diff each answer a different question. Text diff: are these two strings byte-equal, and if not, where do they differ? Line diff: which lines changed (the standard for code review). Word diff: which words changed inside changed lines (the standard for prose). Git diff: which lines changed between two commits in tracked history (line diff plus version-control context).</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>The four flavors and what each one is for</b></h2>
+    <ul>
+        <li><b>Text diff (string diff).</b> The simplest. Compare two strings or two text blocks character-by-character. Outputs the locations where they differ. Right for "are these two pasted blobs really identical?" - JSON config drift, error messages in support tickets, log lines that should match.</li>
+        <li><b>Line diff.</b> The default for code. Treat each line as the unit of change. Output: which lines were added, removed, or modified. The "+" / "-" output every code-review tool uses. Strong default when the underlying content is line-structured.</li>
+        <li><b>Word diff.</b> Right for prose. When a sentence changes a single word, line diff shows the entire sentence twice (once - and once +). Word diff highlights only the changed word. Better for editorial review and content changes.</li>
+        <li><b>Git diff.</b> Line diff plus repository history. Compares two commits, two branches, working-tree-vs-index, or index-vs-HEAD. Adds the file-mode, rename detection, and binary-file handling that pure line diff lacks. Used inside version-control workflows.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>When line diff is wrong</b></h2>
+    <p>Line diff fails when the lines themselves are long. Edit one word in a 200-character line and the diff shows the entire line as removed-and-readded - no signal about which word actually changed. Same for one-line JSON or minified code where everything is on a single line.</p>
+    <p>Two fixes: re-format the input first (pretty-print JSON, run a code formatter), then line diff. Or switch to word diff, which handles long lines correctly. Most online tools offer both - pick based on whether the input is naturally line-structured.</p>
+
+    <h2 class="text-uppercase"><b>When git diff adds value over line diff</b></h2>
+    <p>Three things git tracks that pure line diff cannot:</p>
+    <ul>
+        <li><b>File renames.</b> Move a file from <code>src/foo.js</code> to <code>src/bar.js</code>. Line diff shows it as "all of foo.js deleted, all of bar.js added". Git diff with rename detection shows it as "foo.js renamed to bar.js" plus any actual content changes.</li>
+        <li><b>File mode changes.</b> Marking a script as executable shows up in git diff as a mode change with no content delta. Line diff misses it entirely.</li>
+        <li><b>Binary file changes.</b> Git diff says "binary files differ" without trying to render the bytes. Line diff produces unreadable output for any binary input.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Pick the right one for the task</b></h2>
+    <p>Comparing two pasted strings: text diff. Reviewing code changes: line diff or git diff if you have repository context. Reviewing copy edits: word diff. Investigating an unexpected production drift: text diff first to confirm the difference exists, then line diff to localize it. <a href="/text-diff.html">The text-diff tool</a> covers the first three; git diff lives inside git itself. The full developer set is at <a href="/developer-tools.html">the developer tools hub</a>.</p>
+</div>
