@@ -88,6 +88,34 @@ export const INFO_ROUTES = new Set([
   // Phase 16 Cycle B P16.N16 - "lcd test" head query (28K aggregate
   // impr / 1.10% CTR / pos 6.1). Explainer + when-to-run + boundary.
   '/guides/what-an-lcd-test-does-and-when-to-run-one.html',
+  // Phase 16 cycle 8 N-series — 25 new long-form guides. INFO_ROUTES
+  // membership disables ads + rating widget (matching the rest of the
+  // /guides/* cluster); see page-renderer.mjs showAds gate.
+  '/guides/how-to-make-a-zip-file-smaller.html',
+  '/guides/how-to-compress-zip-file-to-smaller-size.html',
+  '/guides/online-zip-vs-7z-vs-rar-which-to-pick.html',
+  '/guides/how-to-zip-multiple-files-into-one.html',
+  '/guides/how-to-zip-folder-online-step-by-step.html',
+  '/guides/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html',
+  '/guides/recover-corrupt-zip-file-options.html',
+  '/guides/iphone-photo-format-explained-heic-jpg-png-raw.html',
+  '/guides/how-to-convert-iphone-photo-to-jpg.html',
+  '/guides/jpg-vs-jpeg-are-they-the-same.html',
+  '/guides/svg-to-png-when-to-rasterize-an-svg.html',
+  '/guides/how-to-check-camera-quality-on-your-phone.html',
+  '/guides/microphone-test-online-what-it-actually-checks.html',
+  '/guides/keyboard-tester-online-rollover-vs-anti-ghosting.html',
+  '/guides/why-md5-cannot-be-decrypted.html',
+  '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html',
+  '/guides/json-vs-yaml-vs-toml-config-formats-explained.html',
+  '/guides/css-minifier-vs-uglifier-vs-tree-shaking.html',
+  '/guides/base64-when-to-use-and-when-not-to.html',
+  '/guides/how-to-split-a-gif-into-frames-for-editing.html',
+  '/guides/how-to-crop-and-rotate-an-image.html',
+  '/guides/photo-editor-vs-graphics-app-vs-batch-processor.html',
+  '/guides/mp4-vs-mov-vs-mkv-which-container-when.html',
+  '/guides/free-online-tools-that-work-without-uploading-files.html',
+  '/guides/qr-code-generator-best-practices.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
