@@ -77,3 +77,23 @@ export function formatHumanDate(iso) {
 export function getBuildTimeIso() {
   return NOW_ISO;
 }
+
+// 48 BODYWELCOME*.html fragments ship with a hardcoded
+// `<time itemprop="dateUpdated" datetime="2024-11-13T..."><b>Last updated: Nov
+// 13, 2024</b></time>` line under the H1. Rewrite that block in place at
+// build time with the page's real mtime + the standard `dateModified`
+// itemprop. Returns { html, replaced } so the renderer can skip the
+// bottom-of-page fallback stamp when the welcome already carries one.
+const LEGACY_LAST_UPDATED_RE = /<time\s+itemprop="(?:dateUpdated|dateModified)"\s+datetime="[^"]*"\s*>\s*<b>\s*Last updated:[^<]*<\/b>\s*<\/time>/gi;
+
+export function rewriteLastUpdatedTag(html, lastUpdatedIso) {
+  if (!html || !lastUpdatedIso) return { html, replaced: false };
+  const human = formatHumanDate(lastUpdatedIso);
+  if (!human) return { html, replaced: false };
+  let replaced = false;
+  const out = String(html).replace(LEGACY_LAST_UPDATED_RE, () => {
+    replaced = true;
+    return `<time itemprop="dateModified" datetime="${lastUpdatedIso}"><b>Last updated: ${human}</b></time>`;
+  });
+  return { html: out, replaced };
+}

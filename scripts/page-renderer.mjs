@@ -1,7 +1,7 @@
 import { canonicalForRoute, isInfoRoute, isGuideRoute } from './site-data.mjs';
 import { getSeoClusterGroups, resolveHubBacklink } from './seo-clusters.mjs';
 import { DEFAULT_PAGE_SVG_LOGO, escapeCssString, escapeHtml, renderBaseScript, renderDownloadTag, renderLoadingTag, renderShareButtons, renderUploadSecondTag, renderUploadStartupSecondTag, renderUploadStartupTag, renderUploadTag, renderWelcomeTag, replaceExpressions, unwrapStyleBlock } from './page-fragments.mjs';
-import { formatHumanDate } from './page-mtimes.mjs';
+import { formatHumanDate, rewriteLastUpdatedTag } from './page-mtimes.mjs';
 import { buildStagingBannerHtml, normalizeBasePath, resolveCanonicalUrl } from './staging-utils.mjs';
 
 const SEO_CLUSTER_GROUPS = getSeoClusterGroups();
@@ -760,13 +760,21 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   const pageName = pageData.pageName;
   const pageUrl = pageData.pageUrl;
   const isHome = normalizedRoute === '/';
+  // Rewrite the legacy hardcoded "Last updated: Nov 13, 2024" stamp baked
+  // into 48 BODYWELCOME fragments — replace it in place with the page's
+  // real git mtime so the visible under-H1 stamp tracks actual edits.
+  // welcomeHasInlineStamp tells the renderer to skip the bottom-of-page
+  // fallback stamp on these pages (one stamp per page; under-H1 wins).
+  const welcomeRewrite = rewriteLastUpdatedTag(pageData.bodyWelcome, lastUpdatedIso);
+  const bodyWelcome = welcomeRewrite.html;
+  const welcomeHasInlineStamp = welcomeRewrite.replaced;
   const expressionCtx = {
     pageBodyTitle: pageData.bodyTitle,
     pageBodyDesc: pageData.bodyDesc,
     pageBodyKeyword: pageData.bodyKeyword,
     pageBodyHTML: pageData.bodyHtml,
     pageBodyJS: pageData.bodyJs,
-    pageBodyWelcome: pageData.bodyWelcome,
+    pageBodyWelcome: bodyWelcome,
     pageBodyFileType: pageData.bodyFileType,
     pageBodyFileType2: pageData.bodyFileType2,
     pageFaq: pageData.faq,
@@ -943,7 +951,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     pageBodyKeyword: pageData.bodyKeyword,
     pageBodyHTML: pageData.bodyHtml,
     pageBodyJS: pageData.bodyJs,
-    pageBodyWelcome: pageData.bodyWelcome,
+    pageBodyWelcome: bodyWelcome,
     pageBodyFileType: pageData.bodyFileType,
     pageBodyFileType2: pageData.bodyFileType2,
     pageFaq: pageData.faq,
@@ -989,7 +997,11 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   // visible string is a user freshness signal; the canonical machine
   // signal lives in JSON-LD dateModified above.
   const lastUpdatedHuman = lastUpdatedIso ? formatHumanDate(lastUpdatedIso) : '';
-  const lastUpdatedHtml = lastUpdatedIso && lastUpdatedHuman
+  // Bottom-of-page fallback stamp. Suppressed when welcomeHasInlineStamp is
+  // true — those 48 pages already display a more prominent under-H1 stamp
+  // (now driven by the same mtime via rewriteLastUpdatedTag), so the
+  // bottom-of-page tag would be a duplicate signal.
+  const lastUpdatedHtml = lastUpdatedIso && lastUpdatedHuman && !welcomeHasInlineStamp
     ? `<p class="page-mtime" style="font-size:12px;color:#5f6368;margin:8px 0 0;text-align:right;"><time itemprop="dateModified" datetime="${escapeHtml(lastUpdatedIso)}">Last updated: ${escapeHtml(lastUpdatedHuman)}</time></p>`
     : '';
   const showDisableAdsScript = showAds ? `<script>isLoadAds = true;</script>` : '';
