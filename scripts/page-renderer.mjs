@@ -1,6 +1,7 @@
 import { canonicalForRoute, isInfoRoute, isGuideRoute } from './site-data.mjs';
 import { getSeoClusterGroups, resolveHubBacklink } from './seo-clusters.mjs';
 import { DEFAULT_PAGE_SVG_LOGO, escapeCssString, escapeHtml, renderBaseScript, renderDownloadTag, renderLoadingTag, renderShareButtons, renderUploadSecondTag, renderUploadStartupSecondTag, renderUploadStartupTag, renderUploadTag, renderWelcomeTag, replaceExpressions, unwrapStyleBlock } from './page-fragments.mjs';
+import { formatHumanDate } from './page-mtimes.mjs';
 import { buildStagingBannerHtml, normalizeBasePath, resolveCanonicalUrl } from './staging-utils.mjs';
 
 const SEO_CLUSTER_GROUPS = getSeoClusterGroups();
@@ -231,7 +232,7 @@ function buildJsonLdScript(payload) {
   return `<script type="application/ld+json">${JSON.stringify(payload)}</script>`;
 }
 
-function buildWebApplicationJsonLd({ browserTitle, canonicalUrl, description, applicationCategory, aggregateRating }) {
+function buildWebApplicationJsonLd({ browserTitle, canonicalUrl, description, applicationCategory, aggregateRating, dateModified }) {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebApplication',
@@ -252,6 +253,7 @@ function buildWebApplicationJsonLd({ browserTitle, canonicalUrl, description, ap
       priceCurrency: 'USD',
       price: '0',
     },
+    ...(dateModified ? { dateModified } : {}),
     ...(aggregateRating ? { aggregateRating } : {}),
   };
   return buildJsonLdScript(jsonLd);
@@ -289,13 +291,14 @@ function buildArticleJsonLd({ canonicalUrl, canonicalOrigin, headline, descripti
   });
 }
 
-function buildWebSiteJsonLd({ canonicalUrl, name, includeSearchAction = false }) {
+function buildWebSiteJsonLd({ canonicalUrl, name, includeSearchAction = false, dateModified }) {
   const payload = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name,
     url: canonicalUrl,
     inLanguage: 'en-US',
+    ...(dateModified ? { dateModified } : {}),
   };
   // SearchAction is only meaningful on the home route - enables the SERP
   // sitelinks-searchbox rich feature. The target uses the /tags.html route
@@ -390,19 +393,26 @@ function normalizeBreadcrumbLabel(label) {
   return normalized || raw;
 }
 
-function buildCollectionPageJsonLd({ canonicalOrigin, canonicalUrl, name, itemRoutes }) {
+function buildCollectionPageJsonLd({ canonicalOrigin, canonicalUrl, name, itemRoutes, dateModified }) {
   const itemListElement = (itemRoutes ?? []).map((route, index) => ({
     '@type': 'ListItem',
     position: index + 1,
     url: canonicalForRoute(canonicalOrigin, route),
   }));
+  // lastReviewed mirrors dateModified when available — both come from the
+  // most recent commit that touched the hub's CMS fragments / JSP wrapper,
+  // so a hub's "last reviewed" stamp tracks real edits to the hub itself.
+  // Falls back to the historical 2026-04-25 anchor when no mtime is supplied
+  // (e.g. uncommitted local builds).
+  const lastReviewed = (dateModified || '').slice(0, 10) || '2026-04-25';
   return buildJsonLdScript({
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
     name,
     url: canonicalUrl,
     inLanguage: 'en-US',
-    lastReviewed: '2026-04-25',
+    lastReviewed,
+    ...(dateModified ? { dateModified } : {}),
     mainEntity: {
       '@type': 'ItemList',
       itemListElement,
@@ -744,7 +754,7 @@ export function renderJspBody(innerHtml, ctx) {
   return html;
 }
 
-export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePath, isStaging, rewriteInternalContent, apiOrigin, shortenDomain, appVersion, ioVersion, deploySha, getAlterUploaderDelayMs, bgsCollection, ioInfos, unsplashKey, randomString, sharedFragments, pageData, pageAttrs, bodyHtml, themeCss, aggregateRating, relatedToolsData }) {
+export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePath, isStaging, rewriteInternalContent, apiOrigin, shortenDomain, appVersion, ioVersion, deploySha, getAlterUploaderDelayMs, bgsCollection, ioInfos, unsplashKey, randomString, sharedFragments, pageData, pageAttrs, bodyHtml, themeCss, aggregateRating, relatedToolsData, lastUpdatedIso }) {
   const normalizedRoute = route;
   const normalizedBasePath = normalizeBasePath(basePath);
   const pageName = pageData.pageName;
@@ -843,17 +853,18 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     : null;
   const jsonLd = showAds
     ? isHubPage
-      ? buildCollectionPageJsonLd({ canonicalOrigin, canonicalUrl, name: browserTitle, itemRoutes: hubItemRoutes })
+      ? buildCollectionPageJsonLd({ canonicalOrigin, canonicalUrl, name: browserTitle, itemRoutes: hubItemRoutes, dateModified: lastUpdatedIso })
       : buildWebApplicationJsonLd({
         browserTitle,
         canonicalUrl,
         description,
         applicationCategory: resolveApplicationCategory(normalizedRoute),
         aggregateRating: aggregateRatingPayload,
+        dateModified: lastUpdatedIso,
       })
     : isHome
-      ? buildWebSiteJsonLd({ canonicalUrl, name: 'Home Page - Free Tool Online', includeSearchAction: true })
-      : buildWebSiteJsonLd({ canonicalUrl, name: `Free Tool Online - ${browserTitle}` });
+      ? buildWebSiteJsonLd({ canonicalUrl, name: 'Home Page - Free Tool Online', includeSearchAction: true, dateModified: lastUpdatedIso })
+      : buildWebSiteJsonLd({ canonicalUrl, name: `Free Tool Online - ${browserTitle}`, dateModified: lastUpdatedIso });
   const faqJsonLd = faqItems.length > 0 ? buildFaqJsonLd(faqItems) : '';
   const breadcrumbJsonLd = breadcrumbItems.length > 0
     ? buildBreadcrumbJsonLd({ canonicalOrigin, items: breadcrumbItems })
@@ -865,9 +876,12 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   if (organizationJsonLd) {
     console.log(`[schema:org] Injected Organization JSON-LD on ${normalizedRoute}.`);
   }
-  // Article JSON-LD for /guides/* routes. Uses the page's browserTitle as headline,
-  // meta description as abstract, and the hardcoded 2026-04-19 publish date (matches
-  // the <time> element in each guide BODYHTML).
+  // Article JSON-LD for /guides/* routes. Uses the page's browserTitle as
+  // headline, meta description as abstract, the 2026-04-19 publish anchor
+  // (matches the visible <time> element in each guide BODYHTML), and a
+  // dateModified derived from the most recent commit that touched the
+  // guide's own CMS fragments / JSP wrapper. Falls back to the publish
+  // date when no per-page mtime is available.
   const articleJsonLd = isGuide
     ? buildArticleJsonLd({
         canonicalUrl,
@@ -875,7 +889,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
         headline: browserTitle,
         description,
         datePublished: '2026-04-19T08:00:00Z',
-        dateModified: '2026-04-25T08:00:00Z',
+        dateModified: lastUpdatedIso || '2026-04-19T08:00:00Z',
       })
     : '';
   if (articleJsonLd) {
@@ -899,7 +913,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     isStaging,
     isGuide,
     articlePublishedAt: isGuide ? '2026-04-19T08:00:00Z' : '',
-    articleModifiedAt: isGuide ? '2026-04-23T08:00:00Z' : '',
+    articleModifiedAt: isGuide ? (lastUpdatedIso || '2026-04-19T08:00:00Z') : '',
     browserTitle,
     mobileBrowserTitle: pageData.pageBrowserTitleMobile,
     description,
@@ -968,6 +982,16 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     clusterHubLink,
   });
   const relatedStyles = !hasUpload ? `<style>#content.w3-content { margin-top: 50px; }</style>` : '';
+  // Per-page "Last updated" stamp (Schema.org dateModified microdata).
+  // Driven by the most recent git commit that touched this page's CMS
+  // fragments or its JSP wrapper (see scripts/page-mtimes.mjs); a stamp
+  // therefore only changes when the page's own content changes. The
+  // visible string is a user freshness signal; the canonical machine
+  // signal lives in JSON-LD dateModified above.
+  const lastUpdatedHuman = lastUpdatedIso ? formatHumanDate(lastUpdatedIso) : '';
+  const lastUpdatedHtml = lastUpdatedIso && lastUpdatedHuman
+    ? `<p class="page-mtime" style="font-size:12px;color:#5f6368;margin:8px 0 0;text-align:right;"><time itemprop="dateModified" datetime="${escapeHtml(lastUpdatedIso)}">Last updated: ${escapeHtml(lastUpdatedHuman)}</time></p>`
+    : '';
   const showDisableAdsScript = showAds ? `<script>isLoadAds = true;</script>` : '';
   const toolContent = showAds ? toolSections : '';
   const showEditorialSurface = isHome || isHubPage || isGuide;
@@ -1005,6 +1029,7 @@ ${sharedFragments.topPageBannerAd || ''}
 <div class='w3-row page-section'>
 <div class='w3-container w3-padding-0'>
 ${body}
+${lastUpdatedHtml}
 ${relatedStyles}
 </div>
 </div>

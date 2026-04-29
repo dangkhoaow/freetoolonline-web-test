@@ -27,6 +27,7 @@ import {
   stripTrailingSlash,
 } from './site-data.mjs';
 import { parseJspPageSource, renderAlternateAdPage, renderPageDocument, renderRedirectPage } from './page-renderer.mjs';
+import { resolvePageMtime } from './page-mtimes.mjs';
 import { createInternalContentRewriter, normalizeBasePath } from './staging-utils.mjs';
 import { writeSplitSitemaps } from './sitemap-writer.mjs';
 
@@ -209,6 +210,17 @@ async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData,
 
   const { attrs: pageAttrs, innerHtml: bodyHtml } = parseJspPageSource(jspSource);
   const pageData = await loadCmsPageData(cmsRoot, normalizedRoute);
+  // Per-page "last modified" stamp from git history of this page's CMS
+  // fragments + JSP wrapper. Drives Schema.org dateModified (JSON-LD +
+  // visible <time> tag). Requires `fetch-depth: 0` in the GH Actions
+  // checkout step; see .github/workflows/pages.yml.
+  const lastUpdatedIso = await resolvePageMtime({
+    repoRoot,
+    cmsRoot,
+    jspRoot,
+    slug: pageData.slug,
+    jspRelativePath: jspPath,
+  });
   const isHubPage = normalizedRoute.endsWith('-tools.html');
   const showRating = !isHubPage && !isInfoRoute(normalizedRoute) && normalizedRoute !== '/' && normalizedRoute !== '/alternatead.html';
   // P10.1.1 - AggregateRating emission gate (Path A). Until a visible rating UI
@@ -250,6 +262,7 @@ async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData,
       themeCss: sharedFragments.themeCss,
       aggregateRating,
       relatedToolsData,
+      lastUpdatedIso,
     }),
     canonical: true,
   };
