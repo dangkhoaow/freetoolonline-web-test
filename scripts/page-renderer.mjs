@@ -1,6 +1,6 @@
 import { canonicalForRoute, isInfoRoute, isGuideRoute } from './site-data.mjs';
 import { getSeoClusterGroups, resolveHubBacklink } from './seo-clusters.mjs';
-import { DEFAULT_PAGE_SVG_LOGO, escapeHtml, renderBaseScript, renderDownloadTag, renderLoadingTag, renderShareButtons, renderUploadSecondTag, renderUploadStartupSecondTag, renderUploadStartupTag, renderUploadTag, renderWelcomeTag, replaceExpressions, unwrapStyleBlock } from './page-fragments.mjs';
+import { DEFAULT_PAGE_SVG_LOGO, escapeCssString, escapeHtml, renderBaseScript, renderDownloadTag, renderLoadingTag, renderShareButtons, renderUploadSecondTag, renderUploadStartupSecondTag, renderUploadStartupTag, renderUploadTag, renderWelcomeTag, replaceExpressions, unwrapStyleBlock } from './page-fragments.mjs';
 import { buildStagingBannerHtml, normalizeBasePath, resolveCanonicalUrl } from './staging-utils.mjs';
 
 const SEO_CLUSTER_GROUPS = getSeoClusterGroups();
@@ -1001,7 +1001,7 @@ ${stagingBanner}
 ${sharedFragments.rightBannerAd || ''}
 <main class="w3-rest w3-container page-main-content" role="main">
 ${sharedFragments.topPageBannerAd || ''}
-<style>@media(max-width: 999px) {.ad-section.top-ad>ins:after { content: '${escapeHtml(titleText)}'; }}</style>
+<style>@media(max-width: 999px) {.ad-section.top-ad>ins:after { content: '${escapeCssString(titleText)}'; }}</style>
 <div class='w3-row page-section'>
 <div class='w3-container w3-padding-0'>
 ${body}

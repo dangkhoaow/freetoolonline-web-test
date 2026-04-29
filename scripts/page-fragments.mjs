@@ -11,6 +11,19 @@ export function escapeHtml(value) {
     .replaceAll("'", '&#39;');
 }
 
+// CSS string escape for values interpolated inside a CSS string literal
+// (e.g. `content: '...'`). HTML entities are NOT decoded by the CSS parser,
+// so escapeHtml leaks `&amp;` etc. into the rendered text. Escape only what
+// CSS needs: backslash, the wrapping quote, and `<` (to keep `</style>` from
+// terminating the surrounding HTML <style> element). Newlines become `\A `.
+export function escapeCssString(value) {
+  return String(value ?? '')
+    .replaceAll('\\', '\\\\')
+    .replaceAll("'", "\\'")
+    .replaceAll('<', '\\3c ')
+    .replaceAll('\n', '\\A ');
+}
+
 export function unwrapStyleBlock(value) {
   const text = String(value ?? '').trim();
   const start = text.match(/^<style[^>]*>/i);
