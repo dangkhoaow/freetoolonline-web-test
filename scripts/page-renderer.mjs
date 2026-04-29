@@ -121,8 +121,8 @@ function renderMetaTags(ctx) {
   const siteUrl = canonicalForRoute(ctx.siteOrigin, ctx.route);
   const isVietnamese = ctx.lang === 'vi';
   const selfHreflang = isVietnamese ? 'vi-vn' : 'en-us';
-  const title = ctx.isHome ? 'Home Page - Free Tool Online' : `${ctx.browserTitle} - Free Tool Online`;
-  const ogTitle = ctx.isHome ? 'Free Tool Online - Home Page' : `Free Tool Online - ${ctx.browserTitle}`;
+  const title = ctx.isHome ? 'Free Online Tools: PDF, Image, Dev, Device' : `${ctx.browserTitle} - Free Tool Online`;
+  const ogTitle = ctx.isHome ? 'Free Online Tools: PDF, Image, Dev, Device' : `Free Tool Online - ${ctx.browserTitle}`;
   const mobileTitleBase = String(ctx.mobileBrowserTitle ?? '').trim();
   const mobileTitle = mobileTitleBase ? `${mobileTitleBase} - Free Tool Online` : '';
   const description = escapeHtml(ctx.description || '');
