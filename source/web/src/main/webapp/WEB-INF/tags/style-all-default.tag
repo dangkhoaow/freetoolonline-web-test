@@ -2537,12 +2537,14 @@ header.navBarContainer .new-style-nav-bar.w3-white {
     }
 }
 
-html.main-html.dark:not([style*="background-color"]) .page-main-content .page-section {
-    /* Token-driven so the toggle-clicked dark surface matches what the
-     * OS-default dark @media path produces (--bg-surface = #1f2937).
-     * Was hardcoded #2F3437; that produced a visible tonal diff between
-     * the bento (#1f2937) and the editorial-trust / byline panels (#2F3437)
-     * when the user clicked the dark toggle. */
+/* SPECIFICITY BUMP: external CloudFront `dark.css` ships an identical-specificity
+ * rule for `.page-main-content .page-section { #2f3437 !important }`. Inline
+ * `<style>` runs first, then dark.css activates as a stylesheet, so cascade
+ * order makes dark.css win when specificity ties. To beat it WITHOUT touching
+ * the CDN-served file, bump our specificity by chaining an extra `:not()`
+ * (specificity 0,0,6,1 vs CloudFront's 0,0,5,1). Then we win regardless of
+ * cascade order. Token values keep parity with .bento-cell (--bg-surface). */
+html.main-html.dark:not([style*="background-color"]):not(.__never__) .page-main-content .page-section {
     background-color: var(--bg-surface, #2F3437) !important;
     border: 1px solid var(--border-subtle, #37352F) !important;
     color: var(--text-primary, #FFFFFF) !important;
