@@ -291,6 +291,41 @@ function buildArticleJsonLd({ canonicalUrl, canonicalOrigin, headline, descripti
   });
 }
 
+/**
+ * ItemList JSON-LD for the homepage — top-N popular tools per cycle-16
+ * GA4 28d-pageviews ranking. Helps Google's `ItemList` rich-result and the
+ * "site:freetoolonline.com" SERP knowledge-panel surface popular tools
+ * directly. Order MUST match the visible <ol id="popularToolsList"> in
+ * BODYHTML.html so machine + human surfaces agree (qa-truthful-content-claim).
+ */
+function buildHomepageItemListJsonLd({ canonicalOrigin }) {
+  const items = [
+    { name: 'Compress, Zip File and Folder', url: '/zip-file.html' },
+    { name: 'Remove Zip Password', url: '/remove-zip-password.html' },
+    { name: 'HEIC to JPG', url: '/heic-to-jpg.html' },
+    { name: 'LCD Test (Dead Pixel)', url: '/lcd-test.html' },
+    { name: 'MD5 Converter', url: '/md5-converter.html' },
+    { name: 'Camera Test', url: '/camera-test.html' },
+    { name: 'Microphone Test', url: '/microphone-test.html' },
+    { name: 'Photo Editor', url: '/photo-editor.html' },
+    { name: 'CSS Minifier', url: '/css-minifier.html' },
+    { name: 'Compress Image (JPEG)', url: '/compress-image.html' },
+  ];
+  return buildJsonLdScript({
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Popular Free Tool Online tools',
+    description: 'Ten most-used tools on freetoolonline.com, ranked by GA4 28-day pageviews.',
+    numberOfItems: items.length,
+    itemListElement: items.map((item, idx) => ({
+      '@type': 'ListItem',
+      position: idx + 1,
+      name: item.name,
+      url: canonicalForRoute(canonicalOrigin, item.url),
+    })),
+  });
+}
+
 function buildWebSiteJsonLd({ canonicalUrl, name, includeSearchAction = false, dateModified }) {
   const payload = {
     '@context': 'https://schema.org',
@@ -911,7 +946,11 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   if (shouldIncludeHowTo) {
     console.log(`[schema:howto] ${normalizedRoute} steps=${howToSteps.length}.`);
   }
-  const jsonLdBlock = [jsonLd, organizationJsonLd, articleJsonLd, breadcrumbJsonLd, howToJsonLd, faqJsonLd].filter(Boolean).join('\n');
+  const homepageItemListJsonLd = isHome ? buildHomepageItemListJsonLd({ canonicalOrigin }) : '';
+  if (homepageItemListJsonLd) {
+    console.log(`[schema:itemlist] Injected ItemList JSON-LD on homepage (10 popular tools).`);
+  }
+  const jsonLdBlock = [jsonLd, organizationJsonLd, articleJsonLd, homepageItemListJsonLd, breadcrumbJsonLd, howToJsonLd, faqJsonLd].filter(Boolean).join('\n');
   const head = renderMetaTags({
     siteOrigin,
     route: normalizedRoute,
