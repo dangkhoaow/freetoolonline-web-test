@@ -2335,7 +2335,9 @@ header.navBarContainer.w3-top .settingsBtn,
 }
 
 .page-section {
-    background-color: rgba(255, 255, 255, 0.98);
+    /* Token-driven; same rationale as the .page-section block below. */
+    background-color: var(--bg-surface, rgba(255, 255, 255, 0.98));
+    color: var(--text-primary, #000);
 }
 
 footer.page-footer .footer-inner *{
@@ -2367,7 +2369,16 @@ footer.page-footer .footer-inner *{
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     max-width: 1240px;
 	width: calc(100% - 20px);
-    background-color: rgba(255,255,255,0.93);
+    /* Token-driven so .page-section adapts to BOTH the .dark class AND the
+     * OS-default `prefers-color-scheme: dark` media query, the same way
+     * .bento-cell does. Previously hardcoded `rgba(255,255,255,0.93)`, which
+     * caused an inconsistency: bento went dark under OS-dark while trust /
+     * byline panels stayed white because their dark rule (line ~2545)
+     * required `html.main-html.dark` class which only fires after the
+     * toggle JS runs. Falling back to the old rgba so any older surface
+     * without --bg-surface still renders. */
+    background-color: var(--bg-surface, rgba(255,255,255,0.93));
+    color: var(--text-primary, #000);
 }
 
 /* Ad slots only: match common.css - do not use the page-section card fill (breaks dark mode + mobile top-ad title band). */
@@ -2527,9 +2538,14 @@ header.navBarContainer .new-style-nav-bar.w3-white {
 }
 
 html.main-html.dark:not([style*="background-color"]) .page-main-content .page-section {
-    background-color: #2F3437 !important;
-    border: 1px solid #37352F !important;
-    color: #FFFFFF !important;
+    /* Token-driven so the toggle-clicked dark surface matches what the
+     * OS-default dark @media path produces (--bg-surface = #1f2937).
+     * Was hardcoded #2F3437; that produced a visible tonal diff between
+     * the bento (#1f2937) and the editorial-trust / byline panels (#2F3437)
+     * when the user clicked the dark toggle. */
+    background-color: var(--bg-surface, #2F3437) !important;
+    border: 1px solid var(--border-subtle, #37352F) !important;
+    color: var(--text-primary, #FFFFFF) !important;
 }
 
 /* Mirror the minimum dark-mode body + section wrappers inline so pages do not
