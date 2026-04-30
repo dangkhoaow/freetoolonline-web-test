@@ -14,6 +14,7 @@ import {
   DEFAULT_SHORTEN_DOMAIN,
   DEFAULT_SITE_ORIGIN,
   DEFAULT_UNSPLASH_KEY,
+  INFO_ROUTES,
   JSP_BY_ROUTE,
   SPECIAL_ROUTES,
   isInfoRoute,
@@ -22,7 +23,6 @@ import {
   loadSharedFragments,
   loadTextIfExists,
   normalizeRoute,
-  parseSitemapRoutes,
   resolveJspPathForRoute,
   stripTrailingSlash,
 } from './site-data.mjs';
@@ -30,6 +30,7 @@ import { parseJspPageSource, renderAlternateAdPage, renderPageDocument, renderRe
 import { resolvePageMtime } from './page-mtimes.mjs';
 import { createInternalContentRewriter, normalizeBasePath } from './staging-utils.mjs';
 import { writeSplitSitemaps } from './sitemap-writer.mjs';
+import { buildDynamicSitemapBody } from './sitemap-html-builder.mjs';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const distDir = path.resolve(repoRoot, process.env.DIST_DIR ?? 'dist');
@@ -48,7 +49,6 @@ const staticViewRoot = path.join(sourceRepoRoot, 'static', 'src', 'main', 'webap
 const staticAssetsRoot = path.join(sourceWebRoot, 'static');
 const runtimeViewRoot = path.join(staticAssetsRoot, 'view');
 const cmsRoot = path.join(staticViewRoot, 'CMS');
-const sitemapPath = path.join(staticAssetsRoot, 'sitemap.xml');
 const robotsPath = path.join(staticAssetsRoot, 'robots.txt');
 const adsPath = path.join(staticAssetsRoot, 'ads.txt');
 const themeCssPath = path.join(tagsRoot, 'style-all-default.tag');
@@ -71,12 +71,26 @@ async function main() {
   const jspIndex = await buildJspIndex(jspRoot);
   const sharedFragments = await loadSharedFragments(staticViewRoot, runtimeViewRoot, themeCssPath);
   const relatedToolsData = await loadRelatedToolsData(staticAssetsRoot);
-  const sitemapRoutes = await parseSitemapRoutes(sitemapPath);
+  // /sitemap.html body is regenerated on every build from the live route
+  // registry (JSP_BY_ROUTE + GUIDE_ROUTES + INFO_ROUTES + cluster groups)
+  // so adding a guide or tool flows through automatically on the next
+  // GitHub Pages deploy. The static BODYHTMLsitemap.html fragment is a
+  // placeholder; the real body is injected per-render below.
+  const sitemapDynamicBody = await buildDynamicSitemapBody({
+    cmsRoot,
+    lastReviewedIso: new Date().toISOString(),
+  });
+  console.log(`[sitemap-html] Generated dynamic /sitemap.html body (${sitemapDynamicBody.length} chars).`);
+  // Route candidates come exclusively from the in-code route registry so
+  // the build has a single source of truth. The static `source/.../static/
+  // sitemap.xml` is no longer parsed (and no longer copied to dist) - the
+  // dynamic `dist/sitemap.xml` chain is owned end-to-end by sitemap-writer.mjs
+  // and built from the rendered route set below.
   const routeCandidates = unique([
-    ...sitemapRoutes,
     ...Object.keys(JSP_BY_ROUTE),
     ...Object.keys(ALIAS_ROUTES),
     ...Array.from(SPECIAL_ROUTES),
+    ...Array.from(INFO_ROUTES),
   ])
     .map(normalizeRoute)
     .filter((route) => route === '/' || route.endsWith('.html'));
@@ -92,6 +106,7 @@ async function main() {
       basePath,
       isStaging,
       rewriteInternalContent,
+      sitemapDynamicBody,
     });
     await writeOutput(outputPathForRoute(route), html);
     if (canonical) {
@@ -125,10 +140,18 @@ async function main() {
   console.log(`Rendered ${routeCandidates.length} routes and published ${canonicalRoutes.length} pages to ${distDir}`);
 }
 
-async function copyStaticAssets(sourceDir, targetDir) {
+async function copyStaticAssets(sourceDir, targetDir, depth = 0) {
   const entries = await readdir(sourceDir, { withFileTypes: true });
   for (const entry of entries) {
     if (entry.name.startsWith('.')) {
+      continue;
+    }
+    // sitemap.xml + sitemap-*.xml are owned end-to-end by sitemap-writer.mjs
+    // (built per deploy from the live route registry). Skip any source-side
+    // copy at the static-assets root so the dynamic writer's output is the
+    // only thing that ever lands in dist - no risk of a stale checked-in
+    // sitemap shadowing the build output before the writer runs.
+    if (depth === 0 && entry.isFile() && /^sitemap(?:-[a-z0-9]+)?\.xml$/i.test(entry.name)) {
       continue;
     }
 
@@ -137,7 +160,7 @@ async function copyStaticAssets(sourceDir, targetDir) {
 
     if (entry.isDirectory()) {
       await mkdir(targetPath, { recursive: true });
-      await copyStaticAssets(sourcePath, targetPath);
+      await copyStaticAssets(sourcePath, targetPath, depth + 1);
       continue;
     }
 
@@ -176,7 +199,7 @@ async function loadRelatedToolsData(staticAssetsRootPath) {
   }
 }
 
-async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData, canonicalOrigin, basePath, isStaging, rewriteInternalContent }) {
+async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData, canonicalOrigin, basePath, isStaging, rewriteInternalContent, sitemapDynamicBody }) {
   const normalizedRoute = normalizeRoute(route);
 
   if (Object.prototype.hasOwnProperty.call(ALIAS_ROUTES, normalizedRoute)) {
@@ -210,6 +233,13 @@ async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData,
 
   const { attrs: pageAttrs, innerHtml: bodyHtml } = parseJspPageSource(jspSource);
   const pageData = await loadCmsPageData(cmsRoot, normalizedRoute);
+  // /sitemap.html body is build-generated from the live route registry so
+  // it never falls out of sync with the actual published tools / guides.
+  // The static `BODYHTMLsitemap.html` fragment is a placeholder; the
+  // dynamic body computed once in main() wins here.
+  if (normalizedRoute === '/sitemap.html' && sitemapDynamicBody) {
+    pageData.bodyHtml = sitemapDynamicBody;
+  }
   // Per-page "last modified" stamp from git history of this page's CMS
   // fragments + JSP wrapper. Drives Schema.org dateModified (JSON-LD +
   // visible <time> tag). Requires `fetch-depth: 0` in the GH Actions
