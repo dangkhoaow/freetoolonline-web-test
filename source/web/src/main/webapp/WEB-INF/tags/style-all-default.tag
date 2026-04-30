@@ -2401,7 +2401,12 @@ footer.page-footer .footer-inner *{
 }
 
 footer.page-footer .footer-inner {
-    max-width: 1240px!important;
+    /* Aligned with .page-section / .bento outer-edge (effective 1220px wide):
+     * page-section + bento live inside `.page-main-content` (max-width 1240,
+     * centered in body). They use `width: calc(100% - 20px)` of that 1240 ->
+     * effective 1220. Footer is OUTSIDE that wrapper so direct calc on body
+     * 1290 yielded 1240 - wider than the content above. Cap at 1220 to align. */
+    max-width: 1220px !important;
     width: calc(100% - 20px) !important;
     margin-left: auto !important;
     margin-right: auto !important;
@@ -2728,15 +2733,18 @@ html.main-html:not(.dark) header.navBarContainer .new-style-nav-bar {
     background: var(--bg-surface, rgba(255, 255, 255, 0.95)) !important;
 }
 
-/* FIX 2 - footer text token-driven for both modes */
-footer.page-footer .footer-inner,
-footer.page-footer .footer-inner *,
-footer.page-footer .footer-inner a {
+/* FIX 2 - footer text token-driven, BUT only on pages without `.html-fill-img`
+ * (which carries a dark hero bg image that requires the legacy near-white
+ * footer text for contrast). Tool pages like /zip-file.html still use that
+ * dark hero so they keep their original behavior. */
+html.main-html:not(.html-fill-img) footer.page-footer .footer-inner,
+html.main-html:not(.html-fill-img) footer.page-footer .footer-inner *,
+html.main-html:not(.html-fill-img) footer.page-footer .footer-inner a {
     color: var(--text-primary, #0f172a);
 }
-html.main-html.dark footer.page-footer .footer-inner,
-html.main-html.dark footer.page-footer .footer-inner *,
-html.main-html.dark footer.page-footer .footer-inner a {
+html.main-html.dark:not(.html-fill-img) footer.page-footer .footer-inner,
+html.main-html.dark:not(.html-fill-img) footer.page-footer .footer-inner *,
+html.main-html.dark:not(.html-fill-img) footer.page-footer .footer-inner a {
     color: var(--text-primary, #e6edf3);
 }
 
