@@ -1,4 +1,139 @@
 <style>
+/* ============================================================
+ * DESIGN TOKEN LAYER — added 2026-04-30 per Workstream A.5/A.6
+ * of SITE_ENHANCEMENT_PLAN.md (cohort-grounded palette).
+ *
+ * STATUS: scaffold + visual-parity values. Tokens are defined
+ * here so the wider CSS can opt into var(--*) gradually. The
+ * VALUES below match the existing rendered colors so this
+ * commit is visually neutral. The palette FLIP (orange→blue
+ * CTA, refreshed slate-blue body, etc., per cohort-grounded
+ * recommendation in seo-reports/20260430/analyts/COHORT_AND_UX
+ * _OPPORTUNITY_REPORT.md Part 4) happens in a SUBSEQUENT
+ * cycle-18 commit that only changes the token VALUES — no
+ * rule rewrites needed.
+ *
+ * Cohort grounding (cycle-16 GA4 + Bing pulls):
+ *   - geo: India 38.87% / USA 11.49% / Indonesia 7.15%
+ *   - device: desktop 82.15% / mobile 17.30%
+ *   - OS: Windows 70.72% / Android 12.28% / Mac 8.97%
+ *
+ * Owner approvals: OA2 (cohort hypothesis) + OA3 (orange→blue
+ * accent) confirmed 2026-04-30 against the cohort report Part 4.
+ *
+ * Dark-mode wiring: existing site uses html.main-html.dark
+ * class toggle (see #dark-tgl checkbox in nav header). Tokens
+ * are overridden under that selector AND under the OS-default
+ * @media (prefers-color-scheme: dark) for first-paint dark
+ * before the toggle JS runs.
+ * ============================================================ */
+
+:root {
+    /* Surfaces (currently white/black per existing site; ready for slate-50/900 flip in cycle 18) */
+    --bg-primary:    #ffffff;
+    --bg-surface:    #ffffff;
+    --bg-tertiary:   #f8f9fa;
+
+    /* Text (currently #333 body, near-black headings; ready for slate-900 in cycle 18) */
+    --text-primary:  #333333;
+    --text-muted:    #6b7280;
+    --text-heading:  #3a3a3a;
+
+    /* Brand + accent (orange logo retained per OA3; CTA flips to blue in cycle 18) */
+    --logo-orange:   #ff4d00;   /* HEAD-LOGO PATH 1 — keep on the brand mark */
+    --logo-navy:     #00436e;   /* HEAD-LOGO PATH 2 — keep on the brand mark */
+    --logo-grey:     #3a3a3a;   /* HEAD-LOGO PATH 3 — keep on the brand mark */
+    --accent:        #3b73af;   /* WAS the existing link-blue; will become #2563eb in cycle 18 palette flip */
+    --cta-bg:        var(--accent);
+    --cta-text:      #ffffff;
+    --link:          #3b73af;
+    --link-hover:    #1d4ed8;
+
+    /* Semantic panel tints (match w3-pale-* classes) */
+    --panel-success-bg:  #dff0d8;   /* w3-pale-green */
+    --panel-info-bg:     #e7f3fe;   /* w3-pale-blue */
+    --panel-warn-bg:     #fff8d5;   /* w3-pale-yellow */
+    --panel-error-bg:    #ffdddd;   /* w3-pale-red */
+    --panel-success-text: #2c662d;
+    --panel-info-text:    #1b4f8c;
+    --panel-warn-text:    #6b5e1a;
+    --panel-error-text:   #762020;
+
+    /* Borders, separators, shadows (existing site uses 1px gray borders + soft shadows) */
+    --border-subtle:  #e5e7eb;
+    --border-input:   #ccd0d5;
+    --shadow-card:    0 1px 3px rgba(0, 0, 0, 0.08);
+
+    /* Typography — system stack first (no webfont download cost on slow connections,
+     * critical for India 38% + Indonesia 7% + Pakistan 6% + Vietnam 5% emerging-market cohort).
+     * Inter loads as enhancement when available. */
+    --font-body:      'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono:      'JetBrains Mono', ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace;
+    --line-height-body: 1.6;   /* Generous for non-native-English readers per cohort report */
+
+    /* Spacing scale (8px base unit per axis-G niche convention) */
+    --space-1:  4px;
+    --space-2:  8px;
+    --space-3:  16px;
+    --space-4:  24px;
+    --space-5:  32px;
+    --space-6:  48px;
+
+    /* Radius (4-8px tool-site convention; existing site uses 8px modal radius) */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+
+    /* Tap-target floor (44px standard; 48px when cohort overlay flags emerging-market mobile) */
+    --tap-target-min: 44px;
+}
+
+/* Manual dark-mode toggle (#dark-tgl checkbox sets html.main-html.dark) */
+html.main-html.dark {
+    --bg-primary:    #0d1117;
+    --bg-surface:    #161b22;
+    --bg-tertiary:   #1c2128;
+
+    --text-primary:  #e6edf3;
+    --text-muted:    #8b949e;
+    --text-heading:  #f0f6fc;
+
+    --accent:        #4f93d4;
+    --cta-bg:        var(--accent);
+    --cta-text:      #0d1117;
+    --link:          #58a6ff;
+    --link-hover:    #79b8ff;
+
+    --panel-success-bg:  hsl(140, 25%, 14%);
+    --panel-info-bg:     hsl(210, 25%, 14%);
+    --panel-warn-bg:     hsl(45, 25%, 14%);
+    --panel-error-bg:    hsl(0, 25%, 14%);
+    --panel-success-text: hsl(140, 50%, 80%);
+    --panel-info-text:    hsl(210, 50%, 80%);
+    --panel-warn-text:    hsl(45, 50%, 80%);
+    --panel-error-text:   hsl(0, 50%, 80%);
+
+    --border-subtle:  #30363d;
+    --border-input:   #30363d;
+    --shadow-card:    0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* OS-default dark for first-paint correctness when user hasn't clicked the toggle yet.
+ * The toggle JS still wins (it sets the html.main-html.dark class explicitly). */
+@media (prefers-color-scheme: dark) {
+    :root:not(.light) {
+        --bg-primary:    #0d1117;
+        --bg-surface:    #161b22;
+        --text-primary:  #e6edf3;
+        --text-muted:    #8b949e;
+        --text-heading:  #f0f6fc;
+        --accent:        #4f93d4;
+        --link:          #58a6ff;
+        --shadow-card:    0 1px 3px rgba(0, 0, 0, 0.4);
+    }
+}
+/* ===== END DESIGN TOKEN LAYER ===== */
+
 .fa {
     display: inline-block;
     font: normal normal normal 14px/1 FontAwesome;
