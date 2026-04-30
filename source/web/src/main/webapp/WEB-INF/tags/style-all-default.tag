@@ -2687,4 +2687,64 @@ html.main-html.dark:not([style*="background-color"]) .w3-table-all tr {
 .ad-section.top-ad, .bg-credit, .bg-credit-des{
 	display: none
 }
+
+/* ============================================================
+ * Cycle-17 W/E follow-up #9 - light-mode chrome visibility + shadow polish.
+ *
+ * THREE ROOT-CAUSE FIXES (per CLAUDE.md root-cause discipline):
+ *
+ * 1. NAVBAR text invisible in light mode at top scroll:
+ *    SYMPTOM: navPageName "FREE TOOL ONLINE - 122 BROWSER..." renders as
+ *      white text on a transparent navbar over a #fafafa body -> invisible.
+ *    HYPOTHESIS: legacy w3-top rule sets navbar bg rgba(255,255,255,0.98)
+ *      AND text color #000 at scroll, but at first paint the JS-driven
+ *      class toggling races with first paint. Plus dark.css mirrors push
+ *      text to #fff for the dark-mode variant, leaving light-mode users
+ *      without a robust rule.
+ *    FIX: explicit `html:not(.dark)` rule with !important that token-drives
+ *      navbar text color regardless of w3-top / scrolled / menu-open state.
+ *
+ * 2. FOOTER text invisible in light mode:
+ *    SYMPTOM: `footer.page-footer .footer-inner * { color: #fefefe }`
+ *      hardcodes near-white text. On #fafafa light body -> invisible.
+ *    FIX: token-drive the footer text color.
+ *
+ * 3. WRAPPER box-shadow heavy on .page-section (0.2 alpha) vs .bento-cell
+ *    (0.08 alpha) -> user perceives a heavy "border" on the editorial
+ *    panels that the bento doesn't have.
+ *    FIX: align .page-section shadow with the lighter .bento-cell shadow.
+ * ============================================================ */
+
+/* FIX 1 - navbar text in light mode (sole signal: html.dark class) */
+html.main-html:not(.dark) header.navBarContainer .new-style-nav-bar,
+html.main-html:not(.dark) header.navBarContainer .new-style-nav-bar *,
+html.main-html:not(.dark) header.navBarContainer .navPageName {
+    color: var(--text-primary, #0f172a) !important;
+}
+
+/* Navbar bg in light mode - token-driven, slightly translucent for the at-top
+ * sticky look without needing the legacy w3-top class race. */
+html.main-html:not(.dark) header.navBarContainer .new-style-nav-bar {
+    background: var(--bg-surface, rgba(255, 255, 255, 0.95)) !important;
+}
+
+/* FIX 2 - footer text token-driven for both modes */
+footer.page-footer .footer-inner,
+footer.page-footer .footer-inner *,
+footer.page-footer .footer-inner a {
+    color: var(--text-primary, #0f172a);
+}
+html.main-html.dark footer.page-footer .footer-inner,
+html.main-html.dark footer.page-footer .footer-inner *,
+html.main-html.dark footer.page-footer .footer-inner a {
+    color: var(--text-primary, #e6edf3);
+}
+
+/* FIX 3 - lighter, consistent shadow on .page-section to match .bento-cell */
+.page-section {
+    box-shadow: var(--shadow-card, 0 1px 3px rgba(15, 23, 42, 0.08)) !important;
+}
+html.main-html.dark .page-section {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+}
 </style>
