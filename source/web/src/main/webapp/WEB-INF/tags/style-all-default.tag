@@ -2726,12 +2726,6 @@ html.main-html:not(.dark) header.navBarContainer .navPageName {
     color: var(--text-primary, #0f172a) !important;
 }
 
-/* Navbar bg in light mode - token-driven, slightly translucent for the at-top
- * sticky look without needing the legacy w3-top class race. */
-html.main-html:not(.dark) header.navBarContainer .new-style-nav-bar {
-    background: var(--bg-surface, rgba(255, 255, 255, 0.95)) !important;
-}
-
 /* FIX 2 - footer text token-driven, BUT only on pages without `.html-fill-img`
  * (which carries a dark hero bg image that requires the legacy near-white
  * footer text for contrast). Tool pages like /zip-file.html still use that
