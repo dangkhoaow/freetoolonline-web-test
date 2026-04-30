@@ -2,24 +2,38 @@
 <script>
     var switchMode = function(){};
 
+    function demoteOldBrowserH1() {
+        try {
+            var hs = document.querySelectorAll('h1');
+            for (var i = 0; i < hs.length; i++) {
+                var h = hs[i];
+                var t = (h.innerText || '').replace(/\s+/g, ' ').trim();
+                if (t && t.toLowerCase() === 'old browser!') {
+                    var p = document.createElement('p');
+                    var b = document.createElement('b');
+                    b.innerText = t;
+                    p.appendChild(b);
+                    h.replaceWith(p);
+                }
+            }
+        } catch (e) {}
+    };
+    function scheduleOldBrowserH1Demotion() {
+        demoteOldBrowserH1();
+        setTimeout(demoteOldBrowserH1, 500);
+        setTimeout(demoteOldBrowserH1, 1500);
+        setTimeout(demoteOldBrowserH1, 3500);
+        setTimeout(demoteOldBrowserH1, 7500);
+    };
+    try {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', scheduleOldBrowserH1Demotion);
+        } else {
+            scheduleOldBrowserH1Demotion();
+        }
+    } catch (e) {}
+
     function doAfterPageRendered(){  
-        function demoteOldBrowserH1() {
-            try {
-                $('h1').each(function(){
-                    var t = ($(this).text() || '').replace(/\s+/g, ' ').trim();
-                    if (t && t.toLowerCase() === 'old browser!') {
-                        $(this).replaceWith('<p><b>Old browser!</b></p>');
-                    }
-                });
-            } catch (e) {}
-        };
-        function scheduleOldBrowserH1Demotion() {
-            demoteOldBrowserH1();
-            setTimeout(demoteOldBrowserH1, 500);
-            setTimeout(demoteOldBrowserH1, 1500);
-            setTimeout(demoteOldBrowserH1, 3500);
-            setTimeout(demoteOldBrowserH1, 7500);
-        };
         function runInitAfterLoad() {
             $('.editor-c').removeClass('opacity-0');
             $('.loading-tmp').hide();
