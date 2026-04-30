@@ -1885,7 +1885,6 @@ a {
  * mirroring .page-section. */
 main.page-main-content,
 .w3-rest.page-main-content {
-    max-width: 1240px !important;
     width: calc(100% - 20px) !important;
     margin-left: auto !important;
     margin-right: auto !important;
@@ -2413,20 +2412,11 @@ footer.page-footer .footer-inner {
     box-sizing: border-box;
 }
 
-/* Wide desktop: keep footer aligned with the 1240px content column.
-   Overrides common.css `@media (min-width:1900px)` that widens the footer container. */
-@media (min-width: 1900px) {
-    html body footer.page-footer .footer-inner {
-        max-width: 1240px !important;
-    }
-}
-
 /* Large desktop: align footer with the main content container on key static pages. */
 @media (min-width: 1000px) {
     html.page-contact-usroot footer.page-footer .footer-inner,
     html.page-privacy-policyroot footer.page-footer .footer-inner,
     html.page-about-usroot footer.page-footer .footer-inner {
-        max-width: 1240px !important;
         width: calc(100% - 20px) !important;
         margin-left: auto !important;
         margin-right: auto !important;
