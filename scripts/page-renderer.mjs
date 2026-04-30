@@ -122,8 +122,8 @@ function renderMetaTags(ctx) {
   const siteUrl = canonicalForRoute(ctx.siteOrigin, ctx.route);
   const isVietnamese = ctx.lang === 'vi';
   const selfHreflang = isVietnamese ? 'vi-vn' : 'en-us';
-  const title = ctx.isHome ? 'Free Tool Online — 122 Browser Tools for ZIP, PDF, Image, Dev, Device' : `${ctx.browserTitle} - Free Tool Online`;
-  const ogTitle = ctx.isHome ? 'Free Tool Online — 122 Browser Tools for ZIP, PDF, Image, Dev, Device' : `Free Tool Online - ${ctx.browserTitle}`;
+  const title = ctx.isHome ? 'Free Tool Online - 122 Browser Tools for ZIP, PDF, Image, Dev, Device' : `${ctx.browserTitle} - Free Tool Online`;
+  const ogTitle = ctx.isHome ? 'Free Tool Online - 122 Browser Tools for ZIP, PDF, Image, Dev, Device' : `Free Tool Online - ${ctx.browserTitle}`;
   const mobileTitleBase = String(ctx.mobileBrowserTitle ?? '').trim();
   const mobileTitle = mobileTitleBase ? `${mobileTitleBase} - Free Tool Online` : '';
   const description = escapeHtml(ctx.description || '');
@@ -292,7 +292,7 @@ function buildArticleJsonLd({ canonicalUrl, canonicalOrigin, headline, descripti
 }
 
 /**
- * ItemList JSON-LD for the homepage — top-N popular tools per cycle-16
+ * ItemList JSON-LD for the homepage - top-N popular tools per cycle-16
  * GA4 28d-pageviews ranking. Helps Google's `ItemList` rich-result and the
  * "site:freetoolonline.com" SERP knowledge-panel surface popular tools
  * directly. Order MUST match the visible <ol id="popularToolsList"> in
@@ -434,7 +434,7 @@ function buildCollectionPageJsonLd({ canonicalOrigin, canonicalUrl, name, itemRo
     position: index + 1,
     url: canonicalForRoute(canonicalOrigin, route),
   }));
-  // lastReviewed mirrors dateModified when available — both come from the
+  // lastReviewed mirrors dateModified when available - both come from the
   // most recent commit that touched the hub's CMS fragments / JSP wrapper,
   // so a hub's "last reviewed" stamp tracks real edits to the hub itself.
   // Falls back to the historical 2026-04-25 anchor when no mtime is supplied
@@ -796,7 +796,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   const pageUrl = pageData.pageUrl;
   const isHome = normalizedRoute === '/';
   // Rewrite the legacy hardcoded "Last updated: Nov 13, 2024" stamp baked
-  // into 48 BODYWELCOME fragments — replace it in place with the page's
+  // into 48 BODYWELCOME fragments - replace it in place with the page's
   // real git mtime so the visible under-H1 stamp tracks actual edits.
   // welcomeHasInlineStamp tells the renderer to skip the bottom-of-page
   // fallback stamp on these pages (one stamp per page; under-H1 wins).
@@ -1037,9 +1037,9 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   // signal lives in JSON-LD dateModified above.
   const lastUpdatedHuman = lastUpdatedIso ? formatHumanDate(lastUpdatedIso) : '';
   // Bottom-of-page fallback stamp. Suppressed in three cases:
-  //   1. welcomeHasInlineStamp — pages with a rewritten under-H1 stamp
+  //   1. welcomeHasInlineStamp - pages with a rewritten under-H1 stamp
   //      (the prominent placement); a bottom tag would duplicate.
-  //   2. isHome — the home page has its own trust/freshness surface
+  //   2. isHome - the home page has its own trust/freshness surface
   //      ("Last refreshed April 2026" inside WHY TRUST THESE TOOLS) and
   //      the bare bottom stamp lands in dead space between cards.
   //      JSON-LD dateModified still emits on home (machine signal); only
