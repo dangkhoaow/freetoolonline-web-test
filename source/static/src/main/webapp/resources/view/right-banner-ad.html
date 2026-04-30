@@ -16,7 +16,25 @@
 		-webkit-box-shadow: none;
 		background-color: rgba(255,255,255,0);
 	}
-	
+
+	/* cycle-14e ROOT-CAUSE fix — when ads are disabled (ad blocker, staging,
+	 * or AdSense fails to fill the slot), the empty 160 x 600 reservation of
+	 * .ad-panel inside the .w3-row that also contains <main.page-main-content>
+	 * causes the main content to render 600 px below the top nav (block-level
+	 * children of main effectively "wrap around" the right-floated empty
+	 * slot). Forcing example: cycle-14d on /md5-converter.html and
+	 * /camera-test.html — main content y = 624; removing the empty .ad-panel
+	 * via DevTools moves main content y -> 24. The cycle-14a..d PAGESTYLE
+	 * margin-top overrides were workarounds for this same defect.
+	 *
+	 * The fix: hide the empty ad-panel when html.ads-disabled is set
+	 * (server-emitted in page-renderer.mjs:1111 and JS-toggled by
+	 * module-loader.js based on whether AdSense fills any visible slot).
+	 */
+	html.ads-disabled .ad-panel {
+		display: none !important;
+	}
+
 	.w3-right.ad-section.ad-panel {
 		margin-right: 10px;
 	}
