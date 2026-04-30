@@ -997,11 +997,16 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   // visible string is a user freshness signal; the canonical machine
   // signal lives in JSON-LD dateModified above.
   const lastUpdatedHuman = lastUpdatedIso ? formatHumanDate(lastUpdatedIso) : '';
-  // Bottom-of-page fallback stamp. Suppressed when welcomeHasInlineStamp is
-  // true — those 48 pages already display a more prominent under-H1 stamp
-  // (now driven by the same mtime via rewriteLastUpdatedTag), so the
-  // bottom-of-page tag would be a duplicate signal.
-  const lastUpdatedHtml = lastUpdatedIso && lastUpdatedHuman && !welcomeHasInlineStamp
+  // Bottom-of-page fallback stamp. Suppressed in three cases:
+  //   1. welcomeHasInlineStamp — pages with a rewritten under-H1 stamp
+  //      (the prominent placement); a bottom tag would duplicate.
+  //   2. isHome — the home page has its own trust/freshness surface
+  //      ("Last refreshed April 2026" inside WHY TRUST THESE TOOLS) and
+  //      the bare bottom stamp lands in dead space between cards.
+  //      JSON-LD dateModified still emits on home (machine signal); only
+  //      the visible <time> is hidden.
+  const showBottomLastUpdated = lastUpdatedIso && lastUpdatedHuman && !welcomeHasInlineStamp && !isHome;
+  const lastUpdatedHtml = showBottomLastUpdated
     ? `<p class="page-mtime" style="font-size:12px;color:#5f6368;margin:8px 0 0;text-align:right;"><time itemprop="dateModified" datetime="${escapeHtml(lastUpdatedIso)}">Last updated: ${escapeHtml(lastUpdatedHuman)}</time></p>`
     : '';
   const showDisableAdsScript = showAds ? `<script>isLoadAds = true;</script>` : '';
