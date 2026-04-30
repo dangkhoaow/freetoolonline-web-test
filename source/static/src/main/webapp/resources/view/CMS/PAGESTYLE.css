@@ -1,29 +1,18 @@
 /*
- * Sitewide PAGESTYLE — refactored 2026-04-30 per Workstream A.6 of
- * SITE_ENHANCEMENT_PLAN.md. Hardcoded brand colors replaced with
- * design-token references defined in style-all-default.tag :root block.
+ * PAGESTYLE.css (slug-less) — homepage-only stylesheet per site-data.mjs
+ * `read('PAGESTYLE','css')` lookup pattern (slug pages use PAGESTYLE<slug>.css).
  *
- * Each var(--TOKEN, FALLBACK) preserves the original color as fallback
- * so this commit is byte-identical for any browser that doesn't yet
- * resolve custom properties (which all 2026 browsers do, but the
- * fallback is documentation belt-and-braces).
- *
- * The cycle-18 palette flip (orange→blue accent etc., per cohort report
- * Part 4) changes ONLY the token values in style-all-default.tag :root —
- * these rules don't need to change.
+ * Cycle-16 token-wiring: the .headerLogo SVG fills below route via tokens
+ * (--logo-orange/-navy/-grey, no dark override = both palettes hit fallback).
+ * The .extrnl + .ui-autocomplete-input + layout-fix rules previously lived
+ * here are MOVED to style-all-default.tag so they reach every URL, not just '/'.
  */
 a {
     text-decoration: none
 }
 
-/* `.extrnl` and `.ui-autocomplete-input` retained at hardcoded colors for this
- * commit so the visual is byte-identical (token-flip in cycle 18 will route
- * these via var(--*) deliberately, with explicit dark-mode parity).
- * The 3 .headerLogo rules below ARE token-routed since logo colors have no
- * dark-mode override anywhere in the existing CSS — `--logo-orange`/`-navy`/
- * `-grey` resolve to their fallback values in BOTH palettes. Pure refactor. */
 .extrnl {
-    color: #3b73af
+    color: var(--link, #2563eb)
 }
 
 .searchContainer {
@@ -31,11 +20,11 @@ a {
 }
 
 .ui-autocomplete-input {
-    border: 1px solid #ccd0d5!important;
-    background-color: #fff!important;
-    color: #333!important;
+    border: 1px solid var(--border-input, #cbd5e1)!important;
+    background-color: var(--bg-surface, #ffffff)!important;
+    color: var(--text-primary, #0f172a)!important;
     padding: 8px!important;
-    border-radius: 8px!important;
+    border-radius: var(--radius-md, 8px)!important;
     height: 37px!important;
     background: url(https://dkbg1jftzfsd2.cloudfront.net/image/search-icon.svg) right 5px center no-repeat!important;
     background-size: 20px!important;
@@ -271,6 +260,8 @@ html.page-root.dark header.navBarContainer.w3-top .new-style-nav-bar .settingsBt
 .page-main-content {
     overflow: visible !important;
 }
+/* The .page-main-content centering layout fix lives in style-all-default.tag
+ * (line ~1875) so it reaches every URL, not just '/' (homepage-only PAGESTYLE.css). */
 
 @media (min-width: 1000px) {
     html.has-upload .pageNameContainer > .navPageName {
