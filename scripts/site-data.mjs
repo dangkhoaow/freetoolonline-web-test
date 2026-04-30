@@ -88,7 +88,7 @@ export const INFO_ROUTES = new Set([
   // Phase 16 Cycle B P16.N16 - "lcd test" head query (28K aggregate
   // impr / 1.10% CTR / pos 6.1). Explainer + when-to-run + boundary.
   '/guides/what-an-lcd-test-does-and-when-to-run-one.html',
-  // Phase 16 cycle 8 N-series — 25 new long-form guides. INFO_ROUTES
+  // Phase 16 cycle 8 N-series - 25 new long-form guides. INFO_ROUTES
   // membership disables ads + rating widget (matching the rest of the
   // /guides/* cluster); see page-renderer.mjs showAds gate.
   '/guides/how-to-make-a-zip-file-smaller.html',
@@ -116,7 +116,7 @@ export const INFO_ROUTES = new Set([
   '/guides/mp4-vs-mov-vs-mkv-which-container-when.html',
   '/guides/free-online-tools-that-work-without-uploading-files.html',
   '/guides/qr-code-generator-best-practices.html',
-  // Workstream B sample batch — added 2026-04-30 per SITE_ENHANCEMENT_PLAN.md.
+  // Workstream B sample batch - added 2026-04-30 per SITE_ENHANCEMENT_PLAN.md.
   // Two proof-of-pattern guides for cycle-18 batch-1 ship-loop.
   '/guides/how-to-compress-a-folder.html',
   '/guides/lcd-test-what-it-checks.html',
@@ -188,7 +188,7 @@ export const GUIDE_ROUTES = new Set([
   '/guides/mp4-vs-mov-vs-mkv-which-container-when.html',
   '/guides/free-online-tools-that-work-without-uploading-files.html',
   '/guides/qr-code-generator-best-practices.html',
-  // Workstream B sample batch — 2026-04-30
+  // Workstream B sample batch - 2026-04-30
   '/guides/how-to-compress-a-folder.html',
   '/guides/lcd-test-what-it-checks.html',
 ]);
@@ -290,7 +290,7 @@ export const JSP_BY_ROUTE = {
   '/guides/mp4-vs-mov-vs-mkv-which-container-when.html': 'guide/mp4-vs-mov-vs-mkv-which-container-when.jsp',
   '/guides/free-online-tools-that-work-without-uploading-files.html': 'guide/free-online-tools-that-work-without-uploading-files.jsp',
   '/guides/qr-code-generator-best-practices.html': 'guide/qr-code-generator-best-practices.jsp',
-  // Workstream B sample batch — 2026-04-30
+  // Workstream B sample batch - 2026-04-30
   '/guides/how-to-compress-a-folder.html': 'guide/how-to-compress-a-folder.jsp',
   '/guides/lcd-test-what-it-checks.html': 'guide/lcd-test-what-it-checks.jsp',
 

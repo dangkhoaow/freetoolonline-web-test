@@ -1,5 +1,5 @@
 <%--
-  /alternatead.html — AdSense alternate-ad iframe target.
+  /alternatead.html - AdSense alternate-ad iframe target.
   This page is loaded INSIDE an iframe by the AdSense fallback mechanism when no ad fills.
   - meta robots="noindex, nofollow" is INTENTIONAL (this is not a content URL).
   - empty title + missing meta description are INTENTIONAL (ad-tag compatibility).

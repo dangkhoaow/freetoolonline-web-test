@@ -5,7 +5,7 @@ import path from 'node:path';
 const REPO = path.resolve(import.meta.dirname, '..');
 const CMS = path.join(REPO, 'source/static/src/main/webapp/resources/view/CMS');
 
-// (slug, current_text, new_text) — verified each new_text <= 46c so rendered <= 65c.
+// (slug, current_text, new_text) - verified each new_text <= 46c so rendered <= 65c.
 const trims = [
   // existing guides cluster (20)
   ['guidescssminifiervscompressor', 'CSS Minifier vs Compressor - When You Need Each', 'CSS Minifier vs Compressor'],
@@ -47,7 +47,7 @@ for (const [slug, expected, replacement] of trims) {
   }
   const current = fs.readFileSync(file, 'utf8');
   if (current === replacement) { skipped++; continue; }
-  // Don't sanity-check `current === expected` — actual on-disk wording can vary slightly.
+  // Don't sanity-check `current === expected` - actual on-disk wording can vary slightly.
   fs.writeFileSync(file, replacement);
   console.log(`${slug}: ${current.length}c -> ${replacement.length}c (rendered ${replacement.length+19}c)`);
   updated++;

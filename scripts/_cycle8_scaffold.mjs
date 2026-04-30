@@ -1,4 +1,4 @@
-// One-shot scaffold for cycle 8 — writes 25 guides' metadata + JSP wrapper files.
+// One-shot scaffold for cycle 8 - writes 25 guides' metadata + JSP wrapper files.
 // BODYHTML.html files are NOT written here (authored separately).
 import fs from 'node:fs';
 import path from 'node:path';

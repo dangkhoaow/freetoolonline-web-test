@@ -1,5 +1,5 @@
 // Step-4 layout-alignment audit (corrected): compare sibling content
-// elements (h1 / h2 / answer panel / decision table) — they should all share
+// elements (h1 / h2 / answer panel / decision table) - they should all share
 // identical `left` position because they live inside the same w3-container.
 // The container itself (`#content.w3-content`) is full-viewport-width and is
 // excluded from the sibling-alignment check.

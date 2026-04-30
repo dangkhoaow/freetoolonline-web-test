@@ -7,7 +7,7 @@ import path from 'node:path';
 const REPO = path.resolve(import.meta.dirname, '..');
 const manifest = JSON.parse(fs.readFileSync(path.join(REPO, 'scripts/_cycle8_manifest.json'), 'utf8'));
 
-// 1) JSP_BY_ROUTE — append after the Cycle B block before /compose-pdf.html
+// 1) JSP_BY_ROUTE - append after the Cycle B block before /compose-pdf.html
 {
   const file = path.join(REPO, 'scripts/site-data.mjs');
   let src = fs.readFileSync(file, 'utf8');
@@ -70,7 +70,7 @@ const manifest = JSON.parse(fs.readFileSync(path.join(REPO, 'scripts/_cycle8_man
   console.log(`seo-clusters.mjs guides routes[]: +${added} entries`);
 }
 
-// 4) related-tools.js urlMaps — insert before the closing ];
+// 4) related-tools.js urlMaps - insert before the closing ];
 {
   const file = path.join(REPO, 'source/web/src/main/webapp/static/script/related-tools.js');
   let src = fs.readFileSync(file, 'utf8');
@@ -91,7 +91,7 @@ const manifest = JSON.parse(fs.readFileSync(path.join(REPO, 'scripts/_cycle8_man
   console.log(`related-tools.js urlMaps: +${added} entries`);
 }
 
-// 5) static sitemap.xml — append <url> entries before </urlset>
+// 5) static sitemap.xml - append <url> entries before </urlset>
 {
   const file = path.join(REPO, 'source/web/src/main/webapp/static/sitemap.xml');
   let src = fs.readFileSync(file, 'utf8');
