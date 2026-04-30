@@ -97,8 +97,8 @@
 /* DARK MODE - manual toggle via #dark-tgl checkbox (existing JS sets html.main-html.dark) */
 html.main-html.dark {
     --bg-primary:    #0d1117;          /* GitHub dark; NOT #000 per Bound Dev */
-    --bg-surface:    #161b22;          /* 1 step elevated */
-    --bg-tertiary:   #1c2128;
+    --bg-surface:    #1f2937;          /* slate-800; brighter elevation than #161b22 so cards read distinctly on bg-primary */
+    --bg-tertiary:   #2a3441;          /* +1 step up for callout / panel-info chrome */
 
     --text-primary:  #e6edf3;          /* off-white per Bound Dev - pure white halates */
     --text-muted:    #8b949e;
