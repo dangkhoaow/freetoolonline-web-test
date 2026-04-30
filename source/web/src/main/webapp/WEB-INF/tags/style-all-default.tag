@@ -124,20 +124,26 @@ html.main-html.dark {
     --shadow-card:   0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
-/* OS-default dark for first-paint correctness when user hasn't clicked the toggle yet.
- * The toggle JS still wins (it sets the html.main-html.dark class explicitly). */
-@media (prefers-color-scheme: dark) {
-    :root:not(.light) {
-        --bg-primary:    #0d1117;
-        --bg-surface:    #161b22;
-        --text-primary:  #e6edf3;
-        --text-muted:    #8b949e;
-        --text-heading:  #f0f6fc;
-        --accent:        #4f93d4;
-        --link:          #58a6ff;
-        --shadow-card:    0 1px 3px rgba(0, 0, 0, 0.4);
-    }
-}
+/* OS-default dark `@media (prefers-color-scheme: dark)` block REMOVED 2026-04-30
+ * cycle-17 W/E follow-up #8 per ROOT-CAUSE-DISCIPLINE.
+ *
+ * SYMPTOM: user explicitly clicks the LIGHT toggle while OS prefers dark; the
+ * page renders DARK regardless. Chips render with LIGHT tokens (white) inside
+ * a DARK page (token-driven dark via @media) -> chips visually broken.
+ *
+ * HYPOTHESIS: existing toggle JS removes `html.main-html.dark` class on light
+ * toggle but does NOT add a `.light` class. My @media selector was
+ * `:root:not(.light)`, which still matches because `.light` was never set.
+ * Result: explicit light toggle is silently overridden by OS preference.
+ *
+ * ISOLATION: removing the @media block leaves the toggle as the sole driver of
+ * theme. OS-dark users see a brief flash of light at first paint until the
+ * toggle JS sets `.dark`; that flash already exists in the legacy site (which
+ * predates this @media addition) and is the lesser evil compared to ignoring
+ * the user's explicit choice.
+ *
+ * ROOT-CAUSE FIX: delete the @media block. Theme is now controlled by exactly
+ * ONE signal: the `html.main-html.dark` class set by the toggle JS. */
 /* ===== END DESIGN TOKEN LAYER ===== */
 
 .fa {
