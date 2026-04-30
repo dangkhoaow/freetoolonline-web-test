@@ -3,11 +3,29 @@
     var switchMode = function(){};
 
     function doAfterPageRendered(){  
+        function demoteOldBrowserH1() {
+            try {
+                $('h1').each(function(){
+                    var t = ($(this).text() || '').replace(/\s+/g, ' ').trim();
+                    if (t && t.toLowerCase() === 'old browser!') {
+                        $(this).replaceWith('<p><b>Old browser!</b></p>');
+                    }
+                });
+            } catch (e) {}
+        };
+        function scheduleOldBrowserH1Demotion() {
+            demoteOldBrowserH1();
+            setTimeout(demoteOldBrowserH1, 500);
+            setTimeout(demoteOldBrowserH1, 1500);
+            setTimeout(demoteOldBrowserH1, 3500);
+            setTimeout(demoteOldBrowserH1, 7500);
+        };
         function runInitAfterLoad() {
             $('.editor-c').removeClass('opacity-0');
             $('.loading-tmp').hide();
             doStuffWhenOnload();
             $('.editor-c #home, .editor-c #workspace').removeClass('height-1');
+            scheduleOldBrowserH1Demotion();
             if (w_winds < 1000) {
                 var otherHei = $('.navBarContainer').outerHeight() + ($('.w3-rest.page-main-content>.ad-section.top-ad:visible').length == 1 ? $('.w3-rest.page-main-content>.ad-section.top-ad').outerHeight() : 0) + 20;
                 if (localStorage.getItem('ccdimiss') !== 'true' && $('.ccInfo').length > 0) {
