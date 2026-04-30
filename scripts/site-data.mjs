@@ -116,6 +116,10 @@ export const INFO_ROUTES = new Set([
   '/guides/mp4-vs-mov-vs-mkv-which-container-when.html',
   '/guides/free-online-tools-that-work-without-uploading-files.html',
   '/guides/qr-code-generator-best-practices.html',
+  // Workstream B sample batch — added 2026-04-30 per SITE_ENHANCEMENT_PLAN.md.
+  // Two proof-of-pattern guides for cycle-18 batch-1 ship-loop.
+  '/guides/how-to-compress-a-folder.html',
+  '/guides/lcd-test-what-it-checks.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -184,6 +188,9 @@ export const GUIDE_ROUTES = new Set([
   '/guides/mp4-vs-mov-vs-mkv-which-container-when.html',
   '/guides/free-online-tools-that-work-without-uploading-files.html',
   '/guides/qr-code-generator-best-practices.html',
+  // Workstream B sample batch — 2026-04-30
+  '/guides/how-to-compress-a-folder.html',
+  '/guides/lcd-test-what-it-checks.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -283,6 +290,9 @@ export const JSP_BY_ROUTE = {
   '/guides/mp4-vs-mov-vs-mkv-which-container-when.html': 'guide/mp4-vs-mov-vs-mkv-which-container-when.jsp',
   '/guides/free-online-tools-that-work-without-uploading-files.html': 'guide/free-online-tools-that-work-without-uploading-files.jsp',
   '/guides/qr-code-generator-best-practices.html': 'guide/qr-code-generator-best-practices.jsp',
+  // Workstream B sample batch — 2026-04-30
+  '/guides/how-to-compress-a-folder.html': 'guide/how-to-compress-a-folder.jsp',
+  '/guides/lcd-test-what-it-checks.html': 'guide/lcd-test-what-it-checks.jsp',
 
   '/compose-pdf.html': 'pdf/compose-pdf.jsp',
   '/split-pdf-by-range.html': 'pdf/split-by-range.jsp',
