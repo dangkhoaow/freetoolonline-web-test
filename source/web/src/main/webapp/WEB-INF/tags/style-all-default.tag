@@ -54,7 +54,7 @@
 
     /* ACCENT / CTA - blue-600 mid-tone per Prospeo ("survives inversion; saturated
      * blue or green holds up better than pale pastel"). #2563eb on #fafafa = 6.7:1 (WCAG AA Large). */
-    --accent:        #2563eb;
+    --accent:        #2383e2;
     --cta-bg:        #202124;
     --cta-text:      #ffffff;
     --link:          #2563eb;
