@@ -299,6 +299,10 @@ function buildArticleJsonLd({ canonicalUrl, canonicalOrigin, headline, descripti
  * BODYHTML.html so machine + human surfaces agree (qa-truthful-content-claim).
  */
 function buildHomepageItemListJsonLd({ canonicalOrigin }) {
+  // Top-6 by GA4 28d pageviews. List matches the visible <ol id="popularToolsList">
+  // in BODYHTML.html exactly so machine + human surfaces stay byte-identical
+  // (qa-truthful-content-claim G10 parity). Trimmed from 10 to 6 in cycle-17
+  // W/E follow-up #4 to balance bento row-1 cell heights.
   const items = [
     { name: 'Compress, Zip File and Folder', url: '/zip-file.html' },
     { name: 'Remove Zip Password', url: '/remove-zip-password.html' },
@@ -306,16 +310,12 @@ function buildHomepageItemListJsonLd({ canonicalOrigin }) {
     { name: 'LCD Test (Dead Pixel)', url: '/lcd-test.html' },
     { name: 'MD5 Converter', url: '/md5-converter.html' },
     { name: 'Camera Test', url: '/camera-test.html' },
-    { name: 'Microphone Test', url: '/microphone-test.html' },
-    { name: 'Photo Editor', url: '/photo-editor.html' },
-    { name: 'CSS Minifier', url: '/css-minifier.html' },
-    { name: 'Compress Image (JPEG)', url: '/compress-image.html' },
   ];
   return buildJsonLdScript({
     '@context': 'https://schema.org',
     '@type': 'ItemList',
     name: 'Popular Free Tool Online tools',
-    description: 'Ten most-used tools on freetoolonline.com, ranked by GA4 28-day pageviews.',
+    description: 'Six most-used tools on freetoolonline.com, ranked by GA4 28-day pageviews.',
     numberOfItems: items.length,
     itemListElement: items.map((item, idx) => ({
       '@type': 'ListItem',
