@@ -55,7 +55,7 @@
     /* ACCENT / CTA - blue-600 mid-tone per Prospeo ("survives inversion; saturated
      * blue or green holds up better than pale pastel"). #2563eb on #fafafa = 6.7:1 (WCAG AA Large). */
     --accent:        #2563eb;
-    --cta-bg:        var(--accent);
+    --cta-bg:        #202124;
     --cta-text:      #ffffff;
     --link:          #2563eb;
     --link-hover:    #1d4ed8;          /* blue-700 */
@@ -104,7 +104,7 @@ html.main-html.dark {
     --text-muted:    #8b949e;
     --text-heading:  #f0f6fc;          /* slight brightness boost over body */
 
-    --accent:        #4f93d4;          /* lighter mid-tone blue; #4f93d4 on #0d1117 = 5.4:1 (WCAG AA) */
+    --accent:        #3bd671;          /* lighter mid-tone blue; #4f93d4 on #0d1117 = 5.4:1 (WCAG AA) */
     --cta-bg:        var(--accent);
     --cta-text:      #0d1117;          /* dark text on light blue CTA in dark mode */
     --link:          #58a6ff;          /* GitHub-style; 7.2:1 (WCAG AAA) */
