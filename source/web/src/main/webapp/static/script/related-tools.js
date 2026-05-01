@@ -219,6 +219,12 @@ try {
     return !1;
   }
 
+  var searchStopWords = ["free", "tool", "tools", "online", "convert", "converter", "converters", "in", "editor", "maker", "by", "and", "to", "the", "a", "an", "for", "of", "with", "on", "vs"];
+
+  function isSearchStopWord(t) {
+    return searchStopWords.indexOf(t.toLowerCase()) > -1;
+  }
+
   function getAllTags() {
     for (var t = 0; t < urlMaps.length; t++) {
       for (var e = urlMaps[t].tags.split(","), l = 0; l < e.length; l++) {
@@ -307,27 +313,57 @@ try {
         }
       }
     } else {
-      var tagFromQuery = getParameterByName("tag");
+      var rawTagFromQuery = getParameterByName("tag"),
+        rawSearchQuery = getParameterByName("q"),
+        tagFromQuery = rawTagFromQuery || rawSearchQuery;
+      tagFromQuery && (tagFromQuery = tagFromQuery.trim());
       if (tagFromQuery && tagFromQuery.toLowerCase() === "hardwaretest") {
         tagFromQuery = "device-test";
         console.log("[related-tools] Alias tag hardwaretest -> device-test.");
       }
+
+      var normalizedQuery = tagFromQuery ? tagFromQuery.toLowerCase() : "",
+        queryTokens = normalizedQuery
+          ? normalizedQuery.split(/\s+/).filter(function (t) {
+              return "" !== t && !isSearchStopWord(t);
+            })
+          : [];
+
+      normalizedQuery && 0 === queryTokens.length && (queryTokens = [normalizedQuery]);
+      console.log("[related-tools] Tag search query:", tagFromQuery);
+      console.log("[related-tools] Tag search tokens:", queryTokens);
+
       list = "";
-      if ("" !== tagFromQuery && tagFromQuery) {
+      if ("" !== normalizedQuery) {
         for (i = 0; i < urlMaps.length; i++) {
           var tags,
             currentTags,
-            matchedTags;
+            matchedTags,
+            titleLower,
+            titleMatch;
           title = urlMaps[i].title;
           if (!urlMaps[i].include && !isCurrentMapItem(urlMaps[i])) {
-            matchedTags = addPagesHasTheSameTag((tags = urlMaps[i].tags.split(",")), (currentTags = [tagFromQuery]));
-            if ("" !== matchedTags) {
+            matchedTags = addPagesHasTheSameTag((tags = urlMaps[i].tags.split(",")), (currentTags = queryTokens));
+            titleLower = title.toLowerCase();
+            titleMatch =
+              titleLower.indexOf(normalizedQuery) > -1 ||
+              queryTokens.some(function (t) {
+                return titleLower.indexOf(t) > -1;
+              });
+
+            if ("" !== matchedTags || titleMatch) {
+              var matchColor = "" !== matchedTags ? "#4caf50" : "#3b73af",
+                matchLabel = "" !== matchedTags ? matchedTags : ' "' + normalizedQuery + '"',
+                matchTitle = "" !== matchedTags ? "This tool has the same tag(s): " + matchedTags : "Title matches" + matchLabel;
+
               urlMaps[i].include = !0;
               list =
                 list +
                 '<li class="d-inline"><a title="' +
-                title +
-                '" style="color: #4caf50;" href="' +
+                matchTitle +
+                '" style="color: ' +
+                matchColor +
+                ';" href="' +
                 urlMaps[i].url +
                 '">' +
                 title +
@@ -335,7 +371,9 @@ try {
             }
           }
         }
-        "" !== list && (list = "<p>Tools have the tag:<b> #" + tagFromQuery + "</b></p>" + list, $(".tags-collection").html(list));
+        "" !== list &&
+          (list = "<p>Tools matching:<b> " + (normalizedQuery.indexOf(" ") === -1 ? "#" : "") + normalizedQuery + "</b></p>" + list,
+          $(".tags-collection").html(list));
       }
 
       getAllTags();
