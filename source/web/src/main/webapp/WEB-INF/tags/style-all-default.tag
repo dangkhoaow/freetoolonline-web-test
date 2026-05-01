@@ -35,7 +35,7 @@
 :root {
     /* SURFACES - off-white page on light per Muzli ("kinder on low-end IPS panels"),
      * GitHub-style #0d1117 on dark per Bound Dev ("never #000; halation effect"). */
-    --bg-primary:    #fafafa;
+    --bg-primary:    var(--bg-tertiary);
     --bg-surface:    #ffffff;          /* cards on off-white = subtle elevation */
     --bg-tertiary:   #f4f5f7;
 
