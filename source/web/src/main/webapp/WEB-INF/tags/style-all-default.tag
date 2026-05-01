@@ -1881,11 +1881,12 @@ a {
  * vp) or 1000px (1366+) and asymmetric margins (mL ~170px less than mR), shifting
  * the column ~85px LEFT of viewport center across all viewports. Root: W3.CSS
  * .w3-rest creates a BFC (overflow:hidden) that shrink-fits when adjacent floats
- * leave residual width. Force-center with auto margins + width:calc(100% - 20px)
- * mirroring .page-section. */
+ * leave residual width. Force-center with auto margins. Keep the main container
+ * full-width so header/footer align; cards still use width: calc(100% - 20px). */
 main.page-main-content,
 .w3-rest.page-main-content {
-    width: calc(100% - 20px) !important;
+    width: 100% !important;
+    max-width: 100% !important;
     margin-left: auto !important;
     margin-right: auto !important;
     box-sizing: border-box !important;
