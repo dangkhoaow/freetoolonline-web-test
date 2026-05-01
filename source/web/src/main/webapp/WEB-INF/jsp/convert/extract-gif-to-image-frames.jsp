@@ -5,12 +5,12 @@
 	keyword='${pageBodyKeyword}' 
 	description='${pageBodyDesc}'>
 	
-	<!-- BODYHTML -->
-	${pageBodyHTML}
-	
 	<div class='step step1 w3-container'>
 		<freetoolonline:upload/>
 	</div>
+	
+	<!-- BODYHTML -->
+	${pageBodyHTML}
 	<div class='w3-container'>
 		<div class='step step3 w3-container'>
 			<freetoolonline:download/>
