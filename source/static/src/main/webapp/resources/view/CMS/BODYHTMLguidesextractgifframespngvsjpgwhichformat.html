@@ -1,0 +1,53 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Extract GIF Frames: PNG or JPG, Which Format Should You Pick?</b></h1>
+    <p><em>Last reviewed 2026-05-02. Open <a href="/extract-gif-to-image-frames.html">the GIF frame extractor</a> and pick the format from the settings panel before you upload.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> Pick PNG when you will edit, layer, or re-encode the frames; pick JPG when you only need a quick preview or a thumbnail. PNG is lossless and keeps the alpha channel that GIF89a uses for transparency. JPG drops the alpha and re-compresses the pixels, but the files are much smaller. The freetoolonline server emits whichever format you select; the choice happens in the page's settings, before the upload.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>The short version, side by side</b></h2>
+    <p>Below is the trade-off in one table. The deeper trade-offs follow.</p>
+    <table class="w3-table w3-bordered w3-striped">
+        <thead>
+            <tr><th>Concern</th><th>PNG</th><th>JPG</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Pixel fidelity</td><td>Lossless — every pixel matches the GIF</td><td>Lossy — re-compressed at the encoder's quality setting</td></tr>
+            <tr><td>Transparency (alpha)</td><td>Preserved</td><td>Dropped — transparent pixels become white</td></tr>
+            <tr><td>File size per frame</td><td>Larger — typically 2–6× a comparable JPG</td><td>Smaller</td></tr>
+            <tr><td>Best for</td><td>Editing, re-encoding, archiving, sharp-edge graphics</td><td>Thumbnails, quick previews, photographic frames where size matters</td></tr>
+            <tr><td>Worst for</td><td>Very long animations where storage is tight</td><td>Frames that have flat colour, sharp edges, or transparency</td></tr>
+        </tbody>
+    </table>
+
+    <h2 class="text-uppercase"><b>Why PNG keeps the GIF's alpha and JPG cannot</b></h2>
+    <p>GIF89a stores transparency as a single index in its colour palette — one entry of the palette is marked "transparent" and every pixel that maps to that entry is invisible. PNG was designed as a richer replacement for GIF: it carries a full per-pixel alpha channel, so the transparent regions of a GIF translate cleanly into the PNG output. JPG predates the web's transparency story by a decade. It has no alpha channel at all. When the extractor exports a GIF frame as JPG, every transparent pixel collapses to a fixed background colour (usually white), and the transparency is gone for good. If your GIF has transparency and you might re-composite the frames over a different background later, only PNG preserves that option.</p>
+
+    <h2 class="text-uppercase"><b>Why JPG files are so much smaller</b></h2>
+    <p>PNG uses lossless DEFLATE compression — the same algorithm as ZIP — applied to a per-pixel image stream. It cannot drop information; it can only find runs and patterns to store more compactly. JPG uses discrete-cosine-transform compression with quantisation, which deliberately discards high-frequency detail that the human eye is not very sensitive to. The discard is irreversible, but the savings are substantial: a typical photographic frame is two to six times smaller as JPG than as PNG at visually-comparable quality. For a 100-frame animation that storage difference adds up.</p>
+
+    <h2 class="text-uppercase"><b>Pick PNG when</b></h2>
+    <ul>
+        <li><b>You will edit a frame.</b> Every save-and-reopen of a JPG re-encodes the pixels and accumulates artefacts; PNG is lossless across as many edit-save cycles as you need.</li>
+        <li><b>You will re-encode the animation.</b> Modern animation formats (WebP, AVIF, MP4) start from per-frame pixel data; lossy frame inputs propagate into the lossy output.</li>
+        <li><b>The GIF has flat colour, line art, or sharp edges.</b> JPG's frequency-domain compression smears sharp edges into the so-called "ringing" artefact. PNG draws every edge as the original encoder placed it.</li>
+        <li><b>The GIF has transparency.</b> Only PNG preserves the alpha channel. JPG silently flattens the transparent regions to white.</li>
+        <li><b>You are archiving.</b> A folder of PNG frames is the ground-truth representation of the animation. Re-derive any other format from it without quality loss.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Pick JPG when</b></h2>
+    <ul>
+        <li><b>You only need a single still or a thumbnail.</b> A 20 KB JPG thumbnail is faster to load than a 120 KB PNG of the same image, and the difference is invisible at thumbnail size.</li>
+        <li><b>The GIF is a photographic clip with no transparency.</b> Smooth-tone photography is exactly the case JPG was designed for.</li>
+        <li><b>Storage matters more than re-edit fidelity.</b> A long screen-capture GIF that you only need to scroll-review can ship as JPG without practical impact.</li>
+        <li><b>You will not edit the frames after extraction.</b> If the frames are write-once read-many, JPG's lossy compression cost is paid once and never compounds.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Pick PNG when in doubt</b></h2>
+    <p>If the use case is uncertain, pick PNG. You can always re-encode a PNG to JPG later (the PNG is the source of truth); you cannot reverse a JPG re-compression. The only cost of picking PNG when JPG would have done is disk space — the frames remain editable and the alpha is intact.</p>
+
+    <h2 class="text-uppercase"><b>What the extractor actually does</b></h2>
+    <p>The choice is in the settings section of <a href="/extract-gif-to-image-frames.html">the extractor page</a>, above the upload widget. After you pick PNG or JPG and upload your GIF, the file is sent to the freetoolonline AWS service. The service decodes every frame and writes one image per frame in the format you selected, then bundles them into a ZIP for you to download. The original GIF is unchanged; the per-frame images are new files generated server-side.</p>
+    <p>If you are not sure which format you want, run the extractor twice — once with each format — and compare a representative frame. The difference is most visible on flat-colour graphics and on the edges of any transparency mask. For most photographic or video-derived GIFs, the practical difference is small at default quality settings.</p>
+</div>

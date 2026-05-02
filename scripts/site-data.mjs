@@ -135,6 +135,16 @@ export const INFO_ROUTES = new Set([
   // existing /guides/keyboard-tester-online-rollover-vs-anti-ghosting.html
   // (which is the WHAT-IS guide; this is the HOW-TO guide).
   '/guides/how-to-test-a-keyboard-online-step-by-step.html',
+  // Cycle 28 P28.A - Lane-D mandatory guide page for the GA4 sustained
+  // decay on /extract-gif-to-image-frames.html (cycle-21 P21.1 → cycle-27
+  // P27.E research carry, executed cycle 28). PNG-vs-JPG format-decision
+  // angle — narrowly distinct from the existing how-to-split-a-gif and
+  // social-post guides (which both already cover step-by-step intent).
+  // Captures pre-decision searchers comparing output formats; helps the
+  // tool's GA4 decay by routing format-shopping queries to a dedicated
+  // landing page that links INTO the tool's settings panel. Append-only
+  // on every existing surface. Cluster: image-editing.
+  '/guides/extract-gif-frames-png-vs-jpg-which-format.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -210,6 +220,10 @@ export const GUIDE_ROUTES = new Set([
   '/guides/screen-display-test-synonyms.html',
   // Cycle 27 P27.C - keyboard-test how-to guide (Lane-D PA-mode mandatory).
   '/guides/how-to-test-a-keyboard-online-step-by-step.html',
+  // Cycle 28 P28.A - PNG vs JPG output-format comparison guide for the
+  // /extract-gif-to-image-frames.html tool (Lane-D PA-mode mandatory;
+  // image-editing cluster).
+  '/guides/extract-gif-frames-png-vs-jpg-which-format.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -299,6 +313,7 @@ export const JSP_BY_ROUTE = {
   '/guides/microphone-test-online-what-it-actually-checks.html': 'guide/microphone-test-online-what-it-actually-checks.jsp',
   '/guides/keyboard-tester-online-rollover-vs-anti-ghosting.html': 'guide/keyboard-tester-online-rollover-vs-anti-ghosting.jsp',
   '/guides/how-to-test-a-keyboard-online-step-by-step.html': 'guide/how-to-test-a-keyboard-online-step-by-step.jsp',
+  '/guides/extract-gif-frames-png-vs-jpg-which-format.html': 'guide/extract-gif-frames-png-vs-jpg-which-format.jsp',
   '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',
