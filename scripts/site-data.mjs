@@ -156,6 +156,16 @@ export const INFO_ROUTES = new Set([
   // sub-cohort to a dedicated landing page that satellite-links back to
   // the tool. Append-only on every existing surface. Cluster: image-editing.
   '/guides/gif-frames-extract-vs-frame-rate-fps-explained.html',
+  // Cycle 30 P30.A - Lane-D mandatory guide page on the orthogonal
+  // "what to use INSTEAD of MD5" decision. Distinct from the existing
+  // /guides/why-md5-cannot-be-decrypted.html (which answers the why)
+  // and /guides/md5-vs-sha256-when-to-hash.html (narrow MD5-vs-SHA256
+  // only). Captures the residual cohort searching "md5 alternatives",
+  // "what to use instead of md5", "bcrypt vs argon2id", "argon2id
+  // vs bcrypt" - all currently landing on /md5-converter.html at
+  // GSC pos 9-11 with sub-2.5% CTR. Append-only on every existing
+  // surface. Cluster: guide,developer.
+  '/guides/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -239,6 +249,9 @@ export const GUIDE_ROUTES = new Set([
   // tool, orthogonal question to cycle-28 P28.A. Lane-D PA-mode mandatory;
   // image-editing cluster.
   '/guides/gif-frames-extract-vs-frame-rate-fps-explained.html',
+  // Cycle 30 P30.A - MD5 alternatives (bcrypt vs Argon2id vs SHA-256)
+  // decision guide. Lane-D PA-mode mandatory; guide,developer cluster.
+  '/guides/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -330,6 +343,7 @@ export const JSP_BY_ROUTE = {
   '/guides/how-to-test-a-keyboard-online-step-by-step.html': 'guide/how-to-test-a-keyboard-online-step-by-step.jsp',
   '/guides/extract-gif-frames-png-vs-jpg-which-format.html': 'guide/extract-gif-frames-png-vs-jpg-which-format.jsp',
   '/guides/gif-frames-extract-vs-frame-rate-fps-explained.html': 'guide/gif-frames-extract-vs-frame-rate-fps-explained.jsp',
+  '/guides/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html': 'guide/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.jsp',
   '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',
