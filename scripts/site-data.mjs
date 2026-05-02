@@ -120,6 +120,14 @@ export const INFO_ROUTES = new Set([
   // Two proof-of-pattern guides for cycle-18 batch-1 ship-loop.
   '/guides/how-to-compress-a-folder.html',
   '/guides/lcd-test-what-it-checks.html',
+  // Cycle 19 P19.4 - synonym disambiguation guide for "screen test" /
+  // "display test" / "monitor test" Bing-only impression gap (KI-19.3:
+  // Bing serves 100,484 imp on `camera test` and 51,081 on `screen test`
+  // while GSC silent). Routes intent to /lcd-test.html or /camera-test.html
+  // without modifying either tool page; anti-cannibalisation cleared by
+  // seo-agency-check (no overlap with /guides/lcd-test-what-it-checks.html
+  // which explains WHAT the test checks; this guide answers WHICH name = WHICH tool).
+  '/guides/screen-display-test-synonyms.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -191,6 +199,8 @@ export const GUIDE_ROUTES = new Set([
   // Workstream B sample batch - 2026-04-30
   '/guides/how-to-compress-a-folder.html',
   '/guides/lcd-test-what-it-checks.html',
+  // Cycle 19 P19.4 - screen/display/monitor synonym disambiguation guide.
+  '/guides/screen-display-test-synonyms.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -293,6 +303,8 @@ export const JSP_BY_ROUTE = {
   // Workstream B sample batch - 2026-04-30
   '/guides/how-to-compress-a-folder.html': 'guide/how-to-compress-a-folder.jsp',
   '/guides/lcd-test-what-it-checks.html': 'guide/lcd-test-what-it-checks.jsp',
+  // Cycle 19 P19.4 - screen/display/monitor synonym disambiguation guide.
+  '/guides/screen-display-test-synonyms.html': 'guide/screen-display-test-synonyms.jsp',
 
   '/compose-pdf.html': 'pdf/compose-pdf.jsp',
   '/split-pdf-by-range.html': 'pdf/split-by-range.jsp',
