@@ -128,6 +128,13 @@ export const INFO_ROUTES = new Set([
   // seo-agency-check (no overlap with /guides/lcd-test-what-it-checks.html
   // which explains WHAT the test checks; this guide answers WHICH name = WHICH tool).
   '/guides/screen-display-test-synonyms.html',
+  // Cycle 27 P27.C - Lane-D mandatory guide page for the Bing keyboard-test
+  // cohort (`keyboard test online` 7.7k + `online keyboard test` 6.2k +
+  // `test keyboard` 3.4k Bing-only impressions). Routes mid-funnel
+  // step-by-step intent to /keyboard-test.html without overlapping the
+  // existing /guides/keyboard-tester-online-rollover-vs-anti-ghosting.html
+  // (which is the WHAT-IS guide; this is the HOW-TO guide).
+  '/guides/how-to-test-a-keyboard-online-step-by-step.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -201,6 +208,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/lcd-test-what-it-checks.html',
   // Cycle 19 P19.4 - screen/display/monitor synonym disambiguation guide.
   '/guides/screen-display-test-synonyms.html',
+  // Cycle 27 P27.C - keyboard-test how-to guide (Lane-D PA-mode mandatory).
+  '/guides/how-to-test-a-keyboard-online-step-by-step.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -289,6 +298,7 @@ export const JSP_BY_ROUTE = {
   '/guides/how-to-check-camera-quality-on-your-phone.html': 'guide/how-to-check-camera-quality-on-your-phone.jsp',
   '/guides/microphone-test-online-what-it-actually-checks.html': 'guide/microphone-test-online-what-it-actually-checks.jsp',
   '/guides/keyboard-tester-online-rollover-vs-anti-ghosting.html': 'guide/keyboard-tester-online-rollover-vs-anti-ghosting.jsp',
+  '/guides/how-to-test-a-keyboard-online-step-by-step.html': 'guide/how-to-test-a-keyboard-online-step-by-step.jsp',
   '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',

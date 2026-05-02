@@ -102,6 +102,7 @@ try {
     { title: "How to Check Camera Quality on Your Phone", url: "https://freetoolonline.com/guides/how-to-check-camera-quality-on-your-phone.html", include: !1, tags: "guide,device-test" },
     { title: "Microphone Test Online - What It Checks", url: "https://freetoolonline.com/guides/microphone-test-online-what-it-actually-checks.html", include: !1, tags: "guide,device-test,utility" },
     { title: "Keyboard Tester - Rollover vs Anti-Ghost", url: "https://freetoolonline.com/guides/keyboard-tester-online-rollover-vs-anti-ghosting.html", include: !1, tags: "guide,device-test" },
+    { title: "How to Test a Keyboard Online Step by Step", url: "https://freetoolonline.com/guides/how-to-test-a-keyboard-online-step-by-step.html", include: !1, tags: "guide,device-test,utility" },
     { title: "Why MD5 Cannot Be Decrypted", url: "https://freetoolonline.com/guides/why-md5-cannot-be-decrypted.html", include: !1, tags: "guide,developer,md5,hash" },
     { title: "Text vs Line vs Word vs Git Diff", url: "https://freetoolonline.com/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html", include: !1, tags: "guide,developer" },
     { title: "JSON vs YAML vs TOML, Explained", url: "https://freetoolonline.com/guides/json-vs-yaml-vs-toml-config-formats-explained.html", include: !1, tags: "guide,developer,json" },
