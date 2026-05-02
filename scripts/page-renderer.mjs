@@ -109,6 +109,16 @@ const TOOL_OG_IMAGE_MAP = {
 };
 const DEFAULT_OG_IMAGE = 'https://dkbg1jftzfsd2.cloudfront.net/image/logo.200x200.png';
 
+// Cycle 27 P27.A - Per-route additional hreflang signals for cohorts captured
+// only by Bing (Indonesian `cek lcd` 6.7k imp / 377 clicks @ pos 2.5 on
+// /lcd-test.html). Strictly additive: existing self + x-default emissions
+// remain untouched. The map self-references the same canonical URL because
+// no translated variant exists; per Google's hreflang spec, a self-reference
+// is valid when the page is the best match for the language cohort.
+const EXTRA_HREFLANG_BY_ROUTE = {
+  '/lcd-test.html': ['id'],
+};
+
 function resolveOgImage(route) {
   const useToolOgImages = process.env.USE_TOOL_OG_IMAGES === 'true';
   if (!useToolOgImages) {
@@ -144,9 +154,11 @@ function renderMetaTags(ctx) {
   if (ctx.isStaging && !ctx.isHome && mobileTitleBase) {
     console.log(`[seo:mobile-title] route=${ctx.route} mobileTitle="${mobileTitleBase}".`);
   }
+  const extraHreflangs = EXTRA_HREFLANG_BY_ROUTE[ctx.route] || [];
   const alternateLinks = [
     `<link rel='alternate' href='${canonical}' hreflang='${selfHreflang}' />`,
     xDefaultHref ? `<link rel='alternate' href='${escapeHtml(xDefaultHref)}' hreflang='x-default' />` : '',
+    ...extraHreflangs.map((lang) => `<link rel='alternate' href='${canonical}' hreflang='${lang}' />`),
   ].filter(Boolean);
   const mobileTitleScript = ctx.isStaging && !ctx.isHome && mobileTitle
     ? `<script>(function(){try{var t=${JSON.stringify(mobileTitle)};var m=(window.matchMedia?window.matchMedia('(max-width: 480px)').matches:((window.innerWidth||0)<=480));if(m&&t){document.title=t;}}catch(e){}})();</script>`
