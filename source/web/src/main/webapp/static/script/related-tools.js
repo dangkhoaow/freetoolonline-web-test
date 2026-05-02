@@ -104,6 +104,7 @@ try {
     { title: "Keyboard Tester - Rollover vs Anti-Ghost", url: "https://freetoolonline.com/guides/keyboard-tester-online-rollover-vs-anti-ghosting.html", include: !1, tags: "guide,device-test" },
     { title: "How to Test a Keyboard Online Step by Step", url: "https://freetoolonline.com/guides/how-to-test-a-keyboard-online-step-by-step.html", include: !1, tags: "guide,device-test,utility" },
     { title: "Extract GIF Frames: PNG or JPG, Which Format?", url: "https://freetoolonline.com/guides/extract-gif-frames-png-vs-jpg-which-format.html", include: !1, tags: "guide,image-editing,gif,png,jpg" },
+    { title: "GIF Frames vs GIF Frame Rate (FPS) Explained", url: "https://freetoolonline.com/guides/gif-frames-extract-vs-frame-rate-fps-explained.html", include: !1, tags: "guide,image-editing,gif,fps" },
     { title: "Why MD5 Cannot Be Decrypted", url: "https://freetoolonline.com/guides/why-md5-cannot-be-decrypted.html", include: !1, tags: "guide,developer,md5,hash" },
     { title: "Text vs Line vs Word vs Git Diff", url: "https://freetoolonline.com/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html", include: !1, tags: "guide,developer" },
     { title: "JSON vs YAML vs TOML, Explained", url: "https://freetoolonline.com/guides/json-vs-yaml-vs-toml-config-formats-explained.html", include: !1, tags: "guide,developer,json" },
