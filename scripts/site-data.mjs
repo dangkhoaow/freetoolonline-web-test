@@ -305,6 +305,15 @@ export const INFO_ROUTES = new Set([
   // BODYWELCOMEmd5converter.html. Cluster: guide,developer. Lane-D PA-mode
   // mandatory; non-ZIP, non-destructive.
   '/guides/md5-to-text-why-you-cannot-convert-back.html',
+  // Cycle 46 P46.B - pre-call checklist guide. Reader question: "I have 5 minutes
+  // before a video call - which checks do I run on the screen, the webcam, and
+  // the microphone?" Bridges the cycle-42 lcd-test-vs-display-test guide and the
+  // cycle-43 camera-test-vs-webcam-test guide as a procedural HOW-DO-I-RUN-THESE
+  // sequence (different reader job: which-tools-to-run, not which-tool-is-which).
+  // Outbound links: /lcd-test.html, /camera-test.html, /microphone-test.html,
+  // /keyboard-test.html, plus three companion device-test guides. Cluster:
+  // guide,device-test. Lane-D PA-mode mandatory; non-ZIP, non-destructive.
+  '/guides/before-a-video-call-which-tools-to-run.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -413,6 +422,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/camera-test-vs-webcam-test-which-do-you-need.html',
   // Cycle 44 P44.A - "MD5 to text - why you cannot convert it back, and what to do instead" disambiguation/decision guide.
   '/guides/md5-to-text-why-you-cannot-convert-back.html',
+  // Cycle 46 P46.B - "Before a video call - which tools to run (screen / camera / microphone)" pre-call checklist guide.
+  '/guides/before-a-video-call-which-tools-to-run.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -516,6 +527,7 @@ export const JSP_BY_ROUTE = {
   '/guides/lcd-test-vs-display-test-which-do-you-need.html': 'guide/lcd-test-vs-display-test-which-do-you-need.jsp',
   '/guides/camera-test-vs-webcam-test-which-do-you-need.html': 'guide/camera-test-vs-webcam-test-which-do-you-need.jsp',
   '/guides/md5-to-text-why-you-cannot-convert-back.html': 'guide/md5-to-text-why-you-cannot-convert-back.jsp',
+  '/guides/before-a-video-call-which-tools-to-run.html': 'guide/before-a-video-call-which-tools-to-run.jsp',
   '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',
