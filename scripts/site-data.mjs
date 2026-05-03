@@ -291,6 +291,20 @@ export const INFO_ROUTES = new Set([
   // P42.A LCD-test guide cross-link. NO satellite backlinks anywhere this cycle.
   // Cluster: device-test. Lane-D PA-mode mandatory; non-ZIP, non-destructive.
   '/guides/camera-test-vs-webcam-test-which-do-you-need.html',
+  // Cycle 44 P44.A - "MD5 to text - why you cannot convert it back, and what to
+  // do instead" disambiguation/decision guide for the `md5 to text` (1,385 imp /
+  // 28d / pos 3.5 / 20.07% CTR) + `md5 decrypt` (3,158 imp / pos 9.2) demand
+  // cohort. Distinct framing from existing /guides/why-md5-cannot-be-decrypted.html
+  // (cycle 30 — answers WHY) and /guides/md5-alternatives-bcrypt-argon2id-sha256-
+  // when-each-fits.html (cycle 30 — answers WHAT-INSTEAD). This guide answers
+  // WHAT-DO-I-DO operationally for a user who typed "md5 to text" expecting
+  // a converter: verify forward, rainbow-table look-up (with caveats), or pick
+  // the right hash for the real job. Outbound link only to /md5-converter.html
+  // (the action tool, satellite source) and three companion developer-cluster
+  // guides; one append-only `<p><a>` satellite backlink at file-tail of
+  // BODYWELCOMEmd5converter.html. Cluster: guide,developer. Lane-D PA-mode
+  // mandatory; non-ZIP, non-destructive.
+  '/guides/md5-to-text-why-you-cannot-convert-back.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -397,6 +411,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/lcd-test-vs-display-test-which-do-you-need.html',
   // Cycle 43 P43.B - "Camera test vs webcam test vs camera quality - which one do you actually need?" reactive disambiguation-flow guide.
   '/guides/camera-test-vs-webcam-test-which-do-you-need.html',
+  // Cycle 44 P44.A - "MD5 to text - why you cannot convert it back, and what to do instead" disambiguation/decision guide.
+  '/guides/md5-to-text-why-you-cannot-convert-back.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -499,6 +515,7 @@ export const JSP_BY_ROUTE = {
   '/guides/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/gif-frame-extractor-output-looks-wrong-three-causes.jsp',
   '/guides/lcd-test-vs-display-test-which-do-you-need.html': 'guide/lcd-test-vs-display-test-which-do-you-need.jsp',
   '/guides/camera-test-vs-webcam-test-which-do-you-need.html': 'guide/camera-test-vs-webcam-test-which-do-you-need.jsp',
+  '/guides/md5-to-text-why-you-cannot-convert-back.html': 'guide/md5-to-text-why-you-cannot-convert-back.jsp',
   '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',
