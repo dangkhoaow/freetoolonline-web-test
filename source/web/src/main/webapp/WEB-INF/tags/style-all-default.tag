@@ -373,6 +373,10 @@ a {
     font-weight: bold;
 }
 
+html.main-html.dark:not([style*=background-color]) #nav_menu.new-style-nav_menu .w3-col>.w3-button:hover,html.main-html.dark:not([style*=background-color]) .ccInfo a:hover,html.main-html.dark:not([style*=background-color]) .extrnl:hover,html.main-html.dark:not([style*=background-color]) a.link:hover,html.main-html.dark:not([style*=background-color]) a[style*="#3b73af"]:hover,html.main-html.dark:not([style*=background-color]) a[style*="color:#0066b3"]:hover,html.main-html.dark:not([style*=background-color]) a[style*="color:#4caf50"]:hover,html.main-html.dark:not([style*=background-color]) a[style*="color:rgb(59,115,175)"]:hover,html.main-html[lang=en] a:not(.w3-button):not(.shareBtn):not(.button.positive):hover,html.main-html[lang=vi] a:not(.w3-button):not(.shareBtn):not(.button.positive):hover {
+    text-decoration: underline !important;
+}
+
 abbr[title] {
     border-bottom: none;
     text-decoration: underline;
