@@ -1,0 +1,68 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Compress JPEG Without Losing Quality - Quality vs Size</b></h1>
+    <p><em>Last reviewed 2026-05-03. The <a href="/compress-image.html">JPEG compressor</a> exposes one knob - quality - and most people leave it at the default. This guide tells you which value to pick for the four common reader tasks (web, archival, social, email) and the one case where AI auto-compression actually beats a fixed setting.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> JPEG quality 75 is invisible to almost every viewer on almost every photo - it cuts the file size by roughly half versus quality 95. Quality 85 is the safe middle for photos you might re-edit. Quality 95 is only worth the bytes when the JPEG is the master file. Quality 60 starts to show artefacts on smooth gradients (skies, skin) but is fine for thumbnails. The <i>AI auto</i> mode on the <a href="/compress-image.html">JPEG compressor</a> picks per-image, which beats one fixed value when you process a mixed batch (portraits + product shots + screenshots).</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>What the JPEG quality knob actually does</b></h2>
+    <p>JPEG compression is lossy and tunable. The encoder breaks the image into 8x8-pixel blocks, runs a discrete cosine transform on each block, and then rounds (quantises) the resulting coefficients - the higher coefficients carry the fine detail that the human eye is least sensitive to. The quality slider controls how aggressively those coefficients get rounded: low quality keeps fewer of them, high quality keeps more. Re-encoding the same image at quality 75 instead of 95 typically halves the file size because the encoder threw away the high-frequency content most viewers cannot perceive on a typical screen.</p>
+    <p>That is why "compress JPEG without losing quality" is technically a misnomer - <i>every</i> JPEG re-encode loses some data. The real question is "below which quality value does the loss become visible to my reader, on my image, on my likely viewing device". The four sections below pin that to four common tasks.</p>
+
+    <h2 class="text-uppercase"><b>Pick by task: web upload, archive, social, email</b></h2>
+    <div class="w3-responsive">
+        <table class="w3-table-all w3-small">
+            <tr><th>Task</th><th>Quality</th><th>Typical size reduction vs original</th><th>Why this value</th></tr>
+            <tr><td>Hero / website photo (5-10 megapixel source)</td><td>75 - 80</td><td>50 - 65%</td><td>Invisible degradation at typical viewing distance; halves the bytes the visitor downloads on first paint.</td></tr>
+            <tr><td>Archive / master copy you might re-edit</td><td>90 - 95</td><td>15 - 35%</td><td>Preserves headroom for a future crop or colour grade. Below 90, repeated saves accumulate visible artefacts.</td></tr>
+            <tr><td>Social post (Instagram / Twitter / LinkedIn)</td><td>70 - 78</td><td>55 - 70%</td><td>Platform re-encodes anyway; pre-compressing at 70-78 beats the platform default (usually 60-70).</td></tr>
+            <tr><td>Email attachment / chat upload</td><td>65 - 72</td><td>65 - 80%</td><td>Receiver views once on phone; size beats fidelity. Stay above 60 to avoid block-edge artefacts.</td></tr>
+            <tr><td>Thumbnail (under 200 px wide)</td><td>55 - 65</td><td>75 - 90%</td><td>Small canvas hides quantisation; cap at 60 if you see banding on smooth gradients.</td></tr>
+        </table>
+    </div>
+    <p>The percentages are typical, not guaranteed - a flat-colour screenshot compresses to a fraction of the equivalent photograph at the same quality value, because the encoder has more redundancy to remove. If your specific file does not match the table, pick the next-higher quality and re-test.</p>
+
+    <h2 class="text-uppercase"><b>When AI auto-compression beats a fixed quality value</b></h2>
+    <p>The <a href="/compress-image.html">JPEG compressor</a> includes an AI auto mode that picks a quality value per image rather than applying one global setting. AI auto is worth the extra step when one of three conditions is true:</p>
+    <ul>
+        <li><b>Mixed batch.</b> Twenty product shots + ten portraits + five screenshots in one upload. A fixed quality 80 over-compresses the screenshots (visible block edges on text) and under-compresses the portraits (extra bytes the eye does not benefit from). AI auto picks roughly 60 for the screenshots and 80 for the portraits, cutting total bytes by 20-35% with no visible loss anywhere.</li>
+        <li><b>Smooth-gradient images (skies, skin, bokeh).</b> Quantisation banding on smooth gradients shows up first; AI auto allocates more bits to those regions and fewer to flat areas, beating any fixed value at the same total file size.</li>
+        <li><b>High-resolution master plus a low-resolution preview.</b> AI auto can pair more bits with the master and fewer with the preview rather than forcing the preview to inherit the master's quality budget.</li>
+    </ul>
+    <p>For a homogeneous batch (only landscape photos, all same camera) a fixed quality between 75 and 85 is usually within 2-3% of the AI-auto output and saves the cycle of running the auto pass.</p>
+
+    <h2 class="text-uppercase"><b>What you cannot recover with compression</b></h2>
+    <p>Two losses are permanent and no quality knob recovers them:</p>
+    <p><b>Resampling loss.</b> If the upstream tool downscaled the image (3000 px wide source becomes a 1200 px wide JPEG), the discarded pixels are gone. Compress at any quality and you still have a 1200 px image. To preserve detail, pick a target width before compression: a 1920 px wide source is enough for almost every desktop hero; 2400 px covers retina-density laptops; over 3000 px is wasted unless the reader will pinch-zoom.</p>
+    <p><b>Re-save accumulation.</b> Each save at quality 75 takes the previous save's quantisation as its starting point. Five saves at 75 looks visibly worse than one save at 75 even though every step claimed the same quality. Always re-export from your master at the chosen final quality - never repeatedly compress an already-compressed JPEG.</p>
+
+    <h2 class="text-uppercase"><b>The one-paragraph rule of thumb</b></h2>
+    <p><b>If the JPEG is the version your visitor will download:</b> quality 75. If you might re-edit it: quality 90. If it is for a thumbnail / preview: quality 60. If you have a mixed batch: AI auto. Below 60: only for thumbnails or aggressive-size needs (email under 1 MB total). Above 95: only when you also need transparency or layered metadata, in which case JPEG is the wrong format - export PNG or TIFF instead. The <a href="/compress-image.html">JPEG compressor tool</a> drives the same pipeline whether you pick a fixed quality or AI auto - the difference is whether the quality value gets picked once for every image or once per image.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <p><b>Does JPEG quality 100 mean lossless?</b><br/>
+    No. JPEG quality 100 is the highest setting in most encoders, but it still applies the discrete cosine transform and quantisation - just with the smallest rounding step. Truly lossless requires a different format (PNG, TIFF, JPEG 2000 in lossless mode, or HEIC lossless). Quality 100 wastes bytes against quality 95 for almost no perceptual gain.</p>
+
+    <p><b>Can I "decompress" a JPEG to recover the original?</b><br/>
+    No. JPEG is lossy. The encoder discarded data when it first compressed the image; that data is not stored anywhere. The "original" exists only if you kept the source file (RAW, PNG, or a higher-quality JPEG) before re-encoding.</p>
+
+    <p><b>Why does the same quality value give different file sizes on different images?</b><br/>
+    The quality value sets the quantisation step, not the output bytes. A flat-colour screenshot at quality 80 is much smaller than a noisy night-time photo at quality 80 because the encoder ran out of high-frequency content to remove. The percentages in the task table above are typical for matching content type.</p>
+
+    <p><b>Does the JPEG compressor strip EXIF metadata?</b><br/>
+    Re-encoding usually re-emits the EXIF block from the source, but tools differ. For a photo you plan to publish (where camera GPS coordinates are private), strip EXIF after compressing - the <a href="/compress-image.html">JPEG compressor</a> page documents which EXIF fields it preserves.</p>
+
+    <p><b>Should I convert HEIC to JPEG before compressing, or compress the HEIC directly?</b><br/>
+    HEIC is already 30-50% smaller than the equivalent JPEG at the same perceived quality. If your reader's device supports HEIC, keep it. If you must serve to older browsers, convert HEIC to JPEG first (use <a href="/heic-to-jpg.html">HEIC to JPG</a>) and then compress at quality 75.</p>
+
+    <h2 class="text-uppercase"><b>Related</b></h2>
+    <ul>
+        <li><a href="/compress-image.html">JPEG compressor</a> - the tool itself; pick a quality value or hit AI auto.</li>
+        <li><a href="/guides/jpg-vs-png-for-web.html">JPG vs PNG for the web</a> - the format pick before you compress (photos = JPG, UI / screenshots = PNG).</li>
+        <li><a href="/guides/when-to-compress-vs-convert-an-image.html">When to compress vs convert an image</a> - the byte-count rule that decides between cutting size with quality and cutting size with format change.</li>
+        <li><a href="/guides/heic-vs-jpg-vs-webp.html">HEIC vs JPG vs WebP</a> - the modern-format trade-off; WebP at quality 80 typically beats JPEG at the same perceived quality.</li>
+        <li><a href="/guides/jpg-vs-jpeg-are-they-the-same.html">JPG vs JPEG - are they the same?</a> - one-paragraph answer: yes, identical format; .jpg vs .jpeg is just the file extension.</li>
+        <li><a href="/heic-to-jpg.html">HEIC to JPG converter</a> - convert iPhone HEIC photos to JPG first, then compress.</li>
+    </ul>
+</div>

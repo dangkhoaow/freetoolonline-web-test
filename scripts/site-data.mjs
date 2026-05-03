@@ -191,6 +191,17 @@ export const INFO_ROUTES = new Set([
   // cluster gap (camera + microphone already shipped 31/34; LCD has
   // dead-pixel-testing-guide). Lane-D PA-mode mandatory.
   '/guides/keyboard-test-keys-not-detected-four-fixes.html',
+  // Cycle 37 P37.A - "compress JPEG without losing quality - quality
+  // vs size" decision-table guide. Targets the residual /compress-image.html
+  // intent gap (GSC "compress jpeg online free" 156 imp at pos 9.59 /
+  // 0.6% CTR per gsc_page_queries__compress_image_html_28d.json) and
+  // the GA4 -28.8% page-view decay on /compress-image.html (28d). Pure
+  // educational guide on the quality-vs-size tradeoff (50/75/85/95)
+  // mapped to the four common reader tasks (web, archival, social,
+  // email) plus AI auto-mode. Append-only satellite backlink on
+  // /compress-image.html. Cluster: image-editing. Lane-D PA-mode
+  // mandatory; non-ZIP, non-destructive.
+  '/guides/compress-jpeg-without-losing-quality-quality-vs-size.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -283,6 +294,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/microphone-test-no-sound-four-fixes.html',
   // Cycle 35 P35.A - keyboard-test keys-not-detected diagnostic-flow guide.
   '/guides/keyboard-test-keys-not-detected-four-fixes.html',
+  // Cycle 37 P37.A - JPEG quality-vs-size decision-table guide for /compress-image.html.
+  '/guides/compress-jpeg-without-losing-quality-quality-vs-size.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -378,6 +391,7 @@ export const JSP_BY_ROUTE = {
   '/guides/camera-test-shows-black-screen-four-fixes.html': 'guide/camera-test-shows-black-screen-four-fixes.jsp',
   '/guides/microphone-test-no-sound-four-fixes.html': 'guide/microphone-test-no-sound-four-fixes.jsp',
   '/guides/keyboard-test-keys-not-detected-four-fixes.html': 'guide/keyboard-test-keys-not-detected-four-fixes.jsp',
+  '/guides/compress-jpeg-without-losing-quality-quality-vs-size.html': 'guide/compress-jpeg-without-losing-quality-quality-vs-size.jsp',
   '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',
