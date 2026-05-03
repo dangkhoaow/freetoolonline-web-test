@@ -337,6 +337,20 @@ export const INFO_ROUTES = new Set([
   // mode mandatory; non-ZIP, non-destructive; append-only on every existing
   // surface.
   '/guides/ffmpeg-online-vs-video-converter-which-to-pick.html',
+  // Cycle 50 P50.A - "ImageMagick Online vs Task-Specific Tools - which to
+  // pick" routing guide. Image-editing-cluster parallel to cycle 49 P49.A
+  // (FFmpeg-vs-Video-Converter routing). Targets the GA4 /imagemagick-
+  // online.html 114-sessions / 0.51-engagement cohort plus the GSC
+  // "imagemagick online" / "convert image online imagemagick" routing
+  // intent. Five rules: task-specific defaults vs non-default flags vs
+  // chained operations vs huge/sensitive files vs troubleshooting. Routes
+  // intent across tool-imagemagickonline (framing menu hand-verified
+  // 2026-05-03 cycle 11 Workstream D) plus already-verified task-specific
+  // tool skills (cropimage, resizeimage, compressimage, heictojpg,
+  // svgtopng) without editing any of them. Cluster: guide,image-editing,
+  // imagemagick. Lane-D PA-mode mandatory; non-ZIP, non-destructive;
+  // append-only on every existing surface.
+  '/guides/imagemagick-online-vs-task-specific-tools-which-to-pick.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -451,6 +465,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/screen-test-for-laptop-5-minute-checklist.html',
   // Cycle 49 P49.A - "FFmpeg Online vs Video Converter - which tool to open" routing guide (GSC "ffmpeg online" op_score 270.97 row).
   '/guides/ffmpeg-online-vs-video-converter-which-to-pick.html',
+  // Cycle 50 P50.A - "ImageMagick Online vs Task-Specific Tools - which to pick" routing guide (image-editing-cluster parallel to cycle 49 P49.A; GA4 /imagemagick-online.html 114 sess / 0.51 engagement cohort).
+  '/guides/imagemagick-online-vs-task-specific-tools-which-to-pick.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -557,6 +573,7 @@ export const JSP_BY_ROUTE = {
   '/guides/before-a-video-call-which-tools-to-run.html': 'guide/before-a-video-call-which-tools-to-run.jsp',
   '/guides/screen-test-for-laptop-5-minute-checklist.html': 'guide/screen-test-for-laptop-5-minute-checklist.jsp',
   '/guides/ffmpeg-online-vs-video-converter-which-to-pick.html': 'guide/ffmpeg-online-vs-video-converter-which-to-pick.jsp',
+  '/guides/imagemagick-online-vs-task-specific-tools-which-to-pick.html': 'guide/imagemagick-online-vs-task-specific-tools-which-to-pick.jsp',
   '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',
