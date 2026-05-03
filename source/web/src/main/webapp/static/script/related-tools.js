@@ -123,6 +123,7 @@ try {
     { title: "LCD Test vs Display Test vs Monitor Test", url: "https://freetoolonline.com/guides/lcd-test-vs-display-test-which-do-you-need.html", include: !1, tags: "guide,device-test,lcd-test" },
     { title: "MD5 to Text - Why You Cannot Convert It Back", url: "https://freetoolonline.com/guides/md5-to-text-why-you-cannot-convert-back.html", include: !1, tags: "guide,developer,md5,hash" },
     { title: "Before a Video Call - Which Tools to Run", url: "https://freetoolonline.com/guides/before-a-video-call-which-tools-to-run.html", include: !1, tags: "guide,device-test,camera-test,lcd-test,microphone-test" },
+    { title: "Screen Test for Laptop - 5-Minute Checklist", url: "https://freetoolonline.com/guides/screen-test-for-laptop-5-minute-checklist.html", include: !1, tags: "guide,device-test,lcd-test" },
     { title: "All Guides - Browser Tool Library", url: "https://freetoolonline.com/guides.html", include: !1, tags: "guide" }
   ],
     currentTitle = $.trim($(".navPageName").text()),
