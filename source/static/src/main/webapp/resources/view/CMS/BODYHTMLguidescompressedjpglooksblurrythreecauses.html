@@ -1,0 +1,55 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Compressed JPG Looks Blurry? Three Causes (and Quick Fixes)</b></h1>
+    <p><em>Last reviewed 2026-05-03. You compressed a JPG to make it smaller and the result looks blurry, blocky, or pixelated. This guide names the three common causes, gives a one-line fix per cause, and shows a 30-second side-by-side test to figure out which one you hit.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> The compression quality dropped below 50, OR the source you compressed was already a JPG re-saved several times, OR the source had been upscaled to a larger resolution before you compressed it. Re-compress the original at quality 70-85 with <a href="/compress-image.html">a JPG / PNG / WebP image compressor</a> and the result usually goes back to looking normal.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Cause 1: compression quality was too aggressive</b></h2>
+    <p>JPG compression quality runs on a non-linear scale. Quality 90 looks visually identical to the original on most photos. Quality 70 starts to introduce a small amount of blocking in flat colour regions but stays acceptable for the web. Quality 50 looks visibly softer; quality 30 looks blocky in sky / skin / sand and most readers will call the result "blurry." If your tool defaulted to a low quality value (some online compressors default to 50 or even 30 to advertise dramatic file-size reductions), the output will look worse than it has to.</p>
+    <p><b>Fix.</b> Re-compress the same source at quality 70-85. Most photos look fine at quality 80 and shrink to about a third of the original size; quality 85 is a safer choice when the photo has fine detail like hair or fabric. The cycle-37 guide <a href="/guides/compress-jpeg-without-losing-quality-quality-vs-size.html">compress JPEG without losing quality - quality vs size</a> walks through the proactive quality-vs-size decision table if you want to pick the value before you compress, not after.</p>
+
+    <h2 class="text-uppercase"><b>Cause 2: the source was already a JPG, re-saved multiple times</b></h2>
+    <p>Every JPG re-encode loses information; re-encoding a JPG that has already been compressed amplifies the blocking and chroma artifacts from the previous round. If you saved the photo from a chat app, then dragged it into a presentation, then exported the presentation, then ran the export through an image compressor, the file you fed to the compressor was a third- or fourth-generation JPG. Each generation built on top of the previous one's artifacts.</p>
+    <p><b>Fix.</b> Find the original. On an iPhone, the original is usually a HEIC file in the Camera Roll - export the HEIC, then compress that, not a JPG that was sent through Messages or WhatsApp. The guide <a href="/guides/iphone-photo-format-explained-heic-jpg-png-raw.html">iPhone photo format explained: HEIC, JPG, PNG, RAW</a> shows where each format lives. On a desktop, look for the camera RAW (.CR2, .NEF, .ARW) or the first-generation JPG straight from the camera, not the version embedded in a Word document or a PDF export.</p>
+    <p>If the original is genuinely lost and the only copy you have is a re-saved JPG, the artifacts cannot be removed - only hidden. Compressing at high quality (90+) will not reintroduce the lost detail; the right move is to use the re-saved JPG at the resolution it was actually shot, not enlarge it back to the original size.</p>
+
+    <h2 class="text-uppercase"><b>Cause 3: the source was upscaled before you compressed it</b></h2>
+    <p>Upscaling - taking a 1080-px wide photo and resampling it to 4K, for example - fabricates pixels by interpolating between the originals. JPG compression then groups pixels into 8x8 DCT blocks and quantises them; when the input pixels are themselves interpolated guesses, the quantisation step bins them into mush. The result looks "soft" or "smeared," with straight edges turning wavy and fine textures becoming a uniform grey.</p>
+    <p><b>Fix.</b> Compress at the ORIGINAL resolution. If you need a small file at a high resolution, the right approach is the opposite: keep the original resolution, compress at quality 75-85, and let the browser or the slide tool downscale at display time. Browsers downscale crisply; upscaling at compression time and then downscaling at display time stacks two lossy steps for no gain. If you do need a higher-resolution version of a small original, AI upscalers (separate tools, not the JPG compressor) are the right tool - they hallucinate detail consistently rather than letting JPG compression smear it.</p>
+
+    <h2 class="text-uppercase"><b>The 30-second sanity-check (which cause is it?)</b></h2>
+    <p>Open the original and the compressed result side-by-side at 100% zoom (one-to-one pixel mapping; do NOT let the browser fit-to-window). Then look at three regions:</p>
+    <ul>
+        <li><b>Flat colour regions (sky, skin, walls):</b> if you see <b>blocky 8x8 patches</b> or banding, the cause is <b>too-low quality (Cause 1)</b>. Re-compress at quality 80+.</li>
+        <li><b>Fine textures (hair, fabric, foliage):</b> if you see <b>speckled noise that wasn't there in a previous version</b>, the cause is <b>repeated re-encodes (Cause 2)</b>. Find an earlier-generation source.</li>
+        <li><b>Straight edges and sharp corners:</b> if edges look <b>wavy, smeared, or "stairstepped"</b>, the cause is <b>upscaled source (Cause 3)</b>. Compress at the original resolution.</li>
+    </ul>
+    <p>If you see all three at once, the source was probably both upscaled AND re-saved several times - the fix is to find the original-resolution, first-generation copy and compress only that.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <p><b>Why does JPG quality 90 still introduce visible artifacts on my screenshot?</b><br/>
+    JPG was designed for natural photos; it does not handle hard edges (text, UI screenshots, line art) well even at quality 95. For screenshots, save as PNG instead - PNG is lossless and usually smaller for screenshot-style content. The guide <a href="/guides/jpg-vs-png-for-web.html">JPG vs PNG for the web</a> covers when each format wins.</p>
+
+    <p><b>What about WebP / AVIF as a JPG replacement?</b><br/>
+    WebP at quality 80 is roughly 25-35% smaller than JPG quality 80 with the same visual quality. AVIF is smaller still at the same quality. If your delivery target supports them (modern browsers do), they are a strict upgrade over JPG. The guide <a href="/guides/heic-vs-jpg-vs-webp.html">HEIC vs JPG vs WebP</a> compares the three on quality, support, and file size.</p>
+
+    <p><b>Does compressing twice at quality 90 equal compressing once at quality 80?</b><br/>
+    No - the effects are different. Two rounds of quality 90 land at roughly quality 81 in size but introduce more blocking artifacts than a single quality-80 pass, because each round quantises afresh. One pass at the right quality always beats two passes at higher individual qualities for the same final size.</p>
+
+    <p><b>What's the right resolution for a web-delivered JPG?</b><br/>
+    For full-width hero images, 1600-2400 pixels wide is plenty - browsers downscale; the source does not need to be 4K. For thumbnails, 400-800 pixels wide. For body images, 800-1200 pixels wide. Combine the right resolution with quality 75-85 and you'll usually beat the file size of any single quality slider on a too-large source.</p>
+
+    <p><b>Can I un-blur an already-blurry compressed JPG?</b><br/>
+    Not really - the lost information is gone. AI sharpening tools can guess at detail, but the guess is fabricated, not recovered. The reliable fix is to find the original and compress that; if the original is genuinely lost, accept the size you have and avoid re-saving the result.</p>
+
+    <h2 class="text-uppercase"><b>Related</b></h2>
+    <ul>
+        <li><a href="/compress-image.html">Image Compressor</a> - the action tool for compressing JPG, PNG, and WebP images at the quality / resolution you choose.</li>
+        <li><a href="/guides/compress-jpeg-without-losing-quality-quality-vs-size.html">Compress JPEG without losing quality - quality vs size</a> - the proactive companion guide; pick the right quality value BEFORE you compress.</li>
+        <li><a href="/guides/iphone-photo-format-explained-heic-jpg-png-raw.html">iPhone photo format explained: HEIC, JPG, PNG, RAW</a> - find the iPhone original (HEIC) instead of compressing a re-saved JPG.</li>
+        <li><a href="/guides/heic-vs-jpg-vs-webp.html">HEIC vs JPG vs WebP</a> - format comparison for web delivery.</li>
+        <li><a href="/guides/jpg-vs-png-for-web.html">JPG vs PNG for the web</a> - when JPG is the right format and when PNG (or WebP) is.</li>
+    </ul>
+</div>

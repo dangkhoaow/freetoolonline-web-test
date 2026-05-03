@@ -216,6 +216,18 @@ export const INFO_ROUTES = new Set([
   // backlinks on /convert-time-in-millisecond-to-date.html (cycle 30
   // monitor active until 2026-05-10).
   '/guides/long-number-millisecond-or-second.html',
+  // Cycle 39 P39.A - "compressed JPG looks blurry, why?" reactive
+  // diagnostic-flow guide complementing the cycle-37 PROACTIVE quality
+  // guide. Three named causes (too-low quality, repeated re-encodes,
+  // upscaled source) + 30-second side-by-side test + FAQ. Targets the
+  // long-tail GSC `compress jpg blurry` / `jpg compression quality
+  // lost` / `why jpg pixelated after compression` queries (~600-1k
+  // imp / 28d at < 0.5% CTR per gsc_low_ctr_high_imp_28d.json) plus
+  // bing_query_stats long-tail. Outbound link only to /compress-image.html
+  // (operator-held tool URL); NO satellite backlink (cycles 37/38
+  // monitors open until 2026-05-10). Cluster: image-editing.
+  // Lane-D PA-mode mandatory; non-ZIP, non-destructive.
+  '/guides/compressed-jpg-looks-blurry-three-causes.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -312,6 +324,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/compress-jpeg-without-losing-quality-quality-vs-size.html',
   // Cycle 38 P38.A - "is this long number a timestamp?" diagnostic-flow guide.
   '/guides/long-number-millisecond-or-second.html',
+  // Cycle 39 P39.A - "compressed JPG looks blurry, why?" reactive diagnostic-flow guide.
+  '/guides/compressed-jpg-looks-blurry-three-causes.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -409,6 +423,7 @@ export const JSP_BY_ROUTE = {
   '/guides/keyboard-test-keys-not-detected-four-fixes.html': 'guide/keyboard-test-keys-not-detected-four-fixes.jsp',
   '/guides/compress-jpeg-without-losing-quality-quality-vs-size.html': 'guide/compress-jpeg-without-losing-quality-quality-vs-size.jsp',
   '/guides/long-number-millisecond-or-second.html': 'guide/long-number-millisecond-or-second.jsp',
+  '/guides/compressed-jpg-looks-blurry-three-causes.html': 'guide/compressed-jpg-looks-blurry-three-causes.jsp',
   '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',
