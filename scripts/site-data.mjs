@@ -325,6 +325,18 @@ export const INFO_ROUTES = new Set([
   // guide,device-test,lcd-test. Lane-D PA-mode mandatory; non-ZIP,
   // non-destructive; append-only on every existing surface.
   '/guides/screen-test-for-laptop-5-minute-checklist.html',
+  // Cycle 49 P49.A - "FFmpeg Online vs Video Converter - which tool to open"
+  // routing guide. Targets the GSC "ffmpeg online" 1,843 imp / 94 clicks /
+  // pos 6.5 / op_score 270.97 row plus the "convert mov to mp4" / "video
+  // converter online" routing-decision intent. Five rules: defaults vs
+  // non-default flags vs GIF output vs troubleshooting vs local-FFmpeg.
+  // Routes intent across three already-verified tool skills (ffmpegonline,
+  // videoconverter, gifmaker) without editing any of them; complements (not
+  // duplicates) the cycle-40 ffmpeg-stalled guide and the existing
+  // ffmpeg-vs-local-ffmpeg guide. Cluster: guide,video,ffmpeg. Lane-D PA-
+  // mode mandatory; non-ZIP, non-destructive; append-only on every existing
+  // surface.
+  '/guides/ffmpeg-online-vs-video-converter-which-to-pick.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -437,6 +449,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/before-a-video-call-which-tools-to-run.html',
   // Cycle 48 P48.A - laptop-specific screen-test 5-minute checklist guide (Bing under-served laptop reader-task gap).
   '/guides/screen-test-for-laptop-5-minute-checklist.html',
+  // Cycle 49 P49.A - "FFmpeg Online vs Video Converter - which tool to open" routing guide (GSC "ffmpeg online" op_score 270.97 row).
+  '/guides/ffmpeg-online-vs-video-converter-which-to-pick.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -542,6 +556,7 @@ export const JSP_BY_ROUTE = {
   '/guides/md5-to-text-why-you-cannot-convert-back.html': 'guide/md5-to-text-why-you-cannot-convert-back.jsp',
   '/guides/before-a-video-call-which-tools-to-run.html': 'guide/before-a-video-call-which-tools-to-run.jsp',
   '/guides/screen-test-for-laptop-5-minute-checklist.html': 'guide/screen-test-for-laptop-5-minute-checklist.jsp',
+  '/guides/ffmpeg-online-vs-video-converter-which-to-pick.html': 'guide/ffmpeg-online-vs-video-converter-which-to-pick.jsp',
   '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',
