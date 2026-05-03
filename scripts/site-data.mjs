@@ -351,6 +351,21 @@ export const INFO_ROUTES = new Set([
   // imagemagick. Lane-D PA-mode mandatory; non-ZIP, non-destructive;
   // append-only on every existing surface.
   '/guides/imagemagick-online-vs-task-specific-tools-which-to-pick.html',
+  // Cycle 51 P51.A - "File Compressor Online: ZIP a Folder vs Compress an
+  // Image" routing guide. Disambiguates the GSC "file compressor" SERP
+  // intent (258,156 imp / 0.04% CTR / pos 9.9 / 12,797 missed clicks 28d
+  // per gsc_low_ctr_high_imp_28d.json on run 20260504-9). The guide does
+  // NOT compete for the head term itself - the indexed pages already rank
+  // there - but captures the routing-intent variants ("file compressor
+  // online", "online file compressor", "free file compressor" combined
+  // ~4,000 imp / 28d) where neither indexed page ranks top-3. Routes
+  // intent across tool-zipfile (Hand-verified inline 2026-05-03 cycle 11
+  // Workstream D) + tool-compressimage (verified cycle 45 P45.B) +
+  // tool-unzipfile (verified cycle 11 WD) + tool-removezippassword
+  // (verified cycle 11 WD) without editing any of them. Cluster:
+  // guide,zip,image-editing. Lane-D PA-mode mandatory; non-ZIP-rewrite
+  // (only links to ZIP cluster URLs - ZIP-CRITICAL-CARE preserved).
+  '/guides/file-compressor-online-when-to-zip-vs-when-to-compress-image.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -467,6 +482,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/ffmpeg-online-vs-video-converter-which-to-pick.html',
   // Cycle 50 P50.A - "ImageMagick Online vs Task-Specific Tools - which to pick" routing guide (image-editing-cluster parallel to cycle 49 P49.A; GA4 /imagemagick-online.html 114 sess / 0.51 engagement cohort).
   '/guides/imagemagick-online-vs-task-specific-tools-which-to-pick.html',
+  // Cycle 51 P51.A - "File Compressor Online: ZIP a Folder vs Compress an Image" routing guide (GSC "file compressor" 258,156 imp / 0.04% CTR / pos 9.9 / 12,797 missed clicks 28d - cross-cluster routing surface for the head term that neither /zip-file.html nor /compress-image.html owns alone).
+  '/guides/file-compressor-online-when-to-zip-vs-when-to-compress-image.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -574,6 +591,7 @@ export const JSP_BY_ROUTE = {
   '/guides/screen-test-for-laptop-5-minute-checklist.html': 'guide/screen-test-for-laptop-5-minute-checklist.jsp',
   '/guides/ffmpeg-online-vs-video-converter-which-to-pick.html': 'guide/ffmpeg-online-vs-video-converter-which-to-pick.jsp',
   '/guides/imagemagick-online-vs-task-specific-tools-which-to-pick.html': 'guide/imagemagick-online-vs-task-specific-tools-which-to-pick.jsp',
+  '/guides/file-compressor-online-when-to-zip-vs-when-to-compress-image.html': 'guide/file-compressor-online-when-to-zip-vs-when-to-compress-image.jsp',
   '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',
