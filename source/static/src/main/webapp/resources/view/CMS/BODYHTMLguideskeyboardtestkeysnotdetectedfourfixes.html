@@ -1,0 +1,72 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Keyboard Test Keys Not Detected: 4 Fixes That Actually Work</b></h1>
+    <p><em>Last reviewed 2026-05-03. If your browser <a href="/keyboard-test.html">keyboard test</a> opens but some keys never highlight when you press them, the keyboard is rarely broken - one of four causes below is far more likely. Walk the list top-down; each fix takes under a minute.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> Keys that press but never highlight on a browser keyboard test almost always mean the page lost focus, the OS sent a different scancode than the test expects, an accessibility filter is intercepting events, or the key is locked at the hardware layer - not faulty hardware. Step 1: click anywhere on the keyboard test page so it has tab focus. Step 2: confirm your OS keyboard layout matches the physical labels (Privacy &amp; Security &rarr; Keyboard / Region). Step 3: turn off Sticky Keys, Filter Keys, and any virtual-keyboard driver that might absorb events. Step 4: check for a Fn-row toggle, an Insert/ScrollLock LED, or a USB connection issue. Most "key not detected" reports clear inside step 1 or step 3.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Fix 1 - The page lost keyboard focus</b></h2>
+    <p>Browsers route key events to whichever element has focus. The <a href="/keyboard-test.html">keyboard test</a> draws an on-screen layout, but unless you click into the page first, your keystrokes go to the address bar, an extension popup, or a different tab. The symptom: every key looks like it works (the OS captures it), but nothing on the test highlights.</p>
+    <p><b>Click into the test:</b> click any empty area of the keyboard test page once. The page now owns the keystroke routing; press a key and it should highlight immediately.</p>
+    <p><b>Close popups and overlays:</b> autofill prompts, password manager extensions, and screenshot tools (Snagit, Greenshot) sometimes capture global hotkeys. Close every popup, then re-test.</p>
+    <p><b>Switch tab and switch back:</b> if a meeting client (Zoom, Teams) was the previous foreground window, it may still be holding global keystrokes. Switch tabs and back into the keyboard test to force the browser to reclaim focus.</p>
+    <p>If clicking back into the page makes the keys highlight, focus was the cause. Move on only if highlighting still fails.</p>
+
+    <h2 class="text-uppercase"><b>Fix 2 - OS keyboard layout or language mismatch</b></h2>
+    <p>The keyboard test uses the JavaScript <code>KeyboardEvent.code</code> to identify the physical key (e.g. <code>KeyA</code>, <code>Quote</code>). When your OS keyboard layout does not match the labels printed on the keys, the press registers, but it lands on a different on-screen position - which looks like "the key did nothing" because the highlight appears on a different cell.</p>
+    <p><b>macOS:</b> <i>System Settings &rarr; Keyboard &rarr; Input Sources</i>. Confirm the active layout matches your physical keyboard (US, UK, Vietnamese Telex, etc.). If you recently switched languages, switch back; the test should highlight the correct cell.</p>
+    <p><b>Windows 11 / 10:</b> <i>Settings &rarr; Time &amp; language &rarr; Language &amp; region</i>. Check the active input method per language. Press <kbd>Win</kbd> + <kbd>Space</kbd> to cycle layouts and re-test.</p>
+    <p><b>Linux (X11 / Wayland):</b> run <code>setxkbmap -query</code> to see the active layout; <code>setxkbmap us</code> resets to a US layout for testing.</p>
+    <p><b>Quick test:</b> press the Q key on the top-left and confirm "Q" highlights on the test layout. If it highlights "A" instead, your OS thinks the keyboard is AZERTY (French). Switch the OS layout, do not relabel the keys.</p>
+
+    <h2 class="text-uppercase"><b>Fix 3 - Accessibility filter is intercepting events</b></h2>
+    <p>Modern OSes ship accessibility helpers (Sticky Keys, Filter Keys, Slow Keys, Mouse Keys) that absorb or delay keystrokes before the browser sees them. Sticky Keys turns chord input (<kbd>Ctrl</kbd> + <kbd>C</kbd>) into sequence input (<kbd>Ctrl</kbd>, then <kbd>C</kbd>); Filter Keys ignores brief presses to help users with hand tremors; both also affect a quick-press keyboard test.</p>
+    <p><b>Windows:</b> <i>Settings &rarr; Accessibility &rarr; Keyboard</i>. Turn off <i>Sticky Keys</i>, <i>Filter Keys</i>, and <i>Toggle Keys</i>. Re-test.</p>
+    <p><b>macOS:</b> <i>System Settings &rarr; Accessibility &rarr; Keyboard</i>. Turn off <i>Sticky Keys</i> and <i>Slow Keys</i>. Many laptops accidentally enable Slow Keys when the user-help shortcut (5x Shift) fires.</p>
+    <p><b>Virtual-keyboard drivers:</b> some keyboards ship with their own remapping software (Logitech G HUB, Razer Synapse, ASUS Armoury Crate, Karabiner-Elements on macOS). These can intercept events for macros. Quit the helper app and re-test; if keys now highlight, the helper had a remap that pointed elsewhere.</p>
+    <p><b>Browser extensions:</b> Vimium, Surfingkeys, and Tridactyl rebind keys at the page level. Disable browser extensions or use a guest profile.</p>
+
+    <h2 class="text-uppercase"><b>Fix 4 - Hardware-level lock or connection</b></h2>
+    <p>The last layer is the keyboard itself. A few common hardware reasons cause keys to never reach the OS:</p>
+    <p><b>Fn-row toggle:</b> business laptops (ThinkPad, Latitude, EliteBook) ship with an Fn-Lock that swaps the F1-F12 row between media keys (default) and function keys. Press <kbd>Fn</kbd> + <kbd>Esc</kbd> (most ThinkPads) or <kbd>Fn</kbd> + <kbd>Shift</kbd> to toggle. If the F-keys never highlight, this is usually why.</p>
+    <p><b>Lock keys (Caps / Num / Scroll):</b> the LED on the keyboard tells you whether a lock toggle is on. Test: turn Num Lock ON and press the numpad - the digits should highlight. If they do not, the keyboard's numpad is wired to a separate USB controller that may not be enumerated.</p>
+    <p><b>USB / Bluetooth connection:</b> external keyboards on a flaky cable can drop individual keystrokes. Re-seat the cable in a different port; for Bluetooth, re-pair. A wireless keyboard with a near-empty battery often presents this exact symptom.</p>
+    <p><b>BIOS HID disable:</b> Lenovo, Dell, and HP business BIOS expose a "USB keyboard support" toggle that controls whether the keyboard works in pre-OS environments and whether all keys are forwarded to the OS. Reboot, enter setup (F1 / F2 / F12), look for <i>Devices &rarr; USB Setup</i> or <i>Security &rarr; I/O Port Access &rarr; USB</i>, confirm enabled.</p>
+
+    <h2 class="text-uppercase"><b>Still some keys missing? - the diagnostic flow</b></h2>
+    <ol>
+        <li><b>Try a second site.</b> Open <a href="https://en.key-test.ru/" rel="nofollow noopener" target="_blank">en.key-test.ru</a> in the same browser session. If that site also misses the same keys, the cause is upstream of the test page (focus, layout, accessibility, or hardware).</li>
+        <li><b>Try a second browser.</b> If Chrome misses keys but Firefox catches them, the cause is browser-level (extension, profile, or a stale event listener). Use a guest profile to confirm.</li>
+        <li><b>Try a second user account.</b> Switch to a freshly-created OS user and open the keyboard test. If it works there, the cause is in your user profile (a remap, an accessibility flag, or a virtual-keyboard driver registered for your user).</li>
+        <li><b>Try a second machine.</b> If a phone or tablet shows the keyboard test working immediately with a paired Bluetooth keyboard, the failing machine has a hardware or driver issue. Open Device Manager (Windows) or System Information (macOS) and look for the keyboard under <i>Human Interface Devices</i>.</li>
+    </ol>
+    <p>The four steps narrow the cause from the test page outward to the hardware in under five minutes.</p>
+
+    <h2 class="text-uppercase"><b>What about modifier keys (Shift, Ctrl, Alt, Cmd, Win)?</b></h2>
+    <p>Modifier keys are the most common "missing" keys on a quick keyboard test because they only highlight when you also press a non-modifier in chord. The keyboard test page handles each modifier as a standalone press: hold <kbd>Shift</kbd> (left or right) and the corresponding cell on the test should highlight - no other key required. If only one side highlights, the other side's switch may have a stuck contact - press both sides and look for asymmetric behaviour.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <p><b>Why does the same key sometimes highlight and sometimes not?</b><br/>
+    Intermittent detection is usually a hardware problem - dirt or wear under the keycap. Pop the keycap, blow out debris with compressed air, and re-test. If the issue persists in another OS user (Fix Diagnostic 3), the keyboard hardware needs warranty service.</p>
+
+    <p><b>Does Caps Lock affect the keyboard test results?</b><br/>
+    No. The test reads <code>KeyboardEvent.code</code>, which is the same regardless of shift / caps state. If A and a both light the A cell, the test is working correctly.</p>
+
+    <p><b>Why don't multimedia keys (Play, Pause, Volume) highlight?</b><br/>
+    Most OS-level multimedia keys are absorbed by the OS before the browser sees them. The keyboard test cannot reliably highlight them. Their absence does not mean the keys are broken - press one and check the OS volume responds.</p>
+
+    <p><b>I see the right key highlight on the test, but the wrong character types in a text field. Is the keyboard broken?</b><br/>
+    No - the keyboard hardware is fine. Your OS keyboard layout is set to a different language (Fix 2). The test confirms the physical key works; the layout decides what character it produces.</p>
+
+    <h2 class="text-uppercase"><b>Related</b></h2>
+    <ul>
+        <li><a href="/keyboard-test.html">Keyboard test</a> - the tool itself; run it after each fix.</li>
+        <li><a href="/guides/how-to-test-a-keyboard-online-step-by-step.html">How to test a keyboard online, step by step</a> - the 60-second walk-through that covers every key.</li>
+        <li><a href="/guides/keyboard-tester-online-rollover-vs-anti-ghosting.html">Keyboard tester online: rollover vs anti-ghosting</a> - the concept guide for why some chords miss keys.</li>
+        <li><a href="/guides/camera-test-shows-black-screen-four-fixes.html">Camera test black screen: 4 fixes</a> - the same four-layer model applied to camera input.</li>
+        <li><a href="/guides/microphone-test-no-sound-four-fixes.html">Microphone test no sound: 4 fixes</a> - the same four-layer model applied to microphone input.</li>
+        <li><a href="/guides/device-test-checklist-for-remote-work.html">Device test checklist for remote work</a> - the weekly cadence that catches new failures before a call.</li>
+        <li><a href="/device-test-tools.html">Device test tools hub</a> - keyboard, camera, microphone, LCD, and more in one cluster.</li>
+    </ul>
+</div>
