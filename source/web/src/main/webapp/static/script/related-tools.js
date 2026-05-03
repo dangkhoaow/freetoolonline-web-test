@@ -107,6 +107,7 @@ try {
     { title: "GIF Frames vs GIF Frame Rate (FPS) Explained", url: "https://freetoolonline.com/guides/gif-frames-extract-vs-frame-rate-fps-explained.html", include: !1, tags: "guide,image-editing,gif,fps" },
     { title: "Why MD5 Cannot Be Decrypted", url: "https://freetoolonline.com/guides/why-md5-cannot-be-decrypted.html", include: !1, tags: "guide,developer,md5,hash" },
     { title: "MD5 Alternatives - bcrypt vs Argon2id vs SHA-256", url: "https://freetoolonline.com/guides/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html", include: !1, tags: "guide,developer,md5,hash,bcrypt,argon2id,sha256" },
+    { title: "Camera Test Black Screen: 4 Fixes That Work", url: "https://freetoolonline.com/guides/camera-test-shows-black-screen-four-fixes.html", include: !1, tags: "guide,device-test,utility,video" },
     { title: "Text vs Line vs Word vs Git Diff", url: "https://freetoolonline.com/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html", include: !1, tags: "guide,developer" },
     { title: "JSON vs YAML vs TOML, Explained", url: "https://freetoolonline.com/guides/json-vs-yaml-vs-toml-config-formats-explained.html", include: !1, tags: "guide,developer,json" },
     { title: "CSS Minifier vs Uglifier vs Tree-Shaking", url: "https://freetoolonline.com/guides/css-minifier-vs-uglifier-vs-tree-shaking.html", include: !1, tags: "guide,developer,css,minifier,pagespeed" },

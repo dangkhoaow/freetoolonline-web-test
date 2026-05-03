@@ -166,6 +166,12 @@ export const INFO_ROUTES = new Set([
   // GSC pos 9-11 with sub-2.5% CTR. Append-only on every existing
   // surface. Cluster: guide,developer.
   '/guides/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html',
+  // Cycle 31 P31.A - "camera test shows black screen" diagnostic-flow
+  // guide. Targets Bing "camera test" head query (100k+ impressions @
+  // pos 8.4 / 198 clicks) by addressing the failure-mode reader task
+  // ("preview is a black rectangle") no existing guide covers.
+  // Lane-D PA-mode mandatory; device-test cluster.
+  '/guides/camera-test-shows-black-screen-four-fixes.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -252,6 +258,8 @@ export const GUIDE_ROUTES = new Set([
   // Cycle 30 P30.A - MD5 alternatives (bcrypt vs Argon2id vs SHA-256)
   // decision guide. Lane-D PA-mode mandatory; guide,developer cluster.
   '/guides/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html',
+  // Cycle 31 P31.A - camera-test black-screen diagnostic-flow guide.
+  '/guides/camera-test-shows-black-screen-four-fixes.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -344,6 +352,7 @@ export const JSP_BY_ROUTE = {
   '/guides/extract-gif-frames-png-vs-jpg-which-format.html': 'guide/extract-gif-frames-png-vs-jpg-which-format.jsp',
   '/guides/gif-frames-extract-vs-frame-rate-fps-explained.html': 'guide/gif-frames-extract-vs-frame-rate-fps-explained.jsp',
   '/guides/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html': 'guide/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.jsp',
+  '/guides/camera-test-shows-black-screen-four-fixes.html': 'guide/camera-test-shows-black-screen-four-fixes.jsp',
   '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',
