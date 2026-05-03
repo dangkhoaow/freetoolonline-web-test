@@ -1,0 +1,70 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Is This Long Number a Timestamp? Milliseconds vs Seconds</b></h1>
+    <p><em>Last reviewed 2026-05-03. You pasted a 10-, 13-, 16-, or 19-digit number out of a server log, an API response, or a database row, and now you need to know what it is. This guide is the 30-second test - count the digits, sanity-check the year, route to the right converter.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> Count the digits in the number. <b>10 digits</b> &rarr; Unix <i>seconds</i> (paste into <a href="/convert-time-in-millisecond-to-date.html">the millisecond-to-date converter</a> after multiplying by 1000, or use any seconds-to-date tool). <b>13 digits</b> &rarr; Unix <i>milliseconds</i> (paste straight into <a href="/convert-time-in-millisecond-to-date.html">the millisecond-to-date converter</a>). <b>16 digits</b> &rarr; microseconds (rare; usually telemetry). <b>19 digits</b> &rarr; nanoseconds (rare; usually high-precision tracing). Any other count and the number is probably an ID, not a timestamp.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>The 30-second test: count the digits</b></h2>
+    <p>The dominant Unix-timestamp formats encode time as a count of "ticks since 1970-01-01 00:00:00 UTC". The tick size differs - seconds, milliseconds, microseconds, nanoseconds - and that changes how many digits the number has at any given moment in 2026. Today (2026), here is the digit-count rule of thumb:</p>
+    <div class="w3-responsive">
+        <table class="w3-table-all w3-small">
+            <tr><th>Digits</th><th>Most likely meaning</th><th>Where you usually see it</th><th>Convert with</th></tr>
+            <tr><td>10</td><td>Unix <b>seconds</b></td><td>Unix <code>date +%s</code>, PHP <code>time()</code>, Python <code>time.time()</code> truncated, Go <code>time.Now().Unix()</code>, most server log formats.</td><td><a href="/convert-time-in-millisecond-to-date.html">Multiply by 1000 and paste into the millisecond converter</a>, or use a dedicated seconds-to-date tool.</td></tr>
+            <tr><td>13</td><td>Unix <b>milliseconds</b></td><td>JavaScript <code>Date.now()</code>, Java <code>System.currentTimeMillis()</code>, most JSON APIs, Firebase / Firestore writes, Slack / Discord message IDs encoded as ms.</td><td><a href="/convert-time-in-millisecond-to-date.html">Paste straight into the millisecond-to-date converter</a>.</td></tr>
+            <tr><td>16</td><td>Unix <b>microseconds</b></td><td>PostgreSQL <code>now()</code>, Python <code>time.time_ns() // 1000</code>, OpenTelemetry traces, BigQuery <code>CURRENT_TIMESTAMP()</code>.</td><td>Divide by 1000 and treat the result as milliseconds.</td></tr>
+            <tr><td>19</td><td>Unix <b>nanoseconds</b></td><td>Go <code>time.Now().UnixNano()</code>, Prometheus traces, Kafka offsets, eBPF event timestamps.</td><td>Divide by 1,000,000 and treat the result as milliseconds.</td></tr>
+            <tr><td>11, 12, 14, 15, 17, 18</td><td>Probably <b>not a timestamp</b></td><td>Sequence ID, Snowflake ID prefix, account number, phone number variant, account routing number.</td><td>See "When the number is not a timestamp" below.</td></tr>
+        </table>
+    </div>
+
+    <h2 class="text-uppercase"><b>Why most numbers you see on the web are milliseconds</b></h2>
+    <p>JavaScript's <code>Date.now()</code>, Java's <code>System.currentTimeMillis()</code>, and most modern JSON-emitting backends default to milliseconds since the Unix epoch. That moment - 2026-05-03 09:38:00 UTC - is <code>1777800999</code> in seconds (10 digits) but <code>1777800999000</code> in milliseconds (13 digits). The 13-digit form ends up in network responses, browser dev-tool consoles, log lines, and dashboards more than any other timestamp form, which is why the most common reader question on this cluster is "this is a 13-digit number, what date is it?"</p>
+    <p>That observation gives you a fast sanity check: if your number is 13 digits and starts with <code>1777</code>, it is almost certainly a Unix millisecond from May 2026. If it starts with <code>16</code> or <code>17</code> in 2026, it is in the right ballpark. If it starts with <code>1</code> followed by anything else (e.g. <code>1234567890123</code>), you should still convert it to a date and check the year before assuming - bogus test data often picks vanity numbers like <code>1234567890</code> which renders as 2009 (Friday 13 February).</p>
+
+    <h2 class="text-uppercase"><b>When the number is NOT a timestamp</b></h2>
+    <p>Several long numbers look like timestamps but are not:</p>
+    <ul>
+        <li><b>Snowflake / Twitter / Discord IDs (typically 18-19 digits).</b> These encode a timestamp in their high bits but the low bits are worker IDs and sequence counters; treating the whole 19-digit number as a Unix nanosecond will produce a wildly wrong date. Snowflake decoding requires a bit-shift, not a divide.</li>
+        <li><b>UUIDv7 (32 hex digits, but the first 12 hex characters encode milliseconds).</b> If you have 32 hex characters formatted with hyphens, that is a UUID, not a timestamp - convert only the first 48 bits if you need the embedded time.</li>
+        <li><b>Database BIGINT sequence IDs.</b> These are auto-incremented integers and have no time component; they happen to grow into the 12-13 digit range as the sequence advances. Quick check: if the same column on adjacent rows differs by 1 (or by a small predictable step), it is a sequence, not a timestamp.</li>
+        <li><b>Phone numbers stored as integers.</b> A 10-12 digit number that starts with a country code prefix (e.g. <code>1212</code> for New York) may be a phone number rendered without separators. Convert and check: if the resulting year is before 1970 or after 2100, it is not a Unix timestamp.</li>
+        <li><b>Account / order numbers.</b> Padding-style numbers like <code>1000000123</code> (10 digits but not a Unix-second value) usually have a fixed-width prefix that betrays them - they don't grow steadily over time.</li>
+    </ul>
+    <p>The cheapest disambiguation is to <a href="/convert-time-in-millisecond-to-date.html">paste the number into the millisecond converter</a> and look at the year. If the result is in 1970 (number was actually seconds, you treated it as ms) or in some far-future year like 56,000 (number was milliseconds, you treated it as seconds), the digit count will tell you which way to convert. If the result is plausible (2025-2027 for live data, 1990-2025 for historical data), you have your answer.</p>
+
+    <h2 class="text-uppercase"><b>Quick conversion playbook</b></h2>
+    <p>Three steps, no math:</p>
+    <ol>
+        <li><b>Count digits.</b> 10 digits = seconds; 13 = milliseconds; 16 = microseconds; 19 = nanoseconds; otherwise see the previous section.</li>
+        <li><b>Paste into the right converter.</b> 13-digit numbers go straight into <a href="/convert-time-in-millisecond-to-date.html">the millisecond-to-date converter</a>. 10-digit seconds: append three zeroes (so <code>1777800999</code> becomes <code>1777800999000</code>) and paste. 16-digit microseconds: drop the last three digits. 19-digit nanoseconds: drop the last six digits. The converter shows the resulting UTC date and your local date.</li>
+        <li><b>Sanity-check the year.</b> If the year is unexpected (1970 or 56000), you converted in the wrong direction. Re-read the digit count and try again. If the year is plausible, you have the right value.</li>
+    </ol>
+    <p>For the reverse problem - <i>"give me the current Unix milliseconds so I can compare"</i> - open <a href="/get-time-in-millisecond.html">the current Unix milliseconds tool</a>; it ticks live and copies to the clipboard. Comparing two timestamps is the fastest way to confirm whether your number is "now-ish" or stale data.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <p><b>What about 11- or 12-digit numbers? They look almost like seconds.</b><br/>
+    Unix seconds will not produce 11 digits until the year 2286. Unix milliseconds were 12 digits between 2001 (<code>10^12</code> ms = 31.7 years after 1970) and 2286. So a current-era 12-digit number is most likely a sequence ID or a phone number; an 11-digit number is almost certainly not a current Unix value of any kind.</p>
+
+    <p><b>The number is negative or starts with a minus sign. Is that a timestamp?</b><br/>
+    Yes - negative Unix timestamps are dates before 1970-01-01 UTC. <code>-1000000000</code> seconds is 1938-04-24. Most language standard libraries handle negative seconds correctly; some web tools reject them. <a href="/convert-time-in-millisecond-to-date.html">The millisecond converter</a> will accept negative inputs.</p>
+
+    <p><b>Why does the same date give a different number on two systems?</b><br/>
+    The number itself is timezone-free (Unix time is always UTC). What differs is how each system <i>renders</i> the number into a human-readable string - one tool may pick UTC, another your local timezone. The underlying Unix integer is the same. If two systems disagree on the number for the same moment, one of them is using a different unit (seconds vs milliseconds) or a different epoch (e.g. Excel uses 1900-01-01 as its epoch, which is not Unix time).</p>
+
+    <p><b>Can I get fractional seconds out of a 10-digit Unix value?</b><br/>
+    No - a 10-digit seconds value has 1-second resolution. Fractional seconds (millisecond / microsecond precision) require the longer formats. If your data needs sub-second precision, you must be storing milliseconds (13 digits), microseconds (16), or nanoseconds (19). Storing only the integer seconds throws the precision away.</p>
+
+    <p><b>Is JavaScript <code>new Date().valueOf()</code> the same as <code>Date.now()</code>?</b><br/>
+    Yes. Both return Unix milliseconds. <code>Date.now()</code> is the modern, preferred form; <code>new Date().valueOf()</code> is older, slower (it allocates a Date object) but produces the same number.</p>
+
+    <h2 class="text-uppercase"><b>Related</b></h2>
+    <ul>
+        <li><a href="/convert-time-in-millisecond-to-date.html">Convert Milliseconds to Date</a> - the action tool for 13-digit numbers; multiply 10-digit seconds by 1000 first.</li>
+        <li><a href="/get-time-in-millisecond.html">Get Current Unix Milliseconds</a> - live ticker; useful for comparing your number against "now".</li>
+        <li><a href="/guides/unix-timestamps-explained.html">Unix Timestamps Explained</a> - the format reference: epoch, ISO 8601, RFC 2822, UTC vs local time, the three common timestamp pitfalls.</li>
+        <li><a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 when to hash</a> - if your "number" turns out to be 32 or 64 hex characters, it is a hash, not a timestamp.</li>
+        <li><a href="/guides/csv-vs-json-data-formats.html">CSV vs JSON data formats</a> - the format your timestamp arrived in often hints at how it was encoded (ISO 8601 in CSV, milliseconds in JSON).</li>
+    </ul>
+</div>

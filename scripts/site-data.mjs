@@ -202,6 +202,20 @@ export const INFO_ROUTES = new Set([
   // /compress-image.html. Cluster: image-editing. Lane-D PA-mode
   // mandatory; non-ZIP, non-destructive.
   '/guides/compress-jpeg-without-losing-quality-quality-vs-size.html',
+  // Cycle 38 P38.A - "is this long number a timestamp?" diagnostic-flow
+  // guide for the GSC `milliseconds to date` (1,662 imp / pos 6.6) +
+  // `millis to date` (1,378 imp / pos 6.7) cluster (~3,040 imp / 28d
+  // at <= 0.4% CTR per gsc_keyword_opportunities_28d.json) and the
+  // long-tail Bing demand on `currentmillis` / `current milliseconds`
+  // / `convert milliseconds to date`. Reader task: bottom-up "I have
+  // a number, what is it?" (10/13/16/19-digit rule of thumb +
+  // not-a-timestamp disambiguation incl. Snowflake/UUIDv7/sequence
+  // IDs). Complements existing /guides/unix-timestamps-explained.html
+  // (top-down format reference). Cluster: developer-utility. Lane-D
+  // PA-mode mandatory; non-ZIP, non-destructive; NO satellite
+  // backlinks on /convert-time-in-millisecond-to-date.html (cycle 30
+  // monitor active until 2026-05-10).
+  '/guides/long-number-millisecond-or-second.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -296,6 +310,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/keyboard-test-keys-not-detected-four-fixes.html',
   // Cycle 37 P37.A - JPEG quality-vs-size decision-table guide for /compress-image.html.
   '/guides/compress-jpeg-without-losing-quality-quality-vs-size.html',
+  // Cycle 38 P38.A - "is this long number a timestamp?" diagnostic-flow guide.
+  '/guides/long-number-millisecond-or-second.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -392,6 +408,7 @@ export const JSP_BY_ROUTE = {
   '/guides/microphone-test-no-sound-four-fixes.html': 'guide/microphone-test-no-sound-four-fixes.jsp',
   '/guides/keyboard-test-keys-not-detected-four-fixes.html': 'guide/keyboard-test-keys-not-detected-four-fixes.jsp',
   '/guides/compress-jpeg-without-losing-quality-quality-vs-size.html': 'guide/compress-jpeg-without-losing-quality-quality-vs-size.jsp',
+  '/guides/long-number-millisecond-or-second.html': 'guide/long-number-millisecond-or-second.jsp',
   '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',
