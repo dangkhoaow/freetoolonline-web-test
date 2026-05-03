@@ -275,6 +275,22 @@ export const INFO_ROUTES = new Set([
   // NO satellite backlinks anywhere this cycle. Cluster: device-test.
   // Lane-D PA-mode mandatory; non-ZIP, non-destructive.
   '/guides/lcd-test-vs-display-test-which-do-you-need.html',
+  // Cycle 43 P43.B - "camera test vs webcam test vs camera quality - which?"
+  // reactive disambiguation-flow guide. Lane-D pivot because all 6 cycle-43
+  // decision rows touch active-monitor or auto-status tool URLs (/lcd-test.html
+  // cycle-35 monitor, /heic-to-jpg.html research-only, /compress-image.html
+  // option-B carry, /zip-file.html ZIP-CRITICAL-CARE, /camera-test.html cycle
+  // 31 monitor - inbound link only). Captures the camera-test demand cluster
+  // (camera test 701 imp / 0.14% CTR / pos 21.87 head term + mobile camera
+  // test / phone camera test / back camera test / iphone camera test online
+  // tail per gsc_page_queries__camera_test_html_28d.json + Bing tail). Outbound
+  // link only to /camera-test.html (action tool, in cycle 31 monitor) and
+  // three existing companion guides (camera-test-shows-black-screen-four-fixes,
+  // how-to-check-camera-quality-on-your-phone, how-to-check-webcam-and-microphone-
+  // before-an-interview, device-test-checklist-for-remote-work) plus cycle-42
+  // P42.A LCD-test guide cross-link. NO satellite backlinks anywhere this cycle.
+  // Cluster: device-test. Lane-D PA-mode mandatory; non-ZIP, non-destructive.
+  '/guides/camera-test-vs-webcam-test-which-do-you-need.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -379,6 +395,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/gif-frame-extractor-output-looks-wrong-three-causes.html',
   // Cycle 42 P42.A - "LCD test vs display test vs monitor test - which one do you actually need?" reactive disambiguation-flow guide.
   '/guides/lcd-test-vs-display-test-which-do-you-need.html',
+  // Cycle 43 P43.B - "Camera test vs webcam test vs camera quality - which one do you actually need?" reactive disambiguation-flow guide.
+  '/guides/camera-test-vs-webcam-test-which-do-you-need.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -480,6 +498,7 @@ export const JSP_BY_ROUTE = {
   '/guides/ffmpeg-online-conversion-stalled-three-fixes.html': 'guide/ffmpeg-online-conversion-stalled-three-fixes.jsp',
   '/guides/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/gif-frame-extractor-output-looks-wrong-three-causes.jsp',
   '/guides/lcd-test-vs-display-test-which-do-you-need.html': 'guide/lcd-test-vs-display-test-which-do-you-need.jsp',
+  '/guides/camera-test-vs-webcam-test-which-do-you-need.html': 'guide/camera-test-vs-webcam-test-which-do-you-need.jsp',
   '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',
