@@ -365,11 +365,13 @@ audio:not([controls]) {
 }
 
 a {
-    background-color: transparent;
-    color: var(--link, #2563eb) !important
+    background-color: transparent
 }
 
-
+.page-section a:not(.fa):not([style*="color"]) {
+    color: var(--link, #2563eb) !important;
+    font-weight: bold;
+}
 
 abbr[title] {
     border-bottom: none;
