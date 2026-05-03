@@ -120,6 +120,7 @@ try {
     { title: "QR Code Generator - Best Practices", url: "https://freetoolonline.com/guides/qr-code-generator-best-practices.html", include: !1, tags: "guide,utility" },
     { title: "How to Compress a Folder", url: "https://freetoolonline.com/guides/how-to-compress-a-folder.html", include: !1, tags: "guide,zip,compress" },
     { title: "What an LCD Test Actually Checks", url: "https://freetoolonline.com/guides/lcd-test-what-it-checks.html", include: !1, tags: "guide,device-test,lcd-test" },
+    { title: "LCD Test vs Display Test vs Monitor Test", url: "https://freetoolonline.com/guides/lcd-test-vs-display-test-which-do-you-need.html", include: !1, tags: "guide,device-test,lcd-test" },
     { title: "All Guides - Browser Tool Library", url: "https://freetoolonline.com/guides.html", include: !1, tags: "guide" }
   ],
     currentTitle = $.trim($(".navPageName").text()),

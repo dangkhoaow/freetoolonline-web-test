@@ -260,6 +260,21 @@ export const INFO_ROUTES = new Set([
   // satellite backlinks anywhere this cycle. Cluster: image-conversion /
   // animation. Lane-D PA-mode mandatory; non-ZIP, non-destructive.
   '/guides/gif-frame-extractor-output-looks-wrong-three-causes.html',
+  // Cycle 42 P42.A - "LCD test vs display test vs monitor test - which?"
+  // reactive disambiguation-flow guide. Lane-D pivot because all 6 cycle-42
+  // decision rows touch active-monitor or auto-status tool URLs (/lcd-test.html
+  // tool-skill claim_catalogue_status: auto, /heic-to-jpg.html granted research-
+  // only, /compress-image.html in cycle 37 monitor, /zip-file.html ZIP-CRITICAL-
+  // CARE blocked). The LCD/display/monitor disambiguation cluster is the
+  // largest under-covered long-tail (lcd test 28399 + test lcd 5689 + lcd
+  // tester 2237 + lcd check 893 + lcdtest 857 + lcd tes 663 = ~38 K imp /
+  // 28d at < 1.5 % avg CTR per gsc_low_ctr_high_imp_28d.json) and AdSense
+  // /lcd-test.html under-monetised at $0.32/28d (RPM 1.92). Outbound link
+  // only to /lcd-test.html (action tool, in cycle-35 monitor - inbound
+  // link only, no satellite backlink) and four existing companion guides;
+  // NO satellite backlinks anywhere this cycle. Cluster: device-test.
+  // Lane-D PA-mode mandatory; non-ZIP, non-destructive.
+  '/guides/lcd-test-vs-display-test-which-do-you-need.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -362,6 +377,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/ffmpeg-online-conversion-stalled-three-fixes.html',
   // Cycle 41 P41.A - "GIF frame extractor output looks wrong, why?" reactive diagnostic-flow guide.
   '/guides/gif-frame-extractor-output-looks-wrong-three-causes.html',
+  // Cycle 42 P42.A - "LCD test vs display test vs monitor test - which one do you actually need?" reactive disambiguation-flow guide.
+  '/guides/lcd-test-vs-display-test-which-do-you-need.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -462,6 +479,7 @@ export const JSP_BY_ROUTE = {
   '/guides/compressed-jpg-looks-blurry-three-causes.html': 'guide/compressed-jpg-looks-blurry-three-causes.jsp',
   '/guides/ffmpeg-online-conversion-stalled-three-fixes.html': 'guide/ffmpeg-online-conversion-stalled-three-fixes.jsp',
   '/guides/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/gif-frame-extractor-output-looks-wrong-three-causes.jsp',
+  '/guides/lcd-test-vs-display-test-which-do-you-need.html': 'guide/lcd-test-vs-display-test-which-do-you-need.jsp',
   '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',
