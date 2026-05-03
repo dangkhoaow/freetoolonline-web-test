@@ -1,0 +1,61 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>GIF Frame Extractor Output Looks Wrong? Three Causes & a 30-Second Test</b></h1>
+    <p><em>Last reviewed 2026-05-03. You ran a GIF through a frame extractor and the output looks wrong - one frame instead of many, blank frames, or frames that all look identical. This guide names the three common causes (the source GIF was actually static, the GIF uses "do-not-dispose" disposal mode, the browser ran out of memory mid-extraction), gives a one-line fix per cause, and shows a 30-second test that tells you which cause you hit.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> The most common surprise is that the source <code>.gif</code> file is actually static (one frame total), so an extractor cannot produce frames that don't exist. The next is that frames ARE correct but look identical because the GIF uses "do-not-dispose" disposal mode - each frame contains only the diff vs the previous, so most of the picture is unchanged. The third is that the browser ran out of memory mid-extraction on a long, high-resolution GIF and silently truncated the output. Drop a small known-animated test GIF into <a href="/extract-gif-to-image-frames.html">the GIF frame extractor</a>; if it produces the expected frame count, the original GIF was the issue, not the extractor.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Cause 1: the source GIF is actually static</b></h2>
+    <p>The <code>.gif</code> extension does not guarantee animation. Many <code>.gif</code> files in the wild store a single image - a meme that lost its animation when someone re-saved it, a screenshot that a tool exported as GIF instead of PNG, an icon that never had multiple frames in the first place. Most desktop image viewers render single-frame and multi-frame GIFs identically (you see the picture either way), so the reader does not notice the file is static until they try to extract frames and only one comes out.</p>
+    <p><b>Fix.</b> Open the source GIF in a viewer that animates GIFs - a desktop image viewer set to "auto-play," or simply drag the file into a fresh browser tab. If the picture does not move, the GIF is static, and the extractor's single-frame output is correct. There is nothing to extract beyond the one frame. Convert the file to a PNG instead with <a href="/guides/extract-gif-frames-png-vs-jpg-which-format.html">extract GIF frames - PNG vs JPG, which format</a>; the guide covers when to pick PNG vs JPG for the converted output.</p>
+
+    <h2 class="text-uppercase"><b>Cause 2: frames are correct but look identical (do-not-dispose disposal mode)</b></h2>
+    <p>The GIF spec defines four "disposal methods" that govern how each frame relates to the previous. Disposal method 1 ("do not dispose") means each frame draws only its changed pixels on top of whatever the previous frame left on the canvas. So a 100-frame GIF where only a small badge changes between frames will produce 100 PNGs that look almost identical when extracted - because most of the surface IS identical across frames. The animation is real; it lives in the small differences between frames, not in any single frame.</p>
+    <p><b>Fix.</b> Open frames 1, 50, and 100 (or first / mid / last for a shorter GIF) in a viewer side-by-side. Look for the small diff - the moving badge, the changing number, the cursor blink. THAT diff is the animation. The terminology guide <a href="/guides/gif-frames-extract-vs-frame-rate-fps-explained.html">GIF frames vs frame rate (FPS) - explained</a> covers how disposal modes interact with frame count and FPS, so you know what to expect from the extractor before you run it.</p>
+    <p>If you actually need each extracted frame to show the FULL composed picture (not just the diff), look for an extractor option called "compose," "flatten," or "fully-resolved frames." Some extractors offer it; the GIF spec does not require it. Without that option, do-not-dispose GIFs always extract as diff-only frames.</p>
+
+    <h2 class="text-uppercase"><b>Cause 3: browser ran out of memory mid-extraction</b></h2>
+    <p>A long, high-resolution GIF holds a surprising amount of decoded pixel data. A 200-frame 4K GIF, fully decoded, can require multiple GB in browser memory at once. WASM heap caps (typically 2 GB; up to 4 GB on memory64-enabled builds) can be exceeded mid-extraction; the page may show an early subset of frames and silently stop. The reader sees, say, 12 frames out of an expected 200, and assumes the extractor is broken. It is not - it ran out of room.</p>
+    <p><b>Fix.</b> Reduce the working set. Trim the source GIF to a shorter clip first (e.g. with a GIF editor that supports a "trim" or "crop time range" operation), or scale the source to a smaller resolution before extracting. A 200-frame 1080p GIF often extracts cleanly where a 200-frame 4K GIF stalls. The same memory-cap pattern shows up in <a href="/guides/ffmpeg-online-conversion-stalled-three-fixes.html">FFmpeg online conversion stalled - three fixes</a>; the cause-2 description there explains the WASM 2 GB sandbox in more detail.</p>
+
+    <h2 class="text-uppercase"><b>The 30-second sanity-check (which cause is it?)</b></h2>
+    <p>Three steps, no math:</p>
+    <ol>
+        <li><b>Find a small known-animated test GIF</b> - a 10-frame meme GIF works. Save it locally; you want a file you trust to actually animate.</li>
+        <li><b>Drop it into the extractor</b> with default settings. Keep the tab in the foreground.</li>
+        <li><b>Watch the output.</b>
+            <ul>
+                <li>10 frames come out, each visibly different &rarr; the extractor works. Your original failure was <b>Cause 1</b> (source was static) if the original gave you 1 frame, or <b>Cause 3</b> (memory) if the original gave you a small subset of the expected count.</li>
+                <li>10 frames come out, each looking nearly identical &rarr; <b>Cause 2</b> (do-not-dispose disposal) on the test GIF too. Either the test GIF also uses that mode, or the original problem was Cause 2 and the small diff is just hard to see.</li>
+                <li>1 frame comes out from the test GIF &rarr; the extractor itself has a deeper problem (try a different browser or a private window without extensions).</li>
+            </ul>
+        </li>
+    </ol>
+    <p>If a small known-animated GIF returns the expected frame count and the original gave 12 of an expected 200, Cause 3 (memory) is the most likely; trim or downscale the source.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <p><b>Why does my "looping" GIF only give one frame?</b><br/>
+    Because the file is single-frame. Looping is a property of the GIF block, not of how many frames it contains; a single-frame GIF can carry a loop marker too, and viewers that respect the marker will "loop" the same frame indefinitely. The extractor sees one frame in the file and outputs one frame.</p>
+
+    <p><b>Why are extracted frames mostly transparent?</b><br/>
+    Disposal method 2 ("restore to background") and method 3 ("restore to previous") tell the GIF decoder to clear or revert the canvas before drawing each frame. An extractor that emits the raw per-frame layer (not a composed full-canvas image) will produce frames where most of the picture is transparent, because the GIF only encoded the changed pixels. Look for a "compose" or "flatten" option in the extractor, or use a different tool that emits fully-resolved frames.</p>
+
+    <p><b>Can I extract frames from a video file (MP4, WebM, MOV)?</b><br/>
+    Not from a GIF frame extractor - those expect GIF input. For video, use a tool that decodes video and exports per-frame stills; on this site, <a href="/ffmpeg-online.html">FFmpeg Online</a> can do per-frame export with the right command line. The container/codec choice matters; <a href="/guides/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - which container, when</a> covers the safe combinations for browser-based ffmpeg.</p>
+
+    <p><b>What's the difference between frame count and FPS?</b><br/>
+    Frame count is "how many frames are in the file." FPS is "how fast they play back per second." A 10-frame GIF at 1 FPS plays for 10 seconds; the same 10-frame GIF at 30 FPS plays for ~0.33 seconds. The extractor cares about frame count (it outputs one image per frame); FPS only matters when you re-assemble frames back into a video or GIF. The terminology guide <a href="/guides/gif-frames-extract-vs-frame-rate-fps-explained.html">GIF frames vs frame rate (FPS) - explained</a> covers the difference in detail.</p>
+
+    <p><b>Does the browser keep all extracted frames in memory at once?</b><br/>
+    Most in-browser extractors do, yes - they decode the GIF, build the per-frame image array in memory, then offer them all for download (often as a ZIP). That is why long, high-resolution GIFs can hit Cause 3 (memory exhaustion) mid-extraction. A few extractors stream frames to disk one at a time; if memory is your bottleneck, look for that pattern in the tool's documentation.</p>
+
+    <h2 class="text-uppercase"><b>Related</b></h2>
+    <ul>
+        <li><a href="/extract-gif-to-image-frames.html">Extract GIF to Image Frames</a> - the action tool for splitting a GIF into per-frame images.</li>
+        <li><a href="/guides/extract-gif-frames-png-vs-jpg-which-format.html">Extract GIF frames - PNG vs JPG, which format</a> - the proactive companion guide on output format choice.</li>
+        <li><a href="/guides/gif-frames-extract-vs-frame-rate-fps-explained.html">GIF frames vs frame rate (FPS) - explained</a> - terminology refresher (frame count vs FPS, disposal modes).</li>
+        <li><a href="/guides/how-to-split-a-gif-into-frames-for-editing.html">How to split a GIF into frames for editing</a> - workflow walkthrough for an editing/post-production target.</li>
+        <li><a href="/guides/how-to-extract-frames-from-a-gif-for-a-social-post.html">How to extract frames from a GIF for a social post</a> - workflow walkthrough for a social-share target.</li>
+    </ul>
+</div>
