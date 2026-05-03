@@ -1,0 +1,60 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>FFmpeg Online Conversion Stalled? Three Fixes (and a 30-Second Test)</b></h1>
+    <p><em>Last reviewed 2026-05-03. You uploaded a video to an online ffmpeg converter, hit "convert," and the progress bar froze - or never started moving. This guide names the three common causes (browser memory cap, backgrounded tab, codec the WASM build does not support), gives a one-line fix per cause, and shows a 30-second test that tells you which one you hit.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> The browser ran out of memory because the file was too large for in-tab WASM, OR the tab was backgrounded and the OS suspended the worker, OR the source uses a codec the WASM ffmpeg build does not include. Reload the tab and drop a tiny test file (e.g. a 5-second 720p clip) into <a href="/ffmpeg-online.html">the ffmpeg online tool</a>. If the small clip converts in seconds, your original failure was Cause 1 (memory) or Cause 3 (codec). If even the small clip stalls, it is Cause 2 (tab backgrounding).</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Cause 1: browser memory cap on WASM ffmpeg</b></h2>
+    <p>WASM ffmpeg in the browser is a self-contained ffmpeg compiled to WebAssembly that runs entirely in the tab. The trade-off: the tab's WASM module typically gets 2 GB of address space (4 GB with explicit memory64 builds), and a single 4K source video plus the in-flight encoder buffers and color-space conversion arrays can exceed that on long clips. When that happens, ffmpeg either dies silently or stalls at a percentage that never advances. Long 4K source files are the most common trigger, but a long 1080p H.265 source with 5.1 audio can also push the limit on phones and older laptops.</p>
+    <p><b>Fix.</b> Trim the source to a shorter clip first, then convert. Or run ffmpeg locally for files that exceed about 500 MB - the desktop ffmpeg binary has access to all of system RAM, not just a 2 GB sandbox. The proactive companion guide <a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs local FFmpeg - when each wins</a> walks through the size and runtime decision before you upload, so you can pick the right path on the first attempt.</p>
+
+    <h2 class="text-uppercase"><b>Cause 2: tab was backgrounded; the OS suspended the worker</b></h2>
+    <p>Modern browsers (Chrome, Firefox, Safari) throttle or fully suspend Web Workers in background tabs to save battery. A long ffmpeg conversion that runs while the tab is hidden may freeze indefinitely on desktop and almost always freezes on mobile (iOS Safari is especially aggressive). The conversion is not actually broken - the OS has paused it - but to the reader it looks identical to a hard stall.</p>
+    <p><b>Fix.</b> Keep the tab in the foreground for the duration of the conversion. On laptop, do not let the lid close (sleep also pauses the worker). On phone, do not switch apps; lock the screen with the tab still in focus if you must, but a backgrounded tab while the screen is on usually still gets throttled. Some online ffmpeg tools document a "keep-alive" trick (e.g. silent audio loop, or a periodic `noSleep` pulse) - read the tool author's notes if your conversion is long enough to need one.</p>
+    <p>The fastest way to confirm Cause 2 is the small-file test from the 30-second answer above: if a 5-second clip also stalls when the tab is backgrounded, but converts immediately when you bring the tab to the foreground, the cause is tab suspension. If even a foreground small clip stalls, the issue is somewhere else (Cause 1 memory or Cause 3 codec).</p>
+
+    <h2 class="text-uppercase"><b>Cause 3: source file uses a codec the WASM build does not include</b></h2>
+    <p>Browser WASM ffmpeg ships a curated set of decoders to keep the download size manageable - typically H.264, H.265 (HEVC), VP9, AV1, AAC, MP3, Opus, and a handful more. Exotic source codecs (ProRes, DNxHR, JPEG 2000, AC-3 above 5.1 channels, Dolby Atmos in some MOV containers) may not decode. The conversion either fails immediately with a "codec not found" line in the log, or it stalls at 0% because the decoder cannot pull a single frame from the source.</p>
+    <p><b>Fix.</b> Re-encode the source to a common codec locally first - even a fast desktop ffmpeg pass that copies the audio and re-encodes the video to H.264 takes only a fraction of the original recording time. Or pick a container the build is known to support; the guide <a href="/guides/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - which container, when</a> covers which container/codec combinations are safest for browser-based ffmpeg, and <a href="/guides/mp4-vs-webm-for-web.html">MP4 vs WebM for the web</a> covers the right output container for web delivery.</p>
+
+    <h2 class="text-uppercase"><b>The 30-second sanity-check (which cause is it?)</b></h2>
+    <p>Three steps, no math:</p>
+    <ol>
+        <li><b>Reload the tab</b> (cycles the WASM module and clears any zombie state from the previous attempt).</li>
+        <li><b>Drop a very small file</b> - a 5-second 720p clip, ~5 MB. Keep the tab in the foreground.</li>
+        <li><b>Watch.</b>
+            <ul>
+                <li>Small clip converts in seconds &rarr; the original failure was <b>Cause 1 (memory)</b> if your source was large, or <b>Cause 3 (codec)</b> if the source codec was exotic. Trim or re-encode the source.</li>
+                <li>Small clip stalls in the foreground &rarr; the issue is <b>Cause 3 (codec)</b> on the small file too, or a deeper browser/extension conflict (try a private window without extensions).</li>
+                <li>Small clip converts in the foreground but stalls when you switch tabs &rarr; <b>Cause 2 (tab backgrounding)</b>. Keep the tab visible for the full conversion.</li>
+            </ul>
+        </li>
+    </ol>
+    <p>If a small clip succeeds and the original source was 4K or longer than 10 minutes, Cause 1 (memory) is the most likely; trim the source to ~5-minute chunks or run ffmpeg locally.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <p><b>Does Safari support WASM ffmpeg?</b><br/>
+    Yes, recent Safari supports the WebAssembly + Web Worker combination that browser ffmpeg builds use, but Safari is stricter than Chrome on background-tab throttling and on memory caps in private browsing. If your conversion stalls in Safari but works in Chrome on the same machine, the cause is usually Cause 2 (tab backgrounding) or memory pressure in private mode.</p>
+
+    <p><b>Why does the same file convert locally in 10 seconds but stall online?</b><br/>
+    Local ffmpeg uses native machine code and the full RAM of the host; browser ffmpeg uses WASM (typically slower per instruction) and a 2 GB sandbox. For files that fit comfortably in the sandbox, the gap is roughly 2-5x slower in the browser. For files that approach or exceed the sandbox limit, the local conversion finishes and the browser conversion runs out of memory and stalls. The proactive guide <a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs local FFmpeg</a> covers the size threshold where each wins.</p>
+
+    <p><b>Can I increase the browser memory cap?</b><br/>
+    Not from the page side. The cap is set by the browser engine and the WASM build's memory configuration. For Chromium-based browsers, the cap is typically 2 GB per tab; some experimental flags allow larger pools, but they are not user-friendly. The reliable fix is to trim the source so the working set fits.</p>
+
+    <p><b>What's the size limit for online conversion?</b><br/>
+    Tool-specific. Most browser-ffmpeg tools document a soft limit between 100 MB and 2 GB. Above 500 MB, expect frequent stalls on phones and older laptops; above 1 GB, expect stalls on most desktops too. If your source is 4K and longer than 10 minutes, plan to either trim or run locally.</p>
+
+    <p><b>Does Incognito / Private browsing make this worse?</b><br/>
+    Sometimes. Private windows in Chrome and Firefox carry the same memory caps, but extensions are usually disabled (which can help if an extension was interfering). Safari Private Browsing has stricter storage and memory caps that can trigger Cause 1 earlier. If a conversion stalls in Private but works in normal browsing, the cause is usually a stricter sandbox in Private mode.</p>
+
+    <h2 class="text-uppercase"><b>Related</b></h2>
+    <ul>
+        <li><a href="/ffmpeg-online.html">FFmpeg Online</a> - the action tool for converting video and audio in the browser.</li>
+        <li><a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs local FFmpeg - when each wins</a> - the proactive companion guide; pick online or local BEFORE you upload.</li>
+        <li><a href="/guides/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - which container, when</a> - container compatibility reference.</li>
+        <li><a href="/guides/mp4-vs-webm-for-web.html">MP4 vs WebM for the web</a> - web-delivery container choice.</li>
+    </ul>
+</div>
