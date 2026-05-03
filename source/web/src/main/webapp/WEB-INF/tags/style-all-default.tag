@@ -365,7 +365,8 @@ audio:not([controls]) {
 }
 
 a {
-    background-color: transparent
+    background-color: transparent;
+    color: var(--link, #2563eb) !important
 }
 
 
