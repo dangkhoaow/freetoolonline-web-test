@@ -2635,6 +2635,10 @@ html.main-html.dark:not([style*="background-color"]) .w3-table-all tr {
     outline: 0 !important;
 }
 
+.w3-button:not(.headerLogo):not(.menuToogle):hover {
+    box-shadow: none !important;
+}
+
 #nav_menu .menuGroup .w3-bar-item.w3-button.active {
     background-color: rgba(0,0,0,0.12) !important;
     color: #000 !important;
