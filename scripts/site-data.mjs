@@ -489,6 +489,10 @@ export const INFO_ROUTES = new Set([
   // HEIC photos into "Windows can't open this file" errors. Lane-D
   // PA-mode mandatory; image-conversion cluster (non-ZIP); append-only.
   '/guides/why-heic-wont-open-on-windows-three-fixes.html',
+  // Cycle 70 P70.A - "Zip file converter - what it actually does"
+  // disambiguation guide. Targets ~5K imp/28d at 0.5-1.8% CTR / pos 8-9.
+  // Lane-D PA-mode mandatory; non-ZIP-cluster identity; append-only.
+  '/guides/zip-file-converter-what-it-actually-does.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -654,6 +658,16 @@ export const GUIDE_ROUTES = new Set([
   // fixes" troubleshooting guide. Bridges /heic-to-jpg.html top revenue
   // page; image-conversion cluster; non-ZIP; append-only Lane-D guide.
   '/guides/why-heic-wont-open-on-windows-three-fixes.html',
+  // Cycle 70 P70.A - "Zip file converter - what it actually does"
+  // disambiguation guide. Targets the GSC `zip file converter` /
+  // `zip files online` / `make zip file online` / `folder to zip
+  // converter` cluster (~5K imp / 28d at 0.5-1.8% CTR / pos 8-9).
+  // Reader confusion: ZIP is a container, not a format. Outbound link
+  // only to /zip-file.html, /unzip-file.html, /compress-image.html,
+  // /heic-to-jpg.html, /compose-pdf.html. NO satellite backlink on
+  // /zip-file.html (ZIP-CRITICAL-CARE 24h cooldown). Cluster: zip
+  // entry-point. Lane-D PA-mode mandatory; non-ZIP-cluster identity.
+  '/guides/zip-file-converter-what-it-actually-does.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -788,6 +802,8 @@ export const JSP_BY_ROUTE = {
   '/guides/lcd-test-what-it-checks.html': 'guide/lcd-test-what-it-checks.jsp',
   // Cycle 19 P19.4 - screen/display/monitor synonym disambiguation guide.
   '/guides/screen-display-test-synonyms.html': 'guide/screen-display-test-synonyms.jsp',
+  // Cycle 70 P70.A - "Zip file converter - what it actually does" disambiguation guide.
+  '/guides/zip-file-converter-what-it-actually-does.html': 'guide/zip-file-converter-what-it-actually-does.jsp',
 
   '/compose-pdf.html': 'pdf/compose-pdf.jsp',
   '/split-pdf-by-range.html': 'pdf/split-by-range.jsp',

@@ -137,6 +137,7 @@ try {
     { title: "PNG to SVG - When to Vectorize a Raster Image", url: "https://freetoolonline.com/guides/png-to-svg-when-to-vectorize-a-raster-image.html", include: !1, tags: "guide,image-conversion,svg,png,vectorize" },
     { title: "Download Link Not Appearing After Conversion - 5 Fixes", url: "https://freetoolonline.com/guides/download-link-not-appearing-after-conversion-five-fixes.html", include: !1, tags: "guide,troubleshooting,converter,upload,download" },
     { title: "Why HEIC Won't Open on Windows - Three Quick Fixes", url: "https://freetoolonline.com/guides/why-heic-wont-open-on-windows-three-fixes.html", include: !1, tags: "guide,image-conversion,heic,windows" },
+    { title: "Zip File Converter - What It Actually Does", url: "https://freetoolonline.com/guides/zip-file-converter-what-it-actually-does.html", include: !1, tags: "guide,zip,unzip,compress,archive" },
     { title: "All Guides - Browser Tool Library", url: "https://freetoolonline.com/guides.html", include: !1, tags: "guide" }
   ],
     currentTitle = $.trim($(".navPageName").text()),
