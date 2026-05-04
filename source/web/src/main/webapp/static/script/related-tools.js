@@ -134,6 +134,7 @@ try {
     { title: "Read and Compare MD5 Hashes Correctly", url: "https://freetoolonline.com/guides/read-and-compare-md5-hashes-correctly.html", include: !1, tags: "guide,developer,md5,hash" },
     { title: "How to Tell If a JPG Was Compressed Too Much", url: "https://freetoolonline.com/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html", include: !1, tags: "guide,image-conversion,image-editing,jpg,quality" },
     { title: "How to Flatten a PDF - and When to Do It", url: "https://freetoolonline.com/guides/how-to-flatten-a-pdf-and-when-to-do-it.html", include: !1, tags: "guide,pdf,flatten,annotations,signatures" },
+    { title: "PNG to SVG - When to Vectorize a Raster Image", url: "https://freetoolonline.com/guides/png-to-svg-when-to-vectorize-a-raster-image.html", include: !1, tags: "guide,image-conversion,svg,png,vectorize" },
     { title: "All Guides - Browser Tool Library", url: "https://freetoolonline.com/guides.html", include: !1, tags: "guide" }
   ],
     currentTitle = $.trim($(".navPageName").text()),
