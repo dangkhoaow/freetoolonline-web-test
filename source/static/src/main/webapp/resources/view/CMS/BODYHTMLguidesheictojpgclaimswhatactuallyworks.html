@@ -1,0 +1,53 @@
+<h1 class="text-uppercase"><b>HEIC to JPG - what the converter actually does (and what it does not)</b></h1>
+<time itemprop="dateUpdated" datetime="2026-05-05T05:30:00"><b>Last updated: May 5, 2026</b></time>
+<hr/>
+
+<p>If you searched <i>does heic to jpg work</i>, <i>is heic to jpg safe</i>, or <i>what does heic to jpg actually do</i>, this page is the trust anchor: a plain-language walk through every step the <a href="/heic-to-jpg.html">HEIC to JPG converter</a> performs from the moment you drop a file to the moment the JPG appears in your downloads folder, plus the claims the tool deliberately does not make. The point is to set expectations before the upload, so the result matches what you expected when you clicked.</p>
+
+<h2 class="text-uppercase"><b>What runs where</b></h2>
+
+<p><b>The converter is a server-side pipeline, not a browser-only tool.</b> When you select a HEIC file, it is uploaded to our processing service over HTTPS, decoded by <code>libheif</code>, re-encoded as JPG by an optimisation step, and the resulting JPG is sent back as a download link. There is no client-only fallback path: the entire decode and re-encode happens on the server. If your trust model requires zero-upload, this is the wrong tool for that job - read <a href="/guides/free-online-tools-that-work-without-uploading-files.html">Free online tools that work without uploading files</a> for the in-browser-only set.</p>
+
+<p><b>Files are temporary on the server.</b> The output JPG is held just long enough for you to download it; the storage rotates the file off automatically after a short window (configured via <code>web.minsToDelFile</code> on the server). We do not persist your uploaded HEIC after the conversion completes; the JPG behind the download link rotates off as well. If you close the tab before downloading, the link expires.</p>
+
+<h2 class="text-uppercase"><b>The five things the page does, in plain terms</b></h2>
+
+<ol>
+  <li><b>Decodes the HEIC.</b> HEIC files use HEVC-compressed image data wrapped in an HEIF container. The decoder is <a href="https://github.com/strukturag/libheif">libheif</a>, the same library most desktop converters use. If a file refuses to open on Windows but converts here, the cause is usually the missing Windows codec, not a damaged file - the diagnostic flow is in <a href="/guides/why-heic-wont-open-on-windows-three-fixes.html">Why HEIC won't open on Windows: three fixes that actually work</a>.</li>
+  <li><b>Re-encodes as JPG.</b> The optimiser balances visible quality against file size on each conversion; you control the trade-off with the quality slider on the input form. Setting it lower trades sharpness for smaller files, setting it higher keeps detail at the cost of bytes. Default is a middle setting that matches what most iPhone-export workflows expect.</li>
+  <li><b>Preserves EXIF metadata, on by default.</b> Camera model, capture time, GPS coordinates, and orientation flags from the original HEIC are copied into the output JPG when the EXIF toggle is on. Turn it off if you are sharing the photo publicly and prefer not to ship the location pin or device fingerprint.</li>
+  <li><b>Auto-rotates based on the EXIF orientation flag.</b> iPhones write the orientation in EXIF rather than rotating the underlying pixels; many viewers honour the flag, some do not. The converter reads the flag and writes the rotated pixels into the JPG so the result is upright in every viewer, including ones that ignore EXIF orientation.</li>
+  <li><b>Lets you choose the output format.</b> JPG is the default. Selecting PNG produces a lossless re-encode (larger file, no quality loss). Selecting WebP produces a smaller file at similar visible quality; selecting PDF combines multiple HEICs into one document for archival or email-attachment use cases. The format trade-offs are summarised in <a href="/guides/heic-vs-jpg-vs-webp.html">HEIC vs JPG vs WebP</a>.</li>
+</ol>
+
+<h2 class="text-uppercase"><b>What the page does NOT do</b></h2>
+
+<ul>
+  <li><b>It does not run in your browser only.</b> Any guide that says "no upload" or "fully client-side" is describing a different tool. This converter uploads.</li>
+  <li><b>It does not require an account.</b> There is no sign-in, no rate limit tied to a user identity, and no email gate. Drop the file and download the result.</li>
+  <li><b>It does not store your photos for training.</b> The decode and re-encode happens once per upload. Files rotate off the server on a short timer; we do not keep a copy.</li>
+  <li><b>It does not edit pixels beyond decode + re-encode.</b> No filters, no AI upscaling, no auto-enhance. If you want photo edits, run the JPG through <a href="/photo-editor.html">Photo Editor</a> after the conversion.</li>
+  <li><b>It does not extract live-photo motion.</b> An iPhone live-photo HEIC carries a still frame plus a short MOV. The converter reads only the still frame; the motion clip is not extracted by this tool.</li>
+</ul>
+
+<h2 class="text-uppercase"><b>When to choose which output format</b></h2>
+
+<p><b>Pick JPG</b> when the destination is web upload, email attachment, or any system that does not accept HEIC. Quality slider lets you set the size/clarity balance; EXIF preservation keeps capture metadata. <b>Pick PNG</b> when you need a lossless copy (screenshots, design assets, photos you will edit further). <b>Pick WebP</b> when the destination accepts WebP (most modern browsers do) and you want the smallest possible file at the same visible quality. <b>Pick PDF</b> when you have several HEIC photos that should travel as one document - the tool combines them into a single PDF, one image per page.</p>
+
+<p>If you are converting a large batch (hundreds of HEICs at once), the workflow rules are in <a href="/guides/how-to-convert-100-heic-photos-to-jpg.html">How to convert 100 HEIC photos to JPG</a>. For the format-vs-archival comparison, see <a href="/guides/pdf-vs-heic-for-document-archival.html">PDF vs HEIC for document archival</a>. For the iPhone format taxonomy (HEIC vs JPG vs PNG vs RAW), <a href="/guides/iphone-photo-format-explained-heic-jpg-png-raw.html">iPhone photo format explained</a> covers the trade-offs.</p>
+
+<h2 class="text-uppercase"><b>Common ingestion pitfalls and how the tool handles them</b></h2>
+
+<p><b>Photo opens in Photos.app but the file extension is .heic.</b> macOS displays HEIC files transparently; Windows often does not without the HEVC Video Extension. The converter does not need either OS to support HEIC natively - the decode happens on our server. If you have the file, you can convert it.</p>
+
+<p><b>Conversion appears to hang on a very large file.</b> The decode-then-re-encode pass scales with the source resolution. A 12-MP iPhone HEIC converts in a couple of seconds; an HEIC sequence (live photo or burst) takes longer. The progress indicator updates per file in a batch, not per byte, so a single large file can sit at 0% for a moment before the result appears.</p>
+
+<p><b>Output JPG looks lower quality than expected.</b> The default quality setting is in the middle of the slider. For maximum visible quality, push the slider to the top before converting. For smallest file, push it to the bottom. The trade-off is monotonic: higher slider, larger file, sharper edges.</p>
+
+<p><b>Live-photo motion missing from output.</b> The converter reads only the still frame component of the HEIC container. If you need the motion clip, export it from Photos.app on macOS / iCloud first, then convert the still frame here.</p>
+
+<p><b>Output JPG flagged as "no metadata" by a downstream tool.</b> Check the EXIF preservation toggle on the input form - turning it off strips camera model, capture time, and GPS from the JPG.</p>
+
+<h2 class="text-uppercase"><b>Run the converter now</b></h2>
+
+<p>Open <a href="/heic-to-jpg.html">HEIC to JPG</a>, drop one or more HEIC files into the upload zone, pick the output format (JPG / PNG / WebP / PDF), set the quality slider, and click Convert. The download link appears next to each file as it finishes. For the troubleshooting walkthroughs of HEIC ingestion problems on Windows, see <a href="/guides/why-heic-wont-open-on-windows-three-fixes.html">Why HEIC won't open on Windows</a>.</p>
