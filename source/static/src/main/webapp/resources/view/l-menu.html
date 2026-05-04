@@ -482,13 +482,26 @@
                 });
 
                 focusCurrentMenu = function(_el) {
+                    var pageHref = $('.pageNameContainer').attr('href');
+                    if (!pageHref) return;
+                    var normalizePath = function(href) {
+                        try {
+                            var p = new URL(href, window.location.origin).pathname;
+                            p = p.replace(/\/index\.html$/, '/');
+                            return p === '' ? '/' : p;
+                        } catch (e) { return null; }
+                    };
+                    var pagePath = normalizePath(pageHref);
+                    if (!pagePath) return;
                     $('#nav_menu').find(_el).each(function() {
-                        if (typeof $(this).attr('href') !== 'undefined' && $(this).attr('href').indexOf($('.pageNameContainer').attr('href')) > -1) {
-                            $(this).addClass('active');
-                            $("#nav_menu .menuGroup").removeClass("w3-show");
-                            $(this).closest('.menuGroup').addClass('w3-show');
-                            $('#nav_menu .menu-content').scrollTop($(this).offset().top);
-                        }
+                        var linkHref = $(this).attr('href');
+                        if (!linkHref || linkHref.indexOf('javascript:') === 0) return;
+                        var linkPath = normalizePath(linkHref);
+                        if (linkPath === null || linkPath !== pagePath) return;
+                        $(this).addClass('active');
+                        $("#nav_menu .menuGroup").removeClass("w3-show");
+                        $(this).closest('.menuGroup').addClass('w3-show');
+                        $('#nav_menu .menu-content').scrollTop($(this).offset().top);
                     });
                 };
 
