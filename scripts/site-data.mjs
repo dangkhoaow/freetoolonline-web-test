@@ -438,6 +438,17 @@ export const INFO_ROUTES = new Set([
   // tool-md5converter SKILL.md framing-menu D1 line. Append-only on
   // every existing surface.
   '/guides/read-and-compare-md5-hashes-correctly.html',
+  // Cycle 59 P59.A - "How to tell if a JPG was compressed too much"
+  // guide. Bridges /get-jpeg-compression-level.html via the verified
+  // tool-getjpegcompressionlevel SKILL.md framing-menu D1 line. Every
+  // BODYHTML factual claim about JPEG quality numerics traces to
+  // public ITU-T T.81 (JPEG standard) + Independent JPEG Group
+  // cjpeg -quality convention (q75 web default, q85 visual breakpoint,
+  // q95 print baseline). Distinct from 4 existing JPG/JPEG/compression
+  // guides (assess-after vs choose-before). Lane-D PA-mode mandatory;
+  // image-conversion / image-editing cluster (non-ZIP); append-only on
+  // every existing surface.
+  '/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -579,6 +590,12 @@ export const GUIDE_ROUTES = new Set([
   // differences (case, whitespace, BOM, hex format) plus the 5-step
   // compare flow. Append-only Lane-D guide; non-ZIP cluster.
   '/guides/read-and-compare-md5-hashes-correctly.html',
+  // Cycle 59 P59.A - "How to tell if a JPG was compressed too much"
+  // guide. Bridges /get-jpeg-compression-level.html (assess-after the
+  // upload). Distinct from /guides/how-to-choose-a-compression-level
+  // (choose-before). Image-conversion / image-editing cluster;
+  // non-ZIP; append-only Lane-D guide.
+  '/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -692,6 +709,7 @@ export const JSP_BY_ROUTE = {
   '/guides/zip-password-types-strong-vs-weak-explained.html': 'guide/zip-password-types-strong-vs-weak-explained.jsp',
   '/guides/pdf-preflight-online-what-it-actually-checks.html': 'guide/pdf-preflight-online-what-it-actually-checks.jsp',
   '/guides/read-and-compare-md5-hashes-correctly.html': 'guide/read-and-compare-md5-hashes-correctly.jsp',
+  '/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html': 'guide/how-to-tell-if-a-jpg-was-compressed-too-much.jsp',
   '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',
