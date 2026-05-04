@@ -366,6 +366,21 @@ export const INFO_ROUTES = new Set([
   // guide,zip,image-editing. Lane-D PA-mode mandatory; non-ZIP-rewrite
   // (only links to ZIP cluster URLs - ZIP-CRITICAL-CARE preserved).
   '/guides/file-compressor-online-when-to-zip-vs-when-to-compress-image.html',
+  // Cycle 53 P53.A - "How to Extract a File Online - ZIP, RAR, 7z" routing
+  // guide. The reverse-direction inverse of cycle-51's file-compressor
+  // guide. Recovers the GSC "extract file online" query (-9.3 pos in 7d:
+  // 7.9 -> 17.2 per gsc_ranking_drops_7d_v_prior.json) and the "file
+  // zipper" sibling (-8.9 pos in 7d) - neither is owned by an existing
+  // guide on this site. Routes the reader by file extension: .zip ->
+  // /unzip-file.html (server-upload, optional password); .rar / .7z ->
+  // local OS tool (the site has no server-side .rar / .7z extractor and
+  // the guide says so honestly); forgotten-password ZIP ->
+  // /remove-zip-password.html. Outbound links: /unzip-file.html (action
+  // tool) + /remove-zip-password.html + /zip-tools.html + four companion
+  // ZIP-cluster guides. Cluster: guide,zip. Lane-D PA-mode mandatory; not
+  // ZIP-rewrite (only links to ZIP cluster URLs - ZIP-CRITICAL-CARE
+  // preserved).
+  '/guides/how-to-extract-a-file-online-zip-rar-7z.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -484,6 +499,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/imagemagick-online-vs-task-specific-tools-which-to-pick.html',
   // Cycle 51 P51.A - "File Compressor Online: ZIP a Folder vs Compress an Image" routing guide (GSC "file compressor" 258,156 imp / 0.04% CTR / pos 9.9 / 12,797 missed clicks 28d - cross-cluster routing surface for the head term that neither /zip-file.html nor /compress-image.html owns alone).
   '/guides/file-compressor-online-when-to-zip-vs-when-to-compress-image.html',
+  // Cycle 53 P53.A - "How to Extract a File Online - ZIP, RAR, 7z" routing guide (GSC "extract file online" -9.3 pos in 7d, "file zipper" -8.9 pos; neither owned by an existing guide. .zip -> /unzip-file.html; .rar / .7z -> local OS tool; forgotten-password .zip -> /remove-zip-password.html).
+  '/guides/how-to-extract-a-file-online-zip-rar-7z.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -592,6 +609,7 @@ export const JSP_BY_ROUTE = {
   '/guides/ffmpeg-online-vs-video-converter-which-to-pick.html': 'guide/ffmpeg-online-vs-video-converter-which-to-pick.jsp',
   '/guides/imagemagick-online-vs-task-specific-tools-which-to-pick.html': 'guide/imagemagick-online-vs-task-specific-tools-which-to-pick.jsp',
   '/guides/file-compressor-online-when-to-zip-vs-when-to-compress-image.html': 'guide/file-compressor-online-when-to-zip-vs-when-to-compress-image.jsp',
+  '/guides/how-to-extract-a-file-online-zip-rar-7z.html': 'guide/how-to-extract-a-file-online-zip-rar-7z.jsp',
   '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',

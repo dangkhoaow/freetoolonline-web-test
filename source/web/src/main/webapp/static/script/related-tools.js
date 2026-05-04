@@ -127,6 +127,7 @@ try {
     { title: "FFmpeg Online vs Video Converter - Which to Pick", url: "https://freetoolonline.com/guides/ffmpeg-online-vs-video-converter-which-to-pick.html", include: !1, tags: "guide,video,ffmpeg" },
     { title: "ImageMagick Online vs Task-Specific Tools - Which to Pick", url: "https://freetoolonline.com/guides/imagemagick-online-vs-task-specific-tools-which-to-pick.html", include: !1, tags: "guide,image-editing,imagemagick,image-conversion" },
     { title: "File Compressor Online: ZIP a Folder vs Compress an Image", url: "https://freetoolonline.com/guides/file-compressor-online-when-to-zip-vs-when-to-compress-image.html", include: !1, tags: "guide,zip,image-editing,file-compressor" },
+    { title: "How to Extract a File Online - ZIP, RAR, 7z", url: "https://freetoolonline.com/guides/how-to-extract-a-file-online-zip-rar-7z.html", include: !1, tags: "guide,zip,extract,unzip,file-extractor" },
     { title: "All Guides - Browser Tool Library", url: "https://freetoolonline.com/guides.html", include: !1, tags: "guide" }
   ],
     currentTitle = $.trim($(".navPageName").text()),
