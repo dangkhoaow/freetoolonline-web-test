@@ -483,6 +483,12 @@ export const INFO_ROUTES = new Set([
   // Lane-D PA-mode mandatory; troubleshooting cluster (non-ZIP);
   // append-only on every existing surface.
   '/guides/download-link-not-appearing-after-conversion-five-fixes.html',
+  // Cycle 64 P64.A - "Why HEIC won't open on Windows - three quick
+  // fixes" troubleshooting guide. Bridges /heic-to-jpg.html (top
+  // revenue page) for the Windows-side codec gap that turns iPhone
+  // HEIC photos into "Windows can't open this file" errors. Lane-D
+  // PA-mode mandatory; image-conversion cluster (non-ZIP); append-only.
+  '/guides/why-heic-wont-open-on-windows-three-fixes.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -644,6 +650,10 @@ export const GUIDE_ROUTES = new Set([
   // 5 fixes" diagnostic guide. Bridges multiple converter tools.
   // Troubleshooting cluster; non-ZIP; append-only Lane-D guide.
   '/guides/download-link-not-appearing-after-conversion-five-fixes.html',
+  // Cycle 64 P64.A - "Why HEIC won't open on Windows - three quick
+  // fixes" troubleshooting guide. Bridges /heic-to-jpg.html top revenue
+  // page; image-conversion cluster; non-ZIP; append-only Lane-D guide.
+  '/guides/why-heic-wont-open-on-windows-three-fixes.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -761,6 +771,7 @@ export const JSP_BY_ROUTE = {
   '/guides/how-to-flatten-a-pdf-and-when-to-do-it.html': 'guide/how-to-flatten-a-pdf-and-when-to-do-it.jsp',
   '/guides/png-to-svg-when-to-vectorize-a-raster-image.html': 'guide/png-to-svg-when-to-vectorize-a-raster-image.jsp',
   '/guides/download-link-not-appearing-after-conversion-five-fixes.html': 'guide/download-link-not-appearing-after-conversion-five-fixes.jsp',
+  '/guides/why-heic-wont-open-on-windows-three-fixes.html': 'guide/why-heic-wont-open-on-windows-three-fixes.jsp',
   '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',
