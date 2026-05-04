@@ -409,6 +409,23 @@ export const INFO_ROUTES = new Set([
   // PA-mode mandatory; non-ZIP-cluster URL (/guides/* sits OUTSIDE the
   // ZIP-CRITICAL-CARE cluster); append-only on every existing surface.
   '/guides/zip-password-types-strong-vs-weak-explained.html',
+  // Cycle 56 P56.A - "PDF preflight online: what it actually checks" guide.
+  // Lane-D fresh-capture against the search-vocabulary gap upstream of
+  // /preflight-pdf.html. Bing query_stats (run 20260504-20) shows persistent
+  // rolling impressions across 2025 for "pdf preflight" / "online pdf
+  // validator" / "pdf flatten online" / "check pdf" / "preflight pdf"
+  // with /preflight-pdf.html ranking pos 3-20. PDF cluster has only 4
+  // existing guides vs 13+ PDF tools — clearest cluster gap on the site.
+  // Explains what preflight actually means (a check step, not a fix step),
+  // what /preflight-pdf.html validates (PDF/A archival conformance), and
+  // what it does NOT validate (PDF/X print preflight, signature legal-
+  // validity, corrupt-PDF repair, PDF/UA accessibility tagging). Routes
+  // readers to the right tool when "preflight" is not the right word for
+  // their actual question. Every factual claim in BODYHTML traces to
+  // PDF/A ISO 19005 / PDF/X ISO 15930 / Adobe Acrobat preflight docs cited
+  // in the SKILL.md ## Citations block. Lane-D PA-mode mandatory; non-ZIP
+  // cluster; append-only on every existing surface.
+  '/guides/pdf-preflight-online-what-it-actually-checks.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -536,6 +553,14 @@ export const GUIDE_ROUTES = new Set([
   // Explains legacy ZIP 2.0 vs WinZip AES-256, password strength interaction, and the
   // 30-second decision flow before a reader uploads. Append-only Lane-D guide; non-ZIP-cluster URL.
   '/guides/zip-password-types-strong-vs-weak-explained.html',
+  // Cycle 56 P56.A - "PDF preflight online: what it actually checks" guide.
+  // Lane-D fresh-capture on the search-vocabulary gap upstream of /preflight-pdf.html
+  // (Bing pos 3-20 across the preflight/validator/check vocabulary). PDF cluster
+  // had only 4 existing guides vs 13+ PDF tools - clearest cluster gap on the site.
+  // Explains preflight as a check step (not a fix step), what /preflight-pdf.html
+  // validates (PDF/A archival conformance), and what is out-of-scope (PDF/X print,
+  // signature legal-validity, corrupt-PDF repair, PDF/UA). Append-only Lane-D guide.
+  '/guides/pdf-preflight-online-what-it-actually-checks.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -647,6 +672,7 @@ export const JSP_BY_ROUTE = {
   '/guides/how-to-extract-a-file-online-zip-rar-7z.html': 'guide/how-to-extract-a-file-online-zip-rar-7z.jsp',
   '/guides/how-to-choose-a-compression-level.html': 'guide/how-to-choose-a-compression-level.jsp',
   '/guides/zip-password-types-strong-vs-weak-explained.html': 'guide/zip-password-types-strong-vs-weak-explained.jsp',
+  '/guides/pdf-preflight-online-what-it-actually-checks.html': 'guide/pdf-preflight-online-what-it-actually-checks.jsp',
   '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',
