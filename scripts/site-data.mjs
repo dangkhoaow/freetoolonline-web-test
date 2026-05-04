@@ -381,6 +381,20 @@ export const INFO_ROUTES = new Set([
   // ZIP-rewrite (only links to ZIP cluster URLs - ZIP-CRITICAL-CARE
   // preserved).
   '/guides/how-to-extract-a-file-online-zip-rar-7z.html',
+  // Cycle 54 P54.A - "How to choose a compression level - quality vs file
+  // size, with examples" guide. Captures the long-tail "compress image to
+  // 100kb / 200kb / 500kb / target file size" intent + "what compression
+  // level should I use" decision question that the head term "file
+  // compressor" (257,359 imp / 0% CTR / pos 9.9 per
+  // gsc_low_ctr_high_imp_28d.json on run 20260504-14) surfaces in
+  // long-tail. Anchors level 50 / 70 / 85 / 100 with concrete output-size
+  // ranges + visible-quality descriptions; routes the reader to
+  // /compress-image.html (verified) for the action tool, /resize-image.html
+  // for the pixel-dimension fallback, and to format-choice guides
+  // (jpg-vs-png-for-web, heic-vs-jpg-vs-webp) when the format is wrong.
+  // Lane-D PA-mode mandatory; non-ZIP, non-destructive; append-only on every
+  // existing surface (only the new guide page is created).
+  '/guides/how-to-choose-a-compression-level.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -501,6 +515,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/file-compressor-online-when-to-zip-vs-when-to-compress-image.html',
   // Cycle 53 P53.A - "How to Extract a File Online - ZIP, RAR, 7z" routing guide (GSC "extract file online" -9.3 pos in 7d, "file zipper" -8.9 pos; neither owned by an existing guide. .zip -> /unzip-file.html; .rar / .7z -> local OS tool; forgotten-password .zip -> /remove-zip-password.html).
   '/guides/how-to-extract-a-file-online-zip-rar-7z.html',
+  // Cycle 54 P54.A - "How to choose a compression level - quality vs file size, with examples" guide. Captures the long-tail "compress image to 100kb / 200kb / 500kb" + "what compression level should I use" decision intent on /compress-image.html. Routes to /resize-image.html when pixel dimensions matter and to format-choice guides when the format is wrong. Append-only Lane-D guide.
+  '/guides/how-to-choose-a-compression-level.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -610,6 +626,7 @@ export const JSP_BY_ROUTE = {
   '/guides/imagemagick-online-vs-task-specific-tools-which-to-pick.html': 'guide/imagemagick-online-vs-task-specific-tools-which-to-pick.jsp',
   '/guides/file-compressor-online-when-to-zip-vs-when-to-compress-image.html': 'guide/file-compressor-online-when-to-zip-vs-when-to-compress-image.jsp',
   '/guides/how-to-extract-a-file-online-zip-rar-7z.html': 'guide/how-to-extract-a-file-online-zip-rar-7z.jsp',
+  '/guides/how-to-choose-a-compression-level.html': 'guide/how-to-choose-a-compression-level.jsp',
   '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',
