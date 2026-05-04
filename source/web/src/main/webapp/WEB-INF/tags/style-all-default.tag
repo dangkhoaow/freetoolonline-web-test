@@ -2635,8 +2635,8 @@ html.main-html.dark:not([style*="background-color"]) .w3-table-all tr {
     outline: 0 !important;
 }
 
-.w3-button:not(.headerLogo):not(.menuToogle):hover {
-    box-shadow: none !important;
+.w3-button.headerLogo, .w3-button.menuToogle:hover {
+    box-shadow: none
 }
 
 #nav_menu .menuGroup .w3-bar-item.w3-button.active {
