@@ -135,6 +135,7 @@ try {
     { title: "How to Tell If a JPG Was Compressed Too Much", url: "https://freetoolonline.com/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html", include: !1, tags: "guide,image-conversion,image-editing,jpg,quality" },
     { title: "How to Flatten a PDF - and When to Do It", url: "https://freetoolonline.com/guides/how-to-flatten-a-pdf-and-when-to-do-it.html", include: !1, tags: "guide,pdf,flatten,annotations,signatures" },
     { title: "PNG to SVG - When to Vectorize a Raster Image", url: "https://freetoolonline.com/guides/png-to-svg-when-to-vectorize-a-raster-image.html", include: !1, tags: "guide,image-conversion,svg,png,vectorize" },
+    { title: "Download Link Not Appearing After Conversion - 5 Fixes", url: "https://freetoolonline.com/guides/download-link-not-appearing-after-conversion-five-fixes.html", include: !1, tags: "guide,troubleshooting,converter,upload,download" },
     { title: "All Guides - Browser Tool Library", url: "https://freetoolonline.com/guides.html", include: !1, tags: "guide" }
   ],
     currentTitle = $.trim($(".navPageName").text()),

@@ -473,6 +473,16 @@ export const INFO_ROUTES = new Set([
   // not). Lane-D PA-mode mandatory; image-conversion cluster
   // (non-ZIP); append-only on every existing surface.
   '/guides/png-to-svg-when-to-vectorize-a-raster-image.html',
+  // Cycle 62 P62.E - "Download link not appearing after conversion -
+  // 5 fixes" diagnostic guide. Bridges multiple converter tools
+  // (heictojpg, compressimage, zipfile, composepdf, etc) for the
+  // generic post-conversion no-download-link reader pain point.
+  // Distinct from 86 existing guides (only ffmpeg-online-conversion-
+  // stalled-three-fixes covers a stall pattern, and that one is for
+  // the upload-side bottleneck, not the result-link visibility).
+  // Lane-D PA-mode mandatory; troubleshooting cluster (non-ZIP);
+  // append-only on every existing surface.
+  '/guides/download-link-not-appearing-after-conversion-five-fixes.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -630,6 +640,10 @@ export const GUIDE_ROUTES = new Set([
   // via the freetoolonline AWS service). Image-conversion cluster;
   // non-ZIP; append-only Lane-D guide.
   '/guides/png-to-svg-when-to-vectorize-a-raster-image.html',
+  // Cycle 62 P62.E - "Download link not appearing after conversion -
+  // 5 fixes" diagnostic guide. Bridges multiple converter tools.
+  // Troubleshooting cluster; non-ZIP; append-only Lane-D guide.
+  '/guides/download-link-not-appearing-after-conversion-five-fixes.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -746,6 +760,7 @@ export const JSP_BY_ROUTE = {
   '/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html': 'guide/how-to-tell-if-a-jpg-was-compressed-too-much.jsp',
   '/guides/how-to-flatten-a-pdf-and-when-to-do-it.html': 'guide/how-to-flatten-a-pdf-and-when-to-do-it.jsp',
   '/guides/png-to-svg-when-to-vectorize-a-raster-image.html': 'guide/png-to-svg-when-to-vectorize-a-raster-image.jsp',
+  '/guides/download-link-not-appearing-after-conversion-five-fixes.html': 'guide/download-link-not-appearing-after-conversion-five-fixes.jsp',
   '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',
