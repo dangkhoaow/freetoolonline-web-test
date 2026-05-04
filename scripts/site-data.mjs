@@ -426,6 +426,18 @@ export const INFO_ROUTES = new Set([
   // in the SKILL.md ## Citations block. Lane-D PA-mode mandatory; non-ZIP
   // cluster; append-only on every existing surface.
   '/guides/pdf-preflight-online-what-it-actually-checks.html',
+  // Cycle 58 P58.A - "Read and compare MD5 hashes correctly: case,
+  // whitespace, hex format" guide. Lane-D PA-mode mandatory; guide,
+  // developer, md5 cluster (non-ZIP). Bridges the post-conversion
+  // verification gap downstream of /md5-converter.html (11,599 imp /
+  // 953 clicks / 8.22% CTR / pos 6.7 28d): readers generate a hash,
+  // then need to compare it to a published expected value. Distinct
+  // from the 4 existing MD5 guides (md5-vs-sha256, why-md5-cannot-be-
+  // decrypted, md5-alternatives, md5-to-text). Every BODYHTML claim
+  // traces to public RFC 1321 / NIST FIPS 180-4 spec + the
+  // tool-md5converter SKILL.md framing-menu D1 line. Append-only on
+  // every existing surface.
+  '/guides/read-and-compare-md5-hashes-correctly.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -561,6 +573,12 @@ export const GUIDE_ROUTES = new Set([
   // validates (PDF/A archival conformance), and what is out-of-scope (PDF/X print,
   // signature legal-validity, corrupt-PDF repair, PDF/UA). Append-only Lane-D guide.
   '/guides/pdf-preflight-online-what-it-actually-checks.html',
+  // Cycle 58 P58.A - "Read and compare MD5 hashes correctly" guide.
+  // Post-conversion verification flow downstream of /md5-converter.html.
+  // Distinct from 4 existing MD5 guides; covers cosmetic vs real
+  // differences (case, whitespace, BOM, hex format) plus the 5-step
+  // compare flow. Append-only Lane-D guide; non-ZIP cluster.
+  '/guides/read-and-compare-md5-hashes-correctly.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -673,6 +691,7 @@ export const JSP_BY_ROUTE = {
   '/guides/how-to-choose-a-compression-level.html': 'guide/how-to-choose-a-compression-level.jsp',
   '/guides/zip-password-types-strong-vs-weak-explained.html': 'guide/zip-password-types-strong-vs-weak-explained.jsp',
   '/guides/pdf-preflight-online-what-it-actually-checks.html': 'guide/pdf-preflight-online-what-it-actually-checks.jsp',
+  '/guides/read-and-compare-md5-hashes-correctly.html': 'guide/read-and-compare-md5-hashes-correctly.jsp',
   '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',
