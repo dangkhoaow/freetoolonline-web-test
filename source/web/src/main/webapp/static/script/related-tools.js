@@ -133,6 +133,7 @@ try {
     { title: "PDF Preflight Online - What It Actually Checks", url: "https://freetoolonline.com/guides/pdf-preflight-online-what-it-actually-checks.html", include: !1, tags: "guide,pdf,preflight,validator" },
     { title: "Read and Compare MD5 Hashes Correctly", url: "https://freetoolonline.com/guides/read-and-compare-md5-hashes-correctly.html", include: !1, tags: "guide,developer,md5,hash" },
     { title: "How to Tell If a JPG Was Compressed Too Much", url: "https://freetoolonline.com/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html", include: !1, tags: "guide,image-conversion,image-editing,jpg,quality" },
+    { title: "How to Flatten a PDF - and When to Do It", url: "https://freetoolonline.com/guides/how-to-flatten-a-pdf-and-when-to-do-it.html", include: !1, tags: "guide,pdf,flatten,annotations,signatures" },
     { title: "All Guides - Browser Tool Library", url: "https://freetoolonline.com/guides.html", include: !1, tags: "guide" }
   ],
     currentTitle = $.trim($(".navPageName").text()),

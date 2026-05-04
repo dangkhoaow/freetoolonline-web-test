@@ -449,6 +449,17 @@ export const INFO_ROUTES = new Set([
   // image-conversion / image-editing cluster (non-ZIP); append-only on
   // every existing surface.
   '/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html',
+  // Cycle 60 P60.A - "How to flatten a PDF - and when to do it" guide.
+  // Bridges /flatten-pdf.html (server-side PDF flattening tool with
+  // verified tool-flattenpdf SKILL). Distinct from 6 existing PDF guides
+  // (pdf-editing-ladder is ladder of edits, pdf-password-types is about
+  // passwords, pdf-preflight is print-readiness, pdf-vs-heic is format
+  // choice, sign-after-removing is signing flow). New angle: explains
+  // the OPERATION of flattening (AcroForm, annotations, signatures,
+  // OCG layers) and the WHEN-TO-USE / WHEN-NOT-TO decision.
+  // Lane-D PA-mode mandatory; pdf cluster (non-ZIP); append-only on
+  // every existing surface.
+  '/guides/how-to-flatten-a-pdf-and-when-to-do-it.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -596,6 +607,11 @@ export const GUIDE_ROUTES = new Set([
   // (choose-before). Image-conversion / image-editing cluster;
   // non-ZIP; append-only Lane-D guide.
   '/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html',
+  // Cycle 60 P60.A - "How to flatten a PDF - and when to do it" guide.
+  // Bridges /flatten-pdf.html (server-side flatten via FlattenPdfService).
+  // Distinct from 6 existing PDF guides. PDF cluster; non-ZIP;
+  // append-only Lane-D guide.
+  '/guides/how-to-flatten-a-pdf-and-when-to-do-it.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -710,6 +726,7 @@ export const JSP_BY_ROUTE = {
   '/guides/pdf-preflight-online-what-it-actually-checks.html': 'guide/pdf-preflight-online-what-it-actually-checks.jsp',
   '/guides/read-and-compare-md5-hashes-correctly.html': 'guide/read-and-compare-md5-hashes-correctly.jsp',
   '/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html': 'guide/how-to-tell-if-a-jpg-was-compressed-too-much.jsp',
+  '/guides/how-to-flatten-a-pdf-and-when-to-do-it.html': 'guide/how-to-flatten-a-pdf-and-when-to-do-it.jsp',
   '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',
