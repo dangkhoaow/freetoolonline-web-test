@@ -395,6 +395,20 @@ export const INFO_ROUTES = new Set([
   // Lane-D PA-mode mandatory; non-ZIP, non-destructive; append-only on every
   // existing surface (only the new guide page is created).
   '/guides/how-to-choose-a-compression-level.html',
+  // Cycle 55 P55.A - "ZIP password types - strong vs weak, explained" guide.
+  // Trust-gate education for the highest-traffic ZIP-cluster URL
+  // (/remove-zip-password.html: 8 849 28d pageviews / 79.2% engagement /
+  // $1.43 RPM per ga4_page_perf__remove_zip_password_html_28d.json +
+  // ads_top_url_channels_28d.json on run 20260504-17). Explains the three
+  // recoverability cases (legacy ZIP 2.0 + short password = recoverable;
+  // AES-256 + strong password = not recoverable; AES-256 + weak password =
+  // possibly recoverable, slower). Gives readers a 30-second decision
+  // before they upload a 200 MB file to a tool that may not help. Every
+  // factual claim in the guide BODYHTML traces to ZIP 2.0 / WinZip AES-256 /
+  // 7-Zip public docs cited in the SKILL.md ## Citations block. Lane-D
+  // PA-mode mandatory; non-ZIP-cluster URL (/guides/* sits OUTSIDE the
+  // ZIP-CRITICAL-CARE cluster); append-only on every existing surface.
+  '/guides/zip-password-types-strong-vs-weak-explained.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -517,6 +531,11 @@ export const GUIDE_ROUTES = new Set([
   '/guides/how-to-extract-a-file-online-zip-rar-7z.html',
   // Cycle 54 P54.A - "How to choose a compression level - quality vs file size, with examples" guide. Captures the long-tail "compress image to 100kb / 200kb / 500kb" + "what compression level should I use" decision intent on /compress-image.html. Routes to /resize-image.html when pixel dimensions matter and to format-choice guides when the format is wrong. Append-only Lane-D guide.
   '/guides/how-to-choose-a-compression-level.html',
+  // Cycle 55 P55.A - "ZIP password types - strong vs weak, explained" guide.
+  // Trust-gate education on /remove-zip-password.html (top-2 traffic ZIP-cluster URL).
+  // Explains legacy ZIP 2.0 vs WinZip AES-256, password strength interaction, and the
+  // 30-second decision flow before a reader uploads. Append-only Lane-D guide; non-ZIP-cluster URL.
+  '/guides/zip-password-types-strong-vs-weak-explained.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -627,6 +646,7 @@ export const JSP_BY_ROUTE = {
   '/guides/file-compressor-online-when-to-zip-vs-when-to-compress-image.html': 'guide/file-compressor-online-when-to-zip-vs-when-to-compress-image.jsp',
   '/guides/how-to-extract-a-file-online-zip-rar-7z.html': 'guide/how-to-extract-a-file-online-zip-rar-7z.jsp',
   '/guides/how-to-choose-a-compression-level.html': 'guide/how-to-choose-a-compression-level.jsp',
+  '/guides/zip-password-types-strong-vs-weak-explained.html': 'guide/zip-password-types-strong-vs-weak-explained.jsp',
   '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',

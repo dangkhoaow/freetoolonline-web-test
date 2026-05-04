@@ -129,6 +129,7 @@ try {
     { title: "File Compressor Online: ZIP a Folder vs Compress an Image", url: "https://freetoolonline.com/guides/file-compressor-online-when-to-zip-vs-when-to-compress-image.html", include: !1, tags: "guide,zip,image-editing,file-compressor" },
     { title: "How to Extract a File Online - ZIP, RAR, 7z", url: "https://freetoolonline.com/guides/how-to-extract-a-file-online-zip-rar-7z.html", include: !1, tags: "guide,zip,extract,unzip,file-extractor" },
     { title: "How to Choose a Compression Level - Quality vs File Size", url: "https://freetoolonline.com/guides/how-to-choose-a-compression-level.html", include: !1, tags: "guide,image-editing,compress,jpg,quality" },
+    { title: "ZIP Password Types - Strong vs Weak, Explained", url: "https://freetoolonline.com/guides/zip-password-types-strong-vs-weak-explained.html", include: !1, tags: "guide,zip,password" },
     { title: "All Guides - Browser Tool Library", url: "https://freetoolonline.com/guides.html", include: !1, tags: "guide" }
   ],
     currentTitle = $.trim($(".navPageName").text()),
