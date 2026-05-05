@@ -47,6 +47,11 @@ export const INFO_ROUTES = new Set([
   // browser-vs-app diagnostic surface comparison, not panel-vs-display-vs-monitor scope. Sourced from sibling tool-guideslcdtestvsdisplaytestwhichdoyouneed
   // framing-menu lines extended with browser/native abstraction-layer claims (W3C CSSOM color-model, browser fullscreen API).
   '/guides/screen-test-online-vs-app-which-is-more-accurate.html',
+  // Cycle 77 P77.A - "How to compress a ZIP file to a specific size (2 MB / 25 MB / 100 KB)" Lane-D append-only guide for the file-compressor / ZIP intent gap.
+  // GSC evidence (28d): "compress zip file to 25mb" 2,932 imp pos 4.9; "compress zip file to 2mb" 1,365 imp pos 4.3; "compress zip file to 100kb" 787 imp pos 4.7.
+  // Forward-links to /zip-file.html, /compress-image.html. Does NOT modify any indexed ZIP-cluster page (ZIP-CRITICAL-CARE not gated).
+  // Non-cannibalizing vs how-to-make-a-zip-file-smaller (cycle ?) and how-to-compress-zip-file-to-smaller-size; covers the "specific target cap (2/25/100)" sub-intent.
+  '/guides/how-to-compress-a-zip-file-to-a-specific-size.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides - 4 pillar + 2 comparison + 6 how-to + 1 case-study.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -538,6 +543,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/milliseconds-to-date-utc-vs-local-time.html',
   // Cycle 76 P76.A - screen-test-online-vs-app accuracy Lane-D guide (device-test cluster).
   '/guides/screen-test-online-vs-app-which-is-more-accurate.html',
+  // Cycle 77 P77.A - "compress ZIP to a specific size" Lane-D append-only guide.
+  '/guides/how-to-compress-a-zip-file-to-a-specific-size.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -757,6 +764,8 @@ export const JSP_BY_ROUTE = {
   '/guides/milliseconds-to-date-utc-vs-local-time.html': 'guide/milliseconds-to-date-utc-vs-local-time.jsp',
   // Cycle 76 P76.A - screen-test-online-vs-app accuracy Lane-D guide (device-test cluster).
   '/guides/screen-test-online-vs-app-which-is-more-accurate.html': 'guide/screen-test-online-vs-app-which-is-more-accurate.jsp',
+  // Cycle 77 P77.A - "compress ZIP to a specific size" Lane-D append-only guide.
+  '/guides/how-to-compress-a-zip-file-to-a-specific-size.html': 'guide/how-to-compress-a-zip-file-to-a-specific-size.jsp',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html': 'guide/mp4-vs-webm-for-web.jsp',
   '/guides/jpg-vs-png-for-web.html': 'guide/jpg-vs-png-for-web.jsp',
