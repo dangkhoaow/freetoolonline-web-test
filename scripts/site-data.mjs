@@ -52,6 +52,12 @@ export const INFO_ROUTES = new Set([
   // Forward-links to /zip-file.html, /compress-image.html. Does NOT modify any indexed ZIP-cluster page (ZIP-CRITICAL-CARE not gated).
   // Non-cannibalizing vs how-to-make-a-zip-file-smaller (cycle ?) and how-to-compress-zip-file-to-smaller-size; covers the "specific target cap (2/25/100)" sub-intent.
   '/guides/how-to-compress-a-zip-file-to-a-specific-size.html',
+  // Cycle 78 P78.A - "QR code error correction and scan failures: why your QR will not scan" Lane-D append-only guide.
+  // Companion to /qr-code-generator.html (one of the 4 R7_thin_content fixes in P78.B). Reader-task gap: no QR-related guide existed
+  // pre-cycle-78. Diagnoses the four common scan-failure causes (payload size, error-correction level, contrast, print scale) so a
+  // reader who generated a QR with our tool and got a non-scannable result can self-diagnose without leaving the site. Append-only
+  // (new URL); non-cannibalizing (no other QR guide on /guides/).
+  '/guides/qr-code-error-correction-and-scan-failures.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides - 4 pillar + 2 comparison + 6 how-to + 1 case-study.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -545,6 +551,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/screen-test-online-vs-app-which-is-more-accurate.html',
   // Cycle 77 P77.A - "compress ZIP to a specific size" Lane-D append-only guide.
   '/guides/how-to-compress-a-zip-file-to-a-specific-size.html',
+  // Cycle 78 P78.A - "QR code error correction and scan failures" Lane-D guide (companion to /qr-code-generator.html).
+  '/guides/qr-code-error-correction-and-scan-failures.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -766,6 +774,8 @@ export const JSP_BY_ROUTE = {
   '/guides/screen-test-online-vs-app-which-is-more-accurate.html': 'guide/screen-test-online-vs-app-which-is-more-accurate.jsp',
   // Cycle 77 P77.A - "compress ZIP to a specific size" Lane-D append-only guide.
   '/guides/how-to-compress-a-zip-file-to-a-specific-size.html': 'guide/how-to-compress-a-zip-file-to-a-specific-size.jsp',
+  // Cycle 78 P78.A - "QR code error correction and scan failures" Lane-D guide (companion to /qr-code-generator.html).
+  '/guides/qr-code-error-correction-and-scan-failures.html': 'guide/qr-code-error-correction-and-scan-failures.jsp',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html': 'guide/mp4-vs-webm-for-web.jsp',
   '/guides/jpg-vs-png-for-web.html': 'guide/jpg-vs-png-for-web.jsp',
