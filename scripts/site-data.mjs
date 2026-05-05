@@ -81,6 +81,12 @@ export const INFO_ROUTES = new Set([
   // Append-only (new URL); non-cannibalizing (distinct intent from camera-test-shows-black-screen,
   // camera-test-vs-webcam-test, before-a-video-call, how-to-check-camera-quality-on-your-phone).
   '/guides/camera-mirror-vs-flip-explained.html',
+  // Cycle 82 P82.A - "CSS Unminifier vs Prettier: when to use each" Lane-D append-only guide
+  // (developer / CSS sub-cluster, companion to /css-unminifier.html). Reader-task gap: 99 existing
+  // guides cover the forward direction (minifier vs compressor / vs uglifier vs tree-shaking, Cloud
+  // Run cold-start) but no guide explains when /css-unminifier.html is the right tool vs Prettier.
+  // Append-only (new URL); non-cannibalizing.
+  '/guides/css-unminifier-vs-prettier-when-to-use-each.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides - 4 pillar + 2 comparison + 6 how-to + 1 case-study.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -582,6 +588,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/how-to-test-a-touchscreen-for-bad-spots.html',
   // Cycle 81 P81.A - "Webcam mirror vs flip explained" Lane-D guide (camera-test sub-cluster).
   '/guides/camera-mirror-vs-flip-explained.html',
+  // Cycle 82 P82.A - "CSS Unminifier vs Prettier: when to use each" Lane-D guide (developer / CSS sub-cluster).
+  '/guides/css-unminifier-vs-prettier-when-to-use-each.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -811,6 +819,8 @@ export const JSP_BY_ROUTE = {
   '/guides/how-to-test-a-touchscreen-for-bad-spots.html': 'guide/how-to-test-a-touchscreen-for-bad-spots.jsp',
   // Cycle 81 P81.A - "Webcam mirror vs flip explained" Lane-D guide (camera-test sub-cluster, companion to /camera-test.html).
   '/guides/camera-mirror-vs-flip-explained.html': 'guide/camera-mirror-vs-flip-explained.jsp',
+  // Cycle 82 P82.A - "CSS Unminifier vs Prettier: when to use each" Lane-D guide (developer / CSS sub-cluster, companion to /css-unminifier.html).
+  '/guides/css-unminifier-vs-prettier-when-to-use-each.html': 'guide/css-unminifier-vs-prettier-when-to-use-each.jsp',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html': 'guide/mp4-vs-webm-for-web.jsp',
   '/guides/jpg-vs-png-for-web.html': 'guide/jpg-vs-png-for-web.jsp',
