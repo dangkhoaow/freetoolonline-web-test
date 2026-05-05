@@ -38,6 +38,10 @@ export const INFO_ROUTES = new Set([
   // /json-parser.html sub-feature triad. Cluster: developer. Non-cannibalizing - no existing guide on this disambiguation; complements the cycle-74
   // jsonparser BODYHTML thin-content fix.
   '/guides/json-parser-validate-vs-format-vs-tree-view.html',
+  // Cycle 75 P75.B - "Milliseconds to date - UTC vs local time, and why your conversion might look off by hours" Lane-D timezone-interpretation guide
+  // for /convert-time-in-millisecond-to-date.html. Cluster: developer. Non-cannibalizing - existing long-number-millisecond-or-second covers ms-vs-s
+  // disambiguation, unix-timestamps-explained covers epoch fundamentals; this guide covers the timezone-display angle (UTC vs local).
+  '/guides/milliseconds-to-date-utc-vs-local-time.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides - 4 pillar + 2 comparison + 6 how-to + 1 case-study.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -525,6 +529,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/css-minifier-vs-compressor.html',
   // Cycle 74 P74.B - JSON parser sub-feature disambiguation Lane-D guide.
   '/guides/json-parser-validate-vs-format-vs-tree-view.html',
+  // Cycle 75 P75.B - milliseconds-to-date UTC-vs-local-time Lane-D guide.
+  '/guides/milliseconds-to-date-utc-vs-local-time.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -740,6 +746,8 @@ export const JSP_BY_ROUTE = {
   '/guides/css-minifier-vs-compressor.html': 'guide/css-minifier-vs-compressor.jsp',
   // Cycle 74 P74.B - JSON parser sub-feature disambiguation Lane-D guide.
   '/guides/json-parser-validate-vs-format-vs-tree-view.html': 'guide/json-parser-validate-vs-format-vs-tree-view.jsp',
+  // Cycle 75 P75.B - milliseconds-to-date UTC-vs-local-time Lane-D guide.
+  '/guides/milliseconds-to-date-utc-vs-local-time.html': 'guide/milliseconds-to-date-utc-vs-local-time.jsp',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html': 'guide/mp4-vs-webm-for-web.jsp',
   '/guides/jpg-vs-png-for-web.html': 'guide/jpg-vs-png-for-web.jsp',

@@ -1,0 +1,59 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Milliseconds to date - UTC vs local time, and why your conversion might look off by hours</b></h1>
+    <p><em>Last reviewed 2026-05-05. The free <a href="/convert-time-in-millisecond-to-date.html">milliseconds-to-date converter</a> on this site takes a Unix millisecond timestamp and returns a readable date and time. Most reader confusion is not about the conversion itself - it is about <b>which timezone</b> the readable string represents. This guide names the four conversions you should always see (UTC, local, ISO 8601, and the original number), tells you which one to trust for which use case, and gives a 30-second sanity check so you never ship a date that is 7 or 24 hours off.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> A Unix millisecond timestamp like <code>1713538800000</code> is timezone-free - it counts milliseconds since 1970-01-01T00:00:00 UTC. The number itself does not move. What moves is the <em>display</em>: in UTC the same number reads "April 19, 2024, 15:00:00", in Asia/Bangkok (UTC+7) it reads "April 19, 2024, 22:00:00", and in America/Los_Angeles (UTC-7 during PDT) it reads "April 19, 2024, 08:00:00". When your converted date "looks off by hours", the timestamp is fine - you are reading the wrong column. Always compare both UTC and local before shipping the value to a database, an audit log, or a customer-facing email.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Why the same millisecond timestamp shows different dates</b></h2>
+    <p>A Unix millisecond timestamp is a pure number: it counts the milliseconds elapsed since the Unix epoch, which is fixed at <b>1970-01-01T00:00:00 UTC</b>. The timestamp does not carry a timezone, a calendar, or a daylight-saving rule. Every system that displays it picks its own timezone for the human-readable output - your browser uses the operating system's locale, a server uses its container's locale, a SQL database uses its <code>TIMEZONE</code> session setting, and a JSON log uses whatever the writer formatted the value with. The result: the same number can display as 11 different times depending on where the reader is sitting. The <a href="/convert-time-in-millisecond-to-date.html">millisecond-to-date converter</a> shows both UTC and your local time so you can see the offset at a glance.</p>
+
+    <h2 class="text-uppercase"><b>The four values you should always read together</b></h2>
+    <ul>
+        <li><b>The original number</b> (e.g. <code>1713538800000</code>) - timezone-free. Store this in databases, send it across HTTP APIs, log it. It never drifts.</li>
+        <li><b>UTC date/time</b> (e.g. <code>2024-04-19T15:00:00Z</code>) - the canonical human-readable form. Use this in audit logs, server-side reports, and anything shared across teams in different countries.</li>
+        <li><b>Local date/time</b> (e.g. <code>2024-04-19 22:00:00 +07:00</code> in Bangkok) - what the end user sees on their device. Use this for user-facing emails, calendar invites, and any display that should match the reader's clock.</li>
+        <li><b>ISO 8601 with offset</b> (e.g. <code>2024-04-19T22:00:00+07:00</code>) - the round-trip-safe form. Includes both wall-clock time AND offset, so a downstream parser can always recover the exact moment. Prefer this to "April 19, 2024, 10:00 PM" which is ambiguous without a timezone label.</li>
+    </ul>
+    <p>If your tooling only shows one of these four, you cannot tell whether a 7-hour discrepancy is a bug or a timezone difference. The converter on this site shows all four side by side so the comparison is one glance away.</p>
+
+    <h2 class="text-uppercase"><b>The 30-second sanity check before you ship a date</b></h2>
+    <p>Whenever a converted date "looks wrong", run this check before debugging the timestamp itself:</p>
+    <ol>
+        <li>Confirm the input is in <b>milliseconds</b>, not seconds. A 13-digit number (like <code>1713538800000</code>) is milliseconds; a 10-digit number (like <code>1713538800</code>) is seconds. The two interpretations differ by a factor of 1000 - the same digits read as seconds resolve to a date in 56311 AD. See <a href="/guides/long-number-millisecond-or-second.html">long number - millisecond or second?</a> for the disambiguation rules.</li>
+        <li>Note the UTC value the converter returns. This is the canonical, timezone-free answer.</li>
+        <li>Compute the expected local time from UTC: add the local offset (e.g. +07:00 for Bangkok, -08:00 for Los Angeles, with daylight-saving adjustments). The local value the converter returns should match.</li>
+        <li>If the local value disagrees, your operating system's timezone is set differently than you assumed - the timestamp is not wrong, the OS is. Adjust the OS or interpret the UTC value directly.</li>
+    </ol>
+    <p>Following these four steps for every conversion catches the two failure modes that produce 99% of "off by hours" bug reports: confusing seconds with milliseconds, and confusing UTC with local time.</p>
+
+    <h2 class="text-uppercase"><b>When to use UTC vs local in practice</b></h2>
+    <p><b>Use UTC for storage and transport.</b> Database columns, JSON over HTTP, log files, audit trails. UTC values do not drift across daylight-saving transitions and do not vary by deployment region. Future readers - including your future self at 3 AM debugging an outage - thank you for storing UTC.</p>
+    <p><b>Use local time only for display.</b> Calendar invites, user-facing emails, reminders, "your appointment is at 2 PM". Convert to local at the rendering layer, not in storage. The same database row should render as 22:00 Bangkok time for a Bangkok customer and as 08:00 Los Angeles time for an LA customer - that is correct, not a bug.</p>
+    <p><b>Use ISO 8601 with offset for the in-between cases.</b> When you need to send a value to a downstream system that may not know the user's timezone, prefer the offset-included ISO form so the downstream parser can choose how to display it. Avoid free-text "April 19 at 10 PM" - it is unparseable.</p>
+
+    <h2 class="text-uppercase"><b>Companion guides</b></h2>
+    <ul>
+        <li><a href="/guides/long-number-millisecond-or-second.html">Long number - millisecond or second?</a> - the disambiguation rules for the input number.</li>
+        <li><a href="/guides/unix-timestamps-explained.html">Unix timestamps explained</a> - what the epoch is, how seconds and milliseconds relate, and where the format comes from.</li>
+        <li><a href="/convert-time-in-millisecond-to-date.html">Milliseconds to date converter tool</a> - the converter itself; shows UTC, local, ISO 8601, and the input number side by side.</li>
+        <li><a href="/get-time-in-millisecond.html">Get current time in milliseconds</a> - the inverse direction; useful for capturing "now" before storing or comparing.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Frequently asked questions</b></h2>
+    <p><b>Why does the converter show two different times for the same input?</b><br/>
+    The two are the same instant in different timezones. The number you pasted is timezone-free; the UTC value is the canonical render and the local value is the same instant viewed from your operating system's timezone. The difference (e.g. 7 hours) is the local offset.</p>
+
+    <p><b>The local time looks wrong - how do I fix it?</b><br/>
+    The local time is whatever your operating system reports as the current timezone. If your laptop is set to Singapore but you expect Bangkok, the local value will be one hour off. Adjust the OS timezone, or interpret the UTC value directly and apply the offset you actually want.</p>
+
+    <p><b>Does daylight saving change the conversion?</b><br/>
+    Yes - for any timezone that observes DST, the local offset shifts by one hour twice a year. The UTC value never changes. If you compare two timestamps from different sides of a DST boundary, they will look one hour apart in local time even when the elapsed milliseconds are correct.</p>
+
+    <p><b>Can I store local time directly in my database?</b><br/>
+    Yes, but it is rarely a good idea. Storing UTC and rendering local at the read site is the canonical pattern; it survives server moves, region changes, and DST transitions. Storing local time forces every reader to know which timezone the writer was in - and that information is usually lost.</p>
+
+    <p><b>Is anything sent to a server?</b><br/>
+    The conversion runs in your browser; the millisecond input and the resulting date/time strings stay on your device. This matters when the timestamp identifies a sensitive event you do not want to log to a third-party server.</p>
+</div>
