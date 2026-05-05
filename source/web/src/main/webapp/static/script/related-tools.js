@@ -123,6 +123,7 @@ try {
     { title: "QR Code Error Correction and Scan Failures", url: "https://freetoolonline.com/guides/qr-code-error-correction-and-scan-failures.html", include: !1, tags: "guide,utility,qrcode" },
     { title: "Image to Base64 - Embed in HTML/CSS vs Link the Image File", url: "https://freetoolonline.com/guides/image-to-base64-embed-in-html-vs-link.html", include: !1, tags: "guide,developer,image-conversion,base64" },
     { title: "How to Test a Touchscreen for Bad Spots", url: "https://freetoolonline.com/guides/how-to-test-a-touchscreen-for-bad-spots.html", include: !1, tags: "guide,device-test,lcd-test" },
+    { title: "Webcam Mirror vs Flip Explained", url: "https://freetoolonline.com/guides/camera-mirror-vs-flip-explained.html", include: !1, tags: "guide,device-test,camera-test" },
     { title: "How to Compress a Folder", url: "https://freetoolonline.com/guides/how-to-compress-a-folder.html", include: !1, tags: "guide,zip,compress" },
     { title: "What an LCD Test Actually Checks", url: "https://freetoolonline.com/guides/lcd-test-what-it-checks.html", include: !1, tags: "guide,device-test,lcd-test" },
     { title: "LCD Test vs Display Test vs Monitor Test", url: "https://freetoolonline.com/guides/lcd-test-vs-display-test-which-do-you-need.html", include: !1, tags: "guide,device-test,lcd-test" },

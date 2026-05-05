@@ -72,6 +72,15 @@ export const INFO_ROUTES = new Set([
   // "screen tester" 2,849 imp + "screen checker" 2,592 imp cohort lands on /lcd-test.html and bounces because
   // that tool only runs the color cycle. Append-only (new URL); non-cannibalizing.
   '/guides/how-to-test-a-touchscreen-for-bad-spots.html',
+  // Cycle 81 P81.A - "Webcam mirror vs flip explained" Lane-D append-only guide (camera-test sub-cluster).
+  // Reader-task gap: 99 existing guide files contain zero matches for "mirror" / "flip" / "scaleX". Bing
+  // "camera test" 100,484 imp / 0.20% CTR / pos 8.4 cohort lands on /camera-test.html, sees a horizontally-
+  // mirrored preview (live <video> with transform: scaleX(-1)), and bounces interpreting the mirror as a
+  // broken tool. The guide explains preview-mirror is by design vs saved-file usually un-mirrored, gives a
+  // 30-second proof procedure, and provides exact disable-mirror steps for OBS / Zoom / Meet / Teams.
+  // Append-only (new URL); non-cannibalizing (distinct intent from camera-test-shows-black-screen,
+  // camera-test-vs-webcam-test, before-a-video-call, how-to-check-camera-quality-on-your-phone).
+  '/guides/camera-mirror-vs-flip-explained.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides - 4 pillar + 2 comparison + 6 how-to + 1 case-study.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -571,6 +580,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/image-to-base64-embed-in-html-vs-link.html',
   // Cycle 80 P80.G - "How to test a touchscreen for bad spots" Lane-D guide (device-test cluster).
   '/guides/how-to-test-a-touchscreen-for-bad-spots.html',
+  // Cycle 81 P81.A - "Webcam mirror vs flip explained" Lane-D guide (camera-test sub-cluster).
+  '/guides/camera-mirror-vs-flip-explained.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -798,6 +809,8 @@ export const JSP_BY_ROUTE = {
   '/guides/image-to-base64-embed-in-html-vs-link.html': 'guide/image-to-base64-embed-in-html-vs-link.jsp',
   // Cycle 80 P80.G - "How to test a touchscreen for bad spots" Lane-D guide (device-test cluster, companion to /lcd-test.html).
   '/guides/how-to-test-a-touchscreen-for-bad-spots.html': 'guide/how-to-test-a-touchscreen-for-bad-spots.jsp',
+  // Cycle 81 P81.A - "Webcam mirror vs flip explained" Lane-D guide (camera-test sub-cluster, companion to /camera-test.html).
+  '/guides/camera-mirror-vs-flip-explained.html': 'guide/camera-mirror-vs-flip-explained.jsp',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html': 'guide/mp4-vs-webm-for-web.jsp',
   '/guides/jpg-vs-png-for-web.html': 'guide/jpg-vs-png-for-web.jsp',

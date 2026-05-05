@@ -1,0 +1,96 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Webcam Mirror vs Flip Explained: Why Your Preview Reverses Text</b></h1>
+    <p><em>Last reviewed 2026-05-05. If your camera preview shows reversed text on a t-shirt or a printed page, your camera is almost certainly working correctly. Most preview UIs mirror by design; the recorded file usually does not. Confirm in 30 seconds, then turn the mirror off if you don't want it. Run a quick check at <a href="/camera-test.html">Camera Test</a> alongside this guide.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> Hold any printed page up to your webcam. If the text in the preview reads backwards, that is the preview mirror at work, not a broken camera. Record three seconds of video, stop, and play it back. If the text in the playback reads correctly (forwards), the saved file is fine and only the live preview is mirrored. Almost every consumer webcam pipeline (OBS, Zoom, Meet, Teams, the camera-test tool above) mirrors the preview but stores the un-mirrored frame.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Mirror vs flip: the words mean different things</b></h2>
+    <p>Two different transforms are easy to confuse, and most consumer apps (and even some help articles) use the words interchangeably. Knowing which one is happening to your image changes the diagnosis:</p>
+    <ul>
+        <li><b>Mirror</b> (a left-right flip) reverses the image horizontally. The right side of the scene appears on the left side of the screen, and any text in the frame reads backwards. This is what most webcam previews do by default.</li>
+        <li><b>Flip</b> (a vertical / 180&deg; rotation) turns the image upside-down. The top of the scene appears at the bottom of the screen. This is rare in webcam previews and almost always indicates a wrong camera-orientation setting on a USB camera that was mounted upside down.</li>
+        <li><b>Rotate</b> (90&deg; or 270&deg;) tilts the image to the side. This is most common when a phone camera is held in landscape but the OS read the EXIF orientation as portrait. It almost never appears in desktop webcam previews.</li>
+    </ul>
+    <p>If your preview shows reversed text but the rest of the scene is right-side-up, you are seeing a mirror, not a flip or a rotation. The fix and the explanation differ for each.</p>
+
+    <h2 class="text-uppercase"><b>Why your camera preview mirrors (and the saved file usually does not)</b></h2>
+    <p>Webcam preview UIs mirror the live feed because that is how a physical mirror works. When you hold up your right hand, you expect to see "the right hand" on the right side of the mirror image. Without the mirror transform, the live preview would show your right hand on the left of the screen, which feels wrong &mdash; you would have to think about which hand to move every time you adjust your hair, fix the camera angle, or hold up an object.</p>
+    <p>Recording is different. The whole point of a recorded video is to capture the scene as it actually is, not as the speaker sees themselves in a mirror. So the recorded file is stored un-mirrored. Anyone who later plays back the file sees the speaker as a third person sees them in real life, including any text on a shirt or a sign in the frame. This split (mirror in preview, un-mirrored in storage) is consistent across OBS, Zoom, Google Meet, Microsoft Teams, the macOS Camera app, and the Windows Camera app.</p>
+    <p>Two implementation details cement the behaviour:</p>
+    <ol>
+        <li><b>The live preview is a CSS transform, not a frame edit.</b> Most webcam preview UIs apply <code>transform: scaleX(-1)</code> on the &lt;video&gt; element. The bytes coming off the camera are un-mirrored; the browser or app just draws them flipped on screen. The /camera-test.html tool on this site uses the same approach &mdash; the <code>scaleX(-1)</code> is on the live preview, the frame stored to canvas is the original orientation.</li>
+        <li><b>The saved file reads the un-transformed frame.</b> When you click record, OBS / Zoom / Teams / Meet read directly from the camera's frame buffer (the un-mirrored side) and write that to the file. The CSS preview transform never touches the saved bytes. That is why your reversed-text preview becomes correct-text on playback.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>30-second proof: hold up a printed page and record three seconds</b></h2>
+    <p>If you want to be certain about your specific setup before a presentation or a recording, run this proof procedure. It takes about 30 seconds and answers the question definitively:</p>
+    <ol>
+        <li>Open any tool that lets you record (the camera app on Windows / Mac, OBS, Zoom in record mode, or any in-browser recorder). The <a href="/camera-test.html">Camera Test</a> page is fine for the live-preview half of the check; it does not record, but it tells you what your preview looks like to you.</li>
+        <li>Hold a printed page or a piece of cardboard with bold text in front of the camera. The text should fill at least 30% of the frame so it is easy to read.</li>
+        <li>Look at the preview. If the text is backwards, the preview is mirrored (this is the default; do not be alarmed).</li>
+        <li>Click record. Capture three seconds. Stop.</li>
+        <li>Play back the recorded file. If the text on playback reads correctly (forwards), your storage path is un-mirrored and the saved file is fine to share. If the text on playback ALSO reads backwards, your encoder is configured to record the mirrored stream &mdash; uncommon, but it does happen on some custom OBS setups.</li>
+    </ol>
+    <p>If step 5 shows correct-direction text, you can ignore the mirrored preview entirely &mdash; viewers see the scene as you would expect. If step 5 shows reversed text, jump to the OBS section below; that is the only common app that lets users record the mirrored preview by accident.</p>
+
+    <h2 class="text-uppercase"><b>Turn mirroring off in OBS / Zoom / Google Meet / Microsoft Teams</b></h2>
+    <p>If the mirrored preview bothers you (most often: when you are referencing notes that are pinned next to the camera and you find it hard to read your own writing because the preview reverses it), every major conferencing app has a one-click mirror toggle. The exact path differs per app:</p>
+    <div class="w3-responsive">
+        <table class="w3-table-all w3-small">
+            <tr><th>App</th><th>Where to find the mirror toggle</th><th>What it affects</th></tr>
+            <tr><td>OBS Studio</td><td>Right-click the Video Capture Device source &rarr; Transform &rarr; Flip Horizontal. Or with the source selected, the keyboard shortcut H. To prevent recording the mirrored stream, ALSO check that no second Flip Horizontal is applied at the scene or output level.</td><td>Both preview and the recorded / streamed output (because OBS records the canvas, not the camera).</td></tr>
+            <tr><td>Zoom desktop</td><td>Settings &rarr; Video &rarr; uncheck "Mirror my video".</td><td>Preview only. Other meeting participants always see the un-mirrored stream regardless of this checkbox.</td></tr>
+            <tr><td>Google Meet (browser)</td><td>In a meeting: three-dot menu &rarr; Apply visual effects &rarr; uncheck "Mirror my video". Or before joining: Settings (gear) &rarr; Video &rarr; toggle "Mirror".</td><td>Preview only. Other participants always see the un-mirrored stream.</td></tr>
+            <tr><td>Microsoft Teams</td><td>Settings &rarr; Devices &rarr; under Camera, toggle "Mirror my video". Some older Teams clients do not expose this; in that case the preview always mirrors.</td><td>Preview only. Other participants always see the un-mirrored stream.</td></tr>
+            <tr><td>macOS Camera app</td><td>View menu &rarr; uncheck "Mirror Image". The recorded file follows whatever the View menu shows.</td><td>Both preview and recorded file (this is the one common consumer app where the toggle changes the saved bytes).</td></tr>
+            <tr><td>Windows 11 Camera app</td><td>Settings (gear) &rarr; "Mirror image" toggle.</td><td>Both preview and recorded file.</td></tr>
+        </table>
+    </div>
+    <p>Two cases are easy to forget:</p>
+    <ul>
+        <li><b>OBS records what it shows.</b> Unlike Zoom / Meet / Teams (which always send the un-mirrored stream to viewers regardless of the local mirror toggle), OBS captures whatever is on the canvas. If you check Flip Horizontal on the source for preview comfort and forget you checked it, your stream and your recording will both be mirrored. Always run the 30-second proof above before a real recording.</li>
+        <li><b>Hardware mirror keys on some webcams.</b> Some Logitech and Razer cameras expose a hardware mirror toggle through their companion app (Logitech G HUB, Razer Synapse). If your preview is mirrored or un-mirrored regardless of what the conferencing app says, check the camera's vendor app first.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>When mirroring helps (and when it hurts)</b></h2>
+    <p>Mirror is the default for a reason. It is the right choice in most situations, but a few common workflows benefit from turning it off:</p>
+    <ul>
+        <li><b>Mirror helps</b> when you are adjusting framing, fixing your hair, holding up a small object you want the viewer to see, or any other "look at yourself in the mirror" task. The right-hand-on-the-right intuition makes the live preview easier to use.</li>
+        <li><b>Mirror hurts</b> when you are reading from sticky notes pinned next to the camera (the text appears reversed in the preview, which makes it harder to read), demonstrating something where left and right matter (a craft or a hand sign), or recording yourself writing on a transparent whiteboard for a tutorial (the audience expects the writing to read correctly to them).</li>
+        <li><b>Mirror is optional</b> for normal video calls. Other participants always see the un-mirrored stream; the local mirror toggle only affects what you see on your own screen. Pick whichever feels more comfortable.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Pair this with a camera test</b></h2>
+    <p>If you arrived at this guide because your camera preview "looks weird," it is worth confirming three things at the same time: the camera is recognised by the OS, the preview shows a live image, and the mirroring matches your expectation. The <a href="/camera-test.html">Camera Test</a> page covers the first two in about 10 seconds (it is a client-only browser test &mdash; the page is built around <code>navigator.mediaDevices.getUserMedia</code> so the frame never leaves your device). Use this guide for the third.</p>
+    <p>If the camera-test page shows a black screen rather than a mirrored or un-mirrored image, the cause is probably one of four common issues unrelated to mirroring &mdash; read <a href="/guides/camera-test-shows-black-screen-four-fixes.html">Camera test shows black screen &mdash; four fixes</a> first. If you are not sure whether you need a camera test or a webcam test, the <a href="/guides/camera-test-vs-webcam-test-which-do-you-need.html">routing guide</a> resolves the difference in one paragraph.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <p><b>Why does my Zoom recording show me with the right-hand on the wrong side?</b><br/>
+    Almost always, your local Zoom preview was mirrored (so your right hand appeared on the right of your own screen) but the recording stored the un-mirrored stream (so on playback your right hand is on the left, where it actually was relative to the camera). This is the recording showing reality, not Zoom flipping anything. If it is disorienting, either turn off "Mirror my video" in Zoom Settings &rarr; Video so your live view matches the recording, or accept that the recording is the third-person view.</p>
+
+    <p><b>Will other people in my video call see me reversed if my preview is mirrored?</b><br/>
+    No. Zoom, Google Meet, and Microsoft Teams always send the un-mirrored camera stream to other participants regardless of your local mirror toggle. The toggle only changes what YOU see on YOUR screen. Other participants see you the same way a person standing in front of you would see you in real life.</p>
+
+    <p><b>I disabled mirror in Zoom but my recordings are still mirrored. What happened?</b><br/>
+    Two possibilities: (a) you disabled mirror in Zoom but the recording was made through a screen-recorder (OBS, QuickTime) capturing the Zoom window, in which case the recorder captured your local-mirror view; (b) you have a hardware-level mirror enabled in your camera vendor app (Logitech G HUB, Razer Synapse) that overrides Zoom's setting. Check the vendor app before assuming Zoom is the problem.</p>
+
+    <p><b>OBS records my mirrored preview &mdash; how do I fix that without losing the mirrored view I prefer?</b><br/>
+    OBS does not have a separate "preview mirror only" toggle &mdash; whatever you set on the source is what gets recorded. The two-source workaround: add the camera as a Video Capture Device source TWICE. Apply Flip Horizontal to one (use this as your "monitor" preview), and use the un-flipped one in your output scene. Hide the un-flipped one from the canvas if you do not want to see it. This lets you reference your notes with a mirrored monitor while sending the un-mirrored stream.</p>
+
+    <p><b>My camera shows me upside-down, not mirrored. Is this the same problem?</b><br/>
+    No, that is a flip (vertical) or a 180-degree rotation, not a mirror. The most common cause is a USB webcam mounted upside down (the cable is on top instead of the bottom). Either physically rotate the camera or, in OBS, apply Transform &rarr; Rotate 180&deg; to the source. Zoom, Meet, and Teams do not expose a rotation toggle; if your camera mount is the problem, you have to fix it in hardware or in the camera vendor app.</p>
+
+    <p><b>Does the camera-test tool above record or store anything?</b><br/>
+    No. /camera-test.html is a fully client-only test &mdash; the page is built around <code>navigator.mediaDevices.getUserMedia</code> and uses <code>canvas.toDataURL("image/jpeg")</code> for the local snapshot, both of which run in your browser only. No frame is uploaded, transmitted, or stored on a server. This guide does not change that &mdash; it is a written explainer with no media handling at all.</p>
+
+    <h2 class="text-uppercase"><b>Related</b></h2>
+    <ul>
+        <li><a href="/camera-test.html">Camera Test</a> &mdash; the live, in-browser webcam check that this guide is written to accompany. Confirms the camera is recognised, shows a live preview, and lets you take a single snapshot without uploading anything.</li>
+        <li><a href="/guides/camera-test-shows-black-screen-four-fixes.html">Camera test shows black screen &mdash; four fixes</a> &mdash; the no-image diagnostic. Read this first if your preview is black rather than mirrored / un-mirrored.</li>
+        <li><a href="/guides/camera-test-vs-webcam-test-which-do-you-need.html">Camera test vs webcam test &mdash; which do you need</a> &mdash; routing guide if you are unsure whether the in-browser camera test or a more formal webcam test fits your situation.</li>
+        <li><a href="/guides/before-a-video-call-which-tools-to-run.html">Before a video call &mdash; which tools to run</a> &mdash; a 90-second pre-call sweep that bundles the camera, mic, and screen checks.</li>
+        <li><a href="/guides/how-to-check-webcam-and-microphone-before-an-interview.html">How to check webcam and microphone before an interview</a> &mdash; the same routine in interview-prep framing.</li>
+    </ul>
+</div>
