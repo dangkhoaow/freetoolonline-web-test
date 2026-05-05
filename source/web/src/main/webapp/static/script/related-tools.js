@@ -123,6 +123,7 @@ try {
     { title: "How to Compress a Folder", url: "https://freetoolonline.com/guides/how-to-compress-a-folder.html", include: !1, tags: "guide,zip,compress" },
     { title: "What an LCD Test Actually Checks", url: "https://freetoolonline.com/guides/lcd-test-what-it-checks.html", include: !1, tags: "guide,device-test,lcd-test" },
     { title: "LCD Test vs Display Test vs Monitor Test", url: "https://freetoolonline.com/guides/lcd-test-vs-display-test-which-do-you-need.html", include: !1, tags: "guide,device-test,lcd-test" },
+    { title: "Screen Test Online vs App - Which Is More Accurate", url: "https://freetoolonline.com/guides/screen-test-online-vs-app-which-is-more-accurate.html", include: !1, tags: "guide,device-test,lcd-test" },
     { title: "Screen Test vs Camera Test - Which One Do You Need?", url: "https://freetoolonline.com/guides/screen-test-vs-camera-test-pick-the-right-tool.html", include: !1, tags: "guide,device-test,lcd-test,camera-test" },
     { title: "MD5 to Text - Why You Cannot Convert It Back", url: "https://freetoolonline.com/guides/md5-to-text-why-you-cannot-convert-back.html", include: !1, tags: "guide,developer,md5,hash" },
     { title: "Before a Video Call - Which Tools to Run", url: "https://freetoolonline.com/guides/before-a-video-call-which-tools-to-run.html", include: !1, tags: "guide,device-test,camera-test,lcd-test,microphone-test" },

@@ -42,6 +42,11 @@ export const INFO_ROUTES = new Set([
   // for /convert-time-in-millisecond-to-date.html. Cluster: developer. Non-cannibalizing - existing long-number-millisecond-or-second covers ms-vs-s
   // disambiguation, unix-timestamps-explained covers epoch fundamentals; this guide covers the timezone-display angle (UTC vs local).
   '/guides/milliseconds-to-date-utc-vs-local-time.html',
+  // Cycle 76 P76.A - "Screen test online vs app: which is more accurate, and when each one wins" Lane-D guide for the device-test cluster.
+  // Companion to lcd-test-vs-display-test-which-do-you-need (cycle 42) and lcd-test-what-it-checks. Non-cannibalizing - covers the
+  // browser-vs-app diagnostic surface comparison, not panel-vs-display-vs-monitor scope. Sourced from sibling tool-guideslcdtestvsdisplaytestwhichdoyouneed
+  // framing-menu lines extended with browser/native abstraction-layer claims (W3C CSSOM color-model, browser fullscreen API).
+  '/guides/screen-test-online-vs-app-which-is-more-accurate.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides - 4 pillar + 2 comparison + 6 how-to + 1 case-study.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -531,6 +536,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/json-parser-validate-vs-format-vs-tree-view.html',
   // Cycle 75 P75.B - milliseconds-to-date UTC-vs-local-time Lane-D guide.
   '/guides/milliseconds-to-date-utc-vs-local-time.html',
+  // Cycle 76 P76.A - screen-test-online-vs-app accuracy Lane-D guide (device-test cluster).
+  '/guides/screen-test-online-vs-app-which-is-more-accurate.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -748,6 +755,8 @@ export const JSP_BY_ROUTE = {
   '/guides/json-parser-validate-vs-format-vs-tree-view.html': 'guide/json-parser-validate-vs-format-vs-tree-view.jsp',
   // Cycle 75 P75.B - milliseconds-to-date UTC-vs-local-time Lane-D guide.
   '/guides/milliseconds-to-date-utc-vs-local-time.html': 'guide/milliseconds-to-date-utc-vs-local-time.jsp',
+  // Cycle 76 P76.A - screen-test-online-vs-app accuracy Lane-D guide (device-test cluster).
+  '/guides/screen-test-online-vs-app-which-is-more-accurate.html': 'guide/screen-test-online-vs-app-which-is-more-accurate.jsp',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html': 'guide/mp4-vs-webm-for-web.jsp',
   '/guides/jpg-vs-png-for-web.html': 'guide/jpg-vs-png-for-web.jsp',
