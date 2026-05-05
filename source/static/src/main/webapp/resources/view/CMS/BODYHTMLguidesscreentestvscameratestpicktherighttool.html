@@ -1,0 +1,42 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Screen test vs camera test - which one do you actually need?</b></h1>
+    <p><em>Last reviewed 2026-05-05. Two tools, two different problems. A <b>screen test</b> checks the panel - dead pixels, stuck pixels, backlight bleed, color uniformity. A <b>camera test</b> checks the webcam - whether the browser can start the camera, whether the image is upright, whether the microphone is picking up sound. The two share the phrase "test my device" but diagnose disjoint hardware. This guide names the symptom each one catches, the one-sentence rule for picking, and the tool that runs the right check.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> If a single pixel won't change color, a corner glows on a black screen, or you see banding when you stare at a solid color, run an <a href="/lcd-test.html">LCD / screen test</a> - a full-screen color cycle that exposes panel-level defects. If your webcam won't start in a browser tab, the preview is black, the image is upside-down, the camera is mirrored when you don't expect it, or your microphone shows no level meter, run a <a href="/camera-test.html">camera test</a> - a live preview that confirms the browser can read the camera and mic. Match the symptom to the test that catches it.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>When to use the screen test</b></h2>
+    <p>The <a href="/lcd-test.html">screen test (LCD test)</a> is a panel-level diagnostic. The reader fills the screen with one solid color at a time (red, green, blue, white, black, yellow) and looks for defects of the panel itself. Dead pixels stay black on every color. Stuck pixels lock to one of red/green/blue. Color uniformity defects show as patches that are subtly lighter or darker. Backlight bleed shows on the black field as bright corner glow. Burn-in shows as a faint ghost of a previous image on a flat field.</p>
+    <p>The screen test does NOT need a camera or a microphone. It does NOT ask for any browser permission. It does NOT upload anything to a server. It works on any device that can fill the viewport with a color - laptop, desktop, tablet, phone, ChromeOS, smart TV browser. If the test passes, the panel is fine and any picture problem is in the cable, the GPU output, or the OSD - read the companion guide <a href="/guides/lcd-test-vs-display-test-which-do-you-need.html">LCD test vs display test vs monitor test</a> to narrow further.</p>
+
+    <h2 class="text-uppercase"><b>When to use the camera test</b></h2>
+    <p>The <a href="/camera-test.html">camera test (webcam test)</a> is an input-device diagnostic. The reader presses Start Camera; the browser asks permission; the live preview shows what the front or back camera sees, the resolution it reports, and the microphone's audio level (when the mic is in scope). The point is to confirm three things before a video call: (1) the browser can read the camera at all, (2) the image is upright at the right aspect ratio, (3) the mic is producing a level above silence.</p>
+    <p>Symptoms only the camera test catches: a webcam that worked in one tab but not another (browser permission state), a black preview after pressing Start (driver or another app holding the camera), an upside-down image on a tablet (orientation lock), wrong resolution offered (device default vs negotiated), the front camera selected when you wanted the back camera, the mic muted at the OS level. None of those are panel issues; an LCD test on a device with a dead webcam will pass cleanly because the panel is fine. The companion guide <a href="/guides/camera-test-vs-webcam-test-which-do-you-need.html">camera test vs webcam test</a> walks through the in-cluster naming difference.</p>
+
+    <h2 class="text-uppercase"><b>The 30-second decision tree</b></h2>
+    <p>Match the symptom to the test that catches it:</p>
+    <ol>
+        <li><b>Pixel-level defect on the screen</b> (dead pixel, stuck pixel, backlight glow on black, color banding on a solid field, image retention) -> <a href="/lcd-test.html">LCD / screen test</a>. Two minutes, no permissions, runs on any device with a browser.</li>
+        <li><b>Webcam or microphone not behaving</b> (camera won't start, preview is black, image upside-down, mic shows no level, wrong camera selected) -> <a href="/camera-test.html">camera test</a>. Browser asks for camera/mic permission once; live preview confirms the input device works.</li>
+        <li><b>Both</b> (you are about to take a video call and want to confirm the laptop is ready) -> run the <a href="/lcd-test.html">screen test</a> first (no permission needed), then the <a href="/camera-test.html">camera test</a>, then the <a href="/microphone-test.html">microphone test</a>. The companion guide <a href="/guides/before-a-video-call-which-tools-to-run.html">before a video call - which tools to run</a> sequences the three.</li>
+        <li><b>Not sure where the defect lives</b> -> start with the <a href="/lcd-test.html">screen test</a>. It is the fastest of the three, it requires no permission, and it rules out the most expensive failure (a panel return). If it passes, move to the camera test next.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>Why each tool runs differently</b></h2>
+    <p>The two tests run on different browser surfaces and ask the device for different capabilities. The <b>screen test</b> uses fullscreen mode + solid background colors; it needs no hardware permission and works in private/incognito tabs. The <b>camera test</b> uses the browser's getUserMedia API; it needs explicit camera (and optionally microphone) permission, and the browser remembers the choice per origin. That permission state is why the camera test sometimes "stops working" without warning - a previous Deny choice persists on the same site until the reader resets the permission in the browser.</p>
+    <p>Implication: a screen test passing on a device tells you nothing about whether the camera works on that device, and vice versa. The two diagnostics are independent and must be run separately when both surfaces are in scope.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <p><b>Is "screen test" the same as "camera test"?</b><br/>
+    No. A screen test checks the panel pixels and backlight; a camera test checks the webcam and microphone. They share the phrase "test my device" but they look at different hardware. Some sites use "screen test" loosely to mean any device check - read the page first; if it cycles solid colors, it is a screen test (LCD test); if it asks for camera/mic permission, it is a camera test (webcam test).</p>
+
+    <p><b>Can one tool run both at once?</b><br/>
+    Not on this site. The screen test fills the viewport; the camera test renders a video preview - the two surfaces collide. The companion guide <a href="/guides/before-a-video-call-which-tools-to-run.html">before a video call - which tools to run</a> sequences them so you cover both in two minutes.</p>
+
+    <p><b>Which one for a laptop with a built-in webcam?</b><br/>
+    Both, in order. Run the <a href="/lcd-test.html">screen test</a> first to confirm the panel is fine. Then run the <a href="/camera-test.html">camera test</a> to confirm the built-in webcam starts, points up, and the mic is producing level. The laptop-specific checklist <a href="/guides/screen-test-for-laptop-5-minute-checklist.html">screen test for laptop - 5-minute checklist</a> walks through the screen-side first; the camera-test page covers the webcam side.</p>
+
+    <p><b>Which one runs faster?</b><br/>
+    The screen test, because it needs no permission. Open the page, click a color, look at the screen - you have an answer in under two minutes. The camera test asks for camera (and optionally microphone) permission first; the live preview takes a few seconds to start. Plan for ~60 seconds for the screen test, ~90 seconds for the camera test if the device has not granted the camera permission yet.</p>
+</div>

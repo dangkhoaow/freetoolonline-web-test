@@ -291,6 +291,13 @@ export const INFO_ROUTES = new Set([
   // P42.A LCD-test guide cross-link. NO satellite backlinks anywhere this cycle.
   // Cluster: device-test. Lane-D PA-mode mandatory; non-ZIP, non-destructive.
   '/guides/camera-test-vs-webcam-test-which-do-you-need.html',
+  // Cycle 73 P73.B - "Screen test vs camera test - which one do you actually need?" cross-cluster
+  // disambiguation guide for the ambiguous "test my device" head query. Distinct from cycle-42
+  // (within-screen-cluster: lcd vs display vs monitor) and cycle-43 (within-camera-cluster:
+  // camera vs webcam) - this one disambiguates ACROSS the two action tools. Sourced from
+  // DEC.20260505-18.001/003/004 + opportunity-scout OPP.20260505-18.02/04. Lane-D PA-mode
+  // (DASHBOARD-PA contract); cluster: device-test; non-ZIP, non-destructive.
+  '/guides/screen-test-vs-camera-test-pick-the-right-tool.html',
   // Cycle 44 P44.A - "MD5 to text - why you cannot convert it back, and what to
   // do instead" disambiguation/decision guide for the `md5 to text` (1,385 imp /
   // 28d / pos 3.5 / 20.07% CTR) + `md5 decrypt` (3,158 imp / pos 9.2) demand
@@ -607,6 +614,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/lcd-test-vs-display-test-which-do-you-need.html',
   // Cycle 43 P43.B - "Camera test vs webcam test vs camera quality - which one do you actually need?" reactive disambiguation-flow guide.
   '/guides/camera-test-vs-webcam-test-which-do-you-need.html',
+  // Cycle 73 P73.B - "Screen test vs camera test - which one do you actually need?" cross-cluster disambiguation Lane-D guide.
+  '/guides/screen-test-vs-camera-test-pick-the-right-tool.html',
   // Cycle 44 P44.A - "MD5 to text - why you cannot convert it back, and what to do instead" disambiguation/decision guide.
   '/guides/md5-to-text-why-you-cannot-convert-back.html',
   // Cycle 46 P46.B - "Before a video call - which tools to run (screen / camera / microphone)" pre-call checklist guide.
@@ -785,6 +794,7 @@ export const JSP_BY_ROUTE = {
   '/guides/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/gif-frame-extractor-output-looks-wrong-three-causes.jsp',
   '/guides/lcd-test-vs-display-test-which-do-you-need.html': 'guide/lcd-test-vs-display-test-which-do-you-need.jsp',
   '/guides/camera-test-vs-webcam-test-which-do-you-need.html': 'guide/camera-test-vs-webcam-test-which-do-you-need.jsp',
+  '/guides/screen-test-vs-camera-test-pick-the-right-tool.html': 'guide/screen-test-vs-camera-test-pick-the-right-tool.jsp',
   '/guides/md5-to-text-why-you-cannot-convert-back.html': 'guide/md5-to-text-why-you-cannot-convert-back.jsp',
   '/guides/before-a-video-call-which-tools-to-run.html': 'guide/before-a-video-call-which-tools-to-run.jsp',
   '/guides/screen-test-for-laptop-5-minute-checklist.html': 'guide/screen-test-for-laptop-5-minute-checklist.jsp',
