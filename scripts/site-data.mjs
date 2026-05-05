@@ -64,6 +64,14 @@ export const INFO_ROUTES = new Set([
   // decision rule (concrete byte thresholds, HTTP/2 break-even, 30-second sanity check) for the developer who
   // already knows what base64 is. Append-only (new URL); non-cannibalizing.
   '/guides/image-to-base64-embed-in-html-vs-link.html',
+  // Cycle 80 P80.G - "How to test a touchscreen for bad spots" Lane-D append-only guide (device-test cluster).
+  // Reader-task gap: existing /lcd-test.html and 8+ lcd-test cluster guides cover the visual / pixel half of a
+  // screen check (color cycle, dead-pixel-vs-stuck taxonomy, warranty threshold, return-monitor evidence,
+  // online-vs-app accuracy, screen-vs-camera routing); none cover the *touch* half (digitizer dead spots,
+  // edge-only failures, vertical-stripe digitizer faults, ghost touches). Bing-only "test my screen" 3,170 imp +
+  // "screen tester" 2,849 imp + "screen checker" 2,592 imp cohort lands on /lcd-test.html and bounces because
+  // that tool only runs the color cycle. Append-only (new URL); non-cannibalizing.
+  '/guides/how-to-test-a-touchscreen-for-bad-spots.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides - 4 pillar + 2 comparison + 6 how-to + 1 case-study.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -561,6 +569,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/qr-code-error-correction-and-scan-failures.html',
   // Cycle 79 P79.B - "Image to Base64: embed in HTML/CSS vs link the image file" Lane-D guide.
   '/guides/image-to-base64-embed-in-html-vs-link.html',
+  // Cycle 80 P80.G - "How to test a touchscreen for bad spots" Lane-D guide (device-test cluster).
+  '/guides/how-to-test-a-touchscreen-for-bad-spots.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -786,6 +796,8 @@ export const JSP_BY_ROUTE = {
   '/guides/qr-code-error-correction-and-scan-failures.html': 'guide/qr-code-error-correction-and-scan-failures.jsp',
   // Cycle 79 P79.B - "Image to Base64: embed in HTML/CSS vs link the image file" Lane-D guide (companion to /image-to-base64.html + /base64-to-image.html).
   '/guides/image-to-base64-embed-in-html-vs-link.html': 'guide/image-to-base64-embed-in-html-vs-link.jsp',
+  // Cycle 80 P80.G - "How to test a touchscreen for bad spots" Lane-D guide (device-test cluster, companion to /lcd-test.html).
+  '/guides/how-to-test-a-touchscreen-for-bad-spots.html': 'guide/how-to-test-a-touchscreen-for-bad-spots.jsp',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html': 'guide/mp4-vs-webm-for-web.jsp',
   '/guides/jpg-vs-png-for-web.html': 'guide/jpg-vs-png-for-web.jsp',
