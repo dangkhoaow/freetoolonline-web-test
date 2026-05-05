@@ -1,0 +1,77 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Image to Base64: Embed in HTML/CSS vs Link the Image File</b></h1>
+    <p><em>Last reviewed 2026-05-05. Convert in the browser with <a href="/image-to-base64.html">Image to Base64</a> or paste an existing data URL into <a href="/base64-to-image.html">Base64 to Image</a>; both run on your device with no upload.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> Embed (paste the base64 data URL into the HTML / CSS) only when the image is under about 4 KB, used on one or two pages, and never expected to change. Link the image file (a normal <code>&lt;img src="..."&gt;</code> or <code>background:url(...)</code>) for everything else. The break-even is the cost of one extra HTTP request vs the 33% size penalty plus the loss of caching.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Why two options exist at all</b></h2>
+    <p>An HTML or CSS file is a text format. An image (PNG, JPG, WebP, SVG-as-binary) is binary. To put an image inline in a text file you encode the binary as base64 (a 64-character ASCII alphabet) and wrap it in a <code>data:image/png;base64,...</code> URL. The browser decodes the data URL on the fly and treats the result as if it had been fetched. The alternative is a normal file path, which the browser fetches over HTTP and caches independently.</p>
+    <p>Both work. Neither is universally better. The decision is about size, cache behaviour, and how often the image changes.</p>
+
+    <h2 class="text-uppercase"><b>The decision rule (decision table)</b></h2>
+    <div class="w3-responsive">
+        <table class="w3-table-all w3-small">
+            <tr><th>Image size (raw bytes)</th><th>Reused on...</th><th>Likely to change?</th><th>Recommendation</th></tr>
+            <tr><td>under 1 KB</td><td>any number of pages</td><td>no</td><td><b>Embed</b> - the request cost dominates</td></tr>
+            <tr><td>1-4 KB</td><td>one or two pages</td><td>no</td><td><b>Embed</b> if you cannot HTTP/2 multiplex; <b>link</b> if you can</td></tr>
+            <tr><td>1-4 KB</td><td>3+ pages</td><td>no</td><td><b>Link</b> - one cached file beats N inline copies</td></tr>
+            <tr><td>4-50 KB</td><td>any</td><td>any</td><td><b>Link</b> - inline penalty is meaningful</td></tr>
+            <tr><td>over 50 KB</td><td>any</td><td>any</td><td><b>Link</b> - inline blocks parsing and bloats every page that includes the CSS / HTML</td></tr>
+            <tr><td>any size</td><td>SVG used as a CSS mask or background</td><td>no</td><td><b>Embed</b> the SVG as a data URL (text-mode SVG; no base64 needed) for IE-free CSS gradients and masks</td></tr>
+        </table>
+    </div>
+    <p>The break-even on the request side comes from how many bytes a single HTTP request costs. On HTTP/2 over a warm connection, that is roughly one round-trip plus a few hundred bytes of headers. On HTTP/1.1 with a cold connection, the cost can be a full RTT plus TLS plus connection setup - several KB equivalent. The "embed under 4 KB" guideline assumes HTTP/1.1; on HTTP/2 the breakeven shifts down to roughly 1 KB.</p>
+
+    <h2 class="text-uppercase"><b>What you give up by embedding</b></h2>
+    <ul>
+        <li><b>Browser cache.</b> A linked image is fetched once and served from cache for every subsequent page. An embedded data URL is re-parsed and re-decoded for every page that includes the host CSS / HTML. The HOST file is cached, but the cost of decoding the data URL is paid on every page render.</li>
+        <li><b>Independent updates.</b> A linked image can be replaced without redeploying the HTML or CSS. An embedded data URL ships with the host file, so updating the image means redeploying every page that ships that CSS.</li>
+        <li><b>33% encoding overhead.</b> Three bytes of binary become four bytes of base64. A 4 KB PNG becomes ~5.4 KB inline. On a single-page widget this is noise; across a hundred reuses it adds up.</li>
+        <li><b>CDN flexibility.</b> A linked image can be served from a separate image CDN, transformed on the fly, or replaced with WebP / AVIF based on Accept headers. Embedded base64 is frozen at build time.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>What you give up by linking (the case for embedding)</b></h2>
+    <ul>
+        <li><b>One extra request.</b> On HTTP/1.1 with a cold connection this can be 50-200 ms; on HTTP/2 it is closer to one RTT plus a few hundred bytes. For a critical above-the-fold icon this can be the difference between a flash of unstyled content and a clean first paint.</li>
+        <li><b>Email body images.</b> Email clients vary wildly in handling external images; many block them by default for privacy. CID-attached or base64-inlined images render predictably. (Most mail clients still prefer CID over base64 in the body, but base64 in MIME parts is the underlying mechanism.)</li>
+        <li><b>Self-contained snapshots.</b> A single HTML file with embedded images is a complete snapshot - useful for reports, archived docs, single-file demos, and ".eml" exports. Linked images require the path to keep working; embedded ones do not.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>The 30-second sanity check</b></h2>
+    <p>Open the file you are about to ship in a text editor and look at the <code>data:image/...;base64,</code> string. Three quick checks:</p>
+    <ol>
+        <li><b>Length.</b> If the encoded string is over ~6,000 characters (≈ 4 KB raw), do not embed. Link the file instead.</li>
+        <li><b>Reuse count.</b> Search the codebase for the exact string. If the same data URL appears in 3+ files, you are paying the encoding penalty 3+ times. Link it.</li>
+        <li><b>Volatility.</b> If the image is a logo, a placeholder avatar, or anything that "the design team might tweak next month," link it. Embedding freezes the image at build time.</li>
+    </ol>
+    <p>Two-out-of-three "embed" answers means embed. Two-out-of-three "link" answers means link. One-and-one is usually a sign that the right answer depends on the surrounding system - HTTP version, build pipeline, CDN setup.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <p><b>Does base64 encrypt the image?</b><br/>
+    No. Base64 is encoding, not encryption. Anyone who sees the data URL can paste it into a decoder (or this site's <a href="/base64-to-image.html">Base64 to Image</a>) and get the original bytes back. If the image is sensitive, do not put it in a public HTML / CSS file regardless of encoding.</p>
+
+    <p><b>Can I embed a JPG and PNG with the same encoding?</b><br/>
+    Yes - the encoding is content-agnostic. Use <code>data:image/png;base64,...</code> for PNG, <code>data:image/jpeg;base64,...</code> for JPG, <code>data:image/webp;base64,...</code> for WebP. The MIME prefix tells the browser how to decode, not what kind of binary the base64 contains.</p>
+
+    <p><b>What about SVG - do I need base64 for that?</b><br/>
+    No. SVG is already text. You can put it in a data URL as <code>data:image/svg+xml;utf8,...</code> with the SVG XML inline (URL-encode the <code>#</code> and <code>&lt;</code>); base64 is optional and slightly bigger. For tiny CSS background SVGs the text-mode form is cleaner.</p>
+
+    <p><b>Will Google index an image I embed as base64?</b><br/>
+    Generally no - search engines prefer image URLs they can crawl, cache, and rank independently. If you want the image discoverable in Image Search, link it as a normal file. If the image is decorative (an icon, a divider, a UI affordance with no semantic content), embedding is fine.</p>
+
+    <p><b>How big is the encoded string compared to the file?</b><br/>
+    Encoded size = ⌈input bytes / 3⌉ × 4. A 1 KB image becomes ~1.36 KB encoded; a 10 KB image becomes ~13.4 KB encoded. The 33% overhead is exact for inputs whose length is a multiple of 3 and a few bytes more for others (the trailing "=" padding).</p>
+
+    <p><b>Does HTTP/2 change the answer?</b><br/>
+    Yes - HTTP/2 multiplexes many small requests over one connection, so the per-request cost drops sharply. The "embed under 4 KB" guideline shifts to "embed under 1 KB" on HTTP/2; above that, link the file. HTTP/3 (QUIC) is similar.</p>
+
+    <h2 class="text-uppercase"><b>Related</b></h2>
+    <ul>
+        <li><a href="/image-to-base64.html">Image to Base64</a> - convert an image file to a data URL in the browser. Use this when you want to embed.</li>
+        <li><a href="/base64-to-image.html">Base64 to Image</a> - paste a data URL and download the image. Use this when you want to extract an embedded image to a regular file.</li>
+        <li><a href="/guides/base64-when-to-use-and-when-not-to.html">Base64 when to use and when not to</a> - the broader companion guide that covers email MIME, JSON, URL parameters, and the cases where base64 is the wrong tool entirely.</li>
+        <li><a href="/image-tools.html">Image Tools</a> - all image utilities (compress, convert, crop, resize) on freetoolonline.com.</li>
+    </ul>
+</div>

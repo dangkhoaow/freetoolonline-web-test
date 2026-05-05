@@ -58,6 +58,12 @@ export const INFO_ROUTES = new Set([
   // reader who generated a QR with our tool and got a non-scannable result can self-diagnose without leaving the site. Append-only
   // (new URL); non-cannibalizing (no other QR guide on /guides/).
   '/guides/qr-code-error-correction-and-scan-failures.html',
+  // Cycle 79 P79.B - "Image to Base64: embed in HTML/CSS vs link the image file" Lane-D append-only guide.
+  // Companion to /image-to-base64.html and /base64-to-image.html (both client-only). Reader-task gap: existing
+  // /guides/base64-when-to-use-and-when-not-to.html covers the broader theory; this guide is the practical
+  // decision rule (concrete byte thresholds, HTTP/2 break-even, 30-second sanity check) for the developer who
+  // already knows what base64 is. Append-only (new URL); non-cannibalizing.
+  '/guides/image-to-base64-embed-in-html-vs-link.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides - 4 pillar + 2 comparison + 6 how-to + 1 case-study.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -553,6 +559,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/how-to-compress-a-zip-file-to-a-specific-size.html',
   // Cycle 78 P78.A - "QR code error correction and scan failures" Lane-D guide (companion to /qr-code-generator.html).
   '/guides/qr-code-error-correction-and-scan-failures.html',
+  // Cycle 79 P79.B - "Image to Base64: embed in HTML/CSS vs link the image file" Lane-D guide.
+  '/guides/image-to-base64-embed-in-html-vs-link.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -776,6 +784,8 @@ export const JSP_BY_ROUTE = {
   '/guides/how-to-compress-a-zip-file-to-a-specific-size.html': 'guide/how-to-compress-a-zip-file-to-a-specific-size.jsp',
   // Cycle 78 P78.A - "QR code error correction and scan failures" Lane-D guide (companion to /qr-code-generator.html).
   '/guides/qr-code-error-correction-and-scan-failures.html': 'guide/qr-code-error-correction-and-scan-failures.jsp',
+  // Cycle 79 P79.B - "Image to Base64: embed in HTML/CSS vs link the image file" Lane-D guide (companion to /image-to-base64.html + /base64-to-image.html).
+  '/guides/image-to-base64-embed-in-html-vs-link.html': 'guide/image-to-base64-embed-in-html-vs-link.jsp',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html': 'guide/mp4-vs-webm-for-web.jsp',
   '/guides/jpg-vs-png-for-web.html': 'guide/jpg-vs-png-for-web.jsp',
