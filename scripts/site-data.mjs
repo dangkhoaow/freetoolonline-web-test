@@ -34,6 +34,10 @@ export const INFO_ROUTES = new Set([
   // §3.5 comparison guides (Cycle 4).
   '/guides/png-vs-svg-when-to-use.html',
   '/guides/css-minifier-vs-compressor.html',
+  // Cycle 74 P74.B - "JSON parser online: validate vs format vs tree view - which feature do you need?" Lane-D disambiguation guide for the
+  // /json-parser.html sub-feature triad. Cluster: developer. Non-cannibalizing - no existing guide on this disambiguation; complements the cycle-74
+  // jsonparser BODYHTML thin-content fix.
+  '/guides/json-parser-validate-vs-format-vs-tree-view.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides - 4 pillar + 2 comparison + 6 how-to + 1 case-study.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -519,6 +523,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pdf-password-types-owner-vs-user.html',
   '/guides/png-vs-svg-when-to-use.html',
   '/guides/css-minifier-vs-compressor.html',
+  // Cycle 74 P74.B - JSON parser sub-feature disambiguation Lane-D guide.
+  '/guides/json-parser-validate-vs-format-vs-tree-view.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -732,6 +738,8 @@ export const JSP_BY_ROUTE = {
   // §3.5 comparison guides (Cycle 4).
   '/guides/png-vs-svg-when-to-use.html': 'guide/png-vs-svg-when-to-use.jsp',
   '/guides/css-minifier-vs-compressor.html': 'guide/css-minifier-vs-compressor.jsp',
+  // Cycle 74 P74.B - JSON parser sub-feature disambiguation Lane-D guide.
+  '/guides/json-parser-validate-vs-format-vs-tree-view.html': 'guide/json-parser-validate-vs-format-vs-tree-view.jsp',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html': 'guide/mp4-vs-webm-for-web.jsp',
   '/guides/jpg-vs-png-for-web.html': 'guide/jpg-vs-png-for-web.jsp',

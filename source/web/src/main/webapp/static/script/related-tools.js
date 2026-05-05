@@ -68,6 +68,7 @@ try {
     { title: "JPG vs PNG for the Web", url: "https://freetoolonline.com/guides/jpg-vs-png-for-web.html", include: !1, tags: "guide,image-conversion,jpg,png,image-editing" },
     { title: "MD5 vs SHA-256 - When to Hash", url: "https://freetoolonline.com/guides/md5-vs-sha256-when-to-hash.html", include: !1, tags: "guide,developer,md5,hash" },
     { title: "CSV vs JSON Data Formats", url: "https://freetoolonline.com/guides/csv-vs-json-data-formats.html", include: !1, tags: "guide,developer,json,csv" },
+    { title: "JSON Parser Online: Validate vs Format vs Tree View", url: "https://freetoolonline.com/guides/json-parser-validate-vs-format-vs-tree-view.html", include: !1, tags: "guide,developer,json,parser" },
     { title: "PDF vs HEIC for Document Archival", url: "https://freetoolonline.com/guides/pdf-vs-heic-for-document-archival.html", include: !1, tags: "guide,pdf,heic,image-conversion" },
     { title: "FFmpeg Online vs Local FFmpeg", url: "https://freetoolonline.com/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html", include: !1, tags: "guide,video,ffmpeg" },
     { title: "How to Convert 100 HEIC Photos to JPG", url: "https://freetoolonline.com/guides/how-to-convert-100-heic-photos-to-jpg.html", include: !1, tags: "guide,image-conversion,heic,jpg" },
