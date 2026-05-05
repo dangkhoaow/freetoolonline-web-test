@@ -87,6 +87,16 @@ export const INFO_ROUTES = new Set([
   // Run cold-start) but no guide explains when /css-unminifier.html is the right tool vs Prettier.
   // Append-only (new URL); non-cannibalizing.
   '/guides/css-unminifier-vs-prettier-when-to-use-each.html',
+  // Cycle 83 P83.A - "LED test vs LCD test: which applies to your screen?" Lane-D append-only
+  // guide (device-test / lcd-test sub-cluster, companion to /lcd-test.html). Reader-task gap:
+  // GSC `gsc_keyword_opportunities_28d` "led test" 669 imp pos 8.9 + "led tester online" 154
+  // imp pos 5.0 + "lcd checker" 356 imp pos 6.8 + "lcd check" 865 imp pos 6.7 land on
+  // /lcd-test.html with no on-page explanation that LED-vs-LCD is the same hardware. Existing
+  // sibling guides cover panel-vs-display scope (lcd-test-vs-display-test-which-do-you-need),
+  // generic synonyms (screen-display-test-synonyms), and laptop checklist (screen-test-for-
+  // laptop-5-minute-checklist) but none explain the backlight-vs-panel distinction that
+  // generates the LED-test query stream. Append-only (new URL); non-cannibalizing.
+  '/guides/led-test-vs-lcd-test-which-applies-to-your-screen.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides - 4 pillar + 2 comparison + 6 how-to + 1 case-study.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -590,6 +600,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/camera-mirror-vs-flip-explained.html',
   // Cycle 82 P82.A - "CSS Unminifier vs Prettier: when to use each" Lane-D guide (developer / CSS sub-cluster).
   '/guides/css-unminifier-vs-prettier-when-to-use-each.html',
+  // Cycle 83 P83.A - "LED test vs LCD test: which applies to your screen?" Lane-D guide (device-test / lcd-test sub-cluster).
+  '/guides/led-test-vs-lcd-test-which-applies-to-your-screen.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -821,6 +833,8 @@ export const JSP_BY_ROUTE = {
   '/guides/camera-mirror-vs-flip-explained.html': 'guide/camera-mirror-vs-flip-explained.jsp',
   // Cycle 82 P82.A - "CSS Unminifier vs Prettier: when to use each" Lane-D guide (developer / CSS sub-cluster, companion to /css-unminifier.html).
   '/guides/css-unminifier-vs-prettier-when-to-use-each.html': 'guide/css-unminifier-vs-prettier-when-to-use-each.jsp',
+  // Cycle 83 P83.A - "LED test vs LCD test: which applies to your screen?" Lane-D guide (device-test / lcd-test sub-cluster, companion to /lcd-test.html).
+  '/guides/led-test-vs-lcd-test-which-applies-to-your-screen.html': 'guide/led-test-vs-lcd-test-which-applies-to-your-screen.jsp',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html': 'guide/mp4-vs-webm-for-web.jsp',
   '/guides/jpg-vs-png-for-web.html': 'guide/jpg-vs-png-for-web.jsp',
