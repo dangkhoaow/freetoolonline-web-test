@@ -97,6 +97,17 @@ export const INFO_ROUTES = new Set([
   // laptop-5-minute-checklist) but none explain the backlight-vs-panel distinction that
   // generates the LED-test query stream. Append-only (new URL); non-cannibalizing.
   '/guides/led-test-vs-lcd-test-which-applies-to-your-screen.html',
+  // Cycle 84 P84.A - "How to compress a JPG for email attachment size limits" Lane-D append-only
+  // guide (image-conversion / compression sub-cluster, companion to /compress-image.html).
+  // Reader-task gap: existing sibling guides cover folder-mode (how-to-compress-a-folder-for-
+  // email), the quality-vs-size axis (compress-jpeg-without-losing-quality-quality-vs-size),
+  // the level picker (how-to-choose-a-compression-level), the over-compression diagnosis
+  // (how-to-tell-if-a-jpg-was-compressed-too-much), and the format-choice question (when-to-
+  // compress-vs-convert-an-image). NONE cover JPG-specific email-attachment caps as the
+  // primary axis. GSC top-30 28d shows compressor demand dominated by ZIP / folder head terms
+  // (compress folder 1581 clicks @ pos 2.07; compress zip file 986 @ 6.39); JPG-mode email
+  // demand is a verifiable gap. Append-only (new URL); non-cannibalizing.
+  '/guides/how-to-compress-a-jpg-for-email-attachment-limits.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides - 4 pillar + 2 comparison + 6 how-to + 1 case-study.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -602,6 +613,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/css-unminifier-vs-prettier-when-to-use-each.html',
   // Cycle 83 P83.A - "LED test vs LCD test: which applies to your screen?" Lane-D guide (device-test / lcd-test sub-cluster).
   '/guides/led-test-vs-lcd-test-which-applies-to-your-screen.html',
+  // Cycle 84 P84.A - "How to compress a JPG for email attachment size limits" Lane-D guide (image-conversion / compression sub-cluster, companion to /compress-image.html).
+  '/guides/how-to-compress-a-jpg-for-email-attachment-limits.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -835,6 +848,8 @@ export const JSP_BY_ROUTE = {
   '/guides/css-unminifier-vs-prettier-when-to-use-each.html': 'guide/css-unminifier-vs-prettier-when-to-use-each.jsp',
   // Cycle 83 P83.A - "LED test vs LCD test: which applies to your screen?" Lane-D guide (device-test / lcd-test sub-cluster, companion to /lcd-test.html).
   '/guides/led-test-vs-lcd-test-which-applies-to-your-screen.html': 'guide/led-test-vs-lcd-test-which-applies-to-your-screen.jsp',
+  // Cycle 84 P84.A - "How to compress a JPG for email attachment size limits" Lane-D guide (image-conversion / compression sub-cluster, companion to /compress-image.html).
+  '/guides/how-to-compress-a-jpg-for-email-attachment-limits.html': 'guide/how-to-compress-a-jpg-for-email-attachment-limits.jsp',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html': 'guide/mp4-vs-webm-for-web.jsp',
   '/guides/jpg-vs-png-for-web.html': 'guide/jpg-vs-png-for-web.jsp',
