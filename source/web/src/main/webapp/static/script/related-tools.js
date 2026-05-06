@@ -127,6 +127,7 @@ try {
     { title: "CSS Unminifier vs Prettier - When to Use Each", url: "https://freetoolonline.com/guides/css-unminifier-vs-prettier-when-to-use-each.html", include: !1, tags: "guide,developer,css" },
     { title: "LED Test vs LCD Test - Which Applies to Your Screen?", url: "https://freetoolonline.com/guides/led-test-vs-lcd-test-which-applies-to-your-screen.html", include: !1, tags: "guide,device-test,lcd-test" },
     { title: "How to Compress a JPG for Email Attachment Size Limits", url: "https://freetoolonline.com/guides/how-to-compress-a-jpg-for-email-attachment-limits.html", include: !1, tags: "guide,image-conversion,compress,jpg,email" },
+    { title: "Microphone Test Levels - What Quiet, Normal, and Peak Mean", url: "https://freetoolonline.com/guides/microphone-test-online-quiet-normal-peak-meter.html", include: !1, tags: "guide,device-test,microphone-test,utility" },
     { title: "How to Compress a Folder", url: "https://freetoolonline.com/guides/how-to-compress-a-folder.html", include: !1, tags: "guide,zip,compress" },
     { title: "What an LCD Test Actually Checks", url: "https://freetoolonline.com/guides/lcd-test-what-it-checks.html", include: !1, tags: "guide,device-test,lcd-test" },
     { title: "LCD Test vs Display Test vs Monitor Test", url: "https://freetoolonline.com/guides/lcd-test-vs-display-test-which-do-you-need.html", include: !1, tags: "guide,device-test,lcd-test" },

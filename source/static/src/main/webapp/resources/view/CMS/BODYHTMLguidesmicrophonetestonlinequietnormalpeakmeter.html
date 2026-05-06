@@ -1,0 +1,67 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Microphone Test Levels: What Quiet, Normal, and Peak Actually Mean</b></h1>
+    <p><em>Last reviewed 2026-05-06. Targeted at the moment a browser microphone test is running, the bar IS moving when you speak, and you want to know whether what you're seeing is "ready for a Zoom call" or "still too quiet" or "clipping into red." Routes the actual test action to <a href="/microphone-test.html">Microphone Test Online</a> (in-browser via the Web Audio API; no upload, no install).</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> When you speak at normal volume, the level meter should jump to <b>about half scale</b> on a typical browser microphone test - around the middle of the meter, well clear of the bottom, never touching the very top. A meter that barely lifts off the bottom is too quiet (raise input gain in OS sound settings or move closer to the mic); a meter that pegs against the very top on every word is clipping (lower input gain). For a Zoom or Google Meet call the mid-scale target is correct; for a podcast recording you want a slightly lower target (about one-third scale) so dramatic emphasis still has room to peak without clipping.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>What the level meter actually shows</b></h2>
+    <p>The bar (or animated waveform) on a browser microphone test is not a "is your mic on" indicator - it is a real-time amplitude reading of the digital audio samples your browser is capturing. Each frame the page reads a chunk of PCM samples from the Web Audio API <code>AnalyserNode</code> and renders the peak (or RMS) value as a vertical bar height or a horizontal waveform line. When you speak, the air pressure variations at the mic capsule produce voltage variations in the mic preamp; the OS audio driver digitises those variations into 16-bit (or 32-bit float) samples; the browser hands the samples to the page; the page draws them. <em>What you see is the actual audio signal, not a permission/connection light.</em></p>
+    <p>This matters because a moving meter is proof of three things at once: the mic is selected and not muted, the OS audio stack is delivering samples to the browser, and the page has permission to read them. Conversely, a flat meter means the chain is broken somewhere - which is what <a href="/guides/microphone-test-no-sound-four-fixes.html">Microphone test no sound: 4 fixes that work</a> walks you through. This guide picks up where that one ends: the meter is moving, but is the level <em>right</em>?</p>
+
+    <h2 class="text-uppercase"><b>Quiet, normal, and peak: the three regions of the meter</b></h2>
+    <p>Most browser microphone tests use a fixed-scale meter: a vertical bar (or stack of segments) with a defined "bottom" (silence) and "top" (digital full-scale, where samples saturate). Mentally divide that scale into thirds:</p>
+    <ul>
+        <li><b>Bottom third (quiet).</b> The bar barely lifts off the floor when you speak at normal volume. The audio is reaching the browser, but the input level is too low for a clean call: the listener will hear you at a whisper unless they crank their playback volume, which also amplifies whatever room noise you have. <em>What to fix:</em> raise the mic input gain in your OS sound settings, move your face closer to the mic (a USB headset boom should sit two to three finger-widths from the corner of your mouth), or switch to a more sensitive mic if you are using a built-in laptop array.</li>
+        <li><b>Middle third (normal).</b> The bar jumps to roughly half scale on emphasised words and falls back near the bottom between words. This is the call-ready target: loud enough to be intelligible without listener-side gain, quiet enough that occasional emphasis ("yes!", a laugh) has room to peak above the average without slamming into the top. Most professional podcast and broadcast targets land here too, slightly biased toward the lower end of "normal" so that loud transients still fit.</li>
+        <li><b>Top third (peak).</b> The bar reaches into the upper region on louder syllables, occasionally touching the very top. This is "hot" - acceptable for short bursts but harmful if it persists. If the bar pins at the top on every word, the signal is <b>clipping</b>: digital samples are saturating at full scale, and any peaks above full scale get truncated to full scale, which produces audible distortion (a buzzy, edge-y quality on consonants). <em>What to fix:</em> lower the mic input gain in OS sound settings, move slightly back from the mic, or disable an automatic-gain feature that may be over-amplifying.</li>
+    </ul>
+    <p>The asymmetry is intentional: digital audio has a hard ceiling (full scale = 0 dBFS) and a soft floor (room noise + electronic noise). You want headroom under the ceiling because clipping is destructive and irreversible, while extra distance from the floor only costs you a tiny amount of signal-to-noise ratio that the listener will not hear over a typical call.</p>
+
+    <h2 class="text-uppercase"><b>What the test cannot tell you about your level</b></h2>
+    <p>A browser-side level meter shows the level after several upstream stages have already touched the signal. You see what the browser sees, not what came out of the microphone capsule. That gap matters in three cases:</p>
+    <ul>
+        <li><b>Operating-system automatic gain control (AGC) may be active.</b> Windows ("Listen to this device" + "Microphone Boost"), macOS ("Use ambient noise reduction"), and many USB-headset drivers run a software AGC that boosts quiet input and attenuates loud input before the browser ever sees the samples. A meter that looks "perfect" when AGC is on can hide a fundamentally weak (or noisy) mic position. For a recording-grade reading, disable OS-level AGC in the OS audio settings, then re-test.</li>
+        <li><b>Browsers may apply their own noise suppression and echo cancellation.</b> Chrome's <code>getUserMedia</code> default constraints enable <code>echoCancellation</code>, <code>noiseSuppression</code>, and <code>autoGainControl</code>. Some test pages disable those constraints (so you see raw input); others leave them on (so you see the processed signal Zoom and Meet would receive). The meter reading can shift one to two scale-thirds between the two modes. The browser microphone test on this site (see the <a href="/microphone-test.html">tool page</a>) renders the live-metering canvas from the raw <code>AnalyserNode</code> so you see the signal before the meeting-app processing layer.</li>
+        <li><b>The level you see is not what your call partner hears.</b> Meeting apps run their own noise suppression and gain on the receiving side. A level that looks slightly hot in the browser test may sound fine to a Zoom listener; a level that looks fine in the test may sound thin if the meeting app is applying aggressive noise gating that cuts your quietest syllables. The meter is a starting point, not a final mix - confirm with a recorded test clip and a partner before a high-stakes call.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Targets by use case</b></h2>
+    <p>The "normal" middle-third target above is the call-ready default. Different downstream uses have different optima:</p>
+    <ul>
+        <li><b>Video meeting (Zoom, Google Meet, Microsoft Teams).</b> Mid-scale on emphasised words. Meeting apps are tolerant of a wide input range because their own gain stages renormalise on the receiving side. The bigger risks are clipping (which they cannot fix) and excessive room noise (which they can partially suppress but not eliminate).</li>
+        <li><b>Podcast or interview recording.</b> About one-third scale on emphasised words. Podcasters work in dBFS (decibels relative to full scale) and target roughly -18 dBFS to -12 dBFS average ("LUFS" levels are similar in shape). The lower target leaves headroom for loud reactions and post-production normalisation. If your recording app shows numerical dBFS, prefer those numbers; the visual meter is just a proxy.</li>
+        <li><b>Voice-over or narration with a studio condenser.</b> About one-third to one-half scale on emphasised words. Studio condensers are sensitive enough that even quiet rooms will surface small amounts of noise; recording at a slightly lower level and normalising in post is the standard workflow.</li>
+        <li><b>Mobile / phone call diagnostics.</b> Half-scale on emphasised words. Phone calls and Bluetooth headset stacks add their own compression and bandwidth limits (often 8 kHz mono on cellular, 16 kHz wideband on VoIP); the level you record in a desktop browser test is only loosely indicative of what a cellular peer hears.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>If the meter never reaches the middle third</b></h2>
+    <p>The browser is reading samples (the meter moves), but the level is stuck in the bottom region even when you speak loudly. Three quick checks resolve almost every case:</p>
+    <ol>
+        <li><b>Raise mic input gain in OS sound settings.</b> On Windows, <i>Settings &rarr; System &rarr; Sound &rarr; Input</i>, click your mic, slide <i>Input volume</i> upward. On macOS, <i>System Settings &rarr; Sound &rarr; Input</i>, slide <i>Input volume</i> upward. On Chrome OS, <i>Settings &rarr; Device &rarr; Audio &rarr; Microphone gain</i>. Re-run the test and watch the meter shift higher.</li>
+        <li><b>Move closer to the mic.</b> Sound pressure falls with distance squared. Halving your distance to the mic raises the captured level by roughly 6 dB - one full scale-third on a typical meter. A laptop's built-in array picks up audibly more level when you are 30 cm away than at 60 cm.</li>
+        <li><b>Switch input devices.</b> The OS may be capturing from the wrong physical mic. The browser test page should label the active device; if it shows "MacBook Pro Microphone" but you are wearing a USB headset, the OS picked the wrong device. Switch in the OS sound panel, reload the page, re-grant permission, re-run the test.</li>
+    </ol>
+    <p>If all three are correct and the meter still hovers near the floor, the mic preamp may be failing or the OS driver may be muting the channel beneath the input-volume slider. Try the mic in another application (Voice Memos on macOS, Sound Recorder on Windows) to isolate the layer; if the other application also shows a weak signal, the fault is below the browser layer.</p>
+
+    <h2 class="text-uppercase"><b>If the meter is pegged at the top (clipping)</b></h2>
+    <p>Persistent peaks at full scale ruin call audio: the listener hears a buzzy edge on every syllable and the underlying voice quality. Three quick fixes:</p>
+    <ol>
+        <li><b>Lower mic input gain in OS sound settings.</b> Same controls as above; slide downward instead of upward.</li>
+        <li><b>Move slightly back from the mic.</b> Three to five centimetres extra distance is usually enough to drop the level out of the clipping zone without losing intelligibility.</li>
+        <li><b>Disable mic boost.</b> On Windows, <i>Sound &rarr; Recording &rarr; (your mic) &rarr; Properties &rarr; Levels</i> often exposes a <i>Microphone Boost</i> slider with values up to +30 dB. Set it to 0 dB. Many laptop OEM drivers ship with this turned up by default; it is the most common cause of "I don't yell, but I'm clipping anyway."</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>Privacy - what happens to the audio while you're reading the meter</b></h2>
+    <p>The browser microphone test on this site is in-browser only: the live-metering canvas reads PCM samples from the Web Audio API <code>AnalyserNode</code> and renders the meter on the same page. <em>Nothing is uploaded; nothing is stored; nothing is recorded.</em> When you stop the test or close the tab, the browser releases the device and the captured samples are discarded. The level you see is computed locally; it is not a "send to server" indicator. (See the <a href="/microphone-test.html">tool page</a> for the full privacy block and browser-permission troubleshooting.)</p>
+
+    <h2 class="text-uppercase"><b>Related reading</b></h2>
+    <ul>
+        <li><a href="/guides/microphone-test-online-what-it-actually-checks.html">Microphone Test Online: What It Actually Checks</a> - the four layers the test verifies (device, sample rate, level metering, echo)</li>
+        <li><a href="/guides/microphone-test-no-sound-four-fixes.html">Microphone Test No Sound: 4 Fixes That Work</a> - what to do when the meter stays flat</li>
+        <li><a href="/guides/how-to-check-webcam-and-microphone-before-an-interview.html">How to Check Webcam and Microphone Before an Interview</a> - the 5-minute pre-meeting checklist</li>
+        <li><a href="/guides/device-test-checklist-for-remote-work.html">Device Test Checklist for Remote Work</a> - weekly cadence for catching faults before a call</li>
+        <li><a href="/microphone-test.html">Microphone Test Online</a> (the tool)</li>
+    </ul>
+</div>
