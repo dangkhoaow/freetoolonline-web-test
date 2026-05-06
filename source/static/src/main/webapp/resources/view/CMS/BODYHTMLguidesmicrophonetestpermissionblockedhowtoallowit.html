@@ -1,0 +1,85 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Microphone Test Permission Blocked: How to Allow Mic Access in Your Browser</b></h1>
+    <p><em>Last reviewed 2026-05-06. Targeted at the moment a browser microphone test page loads, the level meter stays flat while you speak, and either a permission prompt is sitting in the address bar that you ignored, or one already-denied prompt has hidden itself. Routes the actual test action to <a href="/microphone-test.html">Microphone Test Online</a> (in-browser via the <code>MediaDevices.getUserMedia()</code> Web API; no upload, no install).</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> Most "the microphone test does not respond" cases are a permission state, not a hardware fault. Open the address bar, look for a small microphone icon (Chrome, Edge), shield icon (Firefox), or "Settings" lock (Safari). Click it, then choose <b>Allow</b> for the microphone permission of <code>freetoolonline.com</code>, and reload the page. If you do not see the icon, the prompt was answered earlier and the browser remembers; the fix is the same - find the per-site microphone permission and toggle it back to <b>Allow</b>. The exact click path is below per browser.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Permission blocked vs no prompt at all</b></h2>
+    <p>A browser microphone test asks the operating system for live audio frames from a capture device. Before the page can read any sample, the user agent (your browser) must run a permission check. Three end states are possible, and they look different on the page:</p>
+    <ul>
+        <li><b>Allowed.</b> The permission prompt either appears once and you click <b>Allow</b>, or the browser remembers an earlier <b>Allow</b> from this site and skips the prompt entirely. In both cases, the level meter starts responding to your voice within a second or two of the page finishing its initial paint.</li>
+        <li><b>Blocked (denied).</b> You answered the prompt with <b>Block</b> at some point - on this page or on another page from the same origin - and the browser remembered the choice. There is no new prompt; the page asks for microphone access, the browser silently rejects the request, and the level meter stays flat or shows a "permission denied" notice. A small microphone-with-a-slash icon is usually visible in the address bar.</li>
+        <li><b>Ignored (no decision).</b> The prompt did appear, but you clicked elsewhere, switched tabs, or the prompt scrolled into a part of the screen you did not look at. The browser keeps the request pending without committing to either state. The level meter stays flat, but unlike the blocked case, the browser is not yet remembering "no" - the next page reload will surface the prompt again.</li>
+    </ul>
+    <p>Knowing which of these three states you are in saves time. If a small icon appears in the address bar, you are in case (a) or (b); if there is no icon and the page says nothing, you are in case (c) and a single reload often fixes it. If the icon shows the microphone-with-a-slash, you are in case (b) and the steps below switch the per-site permission back to <b>Allow</b>.</p>
+
+    <h2 class="text-uppercase"><b>Chrome (desktop)</b></h2>
+    <p>Chrome stores microphone permission per origin in the user profile. To grant or re-grant access:</p>
+    <ol>
+        <li>Look at the very left of the address bar. If the microphone icon shows a red slash through it, click that icon.</li>
+        <li>In the small popup, set <b>Microphone</b> to <b>Allow</b> (sometimes labelled "Always allow on this site"). Close the popup.</li>
+        <li>Reload the page (Ctrl/Cmd + R). Speak into your microphone; the level meter should jump within a second.</li>
+    </ol>
+    <p>If you do not see the microphone icon, the permission may already be set to "Block" and Chrome may be hiding the icon when no recent request has fired. Open <code>chrome://settings/content/microphone</code> directly, scroll to the <b>Not allowed to use your microphone</b> list, find <code>https://freetoolonline.com</code>, click the trash icon next to it to clear the rule, then reload the microphone test page; Chrome will surface a fresh permission prompt the next time the page calls <code>getUserMedia</code>. On managed devices (school or workplace policy), microphone access can be policy-blocked at the OS or admin-console level - in that case Chrome shows "Managed by your organisation" and the per-site toggle is greyed out.</p>
+
+    <h2 class="text-uppercase"><b>Firefox (desktop)</b></h2>
+    <p>Firefox shows the active permission as a small microphone icon to the left of the URL when a page has requested or been granted access. Steps:</p>
+    <ol>
+        <li>Click the microphone icon to the left of the URL. A panel labelled <b>Permissions</b> opens.</li>
+        <li>Find the <b>Use the Microphone</b> row. If it shows <b>Blocked Temporarily</b>, click the <b>x</b> next to the entry to clear it, then reload the page; Firefox will re-prompt. If it shows <b>Blocked</b> with no <b>x</b>, the choice was made permanent - open <b>about:preferences#privacy</b>, scroll to <b>Permissions &rarr; Microphone &rarr; Settings</b>, find the <code>freetoolonline.com</code> entry in the list, change it to <b>Allow</b> or remove it, then save and reload.</li>
+        <li>When the prompt re-appears, click <b>Allow</b> (and optionally tick <b>Remember this decision</b> so Firefox does not ask again).</li>
+    </ol>
+    <p>Firefox separates "blocked temporarily" (one-page-load decision) from "blocked permanently" (origin-level decision). Most users hit the temporary case on a first visit and do not realise that a single page reload would have re-prompted. The permanent case requires the about:preferences route above.</p>
+
+    <h2 class="text-uppercase"><b>Safari (macOS)</b></h2>
+    <p>Safari ties microphone permission to the per-website settings for the active Safari profile, not to a single page session. To allow:</p>
+    <ol>
+        <li>With the microphone test page open, choose <b>Safari</b> &rarr; <b>Settings for freetoolonline.com</b> from the menu bar (or <b>Safari</b> &rarr; <b>Settings</b> &rarr; <b>Websites</b> &rarr; <b>Microphone</b>).</li>
+        <li>Set the microphone dropdown for <code>freetoolonline.com</code> to <b>Allow</b>.</li>
+        <li>Close the settings panel and reload the page (Cmd + R).</li>
+    </ol>
+    <p>If "Allow" is not in the dropdown, macOS itself may be blocking Safari's access to the microphone at the OS level - open <b>System Settings</b> &rarr; <b>Privacy &amp; Security</b> &rarr; <b>Microphone</b>, ensure Safari is toggled on, then return to Safari and retry. macOS surfaces a one-time prompt the first time Safari tries to use the microphone on any page; once that is allowed, per-site Safari preferences take over.</p>
+
+    <h2 class="text-uppercase"><b>Edge (desktop)</b></h2>
+    <p>Edge follows the Chromium permission model with the same UI flow as Chrome. Click the microphone icon at the left of the address bar, choose <b>Allow</b>, reload. If the icon is hidden, open <code>edge://settings/content/microphone</code> and clear or change the per-site rule for <code>freetoolonline.com</code>. Edge on managed Windows installations also respects Group Policy - if the toggle is greyed out, the IT admin has policy-locked the setting and a per-user override is not possible from the browser UI.</p>
+
+    <h2 class="text-uppercase"><b>iOS Safari and Android Chrome (mobile)</b></h2>
+    <p>Mobile browsers add an OS-level layer in front of the per-site permission, so a "blocked" microphone test on mobile can have two distinct fixes - one in the browser, one in the OS settings.</p>
+    <p><b>iOS Safari.</b> Open <b>Settings</b> &rarr; <b>Apps</b> &rarr; <b>Safari</b> &rarr; <b>Microphone</b>. Set the default for "Microphone" to <b>Allow</b> (or <b>Ask</b>). Then, with the microphone test page open, tap the small <b>aA</b> button in the address bar and choose <b>Website Settings</b> &rarr; <b>Microphone</b> &rarr; <b>Allow</b>. Close and re-open the tab. iOS also requires that Safari itself has Microphone access in <b>Settings</b> &rarr; <b>Privacy &amp; Security</b> &rarr; <b>Microphone</b> &rarr; <b>Safari</b> - on a fresh device or after a privacy reset this can be turned off.</p>
+    <p><b>Android Chrome.</b> Tap the lock or info icon to the left of the URL, then <b>Permissions</b> &rarr; <b>Microphone</b> &rarr; <b>Allow</b>. If the toggle is missing, open <b>Settings</b> &rarr; <b>Site settings</b> &rarr; <b>Microphone</b>, find the <code>freetoolonline.com</code> entry under "Blocked", clear it, then reload the page so Chrome re-prompts. The Android OS has its own layer too - <b>Settings</b> &rarr; <b>Apps</b> &rarr; <b>Chrome</b> &rarr; <b>Permissions</b> &rarr; <b>Microphone</b> must be set to <b>Allow only while using the app</b> (the default) for any site to use the microphone.</p>
+
+    <h2 class="text-uppercase"><b>When you keep denying by accident: clean revoke and re-grant</b></h2>
+    <p>If you have clicked through several "Block" decisions in different browsers and want a clean reset, the most reliable path is to clear the per-site permission entirely so the browser asks fresh on the next page load. Each browser has a slightly different setting URL:</p>
+    <ul>
+        <li><b>Chrome / Edge:</b> <code>chrome://settings/content/microphone</code> or <code>edge://settings/content/microphone</code> &rarr; remove the <code>freetoolonline.com</code> entry under "Not allowed to use your microphone".</li>
+        <li><b>Firefox:</b> <code>about:preferences#privacy</code> &rarr; <b>Permissions &rarr; Microphone &rarr; Settings</b> &rarr; remove the entry.</li>
+        <li><b>Safari (macOS):</b> <b>Safari</b> &rarr; <b>Settings</b> &rarr; <b>Websites</b> &rarr; <b>Microphone</b> &rarr; select the entry and click <b>Remove</b>.</li>
+    </ul>
+    <p>After clearing, reload the microphone test page; the browser treats the next <code>getUserMedia</code> call as a first-time request and surfaces a fresh prompt. This is also the right route when shared computer accounts have left a stale Block decision from a previous user.</p>
+
+    <h2 class="text-uppercase"><b>Permission allowed, meter still flat: the second cause</b></h2>
+    <p>If the address-bar icon shows the microphone is allowed and the meter is still flat after a reload, the permission layer is fine - the cause is downstream of the browser. Three downstream causes account for almost all "permission OK but no sound" reports:</p>
+    <ul>
+        <li><b>OS-level master toggle is off.</b> macOS: <i>System Settings &rarr; Privacy &amp; Security &rarr; Microphone</i> - confirm your browser is toggled on. Windows: <i>Settings &rarr; Privacy &amp; security &rarr; Microphone</i> - both <i>Let apps access your microphone</i> and <i>Let desktop apps access your microphone</i> must be on.</li>
+        <li><b>Another app holds the device.</b> Microphones expose a single capture stream on most consumer drivers; Zoom, Teams, Google Meet, Discord, OBS Studio, or a virtual-mic driver (Krisp, NVIDIA Broadcast, VoiceMeeter, Loopback) may already have it. Quit the offending app and re-test.</li>
+        <li><b>Hardware mute or wrong input device.</b> A USB-headset cable may have a physical mute switch; a laptop function key (Fn + F4 on most ThinkPads, Fn + F1 on some Dells) may have toggled the integrated mic at the firmware level; or the OS may have auto-paired to a Bluetooth headset that is not the one in your ear. Check the active input device in <i>System Settings &rarr; Sound &rarr; Input</i> (macOS) or <i>Settings &rarr; System &rarr; Sound &rarr; Input</i> (Windows).</li>
+    </ul>
+    <p>The dedicated four-cause walkthrough is at <a href="/guides/microphone-test-no-sound-four-fixes.html">Microphone Test No Sound: 4 Fixes That Work</a> - it covers each downstream cause in detail.</p>
+
+    <h2 class="text-uppercase"><b>Privacy and what the microphone test actually does</b></h2>
+    <p>The browser microphone test on this site reads the live audio stream entirely in your browser. The page calls <code>navigator.mediaDevices.getUserMedia({ audio: true })</code> to ask for an audio stream, attaches the stream to a <code>Web Audio</code> analyser node, and renders the level meter from the analyser's frequency-domain output - all on your device. No sample is uploaded, no recording is saved, and stopping the test releases the stream and the microphone indicator goes off. If the indicator stays on after you leave the page, that is almost always another tab or another application holding the device, not this page; closing the offending tab releases the microphone within a second.</p>
+    <p>Granting permission to <code>freetoolonline.com</code> only authorises this origin's pages to call <code>getUserMedia</code> while you are on a tab from this origin. Permission does not persist across origins, does not extend to sub-pages of other domains, and the browser will revoke it automatically if you change the per-site setting back to "Ask" or "Block". The <a href="/policy/privacy.html">Privacy Policy</a> documents this in plain language.</p>
+
+    <h2 class="text-uppercase"><b>Related reading</b></h2>
+    <ul>
+        <li><a href="/microphone-test.html">Microphone Test Online</a> - the actual test action: a live level meter that confirms the selected microphone is delivering audio frames to the browser.</li>
+        <li><a href="/guides/microphone-test-no-sound-four-fixes.html">Microphone Test No Sound: 4 Fixes That Work</a> - what to check when permission is granted but the meter is still flat (OS toggle, app holding, hardware mute).</li>
+        <li><a href="/guides/microphone-test-online-quiet-normal-peak-meter.html">Microphone Test Levels: What Quiet, Normal, and Peak Mean</a> - reading the meter once permission is allowed.</li>
+        <li><a href="/guides/microphone-test-online-what-it-actually-checks.html">Microphone Test Online: What It Actually Checks</a> - what a browser microphone test can (and cannot) tell you about your setup.</li>
+        <li><a href="/guides/camera-test-permission-blocked-how-to-allow-it.html">Camera Test Permission Blocked: How to Allow Camera Access in Your Browser</a> - the symmetric guide for camera permission, useful when both video and mic are blocked before a call.</li>
+        <li><a href="/guides/how-to-check-webcam-and-microphone-before-an-interview.html">How to Check Webcam and Microphone Before an Interview</a> - sequencing the camera and mic tests for a high-stakes call.</li>
+        <li><a href="/guides/before-a-video-call-which-tools-to-run.html">Before a Video Call - Which Tools to Run</a> - a five-minute pre-call checklist.</li>
+    </ul>
+</div>

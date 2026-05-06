@@ -127,6 +127,16 @@ export const INFO_ROUTES = new Set([
   // "allow camera in browser" / "camera permission denied" demand; Bing query_stats reinforces.
   // Append-only (new URL); non-cannibalizing per seo-agency-check anti-cannibalization gate.
   '/guides/camera-test-permission-blocked-how-to-allow-it.html',
+  // Cycle 87 P87.A - "Microphone test permission blocked: how to allow mic access in your browser" Lane-D guide
+  // (device-test / microphone-test sub-cluster, companion to /microphone-test.html, symmetric peer to cycle-86's
+  // /guides/camera-test-permission-blocked-how-to-allow-it.html). Reader-task gap: existing microphone-test guides
+  // cover the four-cause walkthrough (microphone-test-no-sound-four-fixes), the level-meter semantics
+  // (microphone-test-online-quiet-normal-peak-meter cycle-85), and the test-coverage explainer
+  // (microphone-test-online-what-it-actually-checks), but NONE drill into "the browser blocked me - per-browser
+  // allow path". GSC long-tail "microphone permission denied" / "allow microphone in browser" / "mic blocked safari"
+  // demand carries impression float without a single-intent landing page; Bing query_stats reinforces.
+  // Append-only (new URL); non-cannibalising per seo-agency-check anti-cannibalization gate.
+  '/guides/microphone-test-permission-blocked-how-to-allow-it.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides - 4 pillar + 2 comparison + 6 how-to + 1 case-study.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -638,6 +648,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/microphone-test-online-quiet-normal-peak-meter.html',
   // Cycle 86 P86.A - "Camera test permission blocked: how to allow camera access in your browser" Lane-D guide (device-test / camera-test sub-cluster, companion to /camera-test.html).
   '/guides/camera-test-permission-blocked-how-to-allow-it.html',
+  // Cycle 87 P87.A - "Microphone test permission blocked: how to allow mic access in your browser" Lane-D guide (device-test / microphone-test sub-cluster, companion to /microphone-test.html, symmetric peer to cycle-86 P86.A).
+  '/guides/microphone-test-permission-blocked-how-to-allow-it.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -877,6 +889,8 @@ export const JSP_BY_ROUTE = {
   '/guides/microphone-test-online-quiet-normal-peak-meter.html': 'guide/microphone-test-online-quiet-normal-peak-meter.jsp',
   // Cycle 86 P86.A - "Camera test permission blocked: how to allow camera access in your browser" Lane-D guide (device-test / camera-test sub-cluster, companion to /camera-test.html).
   '/guides/camera-test-permission-blocked-how-to-allow-it.html': 'guide/camera-test-permission-blocked-how-to-allow-it.jsp',
+  // Cycle 87 P87.A - "Microphone test permission blocked: how to allow mic access in your browser" Lane-D guide (device-test / microphone-test sub-cluster, companion to /microphone-test.html, symmetric peer to cycle-86 P86.A).
+  '/guides/microphone-test-permission-blocked-how-to-allow-it.html': 'guide/microphone-test-permission-blocked-how-to-allow-it.jsp',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html': 'guide/mp4-vs-webm-for-web.jsp',
   '/guides/jpg-vs-png-for-web.html': 'guide/jpg-vs-png-for-web.jsp',

@@ -129,6 +129,7 @@ try {
     { title: "How to Compress a JPG for Email Attachment Size Limits", url: "https://freetoolonline.com/guides/how-to-compress-a-jpg-for-email-attachment-limits.html", include: !1, tags: "guide,image-conversion,compress,jpg,email" },
     { title: "Microphone Test Levels - What Quiet, Normal, and Peak Mean", url: "https://freetoolonline.com/guides/microphone-test-online-quiet-normal-peak-meter.html", include: !1, tags: "guide,device-test,microphone-test,utility" },
     { title: "Camera Test Permission Blocked - How to Allow Camera Access in Your Browser", url: "https://freetoolonline.com/guides/camera-test-permission-blocked-how-to-allow-it.html", include: !1, tags: "guide,device-test,camera-test,utility" },
+    { title: "Microphone Test Permission Blocked - How to Allow Mic Access in Your Browser", url: "https://freetoolonline.com/guides/microphone-test-permission-blocked-how-to-allow-it.html", include: !1, tags: "guide,device-test,microphone-test,utility" },
     { title: "How to Compress a Folder", url: "https://freetoolonline.com/guides/how-to-compress-a-folder.html", include: !1, tags: "guide,zip,compress" },
     { title: "What an LCD Test Actually Checks", url: "https://freetoolonline.com/guides/lcd-test-what-it-checks.html", include: !1, tags: "guide,device-test,lcd-test" },
     { title: "LCD Test vs Display Test vs Monitor Test", url: "https://freetoolonline.com/guides/lcd-test-vs-display-test-which-do-you-need.html", include: !1, tags: "guide,device-test,lcd-test" },
