@@ -1,0 +1,87 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>QR Code Content Types: URL vs vCard vs Wi-Fi vs Text - Which to Pick</b></h1>
+    <p><em>Last reviewed 2026-05-06. Targeted at the moment you sit down to make your first QR code and the generator asks "what kind of payload?". Routes the actual generation to <a href="/qr-code-generator.html">QR Code Generator</a> (in-browser, no upload).</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> Four content types cover almost every real-world QR code: <b>URL</b> (a web link - by far the most common), <b>vCard</b> (a contact card that prompts the scanner to save a contact), <b>Wi-Fi</b> (a network credential that prompts the scanner to join), and <b>plain text</b> (a short note shown as text). The scanner app on each phone reads a special prefix at the start of the payload (<code>https://</code>, <code>BEGIN:VCARD</code>, <code>WIFI:</code>) and switches behaviour accordingly. Pick by what you want the scanner to <i>do</i>: open a page (URL), save a contact (vCard), join a network (Wi-Fi), or just display some text.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>What is actually inside a QR code?</b></h2>
+    <p>A QR code is, mechanically, a square of black and white modules that encode a string of bytes. The QR specification (ISO/IEC 18004) does not define <i>what</i> string to put in - it just defines how to encode any string into the visual pattern. The "content type" of a QR code is purely a convention agreed between QR generators and scanner apps about what prefix the string starts with. When a scanner reads <code>https://example.com</code>, it sees the <code>https://</code> prefix and treats the payload as a URL; when it reads <code>BEGIN:VCARD</code>, it treats the payload as a contact card. The QR code itself does not "know" the type; the prefix tells the scanner.</p>
+    <p>Three places define the prefix conventions in practice. First, <b>RFC-registered URI schemes</b> (<code>http</code>, <code>https</code>, <code>mailto</code>, <code>tel</code>, <code>geo</code>, <code>sms</code>) are the formal Internet standards that scanners trust without question. Second, <b>RFC 6350 vCard 4.0</b> (and the older RFC 2426 vCard 3.0) defines the contact-card text format - if a QR payload starts with <code>BEGIN:VCARD</code>, it follows that format. Third, the <b>ZXing project wiki</b> - the canonical open-source QR decoder used in many scanner apps - documents a small set of de-facto prefixes that have no formal IETF spec but are universally implemented; the most important is the <code>WIFI:</code> URI scheme that iOS Camera, Android Camera, and Google Lens all interpret as a network-join request. Understanding which of the three sources backs your chosen content type tells you how reliably it will scan across phones from different manufacturers.</p>
+
+    <h2 class="text-uppercase"><b>Type 1: URL - the most common type</b></h2>
+    <p>A URL QR code is the simplest payload: the literal characters of the URL, including the <code>https://</code> prefix. For example, <code>https://freetoolonline.com/qr-code-generator.html</code> encoded directly. Every scanner app on every modern phone recognises this and offers to open the URL in the default browser; many also auto-open it when the camera is pointed at the code from a "viewfinder" prompt without the user explicitly tapping.</p>
+    <p>The <code>https://</code> prefix matters: a payload of just <code>freetoolonline.com</code> without the scheme is technically a plain-text payload, and most scanners display it as text rather than offering to open it. Always include the scheme. For shorter codes, <code>https://</code> is also slightly longer than <code>http://</code> at the byte level, but the difference is one byte and modern scanners require <code>https://</code> for security warnings to behave correctly - never drop the <code>s</code> to save a byte.</p>
+    <p><b>When to pick URL.</b> Conference table tent that opens an event landing page; restaurant menu that opens an online menu; product packaging that opens a how-to video; flyer that opens a registration form; email signature that opens your portfolio. Any scenario where the desired action is "open this web page in a phone browser" is a URL QR code.</p>
+
+    <h2 class="text-uppercase"><b>Type 2: vCard - for contact cards</b></h2>
+    <p>A vCard QR code encodes a contact card in the RFC 6350 vCard 4.0 format (or the older RFC 2426 vCard 3.0; both are still in active use). The payload starts with <code>BEGIN:VCARD</code> and ends with <code>END:VCARD</code>, with name, phone, email, organisation, and URL fields between. A minimal vCard 3.0 looks like:</p>
+    <pre><code>BEGIN:VCARD
+VERSION:3.0
+N:Smith;Jane
+FN:Jane Smith
+ORG:Example Corp
+TEL:+1-555-0100
+EMAIL:jane@example.com
+URL:https://example.com/jane
+END:VCARD</code></pre>
+    <p>When a scanner reads this, it offers to save the contact - typically by opening the phone's contacts app pre-filled with the fields, ready to confirm. iOS Camera, Android Camera, Google Lens, and most third-party QR scanner apps all support vCard payloads.</p>
+    <p>The trade-off is payload length: a complete vCard with name, phone, email, organisation, address, and URL is often 200-350 bytes, which produces a dense QR code that is harder to scan at small print sizes. Two practical mitigations: (a) keep the vCard minimal (name, single phone, single email - skip address and organisation if they are not essential), and (b) print the QR code at least 3 cm x 3 cm so the dense pattern stays legible from typical scan distances. The companion guide on payload size at <a href="/guides/qr-code-error-correction-and-scan-failures.html">QR Code Error Correction and Scan Failures</a> covers the size-vs-payload trade-off in detail.</p>
+    <p><b>MECARD: a smaller vCard alternative.</b> An older format called MECARD (originated by NTT DoCoMo for Japanese feature phones) uses the prefix <code>MECARD:</code> and a more compact field syntax: <code>MECARD:N:Smith,Jane;TEL:5550100;EMAIL:jane@example.com;;</code>. MECARD payloads are typically 30-40% shorter than the equivalent vCard, which produces a sparser, easier-to-scan code. Most modern scanners (iOS Camera, Android Camera, Google Lens, ZXing-based apps) recognise MECARD; older scanners may not. If your audience is global and mostly on current-stable phones, MECARD is a good choice when print size is constrained; otherwise vCard 3.0 is the safer default.</p>
+    <p><b>When to pick vCard or MECARD.</b> Business card with a "scan to save my contact" QR; lanyard at a conference; event-staff badge that lets attendees grab the organiser's contact; printed real-estate flyer with the agent's contact pre-filled. Any scenario where the desired action is "save this person's contact details to the phone" is a vCard or MECARD QR code.</p>
+
+    <h2 class="text-uppercase"><b>Type 3: Wi-Fi - for joining a network</b></h2>
+    <p>A Wi-Fi QR code encodes a network credential that prompts the scanner to join the network. The format is documented in the ZXing project wiki and is implemented natively by iOS Camera (since iOS 11), Android Camera (since Android 10 on Pixel; varies on other vendors), and Google Lens. The payload syntax is:</p>
+    <pre><code>WIFI:S:&lt;ssid&gt;;T:&lt;auth_type&gt;;P:&lt;password&gt;;H:&lt;hidden&gt;;;</code></pre>
+    <p>Where <code>S:</code> is the network name (SSID), <code>T:</code> is the authentication type (<code>WPA</code> for WPA / WPA2 / WPA3, <code>WEP</code> for legacy WEP, <code>nopass</code> for open networks), <code>P:</code> is the password (omit for open networks), and <code>H:true</code> marks the network as hidden (most networks omit this field). A typical café-Wi-Fi code looks like: <code>WIFI:S:CafeGuest;T:WPA;P:welcome2026;;</code>. Note the trailing double semicolon - it terminates the payload.</p>
+    <p>The Wi-Fi format has no formal IETF RFC; it is a de-facto standard documented in the ZXing wiki and implemented by the major camera apps. This means that on a current-stable iPhone or Pixel the code "just works", but on older phones (pre-iOS 11; pre-Android 10 on most non-Pixel vendors) the payload may display as raw text rather than triggering a network-join prompt. For mixed audiences, print the SSID and password as plain text underneath the QR code so users with older phones can still join manually.</p>
+    <p><b>Special characters in passwords.</b> If the SSID or password contains a literal <code>;</code>, <code>:</code>, <code>,</code>, <code>"</code>, or <code>\</code>, those characters must be backslash-escaped in the payload (<code>\\;</code>, <code>\\:</code>, etc.). Most QR generators handle this automatically, but if you are hand-editing a payload it is the most-common source of "the code generated but my phone refuses to join" reports.</p>
+    <p><b>When to pick Wi-Fi.</b> Café guest-network on a table card; coworking-space welcome packet; conference green-room handout; Airbnb listing that pre-shares the code in the welcome message. Any scenario where the desired action is "let the visitor join my Wi-Fi without typing a password" is a Wi-Fi QR code.</p>
+
+    <h2 class="text-uppercase"><b>Type 4: Plain text - for short notes</b></h2>
+    <p>A plain-text QR code is the literal characters of the text, with no special prefix. When a scanner reads it, the text is displayed in a "scanned content" panel and the user can copy it to the clipboard. There is no auto-open, no auto-save, no auto-join - just text on screen.</p>
+    <p>Plain text is the right choice when none of the other types fits: a Wi-Fi password where you do not want auto-join (you want the user to copy and paste it themselves), a short serial number on a piece of equipment, an event-day code, a Bitcoin address, a discount coupon code. The trade-off is that on most scanners plain text gets the lowest-friction UI - the user has to read the text and decide what to do with it - which is exactly right for some payloads (a coupon code) and exactly wrong for others (a 150-character URL that would have been better as a URL QR code).</p>
+    <p><b>When to pick plain text.</b> Coupon code on a printed flyer; serial number on equipment; conference Wi-Fi password where the SSID is announced aloud and the QR holds only the password; cryptocurrency address; short note ("ask front desk for parking validation"). Any scenario where the desired action is "the user reads the text and types it manually somewhere else" is a plain-text QR code.</p>
+
+    <h2 class="text-uppercase"><b>Other content types worth knowing about</b></h2>
+    <p>Beyond the four primary types, several less-common prefixes have universal scanner support and may be the right fit for narrow scenarios:</p>
+    <ul>
+        <li><b>Email (<code>mailto:</code>)</b> - opens the default email app with the address and optional subject/body pre-filled. Format: <code>mailto:hello@example.com?subject=Inquiry&amp;body=From%20conference%20booth</code>. The reserved characters in subject and body must be percent-encoded per RFC 3986 (URL encoding).</li>
+        <li><b>Phone (<code>tel:</code>)</b> - opens the dialler with the number pre-entered (the user still presses Call). Format: <code>tel:+15551234567</code>. Always include the country code with a leading <code>+</code>.</li>
+        <li><b>SMS (<code>smsto:</code> or <code>sms:</code>)</b> - opens the messaging app with the recipient and optional body pre-filled. Format: <code>smsto:+15551234567:Hello,%20I%20saw%20your%20flyer</code> or <code>sms:+15551234567?body=Hello</code>. The two formats co-exist; <code>smsto:</code> is older but still widely supported.</li>
+        <li><b>Geolocation (<code>geo:</code>)</b> - opens the default maps app at the supplied latitude/longitude. Format: <code>geo:48.8566,2.3522?q=Notre+Dame+Paris</code>. The <code>?q=</code> label is optional; without it the app shows just a pin.</li>
+        <li><b>Calendar event (<code>BEGIN:VEVENT</code> from RFC 5545 iCalendar)</b> - prompts the scanner to add an event to the calendar. Format starts with <code>BEGIN:VEVENT</code> and ends with <code>END:VEVENT</code>. Less universally supported than vCard - test on the target audience's phones before printing at scale.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Decision: which type for which scenario</b></h2>
+    <p>If you know what you want the scanner to <i>do</i>, the type is usually obvious. The mapping:</p>
+    <ul>
+        <li>Open a web page in the browser &rarr; <b>URL</b>.</li>
+        <li>Save a contact to the phone &rarr; <b>vCard</b> (or MECARD if print size is small).</li>
+        <li>Join a Wi-Fi network &rarr; <b>Wi-Fi</b>. Print SSID and password as plain text alongside for older phones.</li>
+        <li>Display a code or note for the user to copy &rarr; <b>plain text</b>.</li>
+        <li>Compose an email &rarr; <b>mailto:</b>. Pre-fill subject and body for clarity.</li>
+        <li>Place a phone call &rarr; <b>tel:</b>. Always include the international country code.</li>
+        <li>Send a pre-filled SMS &rarr; <b>smsto:</b>.</li>
+        <li>Open a map at a location &rarr; <b>geo:</b>.</li>
+        <li>Add a calendar event &rarr; <b>VEVENT</b> (test scanner support first).</li>
+    </ul>
+    <p>When in doubt between two options, pick the one with the shorter payload - shorter payloads produce sparser, more reliable codes. A short URL that redirects to a long URL is almost always more reliable than encoding the long URL directly; the redirect carries the tracking parameters server-side.</p>
+
+    <h2 class="text-uppercase"><b>Payload size, error correction, and the scan-reliability trade-off</b></h2>
+    <p>QR codes have a fixed maximum payload at each size; the longer the payload, the denser the pattern, and the larger the print size you need to keep it scannable. As a rough guide: a 25-character URL produces a sparse code that scans from a metre away on a phone camera; a 200-character vCard produces a dense code that needs to be at least 3 cm x 3 cm and scanned from no more than 30 cm. The dedicated guide at <a href="/guides/qr-code-error-correction-and-scan-failures.html">QR Code Error Correction and Scan Failures</a> covers the four error-correction levels (L / M / Q / H) and the size-vs-payload trade-off, with concrete print-size recommendations per scenario.</p>
+    <p>Two practical defaults that work for almost every print scenario: error-correction level M (~15% damage tolerance) for indoor use and level Q (~25%) for outdoor or worn surfaces; a minimum size of 2 cm x 2 cm for short payloads (URL under 50 chars), 3 cm x 3 cm for medium payloads (vCard, Wi-Fi), and 4 cm x 4 cm for long URLs over 100 characters. Anything smaller and a meaningful share of phones will fail to scan.</p>
+
+    <h2 class="text-uppercase"><b>Privacy: what a QR code does and does not encode</b></h2>
+    <p>A QR code encodes only the literal payload string. There is no IP address, no device ID, no timestamp, no location, no analytics data hidden in the pattern - the code is exactly what you put into it, nothing more. Generating a QR code locally in the browser (which is what <a href="/qr-code-generator.html">QR Code Generator</a> on this site does) keeps the payload entirely on your device; nothing about your QR codes is sent to any server during generation.</p>
+    <p>If you encode a URL that points to a server-side analytics tracker or a URL with UTM parameters, the analytics happen <i>on the receiving end</i> when the scanner opens the URL - the QR code itself is just static bytes. Wi-Fi codes carry the literal password; treat printed Wi-Fi codes the same way you would treat the plain-text password (do not leave them in publicly photographable spots if the network is sensitive).</p>
+
+    <h2 class="text-uppercase"><b>Related reading</b></h2>
+    <ul>
+        <li><a href="/qr-code-generator.html">QR Code Generator</a> - the in-browser generator that creates each of the content types described above; choose the type, fill in the fields, download the PNG. No upload, no install.</li>
+        <li><a href="/guides/qr-code-generator-best-practices.html">QR Code Generator: Best Practices</a> - error-correction level, contrast, physical size, and the five settings that decide whether a code scans reliably.</li>
+        <li><a href="/guides/qr-code-error-correction-and-scan-failures.html">QR Code Error Correction and Scan Failures</a> - how to diagnose a code that does not scan, with concrete fixes for the most-common failure modes.</li>
+        <li><a href="/guides/free-online-tools-that-work-without-uploading-files.html">Free Online Tools That Work Without Uploading Files</a> - the broader privacy-first tool selection on this site, of which the QR generator is one example.</li>
+    </ul>
+</div>

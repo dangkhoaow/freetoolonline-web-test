@@ -137,6 +137,17 @@ export const INFO_ROUTES = new Set([
   // demand carries impression float without a single-intent landing page; Bing query_stats reinforces.
   // Append-only (new URL); non-cannibalising per seo-agency-check anti-cannibalization gate.
   '/guides/microphone-test-permission-blocked-how-to-allow-it.html',
+  // Cycle 88 P88.A - "QR Code Content Types: URL vs vCard vs Wi-Fi vs Text - Which to Pick" Lane-D guide
+  // (utility / qr-code-generator sub-cluster, companion to /qr-code-generator.html). Reader-task gap:
+  // existing /qr-code-generator.html guides cover MECHANICAL concerns (qr-code-error-correction-and-scan-failures
+  // covers EC level / contrast / payload density / scan-failure diagnosis; qr-code-generator-best-practices covers
+  // the five reliability settings: error-correction level, contrast, physical size, quiet zone, payload length).
+  // NEITHER answers the most-common pre-decision question for first-time users: "what kind of payload do I put
+  // inside the QR code?" — the URL vs vCard vs Wi-Fi vs plain-text fork. Sources: ISO/IEC 18004:2015 (QR Code
+  // spec), ZXing project wiki (canonical open-source reference; defines the de-facto WIFI: URI scheme), RFC 6350
+  // vCard 4.0, RFC 2426 vCard 3.0, RFC 5545 iCalendar VEVENT. Append-only (new URL); non-cannibalising per
+  // seo-agency-check anti-cannibalization gate.
+  '/guides/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides - 4 pillar + 2 comparison + 6 how-to + 1 case-study.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -891,6 +902,8 @@ export const JSP_BY_ROUTE = {
   '/guides/camera-test-permission-blocked-how-to-allow-it.html': 'guide/camera-test-permission-blocked-how-to-allow-it.jsp',
   // Cycle 87 P87.A - "Microphone test permission blocked: how to allow mic access in your browser" Lane-D guide (device-test / microphone-test sub-cluster, companion to /microphone-test.html, symmetric peer to cycle-86 P86.A).
   '/guides/microphone-test-permission-blocked-how-to-allow-it.html': 'guide/microphone-test-permission-blocked-how-to-allow-it.jsp',
+  // Cycle 88 P88.A - "QR Code Content Types: URL vs vCard vs Wi-Fi vs Text - Which to Pick" Lane-D guide (utility / qr-code-generator sub-cluster, companion to /qr-code-generator.html).
+  '/guides/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html': 'guide/qr-code-content-types-url-vcard-wifi-text-which-to-pick.jsp',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html': 'guide/mp4-vs-webm-for-web.jsp',
   '/guides/jpg-vs-png-for-web.html': 'guide/jpg-vs-png-for-web.jsp',
