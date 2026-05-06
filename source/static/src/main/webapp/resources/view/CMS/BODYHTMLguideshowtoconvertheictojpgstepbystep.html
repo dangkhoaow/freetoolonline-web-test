@@ -1,9 +1,9 @@
 <div class="w3-container w3-margin-top">
     <h1 class="text-uppercase"><b>How to Convert HEIC to JPG Step by Step</b></h1>
-    <p><em>Last reviewed 2026-04-27. The conversion happens in your browser on your own device. The HEIC file and the resulting JPG never leave your computer or phone.</em></p>
+    <p><em>Last reviewed 2026-05-06. The conversion uploads your .heic file over HTTPS to the FTO conversion service, decodes it server-side via libheif, re-encodes to JPG (default quality 85), and surfaces a short-lived S3 download link. The temporary file is deleted automatically after the configured retention window. For an end-to-end walkthrough of what the converter does and does not do, see <a href="/guides/heic-to-jpg-claims-what-actually-works.html">HEIC to JPG: what the converter actually does (and what it does not)</a>.</em></p>
 
     <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
-        <p style="margin-bottom: 0;"><b>30-second answer.</b> Open <a href="/heic-to-jpg.html">HEIC to JPG</a>, drag the .heic file (or files) into the drop zone, wait for the in-browser decoder to finish, and click download. You get a .jpg copy you can email, upload, or open on Windows / Android / Linux. The conversion is local to your device - no server, no upload, no tracking. For the why, when, and "what about WebP" companion reading, see <a href="/guides/heic-vs-jpg-vs-webp.html">HEIC vs JPG vs WebP</a> and <a href="/guides/heic-vs-jpg-converter-when-each-wins.html">HEIC vs JPG converter - when each wins</a>.</p>
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> Open <a href="/heic-to-jpg.html">HEIC to JPG</a>, drag the .heic file (or files) into the upload zone, wait for the server-side conversion to finish, and click download. You get a .jpg copy you can email, upload, or open on Windows / Android / Linux. Files upload over HTTPS, decode server-side, the JPG download arrives in seconds, and the temporary file is deleted shortly after your session. For the why, when, and "what about WebP" companion reading, see <a href="/guides/heic-vs-jpg-vs-webp.html">HEIC vs JPG vs WebP</a> and <a href="/guides/heic-vs-jpg-converter-when-each-wins.html">HEIC vs JPG converter - when each wins</a>.</p>
     </div>
 
     <h2 class="text-uppercase"><b>Why convert HEIC at all</b></h2>
@@ -20,27 +20,27 @@
     <p>Inside Photos.app on Mac you can also use File &rarr; Export &rarr; "Export Unmodified Original" to extract the .heic. If you AirDrop or email the photo from iPhone, iOS will quietly convert to JPEG before sending - useful if you do not want to convert manually, breaking if you wanted the original metadata.</p>
 
     <h2 class="text-uppercase"><b>Step 2 - open the HEIC to JPG tool</b></h2>
-    <p>Visit <a href="/heic-to-jpg.html">freetoolonline.com/heic-to-jpg.html</a>. The page loads a JavaScript bundle that wraps libheif compiled to WebAssembly - the HEIC decoder used by most modern HEIC viewers. The bundle is roughly 1.5 MB; on broadband it loads in under two seconds. Once the tool is ready you see a drop zone labelled "Drop HEIC file" with a file picker button.</p>
-    <p>The tool runs a service worker that caches the decoder for offline use after the first visit. Subsequent uses do not need to re-download the WASM.</p>
+    <p>Visit <a href="/heic-to-jpg.html">freetoolonline.com/heic-to-jpg.html</a>. The page presents a drop zone labelled "Drop HEIC file" with a file picker button, plus a settings panel for output format (JPG / WebP / PNG), quality (70-85 default 85), and EXIF preservation. The page itself is lightweight: the conversion does not run on your device; it runs on the FTO conversion service. You do not need to install anything, download any plugin, or wait for a JavaScript bundle to fetch a decoder.</p>
+    <p>The first request to the page warms up the upload pipeline (the tool emits a small preflight to the FTO service). Subsequent uploads reuse the same connection and start the moment the file lands in the drop zone.</p>
 
     <h2 class="text-uppercase"><b>Step 3 - drop the file (or files) in</b></h2>
     <p>Drag the .heic file from your file manager into the drop zone, or click the button to open the file picker. The tool accepts:</p>
     <ul>
         <li>Single .heic / .heif files - one at a time.</li>
         <li>Multiple files at once - select with shift-click in the picker, or drop the whole batch.</li>
-        <li>An entire folder - some browsers expose folder-drop; the tool walks the folder tree and processes every .heic inside.</li>
+        <li>An entire folder - some browsers expose folder-drop; the tool walks the folder tree and queues every .heic inside.</li>
     </ul>
-    <p>The decoder runs once per file. On a 2020 MacBook Air, a 3 MB iPhone HEIC converts in roughly 0.4 seconds. On a 2018 Android phone the same file takes about 1.5 seconds. The progress indicator shows per-file status.</p>
+    <p>Each file uploads over HTTPS to <code>service.us-east-1a.freetool.online</code> and is processed in turn by the HEIC service. Typical conversion completes in a few seconds per file depending on the file size and your network upload speed; a 3 MB iPhone HEIC over a 20 Mbit/s upstream usually finishes inside 2-4 seconds end-to-end. The progress indicator shows per-file status as the server returns each result.</p>
 
     <h2 class="text-uppercase"><b>Step 4 - download the JPG</b></h2>
-    <p>When conversion finishes the tool exposes a download link per file. For a single file, click "Download .jpg" and save to your usual downloads folder. For multiple files the tool offers a single "Download all" button that emits a .zip - useful when you converted 50 photos and do not want to click 50 times. The output JPGs preserve the original filename with a .jpg extension swap (IMG_1234.HEIC &rarr; IMG_1234.jpg).</p>
-    <p>The converter targets quality 85 by default. That is a Goldilocks setting - high enough that the JPG looks identical to the HEIC for typical photo content, low enough that the file size stays close to the HEIC original. If you need a smaller result (for a tight email cap), drop the quality slider to 75 before downloading. Below 75 the savings are diminishing and visible artifacts can creep into smooth gradients (sky, skin tones).</p>
+    <p>When conversion finishes the tool surfaces a download link per file. The link points at a short-lived S3-backed download URL emitted by the FTO conversion service; clicking it streams the .jpg from S3 to your downloads folder. For a single file, click "Download .jpg" and save to your usual downloads folder. For multiple files the tool offers a single "Download all" button that emits a .zip - useful when you converted 50 photos and do not want to click 50 times. The output JPGs preserve the original filename with a .jpg extension swap (IMG_1234.HEIC &rarr; IMG_1234.jpg).</p>
+    <p>The converter targets quality 85 by default. That is a Goldilocks setting - high enough that the JPG looks identical to the HEIC for typical photo content, low enough that the file size stays close to the HEIC original. If you need a smaller result (for a tight email cap), drop the quality slider to 75 before submitting. Below 70 the savings are diminishing and visible artifacts can creep into smooth gradients (sky, skin tones); the slider clamps at 70-85 to keep you inside the safe range.</p>
 
     <h2 class="text-uppercase"><b>Step 5 - verify the output</b></h2>
     <p>Open the downloaded .jpg in your default image viewer to confirm:</p>
     <ul>
         <li>The image looks visually identical to the HEIC at typical viewing zoom (100% screen).</li>
-        <li>EXIF data (date taken, camera model, GPS if present) is preserved - the converter copies the relevant EXIF fields from the HEIC into the JPG. If you want to strip EXIF (privacy), do that as a second step.</li>
+        <li>EXIF data (date taken, camera model, GPS if present) is preserved when the "Include EXIF" setting stays on - the converter copies the relevant EXIF fields from the HEIC into the JPG. If you want to strip EXIF (privacy), uncheck "Include EXIF" before submitting, or strip it as a second step in a separate tool.</li>
         <li>Color-space is sRGB. iPhone photos are taken in Display P3; the converter re-maps to sRGB by default for compatibility, with no perceptible difference for typical viewing.</li>
         <li>File size is in the expected range (~70-150% of the HEIC, depending on photo content).</li>
     </ul>
@@ -55,9 +55,10 @@
     </ul>
 
     <h2 class="text-uppercase"><b>Privacy</b></h2>
-    <p>The conversion runs in your browser using libheif compiled to WebAssembly. The HEIC file you select does not leave your device. The JPG result is generated in browser memory and saved via the browser's native download mechanism. There is no network call to a conversion server, no upload step, and no copy of your photo on any third-party system. That posture matters when the photo contains anything personal, family, work-confidential, or location-sensitive (geotagged HEIC files leak GPS to anyone holding the file).</p>
-    <p>For more on this category see <a href="/guides/free-online-tools-that-work-without-uploading-files.html">free online tools that work without uploading files</a>.</p>
+    <p>The converter is a server-upload tool, not an in-browser tool. The .heic file you select uploads over HTTPS to the FTO conversion service, decodes server-side via libheif, re-encodes to JPG (or WebP / PNG) via SlimJpg, and a short-lived S3-backed download URL is returned to your browser. The temporary input and output files on the conversion service are deleted automatically after the configured retention window (a few minutes; see the service's session policy on the privacy page). HTTPS protects the file in transit. No account is required and no copy is kept on third-party systems beyond the retention window.</p>
+    <p>If your privacy posture requires that the photo never leaves your device at all (geotagged HEIC files, work-confidential content, or family photos you would rather not transmit), use a desktop tool that runs locally - for iPhone-to-Windows transfers see <a href="/guides/why-heic-wont-open-on-windows-three-fixes.html">why HEIC wont open on Windows - three fixes</a> for the Microsoft Store HEIF Image Extensions option that lets Windows open .heic files in place without converting at all.</p>
+    <p>For the full server-upload-vs-browser-only walkthrough applied to this specific converter, read <a href="/guides/heic-to-jpg-claims-what-actually-works.html">HEIC to JPG: what the converter actually does (and what it does not)</a>.</p>
 
     <h2 class="text-uppercase"><b>What if I need to convert 100 photos at once</b></h2>
-    <p>Use the same tool with batch select - it handles tens of files in one pass. For larger batches (hundreds), see <a href="/guides/how-to-convert-100-heic-photos-to-jpg.html">how to convert 100 HEIC photos to JPG</a> for the throughput tactics: chunked processing, browser memory limits, and when desktop tools (Preview.app, IrfanView) are faster than the in-browser path.</p>
+    <p>Use the same tool with batch select - it handles tens of files in one pass. For larger batches (hundreds), see <a href="/guides/how-to-convert-100-heic-photos-to-jpg.html">how to convert 100 HEIC photos to JPG</a> for the throughput tactics: chunked upload, network upstream limits, and when desktop tools (Preview.app, IrfanView) are faster than the in-browser-to-server-upload path.</p>
 </div>
