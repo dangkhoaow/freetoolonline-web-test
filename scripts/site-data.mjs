@@ -116,6 +116,17 @@ export const INFO_ROUTES = new Set([
   // too quiet vs clipping). Phase-1 datasource: bing_query_stats + gsc_low_ctr_high_imp_28d.
   // Append-only (new URL); non-cannibalizing per seo-agency-check anti-cannibalization gate.
   '/guides/microphone-test-online-quiet-normal-peak-meter.html',
+  // Cycle 86 P86.A - "Camera Test Permission Blocked: How to Allow Camera Access in Your Browser"
+  // Lane-D append-only guide (device-test / camera-test sub-cluster, companion to /camera-test.html).
+  // Reader-task gap: existing sibling camera-test guides cover hardware-failure black screen
+  // (camera-test-shows-black-screen-four-fixes), mirror/flip preview (camera-mirror-vs-flip-explained),
+  // and the "before an interview" sequencing checklist (how-to-check-webcam-and-microphone-before-an-
+  // interview), but NONE walk a reader through "the page looks empty - did the browser block me?"
+  // permission-state diagnosis + per-browser allow path. GSC `gsc_keyword_opportunities_28d` shows
+  // /camera-test.html sustaining low CTR / high impression on long-tail "camera test not working" /
+  // "allow camera in browser" / "camera permission denied" demand; Bing query_stats reinforces.
+  // Append-only (new URL); non-cannibalizing per seo-agency-check anti-cannibalization gate.
+  '/guides/camera-test-permission-blocked-how-to-allow-it.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides - 4 pillar + 2 comparison + 6 how-to + 1 case-study.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -625,6 +636,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/how-to-compress-a-jpg-for-email-attachment-limits.html',
   // Cycle 85 P85.A - "Microphone test levels: what quiet, normal, and peak mean" Lane-D guide (device-test / microphone-test sub-cluster, companion to /microphone-test.html).
   '/guides/microphone-test-online-quiet-normal-peak-meter.html',
+  // Cycle 86 P86.A - "Camera test permission blocked: how to allow camera access in your browser" Lane-D guide (device-test / camera-test sub-cluster, companion to /camera-test.html).
+  '/guides/camera-test-permission-blocked-how-to-allow-it.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -862,6 +875,8 @@ export const JSP_BY_ROUTE = {
   '/guides/how-to-compress-a-jpg-for-email-attachment-limits.html': 'guide/how-to-compress-a-jpg-for-email-attachment-limits.jsp',
   // Cycle 85 P85.A - "Microphone test levels: what quiet, normal, and peak mean" Lane-D guide (device-test / microphone-test sub-cluster, companion to /microphone-test.html).
   '/guides/microphone-test-online-quiet-normal-peak-meter.html': 'guide/microphone-test-online-quiet-normal-peak-meter.jsp',
+  // Cycle 86 P86.A - "Camera test permission blocked: how to allow camera access in your browser" Lane-D guide (device-test / camera-test sub-cluster, companion to /camera-test.html).
+  '/guides/camera-test-permission-blocked-how-to-allow-it.html': 'guide/camera-test-permission-blocked-how-to-allow-it.jsp',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html': 'guide/mp4-vs-webm-for-web.jsp',
   '/guides/jpg-vs-png-for-web.html': 'guide/jpg-vs-png-for-web.jsp',

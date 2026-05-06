@@ -1,0 +1,74 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Camera Test Permission Blocked: How to Allow Camera Access in Your Browser</b></h1>
+    <p><em>Last reviewed 2026-05-06. Targeted at the moment a browser camera test page loads, the live preview area is dark or empty, and either a permission prompt is sitting in the address bar that you ignored, or one already-denied prompt has hidden itself. Routes the actual test action to <a href="/camera-test.html">Camera Test Online</a> (in-browser via the <code>MediaDevices.getUserMedia()</code> Web API; no upload, no install).</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> Most "the camera test does not start" cases are a permission state, not a hardware fault. Open the address bar, look for a small camera icon (Chrome, Edge), shield icon (Firefox), or "Settings" lock (Safari). Click it, then choose <b>Allow</b> for the camera permission of <code>freetoolonline.com</code>, and reload the page. If you do not see the icon, the prompt was answered earlier and the browser remembers; the fix is the same - find the per-site camera permission and toggle it back to <b>Allow</b>. The exact click path is below per browser.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Permission blocked vs no prompt at all</b></h2>
+    <p>A browser camera test asks the operating system for live frames from a video device. Before the page can read any frame, the user agent (your browser) must run a permission check. Three end states are possible, and they look different on the page:</p>
+    <ul>
+        <li><b>Allowed.</b> The permission prompt either appears once and you click <b>Allow</b>, or the browser remembers an earlier <b>Allow</b> from this site and skips the prompt entirely. In both cases, the live preview area renders frames within a second or two of the page finishing its initial paint.</li>
+        <li><b>Blocked (denied).</b> You answered the prompt with <b>Block</b> at some point - on this page or on another page from the same origin - and the browser remembered the choice. There is no new prompt; the page asks for camera access, the browser silently rejects the request, and the live preview stays dark or shows a "permission denied" notice. A small camera-with-a-slash icon is usually visible in the address bar.</li>
+        <li><b>Ignored (no decision).</b> The prompt did appear, but you clicked elsewhere, switched tabs, or the prompt scrolled into a part of the screen you did not look at. The browser keeps the request pending without committing to either state. The live preview stays dark, but unlike the blocked case, the browser is not yet remembering "no" - the next page reload will surface the prompt again.</li>
+    </ul>
+    <p>Knowing which of these three states you are in saves time. If a small icon appears in the address bar, you are in case (a) or (b); if there is no icon and the page says nothing, you are in case (c) and a single reload often fixes it. If the icon shows the camera-with-a-slash, you are in case (b) and the steps below switch the per-site permission back to <b>Allow</b>.</p>
+
+    <h2 class="text-uppercase"><b>Chrome (desktop)</b></h2>
+    <p>Chrome stores camera permission per origin in the user profile. To grant or re-grant access:</p>
+    <ol>
+        <li>Look at the very left of the address bar. If the camera icon shows a red slash through it, click that icon.</li>
+        <li>In the small popup, set <b>Camera</b> to <b>Allow</b> (sometimes labelled "Always allow on this site"). Close the popup.</li>
+        <li>Reload the page (Ctrl/Cmd + R). The live preview should activate within a second.</li>
+    </ol>
+    <p>If you do not see the camera icon, the permission may already be set to "Block" and Chrome may be hiding the icon when no recent request has fired. Open <code>chrome://settings/content/camera</code> directly, scroll to the <b>Not allowed to use your camera</b> list, find <code>https://freetoolonline.com</code>, click the trash icon next to it to clear the rule, then reload the camera test page; Chrome will surface a fresh permission prompt the next time the page calls <code>getUserMedia</code>. On managed devices (school or workplace policy), camera access can be policy-blocked at the OS or admin-console level - in that case Chrome shows "Managed by your organisation" and the per-site toggle is greyed out.</p>
+
+    <h2 class="text-uppercase"><b>Firefox (desktop)</b></h2>
+    <p>Firefox shows the active permission as a small camera icon to the left of the URL when a page has requested or been granted access. Steps:</p>
+    <ol>
+        <li>Click the camera icon to the left of the URL. A panel labelled <b>Permissions</b> opens.</li>
+        <li>Find the <b>Use the Camera</b> row. If it shows <b>Blocked Temporarily</b>, click the <b>x</b> next to the entry to clear it, then reload the page; Firefox will re-prompt. If it shows <b>Blocked</b> with no <b>x</b>, the choice was made permanent - open <b>about:preferences#privacy</b>, scroll to <b>Permissions &rarr; Camera &rarr; Settings</b>, find the <code>freetoolonline.com</code> entry in the list, change it to <b>Allow</b> or remove it, then save and reload.</li>
+        <li>When the prompt re-appears, click <b>Allow</b> (and optionally tick <b>Remember this decision</b> so Firefox does not ask again).</li>
+    </ol>
+    <p>Firefox separates "blocked temporarily" (one-page-load decision) from "blocked permanently" (origin-level decision). Most users hit the temporary case on a first visit and do not realise that a single page reload would have re-prompted. The permanent case requires the about:preferences route above.</p>
+
+    <h2 class="text-uppercase"><b>Safari (macOS)</b></h2>
+    <p>Safari ties camera permission to the per-website settings for the active Safari profile, not to a single page session. To allow:</p>
+    <ol>
+        <li>With the camera test page open, choose <b>Safari</b> &rarr; <b>Settings for freetoolonline.com</b> from the menu bar (or <b>Safari</b> &rarr; <b>Settings</b> &rarr; <b>Websites</b> &rarr; <b>Camera</b>).</li>
+        <li>Set the camera dropdown for <code>freetoolonline.com</code> to <b>Allow</b>.</li>
+        <li>Close the settings panel and reload the page (Cmd + R).</li>
+    </ol>
+    <p>If "Allow" is not in the dropdown, macOS itself may be blocking Safari's access to the camera at the OS level - open <b>System Settings</b> &rarr; <b>Privacy &amp; Security</b> &rarr; <b>Camera</b>, ensure Safari is toggled on, then return to Safari and retry. macOS surfaces a one-time prompt the first time Safari tries to use the camera on any page; once that is allowed, per-site Safari preferences take over.</p>
+
+    <h2 class="text-uppercase"><b>Edge (desktop)</b></h2>
+    <p>Edge follows the Chromium permission model with the same UI flow as Chrome. Click the camera icon at the left of the address bar, choose <b>Allow</b>, reload. If the icon is hidden, open <code>edge://settings/content/camera</code> and clear or change the per-site rule for <code>freetoolonline.com</code>. Edge on managed Windows installations also respects Group Policy - if the toggle is greyed out, the IT admin has policy-locked the setting and a per-user override is not possible from the browser UI.</p>
+
+    <h2 class="text-uppercase"><b>iOS Safari and Android Chrome (mobile)</b></h2>
+    <p>Mobile browsers add an OS-level layer in front of the per-site permission, so a "blocked" camera test on mobile can have two distinct fixes - one in the browser, one in the OS settings.</p>
+    <p><b>iOS Safari.</b> Open <b>Settings</b> &rarr; <b>Apps</b> &rarr; <b>Safari</b> &rarr; <b>Camera</b>. Set the default for "Camera" to <b>Allow</b> (or <b>Ask</b>). Then, with the camera test page open, tap the small <b>aA</b> button in the address bar and choose <b>Website Settings</b> &rarr; <b>Camera</b> &rarr; <b>Allow</b>. Close and re-open the tab. iOS also requires that Safari itself has Camera access in <b>Settings</b> &rarr; <b>Privacy &amp; Security</b> &rarr; <b>Camera</b> &rarr; <b>Safari</b> - on a fresh device or after a privacy reset this can be turned off.</p>
+    <p><b>Android Chrome.</b> Tap the lock or info icon to the left of the URL, then <b>Permissions</b> &rarr; <b>Camera</b> &rarr; <b>Allow</b>. If the toggle is missing, open <b>Settings</b> &rarr; <b>Site settings</b> &rarr; <b>Camera</b>, find the <code>freetoolonline.com</code> entry under "Blocked", clear it, then reload the page so Chrome re-prompts. The Android OS has its own layer too - <b>Settings</b> &rarr; <b>Apps</b> &rarr; <b>Chrome</b> &rarr; <b>Permissions</b> &rarr; <b>Camera</b> must be set to <b>Allow only while using the app</b> (the default) for any site to use the camera.</p>
+
+    <h2 class="text-uppercase"><b>When you keep denying by accident: clean revoke and re-grant</b></h2>
+    <p>If you have clicked through several "Block" decisions in different browsers and want a clean reset, the most reliable path is to clear the per-site permission entirely so the browser asks fresh on the next page load. Each browser has a slightly different setting URL:</p>
+    <ul>
+        <li><b>Chrome / Edge:</b> <code>chrome://settings/content/camera</code> or <code>edge://settings/content/camera</code> &rarr; remove the <code>freetoolonline.com</code> entry under "Not allowed to use your camera".</li>
+        <li><b>Firefox:</b> <code>about:preferences#privacy</code> &rarr; <b>Permissions &rarr; Camera &rarr; Settings</b> &rarr; remove the entry.</li>
+        <li><b>Safari (macOS):</b> <b>Safari</b> &rarr; <b>Settings</b> &rarr; <b>Websites</b> &rarr; <b>Camera</b> &rarr; select the entry and click <b>Remove</b>.</li>
+    </ul>
+    <p>After clearing, reload the camera test page; the browser treats the next <code>getUserMedia</code> call as a first-time request and surfaces a fresh prompt. This is also the right route when shared computer accounts have left a stale Block decision from a previous user.</p>
+
+    <h2 class="text-uppercase"><b>Privacy and what the camera test actually does</b></h2>
+    <p>The browser camera test on this site renders the live preview entirely in your browser. The page calls <code>navigator.mediaDevices.getUserMedia({ video: true })</code> to ask for a video stream, attaches the stream to a hidden <code>&lt;video&gt;</code> element, and reads frames into a <code>&lt;canvas&gt;</code> for display - all on your device. No frame is uploaded, no recording is saved, and stopping the test releases the stream and the camera light goes off. If the camera light stays on after you leave the page, that is almost always another tab or another application holding the device, not this page; closing the offending tab releases the camera within a second.</p>
+    <p>Granting permission to <code>freetoolonline.com</code> only authorises this origin's pages to call <code>getUserMedia</code> while you are on a tab from this origin. Permission does not persist across origins, does not extend to sub-pages of other domains, and the browser will revoke it automatically if you change the per-site setting back to "Ask" or "Block". The <a href="/policy/privacy.html">Privacy Policy</a> documents this in plain language.</p>
+
+    <h2 class="text-uppercase"><b>Related reading</b></h2>
+    <ul>
+        <li><a href="/camera-test.html">Camera Test Online</a> - the actual test action: a live preview that confirms the selected camera is delivering frames to the browser.</li>
+        <li><a href="/guides/camera-test-shows-black-screen-four-fixes.html">Camera Test Black Screen: 4 Fixes That Work</a> - what to check when permission is granted but the preview is still dark (cable, in-use elsewhere, lens cover, driver).</li>
+        <li><a href="/guides/camera-mirror-vs-flip-explained.html">Webcam Mirror vs Flip Explained</a> - what the mirror toggle does and why your reflection looks different to your meeting partner.</li>
+        <li><a href="/guides/before-a-video-call-which-tools-to-run.html">Before a Video Call - Which Tools to Run</a> - a five-minute pre-call checklist.</li>
+        <li><a href="/guides/how-to-check-webcam-and-microphone-before-an-interview.html">How to Check Webcam and Microphone Before an Interview</a> - sequencing the camera and mic tests for a high-stakes call.</li>
+    </ul>
+</div>
