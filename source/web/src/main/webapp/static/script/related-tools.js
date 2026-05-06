@@ -131,6 +131,7 @@ try {
     { title: "Camera Test Permission Blocked - How to Allow Camera Access in Your Browser", url: "https://freetoolonline.com/guides/camera-test-permission-blocked-how-to-allow-it.html", include: !1, tags: "guide,device-test,camera-test,utility" },
     { title: "Microphone Test Permission Blocked - How to Allow Mic Access in Your Browser", url: "https://freetoolonline.com/guides/microphone-test-permission-blocked-how-to-allow-it.html", include: !1, tags: "guide,device-test,microphone-test,utility" },
     { title: "QR Code Content Types - URL vs vCard vs Wi-Fi vs Text - Which to Pick", url: "https://freetoolonline.com/guides/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html", include: !1, tags: "guide,utility,qrcode" },
+    { title: "EXIF Metadata and Image Compression - What Gets Stripped", url: "https://freetoolonline.com/guides/image-compression-and-exif-metadata-what-gets-stripped.html", include: !1, tags: "guide,image-conversion,image-editing,compress,jpg,exif,metadata,privacy" },
     { title: "How to Compress a Folder", url: "https://freetoolonline.com/guides/how-to-compress-a-folder.html", include: !1, tags: "guide,zip,compress" },
     { title: "What an LCD Test Actually Checks", url: "https://freetoolonline.com/guides/lcd-test-what-it-checks.html", include: !1, tags: "guide,device-test,lcd-test" },
     { title: "LCD Test vs Display Test vs Monitor Test", url: "https://freetoolonline.com/guides/lcd-test-vs-display-test-which-do-you-need.html", include: !1, tags: "guide,device-test,lcd-test" },

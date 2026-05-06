@@ -148,6 +148,17 @@ export const INFO_ROUTES = new Set([
   // vCard 4.0, RFC 2426 vCard 3.0, RFC 5545 iCalendar VEVENT. Append-only (new URL); non-cannibalising per
   // seo-agency-check anti-cannibalization gate.
   '/guides/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html',
+  // Cycle 90 P90.A - "EXIF Metadata and Image Compression: What Gets Stripped" Lane-D guide
+  // (image-conversion / compress-image sub-cluster, companion to /compress-image.html). Reader-task gap:
+  // existing /compress-image.html guides cover quality vs file size (how-to-choose-a-compression-level),
+  // over-compression diagnosis (how-to-tell-if-a-jpg-was-compressed-too-much), the basic compress workflow
+  // (how-to-compress-a-file-online), and compress-vs-convert (when-to-compress-vs-convert-an-image). NONE
+  // cover EXIF metadata behaviour during image compression (the privacy + archival pre-decision question).
+  // Sources: JEITA CP-3451C Exif 2.3, Adobe TIFF 6.0, ITU-T T.81 / ISO/IEC 10918-1 (JPEG marker structure
+  // APP0..APP15), ICC.1:2010-12 (ICC profile in APP2), libjpeg-turbo + mozjpeg + cjpeg encoder docs,
+  // Pillow + Sharp + libvips + ImageMagick + exiftool docs. Append-only (new URL); non-cannibalising per
+  // seo-agency-check anti-cannibalization gate.
+  '/guides/image-compression-and-exif-metadata-what-gets-stripped.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides - 4 pillar + 2 comparison + 6 how-to + 1 case-study.
   '/guides/mp4-vs-webm-for-web.html',
   '/guides/jpg-vs-png-for-web.html',
@@ -904,6 +915,8 @@ export const JSP_BY_ROUTE = {
   '/guides/microphone-test-permission-blocked-how-to-allow-it.html': 'guide/microphone-test-permission-blocked-how-to-allow-it.jsp',
   // Cycle 88 P88.A - "QR Code Content Types: URL vs vCard vs Wi-Fi vs Text - Which to Pick" Lane-D guide (utility / qr-code-generator sub-cluster, companion to /qr-code-generator.html).
   '/guides/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html': 'guide/qr-code-content-types-url-vcard-wifi-text-which-to-pick.jsp',
+  // Cycle 90 P90.A - "EXIF Metadata and Image Compression: What Gets Stripped" Lane-D guide (image-conversion / compress-image sub-cluster, companion to /compress-image.html).
+  '/guides/image-compression-and-exif-metadata-what-gets-stripped.html': 'guide/image-compression-and-exif-metadata-what-gets-stripped.jsp',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
   '/guides/mp4-vs-webm-for-web.html': 'guide/mp4-vs-webm-for-web.jsp',
   '/guides/jpg-vs-png-for-web.html': 'guide/jpg-vs-png-for-web.jsp',
