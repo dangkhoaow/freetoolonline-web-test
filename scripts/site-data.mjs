@@ -886,6 +886,8 @@ export const ALIAS_ROUTES = {
   '/how-to-compress-a-folder.html': '/guides/how-to-compress-a-folder.html',
   // Cycle142 P142.A — capture bare URL traffic to canonical LCD test page (4843 imp / 28d, pos 7.8, CTR 1.28% per GSC; per granted P141.LaneD-residual-saturated-guides option-a).
   '/test-lcd.html': '/lcd-test.html',
+  // Cycle143 P143.A — capture bare URL traffic for "how to compress a file" head-query (5384 imp / 28d, pos 10.65, CTR 0.02% per GSC). Bare URL currently 200-serves the homepage (canonical=/), so Google sees a homepage routing for a file-compression intent. Aliasing into the existing canonical guide page captures the traffic without authoring a parallel page that would cannibalize.
+  '/how-to-compress-a-file.html': '/guides/how-to-compress-a-file-online.html',
 };
 
 export const JSP_BY_ROUTE = {
