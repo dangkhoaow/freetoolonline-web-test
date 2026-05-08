@@ -54,7 +54,7 @@ const SEO_CLUSTER_GROUPS = [
     cluster: 'utility',
     hubRoute: '/utility-tools.html',
     hubLabel: 'Back to Utility Tools',
-    routes: ['/convert-time-in-millisecond-to-date.html', '/get-time-in-millisecond.html', '/qr-code-generator.html', '/do-nong-do-con-truc-tuyen.html', '/cong-cu-chuyen-doi-chu-quoc-ngu-tieng-viet-thanh-tieq-viet-kieu-moi.html'],
+    routes: ['/file-compressor.html', '/convert-time-in-millisecond-to-date.html', '/get-time-in-millisecond.html', '/qr-code-generator.html', '/do-nong-do-con-truc-tuyen.html', '/cong-cu-chuyen-doi-chu-quoc-ngu-tieng-viet-thanh-tieq-viet-kieu-moi.html'],
   },
   // Phase 16 P16.G3 - register the /guides/* cluster. Cycle B activates the
   // full route list now that P16.G1 ships /guides.html. resolveHubBacklink

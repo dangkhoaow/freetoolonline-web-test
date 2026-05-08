@@ -1,6 +1,7 @@
 try {
   var urlMaps = [
     { title: "ZIP Tools", url: "https://freetoolonline.com/zip-tools.html", include: !1, tags: "zip,pdf" },
+    { title: "File Compressor: Pick the Right Tool by File Type", url: "https://freetoolonline.com/file-compressor.html", include: !1, tags: "compress,zip,image-editing,pdf,utility,file-compressor" },
     { title: "Get JPEG Compression Level", url: "https://freetoolonline.com/get-jpeg-compression-level.html", include: !1, tags: "jpg,compress,quality,image-editing" },
     { title: "Base64 To Image", url: "https://freetoolonline.com/base64-to-image.html", include: !1, tags: "image-conversion,base64" },
     { title: "Convert Time In Millisecond To Date", url: "https://freetoolonline.com/convert-time-in-millisecond-to-date.html", include: !1, tags: "millis,utility" },

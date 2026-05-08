@@ -1054,6 +1054,12 @@ export const JSP_BY_ROUTE = {
   '/unzip-file.html': 'file/unzip-file.jsp',
   '/remove-zip-password.html': 'file/remove-zip-password.jsp',
   '/zip-tools.html': 'utility/zip-tools.jsp',
+  // Cycle 134 P134.A — top-level "file compressor" tool-hub page (head query
+  // 203,069 imp/28d at pos 10.0, CTR 0.05% — operator-authorized via cycle 133
+  // P133.C grant accepting cannibalization risk vs the long-form
+  // /guides/file-compressor.html decision-tree guide; this bare-URL page is a
+  // concise tool-finder layout). new_guide_page real-work-floor satisfier.
+  '/file-compressor.html': 'utility/file-compressor.jsp',
   '/image-converter-tools.html': 'utility/image-converter-tools.jsp',
   '/image-tools.html': 'utility/image-tools.jsp',
   '/pdf-tools.html': 'utility/pdf-tools.jsp',
