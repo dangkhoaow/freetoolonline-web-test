@@ -883,6 +883,7 @@ export const ALIAS_ROUTES = {
   '/heic-to-pdf.html': '/heic-to-jpg.html',
   '/insights-optimize-image.html': '/insights-image-optimizer.html',
   '/cong-cu-chuyen-doi-chu-quoc-ngu-tieng-viet-thanh-tiew-viet-kieu-moi-phan-2.html': '/cong-cu-chuyen-doi-chu-quoc-ngu-tieng-viet-thanh-tieq-viet-kieu-moi.html',
+  '/how-to-compress-a-folder.html': '/guides/how-to-compress-a-folder.html',
 };
 
 export const JSP_BY_ROUTE = {
