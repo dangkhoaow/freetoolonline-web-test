@@ -200,6 +200,13 @@ export const INFO_ROUTES = new Set([
   // 0.04% CTR / pos 9.9). Greenfield explainer + routing guide. Touches
   // no existing tool / hub / guide URL; ZIP-CRITICAL-CARE compliant.
   '/guides/what-is-a-file-compressor-and-which-to-use.html',
+  // Cycle 121 P121.G - "file compressor" HEAD-query aggregator landing
+  // (248,591 impr / 0.04% CTR / pos 9.94 / 12,332 missed clicks per 28d).
+  // Operator override carry from cycle120 P120.G. Distinct from the
+  // four long-tail /guides/file-compressor-* pages: this URL targets
+  // the exact-match HEAD query as canonical landing; the long-tail
+  // pages keep their existing intents. Append-only.
+  '/guides/file-compressor.html',
   // Phase 16 Cycle A P16.N2 - "how to compress a file" + variants
   // (~10K impr / 0.02% CTR / pos 10.5). Greenfield how-to guide.
   '/guides/how-to-compress-a-file-online.html',
@@ -701,6 +708,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/what-is-a-file-compressor-and-which-to-use.html',
   '/guides/how-to-compress-a-file-online.html',
   '/guides/how-to-reduce-zip-file-size-online.html',
+  // Cycle 121 P121.G - "file compressor" HEAD-query aggregator landing.
+  '/guides/file-compressor.html',
   // Phase 16 Cycle B P16.N11 / P16.N16.
   '/guides/how-to-convert-heic-to-jpg-step-by-step.html',
   '/guides/what-an-lcd-test-does-and-when-to-run-one.html',
@@ -942,6 +951,8 @@ export const JSP_BY_ROUTE = {
   '/guides/heic-vs-jpg-converter-when-each-wins.html': 'guide/heic-vs-jpg-converter-when-each-wins.jsp',
   // Phase 16 Cycle A P16.N1 / P16.N2 / P16.N4.
   '/guides/what-is-a-file-compressor-and-which-to-use.html': 'guide/what-is-a-file-compressor-and-which-to-use.jsp',
+  // Cycle 121 P121.G - "file compressor" HEAD-query aggregator landing.
+  '/guides/file-compressor.html': 'guide/file-compressor.jsp',
   '/guides/how-to-compress-a-file-online.html': 'guide/how-to-compress-a-file-online.jsp',
   '/guides/how-to-reduce-zip-file-size-online.html': 'guide/how-to-reduce-zip-file-size-online.jsp',
   // Phase 16 Cycle B P16.G1 hub + P16.N11 + P16.N16.
