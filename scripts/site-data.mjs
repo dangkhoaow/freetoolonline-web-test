@@ -207,6 +207,12 @@ export const INFO_ROUTES = new Set([
   // the exact-match HEAD query as canonical landing; the long-tail
   // pages keep their existing intents. Append-only.
   '/guides/file-compressor.html',
+  // Cycle 122 P122.A - "test lcd" + "lcd tester" + "lcd test online"
+  // HEAD-query disambiguation aggregator (combined ~7,773 impr / 28d
+  // at pos 5-8). Routes the "which tool to pick" intent to /lcd-test.html
+  // action tool while the existing 8 /guides/lcd-* / /guides/dead-pixel-*
+  // / /guides/screen-* pages keep their long-tail intents. Append-only.
+  '/guides/test-lcd.html',
   // Phase 16 Cycle A P16.N2 - "how to compress a file" + variants
   // (~10K impr / 0.02% CTR / pos 10.5). Greenfield how-to guide.
   '/guides/how-to-compress-a-file-online.html',
@@ -710,6 +716,10 @@ export const GUIDE_ROUTES = new Set([
   '/guides/how-to-reduce-zip-file-size-online.html',
   // Cycle 121 P121.G - "file compressor" HEAD-query aggregator landing.
   '/guides/file-compressor.html',
+  // Cycle 122 P122.A - "test lcd" / "lcd tester" / "lcd test online" HEAD-query
+  // disambiguation aggregator (combined ~7.7K impr/28d at pos 5-8); routes
+  // intent to /lcd-test.html action tool.
+  '/guides/test-lcd.html',
   // Phase 16 Cycle B P16.N11 / P16.N16.
   '/guides/how-to-convert-heic-to-jpg-step-by-step.html',
   '/guides/what-an-lcd-test-does-and-when-to-run-one.html',
@@ -953,6 +963,8 @@ export const JSP_BY_ROUTE = {
   '/guides/what-is-a-file-compressor-and-which-to-use.html': 'guide/what-is-a-file-compressor-and-which-to-use.jsp',
   // Cycle 121 P121.G - "file compressor" HEAD-query aggregator landing.
   '/guides/file-compressor.html': 'guide/file-compressor.jsp',
+  // Cycle 122 P122.A - HEAD-query disambiguation aggregator for "test lcd" / "lcd tester" / "lcd test online".
+  '/guides/test-lcd.html': 'guide/test-lcd.jsp',
   '/guides/how-to-compress-a-file-online.html': 'guide/how-to-compress-a-file-online.jsp',
   '/guides/how-to-reduce-zip-file-size-online.html': 'guide/how-to-reduce-zip-file-size-online.jsp',
   // Phase 16 Cycle B P16.G1 hub + P16.N11 + P16.N16.

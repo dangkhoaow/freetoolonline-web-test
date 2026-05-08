@@ -87,6 +87,7 @@ try {
     { title: "HEIC vs JPG Converter - When Each Wins", url: "https://freetoolonline.com/guides/heic-vs-jpg-converter-when-each-wins.html", include: !1, tags: "guide,image-conversion,heic,jpg" },
     { title: "What Is a File Compressor and Which to Use", url: "https://freetoolonline.com/guides/what-is-a-file-compressor-and-which-to-use.html", include: !1, tags: "guide,zip,compress,image-editing,image-conversion,pdf" },
     { title: "File Compressor: Pick the Right Tool by File Type", url: "https://freetoolonline.com/guides/file-compressor.html", include: !1, tags: "guide,zip,compress,image-editing,image-conversion,pdf,file-compressor" },
+    { title: "Test LCD: Pick the Right Screen-Test Tool", url: "https://freetoolonline.com/guides/test-lcd.html", include: !1, tags: "guide,device-test,lcd,lcd-test,screen-test,dead-pixel" },
     { title: "How to Compress a File Online (Step by Step)", url: "https://freetoolonline.com/guides/how-to-compress-a-file-online.html", include: !1, tags: "guide,zip,compress,image-editing,pdf,video" },
     { title: "How to Reduce Zip File Size Online (Free)", url: "https://freetoolonline.com/guides/how-to-reduce-zip-file-size-online.html", include: !1, tags: "guide,zip,compress" },
     { title: "How to Convert HEIC to JPG Step by Step", url: "https://freetoolonline.com/guides/how-to-convert-heic-to-jpg-step-by-step.html", include: !1, tags: "guide,image-conversion,heic,jpg" },
