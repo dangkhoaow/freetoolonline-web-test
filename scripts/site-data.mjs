@@ -884,6 +884,8 @@ export const ALIAS_ROUTES = {
   '/insights-optimize-image.html': '/insights-image-optimizer.html',
   '/cong-cu-chuyen-doi-chu-quoc-ngu-tieng-viet-thanh-tiew-viet-kieu-moi-phan-2.html': '/cong-cu-chuyen-doi-chu-quoc-ngu-tieng-viet-thanh-tieq-viet-kieu-moi.html',
   '/how-to-compress-a-folder.html': '/guides/how-to-compress-a-folder.html',
+  // Cycle142 P142.A — capture bare URL traffic to canonical LCD test page (4843 imp / 28d, pos 7.8, CTR 1.28% per GSC; per granted P141.LaneD-residual-saturated-guides option-a).
+  '/test-lcd.html': '/lcd-test.html',
 };
 
 export const JSP_BY_ROUTE = {
