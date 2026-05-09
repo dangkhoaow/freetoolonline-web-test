@@ -244,10 +244,17 @@ function buildJsonLdScript(payload) {
   return `<script type="application/ld+json">${JSON.stringify(payload)}</script>`;
 }
 
-function buildWebApplicationJsonLd({ browserTitle, canonicalUrl, description, applicationCategory, aggregateRating, dateModified }) {
+// Cycle132 (Strategy #1 Citability) — `@type` switched WebApplication →
+// SoftwareApplication. Schema.org treats WebApplication as a subtype of
+// SoftwareApplication; the Rich Results gallery + AI-Overview citation
+// surface favor SoftwareApplication for tool pages. The function name
+// reflects the new type. Existing offers/operatingSystem/applicationCategory
+// fields are retained as-is (already required by SoftwareApplication and
+// already populated correctly).
+function buildSoftwareApplicationJsonLd({ browserTitle, canonicalUrl, description, applicationCategory, aggregateRating, dateModified }) {
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'WebApplication',
+    '@type': 'SoftwareApplication',
     name: `Free Tool Online - ${browserTitle}`,
     url: canonicalUrl,
     ...(description ? { description } : {}),
@@ -909,7 +916,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   const jsonLd = showAds
     ? isHubPage
       ? buildCollectionPageJsonLd({ canonicalOrigin, canonicalUrl, name: browserTitle, itemRoutes: hubItemRoutes, dateModified: lastUpdatedIso })
-      : buildWebApplicationJsonLd({
+      : buildSoftwareApplicationJsonLd({
         browserTitle,
         canonicalUrl,
         description,

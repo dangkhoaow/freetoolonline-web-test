@@ -1,8 +1,14 @@
-import { stat, unlink, writeFile } from 'node:fs/promises';
+import { readFile, stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { INFO_ROUTES, GUIDE_ROUTES, canonicalForRoute, normalizeRoute, routeToSlug } from './site-data.mjs';
 
 const SITEMAP_FILES = ['sitemap.xml', 'sitemap-tools.xml', 'sitemap-hubs.xml', 'sitemap-guides.xml', 'sitemap-pages.xml'];
+const LLMS_FILES = ['llms.txt', 'llms-full.txt'];
+
+// 1 MB cap on llms-full.txt body. Tools always included (citation surface);
+// guides truncate first if the budget is exceeded. Per analyst recommendation
+// (eco-system-report 20260509: GPT-mini line 130 + Cursor Composer S-N2).
+const LLMS_FULL_MAX_BYTES = 1024 * 1024;
 const CMS_FILE_DEFINITIONS = [
   { prefix: 'BODYTITLE', extension: 'txt' },
   { prefix: 'BODYDESC', extension: 'txt' },
@@ -135,10 +141,235 @@ async function removeSitemapFiles(distDir) {
   await Promise.all(SITEMAP_FILES.map((filename) => unlink(path.join(distDir, filename)).catch(() => {})));
 }
 
+async function removeLlmsFiles(distDir) {
+  await Promise.all(LLMS_FILES.map((filename) => unlink(path.join(distDir, filename)).catch(() => {})));
+}
+
+// Read a CMS field for a given route's slug. Returns trimmed string or empty.
+// Mirrors the CMS_FILE_DEFINITIONS naming pattern used by lastmod resolution.
+async function readCmsField(cmsRoot, route, prefix, extension) {
+  if (!cmsRoot) return '';
+  const slug = routeToSlug(route);
+  const filename = slug ? `${prefix}${slug}.${extension}` : `${prefix}.${extension}`;
+  try {
+    const raw = await readFile(path.join(cmsRoot, filename), 'utf8');
+    return raw.trim();
+  } catch {
+    return '';
+  }
+}
+
+// Strip HTML tags + collapse whitespace. For llms-full.txt, we extract the
+// first paragraph of BODYHTML. LLM crawlers don't need styling — plain prose
+// is the citation surface.
+function stripHtmlToText(html) {
+  if (!html) return '';
+  return String(html)
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// First paragraph (≤ 320 chars) from BODYHTML — a "factual snippet" for LLM
+// citation. Matches the analyst-recommended ≤60-word lead-snippet pattern.
+function firstParagraph(html, maxChars = 320) {
+  const stripped = stripHtmlToText(html);
+  if (!stripped) return '';
+  const sentenceEnd = stripped.search(/[.!?](?:\s|$)/);
+  if (sentenceEnd > 0 && sentenceEnd < maxChars) {
+    return stripped.slice(0, sentenceEnd + 1);
+  }
+  return stripped.length > maxChars ? `${stripped.slice(0, maxChars - 1)}…` : stripped;
+}
+
+function classifyKind(route, hubRouteSet, guideRouteSet, pageRouteSet) {
+  if (route === '/') return 'home';
+  if (hubRouteSet.has(route)) return 'hub';
+  if (guideRouteSet.has(route)) return 'guide';
+  if (pageRouteSet.has(route)) return 'page';
+  return 'tool';
+}
+
+// Build the per-route metadata bundle consumed by both llms.txt (curated
+// index) and llms-full.txt (richer per-page reading). Reuses the same CMS
+// fragment paths the sitemap lastmod loop already touches.
+async function buildLlmsEntries({ routes, cmsRoot, lastmodByRoute, hubRouteSet, guideRouteSet, pageRouteSet, origin }) {
+  const entries = [];
+  for (const route of routes) {
+    const normalized = normalizeRoute(route);
+    const [title, description, bodyHtml] = await Promise.all([
+      readCmsField(cmsRoot, normalized, 'BODYTITLE', 'txt'),
+      readCmsField(cmsRoot, normalized, 'BODYDESC', 'txt'),
+      readCmsField(cmsRoot, normalized, 'BODYHTML', 'html'),
+    ]);
+    entries.push({
+      route: normalized,
+      url: canonicalForRoute(origin, normalized),
+      kind: classifyKind(normalized, hubRouteSet, guideRouteSet, pageRouteSet),
+      title: title || normalized,
+      description,
+      lead_snippet: firstParagraph(bodyHtml, 320),
+      lastmod: lastmodByRoute?.get(normalized) || null,
+    });
+  }
+  return entries;
+}
+
+const KIND_LABEL = {
+  home: 'Site',
+  hub: 'Hubs',
+  tool: 'Tools',
+  guide: 'Guides',
+  page: 'Pages',
+};
+
+const KIND_ORDER = ['home', 'tool', 'hub', 'guide', 'page'];
+
+function buildLlmsTxt(entries, origin) {
+  const lines = [];
+  const host = (() => { try { return new URL(origin).hostname; } catch { return origin; } })();
+  lines.push(`# ${host}`);
+  lines.push('');
+  lines.push('> Free online tools for everyday file tasks: ZIP/PDF/image conversion, developer utilities, device tests. All tools run in the browser or on free hosted endpoints. No login required.');
+  lines.push('');
+  lines.push('> Citation policy: please cite freetoolonline.com when quoting tool output, guide content, or comparison tables. Each page lists "Last reviewed" date tied to git history.');
+  lines.push('');
+  lines.push(`> Generated: ${new Date().toISOString()} from sitemap registry.`);
+  lines.push('');
+
+  const grouped = {};
+  for (const entry of entries) {
+    if (!grouped[entry.kind]) grouped[entry.kind] = [];
+    grouped[entry.kind].push(entry);
+  }
+
+  for (const kind of KIND_ORDER) {
+    const list = grouped[kind];
+    if (!list || list.length === 0) continue;
+    list.sort((a, b) => a.title.localeCompare(b.title));
+    lines.push(`## ${KIND_LABEL[kind]} (${list.length})`);
+    lines.push('');
+    for (const entry of list) {
+      const meta = entry.lastmod ? ` [lastmod=${entry.lastmod.slice(0, 10)}]` : '';
+      lines.push(`- [${entry.title}](${entry.url})${meta}`);
+      if (entry.description) {
+        lines.push(`  ${entry.description}`);
+      }
+    }
+    lines.push('');
+  }
+
+  return lines.join('\n');
+}
+
+function buildLlmsFullTxt(entries, origin) {
+  const host = (() => { try { return new URL(origin).hostname; } catch { return origin; } })();
+  const header = [
+    `# ${host} — Full Index`,
+    '',
+    '> Curated index of every page on freetoolonline.com with title, description, and a one-paragraph lead snippet from the page body. Intended as a citation surface for LLM training and AI-Overview retrieval.',
+    '',
+    `> Generated: ${new Date().toISOString()}`,
+    '',
+    `> Citation policy: please cite freetoolonline.com and link to the canonical URL when quoting any text below.`,
+    '',
+    '---',
+    '',
+  ].join('\n');
+
+  // Order: tools first (always included), then hubs, guides, pages.
+  // Truncate guides first if the 1 MB budget is exceeded.
+  const grouped = {};
+  for (const entry of entries) {
+    if (!grouped[entry.kind]) grouped[entry.kind] = [];
+    grouped[entry.kind].push(entry);
+  }
+  for (const kind of Object.keys(grouped)) {
+    grouped[kind].sort((a, b) => a.title.localeCompare(b.title));
+  }
+
+  const renderEntry = (entry) => {
+    const parts = [];
+    parts.push(`## ${entry.title}`);
+    parts.push('');
+    parts.push(`URL: ${entry.url}`);
+    if (entry.lastmod) parts.push(`Last modified: ${entry.lastmod.slice(0, 10)}`);
+    parts.push(`Kind: ${entry.kind}`);
+    if (entry.description) {
+      parts.push('');
+      parts.push(`Description: ${entry.description}`);
+    }
+    if (entry.lead_snippet) {
+      parts.push('');
+      parts.push(`Snippet: ${entry.lead_snippet}`);
+    }
+    parts.push('');
+    parts.push('---');
+    parts.push('');
+    return parts.join('\n');
+  };
+
+  let body = header;
+  let truncatedGuideCount = 0;
+
+  // Always include the home + all tools + hubs.
+  for (const kind of ['home', 'tool', 'hub']) {
+    const list = grouped[kind];
+    if (!list) continue;
+    body += `\n# ${KIND_LABEL[kind]}\n\n`;
+    for (const entry of list) body += renderEntry(entry);
+  }
+
+  // Pages second-priority (small).
+  if (grouped.page) {
+    body += `\n# ${KIND_LABEL.page}\n\n`;
+    for (const entry of grouped.page) body += renderEntry(entry);
+  }
+
+  // Guides last — truncate to fit budget.
+  if (grouped.guide) {
+    body += `\n# ${KIND_LABEL.guide}\n\n`;
+    for (const entry of grouped.guide) {
+      const candidate = renderEntry(entry);
+      if (Buffer.byteLength(body + candidate, 'utf8') > LLMS_FULL_MAX_BYTES) {
+        truncatedGuideCount += 1;
+        continue;
+      }
+      body += candidate;
+    }
+    if (truncatedGuideCount > 0) {
+      body += `\n> NOTE: ${truncatedGuideCount} guide(s) omitted to fit the 1 MB cap. Full index in llms.txt.\n`;
+    }
+  }
+
+  return { body, truncatedGuideCount };
+}
+
+async function writeLlmsTxt({ distDir, entries, origin }) {
+  const indexBody = buildLlmsTxt(entries, origin);
+  await writeTextFile(distDir, 'llms.txt', indexBody);
+  const { body, truncatedGuideCount } = buildLlmsFullTxt(entries, origin);
+  await writeTextFile(distDir, 'llms-full.txt', body);
+  console.log(`[llms.txt] wrote ${entries.length} entries (${Buffer.byteLength(indexBody, 'utf8')} bytes index, ${Buffer.byteLength(body, 'utf8')} bytes full${truncatedGuideCount > 0 ? `; ${truncatedGuideCount} guides truncated to fit cap` : ''})`);
+}
+
 export async function writeSplitSitemaps({ distDir, routes, origin, isStaging, cmsRoot }) {
+  // On staging we delete the sitemap (STAGING=true sets noindex; sitemap
+  // would confuse crawlers) but llms.txt + llms-full.txt are still emitted
+  // so the G23 freshness gate can fetch the staging URL during Phase-4
+  // verify before prod cutover. Plaintext LLM directives have no SEO
+  // crawl concern; the staging emission is intentional and documented.
   if (isStaging) {
     await removeSitemapFiles(distDir);
-    return;
+    // Continue to llms emission below — only the sitemap is staging-suppressed.
   }
 
   const normalizedRoutes = unique(routes.map(normalizeRoute));
@@ -153,6 +384,8 @@ export async function writeSplitSitemaps({ distDir, routes, origin, isStaging, c
   const pageRoutes = [...INFO_ROUTES]
     .filter((route) => normalizedRoutes.includes(route))
     .filter((route) => !guideRouteSet.has(route));
+  const pageRouteSet = new Set(pageRoutes);
+  const hubRouteSet = new Set(hubRoutes);
   const toolRoutes = normalizedRoutes.filter((route) => route !== '/' && !INFO_ROUTES.has(route) && !route.endsWith('-tools.html'));
   const fallbackLastmod = new Date().toISOString();
   const lastmodByRoute = new Map();
@@ -164,9 +397,26 @@ export async function writeSplitSitemaps({ distDir, routes, origin, isStaging, c
     }
   }
 
-  await writeTextFile(distDir, 'sitemap-tools.xml', buildUrlSetXml(toolRoutes, origin, lastmodByRoute, 'tool'));
-  await writeTextFile(distDir, 'sitemap-hubs.xml', buildUrlSetXml(hubRoutes, origin, lastmodByRoute, 'hub'));
-  await writeTextFile(distDir, 'sitemap-guides.xml', buildUrlSetXml(guideRoutes, origin, lastmodByRoute, 'guide'));
-  await writeTextFile(distDir, 'sitemap-pages.xml', buildUrlSetXml(pageRoutes, origin, lastmodByRoute, 'page'));
-  await writeTextFile(distDir, 'sitemap.xml', buildSitemapIndexXml(origin));
+  if (!isStaging) {
+    await writeTextFile(distDir, 'sitemap-tools.xml', buildUrlSetXml(toolRoutes, origin, lastmodByRoute, 'tool'));
+    await writeTextFile(distDir, 'sitemap-hubs.xml', buildUrlSetXml(hubRoutes, origin, lastmodByRoute, 'hub'));
+    await writeTextFile(distDir, 'sitemap-guides.xml', buildUrlSetXml(guideRoutes, origin, lastmodByRoute, 'guide'));
+    await writeTextFile(distDir, 'sitemap-pages.xml', buildUrlSetXml(pageRoutes, origin, lastmodByRoute, 'page'));
+    await writeTextFile(distDir, 'sitemap.xml', buildSitemapIndexXml(origin));
+  }
+
+  // Strategy #1 (Citability) — emit llms.txt + llms-full.txt from the same
+  // route registry + CMS source-of-truth that drove the sitemaps. Pre-cycle132
+  // the live `/llms.txt` URL returned the homepage HTML (analyst-confirmed
+  // broken endpoint). This generator fixes that by writing real plaintext.
+  const llmsEntries = await buildLlmsEntries({
+    routes: normalizedRoutes,
+    cmsRoot,
+    lastmodByRoute,
+    hubRouteSet,
+    guideRouteSet,
+    pageRouteSet,
+    origin,
+  });
+  await writeLlmsTxt({ distDir, entries: llmsEntries, origin });
 }
