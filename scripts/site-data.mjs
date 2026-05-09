@@ -898,6 +898,8 @@ export const ALIAS_ROUTES = {
   '/compress-zip.html': '/zip-file.html',
   // Cycle148 P148.A — capture bare URL traffic for "how to make a zip file smaller" head-query (~2,429 imp / 28d, pos 5.6, CTR 0.33% per GSC; 113 missed clicks). Bare URL currently 200-serves the GitHub-Pages 404 fallback (homepage HTML, canonical=/) so Google routes those clicks to a generic index instead of the actual ZIP-compress tool. Aliasing to /zip-file.html re-routes the traffic without editing the indexed ZIP cluster page (ZIP-CARE preserved — no edit to /zip-file.html HTML). Note: distinct from the existing /guides/how-to-make-a-zip-file-smaller.html long-form guide; the bare URL targets the action intent. Same alias-only playbook as P141.A / P142.A / P143.A / P144.A / P145.A / P146.A / P147.A.
   '/how-to-make-a-zip-file-smaller.html': '/zip-file.html',
+  // Cycle149 P149.A — capture bare URL traffic for "zip file size reducer" head-query (2,754 imp / 28d, pos 5.66, CTR 10.46% per GSC; 288 clicks routed to homepage). Bare URL currently 200-serves the GitHub-Pages 404 fallback (homepage HTML, canonical=/). Aliasing to /zip-file.html re-routes the 288 clicks/28d to the actual ZIP-compress action page (ZIP-CARE preserved — no edit to /zip-file.html HTML). Same alias-only playbook as P141.A / P142.A / P143.A / P144.A / P145.A / P146.A / P147.A / P148.A.
+  '/zip-file-size-reducer.html': '/zip-file.html',
 };
 
 export const JSP_BY_ROUTE = {
