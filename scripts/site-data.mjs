@@ -904,6 +904,8 @@ export const ALIAS_ROUTES = {
   '/reduce-zip-file-size.html': '/zip-file.html',
   // Cycle151 P151.A — capture bare URL traffic for "gif to frames" head-query (1,674 imp / 28d, pos 8.7, CTR 0.30% per GSC; 5 clicks currently routed to homepage). Bare URL currently 200-serves the GitHub-Pages 404 fallback (homepage HTML 201,113 bytes, canonical=/). Aliasing to the existing /extract-gif-to-image-frames.html action page re-routes the traffic to the canonical extractor without editing it. NOT a ZIP-cluster URL — ZIP-CRITICAL-CARE 24h cooldown does not apply (cooldown anchor 2026-05-09T05:53:00Z still active until 2026-05-10T05:53:00Z; this cycle deliberately ships a non-ZIP alias). Same alias-only playbook as P141.A / P142.A / P143.A / P144.A / P145.A / P146.A / P147.A / P148.A / P149.A / P150.A.
   '/gif-to-frames.html': '/extract-gif-to-image-frames.html',
+  // Cycle152 P152.A — capture bare URL traffic for "lcd tester" head-query (2,260 imp / 28d, pos 5.11, CTR 2.65% per GSC; 60 clicks currently routed to homepage). Bare URL currently 200-serves the GitHub-Pages 404 fallback (homepage HTML 201,113 bytes, canonical=/, last-modified Sat, 09 May 2026 11:04:31 GMT — post-PR-#117 rebuild). Aliasing to the existing /lcd-test.html canonical device-test tool re-routes the traffic without editing it. NOT a ZIP-cluster URL — ZIP-CRITICAL-CARE 24h cooldown deliberately not engaged (cooldown anchor 2026-05-09T05:53:00Z still active until 2026-05-10T05:53:00Z; this cycle ships a non-ZIP alias). Same alias-only playbook as P141.A / P142.A / P143.A / P144.A / P145.A / P146.A / P147.A / P148.A / P149.A / P150.A / P151.A.
+  '/lcd-tester.html': '/lcd-test.html',
 };
 
 export const JSP_BY_ROUTE = {
