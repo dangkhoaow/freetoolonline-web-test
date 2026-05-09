@@ -890,6 +890,8 @@ export const ALIAS_ROUTES = {
   '/how-to-compress-a-file.html': '/guides/how-to-compress-a-file-online.html',
   // Cycle144 P144.A — capture bare URL traffic for "zip file compressor" head-query (16,772 imp / 28d, pos 6.2, CTR 5.31% per GSC). Bare URL currently 200-serves the homepage (canonical=/) so Google routes ~890 monthly clicks to a generic 122-tool index. Aliasing to the existing /zip-file.html ZIP-compress tool re-routes the traffic without editing the indexed ZIP cluster page. Same alias-only playbook as P141.A / P142.A / P143.A.
   '/zip-file-compressor.html': '/zip-file.html',
+  // Cycle145 P145.A — capture bare URL traffic for "compress zip file" head-query (16,542 imp / 28d, pos 6.3, CTR 6.47% per GSC). Bare URL currently 200-serves the homepage (canonical=/) so Google routes those clicks to a generic index. Aliasing to /zip-file.html re-routes the traffic without editing the indexed ZIP cluster page (ZIP-CARE preserved — no edit to /zip-file.html HTML). Same alias-only playbook as P141.A / P142.A / P143.A / P144.A.
+  '/compress-zip-file.html': '/zip-file.html',
 };
 
 export const JSP_BY_ROUTE = {
