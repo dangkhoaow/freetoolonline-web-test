@@ -902,6 +902,8 @@ export const ALIAS_ROUTES = {
   '/zip-file-size-reducer.html': '/zip-file.html',
   // Cycle150 P150.A — capture bare URL traffic for "reduce zip file size" head-query (2,769 imp / 28d, pos 6.2, CTR 10.69% per GSC; 296 clicks routed to homepage). Bare URL currently 200-serves the GitHub-Pages 404 fallback (homepage HTML, canonical=/). Aliasing to /zip-file.html re-routes the 296 clicks/28d to the actual ZIP-compress action page (ZIP-CARE preserved — no edit to /zip-file.html HTML). Same alias-only playbook as P141.A / P142.A / P143.A / P144.A / P145.A / P146.A / P147.A / P148.A / P149.A.
   '/reduce-zip-file-size.html': '/zip-file.html',
+  // Cycle151 P151.A — capture bare URL traffic for "gif to frames" head-query (1,674 imp / 28d, pos 8.7, CTR 0.30% per GSC; 5 clicks currently routed to homepage). Bare URL currently 200-serves the GitHub-Pages 404 fallback (homepage HTML 201,113 bytes, canonical=/). Aliasing to the existing /extract-gif-to-image-frames.html action page re-routes the traffic to the canonical extractor without editing it. NOT a ZIP-cluster URL — ZIP-CRITICAL-CARE 24h cooldown does not apply (cooldown anchor 2026-05-09T05:53:00Z still active until 2026-05-10T05:53:00Z; this cycle deliberately ships a non-ZIP alias). Same alias-only playbook as P141.A / P142.A / P143.A / P144.A / P145.A / P146.A / P147.A / P148.A / P149.A / P150.A.
+  '/gif-to-frames.html': '/extract-gif-to-image-frames.html',
 };
 
 export const JSP_BY_ROUTE = {
