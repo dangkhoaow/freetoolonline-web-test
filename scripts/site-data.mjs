@@ -894,6 +894,8 @@ export const ALIAS_ROUTES = {
   '/compress-zip-file.html': '/zip-file.html',
   // Cycle146 P146.A — capture bare URL traffic for "zip compressor" head-query (~4,223 imp / 28d, pos 7.0, CTR 5.09% per GSC). Bare URL currently 200-serves the GitHub-Pages 404 fallback (homepage HTML, canonical=/) so Google routes those clicks to a generic index. Aliasing to /zip-file.html re-routes the traffic without editing the indexed ZIP cluster page (ZIP-CARE preserved — no edit to /zip-file.html HTML). Same alias-only playbook as P141.A / P142.A / P143.A / P144.A / P145.A.
   '/zip-compressor.html': '/zip-file.html',
+  // Cycle147 P147.A — capture bare URL traffic for "compress zip" head-query (~4,220 imp / 28d, pos 7.4, CTR 3.46% per GSC). Bare URL currently 200-serves the GitHub-Pages 404 fallback (homepage HTML, canonical=/) so Google routes those clicks to a generic index. Aliasing to /zip-file.html re-routes the traffic without editing the indexed ZIP cluster page (ZIP-CARE preserved — no edit to /zip-file.html HTML). Same alias-only playbook as P141.A / P142.A / P143.A / P144.A / P145.A / P146.A.
+  '/compress-zip.html': '/zip-file.html',
 };
 
 export const JSP_BY_ROUTE = {
