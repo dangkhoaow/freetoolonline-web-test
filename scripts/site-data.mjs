@@ -878,8 +878,8 @@ export const ALIAS_ROUTES = {
   '/pdf-merge-from-multiple-files.html': '/pdf-tools/join-pdf-from-multiple-files.html',
   '/mov-to-mp4.html': '/video-tools/video-converter.html',
   '/mov-to-mp3.html': '/video-tools/video-converter.html',
-  '/zip-file-with-password.html': '/zip-file.html',
-  '/unzip-file-with-password.html': '/unzip-file.html',
+  '/zip-file-with-password.html': '/zip-tools/zip-file.html',
+  '/unzip-file-with-password.html': '/zip-tools/unzip-file.html',
   '/heic-to-pdf.html': '/image-converter-tools/heic-to-jpg.html',
   '/insights-optimize-image.html': '/image-tools/insights-image-optimizer.html',
   '/cong-cu-chuyen-doi-chu-quoc-ngu-tieng-viet-thanh-tiew-viet-kieu-moi-phan-2.html': '/utility-tools/cong-cu-chuyen-doi-chu-quoc-ngu-tieng-viet-thanh-tieq-viet-kieu-moi.html',
@@ -889,20 +889,20 @@ export const ALIAS_ROUTES = {
   // Cycle143 P143.A — capture bare URL traffic for "how to compress a file" head-query (5384 imp / 28d, pos 10.65, CTR 0.02% per GSC). Bare URL currently 200-serves the homepage (canonical=/), so Google sees a homepage routing for a file-compression intent. Aliasing into the existing canonical guide page captures the traffic without authoring a parallel page that would cannibalize.
   '/how-to-compress-a-file.html': '/guides/how-to-compress-a-file-online.html',
   // Cycle144 P144.A — capture bare URL traffic for "zip file compressor" head-query (16,772 imp / 28d, pos 6.2, CTR 5.31% per GSC). Bare URL currently 200-serves the homepage (canonical=/) so Google routes ~890 monthly clicks to a generic 122-tool index. Aliasing to the existing /zip-file.html ZIP-compress tool re-routes the traffic without editing the indexed ZIP cluster page. Same alias-only playbook as P141.A / P142.A / P143.A.
-  '/zip-file-compressor.html': '/zip-file.html',
+  '/zip-file-compressor.html': '/zip-tools/zip-file.html',
   // Cycle145 P145.A — capture bare URL traffic for "compress zip file" head-query (16,542 imp / 28d, pos 6.3, CTR 6.47% per GSC). Bare URL currently 200-serves the homepage (canonical=/) so Google routes those clicks to a generic index. Aliasing to /zip-file.html re-routes the traffic without editing the indexed ZIP cluster page (ZIP-CARE preserved — no edit to /zip-file.html HTML). Same alias-only playbook as P141.A / P142.A / P143.A / P144.A.
-  '/compress-zip-file.html': '/zip-file.html',
+  '/compress-zip-file.html': '/zip-tools/zip-file.html',
   // Cycle146 P146.A — capture bare URL traffic for "zip compressor" head-query (~4,223 imp / 28d, pos 7.0, CTR 5.09% per GSC). Bare URL currently 200-serves the GitHub-Pages 404 fallback (homepage HTML, canonical=/) so Google routes those clicks to a generic index. Aliasing to /zip-file.html re-routes the traffic without editing the indexed ZIP cluster page (ZIP-CARE preserved — no edit to /zip-file.html HTML). Same alias-only playbook as P141.A / P142.A / P143.A / P144.A / P145.A.
-  '/zip-compressor.html': '/zip-file.html',
+  '/zip-compressor.html': '/zip-tools/zip-file.html',
   // Cycle147 P147.A — capture bare URL traffic for "compress zip" head-query (~4,220 imp / 28d, pos 7.4, CTR 3.46% per GSC). Bare URL currently 200-serves the GitHub-Pages 404 fallback (homepage HTML, canonical=/) so Google routes those clicks to a generic index. Aliasing to /zip-file.html re-routes the traffic without editing the indexed ZIP cluster page (ZIP-CARE preserved — no edit to /zip-file.html HTML). Same alias-only playbook as P141.A / P142.A / P143.A / P144.A / P145.A / P146.A.
-  '/compress-zip.html': '/zip-file.html',
+  '/compress-zip.html': '/zip-tools/zip-file.html',
   // Cycle148 P148.A — capture bare URL traffic for "how to make a zip file smaller" head-query (~2,429 imp / 28d, pos 5.6, CTR 0.33% per GSC; 113 missed clicks). Bare URL currently 200-serves the GitHub-Pages 404 fallback (homepage HTML, canonical=/) so Google routes those clicks to a generic index instead of the actual ZIP-compress tool.
   // Cycle173 P173.B amendment (2026-05-10) — operator-granted P171.B + P172.B (zip_care chain length=11). Re-target alias from /zip-file.html (generic ZIP tool, doesn't directly answer the head query "how to make a zip file smaller") to /guides/how-to-make-a-zip-file-smaller.html (long-form guide that already exists since Phase-16 cycle-8 N-series; ranks for the same query). Consolidates the 2,429 imp/28d 301 traffic into ONE canonical destination instead of two cannibalizing pages. ZIP-CARE preserved — no edit to indexed copy on /zip-file.html or /guides/how-to-make-a-zip-file-smaller.html; route table edit only. Tier-A protocol applied: pre-deploy snapshot at seo-reports/20260510-47/zip-pre-deploy/howtomakeazipfilesmaller/, halved Day +1/+3/+7 rollback thresholds, four-skill gate N/A (route-only change). Operator approve evidence: seo-reports/20260510-45/.approvals/granted/P171.B-howtomakeazipfilesmaller-zip-care-cooldown.json (2026-05-10T09:58:14.373Z) + seo-reports/20260510-46/.approvals/granted/P172.B-howtomakeazipfilesmaller-zip-care-cooldown.json (2026-05-10T09:58:18.077Z).
   '/how-to-make-a-zip-file-smaller.html': '/guides/how-to-make-a-zip-file-smaller.html',
   // Cycle149 P149.A — capture bare URL traffic for "zip file size reducer" head-query (2,754 imp / 28d, pos 5.66, CTR 10.46% per GSC; 288 clicks routed to homepage). Bare URL currently 200-serves the GitHub-Pages 404 fallback (homepage HTML, canonical=/). Aliasing to /zip-file.html re-routes the 288 clicks/28d to the actual ZIP-compress action page (ZIP-CARE preserved — no edit to /zip-file.html HTML). Same alias-only playbook as P141.A / P142.A / P143.A / P144.A / P145.A / P146.A / P147.A / P148.A.
-  '/zip-file-size-reducer.html': '/zip-file.html',
+  '/zip-file-size-reducer.html': '/zip-tools/zip-file.html',
   // Cycle150 P150.A — capture bare URL traffic for "reduce zip file size" head-query (2,769 imp / 28d, pos 6.2, CTR 10.69% per GSC; 296 clicks routed to homepage). Bare URL currently 200-serves the GitHub-Pages 404 fallback (homepage HTML, canonical=/). Aliasing to /zip-file.html re-routes the 296 clicks/28d to the actual ZIP-compress action page (ZIP-CARE preserved — no edit to /zip-file.html HTML). Same alias-only playbook as P141.A / P142.A / P143.A / P144.A / P145.A / P146.A / P147.A / P148.A / P149.A.
-  '/reduce-zip-file-size.html': '/zip-file.html',
+  '/reduce-zip-file-size.html': '/zip-tools/zip-file.html',
   // Cycle151 P151.A — capture bare URL traffic for "gif to frames" head-query (1,674 imp / 28d, pos 8.7, CTR 0.30% per GSC; 5 clicks currently routed to homepage). Bare URL currently 200-serves the GitHub-Pages 404 fallback (homepage HTML 201,113 bytes, canonical=/). Aliasing to the existing /extract-gif-to-image-frames.html action page re-routes the traffic to the canonical extractor without editing it. NOT a ZIP-cluster URL — ZIP-CRITICAL-CARE 24h cooldown does not apply (cooldown anchor 2026-05-09T05:53:00Z still active until 2026-05-10T05:53:00Z; this cycle deliberately ships a non-ZIP alias). Same alias-only playbook as P141.A / P142.A / P143.A / P144.A / P145.A / P146.A / P147.A / P148.A / P149.A / P150.A.
   '/gif-to-frames.html': '/image-converter-tools/extract-gif-to-image-frames.html',
   // Cycle152 P152.A — capture bare URL traffic for "lcd tester" head-query (2,260 imp / 28d, pos 5.11, CTR 2.65% per GSC; 60 clicks currently routed to homepage). Bare URL currently 200-serves the GitHub-Pages 404 fallback (homepage HTML 201,113 bytes, canonical=/, last-modified Sat, 09 May 2026 11:04:31 GMT — post-PR-#117 rebuild). Aliasing to the existing /lcd-test.html canonical device-test tool re-routes the traffic without editing it. NOT a ZIP-cluster URL — ZIP-CRITICAL-CARE 24h cooldown deliberately not engaged (cooldown anchor 2026-05-09T05:53:00Z still active until 2026-05-10T05:53:00Z; this cycle ships a non-ZIP alias). Same alias-only playbook as P141.A / P142.A / P143.A / P144.A / P145.A / P146.A / P147.A / P148.A / P149.A / P150.A / P151.A.
@@ -983,6 +983,13 @@ export const ALIAS_ROUTES = {
   '/image-to-base64.html': '/image-converter-tools/image-to-base64.html',
   '/base64-to-image.html': '/image-converter-tools/base64-to-image.html',
   '/extract-gif-to-image-frames.html': '/image-converter-tools/extract-gif-to-image-frames.html',
+  // Cohort zip URL migration — generated by update-jsp-by-route.mjs (URLMIG-19 sub-step 3.N.b).
+  // Operator-override-2026-05-10 (option B, meta-refresh fallback). Old flat tool URLs alias single-hop
+  // to the new clustered canonical URLs registered above. The renderer's renderRedirectPage() emits a
+  // <meta refresh 0> + JS replace + <link rel=canonical> + noindex,follow page at each old URL.
+  '/zip-file.html': '/zip-tools/zip-file.html',
+  '/unzip-file.html': '/zip-tools/unzip-file.html',
+  '/remove-zip-password.html': '/zip-tools/remove-zip-password.html',
 };
 
 export const JSP_BY_ROUTE = {
@@ -1150,9 +1157,9 @@ export const JSP_BY_ROUTE = {
   '/pdf-tools/flatten-pdf.html': 'pdf/flatten-pdf.jsp',
   '/utility-tools/get-time-in-millisecond.html': 'datetime/get-current-time-in-millisecond.jsp',
   '/utility-tools/convert-time-in-millisecond-to-date.html': 'convert/convert-time-in-millisecond-to-date.jsp',
-  '/zip-file.html': 'file/zip-file.jsp',
-  '/unzip-file.html': 'file/unzip-file.jsp',
-  '/remove-zip-password.html': 'file/remove-zip-password.jsp',
+  '/zip-tools/zip-file.html': 'file/zip-file.jsp',
+  '/zip-tools/unzip-file.html': 'file/unzip-file.jsp',
+  '/zip-tools/remove-zip-password.html': 'file/remove-zip-password.jsp',
   '/zip-tools.html': 'utility/zip-tools.jsp',
   // Cycle 134 P134.A — top-level "file compressor" tool-hub page (head query
   // 203,069 imp/28d at pos 10.0, CTR 0.05% — operator-authorized via cycle 133
