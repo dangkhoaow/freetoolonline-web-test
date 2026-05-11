@@ -864,6 +864,12 @@ export const GUIDE_ROUTES = new Set([
   // browser-only, NOT account-gated, does NOT extract live-photo
   // motion). Lane-D PA-mode mandatory; image-conversion cluster.
   '/guides/heic-to-jpg-claims-what-actually-works.html',
+  // Backfill: cycle 88 + cycle 90 guides were added to INFO_ROUTES but
+  // omitted from GUIDE_ROUTES. Without GUIDE_ROUTES membership they
+  // lose Article JSON-LD, Organization JSON-LD, editorial-byline, AND
+  // (post-2026-05-11 showAdSlots split) AdSense loading. Append-only.
+  '/guides/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html',
+  '/guides/image-compression-and-exif-metadata-what-gets-stripped.html',
 ]);
 
 export function isGuideRoute(route) {

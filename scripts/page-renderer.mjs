@@ -862,6 +862,11 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     || /uploadContainerSecond/.test(bodyHtml)
     || /uploadContainer/.test(bodyHtml);
   const showAds = !isHome && !isInfoRoute(normalizedRoute) && normalizedRoute !== '/alternatead.html';
+  const isGuide = isGuideRoute(normalizedRoute);
+  // Ad slots load on tool pages AND guide pages. Guides remain Article-only
+  // (no rating / related-tools / FAQ / SoftwareApplication JSON-LD) — those
+  // stay gated on showAds. See INFO_ROUTES comment in site-data.mjs.
+  const showAdSlots = showAds || isGuide;
   // Phase 16 Cycle B: detect hub pages either by suffix (existing
   // /<X>-tools.html convention) or by explicit hubRoute registration in
   // SEO_CLUSTER_GROUPS (added so /guides.html participates in the same
@@ -931,7 +936,6 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   const breadcrumbJsonLd = breadcrumbItems.length > 0
     ? buildBreadcrumbJsonLd({ canonicalOrigin, items: breadcrumbItems })
     : '';
-  const isGuide = isGuideRoute(normalizedRoute);
   // Organization JSON-LD: emit on home, hub pages, AND guide pages (guide Article
   // schema references the Organization and its editorial-team Person by @id).
   const organizationJsonLd = (isHome || isHubPage || isGuide) ? buildOrganizationJsonLd({ canonicalOrigin }) : '';
@@ -1067,7 +1071,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   const lastUpdatedHtml = showBottomLastUpdated
     ? `<p class="page-mtime" style="font-size:12px;color:#5f6368;margin:8px 0 0;text-align:right;"><time itemprop="dateModified" datetime="${escapeHtml(lastUpdatedIso)}">Last updated: ${escapeHtml(lastUpdatedHuman)}</time></p>`
     : '';
-  const showDisableAdsScript = showAds ? `<script>isLoadAds = true;</script>` : '';
+  const showDisableAdsScript = showAdSlots ? `<script>isLoadAds = true;</script>` : '';
   const toolContent = showAds ? toolSections : '';
   const showEditorialSurface = isHome || isHubPage || isGuide;
   const editorialByline = showEditorialSurface ? (sharedFragments.editorialByline || '') : '';
