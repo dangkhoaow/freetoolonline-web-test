@@ -93,7 +93,7 @@ async function main() {
     ...Array.from(INFO_ROUTES),
   ])
     .map(normalizeRoute)
-    .filter((route) => route === '/' || route.endsWith('.html'));
+    .filter((route) => route === '/' || route.endsWith('.html') || route.endsWith('/'));
   const rewriteInternalContent = createInternalContentRewriter({ siteOrigin, basePath, routeCandidates });
 
   const canonicalRoutes = [];

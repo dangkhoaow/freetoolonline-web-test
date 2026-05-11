@@ -879,6 +879,22 @@ export function isGuideRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  // Hub directory-form safety redirects (added 2026-05-11). Search engines
+  // and external links may guess `/cluster-tools/` from the clustered tool
+  // URLs (`/cluster-tools/<slug>.html`). Without these entries GitHub Pages
+  // returns 404 and may index the broken URL. Map each to its canonical
+  // .html hub so crawlers see a single soft-redirect signal pointing back
+  // to the canonical hub. The hub URL form-change to canonical-directory
+  // was deferred per plan §E.3; until then `/cluster-tools.html` stays
+  // canonical and the directory form is a redirect alias.
+  '/zip-tools/': '/zip-tools.html',
+  '/utility-tools/': '/utility-tools.html',
+  '/video-tools/': '/video-tools.html',
+  '/image-tools/': '/image-tools.html',
+  '/image-converter-tools/': '/image-converter-tools.html',
+  '/developer-tools/': '/developer-tools.html',
+  '/device-test-tools/': '/device-test-tools.html',
+  '/pdf-tools/': '/pdf-tools.html',
   '/svg-to-image.html': '/image-converter-tools/svg-to-png.html',
   '/split-pdf-to-single-pages.html': '/pdf-tools/split-pdf-by-range.html',
   '/pdf-merge-from-multiple-files.html': '/pdf-tools/join-pdf-from-multiple-files.html',
