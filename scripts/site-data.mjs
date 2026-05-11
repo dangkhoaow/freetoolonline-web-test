@@ -1273,6 +1273,29 @@ export function routeToPageName(route) {
   if (normalized === '/') {
     return '';
   }
+  // URL-migration support (operator-override 2026-05-10): for clustered tool
+  // URLs (e.g. /device-test-tools/lcd-test.html), strip the cluster prefix and
+  // return the leaf pageName ("lcd-test") — preserving hyphens, unlike
+  // routeToSlug which strips them for CMS-fragment filename matching. Two
+  // backward-compat reasons:
+  //   (1) the rating API (service.us-east-1a.freetool.online/ajax/get-rating)
+  //       stores rating data keyed by the pre-migration pageName. Sending the
+  //       new clustered pageName (with a slash) causes a lookup miss → empty
+  //       response → rating.html's error handler removes the parent div →
+  //       rating section disappears from the page. Forcing example: cycle193
+  //       2026-05-11, /device-test-tools/lcd-test.html lost its star-rating
+  //       widget on staging because pageName flipped from "lcd-test" to
+  //       "device-test-tools/lcd-test".
+  //   (2) the rendered HTML uses pageName in the body class (`page-${pageName}root`).
+  //       A slash in the class name (e.g. "page-device-test-tools/lcd-testroot")
+  //       breaks any CSS rule that targets `.page-lcd-testroot` directly.
+  for (const prefix of getClusterToolPathPrefixes()) {
+    if (normalized.startsWith(prefix)) {
+      const tail = normalized.slice(prefix.length);
+      if (tail) return tail.replace(/\.html$/i, '').toLowerCase();
+      // Hub directory-index form (/cluster-name/) — fall through to default.
+    }
+  }
   return normalized.replace(/^\//, '').replace(/\.html$/i, '').toLowerCase();
 }
 
