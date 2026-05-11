@@ -895,6 +895,11 @@ export const ALIAS_ROUTES = {
   '/developer-tools/': '/developer-tools.html',
   '/device-test-tools/': '/device-test-tools.html',
   '/pdf-tools/': '/pdf-tools.html',
+  // Same pattern for the /guides/ subdirectory (added 2026-05-11). The
+  // guides parent URL is `/guides.html` (200); individual guides live at
+  // `/guides/<slug>.html`. Without this entry `/guides/` returns 404 and
+  // a crawler that walks up from a guide URL may index the broken parent.
+  '/guides/': '/guides.html',
   '/svg-to-image.html': '/image-converter-tools/svg-to-png.html',
   '/split-pdf-to-single-pages.html': '/pdf-tools/split-pdf-by-range.html',
   '/pdf-merge-from-multiple-files.html': '/pdf-tools/join-pdf-from-multiple-files.html',
