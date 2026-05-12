@@ -129,6 +129,7 @@ try {
     { title: "Webcam Mirror vs Flip Explained", url: "https://freetoolonline.com/guides/camera-mirror-vs-flip-explained.html", include: !1, tags: "guide,device-test,camera-test" },
     { title: "CSS Unminifier vs Prettier - When to Use Each", url: "https://freetoolonline.com/guides/css-unminifier-vs-prettier-when-to-use-each.html", include: !1, tags: "guide,developer,css" },
     { title: "LED Test vs LCD Test - Which Applies to Your Screen?", url: "https://freetoolonline.com/guides/led-test-vs-lcd-test-which-applies-to-your-screen.html", include: !1, tags: "guide,device-test,lcd-test" },
+    { title: "OLED Test vs LCD Test - What Changes on an OLED Panel", url: "https://freetoolonline.com/guides/oled-test-vs-lcd-test-what-changes-on-oled.html", include: !1, tags: "guide,device-test,lcd-test" },
     { title: "How to Compress a JPG for Email Attachment Size Limits", url: "https://freetoolonline.com/guides/how-to-compress-a-jpg-for-email-attachment-limits.html", include: !1, tags: "guide,image-conversion,compress,jpg,email" },
     { title: "Microphone Test Levels - What Quiet, Normal, and Peak Mean", url: "https://freetoolonline.com/guides/microphone-test-online-quiet-normal-peak-meter.html", include: !1, tags: "guide,device-test,microphone-test,utility" },
     { title: "Camera Test Permission Blocked - How to Allow Camera Access in Your Browser", url: "https://freetoolonline.com/guides/camera-test-permission-blocked-how-to-allow-it.html", include: !1, tags: "guide,device-test,camera-test,utility" },

@@ -97,6 +97,20 @@ export const INFO_ROUTES = new Set([
   // laptop-5-minute-checklist) but none explain the backlight-vs-panel distinction that
   // generates the LED-test query stream. Append-only (new URL); non-cannibalizing.
   '/guides/led-test-vs-lcd-test-which-applies-to-your-screen.html',
+  // Cycle 233 P233.E - "OLED test vs LCD test: what changes on an OLED panel" Lane-D append-only guide
+  // (device-test / lcd-test sub-cluster, companion to /lcd-test.html and sibling to
+  // led-test-vs-lcd-test-which-applies-to-your-screen). Reader-task gap: existing 8 device-test
+  // guides cover LCD-as-panel, LED-as-backlight, dead-pixel sweep, display-vs-screen synonyms,
+  // and laptop checklist - but none make OLED the primary axis. Bing 28d shows "oled test" 702 imp
+  // / 1.28% CTR with no dedicated guide; per-cluster mention in led-test-vs-lcd-test guide treats
+  // OLED only as a footnote ("backlight bleed cannot occur"). New URL captures the burn-in /
+  // image-retention reader task that LCD-centric guides cannot answer. Append-only (new URL);
+  // non-cannibalising vs led-test-vs-lcd-test (different panel technology), vs dead-pixel-testing-
+  // guide (OLED burn-in is a distinct defect class), vs lcd-test-vs-display-test (display ≠ OLED).
+  // Multi-cycle task: phase 1 (this commit) ships the skeleton (route + JSP wrapper + CMS placeholders +
+  // related-tools entry); phase 2 (next cycle) authors CMS content from the SKILL.md framing menu;
+  // phase 3 adds structured data; phase 4 adds sibling backlinks; phase 5 promotes to prod.
+  '/guides/oled-test-vs-lcd-test-what-changes-on-oled.html',
   // Cycle 84 P84.A - "How to compress a JPG for email attachment size limits" Lane-D append-only
   // guide (image-conversion / compression sub-cluster, companion to /compress-image.html).
   // Reader-task gap: existing sibling guides cover folder-mode (how-to-compress-a-folder-for-
@@ -677,6 +691,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/css-unminifier-vs-prettier-when-to-use-each.html',
   // Cycle 83 P83.A - "LED test vs LCD test: which applies to your screen?" Lane-D guide (device-test / lcd-test sub-cluster).
   '/guides/led-test-vs-lcd-test-which-applies-to-your-screen.html',
+  // Cycle 233 P233.E - "OLED test vs LCD test: what changes on an OLED panel" Lane-D guide (device-test / lcd-test sub-cluster, companion to /lcd-test.html). Multi-cycle skeleton phase 1.
+  '/guides/oled-test-vs-lcd-test-what-changes-on-oled.html',
   // Cycle 84 P84.A - "How to compress a JPG for email attachment size limits" Lane-D guide (image-conversion / compression sub-cluster, companion to /compress-image.html).
   '/guides/how-to-compress-a-jpg-for-email-attachment-limits.html',
   // Cycle 85 P85.A - "Microphone test levels: what quiet, normal, and peak mean" Lane-D guide (device-test / microphone-test sub-cluster, companion to /microphone-test.html).
@@ -1058,6 +1074,8 @@ export const JSP_BY_ROUTE = {
   '/guides/css-unminifier-vs-prettier-when-to-use-each.html': 'guide/css-unminifier-vs-prettier-when-to-use-each.jsp',
   // Cycle 83 P83.A - "LED test vs LCD test: which applies to your screen?" Lane-D guide (device-test / lcd-test sub-cluster, companion to /lcd-test.html).
   '/guides/led-test-vs-lcd-test-which-applies-to-your-screen.html': 'guide/led-test-vs-lcd-test-which-applies-to-your-screen.jsp',
+  // Cycle 233 P233.E - "OLED test vs LCD test: what changes on an OLED panel" Lane-D guide (device-test / lcd-test sub-cluster, companion to /lcd-test.html). Multi-cycle skeleton phase 1.
+  '/guides/oled-test-vs-lcd-test-what-changes-on-oled.html': 'guide/oled-test-vs-lcd-test-what-changes-on-oled.jsp',
   // Cycle 84 P84.A - "How to compress a JPG for email attachment size limits" Lane-D guide (image-conversion / compression sub-cluster, companion to /compress-image.html).
   '/guides/how-to-compress-a-jpg-for-email-attachment-limits.html': 'guide/how-to-compress-a-jpg-for-email-attachment-limits.jsp',
   // Cycle 85 P85.A - "Microphone test levels: what quiet, normal, and peak mean" Lane-D guide (device-test / microphone-test sub-cluster, companion to /microphone-test.html).
