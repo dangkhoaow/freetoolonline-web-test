@@ -671,6 +671,16 @@ export const INFO_ROUTES = new Set([
   // and howtocompressafolder-scaffold-url-convention-1778626954066
   // (20260513-4) and ships the kebab-corrected URL.
   '/guides/zip-compressor.html',
+  // Cycle6 of 20260513-6 — "Compress ZIP" Lane-D append-only guide
+  // (zip cluster, companion to /zip-tools/zip-file.html and
+  // /guides/zip-compressor.html). Phase A skeleton only — JSP wrapper +
+  // INFO_ROUTES/GUIDE_ROUTES/JSP_BY_ROUTE entries. Synth fan-out emitted
+  // the non-kebab form /guides/compresszip.html and a plural guides/
+  // JSP subdir; this cycle applies the kebab + singular guide/ subdir
+  // convention established by the prior granted cards (six cards now in
+  // chain: filecompressor, lcdtest, zipfilecompressor, compresszipfile,
+  // howtocompressafolder, zipcompressor; this is the seventh).
+  '/guides/compress-zip.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -900,6 +910,9 @@ export const GUIDE_ROUTES = new Set([
   // Cycle1 of 20260513-5 P5.A - "Zip compressor" Lane-D guide. Phase A
   // skeleton (route + JSP wrapper) only. Kebab URL per granted cards.
   '/guides/zip-compressor.html',
+  // Cycle6 of 20260513-6 — "Compress ZIP" Lane-D guide. Phase A skeleton
+  // (route + JSP wrapper) only. Kebab + singular guide/ JSP subdir.
+  '/guides/compress-zip.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -1209,6 +1222,9 @@ export const JSP_BY_ROUTE = {
   // skeleton (route + JSP wrapper) only. Kebab URL + guide/ singular
   // subdir per granted-card convention.
   '/guides/zip-compressor.html': 'guide/zip-compressor.jsp',
+  // Cycle6 of 20260513-6 — "Compress ZIP" Lane-D guide. Phase A skeleton.
+  // Kebab URL + guide/ singular subdir per granted-card convention.
+  '/guides/compress-zip.html': 'guide/compress-zip.jsp',
 
   '/pdf-tools/compose-pdf.html': 'pdf/compose-pdf.jsp',
   '/pdf-tools/split-pdf-by-range.html': 'pdf/split-by-range.jsp',
