@@ -801,8 +801,15 @@ export const GUIDE_ROUTES = new Set([
   '/guides/lcd-test-what-it-checks.html',
   // Cycle 20260513-19+ multi-cycle - new long-tail guide for "lcd test" query.
   '/guides/lcdtest.html',
-  // Cycle 20260514-2 cycle 1 - Phase A scaffold for "folder to zip converter".
-  '/guides/foldertozipconverter.html',
+  // Cycle 20260514-2 Phase A scaffold for "folder to zip converter" was
+  // aborted-in-place per granted card
+  // create-guide-foldertozipconverter-cannibalisation-1778696200000
+  // (cannibalisation against /zip-tools/zip-file.html + existing
+  // /guides/how-to-compress-a-folder.html; non-kebab slug). Cycle 20260514-3
+  // P1.A implements the "exclude from sitemap" half of the abort-in-place
+  // decision by REMOVING the URL from GUIDE_ROUTES so sitemap-guides.xml
+  // no longer publishes it. The JSP_BY_ROUTE entry stays so the URL still
+  // renders (200, not 404) for any inbound link that already references it.
   // Cycle 19 P19.4 - screen/display/monitor synonym disambiguation guide.
   '/guides/screen-display-test-synonyms.html',
   // Cycle 27 P27.C - keyboard-test how-to guide (Lane-D PA-mode mandatory).
