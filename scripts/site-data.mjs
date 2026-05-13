@@ -660,6 +660,17 @@ export const INFO_ROUTES = new Set([
   // touching the indexed copy of /heic-to-jpg.html. Lane-D PA-mode
   // mandatory; image-conversion cluster (non-ZIP); append-only.
   '/guides/heic-to-jpg-claims-what-actually-works.html',
+  // Cycle1 of 20260513-5 P5.A - "Zip compressor" Lane-D append-only
+  // guide (zip cluster, companion to /zip-tools/zip-file.html). Phase A
+  // skeleton only — JSP wrapper + INFO_ROUTES/GUIDE_ROUTES/JSP_BY_ROUTE
+  // entries (no CMS content yet — phases 2-5 author content,
+  // structured data, backlinks, prod-promote). Synth fan-out emitted
+  // the non-kebab form /guides/zipcompressor.html; this cycle applies
+  // the kebab convention established by granted approval cards
+  // compresszipfile-scaffold-url-convention-1778622900000 (20260513-3)
+  // and howtocompressafolder-scaffold-url-convention-1778626954066
+  // (20260513-4) and ships the kebab-corrected URL.
+  '/guides/zip-compressor.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -886,6 +897,9 @@ export const GUIDE_ROUTES = new Set([
   // (post-2026-05-11 showAdSlots split) AdSense loading. Append-only.
   '/guides/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html',
   '/guides/image-compression-and-exif-metadata-what-gets-stripped.html',
+  // Cycle1 of 20260513-5 P5.A - "Zip compressor" Lane-D guide. Phase A
+  // skeleton (route + JSP wrapper) only. Kebab URL per granted cards.
+  '/guides/zip-compressor.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -1191,6 +1205,10 @@ export const JSP_BY_ROUTE = {
   '/guides/zip-file-converter-what-it-actually-does.html': 'guide/zip-file-converter-what-it-actually-does.jsp',
   // Cycle 71 P71.F - "HEIC to JPG: what the converter actually does (and what it does not)" trust-anchor guide.
   '/guides/heic-to-jpg-claims-what-actually-works.html': 'guide/heic-to-jpg-claims-what-actually-works.jsp',
+  // Cycle1 of 20260513-5 P5.A - "Zip compressor" Lane-D guide. Phase A
+  // skeleton (route + JSP wrapper) only. Kebab URL + guide/ singular
+  // subdir per granted-card convention.
+  '/guides/zip-compressor.html': 'guide/zip-compressor.jsp',
 
   '/pdf-tools/compose-pdf.html': 'pdf/compose-pdf.jsp',
   '/pdf-tools/split-pdf-by-range.html': 'pdf/split-by-range.jsp',
