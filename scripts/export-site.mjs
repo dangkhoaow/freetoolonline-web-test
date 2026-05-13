@@ -388,10 +388,32 @@ function resolveRatingOrigin(siteOriginValue) {
   return 'https://freetoolonline.com';
 }
 
+// HTML comments authored by the SEO agent (Phase B authoring markers,
+// cycle annotations, ROW dividers, etc.) are useful in source for audit
+// trail but add page weight + DOM noise in the published artifact. Strip
+// them at writeOutput time; keep IE conditional comments and the GTM /
+// AdSense markers that downstream tooling looks for.
+const PRESERVE_COMMENT_PATTERNS = [
+  /^\s*\[if /i,
+  /\s*<!\[endif\]/i,
+  /Google Tag Manager/i,
+  /google_ad_/i,
+  /Responsive-ad/i,
+];
+
+function stripHtmlComments(html) {
+  return html.replace(/<!--([\s\S]*?)-->/g, (match, inner) => {
+    if (PRESERVE_COMMENT_PATTERNS.some((re) => re.test(inner))) return match;
+    return '';
+  });
+}
+
 async function writeOutput(outputPath, contents) {
   const fullOutputPath = path.join(distDir, outputPath);
   await mkdir(path.dirname(fullOutputPath), { recursive: true });
-  await writeFile(fullOutputPath, contents, 'utf8');
+  const isHtml = /\.html?$/i.test(outputPath);
+  const finalContents = isHtml ? stripHtmlComments(contents) : contents;
+  await writeFile(fullOutputPath, finalContents, 'utf8');
 }
 
 function outputPathForRoute(route) {
