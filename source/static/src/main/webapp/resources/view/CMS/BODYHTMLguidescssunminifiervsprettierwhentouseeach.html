@@ -1,3 +1,14 @@
+<style>
+    /* Cycle 20260514-9 — collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
 <div class="w3-container w3-margin-top">
     <h1 class="text-uppercase"><b>CSS Unminifier vs Prettier: When to Use Each</b></h1>
     <p><em>Last reviewed 2026-05-05. CSS Unminifier and Prettier are both formatters, but they solve different problems. CSS Unminifier reads minified production CSS and spreads it back out so each selector and declaration sits on its own line &mdash; ideal for debugging a shipped stylesheet you do not own the source of. Prettier formats CSS source you are about to commit, applying your team's <code>.prettierrc</code> rules so every developer's diff stays clean. Pick the right one in 30 seconds with the table below, and read the rest of this guide if you want to know why the wrong choice produces inconsistent output. Try the <a href="/developer-tools/css-unminifier.html">CSS Unminifier</a> alongside this guide for the read-shipped-CSS half.</em></p>
@@ -66,20 +77,30 @@
     <p>If you are unsure whether the file you have is a "minifier" output (whitespace-stripped) or a "uglifier" / tree-shaker output (variables-renamed-too), the <a href="/guides/css-minifier-vs-uglifier-vs-tree-shaking.html">CSS minifier vs uglifier vs tree-shaking guide</a> explains how to tell them apart in one paragraph. If you are picking a minifier vs a compressor (gzip/brotli), the <a href="/guides/css-minifier-vs-compressor.html">minifier vs compressor guide</a> covers that adjacent confusion. If you are running a Cloud Run or Lambda deployment and worried about cold-start CSS bytes, the <a href="/guides/how-to-minify-css-js-for-cloud-run-cold-start.html">how to minify CSS/JS for Cloud Run cold start</a> guide covers the budget-driven case.</p>
 
     <h2 class="text-uppercase"><b>FAQ</b></h2>
-    <p><b>Is the unminified output the same as the original CSS source?</b><br/>
-    Almost never. The unminifier reverses the whitespace step but cannot reverse comment stripping, variable mangling, tree-shaking, or vendor-prefix re-ordering. Treat the output as "readable production CSS," not "original source." If you need the original source, fetch the build's git repository or the source map.</p>
+    <details class="faq-item">
+  <summary>Is the unminified output the same as the original CSS source?</summary>
+  <p>Almost never. The unminifier reverses the whitespace step but cannot reverse comment stripping, variable mangling, tree-shaking, or vendor-prefix re-ordering. Treat the output as "readable production CSS," not "original source." If you need the original source, fetch the build's git repository or the source map.</p>
+</details>
 
-    <p><b>Why are my variable names different after I unminify?</b><br/>
-    They are not different &mdash; they are the same names that the build pipeline wrote to the file. Modern build chains rewrite class names through CSS Modules or CSS-in-JS hashing for scope isolation, so the production stylesheet contains <code>.Button_xY7g3</code> instead of <code>.Button</code>. The unminifier shows you what is in the file; it cannot un-hash the names because the build's mapping is not present.</p>
+    <details class="faq-item">
+  <summary>Why are my variable names different after I unminify?</summary>
+  <p>They are not different &mdash; they are the same names that the build pipeline wrote to the file. Modern build chains rewrite class names through CSS Modules or CSS-in-JS hashing for scope isolation, so the production stylesheet contains <code>.Button_xY7g3</code> instead of <code>.Button</code>. The unminifier shows you what is in the file; it cannot un-hash the names because the build's mapping is not present.</p>
+</details>
 
-    <p><b>Can I run Prettier on the unminified output?</b><br/>
-    Yes, and the result will be Prettier-formatted (matching whatever <code>.prettierrc</code> rule set you point Prettier at). But the unminifier already produces a canonical "one declaration per line" output that is good for reading; running Prettier on it just changes the formatting style to match your team rules. Most readers do not bother. If you are about to commit the file as source, then yes &mdash; run Prettier next, because Prettier matches your team's commit format.</p>
+    <details class="faq-item">
+  <summary>Can I run Prettier on the unminified output?</summary>
+  <p>Yes, and the result will be Prettier-formatted (matching whatever <code>.prettierrc</code> rule set you point Prettier at). But the unminifier already produces a canonical "one declaration per line" output that is good for reading; running Prettier on it just changes the formatting style to match your team rules. Most readers do not bother. If you are about to commit the file as source, then yes &mdash; run Prettier next, because Prettier matches your team's commit format.</p>
+</details>
 
-    <p><b>Will CSS Unminifier handle CSS Modules class hashes?</b><br/>
-    It will format them just fine (the hashes are valid CSS class names). What it cannot do is map them back to the human-readable names from your source. If you have the build's source map, your DevTools can show the human names by mapping back through the source map; the unminifier alone cannot.</p>
+    <details class="faq-item">
+  <summary>Will CSS Unminifier handle CSS Modules class hashes?</summary>
+  <p>It will format them just fine (the hashes are valid CSS class names). What it cannot do is map them back to the human-readable names from your source. If you have the build's source map, your DevTools can show the human names by mapping back through the source map; the unminifier alone cannot.</p>
+</details>
 
-    <p><b>Is there a way to recover comments after a build?</b><br/>
-    Only if the build's minifier was configured to preserve them (most are not by default). Configure your build to keep <code>/*! ... */</code> banner comments via the minifier's <code>preserve</code> or <code>comments: 'some'</code> option. Once stripped, comments are not recoverable through formatting.</p>
+    <details class="faq-item">
+  <summary>Is there a way to recover comments after a build?</summary>
+  <p>Only if the build's minifier was configured to preserve them (most are not by default). Configure your build to keep <code>/*! ... */</code> banner comments via the minifier's <code>preserve</code> or <code>comments: 'some'</code> option. Once stripped, comments are not recoverable through formatting.</p>
+</details>
 
     <h2 class="text-uppercase"><b>Related</b></h2>
     <ul>
