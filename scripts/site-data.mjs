@@ -800,7 +800,15 @@ export const GUIDE_ROUTES = new Set([
   '/guides/how-to-compress-a-folder.html',
   '/guides/lcd-test-what-it-checks.html',
   // Cycle 20260513-19+ multi-cycle - new long-tail guide for "lcd test" query.
-  '/guides/lcdtest.html',
+  // Cycle 20260514-4-followup: REMOVED from GUIDE_ROUTES (sitemap-excluded
+  // via abort-in-place). Reason: slug "lcdtest" smashes the kebab form of
+  // /lcd-test.html (alias of /device-test-tools/lcd-test.html) and shadows
+  // that canonical route — flagged CRITICAL by scan-guide-quality-gates.mjs
+  // (guide_shadows_existing_route). JSP_BY_ROUTE entry stays so the URL
+  // still renders (200) for any inbound link, but sitemap-guides.xml no
+  // longer promotes it. Operator can rename to e.g. `/guides/lcd-test-online.html`
+  // in a future cycle if they want this guide back in the sitemap.
+  // '/guides/lcdtest.html',
   // Cycle 20260514-2 Phase A scaffold for "folder to zip converter" was
   // aborted-in-place per granted card
   // create-guide-foldertozipconverter-cannibalisation-1778696200000
@@ -1125,6 +1133,10 @@ export const JSP_BY_ROUTE = {
   '/guides/led-test-vs-lcd-test-which-applies-to-your-screen.html': 'guide/led-test-vs-lcd-test-which-applies-to-your-screen.jsp',
   // Cycle 233 P233.E - "OLED test vs LCD test: what changes on an OLED panel" Lane-D guide (device-test / lcd-test sub-cluster, companion to /lcd-test.html). Multi-cycle skeleton phase 1.
   '/guides/oled-test-vs-lcd-test-what-changes-on-oled.html': 'guide/oled-test-vs-lcd-test-what-changes-on-oled.jsp',
+  // Cycle1/20260514-5 P1.A - "LCD test online" Lane-D guide (device-test / lcd-test sub-cluster, companion to /lcd-test.html). Multi-cycle Phase A skeleton (route scaffolding only).
+  '/guides/lcd-test-online.html': 'guide/lcd-test-online.jsp',
+  // Cycle1/20260514-5 create_new_guide_page - "Split GIF into frames" Lane-D guide (image-editing / gif-maker sub-cluster, companion to /gif-maker.html). Multi-cycle Phase A skeleton (route scaffolding only).
+  '/guides/split-gif-into-frames.html': 'guide/split-gif-into-frames.jsp',
   // Cycle 84 P84.A - "How to compress a JPG for email attachment size limits" Lane-D guide (image-conversion / compression sub-cluster, companion to /compress-image.html).
   '/guides/how-to-compress-a-jpg-for-email-attachment-limits.html': 'guide/how-to-compress-a-jpg-for-email-attachment-limits.jsp',
   // Cycle 85 P85.A - "Microphone test levels: what quiet, normal, and peak mean" Lane-D guide (device-test / microphone-test sub-cluster, companion to /microphone-test.html).
