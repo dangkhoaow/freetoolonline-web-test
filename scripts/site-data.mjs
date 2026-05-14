@@ -421,6 +421,11 @@ export const INFO_ROUTES = new Set([
   // satellite backlinks anywhere this cycle. Cluster: image-conversion /
   // animation. Lane-D PA-mode mandatory; non-ZIP, non-destructive.
   '/guides/gif-frame-extractor-output-looks-wrong-three-causes.html',
+  // Cycle 20260514-9 create_new_guide_page - "gif frame extractor" head-term
+  // Lane-D guide (1,022 imp / 28d, pos 7.77, CTR 1.08%; opportunity score 130).
+  // Implementing tool: /extract-gif-to-image-frames.html. Single-cycle complete
+  // ship per cycle 20260514-5 contract.
+  '/guides/gif-frame-extractor.html',
   // Cycle 42 P42.A - "LCD test vs display test vs monitor test - which?"
   // reactive disambiguation-flow guide. Lane-D pivot because all 6 cycle-42
   // decision rows touch active-monitor or auto-status tool URLs (/lcd-test.html
@@ -852,6 +857,9 @@ export const GUIDE_ROUTES = new Set([
   '/guides/ffmpeg-online-conversion-stalled-three-fixes.html',
   // Cycle 41 P41.A - "GIF frame extractor output looks wrong, why?" reactive diagnostic-flow guide.
   '/guides/gif-frame-extractor-output-looks-wrong-three-causes.html',
+  // Cycle 20260514-9 create_new_guide_page - "gif frame extractor" head-term
+  // Lane-D guide. Implementing tool: /extract-gif-to-image-frames.html.
+  '/guides/gif-frame-extractor.html',
   // Cycle 42 P42.A - "LCD test vs display test vs monitor test - which one do you actually need?" reactive disambiguation-flow guide.
   '/guides/lcd-test-vs-display-test-which-do-you-need.html',
   // Cycle 43 P43.B - "Camera test vs webcam test vs camera quality - which one do you actually need?" reactive disambiguation-flow guide.
@@ -1249,6 +1257,7 @@ export const JSP_BY_ROUTE = {
   '/guides/compressed-jpg-looks-blurry-three-causes.html': 'guide/compressed-jpg-looks-blurry-three-causes.jsp',
   '/guides/ffmpeg-online-conversion-stalled-three-fixes.html': 'guide/ffmpeg-online-conversion-stalled-three-fixes.jsp',
   '/guides/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/gif-frame-extractor-output-looks-wrong-three-causes.jsp',
+  '/guides/gif-frame-extractor.html': 'guide/gif-frame-extractor.jsp',
   '/guides/lcd-test-vs-display-test-which-do-you-need.html': 'guide/lcd-test-vs-display-test-which-do-you-need.jsp',
   '/guides/camera-test-vs-webcam-test-which-do-you-need.html': 'guide/camera-test-vs-webcam-test-which-do-you-need.jsp',
   '/guides/screen-test-vs-camera-test-pick-the-right-tool.html': 'guide/screen-test-vs-camera-test-pick-the-right-tool.jsp',
