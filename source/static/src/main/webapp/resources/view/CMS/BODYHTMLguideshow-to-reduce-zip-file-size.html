@@ -1,0 +1,61 @@
+<article class="guide-body w3-container w3-padding-large">
+  <h1>How to Reduce ZIP File Size</h1>
+  <p class="lead">The most common surprise when zipping a folder is that the resulting <code>.zip</code> is barely smaller - sometimes a few percent bigger - than the original. That is not a bug in the tool. ZIP only shrinks compressible inputs (plain text, logs, CSV, JSON, source code, uncompressed images), and most of the files people zip - JPG photos, MP4 video, MP3 audio, and many PDFs - are already compressed by their own codec, so wrapping them in a ZIP adds packaging overhead without saving space. The way to make the archive smaller is to preprocess the heavy files before zipping, not to lean harder on the ZIP step.</p>
+  <p class="reviewed">Last reviewed: 2026-05-15</p>
+  <p class="byline">Reviewed by the FreetoolOnline editorial team</p>
+
+  <table class="quick-facts w3-table-all w3-margin-top w3-margin-bottom">
+    <thead><tr><th>Question</th><th>Short answer</th></tr></thead>
+    <tbody>
+      <tr><td>Will my ZIP be smaller than the input files?</td><td>Only if the inputs are text-heavy. JPG / MP4 / MP3 / most PDFs already are compressed.</td></tr>
+      <tr><td>Does choosing a higher compression level help?</td><td>Marginally (a few percent on text-heavy archives). Compressibility of inputs matters more than the level slider.</td></tr>
+      <tr><td>Real way to reduce ZIP size?</td><td>Resize / re-encode the media first, then ZIP the optimised files.</td></tr>
+      <tr><td>Where is the in-browser ZIP creator?</td><td><a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a> (free, no install).</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Why most ZIPs do not shrink</h2>
+  <p>The job of a ZIP file is two things: bundle many files into one container and (optionally) compress them. The compression step uses DEFLATE, which reads each input file looking for repeated byte patterns and replaces them with shorter tokens. Plain text - logs, CSV, JSON, source code, uncompressed image formats like BMP or uncompressed TIFF - contains lots of repetition, so DEFLATE shrinks it heavily; 50-70% size reductions are normal on text-heavy archives. JPG, MP4, MP3, and most PDFs have already been through a domain-specific compressor (JPEG quantisation for photos, AAC or MP3 codec for audio, H.264 / H.265 for video), so the byte stream looks like noise to DEFLATE. The result is that the ZIP only adds the container overhead (file headers, directory record) without finding savings. The output is usually 0-5% smaller, occasionally 1-2% larger.</p>
+
+  <h2>The workflow that actually reduces the size</h2>
+  <p>If the goal is "make this delivery smaller", separate compressible content from already-compressed content before you ZIP:</p>
+  <ol>
+    <li><b>Identify the heavy files.</b> Sort the folder by size. The top one or two files almost always account for 80% of the total, and they are usually photos, screen recordings, or PDFs.</li>
+    <li><b>Reduce the heavy files separately.</b> Resize a 4000x3000 photo to 2000x1500 with <a href="/image-tools/resize-image.html">Resize Image</a>; re-compress at a lower quality with <a href="/image-tools/compress-image.html">Compress Image</a>; trim a video with the video tools at <a href="/video-tools.html">/video-tools.html</a>; flatten a heavy PDF with <a href="/pdf-tools/compress-pdf.html">Compress PDF</a>.</li>
+    <li><b>Now ZIP the optimised files.</b> Open <a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a>, drop the (smaller) replacements in along with the genuinely text-heavy files, and let DEFLATE handle the rest.</li>
+  </ol>
+  <p>The end result is a ZIP whose size is dominated by the new, smaller media files. The ZIP step is the last 5%, not the first 95%.</p>
+
+  <h2>What about the compression-level slider?</h2>
+  <p>Some ZIP tools expose a level (Store / Fast / Normal / Maximum / Ultra). The slider mainly trades CPU time on the sender side against a few extra percent of size reduction:</p>
+  <ul>
+    <li><b>Store</b> - no compression. Useful only when speed matters more than size (a very large folder being uploaded over a slow connection where the CPU is the bottleneck).</li>
+    <li><b>Fast / Normal (DEFLATE default)</b> - the standard setting. Best balance of build time and size. <i>Use this unless you have a reason not to.</i></li>
+    <li><b>Maximum / Ultra</b> - longer CPU time for a few extra percent on a text-heavy archive. Almost never moves the needle on archives that contain media.</li>
+  </ul>
+  <p>If your ZIP did not shrink, the level slider is the wrong knob to turn. The inputs are not compressible, full stop - and you need the preprocessing step above.</p>
+
+  <h2>Synonym-routing note</h2>
+  <p>If you typed "compress ZIP" instead of "how to reduce ZIP file size", the same answer lives at <a href="/guides/compress-zip.html">/guides/compress-zip.html</a> in slightly different language - the disambiguation guide for that phrasing. The companion guide at <a href="/guides/how-to-reduce-zip-file-size-online.html">/guides/how-to-reduce-zip-file-size-online.html</a> covers the same query for readers who include "online" in their search. Both routes link back to the same in-browser ZIP creator at <a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a>, so the next click is the same regardless of which wording you used.</p>
+
+  <h2>FAQ</h2>
+  <details class="faq-item">
+    <summary>My ZIP got slightly bigger than the original folder. Is something broken?</summary>
+    <p>No - that is the expected result when every input is already compressed (JPG / MP4 / MP3 / most PDFs). The ZIP container adds a small per-file directory record; DEFLATE finds nothing to compress; net delta is 0 to a couple of percent larger.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Should I use 7z or RAR instead of ZIP for a real size win?</summary>
+    <p>7z and RAR use stronger compression algorithms (LZMA2, RAR5) and can shrink already-compressed media by another 5-10%. The trade-off is reach: not every recipient has a 7z / RAR opener, and many webmail attachment scanners or upload widgets refuse anything other than <code>.zip</code>. ZIP defaults to maximum compatibility; switch only if you control both ends of the delivery.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Can I just raise the compression level to "Ultra" and skip the preprocessing?</summary>
+    <p>You can try, but the result is usually disappointing. On a folder of photos and a video, "Ultra" might shave 1-2% extra at the cost of a long build time. Resizing the photos and trimming the video first will shave 70-80%. Compressibility of inputs sets the ceiling; the level slider just decides how close you get to it.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Does password-protecting the ZIP change the size?</summary>
+    <p>Password protection (open password + AES encryption) adds a small fixed overhead - typically a few hundred bytes - but does not change how well the contents compress. The size is dominated by the inputs, not the encryption.</p>
+  </details>
+
+  <h2>One-line takeaway</h2>
+  <p>To reduce a ZIP file's size: do not start at the ZIP step. Sort the folder by size, shrink the heavy media files separately (resize, re-encode), then ZIP the optimised files at the default compression level. The ZIP is the bundle; the size win happens upstream of it.</p>
+</article>

@@ -233,6 +233,11 @@ export const INFO_ROUTES = new Set([
   // Phase 16 Cycle A P16.N4 - "how to reduce zip file size" cluster
   // (~2.2K impr / 10-16% CTR / pos 4). Greenfield how-to guide.
   '/guides/how-to-reduce-zip-file-size-online.html',
+  // Cycle 20260515-14 - kebab-form sibling for the same query (the
+  // existing -online suffix variant covers users who type "online";
+  // this bare-form covers users who omit it). 723 imp / 5.39 pos /
+  // 7.5% CTR per GSC 28d.
+  '/guides/how-to-reduce-zip-file-size.html',
   // Phase 16 Cycle B P16.N11 - "convert heic to jpg" head query
   // (5,500+ impr / <2% CTR / pos 11-24). Pure step-by-step how-to;
   // pairs with existing heic-vs-jpg-vs-webp (which covers the WHEN).
@@ -777,6 +782,7 @@ export const GUIDE_ROUTES = new Set([
   '/guides/what-is-a-file-compressor-and-which-to-use.html',
   '/guides/how-to-compress-a-file-online.html',
   '/guides/how-to-reduce-zip-file-size-online.html',
+  '/guides/how-to-reduce-zip-file-size.html',
   // Cycle 121 P121.G - "file compressor" HEAD-query aggregator landing.
   '/guides/file-compressor.html',
   // Cycle 122 P122.A - "test lcd" / "lcd tester" / "lcd test online" HEAD-query
@@ -1235,6 +1241,7 @@ export const JSP_BY_ROUTE = {
   '/guides/test-lcd.html': 'guide/test-lcd.jsp',
   '/guides/how-to-compress-a-file-online.html': 'guide/how-to-compress-a-file-online.jsp',
   '/guides/how-to-reduce-zip-file-size-online.html': 'guide/how-to-reduce-zip-file-size-online.jsp',
+  '/guides/how-to-reduce-zip-file-size.html': 'guide/how-to-reduce-zip-file-size.jsp',
   // Phase 16 Cycle B P16.G1 hub + P16.N11 + P16.N16.
   '/guides.html': 'utility/guides.jsp',
   '/guides/how-to-convert-heic-to-jpg-step-by-step.html': 'guide/how-to-convert-heic-to-jpg-step-by-step.jsp',
