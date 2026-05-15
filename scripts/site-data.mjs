@@ -971,12 +971,6 @@ export const GUIDE_ROUTES = new Set([
   // Spanish-keyword sibling of /guides/make-zip-file-online.html;
   // companion to /zip-tools/zip-file.html). Complete single-cycle ship.
   '/guides/comprimir-zip-online.html',
-  // Cycle 20260515-16 — "Compress ZIP Size" Lane-D guide (zip cluster). Answers
-  // the literal "compress zip size" query (579 impr / 39 clicks / pos 5.1) with
-  // a compressibility table + routes to /zip-tools/zip-file.html. Differentiates
-  // from /guides/compress-zip.html (conceptual disambiguation) and
-  // /guides/how-to-compress-zip-file-to-smaller-size.html (target-cap walkthrough).
-  '/guides/compress-zip-size.html',
   // Cycle 20260515-15 — "Zip File Compressor Online" Lane-D guide (zip
   // cluster head-query; 799 imp / 73 clicks / pos 6.2 / CTR 9.1% per 28d
   // GSC; opportunity_score 117.19). Companion to /zip-tools/zip-file.html.
