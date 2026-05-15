@@ -967,6 +967,11 @@ export const GUIDE_ROUTES = new Set([
   // Spanish-keyword sibling of /guides/make-zip-file-online.html;
   // companion to /zip-tools/zip-file.html). Complete single-cycle ship.
   '/guides/comprimir-zip-online.html',
+  // Cycle 20260515-15 — "Zip File Compressor Online" Lane-D guide (zip
+  // cluster head-query; 799 imp / 73 clicks / pos 6.2 / CTR 9.1% per 28d
+  // GSC; opportunity_score 117.19). Companion to /zip-tools/zip-file.html.
+  // Phase A complete single-cycle ship.
+  '/guides/zip-file-compressor-online.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -1242,6 +1247,8 @@ export const JSP_BY_ROUTE = {
   '/guides/how-to-compress-a-file-online.html': 'guide/how-to-compress-a-file-online.jsp',
   '/guides/how-to-reduce-zip-file-size-online.html': 'guide/how-to-reduce-zip-file-size-online.jsp',
   '/guides/how-to-reduce-zip-file-size.html': 'guide/how-to-reduce-zip-file-size.jsp',
+  // Cycle 20260515-15 — "Zip File Compressor Online" Lane-D guide.
+  '/guides/zip-file-compressor-online.html': 'guide/zip-file-compressor-online.jsp',
   // Phase 16 Cycle B P16.G1 hub + P16.N11 + P16.N16.
   '/guides.html': 'utility/guides.jsp',
   '/guides/how-to-convert-heic-to-jpg-step-by-step.html': 'guide/how-to-convert-heic-to-jpg-step-by-step.jsp',
