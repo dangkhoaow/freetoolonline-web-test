@@ -957,6 +957,10 @@ export const GUIDE_ROUTES = new Set([
   // Cycle 20260515-12 — "Make Zip File Online" Lane-D guide (zip cluster,
   // companion to /zip-tools/zip-file.html). Complete single-cycle ship.
   '/guides/make-zip-file-online.html',
+  // Cycle 20260515-13 — "Comprimir Zip Online" Lane-D guide (zip cluster,
+  // Spanish-keyword sibling of /guides/make-zip-file-online.html;
+  // companion to /zip-tools/zip-file.html). Complete single-cycle ship.
+  '/guides/comprimir-zip-online.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -1186,6 +1190,8 @@ export const JSP_BY_ROUTE = {
   '/guides/split-gif-into-frames.html': 'guide/split-gif-into-frames.jsp',
   // Cycle 20260515-12 create_new_guide_page - "Make Zip File Online" Lane-D guide (zip cluster, companion to /zip-tools/zip-file.html). Complete single-cycle ship per cycle 20260514-5 contract (no skeleton wait).
   '/guides/make-zip-file-online.html': 'guide/make-zip-file-online.jsp',
+  // Cycle 20260515-13 create_new_guide_page - "Comprimir Zip Online" Lane-D guide (zip cluster, Spanish-keyword sibling of /guides/make-zip-file-online.html; companion to /zip-tools/zip-file.html). Complete single-cycle ship per cycle 20260514-5 contract.
+  '/guides/comprimir-zip-online.html': 'guide/comprimir-zip-online.jsp',
   // Cycle 84 P84.A - "How to compress a JPG for email attachment size limits" Lane-D guide (image-conversion / compression sub-cluster, companion to /compress-image.html).
   '/guides/how-to-compress-a-jpg-for-email-attachment-limits.html': 'guide/how-to-compress-a-jpg-for-email-attachment-limits.jsp',
   // Cycle 85 P85.A - "Microphone test levels: what quiet, normal, and peak mean" Lane-D guide (device-test / microphone-test sub-cluster, companion to /microphone-test.html).
