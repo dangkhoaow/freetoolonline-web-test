@@ -245,6 +245,9 @@ export const INFO_ROUTES = new Set([
   // Phase 16 Cycle B P16.N16 - "lcd test" head query (28K aggregate
   // impr / 1.10% CTR / pos 6.1). Explainer + when-to-run + boundary.
   '/guides/what-an-lcd-test-does-and-when-to-run-one.html',
+  // Cycle 20260517-6 create_new_guide_page - "ms to date" synonym-coverage guide.
+  // Implementing tool: /convert-time-in-millisecond-to-date.html.
+  '/guides/ms-to-date.html',
   // Phase 16 cycle 8 N-series - 25 new long-form guides. INFO_ROUTES
   // membership disables ads + rating widget (matching the rest of the
   // /guides/* cluster); see page-renderer.mjs showAds gate.
@@ -793,6 +796,8 @@ export const GUIDE_ROUTES = new Set([
   // Phase 16 Cycle B P16.N11 / P16.N16.
   '/guides/how-to-convert-heic-to-jpg-step-by-step.html',
   '/guides/what-an-lcd-test-does-and-when-to-run-one.html',
+  // Cycle 20260517-6 create_new_guide_page - "ms to date" synonym-coverage guide.
+  '/guides/ms-to-date.html',
   '/guides/how-to-make-a-zip-file-smaller.html',
   '/guides/how-to-compress-zip-file-to-smaller-size.html',
   '/guides/compress-zip-file-to-100kb.html',
@@ -1259,6 +1264,8 @@ export const JSP_BY_ROUTE = {
   '/guides.html': 'utility/guides.jsp',
   '/guides/how-to-convert-heic-to-jpg-step-by-step.html': 'guide/how-to-convert-heic-to-jpg-step-by-step.jsp',
   '/guides/what-an-lcd-test-does-and-when-to-run-one.html': 'guide/what-an-lcd-test-does-and-when-to-run-one.jsp',
+  // Cycle 20260517-6 create_new_guide_page - "ms to date" synonym-coverage guide.
+  '/guides/ms-to-date.html': 'guide/ms-to-date.jsp',
   // Phase 16 cycle 8 N-series guides (25 new).
 
   // Phase 16 cycle 8 N-series guides (25 new).
