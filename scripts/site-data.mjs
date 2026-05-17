@@ -3,7 +3,7 @@ import path from 'node:path';
 import { resolveHubBacklink, getSeoClusterGroups } from './seo-clusters.mjs';
 
 export const DEFAULT_SITE_ORIGIN = 'https://freetoolonline.com';
-export const DEFAULT_API_ORIGIN = 'https://service.us-east-1a.freetool.online/';
+export const DEFAULT_API_ORIGIN = 'https://service.freetool.online/';
 export const DEFAULT_SHORTEN_DOMAIN = 'https://freetoolonline.com';
 export const DEFAULT_APP_VERSION = new Date().toISOString().slice(0, 10).replaceAll('-', '');
 export const DEFAULT_IO_VERSION = '1';
@@ -1469,7 +1469,7 @@ export function routeToPageName(route) {
   // return the leaf pageName ("lcd-test") — preserving hyphens, unlike
   // routeToSlug which strips them for CMS-fragment filename matching. Two
   // backward-compat reasons:
-  //   (1) the rating API (service.us-east-1a.freetool.online/ajax/get-rating)
+  //   (1) the rating API (service.freetool.online/ajax/get-rating)
   //       stores rating data keyed by the pre-migration pageName. Sending the
   //       new clustered pageName (with a slash) causes a lookup miss → empty
   //       response → rating.html's error handler removes the parent div →
