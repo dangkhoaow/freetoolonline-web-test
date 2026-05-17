@@ -250,6 +250,7 @@ export const INFO_ROUTES = new Set([
   // /guides/* cluster); see page-renderer.mjs showAds gate.
   '/guides/how-to-make-a-zip-file-smaller.html',
   '/guides/how-to-compress-zip-file-to-smaller-size.html',
+  '/guides/compress-zip-file-to-100kb.html',
   '/guides/online-zip-vs-7z-vs-rar-which-to-pick.html',
   '/guides/how-to-zip-multiple-files-into-one.html',
   '/guides/how-to-zip-folder-online-step-by-step.html',
@@ -794,6 +795,7 @@ export const GUIDE_ROUTES = new Set([
   '/guides/what-an-lcd-test-does-and-when-to-run-one.html',
   '/guides/how-to-make-a-zip-file-smaller.html',
   '/guides/how-to-compress-zip-file-to-smaller-size.html',
+  '/guides/compress-zip-file-to-100kb.html',
   '/guides/online-zip-vs-7z-vs-rar-which-to-pick.html',
   '/guides/how-to-zip-multiple-files-into-one.html',
   '/guides/how-to-zip-folder-online-step-by-step.html',
@@ -1262,6 +1264,7 @@ export const JSP_BY_ROUTE = {
   // Phase 16 cycle 8 N-series guides (25 new).
   '/guides/how-to-make-a-zip-file-smaller.html': 'guide/how-to-make-a-zip-file-smaller.jsp',
   '/guides/how-to-compress-zip-file-to-smaller-size.html': 'guide/how-to-compress-zip-file-to-smaller-size.jsp',
+  '/guides/compress-zip-file-to-100kb.html': 'guide/compress-zip-file-to-100kb.jsp',
   '/guides/online-zip-vs-7z-vs-rar-which-to-pick.html': 'guide/online-zip-vs-7z-vs-rar-which-to-pick.jsp',
   '/guides/how-to-zip-multiple-files-into-one.html': 'guide/how-to-zip-multiple-files-into-one.jsp',
   '/guides/how-to-zip-folder-online-step-by-step.html': 'guide/how-to-zip-folder-online-step-by-step.jsp',
