@@ -256,6 +256,8 @@ export const INFO_ROUTES = new Set([
   // Cycle 20260517-9 create_new_guide_page - exact-match "compress zip file to smaller size" landing.
   '/guides/compress-zip-file-to-smaller-size.html',
   '/guides/compress-zip-file-to-100kb.html',
+  // Cycle 20260517-10 create_new_guide_page - exact-match "zip size reducer" landing (GSC 605 imp / 56 clicks / pos 5.67 / CTR 9.26%; opportunity_score 96.84).
+  '/guides/zip-size-reducer.html',
   '/guides/online-zip-vs-7z-vs-rar-which-to-pick.html',
   '/guides/how-to-zip-multiple-files-into-one.html',
   '/guides/how-to-zip-folder-online-step-by-step.html',
@@ -807,6 +809,8 @@ export const GUIDE_ROUTES = new Set([
   // Cycle 20260517-9 create_new_guide_page - exact-match "compress zip file to smaller size" landing.
   '/guides/compress-zip-file-to-smaller-size.html',
   '/guides/compress-zip-file-to-100kb.html',
+  // Cycle 20260517-10 create_new_guide_page - exact-match "zip size reducer" landing (GSC 605 imp / 56 clicks / pos 5.67 / CTR 9.26%; opportunity_score 96.84).
+  '/guides/zip-size-reducer.html',
   '/guides/online-zip-vs-7z-vs-rar-which-to-pick.html',
   '/guides/how-to-zip-multiple-files-into-one.html',
   '/guides/how-to-zip-folder-online-step-by-step.html',
@@ -1289,6 +1293,8 @@ export const JSP_BY_ROUTE = {
   // Cycle 20260517-9 create_new_guide_page - exact-match "compress zip file to smaller size" landing.
   '/guides/compress-zip-file-to-smaller-size.html': 'guide/compress-zip-file-to-smaller-size.jsp',
   '/guides/compress-zip-file-to-100kb.html': 'guide/compress-zip-file-to-100kb.jsp',
+  // Cycle 20260517-10 create_new_guide_page - exact-match "zip size reducer" landing.
+  '/guides/zip-size-reducer.html': 'guide/zip-size-reducer.jsp',
   '/guides/online-zip-vs-7z-vs-rar-which-to-pick.html': 'guide/online-zip-vs-7z-vs-rar-which-to-pick.jsp',
   '/guides/how-to-zip-multiple-files-into-one.html': 'guide/how-to-zip-multiple-files-into-one.jsp',
   '/guides/how-to-zip-folder-online-step-by-step.html': 'guide/how-to-zip-folder-online-step-by-step.jsp',
