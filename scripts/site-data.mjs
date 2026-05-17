@@ -1153,6 +1153,17 @@ export const ALIAS_ROUTES = {
   // + readers to the canonical URL).
   '/guides/lcdtest.html': '/guides/lcd-test-online.html',         // smashed "lcd test"; canonical = lcd-test-online (new guide created cycle 20260514-5)
   '/guides/foldertozipconverter.html': '/zip-tools/zip-file.html', // smashed "folder to zip converter"; redirect to working tool (no dedicated guide)
+  // Cycle 20260518 create_new_guide_page synth picked "lcd tes" (GSC query
+  // 635 imp / 3 clicks / pos 6.6 — typo of "lcd test"). Authoring a full
+  // /guides/lcd-tes.html guide would near-clone /guides/lcd-test-online.html
+  // (axis-F cluster_narrative dupe). Routing via alias captures the typo'd
+  // query traffic and 301s to the canonical guide — same pattern as the
+  // /guides/lcdtest.html cycle 20260514-6-followup cleanup above. Deferred-
+  // approval card explains the deviation from the synth's "author a complete
+  // page" contract: cluster is saturated (7+ existing lcd-* guides) and the
+  // typo'd intent is best served by re-using the canonical lcd-test-online
+  // guide rather than authoring an 8th near-duplicate.
+  '/guides/lcd-tes.html': '/guides/lcd-test-online.html',         // typo of "lcd test"; canonical = lcd-test-online (cluster anti-cannibalization)
 };
 
 // ─────────────────────────────────────────────────────────────────────────
