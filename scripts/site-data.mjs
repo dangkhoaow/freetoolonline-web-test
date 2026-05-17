@@ -816,6 +816,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/what-an-lcd-test-does-and-when-to-run-one.html',
   // Cycle 20260517-6 create_new_guide_page - "ms to date" synonym-coverage guide.
   '/guides/ms-to-date.html',
+  // Cycle 20260517-21 create_new_guide_page - "convert milliseconds to date" exact-match landing (GSC 482 imp / 3 clicks / pos 6.02 / CTR 0.62% / opp 79.59). Implementing tool: /convert-time-in-millisecond-to-date.html. Non-cannibalizing - existing ms-to-date covers the short synonym; this guide covers the full natural-language query.
+  '/guides/convert-milliseconds-to-date.html',
   '/guides/how-to-make-a-zip-file-smaller.html',
   '/guides/how-to-compress-zip-file-to-smaller-size.html',
   // Cycle 20260517-9 create_new_guide_page - exact-match "compress zip file to smaller size" landing.
@@ -1323,6 +1325,8 @@ export const JSP_BY_ROUTE = {
   '/guides/what-an-lcd-test-does-and-when-to-run-one.html': 'guide/what-an-lcd-test-does-and-when-to-run-one.jsp',
   // Cycle 20260517-6 create_new_guide_page - "ms to date" synonym-coverage guide.
   '/guides/ms-to-date.html': 'guide/ms-to-date.jsp',
+  // Cycle 20260517-21 create_new_guide_page - "convert milliseconds to date" exact-match landing.
+  '/guides/convert-milliseconds-to-date.html': 'guide/convert-milliseconds-to-date.jsp',
   // Phase 16 cycle 8 N-series guides (25 new).
 
   // Phase 16 cycle 8 N-series guides (25 new).
