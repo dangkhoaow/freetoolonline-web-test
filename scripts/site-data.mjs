@@ -720,6 +720,14 @@ export const INFO_ROUTES = new Set([
   // (2) re-create the archive via /zip-tools/zip-file.html when you have
   // the source files, (3) ask the sender. Append-only kebab URL.
   '/guides/zip-password-recovery-online.html',
+  // Cycle 20260518-22 create_new_guide_page - "Zip compressor online" Lane-D
+  // guide (zip cluster head-query sibling, GSC "zip compressor online"
+  // 611 imp / 57 clicks / pos 6.99 / CTR 9.33% / opportunity_score 79.22).
+  // Companion to /zip-tools/zip-file.html (the in-browser archive creator)
+  // and /guides/zip-compressor.html (the bare-query sibling). Singular
+  // kebab URL passes the URL convention regex; smashed form
+  // "zipcompressoronline" does not shadow any existing primary route.
+  '/guides/zip-compressor-online.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -1023,6 +1031,12 @@ export const GUIDE_ROUTES = new Set([
   // tool-removezippassword/SKILL.md F1-F7 + N2 + N6 (the tool unlocks when
   // password is KNOWN; explicitly does NOT crack unknown passwords).
   '/guides/zip-password-recovery-online.html',
+  // Cycle 20260518-22 create_new_guide_page - "Zip compressor online" Lane-D
+  // guide. Cluster: zip. GSC 611 imp / 57 clicks / pos 6.99 / CTR 9.33% /
+  // opportunity_score 79.22. Sourced from tool-zipfile/SKILL.md M1-M7 +
+  // tool-guidescompresszip/SKILL.md C1-C6 (size question vs archive question;
+  // browser-creator routing; sibling-guide vocabulary disambiguation).
+  '/guides/zip-compressor-online.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -1273,6 +1287,8 @@ export const JSP_BY_ROUTE = {
   '/guides/zip-compress.html': 'guide/zip-compress.jsp',
   // Cycle 20260518-21 create_new_guide_page - "Zip password recovery online" Lane-D truthful-framing guide. Companion to /zip-tools/remove-zip-password.html. Source: tool-removezippassword/SKILL.md F1-F7 + N2 + N6.
   '/guides/zip-password-recovery-online.html': 'guide/zip-password-recovery-online.jsp',
+  // Cycle 20260518-22 create_new_guide_page - "Zip compressor online" Lane-D guide (zip cluster head-query sibling, companion to /zip-tools/zip-file.html and /guides/zip-compressor.html). Complete single-cycle ship per cycle 20260514-5 contract.
+  '/guides/zip-compressor-online.html': 'guide/zip-compressor-online.jsp',
   // Cycle 84 P84.A - "How to compress a JPG for email attachment size limits" Lane-D guide (image-conversion / compression sub-cluster, companion to /compress-image.html).
   '/guides/how-to-compress-a-jpg-for-email-attachment-limits.html': 'guide/how-to-compress-a-jpg-for-email-attachment-limits.jsp',
   // Cycle 85 P85.A - "Microphone test levels: what quiet, normal, and peak mean" Lane-D guide (device-test / microphone-test sub-cluster, companion to /microphone-test.html).

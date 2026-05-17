@@ -1,0 +1,67 @@
+<style>
+    /* Collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+
+<section class="w3-container w3-padding-large">
+  <h1>Zip Compressor Online</h1>
+  <p class="lead">An online zip compressor is the browser-based version of the desktop "right-click then Compress" step: pick a folder of files, click one button, and the page hands back a single <code>.zip</code> archive you can email, upload, or share through a link. The reason to do it in the browser instead of the desktop is install-free convenience - works the same on Windows, macOS, ChromeOS, and from a managed laptop where you cannot install desktop tools. Paraphrases <code>tool-zipfile/SKILL.md</code> M1 (compress a folder into one ZIP) and M5 (bulk-bundle a working folder for handoff).</p>
+
+  <p>The in-browser compressor on this site lives at <a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a>. This guide page is where the decision context lives - when the archive actually shrinks, when it does not, and which optional settings matter; the tool page is where the upload happens and the archive is built. (Paraphrases <code>tool-guidescompresszip/SKILL.md</code> C2 - the guide-vs-tool split.)</p>
+
+  <h2>When the archive actually shrinks</h2>
+  <p>A zip compressor saves space only when the input files have not already been compressed by their own format. Plain text, source code, CSV exports, log files, JSON dumps, and uncompressed bitmaps all compress well inside a <code>.zip</code> - a folder of these often shrinks by half or more after the build. Already-compressed formats - JPG photos, PNG screenshots, MP4 video, MP3 audio, and existing <code>.zip</code> files placed inside another <code>.zip</code> - typically grow by zero to a few percent because the archive header and per-entry metadata are added without further compression being possible on the payload. If your folder is dominated by photos or videos, expect the result to land within a few percent of the input bytes; the benefit is bundling many files into one downloadable archive, not shrinkage. (Paraphrases <code>tool-guidescompresszip/SKILL.md</code> C1 + C5.)</p>
+
+  <h2>When to ZIP what - quick reference</h2>
+  <p>The table below summarises the expected size effect when adding the listed file type to a fresh archive, based on <code>tool-guidescompresszip/SKILL.md</code> C1 (which traces to F1 + F2 in <code>## Implemented features</code>).</p>
+  <table class="w3-table w3-bordered w3-striped quick-facts">
+    <thead><tr><th>File type added</th><th>Typical size delta inside .zip</th><th>Reader takeaway</th></tr></thead>
+    <tbody>
+      <tr><td>Plain text, source code, CSV, log, JSON</td><td>-50&nbsp;% or better</td><td>Worth zipping for transfer.</td></tr>
+      <tr><td>Uncompressed bitmap (BMP) or WAV audio</td><td>-30&nbsp;% to -60&nbsp;%</td><td>Worth zipping for transfer.</td></tr>
+      <tr><td>JPG, PNG, MP4, MP3, existing .zip</td><td>+0&nbsp;% to +3&nbsp;%</td><td>Bundle for convenience, not shrinkage.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Optional password and AES encryption</h2>
+  <p>The in-browser zip compressor supports an optional password and encryption method when the archive needs to travel through a channel where the password is shared separately. Open the Settings modal on <a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a> to set the password and pick one of Standard (legacy ZIP encryption, broadly compatible but cryptographically weak), AES-128, or AES-256. For sensitive content, prefer AES-256 and share the password over a different channel than the archive itself. (Paraphrases <code>tool-zipfile/SKILL.md</code> M2.) If you only need to recover a known password from an existing archive, the sibling <a href="/zip-tools/remove-zip-password.html">Remove ZIP password</a> tool unlocks when the password is known; it does not crack unknown passwords on strong-encryption archives.</p>
+
+  <h2>How the build works</h2>
+  <p>Files are uploaded over HTTPS to a short-lived processing service that assembles the archive and returns it for download; source files are auto-deleted after a short retention window with no persistent storage of inputs. Naming is configurable in the Settings modal - the default is <code>myzipped-&lt;date&gt;</code>, but renaming before download means the recipient sees the project or topic in the filename rather than the date stamp. (Paraphrases <code>tool-zipfile/SKILL.md</code> M3 + M4.)</p>
+
+  <h2>What this guide does not cover</h2>
+  <p>This guide does not walk through choosing a compression level, because the in-browser tool runs the standard DEFLATE step by default and the level slider mostly changes build time rather than archive size. It also does not cover competing archive formats (<code>.7z</code>, <code>.rar</code>, <code>.tar.gz</code>) - the site defaults to <code>.zip</code> for reach, since every desktop OS opens it without an install and most webmail attachment scanners accept it. (Paraphrases <code>tool-guidescompresszip/SKILL.md</code> M5 + M6.) For the receiving-side workflow (how to extract a <code>.zip</code> once it arrives), see <a href="/unzip-file.html">/unzip-file.html</a> or use the unzip built into your operating system.</p>
+
+  <p class="reviewed">Last reviewed: 2026-05-18</p>
+  <address class="author"><a rel="author" href="/editorial-team.html">Free Tool Online Editorial Team</a></address>
+</section>
+
+<section class="w3-container w3-padding-large guide-faq" aria-labelledby="guide-faq-h2">
+  <h2 id="guide-faq-h2">Common questions</h2>
+  <details class="faq-item">
+    <summary>Does the online zip compressor preserve folder structure?</summary>
+    <p>Yes. The archive preserves filenames and the relative directory structure of the inputs verbatim. On cross-operating-system round-trips it does not preserve file ownership or extended attributes (Linux file ownership, macOS resource forks); the visible folder layout is identical on the receiving side. Paraphrases <code>tool-zipfile/SKILL.md</code> M1 + the file-system-attribute caveat from <code>tool-guidescompresszip/SKILL.md</code> N2.</p>
+  </details>
+  <details class="faq-item">
+    <summary>What is the size limit per archive?</summary>
+    <p>The in-browser compressor at <a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a> bundles whatever set of files you select in one upload; very large archives benefit from a desktop browser where memory is less constrained. If a single archive exceeds your recipient's webmail attachment cap (commonly 20 to 25 MB for Gmail and most corporate mail servers), split the bundle: zip the text-heavy inputs separately for the real size win, and send the already-compressed media as separate attachments or through a share link.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Are my files stored on the server?</summary>
+    <p>Files are sent over HTTPS to a short-lived processing service that builds the archive and returns it for download. Source files are auto-deleted after a short retention window; the archive is not indexed or re-used. No account or sign-in is required. Paraphrases <code>tool-zipfile/SKILL.md</code> M4.</p>
+  </details>
+  <details class="faq-item">
+    <summary>What if the archive needs a password?</summary>
+    <p>The in-browser compressor supports an optional password with Standard, AES-128, or AES-256 encryption - open the Settings modal on <a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a> to set it before clicking Zip. For the reverse direction (unlocking an existing archive whose password you know), use <a href="/zip-tools/remove-zip-password.html">Remove ZIP password</a>. There is no online tool on this site that cracks unknown passwords on strong-encryption archives; recovery for a forgotten password depends on having the source files to re-create the archive or asking the sender.</p>
+  </details>
+  <details class="faq-item">
+    <summary>What is the difference between this guide and the bare "zip compressor" guide?</summary>
+    <p>This guide answers the "zip compressor online" query specifically - the reader wanted a browser-based tool, not a desktop install. The sibling guide at <a href="/guides/zip-compressor.html">/guides/zip-compressor.html</a> answers the bare "zip compressor" query with the same size-trade context. Both guides cross-link to the same in-browser creator at <a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a>; the wording you typed picks which guide reads naturally but never picks where the archive is built. Paraphrases <code>tool-guidescompresszip/SKILL.md</code> C6 + M3.</p>
+  </details>
+</section>
