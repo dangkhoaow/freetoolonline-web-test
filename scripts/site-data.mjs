@@ -1076,6 +1076,13 @@ export const GUIDE_ROUTES = new Set([
   // intent (zip-file as a noun, not as a verb). Paraphrases tool-zipfile/SKILL.md
   // M1-M7 (in-browser creator) and tool-ziptools/SKILL.md M1 (one-click routing).
   '/guides/online-zip-file.html',
+  // Cycle 20260518-29 create_new_guide_page - "zip password unlocker" Lane-D
+  // guide (zip cluster, companion to /remove-zip-password.html). GSC 432 imp /
+  // 44 clicks / pos 5.29 / CTR 10.18% / opportunity_score 73.32. Honest framing:
+  // splits the search intent into "remove a known password" (real, points at
+  // /remove-zip-password.html) vs "crack an unknown password" (not solvable
+  // online; cites tool-removezippassword/SKILL.md N2 + N6 anti-claims).
+  '/guides/zip-password-unlocker.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -1538,6 +1545,8 @@ export const JSP_BY_ROUTE = {
   '/video-tools/video-converter.html': 'convert/video-converter.jsp',
   '/image-converter-tools/extract-gif-to-image-frames.html': 'convert/extract-gif-to-image-frames.jsp',
   '/utility-tools/cong-cu-chuyen-doi-chu-quoc-ngu-tieng-viet-thanh-tieq-viet-kieu-moi.html': 'convert/new-vietnamese-converter.jsp',
+  // Cycle 20260518-29 create_new_guide_page - zip-password-unlocker Lane-D guide.
+  '/guides/zip-password-unlocker.html': 'guide/zip-password-unlocker.jsp',
 };
 
 export function normalizeRoute(route) {
