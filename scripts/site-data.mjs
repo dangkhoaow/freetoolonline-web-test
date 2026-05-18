@@ -1657,6 +1657,10 @@ export const JSP_BY_ROUTE = {
   '/guides/json-formatter-viewer-when.html': 'guide/json-formatter-viewer-when.jsp',
   '/guides/json-formatter-viewer-step-by-step.html': 'guide/json-formatter-viewer-step-by-step.jsp',
   '/guides/json-formatter-viewer-vs-alternatives.html': 'guide/json-formatter-viewer-vs-alternatives.jsp',
+  '/json-formatter-compare.html': 'convert/json-formatter-compare.jsp',
+  '/guides/json-formatter-compare-when.html': 'guide/json-formatter-compare-when.jsp',
+  '/guides/json-formatter-compare-step-by-step.html': 'guide/json-formatter-compare-step-by-step.jsp',
+  '/guides/json-formatter-compare-vs-alternatives.html': 'guide/json-formatter-compare-vs-alternatives.jsp',
 };
 
 export function normalizeRoute(route) {

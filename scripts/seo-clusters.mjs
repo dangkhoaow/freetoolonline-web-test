@@ -36,7 +36,7 @@ const SEO_CLUSTER_GROUPS = [
     cluster: 'developer',
     hubRoute: '/developer-tools.html',
     hubLabel: 'Back to Developer Tools',
-    routes: ['/json-parser.html', '/css-minifier.html', '/css-unminifier.html', '/js-minifier.html', '/js-unminifier.html', '/text-diff.html', '/md5-converter.html', '/css-gradient-generator.html', '/text-html-editor.html', '/json-formatter.html', '/json-formatter-editor.html', '/json-formatter-viewer.html'],
+    routes: ['/json-parser.html', '/css-minifier.html', '/css-unminifier.html', '/js-minifier.html', '/js-unminifier.html', '/text-diff.html', '/md5-converter.html', '/css-gradient-generator.html', '/text-html-editor.html', '/json-formatter.html', '/json-formatter-editor.html', '/json-formatter-viewer.html', '/json-formatter-compare.html'],
   },
   {
     cluster: 'video',
