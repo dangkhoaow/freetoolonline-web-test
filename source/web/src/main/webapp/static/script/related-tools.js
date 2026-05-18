@@ -164,6 +164,7 @@ try {
     { title: "All Guides - Browser Tool Library", url: "https://freetoolonline.com/guides.html", include: !1, tags: "guide" }
     { title: "Hd Online Video Converter", url: "https://freetoolonline.com/hd-video-converter.html", include: !1, tags: "image-conversion" },
     { title: "Json Formatter Online", url: "https://freetoolonline.com/json-formatter.html", include: !1, tags: "developer" },
+    { title: "Json Formatter Online Editor", url: "https://freetoolonline.com/json-formatter-editor.html", include: !1, tags: "developer" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
