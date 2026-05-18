@@ -275,6 +275,8 @@ export const INFO_ROUTES = new Set([
   '/guides/compress-zip-file-to-100kb.html',
   // Cycle 20260517-10 create_new_guide_page - exact-match "zip size reducer" landing (GSC 605 imp / 56 clicks / pos 5.67 / CTR 9.26%; opportunity_score 96.84).
   '/guides/zip-size-reducer.html',
+  // Cycle 20260519-12 create_new_guide_page - exact-match "zip file size compressor" landing (GSC 354 imp / 44 clicks / pos 5.43 / CTR 12.43%; opportunity_score 57.07). Implementing tool /zip-file.html. Append-only; non-cannibalizing vs /guides/how-to-make-a-zip-file-smaller.html, /guides/zip-size-reducer.html, /guides/compress-zip-file-to-smaller-size.html (each targets a distinct head-tail intent).
+  '/guides/zip-file-size-compressor.html',
   '/guides/online-zip-vs-7z-vs-rar-which-to-pick.html',
   '/guides/how-to-zip-multiple-files-into-one.html',
   '/guides/how-to-zip-folder-online-step-by-step.html',
@@ -897,6 +899,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/compress-zip-file-to-100kb.html',
   // Cycle 20260517-10 create_new_guide_page - exact-match "zip size reducer" landing (GSC 605 imp / 56 clicks / pos 5.67 / CTR 9.26%; opportunity_score 96.84).
   '/guides/zip-size-reducer.html',
+  // Cycle 20260519-12 create_new_guide_page - exact-match "zip file size compressor" landing (GSC 354 imp / 44 clicks / pos 5.43 / CTR 12.43%; opportunity_score 57.07). Implementing tool /zip-file.html. Append-only; non-cannibalizing vs /guides/how-to-make-a-zip-file-smaller.html, /guides/zip-size-reducer.html, /guides/compress-zip-file-to-smaller-size.html (each targets a distinct head-tail intent).
+  '/guides/zip-file-size-compressor.html',
   '/guides/online-zip-vs-7z-vs-rar-which-to-pick.html',
   '/guides/how-to-zip-multiple-files-into-one.html',
   '/guides/how-to-zip-folder-online-step-by-step.html',
@@ -1495,6 +1499,8 @@ export const JSP_BY_ROUTE = {
   '/guides/compress-zip-file-to-100kb.html': 'guide/compress-zip-file-to-100kb.jsp',
   // Cycle 20260517-10 create_new_guide_page - exact-match "zip size reducer" landing.
   '/guides/zip-size-reducer.html': 'guide/zip-size-reducer.jsp',
+  // Cycle 20260519-12 create_new_guide_page — /guides/zip-file-size-compressor.html (implementing tool /zip-file.html).
+  '/guides/zip-file-size-compressor.html': 'guide/zip-file-size-compressor.jsp',
   '/guides/online-zip-vs-7z-vs-rar-which-to-pick.html': 'guide/online-zip-vs-7z-vs-rar-which-to-pick.jsp',
   '/guides/how-to-zip-multiple-files-into-one.html': 'guide/how-to-zip-multiple-files-into-one.jsp',
   '/guides/how-to-zip-folder-online-step-by-step.html': 'guide/how-to-zip-folder-online-step-by-step.jsp',
