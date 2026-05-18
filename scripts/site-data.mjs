@@ -1110,6 +1110,16 @@ export const GUIDE_ROUTES = new Set([
   // optional password + cross-platform output) and the existing in-browser
   // creator copy in BODYHTMLzipfile / BODYWELCOMEzipfile.
   '/guides/create-zip-file-online.html',
+  // Cycle 20260518-33 create_new_guide_page - "Tes LCD" Lane-D guide (device-test
+  // cluster, companion to /lcd-test.html). GSC 503 imp / 17 clicks / pos 7.38 /
+  // CTR 3.38% / opportunity_score 65.84 - Indonesian-language "tes lcd" intent
+  // (Indonesian for "lcd test"). Authored in Indonesian to serve the actual
+  // search audience (GA4 ID share ~6% of sessions). Paraphrases
+  // tool-lcdtest/SKILL.md F1-F5 (six-color full-viewport fill + full-screen
+  // toggle + reset + display metrics + no-upload disclosure). Kebab slug
+  // /guides/tes-lcd.html does not shadow any existing primary tool route
+  // (urlToSlug() smashes to "teslcd" which is not in JSP_BY_ROUTE).
+  '/guides/tes-lcd.html',
   // Cycle 20260518-29 create_new_guide_page - "zip password unlocker" Lane-D
   // guide (zip cluster, companion to /remove-zip-password.html). GSC 432 imp /
   // 44 clicks / pos 5.29 / CTR 10.18% / opportunity_score 73.32. Honest framing:
@@ -1384,6 +1394,10 @@ export const JSP_BY_ROUTE = {
   '/guides/zip-compressor-online.html': 'guide/zip-compressor-online.jsp',
   // Cycle 20260518-23 create_new_guide_page - "Folder to zip" Lane-D guide. Companion to /zip-tools/zip-file.html. Sourced from tool-ziptools/SKILL.md M1 + tool-guidescompresszip/SKILL.md C1-C5.
   '/guides/folder-to-zip.html': 'guide/folder-to-zip.jsp',
+  // Cycle 20260518-33 create_new_guide_page - "Tes LCD" Lane-D guide (device-test
+  // cluster, companion to /lcd-test.html). Indonesian-language guide for the
+  // "tes lcd" search intent. Paraphrases tool-lcdtest/SKILL.md F1-F5.
+  '/guides/tes-lcd.html': 'guide/tes-lcd.jsp',
   // Cycle 20260518-25 create_new_guide_page - "Online Zip File" Lane-D guide. Companion to /zip-tools/zip-file.html. Sourced from tool-zipfile/SKILL.md M1-M7 + tool-ziptools/SKILL.md M1.
   '/guides/online-zip-file.html': 'guide/online-zip-file.jsp',
   // Cycle 20260518-31 create_new_guide_page - "Create Zip File Online" Lane-D guide. Companion to /zip-tools/zip-file.html. Sourced from tool-zipfile/SKILL.md implemented features + BODYHTMLzipfile reader-task copy.
@@ -1604,6 +1618,10 @@ export const JSP_BY_ROUTE = {
   '/guides/hd-video-converter-when.html': 'guide/hd-video-converter-when.jsp',
   '/guides/hd-video-converter-step-by-step.html': 'guide/hd-video-converter-step-by-step.jsp',
   '/guides/hd-video-converter-vs-alternatives.html': 'guide/hd-video-converter-vs-alternatives.jsp',
+  '/json-formatter.html': 'convert/json-formatter.jsp',
+  '/guides/json-formatter-when.html': 'guide/json-formatter-when.jsp',
+  '/guides/json-formatter-step-by-step.html': 'guide/json-formatter-step-by-step.jsp',
+  '/guides/json-formatter-vs-alternatives.html': 'guide/json-formatter-vs-alternatives.jsp',
 };
 
 export function normalizeRoute(route) {
