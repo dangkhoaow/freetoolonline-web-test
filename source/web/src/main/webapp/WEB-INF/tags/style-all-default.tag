@@ -1108,7 +1108,7 @@ a {
 
 @media (min-width:993px) {
     .w3-modal-content {
-        width: 900px
+        width: 60vw
     }
 
     .w3-hide-large {
