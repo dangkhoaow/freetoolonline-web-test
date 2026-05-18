@@ -97,6 +97,7 @@ try {
     { title: "How to Make a Zip File Smaller", url: "https://freetoolonline.com/guides/how-to-make-a-zip-file-smaller.html", include: !1, tags: "guide,zip,compress" },
     { title: "How to Compress a Zip to a Smaller Size", url: "https://freetoolonline.com/guides/how-to-compress-zip-file-to-smaller-size.html", include: !1, tags: "guide,zip,compress" },
     { title: "How To Compress A Zip File", url: "https://freetoolonline.com/guides/how-to-compress-a-zip-file.html", include: !1, tags: "guide,zip,compress" },
+    { title: "Zip Folder Online Free", url: "https://freetoolonline.com/guides/zip-folder-online-free.html", include: !1, tags: "zip,guide,zip,folder,online" },
     { title: "Online Zip vs 7z vs Rar - Which to Pick", url: "https://freetoolonline.com/guides/online-zip-vs-7z-vs-rar-which-to-pick.html", include: !1, tags: "guide,zip,compress" },
     { title: "How to Zip Multiple Files Into One", url: "https://freetoolonline.com/guides/how-to-zip-multiple-files-into-one.html", include: !1, tags: "guide,zip,compress" },
     { title: "How to Zip a Folder Online, Step by Step", url: "https://freetoolonline.com/guides/how-to-zip-folder-online-step-by-step.html", include: !1, tags: "guide,zip,compress" },
