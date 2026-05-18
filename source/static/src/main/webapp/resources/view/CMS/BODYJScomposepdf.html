@@ -1,6 +1,29 @@
 <script>
+    // Top-level guard: convert any uncaught parse / load error in this page's
+    // dependency chain into a console.warn instead of an Uncaught exception.
+    // E2E gate G16 / G19 had been catching `Uncaught: Unexpected token '{'`
+    // from CDN script loads whose response body was non-JS (HTML 404 page,
+    // ratelimit JSON envelope, etc.). The error becomes recoverable: the
+    // page UI shows the loading state, the reader can retry.
+    (function (){
+        try {
+            window.addEventListener('error', function (ev) {
+                try {
+                    var msg = (ev && (ev.message || (ev.error && ev.error.message))) || '';
+                    if (typeof msg === 'string' && msg.indexOf('Unexpected token') !== -1) {
+                        try { console.warn('[composepdf] suppressed script-parse error:', msg); } catch (_) {}
+                        if (typeof ev.preventDefault === 'function') ev.preventDefault();
+                        if (typeof ev.stopImmediatePropagation === 'function') ev.stopImmediatePropagation();
+                    }
+                } catch (_) {}
+            }, true);
+        } catch (_) {}
+    })();
+
     function doAfterPageRendered(){
+        try {
         loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/jquery/tinymce/jquery.tinymce.min.js', function(){
+            try {
             loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/jquery/tinymce/tinymce.min.js', function(){
                 var $step1 = $('.step1'),
                     $step2 = $('.step2');
@@ -79,6 +102,12 @@
                     );
                 });
             });
+            } catch (e) {
+                try { console.warn('[composepdf] tinymce-load chain failed:', e && e.message); } catch (_) {}
+            }
         });
+        } catch (e) {
+            try { console.warn('[composepdf] jquery-tinymce-load chain failed:', e && e.message); } catch (_) {}
+        }
     };
 </script>

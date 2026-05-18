@@ -52,6 +52,11 @@ export const INFO_ROUTES = new Set([
   // Forward-links to /zip-file.html, /compress-image.html. Does NOT modify any indexed ZIP-cluster page (ZIP-CRITICAL-CARE not gated).
   // Non-cannibalizing vs how-to-make-a-zip-file-smaller (cycle ?) and how-to-compress-zip-file-to-smaller-size; covers the "specific target cap (2/25/100)" sub-intent.
   '/guides/how-to-compress-a-zip-file-to-a-specific-size.html',
+  // Cycle 20260519-10 create_new_guide_page - "how to compress a zip file" bare-query step-by-step guide.
+  // GSC evidence (28d): "how to compress a zip file" 557 imp / 8 clicks / pos 8.8 / CTR 1.43% / opportunity_score 62.38.
+  // Distinct intent from the "to a specific size" / "to smaller size" / "to 100kb" siblings: this captures the bare-query
+  // reader who just wants the 3-step recipe. Implementing tool: /zip-file.html. Append-only (new URL).
+  '/guides/how-to-compress-a-zip-file.html',
   // Cycle 78 P78.A - "QR code error correction and scan failures: why your QR will not scan" Lane-D append-only guide.
   // Companion to /qr-code-generator.html (one of the 4 R7_thin_content fixes in P78.B). Reader-task gap: no QR-related guide existed
   // pre-cycle-78. Diagnoses the four common scan-failure causes (payload size, error-correction level, contrast, print scale) so a
@@ -806,6 +811,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/screen-test-online-vs-app-which-is-more-accurate.html',
   // Cycle 77 P77.A - "compress ZIP to a specific size" Lane-D append-only guide.
   '/guides/how-to-compress-a-zip-file-to-a-specific-size.html',
+  // Cycle 20260519-10 create_new_guide_page - "how to compress a zip file" bare-query step-by-step guide.
+  '/guides/how-to-compress-a-zip-file.html',
   // Cycle 78 P78.A - "QR code error correction and scan failures" Lane-D guide (companion to /qr-code-generator.html).
   '/guides/qr-code-error-correction-and-scan-failures.html',
   // Cycle 79 P79.B - "Image to Base64: embed in HTML/CSS vs link the image file" Lane-D guide.
@@ -1368,6 +1375,8 @@ export const JSP_BY_ROUTE = {
   '/guides/screen-test-online-vs-app-which-is-more-accurate.html': 'guide/screen-test-online-vs-app-which-is-more-accurate.jsp',
   // Cycle 77 P77.A - "compress ZIP to a specific size" Lane-D append-only guide.
   '/guides/how-to-compress-a-zip-file-to-a-specific-size.html': 'guide/how-to-compress-a-zip-file-to-a-specific-size.jsp',
+  // Cycle 20260519-10 create_new_guide_page - "how to compress a zip file" bare-query step-by-step guide (companion to /zip-file.html).
+  '/guides/how-to-compress-a-zip-file.html': 'guide/how-to-compress-a-zip-file.jsp',
   // Cycle 78 P78.A - "QR code error correction and scan failures" Lane-D guide (companion to /qr-code-generator.html).
   '/guides/qr-code-error-correction-and-scan-failures.html': 'guide/qr-code-error-correction-and-scan-failures.jsp',
   // Cycle 79 P79.B - "Image to Base64: embed in HTML/CSS vs link the image file" Lane-D guide (companion to /image-to-base64.html + /base64-to-image.html).
@@ -1636,6 +1645,10 @@ export const JSP_BY_ROUTE = {
   '/guides/json-formatter-editor-when.html': 'guide/json-formatter-editor-when.jsp',
   '/guides/json-formatter-editor-step-by-step.html': 'guide/json-formatter-editor-step-by-step.jsp',
   '/guides/json-formatter-editor-vs-alternatives.html': 'guide/json-formatter-editor-vs-alternatives.jsp',
+  '/json-formatter-viewer.html': 'convert/json-formatter-viewer.jsp',
+  '/guides/json-formatter-viewer-when.html': 'guide/json-formatter-viewer-when.jsp',
+  '/guides/json-formatter-viewer-step-by-step.html': 'guide/json-formatter-viewer-step-by-step.jsp',
+  '/guides/json-formatter-viewer-vs-alternatives.html': 'guide/json-formatter-viewer-vs-alternatives.jsp',
 };
 
 export function normalizeRoute(route) {
