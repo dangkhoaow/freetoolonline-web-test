@@ -64,105 +64,14 @@
         return "";
     };
 
-    // QA / audit support: when `?noads=1` is present, remove ad containers immediately
-    // (the legacy flow only removes them after the first user interaction).
-    try {
-        var __qaNoAds = false;
-        try {
-            __qaNoAds = new URLSearchParams(window.location.search).has('noads');
-        } catch (e) {}
-        if (__qaNoAds) {
-            isLoadAds = false;
-            try { htmlRoot && htmlRoot.classList && htmlRoot.classList.add('qa-noads'); } catch (e) {}
-            try { window.__QA_NOADS_MODE__ = true; } catch (e) {}
-            console.log('[qa:noads] noads param detected; forcing ads off at load.');
-        }
-    } catch (e) {}
-
-    function __qaAlignFooterToHero() {
-        if (!__qaNoAds) return;
-        try {
-            var heroEl = document.querySelector('#home > .main-text') || document.querySelector('.page-main-content .page-section');
-            var footerEl = document.querySelector('footer.page-footer');
-            var footerInnerEl = document.querySelector('footer.page-footer .footer-inner');
-            if (!heroEl || !footerEl || !footerInnerEl) return;
-
-            var hr = heroEl.getBoundingClientRect();
-            var fr = footerEl.getBoundingClientRect();
-            var fs = getComputedStyle(footerEl);
-            var pl = parseFloat(fs.paddingLeft) || 0;
-            var pr = parseFloat(fs.paddingRight) || 0;
-            var contentLeft = fr.left + pl;
-            var contentRight = fr.right - pr;
-            var isHomeHero = !!document.querySelector('#home > .main-text');
-
-            if (isHomeHero) {
-                footerEl.style.paddingLeft = '0px';
-                footerEl.style.paddingRight = '0px';
-            }
-
-            var ml = Math.max(0, Math.round(hr.left - contentLeft));
-            var mr = Math.max(0, Math.round(contentRight - hr.right));
-
-            footerInnerEl.style.marginLeft = ml + 'px';
-            footerInnerEl.style.marginRight = mr + 'px';
-            footerInnerEl.style.maxWidth = 'none';
-            footerInnerEl.style.width = 'auto';
-            footerInnerEl.style.boxSizing = 'border-box';
-
-            console.log('[qa:noads] footer aligned', { heroLeft: Math.round(hr.left), heroRight: Math.round(hr.right), ml: ml, mr: mr, isHomeHero: isHomeHero });
-        } catch (e) {}
-    }
-
     isLoadAds = isLoadAds && (getCookie('disableAd') === '' || getCookie('disableAd') === 'false');
 
-    // 2026-05-18 ROOT-CAUSE FIX for AdSense chicken-and-egg:
-    // page-renderer.mjs renders `<html class="...ads-disabled...">` as a
-    // pessimistic initial state (cycle-14e safety: prevents empty 160x600
-    // side panels from reserving layout while ads load). The CSS rule
-    //   html.ads-disabled .ad-section.top-ad { display: none !important }
-    // (in top-page-banner-ad.html) hides top-ad while ads-disabled is set.
-    // module-loader.js's load gate is
-    //   isLoadAds = isLoadAds && $(".ad-section > .adsbygoogle:visible").length > 0
-    // With top-ad hidden, `:visible` returns 0, `loadAds()` is never
-    // assigned/called, adsbygoogle.js never loads, and `ads-disabled` is
-    // never removed by the success path — the page never recovers.
-    //
-    // Resolution: when we reach here with isLoadAds=true (the user has NOT
-    // explicitly disabled ads), force-remove `ads-disabled` so the gate
-    // sees the slot as :visible. module-loader.js's .catch() branch will
-    // re-add it if adsbygoogle.js fails to load (ad blocker / network).
-    // When isLoadAds=false (cookie `disableAd=true`), we KEEP the class so
-    // the hide-when-disabled CSS rule fires and the "Disable Ads" UX flow
-    // is preserved.
     if (isLoadAds) {
         try {
             document.querySelector('html.main-html').classList.remove('ads-disabled');
         } catch (e) {}
-    }
-
-    if (!isLoadAds) {
+    } else {
         document.querySelector('html.main-html').classList.add('ads-disabled');
-        var __adSelector = __qaNoAds ? '.ad-section' : ('.ad-section' + (window.innerWidth < 1000 ? ':not(.top-ad)' : ''));
-        var __removedAds = 0;
-        document.querySelectorAll(__adSelector).forEach(function(element) {
-            element.remove();
-            __removedAds += 1;
-        });
-        if (__qaNoAds) {
-            console.log('[qa:noads] removed ad sections at load', __removedAds);
-            try {
-                requestAnimationFrame(function() {
-                    requestAnimationFrame(function() {
-                        __qaAlignFooterToHero();
-                        try { window.__QA_NOADS_READY__ = true; } catch (e) {}
-                    });
-                });
-            } catch (e) {
-                __qaAlignFooterToHero();
-                try { window.__QA_NOADS_READY__ = true; } catch (e2) {}
-            }
-        }
     }
 
     if (isDarkMode) {
