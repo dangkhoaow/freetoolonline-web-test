@@ -728,6 +728,12 @@ export const INFO_ROUTES = new Set([
   // kebab URL passes the URL convention regex; smashed form
   // "zipcompressoronline" does not shadow any existing primary route.
   '/guides/zip-compressor-online.html',
+  // Cycle 20260518-23 create_new_guide_page - "Folder to zip" Lane-D guide
+  // (zip cluster, GSC "folder to zip" 773 imp / 13 clicks / pos 9.73 /
+  // CTR 1.68% / opportunity_score 78.12). Companion to /zip-tools/zip-file.html
+  // (the in-browser archive creator). Kebab URL passes URL convention regex;
+  // smashed form "foldertozip" does not shadow any existing primary route.
+  '/guides/folder-to-zip.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -1037,6 +1043,13 @@ export const GUIDE_ROUTES = new Set([
   // tool-guidescompresszip/SKILL.md C1-C6 (size question vs archive question;
   // browser-creator routing; sibling-guide vocabulary disambiguation).
   '/guides/zip-compressor-online.html',
+  // Cycle 20260518-23 create_new_guide_page - "Folder to zip" Lane-D guide
+  // (zip cluster, companion to /zip-tools/zip-file.html). GSC 773 imp / 13
+  // clicks / pos 9.73 / CTR 1.68% / opportunity_score 78.12 — folder-to-archive
+  // intent. Paraphrases tool-ziptools/SKILL.md M1 (one-click routing) and
+  // tool-guidescompresszip/SKILL.md C1-C5 (size question vs archive question
+  // for folder inputs).
+  '/guides/folder-to-zip.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -1289,6 +1302,8 @@ export const JSP_BY_ROUTE = {
   '/guides/zip-password-recovery-online.html': 'guide/zip-password-recovery-online.jsp',
   // Cycle 20260518-22 create_new_guide_page - "Zip compressor online" Lane-D guide (zip cluster head-query sibling, companion to /zip-tools/zip-file.html and /guides/zip-compressor.html). Complete single-cycle ship per cycle 20260514-5 contract.
   '/guides/zip-compressor-online.html': 'guide/zip-compressor-online.jsp',
+  // Cycle 20260518-23 create_new_guide_page - "Folder to zip" Lane-D guide. Companion to /zip-tools/zip-file.html. Sourced from tool-ziptools/SKILL.md M1 + tool-guidescompresszip/SKILL.md C1-C5.
+  '/guides/folder-to-zip.html': 'guide/folder-to-zip.jsp',
   // Cycle 84 P84.A - "How to compress a JPG for email attachment size limits" Lane-D guide (image-conversion / compression sub-cluster, companion to /compress-image.html).
   '/guides/how-to-compress-a-jpg-for-email-attachment-limits.html': 'guide/how-to-compress-a-jpg-for-email-attachment-limits.jsp',
   // Cycle 85 P85.A - "Microphone test levels: what quiet, normal, and peak mean" Lane-D guide (device-test / microphone-test sub-cluster, companion to /microphone-test.html).
@@ -1493,6 +1508,14 @@ export const JSP_BY_ROUTE = {
   '/video-tools/video-converter.html': 'convert/video-converter.jsp',
   '/image-converter-tools/extract-gif-to-image-frames.html': 'convert/extract-gif-to-image-frames.jsp',
   '/utility-tools/cong-cu-chuyen-doi-chu-quoc-ngu-tieng-viet-thanh-tieq-viet-kieu-moi.html': 'convert/new-vietnamese-converter.jsp',
+  '/browser-ai.html': 'convert/browser-ai.jsp',
+  '/guides/browser-ai-when.html': 'guide/browser-ai-when.jsp',
+  '/guides/browser-ai-step-by-step.html': 'guide/browser-ai-step-by-step.jsp',
+  '/guides/browser-ai-vs-alternatives.html': 'guide/browser-ai-vs-alternatives.jsp',
+  '/browser-based-ai.html': 'convert/browser-based-ai.jsp',
+  '/guides/browser-based-ai-when.html': 'guide/browser-based-ai-when.jsp',
+  '/guides/browser-based-ai-step-by-step.html': 'guide/browser-based-ai-step-by-step.jsp',
+  '/guides/browser-based-ai-vs-alternatives.html': 'guide/browser-based-ai-vs-alternatives.jsp',
 };
 
 export function normalizeRoute(route) {
