@@ -755,6 +755,13 @@ export const INFO_ROUTES = new Set([
   // Kebab URL passes URL convention regex; smashed form "onlinezipfile" does
   // not shadow any existing primary route.
   '/guides/online-zip-file.html',
+  // Cycle 20260518-31 create_new_guide_page - "Create Zip File Online" Lane-D
+  // guide (zip cluster, GSC "create zip file online" 702 imp / 8 clicks /
+  // pos 10.08 / CTR 1.14% / opportunity_score 68.87). Companion to
+  // /zip-tools/zip-file.html (the in-browser archive creator). Kebab URL
+  // passes URL convention regex; smashed form "createzipfileonline" does not
+  // shadow any existing primary route.
+  '/guides/create-zip-file-online.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -1088,6 +1095,14 @@ export const GUIDE_ROUTES = new Set([
   // intent (zip-file as a noun, not as a verb). Paraphrases tool-zipfile/SKILL.md
   // M1-M7 (in-browser creator) and tool-ziptools/SKILL.md M1 (one-click routing).
   '/guides/online-zip-file.html',
+  // Cycle 20260518-31 create_new_guide_page - "Create Zip File Online" Lane-D
+  // guide (zip cluster, companion to /zip-tools/zip-file.html). GSC 702 imp /
+  // 8 clicks / pos 10.08 / CTR 1.14% / opportunity_score 68.87 - "create zip
+  // file online" intent (the verb-led companion to "online zip file"). Paraphrases
+  // tool-zipfile/SKILL.md implemented features (upload + server-side build +
+  // optional password + cross-platform output) and the existing in-browser
+  // creator copy in BODYHTMLzipfile / BODYWELCOMEzipfile.
+  '/guides/create-zip-file-online.html',
   // Cycle 20260518-29 create_new_guide_page - "zip password unlocker" Lane-D
   // guide (zip cluster, companion to /remove-zip-password.html). GSC 432 imp /
   // 44 clicks / pos 5.29 / CTR 10.18% / opportunity_score 73.32. Honest framing:
@@ -1357,6 +1372,8 @@ export const JSP_BY_ROUTE = {
   '/guides/folder-to-zip.html': 'guide/folder-to-zip.jsp',
   // Cycle 20260518-25 create_new_guide_page - "Online Zip File" Lane-D guide. Companion to /zip-tools/zip-file.html. Sourced from tool-zipfile/SKILL.md M1-M7 + tool-ziptools/SKILL.md M1.
   '/guides/online-zip-file.html': 'guide/online-zip-file.jsp',
+  // Cycle 20260518-31 create_new_guide_page - "Create Zip File Online" Lane-D guide. Companion to /zip-tools/zip-file.html. Sourced from tool-zipfile/SKILL.md implemented features + BODYHTMLzipfile reader-task copy.
+  '/guides/create-zip-file-online.html': 'guide/create-zip-file-online.jsp',
   // Cycle 84 P84.A - "How to compress a JPG for email attachment size limits" Lane-D guide (image-conversion / compression sub-cluster, companion to /compress-image.html).
   '/guides/how-to-compress-a-jpg-for-email-attachment-limits.html': 'guide/how-to-compress-a-jpg-for-email-attachment-limits.jsp',
   // Cycle 85 P85.A - "Microphone test levels: what quiet, normal, and peak mean" Lane-D guide (device-test / microphone-test sub-cluster, companion to /microphone-test.html).
