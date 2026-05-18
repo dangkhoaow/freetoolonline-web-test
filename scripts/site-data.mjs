@@ -1118,6 +1118,12 @@ export const ALIAS_ROUTES = {
   '/pdf-merge-from-multiple-files.html': '/pdf-tools/join-pdf-from-multiple-files.html',
   '/mov-to-mp4.html': '/video-tools/video-converter.html',
   '/mov-to-mp3.html': '/video-tools/video-converter.html',
+  // Cycle 20260518-29 — new_tool_page_discovery proposal candidate "video-converter-mp4" failed
+  // the seo-tool-page-builder verb-detection guard ("slug ends with format token mp4, no I/O
+  // verb"). Aliasing the proposed URL into the existing canonical video-converter routes the
+  // synonym query traffic to a real working tool without authoring a near-clone that would
+  // cannibalize. Same pattern as /mov-to-mp4.html above + /video-converter.html below.
+  '/video-converter-mp4.html': '/video-tools/video-converter.html',
   '/zip-file-with-password.html': '/zip-tools/zip-file.html',
   '/unzip-file-with-password.html': '/zip-tools/unzip-file.html',
   '/heic-to-pdf.html': '/image-converter-tools/heic-to-jpg.html',
