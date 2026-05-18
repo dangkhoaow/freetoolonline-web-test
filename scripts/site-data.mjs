@@ -736,6 +736,12 @@ export const INFO_ROUTES = new Set([
   // (the in-browser archive creator). Kebab URL passes URL convention regex;
   // smashed form "foldertozip" does not shadow any existing primary route.
   '/guides/folder-to-zip.html',
+  // Cycle 20260518-25 create_new_guide_page - "Online Zip File" Lane-D guide
+  // (zip cluster, GSC "online zip file" 573 imp / 12 clicks / pos 7.39 /
+  // CTR 2.09% / opportunity_score 75.94). Companion to /zip-tools/zip-file.html.
+  // Kebab URL passes URL convention regex; smashed form "onlinezipfile" does
+  // not shadow any existing primary route.
+  '/guides/online-zip-file.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -1054,6 +1060,12 @@ export const GUIDE_ROUTES = new Set([
   // tool-guidescompresszip/SKILL.md C1-C5 (size question vs archive question
   // for folder inputs).
   '/guides/folder-to-zip.html',
+  // Cycle 20260518-25 create_new_guide_page - "Online Zip File" Lane-D guide
+  // (zip cluster, companion to /zip-tools/zip-file.html). GSC 573 imp / 12
+  // clicks / pos 7.39 / CTR 2.09% / opportunity_score 75.94 — "online zip file"
+  // intent (zip-file as a noun, not as a verb). Paraphrases tool-zipfile/SKILL.md
+  // M1-M7 (in-browser creator) and tool-ziptools/SKILL.md M1 (one-click routing).
+  '/guides/online-zip-file.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -1308,6 +1320,8 @@ export const JSP_BY_ROUTE = {
   '/guides/zip-compressor-online.html': 'guide/zip-compressor-online.jsp',
   // Cycle 20260518-23 create_new_guide_page - "Folder to zip" Lane-D guide. Companion to /zip-tools/zip-file.html. Sourced from tool-ziptools/SKILL.md M1 + tool-guidescompresszip/SKILL.md C1-C5.
   '/guides/folder-to-zip.html': 'guide/folder-to-zip.jsp',
+  // Cycle 20260518-25 create_new_guide_page - "Online Zip File" Lane-D guide. Companion to /zip-tools/zip-file.html. Sourced from tool-zipfile/SKILL.md M1-M7 + tool-ziptools/SKILL.md M1.
+  '/guides/online-zip-file.html': 'guide/online-zip-file.jsp',
   // Cycle 84 P84.A - "How to compress a JPG for email attachment size limits" Lane-D guide (image-conversion / compression sub-cluster, companion to /compress-image.html).
   '/guides/how-to-compress-a-jpg-for-email-attachment-limits.html': 'guide/how-to-compress-a-jpg-for-email-attachment-limits.jsp',
   // Cycle 85 P85.A - "Microphone test levels: what quiet, normal, and peak mean" Lane-D guide (device-test / microphone-test sub-cluster, companion to /microphone-test.html).
