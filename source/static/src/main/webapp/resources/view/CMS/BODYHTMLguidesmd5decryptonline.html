@@ -1,0 +1,24 @@
+<article class="guide-body">
+  <h1>MD5 decrypt online: why you cannot, and the practical workaround</h1>
+  <p class="lead">"MD5 decrypt online" is a search the cryptography does not support - MD5 is a one-way hash, so the 32-hex output cannot be mathematically reversed back to the original input. Readers who typed this wording are usually after a dictionary lookup (does someone, somewhere, already have a plaintext paired with this exact hash?) or after a hash builder (turn a known string into its MD5 fingerprint). This page explains both, points to the right tool for each, and names the cases where the answer is "switch to a different algorithm".</p>
+  <p class="reviewed">Last reviewed: 2026-05-18</p>
+  <p class="byline">Reviewed by the FreetoolOnline editorial team</p>
+  <table class="quick-facts">
+    <thead><tr><th>Aspect</th><th>What is true for MD5</th></tr></thead>
+    <tbody>
+      <tr><td>Direction of the function</td><td>One-way only - input goes to output, never the reverse. There is no inverse operation, even in principle.</td></tr>
+      <tr><td>Output size</td><td>Exactly 128 bits, rendered as 32 hexadecimal characters.</td></tr>
+      <tr><td>What "decrypt" actually means in practice</td><td>A dictionary lookup against precomputed hash-to-plaintext pairs; succeeds only for inputs that have been hashed and recorded before. Returns nothing for any new string.</td></tr>
+      <tr><td>Right tool for fingerprint generation</td><td><a href="/md5-converter.html">/md5-converter.html</a> - paste up to 990 characters, click To MD5, the page renders the 32-hex digest.</td></tr>
+      <tr><td>Right tool for password storage</td><td>Not MD5. Switch to bcrypt, argon2id, or scrypt. See <a href="/guides/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html">MD5 alternatives</a>.</td></tr>
+    </tbody>
+  </table>
+  <h2>What "MD5 decrypt" actually does on this site</h2>
+  <p>The MD5 converter at <a href="/md5-converter.html">/md5-converter.html</a> exposes two buttons: To MD5 builds a hash from a string you paste, and To Text checks a dictionary for a plaintext paired with a hash you paste. To Text is the closest thing the site has to "decrypt", but it is a lookup, not a reverse computation. It first checks this browser's localStorage for a pairing you produced earlier on this same device; if none is found, it asks the server's precomputed dictionary for a match. If your hash was never paired with a plaintext on either side, the lookup returns nothing - that is the expected behaviour, not a bug, because MD5 itself cannot be reversed.</p>
+  <h2>If the hash you have is common</h2>
+  <p>Common strings - dictionary words, popular passwords, well-known phrases - are likely already in public MD5 dictionaries because someone hashed them at some point. A To Text lookup against these usually succeeds. Long, random, or user-specific strings have almost never been hashed before, so a lookup returns nothing. The success rate depends entirely on whether someone earlier produced and stored the same pairing; it does not depend on the strength of any algorithm. If you want the recovery to succeed for a string you generated yourself, hash it once with the To MD5 button while it is still in your hands; the converter caches that pairing in localStorage so a future To Text lookup of the same hash returns the original string on this same browser.</p>
+  <h2>If your real task is password storage</h2>
+  <p>If you are searching "MD5 decrypt online" because you stored a password as MD5 and now need to verify it, the right fix is not to decrypt MD5; it is to stop using MD5 for that job. MD5 is fast and unsalted by default, which makes offline brute-force feasible on modern hardware. The dedicated alternatives guide explains when bcrypt, argon2id, or scrypt is the right replacement for the specific password flow you are building, and which migration path each one supports for an existing MD5 column. The MD5 column itself stays in place during the migration; new passwords get re-hashed with the new algorithm on next login, and the old MD5 values get phased out as users log in.</p>
+  <h2>Where to go next</h2>
+  <p>For the cryptographic walkthrough of why reversal is impossible, see <a href="/guides/why-md5-cannot-be-decrypted.html">why MD5 cannot be decrypted</a>. For the file-integrity case (compare two MD5 hashes to confirm a download matches the published fingerprint), see <a href="/guides/read-and-compare-md5-hashes-correctly.html">read and compare MD5 hashes correctly</a>. For the broader wording question ("MD5 decode" vs "MD5 to text" vs "MD5 decrypt"), see <a href="/guides/md5-decode.html">MD5 decode</a> and <a href="/guides/md5-to-text-why-you-cannot-convert-back.html">why you cannot convert MD5 back to text</a>. The hash builder itself is at <a href="/md5-converter.html">/md5-converter.html</a> and is free to use without an account.</p>
+</article>

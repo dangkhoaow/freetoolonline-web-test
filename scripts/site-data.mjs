@@ -273,6 +273,11 @@ export const INFO_ROUTES = new Set([
   '/guides/why-md5-cannot-be-decrypted.html',
   // Cycle 20260518-24 P24.E — "md5 decode" reader-vocabulary routing guide (distinguishing role).
   '/guides/md5-decode.html',
+  // Cycle 20260518-28 — "md5 decrypt online" wording routing guide. Same one-way truth as md5-decode but framed
+  // around the "decrypt" search wording (more specific; carries the password-recovery sub-intent). Distinct from
+  // /guides/why-md5-cannot-be-decrypted.html (cryptographic walkthrough) and /guides/md5-decode.html (broader
+  // wording routing). Outbound link to /md5-converter.html.
+  '/guides/md5-decrypt-online.html',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html',
   '/guides/css-minifier-vs-uglifier-vs-tree-shaking.html',
@@ -862,6 +867,11 @@ export const GUIDE_ROUTES = new Set([
   '/guides/why-md5-cannot-be-decrypted.html',
   // Cycle 20260518-24 P24.E — "md5 decode" reader-vocabulary routing guide (distinguishing role).
   '/guides/md5-decode.html',
+  // Cycle 20260518-28 — "md5 decrypt online" wording routing guide. Same one-way truth as md5-decode but framed
+  // around the "decrypt" search wording (more specific; carries the password-recovery sub-intent). Distinct from
+  // /guides/why-md5-cannot-be-decrypted.html (cryptographic walkthrough) and /guides/md5-decode.html (broader
+  // wording routing). Outbound link to /md5-converter.html.
+  '/guides/md5-decrypt-online.html',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html',
   '/guides/css-minifier-vs-uglifier-vs-tree-shaking.html',
@@ -1432,6 +1442,7 @@ export const JSP_BY_ROUTE = {
   '/guides/why-heic-wont-open-on-windows-three-fixes.html': 'guide/why-heic-wont-open-on-windows-three-fixes.jsp',
   '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
   '/guides/md5-decode.html': 'guide/md5-decode.jsp',
+  '/guides/md5-decrypt-online.html': 'guide/md5-decrypt-online.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',
   '/guides/css-minifier-vs-uglifier-vs-tree-shaking.html': 'guide/css-minifier-vs-uglifier-vs-tree-shaking.jsp',
