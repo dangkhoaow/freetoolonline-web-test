@@ -2342,7 +2342,7 @@ footer.page-footer .footer-inner *{
     max-width: 1600px;
 }
 
-.page-section, .ad-section:not(.ad-panel) {
+.page-section, .ad-section:not(.ad-panel):not(.top-ad) {
     overflow: hidden;
     position: relative;
     margin: auto;
@@ -2350,6 +2350,7 @@ footer.page-footer .footer-inner *{
     -moz-box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 	width: calc(100% - 20px);
+    margin-bottom: 10px;
     /* Token-driven so .page-section adapts to BOTH the .dark class AND the
      * OS-default `prefers-color-scheme: dark` media query, the same way
      * .bento-cell does. Previously hardcoded `rgba(255,255,255,0.93)`, which
@@ -2695,5 +2696,9 @@ html.main-html.dark:not(.html-fill-img) footer.page-footer .footer-inner a {
 }
 html.main-html.dark .page-section {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+}
+
+details.faq-item > summary::before {
+    color: inherit !important;
 }
 </style>
