@@ -1652,6 +1652,8 @@ export const JSP_BY_ROUTE = {
   '/guides/hd-video-converter-step-by-step.html': 'guide/hd-video-converter-step-by-step.jsp',
   '/guides/hd-video-converter-vs-alternatives.html': 'guide/hd-video-converter-vs-alternatives.jsp',
   '/json-formatter.html': 'convert/json-formatter.jsp',
+  // Cycle 20260519-12 new_tool_page — extension-flavored sibling of /json-formatter.html (trending scout cand-2e54654672206320, cycles_seen=16, last_confidence=0.65, registry=text_transform_purejs).
+  '/json-formatter-extension.html': 'convert/json-formatter-extension.jsp',
   '/guides/json-formatter-when.html': 'guide/json-formatter-when.jsp',
   '/guides/json-formatter-step-by-step.html': 'guide/json-formatter-step-by-step.jsp',
   '/guides/json-formatter-vs-alternatives.html': 'guide/json-formatter-vs-alternatives.jsp',
