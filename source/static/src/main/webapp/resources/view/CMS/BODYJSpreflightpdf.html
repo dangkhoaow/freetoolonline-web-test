@@ -5,38 +5,54 @@
             $step3 = $('.step3');
         
         $(document).on('click','#preflightBtn',function() {
-            if(web.fileInfoResult.length <= 0){
-                $step3.show();
-                $step3.find('#downloadLink').text('Error has occur').css('color', 'red').removeAttr('href').removeAttr('target');
-            }
-            var oPreFlight = web.fileInfoResult[web.fileInfoResult.length - 1];
-            oPreFlight['format'] = $('input[name=format]:checked').val();
-            if($('input[name=format]:checked').val() === 'dimension'){
-                oPreFlight['customInputString'] = $('#dimensionOpts').val();
-            }
-            var $btn = $('#preflightBtn');
-            $btn.text('PreFlighting');
-            
-            callAjax(oPreFlight, 
-                    function(result){
-                        $btn.text('PreFlight');
-                        $step3.show();
-                        $('.downloadTitle').text('Errors are listed below');
-                        if(result.errorMessages.length > 0){
-                            var sMessages = '<ol>';
-                            for(var i = 0; i < result.errorMessages.length; i++){
-                                sMessages = sMessages + '<li title=\''+ result.errorMessages[i] +'\'>' + result.errorMessages[i] + '</li>';
+            try {
+                if(!web || !web.fileInfoResult || web.fileInfoResult.length <= 0){
+                    $step3.show();
+                    $step3.find('#downloadLink').text('Error has occur').css('color', 'red').removeAttr('href').removeAttr('target');
+                    return;
+                }
+                var oPreFlight = web.fileInfoResult[web.fileInfoResult.length - 1];
+                oPreFlight['format'] = $('input[name=format]:checked').val();
+                if($('input[name=format]:checked').val() === 'dimension'){
+                    oPreFlight['customInputString'] = $('#dimensionOpts').val();
+                }
+                var $btn = $('#preflightBtn');
+                $btn.text('PreFlighting');
+
+                callAjax(oPreFlight,
+                        function(result){
+                            try {
+                                $btn.text('PreFlight');
+                                $step3.show();
+                                $('.downloadTitle').text('Errors are listed below');
+                                var errs = (result && Array.isArray(result.errorMessages)) ? result.errorMessages : null;
+                                if(errs && errs.length > 0){
+                                    var sMessages = '<ol>';
+                                    for(var i = 0; i < errs.length; i++){
+                                        sMessages = sMessages + '<li title=\''+ errs[i] +'\'>' + errs[i] + '</li>';
+                                    }
+                                    sMessages = sMessages + '</ol>';
+                                    $step3.find('.downloadContainer').html(sMessages);
+                                } else if (errs && errs.length === 0) {
+                                    $step3.find('.downloadContainer').html("<span style='color: #3b73af;'>Your PDF is OK, no errors found.</span>");
+                                } else {
+                                    $step3.find('.downloadContainer').html("<span style='color: red;'>Validation result could not be read. Please re-upload and try again.</span>");
+                                }
+                            } catch (e) {
+                                try { console.error('[preflightpdf] success-callback failed:', e); } catch (_) {}
+                                $btn.text('PreFlight');
+                                $step3.show();
+                                $step3.find('.downloadContainer').html("<span style='color: red;'>Validation result could not be parsed. Please re-upload and try again.</span>");
                             }
-                            sMessages = sMessages + '</ol>';
-                            $step3.find('.downloadContainer').html(sMessages);
-                        } else {
-                            $step3.find('.downloadContainer').html("<span style='color: #3b73af;'>Your PDF is OK, not exisitng any error on this.</span>");
-                        }				
-                    },
-                    function(){
-                        $btn.text('PreFlight');
-                    }
-            );
+                        },
+                        function(){
+                            $btn.text('PreFlight');
+                        }
+                );
+            } catch (e) {
+                try { console.error('[preflightpdf] click handler failed:', e); } catch (_) {}
+                try { $('#preflightBtn').text('PreFlight'); } catch (_) {}
+            }
         });
         
         $("input[name='format']").change(function(){

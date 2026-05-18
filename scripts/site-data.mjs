@@ -271,6 +271,8 @@ export const INFO_ROUTES = new Set([
   '/guides/microphone-test-online-what-it-actually-checks.html',
   '/guides/keyboard-tester-online-rollover-vs-anti-ghosting.html',
   '/guides/why-md5-cannot-be-decrypted.html',
+  // Cycle 20260518-24 P24.E — "md5 decode" reader-vocabulary routing guide (distinguishing role).
+  '/guides/md5-decode.html',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html',
   '/guides/css-minifier-vs-uglifier-vs-tree-shaking.html',
@@ -852,6 +854,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/microphone-test-online-what-it-actually-checks.html',
   '/guides/keyboard-tester-online-rollover-vs-anti-ghosting.html',
   '/guides/why-md5-cannot-be-decrypted.html',
+  // Cycle 20260518-24 P24.E — "md5 decode" reader-vocabulary routing guide (distinguishing role).
+  '/guides/md5-decode.html',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html',
   '/guides/css-minifier-vs-uglifier-vs-tree-shaking.html',
@@ -1413,6 +1417,7 @@ export const JSP_BY_ROUTE = {
   '/guides/download-link-not-appearing-after-conversion-five-fixes.html': 'guide/download-link-not-appearing-after-conversion-five-fixes.jsp',
   '/guides/why-heic-wont-open-on-windows-three-fixes.html': 'guide/why-heic-wont-open-on-windows-three-fixes.jsp',
   '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
+  '/guides/md5-decode.html': 'guide/md5-decode.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',
   '/guides/css-minifier-vs-uglifier-vs-tree-shaking.html': 'guide/css-minifier-vs-uglifier-vs-tree-shaking.jsp',
@@ -1516,6 +1521,10 @@ export const JSP_BY_ROUTE = {
   '/guides/browser-based-ai-when.html': 'guide/browser-based-ai-when.jsp',
   '/guides/browser-based-ai-step-by-step.html': 'guide/browser-based-ai-step-by-step.jsp',
   '/guides/browser-based-ai-vs-alternatives.html': 'guide/browser-based-ai-vs-alternatives.jsp',
+  '/web-browser-ai.html': 'convert/web-browser-ai.jsp',
+  '/guides/web-browser-ai-when.html': 'guide/web-browser-ai-when.jsp',
+  '/guides/web-browser-ai-step-by-step.html': 'guide/web-browser-ai-step-by-step.jsp',
+  '/guides/web-browser-ai-vs-alternatives.html': 'guide/web-browser-ai-vs-alternatives.jsp',
 };
 
 export function normalizeRoute(route) {

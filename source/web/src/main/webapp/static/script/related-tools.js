@@ -164,6 +164,7 @@ try {
     { title: "All Guides - Browser Tool Library", url: "https://freetoolonline.com/guides.html", include: !1, tags: "guide" }
     { title: "Browser Use Ai Tool", url: "https://freetoolonline.com/browser-ai.html", include: !1, tags: "utility" },
     { title: "Browser Based Ai Tool", url: "https://freetoolonline.com/browser-based-ai.html", include: !1, tags: "utility" },
+    { title: "Web Browser Ai Tool", url: "https://freetoolonline.com/web-browser-ai.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
