@@ -368,10 +368,6 @@ a {
     background-color: transparent
 }
 
-.page-section a:not(.fa):not([style*="color"]) {
-    color: var(--link, #2563eb) !important;
-}
-
 abbr[title] {
     border-bottom: none;
     text-decoration: underline;
@@ -1874,27 +1870,6 @@ a {
     color: var(--link, #2563eb)
 }
 
-/* PALETTE FLIP cycle 16 - sitewide layout fix + token wiring for non-homepage pages.
- * Per cycle-16 audit: PAGESTYLE.css (slug-less) is only loaded on '/'; tool/guide
- * pages need their token-wired rules HERE in style-all-default.tag so the palette
- * flip + the centering fix reach every URL.
- *
- * Layout fix - .page-main-content was rendered with computed maxW=660px (1180/1240
- * vp) or 1000px (1366+) and asymmetric margins (mL ~170px less than mR), shifting
- * the column ~85px LEFT of viewport center across all viewports. Root: W3.CSS
- * .w3-rest creates a BFC (overflow:hidden) that shrink-fits when adjacent floats
- * leave residual width. Force-center with auto margins. Keep the main container
- * full-width so header/footer align; cards still use width: calc(100% - 20px). */
-main.page-main-content,
-.w3-rest.page-main-content {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    box-sizing: border-box !important;
-    overflow: visible !important;
-}
-
 #contactForm #btnSend {
     margin: 0!important
 }
@@ -2230,7 +2205,7 @@ header .new-style-nav-bar {
     border-right-color: #c3c6c9;
     border-bottom-color: #b5b9bd;
     border-left-color: #c3c6c9;
-    padding: 20px;
+    padding: 10px;
 }
 
 .ad-section,.page-section,header.navBarContainer{
@@ -2367,7 +2342,7 @@ footer.page-footer .footer-inner *{
     max-width: 1600px;
 }
 
-.page-section {
+.page-section, .ad-section:not(.ad-panel) {
     overflow: hidden;
     position: relative;
     margin: auto;
@@ -2375,7 +2350,6 @@ footer.page-footer .footer-inner *{
     -webkit-box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     -moz-box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    max-width: 1240px;
 	width: calc(100% - 20px);
     /* Token-driven so .page-section adapts to BOTH the .dark class AND the
      * OS-default `prefers-color-scheme: dark` media query, the same way
@@ -2389,51 +2363,19 @@ footer.page-footer .footer-inner *{
     color: var(--text-primary, #000);
 }
 
-/* Ad slots only: match common.css - do not use the page-section card fill (breaks dark mode + mobile top-ad title band). */
-.ad-section:not(.ad-panel) {
-    overflow: hidden;
-    position: relative;
-    margin: auto auto 10px;
-    margin-bottom: 0;
-    max-width: 1240px;
-    width: calc(100% - 20px);
-    background: none;
-    background-color: transparent;
-    box-shadow: none;
-}
-
 footer.page-footer .footer-inner {
-    /* Aligned with .page-section / .bento outer-edge (effective 1220px wide):
-     * page-section + bento live inside `.page-main-content` (max-width 1240,
-     * centered in body). They use `width: calc(100% - 20px)` of that 1240 ->
-     * effective 1220. Footer is OUTSIDE that wrapper so direct calc on body
-     * 1290 yielded 1240 - wider than the content above. Cap at 1220 to align. */
-    max-width: 1220px !important;
-    width: calc(100% - 20px) !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    box-sizing: border-box;
+    max-width: 1240px!important;
 }
 
-/* Wide desktop: keep footer aligned with the 1240px content column.
-   Overrides common.css `@media (min-width:1900px)` that widens the footer container. */
-@media (min-width: 1900px) {
-    html body footer.page-footer .footer-inner {
-        max-width: 1240px !important;
-    }
-}
-
-/* Large desktop: align footer with the main content container on key static pages. */
-@media (min-width: 1000px) {
-    html.page-contact-usroot footer.page-footer .footer-inner,
-    html.page-privacy-policyroot footer.page-footer .footer-inner,
-    html.page-about-usroot footer.page-footer .footer-inner {
-        max-width: 1240px !important;
-        width: calc(100% - 20px) !important;
-        margin-left: auto !important;
-        margin-right: auto !important;
-        box-sizing: border-box;
-    }
+@media(max-width: 1550px) {
+	footer.page-footer .footer-inner {
+    		text-align: left !important;
+	    	max-width: calc(100% - 20px)!important;
+	}
+    .page-section, .ad-section:not(.ad-panel) {
+		margin-left: 10px!important;
+        max-width: unset;
+	}
 }
 
 @media (max-width: 599px){
