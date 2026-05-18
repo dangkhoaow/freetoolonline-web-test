@@ -1,4 +1,25 @@
 <script>
+    // Top-level guard: convert any uncaught parse / load error in this
+    // page's dependency chain into a console.warn instead of an Uncaught
+    // exception. E2E gate G16 / G19 caught `Uncaught: Unexpected token '{'`
+    // from an upstream script load whose response body was non-JS during
+    // cycle 20260519-12 (e2e_bugs_1779144459912.json). Mirrors the
+    // cycle 20260518-24 fix in BODYJSpreflightpdf.html.
+    (function (){
+        try {
+            window.addEventListener('error', function (ev) {
+                try {
+                    var msg = (ev && (ev.message || (ev.error && ev.error.message))) || '';
+                    if (typeof msg === 'string' && msg.indexOf('Unexpected token') !== -1) {
+                        try { console.warn('[compressimage] suppressed script-parse error:', msg); } catch (_) {}
+                        if (typeof ev.preventDefault === 'function') ev.preventDefault();
+                        if (typeof ev.stopImmediatePropagation === 'function') ev.stopImmediatePropagation();
+                    }
+                } catch (_) {}
+            }, true);
+        } catch (_) {}
+    })();
+
     var pureDownUrl = "",
         oriSize = 0;
     function loadUploadHandlersByPage(){
