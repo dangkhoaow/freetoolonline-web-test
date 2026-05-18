@@ -162,7 +162,6 @@ try {
     { title: "Zip File Converter - What It Actually Does", url: "https://freetoolonline.com/guides/zip-file-converter-what-it-actually-does.html", include: !1, tags: "guide,zip,unzip,compress,archive" },
     { title: "HEIC to JPG: What the Converter Actually Does", url: "https://freetoolonline.com/guides/heic-to-jpg-claims-what-actually-works.html", include: !1, tags: "guide,image-conversion,heic,jpg,trust" },
     { title: "All Guides - Browser Tool Library", url: "https://freetoolonline.com/guides.html", include: !1, tags: "guide" }
-    { title: "Video Converter Online Mp3", url: "https://freetoolonline.com/video-converter-mp3.html", include: !1, tags: "image-conversion" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

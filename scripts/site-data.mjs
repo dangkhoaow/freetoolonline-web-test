@@ -1567,10 +1567,6 @@ export const JSP_BY_ROUTE = {
   '/utility-tools/cong-cu-chuyen-doi-chu-quoc-ngu-tieng-viet-thanh-tieq-viet-kieu-moi.html': 'convert/new-vietnamese-converter.jsp',
   // Cycle 20260518-29 create_new_guide_page - zip-password-unlocker Lane-D guide.
   '/guides/zip-password-unlocker.html': 'guide/zip-password-unlocker.jsp',
-  '/video-converter-mp3.html': 'convert/video-converter-mp3.jsp',
-  '/guides/video-converter-mp3-when.html': 'guide/video-converter-mp3-when.jsp',
-  '/guides/video-converter-mp3-step-by-step.html': 'guide/video-converter-mp3-step-by-step.jsp',
-  '/guides/video-converter-mp3-vs-alternatives.html': 'guide/video-converter-mp3-vs-alternatives.jsp',
 };
 
 export function normalizeRoute(route) {
