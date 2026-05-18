@@ -227,6 +227,14 @@ export const INFO_ROUTES = new Set([
   // action tool while the existing 8 /guides/lcd-* / /guides/dead-pixel-*
   // / /guides/screen-* pages keep their long-tail intents. Append-only.
   '/guides/test-lcd.html',
+  // Cycle 20260518-30 P30.E - "lcd checker" / "lcd check" / "monitor checker" /
+  // "screen checker" Lane-D create_new_guide_page. Sibling to /guides/test-lcd.html
+  // and /guides/led-test.html. Covers the "checker" / "check" wording family
+  // (verification framing) vs the "tester" / "test" wording family (active
+  // verb framing). Both routes point at the same in-browser tool /lcd-test.html.
+  // Append-only, kebab-case, does not shadow /lcd-test.html (smashed form
+  // "lcdchecker" differs from existing slugs).
+  '/guides/lcd-checker.html',
   // Phase 16 Cycle A P16.N2 - "how to compress a file" + variants
   // (~10K impr / 0.02% CTR / pos 10.5). Greenfield how-to guide.
   '/guides/how-to-compress-a-file-online.html',
@@ -838,6 +846,10 @@ export const GUIDE_ROUTES = new Set([
   // disambiguation aggregator (combined ~7.7K impr/28d at pos 5-8); routes
   // intent to /lcd-test.html action tool.
   '/guides/test-lcd.html',
+  // Cycle 20260518-30 P30.E - "lcd checker" / "lcd check" / "monitor checker"
+  // / "screen checker" Lane-D guide. Sibling to /guides/test-lcd.html for
+  // the verification-framing query family. Same destination tool.
+  '/guides/lcd-checker.html',
   // Phase 16 Cycle B P16.N11 / P16.N16.
   '/guides/how-to-convert-heic-to-jpg-step-by-step.html',
   '/guides/what-an-lcd-test-does-and-when-to-run-one.html',
@@ -1386,6 +1398,8 @@ export const JSP_BY_ROUTE = {
   '/guides/file-compressor.html': 'guide/file-compressor.jsp',
   // Cycle 122 P122.A - HEAD-query disambiguation aggregator for "test lcd" / "lcd tester" / "lcd test online".
   '/guides/test-lcd.html': 'guide/test-lcd.jsp',
+  // Cycle 20260518-30 P30.E - "lcd checker" / "lcd check" / "monitor checker" verification-framing sibling guide.
+  '/guides/lcd-checker.html': 'guide/lcd-checker.jsp',
   '/guides/how-to-compress-a-file-online.html': 'guide/how-to-compress-a-file-online.jsp',
   '/guides/how-to-reduce-zip-file-size-online.html': 'guide/how-to-reduce-zip-file-size-online.jsp',
   '/guides/how-to-reduce-zip-file-size.html': 'guide/how-to-reduce-zip-file-size.jsp',
