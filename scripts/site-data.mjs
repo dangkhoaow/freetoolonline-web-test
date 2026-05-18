@@ -1513,18 +1513,6 @@ export const JSP_BY_ROUTE = {
   '/video-tools/video-converter.html': 'convert/video-converter.jsp',
   '/image-converter-tools/extract-gif-to-image-frames.html': 'convert/extract-gif-to-image-frames.jsp',
   '/utility-tools/cong-cu-chuyen-doi-chu-quoc-ngu-tieng-viet-thanh-tieq-viet-kieu-moi.html': 'convert/new-vietnamese-converter.jsp',
-  '/browser-ai.html': 'convert/browser-ai.jsp',
-  '/guides/browser-ai-when.html': 'guide/browser-ai-when.jsp',
-  '/guides/browser-ai-step-by-step.html': 'guide/browser-ai-step-by-step.jsp',
-  '/guides/browser-ai-vs-alternatives.html': 'guide/browser-ai-vs-alternatives.jsp',
-  '/browser-based-ai.html': 'convert/browser-based-ai.jsp',
-  '/guides/browser-based-ai-when.html': 'guide/browser-based-ai-when.jsp',
-  '/guides/browser-based-ai-step-by-step.html': 'guide/browser-based-ai-step-by-step.jsp',
-  '/guides/browser-based-ai-vs-alternatives.html': 'guide/browser-based-ai-vs-alternatives.jsp',
-  '/web-browser-ai.html': 'convert/web-browser-ai.jsp',
-  '/guides/web-browser-ai-when.html': 'guide/web-browser-ai-when.jsp',
-  '/guides/web-browser-ai-step-by-step.html': 'guide/web-browser-ai-step-by-step.jsp',
-  '/guides/web-browser-ai-vs-alternatives.html': 'guide/web-browser-ai-vs-alternatives.jsp',
 };
 
 export function normalizeRoute(route) {
