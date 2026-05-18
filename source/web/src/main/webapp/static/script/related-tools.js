@@ -160,6 +160,7 @@ try {
     { title: "Download Link Not Appearing After Conversion - 5 Fixes", url: "https://freetoolonline.com/guides/download-link-not-appearing-after-conversion-five-fixes.html", include: !1, tags: "guide,troubleshooting,converter,upload,download" },
     { title: "Why HEIC Won't Open on Windows - Three Quick Fixes", url: "https://freetoolonline.com/guides/why-heic-wont-open-on-windows-three-fixes.html", include: !1, tags: "guide,image-conversion,heic,windows" },
     { title: "Zip File Converter - What It Actually Does", url: "https://freetoolonline.com/guides/zip-file-converter-what-it-actually-does.html", include: !1, tags: "guide,zip,unzip,compress,archive" },
+    { title: "Zip File Converter", url: "https://freetoolonline.com/guides/zip-file-converter.html", include: !1, tags: "guide,zip,compress,archive" },
     { title: "HEIC to JPG: What the Converter Actually Does", url: "https://freetoolonline.com/guides/heic-to-jpg-claims-what-actually-works.html", include: !1, tags: "guide,image-conversion,heic,jpg,trust" },
     { title: "All Guides - Browser Tool Library", url: "https://freetoolonline.com/guides.html", include: !1, tags: "guide" }
     { title: "Hd Online Video Converter", url: "https://freetoolonline.com/hd-video-converter.html", include: !1, tags: "image-conversion" },

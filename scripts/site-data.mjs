@@ -694,6 +694,12 @@ export const INFO_ROUTES = new Set([
   // disambiguation guide. Targets ~5K imp/28d at 0.5-1.8% CTR / pos 8-9.
   // Lane-D PA-mode mandatory; non-ZIP-cluster identity; append-only.
   '/guides/zip-file-converter-what-it-actually-does.html',
+  // Cycle 20260519-1 create_new_guide_page - bare-query "zip file
+  // converter" guide. Distinct intent angle from the "what it actually
+  // does" sibling above: this is a quick how-to / step-by-step rather
+  // than a disambiguation.  Cluster: zip entry-point.  GSC 661 imp/0.9%
+  // CTR/pos 10 (28d).
+  '/guides/zip-file-converter.html',
   // Cycle 71 P71.F - "HEIC to JPG: what the converter actually does
   // (and what it does not)" trust-anchor guide. Sourced verbatim from
   // tool-heictojpg/SKILL.md ## Implemented features + ## NOT implemented
@@ -1032,6 +1038,8 @@ export const GUIDE_ROUTES = new Set([
   // /zip-file.html (ZIP-CRITICAL-CARE 24h cooldown). Cluster: zip
   // entry-point. Lane-D PA-mode mandatory; non-ZIP-cluster identity.
   '/guides/zip-file-converter-what-it-actually-does.html',
+  // Cycle 20260519-1 - bare-query "zip file converter" guide.
+  '/guides/zip-file-converter.html',
   // Cycle 71 P71.F - "HEIC to JPG: what the converter actually does
   // (and what it does not)" trust-anchor guide. Source-cited claims
   // from tool-heictojpg/SKILL.md (libheif, SlimJpg, EXIF toggle, quality
@@ -1536,6 +1544,8 @@ export const JSP_BY_ROUTE = {
   '/guides/screen-display-test-synonyms.html': 'guide/screen-display-test-synonyms.jsp',
   // Cycle 70 P70.A - "Zip file converter - what it actually does" disambiguation guide.
   '/guides/zip-file-converter-what-it-actually-does.html': 'guide/zip-file-converter-what-it-actually-does.jsp',
+  // Cycle 20260519-1 - bare-query "zip file converter" how-to guide.
+  '/guides/zip-file-converter.html': 'guide/zip-file-converter.jsp',
   // Cycle 71 P71.F - "HEIC to JPG: what the converter actually does (and what it does not)" trust-anchor guide.
   '/guides/heic-to-jpg-claims-what-actually-works.html': 'guide/heic-to-jpg-claims-what-actually-works.jsp',
   // Cycle1 of 20260513-5 P5.A - "Zip compressor" Lane-D guide. Phase A
