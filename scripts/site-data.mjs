@@ -1087,6 +1087,12 @@ export const GUIDE_ROUTES = new Set([
   // Spanish-keyword sibling of /guides/make-zip-file-online.html;
   // companion to /zip-tools/zip-file.html). Complete single-cycle ship.
   '/guides/comprimir-zip-online.html',
+  // Cycle 20260519-14 — "Comprimir Carpeta Zip Online Gratis" Lane-D guide
+  // (zip cluster, Spanish folder-compression intent; 348 imp / 36 clicks /
+  // pos 5.49 / CTR 10.34% per 28d GSC; opportunity_score 56.79). Companion
+  // to /zip-file.html. Native Spanish prose authored against tool-zipfile
+  // SKILL features. Phase A complete single-cycle ship.
+  '/guides/comprimir-carpeta-zip-online-gratis.html',
   // Cycle 20260515-15 — "Zip File Compressor Online" Lane-D guide (zip
   // cluster head-query; 799 imp / 73 clicks / pos 6.2 / CTR 9.1% per 28d
   // GSC; opportunity_score 117.19). Companion to /zip-tools/zip-file.html.
@@ -1413,6 +1419,8 @@ export const JSP_BY_ROUTE = {
   '/guides/make-zip-file-online.html': 'guide/make-zip-file-online.jsp',
   // Cycle 20260515-13 create_new_guide_page - "Comprimir Zip Online" Lane-D guide (zip cluster, Spanish-keyword sibling of /guides/make-zip-file-online.html; companion to /zip-tools/zip-file.html). Complete single-cycle ship per cycle 20260514-5 contract.
   '/guides/comprimir-zip-online.html': 'guide/comprimir-zip-online.jsp',
+  // Cycle 20260519-14 create_new_guide_page - "Comprimir Carpeta Zip Online Gratis" Lane-D guide (zip cluster, Spanish folder-compression intent; companion to /zip-file.html). Native-Spanish prose authored against tool-zipfile SKILL features. Complete single-cycle ship per cycle 20260514-5 contract.
+  '/guides/comprimir-carpeta-zip-online-gratis.html': 'guide/comprimir-carpeta-zip-online-gratis.jsp',
   // Cycle 20260517-8 create_new_guide_page - "Online Zip File Compressor" Lane-D guide (zip cluster head-query sibling, companion to /zip-tools/zip-file.html). Complete single-cycle ship per cycle 20260514-5 contract.
   '/guides/online-zip-file-compressor.html': 'guide/online-zip-file-compressor.jsp',
   // Cycle 20260518-20 create_new_guide_page - "Zip Compress" Lane-D guide (zip cluster head-query sibling, companion to /zip-tools/zip-file.html). Complete single-cycle ship per cycle 20260514-5 contract.

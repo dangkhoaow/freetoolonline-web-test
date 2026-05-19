@@ -173,6 +173,7 @@ try {
     { title: "Json Formatter Online Compare", url: "https://freetoolonline.com/json-formatter-compare.html", include: !1, tags: "developer" },
     { title: "JSON Formatter Online - Browser Extension Edition", url: "https://freetoolonline.com/json-formatter-extension.html", include: !1, tags: "developer" },
     { title: "Json Formatter Online Validator", url: "https://freetoolonline.com/json-formatter-validator.html", include: !1, tags: "developer" },
+    { title: "Comprimir Carpeta Zip Online Gratis", url: "https://freetoolonline.com/guides/comprimir-carpeta-zip-online-gratis.html", include: !1, tags: "zip,guide,comprimir,carpeta,zip" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
