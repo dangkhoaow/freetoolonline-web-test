@@ -175,6 +175,7 @@ try {
     { title: "JSON Formatter Online - Browser Extension Edition", url: "https://freetoolonline.com/json-formatter-extension.html", include: !1, tags: "developer" },
     { title: "Json Formatter Online Validator", url: "https://freetoolonline.com/json-formatter-validator.html", include: !1, tags: "developer" },
     { title: "Comprimir Carpeta Zip Online Gratis", url: "https://freetoolonline.com/guides/comprimir-carpeta-zip-online-gratis.html", include: !1, tags: "zip,guide,comprimir,carpeta,zip" },
+    { title: "Image Format Converter", url: "https://freetoolonline.com/image-format-converter.html", include: !1, tags: "image-conversion" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

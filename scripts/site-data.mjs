@@ -1692,6 +1692,10 @@ export const JSP_BY_ROUTE = {
   '/guides/json-formatter-validator-when.html': 'guide/json-formatter-validator-when.jsp',
   '/guides/json-formatter-validator-step-by-step.html': 'guide/json-formatter-validator-step-by-step.jsp',
   '/guides/json-formatter-validator-vs-alternatives.html': 'guide/json-formatter-validator-vs-alternatives.jsp',
+  '/image-format-converter.html': 'convert/image-format-converter.jsp',
+  '/guides/image-format-converter-when.html': 'guide/image-format-converter-when.jsp',
+  '/guides/image-format-converter-step-by-step.html': 'guide/image-format-converter-step-by-step.jsp',
+  '/guides/image-format-converter-vs-alternatives.html': 'guide/image-format-converter-vs-alternatives.jsp',
 };
 
 export function normalizeRoute(route) {
