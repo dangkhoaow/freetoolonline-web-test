@@ -96,6 +96,7 @@ try {
     { title: "What an LCD Test Does (and When to Run One)", url: "https://freetoolonline.com/guides/what-an-lcd-test-does-and-when-to-run-one.html", include: !1, tags: "guide,device-test,lcd" },
     { title: "How to Make a Zip File Smaller", url: "https://freetoolonline.com/guides/how-to-make-a-zip-file-smaller.html", include: !1, tags: "guide,zip,compress" },
     { title: "Zip File Size Compressor", url: "https://freetoolonline.com/guides/zip-file-size-compressor.html", include: !1, tags: "guide,zip,compress,zip-file-size-compressor" },
+    { title: "Resize Zip File", url: "https://freetoolonline.com/guides/resize-zip-file.html", include: !1, tags: "guide,zip,resize,disambiguation" },
     { title: "How to Compress a Zip to a Smaller Size", url: "https://freetoolonline.com/guides/how-to-compress-zip-file-to-smaller-size.html", include: !1, tags: "guide,zip,compress" },
     { title: "How To Compress A Zip File", url: "https://freetoolonline.com/guides/how-to-compress-a-zip-file.html", include: !1, tags: "guide,zip,compress" },
     { title: "Zip Folder Online Free", url: "https://freetoolonline.com/guides/zip-folder-online-free.html", include: !1, tags: "zip,guide,zip,folder,online" },
