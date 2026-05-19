@@ -1198,6 +1198,7 @@ export const ALIAS_ROUTES = {
   '/svg-to-image.html': '/image-converter-tools/svg-to-png.html',
   '/split-pdf-to-single-pages.html': '/pdf-tools/split-pdf-by-range.html',
   '/pdf-merge-from-multiple-files.html': '/pdf-tools/join-pdf-from-multiple-files.html',
+  '/json-formatter-check.html': '/json-formatter-validator.html',
   '/mov-to-mp4.html': '/video-tools/video-converter.html',
   '/mov-to-mp3.html': '/video-tools/video-converter.html',
   // Cycle 20260518-29 — new_tool_page_discovery proposal candidate "video-converter-mp4" failed
