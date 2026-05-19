@@ -172,6 +172,7 @@ try {
     { title: "Json Formatter Online Viewer", url: "https://freetoolonline.com/json-formatter-viewer.html", include: !1, tags: "developer" },
     { title: "Json Formatter Online Compare", url: "https://freetoolonline.com/json-formatter-compare.html", include: !1, tags: "developer" },
     { title: "JSON Formatter Online - Browser Extension Edition", url: "https://freetoolonline.com/json-formatter-extension.html", include: !1, tags: "developer" },
+    { title: "Json Formatter Online Validator", url: "https://freetoolonline.com/json-formatter-validator.html", include: !1, tags: "developer" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

@@ -1669,6 +1669,10 @@ export const JSP_BY_ROUTE = {
   '/guides/json-formatter-compare-when.html': 'guide/json-formatter-compare-when.jsp',
   '/guides/json-formatter-compare-step-by-step.html': 'guide/json-formatter-compare-step-by-step.jsp',
   '/guides/json-formatter-compare-vs-alternatives.html': 'guide/json-formatter-compare-vs-alternatives.jsp',
+  '/json-formatter-validator.html': 'convert/json-formatter-validator.jsp',
+  '/guides/json-formatter-validator-when.html': 'guide/json-formatter-validator-when.jsp',
+  '/guides/json-formatter-validator-step-by-step.html': 'guide/json-formatter-validator-step-by-step.jsp',
+  '/guides/json-formatter-validator-vs-alternatives.html': 'guide/json-formatter-validator-vs-alternatives.jsp',
 };
 
 export function normalizeRoute(route) {

@@ -35,7 +35,15 @@
 
     var FFMPEG_SLUG = 'hd-video-converter';
     var FFMPEG_TITLE = 'Hd Online Video Converter';
-    var FFMPEG_VENDOR_BASE = '/vendor/ffmpeg';
+    // BASE_PATH is exposed by renderBaseScript() (page-renderer.mjs L1106).
+    // On prod (freetoolonline.com) BASE_PATH === ""; on staging
+    // (dangkhoaow.github.io/freetoolonline-web-test/) BASE_PATH === "/freetoolonline-web-test".
+    // Forcing example: cycle 20260518-30 shipped this file with the path
+    // hardcoded to '/vendor/ffmpeg', so staging tried to load
+    // https://dangkhoaow.github.io/vendor/ffmpeg/ffmpeg.js -> 404. Phase 4
+    // E2E did not catch it because tool-hdvideoconverter/SKILL.md is missing
+    // -> run-e2e.mjs skipped the slug entirely.
+    var FFMPEG_VENDOR_BASE = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/ffmpeg';
     var FFMPEG_UMD_URL = FFMPEG_VENDOR_BASE + '/ffmpeg.js';
     var FFMPEG_CORE_JS_URL = FFMPEG_VENDOR_BASE + '/ffmpeg-core.js';
     var FFMPEG_CORE_WASM_URL = FFMPEG_VENDOR_BASE + '/ffmpeg-core.wasm';
