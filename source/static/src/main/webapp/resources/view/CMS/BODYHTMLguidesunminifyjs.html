@@ -1,0 +1,65 @@
+<article class="guide-body">
+  <h1>Unminify JS: Restore Readability of Minified JavaScript</h1>
+  <p class="lead">Minified JavaScript - the kind shipped by every modern bundler under names like <code>bundle.min.js</code> or <code>main.[hash].js</code> - is a single dense line with one-letter variable names, no whitespace, and no line breaks. This guide walks the three-minute round trip from that compact form back to indented, line-broken code your eye can read. The companion tool at <a href="/js-unminifier.html">/js-unminifier.html</a> runs the unminify entirely inside the browser, so the source never leaves the tab.</p>
+
+  <p class="reviewed">Last reviewed: 2026-05-20</p>
+  <p class="byline">Reviewed by FreetoolOnline editorial team</p>
+
+  <table class="quick-facts">
+    <thead><tr><th>Property</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Format</td><td>Online tool, no install</td></tr>
+      <tr><td>Speed</td><td>Browser-side; readable output in seconds</td></tr>
+      <tr><td>Privacy</td><td>Source stays on-device; nothing uploaded</td></tr>
+      <tr><td>Variable rename</td><td>Not performed - one-letter names remain one-letter</td></tr>
+      <tr><td>Implementing tool</td><td><a href="/js-unminifier.html">/js-unminifier.html</a></td></tr>
+    </tbody>
+  </table>
+
+  <h2>What unminify actually does (and what it cannot do)</h2>
+  <p>Unminify reverses the cheap half of minification: it re-inserts whitespace, line breaks, and consistent indentation, so a one-line bundle becomes readable formatted code. It does NOT reverse the expensive half - the renamer. Variables called <code>a</code>, <code>b</code>, <code>t</code> in the minified bundle stay called <code>a</code>, <code>b</code>, <code>t</code> after unminify, because the original names were discarded at build time and no source map was preserved. If a source map (<code>.map</code> file or inline <code>//# sourceMappingURL=</code> comment) is available, that file points to the original symbols and is the right artifact to load - not an unminify pass. The reader-task framing: unminify is the right tool for "I have a third-party bundle and want to read what it does"; a source map is the right tool for "I have my own build and want to debug original symbols".</p>
+
+  <h2>Three-minute walkthrough</h2>
+  <ol>
+    <li><b>Copy the minified bundle.</b> Open the <code>.min.js</code> file in your editor or the browser's network tab (Response body), select all, copy.</li>
+    <li><b>Paste into the editor.</b> Open <a href="/js-unminifier.html">/js-unminifier.html</a> and paste into the input pane. Long bundles - hundreds of KB or more - work, but expect the format pass to take a second or two while the parser walks the AST.</li>
+    <li><b>Click Unminify.</b> The right pane shows the indented output. Copy the result back into your editor or save it as a local <code>.js</code> file for grep-style reading.</li>
+  </ol>
+
+  <h2>Where the unminified output helps and where it does not</h2>
+  <p>Reading unminified third-party code is useful in three concrete situations. First, vulnerability triage - when a CVE names a function inside a vendor bundle, unminify lets you locate the call sites and read the surrounding flow without standing up the original repo. Second, behaviour confirmation - when a library's behaviour drifts between versions, diffing the unminified versions surfaces the change far faster than reading the dense one-line form. Third, build-output verification - when your own pipeline emits a bundle that mysteriously double-loads a polyfill, the unminified form shows the duplicate IIFE blocks at a glance. Unminify will not help when the goal is the original semantic names; for that, ship the source map alongside the bundle and load it in your debugger.</p>
+
+  <h2>What is preserved, what is lost</h2>
+  <p>Whitespace, line breaks, and indentation are restored deterministically from the AST. Comments are <em>not</em> restored - the minifier strips them at build time, and no information is left in the bundle to reconstruct them. Module structure (CommonJS <code>require</code> calls, ESM <code>import</code> statements) is preserved as it appears in the bundled form, which is often a generated wrapper rather than the original module boundary. Source-level optimisations such as constant folding (<code>5*60*60*1000</code> collapsed to <code>18000000</code>) are <em>not</em> reversed - unminify does not understand semantics, only syntax. If a number reads as cryptic in the unminified output, search for it in the original repo or guess at the unit (milliseconds, bytes, indices).</p>
+
+  <h2>Going the other way?</h2>
+  <p>If you arrived here looking to <em>shrink</em> JS for production rather than expand it, the companion tool at <a href="/js-minifier.html">/js-minifier.html</a> performs the forward direction (whitespace strip, identifier shortening) and the comparison guide <a href="/guides/css-minifier-vs-uglifier-vs-tree-shaking.html">CSS Minifier vs Uglifier vs Tree-Shaking</a> covers how the three transformations stack in a typical build pipeline. For CSS-side equivalents, see <a href="/guides/css-unminifier-vs-prettier-when-to-use-each.html">CSS Unminifier vs Prettier: When to Use Each</a> - the JS-side decision is similar: unminify when reading third-party output, source map when debugging your own.</p>
+
+  <h2>FAQ</h2>
+
+  <details class="faq-item">
+    <summary>Does unminify recover the original variable names?</summary>
+    <p>No. Minifiers replace identifiers with short synthetic names at build time and discard the originals; the unminified output keeps the synthetic names. Load the matching source map in your browser's debugger to see the original symbols.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Is the source uploaded anywhere?</summary>
+    <p>No. The unminify pass runs entirely in your browser; the minified text is never sent to a server. Close the tab and the input is gone.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Will unminify break the JavaScript?</summary>
+    <p>No. The transformation is purely cosmetic - whitespace, line breaks, and indentation. The AST is unchanged, so the unminified code runs identically to the minified original. Run it through a syntax checker if you want a belt-and-braces confirmation.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>What is the file-size limit?</summary>
+    <p>Bundles up to several megabytes work in modern browsers; the format pass time grows roughly linearly with input length. Very large bundles (10 MB+) may stutter the tab; in that case split the bundle by closure boundary and unminify each chunk separately.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>What is the difference between unminify and prettier?</summary>
+    <p>Unminify restores readable formatting to code that was deliberately compacted. Prettier (or a similar formatter) imposes a chosen style guide on already-readable code. For a third-party minified bundle, unminify first; if you then want a specific indent width or quote style, run prettier on the output.</p>
+  </details>
+
+</article>

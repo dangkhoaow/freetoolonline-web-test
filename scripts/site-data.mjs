@@ -795,6 +795,10 @@ export const INFO_ROUTES = new Set([
   // passes URL convention regex; smashed form "compactarpasta" does not
   // shadow any existing primary route.
   '/guides/compactar-pasta.html',
+  // Cycle 20260520-11 new_guide_page_proposal (developer cluster):
+  // implementing tool /js-unminifier.html. GSC 545 imp / 3 clicks /
+  // pos 10.12 / CTR 0.55% / opportunity_score 53.55.
+  '/guides/unminify-js.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -1178,6 +1182,9 @@ export const GUIDE_ROUTES = new Set([
   // BODYHTML (folder + multi-file zip, optional password Standard/AES-128/AES-256,
   // browser-side UI) and the existing /zip-file.html action description.
   '/guides/compactar-pasta.html',
+  // Cycle 20260520-11 new_guide_page_proposal (developer cluster):
+  // implementing tool /js-unminifier.html.
+  '/guides/unminify-js.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -1474,6 +1481,9 @@ export const JSP_BY_ROUTE = {
   '/guides/create-zip-file-online.html': 'guide/create-zip-file-online.jsp',
   // Cycle 20260518-32 create_new_guide_page - "compactar pasta" Lane-D guide (zip cluster, Portuguese folder compression intent). Companion to /zip-tools/zip-file.html. Sourced from tool-zipfile BODYHTML/BODYDESC + cluster-sibling Portuguese guide /guides/comprimir-zip-online.html.
   '/guides/compactar-pasta.html': 'guide/compactar-pasta.jsp',
+  // Cycle 20260520-11 new_guide_page_proposal (developer cluster):
+  // companion to /js-unminifier.html.
+  '/guides/unminify-js.html': 'guide/unminify-js.jsp',
   // Cycle 20260520-10 create_new_guide_page - "GIF into frames" Lane-D guide (image-editing cluster, companion to /extract-gif-to-image-frames.html). Sourced from tool-extractgiftoimageframes BODYTITLE/BODYDESC + Implemented features. Single-cycle ship per cycle 20260514-5 contract. Cannibalization chain from -6 expired (4-cycle window closed).
   '/guides/gif-into-frames.html': 'guide/gif-into-frames.jsp',
   // Cycle 84 P84.A - "How to compress a JPG for email attachment size limits" Lane-D guide (image-conversion / compression sub-cluster, companion to /compress-image.html).
