@@ -13,4 +13,18 @@
     </tbody>
   </table>
   <p>Log lines rarely store a clean integer. A field might be written as <code>1713538800000ms</code>, the comment column might tag it <code>1713538800000 millis</code>, or a JSON payload might wrap the number in quotes. All three forms paste cleanly because the converter coerces the input to a Number before constructing the Date. Trailing letters and surrounding whitespace are ignored, so you can grab the value straight out of the surrounding log noise without scrubbing it first. If the result lands in 1970, the input was almost certainly Unix seconds, not milliseconds; multiply by 1000 or use a seconds-to-date tool instead.</p>
+  <h2>Reading the result back in your local timezone</h2>
+  <p>The converter renders the date using the browser's locale and timezone, which matches what a teammate on the same machine would see when they call <code>new Date(value).toString()</code> in the developer console. That is usually what a developer reading an incident timeline wants: the wall-clock time the event landed in their working timezone, not the abstract UTC value the log stores. If the page is open across a daylight-savings transition, the same input millisecond paints a different wall-clock time before and after the cutover - the underlying integer does not change, but the offset the browser applies does.</p>
+  <p>To force a UTC reading instead of the local-timezone default, switch the system timezone (or use a private browsing window with a UTC-locked profile) and reload the converter. The conversion logic is deterministic - the same input always produces the same output for a given timezone setting - so the page is suitable for pasting into a ticket reply or a code-review comment when both reader and writer set their browser to the same timezone first.</p>
+  <h2>Common 13-digit inputs the converter accepts</h2>
+  <p>The most common shapes the converter has been asked to handle:</p>
+  <ul>
+    <li><b>Raw integer.</b> A bare 13-digit number like <code>1713538800000</code>, often pasted from a database column or a log line.</li>
+    <li><b>Unit-suffixed.</b> A value like <code>1713538800000ms</code> or <code>1713538800000 millis</code>, common in monitoring dashboards.</li>
+    <li><b>JSON-quoted.</b> A value wrapped in quotes like <code>"1713538800000"</code>, copied straight from a JSON payload.</li>
+    <li><b>Comma-separated.</b> A value with thousands separators like <code>1,713,538,800,000</code>, common in spreadsheet exports.</li>
+    <li><b>Whitespace-padded.</b> A value with leading or trailing spaces from a multi-column paste.</li>
+  </ul>
+  <p>Each form is normalised by stripping non-digit characters before the <code>Number()</code> coercion runs, so the reader can paste any of them without scrubbing the value first.</p>
+  <p>If the implementing tool at <a href="/convert-time-in-millisecond-to-date.html">/convert-time-in-millisecond-to-date.html</a> shows an empty output, the most common cause is a value that lost a digit on the way through the clipboard (12 digits read as the year 5878 or earlier). Re-copy the full value, paste it in, and the date should populate as expected.</p>
 </article>
