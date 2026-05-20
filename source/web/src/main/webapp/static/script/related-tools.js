@@ -167,7 +167,7 @@ try {
     { title: "Zip File Converter", url: "https://freetoolonline.com/guides/zip-file-converter.html", include: !1, tags: "guide,zip,compress,archive" },
     { title: "HEIC to JPG: What the Converter Actually Does", url: "https://freetoolonline.com/guides/heic-to-jpg-claims-what-actually-works.html", include: !1, tags: "guide,image-conversion,heic,jpg,trust" },
     { title: "All Guides - Browser Tool Library", url: "https://freetoolonline.com/guides.html", include: !1, tags: "guide" },
-    { title: "Hd Online Video Converter", url: "https://freetoolonline.com/hd-video-converter.html", include: !1, tags: "image-conversion" },
+    { title: "Hd Online Video Converter", url: "https://freetoolonline.com/hd-video-converter.html", include: !1, tags: "video,converter" },
     { title: "Json Formatter Online", url: "https://freetoolonline.com/json-formatter.html", include: !1, tags: "developer" },
     // Cycle 20260520-8 cleanup: 6 dupe json-formatter-* variants + chatgpt-json-tree-viewer
     // removed from urlMaps. They were 301-aliased to /json-formatter.html in P.B (commit 8f159ad)
