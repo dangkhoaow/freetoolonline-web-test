@@ -1,2 +1,6 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ include file="/WEB-INF/jsp/_layout.jsp" %>
+<%@ taglib tagdir='/WEB-INF/tags/' prefix='freetoolonline' %>
+<freetoolonline:page browserTitle='${pageBodyTitle}' description='${pageBodyDesc}'>
+	<freetoolonline:loading/>
+	<!-- BODYHTML -->
+	${pageBodyHTML}
+</freetoolonline:page>
