@@ -1696,6 +1696,10 @@ export const JSP_BY_ROUTE = {
   '/guides/image-format-converter-when.html': 'guide/image-format-converter-when.jsp',
   '/guides/image-format-converter-step-by-step.html': 'guide/image-format-converter-step-by-step.jsp',
   '/guides/image-format-converter-vs-alternatives.html': 'guide/image-format-converter-vs-alternatives.jsp',
+  '/chatgpt-json-tree-viewer.html': 'convert/chatgpt-json-tree-viewer.jsp',
+  '/guides/chatgpt-json-tree-viewer-when.html': 'guide/chatgpt-json-tree-viewer-when.jsp',
+  '/guides/chatgpt-json-tree-viewer-step-by-step.html': 'guide/chatgpt-json-tree-viewer-step-by-step.jsp',
+  '/guides/chatgpt-json-tree-viewer-vs-alternatives.html': 'guide/chatgpt-json-tree-viewer-vs-alternatives.jsp',
 };
 
 export function normalizeRoute(route) {

@@ -176,6 +176,7 @@ try {
     { title: "Json Formatter Online Validator", url: "https://freetoolonline.com/json-formatter-validator.html", include: !1, tags: "developer" },
     { title: "Comprimir Carpeta Zip Online Gratis", url: "https://freetoolonline.com/guides/comprimir-carpeta-zip-online-gratis.html", include: !1, tags: "zip,guide,comprimir,carpeta,zip" },
     { title: "Image Format Converter", url: "https://freetoolonline.com/image-format-converter.html", include: !1, tags: "image-conversion" },
+    { title: "Chatgpt Json Tree Viewer", url: "https://freetoolonline.com/chatgpt-json-tree-viewer.html", include: !1, tags: "developer" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
