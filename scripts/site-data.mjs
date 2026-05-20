@@ -255,6 +255,13 @@ export const INFO_ROUTES = new Set([
   // this bare-form covers users who omit it). 723 imp / 5.39 pos /
   // 7.5% CTR per GSC 28d.
   '/guides/how-to-reduce-zip-file-size.html',
+  // Cycle 20260520-9 create_new_guide_page - exact-match "reduce zip
+  // file size online" landing (GSC 397 imp / 54 clicks / pos 5.01 /
+  // CTR 13.6% / opportunity_score 68.46). Implementing tool /zip-file.html.
+  // Append-only; non-cannibalizing vs how-to-reduce-zip-file-size-online
+  // (this guide is the bare-noun phrase, the existing one is the how-to
+  // framing for the same intent family).
+  '/guides/reduce-zip-file-size-online.html',
   // Phase 16 Cycle B P16.N11 - "convert heic to jpg" head query
   // (5,500+ impr / <2% CTR / pos 11-24). Pure step-by-step how-to;
   // pairs with existing heic-vs-jpg-vs-webp (which covers the WHEN).
@@ -1511,6 +1518,8 @@ export const JSP_BY_ROUTE = {
   '/guides/how-to-compress-a-file-online.html': 'guide/how-to-compress-a-file-online.jsp',
   '/guides/how-to-reduce-zip-file-size-online.html': 'guide/how-to-reduce-zip-file-size-online.jsp',
   '/guides/how-to-reduce-zip-file-size.html': 'guide/how-to-reduce-zip-file-size.jsp',
+  // Cycle 20260520-9 create_new_guide_page - bare-noun landing for "reduce zip file size online" (implementing tool /zip-file.html).
+  '/guides/reduce-zip-file-size-online.html': 'guide/reduce-zip-file-size-online.jsp',
   // Cycle 20260515-15 — "Zip File Compressor Online" Lane-D guide.
   '/guides/zip-file-compressor-online.html': 'guide/zip-file-compressor-online.jsp',
   // Phase 16 Cycle B P16.G1 hub + P16.N11 + P16.N16.

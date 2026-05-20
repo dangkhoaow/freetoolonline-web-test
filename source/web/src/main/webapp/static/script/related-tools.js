@@ -177,6 +177,7 @@ try {
     // developer-cluster JSON entry. See site-data.mjs ALIAS_ROUTES for the 301 mapping.
     { title: "Comprimir Carpeta Zip Online Gratis", url: "https://freetoolonline.com/guides/comprimir-carpeta-zip-online-gratis.html", include: !1, tags: "zip,guide,comprimir,carpeta,zip" },
     { title: "Image Format Converter", url: "https://freetoolonline.com/image-format-converter.html", include: !1, tags: "image-conversion" },
+    { title: "Reduce Zip File Size Online", url: "https://freetoolonline.com/guides/reduce-zip-file-size-online.html", include: !1, tags: "zip,guide,reduce,size" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
