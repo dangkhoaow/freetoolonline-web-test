@@ -1187,6 +1187,11 @@ export const GUIDE_ROUTES = new Set([
   // Cycle 20260520-11 new_guide_page_proposal (developer cluster):
   // implementing tool /js-unminifier.html.
   '/guides/unminify-js.html',
+  // Cycle 20260520-13 new_guide_page_proposal (device-test cluster, companion
+  // to /lcd-test.html). "lcd screen test" head-tail query. Paraphrases
+  // tool-lcdtest/SKILL.md F1-F5. Kebab slug /guides/lcd-screen-test.html
+  // does not shadow /lcd-test.html (smashed form "lcdscreentest" is unique).
+  '/guides/lcd-screen-test.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -1497,6 +1502,14 @@ export const JSP_BY_ROUTE = {
   // Cycle 20260520-11 new_guide_page_proposal (developer cluster):
   // companion to /js-unminifier.html.
   '/guides/unminify-js.html': 'guide/unminify-js.jsp',
+  // Cycle 20260520-13 new_guide_page_proposal (device-test cluster, companion
+  // to /lcd-test.html). "lcd screen test" query - GSC 382 imp / 6 clicks /
+  // pos 7.11 / CTR 1.57% / opportunity_score 52.9. Paraphrases
+  // tool-lcdtest/SKILL.md F1-F5 (six-color full-viewport fill + reset hook +
+  // viewport metrics + no-upload disclosure). Kebab slug
+  // /guides/lcd-screen-test.html does not shadow any existing primary tool
+  // route (urlToSlug() smashes to "lcdscreentest" which is not in JSP_BY_ROUTE).
+  '/guides/lcd-screen-test.html': 'guide/lcd-screen-test.jsp',
   // Cycle 20260520-10 create_new_guide_page - "GIF into frames" Lane-D guide (image-editing cluster, companion to /extract-gif-to-image-frames.html). Sourced from tool-extractgiftoimageframes BODYTITLE/BODYDESC + Implemented features. Single-cycle ship per cycle 20260514-5 contract. Cannibalization chain from -6 expired (4-cycle window closed).
   '/guides/gif-into-frames.html': 'guide/gif-into-frames.jsp',
   // Cycle 84 P84.A - "How to compress a JPG for email attachment size limits" Lane-D guide (image-conversion / compression sub-cluster, companion to /compress-image.html).
