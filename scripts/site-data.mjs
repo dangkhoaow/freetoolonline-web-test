@@ -905,6 +905,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/ms-to-date.html',
   // Cycle 20260517-21 create_new_guide_page - "convert milliseconds to date" exact-match landing (GSC 482 imp / 3 clicks / pos 6.02 / CTR 0.62% / opp 79.59). Implementing tool: /convert-time-in-millisecond-to-date.html. Non-cannibalizing - existing ms-to-date covers the short synonym; this guide covers the full natural-language query.
   '/guides/convert-milliseconds-to-date.html',
+  // Cycle 20260520-12 create_new_guide_page - "millisecond to date" singular-noun landing (GSC 368 imp / 2 clicks / pos 6.86 / CTR 0.54% / opp 53.38). Implementing tool: /convert-time-in-millisecond-to-date.html. Non-cannibalizing - existing /guides/ms-to-date.html covers the abbreviated synonym; /guides/convert-milliseconds-to-date.html covers the verb-led natural-language plural; this guide covers the bare singular-noun query.
+  '/guides/millisecond-to-date.html',
   '/guides/how-to-make-a-zip-file-smaller.html',
   '/guides/how-to-compress-zip-file-to-smaller-size.html',
   // Cycle 20260517-9 create_new_guide_page - exact-match "compress zip file to smaller size" landing.
@@ -1555,6 +1557,8 @@ export const JSP_BY_ROUTE = {
   '/guides/ms-to-date.html': 'guide/ms-to-date.jsp',
   // Cycle 20260517-21 create_new_guide_page - "convert milliseconds to date" exact-match landing.
   '/guides/convert-milliseconds-to-date.html': 'guide/convert-milliseconds-to-date.jsp',
+  // Cycle 20260520-12 create_new_guide_page - "millisecond to date" singular-noun landing. Implementing tool /convert-time-in-millisecond-to-date.html.
+  '/guides/millisecond-to-date.html': 'guide/millisecond-to-date.jsp',
   // Phase 16 cycle 8 N-series guides (25 new).
 
   // Phase 16 cycle 8 N-series guides (25 new).

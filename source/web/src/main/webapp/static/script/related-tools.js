@@ -80,6 +80,7 @@ try {
     { title: "How to Check Webcam and Microphone Before an Interview", url: "https://freetoolonline.com/guides/how-to-check-webcam-and-microphone-before-an-interview.html", include: !1, tags: "guide,device-test,utility,video" },
     { title: "How to Minify CSS and JS for Cloud Run Cold Start", url: "https://freetoolonline.com/guides/how-to-minify-css-js-for-cloud-run-cold-start.html", include: !1, tags: "guide,developer,css,javascript,minifier,pagespeed" },
     { title: "Unminify JS: Restore Readability of Minified JavaScript", url: "https://freetoolonline.com/guides/unminify-js.html", include: !1, tags: "guide,developer,javascript,unminifier,beautifier" },
+    { title: "Millisecond To Date", url: "https://freetoolonline.com/guides/millisecond-to-date.html", include: !1, tags: "utility,guide,millisecond,to,date" },
     { title: "What We Learned Running Free In-Browser Image Tools", url: "https://freetoolonline.com/guides/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html", include: !1, tags: "guide,image-editing,image-conversion" },
     { title: "When to Compress vs Convert an Image", url: "https://freetoolonline.com/guides/when-to-compress-vs-convert-an-image.html", include: !1, tags: "guide,image-editing,image-conversion,compress" },
     { title: "How to Compress a Folder for Email", url: "https://freetoolonline.com/guides/how-to-compress-a-folder-for-email.html", include: !1, tags: "guide,zip,compress" },
