@@ -286,6 +286,8 @@ export const INFO_ROUTES = new Set([
   '/guides/zip-file-size-compressor.html',
   // Cycle 20260519-15 create_new_guide_page — "resize zip file" routing/disambiguation Lane-D guide (GSC 406 imp / 19 clicks / pos 6.83 / CTR 4.68%; opportunity_score 56.6). Distinguishing role: addresses the three-way wording ambiguity (shrink vs split vs shrink-photo-inputs-first), routes to the existing shrink / split / image-resize guides — not a 10th compress-zip duplicate.
   '/guides/resize-zip-file.html',
+  // Cycle 20260520-16 create_new_guide_page — Indonesian-language guide "kompres file zip" (GSC 338 imp / 13 clicks / pos 6.36 / CTR 3.85%; opportunity_score 51.12). Implementing tool /zip-file.html. Companion sibling to /guides/comprimir-zip-online.html (Spanish) and /guides/compactar-pasta.html (Portuguese).
+  '/guides/kompres-file-zip.html',
   '/guides/online-zip-vs-7z-vs-rar-which-to-pick.html',
   '/guides/how-to-zip-multiple-files-into-one.html',
   '/guides/how-to-zip-folder-online-step-by-step.html',
@@ -918,6 +920,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/zip-file-size-compressor.html',
   // Cycle 20260519-15 create_new_guide_page — "resize zip file" routing/disambiguation Lane-D guide (GSC 406 imp / 19 clicks / pos 6.83 / CTR 4.68%; opportunity_score 56.6). Distinguishing role: addresses the three-way wording ambiguity (shrink vs split vs shrink-photo-inputs-first), routes to the existing shrink / split / image-resize guides — not a 10th compress-zip duplicate.
   '/guides/resize-zip-file.html',
+  // Cycle 20260520-16 create_new_guide_page — Indonesian-language guide "kompres file zip" (GSC 338 imp / 13 clicks / pos 6.36 / CTR 3.85%; opportunity_score 51.12). Implementing tool /zip-file.html. Companion sibling to /guides/comprimir-zip-online.html (Spanish) and /guides/compactar-pasta.html (Portuguese).
+  '/guides/kompres-file-zip.html',
   '/guides/online-zip-vs-7z-vs-rar-which-to-pick.html',
   '/guides/how-to-zip-multiple-files-into-one.html',
   '/guides/how-to-zip-folder-online-step-by-step.html',
@@ -1500,6 +1504,13 @@ export const JSP_BY_ROUTE = {
   // cluster, companion to /lcd-test.html). Indonesian-language guide for the
   // "tes lcd" search intent. Paraphrases tool-lcdtest/SKILL.md F1-F5.
   '/guides/tes-lcd.html': 'guide/tes-lcd.jsp',
+  // Cycle 20260520-16 create_new_guide_page - "Kompres File Zip" Lane-D guide
+  // (zip cluster, Indonesian-language sibling to /guides/comprimir-zip-online.html).
+  // Companion to /zip-file.html. GSC 28d "kompres file zip" 338 imp / 13 clicks /
+  // pos 6.36 / CTR 3.85% / opportunity_score 51.12. Paraphrases tool-zipfile
+  // implemented features (server-side bundling, optional AES password, S3-backed
+  // download with short retention) into Indonesian reader-task prose.
+  '/guides/kompres-file-zip.html': 'guide/kompres-file-zip.jsp',
   // Cycle 20260518-25 create_new_guide_page - "Online Zip File" Lane-D guide. Companion to /zip-tools/zip-file.html. Sourced from tool-zipfile/SKILL.md M1-M7 + tool-ziptools/SKILL.md M1.
   '/guides/online-zip-file.html': 'guide/online-zip-file.jsp',
   // Cycle 20260518-31 create_new_guide_page - "Create Zip File Online" Lane-D guide. Companion to /zip-tools/zip-file.html. Sourced from tool-zipfile/SKILL.md implemented features + BODYHTMLzipfile reader-task copy.

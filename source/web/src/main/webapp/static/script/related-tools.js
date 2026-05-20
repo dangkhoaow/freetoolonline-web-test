@@ -183,6 +183,7 @@ try {
     { title: "Image Format Converter", url: "https://freetoolonline.com/image-format-converter.html", include: !1, tags: "image-conversion" },
     { title: "Reduce Zip File Size Online", url: "https://freetoolonline.com/guides/reduce-zip-file-size-online.html", include: !1, tags: "zip,guide,reduce,size" },
     { title: "GIF Into Frames", url: "https://freetoolonline.com/guides/gif-into-frames.html", include: !1, tags: "image-editing,guide,gif,frames,extract" },
+    { title: "Kompres File Zip", url: "https://freetoolonline.com/guides/kompres-file-zip.html", include: !1, tags: "zip,guide,kompres,file,zip" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
