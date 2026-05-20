@@ -1,0 +1,47 @@
+<article class="guide-body">
+  <h1>MD5 Hash Decrypt: When Lookup Works, When It Cannot</h1>
+  <p class="lead">"Decrypt" is the wrong word, but the practical question behind it is real: paste the 32-character hex string into a reverse-lookup table and the original input sometimes appears, sometimes does not. The difference comes down to whether your hash was generated from something a precomputed table already knows. This page walks through the three cases that decide the answer.</p>
+  <p class="reviewed">Last reviewed: 2026-05-20</p>
+  <p class="byline">Reviewed by FreetoolOnline editorial team</p>
+
+  <table class="quick-facts">
+    <thead><tr><th>Property</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Algorithm</td><td>MD5 (RFC 1321, 1992)</td></tr>
+      <tr><td>Output</td><td>128-bit digest, rendered as 32 hex chars</td></tr>
+      <tr><td>Reverse direction</td><td>NOT defined by the spec; lookup uses precomputed tables, not math</td></tr>
+      <tr><td>Implementing tool</td><td><a href="/md5-converter.html">/md5-converter.html</a> (one-way: text -&gt; hash)</td></tr>
+    </tbody>
+  </table>
+
+  <h2>The three cases that decide whether lookup will work</h2>
+
+  <p><b>Case 1 - common dictionary input (lookup usually works).</b> If the original was a short English word, a common password ("123456", "qwerty"), a frequent first-name-plus-year combination, or any value that a rainbow-table builder would have hashed in advance, the lookup finds it instantly. Public rainbow tables for the top 10 million leaked passwords cover most reuse-based credential checks. The MD5 hash <code>5f4dcc3b5aa765d61d8327deb882cf99</code> reverses to "password" because someone, somewhere, already hashed it and saved both sides.</p>
+
+  <p><b>Case 2 - short random input (lookup eventually works via brute force).</b> An 8-character lowercase alphabetic input has about 208 billion possibilities (26 to the 8). On a single mid-range consumer GPU running hashcat, MD5 throughput is roughly 50 billion attempts per second on 2026-class hardware, which means the entire 8-char space sweeps in about 4 seconds. Random-looking but short inputs (license keys, short tokens, 6-digit OTPs that were already used) fall to this approach without any precomputation. The shorter the input, the closer brute force gets to instant.</p>
+
+  <p><b>Case 3 - long random input (lookup does NOT work in practice).</b> A 16-character random input drawn from the full 95-character printable ASCII set has about 5 * 10^31 possibilities. At 50 billion attempts per second, sweeping the whole space takes longer than the age of the universe. The hash itself is still mathematically reversible (collisions exist by pigeonhole), but no precomputed table covers this space and no brute-force run finishes inside human time. This is the case the cryptographic community is referring to when it says MD5 is one-way "in practice".</p>
+
+  <h2>What this means for the hash you have right now</h2>
+
+  <p>The hash on its own does not tell you which case you are in - 32 hex chars look identical regardless of the input length or entropy. Three quick checks narrow the practical-feasibility question down:</p>
+
+  <ul>
+    <li><b>Try a public rainbow-table service first.</b> If the answer comes back in under a second, the input was Case 1 (dictionary). The lookup result tells you the input - and tells you the input was weak enough that anyone with that hash and a network connection could find it too.</li>
+    <li><b>Estimate the input length.</b> If you know the source generated random keys 8 chars or shorter, Case 2 applies and a brute-force search will finish in seconds to hours on a single GPU. If the source generated 16+ random chars from a wide alphabet, Case 3 applies and the practical answer is "cannot".</li>
+    <li><b>Check the source domain.</b> User passwords (especially older ones, especially without salt) are usually Case 1 or Case 2. API tokens, session cookies, and library-generated random bytes are usually Case 3. Salted hashes (where the input is "salt + secret") move the entire question to Case 3 regardless of the secret length because the salt expands the effective input.</li>
+  </ul>
+
+  <h2>Why "decrypt" is the wrong vocabulary</h2>
+
+  <p>Encryption is two-way by design - the same algorithm runs forward (encrypt) and backward (decrypt) with a key that the legitimate user holds. Hashing is one-way by design - the algorithm only runs forward, and there is no inverse function in the spec at all. What public lookup services call "MD5 decrypt" is precomputed reverse lookup: they hashed billions of common inputs in advance and stored both sides, so the "decrypt" step is just a database query against that pre-built index. The math behind MD5 is doing nothing during the lookup; the database is doing the work. <a href="/guides/why-md5-cannot-be-decrypted.html">Why MD5 cannot be decrypted</a> walks the cryptographic detail for the math-curious reader; <a href="/guides/md5-decrypt-online.html">MD5 decrypt online tools</a> explains why the websites that claim to "decrypt" any hash are misnaming the operation.</p>
+
+  <h2>Related reading on this site</h2>
+
+  <ul>
+    <li><a href="/guides/md5-decode.html">MD5 decode</a> - the same one-way-truth framed from the "decode" vocabulary angle.</li>
+    <li><a href="/guides/read-and-compare-md5-hashes-correctly.html">Read and compare MD5 hashes correctly</a> - case, whitespace, and hex format when verifying a hash against an expected value.</li>
+    <li><a href="/guides/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html">MD5 alternatives (bcrypt, Argon2id, SHA-256): when each fits</a> - if the goal is a password store, none of these three cases applies and a different algorithm answers the real question.</li>
+    <li><a href="/md5-converter.html">/md5-converter.html</a> - the tool that runs the forward direction (text in, hash out) when you need to verify a hash someone gave you.</li>
+  </ul>
+</article>
