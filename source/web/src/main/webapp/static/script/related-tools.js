@@ -166,17 +166,17 @@ try {
     { title: "Zip File Converter - What It Actually Does", url: "https://freetoolonline.com/guides/zip-file-converter-what-it-actually-does.html", include: !1, tags: "guide,zip,unzip,compress,archive" },
     { title: "Zip File Converter", url: "https://freetoolonline.com/guides/zip-file-converter.html", include: !1, tags: "guide,zip,compress,archive" },
     { title: "HEIC to JPG: What the Converter Actually Does", url: "https://freetoolonline.com/guides/heic-to-jpg-claims-what-actually-works.html", include: !1, tags: "guide,image-conversion,heic,jpg,trust" },
-    { title: "All Guides - Browser Tool Library", url: "https://freetoolonline.com/guides.html", include: !1, tags: "guide" }
+    { title: "All Guides - Browser Tool Library", url: "https://freetoolonline.com/guides.html", include: !1, tags: "guide" },
     { title: "Hd Online Video Converter", url: "https://freetoolonline.com/hd-video-converter.html", include: !1, tags: "image-conversion" },
     { title: "Json Formatter Online", url: "https://freetoolonline.com/json-formatter.html", include: !1, tags: "developer" },
-    { title: "Json Formatter Online Editor", url: "https://freetoolonline.com/json-formatter-editor.html", include: !1, tags: "developer" },
-    { title: "Json Formatter Online Viewer", url: "https://freetoolonline.com/json-formatter-viewer.html", include: !1, tags: "developer" },
-    { title: "Json Formatter Online Compare", url: "https://freetoolonline.com/json-formatter-compare.html", include: !1, tags: "developer" },
-    { title: "JSON Formatter Online - Browser Extension Edition", url: "https://freetoolonline.com/json-formatter-extension.html", include: !1, tags: "developer" },
-    { title: "Json Formatter Online Validator", url: "https://freetoolonline.com/json-formatter-validator.html", include: !1, tags: "developer" },
+    // Cycle 20260520-8 cleanup: 6 dupe json-formatter-* variants + chatgpt-json-tree-viewer
+    // removed from urlMaps. They were 301-aliased to /json-formatter.html in P.B (commit 8f159ad)
+    // and the cluster-narrative scanner (axis F cross-page dupe) flagged them CRITICAL because
+    // their orphan related-tools entries made them appear as distinct cluster members even
+    // though their URLs now redirect to the canonical. Keeping /json-formatter.html as the single
+    // developer-cluster JSON entry. See site-data.mjs ALIAS_ROUTES for the 301 mapping.
     { title: "Comprimir Carpeta Zip Online Gratis", url: "https://freetoolonline.com/guides/comprimir-carpeta-zip-online-gratis.html", include: !1, tags: "zip,guide,comprimir,carpeta,zip" },
     { title: "Image Format Converter", url: "https://freetoolonline.com/image-format-converter.html", include: !1, tags: "image-conversion" },
-    { title: "Chatgpt Json Tree Viewer", url: "https://freetoolonline.com/chatgpt-json-tree-viewer.html", include: !1, tags: "developer" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
