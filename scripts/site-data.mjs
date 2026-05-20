@@ -1202,7 +1202,22 @@ export const ALIAS_ROUTES = {
   '/svg-to-image.html': '/image-converter-tools/svg-to-png.html',
   '/split-pdf-to-single-pages.html': '/pdf-tools/split-pdf-by-range.html',
   '/pdf-merge-from-multiple-files.html': '/pdf-tools/join-pdf-from-multiple-files.html',
-  '/json-formatter-check.html': '/json-formatter-validator.html',
+  // Cycle 20260520 SEO-synonym-mill cleanup. The trending-scout shipped
+  // 6 near-duplicate json-formatter-* variants + chatgpt-json-tree-viewer
+  // as broken stubs (every click threw "Error: convertForSlug() not
+  // implemented"). /json-formatter.html now ships a real working JSON
+  // parse + pretty-print + validate impl; the 7 dupes 301-alias here so
+  // existing inbound links + sitemap entries route to the canonical tool.
+  // See dedupe-against-existing.mjs (cycle 20260520) — escalated
+  // substring + token-prefix overlap from SOFT to CRITICAL collision
+  // so this pattern cannot recur from the trending-scout pipeline.
+  '/json-formatter-check.html':     '/json-formatter.html',
+  '/json-formatter-editor.html':    '/json-formatter.html',
+  '/json-formatter-viewer.html':    '/json-formatter.html',
+  '/json-formatter-compare.html':   '/json-formatter.html',
+  '/json-formatter-extension.html': '/json-formatter.html',
+  '/json-formatter-validator.html': '/json-formatter.html',
+  '/chatgpt-json-tree-viewer.html': '/json-formatter.html',
   '/mov-to-mp4.html': '/video-tools/video-converter.html',
   '/mov-to-mp3.html': '/video-tools/video-converter.html',
   // Cycle 20260518-29 — new_tool_page_discovery proposal candidate "video-converter-mp4" failed
@@ -1670,36 +1685,29 @@ export const JSP_BY_ROUTE = {
   '/guides/hd-video-converter-when.html': 'guide/hd-video-converter-when.jsp',
   '/guides/hd-video-converter-step-by-step.html': 'guide/hd-video-converter-step-by-step.jsp',
   '/guides/hd-video-converter-vs-alternatives.html': 'guide/hd-video-converter-vs-alternatives.jsp',
+  // Cycle 20260520 SEO-synonym-mill cleanup. The 5 dupe variants of
+  // /json-formatter.html (-extension, -editor, -viewer, -compare, -validator)
+  // shipped as broken stubs that threw "Error: convertForSlug() not implemented"
+  // on every user click. /json-formatter.html now ships a working
+  // JSON.parse + pretty-print impl (cycle 20260520 working converter-text
+  // skeleton); the 5 dupes are 301-aliased to /json-formatter.html via
+  // ALIAS_ROUTES (~line 1216). The 3 KEPT guides under /guides/json-formatter-
+  // {when,step-by-step,vs-alternatives}.html support the canonical tool and
+  // stay in place. See dedupe-against-existing.mjs (cycle 20260520) — that
+  // dedupe escalation prevents future variants from re-emerging.
   '/json-formatter.html': 'convert/json-formatter.jsp',
-  // Cycle 20260519-12 new_tool_page — extension-flavored sibling of /json-formatter.html (trending scout cand-2e54654672206320, cycles_seen=16, last_confidence=0.65, registry=text_transform_purejs).
-  '/json-formatter-extension.html': 'convert/json-formatter-extension.jsp',
   '/guides/json-formatter-when.html': 'guide/json-formatter-when.jsp',
   '/guides/json-formatter-step-by-step.html': 'guide/json-formatter-step-by-step.jsp',
   '/guides/json-formatter-vs-alternatives.html': 'guide/json-formatter-vs-alternatives.jsp',
-  '/json-formatter-editor.html': 'convert/json-formatter-editor.jsp',
-  '/guides/json-formatter-editor-when.html': 'guide/json-formatter-editor-when.jsp',
-  '/guides/json-formatter-editor-step-by-step.html': 'guide/json-formatter-editor-step-by-step.jsp',
-  '/guides/json-formatter-editor-vs-alternatives.html': 'guide/json-formatter-editor-vs-alternatives.jsp',
-  '/json-formatter-viewer.html': 'convert/json-formatter-viewer.jsp',
-  '/guides/json-formatter-viewer-when.html': 'guide/json-formatter-viewer-when.jsp',
-  '/guides/json-formatter-viewer-step-by-step.html': 'guide/json-formatter-viewer-step-by-step.jsp',
-  '/guides/json-formatter-viewer-vs-alternatives.html': 'guide/json-formatter-viewer-vs-alternatives.jsp',
-  '/json-formatter-compare.html': 'convert/json-formatter-compare.jsp',
-  '/guides/json-formatter-compare-when.html': 'guide/json-formatter-compare-when.jsp',
-  '/guides/json-formatter-compare-step-by-step.html': 'guide/json-formatter-compare-step-by-step.jsp',
-  '/guides/json-formatter-compare-vs-alternatives.html': 'guide/json-formatter-compare-vs-alternatives.jsp',
-  '/json-formatter-validator.html': 'convert/json-formatter-validator.jsp',
-  '/guides/json-formatter-validator-when.html': 'guide/json-formatter-validator-when.jsp',
-  '/guides/json-formatter-validator-step-by-step.html': 'guide/json-formatter-validator-step-by-step.jsp',
-  '/guides/json-formatter-validator-vs-alternatives.html': 'guide/json-formatter-validator-vs-alternatives.jsp',
   '/image-format-converter.html': 'convert/image-format-converter.jsp',
   '/guides/image-format-converter-when.html': 'guide/image-format-converter-when.jsp',
   '/guides/image-format-converter-step-by-step.html': 'guide/image-format-converter-step-by-step.jsp',
   '/guides/image-format-converter-vs-alternatives.html': 'guide/image-format-converter-vs-alternatives.jsp',
-  '/chatgpt-json-tree-viewer.html': 'convert/chatgpt-json-tree-viewer.jsp',
-  '/guides/chatgpt-json-tree-viewer-when.html': 'guide/chatgpt-json-tree-viewer-when.jsp',
-  '/guides/chatgpt-json-tree-viewer-step-by-step.html': 'guide/chatgpt-json-tree-viewer-step-by-step.jsp',
-  '/guides/chatgpt-json-tree-viewer-vs-alternatives.html': 'guide/chatgpt-json-tree-viewer-vs-alternatives.jsp',
+  // Cycle 20260520 cleanup: /chatgpt-json-tree-viewer.html also shipped as
+  // a broken "Error: convertForSlug() not implemented" stub. Aliased to
+  // /json-formatter.html (which now has a real JSON parser/tree-viewer
+  // impl), guides removed. See dedupe-against-existing.mjs SEO-synonym-mill
+  // fix that prevents this pattern recurring.
 };
 
 export function normalizeRoute(route) {
