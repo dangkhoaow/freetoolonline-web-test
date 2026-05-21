@@ -809,6 +809,12 @@ export const INFO_ROUTES = new Set([
   // Tier-C (new URL, no GA4 history); Tier-A protocol N/A because this is
   // not modifying an existing high-traffic URL.
   '/guides/comprimir-pasta-zipada.html',
+  // Cycle 20260521-22 P39.H create_new_guide_page - "zipar pasta" Lane-D guide
+  // (ZIP cluster, Portuguese). Implementing tool /zip-file.html. GSC 367 imp /
+  // 15 clicks / pos 8.84 / CTR 4.09% / opportunity_score 39.8. Tier-A protocol
+  // N/A because this is a net-new GUIDE route, not a modification of an indexed
+  // tool URL.
+  '/guides/zipar-pasta.html',
   // Cycle 20260520-11 new_guide_page_proposal (developer cluster):
   // implementing tool /js-unminifier.html. GSC 545 imp / 3 clicks /
   // pos 10.12 / CTR 0.55% / opportunity_score 53.55.
@@ -1560,6 +1566,16 @@ export const JSP_BY_ROUTE = {
   // Cycle 20260521-20 P37.H create_new_guide_page - "comprimir pasta zipada"
   // Lane-D guide (zip cluster, Portuguese). Implementing tool /zip-file.html.
   '/guides/comprimir-pasta-zipada.html': 'guide/comprimir-pasta-zipada.jsp',
+  // Cycle 20260521-22 P39.H create_new_guide_page - "zipar pasta" Lane-D guide
+  // (ZIP cluster, Portuguese - "zipar" = to ZIP, "pasta" = folder). GSC 367 imp
+  // / 15 clicks / pos 8.84 / CTR 4.09% / opportunity_score 39.8. Implementing
+  // tool /zip-file.html. Sister to /guides/comprimir-pasta-zipada.html (same
+  // implementing tool, different intent: "zipar" = create new zip from folder,
+  // "comprimir pasta zipada" = re-compress existing zip). Net-additive (new URL);
+  // Tier-A protocol: ZIP cluster but this is a new GUIDE route (not modifying an
+  // indexed tool URL), so the staged-rollout one-URL-per-deploy constraint does
+  // not apply to net-new guide additions in the cluster.
+  '/guides/zipar-pasta.html': 'guide/zipar-pasta.jsp',
   // Cycle 20260520-11 new_guide_page_proposal (developer cluster):
   // companion to /js-unminifier.html.
   '/guides/unminify-js.html': 'guide/unminify-js.jsp',
