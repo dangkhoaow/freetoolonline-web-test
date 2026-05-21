@@ -1287,6 +1287,14 @@ export const ALIAS_ROUTES = {
   // entirely. Future search-intent ranking is preserved by the hub page.
   '/mov-to-mp4.html': '/video-tools/video-converter.html',
   '/mov-to-mp3.html': '/video-tools/video-converter.html',
+  // Cycle 20260521-19 chain-breaker resolution: /guides/ios-to-jpg.html was flagged
+  // as cannibalisation against the existing /guides/how-to-convert-iphone-photo-to-jpg.html
+  // for 4 consecutive cycles (chain_length=6, predecessor cycle 35). Per CLAUDE.md
+  // "Deferred-approval chain-breaker" L3 + "Semantic dedup" rules, ship as 301 alias
+  // (not as a full duplicate guide). Captures the bare-query "ios to jpg" SERP impressions
+  // (309 imp/28d at pos 6.6) at ~95-100% equity transfer, no duplicate content.
+  // Companion: CloudFront REDIRECTS in url-migration-301.js mirrors this entry.
+  '/guides/ios-to-jpg.html': '/guides/how-to-convert-iphone-photo-to-jpg.html',
   // Cycle 20260518-29 — new_tool_page_discovery proposal candidate "video-converter-mp4" failed
   // the seo-tool-page-builder verb-detection guard ("slug ends with format token mp4, no I/O
   // verb"). Aliasing the proposed URL into the existing canonical video-converter routes the
