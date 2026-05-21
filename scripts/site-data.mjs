@@ -801,6 +801,14 @@ export const INFO_ROUTES = new Set([
   // passes URL convention regex; smashed form "compactarpasta" does not
   // shadow any existing primary route.
   '/guides/compactar-pasta.html',
+  // Cycle 20260521-20 P37.H create_new_guide_page (zip cluster, Portuguese):
+  // implementing tool /zip-file.html. Target query "comprimir pasta zipada"
+  // (compress an already-zipped folder) — distinct from /guides/compactar-pasta.html
+  // (compact a folder) and /guides/comprimir-zip-online.html (compress to ZIP).
+  // GSC 398 imp / 17 clicks / pos 8.84 / CTR 4.27% / opportunity_score 43.1.
+  // Tier-C (new URL, no GA4 history); Tier-A protocol N/A because this is
+  // not modifying an existing high-traffic URL.
+  '/guides/comprimir-pasta-zipada.html',
   // Cycle 20260520-11 new_guide_page_proposal (developer cluster):
   // implementing tool /js-unminifier.html. GSC 545 imp / 3 clicks /
   // pos 10.12 / CTR 0.55% / opportunity_score 53.55.
@@ -1196,6 +1204,8 @@ export const GUIDE_ROUTES = new Set([
   // BODYHTML (folder + multi-file zip, optional password Standard/AES-128/AES-256,
   // browser-side UI) and the existing /zip-file.html action description.
   '/guides/compactar-pasta.html',
+  // Cycle 20260521-20 P37.H create_new_guide_page (zip cluster, Portuguese).
+  '/guides/comprimir-pasta-zipada.html',
   // Cycle 20260520-11 new_guide_page_proposal (developer cluster):
   // implementing tool /js-unminifier.html.
   '/guides/unminify-js.html',
@@ -1547,6 +1557,9 @@ export const JSP_BY_ROUTE = {
   '/guides/create-zip-file-online.html': 'guide/create-zip-file-online.jsp',
   // Cycle 20260518-32 create_new_guide_page - "compactar pasta" Lane-D guide (zip cluster, Portuguese folder compression intent). Companion to /zip-tools/zip-file.html. Sourced from tool-zipfile BODYHTML/BODYDESC + cluster-sibling Portuguese guide /guides/comprimir-zip-online.html.
   '/guides/compactar-pasta.html': 'guide/compactar-pasta.jsp',
+  // Cycle 20260521-20 P37.H create_new_guide_page - "comprimir pasta zipada"
+  // Lane-D guide (zip cluster, Portuguese). Implementing tool /zip-file.html.
+  '/guides/comprimir-pasta-zipada.html': 'guide/comprimir-pasta-zipada.jsp',
   // Cycle 20260520-11 new_guide_page_proposal (developer cluster):
   // companion to /js-unminifier.html.
   '/guides/unminify-js.html': 'guide/unminify-js.jsp',
