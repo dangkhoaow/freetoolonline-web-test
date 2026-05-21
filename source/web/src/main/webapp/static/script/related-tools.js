@@ -102,6 +102,7 @@ try {
     { title: "Zip File Size Compressor", url: "https://freetoolonline.com/guides/zip-file-size-compressor.html", include: !1, tags: "guide,zip,compress,zip-file-size-compressor" },
     { title: "Resize Zip File", url: "https://freetoolonline.com/guides/resize-zip-file.html", include: !1, tags: "guide,zip,resize,disambiguation" },
     { title: "How to Compress a Zip to a Smaller Size", url: "https://freetoolonline.com/guides/how-to-compress-zip-file-to-smaller-size.html", include: !1, tags: "guide,zip,compress" },
+    { title: "How to Compress a ZIP File to 2 MB", url: "https://freetoolonline.com/guides/compress-zip-file-to-2mb.html", include: !1, tags: "guide,zip,compress,email-attachment" },
     { title: "How To Compress A Zip File", url: "https://freetoolonline.com/guides/how-to-compress-a-zip-file.html", include: !1, tags: "guide,zip,compress" },
     { title: "Zip Folder Online Free", url: "https://freetoolonline.com/guides/zip-folder-online-free.html", include: !1, tags: "zip,guide,zip,folder,online" },
     { title: "Online Zip vs 7z vs Rar - Which to Pick", url: "https://freetoolonline.com/guides/online-zip-vs-7z-vs-rar-which-to-pick.html", include: !1, tags: "guide,zip,compress" },
@@ -181,7 +182,6 @@ try {
     // though their URLs now redirect to the canonical. Keeping /json-formatter.html as the single
     // developer-cluster JSON entry. See site-data.mjs ALIAS_ROUTES for the 301 mapping.
     { title: "Comprimir Carpeta Zip Online Gratis", url: "https://freetoolonline.com/guides/comprimir-carpeta-zip-online-gratis.html", include: !1, tags: "zip,guide,comprimir,carpeta,zip" },
-    { title: "Image Format Converter", url: "https://freetoolonline.com/image-format-converter.html", include: !1, tags: "image-conversion" },
     { title: "Reduce Zip File Size Online", url: "https://freetoolonline.com/guides/reduce-zip-file-size-online.html", include: !1, tags: "zip,guide,reduce,size" },
     { title: "GIF Into Frames", url: "https://freetoolonline.com/guides/gif-into-frames.html", include: !1, tags: "image-editing,guide,gif,frames,extract" },
     { title: "Kompres File Zip", url: "https://freetoolonline.com/guides/kompres-file-zip.html", include: !1, tags: "zip,guide,kompres,file,zip" },

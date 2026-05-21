@@ -280,6 +280,8 @@ export const INFO_ROUTES = new Set([
   // Cycle 20260517-9 create_new_guide_page - exact-match "compress zip file to smaller size" landing.
   '/guides/compress-zip-file-to-smaller-size.html',
   '/guides/compress-zip-file-to-100kb.html',
+  // Cycle 20260521-12 P29.A create_new_guide_page - "compress zip file to 2mb" enterprise-SMTP-cap-specific landing. Operator-approved via card cycle29-create_new_guide_page-compresszipfileto2mb-cannibalisation-1779338089590 (option a). 2 MB is the historical Exchange / SMTP-relay / legacy-webmail attachment cap; distinct angle from the 100kb sibling. Implementing tool /zip-file.html.
+  '/guides/compress-zip-file-to-2mb.html',
   // Cycle 20260517-10 create_new_guide_page - exact-match "zip size reducer" landing (GSC 605 imp / 56 clicks / pos 5.67 / CTR 9.26%; opportunity_score 96.84).
   '/guides/zip-size-reducer.html',
   // Cycle 20260519-12 create_new_guide_page - exact-match "zip file size compressor" landing (GSC 354 imp / 44 clicks / pos 5.43 / CTR 12.43%; opportunity_score 57.07). Implementing tool /zip-file.html. Append-only; non-cannibalizing vs /guides/how-to-make-a-zip-file-smaller.html, /guides/zip-size-reducer.html, /guides/compress-zip-file-to-smaller-size.html (each targets a distinct head-tail intent).
@@ -916,6 +918,8 @@ export const GUIDE_ROUTES = new Set([
   // Cycle 20260517-9 create_new_guide_page - exact-match "compress zip file to smaller size" landing.
   '/guides/compress-zip-file-to-smaller-size.html',
   '/guides/compress-zip-file-to-100kb.html',
+  // Cycle 20260521-12 P29.A create_new_guide_page - "compress zip file to 2mb" enterprise-SMTP-cap-specific landing. Operator-approved via card cycle29-create_new_guide_page-compresszipfileto2mb-cannibalisation-1779338089590 (option a). 2 MB is the historical Exchange / SMTP-relay / legacy-webmail attachment cap; distinct angle from the 100kb sibling. Implementing tool /zip-file.html.
+  '/guides/compress-zip-file-to-2mb.html',
   // Cycle 20260517-10 create_new_guide_page - exact-match "zip size reducer" landing (GSC 605 imp / 56 clicks / pos 5.67 / CTR 9.26%; opportunity_score 96.84).
   '/guides/zip-size-reducer.html',
   // Cycle 20260519-12 create_new_guide_page - exact-match "zip file size compressor" landing (GSC 354 imp / 44 clicks / pos 5.43 / CTR 12.43%; opportunity_score 57.07). Implementing tool /zip-file.html. Append-only; non-cannibalizing vs /guides/how-to-make-a-zip-file-smaller.html, /guides/zip-size-reducer.html, /guides/compress-zip-file-to-smaller-size.html (each targets a distinct head-tail intent).
@@ -1266,7 +1270,13 @@ export const ALIAS_ROUTES = {
   // Cycle 20260520-followup: cluster-URL convention aliases for 2 other tools
   // shipped at root by the pre-fix builder.
   '/hd-video-converter.html':       '/video-tools/hd-video-converter.html',
-  '/image-format-converter.html':   '/image-converter-tools/image-format-converter.html',
+  // Cycle 20260521-12 cleanup: /image-format-converter.html was shipped (cycle 20260520-5)
+  // with a SILENT no-op BODYJS stub — user clicks did nothing, no console error either.
+  // Better UX (and SEO hygiene) to NOT alias to a broken tool. The /image-converter-tools/
+  // hub page already captures the "image format converter" reader query with 6 working
+  // converters (heic-to-jpg, png-to-svg, svg-to-png, image-to-base64, base64-to-image,
+  // extract-gif-to-image-frames). Removing the alias + CMS fragments + manifest entry
+  // entirely. Future search-intent ranking is preserved by the hub page.
   '/mov-to-mp4.html': '/video-tools/video-converter.html',
   '/mov-to-mp3.html': '/video-tools/video-converter.html',
   // Cycle 20260518-29 — new_tool_page_discovery proposal candidate "video-converter-mp4" failed
@@ -1613,6 +1623,8 @@ export const JSP_BY_ROUTE = {
   // Cycle 20260517-9 create_new_guide_page - exact-match "compress zip file to smaller size" landing.
   '/guides/compress-zip-file-to-smaller-size.html': 'guide/compress-zip-file-to-smaller-size.jsp',
   '/guides/compress-zip-file-to-100kb.html': 'guide/compress-zip-file-to-100kb.jsp',
+  // Cycle 20260521-12 P29.A create_new_guide_page - operator-approved "compress zip file to 2mb" enterprise-SMTP-cap-specific landing.
+  '/guides/compress-zip-file-to-2mb.html': 'guide/compress-zip-file-to-2mb.jsp',
   // Cycle 20260517-10 create_new_guide_page - exact-match "zip size reducer" landing.
   '/guides/zip-size-reducer.html': 'guide/zip-size-reducer.jsp',
   // Cycle 20260519-12 create_new_guide_page — /guides/zip-file-size-compressor.html (implementing tool /zip-file.html).
@@ -1795,12 +1807,12 @@ export const JSP_BY_ROUTE = {
   '/guides/json-formatter-when.html': 'guide/json-formatter-when.jsp',
   '/guides/json-formatter-step-by-step.html': 'guide/json-formatter-step-by-step.jsp',
   '/guides/json-formatter-vs-alternatives.html': 'guide/json-formatter-vs-alternatives.jsp',
-  // Cycle 20260520-followup: canonical moved to /image-converter-tools/image-format-converter.html
-  // (image-conversion cluster). Root /image-format-converter.html aliased in ALIAS_ROUTES.
-  '/image-converter-tools/image-format-converter.html': 'convert/image-format-converter.jsp',
-  '/guides/image-format-converter-when.html': 'guide/image-format-converter-when.jsp',
-  '/guides/image-format-converter-step-by-step.html': 'guide/image-format-converter-step-by-step.jsp',
-  '/guides/image-format-converter-vs-alternatives.html': 'guide/image-format-converter-vs-alternatives.jsp',
+  // Cycle 20260521-12 cleanup: deleted /image-converter-tools/image-format-converter.html
+  // tool + 3 companion guides. Reasons: (1) BODYJS stub was a silent no-op IIFE that ships
+  // a non-functional tool, (2) cluster /image-converter-tools/ already provides 6 working
+  // converters covering the same reader intent, (3) avoiding the SEO-synonym mill pattern
+  // (alias-to-broken-tool dilutes link equity AND offers a worse user experience than a
+  // 301 to a working hub). See cycle 20260520-5 commit d0eb7c0 for the original (broken) ship.
   // Cycle 20260520 cleanup: /chatgpt-json-tree-viewer.html also shipped as
   // a broken "Error: convertForSlug() not implemented" stub. Aliased to
   // /json-formatter.html (which now has a real JSON parser/tree-viewer
