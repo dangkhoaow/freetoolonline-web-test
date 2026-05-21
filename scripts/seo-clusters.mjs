@@ -29,7 +29,8 @@ const SEO_CLUSTER_GROUPS = [
     // here so the axis_F scanner flagged its template paragraph as a 1.0 jaccard duplicate of
     // /image-format-converter.html's same template paragraph. Re-tagged in related-tools.js
     // commit 765e1d8 + moved here.
-    routes: ['/heic-to-jpg.html', '/svg-to-png.html', '/png-to-svg.html', '/image-to-base64.html', '/base64-to-image.html', '/extract-gif-to-image-frames.html', '/image-format-converter.html'],
+    // Cycle 20260521-12 cleanup: /image-format-converter.html removed entirely (silent stub).
+    routes: ['/heic-to-jpg.html', '/svg-to-png.html', '/png-to-svg.html', '/image-to-base64.html', '/base64-to-image.html', '/extract-gif-to-image-frames.html'],
   },
   {
     cluster: 'pdf',
