@@ -174,13 +174,12 @@ try {
     { title: "HEIC to JPG: What the Converter Actually Does", url: "https://freetoolonline.com/guides/heic-to-jpg-claims-what-actually-works.html", include: !1, tags: "guide,image-conversion,heic,jpg,trust" },
     { title: "All Guides - Browser Tool Library", url: "https://freetoolonline.com/guides.html", include: !1, tags: "guide" },
     { title: "Hd Online Video Converter", url: "https://freetoolonline.com/hd-video-converter.html", include: !1, tags: "video,converter" },
-    { title: "Json Formatter Online", url: "https://freetoolonline.com/json-formatter.html", include: !1, tags: "developer" },
-    // Cycle 20260520-8 cleanup: 6 dupe json-formatter-* variants + chatgpt-json-tree-viewer
-    // removed from urlMaps. They were 301-aliased to /json-formatter.html in P.B (commit 8f159ad)
-    // and the cluster-narrative scanner (axis F cross-page dupe) flagged them CRITICAL because
-    // their orphan related-tools entries made them appear as distinct cluster members even
-    // though their URLs now redirect to the canonical. Keeping /json-formatter.html as the single
-    // developer-cluster JSON entry. See site-data.mjs ALIAS_ROUTES for the 301 mapping.
+    // Cycle 20260521-12 semantic-dedup cleanup: /json-formatter.html entry removed.
+    // The existing /developer-tools/json-parser.html ("JSON Parser & Formatter (Tree
+    // View)") already covers the same reader intent (validate / format / tree view /
+    // copy beautified JSON). 8 aliases (json-formatter + 6 synonyms + chatgpt-json-
+    // tree-viewer) retargeted to /developer-tools/json-parser.html via ALIAS_ROUTES.
+    // Tool route + CMS + manifest + tool-skill deleted in same commit.
     { title: "Comprimir Carpeta Zip Online Gratis", url: "https://freetoolonline.com/guides/comprimir-carpeta-zip-online-gratis.html", include: !1, tags: "zip,guide,comprimir,carpeta,zip" },
     { title: "Reduce Zip File Size Online", url: "https://freetoolonline.com/guides/reduce-zip-file-size-online.html", include: !1, tags: "zip,guide,reduce,size" },
     { title: "GIF Into Frames", url: "https://freetoolonline.com/guides/gif-into-frames.html", include: !1, tags: "image-editing,guide,gif,frames,extract" },

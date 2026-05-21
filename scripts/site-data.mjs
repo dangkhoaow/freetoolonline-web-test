@@ -1259,14 +1259,22 @@ export const ALIAS_ROUTES = {
   // -check, chatgpt-json-tree-viewer) all 301-alias DIRECTLY to the cluster
   // canonical (no intermediate hop through root). Preserves inbound link
   // equity from cycles 20260518-23 .. 20260519-15.
-  '/json-formatter.html':           '/developer-tools/json-formatter.html',
-  '/json-formatter-check.html':     '/developer-tools/json-formatter.html',
-  '/json-formatter-editor.html':    '/developer-tools/json-formatter.html',
-  '/json-formatter-viewer.html':    '/developer-tools/json-formatter.html',
-  '/json-formatter-compare.html':   '/developer-tools/json-formatter.html',
-  '/json-formatter-extension.html': '/developer-tools/json-formatter.html',
-  '/json-formatter-validator.html': '/developer-tools/json-formatter.html',
-  '/chatgpt-json-tree-viewer.html': '/developer-tools/json-formatter.html',
+  // Cycle 20260521-12 semantic-dedup cleanup: /developer-tools/json-formatter.html
+  // was a SEMANTIC DUPLICATE of /developer-tools/json-parser.html (titled "JSON
+  // Parser & Formatter (Tree View)"). The 2026-05-20 trending-scout candidate
+  // passed LEXICAL dedup (token-prefix only 1, JW ~0.85-0.88) but lost on
+  // SEMANTIC overlap with json-parser's existing reader-task contract (validate
+  // / format / tree / copy beautified JSON — all already implemented). Retargeted
+  // all 8 aliases to the real canonical tool. Tool route + CMS fragments +
+  // manifest entry + tool-skill deleted in same commit.
+  '/json-formatter.html':           '/developer-tools/json-parser.html',
+  '/json-formatter-check.html':     '/developer-tools/json-parser.html',
+  '/json-formatter-editor.html':    '/developer-tools/json-parser.html',
+  '/json-formatter-viewer.html':    '/developer-tools/json-parser.html',
+  '/json-formatter-compare.html':   '/developer-tools/json-parser.html',
+  '/json-formatter-extension.html': '/developer-tools/json-parser.html',
+  '/json-formatter-validator.html': '/developer-tools/json-parser.html',
+  '/chatgpt-json-tree-viewer.html': '/developer-tools/json-parser.html',
   // Cycle 20260520-followup: cluster-URL convention aliases for 2 other tools
   // shipped at root by the pre-fix builder.
   '/hd-video-converter.html':       '/video-tools/hd-video-converter.html',
@@ -1799,11 +1807,12 @@ export const JSP_BY_ROUTE = {
   // {when,step-by-step,vs-alternatives}.html support the canonical tool and
   // stay in place. See dedupe-against-existing.mjs (cycle 20260520) — that
   // dedupe escalation prevents future variants from re-emerging.
-  // Cycle 20260520-followup: canonical moved to /developer-tools/json-formatter.html
-  // per cluster-URL convention. Root /json-formatter.html aliased in ALIAS_ROUTES.
-  // The 7 dupe aliases (json-formatter-{editor,viewer,compare,extension,validator},
-  // -check, chatgpt-json-tree-viewer) also re-pointed at the new canonical.
-  '/developer-tools/json-formatter.html': 'convert/json-formatter.jsp',
+  // Cycle 20260521-12 semantic-dedup cleanup: /developer-tools/json-formatter.html
+  // route + CMS fragments + manifest entry + tool-skill deleted. The reader
+  // intent (pretty-print + validate JSON) is fully covered by the existing
+  // /developer-tools/json-parser.html ("JSON Parser & Formatter (Tree View)").
+  // 8 aliases retargeted to json-parser. The 3 companion guides remain but
+  // their implementing-tool reference is retargeted to json-parser.
   '/guides/json-formatter-when.html': 'guide/json-formatter-when.jsp',
   '/guides/json-formatter-step-by-step.html': 'guide/json-formatter-step-by-step.jsp',
   '/guides/json-formatter-vs-alternatives.html': 'guide/json-formatter-vs-alternatives.jsp',

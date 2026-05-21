@@ -45,7 +45,10 @@ const SEO_CLUSTER_GROUPS = [
     // Cycle 20260520-8 P.B cleanup: 5 dupe json-formatter variants + chatgpt-json-tree-viewer
     // removed. They were 301-aliased to /json-formatter.html in commit 8f159ad. Their orphan
     // presence here made cluster-narrative axis_F detect false-positive paragraph_jaccard 1.0.
-    routes: ['/json-parser.html', '/css-minifier.html', '/css-unminifier.html', '/js-minifier.html', '/js-unminifier.html', '/text-diff.html', '/md5-converter.html', '/css-gradient-generator.html', '/text-html-editor.html', '/json-formatter.html'],
+    // Cycle 20260521-12 semantic-dedup cleanup: '/json-formatter.html' removed
+    // (was semantic duplicate of /json-parser.html which is titled "JSON Parser
+    // & Formatter (Tree View)" and already covers pretty-print + validate + tree).
+    routes: ['/json-parser.html', '/css-minifier.html', '/css-unminifier.html', '/js-minifier.html', '/js-unminifier.html', '/text-diff.html', '/md5-converter.html', '/css-gradient-generator.html', '/text-html-editor.html'],
   },
   {
     cluster: 'video',
