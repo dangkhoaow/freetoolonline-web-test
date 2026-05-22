@@ -1244,6 +1244,14 @@ export const GUIDE_ROUTES = new Set([
   // does not shadow any existing route (smashed form "currentmillis" is
   // unique). Complete single-cycle ship per cycle 20260514-5 contract.
   '/guides/current-millis.html',
+  // Cycle 20260522-9 (cycle 48) P48.H new_guide_page_proposal — "zip unlocker
+  // online" query (gsc 269 imp / 33 clk / pos 6.65 / CTR 12.27%; opportunity_score
+  // 35.47). Companion to /remove-zip-password.html (the implementing tool — query
+  // intent is unlock-when-password-known, not crack). ZIP cluster; kebab slug
+  // /guides/zip-unlocker-online.html does not shadow any existing route (smashed
+  // form "zipunlockeronline" is unique). Complete single-cycle ship per cycle
+  // 20260514-5 contract.
+  '/guides/zip-unlocker-online.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -1885,6 +1893,8 @@ export const JSP_BY_ROUTE = {
   // fix that prevents this pattern recurring.
   // Cycle 20260522-8 (cycle 47) P47.H new_guide_page_proposal - /guides/current-millis.html
   '/guides/current-millis.html': 'guide/current-millis.jsp',
+  // Cycle 20260522-9 (cycle 48) P48.H new_guide_page_proposal - /guides/zip-unlocker-online.html (companion to /remove-zip-password.html)
+  '/guides/zip-unlocker-online.html': 'guide/zip-unlocker-online.jsp',
 };
 
 export function normalizeRoute(route) {

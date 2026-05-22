@@ -83,6 +83,7 @@ try {
     { title: "LCD Screen Test", url: "https://freetoolonline.com/guides/lcd-screen-test.html", include: !1, tags: "device-test,guide,lcd,screen,test" },
     { title: "Millisecond To Date", url: "https://freetoolonline.com/guides/millisecond-to-date.html", include: !1, tags: "utility,guide,millisecond,to,date" },
     { title: "Current Millis", url: "https://freetoolonline.com/guides/current-millis.html", include: !1, tags: "utility,guide,current,millis,timestamp,milliseconds" },
+    { title: "Zip Unlocker Online", url: "https://freetoolonline.com/guides/zip-unlocker-online.html", include: !1, tags: "zip,guide,zip,unlocker,online,remove-zip-password" },
     { title: "Unlock Zip File Online", url: "https://freetoolonline.com/guides/unlock-zip-file-online.html", include: !1, tags: "zip,guide,unlock,password,extract" },
     { title: "What We Learned Running Free In-Browser Image Tools", url: "https://freetoolonline.com/guides/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html", include: !1, tags: "guide,image-editing,image-conversion" },
     { title: "When to Compress vs Convert an Image", url: "https://freetoolonline.com/guides/when-to-compress-vs-convert-an-image.html", include: !1, tags: "guide,image-editing,image-conversion,compress" },
