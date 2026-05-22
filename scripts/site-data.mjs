@@ -823,6 +823,12 @@ export const INFO_ROUTES = new Set([
   // N/A because this is a net-new GUIDE route, not a modification of an indexed
   // tool URL.
   '/guides/zipar-pasta.html',
+  // Cycle 20260522-10 P10.E create_new_guide_page - "comprimir arquivo zip"
+  // Lane-D guide (zip cluster, Portuguese). Implementing tool /zip-file.html.
+  // GSC 361 imp / 14 clicks / pos 9.99 / CTR 3.88% / opportunity_score 34.72.
+  // Disambiguation between "create a new zip" and "shrink an existing zip"
+  // (deflate already removes redundancy on first pass). Tier-A protocol N/A.
+  '/guides/comprimir-arquivo-zip.html',
   // Cycle 20260520-11 new_guide_page_proposal (developer cluster):
   // implementing tool /js-unminifier.html. GSC 545 imp / 3 clicks /
   // pos 10.12 / CTR 0.55% / opportunity_score 53.55.
@@ -1601,6 +1607,19 @@ export const JSP_BY_ROUTE = {
   // indexed tool URL), so the staged-rollout one-URL-per-deploy constraint does
   // not apply to net-new guide additions in the cluster.
   '/guides/zipar-pasta.html': 'guide/zipar-pasta.jsp',
+  // Cycle 20260522-10 P10.E create_new_guide_page - "comprimir arquivo zip"
+  // Lane-D guide (zip cluster, Portuguese - "comprimir arquivo zip" = compress
+  // zip file/archive). GSC 28d 361 imp / 14 clicks / pos 9.99 / CTR 3.88% /
+  // opportunity_score 34.72. Implementing tool /zip-file.html. Disambiguation
+  // guide between two reader tasks: (a) create a new .zip from a file/folder
+  // and (b) reduce the size of an existing .zip (deflate already removes
+  // redundancy on the first pass; <1% gain on a second pass). Sister to
+  // /guides/compactar-pasta.html (Portuguese, folder-first intent) and
+  // /guides/comprimir-pasta-zipada.html (Portuguese, re-compress an existing
+  // zipped folder). Kebab slug passes regex; smashed form "comprimirarquivozip"
+  // does not shadow any existing primary route. Tier-A protocol N/A — net-new
+  // guide route, not a modification of an indexed tool URL.
+  '/guides/comprimir-arquivo-zip.html': 'guide/comprimir-arquivo-zip.jsp',
   // Cycle 20260520-11 new_guide_page_proposal (developer cluster):
   // companion to /js-unminifier.html.
   '/guides/unminify-js.html': 'guide/unminify-js.jsp',

@@ -189,6 +189,7 @@ try {
     { title: "Kompres File Zip", url: "https://freetoolonline.com/guides/kompres-file-zip.html", include: !1, tags: "zip,guide,kompres,file,zip" },
     { title: "Comprimir Pasta Zipada", url: "https://freetoolonline.com/guides/comprimir-pasta-zipada.html", include: !1, tags: "zip,guide,comprimir,pasta,zipada" },
     { title: "Zipar Pasta", url: "https://freetoolonline.com/guides/zipar-pasta.html", include: !1, tags: "zip,guide,zipar,pasta,portugues" },
+    { title: "Comprimir Arquivo Zip", url: "https://freetoolonline.com/guides/comprimir-arquivo-zip.html", include: !1, tags: "zip,guide,comprimir,arquivo,portugues" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
