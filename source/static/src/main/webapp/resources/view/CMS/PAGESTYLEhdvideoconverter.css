@@ -1,4 +1,4 @@
-/* G51-followup remediation, 2026-05-22.
+/* G51-followup remediation, 2026-05-22 (REVISED 2026-05-22 #2).
    /hd-video-converter.html is a CLIENT-SIDE FFmpeg.wasm tool. The shared
    upload-chrome's <freetoolonline:download/> tag emits a server-side
    "Click here to download" button inside .downloadC (see
@@ -7,18 +7,41 @@
    exercised: the FFmpeg.wasm conversion produces a Blob URL inside
    the browser tab, and BODYJShdvideoconverter.html::renderOutputDownload
    injects the actual <a class="imgOutDownBtn">Download X.mp3</a> link
-   into .outputImgs. The native .downloadC chrome therefore had no
-   useful target — it appeared as a greyed-out duplicate alongside the
-   real download link (operator caught it 2026-05-22).
+   into .outputImgs.
 
-   The BODYJS attempts $('.downloadC').addClass('w3-hide') but the
-   shared upload-startup machinery later removes the class in some
-   post-upload state, racing with our hide. CSS display:none !important
-   wins regardless of class-list toggles. Single download affordance
-   visible to the reader at all times.
+   Cascade root cause (Playwright-confirmed 2026-05-22 #2):
+   The CDN-hosted upload-style.css ships this rule:
+     .downloadC.w3-hide {
+       display: block !important;
+       pointer-events: none !important;
+       opacity: 0.2 !important;
+     }
+   That's specificity (0,2,0) + !important. It deliberately keeps a
+   GREYED-OUT placeholder button visible for SERVER-SIDE tools (opacity
+   0.2, pointer-events none = "disabled until upload completes" UX).
+   My initial fix `.downloadC { display: none !important; }` was
+   specificity (0,1,0) and LOST the cascade — same !important weight,
+   lower specificity. The element remained visible at page load with
+   opacity 0.2 (greyed-out duplicate the operator screenshotted).
 
-   This is the correct fix for any client-side-only converter slug
-   that injects its own .imageOut/.imgOutDownBtn download link via
-   renderOutputDownload(). See also: tool-hdvideoconverter/SKILL.md
-   M1+M4 (in-browser conversion model). */
-.downloadC { display: none !important; }
+   REAL fix: beat the (0,2,0) rule with (0,3,0) — three-class selector
+   chains that target every shape .downloadC takes (with and without
+   the w3-hide toggle). Belt-and-suspenders: visibility hidden +
+   position absolute off-screen so even if some other rule wins
+   display, the element stays out of layout. */
+
+.w3-container.downloadC.w3-hide,
+.w3-container.downloadC,
+html .downloadC,
+body .downloadC.w3-hide,
+body .downloadC {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  position: absolute !important;
+  left: -9999px !important;
+  height: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
+}
