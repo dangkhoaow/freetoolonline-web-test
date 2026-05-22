@@ -150,6 +150,14 @@ export const INFO_ROUTES = new Set([
   // "allow camera in browser" / "camera permission denied" demand; Bing query_stats reinforces.
   // Append-only (new URL); non-cannibalizing per seo-agency-check anti-cannibalization gate.
   '/guides/camera-test-permission-blocked-how-to-allow-it.html',
+  // Cycle 46 (20260522-7) P46.H - "Camera Check" synonym-disambiguation guide.
+  // GSC "camera check" 451 imp / 5 clicks / pos 11.85 28d (op_score 37.63). Routes the
+  // reader to /camera-test.html (the implementing tool) while explaining the synonym
+  // mapping ("camera check" = "camera test") and the three end-states (allowed /
+  // blocked / ignored). Append-only; non-cannibalising vs camera-test-permission-blocked
+  // (covers synonym intent, not permission diagnosis) and vs camera-test-shows-black-
+  // screen-four-fixes (covers terminology, not hardware failure).
+  '/guides/camera-check.html',
   // Cycle 87 P87.A - "Microphone test permission blocked: how to allow mic access in your browser" Lane-D guide
   // (device-test / microphone-test sub-cluster, companion to /microphone-test.html, symmetric peer to cycle-86's
   // /guides/camera-test-permission-blocked-how-to-allow-it.html). Reader-task gap: existing microphone-test guides
@@ -1042,6 +1050,8 @@ export const GUIDE_ROUTES = new Set([
   // Cycle 50 P50.A - "ImageMagick Online vs Task-Specific Tools - which to pick" routing guide (image-editing-cluster parallel to cycle 49 P49.A; GA4 /imagemagick-online.html 114 sess / 0.51 engagement cohort).
   '/guides/imagemagick-online-vs-task-specific-tools-which-to-pick.html',
   // Cycle 51 P51.A - "File Compressor Online: ZIP a Folder vs Compress an Image" routing guide (GSC "file compressor" 258,156 imp / 0.04% CTR / pos 9.9 / 12,797 missed clicks 28d - cross-cluster routing surface for the head term that neither /zip-file.html nor /compress-image.html owns alone).
+  // Cycle 46 (20260522-7) P46.H — "Camera Check" synonym-disambiguation guide. GSC "camera check" 451 imp / 5 clicks / pos 11.85 28d (opportunity score 37.63). Routes the reader to /camera-test.html (the implementing tool) while explaining the synonym mapping ("camera check" = "camera test") and the three end-states (allowed / blocked / ignored). Sibling guides: camera-test-permission-blocked-how-to-allow-it (permissions deep-dive), camera-test-shows-black-screen-four-fixes (hardware failures), camera-mirror-vs-flip-explained (preview semantics).
+  '/guides/camera-check.html',
   '/guides/file-compressor-online-when-to-zip-vs-when-to-compress-image.html',
   // Cycle 53 P53.A - "How to Extract a File Online - ZIP, RAR, 7z" routing guide (GSC "extract file online" -9.3 pos in 7d, "file zipper" -8.9 pos; neither owned by an existing guide. .zip -> /unzip-file.html; .rar / .7z -> local OS tool; forgotten-password .zip -> /remove-zip-password.html).
   '/guides/how-to-extract-a-file-online-zip-rar-7z.html',
@@ -1704,6 +1714,8 @@ export const JSP_BY_ROUTE = {
   '/guides/screen-test-vs-camera-test-pick-the-right-tool.html': 'guide/screen-test-vs-camera-test-pick-the-right-tool.jsp',
   '/guides/md5-to-text-why-you-cannot-convert-back.html': 'guide/md5-to-text-why-you-cannot-convert-back.jsp',
   '/guides/before-a-video-call-which-tools-to-run.html': 'guide/before-a-video-call-which-tools-to-run.jsp',
+  // Cycle 46 (20260522-7) P46.H — camera-check synonym-disambiguation guide.
+  '/guides/camera-check.html': 'guide/camera-check.jsp',
   '/guides/screen-test-for-laptop-5-minute-checklist.html': 'guide/screen-test-for-laptop-5-minute-checklist.jsp',
   '/guides/ffmpeg-online-vs-video-converter-which-to-pick.html': 'guide/ffmpeg-online-vs-video-converter-which-to-pick.jsp',
   '/guides/imagemagick-online-vs-task-specific-tools-which-to-pick.html': 'guide/imagemagick-online-vs-task-specific-tools-which-to-pick.jsp',
