@@ -1237,6 +1237,13 @@ export const GUIDE_ROUTES = new Set([
   // Kebab slug /guides/unlock-zip-file-online.html does not shadow any
   // existing route (smashed form "unlockzipfileonline" is unique).
   '/guides/unlock-zip-file-online.html',
+  // Cycle 20260522-8 (cycle 47) P47.H new_guide_page_proposal — "current millis"
+  // query (gsc 289 imp / 2 clk / pos 7.92 / CTR 0.69%; opportunity_score 36.24).
+  // Companion to /convert-time-in-millisecond-to-date.html (the implementing
+  // tool). Developer-utility cluster; kebab slug /guides/current-millis.html
+  // does not shadow any existing route (smashed form "currentmillis" is
+  // unique). Complete single-cycle ship per cycle 20260514-5 contract.
+  '/guides/current-millis.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -1876,6 +1883,8 @@ export const JSP_BY_ROUTE = {
   // /json-formatter.html (which now has a real JSON parser/tree-viewer
   // impl), guides removed. See dedupe-against-existing.mjs SEO-synonym-mill
   // fix that prevents this pattern recurring.
+  // Cycle 20260522-8 (cycle 47) P47.H new_guide_page_proposal - /guides/current-millis.html
+  '/guides/current-millis.html': 'guide/current-millis.jsp',
 };
 
 export function normalizeRoute(route) {
