@@ -1,0 +1,24 @@
+/* G51-followup remediation, 2026-05-22.
+   /hd-video-converter.html is a CLIENT-SIDE FFmpeg.wasm tool. The shared
+   upload-chrome's <freetoolonline:download/> tag emits a server-side
+   "Click here to download" button inside .downloadC (see
+   freetoolonline-web-test/source/web/src/main/webapp/WEB-INF/jsp/convert/hd-video-converter.jsp
+   line 10-12). For this slug the server-side download path is NEVER
+   exercised: the FFmpeg.wasm conversion produces a Blob URL inside
+   the browser tab, and BODYJShdvideoconverter.html::renderOutputDownload
+   injects the actual <a class="imgOutDownBtn">Download X.mp3</a> link
+   into .outputImgs. The native .downloadC chrome therefore had no
+   useful target — it appeared as a greyed-out duplicate alongside the
+   real download link (operator caught it 2026-05-22).
+
+   The BODYJS attempts $('.downloadC').addClass('w3-hide') but the
+   shared upload-startup machinery later removes the class in some
+   post-upload state, racing with our hide. CSS display:none !important
+   wins regardless of class-list toggles. Single download affordance
+   visible to the reader at all times.
+
+   This is the correct fix for any client-side-only converter slug
+   that injects its own .imageOut/.imgOutDownBtn download link via
+   renderOutputDownload(). See also: tool-hdvideoconverter/SKILL.md
+   M1+M4 (in-browser conversion model). */
+.downloadC { display: none !important; }
