@@ -188,6 +188,7 @@ try {
     { title: "Reduce Zip File Size Online", url: "https://freetoolonline.com/guides/reduce-zip-file-size-online.html", include: !1, tags: "zip,guide,reduce,size" },
     { title: "GIF Into Frames", url: "https://freetoolonline.com/guides/gif-into-frames.html", include: !1, tags: "image-editing,guide,gif,frames,extract" },
     { title: "Kompres File Zip", url: "https://freetoolonline.com/guides/kompres-file-zip.html", include: !1, tags: "zip,guide,kompres,file,zip" },
+    { title: "Kompres Zip", url: "https://freetoolonline.com/guides/kompres-zip.html", include: !1, tags: "zip,guide,kompres,size" },
     { title: "Comprimir Pasta Zipada", url: "https://freetoolonline.com/guides/comprimir-pasta-zipada.html", include: !1, tags: "zip,guide,comprimir,pasta,zipada" },
     { title: "Zipar Pasta", url: "https://freetoolonline.com/guides/zipar-pasta.html", include: !1, tags: "zip,guide,zipar,pasta,portugues" },
     { title: "Comprimir Arquivo Zip", url: "https://freetoolonline.com/guides/comprimir-arquivo-zip.html", include: !1, tags: "zip,guide,comprimir,arquivo,portugues" },

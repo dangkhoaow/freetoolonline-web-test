@@ -298,6 +298,8 @@ export const INFO_ROUTES = new Set([
   '/guides/resize-zip-file.html',
   // Cycle 20260520-16 create_new_guide_page — Indonesian-language guide "kompres file zip" (GSC 338 imp / 13 clicks / pos 6.36 / CTR 3.85%; opportunity_score 51.12). Implementing tool /zip-file.html. Companion sibling to /guides/comprimir-zip-online.html (Spanish) and /guides/compactar-pasta.html (Portuguese).
   '/guides/kompres-file-zip.html',
+  // Cycle 20260523-5 P52.I create_new_guide_page — Indonesian-language size-question guide "kompres zip" (GSC 248 imp / 18 clicks / pos 7.42 / CTR 7.26%; opportunity_score 30.98). Implementing tool /zip-file.html. SIZE-focused sibling to /guides/kompres-file-zip.html (broader Indonesian bundle/privacy guide).
+  '/guides/kompres-zip.html',
   '/guides/online-zip-vs-7z-vs-rar-which-to-pick.html',
   '/guides/how-to-zip-multiple-files-into-one.html',
   '/guides/how-to-zip-folder-online-step-by-step.html',
@@ -968,6 +970,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/resize-zip-file.html',
   // Cycle 20260520-16 create_new_guide_page — Indonesian-language guide "kompres file zip" (GSC 338 imp / 13 clicks / pos 6.36 / CTR 3.85%; opportunity_score 51.12). Implementing tool /zip-file.html. Companion sibling to /guides/comprimir-zip-online.html (Spanish) and /guides/compactar-pasta.html (Portuguese).
   '/guides/kompres-file-zip.html',
+  // Cycle 20260523-5 P52.I create_new_guide_page — Indonesian-language size-question guide "kompres zip" (GSC 248 imp / 18 clicks / pos 7.42 / CTR 7.26%; opportunity_score 30.98). Implementing tool /zip-file.html. SIZE-focused sibling to /guides/kompres-file-zip.html (broader Indonesian bundle/privacy guide).
+  '/guides/kompres-zip.html',
   '/guides/online-zip-vs-7z-vs-rar-which-to-pick.html',
   '/guides/how-to-zip-multiple-files-into-one.html',
   '/guides/how-to-zip-folder-online-step-by-step.html',
@@ -1627,6 +1631,15 @@ export const JSP_BY_ROUTE = {
   // implemented features (server-side bundling, optional AES password, S3-backed
   // download with short retention) into Indonesian reader-task prose.
   '/guides/kompres-file-zip.html': 'guide/kompres-file-zip.jsp',
+  // Cycle 20260523-5 P52.I create_new_guide_page - "Kompres Zip" Lane-D guide
+  // (zip cluster, Indonesian-language SIZE-QUESTION companion to /guides/kompres-file-zip.html).
+  // Companion to /zip-file.html. GSC 28d "kompres zip" 248 imp / 18 clicks / pos 7.42
+  // / CTR 7.26% / opportunity_score 30.98. CMS slug `guideskompreszip` (no hyphen per
+  // CLAUDE.md slug normalization). Distinguishing role vs /guides/kompres-file-zip.html:
+  // this guide focuses on the SIZE question (kapan ZIP mengecilkan ukuran), the sibling
+  // covers the broader BUNDLE/PRIVACY workflow - the two pages mirror /guides/compress-zip.html
+  // (size) vs the bigger English compress-zip guide family.
+  '/guides/kompres-zip.html': 'guide/kompres-zip.jsp',
   // Cycle 20260518-25 create_new_guide_page - "Online Zip File" Lane-D guide. Companion to /zip-tools/zip-file.html. Sourced from tool-zipfile/SKILL.md M1-M7 + tool-ziptools/SKILL.md M1.
   '/guides/online-zip-file.html': 'guide/online-zip-file.jsp',
   // Cycle 20260518-31 create_new_guide_page - "Create Zip File Online" Lane-D guide. Companion to /zip-tools/zip-file.html. Sourced from tool-zipfile/SKILL.md implemented features + BODYHTMLzipfile reader-task copy.
