@@ -320,6 +320,12 @@ export const INFO_ROUTES = new Set([
   '/guides/md5-decrypt-online.html',
   // Cycle 20260520-17 — "md5 hash decrypt" dictionary-attack-feasibility guide.
   '/guides/md5-hash-decrypt.html',
+  // Cycle 20260523 P50.H create_new_guide_page — "md5 password" reader-intent
+  // guide. Frames the hashing intent (one-way MD5 of a password string) and
+  // routes the password-recovery cohort to the MD5-alternatives guide. Honors
+  // cycle 30/35/40/43/44 decrypt-md5 cannibalisation guard: NOT titled or
+  // framed as "decrypt md5 password". Outbound link to /md5-converter.html.
+  '/guides/md5-password.html',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html',
   '/guides/css-minifier-vs-uglifier-vs-tree-shaking.html',
@@ -1769,6 +1775,13 @@ export const JSP_BY_ROUTE = {
   '/guides/md5-decrypt-online.html': 'guide/md5-decrypt-online.jsp',
   // Cycle 20260520-17 create_new_guide_page — "md5 hash decrypt" narrow-frame guide on dictionary-attack vs rainbow-table feasibility. Distinct angle from the existing 7 MD5 guides (md5-decrypt-online = wording routing, why-md5-cannot-be-decrypted = cryptographic math, md5-decode = vocabulary distinguish, md5-alternatives = recommendation, md5-to-text = why-cannot-convert-back, md5-vs-sha256 = algorithm comparison, read-and-compare = verification). New angle: the practical feasibility question - "for the hash I have right now, will a dictionary attack actually find the input?" Append-only on every existing surface.
   '/guides/md5-hash-decrypt.html': 'guide/md5-hash-decrypt.jsp',
+  // Cycle 20260523 P50.H create_new_guide_page — "md5 password" reader-intent guide.
+  // Distinct angle from the 8 existing MD5 guides: this one frames the hashing intent
+  // (one-way MD5 of a password string for checksum / fingerprint use) and explicitly
+  // routes the password-storage cohort to /guides/md5-alternatives-bcrypt-argon2id-...
+  // Honors cycle 30/35/40/43/44 decrypt-md5 cannibalisation guard: NOT titled or
+  // framed as "decrypt md5 password". Implementing tool: /md5-converter.html.
+  '/guides/md5-password.html': 'guide/md5-password.jsp',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',
   '/guides/css-minifier-vs-uglifier-vs-tree-shaking.html': 'guide/css-minifier-vs-uglifier-vs-tree-shaking.jsp',
