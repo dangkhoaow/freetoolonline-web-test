@@ -279,9 +279,9 @@ export async function buildDynamicGuidesHubBody({ cmsRoot } = {}) {
 
   const html = `<div class='w3-container'>
     <h1><b class="text-uppercase">All Guides - Browser Tool Library</b></h1>
-    <p>Hands-on, no-fluff guides for the people landing on freetoolonline.com tools. Every guide pairs the problem to the right tool, walks the steps, and explains the trade-offs - so you finish in two minutes instead of two browser tabs. Each linked tool runs entirely in your browser; nothing uploads to a server.</p>
+    <p>Hands-on, no-fluff guides for the people landing on freetoolonline.com tools. Every guide pairs the problem to the right tool, walks the steps, and explains the trade-offs — so you finish in two minutes instead of two browser tabs. Each linked tool runs entirely in your browser; nothing uploads to a server.</p>
 
-    <p><em>${totalGuides} guides total, auto-indexed from the live route registry. Browse the machine-readable index at <a href="/sitemap.xml">sitemap.xml</a> or the categorized site overview at <a href="/sitemap.html">sitemap.html</a>.</em></p>
+    <p>${totalGuides} guides grouped by the kind of task you came to do. If you are not sure which group your question lives in, the search box on the home page covers every guide and tool by keyword.</p>
 
 ${sections.join('\n\n')}
 </div>
@@ -422,6 +422,32 @@ const LMENU_CLUSTER_ICONS = {
   utility: 'fa-tools',
 };
 
+/**
+ * Shared cluster-member resolver used by buildDynamicSitemapBody and
+ * buildDynamicLMenuBody. Walks JSP_BY_ROUTE for routes under the cluster's
+ * hub directory pattern (e.g. `/pdf-tools/`). This is the source of truth
+ * because cluster.routes[] still carries legacy URLs that 301 to canonical
+ * cluster URLs via ALIAS_ROUTES.
+ */
+async function resolveClusterMemberRoutes(group, aliasSourceSet) {
+  if (!group?.hubRoute) return [];
+  const hubDir = group.hubRoute.replace(/\.html$/i, '/');
+  const allRoutes = Object.keys(JSP_BY_ROUTE).filter((r) => !aliasSourceSet.has(r));
+  const memberRoutes = allRoutes.filter((r) => r.startsWith(hubDir));
+  const curatedCanonicals = [];
+  const seen = new Set();
+  for (const legacyRoute of (group.routes || [])) {
+    const canonical = aliasSourceSet.has(legacyRoute) ? ALIAS_ROUTES[legacyRoute] : legacyRoute;
+    if (!Object.prototype.hasOwnProperty.call(JSP_BY_ROUTE, canonical)) continue;
+    if (!canonical.startsWith(hubDir)) continue;
+    if (seen.has(canonical)) continue;
+    seen.add(canonical);
+    curatedCanonicals.push(canonical);
+  }
+  const tail = memberRoutes.filter((r) => !seen.has(r));
+  return [...curatedCanonicals, ...tail];
+}
+
 // classifyGuide() topic ids → cluster id. The "editorial-and-other" topic
 // is the catch-all; route it into UTILITY so no guide gets dropped.
 const GUIDE_TOPIC_TO_CLUSTER = {
@@ -486,47 +512,17 @@ export async function buildDynamicLMenuBody({ cmsRoot } = {}) {
   const clusterGroups = getSeoClusterGroups();
   const toolClusterMap = new Map(clusterGroups.map((g) => [g.cluster, g]));
 
-  // Bucket tools by cluster. Source of truth: walk JSP_BY_ROUTE for routes
-  // matching each cluster's hub directory pattern. cluster.hubRoute is e.g.
-  // `/pdf-tools.html` → directory pattern `/pdf-tools/`. This is more robust
-  // than reading cluster.routes[] directly because cluster.routes still
-  // carries the LEGACY non-clustered URLs (e.g. `/compose-pdf.html`) which
-  // were moved to ALIAS_ROUTES after the cluster-URL migration; the canonical
-  // tool URL is `/pdf-tools/compose-pdf.html` and lives in JSP_BY_ROUTE.
-  const allRoutes = Object.keys(JSP_BY_ROUTE).filter((r) => !aliasSourceSet.has(r));
+  // Bucket tools by cluster using the shared resolveClusterMemberRoutes
+  // helper. See its docblock for why JSP_BY_ROUTE is the source of truth.
   const toolsByCluster = new Map();
   for (const clusterId of LMENU_CLUSTER_ORDER) toolsByCluster.set(clusterId, []);
   for (const clusterId of LMENU_CLUSTER_ORDER) {
     const group = toolClusterMap.get(clusterId);
-    if (!group?.hubRoute) continue;
-    const hubDir = group.hubRoute.replace(/\.html$/i, '/');
-    const memberRoutes = allRoutes.filter((r) => r.startsWith(hubDir));
-    // Preserve the operator-curated order from cluster.routes[] when possible
-    // — map each curated entry through ALIAS_ROUTES to its canonical target,
-    // then append any cluster-member routes not in the curated list. Sort
-    // tail by title for predictable diffs on auto-discovered new tools.
-    const curatedCanonicals = [];
-    const seen = new Set();
-    for (const legacyRoute of (group.routes || [])) {
-      const canonical = aliasSourceSet.has(legacyRoute) ? ALIAS_ROUTES[legacyRoute] : legacyRoute;
-      if (!Object.prototype.hasOwnProperty.call(JSP_BY_ROUTE, canonical)) continue;
-      if (!canonical.startsWith(hubDir)) continue;
-      if (seen.has(canonical)) continue;
-      seen.add(canonical);
-      curatedCanonicals.push(canonical);
-    }
-    const tail = memberRoutes.filter((r) => !seen.has(r));
-    const orderedRoutes = [...curatedCanonicals, ...tail];
+    const orderedRoutes = await resolveClusterMemberRoutes(group, aliasSourceSet);
     for (const route of orderedRoutes) {
       const meta = await loadRouteMetadata(cmsRoot, route);
       toolsByCluster.get(clusterId).push(meta);
     }
-    // Sort the auto-discovered tail alphabetically (the curated head keeps
-    // operator order). Implementation: re-sort only the slice after curated.
-    const head = toolsByCluster.get(clusterId).slice(0, curatedCanonicals.length);
-    const tailMetas = toolsByCluster.get(clusterId).slice(curatedCanonicals.length);
-    tailMetas.sort((a, b) => a.title.localeCompare(b.title));
-    toolsByCluster.set(clusterId, [...head, ...tailMetas]);
   }
 
   // Bucket guides by their classified cluster. Guides sort alphabetically
@@ -568,17 +564,20 @@ export async function buildDynamicSitemapBody({ cmsRoot, lastReviewedIso } = {})
   const clusterGroups = getSeoClusterGroups();
   const toolClusterMap = new Map(clusterGroups.map((g) => [g.cluster, g]));
 
-  // Tool clusters - load each cluster's hub and member routes.
+  // Tool clusters — reuse the shared resolveClusterMemberRoutes helper so
+  // sitemap.html stays in lockstep with /guides.html + l-menu cluster
+  // membership. Pre-fix: this builder walked cluster.routes[] directly which
+  // still carries the legacy non-clustered URLs (e.g. /compose-pdf.html) all
+  // sent to ALIAS_ROUTES post cluster-URL migration → 0 tools listed.
   const toolSections = [];
   let toolCount = 0;
   for (const cluster of TOOL_CLUSTER_ORDER) {
     const group = toolClusterMap.get(cluster);
     if (!group) continue;
     const hubMeta = group.hubRoute ? await loadRouteMetadata(cmsRoot, group.hubRoute) : null;
+    const memberRoutes = await resolveClusterMemberRoutes(group, aliasSourceSet);
     const itemMetas = [];
-    for (const memberRoute of group.routes) {
-      if (aliasSourceSet.has(memberRoute)) continue; // never list a 301 alias
-      if (!Object.prototype.hasOwnProperty.call(JSP_BY_ROUTE, memberRoute)) continue;
+    for (const memberRoute of memberRoutes) {
       itemMetas.push(await loadRouteMetadata(cmsRoot, memberRoute));
     }
     if (itemMetas.length === 0) continue;
@@ -630,9 +629,9 @@ export async function buildDynamicSitemapBody({ cmsRoot, lastReviewedIso } = {})
 
   const html = `<div class="w3-container w3-margin-top">
     <h1 class="text-uppercase"><b>Site Map</b></h1>
-    <p><em>Last rebuilt ${escapeHtml(reviewDate)}. This page regenerates on every deploy from the live route registry, so the lists below match what is actually shipping today.</em></p>
+    <p>Looking for the right tool but cannot recall the name? Skim the list below. Every tool runs in your browser — no signup, no upload to a server — and every link points to the canonical page (no redirects to slow you down).</p>
 
-    <p>Use this page when you know what you need but cannot remember the exact tool name. Tools are grouped by category; long-form guides are grouped by topic. Every link below is a canonical URL - no redirect aliases. For the machine-readable index Google and other crawlers consume, see <a href="/sitemap.xml">sitemap.xml</a>.</p>
+    <p>Tools sit under eight task-based categories. Long-form guides — decision walkthroughs, step-by-step recipes, and trade-off explainers — sit below them, grouped by the kind of problem they solve. If a category looks empty for a tool you remember using, the link likely moved into the new category-tools hub; the URL still works.</p>
 
     <h2 class="text-uppercase"><b>Jump to</b></h2>
     <ul>
@@ -642,20 +641,20 @@ export async function buildDynamicSitemapBody({ cmsRoot, lastReviewedIso } = {})
     </ul>
 
     <h2 id="tools" class="text-uppercase"><b>Tools by category</b></h2>
-    <p>The ${toolCount} tools on the site are grouped into eight categories. Each category links to a hub page that explains the trade-offs between the tools in it; every tool below the hub is the canonical URL for that tool.</p>
+    <p>${toolCount} tools across eight task categories. Tap a category heading to jump to its hub — the hub page explains when to pick each tool in that group and which inputs each one expects.</p>
 
 ${toolSections.join('\n\n')}
 
     <h2 id="guides" class="text-uppercase"><b>Guides by topic</b></h2>
-    <p>${totalGuides} long-form guides covering decision trade-offs, step-by-step workflows, and editorial case studies. Browse the full topical hub at <a href="/guides.html">All Guides</a>; the lists below are an exhaustive index for fast lookup.</p>
+    <p>${totalGuides} guides written to answer the question behind the search. Most are 3-7 minute reads that pick the right tool, show the steps, and call out the trade-offs (when ZIP saves space, when HEIC is fine to keep, when MD5 is the wrong hash). For a one-page browse, see <a href="/guides.html">All Guides</a>.</p>
 
 ${guideSections.join('\n\n')}
 
     <h2 id="resources" class="text-uppercase"><b>Site resources</b></h2>
-    <p>Editorial, contact, and policy pages.</p>
+    <p>About the team, contact, and policy pages. Last reviewed ${escapeHtml(reviewDate)}.</p>
     <ul>
 ${resourceItems.map(renderResourceItem).join('\n')}
-        <li><a href="/sitemap.xml">sitemap.xml (machine-readable)</a></li>
+        <li><a href="/sitemap.xml">sitemap.xml (for search engines)</a></li>
     </ul>
 </div>
 `;

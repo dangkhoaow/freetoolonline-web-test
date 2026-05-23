@@ -386,7 +386,18 @@ export async function writeSplitSitemaps({ distDir, routes, origin, isStaging, c
     .filter((route) => !guideRouteSet.has(route));
   const pageRouteSet = new Set(pageRoutes);
   const hubRouteSet = new Set(hubRoutes);
-  const toolRoutes = normalizedRoutes.filter((route) => route !== '/' && !INFO_ROUTES.has(route) && !route.endsWith('-tools.html'));
+  // Cycle 50 follow-up — defence-in-depth against guide URLs leaking into
+  // sitemap-tools.xml. Pre-fix: many entries lived in GUIDE_ROUTES but were
+  // forgotten in INFO_ROUTES (e.g. /guides/led-test.html, /guides/zip-compress.html,
+  // ~25 such cases on prod). The historical filter `!INFO_ROUTES.has(route)`
+  // alone treated them as tools and leaked them into sitemap-tools.xml.
+  // Three layered exclusions now: (a) /guides/* prefix never a tool, (b) any
+  // GUIDE_ROUTES member never a tool, (c) any INFO_ROUTES member never a tool.
+  const toolRoutes = normalizedRoutes.filter((route) => route !== '/'
+    && !INFO_ROUTES.has(route)
+    && !GUIDE_ROUTES.has(route)
+    && !route.startsWith('/guides/')
+    && !route.endsWith('-tools.html'));
   const fallbackLastmod = new Date().toISOString();
   const lastmodByRoute = new Map();
 
