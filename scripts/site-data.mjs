@@ -1273,6 +1273,19 @@ export const GUIDE_ROUTES = new Set([
   // Cycle 20260523-3 (cycle 50) create_new_guide_page - "crop and rotate image"
   // Lane-D guide (image-editing cluster, companion to /crop-image.html).
   '/guides/crop-and-rotate-image.html',
+  // Backfill cycle 20260523-followup-1: /guides/md5-password.html (cycle 50
+  // P50.H, real-work floor) + /guides/comprimir-arquivo-zip.html (cycle
+  // 20260522-10 P10.E, Portuguese zip cluster) were added to INFO_ROUTES +
+  // JSP_BY_ROUTE but omitted from GUIDE_ROUTES — same defect class as the
+  // cycle-88/cycle-90 backfill at line ~1140. Without GUIDE_ROUTES membership
+  // they render fine but never appear in sitemap-guides.xml or the dynamic
+  // /guides.html + /sitemap.html hub bodies (which both filter against this
+  // Set). The follow-up to this fix wires buildDynamicGuidesHubBody() into
+  // export-site.mjs so /guides.html joins /sitemap.html as a build-generated
+  // artifact, closing the "agent edits BODYHTMLguides.html by hand and forgets
+  // an entry" defect class permanently. See sitemap-html-builder.mjs.
+  '/guides/md5-password.html',
+  '/guides/comprimir-arquivo-zip.html',
 ]);
 
 export function isGuideRoute(route) {

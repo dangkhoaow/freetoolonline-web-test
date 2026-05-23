@@ -30,7 +30,7 @@ import { parseJspPageSource, renderAlternateAdPage, renderPageDocument, renderRe
 import { resolvePageMtime } from './page-mtimes.mjs';
 import { createInternalContentRewriter, normalizeBasePath } from './staging-utils.mjs';
 import { writeSplitSitemaps } from './sitemap-writer.mjs';
-import { buildDynamicSitemapBody } from './sitemap-html-builder.mjs';
+import { buildDynamicSitemapBody, buildDynamicGuidesHubBody } from './sitemap-html-builder.mjs';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const distDir = path.resolve(repoRoot, process.env.DIST_DIR ?? 'dist');
@@ -81,6 +81,13 @@ async function main() {
     lastReviewedIso: new Date().toISOString(),
   });
   console.log(`[sitemap-html] Generated dynamic /sitemap.html body (${sitemapDynamicBody.length} chars).`);
+  // /guides.html hub body regenerates on every build from GUIDE_ROUTES +
+  // BODYTITLE/BODYDESC fragments. Adding a guide to site-data.mjs +
+  // creating the per-slug fragments is sufficient — no more hand-edit of
+  // BODYHTMLguides.html. The static fragment is now a placeholder; the
+  // dynamic body computed once here wins in renderRoute below.
+  const guidesHubDynamicBody = await buildDynamicGuidesHubBody({ cmsRoot });
+  console.log(`[guides-hub] Generated dynamic /guides.html body (${guidesHubDynamicBody.length} chars).`);
   // Route candidates come exclusively from the in-code route registry so
   // the build has a single source of truth. The static `source/.../static/
   // sitemap.xml` is no longer parsed (and no longer copied to dist) - the
@@ -107,6 +114,7 @@ async function main() {
       isStaging,
       rewriteInternalContent,
       sitemapDynamicBody,
+      guidesHubDynamicBody,
     });
     await writeOutput(outputPathForRoute(route), html);
     if (canonical) {
@@ -199,7 +207,7 @@ async function loadRelatedToolsData(staticAssetsRootPath) {
   }
 }
 
-async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData, canonicalOrigin, basePath, isStaging, rewriteInternalContent, sitemapDynamicBody }) {
+async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData, canonicalOrigin, basePath, isStaging, rewriteInternalContent, sitemapDynamicBody, guidesHubDynamicBody }) {
   const normalizedRoute = normalizeRoute(route);
 
   if (Object.prototype.hasOwnProperty.call(ALIAS_ROUTES, normalizedRoute)) {
@@ -239,6 +247,13 @@ async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData,
   // dynamic body computed once in main() wins here.
   if (normalizedRoute === '/sitemap.html' && sitemapDynamicBody) {
     pageData.bodyHtml = sitemapDynamicBody;
+  }
+  // /guides.html hub body is build-generated from GUIDE_ROUTES so it never
+  // falls out of sync with the actual published guides. The static
+  // `BODYHTMLguides.html` fragment is a placeholder; the dynamic body
+  // computed once in main() wins here.
+  if (normalizedRoute === '/guides.html' && guidesHubDynamicBody) {
+    pageData.bodyHtml = guidesHubDynamicBody;
   }
   // Per-page "last modified" stamp from git history of this page's CMS
   // fragments + JSP wrapper. Drives Schema.org dateModified (JSON-LD +

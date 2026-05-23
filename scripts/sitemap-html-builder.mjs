@@ -224,6 +224,72 @@ function formatReviewDate(iso) {
   return d.toISOString().slice(0, 10);
 }
 
+function renderGuideHubItem({ route, title, description }) {
+  // Hub format mirrors the historical hand-maintained BODYHTMLguides.html
+  // (anchor + paragraph description on separate lines) so readers get a
+  // scan-and-skim hierarchy. sitemap.html keeps the terser inline format
+  // via renderGuideItem above.
+  const descBlock = description ? `\n            <p>${escapeHtml(description)}</p>` : '';
+  return `        <li>\n            <a href="${route}">${escapeHtml(title)}</a>${descBlock}\n        </li>`;
+}
+
+function renderGuideHubTopicSection(topic, items) {
+  const lines = [];
+  lines.push(`    <h2 class="text-uppercase"><b>${escapeHtml(GUIDE_TOPIC_LABELS[topic] ?? topic)}</b></h2>`);
+  lines.push('    <ul>');
+  for (const item of items) {
+    lines.push(renderGuideHubItem(item));
+  }
+  lines.push('    </ul>');
+  return lines.join('\n');
+}
+
+export async function buildDynamicGuidesHubBody({ cmsRoot } = {}) {
+  if (!cmsRoot) {
+    throw new Error('buildDynamicGuidesHubBody: cmsRoot is required');
+  }
+
+  // GUIDE_ROUTES is the single source of truth for "what guide pages
+  // exist on this site". Adding a guide to site-data.mjs + creating the
+  // BODYTITLE/BODYDESC fragments is now sufficient — this builder picks
+  // it up on the next deploy. No more hand-edit of BODYHTMLguides.html.
+  const guideRoutes = Array.from(GUIDE_ROUTES).filter((route) => Object.prototype.hasOwnProperty.call(JSP_BY_ROUTE, route));
+  const guideMetaByTopic = new Map();
+  for (const topic of GUIDE_TOPIC_ORDER) {
+    guideMetaByTopic.set(topic, []);
+  }
+  for (const route of guideRoutes) {
+    const slug = route.replace(/^\/guides\//, '').replace(/\.html$/i, '');
+    const topic = classifyGuide(slug);
+    const meta = await loadRouteMetadata(cmsRoot, route);
+    guideMetaByTopic.get(topic).push(meta);
+  }
+  // Sort each topic alphabetically by title for predictable diffs.
+  for (const list of guideMetaByTopic.values()) {
+    list.sort((a, b) => a.title.localeCompare(b.title));
+  }
+  const totalGuides = guideRoutes.length;
+
+  const sections = [];
+  for (const topic of GUIDE_TOPIC_ORDER) {
+    const items = guideMetaByTopic.get(topic);
+    if (!items || items.length === 0) continue;
+    sections.push(renderGuideHubTopicSection(topic, items));
+  }
+
+  const html = `<div class='w3-container'>
+    <h1><b class="text-uppercase">All Guides - Browser Tool Library</b></h1>
+    <p>Hands-on, no-fluff guides for the people landing on freetoolonline.com tools. Every guide pairs the problem to the right tool, walks the steps, and explains the trade-offs - so you finish in two minutes instead of two browser tabs. Each linked tool runs entirely in your browser; nothing uploads to a server.</p>
+
+    <p><em>${totalGuides} guides total, auto-indexed from the live route registry. Browse the machine-readable index at <a href="/sitemap.xml">sitemap.xml</a> or the categorized site overview at <a href="/sitemap.html">sitemap.html</a>.</em></p>
+
+${sections.join('\n\n')}
+</div>
+`;
+
+  return html;
+}
+
 export async function buildDynamicSitemapBody({ cmsRoot, lastReviewedIso } = {}) {
   if (!cmsRoot) {
     throw new Error('buildDynamicSitemapBody: cmsRoot is required');
