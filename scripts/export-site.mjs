@@ -30,7 +30,7 @@ import { parseJspPageSource, renderAlternateAdPage, renderPageDocument, renderRe
 import { resolvePageMtime } from './page-mtimes.mjs';
 import { createInternalContentRewriter, normalizeBasePath } from './staging-utils.mjs';
 import { writeSplitSitemaps } from './sitemap-writer.mjs';
-import { buildDynamicSitemapBody, buildDynamicGuidesHubBody } from './sitemap-html-builder.mjs';
+import { buildDynamicSitemapBody, buildDynamicGuidesHubBody, buildDynamicLMenuBody } from './sitemap-html-builder.mjs';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const distDir = path.resolve(repoRoot, process.env.DIST_DIR ?? 'dist');
@@ -88,6 +88,24 @@ async function main() {
   // dynamic body computed once here wins in renderRoute below.
   const guidesHubDynamicBody = await buildDynamicGuidesHubBody({ cmsRoot });
   console.log(`[guides-hub] Generated dynamic /guides.html body (${guidesHubDynamicBody.length} chars).`);
+  // l-menu (left navigation sidebar) — splice the dynamic body into the
+  // static l-menu.html shell which keeps the inline <style> + <script>
+  // blocks. The body is everything between </style> and the closing
+  // <script>. Same defect-class fix as /guides.html — agents no longer
+  // need to hand-edit the sidebar when shipping a new tool or guide.
+  const lMenuDynamicBody = await buildDynamicLMenuBody({ cmsRoot });
+  if (sharedFragments.lMenu) {
+    const styleEndIdx = sharedFragments.lMenu.indexOf('</style>');
+    const scriptStartIdx = sharedFragments.lMenu.indexOf('<script>', styleEndIdx >= 0 ? styleEndIdx : 0);
+    if (styleEndIdx >= 0 && scriptStartIdx > styleEndIdx) {
+      const cssPrefix = sharedFragments.lMenu.slice(0, styleEndIdx + '</style>'.length);
+      const scriptSuffix = sharedFragments.lMenu.slice(scriptStartIdx);
+      sharedFragments.lMenu = `${cssPrefix}\n${lMenuDynamicBody}\n${scriptSuffix}`;
+      console.log(`[lmenu] Spliced dynamic body into l-menu.html (${lMenuDynamicBody.length} chars).`);
+    } else {
+      console.warn('[lmenu] Could not locate </style>/<script> boundaries in l-menu.html — leaving static body in place.');
+    }
+  }
   // Route candidates come exclusively from the in-code route registry so
   // the build has a single source of truth. The static `source/.../static/
   // sitemap.xml` is no longer parsed (and no longer copied to dist) - the

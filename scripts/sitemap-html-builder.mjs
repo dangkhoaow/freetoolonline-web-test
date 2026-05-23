@@ -290,6 +290,188 @@ ${sections.join('\n\n')}
   return html;
 }
 
+// -------------------------------------------------------------------------- //
+// Dynamic l-menu (left navigation sidebar) — same defect class fix.          //
+// Pre-build: l-menu.html was hand-maintained and intermixed tool + guide     //
+// entries with no visual distinction. Operator-approved structure (Option B):
+//   - 8 categories aligned with SEO_CLUSTER_GROUPS (single source of truth   //
+//     with sitemap.html + guides.html).                                      //
+//   - Within each category, TOOLS first (fa-circle), then a thin separator,  //
+//     then GUIDES (fa-book + small [GUIDE] badge for unambiguous signal).    //
+//   - Membership: tools from cluster.routes; guides classified by            //
+//     classifyGuide() then mapped to the matching cluster.                   //
+// -------------------------------------------------------------------------- //
+
+const LMENU_CLUSTER_ORDER = [
+  'pdf',
+  'image-editing',
+  'image-conversion',
+  'video',
+  'zip',
+  'developer',
+  'device-test',
+  'utility',
+];
+
+const LMENU_CLUSTER_LABELS = {
+  pdf: 'PDF',
+  'image-editing': 'IMAGE EDITING',
+  'image-conversion': 'IMAGE CONVERTER',
+  video: 'VIDEO',
+  zip: 'ZIP TOOLS',
+  developer: 'DEVELOPER',
+  'device-test': 'DEVICE TESTS',
+  utility: 'UTILITY',
+};
+
+const LMENU_CLUSTER_ICONS = {
+  pdf: 'fa-file-pdf',
+  'image-editing': 'fa-file-image',
+  'image-conversion': 'fa-images',
+  video: 'fa-file-video',
+  zip: 'fa-file-archive',
+  developer: 'fa-code',
+  'device-test': 'fa-laptop',
+  utility: 'fa-tools',
+};
+
+// classifyGuide() topic ids → cluster id. The "editorial-and-other" topic
+// is the catch-all; route it into UTILITY so no guide gets dropped.
+const GUIDE_TOPIC_TO_CLUSTER = {
+  'zip-and-file-compression': 'zip',
+  'heic-and-image-conversion': 'image-conversion',
+  'image-editing-and-graphics': 'image-editing',
+  pdf: 'pdf',
+  video: 'video',
+  'device-tests': 'device-test',
+  'developer-and-encoding': 'developer',
+  'editorial-and-other': 'utility',
+};
+
+function renderLMenuToolItem({ route, title }) {
+  // Tool item — keep the historical fa-circle icon for backward visual
+  // compatibility with the hand-maintained l-menu items.
+  return `                <a class='w3-bar-item w3-button' href='https://freetoolonline.com${route}'>\n                    <i class="fa fa-circle" data-kind="tool" style="margin-right: 10px;"></i>\n                    ${escapeHtml(title)}\n                </a>`;
+}
+
+function renderLMenuGuideItem({ route, title }) {
+  // Guide item — distinct fa-book icon + small [GUIDE] badge for
+  // unambiguous visual signal. data-kind="guide" lets the menu-search /
+  // analytics layer also filter by kind without parsing the URL.
+  return `                <a class='w3-bar-item w3-button' href='https://freetoolonline.com${route}'>\n                    <i class="fa fa-book" data-kind="guide" style="margin-right: 10px;"></i>\n                    ${escapeHtml(title)}\n                    <span class="lmenu-kind-badge">guide</span>\n                </a>`;
+}
+
+function renderLMenuClusterSection({ clusterId, icon, label, tools, guides }) {
+  const menuId = `${clusterId.replace(/-/g, '')}Menu`;
+  const lines = [];
+  lines.push(`        <div class='w3-col l2 m6'>`);
+  lines.push(`            <button style='font-size: 15px !important;padding: 10px 0px 10px 13px' class="w3-button w3-block w3-left-align menu-btn" onclick="myAccFunc(document.getElementById('${menuId}'))">`);
+  lines.push(`                <i class="fa ${icon}" style="margin-right: 10px;"></i>`);
+  lines.push(`                ${escapeHtml(label)}`);
+  lines.push(`            </button>`);
+  lines.push(`            <div id="${menuId}" class="w3-hide menuGroup">`);
+  for (const t of tools) {
+    lines.push(renderLMenuToolItem(t));
+  }
+  if (tools.length > 0 && guides.length > 0) {
+    lines.push(`                <hr class="lmenu-sep">`);
+  }
+  for (const g of guides) {
+    lines.push(renderLMenuGuideItem(g));
+  }
+  lines.push(`            </div>`);
+  lines.push(`        </div>`);
+  return lines.join('\n');
+}
+
+/**
+ * Build the dynamic body of l-menu.html (left navigation sidebar).
+ * Returns the inner block of `<div id="menu-content-id">…</div>` only —
+ * the surrounding <style>/<script> blocks in the static l-menu.html
+ * shell are preserved by export-site.mjs which splices this body in.
+ */
+export async function buildDynamicLMenuBody({ cmsRoot } = {}) {
+  if (!cmsRoot) {
+    throw new Error('buildDynamicLMenuBody: cmsRoot is required');
+  }
+
+  const aliasSourceSet = new Set(Object.keys(ALIAS_ROUTES));
+  const clusterGroups = getSeoClusterGroups();
+  const toolClusterMap = new Map(clusterGroups.map((g) => [g.cluster, g]));
+
+  // Bucket tools by cluster. Source of truth: walk JSP_BY_ROUTE for routes
+  // matching each cluster's hub directory pattern. cluster.hubRoute is e.g.
+  // `/pdf-tools.html` → directory pattern `/pdf-tools/`. This is more robust
+  // than reading cluster.routes[] directly because cluster.routes still
+  // carries the LEGACY non-clustered URLs (e.g. `/compose-pdf.html`) which
+  // were moved to ALIAS_ROUTES after the cluster-URL migration; the canonical
+  // tool URL is `/pdf-tools/compose-pdf.html` and lives in JSP_BY_ROUTE.
+  const allRoutes = Object.keys(JSP_BY_ROUTE).filter((r) => !aliasSourceSet.has(r));
+  const toolsByCluster = new Map();
+  for (const clusterId of LMENU_CLUSTER_ORDER) toolsByCluster.set(clusterId, []);
+  for (const clusterId of LMENU_CLUSTER_ORDER) {
+    const group = toolClusterMap.get(clusterId);
+    if (!group?.hubRoute) continue;
+    const hubDir = group.hubRoute.replace(/\.html$/i, '/');
+    const memberRoutes = allRoutes.filter((r) => r.startsWith(hubDir));
+    // Preserve the operator-curated order from cluster.routes[] when possible
+    // — map each curated entry through ALIAS_ROUTES to its canonical target,
+    // then append any cluster-member routes not in the curated list. Sort
+    // tail by title for predictable diffs on auto-discovered new tools.
+    const curatedCanonicals = [];
+    const seen = new Set();
+    for (const legacyRoute of (group.routes || [])) {
+      const canonical = aliasSourceSet.has(legacyRoute) ? ALIAS_ROUTES[legacyRoute] : legacyRoute;
+      if (!Object.prototype.hasOwnProperty.call(JSP_BY_ROUTE, canonical)) continue;
+      if (!canonical.startsWith(hubDir)) continue;
+      if (seen.has(canonical)) continue;
+      seen.add(canonical);
+      curatedCanonicals.push(canonical);
+    }
+    const tail = memberRoutes.filter((r) => !seen.has(r));
+    const orderedRoutes = [...curatedCanonicals, ...tail];
+    for (const route of orderedRoutes) {
+      const meta = await loadRouteMetadata(cmsRoot, route);
+      toolsByCluster.get(clusterId).push(meta);
+    }
+    // Sort the auto-discovered tail alphabetically (the curated head keeps
+    // operator order). Implementation: re-sort only the slice after curated.
+    const head = toolsByCluster.get(clusterId).slice(0, curatedCanonicals.length);
+    const tailMetas = toolsByCluster.get(clusterId).slice(curatedCanonicals.length);
+    tailMetas.sort((a, b) => a.title.localeCompare(b.title));
+    toolsByCluster.set(clusterId, [...head, ...tailMetas]);
+  }
+
+  // Bucket guides by their classified cluster. Guides sort alphabetically
+  // by title within each cluster for predictable diffs.
+  const guidesByCluster = new Map();
+  for (const clusterId of LMENU_CLUSTER_ORDER) guidesByCluster.set(clusterId, []);
+  const guideRoutes = Array.from(GUIDE_ROUTES).filter((route) => Object.prototype.hasOwnProperty.call(JSP_BY_ROUTE, route));
+  for (const route of guideRoutes) {
+    const slug = route.replace(/^\/guides\//, '').replace(/\.html$/i, '');
+    const topic = classifyGuide(slug);
+    const clusterId = GUIDE_TOPIC_TO_CLUSTER[topic] || 'utility';
+    const meta = await loadRouteMetadata(cmsRoot, route);
+    guidesByCluster.get(clusterId).push(meta);
+  }
+  for (const list of guidesByCluster.values()) {
+    list.sort((a, b) => a.title.localeCompare(b.title));
+  }
+
+  const sections = [];
+  for (const clusterId of LMENU_CLUSTER_ORDER) {
+    sections.push(renderLMenuClusterSection({
+      clusterId,
+      icon: LMENU_CLUSTER_ICONS[clusterId],
+      label: LMENU_CLUSTER_LABELS[clusterId],
+      tools: toolsByCluster.get(clusterId) || [],
+      guides: guidesByCluster.get(clusterId) || [],
+    }));
+  }
+
+  return `<div id="menu-content-id" class="menu-content">\n    <div class='w3-row-padding'>\n${sections.join('\n')}\n    </div>\n</div>`;
+}
+
 export async function buildDynamicSitemapBody({ cmsRoot, lastReviewedIso } = {}) {
   if (!cmsRoot) {
     throw new Error('buildDynamicSitemapBody: cmsRoot is required');
