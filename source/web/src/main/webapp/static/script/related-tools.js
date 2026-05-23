@@ -184,6 +184,7 @@ try {
     // tree-viewer) retargeted to /developer-tools/json-parser.html via ALIAS_ROUTES.
     // Tool route + CMS + manifest + tool-skill deleted in same commit.
     { title: "Comprimir Carpeta Zip Online Gratis", url: "https://freetoolonline.com/guides/comprimir-carpeta-zip-online-gratis.html", include: !1, tags: "zip,guide,comprimir,carpeta,zip" },
+    { title: "Reducir Tamaño Zip Online", url: "https://freetoolonline.com/guides/reducir-tama-o-zip-online.html", include: !1, tags: "zip,guide,reducir,tamano,zip" },
     { title: "Reduce Zip File Size Online", url: "https://freetoolonline.com/guides/reduce-zip-file-size-online.html", include: !1, tags: "zip,guide,reduce,size" },
     { title: "GIF Into Frames", url: "https://freetoolonline.com/guides/gif-into-frames.html", include: !1, tags: "image-editing,guide,gif,frames,extract" },
     { title: "Kompres File Zip", url: "https://freetoolonline.com/guides/kompres-file-zip.html", include: !1, tags: "zip,guide,kompres,file,zip" },

@@ -1166,6 +1166,15 @@ export const GUIDE_ROUTES = new Set([
   // to /zip-file.html. Native Spanish prose authored against tool-zipfile
   // SKILL features. Phase A complete single-cycle ship.
   '/guides/comprimir-carpeta-zip-online-gratis.html',
+  // Cycle 20260523-4 — "Reducir Tamaño Zip Online" Lane-D guide (zip cluster,
+  // Spanish size-reduction-wording sibling of /guides/comprimir-zip-online.html;
+  // 196 imp / 32 clicks / pos 5.15 / CTR 16.3% per 28d GSC; opportunity_score
+  // 31.83). Reader-routed: this guide is a synonym-landing for the "reducir
+  // tamaño" wording, ROUTES to /guides/comprimir-zip-online.html for the full
+  // compression-wording context AND to /zip-tools/zip-file.html as the creator.
+  // Implementing tool is /zip-file.html (tool-zipfile auto; this guide reuses
+  // truth-source from the existing comprimir-zip-online verified content).
+  '/guides/reducir-tama-o-zip-online.html',
   // Cycle 20260515-15 — "Zip File Compressor Online" Lane-D guide (zip
   // cluster head-query; 799 imp / 73 clicks / pos 6.2 / CTR 9.1% per 28d
   // GSC; opportunity_score 117.19). Companion to /zip-tools/zip-file.html.
@@ -1595,6 +1604,8 @@ export const JSP_BY_ROUTE = {
   '/guides/comprimir-zip-online.html': 'guide/comprimir-zip-online.jsp',
   // Cycle 20260519-14 create_new_guide_page - "Comprimir Carpeta Zip Online Gratis" Lane-D guide (zip cluster, Spanish folder-compression intent; companion to /zip-file.html). Native-Spanish prose authored against tool-zipfile SKILL features. Complete single-cycle ship per cycle 20260514-5 contract.
   '/guides/comprimir-carpeta-zip-online-gratis.html': 'guide/comprimir-carpeta-zip-online-gratis.jsp',
+  // Cycle 20260523-4 create_new_guide_page - "Reducir Tamaño Zip Online" Lane-D synonym-landing guide (zip cluster, Spanish size-reduction wording; companion to /zip-tools/zip-file.html). Routes to /guides/comprimir-zip-online.html for the compression-wording context. Complete single-cycle ship per cycle 20260514-5 contract.
+  '/guides/reducir-tama-o-zip-online.html': 'guide/reducir-tama-o-zip-online.jsp',
   // Cycle 20260517-8 create_new_guide_page - "Online Zip File Compressor" Lane-D guide (zip cluster head-query sibling, companion to /zip-tools/zip-file.html). Complete single-cycle ship per cycle 20260514-5 contract.
   '/guides/online-zip-file-compressor.html': 'guide/online-zip-file-compressor.jsp',
   // Cycle 20260518-20 create_new_guide_page - "Zip Compress" Lane-D guide (zip cluster head-query sibling, companion to /zip-tools/zip-file.html). Complete single-cycle ship per cycle 20260514-5 contract.
