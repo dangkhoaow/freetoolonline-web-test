@@ -291,6 +291,93 @@ ${sections.join('\n\n')}
 }
 
 // -------------------------------------------------------------------------- //
+// Dynamic homepage search box datalist + counter texts.                      //
+// Pre-build: BODYHTML.html had a hand-curated <datalist> of 42 options + a   //
+// hard-coded "122 tools" string in the tagline + placeholder. Stale as soon  //
+// as a new tool / guide ships. Operator request: "able to get dynamic pages  //
+// guides/tools when gh page build (like the same way)".                      //
+// -------------------------------------------------------------------------- //
+
+/**
+ * Build the dynamic homepage search data — datalist innerHTML + counts —
+ * from the live route registry (JSP_BY_ROUTE for tools + GUIDE_ROUTES for
+ * guides). Returns an object that export-site.mjs splices into the BODYHTML.
+ *
+ * Display value for each option = BODYTITLE<slug>.txt (the human-readable
+ * title kept in sync with each page's H1). Guides get a "(guide)" suffix so
+ * the dropdown lets readers triage tools vs guides at a glance.
+ *
+ * data-href = canonical route. Currently the form action is GET /tags.html
+ * which does its own tag-lookup; data-href is retained for a future
+ * client-side option-select handler that navigates directly.
+ */
+export async function buildDynamicHomeSearchData({ cmsRoot } = {}) {
+  if (!cmsRoot) {
+    throw new Error('buildDynamicHomeSearchData: cmsRoot is required');
+  }
+
+  const aliasSourceSet = new Set(Object.keys(ALIAS_ROUTES));
+
+  // Tools: every canonical cluster member in JSP_BY_ROUTE, EXCLUDING:
+  //   - alias source URLs (legacy non-clustered URLs that 301 to canonical)
+  //   - hub pages (end with -tools.html, no children)
+  //   - /guides/* (they live in GUIDE_ROUTES instead)
+  //   - / (home, no point in searching the home page from the home page)
+  //   - INFO_ROUTES other-than guides (about/contact/etc — not action tools)
+  const toolRoutes = Object.keys(JSP_BY_ROUTE).filter((r) => {
+    if (aliasSourceSet.has(r)) return false;
+    if (r === '/') return false;
+    if (r.endsWith('-tools.html')) return false;
+    if (r.startsWith('/guides/')) return false;
+    if (INFO_ROUTES.has(r) && !r.startsWith('/guides/')) return false;
+    return true;
+  });
+
+  const guideRoutes = Array.from(GUIDE_ROUTES).filter((r) => Object.prototype.hasOwnProperty.call(JSP_BY_ROUTE, r));
+
+  // Bucket by cluster prefix for stable listing order (PDF tools next to each
+  // other, image tools next to each other, etc.). Native datalist filters
+  // as the user types regardless of order, but grouped order also makes the
+  // raw HTML easier to diff per cycle.
+  const clusterPrefixOrder = [
+    '/zip-tools/', '/image-tools/', '/image-converter-tools/',
+    '/pdf-tools/', '/developer-tools/', '/video-tools/',
+    '/device-test-tools/', '/utility-tools/',
+  ];
+  const clusterIndexOf = (route) => {
+    for (let i = 0; i < clusterPrefixOrder.length; i++) {
+      if (route.startsWith(clusterPrefixOrder[i])) return i;
+    }
+    return clusterPrefixOrder.length; // un-clustered tools sort last
+  };
+  toolRoutes.sort((a, b) => {
+    const ca = clusterIndexOf(a);
+    const cb = clusterIndexOf(b);
+    if (ca !== cb) return ca - cb;
+    return a.localeCompare(b);
+  });
+  guideRoutes.sort((a, b) => a.localeCompare(b));
+
+  const optionLines = [];
+  for (const route of toolRoutes) {
+    const meta = await loadRouteMetadata(cmsRoot, route);
+    optionLines.push(`        <option value="${escapeHtml(meta.title)}" data-href="${route}">`);
+  }
+  for (const route of guideRoutes) {
+    const meta = await loadRouteMetadata(cmsRoot, route);
+    const guideLabel = `${meta.title} (guide)`;
+    optionLines.push(`        <option value="${escapeHtml(guideLabel)}" data-href="${route}">`);
+  }
+
+  return {
+    toolCount: toolRoutes.length,
+    guideCount: guideRoutes.length,
+    totalCount: toolRoutes.length + guideRoutes.length,
+    datalistInnerHTML: optionLines.join('\n'),
+  };
+}
+
+// -------------------------------------------------------------------------- //
 // Dynamic l-menu (left navigation sidebar) — same defect class fix.          //
 // Pre-build: l-menu.html was hand-maintained and intermixed tool + guide     //
 // entries with no visual distinction. Operator-approved structure (Option B):
