@@ -83,17 +83,17 @@ async function main() {
   console.log(`[sitemap-html] Generated dynamic /sitemap.html body (${sitemapDynamicBody.length} chars).`);
   // /guides.html hub body regenerates on every build from GUIDE_ROUTES +
   // BODYTITLE/BODYDESC fragments. Adding a guide to site-data.mjs +
-  // creating the per-slug fragments is sufficient — no more hand-edit of
+  // creating the per-slug fragments is sufficient - no more hand-edit of
   // BODYHTMLguides.html. The static fragment is now a placeholder; the
   // dynamic body computed once here wins in renderRoute below.
   const guidesHubDynamicBody = await buildDynamicGuidesHubBody({ cmsRoot });
   console.log(`[guides-hub] Generated dynamic /guides.html body (${guidesHubDynamicBody.length} chars).`);
-  // l-menu (left navigation sidebar) — splice the dynamic body into the
+  // l-menu (left navigation sidebar) - splice the dynamic body into the
   // static l-menu.html shell which keeps the inline <style> + <script>
   // blocks. The body is everything between </style> and the closing
-  // <script>. Same defect-class fix as /guides.html — agents no longer
+  // <script>. Same defect-class fix as /guides.html - agents no longer
   // need to hand-edit the sidebar when shipping a new tool or guide.
-  // Homepage search box — datalist + tagline/placeholder counts. Splice
+  // Homepage search box - datalist + tagline/placeholder counts. Splice
   // into pageData.bodyHtml when renderRoute hits `/`. Closes the same
   // "agent forgot to update the homepage search options" defect class
   // /guides.html + l-menu just fixed.
@@ -109,7 +109,7 @@ async function main() {
       sharedFragments.lMenu = `${cssPrefix}\n${lMenuDynamicBody}\n${scriptSuffix}`;
       console.log(`[lmenu] Spliced dynamic body into l-menu.html (${lMenuDynamicBody.length} chars).`);
     } else {
-      console.warn('[lmenu] Could not locate </style>/<script> boundaries in l-menu.html — leaving static body in place.');
+      console.warn('[lmenu] Could not locate </style>/<script> boundaries in l-menu.html - leaving static body in place.');
     }
   }
   // Route candidates come exclusively from the in-code route registry so
@@ -283,7 +283,7 @@ async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData,
   // Homepage: splice live counts + dynamic datalist into BODYHTML.html.
   // 3 surgical replacements preserve all surrounding hero/bento markup.
   // If a regex misses (e.g. operator restructured the hero), leave the
-  // static value in place and emit a console.warn — no silent breakage.
+  // static value in place and emit a console.warn - no silent breakage.
   if (normalizedRoute === '/' && homeSearchData && pageData.bodyHtml) {
     const { toolCount, guideCount, totalCount, datalistInnerHTML } = homeSearchData;
     const taglineRe = /(\d+)\s+fast tools/;
@@ -298,7 +298,7 @@ async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData,
       pageData.bodyHtml = next;
       console.log(`[home-search] Spliced into / bodyHtml: ${toolCount}+${guideCount}=${totalCount}.`);
     } else {
-      console.warn(`[home-search] Only ${hit}/3 regex hits on / bodyHtml — leaving static values in place. Check BODYHTML.html structure.`);
+      console.warn(`[home-search] Only ${hit}/3 regex hits on / bodyHtml - leaving static values in place. Check BODYHTML.html structure.`);
     }
   }
   // Per-page "last modified" stamp from git history of this page's CMS

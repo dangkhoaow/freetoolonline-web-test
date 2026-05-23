@@ -251,7 +251,7 @@ export async function buildDynamicGuidesHubBody({ cmsRoot } = {}) {
 
   // GUIDE_ROUTES is the single source of truth for "what guide pages
   // exist on this site". Adding a guide to site-data.mjs + creating the
-  // BODYTITLE/BODYDESC fragments is now sufficient — this builder picks
+  // BODYTITLE/BODYDESC fragments is now sufficient - this builder picks
   // it up on the next deploy. No more hand-edit of BODYHTMLguides.html.
   const guideRoutes = Array.from(GUIDE_ROUTES).filter((route) => Object.prototype.hasOwnProperty.call(JSP_BY_ROUTE, route));
   const guideMetaByTopic = new Map();
@@ -279,7 +279,7 @@ export async function buildDynamicGuidesHubBody({ cmsRoot } = {}) {
 
   const html = `<div class='w3-container'>
     <h1><b class="text-uppercase">All Guides - Browser Tool Library</b></h1>
-    <p>Hands-on, no-fluff guides for the people landing on freetoolonline.com tools. Every guide pairs the problem to the right tool, walks the steps, and explains the trade-offs — so you finish in two minutes instead of two browser tabs. Each linked tool runs entirely in your browser; nothing uploads to a server.</p>
+    <p>Hands-on, no-fluff guides for the people landing on freetoolonline.com tools. Every guide pairs the problem to the right tool, walks the steps, and explains the trade-offs - so you finish in two minutes instead of two browser tabs. Each linked tool runs entirely in your browser; nothing uploads to a server.</p>
 
     <p>${totalGuides} guides grouped by the kind of task you came to do. If you are not sure which group your question lives in, the search box on the home page covers every guide and tool by keyword.</p>
 
@@ -299,7 +299,7 @@ ${sections.join('\n\n')}
 // -------------------------------------------------------------------------- //
 
 /**
- * Build the dynamic homepage search data — datalist innerHTML + counts —
+ * Build the dynamic homepage search data - datalist innerHTML + counts -
  * from the live route registry (JSP_BY_ROUTE for tools + GUIDE_ROUTES for
  * guides). Returns an object that export-site.mjs splices into the BODYHTML.
  *
@@ -323,7 +323,7 @@ export async function buildDynamicHomeSearchData({ cmsRoot } = {}) {
   //   - hub pages (end with -tools.html, no children)
   //   - /guides/* (they live in GUIDE_ROUTES instead)
   //   - / (home, no point in searching the home page from the home page)
-  //   - INFO_ROUTES other-than guides (about/contact/etc — not action tools)
+  //   - INFO_ROUTES other-than guides (about/contact/etc - not action tools)
   const toolRoutes = Object.keys(JSP_BY_ROUTE).filter((r) => {
     if (aliasSourceSet.has(r)) return false;
     if (r === '/') return false;
@@ -378,7 +378,7 @@ export async function buildDynamicHomeSearchData({ cmsRoot } = {}) {
 }
 
 // -------------------------------------------------------------------------- //
-// Dynamic l-menu (left navigation sidebar) — same defect class fix.          //
+// Dynamic l-menu (left navigation sidebar) - same defect class fix.          //
 // Pre-build: l-menu.html was hand-maintained and intermixed tool + guide     //
 // entries with no visual distinction. Operator-approved structure (Option B):
 //   - 8 categories aligned with SEO_CLUSTER_GROUPS (single source of truth   //
@@ -462,13 +462,13 @@ const GUIDE_TOPIC_TO_CLUSTER = {
 };
 
 function renderLMenuToolItem({ route, title }) {
-  // Tool item — keep the historical fa-circle icon for backward visual
+  // Tool item - keep the historical fa-circle icon for backward visual
   // compatibility with the hand-maintained l-menu items.
   return `                <a class='w3-bar-item w3-button' href='https://freetoolonline.com${route}'>\n                    <i class="fa fa-circle" data-kind="tool" style="margin-right: 10px;"></i>\n                    ${escapeHtml(title)}\n                </a>`;
 }
 
 function renderLMenuGuideItem({ route, title }) {
-  // Guide item — distinct fa-book icon + small [GUIDE] badge for
+  // Guide item - distinct fa-book icon + small [GUIDE] badge for
   // unambiguous visual signal. data-kind="guide" lets the menu-search /
   // analytics layer also filter by kind without parsing the URL.
   return `                <a class='w3-bar-item w3-button' href='https://freetoolonline.com${route}'>\n                    <i class="fa fa-book" data-kind="guide" style="margin-right: 10px;"></i>\n                    ${escapeHtml(title)}\n                    <span class="lmenu-kind-badge">guide</span>\n                </a>`;
@@ -499,7 +499,7 @@ function renderLMenuClusterSection({ clusterId, icon, label, tools, guides }) {
 
 /**
  * Build the dynamic body of l-menu.html (left navigation sidebar).
- * Returns the inner block of `<div id="menu-content-id">…</div>` only —
+ * Returns the inner block of `<div id="menu-content-id">...</div>` only -
  * the surrounding <style>/<script> blocks in the static l-menu.html
  * shell are preserved by export-site.mjs which splices this body in.
  */
@@ -564,7 +564,7 @@ export async function buildDynamicSitemapBody({ cmsRoot, lastReviewedIso } = {})
   const clusterGroups = getSeoClusterGroups();
   const toolClusterMap = new Map(clusterGroups.map((g) => [g.cluster, g]));
 
-  // Tool clusters — reuse the shared resolveClusterMemberRoutes helper so
+  // Tool clusters - reuse the shared resolveClusterMemberRoutes helper so
   // sitemap.html stays in lockstep with /guides.html + l-menu cluster
   // membership. Pre-fix: this builder walked cluster.routes[] directly which
   // still carries the legacy non-clustered URLs (e.g. /compose-pdf.html) all
@@ -629,9 +629,9 @@ export async function buildDynamicSitemapBody({ cmsRoot, lastReviewedIso } = {})
 
   const html = `<div class="w3-container w3-margin-top">
     <h1 class="text-uppercase"><b>Site Map</b></h1>
-    <p>Looking for the right tool but cannot recall the name? Skim the list below. Every tool runs in your browser — no signup, no upload to a server — and every link points to the canonical page (no redirects to slow you down).</p>
+    <p>Looking for the right tool but cannot recall the name? Skim the list below. Every tool runs in your browser - no signup, no upload to a server - and every link points to the canonical page (no redirects to slow you down).</p>
 
-    <p>Tools sit under eight task-based categories. Long-form guides — decision walkthroughs, step-by-step recipes, and trade-off explainers — sit below them, grouped by the kind of problem they solve. If a category looks empty for a tool you remember using, the link likely moved into the new category-tools hub; the URL still works.</p>
+    <p>Tools sit under eight task-based categories. Long-form guides - decision walkthroughs, step-by-step recipes, and trade-off explainers - sit below them, grouped by the kind of problem they solve. If a category looks empty for a tool you remember using, the link likely moved into the new category-tools hub; the URL still works.</p>
 
     <h2 class="text-uppercase"><b>Jump to</b></h2>
     <ul>
@@ -641,7 +641,7 @@ export async function buildDynamicSitemapBody({ cmsRoot, lastReviewedIso } = {})
     </ul>
 
     <h2 id="tools" class="text-uppercase"><b>Tools by category</b></h2>
-    <p>${toolCount} tools across eight task categories. Tap a category heading to jump to its hub — the hub page explains when to pick each tool in that group and which inputs each one expects.</p>
+    <p>${toolCount} tools across eight task categories. Tap a category heading to jump to its hub - the hub page explains when to pick each tool in that group and which inputs each one expects.</p>
 
 ${toolSections.join('\n\n')}
 

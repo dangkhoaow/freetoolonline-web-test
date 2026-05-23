@@ -160,7 +160,7 @@ async function readCmsField(cmsRoot, route, prefix, extension) {
 }
 
 // Strip HTML tags + collapse whitespace. For llms-full.txt, we extract the
-// first paragraph of BODYHTML. LLM crawlers don't need styling — plain prose
+// first paragraph of BODYHTML. LLM crawlers don't need styling - plain prose
 // is the citation surface.
 function stripHtmlToText(html) {
   if (!html) return '';
@@ -178,7 +178,7 @@ function stripHtmlToText(html) {
     .trim();
 }
 
-// First paragraph (≤ 320 chars) from BODYHTML — a "factual snippet" for LLM
+// First paragraph (≤ 320 chars) from BODYHTML - a "factual snippet" for LLM
 // citation. Matches the analyst-recommended ≤60-word lead-snippet pattern.
 function firstParagraph(html, maxChars = 320) {
   const stripped = stripHtmlToText(html);
@@ -187,7 +187,7 @@ function firstParagraph(html, maxChars = 320) {
   if (sentenceEnd > 0 && sentenceEnd < maxChars) {
     return stripped.slice(0, sentenceEnd + 1);
   }
-  return stripped.length > maxChars ? `${stripped.slice(0, maxChars - 1)}…` : stripped;
+  return stripped.length > maxChars ? `${stripped.slice(0, maxChars - 3)}...` : stripped;
 }
 
 function classifyKind(route, hubRouteSet, guideRouteSet, pageRouteSet) {
@@ -273,7 +273,7 @@ function buildLlmsTxt(entries, origin) {
 function buildLlmsFullTxt(entries, origin) {
   const host = (() => { try { return new URL(origin).hostname; } catch { return origin; } })();
   const header = [
-    `# ${host} — Full Index`,
+    `# ${host} - Full Index`,
     '',
     '> Curated index of every page on freetoolonline.com with title, description, and a one-paragraph lead snippet from the page body. Intended as a citation surface for LLM training and AI-Overview retrieval.',
     '',
@@ -334,7 +334,7 @@ function buildLlmsFullTxt(entries, origin) {
     for (const entry of grouped.page) body += renderEntry(entry);
   }
 
-  // Guides last — truncate to fit budget.
+  // Guides last - truncate to fit budget.
   if (grouped.guide) {
     body += `\n# ${KIND_LABEL.guide}\n\n`;
     for (const entry of grouped.guide) {
@@ -369,7 +369,7 @@ export async function writeSplitSitemaps({ distDir, routes, origin, isStaging, c
   // crawl concern; the staging emission is intentional and documented.
   if (isStaging) {
     await removeSitemapFiles(distDir);
-    // Continue to llms emission below — only the sitemap is staging-suppressed.
+    // Continue to llms emission below - only the sitemap is staging-suppressed.
   }
 
   const normalizedRoutes = unique(routes.map(normalizeRoute));
@@ -386,7 +386,7 @@ export async function writeSplitSitemaps({ distDir, routes, origin, isStaging, c
     .filter((route) => !guideRouteSet.has(route));
   const pageRouteSet = new Set(pageRoutes);
   const hubRouteSet = new Set(hubRoutes);
-  // Cycle 50 follow-up — defence-in-depth against guide URLs leaking into
+  // Cycle 50 follow-up - defence-in-depth against guide URLs leaking into
   // sitemap-tools.xml. Pre-fix: many entries lived in GUIDE_ROUTES but were
   // forgotten in INFO_ROUTES (e.g. /guides/led-test.html, /guides/zip-compress.html,
   // ~25 such cases on prod). The historical filter `!INFO_ROUTES.has(route)`
@@ -416,7 +416,7 @@ export async function writeSplitSitemaps({ distDir, routes, origin, isStaging, c
     await writeTextFile(distDir, 'sitemap.xml', buildSitemapIndexXml(origin));
   }
 
-  // Strategy #1 (Citability) — emit llms.txt + llms-full.txt from the same
+  // Strategy #1 (Citability) - emit llms.txt + llms-full.txt from the same
   // route registry + CMS source-of-truth that drove the sitemaps. Pre-cycle132
   // the live `/llms.txt` URL returned the homepage HTML (analyst-confirmed
   // broken endpoint). This generator fixes that by writing real plaintext.
