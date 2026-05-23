@@ -839,6 +839,12 @@ export const INFO_ROUTES = new Set([
   // implementing tool /js-unminifier.html. GSC 545 imp / 3 clicks /
   // pos 10.12 / CTR 0.55% / opportunity_score 53.55.
   '/guides/unminify-js.html',
+  // Cycle 20260523-3 (cycle 50) create_new_guide_page - "crop and rotate image"
+  // Lane-D guide (image-editing cluster). Implementing tool /crop-image.html.
+  // GSC "crop and rotate image" 223 imp / 23 clicks / pos 6.13 / CTR 10.31% /
+  // opportunity_score 32.65. Kebab slug passes URL convention regex; smashed
+  // form "cropandrotateimage" does not shadow any existing primary route.
+  '/guides/crop-and-rotate-image.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -1264,6 +1270,9 @@ export const GUIDE_ROUTES = new Set([
   // form "zipunlockeronline" is unique). Complete single-cycle ship per cycle
   // 20260514-5 contract.
   '/guides/zip-unlocker-online.html',
+  // Cycle 20260523-3 (cycle 50) create_new_guide_page - "crop and rotate image"
+  // Lane-D guide (image-editing cluster, companion to /crop-image.html).
+  '/guides/crop-and-rotate-image.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -1927,6 +1936,8 @@ export const JSP_BY_ROUTE = {
   '/guides/current-millis.html': 'guide/current-millis.jsp',
   // Cycle 20260522-9 (cycle 48) P48.H new_guide_page_proposal - /guides/zip-unlocker-online.html (companion to /remove-zip-password.html)
   '/guides/zip-unlocker-online.html': 'guide/zip-unlocker-online.jsp',
+  // Cycle 20260523-3 (cycle 50) create_new_guide_page - /guides/crop-and-rotate-image.html (companion to /crop-image.html, image-editing cluster)
+  '/guides/crop-and-rotate-image.html': 'guide/crop-and-rotate-image.jsp',
 };
 
 export function normalizeRoute(route) {

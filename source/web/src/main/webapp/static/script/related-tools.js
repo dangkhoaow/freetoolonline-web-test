@@ -191,6 +191,7 @@ try {
     { title: "Zipar Pasta", url: "https://freetoolonline.com/guides/zipar-pasta.html", include: !1, tags: "zip,guide,zipar,pasta,portugues" },
     { title: "Comprimir Arquivo Zip", url: "https://freetoolonline.com/guides/comprimir-arquivo-zip.html", include: !1, tags: "zip,guide,comprimir,arquivo,portugues" },
     { title: "MD5 Password: Hash a Password String and When MD5 Is the Wrong Tool", url: "https://freetoolonline.com/guides/md5-password.html", include: !1, tags: "guide,developer,md5,hash,password" },
+    { title: "Crop and Rotate Image", url: "https://freetoolonline.com/guides/crop-and-rotate-image.html", include: !1, tags: "image-editing,guide,crop,rotate,image" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
