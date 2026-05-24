@@ -1,0 +1,77 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '\25B8'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Current time in milliseconds: read the live epoch value and use it correctly</b></h1>
+    <p><em>Last reviewed 2026-05-24. The free <a href="/get-time-in-millisecond.html">current time in milliseconds tool</a> returns the live epoch value the browser sees right now, in milliseconds since 1970-01-01T00:00:00 UTC. This guide explains what that number is, when to use it instead of seconds, and the three or four small mistakes that produce dates that look off by decades.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> The current time in milliseconds is a 13-digit integer: today it is somewhere around <code>1779645000000</code>. It counts the milliseconds elapsed since the Unix epoch (1970-01-01T00:00:00 UTC) and carries no timezone. To read it in the browser, call <code>Date.now()</code> in JavaScript or open the <a href="/get-time-in-millisecond.html">live current-time tool</a>. To convert it back to a readable date, paste it into <a href="/utility-tools/convert-time-in-millisecond-to-date.html">milliseconds to date</a>.</p>
+    </div>
+    <p class="reviewed"><em>Last reviewed: 2026-05-24</em></p>
+    <p class="byline">Reviewed by FreetoolOnline editorial team</p>
+
+    <h2 class="text-uppercase"><b>What the live value actually represents</b></h2>
+    <p>The current time in milliseconds is a single integer that counts how many milliseconds have elapsed since the Unix epoch, fixed at 1970-01-01T00:00:00 UTC. The number is timezone-free: it does not carry a calendar, an offset, or a daylight-saving rule. When you see <code>1779645000000</code> on a log line and a teammate sees the same number on a different continent, both of you are looking at the same instant; only the human-readable rendering on screen changes per locale.</p>
+    <p>The live tool reads the value the browser sees via <code>Date.now()</code> and prints it without any network round trip. Because the tool runs entirely in the browser, the value reflects the clock of the device you are on - if that clock has drifted, the value reflects the drift. For audit-grade timestamps, prefer a server-issued value (every web request a server handles already carries a high-precision timestamp). For a quick read while debugging a UI, a log line, or a JSON payload, the browser value is enough.</p>
+
+    <h2 class="text-uppercase"><b>Quick facts table</b></h2>
+    <table class="quick-facts">
+        <thead><tr><th>Property</th><th>Value</th></tr></thead>
+        <tbody>
+            <tr><td>Format</td><td>13-digit integer, timezone-free</td></tr>
+            <tr><td>Epoch origin</td><td>1970-01-01T00:00:00 UTC</td></tr>
+            <tr><td>Precision</td><td>1 millisecond (1/1000 of a second)</td></tr>
+            <tr><td>Browser read API</td><td><code>Date.now()</code> or <code>new Date().getTime()</code></td></tr>
+            <tr><td>Server read APIs</td><td>Java <code>System.currentTimeMillis()</code>; Python <code>time.time() * 1000</code>; Go <code>time.Now().UnixMilli()</code></td></tr>
+            <tr><td>Implementing tool</td><td><a href="/get-time-in-millisecond.html">/get-time-in-millisecond.html</a> (in-browser, no upload)</td></tr>
+            <tr><td>Companion converter</td><td><a href="/utility-tools/convert-time-in-millisecond-to-date.html">milliseconds to date</a></td></tr>
+        </tbody>
+    </table>
+
+    <h2 class="text-uppercase"><b>When to read milliseconds (and when to read seconds)</b></h2>
+    <p>The choice between milliseconds and seconds usually traces back to the API or the system you are interacting with. JavaScript, Java, and most JVM-based logs use millisecond timestamps natively; Unix shells, many C APIs, and a long tail of older protocols use second-precision timestamps. The visual rule is short: a 13-digit number is milliseconds; a 10-digit number is seconds. Mixing the two is the most common cause of dates that look off by decades - feeding a 13-digit value into a parser that expects seconds gives a year somewhere around the year 58000.</p>
+    <p>For a longer treatment of the second-vs-millisecond decision (with the exact 10-digit-vs-13-digit detector rule), read the companion guide on <a href="/guides/long-number-millisecond-or-second.html">long number: millisecond or second?</a>. For the timezone display question that follows once the conversion succeeds, read <a href="/guides/milliseconds-to-date-utc-vs-local-time.html">milliseconds to date: UTC vs local time</a>.</p>
+
+    <h2 class="text-uppercase"><b>How to copy the value cleanly</b></h2>
+    <ol>
+        <li>Open the <a href="/get-time-in-millisecond.html">current time tool</a>. The live number renders in the first fold.</li>
+        <li>Click the copy button next to the value, or select and copy the 13-digit integer manually.</li>
+        <li>Paste it into the destination - a log line, a JSON field (use a number type, not a string), a HTTP header, or the URL query string for a quick debug.</li>
+        <li>If the destination expects seconds, drop the last three digits or divide by 1000 (integer-divide; do not round). If it expects ISO 8601, paste into <a href="/utility-tools/convert-time-in-millisecond-to-date.html">milliseconds to date</a> first.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>Frequently asked questions</b></h2>
+
+    <details class="faq-item">
+        <summary>Why does the live value change every time I open the page?</summary>
+        <p>The tool reads <code>Date.now()</code> on each page load, so the number reflects the instant of that load. Two opens a minute apart differ by about 60000 (60 seconds times 1000 milliseconds). The value is not a static random number; it is the live clock.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary>Does the millisecond value depend on my timezone?</summary>
+        <p>No. The value is the count of milliseconds since 1970-01-01T00:00:00 UTC. It does not move when you cross a timezone or when daylight saving starts. What moves is the human-readable display - "April 19, 2024, 15:00 UTC" reads as 22:00 in Bangkok or 08:00 in Los Angeles, but the underlying number is the same.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary>Can I trust this for audit-grade timestamps?</summary>
+        <p>For audit-grade logging, prefer a server-issued timestamp - every server already records the request time at sub-second precision and is not subject to client clock drift. The in-browser value is fine for debugging, demo logs, sample API payloads, and "what is now in milliseconds" reader questions. For incident response or legal-evidence logging, route through the server.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary>What does the 13-digit-vs-10-digit rule actually mean?</summary>
+        <p>A current Unix timestamp in seconds is a 10-digit number (the threshold passed in 2001 at <code>1000000000</code>). The same instant in milliseconds is that number times 1000, which is 13 digits. So if you read a number off a log and it has 13 digits, it is milliseconds; if it has 10, it is seconds. Mixing them gives dates in the year 58000 or in 1970, neither of which is what you wanted.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary>Why is the JavaScript snippet <code>Date.now()</code> and not <code>new Date()</code>?</summary>
+        <p>Both return the same value when coerced to a number. <code>Date.now()</code> is the static method on the Date constructor; it returns a primitive number directly and is the cheapest read. <code>new Date()</code> returns a Date object whose <code>.getTime()</code> method returns the same number. For logging and timestamps, <code>Date.now()</code> is the idiomatic call.</p>
+    </details>
+
+</div>

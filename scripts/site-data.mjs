@@ -877,6 +877,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/json-parser-validate-vs-format-vs-tree-view.html',
   // Cycle 75 P75.B - milliseconds-to-date UTC-vs-local-time Lane-D guide.
   '/guides/milliseconds-to-date-utc-vs-local-time.html',
+  // Cycle 20260524-19 P19.F create_new_guide_page - "current time in milliseconds" bare-query Lane-D guide (utility cluster, companion to /get-time-in-millisecond.html).
+  '/guides/current-time-in-milliseconds.html',
   // Cycle 76 P76.A - screen-test-online-vs-app accuracy Lane-D guide (device-test cluster).
   '/guides/screen-test-online-vs-app-which-is-more-accurate.html',
   // Cycle 77 P77.A - "compress ZIP to a specific size" Lane-D append-only guide.
@@ -1591,6 +1593,8 @@ export const JSP_BY_ROUTE = {
   '/guides/json-parser-validate-vs-format-vs-tree-view.html': 'guide/json-parser-validate-vs-format-vs-tree-view.jsp',
   // Cycle 75 P75.B - milliseconds-to-date UTC-vs-local-time Lane-D guide.
   '/guides/milliseconds-to-date-utc-vs-local-time.html': 'guide/milliseconds-to-date-utc-vs-local-time.jsp',
+  // Cycle 20260524-19 P19.F create_new_guide_page - "current time in milliseconds" bare-query Lane-D guide (utility cluster, companion to /get-time-in-millisecond.html).
+  '/guides/current-time-in-milliseconds.html': 'guide/current-time-in-milliseconds.jsp',
   // Cycle 76 P76.A - screen-test-online-vs-app accuracy Lane-D guide (device-test cluster).
   '/guides/screen-test-online-vs-app-which-is-more-accurate.html': 'guide/screen-test-online-vs-app-which-is-more-accurate.jsp',
   // Cycle 77 P77.A - "compress ZIP to a specific size" Lane-D append-only guide.
