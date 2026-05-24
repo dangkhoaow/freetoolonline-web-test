@@ -2701,4 +2701,35 @@ html.main-html.dark .page-section {
 details.faq-item > summary::before {
     color: inherit !important;
 }
+
+/* ============================================================
+ * SVG illustration figure — sitewide center alignment + scaling
+ * Added 2026-05-24 (RCA SVG quality follow-up). The svg_illustration_author
+ * strategy ships <figure class="illustration"> blocks; without this rule,
+ * the browser default left-aligns the figure and the image flush-left within
+ * the article column. Center the figure, scale image responsively, and
+ * style the caption as a quiet support line.
+ * ============================================================ */
+figure.illustration {
+    display: block;
+    text-align: center;
+    margin: 1.5em auto;
+    max-width: 100%;
+}
+figure.illustration img {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    height: auto;
+}
+figure.illustration figcaption {
+    text-align: center;
+    font-size: 0.9em;
+    color: var(--text-secondary, #475569);
+    margin-top: 0.5em;
+    line-height: 1.4;
+}
+html.main-html.dark figure.illustration figcaption {
+    color: var(--text-secondary, #94a3b8);
+}
 </style>
