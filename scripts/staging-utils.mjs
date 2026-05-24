@@ -82,6 +82,17 @@ export function createInternalContentRewriter({ siteOrigin, basePath = '', route
   register('/view/rating.html', normalizedBasePath ? `${normalizedBasePath}/view/rating.html` : '/view/rating.html');
   register('/view/top-page-banner-ad.html', normalizedBasePath ? `${normalizedBasePath}/view/top-page-banner-ad.html` : '/view/top-page-banner-ad.html');
 
+  // Cycle 20260524-10: register the /img/illustrations subtree so SVG illustrations
+  // shipped by the svg_illustration_author strategy resolve under the staging
+  // base-path. cycle 9 shipped /img/illustrations/feature-badge/free__ae04979c.svg
+  // with absolute /img/... <img src> which 404s on the staging GH Pages URL
+  // (https://dangkhoaow.github.io/freetoolonline-web-test/...). The page-load-probe
+  // regression on cycle 10 caught the asset 404. Append-only registration; prod
+  // builds (basePath="") get no-op replacement.
+  if (normalizedBasePath) {
+    register('/img/illustrations', `${normalizedBasePath}/img/illustrations`);
+  }
+
   for (const candidate of routeCandidates) {
     const sourceRoute = normalizeRoute(candidate);
     if (!sourceRoute.endsWith('.html')) {
