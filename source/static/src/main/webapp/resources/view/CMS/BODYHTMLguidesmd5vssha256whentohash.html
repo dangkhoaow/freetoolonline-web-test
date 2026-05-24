@@ -47,8 +47,8 @@
 <p>MD5 is still ~1.7&times; faster than SHA-256 on a CPU without SHA-NI. On CPUs with Intel SHA-NI (Goldmont+, 2017) or ARMv8 crypto extensions (Cortex-A53 onward), SHA-256 actually matches or exceeds MD5 throughput - the speed gap that motivated choosing MD5 in the 2000s no longer holds.</p>
 <p>In-browser JavaScript with WebCrypto (<code>crypto.subtle.digest('SHA-256', data)</code>) reaches ~200 MB/s on a modern laptop. Our <a href="/developer-tools/md5-converter.html">MD5 converter</a> runs MD5 at similar speed via a wasm implementation.</p>
 
-<br/><h2 class="text-uppercase"><b>The decision rule in one sentence</b></h2>
-<p>If an adversary can influence the inputs, use SHA-256 (or SHA-3, or BLAKE3). If you're fingerprinting your own data for caching, de-duplication, or change detection, MD5 is fine and slightly faster.</p>
+<br/><h2 class="text-uppercase"><b>MD5 or SHA-256: the trust-boundary rule</b></h2>
+<p>The choice between MD5 and SHA-256 turns on a single question - whether an adversary can influence the input you are hashing. If a remote uploader, a network attacker, or any party outside your trust boundary can shape the bytes that reach the hash function, pick SHA-256 (or SHA-3, or BLAKE3) so that a collision attack cannot forge a matching digest. If the inputs come from your own pipeline and you are fingerprinting them for caching, de-duplication, or change detection, MD5 is fine and runs slightly faster on CPUs without SHA-NI acceleration. The decision is binary and it lives at the trust boundary; once you have named which side of that boundary the input sits on, the algorithm to use is determined.</p>
 
 <br/><h2 class="text-uppercase"><b>Related tools</b></h2>
 <ul>
