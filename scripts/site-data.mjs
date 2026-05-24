@@ -1304,6 +1304,18 @@ export const GUIDE_ROUTES = new Set([
   // an entry" defect class permanently. See sitemap-html-builder.mjs.
   '/guides/md5-password.html',
   '/guides/comprimir-arquivo-zip.html',
+  // Cycle 20260524-18 create_new_guide_page - "Compress Folder Online" Lane-D
+  // guide (zip cluster, companion to /zip-file.html). GSC 28d 1243 imp /
+  // 112 clicks / pos 5.01 / CTR 9.01% / opportunity_score 225.55. The query
+  // "compress folder online" is operationally folder-zipping (a folder
+  // becomes a single .zip before transfer); the canonical implementing tool
+  // on this site is /zip-file.html (upload folder, server bundles it into a
+  // ZIP with optional AES password). Paraphrases tool-zipfile/SKILL.md
+  // implemented features (upload pipeline, server bundling, S3-backed
+  // download with short retention, optional password) + the existing
+  // BODYWELCOMEzipfile reader-task framing (folder-as-input, name the
+  // archive, optional encryption choice).
+  '/guides/compress-folder-online.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -1982,6 +1994,13 @@ export const JSP_BY_ROUTE = {
   '/guides/zip-unlocker-online.html': 'guide/zip-unlocker-online.jsp',
   // Cycle 20260523-3 (cycle 50) create_new_guide_page - /guides/crop-and-rotate-image.html (companion to /crop-image.html, image-editing cluster)
   '/guides/crop-and-rotate-image.html': 'guide/crop-and-rotate-image.jsp',
+  // Cycle 20260524-18 create_new_guide_page - /guides/compress-folder-online.html
+  // (zip cluster, companion to /zip-file.html). Cluster override from utility
+  // to zip: "compress folder online" is operationally folder-zipping, and the
+  // truthful implementing tool is /zip-file.html (server-side ZIP creator with
+  // optional AES password). Sourced from tool-zipfile/SKILL.md implemented
+  // features + BODYWELCOMEzipfile reader-task framing.
+  '/guides/compress-folder-online.html': 'guide/compress-folder-online.jsp',
 };
 
 export function normalizeRoute(route) {
