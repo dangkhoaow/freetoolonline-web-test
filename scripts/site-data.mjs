@@ -2007,6 +2007,40 @@ export const JSP_BY_ROUTE = {
   '/guides/compress-folder-online.html': 'guide/compress-folder-online.jsp',
 };
 
+// Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
+//
+// Defect class: cycle agents shipping create_new_guide_page ALWAYS update
+// JSP_BY_ROUTE (required for the route to render) but REPEATEDLY forget to
+// add the same route to GUIDE_ROUTES (required for sitemap-guides.xml +
+// the dynamic /guides.html hub + l-menu sidebar + homepage search). At
+// least 4 separate cycles between 20260514 and 20260523 made this mistake;
+// 9 orphan guides ended up shipping as 200s with no discovery surface.
+//
+// Three-level RCA:
+//   L1: sitemap-guides.xml missing 9 URLs because they are not in GUIDE_ROUTES.
+//   L2: cycle agents updated JSP_BY_ROUTE but not GUIDE_ROUTES on create_new_guide_page.
+//   L3: no structural enforcement at the data layer - the two registries are
+//       hand-maintained in parallel with no auto-sync.
+//
+// REAL FIX at L3 parent: auto-include every /guides/* JSP_BY_ROUTE entry
+// into GUIDE_ROUTES at module load time. The explicit curated list above
+// remains the operator-friendly view (with cycle comments for git-blame);
+// the auto-merge below is the safety net that closes the defect class.
+//
+// Intentional opt-out (abort-in-place): if a /guides/* route ever needs to
+// be a 200 but NOT in sitemap-guides.xml, add it to GUIDE_SITEMAP_EXCLUDE
+// below. Currently empty (no active abort-in-place cases as of cycle 50).
+const GUIDE_SITEMAP_EXCLUDE = new Set([
+  // Reserved for explicit operator opt-out. Format:
+  //   '/guides/<slug>.html', // cycle <N> <reason>
+]);
+for (const route of Object.keys(JSP_BY_ROUTE)) {
+  if (!route.startsWith('/guides/')) continue;
+  if (route in ALIAS_ROUTES) continue;
+  if (GUIDE_SITEMAP_EXCLUDE.has(route)) continue;
+  GUIDE_ROUTES.add(route);
+}
+
 export function normalizeRoute(route) {
   if (!route) {
     return '/';
