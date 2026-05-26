@@ -1,6 +1,6 @@
 import { readFile, stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { INFO_ROUTES, GUIDE_ROUTES, canonicalForRoute, normalizeRoute, routeToSlug } from './site-data.mjs';
+import { INFO_ROUTES, GUIDE_ROUTES, GUIDE_SITEMAP_EXCLUDE, canonicalForRoute, normalizeRoute, routeToSlug } from './site-data.mjs';
 
 const SITEMAP_FILES = ['sitemap.xml', 'sitemap-tools.xml', 'sitemap-hubs.xml', 'sitemap-guides.xml', 'sitemap-pages.xml'];
 const LLMS_FILES = ['llms.txt', 'llms-full.txt'];
@@ -374,12 +374,21 @@ export async function writeSplitSitemaps({ distDir, routes, origin, isStaging, c
 
   const normalizedRoutes = unique(routes.map(normalizeRoute));
   const hubRoutes = normalizedRoutes.filter((route) => route.endsWith('-tools.html'));
-  // Guides are a subset of INFO_ROUTES but represent a distinct content kind
-  // (long-form editorial). Split them into their own sitemap group so search
-  // engines can see guide-group <lastmod> changes separately from info-page
-  // updates and so the guide group can scale independently as more pillars
-  // land. GUIDE_ROUTES is the source of truth (site-data.mjs §3.3).
-  const guideRoutes = [...GUIDE_ROUTES].filter((route) => normalizedRoutes.includes(route));
+  // Guides are derived DYNAMICALLY from the canonical routes that actually
+  // rendered, by URL prefix. Pre-fix (cycle 50 follow-up #2) the filter was
+  // `[...GUIDE_ROUTES].filter((route) => normalizedRoutes.includes(route))`
+  // - a STATIC intersection of the hand-maintained GUIDE_ROUTES Set with the
+  // build's rendered routes. Any /guides/* JSP_BY_ROUTE entry the cycle agent
+  // shipped without ALSO registering in GUIDE_ROUTES was silently dropped
+  // from sitemap-guides.xml. 9 orphan guides accumulated this way.
+  //
+  // Now: any rendered route under /guides/ is a guide. Symmetric with the
+  // toolRoutes filter below (also dynamic, by exclusion). GUIDE_ROUTES Set
+  // is kept for isGuideRoute() consumers + cycle-history git-blame but is
+  // no longer load-bearing for sitemap generation. Opt-out via
+  // GUIDE_SITEMAP_EXCLUDE in site-data.mjs (currently empty).
+  const guideRoutes = normalizedRoutes.filter((route) => route.startsWith('/guides/')
+    && !GUIDE_SITEMAP_EXCLUDE.has(route));
   const guideRouteSet = new Set(guideRoutes);
   const pageRoutes = [...INFO_ROUTES]
     .filter((route) => normalizedRoutes.includes(route))

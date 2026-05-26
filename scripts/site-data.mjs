@@ -2030,9 +2030,13 @@ export const JSP_BY_ROUTE = {
 // Intentional opt-out (abort-in-place): if a /guides/* route ever needs to
 // be a 200 but NOT in sitemap-guides.xml, add it to GUIDE_SITEMAP_EXCLUDE
 // below. Currently empty (no active abort-in-place cases as of cycle 50).
-const GUIDE_SITEMAP_EXCLUDE = new Set([
+export const GUIDE_SITEMAP_EXCLUDE = new Set([
   // Reserved for explicit operator opt-out. Format:
   //   '/guides/<slug>.html', // cycle <N> <reason>
+  // Consumers: sitemap-writer.mjs + sitemap-html-builder.mjs all filter
+  // through this set. Add a route here to keep it renderable (200) but
+  // remove it from sitemap-guides.xml + /guides.html hub + l-menu + home
+  // search. The abort-in-place pattern; rare.
 ]);
 for (const route of Object.keys(JSP_BY_ROUTE)) {
   if (!route.startsWith('/guides/')) continue;

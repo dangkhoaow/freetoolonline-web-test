@@ -2,11 +2,27 @@ import path from 'node:path';
 import {
   ALIAS_ROUTES,
   GUIDE_ROUTES,
+  GUIDE_SITEMAP_EXCLUDE,
   INFO_ROUTES,
   JSP_BY_ROUTE,
   loadTextIfExists,
   routeToSlug,
 } from './site-data.mjs';
+
+// Single source of truth for "which routes are guides shipped in dynamic
+// discovery surfaces (sitemap-guides.xml, /sitemap.html, /guides.html hub,
+// l-menu sidebar, homepage search datalist)". Derived dynamically from
+// JSP_BY_ROUTE by URL prefix; excludes alias sources and opt-out routes.
+// Replaces the historical `Array.from(GUIDE_ROUTES).filter(... has JSP)`
+// pattern that was a STATIC intersection - any /guides/* JSP shipped
+// without a GUIDE_ROUTES register entry was silently dropped from all
+// four surfaces. See cycle 50 follow-up #2 (orphan-guide defect class).
+function getDynamicGuideRoutes() {
+  return Object.keys(JSP_BY_ROUTE)
+    .filter((route) => route.startsWith('/guides/'))
+    .filter((route) => !(route in ALIAS_ROUTES))
+    .filter((route) => !GUIDE_SITEMAP_EXCLUDE.has(route));
+}
 import { getSeoClusterGroups } from './seo-clusters.mjs';
 
 // Dynamic /sitemap.html body builder.
@@ -253,7 +269,7 @@ export async function buildDynamicGuidesHubBody({ cmsRoot } = {}) {
   // exist on this site". Adding a guide to site-data.mjs + creating the
   // BODYTITLE/BODYDESC fragments is now sufficient - this builder picks
   // it up on the next deploy. No more hand-edit of BODYHTMLguides.html.
-  const guideRoutes = Array.from(GUIDE_ROUTES).filter((route) => Object.prototype.hasOwnProperty.call(JSP_BY_ROUTE, route));
+  const guideRoutes = getDynamicGuideRoutes();
   const guideMetaByTopic = new Map();
   for (const topic of GUIDE_TOPIC_ORDER) {
     guideMetaByTopic.set(topic, []);
@@ -333,7 +349,7 @@ export async function buildDynamicHomeSearchData({ cmsRoot } = {}) {
     return true;
   });
 
-  const guideRoutes = Array.from(GUIDE_ROUTES).filter((r) => Object.prototype.hasOwnProperty.call(JSP_BY_ROUTE, r));
+  const guideRoutes = getDynamicGuideRoutes();
 
   // Bucket by cluster prefix for stable listing order (PDF tools next to each
   // other, image tools next to each other, etc.). Native datalist filters
@@ -529,7 +545,7 @@ export async function buildDynamicLMenuBody({ cmsRoot } = {}) {
   // by title within each cluster for predictable diffs.
   const guidesByCluster = new Map();
   for (const clusterId of LMENU_CLUSTER_ORDER) guidesByCluster.set(clusterId, []);
-  const guideRoutes = Array.from(GUIDE_ROUTES).filter((route) => Object.prototype.hasOwnProperty.call(JSP_BY_ROUTE, route));
+  const guideRoutes = getDynamicGuideRoutes();
   for (const route of guideRoutes) {
     const slug = route.replace(/^\/guides\//, '').replace(/\.html$/i, '');
     const topic = classifyGuide(slug);
@@ -588,7 +604,7 @@ export async function buildDynamicSitemapBody({ cmsRoot, lastReviewedIso } = {})
   // Guides - take every route in GUIDE_ROUTES, classify by topic, render in
   // the canonical topic order. Anything unclassified falls into the
   // "Editorial and other" bucket so nothing is silently dropped.
-  const guideRoutes = Array.from(GUIDE_ROUTES).filter((route) => Object.prototype.hasOwnProperty.call(JSP_BY_ROUTE, route));
+  const guideRoutes = getDynamicGuideRoutes();
   const guideMetaByTopic = new Map();
   for (const topic of GUIDE_TOPIC_ORDER) {
     guideMetaByTopic.set(topic, []);
