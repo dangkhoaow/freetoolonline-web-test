@@ -57,12 +57,15 @@ function priorityForKind(kind) {
   }
 }
 
-function buildUrlSetXml(routes, origin, lastmodByRoute, kind = 'tool') {
+function buildUrlSetXml(routes, origin, lastmodByRoute, kind = 'tool', hreflangByRoute = null) {
   const priority = priorityForKind(kind);
   const changefreq = changefreqForKind(kind);
+  const useXhtmlNs = hreflangByRoute && hreflangByRoute.size > 0;
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    useXhtmlNs
+      ? '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">'
+      : '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     ...routes.map((route) => {
       const normalizedRoute = normalizeRoute(route);
       const lastmod = lastmodByRoute?.get(normalizedRoute);
@@ -70,11 +73,70 @@ function buildUrlSetXml(routes, origin, lastmodByRoute, kind = 'tool') {
       const isHomeRoute = normalizedRoute === '/';
       const urlPriority = isHomeRoute ? priorityForKind('home') : priority;
       const urlChangefreq = isHomeRoute ? changefreqForKind('home') : changefreq;
-      return `  <url><loc>${canonicalForRoute(origin, normalizedRoute)}</loc>${lastmodTag}<changefreq>${urlChangefreq}</changefreq><priority>${urlPriority}</priority></url>`;
+      // 2026-05-28 S1.5: emit xhtml:link rel="alternate" hreflang per Google's
+      // localized-versions sitemap spec when locale variants exist for the slug.
+      const hreflangs = hreflangByRoute?.get(normalizedRoute) || [];
+      if (hreflangs.length === 0) {
+        return `  <url><loc>${canonicalForRoute(origin, normalizedRoute)}</loc>${lastmodTag}<changefreq>${urlChangefreq}</changefreq><priority>${urlPriority}</priority></url>`;
+      }
+      // Multi-line form when hreflangs present.
+      const xhtmlLinks = hreflangs.map((h) =>
+        `    <xhtml:link rel="alternate" hreflang="${h.hreflang}" href="${canonicalForRoute(origin, h.route)}"/>`
+      ).join('\n');
+      return `  <url>\n    <loc>${canonicalForRoute(origin, normalizedRoute)}</loc>${lastmodTag ? `\n    ${lastmodTag}` : ''}\n    <changefreq>${urlChangefreq}</changefreq>\n    <priority>${urlPriority}</priority>\n${xhtmlLinks}\n  </url>`;
     }),
     '</urlset>',
     '',
   ].join('\n');
+}
+
+// 2026-05-28 S1.5: derive guide-locale buckets + hreflang map from a flat
+// list of guide routes. Returns { en: [routes...], pt: [...], es: [...], ... }
+// plus a hreflangByRoute Map<route, [{hreflang, route}, ...]>.
+function partitionGuidesByLocale(guideRoutes) {
+  const buckets = { en: [] }; // EN always present
+  const hreflangByRoute = new Map();
+  // Group by canonical-EN slug to detect locale siblings.
+  const bySlug = new Map(); // slug → [{lang, route}]
+  for (const route of guideRoutes) {
+    const localeMatch = /^\/guides\/([a-z]{2})\/([^/]+)\.html$/.exec(route);
+    const enMatch = !localeMatch && /^\/guides\/([^/]+)\.html$/.exec(route);
+    let lang, slug;
+    if (localeMatch) { lang = localeMatch[1]; slug = localeMatch[2]; }
+    else if (enMatch) { lang = 'en'; slug = enMatch[1]; }
+    else continue;
+    if (!buckets[lang]) buckets[lang] = [];
+    buckets[lang].push(route);
+    if (!bySlug.has(slug)) bySlug.set(slug, []);
+    bySlug.get(slug).push({ lang, route });
+  }
+  // Build hreflang annotations for any slug with ≥ 2 variants.
+  const COUNTRY_BY_LANG = {
+    pt: ['pt-BR', 'pt-PT'],
+    es: ['es-ES', 'es-MX', 'es-AR', 'es-CO'],
+    de: ['de-DE', 'de-AT', 'de-CH'],
+    fr: ['fr-FR', 'fr-CA', 'fr-BE'],
+    vi: ['vi-VN'],
+    en: ['en-US', 'en-GB', 'en-AU', 'en-CA', 'en-IN'],
+  };
+  for (const [slug, list] of bySlug) {
+    if (list.length < 2) continue;
+    for (const item of list) {
+      const out = [];
+      // x-default → EN canonical (if present), else self
+      const enSibling = list.find((x) => x.lang === 'en');
+      const xDefaultRoute = enSibling ? enSibling.route : item.route;
+      out.push({ hreflang: 'x-default', route: xDefaultRoute });
+      for (const other of list) {
+        out.push({ hreflang: other.lang, route: other.route });
+        for (const cv of (COUNTRY_BY_LANG[other.lang] || [])) {
+          out.push({ hreflang: cv, route: other.route });
+        }
+      }
+      hreflangByRoute.set(item.route, out);
+    }
+  }
+  return { buckets, hreflangByRoute };
 }
 
 function buildCmsFileCandidates(route) {
@@ -118,12 +180,15 @@ async function resolveLastmodForRoute({ route, cmsRoot, fallbackLastmod }) {
   return lastmod;
 }
 
-function buildSitemapIndexXml(origin) {
+function buildSitemapIndexXml(origin, perLanguageGuideFiles = []) {
   // Order: tools (largest, most crawled) → hubs → guides (long-form editorial,
   // distinct content kind) → pages (home + info: about, contact, privacy, tags).
   // Each child sitemap groups a homogeneous content kind so search engines see
   // focused <lastmod> changes per kind rather than mixed updates.
-  const sitemapFiles = ['sitemap-tools.xml', 'sitemap-hubs.xml', 'sitemap-guides.xml', 'sitemap-pages.xml'];
+  // 2026-05-28 S1.5: guides split per language. sitemap-guides.xml is now a
+  // BACKWARD-COMPAT pointer to the EN canonical guide sitemap; per-language
+  // variants live at sitemap-guides-<lang>.xml.
+  const sitemapFiles = ['sitemap-tools.xml', 'sitemap-hubs.xml', 'sitemap-guides.xml', ...perLanguageGuideFiles, 'sitemap-pages.xml'];
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
@@ -255,6 +320,44 @@ function buildLlmsTxt(entries, origin) {
     const list = grouped[kind];
     if (!list || list.length === 0) continue;
     list.sort((a, b) => a.title.localeCompare(b.title));
+    // 2026-05-28 S1.5: split guides section by detected locale so AI crawlers
+    // (Perplexity / ChatGPT / Claude / Copilot) can pick the locale matching
+    // the user's IP / search language. Subsection per language under `## Guides`.
+    if (kind === 'guide') {
+      const byLang = { en: [] };
+      const LANG_DISPLAY = {
+        en: 'English', pt: 'Portuguese', es: 'Spanish', de: 'German',
+        fr: 'French', vi: 'Vietnamese', it: 'Italian', ja: 'Japanese',
+        ko: 'Korean', zh: 'Chinese', ru: 'Russian', tr: 'Turkish',
+        id: 'Indonesian', nl: 'Dutch', pl: 'Polish', ar: 'Arabic',
+      };
+      for (const entry of list) {
+        const u = entry.url || '';
+        const localeMatch = /\/guides\/([a-z]{2})\//.exec(u);
+        const lang = localeMatch ? localeMatch[1] : 'en';
+        if (!byLang[lang]) byLang[lang] = [];
+        byLang[lang].push(entry);
+      }
+      lines.push(`## ${KIND_LABEL[kind]} (${list.length})`);
+      lines.push('');
+      const langOrder = ['en', ...Object.keys(byLang).filter((l) => l !== 'en').sort()];
+      for (const lang of langOrder) {
+        const localeList = byLang[lang];
+        if (!localeList || localeList.length === 0) continue;
+        const label = LANG_DISPLAY[lang] || lang.toUpperCase();
+        lines.push(`### ${label} guides (${localeList.length})`);
+        lines.push('');
+        for (const entry of localeList) {
+          const meta = entry.lastmod ? ` [lastmod=${entry.lastmod.slice(0, 10)}]` : '';
+          lines.push(`- [${entry.title}](${entry.url})${meta}`);
+          if (entry.description) {
+            lines.push(`  ${entry.description}`);
+          }
+        }
+        lines.push('');
+      }
+      continue;
+    }
     lines.push(`## ${KIND_LABEL[kind]} (${list.length})`);
     lines.push('');
     for (const entry of list) {
@@ -418,11 +521,35 @@ export async function writeSplitSitemaps({ distDir, routes, origin, isStaging, c
   }
 
   if (!isStaging) {
+    // 2026-05-28 S1.5: partition guides by locale + build hreflang annotations.
+    const { buckets: guideBucketsByLang, hreflangByRoute: guideHreflangByRoute } =
+      partitionGuidesByLocale(guideRoutes);
+    const perLanguageGuideFiles = [];
+    for (const [lang, langGuideRoutes] of Object.entries(guideBucketsByLang)) {
+      if (lang === 'en' || langGuideRoutes.length === 0) continue;
+      const filename = `sitemap-guides-${lang}.xml`;
+      perLanguageGuideFiles.push(filename);
+      await writeTextFile(
+        distDir,
+        filename,
+        buildUrlSetXml(langGuideRoutes, origin, lastmodByRoute, 'guide', guideHreflangByRoute),
+      );
+      console.log(`[sitemap] wrote ${filename} (${langGuideRoutes.length} ${lang} guides).`);
+    }
+
     await writeTextFile(distDir, 'sitemap-tools.xml', buildUrlSetXml(toolRoutes, origin, lastmodByRoute, 'tool'));
     await writeTextFile(distDir, 'sitemap-hubs.xml', buildUrlSetXml(hubRoutes, origin, lastmodByRoute, 'hub'));
-    await writeTextFile(distDir, 'sitemap-guides.xml', buildUrlSetXml(guideRoutes, origin, lastmodByRoute, 'guide'));
+    // sitemap-guides.xml = EN canonical guides ONLY (backward compat — existing
+    // crawler references to this URL still resolve). Per-language variants
+    // are in sitemap-guides-<lang>.xml. The full guide universe = union
+    // of sitemap-guides.xml + every sitemap-guides-<lang>.xml.
+    await writeTextFile(
+      distDir,
+      'sitemap-guides.xml',
+      buildUrlSetXml(guideBucketsByLang.en || guideRoutes, origin, lastmodByRoute, 'guide', guideHreflangByRoute),
+    );
     await writeTextFile(distDir, 'sitemap-pages.xml', buildUrlSetXml(pageRoutes, origin, lastmodByRoute, 'page'));
-    await writeTextFile(distDir, 'sitemap.xml', buildSitemapIndexXml(origin));
+    await writeTextFile(distDir, 'sitemap.xml', buildSitemapIndexXml(origin, perLanguageGuideFiles));
   }
 
   // Strategy #1 (Citability) - emit llms.txt + llms-full.txt from the same

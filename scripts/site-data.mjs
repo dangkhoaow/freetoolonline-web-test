@@ -819,7 +819,6 @@ export const INFO_ROUTES = new Set([
   // compression intent. Companion to /zip-tools/zip-file.html. Kebab URL
   // passes URL convention regex; smashed form "compactarpasta" does not
   // shadow any existing primary route.
-  '/guides/compactar-pasta.html',
   // Cycle 20260521-20 P37.H create_new_guide_page (zip cluster, Portuguese):
   // implementing tool /zip-file.html. Target query "comprimir pasta zipada"
   // (compress an already-zipped folder) — distinct from /guides/compactar-pasta.html
@@ -827,19 +826,16 @@ export const INFO_ROUTES = new Set([
   // GSC 398 imp / 17 clicks / pos 8.84 / CTR 4.27% / opportunity_score 43.1.
   // Tier-C (new URL, no GA4 history); Tier-A protocol N/A because this is
   // not modifying an existing high-traffic URL.
-  '/guides/comprimir-pasta-zipada.html',
   // Cycle 20260521-22 P39.H create_new_guide_page - "zipar pasta" Lane-D guide
   // (ZIP cluster, Portuguese). Implementing tool /zip-file.html. GSC 367 imp /
   // 15 clicks / pos 8.84 / CTR 4.09% / opportunity_score 39.8. Tier-A protocol
   // N/A because this is a net-new GUIDE route, not a modification of an indexed
   // tool URL.
-  '/guides/zipar-pasta.html',
   // Cycle 20260522-10 P10.E create_new_guide_page - "comprimir arquivo zip"
   // Lane-D guide (zip cluster, Portuguese). Implementing tool /zip-file.html.
   // GSC 361 imp / 14 clicks / pos 9.99 / CTR 3.88% / opportunity_score 34.72.
   // Disambiguation between "create a new zip" and "shrink an existing zip"
   // (deflate already removes redundancy on first pass). Tier-A protocol N/A.
-  '/guides/comprimir-arquivo-zip.html',
   // Cycle 20260520-11 new_guide_page_proposal (developer cluster):
   // implementing tool /js-unminifier.html. GSC 545 imp / 3 clicks /
   // pos 10.12 / CTR 0.55% / opportunity_score 53.55.
@@ -850,6 +846,15 @@ export const INFO_ROUTES = new Set([
   // opportunity_score 32.65. Kebab slug passes URL convention regex; smashed
   // form "cropandrotateimage" does not shadow any existing primary route.
   '/guides/crop-and-rotate-image.html',
+
+  // 2026-05-28 plan-warm-pascal-v2 S1 multilingual migration (locale-prefixed guide URLs).
+  '/guides/pt/compress-folder.html', // pt canonical of /guides/compactar-pasta.html
+  '/guides/pt/compress-zip-file.html', // pt canonical of /guides/comprimir-arquivo-zip.html
+  '/guides/pt/compress-folder-to-zip.html', // pt canonical of /guides/comprimir-pasta-zipada.html
+  '/guides/pt/compress-zip-online.html', // pt canonical of /guides/comprimir-zip-online.html
+  '/guides/pt/zip-a-folder.html', // pt canonical of /guides/zipar-pasta.html
+  '/guides/es/compress-folder-to-zip-online-free.html', // es canonical of /guides/comprimir-carpeta-zip-online-gratis.html
+  '/guides/es/reduce-zip-size-online.html', // es canonical of /guides/reducir-tama-o-zip-online.html
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -1170,13 +1175,11 @@ export const GUIDE_ROUTES = new Set([
   // Cycle 20260515-13 — "Comprimir Zip Online" Lane-D guide (zip cluster,
   // Spanish-keyword sibling of /guides/make-zip-file-online.html;
   // companion to /zip-tools/zip-file.html). Complete single-cycle ship.
-  '/guides/comprimir-zip-online.html',
   // Cycle 20260519-14 — "Comprimir Carpeta Zip Online Gratis" Lane-D guide
   // (zip cluster, Spanish folder-compression intent; 348 imp / 36 clicks /
   // pos 5.49 / CTR 10.34% per 28d GSC; opportunity_score 56.79). Companion
   // to /zip-file.html. Native Spanish prose authored against tool-zipfile
   // SKILL features. Phase A complete single-cycle ship.
-  '/guides/comprimir-carpeta-zip-online-gratis.html',
   // Cycle 20260523-4 — "Reducir Tamaño Zip Online" Lane-D guide (zip cluster,
   // Spanish size-reduction-wording sibling of /guides/comprimir-zip-online.html;
   // 196 imp / 32 clicks / pos 5.15 / CTR 16.3% per 28d GSC; opportunity_score
@@ -1185,7 +1188,6 @@ export const GUIDE_ROUTES = new Set([
   // compression-wording context AND to /zip-tools/zip-file.html as the creator.
   // Implementing tool is /zip-file.html (tool-zipfile auto; this guide reuses
   // truth-source from the existing comprimir-zip-online verified content).
-  '/guides/reducir-tama-o-zip-online.html',
   // Cycle 20260515-15 — "Zip File Compressor Online" Lane-D guide (zip
   // cluster head-query; 799 imp / 73 clicks / pos 6.2 / CTR 9.1% per 28d
   // GSC; opportunity_score 117.19). Companion to /zip-tools/zip-file.html.
@@ -1257,9 +1259,7 @@ export const GUIDE_ROUTES = new Set([
   // "compactar pasta" intent (compress folder). Paraphrases tool-zipfile/SKILL.md
   // BODYHTML (folder + multi-file zip, optional password Standard/AES-128/AES-256,
   // browser-side UI) and the existing /zip-file.html action description.
-  '/guides/compactar-pasta.html',
   // Cycle 20260521-20 P37.H create_new_guide_page (zip cluster, Portuguese).
-  '/guides/comprimir-pasta-zipada.html',
   // Cycle 20260520-11 new_guide_page_proposal (developer cluster):
   // implementing tool /js-unminifier.html.
   '/guides/unminify-js.html',
@@ -1305,7 +1305,6 @@ export const GUIDE_ROUTES = new Set([
   // artifact, closing the "agent edits BODYHTMLguides.html by hand and forgets
   // an entry" defect class permanently. See sitemap-html-builder.mjs.
   '/guides/md5-password.html',
-  '/guides/comprimir-arquivo-zip.html',
   // Cycle 20260524-18 create_new_guide_page - "Compress Folder Online" Lane-D
   // guide (zip cluster, companion to /zip-file.html). GSC 28d 1243 imp /
   // 112 clicks / pos 5.01 / CTR 9.01% / opportunity_score 225.55. The query
@@ -1543,6 +1542,17 @@ export const ALIAS_ROUTES = {
   // typo'd intent is best served by re-using the canonical lcd-test-online
   // guide rather than authoring an 8th near-duplicate.
   '/guides/lcd-tes.html': '/guides/lcd-test-online.html',         // typo of "lcd test"; canonical = lcd-test-online (cluster anti-cannibalization)
+  // Multilingual guide migration (2026-05-28 plan-warm-pascal-v2 S1).
+  // Per [⛔ Two-layer redirect rule]: CloudFront 301 (~100% equity) is
+  // primary; this origin meta-refresh fallback (~95% equity) catches
+  // direct origin requests when the CF function is bypassed.
+  '/guides/compactar-pasta.html': '/guides/pt/compress-folder.html',
+  '/guides/comprimir-arquivo-zip.html': '/guides/pt/compress-zip-file.html',
+  '/guides/comprimir-pasta-zipada.html': '/guides/pt/compress-folder-to-zip.html',
+  '/guides/comprimir-zip-online.html': '/guides/pt/compress-zip-online.html',
+  '/guides/zipar-pasta.html': '/guides/pt/zip-a-folder.html',
+  '/guides/comprimir-carpeta-zip-online-gratis.html': '/guides/es/compress-folder-to-zip-online-free.html',
+  '/guides/reducir-tama-o-zip-online.html': '/guides/es/reduce-zip-size-online.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -1628,11 +1638,8 @@ export const JSP_BY_ROUTE = {
   // Cycle 20260515-12 create_new_guide_page - "Make Zip File Online" Lane-D guide (zip cluster, companion to /zip-tools/zip-file.html). Complete single-cycle ship per cycle 20260514-5 contract (no skeleton wait).
   '/guides/make-zip-file-online.html': 'guide/make-zip-file-online.jsp',
   // Cycle 20260515-13 create_new_guide_page - "Comprimir Zip Online" Lane-D guide (zip cluster, Spanish-keyword sibling of /guides/make-zip-file-online.html; companion to /zip-tools/zip-file.html). Complete single-cycle ship per cycle 20260514-5 contract.
-  '/guides/comprimir-zip-online.html': 'guide/comprimir-zip-online.jsp',
   // Cycle 20260519-14 create_new_guide_page - "Comprimir Carpeta Zip Online Gratis" Lane-D guide (zip cluster, Spanish folder-compression intent; companion to /zip-file.html). Native-Spanish prose authored against tool-zipfile SKILL features. Complete single-cycle ship per cycle 20260514-5 contract.
-  '/guides/comprimir-carpeta-zip-online-gratis.html': 'guide/comprimir-carpeta-zip-online-gratis.jsp',
   // Cycle 20260523-4 create_new_guide_page - "Reducir Tamaño Zip Online" Lane-D synonym-landing guide (zip cluster, Spanish size-reduction wording; companion to /zip-tools/zip-file.html). Routes to /guides/comprimir-zip-online.html for the compression-wording context. Complete single-cycle ship per cycle 20260514-5 contract.
-  '/guides/reducir-tama-o-zip-online.html': 'guide/reducir-tama-o-zip-online.jsp',
   // Cycle 20260517-8 create_new_guide_page - "Online Zip File Compressor" Lane-D guide (zip cluster head-query sibling, companion to /zip-tools/zip-file.html). Complete single-cycle ship per cycle 20260514-5 contract.
   '/guides/online-zip-file-compressor.html': 'guide/online-zip-file-compressor.jsp',
   // Cycle 20260518-20 create_new_guide_page - "Zip Compress" Lane-D guide (zip cluster head-query sibling, companion to /zip-tools/zip-file.html). Complete single-cycle ship per cycle 20260514-5 contract.
@@ -1668,10 +1675,8 @@ export const JSP_BY_ROUTE = {
   // Cycle 20260518-31 create_new_guide_page - "Create Zip File Online" Lane-D guide. Companion to /zip-tools/zip-file.html. Sourced from tool-zipfile/SKILL.md implemented features + BODYHTMLzipfile reader-task copy.
   '/guides/create-zip-file-online.html': 'guide/create-zip-file-online.jsp',
   // Cycle 20260518-32 create_new_guide_page - "compactar pasta" Lane-D guide (zip cluster, Portuguese folder compression intent). Companion to /zip-tools/zip-file.html. Sourced from tool-zipfile BODYHTML/BODYDESC + cluster-sibling Portuguese guide /guides/comprimir-zip-online.html.
-  '/guides/compactar-pasta.html': 'guide/compactar-pasta.jsp',
   // Cycle 20260521-20 P37.H create_new_guide_page - "comprimir pasta zipada"
   // Lane-D guide (zip cluster, Portuguese). Implementing tool /zip-file.html.
-  '/guides/comprimir-pasta-zipada.html': 'guide/comprimir-pasta-zipada.jsp',
   // Cycle 20260521-22 P39.H create_new_guide_page - "zipar pasta" Lane-D guide
   // (ZIP cluster, Portuguese - "zipar" = to ZIP, "pasta" = folder). GSC 367 imp
   // / 15 clicks / pos 8.84 / CTR 4.09% / opportunity_score 39.8. Implementing
@@ -1681,7 +1686,6 @@ export const JSP_BY_ROUTE = {
   // Tier-A protocol: ZIP cluster but this is a new GUIDE route (not modifying an
   // indexed tool URL), so the staged-rollout one-URL-per-deploy constraint does
   // not apply to net-new guide additions in the cluster.
-  '/guides/zipar-pasta.html': 'guide/zipar-pasta.jsp',
   // Cycle 20260522-10 P10.E create_new_guide_page - "comprimir arquivo zip"
   // Lane-D guide (zip cluster, Portuguese - "comprimir arquivo zip" = compress
   // zip file/archive). GSC 28d 361 imp / 14 clicks / pos 9.99 / CTR 3.88% /
@@ -1694,7 +1698,6 @@ export const JSP_BY_ROUTE = {
   // zipped folder). Kebab slug passes regex; smashed form "comprimirarquivozip"
   // does not shadow any existing primary route. Tier-A protocol N/A — net-new
   // guide route, not a modification of an indexed tool URL.
-  '/guides/comprimir-arquivo-zip.html': 'guide/comprimir-arquivo-zip.jsp',
   // Cycle 20260520-11 new_guide_page_proposal (developer cluster):
   // companion to /js-unminifier.html.
   '/guides/unminify-js.html': 'guide/unminify-js.jsp',
@@ -2005,6 +2008,17 @@ export const JSP_BY_ROUTE = {
   // optional AES password). Sourced from tool-zipfile/SKILL.md implemented
   // features + BODYWELCOMEzipfile reader-task framing.
   '/guides/compress-folder-online.html': 'guide/compress-folder-online.jsp',
+  // Multilingual guide migration (2026-05-28 plan-warm-pascal-v2 S1).
+  // 7 locale-prefixed URLs serving the existing scattered translations
+  // (pt + es) under `/guides/<lang>/<canonical-en-slug>.html`. Each JSP
+  // is a 1-line wrapper copied from the source-language JSP.
+  '/guides/pt/compress-folder.html': 'guide/pt/compress-folder.jsp',
+  '/guides/pt/compress-zip-file.html': 'guide/pt/compress-zip-file.jsp',
+  '/guides/pt/compress-folder-to-zip.html': 'guide/pt/compress-folder-to-zip.jsp',
+  '/guides/pt/compress-zip-online.html': 'guide/pt/compress-zip-online.jsp',
+  '/guides/pt/zip-a-folder.html': 'guide/pt/zip-a-folder.jsp',
+  '/guides/es/compress-folder-to-zip-online-free.html': 'guide/es/compress-folder-to-zip-online-free.jsp',
+  '/guides/es/reduce-zip-size-online.html': 'guide/es/reduce-zip-size-online.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

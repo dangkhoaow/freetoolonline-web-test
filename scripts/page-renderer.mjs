@@ -1,4 +1,120 @@
-import { canonicalForRoute, isInfoRoute, isGuideRoute } from './site-data.mjs';
+import { canonicalForRoute, isInfoRoute, isGuideRoute, ALIAS_ROUTES, JSP_BY_ROUTE } from './site-data.mjs';
+
+// 2026-05-28 plan-warm-pascal-v2 S1.3 — multilingual /guides/ locale support.
+// Build a map of canonical-EN-slug → [{ lang, route, isCanonical }] for every
+// guide with locale variants. Derived from JSP_BY_ROUTE (locale URLs have
+// shape `/guides/<lang>/<slug>.html`) + ALIAS_ROUTES (old localized URL →
+// new locale URL gives the reverse-mapping).
+//
+// Hard rules:
+//   - EN canonical stays at `/guides/<slug>.html`
+//   - Non-EN locale URLs are `/guides/<lang>/<slug>.html`
+//   - <lang> is 2 char ISO 639-1 (pt, es, de, fr, vi, it, ...)
+//
+// Per-country variants (e.g. pt-BR, pt-PT) are emitted as additional
+// hreflang values on the SAME canonical-pt URL — Google's spec allows
+// multiple hreflang pointing at the same URL.
+const SUPPORTED_LOCALE_PREFIXES = new Set(['pt', 'es', 'de', 'fr', 'vi', 'it', 'ja', 'ko', 'zh', 'ru', 'id', 'tr', 'pl', 'nl', 'ar']);
+const COUNTRY_VARIANTS_BY_LANG = Object.freeze({
+  pt: ['pt-BR', 'pt-PT'],
+  es: ['es-ES', 'es-MX', 'es-AR', 'es-CO'],
+  de: ['de-DE', 'de-AT', 'de-CH'],
+  fr: ['fr-FR', 'fr-CA', 'fr-BE'],
+  vi: ['vi-VN'],
+  it: ['it-IT'],
+  en: ['en-US', 'en-GB', 'en-AU', 'en-CA', 'en-IN'],
+});
+
+// Detect locale from a /guides/<lang>/<slug>.html route.
+// Returns null for /guides/<slug>.html (EN canonical) or non-guide routes.
+function detectGuideLocaleFromRoute(route) {
+  const m = /^\/guides\/([a-z]{2})\/[^/]+\.html$/.exec(route || '');
+  if (!m) return null;
+  const lang = m[1];
+  return SUPPORTED_LOCALE_PREFIXES.has(lang) ? lang : null;
+}
+
+// Build the locale-sibling map at module load. Keys are canonical EN slugs
+// (the slug suffix without `/guides/<lang>/` prefix); values list every
+// locale-variant route that exists in JSP_BY_ROUTE for that slug.
+let _localizedGuideMap = null;
+function getLocalizedGuideMap() {
+  if (_localizedGuideMap) return _localizedGuideMap;
+  const map = new Map(); // canonicalSlug → [{lang, route}]
+  for (const route of Object.keys(JSP_BY_ROUTE || {})) {
+    if (!route.startsWith('/guides/')) continue;
+    const lang = detectGuideLocaleFromRoute(route);
+    if (lang) {
+      // Locale URL — extract the canonical EN slug
+      const m = /^\/guides\/[a-z]{2}\/([^/]+)\.html$/.exec(route);
+      if (m) {
+        const slug = m[1];
+        if (!map.has(slug)) map.set(slug, []);
+        map.get(slug).push({ lang, route, isCanonical: false });
+      }
+    } else {
+      // EN canonical guide route
+      const m = /^\/guides\/([^/]+)\.html$/.exec(route);
+      if (m) {
+        const slug = m[1];
+        if (!map.has(slug)) map.set(slug, []);
+        // EN canonical only counts if there exists at least one locale variant.
+        // We add it provisionally; final filter happens below.
+        map.get(slug).push({ lang: 'en', route, isCanonical: true });
+      }
+    }
+  }
+  // Drop entries that only have EN (no locale variants → no hreflang needed)
+  for (const [slug, list] of map) {
+    if (list.length === 1) map.delete(slug);
+  }
+  _localizedGuideMap = map;
+  return map;
+}
+
+// For a given guide route (EN canonical or locale-prefixed), return the
+// full hreflang list. Returns an empty array when the guide has no locale
+// variants registered (the existing default hreflang block stays in effect).
+function buildGuideLocaleHreflangLinks(route, siteOrigin) {
+  const map = getLocalizedGuideMap();
+  // Determine canonical slug
+  let canonicalSlug = null;
+  const localeMatch = /^\/guides\/[a-z]{2}\/([^/]+)\.html$/.exec(route);
+  const enMatch = /^\/guides\/([^/]+)\.html$/.exec(route);
+  if (localeMatch) canonicalSlug = localeMatch[1];
+  else if (enMatch) canonicalSlug = enMatch[1];
+  if (!canonicalSlug) return [];
+  const siblings = map.get(canonicalSlug);
+  if (!siblings || siblings.length < 2) return [];
+
+  const links = [];
+  // x-default → EN canonical
+  const enSibling = siblings.find((s) => s.isCanonical);
+  if (enSibling) {
+    const enUrl = `${siteOrigin}${enSibling.route}`;
+    links.push({ hreflang: 'x-default', href: enUrl });
+    links.push({ hreflang: 'en', href: enUrl });
+    for (const cv of (COUNTRY_VARIANTS_BY_LANG.en || [])) {
+      links.push({ hreflang: cv, href: enUrl });
+    }
+  }
+  // Non-EN siblings → each gets primary lang + per-country variants
+  for (const s of siblings) {
+    if (s.isCanonical) continue;
+    const url = `${siteOrigin}${s.route}`;
+    links.push({ hreflang: s.lang, href: url });
+    for (const cv of (COUNTRY_VARIANTS_BY_LANG[s.lang] || [])) {
+      links.push({ hreflang: cv, href: url });
+    }
+  }
+  return links;
+}
+
+export {
+  detectGuideLocaleFromRoute,
+  getLocalizedGuideMap,
+  buildGuideLocaleHreflangLinks,
+};
 import { getSeoClusterGroups, resolveHubBacklink } from './seo-clusters.mjs';
 import { DEFAULT_PAGE_SVG_LOGO, escapeCssString, escapeHtml, renderBaseScript, renderDownloadTag, renderLoadingTag, renderShareButtons, renderUploadSecondTag, renderUploadStartupSecondTag, renderUploadStartupTag, renderUploadTag, renderWelcomeTag, replaceExpressions, unwrapStyleBlock } from './page-fragments.mjs';
 import { formatHumanDate, rewriteLastUpdatedTag } from './page-mtimes.mjs';
@@ -130,8 +246,13 @@ function resolveOgImage(route) {
 function renderMetaTags(ctx) {
   const canonicalUrl = ctx.canonicalUrl;
   const siteUrl = canonicalForRoute(ctx.siteOrigin, ctx.route);
+  // 2026-05-28 S1.3: detect locale-prefix guide routes
+  const guideLocale = detectGuideLocaleFromRoute(ctx.route);
   const isVietnamese = ctx.lang === 'vi';
-  const selfHreflang = isVietnamese ? 'vi-vn' : 'en-us';
+  // Self-hreflang: for locale guides, use the detected lang; else fall back to existing logic
+  const selfHreflang = guideLocale
+    ? guideLocale
+    : (isVietnamese ? 'vi-vn' : 'en-us');
   const title = ctx.isHome ? 'Free Tool Online - 122 Browser Tools for ZIP, PDF, Image, Dev, Device' : `${ctx.browserTitle} - Free Tool Online`;
   const ogTitle = ctx.isHome ? 'Free Tool Online - 122 Browser Tools for ZIP, PDF, Image, Dev, Device' : `Free Tool Online - ${ctx.browserTitle}`;
   const mobileTitleBase = String(ctx.mobileBrowserTitle ?? '').trim();
@@ -155,11 +276,23 @@ function renderMetaTags(ctx) {
     console.log(`[seo:mobile-title] route=${ctx.route} mobileTitle="${mobileTitleBase}".`);
   }
   const extraHreflangs = EXTRA_HREFLANG_BY_ROUTE[ctx.route] || [];
-  const alternateLinks = [
-    `<link rel='alternate' href='${canonical}' hreflang='${selfHreflang}' />`,
-    xDefaultHref ? `<link rel='alternate' href='${escapeHtml(xDefaultHref)}' hreflang='x-default' />` : '',
-    ...extraHreflangs.map((lang) => `<link rel='alternate' href='${canonical}' hreflang='${lang}' />`),
-  ].filter(Boolean);
+  // 2026-05-28 S1.3: if this guide has locale variants registered, emit
+  // the full per-locale hreflang block (x-default + each locale + per-country
+  // variants). Otherwise fall back to the legacy self + x-default + extras.
+  const guideLocaleLinks = buildGuideLocaleHreflangLinks(ctx.route, ctx.siteOrigin || '');
+  const alternateLinks = guideLocaleLinks.length > 0
+    ? [
+        // Self-reference still emitted (Google's spec recommends it explicitly)
+        `<link rel='alternate' href='${canonical}' hreflang='${selfHreflang}' />`,
+        ...guideLocaleLinks.map((l) =>
+          `<link rel='alternate' href='${escapeHtml(l.href)}' hreflang='${l.hreflang}' />`
+        ),
+      ]
+    : [
+        `<link rel='alternate' href='${canonical}' hreflang='${selfHreflang}' />`,
+        xDefaultHref ? `<link rel='alternate' href='${escapeHtml(xDefaultHref)}' hreflang='x-default' />` : '',
+        ...extraHreflangs.map((lang) => `<link rel='alternate' href='${canonical}' hreflang='${lang}' />`),
+      ].filter(Boolean);
   const mobileTitleScript = ctx.isStaging && !ctx.isHome && mobileTitle
     ? `<script>(function(){try{var t=${JSON.stringify(mobileTitle)};var m=(window.matchMedia?window.matchMedia('(max-width: 480px)').matches:((window.innerWidth||0)<=480));if(m&&t){document.title=t;}}catch(e){}})();</script>`
     : '';
@@ -862,7 +995,11 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   const keyword = resolveAttr(pageAttrs.keyword) || pageData.bodyKeyword || '';
   const customStyle = resolveAttr(pageAttrs.customStyle) || '';
   const pageStyle = pageData.pageStyle || '';
-  const lang = resolveAttr(pageAttrs.lang) || 'en';
+  // 2026-05-28 S1.3: locale-prefix guide URLs (`/guides/<lang>/<slug>.html`)
+  // override the JSP-declared lang attribute. The <lang> path segment is the
+  // authoritative locale signal for these routes.
+  const _detectedGuideLocale = detectGuideLocaleFromRoute(route);
+  const lang = _detectedGuideLocale || resolveAttr(pageAttrs.lang) || 'en';
   const hasSettingsAttr = resolveAttr(pageAttrs.hasSettings);
   const hasSettings = hasSettingsAttr === 'true' || hasSettingsAttr === 'TRUE' || pageData.pageHasSettings;
   const hasUpload = /<freetoolonline:upload(?:-startup(?:-second)?|-second)?\b/i.test(bodyHtml)
