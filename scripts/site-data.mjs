@@ -27,55 +27,55 @@ export const INFO_ROUTES = new Set([
   '/sitemap.html',
   // Guides - plan §3.3. Treated as informational (no related-tools, no rating,
   // no HowTo; Article JSON-LD emitted separately by page-renderer.mjs).
-  '/guides/heic-vs-jpg-vs-webp.html',
-  '/guides/dead-pixel-testing-guide.html',
-  '/guides/unix-timestamps-explained.html',
-  '/guides/pdf-password-types-owner-vs-user.html',
+  '/guides/en/heic-vs-jpg-vs-webp.html',
+  '/guides/en/dead-pixel-testing-guide.html',
+  '/guides/en/unix-timestamps-explained.html',
+  '/guides/en/pdf-password-types-owner-vs-user.html',
   // §3.5 comparison guides (Cycle 4).
-  '/guides/png-vs-svg-when-to-use.html',
-  '/guides/css-minifier-vs-compressor.html',
+  '/guides/en/png-vs-svg-when-to-use.html',
+  '/guides/en/css-minifier-vs-compressor.html',
   // Cycle 74 P74.B - "JSON parser online: validate vs format vs tree view - which feature do you need?" Lane-D disambiguation guide for the
   // /json-parser.html sub-feature triad. Cluster: developer. Non-cannibalizing - no existing guide on this disambiguation; complements the cycle-74
   // jsonparser BODYHTML thin-content fix.
-  '/guides/json-parser-validate-vs-format-vs-tree-view.html',
+  '/guides/en/json-parser-validate-vs-format-vs-tree-view.html',
   // Cycle 75 P75.B - "Milliseconds to date - UTC vs local time, and why your conversion might look off by hours" Lane-D timezone-interpretation guide
   // for /convert-time-in-millisecond-to-date.html. Cluster: developer. Non-cannibalizing - existing long-number-millisecond-or-second covers ms-vs-s
   // disambiguation, unix-timestamps-explained covers epoch fundamentals; this guide covers the timezone-display angle (UTC vs local).
-  '/guides/milliseconds-to-date-utc-vs-local-time.html',
+  '/guides/en/milliseconds-to-date-utc-vs-local-time.html',
   // Cycle 76 P76.A - "Screen test online vs app: which is more accurate, and when each one wins" Lane-D guide for the device-test cluster.
   // Companion to lcd-test-vs-display-test-which-do-you-need (cycle 42) and lcd-test-what-it-checks. Non-cannibalizing - covers the
   // browser-vs-app diagnostic surface comparison, not panel-vs-display-vs-monitor scope. Sourced from sibling tool-guideslcdtestvsdisplaytestwhichdoyouneed
   // framing-menu lines extended with browser/native abstraction-layer claims (W3C CSSOM color-model, browser fullscreen API).
-  '/guides/screen-test-online-vs-app-which-is-more-accurate.html',
+  '/guides/en/screen-test-online-vs-app-which-is-more-accurate.html',
   // Cycle 77 P77.A - "How to compress a ZIP file to a specific size (2 MB / 25 MB / 100 KB)" Lane-D append-only guide for the file-compressor / ZIP intent gap.
   // GSC evidence (28d): "compress zip file to 25mb" 2,932 imp pos 4.9; "compress zip file to 2mb" 1,365 imp pos 4.3; "compress zip file to 100kb" 787 imp pos 4.7.
   // Forward-links to /zip-file.html, /compress-image.html. Does NOT modify any indexed ZIP-cluster page (ZIP-CRITICAL-CARE not gated).
   // Non-cannibalizing vs how-to-make-a-zip-file-smaller (cycle ?) and how-to-compress-zip-file-to-smaller-size; covers the "specific target cap (2/25/100)" sub-intent.
-  '/guides/how-to-compress-a-zip-file-to-a-specific-size.html',
+  '/guides/en/how-to-compress-a-zip-file-to-a-specific-size.html',
   // Cycle 20260519-10 create_new_guide_page - "how to compress a zip file" bare-query step-by-step guide.
   // GSC evidence (28d): "how to compress a zip file" 557 imp / 8 clicks / pos 8.8 / CTR 1.43% / opportunity_score 62.38.
   // Distinct intent from the "to a specific size" / "to smaller size" / "to 100kb" siblings: this captures the bare-query
   // reader who just wants the 3-step recipe. Implementing tool: /zip-file.html. Append-only (new URL).
-  '/guides/how-to-compress-a-zip-file.html',
+  '/guides/en/how-to-compress-a-zip-file.html',
   // Cycle 20260519-11 create_new_guide_page - "zip folder online free" bare-query step-by-step guide.
   // GSC evidence (28d): "zip folder online free" 488 imp / 16 clicks / pos 7.81 / CTR 3.28% / opportunity_score 60.41.
   // Implementing tool: /zip-file.html. Cluster: zip. Append-only (new URL).
-  '/guides/zip-folder-online-free.html',
+  '/guides/en/zip-folder-online-free.html',
   // Cycle 20260524-10 create_new_guide_page - "i love zip" bare-query landing (GSC 182 imp / 2 clicks / pos 6.12 / opportunity_score 29.41).
   // Implementing tool: /zip-file.html. Cluster: zip. BODYTITLE is reader-task framed (not brand-mimicking).
-  '/guides/i-love-zip.html',
+  '/guides/en/i-love-zip.html',
   // Cycle 78 P78.A - "QR code error correction and scan failures: why your QR will not scan" Lane-D append-only guide.
   // Companion to /qr-code-generator.html (one of the 4 R7_thin_content fixes in P78.B). Reader-task gap: no QR-related guide existed
   // pre-cycle-78. Diagnoses the four common scan-failure causes (payload size, error-correction level, contrast, print scale) so a
   // reader who generated a QR with our tool and got a non-scannable result can self-diagnose without leaving the site. Append-only
   // (new URL); non-cannibalizing (no other QR guide on /guides/).
-  '/guides/qr-code-error-correction-and-scan-failures.html',
+  '/guides/en/qr-code-error-correction-and-scan-failures.html',
   // Cycle 79 P79.B - "Image to Base64: embed in HTML/CSS vs link the image file" Lane-D append-only guide.
   // Companion to /image-to-base64.html and /base64-to-image.html (both client-only). Reader-task gap: existing
   // /guides/base64-when-to-use-and-when-not-to.html covers the broader theory; this guide is the practical
   // decision rule (concrete byte thresholds, HTTP/2 break-even, 30-second sanity check) for the developer who
   // already knows what base64 is. Append-only (new URL); non-cannibalizing.
-  '/guides/image-to-base64-embed-in-html-vs-link.html',
+  '/guides/en/image-to-base64-embed-in-html-vs-link.html',
   // Cycle 80 P80.G - "How to test a touchscreen for bad spots" Lane-D append-only guide (device-test cluster).
   // Reader-task gap: existing /lcd-test.html and 8+ lcd-test cluster guides cover the visual / pixel half of a
   // screen check (color cycle, dead-pixel-vs-stuck taxonomy, warranty threshold, return-monitor evidence,
@@ -83,7 +83,7 @@ export const INFO_ROUTES = new Set([
   // edge-only failures, vertical-stripe digitizer faults, ghost touches). Bing-only "test my screen" 3,170 imp +
   // "screen tester" 2,849 imp + "screen checker" 2,592 imp cohort lands on /lcd-test.html and bounces because
   // that tool only runs the color cycle. Append-only (new URL); non-cannibalizing.
-  '/guides/how-to-test-a-touchscreen-for-bad-spots.html',
+  '/guides/en/how-to-test-a-touchscreen-for-bad-spots.html',
   // Cycle 81 P81.A - "Webcam mirror vs flip explained" Lane-D append-only guide (camera-test sub-cluster).
   // Reader-task gap: 99 existing guide files contain zero matches for "mirror" / "flip" / "scaleX". Bing
   // "camera test" 100,484 imp / 0.20% CTR / pos 8.4 cohort lands on /camera-test.html, sees a horizontally-
@@ -92,13 +92,13 @@ export const INFO_ROUTES = new Set([
   // 30-second proof procedure, and provides exact disable-mirror steps for OBS / Zoom / Meet / Teams.
   // Append-only (new URL); non-cannibalizing (distinct intent from camera-test-shows-black-screen,
   // camera-test-vs-webcam-test, before-a-video-call, how-to-check-camera-quality-on-your-phone).
-  '/guides/camera-mirror-vs-flip-explained.html',
+  '/guides/en/camera-mirror-vs-flip-explained.html',
   // Cycle 82 P82.A - "CSS Unminifier vs Prettier: when to use each" Lane-D append-only guide
   // (developer / CSS sub-cluster, companion to /css-unminifier.html). Reader-task gap: 99 existing
   // guides cover the forward direction (minifier vs compressor / vs uglifier vs tree-shaking, Cloud
   // Run cold-start) but no guide explains when /css-unminifier.html is the right tool vs Prettier.
   // Append-only (new URL); non-cannibalizing.
-  '/guides/css-unminifier-vs-prettier-when-to-use-each.html',
+  '/guides/en/css-unminifier-vs-prettier-when-to-use-each.html',
   // Cycle 83 P83.A - "LED test vs LCD test: which applies to your screen?" Lane-D append-only
   // guide (device-test / lcd-test sub-cluster, companion to /lcd-test.html). Reader-task gap:
   // GSC `gsc_keyword_opportunities_28d` "led test" 669 imp pos 8.9 + "led tester online" 154
@@ -108,7 +108,7 @@ export const INFO_ROUTES = new Set([
   // generic synonyms (screen-display-test-synonyms), and laptop checklist (screen-test-for-
   // laptop-5-minute-checklist) but none explain the backlight-vs-panel distinction that
   // generates the LED-test query stream. Append-only (new URL); non-cannibalizing.
-  '/guides/led-test-vs-lcd-test-which-applies-to-your-screen.html',
+  '/guides/en/led-test-vs-lcd-test-which-applies-to-your-screen.html',
   // Cycle 233 P233.E - "OLED test vs LCD test: what changes on an OLED panel" Lane-D append-only guide
   // (device-test / lcd-test sub-cluster, companion to /lcd-test.html and sibling to
   // led-test-vs-lcd-test-which-applies-to-your-screen). Reader-task gap: existing 8 device-test
@@ -122,7 +122,7 @@ export const INFO_ROUTES = new Set([
   // Multi-cycle task: phase 1 (this commit) ships the skeleton (route + JSP wrapper + CMS placeholders +
   // related-tools entry); phase 2 (next cycle) authors CMS content from the SKILL.md framing menu;
   // phase 3 adds structured data; phase 4 adds sibling backlinks; phase 5 promotes to prod.
-  '/guides/oled-test-vs-lcd-test-what-changes-on-oled.html',
+  '/guides/en/oled-test-vs-lcd-test-what-changes-on-oled.html',
   // Cycle 84 P84.A - "How to compress a JPG for email attachment size limits" Lane-D append-only
   // guide (image-conversion / compression sub-cluster, companion to /compress-image.html).
   // Reader-task gap: existing sibling guides cover folder-mode (how-to-compress-a-folder-for-
@@ -133,7 +133,7 @@ export const INFO_ROUTES = new Set([
   // primary axis. GSC top-30 28d shows compressor demand dominated by ZIP / folder head terms
   // (compress folder 1581 clicks @ pos 2.07; compress zip file 986 @ 6.39); JPG-mode email
   // demand is a verifiable gap. Append-only (new URL); non-cannibalizing.
-  '/guides/how-to-compress-a-jpg-for-email-attachment-limits.html',
+  '/guides/en/how-to-compress-a-jpg-for-email-attachment-limits.html',
   // Cycle 85 P85.A - "Microphone test levels: what quiet, normal, and peak mean" Lane-D append-only
   // guide (device-test / microphone-test sub-cluster, companion to /microphone-test.html).
   // Reader-task gap: existing sibling guides cover what the test verifies (microphone-test-online-
@@ -141,7 +141,7 @@ export const INFO_ROUTES = new Set([
   // four-fixes). NONE explain how to interpret the meter when it IS moving (call-ready level vs
   // too quiet vs clipping). Phase-1 datasource: bing_query_stats + gsc_low_ctr_high_imp_28d.
   // Append-only (new URL); non-cannibalizing per seo-agency-check anti-cannibalization gate.
-  '/guides/microphone-test-online-quiet-normal-peak-meter.html',
+  '/guides/en/microphone-test-online-quiet-normal-peak-meter.html',
   // Cycle 86 P86.A - "Camera Test Permission Blocked: How to Allow Camera Access in Your Browser"
   // Lane-D append-only guide (device-test / camera-test sub-cluster, companion to /camera-test.html).
   // Reader-task gap: existing sibling camera-test guides cover hardware-failure black screen
@@ -152,7 +152,7 @@ export const INFO_ROUTES = new Set([
   // /camera-test.html sustaining low CTR / high impression on long-tail "camera test not working" /
   // "allow camera in browser" / "camera permission denied" demand; Bing query_stats reinforces.
   // Append-only (new URL); non-cannibalizing per seo-agency-check anti-cannibalization gate.
-  '/guides/camera-test-permission-blocked-how-to-allow-it.html',
+  '/guides/en/camera-test-permission-blocked-how-to-allow-it.html',
   // Cycle 46 (20260522-7) P46.H - "Camera Check" synonym-disambiguation guide.
   // GSC "camera check" 451 imp / 5 clicks / pos 11.85 28d (op_score 37.63). Routes the
   // reader to /camera-test.html (the implementing tool) while explaining the synonym
@@ -160,7 +160,7 @@ export const INFO_ROUTES = new Set([
   // blocked / ignored). Append-only; non-cannibalising vs camera-test-permission-blocked
   // (covers synonym intent, not permission diagnosis) and vs camera-test-shows-black-
   // screen-four-fixes (covers terminology, not hardware failure).
-  '/guides/camera-check.html',
+  '/guides/en/camera-check.html',
   // Cycle 87 P87.A - "Microphone test permission blocked: how to allow mic access in your browser" Lane-D guide
   // (device-test / microphone-test sub-cluster, companion to /microphone-test.html, symmetric peer to cycle-86's
   // /guides/camera-test-permission-blocked-how-to-allow-it.html). Reader-task gap: existing microphone-test guides
@@ -170,7 +170,7 @@ export const INFO_ROUTES = new Set([
   // allow path". GSC long-tail "microphone permission denied" / "allow microphone in browser" / "mic blocked safari"
   // demand carries impression float without a single-intent landing page; Bing query_stats reinforces.
   // Append-only (new URL); non-cannibalising per seo-agency-check anti-cannibalization gate.
-  '/guides/microphone-test-permission-blocked-how-to-allow-it.html',
+  '/guides/en/microphone-test-permission-blocked-how-to-allow-it.html',
   // Cycle 88 P88.A - "QR Code Content Types: URL vs vCard vs Wi-Fi vs Text - Which to Pick" Lane-D guide
   // (utility / qr-code-generator sub-cluster, companion to /qr-code-generator.html). Reader-task gap:
   // existing /qr-code-generator.html guides cover MECHANICAL concerns (qr-code-error-correction-and-scan-failures
@@ -181,7 +181,7 @@ export const INFO_ROUTES = new Set([
   // spec), ZXing project wiki (canonical open-source reference; defines the de-facto WIFI: URI scheme), RFC 6350
   // vCard 4.0, RFC 2426 vCard 3.0, RFC 5545 iCalendar VEVENT. Append-only (new URL); non-cannibalising per
   // seo-agency-check anti-cannibalization gate.
-  '/guides/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html',
+  '/guides/en/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html',
   // Cycle 90 P90.A - "EXIF Metadata and Image Compression: What Gets Stripped" Lane-D guide
   // (image-conversion / compress-image sub-cluster, companion to /compress-image.html). Reader-task gap:
   // existing /compress-image.html guides cover quality vs file size (how-to-choose-a-compression-level),
@@ -192,61 +192,61 @@ export const INFO_ROUTES = new Set([
   // APP0..APP15), ICC.1:2010-12 (ICC profile in APP2), libjpeg-turbo + mozjpeg + cjpeg encoder docs,
   // Pillow + Sharp + libvips + ImageMagick + exiftool docs. Append-only (new URL); non-cannibalising per
   // seo-agency-check anti-cannibalization gate.
-  '/guides/image-compression-and-exif-metadata-what-gets-stripped.html',
+  '/guides/en/image-compression-and-exif-metadata-what-gets-stripped.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides - 4 pillar + 2 comparison + 6 how-to + 1 case-study.
-  '/guides/mp4-vs-webm-for-web.html',
-  '/guides/jpg-vs-png-for-web.html',
-  '/guides/md5-vs-sha256-when-to-hash.html',
-  '/guides/csv-vs-json-data-formats.html',
-  '/guides/pdf-vs-heic-for-document-archival.html',
-  '/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html',
-  '/guides/how-to-convert-100-heic-photos-to-jpg.html',
-  '/guides/how-to-test-for-dead-pixels-before-returning-a-monitor.html',
-  '/guides/how-to-sign-pdf-after-removing-a-password.html',
-  '/guides/how-to-extract-frames-from-a-gif-for-a-social-post.html',
-  '/guides/how-to-check-webcam-and-microphone-before-an-interview.html',
-  '/guides/how-to-minify-css-js-for-cloud-run-cold-start.html',
-  '/guides/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html',
+  '/guides/en/mp4-vs-webm-for-web.html',
+  '/guides/en/jpg-vs-png-for-web.html',
+  '/guides/en/md5-vs-sha256-when-to-hash.html',
+  '/guides/en/csv-vs-json-data-formats.html',
+  '/guides/en/pdf-vs-heic-for-document-archival.html',
+  '/guides/en/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html',
+  '/guides/en/how-to-convert-100-heic-photos-to-jpg.html',
+  '/guides/en/how-to-test-for-dead-pixels-before-returning-a-monitor.html',
+  '/guides/en/how-to-sign-pdf-after-removing-a-password.html',
+  '/guides/en/how-to-extract-frames-from-a-gif-for-a-social-post.html',
+  '/guides/en/how-to-check-webcam-and-microphone-before-an-interview.html',
+  '/guides/en/how-to-minify-css-js-for-cloud-run-cold-start.html',
+  '/guides/en/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html',
   // Phase 10 Cycle 4 P10.3.4 - cluster-disambiguation guide (compress vs convert
   // intent router; upper-funnel capture for "file compressor" / "image compressor" queries).
-  '/guides/when-to-compress-vs-convert-an-image.html',
+  '/guides/en/when-to-compress-vs-convert-an-image.html',
   // Phase 11 Cycle 4 P11.3.3 - how-to guide targeting the 9,737-impression
   // `how to compress a folder` keyword opportunity (0.14% CTR / pos 6.10).
   // Upper-funnel routing to the frozen ZIP cluster without modifying any
   // zip satellite.
-  '/guides/how-to-compress-a-folder-for-email.html',
+  '/guides/en/how-to-compress-a-folder-for-email.html',
   // Phase 11 Cycle 5 P11.2.1 - device-test-checklist guide (Phase 10 P10.3.5
   // carryover; upper-funnel routing for device-test cluster).
-  '/guides/device-test-checklist-for-remote-work.html',
+  '/guides/en/device-test-checklist-for-remote-work.html',
   // Phase 11 Cycle 5 P11.3.5 - PDF cluster disambiguation ladder (routes
   // users across 12 PDF tools by intent).
-  '/guides/pdf-editing-ladder.html',
+  '/guides/en/pdf-editing-ladder.html',
   // Phase 13 Cycle 2.1 P13.2.1 - file-compressor head-query recovery
   // (252,050 monthly impressions @ 0.04% CTR, pos 9.94 - leak target).
   // Routes upper-funnel "file compressor" intent into the right tool by file
   // type without modifying any ZIP satellite.
-  '/guides/file-compressor-vs-zip-what-to-pick.html',
+  '/guides/en/file-compressor-vs-zip-what-to-pick.html',
   // Phase 13 Cycle 2.2 P13.2.2 - HEIC vs JPG converter decision guide.
   // Pairs with /heic-to-jpg.html (Cycle 1 verb-first recovery) to absorb
   // top-of-funnel "convert HEIC?" intent into a destination-quality page.
-  '/guides/heic-vs-jpg-converter-when-each-wins.html',
+  '/guides/en/heic-vs-jpg-converter-when-each-wins.html',
   // Phase 16 Cycle A P16.N1 - "file compressor" head-query (259,581 impr /
   // 0.04% CTR / pos 9.9). Greenfield explainer + routing guide. Touches
   // no existing tool / hub / guide URL; ZIP-CRITICAL-CARE compliant.
-  '/guides/what-is-a-file-compressor-and-which-to-use.html',
+  '/guides/en/what-is-a-file-compressor-and-which-to-use.html',
   // Cycle 121 P121.G - "file compressor" HEAD-query aggregator landing
   // (248,591 impr / 0.04% CTR / pos 9.94 / 12,332 missed clicks per 28d).
   // Operator override carry from cycle120 P120.G. Distinct from the
   // four long-tail /guides/file-compressor-* pages: this URL targets
   // the exact-match HEAD query as canonical landing; the long-tail
   // pages keep their existing intents. Append-only.
-  '/guides/file-compressor.html',
+  '/guides/en/file-compressor.html',
   // Cycle 122 P122.A - "test lcd" + "lcd tester" + "lcd test online"
   // HEAD-query disambiguation aggregator (combined ~7,773 impr / 28d
   // at pos 5-8). Routes the "which tool to pick" intent to /lcd-test.html
   // action tool while the existing 8 /guides/lcd-* / /guides/dead-pixel-*
   // / /guides/screen-* pages keep their long-tail intents. Append-only.
-  '/guides/test-lcd.html',
+  '/guides/en/test-lcd.html',
   // Cycle 20260518-30 P30.E - "lcd checker" / "lcd check" / "monitor checker" /
   // "screen checker" Lane-D create_new_guide_page. Sibling to /guides/test-lcd.html
   // and /guides/led-test.html. Covers the "checker" / "check" wording family
@@ -254,97 +254,97 @@ export const INFO_ROUTES = new Set([
   // verb framing). Both routes point at the same in-browser tool /lcd-test.html.
   // Append-only, kebab-case, does not shadow /lcd-test.html (smashed form
   // "lcdchecker" differs from existing slugs).
-  '/guides/lcd-checker.html',
+  '/guides/en/lcd-checker.html',
   // Phase 16 Cycle A P16.N2 - "how to compress a file" + variants
   // (~10K impr / 0.02% CTR / pos 10.5). Greenfield how-to guide.
-  '/guides/how-to-compress-a-file-online.html',
+  '/guides/en/how-to-compress-a-file-online.html',
   // Phase 16 Cycle A P16.N4 - "how to reduce zip file size" cluster
   // (~2.2K impr / 10-16% CTR / pos 4). Greenfield how-to guide.
-  '/guides/how-to-reduce-zip-file-size-online.html',
+  '/guides/en/how-to-reduce-zip-file-size-online.html',
   // Cycle 20260515-14 - kebab-form sibling for the same query (the
   // existing -online suffix variant covers users who type "online";
   // this bare-form covers users who omit it). 723 imp / 5.39 pos /
   // 7.5% CTR per GSC 28d.
-  '/guides/how-to-reduce-zip-file-size.html',
+  '/guides/en/how-to-reduce-zip-file-size.html',
   // Cycle 20260520-9 create_new_guide_page - exact-match "reduce zip
   // file size online" landing (GSC 397 imp / 54 clicks / pos 5.01 /
   // CTR 13.6% / opportunity_score 68.46). Implementing tool /zip-file.html.
   // Append-only; non-cannibalizing vs how-to-reduce-zip-file-size-online
   // (this guide is the bare-noun phrase, the existing one is the how-to
   // framing for the same intent family).
-  '/guides/reduce-zip-file-size-online.html',
+  '/guides/en/reduce-zip-file-size-online.html',
   // Phase 16 Cycle B P16.N11 - "convert heic to jpg" head query
   // (5,500+ impr / <2% CTR / pos 11-24). Pure step-by-step how-to;
   // pairs with existing heic-vs-jpg-vs-webp (which covers the WHEN).
-  '/guides/how-to-convert-heic-to-jpg-step-by-step.html',
+  '/guides/en/how-to-convert-heic-to-jpg-step-by-step.html',
   // Phase 16 Cycle B P16.N16 - "lcd test" head query (28K aggregate
   // impr / 1.10% CTR / pos 6.1). Explainer + when-to-run + boundary.
-  '/guides/what-an-lcd-test-does-and-when-to-run-one.html',
+  '/guides/en/what-an-lcd-test-does-and-when-to-run-one.html',
   // Cycle 20260517-6 create_new_guide_page - "ms to date" synonym-coverage guide.
   // Implementing tool: /convert-time-in-millisecond-to-date.html.
-  '/guides/ms-to-date.html',
+  '/guides/en/ms-to-date.html',
   // Phase 16 cycle 8 N-series - 25 new long-form guides. INFO_ROUTES
   // membership disables ads + rating widget (matching the rest of the
   // /guides/* cluster); see page-renderer.mjs showAds gate.
-  '/guides/how-to-make-a-zip-file-smaller.html',
-  '/guides/how-to-compress-zip-file-to-smaller-size.html',
+  '/guides/en/how-to-make-a-zip-file-smaller.html',
+  '/guides/en/how-to-compress-zip-file-to-smaller-size.html',
   // Cycle 20260517-9 create_new_guide_page - exact-match "compress zip file to smaller size" landing.
-  '/guides/compress-zip-file-to-smaller-size.html',
-  '/guides/compress-zip-file-to-100kb.html',
+  '/guides/en/compress-zip-file-to-smaller-size.html',
+  '/guides/en/compress-zip-file-to-100kb.html',
   // Cycle 20260521-12 P29.A create_new_guide_page - "compress zip file to 2mb" enterprise-SMTP-cap-specific landing. Operator-approved via card cycle29-create_new_guide_page-compresszipfileto2mb-cannibalisation-1779338089590 (option a). 2 MB is the historical Exchange / SMTP-relay / legacy-webmail attachment cap; distinct angle from the 100kb sibling. Implementing tool /zip-file.html.
-  '/guides/compress-zip-file-to-2mb.html',
+  '/guides/en/compress-zip-file-to-2mb.html',
   // Cycle 20260517-10 create_new_guide_page - exact-match "zip size reducer" landing (GSC 605 imp / 56 clicks / pos 5.67 / CTR 9.26%; opportunity_score 96.84).
-  '/guides/zip-size-reducer.html',
+  '/guides/en/zip-size-reducer.html',
   // Cycle 20260519-12 create_new_guide_page - exact-match "zip file size compressor" landing (GSC 354 imp / 44 clicks / pos 5.43 / CTR 12.43%; opportunity_score 57.07). Implementing tool /zip-file.html. Append-only; non-cannibalizing vs /guides/how-to-make-a-zip-file-smaller.html, /guides/zip-size-reducer.html, /guides/compress-zip-file-to-smaller-size.html (each targets a distinct head-tail intent).
-  '/guides/zip-file-size-compressor.html',
+  '/guides/en/zip-file-size-compressor.html',
   // Cycle 20260519-15 create_new_guide_page — "resize zip file" routing/disambiguation Lane-D guide (GSC 406 imp / 19 clicks / pos 6.83 / CTR 4.68%; opportunity_score 56.6). Distinguishing role: addresses the three-way wording ambiguity (shrink vs split vs shrink-photo-inputs-first), routes to the existing shrink / split / image-resize guides — not a 10th compress-zip duplicate.
-  '/guides/resize-zip-file.html',
+  '/guides/en/resize-zip-file.html',
   // Cycle 20260520-16 create_new_guide_page — Indonesian-language guide "kompres file zip" (GSC 338 imp / 13 clicks / pos 6.36 / CTR 3.85%; opportunity_score 51.12). Implementing tool /zip-file.html. Companion sibling to /guides/comprimir-zip-online.html (Spanish) and /guides/compactar-pasta.html (Portuguese).
-  '/guides/kompres-file-zip.html',
+  '/guides/en/kompres-file-zip.html',
   // Cycle 20260523-5 P52.I create_new_guide_page — Indonesian-language size-question guide "kompres zip" (GSC 248 imp / 18 clicks / pos 7.42 / CTR 7.26%; opportunity_score 30.98). Implementing tool /zip-file.html. SIZE-focused sibling to /guides/kompres-file-zip.html (broader Indonesian bundle/privacy guide).
-  '/guides/kompres-zip.html',
-  '/guides/online-zip-vs-7z-vs-rar-which-to-pick.html',
-  '/guides/how-to-zip-multiple-files-into-one.html',
-  '/guides/how-to-zip-folder-online-step-by-step.html',
-  '/guides/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html',
-  '/guides/recover-corrupt-zip-file-options.html',
-  '/guides/iphone-photo-format-explained-heic-jpg-png-raw.html',
-  '/guides/how-to-convert-iphone-photo-to-jpg.html',
-  '/guides/jpg-vs-jpeg-are-they-the-same.html',
-  '/guides/svg-to-png-when-to-rasterize-an-svg.html',
-  '/guides/how-to-check-camera-quality-on-your-phone.html',
-  '/guides/microphone-test-online-what-it-actually-checks.html',
-  '/guides/keyboard-tester-online-rollover-vs-anti-ghosting.html',
-  '/guides/why-md5-cannot-be-decrypted.html',
+  '/guides/en/kompres-zip.html',
+  '/guides/en/online-zip-vs-7z-vs-rar-which-to-pick.html',
+  '/guides/en/how-to-zip-multiple-files-into-one.html',
+  '/guides/en/how-to-zip-folder-online-step-by-step.html',
+  '/guides/en/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html',
+  '/guides/en/recover-corrupt-zip-file-options.html',
+  '/guides/en/iphone-photo-format-explained-heic-jpg-png-raw.html',
+  '/guides/en/how-to-convert-iphone-photo-to-jpg.html',
+  '/guides/en/jpg-vs-jpeg-are-they-the-same.html',
+  '/guides/en/svg-to-png-when-to-rasterize-an-svg.html',
+  '/guides/en/how-to-check-camera-quality-on-your-phone.html',
+  '/guides/en/microphone-test-online-what-it-actually-checks.html',
+  '/guides/en/keyboard-tester-online-rollover-vs-anti-ghosting.html',
+  '/guides/en/why-md5-cannot-be-decrypted.html',
   // Cycle 20260518-24 P24.E — "md5 decode" reader-vocabulary routing guide (distinguishing role).
-  '/guides/md5-decode.html',
+  '/guides/en/md5-decode.html',
   // Cycle 20260518-28 — "md5 decrypt online" wording routing guide. Same one-way truth as md5-decode but framed
   // around the "decrypt" search wording (more specific; carries the password-recovery sub-intent). Distinct from
   // /guides/why-md5-cannot-be-decrypted.html (cryptographic walkthrough) and /guides/md5-decode.html (broader
   // wording routing). Outbound link to /md5-converter.html.
-  '/guides/md5-decrypt-online.html',
+  '/guides/en/md5-decrypt-online.html',
   // Cycle 20260520-17 — "md5 hash decrypt" dictionary-attack-feasibility guide.
-  '/guides/md5-hash-decrypt.html',
+  '/guides/en/md5-hash-decrypt.html',
   // Cycle 20260523 P50.H create_new_guide_page — "md5 password" reader-intent
   // guide. Frames the hashing intent (one-way MD5 of a password string) and
   // routes the password-recovery cohort to the MD5-alternatives guide. Honors
   // cycle 30/35/40/43/44 decrypt-md5 cannibalisation guard: NOT titled or
   // framed as "decrypt md5 password". Outbound link to /md5-converter.html.
-  '/guides/md5-password.html',
-  '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html',
-  '/guides/json-vs-yaml-vs-toml-config-formats-explained.html',
-  '/guides/css-minifier-vs-uglifier-vs-tree-shaking.html',
-  '/guides/base64-when-to-use-and-when-not-to.html',
-  '/guides/how-to-split-a-gif-into-frames-for-editing.html',
-  '/guides/how-to-crop-and-rotate-an-image.html',
-  '/guides/photo-editor-vs-graphics-app-vs-batch-processor.html',
-  '/guides/mp4-vs-mov-vs-mkv-which-container-when.html',
-  '/guides/free-online-tools-that-work-without-uploading-files.html',
-  '/guides/qr-code-generator-best-practices.html',
+  '/guides/en/md5-password.html',
+  '/guides/en/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html',
+  '/guides/en/json-vs-yaml-vs-toml-config-formats-explained.html',
+  '/guides/en/css-minifier-vs-uglifier-vs-tree-shaking.html',
+  '/guides/en/base64-when-to-use-and-when-not-to.html',
+  '/guides/en/how-to-split-a-gif-into-frames-for-editing.html',
+  '/guides/en/how-to-crop-and-rotate-an-image.html',
+  '/guides/en/photo-editor-vs-graphics-app-vs-batch-processor.html',
+  '/guides/en/mp4-vs-mov-vs-mkv-which-container-when.html',
+  '/guides/en/free-online-tools-that-work-without-uploading-files.html',
+  '/guides/en/qr-code-generator-best-practices.html',
   // Workstream B sample batch - added 2026-04-30 per SITE_ENHANCEMENT_PLAN.md.
   // Two proof-of-pattern guides for cycle-18 batch-1 ship-loop.
-  '/guides/how-to-compress-a-folder.html',
-  '/guides/lcd-test-what-it-checks.html',
+  '/guides/en/how-to-compress-a-folder.html',
+  '/guides/en/lcd-test-what-it-checks.html',
   // Cycle 20260514-6-followup URL-convention cleanup: /guides/lcdtest.html
   // moved to ALIAS_ROUTES → /guides/lcd-test-online.html. CMS fragments
   // renamed guideslcdtest → guideslcdtestonline. Comment kept for git-blame
@@ -361,14 +361,14 @@ export const INFO_ROUTES = new Set([
   // without modifying either tool page; anti-cannibalisation cleared by
   // seo-agency-check (no overlap with /guides/lcd-test-what-it-checks.html
   // which explains WHAT the test checks; this guide answers WHICH name = WHICH tool).
-  '/guides/screen-display-test-synonyms.html',
+  '/guides/en/screen-display-test-synonyms.html',
   // Cycle 27 P27.C - Lane-D mandatory guide page for the Bing keyboard-test
   // cohort (`keyboard test online` 7.7k + `online keyboard test` 6.2k +
   // `test keyboard` 3.4k Bing-only impressions). Routes mid-funnel
   // step-by-step intent to /keyboard-test.html without overlapping the
   // existing /guides/keyboard-tester-online-rollover-vs-anti-ghosting.html
   // (which is the WHAT-IS guide; this is the HOW-TO guide).
-  '/guides/how-to-test-a-keyboard-online-step-by-step.html',
+  '/guides/en/how-to-test-a-keyboard-online-step-by-step.html',
   // Cycle 28 P28.A - Lane-D mandatory guide page for the GA4 sustained
   // decay on /extract-gif-to-image-frames.html (cycle-21 P21.1 → cycle-27
   // P27.E research carry, executed cycle 28). PNG-vs-JPG format-decision
@@ -378,7 +378,7 @@ export const INFO_ROUTES = new Set([
   // tool's GA4 decay by routing format-shopping queries to a dedicated
   // landing page that links INTO the tool's settings panel. Append-only
   // on every existing surface. Cluster: image-editing.
-  '/guides/extract-gif-frames-png-vs-jpg-which-format.html',
+  '/guides/en/extract-gif-frames-png-vs-jpg-which-format.html',
   // Cycle 29 P29.B - Lane-D mandatory guide page on the orthogonal
   // "frames vs frame rate (FPS)" question for the same /extract-gif-to-
   // image-frames.html tool (cycle-29 PA-mode contract: ≥ 1 new guide
@@ -389,7 +389,7 @@ export const INFO_ROUTES = new Set([
   // (1,643 imp / 28d / 0.30% CTR / pos 8.24) by routing the explanatory
   // sub-cohort to a dedicated landing page that satellite-links back to
   // the tool. Append-only on every existing surface. Cluster: image-editing.
-  '/guides/gif-frames-extract-vs-frame-rate-fps-explained.html',
+  '/guides/en/gif-frames-extract-vs-frame-rate-fps-explained.html',
   // Cycle 30 P30.A - Lane-D mandatory guide page on the orthogonal
   // "what to use INSTEAD of MD5" decision. Distinct from the existing
   // /guides/why-md5-cannot-be-decrypted.html (which answers the why)
@@ -399,13 +399,13 @@ export const INFO_ROUTES = new Set([
   // vs bcrypt" - all currently landing on /md5-converter.html at
   // GSC pos 9-11 with sub-2.5% CTR. Append-only on every existing
   // surface. Cluster: guide,developer.
-  '/guides/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html',
+  '/guides/en/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html',
   // Cycle 31 P31.A - "camera test shows black screen" diagnostic-flow
   // guide. Targets Bing "camera test" head query (100k+ impressions @
   // pos 8.4 / 198 clicks) by addressing the failure-mode reader task
   // ("preview is a black rectangle") no existing guide covers.
   // Lane-D PA-mode mandatory; device-test cluster.
-  '/guides/camera-test-shows-black-screen-four-fixes.html',
+  '/guides/en/camera-test-shows-black-screen-four-fixes.html',
   // Cycle 34 P34.A - microphone-test "no sound / flat waveform"
   // diagnostic-flow guide. Targets Bing "microphone test" /
   // "test microphone" / "microphone test online free" cluster
@@ -414,7 +414,7 @@ export const INFO_ROUTES = new Set([
   // no existing guide covers. Closes the last device-test cluster
   // gap (camera/screen/keyboard already have troubleshooting guides).
   // Lane-D PA-mode mandatory; device-test cluster.
-  '/guides/microphone-test-no-sound-four-fixes.html',
+  '/guides/en/microphone-test-no-sound-four-fixes.html',
   // Cycle 35 P35.A - keyboard-test "keys not detected / some keys
   // don't highlight" diagnostic-flow guide. Targets Bing
   // "keyboard test" / "online keyboard test" / "keyboard tester" /
@@ -424,7 +424,7 @@ export const INFO_ROUTES = new Set([
   // no existing guide covers. Closes the LAST remaining device-test
   // cluster gap (camera + microphone already shipped 31/34; LCD has
   // dead-pixel-testing-guide). Lane-D PA-mode mandatory.
-  '/guides/keyboard-test-keys-not-detected-four-fixes.html',
+  '/guides/en/keyboard-test-keys-not-detected-four-fixes.html',
   // Cycle 37 P37.A - "compress JPEG without losing quality - quality
   // vs size" decision-table guide. Targets the residual /compress-image.html
   // intent gap (GSC "compress jpeg online free" 156 imp at pos 9.59 /
@@ -435,7 +435,7 @@ export const INFO_ROUTES = new Set([
   // email) plus AI auto-mode. Append-only satellite backlink on
   // /compress-image.html. Cluster: image-editing. Lane-D PA-mode
   // mandatory; non-ZIP, non-destructive.
-  '/guides/compress-jpeg-without-losing-quality-quality-vs-size.html',
+  '/guides/en/compress-jpeg-without-losing-quality-quality-vs-size.html',
   // Cycle 38 P38.A - "is this long number a timestamp?" diagnostic-flow
   // guide for the GSC `milliseconds to date` (1,662 imp / pos 6.6) +
   // `millis to date` (1,378 imp / pos 6.7) cluster (~3,040 imp / 28d
@@ -449,7 +449,7 @@ export const INFO_ROUTES = new Set([
   // PA-mode mandatory; non-ZIP, non-destructive; NO satellite
   // backlinks on /convert-time-in-millisecond-to-date.html (cycle 30
   // monitor active until 2026-05-10).
-  '/guides/long-number-millisecond-or-second.html',
+  '/guides/en/long-number-millisecond-or-second.html',
   // Cycle 39 P39.A - "compressed JPG looks blurry, why?" reactive
   // diagnostic-flow guide complementing the cycle-37 PROACTIVE quality
   // guide. Three named causes (too-low quality, repeated re-encodes,
@@ -461,7 +461,7 @@ export const INFO_ROUTES = new Set([
   // (operator-held tool URL); NO satellite backlink (cycles 37/38
   // monitors open until 2026-05-10). Cluster: image-editing.
   // Lane-D PA-mode mandatory; non-ZIP, non-destructive.
-  '/guides/compressed-jpg-looks-blurry-three-causes.html',
+  '/guides/en/compressed-jpg-looks-blurry-three-causes.html',
   // Cycle 40 P40.A - "online ffmpeg conversion stalled, why?" reactive
   // diagnostic-flow guide complementing the cycle-12 PROACTIVE
   // online-vs-local decision guide. Three named causes (browser memory
@@ -478,7 +478,7 @@ export const INFO_ROUTES = new Set([
   // backlinks (cycles 30/31/32/34/35/37/38/39 monitors open until
   // 2026-05-10/2026-05-11). Cluster: video / image-conversion.
   // Lane-D PA-mode mandatory; non-ZIP, non-destructive.
-  '/guides/ffmpeg-online-conversion-stalled-three-fixes.html',
+  '/guides/en/ffmpeg-online-conversion-stalled-three-fixes.html',
   // Cycle 41 P41.A - "GIF frame extractor output looks wrong, why?" reactive
   // diagnostic-flow guide. Lane-D pivot because all 7 cycle-41 decision rows
   // are blocked (cycles 30/31/32/34/35/37/38/39/40 active monitors + ZIP-
@@ -493,12 +493,12 @@ export const INFO_ROUTES = new Set([
   // no satellite backlink) and the four proactive companion guides; NO
   // satellite backlinks anywhere this cycle. Cluster: image-conversion /
   // animation. Lane-D PA-mode mandatory; non-ZIP, non-destructive.
-  '/guides/gif-frame-extractor-output-looks-wrong-three-causes.html',
+  '/guides/en/gif-frame-extractor-output-looks-wrong-three-causes.html',
   // Cycle 20260514-9 create_new_guide_page - "gif frame extractor" head-term
   // Lane-D guide (1,022 imp / 28d, pos 7.77, CTR 1.08%; opportunity score 130).
   // Implementing tool: /extract-gif-to-image-frames.html. Single-cycle complete
   // ship per cycle 20260514-5 contract.
-  '/guides/gif-frame-extractor.html',
+  '/guides/en/gif-frame-extractor.html',
   // Cycle 42 P42.A - "LCD test vs display test vs monitor test - which?"
   // reactive disambiguation-flow guide. Lane-D pivot because all 6 cycle-42
   // decision rows touch active-monitor or auto-status tool URLs (/lcd-test.html
@@ -513,7 +513,7 @@ export const INFO_ROUTES = new Set([
   // link only, no satellite backlink) and four existing companion guides;
   // NO satellite backlinks anywhere this cycle. Cluster: device-test.
   // Lane-D PA-mode mandatory; non-ZIP, non-destructive.
-  '/guides/lcd-test-vs-display-test-which-do-you-need.html',
+  '/guides/en/lcd-test-vs-display-test-which-do-you-need.html',
   // Cycle 43 P43.B - "camera test vs webcam test vs camera quality - which?"
   // reactive disambiguation-flow guide. Lane-D pivot because all 6 cycle-43
   // decision rows touch active-monitor or auto-status tool URLs (/lcd-test.html
@@ -529,14 +529,14 @@ export const INFO_ROUTES = new Set([
   // before-an-interview, device-test-checklist-for-remote-work) plus cycle-42
   // P42.A LCD-test guide cross-link. NO satellite backlinks anywhere this cycle.
   // Cluster: device-test. Lane-D PA-mode mandatory; non-ZIP, non-destructive.
-  '/guides/camera-test-vs-webcam-test-which-do-you-need.html',
+  '/guides/en/camera-test-vs-webcam-test-which-do-you-need.html',
   // Cycle 73 P73.B - "Screen test vs camera test - which one do you actually need?" cross-cluster
   // disambiguation guide for the ambiguous "test my device" head query. Distinct from cycle-42
   // (within-screen-cluster: lcd vs display vs monitor) and cycle-43 (within-camera-cluster:
   // camera vs webcam) - this one disambiguates ACROSS the two action tools. Sourced from
   // DEC.20260505-18.001/003/004 + opportunity-scout OPP.20260505-18.02/04. Lane-D PA-mode
   // (DASHBOARD-PA contract); cluster: device-test; non-ZIP, non-destructive.
-  '/guides/screen-test-vs-camera-test-pick-the-right-tool.html',
+  '/guides/en/screen-test-vs-camera-test-pick-the-right-tool.html',
   // Cycle 44 P44.A - "MD5 to text - why you cannot convert it back, and what to
   // do instead" disambiguation/decision guide for the `md5 to text` (1,385 imp /
   // 28d / pos 3.5 / 20.07% CTR) + `md5 decrypt` (3,158 imp / pos 9.2) demand
@@ -550,7 +550,7 @@ export const INFO_ROUTES = new Set([
   // guides; one append-only `<p><a>` satellite backlink at file-tail of
   // BODYWELCOMEmd5converter.html. Cluster: guide,developer. Lane-D PA-mode
   // mandatory; non-ZIP, non-destructive.
-  '/guides/md5-to-text-why-you-cannot-convert-back.html',
+  '/guides/en/md5-to-text-why-you-cannot-convert-back.html',
   // Cycle 46 P46.B - pre-call checklist guide. Reader question: "I have 5 minutes
   // before a video call - which checks do I run on the screen, the webcam, and
   // the microphone?" Bridges the cycle-42 lcd-test-vs-display-test guide and the
@@ -559,7 +559,7 @@ export const INFO_ROUTES = new Set([
   // Outbound links: /lcd-test.html, /camera-test.html, /microphone-test.html,
   // /keyboard-test.html, plus three companion device-test guides. Cluster:
   // guide,device-test. Lane-D PA-mode mandatory; non-ZIP, non-destructive.
-  '/guides/before-a-video-call-which-tools-to-run.html',
+  '/guides/en/before-a-video-call-which-tools-to-run.html',
   // Cycle 48 P48.A - laptop-specific screen-test 5-minute checklist guide.
   // Targets Bing 'screen test for laptop' (5,222 imp / 1.13% CTR) + 'cek lcd
   // laptop online' (6,639 imp / 2.27% CTR) cluster, both under-served by the
@@ -570,7 +570,7 @@ export const INFO_ROUTES = new Set([
   // /microphone-test.html, plus companion device-test guides. Cluster:
   // guide,device-test,lcd-test. Lane-D PA-mode mandatory; non-ZIP,
   // non-destructive; append-only on every existing surface.
-  '/guides/screen-test-for-laptop-5-minute-checklist.html',
+  '/guides/en/screen-test-for-laptop-5-minute-checklist.html',
   // Cycle 49 P49.A - "FFmpeg Online vs Video Converter - which tool to open"
   // routing guide. Targets the GSC "ffmpeg online" 1,843 imp / 94 clicks /
   // pos 6.5 / op_score 270.97 row plus the "convert mov to mp4" / "video
@@ -582,7 +582,7 @@ export const INFO_ROUTES = new Set([
   // ffmpeg-vs-local-ffmpeg guide. Cluster: guide,video,ffmpeg. Lane-D PA-
   // mode mandatory; non-ZIP, non-destructive; append-only on every existing
   // surface.
-  '/guides/ffmpeg-online-vs-video-converter-which-to-pick.html',
+  '/guides/en/ffmpeg-online-vs-video-converter-which-to-pick.html',
   // Cycle 50 P50.A - "ImageMagick Online vs Task-Specific Tools - which to
   // pick" routing guide. Image-editing-cluster parallel to cycle 49 P49.A
   // (FFmpeg-vs-Video-Converter routing). Targets the GA4 /imagemagick-
@@ -596,7 +596,7 @@ export const INFO_ROUTES = new Set([
   // svgtopng) without editing any of them. Cluster: guide,image-editing,
   // imagemagick. Lane-D PA-mode mandatory; non-ZIP, non-destructive;
   // append-only on every existing surface.
-  '/guides/imagemagick-online-vs-task-specific-tools-which-to-pick.html',
+  '/guides/en/imagemagick-online-vs-task-specific-tools-which-to-pick.html',
   // Cycle 51 P51.A - "File Compressor Online: ZIP a Folder vs Compress an
   // Image" routing guide. Disambiguates the GSC "file compressor" SERP
   // intent (258,156 imp / 0.04% CTR / pos 9.9 / 12,797 missed clicks 28d
@@ -611,7 +611,7 @@ export const INFO_ROUTES = new Set([
   // (verified cycle 11 WD) without editing any of them. Cluster:
   // guide,zip,image-editing. Lane-D PA-mode mandatory; non-ZIP-rewrite
   // (only links to ZIP cluster URLs - ZIP-CRITICAL-CARE preserved).
-  '/guides/file-compressor-online-when-to-zip-vs-when-to-compress-image.html',
+  '/guides/en/file-compressor-online-when-to-zip-vs-when-to-compress-image.html',
   // Cycle 53 P53.A - "How to Extract a File Online - ZIP, RAR, 7z" routing
   // guide. The reverse-direction inverse of cycle-51's file-compressor
   // guide. Recovers the GSC "extract file online" query (-9.3 pos in 7d:
@@ -626,7 +626,7 @@ export const INFO_ROUTES = new Set([
   // ZIP-cluster guides. Cluster: guide,zip. Lane-D PA-mode mandatory; not
   // ZIP-rewrite (only links to ZIP cluster URLs - ZIP-CRITICAL-CARE
   // preserved).
-  '/guides/how-to-extract-a-file-online-zip-rar-7z.html',
+  '/guides/en/how-to-extract-a-file-online-zip-rar-7z.html',
   // Cycle 54 P54.A - "How to choose a compression level - quality vs file
   // size, with examples" guide. Captures the long-tail "compress image to
   // 100kb / 200kb / 500kb / target file size" intent + "what compression
@@ -640,7 +640,7 @@ export const INFO_ROUTES = new Set([
   // (jpg-vs-png-for-web, heic-vs-jpg-vs-webp) when the format is wrong.
   // Lane-D PA-mode mandatory; non-ZIP, non-destructive; append-only on every
   // existing surface (only the new guide page is created).
-  '/guides/how-to-choose-a-compression-level.html',
+  '/guides/en/how-to-choose-a-compression-level.html',
   // Cycle 55 P55.A - "ZIP password types - strong vs weak, explained" guide.
   // Trust-gate education for the highest-traffic ZIP-cluster URL
   // (/remove-zip-password.html: 8 849 28d pageviews / 79.2% engagement /
@@ -654,7 +654,7 @@ export const INFO_ROUTES = new Set([
   // 7-Zip public docs cited in the SKILL.md ## Citations block. Lane-D
   // PA-mode mandatory; non-ZIP-cluster URL (/guides/* sits OUTSIDE the
   // ZIP-CRITICAL-CARE cluster); append-only on every existing surface.
-  '/guides/zip-password-types-strong-vs-weak-explained.html',
+  '/guides/en/zip-password-types-strong-vs-weak-explained.html',
   // Cycle 56 P56.A - "PDF preflight online: what it actually checks" guide.
   // Lane-D fresh-capture against the search-vocabulary gap upstream of
   // /preflight-pdf.html. Bing query_stats (run 20260504-20) shows persistent
@@ -671,7 +671,7 @@ export const INFO_ROUTES = new Set([
   // PDF/A ISO 19005 / PDF/X ISO 15930 / Adobe Acrobat preflight docs cited
   // in the SKILL.md ## Citations block. Lane-D PA-mode mandatory; non-ZIP
   // cluster; append-only on every existing surface.
-  '/guides/pdf-preflight-online-what-it-actually-checks.html',
+  '/guides/en/pdf-preflight-online-what-it-actually-checks.html',
   // Cycle 58 P58.A - "Read and compare MD5 hashes correctly: case,
   // whitespace, hex format" guide. Lane-D PA-mode mandatory; guide,
   // developer, md5 cluster (non-ZIP). Bridges the post-conversion
@@ -683,7 +683,7 @@ export const INFO_ROUTES = new Set([
   // traces to public RFC 1321 / NIST FIPS 180-4 spec + the
   // tool-md5converter SKILL.md framing-menu D1 line. Append-only on
   // every existing surface.
-  '/guides/read-and-compare-md5-hashes-correctly.html',
+  '/guides/en/read-and-compare-md5-hashes-correctly.html',
   // Cycle 59 P59.A - "How to tell if a JPG was compressed too much"
   // guide. Bridges /get-jpeg-compression-level.html via the verified
   // tool-getjpegcompressionlevel SKILL.md framing-menu D1 line. Every
@@ -694,7 +694,7 @@ export const INFO_ROUTES = new Set([
   // guides (assess-after vs choose-before). Lane-D PA-mode mandatory;
   // image-conversion / image-editing cluster (non-ZIP); append-only on
   // every existing surface.
-  '/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html',
+  '/guides/en/how-to-tell-if-a-jpg-was-compressed-too-much.html',
   // Cycle 60 P60.A - "How to flatten a PDF - and when to do it" guide.
   // Bridges /flatten-pdf.html (server-side PDF flattening tool with
   // verified tool-flattenpdf SKILL). Distinct from 6 existing PDF guides
@@ -705,7 +705,7 @@ export const INFO_ROUTES = new Set([
   // OCG layers) and the WHEN-TO-USE / WHEN-NOT-TO decision.
   // Lane-D PA-mode mandatory; pdf cluster (non-ZIP); append-only on
   // every existing surface.
-  '/guides/how-to-flatten-a-pdf-and-when-to-do-it.html',
+  '/guides/en/how-to-flatten-a-pdf-and-when-to-do-it.html',
   // Cycle 61 P61.A - "PNG to SVG - when to vectorize a raster image"
   // guide. Bridges /png-to-svg.html (server-side raster-to-vector
   // conversion via the freetoolonline AWS service). Distinct from
@@ -718,7 +718,7 @@ export const INFO_ROUTES = new Set([
   // photos / gradients / fine texture / soft anti-aliased text do
   // not). Lane-D PA-mode mandatory; image-conversion cluster
   // (non-ZIP); append-only on every existing surface.
-  '/guides/png-to-svg-when-to-vectorize-a-raster-image.html',
+  '/guides/en/png-to-svg-when-to-vectorize-a-raster-image.html',
   // Cycle 62 P62.E - "Download link not appearing after conversion -
   // 5 fixes" diagnostic guide. Bridges multiple converter tools
   // (heictojpg, compressimage, zipfile, composepdf, etc) for the
@@ -728,23 +728,23 @@ export const INFO_ROUTES = new Set([
   // the upload-side bottleneck, not the result-link visibility).
   // Lane-D PA-mode mandatory; troubleshooting cluster (non-ZIP);
   // append-only on every existing surface.
-  '/guides/download-link-not-appearing-after-conversion-five-fixes.html',
+  '/guides/en/download-link-not-appearing-after-conversion-five-fixes.html',
   // Cycle 64 P64.A - "Why HEIC won't open on Windows - three quick
   // fixes" troubleshooting guide. Bridges /heic-to-jpg.html (top
   // revenue page) for the Windows-side codec gap that turns iPhone
   // HEIC photos into "Windows can't open this file" errors. Lane-D
   // PA-mode mandatory; image-conversion cluster (non-ZIP); append-only.
-  '/guides/why-heic-wont-open-on-windows-three-fixes.html',
+  '/guides/en/why-heic-wont-open-on-windows-three-fixes.html',
   // Cycle 70 P70.A - "Zip file converter - what it actually does"
   // disambiguation guide. Targets ~5K imp/28d at 0.5-1.8% CTR / pos 8-9.
   // Lane-D PA-mode mandatory; non-ZIP-cluster identity; append-only.
-  '/guides/zip-file-converter-what-it-actually-does.html',
+  '/guides/en/zip-file-converter-what-it-actually-does.html',
   // Cycle 20260519-1 create_new_guide_page - bare-query "zip file
   // converter" guide. Distinct intent angle from the "what it actually
   // does" sibling above: this is a quick how-to / step-by-step rather
   // than a disambiguation.  Cluster: zip entry-point.  GSC 661 imp/0.9%
   // CTR/pos 10 (28d).
-  '/guides/zip-file-converter.html',
+  '/guides/en/zip-file-converter.html',
   // Cycle 71 P71.F - "HEIC to JPG: what the converter actually does
   // (and what it does not)" trust-anchor guide. Sourced verbatim from
   // tool-heictojpg/SKILL.md ## Implemented features + ## NOT implemented
@@ -752,7 +752,7 @@ export const INFO_ROUTES = new Set([
   // baseline G15_accretion_drift HIGH on prod) at a NEW URL without
   // touching the indexed copy of /heic-to-jpg.html. Lane-D PA-mode
   // mandatory; image-conversion cluster (non-ZIP); append-only.
-  '/guides/heic-to-jpg-claims-what-actually-works.html',
+  '/guides/en/heic-to-jpg-claims-what-actually-works.html',
   // Cycle1 of 20260513-5 P5.A - "Zip compressor" Lane-D append-only
   // guide (zip cluster, companion to /zip-tools/zip-file.html). Phase A
   // skeleton only — JSP wrapper + INFO_ROUTES/GUIDE_ROUTES/JSP_BY_ROUTE
@@ -763,7 +763,7 @@ export const INFO_ROUTES = new Set([
   // compresszipfile-scaffold-url-convention-1778622900000 (20260513-3)
   // and howtocompressafolder-scaffold-url-convention-1778626954066
   // (20260513-4) and ships the kebab-corrected URL.
-  '/guides/zip-compressor.html',
+  '/guides/en/zip-compressor.html',
   // Cycle6 of 20260513-6 — "Compress ZIP" Lane-D append-only guide
   // (zip cluster, companion to /zip-tools/zip-file.html and
   // /guides/zip-compressor.html). Phase A skeleton only — JSP wrapper +
@@ -773,7 +773,7 @@ export const INFO_ROUTES = new Set([
   // convention established by the prior granted cards (six cards now in
   // chain: filecompressor, lcdtest, zipfilecompressor, compresszipfile,
   // howtocompressafolder, zipcompressor; this is the seventh).
-  '/guides/compress-zip.html',
+  '/guides/en/compress-zip.html',
   // Cycle 20260518-21 create_new_guide_page - "Zip password recovery online"
   // Lane-D truthful-framing guide (zip cluster, GSC "zip password recovery
   // online" 690 imp / 147 clicks / pos 6.17 / CTR 21.3% / opportunity_score
@@ -785,7 +785,7 @@ export const INFO_ROUTES = new Set([
   // recovery paths are: (1) known-password unlock via /zip-tools/remove-zip-password.html,
   // (2) re-create the archive via /zip-tools/zip-file.html when you have
   // the source files, (3) ask the sender. Append-only kebab URL.
-  '/guides/zip-password-recovery-online.html',
+  '/guides/en/zip-password-recovery-online.html',
   // Cycle 20260518-22 create_new_guide_page - "Zip compressor online" Lane-D
   // guide (zip cluster head-query sibling, GSC "zip compressor online"
   // 611 imp / 57 clicks / pos 6.99 / CTR 9.33% / opportunity_score 79.22).
@@ -793,26 +793,26 @@ export const INFO_ROUTES = new Set([
   // and /guides/zip-compressor.html (the bare-query sibling). Singular
   // kebab URL passes the URL convention regex; smashed form
   // "zipcompressoronline" does not shadow any existing primary route.
-  '/guides/zip-compressor-online.html',
+  '/guides/en/zip-compressor-online.html',
   // Cycle 20260518-23 create_new_guide_page - "Folder to zip" Lane-D guide
   // (zip cluster, GSC "folder to zip" 773 imp / 13 clicks / pos 9.73 /
   // CTR 1.68% / opportunity_score 78.12). Companion to /zip-tools/zip-file.html
   // (the in-browser archive creator). Kebab URL passes URL convention regex;
   // smashed form "foldertozip" does not shadow any existing primary route.
-  '/guides/folder-to-zip.html',
+  '/guides/en/folder-to-zip.html',
   // Cycle 20260518-25 create_new_guide_page - "Online Zip File" Lane-D guide
   // (zip cluster, GSC "online zip file" 573 imp / 12 clicks / pos 7.39 /
   // CTR 2.09% / opportunity_score 75.94). Companion to /zip-tools/zip-file.html.
   // Kebab URL passes URL convention regex; smashed form "onlinezipfile" does
   // not shadow any existing primary route.
-  '/guides/online-zip-file.html',
+  '/guides/en/online-zip-file.html',
   // Cycle 20260518-31 create_new_guide_page - "Create Zip File Online" Lane-D
   // guide (zip cluster, GSC "create zip file online" 702 imp / 8 clicks /
   // pos 10.08 / CTR 1.14% / opportunity_score 68.87). Companion to
   // /zip-tools/zip-file.html (the in-browser archive creator). Kebab URL
   // passes URL convention regex; smashed form "createzipfileonline" does not
   // shadow any existing primary route.
-  '/guides/create-zip-file-online.html',
+  '/guides/en/create-zip-file-online.html',
   // Cycle 20260518-32 create_new_guide_page - "compactar pasta" Lane-D
   // guide (zip cluster, GSC "compactar pasta" 522 imp / 21 clicks /
   // pos 7.59 / CTR 4.02% / opportunity_score 66.02). Portuguese folder
@@ -839,13 +839,13 @@ export const INFO_ROUTES = new Set([
   // Cycle 20260520-11 new_guide_page_proposal (developer cluster):
   // implementing tool /js-unminifier.html. GSC 545 imp / 3 clicks /
   // pos 10.12 / CTR 0.55% / opportunity_score 53.55.
-  '/guides/unminify-js.html',
+  '/guides/en/unminify-js.html',
   // Cycle 20260523-3 (cycle 50) create_new_guide_page - "crop and rotate image"
   // Lane-D guide (image-editing cluster). Implementing tool /crop-image.html.
   // GSC "crop and rotate image" 223 imp / 23 clicks / pos 6.13 / CTR 10.31% /
   // opportunity_score 32.65. Kebab slug passes URL convention regex; smashed
   // form "cropandrotateimage" does not shadow any existing primary route.
-  '/guides/crop-and-rotate-image.html',
+  '/guides/en/crop-and-rotate-image.html',
 
   // 2026-05-28 plan-warm-pascal-v2 S1 multilingual migration (locale-prefixed guide URLs).
   // plan-warm-pascal-v3 S2 batch 1 (2026-05-29) - 5 locale variants of /guides/lcd-test-online.html
@@ -854,6 +854,12 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/lcd-test-online.html',
   '/guides/id/lcd-test-online.html',
   '/guides/de/lcd-test-online.html',
+  // plan-warm-pascal-v3 S2 batch 2 (2026-05-29) - 5 locale variants of /guides/convert-milliseconds-to-date.html
+  '/guides/pt/convert-milliseconds-to-date.html',
+  '/guides/es/convert-milliseconds-to-date.html',
+  '/guides/vi/convert-milliseconds-to-date.html',
+  '/guides/id/convert-milliseconds-to-date.html',
+  '/guides/de/convert-milliseconds-to-date.html',
   '/guides/pt/compress-folder.html', // pt canonical of /guides/compactar-pasta.html
   '/guides/pt/compress-zip-file.html', // pt canonical of /guides/comprimir-arquivo-zip.html
   '/guides/pt/compress-folder-to-zip.html', // pt canonical of /guides/comprimir-pasta-zipada.html
@@ -884,158 +890,164 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/lcd-test-online.html',
   '/guides/id/lcd-test-online.html',
   '/guides/de/lcd-test-online.html',
-  '/guides/heic-vs-jpg-vs-webp.html',
-  '/guides/dead-pixel-testing-guide.html',
-  '/guides/unix-timestamps-explained.html',
-  '/guides/pdf-password-types-owner-vs-user.html',
-  '/guides/png-vs-svg-when-to-use.html',
-  '/guides/css-minifier-vs-compressor.html',
+  // plan-warm-pascal-v3 S2 batch 2 (2026-05-29) - 5 locale variants of /guides/convert-milliseconds-to-date.html
+  '/guides/pt/convert-milliseconds-to-date.html',
+  '/guides/es/convert-milliseconds-to-date.html',
+  '/guides/vi/convert-milliseconds-to-date.html',
+  '/guides/id/convert-milliseconds-to-date.html',
+  '/guides/de/convert-milliseconds-to-date.html',
+  '/guides/en/heic-vs-jpg-vs-webp.html',
+  '/guides/en/dead-pixel-testing-guide.html',
+  '/guides/en/unix-timestamps-explained.html',
+  '/guides/en/pdf-password-types-owner-vs-user.html',
+  '/guides/en/png-vs-svg-when-to-use.html',
+  '/guides/en/css-minifier-vs-compressor.html',
   // Cycle 74 P74.B - JSON parser sub-feature disambiguation Lane-D guide.
-  '/guides/json-parser-validate-vs-format-vs-tree-view.html',
+  '/guides/en/json-parser-validate-vs-format-vs-tree-view.html',
   // Cycle 75 P75.B - milliseconds-to-date UTC-vs-local-time Lane-D guide.
-  '/guides/milliseconds-to-date-utc-vs-local-time.html',
+  '/guides/en/milliseconds-to-date-utc-vs-local-time.html',
   // Cycle 20260524-19 P19.F create_new_guide_page - "current time in milliseconds" bare-query Lane-D guide (utility cluster, companion to /get-time-in-millisecond.html).
-  '/guides/current-time-in-milliseconds.html',
+  '/guides/en/current-time-in-milliseconds.html',
   // Cycle 76 P76.A - screen-test-online-vs-app accuracy Lane-D guide (device-test cluster).
-  '/guides/screen-test-online-vs-app-which-is-more-accurate.html',
+  '/guides/en/screen-test-online-vs-app-which-is-more-accurate.html',
   // Cycle 77 P77.A - "compress ZIP to a specific size" Lane-D append-only guide.
-  '/guides/how-to-compress-a-zip-file-to-a-specific-size.html',
+  '/guides/en/how-to-compress-a-zip-file-to-a-specific-size.html',
   // Cycle 20260519-10 create_new_guide_page - "how to compress a zip file" bare-query step-by-step guide.
-  '/guides/how-to-compress-a-zip-file.html',
+  '/guides/en/how-to-compress-a-zip-file.html',
   // Cycle 20260519-11 create_new_guide_page - "zip folder online free" bare-query step-by-step guide (companion to /zip-file.html).
-  '/guides/zip-folder-online-free.html',
+  '/guides/en/zip-folder-online-free.html',
   // Cycle 20260524-10 create_new_guide_page - "i love zip" bare-query landing (companion to /zip-file.html).
-  '/guides/i-love-zip.html',
+  '/guides/en/i-love-zip.html',
   // Cycle 78 P78.A - "QR code error correction and scan failures" Lane-D guide (companion to /qr-code-generator.html).
-  '/guides/qr-code-error-correction-and-scan-failures.html',
+  '/guides/en/qr-code-error-correction-and-scan-failures.html',
   // Cycle 79 P79.B - "Image to Base64: embed in HTML/CSS vs link the image file" Lane-D guide.
-  '/guides/image-to-base64-embed-in-html-vs-link.html',
+  '/guides/en/image-to-base64-embed-in-html-vs-link.html',
   // Cycle 80 P80.G - "How to test a touchscreen for bad spots" Lane-D guide (device-test cluster).
-  '/guides/how-to-test-a-touchscreen-for-bad-spots.html',
+  '/guides/en/how-to-test-a-touchscreen-for-bad-spots.html',
   // Cycle 81 P81.A - "Webcam mirror vs flip explained" Lane-D guide (camera-test sub-cluster).
-  '/guides/camera-mirror-vs-flip-explained.html',
+  '/guides/en/camera-mirror-vs-flip-explained.html',
   // Cycle 82 P82.A - "CSS Unminifier vs Prettier: when to use each" Lane-D guide (developer / CSS sub-cluster).
-  '/guides/css-unminifier-vs-prettier-when-to-use-each.html',
+  '/guides/en/css-unminifier-vs-prettier-when-to-use-each.html',
   // Cycle 83 P83.A - "LED test vs LCD test: which applies to your screen?" Lane-D guide (device-test / lcd-test sub-cluster).
-  '/guides/led-test-vs-lcd-test-which-applies-to-your-screen.html',
+  '/guides/en/led-test-vs-lcd-test-which-applies-to-your-screen.html',
   // Cycle 233 P233.E - "OLED test vs LCD test: what changes on an OLED panel" Lane-D guide (device-test / lcd-test sub-cluster, companion to /lcd-test.html). Multi-cycle skeleton phase 1.
-  '/guides/oled-test-vs-lcd-test-what-changes-on-oled.html',
+  '/guides/en/oled-test-vs-lcd-test-what-changes-on-oled.html',
   // Cycle 20260517-7 P7.A - "LED test" Lane-D create_new_guide_page (device-test / lcd-test sub-cluster, companion to /lcd-test.html). GSC 28d "led test" 888 imp at pos 8.5 CTR 2% with no dedicated short-tail guide; existing /guides/led-test-vs-lcd-test-which-applies-to-your-screen.html answers the disambiguation question but the bare "led test" query lands on /lcd-test.html with no on-page framing. New URL routes the short query to the implementing tool with one paragraph of context. Append-only.
-  '/guides/led-test.html',
+  '/guides/en/led-test.html',
   // Cycle 84 P84.A - "How to compress a JPG for email attachment size limits" Lane-D guide (image-conversion / compression sub-cluster, companion to /compress-image.html).
-  '/guides/how-to-compress-a-jpg-for-email-attachment-limits.html',
+  '/guides/en/how-to-compress-a-jpg-for-email-attachment-limits.html',
   // Cycle 85 P85.A - "Microphone test levels: what quiet, normal, and peak mean" Lane-D guide (device-test / microphone-test sub-cluster, companion to /microphone-test.html).
-  '/guides/microphone-test-online-quiet-normal-peak-meter.html',
+  '/guides/en/microphone-test-online-quiet-normal-peak-meter.html',
   // Cycle 86 P86.A - "Camera test permission blocked: how to allow camera access in your browser" Lane-D guide (device-test / camera-test sub-cluster, companion to /camera-test.html).
-  '/guides/camera-test-permission-blocked-how-to-allow-it.html',
+  '/guides/en/camera-test-permission-blocked-how-to-allow-it.html',
   // Cycle 87 P87.A - "Microphone test permission blocked: how to allow mic access in your browser" Lane-D guide (device-test / microphone-test sub-cluster, companion to /microphone-test.html, symmetric peer to cycle-86 P86.A).
-  '/guides/microphone-test-permission-blocked-how-to-allow-it.html',
+  '/guides/en/microphone-test-permission-blocked-how-to-allow-it.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
-  '/guides/mp4-vs-webm-for-web.html',
-  '/guides/jpg-vs-png-for-web.html',
-  '/guides/md5-vs-sha256-when-to-hash.html',
-  '/guides/csv-vs-json-data-formats.html',
-  '/guides/pdf-vs-heic-for-document-archival.html',
-  '/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html',
-  '/guides/how-to-convert-100-heic-photos-to-jpg.html',
-  '/guides/how-to-test-for-dead-pixels-before-returning-a-monitor.html',
-  '/guides/how-to-sign-pdf-after-removing-a-password.html',
-  '/guides/how-to-extract-frames-from-a-gif-for-a-social-post.html',
-  '/guides/how-to-check-webcam-and-microphone-before-an-interview.html',
-  '/guides/how-to-minify-css-js-for-cloud-run-cold-start.html',
-  '/guides/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html',
+  '/guides/en/mp4-vs-webm-for-web.html',
+  '/guides/en/jpg-vs-png-for-web.html',
+  '/guides/en/md5-vs-sha256-when-to-hash.html',
+  '/guides/en/csv-vs-json-data-formats.html',
+  '/guides/en/pdf-vs-heic-for-document-archival.html',
+  '/guides/en/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html',
+  '/guides/en/how-to-convert-100-heic-photos-to-jpg.html',
+  '/guides/en/how-to-test-for-dead-pixels-before-returning-a-monitor.html',
+  '/guides/en/how-to-sign-pdf-after-removing-a-password.html',
+  '/guides/en/how-to-extract-frames-from-a-gif-for-a-social-post.html',
+  '/guides/en/how-to-check-webcam-and-microphone-before-an-interview.html',
+  '/guides/en/how-to-minify-css-js-for-cloud-run-cold-start.html',
+  '/guides/en/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html',
   // Phase 10 Cycle 4 P10.3.4.
-  '/guides/when-to-compress-vs-convert-an-image.html',
+  '/guides/en/when-to-compress-vs-convert-an-image.html',
   // Phase 11 Cycle 4 P11.3.3.
-  '/guides/how-to-compress-a-folder-for-email.html',
+  '/guides/en/how-to-compress-a-folder-for-email.html',
   // Phase 11 Cycle 5 P11.2.1 + P11.3.5.
-  '/guides/device-test-checklist-for-remote-work.html',
-  '/guides/pdf-editing-ladder.html',
+  '/guides/en/device-test-checklist-for-remote-work.html',
+  '/guides/en/pdf-editing-ladder.html',
   // Phase 13 Cycle 2.1 P13.2.1.
-  '/guides/file-compressor-vs-zip-what-to-pick.html',
+  '/guides/en/file-compressor-vs-zip-what-to-pick.html',
   // Phase 13 Cycle 2.2 P13.2.2.
-  '/guides/heic-vs-jpg-converter-when-each-wins.html',
+  '/guides/en/heic-vs-jpg-converter-when-each-wins.html',
   // Phase 16 Cycle A P16.N1 / P16.N2 / P16.N4.
-  '/guides/what-is-a-file-compressor-and-which-to-use.html',
-  '/guides/how-to-compress-a-file-online.html',
-  '/guides/how-to-reduce-zip-file-size-online.html',
-  '/guides/how-to-reduce-zip-file-size.html',
+  '/guides/en/what-is-a-file-compressor-and-which-to-use.html',
+  '/guides/en/how-to-compress-a-file-online.html',
+  '/guides/en/how-to-reduce-zip-file-size-online.html',
+  '/guides/en/how-to-reduce-zip-file-size.html',
   // Cycle 121 P121.G - "file compressor" HEAD-query aggregator landing.
-  '/guides/file-compressor.html',
+  '/guides/en/file-compressor.html',
   // Cycle 122 P122.A - "test lcd" / "lcd tester" / "lcd test online" HEAD-query
   // disambiguation aggregator (combined ~7.7K impr/28d at pos 5-8); routes
   // intent to /lcd-test.html action tool.
-  '/guides/test-lcd.html',
+  '/guides/en/test-lcd.html',
   // Cycle 20260518-30 P30.E - "lcd checker" / "lcd check" / "monitor checker"
   // / "screen checker" Lane-D guide. Sibling to /guides/test-lcd.html for
   // the verification-framing query family. Same destination tool.
-  '/guides/lcd-checker.html',
+  '/guides/en/lcd-checker.html',
   // Phase 16 Cycle B P16.N11 / P16.N16.
-  '/guides/how-to-convert-heic-to-jpg-step-by-step.html',
-  '/guides/what-an-lcd-test-does-and-when-to-run-one.html',
+  '/guides/en/how-to-convert-heic-to-jpg-step-by-step.html',
+  '/guides/en/what-an-lcd-test-does-and-when-to-run-one.html',
   // Cycle 20260517-6 create_new_guide_page - "ms to date" synonym-coverage guide.
-  '/guides/ms-to-date.html',
+  '/guides/en/ms-to-date.html',
   // Cycle 20260517-21 create_new_guide_page - "convert milliseconds to date" exact-match landing (GSC 482 imp / 3 clicks / pos 6.02 / CTR 0.62% / opp 79.59). Implementing tool: /convert-time-in-millisecond-to-date.html. Non-cannibalizing - existing ms-to-date covers the short synonym; this guide covers the full natural-language query.
-  '/guides/convert-milliseconds-to-date.html',
+  '/guides/en/convert-milliseconds-to-date.html',
   // Cycle 20260520-12 create_new_guide_page - "millisecond to date" singular-noun landing (GSC 368 imp / 2 clicks / pos 6.86 / CTR 0.54% / opp 53.38). Implementing tool: /convert-time-in-millisecond-to-date.html. Non-cannibalizing - existing /guides/ms-to-date.html covers the abbreviated synonym; /guides/convert-milliseconds-to-date.html covers the verb-led natural-language plural; this guide covers the bare singular-noun query.
-  '/guides/millisecond-to-date.html',
-  '/guides/how-to-make-a-zip-file-smaller.html',
-  '/guides/how-to-compress-zip-file-to-smaller-size.html',
+  '/guides/en/millisecond-to-date.html',
+  '/guides/en/how-to-make-a-zip-file-smaller.html',
+  '/guides/en/how-to-compress-zip-file-to-smaller-size.html',
   // Cycle 20260517-9 create_new_guide_page - exact-match "compress zip file to smaller size" landing.
-  '/guides/compress-zip-file-to-smaller-size.html',
-  '/guides/compress-zip-file-to-100kb.html',
+  '/guides/en/compress-zip-file-to-smaller-size.html',
+  '/guides/en/compress-zip-file-to-100kb.html',
   // Cycle 20260521-12 P29.A create_new_guide_page - "compress zip file to 2mb" enterprise-SMTP-cap-specific landing. Operator-approved via card cycle29-create_new_guide_page-compresszipfileto2mb-cannibalisation-1779338089590 (option a). 2 MB is the historical Exchange / SMTP-relay / legacy-webmail attachment cap; distinct angle from the 100kb sibling. Implementing tool /zip-file.html.
-  '/guides/compress-zip-file-to-2mb.html',
+  '/guides/en/compress-zip-file-to-2mb.html',
   // Cycle 20260517-10 create_new_guide_page - exact-match "zip size reducer" landing (GSC 605 imp / 56 clicks / pos 5.67 / CTR 9.26%; opportunity_score 96.84).
-  '/guides/zip-size-reducer.html',
+  '/guides/en/zip-size-reducer.html',
   // Cycle 20260519-12 create_new_guide_page - exact-match "zip file size compressor" landing (GSC 354 imp / 44 clicks / pos 5.43 / CTR 12.43%; opportunity_score 57.07). Implementing tool /zip-file.html. Append-only; non-cannibalizing vs /guides/how-to-make-a-zip-file-smaller.html, /guides/zip-size-reducer.html, /guides/compress-zip-file-to-smaller-size.html (each targets a distinct head-tail intent).
-  '/guides/zip-file-size-compressor.html',
+  '/guides/en/zip-file-size-compressor.html',
   // Cycle 20260519-15 create_new_guide_page — "resize zip file" routing/disambiguation Lane-D guide (GSC 406 imp / 19 clicks / pos 6.83 / CTR 4.68%; opportunity_score 56.6). Distinguishing role: addresses the three-way wording ambiguity (shrink vs split vs shrink-photo-inputs-first), routes to the existing shrink / split / image-resize guides — not a 10th compress-zip duplicate.
-  '/guides/resize-zip-file.html',
+  '/guides/en/resize-zip-file.html',
   // Cycle 20260520-16 create_new_guide_page — Indonesian-language guide "kompres file zip" (GSC 338 imp / 13 clicks / pos 6.36 / CTR 3.85%; opportunity_score 51.12). Implementing tool /zip-file.html. Companion sibling to /guides/comprimir-zip-online.html (Spanish) and /guides/compactar-pasta.html (Portuguese).
-  '/guides/kompres-file-zip.html',
+  '/guides/en/kompres-file-zip.html',
   // Cycle 20260523-5 P52.I create_new_guide_page — Indonesian-language size-question guide "kompres zip" (GSC 248 imp / 18 clicks / pos 7.42 / CTR 7.26%; opportunity_score 30.98). Implementing tool /zip-file.html. SIZE-focused sibling to /guides/kompres-file-zip.html (broader Indonesian bundle/privacy guide).
-  '/guides/kompres-zip.html',
-  '/guides/online-zip-vs-7z-vs-rar-which-to-pick.html',
-  '/guides/how-to-zip-multiple-files-into-one.html',
-  '/guides/how-to-zip-folder-online-step-by-step.html',
-  '/guides/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html',
-  '/guides/recover-corrupt-zip-file-options.html',
-  '/guides/iphone-photo-format-explained-heic-jpg-png-raw.html',
-  '/guides/how-to-convert-iphone-photo-to-jpg.html',
-  '/guides/jpg-vs-jpeg-are-they-the-same.html',
-  '/guides/svg-to-png-when-to-rasterize-an-svg.html',
-  '/guides/how-to-check-camera-quality-on-your-phone.html',
-  '/guides/microphone-test-online-what-it-actually-checks.html',
-  '/guides/keyboard-tester-online-rollover-vs-anti-ghosting.html',
-  '/guides/why-md5-cannot-be-decrypted.html',
+  '/guides/en/kompres-zip.html',
+  '/guides/en/online-zip-vs-7z-vs-rar-which-to-pick.html',
+  '/guides/en/how-to-zip-multiple-files-into-one.html',
+  '/guides/en/how-to-zip-folder-online-step-by-step.html',
+  '/guides/en/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html',
+  '/guides/en/recover-corrupt-zip-file-options.html',
+  '/guides/en/iphone-photo-format-explained-heic-jpg-png-raw.html',
+  '/guides/en/how-to-convert-iphone-photo-to-jpg.html',
+  '/guides/en/jpg-vs-jpeg-are-they-the-same.html',
+  '/guides/en/svg-to-png-when-to-rasterize-an-svg.html',
+  '/guides/en/how-to-check-camera-quality-on-your-phone.html',
+  '/guides/en/microphone-test-online-what-it-actually-checks.html',
+  '/guides/en/keyboard-tester-online-rollover-vs-anti-ghosting.html',
+  '/guides/en/why-md5-cannot-be-decrypted.html',
   // Cycle 20260518-24 P24.E — "md5 decode" reader-vocabulary routing guide (distinguishing role).
-  '/guides/md5-decode.html',
+  '/guides/en/md5-decode.html',
   // Cycle 20260518-28 — "md5 decrypt online" wording routing guide. Same one-way truth as md5-decode but framed
   // around the "decrypt" search wording (more specific; carries the password-recovery sub-intent). Distinct from
   // /guides/why-md5-cannot-be-decrypted.html (cryptographic walkthrough) and /guides/md5-decode.html (broader
   // wording routing). Outbound link to /md5-converter.html.
-  '/guides/md5-decrypt-online.html',
+  '/guides/en/md5-decrypt-online.html',
   // Cycle 20260520-17 — "md5 hash decrypt" dictionary-attack-feasibility guide.
-  '/guides/md5-hash-decrypt.html',
-  '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html',
-  '/guides/json-vs-yaml-vs-toml-config-formats-explained.html',
-  '/guides/css-minifier-vs-uglifier-vs-tree-shaking.html',
-  '/guides/base64-when-to-use-and-when-not-to.html',
-  '/guides/how-to-split-a-gif-into-frames-for-editing.html',
-  '/guides/how-to-crop-and-rotate-an-image.html',
-  '/guides/photo-editor-vs-graphics-app-vs-batch-processor.html',
-  '/guides/mp4-vs-mov-vs-mkv-which-container-when.html',
-  '/guides/free-online-tools-that-work-without-uploading-files.html',
-  '/guides/qr-code-generator-best-practices.html',
+  '/guides/en/md5-hash-decrypt.html',
+  '/guides/en/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html',
+  '/guides/en/json-vs-yaml-vs-toml-config-formats-explained.html',
+  '/guides/en/css-minifier-vs-uglifier-vs-tree-shaking.html',
+  '/guides/en/base64-when-to-use-and-when-not-to.html',
+  '/guides/en/how-to-split-a-gif-into-frames-for-editing.html',
+  '/guides/en/how-to-crop-and-rotate-an-image.html',
+  '/guides/en/photo-editor-vs-graphics-app-vs-batch-processor.html',
+  '/guides/en/mp4-vs-mov-vs-mkv-which-container-when.html',
+  '/guides/en/free-online-tools-that-work-without-uploading-files.html',
+  '/guides/en/qr-code-generator-best-practices.html',
   // Cycle 20260520-10 - "gif into frames" head-query guide; companion to /extract-gif-to-image-frames.html
-  '/guides/gif-into-frames.html',
+  '/guides/en/gif-into-frames.html',
   // Workstream B sample batch - 2026-04-30
-  '/guides/how-to-compress-a-folder.html',
-  '/guides/lcd-test-what-it-checks.html',
+  '/guides/en/how-to-compress-a-folder.html',
+  '/guides/en/lcd-test-what-it-checks.html',
   // /guides/lcdtest.html ALIAS → /guides/lcd-test-online.html (cycle 20260514-6-followup)
   // — see ALIAS_ROUTES. The kebab URL below is the canonical one in sitemap-guides.xml.
-  '/guides/lcd-test-online.html',
+  '/guides/en/lcd-test-online.html',
   // Cycle 20260514-2 Phase A scaffold for "folder to zip converter" was
   // aborted-in-place per granted card
   // create-guide-foldertozipconverter-cannibalisation-1778696200000
@@ -1046,68 +1058,68 @@ export const GUIDE_ROUTES = new Set([
   // no longer publishes it. The JSP_BY_ROUTE entry stays so the URL still
   // renders (200, not 404) for any inbound link that already references it.
   // Cycle 19 P19.4 - screen/display/monitor synonym disambiguation guide.
-  '/guides/screen-display-test-synonyms.html',
+  '/guides/en/screen-display-test-synonyms.html',
   // Cycle 27 P27.C - keyboard-test how-to guide (Lane-D PA-mode mandatory).
-  '/guides/how-to-test-a-keyboard-online-step-by-step.html',
+  '/guides/en/how-to-test-a-keyboard-online-step-by-step.html',
   // Cycle 28 P28.A - PNG vs JPG output-format comparison guide for the
   // /extract-gif-to-image-frames.html tool (Lane-D PA-mode mandatory;
   // image-editing cluster).
-  '/guides/extract-gif-frames-png-vs-jpg-which-format.html',
+  '/guides/en/extract-gif-frames-png-vs-jpg-which-format.html',
   // Cycle 29 P29.B - GIF frames vs GIF frame rate (FPS) explainer; same
   // tool, orthogonal question to cycle-28 P28.A. Lane-D PA-mode mandatory;
   // image-editing cluster.
-  '/guides/gif-frames-extract-vs-frame-rate-fps-explained.html',
+  '/guides/en/gif-frames-extract-vs-frame-rate-fps-explained.html',
   // Cycle 30 P30.A - MD5 alternatives (bcrypt vs Argon2id vs SHA-256)
   // decision guide. Lane-D PA-mode mandatory; guide,developer cluster.
-  '/guides/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html',
+  '/guides/en/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html',
   // Cycle 31 P31.A - camera-test black-screen diagnostic-flow guide.
-  '/guides/camera-test-shows-black-screen-four-fixes.html',
+  '/guides/en/camera-test-shows-black-screen-four-fixes.html',
   // Cycle 34 P34.A - microphone-test no-sound diagnostic-flow guide.
-  '/guides/microphone-test-no-sound-four-fixes.html',
+  '/guides/en/microphone-test-no-sound-four-fixes.html',
   // Cycle 35 P35.A - keyboard-test keys-not-detected diagnostic-flow guide.
-  '/guides/keyboard-test-keys-not-detected-four-fixes.html',
+  '/guides/en/keyboard-test-keys-not-detected-four-fixes.html',
   // Cycle 37 P37.A - JPEG quality-vs-size decision-table guide for /compress-image.html.
-  '/guides/compress-jpeg-without-losing-quality-quality-vs-size.html',
+  '/guides/en/compress-jpeg-without-losing-quality-quality-vs-size.html',
   // Cycle 38 P38.A - "is this long number a timestamp?" diagnostic-flow guide.
-  '/guides/long-number-millisecond-or-second.html',
+  '/guides/en/long-number-millisecond-or-second.html',
   // Cycle 39 P39.A - "compressed JPG looks blurry, why?" reactive diagnostic-flow guide.
-  '/guides/compressed-jpg-looks-blurry-three-causes.html',
+  '/guides/en/compressed-jpg-looks-blurry-three-causes.html',
   // Cycle 40 P40.A - "online ffmpeg conversion stalled, why?" reactive diagnostic-flow guide.
-  '/guides/ffmpeg-online-conversion-stalled-three-fixes.html',
+  '/guides/en/ffmpeg-online-conversion-stalled-three-fixes.html',
   // Cycle 41 P41.A - "GIF frame extractor output looks wrong, why?" reactive diagnostic-flow guide.
-  '/guides/gif-frame-extractor-output-looks-wrong-three-causes.html',
+  '/guides/en/gif-frame-extractor-output-looks-wrong-three-causes.html',
   // Cycle 20260514-9 create_new_guide_page - "gif frame extractor" head-term
   // Lane-D guide. Implementing tool: /extract-gif-to-image-frames.html.
-  '/guides/gif-frame-extractor.html',
+  '/guides/en/gif-frame-extractor.html',
   // Cycle 42 P42.A - "LCD test vs display test vs monitor test - which one do you actually need?" reactive disambiguation-flow guide.
-  '/guides/lcd-test-vs-display-test-which-do-you-need.html',
+  '/guides/en/lcd-test-vs-display-test-which-do-you-need.html',
   // Cycle 43 P43.B - "Camera test vs webcam test vs camera quality - which one do you actually need?" reactive disambiguation-flow guide.
-  '/guides/camera-test-vs-webcam-test-which-do-you-need.html',
+  '/guides/en/camera-test-vs-webcam-test-which-do-you-need.html',
   // Cycle 73 P73.B - "Screen test vs camera test - which one do you actually need?" cross-cluster disambiguation Lane-D guide.
-  '/guides/screen-test-vs-camera-test-pick-the-right-tool.html',
+  '/guides/en/screen-test-vs-camera-test-pick-the-right-tool.html',
   // Cycle 44 P44.A - "MD5 to text - why you cannot convert it back, and what to do instead" disambiguation/decision guide.
-  '/guides/md5-to-text-why-you-cannot-convert-back.html',
+  '/guides/en/md5-to-text-why-you-cannot-convert-back.html',
   // Cycle 46 P46.B - "Before a video call - which tools to run (screen / camera / microphone)" pre-call checklist guide.
-  '/guides/before-a-video-call-which-tools-to-run.html',
+  '/guides/en/before-a-video-call-which-tools-to-run.html',
   // Cycle 48 P48.A - laptop-specific screen-test 5-minute checklist guide (Bing under-served laptop reader-task gap).
-  '/guides/screen-test-for-laptop-5-minute-checklist.html',
+  '/guides/en/screen-test-for-laptop-5-minute-checklist.html',
   // Cycle 49 P49.A - "FFmpeg Online vs Video Converter - which tool to open" routing guide (GSC "ffmpeg online" op_score 270.97 row).
-  '/guides/ffmpeg-online-vs-video-converter-which-to-pick.html',
+  '/guides/en/ffmpeg-online-vs-video-converter-which-to-pick.html',
   // Cycle 50 P50.A - "ImageMagick Online vs Task-Specific Tools - which to pick" routing guide (image-editing-cluster parallel to cycle 49 P49.A; GA4 /imagemagick-online.html 114 sess / 0.51 engagement cohort).
-  '/guides/imagemagick-online-vs-task-specific-tools-which-to-pick.html',
+  '/guides/en/imagemagick-online-vs-task-specific-tools-which-to-pick.html',
   // Cycle 51 P51.A - "File Compressor Online: ZIP a Folder vs Compress an Image" routing guide (GSC "file compressor" 258,156 imp / 0.04% CTR / pos 9.9 / 12,797 missed clicks 28d - cross-cluster routing surface for the head term that neither /zip-file.html nor /compress-image.html owns alone).
   // Cycle 46 (20260522-7) P46.H — "Camera Check" synonym-disambiguation guide. GSC "camera check" 451 imp / 5 clicks / pos 11.85 28d (opportunity score 37.63). Routes the reader to /camera-test.html (the implementing tool) while explaining the synonym mapping ("camera check" = "camera test") and the three end-states (allowed / blocked / ignored). Sibling guides: camera-test-permission-blocked-how-to-allow-it (permissions deep-dive), camera-test-shows-black-screen-four-fixes (hardware failures), camera-mirror-vs-flip-explained (preview semantics).
-  '/guides/camera-check.html',
-  '/guides/file-compressor-online-when-to-zip-vs-when-to-compress-image.html',
+  '/guides/en/camera-check.html',
+  '/guides/en/file-compressor-online-when-to-zip-vs-when-to-compress-image.html',
   // Cycle 53 P53.A - "How to Extract a File Online - ZIP, RAR, 7z" routing guide (GSC "extract file online" -9.3 pos in 7d, "file zipper" -8.9 pos; neither owned by an existing guide. .zip -> /unzip-file.html; .rar / .7z -> local OS tool; forgotten-password .zip -> /remove-zip-password.html).
-  '/guides/how-to-extract-a-file-online-zip-rar-7z.html',
+  '/guides/en/how-to-extract-a-file-online-zip-rar-7z.html',
   // Cycle 54 P54.A - "How to choose a compression level - quality vs file size, with examples" guide. Captures the long-tail "compress image to 100kb / 200kb / 500kb" + "what compression level should I use" decision intent on /compress-image.html. Routes to /resize-image.html when pixel dimensions matter and to format-choice guides when the format is wrong. Append-only Lane-D guide.
-  '/guides/how-to-choose-a-compression-level.html',
+  '/guides/en/how-to-choose-a-compression-level.html',
   // Cycle 55 P55.A - "ZIP password types - strong vs weak, explained" guide.
   // Trust-gate education on /remove-zip-password.html (top-2 traffic ZIP-cluster URL).
   // Explains legacy ZIP 2.0 vs WinZip AES-256, password strength interaction, and the
   // 30-second decision flow before a reader uploads. Append-only Lane-D guide; non-ZIP-cluster URL.
-  '/guides/zip-password-types-strong-vs-weak-explained.html',
+  '/guides/en/zip-password-types-strong-vs-weak-explained.html',
   // Cycle 56 P56.A - "PDF preflight online: what it actually checks" guide.
   // Lane-D fresh-capture on the search-vocabulary gap upstream of /preflight-pdf.html
   // (Bing pos 3-20 across the preflight/validator/check vocabulary). PDF cluster
@@ -1115,37 +1127,37 @@ export const GUIDE_ROUTES = new Set([
   // Explains preflight as a check step (not a fix step), what /preflight-pdf.html
   // validates (PDF/A archival conformance), and what is out-of-scope (PDF/X print,
   // signature legal-validity, corrupt-PDF repair, PDF/UA). Append-only Lane-D guide.
-  '/guides/pdf-preflight-online-what-it-actually-checks.html',
+  '/guides/en/pdf-preflight-online-what-it-actually-checks.html',
   // Cycle 58 P58.A - "Read and compare MD5 hashes correctly" guide.
   // Post-conversion verification flow downstream of /md5-converter.html.
   // Distinct from 4 existing MD5 guides; covers cosmetic vs real
   // differences (case, whitespace, BOM, hex format) plus the 5-step
   // compare flow. Append-only Lane-D guide; non-ZIP cluster.
-  '/guides/read-and-compare-md5-hashes-correctly.html',
+  '/guides/en/read-and-compare-md5-hashes-correctly.html',
   // Cycle 59 P59.A - "How to tell if a JPG was compressed too much"
   // guide. Bridges /get-jpeg-compression-level.html (assess-after the
   // upload). Distinct from /guides/how-to-choose-a-compression-level
   // (choose-before). Image-conversion / image-editing cluster;
   // non-ZIP; append-only Lane-D guide.
-  '/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html',
+  '/guides/en/how-to-tell-if-a-jpg-was-compressed-too-much.html',
   // Cycle 60 P60.A - "How to flatten a PDF - and when to do it" guide.
   // Bridges /flatten-pdf.html (server-side flatten via FlattenPdfService).
   // Distinct from 6 existing PDF guides. PDF cluster; non-ZIP;
   // append-only Lane-D guide.
-  '/guides/how-to-flatten-a-pdf-and-when-to-do-it.html',
+  '/guides/en/how-to-flatten-a-pdf-and-when-to-do-it.html',
   // Cycle 61 P61.A - "PNG to SVG - when to vectorize a raster image"
   // guide. Bridges /png-to-svg.html (server-side raster-to-vector
   // via the freetoolonline AWS service). Image-conversion cluster;
   // non-ZIP; append-only Lane-D guide.
-  '/guides/png-to-svg-when-to-vectorize-a-raster-image.html',
+  '/guides/en/png-to-svg-when-to-vectorize-a-raster-image.html',
   // Cycle 62 P62.E - "Download link not appearing after conversion -
   // 5 fixes" diagnostic guide. Bridges multiple converter tools.
   // Troubleshooting cluster; non-ZIP; append-only Lane-D guide.
-  '/guides/download-link-not-appearing-after-conversion-five-fixes.html',
+  '/guides/en/download-link-not-appearing-after-conversion-five-fixes.html',
   // Cycle 64 P64.A - "Why HEIC won't open on Windows - three quick
   // fixes" troubleshooting guide. Bridges /heic-to-jpg.html top revenue
   // page; image-conversion cluster; non-ZIP; append-only Lane-D guide.
-  '/guides/why-heic-wont-open-on-windows-three-fixes.html',
+  '/guides/en/why-heic-wont-open-on-windows-three-fixes.html',
   // Cycle 70 P70.A - "Zip file converter - what it actually does"
   // disambiguation guide. Targets the GSC `zip file converter` /
   // `zip files online` / `make zip file online` / `folder to zip
@@ -1155,35 +1167,35 @@ export const GUIDE_ROUTES = new Set([
   // /heic-to-jpg.html, /compose-pdf.html. NO satellite backlink on
   // /zip-file.html (ZIP-CRITICAL-CARE 24h cooldown). Cluster: zip
   // entry-point. Lane-D PA-mode mandatory; non-ZIP-cluster identity.
-  '/guides/zip-file-converter-what-it-actually-does.html',
+  '/guides/en/zip-file-converter-what-it-actually-does.html',
   // Cycle 20260519-1 - bare-query "zip file converter" guide.
-  '/guides/zip-file-converter.html',
+  '/guides/en/zip-file-converter.html',
   // Cycle 71 P71.F - "HEIC to JPG: what the converter actually does
   // (and what it does not)" trust-anchor guide. Source-cited claims
   // from tool-heictojpg/SKILL.md (libheif, SlimJpg, EXIF toggle, quality
   // slider, multi-format output). Anti-claims also surfaced (NOT
   // browser-only, NOT account-gated, does NOT extract live-photo
   // motion). Lane-D PA-mode mandatory; image-conversion cluster.
-  '/guides/heic-to-jpg-claims-what-actually-works.html',
+  '/guides/en/heic-to-jpg-claims-what-actually-works.html',
   // Backfill: cycle 88 + cycle 90 guides were added to INFO_ROUTES but
   // omitted from GUIDE_ROUTES. Without GUIDE_ROUTES membership they
   // lose Article JSON-LD, Organization JSON-LD, editorial-byline, AND
   // (post-2026-05-11 showAdSlots split) AdSense loading. Append-only.
-  '/guides/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html',
-  '/guides/image-compression-and-exif-metadata-what-gets-stripped.html',
+  '/guides/en/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html',
+  '/guides/en/image-compression-and-exif-metadata-what-gets-stripped.html',
   // Cycle1 of 20260513-5 P5.A - "Zip compressor" Lane-D guide. Phase A
   // skeleton (route + JSP wrapper) only. Kebab URL per granted cards.
-  '/guides/zip-compressor.html',
+  '/guides/en/zip-compressor.html',
   // Cycle6 of 20260513-6 — "Compress ZIP" Lane-D guide. Phase A skeleton
   // (route + JSP wrapper) only. Kebab + singular guide/ JSP subdir.
-  '/guides/compress-zip.html',
+  '/guides/en/compress-zip.html',
   // Cycle 20260515-16 — "Compress ZIP Size" Lane-D guide. Complete single-cycle
   // ship: compressibility table + DEFLATE level explainer + routing to
   // /zip-tools/zip-file.html. Cluster=zip.
-  '/guides/compress-zip-size.html',
+  '/guides/en/compress-zip-size.html',
   // Cycle 20260515-12 — "Make Zip File Online" Lane-D guide (zip cluster,
   // companion to /zip-tools/zip-file.html). Complete single-cycle ship.
-  '/guides/make-zip-file-online.html',
+  '/guides/en/make-zip-file-online.html',
   // Cycle 20260515-13 — "Comprimir Zip Online" Lane-D guide (zip cluster,
   // Spanish-keyword sibling of /guides/make-zip-file-online.html;
   // companion to /zip-tools/zip-file.html). Complete single-cycle ship.
@@ -1204,42 +1216,42 @@ export const GUIDE_ROUTES = new Set([
   // cluster head-query; 799 imp / 73 clicks / pos 6.2 / CTR 9.1% per 28d
   // GSC; opportunity_score 117.19). Companion to /zip-tools/zip-file.html.
   // Phase A complete single-cycle ship.
-  '/guides/zip-file-compressor-online.html',
+  '/guides/en/zip-file-compressor-online.html',
   // Cycle 20260517-8 — "Online Zip File Compressor" Lane-D create_new_guide_page
   // (zip cluster head-query sibling; 634 imp / 27 clicks / pos 5.93 / CTR 4.3%
   // per 28d GSC; opportunity_score 102.3). Companion to /zip-tools/zip-file.html.
   // Complete single-cycle ship per cycle 20260514-5 contract.
-  '/guides/online-zip-file-compressor.html',
+  '/guides/en/online-zip-file-compressor.html',
   // Cycle 20260518-20 create_new_guide_page - "Zip Compress" Lane-D guide (zip
   // cluster head-query sibling; 744 imp / 26 clicks / pos 7.71 / CTR 3.49%
   // per 28d GSC; opportunity_score 93.06). Companion to /zip-tools/zip-file.html.
   // Complete single-cycle ship per cycle 20260514-5 contract.
-  '/guides/zip-compress.html',
+  '/guides/en/zip-compress.html',
   // Cycle 20260518-21 create_new_guide_page - "Zip password recovery online"
   // Lane-D truthful-framing guide. Cluster: zip. GSC 690 imp / 147 clicks /
   // pos 6.17 / CTR 21.3% / opportunity_score 87.95. Sourced from
   // tool-removezippassword/SKILL.md F1-F7 + N2 + N6 (the tool unlocks when
   // password is KNOWN; explicitly does NOT crack unknown passwords).
-  '/guides/zip-password-recovery-online.html',
+  '/guides/en/zip-password-recovery-online.html',
   // Cycle 20260518-22 create_new_guide_page - "Zip compressor online" Lane-D
   // guide. Cluster: zip. GSC 611 imp / 57 clicks / pos 6.99 / CTR 9.33% /
   // opportunity_score 79.22. Sourced from tool-zipfile/SKILL.md M1-M7 +
   // tool-guidescompresszip/SKILL.md C1-C6 (size question vs archive question;
   // browser-creator routing; sibling-guide vocabulary disambiguation).
-  '/guides/zip-compressor-online.html',
+  '/guides/en/zip-compressor-online.html',
   // Cycle 20260518-23 create_new_guide_page - "Folder to zip" Lane-D guide
   // (zip cluster, companion to /zip-tools/zip-file.html). GSC 773 imp / 13
   // clicks / pos 9.73 / CTR 1.68% / opportunity_score 78.12 — folder-to-archive
   // intent. Paraphrases tool-ziptools/SKILL.md M1 (one-click routing) and
   // tool-guidescompresszip/SKILL.md C1-C5 (size question vs archive question
   // for folder inputs).
-  '/guides/folder-to-zip.html',
+  '/guides/en/folder-to-zip.html',
   // Cycle 20260518-25 create_new_guide_page - "Online Zip File" Lane-D guide
   // (zip cluster, companion to /zip-tools/zip-file.html). GSC 573 imp / 12
   // clicks / pos 7.39 / CTR 2.09% / opportunity_score 75.94 — "online zip file"
   // intent (zip-file as a noun, not as a verb). Paraphrases tool-zipfile/SKILL.md
   // M1-M7 (in-browser creator) and tool-ziptools/SKILL.md M1 (one-click routing).
-  '/guides/online-zip-file.html',
+  '/guides/en/online-zip-file.html',
   // Cycle 20260518-31 create_new_guide_page - "Create Zip File Online" Lane-D
   // guide (zip cluster, companion to /zip-tools/zip-file.html). GSC 702 imp /
   // 8 clicks / pos 10.08 / CTR 1.14% / opportunity_score 68.87 - "create zip
@@ -1247,7 +1259,7 @@ export const GUIDE_ROUTES = new Set([
   // tool-zipfile/SKILL.md implemented features (upload + server-side build +
   // optional password + cross-platform output) and the existing in-browser
   // creator copy in BODYHTMLzipfile / BODYWELCOMEzipfile.
-  '/guides/create-zip-file-online.html',
+  '/guides/en/create-zip-file-online.html',
   // Cycle 20260518-33 create_new_guide_page - "Tes LCD" Lane-D guide (device-test
   // cluster, companion to /lcd-test.html). GSC 503 imp / 17 clicks / pos 7.38 /
   // CTR 3.38% / opportunity_score 65.84 - Indonesian-language "tes lcd" intent
@@ -1257,14 +1269,14 @@ export const GUIDE_ROUTES = new Set([
   // toggle + reset + display metrics + no-upload disclosure). Kebab slug
   // /guides/tes-lcd.html does not shadow any existing primary tool route
   // (urlToSlug() smashes to "teslcd" which is not in JSP_BY_ROUTE).
-  '/guides/tes-lcd.html',
+  '/guides/en/tes-lcd.html',
   // Cycle 20260518-29 create_new_guide_page - "zip password unlocker" Lane-D
   // guide (zip cluster, companion to /remove-zip-password.html). GSC 432 imp /
   // 44 clicks / pos 5.29 / CTR 10.18% / opportunity_score 73.32. Honest framing:
   // splits the search intent into "remove a known password" (real, points at
   // /remove-zip-password.html) vs "crack an unknown password" (not solvable
   // online; cites tool-removezippassword/SKILL.md N2 + N6 anti-claims).
-  '/guides/zip-password-unlocker.html',
+  '/guides/en/zip-password-unlocker.html',
   // Cycle 20260518-32 create_new_guide_page - "compactar pasta" Lane-D guide
   // (zip cluster, companion to /zip-tools/zip-file.html). GSC 522 imp /
   // 21 clicks / pos 7.59 / CTR 4.02% / opportunity_score 66.02 - Portuguese
@@ -1274,26 +1286,26 @@ export const GUIDE_ROUTES = new Set([
   // Cycle 20260521-20 P37.H create_new_guide_page (zip cluster, Portuguese).
   // Cycle 20260520-11 new_guide_page_proposal (developer cluster):
   // implementing tool /js-unminifier.html.
-  '/guides/unminify-js.html',
+  '/guides/en/unminify-js.html',
   // Cycle 20260520-13 new_guide_page_proposal (device-test cluster, companion
   // to /lcd-test.html). "lcd screen test" head-tail query. Paraphrases
   // tool-lcdtest/SKILL.md F1-F5. Kebab slug /guides/lcd-screen-test.html
   // does not shadow /lcd-test.html (smashed form "lcdscreentest" is unique).
-  '/guides/lcd-screen-test.html',
+  '/guides/en/lcd-screen-test.html',
   // Cycle 20260520-15 new_guide_page_proposal (zip cluster, disambiguation
   // guide for "unlock zip file online" query — routes between
   // /remove-zip-password.html (password-protected ZIPs) and
   // /unzip-file.html (plain ZIPs). GSC: 421 impressions / 40 clicks / pos 7.4.
   // Kebab slug /guides/unlock-zip-file-online.html does not shadow any
   // existing route (smashed form "unlockzipfileonline" is unique).
-  '/guides/unlock-zip-file-online.html',
+  '/guides/en/unlock-zip-file-online.html',
   // Cycle 20260522-8 (cycle 47) P47.H new_guide_page_proposal — "current millis"
   // query (gsc 289 imp / 2 clk / pos 7.92 / CTR 0.69%; opportunity_score 36.24).
   // Companion to /convert-time-in-millisecond-to-date.html (the implementing
   // tool). Developer-utility cluster; kebab slug /guides/current-millis.html
   // does not shadow any existing route (smashed form "currentmillis" is
   // unique). Complete single-cycle ship per cycle 20260514-5 contract.
-  '/guides/current-millis.html',
+  '/guides/en/current-millis.html',
   // Cycle 20260522-9 (cycle 48) P48.H new_guide_page_proposal — "zip unlocker
   // online" query (gsc 269 imp / 33 clk / pos 6.65 / CTR 12.27%; opportunity_score
   // 35.47). Companion to /remove-zip-password.html (the implementing tool — query
@@ -1301,10 +1313,10 @@ export const GUIDE_ROUTES = new Set([
   // /guides/zip-unlocker-online.html does not shadow any existing route (smashed
   // form "zipunlockeronline" is unique). Complete single-cycle ship per cycle
   // 20260514-5 contract.
-  '/guides/zip-unlocker-online.html',
+  '/guides/en/zip-unlocker-online.html',
   // Cycle 20260523-3 (cycle 50) create_new_guide_page - "crop and rotate image"
   // Lane-D guide (image-editing cluster, companion to /crop-image.html).
-  '/guides/crop-and-rotate-image.html',
+  '/guides/en/crop-and-rotate-image.html',
   // Backfill cycle 20260523-followup-1: /guides/md5-password.html (cycle 50
   // P50.H, real-work floor) + /guides/comprimir-arquivo-zip.html (cycle
   // 20260522-10 P10.E, Portuguese zip cluster) were added to INFO_ROUTES +
@@ -1316,7 +1328,7 @@ export const GUIDE_ROUTES = new Set([
   // export-site.mjs so /guides.html joins /sitemap.html as a build-generated
   // artifact, closing the "agent edits BODYHTMLguides.html by hand and forgets
   // an entry" defect class permanently. See sitemap-html-builder.mjs.
-  '/guides/md5-password.html',
+  '/guides/en/md5-password.html',
   // Cycle 20260524-18 create_new_guide_page - "Compress Folder Online" Lane-D
   // guide (zip cluster, companion to /zip-file.html). GSC 28d 1243 imp /
   // 112 clicks / pos 5.01 / CTR 9.01% / opportunity_score 225.55. The query
@@ -1328,7 +1340,7 @@ export const GUIDE_ROUTES = new Set([
   // download with short retention, optional password) + the existing
   // BODYWELCOMEzipfile reader-task framing (folder-as-input, name the
   // archive, optional encryption choice).
-  '/guides/compress-folder-online.html',
+  '/guides/en/compress-folder-online.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -1412,7 +1424,7 @@ export const ALIAS_ROUTES = {
   // (not as a full duplicate guide). Captures the bare-query "ios to jpg" SERP impressions
   // (309 imp/28d at pos 6.6) at ~95-100% equity transfer, no duplicate content.
   // Companion: CloudFront REDIRECTS in url-migration-301.js mirrors this entry.
-  '/guides/ios-to-jpg.html': '/guides/how-to-convert-iphone-photo-to-jpg.html',
+  '/guides/ios-to-jpg.html': '/guides/en/how-to-convert-iphone-photo-to-jpg.html',
   // Cycle 20260518-29 — new_tool_page_discovery proposal candidate "video-converter-mp4" failed
   // the seo-tool-page-builder verb-detection guard ("slug ends with format token mp4, no I/O
   // verb"). Aliasing the proposed URL into the existing canonical video-converter routes the
@@ -1424,11 +1436,11 @@ export const ALIAS_ROUTES = {
   '/heic-to-pdf.html': '/image-converter-tools/heic-to-jpg.html',
   '/insights-optimize-image.html': '/image-tools/insights-image-optimizer.html',
   '/cong-cu-chuyen-doi-chu-quoc-ngu-tieng-viet-thanh-tiew-viet-kieu-moi-phan-2.html': '/utility-tools/cong-cu-chuyen-doi-chu-quoc-ngu-tieng-viet-thanh-tieq-viet-kieu-moi.html',
-  '/how-to-compress-a-folder.html': '/guides/how-to-compress-a-folder.html',
+  '/how-to-compress-a-folder.html': '/guides/en/how-to-compress-a-folder.html',
   // Cycle142 P142.A — capture bare URL traffic to canonical LCD test page (4843 imp / 28d, pos 7.8, CTR 1.28% per GSC; per granted P141.LaneD-residual-saturated-guides option-a).
   '/test-lcd.html': '/device-test-tools/lcd-test.html',
   // Cycle143 P143.A — capture bare URL traffic for "how to compress a file" head-query (5384 imp / 28d, pos 10.65, CTR 0.02% per GSC). Bare URL currently 200-serves the homepage (canonical=/), so Google sees a homepage routing for a file-compression intent. Aliasing into the existing canonical guide page captures the traffic without authoring a parallel page that would cannibalize.
-  '/how-to-compress-a-file.html': '/guides/how-to-compress-a-file-online.html',
+  '/how-to-compress-a-file.html': '/guides/en/how-to-compress-a-file-online.html',
   // Cycle144 P144.A — capture bare URL traffic for "zip file compressor" head-query (16,772 imp / 28d, pos 6.2, CTR 5.31% per GSC). Bare URL currently 200-serves the homepage (canonical=/) so Google routes ~890 monthly clicks to a generic 122-tool index. Aliasing to the existing /zip-file.html ZIP-compress tool re-routes the traffic without editing the indexed ZIP cluster page. Same alias-only playbook as P141.A / P142.A / P143.A.
   '/zip-file-compressor.html': '/zip-tools/zip-file.html',
   // Cycle145 P145.A — capture bare URL traffic for "compress zip file" head-query (16,542 imp / 28d, pos 6.3, CTR 6.47% per GSC). Bare URL currently 200-serves the homepage (canonical=/) so Google routes those clicks to a generic index. Aliasing to /zip-file.html re-routes the traffic without editing the indexed ZIP cluster page (ZIP-CARE preserved — no edit to /zip-file.html HTML). Same alias-only playbook as P141.A / P142.A / P143.A / P144.A.
@@ -1439,9 +1451,9 @@ export const ALIAS_ROUTES = {
   '/compress-zip.html': '/zip-tools/zip-file.html',
   // Cycle148 P148.A — capture bare URL traffic for "how to make a zip file smaller" head-query (~2,429 imp / 28d, pos 5.6, CTR 0.33% per GSC; 113 missed clicks). Bare URL currently 200-serves the GitHub-Pages 404 fallback (homepage HTML, canonical=/) so Google routes those clicks to a generic index instead of the actual ZIP-compress tool.
   // Cycle173 P173.B amendment (2026-05-10) — operator-granted P171.B + P172.B (zip_care chain length=11). Re-target alias from /zip-file.html (generic ZIP tool, doesn't directly answer the head query "how to make a zip file smaller") to /guides/how-to-make-a-zip-file-smaller.html (long-form guide that already exists since Phase-16 cycle-8 N-series; ranks for the same query). Consolidates the 2,429 imp/28d 301 traffic into ONE canonical destination instead of two cannibalizing pages. ZIP-CARE preserved — no edit to indexed copy on /zip-file.html or /guides/how-to-make-a-zip-file-smaller.html; route table edit only. Tier-A protocol applied: pre-deploy snapshot at seo-reports/20260510-47/zip-pre-deploy/howtomakeazipfilesmaller/, halved Day +1/+3/+7 rollback thresholds, four-skill gate N/A (route-only change). Operator approve evidence: seo-reports/20260510-45/.approvals/granted/P171.B-howtomakeazipfilesmaller-zip-care-cooldown.json (2026-05-10T09:58:14.373Z) + seo-reports/20260510-46/.approvals/granted/P172.B-howtomakeazipfilesmaller-zip-care-cooldown.json (2026-05-10T09:58:18.077Z).
-  '/how-to-make-a-zip-file-smaller.html': '/guides/how-to-make-a-zip-file-smaller.html',
+  '/how-to-make-a-zip-file-smaller.html': '/guides/en/how-to-make-a-zip-file-smaller.html',
   // Cycle 20260519-18 P18.E (create_new_guide_page re-route per cannibalization grant cycle 17). Capture bare-query traffic for "make zip file smaller" (369 imp / 24 clicks / pos 6.17 / CTR 6.5% per GSC) without splitting rank with the existing canonical guide. Bare URL /guides/make-zip-file-smaller.html aliases to /guides/how-to-make-a-zip-file-smaller.html (the canonical long-form guide). Per cycle 17 grant `new-guide-make-zip-file-smaller-cannibalization-cycle17` option (b) — "re-route the synth to /guides/how-to-make-a-zip-file-smaller.html". Route-table-only edit; no indexed-copy change.
-  '/guides/make-zip-file-smaller.html': '/guides/how-to-make-a-zip-file-smaller.html',
+  '/guides/make-zip-file-smaller.html': '/guides/en/how-to-make-a-zip-file-smaller.html',
   // Cycle 20260519-18 P18.F (new_tool_page_discovery re-route per cannibalization grant cycle 16+17). Capture bare-URL traffic for trending-tool candidate cand-50f0efbf185cfb91 ("Image Compressor Online", cycles_seen=19, confidence=0.65) without splitting rank with /compress-image.html canonical. Bare URL /image-compressor.html aliases to /compress-image.html (the canonical client-side image compression tool). Per cycle 16+17 grants `new-tool-image-compressor-cannibalization-intent-overlap-cycle16` option (b/c) — rename to a non-overlapping slug OR drop from candidate pool. Alias is the lightest-touch realisation of intent capture without cannibalization. Route-table-only edit; no indexed-copy change.
   '/image-compressor.html': '/compress-image.html',
   // Cycle149 P149.A — capture bare URL traffic for "zip file size reducer" head-query (2,754 imp / 28d, pos 5.66, CTR 10.46% per GSC; 288 clicks routed to homepage). Bare URL currently 200-serves the GitHub-Pages 404 fallback (homepage HTML, canonical=/). Aliasing to /zip-file.html re-routes the 288 clicks/28d to the actual ZIP-compress action page (ZIP-CARE preserved — no edit to /zip-file.html HTML). Same alias-only playbook as P141.A / P142.A / P143.A / P144.A / P145.A / P146.A / P147.A / P148.A.
@@ -1541,7 +1553,7 @@ export const ALIAS_ROUTES = {
   // cycles, and are now redirected via alias to the kebab-canonical
   // page (preserves any inbound link 200s while pointing search engines
   // + readers to the canonical URL).
-  '/guides/lcdtest.html': '/guides/lcd-test-online.html',         // smashed "lcd test"; canonical = lcd-test-online (new guide created cycle 20260514-5)
+  '/guides/lcdtest.html': '/guides/en/lcd-test-online.html',         // smashed "lcd test"; canonical = lcd-test-online (new guide created cycle 20260514-5)
   '/guides/foldertozipconverter.html': '/zip-tools/zip-file.html', // smashed "folder to zip converter"; redirect to working tool (no dedicated guide)
   // Cycle 20260518 create_new_guide_page synth picked "lcd tes" (GSC query
   // 635 imp / 3 clicks / pos 6.6 — typo of "lcd test"). Authoring a full
@@ -1553,7 +1565,7 @@ export const ALIAS_ROUTES = {
   // page" contract: cluster is saturated (7+ existing lcd-* guides) and the
   // typo'd intent is best served by re-using the canonical lcd-test-online
   // guide rather than authoring an 8th near-duplicate.
-  '/guides/lcd-tes.html': '/guides/lcd-test-online.html',         // typo of "lcd test"; canonical = lcd-test-online (cluster anti-cannibalization)
+  '/guides/lcd-tes.html': '/guides/en/lcd-test-online.html',         // typo of "lcd test"; canonical = lcd-test-online (cluster anti-cannibalization)
   // Multilingual guide migration (2026-05-28 plan-warm-pascal-v2 S1).
   // Per [⛔ Two-layer redirect rule]: CloudFront 301 (~100% equity) is
   // primary; this origin meta-refresh fallback (~95% equity) catches
@@ -1565,6 +1577,174 @@ export const ALIAS_ROUTES = {
   '/guides/zipar-pasta.html': '/guides/pt/zip-a-folder.html',
   '/guides/comprimir-carpeta-zip-online-gratis.html': '/guides/es/compress-folder-to-zip-online-free.html',
   '/guides/reducir-tama-o-zip-online.html': '/guides/es/reduce-zip-size-online.html',
+  // plan-warm-pascal-v3 S1.8 (2026-05-29) — 166 EN canonical routes
+  // /guides/<slug>.html aliased to /guides/en/<slug>.html.
+  '/guides/base64-when-to-use-and-when-not-to.html': '/guides/en/base64-when-to-use-and-when-not-to.html',
+  '/guides/before-a-video-call-which-tools-to-run.html': '/guides/en/before-a-video-call-which-tools-to-run.html',
+  '/guides/camera-check.html': '/guides/en/camera-check.html',
+  '/guides/camera-mirror-vs-flip-explained.html': '/guides/en/camera-mirror-vs-flip-explained.html',
+  '/guides/camera-test-permission-blocked-how-to-allow-it.html': '/guides/en/camera-test-permission-blocked-how-to-allow-it.html',
+  '/guides/camera-test-shows-black-screen-four-fixes.html': '/guides/en/camera-test-shows-black-screen-four-fixes.html',
+  '/guides/camera-test-vs-webcam-test-which-do-you-need.html': '/guides/en/camera-test-vs-webcam-test-which-do-you-need.html',
+  '/guides/compress-folder-online.html': '/guides/en/compress-folder-online.html',
+  '/guides/compress-jpeg-without-losing-quality-quality-vs-size.html': '/guides/en/compress-jpeg-without-losing-quality-quality-vs-size.html',
+  '/guides/compress-zip-file-to-100kb.html': '/guides/en/compress-zip-file-to-100kb.html',
+  '/guides/compress-zip-file-to-2mb.html': '/guides/en/compress-zip-file-to-2mb.html',
+  '/guides/compress-zip-file-to-smaller-size.html': '/guides/en/compress-zip-file-to-smaller-size.html',
+  '/guides/compress-zip-size.html': '/guides/en/compress-zip-size.html',
+  '/guides/compress-zip.html': '/guides/en/compress-zip.html',
+  '/guides/compressed-jpg-looks-blurry-three-causes.html': '/guides/en/compressed-jpg-looks-blurry-three-causes.html',
+  '/guides/convert-milliseconds-to-date.html': '/guides/en/convert-milliseconds-to-date.html',
+  '/guides/create-zip-file-online.html': '/guides/en/create-zip-file-online.html',
+  '/guides/crop-and-rotate-image.html': '/guides/en/crop-and-rotate-image.html',
+  '/guides/css-minifier-vs-compressor.html': '/guides/en/css-minifier-vs-compressor.html',
+  '/guides/css-minifier-vs-uglifier-vs-tree-shaking.html': '/guides/en/css-minifier-vs-uglifier-vs-tree-shaking.html',
+  '/guides/css-unminifier-vs-prettier-when-to-use-each.html': '/guides/en/css-unminifier-vs-prettier-when-to-use-each.html',
+  '/guides/csv-vs-json-data-formats.html': '/guides/en/csv-vs-json-data-formats.html',
+  '/guides/current-millis.html': '/guides/en/current-millis.html',
+  '/guides/current-time-in-milliseconds.html': '/guides/en/current-time-in-milliseconds.html',
+  '/guides/dead-pixel-testing-guide.html': '/guides/en/dead-pixel-testing-guide.html',
+  '/guides/device-test-checklist-for-remote-work.html': '/guides/en/device-test-checklist-for-remote-work.html',
+  '/guides/download-link-not-appearing-after-conversion-five-fixes.html': '/guides/en/download-link-not-appearing-after-conversion-five-fixes.html',
+  '/guides/extract-gif-frames-png-vs-jpg-which-format.html': '/guides/en/extract-gif-frames-png-vs-jpg-which-format.html',
+  '/guides/ffmpeg-online-conversion-stalled-three-fixes.html': '/guides/en/ffmpeg-online-conversion-stalled-three-fixes.html',
+  '/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html': '/guides/en/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html',
+  '/guides/ffmpeg-online-vs-video-converter-which-to-pick.html': '/guides/en/ffmpeg-online-vs-video-converter-which-to-pick.html',
+  '/guides/file-compressor-online-when-to-zip-vs-when-to-compress-image.html': '/guides/en/file-compressor-online-when-to-zip-vs-when-to-compress-image.html',
+  '/guides/file-compressor-vs-zip-what-to-pick.html': '/guides/en/file-compressor-vs-zip-what-to-pick.html',
+  '/guides/file-compressor.html': '/guides/en/file-compressor.html',
+  '/guides/folder-to-zip.html': '/guides/en/folder-to-zip.html',
+  '/guides/free-online-tools-that-work-without-uploading-files.html': '/guides/en/free-online-tools-that-work-without-uploading-files.html',
+  '/guides/gif-frame-extractor-output-looks-wrong-three-causes.html': '/guides/en/gif-frame-extractor-output-looks-wrong-three-causes.html',
+  '/guides/gif-frame-extractor.html': '/guides/en/gif-frame-extractor.html',
+  '/guides/gif-frames-extract-vs-frame-rate-fps-explained.html': '/guides/en/gif-frames-extract-vs-frame-rate-fps-explained.html',
+  '/guides/gif-into-frames.html': '/guides/en/gif-into-frames.html',
+  '/guides/hd-video-converter-step-by-step.html': '/guides/en/hd-video-converter-step-by-step.html',
+  '/guides/hd-video-converter-vs-alternatives.html': '/guides/en/hd-video-converter-vs-alternatives.html',
+  '/guides/hd-video-converter-when.html': '/guides/en/hd-video-converter-when.html',
+  '/guides/heic-to-jpg-claims-what-actually-works.html': '/guides/en/heic-to-jpg-claims-what-actually-works.html',
+  '/guides/heic-vs-jpg-converter-when-each-wins.html': '/guides/en/heic-vs-jpg-converter-when-each-wins.html',
+  '/guides/heic-vs-jpg-vs-webp.html': '/guides/en/heic-vs-jpg-vs-webp.html',
+  '/guides/how-to-check-camera-quality-on-your-phone.html': '/guides/en/how-to-check-camera-quality-on-your-phone.html',
+  '/guides/how-to-check-webcam-and-microphone-before-an-interview.html': '/guides/en/how-to-check-webcam-and-microphone-before-an-interview.html',
+  '/guides/how-to-choose-a-compression-level.html': '/guides/en/how-to-choose-a-compression-level.html',
+  '/guides/how-to-compress-a-file-online.html': '/guides/en/how-to-compress-a-file-online.html',
+  '/guides/how-to-compress-a-folder-for-email.html': '/guides/en/how-to-compress-a-folder-for-email.html',
+  '/guides/how-to-compress-a-folder.html': '/guides/en/how-to-compress-a-folder.html',
+  '/guides/how-to-compress-a-jpg-for-email-attachment-limits.html': '/guides/en/how-to-compress-a-jpg-for-email-attachment-limits.html',
+  '/guides/how-to-compress-a-zip-file-to-a-specific-size.html': '/guides/en/how-to-compress-a-zip-file-to-a-specific-size.html',
+  '/guides/how-to-compress-a-zip-file.html': '/guides/en/how-to-compress-a-zip-file.html',
+  '/guides/how-to-compress-zip-file-to-smaller-size.html': '/guides/en/how-to-compress-zip-file-to-smaller-size.html',
+  '/guides/how-to-convert-100-heic-photos-to-jpg.html': '/guides/en/how-to-convert-100-heic-photos-to-jpg.html',
+  '/guides/how-to-convert-heic-to-jpg-step-by-step.html': '/guides/en/how-to-convert-heic-to-jpg-step-by-step.html',
+  '/guides/how-to-convert-iphone-photo-to-jpg.html': '/guides/en/how-to-convert-iphone-photo-to-jpg.html',
+  '/guides/how-to-crop-and-rotate-an-image.html': '/guides/en/how-to-crop-and-rotate-an-image.html',
+  '/guides/how-to-extract-a-file-online-zip-rar-7z.html': '/guides/en/how-to-extract-a-file-online-zip-rar-7z.html',
+  '/guides/how-to-extract-frames-from-a-gif-for-a-social-post.html': '/guides/en/how-to-extract-frames-from-a-gif-for-a-social-post.html',
+  '/guides/how-to-flatten-a-pdf-and-when-to-do-it.html': '/guides/en/how-to-flatten-a-pdf-and-when-to-do-it.html',
+  '/guides/how-to-make-a-zip-file-smaller.html': '/guides/en/how-to-make-a-zip-file-smaller.html',
+  '/guides/how-to-minify-css-js-for-cloud-run-cold-start.html': '/guides/en/how-to-minify-css-js-for-cloud-run-cold-start.html',
+  '/guides/how-to-reduce-zip-file-size-online.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
+  '/guides/how-to-reduce-zip-file-size.html': '/guides/en/how-to-reduce-zip-file-size.html',
+  '/guides/how-to-sign-pdf-after-removing-a-password.html': '/guides/en/how-to-sign-pdf-after-removing-a-password.html',
+  '/guides/how-to-split-a-gif-into-frames-for-editing.html': '/guides/en/how-to-split-a-gif-into-frames-for-editing.html',
+  '/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html': '/guides/en/how-to-tell-if-a-jpg-was-compressed-too-much.html',
+  '/guides/how-to-test-a-keyboard-online-step-by-step.html': '/guides/en/how-to-test-a-keyboard-online-step-by-step.html',
+  '/guides/how-to-test-a-touchscreen-for-bad-spots.html': '/guides/en/how-to-test-a-touchscreen-for-bad-spots.html',
+  '/guides/how-to-test-for-dead-pixels-before-returning-a-monitor.html': '/guides/en/how-to-test-for-dead-pixels-before-returning-a-monitor.html',
+  '/guides/how-to-zip-folder-online-step-by-step.html': '/guides/en/how-to-zip-folder-online-step-by-step.html',
+  '/guides/how-to-zip-multiple-files-into-one.html': '/guides/en/how-to-zip-multiple-files-into-one.html',
+  '/guides/i-love-zip.html': '/guides/en/i-love-zip.html',
+  '/guides/image-compression-and-exif-metadata-what-gets-stripped.html': '/guides/en/image-compression-and-exif-metadata-what-gets-stripped.html',
+  '/guides/image-to-base64-embed-in-html-vs-link.html': '/guides/en/image-to-base64-embed-in-html-vs-link.html',
+  '/guides/imagemagick-online-vs-task-specific-tools-which-to-pick.html': '/guides/en/imagemagick-online-vs-task-specific-tools-which-to-pick.html',
+  '/guides/iphone-photo-format-explained-heic-jpg-png-raw.html': '/guides/en/iphone-photo-format-explained-heic-jpg-png-raw.html',
+  '/guides/jpg-vs-jpeg-are-they-the-same.html': '/guides/en/jpg-vs-jpeg-are-they-the-same.html',
+  '/guides/jpg-vs-png-for-web.html': '/guides/en/jpg-vs-png-for-web.html',
+  '/guides/json-formatter-step-by-step.html': '/guides/en/json-formatter-step-by-step.html',
+  '/guides/json-formatter-vs-alternatives.html': '/guides/en/json-formatter-vs-alternatives.html',
+  '/guides/json-formatter-when.html': '/guides/en/json-formatter-when.html',
+  '/guides/json-parser-validate-vs-format-vs-tree-view.html': '/guides/en/json-parser-validate-vs-format-vs-tree-view.html',
+  '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': '/guides/en/json-vs-yaml-vs-toml-config-formats-explained.html',
+  '/guides/keyboard-test-keys-not-detected-four-fixes.html': '/guides/en/keyboard-test-keys-not-detected-four-fixes.html',
+  '/guides/keyboard-tester-online-rollover-vs-anti-ghosting.html': '/guides/en/keyboard-tester-online-rollover-vs-anti-ghosting.html',
+  '/guides/kompres-file-zip.html': '/guides/en/kompres-file-zip.html',
+  '/guides/kompres-zip.html': '/guides/en/kompres-zip.html',
+  '/guides/lcd-checker.html': '/guides/en/lcd-checker.html',
+  '/guides/lcd-screen-test.html': '/guides/en/lcd-screen-test.html',
+  '/guides/lcd-test-online.html': '/guides/en/lcd-test-online.html',
+  '/guides/lcd-test-vs-display-test-which-do-you-need.html': '/guides/en/lcd-test-vs-display-test-which-do-you-need.html',
+  '/guides/lcd-test-what-it-checks.html': '/guides/en/lcd-test-what-it-checks.html',
+  '/guides/led-test-vs-lcd-test-which-applies-to-your-screen.html': '/guides/en/led-test-vs-lcd-test-which-applies-to-your-screen.html',
+  '/guides/led-test.html': '/guides/en/led-test.html',
+  '/guides/long-number-millisecond-or-second.html': '/guides/en/long-number-millisecond-or-second.html',
+  '/guides/make-zip-file-online.html': '/guides/en/make-zip-file-online.html',
+  '/guides/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html': '/guides/en/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html',
+  '/guides/md5-decode.html': '/guides/en/md5-decode.html',
+  '/guides/md5-decrypt-online.html': '/guides/en/md5-decrypt-online.html',
+  '/guides/md5-hash-decrypt.html': '/guides/en/md5-hash-decrypt.html',
+  '/guides/md5-password.html': '/guides/en/md5-password.html',
+  '/guides/md5-to-text-why-you-cannot-convert-back.html': '/guides/en/md5-to-text-why-you-cannot-convert-back.html',
+  '/guides/md5-vs-sha256-when-to-hash.html': '/guides/en/md5-vs-sha256-when-to-hash.html',
+  '/guides/microphone-test-no-sound-four-fixes.html': '/guides/en/microphone-test-no-sound-four-fixes.html',
+  '/guides/microphone-test-online-quiet-normal-peak-meter.html': '/guides/en/microphone-test-online-quiet-normal-peak-meter.html',
+  '/guides/microphone-test-online-what-it-actually-checks.html': '/guides/en/microphone-test-online-what-it-actually-checks.html',
+  '/guides/microphone-test-permission-blocked-how-to-allow-it.html': '/guides/en/microphone-test-permission-blocked-how-to-allow-it.html',
+  '/guides/millisecond-to-date.html': '/guides/en/millisecond-to-date.html',
+  '/guides/milliseconds-to-date-utc-vs-local-time.html': '/guides/en/milliseconds-to-date-utc-vs-local-time.html',
+  '/guides/mp4-vs-mov-vs-mkv-which-container-when.html': '/guides/en/mp4-vs-mov-vs-mkv-which-container-when.html',
+  '/guides/mp4-vs-webm-for-web.html': '/guides/en/mp4-vs-webm-for-web.html',
+  '/guides/ms-to-date.html': '/guides/en/ms-to-date.html',
+  '/guides/oled-test-vs-lcd-test-what-changes-on-oled.html': '/guides/en/oled-test-vs-lcd-test-what-changes-on-oled.html',
+  '/guides/online-zip-file-compressor.html': '/guides/en/online-zip-file-compressor.html',
+  '/guides/online-zip-file.html': '/guides/en/online-zip-file.html',
+  '/guides/online-zip-vs-7z-vs-rar-which-to-pick.html': '/guides/en/online-zip-vs-7z-vs-rar-which-to-pick.html',
+  '/guides/pdf-editing-ladder.html': '/guides/en/pdf-editing-ladder.html',
+  '/guides/pdf-password-types-owner-vs-user.html': '/guides/en/pdf-password-types-owner-vs-user.html',
+  '/guides/pdf-preflight-online-what-it-actually-checks.html': '/guides/en/pdf-preflight-online-what-it-actually-checks.html',
+  '/guides/pdf-vs-heic-for-document-archival.html': '/guides/en/pdf-vs-heic-for-document-archival.html',
+  '/guides/photo-editor-vs-graphics-app-vs-batch-processor.html': '/guides/en/photo-editor-vs-graphics-app-vs-batch-processor.html',
+  '/guides/png-to-svg-when-to-vectorize-a-raster-image.html': '/guides/en/png-to-svg-when-to-vectorize-a-raster-image.html',
+  '/guides/png-vs-svg-when-to-use.html': '/guides/en/png-vs-svg-when-to-use.html',
+  '/guides/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html': '/guides/en/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html',
+  '/guides/qr-code-error-correction-and-scan-failures.html': '/guides/en/qr-code-error-correction-and-scan-failures.html',
+  '/guides/qr-code-generator-best-practices.html': '/guides/en/qr-code-generator-best-practices.html',
+  '/guides/read-and-compare-md5-hashes-correctly.html': '/guides/en/read-and-compare-md5-hashes-correctly.html',
+  '/guides/recover-corrupt-zip-file-options.html': '/guides/en/recover-corrupt-zip-file-options.html',
+  '/guides/reduce-zip-file-size-online.html': '/guides/en/reduce-zip-file-size-online.html',
+  '/guides/resize-zip-file.html': '/guides/en/resize-zip-file.html',
+  '/guides/screen-display-test-synonyms.html': '/guides/en/screen-display-test-synonyms.html',
+  '/guides/screen-test-for-laptop-5-minute-checklist.html': '/guides/en/screen-test-for-laptop-5-minute-checklist.html',
+  '/guides/screen-test-online-vs-app-which-is-more-accurate.html': '/guides/en/screen-test-online-vs-app-which-is-more-accurate.html',
+  '/guides/screen-test-vs-camera-test-pick-the-right-tool.html': '/guides/en/screen-test-vs-camera-test-pick-the-right-tool.html',
+  '/guides/split-gif-into-frames.html': '/guides/en/split-gif-into-frames.html',
+  '/guides/svg-to-png-when-to-rasterize-an-svg.html': '/guides/en/svg-to-png-when-to-rasterize-an-svg.html',
+  '/guides/tes-lcd.html': '/guides/en/tes-lcd.html',
+  '/guides/test-lcd.html': '/guides/en/test-lcd.html',
+  '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': '/guides/en/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html',
+  '/guides/unix-timestamps-explained.html': '/guides/en/unix-timestamps-explained.html',
+  '/guides/unlock-zip-file-online.html': '/guides/en/unlock-zip-file-online.html',
+  '/guides/unminify-js.html': '/guides/en/unminify-js.html',
+  '/guides/what-an-lcd-test-does-and-when-to-run-one.html': '/guides/en/what-an-lcd-test-does-and-when-to-run-one.html',
+  '/guides/what-is-a-file-compressor-and-which-to-use.html': '/guides/en/what-is-a-file-compressor-and-which-to-use.html',
+  '/guides/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html': '/guides/en/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html',
+  '/guides/when-to-compress-vs-convert-an-image.html': '/guides/en/when-to-compress-vs-convert-an-image.html',
+  '/guides/why-heic-wont-open-on-windows-three-fixes.html': '/guides/en/why-heic-wont-open-on-windows-three-fixes.html',
+  '/guides/why-md5-cannot-be-decrypted.html': '/guides/en/why-md5-cannot-be-decrypted.html',
+  '/guides/zip-compress.html': '/guides/en/zip-compress.html',
+  '/guides/zip-compressor-online.html': '/guides/en/zip-compressor-online.html',
+  '/guides/zip-compressor.html': '/guides/en/zip-compressor.html',
+  '/guides/zip-file-compressor-online.html': '/guides/en/zip-file-compressor-online.html',
+  '/guides/zip-file-converter-what-it-actually-does.html': '/guides/en/zip-file-converter-what-it-actually-does.html',
+  '/guides/zip-file-converter.html': '/guides/en/zip-file-converter.html',
+  '/guides/zip-file-size-compressor.html': '/guides/en/zip-file-size-compressor.html',
+  '/guides/zip-folder-online-free.html': '/guides/en/zip-folder-online-free.html',
+  '/guides/zip-password-recovery-online.html': '/guides/en/zip-password-recovery-online.html',
+  '/guides/zip-password-types-strong-vs-weak-explained.html': '/guides/en/zip-password-types-strong-vs-weak-explained.html',
+  '/guides/zip-password-unlocker.html': '/guides/en/zip-password-unlocker.html',
+  '/guides/zip-size-reducer.html': '/guides/en/zip-size-reducer.html',
+  '/guides/zip-unlocker-online.html': '/guides/en/zip-unlocker-online.html',
+  '/guides/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html': '/guides/en/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -1604,75 +1784,75 @@ export const JSP_BY_ROUTE = {
   '/sitemap.html': 'sitemap.jsp',
   '/alternatead.html': 'alternatead.jsp',
   // Guides - plan §3.3 greenfield /guides/ subpath for long-form content.
-  '/guides/heic-vs-jpg-vs-webp.html': 'guide/heic-vs-jpg-vs-webp.jsp',
-  '/guides/dead-pixel-testing-guide.html': 'guide/dead-pixel-testing-guide.jsp',
-  '/guides/unix-timestamps-explained.html': 'guide/unix-timestamps-explained.jsp',
-  '/guides/pdf-password-types-owner-vs-user.html': 'guide/pdf-password-types-owner-vs-user.jsp',
+  '/guides/en/heic-vs-jpg-vs-webp.html': 'guide/en/heic-vs-jpg-vs-webp.jsp',
+  '/guides/en/dead-pixel-testing-guide.html': 'guide/en/dead-pixel-testing-guide.jsp',
+  '/guides/en/unix-timestamps-explained.html': 'guide/en/unix-timestamps-explained.jsp',
+  '/guides/en/pdf-password-types-owner-vs-user.html': 'guide/en/pdf-password-types-owner-vs-user.jsp',
   // §3.5 comparison guides (Cycle 4).
-  '/guides/png-vs-svg-when-to-use.html': 'guide/png-vs-svg-when-to-use.jsp',
-  '/guides/css-minifier-vs-compressor.html': 'guide/css-minifier-vs-compressor.jsp',
+  '/guides/en/png-vs-svg-when-to-use.html': 'guide/en/png-vs-svg-when-to-use.jsp',
+  '/guides/en/css-minifier-vs-compressor.html': 'guide/en/css-minifier-vs-compressor.jsp',
   // Cycle 74 P74.B - JSON parser sub-feature disambiguation Lane-D guide.
-  '/guides/json-parser-validate-vs-format-vs-tree-view.html': 'guide/json-parser-validate-vs-format-vs-tree-view.jsp',
+  '/guides/en/json-parser-validate-vs-format-vs-tree-view.html': 'guide/en/json-parser-validate-vs-format-vs-tree-view.jsp',
   // Cycle 75 P75.B - milliseconds-to-date UTC-vs-local-time Lane-D guide.
-  '/guides/milliseconds-to-date-utc-vs-local-time.html': 'guide/milliseconds-to-date-utc-vs-local-time.jsp',
+  '/guides/en/milliseconds-to-date-utc-vs-local-time.html': 'guide/en/milliseconds-to-date-utc-vs-local-time.jsp',
   // Cycle 20260524-19 P19.F create_new_guide_page - "current time in milliseconds" bare-query Lane-D guide (utility cluster, companion to /get-time-in-millisecond.html).
-  '/guides/current-time-in-milliseconds.html': 'guide/current-time-in-milliseconds.jsp',
+  '/guides/en/current-time-in-milliseconds.html': 'guide/en/current-time-in-milliseconds.jsp',
   // Cycle 76 P76.A - screen-test-online-vs-app accuracy Lane-D guide (device-test cluster).
-  '/guides/screen-test-online-vs-app-which-is-more-accurate.html': 'guide/screen-test-online-vs-app-which-is-more-accurate.jsp',
+  '/guides/en/screen-test-online-vs-app-which-is-more-accurate.html': 'guide/en/screen-test-online-vs-app-which-is-more-accurate.jsp',
   // Cycle 77 P77.A - "compress ZIP to a specific size" Lane-D append-only guide.
-  '/guides/how-to-compress-a-zip-file-to-a-specific-size.html': 'guide/how-to-compress-a-zip-file-to-a-specific-size.jsp',
+  '/guides/en/how-to-compress-a-zip-file-to-a-specific-size.html': 'guide/en/how-to-compress-a-zip-file-to-a-specific-size.jsp',
   // Cycle 20260519-10 create_new_guide_page - "how to compress a zip file" bare-query step-by-step guide (companion to /zip-file.html).
-  '/guides/how-to-compress-a-zip-file.html': 'guide/how-to-compress-a-zip-file.jsp',
+  '/guides/en/how-to-compress-a-zip-file.html': 'guide/en/how-to-compress-a-zip-file.jsp',
   // Cycle 20260519-11 create_new_guide_page - "zip folder online free" bare-query step-by-step guide (companion to /zip-file.html).
-  '/guides/zip-folder-online-free.html': 'guide/zip-folder-online-free.jsp',
+  '/guides/en/zip-folder-online-free.html': 'guide/en/zip-folder-online-free.jsp',
   // Cycle 20260524-10 create_new_guide_page - "i love zip" bare-query landing (companion to /zip-file.html).
-  '/guides/i-love-zip.html': 'guide/i-love-zip.jsp',
+  '/guides/en/i-love-zip.html': 'guide/en/i-love-zip.jsp',
   // Cycle 78 P78.A - "QR code error correction and scan failures" Lane-D guide (companion to /qr-code-generator.html).
-  '/guides/qr-code-error-correction-and-scan-failures.html': 'guide/qr-code-error-correction-and-scan-failures.jsp',
+  '/guides/en/qr-code-error-correction-and-scan-failures.html': 'guide/en/qr-code-error-correction-and-scan-failures.jsp',
   // Cycle 79 P79.B - "Image to Base64: embed in HTML/CSS vs link the image file" Lane-D guide (companion to /image-to-base64.html + /base64-to-image.html).
-  '/guides/image-to-base64-embed-in-html-vs-link.html': 'guide/image-to-base64-embed-in-html-vs-link.jsp',
+  '/guides/en/image-to-base64-embed-in-html-vs-link.html': 'guide/en/image-to-base64-embed-in-html-vs-link.jsp',
   // Cycle 80 P80.G - "How to test a touchscreen for bad spots" Lane-D guide (device-test cluster, companion to /lcd-test.html).
-  '/guides/how-to-test-a-touchscreen-for-bad-spots.html': 'guide/how-to-test-a-touchscreen-for-bad-spots.jsp',
+  '/guides/en/how-to-test-a-touchscreen-for-bad-spots.html': 'guide/en/how-to-test-a-touchscreen-for-bad-spots.jsp',
   // Cycle 81 P81.A - "Webcam mirror vs flip explained" Lane-D guide (camera-test sub-cluster, companion to /camera-test.html).
-  '/guides/camera-mirror-vs-flip-explained.html': 'guide/camera-mirror-vs-flip-explained.jsp',
+  '/guides/en/camera-mirror-vs-flip-explained.html': 'guide/en/camera-mirror-vs-flip-explained.jsp',
   // Cycle 82 P82.A - "CSS Unminifier vs Prettier: when to use each" Lane-D guide (developer / CSS sub-cluster, companion to /css-unminifier.html).
-  '/guides/css-unminifier-vs-prettier-when-to-use-each.html': 'guide/css-unminifier-vs-prettier-when-to-use-each.jsp',
+  '/guides/en/css-unminifier-vs-prettier-when-to-use-each.html': 'guide/en/css-unminifier-vs-prettier-when-to-use-each.jsp',
   // Cycle 83 P83.A - "LED test vs LCD test: which applies to your screen?" Lane-D guide (device-test / lcd-test sub-cluster, companion to /lcd-test.html).
-  '/guides/led-test-vs-lcd-test-which-applies-to-your-screen.html': 'guide/led-test-vs-lcd-test-which-applies-to-your-screen.jsp',
+  '/guides/en/led-test-vs-lcd-test-which-applies-to-your-screen.html': 'guide/en/led-test-vs-lcd-test-which-applies-to-your-screen.jsp',
   // Cycle 233 P233.E - "OLED test vs LCD test: what changes on an OLED panel" Lane-D guide (device-test / lcd-test sub-cluster, companion to /lcd-test.html). Multi-cycle skeleton phase 1.
-  '/guides/oled-test-vs-lcd-test-what-changes-on-oled.html': 'guide/oled-test-vs-lcd-test-what-changes-on-oled.jsp',
+  '/guides/en/oled-test-vs-lcd-test-what-changes-on-oled.html': 'guide/en/oled-test-vs-lcd-test-what-changes-on-oled.jsp',
   // Cycle 20260517-7 P7.A - "LED test" Lane-D create_new_guide_page guide (device-test / lcd-test sub-cluster, companion to /lcd-test.html).
-  '/guides/led-test.html': 'guide/led-test.jsp',
+  '/guides/en/led-test.html': 'guide/en/led-test.jsp',
   // Cycle1/20260514-5 P1.A - "LCD test online" Lane-D guide (device-test / lcd-test sub-cluster, companion to /lcd-test.html). Multi-cycle Phase A skeleton (route scaffolding only).
-  '/guides/lcd-test-online.html': 'guide/lcd-test-online.jsp',
+  '/guides/en/lcd-test-online.html': 'guide/en/lcd-test-online.jsp',
   // Cycle1/20260514-5 create_new_guide_page - "Split GIF into frames" Lane-D guide (image-editing / gif-maker sub-cluster, companion to /gif-maker.html). Multi-cycle Phase A skeleton (route scaffolding only).
-  '/guides/split-gif-into-frames.html': 'guide/split-gif-into-frames.jsp',
+  '/guides/en/split-gif-into-frames.html': 'guide/en/split-gif-into-frames.jsp',
   // Cycle 20260515-12 create_new_guide_page - "Make Zip File Online" Lane-D guide (zip cluster, companion to /zip-tools/zip-file.html). Complete single-cycle ship per cycle 20260514-5 contract (no skeleton wait).
-  '/guides/make-zip-file-online.html': 'guide/make-zip-file-online.jsp',
+  '/guides/en/make-zip-file-online.html': 'guide/en/make-zip-file-online.jsp',
   // Cycle 20260515-13 create_new_guide_page - "Comprimir Zip Online" Lane-D guide (zip cluster, Spanish-keyword sibling of /guides/make-zip-file-online.html; companion to /zip-tools/zip-file.html). Complete single-cycle ship per cycle 20260514-5 contract.
   // Cycle 20260519-14 create_new_guide_page - "Comprimir Carpeta Zip Online Gratis" Lane-D guide (zip cluster, Spanish folder-compression intent; companion to /zip-file.html). Native-Spanish prose authored against tool-zipfile SKILL features. Complete single-cycle ship per cycle 20260514-5 contract.
   // Cycle 20260523-4 create_new_guide_page - "Reducir Tamaño Zip Online" Lane-D synonym-landing guide (zip cluster, Spanish size-reduction wording; companion to /zip-tools/zip-file.html). Routes to /guides/comprimir-zip-online.html for the compression-wording context. Complete single-cycle ship per cycle 20260514-5 contract.
   // Cycle 20260517-8 create_new_guide_page - "Online Zip File Compressor" Lane-D guide (zip cluster head-query sibling, companion to /zip-tools/zip-file.html). Complete single-cycle ship per cycle 20260514-5 contract.
-  '/guides/online-zip-file-compressor.html': 'guide/online-zip-file-compressor.jsp',
+  '/guides/en/online-zip-file-compressor.html': 'guide/en/online-zip-file-compressor.jsp',
   // Cycle 20260518-20 create_new_guide_page - "Zip Compress" Lane-D guide (zip cluster head-query sibling, companion to /zip-tools/zip-file.html). Complete single-cycle ship per cycle 20260514-5 contract.
-  '/guides/zip-compress.html': 'guide/zip-compress.jsp',
+  '/guides/en/zip-compress.html': 'guide/en/zip-compress.jsp',
   // Cycle 20260518-21 create_new_guide_page - "Zip password recovery online" Lane-D truthful-framing guide. Companion to /zip-tools/remove-zip-password.html. Source: tool-removezippassword/SKILL.md F1-F7 + N2 + N6.
-  '/guides/zip-password-recovery-online.html': 'guide/zip-password-recovery-online.jsp',
+  '/guides/en/zip-password-recovery-online.html': 'guide/en/zip-password-recovery-online.jsp',
   // Cycle 20260518-22 create_new_guide_page - "Zip compressor online" Lane-D guide (zip cluster head-query sibling, companion to /zip-tools/zip-file.html and /guides/zip-compressor.html). Complete single-cycle ship per cycle 20260514-5 contract.
-  '/guides/zip-compressor-online.html': 'guide/zip-compressor-online.jsp',
+  '/guides/en/zip-compressor-online.html': 'guide/en/zip-compressor-online.jsp',
   // Cycle 20260518-23 create_new_guide_page - "Folder to zip" Lane-D guide. Companion to /zip-tools/zip-file.html. Sourced from tool-ziptools/SKILL.md M1 + tool-guidescompresszip/SKILL.md C1-C5.
-  '/guides/folder-to-zip.html': 'guide/folder-to-zip.jsp',
+  '/guides/en/folder-to-zip.html': 'guide/en/folder-to-zip.jsp',
   // Cycle 20260518-33 create_new_guide_page - "Tes LCD" Lane-D guide (device-test
   // cluster, companion to /lcd-test.html). Indonesian-language guide for the
   // "tes lcd" search intent. Paraphrases tool-lcdtest/SKILL.md F1-F5.
-  '/guides/tes-lcd.html': 'guide/tes-lcd.jsp',
+  '/guides/en/tes-lcd.html': 'guide/en/tes-lcd.jsp',
   // Cycle 20260520-16 create_new_guide_page - "Kompres File Zip" Lane-D guide
   // (zip cluster, Indonesian-language sibling to /guides/comprimir-zip-online.html).
   // Companion to /zip-file.html. GSC 28d "kompres file zip" 338 imp / 13 clicks /
   // pos 6.36 / CTR 3.85% / opportunity_score 51.12. Paraphrases tool-zipfile
   // implemented features (server-side bundling, optional AES password, S3-backed
   // download with short retention) into Indonesian reader-task prose.
-  '/guides/kompres-file-zip.html': 'guide/kompres-file-zip.jsp',
+  '/guides/en/kompres-file-zip.html': 'guide/en/kompres-file-zip.jsp',
   // Cycle 20260523-5 P52.I create_new_guide_page - "Kompres Zip" Lane-D guide
   // (zip cluster, Indonesian-language SIZE-QUESTION companion to /guides/kompres-file-zip.html).
   // Companion to /zip-file.html. GSC 28d "kompres zip" 248 imp / 18 clicks / pos 7.42
@@ -1681,11 +1861,11 @@ export const JSP_BY_ROUTE = {
   // this guide focuses on the SIZE question (kapan ZIP mengecilkan ukuran), the sibling
   // covers the broader BUNDLE/PRIVACY workflow - the two pages mirror /guides/compress-zip.html
   // (size) vs the bigger English compress-zip guide family.
-  '/guides/kompres-zip.html': 'guide/kompres-zip.jsp',
+  '/guides/en/kompres-zip.html': 'guide/en/kompres-zip.jsp',
   // Cycle 20260518-25 create_new_guide_page - "Online Zip File" Lane-D guide. Companion to /zip-tools/zip-file.html. Sourced from tool-zipfile/SKILL.md M1-M7 + tool-ziptools/SKILL.md M1.
-  '/guides/online-zip-file.html': 'guide/online-zip-file.jsp',
+  '/guides/en/online-zip-file.html': 'guide/en/online-zip-file.jsp',
   // Cycle 20260518-31 create_new_guide_page - "Create Zip File Online" Lane-D guide. Companion to /zip-tools/zip-file.html. Sourced from tool-zipfile/SKILL.md implemented features + BODYHTMLzipfile reader-task copy.
-  '/guides/create-zip-file-online.html': 'guide/create-zip-file-online.jsp',
+  '/guides/en/create-zip-file-online.html': 'guide/en/create-zip-file-online.jsp',
   // Cycle 20260518-32 create_new_guide_page - "compactar pasta" Lane-D guide (zip cluster, Portuguese folder compression intent). Companion to /zip-tools/zip-file.html. Sourced from tool-zipfile BODYHTML/BODYDESC + cluster-sibling Portuguese guide /guides/comprimir-zip-online.html.
   // Cycle 20260521-20 P37.H create_new_guide_page - "comprimir pasta zipada"
   // Lane-D guide (zip cluster, Portuguese). Implementing tool /zip-file.html.
@@ -1712,7 +1892,7 @@ export const JSP_BY_ROUTE = {
   // guide route, not a modification of an indexed tool URL.
   // Cycle 20260520-11 new_guide_page_proposal (developer cluster):
   // companion to /js-unminifier.html.
-  '/guides/unminify-js.html': 'guide/unminify-js.jsp',
+  '/guides/en/unminify-js.html': 'guide/en/unminify-js.jsp',
   // Cycle 20260520-13 new_guide_page_proposal (device-test cluster, companion
   // to /lcd-test.html). "lcd screen test" query - GSC 382 imp / 6 clicks /
   // pos 7.11 / CTR 1.57% / opportunity_score 52.9. Paraphrases
@@ -1720,7 +1900,7 @@ export const JSP_BY_ROUTE = {
   // viewport metrics + no-upload disclosure). Kebab slug
   // /guides/lcd-screen-test.html does not shadow any existing primary tool
   // route (urlToSlug() smashes to "lcdscreentest" which is not in JSP_BY_ROUTE).
-  '/guides/lcd-screen-test.html': 'guide/lcd-screen-test.jsp',
+  '/guides/en/lcd-screen-test.html': 'guide/en/lcd-screen-test.jsp',
   // Cycle 20260520-15 new_guide_page_proposal (zip cluster). "unlock zip file
   // online" query - GSC 421 imp / 40 clicks / pos 7.4 / CTR 9.5% /
   // opportunity_score 51.51. Disambiguation guide routing between
@@ -1731,175 +1911,175 @@ export const JSP_BY_ROUTE = {
   // tool-guidesunlockzipfileonline/SKILL.md cites BODYHTML claims back to
   // /unzip-file.html and /remove-zip-password.html behaviour visible on
   // those pages at cycle authoring SHA.
-  '/guides/unlock-zip-file-online.html': 'guide/unlock-zip-file-online.jsp',
+  '/guides/en/unlock-zip-file-online.html': 'guide/en/unlock-zip-file-online.jsp',
   // Cycle 20260520-10 create_new_guide_page - "GIF into frames" Lane-D guide (image-editing cluster, companion to /extract-gif-to-image-frames.html). Sourced from tool-extractgiftoimageframes BODYTITLE/BODYDESC + Implemented features. Single-cycle ship per cycle 20260514-5 contract. Cannibalization chain from -6 expired (4-cycle window closed).
-  '/guides/gif-into-frames.html': 'guide/gif-into-frames.jsp',
+  '/guides/en/gif-into-frames.html': 'guide/en/gif-into-frames.jsp',
   // Cycle 84 P84.A - "How to compress a JPG for email attachment size limits" Lane-D guide (image-conversion / compression sub-cluster, companion to /compress-image.html).
-  '/guides/how-to-compress-a-jpg-for-email-attachment-limits.html': 'guide/how-to-compress-a-jpg-for-email-attachment-limits.jsp',
+  '/guides/en/how-to-compress-a-jpg-for-email-attachment-limits.html': 'guide/en/how-to-compress-a-jpg-for-email-attachment-limits.jsp',
   // Cycle 85 P85.A - "Microphone test levels: what quiet, normal, and peak mean" Lane-D guide (device-test / microphone-test sub-cluster, companion to /microphone-test.html).
-  '/guides/microphone-test-online-quiet-normal-peak-meter.html': 'guide/microphone-test-online-quiet-normal-peak-meter.jsp',
+  '/guides/en/microphone-test-online-quiet-normal-peak-meter.html': 'guide/en/microphone-test-online-quiet-normal-peak-meter.jsp',
   // Cycle 86 P86.A - "Camera test permission blocked: how to allow camera access in your browser" Lane-D guide (device-test / camera-test sub-cluster, companion to /camera-test.html).
-  '/guides/camera-test-permission-blocked-how-to-allow-it.html': 'guide/camera-test-permission-blocked-how-to-allow-it.jsp',
+  '/guides/en/camera-test-permission-blocked-how-to-allow-it.html': 'guide/en/camera-test-permission-blocked-how-to-allow-it.jsp',
   // Cycle 87 P87.A - "Microphone test permission blocked: how to allow mic access in your browser" Lane-D guide (device-test / microphone-test sub-cluster, companion to /microphone-test.html, symmetric peer to cycle-86 P86.A).
-  '/guides/microphone-test-permission-blocked-how-to-allow-it.html': 'guide/microphone-test-permission-blocked-how-to-allow-it.jsp',
+  '/guides/en/microphone-test-permission-blocked-how-to-allow-it.html': 'guide/en/microphone-test-permission-blocked-how-to-allow-it.jsp',
   // Cycle 88 P88.A - "QR Code Content Types: URL vs vCard vs Wi-Fi vs Text - Which to Pick" Lane-D guide (utility / qr-code-generator sub-cluster, companion to /qr-code-generator.html).
-  '/guides/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html': 'guide/qr-code-content-types-url-vcard-wifi-text-which-to-pick.jsp',
+  '/guides/en/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html': 'guide/en/qr-code-content-types-url-vcard-wifi-text-which-to-pick.jsp',
   // Cycle 90 P90.A - "EXIF Metadata and Image Compression: What Gets Stripped" Lane-D guide (image-conversion / compress-image sub-cluster, companion to /compress-image.html).
-  '/guides/image-compression-and-exif-metadata-what-gets-stripped.html': 'guide/image-compression-and-exif-metadata-what-gets-stripped.jsp',
+  '/guides/en/image-compression-and-exif-metadata-what-gets-stripped.html': 'guide/en/image-compression-and-exif-metadata-what-gets-stripped.jsp',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
-  '/guides/mp4-vs-webm-for-web.html': 'guide/mp4-vs-webm-for-web.jsp',
-  '/guides/jpg-vs-png-for-web.html': 'guide/jpg-vs-png-for-web.jsp',
-  '/guides/md5-vs-sha256-when-to-hash.html': 'guide/md5-vs-sha256-when-to-hash.jsp',
-  '/guides/csv-vs-json-data-formats.html': 'guide/csv-vs-json-data-formats.jsp',
-  '/guides/pdf-vs-heic-for-document-archival.html': 'guide/pdf-vs-heic-for-document-archival.jsp',
-  '/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html': 'guide/ffmpeg-online-vs-local-ffmpeg-when-each-wins.jsp',
-  '/guides/how-to-convert-100-heic-photos-to-jpg.html': 'guide/how-to-convert-100-heic-photos-to-jpg.jsp',
-  '/guides/how-to-test-for-dead-pixels-before-returning-a-monitor.html': 'guide/how-to-test-for-dead-pixels-before-returning-a-monitor.jsp',
-  '/guides/how-to-sign-pdf-after-removing-a-password.html': 'guide/how-to-sign-pdf-after-removing-a-password.jsp',
-  '/guides/how-to-extract-frames-from-a-gif-for-a-social-post.html': 'guide/how-to-extract-frames-from-a-gif-for-a-social-post.jsp',
-  '/guides/how-to-check-webcam-and-microphone-before-an-interview.html': 'guide/how-to-check-webcam-and-microphone-before-an-interview.jsp',
-  '/guides/how-to-minify-css-js-for-cloud-run-cold-start.html': 'guide/how-to-minify-css-js-for-cloud-run-cold-start.jsp',
-  '/guides/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html': 'guide/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.jsp',
+  '/guides/en/mp4-vs-webm-for-web.html': 'guide/en/mp4-vs-webm-for-web.jsp',
+  '/guides/en/jpg-vs-png-for-web.html': 'guide/en/jpg-vs-png-for-web.jsp',
+  '/guides/en/md5-vs-sha256-when-to-hash.html': 'guide/en/md5-vs-sha256-when-to-hash.jsp',
+  '/guides/en/csv-vs-json-data-formats.html': 'guide/en/csv-vs-json-data-formats.jsp',
+  '/guides/en/pdf-vs-heic-for-document-archival.html': 'guide/en/pdf-vs-heic-for-document-archival.jsp',
+  '/guides/en/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html': 'guide/en/ffmpeg-online-vs-local-ffmpeg-when-each-wins.jsp',
+  '/guides/en/how-to-convert-100-heic-photos-to-jpg.html': 'guide/en/how-to-convert-100-heic-photos-to-jpg.jsp',
+  '/guides/en/how-to-test-for-dead-pixels-before-returning-a-monitor.html': 'guide/en/how-to-test-for-dead-pixels-before-returning-a-monitor.jsp',
+  '/guides/en/how-to-sign-pdf-after-removing-a-password.html': 'guide/en/how-to-sign-pdf-after-removing-a-password.jsp',
+  '/guides/en/how-to-extract-frames-from-a-gif-for-a-social-post.html': 'guide/en/how-to-extract-frames-from-a-gif-for-a-social-post.jsp',
+  '/guides/en/how-to-check-webcam-and-microphone-before-an-interview.html': 'guide/en/how-to-check-webcam-and-microphone-before-an-interview.jsp',
+  '/guides/en/how-to-minify-css-js-for-cloud-run-cold-start.html': 'guide/en/how-to-minify-css-js-for-cloud-run-cold-start.jsp',
+  '/guides/en/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html': 'guide/en/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.jsp',
   // Phase 10 Cycle 4 P10.3.4.
-  '/guides/when-to-compress-vs-convert-an-image.html': 'guide/when-to-compress-vs-convert-an-image.jsp',
+  '/guides/en/when-to-compress-vs-convert-an-image.html': 'guide/en/when-to-compress-vs-convert-an-image.jsp',
   // Phase 11 Cycle 4 P11.3.3.
-  '/guides/how-to-compress-a-folder-for-email.html': 'guide/how-to-compress-a-folder-for-email.jsp',
+  '/guides/en/how-to-compress-a-folder-for-email.html': 'guide/en/how-to-compress-a-folder-for-email.jsp',
   // Phase 11 Cycle 5 P11.2.1 + P11.3.5.
-  '/guides/device-test-checklist-for-remote-work.html': 'guide/device-test-checklist-for-remote-work.jsp',
-  '/guides/pdf-editing-ladder.html': 'guide/pdf-editing-ladder.jsp',
-  '/guides/file-compressor-vs-zip-what-to-pick.html': 'guide/file-compressor-vs-zip-what-to-pick.jsp',
-  '/guides/heic-vs-jpg-converter-when-each-wins.html': 'guide/heic-vs-jpg-converter-when-each-wins.jsp',
+  '/guides/en/device-test-checklist-for-remote-work.html': 'guide/en/device-test-checklist-for-remote-work.jsp',
+  '/guides/en/pdf-editing-ladder.html': 'guide/en/pdf-editing-ladder.jsp',
+  '/guides/en/file-compressor-vs-zip-what-to-pick.html': 'guide/en/file-compressor-vs-zip-what-to-pick.jsp',
+  '/guides/en/heic-vs-jpg-converter-when-each-wins.html': 'guide/en/heic-vs-jpg-converter-when-each-wins.jsp',
   // Phase 16 Cycle A P16.N1 / P16.N2 / P16.N4.
-  '/guides/what-is-a-file-compressor-and-which-to-use.html': 'guide/what-is-a-file-compressor-and-which-to-use.jsp',
+  '/guides/en/what-is-a-file-compressor-and-which-to-use.html': 'guide/en/what-is-a-file-compressor-and-which-to-use.jsp',
   // Cycle 121 P121.G - "file compressor" HEAD-query aggregator landing.
-  '/guides/file-compressor.html': 'guide/file-compressor.jsp',
+  '/guides/en/file-compressor.html': 'guide/en/file-compressor.jsp',
   // Cycle 122 P122.A - HEAD-query disambiguation aggregator for "test lcd" / "lcd tester" / "lcd test online".
-  '/guides/test-lcd.html': 'guide/test-lcd.jsp',
+  '/guides/en/test-lcd.html': 'guide/en/test-lcd.jsp',
   // Cycle 20260518-30 P30.E - "lcd checker" / "lcd check" / "monitor checker" verification-framing sibling guide.
-  '/guides/lcd-checker.html': 'guide/lcd-checker.jsp',
-  '/guides/how-to-compress-a-file-online.html': 'guide/how-to-compress-a-file-online.jsp',
-  '/guides/how-to-reduce-zip-file-size-online.html': 'guide/how-to-reduce-zip-file-size-online.jsp',
-  '/guides/how-to-reduce-zip-file-size.html': 'guide/how-to-reduce-zip-file-size.jsp',
+  '/guides/en/lcd-checker.html': 'guide/en/lcd-checker.jsp',
+  '/guides/en/how-to-compress-a-file-online.html': 'guide/en/how-to-compress-a-file-online.jsp',
+  '/guides/en/how-to-reduce-zip-file-size-online.html': 'guide/en/how-to-reduce-zip-file-size-online.jsp',
+  '/guides/en/how-to-reduce-zip-file-size.html': 'guide/en/how-to-reduce-zip-file-size.jsp',
   // Cycle 20260520-9 create_new_guide_page - bare-noun landing for "reduce zip file size online" (implementing tool /zip-file.html).
-  '/guides/reduce-zip-file-size-online.html': 'guide/reduce-zip-file-size-online.jsp',
+  '/guides/en/reduce-zip-file-size-online.html': 'guide/en/reduce-zip-file-size-online.jsp',
   // Cycle 20260515-15 — "Zip File Compressor Online" Lane-D guide.
-  '/guides/zip-file-compressor-online.html': 'guide/zip-file-compressor-online.jsp',
+  '/guides/en/zip-file-compressor-online.html': 'guide/en/zip-file-compressor-online.jsp',
   // Phase 16 Cycle B P16.G1 hub + P16.N11 + P16.N16.
   '/guides.html': 'utility/guides.jsp',
-  '/guides/how-to-convert-heic-to-jpg-step-by-step.html': 'guide/how-to-convert-heic-to-jpg-step-by-step.jsp',
-  '/guides/what-an-lcd-test-does-and-when-to-run-one.html': 'guide/what-an-lcd-test-does-and-when-to-run-one.jsp',
+  '/guides/en/how-to-convert-heic-to-jpg-step-by-step.html': 'guide/en/how-to-convert-heic-to-jpg-step-by-step.jsp',
+  '/guides/en/what-an-lcd-test-does-and-when-to-run-one.html': 'guide/en/what-an-lcd-test-does-and-when-to-run-one.jsp',
   // Cycle 20260517-6 create_new_guide_page - "ms to date" synonym-coverage guide.
-  '/guides/ms-to-date.html': 'guide/ms-to-date.jsp',
+  '/guides/en/ms-to-date.html': 'guide/en/ms-to-date.jsp',
   // Cycle 20260517-21 create_new_guide_page - "convert milliseconds to date" exact-match landing.
-  '/guides/convert-milliseconds-to-date.html': 'guide/convert-milliseconds-to-date.jsp',
+  '/guides/en/convert-milliseconds-to-date.html': 'guide/en/convert-milliseconds-to-date.jsp',
   // Cycle 20260520-12 create_new_guide_page - "millisecond to date" singular-noun landing. Implementing tool /convert-time-in-millisecond-to-date.html.
-  '/guides/millisecond-to-date.html': 'guide/millisecond-to-date.jsp',
+  '/guides/en/millisecond-to-date.html': 'guide/en/millisecond-to-date.jsp',
   // Phase 16 cycle 8 N-series guides (25 new).
 
   // Phase 16 cycle 8 N-series guides (25 new).
-  '/guides/how-to-make-a-zip-file-smaller.html': 'guide/how-to-make-a-zip-file-smaller.jsp',
-  '/guides/how-to-compress-zip-file-to-smaller-size.html': 'guide/how-to-compress-zip-file-to-smaller-size.jsp',
+  '/guides/en/how-to-make-a-zip-file-smaller.html': 'guide/en/how-to-make-a-zip-file-smaller.jsp',
+  '/guides/en/how-to-compress-zip-file-to-smaller-size.html': 'guide/en/how-to-compress-zip-file-to-smaller-size.jsp',
   // Cycle 20260517-9 create_new_guide_page - exact-match "compress zip file to smaller size" landing.
-  '/guides/compress-zip-file-to-smaller-size.html': 'guide/compress-zip-file-to-smaller-size.jsp',
-  '/guides/compress-zip-file-to-100kb.html': 'guide/compress-zip-file-to-100kb.jsp',
+  '/guides/en/compress-zip-file-to-smaller-size.html': 'guide/en/compress-zip-file-to-smaller-size.jsp',
+  '/guides/en/compress-zip-file-to-100kb.html': 'guide/en/compress-zip-file-to-100kb.jsp',
   // Cycle 20260521-12 P29.A create_new_guide_page - operator-approved "compress zip file to 2mb" enterprise-SMTP-cap-specific landing.
-  '/guides/compress-zip-file-to-2mb.html': 'guide/compress-zip-file-to-2mb.jsp',
+  '/guides/en/compress-zip-file-to-2mb.html': 'guide/en/compress-zip-file-to-2mb.jsp',
   // Cycle 20260517-10 create_new_guide_page - exact-match "zip size reducer" landing.
-  '/guides/zip-size-reducer.html': 'guide/zip-size-reducer.jsp',
+  '/guides/en/zip-size-reducer.html': 'guide/en/zip-size-reducer.jsp',
   // Cycle 20260519-12 create_new_guide_page — /guides/zip-file-size-compressor.html (implementing tool /zip-file.html).
-  '/guides/zip-file-size-compressor.html': 'guide/zip-file-size-compressor.jsp',
-  '/guides/online-zip-vs-7z-vs-rar-which-to-pick.html': 'guide/online-zip-vs-7z-vs-rar-which-to-pick.jsp',
-  '/guides/how-to-zip-multiple-files-into-one.html': 'guide/how-to-zip-multiple-files-into-one.jsp',
-  '/guides/how-to-zip-folder-online-step-by-step.html': 'guide/how-to-zip-folder-online-step-by-step.jsp',
-  '/guides/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html': 'guide/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.jsp',
-  '/guides/recover-corrupt-zip-file-options.html': 'guide/recover-corrupt-zip-file-options.jsp',
-  '/guides/iphone-photo-format-explained-heic-jpg-png-raw.html': 'guide/iphone-photo-format-explained-heic-jpg-png-raw.jsp',
-  '/guides/how-to-convert-iphone-photo-to-jpg.html': 'guide/how-to-convert-iphone-photo-to-jpg.jsp',
-  '/guides/jpg-vs-jpeg-are-they-the-same.html': 'guide/jpg-vs-jpeg-are-they-the-same.jsp',
-  '/guides/svg-to-png-when-to-rasterize-an-svg.html': 'guide/svg-to-png-when-to-rasterize-an-svg.jsp',
-  '/guides/how-to-check-camera-quality-on-your-phone.html': 'guide/how-to-check-camera-quality-on-your-phone.jsp',
-  '/guides/microphone-test-online-what-it-actually-checks.html': 'guide/microphone-test-online-what-it-actually-checks.jsp',
-  '/guides/keyboard-tester-online-rollover-vs-anti-ghosting.html': 'guide/keyboard-tester-online-rollover-vs-anti-ghosting.jsp',
-  '/guides/how-to-test-a-keyboard-online-step-by-step.html': 'guide/how-to-test-a-keyboard-online-step-by-step.jsp',
-  '/guides/extract-gif-frames-png-vs-jpg-which-format.html': 'guide/extract-gif-frames-png-vs-jpg-which-format.jsp',
-  '/guides/gif-frames-extract-vs-frame-rate-fps-explained.html': 'guide/gif-frames-extract-vs-frame-rate-fps-explained.jsp',
-  '/guides/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html': 'guide/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.jsp',
-  '/guides/camera-test-shows-black-screen-four-fixes.html': 'guide/camera-test-shows-black-screen-four-fixes.jsp',
-  '/guides/microphone-test-no-sound-four-fixes.html': 'guide/microphone-test-no-sound-four-fixes.jsp',
-  '/guides/keyboard-test-keys-not-detected-four-fixes.html': 'guide/keyboard-test-keys-not-detected-four-fixes.jsp',
-  '/guides/compress-jpeg-without-losing-quality-quality-vs-size.html': 'guide/compress-jpeg-without-losing-quality-quality-vs-size.jsp',
-  '/guides/long-number-millisecond-or-second.html': 'guide/long-number-millisecond-or-second.jsp',
-  '/guides/compressed-jpg-looks-blurry-three-causes.html': 'guide/compressed-jpg-looks-blurry-three-causes.jsp',
-  '/guides/ffmpeg-online-conversion-stalled-three-fixes.html': 'guide/ffmpeg-online-conversion-stalled-three-fixes.jsp',
-  '/guides/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/gif-frame-extractor-output-looks-wrong-three-causes.jsp',
-  '/guides/gif-frame-extractor.html': 'guide/gif-frame-extractor.jsp',
-  '/guides/lcd-test-vs-display-test-which-do-you-need.html': 'guide/lcd-test-vs-display-test-which-do-you-need.jsp',
-  '/guides/camera-test-vs-webcam-test-which-do-you-need.html': 'guide/camera-test-vs-webcam-test-which-do-you-need.jsp',
-  '/guides/screen-test-vs-camera-test-pick-the-right-tool.html': 'guide/screen-test-vs-camera-test-pick-the-right-tool.jsp',
-  '/guides/md5-to-text-why-you-cannot-convert-back.html': 'guide/md5-to-text-why-you-cannot-convert-back.jsp',
-  '/guides/before-a-video-call-which-tools-to-run.html': 'guide/before-a-video-call-which-tools-to-run.jsp',
+  '/guides/en/zip-file-size-compressor.html': 'guide/en/zip-file-size-compressor.jsp',
+  '/guides/en/online-zip-vs-7z-vs-rar-which-to-pick.html': 'guide/en/online-zip-vs-7z-vs-rar-which-to-pick.jsp',
+  '/guides/en/how-to-zip-multiple-files-into-one.html': 'guide/en/how-to-zip-multiple-files-into-one.jsp',
+  '/guides/en/how-to-zip-folder-online-step-by-step.html': 'guide/en/how-to-zip-folder-online-step-by-step.jsp',
+  '/guides/en/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html': 'guide/en/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.jsp',
+  '/guides/en/recover-corrupt-zip-file-options.html': 'guide/en/recover-corrupt-zip-file-options.jsp',
+  '/guides/en/iphone-photo-format-explained-heic-jpg-png-raw.html': 'guide/en/iphone-photo-format-explained-heic-jpg-png-raw.jsp',
+  '/guides/en/how-to-convert-iphone-photo-to-jpg.html': 'guide/en/how-to-convert-iphone-photo-to-jpg.jsp',
+  '/guides/en/jpg-vs-jpeg-are-they-the-same.html': 'guide/en/jpg-vs-jpeg-are-they-the-same.jsp',
+  '/guides/en/svg-to-png-when-to-rasterize-an-svg.html': 'guide/en/svg-to-png-when-to-rasterize-an-svg.jsp',
+  '/guides/en/how-to-check-camera-quality-on-your-phone.html': 'guide/en/how-to-check-camera-quality-on-your-phone.jsp',
+  '/guides/en/microphone-test-online-what-it-actually-checks.html': 'guide/en/microphone-test-online-what-it-actually-checks.jsp',
+  '/guides/en/keyboard-tester-online-rollover-vs-anti-ghosting.html': 'guide/en/keyboard-tester-online-rollover-vs-anti-ghosting.jsp',
+  '/guides/en/how-to-test-a-keyboard-online-step-by-step.html': 'guide/en/how-to-test-a-keyboard-online-step-by-step.jsp',
+  '/guides/en/extract-gif-frames-png-vs-jpg-which-format.html': 'guide/en/extract-gif-frames-png-vs-jpg-which-format.jsp',
+  '/guides/en/gif-frames-extract-vs-frame-rate-fps-explained.html': 'guide/en/gif-frames-extract-vs-frame-rate-fps-explained.jsp',
+  '/guides/en/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html': 'guide/en/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.jsp',
+  '/guides/en/camera-test-shows-black-screen-four-fixes.html': 'guide/en/camera-test-shows-black-screen-four-fixes.jsp',
+  '/guides/en/microphone-test-no-sound-four-fixes.html': 'guide/en/microphone-test-no-sound-four-fixes.jsp',
+  '/guides/en/keyboard-test-keys-not-detected-four-fixes.html': 'guide/en/keyboard-test-keys-not-detected-four-fixes.jsp',
+  '/guides/en/compress-jpeg-without-losing-quality-quality-vs-size.html': 'guide/en/compress-jpeg-without-losing-quality-quality-vs-size.jsp',
+  '/guides/en/long-number-millisecond-or-second.html': 'guide/en/long-number-millisecond-or-second.jsp',
+  '/guides/en/compressed-jpg-looks-blurry-three-causes.html': 'guide/en/compressed-jpg-looks-blurry-three-causes.jsp',
+  '/guides/en/ffmpeg-online-conversion-stalled-three-fixes.html': 'guide/en/ffmpeg-online-conversion-stalled-three-fixes.jsp',
+  '/guides/en/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/en/gif-frame-extractor-output-looks-wrong-three-causes.jsp',
+  '/guides/en/gif-frame-extractor.html': 'guide/en/gif-frame-extractor.jsp',
+  '/guides/en/lcd-test-vs-display-test-which-do-you-need.html': 'guide/en/lcd-test-vs-display-test-which-do-you-need.jsp',
+  '/guides/en/camera-test-vs-webcam-test-which-do-you-need.html': 'guide/en/camera-test-vs-webcam-test-which-do-you-need.jsp',
+  '/guides/en/screen-test-vs-camera-test-pick-the-right-tool.html': 'guide/en/screen-test-vs-camera-test-pick-the-right-tool.jsp',
+  '/guides/en/md5-to-text-why-you-cannot-convert-back.html': 'guide/en/md5-to-text-why-you-cannot-convert-back.jsp',
+  '/guides/en/before-a-video-call-which-tools-to-run.html': 'guide/en/before-a-video-call-which-tools-to-run.jsp',
   // Cycle 46 (20260522-7) P46.H — camera-check synonym-disambiguation guide.
-  '/guides/camera-check.html': 'guide/camera-check.jsp',
-  '/guides/screen-test-for-laptop-5-minute-checklist.html': 'guide/screen-test-for-laptop-5-minute-checklist.jsp',
-  '/guides/ffmpeg-online-vs-video-converter-which-to-pick.html': 'guide/ffmpeg-online-vs-video-converter-which-to-pick.jsp',
-  '/guides/imagemagick-online-vs-task-specific-tools-which-to-pick.html': 'guide/imagemagick-online-vs-task-specific-tools-which-to-pick.jsp',
-  '/guides/file-compressor-online-when-to-zip-vs-when-to-compress-image.html': 'guide/file-compressor-online-when-to-zip-vs-when-to-compress-image.jsp',
-  '/guides/how-to-extract-a-file-online-zip-rar-7z.html': 'guide/how-to-extract-a-file-online-zip-rar-7z.jsp',
-  '/guides/how-to-choose-a-compression-level.html': 'guide/how-to-choose-a-compression-level.jsp',
-  '/guides/zip-password-types-strong-vs-weak-explained.html': 'guide/zip-password-types-strong-vs-weak-explained.jsp',
-  '/guides/pdf-preflight-online-what-it-actually-checks.html': 'guide/pdf-preflight-online-what-it-actually-checks.jsp',
-  '/guides/read-and-compare-md5-hashes-correctly.html': 'guide/read-and-compare-md5-hashes-correctly.jsp',
-  '/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html': 'guide/how-to-tell-if-a-jpg-was-compressed-too-much.jsp',
-  '/guides/how-to-flatten-a-pdf-and-when-to-do-it.html': 'guide/how-to-flatten-a-pdf-and-when-to-do-it.jsp',
-  '/guides/png-to-svg-when-to-vectorize-a-raster-image.html': 'guide/png-to-svg-when-to-vectorize-a-raster-image.jsp',
-  '/guides/download-link-not-appearing-after-conversion-five-fixes.html': 'guide/download-link-not-appearing-after-conversion-five-fixes.jsp',
-  '/guides/why-heic-wont-open-on-windows-three-fixes.html': 'guide/why-heic-wont-open-on-windows-three-fixes.jsp',
-  '/guides/why-md5-cannot-be-decrypted.html': 'guide/why-md5-cannot-be-decrypted.jsp',
-  '/guides/md5-decode.html': 'guide/md5-decode.jsp',
-  '/guides/md5-decrypt-online.html': 'guide/md5-decrypt-online.jsp',
+  '/guides/en/camera-check.html': 'guide/en/camera-check.jsp',
+  '/guides/en/screen-test-for-laptop-5-minute-checklist.html': 'guide/en/screen-test-for-laptop-5-minute-checklist.jsp',
+  '/guides/en/ffmpeg-online-vs-video-converter-which-to-pick.html': 'guide/en/ffmpeg-online-vs-video-converter-which-to-pick.jsp',
+  '/guides/en/imagemagick-online-vs-task-specific-tools-which-to-pick.html': 'guide/en/imagemagick-online-vs-task-specific-tools-which-to-pick.jsp',
+  '/guides/en/file-compressor-online-when-to-zip-vs-when-to-compress-image.html': 'guide/en/file-compressor-online-when-to-zip-vs-when-to-compress-image.jsp',
+  '/guides/en/how-to-extract-a-file-online-zip-rar-7z.html': 'guide/en/how-to-extract-a-file-online-zip-rar-7z.jsp',
+  '/guides/en/how-to-choose-a-compression-level.html': 'guide/en/how-to-choose-a-compression-level.jsp',
+  '/guides/en/zip-password-types-strong-vs-weak-explained.html': 'guide/en/zip-password-types-strong-vs-weak-explained.jsp',
+  '/guides/en/pdf-preflight-online-what-it-actually-checks.html': 'guide/en/pdf-preflight-online-what-it-actually-checks.jsp',
+  '/guides/en/read-and-compare-md5-hashes-correctly.html': 'guide/en/read-and-compare-md5-hashes-correctly.jsp',
+  '/guides/en/how-to-tell-if-a-jpg-was-compressed-too-much.html': 'guide/en/how-to-tell-if-a-jpg-was-compressed-too-much.jsp',
+  '/guides/en/how-to-flatten-a-pdf-and-when-to-do-it.html': 'guide/en/how-to-flatten-a-pdf-and-when-to-do-it.jsp',
+  '/guides/en/png-to-svg-when-to-vectorize-a-raster-image.html': 'guide/en/png-to-svg-when-to-vectorize-a-raster-image.jsp',
+  '/guides/en/download-link-not-appearing-after-conversion-five-fixes.html': 'guide/en/download-link-not-appearing-after-conversion-five-fixes.jsp',
+  '/guides/en/why-heic-wont-open-on-windows-three-fixes.html': 'guide/en/why-heic-wont-open-on-windows-three-fixes.jsp',
+  '/guides/en/why-md5-cannot-be-decrypted.html': 'guide/en/why-md5-cannot-be-decrypted.jsp',
+  '/guides/en/md5-decode.html': 'guide/en/md5-decode.jsp',
+  '/guides/en/md5-decrypt-online.html': 'guide/en/md5-decrypt-online.jsp',
   // Cycle 20260520-17 create_new_guide_page — "md5 hash decrypt" narrow-frame guide on dictionary-attack vs rainbow-table feasibility. Distinct angle from the existing 7 MD5 guides (md5-decrypt-online = wording routing, why-md5-cannot-be-decrypted = cryptographic math, md5-decode = vocabulary distinguish, md5-alternatives = recommendation, md5-to-text = why-cannot-convert-back, md5-vs-sha256 = algorithm comparison, read-and-compare = verification). New angle: the practical feasibility question - "for the hash I have right now, will a dictionary attack actually find the input?" Append-only on every existing surface.
-  '/guides/md5-hash-decrypt.html': 'guide/md5-hash-decrypt.jsp',
+  '/guides/en/md5-hash-decrypt.html': 'guide/en/md5-hash-decrypt.jsp',
   // Cycle 20260523 P50.H create_new_guide_page — "md5 password" reader-intent guide.
   // Distinct angle from the 8 existing MD5 guides: this one frames the hashing intent
   // (one-way MD5 of a password string for checksum / fingerprint use) and explicitly
   // routes the password-storage cohort to /guides/md5-alternatives-bcrypt-argon2id-...
   // Honors cycle 30/35/40/43/44 decrypt-md5 cannibalisation guard: NOT titled or
   // framed as "decrypt md5 password". Implementing tool: /md5-converter.html.
-  '/guides/md5-password.html': 'guide/md5-password.jsp',
-  '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
-  '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/json-vs-yaml-vs-toml-config-formats-explained.jsp',
-  '/guides/css-minifier-vs-uglifier-vs-tree-shaking.html': 'guide/css-minifier-vs-uglifier-vs-tree-shaking.jsp',
-  '/guides/base64-when-to-use-and-when-not-to.html': 'guide/base64-when-to-use-and-when-not-to.jsp',
-  '/guides/how-to-split-a-gif-into-frames-for-editing.html': 'guide/how-to-split-a-gif-into-frames-for-editing.jsp',
-  '/guides/how-to-crop-and-rotate-an-image.html': 'guide/how-to-crop-and-rotate-an-image.jsp',
-  '/guides/photo-editor-vs-graphics-app-vs-batch-processor.html': 'guide/photo-editor-vs-graphics-app-vs-batch-processor.jsp',
-  '/guides/mp4-vs-mov-vs-mkv-which-container-when.html': 'guide/mp4-vs-mov-vs-mkv-which-container-when.jsp',
-  '/guides/free-online-tools-that-work-without-uploading-files.html': 'guide/free-online-tools-that-work-without-uploading-files.jsp',
-  '/guides/qr-code-generator-best-practices.html': 'guide/qr-code-generator-best-practices.jsp',
+  '/guides/en/md5-password.html': 'guide/en/md5-password.jsp',
+  '/guides/en/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': 'guide/en/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.jsp',
+  '/guides/en/json-vs-yaml-vs-toml-config-formats-explained.html': 'guide/en/json-vs-yaml-vs-toml-config-formats-explained.jsp',
+  '/guides/en/css-minifier-vs-uglifier-vs-tree-shaking.html': 'guide/en/css-minifier-vs-uglifier-vs-tree-shaking.jsp',
+  '/guides/en/base64-when-to-use-and-when-not-to.html': 'guide/en/base64-when-to-use-and-when-not-to.jsp',
+  '/guides/en/how-to-split-a-gif-into-frames-for-editing.html': 'guide/en/how-to-split-a-gif-into-frames-for-editing.jsp',
+  '/guides/en/how-to-crop-and-rotate-an-image.html': 'guide/en/how-to-crop-and-rotate-an-image.jsp',
+  '/guides/en/photo-editor-vs-graphics-app-vs-batch-processor.html': 'guide/en/photo-editor-vs-graphics-app-vs-batch-processor.jsp',
+  '/guides/en/mp4-vs-mov-vs-mkv-which-container-when.html': 'guide/en/mp4-vs-mov-vs-mkv-which-container-when.jsp',
+  '/guides/en/free-online-tools-that-work-without-uploading-files.html': 'guide/en/free-online-tools-that-work-without-uploading-files.jsp',
+  '/guides/en/qr-code-generator-best-practices.html': 'guide/en/qr-code-generator-best-practices.jsp',
   // Workstream B sample batch - 2026-04-30
-  '/guides/how-to-compress-a-folder.html': 'guide/how-to-compress-a-folder.jsp',
-  '/guides/lcd-test-what-it-checks.html': 'guide/lcd-test-what-it-checks.jsp',
+  '/guides/en/how-to-compress-a-folder.html': 'guide/en/how-to-compress-a-folder.jsp',
+  '/guides/en/lcd-test-what-it-checks.html': 'guide/en/lcd-test-what-it-checks.jsp',
   // Cycle 20260513-19+ multi-cycle - "lcd test" long-tail guide.
   // Cycle 20260514-2 cycle 1 - Phase A scaffold for "folder to zip converter".
   // Cycle 19 P19.4 - screen/display/monitor synonym disambiguation guide.
-  '/guides/screen-display-test-synonyms.html': 'guide/screen-display-test-synonyms.jsp',
+  '/guides/en/screen-display-test-synonyms.html': 'guide/en/screen-display-test-synonyms.jsp',
   // Cycle 70 P70.A - "Zip file converter - what it actually does" disambiguation guide.
-  '/guides/zip-file-converter-what-it-actually-does.html': 'guide/zip-file-converter-what-it-actually-does.jsp',
+  '/guides/en/zip-file-converter-what-it-actually-does.html': 'guide/en/zip-file-converter-what-it-actually-does.jsp',
   // Cycle 20260519-1 - bare-query "zip file converter" how-to guide.
-  '/guides/zip-file-converter.html': 'guide/zip-file-converter.jsp',
+  '/guides/en/zip-file-converter.html': 'guide/en/zip-file-converter.jsp',
   // Cycle 71 P71.F - "HEIC to JPG: what the converter actually does (and what it does not)" trust-anchor guide.
-  '/guides/heic-to-jpg-claims-what-actually-works.html': 'guide/heic-to-jpg-claims-what-actually-works.jsp',
+  '/guides/en/heic-to-jpg-claims-what-actually-works.html': 'guide/en/heic-to-jpg-claims-what-actually-works.jsp',
   // Cycle1 of 20260513-5 P5.A - "Zip compressor" Lane-D guide. Phase A
   // skeleton (route + JSP wrapper) only. Kebab URL + guide/ singular
   // subdir per granted-card convention.
-  '/guides/zip-compressor.html': 'guide/zip-compressor.jsp',
+  '/guides/en/zip-compressor.html': 'guide/en/zip-compressor.jsp',
   // Cycle6 of 20260513-6 — "Compress ZIP" Lane-D guide. Phase A skeleton.
   // Kebab URL + guide/ singular subdir per granted-card convention.
-  '/guides/compress-zip.html': 'guide/compress-zip.jsp',
+  '/guides/en/compress-zip.html': 'guide/en/compress-zip.jsp',
   // Cycle 20260515-16 — "Compress ZIP Size" Lane-D guide.
-  '/guides/compress-zip-size.html': 'guide/compress-zip-size.jsp',
+  '/guides/en/compress-zip-size.html': 'guide/en/compress-zip-size.jsp',
   // Cycle 20260519-15 create_new_guide_page — "resize zip file" wording-disambiguation Lane-D guide (GSC 406 imp / 19 clicks / pos 6.83 / CTR 4.68%; opportunity_score 56.6). Implementing tool /zip-tools/zip-file.html. Append-only routing/disambiguation guide (NOT a 10th compress-zip duplicate); distinguishes from /guides/how-to-make-a-zip-file-smaller.html, /guides/zip-size-reducer.html, /guides/compress-zip-size.html (which all assume "shrink"), by addressing the three-way reader intent ambiguity (shrink vs split vs shrink-inputs-first).
-  '/guides/resize-zip-file.html': 'guide/resize-zip-file.jsp',
+  '/guides/en/resize-zip-file.html': 'guide/en/resize-zip-file.jsp',
 
   '/pdf-tools/compose-pdf.html': 'pdf/compose-pdf.jsp',
   '/pdf-tools/split-pdf-by-range.html': 'pdf/split-by-range.jsp',
@@ -1966,7 +2146,7 @@ export const JSP_BY_ROUTE = {
   '/image-converter-tools/extract-gif-to-image-frames.html': 'convert/extract-gif-to-image-frames.jsp',
   '/utility-tools/cong-cu-chuyen-doi-chu-quoc-ngu-tieng-viet-thanh-tieq-viet-kieu-moi.html': 'convert/new-vietnamese-converter.jsp',
   // Cycle 20260518-29 create_new_guide_page - zip-password-unlocker Lane-D guide.
-  '/guides/zip-password-unlocker.html': 'guide/zip-password-unlocker.jsp',
+  '/guides/en/zip-password-unlocker.html': 'guide/en/zip-password-unlocker.jsp',
   // Cycle 20260520-followup: canonical moved from /hd-video-converter.html (root)
   // to /video-tools/hd-video-converter.html per the site cluster-URL convention.
   // Existing canonical pattern: /<cluster>-tools/<slug>.html (canonical) +
@@ -1974,9 +2154,9 @@ export const JSP_BY_ROUTE = {
   // Pre-cycle-20260520 builder bug: ctx.url hardcoded as /{slug}.html ignoring
   // cluster; fixed in build-tool-page.mjs::deriveUrlsForCluster().
   '/video-tools/hd-video-converter.html': 'convert/hd-video-converter.jsp',
-  '/guides/hd-video-converter-when.html': 'guide/hd-video-converter-when.jsp',
-  '/guides/hd-video-converter-step-by-step.html': 'guide/hd-video-converter-step-by-step.jsp',
-  '/guides/hd-video-converter-vs-alternatives.html': 'guide/hd-video-converter-vs-alternatives.jsp',
+  '/guides/en/hd-video-converter-when.html': 'guide/en/hd-video-converter-when.jsp',
+  '/guides/en/hd-video-converter-step-by-step.html': 'guide/en/hd-video-converter-step-by-step.jsp',
+  '/guides/en/hd-video-converter-vs-alternatives.html': 'guide/en/hd-video-converter-vs-alternatives.jsp',
   // Cycle 20260520 SEO-synonym-mill cleanup. The 5 dupe variants of
   // /json-formatter.html (-extension, -editor, -viewer, -compare, -validator)
   // shipped as broken stubs that threw "Error: convertForSlug() not implemented"
@@ -1993,9 +2173,9 @@ export const JSP_BY_ROUTE = {
   // /developer-tools/json-parser.html ("JSON Parser & Formatter (Tree View)").
   // 8 aliases retargeted to json-parser. The 3 companion guides remain but
   // their implementing-tool reference is retargeted to json-parser.
-  '/guides/json-formatter-when.html': 'guide/json-formatter-when.jsp',
-  '/guides/json-formatter-step-by-step.html': 'guide/json-formatter-step-by-step.jsp',
-  '/guides/json-formatter-vs-alternatives.html': 'guide/json-formatter-vs-alternatives.jsp',
+  '/guides/en/json-formatter-when.html': 'guide/en/json-formatter-when.jsp',
+  '/guides/en/json-formatter-step-by-step.html': 'guide/en/json-formatter-step-by-step.jsp',
+  '/guides/en/json-formatter-vs-alternatives.html': 'guide/en/json-formatter-vs-alternatives.jsp',
   // Cycle 20260521-12 cleanup: deleted /image-converter-tools/image-format-converter.html
   // tool + 3 companion guides. Reasons: (1) BODYJS stub was a silent no-op IIFE that ships
   // a non-functional tool, (2) cluster /image-converter-tools/ already provides 6 working
@@ -2008,18 +2188,18 @@ export const JSP_BY_ROUTE = {
   // impl), guides removed. See dedupe-against-existing.mjs SEO-synonym-mill
   // fix that prevents this pattern recurring.
   // Cycle 20260522-8 (cycle 47) P47.H new_guide_page_proposal - /guides/current-millis.html
-  '/guides/current-millis.html': 'guide/current-millis.jsp',
+  '/guides/en/current-millis.html': 'guide/en/current-millis.jsp',
   // Cycle 20260522-9 (cycle 48) P48.H new_guide_page_proposal - /guides/zip-unlocker-online.html (companion to /remove-zip-password.html)
-  '/guides/zip-unlocker-online.html': 'guide/zip-unlocker-online.jsp',
+  '/guides/en/zip-unlocker-online.html': 'guide/en/zip-unlocker-online.jsp',
   // Cycle 20260523-3 (cycle 50) create_new_guide_page - /guides/crop-and-rotate-image.html (companion to /crop-image.html, image-editing cluster)
-  '/guides/crop-and-rotate-image.html': 'guide/crop-and-rotate-image.jsp',
+  '/guides/en/crop-and-rotate-image.html': 'guide/en/crop-and-rotate-image.jsp',
   // Cycle 20260524-18 create_new_guide_page - /guides/compress-folder-online.html
   // (zip cluster, companion to /zip-file.html). Cluster override from utility
   // to zip: "compress folder online" is operationally folder-zipping, and the
   // truthful implementing tool is /zip-file.html (server-side ZIP creator with
   // optional AES password). Sourced from tool-zipfile/SKILL.md implemented
   // features + BODYWELCOMEzipfile reader-task framing.
-  '/guides/compress-folder-online.html': 'guide/compress-folder-online.jsp',
+  '/guides/en/compress-folder-online.html': 'guide/en/compress-folder-online.jsp',
   // Multilingual guide migration (2026-05-28 plan-warm-pascal-v2 S1).
   // 7 locale-prefixed URLs serving the existing scattered translations
   // (pt + es) under `/guides/<lang>/<canonical-en-slug>.html`. Each JSP
@@ -2039,6 +2219,12 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/lcd-test-online.html': 'guide/vi/lcd-test-online.jsp',
   '/guides/id/lcd-test-online.html': 'guide/id/lcd-test-online.jsp',
   '/guides/de/lcd-test-online.html': 'guide/de/lcd-test-online.jsp',
+  // plan-warm-pascal-v3 S2 batch 2 (2026-05-29) - 5 locale variants of convert-milliseconds-to-date
+  '/guides/pt/convert-milliseconds-to-date.html': 'guide/pt/convert-milliseconds-to-date.jsp',
+  '/guides/es/convert-milliseconds-to-date.html': 'guide/es/convert-milliseconds-to-date.jsp',
+  '/guides/vi/convert-milliseconds-to-date.html': 'guide/vi/convert-milliseconds-to-date.jsp',
+  '/guides/id/convert-milliseconds-to-date.html': 'guide/id/convert-milliseconds-to-date.jsp',
+  '/guides/de/convert-milliseconds-to-date.html': 'guide/de/convert-milliseconds-to-date.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
