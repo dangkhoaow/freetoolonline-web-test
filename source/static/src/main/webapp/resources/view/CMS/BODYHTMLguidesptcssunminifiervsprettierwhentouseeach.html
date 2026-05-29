@@ -1,0 +1,111 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>CSS Unminifier vs Prettier: Quando Usar Cada Um</b></h1>
+    <p><em>Ultima revisao 2026-05-05. CSS Unminifier e Prettier sao ambos formatadores, mas resolvem problemas diferentes. CSS Unminifier le CSS de producao minificado e o espalha de volta para que cada seletor e declaracao fique em sua propria linha - ideal para depurar uma folha de estilos enviada cuja fonte voce nao possui. Prettier formata fonte CSS que voce esta prestes a commitar, aplicando as regras <code>.prettierrc</code> da sua equipe para que o diff de cada desenvolvedor permaneca limpo. Escolha o certo em 30 segundos com a tabela abaixo, e leia o resto deste guia se voce quer saber por que a escolha errada produz saida inconsistente. Experimente o <a href="/developer-tools/css-unminifier.html">CSS Unminifier</a> junto com este guia para a metade ler-CSS-enviado.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Resposta em 30 segundos.</b> Use <a href="/developer-tools/css-unminifier.html">CSS Unminifier</a> quando a entrada e uma folha de estilos de producao construida em uma linha e o objetivo e le-la (depurar um bug de especificidade, inspecionar uma folha de estilos de terceiros, entregar uma copia limpa a um colega). Use Prettier quando a entrada e fonte CSS que voce escreveu e o objetivo e format-la para commit (as regras <code>.prettierrc</code> da sua equipe, o auto-formatar-ao-salvar do seu editor, seu hook de pre-commit git). As duas ferramentas tem como alvo entradas diferentes e produzem saidas diferentes - mistura-las e o motivo mais comum pelo qual desenvolvedores veem "format drift" em pull requests.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>O que CSS Unminifier realmente faz (e o que nao pode fazer)</b></h2>
+    <p>O <a href="/developer-tools/css-unminifier.html">CSS Unminifier</a> neste site le uma string CSS minificada (do tipo produzida por <code>cssnano</code>, <code>csso</code>, <code>clean-css</code> ou qualquer build de producao que executa CSS atraves de um minificador) e emite as mesmas regras com indentacao adequada, quebras de linha e uma declaracao por linha. A ferramenta roda inteiramente no seu navegador - a pagina e construida em torno da analise no navegador do conteudo do textarea, sem upload, sem conta. O texto exato na pagina da ferramenta diz "folha de estilos de producao construida e voce precisa le-la ou edita-la"; esse e o caso de uso canonico.</p>
+    <p>O que a desminificacao recupera:</p>
+    <ul>
+        <li>Espacos em branco entre seletores, declaracoes e blocos de regras. A saida e legivel linha por linha novamente.</li>
+        <li>Quebras de linha apos cada declaracao. Cada <code>propriedade: valor;</code> fica em sua propria linha.</li>
+        <li>Indentacao dentro de blocos de regras. Cada declaracao e indentada sob seu seletor.</li>
+    </ul>
+    <p>O que a desminificacao NAO e NAO PODE recuperar:</p>
+    <ul>
+        <li><b>Comentarios.</b> A maioria dos minificadores de producao remove comentarios antes da saida (<code>cssnano</code> padrao, <code>csso</code> padrao). Uma vez removidos, os comentarios originais se foram - o desminificador nao tem nada para colocar de volta.</li>
+        <li><b>Estilo de formatacao original.</b> O desminificador produz uma saida canonica "uma declaracao por linha". Se sua fonte usou uma convencao diferente (listas de seletores em multiplas linhas indentadas, declaracoes agrupadas por categoria visual, prefixos de vendor alinhados), essa convencao nao esta no arquivo minificado e nao pode ser reconstruida.</li>
+        <li><b>Nomes de variaveis de CSS-in-JS ou CSS Modules.</b> Se o pipeline de build executou CSS Modules ou uma ferramenta CSS-in-JS que hashou nomes de classes (<code>.SubmitButton_xY7g3</code>, <code>.modal-_2hqf</code>), os nomes semanticos originais das classes se foram. O desminificador mostra os nomes hashados porque e o que esta no arquivo.</li>
+        <li><b>Source maps.</b> Se o build de producao nao preservou uma entrada sourceMap, o desminificador nao pode recuperar os caminhos de arquivo originais ou numeros de linha. Ele apenas formata o que esta no textarea.</li>
+    </ul>
+    <p>Se seu objetivo e "ler este CSS minificado para encontrar uma regra especifica", o desminificador entrega exatamente isso. Se seu objetivo e "recuperar a fonte original", essa e uma tarefa diferente (e geralmente impossivel).</p>
+
+    <h2 class="text-uppercase"><b>Prettier (e seu IDE auto-format) faz um trabalho diferente - aqui esta a linha</b></h2>
+    <p>Prettier e um formatador de fonte opinativo. Sua entrada e fonte CSS que voce escreveu (ou esta prestes a escrever), e sua saida e o mesmo CSS reescrito de acordo com um arquivo de configuracao (tipicamente <code>.prettierrc</code> ou <code>prettier.config.js</code> na raiz do repo). Prettier e projetado para ser executado em cada save, em cada commit, em um hook de pre-merge no CI - o formatador que aplica um unico estilo em toda a equipe. A maioria das extensoes de editor (VS Code "Prettier - Code formatter", JetBrains "Prettier", Sublime "JsPrettier") o conectam na acao formatar-ao-salvar.</p>
+    <p>Duas coisas tornam o Prettier diferente do desminificador:</p>
+    <ol>
+        <li><b>Prettier e dirigido por configuracao.</b> Ponto-e-virgulas finais, largura de indentacao (2 vs 4), tratamento de espaco em branco final, comprimento de linha, aspas simples vs aspas duplas dentro de <code>url()</code> - cada equipe escolhe uma combinacao diferente, a codifica em <code>.prettierrc</code>, e o Prettier aplica essa combinacao em cada arquivo. O desminificador nao tem configuracao; ele sempre produz a mesma saida canonica "uma regra por linha".</li>
+        <li><b>Prettier espera entrada legivel.</b> Prettier nao foi construido para lidar com uma folha de estilos minificada em uma linha. Ele pode rodar em CSS minificado e produzira algo formatado, mas a saida usa a regra de comprimento de linha do proprio Prettier (padrao 80 chars), a convencao de agrupamento do proprio Prettier e o estilo de aspas do Prettier - que geralmente NAO corresponde ao arquivo que o desminificador produziria. No pior caso (raro): Prettier pode se recusar a formatar CSS que considera malformado (uma chave de fechamento extra, uma pseudo-classe invalida) onde o desminificador apenas emite quaisquer bytes que recebeu.</li>
+    </ol>
+    <p>O modelo mental mais simples: <strong>CSS Unminifier e um visualizador; Prettier e um escritor.</strong> O visualizador e para olhar um arquivo que voce nao possui. O escritor e para commitar um arquivo que voce possui.</p>
+
+    <h2 class="text-uppercase"><b>Ler CSS enviado rapidamente: quando CSS Unminifier e a resposta mais rapida</b></h2>
+    <p>Tres fluxos de trabalho sao o territorio canonico do CSS Unminifier. Em todos os tres, a entrada e uma folha de estilos de producao minificada e o objetivo e le-la uma vez, nao commitar nada:</p>
+    <ul>
+        <li><b>Depurando um bug de especificidade em producao.</b> Abra DevTools, olhe para a regra que venceu, copie seu seletor completo, cole o CSS minificado no desminificador, busque pelo seletor. A saida desminificada facilita escanear a cascata e ver quais outras regras podem estar em jogo. Mais rapido do que rolar por uma linha de 200 caracteres.</li>
+        <li><b>Inspecionando uma folha de estilos de terceiros.</b> Se uma biblioteca de fornecedor (Bootstrap, CSS compilado Tailwind, CSS de um widget incorporado) esta interferindo com seus estilos e voce nao tem a fonte, cole o arquivo minificado no desminificador e leia as regras diretamente. Frequentemente voce encontra a regra ofensiva em 30 segundos.</li>
+        <li><b>Entregando uma copia limpa a um colega.</b> Um relatorio de bug do QA chega com um anexo CSS minificado. Cole, desminifique, compartilhe a saida formatada no comentario do rastreador de bug para que o proximo leitor nao tenha que rolar horizontalmente.</li>
+    </ul>
+    <p>Em todos os tres, o desminificador vence porque esta no navegador, nao requer instalacao e produz saida que voce pode pesquisar com Ctrl-F. Executar o Prettier na mesma entrada requer ou uma instalacao local (<code>npx prettier file.css</code> grava no disco) ou colar em um playground Prettier - ambos mais lentos do que uma ferramenta de um clique que roda no lado do cliente.</p>
+
+    <h2 class="text-uppercase"><b>Escrevendo fonte CSS: quando Prettier e a escolha certa</b></h2>
+    <p>Tres fluxos de trabalho pertencem ao Prettier. Em todos os tres, a entrada e fonte CSS que o desenvolvedor escreveu e o objetivo e format-la para commit:</p>
+    <ul>
+        <li><b>Formatar-ao-salvar no editor.</b> VS Code e JetBrains ambos conectam o Prettier na acao de formatacao quando um <code>.prettierrc</code> esta presente no repo. Cada vez que o desenvolvedor salva um arquivo CSS, o Prettier o reescreve de acordo com as regras da equipe. O desminificador nao pode ser conectado a formatar-ao-salvar (ele nao tem CLI; e uma pagina web) e ignoraria as regras <code>.prettierrc</code> de qualquer maneira.</li>
+        <li><b>Hook de pre-commit no git.</b> Ferramentas como <code>lint-staged</code> + <code>husky</code> executam o Prettier em cada arquivo CSS preparado antes do commit cair. O diff e sempre formatado pelo Prettier. Revisores veem apenas mudancas logicas, nao drift de espaco em branco. O desminificador nao tem integracao de hook.</li>
+        <li><b>Verificacao de formato CI.</b> Um passo CI executa <code>prettier --check src/**/*.css</code>. Se algum arquivo nao corresponde as regras Prettier, o build falha. Forca cada formato local de desenvolvedor a corresponder as regras da equipe. O desminificador nao pode impor uma verificacao: sua saida e canonica-linha-por-regra, que difere de qualquer <code>.prettierrc</code> da equipe.</li>
+    </ul>
+    <p>Se voce esta commitando CSS, execute o Prettier (via seu editor, seu hook de pre-commit ou o CLI). Se voce esta lendo CSS que voce nao possui, cole-o no <a href="/developer-tools/css-unminifier.html">CSS Unminifier</a>. Fazer o inverso - executar Prettier em uma folha de estilos minificada para "le-la" - produz uma saida que nao corresponde a convencao de fonte da sua equipe E nao corresponde a nenhuma convencao padrao de leitura CSS. E o pior dos dois mundos.</p>
+
+    <h2 class="text-uppercase"><b>O que nenhuma ferramenta pode recuperar apos um build com tree-shaking</b></h2>
+    <p>Pipelines CSS de producao fazem mais do que minificar. A maioria das cadeias de build modernas executa uma sequencia de transformacoes que removem informacoes, e uma vez que a informacao se foi, nenhum formatador (o desminificador ou o Prettier) pode coloca-la de volta. Saber o que foi removido ajuda a definir expectativas para o que sua saida "desminificada" vai parecer:</p>
+    <ul>
+        <li><b>Tree-shaking remove regras nao utilizadas.</b> Ferramentas como PurgeCSS, UnCSS e o motor JIT do Tailwind compilam a fonte contra o HTML/JSX da aplicacao e emitem apenas as regras que correspondem aos nomes de classe usados. A folha de estilos de saida e um SUBCONJUNTO da fonte, em uma ordem diferente. O desminificador pode formatar esse subconjunto mas nao pode dizer quais regras foram removidas.</li>
+        <li><b>Mangling de nome de variavel em CSS-in-JS ou CSS Modules.</b> CSS Modules reescreve <code>.button</code> para <code>.Button_button_2hQF</code> (ou mais curto); bibliotecas CSS-in-JS (styled-components, emotion) reescrevem <code>.MyButton</code> para <code>.css-1n3v7p9</code>. Os nomes hashados sao deterministicos mas opacos. O desminificador mostra os nomes hashados porque e o que esta no arquivo.</li>
+        <li><b>Comentarios removidos pre-build.</b> A maioria dos minificadores remove comentarios <code>/* ... */</code> por padrao. Alguns preservam comentarios banner <code>/*! preserve */</code> (cabecalhos de licenca); o resto se foi antes do arquivo deixar o pipeline de build. Nem o desminificador nem o Prettier os reinstauram.</li>
+        <li><b>Source maps separados.</b> Se o build emitiu um arquivo <code>style.css.map</code> mas voce so tem <code>style.css</code>, voce nao pode voltar aos numeros de linha originais. O desminificador formata o que voce tem; o Prettier faz o mesmo. Ambos dependem de voce tambem buscar o source map se voce precisar de navegacao da fonte original.</li>
+        <li><b>Colapso de prefixos de vendor.</b> Autoprefixer frequentemente emite uma unica regra com multiplas variantes de prefixo (<code>-webkit-, -moz-, -ms-, padrao</code>). Apos minificacao, a ordem do prefixo pode ser reembaralhada para saida mais curta. O desminificador mostra essa ordem final; a saida original do Autoprefixer tinha uma ordem diferente na fonte.</li>
+    </ul>
+    <p>Se seu objetivo e "reconstruir totalmente a fonte", a resposta e: abra o repositorio git do build ou busque o source map correspondente. Nem CSS Unminifier nem Prettier podem reconstruir o que o pipeline de build removeu.</p>
+
+    <h2 class="text-uppercase"><b>Combine o desminificador com o resto do conjunto de ferramentas CSS</b></h2>
+    <p>Se o arquivo que voce esta lendo veio do seu proprio build de producao e voce esta prestes a RE-minifica-lo apos a leitura (o caminho round-trip "visualizar, editar, enviar"), combine o desminificador com o <a href="/developer-tools/css-minifier.html">CSS Minifier</a> neste site para a viagem de volta. O minificador reverte o passo de formato (descarta espaco em branco e quebras de linha) e produz um arquivo deployavel de uma unica linha. As duas ferramentas juntas cobrem ambas as direcoes do loop producao-para-fonte-para-producao.</p>
+    <p>Se voce nao tem certeza se o arquivo que voce tem e uma saida "minificador" (espaco em branco removido) ou uma saida "uglifier" / tree-shaker (variaveis renomeadas tambem), o guia <a href="/guides/css-minifier-vs-uglifier-vs-tree-shaking.html">CSS minifier vs uglifier vs tree-shaking</a> explica como diferencia-los em um paragrafo. Se voce esta escolhendo um minificador vs um compressor (gzip/brotli), o guia <a href="/guides/css-minifier-vs-compressor.html">minifier vs compressor</a> cobre essa confusao adjacente. Se voce esta executando uma implantacao Cloud Run ou Lambda e preocupado com bytes CSS de cold-start, o guia <a href="/guides/how-to-minify-css-js-for-cloud-run-cold-start.html">como minificar CSS/JS para cold-start Cloud Run</a> cobre o caso dirigido por orcamento.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>A saida desminificada e a mesma que a fonte CSS original?</summary>
+  <p>Quase nunca. O desminificador reverte o passo de espaco em branco mas nao pode reverter a remocao de comentarios, mangling de variaveis, tree-shaking ou re-ordenacao de prefixos de vendor. Trate a saida como "CSS de producao legivel", nao "fonte original". Se voce precisa da fonte original, busque o repositorio git do build ou o source map.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Por que meus nomes de variaveis sao diferentes depois que desminifico?</summary>
+  <p>Eles nao sao diferentes - sao os mesmos nomes que o pipeline de build escreveu no arquivo. Cadeias de build modernas reescrevem nomes de classe atraves de CSS Modules ou hashing CSS-in-JS para isolamento de escopo, entao a folha de estilos de producao contem <code>.Button_xY7g3</code> em vez de <code>.Button</code>. O desminificador mostra o que esta no arquivo; nao pode des-hashear os nomes porque o mapeamento do build nao esta presente.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Posso executar Prettier na saida desminificada?</summary>
+  <p>Sim, e o resultado sera formatado pelo Prettier (correspondendo a qualquer conjunto de regras <code>.prettierrc</code> para o qual voce aponta o Prettier). Mas o desminificador ja produz uma saida canonica "uma declaracao por linha" que e boa para leitura; executar o Prettier nela apenas muda o estilo de formatacao para corresponder as regras da sua equipe. A maioria dos leitores nao se incomoda. Se voce esta prestes a commitar o arquivo como fonte, entao sim - execute o Prettier em seguida, porque o Prettier corresponde ao formato de commit da sua equipe.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>O CSS Unminifier lidara com hashes de classe CSS Modules?</summary>
+  <p>Ele os formatara bem (os hashes sao nomes de classe CSS validos). O que ele nao pode fazer e mapea-los de volta para os nomes legiveis humanos da sua fonte. Se voce tem o source map do build, seu DevTools pode mostrar os nomes humanos mapeando de volta atraves do source map; o desminificador sozinho nao pode.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Existe uma maneira de recuperar comentarios apos um build?</summary>
+  <p>Somente se o minificador do build foi configurado para preserva-los (a maioria nao esta por padrao). Configure seu build para manter comentarios banner <code>/*! ... */</code> via opcao <code>preserve</code> ou <code>comments: 'some'</code> do minificador. Uma vez removidos, comentarios nao sao recuperaveis atraves da formatacao.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Relacionados</b></h2>
+    <ul>
+        <li><a href="/developer-tools/css-unminifier.html">CSS Unminifier</a> - a ferramenta que este guia foi escrito para acompanhar. Cola CSS minificado, retorna CSS formatado, roda inteiramente no seu navegador.</li>
+        <li><a href="/developer-tools/css-minifier.html">CSS Minifier</a> - a ferramenta de direcao oposta para re-minificacao apos uma leitura. Mesma configuracao no navegador, sem conta.</li>
+        <li><a href="/guides/css-minifier-vs-compressor.html">CSS minifier vs compressor</a> - guia complementar na direcao para frente. Esclarece a terminologia minificador-vs-gzip que desenvolvedores frequentemente confundem.</li>
+        <li><a href="/guides/css-minifier-vs-uglifier-vs-tree-shaking.html">CSS minifier vs uglifier vs tree-shaking</a> - guia complementar na ordem do pipeline de build. Explica o que cada transformacao realmente faz e quando aplicar cada uma.</li>
+        <li><a href="/guides/how-to-minify-css-js-for-cloud-run-cold-start.html">Como minificar CSS/JS para cold-start Cloud Run</a> - guia especifico de implantacao para orcamentos de cold-start.</li>
+    </ul>
+</div>

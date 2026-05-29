@@ -1,0 +1,44 @@
+<article class="guide-body">
+  <h1>Wie man eine ZIP-Datei auf 2 MB komprimiert</h1>
+  <p class="lead">Das 2-MB-ZIP-Ziel taucht auf, wenn eine E-Mail-Richtlinie oder ein Unternehmens-SMTP-Relay den Anhang auf 2 MB begrenzt. Ob die Obergrenze erreichbar ist, haengt davon ab, was darin ist: ein Ordner mit reinen Textlogs, CSV-Exporten oder Quellcode packt sich normalerweise weit unter 2 MB, sobald DEFLATE die wiederholten Muster entfernt; ein Ordner mit JPG-Fotos, MP4-Clips oder bereits komprimierten PDFs typischerweise nicht, weil der eigene Codec jeder Datei bereits die Redundanz herausgepresst hat, die der ZIP-Wrapper sonst entfernen wuerde.</p>
+
+  <figure class="illustration">
+    <img src="/img/illustrations/numbered-step-row/guidescompresszipfileto2mb__e4fbc985.svg"
+         alt="Drei Schritte, um eine ZIP unter 2 MB zu bringen: sortieren Sie die Eingaben, behalten Sie das Niveau auf Standard, teilen Sie die Lieferung, wenn Medien sperrig bleiben."
+         loading="lazy"
+         width="640"
+         height="200">
+    <figcaption>Drei Pruefungen, um unter 2 MB zu landen: sortieren Sie die Eingaben nach Komprimierbarkeit, lassen Sie den Niveau-Schieberegler auf Standard und teilen Sie die Lieferung, wenn Medien sperrig bleiben.</figcaption>
+  </figure>
+  <p class="reviewed">Zuletzt geprueft: 2026-05-21</p>
+  <p class="byline">Geprueft vom FreetoolOnline-Redaktionsteam</p>
+
+  <table class="quick-facts">
+    <thead><tr><th>Eigenschaft</th><th>Wert</th></tr></thead>
+    <tbody>
+      <tr><td>Wo die ZIP gebaut wird</td><td>In Ihrem Browser; keine Installation, kein Konto, kein Wasserzeichen</td></tr>
+      <tr><td>Typischer 2-MB-Anwendungsfall</td><td>Unternehmens-SMTP-Anhangsgrenze, Legacy-Webmail-Anhangsgrenze, Kontaktformular-Upload-Feld</td></tr>
+      <tr><td>Realistisches Ergebnis fuer textlastigen Ordner</td><td>20 MB Logs / CSV packen oft auf ~3-5 MB; 5 MB Quellcode oder Markdown packen oft auf ~700 KB - 1,5 MB</td></tr>
+      <tr><td>Realistisches Ergebnis fuer fotolastigen Ordner</td><td>20 MB JPG-Fotos packen auf ~19,5-20,5 MB (keine echte Verkleinerung unter die 2-MB-Obergrenze)</td></tr>
+      <tr><td>Implementierungstool</td><td><a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Warum genau 2 MB?</h2>
+  <p>Die 2-MB-Zahl ist die historische Obergrenze fuer viele Unternehmens-E-Mail-Systeme: eine Exchange-Postfachrichtlinie, die eingehende Anhaenge begrenzt, ein Kontaktformular-Upload-Feld konfiguriert fuer 2 MB, ein SMTP-Relay, das groessere Payloads als Spam-Minderung verwirft. Es ist auch eine haeufige Decke fuer Legacy-Webmail (Yahoo Classic, aelteres Hotmail) und fuer einige Helpdesk-Ticket-Plattformen, die Anhaenge per E-Mail akzeptieren. Die Obergrenze ist unabhaengig von der 25-MB-Regel von Consumer-Gmail; Leser, die hier landen, wissen normalerweise, in welches System sie senden.</p>
+
+  <h2>Waehlen Sie die Eingaben, die 2 MB alleine erreichen koennen</h2>
+  <p>Eine ZIP unter 2 MB zu bringen ist zuerst eine Frage der Eingaben, zweitens eine Frage der Einstellungen. Textlastige Ordner (Logs, CSV, Quellcode, Konfiguration) packen sich oft weit unter 2 MB; Foto-, Video- und PDF-Ordner typischerweise nicht, weil der eigene Codec jeder Datei bereits die Redundanz herausgepresst hat, die der ZIP-Wrapper sonst entfernen wuerde. Der realistische Pfad zu einem 2-MB-Archiv ist, die Eingaben zuerst zu verkleinern, nicht sich auf die ZIP-Kompressionsstufe zu stuetzen. Reine Texteingaben komprimieren aggressiv, weil sie lange Strecken wiederholter Token haben; 5 MB Zugriffslogs, CSV-Exporte, Konfigurationsdateien oder Quellcode packen sich oft unter 1 MB in einer einzigen <code>.zip</code>. JPG-Fotos, MP4-Videos, MP3-Audio und die meisten PDFs kommen bereits komprimiert ins Archiv; der ZIP-Wrapper kann sie nicht weiter reduzieren und wird manchmal ein paar Prozent Verpackungs-Overhead hinzufuegen. Wenn die Eingaben medienlastig sind, ist das 2-MB-Ziel normalerweise unrealistisch ohne vorheriges Re-Encoding der Medien - verkleinern Sie die JPGs durch <a href="/compress-image.html">/compress-image.html</a> oder exportieren Sie das Video bei niedrigerer Bitrate, bevor Sie archivieren.</p>
+
+  <h2>Was die Kompressionsstufe tut und nicht tut</h2>
+  <p>Der Ersteller bei <a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a> stellt einen Kompressionsstufen-Schieberegler bereit. Hoehere Stufen (Maximum, Ultra) verbringen mehr CPU-Zeit damit, zusaetzliche wiederholte Muster zu suchen, schneiden aber selten mehr als ein paar zusaetzliche Prozent von einem textlastigen Archiv ab, sobald der Standard-DEFLATE-Durchlauf gelaufen ist. Niedrigere Stufen (Speichern, Schnell) helfen nur, wenn die Geschwindigkeit wichtiger ist als die Groesse - ein grosser Ordner ueber eine langsame Verbindung hochgeladen zum Beispiel. Der Stufen-Schieberegler aendert hauptsaechlich, wie lange das Archiv zum Bauen braucht, nicht ob es die 2-MB-Linie ueberschreitet. Die Komprimierbarkeit der Eingaben setzt die Decke, nicht das Stufenrad.</p>
+
+  <h2>Wenn das 2-MB-Ziel unerreichbar ist, teilen Sie das Paket auf</h2>
+  <p>Fuer eine 2-MB-Anhangsgrenze ist die praktikable Antwort manchmal, die Lieferung aufzuteilen, anstatt mit dem Archiv zu kaempfen. ZIPen Sie die komprimierbaren Eingaben zusammen (die textaehnlichen Dateien, den Quellcode, die Konfiguration) und sie landen oft alleine unter 2 MB; senden Sie die Mediendateien in einem separaten Kanal (einem Datei-Sharing-Link, einer Cloud-Speicher-URL oder einem kleineren Folge-Archiv), wo die 2-MB-Obergrenze nicht gilt. Die Zwei-Paket-Lieferung ist normalerweise kleiner und zuverlaessiger als eine einzelne ZIP, die die Groessenpruefung nicht besteht.</p>
+
+  <h2>Wie die Zahlen tatsaechlich fuer haeufige Ordnerformen aussehen</h2>
+  <p>Konkrete Naeherungswerte helfen, Erwartungen zu setzen, bevor Sie bauen. Ein 20-MB-Ordner mit reinen Textlogs oder CSV landet typischerweise bei 3-5 MB in einer einzigen <code>.zip</code> - ueber die 2-MB-Linie fuer diesen Fall hinaus, aber eine nuetzliche Reiserichtung. 5 MB Quellcode oder Markdown packt sich oft auf 700 KB - 1,5 MB, weit unter der Obergrenze. Dieselben 20 MB, gespeichert als JPG-Fotos, packen sich auf etwa 19,5-20,5 MB, weil die JPGs bereits DEFLATE-aehnlich von der Kamera komprimiert wurden und der Wrapper nichts mehr zu entfernen hat. Fuer das Web optimierte PDFs verhalten sich wie die JPGs; PDFs voller roher gescannter Bilder schrumpfen manchmal ein paar Prozent. Das Muster: stark redundante Textformate komprimieren aggressiv, codec-komprimierte Medien bewegen sich kaum, und ein gemischter Ordner landet irgendwo zwischen den beiden, abhaengig vom Text-zu-Medien-Verhaeltnis.</p>
+
+  <h2>Verwandt</h2>
+  <p>Fuer die breitere Frage "wann spart das Komprimieren eines Ordners in eine ZIP tatsaechlich Platz?" lesen Sie den Schwesternleitfaden <a href="/guides/compress-zip.html">/guides/compress-zip.html</a> fuer den Groessen-Trade-off-Kontext. Fuer ein engeres Ziel bei Icon- oder Thumbnail-grossen Archiven siehe <a href="/guides/compress-zip-file-to-100kb.html">/guides/compress-zip-file-to-100kb.html</a>. Fuer die allgemeine "diese ZIP verkleinern"-Anleitung, die keine bestimmte Zahl festlegt, lesen Sie <a href="/guides/how-to-make-a-zip-file-smaller.html">/guides/how-to-make-a-zip-file-smaller.html</a>. Wenn Sie bereit sind, das Archiv zu bauen, ist der In-Browser-Ersteller bei <a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a> einen Klick entfernt.</p>
+</article>

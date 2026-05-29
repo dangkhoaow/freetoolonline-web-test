@@ -1,0 +1,44 @@
+<article class="guide-body">
+  <h1>Cara mengkompres file ZIP ke 2 MB</h1>
+  <p class="lead">Target ZIP 2 MB muncul ketika kebijakan email atau relay SMTP perusahaan membatasi lampiran pada 2 MB. Apakah batas dapat dicapai tergantung pada apa yang ada di dalam: folder log teks polos, ekspor CSV, atau kode sumber biasanya mengemas jauh di bawah 2 MB setelah DEFLATE menghapus pola yang berulang; folder foto JPG, klip MP4, atau PDF yang sudah dikompres biasanya tidak, karena codec masing-masing file sudah memeras redundansi yang akan dihapus oleh pembungkus ZIP.</p>
+
+  <figure class="illustration">
+    <img src="/img/illustrations/numbered-step-row/guidescompresszipfileto2mb__e4fbc985.svg"
+         alt="Tiga langkah untuk muat ZIP di bawah 2 MB: urutkan input, jaga level default, pecah pengiriman ketika media tetap besar."
+         loading="lazy"
+         width="640"
+         height="200">
+    <figcaption>Tiga pemeriksaan untuk mendarat di bawah 2 MB: urutkan input berdasarkan kompresibilitas, biarkan slider level pada default, dan pecah pengiriman ketika media tetap besar.</figcaption>
+  </figure>
+  <p class="reviewed">Terakhir ditinjau: 2026-05-21</p>
+  <p class="byline">Ditinjau oleh tim editorial FreetoolOnline</p>
+
+  <table class="quick-facts">
+    <thead><tr><th>Properti</th><th>Nilai</th></tr></thead>
+    <tbody>
+      <tr><td>Di mana ZIP dibangun</td><td>Di browser Anda; tanpa instal, tanpa akun, tanpa watermark</td></tr>
+      <tr><td>Kasus penggunaan 2 MB tipikal</td><td>Batas lampiran SMTP perusahaan, batas lampiran webmail lawas, bidang unggahan formulir kontak</td></tr>
+      <tr><td>Hasil realistis untuk folder berat teks</td><td>20 MB log / CSV sering mengemas ke ~3-5 MB; 5 MB kode sumber atau markdown sering mengemas ke ~700 KB - 1.5 MB</td></tr>
+      <tr><td>Hasil realistis untuk folder berat foto</td><td>20 MB foto JPG mengemas ke ~19.5-20.5 MB (tidak ada penyusutan nyata di bawah batas 2 MB)</td></tr>
+      <tr><td>Alat implementasi</td><td><a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Mengapa 2 MB secara khusus?</h2>
+  <p>Angka 2 MB adalah batas historis di banyak sistem email perusahaan: kebijakan kotak surat Exchange yang membatasi lampiran masuk, bidang unggahan formulir kontak yang dikonfigurasi untuk 2 MB, relay SMTP yang menjatuhkan payload yang lebih besar sebagai mitigasi spam. Itu juga merupakan langit-langit umum untuk webmail lawas (Yahoo Classic, Hotmail lama) dan untuk beberapa platform tiket helpdesk yang menerima lampiran via email. Batas independen dari aturan 25 MB Gmail konsumen; pembaca yang mendarat di sini biasanya tahu sistem apa yang mereka kirim.</p>
+
+  <h2>Pilih input yang dapat mencapai 2 MB sendiri</h2>
+  <p>Mendapatkan ZIP di bawah 2 MB adalah pertanyaan input pertama, pertanyaan pengaturan kedua. Folder berat teks (log, CSV, kode sumber, konfigurasi) sering mengemas jauh di bawah 2 MB; folder foto, video, dan PDF biasanya tidak, karena codec masing-masing file sudah memeras redundansi yang akan dihapus oleh pembungkus ZIP. Jalur realistis ke arsip 2 MB adalah menyusutkan input terlebih dahulu, bukan mengandalkan level kompresi ZIP. Input teks polos mengkompres dengan agresif karena memiliki rentang panjang token yang berulang; 5 MB log akses, ekspor CSV, file konfigurasi, atau kode sumber sering mengemas turun melewati 1 MB di dalam satu <code>.zip</code>. Foto JPG, video MP4, audio MP3, dan sebagian besar PDF datang ke arsip sudah dikompres; pembungkus ZIP tidak dapat mengurangi mereka lebih jauh dan kadang-kadang akan menambahkan beberapa persen overhead pengemasan. Jika input berat media, target 2 MB biasanya tidak realistis tanpa pengkodean ulang media terlebih dahulu - susutkan JPG melalui <a href="/compress-image.html">/compress-image.html</a> atau ekspor ulang video pada bitrate yang lebih rendah sebelum mengarsipkan.</p>
+
+  <h2>Apa yang level kompresi lakukan dan tidak lakukan</h2>
+  <p>Pembuat di <a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a> mengekspos slider level kompresi. Level lebih tinggi (Maksimum, Ultra) menghabiskan lebih banyak waktu CPU mencari pola berulang tambahan tetapi jarang memotong lebih dari beberapa persen ekstra dari arsip berat teks setelah pass DEFLATE standar berjalan. Level lebih rendah (Simpan, Cepat) hanya membantu ketika kecepatan lebih penting daripada ukuran - folder besar yang diunggah melalui koneksi lambat, misalnya. Slider level sebagian besar mengubah berapa lama arsip dibangun, bukan apakah ia melewati garis 2 MB. Kompresibilitas input menetapkan langit-langit, bukan dial level.</p>
+
+  <h2>Ketika target 2 MB tidak dapat dicapai, pecah paket</h2>
+  <p>Untuk batas lampiran 2 MB, jawaban yang dapat diterapkan kadang-kadang adalah memecah pengiriman daripada melawan arsip. ZIP input yang dapat dikompres bersama (file mirip teks, kode sumber, konfigurasi) dan mereka sering mendarat di bawah 2 MB sendiri; kirim file media di saluran terpisah (tautan berbagi file, URL penyimpanan cloud, atau arsip tindak lanjut yang lebih kecil) di mana batas 2 MB tidak berlaku. Pengiriman dua paket biasanya lebih kecil dan lebih dapat diandalkan daripada satu ZIP yang gagal pemeriksaan ukuran.</p>
+
+  <h2>Seperti apa angka sebenarnya untuk bentuk folder umum</h2>
+  <p>Angka kasar konkret membantu menetapkan ekspektasi sebelum Anda membangun. Folder 20 MB log teks polos atau CSV biasanya mendarat di 3-5 MB di dalam satu <code>.zip</code> - melewati garis 2 MB untuk kasus itu tetapi arah perjalanan yang berguna. 5 MB kode sumber atau markdown sering mengemas ke 700 KB - 1.5 MB, jauh di bawah batas. 20 MB yang sama yang disimpan sebagai foto JPG dikemas menjadi sekitar 19.5-20.5 MB, karena JPG sudah dikompres dengan gaya DEFLATE oleh kamera dan pembungkus tidak memiliki apa pun yang tersisa untuk dihapus. PDF yang sudah dioptimalkan untuk web berperilaku seperti JPG; PDF yang penuh gambar mentah yang dipindai kadang-kadang menyusut beberapa persen. Polanya: format teks yang sangat redundan dikompres dengan agresif, media yang dikompres codec hampir tidak bergerak, dan folder campuran mendarat di suatu tempat di antara keduanya tergantung pada rasio teks-ke-media.</p>
+
+  <h2>Terkait</h2>
+  <p>Untuk pertanyaan yang lebih luas "kapan mengkompres folder menjadi ZIP benar-benar menghemat ruang?", baca panduan saudara <a href="/guides/compress-zip.html">/guides/compress-zip.html</a> untuk konteks trade-off ukuran. Untuk target yang lebih ketat pada arsip seukuran ikon atau thumbnail, lihat <a href="/guides/compress-zip-file-to-100kb.html">/guides/compress-zip-file-to-100kb.html</a>. Untuk walkthrough umum "susutkan ZIP ini" yang tidak menetapkan angka tertentu, baca <a href="/guides/how-to-make-a-zip-file-smaller.html">/guides/how-to-make-a-zip-file-smaller.html</a>. Ketika Anda siap untuk membangun arsip, pembuat dalam browser di <a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a> hanya satu klik jauhnya.</p>
+</article>

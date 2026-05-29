@@ -1,0 +1,111 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>CSS Unminifier vs Prettier: Khi Nao Su Dung Moi Cong Cu</b></h1>
+    <p><em>Da xem lai lan cuoi 2026-05-05. CSS Unminifier va Prettier deu la cac trinh dinh dang, nhung chung giai quyet cac van de khac nhau. CSS Unminifier doc CSS san xuat duoc minify va trai no ra de moi selector va declaration ngoi tren dong rieng - ly tuong de gd lo mot stylesheet da trien khai ma ban khong so huu nguon. Prettier dinh dang ma nguon CSS ma ban sap commit, ap dung cac quy tac <code>.prettierrc</code> cua nhom ban de diff cua moi nha phat trien van sach. Chon cai dung trong 30 giay voi bang ben duoi, va doc phan con lai cua huong dan nay neu ban muon biet tai sao lua chon sai tao ra dau ra khong nhat quan. Thu <a href="/developer-tools/css-unminifier.html">CSS Unminifier</a> cung voi huong dan nay cho nua doc-CSS-da-trien-khai.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Cau tra loi 30 giay.</b> Su dung <a href="/developer-tools/css-unminifier.html">CSS Unminifier</a> khi dau vao la mot stylesheet san xuat duoc xay dung mot dong va muc tieu la doc no (gd lo mot loi cu the, kiem tra mot stylesheet ben thu ba, ban giao mot ban sao sach cho mot dong nghiep). Su dung Prettier khi dau vao la ma nguon CSS ban viet va muc tieu la dinh dang no de commit (quy tac <code>.prettierrc</code> cua nhom ban, tu dong dinh dang khi luu cua trinh chinh sua, hook pre-commit git cua ban). Hai cong cu nham muc tieu cac dau vao khac nhau va tao ra cac dau ra khac nhau - tron chung la ly do pho bien nhat ma cac nha phat trien thay "format drift" trong pull request.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>CSS Unminifier thuc su lam gi (va khong the lam gi)</b></h2>
+    <p><a href="/developer-tools/css-unminifier.html">CSS Unminifier</a> tren trang web nay doc mot chuoi CSS duoc minify (loai duoc tao boi <code>cssnano</code>, <code>csso</code>, <code>clean-css</code> hoac bat ky build san xuat nao chay CSS qua mot trinh minify) va phat ra cung cac quy tac voi indent dung, ngat dong va mot declaration tren mot dong. Cong cu chay hoan toan trong trinh duyet cua ban - trang duoc xay dung xung quanh phan tich trong trinh duyet cua noi dung textarea, khong tai len, khong tai khoan. Ban sao nguyen van tren trang cong cu noi "stylesheet san xuat duoc xay dung va ban can doc hoac chinh sua no"; do la truong hop su dung canonical.</p>
+    <p>Nhung gi unminification khoi phuc:</p>
+    <ul>
+        <li>Khoang trang giua selector, declaration va khoi quy tac. Dau ra co the doc tung dong tro lai.</li>
+        <li>Ngat dong sau moi declaration. Moi <code>thuoc tinh: gia tri;</code> ngoi tren dong rieng.</li>
+        <li>Indent ben trong cac khoi quy tac. Moi declaration duoc indent duoi selector cua no.</li>
+    </ul>
+    <p>Nhung gi unminification KHONG va KHONG THE khoi phuc:</p>
+    <ul>
+        <li><b>Comments.</b> Hau het cac trinh minify san xuat loai bo comments truoc khi xuat (<code>cssnano</code> mac dinh, <code>csso</code> mac dinh). Mot khi bi loai bo, cac comments goc da bien mat - unminifier khong co gi de dat lai.</li>
+        <li><b>Phong cach dinh dang goc.</b> Unminifier tao ra dau ra canonical "mot declaration tren mot dong". Neu nguon cua ban dung mot quy uoc khac (danh sach selector da dong duoc indent, declaration nhom theo danh muc truc quan, vendor prefix duoc can chinh), quy uoc do khong co trong tep da minify va khong the duoc tai xay dung.</li>
+        <li><b>Ten bien tu CSS-in-JS hoac CSS Modules.</b> Neu pipeline build chay CSS Modules hoac mot cong cu CSS-in-JS hash ten lop (<code>.SubmitButton_xY7g3</code>, <code>.modal-_2hqf</code>), cac ten lop ngu nghia goc da bien mat. Unminifier hien thi cac ten da hash vi do la nhung gi trong tep.</li>
+        <li><b>Source maps.</b> Neu build san xuat khong bao ton mot muc sourceMap, unminifier khong the khoi phuc cac duong dan tep goc hoac so dong. No chi dinh dang nhung gi co trong textarea.</li>
+    </ul>
+    <p>Neu muc tieu cua ban la "doc CSS da minify nay de tim mot quy tac cu the", unminifier giao chinh xac dieu do. Neu muc tieu cua ban la "khoi phuc nguon goc", do la mot nhiem vu khac (va thuong khong the).</p>
+
+    <h2 class="text-uppercase"><b>Prettier (va IDE auto-format cua ban) lam mot cong viec khac - day la duong</b></h2>
+    <p>Prettier la mot trinh dinh dang nguon co quan diem. Dau vao cua no la ma nguon CSS ban viet (hoac sap viet), va dau ra cua no la cung CSS duoc viet lai theo mot tep cau hinh (thuong la <code>.prettierrc</code> hoac <code>prettier.config.js</code> trong goc repo). Prettier duoc thiet ke de chay tren moi luu, tren moi commit, trong hook pre-merge tren CI - trinh dinh dang ap dat mot phong cach duy nhat tren toan bo nhom. Hau het cac tien ich mo rong trinh chinh sua (VS Code "Prettier - Code formatter", JetBrains "Prettier", Sublime "JsPrettier") ket noi no vao hanh dong format-on-save.</p>
+    <p>Hai dieu khien Prettier khac voi unminifier:</p>
+    <ol>
+        <li><b>Prettier duoc dieu khien boi cau hinh.</b> Dau cham phay cuoi, do rong indent (2 vs 4), xu ly khoang trang cuoi, do dai dong, dau ngoac don vs dau ngoac kep ben trong <code>url()</code> - moi nhom chon mot ket hop khac nhau, ma hoa no trong <code>.prettierrc</code> va Prettier ap dat ket hop do tren moi tep. Unminifier khong co cau hinh; no luon tao ra cung dau ra canonical "mot quy tac tren mot dong".</li>
+        <li><b>Prettier mong doi dau vao co the doc duoc.</b> Prettier khong duoc xay dung de xu ly mot stylesheet da minify mot dong. No co the chay tren CSS da minify va se tao ra mot cai gi do da duoc dinh dang, nhung dau ra su dung quy tac do dai dong rieng cua Prettier (mac dinh 80 ky tu), quy uoc nhom rieng cua Prettier va phong cach trich dan cua Prettier - thuong KHONG khop voi tep ma unminifier se tao ra. Truong hop xau nhat (hiem): Prettier co the tu choi dinh dang CSS ma no coi la khong dung dinh dang (mot dau ngoac dong them, mot pseudo-class khong hop le) noi unminifier chi phat ra bat ky byte nao no nhan duoc.</li>
+    </ol>
+    <p>Mo hinh tinh than don gian nhat: <strong>CSS Unminifier la mot trinh xem; Prettier la mot trinh viet.</strong> Trinh xem la de nhin vao mot tep ban khong so huu. Trinh viet la de commit mot tep ban so huu.</p>
+
+    <h2 class="text-uppercase"><b>Doc CSS da trien khai nhanh chong: khi nao CSS Unminifier la cau tra loi nhanh nhat</b></h2>
+    <p>Ba quy trinh lam viec la lanh tho canonical cua CSS Unminifier. Trong ca ba, dau vao la mot stylesheet san xuat da minify va muc tieu la doc no mot lan, khong commit gi:</p>
+    <ul>
+        <li><b>Gd lo mot loi cu the tren san xuat.</b> Mo DevTools, nhin vao quy tac da thang, sao chep selector day du cua no, dan CSS da minify vao unminifier, tim selector. Dau ra duoc unminify giup de dang scan len thac va xem cac quy tac khac co the dang choi. Nhanh hon cuon qua mot dong 200 ky tu.</li>
+        <li><b>Kiem tra mot stylesheet ben thu ba.</b> Neu mot thu vien vendor (Bootstrap, CSS bien dich Tailwind, CSS cua mot widget nhung) dang gay tro ngai voi cac kieu cua ban va ban khong co nguon, dan tep da minify vao unminifier va doc cac quy tac truc tiep. Thuong ban tim thay quy tac vi pham trong 30 giay.</li>
+        <li><b>Ban giao mot ban sao sach cho mot dong nghiep.</b> Mot bao cao loi tu QA den voi mot tep dinh kem CSS da minify. Dan, unminify, chia se dau ra da dinh dang trong binh luan trinh theo doi loi de nguoi doc tiep theo khong phai cuon ngang.</li>
+    </ul>
+    <p>Trong ca ba, unminifier thang vi no o trong trinh duyet, khong yeu cau cai dat va tao ra dau ra ma ban co the tim kiem voi Ctrl-F. Chay Prettier tren cung dau vao yeu cau hoac mot cai dat cuc bo (<code>npx prettier file.css</code> ghi vao dia) hoac dan vao mot Prettier playground - ca hai cham hon mot cong cu mot-dan chay tren phia khach hang.</p>
+
+    <h2 class="text-uppercase"><b>Viet ma nguon CSS: khi nao Prettier la lua chon dung</b></h2>
+    <p>Ba quy trinh lam viec thuoc ve Prettier. Trong ca ba, dau vao la ma nguon CSS ma nha phat trien viet va muc tieu la dinh dang no de commit:</p>
+    <ul>
+        <li><b>Format-on-save trong trinh chinh sua.</b> VS Code va JetBrains deu ket noi Prettier vao hanh dong dinh dang khi mot <code>.prettierrc</code> co mat trong repo. Moi khi nha phat trien luu mot tep CSS, Prettier viet lai theo cac quy tac nhom. Unminifier khong the duoc ket noi vao format-on-save (no khong co CLI; no la mot trang web) va se bo qua cac quy tac <code>.prettierrc</code> du sao.</li>
+        <li><b>Hook pre-commit tren git.</b> Cac cong cu nhu <code>lint-staged</code> + <code>husky</code> chay Prettier tren moi tep CSS duoc stage truoc khi commit dap xuong. Diff luon duoc dinh dang Prettier. Nguoi xem chi thay cac thay doi logic, khong phai drift khoang trang. Unminifier khong co tich hop hook.</li>
+        <li><b>Kiem tra dinh dang CI.</b> Mot buoc CI chay <code>prettier --check src/**/*.css</code>. Neu bat ky tep nao khong khop voi cac quy tac Prettier, build that bai. Buoc dinh dang cuc bo cua moi nha phat trien khop voi cac quy tac nhom. Unminifier khong the ap dat mot kiem tra: dau ra cua no la canonical-line-per-rule, khac voi bat ky <code>.prettierrc</code> cua nhom.</li>
+    </ul>
+    <p>Neu ban dang commit CSS, chay Prettier (qua trinh chinh sua cua ban, hook pre-commit hoac CLI). Neu ban dang doc CSS ban khong so huu, dan no vao <a href="/developer-tools/css-unminifier.html">CSS Unminifier</a>. Lam dieu nguoc lai - chay Prettier tren mot stylesheet da minify de "doc no" - tao ra mot dau ra khong khop voi quy uoc nguon cua nhom ban VA khong khop voi bat ky quy uoc doc CSS tieu chuan nao. Do la te nhat cua ca hai the gioi.</p>
+
+    <h2 class="text-uppercase"><b>Khong cong cu nao co the khoi phuc sau khi build voi tree-shaking</b></h2>
+    <p>Cac pipeline CSS san xuat lam nhieu hon minify. Hau het cac chuoi build hien dai chay mot chuoi cac chuyen doi loai bo thong tin, va mot khi thong tin bien mat, khong trinh dinh dang nao (unminifier hoac Prettier) co the dat no tro lai. Biet nhung gi da bi loai bo giup dat ky vong cho nhung gi dau ra "duoc unminify" cua ban se trong:</p>
+    <ul>
+        <li><b>Tree-shaking loai bo cac quy tac khong su dung.</b> Cac cong cu nhu PurgeCSS, UnCSS va dong co JIT cua Tailwind bien dich nguon voi HTML/JSX cua ung dung va phat ra chi cac quy tac khop voi cac ten lop duoc su dung. Stylesheet dau ra la mot TAP CON cua nguon, theo mot thu tu khac. Unminifier co the dinh dang tap con do nhung khong the noi cho ban biet cac quy tac nao da bi loai bo.</li>
+        <li><b>Mangling ten bien tren CSS-in-JS hoac CSS Modules.</b> CSS Modules viet lai <code>.button</code> thanh <code>.Button_button_2hQF</code> (hoac ngan hon); cac thu vien CSS-in-JS (styled-components, emotion) viet lai <code>.MyButton</code> thanh <code>.css-1n3v7p9</code>. Cac ten da hash la xac dinh nhung mo. Unminifier hien thi cac ten da hash vi do la nhung gi trong tep.</li>
+        <li><b>Comments bi loai bo truoc build.</b> Hau het cac trinh minify loai bo comments <code>/* ... */</code> theo mac dinh. Mot so bao ton cac comments banner <code>/*! preserve */</code> (tieu de giay phep); phan con lai bien mat truoc khi tep roi pipeline build. Khong unminifier cung khong Prettier khoi phuc chung.</li>
+        <li><b>Source maps tach roi.</b> Neu build phat ra mot tep <code>style.css.map</code> nhung ban chi co <code>style.css</code>, ban khong the quay lai cac so dong goc. Unminifier dinh dang nhung gi ban co; Prettier lam tuong tu. Ca hai phu thuoc vao viec ban cung lay source map neu ban can dieu huong nguon goc.</li>
+        <li><b>Sup do vendor prefix.</b> Autoprefixer thuong phat ra mot quy tac duy nhat voi nhieu bien the prefix (<code>-webkit-, -moz-, -ms-, tieu chuan</code>). Sau khi minify, thu tu prefix co the duoc xao tron de cho dau ra ngan nhat. Unminifier hien thi cho ban thu tu cuoi cung do; dau ra Autoprefixer goc co thu tu khac trong nguon.</li>
+    </ul>
+    <p>Neu muc tieu cua ban la "tai xay dung hoan toan nguon", cau tra loi la: mo kho git cua build hoac lay source map khop. Khong CSS Unminifier cung khong Prettier co the tai xay dung nhung gi pipeline build da loai bo.</p>
+
+    <h2 class="text-uppercase"><b>Ghep unminifier voi phan con lai cua bo cong cu CSS</b></h2>
+    <p>Neu tep ban dang doc den tu build san xuat cua chinh ban va ban sap RE-minify no sau khi doc (con duong round-trip "xem, chinh sua, gui"), ghep unminifier voi <a href="/developer-tools/css-minifier.html">CSS Minifier</a> tren trang web nay cho chuyen quay ve. Minifier dao nguoc buoc dinh dang (loai bo khoang trang va ngat dong tro lai) va tao ra mot tep co the trien khai mot dong. Hai cong cu cung nhau bao gom ca hai huong cua vong lap san-xuat-toi-nguon-toi-san-xuat.</p>
+    <p>Neu ban khong chac chan liec tep ban co la mot dau ra "minifier" (khoang trang bi loai bo) hay mot dau ra "uglifier" / tree-shaker (cac bien duoc doi ten cung), huong dan <a href="/guides/css-minifier-vs-uglifier-vs-tree-shaking.html">CSS minifier vs uglifier vs tree-shaking</a> giai thich cach phan biet chung trong mot doan. Neu ban dang chon mot minifier vs mot compressor (gzip/brotli), huong dan <a href="/guides/css-minifier-vs-compressor.html">minifier vs compressor</a> bao gom su nham lan ke ben do. Neu ban dang chay mot trien khai Cloud Run hoac Lambda va lo lang ve cac byte CSS cold-start, huong dan <a href="/guides/how-to-minify-css-js-for-cloud-run-cold-start.html">cach minify CSS/JS cho cold start Cloud Run</a> bao gom truong hop duoc dieu khien boi ngan sach.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>Dau ra duoc unminify co giong nguon CSS goc khong?</summary>
+  <p>Gan nhu khong bao gio. Unminifier dao nguoc buoc khoang trang nhung khong the dao nguoc viec loai bo comments, mangling bien, tree-shaking hoac sap xep lai vendor prefix. Xu ly dau ra nhu "CSS san xuat co the doc duoc", khong phai "nguon goc". Neu ban can nguon goc, lay kho git cua build hoac source map.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Tai sao ten bien cua toi khac nhau sau khi toi unminify?</summary>
+  <p>Chung khong khac nhau - chung la cung cac ten ma pipeline build da viet vao tep. Cac chuoi build hien dai viet lai ten lop thong qua CSS Modules hoac hashing CSS-in-JS de co lap pham vi, nen stylesheet san xuat chua <code>.Button_xY7g3</code> thay vi <code>.Button</code>. Unminifier hien thi cho ban nhung gi trong tep; no khong the un-hash cac ten vi anh xa cua build khong co mat.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Toi co the chay Prettier tren dau ra duoc unminify khong?</summary>
+  <p>Co, va ket qua se duoc dinh dang Prettier (khop voi bat ky bo quy tac <code>.prettierrc</code> nao ma ban tro Prettier toi). Nhung unminifier da tao ra mot dau ra canonical "mot declaration tren mot dong" tot cho viec doc; chay Prettier tren no chi thay doi phong cach dinh dang de khop voi cac quy tac nhom cua ban. Hau het nguoi doc khong ban tam. Neu ban sap commit tep nhu nguon, thi co - chay Prettier tiep theo, vi Prettier khop voi dinh dang commit cua nhom ban.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>CSS Unminifier co xu ly hashes lop CSS Modules khong?</summary>
+  <p>No se dinh dang chung tot (cac hashes la ten lop CSS hop le). Nhung gi no khong the lam la anh xa chung tro lai cac ten doc duoc nguoi cua nguon ban. Neu ban co source map cua build, DevTools cua ban co the hien thi cac ten nguoi bang cach anh xa nguoc thong qua source map; chi unminifier khong the.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Co cach nao de khoi phuc comments sau khi build khong?</summary>
+  <p>Chi neu minifier cua build duoc cau hinh de bao ton chung (hau het khong theo mac dinh). Cau hinh build cua ban de giu cac comments banner <code>/*! ... */</code> qua tuy chon <code>preserve</code> hoac <code>comments: 'some'</code> cua minifier. Mot khi bi loai bo, comments khong the khoi phuc thong qua dinh dang.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Lien quan</b></h2>
+    <ul>
+        <li><a href="/developer-tools/css-unminifier.html">CSS Unminifier</a> - cong cu ma huong dan nay duoc viet de di kem. Dan CSS da minify, tra ve CSS duoc dinh dang, chay hoan toan trong trinh duyet cua ban.</li>
+        <li><a href="/developer-tools/css-minifier.html">CSS Minifier</a> - cong cu huong nguoc lai de re-minify sau khi doc. Cung thiet lap trong trinh duyet, khong tai khoan.</li>
+        <li><a href="/guides/css-minifier-vs-compressor.html">CSS minifier vs compressor</a> - huong dan dong hanh huong tien len. Lam ro thuat ngu minifier-vs-gzip ma cac nha phat trien thuong tron.</li>
+        <li><a href="/guides/css-minifier-vs-uglifier-vs-tree-shaking.html">CSS minifier vs uglifier vs tree-shaking</a> - huong dan dong hanh ve thu tu pipeline build. Giai thich moi chuyen doi thuc su lam gi va khi nao ap dung moi cai.</li>
+        <li><a href="/guides/how-to-minify-css-js-for-cloud-run-cold-start.html">Cach minify CSS/JS cho cold-start Cloud Run</a> - huong dan trien khai cu the cho ngan sach cold-start.</li>
+    </ul>
+</div>

@@ -1,0 +1,111 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>CSS Unminifier vs Prettier: Kapan Menggunakan Masing-masing</b></h1>
+    <p><em>Terakhir ditinjau 2026-05-05. CSS Unminifier dan Prettier keduanya adalah formatter, tetapi mereka menyelesaikan masalah yang berbeda. CSS Unminifier membaca CSS produksi yang diminifikasi dan menyebarkannya kembali sehingga setiap selektor dan deklarasi berada di barisnya sendiri - ideal untuk men-debug stylesheet yang dikirim yang sumbernya tidak Anda miliki. Prettier memformat sumber CSS yang akan Anda commit, menerapkan aturan <code>.prettierrc</code> tim Anda sehingga diff setiap developer tetap bersih. Pilih yang tepat dalam 30 detik dengan tabel di bawah, dan baca sisa panduan ini jika Anda ingin tahu mengapa pilihan yang salah menghasilkan output yang tidak konsisten. Coba <a href="/developer-tools/css-unminifier.html">CSS Unminifier</a> bersama panduan ini untuk paruh baca-CSS-terkirim.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Jawaban 30 detik.</b> Gunakan <a href="/developer-tools/css-unminifier.html">CSS Unminifier</a> ketika input adalah stylesheet produksi yang dibangun satu baris dan tujuannya adalah untuk membacanya (debug bug spesifisitas, periksa stylesheet pihak ketiga, serahkan salinan bersih ke rekan satu tim). Gunakan Prettier ketika input adalah sumber CSS yang Anda tulis dan tujuannya adalah memformatnya untuk commit (aturan <code>.prettierrc</code> tim Anda, auto-format-saat-simpan editor Anda, hook pre-commit git Anda). Kedua alat menargetkan input yang berbeda dan menghasilkan output yang berbeda - mencampurnya adalah alasan paling umum mengapa developer melihat "format drift" di pull request.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Apa yang sebenarnya dilakukan CSS Unminifier (dan apa yang tidak bisa dilakukan)</b></h2>
+    <p><a href="/developer-tools/css-unminifier.html">CSS Unminifier</a> di situs ini membaca string CSS yang diminifikasi (jenis yang diproduksi oleh <code>cssnano</code>, <code>csso</code>, <code>clean-css</code>, atau build produksi apa pun yang menjalankan CSS melalui minifier) dan memancarkan aturan yang sama dengan indentasi yang tepat, line break, dan satu deklarasi per baris. Alat ini berjalan sepenuhnya di browser Anda - halaman dibangun di sekitar parsing in-browser dari konten textarea, tanpa unggahan, tanpa akun. Salinan verbatim pada halaman alat berbunyi "stylesheet produksi yang dibangun dan Anda perlu membacanya atau mengeditnya"; itulah kasus penggunaan kanonik.</p>
+    <p>Apa yang unminifikasi pulihkan:</p>
+    <ul>
+        <li>Whitespace antara selektor, deklarasi, dan blok aturan. Output dapat dibaca baris demi baris lagi.</li>
+        <li>Line breaks setelah setiap deklarasi. Setiap <code>property: value;</code> duduk di barisnya sendiri.</li>
+        <li>Indentasi di dalam blok aturan. Setiap deklarasi diindentasi di bawah selektornya.</li>
+    </ul>
+    <p>Apa yang unminifikasi TIDAK dan TIDAK DAPAT pulihkan:</p>
+    <ul>
+        <li><b>Komentar.</b> Sebagian besar minifier produksi menghapus komentar sebelum output (<code>cssnano</code> default, <code>csso</code> default). Setelah dihapus, komentar asli hilang - unminifier tidak memiliki apa pun untuk diletakkan kembali.</li>
+        <li><b>Gaya format asli.</b> Unminifier menghasilkan output kanonik "satu deklarasi per baris". Jika sumber Anda menggunakan konvensi berbeda (daftar selektor multi-baris yang diindentasi, deklarasi dikelompokkan berdasarkan kategori visual, prefiks vendor disejajarkan), konvensi itu tidak ada dalam file yang diminifikasi dan tidak dapat direkonstruksi.</li>
+        <li><b>Nama variabel dari CSS-in-JS atau CSS Modules.</b> Jika pipeline build menjalankan CSS Modules atau alat CSS-in-JS yang meng-hash nama kelas (<code>.SubmitButton_xY7g3</code>, <code>.modal-_2hqf</code>), nama kelas semantik asli hilang. Unminifier menampilkan nama yang di-hash karena itulah yang ada di file.</li>
+        <li><b>Source maps.</b> Jika build produksi tidak mempertahankan entri sourceMap, unminifier tidak dapat memulihkan path file asli atau nomor baris. Itu hanya memformat apa yang ada di textarea.</li>
+    </ul>
+    <p>Jika tujuan Anda adalah "baca CSS yang diminifikasi ini untuk menemukan aturan tertentu", unminifier memberikan tepat itu. Jika tujuan Anda adalah "memulihkan sumber asli", itu adalah tugas yang berbeda (dan biasanya tidak mungkin).</p>
+
+    <h2 class="text-uppercase"><b>Prettier (dan auto-format IDE Anda) melakukan pekerjaan yang berbeda - inilah garisnya</b></h2>
+    <p>Prettier adalah formatter sumber yang berpendapat. Inputnya adalah sumber CSS yang Anda tulis (atau akan ditulis), dan outputnya adalah CSS yang sama yang ditulis ulang sesuai dengan file konfigurasi (biasanya <code>.prettierrc</code> atau <code>prettier.config.js</code> di root repo). Prettier dirancang untuk dijalankan pada setiap simpan, setiap commit, di hook pre-merge di CI - formatter yang menegakkan satu gaya di seluruh tim. Sebagian besar ekstensi editor (VS Code "Prettier - Code formatter", JetBrains "Prettier", Sublime "JsPrettier") menghubungkannya ke aksi format-saat-simpan.</p>
+    <p>Dua hal yang membuat Prettier berbeda dari unminifier:</p>
+    <ol>
+        <li><b>Prettier dikendalikan konfigurasi.</b> Semicolon trailing, lebar indentasi (2 vs 4), penanganan whitespace trailing, panjang baris, kutip tunggal vs kutip ganda dalam <code>url()</code> - setiap tim memilih kombinasi yang berbeda, mengkodifikasikannya dalam <code>.prettierrc</code>, dan Prettier menegakkan kombinasi itu pada setiap file. Unminifier tidak memiliki konfigurasi; selalu menghasilkan output kanonik yang sama "satu aturan per baris".</li>
+        <li><b>Prettier mengharapkan input yang dapat dibaca.</b> Prettier tidak dibangun untuk menangani stylesheet yang diminifikasi satu baris. Itu dapat berjalan pada CSS yang diminifikasi dan akan menghasilkan sesuatu yang diformat, tetapi output menggunakan aturan panjang baris Prettier sendiri (default 80 karakter), konvensi pengelompokan Prettier sendiri, dan gaya kutip Prettier - yang biasanya TIDAK cocok dengan file yang akan diproduksi unminifier. Kasus terburuk (jarang): Prettier mungkin menolak memformat CSS yang dianggap rusak (kurung tutup ekstra, pseudo-kelas tidak valid) di mana unminifier hanya memancarkan byte apa pun yang diterimanya.</li>
+    </ol>
+    <p>Model mental paling sederhana: <strong>CSS Unminifier adalah penampil; Prettier adalah penulis.</strong> Penampil adalah untuk melihat file yang tidak Anda miliki. Penulis adalah untuk meng-commit file yang Anda miliki.</p>
+
+    <h2 class="text-uppercase"><b>Baca CSS terkirim dengan cepat: kapan CSS Unminifier adalah jawaban tercepat</b></h2>
+    <p>Tiga alur kerja adalah teritori kanonik CSS Unminifier. Dalam ketiganya, input adalah stylesheet produksi yang diminifikasi dan tujuannya adalah membacanya sekali, bukan meng-commit apa pun:</p>
+    <ul>
+        <li><b>Men-debug bug spesifisitas di produksi.</b> Buka DevTools, lihat aturan yang menang, salin selektor lengkapnya, tempel CSS yang diminifikasi ke unminifier, cari selektor. Output yang di-unminify membuat mudah memindai ke atas cascade dan melihat aturan lain mana yang mungkin berperan. Lebih cepat daripada menggulir melalui baris 200 karakter.</li>
+        <li><b>Memeriksa stylesheet pihak ketiga.</b> Jika perpustakaan vendor (Bootstrap, CSS yang dikompilasi Tailwind, CSS widget tertanam) mengganggu gaya Anda dan Anda tidak memiliki sumber, tempel file yang diminifikasi ke unminifier dan baca aturan secara langsung. Sering kali Anda menemukan aturan yang menyinggung dalam 30 detik.</li>
+        <li><b>Menyerahkan salinan bersih ke rekan satu tim.</b> Laporan bug dari QA tiba dengan lampiran CSS yang diminifikasi. Tempel, unminify, bagikan output yang diformat di komentar pelacak bug sehingga pembaca berikutnya tidak harus menggulir secara horizontal.</li>
+    </ul>
+    <p>Dalam ketiganya, unminifier menang karena ada di browser, tidak memerlukan instalasi, dan menghasilkan output yang dapat Anda cari dengan Ctrl-F. Menjalankan Prettier pada input yang sama memerlukan baik instalasi lokal (<code>npx prettier file.css</code> menulis ke disk) atau menempelkan ke playground Prettier - keduanya lebih lambat daripada alat satu-tempel yang berjalan di sisi klien.</p>
+
+    <h2 class="text-uppercase"><b>Menulis sumber CSS: kapan Prettier adalah pilihan yang tepat</b></h2>
+    <p>Tiga alur kerja milik Prettier. Dalam ketiganya, input adalah sumber CSS yang ditulis developer dan tujuannya adalah memformatnya untuk commit:</p>
+    <ul>
+        <li><b>Format-saat-simpan di editor.</b> VS Code dan JetBrains keduanya menghubungkan Prettier ke aksi format ketika <code>.prettierrc</code> hadir di repo. Setiap kali developer menyimpan file CSS, Prettier menulis ulang sesuai dengan aturan tim. Unminifier tidak dapat dihubungkan ke format-saat-simpan (tidak memiliki CLI; itu adalah halaman web) dan akan mengabaikan aturan <code>.prettierrc</code> bagaimanapun.</li>
+        <li><b>Hook pre-commit di git.</b> Alat seperti <code>lint-staged</code> + <code>husky</code> menjalankan Prettier pada setiap file CSS yang di-stage sebelum commit mendarat. Diff selalu diformat Prettier. Pengulas hanya melihat perubahan logis, bukan drift whitespace. Unminifier tidak memiliki integrasi hook.</li>
+        <li><b>Pemeriksaan format CI.</b> Langkah CI menjalankan <code>prettier --check src/**/*.css</code>. Jika ada file yang tidak cocok dengan aturan Prettier, build gagal. Memaksa format lokal setiap developer untuk cocok dengan aturan tim. Unminifier tidak dapat menegakkan pemeriksaan: outputnya adalah kanonik-baris-per-aturan, yang berbeda dari <code>.prettierrc</code> tim mana pun.</li>
+    </ul>
+    <p>Jika Anda meng-commit CSS, jalankan Prettier (via editor Anda, hook pre-commit Anda, atau CLI). Jika Anda membaca CSS yang tidak Anda miliki, tempel ke <a href="/developer-tools/css-unminifier.html">CSS Unminifier</a>. Melakukan kebalikan - menjalankan Prettier pada stylesheet yang diminifikasi untuk "membacanya" - menghasilkan output yang tidak cocok dengan konvensi sumber tim Anda DAN tidak cocok dengan konvensi pembacaan CSS standar mana pun. Itu adalah yang terburuk dari kedua dunia.</p>
+
+    <h2 class="text-uppercase"><b>Apa yang tidak dapat dipulihkan oleh alat mana pun setelah build tree-shaking</b></h2>
+    <p>Pipeline CSS produksi melakukan lebih dari sekadar minify. Sebagian besar rantai build modern menjalankan urutan transformasi yang menghapus informasi, dan setelah informasi hilang, tidak ada formatter (unminifier atau Prettier) yang dapat memasangnya kembali. Mengetahui apa yang dihapus membantu menetapkan harapan untuk seperti apa output "di-unminify" Anda akan terlihat:</p>
+    <ul>
+        <li><b>Tree-shaking menghapus aturan yang tidak digunakan.</b> Alat seperti PurgeCSS, UnCSS, dan mesin JIT Tailwind mengkompilasi sumber terhadap HTML/JSX aplikasi dan memancarkan hanya aturan yang cocok dengan nama kelas yang digunakan. Stylesheet output adalah SUBSET dari sumber, dalam urutan yang berbeda. Unminifier dapat memformat subset itu tetapi tidak dapat memberi tahu Anda aturan mana yang dihapus.</li>
+        <li><b>Mangling nama variabel pada CSS-in-JS atau CSS Modules.</b> CSS Modules menulis ulang <code>.button</code> menjadi <code>.Button_button_2hQF</code> (atau lebih pendek); perpustakaan CSS-in-JS (styled-components, emotion) menulis ulang <code>.MyButton</code> menjadi <code>.css-1n3v7p9</code>. Nama yang di-hash bersifat deterministik tetapi buram. Unminifier menampilkan nama yang di-hash karena itulah yang ada di file.</li>
+        <li><b>Komentar dihapus pra-build.</b> Sebagian besar minifier menghapus komentar <code>/* ... */</code> secara default. Beberapa mempertahankan komentar spanduk <code>/*! preserve */</code> (header lisensi); sisanya hilang sebelum file meninggalkan pipeline build. Baik unminifier maupun Prettier tidak memulihkannya.</li>
+        <li><b>Source maps terlepas.</b> Jika build memancarkan file <code>style.css.map</code> tetapi Anda hanya memiliki <code>style.css</code>, Anda tidak dapat kembali ke nomor baris asli. Unminifier memformat apa yang Anda miliki; Prettier melakukan hal yang sama. Keduanya bergantung pada Anda juga mengambil source map jika Anda memerlukan navigasi sumber asli.</li>
+        <li><b>Pengelipsan prefiks vendor.</b> Autoprefixer sering memancarkan satu aturan dengan beberapa varian prefiks (<code>-webkit-, -moz-, -ms-, standar</code>). Setelah minifikasi, urutan prefiks dapat dikocok untuk output terpendek. Unminifier menunjukkan urutan akhir itu; output Autoprefixer asli memiliki urutan berbeda di sumber.</li>
+    </ul>
+    <p>Jika tujuan Anda adalah "rekonstruksi penuh sumber", jawabannya adalah: buka repositori git build atau ambil source map yang cocok. Baik CSS Unminifier maupun Prettier tidak dapat merekonstruksi apa yang dihapus pipeline build.</p>
+
+    <h2 class="text-uppercase"><b>Pasangkan unminifier dengan sisa toolset CSS</b></h2>
+    <p>Jika file yang Anda baca berasal dari build produksi Anda sendiri dan Anda akan RE-minify setelah membaca (jalur round-trip "lihat, edit, kirim"), pasangkan unminifier dengan <a href="/developer-tools/css-minifier.html">CSS Minifier</a> di situs ini untuk perjalanan kembali. Minifier membalikkan langkah format (menjatuhkan whitespace dan line breaks kembali) dan menghasilkan file satu baris yang dapat di-deploy. Kedua alat bersama-sama mencakup kedua arah loop produksi-ke-sumber-ke-produksi.</p>
+    <p>Jika Anda tidak yakin apakah file yang Anda miliki adalah output "minifier" (whitespace dihapus) atau output "uglifier" / tree-shaker (variabel juga diganti namanya), panduan <a href="/guides/css-minifier-vs-uglifier-vs-tree-shaking.html">CSS minifier vs uglifier vs tree-shaking</a> menjelaskan cara membedakannya dalam satu paragraf. Jika Anda memilih minifier vs kompresor (gzip/brotli), panduan <a href="/guides/css-minifier-vs-compressor.html">minifier vs kompresor</a> mencakup kebingungan yang berdekatan itu. Jika Anda menjalankan deployment Cloud Run atau Lambda dan khawatir tentang byte CSS cold-start, panduan <a href="/guides/how-to-minify-css-js-for-cloud-run-cold-start.html">cara minify CSS/JS untuk cold-start Cloud Run</a> mencakup kasus yang dikendalikan anggaran.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>Apakah output yang di-unminify sama dengan sumber CSS asli?</summary>
+  <p>Hampir tidak pernah. Unminifier membalikkan langkah whitespace tetapi tidak dapat membalikkan penghapusan komentar, mangling variabel, tree-shaking, atau pengurutan ulang prefiks vendor. Perlakukan output sebagai "CSS produksi yang dapat dibaca", bukan "sumber asli". Jika Anda memerlukan sumber asli, ambil repositori git build atau source map.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Mengapa nama variabel saya berbeda setelah saya unminify?</summary>
+  <p>Mereka tidak berbeda - mereka adalah nama yang sama yang ditulis pipeline build ke file. Rantai build modern menulis ulang nama kelas melalui CSS Modules atau hashing CSS-in-JS untuk isolasi cakupan, sehingga stylesheet produksi berisi <code>.Button_xY7g3</code> alih-alih <code>.Button</code>. Unminifier menampilkan apa yang ada di file; tidak dapat un-hash nama karena pemetaan build tidak ada.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Bisakah saya menjalankan Prettier pada output yang di-unminify?</summary>
+  <p>Ya, dan hasilnya akan diformat Prettier (cocok dengan set aturan <code>.prettierrc</code> apa pun yang Anda arahkan Prettier). Tetapi unminifier sudah menghasilkan output kanonik "satu deklarasi per baris" yang bagus untuk dibaca; menjalankan Prettier di atasnya hanya mengubah gaya format agar cocok dengan aturan tim Anda. Sebagian besar pembaca tidak repot-repot. Jika Anda akan meng-commit file sebagai sumber, maka ya - jalankan Prettier berikutnya, karena Prettier cocok dengan format commit tim Anda.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Apakah CSS Unminifier akan menangani hash kelas CSS Modules?</summary>
+  <p>Itu akan memformatnya dengan baik (hash adalah nama kelas CSS yang valid). Apa yang tidak dapat dilakukannya adalah memetakan kembali ke nama yang dapat dibaca manusia dari sumber Anda. Jika Anda memiliki source map build, DevTools Anda dapat menampilkan nama manusia dengan memetakan kembali melalui source map; unminifier sendiri tidak dapat.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Adakah cara untuk memulihkan komentar setelah build?</summary>
+  <p>Hanya jika minifier build dikonfigurasi untuk mempertahankannya (sebagian besar tidak secara default). Konfigurasikan build Anda untuk mempertahankan komentar spanduk <code>/*! ... */</code> melalui opsi <code>preserve</code> atau <code>comments: 'some'</code> minifier. Setelah dihapus, komentar tidak dapat dipulihkan melalui pemformatan.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Terkait</b></h2>
+    <ul>
+        <li><a href="/developer-tools/css-unminifier.html">CSS Unminifier</a> - alat yang ditulis panduan ini untuk menemani. Menempelkan CSS yang diminifikasi, mengembalikan CSS yang diformat, berjalan sepenuhnya di browser Anda.</li>
+        <li><a href="/developer-tools/css-minifier.html">CSS Minifier</a> - alat arah berlawanan untuk re-minifikasi setelah pembacaan. Pengaturan yang sama di browser, tanpa akun.</li>
+        <li><a href="/guides/css-minifier-vs-compressor.html">CSS minifier vs kompresor</a> - panduan pendamping pada arah maju. Mengklarifikasi terminologi minifier-vs-gzip yang sering dicampur developer.</li>
+        <li><a href="/guides/css-minifier-vs-uglifier-vs-tree-shaking.html">CSS minifier vs uglifier vs tree-shaking</a> - panduan pendamping pada urutan pipeline build. Menjelaskan apa yang sebenarnya dilakukan setiap transformasi dan kapan menerapkan masing-masing.</li>
+        <li><a href="/guides/how-to-minify-css-js-for-cloud-run-cold-start.html">Cara minify CSS/JS untuk cold-start Cloud Run</a> - panduan khusus deployment untuk anggaran cold-start.</li>
+    </ul>
+</div>
