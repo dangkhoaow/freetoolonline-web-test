@@ -184,15 +184,17 @@ try {
     // copy beautified JSON). 8 aliases (json-formatter + 6 synonyms + chatgpt-json-
     // tree-viewer) retargeted to /developer-tools/json-parser.html via ALIAS_ROUTES.
     // Tool route + CMS + manifest + tool-skill deleted in same commit.
-    { title: "Comprimir Carpeta Zip Online Gratis", url: "https://freetoolonline.com/guides/comprimir-carpeta-zip-online-gratis.html", include: !1, tags: "zip,guide,comprimir,carpeta,zip" },
-    { title: "Reducir Tamaño Zip Online", url: "https://freetoolonline.com/guides/reducir-tama-o-zip-online.html", include: !1, tags: "zip,guide,reducir,tamano,zip" },
+    { title: "Comprimir Carpeta Zip Online Gratis", url: "https://freetoolonline.com/guides/es/compress-folder-to-zip-online-free.html", include: !1, tags: "zip,guide,comprimir,carpeta,zip,es" },
+    { title: "Reducir Tamaño Zip Online", url: "https://freetoolonline.com/guides/es/reduce-zip-size-online.html", include: !1, tags: "zip,guide,reducir,tamano,zip,es" },
     { title: "Reduce Zip File Size Online", url: "https://freetoolonline.com/guides/reduce-zip-file-size-online.html", include: !1, tags: "zip,guide,reduce,size" },
     { title: "GIF Into Frames", url: "https://freetoolonline.com/guides/gif-into-frames.html", include: !1, tags: "image-editing,guide,gif,frames,extract" },
     { title: "Kompres File Zip", url: "https://freetoolonline.com/guides/kompres-file-zip.html", include: !1, tags: "zip,guide,kompres,file,zip" },
     { title: "Kompres Zip", url: "https://freetoolonline.com/guides/kompres-zip.html", include: !1, tags: "zip,guide,kompres,size" },
-    { title: "Comprimir Pasta Zipada", url: "https://freetoolonline.com/guides/comprimir-pasta-zipada.html", include: !1, tags: "zip,guide,comprimir,pasta,zipada" },
-    { title: "Zipar Pasta", url: "https://freetoolonline.com/guides/zipar-pasta.html", include: !1, tags: "zip,guide,zipar,pasta,portugues" },
-    { title: "Comprimir Arquivo Zip", url: "https://freetoolonline.com/guides/comprimir-arquivo-zip.html", include: !1, tags: "zip,guide,comprimir,arquivo,portugues" },
+    { title: "Comprimir Pasta Zipada", url: "https://freetoolonline.com/guides/pt/compress-folder-to-zip.html", include: !1, tags: "zip,guide,comprimir,pasta,zipada,pt" },
+    { title: "Zipar Pasta", url: "https://freetoolonline.com/guides/pt/zip-a-folder.html", include: !1, tags: "zip,guide,zipar,pasta,portugues,pt" },
+    { title: "Comprimir Arquivo Zip", url: "https://freetoolonline.com/guides/pt/compress-zip-file.html", include: !1, tags: "zip,guide,comprimir,arquivo,portugues,pt" },
+    { title: "Compactar Pasta", url: "https://freetoolonline.com/guides/pt/compress-folder.html", include: !1, tags: "zip,guide,compactar,pasta,portugues,pt" },
+    { title: "Comprimir ZIP Online", url: "https://freetoolonline.com/guides/pt/compress-zip-online.html", include: !1, tags: "zip,guide,comprimir,zip,online,portugues,pt" },
     { title: "MD5 Password: Hash a Password String and When MD5 Is the Wrong Tool", url: "https://freetoolonline.com/guides/md5-password.html", include: !1, tags: "guide,developer,md5,hash,password" },
     { title: "Crop and Rotate Image", url: "https://freetoolonline.com/guides/crop-and-rotate-image.html", include: !1, tags: "image-editing,guide,crop,rotate,image" },
     { title: "Compress Folder Online", url: "https://freetoolonline.com/guides/compress-folder-online.html", include: !1, tags: "zip,guide,compress,folder,online" },
