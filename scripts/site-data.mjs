@@ -896,6 +896,10 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/zip-size-reducer.html', '/guides/es/zip-size-reducer.html', '/guides/vi/zip-size-reducer.html', '/guides/id/zip-size-reducer.html', '/guides/de/zip-size-reducer.html',
   '/guides/pt/zip-folder-online-free.html', '/guides/es/zip-folder-online-free.html', '/guides/vi/zip-folder-online-free.html', '/guides/id/zip-folder-online-free.html', '/guides/de/zip-folder-online-free.html',
   '/guides/pt/svg-to-png-when-to-rasterize-an-svg.html', '/guides/es/svg-to-png-when-to-rasterize-an-svg.html', '/guides/vi/svg-to-png-when-to-rasterize-an-svg.html', '/guides/id/svg-to-png-when-to-rasterize-an-svg.html', '/guides/de/svg-to-png-when-to-rasterize-an-svg.html',
+  // plan-warm-pascal-v3 S2 batch 12 (2026-05-29) - 5 locale variants × 3 guides
+  '/guides/pt/compress-zip-size.html', '/guides/es/compress-zip-size.html', '/guides/vi/compress-zip-size.html', '/guides/id/compress-zip-size.html', '/guides/de/compress-zip-size.html',
+  '/guides/pt/create-zip-file-online.html', '/guides/es/create-zip-file-online.html', '/guides/vi/create-zip-file-online.html', '/guides/id/create-zip-file-online.html', '/guides/de/create-zip-file-online.html',
+  '/guides/pt/css-minifier-vs-compressor.html', '/guides/es/css-minifier-vs-compressor.html', '/guides/vi/css-minifier-vs-compressor.html', '/guides/id/css-minifier-vs-compressor.html', '/guides/de/css-minifier-vs-compressor.html',
   '/guides/pt/compress-folder.html', // pt canonical of /guides/compactar-pasta.html
   '/guides/pt/compress-zip-file.html', // pt canonical of /guides/comprimir-arquivo-zip.html
   '/guides/pt/compress-folder-to-zip.html', // pt canonical of /guides/comprimir-pasta-zipada.html
@@ -968,6 +972,10 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/zip-size-reducer.html', '/guides/es/zip-size-reducer.html', '/guides/vi/zip-size-reducer.html', '/guides/id/zip-size-reducer.html', '/guides/de/zip-size-reducer.html',
   '/guides/pt/zip-folder-online-free.html', '/guides/es/zip-folder-online-free.html', '/guides/vi/zip-folder-online-free.html', '/guides/id/zip-folder-online-free.html', '/guides/de/zip-folder-online-free.html',
   '/guides/pt/svg-to-png-when-to-rasterize-an-svg.html', '/guides/es/svg-to-png-when-to-rasterize-an-svg.html', '/guides/vi/svg-to-png-when-to-rasterize-an-svg.html', '/guides/id/svg-to-png-when-to-rasterize-an-svg.html', '/guides/de/svg-to-png-when-to-rasterize-an-svg.html',
+  // plan-warm-pascal-v3 S2 batch 12 (2026-05-29) - 5 locale variants × 3 guides
+  '/guides/pt/compress-zip-size.html', '/guides/es/compress-zip-size.html', '/guides/vi/compress-zip-size.html', '/guides/id/compress-zip-size.html', '/guides/de/compress-zip-size.html',
+  '/guides/pt/create-zip-file-online.html', '/guides/es/create-zip-file-online.html', '/guides/vi/create-zip-file-online.html', '/guides/id/create-zip-file-online.html', '/guides/de/create-zip-file-online.html',
+  '/guides/pt/css-minifier-vs-compressor.html', '/guides/es/css-minifier-vs-compressor.html', '/guides/vi/css-minifier-vs-compressor.html', '/guides/id/css-minifier-vs-compressor.html', '/guides/de/css-minifier-vs-compressor.html',
   '/guides/en/heic-vs-jpg-vs-webp.html',
   '/guides/en/dead-pixel-testing-guide.html',
   '/guides/en/unix-timestamps-explained.html',
@@ -2345,6 +2353,10 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/zip-size-reducer.html': 'guide/pt/zip-size-reducer.jsp', '/guides/es/zip-size-reducer.html': 'guide/es/zip-size-reducer.jsp', '/guides/vi/zip-size-reducer.html': 'guide/vi/zip-size-reducer.jsp', '/guides/id/zip-size-reducer.html': 'guide/id/zip-size-reducer.jsp', '/guides/de/zip-size-reducer.html': 'guide/de/zip-size-reducer.jsp',
   '/guides/pt/zip-folder-online-free.html': 'guide/pt/zip-folder-online-free.jsp', '/guides/es/zip-folder-online-free.html': 'guide/es/zip-folder-online-free.jsp', '/guides/vi/zip-folder-online-free.html': 'guide/vi/zip-folder-online-free.jsp', '/guides/id/zip-folder-online-free.html': 'guide/id/zip-folder-online-free.jsp', '/guides/de/zip-folder-online-free.html': 'guide/de/zip-folder-online-free.jsp',
   '/guides/pt/svg-to-png-when-to-rasterize-an-svg.html': 'guide/pt/svg-to-png-when-to-rasterize-an-svg.jsp', '/guides/es/svg-to-png-when-to-rasterize-an-svg.html': 'guide/es/svg-to-png-when-to-rasterize-an-svg.jsp', '/guides/vi/svg-to-png-when-to-rasterize-an-svg.html': 'guide/vi/svg-to-png-when-to-rasterize-an-svg.jsp', '/guides/id/svg-to-png-when-to-rasterize-an-svg.html': 'guide/id/svg-to-png-when-to-rasterize-an-svg.jsp', '/guides/de/svg-to-png-when-to-rasterize-an-svg.html': 'guide/de/svg-to-png-when-to-rasterize-an-svg.jsp',
+  // plan-warm-pascal-v3 S2 batch 12 (2026-05-29) - 5 locale variants × 3 guides
+  '/guides/pt/compress-zip-size.html': 'guide/pt/compress-zip-size.jsp', '/guides/es/compress-zip-size.html': 'guide/es/compress-zip-size.jsp', '/guides/vi/compress-zip-size.html': 'guide/vi/compress-zip-size.jsp', '/guides/id/compress-zip-size.html': 'guide/id/compress-zip-size.jsp', '/guides/de/compress-zip-size.html': 'guide/de/compress-zip-size.jsp',
+  '/guides/pt/create-zip-file-online.html': 'guide/pt/create-zip-file-online.jsp', '/guides/es/create-zip-file-online.html': 'guide/es/create-zip-file-online.jsp', '/guides/vi/create-zip-file-online.html': 'guide/vi/create-zip-file-online.jsp', '/guides/id/create-zip-file-online.html': 'guide/id/create-zip-file-online.jsp', '/guides/de/create-zip-file-online.html': 'guide/de/create-zip-file-online.jsp',
+  '/guides/pt/css-minifier-vs-compressor.html': 'guide/pt/css-minifier-vs-compressor.jsp', '/guides/es/css-minifier-vs-compressor.html': 'guide/es/css-minifier-vs-compressor.jsp', '/guides/vi/css-minifier-vs-compressor.html': 'guide/vi/css-minifier-vs-compressor.jsp', '/guides/id/css-minifier-vs-compressor.html': 'guide/id/css-minifier-vs-compressor.jsp', '/guides/de/css-minifier-vs-compressor.html': 'guide/de/css-minifier-vs-compressor.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
