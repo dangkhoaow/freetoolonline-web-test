@@ -1,0 +1,77 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '\25B8'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Waktu sekarang dalam milidetik: baca nilai epoch langsung dan gunakan dengan benar</b></h1>
+    <p><em>Terakhir ditinjau: 2026-05-24. <a href="/get-time-in-millisecond.html">Alat waktu sekarang dalam milidetik</a> gratis mengembalikan nilai epoch langsung yang dilihat browser sekarang, dalam milidetik sejak 1970-01-01T00:00:00 UTC. Panduan ini menjelaskan apa angka itu, kapan menggunakannya alih-alih detik, dan tiga atau empat kesalahan kecil yang menghasilkan tanggal yang tampak meleset puluhan tahun.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Jawaban 30 detik.</b> Waktu sekarang dalam milidetik adalah integer 13 digit: hari ini sekitar <code>1779645000000</code>. Ia menghitung milidetik yang berlalu sejak epoch Unix (1970-01-01T00:00:00 UTC) dan tidak membawa zona waktu. Untuk membacanya di browser, panggil <code>Date.now()</code> di JavaScript atau buka <a href="/get-time-in-millisecond.html">alat waktu sekarang langsung</a>. Untuk mengonversinya kembali ke tanggal yang dapat dibaca, tempel ke <a href="/utility-tools/convert-time-in-millisecond-to-date.html">milidetik ke tanggal</a>.</p>
+    </div>
+    <p class="reviewed"><em>Terakhir ditinjau: 2026-05-24</em></p>
+    <p class="byline">Ditinjau oleh tim editorial FreetoolOnline</p>
+
+    <h2 class="text-uppercase"><b>Apa yang sebenarnya direpresentasikan nilai langsung</b></h2>
+    <p>Waktu sekarang dalam milidetik adalah satu integer yang menghitung berapa banyak milidetik telah berlalu sejak epoch Unix, ditetapkan pada 1970-01-01T00:00:00 UTC. Angka itu bebas zona waktu: ia tidak membawa kalender, offset, atau aturan daylight-saving. Ketika Anda melihat <code>1779645000000</code> pada baris log dan rekan tim melihat angka yang sama di benua berbeda, keduanya melihat instan yang sama; hanya rendering yang dapat dibaca manusia di layar berubah per lokal.</p>
+    <p>Alat langsung membaca nilai yang dilihat browser melalui <code>Date.now()</code> dan mencetaknya tanpa round-trip jaringan apa pun. Karena alat berjalan sepenuhnya di browser, nilai mencerminkan jam perangkat yang Anda gunakan - jika jam itu telah melenceng, nilai mencerminkan kelencengan. Untuk timestamp tingkat audit, lebih suka nilai yang dikeluarkan server (setiap permintaan web yang ditangani server sudah membawa timestamp presisi tinggi). Untuk pembacaan cepat saat debugging UI, baris log, atau payload JSON, nilai browser sudah cukup.</p>
+
+    <h2 class="text-uppercase"><b>Tabel fakta cepat</b></h2>
+    <table class="quick-facts">
+        <thead><tr><th>Properti</th><th>Nilai</th></tr></thead>
+        <tbody>
+            <tr><td>Format</td><td>Integer 13 digit, bebas zona waktu</td></tr>
+            <tr><td>Asal epoch</td><td>1970-01-01T00:00:00 UTC</td></tr>
+            <tr><td>Presisi</td><td>1 milidetik (1/1000 detik)</td></tr>
+            <tr><td>API baca browser</td><td><code>Date.now()</code> atau <code>new Date().getTime()</code></td></tr>
+            <tr><td>API baca server</td><td>Java <code>System.currentTimeMillis()</code>; Python <code>time.time() * 1000</code>; Go <code>time.Now().UnixMilli()</code></td></tr>
+            <tr><td>Alat implementasi</td><td><a href="/get-time-in-millisecond.html">/get-time-in-millisecond.html</a> (di browser, tanpa unggah)</td></tr>
+            <tr><td>Konverter pendamping</td><td><a href="/utility-tools/convert-time-in-millisecond-to-date.html">milidetik ke tanggal</a></td></tr>
+        </tbody>
+    </table>
+
+    <h2 class="text-uppercase"><b>Kapan membaca milidetik (dan kapan membaca detik)</b></h2>
+    <p>Pilihan antara milidetik dan detik biasanya kembali ke API atau sistem yang Anda interaksikan. JavaScript, Java, dan kebanyakan log berbasis JVM menggunakan timestamp milidetik secara native; shell Unix, banyak API C, dan ekor panjang protokol lama menggunakan timestamp presisi detik. Aturan visual singkat: angka 13 digit adalah milidetik; angka 10 digit adalah detik. Mencampur keduanya adalah penyebab paling umum tanggal yang tampak meleset puluhan tahun - memberikan nilai 13 digit ke parser yang mengharapkan detik memberikan tahun sekitar tahun 58000.</p>
+    <p>Untuk perlakuan lebih panjang tentang keputusan detik-vs-milidetik (dengan aturan detektor 10-digit-vs-13-digit yang tepat), baca panduan pendamping di <a href="/guides/long-number-millisecond-or-second.html">angka panjang: milidetik atau detik?</a>. Untuk pertanyaan tampilan zona waktu yang mengikuti setelah konversi berhasil, baca <a href="/guides/milliseconds-to-date-utc-vs-local-time.html">milidetik ke tanggal: UTC vs waktu lokal</a>.</p>
+
+    <h2 class="text-uppercase"><b>Cara menyalin nilai dengan bersih</b></h2>
+    <ol>
+        <li>Buka <a href="/get-time-in-millisecond.html">alat waktu sekarang</a>. Angka langsung dirender di lipatan pertama.</li>
+        <li>Klik tombol salin di sebelah nilai, atau pilih dan salin integer 13 digit secara manual.</li>
+        <li>Tempel ke tujuan - baris log, field JSON (gunakan tipe number, bukan string), header HTTP, atau query string URL untuk debug cepat.</li>
+        <li>Jika tujuan mengharapkan detik, hapus tiga digit terakhir atau bagi dengan 1000 (pembagian integer; jangan dibulatkan). Jika mengharapkan ISO 8601, tempel ke <a href="/utility-tools/convert-time-in-millisecond-to-date.html">milidetik ke tanggal</a> terlebih dahulu.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>Pertanyaan yang sering diajukan</b></h2>
+
+    <details class="faq-item">
+        <summary>Mengapa nilai langsung berubah setiap kali saya membuka halaman?</summary>
+        <p>Alat membaca <code>Date.now()</code> pada setiap pemuatan halaman, jadi angka mencerminkan instan pemuatan tersebut. Dua pembukaan dengan jeda satu menit berbeda sekitar 60000 (60 detik dikali 1000 milidetik). Nilai bukan angka acak statis; itu adalah jam langsung.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary>Apakah nilai milidetik bergantung pada zona waktu saya?</summary>
+        <p>Tidak. Nilai adalah hitungan milidetik sejak 1970-01-01T00:00:00 UTC. Ia tidak bergerak ketika Anda menyeberangi zona waktu atau ketika daylight saving dimulai. Yang bergerak adalah tampilan yang dapat dibaca manusia - "19 April 2024, 15:00 UTC" terbaca sebagai 22:00 di Bangkok atau 08:00 di Los Angeles, tetapi angka yang mendasarinya sama.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary>Bisakah saya mempercayai ini untuk timestamp tingkat audit?</summary>
+        <p>Untuk logging tingkat audit, lebih suka timestamp yang dikeluarkan server - setiap server sudah mencatat waktu permintaan dengan presisi sub-detik dan tidak tunduk pada kelencengan jam klien. Nilai di browser cukup untuk debugging, log demo, payload API sampel, dan pertanyaan pembaca "apa sekarang dalam milidetik". Untuk respons insiden atau logging bukti hukum, rutekan melalui server.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary>Apa sebenarnya arti aturan 13-digit-vs-10-digit?</summary>
+        <p>Timestamp Unix saat ini dalam detik adalah angka 10 digit (ambang melewati 2001 pada <code>1000000000</code>). Instan yang sama dalam milidetik adalah angka itu dikali 1000, yaitu 13 digit. Jadi jika Anda membaca angka dari log dan memiliki 13 digit, itu milidetik; jika memiliki 10, itu detik. Mencampurnya memberikan tanggal di tahun 58000 atau di 1970, keduanya bukan yang Anda inginkan.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary>Mengapa snippet JavaScript adalah <code>Date.now()</code> dan bukan <code>new Date()</code>?</summary>
+        <p>Keduanya mengembalikan nilai yang sama saat dipaksa ke angka. <code>Date.now()</code> adalah metode statis pada konstruktor Date; ia mengembalikan angka primitif langsung dan merupakan pembacaan termurah. <code>new Date()</code> mengembalikan objek Date yang metode <code>.getTime()</code>-nya mengembalikan angka yang sama. Untuk logging dan timestamp, <code>Date.now()</code> adalah panggilan idiomatik.</p>
+    </details>
+
+</div>

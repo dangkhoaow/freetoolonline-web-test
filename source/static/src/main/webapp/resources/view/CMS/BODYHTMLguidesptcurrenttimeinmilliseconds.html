@@ -1,0 +1,77 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '\25B8'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Hora atual em milissegundos: leia o valor epoch ao vivo e use-o corretamente</b></h1>
+    <p><em>Última revisão: 2026-05-24. A <a href="/get-time-in-millisecond.html">ferramenta de hora atual em milissegundos</a> gratuita retorna o valor epoch ao vivo que o navegador vê agora, em milissegundos desde 1970-01-01T00:00:00 UTC. Este guia explica o que é esse número, quando usá-lo em vez de segundos, e os três ou quatro pequenos erros que produzem datas que parecem deslocadas por décadas.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Resposta de 30 segundos.</b> A hora atual em milissegundos é um inteiro de 13 dígitos: hoje fica em torno de <code>1779645000000</code>. Ele conta os milissegundos decorridos desde a epoch Unix (1970-01-01T00:00:00 UTC) e não carrega timezone. Para lê-lo no navegador, chame <code>Date.now()</code> em JavaScript ou abra a <a href="/get-time-in-millisecond.html">ferramenta de hora atual ao vivo</a>. Para convertê-lo de volta para uma data legível, cole em <a href="/utility-tools/convert-time-in-millisecond-to-date.html">milissegundos para data</a>.</p>
+    </div>
+    <p class="reviewed"><em>Última revisão: 2026-05-24</em></p>
+    <p class="byline">Revisado pela equipe editorial FreetoolOnline</p>
+
+    <h2 class="text-uppercase"><b>O que o valor ao vivo realmente representa</b></h2>
+    <p>A hora atual em milissegundos é um único inteiro que conta quantos milissegundos decorreram desde a epoch Unix, fixada em 1970-01-01T00:00:00 UTC. O número é livre de timezone: não carrega um calendário, um deslocamento, ou uma regra de horário de verão. Quando você vê <code>1779645000000</code> em uma linha de log e um colega vê o mesmo número em outro continente, ambos estão olhando o mesmo instante; apenas a renderização legível por humanos na tela muda por localidade.</p>
+    <p>A ferramenta ao vivo lê o valor que o navegador vê via <code>Date.now()</code> e o imprime sem nenhum round-trip de rede. Como a ferramenta roda inteiramente no navegador, o valor reflete o relógio do dispositivo em que você está - se esse relógio derivou, o valor reflete a deriva. Para timestamps de grau de auditoria, prefira um valor emitido pelo servidor (cada requisição web que um servidor manipula já carrega um timestamp de alta precisão). Para uma leitura rápida durante depuração de UI, uma linha de log, ou um payload JSON, o valor do navegador é suficiente.</p>
+
+    <h2 class="text-uppercase"><b>Tabela de fatos rápidos</b></h2>
+    <table class="quick-facts">
+        <thead><tr><th>Propriedade</th><th>Valor</th></tr></thead>
+        <tbody>
+            <tr><td>Formato</td><td>Inteiro de 13 dígitos, livre de timezone</td></tr>
+            <tr><td>Origem da epoch</td><td>1970-01-01T00:00:00 UTC</td></tr>
+            <tr><td>Precisão</td><td>1 milissegundo (1/1000 de um segundo)</td></tr>
+            <tr><td>API de leitura no navegador</td><td><code>Date.now()</code> ou <code>new Date().getTime()</code></td></tr>
+            <tr><td>APIs de leitura no servidor</td><td>Java <code>System.currentTimeMillis()</code>; Python <code>time.time() * 1000</code>; Go <code>time.Now().UnixMilli()</code></td></tr>
+            <tr><td>Ferramenta de implementação</td><td><a href="/get-time-in-millisecond.html">/get-time-in-millisecond.html</a> (no navegador, sem upload)</td></tr>
+            <tr><td>Conversor companheiro</td><td><a href="/utility-tools/convert-time-in-millisecond-to-date.html">milissegundos para data</a></td></tr>
+        </tbody>
+    </table>
+
+    <h2 class="text-uppercase"><b>Quando ler milissegundos (e quando ler segundos)</b></h2>
+    <p>A escolha entre milissegundos e segundos geralmente remonta à API ou ao sistema com o qual você está interagindo. JavaScript, Java, e a maioria dos logs baseados em JVM usam timestamps em milissegundos nativamente; shells Unix, muitas APIs C, e uma longa cauda de protocolos mais antigos usam timestamps de precisão em segundos. A regra visual é curta: um número de 13 dígitos é milissegundos; um número de 10 dígitos é segundos. Misturar os dois é a causa mais comum de datas que parecem deslocadas por décadas - alimentar um valor de 13 dígitos a um parser que espera segundos dá um ano em algum lugar em torno do ano 58000.</p>
+    <p>Para um tratamento mais longo da decisão segundos-vs-milissegundos (com a regra exata detectora 10-dígitos-vs-13-dígitos), leia o guia companheiro em <a href="/guides/long-number-millisecond-or-second.html">número longo: milissegundo ou segundo?</a>. Para a questão de exibição de timezone que segue uma vez que a conversão é bem-sucedida, leia <a href="/guides/milliseconds-to-date-utc-vs-local-time.html">milissegundos para data: UTC vs hora local</a>.</p>
+
+    <h2 class="text-uppercase"><b>Como copiar o valor de forma limpa</b></h2>
+    <ol>
+        <li>Abra a <a href="/get-time-in-millisecond.html">ferramenta de hora atual</a>. O número ao vivo é renderizado na primeira dobra.</li>
+        <li>Clique no botão copiar ao lado do valor, ou selecione e copie o inteiro de 13 dígitos manualmente.</li>
+        <li>Cole no destino - uma linha de log, um campo JSON (use um tipo number, não uma string), um cabeçalho HTTP, ou a query string da URL para um debug rápido.</li>
+        <li>Se o destino espera segundos, descarte os últimos três dígitos ou divida por 1000 (divisão inteira; não arredonde). Se espera ISO 8601, cole em <a href="/utility-tools/convert-time-in-millisecond-to-date.html">milissegundos para data</a> primeiro.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>Perguntas frequentes</b></h2>
+
+    <details class="faq-item">
+        <summary>Por que o valor ao vivo muda toda vez que abro a página?</summary>
+        <p>A ferramenta lê <code>Date.now()</code> em cada carga de página, então o número reflete o instante daquela carga. Duas aberturas com um minuto de diferença diferem por cerca de 60000 (60 segundos vezes 1000 milissegundos). O valor não é um número aleatório estático; é o relógio ao vivo.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary>O valor em milissegundos depende do meu timezone?</summary>
+        <p>Não. O valor é a contagem de milissegundos desde 1970-01-01T00:00:00 UTC. Não se move quando você cruza um timezone ou quando o horário de verão começa. O que se move é a exibição legível por humanos - "19 de abril de 2024, 15:00 UTC" lê como 22:00 em Bangkok ou 08:00 em Los Angeles, mas o número subjacente é o mesmo.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary>Posso confiar nisto para timestamps de grau de auditoria?</summary>
+        <p>Para logging de grau de auditoria, prefira um timestamp emitido pelo servidor - todo servidor já registra o tempo da requisição com precisão de sub-segundo e não está sujeito à deriva de relógio do cliente. O valor no navegador é bom para depuração, logs de demo, payloads de API de amostra, e perguntas de leitor "o que é agora em milissegundos". Para resposta a incidentes ou logging de evidência legal, encaminhe pelo servidor.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary>O que a regra 13-dígitos-vs-10-dígitos realmente significa?</summary>
+        <p>Um timestamp Unix atual em segundos é um número de 10 dígitos (o limite passou em 2001 em <code>1000000000</code>). O mesmo instante em milissegundos é esse número vezes 1000, que é 13 dígitos. Então se você lê um número de um log e tem 13 dígitos, é milissegundos; se tem 10, é segundos. Misturá-los dá datas no ano 58000 ou em 1970, nenhum dos quais é o que você queria.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary>Por que o snippet JavaScript é <code>Date.now()</code> e não <code>new Date()</code>?</summary>
+        <p>Ambos retornam o mesmo valor quando coagidos a um número. <code>Date.now()</code> é o método estático no construtor Date; retorna um número primitivo diretamente e é a leitura mais barata. <code>new Date()</code> retorna um objeto Date cujo método <code>.getTime()</code> retorna o mesmo número. Para logging e timestamps, <code>Date.now()</code> é a chamada idiomática.</p>
+    </details>
+
+</div>

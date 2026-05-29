@@ -1,0 +1,118 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Webcam Mirror vs Flip Dijelaskan: Mengapa Pratinjau Kamera Anda Membalik Teks</b></h1>
+    <p><em>Terakhir ditinjau: 2026-05-05. Jika pratinjau kamera Anda menampilkan teks terbalik pada kaos atau halaman cetak, kamera Anda hampir pasti bekerja dengan benar. Sebagian besar UI pratinjau mirror berdasarkan desain; file yang direkam biasanya tidak. Konfirmasi dalam 30 detik, kemudian matikan mirror jika Anda tidak menginginkannya. Jalankan pemeriksaan cepat di <a href="/device-test-tools/camera-test.html">Tes Kamera</a> bersama panduan ini.</em></p>
+    <address class="author"><a rel="author" href="/editorial-team.html">Tim Editorial Free Tool Online</a></address>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Jawaban 30 detik.</b> Pegang halaman cetak apa pun di depan webcam Anda. Jika teks di pratinjau terbaca terbalik, itu adalah mirror pratinjau yang sedang bekerja, bukan kamera rusak. Rekam tiga detik video, hentikan, dan putar kembali. Jika teks pada pemutaran terbaca benar (maju), file yang disimpan baik-baik saja dan hanya pratinjau langsung yang di-mirror. Hampir setiap pipeline webcam konsumen (OBS, Zoom, Meet, Teams, alat tes kamera di atas) me-mirror pratinjau tetapi menyimpan frame yang tidak di-mirror.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Mirror vs flip: kata-kata berarti hal yang berbeda</b></h2>
+    <p>Dua transformasi yang berbeda mudah dikacaukan, dan sebagian besar aplikasi konsumen (dan bahkan beberapa artikel bantuan) menggunakan kata-kata secara bergantian. Mengetahui mana yang terjadi pada gambar Anda mengubah diagnosis:</p>
+    <ul>
+        <li><b>Mirror</b> (flip kiri-kanan) membalik gambar secara horizontal. Sisi kanan adegan muncul di sisi kiri layar, dan teks apa pun di frame terbaca terbalik. Inilah yang dilakukan sebagian besar pratinjau webcam secara default.</li>
+        <li><b>Flip</b> (rotasi vertikal / 180&deg;) memutar gambar terbalik. Bagian atas adegan muncul di bagian bawah layar. Ini jarang di pratinjau webcam dan hampir selalu menunjukkan pengaturan orientasi kamera yang salah pada kamera USB yang dipasang terbalik.</li>
+        <li><b>Putar</b> (90&deg; atau 270&deg;) memiringkan gambar ke samping. Ini paling umum ketika kamera ponsel dipegang lanskap tetapi OS membaca orientasi EXIF sebagai potret. Hampir tidak pernah muncul di pratinjau webcam desktop.</li>
+    </ul>
+    <p>Jika pratinjau Anda menampilkan teks terbalik tetapi sisa adegan tegak, Anda melihat mirror, bukan flip atau rotasi. Perbaikan dan penjelasannya berbeda untuk masing-masing.</p>
+
+    <h2 class="text-uppercase"><b>Mengapa pratinjau kamera Anda mirror (dan file yang disimpan biasanya tidak)</b></h2>
+    <p>UI pratinjau webcam mirror feed langsung karena begitulah cara cermin fisik bekerja. Saat Anda mengangkat tangan kanan, Anda mengharapkan melihat "tangan kanan" di sisi kanan gambar cermin. Tanpa transformasi mirror, pratinjau langsung akan menampilkan tangan kanan Anda di kiri layar, yang terasa salah - Anda harus berpikir tangan mana yang dipindahkan setiap kali Anda menyesuaikan rambut, memperbaiki sudut kamera, atau memegang objek.</p>
+    <p>Merekam berbeda. Seluruh tujuan video yang direkam adalah menangkap adegan sebagaimana adanya, bukan sebagaimana pembicara melihat dirinya sendiri di cermin. Jadi file yang direkam disimpan tidak di-mirror. Siapa pun yang nantinya memutar file melihat pembicara seperti orang ketiga akan melihat mereka dalam kehidupan nyata, termasuk teks apa pun pada kaos atau tanda di frame. Pemisahan ini (mirror di pratinjau, tidak di-mirror di penyimpanan) konsisten di OBS, Zoom, Google Meet, Microsoft Teams, aplikasi Kamera macOS, dan aplikasi Kamera Windows.</p>
+    <p>Dua detail implementasi mengukuhkan perilaku:</p>
+    <ol>
+        <li><b>Pratinjau langsung adalah transformasi CSS, bukan pengeditan frame.</b> Sebagian besar UI pratinjau webcam menerapkan <code>transform: scaleX(-1)</code> pada elemen &lt;video&gt;. Byte yang keluar dari kamera tidak di-mirror; browser atau aplikasi hanya menggambarnya terbalik di layar. Alat /camera-test.html di situs ini menggunakan pendekatan yang sama - <code>scaleX(-1)</code> ada di pratinjau langsung, frame yang disimpan ke kanvas adalah orientasi asli.</li>
+        <li><b>File yang disimpan membaca frame yang tidak ditransformasi.</b> Saat Anda klik rekam, OBS / Zoom / Teams / Meet membaca langsung dari buffer frame kamera (sisi yang tidak di-mirror) dan menulis itu ke file. Transformasi CSS pratinjau tidak pernah menyentuh byte yang disimpan. Itulah mengapa pratinjau teks terbalik Anda menjadi teks benar pada pemutaran.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>Bukti 30 detik: pegang halaman cetak dan rekam tiga detik</b></h2>
+    <p>Jika Anda ingin yakin tentang setup spesifik Anda sebelum presentasi atau rekaman, jalankan prosedur bukti ini. Memakan waktu sekitar 30 detik dan menjawab pertanyaan secara definitif:</p>
+    <ol>
+        <li>Buka alat apa pun yang memungkinkan Anda merekam (aplikasi kamera di Windows / Mac, OBS, Zoom dalam mode rekam, atau perekam dalam browser apa pun). Halaman <a href="/device-test-tools/camera-test.html">Tes Kamera</a> baik untuk separuh pratinjau langsung dari pemeriksaan; tidak merekam, tetapi memberi tahu Anda seperti apa pratinjau Anda bagi Anda.</li>
+        <li>Pegang halaman cetak atau sepotong karton dengan teks tebal di depan kamera. Teks harus mengisi setidaknya 30% dari frame agar mudah dibaca.</li>
+        <li>Lihat pratinjau. Jika teks terbalik, pratinjau di-mirror (ini adalah default; jangan khawatir).</li>
+        <li>Klik rekam. Tangkap tiga detik. Hentikan.</li>
+        <li>Putar kembali file yang direkam. Jika teks pada pemutaran terbaca benar (maju), jalur penyimpanan Anda tidak di-mirror dan file yang disimpan baik untuk dibagikan. Jika teks pada pemutaran JUGA terbaca terbalik, encoder Anda dikonfigurasi untuk merekam stream yang di-mirror - tidak umum, tetapi terjadi pada beberapa setup OBS kustom.</li>
+    </ol>
+    <p>Jika langkah 5 menampilkan teks arah benar, Anda dapat mengabaikan pratinjau yang di-mirror sepenuhnya - penonton melihat adegan seperti yang Anda harapkan. Jika langkah 5 menampilkan teks terbalik, lompat ke bagian OBS di bawah; itu satu-satunya aplikasi umum yang membiarkan pengguna merekam pratinjau yang di-mirror secara tidak sengaja.</p>
+
+    <h2 class="text-uppercase"><b>Matikan mirror di OBS / Zoom / Google Meet / Microsoft Teams</b></h2>
+    <p>Jika pratinjau yang di-mirror mengganggu Anda (paling sering: ketika Anda merujuk pada catatan yang ditempel di samping kamera dan Anda menemukan sulit membaca tulisan Anda sendiri karena pratinjau membaliknya), setiap aplikasi konferensi utama memiliki toggle mirror satu klik. Jalur persis berbeda per aplikasi:</p>
+    <div class="w3-responsive">
+        <table class="w3-table-all w3-small">
+            <tr><th>Aplikasi</th><th>Di mana menemukan toggle mirror</th><th>Apa yang dipengaruhi</th></tr>
+            <tr><td>OBS Studio</td><td>Klik kanan sumber Video Capture Device &rarr; Transform &rarr; Flip Horizontal. Atau dengan sumber terpilih, pintasan keyboard H. Untuk mencegah merekam stream yang di-mirror, JUGA periksa bahwa tidak ada Flip Horizontal kedua yang diterapkan di tingkat adegan atau output.</td><td>Baik pratinjau maupun output yang direkam / di-streaming (karena OBS merekam kanvas, bukan kamera).</td></tr>
+            <tr><td>Zoom desktop</td><td>Pengaturan &rarr; Video &rarr; hapus centang "Mirror my video".</td><td>Hanya pratinjau. Peserta rapat lain selalu melihat stream yang tidak di-mirror terlepas dari kotak centang ini.</td></tr>
+            <tr><td>Google Meet (browser)</td><td>Dalam rapat: menu tiga titik &rarr; Apply visual effects &rarr; hapus centang "Mirror my video". Atau sebelum bergabung: Pengaturan (roda gigi) &rarr; Video &rarr; toggle "Mirror".</td><td>Hanya pratinjau. Peserta lain selalu melihat stream yang tidak di-mirror.</td></tr>
+            <tr><td>Microsoft Teams</td><td>Pengaturan &rarr; Devices &rarr; di bawah Kamera, toggle "Mirror my video". Beberapa klien Teams lama tidak mengekspos ini; dalam hal ini pratinjau selalu di-mirror.</td><td>Hanya pratinjau. Peserta lain selalu melihat stream yang tidak di-mirror.</td></tr>
+            <tr><td>Aplikasi Kamera macOS</td><td>Menu View &rarr; hapus centang "Mirror Image". File yang direkam mengikuti apa yang ditampilkan menu View.</td><td>Baik pratinjau maupun file yang direkam (ini adalah satu aplikasi konsumen umum di mana toggle mengubah byte yang disimpan).</td></tr>
+            <tr><td>Aplikasi Kamera Windows 11</td><td>Pengaturan (roda gigi) &rarr; toggle "Mirror image".</td><td>Baik pratinjau maupun file yang direkam.</td></tr>
+        </table>
+    </div>
+    <p>Dua kasus mudah dilupakan:</p>
+    <ul>
+        <li><b>OBS merekam apa yang ditampilkannya.</b> Tidak seperti Zoom / Meet / Teams (yang selalu mengirim stream yang tidak di-mirror ke penonton terlepas dari toggle mirror lokal), OBS menangkap apa pun yang ada di kanvas. Jika Anda mencentang Flip Horizontal pada sumber untuk kenyamanan pratinjau dan lupa bahwa Anda telah mencentangnya, stream dan rekaman Anda keduanya akan di-mirror. Selalu jalankan bukti 30 detik di atas sebelum rekaman nyata.</li>
+        <li><b>Tombol mirror perangkat keras pada beberapa webcam.</b> Beberapa kamera Logitech dan Razer mengekspos toggle mirror perangkat keras melalui aplikasi pendamping mereka (Logitech G HUB, Razer Synapse). Jika pratinjau Anda di-mirror atau tidak di-mirror terlepas dari apa yang dikatakan aplikasi konferensi, periksa aplikasi vendor kamera terlebih dahulu.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Kapan mirroring membantu (dan kapan merugikan)</b></h2>
+    <p>Mirror adalah default karena alasan. Ini adalah pilihan yang tepat dalam sebagian besar situasi, tetapi beberapa alur kerja umum mendapat manfaat dari mematikannya:</p>
+    <ul>
+        <li><b>Mirror membantu</b> ketika Anda menyesuaikan framing, memperbaiki rambut Anda, memegang objek kecil yang ingin Anda perlihatkan kepada penonton, atau tugas "lihat dirimu sendiri di cermin" lainnya. Intuisi tangan-kanan-di-kanan membuat pratinjau langsung lebih mudah digunakan.</li>
+        <li><b>Mirror merugikan</b> ketika Anda membaca dari catatan tempel yang ditempelkan di samping kamera (teks tampak terbalik di pratinjau, yang membuatnya lebih sulit dibaca), mendemonstrasikan sesuatu di mana kiri dan kanan penting (kerajinan atau isyarat tangan), atau merekam diri Anda menulis di papan tulis transparan untuk tutorial (penonton mengharapkan tulisan terbaca benar untuk mereka).</li>
+        <li><b>Mirror opsional</b> untuk panggilan video normal. Peserta lain selalu melihat stream yang tidak di-mirror; toggle mirror lokal hanya memengaruhi apa yang Anda lihat di layar Anda sendiri. Pilih mana pun yang terasa lebih nyaman.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Pasangkan ini dengan tes kamera</b></h2>
+    <p>Jika Anda tiba di panduan ini karena pratinjau kamera Anda "terlihat aneh," ada baiknya mengkonfirmasi tiga hal pada waktu yang sama: kamera dikenali oleh OS, pratinjau menampilkan gambar langsung, dan mirroring sesuai dengan harapan Anda. Halaman <a href="/device-test-tools/camera-test.html">Tes Kamera</a> mencakup dua pertama dalam sekitar 10 detik (ini adalah tes klien-saja browser - halaman dibangun di sekitar <code>navigator.mediaDevices.getUserMedia</code> sehingga frame tidak pernah meninggalkan perangkat Anda). Gunakan panduan ini untuk yang ketiga.</p>
+    <p>Jika halaman tes kamera menampilkan layar hitam alih-alih gambar yang di-mirror atau tidak di-mirror, penyebabnya mungkin salah satu dari empat masalah umum yang tidak terkait dengan mirroring - baca <a href="/guides/camera-test-shows-black-screen-four-fixes.html">Tes kamera menampilkan layar hitam - empat perbaikan</a> terlebih dahulu. Jika Anda tidak yakin apakah Anda membutuhkan tes kamera atau tes webcam, <a href="/guides/camera-test-vs-webcam-test-which-do-you-need.html">panduan perutean</a> menyelesaikan perbedaan dalam satu paragraf.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>Mengapa rekaman Zoom saya menampilkan saya dengan tangan kanan di sisi yang salah?</summary>
+  <p>Hampir selalu, pratinjau Zoom lokal Anda di-mirror (sehingga tangan kanan Anda muncul di kanan layar Anda sendiri) tetapi rekaman menyimpan stream yang tidak di-mirror (sehingga pada pemutaran tangan kanan Anda berada di kiri, di mana sebenarnya relatif terhadap kamera). Ini adalah rekaman yang menampilkan kenyataan, bukan Zoom membalik apa pun. Jika membingungkan, baik matikan "Mirror my video" di Pengaturan Zoom &rarr; Video sehingga tampilan langsung Anda cocok dengan rekaman, atau terima bahwa rekaman adalah tampilan orang ketiga.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Apakah orang lain dalam panggilan video saya akan melihat saya terbalik jika pratinjau saya di-mirror?</summary>
+  <p>Tidak. Zoom, Google Meet, dan Microsoft Teams selalu mengirim stream kamera yang tidak di-mirror ke peserta lain terlepas dari toggle mirror lokal Anda. Toggle hanya mengubah apa yang ANDA lihat di LAYAR ANDA. Peserta lain melihat Anda dengan cara yang sama seperti orang yang berdiri di depan Anda akan melihat Anda dalam kehidupan nyata.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Saya menonaktifkan mirror di Zoom tetapi rekaman saya masih di-mirror. Apa yang terjadi?</summary>
+  <p>Dua kemungkinan: (a) Anda menonaktifkan mirror di Zoom tetapi rekaman dibuat melalui perekam layar (OBS, QuickTime) yang menangkap jendela Zoom, dalam hal ini perekam menangkap tampilan mirror lokal Anda; (b) Anda memiliki mirror tingkat perangkat keras yang diaktifkan di aplikasi vendor kamera (Logitech G HUB, Razer Synapse) yang menimpa pengaturan Zoom. Periksa aplikasi vendor sebelum berasumsi bahwa Zoom adalah masalahnya.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>OBS merekam pratinjau mirror saya - bagaimana memperbaiki itu tanpa kehilangan tampilan mirror yang saya sukai?</summary>
+  <p>OBS tidak memiliki toggle terpisah "hanya mirror pratinjau" - apa pun yang Anda atur pada sumber adalah yang direkam. Solusi dua-sumber: tambahkan kamera sebagai sumber Video Capture Device DUA KALI. Terapkan Flip Horizontal pada satu (gunakan ini sebagai pratinjau "monitor" Anda), dan gunakan yang tidak di-flip dalam adegan output Anda. Sembunyikan yang tidak di-flip dari kanvas jika Anda tidak ingin melihatnya. Ini memungkinkan Anda merujuk catatan Anda dengan monitor yang di-mirror sambil mengirim stream yang tidak di-mirror.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Kamera saya menampilkan saya terbalik, bukan di-mirror. Apakah ini masalah yang sama?</summary>
+  <p>Tidak, itu adalah flip (vertikal) atau rotasi 180 derajat, bukan mirror. Penyebab paling umum adalah webcam USB yang dipasang terbalik (kabel di atas alih-alih di bawah). Baik secara fisik putar kamera atau, di OBS, terapkan Transform &rarr; Rotate 180&deg; ke sumber. Zoom, Meet, dan Teams tidak mengekspos toggle rotasi; jika pemasangan kamera Anda adalah masalahnya, Anda harus memperbaikinya di perangkat keras atau di aplikasi vendor kamera.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Apakah alat tes kamera di atas merekam atau menyimpan apa pun?</summary>
+  <p>Tidak. /camera-test.html adalah tes klien-saja sepenuhnya - halaman dibangun di sekitar <code>navigator.mediaDevices.getUserMedia</code> dan menggunakan <code>canvas.toDataURL("image/jpeg")</code> untuk snapshot lokal, keduanya berjalan hanya di browser Anda. Tidak ada frame yang diunggah, dikirim, atau disimpan di server. Panduan ini tidak mengubah itu - ini adalah penjelasan tertulis tanpa penanganan media sama sekali.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Terkait</b></h2>
+    <ul>
+        <li><a href="/device-test-tools/camera-test.html">Tes Kamera</a> - pemeriksaan webcam langsung dalam browser yang panduan ini ditulis untuk menemani. Mengonfirmasi kamera dikenali, menampilkan pratinjau langsung, dan memungkinkan Anda mengambil satu snapshot tanpa mengunggah apa pun.</li>
+        <li><a href="/guides/camera-test-shows-black-screen-four-fixes.html">Tes kamera menampilkan layar hitam - empat perbaikan</a> - diagnosis tidak-ada-gambar. Baca ini terlebih dahulu jika pratinjau Anda hitam alih-alih di-mirror / tidak di-mirror.</li>
+        <li><a href="/guides/camera-test-vs-webcam-test-which-do-you-need.html">Tes kamera vs tes webcam - mana yang Anda butuhkan</a> - panduan perutean jika Anda tidak yakin apakah tes kamera dalam browser atau tes webcam yang lebih formal cocok dengan situasi Anda.</li>
+        <li><a href="/guides/before-a-video-call-which-tools-to-run.html">Sebelum panggilan video - alat mana yang dijalankan</a> - sapuan pra-panggilan 90 detik yang menggabungkan pemeriksaan kamera, mic, dan layar.</li>
+        <li><a href="/guides/how-to-check-webcam-and-microphone-before-an-interview.html">Cara memeriksa webcam dan mikrofon sebelum wawancara</a> - rutinitas yang sama dalam framing persiapan wawancara.</li>
+    </ul>
+</div>

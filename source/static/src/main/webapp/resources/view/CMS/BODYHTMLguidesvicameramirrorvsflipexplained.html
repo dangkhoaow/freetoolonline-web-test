@@ -1,0 +1,118 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Webcam Mirror vs Flip Giải Thích: Tại Sao Preview Camera Đảo Ngược Chữ</b></h1>
+    <p><em>Cập nhật lần cuối: 2026-05-05. Nếu xem trước camera của bạn hiển thị chữ đảo ngược trên áo phông hay trang in, gần như chắc chắn camera của bạn vẫn hoạt động đúng. Hầu hết UI xem trước mirror theo thiết kế; tệp đã ghi thường không. Xác nhận trong 30 giây, sau đó tắt mirror nếu bạn không muốn. Chạy kiểm tra nhanh tại <a href="/device-test-tools/camera-test.html">Test Camera</a> cùng với hướng dẫn này.</em></p>
+    <address class="author"><a rel="author" href="/editorial-team.html">Đội biên tập Free Tool Online</a></address>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Đáp án 30 giây.</b> Giơ bất kỳ trang in nào lên trước webcam. Nếu chữ trong xem trước đọc ngược, đó là mirror của xem trước đang hoạt động, không phải camera bị hỏng. Ghi ba giây video, dừng, và phát lại. Nếu chữ trong phát lại đọc đúng chiều (xuôi), tệp đã lưu vẫn ổn và chỉ xem trước trực tiếp bị mirror. Gần như mọi pipeline webcam tiêu dùng (OBS, Zoom, Meet, Teams, công cụ test camera ở trên) mirror xem trước nhưng lưu khung không mirror.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Mirror vs flip: các từ có nghĩa khác nhau</b></h2>
+    <p>Hai phép biến đổi khác nhau dễ nhầm lẫn, và hầu hết app tiêu dùng (và ngay cả một số bài hỗ trợ) dùng các từ thay đổi cho nhau. Biết cái nào đang xảy ra với hình ảnh thay đổi chẩn đoán:</p>
+    <ul>
+        <li><b>Mirror</b> (lật trái-phải) đảo hình ảnh theo chiều ngang. Bên phải cảnh xuất hiện ở bên trái màn hình, và bất kỳ chữ nào trong khung đọc ngược. Đây là điều mà hầu hết xem trước webcam làm mặc định.</li>
+        <li><b>Flip</b> (xoay dọc / 180&deg;) lật hình ảnh ngược đầu. Đỉnh cảnh xuất hiện ở đáy màn hình. Điều này hiếm trong xem trước webcam và hầu như luôn cho thấy cài đặt hướng camera sai trên webcam USB được gắn ngược đầu.</li>
+        <li><b>Xoay</b> (90&deg; hoặc 270&deg;) nghiêng hình ảnh sang một bên. Điều này phổ biến nhất khi camera điện thoại được giữ ở ngang nhưng hệ điều hành đọc hướng EXIF như dọc. Gần như không bao giờ xuất hiện trong xem trước webcam máy tính để bàn.</li>
+    </ul>
+    <p>Nếu xem trước của bạn hiển thị chữ đảo ngược nhưng phần còn lại của cảnh đứng đúng, bạn đang thấy mirror, không phải flip hay xoay. Cách sửa và lời giải thích khác nhau cho mỗi cái.</p>
+
+    <h2 class="text-uppercase"><b>Tại sao xem trước camera mirror (và tệp lưu thường không)</b></h2>
+    <p>UI xem trước webcam mirror feed trực tiếp vì đó là cách gương vật lý hoạt động. Khi bạn giơ tay phải lên, bạn mong thấy "tay phải" ở bên phải hình ảnh gương. Không có biến đổi mirror, xem trước trực tiếp sẽ hiển thị tay phải của bạn ở bên trái màn hình, cảm giác sai - bạn sẽ phải nghĩ tay nào di chuyển mỗi lần chỉnh tóc, điều chỉnh góc camera, hay giơ một vật.</p>
+    <p>Ghi là khác. Toàn bộ điểm của video ghi là chụp cảnh như thật, không phải như người nói thấy chính mình trong gương. Vậy tệp ghi được lưu không mirror. Bất kỳ ai sau đó phát lại tệp đều thấy người nói như người thứ ba sẽ thấy họ ngoài đời, bao gồm bất kỳ chữ nào trên áo hay biển trong khung. Sự phân chia này (mirror trong xem trước, không mirror khi lưu) nhất quán trong OBS, Zoom, Google Meet, Microsoft Teams, app Camera macOS, và app Camera Windows.</p>
+    <p>Hai chi tiết triển khai cố định hành vi:</p>
+    <ol>
+        <li><b>Xem trước trực tiếp là biến đổi CSS, không phải chỉnh sửa khung.</b> Hầu hết UI xem trước webcam áp dụng <code>transform: scaleX(-1)</code> trên phần tử &lt;video&gt;. Các byte từ camera là không mirror; trình duyệt hay app chỉ vẽ chúng lật trên màn hình. Công cụ /camera-test.html trên trang này dùng cùng phương pháp - <code>scaleX(-1)</code> ở xem trước trực tiếp, khung lưu vào canvas là hướng gốc.</li>
+        <li><b>Tệp đã lưu đọc khung không biến đổi.</b> Khi bạn nhấp ghi, OBS / Zoom / Teams / Meet đọc trực tiếp từ buffer khung camera (bên không mirror) và ghi đó vào tệp. Biến đổi CSS xem trước không bao giờ chạm các byte đã lưu. Đó là lý do xem trước chữ ngược của bạn trở thành chữ đúng khi phát lại.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>Bằng chứng 30 giây: giơ trang in và ghi ba giây</b></h2>
+    <p>Nếu bạn muốn chắc chắn về setup cụ thể của bạn trước thuyết trình hay ghi, chạy quy trình bằng chứng này. Mất khoảng 30 giây và trả lời câu hỏi dứt khoát:</p>
+    <ol>
+        <li>Mở bất kỳ công cụ nào cho phép ghi (app camera trên Windows / Mac, OBS, Zoom ở chế độ ghi, hay bất kỳ trình ghi nào trong trình duyệt). Trang <a href="/device-test-tools/camera-test.html">Test Camera</a> tốt cho nửa xem trước trực tiếp của kiểm tra; nó không ghi, nhưng nó cho bạn biết xem trước trông như thế nào.</li>
+        <li>Giơ trang in hay một mảnh bìa với chữ đậm trước camera. Chữ nên chiếm ít nhất 30% khung để dễ đọc.</li>
+        <li>Nhìn xem trước. Nếu chữ ngược, xem trước được mirror (đây là mặc định; đừng hoảng).</li>
+        <li>Nhấp ghi. Chụp ba giây. Dừng.</li>
+        <li>Phát lại tệp đã ghi. Nếu chữ trong phát lại đọc đúng (xuôi), đường lưu của bạn không mirror và tệp đã lưu ổn để chia sẻ. Nếu chữ trong phát lại CŨNG đọc ngược, encoder của bạn được cấu hình để ghi stream mirror - không phổ biến, nhưng có xảy ra trong một số setup OBS tùy chỉnh.</li>
+    </ol>
+    <p>Nếu bước 5 hiện chữ đúng chiều, bạn có thể bỏ qua xem trước mirror hoàn toàn - người xem thấy cảnh như bạn mong. Nếu bước 5 hiện chữ ngược, nhảy đến phần OBS dưới đây; đó là app phổ biến duy nhất cho phép người dùng vô tình ghi xem trước mirror.</p>
+
+    <h2 class="text-uppercase"><b>Tắt mirror trong OBS / Zoom / Google Meet / Microsoft Teams</b></h2>
+    <p>Nếu xem trước mirror làm phiền bạn (phổ biến nhất: khi bạn tham khảo ghi chú dán cạnh camera và thấy khó đọc chữ viết của mình vì xem trước đảo ngược), mọi app hội nghị chính có toggle mirror một nhấp. Đường dẫn chính xác khác nhau cho mỗi app:</p>
+    <div class="w3-responsive">
+        <table class="w3-table-all w3-small">
+            <tr><th>App</th><th>Tìm toggle mirror ở đâu</th><th>Ảnh hưởng đến gì</th></tr>
+            <tr><td>OBS Studio</td><td>Chuột phải vào nguồn Video Capture Device &rarr; Transform &rarr; Flip Horizontal. Hoặc với nguồn được chọn, phím tắt H. Để ngăn ghi stream mirror, CŨNG kiểm tra rằng không có Flip Horizontal thứ hai được áp dụng ở mức cảnh hay đầu ra.</td><td>Cả xem trước và đầu ra ghi / phát (vì OBS ghi canvas, không phải camera).</td></tr>
+            <tr><td>Zoom desktop</td><td>Cài đặt &rarr; Video &rarr; bỏ chọn "Mirror my video".</td><td>Chỉ xem trước. Các thành viên cuộc họp khác luôn thấy stream không mirror bất kể hộp này.</td></tr>
+            <tr><td>Google Meet (trình duyệt)</td><td>Trong cuộc họp: menu ba chấm &rarr; Apply visual effects &rarr; bỏ chọn "Mirror my video". Hoặc trước khi tham gia: Cài đặt (bánh răng) &rarr; Video &rarr; bật/tắt "Mirror".</td><td>Chỉ xem trước. Các thành viên khác luôn thấy stream không mirror.</td></tr>
+            <tr><td>Microsoft Teams</td><td>Cài đặt &rarr; Devices &rarr; dưới Camera, bật/tắt "Mirror my video". Một số client Teams cũ không hiển thị cái này; trong trường hợp đó xem trước luôn mirror.</td><td>Chỉ xem trước. Các thành viên khác luôn thấy stream không mirror.</td></tr>
+            <tr><td>App Camera macOS</td><td>Menu View &rarr; bỏ chọn "Mirror Image". Tệp đã ghi theo menu View hiển thị.</td><td>Cả xem trước và tệp đã ghi (đây là app tiêu dùng phổ biến nơi toggle thay đổi byte đã lưu).</td></tr>
+            <tr><td>App Camera Windows 11</td><td>Cài đặt (bánh răng) &rarr; toggle "Mirror image".</td><td>Cả xem trước và tệp đã ghi.</td></tr>
+        </table>
+    </div>
+    <p>Hai trường hợp dễ quên:</p>
+    <ul>
+        <li><b>OBS ghi cái nó hiển thị.</b> Không như Zoom / Meet / Teams (luôn gửi stream không mirror cho người xem bất kể toggle mirror cục bộ), OBS chụp bất cứ gì trên canvas. Nếu bạn chọn Flip Horizontal trên nguồn cho thoải mái xem trước và quên rằng bạn đã chọn, stream và bản ghi của bạn đều sẽ mirror. Luôn chạy bằng chứng 30 giây ở trên trước khi ghi thật.</li>
+        <li><b>Phím mirror phần cứng trên một số webcam.</b> Một số camera Logitech và Razer có toggle mirror phần cứng qua app companion (Logitech G HUB, Razer Synapse). Nếu xem trước mirror hay không mirror bất kể app hội nghị nói gì, kiểm tra app nhà cung cấp camera trước.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Khi mirror giúp (và khi gây hại)</b></h2>
+    <p>Mirror là mặc định vì lý do. Đó là lựa chọn đúng trong hầu hết tình huống, nhưng một số luồng phổ biến hưởng lợi từ việc tắt nó:</p>
+    <ul>
+        <li><b>Mirror giúp</b> khi bạn chỉnh khung, sửa tóc, giơ một vật nhỏ bạn muốn người xem thấy, hay bất kỳ tác vụ "nhìn mình trong gương" nào. Trực giác tay-phải-bên-phải làm xem trước dễ dùng hơn.</li>
+        <li><b>Mirror gây hại</b> khi bạn đọc từ giấy nhớ dán cạnh camera (chữ xuất hiện ngược trong xem trước, làm khó đọc), trình bày điều mà trái-phải quan trọng (thủ công hay ký hiệu tay), hay tự ghi mình viết trên bảng trắng trong suốt cho hướng dẫn (khán giả mong chữ đọc đúng cho họ).</li>
+        <li><b>Mirror là tùy chọn</b> cho gọi video bình thường. Các thành viên khác luôn thấy stream không mirror; toggle mirror cục bộ chỉ ảnh hưởng đến cái bạn thấy trên màn hình của bạn. Chọn cái cảm thấy thoải mái hơn.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Kết hợp điều này với test camera</b></h2>
+    <p>Nếu bạn đến hướng dẫn này vì xem trước camera "trông kỳ lạ," nên xác nhận ba điều cùng lúc: camera được hệ điều hành nhận, xem trước hiển thị hình ảnh trực tiếp, và mirror khớp kỳ vọng của bạn. Trang <a href="/device-test-tools/camera-test.html">Test Camera</a> bao gồm hai cái đầu trong khoảng 10 giây (đó là kiểm tra client-only trong trình duyệt - trang được dựng quanh <code>navigator.mediaDevices.getUserMedia</code> nên khung không bao giờ rời thiết bị). Dùng hướng dẫn này cho cái thứ ba.</p>
+    <p>Nếu trang test camera hiện màn hình đen thay vì hình ảnh mirror hay không mirror, nguyên nhân có lẽ là một trong bốn vấn đề phổ biến không liên quan đến mirror - đọc <a href="/guides/camera-test-shows-black-screen-four-fixes.html">Test camera hiện màn hình đen - bốn cách khắc phục</a> trước. Nếu bạn không chắc cần test camera hay test webcam, <a href="/guides/camera-test-vs-webcam-test-which-do-you-need.html">hướng dẫn định tuyến</a> giải quyết sự khác biệt trong một đoạn.</p>
+
+    <h2 class="text-uppercase"><b>Câu hỏi thường gặp</b></h2>
+    <details class="faq-item">
+  <summary>Tại sao bản ghi Zoom của tôi hiện tôi với tay phải ở bên sai?</summary>
+  <p>Hầu như luôn, xem trước Zoom cục bộ của bạn được mirror (vậy tay phải xuất hiện ở bên phải của màn hình của bạn) nhưng bản ghi lưu stream không mirror (vậy khi phát lại tay phải của bạn ở bên trái, nơi nó thực sự ở so với camera). Đây là bản ghi hiển thị thực tế, không phải Zoom lật cái gì. Nếu mất phương hướng, hoặc tắt "Mirror my video" trong Cài đặt Zoom &rarr; Video để xem trực tiếp khớp bản ghi, hoặc chấp nhận rằng bản ghi là góc nhìn người thứ ba.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Người khác trong cuộc gọi video có thấy tôi đảo ngược nếu xem trước của tôi mirror không?</summary>
+  <p>Không. Zoom, Google Meet, và Microsoft Teams luôn gửi stream camera không mirror cho các thành viên khác bất kể toggle mirror cục bộ của bạn. Toggle chỉ thay đổi cái BẠN thấy trên MÀN HÌNH của bạn. Các thành viên khác thấy bạn cùng cách người đứng trước bạn sẽ thấy bạn ngoài đời.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Tôi đã tắt mirror trong Zoom nhưng bản ghi của tôi vẫn mirror. Đã xảy ra điều gì?</summary>
+  <p>Hai khả năng: (a) bạn tắt mirror trong Zoom nhưng bản ghi được tạo qua trình ghi màn hình (OBS, QuickTime) chụp cửa sổ Zoom, trong trường hợp đó trình ghi chụp góc nhìn mirror cục bộ; (b) bạn có mirror cấp phần cứng được bật trong app nhà cung cấp camera (Logitech G HUB, Razer Synapse) đè cài đặt Zoom. Kiểm tra app nhà cung cấp trước khi giả định Zoom là vấn đề.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>OBS ghi xem trước mirror của tôi - làm sao sửa mà không mất góc nhìn mirror tôi thích?</summary>
+  <p>OBS không có toggle riêng "chỉ mirror xem trước" - cái bạn đặt trên nguồn là cái được ghi. Giải pháp hai nguồn: thêm camera như nguồn Video Capture Device HAI lần. Áp dụng Flip Horizontal cho một (dùng cái này làm xem trước "monitor" của bạn), và dùng cái không lật trong cảnh đầu ra. Ẩn cái không lật khỏi canvas nếu bạn không muốn thấy. Điều này cho phép tham khảo ghi chú với monitor mirror đồng thời gửi stream không mirror.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Camera của tôi hiện tôi ngược đầu, không phải mirror. Đây có là cùng vấn đề?</summary>
+  <p>Không, đó là flip (dọc) hay xoay 180 độ, không phải mirror. Nguyên nhân phổ biến nhất là webcam USB được gắn ngược đầu (cáp ở trên thay vì dưới). Hoặc xoay vật lý camera hoặc, trong OBS, áp dụng Transform &rarr; Rotate 180&deg; cho nguồn. Zoom, Meet, và Teams không hiển thị toggle xoay; nếu việc gắn camera là vấn đề, bạn phải sửa ở phần cứng hoặc trong app nhà cung cấp camera.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Công cụ test camera ở trên có ghi hay lưu gì không?</summary>
+  <p>Không. /camera-test.html là kiểm tra hoàn toàn client-only - trang được dựng quanh <code>navigator.mediaDevices.getUserMedia</code> và dùng <code>canvas.toDataURL("image/jpeg")</code> cho snapshot cục bộ, cả hai chỉ chạy trong trình duyệt của bạn. Không có khung nào được tải lên, truyền, hay lưu trên máy chủ. Hướng dẫn này không thay đổi điều đó - nó là giải thích viết không có xử lý media nào.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Liên quan</b></h2>
+    <ul>
+        <li><a href="/device-test-tools/camera-test.html">Test Camera</a> - kiểm tra webcam trực tiếp trong trình duyệt mà hướng dẫn này được viết để đi kèm. Xác nhận camera được nhận, hiển thị xem trước trực tiếp, và cho phép chụp một ảnh chụp đơn mà không tải lên gì.</li>
+        <li><a href="/guides/camera-test-shows-black-screen-four-fixes.html">Test camera hiện màn hình đen - bốn cách khắc phục</a> - chẩn đoán không-hình-ảnh. Đọc đây trước nếu xem trước của bạn đen thay vì mirror / không mirror.</li>
+        <li><a href="/guides/camera-test-vs-webcam-test-which-do-you-need.html">Test camera vs test webcam - cái nào bạn cần</a> - hướng dẫn định tuyến nếu bạn không chắc test camera trong trình duyệt hay test webcam chính thức hơn phù hợp tình huống của bạn.</li>
+        <li><a href="/guides/before-a-video-call-which-tools-to-run.html">Trước cuộc gọi video - công cụ nào cần chạy</a> - quét trước cuộc gọi 90 giây gói gọn kiểm tra camera, mic, và màn hình.</li>
+        <li><a href="/guides/how-to-check-webcam-and-microphone-before-an-interview.html">Cách kiểm tra webcam và microphone trước phỏng vấn</a> - cùng quy trình trong khung chuẩn bị phỏng vấn.</li>
+    </ul>
+</div>

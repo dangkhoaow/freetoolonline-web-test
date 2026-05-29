@@ -1,0 +1,118 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Webcam-Spiegelung vs Flip Erklärt: Warum Ihre Kamera-Vorschau Text Umkehrt</b></h1>
+    <p><em>Zuletzt geprüft: 2026-05-05. Wenn Ihre Kamera-Vorschau umgekehrten Text auf einem T-Shirt oder einer gedruckten Seite zeigt, funktioniert Ihre Kamera höchstwahrscheinlich korrekt. Die meisten Vorschau-UIs spiegeln per Design; die aufgezeichnete Datei normalerweise nicht. Bestätigen Sie in 30 Sekunden, schalten Sie dann die Spiegelung aus, wenn Sie sie nicht wollen. Führen Sie eine schnelle Prüfung bei <a href="/device-test-tools/camera-test.html">Camera Test</a> zusammen mit dieser Anleitung durch.</em></p>
+    <address class="author"><a rel="author" href="/editorial-team.html">Free Tool Online Redaktionsteam</a></address>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-Sekunden-Antwort.</b> Halten Sie eine beliebige gedruckte Seite vor Ihre Webcam. Wenn der Text in der Vorschau rückwärts gelesen wird, ist das die Vorschau-Spiegelung am Werk, keine kaputte Kamera. Nehmen Sie drei Sekunden Video auf, stoppen Sie, und spielen Sie es ab. Wenn der Text in der Wiedergabe korrekt gelesen wird (vorwärts), ist die gespeicherte Datei in Ordnung und nur die Live-Vorschau ist gespiegelt. Fast jede Consumer-Webcam-Pipeline (OBS, Zoom, Meet, Teams, das Camera-Test-Tool oben) spiegelt die Vorschau, speichert aber den ungespiegelten Frame.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Spiegel vs Flip: die Wörter bedeuten verschiedene Dinge</b></h2>
+    <p>Zwei verschiedene Transformationen sind leicht zu verwechseln, und die meisten Consumer-Apps (und sogar einige Hilfeartikel) verwenden die Wörter austauschbar. Zu wissen, was mit Ihrem Bild geschieht, ändert die Diagnose:</p>
+    <ul>
+        <li><b>Spiegel</b> (Links-Rechts-Flip) kehrt das Bild horizontal um. Die rechte Seite der Szene erscheint auf der linken Seite des Bildschirms, und jeder Text im Frame liest sich rückwärts. Das machen die meisten Webcam-Vorschauen standardmäßig.</li>
+        <li><b>Flip</b> (eine vertikale / 180&deg;-Rotation) dreht das Bild auf den Kopf. Die Oberseite der Szene erscheint am unteren Rand des Bildschirms. Dies ist selten in Webcam-Vorschauen und deutet fast immer auf eine falsche Kamera-Orientierungseinstellung an einer USB-Kamera hin, die kopfüber montiert wurde.</li>
+        <li><b>Drehen</b> (90&deg; oder 270&deg;) neigt das Bild zur Seite. Dies ist am häufigsten, wenn eine Telefonkamera im Querformat gehalten wird, das Betriebssystem die EXIF-Orientierung aber als Hochformat las. Es erscheint fast nie in Desktop-Webcam-Vorschauen.</li>
+    </ul>
+    <p>Wenn Ihre Vorschau umgekehrten Text aber den Rest der Szene richtig herum zeigt, sehen Sie eine Spiegelung, keinen Flip oder eine Rotation. Die Korrektur und die Erklärung unterscheiden sich für jede.</p>
+
+    <h2 class="text-uppercase"><b>Warum Ihre Kamera-Vorschau spiegelt (und die gespeicherte Datei normalerweise nicht)</b></h2>
+    <p>Webcam-Vorschau-UIs spiegeln den Live-Feed, weil so ein physischer Spiegel funktioniert. Wenn Sie Ihre rechte Hand heben, erwarten Sie, "die rechte Hand" auf der rechten Seite des Spiegelbildes zu sehen. Ohne die Spiegelungstransformation würde die Live-Vorschau Ihre rechte Hand links auf dem Bildschirm zeigen, was sich falsch anfühlt - Sie müssten überlegen, welche Hand Sie bewegen, jedes Mal, wenn Sie Ihr Haar richten, den Kamerawinkel anpassen oder einen Gegenstand hochhalten.</p>
+    <p>Aufnehmen ist anders. Der ganze Sinn eines aufgenommenen Videos ist, die Szene so einzufangen, wie sie tatsächlich ist, nicht wie der Sprecher sich selbst in einem Spiegel sieht. Daher wird die aufgenommene Datei ungespiegelt gespeichert. Jeder, der die Datei später abspielt, sieht den Sprecher so, wie eine dritte Person ihn im echten Leben sehen würde, einschließlich jeglichen Texts auf einem Shirt oder einem Schild im Frame. Diese Trennung (Spiegel in der Vorschau, ungespiegelt im Speicher) ist konsistent in OBS, Zoom, Google Meet, Microsoft Teams, der macOS-Kamera-App und der Windows-Kamera-App.</p>
+    <p>Zwei Implementierungsdetails festigen das Verhalten:</p>
+    <ol>
+        <li><b>Die Live-Vorschau ist eine CSS-Transformation, keine Frame-Bearbeitung.</b> Die meisten Webcam-Vorschau-UIs wenden <code>transform: scaleX(-1)</code> auf das &lt;video&gt;-Element an. Die Bytes, die von der Kamera kommen, sind ungespiegelt; der Browser oder die App zeichnet sie nur gespiegelt auf dem Bildschirm. Das /camera-test.html-Tool auf dieser Seite verwendet denselben Ansatz - das <code>scaleX(-1)</code> ist auf der Live-Vorschau, der zu Canvas gespeicherte Frame ist die Originalausrichtung.</li>
+        <li><b>Die gespeicherte Datei liest den nicht transformierten Frame.</b> Wenn Sie auf Aufnahme klicken, lesen OBS / Zoom / Teams / Meet direkt vom Frame-Puffer der Kamera (der ungespiegelten Seite) und schreiben das in die Datei. Die CSS-Vorschau-Transformation berührt die gespeicherten Bytes nie. Deshalb wird Ihre umgekehrte Textvorschau bei der Wiedergabe zu korrektem Text.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>30-Sekunden-Beweis: halten Sie eine gedruckte Seite hoch und nehmen Sie drei Sekunden auf</b></h2>
+    <p>Wenn Sie sich vor einer Präsentation oder einer Aufnahme über Ihr spezifisches Setup sicher sein wollen, führen Sie diese Beweisprozedur durch. Sie dauert etwa 30 Sekunden und beantwortet die Frage definitiv:</p>
+    <ol>
+        <li>Öffnen Sie ein beliebiges Tool, das Ihnen erlaubt aufzunehmen (die Kamera-App auf Windows / Mac, OBS, Zoom im Aufnahmemodus, oder einen Browser-Recorder). Die <a href="/device-test-tools/camera-test.html">Camera Test</a>-Seite eignet sich für die Live-Vorschau-Hälfte der Prüfung; sie nimmt nicht auf, sagt Ihnen aber, wie Ihre Vorschau für Sie aussieht.</li>
+        <li>Halten Sie eine gedruckte Seite oder ein Stück Karton mit fettem Text vor die Kamera. Der Text sollte mindestens 30% des Frames füllen, damit er leicht lesbar ist.</li>
+        <li>Schauen Sie auf die Vorschau. Wenn der Text rückwärts ist, ist die Vorschau gespiegelt (das ist der Standard; keine Sorge).</li>
+        <li>Klicken Sie auf Aufnahme. Erfassen Sie drei Sekunden. Stoppen Sie.</li>
+        <li>Spielen Sie die aufgenommene Datei ab. Wenn der Text bei der Wiedergabe korrekt gelesen wird (vorwärts), ist Ihr Speicherpfad ungespiegelt und die gespeicherte Datei ist zum Teilen in Ordnung. Wenn der Text bei der Wiedergabe AUCH rückwärts gelesen wird, ist Ihr Encoder konfiguriert, den gespiegelten Stream aufzunehmen - ungewöhnlich, kommt aber bei einigen benutzerdefinierten OBS-Setups vor.</li>
+    </ol>
+    <p>Wenn Schritt 5 Text in korrekter Richtung zeigt, können Sie die gespiegelte Vorschau vollständig ignorieren - Zuschauer sehen die Szene so, wie Sie es erwarten würden. Wenn Schritt 5 umgekehrten Text zeigt, springen Sie zum OBS-Abschnitt unten; das ist die einzige gängige App, die Benutzern erlaubt, die gespiegelte Vorschau versehentlich aufzunehmen.</p>
+
+    <h2 class="text-uppercase"><b>Spiegelung in OBS / Zoom / Google Meet / Microsoft Teams ausschalten</b></h2>
+    <p>Wenn die gespiegelte Vorschau Sie stört (am häufigsten: wenn Sie Notizen neben der Kamera anbringen und Ihre eigene Handschrift schwer zu lesen finden, weil die Vorschau sie umkehrt), hat jede große Konferenz-App einen Ein-Klick-Spiegelumschalter. Der genaue Pfad unterscheidet sich pro App:</p>
+    <div class="w3-responsive">
+        <table class="w3-table-all w3-small">
+            <tr><th>App</th><th>Wo Sie den Spiegelumschalter finden</th><th>Was es beeinflusst</th></tr>
+            <tr><td>OBS Studio</td><td>Rechtsklick auf die Video-Capture-Device-Quelle &rarr; Transform &rarr; Flip Horizontal. Oder mit ausgewählter Quelle, Tastenkürzel H. Um die Aufnahme des gespiegelten Streams zu verhindern, prüfen Sie AUCH, dass kein zweiter Flip Horizontal auf der Szene- oder Ausgabeebene angewendet wird.</td><td>Sowohl die Vorschau als auch die aufgezeichnete / gestreamte Ausgabe (weil OBS das Canvas aufnimmt, nicht die Kamera).</td></tr>
+            <tr><td>Zoom Desktop</td><td>Einstellungen &rarr; Video &rarr; Häkchen bei "Mein Video spiegeln" entfernen.</td><td>Nur Vorschau. Andere Meeting-Teilnehmer sehen immer den ungespiegelten Stream unabhängig von diesem Kontrollkästchen.</td></tr>
+            <tr><td>Google Meet (Browser)</td><td>In einem Meeting: Drei-Punkte-Menü &rarr; Visuelle Effekte anwenden &rarr; Häkchen bei "Mein Video spiegeln" entfernen. Oder vor dem Beitreten: Einstellungen (Zahnrad) &rarr; Video &rarr; "Spiegeln" umschalten.</td><td>Nur Vorschau. Andere Teilnehmer sehen immer den ungespiegelten Stream.</td></tr>
+            <tr><td>Microsoft Teams</td><td>Einstellungen &rarr; Geräte &rarr; unter Kamera, "Mein Video spiegeln" umschalten. Einige ältere Teams-Clients zeigen das nicht; in diesem Fall spiegelt die Vorschau immer.</td><td>Nur Vorschau. Andere Teilnehmer sehen immer den ungespiegelten Stream.</td></tr>
+            <tr><td>macOS Kamera-App</td><td>Ansicht-Menü &rarr; Häkchen bei "Bild spiegeln" entfernen. Die aufgezeichnete Datei folgt dem, was das Ansicht-Menü zeigt.</td><td>Sowohl Vorschau als auch aufgezeichnete Datei (dies ist die eine gängige Consumer-App, bei der der Umschalter die gespeicherten Bytes ändert).</td></tr>
+            <tr><td>Windows 11 Kamera-App</td><td>Einstellungen (Zahnrad) &rarr; "Bild spiegeln"-Umschalter.</td><td>Sowohl Vorschau als auch aufgezeichnete Datei.</td></tr>
+        </table>
+    </div>
+    <p>Zwei Fälle sind leicht zu vergessen:</p>
+    <ul>
+        <li><b>OBS zeichnet auf, was es zeigt.</b> Anders als Zoom / Meet / Teams (die immer den ungespiegelten Stream an Zuschauer senden, unabhängig vom lokalen Spiegelumschalter) erfasst OBS, was sich auf dem Canvas befindet. Wenn Sie Flip Horizontal auf der Quelle für den Vorschaukomfort aktivieren und vergessen, dass Sie es aktiviert haben, werden Ihr Stream und Ihre Aufnahme beide gespiegelt sein. Führen Sie immer den 30-Sekunden-Beweis oben vor einer echten Aufnahme durch.</li>
+        <li><b>Hardware-Spiegeltasten an einigen Webcams.</b> Einige Logitech- und Razer-Kameras bieten einen Hardware-Spiegelumschalter über ihre Begleit-App (Logitech G HUB, Razer Synapse). Wenn Ihre Vorschau gespiegelt oder ungespiegelt ist, unabhängig davon, was die Konferenz-App sagt, prüfen Sie zuerst die Hersteller-App der Kamera.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Wann Spiegelung hilft (und wann sie schadet)</b></h2>
+    <p>Spiegelung ist aus einem Grund der Standard. Es ist die richtige Wahl in den meisten Situationen, aber einige übliche Workflows profitieren vom Ausschalten:</p>
+    <ul>
+        <li><b>Spiegelung hilft</b>, wenn Sie das Framing anpassen, Ihr Haar richten, einen kleinen Gegenstand hochhalten, den Sie dem Zuschauer zeigen wollen, oder jede andere "Schauen Sie sich im Spiegel an"-Aufgabe. Die rechte-Hand-auf-der-rechten-Seite-Intuition macht die Live-Vorschau einfacher zu nutzen.</li>
+        <li><b>Spiegelung schadet</b>, wenn Sie von Haftnotizen neben der Kamera lesen (der Text erscheint in der Vorschau umgekehrt, was das Lesen erschwert), etwas demonstrieren, bei dem links und rechts wichtig sind (ein Handwerk oder Handzeichen) oder sich selbst beim Schreiben auf einem transparenten Whiteboard für ein Tutorial aufnehmen (das Publikum erwartet, dass die Schrift für sie korrekt lesbar ist).</li>
+        <li><b>Spiegelung ist optional</b> für normale Videoanrufe. Andere Teilnehmer sehen immer den ungespiegelten Stream; der lokale Spiegelumschalter beeinflusst nur, was Sie auf Ihrem eigenen Bildschirm sehen. Wählen Sie, was sich angenehmer anfühlt.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Kombinieren Sie dies mit einem Kameratest</b></h2>
+    <p>Wenn Sie zu dieser Anleitung kamen, weil Ihre Kamera-Vorschau "seltsam aussieht", lohnt es sich, drei Dinge gleichzeitig zu bestätigen: die Kamera wird vom Betriebssystem erkannt, die Vorschau zeigt ein Live-Bild, und die Spiegelung entspricht Ihrer Erwartung. Die <a href="/device-test-tools/camera-test.html">Camera Test</a>-Seite deckt die ersten beiden in etwa 10 Sekunden ab (es ist ein nur-Client-Browser-Test - die Seite ist um <code>navigator.mediaDevices.getUserMedia</code> herum gebaut, sodass der Frame nie Ihr Gerät verlässt). Verwenden Sie diese Anleitung für das dritte.</p>
+    <p>Wenn die Camera-Test-Seite einen schwarzen Bildschirm anstelle eines gespiegelten oder ungespiegelten Bildes zeigt, ist die Ursache wahrscheinlich eines von vier häufigen Problemen, die nicht mit der Spiegelung zusammenhängen - lesen Sie zuerst <a href="/guides/camera-test-shows-black-screen-four-fixes.html">Camera Test zeigt schwarzen Bildschirm - vier Korrekturen</a>. Wenn Sie nicht sicher sind, ob Sie einen Kamera-Test oder einen Webcam-Test brauchen, löst die <a href="/guides/camera-test-vs-webcam-test-which-do-you-need.html">Routing-Anleitung</a> den Unterschied in einem Absatz.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>Warum zeigt mich meine Zoom-Aufnahme mit der rechten Hand auf der falschen Seite?</summary>
+  <p>Fast immer war Ihre lokale Zoom-Vorschau gespiegelt (so erschien Ihre rechte Hand auf der rechten Seite Ihres eigenen Bildschirms), aber die Aufnahme speicherte den ungespiegelten Stream (so ist bei der Wiedergabe Ihre rechte Hand links, wo sie tatsächlich relativ zur Kamera war). Das ist die Aufnahme, die die Realität zeigt, nicht Zoom, das etwas umdreht. Wenn es desorientierend ist, schalten Sie entweder "Mein Video spiegeln" in Zoom-Einstellungen &rarr; Video aus, damit Ihre Live-Ansicht mit der Aufnahme übereinstimmt, oder akzeptieren Sie, dass die Aufnahme die Drittpersonen-Ansicht ist.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Werden andere in meinem Videoanruf mich umgekehrt sehen, wenn meine Vorschau gespiegelt ist?</summary>
+  <p>Nein. Zoom, Google Meet und Microsoft Teams senden immer den ungespiegelten Kamera-Stream an andere Teilnehmer, unabhängig von Ihrem lokalen Spiegelumschalter. Der Umschalter ändert nur, was SIE auf IHREM Bildschirm sehen. Andere Teilnehmer sehen Sie auf die gleiche Weise, wie eine Person, die vor Ihnen steht, Sie im echten Leben sehen würde.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Ich habe Spiegel in Zoom deaktiviert, aber meine Aufnahmen sind immer noch gespiegelt. Was ist passiert?</summary>
+  <p>Zwei Möglichkeiten: (a) Sie haben Spiegel in Zoom deaktiviert, aber die Aufnahme wurde über einen Bildschirmrekorder (OBS, QuickTime) gemacht, der das Zoom-Fenster erfasst, in welchem Fall der Rekorder Ihre lokale Spiegelansicht erfasste; (b) Sie haben einen Spiegel auf Hardware-Ebene in der Hersteller-App Ihrer Kamera (Logitech G HUB, Razer Synapse) aktiviert, der die Zoom-Einstellung überschreibt. Prüfen Sie die Hersteller-App, bevor Sie annehmen, dass Zoom das Problem ist.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>OBS nimmt meine gespiegelte Vorschau auf - wie behebe ich das, ohne die gespiegelte Ansicht zu verlieren, die ich bevorzuge?</summary>
+  <p>OBS hat keinen separaten "nur Vorschau-Spiegel"-Umschalter - was Sie auf die Quelle setzen, ist das, was aufgenommen wird. Die Zwei-Quellen-Umgehung: fügen Sie die Kamera als Video-Capture-Device-Quelle ZWEIMAL hinzu. Wenden Sie Flip Horizontal auf eine an (verwenden Sie diese als Ihre "Monitor"-Vorschau) und verwenden Sie die nicht-geflippte in Ihrer Ausgabe-Szene. Verbergen Sie die nicht-geflippte vom Canvas, wenn Sie sie nicht sehen wollen. So können Sie auf Ihre Notizen mit einem gespiegelten Monitor verweisen, während Sie den ungespiegelten Stream senden.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Meine Kamera zeigt mich auf dem Kopf, nicht gespiegelt. Ist das dasselbe Problem?</summary>
+  <p>Nein, das ist ein Flip (vertikal) oder eine 180-Grad-Rotation, kein Spiegel. Die häufigste Ursache ist eine kopfüber montierte USB-Webcam (das Kabel ist oben statt unten). Drehen Sie entweder die Kamera physisch oder wenden Sie in OBS Transform &rarr; Rotate 180&deg; auf die Quelle an. Zoom, Meet und Teams bieten keinen Rotations-Umschalter; wenn Ihre Kameramontage das Problem ist, müssen Sie es in der Hardware oder in der Hersteller-App der Kamera beheben.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Zeichnet oder speichert das Camera-Test-Tool oben irgendetwas auf?</summary>
+  <p>Nein. /camera-test.html ist ein vollständig nur-Client-Test - die Seite ist um <code>navigator.mediaDevices.getUserMedia</code> herum gebaut und verwendet <code>canvas.toDataURL("image/jpeg")</code> für den lokalen Snapshot, beide laufen nur in Ihrem Browser. Kein Frame wird hochgeladen, übertragen oder auf einem Server gespeichert. Diese Anleitung ändert das nicht - sie ist ein schriftlicher Erklärer ohne jegliche Medienverarbeitung.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Verwandt</b></h2>
+    <ul>
+        <li><a href="/device-test-tools/camera-test.html">Camera Test</a> - die Live-Webcam-Prüfung im Browser, zu der diese Anleitung verfasst wurde. Bestätigt, dass die Kamera erkannt wird, zeigt eine Live-Vorschau und lässt Sie einen einzelnen Snapshot machen, ohne etwas hochzuladen.</li>
+        <li><a href="/guides/camera-test-shows-black-screen-four-fixes.html">Camera Test zeigt schwarzen Bildschirm - vier Korrekturen</a> - die Diagnose ohne Bild. Lesen Sie das zuerst, wenn Ihre Vorschau schwarz statt gespiegelt / ungespiegelt ist.</li>
+        <li><a href="/guides/camera-test-vs-webcam-test-which-do-you-need.html">Camera Test vs Webcam Test - welchen Sie brauchen</a> - Routing-Anleitung, wenn Sie nicht sicher sind, ob der Browser-Kamera-Test oder ein formellerer Webcam-Test in Ihre Situation passt.</li>
+        <li><a href="/guides/before-a-video-call-which-tools-to-run.html">Vor einem Videoanruf - welche Tools auszuführen</a> - ein 90-Sekunden-Vor-Anruf-Sweep, der Kamera-, Mikrofon- und Bildschirm-Prüfungen bündelt.</li>
+        <li><a href="/guides/how-to-check-webcam-and-microphone-before-an-interview.html">Wie man Webcam und Mikrofon vor einem Vorstellungsgespräch prüft</a> - dieselbe Routine im Vorstellungsgespräch-Vorbereitungsrahmen.</li>
+    </ul>
+</div>

@@ -1,0 +1,118 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Espejo de Webcam vs Flip Explicado: Por Qué Tu Preview Invierte el Texto</b></h1>
+    <p><em>Última revisión: 2026-05-05. Si tu preview de cámara muestra texto invertido en una camiseta o una página impresa, tu cámara casi seguro está funcionando correctamente. La mayoría de las UI de preview espejan por diseño; el archivo grabado generalmente no. Confirma en 30 segundos, después apaga el espejo si no lo quieres. Ejecuta una comprobación rápida en <a href="/device-test-tools/camera-test.html">Prueba de Cámara</a> junto con esta guía.</em></p>
+    <address class="author"><a rel="author" href="/editorial-team.html">Equipo Editorial Free Tool Online</a></address>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Respuesta de 30 segundos.</b> Sostén cualquier página impresa frente a tu webcam. Si el texto en el preview se lee al revés, eso es el espejo del preview en acción, no una cámara rota. Graba tres segundos de vídeo, detén, y reprodúcelo. Si el texto en la reproducción se lee correctamente (hacia adelante), el archivo guardado está bien y solo el preview en vivo está espejado. Casi todo pipeline de webcam de consumidor (OBS, Zoom, Meet, Teams, la herramienta de prueba de cámara arriba) espeja el preview pero almacena el fotograma no espejado.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Espejo vs flip: las palabras significan cosas diferentes</b></h2>
+    <p>Dos transformaciones diferentes son fáciles de confundir, y la mayoría de las apps de consumidor (e incluso algunos artículos de ayuda) usan las palabras de forma intercambiable. Saber cuál está ocurriendo con tu imagen cambia el diagnóstico:</p>
+    <ul>
+        <li><b>Espejo</b> (un flip izquierda-derecha) invierte la imagen horizontalmente. El lado derecho de la escena aparece en el lado izquierdo de la pantalla, y cualquier texto en el cuadro se lee al revés. Esto es lo que la mayoría de los previews de webcam hacen por defecto.</li>
+        <li><b>Flip</b> (una rotación vertical / 180&deg;) gira la imagen al revés. La parte superior de la escena aparece en la inferior de la pantalla. Esto es raro en previews de webcam y casi siempre indica una configuración incorrecta de orientación de cámara en una cámara USB que se montó al revés.</li>
+        <li><b>Rotar</b> (90&deg; o 270&deg;) inclina la imagen al lado. Esto es más común cuando una cámara de teléfono se sostiene en horizontal pero el SO leyó la orientación EXIF como vertical. Casi nunca aparece en previews de webcam de escritorio.</li>
+    </ul>
+    <p>Si tu preview muestra texto invertido pero el resto de la escena está hacia arriba, estás viendo un espejo, no un flip ni una rotación. La solución y la explicación difieren para cada uno.</p>
+
+    <h2 class="text-uppercase"><b>Por qué tu preview de cámara espeja (y el archivo guardado generalmente no)</b></h2>
+    <p>Las UI de preview de webcam espejan el feed en vivo porque así funciona un espejo físico. Cuando levantas tu mano derecha, esperas ver "la mano derecha" en el lado derecho de la imagen del espejo. Sin la transformación de espejo, el preview en vivo mostraría tu mano derecha a la izquierda de la pantalla, lo que se siente mal - tendrías que pensar qué mano mover cada vez que ajustas tu pelo, fijas el ángulo de la cámara, o sostienes un objeto.</p>
+    <p>Grabar es diferente. Todo el punto de un vídeo grabado es capturar la escena como realmente es, no como el hablante se ve a sí mismo en un espejo. Así que el archivo grabado se almacena no espejado. Cualquiera que después reproduzca el archivo ve al hablante como una tercera persona lo vería en la vida real, incluyendo cualquier texto en una camiseta o un cartel en el cuadro. Esta división (espejo en preview, no espejado en almacenamiento) es consistente en OBS, Zoom, Google Meet, Microsoft Teams, la app de Cámara de macOS, y la app de Cámara de Windows.</p>
+    <p>Dos detalles de implementación consolidan el comportamiento:</p>
+    <ol>
+        <li><b>El preview en vivo es una transformación CSS, no una edición de fotograma.</b> La mayoría de las UI de preview de webcam aplican <code>transform: scaleX(-1)</code> en el elemento &lt;video&gt;. Los bytes que salen de la cámara están no espejados; el navegador o la app solo los dibuja invertidos en pantalla. La herramienta /camera-test.html en este sitio usa el mismo enfoque - el <code>scaleX(-1)</code> está en el preview en vivo, el fotograma almacenado en canvas es la orientación original.</li>
+        <li><b>El archivo guardado lee el fotograma no transformado.</b> Cuando haces clic en grabar, OBS / Zoom / Teams / Meet leen directamente del buffer de fotograma de la cámara (el lado no espejado) y escriben eso en el archivo. La transformación CSS del preview nunca toca los bytes guardados. Por eso tu preview de texto invertido se vuelve texto correcto en la reproducción.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>Prueba de 30 segundos: sostén una página impresa y graba tres segundos</b></h2>
+    <p>Si quieres estar seguro sobre tu configuración específica antes de una presentación o una grabación, ejecuta este procedimiento de prueba. Lleva unos 30 segundos y responde la pregunta definitivamente:</p>
+    <ol>
+        <li>Abre cualquier herramienta que te permita grabar (la app de cámara en Windows / Mac, OBS, Zoom en modo grabación, o cualquier grabador en navegador). La página <a href="/device-test-tools/camera-test.html">Prueba de Cámara</a> sirve para la mitad de preview en vivo de la verificación; no graba, pero te dice cómo se ve tu preview a ti.</li>
+        <li>Sostén una página impresa o un trozo de cartón con texto en negrita frente a la cámara. El texto debe llenar al menos el 30% del cuadro para que sea fácil de leer.</li>
+        <li>Mira el preview. Si el texto está al revés, el preview está espejado (esto es el predeterminado; no te alarmes).</li>
+        <li>Haz clic en grabar. Captura tres segundos. Detén.</li>
+        <li>Reproduce el archivo grabado. Si el texto en la reproducción se lee correctamente (hacia adelante), tu ruta de almacenamiento está no espejada y el archivo guardado está bien para compartir. Si el texto en la reproducción TAMBIÉN se lee al revés, tu encoder está configurado para grabar el stream espejado - poco común, pero sucede en algunas configuraciones personalizadas de OBS.</li>
+    </ol>
+    <p>Si el paso 5 muestra texto en dirección correcta, puedes ignorar el preview espejado por completo - los espectadores ven la escena como esperarías. Si el paso 5 muestra texto invertido, salta a la sección de OBS abajo; esa es la única app común que permite a los usuarios grabar el preview espejado por accidente.</p>
+
+    <h2 class="text-uppercase"><b>Apaga el espejado en OBS / Zoom / Google Meet / Microsoft Teams</b></h2>
+    <p>Si el preview espejado te molesta (más a menudo: cuando estás haciendo referencia a notas fijadas al lado de la cámara y encuentras difícil de leer tu propia escritura porque el preview la invierte), toda app principal de conferencia tiene un toggle de espejo de un clic. La ruta exacta difiere por app:</p>
+    <div class="w3-responsive">
+        <table class="w3-table-all w3-small">
+            <tr><th>App</th><th>Dónde encontrar el toggle de espejo</th><th>Qué afecta</th></tr>
+            <tr><td>OBS Studio</td><td>Clic derecho en la fuente Video Capture Device &rarr; Transform &rarr; Flip Horizontal. O con la fuente seleccionada, atajo de teclado H. Para prevenir grabar el stream espejado, TAMBIÉN verifica que no se aplique un segundo Flip Horizontal a nivel de escena o salida.</td><td>Tanto el preview como la salida grabada / transmitida (porque OBS graba el canvas, no la cámara).</td></tr>
+            <tr><td>Zoom escritorio</td><td>Configuración &rarr; Vídeo &rarr; desmarca "Espejar mi vídeo".</td><td>Solo preview. Otros participantes de la reunión siempre ven el stream no espejado independiente de este checkbox.</td></tr>
+            <tr><td>Google Meet (navegador)</td><td>En una reunión: menú tres puntos &rarr; Aplicar efectos visuales &rarr; desmarca "Espejar mi vídeo". O antes de unirse: Configuración (engranaje) &rarr; Vídeo &rarr; alternar "Espejar".</td><td>Solo preview. Otros participantes siempre ven el stream no espejado.</td></tr>
+            <tr><td>Microsoft Teams</td><td>Configuración &rarr; Dispositivos &rarr; bajo Cámara, alternar "Espejar mi vídeo". Algunos clientes Teams más antiguos no exponen esto; en ese caso el preview siempre espeja.</td><td>Solo preview. Otros participantes siempre ven el stream no espejado.</td></tr>
+            <tr><td>App de Cámara macOS</td><td>Menú Ver &rarr; desmarca "Espejar Imagen". El archivo grabado sigue lo que el menú Ver muestra.</td><td>Tanto preview como archivo grabado (esta es la app común de consumidor donde el toggle cambia los bytes guardados).</td></tr>
+            <tr><td>App de Cámara Windows 11</td><td>Configuración (engranaje) &rarr; toggle "Espejar imagen".</td><td>Tanto preview como archivo grabado.</td></tr>
+        </table>
+    </div>
+    <p>Dos casos son fáciles de olvidar:</p>
+    <ul>
+        <li><b>OBS graba lo que muestra.</b> A diferencia de Zoom / Meet / Teams (que siempre envían el stream no espejado a los espectadores independiente del toggle de espejo local), OBS captura lo que está en el canvas. Si marcas Flip Horizontal en la fuente por comodidad del preview y olvidas que lo marcaste, tu stream y tu grabación estarán ambos espejados. Siempre ejecuta la prueba de 30 segundos arriba antes de una grabación real.</li>
+        <li><b>Teclas de espejo de hardware en algunas webcams.</b> Algunas cámaras Logitech y Razer exponen un toggle de espejo de hardware a través de su app companion (Logitech G HUB, Razer Synapse). Si tu preview está espejado o no espejado independiente de lo que la app de conferencia dice, verifica primero la app del proveedor de la cámara.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Cuándo el espejado ayuda (y cuándo perjudica)</b></h2>
+    <p>El espejo es el predeterminado por una razón. Es la elección correcta en la mayoría de las situaciones, pero algunos flujos comunes se benefician de apagarlo:</p>
+    <ul>
+        <li><b>El espejo ayuda</b> cuando estás ajustando el encuadre, arreglando tu pelo, sosteniendo un objeto pequeño que quieres que el espectador vea, o cualquier otra tarea de "mírate en el espejo". La intuición mano-derecha-en-la-derecha hace el preview en vivo más fácil de usar.</li>
+        <li><b>El espejo perjudica</b> cuando estás leyendo de notas adhesivas fijadas al lado de la cámara (el texto aparece invertido en el preview, lo que hace más difícil leerlo), demostrando algo donde izquierda y derecha importan (una artesanía o seña de mano), o grabándote a ti mismo escribiendo en una pizarra transparente para un tutorial (la audiencia espera que la escritura se lea correctamente para ellos).</li>
+        <li><b>El espejo es opcional</b> para videollamadas normales. Otros participantes siempre ven el stream no espejado; el toggle de espejo local solo afecta lo que tú ves en tu propia pantalla. Elige lo que se sienta más cómodo.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Combina esto con una prueba de cámara</b></h2>
+    <p>Si llegaste a esta guía porque tu preview de cámara "se ve raro," vale la pena confirmar tres cosas a la vez: la cámara es reconocida por el SO, el preview muestra una imagen en vivo, y el espejado coincide con tu expectativa. La página <a href="/device-test-tools/camera-test.html">Prueba de Cámara</a> cubre las dos primeras en unos 10 segundos (es una prueba cliente-only en navegador - la página está construida en torno a <code>navigator.mediaDevices.getUserMedia</code> así que el fotograma nunca sale de tu dispositivo). Usa esta guía para la tercera.</p>
+    <p>Si la página de prueba de cámara muestra una pantalla negra en vez de una imagen espejada o no espejada, la causa es probablemente una de cuatro cuestiones comunes no relacionadas con el espejado - lee <a href="/guides/camera-test-shows-black-screen-four-fixes.html">Prueba de cámara muestra pantalla negra - cuatro correcciones</a> primero. Si no estás seguro si necesitas una prueba de cámara o una prueba de webcam, la <a href="/guides/camera-test-vs-webcam-test-which-do-you-need.html">guía de enrutamiento</a> resuelve la diferencia en un párrafo.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>¿Por qué mi grabación de Zoom me muestra con la mano derecha en el lado equivocado?</summary>
+  <p>Casi siempre, tu preview local de Zoom estaba espejado (así que tu mano derecha aparecía a la derecha de tu propia pantalla) pero la grabación almacenó el stream no espejado (así que en la reproducción tu mano derecha está a la izquierda, donde realmente estaba relativa a la cámara). Esto es la grabación mostrando realidad, no Zoom invirtiendo nada. Si es desorientador, o apaga "Espejar mi vídeo" en Configuración Zoom &rarr; Vídeo para que tu vista en vivo coincida con la grabación, o acepta que la grabación es la vista de tercera persona.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>¿Otras personas en mi videollamada me verán invertido si mi preview está espejado?</summary>
+  <p>No. Zoom, Google Meet y Microsoft Teams siempre envían el stream de cámara no espejado a otros participantes independientemente de tu toggle de espejo local. El toggle solo cambia lo que TÚ ves en TU pantalla. Otros participantes te ven de la misma manera que una persona de pie frente a ti te vería en la vida real.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Desactivé espejo en Zoom pero mis grabaciones siguen espejadas. ¿Qué pasó?</summary>
+  <p>Dos posibilidades: (a) desactivaste espejo en Zoom pero la grabación se hizo a través de un grabador de pantalla (OBS, QuickTime) capturando la ventana de Zoom, en cuyo caso el grabador capturó tu vista local espejada; (b) tienes un espejo a nivel hardware habilitado en la app del proveedor de tu cámara (Logitech G HUB, Razer Synapse) que sobrescribe la configuración de Zoom. Verifica la app del proveedor antes de asumir que Zoom es el problema.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>OBS graba mi preview espejado - ¿cómo lo arreglo sin perder la vista espejada que prefiero?</summary>
+  <p>OBS no tiene un toggle separado "solo espejo de preview" - lo que pongas en la fuente es lo que se graba. La solución de dos fuentes: añade la cámara como una fuente Video Capture Device DOS VECES. Aplica Flip Horizontal a una (usa esta como tu preview "monitor"), y usa la no invertida en tu escena de salida. Oculta la no invertida del canvas si no quieres verla. Esto te permite hacer referencia a tus notas con un monitor espejado mientras envías el stream no espejado.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Mi cámara me muestra al revés, no espejado. ¿Es el mismo problema?</summary>
+  <p>No, eso es un flip (vertical) o una rotación de 180 grados, no un espejo. La causa más común es una webcam USB montada al revés (el cable está arriba en vez de abajo). O rota físicamente la cámara o, en OBS, aplica Transform &rarr; Rotate 180&deg; a la fuente. Zoom, Meet y Teams no exponen un toggle de rotación; si el montaje de tu cámara es el problema, tienes que arreglarlo en hardware o en la app del proveedor de la cámara.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>¿La herramienta de prueba de cámara arriba graba o almacena algo?</summary>
+  <p>No. /camera-test.html es una prueba completamente cliente-only - la página está construida en torno a <code>navigator.mediaDevices.getUserMedia</code> y usa <code>canvas.toDataURL("image/jpeg")</code> para el snapshot local, ambos corriendo solo en tu navegador. Ningún fotograma se sube, transmite, o almacena en un servidor. Esta guía no cambia eso - es un explicador escrito sin manejo de medios en absoluto.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Relacionados</b></h2>
+    <ul>
+        <li><a href="/device-test-tools/camera-test.html">Prueba de Cámara</a> - la comprobación de webcam en vivo, en navegador, que esta guía está escrita para acompañar. Confirma que la cámara es reconocida, muestra un preview en vivo, y te permite tomar una sola foto sin subir nada.</li>
+        <li><a href="/guides/camera-test-shows-black-screen-four-fixes.html">Prueba de cámara muestra pantalla negra - cuatro correcciones</a> - el diagnóstico de sin-imagen. Lee esto primero si tu preview es negro en vez de espejado / no espejado.</li>
+        <li><a href="/guides/camera-test-vs-webcam-test-which-do-you-need.html">Prueba de cámara vs prueba de webcam - cuál necesitas</a> - guía de enrutamiento si no estás seguro si la prueba de cámara en navegador o una prueba de webcam más formal encaja en tu situación.</li>
+        <li><a href="/guides/before-a-video-call-which-tools-to-run.html">Antes de una videollamada - qué herramientas ejecutar</a> - un barrido pre-llamada de 90 segundos que agrupa las comprobaciones de cámara, mic y pantalla.</li>
+        <li><a href="/guides/how-to-check-webcam-and-microphone-before-an-interview.html">Cómo verificar webcam y micrófono antes de una entrevista</a> - la misma rutina en encuadre de preparación para entrevista.</li>
+    </ul>
+</div>

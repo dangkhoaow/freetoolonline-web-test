@@ -1,0 +1,77 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '\25B8'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Aktuelle Zeit in Millisekunden: den Live-Epoch-Wert lesen und richtig verwenden</b></h1>
+    <p><em>Zuletzt geprüft: 2026-05-24. Das kostenlose <a href="/get-time-in-millisecond.html">Aktuelle-Zeit-in-Millisekunden-Tool</a> gibt den Live-Epoch-Wert zurück, den der Browser gerade sieht, in Millisekunden seit 1970-01-01T00:00:00 UTC. Diese Anleitung erklärt, was diese Zahl ist, wann sie statt Sekunden zu verwenden ist, und die drei oder vier kleinen Fehler, die Daten produzieren, die um Jahrzehnte verschoben aussehen.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-Sekunden-Antwort.</b> Die aktuelle Zeit in Millisekunden ist eine 13-stellige Ganzzahl: heute liegt sie etwa bei <code>1779645000000</code>. Sie zählt die seit der Unix-Epoche (1970-01-01T00:00:00 UTC) vergangenen Millisekunden und trägt keine Zeitzone. Um sie im Browser zu lesen, rufen Sie <code>Date.now()</code> in JavaScript auf oder öffnen Sie das <a href="/get-time-in-millisecond.html">Live-Aktuelle-Zeit-Tool</a>. Um sie wieder in ein lesbares Datum zu konvertieren, fügen Sie sie in <a href="/utility-tools/convert-time-in-millisecond-to-date.html">Millisekunden zu Datum</a> ein.</p>
+    </div>
+    <p class="reviewed"><em>Zuletzt geprüft: 2026-05-24</em></p>
+    <p class="byline">Geprüft vom FreetoolOnline-Redaktionsteam</p>
+
+    <h2 class="text-uppercase"><b>Was der Live-Wert tatsächlich repräsentiert</b></h2>
+    <p>Die aktuelle Zeit in Millisekunden ist eine einzelne Ganzzahl, die zählt, wie viele Millisekunden seit der Unix-Epoche, festgelegt auf 1970-01-01T00:00:00 UTC, vergangen sind. Die Zahl ist zeitzonenfrei: sie trägt keinen Kalender, keine Verschiebung, keine Sommerzeitregel. Wenn Sie <code>1779645000000</code> in einer Logzeile sehen und ein Teamkollege dieselbe Zahl auf einem anderen Kontinent sieht, schauen Sie beide auf denselben Moment; nur die menschenlesbare Darstellung auf dem Bildschirm ändert sich pro Locale.</p>
+    <p>Das Live-Tool liest den Wert, den der Browser über <code>Date.now()</code> sieht, und gibt ihn ohne Netzwerk-Round-Trip aus. Da das Tool vollständig im Browser läuft, spiegelt der Wert die Uhr des Geräts wider, auf dem Sie sind - wenn diese Uhr abweicht, spiegelt der Wert die Abweichung wider. Für Audit-Grade-Timestamps bevorzugen Sie einen vom Server ausgegebenen Wert (jede Webanfrage, die ein Server bearbeitet, trägt bereits einen hochpräzisen Timestamp). Für ein schnelles Auslesen beim UI-Debugging, einer Logzeile oder einer JSON-Payload reicht der Browser-Wert.</p>
+
+    <h2 class="text-uppercase"><b>Schnellfakten-Tabelle</b></h2>
+    <table class="quick-facts">
+        <thead><tr><th>Eigenschaft</th><th>Wert</th></tr></thead>
+        <tbody>
+            <tr><td>Format</td><td>13-stellige Ganzzahl, zeitzonenfrei</td></tr>
+            <tr><td>Epoch-Ursprung</td><td>1970-01-01T00:00:00 UTC</td></tr>
+            <tr><td>Präzision</td><td>1 Millisekunde (1/1000 einer Sekunde)</td></tr>
+            <tr><td>Browser-Lese-API</td><td><code>Date.now()</code> oder <code>new Date().getTime()</code></td></tr>
+            <tr><td>Server-Lese-APIs</td><td>Java <code>System.currentTimeMillis()</code>; Python <code>time.time() * 1000</code>; Go <code>time.Now().UnixMilli()</code></td></tr>
+            <tr><td>Implementierendes Tool</td><td><a href="/get-time-in-millisecond.html">/get-time-in-millisecond.html</a> (im Browser, kein Upload)</td></tr>
+            <tr><td>Begleitkonverter</td><td><a href="/utility-tools/convert-time-in-millisecond-to-date.html">Millisekunden zu Datum</a></td></tr>
+        </tbody>
+    </table>
+
+    <h2 class="text-uppercase"><b>Wann Millisekunden lesen (und wann Sekunden)</b></h2>
+    <p>Die Wahl zwischen Millisekunden und Sekunden geht meist auf die API oder das System zurück, mit dem Sie interagieren. JavaScript, Java und die meisten JVM-basierten Logs verwenden Millisekunden-Timestamps nativ; Unix-Shells, viele C-APIs und eine lange Reihe älterer Protokolle verwenden Sekunden-Präzisions-Timestamps. Die visuelle Regel ist kurz: eine 13-stellige Zahl ist Millisekunden; eine 10-stellige Zahl ist Sekunden. Die beiden zu vermischen ist die häufigste Ursache für Daten, die um Jahrzehnte verschoben aussehen - einen 13-stelligen Wert in einen Parser zu füttern, der Sekunden erwartet, ergibt ein Jahr um das Jahr 58000.</p>
+    <p>Für eine ausführlichere Behandlung der Sekunden-vs-Millisekunden-Entscheidung (mit der genauen 10-Stellen-vs-13-Stellen-Detektor-Regel) lesen Sie die Begleitanleitung unter <a href="/guides/long-number-millisecond-or-second.html">Lange Zahl: Millisekunde oder Sekunde?</a>. Für die Zeitzonen-Anzeigefrage, die folgt, sobald die Konvertierung gelingt, lesen Sie <a href="/guides/milliseconds-to-date-utc-vs-local-time.html">Millisekunden zu Datum: UTC vs Ortszeit</a>.</p>
+
+    <h2 class="text-uppercase"><b>Wie man den Wert sauber kopiert</b></h2>
+    <ol>
+        <li>Öffnen Sie das <a href="/get-time-in-millisecond.html">Aktuelle-Zeit-Tool</a>. Die Live-Zahl rendert im ersten Abschnitt.</li>
+        <li>Klicken Sie auf die Kopier-Schaltfläche neben dem Wert, oder wählen und kopieren Sie die 13-stellige Ganzzahl manuell.</li>
+        <li>Fügen Sie sie in das Ziel ein - eine Logzeile, ein JSON-Feld (verwenden Sie einen Number-Typ, keine Zeichenkette), einen HTTP-Header oder die URL-Query-Zeichenkette für einen schnellen Debug.</li>
+        <li>Wenn das Ziel Sekunden erwartet, lassen Sie die letzten drei Stellen weg oder dividieren Sie durch 1000 (Ganzzahl-Division; nicht runden). Wenn es ISO 8601 erwartet, fügen Sie sie zuerst in <a href="/utility-tools/convert-time-in-millisecond-to-date.html">Millisekunden zu Datum</a> ein.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>Häufig gestellte Fragen</b></h2>
+
+    <details class="faq-item">
+        <summary>Warum ändert sich der Live-Wert jedes Mal, wenn ich die Seite öffne?</summary>
+        <p>Das Tool liest <code>Date.now()</code> bei jedem Seitenladen, also spiegelt die Zahl den Moment dieses Ladens wider. Zwei Öffnungen im Abstand von einer Minute unterscheiden sich um etwa 60000 (60 Sekunden mal 1000 Millisekunden). Der Wert ist keine statische Zufallszahl; es ist die Live-Uhr.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary>Hängt der Millisekunden-Wert von meiner Zeitzone ab?</summary>
+        <p>Nein. Der Wert ist die Anzahl der Millisekunden seit 1970-01-01T00:00:00 UTC. Er bewegt sich nicht, wenn Sie eine Zeitzone überqueren oder wenn die Sommerzeit beginnt. Was sich bewegt, ist die menschenlesbare Anzeige - "19. April 2024, 15:00 UTC" liest sich als 22:00 in Bangkok oder 08:00 in Los Angeles, aber die zugrunde liegende Zahl ist dieselbe.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary>Kann ich dem für Audit-Grade-Timestamps vertrauen?</summary>
+        <p>Für Audit-Grade-Logging bevorzugen Sie einen vom Server ausgegebenen Timestamp - jeder Server zeichnet bereits die Anfragezeit mit Subsekunden-Präzision auf und unterliegt nicht der Client-Uhr-Abweichung. Der Browser-Wert ist gut für Debugging, Demo-Logs, Beispiel-API-Payloads und Leserfragen "was ist jetzt in Millisekunden". Für Incident-Response oder rechtliches-Beweis-Logging leiten Sie über den Server.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary>Was bedeutet die 13-Stellen-vs-10-Stellen-Regel tatsächlich?</summary>
+        <p>Ein aktueller Unix-Timestamp in Sekunden ist eine 10-stellige Zahl (die Schwelle wurde 2001 bei <code>1000000000</code> überschritten). Derselbe Moment in Millisekunden ist diese Zahl mal 1000, also 13 Stellen. Wenn Sie also eine Zahl aus einem Log lesen und sie 13 Stellen hat, sind es Millisekunden; wenn sie 10 hat, sind es Sekunden. Die zu vermischen ergibt Daten im Jahr 58000 oder im Jahr 1970, und keines davon ist, was Sie wollten.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary>Warum ist das JavaScript-Snippet <code>Date.now()</code> und nicht <code>new Date()</code>?</summary>
+        <p>Beide geben denselben Wert zurück, wenn sie in eine Zahl gezwungen werden. <code>Date.now()</code> ist die statische Methode am Date-Konstruktor; sie gibt direkt eine primitive Zahl zurück und ist das günstigste Auslesen. <code>new Date()</code> gibt ein Date-Objekt zurück, dessen <code>.getTime()</code>-Methode dieselbe Zahl zurückgibt. Für Logging und Timestamps ist <code>Date.now()</code> der idiomatische Aufruf.</p>
+    </details>
+
+</div>

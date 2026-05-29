@@ -1,0 +1,77 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '\25B8'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Thời gian hiện tại bằng mili giây: đọc giá trị epoch trực tiếp và dùng đúng cách</b></h1>
+    <p><em>Cập nhật lần cuối: 2026-05-24. <a href="/get-time-in-millisecond.html">Công cụ thời gian hiện tại bằng mili giây</a> miễn phí trả về giá trị epoch trực tiếp mà trình duyệt thấy ngay bây giờ, bằng mili giây kể từ 1970-01-01T00:00:00 UTC. Hướng dẫn này giải thích số đó là gì, khi nào dùng nó thay vì giây, và ba hoặc bốn lỗi nhỏ tạo ra các ngày trông lệch hàng thập kỷ.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Đáp án 30 giây.</b> Thời gian hiện tại bằng mili giây là một số nguyên 13 chữ số: hôm nay nằm khoảng <code>1779645000000</code>. Nó đếm số mili giây đã trôi qua kể từ epoch Unix (1970-01-01T00:00:00 UTC) và không mang múi giờ. Để đọc nó trong trình duyệt, gọi <code>Date.now()</code> trong JavaScript hoặc mở <a href="/get-time-in-millisecond.html">công cụ thời gian hiện tại trực tiếp</a>. Để chuyển nó ngược thành ngày dễ đọc, dán vào <a href="/utility-tools/convert-time-in-millisecond-to-date.html">mili giây thành ngày</a>.</p>
+    </div>
+    <p class="reviewed"><em>Cập nhật lần cuối: 2026-05-24</em></p>
+    <p class="byline">Được biên tập viên FreetoolOnline kiểm duyệt</p>
+
+    <h2 class="text-uppercase"><b>Giá trị trực tiếp thực sự đại diện cho điều gì</b></h2>
+    <p>Thời gian hiện tại bằng mili giây là một số nguyên duy nhất đếm có bao nhiêu mili giây đã trôi qua kể từ epoch Unix, cố định tại 1970-01-01T00:00:00 UTC. Số này không phụ thuộc múi giờ: nó không mang một lịch, một độ lệch, hay quy tắc giờ tiết kiệm ánh sáng ban ngày. Khi bạn thấy <code>1779645000000</code> trên một dòng log và đồng nghiệp thấy cùng số đó trên lục địa khác, cả hai đang nhìn cùng một thời điểm; chỉ kết xuất dễ đọc trên màn hình thay đổi theo địa phương.</p>
+    <p>Công cụ trực tiếp đọc giá trị mà trình duyệt thấy qua <code>Date.now()</code> và in nó mà không có round-trip mạng nào. Vì công cụ chạy hoàn toàn trong trình duyệt, giá trị phản ánh đồng hồ thiết bị bạn đang dùng - nếu đồng hồ đó đã lệch, giá trị phản ánh độ lệch. Cho timestamp cấp độ kiểm toán, ưu tiên giá trị do máy chủ phát ra (mọi yêu cầu web mà máy chủ xử lý đều mang timestamp độ chính xác cao). Cho việc đọc nhanh khi gỡ lỗi UI, một dòng log, hoặc payload JSON, giá trị từ trình duyệt là đủ.</p>
+
+    <h2 class="text-uppercase"><b>Bảng dữ liệu nhanh</b></h2>
+    <table class="quick-facts">
+        <thead><tr><th>Thuộc tính</th><th>Giá trị</th></tr></thead>
+        <tbody>
+            <tr><td>Định dạng</td><td>Số nguyên 13 chữ số, không phụ thuộc múi giờ</td></tr>
+            <tr><td>Gốc epoch</td><td>1970-01-01T00:00:00 UTC</td></tr>
+            <tr><td>Độ chính xác</td><td>1 mili giây (1/1000 của giây)</td></tr>
+            <tr><td>API đọc trình duyệt</td><td><code>Date.now()</code> hoặc <code>new Date().getTime()</code></td></tr>
+            <tr><td>API đọc máy chủ</td><td>Java <code>System.currentTimeMillis()</code>; Python <code>time.time() * 1000</code>; Go <code>time.Now().UnixMilli()</code></td></tr>
+            <tr><td>Công cụ thực thi</td><td><a href="/get-time-in-millisecond.html">/get-time-in-millisecond.html</a> (trong trình duyệt, không tải lên)</td></tr>
+            <tr><td>Trình chuyển đổi đi kèm</td><td><a href="/utility-tools/convert-time-in-millisecond-to-date.html">mili giây thành ngày</a></td></tr>
+        </tbody>
+    </table>
+
+    <h2 class="text-uppercase"><b>Khi nào đọc mili giây (và khi nào đọc giây)</b></h2>
+    <p>Lựa chọn giữa mili giây và giây thường liên quan đến API hoặc hệ thống bạn đang tương tác. JavaScript, Java, và hầu hết các log dựa trên JVM dùng timestamp mili giây gốc; shell Unix, nhiều API C, và một loạt dài giao thức cũ hơn dùng timestamp độ chính xác giây. Quy tắc trực quan ngắn: số 13 chữ số là mili giây; số 10 chữ số là giây. Trộn lẫn hai cái này là nguyên nhân phổ biến nhất gây ra ngày trông lệch hàng thập kỷ - đưa giá trị 13 chữ số vào trình phân tích kỳ vọng giây cho ra năm khoảng năm 58000.</p>
+    <p>Cho thảo luận dài hơn về quyết định giây-vs-mili-giây (với quy tắc phát hiện chính xác 10-chữ-số-vs-13-chữ-số), đọc hướng dẫn đi kèm tại <a href="/guides/long-number-millisecond-or-second.html">số dài: mili giây hay giây?</a>. Cho câu hỏi hiển thị múi giờ tiếp theo sau khi chuyển đổi thành công, đọc <a href="/guides/milliseconds-to-date-utc-vs-local-time.html">mili giây thành ngày: UTC vs giờ địa phương</a>.</p>
+
+    <h2 class="text-uppercase"><b>Cách sao chép giá trị một cách sạch sẽ</b></h2>
+    <ol>
+        <li>Mở <a href="/get-time-in-millisecond.html">công cụ thời gian hiện tại</a>. Số trực tiếp hiển thị ở nếp gấp đầu tiên.</li>
+        <li>Nhấp nút copy bên cạnh giá trị, hoặc chọn và sao chép số nguyên 13 chữ số thủ công.</li>
+        <li>Dán vào đích - một dòng log, một trường JSON (dùng kiểu number, không phải string), một header HTTP, hoặc query string URL cho debug nhanh.</li>
+        <li>Nếu đích kỳ vọng giây, bỏ ba chữ số cuối hoặc chia cho 1000 (chia nguyên; không làm tròn). Nếu kỳ vọng ISO 8601, dán vào <a href="/utility-tools/convert-time-in-millisecond-to-date.html">mili giây thành ngày</a> trước.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>Câu hỏi thường gặp</b></h2>
+
+    <details class="faq-item">
+        <summary>Tại sao giá trị trực tiếp thay đổi mỗi lần tôi mở trang?</summary>
+        <p>Công cụ đọc <code>Date.now()</code> trên mỗi lần tải trang, nên số phản ánh khoảnh khắc tải đó. Hai lần mở cách nhau một phút khác nhau khoảng 60000 (60 giây nhân 1000 mili giây). Giá trị không phải số ngẫu nhiên tĩnh; nó là đồng hồ trực tiếp.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary>Giá trị mili giây có phụ thuộc múi giờ của tôi không?</summary>
+        <p>Không. Giá trị là số đếm mili giây kể từ 1970-01-01T00:00:00 UTC. Nó không di chuyển khi bạn vượt múi giờ hay khi giờ tiết kiệm ánh sáng ban ngày bắt đầu. Cái di chuyển là hiển thị dễ đọc - "19 tháng 4, 2024, 15:00 UTC" đọc là 22:00 ở Bangkok hay 08:00 ở Los Angeles, nhưng số bên dưới giống nhau.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary>Tôi có thể tin tưởng giá trị này cho timestamp cấp kiểm toán không?</summary>
+        <p>Cho logging cấp kiểm toán, ưu tiên timestamp do máy chủ phát ra - mọi máy chủ đã ghi thời gian yêu cầu với độ chính xác dưới giây và không chịu ảnh hưởng từ độ lệch đồng hồ client. Giá trị trong trình duyệt phù hợp cho debug, log demo, payload API mẫu, và câu hỏi độc giả "bây giờ là gì bằng mili giây". Cho phản ứng sự cố hoặc logging bằng chứng pháp lý, định tuyến qua máy chủ.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary>Quy tắc 13-chữ-số-vs-10-chữ-số thực sự nghĩa là gì?</summary>
+        <p>Timestamp Unix hiện tại bằng giây là số 10 chữ số (ngưỡng vượt qua năm 2001 tại <code>1000000000</code>). Cùng thời điểm bằng mili giây là số đó nhân với 1000, là 13 chữ số. Vậy nếu bạn đọc một số từ log và có 13 chữ số, đó là mili giây; nếu có 10 chữ số, đó là giây. Trộn lẫn cho ngày năm 58000 hay năm 1970, cả hai đều không phải điều bạn muốn.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary>Tại sao đoạn JavaScript là <code>Date.now()</code> mà không phải <code>new Date()</code>?</summary>
+        <p>Cả hai trả về cùng giá trị khi ép thành số. <code>Date.now()</code> là phương thức tĩnh trên hàm tạo Date; nó trả về số nguyên thủy trực tiếp và là cách đọc rẻ nhất. <code>new Date()</code> trả về đối tượng Date có phương thức <code>.getTime()</code> trả về cùng số. Cho logging và timestamp, <code>Date.now()</code> là lời gọi đặc trưng.</p>
+    </details>
+
+</div>
