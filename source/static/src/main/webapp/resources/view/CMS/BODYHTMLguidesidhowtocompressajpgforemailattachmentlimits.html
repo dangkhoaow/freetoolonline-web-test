@@ -1,0 +1,68 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Cara mengompres JPG untuk batas ukuran lampiran email</b></h1>
+    <p><em>Tinjauan terakhir 2026-05-06. Ditujukan untuk momen ketika JPG 7-10 MB ditolak oleh batas ukuran Gmail / Outlook / iCloud / kotak surat korporat. Mengarahkan pekerjaan kompresi ke <a href="/image-tools/compress-image.html">Compress Image</a> (pengoptimal AI sisi server, hanya JPEG).</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Jawaban 30 detik.</b> Sebagian besar JPG yang terpental dari email (~5-15 MB) muat di bawah batas 25 MB Gmail ketika disimpan ulang pada <b>kualitas 75</b>; satu pengaturan ini biasanya memotong 60-80% ukuran file pada foto kamera ponsel tanpa kehilangan kualitas yang terlihat oleh penerima. Buka <a href="/image-tools/compress-image.html">Compress Image</a>, unggah file, pilih tingkat kompresi sedang dan unduh hasilnya. Jika kotak surat penerima memiliki batas yang lebih ketat (Outlook 20 MB, iCloud 20 MB, korporat 10 MB), turunkan satu tingkat ke <b>kualitas 65</b> dan periksa ulang ukuran sebelum mengirim.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Batas lampiran email yang benar-benar berlaku di 2026</b></h2>
+    <p>Batas ukuran yang penting adalah yang <em>lebih kecil</em> antara batas kirim pengirim dan batas terima penerima - bukan hanya yang ada di akun Anda sendiri. Kedua sisi harus menerima jumlah byte atau pesan akan terpental dengan balasan 552 / 5.3.4 / "message size exceeds fixed maximum". Angka referensi 2026 untuk penyedia dominan:</p>
+    <ul>
+        <li><b>Gmail:</b> 25 MB kirim / 50 MB terima. Di atas 25 MB, Gmail memotong langkah lampiran dan menawarkan tautan Google Drive sebagai pengganti lampiran sebenarnya. Rute Drive bekerja untuk penerima manapun, tetapi menempatkan file di Drive alih-alih di badan email, yang tidak diizinkan oleh beberapa pengaturan kepatuhan.</li>
+        <li><b>Outlook.com / Microsoft 365 personal:</b> batas lampiran 20 MB. Klien web Outlook menyarankan OneDrive di atas 33 MB; di bawah 33 MB ia mencoba lampiran sebenarnya.</li>
+        <li><b>Microsoft 365 bisnis / Exchange Online:</b> standar 25 MB kirim + 25 MB terima, tetapi tenant biasanya mengetatkan ini ke 10 MB atau 15 MB melalui transport rules. Uji terhadap penerima spesifik sebelum mempercayai default.</li>
+        <li><b>iCloud Mail:</b> batas lampiran 20 MB. Mail Drop iCloud menaikkan plafon praktis ke 5 GB dengan menyajikan tautan unduhan selama 30 hari, tetapi penerima harus mengklik.</li>
+        <li><b>Yahoo Mail:</b> 25 MB kirim.</li>
+        <li><b>Firewall korporat / appliance anti-spam:</b> sering dikunci pada 10 MB sitewide tanpa peduli pengaturan penyedia - penyebab paling umum kegagalan "tapi berfungsi baik di Gmail".</li>
+    </ul>
+    <p>Implikasi praktis: rancang untuk penerima. Foto yang muat nyaman di 25 MB Gmail akan tetap terpental di gateway korporat 10 MB. Jika ragu, kompres ke <b>di bawah 8 MB</b> dan file akan lolos pada dasarnya setiap kotak surat konsumen / bisnis.</p>
+
+    <h2 class="text-uppercase"><b>Mengapa ukuran file JPG didominasi oleh kualitas, bukan jumlah piksel</b></h2>
+    <p>JPEG (format gambar lossy yang didefinisikan oleh ITU-T T.81 / ISO/IEC 10918-1) mengompres dengan membagi setiap gambar menjadi blok 8&times;8 piksel, mengubah setiap blok ke ruang frekuensi (Discrete Cosine Transform), dan membagi koefisien frekuensi dengan tabel kuantisasi per-frekuensi. Bilangan bulat lebih tinggi dalam tabel berarti pembulatan lebih agresif dan lebih banyak byte dihemat; bilangan lebih rendah berarti detail lebih halus terjaga dengan biaya ukuran file. Angka "kualitas" yang Anda lihat di editor gambar (Photoshop, GIMP, ImageMagick, setiap alat web) adalah dial 1-100 yang menskalakan tabel kuantisasi ini. Itu adalah tuas yang jauh lebih kuat terhadap ukuran file dibanding resolusi: foto iPhone 12 MP pada kualitas 95 biasanya 4-6 MB; foto yang sama pada kualitas 75 biasanya 1-2 MB. Jumlah piksel tidak berubah. Byte per piksel berubah.</p>
+    <p>Inilah mengapa "perkecil gambar untuk dikirim" biasanya berarti "turunkan dial kualitas", bukan "perkecil resolusi". Memperkecil piksel kehilangan informasi yang tidak bisa Anda pulihkan; menurunkan kualitas membuang informasi yang tidak akan Anda perhatikan di sisi penerima. Untuk pengiriman email, yang kedua hampir selalu adalah tombol yang tepat.</p>
+
+    <h2 class="text-uppercase"><b>Tabel kualitas untuk pengiriman lampiran email</b></h2>
+    <p>Konvensi <code>cjpeg -quality</code> IJG adalah skala praktis yang diikuti sebagian besar alat JPG. Gunakan ini sebagai titik awal yang disesuaikan dengan batas kotak surat; verifikasi ukuran output sebenarnya dan re-encode satu tingkat lebih rendah jika perlu.</p>
+    <ul>
+        <li><b>Kualitas 90 (tinggi)</b> - hampir tanpa kehilangan secara visual pada foto kamera ponsel umum. Harapkan pengurangan 30-50% vs penyimpanan kamera itu sendiri (sering kualitas 92-95). Gunakan hanya jika kotak surat penerima sangat murah hati (50+ MB).</li>
+        <li><b>Kualitas 80 (default web)</b> - standar untuk situs web dengan banyak gambar; artefak nyaris tidak terlihat pada gradien halus pada zoom 100%. Harapkan pengurangan 50-70%. Nyaman untuk Gmail / Yahoo (25 MB) pada sebagian besar foto.</li>
+        <li><b>Kualitas 75 (titik manis email)</b> - titik manis untuk lampiran email. Pengurangan 60-80%; artefak hanya terlihat pada monitor terkalibrasi pada zoom 100% pada wilayah gradien halus. Membawa hampir setiap JPG kamera ponsel di bawah batas 25 MB Gmail. Titik awal yang direkomendasikan untuk penyimpanan ulang pertama.</li>
+        <li><b>Kualitas 65 (rentang batas korporat)</b> - pengurangan 70-85%; cocok ketika penerima berada di balik gateway 10 MB atau 15 MB dan subjek foto adalah orang, tempat, atau produk di mana penghalusan kecil latar belakang dapat diterima.</li>
+        <li><b>Kualitas 55 dan di bawah</b> - blok terlihat pada area halus (langit, dinding), banding warna, halo dering di dekat tepi tajam. Gunakan hanya sebagai upaya terakhir untuk tangkapan layar atau foto dokumen yang tidak perlu fotorealistis.</li>
+    </ul>
+    <p><a href="/image-tools/get-jpeg-compression-level.html">JPEG Compression Level Checker</a> membaca kembali nilai kualitas tempat JPG yang ada disimpan - berguna ketika Anda ingin tahu apakah foto yang seseorang teruskan ke Anda masih memiliki ruang kompresi, atau sudah didorong melewati ambang artefak terlihat dan re-encoding hanya akan memperburuknya. Lihat juga <a href="/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html">How to tell if a JPG was compressed too much</a> untuk empat tanda terlihat dari kompresi berlebihan.</p>
+
+    <h2 class="text-uppercase"><b>Langkah demi langkah: mengompres satu JPG untuk email</b></h2>
+    <ol>
+        <li><b>Konfirmasi batas penerima.</b> Gmail (25 MB) dan Yahoo (25 MB) toleran; iCloud dan Outlook web (20 MB) tingkat menengah; tenant Exchange korporat biasanya dikunci pada 10 MB atau 15 MB. Jika tidak diketahui, targetkan <b>di bawah 8 MB</b> sebagai lantai aman.</li>
+        <li><b>Buka <a href="/image-tools/compress-image.html">Compress Image</a></b>. Alat menerima input <code>.jpeg</code> dan <code>.jpg</code> dan menggunakan pengoptimal kualitas AI sisi server yang menyetel tabel kuantisasi JPEG di balik layar (nilai kualitas yang setara dengan IJG adalah yang berubah; encoder dasarnya adalah SlimJpg / turunan cjpeg).</li>
+        <li><b>Unggah JPG.</b> Seret ke zona unggah, atau klik untuk menelusuri. File diunggah melalui HTTPS ke <code>service.us-east-1a.freetool.online</code> untuk pemrosesan; alat tidak berjalan di browser - kompresi dilakukan di server dan hasilnya dikirim kembali sebagai tautan unduhan. File dihapus di sisi server setelah jendela retensi singkat (nilai <code>web.minsToDelFile</code> yang dipancarkan saat halaman dimuat).</li>
+        <li><b>Pilih tingkat kompresi.</b> Mulai dengan preset moderat / seimbang (sesuai dengan kira-kira kualitas 75 dalam istilah IJG). Untuk JPG ponsel 10 MB ini biasanya menghasilkan output 2-4 MB - jauh di bawah setiap batas utama.</li>
+        <li><b>Klik <em>Kompres</em>.</b> Tunggu bilah kemajuan unggahan selesai, lalu pratinjau berdampingan dirender. Output juga muncul sebagai anchor unduhan.</li>
+        <li><b>Verifikasi ukuran.</b> Arahkan kursor ke tautan unduhan atau periksa file di folder unduhan Anda. Jika hasilnya masih di atas batas target, jalankan ulang dengan kualitas satu tingkat lebih rendah (65 alih-alih 75). Jika sudah nyaman di bawah, lampirkan apa adanya.</li>
+        <li><b>Lampirkan dan kirim.</b> JPG yang diunduh adalah file biasa - seret-jatuhkan ke compose Gmail / Outlook / Apple Mail, atau gunakan tombol standar "Lampirkan file".</li>
+    </ol>
+    <p>Untuk beberapa foto dalam satu email, kompres masing-masing secara individual alih-alih zip: sebagian besar klien email merender JPG inline di panel pratinjau (kemenangan untuk penerima), dan zip JPG hampir tidak menyusutkannya karena JPG sudah dikodekan entropy. Jika Anda perlu satu bundel, lihat <a href="/guides/how-to-compress-a-folder-for-email.html">How to Compress a Folder for Email</a> untuk alur mode folder dengan <a href="/zip-tools/zip-file.html">Zip File</a>.</p>
+
+    <h2 class="text-uppercase"><b>Ketika kompresi kualitas tidak cukup</b></h2>
+    <p>Sebagian kecil JPG terjebak ukurannya karena resolusi, bukan kualitas. Dua tanda diagnostik:</p>
+    <ul>
+        <li><b>Aslinya sudah berkualitas rendah.</b> Jika <a href="/image-tools/get-jpeg-compression-level.html">JPEG Compression Level Checker</a> melaporkan sumber sebagai kualitas 70 atau lebih rendah, re-encoding sebagian besar akan menambah generation loss tanpa menyimpan byte yang berarti. Langkah yang tepat adalah "perkecil resolusi" (misalnya dari 12 MP ke 4 MP) atau "minta RAW / HEIC asli dari pengirim".</li>
+        <li><b>Gambarnya adalah panorama / pemindaian resolusi sangat tinggi.</b> Panorama iPhone Pro 50 MP atau pemindaian dokumen 600 DPI bisa tetap 8-12 MB bahkan pada kualitas 60 karena memang ada banyak informasi per byte yang disimpan. Untuk ini, perkecil ke jumlah piksel yang lebih rendah (3-6 MP untuk melihat di layar, atau 200 DPI untuk dokumen) <em>sebelum</em> menjalankannya melalui kompresor.</li>
+    </ul>
+    <p>Untuk JPG yang kecil dalam piksel tetapi besar karena kamera menyimpannya pada kualitas 95+ (umum dengan "High Efficiency: Off" iPhone atau mode JPEG-only DSLR), jalur dial kualitas di atas menyelesaikannya dalam satu lintasan tanpa kehilangan piksel.</p>
+
+    <h2 class="text-uppercase"><b>Privasi dan kasus penggunaan lampiran email</b></h2>
+    <p>Foto yang dikirim melalui email tidak privat: relay SMTP mencatat metadata pesan, penerima dapat meneruskan, penyedia email mengindeks lampiran untuk pencarian. Pipeline server <a href="/image-tools/compress-image.html">Compress Image</a> menambahkan satu hop sementara - JPG diunggah melalui HTTPS ke <code>service.us-east-1a.freetool.online</code>, diproses, dan dihapus di sisi server setelah jendela retensi. Untuk foto dengan konten sensitif (pemindaian medis, dokumen hukum, identifikasi), saluran yang tepat jarang adalah lampiran JPG email tanpa peduli kompresornya; pertimbangkan layanan transfer file ber-enkripsi end-to-end. Untuk foto biasa (keluarga, pekerjaan, produk), alur kompres-dan-lampirkan di atas adalah praktik standar.</p>
+
+    <h2 class="text-uppercase"><b>Bacaan terkait</b></h2>
+    <ul>
+        <li><a href="/guides/how-to-compress-a-folder-for-email.html">How to Compress a Folder for Email</a> - mode folder (beberapa file ke dalam satu ZIP)</li>
+        <li><a href="/guides/compress-jpeg-without-losing-quality-quality-vs-size.html">Compress JPEG Without Losing Quality - Quality vs Size</a></li>
+        <li><a href="/guides/how-to-choose-a-compression-level.html">How to Choose a Compression Level</a></li>
+        <li><a href="/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html">How to Tell if a JPG Was Compressed Too Much</a></li>
+        <li><a href="/guides/when-to-compress-vs-convert-an-image.html">When to Compress vs Convert an Image</a></li>
+        <li><a href="/image-tools/compress-image.html">Compress Image</a> (alatnya)</li>
+    </ul>
+</div>

@@ -1,0 +1,80 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Output Ekstraktor Frame GIF Terlihat Salah? Tiga Penyebab Dan Tes 30 Detik</b></h1>
+    <p><em>Terakhir ditinjau 2026-05-03. Anda menjalankan GIF melalui ekstraktor frame dan outputnya terlihat salah - satu frame bukan banyak, frame kosong, atau frame yang semuanya terlihat identik. Panduan ini menamai tiga penyebab umum (GIF sumber sebenarnya statis, GIF menggunakan mode disposal "do-not-dispose", browser kehabisan memori di tengah ekstraksi), memberikan perbaikan satu baris per penyebab, dan menunjukkan tes 30 detik yang memberitahu penyebab mana yang Anda hadapi.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Jawaban 30 detik.</b> Kejutan paling umum adalah bahwa file <code>.gif</code> sumber sebenarnya statis (total satu frame), jadi ekstraktor tidak dapat menghasilkan frame yang tidak ada. Berikutnya adalah bahwa frame BENAR tetapi terlihat identik karena GIF menggunakan mode disposal "do-not-dispose" - setiap frame berisi hanya diff vs sebelumnya, jadi sebagian besar gambar tidak berubah. Ketiga adalah browser kehabisan memori di tengah ekstraksi pada GIF panjang dan resolusi tinggi dan diam-diam memotong output. Jatuhkan GIF tes kecil yang diketahui animasi ke <a href="/image-converter-tools/extract-gif-to-image-frames.html">ekstraktor frame GIF</a>; jika menghasilkan jumlah frame yang diharapkan, GIF asli adalah masalahnya, bukan ekstraktor.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Penyebab 1: GIF sumber sebenarnya statis</b></h2>
+    <p>Ekstensi <code>.gif</code> tidak menjamin animasi. Banyak file <code>.gif</code> di alam liar menyimpan satu gambar - meme yang kehilangan animasinya saat seseorang menyimpannya ulang, tangkapan layar yang alat ekspor sebagai GIF bukan PNG, ikon yang tidak pernah memiliki banyak frame sejak awal. Sebagian besar penampil gambar desktop merender GIF satu frame dan multi-frame secara identik (Anda melihat gambar bagaimanapun), jadi pembaca tidak menyadari file itu statis sampai mereka mencoba mengekstrak frame dan hanya satu yang keluar.</p>
+    <p><b>Perbaikan.</b> Buka GIF sumber di penampil yang menganimasikan GIF - penampil gambar desktop yang diset ke "auto-play", atau cukup seret file ke tab browser baru. Jika gambar tidak bergerak, GIF adalah statis, dan output frame tunggal ekstraktor benar. Tidak ada yang bisa diekstrak di luar satu frame itu. Konversi file ke PNG sebagai gantinya dengan <a href="/guides/extract-gif-frames-png-vs-jpg-which-format.html">ekstrak frame GIF - PNG vs JPG, format mana</a>; panduan mencakup kapan memilih PNG vs JPG untuk output yang dikonversi.</p>
+
+    <h2 class="text-uppercase"><b>Penyebab 2: frame benar tetapi terlihat identik (mode disposal do-not-dispose)</b></h2>
+    <p>Spesifikasi GIF mendefinisikan empat "metode disposal" yang mengatur bagaimana setiap frame berhubungan dengan yang sebelumnya. Metode disposal 1 ("jangan buang") berarti setiap frame menggambar hanya piksel yang berubah di atas apa pun yang ditinggalkan frame sebelumnya di canvas. Jadi GIF 100 frame di mana hanya badge kecil berubah antara frame akan menghasilkan 100 PNG yang terlihat hampir identik saat diekstrak - karena sebagian besar permukaan ADALAH identik di seluruh frame. Animasinya nyata; itu hidup dalam perbedaan kecil antar frame, bukan dalam frame tunggal apa pun.</p>
+    <p><b>Perbaikan.</b> Buka frame 1, 50, dan 100 (atau pertama / tengah / terakhir untuk GIF yang lebih pendek) di penampil berdampingan. Cari diff kecil - badge yang bergerak, angka yang berubah, kursor berkedip. ITU diff adalah animasi. Panduan terminologi <a href="/guides/gif-frames-extract-vs-frame-rate-fps-explained.html">Frame GIF vs frame rate (FPS) - dijelaskan</a> mencakup bagaimana mode disposal berinteraksi dengan jumlah frame dan FPS, jadi Anda tahu apa yang diharapkan dari ekstraktor sebelum menjalankannya.</p>
+    <p>Jika Anda benar-benar memerlukan setiap frame yang diekstrak menunjukkan gambar yang dikomposisikan PENUH (bukan hanya diff), cari opsi ekstraktor yang disebut "menyusun," "meratakan," atau "frame yang sepenuhnya diselesaikan." Beberapa ekstraktor menawarkannya; spesifikasi GIF tidak mewajibkannya. Tanpa opsi itu, GIF do-not-dispose selalu mengekstrak sebagai frame hanya-diff.</p>
+
+    <h2 class="text-uppercase"><b>Penyebab 3: browser kehabisan memori di tengah ekstraksi</b></h2>
+    <p>GIF panjang dan resolusi tinggi menahan jumlah data piksel yang didekode yang mengejutkan. GIF 4K 200 frame, sepenuhnya didekode, dapat membutuhkan beberapa GB di memori browser sekaligus. Batas heap WASM (biasanya 2 GB; hingga 4 GB pada build yang mengaktifkan memory64) dapat dilampaui di tengah ekstraksi; halaman dapat menampilkan subset awal frame dan berhenti diam-diam. Pembaca melihat, katakan, 12 frame dari 200 yang diharapkan, dan mengasumsikan ekstraktor rusak. Tidak - itu kehabisan ruang.</p>
+    <p><b>Perbaikan.</b> Kurangi set kerja. Pangkas GIF sumber ke klip yang lebih pendek terlebih dahulu (mis. dengan editor GIF yang mendukung operasi "trim" atau "crop time range"), atau skalakan sumber ke resolusi yang lebih kecil sebelum mengekstrak. GIF 200 frame 1080p sering mengekstrak dengan bersih di mana GIF 200 frame 4K macet. Pola batas memori yang sama muncul di <a href="/guides/ffmpeg-online-conversion-stalled-three-fixes.html">Konversi FFmpeg online macet - tiga perbaikan</a>; deskripsi penyebab-2 di sana menjelaskan sandbox WASM 2 GB lebih detail.</p>
+
+    <h2 class="text-uppercase"><b>Pemeriksaan kewarasan 30 detik (penyebab mana?)</b></h2>
+    <p>Tiga langkah, tanpa matematika:</p>
+    <ol>
+        <li><b>Temukan GIF tes kecil yang diketahui animasi</b> - GIF meme 10 frame berfungsi. Simpan secara lokal; Anda ingin file yang Anda percayai untuk benar-benar menganimasikan.</li>
+        <li><b>Jatuhkan ke ekstraktor</b> dengan pengaturan default. Pertahankan tab di latar depan.</li>
+        <li><b>Perhatikan output.</b>
+            <ul>
+                <li>10 frame keluar, masing-masing terlihat berbeda &rarr; ekstraktor bekerja. Kegagalan asli Anda adalah <b>Penyebab 1</b> (sumber statis) jika asli memberi 1 frame, atau <b>Penyebab 3</b> (memori) jika asli memberi subset kecil dari jumlah yang diharapkan.</li>
+                <li>10 frame keluar, masing-masing terlihat hampir identik &rarr; <b>Penyebab 2</b> (disposal do-not-dispose) pada GIF tes juga. Entah GIF tes juga menggunakan mode itu, atau masalah asli adalah Penyebab 2 dan diff kecil hanya sulit dilihat.</li>
+                <li>1 frame keluar dari GIF tes &rarr; ekstraktor itu sendiri memiliki masalah lebih dalam (coba browser yang berbeda atau jendela pribadi tanpa ekstensi).</li>
+            </ul>
+        </li>
+    </ol>
+    <p>Jika GIF kecil yang diketahui animasi mengembalikan jumlah frame yang diharapkan dan asli memberi 12 dari 200 yang diharapkan, Penyebab 3 (memori) adalah yang paling mungkin; pangkas atau turunkan skala sumber.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>Mengapa GIF "berulang" saya hanya memberi satu frame?</summary>
+  <p>Karena file adalah satu frame. Pengulangan adalah properti dari blok GIF, bukan berapa banyak frame yang dikandungnya; GIF satu frame dapat membawa penanda perulangan juga, dan penampil yang menghormati penanda akan "mengulang" frame yang sama tanpa batas. Ekstraktor melihat satu frame di file dan menghasilkan satu frame.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Mengapa frame yang diekstrak sebagian besar transparan?</summary>
+  <p>Metode disposal 2 ("kembalikan ke latar belakang") dan metode 3 ("kembalikan ke sebelumnya") memberi tahu dekoder GIF untuk membersihkan atau mengembalikan canvas sebelum menggambar setiap frame. Ekstraktor yang memancarkan lapisan per-frame mentah (bukan gambar yang dikomposisikan canvas penuh) akan menghasilkan frame di mana sebagian besar gambar transparan, karena GIF hanya mengkodekan piksel yang berubah. Cari opsi "menyusun" atau "meratakan" di ekstraktor, atau gunakan alat berbeda yang memancarkan frame yang sepenuhnya diselesaikan.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Bisakah saya mengekstrak frame dari file video (MP4, WebM, MOV)?</summary>
+  <p>Tidak dari ekstraktor frame GIF - mereka mengharapkan input GIF. Untuk video, gunakan alat yang mendekode video dan mengekspor diam per-frame; di situs ini, <a href="/video-tools/ffmpeg-online.html">FFmpeg Online</a> dapat melakukan ekspor per-frame dengan baris perintah yang tepat. Pilihan container/codec penting; <a href="/guides/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - container mana, kapan</a> mencakup kombinasi aman untuk ffmpeg berbasis browser.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Apa perbedaan antara jumlah frame dan FPS?</summary>
+  <p>Jumlah frame adalah "berapa banyak frame ada di file." FPS adalah "seberapa cepat mereka diputar per detik." GIF 10 frame pada 1 FPS diputar selama 10 detik; GIF 10 frame yang sama pada 30 FPS diputar selama ~0.33 detik. Ekstraktor peduli tentang jumlah frame (itu menghasilkan satu gambar per frame); FPS hanya penting saat Anda menyusun ulang frame kembali ke video atau GIF. Panduan terminologi <a href="/guides/gif-frames-extract-vs-frame-rate-fps-explained.html">Frame GIF vs frame rate (FPS) - dijelaskan</a> mencakup perbedaan secara detail.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Apakah browser menyimpan semua frame yang diekstrak di memori sekaligus?</summary>
+  <p>Sebagian besar ekstraktor di browser ya - mereka mendekode GIF, membangun array gambar per-frame di memori, lalu menawarkan semuanya untuk diunduh (sering sebagai ZIP). Itulah mengapa GIF panjang dan resolusi tinggi dapat mengenai Penyebab 3 (kelelahan memori) di tengah ekstraksi. Beberapa ekstraktor mengalirkan frame ke disk satu per satu; jika memori adalah bottleneck Anda, cari pola itu di dokumentasi alat.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Terkait</b></h2>
+    <ul>
+        <li><a href="/image-converter-tools/extract-gif-to-image-frames.html">Ekstrak GIF ke Frame Gambar</a> - alat aksi untuk memecah GIF menjadi gambar per-frame.</li>
+        <li><a href="/guides/extract-gif-frames-png-vs-jpg-which-format.html">Ekstrak frame GIF - PNG vs JPG, format mana</a> - panduan pendamping proaktif tentang pilihan format output.</li>
+        <li><a href="/guides/gif-frames-extract-vs-frame-rate-fps-explained.html">Frame GIF vs frame rate (FPS) - dijelaskan</a> - penyegaran terminologi (jumlah frame vs FPS, mode disposal).</li>
+        <li><a href="/guides/how-to-split-a-gif-into-frames-for-editing.html">Cara membagi GIF menjadi frame untuk pengeditan</a> - walkthrough alur kerja untuk target pengeditan/pascaproduksi.</li>
+        <li><a href="/guides/how-to-extract-frames-from-a-gif-for-a-social-post.html">Cara mengekstrak frame dari GIF untuk posting sosial</a> - walkthrough alur kerja untuk target berbagi sosial.</li>
+    </ul>
+</div>

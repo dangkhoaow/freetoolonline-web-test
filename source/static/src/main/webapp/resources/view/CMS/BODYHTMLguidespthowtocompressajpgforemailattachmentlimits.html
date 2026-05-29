@@ -1,0 +1,68 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Como comprimir um JPG para os limites de tamanho de anexo de e-mail</b></h1>
+    <p><em>Ultima revisao 2026-05-06. Voltado para o momento em que um JPG de 7-10 MB e rejeitado pelos limites de tamanho do Gmail / Outlook / iCloud / caixas corporativas. Encaminha o trabalho de compressao para <a href="/image-tools/compress-image.html">Compress Image</a> (otimizador IA do lado do servidor, apenas JPEG).</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Resposta em 30 segundos.</b> A maioria dos JPGs barrados em e-mail (~5-15 MB) cabe no limite de 25 MB do Gmail quando re-salvos em <b>qualidade 75</b>; essa unica configuracao normalmente corta o tamanho do arquivo em 60-80% em uma foto de celular sem perda visivel para o destinatario. Abra <a href="/image-tools/compress-image.html">Compress Image</a>, envie o arquivo, escolha um nivel de compressao moderado e baixe o resultado. Se a caixa do destinatario tiver um limite mais rigido (Outlook 20 MB, iCloud 20 MB, corporativo 10 MB), baixe mais um degrau para <b>qualidade 65</b> e confira o tamanho antes de enviar.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Quais limites de anexo de e-mail valem de fato em 2026</b></h2>
+    <p>O limite de tamanho que importa e o <em>menor</em> entre o limite de envio do remetente e o limite de recebimento do destinatario - nao apenas o da sua conta. Os dois lados precisam aceitar o tamanho em bytes, ou a mensagem volta com erro 552 / 5.3.4 / "message size exceeds fixed maximum". Os numeros de referencia para 2026 nos provedores dominantes:</p>
+    <ul>
+        <li><b>Gmail:</b> 25 MB envio / 50 MB recebimento. Acima de 25 MB, o Gmail intercepta o anexo e oferece um link do Google Drive em vez de um anexo real. O caminho do Drive funciona para qualquer destinatario, mas coloca o arquivo no Drive em vez do corpo do e-mail, o que algumas politicas de conformidade nao aceitam.</li>
+        <li><b>Outlook.com / Microsoft 365 pessoal:</b> limite de anexo de 20 MB. O cliente web do Outlook sugere o OneDrive acima de 33 MB; abaixo disso ele tenta um anexo real.</li>
+        <li><b>Microsoft 365 corporativo / Exchange Online:</b> padrao de 25 MB envio + 25 MB recebimento, mas os tenants normalmente apertam isso para 10 MB ou 15 MB via regras de transporte. Teste com o destinatario especifico antes de confiar no padrao.</li>
+        <li><b>iCloud Mail:</b> limite de anexo de 20 MB. O Mail Drop do iCloud sobe o teto pratico para 5 GB servindo um link de download por 30 dias, mas o destinatario precisa clicar.</li>
+        <li><b>Yahoo Mail:</b> 25 MB envio.</li>
+        <li><b>Firewalls corporativos / appliances anti-spam:</b> frequentemente fixam em 10 MB sitewide independente das configuracoes do provedor - a causa mais comum de falhas "mas funciona bem no Gmail".</li>
+    </ul>
+    <p>Implicacao pratica: planeje para o destinatario. Uma foto que cabe tranquila nos 25 MB do Gmail ainda vai ser rejeitada num gateway corporativo de 10 MB. Em caso de duvida, comprima para <b>abaixo de 8 MB</b> e o arquivo passa em essencialmente toda caixa de consumidor / corporativa.</p>
+
+    <h2 class="text-uppercase"><b>Por que o tamanho do JPG e dominado pela qualidade, nao pela contagem de pixels</b></h2>
+    <p>O JPEG (formato de imagem com perdas definido pela ITU-T T.81 / ISO/IEC 10918-1) comprime dividindo cada imagem em blocos de 8&times;8 pixels, transformando cada bloco no espaco de frequencia (a Transformada Discreta do Cosseno) e dividindo os coeficientes de frequencia por uma tabela de quantizacao por frequencia. Inteiros maiores na tabela significam arredondamento mais agressivo e mais bytes economizados; inteiros menores significam detalhe mais fino preservado ao custo do tamanho do arquivo. O numero de "qualidade" que voce ve nos editores de imagem (Photoshop, GIMP, ImageMagick, qualquer ferramenta web) e um seletor de 1-100 que escala essas tabelas de quantizacao. Ele e uma alavanca muito mais forte sobre o tamanho do arquivo do que a resolucao: uma foto de 12 MP do iPhone em qualidade 95 normalmente tem 4-6 MB; a mesma foto em qualidade 75 normalmente tem 1-2 MB. A contagem de pixels nao mudou. Os bytes por pixel mudaram.</p>
+    <p>Por isso "diminuir a imagem para enviar" geralmente significa "abaixar o seletor de qualidade", e nao "reduzir a resolucao". Reduzir pixels perde informacao que voce nao consegue recuperar; abaixar a qualidade descarta informacao que voce nao notaria do lado de la. Para envio por e-mail, o segundo e quase sempre o botao certo.</p>
+
+    <h2 class="text-uppercase"><b>Tabela de qualidade para entrega via e-mail</b></h2>
+    <p>A convencao do <code>cjpeg -quality</code> da IJG e a escala pratica que a maioria das ferramentas JPG segue. Use estes como pontos de partida ajustados ao limite da caixa; verifique o tamanho real da saida e re-codifique um degrau mais abaixo se necessario.</p>
+    <ul>
+        <li><b>Qualidade 90 (alta)</b> - visualmente quase sem perdas numa foto tipica de celular. Espere 30-50% de reducao em relacao ao salvamento da propria camera (que costuma ser qualidade 92-95). Use apenas quando a caixa do destinatario for excepcionalmente generosa (50+ MB).</li>
+        <li><b>Qualidade 80 (padrao web)</b> - padrao para sites com muitas imagens; artefatos quase imperceptiveis em gradientes suaves a 100% de zoom. Espere 50-70% de reducao. Confortavel para Gmail / Yahoo (25 MB) na maioria das fotos.</li>
+        <li><b>Qualidade 75 (o ponto certo para e-mail)</b> - o ponto certo para anexos de e-mail. 60-80% de reducao; artefatos so visiveis em monitor calibrado a 100% de zoom em regioes de gradiente suave. Coloca quase qualquer JPG de celular sob o limite de 25 MB do Gmail. Ponto de partida recomendado para o primeiro re-salvamento.</li>
+        <li><b>Qualidade 65 (faixa corporativa)</b> - 70-85% de reducao; adequada quando o destinatario esta atras de um gateway de 10 MB ou 15 MB e o assunto da foto e uma pessoa, lugar ou produto onde uma leve suavizacao do fundo e aceitavel.</li>
+        <li><b>Qualidade 55 e abaixo</b> - blocos visiveis em areas suaves (ceus, paredes), bandeamento de cor, halos perto de bordas nitidas. Use apenas como ultimo recurso para uma captura de tela ou foto de documento que nao precise ser foto-realista.</li>
+    </ul>
+    <p>O <a href="/image-tools/get-jpeg-compression-level.html">JPEG Compression Level Checker</a> le de volta a qualidade em que qualquer JPG existente foi salvo - util quando voce quer saber se uma foto que alguem te enviou ainda tem margem de compressao, ou se ja foi empurrada alem do limite visivel e re-codificar so vai piorar. Veja tambem <a href="/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html">How to tell if a JPG was compressed too much</a> para os quatro sinais visiveis de super-compressao.</p>
+
+    <h2 class="text-uppercase"><b>Passo a passo: comprimindo um JPG para e-mail</b></h2>
+    <ol>
+        <li><b>Confirme o limite do destinatario.</b> Gmail (25 MB) e Yahoo (25 MB) sao tolerantes; iCloud e Outlook web (20 MB) sao intermediarios; tenants corporativos do Exchange normalmente fixam em 10 MB ou 15 MB. Se desconhecido, mire <b>abaixo de 8 MB</b> como piso seguro.</li>
+        <li><b>Abra <a href="/image-tools/compress-image.html">Compress Image</a></b>. A ferramenta aceita entrada <code>.jpeg</code> e <code>.jpg</code> e usa um otimizador de qualidade IA do lado do servidor que ajusta as tabelas de quantizacao JPEG nos bastidores (o valor de qualidade equivalente a IJG e o que muda; o codificador subjacente e SlimJpg / derivado de cjpeg).</li>
+        <li><b>Envie o JPG.</b> Arraste para a zona de upload, ou clique para navegar. O arquivo e enviado por HTTPS para <code>service.us-east-1a.freetool.online</code> para processamento; a ferramenta nao roda no navegador - a compressao acontece no servidor e o resultado e enviado de volta como link de download. Arquivos sao deletados do servidor depois de uma janela curta de retencao (o valor <code>web.minsToDelFile</code> emitido no carregamento da pagina).</li>
+        <li><b>Escolha um nivel de compressao.</b> Comece com o preset moderado / balanceado (corresponde aproximadamente a qualidade 75 em termos IJG). Para um JPG de 10 MB de celular isso normalmente da uma saida de 2-4 MB - bem abaixo de todos os limites principais.</li>
+        <li><b>Clique <em>Comprimir</em>.</b> Espere a barra de progresso de upload terminar, depois a renderizacao da visualizacao lado-a-lado. A saida tambem aparece como ancora de download.</li>
+        <li><b>Verifique o tamanho.</b> Passe sobre o link de download ou cheque o arquivo na pasta de downloads. Se o resultado ainda passar do alvo, re-execute com um degrau a menos (65 em vez de 75). Se ja estiver confortavelmente abaixo, anexe como esta.</li>
+        <li><b>Anexe e envie.</b> O JPG baixado e um arquivo normal - arraste-e-solte na composicao do Gmail / Outlook / Apple Mail, ou use o botao padrao "Anexar arquivo".</li>
+    </ol>
+    <p>Para multiplas fotos num e-mail, comprima cada uma individualmente em vez de zipa-las: a maioria dos clientes de e-mail renderiza JPGs inline no painel de previsao (uma vitoria para o destinatario), e zipar JPGs mal reduz o tamanho ja que JPG ja e codificado por entropia. Se voce precisa de um unico pacote, veja <a href="/guides/how-to-compress-a-folder-for-email.html">How to Compress a Folder for Email</a> para o fluxo de pasta com <a href="/zip-tools/zip-file.html">Zip File</a>.</p>
+
+    <h2 class="text-uppercase"><b>Quando a compressao por qualidade nao basta</b></h2>
+    <p>Uma pequena fracao dos JPGs fica travada em tamanho por causa da resolucao, nao da qualidade. Os dois sinais diagnosticos:</p>
+    <ul>
+        <li><b>O original ja e de baixa qualidade.</b> Se <a href="/image-tools/get-jpeg-compression-level.html">JPEG Compression Level Checker</a> reporta a fonte como qualidade 70 ou abaixo, re-codificar so vai adicionar perda de geracao sem economizar bytes significativos. A jogada certa e "reduzir a resolucao" (ex. de 12 MP para 4 MP) ou "pedir o RAW / HEIC original ao remetente".</li>
+        <li><b>A imagem e um panorama / digitalizacao de alta resolucao.</b> Um panorama de 50 MP do iPhone Pro ou uma digitalizacao de documento em 600 DPI pode permanecer com 8-12 MB mesmo em qualidade 60 porque existe genuinamente muita informacao por byte salvo. Para esses, reduza a contagem de pixels (3-6 MP para visualizacao em tela, ou 200 DPI para documentos) <em>antes</em> de passar pelo compressor.</li>
+    </ul>
+    <p>Para um JPG que e pequeno em pixels mas grande porque a camera salvou em qualidade 95+ (comum com "High Efficiency: Off" do iPhone ou modos JPEG-only de DSLRs), o caminho do seletor de qualidade acima resolve em uma passada sem perder pixels.</p>
+
+    <h2 class="text-uppercase"><b>Privacidade e o caso de anexo de e-mail</b></h2>
+    <p>Fotos enviadas por e-mail nao sao privadas: relays SMTP registram metadados da mensagem, destinatarios podem reencaminhar, provedores de e-mail indexam anexos para busca. O pipeline do servidor <a href="/image-tools/compress-image.html">Compress Image</a> adiciona um salto transitorio - o JPG e enviado por HTTPS para <code>service.us-east-1a.freetool.online</code>, processado e deletado do servidor depois da janela de retencao. Para fotos com conteudo sensivel (exames medicos, documentos juridicos, identificacao), o canal correto raramente e um anexo JPG em e-mail, independente do compressor; considere um servico de transferencia de arquivos com criptografia ponta-a-ponta. Para fotos comuns (familia, trabalho, produtos), o fluxo de comprimir-e-anexar acima e pratica padrao.</p>
+
+    <h2 class="text-uppercase"><b>Leitura relacionada</b></h2>
+    <ul>
+        <li><a href="/guides/how-to-compress-a-folder-for-email.html">How to Compress a Folder for Email</a> - modo pasta (varios arquivos em um ZIP)</li>
+        <li><a href="/guides/compress-jpeg-without-losing-quality-quality-vs-size.html">Compress JPEG Without Losing Quality - Quality vs Size</a></li>
+        <li><a href="/guides/how-to-choose-a-compression-level.html">How to Choose a Compression Level</a></li>
+        <li><a href="/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html">How to Tell if a JPG Was Compressed Too Much</a></li>
+        <li><a href="/guides/when-to-compress-vs-convert-an-image.html">When to Compress vs Convert an Image</a></li>
+        <li><a href="/image-tools/compress-image.html">Compress Image</a> (a ferramenta)</li>
+    </ul>
+</div>

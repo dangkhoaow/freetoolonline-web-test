@@ -1,0 +1,80 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Salida del Extractor de Frames GIF Parece Mal? Tres Causas y Prueba de 30 Segundos</b></h1>
+    <p><em>Ultima revision 2026-05-03. Pasaste un GIF por un extractor de frames y la salida se ve mal - un frame en lugar de muchos, frames en blanco o frames que se ven todos identicos. Esta guia nombra las tres causas comunes (el GIF fuente era realmente estatico, el GIF usa modo de descarte "do-not-dispose", el navegador se quedo sin memoria a mitad de la extraccion), da una correccion de una linea por causa, y muestra una prueba de 30 segundos que te dice cual causa golpeaste.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Respuesta de 30 segundos.</b> La sorpresa mas comun es que el archivo <code>.gif</code> fuente es realmente estatico (un frame total), por lo que un extractor no puede producir frames que no existen. La siguiente es que los frames SON correctos pero se ven identicos porque el GIF usa modo de descarte "do-not-dispose" - cada frame contiene solo el diff vs el anterior, por lo que la mayor parte de la imagen no ha cambiado. La tercera es que el navegador se quedo sin memoria a mitad de la extraccion en un GIF largo y de alta resolucion, y silenciosamente trunco la salida. Suelta un pequeno GIF de prueba conocidamente animado en <a href="/image-converter-tools/extract-gif-to-image-frames.html">el extractor de frames GIF</a>; si produce el conteo de frames esperado, el GIF original era el problema, no el extractor.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Causa 1: el GIF fuente es realmente estatico</b></h2>
+    <p>La extension <code>.gif</code> no garantiza animacion. Muchos archivos <code>.gif</code> en la naturaleza almacenan una sola imagen - un meme que perdio su animacion cuando alguien lo re-guardo, una captura de pantalla que una herramienta exporto como GIF en lugar de PNG, un icono que nunca tuvo multiples frames en primer lugar. La mayoria de los visores de imagen de escritorio renderizan GIFs de un solo frame y multi-frame identicamente (ves la imagen de cualquier manera), por lo que el lector no nota que el archivo es estatico hasta que intenta extraer frames y solo uno sale.</p>
+    <p><b>Correccion.</b> Abre el GIF fuente en un visor que anima GIFs - un visor de imagen de escritorio configurado en "auto-play", o simplemente arrastra el archivo a una nueva pestana del navegador. Si la imagen no se mueve, el GIF es estatico, y la salida de frame unico del extractor es correcta. No hay nada que extraer mas alla del unico frame. Convierte el archivo a un PNG en su lugar con <a href="/guides/extract-gif-frames-png-vs-jpg-which-format.html">extraer frames GIF - PNG vs JPG, que formato</a>; la guia cubre cuando elegir PNG vs JPG para la salida convertida.</p>
+
+    <h2 class="text-uppercase"><b>Causa 2: los frames son correctos pero se ven identicos (modo de descarte do-not-dispose)</b></h2>
+    <p>La especificacion GIF define cuatro "metodos de descarte" que gobiernan como cada frame se relaciona con el anterior. Metodo de descarte 1 ("no descartar") significa que cada frame dibuja solo sus pixeles cambiados encima de lo que el frame anterior dejo en el canvas. Asi que un GIF de 100 frames donde solo un pequeno badge cambia entre frames producira 100 PNGs que se ven casi identicos cuando se extraen - porque la mayor parte de la superficie ES identica entre frames. La animacion es real; vive en las pequenas diferencias entre frames, no en ningun frame unico.</p>
+    <p><b>Correccion.</b> Abre los frames 1, 50 y 100 (o primero / medio / ultimo para un GIF mas corto) en un visor lado a lado. Busca el pequeno diff - el badge en movimiento, el numero cambiando, el cursor parpadeando. ESE diff es la animacion. La guia de terminologia <a href="/guides/gif-frames-extract-vs-frame-rate-fps-explained.html">Frames GIF vs tasa de fotogramas (FPS) - explicado</a> cubre como los modos de descarte interactuan con el conteo de frames y FPS, asi que sabes que esperar del extractor antes de ejecutarlo.</p>
+    <p>Si realmente necesitas que cada frame extraido muestre la imagen compuesta COMPLETA (no solo el diff), busca una opcion del extractor llamada "componer", "aplanar" o "frames totalmente resueltos". Algunos extractores la ofrecen; la especificacion GIF no la requiere. Sin esa opcion, los GIFs do-not-dispose siempre extraen como frames solo de diff.</p>
+
+    <h2 class="text-uppercase"><b>Causa 3: navegador se quedo sin memoria a mitad de la extraccion</b></h2>
+    <p>Un GIF largo y de alta resolucion contiene una cantidad sorprendente de datos de pixel decodificados. Un GIF 4K de 200 frames, completamente decodificado, puede requerir multiples GB en la memoria del navegador a la vez. Los limites de heap WASM (tipicamente 2 GB; hasta 4 GB en builds con memory64 habilitado) pueden ser excedidos a mitad de extraccion; la pagina puede mostrar un subconjunto inicial de frames y detenerse silenciosamente. El lector ve, digamos, 12 frames de un esperado de 200, y asume que el extractor esta roto. No lo esta - se quedo sin espacio.</p>
+    <p><b>Correccion.</b> Reduce el conjunto de trabajo. Recorta el GIF fuente a un clip mas corto primero (por ejemplo, con un editor GIF que soporta una operacion "trim" o "crop time range"), o escala la fuente a una resolucion mas pequena antes de extraer. Un GIF 1080p de 200 frames a menudo extrae limpiamente donde un GIF 4K de 200 frames se atasca. El mismo patron de limite de memoria aparece en <a href="/guides/ffmpeg-online-conversion-stalled-three-fixes.html">Conversion FFmpeg online atascada - tres correcciones</a>; la descripcion de la causa-2 alli explica el sandbox WASM de 2 GB en mas detalle.</p>
+
+    <h2 class="text-uppercase"><b>La verificacion de sanidad de 30 segundos (cual causa es?)</b></h2>
+    <p>Tres pasos, sin matematicas:</p>
+    <ol>
+        <li><b>Encuentra un pequeno GIF de prueba conocidamente animado</b> - un GIF meme de 10 frames funciona. Guardalo localmente; quieres un archivo que confias para realmente animar.</li>
+        <li><b>Sueltalo en el extractor</b> con configuraciones predeterminadas. Manten la pestana en primer plano.</li>
+        <li><b>Observa la salida.</b>
+            <ul>
+                <li>10 frames salen, cada uno visiblemente diferente &rarr; el extractor funciona. Tu fallo original fue <b>Causa 1</b> (la fuente era estatica) si el original te dio 1 frame, o <b>Causa 3</b> (memoria) si el original te dio un pequeno subconjunto del conteo esperado.</li>
+                <li>10 frames salen, cada uno viendose casi identico &rarr; <b>Causa 2</b> (descarte do-not-dispose) en el GIF de prueba tambien. O el GIF de prueba tambien usa ese modo, o el problema original fue Causa 2 y el pequeno diff es solo dificil de ver.</li>
+                <li>1 frame sale del GIF de prueba &rarr; el extractor en si tiene un problema mas profundo (prueba un navegador diferente o una ventana privada sin extensiones).</li>
+            </ul>
+        </li>
+    </ol>
+    <p>Si un pequeno GIF conocidamente animado devuelve el conteo de frames esperado y el original dio 12 de un esperado de 200, Causa 3 (memoria) es la mas probable; recorta o reduce la escala de la fuente.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>Por que mi GIF "en bucle" solo da un frame?</summary>
+  <p>Porque el archivo es de un solo frame. El bucle es una propiedad del bloque GIF, no de cuantos frames contiene; un GIF de un solo frame puede llevar un marcador de bucle tambien, y los visores que respetan el marcador haran "bucle" del mismo frame indefinidamente. El extractor ve un frame en el archivo y produce un frame.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Por que los frames extraidos son mayormente transparentes?</summary>
+  <p>El metodo de descarte 2 ("restaurar al fondo") y el metodo 3 ("restaurar al anterior") le dicen al decodificador GIF que limpie o revierta el canvas antes de dibujar cada frame. Un extractor que emite la capa por-frame en bruto (no una imagen compuesta de canvas completo) producira frames donde la mayor parte de la imagen es transparente, porque el GIF solo codifico los pixeles cambiados. Busca una opcion "componer" o "aplanar" en el extractor, o usa una herramienta diferente que emita frames totalmente resueltos.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Puedo extraer frames de un archivo de video (MP4, WebM, MOV)?</summary>
+  <p>No de un extractor de frames GIF - esos esperan entrada GIF. Para video, usa una herramienta que decodifica video y exporta estaticos por frame; en este sitio, <a href="/video-tools/ffmpeg-online.html">FFmpeg Online</a> puede hacer exportacion por frame con la linea de comandos correcta. La eleccion de container/codec importa; <a href="/guides/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - que container, cuando</a> cubre las combinaciones seguras para ffmpeg basado en navegador.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Cual es la diferencia entre conteo de frames y FPS?</summary>
+  <p>El conteo de frames es "cuantos frames hay en el archivo." FPS es "que tan rapido se reproducen por segundo." Un GIF de 10 frames a 1 FPS se reproduce durante 10 segundos; el mismo GIF de 10 frames a 30 FPS se reproduce durante ~0.33 segundos. Al extractor le importa el conteo de frames (produce una imagen por frame); FPS solo importa cuando re-ensamblas frames de vuelta a un video o GIF. La guia de terminologia <a href="/guides/gif-frames-extract-vs-frame-rate-fps-explained.html">Frames GIF vs tasa de fotogramas (FPS) - explicado</a> cubre la diferencia en detalle.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>El navegador mantiene todos los frames extraidos en memoria a la vez?</summary>
+  <p>La mayoria de los extractores en navegador si - decodifican el GIF, construyen el array de imagenes por frame en memoria, luego los ofrecen todos para descarga (a menudo como un ZIP). Por eso los GIFs largos y de alta resolucion pueden golpear Causa 3 (agotamiento de memoria) a mitad de extraccion. Algunos extractores transmiten frames al disco uno a la vez; si la memoria es tu cuello de botella, busca ese patron en la documentacion de la herramienta.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Relacionados</b></h2>
+    <ul>
+        <li><a href="/image-converter-tools/extract-gif-to-image-frames.html">Extraer GIF a Frames de Imagen</a> - la herramienta de accion para dividir un GIF en imagenes por frame.</li>
+        <li><a href="/guides/extract-gif-frames-png-vs-jpg-which-format.html">Extraer frames GIF - PNG vs JPG, que formato</a> - la guia companera proactiva sobre eleccion de formato de salida.</li>
+        <li><a href="/guides/gif-frames-extract-vs-frame-rate-fps-explained.html">Frames GIF vs tasa de fotogramas (FPS) - explicado</a> - refresco de terminologia (conteo de frames vs FPS, modos de descarte).</li>
+        <li><a href="/guides/how-to-split-a-gif-into-frames-for-editing.html">Como dividir un GIF en frames para edicion</a> - paso a paso de flujo de trabajo para un objetivo de edicion/post-produccion.</li>
+        <li><a href="/guides/how-to-extract-frames-from-a-gif-for-a-social-post.html">Como extraer frames de un GIF para una publicacion social</a> - paso a paso de flujo de trabajo para un objetivo de compartir social.</li>
+    </ul>
+</div>

@@ -1,0 +1,53 @@
+<h1 class="text-uppercase"><b>HEIC ke JPG - apa yang sebenarnya dilakukan konverter (dan apa yang tidak)</b></h1>
+<time itemprop="dateUpdated" datetime="2026-05-05T05:30:00"><b>Diperbarui terakhir: 5 Mei 2026</b></time>
+<hr/>
+
+<p>Jika Anda mencari <i>apakah heic ke jpg bekerja</i>, <i>apakah heic ke jpg aman</i>, atau <i>apa yang sebenarnya dilakukan heic ke jpg</i>, halaman ini adalah jangkar kepercayaan: perjalanan bahasa sederhana melalui setiap langkah yang <a href="/image-converter-tools/heic-to-jpg.html">konverter HEIC ke JPG</a> lakukan dari saat Anda menjatuhkan file hingga saat JPG muncul di folder unduhan Anda, ditambah klaim yang dengan sengaja tidak dibuat alat. Intinya adalah menetapkan ekspektasi sebelum unggahan, sehingga hasilnya cocok dengan yang Anda harapkan saat mengklik.</p>
+
+<h2 class="text-uppercase"><b>Apa yang berjalan di mana</b></h2>
+
+<p><b>Konverter adalah pipeline sisi-server, bukan alat hanya-browser.</b> Saat Anda memilih file HEIC, itu diunggah ke layanan pemrosesan kami melalui HTTPS, didekode oleh <code>libheif</code>, dienkode ulang sebagai JPG oleh langkah optimasi, dan JPG yang dihasilkan dikirim kembali sebagai tautan unduhan. Tidak ada jalur fallback hanya-klien: seluruh decode dan encode ulang terjadi di server. Jika model kepercayaan Anda memerlukan nol-unggahan, ini adalah alat yang salah untuk pekerjaan itu - baca <a href="/guides/free-online-tools-that-work-without-uploading-files.html">Alat online gratis yang bekerja tanpa mengunggah file</a> untuk set hanya-dalam-browser.</p>
+
+<p><b>File bersifat sementara di server.</b> JPG output ditahan cukup lama untuk Anda unduh; penyimpanan merotasi file secara otomatis setelah jendela pendek (dikonfigurasi melalui <code>web.minsToDelFile</code> di server). Kami tidak menyimpan HEIC yang Anda unggah setelah konversi selesai; JPG di balik tautan unduhan juga merotasi. Jika Anda menutup tab sebelum mengunduh, tautan kedaluwarsa.</p>
+
+<h2 class="text-uppercase"><b>Lima hal yang dilakukan halaman, dalam istilah sederhana</b></h2>
+
+<ol>
+  <li><b>Mendekode HEIC.</b> File HEIC menggunakan data gambar terkompresi HEVC yang dibungkus dalam kontainer HEIF. Dekoder adalah <a href="https://github.com/strukturag/libheif">libheif</a>, perpustakaan yang sama yang digunakan sebagian besar konverter desktop. Jika file menolak terbuka di Windows tetapi mengkonversi di sini, penyebabnya biasanya codec Windows yang hilang, bukan file yang rusak - alur diagnostik ada di <a href="/guides/why-heic-wont-open-on-windows-three-fixes.html">Mengapa HEIC tidak terbuka di Windows: tiga perbaikan yang benar-benar bekerja</a>.</li>
+  <li><b>Mengenkode ulang sebagai JPG.</b> Pengoptimal menyeimbangkan kualitas yang terlihat dengan ukuran file pada setiap konversi; Anda mengontrol trade-off dengan slider kualitas pada formulir input. Mengaturnya lebih rendah menukar ketajaman dengan file lebih kecil, mengaturnya lebih tinggi mempertahankan detail dengan biaya byte. Default adalah pengaturan tengah yang cocok dengan apa yang diharapkan sebagian besar alur kerja ekspor iPhone.</li>
+  <li><b>Mempertahankan metadata EXIF, aktif secara default.</b> Model kamera, waktu pengambilan, koordinat GPS, dan flag orientasi dari HEIC asli disalin ke JPG output saat toggle EXIF aktif. Matikan jika Anda berbagi foto secara publik dan lebih suka tidak mengirim pin lokasi atau sidik jari perangkat.</li>
+  <li><b>Otomatis memutar berdasarkan flag orientasi EXIF.</b> iPhone menulis orientasi di EXIF daripada memutar piksel yang mendasarinya; banyak penampil menghormati flag, beberapa tidak. Konverter membaca flag dan menulis piksel yang diputar ke JPG sehingga hasilnya tegak di setiap penampil, termasuk yang mengabaikan orientasi EXIF.</li>
+  <li><b>Memungkinkan Anda memilih format output.</b> JPG adalah default. Memilih PNG menghasilkan re-encode tanpa kehilangan (file lebih besar, tanpa kehilangan kualitas). Memilih WebP menghasilkan file lebih kecil pada kualitas terlihat serupa; memilih PDF menggabungkan beberapa HEIC menjadi satu dokumen untuk kasus penggunaan pengarsipan atau lampiran email. Trade-off format diringkas di <a href="/guides/heic-vs-jpg-vs-webp.html">HEIC vs JPG vs WebP</a>.</li>
+</ol>
+
+<h2 class="text-uppercase"><b>Apa yang TIDAK dilakukan halaman</b></h2>
+
+<ul>
+  <li><b>Itu tidak hanya berjalan di browser Anda.</b> Setiap panduan yang mengatakan "tanpa unggahan" atau "sepenuhnya sisi-klien" sedang menggambarkan alat yang berbeda. Konverter ini mengunggah.</li>
+  <li><b>Itu tidak memerlukan akun.</b> Tidak ada sign-in, tidak ada batas tarif yang terikat ke identitas pengguna, dan tidak ada gerbang email. Jatuhkan file dan unduh hasilnya.</li>
+  <li><b>Itu tidak menyimpan foto Anda untuk pelatihan.</b> Decode dan re-encode terjadi sekali per unggahan. File berotasi dari server pada timer pendek; kami tidak menyimpan salinan.</li>
+  <li><b>Itu tidak mengedit piksel di luar decode + re-encode.</b> Tanpa filter, tanpa upscaling AI, tanpa auto-enhance. Jika Anda ingin pengeditan foto, jalankan JPG melalui <a href="/image-tools/photo-editor.html">Photo Editor</a> setelah konversi.</li>
+  <li><b>Itu tidak mengekstrak gerakan live-photo.</b> HEIC live-photo iPhone membawa bingkai diam ditambah MOV pendek. Konverter membaca hanya bingkai diam; klip gerakan tidak diekstrak oleh alat ini.</li>
+</ul>
+
+<h2 class="text-uppercase"><b>Kapan memilih format output yang mana</b></h2>
+
+<p><b>Pilih JPG</b> ketika tujuan adalah unggahan web, lampiran email, atau sistem apa pun yang tidak menerima HEIC. Slider kualitas memungkinkan Anda mengatur keseimbangan ukuran/kejelasan; pelestarian EXIF mempertahankan metadata pengambilan. <b>Pilih PNG</b> ketika Anda memerlukan salinan tanpa kehilangan (tangkapan layar, aset desain, foto yang akan Anda edit lebih lanjut). <b>Pilih WebP</b> ketika tujuan menerima WebP (sebagian besar browser modern menerimanya) dan Anda ingin file sekecil mungkin pada kualitas yang sama terlihatnya. <b>Pilih PDF</b> ketika Anda memiliki beberapa foto HEIC yang harus melakukan perjalanan sebagai satu dokumen - alat menggabungkannya menjadi satu PDF, satu gambar per halaman.</p>
+
+<p>Jika Anda mengkonversi batch besar (ratusan HEIC sekaligus), aturan alur kerja ada di <a href="/guides/how-to-convert-100-heic-photos-to-jpg.html">Cara mengkonversi 100 foto HEIC ke JPG</a>. Untuk perbandingan format-vs-pengarsipan, lihat <a href="/guides/pdf-vs-heic-for-document-archival.html">PDF vs HEIC untuk pengarsipan dokumen</a>. Untuk taksonomi format iPhone (HEIC vs JPG vs PNG vs RAW), <a href="/guides/iphone-photo-format-explained-heic-jpg-png-raw.html">format foto iPhone dijelaskan</a> mencakup trade-off.</p>
+
+<h2 class="text-uppercase"><b>Jebakan ingestion umum dan bagaimana alat menanganinya</b></h2>
+
+<p><b>Foto terbuka di Photos.app tetapi ekstensi file adalah .heic.</b> macOS menampilkan file HEIC secara transparan; Windows sering tidak tanpa HEVC Video Extension. Konverter tidak memerlukan OS apa pun untuk mendukung HEIC secara native - decode terjadi di server kami. Jika Anda memiliki file, Anda dapat mengkonversinya.</p>
+
+<p><b>Konversi tampaknya menggantung pada file yang sangat besar.</b> Pass decode-lalu-re-encode berskala dengan resolusi sumber. HEIC iPhone 12-MP mengkonversi dalam beberapa detik; urutan HEIC (live photo atau burst) memakan waktu lebih lama. Indikator kemajuan memperbarui per file dalam batch, bukan per byte, jadi satu file besar dapat duduk di 0% sebentar sebelum hasilnya muncul.</p>
+
+<p><b>JPG output terlihat berkualitas lebih rendah dari yang diharapkan.</b> Pengaturan kualitas default berada di tengah slider. Untuk kualitas terlihat maksimum, dorong slider ke atas sebelum mengkonversi. Untuk file terkecil, dorong ke bawah. Trade-off adalah monoton: slider lebih tinggi, file lebih besar, tepi lebih tajam.</p>
+
+<p><b>Gerakan live-photo hilang dari output.</b> Konverter hanya membaca komponen bingkai diam dari kontainer HEIC. Jika Anda memerlukan klip gerakan, ekspor dari Photos.app di macOS / iCloud terlebih dahulu, lalu konversi bingkai diam di sini.</p>
+
+<p><b>JPG output ditandai sebagai "tanpa metadata" oleh alat hilir.</b> Periksa toggle pelestarian EXIF pada formulir input - mematikannya menghapus model kamera, waktu pengambilan, dan GPS dari JPG.</p>
+
+<h2 class="text-uppercase"><b>Jalankan konverter sekarang</b></h2>
+
+<p>Buka <a href="/image-converter-tools/heic-to-jpg.html">HEIC ke JPG</a>, jatuhkan satu atau beberapa file HEIC ke dalam zona unggahan, pilih format output (JPG / PNG / WebP / PDF), atur slider kualitas, dan klik Konversi. Tautan unduhan muncul di sebelah setiap file saat selesai. Untuk panduan troubleshooting masalah ingestion HEIC di Windows, lihat <a href="/guides/why-heic-wont-open-on-windows-three-fixes.html">Mengapa HEIC tidak terbuka di Windows</a>.</p>

@@ -1,0 +1,80 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>GIF-Frame-Extraktor-Ausgabe sieht falsch aus? Drei Ursachen und 30-Sekunden-Test</b></h1>
+    <p><em>Zuletzt geprueft 2026-05-03. Sie haben eine GIF durch einen Frame-Extraktor laufen lassen und die Ausgabe sieht falsch aus - ein Frame statt vieler, leere Frames oder Frames, die alle identisch aussehen. Dieser Leitfaden nennt die drei haeufigen Ursachen (die Quell-GIF war tatsaechlich statisch, die GIF verwendet "do-not-dispose" Disposal-Modus, der Browser ist mitten in der Extraktion ohne Speicher gewesen), gibt eine einzeilige Loesung pro Ursache und zeigt einen 30-Sekunden-Test, der Ihnen sagt, welche Ursache Sie getroffen haben.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-Sekunden-Antwort.</b> Die haeufigste Ueberraschung ist, dass die Quell-<code>.gif</code>-Datei tatsaechlich statisch ist (insgesamt ein Frame), sodass ein Extraktor keine Frames produzieren kann, die nicht existieren. Die naechste ist, dass die Frames KORREKT sind, aber identisch aussehen, weil die GIF "do-not-dispose" Disposal-Modus verwendet - jeder Frame enthaelt nur den Diff vs den vorherigen, sodass der grosste Teil des Bildes unveraendert ist. Die dritte ist, dass der Browser mitten in der Extraktion bei einer langen, hochaufloesenden GIF ohne Speicher war und die Ausgabe stillschweigend abgeschnitten hat. Lassen Sie eine kleine, bekannt animierte Test-GIF in <a href="/image-converter-tools/extract-gif-to-image-frames.html">den GIF-Frame-Extraktor</a> fallen; wenn er die erwartete Frame-Anzahl produziert, war die originale GIF das Problem, nicht der Extraktor.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Ursache 1: die Quell-GIF ist tatsaechlich statisch</b></h2>
+    <p>Die <code>.gif</code>-Erweiterung garantiert keine Animation. Viele <code>.gif</code>-Dateien in der Wildnis speichern ein einzelnes Bild - ein Meme, das seine Animation verlor, als jemand es neu speicherte, ein Screenshot, den ein Tool als GIF statt PNG exportierte, ein Symbol, das von Anfang an nie mehrere Frames hatte. Die meisten Desktop-Bildbetrachter rendern Single-Frame- und Multi-Frame-GIFs identisch (Sie sehen das Bild so oder so), sodass der Leser nicht bemerkt, dass die Datei statisch ist, bis er versucht, Frames zu extrahieren und nur einer herauskommt.</p>
+    <p><b>Loesung.</b> Oeffnen Sie die Quell-GIF in einem Viewer, der GIFs animiert - einem Desktop-Bildbetrachter, der auf "Auto-Play" eingestellt ist, oder ziehen Sie einfach die Datei in einen neuen Browser-Tab. Wenn das Bild sich nicht bewegt, ist die GIF statisch, und die Single-Frame-Ausgabe des Extraktors ist korrekt. Es gibt nichts zu extrahieren ueber den einen Frame hinaus. Konvertieren Sie die Datei stattdessen in eine PNG mit <a href="/guides/extract-gif-frames-png-vs-jpg-which-format.html">GIF-Frames extrahieren - PNG vs JPG, welches Format</a>; der Leitfaden behandelt, wann PNG vs JPG fuer die konvertierte Ausgabe zu waehlen ist.</p>
+
+    <h2 class="text-uppercase"><b>Ursache 2: Frames sind korrekt, sehen aber identisch aus (do-not-dispose Disposal-Modus)</b></h2>
+    <p>Die GIF-Spezifikation definiert vier "Disposal-Methoden", die regeln, wie sich jeder Frame zum vorherigen verhaelt. Disposal-Methode 1 ("nicht entsorgen") bedeutet, dass jeder Frame nur seine veraenderten Pixel auf das zeichnet, was der vorherige Frame auf dem Canvas hinterlassen hat. So wird eine GIF mit 100 Frames, bei der zwischen den Frames nur ein kleines Badge wechselt, 100 PNGs produzieren, die fast identisch aussehen, wenn sie extrahiert werden - weil der grosste Teil der Oberflaeche ueber alle Frames hinweg identisch IST. Die Animation ist echt; sie lebt in den kleinen Unterschieden zwischen Frames, nicht in einem einzelnen Frame.</p>
+    <p><b>Loesung.</b> Oeffnen Sie die Frames 1, 50 und 100 (oder erster / mittlerer / letzter fuer eine kuerzere GIF) in einem Viewer Seite an Seite. Suchen Sie nach dem kleinen Diff - dem sich bewegenden Badge, der sich aendernden Zahl, dem blinkenden Cursor. DIESER Diff ist die Animation. Der Terminologie-Leitfaden <a href="/guides/gif-frames-extract-vs-frame-rate-fps-explained.html">GIF-Frames vs Framerate (FPS) - erklaert</a> behandelt, wie Disposal-Modi mit Frame-Anzahl und FPS interagieren, sodass Sie wissen, was Sie vom Extraktor erwarten koennen, bevor Sie ihn ausfuehren.</p>
+    <p>Wenn Sie tatsaechlich brauchen, dass jeder extrahierte Frame das VOLLE komponierte Bild zeigt (nicht nur den Diff), suchen Sie nach einer Extraktor-Option namens "komponieren", "abflachen" oder "vollstaendig aufgeloeste Frames." Einige Extraktoren bieten sie an; die GIF-Spezifikation erfordert sie nicht. Ohne diese Option extrahieren do-not-dispose GIFs immer als Nur-Diff-Frames.</p>
+
+    <h2 class="text-uppercase"><b>Ursache 3: Browser ist mitten in der Extraktion ohne Speicher gewesen</b></h2>
+    <p>Eine lange, hochaufloesende GIF haelt eine ueberraschende Menge an dekodierten Pixeldaten. Eine 200-Frame-4K-GIF, vollstaendig dekodiert, kann mehrere GB im Browser-Speicher auf einmal benoetigen. WASM-Heap-Limits (typischerweise 2 GB; bis zu 4 GB bei memory64-aktivierten Builds) koennen mitten in der Extraktion ueberschritten werden; die Seite kann eine fruehe Teilmenge von Frames anzeigen und stillschweigend anhalten. Der Leser sieht sagen wir 12 Frames von erwarteten 200 und nimmt an, dass der Extraktor kaputt ist. Ist er nicht - er hat keinen Platz mehr.</p>
+    <p><b>Loesung.</b> Reduzieren Sie das Arbeitsset. Schneiden Sie die Quell-GIF zuerst auf einen kuerzeren Clip zu (z.B. mit einem GIF-Editor, der eine "Trim"- oder "Crop Time Range"-Operation unterstuetzt), oder skalieren Sie die Quelle auf eine kleinere Aufloesung vor dem Extrahieren. Eine 200-Frame-1080p-GIF extrahiert oft sauber, wo eine 200-Frame-4K-GIF stockt. Das gleiche Speicher-Limit-Muster taucht in <a href="/guides/ffmpeg-online-conversion-stalled-three-fixes.html">FFmpeg online Konvertierung haengt - drei Loesungen</a> auf; die Beschreibung von Ursache-2 dort erklaert die WASM-2-GB-Sandbox detaillierter.</p>
+
+    <h2 class="text-uppercase"><b>Der 30-Sekunden-Plausibilitaetscheck (welche Ursache ist es?)</b></h2>
+    <p>Drei Schritte, keine Mathematik:</p>
+    <ol>
+        <li><b>Finden Sie eine kleine, bekannt animierte Test-GIF</b> - eine 10-Frame-Meme-GIF funktioniert. Speichern Sie sie lokal; Sie wollen eine Datei, der Sie vertrauen, tatsaechlich zu animieren.</li>
+        <li><b>Lassen Sie sie in den Extraktor fallen</b> mit Standardeinstellungen. Halten Sie den Tab im Vordergrund.</li>
+        <li><b>Beobachten Sie die Ausgabe.</b>
+            <ul>
+                <li>10 Frames kommen heraus, jeder sichtbar anders &rarr; der Extraktor funktioniert. Ihr urspruenglicher Fehler war <b>Ursache 1</b> (Quelle war statisch), wenn das Original Ihnen 1 Frame gab, oder <b>Ursache 3</b> (Speicher), wenn das Original Ihnen eine kleine Teilmenge der erwarteten Anzahl gab.</li>
+                <li>10 Frames kommen heraus, jeder sieht nahezu identisch aus &rarr; <b>Ursache 2</b> (do-not-dispose Disposal) auch auf der Test-GIF. Entweder verwendet die Test-GIF diesen Modus auch, oder das urspruengliche Problem war Ursache 2 und der kleine Diff ist nur schwer zu sehen.</li>
+                <li>1 Frame kommt aus der Test-GIF heraus &rarr; der Extraktor selbst hat ein tieferes Problem (versuchen Sie einen anderen Browser oder ein privates Fenster ohne Erweiterungen).</li>
+            </ul>
+        </li>
+    </ol>
+    <p>Wenn eine kleine bekannt animierte GIF die erwartete Frame-Anzahl zurueckgibt und das Original 12 von erwarteten 200 gab, ist Ursache 3 (Speicher) am wahrscheinlichsten; schneiden Sie die Quelle zu oder verkleinern Sie sie.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>Warum gibt meine "Loop"-GIF nur einen Frame?</summary>
+  <p>Weil die Datei einzelframe ist. Looping ist eine Eigenschaft des GIF-Blocks, nicht davon, wie viele Frames sie enthaelt; eine Einzelframe-GIF kann auch einen Loop-Marker tragen, und Viewer, die den Marker respektieren, werden den gleichen Frame unbegrenzt "loopen." Der Extraktor sieht einen Frame in der Datei und gibt einen Frame aus.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Warum sind die extrahierten Frames meistens transparent?</summary>
+  <p>Disposal-Methode 2 ("auf Hintergrund wiederherstellen") und Methode 3 ("auf vorherigen wiederherstellen") sagen dem GIF-Decoder, das Canvas zu loeschen oder zurueckzusetzen, bevor jeder Frame gezeichnet wird. Ein Extraktor, der die rohe Per-Frame-Schicht emittiert (kein komponiertes Vollcanvas-Bild), wird Frames produzieren, bei denen der grosste Teil des Bildes transparent ist, weil die GIF nur die veraenderten Pixel kodiert hat. Suchen Sie nach einer "komponieren"- oder "abflachen"-Option im Extraktor oder verwenden Sie ein anderes Tool, das vollstaendig aufgeloeste Frames emittiert.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Kann ich Frames aus einer Videodatei (MP4, WebM, MOV) extrahieren?</summary>
+  <p>Nicht aus einem GIF-Frame-Extraktor - diese erwarten GIF-Eingabe. Fuer Video verwenden Sie ein Tool, das Video dekodiert und Per-Frame-Standbilder exportiert; auf dieser Website kann <a href="/video-tools/ffmpeg-online.html">FFmpeg Online</a> Per-Frame-Export mit der richtigen Befehlszeile durchfuehren. Die Container/Codec-Wahl ist wichtig; <a href="/guides/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - welcher Container, wann</a> deckt die sicheren Kombinationen fuer browserbasiertes ffmpeg ab.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Was ist der Unterschied zwischen Frame-Anzahl und FPS?</summary>
+  <p>Frame-Anzahl ist "wie viele Frames in der Datei sind." FPS ist "wie schnell sie pro Sekunde abgespielt werden." Eine 10-Frame-GIF bei 1 FPS spielt 10 Sekunden lang; dieselbe 10-Frame-GIF bei 30 FPS spielt ~0,33 Sekunden. Den Extraktor interessiert die Frame-Anzahl (er gibt ein Bild pro Frame aus); FPS ist nur wichtig, wenn Sie Frames wieder zu einem Video oder GIF zusammenbauen. Der Terminologie-Leitfaden <a href="/guides/gif-frames-extract-vs-frame-rate-fps-explained.html">GIF-Frames vs Framerate (FPS) - erklaert</a> behandelt den Unterschied im Detail.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Behaelt der Browser alle extrahierten Frames gleichzeitig im Speicher?</summary>
+  <p>Die meisten In-Browser-Extraktoren ja - sie dekodieren die GIF, bauen das Per-Frame-Bild-Array im Speicher auf und bieten dann alle zum Herunterladen an (oft als ZIP). Deshalb koennen lange, hochaufloesende GIFs mitten in der Extraktion Ursache 3 (Speichererschoepfung) treffen. Einige Extraktoren streamen Frames einzeln auf die Festplatte; wenn Speicher Ihr Engpass ist, suchen Sie nach diesem Muster in der Dokumentation des Tools.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Verwandt</b></h2>
+    <ul>
+        <li><a href="/image-converter-tools/extract-gif-to-image-frames.html">GIF in Bildframes extrahieren</a> - das Aktion-Tool zum Aufteilen einer GIF in Per-Frame-Bilder.</li>
+        <li><a href="/guides/extract-gif-frames-png-vs-jpg-which-format.html">GIF-Frames extrahieren - PNG vs JPG, welches Format</a> - der proaktive Begleitleitfaden zur Ausgabeformat-Wahl.</li>
+        <li><a href="/guides/gif-frames-extract-vs-frame-rate-fps-explained.html">GIF-Frames vs Framerate (FPS) - erklaert</a> - Terminologie-Auffrischung (Frame-Anzahl vs FPS, Disposal-Modi).</li>
+        <li><a href="/guides/how-to-split-a-gif-into-frames-for-editing.html">Wie man eine GIF in Frames zum Bearbeiten teilt</a> - Workflow-Walkthrough fuer ein Bearbeitungs-/Postproduktionsziel.</li>
+        <li><a href="/guides/how-to-extract-frames-from-a-gif-for-a-social-post.html">Wie man Frames aus einer GIF fuer einen Social-Beitrag extrahiert</a> - Workflow-Walkthrough fuer ein Social-Share-Ziel.</li>
+    </ul>
+</div>
