@@ -1,0 +1,63 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>JPG vs PNG untuk web - kapan menggunakan setiap format gambar</b></h1>
+<time itemprop="datePublished" datetime="2026-04-20T08:00:00Z"><b>Diterbitkan 20 April 2026</b></time>
+<hr/>
+
+<p class="lead">JPG dan PNG adalah dua format gambar web yang dominan dari 1996 hingga 2010-an, dan mereka masih merupakan format yang didukung oleh setiap browser, setiap pustaka gambar, dan setiap situs stok tanpa keraguan. Pembagiannya sederhana pada prinsipnya - JPG untuk foto, PNG untuk apa pun dengan tepi tajam atau transparansi - tetapi keputusan nyata hari ini melibatkan ukuran file, rantai fallback WebP/AVIF modern, dan apakah screenshot PNG terlalu berat untuk dikirim. Panduan ini mencakup mekanika encoding, aturan keputusan yang berlaku di 2026, dan jalur peningkatan ke format modern.</p>
+
+<br/><h2 class="text-uppercase"><b>Bagaimana setiap format mengkompresi piksel</b></h2>
+<p><b>JPG (juga ditulis JPEG)</b> adalah format <b>lossy</b>. Encoder mengkonversi piksel ke domain frekuensi (DCT), mengkuantisasi koefisien frekuensi tinggi, dan membuang detail yang paling tidak mungkin diperhatikan mata manusia. Kenop kualitas (0-100, di mana lebih tinggi lebih baik) mengontrol seberapa agresif kuantisasi itu menghilangkan detail. JPG cemerlang pada foto dan buruk pada tepi tajam - teks, krom UI, dan line art memperoleh artefak halo yang terlihat pada pengaturan kualitas web yang tipikal.</p>
+<p><b>PNG (Portable Network Graphics)</b> adalah format <b>lossless</b>. Piksel keluar identik bit-demi-bit dengan piksel masuk. PNG mengkompresi dengan menemukan pola dalam grid piksel (DEFLATE pada scanline yang difilter) - bagus pada area warna datar yang besar, sedang pada gradien fotografis. PNG juga mendukung transparansi via channel alpha, yang tidak dilakukan JPG.</p>
+
+<br/><h2 class="text-uppercase"><b>Perbandingan ukuran file untuk gambar yang sama</b></h2>
+<div class="w3-responsive">
+<table class="w3-table-all w3-small">
+<tr><th>Jenis gambar</th><th>JPG (kualitas 82)</th><th>PNG</th><th>WebP (lossy q=82)</th><th>AVIF (q=50)</th></tr>
+<tr><td>Foto 1920&times;1080</td><td>~320&nbsp;KB</td><td>~3,2&nbsp;MB</td><td>~220&nbsp;KB</td><td>~160&nbsp;KB</td></tr>
+<tr><td>Screenshot 1920&times;1080 (UI)</td><td>~180&nbsp;KB (halo terlihat)</td><td>~130&nbsp;KB</td><td>~90&nbsp;KB</td><td>~60&nbsp;KB</td></tr>
+<tr><td>Logo sederhana 512&times;512 (warna datar)</td><td>~40&nbsp;KB</td><td>~18&nbsp;KB</td><td>~10&nbsp;KB</td><td>~7&nbsp;KB</td></tr>
+<tr><td>Ikon 64&times;64 dengan transparansi</td><td>Tidak didukung</td><td>~2&nbsp;KB</td><td>~1&nbsp;KB</td><td>~0,8&nbsp;KB</td></tr>
+</table>
+</div>
+
+<br/><h2 class="text-uppercase"><b>Aturan keputusan yang berlaku di 2026</b></h2>
+<p><b>Foto, full bleed, tidak butuh transparansi.</b> &rarr; <b>JPG</b> (kualitas 80-85) sebagai baseline; WebP/AVIF sebagai varian yang ditingkatkan. JPG pada q=82 secara visual tidak dapat dibedakan dari aslinya yang lossless untuk semua kecuali mata yang paling terlatih. File 5-10&times; lebih kecil daripada PNG dari foto yang sama.</p>
+<p><b>Foto dengan transparansi (subjek dipotong pada latar belakang transparan).</b> &rarr; <b>PNG</b> - JPG tidak dapat mewakili alpha. Pilih WebP jika audiens Anda mengecualikan klien email lama dan WebView Android lama.</p>
+<p><b>Screenshot UI, kode, atau teks.</b> &rarr; <b>PNG</b> sebagai kanonik; WebP lossless sebagai ditingkatkan. Tepi piksel tajam (anti-aliasing teks, batas UI) mengungkapkan artefak kompresi JPG pada kualitas apa pun di bawah 90, dan JPG kualitas 90 lebih besar daripada PNG yang setara.</p>
+<p><b>Logo atau grafik sederhana.</b> &rarr; <b>SVG</b> jika Anda memiliki sumber vektor (lihat <a href="/guides/png-vs-svg-when-to-use.html">panduan PNG vs SVG</a>). Jika hanya raster yang ada, PNG menang dalam ketajaman; WebP lossless sebagai ditingkatkan.</p>
+<p><b>Header newsletter email.</b> &rarr; Hanya <b>JPG</b> atau <b>PNG</b>. Banyak klien email tidak merender WebP/AVIF. Gunakan format universal bahkan ketika codec modern akan menghemat byte.</p>
+
+<br/><h2 class="text-uppercase"><b>Sweet spot kualitas-vs-ukuran</b></h2>
+<p><b>JPG kualitas 82</b> adalah default web yang berfungsi selama satu dekade. Di bawah 75, artefak kompresi menjadi terlihat pada foto kaya detail; di atas 90, ukuran file tumbuh cepat dengan keuntungan visual minimal.</p>
+<p><b>JPG progressive</b> adalah penataan ulang data gambar yang sama - kualitas sama, ukuran sama, tetapi browser dapat menampilkan pratinjau resolusi rendah segera setelah grup scanline pertama diunduh. Gunakan encoding progressive untuk setiap foto hero above-the-fold.</p>
+<p><b>Pengoptimal PNG</b> (pngquant, oxipng, zopflipng) dapat memotong 30-70% dari ekspor PNG default tanpa kehilangan kualitas - mereka mencari parameter filter/kompresi yang lebih baik daripada yang dicoba encoder. Selalu jalankan optimasi sebelum mengirim PNG besar ke produksi.</p>
+
+<br/><h2 class="text-uppercase"><b>Memilih kualitas: target konkret</b></h2>
+<p><a href="/image-tools/get-jpeg-compression-level.html">Pemeriksa level kompresi JPEG</a> kami menginspeksi JPG yang ada dan melaporkan tabel kuantisasinya. Gunakan untuk merekayasa-balik kualitas apa yang digunakan foto saat disimpan sebelum re-encoding. Aturan praktis: foto yang di-re-encode lebih dari dua kali pada kualitas 82 kehilangan detail yang terlihat; jika Anda adalah hop ketiga dalam rantai, naikkan kualitas ke 90 untuk mempertahankan margin untuk re-save di masa depan.</p>
+
+<br/><h2 class="text-uppercase"><b>Rantai fallback &lt;picture&gt;</b></h2>
+<p>Situs modern menyajikan varian AVIF atau WebP ke browser yang dapat memecahkan kodenya dan kembali ke JPG atau PNG untuk sisanya:</p>
+<pre style="background:#0b1220;color:#dbe3f5;padding:12px;border-radius:var(--radius-sm, 4px);overflow:auto"><code>&lt;picture&gt;
+  &lt;source type="image/avif" srcset="hero.avif"&gt;
+  &lt;source type="image/webp" srcset="hero.webp"&gt;
+  &lt;img src="hero.jpg" alt="Deskripsi" width="1920" height="1080"&gt;
+&lt;/picture&gt;</code></pre>
+<p>Browser memilih <code>source</code> pertama yang dapat dipecahkan kodenya. <code>&lt;img&gt;</code> adalah fallback universal. Selalu sertakan <code>width</code> dan <code>height</code> untuk mencegah cumulative layout shift.</p>
+
+<br/><h2 class="text-uppercase"><b>Kapan meningkatkan PNG ke WebP atau AVIF</b></h2>
+<p>WebP lossless adalah pengganti langsung PNG dengan penghematan ukuran file ~25-35% pada sebagian besar konten. Dukungan browser bersifat universal sejak Safari 14 (2020). Jika audiens Anda hanya-browser (tidak berat email), satu file WebP lossless menggantikan PNG tanpa perbedaan visual. AVIF lossless mengkompresi lebih lanjut tetapi memiliki waktu encoding yang lebih lambat dan hanya ditambahkan ke Safari di 16 (2022).</p>
+<p>Untuk foto, AVIF pada kualitas 50-60 biasanya cocok dengan JPG kualitas 85 pada setengah ukuran file. Trade-off-nya adalah waktu encoding (AVIF 10-30&times; lebih lambat daripada JPG untuk encode) dan dukungan dekoding hardware pada perangkat lama.</p>
+
+<br/><h2 class="text-uppercase"><b>Mengkonversi antar format</b></h2>
+<p>Gunakan alat <a href="/image-tools/compress-image.html">kompres gambar</a> kami untuk re-encoding JPG dengan kualitas yang disetel AI. Untuk konversi format ke arah lain, <a href="/image-converter-tools/png-to-svg.html">PNG ke SVG</a> melacak logo PNG menjadi vektor; <a href="/image-converter-tools/svg-to-png.html">SVG ke PNG</a> meraster vektor pada ukuran piksel eksplisit. Semua konversi berjalan di browser - tidak ada yang diunggah.</p>
+
+<br/><h2 class="text-uppercase"><b>Alat terkait</b></h2>
+<ul>
+    <li><a href="/image-tools/compress-image.html">Kompres Gambar</a> - kurangi ukuran file JPG/PNG dengan penyetelan kualitas AI.</li>
+    <li><a href="/image-tools/get-jpeg-compression-level.html">Pemeriksa Level Kompresi JPEG</a> - inspeksi kualitas tersimpan dari setiap JPG.</li>
+    <li><a href="/image-tools/resize-image.html">Ubah Ukuran Gambar</a> - atur dimensi piksel persis dengan interpolasi bicubic.</li>
+    <li><a href="/image-tools/insights-image-optimizer.html">Pengoptimal Gambar Insights</a> - audit gambar menghadap PageSpeed.</li>
+</ul>
+
+<p><br/><a href="/image-tools.html">&larr; Kembali ke Alat Gambar</a></p>
+</div>

@@ -1,0 +1,63 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>JPG vs PNG para la web - cuando usar cada formato de imagen</b></h1>
+<time itemprop="datePublished" datetime="2026-04-20T08:00:00Z"><b>Publicado el 20 de abril de 2026</b></time>
+<hr/>
+
+<p class="lead">JPG y PNG fueron los dos formatos de imagen web dominantes desde 1996 hasta los anos 2010, y siguen siendo los formatos que todo navegador, toda biblioteca de imagenes y todo sitio de fotos soportan sin reservas. La division es simple en principio - JPG para fotos, PNG para cualquier cosa con bordes nitidos o transparencia - pero las decisiones reales hoy involucran tamano de archivo, una cadena de fallback moderna WebP/AVIF, y si un screenshot PNG es demasiado pesado para enviar. Esta guia cubre la mecanica de codificacion, las reglas de decision que se mantienen en 2026, y la ruta de actualizacion a formatos modernos.</p>
+
+<br/><h2 class="text-uppercase"><b>Como cada formato comprime pixeles</b></h2>
+<p><b>JPG (tambien escrito JPEG)</b> es un formato <b>con perdidas</b>. El codificador convierte pixeles al dominio de frecuencia (DCT), cuantiza coeficientes de alta frecuencia, y descarta el detalle que el ojo humano tiene menos probabilidad de notar. El dial de calidad (0-100, donde mas alto es mejor) controla cuan agresivamente esa cuantizacion elimina detalles. JPG es brillante en fotos y terrible en bordes nitidos - texto, cromo de UI, y arte lineal adquieren artefactos de halo visibles en ajustes tipicos de calidad web.</p>
+<p><b>PNG (Portable Network Graphics)</b> es un formato <b>sin perdidas</b>. Los pixeles de salida son bit-por-bit identicos a los pixeles de entrada. PNG comprime encontrando patrones en la cuadricula de pixeles (DEFLATE en scanlines filtradas) - excelente en areas grandes de color plano, mediocre en gradientes fotograficos. PNG tambien soporta transparencia via el canal alfa, lo que JPG no.</p>
+
+<br/><h2 class="text-uppercase"><b>Comparacion de tamano de archivo para la misma imagen</b></h2>
+<div class="w3-responsive">
+<table class="w3-table-all w3-small">
+<tr><th>Tipo de imagen</th><th>JPG (calidad 82)</th><th>PNG</th><th>WebP (lossy q=82)</th><th>AVIF (q=50)</th></tr>
+<tr><td>Fotografia 1920&times;1080</td><td>~320&nbsp;KB</td><td>~3,2&nbsp;MB</td><td>~220&nbsp;KB</td><td>~160&nbsp;KB</td></tr>
+<tr><td>Screenshot 1920&times;1080 (UI)</td><td>~180&nbsp;KB (halos visibles)</td><td>~130&nbsp;KB</td><td>~90&nbsp;KB</td><td>~60&nbsp;KB</td></tr>
+<tr><td>Logo simple 512&times;512 (colores planos)</td><td>~40&nbsp;KB</td><td>~18&nbsp;KB</td><td>~10&nbsp;KB</td><td>~7&nbsp;KB</td></tr>
+<tr><td>Icono 64&times;64 con transparencia</td><td>No soportado</td><td>~2&nbsp;KB</td><td>~1&nbsp;KB</td><td>~0,8&nbsp;KB</td></tr>
+</table>
+</div>
+
+<br/><h2 class="text-uppercase"><b>Las reglas de decision que se mantienen en 2026</b></h2>
+<p><b>Fotografia, full bleed, sin necesidad de transparencia.</b> &rarr; <b>JPG</b> (calidad 80-85) como linea base; WebP/AVIF como variantes mejoradas. Un JPG en q=82 es visualmente indistinguible del original sin perdidas para todos excepto los ojos mas entrenados. El archivo es 5-10&times; mas pequeno que un PNG de la misma foto.</p>
+<p><b>Fotografia con transparencia (sujeto recortado sobre fondo transparente).</b> &rarr; <b>PNG</b> - JPG no puede representar alfa. Prefiere WebP si tu audiencia excluye clientes de correo legacy y WebViews antiguos de Android.</p>
+<p><b>Screenshot de UI, codigo o texto.</b> &rarr; <b>PNG</b> como canonico; WebP lossless como mejorado. Bordes de pixel nitidos (anti-aliasing de texto, bordes de UI) revelan artefactos de compresion JPG en cualquier calidad bajo 90, y JPGs de calidad 90 son mas grandes que el PNG equivalente.</p>
+<p><b>Logo o grafico simple.</b> &rarr; <b>SVG</b> si tienes la fuente vectorial (ver <a href="/guides/png-vs-svg-when-to-use.html">guia PNG vs SVG</a>). Si solo existe un raster, PNG gana en nitidez; WebP lossless como mejorado.</p>
+<p><b>Encabezado de newsletter por correo.</b> &rarr; Solo <b>JPG</b> o <b>PNG</b>. Muchos clientes de correo no renderizan WebP/AVIF. Usa el formato universal incluso cuando un codec moderno ahorraria bytes.</p>
+
+<br/><h2 class="text-uppercase"><b>Puntos dulces calidad-vs-tamano</b></h2>
+<p><b>JPG calidad 82</b> es el default web que funciono por una decada. Bajo 75, los artefactos de compresion se vuelven visibles en fotos ricas en detalle; sobre 90, el tamano del archivo crece rapido con minima ganancia visual.</p>
+<p><b>JPG progresivo</b> es una reordenacion de los mismos datos de imagen - misma calidad, mismo tamano, pero el navegador puede mostrar una vista previa en baja resolucion en cuanto baja el primer grupo de scanlines. Usa codificacion progresiva para cualquier foto hero above-the-fold.</p>
+<p><b>Optimizadores PNG</b> (pngquant, oxipng, zopflipng) pueden recortar 30-70% de una exportacion PNG por defecto sin perdida de calidad - buscan mejores parametros de filtro/compresion que los que intento el codificador. Siempre corre optimizacion antes de enviar un PNG grande a produccion.</p>
+
+<br/><h2 class="text-uppercase"><b>Eligiendo calidad: un objetivo concreto</b></h2>
+<p>Nuestro <a href="/image-tools/get-jpeg-compression-level.html">verificador de nivel de compresion JPEG</a> inspecciona un JPG existente y reporta su tabla de cuantizacion. Usalo para hacer ingenieria inversa de en que calidad se guardo una foto antes de re-codificar. Regla de mano: una foto re-codificada mas de dos veces a calidad 82 pierde detalle visible; si eres el tercer salto en una cadena, sube la calidad a 90 para preservar margen para un futuro re-save.</p>
+
+<br/><h2 class="text-uppercase"><b>La cadena de fallback &lt;picture&gt;</b></h2>
+<p>Los sitios modernos sirven una variante AVIF o WebP a navegadores que pueden decodificarla y caen a JPG o PNG para el resto:</p>
+<pre style="background:#0b1220;color:#dbe3f5;padding:12px;border-radius:var(--radius-sm, 4px);overflow:auto"><code>&lt;picture&gt;
+  &lt;source type="image/avif" srcset="hero.avif"&gt;
+  &lt;source type="image/webp" srcset="hero.webp"&gt;
+  &lt;img src="hero.jpg" alt="Descripcion" width="1920" height="1080"&gt;
+&lt;/picture&gt;</code></pre>
+<p>El navegador elige la primera <code>source</code> que puede decodificar. El <code>&lt;img&gt;</code> es el fallback universal. Siempre incluye <code>width</code> y <code>height</code> para evitar layout shift acumulativo.</p>
+
+<br/><h2 class="text-uppercase"><b>Cuando actualizar PNG a WebP o AVIF</b></h2>
+<p>WebP lossless es un reemplazo directo de PNG con ahorros de tamano de archivo de ~25-35% en la mayoria del contenido. El soporte de navegador es universal desde Safari 14 (2020). Si tu audiencia es solo-navegador (no pesada en correo), un solo archivo WebP lossless reemplaza al PNG sin diferencia visual. AVIF lossless comprime mas pero tiene tiempos de codificacion mas lentos y solo se agrego a Safari en 16 (2022).</p>
+<p>Para fotografias, AVIF en calidad 50-60 tipicamente iguala JPG calidad 85 a la mitad del tamano de archivo. El trade-off es el tiempo de codificacion (AVIF es 10-30&times; mas lento que JPG para codificar) y soporte de decodificacion por hardware en dispositivos mas antiguos.</p>
+
+<br/><h2 class="text-uppercase"><b>Convertir entre formatos</b></h2>
+<p>Usa nuestra herramienta <a href="/image-tools/compress-image.html">comprimir imagen</a> para re-codificacion JPG con calidad ajustada por IA. Para conversion de formato en la otra direccion, <a href="/image-converter-tools/png-to-svg.html">PNG a SVG</a> traza logos PNG en vectores; <a href="/image-converter-tools/svg-to-png.html">SVG a PNG</a> rasteriza un vector a un tamano de pixel explicito. Todas las conversiones corren en navegador - nada se sube.</p>
+
+<br/><h2 class="text-uppercase"><b>Herramientas relacionadas</b></h2>
+<ul>
+    <li><a href="/image-tools/compress-image.html">Comprimir Imagen</a> - reduce tamano de archivo JPG/PNG con ajuste de calidad por IA.</li>
+    <li><a href="/image-tools/get-jpeg-compression-level.html">Verificador de Nivel de Compresion JPEG</a> - inspecciona la calidad guardada de cualquier JPG.</li>
+    <li><a href="/image-tools/resize-image.html">Redimensionar Imagen</a> - define dimensiones exactas en pixeles con interpolacion bicubica.</li>
+    <li><a href="/image-tools/insights-image-optimizer.html">Optimizador de Imagen Insights</a> - auditoria de imagen orientada a PageSpeed.</li>
+</ul>
+
+<p><br/><a href="/image-tools.html">&larr; Volver a Herramientas de Imagen</a></p>
+</div>
