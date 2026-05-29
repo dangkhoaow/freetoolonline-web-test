@@ -1,0 +1,54 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>HEIC vs JPG vs WebP - cuando usar cada formato de imagen</b></h1>
+<time itemprop="datePublished" datetime="2026-04-19T08:00:00Z"><b>Publicado el 19 de Abril de 2026</b></time>
+<hr/>
+
+<p>Tres formatos de imagen dominan la fotografia diaria y la entrega web: <b>HEIC</b> (predeterminado en iPhones desde 2017), <b>JPG</b> (el fallback universal) y <b>WebP</b> (el reemplazo de archivos mas pequenos de Google para JPG y PNG). Cada uno codifica fotos de manera diferente, y la eleccion correcta depende de donde se vaya a usar el archivo. Esta guia recorre lo que cada formato realmente hace, los trade-offs practicos y los pasos exactos de conversion para las cuatro situaciones que las personas encuentran mas.</p>
+
+<br/><h2 class="text-uppercase"><b>Que es (y que no es) cada formato</b></h2>
+<p><b>HEIC (High Efficiency Image Container)</b> envuelve fotos codificadas con el codec HEVC - el mismo codec usado para video H.265. Apple lo hizo predeterminado del iPhone porque los archivos son aproximadamente la mitad del tamano de JPG con la misma calidad visual, y HEIC puede llevar multiples imagenes, mapas de profundidad y metadatos de live-photo en un solo contenedor. El detalle: HEVC esta gravado por patentes, asi que Windows, Android antiguo, la mayoria de los navegadores y muchos servicios web no decodifican HEIC nativamente.</p>
+<p><b>JPG (JPEG)</b> ha sido el formato predeterminado de foto web desde 1992. Usa compresion con perdidas basada en DCT, viene en cada biblioteca de imagen en cada plataforma y no tiene sorpresas de compatibilidad. Los archivos son mas grandes que HEIC o WebP con calidad visual equivalente, pero si algo necesita abrir la imagen de manera confiable - correo, contratos, impresion, archivado - JPG es la apuesta mas segura.</p>
+<p><b>WebP</b> es la respuesta de Google a "mas pequeno que JPG, mejor calidad que PNG". Viene con modos con y sin perdidas, soporta transparencia (a diferencia de JPG) y es decodificado nativamente en cada navegador actual (Chrome, Firefox, Safari 14+, Edge). Permanece menos ampliamente soportado en clientes de correo y algunas herramientas de escritorio antiguas, asi que aun no es un reemplazo universal.</p>
+
+<br/><h2 class="text-uppercase"><b>Comparacion lado a lado de tamano y calidad</b></h2>
+<div class="w3-responsive">
+<table class="w3-table-all w3-small">
+<tr><th>Escenario</th><th>HEIC</th><th>JPG</th><th>WebP</th></tr>
+<tr><td>Foto iPhone 12MP en calidad predeterminada</td><td>~1.5-2.5&nbsp;MB</td><td>~3.5-5&nbsp;MB</td><td>~2-3&nbsp;MB</td></tr>
+<tr><td>Captura de pantalla UI (1080p)</td><td>~150-250&nbsp;KB</td><td>~300-500&nbsp;KB</td><td>~80-180&nbsp;KB (sin perdidas)</td></tr>
+<tr><td>Imagen heroe de sitio web</td><td>N/A (navegadores rechazan)</td><td>~250-600&nbsp;KB</td><td>~120-350&nbsp;KB</td></tr>
+<tr><td>Transparencia soportada?</td><td>Si</td><td>No</td><td>Si</td></tr>
+<tr><td>Amigable para adjunto de correo?</td><td>No (remitente debe convertir)</td><td>Si (universal)</td><td>Parcial (solo clientes modernos)</td></tr>
+</table>
+</div>
+
+<br/><h2 class="text-uppercase"><b>Cuando elegir cada formato</b></h2>
+<p><b>Elige JPG cuando:</b> estas enviando una foto por correo, enviando un documento a un sistema contractual/legal, imprimiendo, subiendo a un servicio que rechaza cualquier otra cosa (portales bancarios, gubernamentales, de seguros), o archivando una foto a largo plazo donde no puedes garantizar soporte futuro de decodificador para HEIC o WebP.</p>
+<p><b>Elige WebP cuando:</b> la imagen va en tu propio sitio web y controlas el servidor. WebP corta significativamente el presupuesto de peso de pagina - importante para cargas mas rapidas y para visitantes en datos moviles. Todos los navegadores modernos lo decodifican; el servidor aun puede servir un fallback JPG via el elemento <code>&lt;picture&gt;</code> para el <1% de visitantes en clientes antiguos.</p>
+<p><b>Manten HEIC cuando:</b> las fotos permanecen en el ecosistema Apple (app Photos, iCloud, Mensajes entre iPhones, AirDrop entre Macs). Los archivos son la mitad del tamano, la calidad es impecable y no hay paso de conversion para introducir artefactos. En el momento en que necesites enviarlos fuera de Apple, convierte a JPG o WebP primero.</p>
+
+<br/><h2 class="text-uppercase"><b>Caminos rapidos de conversion para las cuatro situaciones comunes</b></h2>
+<p><b>Foto de iPhone &rarr; correo o carga web.</b> Usa <a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> - suelta el archivo .heic, descarga el .jpg, adjunta. Tambien puedes configurar Ajustes de iPhone &rarr; Camara &rarr; Formatos &rarr; Mas Compatible para guardar fotos futuras como JPG por defecto.</p>
+<p><b>Lote de iPhone &rarr; WebP para un sitio web.</b> Convierte HEIC &rarr; JPG primero, luego JPG &rarr; WebP con <a href="/image-tools/compress-image.html">Compress JPEG</a> o una tuberia en tiempo de construccion. Una conversion en dos pasos sigue siendo mucho mas pequena que el HEIC original cuando se entrega por HTTP.</p>
+<p><b>Captura de pantalla PNG &rarr; WebP.</b> Usa <a href="/image-converter-tools/svg-to-png.html">SVG to PNG</a> al reves via ImageMagick o pegalo en <a href="/image-tools/imagemagick-online.html">ImageMagick Online</a> con <code>-define webp:lossless=true</code>. WebP sin perdidas de capturas de pantalla UI tipicamente corta el tamano un 25-45%.</p>
+<p><b>HEIC con capa de transparencia &rarr; WebP o PNG.</b> JPG eliminara el canal alfa, asi que evitalo para cualquier imagen con transparencia. <a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> aplana el alfa a blanco; exporta a PNG en su lugar si la transparencia importa, o a WebP (sin perdidas) para un balance recomendado calidad/tamano.</p>
+
+<br/><h2 class="text-uppercase"><b>Soporte de navegador y dispositivo de un vistazo</b></h2>
+<p><b>Chrome / Edge</b>: WebP (desde 2014), HEIC no. <b>Firefox</b>: WebP si, HEIC no. <b>Safari (macOS)</b>: WebP desde 14, HEIC nativo. <b>Safari (iOS)</b>: WebP desde 14, HEIC nativo. <b>Windows Explorer</b>: HEIC requiere la extension paga Microsoft HEVC Video; WebP nativo desde Windows 10. <b>Android Photos</b>: WebP nativo, HEIC nativo desde Android 10. <b>Clientes de correo</b>: JPG es el unico formato garantizado para renderizar en Gmail, Outlook, Apple Mail, ProtonMail y correo web empresarial. Planifica en consecuencia.</p>
+
+<br/><h2 class="text-uppercase"><b>Arbol de decision resumido</b></h2>
+<p>1. El archivo va fuera de tu control (correo, portal, sistema legal, impresion)? &rarr; <b>JPG</b>.<br/>
+2. Va en un sitio web que controlas con trafico de navegador moderno? &rarr; <b>WebP</b> (fallback JPG via <code>&lt;picture&gt;</code>).<br/>
+3. Permaneciendo dentro de Apple (Photos, iCloud, iMessage)? &rarr; <b>HEIC</b>.<br/>
+4. Transparencia requerida? &rarr; <b>WebP</b> (sin perdidas) o <b>PNG</b>; nunca JPG.</p>
+
+<br/><h2 class="text-uppercase"><b>Herramientas relacionadas</b></h2>
+<ul>
+    <li><a href="/image-converter-tools/heic-to-jpg.html">Convertidor HEIC a JPG</a> - el camino mas rapido fuera de HEIC para correo y web.</li>
+    <li><a href="/image-tools/compress-image.html">Compress JPEG</a> - reduce el tamano del archivo despues de la conversion.</li>
+    <li><a href="/image-converter-tools/svg-to-png.html">SVG to PNG/WebP</a> - empareja con ImageMagick para tuberias WebP sin perdidas.</li>
+    <li><a href="/image-tools/imagemagick-online.html">ImageMagick Online</a> - conversion de formato con script en el navegador.</li>
+</ul>
+
+<p><br/><a href="/image-converter-tools.html">&larr; Volver a Herramientas Convertidoras de Imagen</a></p>
+</div>
