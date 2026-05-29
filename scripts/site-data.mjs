@@ -848,6 +848,12 @@ export const INFO_ROUTES = new Set([
   '/guides/crop-and-rotate-image.html',
 
   // 2026-05-28 plan-warm-pascal-v2 S1 multilingual migration (locale-prefixed guide URLs).
+  // plan-warm-pascal-v3 S2 batch 1 (2026-05-29) - 5 locale variants of /guides/lcd-test-online.html
+  '/guides/pt/lcd-test-online.html',
+  '/guides/es/lcd-test-online.html',
+  '/guides/vi/lcd-test-online.html',
+  '/guides/id/lcd-test-online.html',
+  '/guides/de/lcd-test-online.html',
   '/guides/pt/compress-folder.html', // pt canonical of /guides/compactar-pasta.html
   '/guides/pt/compress-zip-file.html', // pt canonical of /guides/comprimir-arquivo-zip.html
   '/guides/pt/compress-folder-to-zip.html', // pt canonical of /guides/comprimir-pasta-zipada.html
@@ -872,6 +878,12 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // plan-warm-pascal-v3 S2 batch 1 (2026-05-29) - 5 locale variants of /guides/lcd-test-online.html
+  '/guides/pt/lcd-test-online.html',
+  '/guides/es/lcd-test-online.html',
+  '/guides/vi/lcd-test-online.html',
+  '/guides/id/lcd-test-online.html',
+  '/guides/de/lcd-test-online.html',
   '/guides/heic-vs-jpg-vs-webp.html',
   '/guides/dead-pixel-testing-guide.html',
   '/guides/unix-timestamps-explained.html',
@@ -2019,6 +2031,14 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/zip-a-folder.html': 'guide/pt/zip-a-folder.jsp',
   '/guides/es/compress-folder-to-zip-online-free.html': 'guide/es/compress-folder-to-zip-online-free.jsp',
   '/guides/es/reduce-zip-size-online.html': 'guide/es/reduce-zip-size-online.jsp',
+  // plan-warm-pascal-v3 S2 batch 1 (2026-05-29) — first 5 locale variants
+  // of /guides/lcd-test-online.html. 5 new BODY* CMS bundles per locale.
+  // Translations: machine-quality, locale_pending_review until human edit.
+  '/guides/pt/lcd-test-online.html': 'guide/pt/lcd-test-online.jsp',
+  '/guides/es/lcd-test-online.html': 'guide/es/lcd-test-online.jsp',
+  '/guides/vi/lcd-test-online.html': 'guide/vi/lcd-test-online.jsp',
+  '/guides/id/lcd-test-online.html': 'guide/id/lcd-test-online.jsp',
+  '/guides/de/lcd-test-online.html': 'guide/de/lcd-test-online.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
