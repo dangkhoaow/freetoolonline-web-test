@@ -1,0 +1,53 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Como saber se um JPG foi comprimido demais</b></h1>
+    <p><em>Ultima revisao 2026-05-04. A maioria das reclamacoes "este JPG parece ruim" sao super-compressao em vez de uma fonte pequena ou de baixa resolucao: o arquivo foi salvo em um valor de qualidade baixo (ou re-salvo varias vezes) e detalhe foi descartado em cada passada. O <a href="/image-tools/get-jpeg-compression-level.html">JPEG Compression Level Checker</a> gratuito le o valor de qualidade com que o arquivo foi salvo para que voce possa decidir se a imagem ainda tem margem para comprimir mais ou se ja foi empurrada alem do limite de artefato visivel e re-codificar so vai piorar.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Decisao em 30 segundos.</b> Abra <a href="/image-tools/get-jpeg-compression-level.html">JPEG Compression Level Checker</a>, envie o JPG e leia o valor de qualidade reportado (convencao Independent JPEG Group: 1 pior, 100 melhor). <b>q90 e acima</b> - visualmente quase sem perdas em uma foto tipica; voce tem margem para comprimir mais se tamanho de arquivo importa. <b>q75 a q89</b> - a faixa web comum; mais compressao e possivel, mas artefatos podem comecar a aparecer. <b>q60 a q74</b> - voce esta no ponto de quebra visual; outra gravacao vai produzir blocos visiveis em areas suaves. <b>Abaixo de q60</b> - ja super-comprimido; re-codificar perde detalhe sem economizar bytes significativos. A decisao e "usar como esta" ou "re-fotografar / re-exportar do original" - nao "comprimir de novo".</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>O que o valor de qualidade JPEG realmente significa</b></h2>
+    <p>JPEG (o formato de imagem com perdas definido pela ITU-T T.81 / ISO/IEC 10918-1) comprime dividindo a imagem em blocos de 8x8 pixels, transformando cada bloco para o espaco de frequencia (a Transformada Discreta do Cosseno) e dividindo os coeficientes de frequencia por uma tabela de quantizacao por frequencia - uma matriz de 64 entradas de inteiros. Inteiros mais altos na tabela significam arredondamento mais agressivo e mais bytes economizados; inteiros mais baixos significam detalhe mais fino preservado ao custo de tamanho de arquivo. O numero de "qualidade" que voce ve em editores de imagem e um dial de 1-100 que escala essas tabelas de quantizacao: cada codificador aplica o dial ligeiramente diferente, mas a bem conhecida convencao Independent JPEG Group `cjpeg` (a referencia de facto por tras de Photoshop, ImageMagick, GIMP e a maioria das ferramentas web) mapeia q100 para "sem quantizacao" (quase sem perdas), q75 para um padrao web balanceado, e valores mais baixos para tabelas progressivamente mais grosseiras. O valor de qualidade e armazenado junto com o JPEG para que um leitor possa recupera-lo depois - que e o que o <a href="/image-tools/get-jpeg-compression-level.html">JPEG Compression Level Checker</a> le de volta.</p>
+
+    <h2 class="text-uppercase"><b>Lendo a qualidade salva de um JPG existente</b></h2>
+    <p>Envie o arquivo para <a href="/image-tools/get-jpeg-compression-level.html">JPEG Compression Level Checker</a> e a ferramenta inspeciona as tabelas de quantizacao embutidas no arquivo e estima o valor de qualidade equivalente IJG com que o JPG foi salvo. O arquivo e processado no servico AWS freetoolonline (o pipeline de upload padrao) e o valor de qualidade e retornado para inspecao - util quando voce tem um JPG de origem desconhecida (baixado da web, enviado por chat, exportado de um editor desconhecido) e quer saber sua margem de compressao antes de decidir se vai comprimir mais.</p>
+    <details class="faq-item">
+  <summary><b>O /get-jpeg-compression-level.html envia o arquivo ou roda localmente no seu navegador?</b></summary>
+  <p>A ponte /get-jpeg-compression-level.html envia o arquivo para o servidor freetoolonline. A pagina nao e uma ferramenta totalmente offline, apenas-cliente ou apenas-navegador, e nao roda localmente. Esta afirmacao de upload e direta: o servidor freetoolonline lida com o processamento, e o resultado e rotacionado para fora do armazenamento depois da janela de retencao padrao.</p>
+</details>
+<h2 class="text-uppercase"><b>Quatro sinais visiveis de super-compressao</b></h2>
+    <p>O numero de qualidade e um proxy util, mas um JPG tambem pode ser diagnosticado visualmente. Os quatro sinais abaixo sao todos consequencias do DCT 8x8 + quantizacao agressiva que o JPEG usa; um JPG mostrando qualquer um deles em zoom 100% foi comprimido alem do limite confortavel para aquele conteudo.</p>
+    <ul>
+        <li><b>Blocos em areas suaves.</b> Um ceu azul ou parede lisa comeca a mostrar quadrados leves de 8x8 pixels, especialmente quando a cor faz transicao lentamente. Este e o sinal mais confiavel de JPEG de baixa qualidade: o gradiente suave esta sendo aproximado por blocos constantes por partes.</li>
+        <li><b>Halos perto de bordas nitidas.</b> Em torno de bordas de alto contraste (texto em fundo simples, a silhueta de um predio contra o ceu, um logo preto em branco) voce ve ecos fantasmas leves da borda - alguns pixels de "anel" antes e depois. Estes sao os coeficientes DCT de alta frequencia sendo cortados pela etapa de quantizacao; o codificador nao consegue representar uma borda em degrau perfeita com o orcamento que tem.</li>
+        <li><b>Sangramento de cor e bandeamento.</b> Gradientes suaves (um por do sol, um fundo desbotando) comecam a mostrar transicoes em degrau em vez de uma mistura continua. As cores sangram ligeiramente fora de seus limites porque o JPEG faz sub-amostragem de croma em resolucao menor que a luma (o padrao 4:2:0).</li>
+        <li><b>Perda de detalhe fino.</b> Cilios, tecido fino, cabelo, texto pequeno e folhas pequenas em uma arvore todos borram em mingau. A informacao de alta frequencia se foi; nenhuma edicao pode recupera-la apenas do JPEG.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Por que re-codificar geralmente piora</b></h2>
+    <p>JPEG e um formato com perdas: cada gravacao descarta informacao. Re-salvar um JPG ja comprimido (mesmo em um numero de qualidade mais alto) nao recupera o detalhe que foi jogado fora na primeira codificacao - apenas adiciona uma rodada nova de quantizacao em cima dos dados ja quantizados. Isso e perda geracional, e aparece como suavidade cumulativa, cores derivando e bloqueio crescente. Entao uma vez que um JPG esta abaixo de aproximadamente q60, o movimento certo quase nunca e "comprimi-lo de novo em q90" - e "voltar para o original e re-exportar". Se voce nao tem o original, trate o JPG existente como o piso: use-o como esta em vez de re-salvar.</p>
+    <p>A excecao e quando voce esta intencionalmente encolhendo um JPG para uma entrega especifica (um anexo de email, um upload de chat). Nesse caso a ferramenta certa e <a href="/image-tools/compress-image.html">Compress Image</a> na fonte original (mais alta qualidade disponivel) - nao em um JPG previamente comprimido. Veja <a href="/guides/how-to-choose-a-compression-level.html">Como escolher um nivel de compressao - Qualidade vs Tamanho de arquivo</a> para um seletor de valor de qualidade ajustado ao canal de entrega, e <a href="/guides/when-to-compress-vs-convert-an-image.html">Quando comprimir vs converter uma imagem</a> para a questao de escolha de formato.</p>
+
+    <h2 class="text-uppercase"><b>Tabela de valor de qualidade (convencao IJG cjpeg)</b></h2>
+    <p>A convencao IJG `cjpeg -quality` e a escala pratica que a maioria das ferramentas segue. Use estes como guias quando ler um valor de <a href="/image-tools/get-jpeg-compression-level.html">JPEG Compression Level Checker</a>.</p>
+    <ul>
+        <li><b>q95 a q100</b> - linha de base de impressao. Visualmente identico ao original na tela; tamanho de arquivo e grande. E o que editores high-end exportam quando querem JPEG sem perda visivel.</li>
+        <li><b>q85 a q94</b> - o ponto de quebra visual. A maioria dos visualizadores nao consegue diferenciar do original em distancia normal de visualizacao; tamanho de arquivo e aproximadamente metade de q95.</li>
+        <li><b>q75 a q84</b> - o padrao web. Photoshop "Save for Web" e a maioria dos pipelines de imagem CMS miram nesta faixa. Artefatos comecam a ser visiveis em inspecao cuidadosa de areas suaves mas nao em visualizacao do dia-a-dia.</li>
+        <li><b>q60 a q74</b> - a zona de artefatos. Bloqueio e halos aparecem em atencao; aqui e onde apps de chat / mensagens frequentemente re-codificam fotos compartilhadas.</li>
+        <li><b>Abaixo de q60</b> - ja super-comprimido. Use o arquivo como esta ou substitua do original; nao re-salve.</li>
+    </ul>
+
+    <p><em>Guias relacionados de JPG e conversao de imagem: <a href="/guides/how-to-choose-a-compression-level.html">Como escolher um nivel de compressao - Qualidade vs Tamanho de arquivo</a> (a contraparte escolha-antes deste guia leia-depois), <a href="/guides/jpg-vs-png-for-web.html">JPG vs PNG para a web</a> (escolha de formato), <a href="/guides/heic-vs-jpg-vs-webp.html">HEIC vs JPG vs WebP</a> (escolha de formato entre alternativas modernas), e <a href="/guides/when-to-compress-vs-convert-an-image.html">Quando comprimir vs converter uma imagem</a> (decisao comprimir vs mudar-formato).</em></p>
+</div>

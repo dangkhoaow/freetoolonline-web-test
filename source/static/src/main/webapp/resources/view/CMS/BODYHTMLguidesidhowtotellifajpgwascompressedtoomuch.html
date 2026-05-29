@@ -1,0 +1,53 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Cara mengetahui apakah JPG dikompresi terlalu banyak</b></h1>
+    <p><em>Tinjauan terakhir 2026-05-04. Sebagian besar keluhan "JPG ini terlihat buruk" adalah kompresi berlebihan daripada sumber kecil atau resolusi rendah: file disimpan pada nilai kualitas rendah (atau disimpan ulang beberapa kali) dan detail dibuang setiap kali. <a href="/image-tools/get-jpeg-compression-level.html">JPEG Compression Level Checker</a> gratis membaca nilai kualitas tempat file disimpan sehingga Anda dapat memutuskan apakah gambar masih memiliki ruang untuk mengompres lebih lanjut atau apakah sudah didorong melewati ambang artefak yang terlihat dan re-encoding hanya akan memperburuknya.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Keputusan 30 detik.</b> Buka <a href="/image-tools/get-jpeg-compression-level.html">JPEG Compression Level Checker</a>, unggah JPG, dan baca nilai kualitas yang dilaporkan (konvensi Independent JPEG Group: 1 terburuk, 100 terbaik). <b>q90 dan di atasnya</b> - hampir tanpa kehilangan secara visual pada foto tipikal; Anda memiliki ruang untuk mengompres lebih lanjut jika ukuran file penting. <b>q75 sampai q89</b> - rentang web umum; kompresi lebih lanjut dimungkinkan tetapi artefak mungkin mulai muncul. <b>q60 sampai q74</b> - Anda berada di titik patah visual; penyimpanan lain akan menghasilkan blok yang terlihat pada area halus. <b>Di bawah q60</b> - sudah dikompres berlebihan; re-encoding kehilangan detail tanpa menyimpan byte yang berarti. Keputusannya adalah "gunakan apa adanya" atau "ambil ulang / ekspor ulang dari aslinya" - bukan "kompres lagi".</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Apa arti nilai kualitas JPEG sebenarnya</b></h2>
+    <p>JPEG (format gambar lossy yang didefinisikan oleh ITU-T T.81 / ISO/IEC 10918-1) mengompres dengan membagi gambar menjadi blok 8x8 piksel, mengubah setiap blok ke ruang frekuensi (Discrete Cosine Transform), dan membagi koefisien frekuensi dengan tabel kuantisasi per-frekuensi - matriks 64-entri bilangan bulat. Bilangan bulat lebih tinggi dalam tabel berarti pembulatan lebih agresif dan lebih banyak byte dihemat; bilangan lebih rendah berarti detail lebih halus terjaga dengan biaya ukuran file. Angka "kualitas" yang Anda lihat di editor gambar adalah dial 1-100 yang menskalakan tabel kuantisasi ini: setiap encoder menerapkan dial sedikit berbeda, tetapi konvensi Independent JPEG Group `cjpeg` yang terkenal (referensi de facto di balik Photoshop, ImageMagick, GIMP, dan sebagian besar alat web) memetakan q100 ke "tanpa kuantisasi" (hampir lossless), q75 ke default web yang seimbang, dan nilai yang lebih rendah ke tabel yang semakin kasar. Nilai kualitas disimpan bersama JPEG sehingga pembaca dapat memulihkannya nanti - yang adalah apa yang <a href="/image-tools/get-jpeg-compression-level.html">JPEG Compression Level Checker</a> baca kembali.</p>
+
+    <h2 class="text-uppercase"><b>Membaca kualitas tersimpan JPG yang ada</b></h2>
+    <p>Unggah file ke <a href="/image-tools/get-jpeg-compression-level.html">JPEG Compression Level Checker</a> dan alat memeriksa tabel kuantisasi yang tertanam dalam file dan memperkirakan nilai kualitas setara IJG di mana JPG disimpan. File diproses di layanan AWS freetoolonline (pipeline unggah standar) dan nilai kualitas dikembalikan untuk inspeksi - berguna ketika Anda memiliki JPG dari asal yang tidak diketahui (diunduh dari web, dikirim melalui chat, diekspor dari editor yang tidak diketahui) dan ingin mengetahui ruang kompresinya sebelum memutuskan apakah akan mengompres lebih lanjut.</p>
+    <details class="faq-item">
+  <summary><b>Apakah /get-jpeg-compression-level.html mengunggah file atau berjalan secara lokal di browser Anda?</b></summary>
+  <p>Jembatan /get-jpeg-compression-level.html mengunggah file ke server freetoolonline. Halaman ini bukan alat yang sepenuhnya offline, hanya-klien, atau hanya-browser, dan tidak berjalan secara lokal. Klaim unggah ini langsung: server freetoolonline menangani pemrosesan, dan hasilnya berputar keluar dari penyimpanan setelah jendela retensi standar.</p>
+</details>
+<h2 class="text-uppercase"><b>Empat tanda terlihat dari kompresi berlebihan</b></h2>
+    <p>Angka kualitas adalah proxy yang berguna, tetapi JPG juga dapat didiagnosis secara visual. Empat tanda di bawah ini semuanya konsekuensi dari DCT 8x8 + kuantisasi agresif yang digunakan JPEG; JPG yang menunjukkan salah satu dari tanda-tanda ini pada zoom 100% telah dikompres melewati ambang yang nyaman untuk konten itu.</p>
+    <ul>
+        <li><b>Blok pada area halus.</b> Langit biru atau dinding polos mulai menunjukkan kotak 8x8 piksel yang samar, terutama ketika warna bertransisi perlahan. Ini adalah tanda paling andal dari JPEG kualitas rendah: gradien halus sedang didekati oleh blok konstan secara bertahap.</li>
+        <li><b>Halo dekat tepi tajam.</b> Di sekitar tepi kontras tinggi (teks pada latar belakang polos, siluet bangunan terhadap langit, logo hitam pada putih) Anda melihat gema hantu samar dari tepi - beberapa piksel "cincin" sebelum dan sesudahnya. Ini adalah koefisien DCT frekuensi tinggi yang dipotong oleh langkah kuantisasi; encoder tidak dapat merepresentasikan tepi langkah yang sempurna dengan anggaran yang dimilikinya.</li>
+        <li><b>Pendarahan warna dan banding.</b> Gradien halus (matahari terbenam, latar belakang yang memudar) mulai menunjukkan transisi langkah alih-alih perpaduan kontinu. Warna sedikit berdarah keluar dari batasnya karena JPEG sub-sampel chroma pada resolusi lebih rendah dari luma (default 4:2:0).</li>
+        <li><b>Hilangnya detail halus.</b> Bulu mata, anyaman kain, rambut, teks kecil, dan daun kecil di pohon semua kabur menjadi bubur. Informasi frekuensi tinggi hilang; tidak ada pengeditan yang dapat memulihkannya hanya dari JPEG.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Mengapa re-encoding biasanya memperburuknya</b></h2>
+    <p>JPEG adalah format lossy: setiap penyimpanan membuang informasi. Menyimpan ulang JPG yang sudah dikompresi (bahkan pada angka kualitas yang lebih tinggi) tidak memulihkan detail yang dibuang dalam encode pertama - itu hanya menambahkan putaran kuantisasi baru di atas data yang sudah dikuantisasi. Ini adalah generation loss, dan muncul sebagai kelembutan kumulatif, warna yang menyimpang, dan pemblokiran yang tumbuh. Jadi setelah JPG berada di bawah sekitar q60 langkah yang tepat hampir tidak pernah "mengompresnya lagi pada q90" - itu adalah "kembali ke aslinya dan ekspor ulang". Jika Anda tidak memiliki aslinya, perlakukan JPG yang ada sebagai lantai: gunakan apa adanya alih-alih menyimpan ulang.</p>
+    <p>Pengecualiannya adalah ketika Anda sengaja menyusutkan JPG untuk pengiriman tertentu (lampiran email, unggahan chat). Dalam hal ini alat yang tepat adalah <a href="/image-tools/compress-image.html">Compress Image</a> pada sumber asli (kualitas tertinggi yang tersedia) - bukan pada JPG yang sebelumnya telah dikompresi. Lihat <a href="/guides/how-to-choose-a-compression-level.html">Cara memilih level kompresi - Kualitas vs Ukuran File</a> untuk pemilih nilai kualitas yang disesuaikan dengan saluran pengiriman, dan <a href="/guides/when-to-compress-vs-convert-an-image.html">Kapan mengompres vs mengkonversi gambar</a> untuk pertanyaan pilihan format.</p>
+
+    <h2 class="text-uppercase"><b>Tabel nilai kualitas (konvensi IJG cjpeg)</b></h2>
+    <p>Konvensi IJG `cjpeg -quality` adalah skala praktis yang diikuti sebagian besar alat. Gunakan ini sebagai panduan ketika membaca nilai dari <a href="/image-tools/get-jpeg-compression-level.html">JPEG Compression Level Checker</a>.</p>
+    <ul>
+        <li><b>q95 sampai q100</b> - garis dasar cetak. Secara visual identik dengan aslinya di layar; ukuran file besar. Ini adalah apa yang diekspor editor kelas atas ketika mereka menginginkan JPEG tanpa kehilangan yang terlihat.</li>
+        <li><b>q85 sampai q94</b> - titik patah visual. Sebagian besar penonton tidak dapat membedakannya dari aslinya pada jarak melihat normal; ukuran file kira-kira setengah dari q95.</li>
+        <li><b>q75 sampai q84</b> - default web. Photoshop "Save for Web" dan sebagian besar pipeline gambar CMS menargetkan rentang ini. Artefak mulai terlihat pada inspeksi cermat area halus tetapi tidak dalam melihat sehari-hari.</li>
+        <li><b>q60 sampai q74</b> - zona artefak. Pemblokiran dan halo muncul saat diperhatikan; di sinilah aplikasi chat / pesan sering meng-encode ulang foto yang dibagikan.</li>
+        <li><b>Di bawah q60</b> - sudah dikompres berlebihan. Gunakan file apa adanya atau ganti dari aslinya; jangan simpan ulang.</li>
+    </ul>
+
+    <p><em>Panduan JPG dan konversi gambar terkait: <a href="/guides/how-to-choose-a-compression-level.html">Cara memilih level kompresi - Kualitas vs Ukuran File</a> (rekan pilih-sebelum dari panduan baca-sesudah ini), <a href="/guides/jpg-vs-png-for-web.html">JPG vs PNG untuk web</a> (pilihan format), <a href="/guides/heic-vs-jpg-vs-webp.html">HEIC vs JPG vs WebP</a> (pilihan format di antara alternatif modern), dan <a href="/guides/when-to-compress-vs-convert-an-image.html">Kapan mengompres vs mengkonversi gambar</a> (keputusan kompres vs ubah-format).</em></p>
+</div>
