@@ -1,0 +1,79 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>¿Conversión FFmpeg Online Atascada? Tres Correcciones (y Prueba de 30 Segundos)</b></h1>
+    <p><em>Última revisión: 2026-05-03. Subiste un video a un conversor ffmpeg online, presionaste "convertir," y la barra de progreso se congeló - o nunca empezó a moverse. Esta guía nombra las tres causas comunes (límite de memoria del navegador, pestaña en segundo plano, codec que el build WASM no soporta), da una corrección de una línea por causa, y muestra una prueba de 30 segundos que te dice cuál golpeaste.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Respuesta de 30 segundos.</b> El navegador se quedó sin memoria porque el archivo era demasiado grande para WASM en pestaña, O la pestaña estaba en segundo plano y el SO suspendió el worker, O la fuente usa un codec que el build WASM ffmpeg no incluye. Recarga la pestaña y suelta un archivo pequeño de prueba (por ejemplo, un clip de 5 segundos a 720p) en <a href="/video-tools/ffmpeg-online.html">la herramienta ffmpeg online</a>. Si el clip pequeño convierte en segundos, tu fallo original fue Causa 1 (memoria) o Causa 3 (codec). Si incluso el clip pequeño se atasca, es Causa 2 (pestaña en segundo plano).</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Causa 1: límite de memoria del navegador en WASM ffmpeg</b></h2>
+    <p>WASM ffmpeg en el navegador es un ffmpeg autocontenido compilado a WebAssembly que se ejecuta enteramente en la pestaña. El compromiso: el módulo WASM de la pestaña típicamente obtiene 2 GB de espacio de direcciones (4 GB con builds memory64 explícitas), y un solo video fuente 4K más los búferes del codificador en vuelo y las matrices de conversión de espacio de color pueden exceder eso en clips largos. Cuando eso pasa, ffmpeg o muere silenciosamente o se atasca en un porcentaje que nunca avanza. Los archivos fuente 4K largos son el disparador más común, pero una fuente 1080p H.265 larga con audio 5.1 también puede empujar el límite en teléfonos y laptops más antiguos.</p>
+    <p><b>Corrección.</b> Recorta la fuente a un clip más corto primero, luego convierte. O ejecuta ffmpeg localmente para archivos que excedan unos 500 MB - el binario de escritorio ffmpeg tiene acceso a toda la RAM del sistema, no solo a un sandbox de 2 GB. La guía companion proactiva <a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs FFmpeg local - cuándo gana cada uno</a> recorre la decisión de tamaño y runtime antes de la subida, para que puedas elegir la ruta correcta en el primer intento.</p>
+
+    <h2 class="text-uppercase"><b>Causa 2: la pestaña pasó a segundo plano; el SO suspendió el worker</b></h2>
+    <p>Los navegadores modernos (Chrome, Firefox, Safari) limitan o suspenden completamente los Web Workers en pestañas de segundo plano para ahorrar batería. Una conversión ffmpeg larga que se ejecuta mientras la pestaña está oculta puede congelarse indefinidamente en escritorio y casi siempre se congela en móvil (iOS Safari es especialmente agresivo). La conversión no está realmente rota - el SO la ha pausado - pero al lector le parece idéntico a un atasco duro.</p>
+    <p><b>Corrección.</b> Mantén la pestaña en primer plano durante la duración de la conversión. En laptop, no dejes que se cierre la tapa (dormir también pausa el worker). En teléfono, no cambies de apps; bloquea la pantalla con la pestaña aún en foco si debes, pero una pestaña en segundo plano mientras la pantalla está encendida usualmente sigue siendo limitada. Algunas herramientas ffmpeg online documentan un truco "keep-alive" (por ejemplo, bucle de audio silencioso, o un pulso periódico `noSleep`) - lee las notas del autor de la herramienta si tu conversión es lo suficientemente larga para necesitar una.</p>
+    <p>La forma más rápida de confirmar Causa 2 es la prueba de archivo pequeño de la respuesta de 30 segundos arriba: si un clip de 5 segundos también se atasca cuando la pestaña está en segundo plano, pero convierte inmediatamente cuando traes la pestaña al primer plano, la causa es suspensión de pestaña. Si incluso un clip pequeño en primer plano se atasca, el problema está en otro lugar (Causa 1 memoria o Causa 3 codec).</p>
+
+    <h2 class="text-uppercase"><b>Causa 3: archivo fuente usa un codec que el build WASM no incluye</b></h2>
+    <p>WASM ffmpeg del navegador envía un conjunto curado de decodificadores para mantener el tamaño de descarga manejable - típicamente H.264, H.265 (HEVC), VP9, AV1, AAC, MP3, Opus, y un puñado más. Los codecs fuente exóticos (ProRes, DNxHR, JPEG 2000, AC-3 por encima de 5.1 canales, Dolby Atmos en algunos contenedores MOV) pueden no decodificar. La conversión o falla inmediatamente con una línea "codec no encontrado" en el log, o se atasca en 0% porque el decodificador no puede sacar un solo fotograma de la fuente.</p>
+    <p><b>Corrección.</b> Re-codifica la fuente a un codec común localmente primero - incluso un pase rápido de ffmpeg de escritorio que copie el audio y re-codifique el video a H.264 toma solo una fracción del tiempo de grabación original. O elige un contenedor que el build es conocido por soportar; la guía <a href="/guides/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - qué contenedor, cuándo</a> cubre qué combinaciones contenedor/codec son más seguras para ffmpeg basado en navegador, y <a href="/guides/mp4-vs-webm-for-web.html">MP4 vs WebM para la web</a> cubre el contenedor de salida correcto para entrega web.</p>
+
+    <h2 class="text-uppercase"><b>La comprobación de atasco de 30 segundos: clip pequeño en primer plano</b></h2>
+    <p>Tres pasos te dicen si memoria, la pestaña en segundo plano, o el codec atascaron tu conversión - sin matemáticas, solo un clip pequeño y una pestaña en primer plano:</p>
+    <ol>
+        <li><b>Recarga la pestaña</b> (cicla el módulo WASM y limpia cualquier estado zombi del intento anterior).</li>
+        <li><b>Suelta un archivo muy pequeño</b> - un clip de 5 segundos a 720p, ~5 MB. Mantén la pestaña en primer plano.</li>
+        <li><b>Observa.</b>
+            <ul>
+                <li>Clip pequeño convierte en segundos &rarr; el fallo original fue <b>Causa 1 (memoria)</b> si tu fuente era grande, o <b>Causa 3 (codec)</b> si el codec fuente era exótico. Recorta o re-codifica la fuente.</li>
+                <li>Clip pequeño se atasca en primer plano &rarr; el problema es <b>Causa 3 (codec)</b> en el archivo pequeño también, o un conflicto más profundo de navegador/extensión (prueba una ventana privada sin extensiones).</li>
+                <li>Clip pequeño convierte en primer plano pero se atasca cuando cambias de pestañas &rarr; <b>Causa 2 (pestaña en segundo plano)</b>. Mantén la pestaña visible durante toda la conversión.</li>
+            </ul>
+        </li>
+    </ol>
+    <p>Si un clip pequeño tiene éxito y la fuente original era 4K o más larga que 10 minutos, Causa 1 (memoria) es la más probable; recorta la fuente en trozos de ~5 minutos o ejecuta ffmpeg localmente.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>¿Safari soporta WASM ffmpeg?</summary>
+  <p>Sí, Safari reciente soporta la combinación WebAssembly + Web Worker que los builds ffmpeg del navegador usan, pero Safari es más estricto que Chrome en limitación de pestaña de segundo plano y en límites de memoria en navegación privada. Si tu conversión se atasca en Safari pero funciona en Chrome en la misma máquina, la causa usualmente es Causa 2 (pestaña en segundo plano) o presión de memoria en modo privado.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>¿Por qué el mismo archivo convierte localmente en 10 segundos pero se atasca online?</summary>
+  <p>FFmpeg local usa código de máquina nativo y la RAM completa del host; ffmpeg del navegador usa WASM (típicamente más lento por instrucción) y un sandbox de 2 GB. Para archivos que caben cómodamente en el sandbox, la brecha es aproximadamente 2-5x más lenta en el navegador. Para archivos que se acercan o exceden el límite del sandbox, la conversión local termina y la conversión del navegador se queda sin memoria y se atasca. La guía proactiva <a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs FFmpeg local</a> cubre el umbral de tamaño donde cada uno gana.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>¿Puedo aumentar el límite de memoria del navegador?</summary>
+  <p>No del lado de la página. El límite es establecido por el motor del navegador y la configuración de memoria del build WASM. Para navegadores basados en Chromium, el límite es típicamente 2 GB por pestaña; algunos flags experimentales permiten pools más grandes, pero no son amigables al usuario. La corrección confiable es recortar la fuente para que el conjunto de trabajo quepa.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>¿Cuál es el límite de tamaño para conversión online?</summary>
+  <p>Específico de la herramienta. La mayoría de las herramientas ffmpeg de navegador documentan un límite blando entre 100 MB y 2 GB. Por encima de 500 MB, espera atascos frecuentes en teléfonos y laptops más antiguos; por encima de 1 GB, espera atascos en la mayoría de los escritorios también. Si tu fuente es 4K y más larga que 10 minutos, planea o recortar o ejecutar localmente.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>¿Incógnito / Navegación Privada lo empeora?</summary>
+  <p>A veces. Las ventanas privadas en Chrome y Firefox llevan los mismos límites de memoria, pero las extensiones suelen estar deshabilitadas (lo que puede ayudar si una extensión estaba interfiriendo). La Navegación Privada de Safari tiene almacenamiento y límites de memoria más estrictos que pueden disparar Causa 1 antes. Si una conversión se atasca en Privada pero funciona en navegación normal, la causa usualmente es un sandbox más estricto en modo Privado.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Relacionados</b></h2>
+    <ul>
+        <li><a href="/video-tools/ffmpeg-online.html">FFmpeg Online</a> - la herramienta de acción para convertir video y audio en el navegador.</li>
+        <li><a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs FFmpeg local - cuándo gana cada uno</a> - la guía companion proactiva; elige online o local ANTES de subir.</li>
+        <li><a href="/guides/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - qué contenedor, cuándo</a> - referencia de compatibilidad de contenedor.</li>
+        <li><a href="/guides/mp4-vs-webm-for-web.html">MP4 vs WebM para la web</a> - elección de contenedor de entrega web.</li>
+    </ul>
+</div>

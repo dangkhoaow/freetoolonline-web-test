@@ -1,0 +1,79 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Conversão FFmpeg Online Travada? Três Correções (e Teste de 30 Segundos)</b></h1>
+    <p><em>Última revisão: 2026-05-03. Você fez upload de um vídeo para um conversor ffmpeg online, clicou em "converter," e a barra de progresso congelou - ou nunca começou a se mover. Este guia nomeia as três causas comuns (limite de memória do navegador, aba em segundo plano, codec que a build WASM não suporta), dá uma correção de uma linha por causa, e mostra um teste de 30 segundos que te diz qual delas você atingiu.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Resposta de 30 segundos.</b> O navegador ficou sem memória porque o arquivo era muito grande para WASM em aba, OU a aba foi colocada em segundo plano e o SO suspendeu o worker, OU a fonte usa um codec que a build WASM ffmpeg não inclui. Recarregue a aba e solte um arquivo pequeno de teste (por exemplo, um clipe de 5 segundos em 720p) em <a href="/video-tools/ffmpeg-online.html">a ferramenta ffmpeg online</a>. Se o clipe pequeno converte em segundos, sua falha original foi Causa 1 (memória) ou Causa 3 (codec). Se até o clipe pequeno trava, é Causa 2 (aba em segundo plano).</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Causa 1: limite de memória do navegador no WASM ffmpeg</b></h2>
+    <p>WASM ffmpeg no navegador é um ffmpeg auto-contido compilado para WebAssembly que roda inteiramente na aba. O trade-off: o módulo WASM da aba tipicamente recebe 2 GB de espaço de endereço (4 GB com builds memory64 explícitas), e um único vídeo fonte 4K mais os buffers de codificador em voo e arrays de conversão de espaço de cor pode exceder isso em clipes longos. Quando isso acontece, ffmpeg ou morre silenciosamente ou trava em uma porcentagem que nunca avança. Arquivos fonte 4K longos são o gatilho mais comum, mas uma fonte 1080p H.265 longa com áudio 5.1 também pode empurrar o limite em telefones e laptops mais antigos.</p>
+    <p><b>Correção.</b> Apare a fonte para um clipe mais curto primeiro, depois converta. Ou rode ffmpeg localmente para arquivos que excedem cerca de 500 MB - o binário ffmpeg de desktop tem acesso a toda a RAM do sistema, não apenas a um sandbox de 2 GB. O guia companheiro proativo <a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs FFmpeg local - quando cada um vence</a> percorre a decisão de tamanho e runtime antes do upload, então você pode escolher o caminho certo na primeira tentativa.</p>
+
+    <h2 class="text-uppercase"><b>Causa 2: a aba foi colocada em segundo plano; o SO suspendeu o worker</b></h2>
+    <p>Navegadores modernos (Chrome, Firefox, Safari) limitam ou suspendem completamente Web Workers em abas de segundo plano para economizar bateria. Uma conversão longa de ffmpeg que roda enquanto a aba está oculta pode congelar indefinidamente em desktop e quase sempre congela em mobile (iOS Safari é especialmente agressivo). A conversão não está realmente quebrada - o SO a pausou - mas para o leitor parece idêntica a uma trava dura.</p>
+    <p><b>Correção.</b> Mantenha a aba em primeiro plano pela duração da conversão. Em laptop, não deixe a tampa fechar (dormir também pausa o worker). No telefone, não troque de apps; trave a tela com a aba ainda em foco se precisar, mas uma aba em segundo plano enquanto a tela está ligada geralmente ainda é limitada. Algumas ferramentas ffmpeg online documentam um truque "keep-alive" (por exemplo, loop de áudio silencioso, ou um pulso periódico `noSleep`) - leia as notas do autor da ferramenta se sua conversão é longa o suficiente para precisar de um.</p>
+    <p>A forma mais rápida de confirmar Causa 2 é o teste de arquivo pequeno da resposta de 30 segundos acima: se um clipe de 5 segundos também trava quando a aba está em segundo plano, mas converte imediatamente quando você traz a aba para o primeiro plano, a causa é suspensão de aba. Se até um clipe pequeno em primeiro plano trava, o problema está em outro lugar (Causa 1 memória ou Causa 3 codec).</p>
+
+    <h2 class="text-uppercase"><b>Causa 3: arquivo fonte usa um codec que a build WASM não inclui</b></h2>
+    <p>WASM ffmpeg do navegador envia um conjunto curado de decodificadores para manter o tamanho de download gerenciável - tipicamente H.264, H.265 (HEVC), VP9, AV1, AAC, MP3, Opus, e um punhado mais. Codecs fonte exóticos (ProRes, DNxHR, JPEG 2000, AC-3 acima de 5.1 canais, Dolby Atmos em alguns containers MOV) podem não decodificar. A conversão ou falha imediatamente com uma linha "codec não encontrado" no log, ou trava em 0% porque o decodificador não consegue puxar um único frame da fonte.</p>
+    <p><b>Correção.</b> Re-codifique a fonte para um codec comum localmente primeiro - mesmo uma passagem rápida de ffmpeg de desktop que copia o áudio e re-codifica o vídeo para H.264 leva apenas uma fração do tempo de gravação original. Ou escolha um container que a build é conhecida por suportar; o guia <a href="/guides/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - qual container, quando</a> cobre quais combinações container/codec são mais seguras para ffmpeg baseado em navegador, e <a href="/guides/mp4-vs-webm-for-web.html">MP4 vs WebM para a web</a> cobre o container de saída certo para entrega web.</p>
+
+    <h2 class="text-uppercase"><b>A verificação de trava de 30 segundos: clipe pequeno em primeiro plano</b></h2>
+    <p>Três passos te dizem se memória, a aba em segundo plano, ou o codec travou sua conversão - sem matemática, apenas um clipe pequeno e uma aba em primeiro plano:</p>
+    <ol>
+        <li><b>Recarregue a aba</b> (cicla o módulo WASM e limpa qualquer estado zumbi da tentativa anterior).</li>
+        <li><b>Solte um arquivo muito pequeno</b> - um clipe de 5 segundos 720p, ~5 MB. Mantenha a aba em primeiro plano.</li>
+        <li><b>Observe.</b>
+            <ul>
+                <li>Clipe pequeno converte em segundos &rarr; a falha original foi <b>Causa 1 (memória)</b> se sua fonte era grande, ou <b>Causa 3 (codec)</b> se o codec fonte era exótico. Apare ou re-codifique a fonte.</li>
+                <li>Clipe pequeno trava em primeiro plano &rarr; o problema é <b>Causa 3 (codec)</b> no arquivo pequeno também, ou um conflito mais profundo de navegador/extensão (tente uma janela privada sem extensões).</li>
+                <li>Clipe pequeno converte em primeiro plano mas trava quando você troca de abas &rarr; <b>Causa 2 (aba em segundo plano)</b>. Mantenha a aba visível pela conversão completa.</li>
+            </ul>
+        </li>
+    </ol>
+    <p>Se um clipe pequeno tem sucesso e a fonte original era 4K ou mais longa que 10 minutos, Causa 1 (memória) é a mais provável; apare a fonte em pedaços de ~5 minutos ou rode ffmpeg localmente.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>Safari suporta WASM ffmpeg?</summary>
+  <p>Sim, Safari recente suporta a combinação WebAssembly + Web Worker que builds ffmpeg de navegador usam, mas Safari é mais estrito que Chrome em limitação de aba de segundo plano e em limites de memória em navegação privada. Se sua conversão trava no Safari mas funciona no Chrome na mesma máquina, a causa geralmente é Causa 2 (aba em segundo plano) ou pressão de memória em modo privado.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Por que o mesmo arquivo converte localmente em 10 segundos mas trava online?</summary>
+  <p>FFmpeg local usa código de máquina nativo e a RAM completa do host; ffmpeg do navegador usa WASM (tipicamente mais lento por instrução) e um sandbox de 2 GB. Para arquivos que cabem confortavelmente no sandbox, a diferença é aproximadamente 2-5x mais lenta no navegador. Para arquivos que se aproximam ou excedem o limite do sandbox, a conversão local termina e a conversão do navegador fica sem memória e trava. O guia proativo <a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs FFmpeg local</a> cobre o limite de tamanho onde cada um vence.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Posso aumentar o limite de memória do navegador?</summary>
+  <p>Não do lado da página. O limite é definido pelo motor do navegador e pela configuração de memória da build WASM. Para navegadores baseados em Chromium, o limite é tipicamente 2 GB por aba; algumas flags experimentais permitem pools maiores, mas não são amigáveis ao usuário. A correção confiável é aparar a fonte para que o conjunto de trabalho caiba.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Qual é o limite de tamanho para conversão online?</summary>
+  <p>Específico da ferramenta. A maioria das ferramentas ffmpeg do navegador documentam um limite suave entre 100 MB e 2 GB. Acima de 500 MB, espere travas frequentes em telefones e laptops mais antigos; acima de 1 GB, espere travas na maioria dos desktops também. Se sua fonte é 4K e mais longa que 10 minutos, planeje aparar ou rodar localmente.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Modo Incógnito / Navegação Privada piora isto?</summary>
+  <p>Às vezes. Janelas privadas em Chrome e Firefox carregam os mesmos limites de memória, mas as extensões geralmente são desativadas (o que pode ajudar se uma extensão estava interferindo). Navegação Privada do Safari tem armazenamento e limites de memória mais estritos que podem disparar Causa 1 antes. Se uma conversão trava em Privada mas funciona em navegação normal, a causa geralmente é um sandbox mais estrito em modo Privado.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Relacionados</b></h2>
+    <ul>
+        <li><a href="/video-tools/ffmpeg-online.html">FFmpeg Online</a> - a ferramenta de ação para converter vídeo e áudio no navegador.</li>
+        <li><a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs FFmpeg local - quando cada um vence</a> - o guia companheiro proativo; escolha online ou local ANTES de fazer upload.</li>
+        <li><a href="/guides/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - qual container, quando</a> - referência de compatibilidade de container.</li>
+        <li><a href="/guides/mp4-vs-webm-for-web.html">MP4 vs WebM para a web</a> - escolha de container de entrega web.</li>
+    </ul>
+</div>

@@ -1,0 +1,79 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>FFmpeg-Online-Konvertierung Hängt? Drei Behebungen (und 30-Sekunden-Test)</b></h1>
+    <p><em>Zuletzt geprüft: 2026-05-03. Sie haben ein Video in einen Online-FFmpeg-Konverter hochgeladen, "Konvertieren" gedrückt, und der Fortschrittsbalken fror ein - oder begann nie sich zu bewegen. Diese Anleitung benennt die drei häufigen Ursachen (Browser-Speicherlimit, Hintergrund-Tab, Codec, den der WASM-Build nicht unterstützt), gibt eine einzeilige Behebung pro Ursache, und zeigt einen 30-Sekunden-Test, der Ihnen sagt, welche Sie getroffen haben.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-Sekunden-Antwort.</b> Dem Browser ist der Speicher ausgegangen, weil die Datei zu groß für WASM-im-Tab war, ODER der Tab wurde in den Hintergrund verschoben und das OS hat den Worker suspendiert, ODER die Quelle verwendet einen Codec, den der WASM-FFmpeg-Build nicht enthält. Laden Sie den Tab neu und legen Sie eine winzige Testdatei (z.B. einen 5-Sekunden-720p-Clip) in <a href="/video-tools/ffmpeg-online.html">das Online-FFmpeg-Tool</a>. Wenn der kleine Clip in Sekunden konvertiert, war Ihr ursprünglicher Fehler Ursache 1 (Speicher) oder Ursache 3 (Codec). Wenn selbst der kleine Clip hängt, ist es Ursache 2 (Tab-Hintergrund).</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Ursache 1: Browser-Speicherlimit auf WASM-FFmpeg</b></h2>
+    <p>WASM-FFmpeg im Browser ist ein eigenständiges FFmpeg, das zu WebAssembly kompiliert wurde und vollständig im Tab läuft. Der Kompromiss: das WASM-Modul des Tabs erhält typischerweise 2 GB Adressraum (4 GB mit expliziten memory64-Builds), und eine einzelne 4K-Quelle plus die in-Flight-Encoder-Buffer und Farbraum-Konvertierungs-Arrays können das bei langen Clips überschreiten. Wenn das passiert, stirbt FFmpeg entweder still oder hängt bei einem Prozentsatz, der nie voranschreitet. Lange 4K-Quelldateien sind der häufigste Auslöser, aber eine lange 1080p-H.265-Quelle mit 5.1-Audio kann das Limit auch auf Telefonen und älteren Laptops überschreiten.</p>
+    <p><b>Behebung.</b> Schneiden Sie die Quelle zuerst auf einen kürzeren Clip zu, dann konvertieren. Oder führen Sie FFmpeg lokal für Dateien aus, die etwa 500 MB überschreiten - das Desktop-FFmpeg-Binary hat Zugriff auf das gesamte System-RAM, nicht nur auf einen 2-GB-Sandbox. Die proaktive Begleitanleitung <a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs lokales FFmpeg - wann jedes gewinnt</a> geht die Größen- und Laufzeitentscheidung vor dem Hochladen durch, damit Sie den richtigen Pfad beim ersten Versuch wählen können.</p>
+
+    <h2 class="text-uppercase"><b>Ursache 2: Tab wurde in den Hintergrund verschoben; das OS suspendierte den Worker</b></h2>
+    <p>Moderne Browser (Chrome, Firefox, Safari) drosseln oder suspendieren Web Workers in Hintergrund-Tabs vollständig, um Akku zu sparen. Eine lange FFmpeg-Konvertierung, die läuft, während der Tab versteckt ist, kann auf Desktop unbegrenzt einfrieren und friert auf Mobile fast immer ein (iOS Safari ist besonders aggressiv). Die Konvertierung ist nicht wirklich kaputt - das OS hat sie pausiert - aber für den Leser sieht es identisch aus mit einem harten Hänger.</p>
+    <p><b>Behebung.</b> Halten Sie den Tab für die Dauer der Konvertierung im Vordergrund. Auf Laptop, lassen Sie den Deckel nicht schließen (Schlaf pausiert auch den Worker). Auf dem Telefon, wechseln Sie nicht die Apps; sperren Sie den Bildschirm mit dem Tab noch im Fokus, wenn Sie müssen, aber ein Hintergrund-Tab, während der Bildschirm an ist, wird normalerweise immer noch gedrosselt. Einige Online-FFmpeg-Tools dokumentieren einen "Keep-Alive"-Trick (z.B. stille Audio-Schleife, oder ein periodischer `noSleep`-Impuls) - lesen Sie die Notizen des Tool-Autors, wenn Ihre Konvertierung lang genug ist, um einen zu benötigen.</p>
+    <p>Der schnellste Weg, Ursache 2 zu bestätigen, ist der Klein-Datei-Test aus der 30-Sekunden-Antwort oben: wenn ein 5-Sekunden-Clip auch hängt, wenn der Tab im Hintergrund ist, aber sofort konvertiert, wenn Sie den Tab in den Vordergrund bringen, ist die Ursache Tab-Suspendierung. Wenn selbst ein kleiner Clip im Vordergrund hängt, liegt das Problem woanders (Ursache 1 Speicher oder Ursache 3 Codec).</p>
+
+    <h2 class="text-uppercase"><b>Ursache 3: Quelldatei verwendet einen Codec, den der WASM-Build nicht enthält</b></h2>
+    <p>Browser-WASM-FFmpeg liefert eine kuratierte Reihe von Decodern, um die Download-Größe handhabbar zu halten - typischerweise H.264, H.265 (HEVC), VP9, AV1, AAC, MP3, Opus, und eine Handvoll weitere. Exotische Quell-Codecs (ProRes, DNxHR, JPEG 2000, AC-3 über 5.1 Kanäle, Dolby Atmos in einigen MOV-Containern) können möglicherweise nicht decodieren. Die Konvertierung schlägt entweder sofort mit einer "Codec nicht gefunden"-Zeile im Log fehl, oder hängt bei 0%, weil der Decoder keinen einzigen Frame aus der Quelle ziehen kann.</p>
+    <p><b>Behebung.</b> Codieren Sie die Quelle lokal zuerst in einen gängigen Codec um - sogar ein schneller Desktop-FFmpeg-Durchlauf, der das Audio kopiert und das Video zu H.264 neu codiert, dauert nur einen Bruchteil der ursprünglichen Aufnahmezeit. Oder wählen Sie einen Container, den der Build bekannt ist zu unterstützen; die Anleitung <a href="/guides/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - welcher Container, wann</a> deckt ab, welche Container/Codec-Kombinationen am sichersten für browserbasiertes FFmpeg sind, und <a href="/guides/mp4-vs-webm-for-web.html">MP4 vs WebM für das Web</a> deckt den richtigen Ausgabe-Container für Web-Lieferung ab.</p>
+
+    <h2 class="text-uppercase"><b>Die 30-Sekunden-Hang-Prüfung: kleiner Clip im Vordergrund</b></h2>
+    <p>Drei Schritte sagen Ihnen, ob Speicher, der Hintergrund-Tab oder der Codec Ihre Konvertierung zum Hängen gebracht hat - keine Mathematik, nur ein kleiner Clip und ein Vordergrund-Tab:</p>
+    <ol>
+        <li><b>Laden Sie den Tab neu</b> (zykliert das WASM-Modul und räumt alle Zombie-Zustände aus dem vorherigen Versuch auf).</li>
+        <li><b>Legen Sie eine sehr kleine Datei ab</b> - einen 5-Sekunden-720p-Clip, ~5 MB. Halten Sie den Tab im Vordergrund.</li>
+        <li><b>Schauen Sie zu.</b>
+            <ul>
+                <li>Kleiner Clip konvertiert in Sekunden &rarr; der ursprüngliche Fehler war <b>Ursache 1 (Speicher)</b>, wenn Ihre Quelle groß war, oder <b>Ursache 3 (Codec)</b>, wenn der Quell-Codec exotisch war. Kürzen oder codieren Sie die Quelle neu.</li>
+                <li>Kleiner Clip hängt im Vordergrund &rarr; das Problem ist <b>Ursache 3 (Codec)</b> auch bei der kleinen Datei, oder ein tieferer Browser/Extension-Konflikt (versuchen Sie ein privates Fenster ohne Erweiterungen).</li>
+                <li>Kleiner Clip konvertiert im Vordergrund aber hängt, wenn Sie Tabs wechseln &rarr; <b>Ursache 2 (Tab-Hintergrund)</b>. Halten Sie den Tab für die vollständige Konvertierung sichtbar.</li>
+            </ul>
+        </li>
+    </ol>
+    <p>Wenn ein kleiner Clip erfolgreich ist und die ursprüngliche Quelle 4K oder länger als 10 Minuten war, ist Ursache 1 (Speicher) am wahrscheinlichsten; schneiden Sie die Quelle auf ~5-Minuten-Stücke oder führen Sie FFmpeg lokal aus.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>Unterstützt Safari WASM-FFmpeg?</summary>
+  <p>Ja, aktuelle Safari unterstützt die WebAssembly + Web Worker-Kombination, die Browser-FFmpeg-Builds verwenden, aber Safari ist strenger als Chrome bei Hintergrund-Tab-Drosselung und bei Speicher-Caps im privaten Browsen. Wenn Ihre Konvertierung in Safari hängt, aber in Chrome auf derselben Maschine funktioniert, ist die Ursache normalerweise Ursache 2 (Tab-Hintergrund) oder Speicherdruck im privaten Modus.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Warum konvertiert dieselbe Datei lokal in 10 Sekunden, aber hängt online?</summary>
+  <p>Lokales FFmpeg verwendet nativen Maschinencode und das volle RAM des Hosts; Browser-FFmpeg verwendet WASM (typischerweise langsamer pro Anweisung) und einen 2-GB-Sandbox. Für Dateien, die bequem in den Sandbox passen, ist die Lücke etwa 2-5x langsamer im Browser. Für Dateien, die sich dem Sandbox-Limit nähern oder überschreiten, ist die lokale Konvertierung fertig und die Browser-Konvertierung geht der Speicher aus und hängt. Die proaktive Anleitung <a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs lokales FFmpeg</a> deckt die Größenschwelle ab, bei der jedes gewinnt.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Kann ich das Browser-Speicherlimit erhöhen?</summary>
+  <p>Nicht von der Seitenebene aus. Das Limit wird von der Browser-Engine und der Speicherkonfiguration des WASM-Builds gesetzt. Für Chromium-basierte Browser ist das Limit typischerweise 2 GB pro Tab; einige experimentelle Flags erlauben größere Pools, sind aber nicht benutzerfreundlich. Die zuverlässige Behebung ist, die Quelle zu kürzen, damit das Arbeitsset passt.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Was ist die Größenbegrenzung für Online-Konvertierung?</summary>
+  <p>Tool-spezifisch. Die meisten Browser-FFmpeg-Tools dokumentieren eine weiche Grenze zwischen 100 MB und 2 GB. Über 500 MB, erwarten Sie häufige Hänger auf Telefonen und älteren Laptops; über 1 GB, erwarten Sie Hänger auch auf den meisten Desktops. Wenn Ihre Quelle 4K und länger als 10 Minuten ist, planen Sie zu kürzen oder lokal auszuführen.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Macht Inkognito / Privates Browsen es schlimmer?</summary>
+  <p>Manchmal. Private Fenster in Chrome und Firefox haben die gleichen Speicher-Caps, aber Erweiterungen sind normalerweise deaktiviert (was helfen kann, wenn eine Erweiterung interferierte). Safari Private Browsing hat strengere Speicher- und Memory-Caps, die Ursache 1 früher auslösen können. Wenn eine Konvertierung in Privat hängt, aber im normalen Browsen funktioniert, ist die Ursache normalerweise ein strengerer Sandbox im Privatmodus.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Verwandt</b></h2>
+    <ul>
+        <li><a href="/video-tools/ffmpeg-online.html">FFmpeg Online</a> - das Action-Tool zum Konvertieren von Video und Audio im Browser.</li>
+        <li><a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs lokales FFmpeg - wann jedes gewinnt</a> - die proaktive Begleitanleitung; wählen Sie online oder lokal VOR dem Upload.</li>
+        <li><a href="/guides/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - welcher Container, wann</a> - Container-Kompatibilitätsreferenz.</li>
+        <li><a href="/guides/mp4-vs-webm-for-web.html">MP4 vs WebM für das Web</a> - Web-Lieferungs-Container-Wahl.</li>
+    </ul>
+</div>

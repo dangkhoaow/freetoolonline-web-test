@@ -1,0 +1,79 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Chuyển Đổi FFmpeg Trực Tuyến Đứng? Ba Cách Khắc Phục (và Test 30 Giây)</b></h1>
+    <p><em>Cập nhật lần cuối: 2026-05-03. Bạn tải video lên trình chuyển ffmpeg trực tuyến, nhấn "convert," và thanh tiến độ đông cứng - hoặc không bao giờ bắt đầu di chuyển. Hướng dẫn này nêu tên ba nguyên nhân phổ biến (giới hạn bộ nhớ trình duyệt, tab nền, codec build WASM không hỗ trợ), đưa ra cách khắc phục một dòng mỗi nguyên nhân, và cho thấy test 30 giây cho biết bạn gặp cái nào.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Đáp án 30 giây.</b> Trình duyệt hết bộ nhớ vì tệp quá lớn cho WASM trong tab, HOẶC tab bị nền và hệ điều hành đình chỉ worker, HOẶC nguồn dùng codec mà build WASM ffmpeg không bao gồm. Tải lại tab và thả tệp nhỏ test (ví dụ clip 5 giây 720p) vào <a href="/video-tools/ffmpeg-online.html">công cụ ffmpeg trực tuyến</a>. Nếu clip nhỏ chuyển đổi trong vài giây, sự cố ban đầu là Nguyên nhân 1 (bộ nhớ) hoặc Nguyên nhân 3 (codec). Nếu cả clip nhỏ cũng đứng, đó là Nguyên nhân 2 (tab nền).</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Nguyên nhân 1: giới hạn bộ nhớ trình duyệt trên WASM ffmpeg</b></h2>
+    <p>WASM ffmpeg trong trình duyệt là một ffmpeg tự đứng được biên dịch sang WebAssembly chạy hoàn toàn trong tab. Đánh đổi: module WASM của tab thường nhận 2 GB không gian địa chỉ (4 GB với build memory64 rõ ràng), và một video nguồn 4K cộng với buffer bộ mã hóa đang bay và mảng chuyển đổi không gian màu có thể vượt quá đó trên clip dài. Khi điều đó xảy ra, ffmpeg hoặc chết âm thầm hoặc đứng ở một phần trăm không bao giờ tiến lên. Tệp nguồn 4K dài là yếu tố kích hoạt phổ biến nhất, nhưng nguồn 1080p H.265 dài với âm thanh 5.1 cũng có thể đẩy giới hạn trên điện thoại và laptop cũ.</p>
+    <p><b>Khắc phục.</b> Cắt nguồn thành clip ngắn hơn trước, sau đó chuyển đổi. Hoặc chạy ffmpeg cục bộ cho tệp vượt khoảng 500 MB - binary ffmpeg desktop có truy cập toàn bộ RAM hệ thống, không chỉ sandbox 2 GB. Hướng dẫn đồng hành chủ động <a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg trực tuyến vs FFmpeg cục bộ - khi nào mỗi cái thắng</a> đi qua quyết định kích thước và runtime trước khi tải lên, để bạn có thể chọn đường đúng ngay lần thử đầu.</p>
+
+    <h2 class="text-uppercase"><b>Nguyên nhân 2: tab bị nền; hệ điều hành đình chỉ worker</b></h2>
+    <p>Trình duyệt hiện đại (Chrome, Firefox, Safari) điều tiết hoặc hoàn toàn đình chỉ Web Worker trong các tab nền để tiết kiệm pin. Chuyển đổi ffmpeg dài chạy khi tab bị ẩn có thể đông cứng vô thời hạn trên desktop và gần như luôn đông cứng trên di động (iOS Safari đặc biệt hung hăng). Chuyển đổi không thực sự hỏng - hệ điều hành đã tạm dừng nó - nhưng với độc giả nó trông giống hệt đứng cứng.</p>
+    <p><b>Khắc phục.</b> Giữ tab ở tiền cảnh trong suốt thời gian chuyển đổi. Trên laptop, đừng để nắp đóng (ngủ cũng tạm dừng worker). Trên điện thoại, đừng chuyển ứng dụng; khóa màn hình với tab vẫn trong tiêu điểm nếu phải, nhưng tab nền khi màn hình bật vẫn thường bị điều tiết. Một số công cụ ffmpeg trực tuyến ghi nhận thủ thuật "keep-alive" (ví dụ vòng lặp âm thanh im lặng, hoặc nhịp `noSleep` định kỳ) - đọc ghi chú của tác giả công cụ nếu chuyển đổi đủ dài để cần.</p>
+    <p>Cách nhanh nhất để xác nhận Nguyên nhân 2 là test tệp nhỏ từ đáp án 30 giây ở trên: nếu clip 5 giây cũng đứng khi tab bị nền, nhưng chuyển đổi ngay khi bạn đưa tab vào tiền cảnh, nguyên nhân là đình chỉ tab. Nếu ngay cả clip nhỏ tiền cảnh cũng đứng, vấn đề ở nơi khác (Nguyên nhân 1 bộ nhớ hoặc Nguyên nhân 3 codec).</p>
+
+    <h2 class="text-uppercase"><b>Nguyên nhân 3: tệp nguồn dùng codec mà build WASM không bao gồm</b></h2>
+    <p>Browser WASM ffmpeg ship một bộ decoder được tuyển chọn để giữ kích thước tải xuống có thể quản lý - thường là H.264, H.265 (HEVC), VP9, AV1, AAC, MP3, Opus, và một số ít khác. Codec nguồn lạ (ProRes, DNxHR, JPEG 2000, AC-3 trên 5.1 kênh, Dolby Atmos trong một số container MOV) có thể không giải mã. Chuyển đổi hoặc thất bại ngay với dòng "codec not found" trong log, hoặc đứng ở 0% vì decoder không thể kéo một khung từ nguồn.</p>
+    <p><b>Khắc phục.</b> Mã hóa lại nguồn thành codec phổ biến cục bộ trước - ngay cả lượt ffmpeg desktop nhanh sao chép âm thanh và mã hóa lại video sang H.264 chỉ mất một phần thời gian ghi gốc. Hoặc chọn container mà build được biết là hỗ trợ; hướng dẫn <a href="/guides/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - container nào, khi nào</a> bao gồm các kết hợp container/codec nào an toàn nhất cho ffmpeg dựa-trên-trình-duyệt, và <a href="/guides/mp4-vs-webm-for-web.html">MP4 vs WebM cho web</a> bao gồm container đầu ra đúng cho phân phối web.</p>
+
+    <h2 class="text-uppercase"><b>Kiểm tra đứng 30 giây: clip nhỏ ở tiền cảnh</b></h2>
+    <p>Ba bước cho biết bộ nhớ, tab bị nền, hay codec đã làm đứng chuyển đổi của bạn - không cần toán học, chỉ cần clip nhỏ và tab tiền cảnh:</p>
+    <ol>
+        <li><b>Tải lại tab</b> (lặp module WASM và xóa bất kỳ trạng thái zombie nào từ lần thử trước).</li>
+        <li><b>Thả tệp rất nhỏ</b> - clip 5 giây 720p, ~5 MB. Giữ tab ở tiền cảnh.</li>
+        <li><b>Xem.</b>
+            <ul>
+                <li>Clip nhỏ chuyển đổi trong vài giây &rarr; sự cố ban đầu là <b>Nguyên nhân 1 (bộ nhớ)</b> nếu nguồn của bạn lớn, hoặc <b>Nguyên nhân 3 (codec)</b> nếu codec nguồn lạ. Cắt hoặc mã hóa lại nguồn.</li>
+                <li>Clip nhỏ đứng ở tiền cảnh &rarr; vấn đề là <b>Nguyên nhân 3 (codec)</b> trên cả tệp nhỏ, hoặc xung đột trình duyệt/tiện ích sâu hơn (thử cửa sổ riêng tư không có tiện ích).</li>
+                <li>Clip nhỏ chuyển đổi ở tiền cảnh nhưng đứng khi bạn chuyển tab &rarr; <b>Nguyên nhân 2 (tab bị nền)</b>. Giữ tab nhìn thấy trong suốt chuyển đổi.</li>
+            </ul>
+        </li>
+    </ol>
+    <p>Nếu clip nhỏ thành công và nguồn gốc là 4K hoặc dài hơn 10 phút, Nguyên nhân 1 (bộ nhớ) là khả năng cao nhất; cắt nguồn thành mảnh ~5 phút hoặc chạy ffmpeg cục bộ.</p>
+
+    <h2 class="text-uppercase"><b>Câu hỏi thường gặp</b></h2>
+    <details class="faq-item">
+  <summary>Safari có hỗ trợ WASM ffmpeg không?</summary>
+  <p>Có, Safari gần đây hỗ trợ kết hợp WebAssembly + Web Worker mà build ffmpeg trình duyệt sử dụng, nhưng Safari nghiêm khắc hơn Chrome về điều tiết tab nền và giới hạn bộ nhớ trong duyệt riêng tư. Nếu chuyển đổi của bạn đứng trong Safari nhưng hoạt động trong Chrome trên cùng máy, nguyên nhân thường là Nguyên nhân 2 (tab bị nền) hoặc áp lực bộ nhớ trong chế độ riêng tư.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Tại sao cùng tệp chuyển đổi cục bộ trong 10 giây nhưng đứng trực tuyến?</summary>
+  <p>FFmpeg cục bộ dùng mã máy bản địa và RAM đầy đủ của host; ffmpeg trình duyệt dùng WASM (thường chậm hơn mỗi lệnh) và sandbox 2 GB. Cho tệp vừa thoải mái trong sandbox, khoảng cách là khoảng 2-5x chậm hơn trong trình duyệt. Cho tệp tiệm cận hoặc vượt giới hạn sandbox, chuyển đổi cục bộ hoàn thành và chuyển đổi trình duyệt hết bộ nhớ và đứng. Hướng dẫn chủ động <a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg trực tuyến vs FFmpeg cục bộ</a> bao gồm ngưỡng kích thước nơi mỗi cái thắng.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Tôi có thể tăng giới hạn bộ nhớ trình duyệt không?</summary>
+  <p>Không từ phía trang. Giới hạn được đặt bởi engine trình duyệt và cấu hình bộ nhớ của build WASM. Cho trình duyệt dựa-trên-Chromium, giới hạn thường là 2 GB mỗi tab; một số cờ thử nghiệm cho phép pool lớn hơn, nhưng không thân thiện người dùng. Cách khắc phục đáng tin cậy là cắt nguồn để tập làm việc vừa.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Giới hạn kích thước cho chuyển đổi trực tuyến là gì?</summary>
+  <p>Cụ thể theo công cụ. Hầu hết công cụ browser-ffmpeg ghi nhận giới hạn mềm giữa 100 MB và 2 GB. Trên 500 MB, mong đợi đứng thường xuyên trên điện thoại và laptop cũ; trên 1 GB, mong đợi đứng trên hầu hết desktop cũng vậy. Nếu nguồn là 4K và dài hơn 10 phút, lên kế hoạch hoặc cắt hoặc chạy cục bộ.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Incognito / Duyệt Riêng tư làm tệ hơn không?</summary>
+  <p>Đôi khi. Cửa sổ riêng tư trong Chrome và Firefox mang cùng giới hạn bộ nhớ, nhưng tiện ích thường bị tắt (có thể giúp nếu tiện ích đang can thiệp). Duyệt Riêng tư của Safari có giới hạn lưu trữ và bộ nhớ nghiêm hơn có thể kích hoạt Nguyên nhân 1 sớm hơn. Nếu chuyển đổi đứng trong Riêng tư nhưng hoạt động trong duyệt thường, nguyên nhân thường là sandbox nghiêm hơn trong chế độ Riêng tư.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Liên quan</b></h2>
+    <ul>
+        <li><a href="/video-tools/ffmpeg-online.html">FFmpeg Trực Tuyến</a> - công cụ hành động để chuyển đổi video và âm thanh trong trình duyệt.</li>
+        <li><a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg trực tuyến vs FFmpeg cục bộ - khi nào mỗi cái thắng</a> - hướng dẫn đồng hành chủ động; chọn trực tuyến hay cục bộ TRƯỚC khi tải lên.</li>
+        <li><a href="/guides/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - container nào, khi nào</a> - tham chiếu tương thích container.</li>
+        <li><a href="/guides/mp4-vs-webm-for-web.html">MP4 vs WebM cho web</a> - lựa chọn container phân phối web.</li>
+    </ul>
+</div>
