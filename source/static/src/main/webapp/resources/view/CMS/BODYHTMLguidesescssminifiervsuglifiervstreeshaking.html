@@ -1,0 +1,26 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Minificador CSS vs Uglifier vs Tree-Shaking</b></h1>
+    <p><em>Última revisión: 2026-04-27. Abre <a href="/developer-tools/css-minifier.html">el minificador CSS</a> para minificación en navegador sin subir el código fuente.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Respuesta de 30 segundos.</b> Tres técnicas diferentes de reducción de tamaño apuntan al mismo objetivo pero trabajan en capas diferentes. El minificador elimina espacios en blanco y comentarios. El uglifier renombra símbolos (variables, nombres de función) a formas más cortas. Tree-shaking elimina código que el resto del bundle nunca usa. Se apilan: un bundle minificado-y-uglificado que ha pasado por tree-shaking es más pequeño que cualquier técnica individual.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Minificador - espacios en blanco y comentarios</b></h2>
+    <p>La táctica más simple: tomar 10 KB de CSS o JS formateado y eliminar cada espacio, salto de línea y comentario que no afecta el parsing. La salida funciona idénticamente a la entrada pero ocupa 30-50% menos espacio. Esto es lo que <a href="/developer-tools/css-minifier.html">el minificador CSS</a> hace para hojas de estilo.</p>
+    <p>Los minificadores CSS modernos van más allá del espacio en blanco: colapsan <code>0px</code> a <code>0</code>, reemplazan <code>#ffffff</code> por <code>#fff</code>, eliminan valores predeterminados redundantes, fusionan selectores adyacentes con reglas idénticas. Cada uno arranca un pequeño porcentaje; el efecto acumulativo es significativo.</p>
+
+    <h2 class="text-uppercase"><b>Uglifier - renombrar para ahorrar bytes</b></h2>
+    <p>Específico de JavaScript. Toma <code>const calculateMonthlyTotal = ...</code> y lo renombra a <code>const a = ...</code>. El nombre más corto es más pequeño. Repetido a través de miles de identificadores, los ahorros se acumulan.</p>
+    <p>El uglifier requiere entender las reglas de alcance del código - puedes renombrar una variable local libremente, pero renombrar una global rompe cualquier cosa que dependa del nombre. Herramientas como Terser, esbuild y SWC hacen esto de forma segura analizando el grafo de alcance.</p>
+    <p>Para CSS, el equivalente es renombrar nombres de clase. Los pipelines de build que hashean clases CSS a <code>.a</code>, <code>.b</code>, <code>.c</code> ahorran bytes de la misma forma - pero solo funcionan cuando el HTML se construye con el mismo pipeline para que las referencias coincidan.</p>
+
+    <h2 class="text-uppercase"><b>Tree-shaking - eliminar lo que nada usa</b></h2>
+    <p>El grande. Cuando importas una biblioteca y usas una función de cincuenta, el bundling ingenuo envía las cincuenta. Tree-shaking analiza el grafo de imports e incluye solo las funciones realmente llamadas por el punto de entrada de tu app. Cuarenta y nueve funciones desaparecen del bundle de salida.</p>
+    <p>Tree-shaking requiere que el código fuente esté en un formato que soporte el análisis - módulos ES nativos ("import" / "export") en lugar de CommonJS ("require"). Los autores de bibliotecas han pasado años migrando a ESM específicamente para hacer tree-shaking efectivo para sus consumidores.</p>
+    <p>Para CSS, tree-shaking tiene un paralelo llamado PurgeCSS o el modo JIT de TailwindCSS: escanear el HTML e incluir solo reglas CSS que coincidan con un nombre de clase real en el markup. Tailwind envía miles de clases utilitarias; el build de producción incluye solo las en uso.</p>
+
+    <h2 class="text-uppercase"><b>Qué buscar primero</b></h2>
+    <p>Usa los tres cuando el pipeline de build los soporta. El orden: tree-shake primero (elimina los trozos más grandes), luego minifica y uglifica el resultado. Los bundlers modernos (Vite, esbuild, Rollup, Webpack 5+) hacen los tres en una pasada con un solo flag de configuración.</p>
+    <p>Para un proyecto no-bundled donde solo quieres una hoja de estilo más pequeña, ejecuta <a href="/developer-tools/css-minifier.html">el minificador CSS</a> en el CSS final. Para contenido más amplio sobre estas técnicas, mira <a href="/guides/css-minifier-vs-compressor.html">minificador CSS vs compresor</a> o <a href="/guides/how-to-minify-css-js-for-cloud-run-cold-start.html">cómo minificar CSS y JS para Cloud Run cold start</a>. El conjunto completo: <a href="/developer-tools.html">hub de herramientas para desarrolladores</a>.</p>
+</div>

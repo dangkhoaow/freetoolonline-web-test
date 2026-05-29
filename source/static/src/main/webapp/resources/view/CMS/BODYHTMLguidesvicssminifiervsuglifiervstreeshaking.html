@@ -1,0 +1,26 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Trình Rút Gọn CSS vs Uglifier vs Tree-Shaking</b></h1>
+    <p><em>Cập nhật lần cuối: 2026-04-27. Mở <a href="/developer-tools/css-minifier.html">trình rút gọn CSS</a> để rút gọn trong trình duyệt mà không tải lên mã nguồn.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Đáp án 30 giây.</b> Ba kỹ thuật giảm kích thước khác nhau nhắm cùng mục tiêu nhưng làm việc trên các lớp khác nhau. Trình rút gọn xóa khoảng trắng và chú thích. Uglifier đổi tên các ký hiệu (biến, tên hàm) thành dạng ngắn hơn. Tree-shaking loại bỏ mã mà phần còn lại của bundle không bao giờ dùng. Chúng xếp chồng: một bundle đã rút gọn-và-uglify đã tree-shake nhỏ hơn bất kỳ kỹ thuật đơn lẻ nào.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Trình rút gọn - khoảng trắng và chú thích</b></h2>
+    <p>Chiến thuật đơn giản nhất: lấy 10 KB CSS hoặc JS có định dạng và xóa mọi khoảng trắng, dòng mới, và chú thích không ảnh hưởng đến parsing. Đầu ra hoạt động giống hệt đầu vào nhưng chiếm ít hơn 30-50% không gian. Đây là cái <a href="/developer-tools/css-minifier.html">trình rút gọn CSS</a> làm cho stylesheet.</p>
+    <p>Các trình rút gọn CSS hiện đại đi xa hơn khoảng trắng: gộp <code>0px</code> thành <code>0</code>, thay <code>#ffffff</code> bằng <code>#fff</code>, xóa giá trị mặc định dư thừa, gộp các bộ chọn kề có cùng luật. Mỗi cái cạo một phần trăm nhỏ; hiệu ứng tích lũy có ý nghĩa.</p>
+
+    <h2 class="text-uppercase"><b>Uglifier - đổi tên để tiết kiệm byte</b></h2>
+    <p>Đặc trưng cho JavaScript. Lấy <code>const calculateMonthlyTotal = ...</code> và đổi tên thành <code>const a = ...</code>. Tên ngắn hơn nhỏ hơn. Lặp lại trên hàng nghìn định danh, tiết kiệm cộng dồn.</p>
+    <p>Uglifier yêu cầu hiểu quy tắc phạm vi của mã - bạn có thể đổi tên biến cục bộ tự do, nhưng đổi tên một biến toàn cục phá vỡ bất cứ gì phụ thuộc vào tên. Các công cụ như Terser, esbuild, và SWC làm điều này an toàn bằng cách phân tích đồ thị phạm vi.</p>
+    <p>Cho CSS, tương đương là đổi tên lớp. Các pipeline build hash lớp CSS thành <code>.a</code>, <code>.b</code>, <code>.c</code> tiết kiệm byte theo cùng cách - nhưng chỉ hoạt động khi HTML được dựng bằng cùng pipeline để các tham chiếu khớp.</p>
+
+    <h2 class="text-uppercase"><b>Tree-shaking - xóa cái không ai dùng</b></h2>
+    <p>Cái lớn. Khi bạn nhập một thư viện và dùng một hàm trong năm mươi, bundling ngây thơ gửi tất cả năm mươi. Tree-shaking phân tích đồ thị nhập và chỉ bao gồm các hàm thực sự được gọi bởi điểm vào của app. Bốn mươi chín hàm biến mất khỏi bundle đầu ra.</p>
+    <p>Tree-shaking yêu cầu mã nguồn ở định dạng hỗ trợ phân tích - module ES gốc ("import" / "export") thay vì CommonJS ("require"). Tác giả thư viện đã dành nhiều năm di chuyển sang ESM cụ thể để làm tree-shaking hiệu quả cho người tiêu dùng của họ.</p>
+    <p>Cho CSS, tree-shaking có một song song gọi là PurgeCSS hay chế độ JIT của TailwindCSS: quét HTML và chỉ bao gồm luật CSS khớp tên lớp thực trong markup. Tailwind gửi hàng nghìn lớp tiện ích; build production chỉ bao gồm những cái đang dùng.</p>
+
+    <h2 class="text-uppercase"><b>Cái nào dùng trước</b></h2>
+    <p>Dùng cả ba khi pipeline build hỗ trợ chúng. Thứ tự: tree-shake trước (loại bỏ các mảng lớn nhất), sau đó rút gọn và uglify kết quả. Bundler hiện đại (Vite, esbuild, Rollup, Webpack 5+) làm cả ba trong một lượt với một cờ cấu hình duy nhất.</p>
+    <p>Cho dự án không-bundle nơi bạn chỉ muốn stylesheet nhỏ hơn, chạy <a href="/developer-tools/css-minifier.html">trình rút gọn CSS</a> trên CSS cuối. Cho nội dung rộng hơn về các kỹ thuật này, xem <a href="/guides/css-minifier-vs-compressor.html">trình rút gọn CSS vs trình nén</a> hay <a href="/guides/how-to-minify-css-js-for-cloud-run-cold-start.html">cách rút gọn CSS và JS cho Cloud Run cold start</a>. Bộ đầy đủ: <a href="/developer-tools.html">hub công cụ lập trình viên</a>.</p>
+</div>
