@@ -880,6 +880,10 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/json-formatter-step-by-step.html', '/guides/es/json-formatter-step-by-step.html', '/guides/vi/json-formatter-step-by-step.html', '/guides/id/json-formatter-step-by-step.html', '/guides/de/json-formatter-step-by-step.html',
   '/guides/pt/zip-compress.html', '/guides/es/zip-compress.html', '/guides/vi/zip-compress.html', '/guides/id/zip-compress.html', '/guides/de/zip-compress.html',
   '/guides/pt/json-formatter-vs-alternatives.html', '/guides/es/json-formatter-vs-alternatives.html', '/guides/vi/json-formatter-vs-alternatives.html', '/guides/id/json-formatter-vs-alternatives.html', '/guides/de/json-formatter-vs-alternatives.html',
+  // plan-warm-pascal-v3 S2 batch 8 (2026-05-29) - 5 locale variants × 3 guides
+  '/guides/pt/unlock-zip-file-online.html', '/guides/es/unlock-zip-file-online.html', '/guides/vi/unlock-zip-file-online.html', '/guides/id/unlock-zip-file-online.html', '/guides/de/unlock-zip-file-online.html',
+  '/guides/pt/how-to-zip-multiple-files-into-one.html', '/guides/es/how-to-zip-multiple-files-into-one.html', '/guides/vi/how-to-zip-multiple-files-into-one.html', '/guides/id/how-to-zip-multiple-files-into-one.html', '/guides/de/how-to-zip-multiple-files-into-one.html',
+  '/guides/pt/crop-and-rotate-image.html', '/guides/es/crop-and-rotate-image.html', '/guides/vi/crop-and-rotate-image.html', '/guides/id/crop-and-rotate-image.html', '/guides/de/crop-and-rotate-image.html',
   '/guides/pt/compress-folder.html', // pt canonical of /guides/compactar-pasta.html
   '/guides/pt/compress-zip-file.html', // pt canonical of /guides/comprimir-arquivo-zip.html
   '/guides/pt/compress-folder-to-zip.html', // pt canonical of /guides/comprimir-pasta-zipada.html
@@ -936,6 +940,10 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/json-formatter-step-by-step.html', '/guides/es/json-formatter-step-by-step.html', '/guides/vi/json-formatter-step-by-step.html', '/guides/id/json-formatter-step-by-step.html', '/guides/de/json-formatter-step-by-step.html',
   '/guides/pt/zip-compress.html', '/guides/es/zip-compress.html', '/guides/vi/zip-compress.html', '/guides/id/zip-compress.html', '/guides/de/zip-compress.html',
   '/guides/pt/json-formatter-vs-alternatives.html', '/guides/es/json-formatter-vs-alternatives.html', '/guides/vi/json-formatter-vs-alternatives.html', '/guides/id/json-formatter-vs-alternatives.html', '/guides/de/json-formatter-vs-alternatives.html',
+  // plan-warm-pascal-v3 S2 batch 8 (2026-05-29) - 5 locale variants × 3 guides
+  '/guides/pt/unlock-zip-file-online.html', '/guides/es/unlock-zip-file-online.html', '/guides/vi/unlock-zip-file-online.html', '/guides/id/unlock-zip-file-online.html', '/guides/de/unlock-zip-file-online.html',
+  '/guides/pt/how-to-zip-multiple-files-into-one.html', '/guides/es/how-to-zip-multiple-files-into-one.html', '/guides/vi/how-to-zip-multiple-files-into-one.html', '/guides/id/how-to-zip-multiple-files-into-one.html', '/guides/de/how-to-zip-multiple-files-into-one.html',
+  '/guides/pt/crop-and-rotate-image.html', '/guides/es/crop-and-rotate-image.html', '/guides/vi/crop-and-rotate-image.html', '/guides/id/crop-and-rotate-image.html', '/guides/de/crop-and-rotate-image.html',
   '/guides/en/heic-vs-jpg-vs-webp.html',
   '/guides/en/dead-pixel-testing-guide.html',
   '/guides/en/unix-timestamps-explained.html',
@@ -2297,6 +2305,10 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/json-formatter-step-by-step.html': 'guide/pt/json-formatter-step-by-step.jsp', '/guides/es/json-formatter-step-by-step.html': 'guide/es/json-formatter-step-by-step.jsp', '/guides/vi/json-formatter-step-by-step.html': 'guide/vi/json-formatter-step-by-step.jsp', '/guides/id/json-formatter-step-by-step.html': 'guide/id/json-formatter-step-by-step.jsp', '/guides/de/json-formatter-step-by-step.html': 'guide/de/json-formatter-step-by-step.jsp',
   '/guides/pt/zip-compress.html': 'guide/pt/zip-compress.jsp', '/guides/es/zip-compress.html': 'guide/es/zip-compress.jsp', '/guides/vi/zip-compress.html': 'guide/vi/zip-compress.jsp', '/guides/id/zip-compress.html': 'guide/id/zip-compress.jsp', '/guides/de/zip-compress.html': 'guide/de/zip-compress.jsp',
   '/guides/pt/json-formatter-vs-alternatives.html': 'guide/pt/json-formatter-vs-alternatives.jsp', '/guides/es/json-formatter-vs-alternatives.html': 'guide/es/json-formatter-vs-alternatives.jsp', '/guides/vi/json-formatter-vs-alternatives.html': 'guide/vi/json-formatter-vs-alternatives.jsp', '/guides/id/json-formatter-vs-alternatives.html': 'guide/id/json-formatter-vs-alternatives.jsp', '/guides/de/json-formatter-vs-alternatives.html': 'guide/de/json-formatter-vs-alternatives.jsp',
+  // plan-warm-pascal-v3 S2 batch 8 (2026-05-29) - 5 locale variants × 3 guides (unlock-zip-file-online + how-to-zip-multiple-files-into-one + crop-and-rotate-image)
+  '/guides/pt/unlock-zip-file-online.html': 'guide/pt/unlock-zip-file-online.jsp', '/guides/es/unlock-zip-file-online.html': 'guide/es/unlock-zip-file-online.jsp', '/guides/vi/unlock-zip-file-online.html': 'guide/vi/unlock-zip-file-online.jsp', '/guides/id/unlock-zip-file-online.html': 'guide/id/unlock-zip-file-online.jsp', '/guides/de/unlock-zip-file-online.html': 'guide/de/unlock-zip-file-online.jsp',
+  '/guides/pt/how-to-zip-multiple-files-into-one.html': 'guide/pt/how-to-zip-multiple-files-into-one.jsp', '/guides/es/how-to-zip-multiple-files-into-one.html': 'guide/es/how-to-zip-multiple-files-into-one.jsp', '/guides/vi/how-to-zip-multiple-files-into-one.html': 'guide/vi/how-to-zip-multiple-files-into-one.jsp', '/guides/id/how-to-zip-multiple-files-into-one.html': 'guide/id/how-to-zip-multiple-files-into-one.jsp', '/guides/de/how-to-zip-multiple-files-into-one.html': 'guide/de/how-to-zip-multiple-files-into-one.jsp',
+  '/guides/pt/crop-and-rotate-image.html': 'guide/pt/crop-and-rotate-image.jsp', '/guides/es/crop-and-rotate-image.html': 'guide/es/crop-and-rotate-image.jsp', '/guides/vi/crop-and-rotate-image.html': 'guide/vi/crop-and-rotate-image.jsp', '/guides/id/crop-and-rotate-image.html': 'guide/id/crop-and-rotate-image.jsp', '/guides/de/crop-and-rotate-image.html': 'guide/de/crop-and-rotate-image.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
