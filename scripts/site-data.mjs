@@ -864,6 +864,10 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/lcd-screen-test.html', '/guides/es/lcd-screen-test.html', '/guides/vi/lcd-screen-test.html', '/guides/id/lcd-screen-test.html', '/guides/de/lcd-screen-test.html',
   '/guides/pt/hd-video-converter-when.html', '/guides/es/hd-video-converter-when.html', '/guides/vi/hd-video-converter-when.html', '/guides/id/hd-video-converter-when.html', '/guides/de/hd-video-converter-when.html',
   '/guides/pt/json-formatter-when.html', '/guides/es/json-formatter-when.html', '/guides/vi/json-formatter-when.html', '/guides/id/json-formatter-when.html', '/guides/de/json-formatter-when.html',
+  // plan-warm-pascal-v3 S2 batch 4 (2026-05-29) - 5 locale variants × 3 guides (zip-file-converter + online-zip-file-compressor + led-test)
+  '/guides/pt/zip-file-converter.html', '/guides/es/zip-file-converter.html', '/guides/vi/zip-file-converter.html', '/guides/id/zip-file-converter.html', '/guides/de/zip-file-converter.html',
+  '/guides/pt/online-zip-file-compressor.html', '/guides/es/online-zip-file-compressor.html', '/guides/vi/online-zip-file-compressor.html', '/guides/id/online-zip-file-compressor.html', '/guides/de/online-zip-file-compressor.html',
+  '/guides/pt/led-test.html', '/guides/es/led-test.html', '/guides/vi/led-test.html', '/guides/id/led-test.html', '/guides/de/led-test.html',
   '/guides/pt/compress-folder.html', // pt canonical of /guides/compactar-pasta.html
   '/guides/pt/compress-zip-file.html', // pt canonical of /guides/comprimir-arquivo-zip.html
   '/guides/pt/compress-folder-to-zip.html', // pt canonical of /guides/comprimir-pasta-zipada.html
@@ -904,6 +908,10 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/lcd-screen-test.html', '/guides/es/lcd-screen-test.html', '/guides/vi/lcd-screen-test.html', '/guides/id/lcd-screen-test.html', '/guides/de/lcd-screen-test.html',
   '/guides/pt/hd-video-converter-when.html', '/guides/es/hd-video-converter-when.html', '/guides/vi/hd-video-converter-when.html', '/guides/id/hd-video-converter-when.html', '/guides/de/hd-video-converter-when.html',
   '/guides/pt/json-formatter-when.html', '/guides/es/json-formatter-when.html', '/guides/vi/json-formatter-when.html', '/guides/id/json-formatter-when.html', '/guides/de/json-formatter-when.html',
+  // plan-warm-pascal-v3 S2 batch 4 (2026-05-29) - 5 locale variants × 3 guides
+  '/guides/pt/zip-file-converter.html', '/guides/es/zip-file-converter.html', '/guides/vi/zip-file-converter.html', '/guides/id/zip-file-converter.html', '/guides/de/zip-file-converter.html',
+  '/guides/pt/online-zip-file-compressor.html', '/guides/es/online-zip-file-compressor.html', '/guides/vi/online-zip-file-compressor.html', '/guides/id/online-zip-file-compressor.html', '/guides/de/online-zip-file-compressor.html',
+  '/guides/pt/led-test.html', '/guides/es/led-test.html', '/guides/vi/led-test.html', '/guides/id/led-test.html', '/guides/de/led-test.html',
   '/guides/en/heic-vs-jpg-vs-webp.html',
   '/guides/en/dead-pixel-testing-guide.html',
   '/guides/en/unix-timestamps-explained.html',
@@ -2249,6 +2257,10 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/json-formatter-when.html': 'guide/vi/json-formatter-when.jsp',
   '/guides/id/json-formatter-when.html': 'guide/id/json-formatter-when.jsp',
   '/guides/de/json-formatter-when.html': 'guide/de/json-formatter-when.jsp',
+  // plan-warm-pascal-v3 S2 batch 4 (2026-05-29) - 5 locale variants × 3 guides (zip-file-converter + online-zip-file-compressor + led-test)
+  '/guides/pt/zip-file-converter.html': 'guide/pt/zip-file-converter.jsp', '/guides/es/zip-file-converter.html': 'guide/es/zip-file-converter.jsp', '/guides/vi/zip-file-converter.html': 'guide/vi/zip-file-converter.jsp', '/guides/id/zip-file-converter.html': 'guide/id/zip-file-converter.jsp', '/guides/de/zip-file-converter.html': 'guide/de/zip-file-converter.jsp',
+  '/guides/pt/online-zip-file-compressor.html': 'guide/pt/online-zip-file-compressor.jsp', '/guides/es/online-zip-file-compressor.html': 'guide/es/online-zip-file-compressor.jsp', '/guides/vi/online-zip-file-compressor.html': 'guide/vi/online-zip-file-compressor.jsp', '/guides/id/online-zip-file-compressor.html': 'guide/id/online-zip-file-compressor.jsp', '/guides/de/online-zip-file-compressor.html': 'guide/de/online-zip-file-compressor.jsp',
+  '/guides/pt/led-test.html': 'guide/pt/led-test.jsp', '/guides/es/led-test.html': 'guide/es/led-test.jsp', '/guides/vi/led-test.html': 'guide/vi/led-test.jsp', '/guides/id/led-test.html': 'guide/id/led-test.jsp', '/guides/de/led-test.html': 'guide/de/led-test.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
