@@ -1,0 +1,97 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Wie man einen Ordner fuer E-Mail komprimiert - Schritt fuer Schritt (2026)</b></h1>
+    <p><em>Zuletzt geprueft 2026-04-24. Funktioniert auf Windows 10/11, macOS 13+ (Ventura und neuer) und im Browser ueber <a href="/zip-tools/zip-file.html">Zip File</a>, wenn ein nativer Shell-ZIP-Flow nicht verfuegbar ist.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-Sekunden-Antwort.</b> Rechtsklick auf den Ordner &rarr; <b>"Senden an ZIP-Ordner (komprimiert)"</b> auf Windows (oder <b>"Komprimieren"</b> auf macOS). Haengen Sie die resultierende <code>.zip</code> an die E-Mail an. Wenn die ZIP die Grenze des Anbieters ueberschreitet (typischerweise 20-25 MB, siehe <a href="#email-size-limits">E-Mail-Groessentabelle unten</a>), dann (a) teilen Sie die Quelle in zwei Ordner und ZIPpen Sie jeden, oder (b) laden Sie zu einem Dateiuebertragungsdienst hoch und fuegen Sie den Link in den E-Mail-Koerper ein.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Warum einen Ordner fuer E-Mail komprimieren?</b></h2>
+    <p>E-Mail-Anhaenge werden in Bytes gemessen. Unkomprimierte Ordner koennen ueberhaupt nicht angehaengt werden - E-Mail-Clients erfordern eine einzelne Datei, kein Verzeichnis. Komprimieren falten den Ordner in ein einzelnes ZIP-Archiv, das die interne Struktur, Dateinamen und Aenderungsdaten bewahrt, waehrend es die Gesamtgroesse durch LZ77 / DEFLATE-Kompression reduziert. Fuer Ordner mit gemischtem Inhalt (Dokumente, Bilder, Tabellen), erwarten Sie 20-50% Groessenreduzierung; fuer Ordner, die bereits von komprimierten Formaten (JPG, MP3, MP4) dominiert werden, erwarten Sie nur ein paar Prozent, weil diese Formate bereits entropie-kodiert sind.</p>
+    <p>Die drei praktischen Gruende, vor dem Senden zu ZIPpen:</p>
+    <ul>
+        <li><b>Anbieter-Groessenlimits.</b> Gmail, Outlook und iCloud begrenzen alle einzelne Anhaenge. Eine ZIP kann unter das Limit passen, wenn der rohe Ordner es nicht kann.</li>
+        <li><b>Strukturerhaltung.</b> Der Empfaenger erhaelt den Ordnerbaum nach dem Entpacken intakt - nicht 47 lose Dateien im Wurzelverzeichnis seines Downloads-Ordners.</li>
+        <li><b>Integritaet im Transit.</b> ZIP speichert CRC-32 pro Datei; beschaedigte Downloads markieren sich beim Extrahieren selbst, sodass Sie es erneut versuchen koennen, anstatt stillschweigend defekte Bytes zu erhalten.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Schritt fuer Schritt auf Windows 10 und 11</b></h2>
+    <ol>
+        <li><b>Finden Sie den Ordner</b> im Datei-Explorer. Wenn Sie eine <em>Teilmenge</em> von Dateien anstelle des gesamten Ordners komprimieren, erstellen Sie zuerst einen neuen leeren Ordner und kopieren Sie die Dateien hinein - ZIP kann lose Dateien nicht nativ "auswaehlen-und-archivieren", ohne sie zu gruppieren.</li>
+        <li><b>Rechtsklicken Sie auf den Ordner</b>. Auf Windows 11 erscheint das neue Shell-Menue; wenn Sie die ZIP-Option nicht sofort sehen, klicken Sie auf <b>"Weitere Optionen anzeigen"</b> unten, um das klassische Menue zu enthuellen.</li>
+        <li><b>Waehlen Sie "Senden an" &rarr; "Komprimierter (gezippter) Ordner"</b>. Windows erstellt <code>&lt;ordner-name&gt;.zip</code> im selben Verzeichnis.</li>
+        <li><b>Benennen</b> Sie die ZIP um, wenn gewuenscht (der Standard erbt den Ordnernamen).</li>
+        <li><b>Haengen</b> Sie die ZIP an Ihre E-Mail an. Drag-and-drop in das Verfassen-Fenster oder verwenden Sie die Bueroklammer / "Datei anhaengen"-Schaltflaeche.</li>
+    </ol>
+    <p>Windows 11 fuegte 2023 native 7z- und tar-Unterstuetzung hinzu; speziell fuer ZIP-Anhaenge bleiben Sie bei <code>.zip</code>, weil macOS und jedes Webmail-Vorschaufenster es ohne Download dekodiert. Wenn der Empfaenger bestaetigt, dass 7-Zip oder gleichwertig installiert ist, kann das Wechseln zu <code>.7z</code> mit LZMA2 weitere 10-20% von der Groesse abrasieren, zum Preis eines langsameren Kompressionsschritts.</p>
+
+    <h2 class="text-uppercase"><b>Schritt fuer Schritt auf macOS 13+ (Ventura, Sonoma, Sequoia)</b></h2>
+    <ol>
+        <li><b>Waehlen Sie den Ordner</b> im Finder aus.</li>
+        <li><b>Rechtsklick (oder Control-Klick)</b> &rarr; <b>"'&lt;ordner-name&gt;' komprimieren"</b>. macOS erstellt <code>&lt;ordner-name&gt;.zip</code> im selben Verzeichnis.</li>
+        <li><b>Benennen</b> Sie das Archiv um, falls noetig. macOS bewahrt Dateimetadaten und Resource Forks in <code>__MACOSX</code>-Ordnern, was einige Windows-Empfaenger als Unordnung betrachten; siehe die FAQ zum Entfernen dieser unten.</li>
+        <li><b>Haengen</b> Sie es an die E-Mail an ueber Standard-Drag-Drop oder Aktion "Datei anhaengen".</li>
+    </ol>
+    <p>macOS unterstuetzt auch terminalbasiertes Archivieren mit <code>zip -r archive.zip ordner/</code> (BSD zip) oder <code>ditto -c -k --sequesterRsrc ordner archive.zip</code> (Apples ditto-Befehl). Ditto ist das, was Finder unter der Haube aufruft, und ist vorzuziehen fuer jeden Ordner, der macOS-spezifische Resource Forks enthaelt.</p>
+
+    <h2 id="email-size-limits" class="text-uppercase"><b>E-Mail-Anhangsgrenzen, die einen ZIPpten Ordner in 2026 blockieren</b></h2>
+    <p>Anbieterspezifische Grenzen verursachen die meisten "mein Ordner-ZIP wird nicht gesendet"-Fehler. Der Blocker ist fast immer die Obergrenze des Empfaengers, nicht Ihr Sendelimit - kennen Sie beide, bevor Sie komprimieren, weil eine 30-MB-Ordner-ZIP, die Ihr Gmail problemlos sendet, immer noch gegen einen 25-MB-Outlook-Empfaenger zurueckprallt. Ordner sind besonders betroffen, weil Verzeichnisarchive dazu neigen, Dutzende von Elementen auf einmal zu buendeln; ein uebergrosses Foto im Ordner reicht aus, um die gesamte ZIP ueber die Grenze eines Empfaengers zu schieben.</p>
+    <ul>
+        <li><b>Gmail:</b> 25 MB senden / 50 MB empfangen. Groessere Anhaenge werden automatisch ueber Google Drive umgeleitet.</li>
+        <li><b>Outlook (Microsoft 365):</b> Standard-Sendelimit 20 MB; 25 MB empfangen fuer die meisten Plaene. Unternehmens-Mandanten koennen bis zu 150 MB konfiguriert werden, aber Empfaenger ausserhalb des Mandanten sehen oft immer noch 25 MB.</li>
+        <li><b>Outlook.com (kostenlos):</b> 10 MB Sendelimit vor OneDrive-Umleitung.</li>
+        <li><b>iCloud Mail:</b> 20 MB; Apples Mail Drop tritt fuer groessere Anhaenge in Aktion (iCloud-Server hostet die Datei fuer 30 Tage).</li>
+        <li><b>Yahoo Mail:</b> 25 MB.</li>
+        <li><b>Unternehmens-/benutzerdefiniertes SMTP:</b> variiert stark (10-150 MB). Fragen Sie Ihren Administrator oder fuehren Sie einen Test-Versand mit einer ~15-MB-Datei durch.</li>
+    </ul>
+    <p>Wenn die ZIP die Grenze des Empfaengers ueberschreitet, sagt die Bounce-Nachricht normalerweise "Nachricht zu gross" oder "554 5.7.1". Wenn Sie diesen Fehler sehen, senden Sie nicht mit der gleichen ZIP erneut - wechseln Sie zu einer Dateiuebertragungslink-Strategie.</p>
+
+    <h2 class="text-uppercase"><b>Wann ein Passwort zur ZIP hinzufuegen</b></h2>
+    <p>Fuegen Sie ein Passwort hinzu, wenn der Ordner irgendetwas von Folgendem enthaelt: rechtliche Dokumente, unterzeichnete Vertraege, HR-Daten, Finanzunterlagen, Anmeldeinformationen oder alles, was einer Vertraulichkeitsvereinbarung unterliegt. Passwortgeschuetztes ZIP verschluesselt Dateiinhalte mit AES-256 (die ZIP-2.0-"traditionelle" Verschluesselung ist kaputt und sollte nicht verwendet werden). Der Empfaenger benoetigt das Passwort ueber einen separaten Kanal - setzen Sie das Passwort nicht in dieselbe E-Mail wie den Anhang.</p>
+    <p>Der schnellste In-Browser-Pfad ist <a href="/zip-tools/zip-file.html">Zip File</a>, das passwortgeschuetzte ZIPs ohne Softwareinstallation erstellt. Wenn Sie nur eine bereits passwortgeschuetzte ZIP, die Sie kontrollieren, <em>oeffnen</em> muessen, ist das passende Tool <a href="/zip-tools/remove-zip-password.html">ZIP-Passwort entfernen</a>. Fuer die Kurzentscheidungsmatrix, wer was wissen sollte, siehe den verwandten Leitfaden zu <a href="/guides/pdf-password-types-owner-vs-user.html">PDF-Passworttypen: Eigentuemer vs Benutzer</a> - die gleiche Taxonomie gilt fuer ZIP-Zugriffs- vs Bearbeitungsberechtigungen.</p>
+
+    <h2 class="text-uppercase"><b>Wann ZIP ueberspringen und einen Dateiuebertragungsdienst verwenden</b></h2>
+    <p>ZIP ist die richtige Antwort fuer Ordner unter der Anhangsobergrenze des Empfaengers. Darueber werden anhangsbasierte Workflows fragil - Empfaenger prallen ab, Spam-Filter markieren, Unternehmens-Posteingangs-Quoten fuellen sich. Drei Signale, dass ein Dateiuebertragungsdienst (Google Drive, OneDrive, Dropbox, WeTransfer oder Ihr eigenes Hosting) einen Anhang schlaegt:</p>
+    <ul>
+        <li><b>ZIP groesser als 20 MB</b> auf dem Weg zu einem Verbraucher-E-Mail-Konto.</li>
+        <li><b>Empfaenger auf restriktiver Unternehmens-E-Mail</b> (rechtlich, Finanzen, Gesundheitswesen haben oft aggressive Groessen- und Inhaltsfilter).</li>
+        <li><b>Medienreiche Ordner</b> (Video, RAW-Fotos), wo Kompression die Groesse nicht bedeutungsvoll reduziert - Hosting ist effizienter als Anhaengen.</li>
+    </ul>
+    <p>Wenn Sie wollen, dass der Empfaenger den Inhalt sehen kann, ohne zuerst herunterzuladen (Nur-Lese-Ueberpruefung), schlaegt ein teilbarer Link zu einem Cloud-Ordner einen ZIP-Anhang auf jeder Achse: vorab anzeigbar, immer aktuell und individuell widerrufbar.</p>
+
+    <h2 class="text-uppercase"><b>ZIP-Groesse vor dem Senden reduzieren</b></h2>
+    <p>Wenn Ihr Ordner gerade knapp ueber dem Groessenlimit ZIPt, vier pragmatische Reduzierungen, bevor Sie zu Dateiuebertragung wechseln:</p>
+    <ul>
+        <li><b>Komprimieren Sie Bilder zuerst.</b> JPG bei Qualitaet 85 ist normalerweise nicht von der Quelle zu unterscheiden und 30-50% kleiner. Fuehren Sie die losen Bilder durch <a href="/image-tools/compress-image.html">Compress Image</a> aus, bevor Sie ZIPpen.</li>
+        <li><b>Konvertieren Sie HEIC-Fotos vom iPhone.</b> HEIC-Dateien koennen, sobald sie in einer ZIP sind, nicht auf vielen Windows-Empfaengern vorab angezeigt werden. Konvertieren Sie zuerst ueber <a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> - JPG ist pro Datei groesser, oeffnet sich aber ueberall ohne Codec-Installation. Siehe <a href="/guides/heic-vs-jpg-vs-webp.html">HEIC vs JPG vs WebP</a> fuer die vollstaendige Format-Entscheidung.</li>
+        <li><b>Entfernen Sie macOS-Metadaten.</b> Auf macOS enthalten Finder-Archive <code>__MACOSX</code>- und <code>.DS_Store</code>-Rauschen. Der <code>ditto</code>-Befehl strippt diese; alternativ komprimieren Sie auf einer Linux- / Windows-Maschine, die sie nie produziert.</li>
+        <li><b>Teilen Sie in mehrere ZIPs.</b> Viele E-Mail-Clients akzeptieren 2-3 Anhaenge eleganter als eine ueberdimensionierte ZIP. Gruppieren Sie nach Thema (dokumente.zip + fotos.zip) anstatt nach willkuerlicher Byte-Grenze.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Haeufig gestellte Fragen</b></h2>
+
+    <details class="faq-item">
+  <summary><b>Warum ueberschreitet meine ZIP nach der Kompression immer noch das Limit?</b></summary>
+  <p>Weil der Quellordner von bereits komprimiertem Inhalt dominiert wird. JPG, PNG, MP3, MP4, DOCX und XLSX sind alle intern vorkomprimiert; der DEFLATE-Algorithmus von ZIP hat wenig zusaetzliche Entropie zu entfernen. Fuer Ordner, in denen 80%+ der Bytes von diesen Formaten kommen, erwarten Sie nur wenige Prozent Reduzierung. In diesen Faellen wechseln Sie zu einem Dateiuebertragungsdienst, anstatt zu versuchen, die ZIP unter das Limit zu pressen.</p>
+</details>
+<details class="faq-item">
+  <summary><b>Kann ich eine Ordner-ZIP unter Windows ohne zusaetzliche Software passwortgeschuetzt machen?</b></summary>
+  <p>Der Windows-Shell-Befehl "Senden an &rarr; Komprimierter Ordner" unterstuetzt nativ keinen Passwortschutz. Sie haben drei Optionen: (a) verwenden Sie unser browserbasiertes <a href="/zip-tools/zip-file.html">Zip File</a>-Tool, um eine passwortgeschuetzte ZIP zu erstellen, (b) installieren Sie 7-Zip und waehlen Sie "Zum Archiv hinzufuegen..." mit einem Passwort, oder (c) verwenden Sie PowerShell mit dem <code>Compress-Archive</code>-Cmdlet plus einem Verschluesselungsschritt von Drittanbietern. Das Browser-Tool ist die Option mit der geringsten Reibung, weil keine Installation erforderlich ist.</p>
+</details>
+<details class="faq-item">
+  <summary><b>Was, wenn der Empfaenger sagt "die ZIP ist beschaedigt" oder "Extraktion fehlgeschlagen"?</b></summary>
+  <p>Drei haeufige Ursachen: (1) der Virenscanner des E-Mail-Anbieters hat das Archiv im Transit modifiziert (ungewoehnlich, aber passiert bei aelteren Antivirus-Gateways); (2) die ZIP wurde mit Windows Explorer erstellt und enthaelt Nicht-ASCII-Dateinamen, die der Extraktor des Empfaengers nicht dekodieren kann; (3) der Download wurde abgeschnitten (weniger wahrscheinlich auf modernem HTTP, aber immer noch moeglich auf unzuverlaessigen Mobilnetzen). Loesung: komprimieren Sie den Ordner auf einem anderen OS neu (wenn macOS-erstellt, versuchen Sie es erneut unter Windows oder verwenden Sie <code>ditto</code> mit <code>--sequesterRsrc</code>), oder laden Sie ueber einen Dateiuebertragungsdienst neu hoch, der Pruefsummen serverseitig verifiziert, bevor er den Download-Link freigibt.</p>
+</details>
+<h2 class="text-uppercase"><b>Zusammenfassung</b></h2>
+    <p>Einen Ordner fuer E-Mail zu komprimieren ist eine 10-Sekunden-native Shell-Operation auf Windows und macOS. Die echte Entscheidung ist, ob die resultierende ZIP unter die Anhangsobergrenze des Empfaengers passt - wenn ja, versenden Sie sie mit dem Rechtsklick-Shell-Menue; wenn nein, waehlen Sie zwischen Aufteilen in kleinere ZIPs und Wechseln zu einem Dateiuebertragungslink. Fuegen Sie ein Passwort hinzu, wann immer der Ordner irgendetwas Reguliertes oder Vertrauliches enthaelt, und denken Sie daran, dass HEIC und bereits komprimierte Medien nicht viel schrumpfen - konvertieren oder hosten Sie diese separat.</p>
+    <p>Bereit, Ihre ZIP zu erstellen? Beginnen Sie mit <a href="/zip-tools/zip-file.html">Zip File</a> fuer browserbasierte Kompression mit optionalem Passwortschutz. Fuer die umgekehrte Richtung entsperrt das Tool <a href="/zip-tools/remove-zip-password.html">ZIP-Passwort entfernen</a> Archive, die Sie bereits zum Oeffnen berechtigt sind.</p>
+</div>

@@ -1,0 +1,63 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>FFmpeg online vs FFmpeg cuc bo - khi nao moi cai thang</b></h1>
+<time itemprop="datePublished" datetime="2026-04-20T08:00:00Z"><b>Xuat ban ngay 20 thang 4 nam 2026</b></time>
+<hr/>
+
+<p class="lead">FFmpeg la bo cong cu video va am thanh pho quat ma moi dich vu streaming, moi nguoi sang tao noi dung va moi pipeline backend deu lang le phu thuoc. Ban co the chay no trong mot tab trinh duyet thong qua WebAssembly (<a href="/video-tools/ffmpeg-online.html">FFmpeg online</a> cua chung toi la mot trien khai nhu vay) hoac cai dat cuc bo va goi tu mot terminal. Lua chon "dung" phu thuoc vao kich co tep, lap truong rieng tu, do bao phu codec va liec ban co muon hoc CLI khong. Huong dan nay bao gom nhung gi moi giao dien co the va khong the lam, voi cac cong thuc cu the cho khi nao moi cai thang.</p>
+
+<br/><h2 class="text-uppercase"><b>Moi giao dien thuc su la gi</b></h2>
+<p><b>FFmpeg online (ffmpeg.wasm)</b> la mot port cua FFmpeg duoc bien dich sang WebAssembly chay ben trong mot tab trinh duyet. Tep video ban chon duoc doc vao mot he thong tep trong bo nho ben trong tab; FFmpeg chay tren he thong tep ao do; dau ra duoc viet lai vao bo nho va duoc cung cap nhu mot ban tai xuong. Khong co gi roi khoi thiet bi cua ban.</p>
+<p><b>FFmpeg cuc bo</b> la nhi phan nguyen ban duoc cai dat thong qua trinh quan ly goi cua ban (<code>brew install ffmpeg</code>, <code>apt install ffmpeg</code>, Chocolatey, scoop). Nhi phan chay voi quyen truy cap day du OS: doc tu dia, ghi vao dia, su dung moi loi CPU, khai thac cac bo ma hoa phan cung (NVENC, QSV, VideoToolbox) khi co san.</p>
+
+<br/><h2 class="text-uppercase"><b>So sanh canh nhau</b></h2>
+<div class="w3-responsive">
+<table class="w3-table-all w3-small">
+<tr><th>Thuoc tinh</th><th>FFmpeg online (wasm trinh duyet)</th><th>FFmpeg cuc bo</th></tr>
+<tr><td>No luc cai dat</td><td>Khong - mo trang</td><td>Trung binh - trinh quan ly goi + PATH</td></tr>
+<tr><td>Kich co dau vao toi da</td><td>~1-2&nbsp;GB trong thuc te (gioi han RAM tab trinh duyet)</td><td>Chi gioi han boi dia</td></tr>
+<tr><td>Quyen rieng tu</td><td>Cac tep khong bao gio roi thiet bi (khong gi duoc tai len)</td><td>Cac tep khong bao gio roi thiet bi</td></tr>
+<tr><td>Toc do ma hoa (1080p H.264, clip 1 phut)</td><td>~60-90 giay (wasm, don luong hoac SharedArrayBuffer)</td><td>~15 giay (da loi) hoac ~3 giay (bo ma hoa phan cung)</td></tr>
+<tr><td>Tang toc phan cung</td><td>Khong (chay trong phan mem qua wasm)</td><td>Co (NVENC, QSV, VideoToolbox, AMD AMF)</td></tr>
+<tr><td>Do bao phu codec</td><td>Rong nhung gioi han boi build (H.264, VP9, AAC, Opus, AV1 trong cac build moi hon)</td><td>Moi codec ma FFmpeg ho tro (phu thuoc vao cac co build)</td></tr>
+<tr><td>Bo loc / hieu ung</td><td>Hau het cac bo loc pho bien hoat dong</td><td>Tat ca bo loc FFmpeg</td></tr>
+<tr><td>Scripting / hang loat</td><td>Gioi han o nhung gi UI phoi bay</td><td>Scripting shell day du, xu ly hang loat</td></tr>
+<tr><td>Cap nhat</td><td>Di kem voi trang; luon hien thoi</td><td>Thu cong (cap nhat trinh quan ly goi)</td></tr>
+</table>
+</div>
+
+<br/><h2 class="text-uppercase"><b>Chon FFmpeg trinh duyet cho: tep nho, khong cai dat, rieng tu</b></h2>
+<p><b>Chuyen doi mot lan cua mot tep duoi 2 GB.</b> Ban co mot MOV duy nhat tu dien thoai cua ban can la MP4 cho email. Mo trang trinh duyet nhanh hon cai dat mot cong cu CLI ban se su dung mot lan trong nam nay.</p>
+<p><b>Noi dung nhay cam ve rieng tu.</b> Mot ban thao video ban khong muon tai len mot trinh chuyen doi truc tuyen mien phi. Wasm trong trinh duyet la cach duy nhat de dam bao tep o lai tren thiet bi cua ban ma khong cai dat FFmpeg cuc bo.</p>
+<p><b>Su dung mot may noi ban khong the cai dat phan mem.</b> Mot laptop cong viec voi quyen cai dat bi khoa, mot phong thi nghiem truong hoc, mot quay thu vien. Neu trinh duyet co the tai trang, FFmpeg chay.</p>
+<p><b>Day hoc hoac trinh bay mot lenh FFmpeg cu the.</b> Console trong trinh duyet hien thi dau ra log FFmpeg theo thoi gian thuc; hoc sinh co the thay cung pipeline chay cuc bo.</p>
+
+<br/><h2 class="text-uppercase"><b>Chon FFmpeg cuc bo cho: tep lon, cong viec hang loat, bo ma hoa phan cung</b></h2>
+<p><b>Cac tep tren 2 GB.</b> Heap cua mot tab trinh duyet bi gioi han o 4 GB tren hau het cac nen tang; ffmpeg.wasm chay trong tab do thuong co 1.5-2 GB headroom sau ma va metadata. Filmstock 4K dai hon, noi nhieu tep nguon hoac video nguon bitrate cao se vuot qua gioi han do. FFmpeg cuc bo stream tu dia va khong bao gio tai toan bo tep vao RAM.</p>
+<p><b>Xu ly hang loat.</b> Mot thu muc 200 video de ma hoa lai, mot cron job transcodes filmstock duoc tai len, mot pipeline CI tao thumbnail. Cac script shell + <code>xargs</code> hoac <code>find -exec</code> xu ly cac lo tam thuong; UI trinh duyet xu ly mot tep tai mot thoi diem.</p>
+<p><b>Bo ma hoa phan cung.</b> Ma hoa mot gio 1080p H.264 voi NVENC mat 2-5 phut tren GPU NVIDIA hien dai. Cung gio do qua wasm mat 1-2 gio. Doi voi bat cu ai xu ly hon vai phut video thuong xuyen, FFmpeg cuc bo voi tang toc phan cung nhanh hon 20-30&times;.</p>
+<p><b>Codec khong pho bien hoac bo loc thu nghiem.</b> Neu ban can mot bo loc yeu cau mot co build FFmpeg cu the (<code>libx265</code> voi tuning x265, <code>libfdk_aac</code>, <code>libaom-av1</code>), FFmpeg cuc bo duoc cai dat tu nguon voi cac co yeu cau la con duong duy nhat.</p>
+
+<br/><h2 class="text-uppercase"><b>"Online" co nghia la gi trong cong cu cua chung toi</b></h2>
+<p><a href="/video-tools/ffmpeg-online.html">FFmpeg online</a> cua chung toi chay hoan toan trong trinh duyet cua ban. Ma FFmpeg la WebAssembly duoc bien dich tu cung nguon nhu CLI. Khi ban chon mot tep, no duoc doc vao mot he thong tep do emscripten gia lap ben trong tab. Khi FFmpeg chay, no doc tu he thong tep ao do va ghi vao no. Khi no ket thuc, tep dau ra duoc trao cho ban nhu mot ban tai xuong qua mot URL Blob. Khong co luc nao tep di chuyen qua mang.</p>
+<p>Trang hien thi dong lenh FFmpeg thuc te va log FFmpeg truc tiep - vi vay ban co the sao chep lenh chinh xac de chay no sau nay tren CLI cho cac tep lon hon, xem <a href="/guides/mp4-vs-webm-for-web.html">huong dan MP4 vs WebM</a> cua chung toi cho cac quyet dinh o muc dinh dang.</p>
+
+<br/><h2 class="text-uppercase"><b>Nam cong thuc cu the hoat dong tren ca hai giao dien</b></h2>
+<p><b>Chuyen MOV sang MP4 (H.264).</b> <code>ffmpeg -i in.mov -c:v libx264 -crf 23 -preset medium -c:a aac -b:a 128k -movflags +faststart out.mp4</code> - hoat dong giong het trong trinh duyet va CLI.</p>
+<p><b>Cat mot clip giua hai timestamp.</b> <code>ffmpeg -ss 00:00:30 -to 00:01:45 -i in.mp4 -c copy out.mp4</code> - <code>-c copy</code> tranh ma hoa lai, lam dieu nay tuc thoi.</p>
+<p><b>Trich xuat am thanh thanh MP3.</b> <code>ffmpeg -i in.mp4 -vn -c:a libmp3lame -q:a 2 out.mp3</code>.</p>
+<p><b>Thay doi kich thuoc thanh 720p giu ti le khung hinh.</b> <code>ffmpeg -i in.mp4 -vf "scale=-2:720" -c:a copy out.mp4</code>.</p>
+<p><b>Tao mot thumbnail o giay thu 5.</b> <code>ffmpeg -ss 00:00:05 -i in.mp4 -vframes 1 -q:v 2 thumb.jpg</code>.</p>
+
+<br/><h2 class="text-uppercase"><b>Khi nao chon FFmpeg online vs cai dat FFmpeg cuc bo trong mot cau</b></h2>
+<p>Neu tep duoi ~1&nbsp;GB, ban can no duoc chuyen doi ngay bay gio va ban khong xu ly video thuong xuyen - su dung FFmpeg online trong trinh duyet qua WebAssembly khong roi trang. Neu ban dang xu ly lo, tep lon hoac thuong xuyen cham vao video - cai dat FFmpeg cuc bo tu trinh quan ly goi de CLI o tren PATH cho moi phien shell. Con duong trinh duyet danh doi cai dat cuc bo bang mot khoan thue cold-start moi tab; con duong cai dat cuc bo danh doi mot cai dat mot lan voi thoi gian khoi dau duoi giay tren moi lan chay tiep theo.</p>
+
+<br/><h2 class="text-uppercase"><b>Cong cu lien quan</b></h2>
+<ul>
+    <li><a href="/video-tools/ffmpeg-online.html">FFmpeg Online</a> - FFmpeg trong trinh duyet cho cong viec nhanh voi tep don.</li>
+    <li><a href="/video-tools/video-converter.html">Trinh Chuyen Doi Video</a> - cac hoan doi MP4/WebM/MOV cap cao hon khong can viet lenh.</li>
+    <li><a href="/video-tools/video-maker.html">Trinh Tao Video</a> - ghep cac hinh anh thanh mot chuoi video.</li>
+    <li><a href="/image-converter-tools/extract-gif-to-image-frames.html">Trinh Trich Xuat Khung GIF</a> - nguoc cua muxer <code>image2</code> cua FFmpeg.</li>
+</ul>
+
+<p><br/><a href="/video-tools.html">&larr; Quay lai Cong cu Video</a></p>
+</div>

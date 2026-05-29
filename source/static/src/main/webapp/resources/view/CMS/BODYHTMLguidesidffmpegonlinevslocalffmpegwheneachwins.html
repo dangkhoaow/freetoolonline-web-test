@@ -1,0 +1,63 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>FFmpeg online vs FFmpeg lokal - kapan masing-masing menang</b></h1>
+<time itemprop="datePublished" datetime="2026-04-20T08:00:00Z"><b>Diterbitkan 20 April 2026</b></time>
+<hr/>
+
+<p class="lead">FFmpeg adalah toolkit video dan audio universal yang setiap layanan streaming, setiap pembuat konten, dan setiap pipeline backend diam-diam bergantung padanya. Anda dapat menjalankannya di tab browser melalui WebAssembly (<a href="/video-tools/ffmpeg-online.html">FFmpeg online</a> kami adalah salah satu implementasi tersebut) atau menginstalnya secara lokal dan memanggilnya dari terminal. Pilihan "yang tepat" tergantung pada ukuran file, postur privasi, cakupan codec, dan apakah Anda ingin mempelajari CLI. Panduan ini mencakup apa yang dapat dan tidak dapat dilakukan setiap permukaan, dengan resep konkret untuk kapan masing-masing menang.</p>
+
+<br/><h2 class="text-uppercase"><b>Apa sebenarnya setiap permukaan</b></h2>
+<p><b>FFmpeg online (ffmpeg.wasm)</b> adalah port FFmpeg yang dikompilasi ke WebAssembly yang berjalan di dalam tab browser. File video yang Anda pilih dibaca ke sistem file dalam-memori di dalam tab; FFmpeg berjalan terhadap sistem file virtual itu; output ditulis kembali ke memori dan ditawarkan sebagai unduhan. Tidak ada yang meninggalkan perangkat Anda.</p>
+<p><b>FFmpeg lokal</b> adalah biner native yang diinstal via manajer paket Anda (<code>brew install ffmpeg</code>, <code>apt install ffmpeg</code>, Chocolatey, scoop). Biner berjalan dengan akses OS penuh: membaca dari disk, menulis ke disk, menggunakan setiap inti CPU, memanfaatkan encoder hardware (NVENC, QSV, VideoToolbox) jika tersedia.</p>
+
+<br/><h2 class="text-uppercase"><b>Perbandingan berdampingan</b></h2>
+<div class="w3-responsive">
+<table class="w3-table-all w3-small">
+<tr><th>Atribut</th><th>FFmpeg online (wasm browser)</th><th>FFmpeg lokal</th></tr>
+<tr><td>Upaya instalasi</td><td>Nol - buka halaman</td><td>Sedang - manajer paket + PATH</td></tr>
+<tr><td>Ukuran input maksimum</td><td>~1-2&nbsp;GB dalam praktik (batas RAM tab browser)</td><td>Terbatas hanya oleh disk</td></tr>
+<tr><td>Privasi</td><td>File tidak pernah meninggalkan perangkat (tidak ada yang diunggah)</td><td>File tidak pernah meninggalkan perangkat</td></tr>
+<tr><td>Kecepatan encoding (1080p H.264, klip 1 menit)</td><td>~60-90 detik (wasm, single-threaded atau SharedArrayBuffer)</td><td>~15 detik (multi-core) atau ~3 detik (encoder hardware)</td></tr>
+<tr><td>Akselerasi hardware</td><td>Tidak (berjalan di software via wasm)</td><td>Ya (NVENC, QSV, VideoToolbox, AMD AMF)</td></tr>
+<tr><td>Cakupan codec</td><td>Luas tetapi dibatasi oleh build (H.264, VP9, AAC, Opus, AV1 di build yang lebih baru)</td><td>Setiap codec yang didukung FFmpeg (tergantung flag build)</td></tr>
+<tr><td>Filter / efek</td><td>Sebagian besar filter umum berfungsi</td><td>Semua filter FFmpeg</td></tr>
+<tr><td>Scripting / batch</td><td>Terbatas pada apa yang diekspos UI</td><td>Scripting shell penuh, pemrosesan batch</td></tr>
+<tr><td>Pembaruan</td><td>Datang dengan halaman; selalu terkini</td><td>Manual (pembaruan manajer paket)</td></tr>
+</table>
+</div>
+
+<br/><h2 class="text-uppercase"><b>Pilih FFmpeg browser untuk: file kecil, tanpa instal, privasi</b></h2>
+<p><b>Konversi satu kali dari satu file di bawah 2 GB.</b> Anda memiliki satu MOV dari ponsel Anda yang perlu menjadi MP4 untuk email. Membuka halaman browser lebih cepat daripada menginstal alat CLI yang akan Anda gunakan sekali tahun ini.</p>
+<p><b>Konten sensitif privasi.</b> Draf video yang tidak ingin Anda unggah ke konverter online gratis. Wasm di browser adalah satu-satunya cara untuk menjamin file tetap di perangkat Anda tanpa menginstal FFmpeg secara lokal.</p>
+<p><b>Menggunakan mesin di mana Anda tidak dapat menginstal perangkat lunak.</b> Laptop kerja dengan izin instal yang dikunci, lab sekolah, kios perpustakaan. Jika browser dapat memuat halaman, FFmpeg berjalan.</p>
+<p><b>Mengajar atau mendemonstrasikan perintah FFmpeg tertentu.</b> Konsol dalam browser menampilkan output log FFmpeg secara real time; siswa dapat melihat pipeline yang sama yang berjalan secara lokal.</p>
+
+<br/><h2 class="text-uppercase"><b>Pilih FFmpeg lokal untuk: file besar, pekerjaan batch, encoder hardware</b></h2>
+<p><b>File di atas 2 GB.</b> Heap tab browser dibatasi pada 4 GB di sebagian besar platform; ffmpeg.wasm yang berjalan di dalam tab itu biasanya memiliki 1.5-2 GB headroom setelah kode dan metadata. Rekaman 4K yang lebih panjang, menggabungkan beberapa file sumber, atau video sumber bitrate tinggi akan melampaui batas itu. FFmpeg lokal melakukan streaming dari disk dan tidak pernah memuat file lengkap ke RAM.</p>
+<p><b>Pemrosesan batch.</b> Folder 200 video untuk diencode ulang, cron job yang mentranskode rekaman yang diunggah, pipeline CI yang menghasilkan thumbnail. Skrip shell + <code>xargs</code> atau <code>find -exec</code> menangani batch dengan mudah; UI browser menangani satu file pada satu waktu.</p>
+<p><b>Encoder hardware.</b> Mengenkode satu jam 1080p H.264 dengan NVENC memakan waktu 2-5 menit pada GPU NVIDIA modern. Jam yang sama via wasm memakan waktu 1-2 jam. Bagi siapa pun yang memproses lebih dari beberapa menit video secara teratur, FFmpeg lokal dengan akselerasi hardware 20-30&times; lebih cepat.</p>
+<p><b>Codec yang tidak biasa atau filter eksperimental.</b> Jika Anda membutuhkan filter yang memerlukan flag build FFmpeg tertentu (<code>libx265</code> dengan tuning x265, <code>libfdk_aac</code>, <code>libaom-av1</code>), FFmpeg lokal yang diinstal dari sumber dengan flag yang diperlukan adalah satu-satunya jalan.</p>
+
+<br/><h2 class="text-uppercase"><b>Apa arti "online" di alat kami</b></h2>
+<p><a href="/video-tools/ffmpeg-online.html">FFmpeg online</a> kami berjalan sepenuhnya di browser Anda. Kode FFmpeg adalah WebAssembly yang dikompilasi dari sumber yang sama dengan CLI. Saat Anda memilih file, itu dibaca ke sistem file yang diemulasi emscripten di dalam tab. Saat FFmpeg berjalan, itu membaca dari sistem file virtual itu dan menulis ke sana. Saat selesai, file output diserahkan kepada Anda sebagai unduhan via URL Blob. Pada titik mana pun file tidak melakukan perjalanan melalui jaringan.</p>
+<p>Halaman menampilkan baris perintah FFmpeg yang sebenarnya dan log FFmpeg langsung - sehingga Anda dapat menyalin perintah persis untuk menjalankannya nanti di CLI untuk file yang lebih besar, lihat <a href="/guides/mp4-vs-webm-for-web.html">panduan MP4 vs WebM</a> kami untuk keputusan tingkat format.</p>
+
+<br/><h2 class="text-uppercase"><b>Lima resep konkret yang bekerja di kedua permukaan</b></h2>
+<p><b>Konversi MOV ke MP4 (H.264).</b> <code>ffmpeg -i in.mov -c:v libx264 -crf 23 -preset medium -c:a aac -b:a 128k -movflags +faststart out.mp4</code> - bekerja secara identik di browser dan CLI.</p>
+<p><b>Pangkas klip antara dua timestamp.</b> <code>ffmpeg -ss 00:00:30 -to 00:01:45 -i in.mp4 -c copy out.mp4</code> - <code>-c copy</code> menghindari pengkodean ulang, membuat ini instan.</p>
+<p><b>Ekstrak audio sebagai MP3.</b> <code>ffmpeg -i in.mp4 -vn -c:a libmp3lame -q:a 2 out.mp3</code>.</p>
+<p><b>Ubah ukuran ke 720p mempertahankan rasio aspek.</b> <code>ffmpeg -i in.mp4 -vf "scale=-2:720" -c:a copy out.mp4</code>.</p>
+<p><b>Hasilkan thumbnail pada 5 detik.</b> <code>ffmpeg -ss 00:00:05 -i in.mp4 -vframes 1 -q:v 2 thumb.jpg</code>.</p>
+
+<br/><h2 class="text-uppercase"><b>Kapan memilih FFmpeg online vs menginstal FFmpeg lokal dalam satu kalimat</b></h2>
+<p>Jika file di bawah ~1&nbsp;GB, Anda membutuhkannya dikonversi sekarang, dan Anda tidak memproses video secara teratur - gunakan FFmpeg online di browser via WebAssembly tanpa meninggalkan halaman. Jika Anda memproses batch, file besar, atau secara teratur menyentuh video - instal FFmpeg lokal dari manajer paket sehingga CLI berada di PATH untuk setiap sesi shell. Jalur browser menukar pengaturan instal lokal dengan pajak cold-start per-tab; jalur instal lokal menukar pengaturan sekali dengan waktu mulai sub-detik pada setiap eksekusi berikutnya.</p>
+
+<br/><h2 class="text-uppercase"><b>Alat terkait</b></h2>
+<ul>
+    <li><a href="/video-tools/ffmpeg-online.html">FFmpeg Online</a> - FFmpeg dalam browser untuk pekerjaan cepat file tunggal.</li>
+    <li><a href="/video-tools/video-converter.html">Konverter Video</a> - pertukaran MP4/WebM/MOV tingkat lebih tinggi tanpa menulis perintah.</li>
+    <li><a href="/video-tools/video-maker.html">Pembuat Video</a> - jahit gambar menjadi urutan video.</li>
+    <li><a href="/image-converter-tools/extract-gif-to-image-frames.html">Ekstraktor Frame GIF</a> - kebalikan dari muxer <code>image2</code> FFmpeg.</li>
+</ul>
+
+<p><br/><a href="/video-tools.html">&larr; Kembali ke Alat Video</a></p>
+</div>

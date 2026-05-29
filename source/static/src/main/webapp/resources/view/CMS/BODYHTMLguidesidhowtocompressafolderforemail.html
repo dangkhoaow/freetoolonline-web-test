@@ -1,0 +1,97 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Cara Mengkompres Folder untuk Email - Langkah Demi Langkah (2026)</b></h1>
+    <p><em>Terakhir ditinjau 2026-04-24. Bekerja di Windows 10/11, macOS 13+ (Ventura dan lebih baru), dan di browser via <a href="/zip-tools/zip-file.html">Zip File</a> ketika alur zip shell natif tidak tersedia.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Jawaban 30 detik.</b> Klik kanan folder &rarr; <b>"Kirim ke folder ZIP (terkompres)"</b> di Windows (atau <b>"Kompres"</b> di macOS). Lampirkan <code>.zip</code> yang dihasilkan ke email. Jika ZIP melebihi batas penyedia (biasanya 20-25 MB, lihat <a href="#email-size-limits">tabel ukuran email di bawah</a>), maka (a) pisahkan sumber menjadi dua folder dan ZIP masing-masing, atau (b) unggah ke layanan transfer file dan tempel tautan ke badan email.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Mengapa mengkompres folder untuk email?</b></h2>
+    <p>Lampiran email diukur byte. Folder yang tidak dikompres tidak dapat dilampirkan sama sekali - klien email memerlukan satu file, bukan direktori. Mengkompres mengumpulkan folder menjadi satu arsip ZIP yang mempertahankan struktur internal, nama file, dan tanggal modifikasi, sambil menyusutkan ukuran total melalui kompresi LZ77 / DEFLATE. Untuk folder konten campuran (dokumen, gambar, spreadsheet), harapkan pengurangan ukuran 20-50%; untuk folder yang sudah didominasi oleh format yang dikompres (JPG, MP3, MP4), harapkan hanya beberapa persen karena format tersebut sudah dikodekan entropi.</p>
+    <p>Tiga alasan praktis untuk ZIP sebelum mengirim:</p>
+    <ul>
+        <li><b>Batas ukuran penyedia.</b> Gmail, Outlook, dan iCloud semuanya membatasi lampiran individu. ZIP dapat muat di bawah batas ketika folder mentah tidak bisa.</li>
+        <li><b>Pelestarian struktur.</b> Penerima mendapat pohon folder utuh setelah unzip - bukan 47 file longgar di akar folder Unduhan mereka.</li>
+        <li><b>Integritas dalam perjalanan.</b> ZIP menyimpan CRC-32 per file; unduhan rusak menyenyalkan diri saat ekstrak sehingga Anda dapat mencoba ulang daripada diam-diam menerima byte rusak.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Langkah demi langkah di Windows 10 dan 11</b></h2>
+    <ol>
+        <li><b>Cari folder</b> di File Explorer. Jika Anda mengkompres <em>subset</em> file daripada seluruh folder, buat folder kosong baru dan salin file ke dalamnya terlebih dahulu - ZIP tidak dapat "pilih-dan-arsipkan" file longgar secara natif tanpa mengelompokkannya.</li>
+        <li><b>Klik kanan folder</b>. Di Windows 11 menu shell baru muncul; jika Anda tidak melihat opsi ZIP segera, klik <b>"Tampilkan opsi lainnya"</b> di bagian bawah untuk mengungkapkan menu klasik.</li>
+        <li><b>Pilih "Kirim ke" &rarr; "Folder terkompres (zip)"</b>. Windows membuat <code>&lt;nama-folder&gt;.zip</code> di direktori yang sama.</li>
+        <li><b>Ganti nama</b> ZIP jika diinginkan (default mewarisi nama folder).</li>
+        <li><b>Lampirkan</b> ZIP ke email Anda. Seret-drop ke jendela komposisi atau gunakan tombol klip / "Lampirkan file".</li>
+    </ol>
+    <p>Windows 11 menambahkan dukungan native 7z dan tar pada 2023; untuk lampiran ZIP secara khusus, tetap dengan <code>.zip</code> karena macOS dan setiap panel pratinjau webmail mendekodenya tanpa unduhan. Jika penerima mengkonfirmasi 7-Zip atau yang setara terinstal, beralih ke <code>.7z</code> dengan LZMA2 dapat mencukur 10-20% lagi dari ukuran dengan biaya langkah kompres yang lebih lambat.</p>
+
+    <h2 class="text-uppercase"><b>Langkah demi langkah di macOS 13+ (Ventura, Sonoma, Sequoia)</b></h2>
+    <ol>
+        <li><b>Pilih folder</b> di Finder.</li>
+        <li><b>Klik kanan (atau Control-klik)</b> &rarr; <b>"Kompres '&lt;nama-folder&gt;'"</b>. macOS membuat <code>&lt;nama-folder&gt;.zip</code> di direktori yang sama.</li>
+        <li><b>Ganti nama</b> arsip jika perlu. macOS mempertahankan metadata file dan resource fork di dalam folder <code>__MACOSX</code>, yang beberapa penerima Windows anggap kekacauan; lihat FAQ tentang menghapusnya di bawah.</li>
+        <li><b>Lampirkan</b> ke email via seret-drop standar atau aksi Lampirkan File.</li>
+    </ol>
+    <p>macOS juga mendukung pengarsipan berbasis Terminal dengan <code>zip -r archive.zip folder/</code> (BSD zip) atau <code>ditto -c -k --sequesterRsrc folder archive.zip</code> (perintah ditto Apple). Ditto adalah yang Finder panggil di bawah selubung dan lebih disukai untuk folder apa pun yang berisi resource fork khusus macOS.</p>
+
+    <h2 id="email-size-limits" class="text-uppercase"><b>Batas lampiran email yang memblokir folder ZIPed pada 2026</b></h2>
+    <p>Batas khusus penyedia mendorong sebagian besar kesalahan "ZIP folder saya tidak akan mengirim". Pemblokir hampir selalu adalah langit-langit penerima, bukan batas pengiriman Anda - ketahui keduanya sebelum Anda mengkompres, karena ZIP folder 30 MB yang Gmail Anda kirim baik-baik saja masih memantul terhadap penerima Outlook 25 MB. Folder sangat terpengaruh karena arsip direktori cenderung membundel puluhan item sekaligus; satu foto besar di dalam folder cukup untuk mendorong seluruh ZIP melebihi batas penerima.</p>
+    <ul>
+        <li><b>Gmail:</b> kirim 25 MB / terima 50 MB. Lampiran lebih besar otomatis dialihkan melalui Google Drive.</li>
+        <li><b>Outlook (Microsoft 365):</b> pengiriman default 20 MB; terima 25 MB untuk sebagian besar paket. Tenant perusahaan dapat dikonfigurasi hingga 150 MB tetapi penerima di luar tenant sering masih melihat 25 MB.</li>
+        <li><b>Outlook.com (gratis):</b> batas pengiriman 10 MB sebelum pengalihan OneDrive.</li>
+        <li><b>iCloud Mail:</b> 20 MB; Mail Drop Apple muncul untuk lampiran lebih besar (server iCloud menampung file selama 30 hari).</li>
+        <li><b>Yahoo Mail:</b> 25 MB.</li>
+        <li><b>SMTP korporat / kustom:</b> sangat bervariasi (10-150 MB). Tanyakan admin Anda atau lakukan pengiriman tes dengan file ~15 MB.</li>
+    </ul>
+    <p>Ketika ZIP melebihi batas penerima, pesan bounce biasanya mengatakan "pesan terlalu besar" atau "554 5.7.1." Jika Anda melihat kesalahan itu, jangan kirim ulang dengan ZIP yang sama - beralih ke strategi tautan transfer file.</p>
+
+    <h2 class="text-uppercase"><b>Kapan menambahkan kata sandi ke ZIP</b></h2>
+    <p>Tambahkan kata sandi ketika folder berisi salah satu dari: dokumen hukum, kontrak yang ditandatangani, data HR, catatan keuangan, kredensial login, atau apa pun yang tunduk pada perjanjian kerahasiaan. ZIP yang dilindungi kata sandi mengenkripsi konten file dengan AES-256 (cipher "tradisional" ZIP 2.0 rusak dan tidak boleh digunakan). Penerima membutuhkan kata sandi melalui saluran terpisah - jangan letakkan kata sandi di email yang sama dengan lampiran.</p>
+    <p>Jalur tercepat dalam browser adalah <a href="/zip-tools/zip-file.html">Zip File</a> yang membuat ZIP yang dilindungi kata sandi tanpa instalasi perangkat lunak. Jika Anda hanya perlu <em>membuka</em> ZIP yang sudah dilindungi kata sandi yang Anda kontrol, alat yang cocok adalah <a href="/zip-tools/remove-zip-password.html">Hapus Kata Sandi ZIP</a>. Untuk matriks keputusan singkat tentang siapa yang harus tahu apa, lihat panduan terkait tentang <a href="/guides/pdf-password-types-owner-vs-user.html">jenis kata sandi PDF: pemilik vs pengguna</a> - taksonomi yang sama berlaku untuk izin akses vs edit ZIP.</p>
+
+    <h2 class="text-uppercase"><b>Kapan melewatkan ZIP dan menggunakan layanan transfer file</b></h2>
+    <p>ZIP adalah jawaban yang tepat untuk folder di bawah langit-langit lampiran penerima. Di atas itu, alur kerja berbasis lampiran menjadi rapuh - penerima memantul, filter spam menandai, kuota kotak masuk perusahaan terisi. Tiga sinyal bahwa layanan transfer file (Google Drive, OneDrive, Dropbox, WeTransfer, atau hosting Anda sendiri) mengalahkan lampiran:</p>
+    <ul>
+        <li><b>ZIP lebih besar dari 20 MB</b> menuju akun email konsumen apa pun.</li>
+        <li><b>Penerima pada email korporat yang membatasi</b> (hukum, keuangan, kesehatan sering memiliki filter ukuran dan konten yang agresif).</li>
+        <li><b>Folder berat media</b> (video, foto mentah) di mana kompresi tidak akan mengurangi ukuran secara berarti - hosting lebih efisien daripada melampirkan.</li>
+    </ul>
+    <p>Jika Anda perlu penerima dapat melihat konten tanpa mengunduh terlebih dahulu (tinjauan hanya-baca), tautan yang dapat dibagikan ke folder cloud mengalahkan lampiran ZIP pada setiap sumbu: dapat dipratinjau, selalu terkini, dan dapat dicabut secara individual.</p>
+
+    <h2 class="text-uppercase"><b>Mengurangi ukuran ZIP sebelum mengirim</b></h2>
+    <p>Jika folder Anda ZIP ke tepat di atas batas ukuran, empat pengurangan pragmatis sebelum beralih ke transfer file:</p>
+    <ul>
+        <li><b>Kompres gambar terlebih dahulu.</b> JPG pada kualitas 85 biasanya tidak dapat dibedakan dari sumber dan 30-50% lebih kecil. Jalankan gambar longgar melalui <a href="/image-tools/compress-image.html">Compress Image</a> sebelum ZIP.</li>
+        <li><b>Konversi foto HEIC dari iPhone.</b> File HEIC, setelah berada di dalam ZIP, tidak dapat dipratinjau pada banyak penerima Windows. Konversi via <a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> terlebih dahulu - JPG lebih besar per-file tetapi terbuka di mana-mana tanpa instalasi codec. Lihat <a href="/guides/heic-vs-jpg-vs-webp.html">HEIC vs JPG vs WebP</a> untuk keputusan format lengkap.</li>
+        <li><b>Hapus metadata macOS.</b> Di macOS, arsip Finder menyertakan kebisingan <code>__MACOSX</code> dan <code>.DS_Store</code>. Perintah <code>ditto</code> menghapus ini; sebagai alternatif, kompres pada mesin Linux / Windows yang tidak pernah memproduksinya.</li>
+        <li><b>Pisahkan menjadi beberapa ZIP.</b> Banyak klien email menerima 2-3 lampiran dengan lebih anggun daripada satu ZIP besar. Kelompokkan menurut topik (dokumen.zip + foto.zip) daripada batas byte sewenang-wenang.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Pertanyaan Yang Sering Diajukan</b></h2>
+
+    <details class="faq-item">
+  <summary><b>Mengapa ZIP saya masih melebihi batas setelah kompresi?</b></summary>
+  <p>Karena folder sumber didominasi oleh konten yang sudah dikompres. JPG, PNG, MP3, MP4, DOCX, dan XLSX semuanya pra-dikompres secara internal; algoritma DEFLATE ZIP memiliki sedikit entropi tambahan untuk dihapus. Untuk folder di mana 80%+ byte berasal dari format ini, harapkan hanya beberapa persen pengurangan. Dalam kasus tersebut, beralih ke layanan transfer file daripada mencoba memeras ZIP di bawah batas.</p>
+</details>
+<details class="faq-item">
+  <summary><b>Bisakah saya melindungi ZIP folder dengan kata sandi di Windows tanpa perangkat lunak tambahan?</b></summary>
+  <p>Perintah shell Windows "Kirim ke &rarr; Folder terkompres" tidak mendukung lindungi-kata-sandi secara natif. Anda memiliki tiga opsi: (a) gunakan alat berbasis browser <a href="/zip-tools/zip-file.html">Zip File</a> kami untuk membuat ZIP yang dilindungi kata sandi, (b) instal 7-Zip dan pilih "Tambah ke arsip..." dengan kata sandi, atau (c) gunakan PowerShell dengan cmdlet <code>Compress-Archive</code> plus langkah enkripsi pihak ketiga. Alat browser adalah opsi gesekan terendah karena tidak ada instalasi yang diperlukan.</p>
+</details>
+<details class="faq-item">
+  <summary><b>Bagaimana jika penerima mengatakan "ZIP rusak" atau "ekstrak gagal"?</b></summary>
+  <p>Tiga penyebab umum: (1) pemindai virus penyedia email memodifikasi arsip dalam perjalanan (tidak biasa tetapi terjadi dengan gateway antivirus yang lebih lama); (2) ZIP dibuat dengan Windows Explorer dan berisi nama file non-ASCII yang ekstraktor penerima tidak dapat decode; (3) unduhan dipotong (kurang mungkin pada HTTP modern tetapi masih mungkin pada jaringan seluler tidak stabil). Perbaikan: re-kompres folder pada OS yang berbeda (jika dibuat macOS, coba lagi di Windows atau gunakan <code>ditto</code> dengan <code>--sequesterRsrc</code>), atau unggah ulang via layanan transfer file yang memverifikasi checksum sisi server sebelum mengekspos tautan unduhan.</p>
+</details>
+<h2 class="text-uppercase"><b>Ringkasan</b></h2>
+    <p>Mengkompres folder untuk email adalah operasi shell native 10 detik di Windows dan macOS. Keputusan nyata adalah apakah ZIP yang dihasilkan muat di bawah langit-langit lampiran penerima - jika ya, kirim dengan menu shell klik kanan; jika tidak, pilih antara membagi menjadi ZIP yang lebih kecil dan beralih ke tautan transfer file. Tambahkan kata sandi kapan pun folder berisi apa pun yang diatur atau rahasia, dan ingat bahwa HEIC dan media yang sudah dikompres tidak akan menyusut banyak - konversi atau host yang terpisah.</p>
+    <p>Siap untuk membuat ZIP Anda? Mulai dengan <a href="/zip-tools/zip-file.html">Zip File</a> untuk kompresi berbasis browser dengan perlindungan kata sandi opsional. Untuk arah sebaliknya, alat <a href="/zip-tools/remove-zip-password.html">Hapus Kata Sandi ZIP</a> membuka arsip yang sudah Anda miliki izin untuk membuka.</p>
+</div>

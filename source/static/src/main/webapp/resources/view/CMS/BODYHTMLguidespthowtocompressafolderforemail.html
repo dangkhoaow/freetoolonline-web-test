@@ -1,0 +1,97 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Como Compactar uma Pasta para Email - Passo a Passo (2026)</b></h1>
+    <p><em>Ultima revisao 2026-04-24. Funciona em Windows 10/11, macOS 13+ (Ventura e posterior) e no navegador via <a href="/zip-tools/zip-file.html">Zip File</a> quando um fluxo zip de shell nativo nao esta disponivel.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Resposta em 30 segundos.</b> Clique com o botao direito na pasta &rarr; <b>"Enviar para pasta ZIP (compactada)"</b> no Windows (ou <b>"Compactar"</b> no macOS). Anexe o <code>.zip</code> resultante ao email. Se o ZIP exceder o limite do provedor (tipicamente 20-25 MB, veja <a href="#email-size-limits">tabela de tamanho de email abaixo</a>), entao (a) divida a fonte em duas pastas e compacte cada uma, ou (b) envie para um servico de transferencia de arquivos e cole o link no corpo do email.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Por que compactar uma pasta para email?</b></h2>
+    <p>Os anexos de email sao medidos em bytes. Pastas nao compactadas nao podem ser anexadas - clientes de email exigem um unico arquivo, nao um diretorio. Compactar colapsa a pasta em um unico arquivo ZIP que preserva a estrutura interna, nomes de arquivos e datas de modificacao, enquanto reduz o tamanho total atraves de compressao LZ77 / DEFLATE. Para pastas de conteudo misto (documentos, imagens, planilhas), espere reducao de tamanho de 20-50%; para pastas ja dominadas por formatos comprimidos (JPG, MP3, MP4), espere apenas alguns por cento porque esses formatos ja sao codificados por entropia.</p>
+    <p>As tres razoes praticas para compactar antes de enviar:</p>
+    <ul>
+        <li><b>Limites de tamanho do provedor.</b> Gmail, Outlook e iCloud todos limitam anexos individuais. Um ZIP pode caber abaixo do limite quando a pasta crua nao pode.</li>
+        <li><b>Preservacao de estrutura.</b> O destinatario obtem a arvore de pasta intacta apos descompactar - nao 47 arquivos soltos na raiz da pasta Downloads dele.</li>
+        <li><b>Integridade durante o transito.</b> ZIP armazena CRC-32 por arquivo; downloads corrompidos se sinalizam na extracao para que voce possa tentar novamente em vez de receber silenciosamente bytes quebrados.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Passo a passo no Windows 10 e 11</b></h2>
+    <ol>
+        <li><b>Localize a pasta</b> no Explorador de Arquivos. Se voce esta compactando um <em>subconjunto</em> de arquivos em vez da pasta inteira, crie uma nova pasta vazia e copie os arquivos para ela primeiro - ZIP nao pode "selecionar-e-arquivar" arquivos soltos nativamente sem agrupa-los.</li>
+        <li><b>Clique com o botao direito na pasta</b>. No Windows 11 o novo menu shell aparece; se voce nao ver a opcao ZIP imediatamente, clique em <b>"Mostrar mais opcoes"</b> na parte inferior para revelar o menu classico.</li>
+        <li><b>Escolha "Enviar para" &rarr; "Pasta compactada (zipada)"</b>. Windows cria <code>&lt;nome-da-pasta&gt;.zip</code> no mesmo diretorio.</li>
+        <li><b>Renomeie</b> o ZIP se desejar (o padrao herda o nome da pasta).</li>
+        <li><b>Anexe</b> o ZIP ao seu email. Arraste e solte na janela de composicao ou use o botao de clipe / "Anexar arquivo".</li>
+    </ol>
+    <p>O Windows 11 adicionou suporte nativo a 7z e tar em 2023; para anexos ZIP especificamente, fique com <code>.zip</code> porque macOS e todo painel de previa de webmail decodificam sem um download. Se o destinatario confirmar que 7-Zip ou equivalente esta instalado, mudar para <code>.7z</code> com LZMA2 pode raspar mais 10-20% do tamanho ao custo de um passo de compressao mais lento.</p>
+
+    <h2 class="text-uppercase"><b>Passo a passo no macOS 13+ (Ventura, Sonoma, Sequoia)</b></h2>
+    <ol>
+        <li><b>Selecione a pasta</b> no Finder.</li>
+        <li><b>Clique com o botao direito (ou Control-clique)</b> &rarr; <b>"Compactar '&lt;nome-da-pasta&gt;'"</b>. macOS cria <code>&lt;nome-da-pasta&gt;.zip</code> no mesmo diretorio.</li>
+        <li><b>Renomeie</b> o arquivo se necessario. macOS preserva metadados de arquivo e resource forks dentro de pastas <code>__MACOSX</code>, que alguns destinatarios Windows consideram desordem; veja o FAQ sobre como remove-las abaixo.</li>
+        <li><b>Anexe</b> ao email via arrastar-soltar padrao ou acao Anexar Arquivo.</li>
+    </ol>
+    <p>O macOS tambem suporta arquivamento baseado em Terminal com <code>zip -r archive.zip pasta/</code> (BSD zip) ou <code>ditto -c -k --sequesterRsrc pasta archive.zip</code> (comando ditto da Apple). Ditto e o que o Finder invoca por baixo dos panos e e preferivel para qualquer pasta que contenha resource forks especificos do macOS.</p>
+
+    <h2 id="email-size-limits" class="text-uppercase"><b>Limites de anexo de email que bloqueiam uma pasta ZIPada em 2026</b></h2>
+    <p>Limites especificos do provedor causam a maioria dos erros "meu ZIP de pasta nao envia". O bloqueador e quase sempre o teto do destinatario, nao seu limite de envio - conheca ambos antes de compactar, porque um ZIP de pasta de 30 MB que seu Gmail envia bem ainda devolve contra um destinatario Outlook de 25 MB. Pastas sao particularmente afetadas porque arquivos de diretorio tendem a empacotar dezenas de itens ao mesmo tempo; uma foto super dimensionada dentro da pasta e suficiente para empurrar o ZIP inteiro alem do limite de um destinatario.</p>
+    <ul>
+        <li><b>Gmail:</b> envio 25 MB / recebimento 50 MB. Anexos maiores sao auto-redirecionados pelo Google Drive.</li>
+        <li><b>Outlook (Microsoft 365):</b> envio padrao 20 MB; recebimento 25 MB para a maioria dos planos. Inquilinos corporativos podem ser configurados ate 150 MB mas destinatarios fora do inquilino frequentemente ainda veem 25 MB.</li>
+        <li><b>Outlook.com (gratuito):</b> limite de envio de 10 MB antes do redirecionamento OneDrive.</li>
+        <li><b>iCloud Mail:</b> 20 MB; o Mail Drop da Apple entra em acao para anexos maiores (servidor iCloud hospeda o arquivo por 30 dias).</li>
+        <li><b>Yahoo Mail:</b> 25 MB.</li>
+        <li><b>SMTP corporativo / personalizado:</b> varia muito (10-150 MB). Pergunte ao seu admin ou faca um envio de teste com um arquivo de ~15 MB.</li>
+    </ul>
+    <p>Quando o ZIP excede o limite do destinatario, a mensagem de bounce geralmente diz "mensagem muito grande" ou "554 5.7.1." Se voce ver esse erro, nao reenvie com o mesmo ZIP - mude para uma estrategia de link de transferencia de arquivo.</p>
+
+    <h2 class="text-uppercase"><b>Quando adicionar uma senha ao ZIP</b></h2>
+    <p>Adicione uma senha quando a pasta contiver qualquer um de: documentos legais, contratos assinados, dados de RH, registros financeiros, credenciais de login, ou qualquer coisa sujeita a um acordo de confidencialidade. ZIP protegido por senha criptografa o conteudo do arquivo com AES-256 (o cifrador "tradicional" ZIP 2.0 esta quebrado e nao deve ser usado). O destinatario precisa da senha via um canal separado - nao coloque a senha no mesmo email que o anexo.</p>
+    <p>O caminho mais rapido no navegador e <a href="/zip-tools/zip-file.html">Zip File</a> que cria ZIPs protegidos por senha sem instalacao de software. Se voce so precisa <em>abrir</em> um ZIP ja protegido por senha que voce controla, a ferramenta correspondente e <a href="/zip-tools/remove-zip-password.html">Remover Senha ZIP</a>. Para a matriz de decisao curta sobre quem deve saber o que, veja o guia relacionado sobre <a href="/guides/pdf-password-types-owner-vs-user.html">tipos de senha PDF: proprietario vs usuario</a> - a mesma taxonomia se aplica a permissoes de acesso vs edicao ZIP.</p>
+
+    <h2 class="text-uppercase"><b>Quando pular ZIP e usar um servico de transferencia de arquivos</b></h2>
+    <p>ZIP e a resposta certa para pastas abaixo do teto de anexo do destinatario. Acima disso, fluxos de trabalho baseados em anexo se tornam fragmentos - destinatarios devolvem, filtros de spam sinalizam, cotas corporativas de caixa de entrada se enchem. Tres sinais de que um servico de transferencia de arquivos (Google Drive, OneDrive, Dropbox, WeTransfer ou sua propria hospedagem) supera um anexo:</p>
+    <ul>
+        <li><b>ZIP maior que 20 MB</b> indo para qualquer conta de email de consumidor.</li>
+        <li><b>Destinatarios em email corporativo restritivo</b> (juridico, financeiro, saude frequentemente tem filtros agressivos de tamanho e conteudo).</li>
+        <li><b>Pastas ricas em midia</b> (video, fotos raw) onde a compressao nao reduzira o tamanho significativamente - hospedar e mais eficiente que anexar.</li>
+    </ul>
+    <p>Se voce precisa que o destinatario possa ver o conteudo sem baixar primeiro (revisao apenas-leitura), um link compartilhavel para uma pasta na nuvem supera um anexo ZIP em todos os eixos: pre-visualizavel, sempre atualizado e individualmente revogavel.</p>
+
+    <h2 class="text-uppercase"><b>Reduzindo o tamanho do ZIP antes de enviar</b></h2>
+    <p>Se sua pasta compacta para apenas acima do limite de tamanho, quatro reducoes pragmaticas antes de mudar para transferencia de arquivo:</p>
+    <ul>
+        <li><b>Comprima imagens primeiro.</b> JPG na qualidade 85 e geralmente indistinguivel da fonte e 30-50% menor. Execute as imagens soltas atraves de <a href="/image-tools/compress-image.html">Compress Image</a> antes de compactar.</li>
+        <li><b>Converta fotos HEIC do iPhone.</b> Arquivos HEIC, uma vez dentro de um ZIP, nao podem ser visualizados em muitos destinatarios Windows. Converta via <a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> primeiro - JPG e maior por arquivo mas abre em qualquer lugar sem uma instalacao de codec. Veja <a href="/guides/heic-vs-jpg-vs-webp.html">HEIC vs JPG vs WebP</a> para a decisao completa de formato.</li>
+        <li><b>Remova metadados macOS.</b> No macOS, arquivos Finder incluem ruido <code>__MACOSX</code> e <code>.DS_Store</code>. O comando <code>ditto</code> remove esses; alternativamente, compacte em uma maquina Linux / Windows que nunca os produz.</li>
+        <li><b>Divida em multiplos ZIPs.</b> Muitos clientes de email aceitam 2-3 anexos mais graciosamente que um ZIP super dimensionado. Agrupe por topico (documentos.zip + fotos.zip) em vez de por limite de byte arbitrario.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Perguntas Frequentes</b></h2>
+
+    <details class="faq-item">
+  <summary><b>Por que meu ZIP ainda excede o limite apos a compressao?</b></summary>
+  <p>Porque a pasta de origem e dominada por conteudo ja comprimido. JPG, PNG, MP3, MP4, DOCX e XLSX sao todos pre-comprimidos internamente; o algoritmo DEFLATE do ZIP tem pouca entropia adicional para remover. Para pastas onde 80%+ dos bytes vem desses formatos, espere apenas alguns por cento de reducao. Nesses casos, mude para um servico de transferencia de arquivos em vez de tentar espremer o ZIP abaixo do limite.</p>
+</details>
+<details class="faq-item">
+  <summary><b>Posso proteger um ZIP de pasta com senha no Windows sem software extra?</b></summary>
+  <p>O comando "Enviar para &rarr; Pasta compactada" do shell Windows nao suporta protecao por senha nativamente. Voce tem tres opcoes: (a) use nossa ferramenta baseada em navegador <a href="/zip-tools/zip-file.html">Zip File</a> para criar um ZIP protegido por senha, (b) instale 7-Zip e escolha "Adicionar ao arquivo..." com uma senha, ou (c) use PowerShell com o cmdlet <code>Compress-Archive</code> mais um passo de criptografia de terceiros. A ferramenta de navegador e a opcao de menor friccao porque nenhuma instalacao e necessaria.</p>
+</details>
+<details class="faq-item">
+  <summary><b>E se o destinatario diz "o ZIP esta corrompido" ou "extracao falhou"?</b></summary>
+  <p>Tres causas comuns: (1) o scanner de virus do provedor de email modificou o arquivo em transito (incomum mas acontece com gateways antivirus mais antigos); (2) o ZIP foi criado com o Windows Explorer e contem nomes de arquivos nao-ASCII que o extrator do destinatario nao consegue decodificar; (3) o download foi truncado (menos provavel em HTTP moderno mas ainda possivel em redes moveis instaveis). Corrigir: re-compacte a pasta em um SO diferente (se criada no macOS, tente novamente no Windows ou use <code>ditto</code> com <code>--sequesterRsrc</code>), ou re-envie via um servico de transferencia de arquivo que verifica checksums no lado do servidor antes de expor o link de download.</p>
+</details>
+<h2 class="text-uppercase"><b>Resumo</b></h2>
+    <p>Compactar uma pasta para email e uma operacao de shell nativo de 10 segundos no Windows e macOS. A decisao real e se o ZIP resultante cabe abaixo do teto de anexo do destinatario - se sim, envie-o com o menu shell de clique direito; se nao, escolha entre dividir em ZIPs menores e mudar para um link de transferencia de arquivo. Adicione uma senha sempre que a pasta contiver qualquer coisa regulamentada ou confidencial, e lembre-se que HEIC e midia ja comprimida nao encolherao muito - converta ou hospede esses separadamente.</p>
+    <p>Pronto para criar seu ZIP? Comece com <a href="/zip-tools/zip-file.html">Zip File</a> para compressao baseada em navegador com protecao opcional por senha. Para a direcao reversa, a ferramenta <a href="/zip-tools/remove-zip-password.html">Remover Senha ZIP</a> desbloqueia arquivos que voce ja tem permissao para abrir.</p>
+</div>

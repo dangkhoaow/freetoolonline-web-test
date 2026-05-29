@@ -1,0 +1,97 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Como Comprimir una Carpeta para Correo - Paso a Paso (2026)</b></h1>
+    <p><em>Ultima revision 2026-04-24. Funciona en Windows 10/11, macOS 13+ (Ventura y posterior), y en el navegador via <a href="/zip-tools/zip-file.html">Zip File</a> cuando un flujo zip-shell nativo no esta disponible.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Respuesta de 30 segundos.</b> Haz clic derecho en la carpeta &rarr; <b>"Enviar a carpeta ZIP (comprimida)"</b> en Windows (o <b>"Comprimir"</b> en macOS). Adjunta el <code>.zip</code> resultante al correo. Si el ZIP excede el limite del proveedor (tipicamente 20-25 MB, ver <a href="#email-size-limits">tabla de tamano de correo abajo</a>), entonces (a) divide la fuente en dos carpetas y comprime cada una, o (b) sube a un servicio de transferencia de archivos y pega el enlace en el cuerpo del correo.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Por que comprimir una carpeta para correo?</b></h2>
+    <p>Los adjuntos de correo se miden en bytes. Las carpetas no comprimidas no pueden ser adjuntadas - los clientes de correo requieren un solo archivo, no un directorio. Comprimir colapsa la carpeta en un solo archivo ZIP que preserva la estructura interna, nombres de archivos y fechas de modificacion, mientras encoge el tamano total a traves de compresion LZ77 / DEFLATE. Para carpetas de contenido mixto (documentos, imagenes, hojas de calculo), espera reduccion de tamano del 20-50%; para carpetas ya dominadas por formatos comprimidos (JPG, MP3, MP4), espera solo unos pocos porcentajes porque esos formatos ya estan codificados por entropia.</p>
+    <p>Las tres razones practicas para comprimir antes de enviar:</p>
+    <ul>
+        <li><b>Limites de tamano del proveedor.</b> Gmail, Outlook e iCloud todos limitan los adjuntos individuales. Un ZIP puede caber bajo el limite cuando la carpeta cruda no puede.</li>
+        <li><b>Preservacion de estructura.</b> El destinatario obtiene el arbol de carpeta intacto despues de descomprimir - no 47 archivos sueltos en la raiz de su carpeta Descargas.</li>
+        <li><b>Integridad en transito.</b> ZIP almacena CRC-32 por archivo; descargas corruptas se senalizan al extraer para que puedas reintentar en lugar de recibir silenciosamente bytes rotos.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Paso a paso en Windows 10 y 11</b></h2>
+    <ol>
+        <li><b>Localiza la carpeta</b> en el Explorador de Archivos. Si estas comprimiendo un <em>subconjunto</em> de archivos en lugar de la carpeta entera, crea una nueva carpeta vacia y copia los archivos a ella primero - ZIP no puede "seleccionar-y-archivar" archivos sueltos nativamente sin agruparlos.</li>
+        <li><b>Haz clic derecho en la carpeta</b>. En Windows 11 aparece el nuevo menu shell; si no ves la opcion ZIP inmediatamente, haz clic en <b>"Mostrar mas opciones"</b> en la parte inferior para revelar el menu clasico.</li>
+        <li><b>Elige "Enviar a" &rarr; "Carpeta comprimida (zipada)"</b>. Windows crea <code>&lt;nombre-de-carpeta&gt;.zip</code> en el mismo directorio.</li>
+        <li><b>Renombra</b> el ZIP si lo deseas (el predeterminado hereda el nombre de la carpeta).</li>
+        <li><b>Adjunta</b> el ZIP a tu correo. Arrastra-y-suelta en la ventana de composicion o usa el boton de clip / "Adjuntar archivo".</li>
+    </ol>
+    <p>Windows 11 agrego soporte nativo de 7z y tar en 2023; para adjuntos ZIP especificamente, quedate con <code>.zip</code> porque macOS y cada panel de vista previa de webmail lo decodifican sin descarga. Si el destinatario confirma que 7-Zip o equivalente esta instalado, cambiar a <code>.7z</code> con LZMA2 puede recortar otro 10-20% del tamano al costo de un paso de compresion mas lento.</p>
+
+    <h2 class="text-uppercase"><b>Paso a paso en macOS 13+ (Ventura, Sonoma, Sequoia)</b></h2>
+    <ol>
+        <li><b>Selecciona la carpeta</b> en Finder.</li>
+        <li><b>Haz clic derecho (o Control-clic)</b> &rarr; <b>"Comprimir '&lt;nombre-de-carpeta&gt;'"</b>. macOS crea <code>&lt;nombre-de-carpeta&gt;.zip</code> en el mismo directorio.</li>
+        <li><b>Renombra</b> el archivo si es necesario. macOS preserva metadatos de archivo y resource forks dentro de carpetas <code>__MACOSX</code>, que algunos destinatarios Windows consideran desorden; ve el FAQ sobre como eliminarlos abajo.</li>
+        <li><b>Adjunta</b> al correo via arrastrar-soltar estandar o accion Adjuntar Archivo.</li>
+    </ol>
+    <p>macOS tambien soporta archivado basado en Terminal con <code>zip -r archive.zip carpeta/</code> (BSD zip) o <code>ditto -c -k --sequesterRsrc carpeta archive.zip</code> (comando ditto de Apple). Ditto es lo que Finder invoca bajo el capo y es preferible para cualquier carpeta que contenga resource forks especificos de macOS.</p>
+
+    <h2 id="email-size-limits" class="text-uppercase"><b>Limites de adjuntos de correo que bloquean una carpeta ZIPada en 2026</b></h2>
+    <p>Los limites especificos del proveedor causan la mayoria de errores "mi ZIP de carpeta no envia". El bloqueador casi siempre es el techo del destinatario, no tu limite de envio - conoce ambos antes de comprimir, porque un ZIP de carpeta de 30 MB que tu Gmail envia bien aun rebota contra un destinatario Outlook de 25 MB. Las carpetas son particularmente afectadas porque los archivos de directorio tienden a empaquetar docenas de elementos a la vez; una foto sobredimensionada dentro de la carpeta es suficiente para empujar el ZIP entero sobre el limite de un destinatario.</p>
+    <ul>
+        <li><b>Gmail:</b> envio 25 MB / recibo 50 MB. Adjuntos mas grandes se auto-redirigen a traves de Google Drive.</li>
+        <li><b>Outlook (Microsoft 365):</b> envio predeterminado 20 MB; recibo 25 MB para la mayoria de planes. Inquilinos empresariales pueden configurarse hasta 150 MB pero destinatarios fuera del inquilino a menudo aun ven 25 MB.</li>
+        <li><b>Outlook.com (gratis):</b> limite de envio de 10 MB antes del redireccionamiento OneDrive.</li>
+        <li><b>iCloud Mail:</b> 20 MB; Mail Drop de Apple entra en accion para adjuntos mas grandes (servidor iCloud aloja el archivo por 30 dias).</li>
+        <li><b>Yahoo Mail:</b> 25 MB.</li>
+        <li><b>SMTP corporativo / personalizado:</b> varia mucho (10-150 MB). Pregunta a tu administrador o haz un envio de prueba con un archivo de ~15 MB.</li>
+    </ul>
+    <p>Cuando el ZIP excede el limite del destinatario, el mensaje de rebote generalmente dice "mensaje demasiado grande" o "554 5.7.1." Si ves ese error, no reenvies con el mismo ZIP - cambia a una estrategia de enlace de transferencia de archivo.</p>
+
+    <h2 class="text-uppercase"><b>Cuando agregar una contrasena al ZIP</b></h2>
+    <p>Anade una contrasena cuando la carpeta contenga cualquiera de: documentos legales, contratos firmados, datos de RR.HH., registros financieros, credenciales de login, o cualquier cosa sujeta a un acuerdo de confidencialidad. ZIP protegido por contrasena cifra el contenido del archivo con AES-256 (el cifrador "tradicional" ZIP 2.0 esta roto y no debe usarse). El destinatario necesita la contrasena via un canal separado - no pongas la contrasena en el mismo correo que el adjunto.</p>
+    <p>El camino mas rapido en el navegador es <a href="/zip-tools/zip-file.html">Zip File</a> que crea ZIPs protegidos por contrasena sin instalacion de software. Si solo necesitas <em>abrir</em> un ZIP ya protegido por contrasena que controlas, la herramienta correspondiente es <a href="/zip-tools/remove-zip-password.html">Quitar Contrasena ZIP</a>. Para la matriz corta de decision sobre quien debe saber que, ve la guia relacionada sobre <a href="/guides/pdf-password-types-owner-vs-user.html">tipos de contrasena PDF: propietario vs usuario</a> - la misma taxonomia aplica a permisos de acceso vs edicion ZIP.</p>
+
+    <h2 class="text-uppercase"><b>Cuando saltar ZIP y usar un servicio de transferencia de archivos</b></h2>
+    <p>ZIP es la respuesta correcta para carpetas bajo el techo de adjuntos del destinatario. Encima de eso, los flujos de trabajo basados en adjuntos se vuelven fragiles - los destinatarios rebotan, los filtros de spam senalan, las cuotas corporativas de bandeja de entrada se llenan. Tres senales de que un servicio de transferencia de archivos (Google Drive, OneDrive, Dropbox, WeTransfer, o tu propio hosting) supera un adjunto:</p>
+    <ul>
+        <li><b>ZIP mas grande que 20 MB</b> yendo a cualquier cuenta de correo de consumidor.</li>
+        <li><b>Destinatarios en correo corporativo restrictivo</b> (legal, financiero, salud frecuentemente tienen filtros agresivos de tamano y contenido).</li>
+        <li><b>Carpetas ricas en medios</b> (video, fotos raw) donde la compresion no reducira el tamano significativamente - hospedar es mas eficiente que adjuntar.</li>
+    </ul>
+    <p>Si necesitas que el destinatario pueda ver el contenido sin descargar primero (revision de solo lectura), un enlace compartible a una carpeta en la nube supera a un adjunto ZIP en cada eje: previsualizable, siempre actualizado, e individualmente revocable.</p>
+
+    <h2 class="text-uppercase"><b>Reduciendo el tamano del ZIP antes de enviar</b></h2>
+    <p>Si tu carpeta comprime a justo encima del limite de tamano, cuatro reducciones pragmaticas antes de cambiar a transferencia de archivo:</p>
+    <ul>
+        <li><b>Comprime imagenes primero.</b> JPG en calidad 85 es usualmente indistinguible de la fuente y 30-50% mas pequeno. Ejecuta las imagenes sueltas a traves de <a href="/image-tools/compress-image.html">Compress Image</a> antes de comprimir.</li>
+        <li><b>Convierte fotos HEIC del iPhone.</b> Archivos HEIC, una vez dentro de un ZIP, no pueden ser previsualizados en muchos destinatarios Windows. Convierte via <a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> primero - JPG es mas grande por archivo pero abre en todas partes sin una instalacion de codec. Ve <a href="/guides/heic-vs-jpg-vs-webp.html">HEIC vs JPG vs WebP</a> para la decision completa de formato.</li>
+        <li><b>Elimina metadatos macOS.</b> En macOS, los archivos Finder incluyen ruido <code>__MACOSX</code> y <code>.DS_Store</code>. El comando <code>ditto</code> los quita; alternativamente, comprime en una maquina Linux / Windows que nunca los produce.</li>
+        <li><b>Divide en multiples ZIPs.</b> Muchos clientes de correo aceptan 2-3 adjuntos mas graciosamente que un ZIP sobredimensionado. Agrupa por tema (documentos.zip + fotos.zip) en lugar de por limite de byte arbitrario.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Preguntas Frecuentes</b></h2>
+
+    <details class="faq-item">
+  <summary><b>Por que mi ZIP sigue excediendo el limite despues de la compresion?</b></summary>
+  <p>Porque la carpeta fuente esta dominada por contenido ya comprimido. JPG, PNG, MP3, MP4, DOCX y XLSX estan todos pre-comprimidos internamente; el algoritmo DEFLATE de ZIP tiene poca entropia adicional para eliminar. Para carpetas donde 80%+ de los bytes vienen de estos formatos, espera solo unos pocos porcentajes de reduccion. En esos casos, cambia a un servicio de transferencia de archivos en lugar de tratar de exprimir el ZIP bajo el limite.</p>
+</details>
+<details class="faq-item">
+  <summary><b>Puedo proteger con contrasena un ZIP de carpeta en Windows sin software extra?</b></summary>
+  <p>El comando "Enviar a &rarr; Carpeta comprimida" del shell Windows no soporta proteccion por contrasena nativamente. Tienes tres opciones: (a) usa nuestra herramienta basada en navegador <a href="/zip-tools/zip-file.html">Zip File</a> para crear un ZIP protegido por contrasena, (b) instala 7-Zip y elige "Anadir al archivo..." con una contrasena, o (c) usa PowerShell con el cmdlet <code>Compress-Archive</code> mas un paso de cifrado de terceros. La herramienta de navegador es la opcion de menor friccion porque no se requiere instalacion.</p>
+</details>
+<details class="faq-item">
+  <summary><b>Que pasa si el destinatario dice "el ZIP esta corrupto" o "la extraccion fallo"?</b></summary>
+  <p>Tres causas comunes: (1) el escaner antivirus del proveedor de correo modifico el archivo en transito (inusual pero pasa con gateways antivirus mas antiguos); (2) el ZIP fue creado con Windows Explorer y contiene nombres de archivos no-ASCII que el extractor del destinatario no puede decodificar; (3) la descarga fue truncada (menos probable en HTTP moderno pero aun posible en redes moviles inestables). Arreglar: re-comprime la carpeta en un SO diferente (si fue creado en macOS, intenta de nuevo en Windows o usa <code>ditto</code> con <code>--sequesterRsrc</code>), o re-sube via un servicio de transferencia de archivos que verifica checksums del lado del servidor antes de exponer el enlace de descarga.</p>
+</details>
+<h2 class="text-uppercase"><b>Resumen</b></h2>
+    <p>Comprimir una carpeta para correo es una operacion de shell nativo de 10 segundos en Windows y macOS. La decision real es si el ZIP resultante encaja bajo el techo de adjuntos del destinatario - si si, enviala con el menu shell de clic derecho; si no, elige entre dividir en ZIPs mas pequenos y cambiar a un enlace de transferencia de archivo. Anade una contrasena cuando la carpeta contenga cualquier cosa regulada o confidencial, y recuerda que HEIC y medios ya comprimidos no encogeran mucho - convierte o aloja esos separadamente.</p>
+    <p>Listo para crear tu ZIP? Comienza con <a href="/zip-tools/zip-file.html">Zip File</a> para compresion basada en navegador con proteccion opcional por contrasena. Para la direccion inversa, la herramienta <a href="/zip-tools/remove-zip-password.html">Quitar Contrasena ZIP</a> desbloquea archivos que ya tienes permiso para abrir.</p>
+</div>

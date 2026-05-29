@@ -1,0 +1,63 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>FFmpeg online vs FFmpeg local - quando cada um vence</b></h1>
+<time itemprop="datePublished" datetime="2026-04-20T08:00:00Z"><b>Publicado em 20 de Abril de 2026</b></time>
+<hr/>
+
+<p class="lead">FFmpeg e o kit universal de ferramentas de video e audio do qual todo servico de streaming, todo criador de conteudo e todo pipeline de backend silenciosamente depende. Voce pode executa-lo em uma aba de navegador via WebAssembly (nosso <a href="/video-tools/ffmpeg-online.html">FFmpeg online</a> e uma dessas implementacoes) ou instala-lo localmente e invocar de um terminal. A escolha "certa" depende do tamanho do arquivo, postura de privacidade, cobertura de codec e se voce quer aprender a CLI. Este guia cobre o que cada superficie pode e nao pode fazer, com receitas concretas para quando cada uma vence.</p>
+
+<br/><h2 class="text-uppercase"><b>O que cada superficie realmente e</b></h2>
+<p><b>FFmpeg online (ffmpeg.wasm)</b> e uma portacao do FFmpeg compilada para WebAssembly que roda dentro de uma aba do navegador. O arquivo de video que voce escolhe e lido em um sistema de arquivos em memoria dentro da aba; o FFmpeg roda contra esse sistema de arquivos virtual; a saida e escrita de volta na memoria e oferecida como um download. Nada deixa seu dispositivo.</p>
+<p><b>FFmpeg local</b> e o binario nativo instalado via seu gerenciador de pacotes (<code>brew install ffmpeg</code>, <code>apt install ffmpeg</code>, Chocolatey, scoop). O binario roda com acesso total ao SO: le do disco, escreve no disco, usa todos os nucleos da CPU, acessa codificadores de hardware (NVENC, QSV, VideoToolbox) quando disponiveis.</p>
+
+<br/><h2 class="text-uppercase"><b>Comparacao lado a lado</b></h2>
+<div class="w3-responsive">
+<table class="w3-table-all w3-small">
+<tr><th>Atributo</th><th>FFmpeg online (wasm de navegador)</th><th>FFmpeg local</th></tr>
+<tr><td>Esforco de instalacao</td><td>Zero - abra a pagina</td><td>Moderado - gerenciador de pacotes + PATH</td></tr>
+<tr><td>Tamanho maximo de entrada</td><td>~1-2&nbsp;GB na pratica (limite de RAM da aba do navegador)</td><td>Limitado apenas pelo disco</td></tr>
+<tr><td>Privacidade</td><td>Arquivos nunca deixam o dispositivo (nada enviado)</td><td>Arquivos nunca deixam o dispositivo</td></tr>
+<tr><td>Velocidade de codificacao (1080p H.264, clipe de 1 minuto)</td><td>~60-90 segundos (wasm, single-threaded ou SharedArrayBuffer)</td><td>~15 segundos (multi-core) ou ~3 segundos (codificador de hardware)</td></tr>
+<tr><td>Aceleracao de hardware</td><td>Nao (roda em software via wasm)</td><td>Sim (NVENC, QSV, VideoToolbox, AMD AMF)</td></tr>
+<tr><td>Cobertura de codec</td><td>Ampla mas limitada pelo build (H.264, VP9, AAC, Opus, AV1 em builds mais recentes)</td><td>Todo codec que o FFmpeg suporta (depende das flags de build)</td></tr>
+<tr><td>Filtros / efeitos</td><td>A maioria dos filtros comuns funciona</td><td>Todos os filtros FFmpeg</td></tr>
+<tr><td>Scripting / lote</td><td>Limitado ao que a UI expoe</td><td>Scripting de shell completo, processamento em lote</td></tr>
+<tr><td>Atualizacoes</td><td>Vem com a pagina; sempre atual</td><td>Manual (atualizacao do gerenciador de pacotes)</td></tr>
+</table>
+</div>
+
+<br/><h2 class="text-uppercase"><b>Escolha FFmpeg do navegador para: arquivos pequenos, sem instalacao, privacidade</b></h2>
+<p><b>Conversao unica de um unico arquivo abaixo de 2 GB.</b> Voce tem um unico MOV do seu telefone que precisa ser MP4 para um email. Abrir a pagina do navegador e mais rapido do que instalar uma ferramenta CLI que voce usara uma vez este ano.</p>
+<p><b>Conteudo sensivel a privacidade.</b> Um rascunho de video que voce nao quer enviar para um conversor online gratuito. O wasm no navegador e a unica maneira de garantir que o arquivo permaneca no seu dispositivo sem instalar FFmpeg localmente.</p>
+<p><b>Usando uma maquina onde voce nao pode instalar software.</b> Um laptop de trabalho com permissoes de instalacao bloqueadas, um laboratorio escolar, um quiosque de biblioteca. Se o navegador pode carregar a pagina, FFmpeg roda.</p>
+<p><b>Ensinando ou demonstrando um comando FFmpeg especifico.</b> O console no navegador mostra a saida de log do FFmpeg em tempo real; estudantes podem ver o mesmo pipeline que roda localmente.</p>
+
+<br/><h2 class="text-uppercase"><b>Escolha FFmpeg local para: arquivos grandes, trabalhos em lote, codificadores de hardware</b></h2>
+<p><b>Arquivos acima de 2 GB.</b> O heap de uma aba do navegador e limitado a 4 GB na maioria das plataformas; o ffmpeg.wasm rodando dentro dessa aba tipicamente tem 1.5-2 GB de margem apos o codigo e metadados. Filmagens 4K mais longas, concatenacao de varios arquivos fonte ou video de origem de alta taxa de bits ultrapassarao esse limite. FFmpeg local faz streaming do disco e nunca carrega o arquivo completo na RAM.</p>
+<p><b>Processamento em lote.</b> Uma pasta de 200 videos para recodificar, um cron job que transcodifica filmagens enviadas, um pipeline CI que gera miniaturas. Scripts shell + <code>xargs</code> ou <code>find -exec</code> lidam com lotes trivialmente; a UI do navegador lida com um arquivo por vez.</p>
+<p><b>Codificadores de hardware.</b> Codificar uma hora de 1080p H.264 com NVENC leva 2-5 minutos em uma GPU NVIDIA moderna. A mesma hora via wasm leva 1-2 horas. Para qualquer um que processe mais do que alguns minutos de video regularmente, FFmpeg local com aceleracao de hardware e 20-30&times; mais rapido.</p>
+<p><b>Codecs incomuns ou filtros experimentais.</b> Se voce precisa de um filtro que requer uma flag de build especifica do FFmpeg (<code>libx265</code> com tuning x265, <code>libfdk_aac</code>, <code>libaom-av1</code>), FFmpeg local instalado da fonte com as flags requeridas e o unico caminho.</p>
+
+<br/><h2 class="text-uppercase"><b>O que "online" significa em nossa ferramenta</b></h2>
+<p>Nosso <a href="/video-tools/ffmpeg-online.html">FFmpeg online</a> roda inteiramente no seu navegador. O codigo FFmpeg e WebAssembly compilado da mesma fonte que a CLI. Quando voce escolhe um arquivo, ele e lido em um sistema de arquivos emulado por emscripten dentro da aba. Quando o FFmpeg roda, ele le desse sistema de arquivos virtual e escreve nele. Quando termina, o arquivo de saida e entregue como download via uma URL Blob. Em nenhum momento o arquivo viaja pela rede.</p>
+<p>A pagina mostra a linha de comando real do FFmpeg e o log FFmpeg ao vivo - entao voce pode copiar o comando exato para executa-lo depois na CLI para arquivos maiores, veja nosso <a href="/guides/mp4-vs-webm-for-web.html">guia MP4 vs WebM</a> para decisoes em nivel de formato.</p>
+
+<br/><h2 class="text-uppercase"><b>Cinco receitas concretas que funcionam em ambas as superficies</b></h2>
+<p><b>Converter MOV para MP4 (H.264).</b> <code>ffmpeg -i in.mov -c:v libx264 -crf 23 -preset medium -c:a aac -b:a 128k -movflags +faststart out.mp4</code> - funciona identicamente no navegador e na CLI.</p>
+<p><b>Recortar um clipe entre dois timestamps.</b> <code>ffmpeg -ss 00:00:30 -to 00:01:45 -i in.mp4 -c copy out.mp4</code> - <code>-c copy</code> evita re-codificacao, tornando isso instantaneo.</p>
+<p><b>Extrair audio como MP3.</b> <code>ffmpeg -i in.mp4 -vn -c:a libmp3lame -q:a 2 out.mp3</code>.</p>
+<p><b>Redimensionar para 720p preservando a proporcao.</b> <code>ffmpeg -i in.mp4 -vf "scale=-2:720" -c:a copy out.mp4</code>.</p>
+<p><b>Gerar uma miniatura em 5 segundos.</b> <code>ffmpeg -ss 00:00:05 -i in.mp4 -vframes 1 -q:v 2 thumb.jpg</code>.</p>
+
+<br/><h2 class="text-uppercase"><b>Quando escolher FFmpeg online vs instalar FFmpeg local em uma frase</b></h2>
+<p>Se o arquivo esta abaixo de ~1&nbsp;GB, voce precisa convertido agora e nao processa video regularmente - use FFmpeg online no navegador via WebAssembly sem sair da pagina. Se voce esta processando lotes, arquivos grandes ou tocando video regularmente - instale FFmpeg local do gerenciador de pacotes para que a CLI esteja no PATH para cada sessao de shell. O caminho do navegador troca configuracao de instalacao local por uma taxa de cold-start por aba; o caminho de instalacao local troca uma configuracao unica por tempos de inicio sub-segundo em cada execucao subsequente.</p>
+
+<br/><h2 class="text-uppercase"><b>Ferramentas relacionadas</b></h2>
+<ul>
+    <li><a href="/video-tools/ffmpeg-online.html">FFmpeg Online</a> - FFmpeg no navegador para trabalho rapido com arquivo unico.</li>
+    <li><a href="/video-tools/video-converter.html">Conversor de Video</a> - trocas MP4/WebM/MOV de nivel mais alto sem escrever comandos.</li>
+    <li><a href="/video-tools/video-maker.html">Criador de Video</a> - costure imagens em uma sequencia de video.</li>
+    <li><a href="/image-converter-tools/extract-gif-to-image-frames.html">Extrator de Frames GIF</a> - o reverso do muxer <code>image2</code> do FFmpeg.</li>
+</ul>
+
+<p><br/><a href="/video-tools.html">&larr; Voltar para Ferramentas de Video</a></p>
+</div>

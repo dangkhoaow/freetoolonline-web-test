@@ -1,0 +1,63 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>FFmpeg online vs lokales FFmpeg - wann jedes gewinnt</b></h1>
+<time itemprop="datePublished" datetime="2026-04-20T08:00:00Z"><b>Veroeffentlicht am 20. April 2026</b></time>
+<hr/>
+
+<p class="lead">FFmpeg ist das universelle Video- und Audio-Toolkit, von dem jeder Streaming-Dienst, jeder Content Creator und jede Backend-Pipeline still abhaengt. Sie koennen es in einem Browser-Tab ueber WebAssembly ausfuehren (unser <a href="/video-tools/ffmpeg-online.html">FFmpeg online</a> ist eine solche Implementierung) oder lokal installieren und aus einem Terminal aufrufen. Die "richtige" Wahl haengt von Dateigroesse, Datenschutzhaltung, Codec-Abdeckung und ob Sie die CLI lernen wollen ab. Dieser Leitfaden behandelt, was jede Oberflaeche kann und nicht kann, mit konkreten Rezepten dafuer, wann jede gewinnt.</p>
+
+<br/><h2 class="text-uppercase"><b>Was jede Oberflaeche tatsaechlich ist</b></h2>
+<p><b>FFmpeg online (ffmpeg.wasm)</b> ist eine Portierung von FFmpeg, die zu WebAssembly kompiliert wurde und in einem Browser-Tab laeuft. Die Videodatei, die Sie auswaehlen, wird in ein In-Memory-Dateisystem im Tab gelesen; FFmpeg laeuft gegen dieses virtuelle Dateisystem; die Ausgabe wird zurueck in den Speicher geschrieben und als Download angeboten. Nichts verlaesst Ihr Geraet.</p>
+<p><b>Lokales FFmpeg</b> ist die native Binaerdatei, die ueber Ihren Paketmanager installiert ist (<code>brew install ffmpeg</code>, <code>apt install ffmpeg</code>, Chocolatey, scoop). Die Binaerdatei laeuft mit vollem OS-Zugriff: liest von der Festplatte, schreibt auf die Festplatte, nutzt jeden CPU-Kern, greift auf Hardware-Encoder (NVENC, QSV, VideoToolbox) zu, wenn verfuegbar.</p>
+
+<br/><h2 class="text-uppercase"><b>Side-by-Side-Vergleich</b></h2>
+<div class="w3-responsive">
+<table class="w3-table-all w3-small">
+<tr><th>Attribut</th><th>FFmpeg online (Browser-Wasm)</th><th>Lokales FFmpeg</th></tr>
+<tr><td>Installationsaufwand</td><td>Null - Seite oeffnen</td><td>Moderat - Paketmanager + PATH</td></tr>
+<tr><td>Maximale Eingabegroesse</td><td>~1-2&nbsp;GB in der Praxis (Browser-Tab-RAM-Limit)</td><td>Nur durch Festplatte begrenzt</td></tr>
+<tr><td>Datenschutz</td><td>Dateien verlassen nie das Geraet (nichts hochgeladen)</td><td>Dateien verlassen nie das Geraet</td></tr>
+<tr><td>Encoding-Geschwindigkeit (1080p H.264, 1-Minuten-Clip)</td><td>~60-90 Sekunden (wasm, single-threaded oder SharedArrayBuffer)</td><td>~15 Sekunden (multi-core) oder ~3 Sekunden (Hardware-Encoder)</td></tr>
+<tr><td>Hardware-Beschleunigung</td><td>Nein (laeuft in Software via wasm)</td><td>Ja (NVENC, QSV, VideoToolbox, AMD AMF)</td></tr>
+<tr><td>Codec-Abdeckung</td><td>Breit, aber durch Build begrenzt (H.264, VP9, AAC, Opus, AV1 in neueren Builds)</td><td>Jeder Codec, den FFmpeg unterstuetzt (haengt von Build-Flags ab)</td></tr>
+<tr><td>Filter / Effekte</td><td>Die meisten gaengigen Filter funktionieren</td><td>Alle FFmpeg-Filter</td></tr>
+<tr><td>Scripting / Batch</td><td>Begrenzt auf das, was die UI offenlegt</td><td>Vollstaendiges Shell-Scripting, Batch-Verarbeitung</td></tr>
+<tr><td>Updates</td><td>Kommt mit der Seite; immer aktuell</td><td>Manuell (Paketmanager-Update)</td></tr>
+</table>
+</div>
+
+<br/><h2 class="text-uppercase"><b>Waehlen Sie Browser-FFmpeg fuer: kleine Dateien, keine Installation, Datenschutz</b></h2>
+<p><b>Einmalige Konvertierung einer einzelnen Datei unter 2 GB.</b> Sie haben eine einzelne MOV von Ihrem Telefon, die als MP4 fuer eine E-Mail benoetigt wird. Das Oeffnen der Browser-Seite ist schneller, als ein CLI-Tool zu installieren, das Sie dieses Jahr einmal verwenden werden.</p>
+<p><b>Datenschutzsensible Inhalte.</b> Ein Video-Entwurf, den Sie nicht auf einen kostenlosen Online-Konverter hochladen wollen. In-Browser-Wasm ist der einzige Weg, um zu garantieren, dass die Datei auf Ihrem Geraet bleibt, ohne FFmpeg lokal zu installieren.</p>
+<p><b>Verwendung eines Geraets, auf dem Sie keine Software installieren koennen.</b> Ein Arbeitslaptop mit gesperrten Installationsberechtigungen, ein Schullabor, ein Bibliothekskiosk. Wenn der Browser die Seite laden kann, laeuft FFmpeg.</p>
+<p><b>Unterrichten oder Demonstrieren eines bestimmten FFmpeg-Befehls.</b> Die In-Browser-Konsole zeigt die FFmpeg-Log-Ausgabe in Echtzeit; Studenten koennen dieselbe Pipeline sehen, die lokal laeuft.</p>
+
+<br/><h2 class="text-uppercase"><b>Waehlen Sie lokales FFmpeg fuer: grosse Dateien, Batch-Jobs, Hardware-Encoder</b></h2>
+<p><b>Dateien ueber 2 GB.</b> Der Heap eines Browser-Tabs ist auf den meisten Plattformen auf 4 GB begrenzt; ffmpeg.wasm, das in diesem Tab laeuft, hat typischerweise 1,5-2 GB Spielraum nach dem Code und den Metadaten. Laengere 4K-Aufnahmen, das Verketten mehrerer Quelldateien oder Quellvideo mit hoher Bitrate werden diese Grenze sprengen. Lokales FFmpeg streamt von der Festplatte und laedt nie die gesamte Datei in den RAM.</p>
+<p><b>Batch-Verarbeitung.</b> Ein Ordner mit 200 Videos zur Neukodierung, ein Cron-Job, der hochgeladenes Material transkodiert, eine CI-Pipeline, die Thumbnails generiert. Shell-Skripte + <code>xargs</code> oder <code>find -exec</code> behandeln Batches trivial; die Browser-UI behandelt eine Datei nach der anderen.</p>
+<p><b>Hardware-Encoder.</b> Eine Stunde 1080p H.264 mit NVENC zu kodieren dauert 2-5 Minuten auf einer modernen NVIDIA-GPU. Dieselbe Stunde via wasm dauert 1-2 Stunden. Fuer jeden, der regelmaessig mehr als ein paar Minuten Video verarbeitet, ist lokales FFmpeg mit Hardware-Beschleunigung 20-30&times; schneller.</p>
+<p><b>Ungewoehnliche Codecs oder experimentelle Filter.</b> Wenn Sie einen Filter benoetigen, der eine bestimmte FFmpeg-Build-Flag erfordert (<code>libx265</code> mit x265-Tuning, <code>libfdk_aac</code>, <code>libaom-av1</code>), ist lokales FFmpeg, das aus der Quelle mit den erforderlichen Flags installiert wurde, der einzige Weg.</p>
+
+<br/><h2 class="text-uppercase"><b>Was "online" in unserem Tool bedeutet</b></h2>
+<p>Unser <a href="/video-tools/ffmpeg-online.html">FFmpeg online</a> laeuft vollstaendig in Ihrem Browser. Der FFmpeg-Code ist WebAssembly, kompiliert aus derselben Quelle wie die CLI. Wenn Sie eine Datei auswaehlen, wird sie in ein emscripten-emuliertes Dateisystem im Tab gelesen. Wenn FFmpeg laeuft, liest es aus diesem virtuellen Dateisystem und schreibt darauf. Wenn es fertig ist, wird Ihnen die Ausgabedatei als Download ueber eine Blob-URL uebergeben. Zu keinem Zeitpunkt reist die Datei ueber das Netzwerk.</p>
+<p>Die Seite zeigt die tatsaechliche FFmpeg-Kommandozeile und das Live-FFmpeg-Log - so koennen Sie den genauen Befehl kopieren, um ihn spaeter auf der CLI fuer groessere Dateien auszufuehren, siehe unseren <a href="/guides/mp4-vs-webm-for-web.html">MP4-vs-WebM-Leitfaden</a> fuer Format-Ebenen-Entscheidungen.</p>
+
+<br/><h2 class="text-uppercase"><b>Fuenf konkrete Rezepte, die auf beiden Oberflaechen funktionieren</b></h2>
+<p><b>MOV zu MP4 (H.264) konvertieren.</b> <code>ffmpeg -i in.mov -c:v libx264 -crf 23 -preset medium -c:a aac -b:a 128k -movflags +faststart out.mp4</code> - funktioniert identisch im Browser und in der CLI.</p>
+<p><b>Einen Clip zwischen zwei Zeitstempeln zuschneiden.</b> <code>ffmpeg -ss 00:00:30 -to 00:01:45 -i in.mp4 -c copy out.mp4</code> - <code>-c copy</code> vermeidet Neukodierung und macht dies sofortig.</p>
+<p><b>Audio als MP3 extrahieren.</b> <code>ffmpeg -i in.mp4 -vn -c:a libmp3lame -q:a 2 out.mp3</code>.</p>
+<p><b>Groesse auf 720p aendern und Seitenverhaeltnis beibehalten.</b> <code>ffmpeg -i in.mp4 -vf "scale=-2:720" -c:a copy out.mp4</code>.</p>
+<p><b>Ein Thumbnail bei 5 Sekunden erzeugen.</b> <code>ffmpeg -ss 00:00:05 -i in.mp4 -vframes 1 -q:v 2 thumb.jpg</code>.</p>
+
+<br/><h2 class="text-uppercase"><b>Wann FFmpeg online vs lokales FFmpeg installieren in einem Satz</b></h2>
+<p>Wenn die Datei unter ~1&nbsp;GB liegt, Sie sie jetzt konvertiert benoetigen und nicht regelmaessig Video verarbeiten - verwenden Sie FFmpeg online im Browser via WebAssembly, ohne die Seite zu verlassen. Wenn Sie Batches, grosse Dateien oder regelmaessig Video bearbeiten - installieren Sie lokales FFmpeg ueber den Paketmanager, sodass die CLI fuer jede Shell-Sitzung im PATH ist. Der Browser-Pfad tauscht lokale Installations-Einrichtung gegen eine Pro-Tab-Cold-Start-Steuer; der lokale-Installations-Pfad tauscht eine einmalige Einrichtung gegen Sub-Sekunden-Startzeiten bei jedem nachfolgenden Lauf.</p>
+
+<br/><h2 class="text-uppercase"><b>Verwandte Tools</b></h2>
+<ul>
+    <li><a href="/video-tools/ffmpeg-online.html">FFmpeg Online</a> - In-Browser-FFmpeg fuer schnelle Einzeldateiarbeit.</li>
+    <li><a href="/video-tools/video-converter.html">Video-Konverter</a> - hoehere MP4/WebM/MOV-Umwandlungen ohne Befehle zu schreiben.</li>
+    <li><a href="/video-tools/video-maker.html">Video-Maker</a> - Bilder zu einer Video-Sequenz zusammennaehen.</li>
+    <li><a href="/image-converter-tools/extract-gif-to-image-frames.html">GIF-Frame-Extraktor</a> - die Umkehrung des <code>image2</code>-Muxers von FFmpeg.</li>
+</ul>
+
+<p><br/><a href="/video-tools.html">&larr; Zurueck zu Video-Tools</a></p>
+</div>
