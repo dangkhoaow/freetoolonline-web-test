@@ -872,6 +872,10 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/hd-video-converter-step-by-step.html', '/guides/es/hd-video-converter-step-by-step.html', '/guides/vi/hd-video-converter-step-by-step.html', '/guides/id/hd-video-converter-step-by-step.html', '/guides/de/hd-video-converter-step-by-step.html',
   '/guides/pt/compress-zip-file-to-smaller-size.html', '/guides/es/compress-zip-file-to-smaller-size.html', '/guides/vi/compress-zip-file-to-smaller-size.html', '/guides/id/compress-zip-file-to-smaller-size.html', '/guides/de/compress-zip-file-to-smaller-size.html',
   '/guides/pt/hd-video-converter-vs-alternatives.html', '/guides/es/hd-video-converter-vs-alternatives.html', '/guides/vi/hd-video-converter-vs-alternatives.html', '/guides/id/hd-video-converter-vs-alternatives.html', '/guides/de/hd-video-converter-vs-alternatives.html',
+  // plan-warm-pascal-v3 S2 batch 6 (2026-05-29) - 5 locale variants × 3 guides
+  '/guides/pt/compress-zip.html', '/guides/es/compress-zip.html', '/guides/vi/compress-zip.html', '/guides/id/compress-zip.html', '/guides/de/compress-zip.html',
+  '/guides/pt/gif-into-frames.html', '/guides/es/gif-into-frames.html', '/guides/vi/gif-into-frames.html', '/guides/id/gif-into-frames.html', '/guides/de/gif-into-frames.html',
+  '/guides/pt/reduce-zip-file-size-online.html', '/guides/es/reduce-zip-file-size-online.html', '/guides/vi/reduce-zip-file-size-online.html', '/guides/id/reduce-zip-file-size-online.html', '/guides/de/reduce-zip-file-size-online.html',
   '/guides/pt/compress-folder.html', // pt canonical of /guides/compactar-pasta.html
   '/guides/pt/compress-zip-file.html', // pt canonical of /guides/comprimir-arquivo-zip.html
   '/guides/pt/compress-folder-to-zip.html', // pt canonical of /guides/comprimir-pasta-zipada.html
@@ -920,6 +924,10 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/hd-video-converter-step-by-step.html', '/guides/es/hd-video-converter-step-by-step.html', '/guides/vi/hd-video-converter-step-by-step.html', '/guides/id/hd-video-converter-step-by-step.html', '/guides/de/hd-video-converter-step-by-step.html',
   '/guides/pt/compress-zip-file-to-smaller-size.html', '/guides/es/compress-zip-file-to-smaller-size.html', '/guides/vi/compress-zip-file-to-smaller-size.html', '/guides/id/compress-zip-file-to-smaller-size.html', '/guides/de/compress-zip-file-to-smaller-size.html',
   '/guides/pt/hd-video-converter-vs-alternatives.html', '/guides/es/hd-video-converter-vs-alternatives.html', '/guides/vi/hd-video-converter-vs-alternatives.html', '/guides/id/hd-video-converter-vs-alternatives.html', '/guides/de/hd-video-converter-vs-alternatives.html',
+  // plan-warm-pascal-v3 S2 batch 6 (2026-05-29) - 5 locale variants × 3 guides
+  '/guides/pt/compress-zip.html', '/guides/es/compress-zip.html', '/guides/vi/compress-zip.html', '/guides/id/compress-zip.html', '/guides/de/compress-zip.html',
+  '/guides/pt/gif-into-frames.html', '/guides/es/gif-into-frames.html', '/guides/vi/gif-into-frames.html', '/guides/id/gif-into-frames.html', '/guides/de/gif-into-frames.html',
+  '/guides/pt/reduce-zip-file-size-online.html', '/guides/es/reduce-zip-file-size-online.html', '/guides/vi/reduce-zip-file-size-online.html', '/guides/id/reduce-zip-file-size-online.html', '/guides/de/reduce-zip-file-size-online.html',
   '/guides/en/heic-vs-jpg-vs-webp.html',
   '/guides/en/dead-pixel-testing-guide.html',
   '/guides/en/unix-timestamps-explained.html',
@@ -2273,6 +2281,10 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/hd-video-converter-step-by-step.html': 'guide/pt/hd-video-converter-step-by-step.jsp', '/guides/es/hd-video-converter-step-by-step.html': 'guide/es/hd-video-converter-step-by-step.jsp', '/guides/vi/hd-video-converter-step-by-step.html': 'guide/vi/hd-video-converter-step-by-step.jsp', '/guides/id/hd-video-converter-step-by-step.html': 'guide/id/hd-video-converter-step-by-step.jsp', '/guides/de/hd-video-converter-step-by-step.html': 'guide/de/hd-video-converter-step-by-step.jsp',
   '/guides/pt/compress-zip-file-to-smaller-size.html': 'guide/pt/compress-zip-file-to-smaller-size.jsp', '/guides/es/compress-zip-file-to-smaller-size.html': 'guide/es/compress-zip-file-to-smaller-size.jsp', '/guides/vi/compress-zip-file-to-smaller-size.html': 'guide/vi/compress-zip-file-to-smaller-size.jsp', '/guides/id/compress-zip-file-to-smaller-size.html': 'guide/id/compress-zip-file-to-smaller-size.jsp', '/guides/de/compress-zip-file-to-smaller-size.html': 'guide/de/compress-zip-file-to-smaller-size.jsp',
   '/guides/pt/hd-video-converter-vs-alternatives.html': 'guide/pt/hd-video-converter-vs-alternatives.jsp', '/guides/es/hd-video-converter-vs-alternatives.html': 'guide/es/hd-video-converter-vs-alternatives.jsp', '/guides/vi/hd-video-converter-vs-alternatives.html': 'guide/vi/hd-video-converter-vs-alternatives.jsp', '/guides/id/hd-video-converter-vs-alternatives.html': 'guide/id/hd-video-converter-vs-alternatives.jsp', '/guides/de/hd-video-converter-vs-alternatives.html': 'guide/de/hd-video-converter-vs-alternatives.jsp',
+  // plan-warm-pascal-v3 S2 batch 6 (2026-05-29) - 5 locale variants × 3 guides (compress-zip + gif-into-frames + reduce-zip-file-size-online)
+  '/guides/pt/compress-zip.html': 'guide/pt/compress-zip.jsp', '/guides/es/compress-zip.html': 'guide/es/compress-zip.jsp', '/guides/vi/compress-zip.html': 'guide/vi/compress-zip.jsp', '/guides/id/compress-zip.html': 'guide/id/compress-zip.jsp', '/guides/de/compress-zip.html': 'guide/de/compress-zip.jsp',
+  '/guides/pt/gif-into-frames.html': 'guide/pt/gif-into-frames.jsp', '/guides/es/gif-into-frames.html': 'guide/es/gif-into-frames.jsp', '/guides/vi/gif-into-frames.html': 'guide/vi/gif-into-frames.jsp', '/guides/id/gif-into-frames.html': 'guide/id/gif-into-frames.jsp', '/guides/de/gif-into-frames.html': 'guide/de/gif-into-frames.jsp',
+  '/guides/pt/reduce-zip-file-size-online.html': 'guide/pt/reduce-zip-file-size-online.jsp', '/guides/es/reduce-zip-file-size-online.html': 'guide/es/reduce-zip-file-size-online.jsp', '/guides/vi/reduce-zip-file-size-online.html': 'guide/vi/reduce-zip-file-size-online.jsp', '/guides/id/reduce-zip-file-size-online.html': 'guide/id/reduce-zip-file-size-online.jsp', '/guides/de/reduce-zip-file-size-online.html': 'guide/de/reduce-zip-file-size-online.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
