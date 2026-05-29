@@ -1,0 +1,45 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Base64 - Cuando Usar y Cuando No</b></h1>
+    <p><em>Ultima revision 2026-04-27. Abre <a href="/image-converter-tools/base64-to-image.html">Base64 to Image</a> o <a href="/image-converter-tools/image-to-base64.html">Image to Base64</a> para conversion en navegador.</em></p>
+    <address class="author"><a rel="author" href="/editorial-team.html">Equipo Editorial Free Tool Online</a></address>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Respuesta de 30 segundos.</b> Base64 hace los datos binarios seguros para texto codificando tres bytes como cuatro caracteres ASCII. El costo: un aumento de tamano del 33%. Eleccion correcta para pequenos activos inline en data URLs HTML/CSS (iconos bajo unos pocos KB), adjuntos de correo dentro de MIME y payloads JSON con binario. Eleccion incorrecta para cualquier cosa sobre unos pocos kilobytes - la penalizacion de tamano duele y una ruta binaria real es mas rapida.</p>
+    </div>
+
+    <figure class="illustration">
+      <img src="/img/illustrations/decision-tree-2branch/guidesbase64whentouseandwhennotto__b1d7fb66.svg"
+           alt="Arbol de decision: elige si para pequenos iconos inline y payloads JSON binarios; elige no para imagenes grandes, datos sensibles o almacenamiento BLOB de base de datos"
+           loading="lazy"
+           width="480"
+           height="280">
+      <figcaption>Elige la rama inline para destinos pequenos solo de texto; elige la rama binaria cuando el payload es grande o sensible.</figcaption>
+    </figure>
+
+    <h2 class="text-uppercase"><b>Que hace realmente base64</b></h2>
+    <p>Toma tres bytes de entrada binaria - 24 bits. Agrupalos como cuatro trozos de 6 bits. Mapea cada trozo de 6 bits a uno de 64 caracteres ASCII (A-Z, a-z, 0-9, +, /). La salida ahora es segura para poner en un cuerpo de correo, una URL, una cadena JSON o un archivo fuente JavaScript - ninguno de los cuales maneja binario crudo limpiamente.</p>
+    <p>El precio es la expansion de la codificacion: cada 3 bytes de entrada se vuelven 4 bytes de salida. Mas el relleno (los signos "=" al final) para entradas cuya longitud no es multiplo de 3. La matematica es exacta: tamano codificado = techo(entrada/3) * 4 bytes.</p>
+
+    <h2 class="text-uppercase"><b>Eleccion correcta: pequenos binarios inline en protocolos de texto</b></h2>
+    <ul>
+        <li><b>Pequenas imagenes inline.</b> Un icono de 1 KB en una data URL dentro de CSS evita una solicitud HTTP separada. La inflacion del 33% cuesta 300 bytes; la solicitud ahorrada cuesta al menos 1 RTT mas encabezados. Bajo ~4 KB, inline gana. Por encima, un archivo separado con multiplexacion HTTP/2 es mas rapido.</li>
+        <li><b>Adjuntos de correo.</b> SMTP y cuerpos de correo son ASCII de 7 bits por tradicion. MIME envuelve adjuntos binarios en base64 especificamente para ajustarse al protocolo. Casi nunca ves esto directamente - los clientes de correo codifican y decodifican automaticamente.</li>
+        <li><b>Binario en JSON.</b> JSON solo almacena strings, numeros, booleanos, arrays y objetos. Para poner binario en un campo JSON, lo conviertes a base64. APIs que devuelven bytes de imagen dentro de JSON, tokens OAuth con firmas binarias y protobuf-sobre-JSON usan este patron.</li>
+        <li><b>Parametros de URL con binario.</b> Base64 seguro para URL (usando <code>-</code> y <code>_</code> en lugar de <code>+</code> y <code>/</code>) te permite poner identificadores binarios cortos en cadenas de consulta sin codificacion por ciento.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Eleccion incorrecta: payloads grandes o cifrado falso</b></h2>
+    <ul>
+        <li><b>Incrustar imagenes grandes en CSS o HTML.</b> Una foto de 500 KB como data URL se vuelve 670 KB de base64 mas la sobrecarga del parser, ademas no se puede cachear por separado, ademas bloquea el parser. Solo enlaza el archivo de imagen.</li>
+        <li><b>"Codificar" datos sensibles.</b> Base64 es reversible por cualquiera. Es codificacion, no cifrado. Pasar una contrasena o clave de API por base64 no oculta nada - la decodificacion es un clic.</li>
+        <li><b>Almacenar archivos en una base de datos.</b> La mayoria de las bases de datos tienen tipos binarios nativos (BLOB, BYTEA). Almacenar binario como base64 en una columna TEXT desperdicia el 33% del disco y fuerza una decodificacion en cada lectura.</li>
+        <li><b>Transferencia de datos de larga duracion.</b> Si el binario es multi-megabyte, cada byte de sobrecarga importa. Transmite el binario directamente con el encabezado Content-Type correcto.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Herramientas y reglas de decision</b></h2>
+    <p>Convierte en el navegador - <a href="/image-converter-tools/image-to-base64.html">Image to Base64</a> para saliente, <a href="/image-converter-tools/base64-to-image.html">Base64 to Image</a> para entrante. Ambos funcionan sin subir el archivo.</p>
+    <p>La regla de decision simple: bajo 4 KB y destino amigable inline -> base64 esta bien. Por encima o en cualquier lugar con una ruta binaria real disponible -> usa la ruta binaria. El conjunto completo de desarrollador esta en <a href="/developer-tools.html">el hub de herramientas de desarrollador</a>.</p>
+
+    <h2 class="text-uppercase"><b>Sobre el umbral de 4 KB</b></h2>
+    <p>La regla general de 4 KB es una heuristica de la era HTTP/1.1 para imagenes inline en data URLs CSS - en HTTP/1.1 cada solicitud separada pagaba aproximadamente 1 RTT mas sobrecarga de encabezado, asi que bajo 4 KB una imagen inline era mas barata que una segunda solicitud incluso con la expansion del 33 por ciento de base64. En HTTP/2 y HTTP/3 el costo de la solicitud cae (compresion de encabezado, multiplexacion en una conexion), y el punto de equilibrio sube: un archivo separado es mas rapido antes. La regla de decision aun se mantiene en forma - pequenos binarios inline en un destino de texto es la llamada correcta; grandes binarios que tienen una ruta binaria real es la llamada incorrecta - solo el umbral exacto se mueve con el protocolo subyacente.</p>
+</div>

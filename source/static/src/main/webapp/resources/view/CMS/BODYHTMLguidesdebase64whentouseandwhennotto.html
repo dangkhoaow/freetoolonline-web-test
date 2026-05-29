@@ -1,0 +1,45 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Base64 - Wann Verwenden Und Wann Nicht</b></h1>
+    <p><em>Zuletzt geprueft 2026-04-27. Oeffnen Sie <a href="/image-converter-tools/base64-to-image.html">Base64 to Image</a> oder <a href="/image-converter-tools/image-to-base64.html">Image to Base64</a> fuer In-Browser-Konvertierung.</em></p>
+    <address class="author"><a rel="author" href="/editorial-team.html">Free Tool Online Redaktionsteam</a></address>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-Sekunden-Antwort.</b> Base64 macht Binaerdaten textsicher, indem es drei Bytes als vier ASCII-Zeichen codiert. Die Kosten: eine 33%ige Groessenzunahme. Richtige Wahl fuer kleine Inline-Assets in HTML/CSS-Daten-URLs (Symbole unter wenigen KB), E-Mail-Anhaenge innerhalb von MIME und JSON-Payloads, die Binaerdaten tragen. Falsche Wahl fuer alles ueber wenigen Kilobyte - die Groessenstrafe schmerzt und ein echter Binaerpfad ist schneller.</p>
+    </div>
+
+    <figure class="illustration">
+      <img src="/img/illustrations/decision-tree-2branch/guidesbase64whentouseandwhennotto__b1d7fb66.svg"
+           alt="Entscheidungsbaum: waehlen Sie Ja fuer kleine Inline-Symbole und JSON-Binaer-Payloads; waehlen Sie Nein fuer grosse Bilder, sensible Daten oder BLOB-Datenbankspeicherung"
+           loading="lazy"
+           width="480"
+           height="280">
+      <figcaption>Waehlen Sie den Inline-Zweig fuer kleine reine Textziele; waehlen Sie den Binaerzweig, wenn der Payload gross oder sensibel ist.</figcaption>
+    </figure>
+
+    <h2 class="text-uppercase"><b>Was Base64 tatsaechlich tut</b></h2>
+    <p>Nehmen Sie drei Bytes Binaereingabe - 24 Bit. Gruppieren Sie sie als vier 6-Bit-Chunks. Bilden Sie jeden 6-Bit-Chunk auf eines von 64 ASCII-Zeichen (A-Z, a-z, 0-9, +, /) ab. Die Ausgabe ist jetzt sicher in einem E-Mail-Koerper, einer URL, einer JSON-Zeichenfolge oder einer JavaScript-Quelldatei zu platzieren - keine davon handhabt rohe Binaerdaten sauber.</p>
+    <p>Der Preis ist die Erweiterung der Codierung: jede 3 Bytes hinein werden 4 Bytes hinaus. Plus Auffuellung (die "="-Zeichen am Ende) fuer Eingaben, deren Laenge kein Vielfaches von 3 ist. Die Mathematik ist exakt: codierte Groesse = aufgerundet(Eingabe/3) * 4 Bytes.</p>
+
+    <h2 class="text-uppercase"><b>Richtige Wahl: kleine Inline-Binaerdaten in Textprotokollen</b></h2>
+    <ul>
+        <li><b>Kleine Inline-Bilder.</b> Ein 1-KB-Symbol in einer Daten-URL innerhalb von CSS vermeidet eine separate HTTP-Anfrage. Der 33%ige Bloat kostet 300 Bytes; die gesparte Anfrage kostet mindestens 1 RTT plus Header. Unter ~4 KB gewinnt Inline. Darueber ist eine separate Datei mit HTTP/2-Multiplexing schneller.</li>
+        <li><b>E-Mail-Anhaenge.</b> SMTP und E-Mail-Koerper sind aus Tradition 7-Bit-ASCII. MIME verpackt Binaeranhaenge in Base64 speziell, um zum Protokoll zu passen. Sie sehen das fast nie direkt - E-Mail-Clients codieren und decodieren automatisch.</li>
+        <li><b>Binaerdaten in JSON.</b> JSON speichert nur Strings, Zahlen, Boolesche, Arrays und Objekte. Um Binaerdaten in ein JSON-Feld zu setzen, base64-en Sie es. APIs, die Bildbytes innerhalb von JSON zurueckgeben, OAuth-Token mit Binaersignaturen und protobuf-ueber-JSON verwenden alle dieses Muster.</li>
+        <li><b>URL-Parameter mit Binaerdaten.</b> URL-sicheres Base64 (mit <code>-</code> und <code>_</code> statt <code>+</code> und <code>/</code>) ermoeglicht es Ihnen, kurze Binaeridentifier in Abfragezeichenfolgen ohne Prozent-Codierung zu setzen.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Falsche Wahl: grosse Payloads oder gefakete Verschluesselung</b></h2>
+    <ul>
+        <li><b>Einbetten grosser Bilder in CSS oder HTML.</b> Ein 500-KB-Foto als Daten-URL wird zu 670 KB Base64 plus Parser-Overhead, plus es kann nicht separat zwischengespeichert werden, plus es blockiert den Parser. Verlinken Sie einfach die Bilddatei.</li>
+        <li><b>Sensible Daten "codieren".</b> Base64 ist von jedem umkehrbar. Es ist Codierung, nicht Verschluesselung. Ein Passwort oder einen API-Schluessel durch Base64 zu schicken, verschleiert nichts - die Decodierung ist ein Klick.</li>
+        <li><b>Dateien in einer Datenbank speichern.</b> Die meisten Datenbanken haben native Binaertypen (BLOB, BYTEA). Binaerdaten als Base64 in einer TEXT-Spalte zu speichern verschwendet 33% der Platte und erzwingt eine Decodierung bei jedem Lesen.</li>
+        <li><b>Langlaufende Datenuebertragung.</b> Wenn die Binaerdaten Multi-Megabyte sind, zaehlt jedes Byte Overhead. Streamen Sie die Binaerdaten direkt mit dem richtigen Content-Type-Header.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Tools und Entscheidungsregeln</b></h2>
+    <p>Konvertieren Sie im Browser - <a href="/image-converter-tools/image-to-base64.html">Image to Base64</a> fuer Ausgehende, <a href="/image-converter-tools/base64-to-image.html">Base64 to Image</a> fuer Eingehende. Beide arbeiten ohne die Datei hochzuladen.</p>
+    <p>Die einfache Entscheidungsregel: unter 4 KB und Inline-freundliches Ziel -> Base64 ist in Ordnung. Darueber oder ueberall mit einem echten Binaerpfad verfuegbar -> verwenden Sie den Binaerpfad. Der vollstaendige Entwicklersatz ist im <a href="/developer-tools.html">Entwickler-Tools-Hub</a>.</p>
+
+    <h2 class="text-uppercase"><b>Ueber den 4-KB-Schwellenwert</b></h2>
+    <p>Die 4-KB-Faustregel ist eine Heuristik aus der HTTP/1.1-Aera fuer Inline-Bilder in CSS-Daten-URLs - bei HTTP/1.1 bezahlte jede separate Anfrage etwa 1 RTT plus Header-Overhead, also unter 4 KB war ein Inline-Bild billiger als eine zweite Anfrage selbst mit der 33-prozentigen Base64-Erweiterung. Bei HTTP/2 und HTTP/3 sinken die Anfragekosten (Header-Komprimierung, Multiplexing auf einer Verbindung), und der Break-Even-Punkt verschiebt sich nach oben: eine separate Datei ist frueher schneller. Die Entscheidungsregel haelt immer noch in der Form - kleine Inline-Binaerdaten in einem Textziel ist die richtige Wahl; grosse Binaerdaten, die einen echten Binaerpfad haben, ist die falsche Wahl - nur der genaue Schwellenwert bewegt sich mit dem zugrunde liegenden Protokoll.</p>
+</div>

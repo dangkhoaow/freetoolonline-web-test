@@ -1,0 +1,45 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Base64 - Khi Nao Su Dung Va Khi Nao Khong</b></h1>
+    <p><em>Da xem lai lan cuoi 2026-04-27. Mo <a href="/image-converter-tools/base64-to-image.html">Base64 to Image</a> hoac <a href="/image-converter-tools/image-to-base64.html">Image to Base64</a> de chuyen doi trong trinh duyet.</em></p>
+    <address class="author"><a rel="author" href="/editorial-team.html">Nhom Bien Tap Free Tool Online</a></address>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Cau tra loi 30 giay.</b> Base64 lam du lieu nhi phan an toan ban van bang cach ma hoa ba byte thanh bon ky tu ASCII. Chi phi: tang kich co 33%. Lua chon dung cho cac tai san inline nho trong data URL HTML/CSS (bieu tuong duoi vai KB), tep dinh kem email trong MIME va payload JSON mang binary. Lua chon sai cho bat ky thu gi tren vai kilobyte - hinh phat kich co dau va mot duong di binary thuc su nhanh hon.</p>
+    </div>
+
+    <figure class="illustration">
+      <img src="/img/illustrations/decision-tree-2branch/guidesbase64whentouseandwhennotto__b1d7fb66.svg"
+           alt="Cay quyet dinh: chon co cho cac bieu tuong inline nho va payload JSON binary; chon khong cho hinh anh lon, du lieu nhay cam hoac luu tru BLOB co so du lieu"
+           loading="lazy"
+           width="480"
+           height="280">
+      <figcaption>Chon nhanh inline cho cac dich nho chi van ban; chon nhanh binary khi payload lon hoac nhay cam.</figcaption>
+    </figure>
+
+    <h2 class="text-uppercase"><b>Base64 thuc su lam gi</b></h2>
+    <p>Lay ba byte dau vao binary - 24 bit. Nhom chung thanh bon doan 6 bit. Anh xa moi doan 6 bit den mot trong 64 ky tu ASCII (A-Z, a-z, 0-9, +, /). Dau ra bay gio an toan de dat trong than email, URL, chuoi JSON hoac tep nguon JavaScript - khong cai nao xu ly binary tho mot cach sach se.</p>
+    <p>Gia la su mo rong cua ma hoa: moi 3 byte dau vao tro thanh 4 byte dau ra. Cong them dem (cac dau "=" o cuoi) cho dau vao co do dai khong la boi cua 3. Toan hoc chinh xac: kich co duoc ma hoa = tran(dau-vao/3) * 4 byte.</p>
+
+    <h2 class="text-uppercase"><b>Lua chon dung: binary nho inline trong giao thuc van ban</b></h2>
+    <ul>
+        <li><b>Hinh anh nho inline.</b> Mot bieu tuong 1 KB trong data URL ben trong CSS tranh duoc mot yeu cau HTTP rieng. Bloat 33% ton 300 byte; yeu cau tiet kiem ton it nhat 1 RTT cong header. Duoi ~4 KB, inline thang. Tren do, mot tep rieng voi multiplexing HTTP/2 nhanh hon.</li>
+        <li><b>Tep dinh kem email.</b> SMTP va than email la ASCII 7-bit theo truyen thong. MIME bao boc tep dinh kem binary trong base64 cu the de phu hop voi giao thuc. Ban hau nhu khong bao gio thay dieu nay truc tiep - khach hang email tu dong ma hoa va giai ma.</li>
+        <li><b>Binary trong JSON.</b> JSON chi luu chuoi, so, boolean, mang va doi tuong. De dat binary trong truong JSON, ban base64 no. API tra ve byte hinh anh ben trong JSON, token OAuth voi chu ky binary va protobuf-tren-JSON deu su dung mau nay.</li>
+        <li><b>Tham so URL voi binary.</b> Base64 an toan URL (su dung <code>-</code> va <code>_</code> thay vi <code>+</code> va <code>/</code>) cho phep ban dat cac dinh danh binary ngan trong chuoi truy van ma khong can ma hoa phan tram.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Lua chon sai: payload lon hoac ma hoa gia</b></h2>
+    <ul>
+        <li><b>Nhung hinh anh lon trong CSS hoac HTML.</b> Mot anh 500 KB la data URL tro thanh 670 KB base64 cong chi phi parser, cong khong the cache rieng, cong chan parser. Chi can lien ket tep hinh anh.</li>
+        <li><b>"Ma hoa" du lieu nhay cam.</b> Base64 co the dao nguoc boi bat ky ai. No la ma hoa, khong phai mat ma. Cho mot mat khau hoac khoa API qua base64 khong che giau gi - giai ma la mot cu nhap chuot.</li>
+        <li><b>Luu tep trong co so du lieu.</b> Hau het cac co so du lieu co kieu binary tu nhien (BLOB, BYTEA). Luu binary nhu base64 trong cot TEXT lang phi 33% dia va buoc giai ma tren moi lan doc.</li>
+        <li><b>Truyen du lieu chay dai.</b> Neu binary la nhieu megabyte, moi byte chi phi quan trong. Truyen binary truc tiep voi header Content-Type dung.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Cong cu va quy tac quyet dinh</b></h2>
+    <p>Chuyen doi trong trinh duyet - <a href="/image-converter-tools/image-to-base64.html">Image to Base64</a> cho di, <a href="/image-converter-tools/base64-to-image.html">Base64 to Image</a> cho den. Ca hai hoat dong ma khong tai len tep.</p>
+    <p>Quy tac quyet dinh don gian: duoi 4 KB va dich than thien inline -> base64 on. Tren do hoac bat cu noi nao co duong di binary thuc su -> su dung duong di binary. Bo lap trinh vien day du o <a href="/developer-tools.html">hub cong cu lap trinh vien</a>.</p>
+
+    <h2 class="text-uppercase"><b>Ve nguong 4 KB</b></h2>
+    <p>Quy tac 4 KB la mot heuristic thoi HTTP/1.1 cho hinh anh inline trong data URL CSS - tren HTTP/1.1 moi yeu cau rieng tra khoang 1 RTT cong chi phi header, vi vay duoi 4 KB mot hinh anh inline re hon mot yeu cau thu hai ngay ca voi su mo rong 33 phan tram cua base64. Tren HTTP/2 va HTTP/3 chi phi yeu cau giam (nen header, multiplexing tren mot ket noi), va diem hoa von dich chuyen len: mot tep rieng nhanh hon som hon. Quy tac quyet dinh van giu hinh dang - binary nho inline trong dich van ban la lua chon dung; binary lon co duong di binary thuc la lua chon sai - chi co nguong chinh xac di chuyen voi giao thuc co ban.</p>
+</div>
