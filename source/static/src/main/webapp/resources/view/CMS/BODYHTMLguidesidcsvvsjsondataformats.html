@@ -1,0 +1,68 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>CSV vs JSON - kapan menggunakan setiap format data</b></h1>
+<time itemprop="datePublished" datetime="2026-04-20T08:00:00Z"><b>Diterbitkan 20 April 2026</b></time>
+<hr/>
+
+<p class="lead">CSV dan JSON adalah dua format pertukaran data yang hampir setiap alat dalam stack modern dapat berbicara. CSV adalah baris dan kolom; JSON adalah objek dan array bersarang. Pembagian di antara keduanya lebih tajam daripada yang terlihat: CSV bersifat tabular berdasarkan desain, dan apa pun yang merentangkannya (koma di field, data bersarang, sel kosong) menjadi masalah parsing. JSON bersifat terstruktur berdasarkan desain, dan apa pun yang meratakannya (satu juta record pengguna dalam satu daftar) menjadi masalah memori. Panduan ini mencakup mekanika, realitas ukuran dan kecepatan, serta keputusan konkret yang menentukan format mana yang menang untuk setiap kasus penggunaan.</p>
+
+<br/><h2 class="text-uppercase"><b>Apa sebenarnya masing-masing format</b></h2>
+<p><b>CSV (nilai dipisahkan koma)</b> adalah format teks biasa: satu record per baris, field dipisahkan oleh pembatas (koma, tab, titik koma, atau pipe), baris header opsional, kuotasi field opsional. Tidak ada satu spesifikasi formal - <a href="https://datatracker.ietf.org/doc/html/rfc4180">RFC 4180</a> mengkodifikasi subset umum pada 2005, tetapi CSV dunia nyata bervariasi pada pembatas, karakter kuotasi, aturan escape, encoding, dan apakah baris kosong diizinkan.</p>
+<p><b>JSON (JavaScript Object Notation)</b> adalah format terstruktur rekursif: objek (peta kunci-nilai), array (daftar terurut), string, angka, boolean, dan null. Spesifikasi formalnya singkat (<a href="https://www.rfc-editor.org/rfc/rfc8259">RFC 8259</a>); setiap bahasa modern menyertakan parser JSON di pustaka standar; interoperabilitasnya hampir universal.</p>
+
+<br/><h2 class="text-uppercase"><b>Perbandingan berdampingan</b></h2>
+<div class="w3-responsive">
+<table class="w3-table-all w3-small">
+<tr><th>Atribut</th><th>CSV</th><th>JSON</th></tr>
+<tr><td>Bentuk data</td><td>Datar: baris dan kolom</td><td>Bersarang: pohon objek/array sembarang</td></tr>
+<tr><td>Penjenisan</td><td>Semuanya string; tipe numerik / tanggal disimpulkan saat parse</td><td>String, angka, boolean, null asli; array dan objek</td></tr>
+<tr><td>Ukuran file (1M record sederhana)</td><td>~60-80&nbsp;MB</td><td>~120-180&nbsp;MB (kunci berulang per record)</td></tr>
+<tr><td>Kecepatan parse (data sama)</td><td>~200-400 MB/s streaming</td><td>~80-150 MB/s streaming (tokenisasi lebih ketat)</td></tr>
+<tr><td>Ramah streaming</td><td>Ya - baris demi baris</td><td>Hanya dengan JSON Lines (satu objek per baris)</td></tr>
+<tr><td>Skema</td><td>Tersirat via baris header</td><td>Opsional (JSON Schema) atau tersirat</td></tr>
+<tr><td>Data bersarang</td><td>Canggung (ratakan ke kolom atau sematkan JSON di sel)</td><td>Asli</td></tr>
+<tr><td>Tooling</td><td>Excel, Numbers, pandas, csvkit, setiap basis data</td><td>Stdlib setiap bahasa, jq, setiap API</td></tr>
+<tr><td>Dapat dibaca manusia</td><td>Sangat (kolom berjajar; terbuka di spreadsheet)</td><td>Ya (jika pretty-printed), padat jika diminify</td></tr>
+</table>
+</div>
+
+<br/><h2 class="text-uppercase"><b>Kapan CSV menang</b></h2>
+<p><b>Data tabular dengan skema stabil.</b> Ekspor pengguna dari basis data, log transaksi, catatan sensus, dump analitik - apa pun yang secara alami baris dan kolom dikirim lebih kecil dan diparse lebih cepat sebagai CSV.</p>
+<p><b>Perjalanan bolak-balik spreadsheet.</b> Jika stakeholder akan membuka file di Excel, Google Sheets, atau Numbers, CSV adalah format yang bolak-balik tanpa kejutan. JSON terbuka di editor teks; sedikit non-pengembang yang dapat membaca file JSON 5.000 baris.</p>
+<p><b>Streaming dataset besar.</b> Memproses file 10 GB satu baris pada satu waktu adalah idiomatik dalam CSV: baca satu baris, parse, pancarkan, buang. JSON Lines mencapai hal yang sama, tetapi JSON biasa (satu array tingkat atas tunggal) memerlukan seluruh file di memori untuk diparse dengan benar.</p>
+<p><b>Pemuatan data warehouse.</b> Setiap warehouse (BigQuery, Snowflake, Redshift, DuckDB) memiliki loader CSV yang dioptimalkan. Loader JSON ada tetapi biasanya lebih lambat karena ambiguitas bentuk.</p>
+
+<br/><h2 class="text-uppercase"><b>Kapan JSON menang</b></h2>
+<p><b>Data bersarang atau hierarkis.</b> Sebuah record pengguna dengan daftar pesanan sebelumnya, setiap pesanan dengan daftar item baris, setiap item baris dengan daftar varian - JSON mengekspresikan ini dalam satu objek; CSV memerlukan denormalisasi (satu baris per item baris, header berulang) atau string JSON tertanam dalam sel (yang terburuk dari kedua format).</p>
+<p><b>API HTTP.</b> Setiap REST dan GraphQL API di web modern mengembalikan JSON. Itu default. Jangan kembalikan CSV dari API kecuali penelepon memintanya secara eksplisit.</p>
+<p><b>File konfigurasi.</b> Nilai bertipe (boolean, null, angka) penting dalam konfigurasi - CSV akan memerlukan parsing setiap field sebagai string dan casting, mengundang bug tipe. JSON mempertahankan tipe. YAML mempertahankan tipe dan menambah komentar - sering kali pilihan yang lebih baik untuk konfigurasi yang diedit manusia.</p>
+<p><b>Record heterogen.</b> Jika data Anda memiliki field opsional, bentuk polimorfis, atau record dengan skema berbeda, kebebasan JSON dipetakan secara alami; CSV memaksa penyatuan semua kolom dengan kosong di mana field tidak ada.</p>
+
+<br/><h2 class="text-uppercase"><b>Pertengahan: JSON Lines (NDJSON)</b></h2>
+<p><b>JSON Lines</b> (juga disebut NDJSON) adalah satu objek JSON per baris file teks:</p>
+<pre style="background:#0b1220;color:#dbe3f5;padding:12px;border-radius:var(--radius-sm, 4px);overflow:auto"><code>{"user":"alice","age":30,"tags":["admin","paid"]}
+{"user":"bob","age":25,"tags":["free"]}
+{"user":"carol","age":42,"tags":["paid"]}</code></pre>
+<p>Ia mempertahankan penjenisan dan penyarangan JSON sambil memungkinkan streaming baris demi baris seperti CSV. Sebagian besar alat pemrosesan log, data warehouse, dan prosesor stream menerimanya secara native. Pilih JSON Lines ketika Anda membutuhkan fleksibilitas bentuk JSON dan keramahan streaming CSV.</p>
+
+<br/><h2 class="text-uppercase"><b>Jebakan umum saat memilih CSV</b></h2>
+<p><b>Koma di field.</b> Jika field mana pun dapat berisi koma (alamat, deskripsi, nama produk), field harus dikutip. Parser <code>split(',')</code> naif langsung rusak. Gunakan parser CSV asli (Python <code>csv</code>, Node <code>fast-csv</code>, Go <code>encoding/csv</code>).</p>
+<p><b>Encoding.</b> Excel di Windows default UTF-16 LE dengan BOM; sebagian besar alat mengharapkan UTF-8. Selalu tentukan encoding saat mengekspor; tambahkan BOM UTF-8 jika interop Excel penting.</p>
+<p><b>Format tanggal.</b> "2026-04-20" dan "04/20/2026" keduanya ambigu tanpa region. Lebih suka ISO 8601 (<code>YYYY-MM-DDTHH:mm:ss.sssZ</code>) dan dokumentasikan zona waktu. Lihat <a href="/guides/unix-timestamps-explained.html">panduan unix timestamps</a> kami untuk alternatif epoch.</p>
+<p><b>Trailing newline + BOM.</b> Beberapa penulis CSV menambahkan keduanya; beberapa parser secara diam-diam menambahkan record kosong atau field yang tidak dapat dibaca. Uji bolak-balik pada sampel representatif.</p>
+
+<br/><h2 class="text-uppercase"><b>Mengonversi antar format</b></h2>
+<p>Konversi di browser layak untuk file kecil hingga sedang. Untuk inspeksi struktur JSON, <a href="/developer-tools.html">hub alat pengembang</a> kami menautkan ke jsonparser, text-diff, dan minifier. Untuk CSV, gunakan <code>pandas.read_csv</code> / <code>pandas.to_json</code> secara lokal untuk file &gt; 100 MB; memori browser membatasi konversi ke ~500 MB per tab dalam praktik.</p>
+
+<br/><h2 class="text-uppercase"><b>Aturan keputusan CSV vs JSON dalam satu kalimat</b></h2>
+<p>Jika baris Anda cocok dalam satu baris header nama kolom dan pengguna spreadsheet setidaknya mungkin di hilir, kirim CSV - format ini adalah penyebut umum terendah yang setiap alat BI, setiap loader basis data, dan Excel dapat menelan tanpa kode. Jika baris mana pun memerlukan objek bersarang, array, atau angka / boolean / null bertipe yang dipertahankan melalui bolak-balik, kirim JSON, dan beralih ke JSON Lines (`.jsonl`) ketika file cukup besar sehingga satu array tingkat atas tunggal akan memaksa konsumen memuat seluruh dokumen ke memori sekaligus. Kedua format tidak dapat dipertukarkan: CSV kehilangan tipe dan penyarangan di jalan keluar, dan JSON memperoleh ketergantungan parser yang mungkin tidak dimiliki tim spreadsheet di jalan masuk.</p>
+
+<br/><h2 class="text-uppercase"><b>Alat terkait</b></h2>
+<ul>
+    <li><a href="/developer-tools/text-diff.html">Text Diff</a> - bandingkan dua ekspor CSV atau JSON.</li>
+    <li><a href="/developer-tools/text-html-editor.html">Editor Text / HTML</a> - tempel dan render output yang diformat.</li>
+    <li><a href="/developer-tools/js-minifier.html">Minifier JavaScript</a> - kompres kode penghasil JSON.</li>
+    <li><a href="/developer-tools/md5-converter.html">Konverter MD5</a> - sidik jari file data yang diekspor.</li>
+</ul>
+
+<p><br/><a href="/developer-tools.html">&larr; Kembali ke Alat Pengembang</a></p>
+</div>

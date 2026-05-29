@@ -1,0 +1,68 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>CSV vs JSON - cuándo usar cada formato de datos</b></h1>
+<time itemprop="datePublished" datetime="2026-04-20T08:00:00Z"><b>Publicado el 20 de abril de 2026</b></time>
+<hr/>
+
+<p class="lead">CSV y JSON son los dos formatos de intercambio de datos que casi toda herramienta del stack moderno habla. CSV es filas y columnas; JSON es objetos y arrays anidados. La división entre ellos es más nítida de lo que parece: CSV es tabular por diseño, y cualquier cosa que lo estire (comas en campos, datos anidados, celdas faltantes) se convierte en un problema de parsing. JSON es estructurado por diseño, y cualquier cosa que lo aplane (un millón de registros de usuario en una sola lista) se convierte en un problema de memoria. Esta guía cubre la mecánica, la realidad de tamaño y velocidad, y las decisiones concretas que determinan qué formato gana para cada caso de uso.</p>
+
+<br/><h2 class="text-uppercase"><b>Lo que cada formato realmente es</b></h2>
+<p><b>CSV (valores separados por comas)</b> es un formato de texto plano: un registro por línea, campos separados por un delimitador (coma, tabulación, punto y coma o barra vertical), fila de cabecera opcional, comillas de campo opcionales. No hay una única especificación formal - <a href="https://datatracker.ietf.org/doc/html/rfc4180">RFC 4180</a> codificó el subconjunto común en 2005, pero el CSV del mundo real varía en delimitador, carácter de comilla, reglas de escape, codificación, y si se permiten líneas en blanco.</p>
+<p><b>JSON (JavaScript Object Notation)</b> es un formato estructurado recursivo: objetos (mapas clave-valor), arrays (listas ordenadas), cadenas, números, booleanos y null. La especificación formal es corta (<a href="https://www.rfc-editor.org/rfc/rfc8259">RFC 8259</a>); todo lenguaje moderno trae un parser JSON en la biblioteca estándar; la interoperabilidad es casi universal.</p>
+
+<br/><h2 class="text-uppercase"><b>Comparación lado a lado</b></h2>
+<div class="w3-responsive">
+<table class="w3-table-all w3-small">
+<tr><th>Atributo</th><th>CSV</th><th>JSON</th></tr>
+<tr><td>Forma de los datos</td><td>Plana: filas y columnas</td><td>Anidada: árboles arbitrarios de objeto/array</td></tr>
+<tr><td>Tipado</td><td>Todo es cadena; tipos numéricos / fecha inferidos en parse</td><td>String, número, booleano, null nativos; arrays y objetos</td></tr>
+<tr><td>Tamaño de archivo (1M registros simples)</td><td>~60-80&nbsp;MB</td><td>~120-180&nbsp;MB (claves repetidas por registro)</td></tr>
+<tr><td>Velocidad de parse (mismos datos)</td><td>~200-400 MB/s en streaming</td><td>~80-150 MB/s en streaming (tokenización más estricta)</td></tr>
+<tr><td>Amigable al streaming</td><td>Sí - línea por línea</td><td>Solo con JSON Lines (un objeto por línea)</td></tr>
+<tr><td>Esquema</td><td>Implícito vía fila de cabecera</td><td>Opcional (JSON Schema) o implícito</td></tr>
+<tr><td>Datos anidados</td><td>Torpe (aplanar a columnas o incrustar JSON en una celda)</td><td>Nativo</td></tr>
+<tr><td>Herramientas</td><td>Excel, Numbers, pandas, csvkit, toda base de datos</td><td>Stdlib de todo lenguaje, jq, toda API</td></tr>
+<tr><td>Legible por humanos</td><td>Muy (las columnas se alinean; abre en hoja de cálculo)</td><td>Sí (si pretty-printed), denso si minificado</td></tr>
+</table>
+</div>
+
+<br/><h2 class="text-uppercase"><b>Cuándo gana CSV</b></h2>
+<p><b>Datos tabulares con esquema estable.</b> Exportaciones de usuarios desde una base de datos, registros de transacciones, datos censales, vertidos de analítica - cualquier cosa naturalmente en filas y columnas se envía más pequeña y parsea más rápida como CSV.</p>
+<p><b>Idas y vueltas con hoja de cálculo.</b> Si un stakeholder va a abrir el archivo en Excel, Google Sheets o Numbers, CSV es el formato que va y vuelve sin sorpresas. JSON abre en un editor de texto; pocos no-desarrolladores pueden leer un archivo JSON de 5.000 líneas.</p>
+<p><b>Streaming de datasets grandes.</b> Procesar un archivo de 10 GB una fila a la vez es idiomático en CSV: lee una línea, parsea, emite, descarta. JSON Lines logra lo mismo, pero JSON plano (un único array de nivel superior) requiere el archivo entero en memoria para parsearse correctamente.</p>
+<p><b>Cargas a data warehouse.</b> Todo warehouse (BigQuery, Snowflake, Redshift, DuckDB) tiene un cargador CSV optimizado. Los cargadores JSON existen pero son típicamente más lentos por la ambigüedad de forma.</p>
+
+<br/><h2 class="text-uppercase"><b>Cuándo gana JSON</b></h2>
+<p><b>Datos anidados o jerárquicos.</b> Un registro de usuario con una lista de pedidos pasados, cada pedido con una lista de líneas de item, cada línea de item con una lista de variantes - JSON expresa esto en un objeto; CSV requiere o desnormalización (una fila por línea de item, cabecera repetida) o strings JSON incrustadas en celdas (lo peor de ambos formatos).</p>
+<p><b>APIs HTTP.</b> Toda API REST y GraphQL en la web moderna devuelve JSON. Es el predeterminado. No devuelvas CSV de una API a menos que el llamador lo pida explícitamente.</p>
+<p><b>Archivos de configuración.</b> Los valores tipados (booleanos, nulls, números) importan en configuración - CSV requeriría parsear cada campo como string y castear, invitando errores de tipo. JSON preserva tipos. YAML preserva tipos y añade comentarios - a menudo la mejor opción para configuración editada por humanos.</p>
+<p><b>Registros heterogéneos.</b> Si tus datos tienen campos opcionales, formas polimórficas, o registros con esquemas diferentes, la libertad de JSON mapea naturalmente; CSV fuerza la unión de todas las columnas con blancos donde un campo está ausente.</p>
+
+<br/><h2 class="text-uppercase"><b>El intermedio: JSON Lines (NDJSON)</b></h2>
+<p><b>JSON Lines</b> (también llamado NDJSON) es un objeto JSON por línea de un archivo de texto:</p>
+<pre style="background:#0b1220;color:#dbe3f5;padding:12px;border-radius:var(--radius-sm, 4px);overflow:auto"><code>{"user":"alice","age":30,"tags":["admin","paid"]}
+{"user":"bob","age":25,"tags":["free"]}
+{"user":"carol","age":42,"tags":["paid"]}</code></pre>
+<p>Retiene el tipado y anidamiento de JSON mientras permite streaming línea a línea como CSV. La mayoría de herramientas de procesamiento de logs, data warehouses y procesadores de stream lo aceptan nativamente. Elige JSON Lines cuando necesitas la flexibilidad de forma de JSON y la amigabilidad de streaming de CSV.</p>
+
+<br/><h2 class="text-uppercase"><b>Trampas comunes al elegir CSV</b></h2>
+<p><b>Comas en campos.</b> Si cualquier campo puede contener una coma (direcciones, descripciones, nombres de producto), el campo debe estar entrecomillado. Los parsers ingenuos <code>split(',')</code> rompen inmediatamente. Usa un parser CSV real (Python <code>csv</code>, Node <code>fast-csv</code>, Go <code>encoding/csv</code>).</p>
+<p><b>Codificación.</b> Excel en Windows usa UTF-16 LE con BOM por defecto; la mayoría de herramientas esperan UTF-8. Siempre especifica la codificación al exportar; añade un BOM UTF-8 si la interoperación con Excel importa.</p>
+<p><b>Formatos de fecha.</b> "2026-04-20" y "04/20/2026" son ambos ambiguos sin región. Prefiere ISO 8601 (<code>YYYY-MM-DDTHH:mm:ss.sssZ</code>) y documenta la zona horaria. Mira nuestra <a href="/guides/unix-timestamps-explained.html">guía de unix timestamps</a> para la alternativa epoch.</p>
+<p><b>Saltos de línea finales + BOM.</b> Algunos escritores CSV añaden ambos; algunos parsers silenciosamente añaden un registro en blanco o un campo ilegible. Prueba ida y vuelta en una muestra representativa.</p>
+
+<br/><h2 class="text-uppercase"><b>Convertir entre formatos</b></h2>
+<p>La conversión en el navegador es viable para archivos pequeños a medianos. Para inspección de estructura JSON, nuestro <a href="/developer-tools.html">hub de herramientas de desarrollador</a> enlaza a jsonparser, text-diff y minificadores. Para CSV, usa <code>pandas.read_csv</code> / <code>pandas.to_json</code> localmente para archivos &gt; 100 MB; la memoria del navegador limita la conversión a ~500 MB por pestaña en la práctica.</p>
+
+<br/><h2 class="text-uppercase"><b>La regla de decisión CSV vs JSON en una oración</b></h2>
+<p>Si tus filas caben en una sola línea de cabecera de nombres de columna y un usuario de hoja de cálculo está al menos posiblemente downstream, envía CSV - el formato es el mínimo común denominador de exportación que toda herramienta BI, todo cargador de base de datos, y Excel pueden ingerir sin código. Si cualquier fila necesita objetos anidados, arrays o números / booleanos / nulls tipados preservados a través del ida y vuelta, envía JSON, y cambia a JSON Lines (`.jsonl`) cuando el archivo es lo suficientemente grande como para que un único array de nivel superior obligaría al consumidor a cargar todo el documento en memoria a la vez. Los dos formatos no son intercambiables: CSV pierde tipos y anidamiento a la salida, y JSON gana una dependencia de parser que el equipo de hoja de cálculo puede no tener a la entrada.</p>
+
+<br/><h2 class="text-uppercase"><b>Herramientas relacionadas</b></h2>
+<ul>
+    <li><a href="/developer-tools/text-diff.html">Text Diff</a> - comparar dos exportaciones CSV o JSON.</li>
+    <li><a href="/developer-tools/text-html-editor.html">Editor de Texto / HTML</a> - pega y renderiza salida formateada.</li>
+    <li><a href="/developer-tools/js-minifier.html">Minificador JavaScript</a> - comprimir código productor de JSON.</li>
+    <li><a href="/developer-tools/md5-converter.html">Convertidor MD5</a> - huella digital de un archivo de datos exportado.</li>
+</ul>
+
+<p><br/><a href="/developer-tools.html">&larr; Volver a Herramientas para Desarrolladores</a></p>
+</div>

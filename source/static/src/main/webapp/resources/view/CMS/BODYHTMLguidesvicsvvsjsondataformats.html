@@ -1,0 +1,68 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>CSV vs JSON - khi nào dùng định dạng dữ liệu nào</b></h1>
+<time itemprop="datePublished" datetime="2026-04-20T08:00:00Z"><b>Xuất bản ngày 20 tháng 4, 2026</b></time>
+<hr/>
+
+<p class="lead">CSV và JSON là hai định dạng trao đổi dữ liệu mà gần như mọi công cụ trong stack hiện đại đều nói. CSV là hàng và cột; JSON là đối tượng và mảng lồng nhau. Sự phân chia giữa chúng sắc hơn so với vẻ ngoài: CSV mang tính bảng theo thiết kế, và bất cứ điều gì kéo dãn nó (dấu phẩy trong trường, dữ liệu lồng, ô bị thiếu) đều trở thành bài toán phân tích cú pháp. JSON mang tính cấu trúc theo thiết kế, và bất cứ điều gì làm phẳng nó (một triệu bản ghi người dùng trong một danh sách duy nhất) đều trở thành bài toán bộ nhớ. Hướng dẫn này bao gồm cơ chế, thực tế kích thước và tốc độ, và các quyết định cụ thể xác định định dạng nào thắng cho mỗi trường hợp sử dụng.</p>
+
+<br/><h2 class="text-uppercase"><b>Mỗi định dạng thực sự là gì</b></h2>
+<p><b>CSV (giá trị phân tách bằng dấu phẩy)</b> là định dạng văn bản thuần: một bản ghi trên mỗi dòng, các trường phân cách bằng ký tự phân tách (dấu phẩy, tab, chấm phẩy, hoặc ống), hàng tiêu đề tùy chọn, đặt dấu nháy quanh trường tùy chọn. Không có đặc tả chính thức duy nhất - <a href="https://datatracker.ietf.org/doc/html/rfc4180">RFC 4180</a> đã mã hóa tập con thông dụng vào năm 2005, nhưng CSV thực tế khác nhau về dấu phân tách, ký tự nháy, quy tắc thoát, mã hóa, và việc liệu dòng trống có được phép hay không.</p>
+<p><b>JSON (JavaScript Object Notation)</b> là định dạng có cấu trúc đệ quy: đối tượng (bản đồ khóa-giá trị), mảng (danh sách có thứ tự), chuỗi, số, boolean, và null. Đặc tả chính thức ngắn (<a href="https://www.rfc-editor.org/rfc/rfc8259">RFC 8259</a>); mọi ngôn ngữ hiện đại đều có parser JSON trong thư viện chuẩn; khả năng tương tác gần như phổ quát.</p>
+
+<br/><h2 class="text-uppercase"><b>So sánh song song</b></h2>
+<div class="w3-responsive">
+<table class="w3-table-all w3-small">
+<tr><th>Thuộc tính</th><th>CSV</th><th>JSON</th></tr>
+<tr><td>Hình dạng dữ liệu</td><td>Phẳng: hàng và cột</td><td>Lồng nhau: cây đối tượng/mảng tùy ý</td></tr>
+<tr><td>Kiểu</td><td>Mọi thứ là chuỗi; kiểu số / ngày suy luận lúc parse</td><td>Chuỗi, số, boolean, null gốc; mảng và đối tượng</td></tr>
+<tr><td>Kích thước tệp (1M bản ghi đơn giản)</td><td>~60-80&nbsp;MB</td><td>~120-180&nbsp;MB (khóa lặp lại mỗi bản ghi)</td></tr>
+<tr><td>Tốc độ parse (cùng dữ liệu)</td><td>~200-400 MB/s streaming</td><td>~80-150 MB/s streaming (token hóa nghiêm hơn)</td></tr>
+<tr><td>Thân thiện streaming</td><td>Có - từng dòng</td><td>Chỉ với JSON Lines (một đối tượng mỗi dòng)</td></tr>
+<tr><td>Schema</td><td>Ngầm qua hàng tiêu đề</td><td>Tùy chọn (JSON Schema) hoặc ngầm</td></tr>
+<tr><td>Dữ liệu lồng</td><td>Vụng (làm phẳng thành cột hoặc nhúng JSON vào ô)</td><td>Gốc</td></tr>
+<tr><td>Công cụ</td><td>Excel, Numbers, pandas, csvkit, mọi cơ sở dữ liệu</td><td>Stdlib mọi ngôn ngữ, jq, mọi API</td></tr>
+<tr><td>Dễ đọc cho người</td><td>Rất (các cột thẳng hàng; mở trong bảng tính)</td><td>Có (nếu pretty-print), dày đặc nếu rút gọn</td></tr>
+</table>
+</div>
+
+<br/><h2 class="text-uppercase"><b>Khi CSV thắng</b></h2>
+<p><b>Dữ liệu dạng bảng với schema ổn định.</b> Xuất người dùng từ cơ sở dữ liệu, nhật ký giao dịch, hồ sơ điều tra dân số, đổ analytics - bất cứ thứ gì tự nhiên là hàng và cột đều xuất nhỏ hơn và parse nhanh hơn dưới dạng CSV.</p>
+<p><b>Vòng quay với bảng tính.</b> Nếu một bên liên quan sẽ mở tệp trong Excel, Google Sheets, hoặc Numbers, CSV là định dạng quay vòng không bất ngờ. JSON mở trong trình soạn thảo văn bản; ít người không phải lập trình viên đọc được tệp JSON 5.000 dòng.</p>
+<p><b>Streaming bộ dữ liệu lớn.</b> Xử lý tệp 10 GB một hàng tại một thời điểm là cách dùng phổ biến trong CSV: đọc một dòng, parse, phát ra, loại bỏ. JSON Lines đạt được tương tự, nhưng JSON thuần (một mảng cấp cao duy nhất) yêu cầu cả tệp trong bộ nhớ để parse chính xác.</p>
+<p><b>Tải vào data warehouse.</b> Mọi warehouse (BigQuery, Snowflake, Redshift, DuckDB) đều có loader CSV được tối ưu hóa. Loader JSON tồn tại nhưng thường chậm hơn vì sự mơ hồ về hình dạng.</p>
+
+<br/><h2 class="text-uppercase"><b>Khi JSON thắng</b></h2>
+<p><b>Dữ liệu lồng hoặc phân cấp.</b> Một bản ghi người dùng với danh sách đơn hàng đã qua, mỗi đơn hàng với danh sách dòng hàng, mỗi dòng hàng với danh sách biến thể - JSON diễn đạt điều này trong một đối tượng; CSV đòi hỏi hoặc khử chuẩn hóa (một hàng mỗi dòng hàng, tiêu đề lặp lại) hoặc chuỗi JSON nhúng trong ô (tệ nhất của cả hai định dạng).</p>
+<p><b>API HTTP.</b> Mọi API REST và GraphQL trên web hiện đại đều trả về JSON. Đó là mặc định. Đừng trả CSV từ API trừ khi người gọi yêu cầu rõ ràng.</p>
+<p><b>Tệp cấu hình.</b> Giá trị có kiểu (boolean, null, số) quan trọng trong cấu hình - CSV sẽ đòi phân tích mỗi trường thành chuỗi rồi ép kiểu, mời mọc bug kiểu. JSON giữ kiểu. YAML giữ kiểu và thêm chú thích - thường là lựa chọn tốt hơn cho cấu hình do người chỉnh.</p>
+<p><b>Bản ghi không đồng nhất.</b> Nếu dữ liệu của bạn có trường tùy chọn, hình dạng đa hình, hoặc các bản ghi với schema khác nhau, sự tự do của JSON ánh xạ tự nhiên; CSV ép thành hợp của mọi cột với khoảng trắng nơi trường vắng mặt.</p>
+
+<br/><h2 class="text-uppercase"><b>Trung gian: JSON Lines (NDJSON)</b></h2>
+<p><b>JSON Lines</b> (còn gọi NDJSON) là một đối tượng JSON mỗi dòng của tệp văn bản:</p>
+<pre style="background:#0b1220;color:#dbe3f5;padding:12px;border-radius:var(--radius-sm, 4px);overflow:auto"><code>{"user":"alice","age":30,"tags":["admin","paid"]}
+{"user":"bob","age":25,"tags":["free"]}
+{"user":"carol","age":42,"tags":["paid"]}</code></pre>
+<p>Nó giữ kiểu và lồng nhau của JSON đồng thời cho phép streaming từng dòng như CSV. Hầu hết công cụ xử lý log, data warehouse, và bộ xử lý stream chấp nhận nó nguyên bản. Chọn JSON Lines khi bạn cần sự linh hoạt hình dạng của JSON và tính thân thiện streaming của CSV.</p>
+
+<br/><h2 class="text-uppercase"><b>Các bẫy thường gặp khi chọn CSV</b></h2>
+<p><b>Dấu phẩy trong trường.</b> Nếu trường nào có thể chứa dấu phẩy (địa chỉ, mô tả, tên sản phẩm), trường phải được đặt trong nháy. Parser ngây thơ <code>split(',')</code> vỡ ngay. Dùng parser CSV thật (Python <code>csv</code>, Node <code>fast-csv</code>, Go <code>encoding/csv</code>).</p>
+<p><b>Mã hóa.</b> Excel trên Windows mặc định UTF-16 LE với BOM; hầu hết công cụ mong đợi UTF-8. Luôn chỉ định mã hóa khi xuất; thêm BOM UTF-8 nếu tương tác Excel quan trọng.</p>
+<p><b>Định dạng ngày.</b> "2026-04-20" và "04/20/2026" đều mơ hồ nếu không có vùng. Ưu tiên ISO 8601 (<code>YYYY-MM-DDTHH:mm:ss.sssZ</code>) và ghi rõ múi giờ. Xem <a href="/guides/unix-timestamps-explained.html">hướng dẫn unix timestamps</a> của chúng tôi cho phương án epoch.</p>
+<p><b>Dòng mới đuôi + BOM.</b> Một số trình ghi CSV thêm cả hai; một số parser âm thầm thêm một bản ghi trống hoặc trường không đọc được. Kiểm tra vòng quay trên mẫu đại diện.</p>
+
+<br/><h2 class="text-uppercase"><b>Chuyển đổi giữa các định dạng</b></h2>
+<p>Chuyển đổi trong trình duyệt khả thi cho tệp nhỏ tới trung bình. Để kiểm tra cấu trúc JSON, <a href="/developer-tools.html">hub công cụ lập trình viên</a> của chúng tôi liên kết tới jsonparser, text-diff và trình rút gọn. Cho CSV, dùng <code>pandas.read_csv</code> / <code>pandas.to_json</code> cục bộ cho tệp &gt; 100 MB; bộ nhớ trình duyệt giới hạn chuyển đổi ở khoảng 500 MB mỗi tab trong thực tế.</p>
+
+<br/><h2 class="text-uppercase"><b>Quy tắc quyết định CSV vs JSON trong một câu</b></h2>
+<p>Nếu hàng của bạn vừa một dòng tiêu đề duy nhất các tên cột và người dùng bảng tính ít nhất có thể nằm ở phía sau, gửi CSV - định dạng này là mẫu số chung thấp nhất mà mọi công cụ BI, mọi loader cơ sở dữ liệu, và Excel có thể ăn vào không cần code. Nếu hàng nào cần đối tượng lồng, mảng, hoặc số / boolean / null có kiểu được giữ qua vòng quay, gửi JSON, và chuyển sang JSON Lines (`.jsonl`) khi tệp đủ lớn để một mảng cấp cao duy nhất sẽ buộc người tiêu thụ phải tải toàn bộ tài liệu vào bộ nhớ một lần. Hai định dạng không hoán đổi: CSV mất kiểu và lồng nhau ở đầu ra, và JSON đắc thêm phụ thuộc parser mà nhóm bảng tính có thể không có ở đầu vào.</p>
+
+<br/><h2 class="text-uppercase"><b>Công cụ liên quan</b></h2>
+<ul>
+    <li><a href="/developer-tools/text-diff.html">Text Diff</a> - so sánh hai xuất CSV hoặc JSON.</li>
+    <li><a href="/developer-tools/text-html-editor.html">Trình soạn Text / HTML</a> - dán và kết xuất đầu ra đã định dạng.</li>
+    <li><a href="/developer-tools/js-minifier.html">Trình rút gọn JavaScript</a> - nén mã sản sinh JSON.</li>
+    <li><a href="/developer-tools/md5-converter.html">Trình chuyển đổi MD5</a> - dấu vân tay tệp dữ liệu đã xuất.</li>
+</ul>
+
+<p><br/><a href="/developer-tools.html">&larr; Quay lại Công cụ Lập trình viên</a></p>
+</div>

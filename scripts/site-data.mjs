@@ -900,6 +900,10 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/compress-zip-size.html', '/guides/es/compress-zip-size.html', '/guides/vi/compress-zip-size.html', '/guides/id/compress-zip-size.html', '/guides/de/compress-zip-size.html',
   '/guides/pt/create-zip-file-online.html', '/guides/es/create-zip-file-online.html', '/guides/vi/create-zip-file-online.html', '/guides/id/create-zip-file-online.html', '/guides/de/create-zip-file-online.html',
   '/guides/pt/css-minifier-vs-compressor.html', '/guides/es/css-minifier-vs-compressor.html', '/guides/vi/css-minifier-vs-compressor.html', '/guides/id/css-minifier-vs-compressor.html', '/guides/de/css-minifier-vs-compressor.html',
+  // plan-warm-pascal-v3 S2 batch 13 (2026-05-29) - 5 locale variants × 3 guides
+  '/guides/pt/compress-folder-online.html', '/guides/es/compress-folder-online.html', '/guides/vi/compress-folder-online.html', '/guides/id/compress-folder-online.html', '/guides/de/compress-folder-online.html',
+  '/guides/pt/csv-vs-json-data-formats.html', '/guides/es/csv-vs-json-data-formats.html', '/guides/vi/csv-vs-json-data-formats.html', '/guides/id/csv-vs-json-data-formats.html', '/guides/de/csv-vs-json-data-formats.html',
+  '/guides/pt/dead-pixel-testing-guide.html', '/guides/es/dead-pixel-testing-guide.html', '/guides/vi/dead-pixel-testing-guide.html', '/guides/id/dead-pixel-testing-guide.html', '/guides/de/dead-pixel-testing-guide.html',
   '/guides/pt/compress-folder.html', // pt canonical of /guides/compactar-pasta.html
   '/guides/pt/compress-zip-file.html', // pt canonical of /guides/comprimir-arquivo-zip.html
   '/guides/pt/compress-folder-to-zip.html', // pt canonical of /guides/comprimir-pasta-zipada.html
@@ -976,6 +980,10 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/compress-zip-size.html', '/guides/es/compress-zip-size.html', '/guides/vi/compress-zip-size.html', '/guides/id/compress-zip-size.html', '/guides/de/compress-zip-size.html',
   '/guides/pt/create-zip-file-online.html', '/guides/es/create-zip-file-online.html', '/guides/vi/create-zip-file-online.html', '/guides/id/create-zip-file-online.html', '/guides/de/create-zip-file-online.html',
   '/guides/pt/css-minifier-vs-compressor.html', '/guides/es/css-minifier-vs-compressor.html', '/guides/vi/css-minifier-vs-compressor.html', '/guides/id/css-minifier-vs-compressor.html', '/guides/de/css-minifier-vs-compressor.html',
+  // plan-warm-pascal-v3 S2 batch 13 (2026-05-29) - 5 locale variants × 3 guides
+  '/guides/pt/compress-folder-online.html', '/guides/es/compress-folder-online.html', '/guides/vi/compress-folder-online.html', '/guides/id/compress-folder-online.html', '/guides/de/compress-folder-online.html',
+  '/guides/pt/csv-vs-json-data-formats.html', '/guides/es/csv-vs-json-data-formats.html', '/guides/vi/csv-vs-json-data-formats.html', '/guides/id/csv-vs-json-data-formats.html', '/guides/de/csv-vs-json-data-formats.html',
+  '/guides/pt/dead-pixel-testing-guide.html', '/guides/es/dead-pixel-testing-guide.html', '/guides/vi/dead-pixel-testing-guide.html', '/guides/id/dead-pixel-testing-guide.html', '/guides/de/dead-pixel-testing-guide.html',
   '/guides/en/heic-vs-jpg-vs-webp.html',
   '/guides/en/dead-pixel-testing-guide.html',
   '/guides/en/unix-timestamps-explained.html',
@@ -2357,6 +2365,10 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/compress-zip-size.html': 'guide/pt/compress-zip-size.jsp', '/guides/es/compress-zip-size.html': 'guide/es/compress-zip-size.jsp', '/guides/vi/compress-zip-size.html': 'guide/vi/compress-zip-size.jsp', '/guides/id/compress-zip-size.html': 'guide/id/compress-zip-size.jsp', '/guides/de/compress-zip-size.html': 'guide/de/compress-zip-size.jsp',
   '/guides/pt/create-zip-file-online.html': 'guide/pt/create-zip-file-online.jsp', '/guides/es/create-zip-file-online.html': 'guide/es/create-zip-file-online.jsp', '/guides/vi/create-zip-file-online.html': 'guide/vi/create-zip-file-online.jsp', '/guides/id/create-zip-file-online.html': 'guide/id/create-zip-file-online.jsp', '/guides/de/create-zip-file-online.html': 'guide/de/create-zip-file-online.jsp',
   '/guides/pt/css-minifier-vs-compressor.html': 'guide/pt/css-minifier-vs-compressor.jsp', '/guides/es/css-minifier-vs-compressor.html': 'guide/es/css-minifier-vs-compressor.jsp', '/guides/vi/css-minifier-vs-compressor.html': 'guide/vi/css-minifier-vs-compressor.jsp', '/guides/id/css-minifier-vs-compressor.html': 'guide/id/css-minifier-vs-compressor.jsp', '/guides/de/css-minifier-vs-compressor.html': 'guide/de/css-minifier-vs-compressor.jsp',
+  // plan-warm-pascal-v3 S2 batch 13 (2026-05-29) - 5 locale variants × 3 guides
+  '/guides/pt/compress-folder-online.html': 'guide/pt/compress-folder-online.jsp', '/guides/es/compress-folder-online.html': 'guide/es/compress-folder-online.jsp', '/guides/vi/compress-folder-online.html': 'guide/vi/compress-folder-online.jsp', '/guides/id/compress-folder-online.html': 'guide/id/compress-folder-online.jsp', '/guides/de/compress-folder-online.html': 'guide/de/compress-folder-online.jsp',
+  '/guides/pt/csv-vs-json-data-formats.html': 'guide/pt/csv-vs-json-data-formats.jsp', '/guides/es/csv-vs-json-data-formats.html': 'guide/es/csv-vs-json-data-formats.jsp', '/guides/vi/csv-vs-json-data-formats.html': 'guide/vi/csv-vs-json-data-formats.jsp', '/guides/id/csv-vs-json-data-formats.html': 'guide/id/csv-vs-json-data-formats.jsp', '/guides/de/csv-vs-json-data-formats.html': 'guide/de/csv-vs-json-data-formats.jsp',
+  '/guides/pt/dead-pixel-testing-guide.html': 'guide/pt/dead-pixel-testing-guide.jsp', '/guides/es/dead-pixel-testing-guide.html': 'guide/es/dead-pixel-testing-guide.jsp', '/guides/vi/dead-pixel-testing-guide.html': 'guide/vi/dead-pixel-testing-guide.jsp', '/guides/id/dead-pixel-testing-guide.html': 'guide/id/dead-pixel-testing-guide.jsp', '/guides/de/dead-pixel-testing-guide.html': 'guide/de/dead-pixel-testing-guide.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
