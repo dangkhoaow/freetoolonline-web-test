@@ -1,0 +1,87 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Comprimir JPEG Sin Perder Calidad - Calidad vs Tamaño</b></h1>
+    <p><em>Última revisión: 2026-05-03. El <a href="/image-tools/compress-image.html">compresor JPEG</a> expone una sola perilla - calidad - y la mayoría de la gente la deja en el valor predeterminado. Esta guía te dice qué valor elegir para las cuatro tareas comunes de lector (web, archivo, social, correo) y el único caso donde la compresión automática por IA realmente supera un ajuste fijo.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Respuesta de 30 segundos.</b> Calidad JPEG 75 es invisible para casi todo visualizador en casi toda foto - corta el tamaño del archivo aproximadamente a la mitad versus calidad 95. Calidad 85 es el punto medio seguro para fotos que podrías re-editar. Calidad 95 solo vale los bytes cuando el JPEG es el archivo maestro. Calidad 60 empieza a mostrar artefactos en gradientes suaves (cielos, piel) pero está bien para miniaturas. El modo <i>IA auto</i> en el <a href="/image-tools/compress-image.html">compresor JPEG</a> elige por imagen, lo que supera un valor fijo cuando procesas un lote mixto (retratos + fotos de producto + capturas de pantalla).</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Lo que la perilla de calidad JPEG realmente hace</b></h2>
+    <p>La compresión JPEG es con pérdida y ajustable. El codificador divide la imagen en bloques de 8x8 píxeles, ejecuta una transformada coseno discreta en cada bloque, y luego redondea (cuantiza) los coeficientes resultantes - los coeficientes más altos llevan el detalle fino al que el ojo humano es menos sensible. El control deslizante de calidad controla cuán agresivamente se redondean esos coeficientes: calidad baja mantiene menos, calidad alta mantiene más. Re-codificar la misma imagen en calidad 75 en vez de 95 típicamente reduce a la mitad el tamaño del archivo porque el codificador descartó el contenido de alta frecuencia que la mayoría de los visualizadores no pueden percibir en una pantalla típica.</p>
+    <p>Por eso "comprimir JPEG sin perder calidad" es técnicamente un nombre incorrecto - <i>cada</i> re-codificación JPEG pierde algunos datos. La pregunta real es "por debajo de qué valor de calidad la pérdida se vuelve visible para mi lector, en mi imagen, en su probable dispositivo de visualización". Las cuatro secciones a continuación lo fijan a cuatro tareas comunes.</p>
+
+    <h2 class="text-uppercase"><b>Elige por tarea: subida web, archivo, social, correo</b></h2>
+    <div class="w3-responsive">
+        <table class="w3-table-all w3-small">
+            <tr><th>Tarea</th><th>Calidad</th><th>Reducción típica de tamaño vs original</th><th>Por qué este valor</th></tr>
+            <tr><td>Foto hero / sitio web (fuente 5-10 megapíxeles)</td><td>75 - 80</td><td>50 - 65%</td><td>Degradación invisible a distancia típica de visualización; reduce a la mitad los bytes que el visitante descarga en la primera pintura.</td></tr>
+            <tr><td>Archivo / copia maestra que podrías re-editar</td><td>90 - 95</td><td>15 - 35%</td><td>Preserva margen para un futuro recorte o ajuste de color. Por debajo de 90, los guardados repetidos acumulan artefactos visibles.</td></tr>
+            <tr><td>Publicación social (Instagram / Twitter / LinkedIn)</td><td>70 - 78</td><td>55 - 70%</td><td>La plataforma re-codifica de todos modos; pre-comprimir en 70-78 supera el predeterminado de la plataforma (usualmente 60-70).</td></tr>
+            <tr><td>Adjunto de correo / subida de chat</td><td>65 - 72</td><td>65 - 80%</td><td>Receptor visualiza una vez en el teléfono; tamaño supera fidelidad. Mantente sobre 60 para evitar artefactos de borde de bloque.</td></tr>
+            <tr><td>Miniatura (menos de 200 px de ancho)</td><td>55 - 65</td><td>75 - 90%</td><td>Canvas pequeño esconde cuantización; limita en 60 si ves banding en gradientes suaves.</td></tr>
+        </table>
+    </div>
+    <p>Los porcentajes son típicos, no garantizados - una captura de pantalla de color plano comprime a una fracción de la fotografía equivalente al mismo valor de calidad, porque el codificador tiene más redundancia para eliminar. Si tu archivo específico no coincide con la tabla, elige la siguiente calidad superior y vuelve a probar.</p>
+
+    <h2 class="text-uppercase"><b>Cuándo la compresión IA-auto supera un valor de calidad fijo</b></h2>
+    <p>El <a href="/image-tools/compress-image.html">compresor JPEG</a> incluye un modo IA auto que elige un valor de calidad por imagen en vez de aplicar una configuración global. IA auto vale el paso extra cuando una de tres condiciones es verdadera:</p>
+    <ul>
+        <li><b>Lote mixto.</b> Veinte fotos de producto + diez retratos + cinco capturas de pantalla en una subida. Una calidad fija 80 sobre-comprime las capturas (bordes de bloque visibles en el texto) y sub-comprime los retratos (bytes extra de los que el ojo no se beneficia). IA auto elige aproximadamente 60 para las capturas y 80 para los retratos, cortando bytes totales en 20-35% sin pérdida visible en ninguna parte.</li>
+        <li><b>Imágenes de gradiente suave (cielos, piel, bokeh).</b> El banding de cuantización en gradientes suaves aparece primero; IA auto asigna más bits a esas regiones y menos a áreas planas, superando cualquier valor fijo al mismo tamaño total de archivo.</li>
+        <li><b>Maestro de alta resolución más vista previa de baja resolución.</b> IA auto puede emparejar más bits con el maestro y menos con la vista previa en vez de forzar a la vista previa a heredar el presupuesto de calidad del maestro.</li>
+    </ul>
+    <p>Para un lote homogéneo (solo fotos de paisaje, todas misma cámara) una calidad fija entre 75 y 85 está generalmente dentro del 2-3% de la salida IA-auto y ahorra el ciclo de ejecutar el pase auto.</p>
+
+    <h2 class="text-uppercase"><b>Lo que no puedes recuperar con compresión</b></h2>
+    <p>Dos pérdidas son permanentes y ninguna perilla de calidad las recupera:</p>
+    <p><b>Pérdida de remuestreo.</b> Si la herramienta upstream redujo la escala de la imagen (fuente de 3000 px de ancho se convierte en un JPEG de 1200 px de ancho), los píxeles descartados se fueron. Comprime en cualquier calidad y aún tienes una imagen de 1200 px. Para preservar detalle, elige un ancho objetivo antes de la compresión: una fuente de 1920 px de ancho es suficiente para casi todo hero de escritorio; 2400 px cubre laptops con densidad retina; sobre 3000 px se desperdicia a menos que el lector haga pinch-zoom.</p>
+    <p><b>Acumulación de re-guardado.</b> Cada guardado en calidad 75 toma la cuantización del guardado anterior como su punto de partida. Cinco guardados en 75 se ven visiblemente peor que un guardado en 75 aunque cada paso reclamó la misma calidad. Siempre re-exporta desde tu maestro en la calidad final elegida - nunca comprimas repetidamente un JPEG ya comprimido.</p>
+
+    <h2 class="text-uppercase"><b>La regla práctica de un párrafo</b></h2>
+    <p><b>Si el JPEG es la versión que tu visitante va a descargar:</b> calidad 75. Si puedes re-editarlo: calidad 90. Si es para una miniatura / vista previa: calidad 60. Si tienes un lote mixto: IA auto. Por debajo de 60: solo para miniaturas o necesidades agresivas de tamaño (correo bajo 1 MB total). Sobre 95: solo cuando también necesitas transparencia o metadatos en capas, en cuyo caso JPEG es el formato equivocado - exporta PNG o TIFF en su lugar. La <a href="/image-tools/compress-image.html">herramienta compresor JPEG</a> conduce el mismo pipeline sea que elijas una calidad fija o IA auto - la diferencia es si el valor de calidad se elige una vez para cada imagen o una vez por imagen.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>¿Calidad JPEG 100 significa sin pérdidas?</summary>
+  <p>No. Calidad JPEG 100 es el ajuste más alto en la mayoría de codificadores, pero todavía aplica la transformada coseno discreta y la cuantización - solo con el paso de redondeo más pequeño. Verdaderamente sin pérdidas requiere un formato diferente (PNG, TIFF, JPEG 2000 en modo sin pérdidas, o HEIC sin pérdidas). Calidad 100 desperdicia bytes contra calidad 95 por casi ninguna ganancia perceptiva.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>¿Puedo "descomprimir" un JPEG para recuperar el original?</summary>
+  <p>No. JPEG es con pérdida. El codificador descartó datos cuando primero comprimió la imagen; esos datos no están almacenados en ninguna parte. El "original" existe solo si conservaste el archivo fuente (RAW, PNG, o un JPEG de calidad superior) antes de re-codificar.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>¿Por qué el mismo valor de calidad da diferentes tamaños de archivo en diferentes imágenes?</summary>
+  <p>El valor de calidad fija el paso de cuantización, no los bytes de salida. Una captura de pantalla de color plano en calidad 80 es mucho más pequeña que una foto nocturna ruidosa en calidad 80 porque al codificador se le acabó el contenido de alta frecuencia para eliminar. Los porcentajes en la tabla de tareas arriba son típicos para tipo de contenido coincidente.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>¿El compresor JPEG elimina metadatos EXIF?</summary>
+  <p>Re-codificar usualmente re-emite el bloque EXIF de la fuente, pero las herramientas difieren. Para una foto que planeas publicar (donde las coordenadas GPS de la cámara son privadas), elimina EXIF después de comprimir - la página del <a href="/image-tools/compress-image.html">compresor JPEG</a> documenta qué campos EXIF preserva.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>¿Debo convertir HEIC a JPEG antes de comprimir, o comprimir el HEIC directamente?</summary>
+  <p>HEIC ya es 30-50% más pequeño que el JPEG equivalente en la misma calidad percibida. Si el dispositivo de tu lector soporta HEIC, consérvalo. Si debes servir a navegadores más antiguos, convierte HEIC a JPEG primero (usa <a href="/image-converter-tools/heic-to-jpg.html">HEIC a JPG</a>) y luego comprime en calidad 75.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Relacionados</b></h2>
+    <ul>
+        <li><a href="/image-tools/compress-image.html">Compresor JPEG</a> - la herramienta misma; elige un valor de calidad o pulsa IA auto.</li>
+        <li><a href="/guides/jpg-vs-png-for-web.html">JPG vs PNG para web</a> - la elección de formato antes de comprimir (fotos = JPG, UI / capturas = PNG).</li>
+        <li><a href="/guides/when-to-compress-vs-convert-an-image.html">Cuándo comprimir vs convertir una imagen</a> - la regla de conteo de bytes que decide entre cortar tamaño con calidad y cortar tamaño con cambio de formato.</li>
+        <li><a href="/guides/heic-vs-jpg-vs-webp.html">HEIC vs JPG vs WebP</a> - el compromiso de formato moderno; WebP en calidad 80 típicamente supera JPEG en la misma calidad percibida.</li>
+        <li><a href="/guides/jpg-vs-jpeg-are-they-the-same.html">JPG vs JPEG - ¿son lo mismo?</a> - respuesta de un párrafo: sí, formato idéntico; .jpg vs .jpeg es solo la extensión del archivo.</li>
+        <li><a href="/image-converter-tools/heic-to-jpg.html">Convertidor HEIC a JPG</a> - convierte fotos HEIC del iPhone a JPG primero, luego comprime.</li>
+    </ul>
+</div>

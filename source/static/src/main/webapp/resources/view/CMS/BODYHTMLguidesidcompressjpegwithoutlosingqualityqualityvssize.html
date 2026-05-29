@@ -1,0 +1,87 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Kompres JPEG Tanpa Kehilangan Kualitas - Kualitas vs Ukuran</b></h1>
+    <p><em>Terakhir ditinjau: 2026-05-03. <a href="/image-tools/compress-image.html">Kompresor JPEG</a> menampilkan satu kenop - kualitas - dan kebanyakan orang membiarkannya di default. Panduan ini memberitahu Anda nilai mana yang harus dipilih untuk empat tugas pembaca yang umum (web, arsip, sosial, email) dan satu kasus di mana kompresi otomatis AI sebenarnya mengalahkan pengaturan tetap.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Jawaban 30 detik.</b> Kualitas JPEG 75 tidak terlihat oleh hampir setiap penonton pada hampir setiap foto - memotong ukuran file kira-kira setengah dibandingkan kualitas 95. Kualitas 85 adalah tengah-tengah yang aman untuk foto yang mungkin Anda edit ulang. Kualitas 95 hanya layak byte ketika JPEG adalah file master. Kualitas 60 mulai menunjukkan artefak pada gradien halus (langit, kulit) tetapi baik untuk thumbnail. Mode <i>AI auto</i> pada <a href="/image-tools/compress-image.html">kompresor JPEG</a> memilih per-gambar, yang mengalahkan satu nilai tetap saat Anda memproses batch campuran (potret + foto produk + screenshot).</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Apa yang sebenarnya dilakukan kenop kualitas JPEG</b></h2>
+    <p>Kompresi JPEG bersifat lossy dan dapat disetel. Encoder memecah gambar menjadi blok 8x8 piksel, menjalankan transformasi kosinus diskrit pada setiap blok, dan kemudian membulatkan (quantises) koefisien yang dihasilkan - koefisien yang lebih tinggi membawa detail halus yang paling tidak peka oleh mata manusia. Slider kualitas mengontrol seberapa agresif koefisien tersebut dibulatkan: kualitas rendah menyimpan lebih sedikit, kualitas tinggi menyimpan lebih banyak. Mengenkode ulang gambar yang sama pada kualitas 75 alih-alih 95 biasanya membagi dua ukuran file karena encoder membuang konten frekuensi tinggi yang tidak dapat dipersepsikan oleh kebanyakan penonton pada layar tipikal.</p>
+    <p>Itulah mengapa "kompres JPEG tanpa kehilangan kualitas" secara teknis salah nama - <i>setiap</i> pengenkodean ulang JPEG kehilangan beberapa data. Pertanyaan sebenarnya adalah "di bawah nilai kualitas mana kehilangan menjadi terlihat oleh pembaca saya, pada gambar saya, pada perangkat tampilan yang mungkin". Empat bagian di bawah menjepitnya ke empat tugas umum.</p>
+
+    <h2 class="text-uppercase"><b>Pilih berdasarkan tugas: unggah web, arsip, sosial, email</b></h2>
+    <div class="w3-responsive">
+        <table class="w3-table-all w3-small">
+            <tr><th>Tugas</th><th>Kualitas</th><th>Pengurangan ukuran tipikal vs asli</th><th>Mengapa nilai ini</th></tr>
+            <tr><td>Foto hero / situs web (sumber 5-10 megapiksel)</td><td>75 - 80</td><td>50 - 65%</td><td>Degradasi tidak terlihat pada jarak pandang tipikal; membagi dua byte yang diunduh pengunjung pada paint pertama.</td></tr>
+            <tr><td>Arsip / salinan master yang mungkin Anda edit ulang</td><td>90 - 95</td><td>15 - 35%</td><td>Mempertahankan ruang gerak untuk potong atau grading warna di masa depan. Di bawah 90, penyimpanan berulang mengakumulasi artefak yang terlihat.</td></tr>
+            <tr><td>Posting sosial (Instagram / Twitter / LinkedIn)</td><td>70 - 78</td><td>55 - 70%</td><td>Platform tetap mengenkode ulang; pra-kompresi pada 70-78 mengalahkan default platform (biasanya 60-70).</td></tr>
+            <tr><td>Lampiran email / unggahan chat</td><td>65 - 72</td><td>65 - 80%</td><td>Penerima melihat sekali di ponsel; ukuran mengalahkan ketelitian. Tetap di atas 60 untuk menghindari artefak tepi blok.</td></tr>
+            <tr><td>Thumbnail (di bawah 200 px lebar)</td><td>55 - 65</td><td>75 - 90%</td><td>Kanvas kecil menyembunyikan kuantisasi; batasi pada 60 jika Anda melihat banding pada gradien halus.</td></tr>
+        </table>
+    </div>
+    <p>Persentasenya adalah tipikal, bukan jaminan - screenshot warna datar dikompres menjadi sebagian kecil dari foto setara pada nilai kualitas yang sama, karena encoder memiliki lebih banyak redundansi untuk dihilangkan. Jika file spesifik Anda tidak cocok dengan tabel, pilih kualitas berikutnya yang lebih tinggi dan uji ulang.</p>
+
+    <h2 class="text-uppercase"><b>Kapan kompresi AI-auto mengalahkan nilai kualitas tetap</b></h2>
+    <p><a href="/image-tools/compress-image.html">Kompresor JPEG</a> menyertakan mode AI auto yang memilih nilai kualitas per gambar daripada menerapkan satu pengaturan global. AI auto layak langkah tambahan ketika salah satu dari tiga kondisi benar:</p>
+    <ul>
+        <li><b>Batch campuran.</b> Dua puluh foto produk + sepuluh potret + lima screenshot dalam satu unggahan. Kualitas tetap 80 mengompres berlebihan screenshot (tepi blok terlihat pada teks) dan kurang-kompres potret (byte ekstra yang tidak dimanfaatkan oleh mata). AI auto memilih sekitar 60 untuk screenshot dan 80 untuk potret, memotong byte total 20-35% tanpa kehilangan yang terlihat di mana pun.</li>
+        <li><b>Gambar gradien halus (langit, kulit, bokeh).</b> Banding kuantisasi pada gradien halus muncul pertama; AI auto mengalokasikan lebih banyak bit ke wilayah tersebut dan lebih sedikit ke area datar, mengalahkan nilai tetap apa pun pada ukuran file total yang sama.</li>
+        <li><b>Master resolusi tinggi plus pratinjau resolusi rendah.</b> AI auto dapat memasangkan lebih banyak bit dengan master dan lebih sedikit dengan pratinjau alih-alih memaksa pratinjau untuk mewarisi anggaran kualitas master.</li>
+    </ul>
+    <p>Untuk batch homogen (hanya foto lanskap, semua kamera sama) kualitas tetap antara 75 dan 85 biasanya berada dalam 2-3% dari output AI-auto dan menghemat siklus menjalankan lewatan auto.</p>
+
+    <h2 class="text-uppercase"><b>Apa yang tidak dapat Anda pulihkan dengan kompresi</b></h2>
+    <p>Dua kehilangan adalah permanen dan tidak ada kenop kualitas yang memulihkannya:</p>
+    <p><b>Kehilangan resampling.</b> Jika alat hulu menurunkan skala gambar (sumber lebar 3000 px menjadi JPEG lebar 1200 px), piksel yang dibuang sudah hilang. Kompres di kualitas apa pun dan Anda masih memiliki gambar 1200 px. Untuk mempertahankan detail, pilih lebar target sebelum kompresi: sumber lebar 1920 px cukup untuk hampir setiap hero desktop; 2400 px mencakup laptop kepadatan retina; di atas 3000 px terbuang kecuali pembaca akan pinch-zoom.</p>
+    <p><b>Akumulasi simpan ulang.</b> Setiap penyimpanan pada kualitas 75 mengambil kuantisasi dari penyimpanan sebelumnya sebagai titik awal. Lima penyimpanan pada 75 terlihat secara visual lebih buruk daripada satu penyimpanan pada 75 meskipun setiap langkah mengklaim kualitas yang sama. Selalu ekspor ulang dari master Anda pada kualitas akhir yang dipilih - jangan pernah berulang kali mengompres JPEG yang sudah dikompres.</p>
+
+    <h2 class="text-uppercase"><b>Aturan praktis satu paragraf</b></h2>
+    <p><b>Jika JPEG adalah versi yang akan diunduh pengunjung Anda:</b> kualitas 75. Jika Anda mungkin mengeditnya ulang: kualitas 90. Jika untuk thumbnail / pratinjau: kualitas 60. Jika Anda memiliki batch campuran: AI auto. Di bawah 60: hanya untuk thumbnail atau kebutuhan ukuran agresif (email di bawah 1 MB total). Di atas 95: hanya jika Anda juga butuh transparansi atau metadata berlapis, dalam hal ini JPEG adalah format yang salah - ekspor PNG atau TIFF sebagai gantinya. <a href="/image-tools/compress-image.html">Alat kompresor JPEG</a> menggerakkan pipeline yang sama baik Anda memilih kualitas tetap atau AI auto - perbedaannya adalah apakah nilai kualitas dipilih sekali untuk setiap gambar atau sekali per gambar.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>Apakah kualitas JPEG 100 berarti lossless?</summary>
+  <p>Tidak. Kualitas JPEG 100 adalah pengaturan tertinggi di sebagian besar encoder, tetapi masih menerapkan transformasi kosinus diskrit dan kuantisasi - hanya dengan langkah pembulatan terkecil. Benar-benar lossless memerlukan format yang berbeda (PNG, TIFF, JPEG 2000 dalam mode lossless, atau HEIC lossless). Kualitas 100 membuang byte terhadap kualitas 95 untuk hampir tidak ada gain persepsi.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Bisakah saya "dekompres" JPEG untuk memulihkan aslinya?</summary>
+  <p>Tidak. JPEG bersifat lossy. Encoder membuang data saat pertama kali mengompres gambar; data itu tidak disimpan di mana pun. "Asli" hanya ada jika Anda menyimpan file sumber (RAW, PNG, atau JPEG kualitas lebih tinggi) sebelum mengenkode ulang.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Mengapa nilai kualitas yang sama memberikan ukuran file yang berbeda pada gambar yang berbeda?</summary>
+  <p>Nilai kualitas mengatur langkah kuantisasi, bukan byte output. Screenshot warna datar pada kualitas 80 jauh lebih kecil daripada foto malam berisik pada kualitas 80 karena encoder kehabisan konten frekuensi tinggi untuk dihilangkan. Persentase di tabel tugas di atas tipikal untuk jenis konten yang cocok.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Apakah kompresor JPEG menghapus metadata EXIF?</summary>
+  <p>Pengenkodean ulang biasanya mengeluarkan ulang blok EXIF dari sumber, tetapi alat berbeda. Untuk foto yang Anda rencanakan untuk dipublikasikan (di mana koordinat GPS kamera bersifat pribadi), hapus EXIF setelah mengompresi - halaman <a href="/image-tools/compress-image.html">kompresor JPEG</a> mendokumentasikan field EXIF mana yang dipertahankannya.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Haruskah saya mengonversi HEIC ke JPEG sebelum mengompres, atau mengompres HEIC langsung?</summary>
+  <p>HEIC sudah 30-50% lebih kecil dari JPEG setara pada kualitas persepsi yang sama. Jika perangkat pembaca Anda mendukung HEIC, pertahankan. Jika harus melayani browser yang lebih lama, konversi HEIC ke JPEG terlebih dahulu (gunakan <a href="/image-converter-tools/heic-to-jpg.html">HEIC ke JPG</a>) dan kemudian kompres pada kualitas 75.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Terkait</b></h2>
+    <ul>
+        <li><a href="/image-tools/compress-image.html">Kompresor JPEG</a> - alat itu sendiri; pilih nilai kualitas atau tekan AI auto.</li>
+        <li><a href="/guides/jpg-vs-png-for-web.html">JPG vs PNG untuk web</a> - pilihan format sebelum Anda mengompres (foto = JPG, UI / screenshot = PNG).</li>
+        <li><a href="/guides/when-to-compress-vs-convert-an-image.html">Kapan kompres vs konversi gambar</a> - aturan hitung byte yang memutuskan antara memotong ukuran dengan kualitas dan memotong ukuran dengan perubahan format.</li>
+        <li><a href="/guides/heic-vs-jpg-vs-webp.html">HEIC vs JPG vs WebP</a> - trade-off format modern; WebP pada kualitas 80 biasanya mengalahkan JPEG pada kualitas persepsi yang sama.</li>
+        <li><a href="/guides/jpg-vs-jpeg-are-they-the-same.html">JPG vs JPEG - apakah sama?</a> - jawaban satu paragraf: ya, format identik; .jpg vs .jpeg hanyalah ekstensi file.</li>
+        <li><a href="/image-converter-tools/heic-to-jpg.html">Konverter HEIC ke JPG</a> - konversi foto HEIC iPhone ke JPG terlebih dahulu, lalu kompres.</li>
+    </ul>
+</div>

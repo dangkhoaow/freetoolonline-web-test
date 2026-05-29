@@ -904,6 +904,10 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/compress-folder-online.html', '/guides/es/compress-folder-online.html', '/guides/vi/compress-folder-online.html', '/guides/id/compress-folder-online.html', '/guides/de/compress-folder-online.html',
   '/guides/pt/csv-vs-json-data-formats.html', '/guides/es/csv-vs-json-data-formats.html', '/guides/vi/csv-vs-json-data-formats.html', '/guides/id/csv-vs-json-data-formats.html', '/guides/de/csv-vs-json-data-formats.html',
   '/guides/pt/dead-pixel-testing-guide.html', '/guides/es/dead-pixel-testing-guide.html', '/guides/vi/dead-pixel-testing-guide.html', '/guides/id/dead-pixel-testing-guide.html', '/guides/de/dead-pixel-testing-guide.html',
+  // plan-warm-pascal-v3 S2 batch 14 (2026-05-29) - 5 locale variants × 3 guides
+  '/guides/pt/current-millis.html', '/guides/es/current-millis.html', '/guides/vi/current-millis.html', '/guides/id/current-millis.html', '/guides/de/current-millis.html',
+  '/guides/pt/camera-check.html', '/guides/es/camera-check.html', '/guides/vi/camera-check.html', '/guides/id/camera-check.html', '/guides/de/camera-check.html',
+  '/guides/pt/compress-jpeg-without-losing-quality-quality-vs-size.html', '/guides/es/compress-jpeg-without-losing-quality-quality-vs-size.html', '/guides/vi/compress-jpeg-without-losing-quality-quality-vs-size.html', '/guides/id/compress-jpeg-without-losing-quality-quality-vs-size.html', '/guides/de/compress-jpeg-without-losing-quality-quality-vs-size.html',
   '/guides/pt/compress-folder.html', // pt canonical of /guides/compactar-pasta.html
   '/guides/pt/compress-zip-file.html', // pt canonical of /guides/comprimir-arquivo-zip.html
   '/guides/pt/compress-folder-to-zip.html', // pt canonical of /guides/comprimir-pasta-zipada.html
@@ -984,6 +988,10 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/compress-folder-online.html', '/guides/es/compress-folder-online.html', '/guides/vi/compress-folder-online.html', '/guides/id/compress-folder-online.html', '/guides/de/compress-folder-online.html',
   '/guides/pt/csv-vs-json-data-formats.html', '/guides/es/csv-vs-json-data-formats.html', '/guides/vi/csv-vs-json-data-formats.html', '/guides/id/csv-vs-json-data-formats.html', '/guides/de/csv-vs-json-data-formats.html',
   '/guides/pt/dead-pixel-testing-guide.html', '/guides/es/dead-pixel-testing-guide.html', '/guides/vi/dead-pixel-testing-guide.html', '/guides/id/dead-pixel-testing-guide.html', '/guides/de/dead-pixel-testing-guide.html',
+  // plan-warm-pascal-v3 S2 batch 14 (2026-05-29) - 5 locale variants × 3 guides
+  '/guides/pt/current-millis.html', '/guides/es/current-millis.html', '/guides/vi/current-millis.html', '/guides/id/current-millis.html', '/guides/de/current-millis.html',
+  '/guides/pt/camera-check.html', '/guides/es/camera-check.html', '/guides/vi/camera-check.html', '/guides/id/camera-check.html', '/guides/de/camera-check.html',
+  '/guides/pt/compress-jpeg-without-losing-quality-quality-vs-size.html', '/guides/es/compress-jpeg-without-losing-quality-quality-vs-size.html', '/guides/vi/compress-jpeg-without-losing-quality-quality-vs-size.html', '/guides/id/compress-jpeg-without-losing-quality-quality-vs-size.html', '/guides/de/compress-jpeg-without-losing-quality-quality-vs-size.html',
   '/guides/en/heic-vs-jpg-vs-webp.html',
   '/guides/en/dead-pixel-testing-guide.html',
   '/guides/en/unix-timestamps-explained.html',
@@ -2369,6 +2377,10 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/compress-folder-online.html': 'guide/pt/compress-folder-online.jsp', '/guides/es/compress-folder-online.html': 'guide/es/compress-folder-online.jsp', '/guides/vi/compress-folder-online.html': 'guide/vi/compress-folder-online.jsp', '/guides/id/compress-folder-online.html': 'guide/id/compress-folder-online.jsp', '/guides/de/compress-folder-online.html': 'guide/de/compress-folder-online.jsp',
   '/guides/pt/csv-vs-json-data-formats.html': 'guide/pt/csv-vs-json-data-formats.jsp', '/guides/es/csv-vs-json-data-formats.html': 'guide/es/csv-vs-json-data-formats.jsp', '/guides/vi/csv-vs-json-data-formats.html': 'guide/vi/csv-vs-json-data-formats.jsp', '/guides/id/csv-vs-json-data-formats.html': 'guide/id/csv-vs-json-data-formats.jsp', '/guides/de/csv-vs-json-data-formats.html': 'guide/de/csv-vs-json-data-formats.jsp',
   '/guides/pt/dead-pixel-testing-guide.html': 'guide/pt/dead-pixel-testing-guide.jsp', '/guides/es/dead-pixel-testing-guide.html': 'guide/es/dead-pixel-testing-guide.jsp', '/guides/vi/dead-pixel-testing-guide.html': 'guide/vi/dead-pixel-testing-guide.jsp', '/guides/id/dead-pixel-testing-guide.html': 'guide/id/dead-pixel-testing-guide.jsp', '/guides/de/dead-pixel-testing-guide.html': 'guide/de/dead-pixel-testing-guide.jsp',
+  // plan-warm-pascal-v3 S2 batch 14 (2026-05-29) - 5 locale variants × 3 guides
+  '/guides/pt/current-millis.html': 'guide/pt/current-millis.jsp', '/guides/es/current-millis.html': 'guide/es/current-millis.jsp', '/guides/vi/current-millis.html': 'guide/vi/current-millis.jsp', '/guides/id/current-millis.html': 'guide/id/current-millis.jsp', '/guides/de/current-millis.html': 'guide/de/current-millis.jsp',
+  '/guides/pt/camera-check.html': 'guide/pt/camera-check.jsp', '/guides/es/camera-check.html': 'guide/es/camera-check.jsp', '/guides/vi/camera-check.html': 'guide/vi/camera-check.jsp', '/guides/id/camera-check.html': 'guide/id/camera-check.jsp', '/guides/de/camera-check.html': 'guide/de/camera-check.jsp',
+  '/guides/pt/compress-jpeg-without-losing-quality-quality-vs-size.html': 'guide/pt/compress-jpeg-without-losing-quality-quality-vs-size.jsp', '/guides/es/compress-jpeg-without-losing-quality-quality-vs-size.html': 'guide/es/compress-jpeg-without-losing-quality-quality-vs-size.jsp', '/guides/vi/compress-jpeg-without-losing-quality-quality-vs-size.html': 'guide/vi/compress-jpeg-without-losing-quality-quality-vs-size.jsp', '/guides/id/compress-jpeg-without-losing-quality-quality-vs-size.html': 'guide/id/compress-jpeg-without-losing-quality-quality-vs-size.jsp', '/guides/de/compress-jpeg-without-losing-quality-quality-vs-size.html': 'guide/de/compress-jpeg-without-losing-quality-quality-vs-size.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
