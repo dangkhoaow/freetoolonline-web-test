@@ -1,0 +1,87 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>So Dai Nay Co Phai La Timestamp? Mili Giay vs Giay</b></h1>
+    <p><em>Cap nhat lan cuoi 2026-05-03. Ban dan mot so 10, 13, 16 hoac 19 chu so tu log may chu, phan hoi API hoac hang co so du lieu, va bay gio can biet do la gi. Huong dan nay la bai kiem tra 30 giay - dem chu so, kiem tra nam, dinh tuyen den trinh chuyen doi dung.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Cau tra loi trong 30 giay.</b> Dem cac chu so trong so. <b>10 chu so</b> &rarr; Unix <i>giay</i> (dan vao <a href="/utility-tools/convert-time-in-millisecond-to-date.html">trinh chuyen doi mili giay sang ngay</a> sau khi nhan voi 1000, hoac dung bat ky cong cu giay-sang-ngay). <b>13 chu so</b> &rarr; Unix <i>mili giay</i> (dan thang vao <a href="/utility-tools/convert-time-in-millisecond-to-date.html">trinh chuyen doi mili giay sang ngay</a>). <b>16 chu so</b> &rarr; micro giay (hiem; thuong la telemetry). <b>19 chu so</b> &rarr; nano giay (hiem; thuong la tracing do chinh xac cao). Bat ky so dem khac va so co the la mot ID, khong phai timestamp.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Bai kiem tra 30 giay: dem chu so</b></h2>
+    <p>Cac dinh dang timestamp Unix chu yeu ma hoa thoi gian nhu mot so dem "tick tu 1970-01-01 00:00:00 UTC". Kich thuoc tick khac nhau - giay, mili giay, micro giay, nano giay - va dieu do thay doi so chu so ma so co o bat ky luc nao trong 2026. Hom nay (2026), day la quy tac dem chu so:</p>
+    <div class="w3-responsive">
+        <table class="w3-table-all w3-small">
+            <tr><th>Chu so</th><th>Y nghia co kha nang nhat</th><th>Noi ban thuong thay</th><th>Chuyen doi voi</th></tr>
+            <tr><td>10</td><td>Unix <b>giay</b></td><td>Unix <code>date +%s</code>, PHP <code>time()</code>, Python <code>time.time()</code> da cat, Go <code>time.Now().Unix()</code>, hau het cac dinh dang log may chu.</td><td><a href="/utility-tools/convert-time-in-millisecond-to-date.html">Nhan voi 1000 va dan vao trinh chuyen doi mili giay</a>, hoac dung mot cong cu giay-sang-ngay chuyen biet.</td></tr>
+            <tr><td>13</td><td>Unix <b>mili giay</b></td><td>JavaScript <code>Date.now()</code>, Java <code>System.currentTimeMillis()</code>, hau het JSON API, ghi Firebase / Firestore, ID tin nhan Slack / Discord duoc ma hoa nhu ms.</td><td><a href="/utility-tools/convert-time-in-millisecond-to-date.html">Dan thang vao trinh chuyen doi mili giay sang ngay</a>.</td></tr>
+            <tr><td>16</td><td>Unix <b>micro giay</b></td><td>PostgreSQL <code>now()</code>, Python <code>time.time_ns() // 1000</code>, trace OpenTelemetry, BigQuery <code>CURRENT_TIMESTAMP()</code>.</td><td>Chia cho 1000 va xu ly ket qua nhu mili giay.</td></tr>
+            <tr><td>19</td><td>Unix <b>nano giay</b></td><td>Go <code>time.Now().UnixNano()</code>, trace Prometheus, offset Kafka, timestamp su kien eBPF.</td><td>Chia cho 1.000.000 va xu ly ket qua nhu mili giay.</td></tr>
+            <tr><td>11, 12, 14, 15, 17, 18</td><td>Co le <b>khong phai timestamp</b></td><td>ID tuan tu, tien to ID Snowflake, so tai khoan, bien the so dien thoai, so dinh tuyen tai khoan.</td><td>Xem "Khi so khong phai timestamp" ben duoi.</td></tr>
+        </table>
+    </div>
+
+    <h2 class="text-uppercase"><b>Vi sao hau het cac so ban thay tren web la mili giay</b></h2>
+    <p><code>Date.now()</code> cua JavaScript, <code>System.currentTimeMillis()</code> cua Java, va hau het cac backend hien dai phat JSON mac dinh la mili giay tu epoch Unix. Khoanh khac do - 2026-05-03 09:38:00 UTC - la <code>1777800999</code> trong giay (10 chu so) nhung <code>1777800999000</code> trong mili giay (13 chu so). Dang 13 chu so xuat hien trong phan hoi mang, console dev-tool trinh duyet, dong log va dashboard nhieu hon bat ky dang timestamp nao khac, do la ly do cau hoi pho bien nhat cua doc gia ve loai timestamp nay la "day la mot so 13 chu so, do la ngay nao?"</p>
+    <p>Quan sat do cho ban mot kiem tra nhanh: neu so cua ban co 13 chu so va bat dau bang <code>1777</code>, no gan nhu chac chan la mot mili giay Unix tu thang 5/2026. Neu no bat dau bang <code>16</code> hoac <code>17</code> trong 2026, no o dung phan vung. Neu no bat dau bang <code>1</code> theo sau bat ky cai gi (vi du <code>1234567890123</code>), ban van nen chuyen doi no thanh ngay va kiem tra nam truoc khi gia dinh - du lieu kiem tra bogus thuong chon cac so vanity nhu <code>1234567890</code> ma render thanh 2009 (thu sau 13 thang 2).</p>
+
+    <h2 class="text-uppercase"><b>Khi so KHONG phai la timestamp</b></h2>
+    <p>Mot so so dai trong giong timestamp nhung khong phai:</p>
+    <ul>
+        <li><b>ID Snowflake / Twitter / Discord (thuong 18-19 chu so).</b> Chung ma hoa mot timestamp trong cac bit cao nhung cac bit thap la ID worker va counter tuan tu; xu ly toan bo so 19 chu so nhu mot nano giay Unix se tao ra mot ngay sai dien rong. Giai ma Snowflake doi hoi mot bit-shift, khong phai mot phep chia.</li>
+        <li><b>UUIDv7 (32 chu so hex, nhung 12 ky tu hex dau ma hoa mili giay).</b> Neu ban co 32 ky tu hex duoc dinh dang voi dau gach noi, do la mot UUID, khong phai timestamp - chi chuyen doi 48 bit dau neu ban can thoi gian nhung.</li>
+        <li><b>ID tuan tu BIGINT co so du lieu.</b> Day la cac so nguyen tu tang va khong co thanh phan thoi gian; chung phat trien den khoang 12-13 chu so khi chuoi tien len. Kiem tra nhanh: neu cung mot cot tren cac hang lien ke khac nhau 1 (hoac mot buoc nho co the du doan), do la mot chuoi, khong phai timestamp.</li>
+        <li><b>So dien thoai luu duoi dang so nguyen.</b> Mot so 10-12 chu so bat dau bang mot tien to ma quoc gia (vi du <code>1212</code> cho New York) co the la so dien thoai duoc render khong co dau phan cach. Chuyen doi va kiem tra: neu nam ket qua truoc 1970 hoac sau 2100, khong phai mot timestamp Unix.</li>
+        <li><b>So tai khoan / don hang.</b> Cac so kieu padding nhu <code>1000000123</code> (10 chu so nhung khong phai gia tri giay Unix) thuong co mot tien to chieu rong co dinh phan boi - chung khong tang deu theo thoi gian.</li>
+    </ul>
+    <p>Cach khu nhap nhang re nhat la <a href="/utility-tools/convert-time-in-millisecond-to-date.html">dan so vao trinh chuyen doi mili giay</a> va xem nam. Neu ket qua o 1970 (so thuc su la giay, ban xu ly nhu ms) hoac trong mot nam tuong lai xa nhu 56.000 (so la mili giay, ban xu ly nhu giay), so dem chu so se cho ban biet huong nao chuyen doi. Neu ket qua hop ly (2025-2027 cho du lieu truc tuyen, 1990-2025 cho du lieu lich su), ban co cau tra loi.</p>
+
+    <h2 class="text-uppercase"><b>Sach huong dan chuyen doi nhanh</b></h2>
+    <p>Ba buoc, khong toan hoc:</p>
+    <ol>
+        <li><b>Dem chu so.</b> 10 chu so = giay; 13 = mili giay; 16 = micro giay; 19 = nano giay; nguoc lai xem phan truoc.</li>
+        <li><b>Dan vao trinh chuyen doi dung.</b> So 13 chu so di thang vao <a href="/utility-tools/convert-time-in-millisecond-to-date.html">trinh chuyen doi mili giay sang ngay</a>. Giay 10 chu so: them ba so khong (vi vay <code>1777800999</code> tro thanh <code>1777800999000</code>) va dan. Micro giay 16 chu so: bo ba chu so cuoi. Nano giay 19 chu so: bo sau chu so cuoi. Trinh chuyen doi hien thi ngay UTC ket qua va ngay dia phuong cua ban.</li>
+        <li><b>Kiem tra nam.</b> Neu nam khong mong doi (1970 hoac 56000), ban da chuyen doi sai huong. Doc lai so dem chu so va thu lai. Neu nam hop ly, ban co gia tri dung.</li>
+    </ol>
+    <p>Voi van de nguoc lai - <i>"cho toi mili giay Unix hien tai de toi co the so sanh"</i> - mo <a href="/utility-tools/get-time-in-millisecond.html">cong cu mili giay Unix hien tai</a>; no chay truc tuyen va sao chep vao clipboard. So sanh hai timestamp la cach nhanh nhat de xac nhan xem so cua ban la "bay gio-ish" hay du lieu cu.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <p><b>Con so 11 hoac 12 chu so thi sao? Chung trong gan giong giay.</b><br/>
+    Giay Unix se khong tao ra 11 chu so cho den nam 2286. Mili giay Unix co 12 chu so giua 2001 (<code>10^12</code> ms = 31,7 nam sau 1970) va 2286. Vi vay mot so 12 chu so cua thoi dai hien tai co kha nang la mot ID tuan tu hoac mot so dien thoai; mot so 11 chu so gan nhu chac chan khong phai mot gia tri Unix hien tai cua bat ky loai nao.</p>
+
+    <details class="faq-item">
+  <summary>So am hoac bat dau bang dau tru. Co phai timestamp khong?</summary>
+  <p>Co - timestamp Unix am la cac ngay truoc 1970-01-01 UTC. <code>-1000000000</code> giay la 1938-04-24. Hau het cac thu vien chuan ngon ngu xu ly giay am dung; mot so cong cu web tu choi chung. <a href="/utility-tools/convert-time-in-millisecond-to-date.html">Trinh chuyen doi mili giay</a> se chap nhan dau vao am.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Vi sao cung mot ngay cho mot so khac nhau tren hai he thong?</summary>
+  <p>Chinh so do la khong mui gio (thoi gian Unix luon la UTC). Cai khac nhau la cach moi he thong <i>render</i> so thanh chuoi de doc - mot cong cu co the chon UTC, mot cai khac chon mui gio dia phuong cua ban. So nguyen Unix co ban giong nhau. Neu hai he thong bat dong y ve so cho cung khoanh khac, mot trong chung dang dung mot don vi khac (giay vs mili giay) hoac mot epoch khac (vi du Excel su dung 1900-01-01 lam epoch cua no, khong phai thoi gian Unix).</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Toi co the lay giay phan tu mot gia tri Unix 10 chu so khong?</summary>
+  <p>Khong - mot gia tri giay 10 chu so co do phan giai 1 giay. Giay phan (do chinh xac mili giay / micro giay) doi hoi cac dinh dang dai hon. Neu du lieu cua ban can do chinh xac duoi giay, ban phai luu mili giay (13 chu so), micro giay (16) hoac nano giay (19). Luu chi giay nguyen ne bo do chinh xac.</p>
+</details>
+
+    <p><b>JavaScript <code>new Date().valueOf()</code> co giong <code>Date.now()</code> khong?</b><br/>
+    Co. Ca hai tra ve mili giay Unix. <code>Date.now()</code> la dang hien dai, uu tien; <code>new Date().valueOf()</code> cu hon, cham hon (no cap phat mot doi tuong Date) nhung tao ra cung mot so.</p>
+
+    <h2 class="text-uppercase"><b>Lien quan</b></h2>
+    <ul>
+        <li><a href="/utility-tools/convert-time-in-millisecond-to-date.html">Chuyen Doi Mili Giay Sang Ngay</a> - cong cu hanh dong cho so 13 chu so; nhan giay 10 chu so voi 1000 truoc.</li>
+        <li><a href="/utility-tools/get-time-in-millisecond.html">Lay Mili Giay Unix Hien Tai</a> - ticker truc tuyen; huu ich de so sanh so cua ban voi "bay gio".</li>
+        <li><a href="/guides/unix-timestamps-explained.html">Timestamp Unix Giai Thich</a> - tham chieu dinh dang: epoch, ISO 8601, RFC 2822, UTC vs gio dia phuong, ba cai bay timestamp pho bien.</li>
+        <li><a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 khi nao bam ham</a> - neu "so" cua ban hoa ra la 32 hoac 64 ky tu hex, do la mot hash, khong phai timestamp.</li>
+        <li><a href="/guides/csv-vs-json-data-formats.html">Dinh dang du lieu CSV vs JSON</a> - dinh dang ma timestamp cua ban den thuong dua y ve cach no duoc ma hoa (ISO 8601 trong CSV, mili giay trong JSON).</li>
+    </ul>
+</div>

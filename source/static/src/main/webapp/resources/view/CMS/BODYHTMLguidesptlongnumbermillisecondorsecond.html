@@ -1,0 +1,87 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Este Numero Longo e um Timestamp? Milissegundos vs Segundos</b></h1>
+    <p><em>Ultima revisao 2026-05-03. Voce colou um numero de 10, 13, 16 ou 19 digitos de um log de servidor, de uma resposta de API ou de uma linha de banco de dados, e agora precisa saber o que e. Este guia e o teste de 30 segundos - conte os digitos, faca um sanity-check do ano, encaminhe para o conversor certo.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Resposta em 30 segundos.</b> Conte os digitos no numero. <b>10 digitos</b> &rarr; Unix <i>segundos</i> (cole em <a href="/utility-tools/convert-time-in-millisecond-to-date.html">o conversor de milissegundos para data</a> depois de multiplicar por 1000, ou use qualquer ferramenta de segundos para data). <b>13 digitos</b> &rarr; Unix <i>milissegundos</i> (cole direto em <a href="/utility-tools/convert-time-in-millisecond-to-date.html">o conversor de milissegundos para data</a>). <b>16 digitos</b> &rarr; microssegundos (raro; geralmente telemetria). <b>19 digitos</b> &rarr; nanossegundos (raro; geralmente tracing de alta precisao). Qualquer outra contagem e o numero provavelmente e um ID, nao um timestamp.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>O teste de 30 segundos: conte os digitos</b></h2>
+    <p>Os formatos dominantes de timestamp Unix codificam tempo como uma contagem de "ticks desde 1970-01-01 00:00:00 UTC". O tamanho do tick difere - segundos, milissegundos, microssegundos, nanossegundos - e isso muda quantos digitos o numero tem em qualquer momento dado em 2026. Hoje (2026), aqui esta a regra pratica de contagem de digitos:</p>
+    <div class="w3-responsive">
+        <table class="w3-table-all w3-small">
+            <tr><th>Digitos</th><th>Significado mais provavel</th><th>Onde voce normalmente ve</th><th>Converter com</th></tr>
+            <tr><td>10</td><td>Unix <b>segundos</b></td><td>Unix <code>date +%s</code>, PHP <code>time()</code>, Python <code>time.time()</code> truncado, Go <code>time.Now().Unix()</code>, a maioria dos formatos de log de servidor.</td><td><a href="/utility-tools/convert-time-in-millisecond-to-date.html">Multiplique por 1000 e cole no conversor de milissegundos</a>, ou use uma ferramenta dedicada de segundos para data.</td></tr>
+            <tr><td>13</td><td>Unix <b>milissegundos</b></td><td>JavaScript <code>Date.now()</code>, Java <code>System.currentTimeMillis()</code>, a maioria das APIs JSON, escritas Firebase / Firestore, IDs de mensagens Slack / Discord codificados como ms.</td><td><a href="/utility-tools/convert-time-in-millisecond-to-date.html">Cole direto no conversor de milissegundos para data</a>.</td></tr>
+            <tr><td>16</td><td>Unix <b>microssegundos</b></td><td>PostgreSQL <code>now()</code>, Python <code>time.time_ns() // 1000</code>, traces OpenTelemetry, BigQuery <code>CURRENT_TIMESTAMP()</code>.</td><td>Divida por 1000 e trate o resultado como milissegundos.</td></tr>
+            <tr><td>19</td><td>Unix <b>nanossegundos</b></td><td>Go <code>time.Now().UnixNano()</code>, traces Prometheus, offsets Kafka, timestamps de evento eBPF.</td><td>Divida por 1.000.000 e trate o resultado como milissegundos.</td></tr>
+            <tr><td>11, 12, 14, 15, 17, 18</td><td>Provavelmente <b>nao e um timestamp</b></td><td>ID de sequencia, prefixo de ID Snowflake, numero de conta, variante de numero de telefone, numero de roteamento de conta.</td><td>Veja "Quando o numero nao e um timestamp" abaixo.</td></tr>
+        </table>
+    </div>
+
+    <h2 class="text-uppercase"><b>Por que a maioria dos numeros que voce ve na web sao milissegundos</b></h2>
+    <p>O <code>Date.now()</code> do JavaScript, o <code>System.currentTimeMillis()</code> do Java e a maioria dos backends modernos que emitem JSON sao padronizados para milissegundos desde o epoch Unix. Esse momento - 2026-05-03 09:38:00 UTC - e <code>1777800999</code> em segundos (10 digitos) mas <code>1777800999000</code> em milissegundos (13 digitos). A forma de 13 digitos aparece em respostas de rede, consoles de dev-tool do navegador, linhas de log e dashboards mais que qualquer outra forma de timestamp, que e por que a pergunta de leitor mais comum para esse tipo de timestamp e "este e um numero de 13 digitos, que data e essa?"</p>
+    <p>Essa observacao da um sanity-check rapido: se seu numero tem 13 digitos e comeca com <code>1777</code>, e quase certamente um milissegundo Unix de maio de 2026. Se ele comeca com <code>16</code> ou <code>17</code> em 2026, esta no campo certo. Se ele comeca com <code>1</code> seguido de qualquer coisa (por exemplo <code>1234567890123</code>), voce ainda deveria converte-lo para uma data e verificar o ano antes de assumir - dados de teste bogus frequentemente escolhem numeros de vaidade como <code>1234567890</code> que renderiza como 2009 (sexta-feira 13 de fevereiro).</p>
+
+    <h2 class="text-uppercase"><b>Quando o numero NAO e um timestamp</b></h2>
+    <p>Varios numeros longos parecem timestamps mas nao sao:</p>
+    <ul>
+        <li><b>IDs Snowflake / Twitter / Discord (normalmente 18-19 digitos).</b> Eles codificam um timestamp em seus bits altos mas os bits baixos sao IDs de worker e contadores de sequencia; tratar o numero inteiro de 19 digitos como um nanossegundo Unix produzira uma data muito errada. Decodificar Snowflake requer um bit-shift, nao uma divisao.</li>
+        <li><b>UUIDv7 (32 digitos hex, mas os primeiros 12 caracteres hex codificam milissegundos).</b> Se voce tem 32 caracteres hex formatados com hifens, e um UUID, nao um timestamp - converta apenas os primeiros 48 bits se precisar do tempo embutido.</li>
+        <li><b>IDs de sequencia BIGINT de banco de dados.</b> Esses sao inteiros auto-incrementados e nao tem componente de tempo; eles crescem ate a faixa de 12-13 digitos conforme a sequencia avanca. Verificacao rapida: se a mesma coluna em linhas adjacentes difere por 1 (ou por um pequeno passo previsivel), e uma sequencia, nao um timestamp.</li>
+        <li><b>Numeros de telefone armazenados como inteiros.</b> Um numero de 10-12 digitos que comeca com um prefixo de codigo de pais (por exemplo <code>1212</code> para Nova York) pode ser um numero de telefone renderizado sem separadores. Converta e verifique: se o ano resultante e antes de 1970 ou depois de 2100, nao e um timestamp Unix.</li>
+        <li><b>Numeros de conta / pedido.</b> Numeros de estilo de preenchimento como <code>1000000123</code> (10 digitos mas nao um valor de segundo Unix) normalmente tem um prefixo de largura fixa que os entrega - eles nao crescem de forma constante ao longo do tempo.</li>
+    </ul>
+    <p>A desambiguacao mais barata e <a href="/utility-tools/convert-time-in-millisecond-to-date.html">colar o numero no conversor de milissegundos</a> e olhar o ano. Se o resultado e em 1970 (numero era na verdade segundos, voce o tratou como ms) ou em algum ano futuro distante como 56.000 (numero era milissegundos, voce o tratou como segundos), a contagem de digitos vai te dizer em que direcao converter. Se o resultado e plausivel (2025-2027 para dados ao vivo, 1990-2025 para dados historicos), voce tem sua resposta.</p>
+
+    <h2 class="text-uppercase"><b>Playbook rapido de conversao</b></h2>
+    <p>Tres passos, sem matematica:</p>
+    <ol>
+        <li><b>Conte os digitos.</b> 10 digitos = segundos; 13 = milissegundos; 16 = microssegundos; 19 = nanossegundos; caso contrario veja a secao anterior.</li>
+        <li><b>Cole no conversor certo.</b> Numeros de 13 digitos vao direto para <a href="/utility-tools/convert-time-in-millisecond-to-date.html">o conversor de milissegundos para data</a>. Segundos de 10 digitos: anexe tres zeros (entao <code>1777800999</code> vira <code>1777800999000</code>) e cole. Microssegundos de 16 digitos: descarte os tres ultimos digitos. Nanossegundos de 19 digitos: descarte os seis ultimos digitos. O conversor mostra a data UTC resultante e sua data local.</li>
+        <li><b>Sanity-check o ano.</b> Se o ano e inesperado (1970 ou 56000), voce converteu na direcao errada. Releia a contagem de digitos e tente de novo. Se o ano e plausivel, voce tem o valor certo.</li>
+    </ol>
+    <p>Para o problema inverso - <i>"me da os milissegundos Unix atuais para que eu possa comparar"</i> - abra <a href="/utility-tools/get-time-in-millisecond.html">a ferramenta de milissegundos Unix atuais</a>; ela tica ao vivo e copia para a area de transferencia. Comparar dois timestamps e o jeito mais rapido de confirmar se seu numero e "agora-ish" ou dados velhos.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <p><b>E sobre numeros de 11 ou 12 digitos? Eles parecem quase segundos.</b><br/>
+    Segundos Unix nao produzirao 11 digitos ate o ano 2286. Milissegundos Unix tinham 12 digitos entre 2001 (<code>10^12</code> ms = 31,7 anos depois de 1970) e 2286. Entao um numero de 12 digitos da era atual e mais provavelmente um ID de sequencia ou um numero de telefone; um numero de 11 digitos quase certamente nao e um valor Unix atual de nenhum tipo.</p>
+
+    <details class="faq-item">
+  <summary>O numero e negativo ou comeca com um sinal de menos. E um timestamp?</summary>
+  <p>Sim - timestamps Unix negativos sao datas antes de 1970-01-01 UTC. <code>-1000000000</code> segundos e 1938-04-24. A maioria das bibliotecas padrao de linguagens lida com segundos negativos corretamente; algumas ferramentas web os rejeitam. <a href="/utility-tools/convert-time-in-millisecond-to-date.html">O conversor de milissegundos</a> aceitara entradas negativas.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Por que a mesma data da um numero diferente em dois sistemas?</summary>
+  <p>O numero em si e sem fuso horario (tempo Unix e sempre UTC). O que difere e como cada sistema <i>renderiza</i> o numero em uma string legivel - uma ferramenta pode escolher UTC, outra seu fuso local. O inteiro Unix subjacente e o mesmo. Se dois sistemas discordam do numero para o mesmo momento, um deles esta usando uma unidade diferente (segundos vs milissegundos) ou um epoch diferente (por exemplo Excel usa 1900-01-01 como seu epoch, que nao e tempo Unix).</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Posso obter segundos fracionarios de um valor Unix de 10 digitos?</summary>
+  <p>Nao - um valor de segundos de 10 digitos tem resolucao de 1 segundo. Segundos fracionarios (precisao de milissegundos / microssegundos) requerem os formatos mais longos. Se seus dados precisam de precisao sub-segundo, voce deve estar armazenando milissegundos (13 digitos), microssegundos (16) ou nanossegundos (19). Armazenar apenas os segundos inteiros joga fora a precisao.</p>
+</details>
+
+    <p><b>O JavaScript <code>new Date().valueOf()</code> e o mesmo que <code>Date.now()</code>?</b><br/>
+    Sim. Ambos retornam milissegundos Unix. <code>Date.now()</code> e a forma moderna, preferida; <code>new Date().valueOf()</code> e mais antigo, mais lento (aloca um objeto Date) mas produz o mesmo numero.</p>
+
+    <h2 class="text-uppercase"><b>Relacionado</b></h2>
+    <ul>
+        <li><a href="/utility-tools/convert-time-in-millisecond-to-date.html">Converter Milissegundos em Data</a> - a ferramenta de acao para numeros de 13 digitos; multiplique segundos de 10 digitos por 1000 primeiro.</li>
+        <li><a href="/utility-tools/get-time-in-millisecond.html">Obter Milissegundos Unix Atuais</a> - ticker ao vivo; util para comparar seu numero contra "agora".</li>
+        <li><a href="/guides/unix-timestamps-explained.html">Timestamps Unix Explicados</a> - a referencia de formato: epoch, ISO 8601, RFC 2822, UTC vs hora local, as tres armadilhas comuns de timestamp.</li>
+        <li><a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 quando hashear</a> - se seu "numero" acabar sendo 32 ou 64 caracteres hex, e um hash, nao um timestamp.</li>
+        <li><a href="/guides/csv-vs-json-data-formats.html">Formatos de dados CSV vs JSON</a> - o formato em que seu timestamp chegou frequentemente dica sobre como foi codificado (ISO 8601 em CSV, milissegundos em JSON).</li>
+    </ul>
+</div>

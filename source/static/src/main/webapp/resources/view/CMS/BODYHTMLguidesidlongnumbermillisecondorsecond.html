@@ -1,0 +1,87 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Apakah Angka Panjang Ini Timestamp? Milidetik vs Detik</b></h1>
+    <p><em>Terakhir ditinjau 2026-05-03. Anda menempelkan angka 10, 13, 16, atau 19 digit dari log server, respons API, atau baris basis data, dan sekarang perlu tahu apa itu. Panduan ini adalah tes 30 detik - hitung digit, periksa kewajaran tahun, arahkan ke konverter yang tepat.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Jawaban 30 detik.</b> Hitung digit dalam angka. <b>10 digit</b> &rarr; Unix <i>detik</i> (tempel ke <a href="/utility-tools/convert-time-in-millisecond-to-date.html">konverter milidetik ke tanggal</a> setelah mengalikan dengan 1000, atau gunakan alat detik-ke-tanggal apa pun). <b>13 digit</b> &rarr; Unix <i>milidetik</i> (tempel langsung ke <a href="/utility-tools/convert-time-in-millisecond-to-date.html">konverter milidetik ke tanggal</a>). <b>16 digit</b> &rarr; mikrodetik (jarang; biasanya telemetri). <b>19 digit</b> &rarr; nanodetik (jarang; biasanya tracing presisi tinggi). Hitungan lain dan angka itu mungkin ID, bukan timestamp.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Tes 30 detik: hitung digit</b></h2>
+    <p>Format timestamp Unix dominan mengenkode waktu sebagai hitungan "tick sejak 1970-01-01 00:00:00 UTC". Ukuran tick berbeda - detik, milidetik, mikrodetik, nanodetik - dan itu mengubah berapa digit yang dimiliki angka pada saat tertentu di 2026. Hari ini (2026), berikut aturan praktis hitungan digit:</p>
+    <div class="w3-responsive">
+        <table class="w3-table-all w3-small">
+            <tr><th>Digit</th><th>Arti paling mungkin</th><th>Di mana biasanya terlihat</th><th>Konversi dengan</th></tr>
+            <tr><td>10</td><td>Unix <b>detik</b></td><td>Unix <code>date +%s</code>, PHP <code>time()</code>, Python <code>time.time()</code> dipangkas, Go <code>time.Now().Unix()</code>, sebagian besar format log server.</td><td><a href="/utility-tools/convert-time-in-millisecond-to-date.html">Kalikan dengan 1000 dan tempel ke konverter milidetik</a>, atau gunakan alat khusus detik-ke-tanggal.</td></tr>
+            <tr><td>13</td><td>Unix <b>milidetik</b></td><td>JavaScript <code>Date.now()</code>, Java <code>System.currentTimeMillis()</code>, sebagian besar API JSON, tulisan Firebase / Firestore, ID pesan Slack / Discord dienkode sebagai ms.</td><td><a href="/utility-tools/convert-time-in-millisecond-to-date.html">Tempel langsung ke konverter milidetik ke tanggal</a>.</td></tr>
+            <tr><td>16</td><td>Unix <b>mikrodetik</b></td><td>PostgreSQL <code>now()</code>, Python <code>time.time_ns() // 1000</code>, trace OpenTelemetry, BigQuery <code>CURRENT_TIMESTAMP()</code>.</td><td>Bagi dengan 1000 dan perlakukan hasilnya sebagai milidetik.</td></tr>
+            <tr><td>19</td><td>Unix <b>nanodetik</b></td><td>Go <code>time.Now().UnixNano()</code>, trace Prometheus, offset Kafka, timestamp acara eBPF.</td><td>Bagi dengan 1.000.000 dan perlakukan hasilnya sebagai milidetik.</td></tr>
+            <tr><td>11, 12, 14, 15, 17, 18</td><td>Mungkin <b>bukan timestamp</b></td><td>ID urutan, prefix ID Snowflake, nomor akun, varian nomor telepon, nomor routing akun.</td><td>Lihat "Ketika angka bukan timestamp" di bawah.</td></tr>
+        </table>
+    </div>
+
+    <h2 class="text-uppercase"><b>Mengapa sebagian besar angka yang Anda lihat di web adalah milidetik</b></h2>
+    <p><code>Date.now()</code> JavaScript, <code>System.currentTimeMillis()</code> Java, dan sebagian besar backend modern yang memancarkan JSON default ke milidetik sejak epoch Unix. Momen itu - 2026-05-03 09:38:00 UTC - adalah <code>1777800999</code> dalam detik (10 digit) tetapi <code>1777800999000</code> dalam milidetik (13 digit). Bentuk 13 digit berakhir di respons jaringan, konsol dev-tool peramban, baris log, dan dashboard lebih dari bentuk timestamp lain, itulah mengapa pertanyaan pembaca paling umum untuk jenis timestamp ini adalah "ini angka 13 digit, tanggal berapa?"</p>
+    <p>Pengamatan itu memberi pemeriksaan cepat: jika angka Anda 13 digit dan dimulai dengan <code>1777</code>, hampir pasti milidetik Unix dari Mei 2026. Jika dimulai dengan <code>16</code> atau <code>17</code> di 2026, ada di kisaran yang tepat. Jika dimulai dengan <code>1</code> diikuti apa pun (misalnya <code>1234567890123</code>), Anda masih harus mengonversinya ke tanggal dan memeriksa tahun sebelum berasumsi - data uji palsu sering memilih angka kesombongan seperti <code>1234567890</code> yang dirender sebagai 2009 (Jumat 13 Februari).</p>
+
+    <h2 class="text-uppercase"><b>Ketika angka BUKAN timestamp</b></h2>
+    <p>Beberapa angka panjang terlihat seperti timestamp tetapi bukan:</p>
+    <ul>
+        <li><b>ID Snowflake / Twitter / Discord (biasanya 18-19 digit).</b> Ini mengenkode timestamp di bit tinggi tetapi bit rendah adalah ID worker dan penghitung urutan; memperlakukan seluruh angka 19 digit sebagai nanodetik Unix akan menghasilkan tanggal yang sangat salah. Decoding Snowflake memerlukan pergeseran bit, bukan pembagian.</li>
+        <li><b>UUIDv7 (32 digit hex, tetapi 12 karakter hex pertama mengenkode milidetik).</b> Jika Anda punya 32 karakter hex yang diformat dengan tanda hubung, itu UUID, bukan timestamp - konversi hanya 48 bit pertama jika Anda perlu waktu yang dilekatkan.</li>
+        <li><b>ID urutan BIGINT basis data.</b> Ini adalah integer yang naik otomatis dan tidak memiliki komponen waktu; mereka kebetulan tumbuh ke kisaran 12-13 digit saat urutan maju. Pemeriksaan cepat: jika kolom yang sama pada baris berdekatan berbeda 1 (atau langkah kecil yang dapat diprediksi), itu adalah urutan, bukan timestamp.</li>
+        <li><b>Nomor telepon disimpan sebagai integer.</b> Angka 10-12 digit yang dimulai dengan prefix kode negara (misalnya <code>1212</code> untuk New York) mungkin nomor telepon yang dirender tanpa pemisah. Konversi dan periksa: jika tahun yang dihasilkan sebelum 1970 atau setelah 2100, itu bukan timestamp Unix.</li>
+        <li><b>Nomor akun / pesanan.</b> Angka gaya padding seperti <code>1000000123</code> (10 digit tetapi bukan nilai detik Unix) biasanya memiliki prefix lebar tetap yang mengkhianatinya - mereka tidak tumbuh secara stabil dari waktu ke waktu.</li>
+    </ul>
+    <p>Disambiguasi termurah adalah <a href="/utility-tools/convert-time-in-millisecond-to-date.html">menempelkan angka ke konverter milidetik</a> dan lihat tahunnya. Jika hasilnya di 1970 (angka sebenarnya detik, Anda perlakukan sebagai ms) atau di tahun masa depan yang jauh seperti 56.000 (angka adalah milidetik, Anda perlakukan sebagai detik), hitungan digit akan memberi tahu Anda ke arah mana untuk mengonversi. Jika hasilnya masuk akal (2025-2027 untuk data langsung, 1990-2025 untuk data historis), Anda punya jawabannya.</p>
+
+    <h2 class="text-uppercase"><b>Buku panduan konversi cepat</b></h2>
+    <p>Tiga langkah, tanpa matematika:</p>
+    <ol>
+        <li><b>Hitung digit.</b> 10 digit = detik; 13 = milidetik; 16 = mikrodetik; 19 = nanodetik; jika tidak lihat bagian sebelumnya.</li>
+        <li><b>Tempel ke konverter yang tepat.</b> Angka 13 digit langsung ke <a href="/utility-tools/convert-time-in-millisecond-to-date.html">konverter milidetik ke tanggal</a>. Detik 10 digit: tambahkan tiga nol (jadi <code>1777800999</code> menjadi <code>1777800999000</code>) dan tempel. Mikrodetik 16 digit: hapus tiga digit terakhir. Nanodetik 19 digit: hapus enam digit terakhir. Konverter menunjukkan tanggal UTC yang dihasilkan dan tanggal lokal Anda.</li>
+        <li><b>Periksa kewajaran tahun.</b> Jika tahunnya tidak terduga (1970 atau 56000), Anda mengonversi ke arah yang salah. Baca ulang hitungan digit dan coba lagi. Jika tahunnya masuk akal, Anda punya nilai yang tepat.</li>
+    </ol>
+    <p>Untuk masalah sebaliknya - <i>"berikan saya milidetik Unix saat ini agar saya bisa membandingkan"</i> - buka <a href="/utility-tools/get-time-in-millisecond.html">alat milidetik Unix saat ini</a>; berdetak langsung dan menyalin ke clipboard. Membandingkan dua timestamp adalah cara tercepat untuk mengonfirmasi apakah angka Anda "sekarang-ish" atau data lama.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <p><b>Bagaimana dengan angka 11 atau 12 digit? Mereka terlihat hampir seperti detik.</b><br/>
+    Detik Unix tidak akan menghasilkan 11 digit hingga tahun 2286. Milidetik Unix adalah 12 digit antara 2001 (<code>10^12</code> ms = 31,7 tahun setelah 1970) dan 2286. Jadi angka 12 digit era saat ini kemungkinan besar adalah ID urutan atau nomor telepon; angka 11 digit hampir pasti bukan nilai Unix saat ini dari jenis apa pun.</p>
+
+    <details class="faq-item">
+  <summary>Angkanya negatif atau dimulai dengan tanda minus. Apakah itu timestamp?</summary>
+  <p>Ya - timestamp Unix negatif adalah tanggal sebelum 1970-01-01 UTC. <code>-1000000000</code> detik adalah 1938-04-24. Sebagian besar pustaka standar bahasa menangani detik negatif dengan benar; beberapa alat web menolaknya. <a href="/utility-tools/convert-time-in-millisecond-to-date.html">Konverter milidetik</a> akan menerima input negatif.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Mengapa tanggal yang sama memberikan angka berbeda di dua sistem?</summary>
+  <p>Angka itu sendiri bebas zona waktu (waktu Unix selalu UTC). Yang berbeda adalah bagaimana setiap sistem <i>merender</i> angka menjadi string yang dapat dibaca - satu alat mungkin memilih UTC, yang lain zona lokal Anda. Integer Unix yang mendasari sama. Jika dua sistem tidak setuju tentang angka untuk momen yang sama, salah satunya menggunakan unit yang berbeda (detik vs milidetik) atau epoch yang berbeda (misalnya Excel menggunakan 1900-01-01 sebagai epoch-nya, yang bukan waktu Unix).</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Bisakah saya mendapatkan detik pecahan dari nilai Unix 10 digit?</summary>
+  <p>Tidak - nilai detik 10 digit memiliki resolusi 1 detik. Detik pecahan (presisi milidetik / mikrodetik) memerlukan format yang lebih panjang. Jika data Anda butuh presisi sub-detik, Anda harus menyimpan milidetik (13 digit), mikrodetik (16), atau nanodetik (19). Menyimpan hanya integer detik membuang presisi.</p>
+</details>
+
+    <p><b>Apakah JavaScript <code>new Date().valueOf()</code> sama dengan <code>Date.now()</code>?</b><br/>
+    Ya. Keduanya mengembalikan milidetik Unix. <code>Date.now()</code> adalah bentuk modern yang lebih disukai; <code>new Date().valueOf()</code> lebih tua, lebih lambat (mengalokasikan objek Date) tetapi menghasilkan angka yang sama.</p>
+
+    <h2 class="text-uppercase"><b>Terkait</b></h2>
+    <ul>
+        <li><a href="/utility-tools/convert-time-in-millisecond-to-date.html">Konversi Milidetik ke Tanggal</a> - alat aksi untuk angka 13 digit; kalikan detik 10 digit dengan 1000 lebih dulu.</li>
+        <li><a href="/utility-tools/get-time-in-millisecond.html">Dapatkan Milidetik Unix Saat Ini</a> - ticker langsung; berguna untuk membandingkan angka Anda dengan "sekarang".</li>
+        <li><a href="/guides/unix-timestamps-explained.html">Timestamp Unix Dijelaskan</a> - referensi format: epoch, ISO 8601, RFC 2822, UTC vs waktu lokal, tiga jebakan timestamp umum.</li>
+        <li><a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 kapan hash</a> - jika "angka" Anda ternyata 32 atau 64 karakter hex, itu hash, bukan timestamp.</li>
+        <li><a href="/guides/csv-vs-json-data-formats.html">Format data CSV vs JSON</a> - format tempat timestamp Anda datang sering memberi petunjuk tentang bagaimana ia dienkode (ISO 8601 di CSV, milidetik di JSON).</li>
+    </ul>
+</div>
