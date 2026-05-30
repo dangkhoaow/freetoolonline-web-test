@@ -1,0 +1,62 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Cara Membaca dan Membandingkan Hash MD5 dengan Benar: Huruf Besar, Spasi, Format Hex</b></h1>
+    <p><em>Terakhir ditinjau 2026-05-04. Panduan 30 detik untuk momen setelah Anda membuat hash di <a href="/developer-tools/md5-converter.html">MD5 Converter</a> (atau membacanya dari halaman download) dan perlu memastikan ia cocok dengan nilai yang diharapkan. Dua hash MD5 atau mewakili digest 16-byte yang sama atau tidak. Perbedaan huruf besar-kecil, spasi sekitarnya, byte-order mark tak terlihat, atau format dengan pemisah titik dua bersifat kosmetik - hash tetap sama. Karakter hex berbeda di mana pun, panjang total yang berbeda, atau karakter non-hex adalah perbedaan sebenarnya - input tidak sama.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Keputusan 30 detik.</b> Dua nilai MD5 cocok ketika, setelah mengubah keduanya menjadi huruf kecil dan menghapus spasi sekitarnya, 32 karakter hex cocok posisi-demi-posisi. <b>Perbedaan kosmetik (tetap cocok):</b> huruf besar vs kecil (`A1B2` dan `a1b2` adalah hex yang sama), spasi awal atau akhir dari salin-tempel yang ceroboh, BOM UTF-8 tak terlihat di awal saat disalin dari file teks, dan format dengan pemisah titik dua (`a1:b2:c3` vs `a1b2c3`). <b>Perbedaan sebenarnya (tidak cocok):</b> setiap digit hex yang berbeda, panjang total yang berbeda (string 40-karakter adalah SHA-1, bukan MD5; 64 karakter adalah SHA-256), dan karakter non-hex apa pun (hanya `0-9` dan `a-f`).</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Apa sebenarnya hash MD5 itu</b></h2>
+    <p>Hash MD5 adalah keluaran dari fungsi yang mengambil input apa saja - string teks, byte sebuah file, stream dari download - dan menghasilkan digest tetap 16-byte (128-bit). Byte adalah nilai kanonik: itulah "MD5" yang sebenarnya. String heksadesimal 32-karakter yang Anda lihat di layar hanyalah enkoding 16 byte tersebut yang bisa dibaca manusia (setiap byte menjadi dua karakter hex). Dua penulis dapat mengeja 16 byte yang sama sebagai `D41D8CD98F00B204E9800998ECF8427E` (huruf besar) atau `d41d8cd98f00b204e9800998ecf8427e` (huruf kecil) atau `d4:1d:8c:d9:8f:00:b2:04:e9:80:09:98:ec:f8:42:7e` (dipisah titik dua, umum di sebagian alat lawas) dan ketiganya adalah hash YANG SAMA. Bytenya sama.</p>
+    <p>Untuk membuat MD5 baru yang bisa Anda bandingkan dengan nilai yang diharapkan, tempel teks asli ke <a href="/developer-tools/md5-converter.html">MD5 Converter</a>: tempel string dan salin hasilnya. Jika input adalah file alih-alih string, lihat <a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - Kapan Hash</a> untuk pemilihan alat; aturan perbandingan di bawah sama di kedua arah.</p>
+
+    <h2 class="text-uppercase"><b>Empat ketidaksesuaian kosmetik yang tetap cocok</b></h2>
+    <p>Empat perbedaan umum di tingkat layar terlihat seperti ketidakcocokan tapi mewakili digest 16-byte yang sama. Jika Anda hanya melihat ini, hash cocok.</p>
+    <ul>
+        <li><b>Huruf besar vs kecil.</b> Hex tidak case-sensitive. `D41D8CD98F00B204E9800998ECF8427E` dan `d41d8cd98f00b204e9800998ecf8427e` adalah hash yang sama. Bentuk huruf kecil adalah konvensi kanonik yang digunakan kebanyakan alat modern, termasuk <a href="/developer-tools/md5-converter.html">MD5 Converter</a> gratis; beberapa alat lawas (dan banyak release notes tercetak) menggunakan huruf besar. Ubah keduanya jadi huruf kecil sebelum membandingkan.</li>
+        <li><b>Spasi di awal atau akhir.</b> Spasi, tab, atau baris baru tambahan yang ikut tersalin bersama hash tak terlihat di layar tapi merusak perbandingan ketat karakter-per-karakter. Pangkas kedua ujung sebelum membandingkan.</li>
+        <li><b>Byte-order mark (BOM) tak terlihat.</b> Ketika hash yang diharapkan dipublikasikan dalam file `.txt` disimpan sebagai UTF-8 dengan BOM, menyalin baris pertama menyeret urutan 3-byte tak terlihat (`EF BB BF`) bersama hash. Perbandingan terlihat seperti string 35-karakter vs string 32-karakter. Simpan ulang file sumber sebagai UTF-8 tanpa BOM, atau hilangkan 3 byte pertama dari string yang disalin.</li>
+        <li><b>Byte dipisah titik dua atau spasi.</b> Beberapa alat lawas memformat hash sebagai `d4:1d:8c:d9:8f:00:b2:04:e9:80:09:98:ec:f8:42:7e` (16 pasang byte dipisah titik dua) atau `d4 1d 8c d9 8f 00 b2 04 e9 80 09 98 ec f8 42 7e` (dipisah spasi). Hilangkan pemisah dan hex 32-karakter di baliknya adalah hash yang sama.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Tiga tanda input tidak sama</b></h2>
+    <p>Jika, setelah pembersihan di atas, string masih berbeda, inputnya tidak setara. Kedua hash dihitung atas byte yang berbeda.</p>
+    <ul>
+        <li><b>Setiap digit hex yang berbeda.</b> MD5 memiliki sifat avalanche: perbedaan 1-bit pada input biasanya membalik sekitar setengah bit pada output. Jadi bahkan satu karakter hex yang berbeda di mana pun pada string 32-karakter berarti input tidak sama. Tidak ada konsep "hampir sama" untuk hash - atau setiap karakter cocok (setelah pembersihan kosmetik di atas) atau input berbeda.</li>
+        <li><b>Panjang total yang berbeda setelah pembersihan.</b> Digest hex MD5 tepat 32 karakter. Panjang lain berarti algoritma lain: string hex 40-karakter adalah SHA-1; 64 karakter adalah SHA-256; 8 karakter adalah CRC32 (sering ditampilkan dalam desimal, bukan hex). Jika "MD5 yang diharapkan" Anda ternyata 40 atau 64 karakter, penerbit menggunakan algoritma berbeda dan Anda perlu alat berbeda.</li>
+        <li><b>Karakter non-hex.</b> Hex MD5 hanya berisi `0-9` dan `a-f` (atau `A-F`). Sebuah `g`, `h`, `z`, atau huruf lain di luar `f` bukan digit hex MD5. Penyebab paling umum adalah string itu base64 (`/=+` dan rentang huruf lebih panjang) atau base32 (`a-z` dan `2-7`) - enkoding berbeda dari 16 byte yang sama, tapi aturan perbandingan jadi berbeda (dalam base64 case-sensitivity tetap penting).</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Alur perbandingan 5 langkah</b></h2>
+    <p>Lewati kedua hash melalui lima langkah yang sama dan perbandingan menjadi mekanis.</p>
+    <ol>
+        <li><b>Ubah kedua string ke huruf kecil.</b> Ini menghilangkan perbedaan case di hex.</li>
+        <li><b>Pangkas spasi awal dan akhir.</b> Ini menghilangkan perbedaan spasi sekitarnya.</li>
+        <li><b>Hapus pemisah.</b> Hilangkan setiap `:`, ` ` (spasi), `-`, atau karakter non-hex lainnya. Hasilnya harus berupa satu string 32-karakter berisi digit hex.</li>
+        <li><b>Konfirmasi panjangnya 32 dan karakter semua di `0-9 a-f`.</b> Jika salah satu sisi gagal pemeriksaan ini, Anda membandingkan sesuatu yang bukan digest hex MD5 (atau masih ada kontaminasi BOM / karakter tak terlihat; tempel string ke inspector hex untuk mendeteksinya).</li>
+        <li><b>Bandingkan karakter-per-karakter.</b> Jika langkah 1-4 menghasilkan dua string hex 32-karakter identik, hash cocok - 16 byte di baliknya sama dan inputnya sama. Jika berbeda di posisi mana pun, input berbeda.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>Kapan MD5 cukup - dan kapan tidak</b></h2>
+    <p>MD5 tepat untuk pemeriksaan korupsi tidak disengaja di mana tidak ada lawan: memastikan download selesai tanpa bit-rot ketika penerbit memublikasikan MD5 yang diharapkan bersama file; memverifikasi transfer file kolega terhadap MD5 yang ia kirim di email sama. Probabilitas dua file tidak terkait menghasilkan MD5 yang sama secara kebetulan sangat kecil. Jadi jika Anda membuat hash di <a href="/developer-tools/md5-converter.html">MD5 Converter</a> dan cocok dengan nilai yang dipublikasikan setelah alur 5 langkah, file adalah file yang dimaksud penerbit.</p>
+    <p>MD5 TIDAK tepat untuk kasus lawan - penyimpanan password, tanda tangan keamanan, ketahanan pemalsuan. Peneliti sekarang dapat menghasilkan dua file berbeda dengan MD5 yang sama dalam hitungan detik di hardware umum. Untuk kasus tersebut alat yang tepat adalah algoritma berbeda. Lihat <a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - Kapan Hash</a> untuk pemilihan algoritma, <a href="/guides/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html">Alternatif MD5 - bcrypt vs Argon2id vs SHA-256</a> untuk jawaban penyimpanan password modern, dan <a href="/guides/why-md5-cannot-be-decrypted.html">Mengapa MD5 Tidak Bisa Didekripsi</a> untuk pertanyaan terkait "saya punya MD5 dan ingin teks aslinya".</p>
+
+    <details class="faq-item">
+  <summary><b>"Hampir cocok" tidak ada untuk MD5</b></summary>
+  <p>Panduan tidak mengklaim hash bisa "hampir cocok". Dua hash MD5 atau cocok persis setelah normalisasi case-dan-spasi, atau tidak. Tafsiran terlarang "hash mungkin benar karena tampak hampir sama" tidak berlaku untuk MD5: hash atau cocok persis di bawah aturan normalisasi atau tidak.</p>
+    <p>Sifat avalanche fungsi hash membuat jaminan ini mekanis: perubahan satu-bit di input membalik kira-kira setengah bit output, jadi mendekati-cocok di hash tidak pernah berarti mendekati-cocok di input. Jika hash Anda dari <a href="/developer-tools/md5-converter.html">MD5 Converter</a> tidak setuju dengan nilai yang diharapkan dipublikasikan di digit hex tunggal mana pun, byte yang Anda hash bukan byte yang penerbit hash - download ulang file atau ambil ulang sumbernya. Satu karakter hex berbeda artinya "input berbeda, ulangi seluruhnya", bukan "hampir benar, ulangi hanya blok terakhir".</p>
+
+    <p><em>Panduan developer dan MD5 terkait: <a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - Kapan Hash</a> (pemilihan algoritma), <a href="/guides/why-md5-cannot-be-decrypted.html">Mengapa MD5 Tidak Bisa Didekripsi</a> (mengapa MD5 tidak reversibel), <a href="/guides/md5-to-text-why-you-cannot-convert-back.html">MD5 ke Teks - Mengapa Anda Tidak Bisa Mengubahnya Kembali</a> (rekan operasional), dan <a href="/guides/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html">Alternatif MD5 - bcrypt vs Argon2id vs SHA-256</a> (alternatif modern untuk penggunaan lawan).</em></p>
+</details>
+</div>

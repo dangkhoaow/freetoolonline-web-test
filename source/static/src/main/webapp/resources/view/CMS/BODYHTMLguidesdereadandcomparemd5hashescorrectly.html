@@ -1,0 +1,62 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>MD5-Hashes Richtig Lesen und Vergleichen: Gross-Klein, Leerzeichen, Hex-Format</b></h1>
+    <p><em>Zuletzt geprueft 2026-05-04. Ein 30-Sekunden-Durchgang fuer den Moment, nachdem Sie einen Hash auf <a href="/developer-tools/md5-converter.html">MD5 Converter</a> erzeugt (oder von einer Download-Seite abgelesen) haben und bestaetigen muessen, dass er mit dem erwarteten Wert uebereinstimmt. Zwei MD5-Hashes repraesentieren entweder denselben 16-Byte-Digest oder nicht. Unterschiede in Gross-/Kleinschreibung, umgebende Leerzeichen, ein unsichtbares Byte-Order-Mark oder ein durch Doppelpunkt getrenntes Format sind kosmetisch - die Hashes sind weiterhin gleich. Ein abweichendes Hex-Zeichen an irgendeiner Stelle, eine andere Gesamtlaenge oder ein Nicht-Hex-Zeichen ist ein echter Unterschied - die Eingaben waren nicht gleich.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-Sekunden-Entscheidung.</b> Zwei MD5-Werte stimmen ueberein, wenn nach Konvertierung beider in Kleinbuchstaben und Entfernen umgebender Leerzeichen die 32 Hex-Zeichen Position fuer Position uebereinstimmen. <b>Kosmetische Unterschiede (immer noch ein Match):</b> Gross- vs. Kleinschreibung (`A1B2` und `a1b2` sind dasselbe Hex), nachlaufende oder fuehrende Leerzeichen aus einer unachtsamen Copy-Paste, ein unsichtbares UTF-8-BOM am Anfang beim Kopieren aus einer Textdatei, und durch Doppelpunkt getrennte Formate (`a1:b2:c3` vs `a1b2c3`). <b>Echte Unterschiede (kein Match):</b> jede abweichende Hex-Ziffer, eine andere Gesamtlaenge (eine 40-Zeichen-Zeichenkette ist SHA-1, nicht MD5; 64 Zeichen sind SHA-256) und jedes Nicht-Hex-Zeichen (nur `0-9` und `a-f`).</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Was ein MD5-Hash wirklich ist</b></h2>
+    <p>Ein MD5-Hash ist die Ausgabe einer Funktion, die jede Eingabe - eine Textzeichenkette, die Bytes einer Datei, einen Stream aus einem Download - nimmt und einen festen 16-Byte- (128-Bit-) Digest erzeugt. Die Bytes sind der kanonische Wert: das ist, was "der MD5" wirklich ist. Die 32 Zeichen lange hexadezimale Zeichenkette, die Sie auf dem Bildschirm sehen, ist nur eine menschenlesbare Kodierung dieser 16 Bytes (jedes Byte wird zu zwei Hex-Zeichen). Zwei Autoren koennen dieselben 16 Bytes als `D41D8CD98F00B204E9800998ECF8427E` (gross) oder `d41d8cd98f00b204e9800998ecf8427e` (klein) oder `d4:1d:8c:d9:8f:00:b2:04:e9:80:09:98:ec:f8:42:7e` (durch Doppelpunkt getrennt, ueblich in einigen Altwerkzeugen) schreiben, und alle drei sind DERSELBE Hash. Die Bytes sind dieselben.</p>
+    <p>Um einen frischen MD5 zu erzeugen, den Sie gegen einen veroeffentlichten erwarteten Wert vergleichen koennen, fuegen Sie den Originaltext in <a href="/developer-tools/md5-converter.html">MD5 Converter</a> ein: Zeichenkette einfuegen, Ergebnis kopieren. War die Eingabe eine Datei statt einer Zeichenkette, siehe <a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - Wann Hashen</a> fuer die Werkzeugentscheidung; die Vergleichsregeln darunter sind in beide Richtungen gleich.</p>
+
+    <h2 class="text-uppercase"><b>Vier kosmetische Abweichungen, die immer noch ein Match bedeuten</b></h2>
+    <p>Vier haeufige Unterschiede auf Bildschirmebene sehen wie ein Mismatch aus, repraesentieren aber denselben 16-Byte-Digest. Wenn Sie nur diese sehen, stimmen die Hashes ueberein.</p>
+    <ul>
+        <li><b>Gross- vs. Kleinschreibung.</b> Hex ist case-insensitive. `D41D8CD98F00B204E9800998ECF8427E` und `d41d8cd98f00b204e9800998ecf8427e` sind derselbe Hash. Die Kleinschreibvariante ist die kanonische Konvention, die die meisten modernen Werkzeuge nutzen, einschliesslich des kostenlosen <a href="/developer-tools/md5-converter.html">MD5 Converters</a>; einige Altwerkzeuge (und viele gedruckte Release-Notes) verwenden Grossbuchstaben. Beide vor dem Vergleich kleinschreiben.</li>
+        <li><b>Fuehrende oder nachlaufende Leerzeichen.</b> Ein verirrtes Leerzeichen, Tabulator oder Newline, das zusammen mit dem Hash kopiert wurde, ist auf dem Bildschirm unsichtbar, bricht aber einen strikten Zeichen-fuer-Zeichen-Vergleich. Vor dem Vergleich beide Enden trimmen.</li>
+        <li><b>Ein unsichtbares Byte-Order-Mark (BOM).</b> Wurde der erwartete Hash in einer `.txt`-Datei mit BOM als UTF-8 veroeffentlicht, schleppt das Kopieren der ersten Zeile eine unsichtbare 3-Byte-Sequenz (`EF BB BF`) mit dem Hash mit. Der Vergleich sieht aus wie 35 Zeichen vs. 32 Zeichen. Quelldatei als UTF-8 ohne BOM erneut speichern, oder die ersten 3 Bytes aus der kopierten Zeichenkette entfernen.</li>
+        <li><b>Durch Doppelpunkt oder Leerzeichen getrennte Bytes.</b> Einige Altwerkzeuge formatieren den Hash als `d4:1d:8c:d9:8f:00:b2:04:e9:80:09:98:ec:f8:42:7e` (16 Byte-Paare durch Doppelpunkt) oder `d4 1d 8c d9 8f 00 b2 04 e9 80 09 98 ec f8 42 7e` (durch Leerzeichen). Trennzeichen entfernen und das zugrunde liegende 32-Zeichen-Hex ist derselbe Hash.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Drei Anzeichen, dass die Eingaben nicht gleich waren</b></h2>
+    <p>Sind die Zeichenketten nach den obigen Bereinigungen immer noch unterschiedlich, waren die Eingaben nicht gleich. Die zwei Hashes wurden ueber verschiedene Bytes berechnet.</p>
+    <ul>
+        <li><b>Eine einzelne abweichende Hex-Ziffer.</b> MD5 hat die Avalanche-Eigenschaft: ein 1-Bit-Unterschied im Input kippt in der Regel rund die Haelfte der Output-Bits. Auch nur ein abweichendes Hex-Zeichen irgendwo in der 32-Zeichen-Zeichenkette bedeutet, dass die Eingaben nicht gleich waren. Es gibt kein "fast gleich" fuer Hashes - entweder jedes Zeichen stimmt ueberein (nach den kosmetischen Bereinigungen oben) oder die Eingaben unterschieden sich.</li>
+        <li><b>Eine abweichende Gesamtlaenge nach den Bereinigungen.</b> Ein MD5-Hex-Digest ist genau 32 Zeichen lang. Andere Laengen bedeuten andere Algorithmen: eine 40-Zeichen-Hex-Zeichenkette ist SHA-1; 64 Zeichen sind SHA-256; 8 Zeichen sind CRC32 (oft dezimal, nicht hex dargestellt). Sind Ihr "erwarteter MD5" tatsaechlich 40 oder 64 Zeichen, hat der Veroeffentlicher einen anderen Algorithmus verwendet, und Sie brauchen ein anderes Werkzeug.</li>
+        <li><b>Nicht-Hex-Zeichen.</b> MD5-Hex enthaelt nur `0-9` und `a-f` (oder `A-F`). Ein `g`, `h`, `z` oder jeder andere Buchstabe ueber `f` hinaus ist keine MD5-Hex-Ziffer. Der haeufigste Grund ist, dass die Zeichenkette base64 (`/=+` und groesserer Buchstabenbereich) oder base32 (`a-z` und `2-7`) ist - eine andere Kodierung derselben 16 Bytes, aber die Vergleichsregeln sind dann anders (in base64 ist Case-Sensitivity weiterhin wichtig).</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Der 5-Schritte-Vergleichsablauf</b></h2>
+    <p>Lassen Sie beide Hashes durch dieselben fuenf Schritte laufen, und der Vergleich wird mechanisch.</p>
+    <ol>
+        <li><b>Beide Zeichenketten kleinschreiben.</b> Das beseitigt case-insensitive Unterschiede im Hex.</li>
+        <li><b>Fuehrende und nachlaufende Leerzeichen trimmen.</b> Das beseitigt die Unterschiede der umgebenden Leerzeichen.</li>
+        <li><b>Trennzeichen entfernen.</b> Jedes `:`, ` ` (Leerzeichen), `-` oder anderes Nicht-Hex-Zeichen weg. Das Ergebnis sollte eine einzelne 32-Zeichen-Zeichenkette aus Hex-Ziffern sein.</li>
+        <li><b>Bestaetigen Sie, dass die Laenge 32 ist und die Zeichen alle in `0-9 a-f` liegen.</b> Faellt eine Seite an dieser Pruefung durch, vergleichen Sie etwas, das kein MD5-Hex-Digest ist (oder es liegt weiterhin BOM- / Unsichtbare-Zeichen-Kontamination vor; Zeichenkette in einen Hex-Inspector einfuegen, um sie zu erkennen).</li>
+        <li><b>Zeichen fuer Zeichen vergleichen.</b> Haben Schritte 1-4 zwei identische 32-Zeichen-Hex-Zeichenketten erzeugt, stimmen die Hashes ueberein - die zugrunde liegenden 16 Bytes sind gleich und die Eingaben waren gleich. Unterscheiden sie sich an irgendeiner Position, waren die Eingaben verschieden.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>Wann MD5 ausreicht - und wann nicht</b></h2>
+    <p>MD5 ist angemessen fuer Pruefungen auf zufaellige Korruption, wenn kein Gegner im Spiel ist: bestaetigen, dass ein Download ohne Bit-Rot abgeschlossen wurde, wenn der Veroeffentlicher den erwarteten MD5 neben der Datei publiziert hat; eine Dateiuebertragung eines Kollegen gegen den MD5 verifizieren, den er in derselben E-Mail gesendet hat. Die Wahrscheinlichkeit, dass zwei nicht verwandte Dateien zufaellig denselben MD5 erzeugen, ist verschwindend gering. Wenn Sie also einen Hash auf <a href="/developer-tools/md5-converter.html">MD5 Converter</a> erzeugt haben und er nach dem 5-Schritte-Ablauf mit dem veroeffentlichten Wert uebereinstimmt, ist die Datei die Datei, die der Veroeffentlicher meinte.</p>
+    <p>MD5 ist NICHT angemessen fuer adversariale Anwendungsfaelle - Passwortspeicherung, Sicherheits-Signaturen, Faelschungsresistenz. Forscher koennen heute auf Standard-Hardware in Sekunden zwei verschiedene Dateien mit demselben MD5 erzeugen. Fuer diese Faelle ist das richtige Werkzeug ein anderer Algorithmus. Siehe <a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - Wann Hashen</a> fuer die Algorithmus-Auswahl, <a href="/guides/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html">Alternativen zu MD5 - bcrypt vs Argon2id vs SHA-256</a> fuer die moderne Antwort zur Passwortspeicherung, und <a href="/guides/why-md5-cannot-be-decrypted.html">Warum MD5 Nicht Entschluesselt Werden Kann</a> fuer die verwandte Frage "ich habe einen MD5 und will den Originaltext".</p>
+
+    <details class="faq-item">
+  <summary><b>"Fast ein Match" gibt es bei MD5 nicht</b></summary>
+  <p>Der Leitfaden behauptet nicht, dass Hashes "fast uebereinstimmen" koennen. Zwei MD5-Hashes stimmen nach Normalisierung von Gross-/Kleinschreibung und Leerzeichen entweder exakt ueberein oder nicht. Die verbotene Lesart "die Hashes sind wahrscheinlich korrekt, weil sie fast gleich aussehen" gilt fuer MD5 nicht: Hashes stimmen unter den Normalisierungsregeln entweder exakt ueberein oder gar nicht.</p>
+    <p>Die Avalanche-Eigenschaft der Hash-Funktion macht diese Garantie mechanisch: eine 1-Bit-Aenderung im Input kippt grob die Haelfte der Output-Bits, daher entspricht ein Beinahe-Treffer im Hash nie einem Beinahe-Treffer in den Eingaben. Wenn Ihr Hash aus dem <a href="/developer-tools/md5-converter.html">MD5 Converter</a> an irgendeiner einzelnen Hex-Ziffer mit dem veroeffentlichten erwarteten Wert nicht uebereinstimmt, sind die Bytes, die Sie gehasht haben, nicht die Bytes, die der Veroeffentlicher gehasht hat - laden Sie die Datei erneut herunter oder holen Sie die Quelle erneut. Ein einzelnes abweichendes Hex-Zeichen heisst "Eingaben unterschieden sich, das Ganze erneut versuchen", nicht "fast korrekt, nur den letzten Block erneut versuchen".</p>
+
+    <p><em>Verwandte Entwickler- und MD5-Anleitungen: <a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - Wann Hashen</a> (Algorithmus-Wahl), <a href="/guides/why-md5-cannot-be-decrypted.html">Warum MD5 Nicht Entschluesselt Werden Kann</a> (warum MD5 nicht umkehrbar ist), <a href="/guides/md5-to-text-why-you-cannot-convert-back.html">MD5 zu Text - Warum Sie Nicht Zurueckkonvertieren Koennen</a> (operatives Gegenstueck), und <a href="/guides/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html">Alternativen zu MD5 - bcrypt vs Argon2id vs SHA-256</a> (moderne Alternativen fuer adversariale Anwendung).</em></p>
+</details>
+</div>

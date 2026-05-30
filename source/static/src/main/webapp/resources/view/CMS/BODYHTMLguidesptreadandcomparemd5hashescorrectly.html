@@ -1,0 +1,62 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Como Ler e Comparar Hashes MD5 Corretamente: Maiusculas, Espacos, Formato Hex</b></h1>
+    <p><em>Ultima revisao 2026-05-04. Um passo a passo de 30 segundos para o momento depois que voce gera um hash em <a href="/developer-tools/md5-converter.html">MD5 Converter</a> (ou copia um de uma pagina de download) e precisa confirmar que ele bate com o valor esperado. Dois hashes MD5 ou representam o mesmo digest de 16 bytes ou nao. Diferencas de maiusculas, espacos em volta, um byte-order mark invisivel ou um formato separado por dois pontos sao cosmeticas - os hashes ainda sao iguais. Um caractere hex diferente em qualquer lugar, um comprimento total diferente ou um caractere nao-hex e uma diferenca real - as entradas nao foram as mesmas.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Decisao em 30 segundos.</b> Dois valores MD5 batem quando, apos converter ambos para minusculas e remover espacos das pontas, os 32 caracteres hex coincidem posicao por posicao. <b>Diferencas cosmeticas (ainda e match):</b> maiuscula vs minuscula (`A1B2` e `a1b2` sao o mesmo hex), espacos em volta vindos de um copia-e-cola descuidado, um BOM UTF-8 invisivel no inicio quando copiado de um arquivo de texto, e formatos separados por dois pontos (`a1:b2:c3` vs `a1b2c3`). <b>Diferencas reais (nao e match):</b> qualquer digito hex diferente, um comprimento total diferente (uma string de 40 caracteres e SHA-1, nao MD5; 64 caracteres e SHA-256), e qualquer caractere nao-hex (apenas `0-9` e `a-f`).</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>O que um hash MD5 e de fato</b></h2>
+    <p>Um hash MD5 e a saida de uma funcao que pega qualquer entrada - uma string de texto, os bytes de um arquivo, um stream de download - e produz um digest fixo de 16 bytes (128 bits). Os bytes sao o valor canonico: e isso que "o MD5" realmente e. A string hexadecimal de 32 caracteres que voce ve na tela e apenas uma codificacao legivel desses 16 bytes (cada byte vira dois caracteres hex). Dois autores podem escrever os mesmos 16 bytes como `D41D8CD98F00B204E9800998ECF8427E` (maiusculas) ou `d41d8cd98f00b204e9800998ecf8427e` (minusculas) ou `d4:1d:8c:d9:8f:00:b2:04:e9:80:09:98:ec:f8:42:7e` (separado por dois pontos, comum em algumas ferramentas antigas) e os tres sao o MESMO hash. Os bytes sao os mesmos.</p>
+    <p>Para gerar um MD5 novo que voce pode comparar contra um valor esperado publicado, cole o texto original em <a href="/developer-tools/md5-converter.html">MD5 Converter</a>: cole a string e copie o resultado. Se a entrada era um arquivo em vez de uma string, veja <a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - Quando Hash</a> para uma decisao de ferramenta; as regras de comparacao abaixo sao as mesmas em qualquer direcao.</p>
+
+    <h2 class="text-uppercase"><b>Quatro divergencias cosmeticas que ainda significam match</b></h2>
+    <p>Quatro diferencas comuns no nivel da tela parecem mismatch mas representam o mesmo digest de 16 bytes. Se voce ve apenas essas, os hashes batem.</p>
+    <ul>
+        <li><b>Maiusculas vs minusculas.</b> Hex e insensivel a caixa. `D41D8CD98F00B204E9800998ECF8427E` e `d41d8cd98f00b204e9800998ecf8427e` sao o mesmo hash. A forma em minusculas e a convencao canonica usada pela maioria das ferramentas modernas, incluindo o <a href="/developer-tools/md5-converter.html">MD5 Converter</a> gratis; algumas ferramentas antigas (e muitas notas de release impressas) usam maiusculas. Passe ambos para minusculas antes de comparar.</li>
+        <li><b>Espaco em branco no inicio ou no final.</b> Um espaco, tab ou nova linha extra copiado junto com o hash e invisivel na tela mas quebra um compare estrito caractere a caractere. Remova os espacos das duas pontas antes de comparar.</li>
+        <li><b>Um byte-order mark (BOM) invisivel.</b> Quando o hash esperado foi publicado em um arquivo `.txt` salvo como UTF-8 com BOM, copiar a primeira linha arrasta uma sequencia invisivel de 3 bytes (`EF BB BF`) junto com o hash. O compare parece uma string de 35 caracteres contra uma de 32. Salve o arquivo de origem novamente como UTF-8 sem BOM, ou retire os 3 primeiros bytes da string copiada.</li>
+        <li><b>Bytes separados por dois pontos ou espacos.</b> Algumas ferramentas antigas formatam o hash como `d4:1d:8c:d9:8f:00:b2:04:e9:80:09:98:ec:f8:42:7e` (16 pares de bytes separados por dois pontos) ou `d4 1d 8c d9 8f 00 b2 04 e9 80 09 98 ec f8 42 7e` (separado por espacos). Tire os separadores e o hex de 32 caracteres por baixo e o mesmo hash.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Tres sinais de que as entradas nao foram as mesmas</b></h2>
+    <p>Se, apos as limpezas acima, as strings ainda diferem, as entradas nao foram iguais. Os dois hashes foram calculados sobre bytes diferentes.</p>
+    <ul>
+        <li><b>Qualquer digito hex diferente.</b> MD5 tem a propriedade avalanche: uma diferenca de um bit na entrada normalmente vira cerca de metade dos bits na saida. Entao mesmo um caractere hex diferente em qualquer lugar da string de 32 caracteres significa que as entradas nao foram as mesmas. Nao existe "quase igual" para hashes - ou todo caractere bate (apos as limpezas cosmeticas acima) ou as entradas divergiram.</li>
+        <li><b>Um comprimento total diferente apos as limpezas.</b> Um digest hex MD5 tem exatamente 32 caracteres. Outros comprimentos significam outros algoritmos: uma string hex de 40 caracteres e SHA-1; 64 caracteres e SHA-256; 8 caracteres e CRC32 (frequentemente mostrado em decimal, nao hex). Se o seu "MD5 esperado" tem 40 ou 64 caracteres, quem publicou usou um algoritmo diferente e voce precisa de outra ferramenta.</li>
+        <li><b>Caracteres nao-hex.</b> Hex MD5 contem apenas `0-9` e `a-f` (ou `A-F`). Um `g`, `h`, `z` ou qualquer outra letra alem de `f` nao e um digito hex MD5. A causa mais comum e a string ser base64 (`/=+` e faixa de letras maior) ou base32 (`a-z` e `2-7`) - uma codificacao diferente dos mesmos 16 bytes, mas as regras de comparacao sao entao diferentes (em base64 sensibilidade a caixa importa).</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>O fluxo de comparacao em 5 passos</b></h2>
+    <p>Passe os dois hashes pelos mesmos cinco passos e a comparacao se torna mecanica.</p>
+    <ol>
+        <li><b>Converta ambas as strings para minusculas.</b> Isso remove diferencas de caixa no hex.</li>
+        <li><b>Remova espacos em branco no inicio e no final.</b> Isso remove as diferencas de espaco em volta.</li>
+        <li><b>Retire separadores.</b> Remova qualquer `:`, ` ` (espaco), `-` ou outro caractere nao-hex. O resultado deve ser uma unica string de 32 caracteres com digitos hex.</li>
+        <li><b>Confirme que o comprimento e 32 e que os caracteres estao todos em `0-9 a-f`.</b> Se algum dos lados falhar nesta verificacao, voce esta comparando algo que nao e um digest hex MD5 (ou ainda ha contaminacao de BOM / caracteres invisiveis; cole a string em um inspetor hex para detectar).</li>
+        <li><b>Compare caractere a caractere.</b> Se os passos 1-4 produziram duas strings hex identicas de 32 caracteres, os hashes batem - os 16 bytes por baixo sao iguais e as entradas foram as mesmas. Se diferem em qualquer posicao, as entradas foram diferentes.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>Quando MD5 e suficiente - e quando nao e</b></h2>
+    <p>MD5 e apropriado para checagens de corrupcao acidental onde nao ha adversario envolvido: confirmar que um download terminou sem bit-rot quando quem publicou postou o MD5 esperado junto do arquivo; verificar a transferencia de arquivo de um colega contra o MD5 que ele enviou no mesmo email. A probabilidade de dois arquivos nao relacionados produzirem o mesmo MD5 por acaso e infimamente pequena. Entao se voce gerou um hash em <a href="/developer-tools/md5-converter.html">MD5 Converter</a> e ele bate com o valor publicado apos o fluxo de 5 passos, o arquivo e o arquivo que quem publicou queria.</p>
+    <p>MD5 NAO e apropriado para casos adversariais - armazenamento de senhas, assinaturas de seguranca, resistencia a forja. Pesquisadores hoje geram dois arquivos diferentes com o mesmo MD5 em segundos em hardware comum. Para esses casos a ferramenta certa e um algoritmo diferente. Veja <a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - Quando Hash</a> para a questao de escolha de algoritmo, <a href="/guides/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html">Alternativas a MD5 - bcrypt vs Argon2id vs SHA-256</a> para a resposta moderna de armazenamento de senhas, e <a href="/guides/why-md5-cannot-be-decrypted.html">Por Que MD5 Nao Pode Ser Descriptografado</a> para a pergunta relacionada "tenho um MD5 e quero o texto original".</p>
+
+    <details class="faq-item">
+  <summary><b>"Quase igual" nao existe para MD5</b></summary>
+  <p>O guia nao afirma que hashes podem ser "quase iguais". Dois hashes MD5 ou batem exatamente apos normalizacao de caixa e espacos, ou nao batem. A leitura proibida "os hashes provavelmente estao corretos porque parecem quase iguais" nao se aplica ao MD5: hashes ou batem exatamente sob as regras de normalizacao ou nao batem.</p>
+    <p>A propriedade avalanche da funcao de hash torna essa garantia mecanica: uma mudanca de um bit na entrada vira aproximadamente metade dos bits da saida, entao uma quase-coincidencia no hash nunca corresponde a uma quase-coincidencia nas entradas. Se seu hash do <a href="/developer-tools/md5-converter.html">MD5 Converter</a> diverge do valor esperado publicado em algum digito hex, os bytes que voce hasheou nao sao os bytes que quem publicou hasheou - baixe o arquivo de novo ou refaca a fonte. Um caractere hex de diferenca e "as entradas divergiram, refaca tudo", nao "quase correto, refaca so o ultimo bloco".</p>
+
+    <p><em>Guias relacionados de desenvolvedor e MD5: <a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - Quando Hash</a> (escolha de algoritmo), <a href="/guides/why-md5-cannot-be-decrypted.html">Por Que MD5 Nao Pode Ser Descriptografado</a> (por que MD5 nao e reversivel), <a href="/guides/md5-to-text-why-you-cannot-convert-back.html">MD5 para Texto - Por Que Voce Nao Pode Converter de Volta</a> (contraparte operacional), e <a href="/guides/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html">Alternativas a MD5 - bcrypt vs Argon2id vs SHA-256</a> (alternativas modernas para uso adversarial).</em></p>
+</details>
+</div>
