@@ -1,0 +1,121 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container">
+<h1 class="text-uppercase"><b>Cuando comprimir vs convertir una imagen - guia de decision</b></h1>
+<time itemprop="datePublished" datetime="2026-04-23T08:00:00Z"><b>Publicado el 23 de abril de 2026</b></time>
+<hr/>
+
+<p class="lead">"Comprimir" y "convertir" suenan como si resolvieran problemas diferentes - y lo hacen - pero la mayoria de las personas eligen el equivocado. La compresion reduce el tamano del archivo sin cambiar el formato; la conversion cambia el formato y puede o no reducir el tamano. Acertar la decision puede llevar un HEIC del iPhone de 3&nbsp;MB a un JPG de 120&nbsp;KB que puedes enviar por correo, o en la direccion opuesta, salvar tu PNG fuente de un acantilado de calidad invisible. Esta guia cubre la diferencia, las reglas de enrutamiento y la herramienta correcta para cada trabajo.</p>
+
+<div class="w3-panel w3-pale-green w3-leftbar w3-border-green" style="margin-top: 10px;">
+    <p><b>Decision de 30 segundos.</b> Hazte tres preguntas:</p>
+    <ol style="margin-top: 6px; margin-bottom: 6px;">
+        <li><b>La plataforma del destinatario es el problema?</b> (HEIC en Windows, WebP en clientes de correo antiguos) &rarr; <b>Convertir.</b></li>
+        <li><b>El tamano del archivo es el problema, pero todos abren el formato actual bien?</b> &rarr; <b>Comprimir.</b></li>
+        <li><b>Ambos?</b> &rarr; <b>Convierte primero, luego comprime.</b> La conversion tipicamente cambia el tamano tambien, asi que comprimir el archivo ya convertido es donde exprimes los ultimos bytes.</li>
+    </ol>
+    <p style="margin-bottom: 0;"><b>Enrutamiento concreto:</b> HEIC/HEIF &rarr; <a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a>. JPG/PNG sobredimensionado &rarr; <a href="/image-tools/compress-image.html">Compress Image</a>. Carpeta grande de fotos a correo &rarr; <a href="/zip-tools/zip-file.html">ZIP</a> despues de comprimir.</p>
+</div>
+
+<br/><h2 class="text-uppercase"><b>Compresion: mantener formato, reducir bytes</b></h2>
+<p>La compresion de imagen reduce el tamano del archivo manteniendo el formato sin cambios. Hay dos sabores y se comportan muy diferente:</p>
+<p><b>Compresion con perdidas</b> (JPG, WebP con perdidas, AVIF con perdidas) descarta detalles de pixel que el ojo humano tiene menos probabilidad de notar. Un JPG en calidad 85 se ve indistinguible de un JPG en calidad 100 en la mayoria de pantallas, pero el archivo es aproximadamente un tercio del tamano. El detalle: cada ciclo de guardar-y-reabrir recodifica la imagen y pierde mas detalle. Cinco ediciones de un JPG en calidad 85 es visiblemente peor que una edicion en calidad 85 del original.</p>
+<p><b>Compresion sin perdidas</b> (PNG, WebP sin perdidas, GIF) encuentra patrones en los datos de pixel y los codifica mas eficientemente sin tocar un solo valor de pixel. La salida es identica bit-por-bit despues de decodificar. PNG ahorra cerca del 30-60% en capturas de UI y logos de color plano; ahorra casi nada en gradientes fotograficos.</p>
+<p>Cuando alguien dice "comprime mi imagen" generalmente quiere decir "haz este JPG mas pequeno". A veces quiere decir "haz este PNG lo mas pequeno posible sin romperlo". La diferencia entre con perdidas y sin perdidas importa para la eleccion de herramienta correcta.</p>
+
+<br/><h2 class="text-uppercase"><b>Conversion: cambiar formato para compatibilidad</b></h2>
+<p>La conversion cambia el formato. HEIC a JPG, PNG a WebP, SVG a PNG - cada uno de estos reemplaza el esquema de codificacion. La conversion casi siempre cambia el tamano del archivo tambien, porque diferentes formatos comprimen diferentemente, pero el tamano es un efecto secundario; el proposito principal es <b>compatibilidad</b>.</p>
+<p>La senal mas clara de que necesitas conversion en lugar de compresion: el archivo <em>se abre bien en tu dispositivo</em> pero falla en el dispositivo del destinatario. HEIC es el caso clasico - los iPhones lo producen por defecto, Windows Photos no puede leerlo sin instalar un codec, y la mayoria de widgets de subida de CMS rechazan la extension directamente. Comprimir el HEIC no arreglaria nada de eso; convertir a JPG si. De manera similar, pegar un SVG copiado en una herramienta de terceros que solo acepta PNG necesita un <a href="/image-converter-tools/svg-to-png.html">conversor SVG a PNG</a>, no compresion.</p>
+
+<br/><h2 class="text-uppercase"><b>Tabla de enrutamiento: 10 escenarios comunes</b></h2>
+<div class="w3-responsive">
+<table class="w3-table-all w3-small">
+<tr><th>Punto de partida</th><th>Objetivo</th><th>Accion</th><th>Herramienta</th></tr>
+<tr><td>Foto HEIC del iPhone</td><td>Correo a usuario Windows</td><td><b>Convertir</b></td><td><a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a></td></tr>
+<tr><td>30 fotos HEIC del iPhone</td><td>Compartir por lotes a destinatario</td><td><b>Convertir</b> todas, luego <b>ZIP</b></td><td><a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> &rarr; <a href="/zip-tools/zip-file.html">ZIP</a></td></tr>
+<tr><td>JPG de 5&nbsp;MB de una camara SLR</td><td>Subida web bajo 2&nbsp;MB</td><td><b>Comprimir</b></td><td><a href="/image-tools/compress-image.html">Compress Image</a></td></tr>
+<tr><td>Captura PNG de 2&nbsp;MB</td><td>Mas pequeno para un documento</td><td><b>Comprimir</b> (re-codificar con filtro PNG mas apretado)</td><td><a href="/image-tools/compress-image.html">Compress Image</a></td></tr>
+<tr><td>Logo SVG de un disenador</td><td>Pegar en herramienta que solo acepta PNG</td><td><b>Convertir</b></td><td><a href="/image-converter-tools/svg-to-png.html">SVG to PNG</a></td></tr>
+<tr><td>Foto PNG de 3&nbsp;MB</td><td>Archivo web-ready mas pequeno</td><td><b>Convertir</b> a JPG (con perdidas), luego opcionalmente comprimir</td><td><a href="/image-tools/compress-image.html">Compress Image</a> (cambio de formato)</td></tr>
+<tr><td>Foto JPG antigua guardada en calidad 95</td><td>Archivo web mas apretado</td><td><b>Comprimir</b> (re-guardar en calidad 82)</td><td><a href="/image-tools/compress-image.html">Compress Image</a></td></tr>
+<tr><td>Foto con transparencia (recorte de producto)</td><td>Archivo web-ready mas pequeno</td><td><b>Mantener PNG</b>, comprimir; convertir a WebP si la audiencia lo permite</td><td><a href="/image-tools/compress-image.html">Compress Image</a></td></tr>
+<tr><td>PNG de un recibo escaneado</td><td>Archivar como PDF</td><td><b>Convertir</b> a PDF via la ruta HEIC-to-PDF o image-to-PDF</td><td><a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> (salida PDF)</td></tr>
+<tr><td>Captura 4K de 8&nbsp;MB</td><td>Compartir por Slack</td><td><b>Comprimir</b> primero; convertir a JPG solo si es una foto, no captura de UI</td><td><a href="/image-tools/compress-image.html">Compress Image</a></td></tr>
+</table>
+</div>
+
+<br/><h2 class="text-uppercase"><b>Comprimir: formato esta bien, archivo es muy grande</b></h2>
+<p>Usa compresion cuando el destinatario abre tu formato actual bien y solo el tamano esta mal. Disparadores tipicos:</p>
+<ul>
+    <li>Gmail rechaza tu adjunto PDF de 27&nbsp;MB y necesitas caber bajo 25&nbsp;MB.</li>
+    <li>Tu CMS limita la subida a 2&nbsp;MB y tu JPG es 4&nbsp;MB.</li>
+    <li>Un foro quiere una foto de producto bajo 1&nbsp;MB.</li>
+    <li>Auditoria de velocidad de pagina marca tu imagen hero en 800&nbsp;KB cuando el presupuesto de peso de pagina es 200&nbsp;KB.</li>
+</ul>
+<p>Para JPGs, re-codificar en una calidad mas baja (tipicamente 80-85) es la victoria rapida. Para PNGs, el equivalente es un codificador PNG mas inteligente (pngcrush, zopflipng, oxipng) - el tamano del archivo generalmente cae 10-30% con cero cambio visual. Ve nuestra guia <a href="/guides/jpg-vs-png-for-web.html">JPG vs PNG for web</a> para los puntos dulces de calidad vs tamano.</p>
+
+<br/><h2 class="text-uppercase"><b>Convertir: destinatario no puede abrir el archivo en absoluto</b></h2>
+<p>Usa conversion cuando el formato actual en si es el bloqueador. Disparadores tipicos:</p>
+<ul>
+    <li>Fotos HEIC del iPhone que Windows Photos muestra como un placeholder en blanco. Solucion: convertir a JPG.</li>
+    <li>Archivo fuente SVG pero una herramienta aguas abajo solo acepta raster. Solucion: convertir a PNG.</li>
+    <li>Fotografia PNG en varios megabytes donde un JPG estaria bajo 400&nbsp;KB. Solucion: convertir a JPG.</li>
+    <li>Imagen WebP antigua que el cliente Outlook legado de un gerente de marketing no renderiza. Solucion: convertir a JPG.</li>
+    <li>Recibos escaneados como PNGs individuales que el equipo de contabilidad quiere como un solo PDF. Solucion: convertir (y combinar) a PDF.</li>
+</ul>
+<p>Si estas convirtiendo porque el tamano tambien es un problema, elige el formato de destino que sirve a ambos objetivos. HEIC &rarr; JPG es universal, no optimo para tamano. HEIC &rarr; WebP es mejor para tamano pero menos destinatarios pueden abrirlo. Elige universal cuando dudes; casi todo plan "ahorrar bytes convirtiendo" falla en el destinatario cuyo Outlook 2016 no renderiza WebP.</p>
+
+<br/><h2 class="text-uppercase"><b>El caso ambos-a-la-vez: convertir, luego comprimir</b></h2>
+<p>A veces tienes un PNG grande de fotografia que quieres enviar como un JPG bajo 300&nbsp;KB. Eso es un trabajo de dos pasos:</p>
+<ol>
+    <li><b>Convertir</b> PNG &rarr; JPG. El archivo cae de ~3&nbsp;MB a aproximadamente 600&nbsp;KB en calidad 85, porque JPG codifica fotos mas eficientemente que PNG.</li>
+    <li><b>Comprimir</b> el JPG bajando la calidad mas (75-80) o redimensionando dimensiones si el detalle visual lo permite. Cada paso recorta otro 20-40%.</li>
+</ol>
+<p>No intentes hacer ambos a la vez con una sola operacion "comprimir PNG". La compresion PNG sola no puede tocar las ganancias de codificacion con perdidas, y una mala herramienta o producira un PNG sobredimensionado o silenciosamente reescribira tu archivo como JPG sin decirtelo.</p>
+
+<br/><h2 class="text-uppercase"><b>Anti-patrones que pierden tiempo</b></h2>
+<p><b>Comprimir un HEIC para arreglar un problema de compatibilidad con Windows.</b> La compresion no cambia el formato. Windows aun no puede abrir el resultado. Convierte a JPG en su lugar.</p>
+<p><b>Convertir SVG &rarr; PNG para "hacerlo mas pequeno".</b> Los logos SVG generalmente ya son mas pequenos que el equivalente PNG. Convierte solo cuando una herramienta aguas abajo rechaza SVG.</p>
+<p><b>Re-guardar un JPG en calidad 100 "para preservar la calidad".</b> JPG en calidad 100 es apenas distinguible de PNG sin perdidas en tamano de archivo, y aun has perdido detalle del guardado anterior. Si la integridad de archivo importa, mantén el PNG fuente o archivo RAW; deriva JPGs de el bajo demanda.</p>
+<p><b>Convertir captura PNG &rarr; JPG para ahorrar bytes.</b> Funciona para fotografias. Falla en texto de UI y arte lineal - artefactos de compresion JPG alrededor de bordes agudos se ven peor que un PNG ligeramente mas grande.</p>
+<p><b>Convertir cada imagen a WebP.</b> WebP gana en el cable en navegadores modernos. Pierde en el destinatario cuyo cliente de correo o objetivo de exportacion no lo soporta. Usa JPG/PNG como canonico; WebP como variante mejorada servida por <code>&lt;picture&gt;</code> con fallback.</p>
+
+<br/><h2 class="text-uppercase"><b>Selecciones de herramienta, para referencia</b></h2>
+<ul>
+    <li><b>Comprimir JPG, PNG o WebP (formato sin cambios):</b> <a href="/image-tools/compress-image.html">Compress Image</a> - en-navegador, sin subida, re-codificacion controlada por calidad.</li>
+    <li><b>Convertir HEIC &rarr; JPG / PNG / WebP / PDF:</b> <a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> - soporte iOS 18, lote, procesamiento local.</li>
+    <li><b>Convertir SVG &rarr; PNG o WebP:</b> <a href="/image-converter-tools/svg-to-png.html">SVG to PNG</a> - para herramientas aguas abajo solo-raster.</li>
+    <li><b>Convertir PNG &rarr; SVG (trace):</b> <a href="/image-converter-tools/png-to-svg.html">PNG to SVG</a> - solo para logos y arte lineal; no fotografias.</li>
+    <li><b>Compartir por lotes una carpeta de fotos:</b> <a href="/zip-tools/zip-file.html">ZIP</a> despues de comprimir/convertir.</li>
+</ul>
+
+<br/><h2 class="text-uppercase"><b>FAQ</b></h2>
+
+<details class="faq-item">
+  <summary><b>Comprimir una imagen reduce su calidad?</b></summary>
+  <p>La compresion con perdidas (JPG, WebP con perdidas) si; la compresion sin perdidas (PNG, WebP sin perdidas) no. Un JPG en calidad 85 es visualmente indistinguible del original para la mayoria de casos de uso; bajo calidad 70, los artefactos de compresion se vuelven visibles. Para fotos, una compresion moderna de un paso con perdidas a calidad 80-85 es la linea base. Para capturas y arte lineal, manten sin perdidas.</p>
+</details>
+<details class="faq-item">
+  <summary><b>Que formato es el mas pequeno para la web en 2026?</b></summary>
+  <p>Para fotos: AVIF &lt; WebP (con perdidas) &lt; JPG. Para UI y colores planos: WebP (sin perdidas) &lt; PNG. AVIF es aproximadamente 20-30% mas pequeno que WebP en calidad comparable, y WebP es aproximadamente 25-30% mas pequeno que JPG. El intercambio es soporte de navegador y cliente de correo: JPG/PNG universal aun gana donde el alcance importa mas que los bytes.</p>
+</details>
+<details class="faq-item">
+  <summary><b>Puedo comprimir y convertir en un paso?</b></summary>
+  <p>Si, con la herramienta correcta. <a href="/image-tools/compress-image.html">Compress Image</a> puede bajar la calidad <em>y</em> re-codificar a un formato diferente en una sola pasada - sube un PNG, elige "JPG" como salida, y establece calidad 82, y obtienes el resultado convertido-y-comprimido sin ejecutar dos herramientas. Los trabajos por lotes son el unico lugar donde una sola pasada ayuda; las conversiones puntuales generalmente se benefician de conversion explicita primero, compresion segundo, para que veas el tamano del archivo intermedio.</p>
+</details>
+<details class="faq-item">
+  <summary><b>Que hace "re-codificar" a la calidad de imagen?</b></summary>
+  <p>Re-codificar significa decodificar la imagen de vuelta a pixeles brutos y codificar de nuevo con nuevas configuraciones. Para formatos sin perdidas (PNG, WebP sin perdidas), no hay perdida de calidad. Para formatos con perdidas (JPG, WebP con perdidas, AVIF), la nueva codificacion introduce artefactos de compresion frescos incluso si la configuracion de calidad es la misma o mas alta. Si re-guardas un JPG en calidad 85 a calidad 85, la salida es medible peor que la entrada. Manten un archivo fuente (PNG, HEIC, RAW, TIFF) y deriva versiones con perdidas de el bajo demanda en lugar de iterar en el JPG.</p>
+
+<p><b>Volver al <a href="/image-converter-tools.html">hub Image Converter</a></b> para cada herramienta de conversion, o el <a href="/image-tools.html">hub Image Tools</a> para editores, compresores y optimizadores.</p>
+</details>
+</div>
