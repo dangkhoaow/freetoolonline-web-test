@@ -1,0 +1,24 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Warum MD5 Nicht Entschluesselt Werden Kann</b></h1>
+    <p><em>Zuletzt geprueft 2026-04-27. Verwenden Sie <a href="/developer-tools/md5-converter.html">den MD5-Konverter</a>, um Text oder Dateien in Ihrem Browser ohne Upload zu hashen.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-Sekunden-Antwort.</b> MD5 ist ein Hash, keine Verschluesselung. Es gibt keinen Entschluesselungsschluessel, weil nie eine Verschluesselung stattfand. Ein Hash ist eine Einwegfunktion: Eingabe geht hinein, ein Fingerabdruck fester Groesse kommt heraus, die Eingabe kann nicht aus dem Fingerabdruck zurueckgefuehrt werden. "MD5-entschluesseln"-Tools sind tatsaechlich Rainbow-Table-Lookups - sie speichern bekannte Eingabe-zu-Hash-Paare und schlagen den Hash nach. Sie funktionieren fuer kurze, gaengige Eingaben (Passwoerter wie "123456") und scheitern an allem Einzigartigen.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Hashing vs Verschluesselung - der eigentliche Unterschied</b></h2>
+    <p>Verschluesselung ist eine Zwei-Wege-Operation: <code>Klartext + Schluessel &rarr; Chiffretext</code>, und <code>Chiffretext + Schluessel &rarr; Klartext</code>. Derselbe Schluessel kehrt den Prozess um. Verschluesselung ist das, was AES, ChaCha20 und RSA tun.</p>
+    <p>Hashing ist einseitig: <code>Eingabe &rarr; Digest fester Groesse</code>. Es gibt keinen Schluessel und keine Operation, die den Digest zurueck zur Eingabe bringt. Die Funktion wirft absichtlich Information weg. MD5 erzeugt einen 128-Bit-Digest aus beliebiger Eingabe - 1 Byte oder 1 GB. Die ursprueng­liche Eingabe kann aus diesen 128 Bit nicht wiederhergestellt werden, weil sie zu wenig sind, um die Eingabe zu kodieren.</p>
+    <p>Die verlustbehaftete Natur ist Absicht. Hashes existieren, um Integritaet zu verifizieren ("die Datei, die Sie empfangen haben, entspricht der Datei, die ich gesendet habe"), um Inhalte fuer Caches und Deduplizierung zu fingerprinten und historisch um Passwort-Verifier ohne das Passwort selbst zu speichern.</p>
+
+    <h2 class="text-uppercase"><b>Was "MD5-entschluesseln"-Dienste tatsaechlich tun</b></h2>
+    <p>Sie schlagen den Hash in einer Tabelle nach. Die Tabelle enthaelt vorberechnete Hashes fuer Milliarden gaengiger Eingaben - Woerterbuchwoerter, Daten, gaengige Passwoerter ("password", "qwerty", "123456"), gaengige Phrasen. Wenn Ihr Hash zu einem dieser Eintraege passt, gibt der Dienst die Eingabe zurueck. Wenn nicht, gibt der Dienst nichts zurueck.</p>
+    <p>Fuer einzigartige Eingaben scheitert der Tabellen-Ansatz komplett. Das MD5 von "mein-laptop-2026-04-27-datei-pruefsumme-abc" ist in keiner Tabelle, weil niemand diesen genauen String vor Ihnen gehasht hat. Der Hash ist nur durch Raten von Eingaben und selbst Hashen wiederherstellbar - was eine Brute-Force-Suche durch einen Raum ist, der zu gross ist, um erschoepft zu werden.</p>
+
+    <h2 class="text-uppercase"><b>Warum MD5 fuer Passwoerter unsicher ist</b></h2>
+    <p>Die Brute-Force-Suche oben ist fuer kurze oder niedrig-entropische Passwoerter machbar. Eine moderne GPU berechnet Milliarden MD5-Hashes pro Sekunde. Gaengige Passwoerter fallen in Millisekunden; 8-Zeichen-Zufallspasswoerter fallen in Stunden. Deshalb hoerte MD5 vor 15 Jahren auf, sicher fuer Passwortspeicherung zu sein.</p>
+    <p>Die richtigen Primitiven fuer Passwoerter im Jahr 2026 sind bcrypt, scrypt, Argon2 oder PBKDF2 mit hohen Iterationszahlen. Sie sind absichtlich langsam und speicherhungrig konzipiert, sodass die Brute-Force-Suche nicht auf eine GPU passt. Keine davon funktioniert wie MD5; Sie speichern einen gesalzenen, langsam gehashten Verifier und vergleichen neue Anmeldeversuche mit dem Verifier. Siehe <a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - when to hash</a> fuer das breitere Bild.</p>
+
+    <h2 class="text-uppercase"><b>Wo MD5 noch in Ordnung ist</b></h2>
+    <p>Integritaetspruefung fuer nicht-adversarische Daten: Wurde diese Datei sauber heruntergeladen, hat sich dieses Build-Artefakt geaendert, sind diese zwei Dateien byte-identisch. Die Kollisionsangriffe gegen MD5 erfordern manipulierte Eingaben; fuer natuerliche Daten ist MD5 immer noch ein funktionierender Fingerabdruck. <a href="/developer-tools/md5-converter.html">Das MD5-Tool</a> behandelt diese Faelle. Fuer alles Sicherheitssensible verwenden Sie SHA-256 oder staerker ueber <a href="/sha256-converter.html">das SHA-256-Tool</a>. Das vollstaendige Set ist unter <a href="/developer-tools.html">dem Developer-Tools-Hub</a>.</p>
+</div>

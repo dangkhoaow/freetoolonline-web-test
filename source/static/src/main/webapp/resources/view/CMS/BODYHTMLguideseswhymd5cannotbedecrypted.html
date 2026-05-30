@@ -1,0 +1,24 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Por Que MD5 No Se Puede Descifrar</b></h1>
+    <p><em>Ultima revision 2026-04-27. Usa <a href="/developer-tools/md5-converter.html">el conversor MD5</a> para generar hash de texto o archivos en tu navegador sin subir.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Respuesta de 30 segundos.</b> MD5 es un hash, no cifrado. No hay clave de descifrado porque ningun cifrado ocurrio. Un hash es una funcion unidireccional: la entrada entra, una huella digital de tamano fijo sale, la entrada no se puede revertir desde la huella digital. Las herramientas de "descifrar MD5" son en realidad busquedas en tabla arcoiris - almacenan pares conocidos de entrada-a-hash y buscan el hash. Funcionan para entradas cortas y comunes (contrasenas como "123456") y fallan en cualquier cosa unica.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Hashing vs cifrado - la diferencia real</b></h2>
+    <p>El cifrado es una operacion bidireccional: <code>texto claro + clave &rarr; texto cifrado</code>, y <code>texto cifrado + clave &rarr; texto claro</code>. La misma clave revierte el proceso. El cifrado es lo que hacen AES, ChaCha20 y RSA.</p>
+    <p>El hashing es unidireccional: <code>entrada &rarr; digest de tamano fijo</code>. No hay clave, y ninguna operacion lleva el digest de vuelta a la entrada. La funcion deliberadamente descarta informacion. MD5 produce un digest de 128 bits a partir de cualquier entrada - 1 byte o 1 GB. La entrada original no se puede recuperar de esos 128 bits porque son muy pocos para codificar la entrada.</p>
+    <p>La naturaleza con perdidas es intencional. Los hashes existen para verificar integridad ("el archivo que recibiste coincide con el archivo que envie"), para huellear contenido para cachees y deduplicacion, e historicamente para almacenar verificadores de contrasena sin almacenar la contrasena en si.</p>
+
+    <h2 class="text-uppercase"><b>Lo que los servicios de "descifrar MD5" realmente hacen</b></h2>
+    <p>Buscan el hash en una tabla. La tabla contiene hashes precalculados para miles de millones de entradas comunes - palabras de diccionario, fechas, contrasenas comunes ("password", "qwerty", "123456"), frases comunes. Si tu hash coincide con una de esas entradas, el servicio devuelve la entrada. Si no, el servicio devuelve nada.</p>
+    <p>Para entradas unicas, el enfoque de tabla falla completamente. El MD5 de "mi-laptop-2026-04-27-checksum-archivo-abc" no esta en ninguna tabla porque nadie hizo hash de esa cadena exacta antes que tu. El hash solo es recuperable adivinando entradas y hasheandolas tu mismo - que es una busqueda por fuerza bruta a traves de un espacio demasiado grande para agotar.</p>
+
+    <h2 class="text-uppercase"><b>Por que MD5 es inseguro para contrasenas</b></h2>
+    <p>La busqueda por fuerza bruta de arriba es factible para contrasenas cortas o de baja entropia. Una GPU moderna computa miles de millones de hashes MD5 por segundo. Las contrasenas comunes caen en milisegundos; las contrasenas aleatorias de 8 caracteres caen en horas. Por eso MD5 dejo de ser seguro para almacenamiento de contrasenas hace 15 anos.</p>
+    <p>Las primitivas correctas para contrasenas en 2026 son bcrypt, scrypt, Argon2 o PBKDF2 con altas cuentas de iteracion. Estan disenadas para ser lentas y hambrientas de memoria a proposito, para que la busqueda por fuerza bruta no quepa en una GPU. Ninguna funciona como MD5; almacenas un verificador con sal y hash lento, y comparas nuevos intentos de inicio de sesion con el verificador. Ve <a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - when to hash</a> para el panorama mas amplio.</p>
+
+    <h2 class="text-uppercase"><b>Donde MD5 todavia esta bien</b></h2>
+    <p>Verificacion de integridad en datos no adversariales: este archivo se descargo limpio, este artefacto de compilacion cambio, estos dos archivos son identicos byte por byte. Los ataques de colision contra MD5 requieren entradas creadas; para datos naturales, MD5 sigue siendo una huella digital funcional. <a href="/developer-tools/md5-converter.html">La herramienta MD5</a> maneja esos casos. Para cualquier cosa sensible a la seguridad, usa SHA-256 o mas fuerte a traves de <a href="/sha256-converter.html">la herramienta SHA-256</a>. El conjunto completo esta en <a href="/developer-tools.html">el hub de herramientas para desarrolladores</a>.</p>
+</div>

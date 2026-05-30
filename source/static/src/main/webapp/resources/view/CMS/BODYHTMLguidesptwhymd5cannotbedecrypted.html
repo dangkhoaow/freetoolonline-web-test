@@ -1,0 +1,24 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Por Que MD5 Nao Pode Ser Descriptografado</b></h1>
+    <p><em>Ultima revisao 2026-04-27. Use <a href="/developer-tools/md5-converter.html">o conversor MD5</a> para gerar hash de texto ou arquivos no seu navegador sem upload.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Resposta de 30 segundos.</b> MD5 e um hash, nao criptografia. Nao ha chave de descriptografia porque nenhuma criptografia aconteceu. Um hash e uma funcao unidirecional: a entrada entra, uma impressao digital de tamanho fixo sai, a entrada nao pode ser revertida da impressao digital. Ferramentas de "descriptografar MD5" sao na verdade buscas em tabela arco-iris - elas armazenam pares conhecidos de entrada-para-hash e procuram o hash. Funcionam para entradas curtas e comuns (senhas como "123456") e falham em qualquer coisa unica.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Hashing vs criptografia - a diferenca real</b></h2>
+    <p>Criptografia e uma operacao bidirecional: <code>texto claro + chave &rarr; texto cifrado</code>, e <code>texto cifrado + chave &rarr; texto claro</code>. A mesma chave reverte o processo. Criptografia e o que AES, ChaCha20 e RSA fazem.</p>
+    <p>Hashing e unidirecional: <code>entrada &rarr; digest de tamanho fixo</code>. Nao ha chave, e nenhuma operacao leva o digest de volta a entrada. A funcao deliberadamente descarta informacao. MD5 produz um digest de 128 bits a partir de qualquer entrada - 1 byte ou 1 GB. A entrada original nao pode ser recuperada desses 128 bits porque sao poucos demais para codificar a entrada.</p>
+    <p>A natureza com perdas e proposital. Hashes existem para verificar integridade ("o arquivo que voce recebeu coincide com o arquivo que enviei"), para identificar conteudo para caches e desduplicacao, e historicamente para armazenar verificadores de senha sem armazenar a senha em si.</p>
+
+    <h2 class="text-uppercase"><b>O que os servicos de "descriptografar MD5" realmente fazem</b></h2>
+    <p>Eles procuram o hash em uma tabela. A tabela contem hashes pre-computados para bilhoes de entradas comuns - palavras de dicionario, datas, senhas comuns ("password", "qwerty", "123456"), frases comuns. Se seu hash coincide com uma dessas entradas, o servico retorna a entrada. Se nao, o servico retorna nada.</p>
+    <p>Para entradas unicas, a abordagem de tabela falha completamente. O MD5 de "meu-laptop-2026-04-27-checksum-arquivo-abc" nao esta em nenhuma tabela porque ninguem fez hash dessa string exata antes de voce. O hash so e recuperavel adivinhando entradas e fazendo hash voce mesmo - que e uma busca por forca bruta atraves de um espaco grande demais para esgotar.</p>
+
+    <h2 class="text-uppercase"><b>Por que MD5 e inseguro para senhas</b></h2>
+    <p>A busca por forca bruta acima e viavel para senhas curtas ou de baixa entropia. Uma GPU moderna computa bilhoes de hashes MD5 por segundo. Senhas comuns caem em milissegundos; senhas aleatorias de 8 caracteres caem em horas. E por isso que MD5 parou de ser seguro para armazenamento de senhas ha 15 anos.</p>
+    <p>As primitivas corretas para senhas em 2026 sao bcrypt, scrypt, Argon2 ou PBKDF2 com altas contagens de iteracao. Sao projetadas para serem lentas e famintas por memoria de proposito, para que a busca por forca bruta nao caiba em uma GPU. Nenhuma delas funciona como MD5; voce armazena um verificador com sal e hash lento, e voce compara novas tentativas de login com o verificador. Veja <a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - when to hash</a> para o quadro mais amplo.</p>
+
+    <h2 class="text-uppercase"><b>Onde MD5 ainda esta bom</b></h2>
+    <p>Verificacao de integridade em dados nao adversariais: este arquivo baixou limpo, este artefato de build mudou, estes dois arquivos sao identicos byte-a-byte. Os ataques de colisao contra MD5 requerem entradas criadas; para dados naturais, MD5 ainda e uma impressao digital funcional. <a href="/developer-tools/md5-converter.html">A ferramenta MD5</a> lida com esses casos. Para qualquer coisa sensivel a seguranca, use SHA-256 ou mais forte atraves <a href="/sha256-converter.html">da ferramenta SHA-256</a>. O conjunto completo esta em <a href="/developer-tools.html">o hub de ferramentas para desenvolvedores</a>.</p>
+</div>

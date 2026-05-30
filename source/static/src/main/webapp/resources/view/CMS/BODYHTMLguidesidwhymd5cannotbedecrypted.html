@@ -1,0 +1,24 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Mengapa MD5 Tidak Dapat Didekripsi</b></h1>
+    <p><em>Ditinjau terakhir 2026-04-27. Gunakan <a href="/developer-tools/md5-converter.html">konverter MD5</a> untuk mem-hash teks atau file di browser Anda tanpa mengunggah.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Jawaban 30 detik.</b> MD5 adalah hash, bukan enkripsi. Tidak ada kunci dekripsi karena tidak ada enkripsi yang terjadi. Hash adalah fungsi satu arah: input masuk, sidik jari ukuran tetap keluar, input tidak dapat dibalik dari sidik jari. Alat "dekripsi MD5" sebenarnya adalah pencarian tabel pelangi - mereka menyimpan pasangan input-ke-hash yang dikenal dan mencari hash. Mereka bekerja untuk input pendek dan umum (kata sandi seperti "123456") dan gagal pada apapun yang unik.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Hashing vs enkripsi - perbedaan sebenarnya</b></h2>
+    <p>Enkripsi adalah operasi dua arah: <code>teks biasa + kunci &rarr; teks tersandi</code>, dan <code>teks tersandi + kunci &rarr; teks biasa</code>. Kunci yang sama membalikkan proses. Enkripsi adalah apa yang dilakukan AES, ChaCha20, dan RSA.</p>
+    <p>Hashing adalah satu arah: <code>input &rarr; digest ukuran tetap</code>. Tidak ada kunci, dan tidak ada operasi yang membawa digest kembali ke input. Fungsi secara sengaja membuang informasi. MD5 menghasilkan digest 128-bit dari input apapun - 1 byte atau 1 GB. Input asli tidak dapat dipulihkan dari 128 bit itu karena terlalu sedikit untuk mengkode input.</p>
+    <p>Sifat lossy adalah sengaja. Hash ada untuk memverifikasi integritas ("file yang Anda terima cocok dengan file yang saya kirim"), untuk men-sidik-jari konten untuk cache dan deduplikasi, dan secara historis untuk menyimpan verifier kata sandi tanpa menyimpan kata sandi itu sendiri.</p>
+
+    <h2 class="text-uppercase"><b>Apa yang sebenarnya dilakukan layanan "dekripsi MD5"</b></h2>
+    <p>Mereka mencari hash di tabel. Tabel berisi hash pra-komputasi untuk miliaran input umum - kata kamus, tanggal, kata sandi umum ("password", "qwerty", "123456"), frasa umum. Jika hash Anda cocok dengan salah satu entri tersebut, layanan mengembalikan input. Jika tidak, layanan mengembalikan nol.</p>
+    <p>Untuk input unik, pendekatan tabel gagal sepenuhnya. MD5 dari "laptop-saya-2026-04-27-checksum-file-abc" tidak ada di tabel manapun karena tidak ada yang men-hash string tepat itu sebelum Anda. Hash hanya dapat dipulihkan dengan menebak input dan men-hashnya sendiri - yang merupakan pencarian brute force melalui ruang yang terlalu besar untuk dihabiskan.</p>
+
+    <h2 class="text-uppercase"><b>Mengapa MD5 tidak aman untuk kata sandi</b></h2>
+    <p>Pencarian brute force di atas layak untuk kata sandi pendek atau entropi rendah. GPU modern menghitung miliaran hash MD5 per detik. Kata sandi umum jatuh dalam milidetik; kata sandi acak 8 karakter jatuh dalam jam. Itu mengapa MD5 berhenti aman untuk penyimpanan kata sandi 15 tahun lalu.</p>
+    <p>Primitif yang tepat untuk kata sandi di 2026 adalah bcrypt, scrypt, Argon2, atau PBKDF2 dengan jumlah iterasi tinggi. Mereka dirancang untuk lambat dan rakus memori dengan sengaja, sehingga pencarian brute force tidak muat di GPU. Tidak satupun bekerja seperti MD5; Anda menyimpan verifier yang di-salt dan di-hash lambat, dan Anda membandingkan upaya login baru dengan verifier. Lihat <a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - when to hash</a> untuk gambaran yang lebih luas.</p>
+
+    <h2 class="text-uppercase"><b>Di mana MD5 masih baik-baik saja</b></h2>
+    <p>Pemeriksaan integritas pada data non-adversarial: apakah file ini terunduh bersih, apakah artefak build ini berubah, apakah kedua file ini identik byte-demi-byte. Serangan tabrakan terhadap MD5 memerlukan input yang dibuat; untuk data alami, MD5 masih merupakan sidik jari yang berfungsi. <a href="/developer-tools/md5-converter.html">Alat MD5</a> menangani kasus-kasus itu. Untuk apapun yang sensitif terhadap keamanan, gunakan SHA-256 atau lebih kuat melalui <a href="/sha256-converter.html">alat SHA-256</a>. Set lengkap ada di <a href="/developer-tools.html">hub alat developer</a>.</p>
+</div>
