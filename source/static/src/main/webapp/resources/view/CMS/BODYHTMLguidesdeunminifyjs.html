@@ -1,0 +1,65 @@
+<article class="guide-body">
+  <h1>JS Entminifizieren: Lesbarkeit Minifizierten JavaScripts Wiederherstellen</h1>
+  <p class="lead">Minifiziertes JavaScript - die Art, die jeder moderne Bundler unter Namen wie <code>bundle.min.js</code> oder <code>main.[hash].js</code> ausliefert - ist eine einzelne dichte Zeile mit Variablennamen aus einem Buchstaben, ohne Leerzeichen und ohne Zeilenumbrueche. Diese Anleitung beschreibt die dreiminuetige Rueckreise von dieser kompakten Form zu eingerueckten, mit Zeilenumbruechen versehenen Code, den Ihr Auge lesen kann. Das begleitende Werkzeug unter <a href="/js-unminifier.html">/js-unminifier.html</a> fuehrt die Entminifizierung vollstaendig im Browser aus, sodass der Quellcode den Tab nie verlaesst.</p>
+
+  <p class="reviewed">Zuletzt geprueft: 2026-05-20</p>
+  <p class="byline">Geprueft vom FreetoolOnline-Redaktionsteam</p>
+
+  <table class="quick-facts">
+    <thead><tr><th>Eigenschaft</th><th>Wert</th></tr></thead>
+    <tbody>
+      <tr><td>Format</td><td>Online-Werkzeug, ohne Installation</td></tr>
+      <tr><td>Geschwindigkeit</td><td>Browserseitig; lesbare Ausgabe in Sekunden</td></tr>
+      <tr><td>Datenschutz</td><td>Quellcode bleibt auf dem Geraet; nichts wird hochgeladen</td></tr>
+      <tr><td>Variablenumbenennung</td><td>Nicht durchgefuehrt - Ein-Buchstaben-Namen bleiben Ein-Buchstaben-Namen</td></tr>
+      <tr><td>Implementierendes Werkzeug</td><td><a href="/js-unminifier.html">/js-unminifier.html</a></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Was Entminifizieren wirklich macht (und was es nicht kann)</h2>
+  <p>Entminifizieren kehrt die billige Haelfte der Minifizierung um: es fuegt Leerzeichen, Zeilenumbrueche und konsistente Einrueckung wieder ein, sodass aus einem einzeiligen Bundle lesbar formatierter Code wird. Es kehrt NICHT die teure Haelfte um - die Umbenennung. Variablen, die im minifizierten Bundle <code>a</code>, <code>b</code>, <code>t</code> heissen, heissen nach dem Entminifizieren weiterhin <code>a</code>, <code>b</code>, <code>t</code>, weil die Originalnamen beim Build verworfen wurden und keine Source-Map erhalten blieb. Wenn eine Source-Map (<code>.map</code>-Datei oder Inline-Kommentar <code>//# sourceMappingURL=</code>) verfuegbar ist, verweist diese Datei auf die Originalsymbole und ist das richtige Artefakt zum Laden - nicht ein Entminifizierungslauf. Die Leser-Einordnung: Entminifizieren ist das richtige Werkzeug fuer "ich habe ein Drittanbieter-Bundle und will lesen, was es macht"; eine Source-Map ist das richtige Werkzeug fuer "ich habe meinen eigenen Build und will Originalsymbole debuggen".</p>
+
+  <h2>Dreiminuetiger Durchgang</h2>
+  <ol>
+    <li><b>Minifiziertes Bundle kopieren.</b> Oeffnen Sie die <code>.min.js</code>-Datei in Ihrem Editor oder im Netzwerk-Tab des Browsers (Response Body), markieren Sie alles, kopieren Sie.</li>
+    <li><b>In den Editor einfuegen.</b> Oeffnen Sie <a href="/js-unminifier.html">/js-unminifier.html</a> und fuegen Sie in den Eingabebereich ein. Lange Bundles - Hunderte KB oder mehr - funktionieren, aber rechnen Sie damit, dass der Formatlauf eine oder zwei Sekunden dauert, waehrend der Parser die AST durchlaeuft.</li>
+    <li><b>Auf Unminify klicken.</b> Der rechte Bereich zeigt die eingerueckte Ausgabe. Kopieren Sie das Ergebnis zurueck in Ihren Editor oder speichern Sie es als lokale <code>.js</code>-Datei zum grep-artigen Lesen.</li>
+  </ol>
+
+  <h2>Wo die entminifizierte Ausgabe hilft und wo nicht</h2>
+  <p>Drittanbieter-Code im entminifizierten Zustand zu lesen ist in drei konkreten Situationen nuetzlich. Erstens, Vulnerability-Triage - wenn ein CVE eine Funktion in einem Anbieter-Bundle nennt, koennen Sie mit Entminifizieren die Aufrufstellen finden und den umgebenden Fluss lesen, ohne das Originalrepo aufzubauen. Zweitens, Verhaltenspruefung - wenn das Verhalten einer Library zwischen Versionen abweicht, zeigt der Diff der entminifizierten Versionen den Unterschied viel schneller als das Lesen der dichten Einzelzeile. Drittens, Build-Ausgabe-Verifikation - wenn Ihre eigene Pipeline ein Bundle ausgibt, das geheimnisvoll ein Polyfill doppelt laedt, zeigt die entminifizierte Form die duplizierten IIFE-Bloecke auf einen Blick. Entminifizieren hilft nicht, wenn das Ziel die semantischen Originalnamen sind; dafuer liefern Sie die Source-Map mit dem Bundle aus und laden sie in Ihrem Debugger.</p>
+
+  <h2>Was erhalten bleibt, was verloren geht</h2>
+  <p>Leerzeichen, Zeilenumbrueche und Einrueckung werden deterministisch aus der AST wiederhergestellt. Kommentare werden <em>nicht</em> wiederhergestellt - der Minifier entfernt sie beim Build, und im Bundle bleibt keine Information uebrig, um sie zu rekonstruieren. Modulstruktur (CommonJS-<code>require</code>-Aufrufe, ESM-<code>import</code>-Anweisungen) bleibt so erhalten, wie sie in der gebuendelten Form erscheint, was oft ein generierter Wrapper anstelle der originalen Modulgrenze ist. Optimierungen auf Quell-Ebene wie Constant Folding (<code>5*60*60*1000</code> zu <code>18000000</code> kollabiert) werden <em>nicht</em> umgekehrt - Entminifizieren versteht keine Semantik, nur Syntax. Wenn eine Zahl in der entminifizierten Ausgabe kryptisch wirkt, suchen Sie sie im Originalrepo oder raten Sie die Einheit (Millisekunden, Bytes, Indizes).</p>
+
+  <h2>In die andere Richtung?</h2>
+  <p>Wenn Sie hierhergekommen sind, um JS fuer die Produktion zu <em>verkleinern</em> statt zu erweitern, fuehrt das begleitende Werkzeug unter <a href="/js-minifier.html">/js-minifier.html</a> die Vorwaertsrichtung durch (Leerzeichen entfernen, Identifier kuerzen), und der Vergleichsleitfaden <a href="/guides/css-minifier-vs-uglifier-vs-tree-shaking.html">CSS Minifier vs Uglifier vs Tree-Shaking</a> behandelt, wie sich die drei Transformationen in einer typischen Build-Pipeline stapeln. Fuer CSS-seitige Aequivalente siehe <a href="/guides/css-unminifier-vs-prettier-when-to-use-each.html">CSS Unminifier vs Prettier: Wann was verwenden</a> - die JS-seitige Entscheidung ist aehnlich: entminifizieren beim Lesen von Drittanbieter-Ausgabe, Source-Map beim Debuggen des eigenen Builds.</p>
+
+  <h2>FAQ</h2>
+
+  <details class="faq-item">
+    <summary>Stellt Entminifizieren die Originalvariablennamen wieder her?</summary>
+    <p>Nein. Minifier ersetzen Identifier beim Build durch kurze synthetische Namen und verwerfen die Originale; die entminifizierte Ausgabe behaelt die synthetischen Namen. Laden Sie die passende Source-Map im Debugger Ihres Browsers, um die Originalsymbole zu sehen.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Wird der Quellcode irgendwohin hochgeladen?</summary>
+    <p>Nein. Der Entminifizierungslauf laeuft vollstaendig in Ihrem Browser; der minifizierte Text wird nie an einen Server gesendet. Schliessen Sie den Tab und die Eingabe ist weg.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Bricht Entminifizieren das JavaScript?</summary>
+    <p>Nein. Die Transformation ist rein kosmetisch - Leerzeichen, Zeilenumbrueche und Einrueckung. Die AST bleibt unveraendert, sodass der entminifizierte Code identisch zum minifizierten Original laeuft. Lassen Sie es durch einen Syntaxpruefer laufen, wenn Sie eine Guertel-und-Hosentraeger-Bestaetigung wollen.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Wie ist die Dateigroessenbeschraenkung?</summary>
+    <p>Bundles bis zu mehreren Megabyte funktionieren in modernen Browsern; die Zeit des Formatlaufs waechst etwa linear mit der Eingabelaenge. Sehr grosse Bundles (10 MB+) koennen den Tab stottern lassen; in diesem Fall teilen Sie das Bundle entlang von Closure-Grenzen und entminifizieren jedes Chunk separat.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Was ist der Unterschied zwischen Entminifizieren und Prettier?</summary>
+    <p>Entminifizieren stellt lesbare Formatierung in Code wieder her, der absichtlich verdichtet wurde. Prettier (oder ein aehnlicher Formatierer) erzwingt einen gewaehlten Stilleitfaden auf bereits lesbarem Code. Bei einem Drittanbieter-Minified-Bundle erst entminifizieren; wenn Sie dann eine bestimmte Einrueckungsbreite oder Anfuehrungszeichen-Stil wollen, lassen Sie Prettier ueber die Ausgabe laufen.</p>
+  </details>
+
+</article>

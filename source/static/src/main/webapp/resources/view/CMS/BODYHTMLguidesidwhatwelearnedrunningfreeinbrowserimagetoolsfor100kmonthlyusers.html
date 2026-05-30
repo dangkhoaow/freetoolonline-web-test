@@ -1,0 +1,63 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>Apa yang kami pelajari saat menjalankan alat gambar gratis di browser untuk 100 ribu pengguna bulanan</b></h1>
+<time itemprop="datePublished" datetime="2026-04-20T08:00:00Z"><b>Diterbitkan 20 April 2026</b></time>
+<hr/>
+
+<p class="lead">freetoolonline.com merilis sekitar 100 utilitas web - konverter HEIC, alat PDF, tes perangkat, utilitas developer - sebagai halaman HTML statis dengan WebAssembly menangani pekerjaan berat. Tanpa daftar, tanpa upload, tanpa pemrosesan server. Pada bulan terakhir yang representatif, situs melayani sekitar 100.000 pengguna bulanan di sekitar 130 negara, sekitar 1,35 juta tampilan halaman, dan beberapa terabyte pemrosesan wasm di sisi browser. Tulisan ini mencakup keputusan arsitektur yang bertahan pada skala itu, hal-hal yang kami lakukan salah dan diperbaiki, serta kejutan yang tidak muncul di tutorial mana pun.</p>
+
+<br/><h2 class="text-uppercase"><b>Bentuk trafik</b></h2>
+<p>Kategori per kategori, trafik sangat tidak merata. <b>Alat ZIP</b> sendiri menyumbang sekitar 81% klik situs - satu alat spesifik, <b>unzip file</b>, adalah sumber klik pencarian masuk terbesar tunggal, jauh melebihi 99 alat lainnya digabungkan. Lapisan kedua adalah <b>konversi gambar</b> (HEIC ke JPG memimpin), <b>tes perangkat</b> (LCD test memimpin), dan <b>alat PDF</b> (remove-password memimpin). Alat developer dan alat video adalah long-tail. Lihat <a href="/tags.html">indeks tag</a> kami untuk rincian kategori lengkap.</p>
+<p>Distribusi geografis juga tidak merata. Pengunjung India dan AS datang dalam volume serupa, tetapi pengunjung India sekitar dua belas kali lebih mungkin mengklik dari hasil pencarian dan menyelesaikan tugas. Alat yang sama - HEIC ke JPG - berperilaku sepenuhnya berbeda di hasil pencarian AS (di mana pengguna iPhone mengharapkan jawaban yang terlihat premium) dibandingkan di hasil pencarian India (di mana utilitas dan kecepatan menang).</p>
+
+<br/><h2 class="text-uppercase"><b>Mengapa semuanya berjalan di browser</b></h2>
+<p>Setiap alat diimplementasikan di browser via WebAssembly + JavaScript. Tidak ada backend yang memproses file pengguna. Alasannya praktis, bukan ideologis:</p>
+<p><b>Privasi adalah pemasarannya.</b> "File Anda tidak pernah meninggalkan perangkat Anda" adalah janji yang tidak bisa diberikan alat berbasis server pada skala apa pun. Pengguna yang mendarat di halaman HEIC-ke-JPG dengan foto KTP, kontrak sewa, tagihan medis - mereka membaca klaim itu sebelum mengklik.</p>
+<p><b>Penskalaan biaya berlawanan dengan dugaan Anda.</b> Layanan konversi berbasis server pada 100 ribu pengguna bulanan akan membutuhkan compute, storage, dan bandwidth yang tidak sepele. Arsitektur di browser memiliki biaya tetap (bundle HTML + JS + wasm statis yang dilayani dari CDN GitHub Pages, sekitar $0/bulan). Perangkat pengguna yang melakukan pekerjaan.</p>
+<p><b>Skala-ke-nol adalah default.</b> Nol trafik = nol biaya, nol layanan berjalan, nol permukaan keamanan. Jutaan tampilan halaman = biaya nol yang sama karena semuanya adalah file statis yang di-cache di CDN ditambah CPU pengguna.</p>
+
+<br/><h2 class="text-uppercase"><b>Apa yang patah di setiap tingkat trafik</b></h2>
+<p>Pada <b>sekitar 1.000 pengguna bulanan</b>, tidak ada yang patah. Bundle wasm muat di browser, alat bekerja, situs deploy dengan GitHub Actions. Iterasi cepat lebih penting dari apa pun.</p>
+<p>Pada <b>sekitar 10.000 pengguna bulanan</b>, SEO mulai penting. Alatnya bagus; tidak ada yang menemukan. Menulis ulang title dan meta description (memimpin dengan query persis yang diketik pengguna) menggerakkan trafik 2-5&times;. Lihat panduan perbandingan kami <a href="/guides/jpg-vs-png-for-web.html">JPG vs PNG</a> dan lainnya - masing-masing adalah saudara dari alat, ditulis untuk menangkap query funnel atas yang tidak diranking alat sendiri.</p>
+<p>Pada <b>sekitar 100.000 pengguna bulanan</b>, schema dan sinyal kepercayaan mulai muncul dalam data trafik. Halaman dengan HowTo atau FAQPage JSON-LD menarik klik per kemunculan yang terukur lebih banyak daripada halaman tanpa. Byline editorial dan blok "Mengapa percaya kami" pada halaman hub kategori memberi makan sinyal kepercayaan yang dihargai pedoman Helpful Content Google; tampilan halaman bulanan halaman kategori naik sekitar 15% setelah kami menambahkan permukaan itu.</p>
+<p>Pada <b>skala yang lebih tinggi</b>, plafon pertumbuhan bukan lagi visibilitas pencarian itu sendiri; itu adalah reputasi - ditautkan, direkomendasikan, dan dikutip dari situs yang sudah dipercaya pembaca Anda. Kami belum mencapai plafon itu; kami berada di sekitar 30 domain perujuk, sebagian besar datang organik dan tidak ada dari outreach aktif. Tahap berikutnya bagi kami adalah outreach itu.</p>
+
+<br/><h2 class="text-uppercase"><b>Lima hal yang kami lakukan salah dan diperbaiki</b></h2>
+<p><b>1. First-paint tersembunyi di balik overlay loading.</b> Template dasar kami menempatkan overlay layar penuh "Inisialisasi, harap tunggu" di setiap halaman hingga JS selesai memuat. Pada halaman /guides/* (yang tidak butuh JS UI alat), overlay tinggal selamanya - pengguna melihat halaman kosong. Perbaikannya: pindahkan logika menutup overlay ke template dasar, bukan di setiap skrip alat, sehingga setiap jenis halaman menutup overlay secara seragam.</p>
+<p><b>2. Hierarki heading bocor dari widget UI alat.</b> Beberapa halaman alat (LCD test, MD5 converter, GIF maker) memiliki label widget <code>&lt;h3&gt;</code> atau <code>&lt;h6&gt;</code> yang dirender sebelum <code>&lt;h1&gt;</code> halaman. Alat aksesibilitas menandainya sebagai kesalahan hierarki; audit SEO menandainya sebagai kelemahan sinyal topical. Perbaikannya: turunkan label widget ke <code>&lt;p&gt;</code> dengan CSS untuk mempertahankan bobot visual. Sederhana tetapi sering terlewat.</p>
+<p><b>3. FAQ JSON-LD diam-diam putus di beberapa halaman.</b> Ekstraktor schema kami mencocokkan bagian FAQ berdasarkan heading literal "Frequently Asked Questions". Beberapa bagian FAQ menggunakan "FAQ:" atau "FAQs"; schema FAQPage mereka tidak pernah dipancarkan. Perbaikannya: perluas regex ekstraktor. Bug-nya adalah perubahan character class tunggal; dampaknya 4 halaman alat mendapatkan kembali kelayakan rich-result.</p>
+<p><b>4. URL alias muncul sebagai duplikat dalam laporan indeks Google.</b> URL alias pendek (mis. <code>/mov-to-mp4.html</code> &rarr; <code>/video-converter.html</code>) memancarkan <code>noindex, nofollow</code>, yang secara teknis benar tetapi menyia-nyiakan link equity alias. Beralih ke <code>noindex, follow</code> meneruskan equity ke canonical tanpa risiko indeks duplikat. Perubahan kecil; pemulihan material.</p>
+<p><b>5. Staging dan produksi mengalami divergensi.</b> Repo staging kami tinggal di GitHub Pages (<code>dangkhoaow.github.io/freetoolonline-web-test</code>); produksi tinggal di <code>freetoolonline.com</code> didukung repo GitHub terpisah. Proses mirror khusus menjaga keduanya tetap sinkron. Pada satu titik kami memiliki 20+ commit di staging yang tidak dimirror ke produksi - situs menyajikan konten pre-release. Perbaikannya: kontrak mirror tertulis (file mana, branch mana, aturan jangan-pernah-copy mana) dan audit reguler.</p>
+
+<br/><h2 class="text-uppercase"><b>Seperti apa anggaran wasm sebenarnya</b></h2>
+<p>Browser modern memberikan tab sekitar 4 GB heap di desktop dan 1-2 GB di mobile. Setelah kode wasm, JIT, dan UI mengkonsumsi bagian mereka, alat wasm memiliki sekitar 1-2 GB untuk bekerja. Realitas untuk setiap keluarga alat:</p>
+<ul>
+<li><b>Konversi HEIC:</b> foto 40 MP didekode dalam sekitar 150 MB memori kerja; lusinan file per batch muat dengan nyaman. 500 file dalam satu batch dapat OOM.</li>
+<li><b>Manipulasi PDF:</b> PDF 100 halaman dirender halaman demi halaman baik-baik saja; PDF 500 halaman dimuat ke buffer tunggal untuk re-encode sering gagal di mobile.</li>
+<li><b>Konversi video FFmpeg:</b> klip 1080p 60 detik di-transcode dalam sekitar 600 MB; apa pun yang lebih panjang atau resolusi lebih tinggi adalah batasnya.</li>
+<li><b>Minifikasi / kompresi gambar:</b> pada dasarnya tanpa batas - CPU adalah bottleneck.</li>
+</ul>
+<p>Kami menyampaikan batasan ini dengan jelas di setiap halaman alat. Pengguna yang memilih video 5 GB dan melihat peringatan "ini mungkin gagal" sebelum mengklik Start adalah pengguna yang tidak mengajukan tiket dukungan.</p>
+
+<br/><h2 class="text-uppercase"><b>Tiga pengamatan kontra-intuitif</b></h2>
+<p><b>Trafik mobile mengklik lebih sering daripada desktop, bukan lebih jarang.</b> Kebijaksanaan web umum adalah pengguna mobile mengintip dan tidak mengklik. Data kami menunjukkan sebaliknya pada halaman alat: klik mobile mendarat sekitar 6,7% dibandingkan 5,6% desktop. Hipotesis: pencari mobile lebih sering dalam mode "selesaikan ini sekarang" (baru saja memotret dengan iPhone, membutuhkannya sebagai JPG) vs pencari desktop dalam mode eksplorasi.</p>
+<p><b>Long-tail adalah sebagian besar nilai, bahkan untuk situs alat.</b> 10 alat teratas menyumbang sekitar 80% visibilitas pencarian tetapi hanya sekitar 60% klik. Long-tail - lusinan alat kecil - berkonversi pada tingkat klik lebih tinggi karena setiap query lebih spesifik. Jangan deprecate alat karena visibilitas pencariannya rendah.</p>
+<p><b>Peningkatan schema membuahkan hasil dalam minggu, bukan bulan.</b> HowTo JSON-LD, FAQPage, BreadcrumbList - menambahkan ini ke halaman secara konsisten mengangkat tingkat klik sebesar 0,3 - 0,8 poin persentase dalam 2 - 3 minggu setelah Google re-crawl. Konten yang sama tanpa schema menunggu 2 - 3 bulan agar peningkatan peringkat diterjemahkan menjadi volume klik.</p>
+
+<br/><h2 class="text-uppercase"><b>Apa yang masih belum kami pecahkan</b></h2>
+<p>Tingkat klik AS (sekitar 1,1%) tetap satu orde besaran di belakang India (sekitar 12%). Kami menulis ulang judul dan deskripsi dalam bahasa-AS-pertama; selisihnya menyempit perlahan. Kami menduga hasil pencarian AS lebih kompetitif - lebih banyak alat bersaing untuk tugas yang sama - bukan halaman kami yang lebih buruk dalam istilah absolut.</p>
+<p>RPM AdSense bervariasi 50% bulan-ke-bulan tanpa penyebab terlihat. Bauran geografis bergeser, bauran kategori bergeser, eksperimen penempatan - tidak ada yang sepenuhnya menjelaskan varians. Sisi pendapatan situs kurang dapat diprediksi daripada sisi trafik.</p>
+<p>Pertumbuhan domain perujuk macet di sekitar 30 domain. Outreach belum jadi prioritas; tahap berikutnya situs adalah mengubah itu.</p>
+
+<br/><h2 class="text-uppercase"><b>Apa yang akan kami rekomendasikan kepada siapa pun yang membangun sesuatu serupa</b></h2>
+<p>Rilis halaman statis dengan wasm untuk pekerjaan berat. Tolak dorongan menambahkan akun, kuota, atau tier premium - itu adalah pajak usability tanpa pendapatan yang sesuai. Lakukan privasi dengan arsitektur (tidak ada yang upload) daripada dengan marketing ("kami tidak log"). Tulis konten SEO seakan Anda adalah teman pengguna yang menjelaskan tugas, bukan departemen marketing alat. Ukur cold-start, parse time, dan first-paint pada perangkat nyata, bukan dev lokal.</p>
+
+<br/><h2 class="text-uppercase"><b>Panduan terkait</b></h2>
+<ul>
+    <li><a href="/guides/jpg-vs-png-for-web.html">JPG vs PNG untuk web</a></li>
+    <li><a href="/guides/heic-vs-jpg-vs-webp.html">HEIC vs JPG vs WebP</a></li>
+    <li><a href="/guides/mp4-vs-webm-for-web.html">MP4 vs WebM untuk web</a></li>
+    <li><a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs lokal</a></li>
+</ul>
+
+<p><br/><a href="/">&larr; Kembali ke Beranda</a></p>
+</div>

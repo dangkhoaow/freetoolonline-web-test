@@ -1,0 +1,63 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>Lo que aprendimos ejecutando herramientas de imagen gratis en el navegador para 100 mil usuarios mensuales</b></h1>
+<time itemprop="datePublished" datetime="2026-04-20T08:00:00Z"><b>Publicado el 20 de abril de 2026</b></time>
+<hr/>
+
+<p class="lead">freetoolonline.com publica unas 100 utilidades web - conversores HEIC, herramientas PDF, pruebas de dispositivo, utilidades de desarrollador - como paginas HTML estaticas con WebAssembly haciendo el trabajo pesado. Sin registro, sin subir archivos, sin procesamiento en servidor. En un mes reciente representativo, el sitio atendio a unos 100.000 usuarios mensuales en aproximadamente 130 paises, alrededor de 1,35 millones de paginas vistas, y unos pocos terabytes de procesamiento wasm del lado del navegador. Este texto cubre las decisiones de arquitectura que se sostienen a esa escala, las cosas que hicimos mal y corregimos, y las sorpresas que no aparecen en ningun tutorial.</p>
+
+<br/><h2 class="text-uppercase"><b>La forma del trafico</b></h2>
+<p>Categoria por categoria, el trafico es enormemente desigual. <b>Herramientas ZIP</b> solas representan alrededor del 81% de los clics del sitio - una herramienta especifica, <b>unzip file</b>, es la fuente unica mas grande de clics de busqueda entrantes, eclipsando a las otras 99 herramientas combinadas. La segunda capa es <b>conversion de imagen</b> (HEIC a JPG lidera), <b>pruebas de dispositivo</b> (LCD test lidera), y <b>herramientas PDF</b> (remove-password lidera). Herramientas de desarrollador y de video son long-tail. Vea nuestro <a href="/tags.html">indice de tags</a> para el desglose completo de categorias.</p>
+<p>La distribucion geografica es similarmente desigual. Visitantes indios y estadounidenses llegan en volumen parecido, pero los visitantes indios tienen aproximadamente doce veces mas probabilidad de hacer clic desde los resultados de busqueda y completar la tarea. La misma herramienta - HEIC a JPG - se comporta de manera completamente diferente en los resultados de busqueda de EE.UU. (donde los usuarios de iPhone esperan respuestas con apariencia premium) que en los resultados de busqueda indios (donde utilidad y velocidad ganan).</p>
+
+<br/><h2 class="text-uppercase"><b>Por que todo se ejecuta en el navegador</b></h2>
+<p>Cada herramienta esta implementada en el navegador con WebAssembly + JavaScript. No hay backend que procese los archivos del usuario. Las razones son practicas, no ideologicas:</p>
+<p><b>La privacidad es el marketing.</b> "Sus archivos nunca salen de su dispositivo" es una promesa que una herramienta con backend no puede hacer a ninguna escala. Usuarios que llegan a una pagina HEIC-a-JPG con fotos de su DNI, su contrato de alquiler, sus facturas medicas - ellos leen esa afirmacion antes de hacer clic.</p>
+<p><b>El escalado de costos es lo opuesto de lo que se esperaria.</b> Un servicio de conversion con backend a 100 mil usuarios mensuales requeriria computo, almacenamiento y ancho de banda no triviales. La arquitectura en el navegador tiene costo fijo (los bundles estaticos HTML + JS + wasm servidos desde el CDN de GitHub Pages, aproximadamente $0/mes). El dispositivo del usuario hace el trabajo.</p>
+<p><b>Escalar a cero es el predeterminado.</b> Cero trafico = cero costo, cero servicios corriendo, cero superficie de seguridad. Millones de paginas vistas = el mismo costo cero porque son archivos estaticos cacheados en el CDN mas la CPU del usuario.</p>
+
+<br/><h2 class="text-uppercase"><b>Que se rompe en cada nivel de trafico</b></h2>
+<p>A <b>unos 1.000 usuarios mensuales</b>, nada se rompe. Los bundles wasm caben en el navegador, las herramientas funcionan, el sitio se despliega con GitHub Actions. Iterar rapido importa mas que cualquier otra cosa.</p>
+<p>A <b>unos 10.000 usuarios mensuales</b>, el SEO empieza a importar. Las herramientas son buenas; nadie las encuentra. Reescribir titulo y meta description (empezar por la query exacta que escribio el usuario) mueve trafico en 2-5&times;. Vea nuestras guias de comparacion <a href="/guides/jpg-vs-png-for-web.html">JPG vs PNG</a> y otras - cada una es hermana de una herramienta, escrita para capturar la query de funnel superior por la que la herramienta sola no rankea.</p>
+<p>A <b>unos 100.000 usuarios mensuales</b>, schema y senales de confianza empiezan a aparecer en los datos de trafico. Las paginas con HowTo o FAQPage JSON-LD atraen medibles mas clics por aparicion que las paginas sin. Una byline editorial y un bloque "Por que confiar en nosotros" en paginas de hub de categoria alimentan las senales de confianza que las directrices Helpful Content de Google recompensan; las paginas vistas mensuales de pagina de categoria subieron aproximadamente 15% despues de agregar esa superficie.</p>
+<p>A <b>escalas mayores</b>, el techo de crecimiento ya no es la visibilidad de busqueda en si; es reputacion - ser enlazado, recomendado y citado desde sitios en los que sus lectores ya confian. No hemos alcanzado ese techo; estamos en aproximadamente 30 dominios referentes, la mayoria llegando organicamente y ninguno de outreach activo. La proxima etapa para nosotros es ese outreach.</p>
+
+<br/><h2 class="text-uppercase"><b>Las cinco cosas que hicimos mal y corregimos</b></h2>
+<p><b>1. El primer paint estaba oculto detras de un overlay de carga.</b> Nuestra plantilla base ponia un overlay a pantalla completa "Inicializando, por favor espere" en cada pagina hasta que el JS terminara de cargar. En las paginas /guides/* (que no necesitan JS de UI de herramienta), el overlay quedaba para siempre - los usuarios veian una pagina en blanco. La correccion: dejar la logica de cerrar el overlay en la plantilla base, no en el script de cada herramienta, para que cada tipo de pagina cierre el overlay uniformemente.</p>
+<p><b>2. La jerarquia de encabezados se filtraba desde los widgets de UI de herramienta.</b> Varias paginas de herramienta (LCD test, MD5 converter, GIF maker) tenian etiquetas de widget <code>&lt;h3&gt;</code> o <code>&lt;h6&gt;</code> renderizadas antes del <code>&lt;h1&gt;</code> de la pagina. Las herramientas de accesibilidad lo marcaban como error de jerarquia; las auditorias SEO lo marcaban como debilidad de senal topical. La correccion: degradar las etiquetas de widget a <code>&lt;p&gt;</code> con CSS para preservar el peso visual. Simple pero ampliamente pasado por alto.</p>
+<p><b>3. FAQ JSON-LD se caia en silencio en algunas paginas.</b> Nuestro extractor de schema hacia match con secciones FAQ por el encabezado literal "Frequently Asked Questions". Algunas secciones FAQ usaban "FAQ:" o "FAQs" en su lugar; su schema FAQPage nunca se emitia. La correccion: ampliar el regex del extractor. El bug fue un cambio de una sola character class; el impacto fueron 4 paginas de herramienta recuperando elegibilidad para rich results.</p>
+<p><b>4. URLs alias aparecian como duplicadas en los reportes de indice de Google.</b> URLs alias cortas (por ejemplo, <code>/mov-to-mp4.html</code> &rarr; <code>/video-converter.html</code>) emitian <code>noindex, nofollow</code>, lo que es tecnicamente correcto pero desperdicia el link equity del alias. Cambiar a <code>noindex, follow</code> paso el equity a la canonical sin riesgo de indexacion duplicada. Cambio pequeno; recuperacion material.</p>
+<p><b>5. Staging y produccion divergieron.</b> Nuestro repo de staging vive en GitHub Pages (<code>dangkhoaow.github.io/freetoolonline-web-test</code>); produccion vive en <code>freetoolonline.com</code> respaldado por un repo GitHub separado. Un proceso dedicado de mirror mantiene los dos en sincronia. En un momento tuvimos 20+ commits en staging que no fueron espejados en produccion - el sitio estaba sirviendo contenido pre-release. La correccion: un contrato de mirror escrito (cuales archivos, cuales branches, cuales reglas nunca-copiar) y una auditoria regular.</p>
+
+<br/><h2 class="text-uppercase"><b>Como se ve realmente el presupuesto de wasm</b></h2>
+<p>Los navegadores modernos dan a una pestana cerca de 4 GB de heap en desktop y 1-2 GB en mobile. Despues de que el codigo wasm, el JIT y la UI consumen su parte, una herramienta wasm tiene cerca de 1-2 GB para trabajar. La realidad por familia de herramientas:</p>
+<ul>
+<li><b>Conversion HEIC:</b> una foto de 40 MP se decodifica en cerca de 150 MB de memoria de trabajo; docenas de archivos por lote caben comodamente. 500 archivos en un lote pueden causar OOM.</li>
+<li><b>Manipulacion de PDF:</b> un PDF de 100 paginas renderizado pagina por pagina va bien; un PDF de 500 paginas cargado en un solo buffer para re-encodear falla con frecuencia en mobile.</li>
+<li><b>Conversion de video con FFmpeg:</b> un clip 1080p de 60 segundos transcodifica en cerca de 600 MB; cualquier cosa mas larga o de mayor resolucion es el limite.</li>
+<li><b>Minificacion / compresion de imagen:</b> esencialmente sin limite - la CPU es el cuello de botella.</li>
+</ul>
+<p>Mensajeamos estos limites claramente en cada pagina de herramienta. Un usuario que elige un video de 5 GB y ve avisos "esto puede fallar" antes de hacer clic en Start es un usuario que no abre un ticket de soporte.</p>
+
+<br/><h2 class="text-uppercase"><b>Tres observaciones contra-intuitivas</b></h2>
+<p><b>El trafico mobile clica con mas frecuencia que el desktop, no menos.</b> La sabiduria web comun es que los usuarios mobile pasan el ojo y no clican. Nuestros datos muestran lo contrario en paginas de herramienta: los clics mobile aciertan alrededor del 6,7% de las veces vs 5,6% del desktop. La hipotesis: los buscadores mobile estan con mas frecuencia en modo "resolver esto ahora" (acaban de sacar una foto con iPhone, la necesitan como JPG) vs los buscadores desktop en modo exploracion.</p>
+<p><b>La cola larga es la mayor parte del valor, incluso en un sitio de herramientas.</b> Las 10 herramientas top representan alrededor del 80% de la visibilidad de busqueda pero solo alrededor del 60% de los clics. La cola larga - docenas de herramientas pequenas - convierte a una tasa de clic mas alta porque cada query es mas especifica. No deprecie una herramienta porque tiene baja visibilidad de busqueda.</p>
+<p><b>Las mejoras de schema se pagan en semanas, no en meses.</b> HowTo JSON-LD, FAQPage, BreadcrumbList - agregar esto a una pagina sube consistentemente las tasas de clic en 0,3 - 0,8 puntos porcentuales dentro de 2 - 3 semanas despues de que Google recrawle. El mismo contenido sin schema espera 2 - 3 meses para que las mejoras de ranking se traduzcan en volumen de clic.</p>
+
+<br/><h2 class="text-uppercase"><b>Lo que todavia no hemos resuelto</b></h2>
+<p>Las tasas de clic en EE.UU. (alrededor de 1,1%) siguen un orden de magnitud detras de India (alrededor de 12%). Reescribimos titulos y descripciones en lenguaje primero para EE.UU.; la brecha se reduce lentamente. Sospechamos que los resultados de busqueda de EE.UU. son mas competitivos - mas herramientas compitiendo por la misma tarea - no que nuestras paginas sean peores en terminos absolutos.</p>
+<p>El RPM de AdSense varia 50% mes a mes sin causa visible. Mezcla geografica cambia, mezcla de categorias cambia, experimentos de colocacion - ninguno explica totalmente la varianza. El lado de ingresos del sitio es menos predecible que el lado de trafico.</p>
+<p>El crecimiento de dominios referentes esta atascado en unos 30 dominios. El outreach no ha sido prioridad; la proxima fase del sitio es cambiar eso.</p>
+
+<br/><h2 class="text-uppercase"><b>Lo que recomendariamos a alguien construyendo algo similar</b></h2>
+<p>Publique paginas estaticas con wasm para el trabajo pesado. Rechace la tentacion de agregar cuentas, cuotas o niveles premium - son impuesto de usabilidad sin ingresos coincidentes. Haga privacidad con la arquitectura (nada sube) en lugar de con marketing ("no logueamos"). Escriba el contenido SEO como si fuera el amigo del usuario explicando la tarea, no como si fuera el departamento de marketing de la herramienta. Mida cold-start, parse time y first-paint en dispositivos reales, no en su dev local.</p>
+
+<br/><h2 class="text-uppercase"><b>Guias relacionadas</b></h2>
+<ul>
+    <li><a href="/guides/jpg-vs-png-for-web.html">JPG vs PNG para web</a></li>
+    <li><a href="/guides/heic-vs-jpg-vs-webp.html">HEIC vs JPG vs WebP</a></li>
+    <li><a href="/guides/mp4-vs-webm-for-web.html">MP4 vs WebM para web</a></li>
+    <li><a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs local</a></li>
+</ul>
+
+<p><br/><a href="/">&larr; Volver al Inicio</a></p>
+</div>

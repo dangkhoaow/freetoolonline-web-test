@@ -1,0 +1,65 @@
+<article class="guide-body">
+  <h1>Desminificar JS: Restaurar la Legibilidad de JavaScript Minificado</h1>
+  <p class="lead">JavaScript minificado - el tipo entregado por todo bundler moderno con nombres como <code>bundle.min.js</code> o <code>main.[hash].js</code> - es una sola linea densa con nombres de variable de una letra, sin espacios en blanco y sin saltos de linea. Esta guia recorre el viaje de tres minutos desde esa forma compacta de vuelta a codigo indentado y con saltos de linea que su ojo puede leer. La herramienta companera en <a href="/js-unminifier.html">/js-unminifier.html</a> ejecuta la desminificacion enteramente dentro del navegador, asi que el codigo fuente nunca sale de la pestana.</p>
+
+  <p class="reviewed">Ultima revision: 2026-05-20</p>
+  <p class="byline">Revisado por el equipo editorial FreetoolOnline</p>
+
+  <table class="quick-facts">
+    <thead><tr><th>Propiedad</th><th>Valor</th></tr></thead>
+    <tbody>
+      <tr><td>Formato</td><td>Herramienta online, sin instalar</td></tr>
+      <tr><td>Velocidad</td><td>En el navegador; salida legible en segundos</td></tr>
+      <tr><td>Privacidad</td><td>El codigo fuente se queda en el dispositivo; nada se sube</td></tr>
+      <tr><td>Renombrar variable</td><td>No se realiza - los nombres de una letra siguen siendo de una letra</td></tr>
+      <tr><td>Herramienta implementadora</td><td><a href="/js-unminifier.html">/js-unminifier.html</a></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Lo que desminificar realmente hace (y lo que no puede hacer)</h2>
+  <p>Desminificar revierte la mitad barata de la minificacion: re-inserta espacio en blanco, saltos de linea e indentacion consistente, asi que un bundle de una linea se vuelve codigo formateado legible. NO revierte la mitad cara - el renombrador. Variables llamadas <code>a</code>, <code>b</code>, <code>t</code> en el bundle minificado siguen llamandose <code>a</code>, <code>b</code>, <code>t</code> despues de desminificar, porque los nombres originales se descartaron en tiempo de build y no se preservo source map. Si un source map (archivo <code>.map</code> o comentario inline <code>//# sourceMappingURL=</code>) esta disponible, ese archivo apunta a los simbolos originales y es el artefacto correcto a cargar - no una pasada de desminificar. El enfoque para el lector: desminificar es la herramienta correcta para "tengo un bundle de terceros y quiero leer lo que hace"; un source map es la herramienta correcta para "tengo mi propio build y quiero depurar simbolos originales".</p>
+
+  <h2>Recorrido de tres minutos</h2>
+  <ol>
+    <li><b>Copie el bundle minificado.</b> Abra el archivo <code>.min.js</code> en su editor o en la pestana de red del navegador (Response body), seleccione todo, copie.</li>
+    <li><b>Pegue en el editor.</b> Abra <a href="/js-unminifier.html">/js-unminifier.html</a> y pegue en el panel de entrada. Bundles largos - cientos de KB o mas - funcionan, pero espere que la pasada de formato tome un segundo o dos mientras el parser recorre la AST.</li>
+    <li><b>Haga clic en Unminify.</b> El panel derecho muestra la salida indentada. Copie el resultado de vuelta a su editor o guardelo como un archivo <code>.js</code> local para lectura tipo grep.</li>
+  </ol>
+
+  <h2>Donde la salida desminificada ayuda y donde no</h2>
+  <p>Leer codigo de terceros desminificado es util en tres situaciones concretas. Primero, triaje de vulnerabilidad - cuando un CVE nombra una funcion dentro de un bundle de proveedor, desminificar le permite localizar las llamadas y leer el flujo circundante sin montar el repo original. Segundo, confirmacion de comportamiento - cuando el comportamiento de una libreria varia entre versiones, comparar las versiones desminificadas saca la diferencia mucho mas rapido que leer la forma densa de una linea. Tercero, verificacion de salida de build - cuando su propio pipeline emite un bundle que misteriosamente carga dos veces un polyfill, la forma desminificada muestra los bloques IIFE duplicados de un vistazo. Desminificar no ayudara cuando el objetivo sean los nombres semanticos originales; para eso, entregue el source map junto al bundle y cargelo en su depurador.</p>
+
+  <h2>Lo que se preserva, lo que se pierde</h2>
+  <p>Espacio en blanco, saltos de linea e indentacion se restauran deterministicamente desde la AST. Los comentarios <em>no</em> se restauran - el minificador los quita en tiempo de build, y no queda informacion en el bundle para reconstruirlos. La estructura de modulo (llamadas CommonJS <code>require</code>, declaraciones ESM <code>import</code>) se preserva como aparece en la forma empaquetada, que a menudo es un wrapper generado en lugar del limite original del modulo. Optimizaciones a nivel de fuente como constant folding (<code>5*60*60*1000</code> colapsado a <code>18000000</code>) <em>no</em> se revierten - desminificar no entiende semantica, solo sintaxis. Si un numero se lee como criptico en la salida desminificada, busquelo en el repositorio original o adivine la unidad (milisegundos, bytes, indices).</p>
+
+  <h2>Yendo en sentido contrario?</h2>
+  <p>Si llego aqui buscando <em>encoger</em> JS para produccion en vez de expandirlo, la herramienta companera en <a href="/js-minifier.html">/js-minifier.html</a> realiza la direccion hacia adelante (eliminar espacios, acortar identificadores) y la guia de comparacion <a href="/guides/css-minifier-vs-uglifier-vs-tree-shaking.html">CSS Minifier vs Uglifier vs Tree-Shaking</a> cubre como las tres transformaciones se apilan en un pipeline de build tipico. Para equivalentes del lado CSS, vea <a href="/guides/css-unminifier-vs-prettier-when-to-use-each.html">CSS Unminifier vs Prettier: Cuando Usar Cada Uno</a> - la decision del lado JS es similar: desminificar al leer salida de terceros, source map al depurar la propia.</p>
+
+  <h2>FAQ</h2>
+
+  <details class="faq-item">
+    <summary>Desminificar recupera los nombres originales de las variables?</summary>
+    <p>No. Los minificadores reemplazan identificadores con nombres sinteticos cortos en tiempo de build y descartan los originales; la salida desminificada mantiene los nombres sinteticos. Cargue el source map correspondiente en el depurador de su navegador para ver los simbolos originales.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>El codigo fuente se sube a algun lugar?</summary>
+    <p>No. La pasada de desminificar se ejecuta enteramente en su navegador; el texto minificado nunca se envia a un servidor. Cierre la pestana y la entrada se va.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Desminificar rompera el JavaScript?</summary>
+    <p>No. La transformacion es puramente cosmetica - espacio en blanco, saltos de linea, indentacion. La AST no cambia, asi que el codigo desminificado corre identicamente al minificado original. Pase por un verificador de sintaxis si quiere una confirmacion con cinturon y tirantes.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Cual es el limite de tamano de archivo?</summary>
+    <p>Bundles de hasta varios megabytes funcionan en navegadores modernos; el tiempo de la pasada de formato crece aproximadamente lineal con la longitud de entrada. Bundles muy grandes (10 MB+) pueden trabar la pestana; en ese caso divida el bundle por limite de closure y desminifique cada chunk por separado.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Cual es la diferencia entre desminificar y prettier?</summary>
+    <p>Desminificar restaura formato legible a codigo que fue deliberadamente compactado. Prettier (o un formateador similar) impone una guia de estilo elegida sobre codigo ya legible. Para un bundle de terceros minificado, desminifique primero; si despues quiere un ancho de indent o estilo de comillas especifico, ejecute prettier sobre la salida.</p>
+  </details>
+
+</article>

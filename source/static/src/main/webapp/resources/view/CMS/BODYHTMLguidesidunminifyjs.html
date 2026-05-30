@@ -1,0 +1,65 @@
+<article class="guide-body">
+  <h1>Unminify JS: Memulihkan Keterbacaan JavaScript Terminifikasi</h1>
+  <p class="lead">JavaScript yang terminifikasi - jenis yang dikirim oleh setiap bundler modern dengan nama seperti <code>bundle.min.js</code> atau <code>main.[hash].js</code> - adalah satu baris padat dengan nama variabel satu huruf, tanpa spasi putih, dan tanpa baris baru. Panduan ini menempuh perjalanan tiga menit dari bentuk padat itu kembali ke kode yang terindentasi dan ada baris baru yang bisa dibaca mata Anda. Alat pendamping di <a href="/js-unminifier.html">/js-unminifier.html</a> menjalankan unminify sepenuhnya di dalam browser, sehingga sumber tidak pernah meninggalkan tab.</p>
+
+  <p class="reviewed">Terakhir ditinjau: 2026-05-20</p>
+  <p class="byline">Ditinjau oleh tim editorial FreetoolOnline</p>
+
+  <table class="quick-facts">
+    <thead><tr><th>Properti</th><th>Nilai</th></tr></thead>
+    <tbody>
+      <tr><td>Format</td><td>Alat online, tanpa install</td></tr>
+      <tr><td>Kecepatan</td><td>Di sisi browser; output terbaca dalam hitungan detik</td></tr>
+      <tr><td>Privasi</td><td>Sumber tetap di perangkat; tidak ada yang di-upload</td></tr>
+      <tr><td>Penggantian nama variabel</td><td>Tidak dilakukan - nama satu huruf tetap satu huruf</td></tr>
+      <tr><td>Alat implementasi</td><td><a href="/js-unminifier.html">/js-unminifier.html</a></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Apa yang sebenarnya dilakukan unminify (dan apa yang tidak bisa dilakukannya)</h2>
+  <p>Unminify membalikkan separuh murah dari minifikasi: ia menyisipkan kembali spasi putih, baris baru, dan indentasi konsisten, sehingga bundle satu baris menjadi kode terformat yang terbaca. Ia TIDAK membalikkan separuh mahal - penggantian nama. Variabel bernama <code>a</code>, <code>b</code>, <code>t</code> di bundle yang terminifikasi tetap dipanggil <code>a</code>, <code>b</code>, <code>t</code> setelah unminify, karena nama aslinya dibuang saat build dan tidak ada source map yang dipertahankan. Jika source map (file <code>.map</code> atau komentar inline <code>//# sourceMappingURL=</code>) tersedia, file itu menunjuk ke simbol asli dan merupakan artefak yang tepat untuk dimuat - bukan pass unminify. Pembingkaian untuk pembaca: unminify adalah alat yang tepat untuk "saya punya bundle pihak ketiga dan ingin membaca apa yang dilakukannya"; source map adalah alat yang tepat untuk "saya punya build saya sendiri dan ingin debug simbol asli".</p>
+
+  <h2>Walkthrough tiga menit</h2>
+  <ol>
+    <li><b>Salin bundle terminifikasi.</b> Buka file <code>.min.js</code> di editor Anda atau di tab network browser (Response body), pilih semua, salin.</li>
+    <li><b>Tempel ke editor.</b> Buka <a href="/js-unminifier.html">/js-unminifier.html</a> dan tempel ke panel input. Bundle panjang - ratusan KB atau lebih - bekerja, tetapi tunggu pass format butuh satu atau dua detik saat parser berjalan melewati AST.</li>
+    <li><b>Klik Unminify.</b> Panel kanan menampilkan output yang terindentasi. Salin hasil kembali ke editor Anda atau simpan sebagai file <code>.js</code> lokal untuk pembacaan gaya grep.</li>
+  </ol>
+
+  <h2>Di mana output unminified membantu dan di mana tidak</h2>
+  <p>Membaca kode pihak ketiga yang sudah di-unminify bermanfaat dalam tiga situasi konkret. Pertama, triase kerentanan - ketika CVE menyebut fungsi di dalam bundle vendor, unminify memungkinkan Anda menemukan situs panggilan dan membaca alur sekitarnya tanpa menyiapkan repo asli. Kedua, konfirmasi perilaku - ketika perilaku library berubah antar versi, membandingkan versi unminified menampilkan perubahan jauh lebih cepat daripada membaca bentuk padat satu baris. Ketiga, verifikasi output build - ketika pipeline Anda sendiri memancarkan bundle yang secara misterius memuat ganda polyfill, bentuk unminified menampilkan blok IIFE duplikat sekilas. Unminify tidak akan membantu ketika tujuannya adalah nama semantik asli; untuk itu, kirim source map bersama bundle dan muat di debugger Anda.</p>
+
+  <h2>Apa yang dipertahankan, apa yang hilang</h2>
+  <p>Spasi putih, baris baru, dan indentasi dipulihkan secara deterministik dari AST. Komentar <em>tidak</em> dipulihkan - minifier menghapusnya saat build, dan tidak ada informasi yang tersisa di bundle untuk merekonstruksinya. Struktur modul (panggilan CommonJS <code>require</code>, pernyataan ESM <code>import</code>) dipertahankan seperti yang muncul dalam bentuk bundled, yang sering merupakan wrapper hasil generate alih-alih batas modul asli. Optimisasi tingkat sumber seperti constant folding (<code>5*60*60*1000</code> diciutkan ke <code>18000000</code>) <em>tidak</em> dibalikkan - unminify tidak memahami semantik, hanya sintaks. Jika angka tampak rahasia dalam output unminified, cari di repo asli atau tebak unitnya (milidetik, byte, indeks).</p>
+
+  <h2>Ingin ke arah sebaliknya?</h2>
+  <p>Jika Anda tiba di sini ingin <em>mengecilkan</em> JS untuk produksi alih-alih memperluasnya, alat pendamping di <a href="/js-minifier.html">/js-minifier.html</a> melakukan arah maju (penghapusan spasi putih, penyingkatan identifier) dan panduan perbandingan <a href="/guides/css-minifier-vs-uglifier-vs-tree-shaking.html">CSS Minifier vs Uglifier vs Tree-Shaking</a> mencakup bagaimana tiga transformasi bertumpuk dalam pipeline build tipikal. Untuk padanan sisi CSS, lihat <a href="/guides/css-unminifier-vs-prettier-when-to-use-each.html">CSS Unminifier vs Prettier: Kapan Menggunakan yang Mana</a> - keputusan sisi JS serupa: unminify saat membaca output pihak ketiga, source map saat debug milik Anda sendiri.</p>
+
+  <h2>FAQ</h2>
+
+  <details class="faq-item">
+    <summary>Apakah unminify memulihkan nama variabel asli?</summary>
+    <p>Tidak. Minifier mengganti identifier dengan nama sintetis pendek saat build dan membuang yang asli; output unminified mempertahankan nama sintetis. Muat source map yang sesuai di debugger browser Anda untuk melihat simbol asli.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Apakah sumber diunggah ke mana pun?</summary>
+    <p>Tidak. Pass unminify berjalan sepenuhnya di browser Anda; teks terminifikasi tidak pernah dikirim ke server. Tutup tab dan input hilang.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Apakah unminify akan merusak JavaScript?</summary>
+    <p>Tidak. Transformasi murni kosmetik - spasi putih, baris baru, dan indentasi. AST tidak berubah, sehingga kode unminified berjalan identik dengan minified asli. Jalankan melalui pemeriksa sintaks jika Anda ingin konfirmasi sabuk-pengaman.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Berapa batas ukuran file?</summary>
+    <p>Bundle hingga beberapa megabyte bekerja di browser modern; waktu pass format tumbuh hampir linear dengan panjang input. Bundle yang sangat besar (10 MB+) dapat menggagalkan tab; dalam hal itu pisahkan bundle berdasarkan batas closure dan unminify setiap chunk secara terpisah.</p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Apa perbedaan antara unminify dan prettier?</summary>
+    <p>Unminify memulihkan format terbaca pada kode yang sengaja dipadatkan. Prettier (atau formatter serupa) memberlakukan style guide yang dipilih pada kode yang sudah terbaca. Untuk bundle pihak ketiga yang terminifikasi, unminify dulu; jika Anda kemudian ingin lebar indentasi atau gaya tanda kutip tertentu, jalankan prettier pada output.</p>
+  </details>
+
+</article>
