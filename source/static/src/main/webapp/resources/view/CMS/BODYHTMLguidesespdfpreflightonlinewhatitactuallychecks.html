@@ -1,0 +1,55 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Preflight PDF online: que verifica realmente (y que no)</b></h1>
+    <p><em>Ultima revision 2026-05-04. Una guia de decision de 30 segundos antes de subir un PDF a <a href="/pdf-tools/preflight-pdf.html">Preflight PDF</a>: que valida realmente una herramienta de preflight online, y es esa la pregunta que necesitas responder? Preflight es un paso de COMPROBACION, no un paso de CORRECCION. Si necesitas confirmar que tu PDF cumple las reglas archival PDF/A, esta es la herramienta correcta. Si necesitas preflight de impresion PDF/X-1a / PDF/X-3 / PDF/X-4, verificacion legal de firma, o reparacion de un flujo de bytes corrupto, el siguiente paso correcto es una herramienta diferente.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Decision en 30 segundos.</b> Elige la pregunta que realmente necesitas responder. <b>"Mi PDF cumple las reglas archival PDF/A (fuentes incrustadas, sin transparencia, sin cifrado, sin JavaScript)?"</b> &rarr; <a href="/pdf-tools/preflight-pdf.html">Preflight PDF</a> reporta la conformidad PDF/A-1A y PDF/A-1B. <b>"Esta mi PDF listo para produccion de impresion (CMYK, output intent, PDF/X-1a / 3 / 4)?"</b> &rarr; la herramienta de preflight freetoolonline NO cubre preflight de impresion PDF/X; una herramienta offline como Adobe Acrobat Pro es la respuesta correcta. <b>"Mi PDF esta roto / corrupto / no abre"</b> &rarr; preflight no repara PDFs; necesitas una herramienta de reconstruccion PDF. <b>"Quiero bloquear campos de formulario y anotaciones en la pagina"</b> &rarr; eso es aplanar, no preflight; usa <a href="/pdf-tools/flatten-pdf.html">Flatten PDF</a>.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Que significa preflight realmente</b></h2>
+    <p>"Preflight" se toma prestado de las comprobaciones previas al vuelo de la aviacion y entro al mundo PDF a traves de Adobe a principios de los 2000, primero en InDesign y despues en Acrobat. Es un paso de validacion previo a la impresion / publicacion que produce un INFORME listando problemas estructurales que un archivo PDF tiene frente a un estandar o flujo de trabajo objetivo. Problemas tipicos que reporta una comprobacion de preflight: fuentes faltantes, fuentes no incrustadas, imagenes RGB en un flujo CMYK-only, imagenes de baja resolucion por debajo de un DPI objetivo, transparencia sin aplanar, cifrado (que bloquea la ingesta en algunos sistemas archival), acciones JavaScript (que rompen el archivado PDF/A), y defectos estructurales PDF.</p>
+    <p>Preflight es un paso de COMPROBACION. No REMEDIA el archivo. El lector (o una herramienta aguas abajo) lee el informe y o bien corrige el archivo en la herramienta de layout / autoria aguas arriba, o ejecuta un paso de remediacion separado.</p>
+
+    <h2 class="text-uppercase"><b>Que comprueba realmente /preflight-pdf.html</b></h2>
+    <p>La herramienta de preflight freetoolonline reporta dos niveles especificos de conformidad archival: <b>PDF/A-1A</b> (la variante de texto accesible / etiquetada) y <b>PDF/A-1B</b> (la variante solo de fidelidad visual). PDF/A es el formato archival ISO 19005 usado por archivos nacionales, bibliotecas, y cualquier flujo de trabajo que necesite que el PDF renderice de la misma forma decadas despues. Las reglas estructurales estan bien definidas:</p>
+    <ul>
+        <li><b>Las fuentes deben estar incrustadas</b> como subconjuntos Type 1 / TrueType / OpenType / CFF / Type 3, para que el archivo no dependa de la disponibilidad de la fuente en un renderizador futuro.</li>
+        <li><b>Sin transparencia</b> en la pagina (debe ser aplanada en pixeles compuestos primero).</li>
+        <li><b>Sin cifrado</b> (el archivo debe poder abrirse sin contrasena).</li>
+        <li><b>Sin video incrustado / sin JavaScript incrustado / sin referencias a archivos externos</b> (el archivo debe ser autocontenido para archivado).</li>
+        <li><b>Los espacios de color deben ser independientes del dispositivo</b> (ICC-tagged, no RGB o CMYK de dispositivo crudo sin output intent).</li>
+    </ul>
+    <p>Sube un PDF a <a href="/pdf-tools/preflight-pdf.html">Preflight PDF</a>, y el informe te dice cuales de estas reglas estructurales pasa o falla tu archivo frente a PDF/A-1A y PDF/A-1B.</p>
+
+    <h2 class="text-uppercase"><b>Lo que NO comprueba</b></h2>
+    <p>La herramienta es honesta sobre su alcance. La lista de abajo es lo que /preflight-pdf.html NO hace, y a donde ir en su lugar.</p>
+    <ul>
+        <li><b>NO CORRIGE problemas</b>. Preflight es un paso de comprobacion. Reporta problemas; no incrusta fuentes faltantes, no aplana transparencia, no convierte RGB a CMYK. Para corregir los problemas, el siguiente paso correcto es re-exportar desde la herramienta de layout / autoria de origen con los ajustes corregidos, o usar una herramienta de remediacion offline.</li>
+        <li><b>NO hace preflight de impresion PDF/X</b>. PDF/X-1a (CMYK-only, sin transparencia, sin problemas de color especial), PDF/X-3 (permite RGB con tag ICC), y PDF/X-4 (permite transparencia activa) son estandares ISO 15930 diferentes de PDF/A y requieren analisis sensible a CMYK. Para conformidad PDF/X, la herramienta correcta es el motor de preflight completo de Adobe Acrobat Pro (offline), o un flujo de preflight de imprenta.</li>
+        <li><b>NO valida validez legal de firma digital</b>. Una firma PDF puede ser criptograficamente valida (los bytes coinciden con el hash firmado) pero legalmente invalida (el certificado firmante no esta en tu trust store de CA, o el tiempo de firma esta fuera de la ventana de validez del certificado). Para verificacion legal de firma, la herramienta correcta es Adobe Acrobat o el validador oficial de firmas de tu jurisdiccion.</li>
+        <li><b>NO repara un PDF corrupto</b>. Si tu PDF no abre (el lector PDF dice "archivo danado" o "no se pudo abrir este archivo"), el flujo de bytes esta roto y el preflight probablemente se negara a leer el archivo en absoluto. El siguiente paso correcto es una herramienta de reparacion PDF que reconstruya la tabla de referencias cruzadas.</li>
+        <li><b>NO valida accesibilidad PDF/UA</b>. PDF/UA (Universal Accessibility, ISO 14289) es un estandar de PDF etiquetado para compatibilidad con lectores de pantalla y tecnologia asistiva. Es mas estricto que el requisito de etiquetado de PDF/A-1A. Para validacion PDF/UA, un validador de accesibilidad dedicado es la herramienta correcta.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Tabla de traduccion de vocabulario de busqueda</b></h2>
+    <p>Busquedas diferentes usan palabras diferentes para el mismo concepto (o para conceptos diferentes). La tabla de abajo mapea el vocabulario de busqueda comun a si /preflight-pdf.html es la herramienta correcta.</p>
+    <ul>
+        <li><b>"validador pdf online" / "verificacion pdf" / "comprobar pdf"</b> &rarr; SI, si la pregunta es conformidad archival PDF/A. <a href="/pdf-tools/preflight-pdf.html">Preflight PDF</a> responde a esto.</li>
+        <li><b>"preflight pdf online" / "preflight pdf"</b> &rarr; SI para PDF/A. NO para preflight de impresion PDF/X.</li>
+        <li><b>"aplanar pdf online" / "flatten pdf"</b> &rarr; NO. Aplanar es una operacion diferente: bloquea campos de formulario y anotaciones en la pagina para que ya no puedan ser editados. Usa <a href="/pdf-tools/flatten-pdf.html">Flatten PDF</a> para eso.</li>
+        <li><b>"reparar pdf" / "arreglar pdf"</b> &rarr; NO. Preflight reporta problemas; no los corrige. Para reparacion de PDF corrupto, usa una herramienta de reconstruccion dedicada.</li>
+        <li><b>"preflight pdf/x" / "preflight de impresion"</b> &rarr; PARCIAL. La herramienta freetoolonline comprueba PDF/A, no PDF/X. El motor de preflight offline de Adobe Acrobat Pro es la herramienta correcta para PDF/X-1a / 3 / 4.</li>
+        <li><b>"verificar firma pdf"</b> &rarr; NO. Usa Adobe Acrobat o el validador oficial de firmas de tu jurisdiccion.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Flujo de decision: de un PDF que necesita comprobacion a la herramienta correcta</b></h2>
+    <p>Si tienes un PDF delante y no estas seguro de si /preflight-pdf.html es el siguiente paso correcto, el flujo de cuatro pasos de abajo te enruta a la herramienta correcta.</p>
+    <ol>
+        <li><b>Nombra la pregunta real.</b> Estas validando conformidad archival (PDF/A)? Conformidad de impresion (PDF/X)? Arreglando un archivo corrupto? Bloqueando campos de formulario? Verificando una firma digital? Cada pregunta enruta a una herramienta diferente.</li>
+        <li><b>Empareja la pregunta con la herramienta.</b> Archival PDF/A &rarr; <a href="/pdf-tools/preflight-pdf.html">Preflight PDF</a>. Impresion PDF/X &rarr; Adobe Acrobat Pro offline. Reparacion de PDF corrupto &rarr; una herramienta de reconstruccion dedicada. Bloquear campos de formulario y anotaciones en la pagina &rarr; <a href="/pdf-tools/flatten-pdf.html">Flatten PDF</a>. Validez legal de firma &rarr; Adobe Acrobat o validador de jurisdiccion.</li>
+        <li><b>Realiza la accion en la herramienta correcta.</b> Sube a /preflight-pdf.html para archival PDF/A; o navega por el hub mas amplio <a href="/pdf-tools.html">PDF Tools</a> para el siguiente mejor ajuste.</li>
+        <li><b>Lee el informe y decide la remediacion.</b> Preflight produce un informe. Decide si re-exportar desde la herramienta de autoria aguas arriba (la correccion mas comun), ejecutar un paso de remediacion separado, o aceptar el archivo como no conforme con el estandar objetivo.</li>
+    </ol>
+
+    <p><em>Guias complementarias para la categoria de herramientas PDF: <a href="/guides/pdf-editing-ladder.html">PDF editing ladder</a> (que herramienta PDF para que intencion), <a href="/guides/pdf-password-types-owner-vs-user.html">PDF password types</a> (contrasenas de propietario vs usuario), y <a href="/guides/how-to-sign-pdf-after-removing-a-password.html">Como firmar un PDF despues de eliminar una contrasena</a>.</em></p>
+</div>

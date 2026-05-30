@@ -1,0 +1,35 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>JSON vs YAML vs TOML, Explicado</b></h1>
+    <p><em>Ultima revisao 2026-04-27. Abra <a href="/developer-tools/json-parser.html">o parser JSON</a> ou <a href="/json-to-csv.html">JSON to CSV</a> para trabalho JSON no navegador.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Resposta em 30 segundos.</b> JSON e para maquinas - sintaxe rigorosa, facil de analisar, feio de ler. YAML e para humanos - espaco em branco e significativo, suporta ancoras e referencias, propenso a erros de analise subtis. TOML e um meio termo - limpo para configuracao rasa, desajeitado para aninhamento profundo. Escolha por quem edita o ficheiro e quao complexos sao os dados.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Os tres formatos lado a lado</b></h2>
+    <p>A mesma configuracao, tres formas:</p>
+    <pre style="background:#f4f4f4;padding:12px;border-left:4px solid #4caf50;overflow-x:auto;">
+JSON                        YAML                  TOML
+{                           server:               [server]
+  "server": {                 host: "localhost"   host = "localhost"
+    "host": "localhost",      port: 8080          port = 8080
+    "port": 8080
+  }
+}                                                 </pre>
+
+    <h2 class="text-uppercase"><b>JSON - rigoroso e inequivoco</b></h2>
+    <p>O objetivo de design do JSON era um formato que qualquer linguagem pudesse analisar identicamente. A gramatica e pequena (seis tipos de dados, regras de espaco em branco bem definidas). Cada parser produz a mesma arvore. Essa uniformidade e o motivo pelo qual JSON domina APIs, ficheiros de configuracao para ferramentas que trazem um parser JSON, e serializacao maquina a maquina.</p>
+    <p>Onde JSON e desajeitado: comentarios nao sao permitidos, virgulas finais sao erros de sintaxe, e configuracao profundamente aninhada fica ilegivel para humanos. A correcao e JSON5 (JSON com comentarios e virgulas finais) para configuracao editada por humanos, enquanto mantem JSON puro para transporte.</p>
+
+    <h2 class="text-uppercase"><b>YAML - legivel, por vezes demasiado esperto</b></h2>
+    <p>YAML le-se como notas de esquema. A indentacao cria estrutura; listas usam tracos; valores nao precisam de aspas. Os campos sao curtos e o ficheiro e denso. E por isso que YAML domina Kubernetes, GitHub Actions, Docker Compose e configuracoes de CI - todos lugares onde humanos editam o ficheiro diariamente.</p>
+    <p>Onde YAML magoa: o espaco em branco e significativo e os tabs quebram o parser. A string "yes" analisa como o booleano true. O codigo de pais Noruega "NO" analisa como false. Numeros com zeros a esquerda analisam como octal. Strings multi-linha tem quatro sintaxes diferentes. O formato e legivel por humanos mas nao seguro para humanos; bugs de analise subtis sao comuns em producao. A correcao e lintar cada ficheiro YAML em CI e citar qualquer string que pareca poder ser mal interpretada.</p>
+
+    <h2 class="text-uppercase"><b>TOML - simples, raso</b></h2>
+    <p>TOML mira no nicho de ficheiros de configuracao onde YAML e demasiado solto e JSON e demasiado verboso. Seccoes em parenteses retos, pares chave-valor com sinais de igual, tipos nativos de data e hora. Cargo (gestor de pacotes do Rust), pyproject.toml em Python moderno, e varias ferramentas de configuracao usam-no.</p>
+    <p>Onde TOML e desajeitado: dados profundamente aninhados. A sintaxe para arrays de tabelas e verbosa e nao visualmente obvia. Para aninhar mais de 2-3 niveis, YAML ou JSON leem melhor. TOML vence quando a configuracao e naturalmente plana - uma lista de dependencias, uma lista de definicoes de compilacao, um pequeno conjunto de seccoes nomeadas.</p>
+
+    <h2 class="text-uppercase"><b>Regra de decisao</b></h2>
+    <p>Maquina a maquina: JSON. Configuracao humana editada diariamente, com estrutura maioritariamente plana: TOML. Configuracao humana editada diariamente, com estrutura profundamente aninhada: YAML, com linting em CI. Em caso de duvida, JSON - o rigor e seguro barato.</p>
+    <p>Para converter entre formatos, veja <a href="/json-to-csv.html">JSON to CSV</a> ou <a href="/developer-tools/json-parser.html">o parser JSON</a>. Para outras ferramentas de programador, <a href="/developer-tools.html">o hub de ferramentas para programadores</a>.</p>
+</div>

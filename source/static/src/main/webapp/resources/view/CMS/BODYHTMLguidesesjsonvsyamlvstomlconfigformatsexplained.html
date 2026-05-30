@@ -1,0 +1,35 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>JSON vs YAML vs TOML, Explicado</b></h1>
+    <p><em>Ultima revision 2026-04-27. Abre <a href="/developer-tools/json-parser.html">el parser JSON</a> o <a href="/json-to-csv.html">JSON to CSV</a> para trabajo JSON en el navegador.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Respuesta en 30 segundos.</b> JSON es para maquinas - sintaxis estricta, facil de parsear, feo de leer. YAML es para humanos - el espacio en blanco es significativo, soporta anclas y referencias, propenso a errores de parsing sutiles. TOML es un punto intermedio - limpio para configuracion poco profunda, incomodo para anidamiento profundo. Elige por quien edita el archivo y que tan complejos son los datos.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Los tres formatos lado a lado</b></h2>
+    <p>La misma configuracion, tres formas:</p>
+    <pre style="background:#f4f4f4;padding:12px;border-left:4px solid #4caf50;overflow-x:auto;">
+JSON                        YAML                  TOML
+{                           server:               [server]
+  "server": {                 host: "localhost"   host = "localhost"
+    "host": "localhost",      port: 8080          port = 8080
+    "port": 8080
+  }
+}                                                 </pre>
+
+    <h2 class="text-uppercase"><b>JSON - estricto e inequivoco</b></h2>
+    <p>El objetivo de diseno de JSON era un formato que cualquier lenguaje pudiera parsear identicamente. La gramatica es pequena (seis tipos de datos, reglas de espacio en blanco bien definidas). Cada parser produce el mismo arbol. Esa uniformidad es por lo que JSON domina las APIs, los archivos de configuracion para herramientas que vienen con un parser JSON, y la serializacion maquina-a-maquina.</p>
+    <p>Donde JSON es incomodo: los comentarios no estan permitidos, las comas finales son errores de sintaxis, y la configuracion anidada profundamente se vuelve ilegible para humanos. La solucion es JSON5 (JSON con comentarios y comas finales) para configuracion editada por humanos, mientras se mantiene JSON puro para transporte.</p>
+
+    <h2 class="text-uppercase"><b>YAML - legible, a veces demasiado astuto</b></h2>
+    <p>YAML se lee como notas de esquema. La indentacion crea estructura; las listas usan guiones; los valores no necesitan comillas. Los campos son cortos y el archivo es denso. Por eso YAML domina Kubernetes, GitHub Actions, Docker Compose, y configuraciones de CI - todos lugares donde los humanos editan el archivo diariamente.</p>
+    <p>Donde YAML duele: el espacio en blanco es significativo y los tabs rompen el parser. La cadena "yes" se parsea como el booleano true. El codigo de pais Noruega "NO" se parsea como false. Los numeros con ceros a la izquierda se parsean como octales. Las cadenas multilinea tienen cuatro sintaxis diferentes. El formato es legible por humanos pero no seguro para humanos; los bugs de parsing sutiles son comunes en produccion. La solucion es linter cada archivo YAML en CI y entrecomillar cualquier cadena que parezca que podria ser mal interpretada.</p>
+
+    <h2 class="text-uppercase"><b>TOML - simple, poco profundo</b></h2>
+    <p>TOML apunta al nicho de archivos de configuracion donde YAML es demasiado suelto y JSON es demasiado verboso. Secciones en corchetes, pares clave-valor con signos de igual, tipos nativos de fecha y hora. Cargo (gestor de paquetes de Rust), pyproject.toml en Python moderno, y varias herramientas de configuracion lo usan.</p>
+    <p>Donde TOML es incomodo: datos profundamente anidados. La sintaxis para arrays de tablas es verbosa y no es visualmente obvia. Para anidar mas de 2-3 niveles, YAML o JSON se leen mejor. TOML gana cuando la configuracion es naturalmente plana - una lista de dependencias, una lista de ajustes de compilacion, un pequeno conjunto de secciones nombradas.</p>
+
+    <h2 class="text-uppercase"><b>Regla de decision</b></h2>
+    <p>Maquina-a-maquina: JSON. Configuracion humana editada diariamente, con estructura principalmente plana: TOML. Configuracion humana editada diariamente, con estructura profundamente anidada: YAML, con linting en CI. En caso de duda, JSON - el rigor es seguro barato.</p>
+    <p>Para convertir entre formatos, ve <a href="/json-to-csv.html">JSON to CSV</a> o <a href="/developer-tools/json-parser.html">el parser JSON</a>. Para otras herramientas de desarrollo, <a href="/developer-tools.html">el hub de herramientas de desarrollo</a>.</p>
+</div>

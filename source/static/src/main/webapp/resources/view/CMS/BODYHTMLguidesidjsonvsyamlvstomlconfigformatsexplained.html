@@ -1,0 +1,35 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>JSON vs YAML vs TOML, Dijelaskan</b></h1>
+    <p><em>Ditinjau terakhir 2026-04-27. Buka <a href="/developer-tools/json-parser.html">JSON parser</a> atau <a href="/json-to-csv.html">JSON to CSV</a> untuk pekerjaan JSON di browser.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Jawaban 30 detik.</b> JSON untuk mesin - sintaks ketat, mudah di-parse, jelek dibaca. YAML untuk manusia - spasi signifikan, mendukung anchor dan referensi, rentan terhadap error parsing yang halus. TOML adalah jalan tengah - bersih untuk konfigurasi dangkal, canggung untuk nesting dalam. Pilih berdasarkan siapa yang mengedit file dan seberapa kompleks datanya.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Tiga format berdampingan</b></h2>
+    <p>Konfigurasi yang sama, tiga cara:</p>
+    <pre style="background:#f4f4f4;padding:12px;border-left:4px solid #4caf50;overflow-x:auto;">
+JSON                        YAML                  TOML
+{                           server:               [server]
+  "server": {                 host: "localhost"   host = "localhost"
+    "host": "localhost",      port: 8080          port = 8080
+    "port": 8080
+  }
+}                                                 </pre>
+
+    <h2 class="text-uppercase"><b>JSON - ketat dan tidak ambigu</b></h2>
+    <p>Tujuan desain JSON adalah format yang dapat di-parse identik oleh bahasa apa pun. Tata bahasanya kecil (enam tipe data, aturan spasi yang terdefinisi dengan baik). Setiap parser menghasilkan pohon yang sama. Keseragaman itu adalah alasan mengapa JSON mendominasi API, file konfigurasi untuk alat yang dikirim dengan parser JSON, dan serialisasi mesin-ke-mesin.</p>
+    <p>Di mana JSON canggung: komentar tidak diizinkan, koma akhir adalah error sintaks, dan konfigurasi nested dalam menjadi tidak terbaca untuk manusia. Perbaikannya adalah JSON5 (JSON dengan komentar dan koma akhir) untuk konfigurasi yang diedit manusia, sambil menjaga JSON murni untuk transportasi.</p>
+
+    <h2 class="text-uppercase"><b>YAML - mudah dibaca, kadang terlalu cerdik</b></h2>
+    <p>YAML terbaca seperti catatan outline. Indentasi membuat struktur; daftar menggunakan tanda hubung; nilai tidak perlu tanda kutip. Field-nya singkat dan file padat. Itulah mengapa YAML mendominasi Kubernetes, GitHub Actions, Docker Compose, dan konfigurasi CI - semua tempat di mana manusia mengedit file setiap hari.</p>
+    <p>Di mana YAML menyakitkan: spasi signifikan dan tab merusak parser. String "yes" diparsing sebagai boolean true. Kode negara Norwegia "NO" diparsing sebagai false. Angka dengan nol di depan diparsing sebagai oktal. String multi-baris memiliki empat sintaks berbeda. Format dapat dibaca manusia tetapi tidak aman bagi manusia; bug parsing halus umum terjadi di produksi. Perbaikannya adalah lint setiap file YAML di CI dan kutip string apa pun yang terlihat dapat disalahartikan.</p>
+
+    <h2 class="text-uppercase"><b>TOML - sederhana, dangkal</b></h2>
+    <p>TOML menargetkan ceruk file konfigurasi di mana YAML terlalu longgar dan JSON terlalu verbose. Bagian dalam kurung siku, pasangan kunci-nilai dengan tanda sama dengan, tipe tanggal dan waktu native. Cargo (manajer paket Rust), pyproject.toml di Python modern, dan beberapa alat konfigurasi menggunakannya.</p>
+    <p>Di mana TOML canggung: data nested dalam. Sintaks untuk array tabel verbose dan tidak jelas secara visual. Untuk nesting lebih dari 2-3 level, YAML atau JSON terbaca lebih baik. TOML menang ketika konfigurasi secara alami datar - daftar dependensi, daftar pengaturan build, sekumpulan kecil bagian bernama.</p>
+
+    <h2 class="text-uppercase"><b>Aturan keputusan</b></h2>
+    <p>Mesin-ke-mesin: JSON. Konfigurasi manusia diedit harian, dengan struktur sebagian besar datar: TOML. Konfigurasi manusia diedit harian, dengan struktur nested dalam: YAML, dengan linting di CI. Saat ragu, JSON - ketegasannya adalah asuransi murah.</p>
+    <p>Untuk konversi antar format, lihat <a href="/json-to-csv.html">JSON to CSV</a> atau <a href="/developer-tools/json-parser.html">JSON parser</a>. Untuk perkakas developer lain, <a href="/developer-tools.html">hub alat developer</a>.</p>
+</div>
