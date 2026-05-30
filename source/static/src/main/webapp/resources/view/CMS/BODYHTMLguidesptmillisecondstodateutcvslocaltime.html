@@ -1,0 +1,77 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Milissegundos para data: UTC vs hora local, e por que pode parecer errado</b></h1>
+    <p><em>Ultima revisao 2026-05-05. O <a href="/utility-tools/convert-time-in-millisecond-to-date.html">conversor gratuito de milissegundos para data</a> recebe um timestamp Unix em milissegundos e retorna uma data e hora legiveis. A maior parte da confusao do leitor nao e sobre a conversao em si - e sobre <b>qual fuso horario</b> a string legivel representa. Este guia nomeia os quatro valores que voce sempre deve ler juntos e da uma verificacao de sanidade de 30 segundos para que voce nunca envie uma data que esteja horas errada.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Resposta em 30 segundos.</b> Um timestamp como <code>1713538800000</code> nao tem fuso - ele conta milissegundos desde 1970-01-01T00:00:00 UTC. O numero nao se move. O que se move e a <em>exibicao</em>: em UTC o mesmo numero le "19 de abril de 2024, 15:00:00", em Asia/Bangkok (UTC+7) le "22:00:00", e em America/Los_Angeles (UTC-7) le "08:00:00". Quando sua data convertida "parece errada por horas", o timestamp esta bem - voce esta lendo a coluna errada.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Por que o mesmo timestamp mostra datas diferentes</b></h2>
+    <p>Um timestamp Unix em milissegundos conta os milissegundos decorridos desde o epoch Unix, fixado em <b>1970-01-01T00:00:00 UTC</b>. O numero nao carrega um fuso horario ou um calendario. Cada sistema que o exibe escolhe seu proprio fuso para a saida legivel: seu navegador usa o locale do SO, um servidor usa o locale de seu container, um banco SQL usa o fuso da sessao, e um log JSON usa o que o gravador formatou. O <a href="/utility-tools/convert-time-in-millisecond-to-date.html">conversor de milissegundos para data</a> mostra tanto UTC quanto sua hora local para que voce possa ver o offset de relance.</p>
+
+    <h2 class="text-uppercase"><b>Os quatro valores para sempre ler juntos</b></h2>
+    <ul>
+        <li><b>O numero original</b> (<code>1713538800000</code>) - sem fuso. Armazene isto em bancos de dados, envie por APIs HTTP, registre em logs. Ele nunca desvia.</li>
+        <li><b>Data/hora UTC</b> (<code>2024-04-19T15:00:00Z</code>) - a renderizacao canonica. Use em logs de auditoria, relatorios entre regioes, e qualquer coisa compartilhada entre equipes.</li>
+        <li><b>Data/hora local</b> (<code>2024-04-19 22:00:00 +07:00</code>) - o que o usuario final ve. Use para e-mails, convites de calendario e exibicoes para o leitor.</li>
+        <li><b>ISO 8601 com offset</b> (<code>2024-04-19T22:00:00+07:00</code>) - seguro para ida e volta. Inclui hora local e offset, entao um parser downstream pode recuperar o momento exato.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Verificacao de sanidade de 30 segundos antes de enviar uma data</b></h2>
+    <ol>
+        <li>Confirme que a entrada esta em <b>milissegundos</b>, nao em segundos. Um numero de 13 digitos e milissegundos; um numero de 10 digitos e segundos. Veja <a href="/guides/long-number-millisecond-or-second.html">numero longo - milissegundo ou segundo?</a> para as regras.</li>
+        <li>Note o valor UTC que o conversor retorna. Esta e a resposta canonica e sem fuso.</li>
+        <li>Adicione o offset local ao UTC (ex.: +07:00 para Bangkok, -08:00 para Los Angeles, com horario de verao). O valor local deve coincidir.</li>
+        <li>Se o valor local discordar, o fuso do seu SO esta diferente do que voce assumiu. Ajuste o SO ou interprete o UTC diretamente.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>UTC vs local na pratica</b></h2>
+    <p><b>Use UTC para armazenamento e transporte.</b> Colunas de banco de dados, JSON sobre HTTP, arquivos de log, trilhas de auditoria. Valores UTC nao desviam atraves de transicoes de horario de verao e nao variam por regiao de implantacao.</p>
+    <p><b>Use hora local apenas para exibicao.</b> Convites de calendario, e-mails para usuarios, lembretes. Converta para local na camada de renderizacao, nao no armazenamento. A mesma linha de banco deve renderizar como 22:00 hora de Bangkok e 08:00 hora de LA - isso esta correto, nao e um bug.</p>
+    <p><b>Use ISO 8601 com offset para os casos intermediarios.</b> Quando voce envia um valor para um sistema downstream que pode nao conhecer o fuso do usuario, prefira a forma ISO com offset incluido. Evite texto livre "19 de abril as 22h" - nao e parseavel.</p>
+
+    <h2 class="text-uppercase"><b>Guias complementares</b></h2>
+    <ul>
+        <li><a href="/guides/long-number-millisecond-or-second.html">Numero longo - milissegundo ou segundo?</a> - desambiguacao de entrada.</li>
+        <li><a href="/guides/unix-timestamps-explained.html">Timestamps Unix explicados</a> - o que e o epoch e de onde vem o formato.</li>
+        <li><a href="/utility-tools/convert-time-in-millisecond-to-date.html">Conversor de milissegundos para data</a> - a propria ferramenta.</li>
+        <li><a href="/utility-tools/get-time-in-millisecond.html">Obter hora atual em milissegundos</a> - a direcao inversa.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Perguntas frequentes</b></h2>
+    <details class="faq-item">
+  <summary>Por que o conversor mostra duas horas diferentes para a mesma entrada?</summary>
+  <p>Sao o mesmo instante em fusos horarios diferentes. O numero nao tem fuso; o valor UTC e a renderizacao canonica e o valor local e o mesmo instante visto do fuso do seu SO. A diferenca e o offset local.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>A hora local parece errada - como conserto?</summary>
+  <p>A hora local e o que quer que o seu SO informe como o fuso atual. Se seu laptop esta definido para Singapura mas voce espera Bangkok, o valor local estara uma hora errada. Ajuste o fuso do SO, ou interprete o valor UTC e aplique o offset que voce realmente quer.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>O horario de verao muda a conversao?</summary>
+  <p>Sim - para qualquer fuso que observa horario de verao, o offset local muda uma hora duas vezes por ano. O valor UTC nunca muda. Dois timestamps de lados opostos de uma transicao de horario de verao parecem uma hora distantes em hora local mesmo quando os milissegundos decorridos estao corretos.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Posso armazenar hora local diretamente no meu banco de dados?</summary>
+  <p>Sim, mas raramente uma boa ideia. Armazenar UTC e renderizar local no local de leitura e canonico; sobrevive a mudancas de servidor, mudancas de regiao e transicoes de horario de verao. Armazenar hora local forca cada leitor a saber em qual fuso o gravador estava - geralmente perdido.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Algo e enviado para um servidor?</summary>
+  <p>A conversao roda no seu navegador; a entrada em milissegundos e as strings resultantes ficam no seu dispositivo. Isso importa quando o timestamp identifica um evento sensivel que voce nao quer registrar.</p>
+</details>
+</div>

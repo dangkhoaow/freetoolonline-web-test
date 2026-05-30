@@ -1,0 +1,77 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Millisekunden zu Datum: UTC vs Ortszeit, und warum es falsch aussehen kann</b></h1>
+    <p><em>Zuletzt geprueft 2026-05-05. Der kostenlose <a href="/utility-tools/convert-time-in-millisecond-to-date.html">Millisekunden-zu-Datum-Konverter</a> nimmt einen Unix-Millisekunden-Zeitstempel und gibt ein lesbares Datum und eine lesbare Uhrzeit zurueck. Die meiste Verwirrung beim Leser geht nicht um die Konvertierung selbst - sondern darum, <b>welche Zeitzone</b> die lesbare Zeichenkette darstellt. Diese Anleitung nennt die vier Werte, die Sie immer zusammen lesen sollten und gibt eine 30-Sekunden-Plausibilitaetspruefung, damit Sie nie ein Datum ausliefern, das Stunden danebenliegt.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-Sekunden-Antwort.</b> Ein Zeitstempel wie <code>1713538800000</code> ist zeitzonenfrei - er zaehlt Millisekunden seit 1970-01-01T00:00:00 UTC. Die Zahl bewegt sich nicht. Was sich bewegt, ist die <em>Anzeige</em>: in UTC liest die gleiche Zahl "19. April 2024, 15:00:00", in Asia/Bangkok (UTC+7) liest sie "22:00:00", und in America/Los_Angeles (UTC-7) liest sie "08:00:00". Wenn Ihr konvertiertes Datum "stundenweise falsch aussieht", ist der Zeitstempel in Ordnung - Sie lesen die falsche Spalte.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Warum derselbe Zeitstempel verschiedene Daten zeigt</b></h2>
+    <p>Ein Unix-Millisekunden-Zeitstempel zaehlt die seit der Unix-Epoche vergangenen Millisekunden, festgelegt auf <b>1970-01-01T00:00:00 UTC</b>. Die Zahl traegt keine Zeitzone und keinen Kalender. Jedes System, das ihn anzeigt, waehlt seine eigene Zeitzone fuer die menschenlesbare Ausgabe: Ihr Browser verwendet die OS-Locale, ein Server verwendet die Locale seines Containers, eine SQL-Datenbank verwendet die Sitzungs-Zeitzone, und ein JSON-Log verwendet das, womit der Schreiber formatiert hat. Der <a href="/utility-tools/convert-time-in-millisecond-to-date.html">Millisekunden-zu-Datum-Konverter</a> zeigt sowohl UTC als auch Ihre Ortszeit, damit Sie den Offset auf einen Blick sehen.</p>
+
+    <h2 class="text-uppercase"><b>Die vier Werte immer zusammen lesen</b></h2>
+    <ul>
+        <li><b>Die Originalzahl</b> (<code>1713538800000</code>) - zeitzonenfrei. Speichern Sie diese in Datenbanken, senden Sie sie ueber HTTP-APIs, loggen Sie sie. Sie driftet nie.</li>
+        <li><b>UTC Datum/Zeit</b> (<code>2024-04-19T15:00:00Z</code>) - die kanonische Darstellung. Verwenden Sie sie in Audit-Logs, regionsuebergreifenden Berichten und allem, was team-uebergreifend geteilt wird.</li>
+        <li><b>Lokales Datum/Zeit</b> (<code>2024-04-19 22:00:00 +07:00</code>) - was der Endnutzer sieht. Verwenden Sie dies fuer E-Mails, Kalendereinladungen und Anzeigen fuer den Leser.</li>
+        <li><b>ISO 8601 mit Offset</b> (<code>2024-04-19T22:00:00+07:00</code>) - rundlauf-sicher. Enthaelt Wanduhr und Offset, sodass ein nachgelagerter Parser den exakten Moment wiederherstellen kann.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>30-Sekunden-Plausibilitaetspruefung vor dem Ausliefern eines Datums</b></h2>
+    <ol>
+        <li>Bestaetigen Sie, dass die Eingabe in <b>Millisekunden</b> ist, nicht in Sekunden. Eine 13-stellige Zahl ist Millisekunden; eine 10-stellige Zahl ist Sekunden. Siehe <a href="/guides/long-number-millisecond-or-second.html">lange Zahl - Millisekunde oder Sekunde?</a> fuer die Regeln.</li>
+        <li>Notieren Sie den UTC-Wert, den der Konverter zurueckgibt. Dies ist die kanonische, zeitzonenfreie Antwort.</li>
+        <li>Addieren Sie den lokalen Offset zur UTC (z.B. +07:00 fuer Bangkok, -08:00 fuer Los Angeles, mit Sommerzeit). Der lokale Wert sollte uebereinstimmen.</li>
+        <li>Wenn der lokale Wert nicht uebereinstimmt, ist Ihre OS-Zeitzone anders eingestellt, als Sie angenommen haben. Passen Sie das OS an oder interpretieren Sie UTC direkt.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>UTC vs lokal in der Praxis</b></h2>
+    <p><b>Verwenden Sie UTC fuer Speicherung und Transport.</b> Datenbankspalten, JSON ueber HTTP, Log-Dateien, Audit-Spuren. UTC-Werte driften nicht ueber Sommerzeit-Uebergaenge und variieren nicht je Deploy-Region.</p>
+    <p><b>Verwenden Sie Ortszeit nur fuer die Anzeige.</b> Kalendereinladungen, Nutzer-E-Mails, Erinnerungen. Konvertieren Sie zu lokal in der Render-Schicht, nicht in der Speicherung. Dieselbe Datenbankzeile sollte als 22:00 Bangkok-Zeit und 08:00 LA-Zeit dargestellt werden - das ist korrekt, kein Bug.</p>
+    <p><b>Verwenden Sie ISO 8601 mit Offset fuer die Zwischenfaelle.</b> Wenn Sie einen Wert an ein nachgelagertes System senden, das die Zeitzone des Nutzers vielleicht nicht kennt, bevorzugen Sie die ISO-Form mit Offset. Vermeiden Sie Freitext "19. April um 22 Uhr" - er ist nicht parsbar.</p>
+
+    <h2 class="text-uppercase"><b>Begleit-Anleitungen</b></h2>
+    <ul>
+        <li><a href="/guides/long-number-millisecond-or-second.html">Lange Zahl - Millisekunde oder Sekunde?</a> - Eingabe-Disambiguierung.</li>
+        <li><a href="/guides/unix-timestamps-explained.html">Unix-Zeitstempel erklaert</a> - was die Epoche ist und woher das Format kommt.</li>
+        <li><a href="/utility-tools/convert-time-in-millisecond-to-date.html">Millisekunden-zu-Datum-Konverter</a> - das Tool selbst.</li>
+        <li><a href="/utility-tools/get-time-in-millisecond.html">Aktuelle Zeit in Millisekunden abrufen</a> - die umgekehrte Richtung.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Haeufig gestellte Fragen</b></h2>
+    <details class="faq-item">
+  <summary>Warum zeigt der Konverter zwei verschiedene Zeiten fuer dieselbe Eingabe?</summary>
+  <p>Sie sind derselbe Augenblick in verschiedenen Zeitzonen. Die Zahl ist zeitzonenfrei; der UTC-Wert ist die kanonische Darstellung und der lokale Wert ist derselbe Augenblick aus Sicht Ihrer OS-Zeitzone. Der Unterschied ist der lokale Offset.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Die Ortszeit sieht falsch aus - wie behebe ich das?</summary>
+  <p>Die Ortszeit ist, was auch immer Ihr OS als die aktuelle Zeitzone meldet. Wenn Ihr Laptop auf Singapur eingestellt ist, Sie aber Bangkok erwarten, wird der lokale Wert eine Stunde falsch sein. Passen Sie die OS-Zeitzone an oder interpretieren Sie den UTC-Wert und wenden Sie den gewuenschten Offset an.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Aendert die Sommerzeit die Konvertierung?</summary>
+  <p>Ja - fuer jede Zeitzone, die DST beobachtet, verschiebt sich der lokale Offset um eine Stunde zweimal im Jahr. Der UTC-Wert aendert sich nie. Zwei Zeitstempel von gegenueberliegenden Seiten einer DST-Grenze erscheinen in der Ortszeit eine Stunde auseinander, auch wenn die verstrichenen Millisekunden korrekt sind.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Kann ich Ortszeit direkt in meiner Datenbank speichern?</summary>
+  <p>Ja, aber selten eine gute Idee. UTC zu speichern und lokal an der Lese-Stelle zu rendern, ist kanonisch; es ueberlebt Server-Umzuege, Regions-Wechsel und DST-Uebergaenge. Ortszeit zu speichern zwingt jeden Leser zu wissen, in welcher Zeitzone der Schreiber war - meistens verloren.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Wird etwas an einen Server gesendet?</summary>
+  <p>Die Konvertierung laeuft in Ihrem Browser; die Millisekunden-Eingabe und die resultierenden Zeichenketten bleiben auf Ihrem Geraet. Das ist wichtig, wenn der Zeitstempel ein sensibles Ereignis identifiziert, das Sie nicht loggen wollen.</p>
+</details>
+</div>

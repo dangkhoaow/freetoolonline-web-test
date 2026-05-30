@@ -1,0 +1,77 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Mili giay sang ngay: UTC vs gio dia phuong, va vi sao co the trong sai</b></h1>
+    <p><em>Cap nhat lan cuoi 2026-05-05. <a href="/utility-tools/convert-time-in-millisecond-to-date.html">Cong cu chuyen doi mili giay sang ngay mien phi</a> nhan mot timestamp Unix tinh bang mili giay va tra ve ngay gio de doc. Hau het su nham lan cua doc gia khong phai ve viec chuyen doi - ma la ve <b>mui gio nao</b> ma chuoi de doc dai dien. Huong dan nay neu ten bon gia tri ban luon nen doc cung nhau va dua ra mot kiem tra suc khoe 30 giay de ban khong bao gio gui di mot ngay lech vai gio.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Cau tra loi trong 30 giay.</b> Mot timestamp nhu <code>1713538800000</code> khong co mui gio - no dem so mili giay tu 1970-01-01T00:00:00 UTC. So nay khong di chuyen. Cai di chuyen la <em>hien thi</em>: trong UTC cung so do doc la "19 thang 4 nam 2024, 15:00:00", trong Asia/Bangkok (UTC+7) doc la "22:00:00", va trong America/Los_Angeles (UTC-7) doc la "08:00:00". Khi ngay da chuyen doi "trong nhu lech vai gio", timestamp van dung - ban dang doc nham cot.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Vi sao cung mot timestamp hien thi ngay khac nhau</b></h2>
+    <p>Mot timestamp Unix mili giay dem so mili giay troi qua tu Unix epoch, co dinh tai <b>1970-01-01T00:00:00 UTC</b>. So nay khong mang mui gio hay lich. Moi he thong hien thi no chon mui gio rieng cho dau ra de doc: trinh duyet cua ban dung locale cua HDH, may chu dung locale cua container, co so du lieu SQL dung mui gio cua session, va log JSON dung gi ma nguoi viet dinh dang. <a href="/utility-tools/convert-time-in-millisecond-to-date.html">Cong cu chuyen doi mili giay sang ngay</a> hien thi ca UTC va gio dia phuong cua ban de ban thay offset trong nhay mat.</p>
+
+    <h2 class="text-uppercase"><b>Bon gia tri luon doc cung nhau</b></h2>
+    <ul>
+        <li><b>So goc</b> (<code>1713538800000</code>) - khong mui gio. Luu cai nay trong co so du lieu, gui qua HTTP APIs, ghi log. No khong bao gio bi troi.</li>
+        <li><b>Ngay/gio UTC</b> (<code>2024-04-19T15:00:00Z</code>) - hien thi chuan. Dung trong log kiem toan, bao cao xuyen vung, va bat ky gi duoc chia se giua cac doi.</li>
+        <li><b>Ngay/gio dia phuong</b> (<code>2024-04-19 22:00:00 +07:00</code>) - cai nguoi dung cuoi thay. Dung cho email, loi moi lich va hien thi cho doc gia.</li>
+        <li><b>ISO 8601 voi offset</b> (<code>2024-04-19T22:00:00+07:00</code>) - an toan vong tron. Bao gom dong ho va offset, nen parser downstream co the khoi phuc dung khoanh khac.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Kiem tra suc khoe 30 giay truoc khi gui ngay</b></h2>
+    <ol>
+        <li>Xac nhan dau vao la <b>mili giay</b>, khong phai giay. So 13 chu so la mili giay; so 10 chu so la giay. Xem <a href="/guides/long-number-millisecond-or-second.html">so dai - mili giay hay giay?</a> de biet quy tac.</li>
+        <li>Ghi chu gia tri UTC ma cong cu chuyen doi tra ve. Day la cau tra loi chuan, khong mui gio.</li>
+        <li>Cong offset dia phuong vao UTC (vi du +07:00 cho Bangkok, -08:00 cho Los Angeles, co tinh gio mua he). Gia tri dia phuong nen khop.</li>
+        <li>Neu gia tri dia phuong khong khop, mui gio HDH cua ban duoc dat khac voi gia dinh cua ban. Dieu chinh HDH hoac dien giai UTC truc tiep.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>UTC vs dia phuong trong thuc te</b></h2>
+    <p><b>Dung UTC cho luu tru va truyen tai.</b> Cot co so du lieu, JSON qua HTTP, tep log, dau vet kiem toan. Gia tri UTC khong troi qua cac chuyen doi gio mua he va khong thay doi theo vung trien khai.</p>
+    <p><b>Chi dung gio dia phuong de hien thi.</b> Loi moi lich, email cho nguoi dung, nhac nho. Chuyen sang dia phuong o tang render, khong phai o tang luu tru. Cung mot dong co so du lieu nen hien thi la 22:00 gio Bangkok va 08:00 gio LA - dieu do dung, khong phai loi.</p>
+    <p><b>Dung ISO 8601 voi offset cho cac truong hop trung gian.</b> Khi ban gui mot gia tri den he thong downstream co the khong biet mui gio nguoi dung, hay uu tien dang ISO co kem offset. Tranh van ban tu do "19 thang 4 luc 22 gio" - khong the parse.</p>
+
+    <h2 class="text-uppercase"><b>Cac huong dan dong hanh</b></h2>
+    <ul>
+        <li><a href="/guides/long-number-millisecond-or-second.html">So dai - mili giay hay giay?</a> - khu nhap nhang dau vao.</li>
+        <li><a href="/guides/unix-timestamps-explained.html">Timestamp Unix giai thich</a> - epoch la gi va dinh dang den tu dau.</li>
+        <li><a href="/utility-tools/convert-time-in-millisecond-to-date.html">Cong cu chuyen doi mili giay sang ngay</a> - chinh cong cu.</li>
+        <li><a href="/utility-tools/get-time-in-millisecond.html">Lay gio hien tai tinh bang mili giay</a> - chieu nguoc lai.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Cau hoi thuong gap</b></h2>
+    <details class="faq-item">
+  <summary>Vi sao cong cu chuyen doi hien thi hai gio khac nhau cho cung mot dau vao?</summary>
+  <p>Chung la cung mot khoanh khac trong cac mui gio khac nhau. So nay khong mui gio; gia tri UTC la hien thi chuan va gia tri dia phuong la cung khoanh khac do nhin tu mui gio HDH cua ban. Su khac biet la offset dia phuong.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Gio dia phuong trong sai - lam sao toi sua?</summary>
+  <p>Gio dia phuong la bat cu thu gi HDH cua ban bao cao la mui gio hien tai. Neu laptop cua ban duoc dat sang Singapore nhung ban mong doi Bangkok, gia tri dia phuong se lech mot gio. Dieu chinh mui gio HDH, hoac dien giai gia tri UTC va ap dung offset ma ban thuc su muon.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Gio mua he co thay doi chuyen doi khong?</summary>
+  <p>Co - voi bat ky mui gio nao quan sat DST, offset dia phuong dich chuyen mot gio hai lan moi nam. Gia tri UTC khong bao gio thay doi. Hai timestamp tu hai phia cua mot ranh gioi DST trong cach nhau mot gio trong gio dia phuong ngay ca khi so mili giay troi qua la dung.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Toi co the luu gio dia phuong truc tiep trong co so du lieu khong?</summary>
+  <p>Co, nhung hiem khi la y tuong tot. Luu UTC va render dia phuong tai noi doc la chuan; no song qua viec chuyen may chu, thay doi vung va chuyen doi DST. Luu gio dia phuong buoc moi nguoi doc phai biet nguoi viet o mui gio nao - thuong la mat.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Co gi duoc gui den may chu khong?</summary>
+  <p>Viec chuyen doi chay trong trinh duyet cua ban; dau vao mili giay va cac chuoi ket qua o lai tren thiet bi cua ban. Dieu nay quan trong khi timestamp xac dinh mot su kien nhay cam ma ban khong muon ghi log.</p>
+</details>
+</div>

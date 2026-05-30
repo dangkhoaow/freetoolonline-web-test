@@ -1,0 +1,77 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Milidetik ke tanggal: UTC vs waktu lokal, dan mengapa bisa terlihat keliru</b></h1>
+    <p><em>Terakhir ditinjau 2026-05-05. <a href="/utility-tools/convert-time-in-millisecond-to-date.html">Konverter milidetik ke tanggal gratis</a> mengambil timestamp Unix milidetik dan mengembalikan tanggal dan waktu yang dapat dibaca. Sebagian besar kebingungan pembaca bukan tentang konversinya sendiri - tetapi tentang <b>zona waktu mana</b> yang diwakili string yang dapat dibaca. Panduan ini menamai empat nilai yang harus selalu Anda baca bersamaan dan memberikan pemeriksaan kewarasan 30 detik agar Anda tidak pernah mengirim tanggal yang meleset beberapa jam.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Jawaban 30 detik.</b> Timestamp seperti <code>1713538800000</code> bebas zona waktu - menghitung milidetik sejak 1970-01-01T00:00:00 UTC. Angka itu tidak bergerak. Yang bergerak adalah <em>tampilan</em>: dalam UTC angka yang sama terbaca "19 April 2024, 15:00:00", dalam Asia/Bangkok (UTC+7) terbaca "22:00:00", dan dalam America/Los_Angeles (UTC-7) terbaca "08:00:00". Saat tanggal yang dikonversi "tampak meleset beberapa jam", timestamp baik-baik saja - Anda membaca kolom yang salah.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Mengapa timestamp yang sama menampilkan tanggal berbeda</b></h2>
+    <p>Timestamp Unix milidetik menghitung milidetik yang berlalu sejak Unix epoch, ditetapkan pada <b>1970-01-01T00:00:00 UTC</b>. Angka itu tidak membawa zona waktu atau kalender. Setiap sistem yang menampilkannya memilih zona waktunya sendiri untuk keluaran yang dapat dibaca: peramban Anda menggunakan locale OS, server menggunakan locale kontainernya, basis data SQL menggunakan zona waktu sesinya, dan log JSON menggunakan apa pun yang diformat oleh penulis. <a href="/utility-tools/convert-time-in-millisecond-to-date.html">Konverter milidetik ke tanggal</a> menampilkan UTC dan waktu lokal Anda sehingga Anda dapat melihat offset sekilas.</p>
+
+    <h2 class="text-uppercase"><b>Empat nilai yang harus selalu dibaca bersamaan</b></h2>
+    <ul>
+        <li><b>Angka asli</b> (<code>1713538800000</code>) - bebas zona waktu. Simpan ini di basis data, kirim melalui API HTTP, log. Tidak pernah bergeser.</li>
+        <li><b>Tanggal/waktu UTC</b> (<code>2024-04-19T15:00:00Z</code>) - render kanonik. Gunakan di log audit, laporan lintas wilayah, dan apa pun yang dibagikan antar tim.</li>
+        <li><b>Tanggal/waktu lokal</b> (<code>2024-04-19 22:00:00 +07:00</code>) - apa yang dilihat pengguna akhir. Gunakan untuk email, undangan kalender, dan tampilan pembaca.</li>
+        <li><b>ISO 8601 dengan offset</b> (<code>2024-04-19T22:00:00+07:00</code>) - aman bolak-balik. Termasuk jam dinding dan offset, sehingga parser hilir dapat memulihkan momen pastinya.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Pemeriksaan kewarasan 30 detik sebelum mengirim tanggal</b></h2>
+    <ol>
+        <li>Pastikan input dalam <b>milidetik</b>, bukan detik. Angka 13 digit adalah milidetik; angka 10 digit adalah detik. Lihat <a href="/guides/long-number-millisecond-or-second.html">angka panjang - milidetik atau detik?</a> untuk aturannya.</li>
+        <li>Catat nilai UTC yang dikembalikan konverter. Ini adalah jawaban kanonik dan bebas zona waktu.</li>
+        <li>Tambahkan offset lokal ke UTC (misalnya +07:00 untuk Bangkok, -08:00 untuk Los Angeles, dengan waktu musim panas). Nilai lokal harus cocok.</li>
+        <li>Jika nilai lokal tidak cocok, zona waktu OS Anda diatur berbeda dari yang Anda asumsikan. Sesuaikan OS atau tafsirkan UTC secara langsung.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>UTC vs lokal dalam praktik</b></h2>
+    <p><b>Gunakan UTC untuk penyimpanan dan transportasi.</b> Kolom basis data, JSON melalui HTTP, file log, jejak audit. Nilai UTC tidak bergeser melalui transisi waktu musim panas dan tidak bervariasi berdasarkan wilayah deploy.</p>
+    <p><b>Gunakan waktu lokal hanya untuk tampilan.</b> Undangan kalender, email untuk pengguna, pengingat. Konversi ke lokal di lapisan render, bukan di penyimpanan. Baris basis data yang sama harus dirender sebagai 22:00 waktu Bangkok dan 08:00 waktu LA - itu benar, bukan bug.</p>
+    <p><b>Gunakan ISO 8601 dengan offset untuk kasus di antaranya.</b> Saat Anda mengirim nilai ke sistem hilir yang mungkin tidak tahu zona waktu pengguna, lebih baik bentuk ISO yang menyertakan offset. Hindari teks bebas "19 April pukul 22.00" - tidak dapat di-parse.</p>
+
+    <h2 class="text-uppercase"><b>Panduan pendamping</b></h2>
+    <ul>
+        <li><a href="/guides/long-number-millisecond-or-second.html">Angka panjang - milidetik atau detik?</a> - penyamaran input.</li>
+        <li><a href="/guides/unix-timestamps-explained.html">Timestamp Unix dijelaskan</a> - apa itu epoch dan dari mana asal formatnya.</li>
+        <li><a href="/utility-tools/convert-time-in-millisecond-to-date.html">Konverter milidetik ke tanggal</a> - alatnya sendiri.</li>
+        <li><a href="/utility-tools/get-time-in-millisecond.html">Dapatkan waktu saat ini dalam milidetik</a> - arah sebaliknya.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Pertanyaan yang sering diajukan</b></h2>
+    <details class="faq-item">
+  <summary>Mengapa konverter menampilkan dua waktu berbeda untuk input yang sama?</summary>
+  <p>Keduanya adalah instan yang sama di zona waktu yang berbeda. Angkanya bebas zona waktu; nilai UTC adalah render kanonik dan nilai lokal adalah instan yang sama dilihat dari zona waktu OS Anda. Selisihnya adalah offset lokal.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Waktu lokal terlihat salah - bagaimana cara memperbaikinya?</summary>
+  <p>Waktu lokal adalah apa pun yang dilaporkan OS Anda sebagai zona waktu saat ini. Jika laptop Anda diatur ke Singapura tetapi Anda mengharapkan Bangkok, nilai lokal akan meleset satu jam. Sesuaikan zona waktu OS, atau tafsirkan nilai UTC dan terapkan offset yang sebenarnya Anda inginkan.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Apakah waktu musim panas mengubah konversi?</summary>
+  <p>Ya - untuk zona waktu mana pun yang menggunakan DST, offset lokal bergeser satu jam dua kali setahun. Nilai UTC tidak pernah berubah. Dua timestamp dari sisi berlawanan dari batas DST terlihat berjarak satu jam dalam waktu lokal bahkan saat milidetik yang berlalu benar.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Bisakah saya menyimpan waktu lokal langsung di basis data saya?</summary>
+  <p>Ya, tetapi jarang merupakan ide yang baik. Menyimpan UTC dan merender lokal di tempat baca adalah kanonik; bertahan terhadap pemindahan server, perubahan wilayah, dan transisi DST. Menyimpan waktu lokal memaksa setiap pembaca untuk tahu di zona mana penulis berada - biasanya hilang.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Apakah ada yang dikirim ke server?</summary>
+  <p>Konversi berjalan di peramban Anda; input milidetik dan string hasilnya tetap di perangkat Anda. Ini penting saat timestamp mengidentifikasi peristiwa sensitif yang tidak ingin Anda log.</p>
+</details>
+</div>
