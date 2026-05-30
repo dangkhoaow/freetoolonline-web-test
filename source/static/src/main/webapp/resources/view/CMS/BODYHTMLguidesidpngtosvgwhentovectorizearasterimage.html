@@ -1,0 +1,56 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>PNG ke SVG - kapan vektorisasi gambar raster</b></h1>
+    <p><em>Ditinjau terakhir 2026-05-04. "Vektorisasi" gambar raster (PNG, JPG, screenshot) berarti menggambar ulang bentuk yang terlihat sebagai jalur vektor yang independen dari resolusi alih-alih grid pixel tetap. Alat gratis <a href="/image-converter-tools/png-to-svg.html">PNG to SVG</a> menjalankan konversi ini di sisi server dan mengembalikan file SVG. Catatan penting: PNG dan JPG tidak membawa informasi jalur menurut definisi - mereka adalah grid pixel berwarna - jadi alat apa pun hanya dapat <em>mendekati</em> pembacaan vektor dengan menelusuri tepi antara wilayah warna yang serupa. Apakah pendekatan itu berguna sepenuhnya tergantung pada apa yang ada di input. Logo, ikon, line art, siluet kontras tinggi, dan screenshot elemen UI dikonversi dengan indah. Foto, gradien lembut, tekstur halus, dan apa pun dengan transisi warna mulus biasanya tidak.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Keputusan 30 detik.</b> Konversi PNG (atau JPG) ke SVG ketika gambar adalah line art, logo, ikon, siluet satu warna, ilustrasi warna datar, atau screenshot UI dari bentuk yang tajam - dan Anda perlu skala ke ukuran apa pun tanpa pixelisasi, mengeditnya sebagai jalur di Inkscape / Illustrator / Figma, atau menyematkannya di halaman web sehingga merender tajam di setiap kepadatan layar. JANGAN vektorisasi ketika input adalah foto, ketika memiliki gradien lembut atau detail tekstur halus, atau ketika Anda hanya butuh file yang lebih kecil (PNG atau WebP yang dioptimalkan hampir selalu menang untuk konten raster). Buka <a href="/image-converter-tools/png-to-svg.html">PNG to SVG</a>, unggah file, dan unduh SVG; file asli berputar keluar dari penyimpanan AWS freetoolonline setelah jendela retensi standar sehingga Anda hanya menyimpan apa yang disimpan secara lokal.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Apa arti raster vs vektor (dan mengapa konversi ini perkiraan)</b></h2>
+    <p>Gambar raster (PNG, JPG, BMP, screenshot, foto) adalah grid pixel berwarna yang tetap - file tahu warna pixel (0,0), (0,1), dan seterusnya, dan tidak ada yang lain. Gambar vektor (SVG) adalah daftar instruksi geometris - "gambar lingkaran dengan radius 12 di (50,50) diisi merah", "gambar jalur sepanjang 14 titik ini di-stroke hitam" - yang dirender oleh renderer menjadi pixel pada ukuran apa pun yang diminta halaman. Karena raster tidak membawa data bentuk, tidak ada alat yang dapat memulihkan instruksi geometris asli dari PNG; pixel tidak ingat mana yang dulu termasuk "huruf A" atau "lengkungan logo". Karena itu vektorizer membaca grid pixel, menemukan urutan warna serupa, mengikuti batas di antara mereka, dan memancarkan satu SVG <code>&lt;path&gt;</code> per wilayah. SVG output tampak seperti input hanya ketika batas warna itu cocok dengan bentuk sebenarnya yang dibaca mata manusia; ketika tidak cocok, output adalah mosaik bising poligon yang berskala tak terbatas tetapi tidak terlihat seperti fotonya.</p>
+
+    <h2 class="text-uppercase"><b>Kapan PNG-ke-SVG benar-benar bekerja</b></h2>
+    <p>Vektorisasi menghasilkan SVG yang dapat digunakan ketika input memiliki sejumlah kecil wilayah warna solid dengan batas tajam di antara mereka. Empat kasus umum:</p>
+    <ul>
+        <li><b>Logo dan merek.</b> Logo biasanya memiliki 1-4 warna solid dengan tepi tajam - tepatnya yang dibutuhkan auto-tracing. SVG output berskala hingga ukuran billboard tanpa kehilangan ketajaman tepi, dapat diberi warna ulang dengan mengedit atribut <code>fill</code>, dan dikirim dalam beberapa kilobyte. Ini adalah kasus penggunaan kanonik.</li>
+        <li><b>Ikon dan piktogram.</b> Siluet satu warna (ikon folder, menu hamburger, chevron, glyph media sosial) ditelusuri dengan bersih karena ada tepat satu batas latar-depan / latar-belakang. Hasilnya dapat diedit sebagai jalur dan diberi warna ulang dengan satu aturan CSS.</li>
+        <li><b>Line art dan gambar tinta.</b> Gambar hitam-di-putih, line art komik, sketsa tangan yang dipindai dengan kontras tinggi: setiap goresan menjadi satu jalur tertutup, dan SVG dapat di-stroke ulang dengan warna atau ketebalan apa pun setelahnya.</li>
+        <li><b>Screenshot UI dari bentuk yang tajam.</b> Screenshot tombol, kotak dialog, grafik sederhana, atau teks di atas latar belakang datar memiliki tepi pixel anti-aliasing yang divektorkan menjadi perkiraan yang sangat dekat dengan geometri asli. Hasilnya sempurna untuk menyematkan di dokumentasi responsif.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Kapan PNG-ke-SVG TIDAK bekerja</b></h2>
+    <p>Algoritma yang sama yang berhasil baik pada logo menghasilkan mosaik yang tidak dapat digunakan pada foto. Tiga kontra-kasus:</p>
+    <ul>
+        <li><b>Foto.</b> Foto wajah, pemandangan, atau produk memiliki ribuan warna yang sedikit berbeda yang berbaur satu sama lain. Vektorizer baik memperlakukan setiap pixel sebagai poligonnya sendiri (file output membengkak hingga puluhan megabyte dan menggulir lambat di browser) atau mengkuantisasi warna menjadi beberapa lusin wilayah (output terlihat seperti versi terposterisasi dari foto, bukan aslinya). Untuk foto, simpan raster dan optimalkan sebagai JPG atau WebP.</li>
+        <li><b>Gradien lembut dan tekstur halus.</b> Tombol dengan gradien atas-ke-bawah yang halus, lukisan cat air dengan tepi yang luntur, atau gambar apa pun dengan butiran film tidak memiliki batas warna yang tajam untuk ditelusuri. Vektorizer menemukan batas sewenang-wenang pada ambang kuantisasi, dan SVG terlihat "bergaris" atau "berblok" di mana aslinya halus.</li>
+        <li><b>Teks anti-aliasing yang dirender sebagai pixel (kontras rendah / kecil).</b> Teks yang dirender pada ukuran kecil atau dengan anti-aliasing yang berat menjadi sup pixel abu-abu di sekitar setiap glyph. Auto-tracing menghasilkan huruf yang tidak terbaca. Jika Anda butuh teks sebagai jalur, atur dokumen dengan font sebenarnya di alat vektor alih-alih memvektorisasi screenshot yang dirender.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Vektorisasi di freetoolonline</b></h2>
+    <p>Buka <a href="/image-converter-tools/png-to-svg.html">PNG to SVG</a>, unggah PNG atau JPG, dan unduh hasil SVG. File diproses di layanan AWS freetoolonline: diunggah melalui pipeline upload standar, konversi berjalan di sisi server, dan file output dirotasi keluar dari penyimpanan layanan setelah jendela retensi sehingga Anda harus mengunduh dan menyimpan secara lokal jika Anda perlu menyimpannya. SVG output terbuka di browser modern mana pun (elemen SVG telah menjadi warga negara kelas satu dari HTML sejak awal 2010-an), dan dapat diimpor ke Inkscape, Adobe Illustrator, Figma, Affinity Designer, atau editor vektor lainnya untuk penyempurnaan lebih lanjut. Jika hasilnya terlihat berblok atau bising, itu adalah sinyal bahwa input bukan kandidat vektorisasi yang baik (lihat bagian di atas) - simpan raster asli dan optimalkan sebagai PNG / WebP, atau jika asetnya adalah logo / ikon / ilustrasi, minta desainer sumber vektor aslinya.</p>
+
+    <details class="faq-item">
+  <summary><b>Apakah /png-to-svg.html mengunggah file atau berjalan secara lokal di browser Anda?</b></summary>
+  <p>Jembatan <a href="/image-converter-tools/png-to-svg.html">/png-to-svg.html</a> mengunggah PNG ke server freetoolonline. Halaman ini bukan alat offline penuh, hanya-klien, atau hanya-browser, dan tidak berjalan secara lokal. Klaim upload ini langsung: server freetoolonline menangani auto-trace, dan hasil SVG diputar keluar dari penyimpanan setelah jendela retensi standar.</p>
+</details>
+<h2 class="text-uppercase"><b>Apa yang BUKAN PNG-ke-SVG</b></h2>
+    <p>Tiga operasi sering disalahartikan sebagai vektorisasi; masing-masing adalah tindakan berbeda dengan hasil berbeda.</p>
+    <ul>
+        <li><b>"Simpan sebagai SVG" dari PNG di dalam editor.</b> Sebagian besar editor akan dengan senang hati menyimpan PNG sebagai file SVG - tetapi yang sebenarnya mereka lakukan adalah membungkus byte PNG di dalam elemen <code>&lt;image&gt;</code> SVG. Hasilnya memiliki ekstensi <code>.svg</code> dan pixel yang sama dengan input; TIDAK berskala lebih baik dan TIDAK dapat diedit sebagai jalur. Vektorisasi (apa yang dilakukan /png-to-svg.html) menggambar ulang konten sebagai elemen <code>&lt;path&gt;</code> sebenarnya, yang merupakan operasi berbeda.</li>
+        <li><b>SVG ke PNG (rasterisasi).</b> Arah sebaliknya - mengambil vektor dan merendernya ke raster ukuran tetap - adalah tugas terpisah dengan kompromi berbeda (pilihan resolusi, anti-aliasing, font tertanam). Lihat <a href="/guides/svg-to-png-when-to-rasterize-an-svg.html">SVG ke PNG - kapan rasterisasi SVG</a> untuk sisi rasterisasi, dan <a href="/image-converter-tools/svg-to-png.html">alat SVG to PNG</a> untuk operasinya.</li>
+        <li><b>Mengompresi PNG ke PNG yang lebih kecil.</b> Jika tujuannya adalah "file terlalu besar" dan kontennya fotografis atau kaya tekstur, langkah yang tepat adalah kompresi raster, bukan vektorisasi. Lihat <a href="/guides/compress-jpeg-without-losing-quality-quality-vs-size.html">Kompres JPEG tanpa kehilangan kualitas - kualitas vs ukuran</a> untuk kompromi kompresi foto, <a href="/guides/jpg-vs-png-for-web.html">JPG vs PNG untuk web</a> untuk pilihan format raster, dan <a href="/image-tools/compress-image.html">alat Compress Image</a> untuk operasinya.</li>
+    </ul>
+
+    <p><em>Panduan konversi gambar terkait: <a href="/guides/svg-to-png-when-to-rasterize-an-svg.html">SVG ke PNG - kapan rasterisasi SVG</a> (arah sebaliknya), <a href="/guides/png-vs-svg-when-to-use.html">PNG vs SVG - kapan menggunakan yang mana</a> (keputusan pilihan format sebelum Anda mengonversi), dan <a href="/guides/jpg-vs-png-for-web.html">JPG vs PNG untuk web</a> (pilihan format raster ketika vektorisasi bukan jawabannya).</em></p>
+</div>

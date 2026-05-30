@@ -1,0 +1,56 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>PNG para SVG - quando vetorizar uma imagem raster</b></h1>
+    <p><em>Ultima revisao 2026-05-04. "Vetorizar" uma imagem raster (PNG, JPG, captura de ecra) significa redesenhar as suas formas visiveis como caminhos vetoriais independentes de resolucao em vez de uma grelha fixa de pixels. A ferramenta gratuita <a href="/image-converter-tools/png-to-svg.html">PNG to SVG</a> executa esta conversao no servidor e devolve o ficheiro SVG. O senao: PNG e JPG nao carregam informacao de caminho por definicao - sao grelhas de pixels coloridos - portanto qualquer ferramenta so pode <em>aproximar</em> uma leitura vetorial tracando arestas entre regioes de cor semelhantes. Se a aproximacao e util depende inteiramente do que esta na entrada. Logos, icones, line art, silhuetas de alto contraste e capturas de ecra de elementos de UI convertem-se lindamente. Fotografias, gradientes suaves, texturas finas e qualquer coisa com transicoes de cor suaves geralmente nao.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Decisao em 30 segundos.</b> Converta PNG (ou JPG) para SVG quando a imagem for line art, um logo, um icone, uma silhueta de uma so cor, uma ilustracao de cores planas ou uma captura de ecra de UI de formas nitidas - e voce precisa que escale para qualquer tamanho sem pixelizar, que possa edita-la como caminhos no Inkscape / Illustrator / Figma, ou incorpora-la numa pagina web para renderizar nitida em todas as densidades de ecra. NAO vetorize quando a entrada e uma fotografia, quando tem gradientes suaves ou detalhe de textura fino, ou quando voce so precisa de um ficheiro mais pequeno (um PNG ou WebP otimizado quase sempre vence para conteudo raster). Abra <a href="/image-converter-tools/png-to-svg.html">PNG to SVG</a>, carregue o ficheiro e baixe o SVG; o ficheiro original sai do armazenamento AWS da freetoolonline apos a janela de retencao padrao, portanto voce so mantem o que guardou localmente.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>O que raster vs vetor significa (e porque esta conversao e aproximada)</b></h2>
+    <p>Uma imagem raster (PNG, JPG, BMP, captura de ecra, fotografia) e uma grelha fixa de pixels coloridos - o ficheiro sabe a cor do pixel (0,0), (0,1) e assim por diante, e nada mais. Uma imagem vetorial (SVG) e uma lista de instrucoes geometricas - "desenha um circulo de raio 12 em (50,50) preenchido a vermelho", "desenha um caminho ao longo destes 14 pontos contornado a preto" - que um renderizador transforma em pixels no tamanho que a pagina pedir. Como o raster nao carrega dados de forma, nenhuma ferramenta pode recuperar as instrucoes geometricas originais a partir de um PNG; os pixels nao se lembram quais costumavam pertencer a "a letra A" ou "a curva do logo". Por isso os vetorizadores leem a grelha de pixels, encontram corridas de cor semelhantes, seguem as fronteiras entre elas e emitem um <code>&lt;path&gt;</code> SVG por regiao. O SVG de saida parece a entrada apenas quando essas fronteiras de cor correspondem as formas reais que o olho humano le; quando nao correspondem, a saida e um mosaico ruidoso de poligonos que escala infinitamente mas nao se parece com a fotografia.</p>
+
+    <h2 class="text-uppercase"><b>Quando PNG-para-SVG efetivamente funciona</b></h2>
+    <p>A vetorizacao produz um SVG util quando a entrada tem um pequeno numero de regioes de cor solida com fronteiras nitidas entre elas. Os quatro casos comuns:</p>
+    <ul>
+        <li><b>Logos e marcas.</b> Um logo e normalmente 1-4 cores solidas com arestas nitidas - exatamente o que o auto-tracing precisa. O SVG de saida escala ate ao tamanho de outdoor sem perder nitidez de aresta, pode ser recolorido editando o atributo <code>fill</code> e e entregue em poucos kilobytes. Este e o caso de uso canonico.</li>
+        <li><b>Icones e pictogramas.</b> Silhuetas de cor unica (icones de pasta, menus hamburguer, chevrons, glifos de redes sociais) tracam-se de forma limpa porque ha exatamente uma fronteira primeiro plano / fundo. O resultado e editavel como caminhos e recolorivel com uma regra CSS.</li>
+        <li><b>Line art e desenhos a tinta.</b> Desenhos preto-no-branco, line art de banda desenhada, esbocos a mao digitalizados em alto contraste: cada traco torna-se um caminho fechado, e o SVG pode ser recontornado em qualquer cor ou peso depois.</li>
+        <li><b>Capturas de ecra de UI de formas nitidas.</b> Capturas de ecra de botoes, caixas de dialogo, graficos simples ou texto sobre um fundo plano tem arestas de pixels com anti-aliasing que se vetorizam em aproximacoes muito proximas da geometria original. O resultado e perfeito para incorporar em documentacao responsiva.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Quando PNG-para-SVG NAO funciona</b></h2>
+    <p>O mesmo algoritmo que se sai tao bem em logos produz mosaicos inutilizaveis em fotografias. Os tres contra-casos:</p>
+    <ul>
+        <li><b>Fotografias.</b> Uma foto de um rosto, uma paisagem ou um produto tem milhares de cores subtilmente diferentes a misturarem-se. O vetorizador ou trata cada pixel como o seu proprio poligono (o ficheiro de saida explode para dezenas de megabytes e desloca-se devagar no navegador) ou quantiza as cores em algumas dezenas de regioes (a saida parece uma versao posterizada da foto, nao a original). Para fotos, mantenha o raster e otimize como JPG ou WebP.</li>
+        <li><b>Gradientes suaves e textura fina.</b> Um botao com um gradiente suave de cima para baixo, uma aguarela com arestas que sangram, ou qualquer imagem com gros de pelicula nao tem fronteiras de cor nitidas para tracar. O vetorizador inventa fronteiras arbitrarias em limiares de quantizacao e o SVG fica "as riscas" ou "aos blocos" onde o original era suave.</li>
+        <li><b>Texto com anti-aliasing renderizado como pixels (baixo contraste / pequeno).</b> Texto renderizado em tamanhos pequenos ou com forte anti-aliasing torna-se uma sopa de pixels cinza a volta de cada glifo. O auto-tracing produz letras ilegiveis. Se precisa do texto como caminhos, configure o documento com a fonte real numa ferramenta vetorial em vez de vetorizar uma captura renderizada.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Vetorizar em freetoolonline</b></h2>
+    <p>Abra <a href="/image-converter-tools/png-to-svg.html">PNG to SVG</a>, carregue o PNG ou JPG e baixe o resultado SVG. O ficheiro e processado no servico AWS da freetoolonline: e carregado pelo pipeline de upload padrao, a conversao corre no servidor e o ficheiro de saida sai do armazenamento do servico apos a janela de retencao, portanto deve baixar e guardar localmente se precisa de o manter. O SVG de saida abre em qualquer navegador moderno (o elemento SVG e cidadao de primeira do HTML desde o inicio dos anos 2010), e pode ser importado para Inkscape, Adobe Illustrator, Figma, Affinity Designer ou qualquer outro editor vetorial para refinamento posterior. Se o resultado parecer aos blocos ou ruidoso, isso e um sinal de que a entrada nao era um bom candidato a vetorizacao (veja a seccao acima) - mantenha o raster original e otimize como PNG / WebP ou, se o ativo for um logo / icone / ilustracao, peca a um designer a fonte vetorial original.</p>
+
+    <details class="faq-item">
+  <summary><b>O /png-to-svg.html carrega o ficheiro ou corre localmente no seu navegador?</b></summary>
+  <p>A ponte <a href="/image-converter-tools/png-to-svg.html">/png-to-svg.html</a> carrega o PNG para o servidor freetoolonline. A pagina nao e uma ferramenta totalmente offline, so-cliente ou so-navegador, e nao corre localmente. Esta afirmacao de upload e direta: o servidor freetoolonline trata do auto-trace e o resultado SVG sai do armazenamento apos a janela de retencao padrao.</p>
+</details>
+<h2 class="text-uppercase"><b>O que PNG-para-SVG NAO e</b></h2>
+    <p>Tres operacoes sao frequentemente confundidas com vetorizacao; cada uma e uma acao diferente com um resultado diferente.</p>
+    <ul>
+        <li><b>"Guardar como SVG" de um PNG dentro de um editor.</b> A maioria dos editores guarda alegremente um PNG como um ficheiro SVG - mas o que realmente fazem e embrulhar os bytes do PNG dentro de um elemento <code>&lt;image&gt;</code> SVG. O resultado tem extensao <code>.svg</code> e os mesmos pixels da entrada; NAO escala melhor e NAO e editavel como caminhos. A vetorizacao (o que /png-to-svg.html faz) redesenha o conteudo como elementos <code>&lt;path&gt;</code> reais, que e uma operacao diferente.</li>
+        <li><b>SVG para PNG (rasterizar).</b> A direcao inversa - pegar num vetor e renderiza-lo num raster de tamanho fixo - e uma tarefa separada com trade-offs diferentes (escolha de resolucao, anti-aliasing, fontes incorporadas). Veja <a href="/guides/svg-to-png-when-to-rasterize-an-svg.html">SVG to PNG - quando rasterizar um SVG</a> para o lado da rasterizacao e <a href="/image-converter-tools/svg-to-png.html">a ferramenta SVG to PNG</a> para a operacao.</li>
+        <li><b>Comprimir um PNG para um PNG mais pequeno.</b> Se o objetivo e "o ficheiro e demasiado grande" e o conteudo e fotografico ou rico em textura, o movimento certo e a compressao raster, nao vetorizacao. Veja <a href="/guides/compress-jpeg-without-losing-quality-quality-vs-size.html">Comprimir JPEG sem perder qualidade - qualidade vs tamanho</a> para o trade-off de compressao de fotos, <a href="/guides/jpg-vs-png-for-web.html">JPG vs PNG para a web</a> para escolha de formato raster, e <a href="/image-tools/compress-image.html">a ferramenta Compress Image</a> para a operacao.</li>
+    </ul>
+
+    <p><em>Guias de conversao de imagem relacionados: <a href="/guides/svg-to-png-when-to-rasterize-an-svg.html">SVG to PNG - quando rasterizar um SVG</a> (a direcao inversa), <a href="/guides/png-vs-svg-when-to-use.html">PNG vs SVG - quando usar cada um</a> (a decisao de escolha de formato antes de converter), e <a href="/guides/jpg-vs-png-for-web.html">JPG vs PNG para a web</a> (escolha de formato raster quando a vetorizacao nao e a resposta).</em></p>
+</div>

@@ -1,0 +1,56 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>PNG a SVG - cuando vectorizar una imagen raster</b></h1>
+    <p><em>Ultima revision 2026-05-04. "Vectorizar" una imagen raster (PNG, JPG, captura de pantalla) significa redibujar sus formas visibles como rutas vectoriales independientes de la resolucion en lugar de una cuadricula fija de pixeles. La herramienta gratuita <a href="/image-converter-tools/png-to-svg.html">PNG to SVG</a> ejecuta esta conversion en el servidor y devuelve el archivo SVG. La trampa: PNG y JPG no llevan informacion de ruta por definicion - son cuadriculas de pixeles coloreados - asi que cualquier herramienta solo puede <em>aproximar</em> una lectura vectorial trazando bordes entre regiones de color similares. Si la aproximacion es util depende enteramente de lo que haya en la entrada. Logos, iconos, line art, siluetas de alto contraste y capturas de UI se convierten muy bien. Fotografias, gradientes suaves, texturas finas y cualquier cosa con transiciones de color suaves normalmente no.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Decision en 30 segundos.</b> Convierte PNG (o JPG) a SVG cuando la imagen sea line art, un logo, un icono, una silueta de un solo color, una ilustracion de colores planos o una captura de pantalla de UI con formas nitidas - y necesites que escale a cualquier tamano sin pixelarse, editarla como rutas en Inkscape / Illustrator / Figma, o incrustarla en una pagina web para renderizar nitida en cada densidad de pantalla. NO vectorices cuando la entrada sea una fotografia, cuando tenga gradientes suaves o detalle de textura fino, o cuando solo necesitas un archivo mas pequeno (un PNG o WebP optimizado casi siempre gana para contenido raster). Abre <a href="/image-converter-tools/png-to-svg.html">PNG to SVG</a>, sube el archivo y descarga el SVG; el archivo original sale del almacenamiento AWS de freetoolonline tras la ventana de retencion estandar, asi que solo conservas lo que guardas localmente.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Que significa raster vs vector (y por que esta conversion es aproximada)</b></h2>
+    <p>Una imagen raster (PNG, JPG, BMP, captura de pantalla, fotografia) es una cuadricula fija de pixeles coloreados - el archivo conoce el color del pixel (0,0), (0,1), y asi sucesivamente, y nada mas. Una imagen vectorial (SVG) es una lista de instrucciones geometricas - "dibuja un circulo de radio 12 en (50,50) relleno de rojo", "dibuja una ruta a lo largo de estos 14 puntos con trazo negro" - que un renderizador convierte en pixeles en el tamano que la pagina pida. Como el raster no lleva datos de forma, ninguna herramienta puede recuperar las instrucciones geometricas originales a partir de un PNG; los pixeles no recuerdan cuales pertenecian a "la letra A" o "la curva del logo". Por eso los vectorizadores leen la cuadricula de pixeles, encuentran rachas de color similares, siguen los limites entre ellas, y emiten un <code>&lt;path&gt;</code> SVG por region. El SVG de salida se parece a la entrada solo cuando esos limites de color coinciden con las formas reales que el ojo humano lee; cuando no coinciden, la salida es un mosaico ruidoso de poligonos que escala infinitamente pero no se parece a la fotografia.</p>
+
+    <h2 class="text-uppercase"><b>Cuando PNG-a-SVG realmente funciona</b></h2>
+    <p>La vectorizacion produce un SVG util cuando la entrada tiene un numero pequeno de regiones de color solido con limites nitidos entre ellas. Los cuatro casos comunes:</p>
+    <ul>
+        <li><b>Logos y marcas.</b> Un logo suele ser 1-4 colores solidos con bordes nitidos - exactamente lo que el autotrazado necesita. El SVG de salida escala hasta tamano valla sin perder nitidez de borde, se puede recolorear editando el atributo <code>fill</code>, y se envia en unos pocos kilobytes. Este es el caso de uso canonico.</li>
+        <li><b>Iconos y pictogramas.</b> Las siluetas de un solo color (iconos de carpeta, menus hamburguesa, chevrones, glifos de redes sociales) se trazan limpiamente porque hay exactamente un limite primer plano / fondo. El resultado es editable como rutas y recoloreable con una regla CSS.</li>
+        <li><b>Line art y dibujos a tinta.</b> Dibujos blanco-sobre-negro, line art de comic, bocetos a mano escaneados con alto contraste: cada trazo se convierte en una ruta cerrada, y el SVG puede redibujarse en cualquier color o grosor despues.</li>
+        <li><b>Capturas de pantalla de UI con formas nitidas.</b> Capturas de botones, cuadros de dialogo, graficos simples o texto sobre un fondo plano tienen bordes de pixeles anti-aliasing que se vectorizan en aproximaciones muy cercanas a la geometria original. El resultado es perfecto para incrustar en documentacion responsiva.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Cuando PNG-a-SVG NO funciona</b></h2>
+    <p>El mismo algoritmo que funciona tan bien en logos produce mosaicos inutilizables en fotografias. Los tres contra-casos:</p>
+    <ul>
+        <li><b>Fotografias.</b> Una foto de una cara, un paisaje o un producto tiene miles de colores sutilmente diferentes mezclados entre si. El vectorizador o trata cada pixel como su propio poligono (el archivo de salida se hincha hasta decenas de megabytes y se desplaza lento en el navegador) o cuantiza los colores en unas pocas docenas de regiones (la salida parece una version posterizada de la foto, no la original). Para fotos, manten el raster y optimizalo como JPG o WebP.</li>
+        <li><b>Gradientes suaves y textura fina.</b> Un boton con un gradiente suave de arriba a abajo, una acuarela con bordes que sangran, o cualquier imagen con grano de pelicula no tiene limites de color nitidos para trazar. El vectorizador inventa limites arbitrarios en umbrales de cuantizacion, y el SVG queda "a rayas" o "a bloques" donde el original era suave.</li>
+        <li><b>Texto con anti-aliasing renderizado como pixeles (bajo contraste / pequeno).</b> El texto renderizado en tamanos pequenos o con fuerte anti-aliasing se convierte en una sopa de pixeles grises alrededor de cada glifo. El autotrazado produce letras ilegibles. Si necesitas el texto como rutas, configura el documento con la fuente real en una herramienta vectorial en lugar de vectorizar una captura renderizada.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Vectorizar en freetoolonline</b></h2>
+    <p>Abre <a href="/image-converter-tools/png-to-svg.html">PNG to SVG</a>, sube el PNG o JPG, y descarga el resultado SVG. El archivo se procesa en el servicio AWS de freetoolonline: se sube por el pipeline de subida estandar, la conversion corre en el servidor, y el archivo de salida sale del almacenamiento del servicio tras la ventana de retencion, asi que debes descargar y guardar localmente si necesitas conservarlo. El SVG de salida abre en cualquier navegador moderno (el elemento SVG es ciudadano de primera del HTML desde principios de los 2010), y se puede importar en Inkscape, Adobe Illustrator, Figma, Affinity Designer o cualquier otro editor vectorial para refinamiento posterior. Si el resultado parece a bloques o ruidoso, esa es una senal de que la entrada no era un buen candidato a vectorizacion (ver la seccion anterior) - manten el raster original y optimizalo como PNG / WebP, o si el activo es un logo / icono / ilustracion, pide a un disenador la fuente vectorial original.</p>
+
+    <details class="faq-item">
+  <summary><b>El /png-to-svg.html sube el archivo o se ejecuta localmente en tu navegador?</b></summary>
+  <p>El puente <a href="/image-converter-tools/png-to-svg.html">/png-to-svg.html</a> sube el PNG al servidor freetoolonline. La pagina no es una herramienta totalmente offline, solo-cliente o solo-navegador, y no corre localmente. Esta afirmacion de subida es directa: el servidor freetoolonline maneja el autotrazado, y el resultado SVG sale del almacenamiento tras la ventana de retencion estandar.</p>
+</details>
+<h2 class="text-uppercase"><b>Lo que PNG-a-SVG NO es</b></h2>
+    <p>Tres operaciones se confunden a menudo con la vectorizacion; cada una es una accion diferente con un resultado diferente.</p>
+    <ul>
+        <li><b>"Guardar como SVG" de un PNG dentro de un editor.</b> La mayoria de los editores guardan alegremente un PNG como archivo SVG - pero lo que realmente hacen es envolver los bytes PNG dentro de un elemento <code>&lt;image&gt;</code> SVG. El resultado tiene extension <code>.svg</code> y los mismos pixeles que la entrada; NO escala mejor y NO es editable como rutas. La vectorizacion (lo que hace /png-to-svg.html) redibuja el contenido como elementos <code>&lt;path&gt;</code> reales, que es una operacion diferente.</li>
+        <li><b>SVG a PNG (rasterizar).</b> La direccion inversa - tomar un vector y renderizarlo en un raster de tamano fijo - es una tarea separada con compensaciones distintas (eleccion de resolucion, anti-aliasing, fuentes incrustadas). Ver <a href="/guides/svg-to-png-when-to-rasterize-an-svg.html">SVG a PNG - cuando rasterizar un SVG</a> para el lado de la rasterizacion, y <a href="/image-converter-tools/svg-to-png.html">la herramienta SVG to PNG</a> para la operacion.</li>
+        <li><b>Comprimir un PNG a un PNG mas pequeno.</b> Si el objetivo es "el archivo es demasiado grande" y el contenido es fotografico o rico en textura, el movimiento correcto es compresion raster, no vectorizacion. Ver <a href="/guides/compress-jpeg-without-losing-quality-quality-vs-size.html">Comprimir JPEG sin perder calidad - calidad vs tamano</a> para el compromiso de compresion de fotos, <a href="/guides/jpg-vs-png-for-web.html">JPG vs PNG para web</a> para eleccion de formato raster, y <a href="/image-tools/compress-image.html">la herramienta Compress Image</a> para la operacion.</li>
+    </ul>
+
+    <p><em>Guias relacionadas de conversion de imagen: <a href="/guides/svg-to-png-when-to-rasterize-an-svg.html">SVG a PNG - cuando rasterizar un SVG</a> (la direccion inversa), <a href="/guides/png-vs-svg-when-to-use.html">PNG vs SVG - cuando usar cada uno</a> (la decision de eleccion de formato antes de convertir), y <a href="/guides/jpg-vs-png-for-web.html">JPG vs PNG para web</a> (eleccion de formato raster cuando la vectorizacion no es la respuesta).</em></p>
+</div>
