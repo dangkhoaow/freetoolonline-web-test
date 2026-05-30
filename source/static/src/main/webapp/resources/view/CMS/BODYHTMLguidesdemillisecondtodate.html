@@ -1,0 +1,30 @@
+<article class="guide-body">
+  <h1>Millisekunde Zu Datum</h1>
+  <p class="lead">Sie haben eine lange Ganzzahl in einer Log-Zeile, einer API-Antwort oder einem <code>Date.now()</code>-Rueckgabewert sitzen und muessen sie als Kalenderdatum lesen. Fuegen Sie den 13-stelligen Wert in den Konverter ein; die Seite liest ihn als Datum in Ihrer lokalen Zeitzone direkt im Browser zurueck. Das Feld oeffnet sich vorbelegt mit der aktuellen Millisekunde, sodass die erwartete Form bereits auf dem Bildschirm ist.</p>
+  <p class="reviewed">Zuletzt geprueft: 2026-05-20</p>
+  <p class="byline">Geprueft vom FreetoolOnline-Redaktionsteam</p>
+  <table class="quick-facts">
+    <thead><tr><th>Eigenschaft</th><th>Wert</th></tr></thead>
+    <tbody>
+      <tr><td>Format</td><td>Online-Werkzeug, ohne Installation</td></tr>
+      <tr><td>Geschwindigkeit</td><td>Browserseitig; Ausgabe in Sekunden</td></tr>
+      <tr><td>Datenschutz</td><td>Dateien bleiben auf dem Geraet</td></tr>
+      <tr><td>Implementierendes Werkzeug</td><td><a href="/convert-time-in-millisecond-to-date.html">/convert-time-in-millisecond-to-date.html</a></td></tr>
+    </tbody>
+  </table>
+  <p>Log-Zeilen speichern selten eine saubere Ganzzahl. Ein Feld kann als <code>1713538800000ms</code> geschrieben sein, die Kommentarspalte kann es als <code>1713538800000 millis</code> markieren oder ein JSON-Payload kann die Zahl in Anfuehrungszeichen einschliessen. Alle drei Formen werden sauber eingefuegt, weil der Konverter die Eingabe in eine Number zwingt, bevor er das Date konstruiert. Nachgestellte Buchstaben und umgebende Leerzeichen werden ignoriert, sodass Sie den Wert direkt aus dem umgebenden Log-Rauschen greifen koennen, ohne ihn zuerst zu putzen. Wenn das Ergebnis in 1970 landet, war die Eingabe fast sicher Unix-Sekunden, nicht Millisekunden; multiplizieren Sie mit 1000 oder verwenden Sie stattdessen ein Sekunden-zu-Datum-Werkzeug.</p>
+  <h2>Das Ergebnis in Ihrer lokalen Zeitzone zurueck lesen</h2>
+  <p>Der Konverter rendert das Datum mit dem Locale und der Zeitzone des Browsers, was dem entspricht, was ein Kollege auf derselben Maschine sehen wuerde, wenn er <code>new Date(value).toString()</code> in der Entwicklerkonsole aufruft. Das ist meistens das, was ein Entwickler, der eine Vorfall-Timeline liest, will: die Wanduhrzeit, zu der das Ereignis in seiner Arbeitszeitzone gelandet ist, nicht der abstrakte UTC-Wert, den der Log speichert. Wenn die Seite waehrend eines Sommerzeit-Uebergangs offen ist, malt dieselbe Eingabe-Millisekunde vor und nach dem Schnitt eine andere Wanduhrzeit - die zugrunde liegende Ganzzahl aendert sich nicht, aber der Offset, den der Browser anwendet, schon.</p>
+  <p>Um eine UTC-Lesung anstelle des Standard-Lokalzonen-Verhaltens zu erzwingen, wechseln Sie die Systemzeitzone (oder verwenden Sie ein privates Browserfenster mit einem UTC-gesperrten Profil) und laden Sie den Konverter neu. Die Konvertierungslogik ist deterministisch - dieselbe Eingabe produziert immer dieselbe Ausgabe fuer eine gegebene Zeitzonen-Einstellung - sodass die Seite geeignet ist, in eine Ticket-Antwort oder einen Code-Review-Kommentar einzufuegen, wenn Leser und Schreiber ihren Browser zuerst auf dieselbe Zeitzone setzen.</p>
+  <h2>Haeufige 13-stellige Eingaben, die der Konverter akzeptiert</h2>
+  <p>Die haeufigsten Formen, mit denen der Konverter umgehen musste:</p>
+  <ul>
+    <li><b>Rohe Ganzzahl.</b> Eine reine 13-stellige Zahl wie <code>1713538800000</code>, oft aus einer Datenbankspalte oder Log-Zeile eingefuegt.</li>
+    <li><b>Mit Einheit-Suffix.</b> Ein Wert wie <code>1713538800000ms</code> oder <code>1713538800000 millis</code>, ueblich in Monitoring-Dashboards.</li>
+    <li><b>JSON-Anfuehrungszeichen.</b> Ein in Anfuehrungszeichen eingeschlossener Wert wie <code>"1713538800000"</code>, direkt aus einem JSON-Payload kopiert.</li>
+    <li><b>Komma-getrennt.</b> Ein Wert mit Tausendertrennzeichen wie <code>1,713,538,800,000</code>, ueblich in Tabellenkalkulationsexporten.</li>
+    <li><b>Leerzeichen-aufgepolstert.</b> Ein Wert mit fuehrenden oder nachfolgenden Leerzeichen aus einer Mehrfach-Spalten-Einfuegung.</li>
+  </ul>
+  <p>Jede Form wird normalisiert, indem nicht-numerische Zeichen entfernt werden, bevor der <code>Number()</code>-Zwang laeuft, sodass der Leser jede davon einfuegen kann, ohne den Wert zuerst zu putzen.</p>
+  <p>Wenn das implementierende Werkzeug unter <a href="/convert-time-in-millisecond-to-date.html">/convert-time-in-millisecond-to-date.html</a> eine leere Ausgabe zeigt, ist die haeufigste Ursache ein Wert, der auf dem Weg durch die Zwischenablage eine Ziffer verloren hat (12 Ziffern werden als Jahr 5878 oder frueher gelesen). Kopieren Sie den vollstaendigen Wert erneut, fuegen Sie ihn ein und das Datum sollte wie erwartet erscheinen.</p>
+</article>

@@ -1,0 +1,30 @@
+<article class="guide-body">
+  <h1>Milidetik Ke Tanggal</h1>
+  <p class="lead">Anda memiliki bilangan bulat panjang yang duduk di baris log, respons API, atau nilai pengembalian <code>Date.now()</code>, dan perlu membacanya sebagai tanggal kalender. Tempel nilai 13-digit ke konverter; halaman membacanya kembali sebagai tanggal di zona waktu lokal Anda, langsung di browser. Bidang terbuka pra-terisi dengan milidetik saat ini sehingga bentuk yang diharapkan sudah ada di layar.</p>
+  <p class="reviewed">Terakhir ditinjau: 2026-05-20</p>
+  <p class="byline">Ditinjau oleh tim editorial FreetoolOnline</p>
+  <table class="quick-facts">
+    <thead><tr><th>Properti</th><th>Nilai</th></tr></thead>
+    <tbody>
+      <tr><td>Format</td><td>Alat online, tanpa install</td></tr>
+      <tr><td>Kecepatan</td><td>Sisi browser; output dalam hitungan detik</td></tr>
+      <tr><td>Privasi</td><td>File tetap di perangkat</td></tr>
+      <tr><td>Alat implementasi</td><td><a href="/convert-time-in-millisecond-to-date.html">/convert-time-in-millisecond-to-date.html</a></td></tr>
+    </tbody>
+  </table>
+  <p>Baris log jarang menyimpan bilangan bulat yang bersih. Sebuah bidang mungkin ditulis sebagai <code>1713538800000ms</code>, kolom komentar mungkin menandainya <code>1713538800000 millis</code>, atau payload JSON mungkin membungkus angka dalam tanda kutip. Ketiga bentuk menempel dengan bersih karena konverter memaksa input menjadi Number sebelum membangun Date. Huruf di akhir dan spasi sekitarnya diabaikan, jadi Anda dapat mengambil nilai langsung dari kebisingan log tanpa membersihkannya dulu. Jika hasilnya jatuh di tahun 1970, input hampir pasti detik Unix, bukan milidetik; kalikan dengan 1000 atau gunakan alat detik-ke-tanggal sebagai gantinya.</p>
+  <h2>Membaca hasil kembali di zona waktu lokal Anda</h2>
+  <p>Konverter merender tanggal menggunakan locale dan zona waktu browser, yang cocok dengan apa yang dilihat rekan satu mesin ketika mereka memanggil <code>new Date(value).toString()</code> di konsol developer. Itu biasanya yang diinginkan developer yang membaca timeline insiden: waktu dinding ketika peristiwa mendarat di zona kerja mereka, bukan nilai UTC abstrak yang disimpan log. Jika halaman terbuka melintasi transisi daylight savings, milidetik input yang sama melukis waktu dinding berbeda sebelum dan sesudah cutover - bilangan bulat di bawahnya tidak berubah, tetapi offset yang diterapkan browser berubah.</p>
+  <p>Untuk memaksa pembacaan UTC alih-alih default zona-lokal, ganti zona waktu sistem (atau gunakan jendela penjelajahan pribadi dengan profil terkunci UTC) dan muat ulang konverter. Logika konversi deterministik - input yang sama selalu menghasilkan output yang sama untuk pengaturan zona tertentu - sehingga halaman cocok untuk ditempel ke balasan tiket atau komentar review kode ketika pembaca dan penulis mengatur browser mereka ke zona yang sama lebih dulu.</p>
+  <h2>Input 13-digit umum yang diterima konverter</h2>
+  <p>Bentuk paling umum yang harus ditangani konverter:</p>
+  <ul>
+    <li><b>Bilangan bulat mentah.</b> Angka 13-digit polos seperti <code>1713538800000</code>, sering ditempel dari kolom database atau baris log.</li>
+    <li><b>Dengan akhiran unit.</b> Nilai seperti <code>1713538800000ms</code> atau <code>1713538800000 millis</code>, umum di dasbor monitoring.</li>
+    <li><b>Berkutip JSON.</b> Nilai yang dibungkus tanda kutip seperti <code>"1713538800000"</code>, disalin langsung dari payload JSON.</li>
+    <li><b>Dipisahkan koma.</b> Nilai dengan pemisah ribuan seperti <code>1,713,538,800,000</code>, umum di ekspor spreadsheet.</li>
+    <li><b>Berbantal spasi.</b> Nilai dengan spasi di awal atau akhir dari tempel multi-kolom.</li>
+  </ul>
+  <p>Setiap bentuk dinormalisasi dengan menghapus karakter non-digit sebelum pemaksaan <code>Number()</code> berjalan, sehingga pembaca dapat menempel salah satu tanpa membersihkan nilainya terlebih dahulu.</p>
+  <p>Jika alat implementasi di <a href="/convert-time-in-millisecond-to-date.html">/convert-time-in-millisecond-to-date.html</a> menampilkan output kosong, penyebab paling umum adalah nilai yang kehilangan digit dalam perjalanan melalui clipboard (12 digit dibaca sebagai tahun 5878 atau lebih awal). Salin ulang nilai lengkap, tempel masuk, dan tanggal harus terisi seperti yang diharapkan.</p>
+</article>

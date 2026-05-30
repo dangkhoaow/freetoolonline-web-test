@@ -1,0 +1,30 @@
+<article class="guide-body">
+  <h1>Milisegundo A Fecha</h1>
+  <p class="lead">Tiene un entero largo en una linea de log, en una respuesta de API o en un retorno de <code>Date.now()</code>, y necesita leerlo como fecha de calendario. Pegue el valor de 13 digitos en el conversor; la pagina lo lee de vuelta como fecha en su zona horaria local, directo en su navegador. El campo abre prellenado con el milisegundo actual para que la forma esperada ya este en pantalla.</p>
+  <p class="reviewed">Ultima revision: 2026-05-20</p>
+  <p class="byline">Revisado por el equipo editorial FreetoolOnline</p>
+  <table class="quick-facts">
+    <thead><tr><th>Propiedad</th><th>Valor</th></tr></thead>
+    <tbody>
+      <tr><td>Formato</td><td>Herramienta online, sin instalar</td></tr>
+      <tr><td>Velocidad</td><td>En el navegador; salida en segundos</td></tr>
+      <tr><td>Privacidad</td><td>Los archivos quedan en el dispositivo</td></tr>
+      <tr><td>Herramienta implementadora</td><td><a href="/convert-time-in-millisecond-to-date.html">/convert-time-in-millisecond-to-date.html</a></td></tr>
+    </tbody>
+  </table>
+  <p>Las lineas de log rara vez guardan un entero limpio. Un campo puede escribirse como <code>1713538800000ms</code>, la columna de comentario puede etiquetarlo <code>1713538800000 millis</code>, o un payload JSON puede envolver el numero en comillas. Las tres formas pegan limpio porque el conversor coacciona la entrada a Number antes de construir la Date. Letras finales y espacios alrededor se ignoran, asi que puede tomar el valor directo del ruido del log sin limpiarlo primero. Si el resultado cae en 1970, la entrada casi seguro era en segundos Unix, no en milisegundos; multiplique por 1000 o use una herramienta de segundos-a-fecha.</p>
+  <h2>Leer el resultado en su zona horaria local</h2>
+  <p>El conversor renderiza la fecha usando el locale y la zona horaria del navegador, que coincide con lo que un companero en la misma maquina veria cuando llamara <code>new Date(value).toString()</code> en la consola de desarrollador. Eso es usualmente lo que un desarrollador leyendo una cronologia de incidente quiere: la hora de reloj en que el evento aterrizo en su zona de trabajo, no el valor UTC abstracto que guarda el log. Si la pagina esta abierta cruzando una transicion de horario de verano, el mismo milisegundo de entrada pinta una hora de reloj distinta antes y despues del corte - el entero subyacente no cambia, pero el offset que el navegador aplica cambia.</p>
+  <p>Para forzar una lectura en UTC en lugar del default de zona local, cambie la zona del sistema (o use una ventana de navegacion privada con un perfil bloqueado en UTC) y recargue el conversor. La logica de conversion es deterministica - la misma entrada siempre produce la misma salida para una configuracion de zona dada - asi que la pagina sirve para pegar en una respuesta de ticket o en un comentario de revision de codigo cuando lector y escritor pongan su navegador en la misma zona primero.</p>
+  <h2>Entradas comunes de 13 digitos que el conversor acepta</h2>
+  <p>Las formas mas comunes que el conversor tuvo que manejar:</p>
+  <ul>
+    <li><b>Entero crudo.</b> Un numero pelado de 13 digitos como <code>1713538800000</code>, a menudo pegado de una columna de base de datos o linea de log.</li>
+    <li><b>Con sufijo de unidad.</b> Un valor como <code>1713538800000ms</code> o <code>1713538800000 millis</code>, comun en paneles de monitoreo.</li>
+    <li><b>Con comillas JSON.</b> Un valor envuelto en comillas como <code>"1713538800000"</code>, copiado directo de un payload JSON.</li>
+    <li><b>Separado por coma.</b> Un valor con separadores de miles como <code>1,713,538,800,000</code>, comun en exportaciones de hoja de calculo.</li>
+    <li><b>Con espacios alrededor.</b> Un valor con espacios al inicio o final de un pegado de varias columnas.</li>
+  </ul>
+  <p>Cada forma se normaliza quitando caracteres no-digitos antes de que corra la coaccion <code>Number()</code>, asi que el lector puede pegar cualquiera sin limpiar el valor primero.</p>
+  <p>Si la herramienta implementadora en <a href="/convert-time-in-millisecond-to-date.html">/convert-time-in-millisecond-to-date.html</a> muestra una salida vacia, la causa mas comun es un valor que perdio un digito en el camino del portapapeles (12 digitos leidos como el ano 5878 o anterior). Recopie el valor completo, peguelo, y la fecha deberia poblarse como se espera.</p>
+</article>
