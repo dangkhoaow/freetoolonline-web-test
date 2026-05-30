@@ -1,0 +1,61 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>MD5 vs SHA-256 - quando usar cada funcao de hash</b></h1>
+<time itemprop="datePublished" datetime="2026-04-20T08:00:00Z"><b>Publicado em 20 de abril de 2026</b></time>
+<hr/>
+
+<p class="lead">MD5 e SHA-256 produzem impressoes digitais de comprimento fixo de dados de entrada arbitrarios. Eles parecem intercambiaveis por fora - cole texto, obtenha hex - mas resolvem problemas diferentes. MD5 e uma impressao digital rapida, criptograficamente quebrada, adequada para verificacoes de integridade nao adversariais. SHA-256 e um hash moderno, criptograficamente solido, usado onde quer que um atacante possa tentar forjar uma colisao. Escolher o certo para o trabalho economiza tempo de CPU e previne lacunas de seguranca reais.</p>
+
+<br/><h2 class="text-uppercase"><b>O que uma funcao de hash realmente faz</b></h2>
+<p>Uma funcao de hash recebe bytes de entrada de qualquer comprimento e retorna um digest de comprimento fixo. A mesma entrada sempre produz o mesmo digest. Mudar um unico bit de entrada produz um digest completamente diferente (o efeito avalanche). O digest e unidirecional - voce nao pode reconstruir a entrada do digest.</p>
+<p>MD5 retorna 128 bits (32 caracteres hex). SHA-256 retorna 256 bits (64 caracteres hex). Ambos sao deterministicos. Ambos sao rapidos. Ambos nao revelam nada sobre a estrutura da entrada a partir da saida.</p>
+
+<br/><h2 class="text-uppercase"><b>Comparacao lado a lado</b></h2>
+<div class="w3-responsive">
+<table class="w3-table-all w3-small"><tr><th>Atributo</th><th>MD5</th><th>SHA-256</th></tr>
+<tr><td>Comprimento do digest</td><td>128 bits (32 caracteres hex)</td><td>256 bits (64 caracteres hex)</td></tr>
+<tr><td>Projetado em</td><td>1991 (Ron Rivest)</td><td>2001 (NSA, FIPS 180-2)</td></tr>
+<tr><td>Familia</td><td>linhagem MD4</td><td>familia SHA-2</td></tr>
+<tr><td>Resistencia a colisoes</td><td><b>Quebrada</b> desde 2004 (Wang et al.); colisoes praticas em segundos</td><td>Sem colisao pratica conhecida; ~2<sup>128</sup> operacoes para encontrar uma</td></tr>
+<tr><td>Resistencia de segunda pre-imagem</td><td>Enfraquecida mas sem ataque pratico para entrada pre-computada</td><td>Forte; ~2<sup>256</sup> operacoes</td></tr>
+<tr><td>Velocidade (x86-64 moderno)</td><td>~500 MB/s por nucleo</td><td>~300 MB/s por nucleo (SHA-NI: ~1,5 GB/s)</td></tr>
+<tr><td>Aceleracao de hardware</td><td>Sem instrucao dedicada</td><td>Intel SHA-NI, extensoes crypto ARMv8</td></tr>
+<tr><td>Seguro para uso criptografico</td><td>Nao - nao usar para assinaturas, cert pinning, hash de senha</td><td>Sim (fora de hash de senha - use Argon2id/bcrypt para senhas)</td></tr>
+</table>
+</div>
+
+<br/><h2 class="text-uppercase"><b>Por que MD5 esta quebrado e o que isso realmente significa</b></h2>
+<p>Uma colisao e duas entradas diferentes que produzem o mesmo digest. A resistencia a colisoes do MD5 foi teoricamente quebrada em 2004 e praticamente quebrada em 2008 - um pesquisador pode criar dois arquivos com digests MD5 identicos em segundos em hardware de consumo. Isso quebrou o uso de MD5 em assinaturas digitais (o malware Flame forjou uma assinatura do Windows Update em 2012), certificados TLS (todas as principais CAs pararam de emitir certs assinados MD5 em 2014), e qualquer contexto onde um adversario pode influenciar as entradas.</p>
+<p>A resistencia de segunda pre-imagem do MD5 e mais fraca que a do SHA-256, mas nao tem ataque pratico conhecido contra entradas arbitrarias ja existentes. Essa e a janela estreita onde MD5 ainda e seguro: confirmar que um digest ja computado corresponde a um arquivo que voce baixou, quando nenhum adversario teve a chance de criar uma colisao contra esse arquivo especifico.</p>
+
+<br/><h2 class="text-uppercase"><b>Quando MD5 ainda esta bem</b></h2>
+<p><b>Integridade de arquivo para ambientes nao adversariais.</b> Um download de ISO Linux publica um MD5 junto com a imagem; se o hash corresponde, seu download nao foi corrompido em transito. Nao ha adversario criando um ISO forjado contra esse MD5 especifico - eles precisariam ter seu arquivo publicado no site upstream primeiro.</p>
+<p><b>Caches de de-duplicacao.</b> Um proxy de cache indexa objetos por MD5 de seu conteudo para detectar repeticoes. Colisoes nesse contexto sao benignas - dois objetos diferentes com o mesmo MD5 significam uma falha de cache, sem consequencia de seguranca.</p>
+<p><b>Fingerprint de linhas de banco de dados.</b> "Este registro mudou desde a ultima sincronizacao?" - MD5 da linha, compare com digest armazenado. Mais rapido que SHA-256; o modelo de adversario esta ausente.</p>
+<p><b>Enderecamento de conteudo Git.</b> Git usa SHA-1 (em breve SHA-256), nao MD5 - mas a justificativa do design se aplica: para um armazenamento enderecado por conteudo onde voce confia no escritor, um hash de 128 bits e suficiente se a colisao nao for um vetor de ataque.</p>
+
+<br/><h2 class="text-uppercase"><b>Quando SHA-256 e a escolha correta</b></h2>
+<p><b>Assinaturas digitais.</b> Certificados TLS, assinatura de codigo, assinatura JWT - onde quer que um atacante ganhe ao forjar uma assinatura, use SHA-256 ou mais forte.</p>
+<p><b>Cert pinning e impressoes digitais de chave publica.</b> A impressao digital SHA-256 da chave publica de um certificado e o padrao para pinning.</p>
+<p><b>Blockchain e armazenamento enderecavel por conteudo onde adversarios participam.</b> Bitcoin usa SHA-256 duas vezes (SHA-256d) para cabecalhos de bloco e identificadores de transacao. Qualquer armazenamento onde usuarios contribuem conteudo e colisoes podem ser exploradas precisa de SHA-256.</p>
+<p><b>HMAC para autenticacao de mensagens.</b> HMAC-SHA-256 e a linha de base para assinatura de requisicao de API (AWS Signature v4, GitHub webhooks, Stripe). HMAC-MD5 ainda e usado em alguns protocolos legados mas e cada vez mais sinalizado por scanners de conformidade.</p>
+
+<br/><h2 class="text-uppercase"><b>O que usar para senhas (spoiler: nenhum)</b></h2>
+<p>Nao use MD5 ou SHA-256 diretamente para armazenamento de senhas. Ambos sao rapidos - isso e ruim para senhas. Um atacante com um digest vazado pode testar bilhoes de senhas candidatas por segundo em uma GPU. Use uma <b>funcao de hash de senha</b>: <b>Argon2id</b> (recomendacao OWASP 2025), <b>bcrypt</b>, ou <b>scrypt</b>. Essas funcoes sao intencionalmente lentas e exigentes em memoria, entao um atacante pode testar apenas milhares de candidatos por segundo, nao bilhoes.</p>
+
+<br/><h2 class="text-uppercase"><b>Realidade de desempenho em 2026</b></h2>
+<p>MD5 ainda e ~1,7&times; mais rapido que SHA-256 em uma CPU sem SHA-NI. Em CPUs com Intel SHA-NI (Goldmont+, 2017) ou extensoes crypto ARMv8 (Cortex-A53 em diante), SHA-256 realmente iguala ou excede o throughput do MD5 - a lacuna de velocidade que motivou escolher MD5 nos anos 2000 nao se mantem mais.</p>
+<p>JavaScript no navegador com WebCrypto (<code>crypto.subtle.digest('SHA-256', data)</code>) atinge ~200 MB/s em um laptop moderno. Nosso <a href="/developer-tools/md5-converter.html">conversor MD5</a> executa MD5 em velocidade similar via implementacao wasm.</p>
+
+<br/><h2 class="text-uppercase"><b>MD5 ou SHA-256: a regra da fronteira de confianca</b></h2>
+<p>A escolha entre MD5 e SHA-256 depende de uma unica pergunta - se um adversario pode influenciar a entrada que voce esta fazendo hash. Se um uploader remoto, um atacante de rede, ou qualquer parte fora de sua fronteira de confianca pode moldar os bytes que chegam a funcao de hash, escolha SHA-256 (ou SHA-3, ou BLAKE3) para que um ataque de colisao nao possa forjar um digest correspondente. Se as entradas vem de seu proprio pipeline e voce esta fingerprintando-as para cache, de-duplicacao, ou deteccao de mudanca, MD5 esta bem e roda ligeiramente mais rapido em CPUs sem aceleracao SHA-NI. A decisao e binaria e vive na fronteira de confianca; uma vez que voce nomeou de qual lado dessa fronteira a entrada esta, o algoritmo a usar e determinado.</p>
+
+<br/><h2 class="text-uppercase"><b>Ferramentas relacionadas</b></h2>
+<ul>
+    <li><a href="/developer-tools/md5-converter.html">MD5 Converter</a> - calcule MD5 de texto ou um arquivo pequeno no navegador.</li>
+    <li><a href="/developer-tools/text-diff.html">Text Diff</a> - compare dois blocos de texto linha por linha.</li>
+    <li><a href="/developer-tools/text-html-editor.html">Text / HTML Editor</a> - renderize HTML e Markdown ao vivo.</li>
+    <li><a href="/utility-tools/get-time-in-millisecond.html">Current Time (ms)</a> - tempo epoch para correlacao de logs.</li>
+</ul>
+
+<p><br/><a href="/developer-tools.html">&larr; Voltar para Developer Tools</a></p>
+</div>

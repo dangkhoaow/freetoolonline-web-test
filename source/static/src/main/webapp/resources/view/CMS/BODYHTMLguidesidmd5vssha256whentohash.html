@@ -1,0 +1,61 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>MD5 vs SHA-256 - kapan menggunakan setiap fungsi hash</b></h1>
+<time itemprop="datePublished" datetime="2026-04-20T08:00:00Z"><b>Diterbitkan 20 April 2026</b></time>
+<hr/>
+
+<p class="lead">MD5 dan SHA-256 menghasilkan sidik jari dengan panjang tetap dari data input sembarang. Mereka terlihat dapat dipertukarkan dari luar - tempel teks, dapatkan hex - tetapi mereka memecahkan masalah yang berbeda. MD5 adalah sidik jari cepat, secara kriptografi rusak, cocok untuk pemeriksaan integritas non-adversarial. SHA-256 adalah hash modern, secara kriptografi solid, digunakan di mana saja seorang penyerang mungkin mencoba memalsukan tabrakan. Memilih yang tepat untuk pekerjaan menghemat waktu CPU dan mencegah celah keamanan nyata.</p>
+
+<br/><h2 class="text-uppercase"><b>Apa yang sebenarnya dilakukan fungsi hash</b></h2>
+<p>Fungsi hash mengambil byte input dengan panjang apapun dan mengembalikan digest dengan panjang tetap. Input yang sama selalu menghasilkan digest yang sama. Mengubah satu bit input menghasilkan digest yang benar-benar berbeda (efek longsor). Digest adalah satu arah - Anda tidak dapat merekonstruksi input dari digest.</p>
+<p>MD5 mengembalikan 128 bit (32 karakter hex). SHA-256 mengembalikan 256 bit (64 karakter hex). Keduanya deterministik. Keduanya cepat. Keduanya tidak mengungkapkan apapun tentang struktur input dari output.</p>
+
+<br/><h2 class="text-uppercase"><b>Perbandingan berdampingan</b></h2>
+<div class="w3-responsive">
+<table class="w3-table-all w3-small"><tr><th>Atribut</th><th>MD5</th><th>SHA-256</th></tr>
+<tr><td>Panjang digest</td><td>128 bit (32 karakter hex)</td><td>256 bit (64 karakter hex)</td></tr>
+<tr><td>Dirancang</td><td>1991 (Ron Rivest)</td><td>2001 (NSA, FIPS 180-2)</td></tr>
+<tr><td>Keluarga</td><td>garis keturunan MD4</td><td>keluarga SHA-2</td></tr>
+<tr><td>Ketahanan tabrakan</td><td><b>Rusak</b> sejak 2004 (Wang et al.); tabrakan praktis dalam hitungan detik</td><td>Tidak ada tabrakan praktis yang diketahui; ~2<sup>128</sup> operasi untuk menemukan satu</td></tr>
+<tr><td>Ketahanan preimage kedua</td><td>Dilemahkan tetapi tidak ada serangan praktis untuk input yang dihitung sebelumnya</td><td>Kuat; ~2<sup>256</sup> operasi</td></tr>
+<tr><td>Kecepatan (x86-64 modern)</td><td>~500 MB/s per inti</td><td>~300 MB/s per inti (SHA-NI: ~1,5 GB/s)</td></tr>
+<tr><td>Akselerasi hardware</td><td>Tidak ada instruksi khusus</td><td>Intel SHA-NI, ekstensi crypto ARMv8</td></tr>
+<tr><td>Aman untuk penggunaan kriptografi</td><td>Tidak - jangan gunakan untuk tanda tangan, cert pinning, hash kata sandi</td><td>Ya (di luar hash kata sandi - gunakan Argon2id/bcrypt untuk kata sandi)</td></tr>
+</table>
+</div>
+
+<br/><h2 class="text-uppercase"><b>Mengapa MD5 rusak dan apa artinya sebenarnya</b></h2>
+<p>Tabrakan adalah dua input berbeda yang menghasilkan digest yang sama. Ketahanan tabrakan MD5 secara teoritis rusak pada 2004 dan praktis rusak pada 2008 - seorang peneliti dapat membuat dua file dengan digest MD5 identik dalam hitungan detik pada hardware konsumen. Ini merusak penggunaan MD5 dalam tanda tangan digital (malware Flame memalsukan tanda tangan Windows Update pada 2012), sertifikat TLS (semua CA besar berhenti menerbitkan cert yang ditandatangani MD5 pada 2014), dan setiap konteks di mana seorang penyerang dapat mempengaruhi input.</p>
+<p>Ketahanan preimage kedua MD5 lebih lemah daripada SHA-256 tetapi tidak ada serangan praktis yang diketahui terhadap input sembarang yang sudah ada. Itu adalah jendela sempit di mana MD5 masih aman: mengkonfirmasi bahwa digest yang sudah dihitung cocok dengan file yang Anda unduh, ketika tidak ada penyerang yang punya kesempatan untuk membuat tabrakan terhadap file spesifik itu.</p>
+
+<br/><h2 class="text-uppercase"><b>Kapan MD5 masih baik-baik saja</b></h2>
+<p><b>Integritas file untuk lingkungan non-adversarial.</b> Unduhan ISO Linux menerbitkan MD5 bersama dengan citra; jika hash cocok, unduhan Anda tidak rusak dalam perjalanan. Tidak ada penyerang yang membuat ISO palsu terhadap MD5 spesifik itu - mereka harus menerbitkan file mereka di situs upstream terlebih dahulu.</p>
+<p><b>Cache de-duplikasi.</b> Proxy caching mengindeks objek berdasarkan MD5 konten mereka untuk mendeteksi pengulangan. Tabrakan dalam konteks ini tidak berbahaya - dua objek berbeda dengan MD5 yang sama berarti satu cache miss, tidak ada konsekuensi keamanan.</p>
+<p><b>Sidik jari baris database.</b> "Apakah catatan ini berubah sejak sinkronisasi terakhir?" - MD5 baris, bandingkan dengan digest yang disimpan. Lebih cepat daripada SHA-256; model adversari tidak ada.</p>
+<p><b>Pengalamatan konten Git.</b> Git menggunakan SHA-1 (segera SHA-256), bukan MD5 - tetapi alasan desain berlaku: untuk penyimpanan yang dialamatkan konten di mana Anda mempercayai penulis, hash 128-bit sudah cukup jika tabrakan bukan vektor serangan.</p>
+
+<br/><h2 class="text-uppercase"><b>Kapan SHA-256 adalah pilihan yang tepat</b></h2>
+<p><b>Tanda tangan digital.</b> Sertifikat TLS, penandatanganan kode, penandatanganan JWT - di mana saja penyerang mendapatkan keuntungan dari memalsukan tanda tangan, gunakan SHA-256 atau lebih kuat.</p>
+<p><b>Cert pinning dan sidik jari kunci publik.</b> Sidik jari SHA-256 dari kunci publik sertifikat adalah standar untuk pinning.</p>
+<p><b>Blockchain dan penyimpanan yang dapat dialamatkan konten di mana adversari berpartisipasi.</b> Bitcoin menggunakan SHA-256 dua kali (SHA-256d) untuk header blok dan pengidentifikasi transaksi. Setiap penyimpanan di mana pengguna menyumbangkan konten dan tabrakan dapat dieksploitasi membutuhkan SHA-256.</p>
+<p><b>HMAC untuk otentikasi pesan.</b> HMAC-SHA-256 adalah baseline untuk penandatanganan permintaan API (AWS Signature v4, GitHub webhooks, Stripe). HMAC-MD5 masih digunakan dalam beberapa protokol lama tetapi semakin ditandai oleh pemindai kepatuhan.</p>
+
+<br/><h2 class="text-uppercase"><b>Apa yang digunakan untuk kata sandi (spoiler: tidak ada)</b></h2>
+<p>Jangan gunakan MD5 atau SHA-256 secara langsung untuk penyimpanan kata sandi. Keduanya cepat - itu buruk untuk kata sandi. Penyerang dengan digest yang bocor dapat menguji miliaran kata sandi kandidat per detik pada GPU. Gunakan <b>fungsi hash kata sandi</b>: <b>Argon2id</b> (rekomendasi OWASP 2025), <b>bcrypt</b>, atau <b>scrypt</b>. Fungsi-fungsi ini sengaja lambat dan haus memori, sehingga penyerang hanya dapat menguji ribuan kandidat per detik, bukan miliaran.</p>
+
+<br/><h2 class="text-uppercase"><b>Realitas kinerja di 2026</b></h2>
+<p>MD5 masih ~1,7&times; lebih cepat daripada SHA-256 pada CPU tanpa SHA-NI. Pada CPU dengan Intel SHA-NI (Goldmont+, 2017) atau ekstensi crypto ARMv8 (Cortex-A53 dan seterusnya), SHA-256 sebenarnya cocok atau melebihi throughput MD5 - kesenjangan kecepatan yang memotivasi pemilihan MD5 pada 2000-an tidak lagi berlaku.</p>
+<p>JavaScript dalam browser dengan WebCrypto (<code>crypto.subtle.digest('SHA-256', data)</code>) mencapai ~200 MB/s pada laptop modern. <a href="/developer-tools/md5-converter.html">Konverter MD5</a> kami menjalankan MD5 pada kecepatan serupa melalui implementasi wasm.</p>
+
+<br/><h2 class="text-uppercase"><b>MD5 atau SHA-256: aturan batas kepercayaan</b></h2>
+<p>Pilihan antara MD5 dan SHA-256 bergantung pada satu pertanyaan - apakah adversari dapat mempengaruhi input yang Anda hash. Jika uploader jarak jauh, penyerang jaringan, atau pihak apapun di luar batas kepercayaan Anda dapat membentuk byte yang mencapai fungsi hash, pilih SHA-256 (atau SHA-3, atau BLAKE3) sehingga serangan tabrakan tidak dapat memalsukan digest yang cocok. Jika input berasal dari pipeline Anda sendiri dan Anda men-sidik-jari mereka untuk caching, de-duplikasi, atau deteksi perubahan, MD5 baik-baik saja dan berjalan sedikit lebih cepat pada CPU tanpa akselerasi SHA-NI. Keputusan bersifat biner dan hidup di batas kepercayaan; setelah Anda menamai di sisi mana batas itu input berada, algoritma yang digunakan ditentukan.</p>
+
+<br/><h2 class="text-uppercase"><b>Alat terkait</b></h2>
+<ul>
+    <li><a href="/developer-tools/md5-converter.html">MD5 Converter</a> - hitung MD5 dari teks atau file kecil di browser.</li>
+    <li><a href="/developer-tools/text-diff.html">Text Diff</a> - bandingkan dua blok teks baris demi baris.</li>
+    <li><a href="/developer-tools/text-html-editor.html">Text / HTML Editor</a> - render HTML dan Markdown langsung.</li>
+    <li><a href="/utility-tools/get-time-in-millisecond.html">Current Time (ms)</a> - waktu epoch untuk korelasi log.</li>
+</ul>
+
+<p><br/><a href="/developer-tools.html">&larr; Kembali ke Developer Tools</a></p>
+</div>
