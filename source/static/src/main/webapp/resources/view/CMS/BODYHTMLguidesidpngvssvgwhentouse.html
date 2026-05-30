@@ -1,0 +1,61 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>PNG vs SVG - kapan menggunakan setiap format</b></h1>
+<time itemprop="datePublished" datetime="2026-04-19T08:00:00Z"><b>Diterbitkan 19 April 2026</b></time>
+<hr/>
+
+<p>PNG dan SVG adalah dua format andalan untuk logo, ikon, dan elemen UI di web modern. Keduanya menyelesaikan masalah yang sama - gambar tajam di setiap layar - tetapi dengan cara yang fundamental berbeda. PNG menyimpan pixel; SVG menyimpan instruksi gambar. Pilihan yang tepat tergantung pada apa yang Anda tampilkan, ke mana akan dikirim, dan seberapa besar render akhir yang dibutuhkan. Panduan ini mencakup mekanisme, kompromi, dan empat keputusan dunia nyata yang menentukan format mana yang menang.</p>
+
+<br/><h2 class="text-uppercase"><b>Bagaimana setiap format sebenarnya bekerja</b></h2>
+<p><b>PNG (Portable Network Graphics)</b> adalah format <b>raster</b>. File PNG menyimpan grid pixel berwarna - setiap pixel memiliki nilai eksplisit merah, hijau, biru, dan alpha. Ketika browser atau penampil gambar Anda membuka PNG, ia membaca nilai pixel tersebut dari file dan menggambarkannya ke layar pada resolusi aslinya. Membuat PNG lebih besar di layar meregangkan setiap pixel, yang menghasilkan upscale buram yang dikenal. Mengecilkan PNG mengambil sampel ulang grid; tergantung algoritmanya, tepi bisa melembut.</p>
+<p><b>SVG (Scalable Vector Graphics)</b> adalah format <b>vektor</b>. File SVG adalah dokumen XML yang menjelaskan bentuk, garis, kurva, dan isian. Tidak ada pixel di sumber - hanya instruksi seperti "gambar lingkaran di (20,20) dengan radius 15, isi merah". Ketika browser merender SVG, ia menghitung pixel saat itu pada resolusi apa pun yang dibutuhkan tampilan. File SVG yang sama merender tajam pada 16&times;16 untuk favicon dan pada 3000&times;3000 untuk banner papan iklan, tanpa kehilangan kualitas.</p>
+
+<br/><h2 class="text-uppercase"><b>Perbandingan berdampingan</b></h2>
+<div class="w3-responsive">
+<table class="w3-table-all w3-small">
+<tr><th>Atribut</th><th>PNG</th><th>SVG</th></tr>
+<tr><td>Pengkodean</td><td>Grid pixel (raster)</td><td>Instruksi gambar (vektor)</td></tr>
+<tr><td>Skalabilitas</td><td>Kehilangan kualitas saat diperbesar</td><td>Tak terbatas, tanpa kehilangan</td></tr>
+<tr><td>Ukuran file (logo sederhana)</td><td>~20-80&nbsp;KB</td><td>~2-8&nbsp;KB</td></tr>
+<tr><td>Ukuran file (ilustrasi kompleks)</td><td>Sedang (~150&nbsp;KB)</td><td>Dapat membengkak (~500&nbsp;KB+)</td></tr>
+<tr><td>Ukuran file (foto)</td><td>Besar (~1-3&nbsp;MB)</td><td>Tidak cocok</td></tr>
+<tr><td>Transparansi</td><td>Ya (kanal alpha)</td><td>Ya (opasitas per bentuk)</td></tr>
+<tr><td>Animasi</td><td>Via APNG (dukungan terbatas)</td><td>SMIL + CSS (dukungan luas)</td></tr>
+<tr><td>Dukungan browser</td><td>Universal</td><td>IE9+, semua modern</td></tr>
+<tr><td>Dapat diedit di editor teks</td><td>Tidak</td><td>Ya (ini XML)</td></tr>
+<tr><td>Styling CSS saat runtime</td><td>Tidak</td><td>Ya (warna, stroke, filter)</td></tr>
+</table>
+</div>
+
+<br/><h2 class="text-uppercase"><b>Kapan PNG menang</b></h2>
+<p><b>Foto.</b> Foto memiliki jutaan nilai pixel yang bervariasi secara bertahap - persis untuk apa format raster dirancang. SVG tidak dapat merepresentasikan foto secara efisien; menyematkan pixel sebagai blob base64 di dalam SVG mengalahkan keunggulan vektor. Gunakan PNG untuk foto, atau lebih baik lagi, gunakan JPG atau WebP untuk foto tanpa transparansi untuk memotong ukuran file lebih jauh.</p>
+<p><b>Ilustrasi kompleks dengan banyak gradien, bayangan, dan detail tingkat pixel.</b> Jika ikon Anda terlihat seperti lukisan kecil - bayangan lembut, gradien multi-stop, overlay tekstur - PNG dari render akhir yang diratakan sering lebih kecil dari SVG dengan filter yang setara.</p>
+<p><b>Tangkapan layar UI, teks, atau kode.</b> Tangkapan layar pada dasarnya adalah data pixel. PNG mempertahankan ketajaman persis dari teks yang dirender dan chrome UI tanpa artefak kompresi lossy. Lebih utamakan WebP lossless untuk penghematan ukuran file jika audiens Anda menggunakan browser modern.</p>
+<p><b>Ketika platform target tidak mendukung SVG.</b> Beberapa format dokumen (Word, beberapa klien email, PowerPoint lama) masih merender SVG secara tidak konsisten. Jika tujuan akhir tidak menjamin dukungan SVG, ekspor SVG ke PNG pada resolusi target terlebih dahulu.</p>
+
+<br/><h2 class="text-uppercase"><b>Kapan SVG menang</b></h2>
+<p><b>Logo.</b> Logo Anda harus terlihat bagus pada 24&times;24 di tab browser, 200&times;200 di layar login, dan 2000&times;2000 di banner konferensi. Satu file SVG melakukan ketiganya dengan fidelitas sempurna. PNG memerlukan ekspor beberapa ukuran (24, 48, 96, 200, 400, 1000, 2000) dan memilih yang tepat per konteks - beban pemeliharaan.</p>
+<p><b>Ikon dalam UI.</b> Ikon SVG dapat ditata dengan CSS (<code>fill</code>, <code>stroke</code>, <code>opacity</code>, <code>filter</code>) dan dianimasikan saat hover/focus. Ikon yang sama mewarisi warna teks saat ini dengan menetapkan <code>fill: currentColor</code>. Ikon PNG memerlukan file terpisah per varian warna.</p>
+<p><b>Bagan, diagram, dan infografik.</b> Apa pun yang digambar dari bentuk dan teks - bagan organisasi, diagram arsitektur, diagram alir, plot statistik - merender bersih dalam SVG dan tetap tajam pada level zoom apa pun. Memperbesar diagram PNG dengan cepat mengungkapkan aliasing.</p>
+<p><b>Elemen UI yang dianimasikan.</b> Animasi SVG via SMIL, transisi CSS, atau JavaScript skala lebih baik daripada APNG atau GIF animasi untuk bentuk geometris (spinner pemuatan, indikator status, mikro-interaksi). Ukuran file tetap kecil bahkan untuk animasi kompleks.</p>
+
+<br/><h2 class="text-uppercase"><b>Empat keputusan nyata dalam pekerjaan sehari-hari</b></h2>
+<p><b>Logo di situs marketing.</b> &rarr; <b>SVG</b>. File yang sama menangani header (kecil), hero (sedang), dan ekspor cetak/papan iklan (besar) tanpa file terpisah atau kehilangan kualitas. Kembali ke PNG hanya jika Anda perlu menyematkan logo dalam format dokumen yang menolak SVG.</p>
+<p><b>Ikon aplikasi / favicon.</b> &rarr; <b>SVG</b> untuk master; ekspor ke <b>PNG</b> pada 16, 32, 48, 180, 192, 512 untuk fallback <code>apple-touch-icon</code> dan <code>favicon.ico</code>. Kedua file masuk ke bundle yang di-deploy; browser memilih yang tepat per konteks.</p>
+<p><b>Foto produk.</b> &rarr; <b>PNG</b> jika transparansi penting (potongan pada putih atau latar bermotif); sebaliknya <b>JPG</b> atau <b>WebP</b> untuk setengah ukuran file. Jangan pernah SVG.</p>
+<p><b>Diagram atau bagan dalam dokumentasi.</b> &rarr; <b>SVG</b> disematkan di HTML (jadi dapat di-zoom, dapat diakses via teks di dalam SVG, dan dapat dibagikan sebagai satu file). Ekspor ke PNG hanya ketika targetnya adalah PDF atau Word yang tidak menghormati fidelitas SVG.</p>
+
+<br/><h2 class="text-uppercase"><b>Jalur konversi antara PNG dan SVG</b></h2>
+<p><b>PNG &rarr; SVG</b> adalah operasi "tracing". Format target membutuhkan definisi bentuk, jadi tracer menganalisis tepi dan wilayah warna di PNG dan menghasilkan jalur vektor yang diperkirakan. Hasilnya sangat baik untuk logo dan ikon sederhana (tepi bersih, sedikit warna) dan buruk untuk foto (terlalu banyak wilayah warna untuk dilacak secara berarti). Gunakan <a href="/image-converter-tools/png-to-svg.html">PNG to SVG</a> - sesuaikan parameter penghalusan, pratinjau, dan iterasi hingga jalur yang dilacak cocok dengan aslinya.</p>
+<p><b>SVG &rarr; PNG</b> adalah operasi "rasterisasi". Browser (atau konverter) mengevaluasi instruksi SVG pada resolusi yang ditentukan dan menulis nilai pixel. Gunakan <a href="/image-converter-tools/svg-to-png.html">SVG to PNG</a> - pilih ukuran output sebelum ekspor; tidak seperti arah lain, rasterisasi tanpa kehilangan untuk ukuran target tetapi berarti Anda berkomitmen pada satu resolusi.</p>
+<p>Konversi bolak-balik (SVG &rarr; PNG &rarr; SVG) menggabungkan kehilangan pada tahap PNG dan trace berikutnya. Pertahankan sumber master SVG dan ekspor rasa PNG sesuai kebutuhan; jangan pernah pergi ke arah sebaliknya kecuali Anda tidak memiliki sumber SVG untuk dikerjakan.</p>
+
+<br/><h2 class="text-uppercase"><b>Alat terkait</b></h2>
+<ul>
+    <li><a href="/image-converter-tools/png-to-svg.html">PNG to SVG Converter</a> - telusuri gambar raster ke vektor yang dapat diskalakan.</li>
+    <li><a href="/image-converter-tools/svg-to-png.html">SVG to PNG Converter</a> - rasterisasi vektor ke PNG atau WebP pada ukuran apa pun.</li>
+    <li><a href="/image-tools/compress-image.html">Compress JPEG</a> - kurangi ukuran file foto dengan kualitas yang disetel AI.</li>
+    <li><a href="/image-tools/resize-image.html">Resize Image</a> - tetapkan dimensi pixel yang tepat dengan interpolasi bikubik.</li>
+</ul>
+
+<p><br/><a href="/image-converter-tools.html">&larr; Kembali ke Image Converter Tools</a></p>
+</div>

@@ -1,0 +1,65 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>MP4 vs WebM untuk web - kapan menggunakan setiap format</b></h1>
+<time itemprop="datePublished" datetime="2026-04-20T08:00:00Z"><b>Diterbitkan 20 April 2026</b></time>
+<hr/>
+
+<p class="lead">MP4 dan WebM adalah dua format kontainer yang penting di web modern. MP4 hampir selalu membawa video H.264 (AVC) dengan audio AAC; WebM hampir selalu membawa video VP9 atau AV1 dengan audio Opus. Pilihan yang tepat tergantung pada di mana video Anda diputar, berapa banyak bandwidth yang dikonsumsinya, dan berapa lama Anda bersedia menunggu encode. Panduan ini mencakup ekonomi codec, kenyataan dukungan browser pada 2026, dan tiga keputusan produksi nyata yang menentukan kontainer mana yang dikirim.</p>
+
+<br/><h2 class="text-uppercase"><b>Kontainer vs codec - apa yang sebenarnya dipegang setiap file</b></h2>
+<p><b>Kontainer</b> membungkus video, audio, dan metadata ke dalam satu file yang dapat dibaca pemutar. MP4 (ISO base media) dan WebM (profil Matroska yang dibatasi) keduanya adalah kontainer. <b>Codec</b> adalah bagaimana pixel video dan sample audio dikompresi. MP4, secara teori, dapat membawa hampir semua codec, tetapi dalam praktiknya ekosistem web memperlakukan MP4 sebagai file H.264. WebM dibangun khusus untuk codec bebas royalti - VP8 (jarang pada 2026), VP9 (mainstream), dan AV1 (terbaru, kompresi tertinggi).</p>
+<p>Ketika keputusan dirumuskan sebagai "MP4 atau WebM", keputusan sebenarnya adalah H.264 vs VP9 vs AV1 - codec mana yang akan dikodekan. Kontainer mengikuti codec. H.264 dikirim di MP4; VP9 dan AV1 dikirim di WebM di web.</p>
+
+<br/><h2 class="text-uppercase"><b>Perbandingan ukuran codec untuk kualitas visual yang sama</b></h2>
+<div class="w3-responsive">
+<table class="w3-table-all w3-small">
+<tr><th>Skenario</th><th>H.264 (MP4)</th><th>VP9 (WebM)</th><th>AV1 (WebM)</th></tr>
+<tr><td>Klip 60 detik 1080p 30fps</td><td>~12&nbsp;MB</td><td>~7&nbsp;MB</td><td>~5&nbsp;MB</td></tr>
+<tr><td>Klip 60 detik 720p 30fps</td><td>~6&nbsp;MB</td><td>~3.5&nbsp;MB</td><td>~2.5&nbsp;MB</td></tr>
+<tr><td>Penghematan bitrate relatif vs H.264</td><td>0% (baseline)</td><td>~40% lebih kecil</td><td>~55% lebih kecil</td></tr>
+<tr><td>Waktu encode untuk 1 menit 1080p</td><td>~15 detik</td><td>~2-3 menit</td><td>~8-15 menit</td></tr>
+<tr><td>CPU pemutaran pada laptop kelas menengah</td><td>Rendah (decode hardware)</td><td>Rendah (decode hardware)</td><td>Sedang (decode hardware tidak merata pada GPU pra-2023)</td></tr>
+</table>
+</div>
+
+<br/><h2 class="text-uppercase"><b>Kenyataan dukungan browser pada 2026</b></h2>
+<p><b>MP4/H.264</b> diputar pada 100% browser yang beredar - Chrome, Firefox, Safari, Edge, setiap WebView mobile. Sudah satu dekade. Jika video yang bisa diputar lebih penting daripada byte yang dihemat, kirim H.264.</p>
+<p><b>WebM/VP9</b> diputar di Chrome, Firefox, Edge, Opera, dan Safari (sejak Safari 14, macOS Big Sur, 2020). Safari mobile di iOS 14+ mendukung VP9. Audiens residu yang sangat kecil pada iPhone warisan di bawah iOS 14 tidak dapat mendekodekan VP9.</p>
+<p><b>WebM/AV1</b> diputar di Chrome 70+, Firefox 67+, dan Edge 75+. Safari menambahkan dukungan AV1 di 17.4 (2024). Decode AV1 hardware membutuhkan silikon yang relatif baru - Intel gen 11 (Tiger Lake) atau lebih baru, Apple M3 atau lebih baru, AMD seri 6000 atau lebih baru. Perangkat pra-2022 jatuh ke decode software, yang menguras baterai dan dapat menjatuhkan frame pada konten 4K.</p>
+
+<br/><h2 class="text-uppercase"><b>Pola fallback &lt;source&gt;</b></h2>
+<p>Pola HTML5 video kanonik menyajikan codec yang direkomendasikan yang dapat didekode browser dan jatuh ke bawah daftar:</p>
+<pre style="background:#0b1220;color:#dbe3f5;padding:12px;border-radius:var(--radius-sm, 4px);overflow:auto"><code>&lt;video controls preload="metadata" poster="cover.jpg"&gt;
+  &lt;source src="clip.av1.webm" type="video/webm; codecs=av01.0.05M.08"&gt;
+  &lt;source src="clip.vp9.webm" type="video/webm; codecs=vp9,opus"&gt;
+  &lt;source src="clip.h264.mp4" type="video/mp4; codecs=avc1.4D401F,mp4a.40.2"&gt;
+  &lt;p&gt;Browser Anda tidak mendukung video HTML5.&lt;/p&gt;
+&lt;/video&gt;</code></pre>
+<p>Browser berjalan dari atas ke bawah pada daftar <code>&lt;source&gt;</code>, memilih <code>type</code> pertama yang dikenalinya, dan mengabaikan sisanya. Menyajikan AV1 dulu menangkap ~60% perangkat 2026 yang memiliki decode AV1 hardware; VP9 menangkap sebagian besar sisanya; H.264 menjamin fallback 100%.</p>
+
+<br/><h2 class="text-uppercase"><b>Tiga keputusan produksi nyata</b></h2>
+<p><b>Keputusan 1 - Klip sosial pendek untuk jangkauan terluas.</b> &rarr; <b>MP4 (H.264)</b> saja. Encode sekali. Setiap browser, setiap platform sosial, setiap klien email memutarnya. Penghematan bandwidth VP9/AV1 tidak menjustifikasi waktu encode dan perangkat tepi yang akan Anda lewatkan.</p>
+<p><b>Keputusan 2 - Video hero latar belakang di situs marketing pada 1080p, loop 15 detik.</b> &rarr; <b>MP4 (H.264) + WebM (VP9)</b>. File VP9 dikirim pada ~60% ukuran H.264, yang berarti pemuatan halaman lebih cepat untuk pengunjung dengan koneksi lambat. File H.264 adalah fallback untuk siapa saja yang browsernya melewati WebM. Waktu encode kecil (sekali, klip 15 detik).</p>
+<p><b>Keputusan 3 - Pustaka streaming format panjang (layanan VOD, platform kursus, video 30+ menit).</b> &rarr; <b>AV1 (WebM) + VP9 (WebM) + H.264 (MP4)</b>. File AV1 menghemat egress CDN substansial pada skala. File VP9 menutupi setiap browser modern. File H.264 adalah fallback universal. Encode pada hardware GPU atau pipeline batch; waktu encode 10&times; AV1 penting ketika perpustakaan memiliki ribuan video.</p>
+
+<br/><h2 class="text-uppercase"><b>Resep encoding</b></h2>
+<p><b>H.264 (MP4) - universal yang aman.</b> Sebuah one-liner FFmpeg tunggal mencapai titik manis untuk pengiriman web: <code>ffmpeg -i in.mov -c:v libx264 -crf 23 -preset medium -c:a aac -b:a 128k -movflags +faststart out.mp4</code>. Flag <code>+faststart</code> menempatkan atom <code>moov</code> di awal file sehingga browser dapat memulai pemutaran sebelum file lengkap diunduh.</p>
+<p><b>VP9 (WebM) - keseimbangan kompresi/kompatibilitas terbaik.</b> Gunakan encoding dua-pass untuk kualitas konsisten pada bitrate target. <code>-c:v libvpx-vp9 -b:v 0 -crf 31 -row-mt 1 -c:a libopus -b:a 96k</code>. Flag <code>-row-mt 1</code> mengaktifkan multi-threading berbasis baris yang memotong waktu encode kira-kira setengah pada CPU modern.</p>
+<p><b>AV1 (WebM) - kompresi maksimum.</b> SVT-AV1 adalah encoder yang dipilih industri: <code>-c:v libsvtav1 -crf 35 -preset 6 -c:a libopus -b:a 96k</code>. Preset 6 adalah keseimbangan default antara kecepatan dan kompresi; preset lebih rendah (4, 5) menyukai kualitas dengan biaya encode yang jauh lebih lama.</p>
+
+<br/><h2 class="text-uppercase"><b>Kapan menghindari WebM sepenuhnya</b></h2>
+<p>Jika audiens Anda terutama iOS &lt; 14, Android WebView yang lebih lama, atau browser perusahaan warisan, WebM tidak menawarkan manfaat - perangkat tersebut akan jatuh ke sumber H.264, dan encode WebM adalah upaya yang sia-sia. Jika video adalah konten buatan pengguna yang sering disimpan, dibagikan ulang, atau diedit oleh penonton, H.264 MP4 adalah format yang diharapkan alat mereka terima.</p>
+<p>Klien email hampir tidak pernah merender <code>&lt;video&gt;</code> secara native. Jika video ada di newsletter email, ekspor <b>GIF</b> animasi pendek atau tautan MP4 ke landing page - baik WebM maupun tag video HTML5 inline tidak membantu.</p>
+
+<br/><h2 class="text-uppercase"><b>Mengonversi antar format</b></h2>
+<p><a href="/video-tools/video-converter.html">konverter video</a> kami menangani MP4 &harr; WebM di browser dengan FFmpeg.wasm - tanpa unggah, tanpa instalasi. Untuk konversi batch format panjang, instal FFmpeg secara lokal dan gunakan resep di atas; konverter dalam-browser dibatasi oleh RAM yang tersedia (biasanya 2-4 GB per tab), yang bekerja untuk klip individu tetapi tidak untuk katalog 50 video. Lihat <a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">panduan perbandingan FFmpeg online vs lokal</a> untuk kapan masing-masing menang.</p>
+
+<br/><h2 class="text-uppercase"><b>Alat terkait</b></h2>
+<ul>
+    <li><a href="/video-tools/video-converter.html">Video Converter</a> - konversi MP4, WebM, MOV di browser.</li>
+    <li><a href="/video-tools/ffmpeg-online.html">FFmpeg Online</a> - FFmpeg baris perintah di browser.</li>
+    <li><a href="/video-tools/video-maker.html">Video Maker</a> - gabungkan gambar menjadi klip video.</li>
+    <li><a href="/image-tools/compress-image.html">Compress Image</a> - kurangi ukuran file gambar sampul.</li>
+</ul>
+
+<p><br/><a href="/video-tools.html">&larr; Kembali ke Video Tools</a></p>
+</div>

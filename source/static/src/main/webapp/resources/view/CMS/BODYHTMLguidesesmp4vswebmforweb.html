@@ -1,0 +1,65 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>MP4 vs WebM para la web - cuando usar cada formato</b></h1>
+<time itemprop="datePublished" datetime="2026-04-20T08:00:00Z"><b>Publicado el 20 de abril de 2026</b></time>
+<hr/>
+
+<p class="lead">MP4 y WebM son los dos formatos contenedores que importan en la web moderna. MP4 casi siempre lleva video H.264 (AVC) con audio AAC; WebM casi siempre lleva video VP9 o AV1 con audio Opus. La eleccion correcta depende de donde se reproduce tu video, cuanto ancho de banda consume y cuanto tiempo estas dispuesto a esperar por la codificacion. Esta guia cubre la economia de los codecs, la realidad del soporte de navegadores en 2026 y las tres decisiones reales de produccion que determinan que contenedor se envia.</p>
+
+<br/><h2 class="text-uppercase"><b>Contenedor vs codec - lo que realmente contiene cada archivo</b></h2>
+<p>Un <b>contenedor</b> envuelve video, audio y metadatos en un solo archivo que un reproductor puede leer. MP4 (ISO base media) y WebM (un perfil Matroska restringido) son ambos contenedores. El <b>codec</b> es como se comprimen los pixeles del video y las muestras de audio. Un MP4 puede, en teoria, llevar casi cualquier codec, pero en la practica el ecosistema web trata MP4 como un archivo H.264. WebM esta construido a proposito para codecs libres de regalias - VP8 (raro en 2026), VP9 (mainstream) y AV1 (mas nuevo, mayor compresion).</p>
+<p>Cuando la decision se enmarca como "MP4 o WebM", la decision real es H.264 vs VP9 vs AV1 - que codec codificar. El contenedor sigue al codec. H.264 se envia en MP4; VP9 y AV1 se envian en WebM en la web.</p>
+
+<br/><h2 class="text-uppercase"><b>Comparacion de tamano de codec para la misma calidad visual</b></h2>
+<div class="w3-responsive">
+<table class="w3-table-all w3-small">
+<tr><th>Escenario</th><th>H.264 (MP4)</th><th>VP9 (WebM)</th><th>AV1 (WebM)</th></tr>
+<tr><td>Clip de 60 segundos a 1080p 30fps</td><td>~12&nbsp;MB</td><td>~7&nbsp;MB</td><td>~5&nbsp;MB</td></tr>
+<tr><td>Clip de 60 segundos a 720p 30fps</td><td>~6&nbsp;MB</td><td>~3.5&nbsp;MB</td><td>~2.5&nbsp;MB</td></tr>
+<tr><td>Ahorro relativo de bitrate vs H.264</td><td>0% (linea base)</td><td>~40% menor</td><td>~55% menor</td></tr>
+<tr><td>Tiempo de codificacion para 1 minuto de 1080p</td><td>~15 segundos</td><td>~2-3 minutos</td><td>~8-15 minutos</td></tr>
+<tr><td>CPU de reproduccion en portatil de gama media</td><td>Bajo (decodificacion por hardware)</td><td>Bajo (decodificacion por hardware)</td><td>Moderado (decodificacion por hardware irregular en GPUs pre-2023)</td></tr>
+</table>
+</div>
+
+<br/><h2 class="text-uppercase"><b>Realidad de soporte de navegadores en 2026</b></h2>
+<p><b>MP4/H.264</b> se reproduce en el 100% de los navegadores en circulacion - Chrome, Firefox, Safari, Edge, cada WebView movil. Lo ha hecho durante una decada. Si que un video se reproduzca importa mas que los bytes ahorrados, envia H.264.</p>
+<p><b>WebM/VP9</b> se reproduce en Chrome, Firefox, Edge, Opera y Safari (desde Safari 14, macOS Big Sur, 2020). Safari movil en iOS 14+ soporta VP9. Una audiencia residual muy pequena en iPhones heredados por debajo de iOS 14 no puede decodificar VP9.</p>
+<p><b>WebM/AV1</b> se reproduce en Chrome 70+, Firefox 67+ y Edge 75+. Safari anadio soporte AV1 en 17.4 (2024). La decodificacion AV1 por hardware requiere silicio relativamente nuevo - Intel 11a gen (Tiger Lake) o posterior, Apple M3 o posterior, AMD serie 6000 o posterior. Dispositivos pre-2022 caen a decodificacion por software, que agota la bateria y puede perder cuadros en contenido 4K.</p>
+
+<br/><h2 class="text-uppercase"><b>El patron de fallback &lt;source&gt;</b></h2>
+<p>El patron HTML5 video canonico sirve un codec recomendado que el navegador puede decodificar y cae por la lista:</p>
+<pre style="background:#0b1220;color:#dbe3f5;padding:12px;border-radius:var(--radius-sm, 4px);overflow:auto"><code>&lt;video controls preload="metadata" poster="cover.jpg"&gt;
+  &lt;source src="clip.av1.webm" type="video/webm; codecs=av01.0.05M.08"&gt;
+  &lt;source src="clip.vp9.webm" type="video/webm; codecs=vp9,opus"&gt;
+  &lt;source src="clip.h264.mp4" type="video/mp4; codecs=avc1.4D401F,mp4a.40.2"&gt;
+  &lt;p&gt;Tu navegador no soporta video HTML5.&lt;/p&gt;
+&lt;/video&gt;</code></pre>
+<p>El navegador recorre la lista <code>&lt;source&gt;</code> de arriba hacia abajo, escoge el primer <code>type</code> que reconoce e ignora el resto. Servir AV1 primero captura el ~60% de los dispositivos de 2026 que tienen decodificacion AV1 por hardware; VP9 atrapa la mayor parte del resto; H.264 garantiza fallback 100%.</p>
+
+<br/><h2 class="text-uppercase"><b>Las tres decisiones reales de produccion</b></h2>
+<p><b>Decision 1 - Clip social corto para alcance amplio.</b> &rarr; <b>MP4 (H.264)</b> solamente. Codifica una vez. Cada navegador, cada plataforma social, cada cliente de email lo reproduce. Los ahorros de banda de VP9/AV1 no justifican el tiempo de codificacion y los dispositivos de borde que perderias.</p>
+<p><b>Decision 2 - Video hero de fondo en un sitio de marketing a 1080p, loop de 15 segundos.</b> &rarr; <b>MP4 (H.264) + WebM (VP9)</b>. El archivo VP9 sale a ~60% del tamano H.264, lo que significa carga de pagina mas rapida para visitantes con conexiones lentas. El archivo H.264 es el fallback para cualquiera cuyo navegador omita WebM. El tiempo de codificacion es pequeno (una vez, clip de 15 segundos).</p>
+<p><b>Decision 3 - Biblioteca de streaming de formato largo (servicio VOD, plataforma de cursos, videos de 30+ minutos).</b> &rarr; <b>AV1 (WebM) + VP9 (WebM) + H.264 (MP4)</b>. Los archivos AV1 ahorran salida sustancial de CDN a escala. Los archivos VP9 cubren todos los navegadores modernos. Los archivos H.264 son el fallback universal. Codifica en hardware GPU o pipeline por lotes; el tiempo de codificacion 10&times; de AV1 importa cuando la biblioteca tiene miles de videos.</p>
+
+<br/><h2 class="text-uppercase"><b>Recetas de codificacion</b></h2>
+<p><b>H.264 (MP4) - el universal seguro.</b> Un solo one-liner de FFmpeg da en el punto dulce para entrega web: <code>ffmpeg -i in.mov -c:v libx264 -crf 23 -preset medium -c:a aac -b:a 128k -movflags +faststart out.mp4</code>. La bandera <code>+faststart</code> coloca el atomo <code>moov</code> al inicio del archivo para que un navegador pueda comenzar la reproduccion antes de que el archivo completo se descargue.</p>
+<p><b>VP9 (WebM) - mejor equilibrio compresion/compatibilidad.</b> Usa codificacion en dos pasadas para calidad consistente a un bitrate objetivo. <code>-c:v libvpx-vp9 -b:v 0 -crf 31 -row-mt 1 -c:a libopus -b:a 96k</code>. La bandera <code>-row-mt 1</code> activa multi-threading por filas que corta el tiempo de codificacion aproximadamente a la mitad en CPUs modernos.</p>
+<p><b>AV1 (WebM) - compresion maxima.</b> SVT-AV1 es el encoder en el que la industria se asento: <code>-c:v libsvtav1 -crf 35 -preset 6 -c:a libopus -b:a 96k</code>. Preset 6 es el equilibrio por defecto entre velocidad y compresion; presets inferiores (4, 5) favorecen la calidad a costa de codificaciones mucho mas largas.</p>
+
+<br/><h2 class="text-uppercase"><b>Cuando evitar WebM por completo</b></h2>
+<p>Si tu audiencia es principalmente iOS &lt; 14, Android WebView mas antiguo o navegadores empresariales heredados, WebM no ofrece beneficio - esos dispositivos caeran a la fuente H.264 de todos modos, y la codificacion WebM es esfuerzo desperdiciado. Si el video es contenido generado por usuarios que los espectadores a menudo guardan, re-comparten o editan, H.264 MP4 es el formato que sus herramientas esperan aceptar.</p>
+<p>Los clientes de email casi nunca renderizan <code>&lt;video&gt;</code> de forma nativa. Si el video esta en un boletin de email, exporta un breve <b>GIF</b> animado o un enlace MP4 a una landing page - ni WebM ni una etiqueta de video HTML5 inline ayudan.</p>
+
+<br/><h2 class="text-uppercase"><b>Convertir entre formatos</b></h2>
+<p>Nuestro <a href="/video-tools/video-converter.html">conversor de video</a> maneja MP4 &harr; WebM en el navegador con FFmpeg.wasm - sin subida, sin instalacion. Para conversion por lotes de formato largo, instala FFmpeg localmente y usa las recetas anteriores; el conversor en el navegador esta limitado por tu RAM disponible (tipicamente 2-4 GB por pestana), que funciona para clips individuales pero no para un catalogo de 50 videos. Ve nuestra <a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">guia comparativa FFmpeg online vs local</a> para cuando gana cada uno.</p>
+
+<br/><h2 class="text-uppercase"><b>Herramientas relacionadas</b></h2>
+<ul>
+    <li><a href="/video-tools/video-converter.html">Video Converter</a> - conversion MP4, WebM, MOV en navegador.</li>
+    <li><a href="/video-tools/ffmpeg-online.html">FFmpeg Online</a> - FFmpeg en linea de comandos en el navegador.</li>
+    <li><a href="/video-tools/video-maker.html">Video Maker</a> - unir imagenes en un clip de video.</li>
+    <li><a href="/image-tools/compress-image.html">Compress Image</a> - reducir tamano de archivo de la imagen de portada.</li>
+</ul>
+
+<p><br/><a href="/video-tools.html">&larr; Volver a Video Tools</a></p>
+</div>

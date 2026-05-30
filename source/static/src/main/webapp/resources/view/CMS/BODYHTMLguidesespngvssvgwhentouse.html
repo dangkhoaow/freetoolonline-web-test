@@ -1,0 +1,61 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>PNG vs SVG - cuando usar cada formato</b></h1>
+<time itemprop="datePublished" datetime="2026-04-19T08:00:00Z"><b>Publicado el 19 de abril de 2026</b></time>
+<hr/>
+
+<p>PNG y SVG son los dos formatos elegidos para logos, iconos y elementos de UI en la web moderna. Resuelven el mismo problema - imagenes nitidas en cualquier pantalla - pero de formas fundamentalmente diferentes. PNG almacena pixeles; SVG almacena instrucciones de dibujo. La eleccion correcta depende de lo que esta mostrando, a donde va y que tan grande necesita ser la renderizacion final. Esta guia cubre los mecanismos, los compromisos y las cuatro decisiones del mundo real que determinan que formato gana.</p>
+
+<br/><h2 class="text-uppercase"><b>Como funciona realmente cada formato</b></h2>
+<p><b>PNG (Portable Network Graphics)</b> es un formato <b>raster</b>. Un archivo PNG almacena una cuadricula de pixeles coloreados - cada pixel tiene un valor explicito de rojo, verde, azul y alfa. Cuando tu navegador o visor de imagen abre un PNG, lee esos valores de pixel del archivo y los pinta en la pantalla a su resolucion nativa. Hacer un PNG mas grande en pantalla estira cada pixel, lo que produce el familiar upscale borroso. Reducir un PNG re-muestrea la cuadricula; dependiendo del algoritmo, los bordes pueden suavizarse.</p>
+<p><b>SVG (Scalable Vector Graphics)</b> es un formato <b>vector</b>. Un archivo SVG es un documento XML que describe formas, lineas, curvas y rellenos. No hay pixeles en la fuente - solo instrucciones como "dibujar un circulo en (20,20) con radio 15, relleno rojo". Cuando el navegador renderiza el SVG, calcula los pixeles al vuelo a la resolucion que la pantalla requiera. El mismo archivo SVG se renderiza nitido a 16&times;16 para un favicon y a 3000&times;3000 para una valla publicitaria, sin perdida de calidad.</p>
+
+<br/><h2 class="text-uppercase"><b>Comparacion lado a lado</b></h2>
+<div class="w3-responsive">
+<table class="w3-table-all w3-small">
+<tr><th>Atributo</th><th>PNG</th><th>SVG</th></tr>
+<tr><td>Codificacion</td><td>Cuadricula de pixeles (raster)</td><td>Instrucciones de dibujo (vector)</td></tr>
+<tr><td>Escalabilidad</td><td>Pierde calidad al ampliar</td><td>Infinita, sin perdida</td></tr>
+<tr><td>Tamano de archivo (logo simple)</td><td>~20-80&nbsp;KB</td><td>~2-8&nbsp;KB</td></tr>
+<tr><td>Tamano de archivo (ilustracion compleja)</td><td>Moderado (~150&nbsp;KB)</td><td>Puede inflarse (~500&nbsp;KB+)</td></tr>
+<tr><td>Tamano de archivo (fotografia)</td><td>Grande (~1-3&nbsp;MB)</td><td>No adecuado</td></tr>
+<tr><td>Transparencia</td><td>Si (canal alfa)</td><td>Si (opacidad por forma)</td></tr>
+<tr><td>Animacion</td><td>Via APNG (soporte limitado)</td><td>SMIL + CSS (soporte amplio)</td></tr>
+<tr><td>Soporte de navegador</td><td>Universal</td><td>IE9+, todos los modernos</td></tr>
+<tr><td>Editable en editor de texto</td><td>No</td><td>Si (es XML)</td></tr>
+<tr><td>Estilizado CSS en runtime</td><td>No</td><td>Si (colores, trazos, filtros)</td></tr>
+</table>
+</div>
+
+<br/><h2 class="text-uppercase"><b>Cuando gana PNG</b></h2>
+<p><b>Fotografias.</b> Una fotografia tiene millones de valores de pixel variando gradualmente - exactamente para lo que un formato raster fue disenado. SVG no puede representar una foto eficientemente; incrustar los pixeles como blob base64 dentro de un SVG anula las ventajas vectoriales. Usa PNG para fotos, o mejor aun, usa JPG o WebP para fotos sin transparencia para recortar mas el tamano de archivo.</p>
+<p><b>Ilustraciones complejas con muchos gradientes, sombras y detalle a nivel de pixel.</b> Si tu icono parece una pequena pintura - sombras suaves, gradientes multi-stop, superposiciones de textura - un PNG del render final aplanado a menudo es mas pequeno que el SVG con los filtros equivalentes.</p>
+<p><b>Capturas de pantalla de UI, texto o codigo.</b> Las capturas de pantalla son inherentemente datos de pixel. PNG preserva la nitidez exacta del texto renderizado y el chrome de UI sin artefactos de compresion con perdidas. Prefiere WebP sin perdidas para ahorrar tamano de archivo si tu audiencia usa navegadores modernos.</p>
+<p><b>Cuando la plataforma objetivo no soporta SVG.</b> Algunos formatos de documento (Word, algunos clientes de email, PowerPoint mas antiguo) aun renderizan SVG de forma inconsistente. Si el destino final no garantiza soporte SVG, exporta el SVG a PNG a la resolucion objetivo primero.</p>
+
+<br/><h2 class="text-uppercase"><b>Cuando gana SVG</b></h2>
+<p><b>Logos.</b> Tu logo tiene que verse bien a 24&times;24 en una pestana del navegador, 200&times;200 en una pantalla de login y 2000&times;2000 en una valla de conferencia. Un solo archivo SVG hace los tres con fidelidad perfecta. PNG requiere exportar multiples tamanos (24, 48, 96, 200, 400, 1000, 2000) y seleccionar el correcto por contexto - una carga de mantenimiento.</p>
+<p><b>Iconos en una UI.</b> Los iconos SVG pueden estilizarse con CSS (<code>fill</code>, <code>stroke</code>, <code>opacity</code>, <code>filter</code>) y animarse en hover/focus. El mismo icono hereda el color de texto actual al establecer <code>fill: currentColor</code>. Los iconos PNG requieren archivos separados por variante de color.</p>
+<p><b>Graficos, diagramas e infografias.</b> Cualquier cosa dibujada a partir de formas y texto - organigramas, diagramas de arquitectura, diagramas de flujo, graficos estadisticos - se renderiza limpiamente en SVG y permanece nitido a cualquier nivel de zoom. Hacer zoom en un diagrama PNG rapidamente revela aliasing.</p>
+<p><b>Elementos de UI animados.</b> La animacion SVG via SMIL, transiciones CSS o JavaScript escala mejor que APNG o GIF animado para formas geometricas (spinners de carga, indicadores de estado, microinteracciones). Los tamanos de archivo permanecen pequenos incluso para animaciones complejas.</p>
+
+<br/><h2 class="text-uppercase"><b>Las cuatro decisiones reales en el trabajo diario</b></h2>
+<p><b>Logo en un sitio de marketing.</b> &rarr; <b>SVG</b>. El mismo archivo maneja header (pequeno), hero (mediano) y exportacion impresa/valla (grande) sin archivos separados ni perdida de calidad. Recurre a un PNG solo si necesitas incrustar el logo en un formato de documento que rechaza SVG.</p>
+<p><b>Icono de app / favicon.</b> &rarr; <b>SVG</b> para el maestro; exporta a <b>PNG</b> a 16, 32, 48, 180, 192, 512 para los fallbacks <code>apple-touch-icon</code> y <code>favicon.ico</code>. Ambos archivos van en el bundle desplegado; los navegadores eligen el correcto por contexto.</p>
+<p><b>Foto de producto.</b> &rarr; <b>PNG</b> si la transparencia importa (recorte sobre blanco o un fondo con patron); de lo contrario <b>JPG</b> o <b>WebP</b> por la mitad del tamano de archivo. Nunca SVG.</p>
+<p><b>Diagrama o grafico en documentacion.</b> &rarr; <b>SVG</b> incrustado en el HTML (asi es ampliable, accesible via texto dentro del SVG y compartible como un solo archivo). Exporta a PNG solo cuando el objetivo es un PDF o Word que no respeta la fidelidad SVG.</p>
+
+<br/><h2 class="text-uppercase"><b>Rutas de conversion entre PNG y SVG</b></h2>
+<p><b>PNG &rarr; SVG</b> es una operacion de "tracing". El formato objetivo necesita definiciones de forma, asi que un tracer analiza bordes y regiones de color en el PNG y genera rutas vectoriales aproximadas. Los resultados son excelentes para logos e iconos simples (bordes limpios, pocos colores) y pobres para fotos (demasiadas regiones de color para trazar significativamente). Usa <a href="/image-converter-tools/png-to-svg.html">PNG to SVG</a> - ajusta el parametro de suavizado, previsualiza e itera hasta que las rutas trazadas coincidan con el original.</p>
+<p><b>SVG &rarr; PNG</b> es una operacion de "rasterizado". El navegador (o un conversor) evalua las instrucciones SVG a una resolucion especificada y escribe valores de pixel. Usa <a href="/image-converter-tools/svg-to-png.html">SVG to PNG</a> - elige el tamano de salida antes de exportar; a diferencia de la otra direccion, rasterizar es sin perdidas para el tamano objetivo pero significa que te comprometes con una sola resolucion.</p>
+<p>Las conversiones de ida y vuelta (SVG &rarr; PNG &rarr; SVG) componen perdidas en la fase PNG y el trace subsiguiente. Manten la fuente maestra SVG y exporta sabores PNG segun sea necesario; nunca vayas en la otra direccion a menos que no tengas fuente SVG con la que trabajar.</p>
+
+<br/><h2 class="text-uppercase"><b>Herramientas relacionadas</b></h2>
+<ul>
+    <li><a href="/image-converter-tools/png-to-svg.html">PNG to SVG Converter</a> - traza una imagen raster a un vector escalable.</li>
+    <li><a href="/image-converter-tools/svg-to-png.html">SVG to PNG Converter</a> - rasteriza un vector a PNG o WebP en cualquier tamano.</li>
+    <li><a href="/image-tools/compress-image.html">Compress JPEG</a> - reduce el tamano de archivo de una foto con calidad ajustada por IA.</li>
+    <li><a href="/image-tools/resize-image.html">Resize Image</a> - establece dimensiones exactas en pixeles con interpolacion bicubica.</li>
+</ul>
+
+<p><br/><a href="/image-converter-tools.html">&larr; Volver a Image Converter Tools</a></p>
+</div>
