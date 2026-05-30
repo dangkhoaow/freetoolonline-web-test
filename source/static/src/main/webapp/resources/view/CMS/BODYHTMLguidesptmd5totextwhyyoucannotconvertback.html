@@ -1,0 +1,79 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>MD5 para texto - por que voce nao pode converter de volta, e o que fazer em vez disso</b></h1>
+    <p><em>Ultima revisao 2026-05-03. Buscar "MD5 para texto" normalmente significa uma de tres coisas: voce tem uma string MD5 de 32 caracteres e quer a entrada original de volta, voce quer verificar se uma string que voce ja tem produz um hash conhecido, ou voce leu sobre MD5 e assume que ha um botao "decodificar" em algum lugar. Apenas a segunda e algo que uma ferramenta pode fazer diretamente. Este guia explica por que "MD5 para texto" nao pode funcionar como uma conversao direta, nomeia as tres acoes que realmente respondem a pergunta subjacente, e linka a ferramenta certa para cada uma.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Resposta em 30 segundos.</b> MD5 e uma impressao digital de mao unica, nao um codificador. Dado o input "hello world" voce pode computar o hash <code>5eb63bbbe01eeed093cb22bb8f5acdc3</code> em milissegundos; dado o hash <code>5eb63bbbe01eeed093cb22bb8f5acdc3</code> nao ha algoritmo que retorne "hello world". O calculo para frente joga informacao fora de proposito, entao reverter exigiria adivinhar cada input possivel ate os hashes coincidirem. Se voce ja tem uma string candidata e quer confirmar que ela produziu o hash, use <a href="/developer-tools/md5-converter.html">MD5 Converter</a> - digite o candidato, compute seu MD5, compare contra o hash que voce tem. Se voce quer procurar uma string curta comum pelo seu hash (uma senha vazada, um pequeno dicionario conhecido), um servico online de rainbow-table as vezes pode retornar uma correspondencia para inputs curtos ou comuns - mas nunca para dados sensiveis, e nunca de forma confiavel. Se voce chegou ao MD5 esperando um armazenamento de senha reversivel, leia <a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - quando hashear</a> - armazenamento moderno de senha usa bcrypt ou Argon2id, nao MD5 ou SHA-256.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Por que MD5 para texto nao e uma direcao real</b></h2>
+    <p>MD5 e uma funcao hash criptografica definida em RFC 1321 (Rivest, 1992). Ela pega qualquer input - um caractere, um paragrafo, um arquivo ISO inteiro de 4 GB - e produz uma saida fixa de 128 bits, que e convencionalmente escrita como uma string hexadecimal de 32 caracteres. A compressao e com perda por design. Existem infinitos inputs possiveis (qualquer string, qualquer arquivo, qualquer tamanho) e apenas <i>2<sup>128</sup></i> saidas possiveis. Pelo principio da casa do pombo, cada saida corresponde a infinitos inputs - entao mesmo se reverter fosse computacionalmente viavel, "o" texto original nao existe como uma unica resposta.</p>
+    <p>Compare isso a um conversor real. Base64 para texto e reversivel porque Base64 e uma codificacao - a saida e uma representacao diferente dos mesmos bytes, e os bytes originais sao recuperaveis da forma codificada. Texto cifrado com AES para texto plano e reversivel <i>se voce tem a chave</i> porque AES e uma cifra com inversa. MD5 nao tem nenhum dos dois: nao e uma codificacao (os bytes de input nao sao preservados) e nao e uma cifra (nao ha chave; a saida e a mesma independente de quem computa). O guia companheiro <a href="/guides/why-md5-cannot-be-decrypted.html">por que MD5 nao pode ser decifrado</a> cobre o argumento criptografico com mais profundidade, incluindo por que "colisoes MD5 existem" nao contradiz "MD5 nao pode ser revertido".</p>
+
+    <h2 class="text-uppercase"><b>Acao 1 - verificar se uma string candidata produz um hash conhecido</b></h2>
+    <p>A razao mais comum dos leitores buscarem "MD5 para texto" e verificacao: voce tem um hash, voce tem um palpite sobre a string original, e quer confirmar. Esse e o unico fluxo que roda para frente e combina com a forma como MD5 e realmente projetado. Abra <a href="/developer-tools/md5-converter.html">MD5 Converter</a>, cole sua string candidata, clique no botao de computar, e compare a saida de 32 caracteres contra o hash que voce tem. Se as duas strings sao identicas caractere por caractere, o candidato e o input original (ou, com probabilidade desprezivelmente pequena, uma colisao - para qualquer input de texto legivel a resposta e efetivamente sim).</p>
+    <p>Esse padrao e como MD5 e usado na pratica quase em todo lugar que ainda aparece: uma pagina de download publica o MD5 de um instalador, voce computa o MD5 do arquivo que baixou, os dois batem se o arquivo esta intacto. Uma ferramenta de configuracao armazena o MD5 de um token esperado, o usuario insere o token, a ferramenta o hashea e compara. O ponto e pegar corrupcao ou substituicao, nao recuperar nada. Se seu objetivo e "este e o input correto?", computar para frente e comparar e a resposta.</p>
+
+    <h2 class="text-uppercase"><b>Acao 2 - procurar um input comum curto via uma rainbow table (com ressalvas)</b></h2>
+    <p>Para strings curtas e comuns - palavras em ingles, numeros de quatro digitos, senhas populares de listas antigas de vazamentos, strings fixas bem conhecidas como "test" ou "admin" - a internet publica hospeda bancos de dados que pre-computaram bilhoes de hashes MD5 e retornarao um input correspondente se ele existir no banco. Busque "MD5 decrypt &lt;seu hash&gt;" e varios desses servicos aparecem. Eles nao "decifram" nada; eles procuram o hash em uma tabela pre-computada. A consulta acerta quando o input original foi previamente hasheado pelo banco; ela erra para qualquer input que nao foi.</p>
+    <p>Duas ressalvas importam. <b>Primeiro</b>, dados sensiveis nunca devem ser enviados a um servico de rainbow-table. O hash e qualquer texto plano retornado sao registrados; submeter o MD5 de uma senha ou identificador pessoal e funcionalmente uma divulgacao. <b>Segundo</b>, consultas de rainbow-table nao generalizam. Elas funcionam para inputs curtos / comuns / previamente vazados e falham para qualquer coisa nova, qualquer coisa mais longa que alguns caracteres, ou qualquer coisa contendo um salt - que e exatamente por que o hashing de senha se afastou do MD5 puro (e do MD5 inteiramente; veja a proxima secao).</p>
+
+    <h2 class="text-uppercase"><b>Acao 3 - voce chegou ao MD5 por engano; escolha o hash certo para seu trabalho real</b></h2>
+    <p>Alguns leitores chegam a "MD5 para texto" porque escreveram MD5 em um sistema que precisa armazenar um segredo recuperavel - uma senha, uma chave de API, um token que precisam verificar depois. MD5 e a ferramenta errada por duas razoes: nao e reversivel (que o resto deste guia explica), e nao e lento o suficiente para armazenamento de senha mesmo quando usado corretamente. O armazenamento moderno de senha usa bcrypt ou Argon2id, ambos sao intencionalmente lentos e salgados de modo que um banco de dados de hash roubado nao possa ser brute-forced rapidamente. Para integridade de arquivo ou identidade nao-criptografica (chaves de cache, deteccao de mudanca no estilo ETag, verificacoes de deduplicacao) SHA-256 e o padrao moderno; o guia companheiro <a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - quando hashear</a> percorre a escolha.</p>
+    <p>Se sua pergunta real e "Eu quero armazenar uma senha e verificar depois", MD5 nao e a resposta; use bcrypt ou Argon2id com um salt por usuario e deixe a biblioteca lidar com o passo de verificar. Se sua pergunta real e "Eu quero uma impressao digital deste arquivo que pegue corrupcao", MD5 ainda funciona para esse proposito de integridade-apenas - paginas de download usaram somas MD5 dessa forma por trinta anos - mas SHA-256 e o padrao moderno para novo codigo.</p>
+
+    <h2 class="text-uppercase"><b>A arvore de decisao de 30 segundos</b></h2>
+    <p>Combine a pergunta subjacente com a acao que realmente a responde:</p>
+    <ol>
+        <li><b>Eu tenho um hash e um palpite na string original - o palpite esta certo?</b> &rarr; verifique para frente. Abra <a href="/developer-tools/md5-converter.html">MD5 Converter</a>, cole o palpite, clique computar, compare. Se a saida de 32 caracteres bate com seu hash, o palpite esta certo.</li>
+        <li><b>Eu tenho um hash e nenhum palpite; o original e algo bem conhecido?</b> &rarr; consulta de rainbow-table se e somente se o input nao for sensivel. Uma palavra inglesa comum ou uma string curta bem conhecida as vezes pode ser encontrada. Uma senha, um identificador pessoal, ou qualquer coisa que voce nao queira publicada nunca deve ser submetido a uma consulta de terceiro.</li>
+        <li><b>Eu quero armazenar uma senha que posso verificar depois</b> &rarr; nao MD5. Use bcrypt ou Argon2id atraves da biblioteca padrao da sua linguagem. O ponto e ser lento e salgado, o que MD5 deliberadamente nao e.</li>
+        <li><b>Eu quero uma impressao digital de um arquivo ou string que pegue corrupcao</b> &rarr; MD5 esta bem para integridade nao-adversaria (o caso de uso que ele manteve por tres decadas), mas SHA-256 e o padrao moderno para qualquer codigo novo. <a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - quando hashear</a> percorre a escolha.</li>
+        <li><b>Eu so quero entender por que "MD5 para texto" nao e uma operacao real</b> &rarr; <a href="/guides/why-md5-cannot-be-decrypted.html">por que MD5 nao pode ser decifrado</a> cobre o argumento criptografico: funcao de mao unica, a propriedade da casa do pombo, e a diferenca entre "colisoes existem" e "o algoritmo e reversivel".</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>Existem ferramentas que realmente convertem MD5 para texto?</summary>
+  <p>Nao. Ferramentas que anunciam "decifracao MD5" estao rodando consultas de rainbow-table contra um banco de dados de hashes pre-computados. A consulta tem sucesso quando o input foi previamente hasheado e indexado; ela falha para qualquer coisa nova. A frase "decifracao" e marketing - MD5 nao e uma cifra e nao ha chave.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Um computador suficientemente poderoso pode fazer brute-force de qualquer hash MD5 de volta para texto?</summary>
+  <p>Para inputs muito curtos (alguns caracteres, alfabeto restrito) sim - hardware moderno pode computar trilhoes de hashes MD5 por segundo, entao uma senha minuscula de seis caracteres pode ser exaurida em segundos. Para inputs de tamanho e entropia significativos, nao - o espaco de busca cresce exponencialmente com o tamanho e rapidamente excede qualquer orcamento de hardware-tempo viavel. E por isso que MD5 e inadequado para armazenamento de senha mesmo quando nao diretamente reversivel: senhas curtas / fracas sao recuperaveis por brute force, e hashes de senha modernos (bcrypt, Argon2id) sao projetados para tornar isso muito mais lento.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>O que e uma colisao MD5 e isso significa que MD5 pode ser revertido?</summary>
+  <p>Nao. Uma colisao e dois inputs diferentes que produzem o mesmo hash MD5. Colisoes existem (e foram demonstradas desde 2004) e sao a razao pela qual MD5 e quebrado para assinaturas criptograficas - um atacante pode forjar um segundo input que faz hash para o mesmo valor que um alvo. Mas construir uma colisao nao deixa voce comecar de um hash e recuperar o input original; voce produz dois novos inputs que por acaso compartilham um hash. O guia companheiro <a href="/guides/why-md5-cannot-be-decrypted.html">por que MD5 nao pode ser decifrado</a> cobre isso em mais detalhe.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Se eu nao posso reverter MD5, para que serve a ferramenta MD5 Converter?</summary>
+  <p>Computar hashes MD5 para frente. Cole uma string, clique computar, e voce recebe o hash de 32 caracteres. Os dois usos reais sao (a) verificacao - voce tem uma string candidata e quer confirmar que ela produz o hash que voce tem - e (b) integridade - voce quer publicar um hash junto a um arquivo de modo que um downloader possa confirmar que o arquivo chegou intacto. <a href="/developer-tools/md5-converter.html">MD5 Converter</a> lida com ambos.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>SHA-256 e reversivel? E SHA-1?</summary>
+  <p>Nao. SHA-1 e SHA-256 sao tambem funcoes hash de mao unica, com a mesma propriedade da casa do pombo - infinitos inputs possiveis mapeiam em uma saida de tamanho fixo, entao nenhum algoritmo pode recuperar "o" input do hash. SHA-1 esta quebrado pela mesma razao que MD5 esta quebrado (colisoes sao praticamente encontraveis). SHA-256 e o padrao moderno para usos de integridade nao-criptografica-assinatura; <a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - quando hashear</a> cobre quando cada um e apropriado.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Relacionado</b></h2>
+    <ul>
+        <li><a href="/developer-tools/md5-converter.html">MD5 Converter</a> - computar o hash MD5 de qualquer string para frente (a ferramenta certa para verificacao).</li>
+        <li><a href="/guides/why-md5-cannot-be-decrypted.html">Por que MD5 nao pode ser decifrado</a> - o argumento criptografico em detalhe.</li>
+        <li><a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - quando hashear</a> - escolha a funcao hash certa para casos de uso de integridade vs identidade vs senha.</li>
+        <li><a href="/guides/base64-when-to-use-and-when-not-to.html">Base64 - quando usar e quando nao</a> - a diferenca entre uma codificacao (reversivel) e um hash (mao unica).</li>
+    </ul>
+</div>

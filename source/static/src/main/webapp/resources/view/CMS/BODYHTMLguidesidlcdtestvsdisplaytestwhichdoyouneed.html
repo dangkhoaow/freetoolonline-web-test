@@ -1,0 +1,76 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Tes LCD vs tes display vs tes monitor - yang mana yang sebenarnya Anda butuhkan?</b></h1>
+    <p><em>Terakhir ditinjau 2026-05-03. Tiga istilah, tiga set pemeriksaan yang berbeda. Tes LCD melihat panel itu sendiri - pixel mati/macet, keseragaman warna, burn-in. Tes display menambahkan jalur sinyal - kabel, handshake EDID, negosiasi refresh rate. Tes monitor lebih luas lagi - port, USB hub, speaker bawaan, OSD, scaling. Panduan ini menamai apa yang sebenarnya diperiksa setiap tes, kapan masing-masing adalah titik awal yang tepat, dan menautkan alat yang menjalankan diagnostik yang tepat.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Jawaban 30 detik.</b> Jika satu pixel tidak mengubah warna atau tidak mati, jalankan <a href="/device-test-tools/lcd-test.html">tes LCD</a> - siklus warna layar penuh yang mengekspos pixel mati/macet dan keseragaman. Jika gambar berkedip, putus-putus, atau berjalan pada refresh rate yang salah, itu masalah <i>display</i> (jalur sinyal, kabel, EDID) dan tes LCD tidak akan menangkapnya. Jika port tidak menyala, speaker diam, atau OSD tidak terbuka, itu masalah <i>monitor</i> (port / firmware / perangkat keras di sekitar panel). Cocokkan gejala dengan tes yang tepat, simpan formulir garansi untuk tes yang gagal.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Apa yang sebenarnya diperiksa tes LCD</b></h2>
+    <p>Tes LCD adalah diagnostik tingkat panel. Pembaca mengisi layar dengan satu warna solid pada satu waktu (merah, hijau, biru, putih, hitam, kadang gradien) dan melihat pixel. Intinya adalah mengekspos cacat panel itu sendiri - lapisan sel kristal cair dan filter warna di depan lampu latar. Pixel mati tetap hitam pada setiap warna. Pixel macet terkunci pada salah satu merah/hijau/biru. Cacat keseragaman warna muncul sebagai patch yang sedikit lebih terang atau lebih gelap daripada sisa bidang. Kebocoran lampu latar muncul pada bidang hitam sebagai cahaya sudut. Burn-in (retensi gambar) muncul sebagai hantu samar dari gambar sebelumnya pada bidang datar.</p>
+    <p>Tes LCD <b>tidak</b> memeriksa kabel, output GPU, refresh rate, scaler, port, atau OSD. Ia mengasumsikan gambar mencapai panel dengan benar dan mengajukan satu pertanyaan: apakah pixel panel itu sendiri OK? Itulah mengapa panduan pendamping yang ada <a href="/guides/lcd-test-what-it-checks.html">Apa yang sebenarnya diperiksa tes LCD</a> berjalan melalui setiap pola dan cacat apa yang dapat diungkapnya.</p>
+
+    <h2 class="text-uppercase"><b>Apa yang ditambahkan tes display</b></h2>
+    <p>Tes display lebih luas: mencakup pemeriksaan panel di atas DAN jalur sinyal yang mengirim gambar ke panel. Jalur sinyal meliputi kabel (HDMI / DisplayPort / USB-C / VGA), handshake EDID (layar memberi tahu GPU resolusi dan refresh rate apa yang didukung), negosiasi bandwidth (4K@120 membutuhkan DisplayPort 1.4 atau HDMI 2.1; 4K@60 cocok HDMI 2.0), dan timing/genlock antara GPU dan panel.</p>
+    <p>Gejala yang ditangkap tes display tetapi tes LCD lewatkan: kedipan acak, blackout sesaat ketika GPU mengubah refresh rate, pesan "tidak ada sinyal" yang datang dan pergi, resolusi native yang salah ditawarkan, HDR tidak aktif, refresh rate dibatasi lebih rendah dari spec panel. Masalah display sering bertahan di beberapa PC - tukar kabel untuk menguji, tukar PC sumber untuk konfirmasi; jika gejala bergerak dengan kabel, kabel adalah penyebab; jika bergerak dengan PC sumber, sumber adalah penyebab.</p>
+
+    <h2 class="text-uppercase"><b>Apa yang ditambahkan tes monitor di atas</b></h2>
+    <p>Tes monitor adalah yang terluas dari tiga. Mencakup panel dan jalur sinyal, ditambah semua yang dilakukan kotak: setiap port (setiap HDMI, setiap DisplayPort, USB-C dengan mode DP-Alt, USB-A pass-through, audio out), speaker bawaan, menu display di layar (OSD) dan tombol-tombolnya, firmware (apakah menu hang, apakah kehilangan pengaturan saat power cycle), perilaku scaling (apakah input 1080p merender dengan benar ke panel 4K), fitur picture-in-picture / picture-by-picture, sensor auto-rotate, dan sensor cahaya ambien.</p>
+    <p>Gejala yang hanya ditangkap tes monitor: port USB-C yang mengirim gambar tetapi tidak ada daya, hub USB yang terputus setiap lima menit, speaker yang berdengung pada frekuensi tertentu, tombol OSD yang tidak merespons, scaling yang memotong gambar alih-alih mengepasnya. Ini tidak ada hubungannya dengan panel; tes LCD pada monitor dengan hub USB yang rusak akan lulus dengan bersih karena panel baik-baik saja.</p>
+
+    <h2 class="text-uppercase"><b>Pohon keputusan 30 detik</b></h2>
+    <p>Pilih tes dari mana cacat sebenarnya berada - panel, jalur sinyal, atau kotak itu sendiri. Baca empat baris di bawah sebagai "jika Anda melihat X di layar, kegagalan berada di lapisan Y, jadi tes yang tepat adalah Z":</p>
+    <ol>
+        <li><b>Cacat tingkat pixel</b> (bintik mati, pixel macet warna, patch warna tidak rata, hantu burn-in pada bidang datar) &rarr; jalankan <a href="/device-test-tools/lcd-test.html">tes LCD</a>. Siklus warna layar penuh mengekspos cacat panel dalam kurang dari dua menit.</li>
+        <li><b>Cacat tingkat gambar</b> (kedip, blackout, "tidak ada sinyal" sesekali, resolusi salah ditawarkan, HDR tidak aktif) &rarr; ini adalah masalah display/sinyal. Tukar kabel dulu, lalu PC sumber. Tes LCD akan lulus meskipun jalur sinyal rusak.</li>
+        <li><b>Cacat tingkat kotak</b> (port mati, hub USB jatuh, OSD tidak terbuka, speaker tidak berbunyi, scaling salah) &rarr; ini adalah masalah monitor/firmware. Periksa port secara manual; tes LCD tidak dapat melihat port.</li>
+        <li><b>Tidak yakin di mana cacat berada</b> &rarr; mulailah dengan <a href="/device-test-tools/lcd-test.html">tes LCD</a> bagaimanapun. Itu yang tercepat dari tiga untuk dijalankan, menyingkirkan kegagalan termahal (pengembalian panel), dan polanya juga mengungkap beberapa masalah jalur sinyal (kabel yang berkedip muncul sebagai pita warna berkedip pada layar warna solid).</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>Apakah "tes layar" sama dengan "tes LCD"?</summary>
+  <p>"Tes layar" adalah istilah payung yang digunakan sumber berbeda untuk berarti salah satu dari tiga. Beberapa situs menggunakannya untuk berarti tes panel (= tes LCD); beberapa menggunakannya untuk berarti tes sinyal/gambar (= tes display); beberapa memperlakukannya sebagai sinonim untuk tes monitor. Baca halaman dulu - jika mencicil warna solid, itu tes panel/LCD; jika menanyakan kabel dan resolusi, itu tes display; jika menanyakan port dan OSD, itu tes monitor. Panduan pendamping <a href="/guides/dead-pixel-testing-guide.html">panduan tes pixel mati</a> berjalan melalui pola tingkat panel dengan detail lebih.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Apakah tes LCD akan menangkap kabel buruk?</summary>
+  <p>Kadang. Kabel yang gagal sering muncul sebagai pita horizontal halus atau ledakan kedip singkat pada bidang warna solid, terutama merah dan biru (pola sinyal bandwidth tertinggi). Tetapi panel yang sempurna bersih masih bisa memiliki kabel marginal yang menurunkan 4K@120 ke 4K@60; tes LCD tidak akan menangkapnya karena gambar itu sendiri baik. Jika tes LCD lulus tetapi Anda masih melihat masalah gambar, tukar kabel dan tes ulang.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Saya akan mengembalikan monitor di bawah garansi - tes mana yang saya jalankan?</summary>
+  <p>Jalankan ketiga. Sebagian besar klaim garansi bergantung pada cacat pixel yang didokumentasikan (tes LCD) - produsen menghitung pixel mati/macet terhadap ambang yang diterbitkan (misalnya ISO 9241-307 Kelas II memungkinkan N pixel cacat per juta tergantung tipe). Tetapi dokumentasikan juga pemeriksaan tingkat sinyal dan kotak: pengembalian "DOA" untuk port yang tidak hidup lebih cepat daripada pengembalian cacat pixel pada monitor yang sama. Panduan pendamping: <a href="/guides/how-to-test-for-dead-pixels-before-returning-a-monitor.html">cara menguji pixel mati sebelum mengembalikan monitor</a>.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Mengapa pixel saya terlihat mati pada putih tetapi baik pada hitam?</summary>
+  <p>Pixel yang tetap gelap pada bidang putih adalah subpixel "mati" - salah satu sel merah/hijau/biru di pixel itu permanen mati. Pixel yang menyala pada bidang hitam adalah subpixel "macet" - satu sel permanen menyala. Keduanya adalah cacat panel yang diekspos tes LCD; tidak ada yang ada hubungannya dengan kabel, PC sumber, atau port.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Berapa lama setiap tes seharusnya?</summary>
+  <p>Tes LCD: sekitar dua menit (enam layar warna, ~20 detik masing-masing, plus gradien lambat). Tes display: sepuluh hingga lima belas menit jika Anda menukar kabel dan PC sumber. Tes monitor: tiga puluh menit atau lebih jika Anda mengeksekusi setiap port, setiap pengaturan OSD, dan setiap sumber input. Jalankan dalam urutan itu agar Anda tidak menghabiskan satu jam untuk tes port pada panel yang ternyata cacat.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Terkait</b></h2>
+    <ul>
+        <li><a href="/device-test-tools/lcd-test.html">LCD Test</a> - siklus warna layar penuh tingkat panel.</li>
+        <li><a href="/guides/lcd-test-what-it-checks.html">Apa yang sebenarnya diperiksa tes LCD</a> - penelusuran per pola diagnostik tingkat panel.</li>
+        <li><a href="/guides/what-an-lcd-test-does-and-when-to-run-one.html">Apa yang dilakukan tes LCD dan kapan menjalankannya</a> - panduan pendamping tentang waktu/kasus penggunaan.</li>
+        <li><a href="/guides/dead-pixel-testing-guide.html">Panduan tes pixel mati</a> - tampilan lebih dekat pada cacat mati vs macet vs keseragaman.</li>
+        <li><a href="/guides/how-to-test-for-dead-pixels-before-returning-a-monitor.html">Cara menguji pixel mati sebelum mengembalikan monitor</a> - alur persiapan garansi.</li>
+        <li><a href="/guides/device-test-checklist-for-remote-work.html">Daftar tes perangkat untuk kerja jarak jauh</a> - daftar yang lebih luas monitor + kamera + mikrofon + keyboard.</li>
+    </ul>
+</div>

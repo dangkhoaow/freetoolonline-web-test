@@ -1,0 +1,76 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Teste LCD vs teste de display vs teste de monitor - qual voce realmente precisa?</b></h1>
+    <p><em>Ultima revisao 2026-05-03. Tres termos, tres conjuntos diferentes de verificacoes. Um teste LCD olha o painel em si - pixels mortos / travados, uniformidade de cor, burn-in. Um teste de display adiciona o caminho do sinal - cabo, handshake EDID, negociacao de taxa de atualizacao. Um teste de monitor vai mais amplo ainda - portas, hub USB, alto-falantes embutidos, OSD, escala. Este guia nomeia o que cada teste realmente verifica, quando cada um e o ponto de partida certo, e linka a ferramenta que roda o diagnostico certo.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Resposta em 30 segundos.</b> Se um unico pixel nao muda de cor ou nao apaga, rode um <a href="/device-test-tools/lcd-test.html">teste LCD</a> - um ciclo de cores em tela cheia que expoe pixels mortos / travados e uniformidade. Se a imagem cintila, cai, ou roda na taxa de atualizacao errada, isso e um problema de <i>display</i> (caminho do sinal, cabo, EDID) e um teste LCD nao vai pegar. Se uma porta nao acende, os alto-falantes estao em silencio, ou o OSD nao abre, isso e um problema de <i>monitor</i> (portas / firmware / hardware ao redor do painel). Combine o sintoma com o teste certo, guarde o formulario de garantia para o teste que falha.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>O que um teste LCD realmente verifica</b></h2>
+    <p>Um teste LCD e um diagnostico no nivel do painel. O leitor enche a tela com uma cor solida por vez (vermelho, verde, azul, branco, preto, as vezes um gradiente) e olha os pixels. O ponto e expor defeitos do painel em si - a camada de celulas de cristal liquido e filtros de cor na frente da luz de fundo. Pixels mortos ficam pretos em toda cor. Pixels travados ficam bloqueados em um de vermelho/verde/azul. Defeitos de uniformidade de cor aparecem como manchas que sao sutilmente mais claras ou mais escuras que o resto do campo. Vazamento de luz de fundo aparece em um campo preto como brilho de canto. Burn-in (retencao de imagem) aparece como um fantasma fraco de uma imagem anterior em um campo plano.</p>
+    <p>Um teste LCD <b>nao</b> verifica o cabo, a saida da GPU, a taxa de atualizacao, o scaler, as portas ou o OSD. Ele assume que a imagem esta chegando ao painel corretamente e faz uma pergunta: os pixels do painel em si estao bem? E por isso que o guia companheiro existente <a href="/guides/lcd-test-what-it-checks.html">O que um teste LCD realmente verifica</a> percorre cada padrao e que defeito ele pode revelar.</p>
+
+    <h2 class="text-uppercase"><b>O que um teste de display adiciona</b></h2>
+    <p>Um teste de display e mais amplo: cobre as verificacoes de painel acima E o caminho do sinal que entrega a imagem ao painel. O caminho do sinal inclui o cabo (HDMI / DisplayPort / USB-C / VGA), o handshake EDID (a tela diz a GPU quais resolucoes e taxas de atualizacao suporta), a negociacao de largura de banda (4K@120 precisa DisplayPort 1.4 ou HDMI 2.1; 4K@60 cabe em HDMI 2.0), e o timing/genlock entre GPU e painel.</p>
+    <p>Sintomas que um teste de display pega que um teste LCD perde: cintilacao aleatoria, blackout momentaneo quando a GPU troca de taxa de atualizacao, uma mensagem "sem sinal" que vai e vem, a resolucao nativa errada sendo oferecida, HDR nao engajando, taxa de atualizacao limitada abaixo da espec do painel. Um problema de display frequentemente persiste em multiplos PCs - troque o cabo para testar, troque o PC de origem para confirmar; se o sintoma se move com o cabo, o cabo e a causa; se ele se move com o PC de origem, a origem e a causa.</p>
+
+    <h2 class="text-uppercase"><b>O que um teste de monitor adiciona em cima</b></h2>
+    <p>Um teste de monitor e o mais amplo dos tres. Cobre o painel e o caminho do sinal, mais tudo o que a caixa faz: cada porta (cada HDMI, cada DisplayPort, USB-C com modo DP-Alt, USB-A pass-through, saida de audio), os alto-falantes embutidos, o menu de display on-screen (OSD) e seus botoes, o firmware (o menu trava, perde configuracoes em power cycle), o comportamento de escala (1080p de entrada renderiza corretamente em um painel 4K), a funcionalidade picture-in-picture / picture-by-picture, o sensor de auto-rotacao, e qualquer sensor de luz ambiente.</p>
+    <p>Sintomas que so um teste de monitor pega: uma porta USB-C que entrega imagem mas nao energia, um hub USB que desconecta a cada cinco minutos, alto-falantes que zumbem em certas frequencias, um botao OSD que nao responde, escala que recorta a imagem em vez de encaixa-la. Esses nao tem nada a ver com o painel; um teste LCD em um monitor com um hub USB quebrado vai passar limpo porque o painel esta bem.</p>
+
+    <h2 class="text-uppercase"><b>A arvore de decisao de 30 segundos</b></h2>
+    <p>Escolha o teste de onde o defeito realmente esta - painel, caminho do sinal, ou a caixa em si. Leia as quatro linhas abaixo como "se voce ve X na tela, a falha esta na camada Y, entao o teste certo e Z":</p>
+    <ol>
+        <li><b>Defeito no nivel do pixel</b> (ponto morto, pixel travado de cor, manchas de cor desiguais, fantasma de burn-in em campo plano) &rarr; rode um <a href="/device-test-tools/lcd-test.html">teste LCD</a>. O ciclo de cores em tela cheia expoe defeitos de painel em menos de dois minutos.</li>
+        <li><b>Defeito no nivel da imagem</b> (cintilacao, blackouts, "sem sinal" intermitentemente, resolucao errada oferecida, HDR nao engajando) &rarr; isso e um problema de display/sinal. Troque o cabo primeiro, depois o PC de origem. Um teste LCD vai passar mesmo que o caminho do sinal esteja quebrado.</li>
+        <li><b>Defeito no nivel da caixa</b> (uma porta morta, um hub USB que cai, OSD nao abre, alto-falantes nao tocam, escala esta errada) &rarr; isso e um problema de monitor/firmware. Verifique as portas manualmente; um teste LCD nao pode ver portas.</li>
+        <li><b>Nao tenho certeza onde o defeito vive</b> &rarr; comece com o <a href="/device-test-tools/lcd-test.html">teste LCD</a> de qualquer forma. E o mais rapido dos tres para rodar, ele descarta a falha mais cara (devolucao do painel), e os padroes tambem revelam alguns problemas de caminho de sinal (um cabo cintilante mostra como uma faixa de cor piscando nas telas de cor solida).</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>"Teste de tela" e a mesma coisa que "teste LCD"?</summary>
+  <p>"Teste de tela" e um termo guarda-chuva que diferentes fontes usam para significar qualquer um dos tres. Alguns sites usam para significar teste de painel (= teste LCD); alguns usam para significar teste de sinal/imagem (= teste de display); alguns tratam como sinonimo de teste de monitor. Leia a pagina primeiro - se ela cicla cores solidas, e um teste de painel/LCD; se pergunta sobre cabos e resolucoes, e um teste de display; se pergunta sobre portas e OSD, e um teste de monitor. O guia companheiro <a href="/guides/dead-pixel-testing-guide.html">guia de teste de pixel morto</a> percorre os padroes no nivel do painel em mais detalhe.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Um teste LCD vai pegar um cabo ruim?</summary>
+  <p>As vezes. Um cabo falhando frequentemente aparece como faixas horizontais finas ou explosoes de cintilacao curtas em um campo de cor solida, especialmente vermelho e azul (os padroes de sinal de maior largura de banda). Mas um painel perfeitamente limpo ainda pode ter um cabo marginal que cai 4K@120 para 4K@60; o teste LCD nao vai pegar isso porque a imagem em si esta bem. Se o teste LCD passa mas voce ainda ve problemas de imagem, troque o cabo e teste novamente.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Estou prestes a devolver um monitor sob garantia - qual teste eu rodo?</summary>
+  <p>Rode os tres. A maioria das reivindicacoes de garantia gira em torno de um defeito de pixel documentado (teste LCD) - fabricantes contam pixels mortos / travados contra um limite publicado (ex.: ISO 9241-307 Classe II permite N pixels defeituosos por milhao dependendo do tipo). Mas documente as verificacoes no nivel do sinal e da caixa tambem: uma devolucao "DOA" para uma porta que nao energiza e mais rapida que uma devolucao por defeito de pixel no mesmo monitor. Guia companheiro: <a href="/guides/how-to-test-for-dead-pixels-before-returning-a-monitor.html">como testar pixels mortos antes de devolver um monitor</a>.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Por que meus pixels parecem mortos em branco mas bem em preto?</summary>
+  <p>Um pixel que fica escuro em um campo branco e um subpixel "morto" - uma das celulas vermelho/verde/azul nesse pixel esta permanentemente desligada. Um pixel que acende em um campo preto e um subpixel "travado" - uma celula esta permanentemente ligada. Ambos sao defeitos de painel que um teste LCD expoe; nenhum tem nada a ver com cabo, PC de origem ou portas.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Quanto tempo cada teste deve levar?</summary>
+  <p>Teste LCD: cerca de dois minutos (seis telas de cor, ~20 s cada, mais um gradiente lento). Teste de display: dez a quinze minutos se voce trocar cabos e PC de origem. Teste de monitor: trinta minutos ou mais se voce exercitar cada porta, cada configuracao de OSD, e cada fonte de entrada. Rode-os nessa ordem para nao gastar uma hora em um teste de porta para um painel que acaba sendo defeituoso.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Relacionado</b></h2>
+    <ul>
+        <li><a href="/device-test-tools/lcd-test.html">LCD Test</a> - o ciclo de cores em tela cheia no nivel do painel.</li>
+        <li><a href="/guides/lcd-test-what-it-checks.html">O que um teste LCD realmente verifica</a> - passo a passo por padrao do diagnostico no nivel do painel.</li>
+        <li><a href="/guides/what-an-lcd-test-does-and-when-to-run-one.html">O que um teste LCD faz e quando rodar um</a> - guia companheiro sobre timing/casos de uso.</li>
+        <li><a href="/guides/dead-pixel-testing-guide.html">Guia de teste de pixel morto</a> - olhada mais de perto em defeitos morto vs travado vs uniformidade.</li>
+        <li><a href="/guides/how-to-test-for-dead-pixels-before-returning-a-monitor.html">Como testar pixels mortos antes de devolver um monitor</a> - fluxo de preparacao para garantia.</li>
+        <li><a href="/guides/device-test-checklist-for-remote-work.html">Checklist de teste de dispositivo para trabalho remoto</a> - checklist mais amplo monitor + camera + microfone + teclado.</li>
+    </ul>
+</div>
