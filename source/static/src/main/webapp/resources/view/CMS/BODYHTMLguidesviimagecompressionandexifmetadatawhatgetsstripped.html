@@ -1,0 +1,104 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Metadata EXIF va Nen Anh: Cai Gi Bi Loai Bo</b></h1>
+    <p><em>Cap nhat lan cuoi 2026-05-06. Nham vao thoi diem ban nen mot anh va thac mac lieu chi tiet may anh, toa do GPS hoac dau thoi gian co con trong tep. Dieu huong buoc nen thuc su den <a href="/image-tools/compress-image.html">Compress Image</a> (trong trinh duyet, khong tai len).</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Cau tra loi trong 30 giay.</b> Hau het cac trinh nen anh ma ma hoa lai JPEG loai bo <b>metadata EXIF</b> theo mac dinh - bao gom hang va model may anh, ong kinh, cai dat phoi sang, dau thoi gian chup goc, va (cho anh dien thoai) toa do GPS. Dieu nay xay ra vi ma hoa lai dung lai JPEG tu du lieu pixel da giai ma, va trinh ma hoa phai duoc bao ro rang sao chep khoi metadata tro lai. Neu ban muon loai bo metadata (rieng tu, chia se anh cong khai), hanh vi mac dinh la dieu ban muon. Neu ban muon giu metadata (luu tru, ban quyen, portfolio nhiep anh), chon mot cong cu hoac cai dat thu vien giu lai EXIF, hoac nen lai voi co ro rang "preserve metadata".</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Metadata EXIF la gi, theo nghia cu the?</b></h2>
+    <p>EXIF la viet tat cua <b>Exchangeable Image File Format</b>, duoc dinh nghia boi tieu chuan JEITA CP-3451C (Exif 2.3 la phien ban ma hau het may anh va dien thoai viet hom nay). EXIF khong phai la pixel cua anh - no la mot khoi rieng cua <i>metadata</i> luu tru ben canh pixel trong cung mot tep anh. Khoi duoc cau truc nhu mot loat truong duoc gan the, moi truong co mot ID the so va mot gia tri. Dinh dang container chua khoi la TIFF (Tag-Image File Format, Adobe TIFF 6.0); EXIF ke thua cau truc thu muc tep anh (IFD) cua TIFF, vi vay mot khoi EXIF ve co ban la mot tep TIFF nho duoc nhung ben trong mot JPEG, HEIC hoac anh tuong tu.</p>
+    <p>Mot khoi EXIF duoc to chuc thanh mot so it thu muc co ten, moi cai chua mot loai truong khac:</p>
+    <ul>
+        <li><b>IFD0 (thu muc anh chinh)</b> - thuoc tinh anh co ban: chieu rong, chieu cao, co dinh huong, do phan giai, ten phan mem, ngay gio sua doi cuoi cung.</li>
+        <li><b>Exif IFD</b> - du lieu chup dac thu may anh: hang va model may anh, model ong kinh, thoi gian phoi sang, F-number, ISO, tieu cu, can bang trang, trang thai den flash, dau thoi gian chup goc, dau thoi gian so hoa, va the khong gian mau.</li>
+        <li><b>GPS IFD</b> - du lieu vi tri: vi do, kinh do, do cao, dau thoi gian GPS, huong chup. Dien thoai viet cai nay theo mac dinh tru khi dich vu vi tri bi tu choi voi ung dung may anh.</li>
+        <li><b>IFD1 (thu muc thumbnail)</b> - mot thumbnail nhung nho cua anh, duoc trinh quan ly tep su dung de xem truoc nhanh. Thuong la 160 x 120 pixel va vai kilobyte.</li>
+        <li><b>Interoperability IFD</b> - cac co danh dau tep tuan thu dac ta EXIF.</li>
+    </ul>
+    <p>Ben trong mot tep JPEG, toan bo khoi metadata nay duoc boc trong mot segment marker duy nhat goi la <b>APP1</b>. Cac tep JPEG (theo ITU-T T.81 / ISO/IEC 10918-1) co mot tap nho cac segment marker ung dung danh so APP0 den APP15; APP1 la segment ma EXIF song trong do (bat dau bang cac byte <code>FF E1</code> theo sau la do dai segment va chuoi nghia den <code>Exif\0\0</code>). Mot segment thu hai pho bien, <b>APP2</b>, chua profile mau ICC (theo dac ta ICC.1:2010-12). Du lieu pixel chinh nam trong cac segment SOS (Start of Scan) sau cac marker ung dung.</p>
+
+    <h2 class="text-uppercase"><b>Vi sao nen anh thuong loai bo EXIF (ly do ky thuat)</b></h2>
+    <p>Khi mot cong cu nen anh dien hinh lam JPEG nho hon, no <i>khong</i> cao byte khoi JPEG hien tai tai cho - no <b>ma hoa lai</b> anh. Pipeline la: (1) <i>giai ma</i> JPEG dau vao tro lai thanh mang 2D pixel RGB trong bo nho, (2) <i>ma hoa lai</i> cac pixel do thanh JPEG moi o muc chat luong yeu cau. Trinh ma hoa lai dung lai tep tu dau: viet mot marker SOI (Start of Image) moi, mot bo bang luong tu hoa moi, bang Huffman moi, va du lieu pixel da nen moi. Cac segment marker ung dung (APP0 den APP15) <i>khong</i> phai la mot phan cua du lieu pixel; chung la cau truc cap tren rieng le, va trinh ma hoa chi viet chung neu code goi truyen chung vao mot cach ro rang.</p>
+    <p>Hanh vi trinh ma hoa mac dinh trong hau het cac thu vien pho bien la <b>khong</b> sao chep cac marker ung dung qua:</p>
+    <ul>
+        <li><b>libjpeg-turbo</b> (codec JPEG duoc dung nhieu nhat tren Linux, macOS va Android) va <b>mozjpeg</b> (fork Mozilla dieu chinh cho nen web) ca hai chi viet cac marker ma chinh trinh ma hoa tao ra - bang luong tu hoa, bang Huffman, header frame - va loai bo moi thu khac. Cong cu dong lenh <code>cjpeg</code> theo cung mac dinh; giu EXIF doi hoi flag <code>-copy all</code> hoac tuong duong.</li>
+        <li><b>Pillow (PIL) trong Python</b> - <code>Image.save("out.jpg", quality=80)</code> loai bo EXIF theo mac dinh. De giu: <code>img.save("out.jpg", quality=80, exif=img.info.get("exif"))</code>. Metadata khong ngam dinh; ban phai truyen chung vao ro rang.</li>
+        <li><b>Sharp (Node.js, libvips)</b> - hanh vi mac dinh loai bo EXIF; phuong thuc <code>.withMetadata()</code> noi trinh ma hoa giu lai.</li>
+        <li><b>ImageMagick</b> - flag <code>-strip</code> loai bo EXIF ro rang; khong co no, ImageMagick co gang giu lai metadata, dieu nay khien ImageMagick la ngoai le chu khong phai quy tac.</li>
+        <li><b>Nen ben trinh duyet</b> su dung phan tu HTML5 <code>&lt;canvas&gt;</code> va <code>canvas.toBlob()</code> - API canvas <i>khong co khai niem</i> ve metadata. Ve mot anh vao canvas chi giai ma pixel; ma hoa canvas thanh JPEG tao ra mot tep moi khong co khoi EXIF nao ca. Cac cong cu web nen hoan toan trong trinh duyet su dung canvas luon tao ra dau ra khong metadata tru khi chung phan tich va dinh kem lai khoi EXIF bang mot thu vien rieng.</li>
+    </ul>
+    <p>Ket luan: loai bo EXIF khi nen la mot <i>tac dung phu</i> cua cach ma hoa lai hoat dong, khong phai mot tinh nang rieng tu co y. Trinh ma hoa khong "chon" loai bo metadata - no don gian la khong sao chep chung tru khi duoc bao. Cong cu cua ban giu hay loai bo EXIF do do phu thuoc vao mot dong ma duy nhat (hoac mot flag CLI duy nhat) o buoc ma hoa.</p>
+
+    <h2 class="text-uppercase"><b>Cai gi trong EXIF quan trong</b></h2>
+    <p>Cac truong khac nhau trong khoi EXIF co rui ro rat khac nhau cho cac doc gia khac nhau. Bon truong ma hau het doc gia hoi:</p>
+    <ul>
+        <li><b>Toa do GPS</b> (GPS IFD: <code>GPSLatitude</code>, <code>GPSLongitude</code>, <code>GPSAltitude</code>) - duoc viet boi dien thoai tru khi vi tri bi tu choi voi ung dung may anh. Doc chung cho bat ky ai co tep biet anh duoc chup o dau, thuong la trong vai met. Day la moi quan ngai rieng tu duoc trich dan nhieu nhat voi EXIF; chia se mot "selfie tai nha" voi GPS van dinh kem hieu qua la chia se dia chi nha.</li>
+        <li><b>Dau thoi gian chup</b> (Exif IFD: <code>DateTimeOriginal</code>) - thoi diem man trap bam, chinh xac den giay. Huu ich cho luu tru; tiem an nhay cam neu anh ghi ngay mot su kien rieng tu.</li>
+        <li><b>Nhan dien may anh va ong kinh</b> (IFD0: <code>Make</code>, <code>Model</code>; Exif IFD: <code>LensModel</code>) - noi cho doc gia biet than may va ong kinh nao chup anh. Duoc nhiep anh gia su dung lam metadata portfolio; vo hai tren hau het anh tieu dung.</li>
+        <li><b>Tham so phoi sang</b> (Exif IFD: <code>ExposureTime</code>, <code>FNumber</code>, <code>ISOSpeedRatings</code>, <code>FocalLength</code>) - cai dat ky thuat cua phat chup. Huu ich cho nhiep anh gia so sanh cac phat chup; vo hai khi chia se.</li>
+    </ul>
+    <p>Hai truong khac dang biet:</p>
+    <ul>
+        <li><b>Co dinh huong</b> (IFD0: <code>Orientation</code>) - noi trinh ren xoay anh hien thi 90, 180 hoac 270 do ma khong xoay pixel. Neu mot trinh nen loai bo co nay <i>va</i> khong xoay truoc pixel, mot anh hien thi dung tren mot dien thoai co the dot nhien xuat hien nghieng tren web. Hau het cac trinh nen hien dai tu xoay pixel va xoa co (hanh vi an toan); mot vai loai bo co ma khong xoay, tao ra dau ra hong nhin thay duoc.</li>
+        <li><b>Ban quyen va tac gia</b> (IFD0: <code>Copyright</code>, <code>Artist</code>) - cac truong so huu duoc viet boi mot so may anh va hau het phan mem chinh sua anh. Loai bo chung trong mot quy trinh nen huong cong khai la ok; loai bo chung trong mot quy trinh luu tru hoac thuong mai co the lam hong viec ghi cong.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Khi nao nen giu EXIF</b></h2>
+    <p>Ba kich ban ma giu lai EXIF khi nen la lua chon dung:</p>
+    <ul>
+        <li><b>Luu tru ca nhan</b> - anh dang chuyen tu dien thoai sang thu vien anh dai han (NAS, thu muc dong bo, o cung ngoai) va ngay va GPS la mot phan gia tri: do la khi nao va o dau khoanh khac xay ra. Loai bo EXIF o day se xoa duong thoi gian va dia diem.</li>
+        <li><b>Portfolio nhiep anh gia</b> - phoi sang, ong kinh, ISO va ban quyen la mot phan cua cach nhiep anh gia trinh bay cong viec cua minh. Mot so nen tang portfolio ren EXIF nhu mot thanh ben; mot so trinh duyet hien thi no trong thuoc tinh anh. Giu EXIF cho phep nguoi xem thay nghe.</li>
+        <li><b>Su dung phap ly hoac lam bang chung</b> - dau thoi gian, GPS va nhan dien may anh co the lien quan neu anh duoc su dung lam bang chung sau nay. Khoi EXIF khong phai mot bao dam tinh xac thuc (bat ky truong nao trong cac truong nay co the chinh sua), nhung loai bo chung hoan toan se xoa thong tin co the can.</li>
+    </ul>
+    <p>Chon mot cong cu giu EXIF: trong cong cu dua tren trinh duyet, tim mot checkbox ro rang "preserve metadata" hoac "keep EXIF"; trong cong cu dong lenh, dung <code>cjpeg -copy all</code>, <code>jpegtran -copy all</code>, ImageMagick khong co <code>-strip</code>, hoac goi API giu metadata cua thu vien cua ban. <code>jpegtran</code> tu libjpeg-turbo la truong hop dac biet: no thuc hien nen lai <b>khong mat mat</b> (sap xep lai ma Huffman ma khong giai ma sang pixel) va giu lai tat ca cac segment marker theo mac dinh, vi vay mot pass <code>jpegtran -optimise</code> thu nho mot JPEG mot chut ma khong cham vao EXIF hoac pixel.</p>
+
+    <h2 class="text-uppercase"><b>Khi nao co y loai bo EXIF</b></h2>
+    <p>Ba kich ban ma loai bo EXIF la lua chon dung - hanh vi mac dinh cua hau het trinh nen lam dung viec o day, nhung neu ban khong chac, ban cung co the cho mot anh qua mot cong cu loai bo metadata chuyen dung truoc:</p>
+    <ul>
+        <li><b>Chia se anh dien thoai cong khai</b> - dang mot anh len mot trang web cong cong, dien dan, mang xa hoi hoac danh sach marketplace. Toa do GPS va dau thoi gian chup khong huu ich cho nguoi xem cong cong; chung la mot ro ri rieng tu. Loai bo EXIF truoc khi tai len.</li>
+        <li><b>Toi thieu hoa kich thuoc tep cho web</b> - mot khoi EXIF tu mot anh dien thoai thuong la 10 den 60 kilobyte, co the la mot phan dang ke cua mot anh duoc nen manh (mot JPEG 50 kilobyte voi khoi EXIF 30 kilobyte la 60 phan tram metadata). Loai bo EXIF trong mot pipeline nen huong web la tiet kiem byte mien phi.</li>
+        <li><b>Marketplace va danh sach cong khai</b> - ban mot mon do cu, dang mot anh bat dong san, dang mot cho thue: bat ky boi canh nao ma danh sach khong nen tiet lo noi nhiep anh gia song hoac lam viec. Loai bo EXIF truoc khi anh roi khoi thiet bi cua ban.</li>
+    </ul>
+    <p>Cho loai bo theo lo, CLI don gian nhat la <code>exiftool -all= image.jpg</code> (cong cu <code>exiftool</code> ghi mot ban sao voi tat ca metadata da bi loai bo) hoac <code>jpegtran -copy none input.jpg &gt; output.jpg</code> (khong mat mat, khong thay doi chat luong, khong EXIF). Ca hai deu co san rong rai.</p>
+
+    <h2 class="text-uppercase"><b>Cai gi KHONG co trong EXIF (nham lan thuong gap)</b></h2>
+    <p>Mot vai loai "metadata" thuong bi nham lan voi EXIF nhung duoc luu tru o cac khoi khac nhau cua tep - hoac khong trong tep chut nao:</p>
+    <ul>
+        <li><b>IPTC / XMP</b> - cac tieu chuan metadata rieng duoc trinh chinh sua anh su dung cho tu khoa, chu thich, tuyen bo ban quyen va xep hang. Duoc luu tru trong segment marker JPEG rieng cua chung (XMP thuong trong APP1 ben canh EXIF; IPTC trong mot khoi tai nguyen anh Photoshop). Loai bo EXIF khong phai luc nao cung loai bo XMP; mot so cong cu loai bo ca hai, mot so chi loai bo mot.</li>
+        <li><b>Profile mau ICC</b> - profile quan ly mau (sRGB, Display P3, Adobe RGB) noi trinh ren cach dien giai cac gia tri mau. Duoc luu tru trong segment marker APP2 cua JPEG theo ICC.1:2010-12. Profile ICC <i>khong</i> phai EXIF; mot so trinh nen loai bo no cung voi EXIF (co the dich chuyen mau co the nhin thay tren man hinh gamut rong), mot so giu lai. Neu mau trong "la" sau khi nen tren mot man hinh hieu chuan, profile ICC la nghi can.</li>
+        <li><b>Metadata he thong tep</b> (ngay sua doi tep, ngay tao tep, chu so huu tep, thuoc tinh mo rong cap HDH) - day la thuoc tinh cua <i>tep tren dia</i>, khong phai thuoc tinh cua du lieu anh. Chung doc lap voi EXIF; tai len mot tep thuong loai bo tat ca metadata he thong tep ngay ca khi EXIF duoc giu lai.</li>
+        <li><b>Steganography hoac watermark nhung trong pixel</b> - mot vai quy trinh giau du lieu ben trong chinh gia tri pixel (watermark bit it quan trong nhat, dau mien tan so). Du lieu nay <i>nam</i> trong du lieu pixel, vi vay ma hoa lai thuong lam hong hoac pha huy; giu EXIF khong giup o day.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Cach kiem tra cai gi co trong tep cua ban</b></h2>
+    <p>Cong cu kiem tra da nen tang don gian nhat la <code>exiftool</code> (mot tien ich Perl mien phi, co san trong cac trinh quan ly goi Windows, macOS va Linux). Chay <code>exiftool image.jpg</code> va no in moi truong metadata duoc to chuc theo thu muc (IFD0, Exif IFD, GPS IFD, IFD1, XMP, IPTC, ICC). Neu dau ra hien thi toa do GPS, tep van con chung; neu chi hien thi thuoc tinh anh co ban (kich thuoc, dinh dang), khoi metadata da bi loai bo.</p>
+    <p>Cac loi tat he dieu hanh cung hoat dong de kiem tra nhanh:</p>
+    <ul>
+        <li><b>macOS Finder</b> - chon anh, nhan Command+I, mo rong "More Info" - hien thi may anh, phoi sang va (neu co) toa do GPS duoc ren nhu mot ban do nho.</li>
+        <li><b>Windows Explorer</b> - nhap chuot phai vao anh, chon Properties, nhap vao tab Details - hien thi cac truong EXIF bao gom GPS dang so vi do / kinh do.</li>
+        <li><b>Trinh quan ly tep Linux</b> - hau het trinh quan ly tep (Nautilus, Dolphin, Thunar) hien thi mot tab Exif trong hop thoai thuoc tinh tep neu mot thu vien metadata duoc cai dat.</li>
+    </ul>
+    <p>Cho mot kiem tra lien quan sau khi nen - viec nen co lam hong pixel nhin thay duoc khong? - huong dan dong hanh tai <a href="/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html">How to Tell If a JPG Was Compressed Too Much</a> bao tru cac dau hieu thi giac cua nen qua muc, day la mot cau hoi khac voi "metadata co song sot".</p>
+
+    <h2 class="text-uppercase"><b>Cong thuc thuc te: giu hoac loai bo, theo kich ban</b></h2>
+    <p>Quyet dinh trong hau het cac quy trinh duoc rut gon thanh mot cau hoi: ai se thay tep nay tiep theo?</p>
+    <ul>
+        <li><b>Chia se cong khai (mang xa hoi, danh sach, dien dan, trang web)</b> - loai bo EXIF. Hanh vi mac dinh cua hau het trinh nen lam dieu nay mien phi. Neu trinh nen giu lai EXIF theo mac dinh, cho dau ra qua <code>exiftool -all= file.jpg</code> nhu buoc theo doi.</li>
+        <li><b>Gui cho ban hoac thanh vien gia dinh</b> - giu EXIF la ok; GPS va dau thoi gian co the la boi canh lien quan. Neu anh se duoc chia se lai xa hon, loai bo truoc.</li>
+        <li><b>Luu tru vao thu vien cua chinh ban</b> - giu EXIF. Su dung mot cong cu voi "preserve metadata" ro rang hoac dung <code>jpegtran -copy all</code> cho nen lai khong mat mat.</li>
+        <li><b>Xuat ban tren portfolio nhiep anh</b> - giu EXIF. Cac truong phoi sang va ong kinh la mot phan gia tri portfolio.</li>
+        <li><b>Giam kich thuoc tep cho mot trang web noi moi kilobyte quan trong</b> - loai bo EXIF va ICC. Xoay truoc pixel de tranh mat co dinh huong mot cach am tham.</li>
+        <li><b>Ban sao phap ly hoac bang chung</b> - giu EXIF; ly tuong la khong nen lai chut nao (sao chep tep goc nhu hien co). Neu can mot ban sao nho hon, <code>jpegtran -copy all</code> la duong an toan nhat.</li>
+    </ul>
+    <p>Neu ban sap nen mot anh va khong chac truong hop nao ap dung: mac dinh than trong la <i>loai bo</i> EXIF khi chia se ben ngoai va <i>giu</i> EXIF khi luu tru noi bo. Huong dan dong hanh ve chon muc chat luong tai <a href="/guides/how-to-choose-a-compression-level.html">How to Choose a Compression Level</a>; huong dan dong hanh ve viec nen co phai la thao tac dung khong (vs chuyen doi dinh dang) tai <a href="/guides/when-to-compress-vs-convert-an-image.html">When to Compress vs Convert an Image</a>.</p>
+
+    <h2 class="text-uppercase"><b>Tai lieu doc lien quan</b></h2>
+    <ul>
+        <li><a href="/image-tools/compress-image.html">Compress Image</a> - trinh nen anh trong trinh duyet; chon muc chat luong, nhan duoc mot JPEG nho hon. Khong can tai len cho buoc nen.</li>
+        <li><a href="/guides/how-to-choose-a-compression-level.html">How to Choose a Compression Level - Quality vs File Size</a> - danh doi giua chat luong thay duoc va kich thuoc tep, voi de xuat muc chat luong cu the theo kich ban.</li>
+        <li><a href="/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html">How to Tell If a JPG Was Compressed Too Much</a> - cac dau hieu thay duoc co nghia la mot JPEG da bi nen qua muc (banding, blocking, mosquito noise) va cach phat hien chung.</li>
+        <li><a href="/guides/when-to-compress-vs-convert-an-image.html">When to Compress vs Convert an Image</a> - lieu thao tac dung la "lam JPEG nay nho hon" hay "chuyen doi cai nay sang dinh dang khac" - chung la cac cong cu khac nhau.</li>
+        <li><a href="/guides/free-online-tools-that-work-without-uploading-files.html">Free Online Tools That Work Without Uploading Files</a> - lua chon cong cu rieng tu uu tien rong hon tren trang nay.</li>
+    </ul>
+</div>

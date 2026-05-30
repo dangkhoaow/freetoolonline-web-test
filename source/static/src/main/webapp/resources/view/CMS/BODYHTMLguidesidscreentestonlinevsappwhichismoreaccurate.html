@@ -1,0 +1,93 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Tes layar online vs app: mana yang lebih akurat, dan kapan masing-masing menang</b></h1>
+    <p><em>Terakhir ditinjau 2026-05-05. <a href="/device-test-tools/lcd-test.html">Tes layar</a> berbasis peramban dan app native tes layar mendiagnosis panel yang sama, tetapi mengamatinya melalui stack yang berbeda. Versi peramban mencakup kegagalan paling umum (pixel mati, keseragaman warna, kebocoran lampu latar) dalam dua menit tanpa instalasi. App native mencapai sinyal yang lebih dalam (ramp frekuensi refresh, warna 10-bit, transfer HDR, manajemen warna ICC) yang tidak dapat dibaca peramban secara langsung. Panduan ini menamai apa yang dapat dilihat masing-masing, apa yang tidak bisa, dan mana yang harus dibuka pertama untuk gejala di depan Anda.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Jawaban 30 detik.</b> Jika gejala terlihat di layar penuh pada warna solid (titik gelap, titik terang, bercak dengan rona salah, sudut yang bersinar di bidang hitam), <a href="/device-test-tools/lcd-test.html">tes layar</a> peramban sudah cukup - ia menyapu merah, hijau, biru, putih, hitam, dan kuning pada resolusi native dan menangkap setiap cacat panel yang akan ditangkap app native pada pola yang sama. Jika gejala tentang frekuensi refresh, manajemen warna, aktivasi HDR, atau drift profil ICC, instal app native: sinyal-sinyal itu diabstraksi peramban dan tidak diekspos ke halaman web.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Apa yang dapat dilakukan tes layar peramban</b></h2>
+    <p>Buka halaman, klik warna, izinkan peramban masuk ke layar penuh. Peramban kemudian meminta sistem operasi memberinya seluruh panel - setiap pixel - dan melukis satu warna solid di seluruhnya. Dari perspektif panel, ini identik dengan warna yang sama yang digambar app native. Subpixel mati yang gagal menyala, subpixel macet terkunci ke satu kanal, gradien keseragaman warna di seluruh bidang, kebocoran lampu latar di layar hitam, retensi gambar yang tersisa dari pola statis sebelumnya - peramban menampilkannya dengan kesetiaan yang sama seperti app native, karena ia memiliki seluruh area output panel pada resolusi penuh.</p>
+    <p><a href="/device-test-tools/lcd-test.html">Tes pixel mati berbasis peramban</a> di situs ini menggunakan enam warna diagnostik (merah, hijau, biru, putih, hitam, kuning). Pixel mati muncul di setiap warna. Pixel macet muncul di warna yang BUKAN warna tempat subpixel terkunci (pixel macet merah tidak terlihat di merah dan terlihat di hijau / biru / hitam). Kebocoran lampu latar muncul di hitam; drift gradien muncul di putih. Dua menit per panel, tanpa instalasi.</p>
+
+    <h2 class="text-uppercase"><b>Di mana jalur peramban berhenti: sinyal yang tidak boleh dibaca</b></h2>
+    <p>Peramban dengan sengaja mengabstraksikan beberapa sinyal display sehingga halaman web tidak dapat melakukan fingerprint perangkat keras pengguna. Abstraksi itu juga alasan tes layar peramban tidak melihatnya.</p>
+    <ul>
+        <li><b>Ramp frekuensi refresh.</b> Peramban tidak dapat secara andal memberi tahu Anda apakah panel berjalan di 60 Hz, 120 Hz, atau 144 Hz, dan tidak dapat menyapunya untuk menemukan ambang kedip. App native berbicara langsung ke driver GPU dan dapat mengubah frekuensi refresh, lalu mengamati kehilangan gambar atau kedip.</li>
+        <li><b>Sinyal 10-bit / HDR.</b> Sebagian besar peramban menggambar ke kanvas 8-bit per kanal bahkan pada panel 10-bit; fungsi transfer HDR (PQ, HLG) tidak diekspos ke CSS standar. App native dapat meminta permukaan 10-bit / HDR dari OS dan memvalidasi banding atau luminansi puncak.</li>
+        <li><b>Penyelidikan profil warna ICC.</b> Peramban menghormati profil warna OS secara diam-diam; tidak mengizinkan halaman mengukur atau menimpanya. App kalibrasi membaca profil, menerapkan patch tes pada nilai XYZ yang diketahui, dan melaporkan delta-E.</li>
+        <li><b>Waktu respons / ghosting overdrive pixel.</b> Mendeteksi jejak hantu 1-3 ms memerlukan pengukuran kecepatan tinggi, bukan layar warna statis.</li>
+        <li><b>Diagnostik port / kabel langsung.</b> Peramban tidak dapat memberi tahu Anda apakah gambar mencapai panel via HDMI 2.0 atau HDMI 2.1; lapisan kabel / EDID berada di bawah abstraksi.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Apa yang ditambahkan app native tes layar</b></h2>
+    <p>App native yang diinstal dari vendor atau toko platform berbicara dengan driver display OS, stack manajemen warna, dan (untuk pekerjaan kritis warna) kolorimeter perangkat keras. Akses istimewa itu memungkinkannya mengamati apa yang tidak dapat dilakukan peramban.</p>
+    <ul>
+        <li><b>Sapuan frekuensi refresh</b> di setiap mode yang diiklankan driver GPU.</li>
+        <li><b>Validasi 10-bit dan HDR</b> dengan pola tes di layar dan (dengan kolorimeter) nits puncak terukur dan akurasi EOTF HDR.</li>
+        <li><b>Pembuatan dan validasi profil warna</b> - terapkan patch tes yang diketahui, ukur dengan kolorimeter, tulis profil ICC yang dikoreksi.</li>
+        <li><b>Pelaporan waktu respons / overshoot</b> via pola yang disediakan vendor dan alat pengukuran.</li>
+        <li><b>Tes perangkat keras spesifik vendor</b> - self-test OSD monitor, pembacaan info panel laptop, pola stres GPU dari vendor GPU.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Pohon keputusan 30 detik</b></h2>
+    <p>Cocokkan gejala dengan tes yang menangkapnya - jalankan yang lebih murah dulu.</p>
+    <ol>
+        <li><b>Cacat terlihat pada warna solid</b> (bintik mati, bintik macet terang, bercak warna, sudut bersinar) &rarr; buka <a href="/device-test-tools/lcd-test.html">tes layar peramban</a> dulu. Dua menit, tanpa instalasi. Jika mengonfirmasi cacat, Anda punya bukti; panel butuh RMA.</li>
+        <li><b>Gejala tentang kedip atau frekuensi refresh</b> ("layar tampak juddery", "kursor meninggalkan jejak", "saya tidak bisa memberi tahu apakah 120 Hz benar-benar aktif") &rarr; instal app native. Peramban tidak dapat menyapu frekuensi refresh; Anda butuh akses langsung driver GPU.</li>
+        <li><b>Gejala tentang HDR atau akurasi warna</b> ("video HDR tampak datar", "foto yang saya edit cetak lebih gelap", "tone kulit tampak merah hanya di monitor ini") &rarr; app native, idealnya dengan kolorimeter. Peramban tidak dapat mengukur sinyal 10-bit atau HDR.</li>
+        <li><b>Gejala tentang port atau OSD</b> ("port USB-C mati", "tombol OSD tidak merespons") &rarr; baik tes layar online maupun app tidak menangkap ini. Tes port secara manual dan baca panduan <a href="/guides/lcd-test-vs-display-test-which-do-you-need.html">tes LCD vs tes display vs tes monitor</a> untuk jalur eskalasi yang tepat.</li>
+        <li><b>Tidak yakin harus mulai dari mana</b> &rarr; <a href="/device-test-tools/lcd-test.html">tes layar peramban</a>. Ini paling murah, paling cepat, dan mengesampingkan kegagalan paling mahal (pengembalian panel) sebelum instalasi atau pengukuran apa pun.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>Perbandingan akurasi: panel sama, cacat sama</b></h2>
+    <p>Untuk cacat level panel (mati, macet, keseragaman, kebocoran), online dan native sama akuratnya. Permukaan diagnostik adalah panel itu sendiri - peramban mengisinya dengan cara yang sama seperti app native mengisinya, dan mata manusia adalah instrumen pengukuran di kedua kasus. App "tes layar" vendor untuk laptop dan monitor menjalankan sapuan merah / hijau / biru / putih / hitam yang sama yang dijalankan versi peramban; pemasaran berbeda, polanya identik.</p>
+    <p>Untuk sinyal yang lebih dalam (refresh, HDR, profil warna), app native lebih akurat berdasarkan definisi - ia memiliki akses ke sinyal yang tidak dapat dibaca peramban. Tes layar peramban yang mencoba mengklaim validasi 144 Hz menjual sesuatu yang tidak dapat dia berikan.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>Apakah situs "tes layar" online berbayar lebih akurat daripada yang gratis?</summary>
+  <p>Untuk cacat level panel, tidak. Setiap situs yang menjalankan siklus warna layar penuh mengamati panel yang sama melalui stack peramban yang sama. Situs berbayar mungkin menambahkan panduan terkurasi, alat bantu kertas kerja RMA, atau UI yang lebih dipoles, tetapi diagnostik yang mendasari adalah sapuan merah / hijau / biru / putih / hitam yang sama. Akurasi ada di mata pembaca, bukan harga situs.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Mengapa vendor laptop menyertakan app "tes layar" bawaan jika peramban melakukan pekerjaan yang sama?</summary>
+  <p>App vendor menambahkan tiga hal yang tidak dapat dilakukan peramban: pembacaan info panel (pabrikan, model, resolusi native, ID panel) untuk kertas kerja garansi; ramp frekuensi refresh cepat untuk memvalidasi panel berjalan di spek yang diiklankan; dan mode self-test yang melewati OS, berguna saat OS sendiri yang dicurigai. Untuk pemeriksaan pixel mati murni, versi peramban sudah cukup.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Bisakah tes layar peramban melewatkan cacat yang ditemukan app native?</summary>
+  <p>Untuk cacat level panel pada warna solid, tidak. Untuk isu level sinyal (refresh, HDR, ICC), ya - itu tidak terlihat di layar warna statis sama sekali. Tes layar peramban yang bersih tidak mengesampingkan masalah display atau sinyal; hanya mengesampingkan cacat level panel.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Apakah menjalankan layar penuh memengaruhi hasil tes?</summary>
+  <p>Ya - harus layar penuh. Apa pun yang kurang dari cakupan panel penuh (tes dalam jendela, tab peramban dengan chrome di sekitar kanvas) meninggalkan tepi dan sudut tidak terperiksa, yang merupakan tempat cacat kebocoran lampu latar dan keseragaman sudut biasanya berada. <a href="/device-test-tools/lcd-test.html">Tes layar peramban</a> di situs ini memicu layar penuh pada setiap klik ubin warna.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Saya menjalankan tes peramban, terlihat bersih, tetapi layar masih tampak "off". Sekarang apa?</summary>
+  <p>Dua jalur. (1) Jika gejalanya tentang warna - tone kulit tampak salah, edit foto cetak lebih gelap dari tampilannya, hitam tampak abu-abu di adegan gelap - isunya adalah manajemen warna, instal app kalibrasi native dan idealnya kolorimeter. (2) Jika gejalanya tentang gerakan atau kedip - jejak kursor, judder, ketidakpastian frekuensi refresh - isunya adalah sinyal, instal app native tes layar vendor atau pihak ketiga. Baca <a href="/guides/lcd-test-vs-display-test-which-do-you-need.html">LCD vs display vs tes monitor</a> untuk jalur eskalasi yang lebih luas.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Terkait</b></h2>
+    <ul>
+        <li><a href="/device-test-tools/lcd-test.html">Tes LCD / Pixel Mati</a> - sapuan warna layar penuh dalam peramban yang dirujuk di seluruh panduan ini.</li>
+        <li><a href="/guides/lcd-test-vs-display-test-which-do-you-need.html">Tes LCD vs tes display vs tes monitor</a> - mana dari tiga cakupan diagnostik yang cocok dengan gejala Anda.</li>
+        <li><a href="/guides/lcd-test-what-it-checks.html">Apa yang sebenarnya diperiksa tes LCD</a> - penelusuran per pola diagnostik level panel.</li>
+        <li><a href="/guides/dead-pixel-testing-guide.html">Panduan tes pixel mati</a> - taksonomi cacat mati vs macet vs keseragaman.</li>
+        <li><a href="/guides/how-to-test-for-dead-pixels-before-returning-a-monitor.html">Cara tes pixel mati sebelum mengembalikan monitor</a> - alur bukti garansi.</li>
+        <li><a href="/guides/device-test-checklist-for-remote-work.html">Daftar tes perangkat untuk kerja jarak jauh</a> - irama lebih luas layar + kamera + mikrofon + keyboard.</li>
+    </ul>
+</div>

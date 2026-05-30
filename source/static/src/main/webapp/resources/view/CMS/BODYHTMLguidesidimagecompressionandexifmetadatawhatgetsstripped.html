@@ -1,0 +1,104 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Metadata EXIF dan Kompresi Gambar: Apa yang Dihapus</b></h1>
+    <p><em>Terakhir ditinjau 2026-05-06. Ditargetkan ke momen Anda mengompres sebuah gambar dan bertanya-tanya apakah detail kamera, koordinat GPS, atau stempel waktu masih ada di file. Mengarahkan langkah kompresi sebenarnya ke <a href="/image-tools/compress-image.html">Compress Image</a> (di peramban, tanpa unggahan).</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Jawaban 30 detik.</b> Sebagian besar kompresor gambar yang mengenkode ulang JPEG menghapus <b>metadata EXIF</b> secara default - itu mencakup merek dan model kamera, lensa, pengaturan eksposur, stempel waktu asli pengambilan, dan (untuk foto ponsel) koordinat GPS. Ini terjadi karena mengenkode ulang membangun kembali JPEG dari data pixel yang didekode, dan encoder harus diberi tahu secara eksplisit untuk menyalin blok metadata kembali. Jika Anda ingin metadata hilang (privasi, berbagi foto secara publik), perilaku default adalah yang Anda inginkan. Jika Anda ingin metadata dipertahankan (arsip, hak cipta, portofolio fotografi), pilih alat atau pengaturan pustaka yang menyimpan EXIF, atau kompres ulang dengan flag eksplisit "preserve metadata".</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Apa itu metadata EXIF, dalam istilah konkret?</b></h2>
+    <p>EXIF singkatan dari <b>Exchangeable Image File Format</b>, didefinisikan oleh standar JEITA CP-3451C (Exif 2.3 adalah versi yang ditulis sebagian besar kamera dan ponsel hari ini). EXIF bukan pixel gambar - itu adalah blok <i>metadata</i> terpisah yang disimpan di samping pixel dalam file gambar yang sama. Blok terstruktur sebagai serangkaian bidang bertag, masing-masing dengan ID tag numerik dan nilai. Format kontainer yang menampung blok adalah TIFF (Tag-Image File Format, Adobe TIFF 6.0); EXIF mewarisi struktur direktori file gambar (IFD) TIFF, jadi blok EXIF pada dasarnya adalah file TIFF kecil yang disematkan di dalam JPEG, HEIC, atau gambar serupa.</p>
+    <p>Blok EXIF diatur dalam sejumlah kecil direktori bernama, masing-masing memegang kategori bidang yang berbeda:</p>
+    <ul>
+        <li><b>IFD0 (direktori gambar primer)</b> - properti gambar dasar: lebar, tinggi, flag orientasi, resolusi, nama perangkat lunak, tanggal dan waktu modifikasi terakhir.</li>
+        <li><b>Exif IFD</b> - data pengambilan khusus kamera: merek dan model kamera, model lensa, waktu eksposur, F-number, ISO, panjang fokus, white balance, status flash, stempel waktu asli pengambilan, stempel waktu digitalisasi, dan tag ruang warna.</li>
+        <li><b>GPS IFD</b> - data lokasi: lintang, bujur, ketinggian, stempel waktu GPS, arah pengambilan. Ponsel menulis ini secara default kecuali layanan lokasi ditolak ke aplikasi kamera.</li>
+        <li><b>IFD1 (direktori thumbnail)</b> - thumbnail kecil yang disematkan dari gambar, digunakan oleh pengelola file untuk pratinjau cepat. Biasanya 160 x 120 pixel dan beberapa kilobyte.</li>
+        <li><b>Interoperability IFD</b> - flag yang menandai file sebagai sesuai dengan spesifikasi EXIF.</li>
+    </ul>
+    <p>Di dalam file JPEG, seluruh blok metadata ini dibungkus dalam segmen marker tunggal yang disebut <b>APP1</b>. File JPEG (per ITU-T T.81 / ISO/IEC 10918-1) memiliki satu set kecil segmen marker aplikasi bernomor APP0 hingga APP15; APP1 adalah segmen tempat EXIF tinggal (dimulai dengan byte <code>FF E1</code> diikuti panjang segmen dan string literal <code>Exif\0\0</code>). Segmen kedua yang umum, <b>APP2</b>, memegang profil warna ICC (per spesifikasi ICC.1:2010-12). Data pixel sendiri berada di segmen SOS (Start of Scan) setelah marker aplikasi.</p>
+
+    <h2 class="text-uppercase"><b>Mengapa kompresi biasanya menghapus EXIF (alasan teknis)</b></h2>
+    <p>Ketika alat kompresi gambar tipikal membuat JPEG lebih kecil, ia <i>tidak</i> memotong byte dari JPEG yang ada di tempat - ia <b>mengenkode ulang</b> gambar. Pipelinenya adalah: (1) <i>dekode</i> JPEG input kembali menjadi array 2D pixel RGB dalam memori, (2) <i>enkode ulang</i> pixel-pixel itu sebagai JPEG baru pada tingkat kualitas yang diminta. Encoder ulang membangun file dari awal: menulis marker SOI (Start of Image) baru, set tabel kuantisasi baru, tabel Huffman baru, dan data pixel terkompresi baru. Segmen marker aplikasi (APP0 hingga APP15) <i>bukan</i> bagian dari data pixel; mereka struktur tingkat atas yang terpisah, dan encoder hanya menulisnya jika kode pemanggil menyerahkannya secara eksplisit.</p>
+    <p>Perilaku encoder default di sebagian besar pustaka populer adalah <b>tidak</b> menyalin marker aplikasi:</p>
+    <ul>
+        <li><b>libjpeg-turbo</b> (codec JPEG paling banyak digunakan di Linux, macOS, dan Android) dan <b>mozjpeg</b> (fork Mozilla yang disetel untuk kompresi web) keduanya menulis hanya marker yang diproduksi encoder itu sendiri - tabel kuantisasi, tabel Huffman, header frame - dan menjatuhkan yang lainnya. Alat baris perintah <code>cjpeg</code> mengikuti default yang sama; menyimpan EXIF memerlukan flag <code>-copy all</code> atau yang setara.</li>
+        <li><b>Pillow (PIL) di Python</b> - <code>Image.save("out.jpg", quality=80)</code> menjatuhkan EXIF secara default. Untuk mempertahankannya: <code>img.save("out.jpg", quality=80, exif=img.info.get("exif"))</code>. Metadata tidak implisit; Anda harus melewatkannya secara eksplisit.</li>
+        <li><b>Sharp (Node.js, libvips)</b> - perilaku default menjatuhkan EXIF; metode <code>.withMetadata()</code> memberi tahu encoder untuk menyimpannya.</li>
+        <li><b>ImageMagick</b> - flag <code>-strip</code> menghapus EXIF secara eksplisit; tanpa itu, ImageMagick mencoba menyimpan metadata, yang membuat ImageMagick pengecualian daripada aturan.</li>
+        <li><b>Kompresi sisi peramban</b> menggunakan elemen HTML5 <code>&lt;canvas&gt;</code> dan <code>canvas.toBlob()</code> - API canvas <i>tidak memiliki konsep</i> metadata. Menggambar gambar ke canvas mendekode pixel saja; mengenkode canvas ke JPEG menghasilkan file segar tanpa blok EXIF sama sekali. Alat web yang mengompres sepenuhnya di peramban menggunakan canvas selalu menghasilkan output bebas metadata kecuali mereka mem-parse dan melampirkan kembali blok EXIF sendiri dengan pustaka terpisah.</li>
+    </ul>
+    <p>Intinya: penghapusan EXIF saat kompresi adalah <i>efek samping</i> dari cara mengenkode ulang bekerja, bukan fitur privasi yang disengaja. Encoder tidak "memilih" menghapus metadata - ia hanya tidak menyalinnya kecuali diberitahu. Apakah alat Anda menyimpan atau menjatuhkan EXIF karena itu bergantung pada satu baris kode (atau satu flag CLI) di langkah enkode.</p>
+
+    <h2 class="text-uppercase"><b>Apa yang ada di EXIF yang penting</b></h2>
+    <p>Bidang berbeda dalam blok EXIF memiliki taruhan yang sangat berbeda untuk pembaca yang berbeda. Empat bidang yang paling banyak ditanyakan pembaca:</p>
+    <ul>
+        <li><b>Koordinat GPS</b> (GPS IFD: <code>GPSLatitude</code>, <code>GPSLongitude</code>, <code>GPSAltitude</code>) - ditulis oleh ponsel kecuali lokasi ditolak ke aplikasi kamera. Membacanya memberi tahu siapa pun dengan file di mana foto diambil, sering dalam beberapa meter. Ini adalah satu-satunya kekhawatiran privasi paling dikutip dengan EXIF; berbagi "selfie di rumah" dengan GPS masih terlampir secara efektif berbagi alamat rumah.</li>
+        <li><b>Stempel waktu pengambilan</b> (Exif IFD: <code>DateTimeOriginal</code>) - saat rana ditembakkan, akurat ke detik. Berguna untuk arsip; berpotensi sensitif jika foto memberi tanggal acara pribadi.</li>
+        <li><b>Identifikasi kamera dan lensa</b> (IFD0: <code>Make</code>, <code>Model</code>; Exif IFD: <code>LensModel</code>) - memberi tahu pembaca body kamera dan lensa apa yang memotret gambar. Digunakan oleh fotografer sebagai metadata portofolio; tidak berbahaya pada sebagian besar foto konsumen.</li>
+        <li><b>Parameter eksposur</b> (Exif IFD: <code>ExposureTime</code>, <code>FNumber</code>, <code>ISOSpeedRatings</code>, <code>FocalLength</code>) - pengaturan teknis pemotretan. Berguna untuk fotografer membandingkan pemotretan; tidak berbahaya untuk dibagikan.</li>
+    </ul>
+    <p>Dua bidang lain yang perlu diketahui:</p>
+    <ul>
+        <li><b>Flag orientasi</b> (IFD0: <code>Orientation</code>) - memberi tahu renderer untuk memutar gambar yang ditampilkan 90, 180, atau 270 derajat tanpa memutar pixel. Jika kompresor menghapus flag ini <i>dan</i> tidak memutar pixel terlebih dahulu, gambar yang ditampilkan dengan benar di ponsel mungkin tiba-tiba muncul miring di web. Sebagian besar kompresor modern memutar pixel secara otomatis dan membersihkan flag (perilaku aman); beberapa menjatuhkan flag tanpa memutar, menghasilkan output yang terlihat rusak.</li>
+        <li><b>Hak cipta dan penulis</b> (IFD0: <code>Copyright</code>, <code>Artist</code>) - bidang kepemilikan ditulis oleh beberapa kamera dan sebagian besar perangkat lunak pengeditan foto. Menghapusnya pada alur kerja kompresi yang menghadap publik baik-baik saja; menghapusnya pada alur kerja arsip atau komersial dapat merusak atribusi.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Kapan menyimpan EXIF</b></h2>
+    <p>Tiga skenario di mana menyimpan EXIF selama kompresi adalah pilihan yang tepat:</p>
+    <ul>
+        <li><b>Arsip pribadi</b> - foto berpindah dari ponsel ke pustaka foto jangka panjang (NAS, folder yang disinkronkan, drive eksternal) dan tanggal serta GPS adalah bagian dari nilai: ini adalah kapan dan di mana momen terjadi. Menghapus EXIF di sini akan menghapus garis waktu dan tempat.</li>
+        <li><b>Portofolio fotografer</b> - eksposur, lensa, ISO, dan hak cipta adalah bagian dari bagaimana fotografer menyajikan karyanya. Beberapa platform portofolio merender EXIF sebagai sidebar; beberapa peramban menampilkannya dalam properti gambar. Menyimpan EXIF memungkinkan penonton melihat keahliannya.</li>
+        <li><b>Penggunaan forensik atau bukti</b> - stempel waktu, GPS, dan identifikasi kamera mungkin relevan jika gambar nanti digunakan sebagai bukti. Blok EXIF bukan jaminan keaslian (salah satu bidang ini dapat diedit), tetapi menghapusnya sepenuhnya menghilangkan informasi yang mungkin diperlukan.</li>
+    </ul>
+    <p>Memilih alat yang menyimpan EXIF: di alat berbasis peramban, cari kotak centang eksplisit "preserve metadata" atau "keep EXIF"; di alat baris perintah, gunakan <code>cjpeg -copy all</code>, <code>jpegtran -copy all</code>, ImageMagick tanpa <code>-strip</code>, atau panggil API simpan metadata pustaka Anda. <code>jpegtran</code> dari libjpeg-turbo adalah kasus khusus: ia melakukan rekompresi <b>lossless</b> (mengatur ulang kode Huffman tanpa mendekode ke pixel) dan menyimpan semua segmen marker secara default, jadi pass <code>jpegtran -optimise</code> mengecilkan JPEG sedikit tanpa menyentuh EXIF atau pixel.</p>
+
+    <h2 class="text-uppercase"><b>Kapan menghapus EXIF dengan sengaja</b></h2>
+    <p>Tiga skenario di mana menghapus EXIF adalah pilihan yang tepat - perilaku default dari sebagian besar kompresor melakukan hal yang benar di sini, tetapi jika Anda tidak yakin, Anda juga bisa melewatkan gambar melalui alat penghapus metadata khusus terlebih dahulu:</p>
+    <ul>
+        <li><b>Berbagi foto ponsel secara publik</b> - memposting foto ke situs web publik, forum, jaringan sosial, atau daftar marketplace. Koordinat GPS dan stempel waktu pengambilan tidak berguna untuk penonton publik; mereka adalah kebocoran privasi. Hapus EXIF sebelum mengunggah.</li>
+        <li><b>Minimasi ukuran file untuk web</b> - blok EXIF dari foto ponsel biasanya 10 - 60 kilobyte, yang dapat menjadi bagian signifikan dari gambar yang sangat dikompresi (JPEG 50 kilobyte dengan blok EXIF 30 kilobyte adalah 60 persen metadata). Menghapus EXIF pada pipeline kompresi yang terikat web adalah penghematan byte gratis.</li>
+        <li><b>Marketplace dan daftar publik</b> - menjual barang bekas, memposting foto real estat, mendaftarkan sewa: konteks apa pun di mana daftar tidak boleh mengungkapkan di mana fotografer tinggal atau bekerja. Hapus EXIF sebelum foto meninggalkan perangkat Anda.</li>
+    </ul>
+    <p>Untuk penghapusan batch, CLI paling sederhana adalah <code>exiftool -all= image.jpg</code> (utilitas <code>exiftool</code> menulis salinan dengan semua metadata dihapus) atau <code>jpegtran -copy none input.jpg &gt; output.jpg</code> (lossless, tanpa perubahan kualitas, tanpa EXIF). Keduanya tersedia luas.</p>
+
+    <h2 class="text-uppercase"><b>Apa yang TIDAK ada di EXIF (kebingungan umum)</b></h2>
+    <p>Beberapa kategori "metadata" sering disalahartikan sebagai EXIF tetapi disimpan di blok berbeda dari file - atau tidak di file sama sekali:</p>
+    <ul>
+        <li><b>IPTC / XMP</b> - standar metadata terpisah yang digunakan oleh editor foto untuk kata kunci, keterangan, pernyataan hak cipta, dan peringkat. Disimpan di segmen marker JPEG mereka sendiri (XMP biasanya di APP1 bersama EXIF; IPTC di blok sumber daya gambar Photoshop). Menghapus EXIF tidak selalu menghapus XMP; beberapa alat menghapus keduanya, beberapa hanya menghapus satu.</li>
+        <li><b>Profil warna ICC</b> - profil manajemen warna (sRGB, Display P3, Adobe RGB) yang memberi tahu renderer cara menafsirkan nilai warna. Disimpan di segmen marker APP2 JPEG per ICC.1:2010-12. Profil ICC <i>bukan</i> EXIF; beberapa kompresor menghapusnya bersama EXIF (yang dapat menggeser warna secara terlihat pada monitor gamut lebar), beberapa menyimpannya. Jika warna terlihat "off" setelah kompresi pada monitor terkalibrasi, profil ICC adalah tersangka.</li>
+        <li><b>Metadata sistem file</b> (tanggal modifikasi file, tanggal pembuatan file, pemilik file, atribut diperluas tingkat OS) - ini adalah properti dari <i>file di disk</i>, bukan properti data gambar. Mereka independen dari EXIF; mengunggah file umumnya menjatuhkan semua metadata sistem file bahkan jika EXIF disimpan.</li>
+        <li><b>Steganografi atau watermark yang disematkan di pixel</b> - beberapa alur menyembunyikan data di dalam nilai pixel itu sendiri (watermark bit yang paling tidak signifikan, tanda domain frekuensi). Data ini <i>ada</i> dalam data pixel, jadi mengenkode ulang biasanya merusak atau menghancurkannya; menyimpan EXIF tidak membantu di sini.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Cara memeriksa apa yang ada di file Anda</b></h2>
+    <p>Alat inspeksi lintas platform paling sederhana adalah <code>exiftool</code> (utilitas Perl gratis, tersedia di pengelola paket Windows, macOS, dan Linux). Jalankan <code>exiftool image.jpg</code> dan ia mencetak setiap bidang metadata yang diatur berdasarkan direktori (IFD0, Exif IFD, GPS IFD, IFD1, XMP, IPTC, ICC). Jika output menunjukkan koordinat GPS, file masih memilikinya; jika hanya menunjukkan properti gambar dasar (ukuran, format), blok metadata telah dihapus.</p>
+    <p>Pintasan sistem operasi juga berfungsi untuk pemeriksaan cepat:</p>
+    <ul>
+        <li><b>macOS Finder</b> - pilih gambar, tekan Command+I, perluas "More Info" - menunjukkan kamera, eksposur, dan (jika ada) koordinat GPS dirender sebagai peta kecil.</li>
+        <li><b>Windows Explorer</b> - klik kanan gambar, pilih Properties, klik tab Details - menunjukkan bidang EXIF termasuk GPS sebagai angka lintang / bujur.</li>
+        <li><b>Pengelola file Linux</b> - sebagian besar pengelola file (Nautilus, Dolphin, Thunar) menampilkan tab Exif di dialog properti file jika pustaka metadata diinstal.</li>
+    </ul>
+    <p>Untuk pemeriksaan terkait setelah kompresi - apakah kompresi juga merusak pixel secara terlihat? - panduan pendamping di <a href="/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html">How to Tell If a JPG Was Compressed Too Much</a> mencakup artefak visual dari kompresi berlebihan, yang merupakan pertanyaan berbeda dari "apakah metadata bertahan".</p>
+
+    <h2 class="text-uppercase"><b>Resep praktis: simpan atau hapus, berdasarkan skenario</b></h2>
+    <p>Keputusan di sebagian besar alur kerja berkurang menjadi satu pertanyaan: siapa yang akan melihat file ini berikutnya?</p>
+    <ul>
+        <li><b>Berbagi publik (sosial, daftar, forum, situs web)</b> - hapus EXIF. Perilaku default sebagian besar kompresor melakukan ini gratis. Jika kompresor menyimpan EXIF secara default, jalankan output melalui <code>exiftool -all= file.jpg</code> sebagai langkah lanjutan.</li>
+        <li><b>Mengirim ke teman atau anggota keluarga</b> - menyimpan EXIF baik-baik saja; GPS dan stempel waktu mungkin merupakan konteks yang relevan. Jika foto akan dibagikan ulang lebih jauh, hapus terlebih dahulu.</li>
+        <li><b>Mengarsipkan ke pustaka Anda sendiri</b> - simpan EXIF. Gunakan alat dengan "preserve metadata" eksplisit atau gunakan <code>jpegtran -copy all</code> untuk rekompresi lossless.</li>
+        <li><b>Menerbitkan di portofolio fotografi</b> - simpan EXIF. Bidang eksposur dan lensa adalah bagian dari nilai portofolio.</li>
+        <li><b>Mengurangi ukuran file untuk halaman web di mana setiap kilobyte penting</b> - hapus EXIF dan ICC. Putar pixel terlebih dahulu untuk menghindari kehilangan flag orientasi secara diam-diam.</li>
+        <li><b>Salinan forensik atau bukti</b> - simpan EXIF; idealnya jangan mengenkode ulang sama sekali (salin file asli apa adanya). Jika salinan lebih kecil diperlukan, <code>jpegtran -copy all</code> adalah jalur teraman.</li>
+    </ul>
+    <p>Jika Anda akan mengompres gambar dan tidak yakin kasus mana yang berlaku: default konservatif adalah <i>menghapus</i> EXIF saat berbagi secara eksternal dan <i>menyimpan</i> EXIF saat menyimpan secara internal. Panduan pendamping tentang memilih tingkat kualitas ada di <a href="/guides/how-to-choose-a-compression-level.html">How to Choose a Compression Level</a>; panduan pendamping tentang apakah kompresi adalah operasi yang tepat (vs konversi format) ada di <a href="/guides/when-to-compress-vs-convert-an-image.html">When to Compress vs Convert an Image</a>.</p>
+
+    <h2 class="text-uppercase"><b>Bacaan terkait</b></h2>
+    <ul>
+        <li><a href="/image-tools/compress-image.html">Compress Image</a> - kompresor gambar dalam peramban; pilih tingkat kualitas, dapatkan JPEG yang lebih kecil. Tidak perlu mengunggah untuk langkah kompresi itu sendiri.</li>
+        <li><a href="/guides/how-to-choose-a-compression-level.html">How to Choose a Compression Level - Quality vs File Size</a> - trade-off antara kualitas terlihat dan ukuran file, dengan rekomendasi tingkat kualitas konkret per skenario.</li>
+        <li><a href="/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html">How to Tell If a JPG Was Compressed Too Much</a> - artefak terlihat yang berarti JPEG telah dikompresi berlebihan (banding, blocking, mosquito noise) dan cara mendeteksinya.</li>
+        <li><a href="/guides/when-to-compress-vs-convert-an-image.html">When to Compress vs Convert an Image</a> - apakah operasi yang tepat adalah "membuat JPEG ini lebih kecil" atau "mengonversi ini ke format berbeda" - mereka adalah alat berbeda.</li>
+        <li><a href="/guides/free-online-tools-that-work-without-uploading-files.html">Free Online Tools That Work Without Uploading Files</a> - pilihan alat privasi-pertama yang lebih luas di situs ini.</li>
+    </ul>
+</div>

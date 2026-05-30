@@ -1,0 +1,61 @@
+<article class="guide-body w3-container w3-padding-large">
+  <h1>Como Reducir el Tamano de un Archivo ZIP</h1>
+  <p class="lead">La sorpresa mas comun al comprimir una carpeta es que el <code>.zip</code> resultante apenas es mas pequeno - a veces algunos por ciento mas grande - que el original. Eso no es un bug en la herramienta. ZIP solo encoge entradas comprimibles (texto plano, registros, CSV, JSON, codigo fuente, imagenes sin comprimir), y la mayoria de los archivos que la gente comprime - fotos JPG, video MP4, audio MP3 y muchos PDFs - ya fueron comprimidos por su propio codec, asi que envolverlos en un ZIP anade sobrecarga de empaquetado sin ahorrar espacio. La manera de hacer el archivo mas pequeno es preprocesar los archivos pesados antes de comprimir, no apretar mas el paso de ZIP.</p>
+  <p class="reviewed">Ultima revision: 2026-05-15</p>
+  <p class="byline">Revisado por el equipo editorial de FreetoolOnline</p>
+
+  <table class="quick-facts w3-table-all w3-margin-top w3-margin-bottom">
+    <thead><tr><th>Pregunta</th><th>Respuesta corta</th></tr></thead>
+    <tbody>
+      <tr><td>Mi ZIP sera mas pequeno que los archivos de entrada?</td><td>Solo si las entradas son ricas en texto. JPG / MP4 / MP3 / la mayoria de PDFs ya estan comprimidos.</td></tr>
+      <tr><td>Elegir un nivel de compresion mas alto ayuda?</td><td>Marginalmente (algunos por ciento en archivos ricos en texto). La compresibilidad de las entradas importa mas que el deslizador de nivel.</td></tr>
+      <tr><td>Forma real de reducir el tamano del ZIP?</td><td>Redimensiona / recodifica los medios primero, despues comprime los archivos optimizados.</td></tr>
+      <tr><td>Donde esta el creador de ZIP en el navegador?</td><td><a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a> (gratis, sin instalar).</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Por que la mayoria de ZIPs no se encogen</h2>
+  <p>El trabajo de un archivo ZIP es dos cosas: agrupar muchos archivos en un solo contenedor y (opcionalmente) comprimirlos. El paso de compresion usa DEFLATE, que lee cada archivo de entrada buscando patrones de bytes repetidos y los reemplaza con tokens mas cortos. El texto plano - registros, CSV, JSON, codigo fuente, formatos de imagen sin comprimir como BMP o TIFF sin comprimir - contiene mucha repeticion, asi que DEFLATE lo encoge mucho; reducciones de 50-70% son normales en archivos ricos en texto. JPG, MP4, MP3 y la mayoria de PDFs ya pasaron por un compresor de dominio especifico (cuantizacion JPEG para fotos, codec AAC o MP3 para audio, H.264 / H.265 para video), asi que el flujo de bytes le parece ruido a DEFLATE. El resultado es que el ZIP solo anade la sobrecarga del contenedor (cabeceras de archivo, registro de directorio) sin encontrar ahorros. La salida suele ser 0-5% mas pequena, ocasionalmente 1-2% mas grande.</p>
+
+  <h2>El flujo que realmente reduce el tamano</h2>
+  <p>Si el objetivo es "hacer mas pequena esta entrega", separa el contenido comprimible del ya comprimido antes de comprimir:</p>
+  <ol>
+    <li><b>Identifica los archivos pesados.</b> Ordena la carpeta por tamano. Los uno o dos archivos del tope casi siempre representan el 80% del total, y normalmente son fotos, grabaciones de pantalla o PDFs.</li>
+    <li><b>Reduce los archivos pesados por separado.</b> Redimensiona una foto de 4000x3000 a 2000x1500 con <a href="/image-tools/resize-image.html">Resize Image</a>; recomprime con menor calidad usando <a href="/image-tools/compress-image.html">Compress Image</a>; recorta un video con las herramientas de video en <a href="/video-tools.html">/video-tools.html</a>; aplana un PDF pesado con <a href="/pdf-tools/compress-pdf.html">Compress PDF</a>.</li>
+    <li><b>Ahora comprime los archivos optimizados.</b> Abre <a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a>, suelta los reemplazos (mas pequenos) junto con los archivos genuinamente ricos en texto, y deja que DEFLATE haga el resto.</li>
+  </ol>
+  <p>El resultado final es un ZIP cuyo tamano lo dominan los nuevos archivos de medios mas pequenos. El paso del ZIP es el ultimo 5%, no el primer 95%.</p>
+
+  <h2>Y el deslizador de nivel de compresion?</h2>
+  <p>Algunas herramientas ZIP exponen un nivel (Store / Fast / Normal / Maximum / Ultra). El deslizador principalmente intercambia tiempo de CPU del lado del remitente por unos por ciento extra de reduccion de tamano:</p>
+  <ul>
+    <li><b>Store</b> - sin compresion. Util solo cuando la velocidad importa mas que el tamano (una carpeta muy grande subida por una conexion lenta donde la CPU es el cuello de botella).</li>
+    <li><b>Fast / Normal (DEFLATE por defecto)</b> - el ajuste estandar. Mejor equilibrio entre tiempo de build y tamano. <i>Usa este a menos que tengas una razon para no hacerlo.</i></li>
+    <li><b>Maximum / Ultra</b> - mas tiempo de CPU por unos por ciento extra en un archivo rico en texto. Casi nunca mueve la aguja en archivos que contienen medios.</li>
+  </ul>
+  <p>Si tu ZIP no encogio, el deslizador de nivel es la perilla equivocada para girar. Las entradas no son comprimibles, punto final - y necesitas el paso de preprocesamiento de arriba.</p>
+
+  <h2>Nota de enrutamiento de sinonimos</h2>
+  <p>Si escribiste "compress ZIP" en vez de "como reducir el tamano de archivo ZIP", la misma respuesta vive en <a href="/guides/compress-zip.html">/guides/compress-zip.html</a> en lenguaje ligeramente distinto - la guia de desambiguacion para esa formulacion. La guia companera en <a href="/guides/how-to-reduce-zip-file-size-online.html">/guides/how-to-reduce-zip-file-size-online.html</a> cubre la misma consulta para lectores que incluyen "online" en su busqueda. Ambas rutas enlazan de vuelta al mismo creador de ZIP en el navegador en <a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a>, asi que el siguiente clic es el mismo independientemente de la formulacion usada.</p>
+
+  <h2>FAQ</h2>
+  <details class="faq-item">
+    <summary>Mi ZIP quedo ligeramente mas grande que la carpeta original. Algo esta roto?</summary>
+    <p>No - ese es el resultado esperado cuando toda entrada ya esta comprimida (JPG / MP4 / MP3 / la mayoria de PDFs). El contenedor ZIP anade un pequeno registro de directorio por archivo; DEFLATE no encuentra nada que comprimir; delta neto de 0 a un par de por ciento mas grande.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Deberia usar 7z o RAR en vez de ZIP para una ganancia real de tamano?</summary>
+    <p>7z y RAR usan algoritmos de compresion mas fuertes (LZMA2, RAR5) y pueden encoger medios ya comprimidos en otro 5-10%. El intercambio es alcance: no todo destinatario tiene un abridor de 7z / RAR, y muchos escaneadores de adjuntos de webmail o widgets de subida rechazan cualquier cosa que no sea <code>.zip</code>. ZIP por defecto a maxima compatibilidad; cambia solo si controlas los dos extremos de la entrega.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Puedo solo elevar el nivel de compresion a "Ultra" y saltar el preprocesamiento?</summary>
+    <p>Puedes intentarlo, pero el resultado normalmente es decepcionante. En una carpeta de fotos y un video, "Ultra" podria afeitar 1-2% extra al costo de un largo tiempo de build. Redimensionar las fotos y recortar el video primero afeitara 70-80%. La compresibilidad de las entradas pone el techo; el deslizador de nivel solo decide que tan cerca llegas a el.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Proteger con contrasena el ZIP cambia el tamano?</summary>
+    <p>La proteccion con contrasena (contrasena de apertura + cifrado AES) anade una pequena sobrecarga fija - normalmente unos pocos cientos de bytes - pero no cambia que tan bien comprime el contenido. El tamano lo dominan las entradas, no el cifrado.</p>
+  </details>
+
+  <h2>Resumen en una linea</h2>
+  <p>Para reducir el tamano de un archivo ZIP: no empieces en el paso del ZIP. Ordena la carpeta por tamano, encoge los archivos de medios pesados por separado (redimensiona, recodifica), despues comprime los archivos optimizados al nivel de compresion por defecto. El ZIP es el paquete; la ganancia de tamano ocurre rio arriba de el.</p>
+</article>

@@ -1,0 +1,104 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>EXIF-Metadaten und Bildkomprimierung: Was Entfernt Wird</b></h1>
+    <p><em>Zuletzt geprueft 2026-05-06. Ausgerichtet auf den Moment, in dem du ein Bild komprimierst und dich fragst, ob die Kameradetails, GPS-Koordinaten oder Zeitstempel noch in der Datei sind. Leitet den eigentlichen Komprimierungsschritt zu <a href="/image-tools/compress-image.html">Compress Image</a> (im Browser, kein Upload).</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-Sekunden-Antwort.</b> Die meisten Bildkompressoren, die ein JPEG neu kodieren, entfernen <b>EXIF-Metadaten</b> standardmaessig - das schliesst Kameramarke und -modell, Objektiv, Belichtungseinstellungen, den urspruenglichen Aufnahmezeitstempel und (fuer Telefonfotos) GPS-Koordinaten ein. Das passiert, weil das Neu-Kodieren das JPEG aus dekodierten Pixeldaten neu aufbaut, und der Encoder muss explizit angewiesen werden, den Metadatenblock wieder zu kopieren. Wenn du die Metadaten entfernt haben willst (Datenschutz, oeffentliches Foto-Sharing), ist das Standardverhalten was du willst. Wenn du die Metadaten behalten willst (Archivierung, Urheberrecht, Fotografie-Portfolio), waehle ein Tool oder eine Bibliothekseinstellung, die EXIF bewahrt, oder komprimiere mit einem expliziten "preserve metadata"-Flag neu.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Was sind EXIF-Metadaten in konkreten Begriffen?</b></h2>
+    <p>EXIF steht fuer <b>Exchangeable Image File Format</b>, definiert vom JEITA CP-3451C-Standard (Exif 2.3 ist die Version, die die meisten Kameras und Telefone heute schreiben). EXIF sind nicht die Bildpixel - es ist ein separater Block von <i>Metadaten</i>, gespeichert neben den Pixeln innerhalb derselben Bilddatei. Der Block ist als eine Reihe von getaggten Feldern strukturiert, jedes mit einer numerischen Tag-ID und einem Wert. Das Container-Format, das den Block enthaelt, ist TIFF (Tag-Image File Format, Adobe TIFF 6.0); EXIF erbt TIFFs Image File Directory (IFD)-Struktur, also ist ein EXIF-Block im Wesentlichen eine kleine TIFF-Datei, die in einem JPEG, HEIC oder aehnlichem Bild eingebettet ist.</p>
+    <p>Ein EXIF-Block ist in eine kleine Anzahl benannter Verzeichnisse organisiert, jedes haelt eine andere Kategorie von Feldern:</p>
+    <ul>
+        <li><b>IFD0 (das primaere Bildverzeichnis)</b> - grundlegende Bildeigenschaften: Breite, Hoehe, Ausrichtungs-Flag, Aufloesung, Softwarename, Datum und Zeit der letzten Aenderung.</li>
+        <li><b>Exif IFD</b> - kameraspezifische Aufnahmedaten: Kameramarke und -modell, Objektivmodell, Belichtungszeit, F-Zahl, ISO, Brennweite, Weissabgleich, Blitzstatus, urspruenglicher Aufnahmezeitstempel, digitalisierter Zeitstempel und ein Farbraum-Tag.</li>
+        <li><b>GPS IFD</b> - Standortdaten: Breitengrad, Laengengrad, Hoehe, GPS-Zeitstempel, Aufnahmerichtung. Telefone schreiben dies standardmaessig, ausser Ortungsdienste sind der Kamera-App verweigert.</li>
+        <li><b>IFD1 (das Thumbnail-Verzeichnis)</b> - ein kleines eingebettetes Thumbnail des Bildes, von Dateimanagern fuer schnelle Vorschauen verwendet. Typischerweise 160 x 120 Pixel und einige Kilobyte.</li>
+        <li><b>Interoperability IFD</b> - Flags, die die Datei als der EXIF-Spezifikation entsprechend markieren.</li>
+    </ul>
+    <p>Innerhalb einer JPEG-Datei ist dieser ganze Metadatenblock in einem einzelnen Marker-Segment namens <b>APP1</b> eingewickelt. JPEG-Dateien (gemaess ITU-T T.81 / ISO/IEC 10918-1) haben einen kleinen Satz von Anwendungs-Marker-Segmenten nummeriert von APP0 bis APP15; APP1 ist das Segment, in dem EXIF lebt (es beginnt mit den Bytes <code>FF E1</code>, gefolgt von der Segmentlaenge und der wortwoertlichen Zeichenkette <code>Exif\0\0</code>). Ein zweites haeufiges Segment, <b>APP2</b>, haelt das ICC-Farbprofil (gemaess ICC.1:2010-12-Spezifikation). Die Pixeldaten selbst sitzen in den SOS (Start of Scan)-Segmenten nach den Anwendungs-Markern.</p>
+
+    <h2 class="text-uppercase"><b>Warum Komprimierung EXIF gewoehnlich entfernt (der technische Grund)</b></h2>
+    <p>Wenn ein typisches Bildkomprimierungstool ein JPEG kleiner macht, rasiert es <i>nicht</i> Bytes von einem existierenden JPEG an Ort und Stelle ab - es <b>kodiert neu</b> das Bild. Die Pipeline ist: (1) <i>dekodiere</i> das Eingabe-JPEG zurueck in ein 2D-Array von RGB-Pixeln im Speicher, (2) <i>kodiere neu</i> diese Pixel als neues JPEG auf dem angeforderten Qualitaetsniveau. Der Re-Encoder baut die Datei von Grund auf neu auf: er schreibt einen neuen SOI (Start of Image)-Marker, einen neuen Satz Quantisierungstabellen, neue Huffman-Tabellen und die neuen komprimierten Pixeldaten. Die Anwendungs-Marker-Segmente (APP0 bis APP15) sind <i>kein</i> Teil der Pixeldaten; sie sind separate Top-Level-Strukturen, und der Encoder schreibt sie nur, wenn der aufrufende Code sie explizit uebergibt.</p>
+    <p>Das Standardverhalten des Encoders in den meisten beliebten Bibliotheken ist, die Anwendungs-Marker <b>nicht</b> mit zu kopieren:</p>
+    <ul>
+        <li><b>libjpeg-turbo</b> (der am meisten verwendete JPEG-Codec auf Linux, macOS und Android) und <b>mozjpeg</b> (Mozillas Fork, abgestimmt auf Web-Komprimierung) schreiben beide nur die Marker, die der Encoder selbst produziert - Quantisierungstabellen, Huffman-Tabellen, Frame-Header - und lassen alles andere fallen. Das Befehlszeilen-Tool <code>cjpeg</code> folgt dem gleichen Standard; EXIF zu bewahren erfordert das Flag <code>-copy all</code> oder sein Aequivalent.</li>
+        <li><b>Pillow (PIL) in Python</b> - <code>Image.save("out.jpg", quality=80)</code> laesst EXIF standardmaessig fallen. Um es zu behalten: <code>img.save("out.jpg", quality=80, exif=img.info.get("exif"))</code>. Die Metadaten sind nicht implizit; du musst sie explizit uebergeben.</li>
+        <li><b>Sharp (Node.js, libvips)</b> - das Standardverhalten laesst EXIF fallen; die Methode <code>.withMetadata()</code> weist den Encoder an, es zu behalten.</li>
+        <li><b>ImageMagick</b> - das Flag <code>-strip</code> entfernt EXIF explizit; ohne es versucht ImageMagick, Metadaten zu bewahren, was ImageMagick zur Ausnahme statt zur Regel macht.</li>
+        <li><b>Browser-seitige Komprimierung</b> mit dem HTML5-<code>&lt;canvas&gt;</code>-Element und <code>canvas.toBlob()</code> - die Canvas-API hat <i>kein Konzept</i> von Metadaten. Ein Bild auf eine Canvas zu zeichnen dekodiert nur Pixel; die Canvas zu JPEG zu kodieren produziert eine frische Datei ohne EXIF-Block ueberhaupt. Web-Tools, die vollstaendig im Browser mit Canvas komprimieren, produzieren immer metadatenfreie Ausgabe, ausser sie parsen und haengen den EXIF-Block selbst mit einer separaten Bibliothek wieder an.</li>
+    </ul>
+    <p>Die Erkenntnis: EXIF-Entfernung waehrend der Komprimierung ist ein <i>Nebeneffekt</i>, wie das Neu-Kodieren funktioniert, kein absichtliches Datenschutz-Feature. Der Encoder "waehlt" nicht, Metadaten zu entfernen - er kopiert sie einfach nicht, ausser er wird angewiesen. Ob dein Tool EXIF behaelt oder fallen laesst, haengt daher von einer einzelnen Code-Zeile (oder einem einzelnen CLI-Flag) im Encoding-Schritt ab.</p>
+
+    <h2 class="text-uppercase"><b>Was in EXIF wichtig ist</b></h2>
+    <p>Verschiedene Felder im EXIF-Block haben sehr unterschiedliche Einsaetze fuer verschiedene Leser. Die vier Felder, nach denen die meisten Leser fragen:</p>
+    <ul>
+        <li><b>GPS-Koordinaten</b> (GPS IFD: <code>GPSLatitude</code>, <code>GPSLongitude</code>, <code>GPSAltitude</code>) - von Telefonen geschrieben, ausser der Standort wird der Kamera-App verweigert. Sie zu lesen sagt jedem mit der Datei, wo das Foto gemacht wurde, oft auf wenige Meter genau. Dies ist die einzige meist-zitierte Datenschutzsorge mit EXIF; ein "Selfie zu Hause" mit noch angehaengtem GPS zu teilen, teilt effektiv die Heimadresse.</li>
+        <li><b>Aufnahme-Zeitstempel</b> (Exif IFD: <code>DateTimeOriginal</code>) - der Moment, in dem der Verschluss ausloeste, sekundengenau. Nuetzlich fuer Archivierung; potenziell sensibel, wenn das Foto ein privates Ereignis datiert.</li>
+        <li><b>Kamera- und Objektivkennung</b> (IFD0: <code>Make</code>, <code>Model</code>; Exif IFD: <code>LensModel</code>) - sagt dem Leser, welcher Kamerabody und welches Objektiv das Bild aufgenommen haben. Wird von Fotografen als Portfolio-Metadaten verwendet; harmlos bei den meisten Konsumentenfotos.</li>
+        <li><b>Belichtungsparameter</b> (Exif IFD: <code>ExposureTime</code>, <code>FNumber</code>, <code>ISOSpeedRatings</code>, <code>FocalLength</code>) - die technischen Einstellungen der Aufnahme. Nuetzlich fuer Fotografen, die Aufnahmen vergleichen; harmlos zu teilen.</li>
+    </ul>
+    <p>Zwei andere Felder, die es wert sind zu kennen:</p>
+    <ul>
+        <li><b>Ausrichtungs-Flag</b> (IFD0: <code>Orientation</code>) - sagt dem Renderer, das angezeigte Bild um 90, 180 oder 270 Grad zu drehen, ohne die Pixel zu drehen. Wenn ein Kompressor dieses Flag entfernt <i>und</i> nicht zuerst die Pixel vorrotiert, kann ein Bild, das auf einem Telefon korrekt angezeigt wurde, ploetzlich seitwaerts im Web erscheinen. Die meisten modernen Kompressoren rotieren Pixel automatisch und loeschen das Flag (das sichere Verhalten); einige lassen das Flag ohne Rotation fallen, was sichtbar kaputte Ausgabe produziert.</li>
+        <li><b>Urheberrecht und Autor</b> (IFD0: <code>Copyright</code>, <code>Artist</code>) - Besitzfelder, geschrieben von einigen Kameras und den meisten Fotobearbeitungs-Programmen. Sie auf einem oeffentlichen Komprimierungs-Workflow zu entfernen ist okay; sie auf einem archivarischen oder kommerziellen Workflow zu entfernen, kann die Zuschreibung kaputt machen.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Wann EXIF behalten</b></h2>
+    <p>Drei Szenarien, in denen EXIF waehrend der Komprimierung zu bewahren die richtige Entscheidung ist:</p>
+    <ul>
+        <li><b>Persoenliches Archiv</b> - das Foto bewegt sich von einem Telefon zu einer langfristigen Fotobibliothek (ein NAS, ein synchronisierter Ordner, eine externe Festplatte) und Datum und GPS sind Teil des Werts: das ist wann und wo der Moment passierte. EXIF hier zu entfernen wuerde die Zeitlinie und den Ort loeschen.</li>
+        <li><b>Fotograf-Portfolio</b> - Belichtung, Objektiv, ISO und Urheberrecht sind Teil davon, wie der Fotograf seine Arbeit praesentiert. Einige Portfolio-Plattformen rendern EXIF als Sidebar; einige Browser zeigen es in Bildeigenschaften an. EXIF zu behalten laesst den Betrachter das Handwerk sehen.</li>
+        <li><b>Forensische oder Beweis-Verwendung</b> - Zeitstempel, GPS und Kamerakennung koennen relevant sein, wenn das Bild spaeter als Beweis verwendet wird. Der EXIF-Block ist keine Garantie der Authentizitaet (jedes dieser Felder kann bearbeitet werden), aber sie vollstaendig zu entfernen, entfernt Informationen, die benoetigt werden koennten.</li>
+    </ul>
+    <p>Ein Tool waehlen, das EXIF bewahrt: in browserbasierten Tools, suche nach einer expliziten "preserve metadata"- oder "keep EXIF"-Checkbox; in Befehlszeilen-Tools, verwende <code>cjpeg -copy all</code>, <code>jpegtran -copy all</code>, ImageMagick ohne <code>-strip</code>, oder rufe die preserve-metadata-API deiner Bibliothek auf. <code>jpegtran</code> von libjpeg-turbo ist der Sonderfall: er macht <b>verlustfreie</b> Rekomprimierung (ordnet Huffman-Codes neu an, ohne zu Pixeln zu dekodieren) und bewahrt alle Marker-Segmente standardmaessig, also schrumpft ein <code>jpegtran -optimise</code>-Durchlauf ein JPEG leicht, ohne EXIF oder die Pixel zu beruehren.</p>
+
+    <h2 class="text-uppercase"><b>Wann EXIF absichtlich entfernen</b></h2>
+    <p>Drei Szenarien, in denen EXIF zu entfernen die richtige Entscheidung ist - das Standardverhalten der meisten Kompressoren macht hier das Richtige, aber wenn du unsicher bist, kannst du ein Bild auch zuerst durch ein dediziertes Metadaten-Entferner-Tool laufen lassen:</p>
+    <ul>
+        <li><b>Oeffentliches Teilen von Telefon-Fotos</b> - ein Foto auf einer oeffentlichen Webseite, einem Forum, sozialen Netzwerk oder Marketplace-Listing posten. Die GPS-Koordinaten und der Aufnahme-Zeitstempel sind nicht nuetzlich fuer einen oeffentlichen Betrachter; sie sind ein Datenschutz-Leck. Entferne EXIF vor dem Upload.</li>
+        <li><b>Dateigroessen-Minimierung fuer das Web</b> - ein EXIF-Block von einem Telefonfoto ist typischerweise 10 - 60 Kilobyte, was ein bedeutender Anteil eines stark komprimierten Bildes sein kann (ein 50-Kilobyte-JPEG mit einem 30-Kilobyte-EXIF-Block ist 60 Prozent Metadaten). EXIF in einer web-gerichteten Komprimierungs-Pipeline zu entfernen ist eine kostenlose Byte-Ersparnis.</li>
+        <li><b>Oeffentliche Marktplaetze und Listings</b> - einen gebrauchten Gegenstand verkaufen, ein Immobilienfoto posten, eine Vermietung listen: jeder Kontext, in dem das Listing nicht offenbaren sollte, wo der Fotograf lebt oder arbeitet. Entferne EXIF, bevor das Foto dein Geraet verlaesst.</li>
+    </ul>
+    <p>Fuer Batch-Entfernung ist der einfachste CLI <code>exiftool -all= image.jpg</code> (das <code>exiftool</code>-Utility schreibt eine Kopie mit allen Metadaten entfernt) oder <code>jpegtran -copy none input.jpg &gt; output.jpg</code> (verlustfrei, keine Qualitaetsaenderung, kein EXIF). Beide sind weit verbreitet verfuegbar.</p>
+
+    <h2 class="text-uppercase"><b>Was NICHT in EXIF ist (haeufige Verwechslungen)</b></h2>
+    <p>Einige Kategorien von "Metadaten" werden oft mit EXIF verwechselt, aber sind in verschiedenen Bloecken der Datei gespeichert - oder ueberhaupt nicht in der Datei:</p>
+    <ul>
+        <li><b>IPTC / XMP</b> - separate Metadaten-Standards, von Fotoeditoren fuer Stichwoerter, Bildunterschriften, Urheberrechts-Statements und Bewertungen verwendet. Gespeichert in ihren eigenen JPEG-Marker-Segmenten (XMP gewoehnlich in APP1 neben EXIF; IPTC in einem Photoshop-Image-Resource-Block). EXIF zu entfernen entfernt nicht immer XMP; einige Tools entfernen beide, einige entfernen nur eines.</li>
+        <li><b>ICC-Farbprofil</b> - das Farbmanagement-Profil (sRGB, Display P3, Adobe RGB), das einem Renderer sagt, wie die Farbwerte zu interpretieren sind. Gespeichert im JPEG-APP2-Marker-Segment gemaess ICC.1:2010-12. Das ICC-Profil ist <i>nicht</i> EXIF; einige Kompressoren entfernen es neben EXIF (was Farben auf Weitgamut-Displays sichtbar verschieben kann), einige behalten es. Wenn Farben nach der Komprimierung auf einem kalibrierten Monitor "off" aussehen, ist das ICC-Profil der Verdaechtige.</li>
+        <li><b>Dateisystem-Metadaten</b> (Dateiaenderungsdatum, Dateierstellungsdatum, Dateibesitzer, OS-Level erweiterte Attribute) - dies sind Eigenschaften der <i>Datei auf der Festplatte</i>, keine Eigenschaften der Bilddaten. Sie sind unabhaengig von EXIF; eine Datei hochzuladen laesst im Allgemeinen alle Dateisystem-Metadaten fallen, auch wenn EXIF bewahrt wird.</li>
+        <li><b>Steganografie oder in den Pixeln eingebettete Wasserzeichen</b> - einige Workflows verstecken Daten innerhalb der Pixelwerte selbst (Least-Significant-Bit-Wasserzeichen, Frequenzbereich-Marken). Diese Daten <i>sind</i> in den Pixeldaten, also korrumpiert oder zerstoert das Neu-Kodieren sie normalerweise; EXIF-Bewahrung hilft hier nicht.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Wie pruefen, was in deiner Datei ist</b></h2>
+    <p>Das einfachste plattformuebergreifende Inspektionstool ist <code>exiftool</code> (ein kostenloses Perl-Utility, verfuegbar in Windows-, macOS- und Linux-Paketmanagern). Fuehre <code>exiftool image.jpg</code> aus und es druckt jedes Metadatenfeld, organisiert nach Verzeichnis (IFD0, Exif IFD, GPS IFD, IFD1, XMP, IPTC, ICC). Wenn die Ausgabe GPS-Koordinaten zeigt, hat die Datei sie immer noch; wenn sie nur grundlegende Bildeigenschaften zeigt (Groesse, Format), wurde der Metadatenblock entfernt.</p>
+    <p>Betriebssystem-Shortcuts funktionieren auch fuer eine schnelle Pruefung:</p>
+    <ul>
+        <li><b>macOS Finder</b> - waehle das Bild aus, druecke Command+I, klappe "More Info" aus - zeigt Kamera, Belichtung und (falls vorhanden) GPS-Koordinaten als kleine Karte gerendert.</li>
+        <li><b>Windows Explorer</b> - rechts-klicke das Bild, waehle Eigenschaften, klicke auf den Tab Details - zeigt EXIF-Felder einschliesslich GPS als Breiten- / Laengengrad-Zahlen.</li>
+        <li><b>Linux-Dateimanager</b> - die meisten Dateimanager (Nautilus, Dolphin, Thunar) zeigen einen Exif-Tab im Datei-Eigenschaften-Dialog, wenn eine Metadaten-Bibliothek installiert ist.</li>
+    </ul>
+    <p>Fuer eine verwandte Pruefung nach der Komprimierung - hat die Komprimierung auch die Pixel sichtbar beschaedigt? - deckt der Begleit-Guide bei <a href="/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html">How to Tell If a JPG Was Compressed Too Much</a> die visuellen Artefakte von Ueberkomprimierung ab, was eine andere Frage ist als "haben die Metadaten ueberlebt".</p>
+
+    <h2 class="text-uppercase"><b>Praktisches Rezept: behalten oder entfernen, nach Szenario</b></h2>
+    <p>Die Entscheidung in den meisten Workflows reduziert sich auf eine Frage: wer wird diese Datei als naechstes sehen?</p>
+    <ul>
+        <li><b>Oeffentliches Teilen (Soziales, Listings, Foren, Webseiten)</b> - entferne EXIF. Das Standardverhalten der meisten Kompressoren macht dies kostenlos. Wenn der Kompressor EXIF standardmaessig bewahrt, lasse die Ausgabe als Folgeschritt durch <code>exiftool -all= file.jpg</code> laufen.</li>
+        <li><b>Senden an einen Freund oder ein Familienmitglied</b> - EXIF zu behalten ist okay; GPS und Zeitstempel koennen relevanter Kontext sein. Wenn das Foto weiter geteilt werden wird, entferne zuerst.</li>
+        <li><b>Archivierung in deine eigene Bibliothek</b> - EXIF behalten. Verwende ein Tool mit explizitem "preserve metadata" oder verwende <code>jpegtran -copy all</code> fuer verlustfreie Rekomprimierung.</li>
+        <li><b>Veroeffentlichung auf einem Fotografie-Portfolio</b> - EXIF behalten. Die Belichtungs- und Objektiv-Felder sind Teil des Portfolio-Werts.</li>
+        <li><b>Dateigroesse fuer eine Webseite reduzieren, wo jedes Kilobyte zaehlt</b> - entferne EXIF und ICC. Rotiere die Pixel zuerst vor, um nicht das Ausrichtungs-Flag stillschweigend zu verlieren.</li>
+        <li><b>Forensische oder Beweis-Kopie</b> - EXIF behalten; idealerweise gar nicht rekomprimieren (die Originaldatei wie sie ist kopieren). Wenn eine kleinere Kopie benoetigt wird, ist <code>jpegtran -copy all</code> der sicherste Weg.</li>
+    </ul>
+    <p>Wenn du dabei bist, ein Bild zu komprimieren und unsicher bist, welcher Fall zutrifft: der konservative Standard ist, EXIF beim externen Teilen <i>zu entfernen</i> und EXIF beim internen Speichern <i>zu behalten</i>. Der Begleit-Guide zur Wahl eines Qualitaetsniveaus ist bei <a href="/guides/how-to-choose-a-compression-level.html">How to Choose a Compression Level</a>; der Begleit-Guide dazu, ob Komprimierung ueberhaupt die richtige Operation ist (vs Formatkonvertierung), ist bei <a href="/guides/when-to-compress-vs-convert-an-image.html">When to Compress vs Convert an Image</a>.</p>
+
+    <h2 class="text-uppercase"><b>Verwandte Lektuere</b></h2>
+    <ul>
+        <li><a href="/image-tools/compress-image.html">Compress Image</a> - der In-Browser-Bildkompressor; waehle ein Qualitaetsniveau, erhalte ein kleineres JPEG. Kein Upload fuer den Komprimierungsschritt selbst erforderlich.</li>
+        <li><a href="/guides/how-to-choose-a-compression-level.html">How to Choose a Compression Level - Quality vs File Size</a> - der Trade-off zwischen sichtbarer Qualitaet und Dateigroesse, mit konkreten Qualitaetsniveau-Empfehlungen pro Szenario.</li>
+        <li><a href="/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html">How to Tell If a JPG Was Compressed Too Much</a> - die sichtbaren Artefakte, die bedeuten, dass ein JPEG ueberkomprimiert wurde (Banding, Blocking, Mosquito-Noise) und wie man sie erkennt.</li>
+        <li><a href="/guides/when-to-compress-vs-convert-an-image.html">When to Compress vs Convert an Image</a> - ob die richtige Operation "dieses JPEG kleiner machen" oder "dies in ein anderes Format konvertieren" ist - sie sind verschiedene Tools.</li>
+        <li><a href="/guides/free-online-tools-that-work-without-uploading-files.html">Free Online Tools That Work Without Uploading Files</a> - die breitere Datenschutz-erste Tool-Auswahl auf dieser Seite.</li>
+    </ul>
+</div>

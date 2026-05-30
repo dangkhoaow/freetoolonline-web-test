@@ -1,0 +1,93 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Teste de tela online vs app: qual e mais preciso, e quando cada um vence</b></h1>
+    <p><em>Ultima revisao 2026-05-05. Um <a href="/device-test-tools/lcd-test.html">teste de tela</a> baseado em navegador e um app nativo de teste de tela diagnosticam o mesmo painel, mas o observam atraves de pilhas diferentes. A versao do navegador cobre as falhas mais comuns (pixels mortos, uniformidade de cor, vazamento de luz de fundo) em dois minutos sem instalacao. Um app nativo alcanca sinais mais profundos (rampas de taxa de atualizacao, cor de 10 bits, transferencia HDR, gerenciamento de cor ICC) que o navegador nao pode ler diretamente. Este guia nomeia o que cada um pode ver, o que cada um nao pode, e qual abrir primeiro para o sintoma a sua frente.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Resposta em 30 segundos.</b> Se o sintoma e visivel em tela cheia sobre uma cor solida (um ponto escuro, um ponto brilhante, uma area com o tom errado, um canto que brilha em um campo preto), o <a href="/device-test-tools/lcd-test.html">teste de tela</a> do navegador e suficiente - ele varre vermelho, verde, azul, branco, preto e amarelo em resolucao nativa e captura todo defeito de painel que um app nativo capturaria nos mesmos padroes. Se o sintoma e sobre taxa de atualizacao, gerenciamento de cor, ativacao de HDR ou deriva de perfil ICC, instale um app nativo: esses sinais sao abstraidos pelo navegador e nao sao expostos a paginas web.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>O que um teste de tela no navegador pode fazer</b></h2>
+    <p>Abra a pagina, clique em uma cor, permita que o navegador entre em tela cheia. O navegador entao pede ao sistema operacional que lhe de o painel inteiro - cada pixel - e pinta uma cor solida em toda a extensao. Da perspectiva do painel, isso e identico a mesma cor desenhada por um app nativo. Um subpixel morto que nao se acende, um subpixel travado bloqueado em um canal, um gradiente de uniformidade de cor pelo campo, vazamento de luz de fundo em uma tela preta, retencao de imagem deixada por um padrao estatico anterior - o navegador os mostra com a mesma fidelidade que um app nativo, porque tem toda a area de saida do painel em resolucao plena.</p>
+    <p>O <a href="/device-test-tools/lcd-test.html">teste de pixel morto no navegador</a> deste site usa seis cores diagnosticas (vermelho, verde, azul, branco, preto, amarelo). Pixels mortos aparecem em todas as cores. Pixels travados aparecem nas cores que NAO sao aquela em que o subpixel esta bloqueado (um pixel travado em vermelho e invisivel no vermelho e visivel em verde / azul / preto). O vazamento de luz de fundo aparece no preto; a deriva de gradiente aparece no branco. Dois minutos por painel, sem instalar nada.</p>
+
+    <h2 class="text-uppercase"><b>Onde o caminho no navegador para: sinais que nao tem permissao de ler</b></h2>
+    <p>O navegador abstrai deliberadamente varios sinais do display para que uma pagina web nao possa fazer fingerprint do hardware do usuario. Essa abstracao tambem e o motivo pelo qual um teste de tela no navegador nao os ve.</p>
+    <ul>
+        <li><b>Rampas de taxa de atualizacao.</b> O navegador nao pode dizer com confianca se o painel esta rodando a 60 Hz, 120 Hz ou 144 Hz, e nao pode varrer por elas para encontrar um limiar de tremor. Um app nativo conversa diretamente com o driver da GPU e pode mudar a taxa de atualizacao, depois observar perda de imagem ou tremor.</li>
+        <li><b>Sinal 10 bits / HDR.</b> A maioria dos navegadores renderiza para um canvas de 8 bits por canal mesmo em um painel de 10 bits; funcoes de transferencia HDR (PQ, HLG) nao sao expostas ao CSS padrao. Um app nativo pode pedir uma superficie de 10 bits / HDR ao SO e validar banding ou pico de luminancia.</li>
+        <li><b>Sondagem de perfil de cor ICC.</b> O navegador respeita o perfil de cor do SO silenciosamente; nao deixa uma pagina mediar ou substitui-lo. Um app de calibracao le o perfil, aplica patches de teste em valores XYZ conhecidos e reporta delta-E.</li>
+        <li><b>Tempo de resposta / ghosting por overdrive de pixel.</b> Detectar um rastro fantasma de 1-3 ms requer uma medicao de alta velocidade, nao uma tela de cor estatica.</li>
+        <li><b>Diagnostico direto de porta / cabo.</b> O navegador nao pode dizer se a imagem esta chegando ao painel via HDMI 2.0 ou HDMI 2.1; a camada de cabo / EDID esta abaixo da abstracao.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>O que um app nativo de teste de tela adiciona</b></h2>
+    <p>Um app nativo instalado de um fabricante ou loja de plataforma conversa com o driver de display do SO, a pilha de gerenciamento de cor e (para trabalho critico de cor) um colorimetro de hardware. Esse acesso privilegiado permite observar o que um navegador nao pode.</p>
+    <ul>
+        <li><b>Varreduras de taxa de atualizacao</b> em cada modo que o driver da GPU anuncia.</li>
+        <li><b>Validacao de 10 bits e HDR</b> com padroes de teste na tela e (com um colorimetro) pico de nits medido e precisao de EOTF HDR.</li>
+        <li><b>Criacao e validacao de perfil de cor</b> - aplique um patch de teste conhecido, mede com um colorimetro, escreve um perfil ICC corrigido.</li>
+        <li><b>Relatorios de tempo de resposta / overshoot</b> atraves de padroes fornecidos pelo fabricante e ferramentas de medicao.</li>
+        <li><b>Testes de hardware especificos do fabricante</b> - o autoteste de OSD de um monitor, a leitura de informacoes do painel de um laptop, padroes de estresse de GPU do fabricante da GPU.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>A arvore de decisao de 30 segundos</b></h2>
+    <p>Combine o sintoma com o teste que o captura - rode o mais barato primeiro.</p>
+    <ol>
+        <li><b>Defeito visivel em cor solida</b> (ponto morto, ponto travado brilhante, mancha de cor, brilho de canto) &rarr; abra primeiro o <a href="/device-test-tools/lcd-test.html">teste de tela no navegador</a>. Dois minutos, sem instalar. Se confirmar o defeito, voce tem sua evidencia; o painel precisa de RMA.</li>
+        <li><b>Sintoma sobre tremor ou taxa de atualizacao</b> ("a tela parece tremida", "o cursor deixa rastros", "nao sei se 120 Hz esta realmente engajando") &rarr; instale um app nativo. O navegador nao pode varrer a taxa de atualizacao; voce precisa de acesso direto ao driver da GPU.</li>
+        <li><b>Sintoma sobre HDR ou precisao de cor</b> ("videos HDR ficam apagados", "a foto que editei imprime mais escura", "tons de pele ficam vermelhos so neste monitor") &rarr; app nativo, idealmente com um colorimetro. O navegador nao pode medir sinais de 10 bits ou HDR.</li>
+        <li><b>Sintoma sobre uma porta ou o OSD</b> ("porta USB-C nao funciona", "botao do OSD nao responde") &rarr; nem testes de tela online nem em apps capturam isso. Teste a porta manualmente e leia o guia <a href="/guides/lcd-test-vs-display-test-which-do-you-need.html">teste LCD vs teste de display vs teste de monitor</a> para o caminho certo de escalada.</li>
+        <li><b>Nao sabe por onde comecar</b> &rarr; <a href="/device-test-tools/lcd-test.html">teste de tela no navegador</a>. E o mais barato, o mais rapido, e descarta a falha mais cara (devolucao do painel) antes de qualquer instalacao ou medicao.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>Comparacao de precisao: mesmo painel, mesmo defeito</b></h2>
+    <p>Para defeitos no nivel de painel (morto, travado, uniformidade, vazamento), online e nativo sao igualmente precisos. A superficie diagnostica e o proprio painel - o navegador o preenche da mesma forma que um app nativo, e o olho humano e o instrumento de medicao em ambos os casos. Apps de "teste de tela" de fabricantes para laptops e monitores rodam a mesma varredura vermelho / verde / azul / branco / preto que a versao do navegador roda; o marketing difere, os padroes sao identicos.</p>
+    <p>Para sinais mais profundos (refresh, HDR, perfil de cor), o app nativo e mais preciso por definicao - ele tem acesso a sinais que o navegador nao pode ler. Um teste de tela no navegador que tenta reivindicar validacao de 144 Hz esta vendendo algo que nao pode entregar.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>Sites pagos de "teste de tela" online sao mais precisos que os gratuitos?</summary>
+  <p>Para defeitos no nivel de painel, nao. Todo site que roda um ciclo de cores em tela cheia observa o mesmo painel atraves da mesma pilha de navegador. Sites pagos podem adicionar guias curados, ajudantes de papelada de RMA ou uma UI mais polida, mas o diagnostico subjacente e a mesma varredura vermelho / verde / azul / branco / preto. A precisao esta no olho do leitor, nao no preco do site.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Por que fabricantes de laptops embarcam um app de "teste de tela" embutido se um navegador faz o mesmo trabalho?</summary>
+  <p>Apps de fabricante adicionam tres coisas que um navegador nao pode: uma leitura de informacoes do painel (fabricante, modelo, resolucao nativa, ID do painel) para papelada de garantia; uma rampa rapida de taxa de atualizacao para validar que o painel roda nas especificacoes anunciadas; e um modo de autoteste que contorna o SO, util quando o proprio SO e o suspeito. Para verificacoes puras de pixel morto, a versao do navegador serve.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Um teste de tela no navegador pode perder um defeito que um app nativo encontra?</summary>
+  <p>Para defeitos no nivel de painel em uma cor solida, nao. Para questoes no nivel de sinal (refresh, HDR, ICC), sim - elas nao sao visiveis em uma tela de cor estatica. Um teste limpo de tela no navegador nao descarta um problema de display ou sinal; so descarta um defeito no nivel de painel.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Rodar em tela cheia afeta o resultado do teste?</summary>
+  <p>Sim - tem que ser em tela cheia. Qualquer coisa menor que cobertura total do painel (um teste em janela, uma aba de navegador com chrome ao redor do canvas) deixa bordas e cantos sem verificacao, e e onde defeitos de vazamento de luz de fundo e uniformidade de canto normalmente vivem. O <a href="/device-test-tools/lcd-test.html">teste de tela no navegador</a> deste site dispara tela cheia em cada clique de bloco de cor.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Eu rodo o teste do navegador, parece limpo, mas a tela ainda parece "estranha". E agora?</summary>
+  <p>Dois caminhos. (1) Se o sintoma e sobre cor - tons de pele parecem errados, edicoes de foto imprimem mais escuras do que parecem, pretos parecem cinza em cenas escuras - o problema e gerenciamento de cor, instale um app nativo de calibracao e idealmente um colorimetro. (2) Se o sintoma e sobre movimento ou tremor - rastros de cursor, juddering, incerteza de taxa de atualizacao - o problema e sinal, instale um app nativo de teste de tela do fabricante ou de terceiro. Leia <a href="/guides/lcd-test-vs-display-test-which-do-you-need.html">teste LCD vs display vs monitor</a> para o caminho de escalada mais amplo.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Relacionados</b></h2>
+    <ul>
+        <li><a href="/device-test-tools/lcd-test.html">Teste LCD / de Pixel Morto</a> - a varredura de cores em tela cheia no navegador referenciada ao longo deste guia.</li>
+        <li><a href="/guides/lcd-test-vs-display-test-which-do-you-need.html">Teste LCD vs teste de display vs teste de monitor</a> - qual dos tres escopos diagnosticos combina com seu sintoma.</li>
+        <li><a href="/guides/lcd-test-what-it-checks.html">O que um teste LCD realmente verifica</a> - passo a passo por padrao do diagnostico no nivel de painel.</li>
+        <li><a href="/guides/dead-pixel-testing-guide.html">Guia de teste de pixel morto</a> - taxonomia de defeitos morto vs travado vs uniformidade.</li>
+        <li><a href="/guides/how-to-test-for-dead-pixels-before-returning-a-monitor.html">Como testar pixels mortos antes de devolver um monitor</a> - fluxo de evidencia para garantia.</li>
+        <li><a href="/guides/device-test-checklist-for-remote-work.html">Checklist de teste de dispositivo para trabalho remoto</a> - cadencia mais ampla de tela + camera + microfone + teclado.</li>
+    </ul>
+</div>

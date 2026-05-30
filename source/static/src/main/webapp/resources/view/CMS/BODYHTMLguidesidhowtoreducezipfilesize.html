@@ -1,0 +1,61 @@
+<article class="guide-body w3-container w3-padding-large">
+  <h1>Cara Mengurangi Ukuran File ZIP</h1>
+  <p class="lead">Kejutan paling umum saat mengompres folder adalah <code>.zip</code> yang dihasilkan hanya sedikit lebih kecil - kadang beberapa persen lebih besar - daripada aslinya. Itu bukan bug pada alat. ZIP hanya mengecil pada input yang dapat dikompres (teks biasa, log, CSV, JSON, kode sumber, gambar tanpa kompresi), dan sebagian besar file yang orang kompres - foto JPG, video MP4, audio MP3, dan banyak PDF - sudah dikompres oleh codec mereka sendiri, jadi membungkusnya dalam ZIP menambah overhead pengemasan tanpa menghemat ruang. Cara membuat arsip lebih kecil adalah memproses lebih dulu file berat sebelum mengompres, bukan menekan lebih keras pada langkah ZIP.</p>
+  <p class="reviewed">Terakhir ditinjau: 2026-05-15</p>
+  <p class="byline">Ditinjau oleh tim editorial FreetoolOnline</p>
+
+  <table class="quick-facts w3-table-all w3-margin-top w3-margin-bottom">
+    <thead><tr><th>Pertanyaan</th><th>Jawaban singkat</th></tr></thead>
+    <tbody>
+      <tr><td>Apakah ZIP saya akan lebih kecil dari file input?</td><td>Hanya jika input berbasis teks. JPG / MP4 / MP3 / sebagian besar PDF sudah dikompres.</td></tr>
+      <tr><td>Apakah memilih tingkat kompresi lebih tinggi membantu?</td><td>Sedikit (beberapa persen pada arsip berbasis teks). Kompresibilitas input lebih penting daripada penggeser tingkat.</td></tr>
+      <tr><td>Cara nyata mengurangi ukuran ZIP?</td><td>Ubah ukuran / encode ulang media terlebih dahulu, lalu kompres file yang dioptimalkan.</td></tr>
+      <tr><td>Di mana pembuat ZIP di peramban?</td><td><a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a> (gratis, tanpa instal).</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Mengapa sebagian besar ZIP tidak mengecil</h2>
+  <p>Pekerjaan file ZIP adalah dua hal: menggabungkan banyak file ke dalam satu wadah dan (opsional) mengompresnya. Langkah kompresi menggunakan DEFLATE, yang membaca setiap file input mencari pola byte berulang dan menggantinya dengan token lebih pendek. Teks biasa - log, CSV, JSON, kode sumber, format gambar tanpa kompresi seperti BMP atau TIFF tanpa kompresi - mengandung banyak pengulangan, jadi DEFLATE mengecilkannya banyak; pengurangan 50-70% ukuran normal pada arsip berbasis teks. JPG, MP4, MP3, dan sebagian besar PDF sudah melewati kompresor khusus domain (kuantisasi JPEG untuk foto, codec AAC atau MP3 untuk audio, H.264 / H.265 untuk video), jadi aliran byte tampak seperti noise bagi DEFLATE. Hasilnya adalah ZIP hanya menambah overhead wadah (header file, catatan direktori) tanpa menemukan penghematan. Outputnya biasanya 0-5% lebih kecil, kadang 1-2% lebih besar.</p>
+
+  <h2>Alur yang benar-benar mengurangi ukuran</h2>
+  <p>Jika tujuannya adalah "membuat pengiriman ini lebih kecil", pisahkan konten yang dapat dikompres dari konten yang sudah dikompres sebelum Anda mengompres:</p>
+  <ol>
+    <li><b>Identifikasi file berat.</b> Urutkan folder berdasarkan ukuran. Satu atau dua file teratas hampir selalu mewakili 80% dari total, dan biasanya foto, rekaman layar, atau PDF.</li>
+    <li><b>Kurangi file berat secara terpisah.</b> Ubah ukuran foto 4000x3000 menjadi 2000x1500 dengan <a href="/image-tools/resize-image.html">Resize Image</a>; kompres ulang dengan kualitas lebih rendah dengan <a href="/image-tools/compress-image.html">Compress Image</a>; potong video dengan alat video di <a href="/video-tools.html">/video-tools.html</a>; ratakan PDF berat dengan <a href="/pdf-tools/compress-pdf.html">Compress PDF</a>.</li>
+    <li><b>Sekarang kompres file yang dioptimalkan.</b> Buka <a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a>, jatuhkan pengganti (lebih kecil) bersama file yang benar-benar berbasis teks, dan biarkan DEFLATE menangani sisanya.</li>
+  </ol>
+  <p>Hasil akhirnya adalah ZIP yang ukurannya didominasi oleh file media baru yang lebih kecil. Langkah ZIP adalah 5% terakhir, bukan 95% pertama.</p>
+
+  <h2>Bagaimana dengan penggeser tingkat kompresi?</h2>
+  <p>Beberapa alat ZIP menampilkan tingkat (Store / Fast / Normal / Maximum / Ultra). Penggeser ini terutama menukar waktu CPU di sisi pengirim dengan beberapa persen ekstra pengurangan ukuran:</p>
+  <ul>
+    <li><b>Store</b> - tanpa kompresi. Berguna hanya saat kecepatan lebih penting daripada ukuran (folder sangat besar yang diunggah melalui koneksi lambat di mana CPU adalah bottleneck).</li>
+    <li><b>Fast / Normal (DEFLATE default)</b> - pengaturan standar. Keseimbangan terbaik antara waktu build dan ukuran. <i>Gunakan ini kecuali Anda punya alasan untuk tidak.</i></li>
+    <li><b>Maximum / Ultra</b> - waktu CPU lebih lama untuk beberapa persen ekstra pada arsip berbasis teks. Hampir tidak pernah menggerakkan jarum pada arsip yang berisi media.</li>
+  </ul>
+  <p>Jika ZIP Anda tidak mengecil, penggeser tingkat adalah tombol yang salah untuk diputar. Inputnya tidak dapat dikompres, titik - dan Anda butuh langkah pra-pemrosesan di atas.</p>
+
+  <h2>Catatan routing sinonim</h2>
+  <p>Jika Anda mengetik "compress ZIP" alih-alih "cara mengurangi ukuran file ZIP", jawaban yang sama ada di <a href="/guides/compress-zip.html">/guides/compress-zip.html</a> dalam bahasa yang sedikit berbeda - panduan disambiguasi untuk frasa itu. Panduan pendamping di <a href="/guides/how-to-reduce-zip-file-size-online.html">/guides/how-to-reduce-zip-file-size-online.html</a> mencakup kueri yang sama untuk pembaca yang menyertakan "online" dalam pencarian. Kedua rute menghubungkan kembali ke pembuat ZIP di peramban yang sama di <a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a>, jadi klik berikutnya sama terlepas dari frasa yang Anda gunakan.</p>
+
+  <h2>FAQ</h2>
+  <details class="faq-item">
+    <summary>ZIP saya jadi sedikit lebih besar dari folder asli. Apakah ada yang rusak?</summary>
+    <p>Tidak - itu hasil yang diharapkan saat setiap input sudah dikompres (JPG / MP4 / MP3 / sebagian besar PDF). Wadah ZIP menambah catatan direktori kecil per file; DEFLATE tidak menemukan apa pun untuk dikompres; delta bersih dari 0 hingga beberapa persen lebih besar.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Haruskah saya menggunakan 7z atau RAR alih-alih ZIP untuk kemenangan ukuran nyata?</summary>
+    <p>7z dan RAR menggunakan algoritma kompresi lebih kuat (LZMA2, RAR5) dan dapat mengecilkan media yang sudah dikompres lagi 5-10%. Trade-offnya adalah jangkauan: tidak semua penerima punya pembuka 7z / RAR, dan banyak pemindai lampiran webmail atau widget unggah menolak apa pun selain <code>.zip</code>. ZIP default ke kompatibilitas maksimum; beralih hanya jika Anda mengontrol kedua ujung pengiriman.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Bisakah saya hanya menaikkan tingkat kompresi ke "Ultra" dan melewati pra-pemrosesan?</summary>
+    <p>Anda bisa mencoba, tapi hasilnya biasanya mengecewakan. Pada folder foto dan satu video, "Ultra" mungkin mencukur 1-2% ekstra dengan biaya waktu build yang panjang. Mengubah ukuran foto dan memotong video terlebih dahulu akan mencukur 70-80%. Kompresibilitas input menetapkan plafon; penggeser tingkat hanya memutuskan seberapa dekat Anda mencapainya.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Apakah melindungi ZIP dengan kata sandi mengubah ukurannya?</summary>
+    <p>Perlindungan kata sandi (kata sandi buka + enkripsi AES) menambah overhead tetap kecil - biasanya beberapa ratus byte - tetapi tidak mengubah seberapa baik konten dikompres. Ukuran didominasi oleh input, bukan enkripsi.</p>
+  </details>
+
+  <h2>Inti satu baris</h2>
+  <p>Untuk mengurangi ukuran file ZIP: jangan mulai di langkah ZIP. Urutkan folder berdasarkan ukuran, kecilkan file media berat secara terpisah (ubah ukuran, encode ulang), lalu kompres file yang dioptimalkan pada tingkat kompresi default. ZIP adalah paket; kemenangan ukuran terjadi di hulu darinya.</p>
+</article>
