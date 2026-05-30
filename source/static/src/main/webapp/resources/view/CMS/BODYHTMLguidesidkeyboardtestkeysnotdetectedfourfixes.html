@@ -1,0 +1,91 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Tombol Tidak Terdeteksi Di Tes Keyboard: 4 Perbaikan Yang Benar-Benar Bekerja</b></h1>
+    <p><em>Ditinjau terakhir 2026-05-03. Jika <a href="/device-test-tools/keyboard-test.html">tes keyboard</a> browser terbuka tetapi beberapa tombol tidak pernah menyala saat Anda menekan, keyboard jarang rusak - salah satu dari empat penyebab di bawah jauh lebih mungkin. Telusuri daftar dari atas ke bawah; setiap perbaikan memakan waktu kurang dari satu menit.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Jawaban 30 detik.</b> Tombol yang ditekan tetapi tidak pernah menyala di tes keyboard browser hampir selalu berarti halaman kehilangan fokus, OS mengirim scancode yang berbeda dari yang diharapkan tes, filter aksesibilitas mencegat peristiwa, atau tombol terkunci di lapisan hardware - bukan hardware rusak. Langkah 1: klik di mana saja di halaman tes keyboard agar memiliki fokus tab. Langkah 2: konfirmasi layout keyboard OS Anda cocok dengan label fisik (Privasi dan Keamanan &rarr; Keyboard / Wilayah). Langkah 3: matikan Sticky Keys, Filter Keys, dan driver keyboard virtual yang mungkin menyerap peristiwa. Langkah 4: periksa toggle baris Fn, LED Insert/ScrollLock, atau masalah koneksi USB. Sebagian besar laporan "tombol tidak terdeteksi" terselesaikan dalam langkah 1 atau langkah 3.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Perbaikan 1 - Halaman kehilangan fokus keyboard</b></h2>
+    <p>Browser merutekan peristiwa tombol ke elemen mana pun yang memiliki fokus. <a href="/device-test-tools/keyboard-test.html">Tes keyboard</a> menggambar layout di layar, tetapi kecuali Anda klik di halaman terlebih dahulu, ketukan tombol Anda pergi ke bar alamat, popup ekstensi, atau tab berbeda. Gejala: setiap tombol terlihat bekerja (OS menangkapnya), tetapi tidak ada yang menyala di tes.</p>
+    <p><b>Klik di tes:</b> klik area kosong di halaman tes keyboard sekali. Halaman sekarang memiliki perutean ketukan; tekan tombol dan akan menyala segera.</p>
+    <p><b>Tutup popup dan overlay:</b> prompt autofill, ekstensi pengelola password, dan alat screenshot (Snagit, Greenshot) terkadang menangkap hotkey global. Tutup setiap popup, lalu tes ulang.</p>
+    <p><b>Pindah tab dan kembali:</b> jika klien rapat (Zoom, Teams) adalah jendela foreground sebelumnya, mungkin masih memegang ketukan global. Pindah tab dan kembali ke tes keyboard untuk memaksa browser mengklaim ulang fokus.</p>
+    <p>Jika klik kembali ke halaman membuat tombol menyala, fokus adalah penyebabnya. Lanjut hanya jika penyalaan masih gagal.</p>
+
+    <h2 class="text-uppercase"><b>Perbaikan 2 - Layout atau bahasa keyboard OS tidak cocok</b></h2>
+    <p>Tes keyboard menggunakan JavaScript <code>KeyboardEvent.code</code> untuk mengidentifikasi tombol fisik (misal <code>KeyA</code>, <code>Quote</code>). Ketika layout keyboard OS tidak cocok dengan label yang dicetak pada tombol, tekanan terdaftar, tetapi mendarat pada posisi layar yang berbeda - yang terlihat seperti "tombol tidak melakukan apa-apa" karena penyalaan muncul di sel berbeda.</p>
+    <p><b>macOS:</b> <i>Pengaturan Sistem &rarr; Keyboard &rarr; Sumber Input</i>. Konfirmasi layout aktif cocok dengan keyboard fisik Anda (US, UK, Telex Vietnam, dst). Jika baru-baru ini ganti bahasa, ganti kembali; tes akan menyalakan sel yang benar.</p>
+    <p><b>Windows 11 / 10:</b> <i>Pengaturan &rarr; Waktu dan bahasa &rarr; Bahasa dan wilayah</i>. Periksa metode input aktif per bahasa. Tekan <kbd>Win</kbd> + <kbd>Space</kbd> untuk siklus layout dan tes ulang.</p>
+    <p><b>Linux (X11 / Wayland):</b> jalankan <code>setxkbmap -query</code> untuk melihat layout aktif; <code>setxkbmap us</code> reset ke layout US untuk testing.</p>
+    <p><b>Tes cepat:</b> tekan tombol Q di kiri atas dan konfirmasi "Q" menyala di layout tes. Jika menyalakan "A" sebagai gantinya, OS pikir keyboard adalah AZERTY (Prancis). Ganti layout OS, jangan beri label ulang tombol.</p>
+
+    <h2 class="text-uppercase"><b>Perbaikan 3 - Filter aksesibilitas mencegat peristiwa</b></h2>
+    <p>OS modern dikirim dengan helper aksesibilitas (Sticky Keys, Filter Keys, Slow Keys, Mouse Keys) yang menyerap atau menunda ketukan sebelum browser melihatnya. Sticky Keys mengubah input chord (<kbd>Ctrl</kbd> + <kbd>C</kbd>) menjadi input urutan (<kbd>Ctrl</kbd>, lalu <kbd>C</kbd>); Filter Keys mengabaikan tekanan singkat untuk membantu pengguna dengan tremor tangan; keduanya juga mempengaruhi tes keyboard tekan cepat.</p>
+    <p><b>Windows:</b> <i>Pengaturan &rarr; Aksesibilitas &rarr; Keyboard</i>. Matikan <i>Sticky Keys</i>, <i>Filter Keys</i>, dan <i>Toggle Keys</i>. Tes ulang.</p>
+    <p><b>macOS:</b> <i>Pengaturan Sistem &rarr; Aksesibilitas &rarr; Keyboard</i>. Matikan <i>Sticky Keys</i> dan <i>Slow Keys</i>. Banyak laptop secara tidak sengaja mengaktifkan Slow Keys ketika pintasan bantuan pengguna (5x Shift) terpicu.</p>
+    <p><b>Driver keyboard virtual:</b> beberapa keyboard dikirim dengan software remapping mereka sendiri (Logitech G HUB, Razer Synapse, ASUS Armoury Crate, Karabiner-Elements di macOS). Ini bisa mencegat peristiwa untuk makro. Keluar dari aplikasi helper dan tes ulang; jika tombol sekarang menyala, helper memiliki remap yang menunjuk ke tempat lain.</p>
+    <p><b>Ekstensi browser:</b> Vimium, Surfingkeys, dan Tridactyl mengikat ulang tombol di tingkat halaman. Nonaktifkan ekstensi browser atau gunakan profil tamu.</p>
+
+    <h2 class="text-uppercase"><b>Perbaikan 4 - Kunci atau koneksi tingkat hardware</b></h2>
+    <p>Lapisan terakhir adalah keyboard itu sendiri. Beberapa alasan hardware umum membuat tombol tidak pernah mencapai OS:</p>
+    <p><b>Toggle baris Fn:</b> laptop bisnis (ThinkPad, Latitude, EliteBook) dikirim dengan Fn-Lock yang mengganti baris F1-F12 antara tombol media (default) dan tombol fungsi. Tekan <kbd>Fn</kbd> + <kbd>Esc</kbd> (kebanyakan ThinkPad) atau <kbd>Fn</kbd> + <kbd>Shift</kbd> untuk toggle. Jika tombol F tidak pernah menyala, ini biasanya alasannya.</p>
+    <p><b>Tombol kunci (Caps / Num / Scroll):</b> LED di keyboard memberi tahu apakah toggle kunci aktif. Tes: nyalakan Num Lock ON dan tekan numpad - digit akan menyala. Jika tidak, numpad keyboard terhubung ke kontroler USB terpisah yang mungkin tidak terdaftar.</p>
+    <p><b>Koneksi USB / Bluetooth:</b> keyboard eksternal di kabel goyah dapat menjatuhkan ketukan individu. Pasang ulang kabel di port berbeda; untuk Bluetooth, pasangkan ulang. Keyboard nirkabel dengan baterai hampir kosong sering menampilkan gejala persis ini.</p>
+    <p><b>BIOS HID nonaktif:</b> BIOS bisnis Lenovo, Dell, dan HP mengekspos toggle "Dukungan keyboard USB" yang mengontrol apakah keyboard bekerja di lingkungan pra-OS dan apakah semua tombol diteruskan ke OS. Reboot, masuk setup (F1 / F2 / F12), cari <i>Perangkat &rarr; Pengaturan USB</i> atau <i>Keamanan &rarr; Akses Port I/O &rarr; USB</i>, konfirmasi diaktifkan.</p>
+
+    <h2 class="text-uppercase"><b>Masih ada tombol hilang? - alur diagnostik</b></h2>
+    <ol>
+        <li><b>Coba situs kedua.</b> Buka <a href="https://en.key-test.ru/" rel="nofollow noopener" target="_blank">en.key-test.ru</a> dalam sesi browser yang sama. Jika situs itu juga melewatkan tombol yang sama, penyebabnya di hulu halaman tes (fokus, layout, aksesibilitas, atau hardware).</li>
+        <li><b>Coba browser kedua.</b> Jika Chrome melewatkan tombol tetapi Firefox menangkapnya, penyebabnya di tingkat browser (ekstensi, profil, atau listener peristiwa basi). Gunakan profil tamu untuk konfirmasi.</li>
+        <li><b>Coba akun pengguna kedua.</b> Beralih ke pengguna OS yang baru dibuat dan buka tes keyboard. Jika berhasil di sana, penyebabnya di profil pengguna Anda (remap, flag aksesibilitas, atau driver keyboard virtual terdaftar untuk pengguna Anda).</li>
+        <li><b>Coba mesin kedua.</b> Jika ponsel atau tablet menunjukkan tes keyboard bekerja segera dengan keyboard Bluetooth yang dipasangkan, mesin yang gagal memiliki masalah hardware atau driver. Buka Device Manager (Windows) atau System Information (macOS) dan cari keyboard di bawah <i>Human Interface Devices</i>.</li>
+    </ol>
+    <p>Setiap pass menelusuri ketukan dari tempat browser menangkapnya kembali ke saklar di bawah jari Anda - fokus terlebih dahulu, lalu layout, lalu filter aksesibilitas, lalu keyboard itu sendiri - dan sebagian besar laporan tombol hilang terselesaikan dalam langkah satu (fokus) atau langkah tiga (filter aksesibilitas yang Anda lupa aktif). Jika tombol masih tidak menyala setelah langkah empat, saklar itu sendiri yang dicurigai; ganti ke keyboard yang dikenal baik sebelum mengasumsikan mesin rusak.</p>
+
+    <h2 class="text-uppercase"><b>Bagaimana dengan tombol modifier (Shift, Ctrl, Alt, Cmd, Win)?</b></h2>
+    <p>Tombol modifier adalah tombol "hilang" paling umum dalam tes keyboard cepat karena mereka hanya menyala saat Anda juga menekan non-modifier dalam chord. Halaman tes keyboard menangani setiap modifier sebagai tekanan mandiri: tahan <kbd>Shift</kbd> (kiri atau kanan) dan sel terkait di tes akan menyala - tidak perlu tombol lain. Jika hanya satu sisi menyala, saklar sisi lain mungkin memiliki kontak macet - tekan kedua sisi dan cari perilaku asimetris.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>Mengapa tombol yang sama kadang menyala dan kadang tidak?</summary>
+  <p>Deteksi tidak konsisten biasanya masalah hardware - kotoran atau aus di bawah keycap. Pop keycap, tiup debu dengan udara terkompresi, dan tes ulang. Jika masalah berlanjut di pengguna OS lain (Diagnostik Fix 3), hardware keyboard memerlukan layanan garansi.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Apakah Caps Lock mempengaruhi hasil tes keyboard?</summary>
+  <p>Tidak. Tes membaca <code>KeyboardEvent.code</code>, yang sama terlepas dari status shift / caps. Jika A dan a keduanya menyalakan sel A, tes bekerja dengan benar.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Mengapa tombol multimedia (Play, Pause, Volume) tidak menyala?</summary>
+  <p>Sebagian besar tombol multimedia tingkat OS diserap oleh OS sebelum browser melihatnya. Tes keyboard tidak dapat menyalakannya secara andal. Ketiadaan mereka tidak berarti tombol rusak - tekan satu dan periksa volume OS merespons.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Saya melihat tombol yang benar menyala di tes, tetapi karakter yang salah diketik di kolom teks. Apakah keyboard rusak?</summary>
+  <p>Tidak - hardware keyboard baik-baik saja. Layout keyboard OS Anda diatur ke bahasa berbeda (Perbaikan 2). Tes mengkonfirmasi tombol fisik bekerja; layout memutuskan karakter apa yang dihasilkan.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Terkait</b></h2>
+    <ul>
+        <li><a href="/device-test-tools/keyboard-test.html">Keyboard test</a> - alat itu sendiri; jalankan setelah setiap perbaikan.</li>
+        <li><a href="/guides/how-to-test-a-keyboard-online-step-by-step.html">How to test a keyboard online, step by step</a> - panduan 60 detik yang mencakup setiap tombol.</li>
+        <li><a href="/guides/keyboard-tester-online-rollover-vs-anti-ghosting.html">Keyboard tester online: rollover vs anti-ghosting</a> - panduan konsep mengapa beberapa chord melewatkan tombol.</li>
+        <li><a href="/guides/camera-test-shows-black-screen-four-fixes.html">Camera test black screen: 4 fixes</a> - model empat lapis yang sama diterapkan ke input kamera.</li>
+        <li><a href="/guides/microphone-test-no-sound-four-fixes.html">Microphone test no sound: 4 fixes</a> - model empat lapis yang sama diterapkan ke input mikrofon.</li>
+        <li><a href="/guides/device-test-checklist-for-remote-work.html">Device test checklist for remote work</a> - irama mingguan yang menangkap kegagalan baru sebelum panggilan.</li>
+        <li><a href="/device-test-tools.html">Device test tools hub</a> - keyboard, kamera, mikrofon, LCD, dan lebih banyak di bawah satu kategori.</li>
+    </ul>
+</div>

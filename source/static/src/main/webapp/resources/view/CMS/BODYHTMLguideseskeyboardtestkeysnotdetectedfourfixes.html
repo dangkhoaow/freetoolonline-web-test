@@ -1,0 +1,91 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Teclas No Detectadas en la Prueba de Teclado: 4 Soluciones Que Realmente Funcionan</b></h1>
+    <p><em>Ultima revision 2026-05-03. Si la <a href="/device-test-tools/keyboard-test.html">prueba de teclado</a> en tu navegador abre pero algunas teclas nunca se resaltan al presionarlas, el teclado raramente esta roto - una de las cuatro causas siguientes es mucho mas probable. Recorre la lista de arriba abajo; cada solucion lleva menos de un minuto.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Respuesta en 30 segundos.</b> Las teclas que se presionan pero nunca se resaltan en una prueba de teclado del navegador casi siempre significan que la pagina perdio el foco, el SO envio un scancode diferente al que la prueba espera, un filtro de accesibilidad esta interceptando eventos, o la tecla esta bloqueada en la capa de hardware - no hardware defectuoso. Paso 1: haz clic en cualquier parte de la pagina de prueba para que tenga foco de tab. Paso 2: confirma que la distribucion de teclado del SO coincide con las etiquetas fisicas (Privacidad y Seguridad &rarr; Teclado / Region). Paso 3: desactiva Sticky Keys, Filter Keys, y cualquier driver de teclado virtual que pueda absorber eventos. Paso 4: verifica un toggle de fila Fn, un LED Insert/ScrollLock, o un problema de conexion USB. La mayoria de los reportes de "tecla no detectada" se resuelven en el paso 1 o el paso 3.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Solucion 1 - La pagina perdio el foco de teclado</b></h2>
+    <p>Los navegadores enrutan eventos de tecla al elemento que tenga foco. La <a href="/device-test-tools/keyboard-test.html">prueba de teclado</a> dibuja un layout en pantalla, pero a menos que hagas clic en la pagina primero, tus pulsaciones van a la barra de direcciones, un popup de extension, o una pestana diferente. El sintoma: cada tecla parece funcionar (el SO la captura), pero nada se resalta en la prueba.</p>
+    <p><b>Haz clic en la prueba:</b> haz clic en cualquier area vacia de la pagina de prueba de teclado una vez. La pagina ahora posee el enrutamiento de teclas; presiona una tecla y deberia resaltarse inmediatamente.</p>
+    <p><b>Cierra popups y overlays:</b> los prompts de autofill, las extensiones de gestor de contrasenas, y las herramientas de screenshot (Snagit, Greenshot) a veces capturan hotkeys globales. Cierra cada popup, luego vuelve a probar.</p>
+    <p><b>Cambia de pestana y vuelve:</b> si un cliente de reunion (Zoom, Teams) era la ventana en primer plano anterior, puede seguir reteniendo pulsaciones globales. Cambia pestanas y de vuelta a la prueba de teclado para forzar al navegador a reclamar el foco.</p>
+    <p>Si hacer clic de vuelta en la pagina hace que las teclas se resalten, el foco era la causa. Avanza solo si el resaltado sigue fallando.</p>
+
+    <h2 class="text-uppercase"><b>Solucion 2 - Distribucion o idioma del teclado del SO no coinciden</b></h2>
+    <p>La prueba de teclado usa el JavaScript <code>KeyboardEvent.code</code> para identificar la tecla fisica (ej. <code>KeyA</code>, <code>Quote</code>). Cuando la distribucion del teclado de tu SO no coincide con las etiquetas impresas en las teclas, la pulsacion se registra, pero aterriza en una posicion en pantalla diferente - lo que parece "la tecla no hizo nada" porque el resaltado aparece en una celda diferente.</p>
+    <p><b>macOS:</b> <i>Ajustes del Sistema &rarr; Teclado &rarr; Fuentes de entrada</i>. Confirma que la distribucion activa coincide con tu teclado fisico (US, UK, Vietnamita Telex, etc.). Si cambiaste de idioma recientemente, cambia de vuelta; la prueba deberia resaltar la celda correcta.</p>
+    <p><b>Windows 11 / 10:</b> <i>Configuracion &rarr; Hora e idioma &rarr; Idioma y region</i>. Verifica el metodo de entrada activo por idioma. Presiona <kbd>Win</kbd> + <kbd>Espacio</kbd> para ciclar entre distribuciones y vuelve a probar.</p>
+    <p><b>Linux (X11 / Wayland):</b> ejecuta <code>setxkbmap -query</code> para ver la distribucion activa; <code>setxkbmap us</code> resetea a una distribucion US para pruebas.</p>
+    <p><b>Prueba rapida:</b> presiona la tecla Q arriba a la izquierda y confirma que "Q" se resalta en el layout de prueba. Si se resalta "A" en cambio, tu SO piensa que el teclado es AZERTY (frances). Cambia la distribucion del SO, no reetiquetes las teclas.</p>
+
+    <h2 class="text-uppercase"><b>Solucion 3 - Filtro de accesibilidad esta interceptando eventos</b></h2>
+    <p>Los SO modernos vienen con asistentes de accesibilidad (Sticky Keys, Filter Keys, Slow Keys, Mouse Keys) que absorben o retrasan pulsaciones antes de que el navegador las vea. Sticky Keys convierte la entrada de acorde (<kbd>Ctrl</kbd> + <kbd>C</kbd>) en entrada de secuencia (<kbd>Ctrl</kbd>, luego <kbd>C</kbd>); Filter Keys ignora pulsaciones breves para ayudar a usuarios con temblores en las manos; ambos tambien afectan a una prueba de teclado de pulsacion rapida.</p>
+    <p><b>Windows:</b> <i>Configuracion &rarr; Accesibilidad &rarr; Teclado</i>. Desactiva <i>Sticky Keys</i>, <i>Filter Keys</i>, y <i>Toggle Keys</i>. Vuelve a probar.</p>
+    <p><b>macOS:</b> <i>Ajustes del Sistema &rarr; Accesibilidad &rarr; Teclado</i>. Desactiva <i>Sticky Keys</i> y <i>Slow Keys</i>. Muchos portatiles habilitan Slow Keys accidentalmente cuando el atajo de ayuda al usuario (5x Shift) se dispara.</p>
+    <p><b>Drivers de teclado virtual:</b> algunos teclados vienen con su propio software de remapeo (Logitech G HUB, Razer Synapse, ASUS Armoury Crate, Karabiner-Elements en macOS). Estos pueden interceptar eventos para macros. Sal de la app auxiliar y vuelve a probar; si las teclas ahora se resaltan, el auxiliar tenia un remap que apuntaba a otro lugar.</p>
+    <p><b>Extensiones de navegador:</b> Vimium, Surfingkeys, y Tridactyl rebind teclas a nivel de pagina. Desactiva extensiones del navegador o usa un perfil de invitado.</p>
+
+    <h2 class="text-uppercase"><b>Solucion 4 - Bloqueo o conexion a nivel de hardware</b></h2>
+    <p>La ultima capa es el propio teclado. Algunas razones de hardware comunes causan que las teclas nunca lleguen al SO:</p>
+    <p><b>Toggle de fila Fn:</b> portatiles empresariales (ThinkPad, Latitude, EliteBook) vienen con un Fn-Lock que cambia la fila F1-F12 entre teclas multimedia (por defecto) y teclas de funcion. Presiona <kbd>Fn</kbd> + <kbd>Esc</kbd> (la mayoria de ThinkPads) o <kbd>Fn</kbd> + <kbd>Shift</kbd> para alternar. Si las teclas F nunca se resaltan, esto es usualmente por que.</p>
+    <p><b>Teclas de bloqueo (Caps / Num / Scroll):</b> el LED en el teclado te dice si un toggle de bloqueo esta activado. Prueba: enciende Num Lock y presiona el numpad - los digitos deberian resaltarse. Si no lo hacen, el numpad del teclado esta conectado a un controlador USB separado que puede no estar enumerado.</p>
+    <p><b>Conexion USB / Bluetooth:</b> teclados externos en un cable inestable pueden perder pulsaciones individuales. Vuelve a meter el cable en un puerto diferente; para Bluetooth, vuelve a emparejar. Un teclado inalambrico con bateria casi vacia a menudo presenta este sintoma exacto.</p>
+    <p><b>HID deshabilitado en BIOS:</b> BIOS empresarial Lenovo, Dell, y HP exponen un toggle "Soporte de teclado USB" que controla si el teclado funciona en entornos pre-SO y si todas las teclas se envian al SO. Reinicia, entra en la configuracion (F1 / F2 / F12), busca <i>Dispositivos &rarr; Configuracion USB</i> o <i>Seguridad &rarr; Acceso a puerto I/O &rarr; USB</i>, confirma habilitado.</p>
+
+    <h2 class="text-uppercase"><b>Aun faltan algunas teclas? - el flujo de diagnostico</b></h2>
+    <ol>
+        <li><b>Prueba un segundo sitio.</b> Abre <a href="https://en.key-test.ru/" rel="nofollow noopener" target="_blank">en.key-test.ru</a> en la misma sesion del navegador. Si ese sitio tambien falla las mismas teclas, la causa esta aguas arriba de la pagina de prueba (foco, distribucion, accesibilidad, o hardware).</li>
+        <li><b>Prueba un segundo navegador.</b> Si Chrome falla teclas pero Firefox las captura, la causa es a nivel de navegador (extension, perfil, o un listener de evento obsoleto). Usa un perfil de invitado para confirmar.</li>
+        <li><b>Prueba una segunda cuenta de usuario.</b> Cambia a un usuario SO recien creado y abre la prueba de teclado. Si funciona alli, la causa esta en tu perfil de usuario (un remap, un flag de accesibilidad, o un driver de teclado virtual registrado para tu usuario).</li>
+        <li><b>Prueba una segunda maquina.</b> Si un telefono o tablet muestra la prueba de teclado funcionando inmediatamente con un teclado Bluetooth emparejado, la maquina que falla tiene un problema de hardware o driver. Abre el Administrador de Dispositivos (Windows) o Informacion del Sistema (macOS) y busca el teclado bajo <i>Dispositivos de Interfaz Humana</i>.</li>
+    </ol>
+    <p>Cada pasada recorre la pulsacion desde donde el navegador la captura hacia atras hasta el interruptor bajo tu dedo - foco primero, luego distribucion, luego filtros de accesibilidad, luego el teclado en si - y la mayoria de los reportes de teclas faltantes se resuelven en el paso uno (foco) o en el paso tres (un filtro de accesibilidad que olvidaste que estaba activado). Si una tecla aun no se resalta despues del paso cuatro, el interruptor en si es el sospechoso; cambia a un teclado conocido como bueno antes de asumir que la maquina esta rota.</p>
+
+    <h2 class="text-uppercase"><b>Que hay sobre las teclas modificadoras (Shift, Ctrl, Alt, Cmd, Win)?</b></h2>
+    <p>Las teclas modificadoras son las teclas "faltantes" mas comunes en una prueba rapida de teclado porque solo se resaltan cuando tambien presionas un no-modificador en acorde. La pagina de prueba de teclado maneja cada modificador como una pulsacion autonoma: manten <kbd>Shift</kbd> (izquierdo o derecho) y la celda correspondiente en la prueba deberia resaltarse - sin necesidad de otra tecla. Si solo un lado se resalta, el interruptor del otro lado puede tener un contacto atascado - presiona ambos lados y busca comportamiento asimetrico.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>Por que la misma tecla a veces se resalta y a veces no?</summary>
+  <p>La deteccion intermitente es usualmente un problema de hardware - suciedad o desgaste bajo la tapa de la tecla. Saca la keycap, sopla los residuos con aire comprimido, y vuelve a probar. Si el problema persiste en otro usuario SO (Diagnostico Fix 3), el hardware del teclado necesita servicio de garantia.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Caps Lock afecta los resultados de la prueba de teclado?</summary>
+  <p>No. La prueba lee <code>KeyboardEvent.code</code>, que es el mismo independientemente del estado shift / caps. Si A y a iluminan ambas la celda A, la prueba esta funcionando correctamente.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Por que las teclas multimedia (Play, Pause, Volumen) no se resaltan?</summary>
+  <p>La mayoria de las teclas multimedia a nivel del SO son absorbidas por el SO antes de que el navegador las vea. La prueba de teclado no puede resaltarlas de forma fiable. Su ausencia no significa que las teclas esten rotas - presiona una y verifica que el volumen del SO responde.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Veo la tecla correcta resaltarse en la prueba, pero el caracter incorrecto se escribe en un campo de texto. Esta el teclado roto?</summary>
+  <p>No - el hardware del teclado esta bien. La distribucion del teclado de tu SO esta establecida en un idioma diferente (Solucion 2). La prueba confirma que la tecla fisica funciona; la distribucion decide que caracter produce.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Relacionados</b></h2>
+    <ul>
+        <li><a href="/device-test-tools/keyboard-test.html">Keyboard test</a> - la herramienta en si; ejecuta despues de cada solucion.</li>
+        <li><a href="/guides/how-to-test-a-keyboard-online-step-by-step.html">How to test a keyboard online, step by step</a> - el recorrido de 60 segundos que cubre cada tecla.</li>
+        <li><a href="/guides/keyboard-tester-online-rollover-vs-anti-ghosting.html">Keyboard tester online: rollover vs anti-ghosting</a> - la guia conceptual de por que algunos acordes pierden teclas.</li>
+        <li><a href="/guides/camera-test-shows-black-screen-four-fixes.html">Camera test black screen: 4 fixes</a> - el mismo modelo de cuatro capas aplicado a entrada de camara.</li>
+        <li><a href="/guides/microphone-test-no-sound-four-fixes.html">Microphone test no sound: 4 fixes</a> - el mismo modelo de cuatro capas aplicado a entrada de microfono.</li>
+        <li><a href="/guides/device-test-checklist-for-remote-work.html">Device test checklist for remote work</a> - la cadencia semanal que captura nuevos fallos antes de una llamada.</li>
+        <li><a href="/device-test-tools.html">Device test tools hub</a> - teclado, camara, microfono, LCD, y mas bajo una categoria.</li>
+    </ul>
+</div>
