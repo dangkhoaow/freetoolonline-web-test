@@ -1,0 +1,57 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>Timestamp Unix dijelaskan - epoch, ISO-8601, dan zona waktu</b></h1>
+<time itemprop="datePublished" datetime="2026-04-19T08:00:00Z"><b>Diterbitkan 19 April 2026</b></time>
+<hr/>
+
+<p>Setiap log server, baris basis data, dan respons API di internet mengkodekan "kapan sesuatu terjadi" dalam salah satu dari empat format: Unix epoch (detik atau milidetik), ISO&nbsp;8601, atau RFC&nbsp;2822. Jika Anda pernah menempelkan timestamp ke Slack hanya untuk berdebat zona waktu mana yang dipakai, panduan ini untuk Anda. Ini mencakup apa yang sebenarnya dikodekan setiap format, cara mengonversi antar mereka, dan tiga jebakan yang menjebak bahkan pengembang berpengalaman.</p>
+
+<br/><h2 class="text-uppercase"><b>Unix epoch: detik sejak 1970-01-01 UTC</b></h2>
+<p>Timestamp Unix - juga disebut "waktu epoch" - adalah jumlah <b>detik</b> yang telah berlalu sejak 00:00:00 UTC pada 1 Januari 1970. Titik referensi itu sewenang-wenang tetapi universal; setiap sistem turunan Unix (Linux, macOS, Android, iOS) dan hampir setiap bahasa pemrograman melacak waktu secara internal sebagai hitungan dari momen ini.</p>
+<p>Nilai saat ini: <code>1776495426</code> diterjemahkan menjadi 2026-04-18 12:17:06 UTC. Tidak ada zona waktu yang dikodekan dalam angka itu sendiri - selalu UTC - yang merupakan kekuatan (tidak ada ambiguitas saat dua sistem membandingkan timestamp) dan jebakan (apa pun yang mengonversi angka menjadi string yang dapat dibaca manusia harus memilih zona waktu, dan biasanya memilih yang lokal).</p>
+
+<br/><h2 class="text-uppercase"><b>Detik vs milidetik: sumber kebingungan pertama</b></h2>
+<p>JavaScript, Java, dan sebagian besar pustaka standar bahasa modern secara default menggunakan <b>milidetik</b> sejak epoch, bukan detik. Momen yang sama - 2026-04-18 12:17:06 UTC - adalah <code>1776495426</code> dalam detik (10 digit) tetapi <code>1776495426000</code> dalam milidetik (13 digit). Aturan praktis untuk memeriksa kewarasan timestamp yang Anda terima:</p>
+<ul>
+    <li><b>10 digit</b> &rarr; detik (baris perintah Unix, PHP, Python <code>time.time()</code>, Go).</li>
+    <li><b>13 digit</b> &rarr; milidetik (JavaScript <code>Date.now()</code>, Java <code>System.currentTimeMillis()</code>, sebagian besar API JSON).</li>
+    <li><b>16 atau 19 digit</b> &rarr; mikrodetik atau nanodetik (telemetri khusus dan pengaturan waktu ilmiah).</li>
+</ul>
+<p>Nilai detik 10-digit yang ditafsirkan sebagai milidetik dirender sebagai tanggal di tahun 1970 (50+ tahun terlalu awal). Nilai milidetik 13-digit yang ditafsirkan sebagai detik dirender sebagai tanggal ~56.000 M. Kedua kesalahan langsung terlihat begitu timestamp dikonversi - gunakan <a href="/utility-tools/convert-time-in-millisecond-to-date.html">Convert Milliseconds to Date</a> untuk memeriksa kewarasan, atau <a href="/utility-tools/get-time-in-millisecond.html">Get Current Time in Milliseconds</a> untuk membandingkan dengan sekarang.</p>
+
+<br/><h2 class="text-uppercase"><b>ISO 8601: format pertukaran yang mudah dibaca</b></h2>
+<p>ISO 8601 adalah format tanggal-waktu yang dapat dibaca manusia yang juga disetujui mesin. Bentuk kanoniknya terlihat seperti: <code>2026-04-18T12:17:06.520Z</code>. Bagian:</p>
+<ul>
+    <li><b>Tanggal:</b> <code>2026-04-18</code> (YYYY-MM-DD, selalu dalam urutan ini).</li>
+    <li><b>Pemisah:</b> <code>T</code> (huruf T literal antara tanggal dan waktu).</li>
+    <li><b>Waktu:</b> <code>12:17:06.520</code> (HH:MM:SS.sss, 24 jam).</li>
+    <li><b>Zona waktu:</b> <code>Z</code> untuk UTC, atau offset seperti <code>+07:00</code> / <code>-05:30</code> untuk zona lain.</li>
+</ul>
+<p>ISO 8601 tidak ambigu (tidak ada kebingungan tanggal regional seperti 04-18 vs 18-04), dapat diurutkan sebagai string biasa (urutan leksikal cocok dengan urutan kronologis ketika zona waktu sama), dan didukung oleh setiap parser modern. Jika Anda mengontrol API yang Anda bangun, lebih utamakan string ISO 8601 daripada angka epoch Unix mentah - mereka membawa zona waktu secara eksplisit, yang menghilangkan seluruh kelas bug.</p>
+
+<br/><h2 class="text-uppercase"><b>RFC 2822: format email dan HTTP warisan</b></h2>
+<p>RFC 2822 (dan HTTP-date yang hampir identik dari RFC 7231) terlihat seperti <code>Sat, 18 Apr 2026 12:17:06 +0000</code>. Ini adalah format yang akan Anda lihat di header <code>Date:</code> email, header HTTP <code>Last-Modified</code>, dan beberapa API web lama. Dapat dibaca tetapi tidak dapat diurutkan sebagai string biasa (awalan hari minggu memecah urutan leksikal), jadi sistem semakin sering mengembalikan ISO 8601 di samping atau menggantikan RFC 2822. Saat Anda perlu menghasilkan RFC 2822 secara manual, gunakan pustaka daripada membangun string sendiri - nama hari dan singkatan bulan sensitif terhadap locale dan mudah salah.</p>
+
+<br/><h2 class="text-uppercase"><b>UTC vs waktu lokal: akar dari sebagian besar bug timestamp</b></h2>
+<p>Timestamp Unix epoch selalu UTC; string ISO 8601 dapat berupa UTC (<code>Z</code>) atau offset apa pun; RFC 2822 hampir selalu membawa offset. Tetapi ketika program <i>menampilkan</i> timestamp, biasanya dikonversi ke zona waktu lokal mesin yang menampilkan.</p>
+<p>Ini baik-baik saja untuk satu pengguna tetapi menyebabkan kekacauan dalam tiga skenario:</p>
+<ul>
+    <li><b>Berbagi timestamp di chat.</b> "Deploy terjadi pada 14:00" ambigu - 14:00 milik siapa? Tempel nilai ISO 8601 (<code>2026-04-18T14:00:00+07:00</code>) atau sebutkan zona waktu secara eksplisit.</li>
+    <li><b>Log dari beberapa server.</b> Atur setiap server ke UTC. Selalu. Agregator log dan perkakas respons insiden mengasumsikan UTC; mencampur zona waktu di log adalah cara tercepat untuk salah mengaitkan rantai sebab-akibat.</li>
+    <li><b>Jadwal yang menghadap pengguna.</b> Simpan waktu acara dalam UTC (atau zona waktu sumber acara dengan offset eksplisit) dan konversi pada waktu tampilan. Jangan simpan "7pm" tanpa zona waktu; "7pm" dalam sesi satu pengguna mungkin 4pm untuk pengguna lain.</li>
+</ul>
+
+<br/><h2 class="text-uppercase"><b>Tiga jebakan umum (dan cara menangkapnya)</b></h2>
+<p><b>1. Timestamp integer-vs-string di JSON.</b> <code>JSON.parse</code> JavaScript akan dengan setia menghasilkan angka untuk <code>1776495426520</code> - tetapi jika API mengembalikan timestamp yang sama sebagai string <code>&quot;1776495426520&quot;</code>, kode hilir yang melakukan aritmatika padanya akan mengkoersinya secara diam-diam. Selalu periksa tipe sebelum meneruskan ke <code>new Date()</code>.</p>
+<p><b>2. Bulan 0-11 di JavaScript Date.</b> <code>new Date(2026, 3, 18)</code> adalah 18 April 2026, bukan 18 Maret 2026. Bulan diindeks 0 tetapi hari dan tahun diindeks 1. Lebih utamakan konstruktor ISO 8601 (<code>new Date(&quot;2026-04-18&quot;)</code>) yang mengikuti penomoran alami.</p>
+<p><b>3. Transisi DST.</b> Pada malam "maju jam", 2:30 pagi waktu lokal tidak ada; pada malam "mundur jam", 1:30 pagi terjadi dua kali. Jika sistem Anda menyimpan string waktu lokal, momen ini menciptakan timestamp yang mustahil atau ganda. Penyimpanan UTC menghilangkan masalah; pustaka Date seperti Luxon atau date-fns-tz menangani konversi secara eksplisit.</p>
+
+<br/><h2 class="text-uppercase"><b>Alat terkait</b></h2>
+<ul>
+    <li><a href="/utility-tools/convert-time-in-millisecond-to-date.html">Convert Milliseconds to Date</a> - tempelkan timestamp, dapatkan tanggal terformat UTC dan lokal.</li>
+    <li><a href="/utility-tools/get-time-in-millisecond.html">Get Current Time in Milliseconds</a> - pembacaan epoch langsung yang diperbarui setiap detik.</li>
+    <li><a href="/developer-tools/md5-converter.html">MD5 Converter</a> - hash string untuk checksum atau kunci deduplikasi.</li>
+    <li><a href="/developer-tools/json-parser.html">JSON Parser</a> - periksa respons API yang berisi bidang timestamp.</li>
+</ul>
+
+<p><br/><a href="/utility-tools.html">&larr; Kembali ke Utility Tools</a></p>
+</div>

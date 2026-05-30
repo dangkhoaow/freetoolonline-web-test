@@ -1,0 +1,57 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>Timestamp Unix giai thich - epoch, ISO-8601 va mui gio</b></h1>
+<time itemprop="datePublished" datetime="2026-04-19T08:00:00Z"><b>Xuat ban 19 thang 4 nam 2026</b></time>
+<hr/>
+
+<p>Moi log server, hang co so du lieu, va phan hoi API tren internet ma hoa "khi nao chuyen gi xay ra" trong mot trong bon dinh dang: epoch Unix (giay hoac mili giay), ISO&nbsp;8601, hoac RFC&nbsp;2822. Neu ban tung dan timestamp vao Slack roi tranh cai xem no o mui gio nao, huong dan nay danh cho ban. No giai thich tung dinh dang thuc su ma hoa cai gi, cach chuyen doi giua chung, va ba bay thuong gap bat ca nha phat trien co kinh nghiem.</p>
+
+<br/><h2 class="text-uppercase"><b>Epoch Unix: giay tu 1970-01-01 UTC</b></h2>
+<p>Timestamp Unix - cung goi la "thoi gian epoch" - la so <b>giay</b> da troi qua tu 00:00:00 UTC ngay 1 thang 1 nam 1970. Diem tham chieu do tuy y nhung pho quat; moi he thong xuat phat tu Unix (Linux, macOS, Android, iOS) va gan nhu moi ngon ngu lap trinh deu theo doi thoi gian noi bo nhu mot dem tu thoi diem nay.</p>
+<p>Mot gia tri hien tai: <code>1776495426</code> dich ra 2026-04-18 12:17:06 UTC. Khong co mui gio ma hoa trong so - no luon la UTC - dieu nay vua la diem manh (khong co nham lan khi hai he thong so sanh timestamp) vua la cai bay (bat cu cai gi chuyen so thanh chuoi nguoi doc duoc deu phai chon mot mui gio, va thuong chon mui gio dia phuong).</p>
+
+<br/><h2 class="text-uppercase"><b>Giay vs mili giay: nguon nham lan dau tien</b></h2>
+<p>JavaScript, Java va hau het thu vien chuan ngon ngu hien dai mac dinh dung <b>mili giay</b> tu epoch, khong phai giay. Cung khoanh khac do - 2026-04-18 12:17:06 UTC - la <code>1776495426</code> giay (10 chu so) nhung <code>1776495426000</code> mili giay (13 chu so). Quy tac kiem tra nhanh cho timestamp nhan duoc:</p>
+<ul>
+    <li><b>10 chu so</b> &rarr; giay (dong lenh Unix, PHP, Python <code>time.time()</code>, Go).</li>
+    <li><b>13 chu so</b> &rarr; mili giay (JavaScript <code>Date.now()</code>, Java <code>System.currentTimeMillis()</code>, hau het API JSON).</li>
+    <li><b>16 hoac 19 chu so</b> &rarr; micro giay hoac nano giay (telemetry chuyen biet va do thoi gian khoa hoc).</li>
+</ul>
+<p>Gia tri 10 chu so theo giay duoc hieu la mili giay render thanh ngay nam 1970 (som 50+ nam). Gia tri 13 chu so theo mili giay duoc hieu la giay render thanh ngay khoang nam 56,000 SCN. Ca hai loi deu nhin thay ngay khi timestamp duoc chuyen doi - dung <a href="/utility-tools/convert-time-in-millisecond-to-date.html">Convert Milliseconds to Date</a> de kiem tra do hop ly, hoac <a href="/utility-tools/get-time-in-millisecond.html">Get Current Time in Milliseconds</a> de so sanh voi hien tai.</p>
+
+<br/><h2 class="text-uppercase"><b>ISO 8601: dinh dang trao doi de doc</b></h2>
+<p>ISO 8601 la dinh dang ngay-gio doc duoc cho con nguoi ma may moc cung dong y. Dang chinh tac trong giong: <code>2026-04-18T12:17:06.520Z</code>. Cac phan:</p>
+<ul>
+    <li><b>Ngay:</b> <code>2026-04-18</code> (YYYY-MM-DD, luon theo thu tu nay).</li>
+    <li><b>Dau ngan:</b> <code>T</code> (chu T giua ngay va gio).</li>
+    <li><b>Gio:</b> <code>12:17:06.520</code> (HH:MM:SS.sss, 24 gio).</li>
+    <li><b>Mui gio:</b> <code>Z</code> cho UTC, hoac offset nhu <code>+07:00</code> / <code>-05:30</code> cho cac mui khac.</li>
+</ul>
+<p>ISO 8601 ro rang (khong co nham lan ngay theo vung nhu 04-18 vs 18-04), sap xep duoc nhu chuoi don gian (thu tu ky tu khop voi thu tu thoi gian khi mui gio giong nhau), va duoc moi parser hien dai ho tro. Neu ban kiem soat API dang xay dung, hay uu tien chuoi ISO 8601 hon so epoch Unix tho - chung mang mui gio mot cach ro rang, loai bo ca mot lop bug.</p>
+
+<br/><h2 class="text-uppercase"><b>RFC 2822: dinh dang email va HTTP cu</b></h2>
+<p>RFC 2822 (va HTTP-date gan giong tu RFC 7231) trong nhu <code>Sat, 18 Apr 2026 12:17:06 +0000</code>. Day la dinh dang ban se thay trong header <code>Date:</code> cua email, header HTTP <code>Last-Modified</code>, va mot so API web cu hon. No doc duoc nhung khong sap xep duoc nhu chuoi don gian (tien to ngay trong tuan pha vo thu tu ky tu), nen cac he thong ngay cang tra ve ISO 8601 cung hoac thay vi RFC 2822. Khi ban can tao RFC 2822 thu cong, hay dung thu vien chu khong tu xay dung chuoi - ten ngay trong tuan va viet tat thang nhay cam voi locale va de sai.</p>
+
+<br/><h2 class="text-uppercase"><b>UTC vs gio dia phuong: goc cua hau het bug timestamp</b></h2>
+<p>Timestamp epoch Unix luon la UTC; chuoi ISO 8601 co the la UTC (<code>Z</code>) hoac bat ky offset nao; RFC 2822 gan nhu luon mang offset. Nhung khi mot chuong trinh <i>hien</i> timestamp, no thuong chuyen sang mui gio dia phuong cua may dang hien.</p>
+<p>Dieu nay tot cho mot nguoi dung duy nhat nhung gay hon loan trong ba kich ban:</p>
+<ul>
+    <li><b>Chia se timestamp trong chat.</b> "Deploy xay ra luc 14:00" la mo ho - 14:00 cua ai? Dan gia tri ISO 8601 (<code>2026-04-18T14:00:00+07:00</code>) hoac neu ro mui gio.</li>
+    <li><b>Log tu nhieu server.</b> Dat moi server theo UTC. Luon luon. Bo gop log va cong cu phan ung su co gia dinh UTC; tron mui gio trong log la cach nhanh nhat de quy sai chuoi nhan-qua.</li>
+    <li><b>Lich huong toi nguoi dung.</b> Luu thoi gian su kien theo UTC (hoac mui gio nguon cua su kien voi offset ro rang) va chuyen doi luc hien thi. Dung luu "7pm" khong co mui gio; "7pm" trong phien cua mot nguoi dung co the la 4pm voi nguoi khac.</li>
+</ul>
+
+<br/><h2 class="text-uppercase"><b>Ba bay thuong gap (va cach bat chung)</b></h2>
+<p><b>1. Timestamp so nguyen vs chuoi trong JSON.</b> <code>JSON.parse</code> cua JavaScript se tao mot so cho <code>1776495426520</code> - nhung neu API tra cung timestamp do duoi dang chuoi <code>&quot;1776495426520&quot;</code>, bat ky ma downstream nao lam toan tren no se chuyen ngam. Luon kiem tra kieu truoc khi truyen sang <code>new Date()</code>.</p>
+<p><b>2. Thang 0-11 trong JavaScript Date.</b> <code>new Date(2026, 3, 18)</code> la 18 thang 4 nam 2026, khong phai 18 thang 3 nam 2026. Thang dem tu 0 nhung ngay va nam dem tu 1. Uu tien constructor ISO 8601 (<code>new Date(&quot;2026-04-18&quot;)</code>) theo dem tu nhien.</p>
+<p><b>3. Chuyen DST.</b> Vao dem "tien len", 2:30 sang gio dia phuong khong ton tai; vao dem "lui xuong", 1:30 sang xay ra hai lan. Neu he thong cua ban luu chuoi gio dia phuong, nhung khoanh khac do tao ra timestamp khong the hoac trung lap. Luu UTC loai bo van de; cac thu vien Date nhu Luxon hay date-fns-tz xu ly chuyen doi mot cach ro rang.</p>
+
+<br/><h2 class="text-uppercase"><b>Cong cu lien quan</b></h2>
+<ul>
+    <li><a href="/utility-tools/convert-time-in-millisecond-to-date.html">Convert Milliseconds to Date</a> - dan timestamp, nhan ngay dinh dang UTC va dia phuong.</li>
+    <li><a href="/utility-tools/get-time-in-millisecond.html">Get Current Time in Milliseconds</a> - doc epoch truc tiep cap nhat moi giay.</li>
+    <li><a href="/developer-tools/md5-converter.html">MD5 Converter</a> - bam chuoi cho checksum hoac khoa khu trung lap.</li>
+    <li><a href="/developer-tools/json-parser.html">JSON Parser</a> - kiem tra phan hoi API chua truong timestamp.</li>
+</ul>
+
+<p><br/><a href="/utility-tools.html">&larr; Quay lai Utility Tools</a></p>
+</div>

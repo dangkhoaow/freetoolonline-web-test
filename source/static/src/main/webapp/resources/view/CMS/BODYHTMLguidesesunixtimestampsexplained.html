@@ -1,0 +1,57 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>Timestamps Unix explicados - epoch, ISO-8601 y zonas horarias</b></h1>
+<time itemprop="datePublished" datetime="2026-04-19T08:00:00Z"><b>Publicado el 19 de abril de 2026</b></time>
+<hr/>
+
+<p>Cada log de servidor, fila de base de datos y respuesta de API en internet codifica "cuando paso algo" en uno de cuatro formatos: el epoch Unix (segundos o milisegundos), ISO&nbsp;8601 o RFC&nbsp;2822. Si alguna vez has pegado un timestamp en Slack solo para discutir en que zona horaria estaba, esta guia es para ti. Cubre que codifica realmente cada formato, como convertir entre ellos y las tres trampas que pillan incluso a desarrolladores experimentados.</p>
+
+<br/><h2 class="text-uppercase"><b>Epoch Unix: segundos desde 1970-01-01 UTC</b></h2>
+<p>El timestamp Unix - tambien llamado "tiempo epoch" - es el numero de <b>segundos</b> que han transcurrido desde 00:00:00 UTC del 1 de enero de 1970. Ese punto de referencia es arbitrario pero universal; cada sistema derivado de Unix (Linux, macOS, Android, iOS) y casi todos los lenguajes de programacion rastrean el tiempo internamente como una cuenta desde ese momento.</p>
+<p>Un valor actualizado: <code>1776495426</code> se traduce a 2026-04-18 12:17:06 UTC. No hay zona horaria codificada en el numero en si - es siempre UTC - lo cual es a la vez una fortaleza (sin ambiguedad cuando dos sistemas comparan timestamps) y una trampa (lo que sea que convierta el numero a una cadena legible tiene que elegir una zona horaria, y normalmente elige la local).</p>
+
+<br/><h2 class="text-uppercase"><b>Segundos vs milisegundos: la primera fuente de confusion</b></h2>
+<p>JavaScript, Java y la mayoria de las bibliotecas estandar de lenguajes modernos usan por defecto <b>milisegundos</b> desde el epoch, no segundos. Ese mismo momento - 2026-04-18 12:17:06 UTC - es <code>1776495426</code> en segundos (10 digitos) pero <code>1776495426000</code> en milisegundos (13 digitos). Una regla rapida para comprobar la cordura de un timestamp que has recibido:</p>
+<ul>
+    <li><b>10 digitos</b> &rarr; segundos (linea de comandos Unix, PHP, Python <code>time.time()</code>, Go).</li>
+    <li><b>13 digitos</b> &rarr; milisegundos (JavaScript <code>Date.now()</code>, Java <code>System.currentTimeMillis()</code>, la mayoria de las API JSON).</li>
+    <li><b>16 o 19 digitos</b> &rarr; microsegundos o nanosegundos (telemetria especializada y temporizacion cientifica).</li>
+</ul>
+<p>Un valor de 10 digitos en segundos interpretado como milisegundos se renderiza como una fecha de 1970 (50+ anos demasiado temprano). Un valor de 13 digitos en milisegundos interpretado como segundos se renderiza como una fecha ~56,000 DC. Ambos errores son instantaneamente visibles una vez convertido el timestamp - usa <a href="/utility-tools/convert-time-in-millisecond-to-date.html">Convert Milliseconds to Date</a> para una comprobacion de cordura, o <a href="/utility-tools/get-time-in-millisecond.html">Get Current Time in Milliseconds</a> para comparar con el ahora.</p>
+
+<br/><h2 class="text-uppercase"><b>ISO 8601: el formato de intercambio legible</b></h2>
+<p>ISO 8601 es un formato de fecha-hora legible para humanos en el que las maquinas tambien estan de acuerdo. La forma canonica se ve asi: <code>2026-04-18T12:17:06.520Z</code>. Partes:</p>
+<ul>
+    <li><b>Fecha:</b> <code>2026-04-18</code> (AAAA-MM-DD, siempre en este orden).</li>
+    <li><b>Separador:</b> <code>T</code> (letra T literal entre fecha y hora).</li>
+    <li><b>Hora:</b> <code>12:17:06.520</code> (HH:MM:SS.sss, 24 horas).</li>
+    <li><b>Zona horaria:</b> <code>Z</code> para UTC, o un offset como <code>+07:00</code> / <code>-05:30</code> para otras zonas.</li>
+</ul>
+<p>ISO 8601 no es ambiguo (sin confusion regional de fechas como 04-18 vs 18-04), ordenable como cadena simple (el orden lexical coincide con el orden cronologico cuando la zona horaria es la misma), y soportado por todos los parsers modernos. Si controlas la API que estas construyendo, prefiere cadenas ISO 8601 sobre numeros raw de epoch Unix - llevan la zona horaria explicitamente, lo cual elimina toda una clase de bugs.</p>
+
+<br/><h2 class="text-uppercase"><b>RFC 2822: el formato legado de email y HTTP</b></h2>
+<p>RFC 2822 (y el HTTP-date casi identico del RFC 7231) se ve asi: <code>Sat, 18 Apr 2026 12:17:06 +0000</code>. Es el formato que veras en cabeceras <code>Date:</code> de email, cabeceras HTTP <code>Last-Modified</code>, y algunas API web mas antiguas. Es legible pero no ordenable como cadena simple (el prefijo del dia de la semana rompe la ordenacion lexical), por lo que los sistemas devuelven cada vez mas ISO 8601 junto con o en lugar de RFC 2822. Cuando necesitas generar RFC 2822 manualmente, usa una biblioteca en lugar de construir la cadena tu mismo - el nombre del dia de la semana y la abreviatura del mes son sensibles a la configuracion regional y faciles de equivocar.</p>
+
+<br/><h2 class="text-uppercase"><b>UTC vs hora local: la raiz de la mayoria de los bugs de timestamp</b></h2>
+<p>Los timestamps de epoch Unix son siempre UTC; las cadenas ISO 8601 pueden ser UTC (<code>Z</code>) o cualquier offset; RFC 2822 casi siempre lleva un offset. Pero cuando un programa <i>muestra</i> un timestamp, normalmente convierte a la zona horaria local de la maquina que esta mostrando.</p>
+<p>Esto esta bien para un solo usuario pero causa caos en tres escenarios:</p>
+<ul>
+    <li><b>Compartir un timestamp en el chat.</b> "El deploy paso a las 14:00" es ambiguo - 14:00 de quien? Pega el valor ISO 8601 (<code>2026-04-18T14:00:00+07:00</code>) o indica explicitamente la zona horaria.</li>
+    <li><b>Logs de varios servidores.</b> Configura cada servidor en UTC. Siempre. Los agregadores de logs y las herramientas de respuesta a incidentes asumen UTC; mezclar zonas horarias en logs es la forma mas rapida de atribuir mal una cadena causa-efecto.</li>
+    <li><b>Horarios orientados al usuario.</b> Almacena la hora del evento en UTC (o la zona horaria fuente del evento con offset explicito) y convierte en el momento de la visualizacion. No almacenes "7pm" sin zona horaria; "7pm" en la sesion de un usuario puede ser 4pm para otro.</li>
+</ul>
+
+<br/><h2 class="text-uppercase"><b>Tres trampas comunes (y como pillarlas)</b></h2>
+<p><b>1. Timestamps enteros vs cadenas en JSON.</b> El <code>JSON.parse</code> de JavaScript producira fielmente un numero para <code>1776495426520</code> - pero si la API devolvio el mismo timestamp como cadena <code>&quot;1776495426520&quot;</code>, cualquier codigo aguas abajo que haga aritmetica con el la coercera silenciosamente. Comprueba siempre el tipo antes de pasarlo a <code>new Date()</code>.</p>
+<p><b>2. Mes 0-11 en JavaScript Date.</b> <code>new Date(2026, 3, 18)</code> es 18 de abril de 2026, no 18 de marzo de 2026. El mes esta indexado en 0 pero el dia y el ano estan indexados en 1. Prefiere el constructor ISO 8601 (<code>new Date(&quot;2026-04-18&quot;)</code>) que sigue la numeracion natural.</p>
+<p><b>3. Transiciones de horario de verano.</b> En la noche de "adelantar la hora", las 2:30 de la manana en hora local no existen; en la noche de "retrasar la hora", las 1:30 de la manana ocurren dos veces. Si tu sistema almacena cadenas de hora local, esos momentos crean timestamps imposibles o duplicados. El almacenamiento UTC elimina el problema; bibliotecas de Date como Luxon o date-fns-tz manejan la conversion explicitamente.</p>
+
+<br/><h2 class="text-uppercase"><b>Herramientas relacionadas</b></h2>
+<ul>
+    <li><a href="/utility-tools/convert-time-in-millisecond-to-date.html">Convert Milliseconds to Date</a> - pega un timestamp, obten fechas formateadas UTC y locales.</li>
+    <li><a href="/utility-tools/get-time-in-millisecond.html">Get Current Time in Milliseconds</a> - lectura epoch en vivo actualizada cada segundo.</li>
+    <li><a href="/developer-tools/md5-converter.html">MD5 Converter</a> - hash de una cadena para checksums o claves de deduplicacion.</li>
+    <li><a href="/developer-tools/json-parser.html">JSON Parser</a> - inspecciona respuestas de API que contienen campos de timestamp.</li>
+</ul>
+
+<p><br/><a href="/utility-tools.html">&larr; Volver a Utility Tools</a></p>
+</div>

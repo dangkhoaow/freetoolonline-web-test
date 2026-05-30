@@ -1,0 +1,57 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>Unix-Timestamps erklaert - Epoch, ISO-8601 und Zeitzonen</b></h1>
+<time itemprop="datePublished" datetime="2026-04-19T08:00:00Z"><b>Veroeffentlicht am 19. April 2026</b></time>
+<hr/>
+
+<p>Jedes Serverlog, jede Datenbankzeile und jede API-Antwort im Internet kodiert "wann etwas passiert ist" in einem von vier Formaten: dem Unix-Epoch (Sekunden oder Millisekunden), ISO&nbsp;8601 oder RFC&nbsp;2822. Wenn Sie schon einmal einen Timestamp in Slack eingefuegt haben, nur um zu streiten, in welcher Zeitzone er war, ist dieser Leitfaden fuer Sie. Er behandelt, was jedes Format tatsaechlich kodiert, wie man zwischen ihnen konvertiert, und die drei Fallstricke, die auch erfahrene Entwickler erwischen.</p>
+
+<br/><h2 class="text-uppercase"><b>Unix-Epoch: Sekunden seit 1970-01-01 UTC</b></h2>
+<p>Der Unix-Timestamp - auch "Epoch-Zeit" genannt - ist die Anzahl der <b>Sekunden</b>, die seit 00:00:00 UTC am 1. Januar 1970 vergangen sind. Dieser Referenzpunkt ist willkuerlich, aber universell; jedes von Unix abgeleitete System (Linux, macOS, Android, iOS) und fast jede Programmiersprache verfolgt die Zeit intern als Zaehlung von diesem Moment aus.</p>
+<p>Ein aktueller Wert: <code>1776495426</code> uebersetzt sich zu 2026-04-18 12:17:06 UTC. Es gibt keine Zeitzone, die in der Zahl selbst kodiert ist - sie ist immer UTC - was sowohl eine Staerke (keine Ambiguitaet, wenn zwei Systeme Timestamps vergleichen) als auch eine Falle ist (was auch immer die Zahl in einen menschenlesbaren String konvertiert, muss eine Zeitzone waehlen, und es waehlt normalerweise die lokale).</p>
+
+<br/><h2 class="text-uppercase"><b>Sekunden vs Millisekunden: die erste Quelle der Verwirrung</b></h2>
+<p>JavaScript, Java und die meisten modernen Sprach-Standardbibliotheken verwenden standardmaessig <b>Millisekunden</b> seit dem Epoch, nicht Sekunden. Derselbe Moment - 2026-04-18 12:17:06 UTC - ist <code>1776495426</code> in Sekunden (10 Ziffern), aber <code>1776495426000</code> in Millisekunden (13 Ziffern). Eine schnelle Faustregel zur Plausibilitaetspruefung eines Timestamps, den Sie erhalten haben:</p>
+<ul>
+    <li><b>10 Ziffern</b> &rarr; Sekunden (Unix-Kommandozeile, PHP, Python <code>time.time()</code>, Go).</li>
+    <li><b>13 Ziffern</b> &rarr; Millisekunden (JavaScript <code>Date.now()</code>, Java <code>System.currentTimeMillis()</code>, die meisten JSON-APIs).</li>
+    <li><b>16 oder 19 Ziffern</b> &rarr; Mikrosekunden oder Nanosekunden (spezialisierte Telemetrie und wissenschaftliche Zeitmessung).</li>
+</ul>
+<p>Ein 10-stelliger Sekundenwert, der als Millisekunden interpretiert wird, rendert als Datum im Jahr 1970 (50+ Jahre zu frueh). Ein 13-stelliger Millisekundenwert, der als Sekunden interpretiert wird, rendert als Datum ~56.000 n. Chr. Beide Fehler sind sofort sichtbar, sobald der Timestamp konvertiert wird - verwenden Sie <a href="/utility-tools/convert-time-in-millisecond-to-date.html">Convert Milliseconds to Date</a> zur Plausibilitaetspruefung oder <a href="/utility-tools/get-time-in-millisecond.html">Get Current Time in Milliseconds</a> zum Vergleich mit dem Jetzt.</p>
+
+<br/><h2 class="text-uppercase"><b>ISO 8601: das lesbare Austauschformat</b></h2>
+<p>ISO 8601 ist ein menschenlesbares Datums-Zeit-Format, dem auch Maschinen zustimmen. Die kanonische Form sieht so aus: <code>2026-04-18T12:17:06.520Z</code>. Teile:</p>
+<ul>
+    <li><b>Datum:</b> <code>2026-04-18</code> (YYYY-MM-DD, immer in dieser Reihenfolge).</li>
+    <li><b>Trennzeichen:</b> <code>T</code> (literaler Buchstabe T zwischen Datum und Zeit).</li>
+    <li><b>Zeit:</b> <code>12:17:06.520</code> (HH:MM:SS.sss, 24 Stunden).</li>
+    <li><b>Zeitzone:</b> <code>Z</code> fuer UTC oder ein Offset wie <code>+07:00</code> / <code>-05:30</code> fuer andere Zonen.</li>
+</ul>
+<p>ISO 8601 ist eindeutig (keine regionale Datumsverwirrung wie 04-18 vs 18-04), sortierbar als einfacher String (die lexikalische Reihenfolge entspricht der chronologischen Reihenfolge, wenn die Zeitzone gleich ist), und wird von jedem modernen Parser unterstuetzt. Wenn Sie die API kontrollieren, die Sie bauen, bevorzugen Sie ISO-8601-Strings gegenueber rohen Unix-Epoch-Zahlen - sie tragen die Zeitzone explizit, was eine ganze Klasse von Bugs eliminiert.</p>
+
+<br/><h2 class="text-uppercase"><b>RFC 2822: das alte E-Mail- und HTTP-Format</b></h2>
+<p>RFC 2822 (und das fast identische HTTP-Datum aus RFC 7231) sieht so aus: <code>Sat, 18 Apr 2026 12:17:06 +0000</code>. Es ist das Format, das Sie in E-Mail-<code>Date:</code>-Headern, HTTP-<code>Last-Modified</code>-Headern und einigen aelteren Web-APIs sehen werden. Es ist lesbar, aber nicht als einfacher String sortierbar (das Wochentags-Praefix bricht die lexikalische Reihenfolge), so dass Systeme zunehmend ISO 8601 neben oder anstelle von RFC 2822 zurueckgeben. Wenn Sie RFC 2822 manuell generieren muessen, verwenden Sie eine Bibliothek, anstatt den String selbst zu bauen - der Wochentagsname und die Monatsabkuerzung sind locale-sensitiv und leicht zu verwechseln.</p>
+
+<br/><h2 class="text-uppercase"><b>UTC vs Ortszeit: die Wurzel der meisten Timestamp-Bugs</b></h2>
+<p>Unix-Epoch-Timestamps sind immer UTC; ISO-8601-Strings koennen UTC (<code>Z</code>) oder jeder Offset sein; RFC 2822 traegt fast immer einen Offset. Aber wenn ein Programm einen Timestamp <i>anzeigt</i>, konvertiert es normalerweise in die lokale Zeitzone der anzeigenden Maschine.</p>
+<p>Das ist fuer einen einzelnen Benutzer in Ordnung, verursacht aber in drei Szenarien Chaos:</p>
+<ul>
+    <li><b>Einen Timestamp im Chat teilen.</b> "Der Deploy passierte um 14:00" ist mehrdeutig - wessen 14:00? Fuegen Sie den ISO-8601-Wert (<code>2026-04-18T14:00:00+07:00</code>) ein oder geben Sie die Zeitzone explizit an.</li>
+    <li><b>Logs von mehreren Servern.</b> Setzen Sie jeden Server auf UTC. Immer. Log-Aggregatoren und Incident-Response-Tools nehmen UTC an; das Mischen von Zeitzonen in Logs ist der schnellste Weg, eine Ursache-Wirkungs-Kette falsch zuzuordnen.</li>
+    <li><b>Benutzerorientierte Zeitplaene.</b> Speichern Sie die Ereigniszeit in UTC (oder in der Quellzeitzone des Ereignisses mit explizitem Offset) und konvertieren Sie zur Anzeigezeit. Speichern Sie nicht "19 Uhr" ohne Zeitzone; "19 Uhr" in der Sitzung eines Benutzers kann 16 Uhr fuer einen anderen sein.</li>
+</ul>
+
+<br/><h2 class="text-uppercase"><b>Drei haeufige Fallstricke (und wie man sie erkennt)</b></h2>
+<p><b>1. Integer-vs-String-Timestamps in JSON.</b> JavaScripts <code>JSON.parse</code> erzeugt treu eine Zahl fuer <code>1776495426520</code> - aber wenn die API denselben Timestamp als String <code>&quot;1776495426520&quot;</code> zurueckgegeben hat, wird jeder nachfolgende Code, der Arithmetik darauf ausfuehrt, ihn stillschweigend coercen. Pruefen Sie immer den Typ, bevor Sie ihn an <code>new Date()</code> uebergeben.</p>
+<p><b>2. Monat 0-11 in JavaScript Date.</b> <code>new Date(2026, 3, 18)</code> ist der 18. April 2026, nicht der 18. Maerz 2026. Der Monat ist 0-indiziert, aber Tag und Jahr sind 1-indiziert. Bevorzugen Sie den ISO-8601-Konstruktor (<code>new Date(&quot;2026-04-18&quot;)</code>), der der natuerlichen Nummerierung folgt.</p>
+<p><b>3. DST-Uebergaenge.</b> In der Nacht "Vorstellen", existiert 2:30 Uhr Ortszeit nicht; in der Nacht "Zurueckstellen", passiert 1:30 Uhr zweimal. Wenn Ihr System lokale Zeitstrings speichert, erzeugen diese Momente unmoegliche oder duplizierte Timestamps. UTC-Speicherung beseitigt das Problem; Date-Bibliotheken wie Luxon oder date-fns-tz behandeln die Konvertierung explizit.</p>
+
+<br/><h2 class="text-uppercase"><b>Verwandte Werkzeuge</b></h2>
+<ul>
+    <li><a href="/utility-tools/convert-time-in-millisecond-to-date.html">Convert Milliseconds to Date</a> - Timestamp einfuegen, formatierte UTC- und Ortsdatum erhalten.</li>
+    <li><a href="/utility-tools/get-time-in-millisecond.html">Get Current Time in Milliseconds</a> - Live-Epoch-Ablesung, jede Sekunde aktualisiert.</li>
+    <li><a href="/developer-tools/md5-converter.html">MD5 Converter</a> - String fuer Checksums oder Deduplikationsschluessel hashen.</li>
+    <li><a href="/developer-tools/json-parser.html">JSON Parser</a> - API-Antworten mit Timestamp-Feldern inspizieren.</li>
+</ul>
+
+<p><br/><a href="/utility-tools.html">&larr; Zurueck zu Utility Tools</a></p>
+</div>
