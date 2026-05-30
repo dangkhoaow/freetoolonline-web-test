@@ -1,0 +1,61 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Prueba de pantalla vs prueba de camara - cual necesita realmente?</b></h1>
+    <p><em>Ultima revision 2026-05-05. Dos herramientas, dos problemas distintos. Una <b>prueba de pantalla</b> revisa el panel - pixeles muertos, pixeles atascados, fuga de retroiluminacion, uniformidad de color. Una <b>prueba de camara</b> revisa la webcam - si el navegador puede iniciar la camara, si la imagen esta derecha, si el microfono capta sonido. Las dos comparten la frase "probar mi dispositivo" pero diagnostican hardware separado. Esta guia nombra el sintoma que cada una captura, la regla de una frase para elegir, y la herramienta que ejecuta la comprobacion correcta.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Respuesta en 30 segundos.</b> Si un solo pixel no cambia de color, una esquina brilla en una pantalla negra, o ve bandas al mirar un color solido, ejecute una <a href="/device-test-tools/lcd-test.html">prueba de LCD / pantalla</a> - un ciclo de colores a pantalla completa que expone defectos a nivel de panel. Si su webcam no arranca en una pestana del navegador, la previa esta negra, la imagen esta al reves, la camara esta espejada cuando no lo espera, o su microfono no muestra medidor de nivel, ejecute una <a href="/device-test-tools/camera-test.html">prueba de camara</a> - una previa en vivo que confirma que el navegador puede leer la camara y el mic. Empareje el sintoma con la prueba que lo captura.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Cuando usar la prueba de pantalla</b></h2>
+    <p>La <a href="/device-test-tools/lcd-test.html">prueba de pantalla (prueba de LCD)</a> es un diagnostico a nivel de panel. El lector llena la pantalla con un color solido a la vez (rojo, verde, azul, blanco, negro, amarillo) y busca defectos del panel en si. Los pixeles muertos quedan negros en cada color. Los pixeles atascados se bloquean en uno de rojo/verde/azul. Los defectos de uniformidad de color aparecen como parches sutilmente mas claros o mas oscuros. La fuga de retroiluminacion aparece en el campo negro como brillo de esquina. El burn-in aparece como un fantasma tenue de una imagen previa en un campo plano.</p>
+    <p>La prueba de pantalla NO necesita camara ni microfono. NO pide ningun permiso al navegador. NO sube nada a un servidor. Funciona en cualquier dispositivo que pueda llenar el viewport con un color - laptop, escritorio, tablet, telefono, ChromeOS, navegador de smart TV. Si la prueba pasa, el panel esta bien y cualquier problema de imagen esta en el cable, en la salida de la GPU, o en el OSD - lea la guia companera <a href="/guides/lcd-test-vs-display-test-which-do-you-need.html">prueba de LCD vs prueba de display vs prueba de monitor</a> para reducir mas.</p>
+
+    <h2 class="text-uppercase"><b>Cuando usar la prueba de camara</b></h2>
+    <p>La <a href="/device-test-tools/camera-test.html">prueba de camara (prueba de webcam)</a> es un diagnostico de dispositivo de entrada. El lector presiona Start Camera; el navegador pide permiso; la previa en vivo muestra lo que ve la camara frontal o trasera, la resolucion que reporta, y el nivel de audio del microfono (cuando el mic esta en alcance). El punto es confirmar tres cosas antes de una videollamada: (1) el navegador puede leer la camara, (2) la imagen esta derecha en la proporcion correcta, (3) el mic esta produciendo un nivel por encima del silencio.</p>
+    <p>Sintomas que solo la prueba de camara captura: una webcam que funciono en una pestana pero no en otra (estado de permiso del navegador), una previa negra tras presionar Start (driver u otra app reteniendo la camara), una imagen al reves en un tablet (bloqueo de orientacion), resolucion equivocada ofrecida (default del dispositivo vs negociado), la camara frontal seleccionada cuando queria la trasera, el mic mudo a nivel de OS. Ninguno de esos es problema de panel; una prueba de LCD en un dispositivo con webcam muerta pasara limpia porque el panel esta bien. La guia companera <a href="/guides/camera-test-vs-webcam-test-which-do-you-need.html">prueba de camara vs prueba de webcam</a> recorre la diferencia de nombre dentro de la categoria.</p>
+
+    <h2 class="text-uppercase"><b>El arbol de decision de 30 segundos</b></h2>
+    <p>Empareje el sintoma con la prueba que lo captura:</p>
+    <ol>
+        <li><b>Defecto a nivel de pixel en la pantalla</b> (pixel muerto, pixel atascado, brillo de retroiluminacion en negro, bandas de color en campo solido, retencion de imagen) -> <a href="/device-test-tools/lcd-test.html">prueba de LCD / pantalla</a>. Dos minutos, sin permisos, corre en cualquier dispositivo con navegador.</li>
+        <li><b>Webcam o microfono no se comportan</b> (camara no arranca, previa negra, imagen al reves, mic sin nivel, camara equivocada seleccionada) -> <a href="/device-test-tools/camera-test.html">prueba de camara</a>. El navegador pide permiso de camara/mic una vez; la previa en vivo confirma que el dispositivo de entrada funciona.</li>
+        <li><b>Ambos</b> (esta a punto de entrar a una videollamada y quiere confirmar que el laptop esta listo) -> ejecute primero la <a href="/device-test-tools/lcd-test.html">prueba de pantalla</a> (sin permiso), luego la <a href="/device-test-tools/camera-test.html">prueba de camara</a>, luego la <a href="/device-test-tools/microphone-test.html">prueba de microfono</a>. La guia companera <a href="/guides/before-a-video-call-which-tools-to-run.html">antes de una videollamada - que herramientas correr</a> secuencia las tres.</li>
+        <li><b>No esta seguro donde esta el defecto</b> -> empiece con la <a href="/device-test-tools/lcd-test.html">prueba de pantalla</a>. Es la mas rapida de las tres, no requiere permiso, y descarta el fallo mas costoso (una devolucion de panel). Si pasa, pase a la prueba de camara despues.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>Por que cada herramienta corre distinto</b></h2>
+    <p>Las dos pruebas corren en superficies de navegador distintas y le piden al dispositivo capacidades distintas. La <b>prueba de pantalla</b> usa modo a pantalla completa + colores de fondo solidos; no necesita permiso de hardware y funciona en pestanas privadas/incognito. La <b>prueba de camara</b> usa la API getUserMedia del navegador; necesita permiso explicito de camara (y opcionalmente microfono), y el navegador recuerda la eleccion por origen. Ese estado de permiso es la razon por la que la prueba de camara a veces "deja de funcionar" sin aviso - una eleccion previa de Deny persiste en el mismo sitio hasta que el lector restablezca el permiso en el navegador.</p>
+    <p>Implicacion: una prueba de pantalla que pase en un dispositivo no le dice nada sobre si la camara funciona en ese dispositivo, y viceversa. Los dos diagnosticos son independientes y deben correrse por separado cuando ambas superficies estan en alcance.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>Es "prueba de pantalla" lo mismo que "prueba de camara"?</summary>
+  <p>No. Una prueba de pantalla revisa los pixeles del panel y la retroiluminacion; una prueba de camara revisa la webcam y el microfono. Comparten la frase "probar mi dispositivo" pero miran hardware distinto. Algunos sitios usan "prueba de pantalla" de manera laxa para cualquier comprobacion de dispositivo - lea la pagina primero; si cicla colores solidos, es una prueba de pantalla (prueba de LCD); si pide permiso de camara/mic, es una prueba de camara (prueba de webcam).</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Puede una herramienta correr ambas a la vez?</summary>
+  <p>No en este sitio. La prueba de pantalla llena el viewport; la prueba de camara renderiza una previa de video - las dos superficies chocan. La guia companera <a href="/guides/before-a-video-call-which-tools-to-run.html">antes de una videollamada - que herramientas correr</a> las secuencia para que cubra ambas en dos minutos.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Cual para una laptop con webcam integrada?</summary>
+  <p>Ambas, en orden. Corra primero la <a href="/device-test-tools/lcd-test.html">prueba de pantalla</a> para confirmar que el panel esta bien. Luego corra la <a href="/device-test-tools/camera-test.html">prueba de camara</a> para confirmar que la webcam integrada arranca, apunta hacia arriba, y el mic produce nivel. La checklist especifica para laptop <a href="/guides/screen-test-for-laptop-5-minute-checklist.html">prueba de pantalla para laptop - checklist de 5 minutos</a> recorre primero el lado de la pantalla; la pagina de prueba de camara cubre el lado de la webcam.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Cual corre mas rapido?</summary>
+  <p>La prueba de pantalla, porque no necesita permiso. Abra la pagina, haga clic en un color, mire la pantalla - tiene una respuesta en menos de dos minutos. La prueba de camara primero pide permiso de camara (y opcionalmente microfono); la previa en vivo tarda unos segundos en arrancar. Planee ~60 segundos para la prueba de pantalla, ~90 segundos para la prueba de camara si el dispositivo aun no concedio el permiso de camara.</p>
+</details>
+</div>
