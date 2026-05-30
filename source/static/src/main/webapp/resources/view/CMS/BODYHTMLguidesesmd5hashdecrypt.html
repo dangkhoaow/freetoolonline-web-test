@@ -1,0 +1,47 @@
+<article class="guide-body">
+  <h1>Descifrar Hash MD5: Cuando Funciona el Lookup, Cuando No</h1>
+  <p class="lead">"Descifrar" es la palabra equivocada, pero la pregunta practica detras de ella es real: pegue la cadena hex de 32 caracteres en una tabla de busqueda inversa y la entrada original a veces aparece, a veces no. La diferencia se reduce a si su hash fue generado a partir de algo que una tabla precomputada ya conoce. Esta pagina recorre los tres casos que deciden la respuesta.</p>
+  <p class="reviewed">Ultima revision: 2026-05-20</p>
+  <p class="byline">Revisado por el equipo editorial FreetoolOnline</p>
+
+  <table class="quick-facts">
+    <thead><tr><th>Propiedad</th><th>Valor</th></tr></thead>
+    <tbody>
+      <tr><td>Algoritmo</td><td>MD5 (RFC 1321, 1992)</td></tr>
+      <tr><td>Salida</td><td>Digest de 128 bits, renderizado como 32 caracteres hex</td></tr>
+      <tr><td>Direccion inversa</td><td>NO definida por la spec; la busqueda usa tablas precomputadas, no matematica</td></tr>
+      <tr><td>Herramienta implementadora</td><td><a href="/md5-converter.html">/md5-converter.html</a> (una via: text -&gt; hash)</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Los tres casos que deciden si la busqueda funcionara</h2>
+
+  <p><b>Caso 1 - entrada de diccionario comun (la busqueda usualmente funciona).</b> Si el original fue una palabra corta en ingles, una contrasena comun ("123456", "qwerty"), una combinacion frecuente de primer-nombre-mas-ano, o cualquier valor que un constructor de rainbow table habria hasheado de antemano, la busqueda lo encuentra al instante. Las rainbow tables publicas para las top 10 millones de contrasenas filtradas cubren la mayoria de verificaciones de credenciales basadas en reuso. El hash MD5 <code>5f4dcc3b5aa765d61d8327deb882cf99</code> revierte a "password" porque alguien, en algun lugar, ya lo hasheo y guardo ambos lados.</p>
+
+  <p><b>Caso 2 - entrada aleatoria corta (la busqueda eventualmente funciona via fuerza bruta).</b> Una entrada alfabetica minuscula de 8 caracteres tiene alrededor de 208 mil millones de posibilidades (26 a la 8). En una sola GPU de consumo de gama media corriendo hashcat, el rendimiento de MD5 es aproximadamente 50 mil millones de intentos por segundo en hardware de clase 2026, lo que significa que todo el espacio de 8 caracteres se barre en aproximadamente 4 segundos. Entradas cortas que parecen aleatorias (claves de licencia, tokens cortos, OTPs de 6 digitos que ya se usaron) caen ante este enfoque sin precomputacion. Cuanto mas corta la entrada, mas cerca la fuerza bruta llega de ser instantanea.</p>
+
+  <p><b>Caso 3 - entrada aleatoria larga (la busqueda NO funciona en la practica).</b> Una entrada aleatoria de 16 caracteres extraida del conjunto ASCII imprimible completo de 95 caracteres tiene alrededor de 5 * 10^31 posibilidades. A 50 mil millones de intentos por segundo, barrer todo el espacio toma mas que la edad del universo. El hash en si sigue siendo matematicamente reversible (las colisiones existen por casillero), pero ninguna tabla precomputada cubre este espacio y ninguna ejecucion de fuerza bruta termina en tiempo humano. Este es el caso al que se refiere la comunidad criptografica cuando dice que MD5 es de una via "en la practica".</p>
+
+  <h2>Lo que esto significa para el hash que tiene ahora</h2>
+
+  <p>El hash por si solo no le dice en cual caso esta - 32 caracteres hex se ven identicos sin importar la longitud o entropia de la entrada. Tres verificaciones rapidas reducen la pregunta de viabilidad practica:</p>
+
+  <ul>
+    <li><b>Pruebe primero un servicio publico de rainbow table.</b> Si la respuesta llega en menos de un segundo, la entrada fue Caso 1 (diccionario). El resultado de la busqueda le dice la entrada - y le dice que la entrada era lo suficientemente debil como para que cualquiera con ese hash y conexion a internet pudiera encontrarla tambien.</li>
+    <li><b>Estime la longitud de la entrada.</b> Si sabe que la fuente genero claves aleatorias de 8 caracteres o menos, aplica Caso 2 y una busqueda de fuerza bruta terminara en segundos a horas en una sola GPU. Si la fuente genero 16+ caracteres aleatorios de un alfabeto amplio, aplica Caso 3 y la respuesta practica es "no se puede".</li>
+    <li><b>Verifique el dominio fuente.</b> Las contrasenas de usuario (especialmente las antiguas, especialmente sin sal) son usualmente Caso 1 o Caso 2. Los tokens de API, cookies de sesion, y bytes aleatorios generados por libreria son usualmente Caso 3. Los hashes salados (donde la entrada es "sal + secreto") mueven toda la pregunta al Caso 3 sin importar la longitud del secreto porque la sal expande la entrada efectiva.</li>
+  </ul>
+
+  <h2>Por que "descifrar" es el vocabulario equivocado</h2>
+
+  <p>El cifrado es de dos vias por diseno - el mismo algoritmo corre hacia adelante (cifrar) y hacia atras (descifrar) con una llave que el usuario legitimo tiene. El hashing es de una via por diseno - el algoritmo solo corre hacia adelante, y no hay funcion inversa en la spec. Lo que los servicios publicos de busqueda llaman "descifrar MD5" es busqueda inversa precomputada: hashearon miles de millones de entradas comunes de antemano y guardaron ambos lados, asi que el paso "descifrar" es solo una consulta a la base de datos contra ese indice pre-construido. La matematica detras de MD5 no hace nada durante la busqueda; la base de datos hace el trabajo. <a href="/guides/why-md5-cannot-be-decrypted.html">Por que MD5 no puede ser descifrado</a> recorre el detalle criptografico para el lector curioso de matematica; <a href="/guides/md5-decrypt-online.html">Herramientas online de descifrar MD5</a> explica por que los sitios que afirman "descifrar" cualquier hash estan dando un nombre equivocado a la operacion.</p>
+
+  <h2>Lectura relacionada en este sitio</h2>
+
+  <ul>
+    <li><a href="/guides/md5-decode.html">MD5 decode</a> - la misma verdad de una via enmarcada desde el angulo del vocabulario "decode".</li>
+    <li><a href="/guides/read-and-compare-md5-hashes-correctly.html">Leer y comparar hashes MD5 correctamente</a> - caso, espacios en blanco y formato hex al verificar un hash contra un valor esperado.</li>
+    <li><a href="/guides/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html">Alternativas a MD5 (bcrypt, Argon2id, SHA-256): cuando encaja cada uno</a> - si la meta es un almacen de contrasenas, ninguno de estos tres casos aplica y un algoritmo diferente responde la pregunta real.</li>
+    <li><a href="/md5-converter.html">/md5-converter.html</a> - la herramienta que ejecuta la direccion hacia adelante (texto entra, hash sale) cuando necesita verificar un hash que alguien le dio.</li>
+  </ul>
+</article>

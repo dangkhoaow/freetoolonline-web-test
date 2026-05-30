@@ -1,0 +1,47 @@
+<article class="guide-body">
+  <h1>MD5-Hash Entschluesseln: Wann Lookup Funktioniert, Wann Nicht</h1>
+  <p class="lead">"Entschluesseln" ist das falsche Wort, aber die praktische Frage dahinter ist real: fuegen Sie die 32-Zeichen-Hex-Zeichenkette in eine Reverse-Lookup-Tabelle ein, und die ursprueglich Eingabe erscheint manchmal, manchmal nicht. Der Unterschied haengt davon ab, ob Ihr Hash aus etwas erzeugt wurde, das eine vorberechnete Tabelle bereits kennt. Diese Seite geht die drei Faelle durch, die die Antwort entscheiden.</p>
+  <p class="reviewed">Zuletzt geprueft: 2026-05-20</p>
+  <p class="byline">Geprueft vom FreetoolOnline-Redaktionsteam</p>
+
+  <table class="quick-facts">
+    <thead><tr><th>Eigenschaft</th><th>Wert</th></tr></thead>
+    <tbody>
+      <tr><td>Algorithmus</td><td>MD5 (RFC 1321, 1992)</td></tr>
+      <tr><td>Ausgabe</td><td>128-Bit-Digest, dargestellt als 32 Hex-Zeichen</td></tr>
+      <tr><td>Rueckwaerts-Richtung</td><td>NICHT durch Spec definiert; Lookup verwendet vorberechnete Tabellen, keine Mathematik</td></tr>
+      <tr><td>Implementierendes Werkzeug</td><td><a href="/md5-converter.html">/md5-converter.html</a> (einseitig: text -&gt; hash)</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Die drei Faelle, die entscheiden, ob das Lookup funktioniert</h2>
+
+  <p><b>Fall 1 - haeufige Woerterbuch-Eingabe (Lookup funktioniert meist).</b> Wenn das Original ein kurzes englisches Wort, ein haeufiges Passwort ("123456", "qwerty"), eine haeufige Vorname-plus-Jahr-Kombination oder irgendein Wert war, den ein Rainbow-Table-Builder im Voraus gehasht haette, findet das Lookup es sofort. Oeffentliche Rainbow-Tables fuer die Top-10-Millionen geleakter Passwoerter decken die meisten reuse-basierten Credential-Pruefungen ab. Der MD5-Hash <code>5f4dcc3b5aa765d61d8327deb882cf99</code> reversiert zu "password", weil jemand, irgendwo, ihn bereits gehasht und beide Seiten gespeichert hat.</p>
+
+  <p><b>Fall 2 - kurze zufaellige Eingabe (Lookup funktioniert schliesslich per Brute-Force).</b> Eine 8-Zeichen-Kleinbuchstaben-Eingabe hat etwa 208 Milliarden Moeglichkeiten (26 hoch 8). Auf einer einzelnen Consumer-GPU mittlerer Klasse, die hashcat ausfuehrt, betraegt der MD5-Durchsatz etwa 50 Milliarden Versuche pro Sekunde auf Hardware der Klasse 2026, was bedeutet, dass der gesamte 8-Zeichen-Raum in etwa 4 Sekunden gefegt wird. Kurze, zufaellig wirkende Eingaben (Lizenzschluessel, kurze Tokens, 6-stellige OTPs, die bereits verwendet wurden) fallen ohne Vorberechnung diesem Ansatz zum Opfer. Je kuerzer die Eingabe, desto naeher kommt Brute-Force an "sofort".</p>
+
+  <p><b>Fall 3 - lange zufaellige Eingabe (Lookup funktioniert in der Praxis NICHT).</b> Eine 16-Zeichen-zufaellige Eingabe aus dem vollen 95-Zeichen-druckbaren-ASCII-Set hat etwa 5 * 10^31 Moeglichkeiten. Bei 50 Milliarden Versuchen pro Sekunde dauert das Durchsuchen des gesamten Raumes laenger als das Alter des Universums. Der Hash selbst ist mathematisch immer noch reversibel (Kollisionen existieren per Schubfachprinzip), aber keine vorberechnete Tabelle deckt diesen Raum ab und kein Brute-Force-Lauf endet in menschlicher Zeit. Das ist der Fall, auf den sich die kryptographische Gemeinschaft bezieht, wenn sie sagt, MD5 sei "in der Praxis" einseitig.</p>
+
+  <h2>Was das fuer den Hash bedeutet, den Sie gerade haben</h2>
+
+  <p>Der Hash allein sagt Ihnen nicht, in welchem Fall Sie sich befinden - 32 Hex-Zeichen sehen unabhaengig von Eingabelaenge oder Entropie identisch aus. Drei schnelle Checks verengen die praktische-Machbarkeits-Frage:</p>
+
+  <ul>
+    <li><b>Probieren Sie zuerst einen oeffentlichen Rainbow-Table-Dienst.</b> Wenn die Antwort in weniger als einer Sekunde kommt, war die Eingabe Fall 1 (Woerterbuch). Das Lookup-Ergebnis sagt Ihnen die Eingabe - und sagt Ihnen, dass die Eingabe schwach genug war, dass jeder mit diesem Hash und einer Internetverbindung sie auch finden koennte.</li>
+    <li><b>Schaetzen Sie die Eingabelaenge.</b> Wenn Sie wissen, dass die Quelle zufaellige Schluessel mit 8 Zeichen oder weniger generiert hat, gilt Fall 2 und eine Brute-Force-Suche endet in Sekunden bis Stunden auf einer einzelnen GPU. Wenn die Quelle 16+ zufaellige Zeichen aus einem breiten Alphabet generiert hat, gilt Fall 3 und die praktische Antwort lautet "geht nicht".</li>
+    <li><b>Pruefen Sie die Quelldomaene.</b> Benutzerpasswoerter (besonders aeltere, besonders ohne Salt) sind meist Fall 1 oder Fall 2. API-Tokens, Sitzungs-Cookies und von Bibliotheken generierte zufaellige Bytes sind meist Fall 3. Gesalzene Hashes (bei denen die Eingabe "salt + secret" ist) verschieben die gesamte Frage in Fall 3, unabhaengig von der Geheimnislaenge, weil das Salt die effektive Eingabe erweitert.</li>
+  </ul>
+
+  <h2>Warum "entschluesseln" das falsche Vokabular ist</h2>
+
+  <p>Verschluesselung ist per Design zweiseitig - derselbe Algorithmus laeuft vorwaerts (verschluesseln) und rueckwaerts (entschluesseln) mit einem Schluessel, den der legitime Nutzer haelt. Hashing ist per Design einseitig - der Algorithmus laeuft nur vorwaerts, und es gibt ueberhaupt keine Umkehrfunktion in der Spec. Was oeffentliche Lookup-Dienste "MD5 entschluesseln" nennen, ist vorberechnetes Reverse-Lookup: sie haben Milliarden haeufiger Eingaben im Voraus gehasht und beide Seiten gespeichert, also ist der "Entschluesseln"-Schritt nur eine Datenbankabfrage gegen diesen vorgebauten Index. Die Mathematik hinter MD5 macht waehrend des Lookups nichts; die Datenbank macht die Arbeit. <a href="/guides/why-md5-cannot-be-decrypted.html">Warum MD5 nicht entschluesselt werden kann</a> geht das kryptographische Detail fuer den mathematisch neugierigen Leser durch; <a href="/guides/md5-decrypt-online.html">MD5-Online-Entschluesselungswerkzeuge</a> erklaert, warum die Webseiten, die behaupten, jeden Hash zu "entschluesseln", die Operation falsch benennen.</p>
+
+  <h2>Verwandte Lektuere auf dieser Seite</h2>
+
+  <ul>
+    <li><a href="/guides/md5-decode.html">MD5 decode</a> - dieselbe einseitige Wahrheit gerahmt aus dem "decode"-Vokabular-Winkel.</li>
+    <li><a href="/guides/read-and-compare-md5-hashes-correctly.html">MD5-Hashes richtig lesen und vergleichen</a> - Case, Leerzeichen und Hex-Format beim Verifizieren eines Hashes gegen einen erwarteten Wert.</li>
+    <li><a href="/guides/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html">Alternativen zu MD5 (bcrypt, Argon2id, SHA-256): wann jede passt</a> - wenn das Ziel ein Passwortspeicher ist, gilt keiner dieser drei Faelle und ein anderer Algorithmus beantwortet die echte Frage.</li>
+    <li><a href="/md5-converter.html">/md5-converter.html</a> - das Werkzeug, das die Vorwaertsrichtung laeuft (Text rein, Hash raus), wenn Sie einen Hash verifizieren muessen, den Ihnen jemand gegeben hat.</li>
+  </ul>
+</article>

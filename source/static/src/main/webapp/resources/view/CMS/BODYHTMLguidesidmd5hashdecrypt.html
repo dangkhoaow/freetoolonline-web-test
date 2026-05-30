@@ -1,0 +1,47 @@
+<article class="guide-body">
+  <h1>Dekripsi Hash MD5: Kapan Lookup Bekerja, Kapan Tidak</h1>
+  <p class="lead">"Dekripsi" adalah kata yang salah, tetapi pertanyaan praktis di baliknya nyata: tempel string hex 32 karakter ke dalam tabel lookup balik dan input asli kadang muncul, kadang tidak. Perbedaannya tergantung apakah hash Anda dibuat dari sesuatu yang sudah dikenal oleh tabel yang dihitung sebelumnya. Halaman ini menelusuri tiga kasus yang menentukan jawabannya.</p>
+  <p class="reviewed">Terakhir ditinjau: 2026-05-20</p>
+  <p class="byline">Ditinjau oleh tim editorial FreetoolOnline</p>
+
+  <table class="quick-facts">
+    <thead><tr><th>Properti</th><th>Nilai</th></tr></thead>
+    <tbody>
+      <tr><td>Algoritma</td><td>MD5 (RFC 1321, 1992)</td></tr>
+      <tr><td>Output</td><td>Digest 128-bit, ditampilkan sebagai 32 karakter hex</td></tr>
+      <tr><td>Arah balik</td><td>TIDAK didefinisikan oleh spec; lookup menggunakan tabel yang dihitung sebelumnya, bukan matematika</td></tr>
+      <tr><td>Alat implementasi</td><td><a href="/md5-converter.html">/md5-converter.html</a> (satu arah: text -&gt; hash)</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Tiga kasus yang menentukan apakah lookup akan bekerja</h2>
+
+  <p><b>Kasus 1 - input kamus umum (lookup biasanya bekerja).</b> Jika aslinya adalah kata pendek bahasa Inggris, password umum ("123456", "qwerty"), kombinasi nama-depan-plus-tahun yang sering, atau nilai apa pun yang pembangun rainbow table akan hash sebelumnya, lookup menemukannya seketika. Rainbow table publik untuk 10 juta password yang bocor teratas mencakup sebagian besar pemeriksaan kredensial berbasis reuse. Hash MD5 <code>5f4dcc3b5aa765d61d8327deb882cf99</code> kembali menjadi "password" karena seseorang, di suatu tempat, sudah hash dan menyimpan kedua sisi.</p>
+
+  <p><b>Kasus 2 - input acak pendek (lookup akhirnya bekerja melalui brute force).</b> Input alfabet huruf kecil 8 karakter memiliki sekitar 208 miliar kemungkinan (26 pangkat 8). Pada GPU konsumen kelas menengah yang menjalankan hashcat, throughput MD5 sekitar 50 miliar percobaan per detik pada hardware kelas 2026, yang berarti seluruh ruang 8 karakter disapu dalam waktu sekitar 4 detik. Input pendek yang tampak acak (kunci lisensi, token pendek, OTP 6 digit yang sudah digunakan) jatuh ke pendekatan ini tanpa precomputasi. Semakin pendek input, semakin dekat brute force mendekati instan.</p>
+
+  <p><b>Kasus 3 - input acak panjang (lookup TIDAK bekerja dalam praktik).</b> Input acak 16 karakter yang ditarik dari set ASCII printable 95-karakter penuh memiliki sekitar 5 * 10^31 kemungkinan. Pada 50 miliar percobaan per detik, menyapu seluruh ruang membutuhkan waktu lebih lama dari usia alam semesta. Hash itu sendiri masih dapat dibalik secara matematis (collisions ada berdasarkan pigeonhole), tetapi tidak ada tabel precomputed yang mencakup ruang ini dan tidak ada run brute-force yang selesai dalam waktu manusia. Ini adalah kasus yang dimaksud komunitas kriptografi ketika mengatakan MD5 satu arah "dalam praktik".</p>
+
+  <h2>Apa artinya ini untuk hash yang Anda miliki sekarang</h2>
+
+  <p>Hash itu sendiri tidak memberi tahu Anda kasus mana Anda berada - 32 karakter hex terlihat identik terlepas dari panjang atau entropi input. Tiga pemeriksaan cepat mempersempit pertanyaan kelayakan praktis:</p>
+
+  <ul>
+    <li><b>Coba dulu layanan rainbow table publik.</b> Jika jawaban kembali dalam waktu kurang dari satu detik, input adalah Kasus 1 (kamus). Hasil lookup memberi tahu Anda input - dan memberi tahu Anda bahwa input cukup lemah sehingga siapa pun dengan hash itu dan koneksi internet juga bisa menemukannya.</li>
+    <li><b>Perkirakan panjang input.</b> Jika Anda tahu sumber menghasilkan kunci acak 8 karakter atau lebih pendek, Kasus 2 berlaku dan pencarian brute force akan selesai dalam hitungan detik hingga jam pada satu GPU. Jika sumber menghasilkan 16+ karakter acak dari alfabet luas, Kasus 3 berlaku dan jawaban praktisnya adalah "tidak bisa".</li>
+    <li><b>Periksa domain sumber.</b> Password pengguna (terutama yang lama, terutama tanpa salt) biasanya Kasus 1 atau Kasus 2. Token API, cookie sesi, dan byte acak yang dihasilkan library biasanya Kasus 3. Hash yang di-salt (di mana input adalah "salt + rahasia") memindahkan seluruh pertanyaan ke Kasus 3 terlepas dari panjang rahasia karena salt memperluas input efektif.</li>
+  </ul>
+
+  <h2>Mengapa "dekripsi" adalah kosakata yang salah</h2>
+
+  <p>Enkripsi adalah dua arah berdasarkan desain - algoritma yang sama berjalan ke depan (enkripsi) dan ke belakang (dekripsi) dengan kunci yang dipegang pengguna sah. Hashing adalah satu arah berdasarkan desain - algoritma hanya berjalan ke depan, dan tidak ada fungsi invers dalam spec sama sekali. Apa yang layanan lookup publik sebut "dekripsi MD5" adalah lookup balik yang dihitung sebelumnya: mereka hash miliaran input umum sebelumnya dan menyimpan kedua sisi, sehingga langkah "dekripsi" hanyalah query database terhadap indeks yang dibangun sebelumnya itu. Matematika di balik MD5 tidak melakukan apa pun selama lookup; databaselah yang melakukan pekerjaan. <a href="/guides/why-md5-cannot-be-decrypted.html">Mengapa MD5 tidak bisa didekripsi</a> menelusuri detail kriptografis untuk pembaca yang penasaran matematika; <a href="/guides/md5-decrypt-online.html">Alat dekripsi MD5 online</a> menjelaskan mengapa situs yang mengklaim "mendekripsi" hash apa pun salah menamai operasi.</p>
+
+  <h2>Bacaan terkait di situs ini</h2>
+
+  <ul>
+    <li><a href="/guides/md5-decode.html">MD5 decode</a> - kebenaran satu arah yang sama dibingkai dari sudut kosakata "decode".</li>
+    <li><a href="/guides/read-and-compare-md5-hashes-correctly.html">Membaca dan membandingkan hash MD5 dengan benar</a> - case, spasi, dan format hex saat memverifikasi hash terhadap nilai yang diharapkan.</li>
+    <li><a href="/guides/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html">Alternatif MD5 (bcrypt, Argon2id, SHA-256): kapan masing-masing cocok</a> - jika tujuannya adalah penyimpanan password, tidak satu pun dari tiga kasus ini berlaku dan algoritma berbeda menjawab pertanyaan nyata.</li>
+    <li><a href="/md5-converter.html">/md5-converter.html</a> - alat yang menjalankan arah maju (text masuk, hash keluar) ketika Anda perlu memverifikasi hash yang diberikan seseorang.</li>
+  </ul>
+</article>

@@ -1,0 +1,47 @@
+<article class="guide-body">
+  <h1>Giai Ma Hash MD5: Khi Nao Lookup Hoat Dong, Khi Nao Khong</h1>
+  <p class="lead">"Giai ma" la tu sai, nhung cau hoi thuc te dang sau no la that: dan chuoi hex 32 ky tu vao mot bang tra cuu nguoc va dau vao goc doi khi xuat hien, doi khi khong. Su khac biet xuong toi viec hash cua ban co duoc tao tu cai gi do ma mot bang dat truoc da biet hay khong. Trang nay di qua ba truong hop quyet dinh cau tra loi.</p>
+  <p class="reviewed">Cap nhat lan cuoi: 2026-05-20</p>
+  <p class="byline">Duoc nhom bien tap FreetoolOnline xem xet</p>
+
+  <table class="quick-facts">
+    <thead><tr><th>Thuoc tinh</th><th>Gia tri</th></tr></thead>
+    <tbody>
+      <tr><td>Thuat toan</td><td>MD5 (RFC 1321, 1992)</td></tr>
+      <tr><td>Dau ra</td><td>Digest 128 bit, render thanh 32 ky tu hex</td></tr>
+      <tr><td>Huong nguoc</td><td>KHONG duoc spec dinh nghia; tra cuu dung bang dat truoc, khong phai toan hoc</td></tr>
+      <tr><td>Cong cu trien khai</td><td><a href="/md5-converter.html">/md5-converter.html</a> (mot chieu: text -&gt; hash)</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Ba truong hop quyet dinh xem tra cuu co hoat dong khong</h2>
+
+  <p><b>Truong hop 1 - dau vao tu dien pho bien (tra cuu thuong hoat dong).</b> Neu ban goc la mot tu tieng Anh ngan, mot mat khau pho bien ("123456", "qwerty"), mot ket hop ten-ho-cong-nam thuong gap, hoac bat ky gia tri nao ma nguoi xay rainbow table da hash truoc, tra cuu tim ra ngay lap tuc. Rainbow table cong khai cho top 10 trieu mat khau bi ro ri bao quat da so cac kiem tra credential dua tren su dung lai. Hash MD5 <code>5f4dcc3b5aa765d61d8327deb882cf99</code> ngoc lai thanh "password" vi ai do, o dau do, da hash va luu ca hai phia.</p>
+
+  <p><b>Truong hop 2 - dau vao ngau nhien ngan (tra cuu cuoi cung hoat dong qua vu luc).</b> Mot dau vao chu thuong 8 ky tu co khoang 208 ty kha nang (26 mu 8). Tren mot GPU tieu dung tam trung chay hashcat, throughput MD5 khoang 50 ty lan thu moi giay tren phan cung lop 2026, nghia la toan bo khong gian 8 ky tu quet trong khoang 4 giay. Dau vao ngan trong nhu ngau nhien (license key, token ngan, OTP 6 chu so da duoc dung) deu thua truoc cach tiep can nay khong can dat truoc. Dau vao cang ngan, vu luc cang gan voi tuc thoi.</p>
+
+  <p><b>Truong hop 3 - dau vao ngau nhien dai (tra cuu KHONG hoat dong trong thuc te).</b> Mot dau vao ngau nhien 16 ky tu lay tu day ASCII in duoc 95 ky tu co khoang 5 * 10^31 kha nang. O 50 ty lan thu moi giay, quet toan bo khong gian mat lau hon tuoi cua vu tru. Ban than hash van co the dao nguoc ve mat toan hoc (collisions ton tai theo nguyen ly chim bo cau), nhung khong bang dat truoc nao bao quat khong gian nay va khong run vu luc nao ket thuc trong thoi gian con nguoi. Day la truong hop ma cong dong mat ma noi den khi noi MD5 mot chieu "trong thuc te".</p>
+
+  <h2>Dieu nay co nghia gi cho hash ban dang co</h2>
+
+  <p>Hash mot minh khong cho ban biet ban o truong hop nao - 32 ky tu hex trong giong het nhau bat ke do dai hay entropy cua dau vao. Ba kiem tra nhanh thu hep cau hoi kha thi trong thuc te:</p>
+
+  <ul>
+    <li><b>Thu mot dich vu rainbow table cong khai truoc.</b> Neu cau tra loi tro ve trong duoi mot giay, dau vao la Truong hop 1 (tu dien). Ket qua tra cuu cho ban biet dau vao - va cho ban biet dau vao yeu den muc bat ky ai co hash do va ket noi mang cung co the tim duoc.</li>
+    <li><b>Uoc luong do dai dau vao.</b> Neu ban biet nguon tao khoa ngau nhien 8 ky tu hoac ngan hon, Truong hop 2 ap dung va mot run vu luc se ket thuc trong giay den gio tren mot GPU duy nhat. Neu nguon tao 16+ ky tu ngau nhien tu bang chu cai rong, Truong hop 3 ap dung va cau tra loi thuc te la "khong the".</li>
+    <li><b>Kiem tra mien nguon.</b> Mat khau nguoi dung (dac biet la cu, dac biet khong co salt) thuong la Truong hop 1 hoac 2. API token, session cookie, va byte ngau nhien sinh tu library thuong la Truong hop 3. Hash co salt (noi dau vao la "salt + bi mat") chuyen toan bo cau hoi sang Truong hop 3 bat ke do dai bi mat vi salt mo rong dau vao hieu dung.</li>
+  </ul>
+
+  <h2>Tai sao "giai ma" la tu vung sai</h2>
+
+  <p>Ma hoa la hai chieu theo thiet ke - cung mot thuat toan chay tien (ma hoa) va nguoc (giai ma) voi mot khoa ma nguoi dung hop le giu. Hashing la mot chieu theo thiet ke - thuat toan chi chay tien, va khong co ham nghich trong spec. Cai ma dich vu tra cuu cong khai goi la "giai ma MD5" la tra cuu nguoc dat truoc: ho hash hang ty dau vao pho bien truoc va luu ca hai phia, nen buoc "giai ma" chi la mot query database chong lai chi muc dat truoc do. Toan hoc dang sau MD5 khong lam gi trong tra cuu; database lam viec. <a href="/guides/why-md5-cannot-be-decrypted.html">Tai sao MD5 khong the giai ma</a> di qua chi tiet mat ma cho doc gia to mo ve toan; <a href="/guides/md5-decrypt-online.html">Cong cu online giai ma MD5</a> giai thich tai sao cac trang tuyen bo "giai ma" bat ky hash nao dang dat ten sai cho thao tac.</p>
+
+  <h2>Bai doc lien quan tren site nay</h2>
+
+  <ul>
+    <li><a href="/guides/md5-decode.html">MD5 decode</a> - cung su that mot chieu duoc khung tu goc tu vung "decode".</li>
+    <li><a href="/guides/read-and-compare-md5-hashes-correctly.html">Doc va so sanh hash MD5 dung cach</a> - hoa thuong, khoang trang, va dinh dang hex khi xac minh hash voi gia tri ky vong.</li>
+    <li><a href="/guides/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html">Cac lua chon thay the MD5 (bcrypt, Argon2id, SHA-256): khi nao moi cai phu hop</a> - neu muc tieu la mot kho mat khau, khong cai nao trong ba truong hop nay ap dung va mot thuat toan khac tra loi cau hoi that.</li>
+    <li><a href="/md5-converter.html">/md5-converter.html</a> - cong cu chay huong tien (text vao, hash ra) khi ban can xac minh hash ai do dua cho ban.</li>
+  </ul>
+</article>
