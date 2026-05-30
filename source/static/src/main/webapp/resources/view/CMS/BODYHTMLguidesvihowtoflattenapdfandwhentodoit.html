@@ -1,0 +1,55 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Cach lam phang mot PDF - va khi nao thuc hien</b></h1>
+    <p><em>Soat lai lan cuoi 2026-05-04. "Lam phang" mot PDF la thao tac nuong trang thai thay duoc cua moi doi tuong nhieu lop - truong bieu mau, ghi chu, binh luan, chu ky, dau, lop - vao do hoa trang tinh, de ket qua trong giong het voi trinh xem nhung khong con mang cau truc co the chinh sua / dien lai / trich xuat ben duoi. Cong cu mien phi <a href="/pdf-tools/flatten-pdf.html">Flatten PDF</a> chay thao tac phia may chu va tra ve tep da lam phang de tai ve. Hau het doc gia tim den no vi mot trong ba ly do: mot dich vu ky dien tu da tu choi mot PDF van con cac truong bieu mau song, mot he thong toa an / kiem toan mong doi mot ban sao luu tru tinh, hoac mot cong cu downstream cu render lai mot ghi chu le ra phai dung yen.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Quyet dinh 30 giay.</b> Lam phang khi PDF phai trong giong het voi moi doc gia tren moi thiet bi, khong con chinh sua duoc nua: luong e-sign, nop toa an / kiem toan, ban sao luu tru, in. KHONG lam phang khi cac doc gia downstream van can dien bieu mau (ban se khoa ho ra), khi mot trinh chinh sua tuong lai nen tiep tuc chinh sua cac lop (ban khong the un-flatten), hoac khi yeu cau truy cap / PDF gan the phu thuoc vao cau truc logic ma lam phang co the sap. Mo <a href="/pdf-tools/flatten-pdf.html">Flatten PDF</a>, tai tep len, va tai ket qua da lam phang ve; tep goc xoay khoi luu tru AWS freetoolonline sau cua so luu giu chuan vi vay ban chi giu nhung gi ban da luu cuc bo.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Lam phang thuc su lam gi voi mot PDF</b></h2>
+    <p>Mot PDF (dinh dang mo ta trang duoc dinh nghia boi ISO 32000-1 / ISO 32000-2) la mot cay cua cac doi tuong nhieu lop. Trang thay duoc la mot luong cac toan tu ve; tren do tep co the mang mot tu dien <code>AcroForm</code> (cac truong bieu mau co the dien), mot mang <em>cac ghi chu</em> moi trang (binh luan, dau, ghi chu dinh, van ban tu do, danh dau muc, dau redaction), mot <em>tu dien chu ky</em> tuy chon (chu ky ma hoa cong voi hinh thuc thay duoc cua no), va <em>Optional Content Groups</em> tuy chon (cac lop co the bat hoac tat). Tat ca dieu nay nam "tren" trang tinh nhu cac overlay trong suot. Mot thao tac lam phang di qua cay nay va son lai moi overlay vao luong noi dung trang ben duoi nhu muc don gian: gia tri truong bieu mau tro thanh van ban tinh duoc ve tai vi tri truong, ghi chu tro thanh mot hinh dang co dinh voi mot mau co dinh, hinh thuc thay duoc cua chu ky tro thanh mot hinh anh tinh cua glyph chu ky, va cau truc bat-tat lop bi sap lai thanh bat cu gi co the thay tai thoi diem lam phang. Sau khi lam phang, mo PDF trong bat ky trinh doc nao hien thi cac pixel giong nhau - nhung tu dien AcroForm, mang ghi chu, va Optional Content Groups da bi loai bo, nen khong con gi de dien, chinh sua, hoac bat tat.</p>
+
+    <h2 class="text-uppercase"><b>Khi nao ban thuc su can lam phang</b></h2>
+    <p>Lam phang giai quyet mot phan loai van de cu the: PDF can render giong het khap moi noi va van khong tuong tac. Bon tinh huong thong dung:</p>
+    <ul>
+        <li><b>Dich vu e-sign tu choi cac PDF nhieu lop.</b> Nhieu nen tang e-sign tu choi ap dung mot chu ky ma hoa cuoi cung len tren mot PDF van con cac truong bieu mau song hoac chu ky chua ky, vi gia tri bieu mau co the thay doi sau khi ky. Lam phang bieu mau truoc bien cac gia tri truong thanh van ban tinh, sau do buoc e-sign co the boc toan bo tai lieu trong mot phong bi ma hoa.</li>
+        <li><b>Nop toa an / kiem toan / quy dinh.</b> Cac don nop thuong chi dinh mot dinh dang luu tru tinh - doi khi PDF/A, doi khi "PDF da lam phang". Nguoi xem xet can su dam bao rang tep ho nhan duoc chinh xac la nhung gi moi nguoi xem xet khac se thay; cac doi tuong nhieu lop va truong bieu mau tao kha nang mot trang render khac tren mot trinh doc khac.</li>
+        <li><b>Chia se ban thao co ghi chu nhu ban cuoi cung.</b> Khi xem xet bien tap da xong va PDF co danh dau nen gui di nhu ban cuoi, lam phang nuong cac binh luan va danh dau vao trang de chung khong the bi xoa boi mot doc gia downstream bam vao nut sai. Cac ghi chu van thay duoc nhu muc thay vi nhu cac overlay co the loai bo.</li>
+        <li><b>Khoa mot trang da ky de chu ky thay duoc khong drift.</b> Mot hinh thuc chu ky thay duoc song chi nhu mot ghi chu co the duoc di chuyen, an, hoac loai bo boi mot bien tap vien. Lam phang chuyen doi hinh thuc thanh noi dung trang tinh; tu dien chu ky ma hoa la mot moi quan tam rieng, nhung glyph thay duoc dung di chuyen duoc.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Khi nao KHONG lam phang</b></h2>
+    <p>Lam phang la mot chieu. Cau truc nhieu lop goc da di sau buoc lam phang; ban khong the un-flatten mot PDF da nuong tro lai mot bieu mau co the dien. Ba truong hop khi lam phang la dong tac sai:</p>
+    <ul>
+        <li><b>Cac doc gia downstream van can dien bieu mau.</b> Neu PDF la mot bieu mau thue, mot don xin viec, hoac bat ky template trong nao ma doc gia tiep theo phai go vao, lam phang truoc khi gui de lai cho ho mot buc tranh tinh cua cac o trong. Gui tep nhieu lop; de nguoi nhan dien, sau do yeu cau ho lam phang truoc khi tra ve neu luong cong viec can mot ban sao khong thay doi.</li>
+        <li><b>Mot trinh chinh sua tuong lai mong doi tiep tuc chinh sua.</b> Cac ghi chu va binh luan nhieu lop la cach nguoi xem xet giao tiep. Lam phang mot ban thao xoa cuoc doi thoai - nguoi xem xet tiep theo khong the xoa mot binh luan cu vi no khong con la mot binh luan, chi la muc tren trang. Giu phien ban nhieu lop cho vong xem xet bien tap va chi lam phang ban cuoi.</li>
+        <li><b>Truy cap PDF gan the phu thuoc vao cau truc logic.</b> Mot PDF gan the mang mot cay cau truc (doan van, tieu de, muc danh sach, o bang) ma trinh doc man hinh di qua. Mot so trien khai lam phang bao toan the; nhung cai khac sap chung. Neu tai lieu duoc tieu thu boi cong nghe tro giup, hay xac minh cac the song sot buoc lam phang, hoac dung lam phang chut nao.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Lam phang tren freetoolonline</b></h2>
+    <p>Mo <a href="/pdf-tools/flatten-pdf.html">Flatten PDF</a>, tai PDF len, va tai ket qua da lam phang ve. Tep duoc xu ly tren dich vu AWS freetoolonline: no duoc tai len qua pipeline tai len chuan, thao tac lam phang chay phia may chu, va tep dau ra xoay khoi luu tru cua dich vu sau cua so luu giu nen ban nen tai ve va luu cuc bo neu can giu. Cong cu tra ve mot PDF noi moi truong bieu mau, ghi chu, va hinh thuc chu ky thay duoc da duoc nuong vao trang; kich thuoc tep thuong giam nhe (cau truc co the chinh sua da di) va ket qua mo voi cac pixel giong nhau trong bat ky trinh doc PDF nao.</p>
+
+    <h2 class="text-uppercase"><b>Nhung gi lam phang KHONG la</b></h2>
+    <p>Ba thao tac thuong bi nham lan voi lam phang; moi cai la mot hanh dong khac voi mot ket qua khac.</p>
+    <ul>
+        <li><b>"Save as PDF" tu hop thoai in.</b> Cai nay render lai PDF qua mot may in ao, thuong lam phang lop - nhung cung co the rasterize lai noi dung vector (vi vay van ban tro thanh mot buc tranh van ban va dung co the chon / tim kiem). Lam phang giu cac toan tu ve ben duoi noi co the; print-to-PDF co the khong.</li>
+        <li><b>Nen mot PDF.</b> Nen viet lai cac luong noi dung trang de chiem it byte hon - KHONG loai bo tu dien AcroForm, mang ghi chu, hoac lop. Mot PDF da nen van co the chinh sua; mot PDF da lam phang thi khong. Xem <a href="/guides/pdf-preflight-online-what-it-actually-checks.html">PDF Preflight Online - No thuc su kiem tra gi</a> cho doi tac kiem tra cau truc cung khac biet voi lam phang.</li>
+        <li><b>Xoa mat khau.</b> Xoa mat khau thay doi tu dien ma hoa / quyen; khong cham vao cac doi tuong nhieu lop. Mot PDF da xoa mat khau van co the dien / chinh sua. Xem <a href="/guides/pdf-password-types-owner-vs-user.html">Cac loai mat khau PDF - Owner vs User</a> cho hai loai mat khau va <a href="/guides/how-to-sign-pdf-after-removing-a-password.html">Cach ky mot PDF sau khi xoa mat khau</a> cho luong ky-sau-khi-xoa.</li>
+    </ul>
+
+    <details class="faq-item">
+  <summary><b>flatten-pdf.html co tai tep len hay chay cuc bo trong trinh duyet?</b></summary>
+  <p>Trang cau /flatten-pdf.html tai PDF len may chu freetoolonline - day khong phai mot cong cu lam phang hoan toan offline, chi-client hoac chi-trinh-duyet, va no khong chay cuc bo trong trinh duyet. Khang dinh tai len ro rang: pipeline mang tep den may chu freetoolonline, buoc lam phang chay o do, va lien ket tai ve xoay khoi luu tru cua dich vu sau cua so luu giu chuan.</p>
+
+    <p><em>Cac huong dan PDF lien quan: <a href="/guides/pdf-editing-ladder.html">Thang chinh sua PDF</a> (thang cua cac tuy chon chinh sua truoc khi lam phang la buoc dung), <a href="/guides/pdf-preflight-online-what-it-actually-checks.html">PDF Preflight Online - No thuc su kiem tra gi</a> (kiem tra san sang in khac biet voi lam phang), va <a href="/guides/pdf-vs-heic-for-document-archival.html">PDF vs HEIC de luu tru tai lieu</a> (lua chon dinh dang cho ban sao luu tru ma lam phang tao ra).</em></p>
+</details>
+</div>

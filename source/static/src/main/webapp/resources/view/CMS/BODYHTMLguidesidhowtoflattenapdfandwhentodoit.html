@@ -1,0 +1,55 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Cara meratakan PDF - dan kapan melakukannya</b></h1>
+    <p><em>Tinjauan terakhir 2026-05-04. "Meratakan" PDF adalah operasi memanggang status visible dari setiap objek berlapis - field formulir, anotasi, komentar, tanda tangan, stempel, lapisan - menjadi grafik halaman statis, sehingga hasilnya terlihat identik bagi penampil tetapi tidak lagi membawa struktur yang dapat diedit / diisi ulang / diekstrak ulang di bawahnya. Alat gratis <a href="/pdf-tools/flatten-pdf.html">Flatten PDF</a> menjalankan operasi di sisi server dan mengembalikan file yang sudah diratakan untuk diunduh. Sebagian besar pembaca mencarinya karena salah satu dari tiga alasan: layanan e-signing menolak PDF yang masih memiliki field formulir aktif, sistem pengadilan / audit mengharapkan salinan arsip statis, atau alat downstream terus merender ulang anotasi yang seharusnya tetap pada tempatnya.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Keputusan 30 detik.</b> Ratakan ketika PDF harus terlihat persis sama bagi setiap pembaca di setiap perangkat, tanpa pengeditan lebih lanjut yang mungkin: alur e-sign, pengajuan pengadilan / audit, salinan arsip, cetakan. JANGAN ratakan ketika pembaca downstream masih perlu mengisi formulir (Anda akan mengunci mereka), ketika editor masa depan harus terus mengedit lapisan (Anda tidak dapat membatalkan-rata), atau ketika persyaratan aksesibilitas / PDF bertag bergantung pada struktur logis yang dapat dikolapskan oleh perataan. Buka <a href="/pdf-tools/flatten-pdf.html">Flatten PDF</a>, unggah file, dan unduh hasil yang diratakan; file asli berputar keluar dari penyimpanan AWS freetoolonline setelah jendela retensi standar sehingga Anda hanya menyimpan apa yang Anda simpan secara lokal.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Apa yang sebenarnya dilakukan perataan pada PDF</b></h2>
+    <p>PDF (format deskripsi halaman yang didefinisikan oleh ISO 32000-1 / ISO 32000-2) adalah pohon objek berlapis. Halaman yang terlihat adalah aliran operator gambar; di atasnya file dapat membawa kamus <code>AcroForm</code> (field formulir yang dapat diisi), array <em>anotasi</em> per halaman (komentar, stempel, catatan tempel, teks bebas, markup tinta, tanda redaksi), <em>kamus tanda tangan</em> opsional (tanda tangan kriptografis ditambah penampilan visualnya), dan <em>Grup Konten Opsional</em> opsional (lapisan yang dapat diaktifkan atau dinonaktifkan). Semua ini berada "di atas" halaman statis seperti overlay transparan. Operasi perataan menelusuri pohon ini dan mengecat ulang setiap overlay ke dalam aliran konten halaman dasar sebagai tinta polos: nilai field formulir menjadi teks statis yang digambar di posisi field, anotasi menjadi bentuk tetap dengan warna tetap, penampilan visible tanda tangan menjadi gambar statis dari glyph tanda tangan, dan struktur toggle-lapisan dikolapskan ke apa pun yang terlihat pada waktu perataan. Setelah perataan, membuka PDF di pembaca apa pun menampilkan piksel yang sama - tetapi kamus AcroForm, array anotasi, dan Grup Konten Opsional telah dihapus, jadi tidak ada yang tersisa untuk diisi, diedit, atau dialihkan.</p>
+
+    <h2 class="text-uppercase"><b>Kapan Anda benar-benar perlu meratakan</b></h2>
+    <p>Perataan menyelesaikan kategori masalah konkret: PDF perlu merender secara identik di mana pun dan tetap non-interaktif. Empat situasi umum:</p>
+    <ul>
+        <li><b>Layanan e-sign yang menolak PDF berlapis.</b> Banyak platform e-sign menolak menerapkan tanda tangan kriptografis terakhir di atas PDF yang masih memiliki field formulir aktif atau placeholder tanda tangan yang belum ditandatangani, karena nilai formulir dapat berubah setelah penandatanganan. Meratakan formulir terlebih dahulu mengubah nilai field menjadi teks statis, setelah itu langkah e-sign dapat membungkus seluruh dokumen dalam satu amplop kriptografis.</li>
+        <li><b>Pengajuan pengadilan / audit / peraturan.</b> Pengajuan sering menentukan format arsip statis - kadang PDF/A, kadang "PDF yang diratakan". Pemeriksa membutuhkan jaminan bahwa file yang mereka terima adalah persis apa yang akan dilihat oleh setiap pemeriksa lain; objek berlapis dan field formulir menciptakan kemungkinan halaman yang dirender berbeda pada pembaca yang berbeda.</li>
+        <li><b>Berbagi draf yang dianotasi sebagai final.</b> Ketika tinjauan editorial selesai dan PDF yang ditandai harus dikirim sebagai final, perataan memanggang komentar dan sorotan ke halaman sehingga tidak dapat dihapus oleh pembaca downstream yang mengklik tombol yang salah. Anotasi tetap terlihat sebagai tinta daripada sebagai overlay yang dapat dihapus.</li>
+        <li><b>Mengunci halaman yang ditandatangani sehingga tanda tangan visual tidak bergeser.</b> Penampilan tanda tangan visual yang hidup hanya sebagai anotasi dapat dipindahkan, disembunyikan, atau dihapus oleh editor. Perataan mengubah penampilan menjadi konten halaman statis; kamus tanda tangan kriptografis adalah keprihatinan terpisah, tetapi glyph visual berhenti dapat dipindahkan.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Kapan TIDAK meratakan</b></h2>
+    <p>Perataan adalah satu arah. Struktur berlapis asli hilang setelah langkah perataan; Anda tidak dapat membatalkan-rata PDF yang sudah dipanggang kembali ke formulir yang dapat diisi. Tiga kasus di mana meratakan adalah langkah yang salah:</p>
+    <ul>
+        <li><b>Pembaca downstream masih perlu mengisi formulir.</b> Jika PDF adalah formulir pajak, lamaran kerja, atau template kosong apa pun yang seharusnya diketik oleh pembaca berikutnya, meratakannya sebelum mengirim meninggalkan mereka dengan gambar statis kotak kosong. Kirim file berlapis; biarkan penerima mengisi, lalu minta mereka untuk meratakan sebelum kembali jika alur kerja membutuhkan salinan yang tidak dapat diubah.</li>
+        <li><b>Editor masa depan mengharapkan untuk terus mengedit.</b> Anotasi dan komentar berlapis adalah cara peninjau berkomunikasi. Meratakan draf menghapus dialog - peninjau berikutnya tidak dapat menghapus komentar usang karena itu bukan lagi komentar, hanya tinta di halaman. Pertahankan versi berlapis untuk loop editorial dan hanya ratakan final.</li>
+        <li><b>Aksesibilitas PDF bertag bergantung pada struktur logis.</b> PDF bertag membawa pohon struktur (paragraf, judul, item daftar, sel tabel) yang dilalui oleh pembaca layar. Beberapa implementasi perataan mempertahankan tag; yang lain mengolapskannya. Jika dokumen dikonsumsi oleh teknologi bantu, verifikasi tag selamat dari langkah perataan, atau jangan ratakan sama sekali.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Meratakan di freetoolonline</b></h2>
+    <p>Buka <a href="/pdf-tools/flatten-pdf.html">Flatten PDF</a>, unggah PDF, dan unduh hasil yang diratakan. File diproses di layanan AWS freetoolonline: diunggah melalui pipeline unggah standar, operasi perataan berjalan di sisi server, dan file output diputar keluar dari penyimpanan layanan setelah jendela retensi sehingga Anda harus mengunduh dan menyimpan secara lokal jika Anda perlu menyimpannya. Alat mengembalikan satu PDF di mana setiap field formulir, anotasi, dan penampilan tanda tangan yang terlihat telah dipanggang ke halaman; ukuran file biasanya turun sedikit (struktur yang dapat diedit hilang) dan hasilnya terbuka dengan piksel yang sama di pembaca PDF apa pun.</p>
+
+    <h2 class="text-uppercase"><b>Apa yang BUKAN perataan</b></h2>
+    <p>Tiga operasi sering dibingungkan dengan perataan; masing-masing adalah tindakan berbeda dengan hasil berbeda.</p>
+    <ul>
+        <li><b>"Save as PDF" dari dialog cetak.</b> Ini merender ulang PDF melalui printer virtual, yang biasanya meratakan lapisan - tetapi juga dapat me-rasterize ulang konten vektor (sehingga teks menjadi gambar teks dan berhenti dapat dipilih / dicari). Perataan mempertahankan operator gambar dasar di mana mungkin; print-to-PDF mungkin tidak.</li>
+        <li><b>Mengompres PDF.</b> Kompresi menulis ulang aliran konten halaman untuk mengambil lebih sedikit byte - TIDAK menghapus kamus AcroForm, array anotasi, atau lapisan. PDF yang dikompresi masih dapat diedit; PDF yang diratakan tidak. Lihat <a href="/guides/pdf-preflight-online-what-it-actually-checks.html">PDF Preflight Online - Apa yang Sebenarnya Diperiksa</a> untuk rekan pemeriksaan struktural yang juga berbeda dari perataan.</li>
+        <li><b>Menghapus kata sandi.</b> Penghapusan kata sandi mengubah kamus enkripsi / izin; tidak menyentuh objek berlapis. PDF yang kata sandinya dihapus masih dapat diisi / diedit. Lihat <a href="/guides/pdf-password-types-owner-vs-user.html">Tipe Kata Sandi PDF - Owner vs User</a> untuk dua tipe kata sandi dan <a href="/guides/how-to-sign-pdf-after-removing-a-password.html">Cara Menandatangani PDF Setelah Menghapus Kata Sandi</a> untuk alur tandatangani-setelah-hapus.</li>
+    </ul>
+
+    <details class="faq-item">
+  <summary><b>Apakah flatten-pdf.html mengunggah file atau berjalan secara lokal di browser Anda?</b></summary>
+  <p>Halaman jembatan /flatten-pdf.html mengunggah PDF ke server freetoolonline - ini bukan alat perataan yang sepenuhnya offline, hanya-klien, atau hanya-browser, dan tidak berjalan secara lokal di browser. Klaim unggah jelas: pipeline membawa file ke server freetoolonline, langkah perataan berjalan di sana, dan tautan unduh berputar keluar dari penyimpanan layanan setelah jendela retensi standar.</p>
+
+    <p><em>Panduan PDF terkait: <a href="/guides/pdf-editing-ladder.html">Tangga Pengeditan PDF</a> (tangga opsi pengeditan sebelum perataan adalah langkah yang tepat), <a href="/guides/pdf-preflight-online-what-it-actually-checks.html">PDF Preflight Online - Apa yang Sebenarnya Diperiksa</a> (pemeriksaan kesiapan cetak yang berbeda dari perataan), dan <a href="/guides/pdf-vs-heic-for-document-archival.html">PDF vs HEIC untuk Arsip Dokumen</a> (pilihan format untuk salinan arsip yang dihasilkan perataan).</em></p>
+</details>
+</div>

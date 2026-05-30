@@ -1,0 +1,96 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Cara mengompres file ZIP ke ukuran tertentu (2 MB, 25 MB, 100 KB)</b></h1>
+    <p><em>Tinjauan terakhir 2026-05-05. "Kompres ZIP ini di bawah 25 MB agar saya bisa mengirim email" terdengar seperti satu operasi, tetapi itu tiga. Ukuran output arsip ZIP ditentukan oleh apa yang ada di dalam arsip, oleh seberapa kompresibel byte tersebut, dan oleh level deflate yang dipilih pada saat penulisan. Tidak ada yang diatur ke "tepat N MB". Panduan ini menyebutkan apa yang sebenarnya mengontrol ukuran output ZIP, dan urutan untuk menerapkan alat di situs ini sehingga Anda mencapai batas target (2 MB, 25 MB batas lampiran Gmail / Outlook, 100 KB batas unggah) pada percobaan pertama atau kedua.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Jawaban 30 detik.</b> ZIP tidak dapat diperintahkan untuk "menghasilkan output 25 MB". Ukuran yang Anda dapatkan adalah apa pun yang kebetulan dihasilkan <code>deflate</code> pada byte yang Anda umpankan. Untuk mencapai batas tertentu, lakukan ini secara berurutan: (1) kecilkan kontributor terbesar terlebih dahulu - foto, video, PDF - menggunakan alat yang tepat per file (<a href="/image-tools/compress-image.html">Compress Image</a> untuk JPG/PNG, <a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> untuk sumber iPhone, <a href="/image-tools/photo-editor.html">Photo Editor</a> jika Anda juga perlu memotong atau mengubah ukuran). (2) Lalu ZIP file yang lebih kecil dengan <a href="/zip-tools/zip-file.html">ZIP File</a>. (3) Jika arsip masih di atas batas, bagi: ZIP dapat dibagi menjadi bagian multi-volume yang masing-masing pas dengan transportasi Anda, dan sebagian besar pembaca arsip akan merakitnya kembali.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Mengapa ukuran output ZIP tidak deterministik</b></h2>
+    <p>Arsip ZIP adalah format container dengan kompresi deflate per file. Tiga hal yang menentukan jumlah byte yang Anda dapatkan di output, dan Anda hanya mengontrol dua yang pertama:</p>
+    <ol>
+        <li><b>Apa yang ada di arsip.</b> Jika Anda meletakkan JPG 10 MB ke dalam ZIP, Anda mendapatkan sesuatu yang mendekati 10 MB keluar. JPG sudah dikompres; deflate tidak dapat secara berarti menyusutkan byte yang sudah dikompres. Hal yang sama berlaku untuk MP4, HEIC, PNG, MP3, ODT, DOCX, XLSX, PDF modern - semua ini menyimpan data mereka dalam format internal yang dikompres. Membungkus ZIP hampir tidak mengurangi ukuran.</li>
+        <li><b>Seberapa kompresibel byte sebenarnya.</b> Teks polos, CSV, log mentah, BMP, WAV, TIFF tidak terkompresi, kode sumber - ini sangat kompresibel. Log teks 10 MB dapat mendarat dekat 1 MB setelah deflate. Jadi arsip yang sama dapat menyusut 10x atau 1,05x tergantung apa yang ada di dalamnya; tidak ada "rasio ZIP" tunggal.</li>
+        <li><b>Level deflate.</b> Sebagian besar alat ZIP online dan "Send to compressed folder" tingkat-OS menggunakan level 6 (default). Level 9 (maksimum) memakan waktu lebih lama untuk dihitung dan memberi Anda beberapa persen lebih banyak pengecilan pada konten yang dapat dikompres - tidak pernah lebih dari 5-10%. Level 1 (tercepat) memberi Anda kembali hampir ukuran yang sama dengan tanpa kompresi. Slider level TIDAK secara ajaib mencapai batas target.</li>
+    </ol>
+    <p>Menyatukan: folder foto JPG tidak akan menyusut secara berarti tidak peduli level deflate apa yang Anda pilih, karena byte sudah dikompres. Folder ekspor CSV dapat menyusut 8x di level 9 vs 7x di level 6. Tugas "kompres di bawah 25 MB" Anda karena itu bukan pilihan level deflate - itu adalah pertanyaan tentang konten apa yang Anda masukkan.</p>
+
+    <h2 class="text-uppercase"><b>Alur kerja dua langkah yang benar-benar mencapai batas</b></h2>
+    <p>Untuk 90% kasus "saya butuh ini di bawah N MB untuk email / unggah / portal", jalurnya adalah: kecilkan kontributor terbesar sebelum Anda ZIP, lalu ZIP versi yang lebih kecil. Urutannya penting - mem-ZIP terlebih dahulu lalu mencoba menyusutkan ZIP adalah jalur lambat karena Anda kehilangan optimasi per-file yang dapat diberikan compress-image dan heic-to-jpg.</p>
+
+    <details class="faq-item">
+  <summary><b>Langkah 1: identifikasi dan kecilkan kontributor terbesar</b></summary>
+  <p>Buka folder. Urutkan berdasarkan ukuran, turun. Tiga file teratas hampir selalu menyumbang &gt;80% dari total. Mereka biasanya foto, PDF yang dipindai, video, atau sumber HEIC dari iPhone. Terapkan alat yang tepat per tipe file:</p>
+    <ul>
+        <li><b>Foto JPG / PNG.</b> Jalankan <a href="/image-tools/compress-image.html">Compress Image</a>. Slider kualitas berjalan dari 1 ke 100; untuk "cukup baik untuk email" band 60-75 menjatuhkan JPG 4 MB menjadi 600-900 KB tanpa kehilangan kualitas yang terlihat. Baca <a href="/guides/compress-jpeg-without-losing-quality-quality-vs-size.html">Kompres JPEG tanpa kehilangan kualitas - kualitas vs ukuran</a> untuk perilaku slider.</li>
+        <li><b>Foto HEIC dari iPhone.</b> Jalankan <a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a>. HEIC sudah efisien, tetapi sebagian besar klien email menolak lampiran .heic secara langsung; mengkonversi ke JPG pada kualitas 75 menukar 5-15% pertumbuhan ukuran untuk kemampuan dibuka universal. Baca <a href="/guides/how-to-convert-heic-to-jpg-step-by-step.html">Cara mengkonversi HEIC ke JPG langkah demi langkah</a> untuk alur per-file.</li>
+        <li><b>PDF dipindai / berat gambar.</b> PDF yang dipindai adalah foto dalam wrapper PDF. Ekspor ulang pada DPI yang lebih rendah atau kompres ulang gambar terlebih dahulu. Alat PDF situs ini mencakup <a href="/guides/how-to-flatten-a-pdf-and-when-to-do-it.html">cara meratakan PDF</a> dan <a href="/guides/pdf-editing-ladder.html">tangga pengeditan PDF</a> untuk urutan alat yang tepat.</li>
+        <li><b>Video.</b> ZIP video hampir tidak melakukan apa-apa. Encode ulang melalui <a href="/video-tools/video-converter.html">Video Converter</a> dengan bitrate yang lebih rendah terlebih dahulu; <a href="/guides/mp4-vs-webm-for-web.html">MP4 vs WebM untuk web</a> mencakup trade-off codec.</li>
+        <li><b>Teks polos / CSV / log.</b> Tidak ada langkah pra-yang diperlukan; ini mengkompres 5-10x di dalam ZIP pada level 6 sudah.</li>
+    </ul>
+</details>
+<details class="faq-item">
+  <summary><b>Langkah 2: ZIP file yang lebih kecil</b></summary>
+  <p>Buka <a href="/zip-tools/zip-file.html">ZIP File</a>, seret file yang sudah dikecilkan, dan unduh arsipnya. Level default (6) adalah pilihan yang tepat untuk hampir semua kasus - level 9 mendapat 1-3% lebih banyak pada konten yang dapat dikompres dan menambahkan waktu CPU yang tidak Anda dapatkan kembali. Baca <a href="/guides/how-to-choose-a-compression-level.html">Cara memilih level kompresi</a> jika Anda memiliki alasan khusus untuk mendorong level 9.</p>
+    <p>Sekarang periksa ukuran arsip terhadap batas Anda.</p>
+</details>
+<h2 class="text-uppercase"><b>Jika arsip masih di atas batas: bagi, jangan coba lagi</b></h2>
+    <p>Jika alur kerja dua langkah Anda menempatkan arsip pada, katakanlah, 32 MB tetapi Gmail membatasi pada 25 MB, JANGAN terus menaikkan level deflate - Anda paling banyak kekurangan 1-2 MB dan level 9 tidak akan menyelamatkan Anda. Dua jalur dari sini:</p>
+    <ol>
+        <li><b>Bagi arsip menjadi bagian multi-volume.</b> Sebagian besar pengarsip desktop (7-Zip, WinRAR, Keka) menulis ZIP / 7z multi-volume yang penerima rakit secara otomatis. Untuk ZIP murni, atur ukuran volume ke batas Anda (25 MB untuk lampiran Gmail / Outlook, 10 MB untuk relay email lebih lama, 4 GB untuk flash drive FAT32). Panduan <a href="/guides/online-zip-vs-7z-vs-rar-which-to-pick.html">online zip vs 7z vs rar</a> menyebutkan format mana yang paling mungkin didukung penerima secara native.</li>
+        <li><b>Jatuhkan kontributor terbesar yang tersisa.</b> Urutkan konten arsip berdasarkan ukuran lagi - jika satu file adalah 60% byte, kirim melalui tautan (Drive, Dropbox, WeTransfer) dan ZIP hanya sisanya.</li>
+    </ol>
+    <p>Jalur mana pun lebih cepat dan lebih andal daripada mencoba ulang kompresi. Baca <a href="/guides/how-to-compress-a-folder-for-email.html">Cara mengompres folder untuk email</a> untuk referensi lengkap per-batas-kotak-surat.</p>
+
+    <h2 class="text-uppercase"><b>Resep batas spesifik</b></h2>
+    <p><b>Batas = 100 KB.</b> Hampir pasti formulir unggah (portal pemerintah, tugas sekolah, lamaran kerja). Pada ukuran ini, Anda tidak mengkompres - Anda memilih satu atau dua foto dan mengubah ukurannya. Gunakan <a href="/image-tools/photo-editor.html">Photo Editor</a> untuk mengubah ukuran ke 1200-1600 px lebar, simpan sebagai JPG kualitas 60, dan ZIP hanya jika formulir membutuhkan .zip. JPG tunggal yang diubah ukurannya biasanya di bawah 100 KB dengan sendirinya; wrapper ZIP menambahkan 30 byte header.</p>
+    <p><b>Batas = 2 MB.</b> Umum untuk unggahan portal, lampiran email ringan. Jalankan <a href="/image-tools/compress-image.html">Compress Image</a> pada kualitas 70 pada JPG, konversi HEIC ke JPG pada kualitas 70, lalu ZIP. Untuk 5-10 foto, hasilnya hampir selalu mendarat pada 1,4-1,8 MB.</p>
+    <p><b>Batas = 25 MB.</b> Batas lampiran default Gmail dan Outlook. Jalankan alur kerja dua langkah pada kualitas 75-80 (kurang agresif). Untuk folder foto campuran dan beberapa dokumen, ini mendarat di bawah 25 MB pada percobaan pertama di sebagian besar kasus. Jika folder sumber adalah &gt;500 MB HEIC, harapkan membagi menjadi volume.</p>
+    <p><b>Batas = 10 MB.</b> Beberapa relay email korporat / lama. Sama dengan 25 MB tetapi kualitas 65 pada foto dan pertimbangkan membuang non-esensial sebelum langkah ZIP.</p>
+
+    <h2 class="text-uppercase"><b>Apa yang TIDAK berhasil dan mengapa</b></h2>
+    <ul>
+        <li><b>"Cukup zip dua kali."</b> Mem-ZIP ZIP mendapatkan nol pengecilan - ZIP dalam sudah dikompres-deflate, dan deflate tidak dapat mengkompres byte yang sudah dikompres. ZIP luar menambahkan ~30 byte header dan itu saja.</li>
+        <li><b>"Pilih level kompresi yang lebih tinggi dan coba ulang."</b> Beralih dari level 6 ke level 9 menghemat 1-5% pada konten yang dapat dikompres dan 0% pada konten yang sudah dikompres. Jika Anda 30% di atas batas, level 9 tidak akan membawa Anda ke sana.</li>
+        <li><b>"Gunakan format arsip yang berbeda - 7z lebih kecil."</b> 7z (LZMA2) memang lebih kecil daripada ZIP (deflate) pada konten yang dapat dikompres - terkadang 30-50% lebih kecil pada teks. Tetapi pada foto / video / konten yang sudah dikompres, 7z juga tidak menghemat apa pun, dan penerima Anda mungkin tidak dapat membuka .7z tanpa pembaca pihak ketiga. Panduan <a href="/guides/online-zip-vs-7z-vs-rar-which-to-pick.html">online zip vs 7z vs rar</a> mencakup kapan swap format layak.</li>
+        <li><b>"Enkripsi dengan kata sandi untuk membuatnya lebih kecil."</b> Enkripsi tidak mengubah ukuran file - bahkan menambahkan ~30 byte overhead per file. ZIP yang dilindungi kata sandi memiliki ukuran yang sama dengan yang tidak dilindungi (modulo byte header).</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <p><b>Mengapa folder yang sama zip ke 18 MB di laptop saya dan 22 MB online?</b><br/>
+    Implementasi deflate yang berbeda membuat pilihan yang sedikit berbeda pada level yang sama. macOS Finder, Windows Explorer, 7-Zip, dan alat online masing-masing memiliki perpustakaan deflate yang memilih parameter match-finder yang sedikit berbeda. Perbedaannya jarang lebih dari +-5%. Jika ZIP online Anda secara material lebih besar, alat online mungkin memaksa level 1 (tercepat) atau mengemas ulang per file.</p>
+
+    <p><b>Bisakah saya memberi tahu alat ZIP "berhenti pada 25 MB"?</b><br/>
+    Tidak ada alat ZIP standar yang mengekspos flag ukuran-target - format tidak mendukungnya. Yang dapat Anda lakukan adalah meminta alat untuk membagi output menjadi volume 25 MB (ZIP multi-volume). Sebagian besar pengarsip desktop mengekspos ini; banyak alat online tidak.</p>
+
+    <p><b>Folder adalah 1,2 GB foto HEIC. Bisakah saya mengirim email sebagai satu ZIP?</b><br/>
+    Tidak di bawah batas mana pun. ZIP setelah mengkonversi HEIC ke JPG pada kualitas 60-70 dan Anda dapat mendarat dekat 200-400 MB. Itu masih membutuhkan berbagi tautan, bukan lampiran email. Gunakan Drive / Dropbox / WeTransfer.</p>
+
+    <p><b>Jika saya menghapus file dari ZIP setelah membuatnya, apakah ukurannya menyusut?</b><br/>
+    Ya. ZIP mendukung penghapusan per file. Sebagian besar pengarsip (7-Zip, WinRAR, Keka, alat online <a href="/zip-tools/zip-file.html">ZIP File</a>) memungkinkan Anda menghapus file individu dari arsip yang ada; arsip ditulis ulang tanpa mereka dan ukurannya turun sesuai. Ini adalah perbaikan tercepat ketika Anda 1-2 MB di atas batas dan satu file tidak esensial.</p>
+
+    <p><b>Mengapa "kompres file zip ke 100kb" adalah sebuah hal jika hampir tidak pernah berhasil?</b><br/>
+    Kueri mencerminkan batas formulir unggah nyata (portal e-gov, lamaran universitas, beberapa formulir penerimaan korporat masih membatasi lampiran pada 100-200 KB). Jawaban realistisnya adalah Anda tidak mengkompres - Anda memilih satu atau dua file dan mengubah ukurannya ke ukuran itu. Wrapper ZIP adalah langkah pengemasan, bukan langkah penyusutan.</p>
+
+    <h2 class="text-uppercase"><b>Terkait</b></h2>
+    <ul>
+        <li><a href="/zip-tools/zip-file.html">ZIP File (kompres / buat)</a> - alat yang dirujuk sebagai Langkah 2 di seluruh panduan ini.</li>
+        <li><a href="/image-tools/compress-image.html">Compress Image</a> - alat yang dirujuk sebagai Langkah 1 untuk foto JPG / PNG.</li>
+        <li><a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> - alat yang dirujuk sebagai Langkah 1 untuk foto sumber iPhone.</li>
+        <li><a href="/guides/how-to-compress-a-folder-for-email.html">Cara mengompres folder untuk email</a> - referensi per-batas-kotak-surat.</li>
+        <li><a href="/guides/how-to-choose-a-compression-level.html">Cara memilih level kompresi</a> - trade-off level 1 vs 6 vs 9.</li>
+        <li><a href="/guides/file-compressor-vs-zip-what-to-pick.html">File compressor vs ZIP - pilih yang mana</a> - disambiguasi kelas alat.</li>
+        <li><a href="/guides/file-compressor-online-when-to-zip-vs-when-to-compress-image.html">File compressor online - kapan ZIP vs kapan kompres gambar</a> - keputusan urutan operasi.</li>
+        <li><a href="/guides/compress-jpeg-without-losing-quality-quality-vs-size.html">Kompres JPEG tanpa kehilangan kualitas - kualitas vs ukuran</a> - cara slider kualitas JPG berperilaku.</li>
+        <li><a href="/guides/online-zip-vs-7z-vs-rar-which-to-pick.html">Online ZIP vs 7z vs RAR - pilih yang mana</a> - pilihan format untuk penerima.</li>
+    </ul>
+</div>

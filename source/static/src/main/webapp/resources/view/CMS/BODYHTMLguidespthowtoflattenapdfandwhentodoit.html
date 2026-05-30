@@ -1,0 +1,55 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Como achatar um PDF - e quando fazer isso</b></h1>
+    <p><em>Ultima revisao 2026-05-04. "Achatar" um PDF e a operacao de assar o estado visivel de cada objeto em camadas - campos de formulario, anotacoes, comentarios, assinaturas, carimbos, camadas - nos graficos de pagina estaticos, de modo que o resultado pareca identico para um visualizador mas nao carregue mais a estrutura editavel / re-preenchivel / re-extraivel por baixo. A ferramenta gratuita <a href="/pdf-tools/flatten-pdf.html">Flatten PDF</a> roda a operacao server-side e retorna o arquivo achatado para download. A maioria dos leitores busca por isso por uma de tres razoes: um servico de assinatura eletronica rejeitou um PDF que ainda tinha campos de formulario vivos, um sistema de tribunal / auditoria espera uma copia de arquivo estatico, ou uma ferramenta downstream continua re-renderizando uma anotacao que deveria ter permanecido no lugar.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Decisao em 30 segundos.</b> Achatar quando o PDF precisa parecer exatamente o mesmo para cada leitor em cada dispositivo, sem mais edicoes possiveis: fluxos de e-sign, submissoes de tribunal / auditoria, copias de arquivo, impressoes. NAO achatar quando leitores downstream ainda precisam preencher o formulario (voce vai bloquea-los), quando um editor futuro deve continuar editando camadas (voce nao pode des-achatar), ou quando um requisito de acessibilidade / PDF marcado depende da estrutura logica que achatar pode colapsar. Abra <a href="/pdf-tools/flatten-pdf.html">Flatten PDF</a>, envie o arquivo, e baixe o resultado achatado; o arquivo original rotaciona para fora do armazenamento AWS freetoolonline depois da janela de retencao padrao entao voce so guarda o que salvou localmente.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>O que achatar realmente faz a um PDF</b></h2>
+    <p>Um PDF (o formato de descricao de pagina definido por ISO 32000-1 / ISO 32000-2) e uma arvore de objetos em camadas. A pagina visivel e um fluxo de operadores de desenho; sobre isso o arquivo pode carregar um dicionario <code>AcroForm</code> (campos de formulario preenchiveis), um array de <em>anotacoes</em> por pagina (comentarios, carimbos, notas adesivas, texto livre, marcacoes de tinta, marcas de redacao), um <em>dicionario de assinatura</em> opcional (a assinatura criptografica mais sua aparencia visivel), e <em>Grupos de Conteudo Opcionais</em> opcionais (camadas que podem ser ativadas ou desativadas). Tudo isso esta "acima" da pagina estatica como overlays transparentes. Uma operacao de achatar caminha por essa arvore e re-pinta cada overlay no fluxo de conteudo da pagina subjacente como tinta simples: o valor do campo de formulario se torna texto estatico desenhado na posicao do campo, a anotacao se torna uma forma fixa com uma cor fixa, a aparencia visivel da assinatura se torna uma imagem estatica do glifo da assinatura, e a estrutura de alternancia de camadas e colapsada para o que estava visivel no momento do achatamento. Depois de achatar, abrir o PDF em qualquer leitor mostra os mesmos pixels - mas o dicionario AcroForm, arrays de anotacao, e Grupos de Conteudo Opcionais foram removidos, entao nao ha nada restante para preencher, editar, ou alternar.</p>
+
+    <h2 class="text-uppercase"><b>Quando voce realmente precisa achatar</b></h2>
+    <p>Achatar resolve uma categoria concreta de problema: o PDF precisa renderizar identicamente em todo lugar e permanecer nao-interativo. As quatro situacoes comuns:</p>
+    <ul>
+        <li><b>Servicos de e-sign que rejeitam PDFs em camadas.</b> Muitas plataformas de e-sign se recusam a aplicar uma assinatura criptografica final em cima de um PDF que ainda tem campos de formulario vivos ou placeholders de assinatura nao assinados, porque os valores do formulario podem mudar depois de assinar. Achatar o formulario primeiro transforma os valores dos campos em texto estatico, depois do qual o passo de e-sign pode envolver todo o documento em um envelope criptografico.</li>
+        <li><b>Submissoes de tribunal / auditoria / regulatorias.</b> Submissoes frequentemente especificam um formato de arquivo estatico - as vezes PDF/A, as vezes "PDF achatado". O revisor precisa da garantia de que o arquivo que ele recebeu e exatamente o que cada outro revisor vera; objetos em camadas e campos de formulario criam a possibilidade de uma pagina renderizada diferente em um leitor diferente.</li>
+        <li><b>Compartilhar rascunhos anotados como finais.</b> Quando a revisao editorial esta terminada e o PDF marcado deve ser enviado como final, achatar assa os comentarios e destaques na pagina para que nao possam ser deletados por um leitor downstream que clique no botao errado. As anotacoes permanecem visiveis como tinta em vez de como overlays removiveis.</li>
+        <li><b>Travar uma pagina assinada para que a assinatura visivel nao saia do lugar.</b> Uma aparencia de assinatura visivel que vive apenas como uma anotacao pode ser movida, escondida, ou removida por um editor. Achatar converte a aparencia em conteudo de pagina estatico; o dicionario de assinatura criptografica e uma preocupacao separada, mas o glifo visivel para de ser movel.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Quando NAO achatar</b></h2>
+    <p>Achatar e em uma so direcao. A estrutura em camadas original se vai depois do passo de achatar; voce nao pode des-achatar um PDF assado de volta em um formulario preenchivel. Tres casos onde achatar e o movimento errado:</p>
+    <ul>
+        <li><b>Leitores downstream ainda precisam preencher o formulario.</b> Se o PDF e um formulario de imposto, uma aplicacao de emprego, ou qualquer template em branco que o proximo leitor deve digitar, achatar antes de enviar deixa-os com uma imagem estatica de caixas vazias. Envie o arquivo em camadas; deixe o destinatario preencher, depois peca para eles achatarem antes de retornar se o fluxo precisa de uma copia inalteravel.</li>
+        <li><b>Um editor futuro espera continuar editando.</b> Anotacoes em camadas e comentarios sao como revisores se comunicam. Achatar um rascunho apaga o dialogo - o proximo revisor nao pode deletar um comentario obsoleto porque nao e mais um comentario, apenas tinta na pagina. Mantenha a versao em camadas para o loop editorial e so achate o final.</li>
+        <li><b>Acessibilidade de PDF marcado depende da estrutura logica.</b> Um PDF marcado carrega uma arvore de estrutura (paragrafos, cabecalhos, itens de lista, celulas de tabela) que leitores de tela percorrem. Algumas implementacoes de achatar preservam tags; outras colapsam-nas. Se o documento e consumido por tecnologia assistiva, verifique se as tags sobrevivem ao passo de achatar, ou nao achate de jeito nenhum.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Achatando no freetoolonline</b></h2>
+    <p>Abra <a href="/pdf-tools/flatten-pdf.html">Flatten PDF</a>, envie o PDF, e baixe o resultado achatado. O arquivo e processado no servico AWS freetoolonline: e enviado via o pipeline de upload padrao, a operacao de achatar roda server-side, e o arquivo de saida e rotacionado para fora do armazenamento do servico depois da janela de retencao entao voce deve baixar e salvar localmente se precisa manter. A ferramenta retorna um PDF onde cada campo de formulario, anotacao, e aparencia de assinatura visivel foi assada na pagina; o tamanho do arquivo geralmente cai ligeiramente (a estrutura editavel se foi) e o resultado abre com os mesmos pixels em qualquer leitor de PDF.</p>
+
+    <h2 class="text-uppercase"><b>O que achatar NAO e</b></h2>
+    <p>Tres operacoes sao frequentemente confundidas com achatar; cada uma e uma acao diferente com um resultado diferente.</p>
+    <ul>
+        <li><b>"Salvar como PDF" de um dialogo de impressao.</b> Isso re-renderiza o PDF atraves de uma impressora virtual, que geralmente achata camadas - mas tambem pode re-rasterizar conteudo vetorial (entao texto se torna uma imagem de texto e para de ser selecionavel / pesquisavel). Achatar preserva os operadores de desenho subjacentes onde possivel; print-para-PDF pode nao.</li>
+        <li><b>Comprimir um PDF.</b> Compressao re-escreve os fluxos de conteudo de pagina para ocupar menos bytes - NAO remove o dicionario AcroForm, arrays de anotacao, ou camadas. Um PDF comprimido ainda e editavel; um PDF achatado nao e. Veja <a href="/guides/pdf-preflight-online-what-it-actually-checks.html">PDF Preflight Online - O que ele realmente verifica</a> para a contraparte de verificacao estrutural que tambem e distinta de achatar.</li>
+        <li><b>Remover uma senha.</b> Remocao de senha muda o dicionario de criptografia / permissoes; nao toca nos objetos em camadas. Um PDF com senha removida ainda e preenchivel / editavel. Veja <a href="/guides/pdf-password-types-owner-vs-user.html">Tipos de senha PDF - Owner vs User</a> para os dois tipos de senha e <a href="/guides/how-to-sign-pdf-after-removing-a-password.html">Como assinar um PDF depois de remover uma senha</a> para o fluxo assinar-depois-de-remover.</li>
+    </ul>
+
+    <details class="faq-item">
+  <summary><b>O flatten-pdf.html envia o arquivo ou roda localmente no seu navegador?</b></summary>
+  <p>A ponte /flatten-pdf.html envia o PDF para o servidor freetoolonline - esta nao e uma ferramenta de achatar totalmente offline, apenas-cliente ou apenas-navegador, e nao roda localmente no navegador. A afirmacao de upload e clara: o pipeline carrega o arquivo para o servidor freetoolonline, o passo de achatar roda la, e o link de download rotaciona para fora do armazenamento do servico depois da janela de retencao padrao.</p>
+
+    <p><em>Guias PDF relacionados: <a href="/guides/pdf-editing-ladder.html">Escada de edicao PDF</a> (a escada de opcoes de edicao antes de achatar ser o passo certo), <a href="/guides/pdf-preflight-online-what-it-actually-checks.html">PDF Preflight Online - O que ele realmente verifica</a> (a verificacao de prontidao para impressao distinta de achatar), e <a href="/guides/pdf-vs-heic-for-document-archival.html">PDF vs HEIC para arquivamento de documentos</a> (escolha de formato para a copia de arquivo que achatar produz).</em></p>
+</details>
+</div>

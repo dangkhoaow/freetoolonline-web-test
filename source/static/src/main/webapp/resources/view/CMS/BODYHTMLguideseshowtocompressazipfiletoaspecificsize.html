@@ -1,0 +1,96 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Como comprimir un archivo ZIP a un tamano especifico (2 MB, 25 MB, 100 KB)</b></h1>
+    <p><em>Ultima revision 2026-05-05. "Comprimir este ZIP a menos de 25 MB para que pueda enviarlo por correo" suena como una operacion, pero son tres. El tamano de salida de un archivo ZIP esta decidido por lo que esta dentro del archivo, por que tan compresibles son esos bytes, y por el nivel deflate elegido al momento de escribir. Ninguno de esos se ajusta a "exactamente N MB". Esta guia nombra lo que realmente controla el tamano de salida del ZIP, y el orden para aplicar las herramientas en este sitio para que alcances un cap objetivo (2 MB, 25 MB cap de adjunto Gmail / Outlook, 100 KB limite de subida) en el primer o segundo intento.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Respuesta en 30 segundos.</b> ZIP no puede ser instruido a "producir una salida de 25 MB". El tamano que obtienes es lo que <code>deflate</code> resulta producir en los bytes que le alimentaste. Para alcanzar un cap especifico, haz esto en orden: (1) reduce el mayor contribuidor primero - fotos, video, PDFs - usando la herramienta correcta por archivo (<a href="/image-tools/compress-image.html">Compress Image</a> para JPG/PNG, <a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> para origen iPhone, <a href="/image-tools/photo-editor.html">Photo Editor</a> si tambien necesitas recortar o redimensionar). (2) Luego ZIP los archivos mas pequenos con <a href="/zip-tools/zip-file.html">ZIP File</a>. (3) Si el archivo aun esta sobre el cap, divide: ZIP puede dividirse en partes multi-volumen que cada una cabe en tu transporte, y la mayoria de los lectores de archivo los reensamblaran.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Por que el tamano de salida del ZIP no es deterministico</b></h2>
+    <p>Un archivo ZIP es un formato contenedor con compresion deflate por archivo. Tres cosas deciden el conteo de bytes que obtienes a la salida, y solo controlas las dos primeras:</p>
+    <ol>
+        <li><b>Lo que esta en el archivo.</b> Si pones un JPG de 10 MB en ZIP, obtienes algo cerca de 10 MB de salida. JPG ya esta comprimido; deflate no puede encoger significativamente bytes ya comprimidos. Lo mismo es cierto para MP4, HEIC, PNG, MP3, ODT, DOCX, XLSX, PDF moderno - todos ellos almacenan sus datos en un formato interno comprimido. Envolver con ZIP apenas reduce el tamano.</li>
+        <li><b>Que tan compresibles son realmente los bytes.</b> Texto plano, CSV, logs crudos, BMP, WAV, TIFF sin comprimir, codigo fuente - estos son altamente compresibles. Un log de texto de 10 MB puede aterrizar cerca de 1 MB despues de deflate. Asi que el mismo archivo puede encoger 10x o 1.05x dependiendo de lo que esta dentro; no hay una unica "ratio ZIP".</li>
+        <li><b>El nivel de deflate.</b> La mayoria de las herramientas ZIP en linea y el "Enviar a carpeta comprimida" a nivel SO usan nivel 6 (default). Nivel 9 (maximo) toma mas tiempo de calcular y te da unos pocos por ciento mas de reduccion en contenido compresible - nunca mas de 5-10%. Nivel 1 (mas rapido) te devuelve casi el mismo tamano que sin compresion. El slider de nivel NO magicamente alcanza un cap objetivo.</li>
+    </ol>
+    <p>Juntandolo: una carpeta de fotos JPG no encogera significativamente sin importar que nivel deflate elijas, porque los bytes ya estan comprimidos. Una carpeta de exports CSV puede encoger 8x en nivel 9 vs 7x en nivel 6. Tu tarea "comprimir a menos de 25 MB" por lo tanto no es una eleccion de nivel deflate - es una pregunta de que contenido pones dentro.</p>
+
+    <h2 class="text-uppercase"><b>El flujo de trabajo de dos pasos que realmente alcanza un cap</b></h2>
+    <p>Para 90% de los casos "necesito esto bajo N MB para correo / subida / un portal", el camino es: reduce los mayores contribuidores antes de ZIP, luego ZIP las versiones mas pequenas. El orden importa - ZIP primero y luego tratar de reducir el ZIP es el camino lento porque pierdes la optimizacion por archivo que compress-image y heic-to-jpg pueden entregar.</p>
+
+    <details class="faq-item">
+  <summary><b>Paso 1: identifica y reduce los mayores contribuidores</b></summary>
+  <p>Abre la carpeta. Ordena por tamano, descendente. Los tres archivos del tope casi siempre representan &gt;80% del total. Usualmente son fotos, PDFs escaneados, video, u origen HEIC de un iPhone. Aplica la herramienta correcta por tipo de archivo:</p>
+    <ul>
+        <li><b>Fotos JPG / PNG.</b> Corre <a href="/image-tools/compress-image.html">Compress Image</a>. El slider de calidad va de 1 a 100; para "suficientemente bueno para correo" la banda 60-75 deja un JPG de 4 MB a 600-900 KB sin perdida visible. Lee <a href="/guides/compress-jpeg-without-losing-quality-quality-vs-size.html">Comprimir JPEG sin perder calidad - calidad vs tamano</a> para el comportamiento del slider.</li>
+        <li><b>Fotos HEIC de iPhone.</b> Corre <a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a>. HEIC ya es eficiente, pero la mayoria de los clientes de correo rechazan adjuntos .heic directamente; convertir a JPG en calidad 75 intercambia 5-15% de crecimiento de tamano por aperturabilidad universal. Lee <a href="/guides/how-to-convert-heic-to-jpg-step-by-step.html">Como convertir HEIC a JPG paso a paso</a> para el flujo por archivo.</li>
+        <li><b>PDFs escaneados / pesados en imagen.</b> Un PDF escaneado es fotos en un wrapper PDF. Re-exporta a menor DPI o recomprime imagenes primero. Las herramientas PDF del sitio cubren <a href="/guides/how-to-flatten-a-pdf-and-when-to-do-it.html">como aplanar un PDF</a> y la <a href="/guides/pdf-editing-ladder.html">escalera de edicion PDF</a> para el orden correcto de herramientas.</li>
+        <li><b>Video.</b> ZIP video hace casi nada. Re-codifica a traves de <a href="/video-tools/video-converter.html">Video Converter</a> con un bitrate menor primero; <a href="/guides/mp4-vs-webm-for-web.html">MP4 vs WebM para web</a> cubre el trade-off de codec.</li>
+        <li><b>Texto plano / CSV / logs.</b> Ningun paso previo necesario; estos comprimen 5-10x dentro del ZIP a nivel 6 ya.</li>
+    </ul>
+</details>
+<details class="faq-item">
+  <summary><b>Paso 2: ZIP los archivos mas pequenos</b></summary>
+  <p>Abre <a href="/zip-tools/zip-file.html">ZIP File</a>, arrastra los archivos reducidos, y descarga el archivo. El nivel default (6) es la opcion correcta para casi todos los casos - nivel 9 te gana 1-3% mas en contenido compresible y agrega tiempo de CPU que no recuperas. Lee <a href="/guides/how-to-choose-a-compression-level.html">Como elegir un nivel de compresion</a> si tienes una razon especifica para empujar nivel 9.</p>
+    <p>Ahora verifica el tamano del archivo contra tu cap.</p>
+</details>
+<h2 class="text-uppercase"><b>Si el archivo aun esta sobre el cap: divide, no reintentes</b></h2>
+    <p>Si tu flujo de dos pasos pone el archivo en, digamos, 32 MB pero Gmail limita en 25 MB, NO sigas subiendo el nivel deflate - estas a lo mas 1-2 MB corto y nivel 9 no te salvara. Dos caminos desde aqui:</p>
+    <ol>
+        <li><b>Divide el archivo en partes multi-volumen.</b> La mayoria de los archivadores desktop (7-Zip, WinRAR, Keka) escriben ZIP / 7z multi-volumen que el destinatario reensambla automaticamente. Para ZIP puro, define el tamano del volumen a tu cap (25 MB para adjuntos Gmail / Outlook, 10 MB para relays de correo mas viejos, 4 GB para memorias FAT32). La guia <a href="/guides/online-zip-vs-7z-vs-rar-which-to-pick.html">online zip vs 7z vs rar</a> nombra que formato el destinatario es mas probable que soporte de forma nativa.</li>
+        <li><b>Suelta el mayor contribuidor restante.</b> Ordena el contenido del archivo por tamano de nuevo - si un archivo es 60% de los bytes, enviarlo via un link (Drive, Dropbox, WeTransfer) y ZIP solo el resto.</li>
+    </ol>
+    <p>Cualquier camino es mas rapido y mas confiable que reintentar compresion. Lee <a href="/guides/how-to-compress-a-folder-for-email.html">Como comprimir una carpeta para correo</a> para la referencia completa por cap-de-buzon.</p>
+
+    <h2 class="text-uppercase"><b>Recetas por cap especifico</b></h2>
+    <p><b>Cap = 100 KB.</b> Casi con certeza un formulario de subida (portal gubernamental, asignacion escolar, aplicacion de empleo). A este tamano, no estas comprimiendo - estas eligiendo una o dos fotos y redimensionandolas. Usa <a href="/image-tools/photo-editor.html">Photo Editor</a> para redimensionar a 1200-1600 px de ancho, guarda como JPG calidad 60, y ZIP solo si el formulario requiere .zip. Un solo JPG redimensionado usualmente esta bajo 100 KB por si mismo; el wrapper ZIP agrega 30 bytes de encabezado.</p>
+    <p><b>Cap = 2 MB.</b> Comun para subidas de portal, adjuntos ligeros de correo. Corre <a href="/image-tools/compress-image.html">Compress Image</a> a calidad 70 en JPG, convierte HEIC a JPG a calidad 70, luego ZIP. Para 5-10 fotos, el resultado casi siempre aterriza en 1.4-1.8 MB.</p>
+    <p><b>Cap = 25 MB.</b> Limite por default de adjunto Gmail y Outlook. Corre el flujo de dos pasos a calidad 75-80 (menos agresivo). Para carpetas de fotos mixtas y unos pocos documentos, esto aterriza bajo 25 MB en el primer intento en la mayoria de los casos. Si la carpeta fuente es &gt;500 MB de HEIC, espera dividir en volumenes.</p>
+    <p><b>Cap = 10 MB.</b> Algunos relays de correo corporativo / legado. Mismo que 25 MB pero calidad 65 en fotos y considera dropear no-esenciales antes del paso ZIP.</p>
+
+    <h2 class="text-uppercase"><b>Lo que NO funciona y por que</b></h2>
+    <ul>
+        <li><b>"Solo zipealo dos veces."</b> Hacer ZIP de un ZIP gana cero reduccion - el ZIP interno ya esta deflate-comprimido, y deflate no puede comprimir bytes ya comprimidos. El ZIP externo agrega ~30 bytes de encabezado y eso es todo.</li>
+        <li><b>"Elige un nivel de compresion mayor y reintenta."</b> Ir de nivel 6 a nivel 9 ahorra 1-5% en contenido compresible y 0% en contenido ya comprimido. Si estas 30% sobre el cap, nivel 9 no te llevara ahi.</li>
+        <li><b>"Usa un formato de archivo diferente - 7z es mas pequeno."</b> 7z (LZMA2) es genuinamente mas pequeno que ZIP (deflate) en contenido compresible - a veces 30-50% mas pequeno en texto. Pero en fotos / video / contenido ya comprimido, 7z tampoco ahorra nada, y tu destinatario puede no ser capaz de abrir .7z sin un lector de terceros. La guia <a href="/guides/online-zip-vs-7z-vs-rar-which-to-pick.html">online zip vs 7z vs rar</a> cubre cuando el intercambio de formato vale la pena.</li>
+        <li><b>"Cifralo con contrasena para hacerlo mas pequeno."</b> El cifrado no cambia el tamano del archivo - de hecho agrega ~30 bytes de overhead por archivo. Un ZIP protegido por contrasena es del mismo tamano que el desprotegido (modulo los bytes del encabezado).</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <p><b>Por que la misma carpeta zipea a 18 MB en mi laptop y 22 MB en linea?</b><br/>
+    Diferentes implementaciones deflate hacen elecciones ligeramente diferentes al mismo nivel. macOS Finder, Windows Explorer, 7-Zip, y herramientas en linea cada uno tiene una biblioteca deflate que elige parametros de match-finder ligeramente diferentes. La diferencia raramente es mas de +-5%. Si tu ZIP en linea es materialmente mas grande, la herramienta en linea puede estar forzando nivel 1 (mas rapido) o re-empacando archivo por archivo.</p>
+
+    <p><b>Puedo decirle a la herramienta ZIP "detente en 25 MB"?</b><br/>
+    Ninguna herramienta ZIP estandar expone una flag de tamano-objetivo - el formato no lo soporta. Lo que puedes hacer es pedir a la herramienta dividir la salida en volumenes de 25 MB (ZIP multi-volumen). La mayoria de los archivadores desktop exponen esto; muchas herramientas en linea no.</p>
+
+    <p><b>La carpeta es 1.2 GB de fotos HEIC. Puedo enviarla como un ZIP por correo?</b><br/>
+    Bajo ningun cap. ZIP despues de convertir HEIC a JPG a calidad 60-70 y puedes aterrizar cerca de 200-400 MB. Eso aun necesita compartir por link, no un adjunto de correo. Usa Drive / Dropbox / WeTransfer.</p>
+
+    <p><b>Si elimino archivos del ZIP despues de crearlo, el tamano se encoge?</b><br/>
+    Si. ZIP soporta eliminar por archivo. La mayoria de los archivadores (7-Zip, WinRAR, Keka, online <a href="/zip-tools/zip-file.html">ZIP File</a> tool) te dejan eliminar archivos individuales de un archivo existente; el archivo se reescribe sin ellos y el tamano cae de acuerdo. Esta es la solucion mas rapida cuando estas 1-2 MB sobre un cap y un archivo no es esencial.</p>
+
+    <p><b>Por que "comprimir archivo zip a 100kb" es una cosa si casi nunca funciona?</b><br/>
+    La consulta refleja limites reales de formulario de subida (portales e-gov, aplicaciones universitarias, algunos formularios corporativos aun capean adjuntos en 100-200 KB). La respuesta realista es que no estas comprimiendo - estas eligiendo uno o dos archivos y redimensionandolos a ese tamano. El wrapper ZIP es un paso de empaquetado, no un paso de encogimiento.</p>
+
+    <h2 class="text-uppercase"><b>Relacionado</b></h2>
+    <ul>
+        <li><a href="/zip-tools/zip-file.html">ZIP File (comprimir / crear)</a> - la herramienta referenciada como Paso 2 a lo largo de esta guia.</li>
+        <li><a href="/image-tools/compress-image.html">Compress Image</a> - la herramienta referenciada como Paso 1 para fotos JPG / PNG.</li>
+        <li><a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> - la herramienta referenciada como Paso 1 para fotos origen iPhone.</li>
+        <li><a href="/guides/how-to-compress-a-folder-for-email.html">Como comprimir una carpeta para correo</a> - referencia por cap-de-buzon.</li>
+        <li><a href="/guides/how-to-choose-a-compression-level.html">Como elegir un nivel de compresion</a> - trade-offs nivel 1 vs 6 vs 9.</li>
+        <li><a href="/guides/file-compressor-vs-zip-what-to-pick.html">File compressor vs ZIP - que elegir</a> - desambiguacion de clase de herramienta.</li>
+        <li><a href="/guides/file-compressor-online-when-to-zip-vs-when-to-compress-image.html">File compressor en linea - cuando ZIP vs cuando comprimir imagen</a> - la decision de orden de operaciones.</li>
+        <li><a href="/guides/compress-jpeg-without-losing-quality-quality-vs-size.html">Comprimir JPEG sin perder calidad - calidad vs tamano</a> - como se comporta el slider de calidad JPG.</li>
+        <li><a href="/guides/online-zip-vs-7z-vs-rar-which-to-pick.html">Online ZIP vs 7z vs RAR - cual elegir</a> - eleccion de formato para el destinatario.</li>
+    </ul>
+</div>
