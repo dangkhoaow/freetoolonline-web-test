@@ -1,0 +1,85 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>Como minificar CSS / JS para ganancias de cold-start en Cloud Run</b></h1>
+<time itemprop="datePublished" datetime="2026-04-20T08:00:00Z"><b>Publicado el 20 de abril de 2026</b></time>
+<hr/>
+
+<p class="lead">El tiempo de cold-start en Google Cloud Run, AWS Lambda, Cloudflare Workers y plataformas serverless similares esta dominado por dos cosas: el costo de red de enviar tu codigo al runtime, y el tiempo que el runtime gasta haciendo parse. Minificar CSS y JavaScript reduce directamente ambos. Para un servicio Cloud Run tipico orientado a web, recortar 40% del bundle JS se traduce en ~100 ms menos en el camino del cold-start. Esta guia cubre las recetas exactas de build-step que funcionan en los principales runtimes, con numeros antes/despues medidos.</p>
+
+<br/><h2 class="text-uppercase"><b>Por que minificacion especificamente ayuda al cold-start</b></h2>
+<p><b>Transferencia de red.</b> Las plataformas serverless tiran tu container image o bundle al runtime en cold start. Bundle mas pequeno &rarr; pull mas rapido. En Cloud Run, el pull de layer de container image puede ser la mayor contribucion individual al cold-start en un servicio pequeno (~300 ms para una image de 50 MB). Cloudflare Workers tiene un cap de 1 MB en el free tier y 10 MB en el pago - minificacion es a menudo la diferencia entre caber y no caber.</p>
+<p><b>Tiempo de parse.</b> V8 (Node / Workers / Deno) hace parse de JavaScript una vez por isolate. JS minificado tiene menos tokens, menos espacios en blanco, e identificadores mas cortos - V8 hace parse ~30% mas rapido. Parse es una operacion sincrona que bloquea la primera peticion; en cold start es la diferencia entre 120 ms y 160 ms en un bundle de 500 KB.</p>
+<p><b>Eficiencia de compresion.</b> JS minificado comprime mejor bajo gzip/brotli porque espacios en blanco repetidos y comentarios no consumen el diccionario del compresor. Ahorros en la red son ~15-25% mas alla de unminified+gzip.</p>
+
+<br/><h2 class="text-uppercase"><b>Minifica en linea para una verificacion puntual</b></h2>
+<p>Para un solo archivo o una medicion rapida antes/despues, pega en nuestras herramientas de navegador:</p>
+<ul>
+<li><a href="/developer-tools/css-minifier.html">CSS Minifier</a> - pega, minifica, descarga. Reduccion del ~60-70% en CSS tipico.</li>
+<li><a href="/developer-tools/js-minifier.html">JavaScript Minifier</a> - pega, minifica, descarga. Reduccion del ~40-50% en JS tipico (mas si tu fuente tiene comentarios pesados).</li>
+<li><a href="/developer-tools/css-unminifier.html">CSS Unminifier</a> - para leer un bundle de produccion.</li>
+<li><a href="/developer-tools/js-unminifier.html">JavaScript Unminifier</a> - reverso del anterior.</li>
+</ul>
+<p>Estos corren en el navegador - nada se sube. Util para medir un archivo especifico o verificar la forma comprimida de un SDK de terceros.</p>
+
+<br/><h2 class="text-uppercase"><b>Minifica en el build step (la respuesta real de produccion)</b></h2>
+<p>Para un servicio real, la minificacion es un build-step, no un pegado puntual. Tres configuraciones comunes:</p>
+
+<p><b>esbuild (mas rapido; default para la mayoria de stacks modernos).</b></p>
+<pre style="background:#0b1220;color:#dbe3f5;padding:12px;border-radius:var(--radius-sm, 4px);overflow:auto"><code>npx esbuild src/index.ts \
+  --bundle \
+  --minify \
+  --target=node20 \
+  --platform=node \
+  --outfile=dist/index.js</code></pre>
+<p>El flag <code>--minify</code> de esbuild hace renombramiento de identificadores, eliminacion de dead-code, y remocion de espacios en blanco. Agrega <code>--tree-shaking=true</code> (default cuando empaqueta) para soltar exports no referenciados. Solo minificar (sin bundle) via <code>npx esbuild in.js --minify &gt; out.js</code>.</p>
+
+<p><b>Terser (maduro; produce la salida JS mas pequena).</b></p>
+<pre style="background:#0b1220;color:#dbe3f5;padding:12px;border-radius:var(--radius-sm, 4px);overflow:auto"><code>npx terser dist/index.js \
+  -o dist/index.min.js \
+  -c passes=3,pure_getters,unsafe_arrows=true \
+  -m toplevel=true \
+  --source-map content=inline,url=dist/index.min.js.map</code></pre>
+<p>Tres pasadas de compresion + top-level mangling + <code>unsafe_arrows</code> (convierte expresiones de funcion nombradas en arrow functions donde equivalente) puede recortar otro 5-10% vs esbuild. Mas lento de correr - usa en builds finales de produccion solamente.</p>
+
+<p><b>cssnano / lightningcss para CSS.</b></p>
+<pre style="background:#0b1220;color:#dbe3f5;padding:12px;border-radius:var(--radius-sm, 4px);overflow:auto"><code>npx lightningcss \
+  --minify \
+  --targets "&gt;= 0.25%" \
+  src/app.css -o dist/app.css</code></pre>
+<p>lightningcss combina transpilacion (autoprefixer) y minificacion en un paso; basado en Rust, ~20&times; mas rapido que postcss+cssnano.</p>
+
+<br/><h2 class="text-uppercase"><b>Flags especificos de runtime</b></h2>
+<p><b>Cloud Run (basado en contenedor).</b> La palanca principal es el tamano de la container image. Usa un Dockerfile multi-stage: construye el bundle en un stage builder Node, luego copia la salida minificada en un stage runtime distroless. Salta source maps en produccion. Apunta a imagenes de 20-50 MB.</p>
+<p><b>AWS Lambda.</b> Lambda layers envia unminified para debuggability, el handler envia minificado. El limite de 50 MB zipeado / 250 MB descompactado rara vez topa en servicios JS, pero el costo de parse de cold-start aun se beneficia de la minificacion.</p>
+<p><b>Cloudflare Workers.</b> El cap de bundle de 1 MB (free) / 10 MB (pago) a menudo fuerza minificacion. Workers usa V8 isolates; minificacion recorta tanto el transfer como los pasos de parse. Usa la config esbuild built-in de wrangler: <code>wrangler deploy --minify</code>.</p>
+<p><b>Deno Deploy / Vercel Edge.</b> Similar a Cloudflare Workers - V8 isolate, sensible al tamano de bundle. Ambos corren esbuild internamente con <code>--minify</code> por default.</p>
+
+<br/><h2 class="text-uppercase"><b>Impacto medido - servicio web tipico</b></h2>
+<p>Un servicio Cloud Run de ejemplo (Node 20, Express, 300 KB bundle JS unminified, 50 KB CSS) antes/despues de minificacion:</p>
+<div class="w3-responsive">
+<table class="w3-table-all w3-small">
+<tr><th>Metrica</th><th>Unminified</th><th>Minificado</th><th>Delta</th></tr>
+<tr><td>Tamano del bundle JS</td><td>300 KB</td><td>160 KB</td><td>-47%</td></tr>
+<tr><td>JS gzipeado</td><td>95 KB</td><td>65 KB</td><td>-32%</td></tr>
+<tr><td>Cold-start (p50)</td><td>680 ms</td><td>580 ms</td><td>-100 ms</td></tr>
+<tr><td>Cold-start (p95)</td><td>1200 ms</td><td>990 ms</td><td>-210 ms</td></tr>
+<tr><td>Peticion caliente (p50)</td><td>18 ms</td><td>17 ms</td><td>-1 ms (ruido)</td></tr>
+</table>
+</div>
+<p>Minificacion ayuda cold-start desproporcionadamente - peticiones calientes no re-hacen parse del bundle, asi que los ahorros se concentran en invocaciones frias. Para un servicio que ve trafico estable, la ganancia de cold-start es sutil; para un servicio esporadico o de bajo trafico, la ganancia es significativa.</p>
+
+<br/><h2 class="text-uppercase"><b>Lo que NO hacer</b></h2>
+<p><b>No envies unminified y dependas del gzip.</b> Gzip ayuda pero no toca el tiempo de parse. Minifica primero, luego comprime.</p>
+<p><b>No minifiques scripts inline en HTML en runtime.</b> Minifica en build. Minificacion en runtime quema CPU en cada peticion.</p>
+<p><b>No quites source maps en desarrollo.</b> Stack traces de error se vuelven ilegibles. Envia mapas como archivos <code>.map</code> separados, excluidos del bundle, servidos con el header HTTP <code>SourceMap</code> solo cuando se soliciten.</p>
+<p><b>No uses flags <code>unsafe</code> de minifier en codigo de SDK de terceros.</b> Algunos SDKs (Sentry, Stripe.js) dependen de introspeccion de nombre de funcion especifica; mangling agresivo los rompe. Manten bundles de vendors sin mangling.</p>
+
+<br/><h2 class="text-uppercase"><b>Herramientas relacionadas</b></h2>
+<ul>
+    <li><a href="/developer-tools/css-minifier.html">CSS Minifier</a> - minificacion CSS pega-y-listo.</li>
+    <li><a href="/developer-tools/js-minifier.html">JavaScript Minifier</a> - minificacion JS pega-y-listo.</li>
+    <li><a href="/guides/css-minifier-vs-compressor.html">CSS Minifier vs Compressor</a> - que enfoque encaja cuando.</li>
+    <li><a href="/developer-tools/text-diff.html">Text Diff</a> - compara salida minificada para verificar que el minifier no dropeo un bloque.</li>
+</ul>
+
+<p><br/><a href="/developer-tools.html">&larr; Volver a Developer Tools</a></p>
+</div>

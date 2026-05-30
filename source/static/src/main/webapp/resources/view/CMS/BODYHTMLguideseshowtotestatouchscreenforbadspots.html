@@ -1,0 +1,107 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Como probar una pantalla tactil por puntos muertos</b></h1>
+    <p><em>Ultima revision 2026-05-05. La mitad visual de un chequeo de pantalla (pixeles muertos, uniformidad de color, sangrado de retroiluminacion) corre en <a href="/device-test-tools/lcd-test.html">LCD Test</a>; la mitad tactil es lo que esta guia cubre - ambas corren en tu navegador, ambas terminan en menos de un minuto en un dispositivo funcional.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Respuesta en 30 segundos.</b> Abre una pagina en blanco en tu navegador, arrastra la punta del dedo lentamente por toda la pantalla en un patron de serpiente (izquierda-a-derecha, luego abajo una fila, derecha-a-izquierda, repite), y observa cualquier region donde el cursor o el resaltado deje de moverse. Esa region es un punto muerto. El patron del area muerta (una esquina, un borde, una franja vertical, todo el panel) te dice si la causa es dano de vidrio, un problema de cable del digitalizador, una deriva de calibracion del SO, o una falla de hardware mas profunda.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Por que un "test de pantalla" y un "test de tactil" no son la misma verificacion</b></h2>
+    <p>Un "test de pantalla" tipico o "test de pixel muerto" - incluyendo el <a href="/device-test-tools/lcd-test.html">LCD Test</a> en este sitio - cicla colores en pantalla completa para que puedas detectar pixeles que no cambian. Esa verificacion es sobre la <i>capa de visualizacion</i>: la matriz LCD u OLED que produce luz. No dice nada sobre si la <i>capa tactil</i> (el digitalizador que se sienta encima de la visualizacion) esta leyendo tu dedo.</p>
+    <p>Las dos capas fallan independientemente. Un telefono puede tener una pantalla perfectamente limpia con una esquina tactil muerta; un monitor puede tener un pixel atascado y una grilla tactil perfectamente funcional. Si tu sintoma es "la pantalla se ve bien pero tocar abajo a la izquierda no hace nada", necesitas una verificacion tactil, no un ciclo de pixel.</p>
+
+    <h2 class="text-uppercase"><b>Como probar respuesta tactil en cualquier navegador (sin instalar)</b></h2>
+    <p>No necesitas una app de prueba de pantalla tactil. Tres metodos solo-navegador funcionan en pantallas tactiles de telefono, tablet y laptop.</p>
+    <ol>
+        <li><b>Serpiente de arrastre en una pagina en blanco.</b> Abre una nueva pestana del navegador, navega a una pagina en blanco o de bajo contenido (la barra de direcciones con <code>about:blank</code> funciona en la mayoria de los navegadores), y arrastra la punta del dedo en patron de serpiente: por el borde superior, abajo una fila, de vuelta, abajo otra vez, hasta cubrir toda la superficie. Cualquier region donde el resaltado o cursor deje de responder es un punto muerto. Esta es la verificacion solo-navegador mas confiable en telefonos y tablets.</li>
+        <li><b>Superficie de dibujo en pantalla.</b> Un canvas de pintura tactil (cualquier pad de dibujo gratuito en navegador - busca "dibujar en linea" si no tienes uno guardado) te deja trazar lineas. Dibuja lineas rectas horizontales y verticales de borde a borde. Una linea que se rompe en las mismas coordenadas cada vez es un area muerta; una linea que oscila pero recupera es usualmente un problema de huella o humedad, no una falla de hardware.</li>
+        <li><b>Test multi-touch.</b> Si tu dispositivo soporta gestos de dos dedos, haz pinch-to-zoom en una imagen. Un dispositivo que solo registra un dedo cuando colocas dos tiene un problema de digitalizador o driver, no un problema de vidrio.</li>
+    </ol>
+    <p>Ejecuta los tres en orden en el mismo dispositivo. El primero encuentra grandes zonas muertas; el segundo encuentra franjas estrechas; el tercero encuentra fallas del lado del digitalizador que los dos primeros pierden.</p>
+
+    <h2 class="text-uppercase"><b>Leyendo el patron de falla</b></h2>
+    <p>La forma del area muerta es la pista mas fuerte para la causa. Algunos patrones comunes y lo que cada uno usualmente significa:</p>
+    <div class="w3-responsive">
+        <table class="w3-table-all w3-small">
+            <tr><th>Patron</th><th>Como se ve</th><th>Causa mas comun</th></tr>
+            <tr><td>Una esquina muerta</td><td>Una region cuadrada o triangular en una esquina deja de responder</td><td>Grieta de vidrio cerca de la esquina, o un conector de digitalizador que se ha soltado; historial de impacto fisico es senal fuerte</td></tr>
+            <tr><td>Un borde muerto</td><td>Una franja de 5-15 mm a lo largo de un borde de la pantalla no responde</td><td>Presion de marco (la funda esta muy apretada), una bateria hinchada empujando la pantalla desde abajo, o dano de cable del digitalizador por una caida</td></tr>
+            <tr><td>Franja vertical u horizontal por toda la pantalla</td><td>Una banda de N pixeles de ancho deja de responder, lejos de cualquier borde</td><td>Una fila o columna en la grilla del digitalizador ha perdido conexion - tipicamente una falla de cable flex dentro del ensamble de pantalla</td></tr>
+            <tr><td>Area completa muerta</td><td>Ninguna parte de la pantalla responde, pero la pantalla aun muestra la imagen correctamente</td><td>Cable del digitalizador completamente desconectado, driver de nivel-SO deshabilitado, o problema de gestion de energia (intenta un hard reboot antes de asumir hardware)</td></tr>
+            <tr><td>Toques fantasma aleatorios</td><td>El cursor salta a una coordenada fija incluso cuando no tocas la pantalla</td><td>Humedad o grasa en la pantalla, una capa de vidrio danada, o un cargador defectuoso inyectando ruido electrico (intenta un cargador diferente)</td></tr>
+            <tr><td>Fallas solo-borde durante gestos especificos</td><td>Deslizamientos de borde no registran, pero toques en la misma area si</td><td>Conflicto de gesto "edge swipe" a nivel SO - apaga el gesto Recent Apps / entrenamiento de back-gesture en configuraciones del SO antes de asumir hardware</td></tr>
+        </table>
+    </div>
+
+    <h2 class="text-uppercase"><b>Lo que cada patron usualmente significa (el diagnostico mas profundo)</b></h2>
+    <p>Antes de asumir dano de hardware, descarta las explicaciones mas baratas en orden:</p>
+    <ul>
+        <li><b>Contacto de superficie y piel.</b> Las pantallas tactiles capacitivas leen la capa conductora de tu piel. Piel seca de invierno, dedos grasos, protectores de pantalla muy gruesos, o una capa de polvo pueden causar lecturas irregulares. Limpia la pantalla con un pano de microfibra seco e intenta de nuevo con dedos limpios y ligeramente humedos.</li>
+        <li><b>Deriva de calibracion a nivel-SO.</b> En laptops con Windows o tablets mas viejos, la calibracion tactil deriva despues de actualizaciones mayores. En Windows: Configuracion &rarr; Dispositivos &rarr; Lapiz y Tactil &rarr; Calibrar. En Android: rara vez hay una herramienta de calibracion accesible al usuario, pero un reset de fabrica limpia la mayoria de las derivas de calibracion.</li>
+        <li><b>Ruido del cargador.</b> Un cargador no-original o danado puede inyectar ruido electrico que confunde al digitalizador. Si los problemas tactiles solo aparecen mientras esta enchufado, cambia el cargador o prueba un test solo-bateria.</li>
+        <li><b>Presion de la funda.</b> Una funda que envuelve el marco (especialmente despues de una caida) puede presionar el cable flex del digitalizador soltandolo. Quita la funda y re-prueba antes de asumir que la pantalla necesita reemplazo.</li>
+        <li><b>Hinchazon de bateria.</b> Una bateria hinchada es un problema serio de seguridad. Si la parte trasera del dispositivo esta abultandose, deja de usarlo y contacta al fabricante o una tienda de reparacion. La hinchazon de bateria empuja la pantalla desde abajo y desconecta el digitalizador.</li>
+        <li><b>Falla de cable del digitalizador.</b> Si has descartado piel, calibracion, cargador, funda y bateria, una falla de cable del digitalizador es la causa restante mas probable. Esta es una correccion de tienda de reparacion, no una correccion de usuario - reemplazar el digitalizador significa levantar el ensamble de pantalla, lo que anula la mayoria de las garantias si se intenta en casa.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Cuando dejar de probar y llamar a garantia / reparacion</b></h2>
+    <p>Dos-de-tres de estas senales significa deja de probar y comienza el proceso de garantia o reparacion - pruebas adicionales arriesgan empeorar el sintoma:</p>
+    <ol>
+        <li><b>El area muerta esta creciendo.</b> Una falla que cubrio una esquina la semana pasada y ahora cubre dos esquinas se esta propagando; uso adicional acelera la expansion (especialmente con dano de grieta que deja entrar humedad).</li>
+        <li><b>Otro hardware tambien esta fallando.</b> Si el area-tactil-muerta esta pareada con reinicios aleatorios, problemas de carga, o una bateria hinchandose, la falla probablemente es una falla de hardware a nivel-sistema que pruebas-tactiles solas no pueden diagnosticar.</li>
+        <li><b>Puedes ver dano fisico.</b> Grietas visibles de vidrio, marco separado, o humedad bajo la pantalla todos necesitan una tienda de reparacion, no un diagnostico de software.</li>
+    </ol>
+    <p>Documenta el area muerta antes de entregar el dispositivo: toma una captura de pantalla del patron de falla (usa el combo de tecla de captura incluso si el tactil esta muerto - power+volumen en la mayoria de los telefonos, PrtScn en la mayoria de los laptops), graba un video de 10 segundos de la serpiente-de-arrastre fallando, y escribe una nota corta (fecha, historial de caidas, dano visible, version del SO). Las tiendas de reparacion y los procesos de garantia se mueven mas rapido cuando llegas con evidencia en vez de una descripcion verbal.</p>
+
+    <h2 class="text-uppercase"><b>Pares la verificacion tactil con la verificacion visual</b></h2>
+    <p>Si detectaste un area tactil muerta, tambien ejecuta la verificacion visual. Un dispositivo con una esquina tactil muerta a menudo tiene una grieta fina invisible al ojo desnudo, y esa grieta a menudo aparece como un pixel atascado en colores de pantalla completa antes de aparecer como una grieta visible. Ejecuta <a href="/device-test-tools/lcd-test.html">LCD Test</a> despues de la verificacion tactil; si ves uno o mas pixeles atascados en la misma region que el area tactil muerta, la causa subyacente es casi con certeza dano fisico al panel, no solo al digitalizador.</p>
+    <p>Para la taxonomia de pixel muerto y los umbrales de garantia que la mayoria de los fabricantes aplican (cuantos pixeles muertos reemplazan una pantalla), lee <a href="/guides/dead-pixel-testing-guide.html">Guia de prueba de pixel muerto</a> despues de que la verificacion visual complete.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>Esta guia funciona en un monitor no-tactil?</summary>
+  <p>No. Los monitores no-tactiles tienen una capa de display pero no digitalizador; no hay nada que probar. Ejecuta la verificacion visual en <a href="/device-test-tools/lcd-test.html">LCD Test</a> para esos displays.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Necesito una app especial para probar una pantalla tactil?</summary>
+  <p>No. La serpiente-de-arrastre solo-navegador mas el pad de dibujo en pantalla cubre ~95% de las fallas de pantalla tactil. Las apps agregan barridos de grilla automatizados y curvas de presion pero rara vez cambian el diagnostico.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Mi pantalla tactil funciona pero se siente "lenta" - es una falla de hardware?</summary>
+  <p>Usualmente no. El lag tactil es mas a menudo un cuello de botella de CPU o GPU (apps en segundo plano, poco almacenamiento) que una falla de digitalizador. Reinicia el dispositivo, cierra todas las apps en segundo plano, y re-prueba antes de asumir hardware. Si el lag persiste a traves de un reboot limpio, el firmware del digitalizador puede necesitar una actualizacion del fabricante.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Un protector de pantalla puede causar puntos muertos?</summary>
+  <p>Si - especialmente protectores de vidrio templado que no estan adecuadamente asentados. Si puedes ver burbujas de aire o levantamiento a lo largo de un borde, quita el protector y re-prueba. Un protector de vidrio templado que es muy grueso (sobre ~0,4 mm) tambien puede bloquear toques en los bordes en algunos dispositivos.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Y si el test pasa hoy pero el area se sintio muerta ayer?</summary>
+  <p>Puntos muertos intermitentes son usualmente senal de una falla parcial de cable del digitalizador o intrusion de humedad. Repite la prueba en frio (despues de que el dispositivo se sienta una hora sin cargador) y caliente (despues de gaming o una llamada de video larga). Una falla que se reproduce en solo un estado termico aun necesita reparacion, pero documentar el disparador acelera la conversacion de garantia.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>La prueba de pantalla tactil escribe algun dato?</summary>
+  <p>No. Los metodos solo-navegador en esta guia leen entrada tactil y renderizan feedback visible (un resaltado de cursor, una linea dibujada); no graban, transmiten, o almacenan nada. Lo que sea que pruebes se queda en el dispositivo.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Relacionado</b></h2>
+    <ul>
+        <li><a href="/device-test-tools/lcd-test.html">LCD Test</a> - la mitad visual / pixel de una verificacion completa de pantalla (ciclo de color en pantalla completa para pixeles muertos, atascados y propensos a sangrado). Pares con la verificacion tactil arriba para un diagnostico completo de pantalla.</li>
+        <li><a href="/guides/dead-pixel-testing-guide.html">Guia de prueba de pixel muerto</a> - la taxonomia muerto-vs-atascado-vs-caliente y el umbral de devolucion de garantia que la mayoria de los fabricantes aplica.</li>
+        <li><a href="/guides/screen-test-vs-camera-test-pick-the-right-tool.html">Test de pantalla vs test de camara - elige la herramienta correcta</a> - guia companera de enrutamiento si llegaste aqui desde "probar mi pantalla" pero en realidad quieres una verificacion de webcam.</li>
+        <li><a href="/guides/device-test-checklist-for-remote-work.html">Checklist de prueba de dispositivo para trabajo remoto</a> - la rutina recurrente que agrupa verificaciones de pantalla, tactil, microfono, webcam y teclado en un barrido de 90 segundos.</li>
+    </ul>
+</div>

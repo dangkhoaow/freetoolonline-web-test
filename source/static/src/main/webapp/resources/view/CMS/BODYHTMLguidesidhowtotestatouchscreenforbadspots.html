@@ -1,0 +1,107 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Cara menguji layar sentuh untuk titik mati</b></h1>
+    <p><em>Tinjauan terakhir 2026-05-05. Bagian visual dari pemeriksaan layar (piksel mati, keseragaman warna, kebocoran backlight) berjalan di <a href="/device-test-tools/lcd-test.html">LCD Test</a>; bagian sentuh adalah yang dibahas panduan ini - keduanya berjalan di browser Anda, keduanya selesai dalam kurang dari satu menit pada perangkat yang berfungsi.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Jawaban 30 detik.</b> Buka halaman kosong di browser Anda, seret ujung jari Anda perlahan di seluruh layar dalam pola ular (kiri-ke-kanan, lalu turun satu baris, kanan-ke-kiri, ulangi), dan amati area di mana kursor atau highlight berhenti bergerak. Area itu adalah titik mati. Pola area mati (satu sudut, satu tepi, garis vertikal, seluruh panel) memberi tahu Anda apakah penyebabnya adalah kerusakan kaca, masalah kabel digitizer, drift kalibrasi OS, atau kesalahan hardware yang lebih dalam.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Mengapa "tes layar" dan "tes sentuh" bukan pemeriksaan yang sama</b></h2>
+    <p>"Tes layar" atau "tes piksel mati" tipikal - termasuk <a href="/device-test-tools/lcd-test.html">LCD Test</a> di situs ini - mensiklus warna layar penuh agar Anda bisa mendeteksi piksel yang tidak berubah. Pemeriksaan itu adalah tentang <i>lapisan tampilan</i>: matriks LCD atau OLED yang menghasilkan cahaya. Itu tidak mengatakan apa pun tentang apakah <i>lapisan sentuh</i> (digitizer yang duduk di atas tampilan) sedang membaca jari Anda.</p>
+    <p>Kedua lapisan gagal secara independen. Sebuah ponsel dapat memiliki tampilan yang sangat bersih dengan sudut sentuh mati; sebuah monitor dapat memiliki satu piksel terjebak dan grid sentuh yang sangat berfungsi. Jika gejala Anda adalah "layar terlihat baik tetapi menyentuh kiri-bawah tidak melakukan apa-apa", Anda butuh pemeriksaan sentuh, bukan siklus piksel.</p>
+
+    <h2 class="text-uppercase"><b>Cara menguji respons sentuh di browser apa pun (tanpa instal)</b></h2>
+    <p>Anda tidak butuh aplikasi tes layar sentuh. Tiga metode hanya-browser bekerja pada layar sentuh ponsel, tablet, dan laptop.</p>
+    <ol>
+        <li><b>Ular-seret di halaman kosong.</b> Buka tab browser baru, navigasi ke halaman kosong atau konten rendah (bilah alamat dengan <code>about:blank</code> bekerja di sebagian besar browser), dan seret ujung jari Anda dalam pola ular: di seluruh tepi atas, turun satu baris, kembali, turun lagi, sampai Anda menutupi seluruh permukaan. Area di mana highlight atau kursor berhenti merespons adalah titik mati. Ini adalah pemeriksaan hanya-browser paling andal pada ponsel dan tablet.</li>
+        <li><b>Permukaan menggambar di layar.</b> Sebuah kanvas paint sentuh (pad gambar gratis di browser apa pun - cari "menggambar online" jika tidak punya yang ditandai) memungkinkan Anda melacak garis. Gambar garis lurus horizontal dan vertikal dari tepi ke tepi. Garis yang putus di koordinat yang sama setiap kali adalah area mati; garis yang berfluktuasi tetapi pulih biasanya masalah sidik jari atau kelembaban, bukan kesalahan hardware.</li>
+        <li><b>Tes multi-sentuh.</b> Jika perangkat Anda mendukung gestur dua jari, lakukan pinch-to-zoom pada gambar. Perangkat yang hanya mendaftarkan satu jari ketika Anda meletakkan dua memiliki masalah digitizer atau driver, bukan masalah kaca.</li>
+    </ol>
+    <p>Jalankan ketiganya secara berurutan pada perangkat yang sama. Yang pertama menemukan zona mati besar; yang kedua menemukan garis sempit; yang ketiga menemukan kesalahan sisi-digitizer yang dua pertama lewatkan.</p>
+
+    <h2 class="text-uppercase"><b>Membaca pola kegagalan</b></h2>
+    <p>Bentuk area mati adalah petunjuk terkuat untuk penyebabnya. Beberapa pola umum dan apa arti setiap satu biasanya:</p>
+    <div class="w3-responsive">
+        <table class="w3-table-all w3-small">
+            <tr><th>Pola</th><th>Seperti apa</th><th>Penyebab paling umum</th></tr>
+            <tr><td>Satu sudut mati</td><td>Area persegi atau segitiga di satu sudut berhenti merespons</td><td>Retak kaca dekat sudut, atau konektor digitizer yang telah longgar; riwayat dampak fisik adalah sinyal kuat</td></tr>
+            <tr><td>Satu tepi mati</td><td>Garis 5-15 mm di sepanjang satu tepi layar tidak merespons</td><td>Tekanan bezel (casing terlalu ketat), baterai bengkak mendorong tampilan dari bawah, atau kerusakan kabel digitizer karena terjatuh</td></tr>
+            <tr><td>Garis vertikal atau horizontal di seluruh layar</td><td>Sebuah band N piksel lebar berhenti merespons, jauh dari tepi mana pun</td><td>Sebuah baris atau kolom pada grid digitizer telah kehilangan koneksi - biasanya kesalahan kabel flex di dalam assembly tampilan</td></tr>
+            <tr><td>Area penuh mati</td><td>Tidak ada bagian layar yang merespons, tetapi tampilan masih menunjukkan gambar dengan benar</td><td>Kabel digitizer terputus penuh, driver tingkat-OS dinonaktifkan, atau masalah manajemen daya (coba hard reboot sebelum mengasumsikan hardware)</td></tr>
+            <tr><td>Sentuhan hantu acak</td><td>Kursor melompat ke koordinat tetap bahkan ketika Anda tidak menyentuh layar</td><td>Kelembaban atau gemuk di layar, lapisan kaca yang rusak, atau charger yang rusak menyuntikkan noise listrik (coba charger berbeda)</td></tr>
+            <tr><td>Kegagalan hanya-tepi selama gestur spesifik</td><td>Geser tepi tidak terdaftar, tetapi sentuhan di area yang sama mendaftar</td><td>Konflik gestur "edge swipe" tingkat-OS - matikan gestur Recent Apps / pelatihan back-gesture di pengaturan OS sebelum mengasumsikan hardware</td></tr>
+        </table>
+    </div>
+
+    <h2 class="text-uppercase"><b>Apa arti setiap pola biasanya (diagnosis lebih dalam)</b></h2>
+    <p>Sebelum mengasumsikan kerusakan hardware, kesampingkan penjelasan lebih murah dalam urutan:</p>
+    <ul>
+        <li><b>Kontak permukaan dan kulit.</b> Layar sentuh kapasitif membaca lapisan konduktif kulit Anda. Kulit kering musim dingin, jari berminyak, pelindung layar yang terlalu tebal, atau lapisan debu dapat menyebabkan pembacaan tidak rata. Bersihkan layar dengan kain mikrofiber kering dan coba lagi dengan jari bersih, sedikit lembab.</li>
+        <li><b>Drift kalibrasi tingkat-OS.</b> Pada laptop dengan Windows atau tablet lama, kalibrasi sentuh drift setelah pembaruan besar. Di Windows: Settings &rarr; Devices &rarr; Pen &amp; Touch &rarr; Calibrate. Di Android: jarang ada alat kalibrasi yang dapat diakses pengguna, tetapi factory reset membersihkan sebagian besar drift kalibrasi.</li>
+        <li><b>Noise charger.</b> Charger non-asli atau rusak dapat menyuntikkan noise listrik yang membingungkan digitizer. Jika masalah sentuh hanya muncul saat dicolokkan, ganti charger atau coba tes hanya-baterai.</li>
+        <li><b>Tekanan casing.</b> Casing yang membungkus bezel (terutama setelah terjatuh) dapat menekan kabel flex digitizer longgar. Lepas casing dan tes ulang sebelum mengasumsikan layar perlu diganti.</li>
+        <li><b>Pembengkakan baterai.</b> Baterai bengkak adalah masalah keselamatan serius. Jika belakang perangkat menonjol, hentikan menggunakan dan hubungi produsen atau toko perbaikan. Pembengkakan baterai mendorong tampilan dari bawah dan memutuskan digitizer.</li>
+        <li><b>Kesalahan kabel digitizer.</b> Jika Anda telah mengesampingkan kulit, kalibrasi, charger, casing, dan baterai, kesalahan kabel digitizer adalah penyebab tersisa yang paling mungkin. Ini adalah perbaikan toko, bukan perbaikan pengguna - mengganti digitizer berarti mengangkat assembly tampilan, yang membatalkan sebagian besar garansi jika dicoba di rumah.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Kapan berhenti menguji dan menelepon garansi / perbaikan</b></h2>
+    <p>Dua-dari-tiga sinyal ini berarti hentikan pengujian dan mulai proses garansi atau perbaikan - pengujian tambahan berisiko memperburuk gejala:</p>
+    <ol>
+        <li><b>Area mati membesar.</b> Kegagalan yang menutupi satu sudut minggu lalu dan sekarang menutupi dua sudut sedang merambat; penggunaan lebih lanjut mempercepat penyebaran (terutama dengan kerusakan retak yang membiarkan kelembaban masuk).</li>
+        <li><b>Hardware lain juga gagal.</b> Jika area-sentuh-mati dipasangkan dengan reboot acak, masalah pengisian daya, atau baterai bengkak, kegagalan kemungkinan adalah kesalahan hardware tingkat-sistem yang tes sentuh sendiri tidak dapat mendiagnosis.</li>
+        <li><b>Anda dapat melihat kerusakan fisik.</b> Retak kaca yang terlihat, bezel terpisah, atau kelembaban di bawah layar semua membutuhkan toko perbaikan, bukan diagnosis software.</li>
+    </ol>
+    <p>Dokumentasikan area mati sebelum menyerahkan perangkat: ambil screenshot pola kegagalan (gunakan kombo tombol screenshot bawaan bahkan jika sentuh mati - power+volume pada sebagian besar ponsel, PrtScn pada sebagian besar laptop), rekam video 10 detik dari snake-drag gagal, dan tulis catatan singkat (tanggal, riwayat jatuh, kerusakan terlihat, versi OS). Toko perbaikan dan proses garansi bergerak lebih cepat ketika Anda tiba dengan bukti daripada deskripsi verbal.</p>
+
+    <h2 class="text-uppercase"><b>Pasangkan pemeriksaan sentuh dengan pemeriksaan visual</b></h2>
+    <p>Jika Anda menemukan area sentuh mati, juga jalankan pemeriksaan visual. Perangkat dengan sudut sentuh mati sering memiliki retak rambut yang tidak terlihat dengan mata telanjang, dan retak itu sering muncul sebagai piksel terjebak pada warna layar penuh sebelum muncul sebagai retak yang terlihat. Jalankan <a href="/device-test-tools/lcd-test.html">LCD Test</a> setelah pemeriksaan sentuh; jika Anda melihat satu atau lebih piksel terjebak di area yang sama dengan area sentuh mati, penyebab dasarnya hampir pasti adalah kerusakan fisik pada panel, bukan hanya digitizer.</p>
+    <p>Untuk taksonomi piksel mati dan ambang garansi yang sebagian besar produsen terapkan (berapa banyak piksel mati mereka akan mengganti layar), baca <a href="/guides/dead-pixel-testing-guide.html">Panduan pengujian piksel mati</a> setelah pemeriksaan visual selesai.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>Apakah panduan ini berfungsi pada monitor non-sentuh?</summary>
+  <p>Tidak. Monitor non-sentuh memiliki lapisan tampilan tetapi tidak memiliki digitizer; tidak ada yang perlu diuji. Jalankan pemeriksaan visual di <a href="/device-test-tools/lcd-test.html">LCD Test</a> untuk tampilan tersebut.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Apakah saya butuh aplikasi khusus untuk menguji layar sentuh?</summary>
+  <p>Tidak. Snake-drag hanya-browser plus pad gambar di layar mencakup ~95% kegagalan layar sentuh. Aplikasi menambahkan sweep grid otomatis dan kurva tekanan tetapi jarang mengubah diagnosis.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Layar sentuh saya berfungsi tetapi terasa "lag" - apakah itu kesalahan hardware?</summary>
+  <p>Biasanya tidak. Touch lag lebih sering adalah bottleneck CPU atau GPU (aplikasi latar belakang, penyimpanan rendah) daripada kesalahan digitizer. Restart perangkat, tutup semua aplikasi latar belakang, dan tes ulang sebelum mengasumsikan hardware. Jika lag bertahan melalui clean reboot, firmware digitizer mungkin butuh pembaruan vendor.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Bisakah pelindung layar menyebabkan titik mati?</summary>
+  <p>Ya - terutama pelindung kaca tempered yang tidak terpasang dengan benar. Jika Anda dapat melihat gelembung udara atau angkat di sepanjang tepi, lepas pelindung dan tes ulang. Pelindung kaca tempered yang terlalu tebal (di atas ~0,4 mm) juga dapat memblokir sentuhan di tepi pada beberapa perangkat.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Bagaimana jika tes lulus hari ini tetapi area terasa mati kemarin?</summary>
+  <p>Titik mati intermiten biasanya tanda kesalahan kabel digitizer parsial atau intrusi kelembaban. Ulangi tes dingin (setelah perangkat duduk satu jam tanpa charger) dan hangat (setelah gaming atau panggilan video panjang). Kegagalan yang terjadi hanya dalam satu keadaan termal masih butuh perbaikan, tetapi mendokumentasikan pemicu mempercepat percakapan garansi.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Apakah tes layar sentuh menulis data apa pun?</summary>
+  <p>Tidak. Metode hanya-browser dalam panduan ini membaca input sentuh dan merender umpan balik visual (highlight kursor, garis yang digambar); mereka tidak merekam, mentransmisikan, atau menyimpan apa pun. Apa pun yang Anda uji tetap di perangkat.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Terkait</b></h2>
+    <ul>
+        <li><a href="/device-test-tools/lcd-test.html">LCD Test</a> - bagian visual / piksel dari pemeriksaan layar lengkap (siklus warna layar penuh untuk piksel mati, terjebak, dan rentan kebocoran). Pasangkan dengan pemeriksaan sentuh di atas untuk diagnosis layar lengkap.</li>
+        <li><a href="/guides/dead-pixel-testing-guide.html">Panduan pengujian piksel mati</a> - taksonomi mati-vs-terjebak-vs-panas dan ambang pengembalian garansi yang sebagian besar produsen terapkan.</li>
+        <li><a href="/guides/screen-test-vs-camera-test-pick-the-right-tool.html">Tes layar vs tes kamera - pilih alat yang tepat</a> - panduan perutean pendamping jika Anda tiba di sini dari "uji layar saya" tetapi sebenarnya menginginkan pemeriksaan webcam.</li>
+        <li><a href="/guides/device-test-checklist-for-remote-work.html">Checklist tes perangkat untuk kerja jarak jauh</a> - rutinitas berulang yang mengikat pemeriksaan layar, sentuh, mikrofon, webcam, dan keyboard ke satu sapuan 90 detik.</li>
+    </ul>
+</div>

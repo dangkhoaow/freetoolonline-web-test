@@ -1,0 +1,64 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Como converter HEIC para JPG passo a passo</b></h1>
+    <p><em>Ultima revisao 2026-05-06. A conversao envia seu arquivo .heic por HTTPS para o servico de conversao FTO, decodifica server-side via libheif, re-codifica para JPG (qualidade padrao 85) e expoe um link de download S3 de curta duracao. O arquivo temporario e deletado automaticamente depois da janela de retencao configurada. Para um passeio fim-a-fim do que o conversor faz e nao faz, veja <a href="/guides/heic-to-jpg-claims-what-actually-works.html">HEIC para JPG: o que o conversor realmente faz (e o que nao faz)</a>.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Resposta em 30 segundos.</b> Abra <a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a>, arraste o arquivo .heic (ou arquivos) na zona de upload, espere a conversao server-side terminar, e clique em baixar. Voce recebe uma copia .jpg que pode enviar por email, fazer upload, ou abrir no Windows / Android / Linux. Arquivos enviam por HTTPS, decodificam server-side, o download JPG chega em segundos, e o arquivo temporario e deletado logo apos sua sessao. Para o porque, quando, e leitura companheira "e quanto a WebP", veja <a href="/guides/heic-vs-jpg-vs-webp.html">HEIC vs JPG vs WebP</a> e <a href="/guides/heic-vs-jpg-converter-when-each-wins.html">Conversor HEIC vs JPG - quando cada um vence</a>.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Por que converter HEIC afinal</b></h2>
+    <p>HEIC e o formato de foto padrao em iPhone e iPad desde iOS 11 (2017). Fotos sao aproximadamente metade do tamanho de JPGs equivalentes e o formato suporta containers multi-imagem, mapas de profundidade e metadados Live Photo. O problema e suporte de decoder: HEIC requer o codec de video HEVC, que Microsoft, a maioria dos dispositivos Android, a maioria dos navegadores, e a maioria dos apps desktop nao incluem por padrao. Enviar uma foto iPhone para um colega Windows geralmente termina com "nao consigo abrir este arquivo" a menos que voce converta antes.</p>
+    <p>Converter para JPG corrige o gap de compatibilidade. Todo sistema operacional, todo navegador, todo cliente de email, toda plataforma social, todo portal governamental, e todo sistema bancario le JPG. O trade-off e tamanho de arquivo: um HEIC de 3 MB tipicamente termina em 2-4 MB como JPG em qualidade 85, sem diferenca visual perceptivel para a maioria das fotos. Para compartilhamento Apple-only telefone-para-telefone a conversao e desnecessaria; para tudo mais e o caminho de menos friccao.</p>
+
+    <h2 class="text-uppercase"><b>Passo 1 - encontre o arquivo HEIC no seu dispositivo</b></h2>
+    <p>No iPhone, fotos tiradas no app de camera padrao chegam na biblioteca Photos. Para exportar o arquivo .heic em vez do JPG auto-convertido que o AirDrop produz, voce tem dois caminhos:</p>
+    <ul>
+        <li><b>De um Mac.</b> Conecte o iPhone, abra o app Photos, arraste a foto para o Desktop. O arquivo exportado e o .heic original.</li>
+        <li><b>Do iCloud Photos no iCloud.com.</b> Clique com botao direito na foto, "Download Originals". O navegador baixa o arquivo .heic diretamente.</li>
+        <li><b>Do iPhone para Windows via USB.</b> Conecte via cabo, abra "Armazenamento Interno" do iPhone no Explorador de Arquivos, navegue DCIM/100APPLE/, o arquivo se chama tipo IMG_1234.HEIC.</li>
+    </ul>
+    <p>Dentro do Photos.app no Mac voce tambem pode usar Arquivo &rarr; Exportar &rarr; "Exportar Original Nao Modificado" para extrair o .heic. Se voce envia AirDrop ou email a foto do iPhone, iOS converte silenciosamente para JPEG antes de enviar - util se voce nao quer converter manualmente, ruim se voce queria os metadados originais.</p>
+
+    <h2 class="text-uppercase"><b>Passo 2 - abra a ferramenta HEIC to JPG</b></h2>
+    <p>Visite <a href="/image-converter-tools/heic-to-jpg.html">freetoolonline.com/heic-to-jpg.html</a>. A pagina apresenta uma zona de drop rotulada "Drop HEIC file" com um botao de seletor de arquivo, mais um painel de configuracoes para formato de saida (JPG / WebP / PNG), qualidade (70-85 padrao 85), e preservacao EXIF. A pagina em si e leve: a conversao nao roda no seu dispositivo; roda no servico de conversao FTO. Voce nao precisa instalar nada, baixar nenhum plugin, ou esperar um bundle JavaScript carregar um decoder.</p>
+    <p>A primeira requisicao para a pagina aquece o pipeline de upload (a ferramenta emite um pequeno preflight para o servico FTO). Uploads subsequentes reutilizam a mesma conexao e comecam no momento em que o arquivo cai na zona de drop.</p>
+
+    <h2 class="text-uppercase"><b>Passo 3 - solte o arquivo (ou arquivos)</b></h2>
+    <p>Arraste o arquivo .heic do seu gerenciador de arquivos para a zona de drop, ou clique no botao para abrir o seletor de arquivo. A ferramenta aceita:</p>
+    <ul>
+        <li>Arquivos .heic / .heif unicos - um por vez.</li>
+        <li>Multiplos arquivos de uma vez - selecione com shift-click no seletor, ou solte o lote inteiro.</li>
+        <li>Uma pasta inteira - alguns navegadores expoem drop de pasta; a ferramenta percorre a arvore de pastas e enfileira cada .heic dentro.</li>
+    </ul>
+    <p>Cada arquivo envia por HTTPS para <code>service.us-east-1a.freetool.online</code> e e processado em ordem pelo servico HEIC. Conversao tipica completa em poucos segundos por arquivo dependendo do tamanho do arquivo e sua velocidade de upload de rede; um HEIC iPhone de 3 MB sobre 20 Mbit/s upstream geralmente termina em 2-4 segundos fim-a-fim. O indicador de progresso mostra status por-arquivo conforme o servidor retorna cada resultado.</p>
+
+    <h2 class="text-uppercase"><b>Passo 4 - baixe o JPG</b></h2>
+    <p>Quando a conversao termina a ferramenta expoe um link de download por arquivo. O link aponta para uma URL de download de curta duracao S3-backed emitida pelo servico de conversao FTO; clicar nele transmite o .jpg de S3 para sua pasta de downloads. Para um unico arquivo, clique em "Download .jpg" e salve na sua pasta de downloads usual. Para multiplos arquivos a ferramenta oferece um unico botao "Baixar todos" que emite um .zip - util quando voce converteu 50 fotos e nao quer clicar 50 vezes. Os JPGs de saida preservam o nome original com troca de extensao .jpg (IMG_1234.HEIC &rarr; IMG_1234.jpg).</p>
+    <p>O conversor mira qualidade 85 por padrao. Esse e um ajuste Cachinhos Dourados - alto o suficiente para que o JPG pareca identico ao HEIC para conteudo tipico de fotos, baixo o suficiente para que o tamanho do arquivo fique perto do HEIC original. Se voce precisa de um resultado menor (para um cap de email apertado), baixe o slider de qualidade para 75 antes de submeter. Abaixo de 70 as economias diminuem e artefatos visiveis podem aparecer em gradientes suaves (ceu, tons de pele); o slider trava em 70-85 para manter voce dentro da faixa segura.</p>
+
+    <h2 class="text-uppercase"><b>Passo 5 - verifique a saida</b></h2>
+    <p>Abra o .jpg baixado no seu visualizador de imagem padrao para confirmar:</p>
+    <ul>
+        <li>A imagem parece visualmente identica ao HEIC em zoom de visualizacao tipico (tela 100%).</li>
+        <li>Dados EXIF (data tirada, modelo da camera, GPS se presente) sao preservados quando a configuracao "Include EXIF" permanece ligada - o conversor copia os campos EXIF relevantes do HEIC para o JPG. Se voce quer remover EXIF (privacidade), desmarque "Include EXIF" antes de submeter, ou remova como um segundo passo em uma ferramenta separada.</li>
+        <li>Espaco de cor e sRGB. Fotos iPhone sao tiradas em Display P3; o conversor re-mapeia para sRGB por padrao para compatibilidade, sem diferenca perceptivel para visualizacao tipica.</li>
+        <li>Tamanho do arquivo esta na faixa esperada (~70-150% do HEIC, dependendo do conteudo da foto).</li>
+    </ul>
+    <p>Se a saida parece desbotada ou super-saturada, o HEIC fonte provavelmente estava em Display P3 e o visualizador do destinatario nao tem gerencia de cor (Windows mais antigo e o culpado usual). A conversao em si esta correta; a renderizacao na tela do destinatario e a limitacao.</p>
+
+    <h2 class="text-uppercase"><b>E sobre Live Photos e Modo Retrato</b></h2>
+    <p>HEIC pode carregar multiplas imagens em um container - o quadro estatico, um mapa de profundidade, o clipe de movimento Live Photo, dados de gain-map para HDR, e assim por diante. JPG carrega uma imagem por arquivo. A conversao extrai o quadro estatico primario e descarta o resto. Para a maioria dos casos de uso (enviar para um colega Windows, upload para um portal, anexar a um email) isso e exatamente o que voce quer.</p>
+    <p>Dois casos onde os dados laterais importam:</p>
+    <ul>
+        <li><b>Live Photo</b>: o clipe de movimento vive no container HEIC. Apos conversao para JPG o movimento se foi. Se voce precisa preservar o movimento, exporte do Photos.app como um .mov em vez de converter o HEIC.</li>
+        <li><b>Modo Retrato</b>: o mapa de profundidade dirige ajustes de bokeh dentro do Apple Photos. O mapa de profundidade e dropado durante a conversao. O JPG parece o mesmo que a foto exibida no momento da conversao, mas o destinatario nao pode re-editar o bokeh.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Privacidade</b></h2>
+    <p>O conversor e uma ferramenta server-upload, nao uma ferramenta in-browser. O arquivo .heic que voce seleciona envia por HTTPS para o servico de conversao FTO, decodifica server-side via libheif, re-codifica para JPG (ou WebP / PNG) via SlimJpg, e uma URL de download de curta duracao S3-backed e retornada para seu navegador. Os arquivos temporarios de entrada e saida no servico de conversao sao deletados automaticamente apos a janela de retencao configurada (poucos minutos; veja a politica de sessao do servico na pagina de privacidade). HTTPS protege o arquivo em transito. Nenhuma conta e necessaria e nenhuma copia e mantida em sistemas de terceiros alem da janela de retencao.</p>
+    <p>Se sua postura de privacidade requer que a foto nunca deixe seu dispositivo (arquivos HEIC geotagged, conteudo confidencial de trabalho, ou fotos de familia que voce preferiria nao transmitir), use uma ferramenta desktop que roda localmente - para transferencias iPhone-para-Windows veja <a href="/guides/why-heic-wont-open-on-windows-three-fixes.html">por que HEIC nao abre no Windows - tres correcoes</a> para a opcao Microsoft Store HEIF Image Extensions que permite o Windows abrir arquivos .heic no lugar sem converter de jeito nenhum.</p>
+    <p>Para o passeio completo server-upload-vs-browser-only aplicado a este conversor especifico, leia <a href="/guides/heic-to-jpg-claims-what-actually-works.html">HEIC para JPG: o que o conversor realmente faz (e o que nao faz)</a>.</p>
+
+    <h2 class="text-uppercase"><b>E se eu precisar converter 100 fotos de uma vez</b></h2>
+    <p>Use a mesma ferramenta com selecao em lote - ela manipula dezenas de arquivos em uma passada. Para lotes maiores (centenas), veja <a href="/guides/how-to-convert-100-heic-photos-to-jpg.html">como converter 100 fotos HEIC para JPG</a> para as taticas de throughput: upload em chunks, limites de upstream de rede, e quando ferramentas desktop (Preview.app, IrfanView) sao mais rapidas que o caminho in-browser-para-server-upload.</p>
+</div>

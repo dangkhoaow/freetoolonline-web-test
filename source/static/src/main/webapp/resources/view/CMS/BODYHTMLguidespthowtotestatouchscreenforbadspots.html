@@ -1,0 +1,107 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Como testar uma tela sensivel ao toque por pontos defeituosos</b></h1>
+    <p><em>Ultima revisao 2026-05-05. A metade visual de uma verificacao de tela (pixels mortos, uniformidade de cor, vazamento de luz) roda em <a href="/device-test-tools/lcd-test.html">LCD Test</a>; a metade de toque e o que este guia cobre - ambas rodam no seu navegador, ambas terminam em menos de um minuto em um dispositivo funcionando.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Resposta em 30 segundos.</b> Abra uma pagina em branco no seu navegador, arraste a ponta do seu dedo lentamente por toda a tela em um padrao de cobra (esquerda-para-direita, depois para baixo uma linha, direita-para-esquerda, repita), e procure qualquer regiao onde o cursor ou o destaque pare de mover. Essa regiao e um ponto morto. O padrao da area morta (um canto, uma borda, uma faixa vertical, o painel todo) te diz se a causa e dano de vidro, um problema no cabo do digitalizador, uma deriva de calibracao do SO, ou uma falha de hardware mais profunda.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Por que um "teste de tela" e um "teste de toque" nao sao a mesma verificacao</b></h2>
+    <p>Um tipico "teste de tela" ou "teste de pixel morto" - incluindo o <a href="/device-test-tools/lcd-test.html">LCD Test</a> neste site - cicla cores em tela cheia para que voce possa detectar pixels que nao mudam. Essa verificacao e sobre a <i>camada de exibicao</i>: a matriz LCD ou OLED que produz luz. Ela nao diz nada sobre se a <i>camada de toque</i> (o digitalizador que fica em cima da exibicao) esta lendo seu dedo.</p>
+    <p>As duas camadas falham independentemente. Um telefone pode ter um display perfeitamente limpo com um canto de toque morto; um monitor pode ter um pixel travado e uma grade de toque perfeitamente funcional. Se seu sintoma e "a tela parece bem mas tocar no canto inferior esquerdo nao faz nada", voce precisa de uma verificacao de toque, nao de um ciclo de pixel.</p>
+
+    <h2 class="text-uppercase"><b>Como testar a resposta ao toque em qualquer navegador (sem instalacao)</b></h2>
+    <p>Voce nao precisa de um app de teste de tela sensivel ao toque. Tres metodos apenas-navegador funcionam em telas sensiveis ao toque de telefone, tablet e laptop.</p>
+    <ol>
+        <li><b>Cobra de arrasto em uma pagina em branco.</b> Abra uma nova aba do navegador, navegue para uma pagina em branco ou de baixo conteudo (a barra de enderecos com <code>about:blank</code> funciona na maioria dos navegadores), e arraste a ponta do dedo em padrao de cobra: pela borda superior, para baixo uma linha, de volta, para baixo de novo, ate cobrir toda a superficie. Qualquer regiao onde o destaque ou cursor parar de responder e um ponto morto. Esta e a verificacao apenas-navegador mais confiavel em telefones e tablets.</li>
+        <li><b>Superficie de desenho na tela.</b> Um canvas de pintura por toque (qualquer pad de desenho gratuito no navegador - procure por "desenhar online" se nao tiver um salvo) deixa voce tracar linhas. Desenhe linhas retas horizontais e verticais de borda a borda. Uma linha que quebra nas mesmas coordenadas toda vez e uma area morta; uma linha que oscila mas recupera e geralmente um problema de impressao digital ou umidade, nao uma falha de hardware.</li>
+        <li><b>Teste multi-toque.</b> Se seu dispositivo suporta gestos de dois dedos, faca pinca-para-zoom em uma imagem. Um dispositivo que so registra um dedo quando voce coloca dois tem um problema de digitalizador ou driver, nao um problema de vidro.</li>
+    </ol>
+    <p>Execute todos os tres em ordem no mesmo dispositivo. O primeiro encontra grandes zonas mortas; o segundo encontra faixas estreitas; o terceiro encontra falhas do lado do digitalizador que os dois primeiros perdem.</p>
+
+    <h2 class="text-uppercase"><b>Lendo o padrao de falha</b></h2>
+    <p>O formato da area morta e a pista mais forte para a causa. Alguns padroes comuns e o que cada um geralmente significa:</p>
+    <div class="w3-responsive">
+        <table class="w3-table-all w3-small">
+            <tr><th>Padrao</th><th>Como parece</th><th>Causa mais comum</th></tr>
+            <tr><td>Um canto morto</td><td>Uma regiao quadrada ou triangular em um canto para de responder</td><td>Rachadura de vidro perto do canto, ou um conector de digitalizador que se soltou; historico de impacto fisico e um sinal forte</td></tr>
+            <tr><td>Uma borda morta</td><td>Uma faixa de 5-15 mm ao longo de uma borda da tela nao responde</td><td>Pressao do bisel (capa esta apertada demais), bateria inchada empurrando o display por baixo, ou dano no cabo do digitalizador por uma queda</td></tr>
+            <tr><td>Faixa vertical ou horizontal pela tela toda</td><td>Uma banda de N pixels de largura para de responder, longe de qualquer borda</td><td>Uma linha ou coluna na grade do digitalizador perdeu conexao - tipicamente uma falha de cabo flex dentro do assembly de display</td></tr>
+            <tr><td>Area inteira morta</td><td>Nenhuma parte da tela responde, mas o display ainda mostra a imagem corretamente</td><td>Cabo do digitalizador completamente desconectado, driver desabilitado a nivel de SO, ou problema de gerenciamento de energia (tente um hard reboot antes de assumir hardware)</td></tr>
+            <tr><td>Toques fantasmas aleatorios</td><td>O cursor pula para uma coordenada fixa mesmo quando voce nao toca na tela</td><td>Umidade ou gordura na tela, uma camada de vidro danificada, ou um carregador defeituoso injetando ruido eletrico (tente um carregador diferente)</td></tr>
+            <tr><td>Falhas apenas-borda durante gestos especificos</td><td>Deslizes de borda nao registram, mas toques na mesma area sim</td><td>Conflito de gesto "edge swipe" a nivel de SO - desligue o gesto Recent Apps / treinamento de back-gesture nas configuracoes do SO antes de assumir hardware</td></tr>
+        </table>
+    </div>
+
+    <h2 class="text-uppercase"><b>O que cada padrao geralmente significa (o diagnostico mais profundo)</b></h2>
+    <p>Antes de assumir dano de hardware, descarte as explicacoes mais baratas em ordem:</p>
+    <ul>
+        <li><b>Contato de superficie e pele.</b> Telas sensiveis ao toque capacitivas leem a camada condutora da sua pele. Pele seca de inverno, dedos oleosos, protetores de tela espessos demais, ou uma camada de poeira podem causar leituras irregulares. Limpe a tela com um pano de microfibra seco e tente novamente com dedos limpos e levemente umedecidos.</li>
+        <li><b>Deriva de calibracao a nivel de SO.</b> Em laptops com Windows ou tablets mais antigos, a calibracao de toque deriva apos grandes atualizacoes. No Windows: Configuracoes &rarr; Dispositivos &rarr; Caneta e Toque &rarr; Calibrar. No Android: raramente ha uma ferramenta de calibracao acessivel ao usuario, mas um reset de fabrica limpa a maioria das derivas de calibracao.</li>
+        <li><b>Ruido do carregador.</b> Um carregador nao-original ou danificado pode injetar ruido eletrico que confunde o digitalizador. Se problemas de toque so aparecem enquanto conectado, troque o carregador ou tente um teste apenas-bateria.</li>
+        <li><b>Pressao da capa.</b> Uma capa que envolve o bisel (especialmente apos uma queda) pode pressionar o cabo flex do digitalizador soltando-o. Retire a capa e re-teste antes de assumir que a tela precisa de substituicao.</li>
+        <li><b>Inchamento da bateria.</b> Uma bateria inchada e um problema serio de seguranca. Se a parte de tras do dispositivo esta inchando, pare de usar e contate o fabricante ou uma loja de reparo. Inchamento da bateria empurra o display por baixo e desconecta o digitalizador.</li>
+        <li><b>Falha de cabo do digitalizador.</b> Se voce descartou pele, calibracao, carregador, capa e bateria, uma falha de cabo do digitalizador e a causa restante mais provavel. Esta e uma correcao de loja de reparo, nao uma correcao do usuario - substituir o digitalizador significa levantar o assembly do display, o que anula a maioria das garantias se tentado em casa.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Quando parar de testar e ligar para garantia / reparo</b></h2>
+    <p>Dois-de-tres destes sinais significa pare de testar e comece o processo de garantia ou reparo - testes adicionais arriscam piorar o sintoma:</p>
+    <ol>
+        <li><b>A area morta esta crescendo.</b> Uma falha que cobriu um canto na semana passada e agora cobre dois cantos esta se propagando; uso adicional acelera o espalhamento (especialmente com dano de rachadura que permite umidade entrar).</li>
+        <li><b>Outro hardware tambem esta falhando.</b> Se a area-morta-de-toque esta pareada com reinicializacoes aleatorias, problemas de carregamento, ou uma bateria inchando, a falha provavelmente e uma falha de hardware a nivel de sistema que teste-de-toque sozinho nao pode diagnosticar.</li>
+        <li><b>Voce pode ver dano fisico.</b> Rachaduras visiveis no vidro, bisel separado, ou umidade sob a tela todos precisam de uma loja de reparo, nao de um diagnostico de software.</li>
+    </ol>
+    <p>Documente a area morta antes de entregar o dispositivo: tire um screenshot do padrao de falha (use o combo de tecla de screenshot embutido mesmo se o toque estiver morto - power+volume na maioria dos telefones, PrtScn na maioria dos laptops), grave um video de 10 segundos da cobra-de-arrasto falhando, e escreva uma nota curta (data, historico de queda, dano visivel, versao do SO). Lojas de reparo e processos de garantia se movem mais rapido quando voce chega com evidencia em vez de uma descricao verbal.</p>
+
+    <h2 class="text-uppercase"><b>Pareie a verificacao de toque com a verificacao visual</b></h2>
+    <p>Se voce detectou uma area de toque morta, tambem execute a verificacao visual. Um dispositivo com um canto de toque morto frequentemente tem uma rachadura fina invisivel a olho nu, e essa rachadura frequentemente aparece como um pixel travado em cores de tela cheia antes de aparecer como uma rachadura visivel. Execute <a href="/device-test-tools/lcd-test.html">LCD Test</a> apos a verificacao de toque; se voce ver um ou mais pixels travados na mesma regiao que a area de toque morta, a causa subjacente e quase certamente dano fisico ao painel, nao apenas ao digitalizador.</p>
+    <p>Para a taxonomia de pixel morto e os limiares de garantia que a maioria dos fabricantes aplica (quantos pixels mortos eles substituirao uma tela), leia <a href="/guides/dead-pixel-testing-guide.html">Guia de teste de pixel morto</a> apos a verificacao visual completar.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>Este guia funciona em um monitor nao-toque?</summary>
+  <p>Nao. Monitores nao-toque tem uma camada de display mas nenhum digitalizador; nao ha nada para testar. Execute a verificacao visual em <a href="/device-test-tools/lcd-test.html">LCD Test</a> para esses displays.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Eu preciso de um app especial para testar uma tela sensivel ao toque?</summary>
+  <p>Nao. A cobra-de-arrasto apenas-navegador mais o pad de desenho na tela cobre ~95% das falhas de tela sensivel ao toque. Apps adicionam varreduras de grade automatizadas e curvas de pressao mas raramente mudam o diagnostico.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Minha tela sensivel ao toque funciona mas se sente "lenta" - isso e uma falha de hardware?</summary>
+  <p>Geralmente nao. Lag de toque e mais frequentemente um gargalo de CPU ou GPU (apps em segundo plano, armazenamento baixo) do que uma falha de digitalizador. Reinicie o dispositivo, feche todos os apps em segundo plano, e re-teste antes de assumir hardware. Se o lag persiste atraves de um reboot limpo, o firmware do digitalizador pode precisar de uma atualizacao do fornecedor.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Um protetor de tela pode causar pontos mortos?</summary>
+  <p>Sim - especialmente protetores de vidro temperado que nao estao adequadamente assentados. Se voce pode ver bolhas de ar ou levantamento ao longo de uma borda, remova o protetor e re-teste. Um protetor de vidro temperado que e espesso demais (acima de ~0,4 mm) tambem pode bloquear toques nas bordas em alguns dispositivos.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>E se o teste passa hoje mas a area se sentiu morta ontem?</summary>
+  <p>Pontos mortos intermitentes geralmente sao sinal de uma falha parcial de cabo do digitalizador ou intrusao de umidade. Repita o teste frio (depois que o dispositivo fica uma hora sem carregador) e quente (depois de gaming ou uma chamada de video longa). Uma falha que reproduz em apenas um estado termico ainda precisa de reparo, mas documentar o gatilho acelera a conversa de garantia.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>O teste de tela sensivel ao toque escreve algum dado?</summary>
+  <p>Nao. Os metodos apenas-navegador neste guia leem entrada de toque e renderizam feedback visivel (um destaque de cursor, uma linha desenhada); eles nao gravam, transmitem, ou armazenam nada. O que quer que voce teste fica no dispositivo.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Relacionado</b></h2>
+    <ul>
+        <li><a href="/device-test-tools/lcd-test.html">LCD Test</a> - a metade visual / pixel de uma verificacao completa de tela (ciclo de cor em tela cheia para pixels mortos, travados e propensos a vazamento). Pareie com a verificacao de toque acima para um diagnostico completo de tela.</li>
+        <li><a href="/guides/dead-pixel-testing-guide.html">Guia de teste de pixel morto</a> - a taxonomia morto-vs-travado-vs-quente e o limiar de retorno de garantia que a maioria dos fabricantes aplica.</li>
+        <li><a href="/guides/screen-test-vs-camera-test-pick-the-right-tool.html">Teste de tela vs teste de camera - escolha a ferramenta certa</a> - guia companheiro de roteamento se voce chegou aqui de "testar minha tela" mas na verdade quer uma verificacao de webcam.</li>
+        <li><a href="/guides/device-test-checklist-for-remote-work.html">Checklist de teste de dispositivo para trabalho remoto</a> - a rotina recorrente que agrupa verificacoes de tela, toque, microfone, webcam e teclado em uma varredura de 90 segundos.</li>
+    </ul>
+</div>
