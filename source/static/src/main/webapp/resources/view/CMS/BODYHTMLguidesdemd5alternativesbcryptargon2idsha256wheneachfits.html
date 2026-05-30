@@ -1,0 +1,63 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>MD5-Alternativen: bcrypt vs Argon2id vs SHA-256 - Wann Jedes Passt</b></h1>
+    <p><em>Zuletzt geprueft 2026-05-02. Wenn Sie hier sind, um ein Klartext-Passwort aus einem MD5-Hash wiederherzustellen, lesen Sie zuerst <a href="/guides/why-md5-cannot-be-decrypted.html">Why MD5 Cannot Be Decrypted</a> - die kurze Antwort ist, dass kein Schluessel existiert und Rainbow-Table-Lookups nur fuer sehr haeufige Eingaben funktionieren. Diese Seite deckt ab, was stattdessen zu verwenden ist, nach Anwendungsfall.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-Sekunden-Antwort.</b> Die richtige MD5-Alternative haengt vom Job ab. <b>Passwoerter speichern?</b> Verwenden Sie <b>Argon2id</b> (aktuelle OWASP-Empfehlung) oder <b>bcrypt</b> (breite Bibliotheksunterstuetzung). <b>Integritaet gegen einen Gegner schuetzen?</b> Verwenden Sie <b>SHA-256</b> mit HMAC. <b>Einen Schluessel aus einem Passwort ableiten?</b> Verwenden Sie <b>PBKDF2</b> (FIPS-erforderliche Umgebungen) oder <b>Argon2id</b> anderswo. <b>Cache-Schluessel, ETags, Deduplizierung auf nicht-gegnerischen Daten?</b> MD5 ist immer noch in Ordnung - lassen Sie es durch den <a href="/developer-tools/md5-converter.html">MD5-Konverter</a> laufen.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Die Entscheidung in einer Tabelle</b></h2>
+    <div class="w3-responsive">
+        <table class="w3-table-all w3-small">
+            <tr><th>Anwendungsfall</th><th>Waehlen</th><th>Warum</th><th>Nicht MD5 waehlen weil</th></tr>
+            <tr><td>Benutzer-Passwoerter speichern (Web, Mobile, API)</td><td><b>Argon2id</b> (bevorzugt), bcrypt (Fallback)</td><td>Speicher-hart + abstimmbare Kosten; widersteht GPU-Brute-Force</td><td>MD5 ist zu schnell - GPUs hashen Milliarden/Sek, gaengige Passwoerter fallen in Millisekunden</td></tr>
+            <tr><td>Bestehende MD5-Passwort-DB (Legacy)</td><td><b>Migrieren</b> Sie zu Argon2id beim naechsten Login</td><td>Wickeln Sie MD5(passwort) in Argon2id waehrend des rollenden Resets ein</td><td>Reine MD5-Hashes lecken schnell; nehmen Sie Kompromittierung bei Offenlegung an</td></tr>
+            <tr><td>Datei-Integritaet vs gegnerische Eingabe</td><td><b>SHA-256</b></td><td>Praktische Kollisionsangriffe gegen MD5 seit 2004; SHA-256 immer noch sicher</td><td>Ein Angreifer kann zwei verschiedene Dateien erstellen, die ein MD5 teilen</td></tr>
+            <tr><td>Datei-Integritaet nur vs versehentliche Korruption</td><td>MD5 oder SHA-256 (beide in Ordnung)</td><td>Natuerliche Daten kollidieren in der Praxis nicht mit MD5</td><td>(MD5 ist hier akzeptabel; waehlen Sie nach Toolchain-Komfort)</td></tr>
+            <tr><td>Nachrichtenauthentifizierung (HMAC)</td><td><b>HMAC-SHA-256</b></td><td>HMAC schraubt einen Schluessel auf den Hash; HMAC-MD5 ist in der Praxis kaputt</td><td>HMAC-MD5 ist von NIST und der IETF veraltet</td></tr>
+            <tr><td>Schluesselableitung aus einem Passwort</td><td><b>Argon2id</b> (bevorzugt), PBKDF2 (FIPS)</td><td>Entwickelt fuer Passwort-zu-Schluessel-Ableitung mit Kostenfaktor</td><td>MD5 hat keinen Kostenfaktor; produziert den gleichen Digest in Nanosekunden</td></tr>
+            <tr><td>Cache-Schluessel, ETags, Dedup-Schluessel</td><td>MD5 (in Ordnung)</td><td>Fester Laengen-Fingerabdruck willkuerlicher Eingabe; Kollisionen sind fuer nicht-gegnerische Daten nicht wichtig</td><td>(hier verdient MD5 immer noch seinen Platz)</td></tr>
+            <tr><td>Inhaltsadressierbarer Speicher (CAS) unter Angreifer-Einfluss</td><td><b>SHA-256</b></td><td>Kollisionsangriffe wuerden einem Angreifer erlauben, Inhalt mit der gleichen Adresse zu ersetzen</td><td>MD5 kann keine Eindeutigkeit gegen erstellte Eingaben garantieren</td></tr>
+        </table>
+    </div>
+
+    <h2 class="text-uppercase"><b>Argon2id vs bcrypt fuer Passwoerter</b></h2>
+    <p><b>Argon2id</b> ist der von OWASP empfohlene Passwort-Hash seit 2022. Er ist speicher-hart, was bedeutet, dass ein GPU-Angreifer Hunderte von Megabytes pro paralleler Vermutung zuweisen muss. Der empfohlene Startpunkt ist <code>Argon2id, m=64MB, t=3, p=4</code>. Der Kostenfaktor skaliert mit der Hardware: alle zwei Jahre neu bewerten und die Parameter anheben.</p>
+    <p><b>bcrypt</b> ist der gut unterstuetzte Zweitplatzierte. Er ist aelter (1999), verwendet einen abstimmbaren Kostenfaktor, ausgedrueckt als log<sub>2</sub> von Iterationen (Kosten 12 zum Zeitpunkt des Schreibens). Er ist nicht speicher-hart, was seine Hauptschwaeche vs Argon2id ist, aber seine Bibliotheksunterstuetzung in jedem Web-Framework ist breiter. Waehlen Sie bcrypt nur, wenn Ihre Plattform noch kein gepflegtes Argon2id-Binding hat.</p>
+    <p>Beides ist 2026 korrekt. <b>Speichern Sie keine Passwoerter</b> als MD5 + Salt - dieses Schema faellt einer einzelnen GPU in Tagen zum Opfer, selbst mit einem langen zufaelligen Salt, weil MD5 der Flaschenhals ist, nicht das Salting.</p>
+
+    <h2 class="text-uppercase"><b>SHA-256 vs MD5 fuer Integritaet</b></h2>
+    <p>Wenn die Eingabe von einem Angreifer erstellt werden koennte, verwenden Sie SHA-256. Der Wang-Angriff von 2004 und die Stevens / Lenstra MD5-Kollision von 2008 gegen ein X.509-Zertifikat zeigten, dass zwei verschiedene Eingaben so gemacht werden koennen, dass sie ein einziges MD5 teilen. Fuer eine digitale Signatur, Code-Signierung oder alles, wo ein Angreifer seinen Inhalt fuer Ihren ersetzen kann, ist MD5 kaputt; SHA-256 ist die richtige Primitive.</p>
+    <p>Wenn die Eingabe nur ein Download ist, den Sie kontrollieren, oder ein Build-Artefakt, das Sie produziert haben, ist MD5 immer noch in Ordnung fuer Integritaetspruefung. Es faengt die zufaelligen Bit-Flips, die Sie tatsaechlich in der Praxis sehen (kosmische Strahlung, schlechte Kabel, schlechte Festplatten). Das vollstaendige Set von MD5-vs-SHA-256-Trade-offs ist in <a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - wann mit jedem hashen</a>.</p>
+
+    <h2 class="text-uppercase"><b>PBKDF2 - der FIPS-Pfad</b></h2>
+    <p>PBKDF2 ist die passwortbasierte Schluesselableitungsfunktion, die NIST 2000 gesegnet hat. Sie ist iterationsbasiert: Sie waehlen eine Anzahl, fuehren einen zugrundeliegenden Hash so oft aus, und der Arbeitsfaktor folgt. Sie ist nicht speicher-hart, also schwaecher als Argon2id gegen moderne GPUs, aber sie ist die richtige Wahl, wenn Ihre Umgebung einen FIPS 140-2 / 140-3-Algorithmus erfordert. Iterationsanzahl, die 2026 mit HMAC-SHA-256 darunter zu verwenden ist, ist <b>600.000 oder hoeher</b> gemaess OWASP-Richtlinien; mit HMAC-SHA-512 ist es <b>210.000 oder hoeher</b>. Niedrigere Zahlen sind in Legacy-Code immer noch ueblich; erhoehen Sie sie beim naechsten Deploy.</p>
+
+    <h2 class="text-uppercase"><b>"Wo MD5 immer noch hingehoert" - die Arbeitsliste</b></h2>
+    <ul>
+        <li><b>Cache-Schluessel.</b> Hashen Sie eine lange URL oder Query-String in einen Schluessel fester Laenge fuer memcached, Redis oder einen Dateinamen. Kollisionen sind nicht wichtig; Geschwindigkeit schon.</li>
+        <li><b>ETag-artige Inhalts-Fingerabdruecke.</b> Geben Sie MD5 eines Antwort-Bodys als <code>ETag</code>-Header aus, damit Clients ohne erneuten Download revalidieren koennen.</li>
+        <li><b>Datei-Integritaetspruefung auf einem von Ihnen produzierten Download.</b> Veroeffentlichen Sie MD5 neben der Datei; Benutzer vergleichen lokal. Viele Linux-Mirror veroeffentlichen aus Kompatibilitaetsgruenden immer noch sowohl MD5 als auch SHA-256.</li>
+        <li><b>Deduplizierung eingehender Uploads.</b> Fingerabdruck des Byte-Stroms mit MD5, um die Speicherung eines exakten Duplikats kurzzuschliessen, bevor Sie es persistieren.</li>
+        <li><b>Test-Fixtures und Snapshot-IDs.</b> Hashen Sie einen kanonischen JSON-Blob, um deterministische IDs fuer Unit-Test-Fixtures zu produzieren.</li>
+    </ul>
+    <p>Fuer all das ist <a href="/developer-tools/md5-converter.html">der MD5-Konverter</a> die richtige Oberflaeche - Text einfuegen, Hash bekommen, Ergebnis kopieren.</p>
+
+    <h2 class="text-uppercase"><b>Migrations-Checkliste - eine bestehende App von MD5 wegbewegen</b></h2>
+    <ol>
+        <li><b>Auditieren Sie, wo MD5 verwendet wird.</b> Grepen Sie die Codebasis nach <code>md5</code>, <code>MessageDigest.getInstance("MD5")</code>, <code>hashlib.md5</code>, <code>crypto.createHash('md5')</code>. Markieren Sie jede Verwendung als eine von: Passwoerter, MAC, Integritaet, Cache.</li>
+        <li><b>Passwoerter - rollende Migration.</b> Fuegen Sie einen Argon2id-Verifier neben dem MD5-Verifier hinzu. Beim naechsten erfolgreichen Login berechnen Sie das Passwort unter Argon2id neu, speichern den neuen Verifier, lassen die MD5-Zeile fallen. Rotieren Sie jedes Konto innerhalb von 90 Tagen; erzwingen Sie Reset fuer alles Verbliebene.</li>
+        <li><b>MAC - durch HMAC-SHA-256 ersetzen.</b> HMAC-MD5-Deployments aus der 2010er-Aera-APIs sollten Schluessel rotieren und Clients mit HMAC-SHA-256 neu ausstellen.</li>
+        <li><b>Gegnerische Integritaet - durch SHA-256 ersetzen.</b> Alles, was vom Benutzer hochgeladenen Inhalt, Paketverteilung oder Drittanbieter-Code signiert, geht sofort zu SHA-256.</li>
+        <li><b>Nicht-gegnerische Integritaet, Cache, ETag, Dedup - in Ruhe lassen.</b> Wirbeln Sie funktionierenden Code nicht aus theoretischen Gruenden auf. MD5 ist hier in Ordnung.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>Verwandt</b></h2>
+    <ul>
+        <li><a href="/developer-tools/md5-converter.html">MD5 converter</a> - das Tool selbst, fuer die Anwendungsfaelle, in denen MD5 immer noch in Ordnung ist.</li>
+        <li><a href="/guides/why-md5-cannot-be-decrypted.html">Why MD5 cannot be decrypted</a> - die Antwort auf die haeufigste Verwirrung hinter MD5-Alternativen-Abfragen.</li>
+        <li><a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - when to hash with each</a> - der enge Vergleich, wenn SHA-256 Ihr einziger Kandidat ist.</li>
+        <li><a href="/sha256-converter.html">SHA-256 converter</a> - die Integritaets-gegen-Gegner-Primitive.</li>
+        <li><a href="/developer-tools.html">Developer tools hub</a> - das vollstaendige Entwickler-Toolset.</li>
+    </ul>
+</div>

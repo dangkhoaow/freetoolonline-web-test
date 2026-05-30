@@ -1,0 +1,63 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Alternativas a MD5: bcrypt vs Argon2id vs SHA-256 - Cuando Cada Uno Encaja</b></h1>
+    <p><em>Ultima revision 2026-05-02. Si llegaste aqui intentando recuperar una contrasena en texto plano desde un hash MD5, lee <a href="/guides/why-md5-cannot-be-decrypted.html">Why MD5 Cannot Be Decrypted</a> primero - la respuesta corta es que no existe clave, y las busquedas en tablas rainbow solo funcionan para entradas muy comunes. Esta pagina cubre que usar en su lugar, por caso de uso.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Respuesta en 30 segundos.</b> La alternativa correcta a MD5 depende del trabajo. <b>Almacenar contrasenas?</b> Usa <b>Argon2id</b> (recomendacion actual de OWASP) o <b>bcrypt</b> (amplio soporte de bibliotecas). <b>Proteger integridad contra un adversario?</b> Usa <b>SHA-256</b> con HMAC. <b>Derivar una clave a partir de una contrasena?</b> Usa <b>PBKDF2</b> (entornos que requieren FIPS) o <b>Argon2id</b> en otros lugares. <b>Claves de cache, ETags, deduplicacion en datos no adversarios?</b> MD5 sigue estando bien - pasalo por el <a href="/developer-tools/md5-converter.html">conversor MD5</a>.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>La decision en una tabla</b></h2>
+    <div class="w3-responsive">
+        <table class="w3-table-all w3-small">
+            <tr><th>Caso de uso</th><th>Elige</th><th>Por que</th><th>No elijas MD5 porque</th></tr>
+            <tr><td>Almacenar contrasenas de usuario (web, movil, API)</td><td><b>Argon2id</b> (preferido), bcrypt (alternativa)</td><td>Memoria-duro + costo ajustable; resiste fuerza bruta de GPU</td><td>MD5 es demasiado rapido - las GPUs hashean miles de millones/seg, las contrasenas comunes caen en milisegundos</td></tr>
+            <tr><td>BD de contrasenas MD5 existente (legado)</td><td><b>Migra</b> a Argon2id en el proximo login</td><td>Envuelve MD5(contrasena) dentro de Argon2id durante el reset progresivo</td><td>Los hashes MD5 puros se filtran rapido; asume compromiso al divulgar</td></tr>
+            <tr><td>Integridad de archivo contra entrada adversaria</td><td><b>SHA-256</b></td><td>Ataques de colision practicos contra MD5 desde 2004; SHA-256 sigue siendo seguro</td><td>Un atacante puede crear dos archivos diferentes que comparten un MD5</td></tr>
+            <tr><td>Integridad de archivo solo contra corrupcion accidental</td><td>MD5 o SHA-256 (cualquiera vale)</td><td>Los datos naturales no colisionan con MD5 en la practica</td><td>(MD5 es aceptable aqui; elige por conveniencia de la herramienta)</td></tr>
+            <tr><td>Autenticacion de mensaje (HMAC)</td><td><b>HMAC-SHA-256</b></td><td>HMAC anade una clave al hash; HMAC-MD5 esta roto en la practica</td><td>HMAC-MD5 esta deprecado por NIST y la IETF</td></tr>
+            <tr><td>Derivacion de clave a partir de una contrasena</td><td><b>Argon2id</b> (preferido), PBKDF2 (FIPS)</td><td>Disenado para derivacion contrasena-a-clave con factor de costo</td><td>MD5 no tiene factor de costo; produce el mismo digest en nanosegundos</td></tr>
+            <tr><td>Claves de cache, ETags, claves de dedup</td><td>MD5 (bien)</td><td>Huella digital de longitud fija de entrada arbitraria; las colisiones no importan para datos no adversarios</td><td>(este es donde MD5 aun se gana su lugar)</td></tr>
+            <tr><td>Almacenamiento direccionable por contenido (CAS) bajo influencia de atacante</td><td><b>SHA-256</b></td><td>Los ataques de colision permitirian que un atacante sustituya contenido con la misma direccion</td><td>MD5 no puede garantizar unicidad contra entradas creadas</td></tr>
+        </table>
+    </div>
+
+    <h2 class="text-uppercase"><b>Argon2id vs bcrypt para contrasenas</b></h2>
+    <p><b>Argon2id</b> es el hash de contrasena recomendado por OWASP desde 2022. Es memoria-duro, lo que significa que un atacante con GPU tiene que asignar cientos de megabytes por intento paralelo. El punto de partida recomendado es <code>Argon2id, m=64MB, t=3, p=4</code>. El factor de costo escala con el hardware: reevalua cada dos anos y aumenta los parametros.</p>
+    <p><b>bcrypt</b> es el subcampeon bien soportado. Es mas antiguo (1999), usa un factor de costo ajustable expresado como el log<sub>2</sub> de iteraciones (costo 12 al momento de escribir). No es memoria-duro, lo cual es su principal debilidad vs Argon2id, pero su soporte de bibliotecas en cada framework web es mas amplio. Elige bcrypt solo si tu plataforma aun no tiene un binding Argon2id mantenido.</p>
+    <p>Cualquiera es correcto en 2026. <b>No</b> almacenes contrasenas como MD5 + salt - ese esquema cae a una sola GPU en dias incluso con un salt aleatorio largo, porque MD5 es el cuello de botella, no el salting.</p>
+
+    <h2 class="text-uppercase"><b>SHA-256 vs MD5 para integridad</b></h2>
+    <p>Si la entrada puede ser creada por un atacante, usa SHA-256. El ataque Wang de 2004 y la colision Stevens / Lenstra de 2008 contra un certificado X.509 mostraron que dos entradas diferentes pueden hacerse para compartir un solo MD5. Para una firma digital, firma de codigo, o cualquier cosa donde un atacante puede sustituir su contenido por el tuyo, MD5 esta roto; SHA-256 es la primitiva correcta.</p>
+    <p>Si la entrada es solo una descarga que controlas o un artefacto de build que produjiste, MD5 sigue estando bien para verificacion de integridad. Captura las inversiones aleatorias de bit que realmente ves en la practica (rayos cosmicos, cables malos, discos malos). El conjunto completo de trade-offs MD5 vs SHA-256 esta en <a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - cuando hashear con cada uno</a>.</p>
+
+    <h2 class="text-uppercase"><b>PBKDF2 - el camino FIPS</b></h2>
+    <p>PBKDF2 es la funcion de derivacion de clave basada en contrasena que NIST bendijo en 2000. Es basada en iteraciones: eliges un conteo, ejecutas un hash subyacente esa cantidad de veces, y el factor de trabajo sigue. No es memoria-duro, asi que es mas debil que Argon2id contra GPUs modernas, pero es la eleccion correcta cuando tu entorno requiere un algoritmo FIPS 140-2 / 140-3. La cantidad de iteraciones a usar en 2026 con HMAC-SHA-256 por debajo es <b>600.000 o mas</b> por orientacion de OWASP; con HMAC-SHA-512 es <b>210.000 o mas</b>. Numeros mas bajos siguen siendo comunes en codigo legado; suberlos en el proximo deploy.</p>
+
+    <h2 class="text-uppercase"><b>"Donde MD5 sigue perteneciendo" - la lista de trabajo</b></h2>
+    <ul>
+        <li><b>Claves de cache.</b> Hashea una URL larga o cadena de consulta en una clave de longitud fija para memcached, Redis, o un nombre de archivo. Las colisiones no importan; la velocidad si.</li>
+        <li><b>Huellas digitales de contenido tipo ETag.</b> Emite MD5 de un cuerpo de respuesta como la cabecera <code>ETag</code> para que los clientes puedan revalidar sin volver a descargar.</li>
+        <li><b>Verificacion de integridad de archivo en una descarga que produjiste.</b> Publica MD5 junto al archivo; los usuarios comparan localmente. Muchos espejos de Linux aun publican tanto MD5 como SHA-256 por compatibilidad.</li>
+        <li><b>Deduplicacion de subidas entrantes.</b> Huella digital del flujo de bytes con MD5 para cortocircuitar el almacenamiento de un duplicado exacto antes de persistirlo.</li>
+        <li><b>Fixtures de prueba e IDs de snapshot.</b> Hashea un blob JSON canonico para producir IDs deterministicos para fixtures de prueba unitaria.</li>
+    </ul>
+    <p>Para todos esos, <a href="/developer-tools/md5-converter.html">el conversor MD5</a> es la superficie correcta - pega texto, obten el hash, copia el resultado.</p>
+
+    <h2 class="text-uppercase"><b>Lista de verificacion de migracion - mover una app existente fuera de MD5</b></h2>
+    <ol>
+        <li><b>Audita donde se usa MD5.</b> Grep la base de codigo por <code>md5</code>, <code>MessageDigest.getInstance("MD5")</code>, <code>hashlib.md5</code>, <code>crypto.createHash('md5')</code>. Etiqueta cada uso como uno de: contrasenas, MAC, integridad, cache.</li>
+        <li><b>Contrasenas - migracion progresiva.</b> Anade un verificador Argon2id junto al verificador MD5. En el proximo login exitoso, recomputa la contrasena bajo Argon2id, almacena el nuevo verificador, descarta la fila MD5. Rota cada cuenta dentro de 90 dias; force-reset lo que quede.</li>
+        <li><b>MAC - reemplaza con HMAC-SHA-256.</b> Despliegues HMAC-MD5 de la epoca de 2010 en APIs deben rotar claves y re-emitir clientes con HMAC-SHA-256.</li>
+        <li><b>Integridad adversaria - reemplaza con SHA-256.</b> Cualquier cosa firmando contenido subido por usuario, distribucion de paquetes, o codigo de terceros va a SHA-256 inmediatamente.</li>
+        <li><b>Integridad no adversaria, cache, ETag, dedup - dejalo en paz.</b> No agites codigo que funciona por razones teoricas. MD5 esta bien aqui.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>Relacionado</b></h2>
+    <ul>
+        <li><a href="/developer-tools/md5-converter.html">MD5 converter</a> - la herramienta en si, para los casos de uso donde MD5 sigue estando bien.</li>
+        <li><a href="/guides/why-md5-cannot-be-decrypted.html">Why MD5 cannot be decrypted</a> - la respuesta a la confusion mas comun detras de las consultas de alternativas a MD5.</li>
+        <li><a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - when to hash with each</a> - la comparacion estrecha si SHA-256 es tu unico candidato.</li>
+        <li><a href="/sha256-converter.html">SHA-256 converter</a> - la primitiva de integridad contra adversario.</li>
+        <li><a href="/developer-tools.html">Developer tools hub</a> - el conjunto completo de herramientas de desarrollador.</li>
+    </ul>
+</div>

@@ -1,0 +1,63 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Alternatif MD5: bcrypt vs Argon2id vs SHA-256 - Kapan Masing-Masing Cocok</b></h1>
+    <p><em>Terakhir ditinjau 2026-05-02. Jika Anda tiba di sini mencoba memulihkan kata sandi teks polos dari hash MD5, baca <a href="/guides/why-md5-cannot-be-decrypted.html">Why MD5 Cannot Be Decrypted</a> dulu - jawaban singkatnya adalah tidak ada kunci, dan pencarian rainbow-table hanya bekerja untuk input yang sangat umum. Halaman ini mencakup apa yang harus digunakan, berdasarkan kasus penggunaan.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Jawaban 30 detik.</b> Alternatif MD5 yang tepat bergantung pada pekerjaannya. <b>Menyimpan kata sandi?</b> Gunakan <b>Argon2id</b> (rekomendasi OWASP saat ini) atau <b>bcrypt</b> (dukungan pustaka luas). <b>Melindungi integritas dari musuh?</b> Gunakan <b>SHA-256</b> dengan HMAC. <b>Mengambil kunci dari kata sandi?</b> Gunakan <b>PBKDF2</b> (lingkungan yang memerlukan FIPS) atau <b>Argon2id</b> di tempat lain. <b>Kunci cache, ETag, deduplikasi pada data non-adversarial?</b> MD5 masih baik - jalankan melalui <a href="/developer-tools/md5-converter.html">konverter MD5</a>.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Keputusan dalam satu tabel</b></h2>
+    <div class="w3-responsive">
+        <table class="w3-table-all w3-small">
+            <tr><th>Kasus penggunaan</th><th>Pilih</th><th>Mengapa</th><th>Jangan pilih MD5 karena</th></tr>
+            <tr><td>Menyimpan kata sandi pengguna (web, ponsel, API)</td><td><b>Argon2id</b> (lebih disukai), bcrypt (cadangan)</td><td>Memori-keras + biaya yang dapat disetel; menahan brute-force GPU</td><td>MD5 terlalu cepat - GPU melakukan hash miliaran/detik, kata sandi umum jatuh dalam milidetik</td></tr>
+            <tr><td>DB kata sandi MD5 yang ada (warisan)</td><td><b>Migrasi</b> ke Argon2id pada login berikutnya</td><td>Bungkus MD5(sandi) di dalam Argon2id selama reset bergulir</td><td>Hash MD5 polos bocor cepat; asumsikan kompromi pada pengungkapan</td></tr>
+            <tr><td>Integritas file vs input adversarial</td><td><b>SHA-256</b></td><td>Serangan tabrakan praktis terhadap MD5 sejak 2004; SHA-256 masih aman</td><td>Penyerang dapat membuat dua file berbeda yang berbagi MD5</td></tr>
+            <tr><td>Integritas file vs kerusakan acak saja</td><td>MD5 atau SHA-256 (keduanya oke)</td><td>Data alami tidak bertabrakan dengan MD5 dalam praktik</td><td>(MD5 dapat diterima di sini; pilih berdasarkan kenyamanan toolchain)</td></tr>
+            <tr><td>Autentikasi pesan (HMAC)</td><td><b>HMAC-SHA-256</b></td><td>HMAC menambahkan kunci ke hash; HMAC-MD5 rusak dalam praktik</td><td>HMAC-MD5 sudah usang oleh NIST dan IETF</td></tr>
+            <tr><td>Derivasi kunci dari kata sandi</td><td><b>Argon2id</b> (lebih disukai), PBKDF2 (FIPS)</td><td>Dirancang untuk derivasi kata-sandi-ke-kunci dengan faktor biaya</td><td>MD5 tidak memiliki faktor biaya; menghasilkan digest yang sama dalam nanodetik</td></tr>
+            <tr><td>Kunci cache, ETag, kunci dedup</td><td>MD5 (oke)</td><td>Sidik jari panjang tetap dari input sembarang; tabrakan tidak penting untuk data non-adversarial</td><td>(di sinilah MD5 masih layak)</td></tr>
+            <tr><td>Penyimpanan beralamat konten (CAS) di bawah pengaruh penyerang</td><td><b>SHA-256</b></td><td>Serangan tabrakan akan membiarkan penyerang menggantikan konten dengan alamat yang sama</td><td>MD5 tidak dapat menjamin keunikan terhadap input yang dibuat</td></tr>
+        </table>
+    </div>
+
+    <h2 class="text-uppercase"><b>Argon2id vs bcrypt untuk kata sandi</b></h2>
+    <p><b>Argon2id</b> adalah hash kata sandi yang direkomendasikan OWASP sejak 2022. Memori-keras, artinya penyerang GPU harus mengalokasikan ratusan megabyte per tebakan paralel. Titik awal yang direkomendasikan adalah <code>Argon2id, m=64MB, t=3, p=4</code>. Faktor biaya berskala dengan perangkat keras: evaluasi ulang setiap dua tahun dan tingkatkan parameternya.</p>
+    <p><b>bcrypt</b> adalah peringkat kedua yang didukung dengan baik. Lebih tua (1999), menggunakan faktor biaya yang dapat disetel yang dinyatakan sebagai log<sub>2</sub> dari iterasi (biaya 12 pada saat penulisan). Tidak memori-keras, yang merupakan kelemahan utamanya vs Argon2id, tetapi dukungan pustakanya di setiap framework web lebih luas. Pilih bcrypt hanya jika platform Anda belum memiliki binding Argon2id yang dipelihara.</p>
+    <p>Keduanya benar pada 2026. <b>Jangan</b> simpan kata sandi sebagai MD5 + salt - skema itu jatuh ke satu GPU dalam beberapa hari bahkan dengan salt acak yang panjang, karena MD5 adalah bottleneck, bukan salting.</p>
+
+    <h2 class="text-uppercase"><b>SHA-256 vs MD5 untuk integritas</b></h2>
+    <p>Jika input dapat dibuat oleh penyerang, gunakan SHA-256. Serangan Wang 2004 dan tabrakan Stevens / Lenstra 2008 terhadap sertifikat X.509 menunjukkan bahwa dua input berbeda dapat dibuat berbagi satu MD5. Untuk tanda tangan digital, penandatanganan kode, atau apa pun di mana penyerang dapat menggantikan konten mereka dengan milik Anda, MD5 rusak; SHA-256 adalah primitif yang tepat.</p>
+    <p>Jika input hanyalah unduhan yang Anda kendalikan atau artefak build yang Anda hasilkan, MD5 masih baik untuk pemeriksaan integritas. Ia menangkap pembalikan bit acak yang sebenarnya Anda lihat dalam praktik (sinar kosmik, kabel buruk, disk buruk). Set lengkap trade-off MD5 vs SHA-256 ada di <a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - kapan hash dengan masing-masing</a>.</p>
+
+    <h2 class="text-uppercase"><b>PBKDF2 - jalur FIPS</b></h2>
+    <p>PBKDF2 adalah fungsi derivasi kunci berbasis kata sandi yang diberkati NIST pada 2000. Berbasis iterasi: Anda memilih hitungan, menjalankan hash yang mendasarinya sebanyak itu, dan faktor kerja mengikuti. Tidak memori-keras, jadi lebih lemah dari Argon2id terhadap GPU modern, tetapi merupakan pilihan yang tepat ketika lingkungan Anda memerlukan algoritma FIPS 140-2 / 140-3. Hitungan iterasi yang digunakan pada 2026 dengan HMAC-SHA-256 di bawahnya adalah <b>600.000 atau lebih tinggi</b> per panduan OWASP; dengan HMAC-SHA-512 adalah <b>210.000 atau lebih tinggi</b>. Angka yang lebih rendah masih umum dalam kode warisan; naikkan pada deploy berikutnya.</p>
+
+    <h2 class="text-uppercase"><b>"Di mana MD5 masih cocok" - daftar kerja</b></h2>
+    <ul>
+        <li><b>Kunci cache.</b> Hash URL panjang atau string query menjadi kunci panjang tetap untuk memcached, Redis, atau nama file. Tabrakan tidak penting; kecepatan penting.</li>
+        <li><b>Sidik jari konten gaya ETag.</b> Pancarkan MD5 dari body respons sebagai header <code>ETag</code> sehingga klien dapat memvalidasi ulang tanpa mengunduh ulang.</li>
+        <li><b>Pemeriksaan integritas file pada unduhan yang Anda hasilkan.</b> Publikasikan MD5 di samping file; pengguna membandingkan secara lokal. Banyak mirror Linux masih mempublikasikan MD5 dan SHA-256 untuk kompatibilitas.</li>
+        <li><b>Deduplikasi unggahan masuk.</b> Sidik jari aliran byte dengan MD5 untuk memperpendek penyimpanan duplikat yang persis sebelum Anda menyimpannya.</li>
+        <li><b>Fixture pengujian dan ID snapshot.</b> Hash blob JSON kanonik untuk menghasilkan ID deterministik untuk fixture uji unit.</li>
+    </ul>
+    <p>Untuk semua itu, <a href="/developer-tools/md5-converter.html">konverter MD5</a> adalah permukaan yang tepat - tempel teks, dapatkan hash, salin hasilnya.</p>
+
+    <h2 class="text-uppercase"><b>Daftar periksa migrasi - memindahkan aplikasi yang ada dari MD5</b></h2>
+    <ol>
+        <li><b>Audit di mana MD5 digunakan.</b> Grep basis kode untuk <code>md5</code>, <code>MessageDigest.getInstance("MD5")</code>, <code>hashlib.md5</code>, <code>crypto.createHash('md5')</code>. Beri tag setiap penggunaan sebagai salah satu dari: kata sandi, MAC, integritas, cache.</li>
+        <li><b>Kata sandi - migrasi bergulir.</b> Tambahkan verifier Argon2id di samping verifier MD5. Pada login berikutnya yang berhasil, hitung ulang kata sandi di bawah Argon2id, simpan verifier baru, jatuhkan baris MD5. Putar setiap akun dalam 90 hari; paksa-reset apa pun yang tersisa.</li>
+        <li><b>MAC - ganti dengan HMAC-SHA-256.</b> Deployment HMAC-MD5 era 2010-an dari API harus memutar kunci dan menerbitkan ulang klien dengan HMAC-SHA-256.</li>
+        <li><b>Integritas adversarial - ganti dengan SHA-256.</b> Apa pun yang menandatangani konten yang diunggah pengguna, distribusi paket, atau kode pihak ketiga langsung beralih ke SHA-256.</li>
+        <li><b>Integritas non-adversarial, cache, ETag, dedup - biarkan saja.</b> Jangan mengaduk-aduk kode yang berfungsi karena alasan teoretis. MD5 baik-baik saja di sini.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>Terkait</b></h2>
+    <ul>
+        <li><a href="/developer-tools/md5-converter.html">MD5 converter</a> - alatnya sendiri, untuk kasus penggunaan di mana MD5 masih baik.</li>
+        <li><a href="/guides/why-md5-cannot-be-decrypted.html">Why MD5 cannot be decrypted</a> - jawaban atas kebingungan paling umum di balik kueri alternatif MD5.</li>
+        <li><a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - when to hash with each</a> - perbandingan sempit jika SHA-256 adalah satu-satunya kandidat Anda.</li>
+        <li><a href="/sha256-converter.html">SHA-256 converter</a> - primitif integritas-terhadap-musuh.</li>
+        <li><a href="/developer-tools.html">Developer tools hub</a> - perangkat pengembang lengkap.</li>
+    </ul>
+</div>
