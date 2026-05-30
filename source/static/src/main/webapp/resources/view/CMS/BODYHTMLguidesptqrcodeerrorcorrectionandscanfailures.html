@@ -1,0 +1,81 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Correcao de erros do QR code e falhas de leitura: por que seu QR nao le</b></h1>
+    <p><em>Ultima revisao 2026-05-05. Voce gerou um QR com nosso <a href="/utility-tools/qr-code-generator.html">Gerador de QR Code</a>, imprimiu em um flyer ou colou em um slide, e a camera nao consegue capta-lo. A causa quase sempre e uma de quatro coisas - tamanho do payload, nivel de correcao de erros, contraste ou escala de impressao - e a correcao e mecanica, nao magica. Este guia nomeia como cada uma se parece e como fazer o QR ler na primeira tentativa.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Resposta de 30 segundos.</b> Um QR nao le quando (1) o payload e longo demais para o nivel de correcao de erros escolhido (o padrao fica muito denso), (2) o contraste entre modulos e fundo e baixo demais (cameras falham em ambientes escuros ou nao brancos), (3) a escala de impressao esta abaixo de ~2 cm x 2 cm na distancia de leitura, ou (4) parte do padrao localizador (os tres quadrados de canto) e cortada, riscada ou coberta. Nosso <a href="/utility-tools/qr-code-generator.html">Gerador de QR Code</a> emite um PNG; as quatro verificacoes abaixo dizem qual e seu problema especifico e como recuperar.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Causa 1: payload longo demais para o codificador</b></h2>
+    <p>Um QR code armazena seu payload em um numero fixo de "modulos" - os pequenos quadrados pretos e brancos. Quanto mais longo o payload, mais modulos voce precisa, mais denso o padrao fica, e em algum ponto a camera nao consegue resolver os modulos limpamente da distancia tipica de leitura de um celular (15-30 cm).</p>
+    <p>Tres faixas aproximadas de payload que vale a pena saber:</p>
+    <ul>
+        <li><b>URL curta ou texto com menos de ~25 caracteres</b> (ex. <code>https://seusite.com</code>, "WIFI:..." SSID curto). O padrao fica esparso e le limpamente em qualquer tamanho razoavel.</li>
+        <li><b>URL ou texto medio de 25-100 caracteres</b> (ex. URLs com tracking, vCards curtos). O padrao comeca a densificar; geralmente bem mas atencao a contraste baixo ou impressao pequena.</li>
+        <li><b>URL longa ou vCard completo de 100-300+ caracteres</b> (cartao de contato completo com telefone, email, organizacao, endereco; URLs com varios parametros de tracking). O padrao agora e muito denso - tamanhos de impressao pequenos falharao em ser lidos.</li>
+    </ul>
+    <p><b>Correcao:</b> encurte o payload antes de gerar. Para URLs, remova parametros de tracking ou use um servico de link curto. Para vCards, mantenha apenas campos essenciais (nome, telefone unico, email unico). Para Wi-Fi, nao incorpore uma senha longa se puder evitar. Re-gere a partir do <a href="/utility-tools/qr-code-generator.html">Gerador de QR Code</a> apos cortar e o padrao deve afrouxar notavelmente.</p>
+
+    <h2 class="text-uppercase"><b>Causa 2: incompatibilidade de nivel de correcao de erros</b></h2>
+    <p>QR codes tem quatro niveis de correcao de erros - L (~7% recuperavel), M (~15%), Q (~25%), H (~30%). Niveis mais altos significam que o codigo pode ser parcialmente obscurecido (sobreposicao de logo, mancha de impressao digital, canto rasgado) e ainda decodificar, mas com o custo de mais modulos por caractere de payload.</p>
+    <p>O trade-off em linguagem simples:</p>
+    <ul>
+        <li><b>L (Baixo) - padrao para a maioria dos geradores incluindo o nosso.</b> Leitura mais rapida, menor padrao para um dado tamanho de payload. Use quando o QR sera exibido em uma tela digital limpa ou impressao impecavel.</li>
+        <li><b>M (Medio).</b> Um pequeno buffer de confiabilidade com custo menor de padrao. Use para flyers impressos que podem dobrar ou manchar.</li>
+        <li><b>Q (Quartil).</b> Aproximadamente 25% do codigo pode ser obscurecido e a leitura ainda funciona. Use quando voce planeja sobrepor um pequeno logo no centro.</li>
+        <li><b>H (Alto).</b> Aproximadamente 30% obscurecivel. Use para sinalizacao externa que pode desbotar, descascar ou ser parcialmente coberta.</li>
+    </ul>
+    <p>O <a href="/utility-tools/qr-code-generator.html">Gerador de QR Code</a> neste site emite no nivel L, que e o padrao certo para uso digital e de impressao impecavel. Se voce precisa especificamente de tolerancia a sobreposicao, gere o QR, embrulhe-o em sua ferramenta de design, e teste a leitura a partir do meio final real (impresso no tamanho real, montado na distancia real) antes de ir para impressao.</p>
+
+    <h2 class="text-uppercase"><b>Causa 3: baixo contraste entre modulos e fundo</b></h2>
+    <p>A camera do telefone le os modulos como binario: escuro ou claro. Se os modulos forem cinza escuro sobre fundo cinza claro - ou pior, sobre um fundo colorido que se sobrepoe com o valor do modulo - a camera nao pode fazer threshold limpamente e a leitura falha. Essa e a unica causa mais comum de "o QR esta ali, por que meu telefone nao le?"</p>
+    <p>Regras de contraste:</p>
+    <ul>
+        <li><b>Escuro sobre claro, nao claro sobre escuro.</b> Embora QRs invertidos (modulos brancos sobre fundo escuro) sejam tecnicamente validos, muitas cameras antigas e alguns apps recusam decodifica-los. Mantenha-se em escuro-sobre-claro a menos que voce controle o dispositivo de leitura.</li>
+        <li><b>Fundo solido, nao fotografico.</b> Colocar um QR sobre uma foto quase nunca funciona - o ruido na foto vaza para o padrao do modulo.</li>
+        <li><b>Preto verdadeiro, nao cor escura.</b> Modulos azul escuro, vermelho escuro ou marrom escuro lerao, mas reduzem a margem de contraste. Se voce esta imprimindo em tamanho pequeno, prefira preto puro.</li>
+        <li><b>Fundo branco ou quase branco.</b> Creme, off-white, amarelo muito palido geralmente bem. Pasteis saturados sao arriscados.</li>
+    </ul>
+    <p>Nosso <a href="/utility-tools/qr-code-generator.html">Gerador de QR Code</a> produz um PNG preto-verdadeiro-sobre-branco-verdadeiro. Se voce re-estiliza-lo em uma ferramenta de design, mantenha a razao de contraste alta e re-teste com dois telefones diferentes antes de imprimir.</p>
+
+    <h2 class="text-uppercase"><b>Causa 4: escala de impressao abaixo do piso de resolucao da camera</b></h2>
+    <p>Um QR code precisa de aproximadamente <b>10 modulos por centimetro de distancia de leitura</b> na camera. Um QR de payload curto tem ~21 modulos por lado; um QR de payload longo tem ~57+. Imprima em 2 cm x 2 cm e uma URL de 25 caracteres esta bem; imprima o mesmo payload em 1 cm x 1 cm e os modulos colapsam em ilegibilidade na camera de um telefone.</p>
+    <p>Pisos praticos de escala de impressao:</p>
+    <ul>
+        <li><b>Cartao de visita / adesivo / flyer (distancia de leitura ~15 cm):</b> minimo 2 cm x 2 cm para payloads curtos, 3 cm x 3 cm para medios, 4-5 cm x 4-5 cm para vCards completos.</li>
+        <li><b>Cartaz / sinalizacao (distancia de leitura 30-60 cm):</b> minimo 5 cm x 5 cm; para sinalizacao externa lida do outro lado de uma sala, 10-15 cm x 10-15 cm.</li>
+        <li><b>Apresentacao de slides (distancia de leitura varia; assuma fundo de sala ~5 m):</b> pelo menos 10 cm x 10 cm renderizado, e pre-teste da fileira de tras real antes da palestra.</li>
+    </ul>
+    <p>O PNG do <a href="/utility-tools/qr-code-generator.html">Gerador de QR Code</a> e uma imagem raster; se voce o aumenta sem artefatos de anti-aliasing, ele permanece legivel. Se voce precisa de impressao muito grande e o PNG fica blocado em escala, regere em um tamanho de saida maior ou converta para SVG via o <a href="/image-converter-tools/svg-to-png.html">conversor SVG para PNG</a> em reverso (a maioria das ferramentas QR tambem exporta SVG; a nossa emite PNG que escala limpamente com reamostragem nearest-neighbour).</p>
+
+    <h2 class="text-uppercase"><b>Corte e o padrao localizador: uma quinta falha comum</b></h2>
+    <p>Todo QR tem tres grandes "padroes localizadores" quadrados em tres cantos (superior esquerdo, superior direito, inferior esquerdo). A camera localiza o QR detectando-os. Se qualquer um deles for cortado, ocultado ou riscado, a leitura falha completamente - nao "com erros", mas completamente, porque a camera nao pode encontrar o codigo em primeiro lugar.</p>
+    <p>Ao dispor um QR em um cartao ou flyer, deixe pelo menos uma borda branca de 4 modulos de largura (a "zona quieta") ao redor de todo o codigo. Nao deixe grades de layout ou formas de fundo tocarem os quadrados localizadores. Se seu QR esta falhando em uma pagina impressa que le bem na tela, isso e a primeira coisa para verificar - pegue a copia impressa e inspecione os tres quadrados de canto contra a versao da tela.</p>
+
+    <h2 class="text-uppercase"><b>Fluxograma rapido de diagnostico</b></h2>
+    <ol>
+        <li><b>O QR le da tela?</b> Se nao, o codificador nao e o problema - payload ou contraste e.</li>
+        <li><b>Se sim da tela mas nao da impressao:</b> meca o codigo impresso. Cada lado &lt; 2 cm? Imprima maior.</li>
+        <li><b>Ainda falhando da impressao em &gt; 2 cm:</b> verifique os padroes localizadores de canto visualmente. Os tres quadrados presentes e nao cortados?</li>
+        <li><b>Ainda falhando:</b> verifique o contraste. Escuro sobre claro? Preto verdadeiro sobre fundo branco? Sem tinta colorida sobre o QR?</li>
+        <li><b>Ainda falhando em payloads longos:</b> regere com uma URL mais curta ou vCard cortado. O padrao de payload longo e denso demais para muitas cameras de telefone.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>O que NAO causa falhas de leitura (mitos comuns)</b></h2>
+    <ul>
+        <li><b>"Voce precisa de um gerador de QR pago."</b> Nao. A especificacao QR e aberta; um gerador gratuito no navegador como o nosso produz um codigo que le identicamente a um pago. Voce paga por analytics ou branding, nao por capacidade de leitura.</li>
+        <li><b>"QRs curvos ou rotacionados nao leem."</b> Cameras de telefone modernas lidam bem com rotacao moderada e leve curvatura de superficie. Wrap severo (ao redor de uma garrafa) quebra leituras, mas uma etiqueta plana em uma superficie ligeiramente curva geralmente esta bem.</li>
+        <li><b>"Telefones antigos nao podem ler QRs."</b> Leitura nativa de QR foi enviada no iOS 11 (2017) e em cameras stock Android pela mesma epoca. Qualquer coisa dos ultimos 7 anos tem incorporada.</li>
+        <li><b>"Voce precisa instalar um app QR."</b> Nao no iPhone ou Android moderno. Se um flyer instrui o leitor a instalar um "app scanner QR", o QR esta sendo usado em marketing de 2008 e deve ser substituido.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Ferramentas e guias relacionados neste site</b></h2>
+    <ul>
+        <li><a href="/utility-tools/qr-code-generator.html">Gerador de QR Code</a> - o gerador no navegador que produziu o PNG que voce esta depurando.</li>
+        <li><a href="/image-tools/compress-image.html">Compress Image</a> - se o arquivo PNG impresso for enorme e voce precisa enviar um flyer menor por email, comprima o PNG do QR primeiro.</li>
+        <li><a href="/image-converter-tools/svg-to-png.html">SVG to PNG</a> - para designers regenerando um QR vetorial em um tamanho raster especifico.</li>
+        <li><a href="/image-tools/photo-editor.html">Photo Editor</a> - para adicionar uma borda branca de zona-quieta ou colocar o QR em um tile de fundo limpo antes da impressao.</li>
+    </ul>
+
+    <p style="margin-top: 1em;"><a href="/utility-tools/qr-code-generator.html">&larr; Voltar para Gerador de QR Code</a></p>
+</div>

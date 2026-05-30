@@ -1,0 +1,81 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Koreksi kesalahan kode QR dan kegagalan pemindaian: mengapa QR Anda tidak akan dipindai</b></h1>
+    <p><em>Ditinjau terakhir 2026-05-05. Anda membuat QR dengan <a href="/utility-tools/qr-code-generator.html">QR Code Generator</a> kami, mencetaknya di flyer atau menempelkannya di slide, dan kamera tidak akan menangkapnya. Penyebabnya hampir selalu salah satu dari empat hal - ukuran payload, tingkat koreksi kesalahan, kontras, atau skala cetak - dan perbaikannya mekanis, bukan ajaib. Panduan ini menamai seperti apa masing-masing dan cara membuat QR dipindai pada percobaan pertama.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Jawaban 30 detik.</b> QR tidak akan dipindai ketika (1) payload terlalu panjang untuk tingkat koreksi kesalahan yang dipilih (pola menjadi sangat padat), (2) kontras antara modul dan latar belakang terlalu rendah (kamera gagal di pengaturan redup atau tidak putih), (3) skala cetak di bawah ~2 cm x 2 cm pada jarak pemindaian, atau (4) bagian dari pola pencari (tiga kotak sudut) terpotong, tergores, atau tertutup. <a href="/utility-tools/qr-code-generator.html">QR Code Generator</a> kami menghasilkan PNG; empat pemeriksaan di bawah memberi tahu Anda mana masalah spesifik Anda dan cara memulihkannya.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Penyebab 1: payload terlalu panjang untuk encoder</b></h2>
+    <p>Kode QR menyimpan payload-nya dalam sejumlah tetap "modul" - kotak hitam-putih kecil. Semakin panjang payload, semakin banyak modul yang Anda butuhkan, semakin padat polanya, dan pada titik tertentu kamera tidak dapat menyelesaikan modul dengan bersih dari jarak pemindaian khas ponsel (15-30 cm).</p>
+    <p>Tiga rentang payload yang layak diketahui:</p>
+    <ul>
+        <li><b>URL pendek atau teks di bawah ~25 karakter</b> (mis. <code>https://situsanda.com</code>, "WIFI:..." SSID pendek). Pola tetap jarang dan dipindai dengan bersih pada ukuran apapun yang masuk akal.</li>
+        <li><b>URL atau teks medium 25-100 karakter</b> (mis. URL dengan tracking, vCard pendek). Pola mulai memadat; sebagian besar baik tetapi waspada terhadap kontras rendah atau cetak kecil.</li>
+        <li><b>URL panjang atau vCard penuh 100-300+ karakter</b> (kartu kontak lengkap dengan telepon, email, organisasi, alamat; URL dengan beberapa params tracking). Pola sekarang sangat padat - ukuran cetak kecil akan gagal dipindai.</li>
+    </ul>
+    <p><b>Perbaikan:</b> persingkat payload sebelum menghasilkan. Untuk URL, buang parameter tracking atau gunakan layanan link pendek. Untuk vCard, simpan hanya field esensial (nama, satu telepon, satu email). Untuk Wi-Fi, jangan tanamkan passphrase panjang jika dapat dihindari. Re-generate dari <a href="/utility-tools/qr-code-generator.html">QR Code Generator</a> setelah memangkas dan polanya harus melonggar secara nyata.</p>
+
+    <h2 class="text-uppercase"><b>Penyebab 2: ketidakcocokan tingkat koreksi kesalahan</b></h2>
+    <p>Kode QR memiliki empat tingkat koreksi kesalahan - L (~7% dapat dipulihkan), M (~15%), Q (~25%), H (~30%). Tingkat lebih tinggi berarti kode dapat sebagian dikaburkan (overlay logo, noda sidik jari, sudut robek) dan tetap dapat didekode, tetapi dengan biaya lebih banyak modul per karakter payload.</p>
+    <p>Trade-off dalam bahasa sederhana:</p>
+    <ul>
+        <li><b>L (Rendah) - default untuk sebagian besar generator termasuk kami.</b> Pemindaian tercepat, pola terkecil pada ukuran payload tertentu. Gunakan ketika QR akan ditampilkan di layar digital bersih atau cetak pristine.</li>
+        <li><b>M (Medium).</b> Buffer keandalan kecil dengan biaya pola minor. Gunakan untuk flyer yang dicetak yang mungkin tertekuk atau bernoda.</li>
+        <li><b>Q (Quartile).</b> Sekitar 25% dari kode dapat dikaburkan dan pemindaian masih bekerja. Gunakan ketika Anda berencana untuk overlay logo kecil di tengah.</li>
+        <li><b>H (Tinggi).</b> Sekitar 30% dapat dikaburkan. Gunakan untuk papan iklan luar ruangan yang mungkin pudar, mengelupas, atau sebagian tertutup.</li>
+    </ul>
+    <p><a href="/utility-tools/qr-code-generator.html">QR Code Generator</a> di situs ini menghasilkan pada tingkat L, yang merupakan default tepat untuk penggunaan digital dan cetak pristine. Jika Anda secara khusus membutuhkan toleransi overlay, hasilkan QR, bungkus dalam alat desain Anda, dan uji pindai dari medium akhir aktual (dicetak pada ukuran aktual, dipasang pada jarak aktual) sebelum mencetak.</p>
+
+    <h2 class="text-uppercase"><b>Penyebab 3: kontras rendah antara modul dan latar belakang</b></h2>
+    <p>Kamera ponsel membaca modul sebagai biner: gelap atau terang. Jika modulnya abu-abu gelap pada latar belakang abu-abu terang - atau lebih buruk, pada latar belakang berwarna yang tumpang tindih dengan nilai modul - kamera tidak dapat melakukan threshold bersih dan pemindaian gagal. Ini adalah penyebab tunggal paling umum dari "QR ada di sana, mengapa ponsel saya tidak membacanya?"</p>
+    <p>Aturan praktis kontras:</p>
+    <ul>
+        <li><b>Gelap di atas terang, bukan terang di atas gelap.</b> Meskipun QR terbalik (modul putih di atas latar belakang gelap) secara teknis valid, banyak kamera lama dan beberapa aplikasi menolak mendekode mereka. Tetap dengan gelap-di-atas-terang kecuali Anda mengontrol perangkat pemindaian.</li>
+        <li><b>Latar belakang solid, bukan fotografis.</b> Menempatkan QR di atas foto hampir tidak pernah bekerja - noise di foto bocor ke pola modul.</li>
+        <li><b>Hitam sejati, bukan warna gelap.</b> Modul biru gelap, merah gelap, atau coklat gelap akan dipindai, tetapi mereka mengurangi margin kontras. Jika Anda mencetak pada ukuran kecil, lebih suka hitam murni.</li>
+        <li><b>Latar belakang putih atau hampir putih.</b> Krem, off-white, kuning sangat pucat biasanya baik. Pastel jenuh berisiko.</li>
+    </ul>
+    <p><a href="/utility-tools/qr-code-generator.html">QR Code Generator</a> kami menghasilkan PNG hitam-sejati-di-atas-putih-sejati. Jika Anda menatanya kembali dalam alat desain, pertahankan rasio kontras tinggi dan uji ulang dengan dua ponsel berbeda sebelum mencetak.</p>
+
+    <h2 class="text-uppercase"><b>Penyebab 4: skala cetak di bawah lantai resolusi kamera</b></h2>
+    <p>Kode QR membutuhkan sekitar <b>10 modul per sentimeter jarak pemindaian</b> di kamera. QR payload pendek memiliki ~21 modul per sisi; QR payload panjang memiliki ~57+. Cetak pada 2 cm x 2 cm dan URL 25-karakter baik-baik saja; cetak payload yang sama pada 1 cm x 1 cm dan modul runtuh menjadi tidak terbaca di kamera ponsel.</p>
+    <p>Lantai praktis skala cetak:</p>
+    <ul>
+        <li><b>Kartu nama / stiker / flyer (jarak pemindaian ~15 cm):</b> minimum 2 cm x 2 cm untuk payload pendek, 3 cm x 3 cm untuk medium, 4-5 cm x 4-5 cm untuk vCard penuh.</li>
+        <li><b>Poster / signage (jarak pemindaian 30-60 cm):</b> minimum 5 cm x 5 cm; untuk signage luar ruangan yang dipindai dari seberang ruangan, 10-15 cm x 10-15 cm.</li>
+        <li><b>Slide deck (jarak pemindaian bervariasi; asumsikan belakang ruangan ~5 m):</b> setidaknya 10 cm x 10 cm dirender, dan pre-test dari baris belakang aktual sebelum pembicaraan.</li>
+    </ul>
+    <p>PNG dari <a href="/utility-tools/qr-code-generator.html">QR Code Generator</a> adalah gambar raster; jika Anda meningkatkannya tanpa artefak anti-aliasing, ia tetap dapat dipindai. Jika Anda perlu cetak sangat besar dan PNG terlihat berblok pada skala, regenerate pada ukuran output yang lebih besar atau konversi ke SVG melalui <a href="/image-converter-tools/svg-to-png.html">konverter SVG ke PNG</a> dalam terbalik (sebagian besar alat QR juga mengekspor SVG; kami menghasilkan PNG yang menskalakan dengan bersih dengan resampling nearest-neighbour).</p>
+
+    <h2 class="text-uppercase"><b>Pemotongan dan pola pencari: kegagalan umum kelima</b></h2>
+    <p>Setiap QR memiliki tiga "pola pencari" kotak besar di tiga sudut (kiri atas, kanan atas, kiri bawah). Kamera menemukan QR dengan menemukan ini. Jika salah satunya terpotong, tertutup, atau tergores, pemindaian gagal sepenuhnya - tidak "dengan kesalahan", tetapi sepenuhnya, karena kamera tidak dapat menemukan kode di tempat pertama.</p>
+    <p>Saat menempatkan QR di kartu atau flyer, biarkan setidaknya batas putih lebar 4 modul ("zona tenang") di sekitar seluruh kode. Jangan biarkan grid layout atau bentuk latar belakang menyentuh kotak pencari. Jika QR Anda gagal di halaman cetak yang dipindai dengan baik di layar, ini adalah hal pertama yang harus diperiksa - ambil salinan cetak dan periksa tiga kotak sudut terhadap versi layar.</p>
+
+    <h2 class="text-uppercase"><b>Diagram alir diagnostik cepat</b></h2>
+    <ol>
+        <li><b>Apakah QR dipindai dari layar?</b> Jika tidak, encoder bukan masalahnya - payload atau kontras adalah.</li>
+        <li><b>Jika ya dari layar tetapi tidak dari cetak:</b> ukur kode yang dicetak. Apakah setiap sisi &lt; 2 cm? Cetak lebih besar.</li>
+        <li><b>Masih gagal dari cetak pada &gt; 2 cm:</b> periksa pola pencari sudut secara visual. Ketiga kotak hadir dan tidak dipotong?</li>
+        <li><b>Masih gagal:</b> periksa kontras. Gelap di atas terang? Hitam sejati di atas latar belakang putih? Tidak ada warna berwarna di atas QR?</li>
+        <li><b>Masih gagal pada payload panjang:</b> regenerate dengan URL lebih pendek atau vCard yang dipangkas. Pola payload panjang terlalu padat untuk banyak kamera ponsel.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>Apa yang TIDAK menyebabkan kegagalan pemindaian (mitos umum)</b></h2>
+    <ul>
+        <li><b>"Anda perlu generator QR berbayar."</b> Tidak. Spesifikasi QR terbuka; generator gratis dalam-browser seperti milik kami menghasilkan kode yang dipindai identik dengan yang berbayar. Anda membayar untuk analytics atau branding, bukan kemampuan pemindaian.</li>
+        <li><b>"QR melengkung atau diputar tidak dipindai."</b> Kamera ponsel modern menangani rotasi sedang dan sedikit lengkungan permukaan dengan baik. Wrap parah (di sekitar botol) merusak pemindaian, tetapi label datar pada permukaan sedikit melengkung biasanya OK.</li>
+        <li><b>"Ponsel lama tidak dapat memindai QR."</b> Pemindaian QR asli dikirimkan di iOS 11 (2017) dan kamera stock Android sekitar waktu yang sama. Apapun dari 7 tahun terakhir memilikinya bawaan.</li>
+        <li><b>"Anda perlu menginstal aplikasi QR."</b> Tidak di iPhone atau Android modern. Jika flyer menginstruksikan pembaca untuk menginstal "aplikasi pemindai QR", QR digunakan dalam pemasaran 2008 dan harus diganti.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Alat dan panduan terkait di situs ini</b></h2>
+    <ul>
+        <li><a href="/utility-tools/qr-code-generator.html">QR Code Generator</a> - generator dalam-browser yang menghasilkan PNG yang Anda debug.</li>
+        <li><a href="/image-tools/compress-image.html">Compress Image</a> - jika file PNG yang dicetak besar dan Anda perlu mengirim flyer yang lebih kecil melalui email, kompres PNG QR terlebih dahulu.</li>
+        <li><a href="/image-converter-tools/svg-to-png.html">SVG to PNG</a> - untuk desainer yang meregenerate QR vektor pada ukuran raster tertentu.</li>
+        <li><a href="/image-tools/photo-editor.html">Photo Editor</a> - untuk menambahkan batas putih zona-tenang atau menempatkan QR pada tile latar belakang bersih sebelum mencetak.</li>
+    </ul>
+
+    <p style="margin-top: 1em;"><a href="/utility-tools/qr-code-generator.html">&larr; Kembali ke QR Code Generator</a></p>
+</div>

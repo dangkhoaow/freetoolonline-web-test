@@ -1,0 +1,81 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Correccion de errores del codigo QR y fallos de escaneo: por que tu QR no escanea</b></h1>
+    <p><em>Ultima revision 2026-05-05. Generaste un QR con nuestro <a href="/utility-tools/qr-code-generator.html">Generador de codigo QR</a>, lo imprimiste en un flyer o lo pegaste en una diapositiva, y la camara no logra captarlo. La causa casi siempre es una de cuatro cosas - tamano del payload, nivel de correccion de errores, contraste o escala de impresion - y la solucion es mecanica, no magica. Esta guia nombra como se ve cada una y como hacer que el QR escanee en el primer intento.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Respuesta de 30 segundos.</b> Un QR no escanea cuando (1) el payload es demasiado largo para el nivel de correccion de errores elegido (el patron se vuelve muy denso), (2) el contraste entre modulos y fondo es demasiado bajo (las camaras fallan en entornos oscuros o no blancos), (3) la escala de impresion esta por debajo de ~2 cm x 2 cm a la distancia de escaneo, o (4) parte del patron localizador (los tres cuadrados de esquina) esta cortada, ranurada o cubierta. Nuestro <a href="/utility-tools/qr-code-generator.html">Generador de codigo QR</a> emite un PNG; las cuatro verificaciones siguientes te dicen cual es tu problema especifico y como recuperarte.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Causa 1: payload demasiado largo para el codificador</b></h2>
+    <p>Un codigo QR almacena su payload en un numero fijo de "modulos" - los pequenos cuadrados blancos y negros. Cuanto mas largo el payload, mas modulos necesitas, mas denso se vuelve el patron, y en algun punto la camara no puede resolver los modulos limpiamente desde la distancia de escaneo tipica de un telefono (15-30 cm).</p>
+    <p>Tres bandas aproximadas de payload que vale la pena conocer:</p>
+    <ul>
+        <li><b>URL corta o texto bajo ~25 caracteres</b> (ej. <code>https://tusitio.com</code>, "WIFI:..." SSID corto). El patron permanece disperso y escanea limpiamente a cualquier tamano razonable.</li>
+        <li><b>URL o texto medio de 25-100 caracteres</b> (ej. URLs con tracking, vCards cortos). El patron comienza a densificarse; en su mayoria bien pero cuidado con bajo contraste o impresion pequena.</li>
+        <li><b>URL larga o vCard completo de 100-300+ caracteres</b> (tarjeta de contacto completa con telefono, email, organizacion, direccion; URLs con multiples params de tracking). El patron ahora es muy denso - tamanos de impresion pequenos fallaran al escanear.</li>
+    </ul>
+    <p><b>Solucion:</b> acorta el payload antes de generar. Para URLs, descarta parametros de tracking o usa un servicio de enlace corto. Para vCards, manten solo campos esenciales (nombre, un solo telefono, un solo email). Para Wi-Fi, no incrustes una contrasena larga si puedes evitarla. Re-genera desde el <a href="/utility-tools/qr-code-generator.html">Generador de codigo QR</a> despues de recortar y el patron deberia aflojar notablemente.</p>
+
+    <h2 class="text-uppercase"><b>Causa 2: discrepancia de nivel de correccion de errores</b></h2>
+    <p>Los codigos QR tienen cuatro niveles de correccion de errores - L (~7% recuperable), M (~15%), Q (~25%), H (~30%). Niveles mas altos significan que el codigo puede ser parcialmente oscurecido (una superposicion de logo, una mancha de huella, una esquina rota) y aun decodificar, pero al costo de mas modulos por caracter de payload.</p>
+    <p>El trade-off en lenguaje simple:</p>
+    <ul>
+        <li><b>L (Bajo) - predeterminado para la mayoria de generadores incluido el nuestro.</b> Escaneo mas rapido, patron mas pequeno a un tamano de payload dado. Usa cuando el QR sera mostrado en una pantalla digital limpia o impresion prosa.</li>
+        <li><b>M (Medio).</b> Un pequeno buffer de confiabilidad a costo menor de patron. Usa para flyers impresos que pueden doblarse o mancharse.</li>
+        <li><b>Q (Quartil).</b> Aproximadamente 25% del codigo puede ser oscurecido y el escaneo aun funciona. Usa cuando planeas superponer un pequeno logo en el centro.</li>
+        <li><b>H (Alto).</b> Aproximadamente 30% oscurecible. Usa para senalizacion exterior que puede desvanecerse, pelar o ser parcialmente cubierta.</li>
+    </ul>
+    <p>El <a href="/utility-tools/qr-code-generator.html">Generador de codigo QR</a> en este sitio emite a nivel L, que es el predeterminado correcto para uso digital e impresion prosa. Si necesitas especificamente tolerancia de superposicion, genera el QR, envuelvelo en tu herramienta de diseno, y prueba el escaneo desde el medio final real (impreso en el tamano real, montado a la distancia real) antes de ir a impresion.</p>
+
+    <h2 class="text-uppercase"><b>Causa 3: bajo contraste entre modulos y fondo</b></h2>
+    <p>La camara del telefono lee los modulos como binarios: oscuro o claro. Si los modulos son gris oscuro sobre un fondo gris claro - o peor, sobre un fondo coloreado que se solapa con el valor del modulo - la camara no puede aplicar threshold limpiamente y el escaneo falla. Esta es la causa unica mas comun de "el QR esta justo ahi, por que mi telefono no lo lee?"</p>
+    <p>Reglas generales de contraste:</p>
+    <ul>
+        <li><b>Oscuro sobre claro, no claro sobre oscuro.</b> Aunque los QRs invertidos (modulos blancos sobre fondo oscuro) son tecnicamente validos, muchas camaras antiguas y algunas apps rehusan decodificarlos. Quedate con oscuro-sobre-claro a menos que controles el dispositivo de escaneo.</li>
+        <li><b>Fondo solido, no fotografico.</b> Colocar un QR sobre una fotografia casi nunca funciona - el ruido en la foto se desangra en el patron del modulo.</li>
+        <li><b>Negro verdadero, no color oscuro.</b> Modulos azul oscuro, rojo oscuro o marron oscuro escanearan, pero reducen el margen de contraste. Si imprimes en tamano pequeno, prefiere negro puro.</li>
+        <li><b>Fondo blanco o casi blanco.</b> Crema, off-white, amarillo muy palido suelen estar bien. Pasteles saturados son arriesgados.</li>
+    </ul>
+    <p>Nuestro <a href="/utility-tools/qr-code-generator.html">Generador de codigo QR</a> emite un PNG negro-verdadero-sobre-blanco-verdadero. Si lo restilas en una herramienta de diseno, manten la razon de contraste alta y vuelve a probar con dos telefonos diferentes antes de imprimir.</p>
+
+    <h2 class="text-uppercase"><b>Causa 4: escala de impresion bajo el piso de resolucion de la camara</b></h2>
+    <p>Un codigo QR necesita aproximadamente <b>10 modulos por centimetro de distancia de escaneo</b> en la camara. Un QR de payload corto tiene ~21 modulos por lado; un QR de payload largo tiene ~57+. Imprime a 2 cm x 2 cm y una URL de 25 caracteres esta bien; imprime el mismo payload a 1 cm x 1 cm y los modulos colapsan en ilegibilidad en una camara de telefono.</p>
+    <p>Pisos practicos de escala de impresion:</p>
+    <ul>
+        <li><b>Tarjeta de visita / pegatina / flyer (distancia de escaneo ~15 cm):</b> minimo 2 cm x 2 cm para payloads cortos, 3 cm x 3 cm para medios, 4-5 cm x 4-5 cm para vCards completos.</li>
+        <li><b>Cartel / senalizacion (distancia de escaneo 30-60 cm):</b> minimo 5 cm x 5 cm; para senalizacion exterior escaneada desde el otro lado de una sala, 10-15 cm x 10-15 cm.</li>
+        <li><b>Presentacion de diapositivas (distancia de escaneo varia; asume parte trasera de la sala ~5 m):</b> al menos 10 cm x 10 cm renderizado, y pre-prueba desde la fila trasera real antes de la charla.</li>
+    </ul>
+    <p>El PNG del <a href="/utility-tools/qr-code-generator.html">Generador de codigo QR</a> es una imagen raster; si lo amplias sin artefactos de anti-aliasing, permanece escaneable. Si necesitas impresion muy grande y el PNG se ve cuadriculado a escala, regenera a un tamano de salida mayor o convierte a SVG via el <a href="/image-converter-tools/svg-to-png.html">conversor SVG a PNG</a> en reverso (la mayoria de herramientas QR tambien exportan SVG; la nuestra emite PNG que escala limpiamente con reescalado vecino-mas-cercano).</p>
+
+    <h2 class="text-uppercase"><b>Recorte y el patron localizador: una quinta falla comun</b></h2>
+    <p>Cada QR tiene tres grandes "patrones localizadores" cuadrados en tres esquinas (superior izquierda, superior derecha, inferior izquierda). La camara localiza el QR detectandolos. Si cualquiera de ellos esta recortado, ocluido o ranurado, el escaneo falla por completo - no "con errores", sino por completo, porque la camara no puede encontrar el codigo en primer lugar.</p>
+    <p>Al disponer un QR en una tarjeta o flyer, deja al menos un borde blanco de 4 modulos de ancho (la "zona tranquila") alrededor de todo el codigo. No dejes que cuadriculas de layout o formas de fondo toquen los cuadrados localizadores. Si tu QR esta fallando en una pagina impresa que escanea bien en pantalla, esto es lo primero que verificar - levanta la copia impresa e inspecciona los tres cuadrados de esquina contra la version de pantalla.</p>
+
+    <h2 class="text-uppercase"><b>Diagrama de flujo rapido de diagnostico</b></h2>
+    <ol>
+        <li><b>El QR escanea desde la pantalla?</b> Si no, el codificador no es el problema - el payload o contraste si.</li>
+        <li><b>Si si desde la pantalla pero no desde la impresion:</b> mide el codigo impreso. Cada lado &lt; 2 cm? Imprime mas grande.</li>
+        <li><b>Aun fallando desde impresion en &gt; 2 cm:</b> verifica los patrones localizadores de esquina visualmente. Los tres cuadrados presentes y sin recortar?</li>
+        <li><b>Aun fallando:</b> verifica el contraste. Oscuro sobre claro? Negro verdadero sobre fondo blanco? Sin tinte coloreado sobre el QR?</li>
+        <li><b>Aun fallando en payloads largos:</b> regenera con una URL mas corta o vCard recortado. El patron de payload largo es demasiado denso para muchas camaras de telefono.</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>Lo que NO causa fallos de escaneo (mitos comunes)</b></h2>
+    <ul>
+        <li><b>"Necesitas un generador de QR pago."</b> No. La especificacion QR es abierta; un generador gratuito en el navegador como el nuestro produce un codigo que escanea identicamente a uno pago. Pagas por analytics o branding, no por escaneabilidad.</li>
+        <li><b>"QRs curvos o rotados no escanean."</b> Las camaras de telefono modernas manejan rotacion moderada y curvatura de superficie leve bien. Wrap severo (alrededor de una botella) rompe escaneos, pero una etiqueta plana en una superficie ligeramente curva suele estar bien.</li>
+        <li><b>"Telefonos viejos no pueden escanear QRs."</b> El escaneo nativo de QR se envio en iOS 11 (2017) y en camaras stock de Android por la misma epoca. Cualquier cosa de los ultimos 7 anos lo tiene incorporado.</li>
+        <li><b>"Necesitas instalar una app QR."</b> No en iPhone o Android moderno. Si un flyer instruye al lector a instalar una "app escaner QR", el QR esta siendo usado en marketing de 2008 y deberia ser reemplazado.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Herramientas y guias relacionados en este sitio</b></h2>
+    <ul>
+        <li><a href="/utility-tools/qr-code-generator.html">Generador de codigo QR</a> - el generador en el navegador que produjo el PNG que estas depurando.</li>
+        <li><a href="/image-tools/compress-image.html">Compress Image</a> - si el archivo PNG impreso es enorme y necesitas enviar un flyer mas pequeno por email, comprime el PNG del QR primero.</li>
+        <li><a href="/image-converter-tools/svg-to-png.html">SVG to PNG</a> - para disenadores regenerando un QR vectorial a un tamano raster especifico.</li>
+        <li><a href="/image-tools/photo-editor.html">Photo Editor</a> - para anadir un borde blanco de zona-tranquila o colocar el QR en un tile de fondo limpio antes de imprimir.</li>
+    </ul>
+
+    <p style="margin-top: 1em;"><a href="/utility-tools/qr-code-generator.html">&larr; Volver al Generador de codigo QR</a></p>
+</div>
