@@ -1,0 +1,98 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Gambar ke Base64: Sematkan di HTML/CSS vs Tautkan File Gambar</b></h1>
+    <p><em>Tinjauan terakhir 2026-05-05. Konversi di browser dengan <a href="/image-converter-tools/image-to-base64.html">Image to Base64</a> atau tempelkan URL data yang ada ke <a href="/image-converter-tools/base64-to-image.html">Base64 to Image</a>; keduanya berjalan di perangkat Anda tanpa unggah.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Jawaban 30 detik.</b> Sematkan (tempelkan URL data base64 ke HTML / CSS) hanya ketika gambar di bawah sekitar 4 KB, digunakan pada satu atau dua halaman, dan tidak pernah diharapkan untuk berubah. Tautkan file gambar (<code>&lt;img src="..."&gt;</code> atau <code>background:url(...)</code> normal) untuk yang lainnya. Titik impas adalah biaya satu permintaan HTTP tambahan vs penalti ukuran 33% ditambah hilangnya cache.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Mengapa dua opsi ada sama sekali</b></h2>
+    <p>File HTML atau CSS adalah format teks. Gambar (PNG, JPG, WebP, SVG-sebagai-biner) adalah biner. Untuk meletakkan gambar inline dalam file teks, Anda mengkodekan biner sebagai base64 (alfabet ASCII 64 karakter) dan membungkusnya dalam URL <code>data:image/png;base64,...</code>. Browser mendekode URL data dengan cepat dan memperlakukan hasilnya seolah-olah telah diambil. Alternatifnya adalah jalur file normal, yang diambil browser melalui HTTP dan di-cache secara independen.</p>
+    <p>Keduanya berfungsi. Tidak ada yang secara universal lebih baik. Keputusannya tentang ukuran, perilaku cache, dan seberapa sering gambar berubah.</p>
+
+    <h2 class="text-uppercase"><b>Aturan keputusan (tabel keputusan)</b></h2>
+    <div class="w3-responsive">
+        <table class="w3-table-all w3-small">
+            <tr><th>Ukuran gambar (byte mentah)</th><th>Digunakan kembali di...</th><th>Kemungkinan berubah?</th><th>Rekomendasi</th></tr>
+            <tr><td>di bawah 1 KB</td><td>jumlah halaman berapa pun</td><td>tidak</td><td><b>Sematkan</b> - biaya permintaan mendominasi</td></tr>
+            <tr><td>1-4 KB</td><td>satu atau dua halaman</td><td>tidak</td><td><b>Sematkan</b> jika Anda tidak dapat multiplex HTTP/2; <b>tautkan</b> jika Anda bisa</td></tr>
+            <tr><td>1-4 KB</td><td>3+ halaman</td><td>tidak</td><td><b>Tautkan</b> - satu file yang di-cache mengalahkan N salinan inline</td></tr>
+            <tr><td>4-50 KB</td><td>apa pun</td><td>apa pun</td><td><b>Tautkan</b> - penalti inline berarti</td></tr>
+            <tr><td>di atas 50 KB</td><td>apa pun</td><td>apa pun</td><td><b>Tautkan</b> - inline memblokir parsing dan membengkakkan setiap halaman yang menyertakan CSS / HTML</td></tr>
+            <tr><td>ukuran apa pun</td><td>SVG digunakan sebagai mask atau background CSS</td><td>tidak</td><td><b>Sematkan</b> SVG sebagai URL data (SVG mode teks; tidak perlu base64) untuk gradien dan mask CSS bebas IE</td></tr>
+        </table>
+    </div>
+    <p>Titik impas di sisi permintaan berasal dari berapa banyak byte yang dikenakan oleh satu permintaan HTTP. Pada HTTP/2 melalui koneksi hangat, itu kira-kira satu round-trip ditambah beberapa ratus byte header. Pada HTTP/1.1 dengan koneksi dingin, biayanya dapat mencapai RTT penuh ditambah TLS ditambah penyiapan koneksi - beberapa KB setara. Pedoman "sematkan di bawah 4 KB" mengasumsikan HTTP/1.1; pada HTTP/2 titik impas bergeser ke sekitar 1 KB.</p>
+
+    <h2 class="text-uppercase"><b>Apa yang Anda lepaskan dengan menyematkan</b></h2>
+    <ul>
+        <li><b>Cache browser.</b> Gambar yang ditautkan diambil sekali dan disajikan dari cache untuk setiap halaman berikutnya. URL data yang disematkan di-parse ulang dan didekode ulang untuk setiap halaman yang menyertakan CSS / HTML host. File HOST di-cache, tetapi biaya mendekode URL data dibayar pada setiap render halaman.</li>
+        <li><b>Pembaruan independen.</b> Gambar yang ditautkan dapat diganti tanpa men-deploy ulang HTML atau CSS. URL data yang disematkan dikirim dengan file host, jadi memperbarui gambar berarti men-deploy ulang setiap halaman yang mengirim CSS itu.</li>
+        <li><b>Overhead pengkodean 33%.</b> Tiga byte biner menjadi empat byte base64. PNG 4 KB menjadi ~5,4 KB inline. Pada widget satu halaman ini adalah kebisingan; di seratus penggunaan ulang ini menumpuk.</li>
+        <li><b>Fleksibilitas CDN.</b> Gambar yang ditautkan dapat dilayani dari CDN gambar terpisah, ditransformasikan dengan cepat, atau diganti dengan WebP / AVIF berdasarkan header Accept. Base64 yang disematkan dibekukan pada waktu build.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Apa yang Anda lepaskan dengan menautkan (kasus untuk menyematkan)</b></h2>
+    <ul>
+        <li><b>Satu permintaan tambahan.</b> Pada HTTP/1.1 dengan koneksi dingin ini bisa 50-200 ms; pada HTTP/2 lebih dekat ke satu RTT plus beberapa ratus byte. Untuk ikon di atas-lipatan yang kritis ini bisa menjadi perbedaan antara kilatan konten tanpa gaya dan pengecatan pertama yang bersih.</li>
+        <li><b>Gambar tubuh email.</b> Klien email sangat bervariasi dalam menangani gambar eksternal; banyak yang memblokir secara default untuk privasi. Gambar yang dilampirkan CID atau base64-inline dirender dengan dapat diprediksi. (Sebagian besar klien email masih lebih memilih CID daripada base64 di tubuh, tetapi base64 di bagian MIME adalah mekanisme dasarnya.)</li>
+        <li><b>Snapshot mandiri.</b> Satu file HTML dengan gambar yang disematkan adalah snapshot lengkap - berguna untuk laporan, dokumen yang diarsipkan, demo file-tunggal, dan ekspor ".eml". Gambar yang ditautkan memerlukan jalur untuk terus bekerja; yang disematkan tidak.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Pemeriksaan kewarasan 30 detik</b></h2>
+    <p>Buka file yang akan Anda kirim di editor teks dan lihat string <code>data:image/...;base64,</code>. Tiga pemeriksaan cepat:</p>
+    <ol>
+        <li><b>Panjang.</b> Jika string yang dikodekan lebih dari ~6.000 karakter (≈ 4 KB mentah), jangan sematkan. Tautkan file sebagai gantinya.</li>
+        <li><b>Jumlah penggunaan ulang.</b> Cari di codebase untuk string yang persis. Jika URL data yang sama muncul di 3+ file, Anda membayar penalti pengkodean 3+ kali. Tautkan.</li>
+        <li><b>Volatilitas.</b> Jika gambar adalah logo, avatar placeholder, atau apa pun yang "tim desain mungkin sesuaikan bulan depan", tautkan. Menyematkan membekukan gambar pada waktu build.</li>
+    </ol>
+    <p>Dua-dari-tiga jawaban "sematkan" berarti sematkan. Dua-dari-tiga jawaban "tautkan" berarti tautkan. Satu-dan-satu biasanya tanda bahwa jawaban yang tepat tergantung pada sistem di sekitarnya - versi HTTP, pipeline build, setup CDN.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>Apakah base64 mengenkripsi gambar?</summary>
+  <p>Tidak. Base64 adalah pengkodean, bukan enkripsi. Siapa pun yang melihat URL data dapat menempelkannya ke decoder (atau <a href="/image-converter-tools/base64-to-image.html">Base64 to Image</a> situs ini) dan mendapatkan kembali byte asli. Jika gambar sensitif, jangan letakkan di file HTML / CSS publik terlepas dari pengkodean.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Bisakah saya menyematkan JPG dan PNG dengan pengkodean yang sama?</summary>
+  <p>Ya - pengkodean tidak bergantung pada konten. Gunakan <code>data:image/png;base64,...</code> untuk PNG, <code>data:image/jpeg;base64,...</code> untuk JPG, <code>data:image/webp;base64,...</code> untuk WebP. Awalan MIME memberi tahu browser cara mendekode, bukan jenis biner apa yang dikandung base64.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Bagaimana dengan SVG - apakah saya butuh base64 untuk itu?</summary>
+  <p>Tidak. SVG sudah berupa teks. Anda dapat meletakkannya dalam URL data sebagai <code>data:image/svg+xml;utf8,...</code> dengan XML SVG inline (URL-encode <code>#</code> dan <code>&lt;</code>); base64 opsional dan sedikit lebih besar. Untuk SVG background CSS kecil bentuk mode-teks lebih bersih.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Akankah Google mengindeks gambar yang saya sematkan sebagai base64?</summary>
+  <p>Umumnya tidak - mesin pencari lebih menyukai URL gambar yang dapat mereka crawl, cache, dan peringkat secara independen. Jika Anda ingin gambar ditemukan di Image Search, tautkan sebagai file normal. Jika gambar bersifat dekoratif (ikon, pembagi, affordance UI tanpa konten semantik), menyematkan baik-baik saja.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Seberapa besar string yang dikodekan dibandingkan dengan file?</summary>
+  <p>Ukuran terkodekan = ⌈byte input / 3⌉ × 4. Gambar 1 KB menjadi ~1,36 KB terkodekan; gambar 10 KB menjadi ~13,4 KB terkodekan. Overhead 33% tepat untuk input yang panjangnya kelipatan 3 dan beberapa byte lebih untuk yang lain (padding "=" trailing).</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Apakah HTTP/2 mengubah jawaban?</summary>
+  <p>Ya - HTTP/2 multiplexes banyak permintaan kecil melalui satu koneksi, jadi biaya per-permintaan turun tajam. Pedoman "sematkan di bawah 4 KB" bergeser ke "sematkan di bawah 1 KB" di HTTP/2; di atasnya, tautkan file. HTTP/3 (QUIC) serupa.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Terkait</b></h2>
+    <ul>
+        <li><a href="/image-converter-tools/image-to-base64.html">Image to Base64</a> - konversi file gambar ke URL data di browser. Gunakan ini ketika Anda ingin menyematkan.</li>
+        <li><a href="/image-converter-tools/base64-to-image.html">Base64 to Image</a> - tempelkan URL data dan unduh gambar. Gunakan ini ketika Anda ingin mengekstrak gambar yang disematkan ke file biasa.</li>
+        <li><a href="/guides/base64-when-to-use-and-when-not-to.html">Base64 kapan menggunakan dan kapan tidak</a> - panduan pendamping yang lebih luas yang mencakup email MIME, JSON, parameter URL, dan kasus di mana base64 adalah alat yang salah sepenuhnya.</li>
+        <li><a href="/image-tools.html">Image Tools</a> - semua utilitas gambar (kompres, konversi, potong, ubah ukuran) di freetoolonline.com.</li>
+    </ul>
+</div>

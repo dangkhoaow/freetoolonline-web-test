@@ -1,0 +1,98 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Imagen a Base64: Incrustar en HTML/CSS vs Enlazar el Archivo de Imagen</b></h1>
+    <p><em>Ultima revision 2026-05-05. Convierte en el navegador con <a href="/image-converter-tools/image-to-base64.html">Image to Base64</a> o pega una URL de datos existente en <a href="/image-converter-tools/base64-to-image.html">Base64 to Image</a>; ambos corren en tu dispositivo sin subida.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Respuesta en 30 segundos.</b> Incrusta (pega la URL de datos base64 en el HTML / CSS) solo cuando la imagen esta bajo aproximadamente 4 KB, usada en una o dos paginas, y nunca se espera que cambie. Enlaza el archivo de imagen (un normal <code>&lt;img src="..."&gt;</code> o <code>background:url(...)</code>) para todo lo demas. El punto de equilibrio es el costo de una peticion HTTP extra vs la penalizacion de tamano del 33% mas la perdida de cache.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Por que existen dos opciones en absoluto</b></h2>
+    <p>Un archivo HTML o CSS es un formato de texto. Una imagen (PNG, JPG, WebP, SVG-como-binario) es binaria. Para poner una imagen inline en un archivo de texto codificas el binario como base64 (un alfabeto ASCII de 64 caracteres) y envuelves en una URL <code>data:image/png;base64,...</code>. El navegador decodifica la URL de datos sobre la marcha y trata el resultado como si hubiera sido obtenido. La alternativa es una ruta de archivo normal, que el navegador obtiene por HTTP y almacena en cache independientemente.</p>
+    <p>Ambos funcionan. Ninguno es universalmente mejor. La decision es sobre tamano, comportamiento de cache, y que tan frecuentemente la imagen cambia.</p>
+
+    <h2 class="text-uppercase"><b>La regla de decision (tabla de decision)</b></h2>
+    <div class="w3-responsive">
+        <table class="w3-table-all w3-small">
+            <tr><th>Tamano de imagen (bytes crudos)</th><th>Reutilizada en...</th><th>Probable que cambie?</th><th>Recomendacion</th></tr>
+            <tr><td>bajo 1 KB</td><td>cualquier numero de paginas</td><td>no</td><td><b>Incrustar</b> - el costo de peticion domina</td></tr>
+            <tr><td>1-4 KB</td><td>una o dos paginas</td><td>no</td><td><b>Incrustar</b> si no puedes multiplexar HTTP/2; <b>enlazar</b> si puedes</td></tr>
+            <tr><td>1-4 KB</td><td>3+ paginas</td><td>no</td><td><b>Enlazar</b> - un archivo en cache gana a N copias inline</td></tr>
+            <tr><td>4-50 KB</td><td>cualquiera</td><td>cualquiera</td><td><b>Enlazar</b> - la penalizacion inline es significativa</td></tr>
+            <tr><td>sobre 50 KB</td><td>cualquiera</td><td>cualquiera</td><td><b>Enlazar</b> - inline bloquea parsing e infla cada pagina que incluye el CSS / HTML</td></tr>
+            <tr><td>cualquier tamano</td><td>SVG usado como mascara o fondo CSS</td><td>no</td><td><b>Incrustar</b> el SVG como una URL de datos (SVG modo texto; sin base64 necesario) para gradientes CSS y mascaras sin IE</td></tr>
+        </table>
+    </div>
+    <p>El punto de equilibrio en el lado de la peticion viene de cuantos bytes cuesta una sola peticion HTTP. En HTTP/2 sobre una conexion caliente, eso es aproximadamente un viaje redondo mas unos cientos de bytes de encabezados. En HTTP/1.1 con una conexion fria, el costo puede ser un RTT completo mas TLS mas setup de conexion - varios KB equivalentes. La directriz "incrustar bajo 4 KB" asume HTTP/1.1; en HTTP/2 el punto de equilibrio se desplaza a aproximadamente 1 KB.</p>
+
+    <h2 class="text-uppercase"><b>Lo que renuncias al incrustar</b></h2>
+    <ul>
+        <li><b>Cache del navegador.</b> Una imagen enlazada se obtiene una vez y se sirve desde cache para cada pagina posterior. Una URL de datos incrustada se re-parsea y re-decodifica para cada pagina que incluye el CSS / HTML anfitrion. El archivo ANFITRION se almacena en cache, pero el costo de decodificar la URL de datos se paga en cada renderizado de pagina.</li>
+        <li><b>Actualizaciones independientes.</b> Una imagen enlazada puede ser reemplazada sin redesplegar el HTML o CSS. Una URL de datos incrustada envia con el archivo anfitrion, asi que actualizar la imagen significa redesplegar cada pagina que envia ese CSS.</li>
+        <li><b>33% overhead de codificacion.</b> Tres bytes de binario se vuelven cuatro bytes de base64. Un PNG de 4 KB se vuelve ~5,4 KB inline. En un widget de una sola pagina esto es ruido; a lo largo de cien reutilizaciones se acumula.</li>
+        <li><b>Flexibilidad CDN.</b> Una imagen enlazada puede servirse desde un CDN de imagen separado, transformarse al vuelo, o reemplazarse con WebP / AVIF basado en encabezados Accept. El base64 incrustado se congela en tiempo de build.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Lo que renuncias al enlazar (el caso para incrustar)</b></h2>
+    <ul>
+        <li><b>Una peticion extra.</b> En HTTP/1.1 con una conexion fria esto puede ser 50-200 ms; en HTTP/2 esta mas cerca de un RTT mas unos cientos de bytes. Para un icono above-the-fold critico esto puede ser la diferencia entre un flash de contenido sin estilo y un primer pintado limpio.</li>
+        <li><b>Imagenes de cuerpo de correo.</b> Los clientes de correo varian salvajemente en el manejo de imagenes externas; muchos bloquean por defecto por privacidad. Las imagenes adjuntas CID o base64-inline se renderizan predeciblemente. (La mayoria de los clientes de correo aun prefieren CID sobre base64 en el cuerpo, pero base64 en partes MIME es el mecanismo subyacente.)</li>
+        <li><b>Snapshots autocontenidos.</b> Un solo archivo HTML con imagenes incrustadas es un snapshot completo - util para informes, documentos archivados, demos de archivo unico, y exports ".eml". Las imagenes enlazadas requieren que la ruta siga funcionando; las incrustadas no.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>La verificacion de sanidad en 30 segundos</b></h2>
+    <p>Abre el archivo que estas por enviar en un editor de texto y mira la cadena <code>data:image/...;base64,</code>. Tres verificaciones rapidas:</p>
+    <ol>
+        <li><b>Longitud.</b> Si la cadena codificada esta sobre ~6,000 caracteres (≈ 4 KB crudos), no incrustes. Enlaza el archivo en su lugar.</li>
+        <li><b>Conteo de reutilizacion.</b> Busca en el codebase la cadena exacta. Si la misma URL de datos aparece en 3+ archivos, estas pagando la penalizacion de codificacion 3+ veces. Enlazala.</li>
+        <li><b>Volatilidad.</b> Si la imagen es un logo, un avatar placeholder, o cualquier cosa que "el equipo de diseno podria ajustar el mes que viene", enlazala. Incrustar congela la imagen en tiempo de build.</li>
+    </ol>
+    <p>Dos-de-tres respuestas "incrustar" significa incrustar. Dos-de-tres respuestas "enlazar" significa enlazar. Uno-y-uno es usualmente una senal de que la respuesta correcta depende del sistema circundante - version HTTP, pipeline de build, setup CDN.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>Base64 encripta la imagen?</summary>
+  <p>No. Base64 es codificacion, no encriptacion. Cualquiera que ve la URL de datos puede pegarla en un decodificador (o el <a href="/image-converter-tools/base64-to-image.html">Base64 to Image</a> de este sitio) y obtener los bytes originales de vuelta. Si la imagen es sensible, no la pongas en un archivo HTML / CSS publico independiente de codificacion.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Puedo incrustar un JPG y PNG con la misma codificacion?</summary>
+  <p>Si - la codificacion es agnostica al contenido. Usa <code>data:image/png;base64,...</code> para PNG, <code>data:image/jpeg;base64,...</code> para JPG, <code>data:image/webp;base64,...</code> para WebP. El prefijo MIME le dice al navegador como decodificar, no que tipo de binario contiene el base64.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Que hay de SVG - necesito base64 para eso?</summary>
+  <p>No. SVG ya es texto. Puedes ponerlo en una URL de datos como <code>data:image/svg+xml;utf8,...</code> con el XML SVG inline (URL-encode el <code>#</code> y <code>&lt;</code>); base64 es opcional y ligeramente mas grande. Para SVGs pequenos de fondo CSS la forma modo-texto es mas limpia.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Google indexara una imagen que incrusto como base64?</summary>
+  <p>Generalmente no - los motores de busqueda prefieren URLs de imagen que puedan rastrear, cachear, y clasificar independientemente. Si quieres la imagen descubrible en Image Search, enlazala como un archivo normal. Si la imagen es decorativa (un icono, un divisor, un affordance UI sin contenido semantico), incrustar esta bien.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Que tan grande es la cadena codificada comparada con el archivo?</summary>
+  <p>Tamano codificado = ⌈bytes de entrada / 3⌉ × 4. Una imagen de 1 KB se vuelve ~1,36 KB codificada; una imagen de 10 KB se vuelve ~13,4 KB codificada. El 33% overhead es exacto para entradas cuya longitud es un multiplo de 3 y unos pocos bytes mas para otros (el relleno "=" final).</p>
+</details>
+
+    <details class="faq-item">
+  <summary>HTTP/2 cambia la respuesta?</summary>
+  <p>Si - HTTP/2 multiplexa muchas peticiones pequenas sobre una conexion, asi que el costo por peticion cae bruscamente. La directriz "incrustar bajo 4 KB" se desplaza a "incrustar bajo 1 KB" en HTTP/2; sobre eso, enlaza el archivo. HTTP/3 (QUIC) es similar.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Relacionado</b></h2>
+    <ul>
+        <li><a href="/image-converter-tools/image-to-base64.html">Image to Base64</a> - convierte un archivo de imagen a una URL de datos en el navegador. Usa esto cuando quieres incrustar.</li>
+        <li><a href="/image-converter-tools/base64-to-image.html">Base64 to Image</a> - pega una URL de datos y descarga la imagen. Usa esto cuando quieres extraer una imagen incrustada a un archivo regular.</li>
+        <li><a href="/guides/base64-when-to-use-and-when-not-to.html">Base64 cuando usar y cuando no</a> - la guia companera mas amplia que cubre email MIME, JSON, parametros URL, y los casos donde base64 es la herramienta incorrecta enteramente.</li>
+        <li><a href="/image-tools.html">Image Tools</a> - todas las utilidades de imagen (comprimir, convertir, recortar, redimensionar) en freetoolonline.com.</li>
+    </ul>
+</div>

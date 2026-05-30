@@ -1,0 +1,98 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Hinh Anh sang Base64: Nhung trong HTML/CSS vs Lien Ket Tep Anh</b></h1>
+    <p><em>Soat lai lan cuoi 2026-05-05. Chuyen doi trong trinh duyet voi <a href="/image-converter-tools/image-to-base64.html">Image to Base64</a> hoac dan mot URL du lieu hien co vao <a href="/image-converter-tools/base64-to-image.html">Base64 to Image</a>; ca hai chay tren thiet bi cua ban ma khong tai len.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Cau tra loi 30 giay.</b> Nhung (dan URL du lieu base64 vao HTML / CSS) chi khi hinh anh duoi khoang 4 KB, duoc dung tren mot hoac hai trang, va khong bao gio mong doi thay doi. Lien ket tep anh (mot <code>&lt;img src="..."&gt;</code> hoac <code>background:url(...)</code> binh thuong) cho moi thu khac. Diem can bang la chi phi cua mot yeu cau HTTP them vs hinh phat kich thuoc 33% cong voi mat cache.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Tai sao hai tuy chon ton tai ngay tu dau</b></h2>
+    <p>Mot tep HTML hoac CSS la dinh dang van ban. Mot hinh anh (PNG, JPG, WebP, SVG-nhu-nhi-phan) la nhi phan. De dat mot hinh anh inline trong mot tep van ban ban ma hoa nhi phan thanh base64 (mot bang chu cai ASCII 64 ky tu) va goi trong mot URL <code>data:image/png;base64,...</code>. Trinh duyet giai ma URL du lieu khi can va xu ly ket qua nhu the no da duoc lay. Phuong an thay the la mot duong dan tep binh thuong, ma trinh duyet lay qua HTTP va cache doc lap.</p>
+    <p>Ca hai deu hoat dong. Khong cai nao tot hon pho quat. Quyet dinh la ve kich thuoc, hanh vi cache, va hinh anh thay doi thuong xuyen nhu the nao.</p>
+
+    <h2 class="text-uppercase"><b>Quy tac quyet dinh (bang quyet dinh)</b></h2>
+    <div class="w3-responsive">
+        <table class="w3-table-all w3-small">
+            <tr><th>Kich thuoc anh (byte tho)</th><th>Tai su dung tren...</th><th>Co kha nang thay doi?</th><th>Khuyen nghi</th></tr>
+            <tr><td>duoi 1 KB</td><td>bat ky so trang nao</td><td>khong</td><td><b>Nhung</b> - chi phi yeu cau chiem uu the</td></tr>
+            <tr><td>1-4 KB</td><td>mot hoac hai trang</td><td>khong</td><td><b>Nhung</b> neu ban khong the multiplex HTTP/2; <b>lien ket</b> neu ban co the</td></tr>
+            <tr><td>1-4 KB</td><td>3+ trang</td><td>khong</td><td><b>Lien ket</b> - mot tep da cache thang N ban sao inline</td></tr>
+            <tr><td>4-50 KB</td><td>bat ky</td><td>bat ky</td><td><b>Lien ket</b> - hinh phat inline co y nghia</td></tr>
+            <tr><td>tren 50 KB</td><td>bat ky</td><td>bat ky</td><td><b>Lien ket</b> - inline chan parsing va lam phinh moi trang chua CSS / HTML</td></tr>
+            <tr><td>kich thuoc bat ky</td><td>SVG dung lam mask hoac background CSS</td><td>khong</td><td><b>Nhung</b> SVG nhu mot URL du lieu (SVG che do van ban; khong can base64) cho gradient va mask CSS khong-IE</td></tr>
+        </table>
+    </div>
+    <p>Diem can bang ve phia yeu cau den tu bao nhieu byte mot yeu cau HTTP don le ton chi phi. Tren HTTP/2 qua mot ket noi am, do la khoang mot round-trip cong vai tram byte header. Tren HTTP/1.1 voi mot ket noi lanh, chi phi co the la mot RTT day du cong TLS cong setup ket noi - vai KB tuong duong. Huong dan "nhung duoi 4 KB" gia su HTTP/1.1; tren HTTP/2 diem can bang chuyen xuong khoang 1 KB.</p>
+
+    <h2 class="text-uppercase"><b>Nhung gi ban tu bo bang cach nhung</b></h2>
+    <ul>
+        <li><b>Cache trinh duyet.</b> Mot hinh anh duoc lien ket duoc lay mot lan va phuc vu tu cache cho moi trang tiep theo. Mot URL du lieu duoc nhung duoc parse lai va giai ma lai cho moi trang chua CSS / HTML chu. Tep CHU duoc cache, nhung chi phi giai ma URL du lieu duoc tra trong moi lan render trang.</li>
+        <li><b>Cap nhat doc lap.</b> Mot hinh anh duoc lien ket co the duoc thay the ma khong trien khai lai HTML hoac CSS. Mot URL du lieu duoc nhung gui voi tep chu, vi vay cap nhat hinh anh co nghia trien khai lai moi trang gui CSS do.</li>
+        <li><b>33% chi phi ma hoa.</b> Ba byte nhi phan tro thanh bon byte base64. Mot PNG 4 KB tro thanh ~5,4 KB inline. Tren mot widget mot trang day la tieng on; qua hang tram lan tai su dung no cong don.</li>
+        <li><b>Linh hoat CDN.</b> Mot hinh anh duoc lien ket co the duoc phuc vu tu mot CDN hinh anh rieng, bien doi khi can, hoac thay the bang WebP / AVIF dua tren header Accept. Base64 duoc nhung dong bang tai thoi diem build.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Nhung gi ban tu bo bang cach lien ket (truong hop ung ho nhung)</b></h2>
+    <ul>
+        <li><b>Mot yeu cau them.</b> Tren HTTP/1.1 voi mot ket noi lanh dieu nay co the la 50-200 ms; tren HTTP/2 gan hon mot RTT cong vai tram byte. Cho mot bieu tuong tren-cuon nguy hiem dieu nay co the la su khac biet giua mot flash noi dung khong style va mot first paint sach.</li>
+        <li><b>Hinh anh trong noi dung email.</b> Cac client email khac nhau cuc ky trong xu ly hinh anh ben ngoai; nhieu cai chan mac dinh vi rieng tu. Hinh anh dinh kem CID hoac base64-inline render co the du doan. (Hau het cac client email van uu tien CID hon base64 trong noi dung, nhung base64 trong cac phan MIME la co che ben duoi.)</li>
+        <li><b>Snapshot tu chua.</b> Mot tep HTML duy nhat voi cac hinh anh duoc nhung la mot snapshot hoan chinh - huu ich cho bao cao, tai lieu luu tru, demo tep don, va xuat ".eml". Hinh anh lien ket yeu cau duong dan tiep tuc hoat dong; nhung cai duoc nhung khong.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Kiem tra tinh tao trong 30 giay</b></h2>
+    <p>Mo tep ban sap gui trong mot trinh chinh sua van ban va nhin chuoi <code>data:image/...;base64,</code>. Ba kiem tra nhanh:</p>
+    <ol>
+        <li><b>Do dai.</b> Neu chuoi duoc ma hoa tren ~6,000 ky tu (≈ 4 KB tho), dung nhung. Lien ket tep thay vi.</li>
+        <li><b>So lan tai su dung.</b> Tim trong code base cho chuoi chinh xac. Neu cung URL du lieu xuat hien trong 3+ tep, ban dang tra hinh phat ma hoa 3+ lan. Lien ket no.</li>
+        <li><b>Tinh bien dong.</b> Neu hinh anh la mot logo, mot avatar placeholder, hoac bat cu thu gi ma "doi thiet ke co the dieu chinh thang sau", hay lien ket. Nhung dong bang hinh anh tai thoi diem build.</li>
+    </ol>
+    <p>Hai-trong-ba cau tra loi "nhung" nghia la nhung. Hai-trong-ba cau tra loi "lien ket" nghia la lien ket. Mot-va-mot thuong la dau hieu rang cau tra loi dung phu thuoc vao he thong xung quanh - phien ban HTTP, build pipeline, setup CDN.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>Base64 co ma hoa anh khong?</summary>
+  <p>Khong. Base64 la ma hoa, khong phai encryption. Bat ky ai thay URL du lieu deu co the dan no vao mot bo giai ma (hoac <a href="/image-converter-tools/base64-to-image.html">Base64 to Image</a> cua trang nay) va lay lai cac byte goc. Neu hinh anh la nhay cam, dung dat no vao mot tep HTML / CSS cong khai bat ke ma hoa.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Toi co the nhung JPG va PNG voi cung ma hoa khong?</summary>
+  <p>Co - ma hoa khong phu thuoc vao noi dung. Dung <code>data:image/png;base64,...</code> cho PNG, <code>data:image/jpeg;base64,...</code> cho JPG, <code>data:image/webp;base64,...</code> cho WebP. Tien to MIME noi voi trinh duyet cach giai ma, khong phai loai nhi phan nao base64 chua.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Con SVG thi sao - toi co can base64 cho cai do khong?</summary>
+  <p>Khong. SVG da la van ban. Ban co the dat no trong mot URL du lieu nhu <code>data:image/svg+xml;utf8,...</code> voi XML SVG inline (URL-encode <code>#</code> va <code>&lt;</code>); base64 la tuy chon va hoi lon hon. Cho SVG background CSS nho dang che-do-van-ban sach hon.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Google se index mot anh toi nhung nhu base64 khong?</summary>
+  <p>Nhin chung khong - cong cu tim kiem uu tien URL hinh anh ma chung co the crawl, cache, va xep hang doc lap. Neu ban muon hinh anh kham pha duoc trong Image Search, hay lien ket nhu mot tep binh thuong. Neu hinh anh la trang tri (mot bieu tuong, mot dau phan cach, mot affordance UI khong co noi dung ngu nghia), nhung la duoc.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Chuoi duoc ma hoa lon nhu the nao so voi tep?</summary>
+  <p>Kich thuoc duoc ma hoa = ⌈byte dau vao / 3⌉ × 4. Mot anh 1 KB tro thanh ~1,36 KB duoc ma hoa; mot anh 10 KB tro thanh ~13,4 KB duoc ma hoa. Overhead 33% chinh xac cho dau vao co do dai la boi cua 3 va vai byte them cho cac dau vao khac (padding "=" cuoi cung).</p>
+</details>
+
+    <details class="faq-item">
+  <summary>HTTP/2 co thay doi cau tra loi khong?</summary>
+  <p>Co - HTTP/2 multiplex nhieu yeu cau nho qua mot ket noi, vi vay chi phi moi yeu cau giam dot ngot. Huong dan "nhung duoi 4 KB" chuyen sang "nhung duoi 1 KB" tren HTTP/2; tren do, hay lien ket tep. HTTP/3 (QUIC) tuong tu.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Lien quan</b></h2>
+    <ul>
+        <li><a href="/image-converter-tools/image-to-base64.html">Image to Base64</a> - chuyen doi mot tep hinh anh sang URL du lieu trong trinh duyet. Dung khi ban muon nhung.</li>
+        <li><a href="/image-converter-tools/base64-to-image.html">Base64 to Image</a> - dan mot URL du lieu va tai anh ve. Dung khi ban muon trich xuat mot hinh anh duoc nhung sang mot tep binh thuong.</li>
+        <li><a href="/guides/base64-when-to-use-and-when-not-to.html">Base64 khi nao dung va khi nao khong</a> - huong dan dong hanh rong hon bao quat email MIME, JSON, tham so URL, va cac truong hop noi base64 la cong cu sai hoan toan.</li>
+        <li><a href="/image-tools.html">Image Tools</a> - tat ca tien ich hinh anh (nen, chuyen doi, cat, doi kich thuoc) tren freetoolonline.com.</li>
+    </ul>
+</div>

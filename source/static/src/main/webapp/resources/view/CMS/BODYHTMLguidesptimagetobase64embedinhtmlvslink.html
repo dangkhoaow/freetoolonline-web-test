@@ -1,0 +1,98 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Imagem para Base64: Embutir em HTML/CSS vs Vincular o Arquivo de Imagem</b></h1>
+    <p><em>Ultima revisao 2026-05-05. Converta no navegador com <a href="/image-converter-tools/image-to-base64.html">Image to Base64</a> ou cole uma URL de dados existente em <a href="/image-converter-tools/base64-to-image.html">Base64 to Image</a>; ambos rodam no seu dispositivo sem upload.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Resposta em 30 segundos.</b> Embuta (cole a URL de dados base64 no HTML / CSS) apenas quando a imagem esta abaixo de cerca de 4 KB, usada em uma ou duas paginas, e nunca esperada para mudar. Vincule o arquivo de imagem (um normal <code>&lt;img src="..."&gt;</code> ou <code>background:url(...)</code>) para todo o resto. O ponto de equilibrio e o custo de uma requisicao HTTP extra vs a penalidade de tamanho de 33% mais a perda de cache.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Por que duas opcoes existem em primeiro lugar</b></h2>
+    <p>Um arquivo HTML ou CSS e um formato de texto. Uma imagem (PNG, JPG, WebP, SVG-como-binario) e binaria. Para colocar uma imagem inline em um arquivo de texto voce codifica o binario como base64 (um alfabeto ASCII de 64 caracteres) e envolve em uma URL <code>data:image/png;base64,...</code>. O navegador decodifica a URL de dados no momento e trata o resultado como se tivesse sido buscado. A alternativa e um caminho normal de arquivo, que o navegador busca por HTTP e armazena em cache independentemente.</p>
+    <p>Ambos funcionam. Nenhum e universalmente melhor. A decisao e sobre tamanho, comportamento de cache, e quao frequentemente a imagem muda.</p>
+
+    <h2 class="text-uppercase"><b>A regra de decisao (tabela de decisao)</b></h2>
+    <div class="w3-responsive">
+        <table class="w3-table-all w3-small">
+            <tr><th>Tamanho da imagem (bytes brutos)</th><th>Reutilizada em...</th><th>Provavel mudar?</th><th>Recomendacao</th></tr>
+            <tr><td>abaixo de 1 KB</td><td>qualquer numero de paginas</td><td>nao</td><td><b>Embutir</b> - o custo da requisicao domina</td></tr>
+            <tr><td>1-4 KB</td><td>uma ou duas paginas</td><td>nao</td><td><b>Embutir</b> se voce nao pode multiplexar HTTP/2; <b>vincular</b> se voce pode</td></tr>
+            <tr><td>1-4 KB</td><td>3+ paginas</td><td>nao</td><td><b>Vincular</b> - um arquivo em cache vence N copias inline</td></tr>
+            <tr><td>4-50 KB</td><td>qualquer</td><td>qualquer</td><td><b>Vincular</b> - penalidade inline e significativa</td></tr>
+            <tr><td>acima de 50 KB</td><td>qualquer</td><td>qualquer</td><td><b>Vincular</b> - inline bloqueia parsing e incha cada pagina que inclui o CSS / HTML</td></tr>
+            <tr><td>qualquer tamanho</td><td>SVG usado como mascara ou background CSS</td><td>nao</td><td><b>Embutir</b> o SVG como uma URL de dados (SVG modo texto; sem base64 necessario) para gradientes CSS e mascaras sem IE</td></tr>
+        </table>
+    </div>
+    <p>O ponto de equilibrio no lado da requisicao vem de quantos bytes uma unica requisicao HTTP custa. Em HTTP/2 sobre uma conexao aquecida, isso e aproximadamente uma viagem de ida-e-volta mais algumas centenas de bytes de cabecalhos. Em HTTP/1.1 com uma conexao fria, o custo pode ser um RTT completo mais TLS mais setup de conexao - varios KB equivalentes. A diretriz "embutir abaixo de 4 KB" assume HTTP/1.1; em HTTP/2 o ponto de equilibrio desce para aproximadamente 1 KB.</p>
+
+    <h2 class="text-uppercase"><b>O que voce abre mao embutindo</b></h2>
+    <ul>
+        <li><b>Cache do navegador.</b> Uma imagem vinculada e buscada uma vez e servida do cache para cada pagina subsequente. Uma URL de dados embutida e re-parseada e re-decodificada para cada pagina que inclui o CSS / HTML hospedeiro. O arquivo HOSPEDEIRO e armazenado em cache, mas o custo de decodificar a URL de dados e pago em cada renderizacao de pagina.</li>
+        <li><b>Atualizacoes independentes.</b> Uma imagem vinculada pode ser substituida sem reimplantar o HTML ou CSS. Uma URL de dados embutida envia com o arquivo hospedeiro, entao atualizar a imagem significa reimplantar cada pagina que envia esse CSS.</li>
+        <li><b>33% overhead de codificacao.</b> Tres bytes de binario se tornam quatro bytes de base64. Um PNG de 4 KB se torna ~5,4 KB inline. Em um widget de uma unica pagina isso e ruido; em cem reutilizacoes isso soma.</li>
+        <li><b>Flexibilidade CDN.</b> Uma imagem vinculada pode ser servida de uma CDN de imagem separada, transformada em movimento, ou substituida com WebP / AVIF baseado em cabecalhos Accept. Base64 embutido e congelado no tempo de build.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>O que voce abre mao vinculando (o caso para embutir)</b></h2>
+    <ul>
+        <li><b>Uma requisicao extra.</b> Em HTTP/1.1 com uma conexao fria isso pode ser 50-200 ms; em HTTP/2 e mais perto de um RTT mais algumas centenas de bytes. Para um icone above-the-fold critico isso pode ser a diferenca entre um flash de conteudo sem estilo e uma primeira pintura limpa.</li>
+        <li><b>Imagens de corpo de email.</b> Clientes de email variam loucamente no tratamento de imagens externas; muitos bloqueiam por padrao por privacidade. Imagens CID-anexadas ou base64-inline renderizam previsivelmente. (A maioria dos clientes de email ainda prefere CID sobre base64 no corpo, mas base64 em partes MIME e o mecanismo subjacente.)</li>
+        <li><b>Snapshots auto-contidos.</b> Um unico arquivo HTML com imagens embutidas e um snapshot completo - util para relatorios, documentos arquivados, demos de arquivo unico, e exports ".eml". Imagens vinculadas requerem que o caminho continue funcionando; embutidas nao.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>A verificacao de sanidade em 30 segundos</b></h2>
+    <p>Abra o arquivo que voce esta prestes a enviar em um editor de texto e olhe a string <code>data:image/...;base64,</code>. Tres verificacoes rapidas:</p>
+    <ol>
+        <li><b>Comprimento.</b> Se a string codificada esta acima de ~6.000 caracteres (≈ 4 KB brutos), nao embuta. Vincule o arquivo em vez disso.</li>
+        <li><b>Contagem de reutilizacao.</b> Procure a base de codigo pela string exata. Se a mesma URL de dados aparece em 3+ arquivos, voce esta pagando a penalidade de codificacao 3+ vezes. Vincule.</li>
+        <li><b>Volatilidade.</b> Se a imagem e um logo, um avatar placeholder, ou qualquer coisa que "a equipe de design pode ajustar mes que vem", vincule. Embutir congela a imagem no tempo de build.</li>
+    </ol>
+    <p>Duas-de-tres respostas "embutir" significa embutir. Duas-de-tres respostas "vincular" significa vincular. Um-e-um geralmente e sinal de que a resposta certa depende do sistema circundante - versao HTTP, pipeline de build, setup CDN.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+  <summary>Base64 criptografa a imagem?</summary>
+  <p>Nao. Base64 e codificacao, nao criptografia. Qualquer um que ve a URL de dados pode colar em um decodificador (ou <a href="/image-converter-tools/base64-to-image.html">Base64 to Image</a> deste site) e obter os bytes originais de volta. Se a imagem e sensivel, nao coloque em um arquivo HTML / CSS publico independente de codificacao.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Posso embutir um JPG e PNG com a mesma codificacao?</summary>
+  <p>Sim - a codificacao e independente de conteudo. Use <code>data:image/png;base64,...</code> para PNG, <code>data:image/jpeg;base64,...</code> para JPG, <code>data:image/webp;base64,...</code> para WebP. O prefixo MIME diz ao navegador como decodificar, nao que tipo de binario o base64 contem.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>E quanto a SVG - eu preciso de base64 para isso?</summary>
+  <p>Nao. SVG ja e texto. Voce pode colocar em uma URL de dados como <code>data:image/svg+xml;utf8,...</code> com o XML SVG inline (URL-encode o <code>#</code> e <code>&lt;</code>); base64 e opcional e ligeiramente maior. Para SVGs de background CSS pequenos a forma modo-texto e mais limpa.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Google vai indexar uma imagem que eu embuta como base64?</summary>
+  <p>Geralmente nao - mecanismos de busca preferem URLs de imagem que eles podem rastrear, armazenar em cache e classificar independentemente. Se voce quer a imagem descobrivel em Image Search, vincule como um arquivo normal. Se a imagem e decorativa (um icone, um divisor, uma affordance de UI sem conteudo semantico), embutir esta tudo bem.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Quao grande e a string codificada comparada ao arquivo?</summary>
+  <p>Tamanho codificado = ⌈bytes de entrada / 3⌉ × 4. Uma imagem de 1 KB se torna ~1,36 KB codificada; uma imagem de 10 KB se torna ~13,4 KB codificada. O overhead de 33% e exato para entradas cujo comprimento e um multiplo de 3 e alguns bytes mais para outros (o preenchimento "=" final).</p>
+</details>
+
+    <details class="faq-item">
+  <summary>HTTP/2 muda a resposta?</summary>
+  <p>Sim - HTTP/2 multiplexa muitas requisicoes pequenas sobre uma conexao, entao o custo por requisicao cai acentuadamente. A diretriz "embutir abaixo de 4 KB" muda para "embutir abaixo de 1 KB" em HTTP/2; acima disso, vincule o arquivo. HTTP/3 (QUIC) e similar.</p>
+</details>
+
+    <h2 class="text-uppercase"><b>Relacionado</b></h2>
+    <ul>
+        <li><a href="/image-converter-tools/image-to-base64.html">Image to Base64</a> - converta um arquivo de imagem para uma URL de dados no navegador. Use isso quando voce quer embutir.</li>
+        <li><a href="/image-converter-tools/base64-to-image.html">Base64 to Image</a> - cole uma URL de dados e baixe a imagem. Use isso quando voce quer extrair uma imagem embutida para um arquivo normal.</li>
+        <li><a href="/guides/base64-when-to-use-and-when-not-to.html">Base64 quando usar e quando nao</a> - o guia companheiro mais amplo que cobre email MIME, JSON, parametros de URL, e os casos onde base64 e a ferramenta errada inteiramente.</li>
+        <li><a href="/image-tools.html">Image Tools</a> - todos os utilitarios de imagem (comprimir, converter, cortar, redimensionar) em freetoolonline.com.</li>
+    </ul>
+</div>
