@@ -1,0 +1,67 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Muc Kiem Tra Microphone: Yen Tinh, Binh Thuong va Peak Thuc Su Co Nghia La Gi</b></h1>
+    <p><em>Lan ra soat cuoi 2026-05-06. Nham vao thoi diem mot kiem tra microphone trinh duyet dang chay, thanh DANG di chuyen khi ban noi, va ban muon biet liệu cai ban thay co "san sang cho cuoc goi Zoom" hay "van qua yen" hay "dang clipping vao do". Dinh tuyen hanh dong test thuc su den <a href="/device-test-tools/microphone-test.html">Microphone Test Online</a> (trong trinh duyet qua Web Audio API; khong tai len, khong cai dat).</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Cau tra loi 30 giay.</b> Khi ban noi o am luong binh thuong, dong ho do muc nen nhay den <b>khoang nua thang do</b> tren mot kiem tra microphone trinh duyet tieu bieu - khoang giua dong ho, ro rang xa khoi day, khong bao gio cham vao dinh. Mot dong ho chi nhich len khoi day la qua yen (tang gain dau vao trong cai dat am thanh he dieu hanh hoac di gan microphone hon); mot dong ho ghim vao dinh moi tu la dang clipping (giam gain dau vao). Cho cuoc goi Zoom hoac Google Meet muc tieu giua thang do la dung; cho ghi am podcast ban muon muc tieu thap hon mot chut (khoang mot phan ba thang do) de nhan manh kich tinh van co cho de peak ma khong clipping.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Cai dong ho do muc thuc su hien thi</b></h2>
+    <p>Thanh (hoac dang song hoat hinh) tren mot kiem tra microphone trinh duyet khong phai chi bao "microphone cua ban co bat khong" - day la mot doc bien do thoi gian thuc cua cac mau audio so ma trinh duyet ban dang chup. Moi khung trang doc mot doan mau PCM tu <code>AnalyserNode</code> cua Web Audio API va render gia tri peak (hoac RMS) la mot chieu cao thanh doc hoac mot duong song ngang. Khi ban noi, cac bien doi ap suat khong khi tai capsule mic tao bien doi dien ap trong preamp mic; driver audio he dieu hanh so hoa cac bien doi do thanh mau 16-bit (hoac 32-bit float); trinh duyet trao mau cho trang; trang ve chung. <em>Cai ban thay la tin hieu audio thuc, khong phai mot den quyen/ket noi.</em></p>
+    <p>Dieu nay quan trong vi mot dong ho dang di chuyen la bang chung ba thu cung mot luc: mic duoc chon va khong tat tieng, ngan xep audio he dieu hanh dang chuyen mau den trinh duyet, va trang co quyen doc chung. Nguoc lai, mot dong ho phang nghia la chuoi bi gay o dau do - cai ma <a href="/guides/microphone-test-no-sound-four-fixes.html">Microphone test no sound: 4 fixes that work</a> huong dan ban giai quyet. Huong dan nay tiep tuc tu noi cai do ket thuc: dong ho dang di chuyen, nhung muc co <em>dung</em>?</p>
+
+    <h2 class="text-uppercase"><b>Yen tinh, binh thuong va peak: ba vung cua dong ho</b></h2>
+    <p>Hau het kiem tra microphone trinh duyet dung mot dong ho thang do co dinh: mot thanh doc (hoac chong segment) voi mot "day" duoc xac dinh (im lang) va "dinh" (thang do day so, noi mau bao hoa). Chia tinh than thang do do thanh ba phan:</p>
+    <ul>
+        <li><b>Phan ba duoi (yen tinh).</b> Thanh chi nhich len khoi san khi ban noi o am luong binh thuong. Audio dang den trinh duyet, nhung muc dau vao qua thap cho mot cuoc goi sach: nguoi nghe se nghe ban o tieng tham tru khi ho tang am luong phat lai, cai cung khuech dai bat ky tieng on phong nao ban co. <em>Cai gi de sua:</em> tang gain dau vao mic trong cai dat am thanh he dieu hanh, di gan mat ban den mic (mot boom headset USB nen ngoi cach goc mieng hai den ba do rong ngon tay), hoac chuyen sang mot mic nhay hon neu ban dung mot array tich hop laptop.</li>
+        <li><b>Phan ba giua (binh thuong).</b> Thanh nhay den khoang nua thang do tren cac tu nhan manh va roi tro lai gan day giua cac tu. Day la muc tieu san sang cho cuoc goi: du to de hieu duoc ma khong can gain ben nguoi nghe, du nho de nhan manh thinh thoang ("co!", mot tieng cuoi) co cho peak tren trung binh ma khong dap vao dinh. Hau het muc tieu chuyen nghiep podcast va broadcast cung dap vao day, hoi nghieng ve cuoi thap cua "binh thuong" de transient lon van vua.</li>
+        <li><b>Phan ba tren (peak).</b> Thanh den vung tren tren cac am tiet to hon, thinh thoang cham dinh. Day la "nong" - chap nhan cho rafagas ngan nhung co hai neu keo dai. Neu thanh ghim o dinh moi tu, tin hieu dang <b>clipping</b>: mau so bao hoa o thang do day, va bat ky peak nao tren thang do day bi cat ngan thanh thang do day, tao distortion am thanh duoc (mot chat luong vo vo, cat la o cac phu am). <em>Cai gi de sua:</em> giam gain dau vao mic trong cai dat am thanh he dieu hanh, di xa mic mot chut, hoac tat mot tinh nang auto-gain co the dang khuech dai qua muc.</li>
+    </ul>
+    <p>Tinh khong doi xung la co y: audio so co tran cung (thang do day = 0 dBFS) va san mem (tieng on phong + tieng on dien tu). Ban muon headroom duoi tran vi clipping pha hoai va khong dao nguoc, trong khi khoang cach them tu san chi ton mot luong nho ty le tin hieu-tieng on ma nguoi nghe se khong nghe duoc tren mot cuoc goi tieu bieu.</p>
+
+    <h2 class="text-uppercase"><b>Cai test khong the noi ban ve muc cua ban</b></h2>
+    <p>Mot dong ho do muc ben trinh duyet hien muc sau khi nhieu giai doan upstream da cham vao tin hieu. Ban thay cai trinh duyet thay, khong phai cai ra khoi capsule microphone. Khoang cach do quan trong trong ba truong hop:</p>
+    <ul>
+        <li><b>Auto-gain control (AGC) cap he dieu hanh co the dang hoat dong.</b> Windows ("Listen to this device" + "Microphone Boost"), macOS ("Use ambient noise reduction"), va nhieu driver headset USB chay mot AGC software de tang dau vao yen va lam giam dau vao lon truoc khi trinh duyet thay mau. Mot dong ho trong "hoan hao" khi AGC bat co the an mot vi tri mic yeu can ban (hoac on). Cho mot doc cap-ghi-am, tat AGC cap he dieu hanh trong cai dat audio he dieu hanh, sau do test lai.</li>
+        <li><b>Trinh duyet co the ap dung supression tieng on va huy bo tieng vong cua chung.</b> Cac rang buoc mac dinh <code>getUserMedia</code> cua Chrome bat <code>echoCancellation</code>, <code>noiseSuppression</code>, va <code>autoGainControl</code>. Mot so trang test tat cac rang buoc do (nen ban thay dau vao tho); cac trang khac de chung bat (nen ban thay tin hieu da xu ly ma Zoom va Meet se nhan). Doc dong ho co the chuyen mot den hai phan ba thang do giua hai che do. Kiem tra microphone trinh duyet tren trang nay (xem <a href="/device-test-tools/microphone-test.html">trang cong cu</a>) render canvas do truc tiep tu <code>AnalyserNode</code> tho nen ban thay tin hieu truoc lop xu ly ung dung hop.</li>
+        <li><b>Muc ban thay khong phai cai doi tac cuoc goi cua ban nghe.</b> Ung dung hop chay supression tieng on va gain cua chung ben nhan. Mot muc trong hoi nong trong test trinh duyet co the nghe on doi voi nguoi nghe Zoom; mot muc trong on trong test co the nghe mong neu ung dung hop dang ap dung gate tieng on manh me cat am tiet yen nhat cua ban. Dong ho la diem khoi dau, khong phai mix cuoi - xac nhan voi mot clip test da ghi am va mot doi tac truoc cuoc goi quan trong cao.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Muc tieu theo truong hop su dung</b></h2>
+    <p>Muc tieu "binh thuong" phan ba giua o tren la mac dinh san sang cho cuoc goi. Cac su dung ha lop khac nhau co toi uu khac nhau:</p>
+    <ul>
+        <li><b>Cuoc hop video (Zoom, Google Meet, Microsoft Teams).</b> Giua thang do tren cac tu nhan manh. Ung dung hop khoan dung voi pham vi dau vao rong vi cac giai doan gain rieng cua chung tai chuan hoa ben nhan. Rui ro lon hon la clipping (cai chung khong the sua) va tieng on phong qua muc (cai chung co the supression mot phan nhung khong loai bo).</li>
+        <li><b>Ghi am podcast hoac phong van.</b> Khoang mot phan ba thang do tren cac tu nhan manh. Podcaster lam viec trong dBFS (decibel so voi thang do day) va nham khoang -18 dBFS den -12 dBFS trung binh (muc "LUFS" tuong tu ve hinh dang). Muc tieu thap hon de headroom cho cac phan ung to va chuan hoa hau ky. Neu ung dung ghi am cua ban hien dBFS so, uu tien cac so do; dong ho truc quan chi la mot proxy.</li>
+        <li><b>Voice-over hoac thuyet minh voi mot condenser studio.</b> Khoang mot phan ba den nua thang do tren cac tu nhan manh. Condenser studio du nhay de ngay ca phong yen cung se dua cac luong nho tieng on len be mat; ghi am o muc hoi thap hon va chuan hoa hau ky la quy trinh cong viec tieu chuan.</li>
+        <li><b>Chan doan cuoc goi di dong / dien thoai.</b> Nua thang do tren cac tu nhan manh. Cuoc goi dien thoai va ngan xep headset Bluetooth them nen va gioi han bang thong cua chung (thuong 8 kHz mono tren di dong, 16 kHz wideband tren VoIP); muc ban ghi trong mot test trinh duyet desktop chi vong vo bieu thi cai mot doi tac di dong nghe.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Neu dong ho khong bao gio den phan ba giua</b></h2>
+    <p>Trinh duyet dang doc mau (dong ho di chuyen), nhung muc bi mac ket o vung duoi ngay ca khi ban noi to. Ba kiem tra nhanh giai quyet gan nhu moi truong hop:</p>
+    <ol>
+        <li><b>Tang gain dau vao mic trong cai dat am thanh he dieu hanh.</b> Tren Windows, <i>Cai dat &rarr; He thong &rarr; Am thanh &rarr; Dau vao</i>, nhap mic cua ban, truot <i>Volume dau vao</i> len. Tren macOS, <i>Cai dat He thong &rarr; Am thanh &rarr; Dau vao</i>, truot <i>Volume dau vao</i> len. Tren Chrome OS, <i>Cai dat &rarr; Thiet bi &rarr; Audio &rarr; Gain microphone</i>. Chay lai test va xem dong ho chuyen cao hon.</li>
+        <li><b>Den gan mic.</b> Ap suat am thanh giam voi khoang cach binh phuong. Giam mot nua khoang cach ban den mic tang muc bat duoc khoang 6 dB - mot phan ba thang do day tren mot dong ho tieu bieu. Array tich hop cua mot laptop bat to hon nhieu khi ban cach 30 cm hon 60 cm.</li>
+        <li><b>Chuyen thiet bi dau vao.</b> He dieu hanh co the dang chup tu mic vat ly sai. Trang test trinh duyet nen gan nhan thiet bi hoat dong; neu hien "MacBook Pro Microphone" nhung ban dang deo headset USB, he dieu hanh chon thiet bi sai. Chuyen trong bang am thanh he dieu hanh, tai lai trang, re-cap quyen, chay lai test.</li>
+    </ol>
+    <p>Neu ca ba dung va dong ho van bay gan san, preamp mic co the dang loi hoac driver he dieu hanh co the dang tat tieng kenh duoi thanh truot volume dau vao. Thu mic trong ung dung khac (Voice Memos tren macOS, Sound Recorder tren Windows) de tach lop; neu ung dung khac cung hien tin hieu yeu, loi duoi lop trinh duyet.</p>
+
+    <h2 class="text-uppercase"><b>Neu dong ho bi ghim o dinh (clipping)</b></h2>
+    <p>Peak keo dai o thang do day pha hoai audio cuoc goi: nguoi nghe nghe mot canh vo vo tren moi am tiet va chat luong giong noi co ban. Ba cach sua nhanh:</p>
+    <ol>
+        <li><b>Giam gain dau vao mic trong cai dat am thanh he dieu hanh.</b> Cung dieu khien tren; truot xuong thay vi len.</li>
+        <li><b>Di xa mic mot chut.</b> Ba den nam centimet khoang cach them thuong du de lay muc ra khoi vung clipping ma khong mat de hieu.</li>
+        <li><b>Tat mic boost.</b> Tren Windows, <i>Am thanh &rarr; Ghi am &rarr; (mic cua ban) &rarr; Properties &rarr; Levels</i> thuong hien thanh truot <i>Microphone Boost</i> voi gia tri den +30 dB. Dat thanh 0 dB. Nhieu driver OEM laptop duoc gui voi cai nay bat mac dinh; do la nguyen nhan pho bien nhat cua "toi khong het, nhung toi van dang clipping".</li>
+    </ol>
+
+    <h2 class="text-uppercase"><b>Quyen rieng tu - cai xay ra voi audio khi ban dang doc dong ho</b></h2>
+    <p>Kiem tra microphone trinh duyet tren trang nay chi trong trinh duyet: canvas do truc tiep doc mau PCM tu <code>AnalyserNode</code> cua Web Audio API va render dong ho tren cung trang. <em>Khong gi duoc tai len; khong gi duoc luu; khong gi duoc ghi am.</em> Khi ban dung test hoac dong tab, trinh duyet giai phong thiet bi va mau bat duoc bi loai bo. Muc ban thay duoc tinh cuc bo; khong phai mot chi bao "gui den server". (Xem <a href="/device-test-tools/microphone-test.html">trang cong cu</a> cho khoi quyen rieng tu day du va troubleshooting quyen trinh duyet.)</p>
+
+    <h2 class="text-uppercase"><b>Doc lien quan</b></h2>
+    <ul>
+        <li><a href="/guides/microphone-test-online-what-it-actually-checks.html">Microphone Test Online: What It Actually Checks</a> - bon lop ma test xac minh (thiet bi, ty le mau, do muc, tieng vong)</li>
+        <li><a href="/guides/microphone-test-no-sound-four-fixes.html">Microphone Test No Sound: 4 Fixes That Work</a> - lam gi khi dong ho van phang</li>
+        <li><a href="/guides/how-to-check-webcam-and-microphone-before-an-interview.html">How to Check Webcam and Microphone Before an Interview</a> - danh sach kiem tra 5 phut truoc cuoc hop</li>
+        <li><a href="/guides/device-test-checklist-for-remote-work.html">Device Test Checklist for Remote Work</a> - cadence hang tuan de bat loi truoc cuoc goi</li>
+        <li><a href="/device-test-tools/microphone-test.html">Microphone Test Online</a> (cong cu)</li>
+    </ul>
+</div>

@@ -1,0 +1,31 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Text vs Line vs Word vs Git Diff</b></h1>
+    <p><em>Ultima revisao 2026-04-27. Abra <a href="/developer-tools/text-diff.html">a ferramenta text-diff</a> para comparar duas strings, arquivos ou blocos colados no seu navegador.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Resposta de 30 segundos.</b> Quatro tipos de diff cada um responde uma pergunta diferente. Text diff: estas duas strings sao byte-iguais e, se nao, onde diferem? Line diff: quais linhas mudaram (o padrao para revisao de codigo). Word diff: quais palavras mudaram dentro de linhas alteradas (o padrao para prosa). Git diff: quais linhas mudaram entre dois commits no historico rastreado (line diff mais contexto de controle de versao).</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Os quatro sabores e para que serve cada um</b></h2>
+    <ul>
+        <li><b>Text diff (string diff).</b> O mais simples. Compare duas strings ou dois blocos de texto caractere por caractere. Saidas: os locais onde diferem. Certo para "estes dois blobs colados sao realmente identicos?" - drift de configuracao JSON, mensagens de erro em tickets de suporte, linhas de log que deveriam coincidir.</li>
+        <li><b>Line diff.</b> O padrao para codigo. Trate cada linha como a unidade de mudanca. Saida: quais linhas foram adicionadas, removidas ou modificadas. A saida "+" / "-" que toda ferramenta de revisao de codigo usa. Forte padrao quando o conteudo subjacente e estruturado em linhas.</li>
+        <li><b>Word diff.</b> Certo para prosa. Quando uma frase muda uma unica palavra, line diff mostra a frase inteira duas vezes (uma vez - e uma vez +). Word diff destaca apenas a palavra alterada. Melhor para revisao editorial e mudancas de conteudo.</li>
+        <li><b>Git diff.</b> Line diff mais historico de repositorio. Compara dois commits, duas branches, working-tree-vs-index, ou index-vs-HEAD. Adiciona deteccao de file-mode, deteccao de rename, e tratamento de arquivo binario que line diff puro nao tem. Usado dentro de fluxos de trabalho de controle de versao.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Quando line diff esta errado</b></h2>
+    <p>Line diff falha quando as proprias linhas sao longas. Edite uma palavra em uma linha de 200 caracteres e o diff mostra a linha inteira como removida-e-readicionada - nenhum sinal sobre qual palavra realmente mudou. Mesmo para JSON de uma linha ou codigo minificado onde tudo esta em uma unica linha.</p>
+    <p>Duas correcoes: reformate a entrada primeiro (pretty-print JSON, execute um formatador de codigo), depois line diff. Ou troque para word diff, que lida com linhas longas corretamente. A maioria das ferramentas online oferece ambos - escolha com base em se a entrada e naturalmente estruturada em linhas.</p>
+
+    <h2 class="text-uppercase"><b>Quando git diff adiciona valor sobre line diff</b></h2>
+    <p>Tres coisas que git rastreia que line diff puro nao pode:</p>
+    <ul>
+        <li><b>Renomeacoes de arquivos.</b> Mova um arquivo de <code>src/foo.js</code> para <code>src/bar.js</code>. Line diff mostra como "tudo de foo.js deletado, tudo de bar.js adicionado". Git diff com deteccao de rename mostra como "foo.js renomeado para bar.js" mais quaisquer mudancas de conteudo reais.</li>
+        <li><b>Mudancas de modo de arquivo.</b> Marcar um script como executavel aparece no git diff como uma mudanca de modo sem delta de conteudo. Line diff perde completamente.</li>
+        <li><b>Mudancas de arquivo binario.</b> Git diff diz "binary files differ" sem tentar renderizar os bytes. Line diff produz saida ilegivel para qualquer entrada binaria.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Escolha o certo para a tarefa</b></h2>
+    <p>Comparando duas strings coladas: text diff. Revisando mudancas de codigo: line diff ou git diff se voce tem contexto de repositorio. Revisando edicoes de copia: word diff. Investigando um drift inesperado em producao: text diff primeiro para confirmar que a diferenca existe, depois line diff para localizar. <a href="/developer-tools/text-diff.html">A ferramenta text-diff</a> cobre os tres primeiros; git diff vive dentro do proprio git. O conjunto completo de desenvolvedor esta em <a href="/developer-tools.html">o hub de ferramentas para desenvolvedores</a>.</p>
+</div>

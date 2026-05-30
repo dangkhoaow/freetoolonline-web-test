@@ -1,0 +1,31 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Text vs Line vs Word vs Git Diff</b></h1>
+    <p><em>Ditinjau terakhir 2026-04-27. Buka <a href="/developer-tools/text-diff.html">alat text-diff</a> untuk membandingkan dua string, file, atau blok yang ditempel di browser Anda.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Jawaban 30 detik.</b> Empat jenis diff masing-masing menjawab pertanyaan yang berbeda. Text diff: apakah kedua string ini byte-setara, dan jika tidak, di mana mereka berbeda? Line diff: baris mana yang berubah (standar untuk review kode). Word diff: kata mana yang berubah dalam baris yang diubah (standar untuk prosa). Git diff: baris mana yang berubah antara dua commit dalam riwayat yang dilacak (line diff plus konteks kontrol versi).</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Empat rasa dan untuk apa masing-masing</b></h2>
+    <ul>
+        <li><b>Text diff (string diff).</b> Yang paling sederhana. Bandingkan dua string atau dua blok teks karakter demi karakter. Output: lokasi di mana mereka berbeda. Tepat untuk "apakah kedua blob yang ditempel ini benar-benar identik?" - drift konfigurasi JSON, pesan kesalahan dalam tiket dukungan, baris log yang seharusnya cocok.</li>
+        <li><b>Line diff.</b> Default untuk kode. Perlakukan setiap baris sebagai unit perubahan. Output: baris mana yang ditambahkan, dihapus, atau dimodifikasi. Output "+" / "-" yang digunakan setiap alat review kode. Default kuat ketika konten yang mendasari terstruktur baris.</li>
+        <li><b>Word diff.</b> Tepat untuk prosa. Ketika sebuah kalimat mengubah satu kata, line diff menunjukkan seluruh kalimat dua kali (satu kali - dan satu kali +). Word diff hanya menyoroti kata yang diubah. Lebih baik untuk review editorial dan perubahan konten.</li>
+        <li><b>Git diff.</b> Line diff plus riwayat repositori. Membandingkan dua commit, dua branch, working-tree-vs-index, atau index-vs-HEAD. Menambahkan deteksi file-mode, deteksi rename, dan penanganan file biner yang tidak dimiliki line diff murni. Digunakan dalam alur kerja kontrol versi.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Ketika line diff salah</b></h2>
+    <p>Line diff gagal ketika baris itu sendiri panjang. Edit satu kata dalam baris 200 karakter dan diff menunjukkan seluruh baris sebagai dihapus-dan-ditambahkan-kembali - tidak ada sinyal tentang kata mana yang sebenarnya berubah. Sama untuk JSON satu baris atau kode yang diminify di mana semuanya berada di satu baris.</p>
+    <p>Dua perbaikan: format ulang input terlebih dahulu (pretty-print JSON, jalankan formatter kode), lalu line diff. Atau beralih ke word diff, yang menangani baris panjang dengan benar. Sebagian besar alat online menawarkan keduanya - pilih berdasarkan apakah inputnya secara alami terstruktur baris.</p>
+
+    <h2 class="text-uppercase"><b>Ketika git diff menambahkan nilai di atas line diff</b></h2>
+    <p>Tiga hal yang git lacak yang tidak bisa dilakukan line diff murni:</p>
+    <ul>
+        <li><b>Penggantian nama file.</b> Pindahkan file dari <code>src/foo.js</code> ke <code>src/bar.js</code>. Line diff menunjukkannya sebagai "semua foo.js dihapus, semua bar.js ditambahkan". Git diff dengan deteksi rename menunjukkannya sebagai "foo.js diganti namanya ke bar.js" plus perubahan konten aktual.</li>
+        <li><b>Perubahan mode file.</b> Menandai script sebagai dapat dieksekusi muncul di git diff sebagai perubahan mode tanpa delta konten. Line diff melewatkannya sepenuhnya.</li>
+        <li><b>Perubahan file biner.</b> Git diff mengatakan "binary files differ" tanpa mencoba merender byte. Line diff menghasilkan output yang tidak terbaca untuk input biner apapun.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Pilih yang tepat untuk tugas</b></h2>
+    <p>Membandingkan dua string yang ditempel: text diff. Mereview perubahan kode: line diff atau git diff jika Anda memiliki konteks repositori. Mereview pengeditan copy: word diff. Menyelidiki drift produksi yang tidak terduga: text diff dulu untuk mengkonfirmasi perbedaan ada, lalu line diff untuk melokalisasinya. <a href="/developer-tools/text-diff.html">Alat text-diff</a> mencakup tiga yang pertama; git diff hidup di dalam git sendiri. Set developer lengkap ada di <a href="/developer-tools.html">hub alat developer</a>.</p>
+</div>

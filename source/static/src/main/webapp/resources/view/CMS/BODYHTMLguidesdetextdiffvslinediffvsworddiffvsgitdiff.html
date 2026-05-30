@@ -1,0 +1,31 @@
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Text vs Line vs Word vs Git Diff</b></h1>
+    <p><em>Zuletzt geprueft 2026-04-27. Oeffnen Sie <a href="/developer-tools/text-diff.html">das text-diff-Tool</a>, um zwei Strings, Dateien oder eingefuegte Bloecke in Ihrem Browser zu vergleichen.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-Sekunden-Antwort.</b> Vier Arten von Diff beantworten jeweils eine andere Frage. Text-Diff: sind diese beiden Strings byte-gleich, und wenn nicht, wo unterscheiden sie sich? Line-Diff: welche Zeilen haben sich geaendert (der Standard fuer Code-Review). Word-Diff: welche Woerter haben sich innerhalb geaenderter Zeilen geaendert (der Standard fuer Prosa). Git-Diff: welche Zeilen haben sich zwischen zwei Commits in der verfolgten Historie geaendert (Line-Diff plus Versionskontroll-Kontext).</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Die vier Geschmacksrichtungen und wofuer jede ist</b></h2>
+    <ul>
+        <li><b>Text-Diff (String-Diff).</b> Der einfachste. Vergleichen Sie zwei Strings oder zwei Textbloecke Zeichen fuer Zeichen. Ausgaben: die Stellen, wo sie sich unterscheiden. Richtig fuer "sind diese beiden eingefuegten Blobs wirklich identisch?" - JSON-Konfigurations-Drift, Fehlermeldungen in Support-Tickets, Log-Zeilen, die uebereinstimmen sollten.</li>
+        <li><b>Line-Diff.</b> Der Standard fuer Code. Behandeln Sie jede Zeile als die Aenderungseinheit. Ausgabe: welche Zeilen hinzugefuegt, entfernt oder modifiziert wurden. Die "+" / "-"-Ausgabe, die jedes Code-Review-Tool verwendet. Starker Standard, wenn der zugrunde liegende Inhalt zeilenstrukturiert ist.</li>
+        <li><b>Word-Diff.</b> Richtig fuer Prosa. Wenn ein Satz ein einzelnes Wort aendert, zeigt Line-Diff den gesamten Satz zweimal (einmal - und einmal +). Word-Diff hebt nur das geaenderte Wort hervor. Besser fuer redaktionelle Pruefung und Inhaltsaenderungen.</li>
+        <li><b>Git-Diff.</b> Line-Diff plus Repository-Historie. Vergleicht zwei Commits, zwei Branches, working-tree-vs-index oder index-vs-HEAD. Fuegt Datei-Modus-Erkennung, Umbennen-Erkennung und Binaerdatei-Handhabung hinzu, die reines Line-Diff fehlt. Wird innerhalb von Versionskontroll-Workflows verwendet.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Wann Line-Diff falsch ist</b></h2>
+    <p>Line-Diff scheitert, wenn die Zeilen selbst lang sind. Bearbeiten Sie ein Wort in einer 200-Zeichen-Zeile und das Diff zeigt die gesamte Zeile als entfernt-und-neu-hinzugefuegt - kein Signal darueber, welches Wort tatsaechlich geaendert wurde. Dasselbe fuer einzeiliges JSON oder minifizierten Code, wo alles auf einer einzigen Zeile ist.</p>
+    <p>Zwei Korrekturen: formatieren Sie die Eingabe zuerst neu (pretty-print JSON, fuehren Sie einen Code-Formatter aus), dann Line-Diff. Oder wechseln Sie zu Word-Diff, das lange Zeilen korrekt behandelt. Die meisten Online-Tools bieten beides - waehlen Sie basierend darauf, ob die Eingabe natuerlich zeilenstrukturiert ist.</p>
+
+    <h2 class="text-uppercase"><b>Wann Git-Diff Wert ueber Line-Diff hinzufuegt</b></h2>
+    <p>Drei Dinge, die Git verfolgt, die reines Line-Diff nicht kann:</p>
+    <ul>
+        <li><b>Datei-Umbenennungen.</b> Verschieben Sie eine Datei von <code>src/foo.js</code> nach <code>src/bar.js</code>. Line-Diff zeigt es als "ganzes foo.js geloescht, ganzes bar.js hinzugefuegt". Git-Diff mit Umbennen-Erkennung zeigt es als "foo.js umbenannt zu bar.js" plus jegliche tatsaechlichen Inhaltsaenderungen.</li>
+        <li><b>Datei-Modus-Aenderungen.</b> Ein Skript als ausfuehrbar zu markieren erscheint im Git-Diff als Modus-Aenderung ohne Inhalts-Delta. Line-Diff verfehlt es vollstaendig.</li>
+        <li><b>Binaerdatei-Aenderungen.</b> Git-Diff sagt "binary files differ", ohne zu versuchen, die Bytes zu rendern. Line-Diff produziert unlesbare Ausgabe fuer jede Binaer-Eingabe.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Waehlen Sie das richtige fuer die Aufgabe</b></h2>
+    <p>Vergleichen zweier eingefuegter Strings: Text-Diff. Pruefen von Code-Aenderungen: Line-Diff oder Git-Diff, wenn Sie Repository-Kontext haben. Pruefen von Copy-Edits: Word-Diff. Untersuchen eines unerwarteten Produktions-Drifts: Text-Diff zuerst, um zu bestaetigen, dass der Unterschied existiert, dann Line-Diff, um ihn zu lokalisieren. <a href="/developer-tools/text-diff.html">Das text-diff-Tool</a> deckt die ersten drei ab; Git-Diff lebt innerhalb von Git selbst. Das vollstaendige Developer-Set ist unter <a href="/developer-tools.html">dem Developer-Tools-Hub</a>.</p>
+</div>
