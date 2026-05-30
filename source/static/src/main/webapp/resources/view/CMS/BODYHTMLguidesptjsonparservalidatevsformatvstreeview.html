@@ -1,0 +1,61 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>JSON parser online: validar vs formatar vs vista em arvore - que funcao precisa?</b></h1>
+    <p><em>Ultima revisao 2026-05-05. O <a href="/developer-tools/json-parser.html">parser JSON</a> gratuito neste site reune tres sub-funcoes numa pagina: <b>validar</b> (apanhar erros de analise), <b>formatar / embelezar</b> (transformar um blob de uma linha minificado em JSON indentado e legivel) e <b>vista em arvore</b> (explorar a estrutura interativamente). Tres tarefas de leitor diferentes, tres pontos de partida diferentes. Este guia nomeia o sintoma que cada uma apanha e a ordem para usar quando mais de uma se aplica.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Resposta em 30 segundos.</b> Se o seu JSON esta a lancar um erro de analise no codigo ou o seu editor o destaca a vermelho, <b>valide primeiro</b> - o parser revela a posicao do primeiro erro. Se o seu JSON e uma longa linha minificada copiada de um separador de rede, <b>formate-o</b> - a indentacao torna uma resposta de 50 linhas diferenciavel. Se o seu JSON analisa de forma limpa mas nao consegue encontrar uma chave enterrada em objetos aninhados, <b>use a vista em arvore</b> - cada propriedade torna-se uma linha que pode expandir e inspecionar. Quando mais de uma se aplica, a ordem e sempre validar → formatar → vista em arvore: um erro de analise bloqueia a formatacao, e JSON nao formatado e mais dificil de ler em forma de arvore.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Quando validar primeiro</b></h2>
+    <p>O <a href="/developer-tools/json-parser.html">parser JSON</a> valida a medida que cola. Se o seu input e invalido, o painel direito mostra uma notificacao vermelha <b>Invalid JSON</b> e aponta para o primeiro erro. As quatro causas mais comuns sao parenteses em falta (<code>{</code> sem um <code>}</code> correspondente), virgulas finais (<code>{"a": 1,}</code> - JSON nao as permite), aspas sem escape dentro de valores de string (<code>"key": "she said "hi""</code>) e comentarios soltos (blocos <code>//</code> ou <code>/* */</code> - JSON nao suporta comentarios). Corrija o primeiro erro, cole novamente, e o parser diz-lhe se restam mais. A validacao corre antes da formatacao porque o formatador nao consegue indentar JSON que nao consegue analisar.</p>
+
+    <h2 class="text-uppercase"><b>Quando formatar (embelezar)</b></h2>
+    <p>A sub-funcao <b>formatar / embelezar</b> transforma uma string JSON minificada de uma linha num documento corretamente indentado com cada propriedade na sua propria linha. Use-a quando copia uma resposta de um separador de rede, uma saida curl, ou um log de servidor e precisa de ler ou diferenciar. O botao <b>Copy Beautified JSON</b> devolve os mesmos dados com indentacao para que possa colar de volta numa revisao de codigo, num ticket ou numa fixture de teste unitario. A formatacao nao muda os dados - as chaves, valores e forma sao identicos ao input - apenas o espaco em branco e as quebras de linha mudam. Se quer a direcao inversa (transformar um JSON embelezado de volta para uma linha para envio), o mesmo parser mantem ambas as formas sincronizadas.</p>
+
+    <h2 class="text-uppercase"><b>Quando usar a vista em arvore</b></h2>
+    <p>A sub-funcao <b>vista em arvore</b> renderiza o JSON analisado como uma arvore interativa no painel direito. Cada propriedade e a sua propria linha; objetos aninhados expandem e colapsam; arrays mostram os seus itens por indice. Use-a quando o JSON analisa de forma limpa mas nao consegue encontrar uma chave enterrada quatro niveis profundo, ou quando quer inspecionar a forma de um array - e cada item do mesmo tipo, faltam alguns itens campos, os indices correspondem ao que a API documenta? Alterne <b>Show Types</b> para revelar o tipo de cada valor (string, numero, objeto, array, booleano, null) ao lado da sua chave. Alterne <b>Show Indexes</b> para etiquetar cada item de array com a sua posicao base-zero. A vista em arvore e apenas de leitura - nao modifica o JSON no painel de input.</p>
+
+    <h2 class="text-uppercase"><b>Quando usar mais de uma funcao</b></h2>
+    <p>As tres funcoes empilham numa ordem fixa: <b>validar</b> primeiro (caso contrario o formatador e a vista em arvore falham), depois <b>formatar</b> (para que uma resposta de 200 linhas seja legivel), depois <b>vista em arvore</b> (quando o texto formatado ainda e demasiado longo para escanear). Um fluxo de trabalho comum ao depurar uma API de terceiros: cole a resposta bruta, corrija o primeiro erro de analise que o validador revela, clique em <b>Copy Beautified JSON</b> para obter uma copia legivel para o ticket de bug, e depois use a vista em arvore para apontar para a chave especifica que o consumidor da API esperava. Para decisoes nao relacionadas de ferramentas de desenvolvedor na categoria developer-tools, veja os guias de comparacao ligados abaixo.</p>
+
+    <h2 class="text-uppercase"><b>Guias complementares</b></h2>
+    <ul>
+        <li><a href="/guides/csv-vs-json-data-formats.html">CSV vs JSON data formats</a> - qual escolher quando esta a desenhar a forma dos dados, nao a analisa-los.</li>
+        <li><a href="/guides/json-vs-yaml-vs-toml-config-formats-explained.html">JSON vs YAML vs TOML config formats explained</a> - equilibrio de formatos para ficheiros de configuracao.</li>
+        <li><a href="/guides/css-minifier-vs-uglifier-vs-tree-shaking.html">CSS minifier vs uglifier vs tree-shaking</a> - a disambiguacao analoga de ferramenta de desenvolvedor para folhas de estilo.</li>
+        <li><a href="/developer-tools/json-parser.html">JSON parser tool</a> - a propria ferramenta; validar, formatar e explorar numa pagina.</li>
+        <li><a href="/developer-tools/css-minifier.html">CSS minifier</a> e <a href="/developer-tools/css-unminifier.html">CSS unminifier</a> - o mesmo par minificar/embelezar, mas para CSS.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Perguntas frequentes</b></h2>
+    <details class="faq-item">
+  <summary>A vista em arvore modifica o meu JSON?</summary>
+  <p>Nao. A vista em arvore e uma renderizacao apenas de leitura do input analisado; alternar <b>Show Types</b> ou <b>Show Indexes</b> afeta apenas como a arvore e exibida, nao o JSON subjacente. Para mudar o JSON, edite o painel de input a esquerda.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Qual e a diferenca entre minificar e embelezar?</summary>
+  <p>Minificar remove espaco em branco, quebras de linha e outros caracteres nao significativos para tornar o JSON o menor possivel (para transporte ou armazenamento). Embelezar (tambem chamado "pretty-print" ou "formatar") adiciona espaco em branco e quebras de linha para que um humano possa le-lo. Os dados sao identicos em ambas as formas - apenas a formatacao muda. O analogo CSS para codigo usa duas ferramentas separadas: <a href="/developer-tools/css-minifier.html">CSS minifier</a> e <a href="/developer-tools/css-unminifier.html">CSS unminifier</a>.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Posso colar JSON5, JSON-com-comentarios, ou NDJSON?</summary>
+  <p>Apenas JSON estrito. JSON5 (que permite comentarios, virgulas finais e strings com aspas simples), JSON-com-comentarios (por vezes chamado JSONC, usado pelo VS Code) e NDJSON (um objeto JSON por linha) falham todos a validacao porque nao sao JSON estrito. Remova as funcionalidades nao-standard primeiro, ou converta NDJSON para um array JSON, e cole.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>E enviado algo para um servidor?</summary>
+  <p>O parser JSON corre no seu navegador; as passagens de validar, formatar e vista em arvore executam no cliente sem enviar o JSON para um servidor. Isto e util quando o JSON contem dados sensiveis e voce nao quer que saiam do dispositivo.</p>
+</details>
+</div>

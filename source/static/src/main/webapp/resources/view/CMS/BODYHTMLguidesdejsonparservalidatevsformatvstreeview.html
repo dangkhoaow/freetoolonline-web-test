@@ -1,0 +1,61 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>JSON-Parser online: validieren vs formatieren vs Baumansicht - welche Funktion brauchen Sie?</b></h1>
+    <p><em>Zuletzt geprueft 2026-05-05. Der kostenlose <a href="/developer-tools/json-parser.html">JSON-Parser</a> auf dieser Seite buendelt drei Unterfunktionen in einer Seite: <b>validieren</b> (Parse-Fehler erfassen), <b>formatieren / verschoenern</b> (einen einzeiligen minifizierten Blob in eingerueckten, lesbaren JSON umwandeln) und <b>Baumansicht</b> (die Struktur interaktiv erkunden). Drei verschiedene Leseraufgaben, drei verschiedene Startpunkte. Dieser Leitfaden benennt das Symptom, das jede erfasst, und die Reihenfolge der Verwendung, wenn mehr als eine zutrifft.</em></p>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-Sekunden-Antwort.</b> Wenn Ihr JSON einen Parse-Fehler im Code wirft oder Ihr Editor es rot hervorhebt, <b>validieren Sie zuerst</b> - der Parser bringt die erste Fehlerposition zum Vorschein. Wenn Ihr JSON eine lange minifizierte Zeile ist, die aus einem Netzwerk-Tab kopiert wurde, <b>formatieren Sie es</b> - die Einrueckung macht eine Antwort mit 50 Zeilen fuer Diffs lesbar. Wenn Ihr JSON sauber parsed wird, aber Sie einen Schluessel nicht finden koennen, der in verschachtelten Objekten vergraben ist, <b>verwenden Sie die Baumansicht</b> - jede Eigenschaft wird zu einer Zeile, die Sie erweitern und inspizieren koennen. Wenn mehr als eine zutrifft, ist die Reihenfolge immer validieren → formatieren → Baumansicht: Ein Parse-Fehler blockiert die Formatierung, und unformatiertes JSON ist in Baumform schwerer zu lesen.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Wann zuerst validieren</b></h2>
+    <p>Der <a href="/developer-tools/json-parser.html">JSON-Parser</a> validiert, waehrend Sie einfuegen. Wenn Ihr Input ungueltig ist, zeigt der rechte Bereich eine rote Benachrichtigung <b>Invalid JSON</b> und zeigt auf den ersten Fehler. Die vier haeufigsten Ursachen sind fehlende Klammern (<code>{</code> ohne passendes <code>}</code>), nachgestellte Kommas (<code>{"a": 1,}</code> - JSON erlaubt sie nicht), nicht entkommen Anfuehrungszeichen in String-Werten (<code>"key": "she said "hi""</code>) und herumirrende Kommentare (<code>//</code>- oder <code>/* */</code>-Bloecke - JSON unterstuetzt keine Kommentare). Beheben Sie den ersten Fehler, fuegen Sie erneut ein, und der Parser sagt Ihnen, ob noch mehr uebrig sind. Validierung laeuft vor der Formatierung, weil der Formatierer JSON, das er nicht parsen kann, nicht einruecken kann.</p>
+
+    <h2 class="text-uppercase"><b>Wann formatieren (verschoenern)</b></h2>
+    <p>Die Unterfunktion <b>formatieren / verschoenern</b> wandelt einen einzeiligen minifizierten JSON-String in ein ordnungsgemaess eingeruecktes Dokument mit jeder Eigenschaft in ihrer eigenen Zeile um. Verwenden Sie sie, wenn Sie eine Antwort aus einem Netzwerk-Tab, einer curl-Ausgabe oder einem Server-Log kopieren und lesen oder diffen muessen. Die Schaltflaeche <b>Copy Beautified JSON</b> gibt dieselben Daten mit Einrueckung zurueck, damit Sie sie in ein Code-Review, ein Ticket oder eine Unit-Test-Fixture zurueck einfuegen koennen. Die Formatierung aendert die Daten nicht - die Schluessel, Werte und Form sind identisch zum Input - nur die Leerzeichen und Zeilenumbrueche aendern sich. Wenn Sie die umgekehrte Richtung moechten (ein verschoenertes JSON zurueck in eine Zeile fuer den Versand verwandeln), haelt derselbe Parser beide Formen synchron.</p>
+
+    <h2 class="text-uppercase"><b>Wann die Baumansicht verwenden</b></h2>
+    <p>Die Unterfunktion <b>Baumansicht</b> rendert das geparste JSON als interaktiven Baum im rechten Bereich. Jede Eigenschaft ist ihre eigene Zeile; verschachtelte Objekte expandieren und kollabieren; Arrays zeigen ihre Elemente nach Index. Verwenden Sie sie, wenn das JSON sauber parsed wird, aber Sie einen Schluessel nicht finden koennen, der vier Ebenen tief vergraben ist, oder wenn Sie die Form eines Arrays inspizieren moechten - ist jedes Element vom gleichen Typ, fehlen einigen Elementen Felder, stimmen Indizes mit dem ueberein, was die API dokumentiert? Schalten Sie <b>Show Types</b> um, um den Typ jedes Wertes (String, Zahl, Objekt, Array, Boolean, null) neben seinem Schluessel anzuzeigen. Schalten Sie <b>Show Indexes</b> um, um jedes Array-Element mit seiner nullbasierten Position zu kennzeichnen. Die Baumansicht ist nur-lesen - sie modifiziert das JSON im Input-Bereich nicht.</p>
+
+    <h2 class="text-uppercase"><b>Wann mehr als eine Funktion verwenden</b></h2>
+    <p>Die drei Funktionen stapeln sich in einer festen Reihenfolge: <b>validieren</b> zuerst (sonst scheitern Formatierer und Baumansicht), dann <b>formatieren</b> (damit eine 200-zeilige Antwort lesbar ist), dann <b>Baumansicht</b> (wenn der formatierte Text noch zu lang zum Scannen ist). Ein gaengiger Workflow beim Debuggen einer Drittanbieter-API: Fuegen Sie die rohe Antwort ein, beheben Sie den ersten Parse-Fehler, den der Validator zum Vorschein bringt, klicken Sie auf <b>Copy Beautified JSON</b>, um eine lesbare Kopie fuer das Bug-Ticket zu erhalten, und verwenden Sie dann die Baumansicht, um auf den spezifischen Schluessel zu zeigen, den der API-Verbraucher erwartet hatte. Fuer nicht verwandte Entscheidungen zu Entwicklerwerkzeugen in der Kategorie developer-tools siehe die unten verlinkten Vergleichs-Leitfaeden.</p>
+
+    <h2 class="text-uppercase"><b>Begleitleitfaeden</b></h2>
+    <ul>
+        <li><a href="/guides/csv-vs-json-data-formats.html">CSV vs JSON data formats</a> - welches waehlen, wenn Sie die Datenform entwerfen, nicht parsen.</li>
+        <li><a href="/guides/json-vs-yaml-vs-toml-config-formats-explained.html">JSON vs YAML vs TOML config formats explained</a> - Format-Kompromisse fuer Konfigurationsdateien.</li>
+        <li><a href="/guides/css-minifier-vs-uglifier-vs-tree-shaking.html">CSS minifier vs uglifier vs tree-shaking</a> - die analoge Entwicklerwerkzeug-Disambiguierung fuer Stylesheets.</li>
+        <li><a href="/developer-tools/json-parser.html">JSON parser tool</a> - das Werkzeug selbst; validieren, formatieren und erkunden in einer Seite.</li>
+        <li><a href="/developer-tools/css-minifier.html">CSS minifier</a> und <a href="/developer-tools/css-unminifier.html">CSS unminifier</a> - dasselbe Minify/Beautify-Paar, aber fuer CSS.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Haeufig gestellte Fragen</b></h2>
+    <details class="faq-item">
+  <summary>Veraendert die Baumansicht mein JSON?</summary>
+  <p>Nein. Die Baumansicht ist ein Nur-Lese-Rendering des geparsten Inputs; das Umschalten von <b>Show Types</b> oder <b>Show Indexes</b> beeinflusst nur, wie der Baum angezeigt wird, nicht das zugrunde liegende JSON. Um das JSON zu aendern, bearbeiten Sie den Input-Bereich auf der linken Seite.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Was ist der Unterschied zwischen Minify und Beautify?</summary>
+  <p>Minify entfernt Leerzeichen, Zeilenumbrueche und andere nicht signifikante Zeichen, um das JSON so klein wie moeglich zu machen (fuer Transport oder Speicherung). Beautify (auch "pretty-print" oder "formatieren" genannt) fuegt Leerzeichen und Zeilenumbrueche hinzu, damit ein Mensch es lesen kann. Die Daten sind in beiden Formen identisch - nur die Formatierung aendert sich. Das CSS-Analog fuer Code verwendet zwei separate Werkzeuge: <a href="/developer-tools/css-minifier.html">CSS minifier</a> und <a href="/developer-tools/css-unminifier.html">CSS unminifier</a>.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Kann ich JSON5, JSON-mit-Kommentaren oder NDJSON einfuegen?</summary>
+  <p>Nur strenges JSON. JSON5 (das Kommentare, nachgestellte Kommas und einfach quotierte Strings erlaubt), JSON-mit-Kommentaren (manchmal JSONC genannt, von VS Code verwendet) und NDJSON (ein JSON-Objekt pro Zeile) scheitern alle bei der Validierung, weil sie kein strenges JSON sind. Entfernen Sie zuerst die nicht standardmaessigen Funktionen oder konvertieren Sie NDJSON in ein JSON-Array, dann einfuegen.</p>
+</details>
+
+    <details class="faq-item">
+  <summary>Wird etwas an einen Server gesendet?</summary>
+  <p>Der JSON-Parser laeuft in Ihrem Browser; die Validierungs-, Formatierungs- und Baumansicht-Durchlaeufe werden auf dem Client ausgefuehrt, ohne das JSON an einen Server hochzuladen. Das ist nuetzlich, wenn das JSON sensible Daten enthaelt und Sie nicht moechten, dass es das Geraet verlaesst.</p>
+</details>
+</div>
