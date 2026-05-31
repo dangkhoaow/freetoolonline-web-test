@@ -490,7 +490,11 @@ function renderLMenuGuideItem({ route, title }) {
   return `                <a class='w3-bar-item w3-button' href='https://freetoolonline.com${route}'>\n                    <i class="fa fa-book" data-kind="guide" style="margin-right: 10px;"></i>\n                    ${escapeHtml(title)}\n                    <span class="lmenu-kind-badge">guide</span>\n                </a>`;
 }
 
-function renderLMenuClusterSection({ clusterId, icon, label, tools, guides }) {
+function renderLMenuClusterSection({ clusterId, icon, label, tools }) {
+  // Tool-only cluster section. Guides are now grouped into a dedicated
+  // "GUIDES" top-level menu item (see renderLMenuGuidesSection) per the
+  // plan-warm-pascal-v3 S7 restructure — readers shopping for a tool see
+  // just tools; readers shopping for editorial reading see just guides.
   const menuId = `${clusterId.replace(/-/g, '')}Menu`;
   const lines = [];
   lines.push(`        <div class='w3-col l2 m6'>`);
@@ -502,11 +506,44 @@ function renderLMenuClusterSection({ clusterId, icon, label, tools, guides }) {
   for (const t of tools) {
     lines.push(renderLMenuToolItem(t));
   }
-  if (tools.length > 0 && guides.length > 0) {
-    lines.push(`                <hr class="lmenu-sep">`);
-  }
-  for (const g of guides) {
-    lines.push(renderLMenuGuideItem(g));
+  lines.push(`            </div>`);
+  lines.push(`        </div>`);
+  return lines.join('\n');
+}
+
+// Topic-label map for the dedicated GUIDES menu sub-headings. Order matches
+// LMENU_CLUSTER_ORDER so readers see a consistent grouping across the l-menu.
+const LMENU_GUIDE_TOPIC_LABELS = {
+  pdf: 'PDF guides',
+  'image-editing': 'Image editing guides',
+  'image-conversion': 'Image converter guides',
+  video: 'Video guides',
+  zip: 'ZIP guides',
+  developer: 'Developer guides',
+  'device-test': 'Device-test guides',
+  utility: 'Other guides',
+};
+
+function renderLMenuGuidesSection(guidesByCluster) {
+  const lines = [];
+  lines.push(`        <div class='w3-col l2 m6'>`);
+  lines.push(`            <button style='font-size: 15px !important;padding: 10px 0px 10px 13px' class="w3-button w3-block w3-left-align menu-btn" onclick="myAccFunc(document.getElementById('guidesMenu'))">`);
+  lines.push(`                <i class="fa fa-book" style="margin-right: 10px;"></i>`);
+  lines.push(`                GUIDES`);
+  lines.push(`            </button>`);
+  lines.push(`            <div id="guidesMenu" class="w3-hide menuGroup">`);
+  let emittedTopics = 0;
+  for (const clusterId of LMENU_CLUSTER_ORDER) {
+    const items = guidesByCluster.get(clusterId) || [];
+    if (items.length === 0) continue;
+    if (emittedTopics > 0) {
+      lines.push(`                <hr class="lmenu-sep">`);
+    }
+    lines.push(`                <div class="lmenu-guide-topic"><small><strong>${escapeHtml(LMENU_GUIDE_TOPIC_LABELS[clusterId] || clusterId)}</strong></small></div>`);
+    for (const g of items) {
+      lines.push(renderLMenuGuideItem(g));
+    }
+    emittedTopics += 1;
   }
   lines.push(`            </div>`);
   lines.push(`        </div>`);
@@ -564,9 +601,12 @@ export async function buildDynamicLMenuBody({ cmsRoot } = {}) {
       icon: LMENU_CLUSTER_ICONS[clusterId],
       label: LMENU_CLUSTER_LABELS[clusterId],
       tools: toolsByCluster.get(clusterId) || [],
-      guides: guidesByCluster.get(clusterId) || [],
     }));
   }
+  // plan-warm-pascal-v3 S7: dedicated GUIDES menu item appended last.
+  // Guides are no longer interleaved into the per-cluster tool sections;
+  // readers see a single "GUIDES" entry that groups all guides by topic.
+  sections.push(renderLMenuGuidesSection(guidesByCluster));
 
   return `<div id="menu-content-id" class="menu-content">\n    <div class='w3-row-padding'>\n${sections.join('\n')}\n    </div>\n</div>`;
 }
@@ -643,11 +683,27 @@ export async function buildDynamicSitemapBody({ cmsRoot, lastReviewedIso } = {})
 
   const reviewDate = formatReviewDate(lastReviewedIso);
 
+  // plan-warm-pascal-v3 S3.3: locale picker row above the Jump-to block.
+  // Surfaces the five non-EN locale guide sitemaps so a reader who landed on
+  // sitemap.html in their native language can switch the guide universe to
+  // their locale in one click. Per-language guide counts come from the
+  // sitemap-guides-<lang>.xml emit step in sitemap-writer.mjs.
+  const localeGuidePickerHtml = `    <p><strong>Browse guides in your language:</strong>
+        <a href="/guides.html">English</a>
+        &middot; <a href="/sitemap-guides-pt.xml">Portuguese (XML)</a>
+        &middot; <a href="/sitemap-guides-es.xml">Spanish (XML)</a>
+        &middot; <a href="/sitemap-guides-vi.xml">Vietnamese (XML)</a>
+        &middot; <a href="/sitemap-guides-id.xml">Indonesian (XML)</a>
+        &middot; <a href="/sitemap-guides-de.xml">German (XML)</a>
+    </p>`;
+
   const html = `<div class="w3-container w3-margin-top">
     <h1 class="text-uppercase"><b>Site Map</b></h1>
     <p>Looking for the right tool but cannot recall the name? Skim the list below. Every tool runs in your browser - no signup, no upload to a server - and every link points to the canonical page (no redirects to slow you down).</p>
 
     <p>Tools sit under eight task-based categories. Long-form guides - decision walkthroughs, step-by-step recipes, and trade-off explainers - sit below them, grouped by the kind of problem they solve. If a category looks empty for a tool you remember using, the link likely moved into the new category-tools hub; the URL still works.</p>
+
+${localeGuidePickerHtml}
 
     <h2 class="text-uppercase"><b>Jump to</b></h2>
     <ul>

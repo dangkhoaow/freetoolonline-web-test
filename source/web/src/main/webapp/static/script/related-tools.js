@@ -1,4 +1,27 @@
 try {
+  // plan-warm-pascal-v3 S3.1: locale-aware Related-Tools link rewriter.
+  // Detect the active page locale from `<html lang>` (set by the renderer for
+  // /guides/<lang>/<slug>.html URLs) and rewrite guide URLs in urlMaps to the
+  // matching locale variant. Falls back to the EN canonical when the variant
+  // is unknown to the client (the link target is then resolved server-side
+  // via JSP_BY_ROUTE or 301s through ALIAS_ROUTES).
+  var SUPPORTED_LOCALES = ["pt", "es", "vi", "id", "de"];
+  function detectPageLocale() {
+    try {
+      var lang = (document.documentElement.getAttribute("lang") || "").toLowerCase().slice(0, 2);
+      if (SUPPORTED_LOCALES.indexOf(lang) !== -1) return lang;
+    } catch (e) {}
+    return null;
+  }
+  function localizeRelatedUrl(url) {
+    var locale = detectPageLocale();
+    if (!locale) return url;
+    // Only rewrite /guides/<bare-slug>.html (EN canonical). Already-localised
+    // /guides/<lang>/<slug>.html URLs and non-guide URLs pass through.
+    var m = /^https:\/\/freetoolonline\.com\/guides\/([a-z0-9-]+\.html)$/.exec(url);
+    if (!m) return url;
+    return "https://freetoolonline.com/guides/" + locale + "/" + m[1];
+  }
   var urlMaps = [
     { title: "ZIP Tools", url: "https://freetoolonline.com/zip-tools.html", include: !1, tags: "zip,pdf" },
     { title: "File Compressor: Pick the Right Tool by File Type", url: "https://freetoolonline.com/utility-tools/file-compressor.html", include: !1, tags: "compress,zip,image-editing,pdf,utility,file-compressor" },
@@ -446,7 +469,7 @@ try {
                 '" style="color: ' +
                 matchColor +
                 ';" href="' +
-                urlMaps[i].url +
+                localizeRelatedUrl(urlMaps[i].url) +
                 '">' +
                 title +
                 "</a></li>";
