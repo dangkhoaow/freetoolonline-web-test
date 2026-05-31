@@ -515,6 +515,40 @@
     </div>
 </div>
 <script>
+    // plan-warm-pascal-v3 S3.2: l-menu locale-aware guide-link rewrite.
+    // When the current page is a locale-prefixed guide (<html lang> in
+    // pt/es/vi/id/de), rewrite the GUIDES sub-menu items from the EN
+    // canonical /guides/<slug>.html to /guides/<lang>/<slug>.html so the
+    // reader stays in their locale when clicking another guide. Already-
+    // localised links and non-guide links pass through unchanged.
+    (function() {
+        var SUPPORTED = {"pt":1,"es":1,"vi":1,"id":1,"de":1};
+        try {
+            var lang = (document.documentElement.getAttribute("lang") || "").toLowerCase().slice(0, 2);
+            if (!SUPPORTED[lang]) return;
+            // Wait for DOMContentLoaded so the inlined l-menu HTML is parsed.
+            var apply = function() {
+                var menu = document.getElementById("guidesMenu");
+                if (!menu) return;
+                var anchors = menu.getElementsByTagName("a");
+                for (var i = 0; i < anchors.length; i++) {
+                    var href = anchors[i].getAttribute("href") || "";
+                    // Match /guides/<bare-slug>.html (EN canonical). Already-
+                    // localised hrefs and non-guide hrefs pass through.
+                    var m = /^(https?:\/\/[^\/]+)?(\/guides\/)([a-z0-9-]+\.html)$/.exec(href);
+                    if (!m) continue;
+                    var origin = m[1] || "";
+                    anchors[i].setAttribute("href", origin + "/guides/" + lang + "/" + m[3]);
+                }
+            };
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", apply, { once: true });
+            } else {
+                apply();
+            }
+        } catch (e) { /* fall through to non-localised links */ }
+    })();
+
     fixIOSOverplayScrolling = function(_overlayId) {
         try {
             (function() {
