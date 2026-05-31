@@ -1056,6 +1056,10 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/zip-file-size-compressor.html', '/guides/es/zip-file-size-compressor.html', '/guides/vi/zip-file-size-compressor.html', '/guides/id/zip-file-size-compressor.html', '/guides/de/zip-file-size-compressor.html',
   '/guides/pt/md5-hash-decrypt.html', '/guides/es/md5-hash-decrypt.html', '/guides/vi/md5-hash-decrypt.html', '/guides/id/md5-hash-decrypt.html', '/guides/de/md5-hash-decrypt.html',
   '/guides/pt/led-test-vs-lcd-test-which-applies-to-your-screen.html', '/guides/es/led-test-vs-lcd-test-which-applies-to-your-screen.html', '/guides/vi/led-test-vs-lcd-test-which-applies-to-your-screen.html', '/guides/id/led-test-vs-lcd-test-which-applies-to-your-screen.html', '/guides/de/led-test-vs-lcd-test-which-applies-to-your-screen.html',
+  // plan-warm-pascal-v3 S2 batch 52 (2026-05-31) - 5 locale variants × 3 guides
+  '/guides/pt/resize-zip-file.html', '/guides/es/resize-zip-file.html', '/guides/vi/resize-zip-file.html', '/guides/id/resize-zip-file.html', '/guides/de/resize-zip-file.html',
+  '/guides/pt/md5-decrypt-online.html', '/guides/es/md5-decrypt-online.html', '/guides/vi/md5-decrypt-online.html', '/guides/id/md5-decrypt-online.html', '/guides/de/md5-decrypt-online.html',
+  '/guides/pt/ms-to-date.html', '/guides/es/ms-to-date.html', '/guides/vi/ms-to-date.html', '/guides/id/ms-to-date.html', '/guides/de/ms-to-date.html',
   '/guides/pt/compress-folder.html', // pt canonical of /guides/compactar-pasta.html
   '/guides/pt/compress-zip-file.html', // pt canonical of /guides/comprimir-arquivo-zip.html
   '/guides/pt/compress-folder-to-zip.html', // pt canonical of /guides/comprimir-pasta-zipada.html
@@ -1288,6 +1292,10 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/zip-file-size-compressor.html', '/guides/es/zip-file-size-compressor.html', '/guides/vi/zip-file-size-compressor.html', '/guides/id/zip-file-size-compressor.html', '/guides/de/zip-file-size-compressor.html',
   '/guides/pt/md5-hash-decrypt.html', '/guides/es/md5-hash-decrypt.html', '/guides/vi/md5-hash-decrypt.html', '/guides/id/md5-hash-decrypt.html', '/guides/de/md5-hash-decrypt.html',
   '/guides/pt/led-test-vs-lcd-test-which-applies-to-your-screen.html', '/guides/es/led-test-vs-lcd-test-which-applies-to-your-screen.html', '/guides/vi/led-test-vs-lcd-test-which-applies-to-your-screen.html', '/guides/id/led-test-vs-lcd-test-which-applies-to-your-screen.html', '/guides/de/led-test-vs-lcd-test-which-applies-to-your-screen.html',
+  // plan-warm-pascal-v3 S2 batch 52 (2026-05-31) - 5 locale variants × 3 guides
+  '/guides/pt/resize-zip-file.html', '/guides/es/resize-zip-file.html', '/guides/vi/resize-zip-file.html', '/guides/id/resize-zip-file.html', '/guides/de/resize-zip-file.html',
+  '/guides/pt/md5-decrypt-online.html', '/guides/es/md5-decrypt-online.html', '/guides/vi/md5-decrypt-online.html', '/guides/id/md5-decrypt-online.html', '/guides/de/md5-decrypt-online.html',
+  '/guides/pt/ms-to-date.html', '/guides/es/ms-to-date.html', '/guides/vi/ms-to-date.html', '/guides/id/ms-to-date.html', '/guides/de/ms-to-date.html',
   '/guides/en/heic-vs-jpg-vs-webp.html',
   '/guides/en/dead-pixel-testing-guide.html',
   '/guides/en/unix-timestamps-explained.html',
@@ -2825,6 +2833,10 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/zip-file-size-compressor.html': 'guide/pt/zip-file-size-compressor.jsp', '/guides/es/zip-file-size-compressor.html': 'guide/es/zip-file-size-compressor.jsp', '/guides/vi/zip-file-size-compressor.html': 'guide/vi/zip-file-size-compressor.jsp', '/guides/id/zip-file-size-compressor.html': 'guide/id/zip-file-size-compressor.jsp', '/guides/de/zip-file-size-compressor.html': 'guide/de/zip-file-size-compressor.jsp',
   '/guides/pt/md5-hash-decrypt.html': 'guide/pt/md5-hash-decrypt.jsp', '/guides/es/md5-hash-decrypt.html': 'guide/es/md5-hash-decrypt.jsp', '/guides/vi/md5-hash-decrypt.html': 'guide/vi/md5-hash-decrypt.jsp', '/guides/id/md5-hash-decrypt.html': 'guide/id/md5-hash-decrypt.jsp', '/guides/de/md5-hash-decrypt.html': 'guide/de/md5-hash-decrypt.jsp',
   '/guides/pt/led-test-vs-lcd-test-which-applies-to-your-screen.html': 'guide/pt/led-test-vs-lcd-test-which-applies-to-your-screen.jsp', '/guides/es/led-test-vs-lcd-test-which-applies-to-your-screen.html': 'guide/es/led-test-vs-lcd-test-which-applies-to-your-screen.jsp', '/guides/vi/led-test-vs-lcd-test-which-applies-to-your-screen.html': 'guide/vi/led-test-vs-lcd-test-which-applies-to-your-screen.jsp', '/guides/id/led-test-vs-lcd-test-which-applies-to-your-screen.html': 'guide/id/led-test-vs-lcd-test-which-applies-to-your-screen.jsp', '/guides/de/led-test-vs-lcd-test-which-applies-to-your-screen.html': 'guide/de/led-test-vs-lcd-test-which-applies-to-your-screen.jsp',
+  // plan-warm-pascal-v3 S2 batch 52 (2026-05-31) - 5 locale variants × 3 guides
+  '/guides/pt/resize-zip-file.html': 'guide/pt/resize-zip-file.jsp', '/guides/es/resize-zip-file.html': 'guide/es/resize-zip-file.jsp', '/guides/vi/resize-zip-file.html': 'guide/vi/resize-zip-file.jsp', '/guides/id/resize-zip-file.html': 'guide/id/resize-zip-file.jsp', '/guides/de/resize-zip-file.html': 'guide/de/resize-zip-file.jsp',
+  '/guides/pt/md5-decrypt-online.html': 'guide/pt/md5-decrypt-online.jsp', '/guides/es/md5-decrypt-online.html': 'guide/es/md5-decrypt-online.jsp', '/guides/vi/md5-decrypt-online.html': 'guide/vi/md5-decrypt-online.jsp', '/guides/id/md5-decrypt-online.html': 'guide/id/md5-decrypt-online.jsp', '/guides/de/md5-decrypt-online.html': 'guide/de/md5-decrypt-online.jsp',
+  '/guides/pt/ms-to-date.html': 'guide/pt/ms-to-date.jsp', '/guides/es/ms-to-date.html': 'guide/es/ms-to-date.jsp', '/guides/vi/ms-to-date.html': 'guide/vi/ms-to-date.jsp', '/guides/id/ms-to-date.html': 'guide/id/ms-to-date.jsp', '/guides/de/ms-to-date.html': 'guide/de/ms-to-date.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

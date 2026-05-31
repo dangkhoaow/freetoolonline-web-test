@@ -1,0 +1,54 @@
+<article class="guide-body">
+  <h1>ms a fecha</h1>
+  <p class="lead">"ms a fecha" es el atajo para preguntar "este numero de 13 digitos es un timestamp Unix en milisegundos - que fecha y hora de reloj representa en mi zona horaria local?" Pega el numero en el conversor, haz clic en Convert, y aparece como fecha legible y reloj de 24 horas el mismo momento de calendario al que se referia el servidor, la linea de log o la respuesta de API.</p>
+  <p class="reviewed">Ultima revision: 2026-05-17</p>
+  <p class="byline">Revisado por el equipo editorial FreetoolOnline</p>
+
+  <table class="quick-facts">
+    <thead><tr><th>Propiedad</th><th>Valor</th></tr></thead>
+    <tbody>
+      <tr><td>Entrada</td><td>Timestamp Unix en milisegundos de 13 digitos (ej: 1713538800000)</td></tr>
+      <tr><td>Salida</td><td>Fecha de calendario en zona local + reloj de 24 horas</td></tr>
+      <tr><td>Entrada de 10 digitos</td><td>Eso es segundos - multiplica por 1000 o usa un conversor de segundos a fecha</td></tr>
+      <tr><td>Herramienta implementadora</td><td><a href="/convert-time-in-millisecond-to-date.html">/convert-time-in-millisecond-to-date.html</a></td></tr>
+      <tr><td>Privacidad</td><td>Corre en la pestana del navegador - sin upload, sin cuenta, sin ida y vuelta al servidor</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Que pregunta de hecho "ms a fecha"</h2>
+  <p>Los buscadores y los comentarios de Stack Overflow usan "ms a fecha", "millis a fecha" y "epoch ms a fecha" de forma intercambiable. Las tres se refieren al mismo epoch Unix contado en milisegundos desde medianoche UTC del 1 de enero de 1970, y la misma unica caja de entrada en la herramienta implementadora en <a href="/convert-time-in-millisecond-to-date.html">/convert-time-in-millisecond-to-date.html</a> responde a las tres. El lector que pega un numero largo en la caja esta preguntando que momento de calendario referenciaba el sistema subyacente cuando estampo ese valor en una linea de log, una fila de base de datos o una respuesta JSON - y la respuesta es la fecha de zona local y la hora de reloj de 24 horas que el conversor renderiza al momento de hacer clic en Convert.</p>
+
+  <h2>Error de factor 1000: ms vs s en una verificacion rapida</h2>
+  <p>Si el numero tiene solo 10 digitos, son casi con seguridad segundos Unix en lugar de milisegundos. Multiplica por 1000 primero, o abre la guia de desambiguacion de numero largo en <a href="/guides/long-number-millisecond-or-second.html">numero largo: milisegundo o segundo?</a> que recorre la heuristica de conteo de digitos en 30 segundos. La confusion de factor 1000 muerde a todo ingeniero nuevo de backend al menos una vez - el momento de calendario al que apunta un valor de 10 digitos esta decadas antes de lo que el lector de 13 digitos espera.</p>
+
+  <h2>Que hace el conversor en tu navegador</h2>
+  <p>La caja de entrada se abre prerrellenada con el timestamp en milisegundos actual y una conversion funcional ya en pantalla. Eso significa que lo primero que ve el lector es el formato de entrada que la herramienta espera - util cuando estas en medio de un debug y necesitas una verificacion rapida de la forma del valor antes de confiar en el epoch raro pegado de un hilo de Slack. Haz clic en Convert y la fecha de calendario mas la hora de reloj de 24 horas aparecen abajo, renderizadas en tu zona local para que la respuesta sea el momento de reloj de pared que un colega reconoceria, en vez de una cadena solo en UTC.</p>
+
+  <h2>Privacidad en la conversion</h2>
+  <p>Nada de lo que el lector escribe sale de la pestana. No hay upload, no hay cuenta, no hay ida y vuelta al servidor - la conversion corre en el navegador, asi que los timestamps de log de produccion, las fechas de ventana de licitacion sellada y cualquier otro valor que no pegarias en una API de terceros son seguros de convertir aqui. Cierra la pestana cuando hayas leido la respuesta y la entrada desaparece con ella.</p>
+
+  <h2>Lectura relacionada y guias hermanas</h2>
+  <ul>
+    <li><a href="/guides/unix-timestamps-explained.html">Timestamps Unix explicados</a> - fundamentos del epoch, por que 1 de enero de 1970, y que cuenta el entero.</li>
+    <li><a href="/guides/long-number-millisecond-or-second.html">Numero largo: milisegundo o segundo?</a> - la heuristica de conteo de digitos y como se ven los no-timestamps (Snowflake IDs, UUIDv7, numeros de secuencia).</li>
+    <li><a href="/guides/milliseconds-to-date-utc-vs-local-time.html">Milisegundos a fecha: UTC vs hora local</a> - la misma conversion, enmarcada en torno a la eleccion de visualizacion de zona horaria que muerde a los equipos cross-region.</li>
+  </ul>
+
+  <h2>FAQ</h2>
+  <details class="faq-item">
+    <summary>Que es un timestamp Unix en milisegundos?</summary>
+    <p>El numero de milisegundos desde medianoche UTC del 1 de enero de 1970. Un valor de 13 digitos cubre timestamps de finales de 2001 hasta finales de 5138; cualquier cosa fuera de ese rango son o bien segundos Unix (10 digitos) o bien microsegundos (16 digitos).</p>
+  </details>
+  <details class="faq-item">
+    <summary>Mi valor tiene 10 digitos, no 13 - que hago?</summary>
+    <p>Eso son casi con seguridad segundos Unix. Multiplica por 1000 para convertir a milisegundos, o usa directamente un conversor de segundos a fecha. El error de factor 1000 es la confusion mas comun de ms a fecha.</p>
+  </details>
+  <details class="faq-item">
+    <summary>La conversion envia mi valor a un servidor?</summary>
+    <p>No. La herramienta implementadora en <a href="/convert-time-in-millisecond-to-date.html">/convert-time-in-millisecond-to-date.html</a> corre la conversion en la pestana del navegador - seguro para timestamps de log de produccion y cualquier valor que no pegarias en una API de terceros.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Que zona horaria usa el conversor para la salida?</summary>
+    <p>La zona horaria local de tu navegador, asi que la respuesta aparece como el momento de reloj de pared que un colega en la misma region reconoceria. Para el angulo UTC-vs-local, mira <a href="/guides/milliseconds-to-date-utc-vs-local-time.html">Milisegundos a fecha: UTC vs hora local</a>.</p>
+  </details>
+</article>
