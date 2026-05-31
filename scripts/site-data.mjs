@@ -1075,6 +1075,9 @@ export const INFO_ROUTES = new Set([
   // plan-warm-pascal-v3 S2 batch 56 (2026-05-31) - 5 locale variants × 2 guides (FINAL substantive batch; 163 of 166 guides complete; 3 stubs noindex deferred)
   '/guides/pt/kompres-zip.html', '/guides/es/kompres-zip.html', '/guides/vi/kompres-zip.html', '/guides/id/kompres-zip.html', '/guides/de/kompres-zip.html',
   '/guides/pt/zip-file-compressor-online.html', '/guides/es/zip-file-compressor-online.html', '/guides/vi/zip-file-compressor-online.html', '/guides/id/zip-file-compressor-online.html', '/guides/de/zip-file-compressor-online.html',
+  // plan-warm-pascal-v3 S2 batch 57 (2026-05-31) - 5 locale variants × 2 guides (NEW make-zip-file-online + split-gif-into-frames, post-ledger-166 expansion to 168 targeted)
+  '/guides/pt/make-zip-file-online.html', '/guides/es/make-zip-file-online.html', '/guides/vi/make-zip-file-online.html', '/guides/id/make-zip-file-online.html', '/guides/de/make-zip-file-online.html',
+  '/guides/pt/split-gif-into-frames.html', '/guides/es/split-gif-into-frames.html', '/guides/vi/split-gif-into-frames.html', '/guides/id/split-gif-into-frames.html', '/guides/de/split-gif-into-frames.html',
   '/guides/pt/compress-folder.html', // pt canonical of /guides/compactar-pasta.html
   '/guides/pt/compress-zip-file.html', // pt canonical of /guides/comprimir-arquivo-zip.html
   '/guides/pt/compress-folder-to-zip.html', // pt canonical of /guides/comprimir-pasta-zipada.html
@@ -1326,6 +1329,9 @@ export const GUIDE_ROUTES = new Set([
   // plan-warm-pascal-v3 S2 batch 56 (2026-05-31) - 5 locale variants × 2 guides (FINAL substantive batch)
   '/guides/pt/kompres-zip.html', '/guides/es/kompres-zip.html', '/guides/vi/kompres-zip.html', '/guides/id/kompres-zip.html', '/guides/de/kompres-zip.html',
   '/guides/pt/zip-file-compressor-online.html', '/guides/es/zip-file-compressor-online.html', '/guides/vi/zip-file-compressor-online.html', '/guides/id/zip-file-compressor-online.html', '/guides/de/zip-file-compressor-online.html',
+  // plan-warm-pascal-v3 S2 batch 57 (2026-05-31) - 5 locale variants × 2 guides (NEW make-zip-file-online + split-gif-into-frames; ledger expanded 166 -> 168 targeted)
+  '/guides/pt/make-zip-file-online.html', '/guides/es/make-zip-file-online.html', '/guides/vi/make-zip-file-online.html', '/guides/id/make-zip-file-online.html', '/guides/de/make-zip-file-online.html',
+  '/guides/pt/split-gif-into-frames.html', '/guides/es/split-gif-into-frames.html', '/guides/vi/split-gif-into-frames.html', '/guides/id/split-gif-into-frames.html', '/guides/de/split-gif-into-frames.html',
   '/guides/en/heic-vs-jpg-vs-webp.html',
   '/guides/en/dead-pixel-testing-guide.html',
   '/guides/en/unix-timestamps-explained.html',
@@ -2882,6 +2888,9 @@ export const JSP_BY_ROUTE = {
   // plan-warm-pascal-v3 S2 batch 56 (2026-05-31) - 5 locale variants × 2 guides (FINAL substantive batch)
   '/guides/pt/kompres-zip.html': 'guide/pt/kompres-zip.jsp', '/guides/es/kompres-zip.html': 'guide/es/kompres-zip.jsp', '/guides/vi/kompres-zip.html': 'guide/vi/kompres-zip.jsp', '/guides/id/kompres-zip.html': 'guide/id/kompres-zip.jsp', '/guides/de/kompres-zip.html': 'guide/de/kompres-zip.jsp',
   '/guides/pt/zip-file-compressor-online.html': 'guide/pt/zip-file-compressor-online.jsp', '/guides/es/zip-file-compressor-online.html': 'guide/es/zip-file-compressor-online.jsp', '/guides/vi/zip-file-compressor-online.html': 'guide/vi/zip-file-compressor-online.jsp', '/guides/id/zip-file-compressor-online.html': 'guide/id/zip-file-compressor-online.jsp', '/guides/de/zip-file-compressor-online.html': 'guide/de/zip-file-compressor-online.jsp',
+  // plan-warm-pascal-v3 S2 batch 57 (2026-05-31) - 5 locale variants × 2 guides (NEW make-zip-file-online + split-gif-into-frames; ledger expanded 166 -> 168 targeted)
+  '/guides/pt/make-zip-file-online.html': 'guide/pt/make-zip-file-online.jsp', '/guides/es/make-zip-file-online.html': 'guide/es/make-zip-file-online.jsp', '/guides/vi/make-zip-file-online.html': 'guide/vi/make-zip-file-online.jsp', '/guides/id/make-zip-file-online.html': 'guide/id/make-zip-file-online.jsp', '/guides/de/make-zip-file-online.html': 'guide/de/make-zip-file-online.jsp',
+  '/guides/pt/split-gif-into-frames.html': 'guide/pt/split-gif-into-frames.jsp', '/guides/es/split-gif-into-frames.html': 'guide/es/split-gif-into-frames.jsp', '/guides/vi/split-gif-into-frames.html': 'guide/vi/split-gif-into-frames.jsp', '/guides/id/split-gif-into-frames.html': 'guide/id/split-gif-into-frames.jsp', '/guides/de/split-gif-into-frames.html': 'guide/de/split-gif-into-frames.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
