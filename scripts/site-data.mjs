@@ -1060,6 +1060,10 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/resize-zip-file.html', '/guides/es/resize-zip-file.html', '/guides/vi/resize-zip-file.html', '/guides/id/resize-zip-file.html', '/guides/de/resize-zip-file.html',
   '/guides/pt/md5-decrypt-online.html', '/guides/es/md5-decrypt-online.html', '/guides/vi/md5-decrypt-online.html', '/guides/id/md5-decrypt-online.html', '/guides/de/md5-decrypt-online.html',
   '/guides/pt/ms-to-date.html', '/guides/es/ms-to-date.html', '/guides/vi/ms-to-date.html', '/guides/id/ms-to-date.html', '/guides/de/ms-to-date.html',
+  // plan-warm-pascal-v3 S2 batch 53 (2026-05-31) - 5 locale variants × 3 guides
+  '/guides/pt/zip-compressor.html', '/guides/es/zip-compressor.html', '/guides/vi/zip-compressor.html', '/guides/id/zip-compressor.html', '/guides/de/zip-compressor.html',
+  '/guides/pt/lcd-checker.html', '/guides/es/lcd-checker.html', '/guides/vi/lcd-checker.html', '/guides/id/lcd-checker.html', '/guides/de/lcd-checker.html',
+  '/guides/pt/online-zip-file.html', '/guides/es/online-zip-file.html', '/guides/vi/online-zip-file.html', '/guides/id/online-zip-file.html', '/guides/de/online-zip-file.html',
   '/guides/pt/compress-folder.html', // pt canonical of /guides/compactar-pasta.html
   '/guides/pt/compress-zip-file.html', // pt canonical of /guides/comprimir-arquivo-zip.html
   '/guides/pt/compress-folder-to-zip.html', // pt canonical of /guides/comprimir-pasta-zipada.html
@@ -1296,6 +1300,10 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/resize-zip-file.html', '/guides/es/resize-zip-file.html', '/guides/vi/resize-zip-file.html', '/guides/id/resize-zip-file.html', '/guides/de/resize-zip-file.html',
   '/guides/pt/md5-decrypt-online.html', '/guides/es/md5-decrypt-online.html', '/guides/vi/md5-decrypt-online.html', '/guides/id/md5-decrypt-online.html', '/guides/de/md5-decrypt-online.html',
   '/guides/pt/ms-to-date.html', '/guides/es/ms-to-date.html', '/guides/vi/ms-to-date.html', '/guides/id/ms-to-date.html', '/guides/de/ms-to-date.html',
+  // plan-warm-pascal-v3 S2 batch 53 (2026-05-31) - 5 locale variants × 3 guides
+  '/guides/pt/zip-compressor.html', '/guides/es/zip-compressor.html', '/guides/vi/zip-compressor.html', '/guides/id/zip-compressor.html', '/guides/de/zip-compressor.html',
+  '/guides/pt/lcd-checker.html', '/guides/es/lcd-checker.html', '/guides/vi/lcd-checker.html', '/guides/id/lcd-checker.html', '/guides/de/lcd-checker.html',
+  '/guides/pt/online-zip-file.html', '/guides/es/online-zip-file.html', '/guides/vi/online-zip-file.html', '/guides/id/online-zip-file.html', '/guides/de/online-zip-file.html',
   '/guides/en/heic-vs-jpg-vs-webp.html',
   '/guides/en/dead-pixel-testing-guide.html',
   '/guides/en/unix-timestamps-explained.html',
@@ -2837,6 +2845,10 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/resize-zip-file.html': 'guide/pt/resize-zip-file.jsp', '/guides/es/resize-zip-file.html': 'guide/es/resize-zip-file.jsp', '/guides/vi/resize-zip-file.html': 'guide/vi/resize-zip-file.jsp', '/guides/id/resize-zip-file.html': 'guide/id/resize-zip-file.jsp', '/guides/de/resize-zip-file.html': 'guide/de/resize-zip-file.jsp',
   '/guides/pt/md5-decrypt-online.html': 'guide/pt/md5-decrypt-online.jsp', '/guides/es/md5-decrypt-online.html': 'guide/es/md5-decrypt-online.jsp', '/guides/vi/md5-decrypt-online.html': 'guide/vi/md5-decrypt-online.jsp', '/guides/id/md5-decrypt-online.html': 'guide/id/md5-decrypt-online.jsp', '/guides/de/md5-decrypt-online.html': 'guide/de/md5-decrypt-online.jsp',
   '/guides/pt/ms-to-date.html': 'guide/pt/ms-to-date.jsp', '/guides/es/ms-to-date.html': 'guide/es/ms-to-date.jsp', '/guides/vi/ms-to-date.html': 'guide/vi/ms-to-date.jsp', '/guides/id/ms-to-date.html': 'guide/id/ms-to-date.jsp', '/guides/de/ms-to-date.html': 'guide/de/ms-to-date.jsp',
+  // plan-warm-pascal-v3 S2 batch 53 (2026-05-31) - 5 locale variants × 3 guides
+  '/guides/pt/zip-compressor.html': 'guide/pt/zip-compressor.jsp', '/guides/es/zip-compressor.html': 'guide/es/zip-compressor.jsp', '/guides/vi/zip-compressor.html': 'guide/vi/zip-compressor.jsp', '/guides/id/zip-compressor.html': 'guide/id/zip-compressor.jsp', '/guides/de/zip-compressor.html': 'guide/de/zip-compressor.jsp',
+  '/guides/pt/lcd-checker.html': 'guide/pt/lcd-checker.jsp', '/guides/es/lcd-checker.html': 'guide/es/lcd-checker.jsp', '/guides/vi/lcd-checker.html': 'guide/vi/lcd-checker.jsp', '/guides/id/lcd-checker.html': 'guide/id/lcd-checker.jsp', '/guides/de/lcd-checker.html': 'guide/de/lcd-checker.jsp',
+  '/guides/pt/online-zip-file.html': 'guide/pt/online-zip-file.jsp', '/guides/es/online-zip-file.html': 'guide/es/online-zip-file.jsp', '/guides/vi/online-zip-file.html': 'guide/vi/online-zip-file.jsp', '/guides/id/online-zip-file.html': 'guide/id/online-zip-file.jsp', '/guides/de/online-zip-file.html': 'guide/de/online-zip-file.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
