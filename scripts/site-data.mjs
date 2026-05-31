@@ -1064,6 +1064,10 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/zip-compressor.html', '/guides/es/zip-compressor.html', '/guides/vi/zip-compressor.html', '/guides/id/zip-compressor.html', '/guides/de/zip-compressor.html',
   '/guides/pt/lcd-checker.html', '/guides/es/lcd-checker.html', '/guides/vi/lcd-checker.html', '/guides/id/lcd-checker.html', '/guides/de/lcd-checker.html',
   '/guides/pt/online-zip-file.html', '/guides/es/online-zip-file.html', '/guides/vi/online-zip-file.html', '/guides/id/online-zip-file.html', '/guides/de/online-zip-file.html',
+  // plan-warm-pascal-v3 S2 batch 54 (2026-05-31) - 5 locale variants × 3 guides
+  '/guides/pt/test-lcd.html', '/guides/es/test-lcd.html', '/guides/vi/test-lcd.html', '/guides/id/test-lcd.html', '/guides/de/test-lcd.html',
+  '/guides/pt/i-love-zip.html', '/guides/es/i-love-zip.html', '/guides/vi/i-love-zip.html', '/guides/id/i-love-zip.html', '/guides/de/i-love-zip.html',
+  '/guides/pt/zip-compressor-online.html', '/guides/es/zip-compressor-online.html', '/guides/vi/zip-compressor-online.html', '/guides/id/zip-compressor-online.html', '/guides/de/zip-compressor-online.html',
   '/guides/pt/compress-folder.html', // pt canonical of /guides/compactar-pasta.html
   '/guides/pt/compress-zip-file.html', // pt canonical of /guides/comprimir-arquivo-zip.html
   '/guides/pt/compress-folder-to-zip.html', // pt canonical of /guides/comprimir-pasta-zipada.html
@@ -1304,6 +1308,10 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/zip-compressor.html', '/guides/es/zip-compressor.html', '/guides/vi/zip-compressor.html', '/guides/id/zip-compressor.html', '/guides/de/zip-compressor.html',
   '/guides/pt/lcd-checker.html', '/guides/es/lcd-checker.html', '/guides/vi/lcd-checker.html', '/guides/id/lcd-checker.html', '/guides/de/lcd-checker.html',
   '/guides/pt/online-zip-file.html', '/guides/es/online-zip-file.html', '/guides/vi/online-zip-file.html', '/guides/id/online-zip-file.html', '/guides/de/online-zip-file.html',
+  // plan-warm-pascal-v3 S2 batch 54 (2026-05-31) - 5 locale variants × 3 guides
+  '/guides/pt/test-lcd.html', '/guides/es/test-lcd.html', '/guides/vi/test-lcd.html', '/guides/id/test-lcd.html', '/guides/de/test-lcd.html',
+  '/guides/pt/i-love-zip.html', '/guides/es/i-love-zip.html', '/guides/vi/i-love-zip.html', '/guides/id/i-love-zip.html', '/guides/de/i-love-zip.html',
+  '/guides/pt/zip-compressor-online.html', '/guides/es/zip-compressor-online.html', '/guides/vi/zip-compressor-online.html', '/guides/id/zip-compressor-online.html', '/guides/de/zip-compressor-online.html',
   '/guides/en/heic-vs-jpg-vs-webp.html',
   '/guides/en/dead-pixel-testing-guide.html',
   '/guides/en/unix-timestamps-explained.html',
@@ -2849,6 +2857,10 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/zip-compressor.html': 'guide/pt/zip-compressor.jsp', '/guides/es/zip-compressor.html': 'guide/es/zip-compressor.jsp', '/guides/vi/zip-compressor.html': 'guide/vi/zip-compressor.jsp', '/guides/id/zip-compressor.html': 'guide/id/zip-compressor.jsp', '/guides/de/zip-compressor.html': 'guide/de/zip-compressor.jsp',
   '/guides/pt/lcd-checker.html': 'guide/pt/lcd-checker.jsp', '/guides/es/lcd-checker.html': 'guide/es/lcd-checker.jsp', '/guides/vi/lcd-checker.html': 'guide/vi/lcd-checker.jsp', '/guides/id/lcd-checker.html': 'guide/id/lcd-checker.jsp', '/guides/de/lcd-checker.html': 'guide/de/lcd-checker.jsp',
   '/guides/pt/online-zip-file.html': 'guide/pt/online-zip-file.jsp', '/guides/es/online-zip-file.html': 'guide/es/online-zip-file.jsp', '/guides/vi/online-zip-file.html': 'guide/vi/online-zip-file.jsp', '/guides/id/online-zip-file.html': 'guide/id/online-zip-file.jsp', '/guides/de/online-zip-file.html': 'guide/de/online-zip-file.jsp',
+  // plan-warm-pascal-v3 S2 batch 54 (2026-05-31) - 5 locale variants × 3 guides
+  '/guides/pt/test-lcd.html': 'guide/pt/test-lcd.jsp', '/guides/es/test-lcd.html': 'guide/es/test-lcd.jsp', '/guides/vi/test-lcd.html': 'guide/vi/test-lcd.jsp', '/guides/id/test-lcd.html': 'guide/id/test-lcd.jsp', '/guides/de/test-lcd.html': 'guide/de/test-lcd.jsp',
+  '/guides/pt/i-love-zip.html': 'guide/pt/i-love-zip.jsp', '/guides/es/i-love-zip.html': 'guide/es/i-love-zip.jsp', '/guides/vi/i-love-zip.html': 'guide/vi/i-love-zip.jsp', '/guides/id/i-love-zip.html': 'guide/id/i-love-zip.jsp', '/guides/de/i-love-zip.html': 'guide/de/i-love-zip.jsp',
+  '/guides/pt/zip-compressor-online.html': 'guide/pt/zip-compressor-online.jsp', '/guides/es/zip-compressor-online.html': 'guide/es/zip-compressor-online.jsp', '/guides/vi/zip-compressor-online.html': 'guide/vi/zip-compressor-online.jsp', '/guides/id/zip-compressor-online.html': 'guide/id/zip-compressor-online.jsp', '/guides/de/zip-compressor-online.html': 'guide/de/zip-compressor-online.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

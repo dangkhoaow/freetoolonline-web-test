@@ -1,0 +1,66 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '>'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+
+<section class="w3-container w3-padding-large">
+  <h1>ZIP-Kompressor Online</h1>
+  <p class="lead">Ein Online-ZIP-Kompressor ist die browser-basierte Version des Desktop-Schritts "Rechtsklick dann Komprimieren": waehle einen Ordner mit Dateien, klicke einen Knopf, und die Seite gibt eine einzige <code>.zip</code>-Datei zurueck, die du per E-Mail senden, hochladen oder ueber einen Link teilen kannst. Der Grund, dies im Browser statt auf dem Desktop zu tun, ist die Bequemlichkeit ohne Installation - funktioniert gleich auf Windows, macOS, ChromeOS und auf einem verwalteten Laptop, wo du keine Desktop-Werkzeuge installieren kannst.</p>
+
+  <p>Der browser-basierte Kompressor auf dieser Website lebt unter <a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a>. Diese Anleitungsseite ist der Ort, an dem der Entscheidungskontext lebt - wann das Archiv tatsaechlich schrumpft, wann nicht, und welche optionalen Einstellungen wichtig sind; die Werkzeugseite ist der Ort, an dem der Upload geschieht und das Archiv erstellt wird.</p>
+
+  <h2>Wann das Archiv tatsaechlich schrumpft</h2>
+  <p>Ein ZIP-Kompressor spart Platz nur, wenn die Eingabedateien noch nicht durch ihr eigenes Format komprimiert wurden. Reiner Text, Quellcode, CSV-Exporte, Log-Dateien, JSON-Dumps und unkomprimierte Bitmaps komprimieren alle gut in einer <code>.zip</code>-Datei - ein Ordner mit diesen schrumpft oft um die Haelfte oder mehr nach dem Build. Bereits komprimierte Formate - JPG-Fotos, PNG-Screenshots, MP4-Video, MP3-Audio und vorhandene <code>.zip</code>-Dateien in einer anderen <code>.zip</code> - wachsen typischerweise um null bis einige Prozent, weil der Archiv-Header und die Metadaten pro Eintrag hinzugefuegt werden, ohne dass weitere Komprimierung auf der Nutzlast moeglich ist. Wenn dein Ordner von Fotos oder Videos dominiert wird, erwarte, dass das Ergebnis innerhalb weniger Prozent der Eingabe-Bytes liegt; der Vorteil ist das Buendeln vieler Dateien in ein herunterladbares Archiv, nicht das Schrumpfen.</p>
+
+  <h2>Wann was zippen - schnelle Referenz</h2>
+  <p>Die Tabelle unten fasst die erwartete Groessenwirkung beim Hinzufuegen des aufgelisteten Dateityps zu einem frischen Archiv zusammen.</p>
+  <table class="w3-table w3-bordered w3-striped quick-facts">
+    <thead><tr><th>Hinzugefuegter Dateityp</th><th>Typisches Groessen-Delta innerhalb der .zip</th><th>Leser-Empfehlung</th></tr></thead>
+    <tbody>
+      <tr><td>Reiner Text, Quellcode, CSV, Log, JSON</td><td>-50% oder besser</td><td>Lohnt sich zu zippen fuer den Transfer.</td></tr>
+      <tr><td>Unkomprimierte Bitmap (BMP) oder WAV-Audio</td><td>-30% bis -60%</td><td>Lohnt sich zu zippen fuer den Transfer.</td></tr>
+      <tr><td>JPG, PNG, MP4, MP3, vorhandene .zip</td><td>+0% bis +3%</td><td>Buendeln fuer Bequemlichkeit, nicht fuer Schrumpfung.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Optionales Passwort und AES-Verschluesselung</h2>
+  <p>Der browser-basierte ZIP-Kompressor unterstuetzt ein optionales Passwort und eine Verschluesselungsmethode, wenn das Archiv ueber einen Kanal reisen muss, wo das Passwort separat geteilt wird. Oeffne das Einstellungs-Modal auf <a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a>, um das Passwort festzulegen und eines von Standard (Legacy-ZIP-Verschluesselung, weitgehend kompatibel, aber kryptographisch schwach), AES-128 oder AES-256 zu waehlen. Fuer sensible Inhalte bevorzuge AES-256 und teile das Passwort ueber einen anderen Kanal als das Archiv selbst. Wenn du nur ein bekanntes Passwort von einem vorhandenen Archiv wiederherstellen musst, entsperrt das Schwester-Werkzeug <a href="/zip-tools/remove-zip-password.html">Remove ZIP password</a>, wenn das Passwort bekannt ist; es knackt keine unbekannten Passwoerter auf Archiven mit starker Verschluesselung.</p>
+
+  <h2>Wie der Build funktioniert</h2>
+  <p>Dateien werden ueber HTTPS zu einem kurzlebigen Verarbeitungsdienst hochgeladen, der das Archiv zusammenbaut und es zum Herunterladen zurueckgibt; Quelldateien werden nach einem kurzen Aufbewahrungsfenster automatisch geloescht, ohne dauerhafte Speicherung von Eingaben. Die Benennung ist im Einstellungs-Modal konfigurierbar - die Standardeinstellung ist <code>myzipped-&lt;Datum&gt;</code>, aber das Umbenennen vor dem Herunterladen bedeutet, dass der Empfaenger das Projekt oder Thema im Dateinamen sieht statt des Datumsstempels.</p>
+
+  <h2>Was diese Anleitung nicht abdeckt</h2>
+  <p>Diese Anleitung geht nicht durch die Wahl einer Komprimierungsstufe, weil das Werkzeug im Browser standardmaessig den Standard-DEFLATE-Schritt ausfuehrt und der Stufen-Schieberegler hauptsaechlich die Build-Zeit aendert statt die Archiv-Groesse. Sie deckt auch keine konkurrierenden Archiv-Formate (<code>.7z</code>, <code>.rar</code>, <code>.tar.gz</code>) ab - die Website setzt standardmaessig <code>.zip</code> fuer die Reichweite, da jedes Desktop-Betriebssystem es ohne Installation oeffnet und die meisten Webmail-Anhang-Scanner es akzeptieren. Fuer den empfangsseitigen Workflow (wie man eine <code>.zip</code> extrahiert, sobald sie ankommt), siehe <a href="/unzip-file.html">/unzip-file.html</a> oder verwende den in dein Betriebssystem eingebauten Entpacker.</p>
+
+  <p class="reviewed">Zuletzt geprueft: 2026-05-18</p>
+  <address class="author"><a rel="author" href="/editorial-team.html">FreetoolOnline-Redaktionsteam</a></address>
+</section>
+
+<section class="w3-container w3-padding-large guide-faq" aria-labelledby="guide-faq-h2">
+  <h2 id="guide-faq-h2">Haeufige Fragen</h2>
+  <details class="faq-item">
+    <summary>Bewahrt der Online-ZIP-Kompressor die Ordnerstruktur?</summary>
+    <p>Ja. Das Archiv bewahrt Dateinamen und die relative Verzeichnisstruktur der Eingaben woertlich. Bei betriebssystemuebergreifenden Hin-und-Rueck-Faehrten bewahrt es weder Dateieigentuemerschaft noch erweiterte Attribute (Linux-Dateieigentuemerschaft, macOS-Resource-Forks); das sichtbare Ordnerlayout ist auf der Empfangsseite identisch.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Was ist das Groessenlimit pro Archiv?</summary>
+    <p>Der browser-basierte Kompressor unter <a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a> buendelt jede Datei-Auswahl, die du in einem Upload triffst; sehr grosse Archive profitieren von einem Desktop-Browser, wo der Speicher weniger eingeschraenkt ist. Wenn ein einzelnes Archiv die Webmail-Anhang-Obergrenze des Empfaengers ueberschreitet (haeufig 20 bis 25 MB fuer Gmail und die meisten Unternehmens-Mail-Server), teile das Paket: zippe die textlastigen Eingaben separat fuer den echten Groessen-Gewinn, und sende die bereits komprimierten Medien als separate Anhaenge oder ueber einen Freigabelink.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Werden meine Dateien auf dem Server gespeichert?</summary>
+    <p>Dateien werden ueber HTTPS zu einem kurzlebigen Verarbeitungsdienst gesendet, der das Archiv erstellt und es zum Herunterladen zurueckgibt. Quelldateien werden nach einem kurzen Aufbewahrungsfenster automatisch geloescht; das Archiv wird weder indiziert noch wiederverwendet. Kein Konto oder Login ist erforderlich.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Was, wenn das Archiv ein Passwort braucht?</summary>
+    <p>Der browser-basierte Kompressor unterstuetzt ein optionales Passwort mit Standard-, AES-128- oder AES-256-Verschluesselung - oeffne das Einstellungs-Modal auf <a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a>, um es vor dem Klick auf Zip festzulegen. Fuer die umgekehrte Richtung (ein vorhandenes Archiv entsperren, dessen Passwort du kennst), verwende <a href="/zip-tools/remove-zip-password.html">Remove ZIP password</a>. Es gibt kein Online-Werkzeug auf dieser Website, das unbekannte Passwoerter auf Archiven mit starker Verschluesselung knackt; die Wiederherstellung fuer ein vergessenes Passwort haengt davon ab, die Quelldateien zu haben, um das Archiv neu zu erstellen, oder den Absender zu fragen.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Was ist der Unterschied zwischen dieser Anleitung und der nackten "ZIP-Kompressor"-Anleitung?</summary>
+    <p>Diese Anleitung beantwortet die Anfrage "ZIP-Kompressor online" speziell - der Leser wollte ein browser-basiertes Werkzeug, keine Desktop-Installation. Die Schwester-Anleitung unter <a href="/guides/zip-compressor.html">/guides/zip-compressor.html</a> beantwortet die nackte "ZIP-Kompressor"-Anfrage mit demselben Groessen-Trade-Off-Kontext. Beide Anleitungen verlinken auf denselben browser-basierten Ersteller unter <a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a>; die Formulierung, die du getippt hast, waehlt aus, welche Anleitung natuerlich liest, aber waehlt nie aus, wo das Archiv erstellt wird.</p>
+  </details>
+</section>
