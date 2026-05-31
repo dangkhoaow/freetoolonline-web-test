@@ -17,7 +17,7 @@
 
     <h2 class="text-uppercase"><b>Penyebab 1: batas memori browser pada WASM ffmpeg</b></h2>
     <p>WASM ffmpeg di browser adalah ffmpeg mandiri yang dikompilasi ke WebAssembly yang berjalan sepenuhnya di tab. Trade-off: modul WASM tab biasanya mendapatkan 2 GB ruang alamat (4 GB dengan build memory64 eksplisit), dan satu video sumber 4K plus buffer encoder yang sedang berjalan dan array konversi ruang warna dapat melebihi itu pada klip panjang. Ketika itu terjadi, ffmpeg baik mati diam-diam atau macet pada persentase yang tidak pernah maju. File sumber 4K panjang adalah pemicu paling umum, tetapi sumber 1080p H.265 panjang dengan audio 5.1 juga dapat mendorong batas pada ponsel dan laptop lama.</p>
-    <p><b>Perbaikan.</b> Pangkas sumber ke klip lebih pendek dulu, lalu konversi. Atau jalankan ffmpeg lokal untuk file yang melebihi sekitar 500 MB - biner ffmpeg desktop memiliki akses ke semua RAM sistem, bukan hanya sandbox 2 GB. Panduan pendamping proaktif <a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs FFmpeg lokal - kapan masing-masing menang</a> menyusuri keputusan ukuran dan runtime sebelum mengunggah, sehingga Anda dapat memilih jalur yang tepat pada percobaan pertama.</p>
+    <p><b>Perbaikan.</b> Pangkas sumber ke klip lebih pendek dulu, lalu konversi. Atau jalankan ffmpeg lokal untuk file yang melebihi sekitar 500 MB - biner ffmpeg desktop memiliki akses ke semua RAM sistem, bukan hanya sandbox 2 GB. Panduan pendamping proaktif <a href="/guides/id/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs FFmpeg lokal - kapan masing-masing menang</a> menyusuri keputusan ukuran dan runtime sebelum mengunggah, sehingga Anda dapat memilih jalur yang tepat pada percobaan pertama.</p>
 
     <h2 class="text-uppercase"><b>Penyebab 2: tab dilatar-belakangkan; OS menangguhkan worker</b></h2>
     <p>Browser modern (Chrome, Firefox, Safari) membatasi atau sepenuhnya menangguhkan Web Worker di tab latar belakang untuk menghemat baterai. Konversi ffmpeg panjang yang berjalan saat tab tersembunyi dapat membeku tanpa batas waktu di desktop dan hampir selalu membeku di mobile (iOS Safari sangat agresif). Konversi tidak benar-benar rusak - OS telah menjedanya - tetapi bagi pembaca itu terlihat identik dengan kemacetan keras.</p>
@@ -26,7 +26,7 @@
 
     <h2 class="text-uppercase"><b>Penyebab 3: file sumber menggunakan codec yang build WASM tidak sertakan</b></h2>
     <p>Browser WASM ffmpeg mengirimkan set decoder yang dikurasi untuk menjaga ukuran unduh dapat dikelola - biasanya H.264, H.265 (HEVC), VP9, AV1, AAC, MP3, Opus, dan beberapa lainnya. Codec sumber eksotis (ProRes, DNxHR, JPEG 2000, AC-3 di atas 5.1 saluran, Dolby Atmos di beberapa kontainer MOV) mungkin tidak dapat didekode. Konversi baik gagal segera dengan baris "codec tidak ditemukan" dalam log, atau macet pada 0% karena decoder tidak dapat menarik satu frame dari sumber.</p>
-    <p><b>Perbaikan.</b> Encode ulang sumber ke codec umum secara lokal terlebih dahulu - bahkan lewatan ffmpeg desktop cepat yang menyalin audio dan mengencode ulang video ke H.264 hanya membutuhkan sebagian kecil dari waktu rekaman asli. Atau pilih kontainer yang build dikenal mendukung; panduan <a href="/guides/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - kontainer mana, kapan</a> mencakup kombinasi kontainer/codec mana yang paling aman untuk ffmpeg berbasis browser, dan <a href="/guides/mp4-vs-webm-for-web.html">MP4 vs WebM untuk web</a> mencakup kontainer output yang tepat untuk pengiriman web.</p>
+    <p><b>Perbaikan.</b> Encode ulang sumber ke codec umum secara lokal terlebih dahulu - bahkan lewatan ffmpeg desktop cepat yang menyalin audio dan mengencode ulang video ke H.264 hanya membutuhkan sebagian kecil dari waktu rekaman asli. Atau pilih kontainer yang build dikenal mendukung; panduan <a href="/guides/id/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - kontainer mana, kapan</a> mencakup kombinasi kontainer/codec mana yang paling aman untuk ffmpeg berbasis browser, dan <a href="/guides/id/mp4-vs-webm-for-web.html">MP4 vs WebM untuk web</a> mencakup kontainer output yang tepat untuk pengiriman web.</p>
 
     <h2 class="text-uppercase"><b>Pemeriksaan macet 30 detik: klip kecil di latar depan</b></h2>
     <p>Tiga langkah memberi tahu Anda apakah memori, tab latar belakang, atau codec yang memacetkan konversi Anda - tanpa matematika, hanya klip kecil dan tab latar depan:</p>
@@ -51,7 +51,7 @@
 
     <details class="faq-item">
   <summary>Mengapa file yang sama dikonversi secara lokal dalam 10 detik tetapi macet online?</summary>
-  <p>FFmpeg lokal menggunakan kode mesin asli dan RAM penuh dari host; ffmpeg browser menggunakan WASM (biasanya lebih lambat per instruksi) dan sandbox 2 GB. Untuk file yang muat dengan nyaman dalam sandbox, kesenjangannya sekitar 2-5x lebih lambat di browser. Untuk file yang mendekati atau melebihi batas sandbox, konversi lokal selesai dan konversi browser kehabisan memori dan macet. Panduan proaktif <a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs FFmpeg lokal</a> mencakup ambang ukuran di mana masing-masing menang.</p>
+  <p>FFmpeg lokal menggunakan kode mesin asli dan RAM penuh dari host; ffmpeg browser menggunakan WASM (biasanya lebih lambat per instruksi) dan sandbox 2 GB. Untuk file yang muat dengan nyaman dalam sandbox, kesenjangannya sekitar 2-5x lebih lambat di browser. Untuk file yang mendekati atau melebihi batas sandbox, konversi lokal selesai dan konversi browser kehabisan memori dan macet. Panduan proaktif <a href="/guides/id/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs FFmpeg lokal</a> mencakup ambang ukuran di mana masing-masing menang.</p>
 </details>
 
     <details class="faq-item">
@@ -72,8 +72,8 @@
     <h2 class="text-uppercase"><b>Terkait</b></h2>
     <ul>
         <li><a href="/video-tools/ffmpeg-online.html">FFmpeg Online</a> - alat aksi untuk mengonversi video dan audio di browser.</li>
-        <li><a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs FFmpeg lokal - kapan masing-masing menang</a> - panduan pendamping proaktif; pilih online atau lokal SEBELUM mengunggah.</li>
-        <li><a href="/guides/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - kontainer mana, kapan</a> - referensi kompatibilitas kontainer.</li>
-        <li><a href="/guides/mp4-vs-webm-for-web.html">MP4 vs WebM untuk web</a> - pilihan kontainer pengiriman web.</li>
+        <li><a href="/guides/id/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs FFmpeg lokal - kapan masing-masing menang</a> - panduan pendamping proaktif; pilih online atau lokal SEBELUM mengunggah.</li>
+        <li><a href="/guides/id/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - kontainer mana, kapan</a> - referensi kompatibilitas kontainer.</li>
+        <li><a href="/guides/id/mp4-vs-webm-for-web.html">MP4 vs WebM untuk web</a> - pilihan kontainer pengiriman web.</li>
     </ul>
 </div>

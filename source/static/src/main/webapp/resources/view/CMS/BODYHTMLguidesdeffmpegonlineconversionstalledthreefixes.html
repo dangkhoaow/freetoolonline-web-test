@@ -17,7 +17,7 @@
 
     <h2 class="text-uppercase"><b>Ursache 1: Browser-Speicherlimit auf WASM-FFmpeg</b></h2>
     <p>WASM-FFmpeg im Browser ist ein eigenständiges FFmpeg, das zu WebAssembly kompiliert wurde und vollständig im Tab läuft. Der Kompromiss: das WASM-Modul des Tabs erhält typischerweise 2 GB Adressraum (4 GB mit expliziten memory64-Builds), und eine einzelne 4K-Quelle plus die in-Flight-Encoder-Buffer und Farbraum-Konvertierungs-Arrays können das bei langen Clips überschreiten. Wenn das passiert, stirbt FFmpeg entweder still oder hängt bei einem Prozentsatz, der nie voranschreitet. Lange 4K-Quelldateien sind der häufigste Auslöser, aber eine lange 1080p-H.265-Quelle mit 5.1-Audio kann das Limit auch auf Telefonen und älteren Laptops überschreiten.</p>
-    <p><b>Behebung.</b> Schneiden Sie die Quelle zuerst auf einen kürzeren Clip zu, dann konvertieren. Oder führen Sie FFmpeg lokal für Dateien aus, die etwa 500 MB überschreiten - das Desktop-FFmpeg-Binary hat Zugriff auf das gesamte System-RAM, nicht nur auf einen 2-GB-Sandbox. Die proaktive Begleitanleitung <a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs lokales FFmpeg - wann jedes gewinnt</a> geht die Größen- und Laufzeitentscheidung vor dem Hochladen durch, damit Sie den richtigen Pfad beim ersten Versuch wählen können.</p>
+    <p><b>Behebung.</b> Schneiden Sie die Quelle zuerst auf einen kürzeren Clip zu, dann konvertieren. Oder führen Sie FFmpeg lokal für Dateien aus, die etwa 500 MB überschreiten - das Desktop-FFmpeg-Binary hat Zugriff auf das gesamte System-RAM, nicht nur auf einen 2-GB-Sandbox. Die proaktive Begleitanleitung <a href="/guides/de/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs lokales FFmpeg - wann jedes gewinnt</a> geht die Größen- und Laufzeitentscheidung vor dem Hochladen durch, damit Sie den richtigen Pfad beim ersten Versuch wählen können.</p>
 
     <h2 class="text-uppercase"><b>Ursache 2: Tab wurde in den Hintergrund verschoben; das OS suspendierte den Worker</b></h2>
     <p>Moderne Browser (Chrome, Firefox, Safari) drosseln oder suspendieren Web Workers in Hintergrund-Tabs vollständig, um Akku zu sparen. Eine lange FFmpeg-Konvertierung, die läuft, während der Tab versteckt ist, kann auf Desktop unbegrenzt einfrieren und friert auf Mobile fast immer ein (iOS Safari ist besonders aggressiv). Die Konvertierung ist nicht wirklich kaputt - das OS hat sie pausiert - aber für den Leser sieht es identisch aus mit einem harten Hänger.</p>
@@ -26,7 +26,7 @@
 
     <h2 class="text-uppercase"><b>Ursache 3: Quelldatei verwendet einen Codec, den der WASM-Build nicht enthält</b></h2>
     <p>Browser-WASM-FFmpeg liefert eine kuratierte Reihe von Decodern, um die Download-Größe handhabbar zu halten - typischerweise H.264, H.265 (HEVC), VP9, AV1, AAC, MP3, Opus, und eine Handvoll weitere. Exotische Quell-Codecs (ProRes, DNxHR, JPEG 2000, AC-3 über 5.1 Kanäle, Dolby Atmos in einigen MOV-Containern) können möglicherweise nicht decodieren. Die Konvertierung schlägt entweder sofort mit einer "Codec nicht gefunden"-Zeile im Log fehl, oder hängt bei 0%, weil der Decoder keinen einzigen Frame aus der Quelle ziehen kann.</p>
-    <p><b>Behebung.</b> Codieren Sie die Quelle lokal zuerst in einen gängigen Codec um - sogar ein schneller Desktop-FFmpeg-Durchlauf, der das Audio kopiert und das Video zu H.264 neu codiert, dauert nur einen Bruchteil der ursprünglichen Aufnahmezeit. Oder wählen Sie einen Container, den der Build bekannt ist zu unterstützen; die Anleitung <a href="/guides/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - welcher Container, wann</a> deckt ab, welche Container/Codec-Kombinationen am sichersten für browserbasiertes FFmpeg sind, und <a href="/guides/mp4-vs-webm-for-web.html">MP4 vs WebM für das Web</a> deckt den richtigen Ausgabe-Container für Web-Lieferung ab.</p>
+    <p><b>Behebung.</b> Codieren Sie die Quelle lokal zuerst in einen gängigen Codec um - sogar ein schneller Desktop-FFmpeg-Durchlauf, der das Audio kopiert und das Video zu H.264 neu codiert, dauert nur einen Bruchteil der ursprünglichen Aufnahmezeit. Oder wählen Sie einen Container, den der Build bekannt ist zu unterstützen; die Anleitung <a href="/guides/de/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - welcher Container, wann</a> deckt ab, welche Container/Codec-Kombinationen am sichersten für browserbasiertes FFmpeg sind, und <a href="/guides/de/mp4-vs-webm-for-web.html">MP4 vs WebM für das Web</a> deckt den richtigen Ausgabe-Container für Web-Lieferung ab.</p>
 
     <h2 class="text-uppercase"><b>Die 30-Sekunden-Hang-Prüfung: kleiner Clip im Vordergrund</b></h2>
     <p>Drei Schritte sagen Ihnen, ob Speicher, der Hintergrund-Tab oder der Codec Ihre Konvertierung zum Hängen gebracht hat - keine Mathematik, nur ein kleiner Clip und ein Vordergrund-Tab:</p>
@@ -51,7 +51,7 @@
 
     <details class="faq-item">
   <summary>Warum konvertiert dieselbe Datei lokal in 10 Sekunden, aber hängt online?</summary>
-  <p>Lokales FFmpeg verwendet nativen Maschinencode und das volle RAM des Hosts; Browser-FFmpeg verwendet WASM (typischerweise langsamer pro Anweisung) und einen 2-GB-Sandbox. Für Dateien, die bequem in den Sandbox passen, ist die Lücke etwa 2-5x langsamer im Browser. Für Dateien, die sich dem Sandbox-Limit nähern oder überschreiten, ist die lokale Konvertierung fertig und die Browser-Konvertierung geht der Speicher aus und hängt. Die proaktive Anleitung <a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs lokales FFmpeg</a> deckt die Größenschwelle ab, bei der jedes gewinnt.</p>
+  <p>Lokales FFmpeg verwendet nativen Maschinencode und das volle RAM des Hosts; Browser-FFmpeg verwendet WASM (typischerweise langsamer pro Anweisung) und einen 2-GB-Sandbox. Für Dateien, die bequem in den Sandbox passen, ist die Lücke etwa 2-5x langsamer im Browser. Für Dateien, die sich dem Sandbox-Limit nähern oder überschreiten, ist die lokale Konvertierung fertig und die Browser-Konvertierung geht der Speicher aus und hängt. Die proaktive Anleitung <a href="/guides/de/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs lokales FFmpeg</a> deckt die Größenschwelle ab, bei der jedes gewinnt.</p>
 </details>
 
     <details class="faq-item">
@@ -72,8 +72,8 @@
     <h2 class="text-uppercase"><b>Verwandt</b></h2>
     <ul>
         <li><a href="/video-tools/ffmpeg-online.html">FFmpeg Online</a> - das Action-Tool zum Konvertieren von Video und Audio im Browser.</li>
-        <li><a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs lokales FFmpeg - wann jedes gewinnt</a> - die proaktive Begleitanleitung; wählen Sie online oder lokal VOR dem Upload.</li>
-        <li><a href="/guides/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - welcher Container, wann</a> - Container-Kompatibilitätsreferenz.</li>
-        <li><a href="/guides/mp4-vs-webm-for-web.html">MP4 vs WebM für das Web</a> - Web-Lieferungs-Container-Wahl.</li>
+        <li><a href="/guides/de/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs lokales FFmpeg - wann jedes gewinnt</a> - die proaktive Begleitanleitung; wählen Sie online oder lokal VOR dem Upload.</li>
+        <li><a href="/guides/de/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - welcher Container, wann</a> - Container-Kompatibilitätsreferenz.</li>
+        <li><a href="/guides/de/mp4-vs-webm-for-web.html">MP4 vs WebM für das Web</a> - Web-Lieferungs-Container-Wahl.</li>
     </ul>
 </div>

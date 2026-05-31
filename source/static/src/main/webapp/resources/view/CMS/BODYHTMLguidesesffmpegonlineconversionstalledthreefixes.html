@@ -17,7 +17,7 @@
 
     <h2 class="text-uppercase"><b>Causa 1: límite de memoria del navegador en WASM ffmpeg</b></h2>
     <p>WASM ffmpeg en el navegador es un ffmpeg autocontenido compilado a WebAssembly que se ejecuta enteramente en la pestaña. El compromiso: el módulo WASM de la pestaña típicamente obtiene 2 GB de espacio de direcciones (4 GB con builds memory64 explícitas), y un solo video fuente 4K más los búferes del codificador en vuelo y las matrices de conversión de espacio de color pueden exceder eso en clips largos. Cuando eso pasa, ffmpeg o muere silenciosamente o se atasca en un porcentaje que nunca avanza. Los archivos fuente 4K largos son el disparador más común, pero una fuente 1080p H.265 larga con audio 5.1 también puede empujar el límite en teléfonos y laptops más antiguos.</p>
-    <p><b>Corrección.</b> Recorta la fuente a un clip más corto primero, luego convierte. O ejecuta ffmpeg localmente para archivos que excedan unos 500 MB - el binario de escritorio ffmpeg tiene acceso a toda la RAM del sistema, no solo a un sandbox de 2 GB. La guía companion proactiva <a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs FFmpeg local - cuándo gana cada uno</a> recorre la decisión de tamaño y runtime antes de la subida, para que puedas elegir la ruta correcta en el primer intento.</p>
+    <p><b>Corrección.</b> Recorta la fuente a un clip más corto primero, luego convierte. O ejecuta ffmpeg localmente para archivos que excedan unos 500 MB - el binario de escritorio ffmpeg tiene acceso a toda la RAM del sistema, no solo a un sandbox de 2 GB. La guía companion proactiva <a href="/guides/es/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs FFmpeg local - cuándo gana cada uno</a> recorre la decisión de tamaño y runtime antes de la subida, para que puedas elegir la ruta correcta en el primer intento.</p>
 
     <h2 class="text-uppercase"><b>Causa 2: la pestaña pasó a segundo plano; el SO suspendió el worker</b></h2>
     <p>Los navegadores modernos (Chrome, Firefox, Safari) limitan o suspenden completamente los Web Workers en pestañas de segundo plano para ahorrar batería. Una conversión ffmpeg larga que se ejecuta mientras la pestaña está oculta puede congelarse indefinidamente en escritorio y casi siempre se congela en móvil (iOS Safari es especialmente agresivo). La conversión no está realmente rota - el SO la ha pausado - pero al lector le parece idéntico a un atasco duro.</p>
@@ -26,7 +26,7 @@
 
     <h2 class="text-uppercase"><b>Causa 3: archivo fuente usa un codec que el build WASM no incluye</b></h2>
     <p>WASM ffmpeg del navegador envía un conjunto curado de decodificadores para mantener el tamaño de descarga manejable - típicamente H.264, H.265 (HEVC), VP9, AV1, AAC, MP3, Opus, y un puñado más. Los codecs fuente exóticos (ProRes, DNxHR, JPEG 2000, AC-3 por encima de 5.1 canales, Dolby Atmos en algunos contenedores MOV) pueden no decodificar. La conversión o falla inmediatamente con una línea "codec no encontrado" en el log, o se atasca en 0% porque el decodificador no puede sacar un solo fotograma de la fuente.</p>
-    <p><b>Corrección.</b> Re-codifica la fuente a un codec común localmente primero - incluso un pase rápido de ffmpeg de escritorio que copie el audio y re-codifique el video a H.264 toma solo una fracción del tiempo de grabación original. O elige un contenedor que el build es conocido por soportar; la guía <a href="/guides/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - qué contenedor, cuándo</a> cubre qué combinaciones contenedor/codec son más seguras para ffmpeg basado en navegador, y <a href="/guides/mp4-vs-webm-for-web.html">MP4 vs WebM para la web</a> cubre el contenedor de salida correcto para entrega web.</p>
+    <p><b>Corrección.</b> Re-codifica la fuente a un codec común localmente primero - incluso un pase rápido de ffmpeg de escritorio que copie el audio y re-codifique el video a H.264 toma solo una fracción del tiempo de grabación original. O elige un contenedor que el build es conocido por soportar; la guía <a href="/guides/es/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - qué contenedor, cuándo</a> cubre qué combinaciones contenedor/codec son más seguras para ffmpeg basado en navegador, y <a href="/guides/es/mp4-vs-webm-for-web.html">MP4 vs WebM para la web</a> cubre el contenedor de salida correcto para entrega web.</p>
 
     <h2 class="text-uppercase"><b>La comprobación de atasco de 30 segundos: clip pequeño en primer plano</b></h2>
     <p>Tres pasos te dicen si memoria, la pestaña en segundo plano, o el codec atascaron tu conversión - sin matemáticas, solo un clip pequeño y una pestaña en primer plano:</p>
@@ -51,7 +51,7 @@
 
     <details class="faq-item">
   <summary>¿Por qué el mismo archivo convierte localmente en 10 segundos pero se atasca online?</summary>
-  <p>FFmpeg local usa código de máquina nativo y la RAM completa del host; ffmpeg del navegador usa WASM (típicamente más lento por instrucción) y un sandbox de 2 GB. Para archivos que caben cómodamente en el sandbox, la brecha es aproximadamente 2-5x más lenta en el navegador. Para archivos que se acercan o exceden el límite del sandbox, la conversión local termina y la conversión del navegador se queda sin memoria y se atasca. La guía proactiva <a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs FFmpeg local</a> cubre el umbral de tamaño donde cada uno gana.</p>
+  <p>FFmpeg local usa código de máquina nativo y la RAM completa del host; ffmpeg del navegador usa WASM (típicamente más lento por instrucción) y un sandbox de 2 GB. Para archivos que caben cómodamente en el sandbox, la brecha es aproximadamente 2-5x más lenta en el navegador. Para archivos que se acercan o exceden el límite del sandbox, la conversión local termina y la conversión del navegador se queda sin memoria y se atasca. La guía proactiva <a href="/guides/es/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs FFmpeg local</a> cubre el umbral de tamaño donde cada uno gana.</p>
 </details>
 
     <details class="faq-item">
@@ -72,8 +72,8 @@
     <h2 class="text-uppercase"><b>Relacionados</b></h2>
     <ul>
         <li><a href="/video-tools/ffmpeg-online.html">FFmpeg Online</a> - la herramienta de acción para convertir video y audio en el navegador.</li>
-        <li><a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs FFmpeg local - cuándo gana cada uno</a> - la guía companion proactiva; elige online o local ANTES de subir.</li>
-        <li><a href="/guides/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - qué contenedor, cuándo</a> - referencia de compatibilidad de contenedor.</li>
-        <li><a href="/guides/mp4-vs-webm-for-web.html">MP4 vs WebM para la web</a> - elección de contenedor de entrega web.</li>
+        <li><a href="/guides/es/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs FFmpeg local - cuándo gana cada uno</a> - la guía companion proactiva; elige online o local ANTES de subir.</li>
+        <li><a href="/guides/es/mp4-vs-mov-vs-mkv-which-container-when.html">MP4 vs MOV vs MKV - qué contenedor, cuándo</a> - referencia de compatibilidad de contenedor.</li>
+        <li><a href="/guides/es/mp4-vs-webm-for-web.html">MP4 vs WebM para la web</a> - elección de contenedor de entrega web.</li>
     </ul>
 </div>
