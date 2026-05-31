@@ -1072,6 +1072,9 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/screen-display-test-synonyms.html', '/guides/es/screen-display-test-synonyms.html', '/guides/vi/screen-display-test-synonyms.html', '/guides/id/screen-display-test-synonyms.html', '/guides/de/screen-display-test-synonyms.html',
   '/guides/pt/kompres-file-zip.html', '/guides/es/kompres-file-zip.html', '/guides/vi/kompres-file-zip.html', '/guides/id/kompres-file-zip.html', '/guides/de/kompres-file-zip.html',
   '/guides/pt/zip-unlocker-online.html', '/guides/es/zip-unlocker-online.html', '/guides/vi/zip-unlocker-online.html', '/guides/id/zip-unlocker-online.html', '/guides/de/zip-unlocker-online.html',
+  // plan-warm-pascal-v3 S2 batch 56 (2026-05-31) - 5 locale variants × 2 guides (FINAL substantive batch; 163 of 166 guides complete; 3 stubs noindex deferred)
+  '/guides/pt/kompres-zip.html', '/guides/es/kompres-zip.html', '/guides/vi/kompres-zip.html', '/guides/id/kompres-zip.html', '/guides/de/kompres-zip.html',
+  '/guides/pt/zip-file-compressor-online.html', '/guides/es/zip-file-compressor-online.html', '/guides/vi/zip-file-compressor-online.html', '/guides/id/zip-file-compressor-online.html', '/guides/de/zip-file-compressor-online.html',
   '/guides/pt/compress-folder.html', // pt canonical of /guides/compactar-pasta.html
   '/guides/pt/compress-zip-file.html', // pt canonical of /guides/comprimir-arquivo-zip.html
   '/guides/pt/compress-folder-to-zip.html', // pt canonical of /guides/comprimir-pasta-zipada.html
@@ -1320,6 +1323,9 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/screen-display-test-synonyms.html', '/guides/es/screen-display-test-synonyms.html', '/guides/vi/screen-display-test-synonyms.html', '/guides/id/screen-display-test-synonyms.html', '/guides/de/screen-display-test-synonyms.html',
   '/guides/pt/kompres-file-zip.html', '/guides/es/kompres-file-zip.html', '/guides/vi/kompres-file-zip.html', '/guides/id/kompres-file-zip.html', '/guides/de/kompres-file-zip.html',
   '/guides/pt/zip-unlocker-online.html', '/guides/es/zip-unlocker-online.html', '/guides/vi/zip-unlocker-online.html', '/guides/id/zip-unlocker-online.html', '/guides/de/zip-unlocker-online.html',
+  // plan-warm-pascal-v3 S2 batch 56 (2026-05-31) - 5 locale variants × 2 guides (FINAL substantive batch)
+  '/guides/pt/kompres-zip.html', '/guides/es/kompres-zip.html', '/guides/vi/kompres-zip.html', '/guides/id/kompres-zip.html', '/guides/de/kompres-zip.html',
+  '/guides/pt/zip-file-compressor-online.html', '/guides/es/zip-file-compressor-online.html', '/guides/vi/zip-file-compressor-online.html', '/guides/id/zip-file-compressor-online.html', '/guides/de/zip-file-compressor-online.html',
   '/guides/en/heic-vs-jpg-vs-webp.html',
   '/guides/en/dead-pixel-testing-guide.html',
   '/guides/en/unix-timestamps-explained.html',
@@ -2873,6 +2879,9 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/screen-display-test-synonyms.html': 'guide/pt/screen-display-test-synonyms.jsp', '/guides/es/screen-display-test-synonyms.html': 'guide/es/screen-display-test-synonyms.jsp', '/guides/vi/screen-display-test-synonyms.html': 'guide/vi/screen-display-test-synonyms.jsp', '/guides/id/screen-display-test-synonyms.html': 'guide/id/screen-display-test-synonyms.jsp', '/guides/de/screen-display-test-synonyms.html': 'guide/de/screen-display-test-synonyms.jsp',
   '/guides/pt/kompres-file-zip.html': 'guide/pt/kompres-file-zip.jsp', '/guides/es/kompres-file-zip.html': 'guide/es/kompres-file-zip.jsp', '/guides/vi/kompres-file-zip.html': 'guide/vi/kompres-file-zip.jsp', '/guides/id/kompres-file-zip.html': 'guide/id/kompres-file-zip.jsp', '/guides/de/kompres-file-zip.html': 'guide/de/kompres-file-zip.jsp',
   '/guides/pt/zip-unlocker-online.html': 'guide/pt/zip-unlocker-online.jsp', '/guides/es/zip-unlocker-online.html': 'guide/es/zip-unlocker-online.jsp', '/guides/vi/zip-unlocker-online.html': 'guide/vi/zip-unlocker-online.jsp', '/guides/id/zip-unlocker-online.html': 'guide/id/zip-unlocker-online.jsp', '/guides/de/zip-unlocker-online.html': 'guide/de/zip-unlocker-online.jsp',
+  // plan-warm-pascal-v3 S2 batch 56 (2026-05-31) - 5 locale variants × 2 guides (FINAL substantive batch)
+  '/guides/pt/kompres-zip.html': 'guide/pt/kompres-zip.jsp', '/guides/es/kompres-zip.html': 'guide/es/kompres-zip.jsp', '/guides/vi/kompres-zip.html': 'guide/vi/kompres-zip.jsp', '/guides/id/kompres-zip.html': 'guide/id/kompres-zip.jsp', '/guides/de/kompres-zip.html': 'guide/de/kompres-zip.jsp',
+  '/guides/pt/zip-file-compressor-online.html': 'guide/pt/zip-file-compressor-online.jsp', '/guides/es/zip-file-compressor-online.html': 'guide/es/zip-file-compressor-online.jsp', '/guides/vi/zip-file-compressor-online.html': 'guide/vi/zip-file-compressor-online.jsp', '/guides/id/zip-file-compressor-online.html': 'guide/id/zip-file-compressor-online.jsp', '/guides/de/zip-file-compressor-online.html': 'guide/de/zip-file-compressor-online.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
