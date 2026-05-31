@@ -2958,6 +2958,20 @@ export function routeToSlug(route) {
   if (normalized === '/') {
     return '';
   }
+  // plan-warm-pascal-v3 routing-layer-only EN-canonical fix (2026-05-31):
+  // routes `/guides/en/<slug>.html` resolve to the same CMS-fragment slug
+  // as `/guides/<slug>.html` (the EN canonical), so the existing
+  // BODY*guides<slug>.* fragments serve both URLs. This makes hreflang
+  // alternates that point at /guides/en/<slug>.html render with content
+  // WITHOUT a per-URL CMS rename (full S1 migration is a Tier-A staged
+  // rollout — this fix is the routing-only shim until that ships).
+  // Forcing example: PT/ES/VI/ID/DE pages emit hreflang to
+  // /guides/en/<slug>.html; before this fix those 166 EN URLs rendered as
+  // empty <title> - Free Tool Online</title> shells.
+  const enLocaleMatch = /^\/guides\/en\/([a-z0-9-]+)\.html$/.exec(normalized);
+  if (enLocaleMatch) {
+    return ('guides' + enLocaleMatch[1]).toLowerCase().replace(/-/g, '');
+  }
   // URL-migration support (operator-override 2026-05-10): for clustered tool
   // URLs (e.g. /device-test-tools/microphone-test.html), strip the cluster
   // prefix and return the tool slug only (microphonetest) so the existing
