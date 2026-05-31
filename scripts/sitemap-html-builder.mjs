@@ -531,7 +531,7 @@ function renderLMenuGuidesSection(guidesByCluster) {
   lines.push(`                <i class="fa fa-book" style="margin-right: 10px;"></i>`);
   lines.push(`                GUIDES`);
   lines.push(`            </button>`);
-  lines.push(`            <div id="guidesMenu" class="w3-hide menuGroup">`);
+  lines.push(`            <div id="guidesMenu" class="w3-hide menuGroup" style="font-size: 15px !important;padding: 10px 0px 10px 13px">`);
   let emittedTopics = 0;
   for (const clusterId of LMENU_CLUSTER_ORDER) {
     const items = guidesByCluster.get(clusterId) || [];
