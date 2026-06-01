@@ -363,7 +363,7 @@ try {
               '<li class="d-inline"><a title="This tool has the same tag(s): ' +
               matchedTags +
               '" style="color: #4caf50;" href="' +
-              urlMaps[i].url +
+              localizeRelatedUrl(urlMaps[i].url) +
               '">' +
               title +
               "</a></li>";
@@ -397,7 +397,7 @@ try {
                 '<li class="d-inline"><a title="Go to ' +
                 title +
                 '" style="color: #3b73af;" href="' +
-                urlMaps[i].url +
+                localizeRelatedUrl(urlMaps[i].url) +
                 '">' +
                 title +
                 "</a></li>";
