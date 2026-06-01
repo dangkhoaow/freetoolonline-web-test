@@ -1078,6 +1078,8 @@ export const INFO_ROUTES = new Set([
   // plan-warm-pascal-v3 S2 batch 57 (2026-05-31) - 5 locale variants × 2 guides (NEW make-zip-file-online + split-gif-into-frames, post-ledger-166 expansion to 168 targeted)
   '/guides/pt/make-zip-file-online.html', '/guides/es/make-zip-file-online.html', '/guides/vi/make-zip-file-online.html', '/guides/id/make-zip-file-online.html', '/guides/de/make-zip-file-online.html',
   '/guides/pt/split-gif-into-frames.html', '/guides/es/split-gif-into-frames.html', '/guides/vi/split-gif-into-frames.html', '/guides/id/split-gif-into-frames.html', '/guides/de/split-gif-into-frames.html',
+  // plan-warm-pascal-v3 S2 batch 58 (2026-06-01) - 5 locale variants × 1 guide (tes-lcd; CLOSURE batch reaching 100% route-level coverage)
+  '/guides/pt/tes-lcd.html', '/guides/es/tes-lcd.html', '/guides/vi/tes-lcd.html', '/guides/id/tes-lcd.html', '/guides/de/tes-lcd.html',
   '/guides/pt/compress-folder.html', // pt canonical of /guides/compactar-pasta.html
   '/guides/pt/compress-zip-file.html', // pt canonical of /guides/comprimir-arquivo-zip.html
   '/guides/pt/compress-folder-to-zip.html', // pt canonical of /guides/comprimir-pasta-zipada.html
@@ -1332,6 +1334,8 @@ export const GUIDE_ROUTES = new Set([
   // plan-warm-pascal-v3 S2 batch 57 (2026-05-31) - 5 locale variants × 2 guides (NEW make-zip-file-online + split-gif-into-frames; ledger expanded 166 -> 168 targeted)
   '/guides/pt/make-zip-file-online.html', '/guides/es/make-zip-file-online.html', '/guides/vi/make-zip-file-online.html', '/guides/id/make-zip-file-online.html', '/guides/de/make-zip-file-online.html',
   '/guides/pt/split-gif-into-frames.html', '/guides/es/split-gif-into-frames.html', '/guides/vi/split-gif-into-frames.html', '/guides/id/split-gif-into-frames.html', '/guides/de/split-gif-into-frames.html',
+  // plan-warm-pascal-v3 S2 batch 58 (2026-06-01) - 5 locale variants × 1 guide (tes-lcd; CLOSURE batch reaching 100% route-level coverage)
+  '/guides/pt/tes-lcd.html', '/guides/es/tes-lcd.html', '/guides/vi/tes-lcd.html', '/guides/id/tes-lcd.html', '/guides/de/tes-lcd.html',
   '/guides/en/heic-vs-jpg-vs-webp.html',
   '/guides/en/dead-pixel-testing-guide.html',
   '/guides/en/unix-timestamps-explained.html',
@@ -2891,6 +2895,8 @@ export const JSP_BY_ROUTE = {
   // plan-warm-pascal-v3 S2 batch 57 (2026-05-31) - 5 locale variants × 2 guides (NEW make-zip-file-online + split-gif-into-frames; ledger expanded 166 -> 168 targeted)
   '/guides/pt/make-zip-file-online.html': 'guide/pt/make-zip-file-online.jsp', '/guides/es/make-zip-file-online.html': 'guide/es/make-zip-file-online.jsp', '/guides/vi/make-zip-file-online.html': 'guide/vi/make-zip-file-online.jsp', '/guides/id/make-zip-file-online.html': 'guide/id/make-zip-file-online.jsp', '/guides/de/make-zip-file-online.html': 'guide/de/make-zip-file-online.jsp',
   '/guides/pt/split-gif-into-frames.html': 'guide/pt/split-gif-into-frames.jsp', '/guides/es/split-gif-into-frames.html': 'guide/es/split-gif-into-frames.jsp', '/guides/vi/split-gif-into-frames.html': 'guide/vi/split-gif-into-frames.jsp', '/guides/id/split-gif-into-frames.html': 'guide/id/split-gif-into-frames.jsp', '/guides/de/split-gif-into-frames.html': 'guide/de/split-gif-into-frames.jsp',
+  // plan-warm-pascal-v3 S2 batch 58 (2026-06-01) - 5 locale variants × 1 guide (tes-lcd; CLOSURE batch reaching 100% route-level coverage)
+  '/guides/pt/tes-lcd.html': 'guide/pt/tes-lcd.jsp', '/guides/es/tes-lcd.html': 'guide/es/tes-lcd.jsp', '/guides/vi/tes-lcd.html': 'guide/vi/tes-lcd.jsp', '/guides/id/tes-lcd.html': 'guide/id/tes-lcd.jsp', '/guides/de/tes-lcd.html': 'guide/de/tes-lcd.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
