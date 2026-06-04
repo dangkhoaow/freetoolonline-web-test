@@ -299,6 +299,15 @@ export async function buildDynamicGuidesHubBody({ cmsRoot } = {}) {
 
     <p>${totalGuides} guides grouped by the kind of task you came to do. If you are not sure which group your question lives in, the search box on the home page covers every guide and tool by keyword.</p>
 
+    <figure class="illustration">
+      <img src="/img/illustrations/decision-tree-2branch/guides__12f3a7f9.svg"
+           alt="Decision tree showing how readers pick a guide by the input they already have"
+           loading="lazy"
+           width="480"
+           height="280">
+      <figcaption>Pick the walkthrough by what you already hold: a file or folder, or a device to test.</figcaption>
+    </figure>
+
 ${sections.join('\n\n')}
 </div>
 `;

@@ -2030,6 +2030,8 @@ export const ALIAS_ROUTES = {
   '/guides/camera-test-vs-webcam-test-which-do-you-need.html': '/guides/en/camera-test-vs-webcam-test-which-do-you-need.html',
   '/guides/compress-folder-online.html': '/guides/en/compress-folder-online.html',
   '/guides/folder-compressor-online.html': '/guides/en/compress-folder-online.html',
+  // Cycle 20260605 - capture "online folder compressor" query word-order variant (GSC: 216 imp / 28d, pos 5.09, CTR 13.4% per phase1 keyword-opportunities); semantic-dedup target = canonical /guides/en/compress-folder-online.html; alias-emit per CLAUDE.md "Semantic dedup" rule (G51 + dedup gate). Paired CloudFront 301 entry below.
+  '/guides/online-folder-compressor.html': '/guides/en/compress-folder-online.html',
   '/guides/compress-jpeg-without-losing-quality-quality-vs-size.html': '/guides/en/compress-jpeg-without-losing-quality-quality-vs-size.html',
   '/guides/compress-zip-file-to-100kb.html': '/guides/en/compress-zip-file-to-100kb.html',
   '/guides/compress-zip-file-to-2mb.html': '/guides/en/compress-zip-file-to-2mb.html',
