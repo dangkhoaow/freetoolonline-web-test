@@ -800,6 +800,13 @@ export const INFO_ROUTES = new Set([
   // (the in-browser archive creator). Kebab URL passes URL convention regex;
   // smashed form "foldertozip" does not shadow any existing primary route.
   '/guides/en/folder-to-zip.html',
+  // Cycle 20260605-3 create_new_guide_page - "File to zip" Lane-D guide (zip
+  // cluster, GSC "file to zip" 305 imp / 4 clicks / pos 10.05 / CTR 1.31% /
+  // opportunity_score 29.96). Companion to /zip-file.html (server-side upload
+  // creator). Paraphrases tool-zipfile/SKILL.md M1+M2+M3 + sibling cross-link
+  // to /guides/folder-to-zip.html. Kebab URL passes URL convention regex;
+  // smashed form "filetozip" does not shadow any existing primary route.
+  '/guides/en/file-to-zip.html',
   // Cycle 20260518-25 create_new_guide_page - "Online Zip File" Lane-D guide
   // (zip cluster, GSC "online zip file" 573 imp / 12 clicks / pos 7.39 /
   // CTR 2.09% / opportunity_score 75.94). Companion to /zip-tools/zip-file.html.
@@ -1686,6 +1693,15 @@ export const GUIDE_ROUTES = new Set([
   // tool-guidescompresszip/SKILL.md C1-C5 (size question vs archive question
   // for folder inputs).
   '/guides/en/folder-to-zip.html',
+  // Cycle 20260605-3 create_new_guide_page - "File To Zip" Lane-D guide (zip
+  // cluster, GSC "file to zip" 305 imp / 4 clicks / pos 10.05 / CTR 1.31% /
+  // opportunity_score 29.96). Companion to /zip-file.html (server-side upload
+  // creator). Paraphrases tool-zipfile/SKILL.md M1 (single-file workflow) +
+  // M2 (compressibility expectation) + M3 (optional password). Cross-link to
+  // /guides/folder-to-zip.html for folder-input variant. Kebab URL passes URL
+  // convention regex; smashed form "filetozip" does not shadow any existing
+  // primary route.
+  '/guides/en/file-to-zip.html',
   // Cycle 20260518-25 create_new_guide_page - "Online Zip File" Lane-D guide
   // (zip cluster, companion to /zip-tools/zip-file.html). GSC 573 imp / 12
   // clicks / pos 7.39 / CTR 2.09% / opportunity_score 75.94 — "online zip file"
@@ -2058,6 +2074,7 @@ export const ALIAS_ROUTES = {
   '/guides/file-compressor-online-when-to-zip-vs-when-to-compress-image.html': '/guides/en/file-compressor-online-when-to-zip-vs-when-to-compress-image.html',
   '/guides/file-compressor-vs-zip-what-to-pick.html': '/guides/en/file-compressor-vs-zip-what-to-pick.html',
   '/guides/file-compressor.html': '/guides/en/file-compressor.html',
+  '/guides/file-to-zip.html': '/guides/en/file-to-zip.html',
   '/guides/folder-to-zip.html': '/guides/en/folder-to-zip.html',
   '/guides/free-online-tools-that-work-without-uploading-files.html': '/guides/en/free-online-tools-that-work-without-uploading-files.html',
   '/guides/gif-frame-extractor-output-looks-wrong-three-causes.html': '/guides/en/gif-frame-extractor-output-looks-wrong-three-causes.html',
@@ -2290,6 +2307,8 @@ export const JSP_BY_ROUTE = {
   '/guides/en/zip-compressor-online.html': 'guide/en/zip-compressor-online.jsp',
   // Cycle 20260518-23 create_new_guide_page - "Folder to zip" Lane-D guide. Companion to /zip-tools/zip-file.html. Sourced from tool-ziptools/SKILL.md M1 + tool-guidescompresszip/SKILL.md C1-C5.
   '/guides/en/folder-to-zip.html': 'guide/en/folder-to-zip.jsp',
+  // Cycle 20260605-3 create_new_guide_page - "File to zip" Lane-D guide. Companion to /zip-file.html. Sourced from tool-zipfile/SKILL.md M1+M2+M3.
+  '/guides/en/file-to-zip.html': 'guide/en/file-to-zip.jsp',
   // Cycle 20260518-33 create_new_guide_page - "Tes LCD" Lane-D guide (device-test
   // cluster, companion to /lcd-test.html). Indonesian-language guide for the
   // "tes lcd" search intent. Paraphrases tool-lcdtest/SKILL.md F1-F5.
