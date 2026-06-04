@@ -1,0 +1,46 @@
+<article class="guide-body w3-container">
+  <h1>Are online tools actually free? Privacy, monetisation, and the in-browser model</h1>
+  <p class="lead">"Free" online tools fall into three patterns: a free tier behind a signup gate that nudges to paid, an open page with watermarks or file-size caps that the paid plan removes, and an ad-supported page that runs the work in-browser and never touches the file on a server. The third pattern is the one that lets the page stay free, free of an account, free of an upload, and still pay the bill - the ads pay for the bandwidth, the work runs on your device. This guide unpacks how that model actually works on FreetoolOnline so you can scan a "free" claim and know which kind you are reading.</p>
+  <p class="reviewed">Last reviewed: 2026-06-04</p>
+  <p class="byline">Reviewed by FreetoolOnline editorial team</p>
+
+  <h2>Three "free" patterns, and which one this site uses</h2>
+  <table class="quick-facts">
+    <thead><tr><th>Pattern</th><th>What the reader pays with</th><th>What stays on-device</th></tr></thead>
+    <tbody>
+      <tr><td>Free tier + signup gate</td><td>Email plus eventual upsell to paid plan</td><td>Often nothing - file uploads to the vendor's server</td></tr>
+      <tr><td>Open page + watermark or size cap</td><td>Output quality unless they upgrade</td><td>Often nothing - file uploads to the vendor's server</td></tr>
+      <tr><td>Ad-supported in-browser tool</td><td>Time spent on an ad-funded page</td><td>The file: the work runs as JavaScript or WebAssembly in your tab</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Why the ad-supported in-browser model can stay genuinely free</h2>
+  <p>Most of the cost of a vendor-side conversion service is server time and bandwidth: the user uploads a 50 MB video, the vendor's server runs FFmpeg on it, and the result downloads back. That cost scales with usage, and the vendor recovers it through a paywall or a quota. The in-browser model breaks that link. The library that runs the conversion - <code>ffmpeg.wasm</code> for video, JSZip for archives, browser-native canvas APIs for image work - ships once as a script bundle and then runs inside the reader's tab. The server cost per conversion drops to roughly zero; only the initial page load and the AdSense banner generate any server-side traffic. That cost is small enough that a banner ad pays for it, which is why the site can serve unlimited conversions without an account.</p>
+
+  <h2>What "no upload" actually means on this site</h2>
+  <p>Tools that say "no upload" or "in-browser" do not silently move the file to a server. The library loads, the file picker hands the browser a <code>File</code> object, the conversion runs on that object in the same tab, and the output stays in a <code>Blob</code> that you save with a download dialog. There is no fetch to a backend with the file payload. You can verify this on any tool page by opening DevTools, switching to the Network tab, picking a file, and watching for outbound POST requests with the file's bytes - there are none. The in-browser examples on this site that follow this contract include <a href="/video-tools/hd-video-converter.html">HD Video Converter</a>, <a href="/zip-tools/zip-file.html">ZIP File</a>, <a href="/compress-image.html">Compress Image</a>, and the developer-utility set (<a href="/md5-converter.html">MD5</a>, <a href="/json-parser.html">JSON Parser</a>, <a href="/css-minifier.html">CSS Minifier</a>).</p>
+
+  <h2>What "free" does not cover</h2>
+  <p>"Free" on this site is not the same as "anonymous" or "without limits". The page itself logs an anonymous request to the web server when you load it (the same as any HTTP request to any site), and AdSense places a cookie if you accept ad personalisation. Those are how the page pays its bandwidth bill. The file you process stays on your device for the in-browser tools above; the few server-routed tools (the older <a href="/video-tools/video-converter.html">All Video Converter</a>, <a href="/video-tools/video-maker.html">Video And SlideShow Maker</a>, <a href="/video-tools/ffmpeg-online.html">FFmpeg Online</a>, and the PDF tools that run server-side workflows) upload the file and run the conversion on the freetoolonline service, then return a download URL.</p>
+
+  <h2>The reader test: how to tell which "free" you are reading</h2>
+  <p>Three quick checks distinguish the three patterns on any "free" tool page. First, does it ask for an email or a sign-in before you can use it? If yes, it is a free-tier pattern; the paid plan is the eventual ask. Second, does the output carry a watermark, a size cap, or a "Upgrade to remove this limit" banner? If yes, it is the watermark pattern; the upgrade is the ask. Third, watch the Network tab during conversion. If there is a POST with your file's bytes, the file is uploading; if there is no such POST, the work is running locally. The third pattern is the ad-supported in-browser model. The hub for the full set of tools on this site that follow it is at <a href="/utility-tools.html">Utility Tools</a> for everyday tasks and <a href="/guides.html">Guides</a> for the long-form walkthroughs.</p>
+
+  <h2>Frequently Asked Questions</h2>
+  <details class="faq-item">
+    <summary>Is FreetoolOnline really free?</summary>
+    <p>Yes - the site serves AdSense banners and runs the conversion work in the reader's browser, so the bandwidth bill is paid by ad revenue rather than a subscription. No account or credit card is required.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Do any tools on this site upload my file to a server?</summary>
+    <p>Some do, some do not. The in-browser tools (HD Video Converter, ZIP File, Compress Image, the developer-utility set) run entirely in the reader's tab and never upload the file. The older server-routed tools (All Video Converter, Video And SlideShow Maker, FFmpeg Online, server-side PDF tools) upload the file to the freetoolonline service for processing. The tool page itself names which model it uses.</p>
+  </details>
+  <details class="faq-item">
+    <summary>What is the catch with the in-browser tools?</summary>
+    <p>The catch is the ads. The page that wraps the in-browser tool runs AdSense, and the ads pay for the page being served. The work itself is not throttled, watermarked, or size-capped behind a paid tier - the same conversion that runs on a free-tier vendor's paid plan runs once and finishes here without an upgrade.</p>
+  </details>
+  <details class="faq-item">
+    <summary>What is the difference between this guide and the Utility Tools hub?</summary>
+    <p>The <a href="/utility-tools.html">Utility Tools</a> hub is the index of the individual tools (each tool is one page). This guide answers the meta-question that readers ask before clicking through: why is it free, what is the catch, and what stays on my device. Open this guide once for the model; open the hub when you have a specific task.</p>
+  </details>
+</article>
