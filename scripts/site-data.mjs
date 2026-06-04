@@ -1877,6 +1877,8 @@ export const ALIAS_ROUTES = {
   '/insights-optimize-image.html': '/image-tools/insights-image-optimizer.html',
   '/cong-cu-chuyen-doi-chu-quoc-ngu-tieng-viet-thanh-tiew-viet-kieu-moi-phan-2.html': '/utility-tools/cong-cu-chuyen-doi-chu-quoc-ngu-tieng-viet-thanh-tieq-viet-kieu-moi.html',
   '/how-to-compress-a-folder.html': '/guides/en/how-to-compress-a-folder.html',
+  // Cycle 20260604-2 — capture bare URL traffic for "folder compressor online" query (538 imp / 28d, pos 5.17, CTR 10.4% per GSC). Semantic-dedup: synonym of canonical /guides/en/compress-folder-online.html; alias-emit per CLAUDE.md "Semantic dedup" rule (G51 + dedup gate). Edge-equity preserved via paired CloudFront 301 in seo-reports/static-plan/20260510/cloudfront-function/url-migration-301.js.
+  '/folder-compressor-online.html': '/guides/en/compress-folder-online.html',
   // Cycle142 P142.A — capture bare URL traffic to canonical LCD test page (4843 imp / 28d, pos 7.8, CTR 1.28% per GSC; per granted P141.LaneD-residual-saturated-guides option-a).
   '/test-lcd.html': '/device-test-tools/lcd-test.html',
   // Cycle143 P143.A — capture bare URL traffic for "how to compress a file" head-query (5384 imp / 28d, pos 10.65, CTR 0.02% per GSC). Bare URL currently 200-serves the homepage (canonical=/), so Google sees a homepage routing for a file-compression intent. Aliasing into the existing canonical guide page captures the traffic without authoring a parallel page that would cannibalize.
@@ -2027,6 +2029,7 @@ export const ALIAS_ROUTES = {
   '/guides/camera-test-shows-black-screen-four-fixes.html': '/guides/en/camera-test-shows-black-screen-four-fixes.html',
   '/guides/camera-test-vs-webcam-test-which-do-you-need.html': '/guides/en/camera-test-vs-webcam-test-which-do-you-need.html',
   '/guides/compress-folder-online.html': '/guides/en/compress-folder-online.html',
+  '/guides/folder-compressor-online.html': '/guides/en/compress-folder-online.html',
   '/guides/compress-jpeg-without-losing-quality-quality-vs-size.html': '/guides/en/compress-jpeg-without-losing-quality-quality-vs-size.html',
   '/guides/compress-zip-file-to-100kb.html': '/guides/en/compress-zip-file-to-100kb.html',
   '/guides/compress-zip-file-to-2mb.html': '/guides/en/compress-zip-file-to-2mb.html',
