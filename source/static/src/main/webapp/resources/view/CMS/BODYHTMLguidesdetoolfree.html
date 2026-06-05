@@ -1,0 +1,46 @@
+<article class="guide-body w3-container">
+  <h1>Sind Online-Tools wirklich kostenlos? Datenschutz, Monetarisierung und das In-Browser-Modell</h1>
+  <p class="lead">"Kostenlose" Online-Tools folgen drei Mustern: eine kostenlose Stufe hinter einer Anmeldeschranke, die zum Bezahlplan draengt, eine offene Seite mit Wasserzeichen oder Groessenlimit, das der Bezahlplan entfernt, und eine werbefinanzierte Seite, die die Arbeit im Browser ausfuehrt und die Datei nie auf einem Server beruehrt. Das dritte Muster ist jenes, das die Seite kostenlos bleiben laesst, ohne Konto, ohne Upload, und trotzdem die Rechnung zahlt - die Anzeigen zahlen die Bandbreite, die Arbeit laeuft auf Ihrem Geraet. Diese Anleitung erklaert, wie das Modell auf FreetoolOnline funktioniert, damit Sie ein "Kostenlos"-Versprechen lesen und wissen, welche Art Sie vor sich haben.</p>
+  <p class="reviewed">Zuletzt geprueft: 2026-06-04</p>
+  <p class="byline">Geprueft vom FreetoolOnline-Redaktionsteam</p>
+
+  <h2>Drei "Kostenlos"-Muster, und welches diese Seite nutzt</h2>
+  <table class="quick-facts">
+    <thead><tr><th>Muster</th><th>Womit der Leser zahlt</th><th>Was auf dem Geraet bleibt</th></tr></thead>
+    <tbody>
+      <tr><td>Kostenlose Stufe + Anmeldeschranke</td><td>E-Mail plus spaeterer Wechsel zum Bezahlplan</td><td>Oft nichts - die Datei wird auf den Server des Anbieters geladen</td></tr>
+      <tr><td>Offene Seite + Wasserzeichen oder Limit</td><td>Ausgabequalitaet bis zum Upgrade</td><td>Oft nichts - die Datei wird auf den Server des Anbieters geladen</td></tr>
+      <tr><td>Werbefinanziertes In-Browser-Tool</td><td>Zeit auf einer anzeigenfinanzierten Seite</td><td>Die Datei: die Arbeit laeuft als JavaScript oder WebAssembly in Ihrem Tab</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Warum das werbefinanzierte In-Browser-Modell wirklich kostenlos bleiben kann</h2>
+  <p>Der groesste Teil der Kosten eines serverseitigen Konvertierungsdienstes ist Serverzeit und Bandbreite: der Nutzer laedt ein 50-MB-Video hoch, der Server des Anbieters laesst FFmpeg darauf laufen, und das Ergebnis wird zurueckgeladen. Diese Kosten wachsen mit der Nutzung, und der Anbieter holt sie ueber eine Bezahlschranke oder ein Kontingent zurueck. Das In-Browser-Modell durchbricht diese Verbindung. Die Bibliothek, die die Konvertierung ausfuehrt - <code>ffmpeg.wasm</code> fuer Video, JSZip fuer Archive, browsereigene Canvas-APIs fuer Bilder - wird einmal als Skriptbuendel ausgeliefert und laeuft dann im Tab des Lesers. Die Serverkosten pro Konvertierung sinken auf nahezu null; nur das erste Laden der Seite und das AdSense-Banner erzeugen serverseitigen Verkehr. Diese Kosten sind klein genug, dass ein Banner sie zahlt, und darum kann die Seite unbegrenzte Konvertierungen ohne Konto anbieten.</p>
+
+  <h2>Was "kein Upload" auf dieser Seite wirklich bedeutet</h2>
+  <p>Tools, die "kein Upload" oder "im Browser" sagen, verschieben die Datei nicht heimlich auf einen Server. Die Bibliothek laedt, die Dateiauswahl uebergibt dem Browser ein <code>File</code>-Objekt, die Konvertierung laeuft auf diesem Objekt im selben Tab, und die Ausgabe bleibt in einem <code>Blob</code>, den Sie ueber einen Download-Dialog speichern. Es gibt keine Anfrage an ein Backend mit dem Dateiinhalt. Sie koennen das auf jeder Tool-Seite pruefen, indem Sie die DevTools oeffnen, zum Network-Tab wechseln, eine Datei waehlen und beobachten, ob es POST-Anfragen mit den Bytes der Datei gibt - es gibt keine. Die In-Browser-Beispiele auf dieser Seite, die diesem Vertrag folgen, umfassen <a href="/video-tools/hd-video-converter.html">HD Video Converter</a>, <a href="/zip-tools/zip-file.html">ZIP File</a>, <a href="/compress-image.html">Compress Image</a> und das Entwickler-Utility-Set (<a href="/md5-converter.html">MD5</a>, <a href="/json-parser.html">JSON Parser</a>, <a href="/css-minifier.html">CSS Minifier</a>).</p>
+
+  <h2>Was "kostenlos" nicht abdeckt</h2>
+  <p>"Kostenlos" auf dieser Seite ist nicht dasselbe wie "anonym" oder "ohne Grenzen". Die Seite selbst protokolliert eine anonyme Anfrage am Webserver, wenn Sie sie laden (wie jede HTTP-Anfrage an jede Seite), und AdSense setzt ein Cookie, wenn Sie die Anzeigenpersonalisierung akzeptieren. So zahlt die Seite ihre Bandbreitenrechnung. Die Datei, die Sie verarbeiten, bleibt bei den obigen In-Browser-Tools auf Ihrem Geraet; die wenigen serverseitig gerouteten Tools (das aeltere <a href="/video-tools/video-converter.html">All Video Converter</a>, <a href="/video-tools/video-maker.html">Video And SlideShow Maker</a>, <a href="/video-tools/ffmpeg-online.html">FFmpeg Online</a> und die PDF-Tools mit serverseitigen Ablaeufen) laden die Datei hoch und fuehren die Konvertierung auf dem freetoolonline-Dienst aus und geben dann eine Download-URL zurueck.</p>
+
+  <h2>Der Lesertest: wie Sie erkennen, welches "Kostenlos" Sie lesen</h2>
+  <p>Drei schnelle Pruefungen unterscheiden die drei Muster auf jeder "kostenlosen" Tool-Seite. Erstens: verlangt sie eine E-Mail oder Anmeldung, bevor Sie sie nutzen koennen? Wenn ja, ist es das Muster der kostenlosen Stufe; der Bezahlplan ist die spaetere Bitte. Zweitens: traegt die Ausgabe ein Wasserzeichen, ein Groessenlimit oder ein Banner "Upgraden, um dieses Limit zu entfernen"? Wenn ja, ist es das Wasserzeichen-Muster; das Upgrade ist die Bitte. Drittens: beobachten Sie den Network-Tab waehrend der Konvertierung. Gibt es ein POST mit den Bytes Ihrer Datei, wird die Datei hochgeladen; gibt es kein solches POST, laeuft die Arbeit lokal. Das dritte Muster ist das werbefinanzierte In-Browser-Modell. Der Hub des vollstaendigen Tool-Sets dieser Seite, das ihm folgt, liegt unter <a href="/utility-tools.html">Utility Tools</a> fuer Alltagsaufgaben und <a href="/guides.html">Guides</a> fuer die langen Anleitungen.</p>
+
+  <h2>Haeufig gestellte Fragen</h2>
+  <details class="faq-item">
+    <summary>Ist FreetoolOnline wirklich kostenlos?</summary>
+    <p>Ja - die Seite zeigt AdSense-Banner und fuehrt die Konvertierungsarbeit im Browser des Lesers aus, sodass die Bandbreitenrechnung durch Werbeeinnahmen statt durch ein Abo bezahlt wird. Kein Konto und keine Kreditkarte noetig.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Laedt irgendein Tool auf dieser Seite meine Datei auf einen Server?</summary>
+    <p>Einige ja, einige nicht. Die In-Browser-Tools (HD Video Converter, ZIP File, Compress Image, das Entwickler-Utility-Set) laufen vollstaendig im Tab des Lesers und laden die Datei nie hoch. Die aelteren serverseitig gerouteten Tools (All Video Converter, Video And SlideShow Maker, FFmpeg Online, serverseitige PDF-Tools) laden die Datei zum freetoolonline-Dienst zur Verarbeitung. Die Tool-Seite selbst nennt, welches Modell sie nutzt.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Was ist der Haken an den In-Browser-Tools?</summary>
+    <p>Der Haken sind die Anzeigen. Die Seite, die das In-Browser-Tool umgibt, schaltet AdSense, und die Anzeigen zahlen dafuer, dass die Seite ausgeliefert wird. Die Arbeit selbst wird nicht gedrosselt, mit Wasserzeichen versehen oder hinter einer Bezahlstufe in der Groesse begrenzt - dieselbe Konvertierung, die im Bezahlplan eines Anbieters mit kostenloser Stufe laeuft, laeuft einmal und endet hier ohne Upgrade.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Was ist der Unterschied zwischen dieser Anleitung und dem Utility-Tools-Hub?</summary>
+    <p>Der <a href="/utility-tools.html">Utility Tools</a>-Hub ist das Verzeichnis der einzelnen Tools (jedes Tool ist eine Seite). Diese Anleitung beantwortet die Meta-Frage, die Leser vor dem Klick stellen: warum ist es kostenlos, was ist der Haken und was bleibt auf meinem Geraet. Oeffnen Sie diese Anleitung einmal fuer das Modell; oeffnen Sie den Hub, wenn Sie eine konkrete Aufgabe haben.</p>
+  </details>
+</article>

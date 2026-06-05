@@ -1093,6 +1093,8 @@ export const INFO_ROUTES = new Set([
   // plan-warm-pascal-v3 S2 batch 59 (2026-06-05) - 5 locale variants x 2 NEW guides (file-to-zip, online-diff-tool; backfill of pipeline-created EN-only guides)
   '/guides/pt/file-to-zip.html', '/guides/es/file-to-zip.html', '/guides/vi/file-to-zip.html', '/guides/id/file-to-zip.html', '/guides/de/file-to-zip.html',
   '/guides/pt/online-diff-tool.html', '/guides/es/online-diff-tool.html', '/guides/vi/online-diff-tool.html', '/guides/id/online-diff-tool.html', '/guides/de/online-diff-tool.html',
+  // plan-warm-pascal-v3 S2 batch 60 (2026-06-05) - tool-free x 5 locales (new_guide_locale_completeness gate backfill)
+  '/guides/pt/tool-free.html', '/guides/es/tool-free.html', '/guides/vi/tool-free.html', '/guides/id/tool-free.html', '/guides/de/tool-free.html',
   '/guides/pt/compress-folder.html', // pt canonical of /guides/compactar-pasta.html
   '/guides/pt/compress-zip-file.html', // pt canonical of /guides/comprimir-arquivo-zip.html
   '/guides/pt/compress-folder-to-zip.html', // pt canonical of /guides/comprimir-pasta-zipada.html
@@ -1352,6 +1354,8 @@ export const GUIDE_ROUTES = new Set([
   // plan-warm-pascal-v3 S2 batch 59 (2026-06-05) - 5 locale variants x 2 NEW guides (file-to-zip, online-diff-tool; backfill of pipeline-created EN-only guides)
   '/guides/pt/file-to-zip.html', '/guides/es/file-to-zip.html', '/guides/vi/file-to-zip.html', '/guides/id/file-to-zip.html', '/guides/de/file-to-zip.html',
   '/guides/pt/online-diff-tool.html', '/guides/es/online-diff-tool.html', '/guides/vi/online-diff-tool.html', '/guides/id/online-diff-tool.html', '/guides/de/online-diff-tool.html',
+  // plan-warm-pascal-v3 S2 batch 60 (2026-06-05) - tool-free x 5 locales (new_guide_locale_completeness gate backfill)
+  '/guides/pt/tool-free.html', '/guides/es/tool-free.html', '/guides/vi/tool-free.html', '/guides/id/tool-free.html', '/guides/de/tool-free.html',
   '/guides/en/heic-vs-jpg-vs-webp.html',
   '/guides/en/dead-pixel-testing-guide.html',
   '/guides/en/unix-timestamps-explained.html',
@@ -2942,6 +2946,8 @@ export const JSP_BY_ROUTE = {
   // plan-warm-pascal-v3 S2 batch 59 (2026-06-05) - 5 locale variants x 2 NEW guides (file-to-zip, online-diff-tool)
   '/guides/pt/file-to-zip.html': 'guide/pt/file-to-zip.jsp', '/guides/es/file-to-zip.html': 'guide/es/file-to-zip.jsp', '/guides/vi/file-to-zip.html': 'guide/vi/file-to-zip.jsp', '/guides/id/file-to-zip.html': 'guide/id/file-to-zip.jsp', '/guides/de/file-to-zip.html': 'guide/de/file-to-zip.jsp',
   '/guides/pt/online-diff-tool.html': 'guide/pt/online-diff-tool.jsp', '/guides/es/online-diff-tool.html': 'guide/es/online-diff-tool.jsp', '/guides/vi/online-diff-tool.html': 'guide/vi/online-diff-tool.jsp', '/guides/id/online-diff-tool.html': 'guide/id/online-diff-tool.jsp', '/guides/de/online-diff-tool.html': 'guide/de/online-diff-tool.jsp',
+  // plan-warm-pascal-v3 S2 batch 60 (2026-06-05) - tool-free x 5 locales
+  '/guides/pt/tool-free.html': 'guide/pt/tool-free.jsp', '/guides/es/tool-free.html': 'guide/es/tool-free.jsp', '/guides/vi/tool-free.html': 'guide/vi/tool-free.jsp', '/guides/id/tool-free.html': 'guide/id/tool-free.jsp', '/guides/de/tool-free.html': 'guide/de/tool-free.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

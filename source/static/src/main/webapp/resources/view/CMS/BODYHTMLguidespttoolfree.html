@@ -1,0 +1,46 @@
+<article class="guide-body w3-container">
+  <h1>As ferramentas online sao realmente gratuitas? Privacidade, monetizacao e o modelo no navegador</h1>
+  <p class="lead">As ferramentas online "gratuitas" seguem tres padroes: um nivel gratuito atras de um cadastro que empurra para o pago, uma pagina aberta com marca d'agua ou limite de tamanho que o plano pago remove, e uma pagina sustentada por anuncios que executa o trabalho no navegador e nunca envia o arquivo para um servidor. O terceiro padrao e o que permite a pagina permanecer gratuita, sem conta, sem upload, e ainda assim pagar a conta - os anuncios pagam a banda, o trabalho roda no seu dispositivo. Este guia explica como esse modelo funciona na FreetoolOnline para que voce consiga olhar uma promessa de "gratis" e saber qual tipo esta lendo.</p>
+  <p class="reviewed">Ultima revisao: 2026-06-04</p>
+  <p class="byline">Revisado pela equipe editorial da FreetoolOnline</p>
+
+  <h2>Tres padroes de "gratis", e qual este site usa</h2>
+  <table class="quick-facts">
+    <thead><tr><th>Padrao</th><th>Com o que o leitor paga</th><th>O que fica no dispositivo</th></tr></thead>
+    <tbody>
+      <tr><td>Nivel gratuito + cadastro</td><td>E-mail mais um eventual upgrade para o plano pago</td><td>Muitas vezes nada - o arquivo sobe para o servidor do fornecedor</td></tr>
+      <tr><td>Pagina aberta + marca d'agua ou limite</td><td>Qualidade da saida ate fazer upgrade</td><td>Muitas vezes nada - o arquivo sobe para o servidor do fornecedor</td></tr>
+      <tr><td>Ferramenta no navegador com anuncios</td><td>Tempo gasto em uma pagina sustentada por anuncios</td><td>O arquivo: o trabalho roda como JavaScript ou WebAssembly na sua aba</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Por que o modelo no navegador com anuncios pode continuar realmente gratuito</h2>
+  <p>A maior parte do custo de um servico de conversao no lado do servidor e tempo de servidor e banda: o usuario envia um video de 50 MB, o servidor do fornecedor roda o FFmpeg nele e o resultado e baixado de volta. Esse custo cresce com o uso, e o fornecedor o recupera com um paywall ou uma cota. O modelo no navegador quebra essa relacao. A biblioteca que executa a conversao - <code>ffmpeg.wasm</code> para video, JSZip para arquivos compactados, as APIs nativas de canvas do navegador para imagens - e enviada uma vez como um pacote de script e depois roda dentro da aba do leitor. O custo de servidor por conversao cai para praticamente zero; apenas o carregamento inicial da pagina e o banner do AdSense geram trafego no servidor. Esse custo e pequeno o bastante para um banner pagar, e por isso o site consegue oferecer conversoes ilimitadas sem conta.</p>
+
+  <h2>O que "sem upload" realmente significa neste site</h2>
+  <p>As ferramentas que dizem "sem upload" ou "no navegador" nao movem o arquivo para um servidor em segredo. A biblioteca carrega, o seletor de arquivos entrega ao navegador um objeto <code>File</code>, a conversao roda nesse objeto na mesma aba, e a saida fica em um <code>Blob</code> que voce salva com uma caixa de download. Nao ha nenhuma requisicao para um backend com o conteudo do arquivo. Voce pode verificar isso em qualquer pagina de ferramenta abrindo o DevTools, indo para a aba Network, escolhendo um arquivo e observando se ha requisicoes POST com os bytes do arquivo - nao ha. Os exemplos no navegador deste site que seguem esse contrato incluem <a href="/video-tools/hd-video-converter.html">HD Video Converter</a>, <a href="/zip-tools/zip-file.html">ZIP File</a>, <a href="/compress-image.html">Compress Image</a> e o conjunto de utilitarios para desenvolvedores (<a href="/md5-converter.html">MD5</a>, <a href="/json-parser.html">JSON Parser</a>, <a href="/css-minifier.html">CSS Minifier</a>).</p>
+
+  <h2>O que "gratis" nao cobre</h2>
+  <p>"Gratis" neste site nao e o mesmo que "anonimo" ou "sem limites". A propria pagina registra uma requisicao anonima no servidor web quando voce a carrega (igual a qualquer requisicao HTTP para qualquer site), e o AdSense coloca um cookie se voce aceitar a personalizacao de anuncios. E assim que a pagina paga a conta de banda. O arquivo que voce processa fica no seu dispositivo nas ferramentas no navegador acima; as poucas ferramentas roteadas no servidor (o antigo <a href="/video-tools/video-converter.html">All Video Converter</a>, o <a href="/video-tools/video-maker.html">Video And SlideShow Maker</a>, o <a href="/video-tools/ffmpeg-online.html">FFmpeg Online</a> e as ferramentas de PDF que rodam fluxos no servidor) enviam o arquivo e fazem a conversao no servico freetoolonline, depois retornam uma URL de download.</p>
+
+  <h2>O teste do leitor: como saber qual "gratis" voce esta lendo</h2>
+  <p>Tres verificacoes rapidas distinguem os tres padroes em qualquer pagina de ferramenta "gratuita". Primeiro: ela pede um e-mail ou login antes de voce poder usar? Se sim, e o padrao de nivel gratuito; o plano pago e o pedido eventual. Segundo: a saida traz uma marca d'agua, um limite de tamanho ou um banner de "Faca upgrade para remover este limite"? Se sim, e o padrao de marca d'agua; o upgrade e o pedido. Terceiro: observe a aba Network durante a conversao. Se houver um POST com os bytes do seu arquivo, o arquivo esta subindo; se nao houver esse POST, o trabalho esta rodando localmente. O terceiro padrao e o modelo no navegador sustentado por anuncios. O hub do conjunto completo de ferramentas deste site que seguem esse modelo esta em <a href="/utility-tools.html">Utility Tools</a> para tarefas do dia a dia e em <a href="/guides.html">Guides</a> para os tutoriais mais longos.</p>
+
+  <h2>Perguntas frequentes</h2>
+  <details class="faq-item">
+    <summary>A FreetoolOnline e realmente gratuita?</summary>
+    <p>Sim - o site exibe banners do AdSense e executa o trabalho de conversao no navegador do leitor, entao a conta de banda e paga pela receita de anuncios e nao por uma assinatura. Nao e preciso conta nem cartao de credito.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Alguma ferramenta deste site envia meu arquivo para um servidor?</summary>
+    <p>Algumas enviam, outras nao. As ferramentas no navegador (HD Video Converter, ZIP File, Compress Image, o conjunto de utilitarios para desenvolvedores) rodam inteiramente na aba do leitor e nunca enviam o arquivo. As ferramentas mais antigas roteadas no servidor (All Video Converter, Video And SlideShow Maker, FFmpeg Online, ferramentas de PDF no servidor) enviam o arquivo para o servico freetoolonline para processamento. A propria pagina da ferramenta indica qual modelo ela usa.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Qual e a pegadinha das ferramentas no navegador?</summary>
+    <p>A pegadinha sao os anuncios. A pagina que envolve a ferramenta no navegador exibe o AdSense, e os anuncios pagam por ela ser servida. O trabalho em si nao e limitado, marcado com marca d'agua nem restrito por tamanho atras de um plano pago - a mesma conversao que roda no plano pago de um fornecedor de nivel gratuito roda uma vez e termina aqui sem upgrade.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Qual e a diferenca entre este guia e o hub Utility Tools?</summary>
+    <p>O hub <a href="/utility-tools.html">Utility Tools</a> e o indice das ferramentas individuais (cada ferramenta e uma pagina). Este guia responde a meta-pergunta que os leitores fazem antes de clicar: por que e gratis, qual e a pegadinha e o que fica no meu dispositivo. Abra este guia uma vez para entender o modelo; abra o hub quando tiver uma tarefa especifica.</p>
+  </details>
+</article>
