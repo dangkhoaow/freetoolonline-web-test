@@ -119,6 +119,7 @@ try {
     { title: "What Is a File Compressor and Which to Use", url: "https://freetoolonline.com/guides/en/what-is-a-file-compressor-and-which-to-use.html", include: !1, tags: "guide,zip,compress,image-editing,image-conversion,pdf" },
     { title: "File Compressor: Pick the Right Tool by File Type", url: "https://freetoolonline.com/guides/en/file-compressor.html", include: !1, tags: "guide,zip,compress,image-editing,image-conversion,pdf,file-compressor" },
     { title: "File to ZIP - Online File Compressor Guide", url: "https://freetoolonline.com/guides/en/file-to-zip.html", include: !1, tags: "guide,zip,compress,file-to-zip" },
+    { title: "Online Diff Tool - Compare Two Texts Side-by-Side Guide", url: "https://freetoolonline.com/guides/en/online-diff-tool.html", include: !1, tags: "developer,guide,online,diff,tool,text-diff" },
     { title: "Test LCD: Pick the Right Screen-Test Tool", url: "https://freetoolonline.com/guides/en/test-lcd.html", include: !1, tags: "guide,device-test,lcd,lcd-test,screen-test,dead-pixel" },
     { title: "LCD Test Online: Run a Free Browser-Based Screen Test", url: "https://freetoolonline.com/guides/en/lcd-test-online.html", include: !1, tags: "guide,device-test,lcd,lcd-test,screen-test,dead-pixel" },
     { title: "How to Compress a File Online (Step by Step)", url: "https://freetoolonline.com/guides/en/how-to-compress-a-file-online.html", include: !1, tags: "guide,zip,compress,image-editing,pdf,video" },

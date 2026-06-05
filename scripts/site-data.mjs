@@ -807,6 +807,9 @@ export const INFO_ROUTES = new Set([
   // to /guides/folder-to-zip.html. Kebab URL passes URL convention regex;
   // smashed form "filetozip" does not shadow any existing primary route.
   '/guides/en/file-to-zip.html',
+  // Cycle 20260605-4 create_new_guide_page - "Online diff tool" Lane-D guide.
+  // Companion to /developer-tools/text-diff.html. Sourced from tool-developertools/SKILL.md M1+M3+M5. Kebab URL passes URL convention regex; smashed form "onlinedifftool" does not shadow any existing primary route.
+  '/guides/en/online-diff-tool.html',
   // Cycle 20260518-25 create_new_guide_page - "Online Zip File" Lane-D guide
   // (zip cluster, GSC "online zip file" 573 imp / 12 clicks / pos 7.39 /
   // CTR 2.09% / opportunity_score 75.94). Companion to /zip-tools/zip-file.html.
@@ -1702,6 +1705,9 @@ export const GUIDE_ROUTES = new Set([
   // convention regex; smashed form "filetozip" does not shadow any existing
   // primary route.
   '/guides/en/file-to-zip.html',
+  // Cycle 20260605-4 create_new_guide_page - "Online diff tool" Lane-D guide.
+  // Companion to /developer-tools/text-diff.html.
+  '/guides/en/online-diff-tool.html',
   // Cycle 20260518-25 create_new_guide_page - "Online Zip File" Lane-D guide
   // (zip cluster, companion to /zip-tools/zip-file.html). GSC 573 imp / 12
   // clicks / pos 7.39 / CTR 2.09% / opportunity_score 75.94 — "online zip file"
@@ -2076,6 +2082,7 @@ export const ALIAS_ROUTES = {
   '/guides/file-compressor.html': '/guides/en/file-compressor.html',
   '/guides/file-to-zip.html': '/guides/en/file-to-zip.html',
   '/guides/folder-to-zip.html': '/guides/en/folder-to-zip.html',
+  '/guides/online-diff-tool.html': '/guides/en/online-diff-tool.html',
   '/guides/free-online-tools-that-work-without-uploading-files.html': '/guides/en/free-online-tools-that-work-without-uploading-files.html',
   '/guides/gif-frame-extractor-output-looks-wrong-three-causes.html': '/guides/en/gif-frame-extractor-output-looks-wrong-three-causes.html',
   '/guides/gif-frame-extractor.html': '/guides/en/gif-frame-extractor.html',
@@ -2309,6 +2316,8 @@ export const JSP_BY_ROUTE = {
   '/guides/en/folder-to-zip.html': 'guide/en/folder-to-zip.jsp',
   // Cycle 20260605-3 create_new_guide_page - "File to zip" Lane-D guide. Companion to /zip-file.html. Sourced from tool-zipfile/SKILL.md M1+M2+M3.
   '/guides/en/file-to-zip.html': 'guide/en/file-to-zip.jsp',
+  // Cycle 20260605-4 create_new_guide_page - "Online diff tool" Lane-D guide. Companion to /developer-tools/text-diff.html. Sourced from tool-developertools/SKILL.md M1+M3+M5.
+  '/guides/en/online-diff-tool.html': 'guide/en/online-diff-tool.jsp',
   // Cycle 20260518-33 create_new_guide_page - "Tes LCD" Lane-D guide (device-test
   // cluster, companion to /lcd-test.html). Indonesian-language guide for the
   // "tes lcd" search intent. Paraphrases tool-lcdtest/SKILL.md F1-F5.
