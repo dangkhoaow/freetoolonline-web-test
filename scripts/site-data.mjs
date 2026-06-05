@@ -810,6 +810,17 @@ export const INFO_ROUTES = new Set([
   // Cycle 20260605-4 create_new_guide_page - "Online diff tool" Lane-D guide.
   // Companion to /developer-tools/text-diff.html. Sourced from tool-developertools/SKILL.md M1+M3+M5. Kebab URL passes URL convention regex; smashed form "onlinedifftool" does not shadow any existing primary route.
   '/guides/en/online-diff-tool.html',
+  // Cycle 20260605-8 create_new_guide_page - "common::md5::gethash64string" Lane-D guide
+  // (developer cluster, GSC 212 imp / 0 clicks / pos 8.31 / CTR 0% / opportunity_score 25.52).
+  // Companion to /md5-converter.html. Sourced from tool-md5converter/SKILL.md M1+M2. The
+  // query is a framework-style method name (Yii PHP common\md5\getHash64String); the guide
+  // honestly redirects the developer reader to the in-browser MD5 hash + cache-lookup tool.
+  // Kebab URL passes URL convention regex; the "gethash64string" token is 15 chars but the
+  // slug itself is hyphenated so the smashed-multi-word check (single-token >= 13 chars) does
+  // NOT fire.
+  '/guides/en/common-md5-gethash64string.html',
+  // pt/es/vi/id/de locale variants (new-guide locale-completeness gate, 2026-06-05).
+  '/guides/pt/common-md5-gethash64string.html', '/guides/es/common-md5-gethash64string.html', '/guides/vi/common-md5-gethash64string.html', '/guides/id/common-md5-gethash64string.html', '/guides/de/common-md5-gethash64string.html',
   // Cycle 20260518-25 create_new_guide_page - "Online Zip File" Lane-D guide
   // (zip cluster, GSC "online zip file" 573 imp / 12 clicks / pos 7.39 /
   // CTR 2.09% / opportunity_score 75.94). Companion to /zip-tools/zip-file.html.
@@ -1718,6 +1729,10 @@ export const GUIDE_ROUTES = new Set([
   // Cycle 20260605-4 create_new_guide_page - "Online diff tool" Lane-D guide.
   // Companion to /developer-tools/text-diff.html.
   '/guides/en/online-diff-tool.html',
+  // Cycle 20260605-8 create_new_guide_page - "common::md5::gethash64string" Lane-D.
+  // Companion to /md5-converter.html. Sourced from tool-md5converter/SKILL.md M1+M2.
+  '/guides/en/common-md5-gethash64string.html',
+  '/guides/pt/common-md5-gethash64string.html', '/guides/es/common-md5-gethash64string.html', '/guides/vi/common-md5-gethash64string.html', '/guides/id/common-md5-gethash64string.html', '/guides/de/common-md5-gethash64string.html',
   // Cycle 20260518-25 create_new_guide_page - "Online Zip File" Lane-D guide
   // (zip cluster, companion to /zip-tools/zip-file.html). GSC 573 imp / 12
   // clicks / pos 7.39 / CTR 2.09% / opportunity_score 75.94 — "online zip file"
@@ -2093,6 +2108,7 @@ export const ALIAS_ROUTES = {
   '/guides/file-to-zip.html': '/guides/en/file-to-zip.html',
   '/guides/folder-to-zip.html': '/guides/en/folder-to-zip.html',
   '/guides/online-diff-tool.html': '/guides/en/online-diff-tool.html',
+  '/guides/common-md5-gethash64string.html': '/guides/en/common-md5-gethash64string.html',
   '/guides/free-online-tools-that-work-without-uploading-files.html': '/guides/en/free-online-tools-that-work-without-uploading-files.html',
   '/guides/gif-frame-extractor-output-looks-wrong-three-causes.html': '/guides/en/gif-frame-extractor-output-looks-wrong-three-causes.html',
   '/guides/gif-frame-extractor.html': '/guides/en/gif-frame-extractor.html',
@@ -2328,6 +2344,13 @@ export const JSP_BY_ROUTE = {
   '/guides/en/file-to-zip.html': 'guide/en/file-to-zip.jsp',
   // Cycle 20260605-4 create_new_guide_page - "Online diff tool" Lane-D guide. Companion to /developer-tools/text-diff.html. Sourced from tool-developertools/SKILL.md M1+M3+M5.
   '/guides/en/online-diff-tool.html': 'guide/en/online-diff-tool.jsp',
+  // Cycle 20260605-8 create_new_guide_page - "Common::Md5::Gethash64string" Lane-D. Companion to /md5-converter.html. Sourced from tool-md5converter/SKILL.md M1+M2.
+  '/guides/en/common-md5-gethash64string.html': 'guide/en/common-md5-gethash64string.jsp',
+  '/guides/pt/common-md5-gethash64string.html': 'guide/pt/common-md5-gethash64string.jsp',
+  '/guides/es/common-md5-gethash64string.html': 'guide/es/common-md5-gethash64string.jsp',
+  '/guides/vi/common-md5-gethash64string.html': 'guide/vi/common-md5-gethash64string.jsp',
+  '/guides/id/common-md5-gethash64string.html': 'guide/id/common-md5-gethash64string.jsp',
+  '/guides/de/common-md5-gethash64string.html': 'guide/de/common-md5-gethash64string.jsp',
   // Cycle 20260518-33 create_new_guide_page - "Tes LCD" Lane-D guide (device-test
   // cluster, companion to /lcd-test.html). Indonesian-language guide for the
   // "tes lcd" search intent. Paraphrases tool-lcdtest/SKILL.md F1-F5.
