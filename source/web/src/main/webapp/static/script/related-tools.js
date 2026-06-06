@@ -178,7 +178,7 @@ try {
     { title: "EXIF Metadata and Image Compression - What Gets Stripped", url: "https://freetoolonline.com/guides/en/image-compression-and-exif-metadata-what-gets-stripped.html", include: !1, tags: "guide,image-conversion,image-editing,compress,jpg,exif,metadata,privacy" },
     { title: "How to Compress a Folder", url: "https://freetoolonline.com/guides/en/how-to-compress-a-folder.html", include: !1, tags: "guide,zip,compress" },
     { title: "What an LCD Test Actually Checks", url: "https://freetoolonline.com/guides/en/lcd-test-what-it-checks.html", include: !1, tags: "guide,device-test,lcd-test" },
-    { title: "LCD Test — Reader-Task Explainer", url: "https://freetoolonline.com/guides/en/lcdtest.html", include: !1, tags: "guide,device-test,lcd-test" },
+    { title: "LCD Test - Reader-Task Explainer", url: "https://freetoolonline.com/guides/en/lcdtest.html", include: !1, tags: "guide,device-test,lcd-test" },
     { title: "LCD Test vs Display Test vs Monitor Test", url: "https://freetoolonline.com/guides/en/lcd-test-vs-display-test-which-do-you-need.html", include: !1, tags: "guide,device-test,lcd-test" },
     { title: "Screen Test Online vs App - Which Is More Accurate", url: "https://freetoolonline.com/guides/en/screen-test-online-vs-app-which-is-more-accurate.html", include: !1, tags: "guide,device-test,lcd-test" },
     { title: "Screen Test vs Camera Test - Which One Do You Need?", url: "https://freetoolonline.com/guides/en/screen-test-vs-camera-test-pick-the-right-tool.html", include: !1, tags: "guide,device-test,lcd-test,camera-test" },
