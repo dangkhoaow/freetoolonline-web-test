@@ -224,6 +224,7 @@ try {
     { title: "MD5 Password: Hash a Password String and When MD5 Is the Wrong Tool", url: "https://freetoolonline.com/guides/en/md5-password.html", include: !1, tags: "guide,developer,md5,hash,password" },
     { title: "Crop and Rotate Image", url: "https://freetoolonline.com/guides/en/crop-and-rotate-image.html", include: !1, tags: "image-editing,guide,crop,rotate,image" },
     { title: "Compress Folder Online", url: "https://freetoolonline.com/guides/en/compress-folder-online.html", include: !1, tags: "zip,guide,compress,folder,online" },
+    { title: "Regex Tester Online", url: "https://freetoolonline.com/developer-tools/regex-tester.html", include: !1, tags: "developer" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

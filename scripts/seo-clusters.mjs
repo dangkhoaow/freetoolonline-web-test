@@ -48,7 +48,7 @@ const SEO_CLUSTER_GROUPS = [
     // Cycle 20260521-12 semantic-dedup cleanup: '/json-formatter.html' removed
     // (was semantic duplicate of /json-parser.html which is titled "JSON Parser
     // & Formatter (Tree View)" and already covers pretty-print + validate + tree).
-    routes: ['/json-parser.html', '/css-minifier.html', '/css-unminifier.html', '/js-minifier.html', '/js-unminifier.html', '/text-diff.html', '/md5-converter.html', '/css-gradient-generator.html', '/text-html-editor.html'],
+    routes: ['/json-parser.html', '/css-minifier.html', '/css-unminifier.html', '/js-minifier.html', '/js-unminifier.html', '/text-diff.html', '/md5-converter.html', '/css-gradient-generator.html', '/text-html-editor.html', '/developer-tools/regex-tester.html'],
   },
   {
     cluster: 'video',

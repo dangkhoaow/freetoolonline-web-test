@@ -2241,6 +2241,7 @@ export const ALIAS_ROUTES = {
   '/guides/zip-size-reducer.html': '/guides/en/zip-size-reducer.html',
   '/guides/zip-unlocker-online.html': '/guides/en/zip-unlocker-online.html',
   '/guides/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html': '/guides/en/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html',
+  '/regex-tester.html': '/developer-tools/regex-tester.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -2971,6 +2972,7 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/online-diff-tool.html': 'guide/pt/online-diff-tool.jsp', '/guides/es/online-diff-tool.html': 'guide/es/online-diff-tool.jsp', '/guides/vi/online-diff-tool.html': 'guide/vi/online-diff-tool.jsp', '/guides/id/online-diff-tool.html': 'guide/id/online-diff-tool.jsp', '/guides/de/online-diff-tool.html': 'guide/de/online-diff-tool.jsp',
   // plan-warm-pascal-v3 S2 batch 60 (2026-06-05) - tool-free x 5 locales
   '/guides/pt/tool-free.html': 'guide/pt/tool-free.jsp', '/guides/es/tool-free.html': 'guide/es/tool-free.jsp', '/guides/vi/tool-free.html': 'guide/vi/tool-free.jsp', '/guides/id/tool-free.html': 'guide/id/tool-free.jsp', '/guides/de/tool-free.html': 'guide/de/tool-free.jsp',
+  '/developer-tools/regex-tester.html': 'utility/regex-tester.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

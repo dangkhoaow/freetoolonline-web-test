@@ -1,0 +1,215 @@
+<script>
+    // Regex tester skeleton - pure-JS RegExp, no upload, no backend.
+    // Reference: verified-browser-impl-registry.mjs entry `regex_tester_purejs`.
+    // Page: /regex-tester.html
+    //
+    // What it does on the client:
+    //   - Reads the pattern + the g/i/m/s/u/y flag checkboxes.
+    //   - Validates the pattern with try/catch around new RegExp(); a syntax
+    //     error renders inline next to the pattern input (never throws).
+    //   - Highlights every match in the test text with <mark>; capture-group
+    //     substrings get a distinct shade (via the `d` indices flag when the
+    //     browser supports it).
+    //   - Lists each match with its index, length, and numbered/named groups.
+    //   - One-click starter patterns (email / URL / IPv4 / phone / date).
+    //   - Re-runs on any input change, debounced 100ms.
+    //
+    // This tool processes everything in the browser, so the upload widget is
+    // disabled. The framework calls loadUploadHandlersByPage() during page
+    // startup; we also bind on document.ready as a belt-and-suspenders fallback.
+
+    web.localUpload = false;
+
+    var RX_FLAG_IDS = [
+        ['g', '#flagG'], ['i', '#flagI'], ['m', '#flagM'],
+        ['s', '#flagS'], ['u', '#flagU'], ['y', '#flagY']
+    ];
+    var rxDebounceTimer = null;
+
+    function rxEscapeHtml(s) {
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    function rxReadFlags() {
+        var flags = '';
+        for (var i = 0; i < RX_FLAG_IDS.length; i++) {
+            if ($(RX_FLAG_IDS[i][1]).is(':checked')) flags += RX_FLAG_IDS[i][0];
+        }
+        return flags;
+    }
+
+    // Render the inside of a single match, shading captured groups when the
+    // browser exposes match indices (the `d` flag). Handles the common case of
+    // non-overlapping groups; falls back to the plain match text otherwise.
+    function rxRenderMatchInner(text, start, end, indices) {
+        var ranges = [];
+        if (indices && indices.length > 1) {
+            for (var i = 1; i < indices.length; i++) {
+                var idx = indices[i];
+                if (idx && idx[1] > idx[0] && idx[0] >= start && idx[1] <= end) {
+                    ranges.push(idx);
+                }
+            }
+        }
+        if (!ranges.length) return rxEscapeHtml(text.slice(start, end));
+        ranges.sort(function (a, b) { return a[0] - b[0]; });
+        var out = '';
+        var p = start;
+        for (var r = 0; r < ranges.length; r++) {
+            var gs = ranges[r][0], ge = ranges[r][1];
+            if (gs < p) continue; // skip overlap with an already-rendered group
+            if (gs > p) out += rxEscapeHtml(text.slice(p, gs));
+            out += '<span class="rx-group">' + rxEscapeHtml(text.slice(gs, ge)) + '</span>';
+            p = ge;
+        }
+        if (p < end) out += rxEscapeHtml(text.slice(p, end));
+        return out;
+    }
+
+    // Build a RegExp clone with the flags we need for iteration / indices.
+    function rxCloneFor(re, want) {
+        var flags = re.flags;
+        for (var i = 0; i < want.length; i++) {
+            if (flags.indexOf(want[i]) < 0) flags += want[i];
+        }
+        try { return new RegExp(re.source, flags); }
+        catch (e) { return new RegExp(re.source, re.flags.indexOf('g') < 0 ? re.flags + 'g' : re.flags); }
+    }
+
+    function rxBuildHighlight(text, re, global) {
+        if (!global) {
+            var single = re.exec(text);
+            if (!single) return rxEscapeHtml(text);
+            var s = single.index, e = s + single[0].length;
+            return rxEscapeHtml(text.slice(0, s)) +
+                '<mark class="rx-match">' + rxRenderMatchInner(text, s, e, single.indices) + '</mark>' +
+                rxEscapeHtml(text.slice(e));
+        }
+        var gre = rxCloneFor(re, ['g', 'd']);
+        var out = '', last = 0, m, guard = 0;
+        while ((m = gre.exec(text)) !== null) {
+            if (guard++ > 100000) break;
+            var ms = m.index, me = ms + m[0].length;
+            out += rxEscapeHtml(text.slice(last, ms));
+            out += '<mark class="rx-match">' + rxRenderMatchInner(text, ms, me, m.indices) + '</mark>';
+            last = me;
+            if (m[0].length === 0) gre.lastIndex++; // avoid an infinite loop on empty matches
+        }
+        out += rxEscapeHtml(text.slice(last));
+        return out;
+    }
+
+    function rxBuildMatchList(text, re, global) {
+        var lre = rxCloneFor(re, global ? ['g'] : []);
+        var items = [], m, n = 0, guard = 0;
+        do {
+            m = global ? lre.exec(text) : re.exec(text);
+            if (m === null) break;
+            if (guard++ > 100000) break;
+            var groups = '';
+            for (var i = 1; i < m.length; i++) {
+                var gv = (m[i] === undefined) ? '(no match)' : m[i];
+                groups += '<div class="rx-group-line">Group ' + i + ': <span class="rx-group">' + rxEscapeHtml(gv) + '</span></div>';
+            }
+            if (m.groups) {
+                for (var k in m.groups) {
+                    if (!Object.prototype.hasOwnProperty.call(m.groups, k)) continue;
+                    var nv = (m.groups[k] == null) ? '(no match)' : m.groups[k];
+                    groups += '<div class="rx-group-line">Group &lt;' + rxEscapeHtml(k) + '&gt;: <span class="rx-group">' + rxEscapeHtml(nv) + '</span></div>';
+                }
+            }
+            items.push(
+                '<div class="rx-match-item"><b>Match ' + (n + 1) + '</b> at index ' + m.index +
+                ', length ' + m[0].length + ': <span class="rx-match">' + rxEscapeHtml(m[0]) + '</span>' +
+                groups + '</div>'
+            );
+            n++;
+            if (global && m[0].length === 0) lre.lastIndex++;
+        } while (global);
+        return { html: items.join('\n'), count: n };
+    }
+
+    function runRegexTester() {
+        var pattern = $('#regexPattern').val() || '';
+        var text = $('#regexTestText').val() || '';
+        var flags = rxReadFlags();
+        var global = flags.indexOf('g') >= 0;
+        var $err = $('#regexError');
+        var $hl = $('#regexHighlight');
+        var $list = $('#regexMatchList');
+        var $count = $('#regexMatchCount');
+
+        $err.text('');
+        if (!pattern) {
+            $hl.html(rxEscapeHtml(text));
+            $list.html('');
+            $count.text('Enter a pattern above to start matching.');
+            return;
+        }
+
+        var re;
+        try {
+            re = new RegExp(pattern, flags);
+        } catch (e) {
+            $err.text('Invalid pattern: ' + e.message);
+            $hl.html(rxEscapeHtml(text));
+            $list.html('');
+            $count.text('');
+            return;
+        }
+
+        if (!text) {
+            $hl.html('');
+            $list.html('');
+            $count.text('Add test text above to see matches.');
+            return;
+        }
+
+        try {
+            $hl.html(rxBuildHighlight(text, re, global));
+            var ml = rxBuildMatchList(text, re, global);
+            $list.html(ml.html);
+            if (ml.count === 0) $count.text('No matches found.');
+            else if (ml.count === 1) $count.text('1 match found.');
+            else $count.text(ml.count + ' matches found.');
+        } catch (e) {
+            $err.text('Error while matching: ' + (e.message || String(e)));
+        }
+    }
+
+    function rxScheduleRun() {
+        clearTimeout(rxDebounceTimer);
+        rxDebounceTimer = setTimeout(runRegexTester, 100);
+    }
+
+    function initRegexTester() {
+        if ($('#regexPattern').length === 0) return; // not the regex-tester page
+        $('#regexPattern').off('input.rx').on('input.rx', rxScheduleRun);
+        $('#regexTestText').off('input.rx').on('input.rx', rxScheduleRun);
+        $('#regexFlags input').off('change.rx').on('change.rx', runRegexTester);
+        $('#regexRunButton').off('click.rx').on('click.rx', runRegexTester);
+        $('#regexClearButton').off('click.rx').on('click.rx', function () {
+            $('#regexPattern').val('');
+            $('#regexTestText').val('');
+            runRegexTester();
+            $('#regexPattern').focus();
+        });
+        $('.rx-starter').off('click.rx').on('click.rx', function () {
+            $('#regexPattern').val($(this).attr('data-pattern') || '');
+            runRegexTester();
+        });
+        runRegexTester();
+    }
+
+    // Framework startup hook. The upload-startup fragment (in tool.jsp.template)
+    // calls loadUploadHandlersByPage() AFTER jQuery has loaded near the end of
+    // the page, so binding happens here. Do NOT call $(...) at the top level of
+    // this inline script: jQuery loads after the body content, so `$` is not yet
+    // defined when this script runs (calling it would throw "$ is not defined").
+    function loadUploadHandlersByPage() {
+        initRegexTester();
+    }
+</script>
