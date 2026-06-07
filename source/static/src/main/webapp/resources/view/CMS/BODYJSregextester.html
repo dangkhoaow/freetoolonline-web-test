@@ -14,9 +14,10 @@
     //   - One-click starter patterns (email / URL / IPv4 / phone / date).
     //   - Re-runs on any input change, debounced 100ms.
     //
-    // This tool processes everything in the browser, so the upload widget is
-    // disabled. The framework calls loadUploadHandlersByPage() during page
-    // startup; we also bind on document.ready as a belt-and-suspenders fallback.
+    // This tool processes everything in the browser; there is no upload widget
+    // (the page uses the in-browser JSP layout). It bootstraps via the
+    // framework's doAfterPageRendered() hook (defined near the bottom), which
+    // fires on every page after jQuery + base-script load.
 
     web.localUpload = false;
 
@@ -204,12 +205,14 @@
         runRegexTester();
     }
 
-    // Framework startup hook. The upload-startup fragment (in tool.jsp.template)
-    // calls loadUploadHandlersByPage() AFTER jQuery has loaded near the end of
-    // the page, so binding happens here. Do NOT call $(...) at the top level of
-    // this inline script: jQuery loads after the body content, so `$` is not yet
-    // defined when this script runs (calling it would throw "$ is not defined").
-    function loadUploadHandlersByPage() {
+    // Framework startup hook. This is an in-browser tool (no upload widget),
+    // so it bootstraps via doAfterPageRendered() — initPageCompomentsAndEvent
+    // calls it for EVERY page once jQuery + base-script have loaded. The legacy
+    // loadUploadHandlersByPage() hook only fires on upload-layout pages, so an
+    // in-browser tool relying on it would NEVER initialize. Do NOT call $(...)
+    // at the top level of this inline script: jQuery loads after the body
+    // content; `$` is only defined inside this deferred hook.
+    function doAfterPageRendered() {
         initRegexTester();
     }
 </script>
