@@ -331,6 +331,11 @@ export const INFO_ROUTES = new Set([
   // cycle 30/35/40/43/44 decrypt-md5 cannibalisation guard: NOT titled or
   // framed as "decrypt md5 password". Outbound link to /md5-converter.html.
   '/guides/en/md5-password.html',
+  // cycle 20260609-2 Phase 3 — "md5 decrypter" reader-intent guide. Distinct angle from the 9 existing MD5
+  // guides: frames what "MD5 decrypter" actually means (cache lookup, not reversal), covers hash vs SHA-256
+  // comparison table, HowTo generate + lookup steps, and explains when MD5 is the wrong tool. Implementing tool:
+  // /md5-converter.html. Honors anti-claim: NEVER "decrypt MD5" / "crack MD5" - framed as cache lookup.
+  '/guides/en/md5-decrypter.html',
   '/guides/en/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html',
   '/guides/en/json-vs-yaml-vs-toml-config-formats-explained.html',
   '/guides/en/css-minifier-vs-uglifier-vs-tree-shaking.html',
@@ -1106,6 +1111,9 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/online-diff-tool.html', '/guides/es/online-diff-tool.html', '/guides/vi/online-diff-tool.html', '/guides/id/online-diff-tool.html', '/guides/de/online-diff-tool.html',
   // plan-warm-pascal-v3 S2 batch 60 (2026-06-05) - tool-free x 5 locales (new_guide_locale_completeness gate backfill)
   '/guides/pt/tool-free.html', '/guides/es/tool-free.html', '/guides/vi/tool-free.html', '/guides/id/tool-free.html', '/guides/de/tool-free.html',
+  // cycle 20260609-2 - md5-decrypter guide (EN + 5 locale variants)
+  '/guides/en/md5-decrypter.html',
+  '/guides/pt/md5-decrypter.html', '/guides/es/md5-decrypter.html', '/guides/vi/md5-decrypter.html', '/guides/id/md5-decrypter.html', '/guides/de/md5-decrypter.html',
   '/guides/pt/compress-folder.html', // pt canonical of /guides/compactar-pasta.html
   '/guides/pt/compress-zip-file.html', // pt canonical of /guides/comprimir-arquivo-zip.html
   '/guides/pt/compress-folder-to-zip.html', // pt canonical of /guides/comprimir-pasta-zipada.html
@@ -2972,6 +2980,9 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/online-diff-tool.html': 'guide/pt/online-diff-tool.jsp', '/guides/es/online-diff-tool.html': 'guide/es/online-diff-tool.jsp', '/guides/vi/online-diff-tool.html': 'guide/vi/online-diff-tool.jsp', '/guides/id/online-diff-tool.html': 'guide/id/online-diff-tool.jsp', '/guides/de/online-diff-tool.html': 'guide/de/online-diff-tool.jsp',
   // plan-warm-pascal-v3 S2 batch 60 (2026-06-05) - tool-free x 5 locales
   '/guides/pt/tool-free.html': 'guide/pt/tool-free.jsp', '/guides/es/tool-free.html': 'guide/es/tool-free.jsp', '/guides/vi/tool-free.html': 'guide/vi/tool-free.jsp', '/guides/id/tool-free.html': 'guide/id/tool-free.jsp', '/guides/de/tool-free.html': 'guide/de/tool-free.jsp',
+  // cycle 20260609-2 Phase 3 — md5-decrypter new guide (EN + 5 locale variants)
+  '/guides/en/md5-decrypter.html': 'guide/en/md5-decrypter.jsp',
+  '/guides/pt/md5-decrypter.html': 'guide/pt/md5-decrypter.jsp', '/guides/es/md5-decrypter.html': 'guide/es/md5-decrypter.jsp', '/guides/vi/md5-decrypter.html': 'guide/vi/md5-decrypter.jsp', '/guides/id/md5-decrypter.html': 'guide/id/md5-decrypter.jsp', '/guides/de/md5-decrypter.html': 'guide/de/md5-decrypter.jsp',
   '/developer-tools/regex-tester.html': 'utility/regex-tester.jsp',
 };
 

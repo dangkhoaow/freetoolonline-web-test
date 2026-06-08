@@ -1,0 +1,78 @@
+<article class="guide-body">
+  <h1>MD5 Decrypter: Hash, Verify, and Reverse-Lookup in the Browser</h1>
+  <p class="lead">An "MD5 decrypter" is a common search that runs into a hard constraint: MD5 is a one-way hash, so there is no mathematical inverse. What tools marketed as "MD5 decrypters" actually do is a dictionary lookup - they check whether someone previously hashed the same input and stored the pair. This page explains both jobs the phrase covers - generating an MD5 hash and looking up a cached plaintext - and points to the right tool for each.</p>
+  <p class="reviewed">Last reviewed: 2026-06-09</p>
+  <address class="author">Reviewed by the FreetoolOnline editorial team</address>
+  <table class="quick-facts">
+    <thead>
+      <tr>
+        <th>Algorithm</th>
+        <th>Output size</th>
+        <th>Collision risk</th>
+        <th>Speed (relative)</th>
+        <th>Common use today</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>MD5</td>
+        <td>128 bits (32 hex chars)</td>
+        <td>Known collisions - practical with GPU</td>
+        <td>Very fast</td>
+        <td>Checksums, cache keys, dedup IDs</td>
+      </tr>
+      <tr>
+        <td>SHA-256</td>
+        <td>256 bits (64 hex chars)</td>
+        <td>No practical collision known</td>
+        <td>Fast (slightly slower than MD5)</td>
+        <td>File integrity, code signing, TLS</td>
+      </tr>
+      <tr>
+        <td>bcrypt</td>
+        <td>60-char string (encoded)</td>
+        <td>N/A - password hash, not general hash</td>
+        <td>Deliberately slow</td>
+        <td>Password storage (authentication)</td>
+      </tr>
+    </tbody>
+  </table>
+  <h2>What "MD5 decrypt" actually means</h2>
+  <p>MD5 maps an input of any size to a fixed 128-bit output. The operation is intentionally designed as a one-way trapdoor: given the output, there is no algebraic path back to the input. No key exists, no reverse button exists, and no algorithm can recover an arbitrary input from its MD5 digest - not this browser, not a server, not any tool. What sites labelled "MD5 decrypter" offer is a precomputed dictionary lookup. Someone hashed a set of known strings - dictionary words, common passwords, short phrases - and stored the hash-to-plaintext pairs. When you paste a 32-hex string, the lookup scans that dictionary. If the string was previously hashed and stored, the plaintext comes back. If it was not - any unique, long, or random input - the lookup returns nothing. This is the correct expectation, not a failure of the tool.</p>
+  <h2>How to use the MD5 tool on this site</h2>
+  <p>Open <a href="/md5-converter.html">the MD5 converter</a>. The page has two panels side by side. The top panel, labelled "Text to MD5", accepts a text string up to 990 characters; click the To MD5 button and the 32-hex digest appears instantly. The bottom panel, labelled "MD5 to Text", is the cache lookup: paste a 32-hex hash, click To Text, and the tool first checks localStorage for a pair you produced on this device earlier, then checks the server dictionary. If either source has a match, the original text appears. If not, you see an empty result - the expected behaviour for anything unique.</p>
+  <h2>When the cache lookup succeeds and when it does not</h2>
+  <p>The lookup succeeds for inputs that have been hashed before and whose hash-plaintext pair ended up in the dictionary. Common dictionary words, the most popular 10,000 passwords, short phrases, and strings other users have hashed on this site are the inputs most likely to hit. The lookup fails for anything unique - a random token, a long configuration string, a UUID, a user-generated password. Length and randomness determine success, not the number of attempts or the speed of the lookup. If you want a lookup to succeed for your own string in a future session, hash it with the To MD5 button first; the converter caches the pair in localStorage so the same browser can retrieve it later.</p>
+  <h2>HowTo: generate an MD5 hash in three steps</h2>
+  <ol>
+    <li>Open <a href="/md5-converter.html">/md5-converter.html</a> in your browser.</li>
+    <li>Paste the text you want to fingerprint into the top text area (up to 990 characters).</li>
+    <li>Click the <b>To MD5</b> button. The 32-hex digest appears and can be copied for use as a cache key, checksum, or dedup ID.</li>
+  </ol>
+  <h2>HowTo: run a cache lookup on a known MD5 hash</h2>
+  <ol>
+    <li>Open <a href="/md5-converter.html">/md5-converter.html</a>.</li>
+    <li>Paste the 32-hex hash into the bottom text area labelled "MD5 to Text".</li>
+    <li>Click the <b>To Text</b> button. If the hash appears in the server dictionary or your localStorage cache, the original string displays below the button. If nothing appears, the input has not been hashed and cached before - that is the expected outcome for unique or long strings.</li>
+  </ol>
+  <h2>When MD5 is the wrong tool</h2>
+  <p>Two jobs should never use MD5. First, password storage for authentication: MD5 is fast, which means GPU brute force can test billions of candidates per second against a stolen hash database. Bcrypt, argon2id, and scrypt are deliberately slow and include per-user salts - they are built for this job. Second, any integrity check where an attacker might craft a colliding input: MD5 has known collision attacks, meaning two different inputs can produce the same digest under controlled conditions. For file integrity under adversarial conditions, use SHA-256 or SHA-3. For checksums, cache keys, dedup IDs, and ETags where the input is not adversarial, MD5 remains practical and fast.</p>
+  <h2>Frequently asked questions</h2>
+  <details class="faq-item">
+    <summary>Is there a true MD5 decrypter that reverses any hash?</summary>
+    <p>No. MD5 is a one-way function by design. There is no mathematical inverse, no key, and no algorithm that can recover an arbitrary input from its 32-hex output. Tools marketed as MD5 decrypters perform a dictionary lookup - they return a result only if the input was previously hashed and stored. Unique, long, or random inputs return nothing.</p>
+  </details>
+  <details class="faq-item">
+    <summary>What is the difference between MD5 and SHA-256 for checksums?</summary>
+    <p>Both produce a fixed-width fingerprint from any input. MD5 produces 32 hex characters; SHA-256 produces 64. For non-adversarial uses like cache keys and dedup IDs, both are fast and reliable. For integrity checks where someone might tamper with a file, SHA-256 is the right choice - MD5 has known collision attacks, meaning an attacker can craft two different files with the same MD5 digest. SHA-256 has no known practical collision.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Why does the MD5 "decrypt" lookup return nothing for my input?</summary>
+    <p>The lookup checks a precomputed dictionary of previously-hashed strings. If your input - or the text that produced your hash - was never hashed and stored before, the dictionary has no record. Common dictionary words and popular passwords are well-covered; unique, long, or random strings almost never appear. This is the expected outcome, not a bug. If you need the lookup to succeed for your own string, hash it first with the To MD5 button and the pair gets stored locally.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Can I use MD5 to verify a file download?</summary>
+    <p>Yes - compare the MD5 the file provider publishes against an MD5 you compute from the downloaded file. Matching digests confirm the bytes are identical. For text content short enough to paste (up to 990 characters), use the To MD5 button on <a href="/md5-converter.html">/md5-converter.html</a>. For binary files or files larger than the paste limit, run <code>md5sum filename</code> on Linux or macOS, or <code>CertUtil -hashfile filename MD5</code> on Windows, then compare the resulting 32-hex string by eye or paste both into a text diff tool.</p>
+  </details>
+  <p>The hash generator and cache lookup are both free at <a href="/md5-converter.html">/md5-converter.html</a>. No account is required.</p>
+</article>

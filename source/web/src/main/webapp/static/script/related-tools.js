@@ -222,6 +222,7 @@ try {
     { title: "Compactar Pasta", url: "https://freetoolonline.com/guides/pt/compress-folder.html", include: !1, tags: "zip,guide,compactar,pasta,portugues,pt" },
     { title: "Comprimir ZIP Online", url: "https://freetoolonline.com/guides/pt/compress-zip-online.html", include: !1, tags: "zip,guide,comprimir,zip,online,portugues,pt" },
     { title: "MD5 Password: Hash a Password String and When MD5 Is the Wrong Tool", url: "https://freetoolonline.com/guides/en/md5-password.html", include: !1, tags: "guide,developer,md5,hash,password" },
+    { title: "MD5 Decrypter: Hash, Verify, and Reverse-Lookup", url: "https://freetoolonline.com/guides/en/md5-decrypter.html", include: !1, tags: "guide,developer,md5,hash,decrypt,reverse-lookup" },
     { title: "Crop and Rotate Image", url: "https://freetoolonline.com/guides/en/crop-and-rotate-image.html", include: !1, tags: "image-editing,guide,crop,rotate,image" },
     { title: "Compress Folder Online", url: "https://freetoolonline.com/guides/en/compress-folder-online.html", include: !1, tags: "zip,guide,compress,folder,online" },
     { title: "Regex Tester Online", url: "https://freetoolonline.com/developer-tools/regex-tester.html", include: !1, tags: "developer" },
