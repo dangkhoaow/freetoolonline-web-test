@@ -539,6 +539,8 @@ export const INFO_ROUTES = new Set([
   // P42.A LCD-test guide cross-link. NO satellite backlinks anywhere this cycle.
   // Cluster: device-test. Lane-D PA-mode mandatory; non-ZIP, non-destructive.
   '/guides/en/camera-test-vs-webcam-test-which-do-you-need.html',
+  // Cycle 20260610-13 - LCD test for laptop screens (device-test)
+  '/guides/en/lcd-test-laptop.html',
   // Cycle 73 P73.B - "Screen test vs camera test - which one do you actually need?" cross-cluster
   // disambiguation guide for the ambiguous "test my device" head query. Distinct from cycle-42
   // (within-screen-cluster: lcd vs display vs monitor) and cycle-43 (within-camera-cluster:
@@ -948,6 +950,8 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/download-link-not-appearing-after-conversion-five-fixes.html', '/guides/es/download-link-not-appearing-after-conversion-five-fixes.html', '/guides/vi/download-link-not-appearing-after-conversion-five-fixes.html', '/guides/id/download-link-not-appearing-after-conversion-five-fixes.html', '/guides/de/download-link-not-appearing-after-conversion-five-fixes.html',
   // plan-warm-pascal-v3 S2 batch 17 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/camera-test-vs-webcam-test-which-do-you-need.html', '/guides/es/camera-test-vs-webcam-test-which-do-you-need.html', '/guides/vi/camera-test-vs-webcam-test-which-do-you-need.html', '/guides/id/camera-test-vs-webcam-test-which-do-you-need.html', '/guides/de/camera-test-vs-webcam-test-which-do-you-need.html',
+  // Cycle 20260610-13 - LCD test for laptop screens (device-test) - 5 locale variants
+  '/guides/pt/lcd-test-laptop.html', '/guides/es/lcd-test-laptop.html', '/guides/vi/lcd-test-laptop.html', '/guides/id/lcd-test-laptop.html', '/guides/de/lcd-test-laptop.html',
   '/guides/pt/device-test-checklist-for-remote-work.html', '/guides/es/device-test-checklist-for-remote-work.html', '/guides/vi/device-test-checklist-for-remote-work.html', '/guides/id/device-test-checklist-for-remote-work.html', '/guides/de/device-test-checklist-for-remote-work.html',
   '/guides/pt/before-a-video-call-which-tools-to-run.html', '/guides/es/before-a-video-call-which-tools-to-run.html', '/guides/vi/before-a-video-call-which-tools-to-run.html', '/guides/id/before-a-video-call-which-tools-to-run.html', '/guides/de/before-a-video-call-which-tools-to-run.html',
   // plan-warm-pascal-v3 S2 batch 18 (2026-05-29) - 5 locale variants × 3 guides
@@ -1214,6 +1218,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/download-link-not-appearing-after-conversion-five-fixes.html', '/guides/es/download-link-not-appearing-after-conversion-five-fixes.html', '/guides/vi/download-link-not-appearing-after-conversion-five-fixes.html', '/guides/id/download-link-not-appearing-after-conversion-five-fixes.html', '/guides/de/download-link-not-appearing-after-conversion-five-fixes.html',
   // plan-warm-pascal-v3 S2 batch 17 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/camera-test-vs-webcam-test-which-do-you-need.html', '/guides/es/camera-test-vs-webcam-test-which-do-you-need.html', '/guides/vi/camera-test-vs-webcam-test-which-do-you-need.html', '/guides/id/camera-test-vs-webcam-test-which-do-you-need.html', '/guides/de/camera-test-vs-webcam-test-which-do-you-need.html',
+  // Cycle 20260610-13 - LCD test for laptop screens (device-test) - 5 locale variants
+  '/guides/pt/lcd-test-laptop.html', '/guides/es/lcd-test-laptop.html', '/guides/vi/lcd-test-laptop.html', '/guides/id/lcd-test-laptop.html', '/guides/de/lcd-test-laptop.html',
   '/guides/pt/device-test-checklist-for-remote-work.html', '/guides/es/device-test-checklist-for-remote-work.html', '/guides/vi/device-test-checklist-for-remote-work.html', '/guides/id/device-test-checklist-for-remote-work.html', '/guides/de/device-test-checklist-for-remote-work.html',
   '/guides/pt/before-a-video-call-which-tools-to-run.html', '/guides/es/before-a-video-call-which-tools-to-run.html', '/guides/vi/before-a-video-call-which-tools-to-run.html', '/guides/id/before-a-video-call-which-tools-to-run.html', '/guides/de/before-a-video-call-which-tools-to-run.html',
   // plan-warm-pascal-v3 S2 batch 18 (2026-05-29) - 5 locale variants × 3 guides
@@ -1584,6 +1590,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/en/lcd-test-vs-display-test-which-do-you-need.html',
   // Cycle 43 P43.B - "Camera test vs webcam test vs camera quality - which one do you actually need?" reactive disambiguation-flow guide.
   '/guides/en/camera-test-vs-webcam-test-which-do-you-need.html',
+  // Cycle 20260610-13 - LCD test for laptop screens (device-test)
+  '/guides/en/lcd-test-laptop.html',
   // Cycle 73 P73.B - "Screen test vs camera test - which one do you actually need?" cross-cluster disambiguation Lane-D guide.
   '/guides/en/screen-test-vs-camera-test-pick-the-right-tool.html',
   // Cycle 44 P44.A - "MD5 to text - why you cannot convert it back, and what to do instead" disambiguation/decision guide.
@@ -2093,6 +2101,8 @@ export const ALIAS_ROUTES = {
   '/guides/camera-test-permission-blocked-how-to-allow-it.html': '/guides/en/camera-test-permission-blocked-how-to-allow-it.html',
   '/guides/camera-test-shows-black-screen-four-fixes.html': '/guides/en/camera-test-shows-black-screen-four-fixes.html',
   '/guides/camera-test-vs-webcam-test-which-do-you-need.html': '/guides/en/camera-test-vs-webcam-test-which-do-you-need.html',
+  // Cycle 20260610-13 - LCD test for laptop screens (device-test)
+  '/guides/lcd-test-laptop.html': '/guides/en/lcd-test-laptop.html',
   '/guides/compress-folder-online.html': '/guides/en/compress-folder-online.html',
   '/guides/folder-compressor-online.html': '/guides/en/compress-folder-online.html',
   // Cycle 20260605 - capture "online folder compressor" query word-order variant (GSC: 216 imp / 28d, pos 5.09, CTR 13.4% per phase1 keyword-opportunities); semantic-dedup target = canonical /guides/en/compress-folder-online.html; alias-emit per CLAUDE.md "Semantic dedup" rule (G51 + dedup gate). Paired CloudFront 301 entry below.
@@ -2545,6 +2555,8 @@ export const JSP_BY_ROUTE = {
   '/guides/en/gif-to-frames-converter.html': 'guide/en/gif-to-frames-converter.jsp',
   '/guides/en/lcd-test-vs-display-test-which-do-you-need.html': 'guide/en/lcd-test-vs-display-test-which-do-you-need.jsp',
   '/guides/en/camera-test-vs-webcam-test-which-do-you-need.html': 'guide/en/camera-test-vs-webcam-test-which-do-you-need.jsp',
+  // Cycle 20260610-13 - LCD test for laptop screens (device-test)
+  '/guides/en/lcd-test-laptop.html': 'guide/en/lcd-test-laptop.jsp',
   '/guides/en/screen-test-vs-camera-test-pick-the-right-tool.html': 'guide/en/screen-test-vs-camera-test-pick-the-right-tool.jsp',
   '/guides/en/md5-to-text-why-you-cannot-convert-back.html': 'guide/en/md5-to-text-why-you-cannot-convert-back.jsp',
   '/guides/en/before-a-video-call-which-tools-to-run.html': 'guide/en/before-a-video-call-which-tools-to-run.jsp',
@@ -2825,6 +2837,8 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/download-link-not-appearing-after-conversion-five-fixes.html': 'guide/pt/download-link-not-appearing-after-conversion-five-fixes.jsp', '/guides/es/download-link-not-appearing-after-conversion-five-fixes.html': 'guide/es/download-link-not-appearing-after-conversion-five-fixes.jsp', '/guides/vi/download-link-not-appearing-after-conversion-five-fixes.html': 'guide/vi/download-link-not-appearing-after-conversion-five-fixes.jsp', '/guides/id/download-link-not-appearing-after-conversion-five-fixes.html': 'guide/id/download-link-not-appearing-after-conversion-five-fixes.jsp', '/guides/de/download-link-not-appearing-after-conversion-five-fixes.html': 'guide/de/download-link-not-appearing-after-conversion-five-fixes.jsp',
   // plan-warm-pascal-v3 S2 batch 17 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/camera-test-vs-webcam-test-which-do-you-need.html': 'guide/pt/camera-test-vs-webcam-test-which-do-you-need.jsp', '/guides/es/camera-test-vs-webcam-test-which-do-you-need.html': 'guide/es/camera-test-vs-webcam-test-which-do-you-need.jsp', '/guides/vi/camera-test-vs-webcam-test-which-do-you-need.html': 'guide/vi/camera-test-vs-webcam-test-which-do-you-need.jsp', '/guides/id/camera-test-vs-webcam-test-which-do-you-need.html': 'guide/id/camera-test-vs-webcam-test-which-do-you-need.jsp', '/guides/de/camera-test-vs-webcam-test-which-do-you-need.html': 'guide/de/camera-test-vs-webcam-test-which-do-you-need.jsp',
+  // Cycle 20260610-13 - LCD test for laptop screens (device-test) - 5 locale variants
+  '/guides/pt/lcd-test-laptop.html': 'guide/pt/lcd-test-laptop.jsp', '/guides/es/lcd-test-laptop.html': 'guide/es/lcd-test-laptop.jsp', '/guides/vi/lcd-test-laptop.html': 'guide/vi/lcd-test-laptop.jsp', '/guides/id/lcd-test-laptop.html': 'guide/id/lcd-test-laptop.jsp', '/guides/de/lcd-test-laptop.html': 'guide/de/lcd-test-laptop.jsp',
   '/guides/pt/device-test-checklist-for-remote-work.html': 'guide/pt/device-test-checklist-for-remote-work.jsp', '/guides/es/device-test-checklist-for-remote-work.html': 'guide/es/device-test-checklist-for-remote-work.jsp', '/guides/vi/device-test-checklist-for-remote-work.html': 'guide/vi/device-test-checklist-for-remote-work.jsp', '/guides/id/device-test-checklist-for-remote-work.html': 'guide/id/device-test-checklist-for-remote-work.jsp', '/guides/de/device-test-checklist-for-remote-work.html': 'guide/de/device-test-checklist-for-remote-work.jsp',
   '/guides/pt/before-a-video-call-which-tools-to-run.html': 'guide/pt/before-a-video-call-which-tools-to-run.jsp', '/guides/es/before-a-video-call-which-tools-to-run.html': 'guide/es/before-a-video-call-which-tools-to-run.jsp', '/guides/vi/before-a-video-call-which-tools-to-run.html': 'guide/vi/before-a-video-call-which-tools-to-run.jsp', '/guides/id/before-a-video-call-which-tools-to-run.html': 'guide/id/before-a-video-call-which-tools-to-run.jsp', '/guides/de/before-a-video-call-which-tools-to-run.html': 'guide/de/before-a-video-call-which-tools-to-run.jsp',
   // plan-warm-pascal-v3 S2 batch 18 (2026-05-29) - 5 locale variants × 3 guides

@@ -105,6 +105,7 @@ try {
     { title: "How to Minify CSS and JS for Cloud Run Cold Start", url: "https://freetoolonline.com/guides/en/how-to-minify-css-js-for-cloud-run-cold-start.html", include: !1, tags: "guide,developer,css,javascript,minifier,pagespeed" },
     { title: "Unminify JS: Restore Readability of Minified JavaScript", url: "https://freetoolonline.com/guides/en/unminify-js.html", include: !1, tags: "guide,developer,javascript,unminifier,beautifier" },
     { title: "LCD Screen Test", url: "https://freetoolonline.com/guides/en/lcd-screen-test.html", include: !1, tags: "device-test,guide,lcd,screen,test" },
+    { title: "LCD Test for Laptop Screens", url: "https://freetoolonline.com/guides/en/lcd-test-laptop.html", include: !1, tags: "device-test,guide,lcd,test,laptop" },
     { title: "Millisecond To Date", url: "https://freetoolonline.com/guides/en/millisecond-to-date.html", include: !1, tags: "utility,guide,millisecond,to,date" },
     { title: "Current Millis", url: "https://freetoolonline.com/guides/en/current-millis.html", include: !1, tags: "utility,guide,current,millis,timestamp,milliseconds" },
     { title: "Zip Unlocker Online", url: "https://freetoolonline.com/guides/en/zip-unlocker-online.html", include: !1, tags: "zip,guide,zip,unlocker,online,remove-zip-password" },
