@@ -504,6 +504,10 @@ export const INFO_ROUTES = new Set([
   // Implementing tool: /extract-gif-to-image-frames.html. Single-cycle complete
   // ship per cycle 20260514-5 contract.
   '/guides/en/gif-frame-extractor.html',
+  // Cycle 20260610-12 P12.D create_new_guide_page - "gif to frames converter" head-term
+  // (triangulated demand: "gif to frames" query cluster). Implementing tool:
+  // /extract-gif-to-image-frames.html. Cluster: utility. Locale-complete (5 variants).
+  '/guides/en/gif-to-frames-converter.html',
   // Cycle 42 P42.A - "LCD test vs display test vs monitor test - which?"
   // reactive disambiguation-flow guide. Lane-D pivot because all 6 cycle-42
   // decision rows touch active-monitor or auto-status tool URLs (/lcd-test.html
@@ -954,6 +958,8 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/camera-test-shows-black-screen-four-fixes.html', '/guides/es/camera-test-shows-black-screen-four-fixes.html', '/guides/vi/camera-test-shows-black-screen-four-fixes.html', '/guides/id/camera-test-shows-black-screen-four-fixes.html', '/guides/de/camera-test-shows-black-screen-four-fixes.html',
   '/guides/pt/file-compressor.html', '/guides/es/file-compressor.html', '/guides/vi/file-compressor.html', '/guides/id/file-compressor.html', '/guides/de/file-compressor.html',
   '/guides/pt/gif-frame-extractor.html', '/guides/es/gif-frame-extractor.html', '/guides/vi/gif-frame-extractor.html', '/guides/id/gif-frame-extractor.html', '/guides/de/gif-frame-extractor.html',
+  // Cycle 20260610-12 P12.D - 5 locale variants for gif-to-frames-converter
+  '/guides/pt/gif-to-frames-converter.html', '/guides/es/gif-to-frames-converter.html', '/guides/vi/gif-to-frames-converter.html', '/guides/id/gif-to-frames-converter.html', '/guides/de/gif-to-frames-converter.html',
   // plan-warm-pascal-v3 S2 batch 20 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/how-to-choose-a-compression-level.html', '/guides/es/how-to-choose-a-compression-level.html', '/guides/vi/how-to-choose-a-compression-level.html', '/guides/id/how-to-choose-a-compression-level.html', '/guides/de/how-to-choose-a-compression-level.html',
   '/guides/pt/heic-vs-jpg-vs-webp.html', '/guides/es/heic-vs-jpg-vs-webp.html', '/guides/vi/heic-vs-jpg-vs-webp.html', '/guides/id/heic-vs-jpg-vs-webp.html', '/guides/de/heic-vs-jpg-vs-webp.html',
@@ -1218,6 +1224,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/camera-test-shows-black-screen-four-fixes.html', '/guides/es/camera-test-shows-black-screen-four-fixes.html', '/guides/vi/camera-test-shows-black-screen-four-fixes.html', '/guides/id/camera-test-shows-black-screen-four-fixes.html', '/guides/de/camera-test-shows-black-screen-four-fixes.html',
   '/guides/pt/file-compressor.html', '/guides/es/file-compressor.html', '/guides/vi/file-compressor.html', '/guides/id/file-compressor.html', '/guides/de/file-compressor.html',
   '/guides/pt/gif-frame-extractor.html', '/guides/es/gif-frame-extractor.html', '/guides/vi/gif-frame-extractor.html', '/guides/id/gif-frame-extractor.html', '/guides/de/gif-frame-extractor.html',
+  // Cycle 20260610-12 P12.D - 5 locale variants for gif-to-frames-converter
+  '/guides/pt/gif-to-frames-converter.html', '/guides/es/gif-to-frames-converter.html', '/guides/vi/gif-to-frames-converter.html', '/guides/id/gif-to-frames-converter.html', '/guides/de/gif-to-frames-converter.html',
   // plan-warm-pascal-v3 S2 batch 20 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/how-to-choose-a-compression-level.html', '/guides/es/how-to-choose-a-compression-level.html', '/guides/vi/how-to-choose-a-compression-level.html', '/guides/id/how-to-choose-a-compression-level.html', '/guides/de/how-to-choose-a-compression-level.html',
   '/guides/pt/heic-vs-jpg-vs-webp.html', '/guides/es/heic-vs-jpg-vs-webp.html', '/guides/vi/heic-vs-jpg-vs-webp.html', '/guides/id/heic-vs-jpg-vs-webp.html', '/guides/de/heic-vs-jpg-vs-webp.html',
@@ -1570,6 +1578,8 @@ export const GUIDE_ROUTES = new Set([
   // Cycle 20260514-9 create_new_guide_page - "gif frame extractor" head-term
   // Lane-D guide. Implementing tool: /extract-gif-to-image-frames.html.
   '/guides/en/gif-frame-extractor.html',
+  // Cycle 20260610-12 P12.D - gif-to-frames-converter (utility cluster)
+  '/guides/en/gif-to-frames-converter.html',
   // Cycle 42 P42.A - "LCD test vs display test vs monitor test - which one do you actually need?" reactive disambiguation-flow guide.
   '/guides/en/lcd-test-vs-display-test-which-do-you-need.html',
   // Cycle 43 P43.B - "Camera test vs webcam test vs camera quality - which one do you actually need?" reactive disambiguation-flow guide.
@@ -2120,6 +2130,7 @@ export const ALIAS_ROUTES = {
   '/guides/free-online-tools-that-work-without-uploading-files.html': '/guides/en/free-online-tools-that-work-without-uploading-files.html',
   '/guides/gif-frame-extractor-output-looks-wrong-three-causes.html': '/guides/en/gif-frame-extractor-output-looks-wrong-three-causes.html',
   '/guides/gif-frame-extractor.html': '/guides/en/gif-frame-extractor.html',
+  '/guides/gif-to-frames-converter.html': '/guides/en/gif-to-frames-converter.html',
   '/guides/gif-frames-extract-vs-frame-rate-fps-explained.html': '/guides/en/gif-frames-extract-vs-frame-rate-fps-explained.html',
   '/guides/gif-into-frames.html': '/guides/en/gif-into-frames.html',
   '/guides/hd-video-converter-step-by-step.html': '/guides/en/hd-video-converter-step-by-step.html',
@@ -2531,6 +2542,7 @@ export const JSP_BY_ROUTE = {
   '/guides/en/ffmpeg-online-conversion-stalled-three-fixes.html': 'guide/en/ffmpeg-online-conversion-stalled-three-fixes.jsp',
   '/guides/en/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/en/gif-frame-extractor-output-looks-wrong-three-causes.jsp',
   '/guides/en/gif-frame-extractor.html': 'guide/en/gif-frame-extractor.jsp',
+  '/guides/en/gif-to-frames-converter.html': 'guide/en/gif-to-frames-converter.jsp',
   '/guides/en/lcd-test-vs-display-test-which-do-you-need.html': 'guide/en/lcd-test-vs-display-test-which-do-you-need.jsp',
   '/guides/en/camera-test-vs-webcam-test-which-do-you-need.html': 'guide/en/camera-test-vs-webcam-test-which-do-you-need.jsp',
   '/guides/en/screen-test-vs-camera-test-pick-the-right-tool.html': 'guide/en/screen-test-vs-camera-test-pick-the-right-tool.jsp',
@@ -2823,6 +2835,8 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/camera-test-shows-black-screen-four-fixes.html': 'guide/pt/camera-test-shows-black-screen-four-fixes.jsp', '/guides/es/camera-test-shows-black-screen-four-fixes.html': 'guide/es/camera-test-shows-black-screen-four-fixes.jsp', '/guides/vi/camera-test-shows-black-screen-four-fixes.html': 'guide/vi/camera-test-shows-black-screen-four-fixes.jsp', '/guides/id/camera-test-shows-black-screen-four-fixes.html': 'guide/id/camera-test-shows-black-screen-four-fixes.jsp', '/guides/de/camera-test-shows-black-screen-four-fixes.html': 'guide/de/camera-test-shows-black-screen-four-fixes.jsp',
   '/guides/pt/file-compressor.html': 'guide/pt/file-compressor.jsp', '/guides/es/file-compressor.html': 'guide/es/file-compressor.jsp', '/guides/vi/file-compressor.html': 'guide/vi/file-compressor.jsp', '/guides/id/file-compressor.html': 'guide/id/file-compressor.jsp', '/guides/de/file-compressor.html': 'guide/de/file-compressor.jsp',
   '/guides/pt/gif-frame-extractor.html': 'guide/pt/gif-frame-extractor.jsp', '/guides/es/gif-frame-extractor.html': 'guide/es/gif-frame-extractor.jsp', '/guides/vi/gif-frame-extractor.html': 'guide/vi/gif-frame-extractor.jsp', '/guides/id/gif-frame-extractor.html': 'guide/id/gif-frame-extractor.jsp', '/guides/de/gif-frame-extractor.html': 'guide/de/gif-frame-extractor.jsp',
+  // Cycle 20260610-12 P12.D - 5 locale JSP routes for gif-to-frames-converter
+  '/guides/pt/gif-to-frames-converter.html': 'guide/pt/gif-to-frames-converter.jsp', '/guides/es/gif-to-frames-converter.html': 'guide/es/gif-to-frames-converter.jsp', '/guides/vi/gif-to-frames-converter.html': 'guide/vi/gif-to-frames-converter.jsp', '/guides/id/gif-to-frames-converter.html': 'guide/id/gif-to-frames-converter.jsp', '/guides/de/gif-to-frames-converter.html': 'guide/de/gif-to-frames-converter.jsp',
   // plan-warm-pascal-v3 S2 batch 20 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/how-to-choose-a-compression-level.html': 'guide/pt/how-to-choose-a-compression-level.jsp', '/guides/es/how-to-choose-a-compression-level.html': 'guide/es/how-to-choose-a-compression-level.jsp', '/guides/vi/how-to-choose-a-compression-level.html': 'guide/vi/how-to-choose-a-compression-level.jsp', '/guides/id/how-to-choose-a-compression-level.html': 'guide/id/how-to-choose-a-compression-level.jsp', '/guides/de/how-to-choose-a-compression-level.html': 'guide/de/how-to-choose-a-compression-level.jsp',
   '/guides/pt/heic-vs-jpg-vs-webp.html': 'guide/pt/heic-vs-jpg-vs-webp.jsp', '/guides/es/heic-vs-jpg-vs-webp.html': 'guide/es/heic-vs-jpg-vs-webp.jsp', '/guides/vi/heic-vs-jpg-vs-webp.html': 'guide/vi/heic-vs-jpg-vs-webp.jsp', '/guides/id/heic-vs-jpg-vs-webp.html': 'guide/id/heic-vs-jpg-vs-webp.jsp', '/guides/de/heic-vs-jpg-vs-webp.html': 'guide/de/heic-vs-jpg-vs-webp.jsp',

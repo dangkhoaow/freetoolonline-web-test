@@ -214,6 +214,7 @@ try {
     { title: "Reducir Tamaño Zip Online", url: "https://freetoolonline.com/guides/es/reduce-zip-size-online.html", include: !1, tags: "zip,guide,reducir,tamano,zip,es" },
     { title: "Reduce Zip File Size Online", url: "https://freetoolonline.com/guides/en/reduce-zip-file-size-online.html", include: !1, tags: "zip,guide,reduce,size" },
     { title: "GIF Into Frames", url: "https://freetoolonline.com/guides/en/gif-into-frames.html", include: !1, tags: "image-editing,guide,gif,frames,extract" },
+    { title: "GIF to Frames Converter", url: "https://freetoolonline.com/guides/en/gif-to-frames-converter.html", include: !1, tags: "utility,guide,gif,to,frames,converter" },
     { title: "Kompres File Zip", url: "https://freetoolonline.com/guides/en/kompres-file-zip.html", include: !1, tags: "zip,guide,kompres,file,zip" },
     { title: "Kompres Zip", url: "https://freetoolonline.com/guides/en/kompres-zip.html", include: !1, tags: "zip,guide,kompres,size" },
     { title: "Comprimir Pasta Zipada", url: "https://freetoolonline.com/guides/pt/compress-folder-to-zip.html", include: !1, tags: "zip,guide,comprimir,pasta,zipada,pt" },
