@@ -1143,6 +1143,12 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/front-camera-test.html',
   '/guides/id/front-camera-test.html',
   '/guides/de/front-camera-test.html',
+  // cycle 20260610-16 - compress-pdf-online-free guide locale variants (pt/es/vi/id/de)
+  '/guides/pt/compress-pdf-online-free.html',
+  '/guides/es/compress-pdf-online-free.html',
+  '/guides/vi/compress-pdf-online-free.html',
+  '/guides/id/compress-pdf-online-free.html',
+  '/guides/de/compress-pdf-online-free.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -1875,6 +1881,13 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/front-camera-test.html',
   '/guides/id/front-camera-test.html',
   '/guides/de/front-camera-test.html',
+  // cycle 20260610-16 - compress-pdf-online-free new guide (EN bare canonical + 5 locale variants)
+  '/guides/compress-pdf-online-free.html',
+  '/guides/pt/compress-pdf-online-free.html',
+  '/guides/es/compress-pdf-online-free.html',
+  '/guides/vi/compress-pdf-online-free.html',
+  '/guides/id/compress-pdf-online-free.html',
+  '/guides/de/compress-pdf-online-free.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -3041,6 +3054,9 @@ export const JSP_BY_ROUTE = {
   // cycle 20260610-15 Phase 3 — front-camera-test new guide (EN + 5 locale variants); implementing tool /camera-test.html (cluster device-test)
   '/guides/front-camera-test.html': 'guides/front-camera-test.jsp',
   '/guides/pt/front-camera-test.html': 'guides/pt/front-camera-test.jsp', '/guides/es/front-camera-test.html': 'guides/es/front-camera-test.jsp', '/guides/vi/front-camera-test.html': 'guides/vi/front-camera-test.jsp', '/guides/id/front-camera-test.html': 'guides/id/front-camera-test.jsp', '/guides/de/front-camera-test.html': 'guides/de/front-camera-test.jsp',
+  // cycle 20260610-16 Phase 3 — compress-pdf-online-free new guide (EN + 5 locale variants); implementing tools /flatten-pdf.html + /pdf-to-images.html + /compress-image.html + /images-to-pdf.html + /preflight-pdf.html (cluster pdf)
+  '/guides/compress-pdf-online-free.html': 'guides/compress-pdf-online-free.jsp',
+  '/guides/pt/compress-pdf-online-free.html': 'guides/pt/compress-pdf-online-free.jsp', '/guides/es/compress-pdf-online-free.html': 'guides/es/compress-pdf-online-free.jsp', '/guides/vi/compress-pdf-online-free.html': 'guides/vi/compress-pdf-online-free.jsp', '/guides/id/compress-pdf-online-free.html': 'guides/id/compress-pdf-online-free.jsp', '/guides/de/compress-pdf-online-free.html': 'guides/de/compress-pdf-online-free.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
