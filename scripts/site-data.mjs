@@ -1137,6 +1137,12 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/zip-a-folder.html', // pt canonical of /guides/zipar-pasta.html
   '/guides/es/compress-folder-to-zip-online-free.html', // es canonical of /guides/comprimir-carpeta-zip-online-gratis.html
   '/guides/es/reduce-zip-size-online.html', // es canonical of /guides/reducir-tama-o-zip-online.html
+  // cycle 20260610-15 - front-camera-test guide locale variants (pt/es/vi/id/de)
+  '/guides/pt/front-camera-test.html',
+  '/guides/es/front-camera-test.html',
+  '/guides/vi/front-camera-test.html',
+  '/guides/id/front-camera-test.html',
+  '/guides/de/front-camera-test.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -1862,6 +1868,13 @@ export const GUIDE_ROUTES = new Set([
   // BODYWELCOMEzipfile reader-task framing (folder-as-input, name the
   // archive, optional encryption choice).
   '/guides/en/compress-folder-online.html',
+  // cycle 20260610-15 - front-camera-test new guide (EN bare canonical + 5 locale variants)
+  '/guides/front-camera-test.html',
+  '/guides/pt/front-camera-test.html',
+  '/guides/es/front-camera-test.html',
+  '/guides/vi/front-camera-test.html',
+  '/guides/id/front-camera-test.html',
+  '/guides/de/front-camera-test.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -3025,6 +3038,9 @@ export const JSP_BY_ROUTE = {
   '/guides/en/md5-decrypter.html': 'guide/en/md5-decrypter.jsp',
   '/guides/pt/md5-decrypter.html': 'guide/pt/md5-decrypter.jsp', '/guides/es/md5-decrypter.html': 'guide/es/md5-decrypter.jsp', '/guides/vi/md5-decrypter.html': 'guide/vi/md5-decrypter.jsp', '/guides/id/md5-decrypter.html': 'guide/id/md5-decrypter.jsp', '/guides/de/md5-decrypter.html': 'guide/de/md5-decrypter.jsp',
   '/developer-tools/regex-tester.html': 'utility/regex-tester.jsp',
+  // cycle 20260610-15 Phase 3 — front-camera-test new guide (EN + 5 locale variants); implementing tool /camera-test.html (cluster device-test)
+  '/guides/front-camera-test.html': 'guides/front-camera-test.jsp',
+  '/guides/pt/front-camera-test.html': 'guides/pt/front-camera-test.jsp', '/guides/es/front-camera-test.html': 'guides/es/front-camera-test.jsp', '/guides/vi/front-camera-test.html': 'guides/vi/front-camera-test.jsp', '/guides/id/front-camera-test.html': 'guides/id/front-camera-test.jsp', '/guides/de/front-camera-test.html': 'guides/de/front-camera-test.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

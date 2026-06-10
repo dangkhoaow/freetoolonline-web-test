@@ -229,6 +229,7 @@ try {
     { title: "Crop and Rotate Image", url: "https://freetoolonline.com/guides/en/crop-and-rotate-image.html", include: !1, tags: "image-editing,guide,crop,rotate,image" },
     { title: "Compress Folder Online", url: "https://freetoolonline.com/guides/en/compress-folder-online.html", include: !1, tags: "zip,guide,compress,folder,online" },
     { title: "Regex Tester Online", url: "https://freetoolonline.com/developer-tools/regex-tester.html", include: !1, tags: "developer" },
+    { title: "Front Camera Test", url: "https://freetoolonline.com/guides/front-camera-test.html", include: !1, tags: "device-test,guide,front,camera,test" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
