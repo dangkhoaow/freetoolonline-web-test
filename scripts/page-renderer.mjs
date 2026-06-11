@@ -529,8 +529,8 @@ function buildOrganizationJsonLd({ canonicalOrigin }) {
       height: 200,
     },
     foundingDate: '2015',
-    description: 'A collection of 100+ free, in-browser online tools (ZIP, PDF, image conversion, device tests, developer utilities, video) curated by the freetoolonline editorial team since 2015.',
-    slogan: 'In-browser tools, no upload, no install.',
+    description: 'A collection of 100+ free online tools (ZIP, PDF, image conversion, device tests, developer utilities, video) curated by the freetoolonline editorial team since 2015.',
+    slogan: 'Free online tools, no sign-up, no install.',
     sameAs: [
       'https://twitter.com/freetoolonline1',
       'https://www.buymeacoffee.com/freetoolonline.com',
