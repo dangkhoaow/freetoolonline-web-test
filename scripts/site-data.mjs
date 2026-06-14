@@ -1892,6 +1892,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/split-pdf-online-free.html',
   // cycle 20260615 - split-pdf-online-free PT locale variant (EN-first locale drain; es/vi/id/de remain)
   '/guides/pt/split-pdf-online-free.html',
+  // cycle 20260615-2 - split-pdf-online-free ES locale variant (EN-first locale drain; vi/id/de remain)
+  '/guides/es/split-pdf-online-free.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -3065,6 +3067,8 @@ export const JSP_BY_ROUTE = {
   '/guides/split-pdf-online-free.html': 'guides/split-pdf-online-free.jsp',
   // cycle 20260615 Phase 3 - split-pdf-online-free PT locale variant (EN-first locale drain; es/vi/id/de remain)
   '/guides/pt/split-pdf-online-free.html': 'guides/pt/split-pdf-online-free.jsp',
+  // cycle 20260615-2 Phase 3 - split-pdf-online-free ES locale variant (EN-first locale drain; vi/id/de remain)
+  '/guides/es/split-pdf-online-free.html': 'guides/es/split-pdf-online-free.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
