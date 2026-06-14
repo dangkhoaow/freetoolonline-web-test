@@ -231,6 +231,7 @@ try {
     { title: "Regex Tester Online", url: "https://freetoolonline.com/developer-tools/regex-tester.html", include: !1, tags: "developer" },
     { title: "Front Camera Test", url: "https://freetoolonline.com/guides/front-camera-test.html", include: !1, tags: "device-test,guide,front,camera,test" },
     { title: "Compress PDF Online Free", url: "https://freetoolonline.com/guides/compress-pdf-online-free.html", include: !1, tags: "pdf,guide,compress,pdf,online" },
+    { title: "Split PDF Online Free", url: "https://freetoolonline.com/guides/split-pdf-online-free.html", include: !1, tags: "pdf,guide,split,pdf,online" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
