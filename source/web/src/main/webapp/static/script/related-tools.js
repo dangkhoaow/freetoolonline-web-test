@@ -232,6 +232,8 @@ try {
     { title: "Front Camera Test", url: "https://freetoolonline.com/guides/front-camera-test.html", include: !1, tags: "device-test,guide,front,camera,test" },
     { title: "Compress PDF Online Free", url: "https://freetoolonline.com/guides/compress-pdf-online-free.html", include: !1, tags: "pdf,guide,compress,pdf,online" },
     { title: "Split PDF Online Free", url: "https://freetoolonline.com/guides/split-pdf-online-free.html", include: !1, tags: "pdf,guide,split,pdf,online" },
+    { title: "To-Do List", url: "https://freetoolonline.com/utility-tools/todo-list.html", include: !1, tags: "utility" },
+    { title: "How to Make a To-Do List Online - Free and No Sign-Up", url: "https://freetoolonline.com/guides/how-to-make-a-to-do-list-online.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

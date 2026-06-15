@@ -2322,6 +2322,7 @@ export const ALIAS_ROUTES = {
   '/guides/zip-unlocker-online.html': '/guides/en/zip-unlocker-online.html',
   '/guides/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html': '/guides/en/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html',
   '/regex-tester.html': '/developer-tools/regex-tester.html',
+  '/todo-list.html': '/utility-tools/todo-list.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3085,6 +3086,13 @@ export const JSP_BY_ROUTE = {
   '/guides/id/split-pdf-online-free.html': 'guides/id/split-pdf-online-free.jsp',
   // cycle 20260615-5 Phase 3 - split-pdf-online-free DE locale variant (EN-first locale drain COMPLETE; en+pt+es+vi+id+de all present)
   '/guides/de/split-pdf-online-free.html': 'guides/de/split-pdf-online-free.jsp',
+  '/utility-tools/todo-list.html': 'utility/todo-list.jsp',
+  '/guides/how-to-make-a-to-do-list-online.html': 'guide/how-to-make-a-to-do-list-online.jsp',
+  '/guides/pt/how-to-make-a-to-do-list-online.html': 'guide/pt/how-to-make-a-to-do-list-online.jsp',
+  '/guides/es/how-to-make-a-to-do-list-online.html': 'guide/es/how-to-make-a-to-do-list-online.jsp',
+  '/guides/vi/how-to-make-a-to-do-list-online.html': 'guide/vi/how-to-make-a-to-do-list-online.jsp',
+  '/guides/id/how-to-make-a-to-do-list-online.html': 'guide/id/how-to-make-a-to-do-list-online.jsp',
+  '/guides/de/how-to-make-a-to-do-list-online.html': 'guide/de/how-to-make-a-to-do-list-online.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
