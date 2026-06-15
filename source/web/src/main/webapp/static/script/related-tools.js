@@ -236,6 +236,8 @@ try {
     { title: "How to Make a To-Do List Online - Free and No Sign-Up", url: "https://freetoolonline.com/guides/how-to-make-a-to-do-list-online.html", include: !1, tags: "utility" },
     { title: "Unit Converter", url: "https://freetoolonline.com/utility-tools/unit-converter.html", include: !1, tags: "utility" },
     { title: "How to Convert Units Online - Free, No Sign-Up", url: "https://freetoolonline.com/guides/how-to-convert-units-online.html", include: !1, tags: "utility" },
+    { title: "Color Picker", url: "https://freetoolonline.com/developer-tools/color-picker.html", include: !1, tags: "developer" },
+    { title: "How to Pick a Color Online - HEX, RGB, and HSL", url: "https://freetoolonline.com/guides/how-to-pick-a-color-online.html", include: !1, tags: "developer" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

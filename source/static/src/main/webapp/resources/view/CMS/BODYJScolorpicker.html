@@ -1,0 +1,233 @@
+<script>
+    // Color picker - fully in-browser. Conversion + palette + contrast + favorites/history
+    // logic ported from freetool.online lib/services/color-picker-service.ts (behavior
+    // reference only; UI is freetoolonline's own per the operator UI/UX rule - a native
+    // <input type="color"> + w3.css controls, NOT the source React sliders/canvas chrome).
+    // No upload, no fetch, no backend. The framework calls doAfterPageRendered() on startup;
+    // $ is only defined inside it.
+    //
+    // Element IDs (provided by BODYHTMLcolorpicker.html): #cpInput (color input),
+    // #cpHex #cpRgb #cpHsl (readouts), #cpSwatch, #cpName, #cpContrast,
+    // #cpCopyHex #cpCopyRgb #cpCopyHsl, #cpComplementary #cpAnalogous #cpMono (palette
+    // containers - JS appends clickable swatches), #cpFavName #cpSaveFav #cpFavorites
+    // #cpFavEmpty, #cpHistory #cpHistoryEmpty #cpClearHistory.
+
+    web.localUpload = false;
+
+    var CP_FAV_KEY = 'favoriteColors';
+    var CP_HIST_KEY = 'colorHistory';
+
+    // ---- conversions (ported verbatim from color-picker-service.ts) ----
+    function cpHexToRgb(hex) {
+        hex = String(hex || '').replace(/^#/, '');
+        var r, g, b;
+        if (hex.length === 3) {
+            r = parseInt(hex.charAt(0) + hex.charAt(0), 16);
+            g = parseInt(hex.charAt(1) + hex.charAt(1), 16);
+            b = parseInt(hex.charAt(2) + hex.charAt(2), 16);
+        } else if (hex.length === 6) {
+            r = parseInt(hex.substring(0, 2), 16);
+            g = parseInt(hex.substring(2, 4), 16);
+            b = parseInt(hex.substring(4, 6), 16);
+        } else { return null; }
+        if (isNaN(r) || isNaN(g) || isNaN(b)) return null;
+        return { r: r, g: g, b: b };
+    }
+    function cpRgbToHex(r, g, b) {
+        return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+    }
+    function cpRgbToHsl(r, g, b) {
+        r /= 255; g /= 255; b /= 255;
+        var max = Math.max(r, g, b), min = Math.min(r, g, b);
+        var h = 0, s = 0, l = (max + min) / 2;
+        if (max !== min) {
+            var d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            if (max === r) { h = (g - b) / d + (g < b ? 6 : 0); }
+            else if (max === g) { h = (b - r) / d + 2; }
+            else { h = (r - g) / d + 4; }
+            h /= 6;
+        }
+        return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+    }
+    function cpHslToRgb(h, s, l) {
+        h /= 360; s /= 100; l /= 100;
+        var r, g, b;
+        if (s === 0) { r = g = b = l; }
+        else {
+            var hue2rgb = function (p, q, t) {
+                if (t < 0) t += 1;
+                if (t > 1) t -= 1;
+                if (t < 1 / 6) return p + (q - p) * 6 * t;
+                if (t < 1 / 2) return q;
+                if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+                return p;
+            };
+            var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            var p = 2 * l - q;
+            r = hue2rgb(p, q, h + 1 / 3);
+            g = hue2rgb(p, q, h);
+            b = hue2rgb(p, q, h - 1 / 3);
+        }
+        return { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) };
+    }
+    function cpHexToHsl(hex) { var rgb = cpHexToRgb(hex); return rgb ? cpRgbToHsl(rgb.r, rgb.g, rgb.b) : null; }
+    function cpHslToHex(h, s, l) { var rgb = cpHslToRgb(h, s, l); return cpRgbToHex(rgb.r, rgb.g, rgb.b); }
+
+    // ---- accessibility contrast (WCAG relative luminance; best of vs-black / vs-white) ----
+    function cpContrastRatio(hex) {
+        var rgb = cpHexToRgb(hex);
+        if (!rgb) return 0;
+        var lum = (function (r, g, b) {
+            var a = [r, g, b].map(function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+            return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+        })(rgb.r, rgb.g, rgb.b);
+        return Math.max((lum + 0.05) / 0.05, 1.05 / (lum + 0.05));
+    }
+
+    // ---- color name (small exact-match map; Custom Color fallback) ----
+    var CP_NAMES = {
+        '#FF0000': 'Red', '#00FF00': 'Green', '#0000FF': 'Blue', '#FFFF00': 'Yellow',
+        '#FF00FF': 'Magenta', '#00FFFF': 'Cyan', '#000000': 'Black', '#FFFFFF': 'White',
+        '#808080': 'Gray', '#FFA500': 'Orange', '#800080': 'Purple', '#A52A2A': 'Brown', '#FFC0CB': 'Pink'
+    };
+    function cpColorName(hex) { return CP_NAMES[String(hex).toUpperCase()] || 'Custom Color'; }
+
+    // ---- palettes ----
+    function cpComplementary(hex) { var rgb = cpHexToRgb(hex); return rgb ? cpRgbToHex(255 - rgb.r, 255 - rgb.g, 255 - rgb.b) : '#000000'; }
+    function cpAnalogous(hex) {
+        var hsl = cpHexToHsl(hex);
+        if (!hsl) return ['#000000', '#000000'];
+        return [cpHslToHex((hsl.h + 30) % 360, hsl.s, hsl.l), cpHslToHex((hsl.h + 330) % 360, hsl.s, hsl.l)];
+    }
+    function cpMonochromatic(hex, count) {
+        count = count || 5;
+        var hsl = cpHexToHsl(hex);
+        if (!hsl) { var z = []; for (var k = 0; k < count; k++) z.push('#000000'); return z; }
+        var out = [], step = 100 / (count + 1);
+        for (var i = 1; i <= count; i++) { out.push(cpHslToHex(hsl.h, hsl.s, Math.min(Math.max(step * i, 10), 90))); }
+        return out;
+    }
+
+    // ---- favorites + history (localStorage) ----
+    function cpGetFavorites() { try { var f = localStorage.getItem(CP_FAV_KEY); return f ? JSON.parse(f) : []; } catch (e) { return []; } }
+    function cpSaveFavorite(color, name) {
+        try {
+            var favs = cpGetFavorites();
+            var ts = new Date().toISOString();
+            var idx = favs.findIndex(function (f) { return f.color.toLowerCase() === color.toLowerCase(); });
+            if (idx >= 0) { favs[idx].name = name || favs[idx].name; favs[idx].updatedAt = ts; }
+            else { favs.push({ id: Date.now().toString(), color: color, name: name || cpColorName(color), createdAt: ts, updatedAt: ts }); }
+            localStorage.setItem(CP_FAV_KEY, JSON.stringify(favs));
+        } catch (e) { /* storage blocked */ }
+    }
+    function cpRemoveFavorite(id) {
+        try { localStorage.setItem(CP_FAV_KEY, JSON.stringify(cpGetFavorites().filter(function (f) { return f.id !== id; }))); } catch (e) {}
+    }
+    function cpGetHistory() { try { var h = localStorage.getItem(CP_HIST_KEY); return h ? JSON.parse(h) : []; } catch (e) { return []; } }
+    function cpSaveHistory(color) {
+        try {
+            var hist = cpGetHistory();
+            var ts = new Date().toISOString();
+            var idx = hist.findIndex(function (h) { return h.color.toLowerCase() === color.toLowerCase(); });
+            if (idx >= 0) { var ex = hist.splice(idx, 1)[0]; ex.updatedAt = ts; hist.unshift(ex); }
+            else { hist.unshift({ id: Date.now().toString(), color: color, createdAt: ts, updatedAt: ts }); }
+            localStorage.setItem(CP_HIST_KEY, JSON.stringify(hist.slice(0, 20)));
+        } catch (e) {}
+    }
+    function cpClearHistory() { try { localStorage.setItem(CP_HIST_KEY, JSON.stringify([])); } catch (e) {} }
+
+    function cpEscape(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+    // ---- DOM render (jQuery $, available in doAfterPageRendered) ----
+    function cpSwatchHtml(color, label) {
+        return '<button type="button" class="cp-swatch" data-color="' + cpEscape(color) + '" ' +
+            'style="background-color:' + cpEscape(color) + ';" title="' + cpEscape(color) + (label ? ' ' + cpEscape(label) : '') + '" ' +
+            'aria-label="Use ' + cpEscape(color) + '"></button>';
+    }
+
+    function cpRenderPalettes(hex) {
+        $('#cpComplementary').html(cpSwatchHtml(cpComplementary(hex), 'complementary'));
+        $('#cpAnalogous').html(cpAnalogous(hex).map(function (c) { return cpSwatchHtml(c, 'analogous'); }).join(''));
+        $('#cpMono').html(cpMonochromatic(hex, 5).map(function (c) { return cpSwatchHtml(c, 'shade'); }).join(''));
+    }
+
+    function cpRenderFavorites() {
+        var $list = $('#cpFavorites'); if ($list.length === 0) return;
+        var favs = cpGetFavorites();
+        $list.empty();
+        if (!favs.length) { $('#cpFavEmpty').show(); return; }
+        $('#cpFavEmpty').hide();
+        for (var i = 0; i < favs.length; i++) {
+            var f = favs[i];
+            $list.append(
+                '<li class="cp-fav-item">' + cpSwatchHtml(f.color) +
+                    '<span class="cp-fav-name">' + cpEscape(f.name || f.color) + '</span> ' +
+                    '<code>' + cpEscape(String(f.color).toUpperCase()) + '</code> ' +
+                    '<button type="button" class="w3-button w3-small w3-light-grey cp-fav-del" data-id="' + cpEscape(f.id) + '">Remove</button>' +
+                '</li>'
+            );
+        }
+    }
+
+    function cpRenderHistory() {
+        var $list = $('#cpHistory'); if ($list.length === 0) return;
+        var hist = cpGetHistory();
+        $list.empty();
+        if (!hist.length) { $('#cpHistoryEmpty').show(); return; }
+        $('#cpHistoryEmpty').hide();
+        for (var i = 0; i < hist.length; i++) { $list.append(cpSwatchHtml(hist[i].color)); }
+    }
+
+    function cpRender(hex, pushHistory) {
+        var rgb = cpHexToRgb(hex);
+        if (!rgb) return;
+        var hsl = cpRgbToHsl(rgb.r, rgb.g, rgb.b);
+        var contrast = cpContrastRatio(hex);
+        $('#cpHex').text(String(hex).toUpperCase());
+        $('#cpRgb').text('rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ')');
+        $('#cpHsl').text('hsl(' + hsl.h + ', ' + hsl.s + '%, ' + hsl.l + '%)');
+        $('#cpName').text(cpColorName(hex));
+        $('#cpContrast').text('Best contrast vs black/white: ' + contrast.toFixed(2) + ':1 (' + (contrast >= 4.5 ? 'AA pass for text' : 'below AA') + ')');
+        $('#cpSwatch').css('background-color', hex);
+        cpRenderPalettes(hex);
+        if (pushHistory) { cpSaveHistory(hex); cpRenderHistory(); }
+    }
+
+    function cpCopy(text) { if (!text) return; try { navigator.clipboard.writeText(text); } catch (e) {} }
+
+    function cpSelect(color) {
+        if (!cpHexToRgb(color)) return;
+        $('#cpInput').val(String(color).toLowerCase());
+        cpRender(color, true);
+    }
+
+    function initColorPicker() {
+        if ($('#cpInput').length === 0) return; // not the color-picker page
+        var start = $('#cpInput').val() || '#3366ff';
+        cpRender(start, true);
+        cpRenderFavorites();
+        cpRenderHistory();
+
+        $('#cpInput').off('input.cp change.cp').on('input.cp change.cp', function () { cpRender($(this).val() || '', true); });
+        $('#cpCopyHex').off('click.cp').on('click.cp', function () { cpCopy($('#cpHex').text()); });
+        $('#cpCopyRgb').off('click.cp').on('click.cp', function () { cpCopy($('#cpRgb').text()); });
+        $('#cpCopyHsl').off('click.cp').on('click.cp', function () { cpCopy($('#cpHsl').text()); });
+        $('#cpSaveFav').off('click.cp').on('click.cp', function () {
+            cpSaveFavorite($('#cpInput').val() || '', ($('#cpFavName').val() || '').trim());
+            $('#cpFavName').val(''); cpRenderFavorites();
+        });
+        $('#cpClearHistory').off('click.cp').on('click.cp', function () { cpClearHistory(); cpRenderHistory(); });
+        // Delegated: click any swatch (palette/favorite/history) -> select it.
+        $('#cpTool').off('click.cpsw', '.cp-swatch').on('click.cpsw', '.cp-swatch', function () {
+            cpSelect($(this).attr('data-color'));
+        });
+        $('#cpFavorites').off('click.cpdel', '.cp-fav-del').on('click.cpdel', '.cp-fav-del', function () {
+            cpRemoveFavorite($(this).attr('data-id')); cpRenderFavorites();
+        });
+    }
+
+    function doAfterPageRendered() {
+        initColorPicker();
+    }
+</script>

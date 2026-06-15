@@ -2324,6 +2324,7 @@ export const ALIAS_ROUTES = {
   '/regex-tester.html': '/developer-tools/regex-tester.html',
   '/todo-list.html': '/utility-tools/todo-list.html',
   '/unit-converter.html': '/utility-tools/unit-converter.html',
+  '/color-picker.html': '/developer-tools/color-picker.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3101,6 +3102,13 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-convert-units-online.html': 'guide/vi/how-to-convert-units-online.jsp',
   '/guides/id/how-to-convert-units-online.html': 'guide/id/how-to-convert-units-online.jsp',
   '/guides/de/how-to-convert-units-online.html': 'guide/de/how-to-convert-units-online.jsp',
+  '/developer-tools/color-picker.html': 'utility/color-picker.jsp',
+  '/guides/how-to-pick-a-color-online.html': 'guide/how-to-pick-a-color-online.jsp',
+  '/guides/pt/how-to-pick-a-color-online.html': 'guide/pt/how-to-pick-a-color-online.jsp',
+  '/guides/es/how-to-pick-a-color-online.html': 'guide/es/how-to-pick-a-color-online.jsp',
+  '/guides/vi/how-to-pick-a-color-online.html': 'guide/vi/how-to-pick-a-color-online.jsp',
+  '/guides/id/how-to-pick-a-color-online.html': 'guide/id/how-to-pick-a-color-online.jsp',
+  '/guides/de/how-to-pick-a-color-online.html': 'guide/de/how-to-pick-a-color-online.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
