@@ -1149,6 +1149,8 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/compress-pdf-online-free.html',
   '/guides/id/compress-pdf-online-free.html',
   '/guides/de/compress-pdf-online-free.html',
+  // cycle 20260615-4 - split-pdf-online-free ID locale variant (EN-first locale drain; de remains)
+  '/guides/id/split-pdf-online-free.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -1896,6 +1898,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/es/split-pdf-online-free.html',
   // cycle 20260615-3 - split-pdf-online-free VI locale variant (EN-first locale drain; id/de remain)
   '/guides/vi/split-pdf-online-free.html',
+  // cycle 20260615-4 - split-pdf-online-free ID locale variant (EN-first locale drain; de remains)
+  '/guides/id/split-pdf-online-free.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -3073,6 +3077,8 @@ export const JSP_BY_ROUTE = {
   '/guides/es/split-pdf-online-free.html': 'guides/es/split-pdf-online-free.jsp',
   // cycle 20260615-3 Phase 3 - split-pdf-online-free VI locale variant (EN-first locale drain; id/de remain)
   '/guides/vi/split-pdf-online-free.html': 'guides/vi/split-pdf-online-free.jsp',
+  // cycle 20260615-4 Phase 3 - split-pdf-online-free ID locale variant (EN-first locale drain; de remains)
+  '/guides/id/split-pdf-online-free.html': 'guides/id/split-pdf-online-free.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
