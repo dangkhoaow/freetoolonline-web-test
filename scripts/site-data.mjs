@@ -2323,6 +2323,7 @@ export const ALIAS_ROUTES = {
   '/guides/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html': '/guides/en/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html',
   '/regex-tester.html': '/developer-tools/regex-tester.html',
   '/todo-list.html': '/utility-tools/todo-list.html',
+  '/unit-converter.html': '/utility-tools/unit-converter.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3093,6 +3094,13 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-make-a-to-do-list-online.html': 'guide/vi/how-to-make-a-to-do-list-online.jsp',
   '/guides/id/how-to-make-a-to-do-list-online.html': 'guide/id/how-to-make-a-to-do-list-online.jsp',
   '/guides/de/how-to-make-a-to-do-list-online.html': 'guide/de/how-to-make-a-to-do-list-online.jsp',
+  '/utility-tools/unit-converter.html': 'utility/unit-converter.jsp',
+  '/guides/how-to-convert-units-online.html': 'guide/how-to-convert-units-online.jsp',
+  '/guides/pt/how-to-convert-units-online.html': 'guide/pt/how-to-convert-units-online.jsp',
+  '/guides/es/how-to-convert-units-online.html': 'guide/es/how-to-convert-units-online.jsp',
+  '/guides/vi/how-to-convert-units-online.html': 'guide/vi/how-to-convert-units-online.jsp',
+  '/guides/id/how-to-convert-units-online.html': 'guide/id/how-to-convert-units-online.jsp',
+  '/guides/de/how-to-convert-units-online.html': 'guide/de/how-to-convert-units-online.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

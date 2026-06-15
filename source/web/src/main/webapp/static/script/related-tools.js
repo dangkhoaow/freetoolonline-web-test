@@ -234,6 +234,8 @@ try {
     { title: "Split PDF Online Free", url: "https://freetoolonline.com/guides/split-pdf-online-free.html", include: !1, tags: "pdf,guide,split,pdf,online" },
     { title: "To-Do List", url: "https://freetoolonline.com/utility-tools/todo-list.html", include: !1, tags: "utility" },
     { title: "How to Make a To-Do List Online - Free and No Sign-Up", url: "https://freetoolonline.com/guides/how-to-make-a-to-do-list-online.html", include: !1, tags: "utility" },
+    { title: "Unit Converter", url: "https://freetoolonline.com/utility-tools/unit-converter.html", include: !1, tags: "utility" },
+    { title: "How to Convert Units Online - Free, No Sign-Up", url: "https://freetoolonline.com/guides/how-to-convert-units-online.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
