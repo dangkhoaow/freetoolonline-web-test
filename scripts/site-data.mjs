@@ -2327,6 +2327,7 @@ export const ALIAS_ROUTES = {
   '/color-picker.html': '/developer-tools/color-picker.html',
   '/data-visualizer.html': '/developer-tools/data-visualizer.html',
   '/screen-recorder.html': '/device-test-tools/screen-recorder.html',
+  '/font-generator.html': '/utility-tools/font-generator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3125,6 +3126,13 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-record-your-screen-online.html': 'guide/vi/how-to-record-your-screen-online.jsp',
   '/guides/id/how-to-record-your-screen-online.html': 'guide/id/how-to-record-your-screen-online.jsp',
   '/guides/de/how-to-record-your-screen-online.html': 'guide/de/how-to-record-your-screen-online.jsp',
+  '/utility-tools/font-generator.html': 'utility/font-generator.jsp',
+  '/guides/how-to-turn-text-into-an-image-online.html': 'guide/how-to-turn-text-into-an-image-online.jsp',
+  '/guides/pt/how-to-turn-text-into-an-image-online.html': 'guide/pt/how-to-turn-text-into-an-image-online.jsp',
+  '/guides/es/how-to-turn-text-into-an-image-online.html': 'guide/es/how-to-turn-text-into-an-image-online.jsp',
+  '/guides/vi/how-to-turn-text-into-an-image-online.html': 'guide/vi/how-to-turn-text-into-an-image-online.jsp',
+  '/guides/id/how-to-turn-text-into-an-image-online.html': 'guide/id/how-to-turn-text-into-an-image-online.jsp',
+  '/guides/de/how-to-turn-text-into-an-image-online.html': 'guide/de/how-to-turn-text-into-an-image-online.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

@@ -242,6 +242,8 @@ try {
     { title: "How to Visualize Data Online - Make a Chart From Your Numbers", url: "https://freetoolonline.com/guides/how-to-visualize-data-online.html", include: !1, tags: "developer" },
     { title: "Screen Recorder", url: "https://freetoolonline.com/device-test-tools/screen-recorder.html", include: !1, tags: "device-test" },
     { title: "How to Record Your Screen Online - Screen, Camera, or Microphone", url: "https://freetoolonline.com/guides/how-to-record-your-screen-online.html", include: !1, tags: "device-test" },
+    { title: "Font Generator", url: "https://freetoolonline.com/utility-tools/font-generator.html", include: !1, tags: "utility" },
+    { title: "How to Turn Text Into an Image (PNG) Online Free", url: "https://freetoolonline.com/guides/how-to-turn-text-into-an-image-online.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
