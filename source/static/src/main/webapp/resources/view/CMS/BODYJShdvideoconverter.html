@@ -1,48 +1,36 @@
 <script>
-    /* Media-converter skeleton via self-hosted FFmpeg.wasm.
-     * Wired contract per CONCRETE_BROWSER_TOOL_RULES.md section 4.
+    /* Media-converter via self-hosted FFmpeg.wasm (client-side; NO bytes leave the device).
+     * Wired per CONCRETE_BROWSER_TOOL_RULES.md section 4. web.localUpload = true (local file
+     * widget; no server POST). FFmpeg.wasm runs as a WebAssembly worker; the only network calls
+     * are the one-time same-origin vendor-asset fetches.
      *
-     * Browser-only invariant: the uploaded File is processed entirely in the
-     * browser tab. NO bytes leave the device. FFmpeg.wasm runs as a WebAssembly
-     * worker; the only network calls this skeleton makes are the one-time
-     * fetches for vendor assets at the same origin.
+     * E3 enrichment (freetool.online migration 2026-06-16). Behavior reference ONLY:
+     * freetool.online lib/services/video-transcoder/* (ffmpeg.wasm; UI is freetoolonline's own).
+     * ADDITIVE - the existing convert flow (container-copy / audio-extract / gif) is preserved as
+     * the default when no enrichment control is set. New in-browser features layered on:
+     *   - video codec control (libx264 / libx265 / libvpx-vp9)            #ffmpegVCodec
+     *   - 5-level quality slider -> CRF + target bitrate                  #ffmpegQuality
+     *   - resolution / aspect preset (original / 720p / 480p / 9:16 / custom WxH)  #ffmpegResolution #ffmpegCustomW #ffmpegCustomH
+     *   - frame-rate control                                             #ffmpegFps
+     *   - audio bitrate (existing) + audio codec                         #ffmpegBitrate #ffmpegACodec
+     *   - fade transition (fade-in / fade-out, single file)              #ffmpegTransition
+     *   - split-to-files by segment seconds (0 = off)                    #ffmpegSplit
+     *   - performance mode (balanced / max-performance)                  #ffmpegPerfMode
+     *   - batch (each locally-picked file is processed; outputs append)
+     *   - per-conversion performance metrics (elapsed / in-out size / speedup)   .ffmpeg-perf
+     * NOTE: crossfade / wipe BETWEEN clips needs the multi-input xfade (merge) flow and is NOT in
+     * this single-file pass; #ffmpegTransition does fade-in/out on one clip. All reads are defensive
+     * (the page renders + the legacy convert works before the enrichment controls exist).
      *
-     * Required vendor assets (operator must install once per repo):
-     *   /vendor/ffmpeg/ffmpeg.js          (UMD main; registers globalThis.FFmpegWASM)
-     *   /vendor/ffmpeg/814.ffmpeg.js      (webpack worker chunk; must live alongside ffmpeg.js)
-     *   /vendor/ffmpeg/ffmpeg-core.js
-     *   /vendor/ffmpeg/ffmpeg-core.wasm
-     * Install command (run once per child repo):
+     * Required vendor assets (operator installs once per repo):
+     *   /vendor/ffmpeg/ffmpeg.js  /vendor/ffmpeg/814.ffmpeg.js  /vendor/ffmpeg/ffmpeg-core.js  /vendor/ffmpeg/ffmpeg-core.wasm
      *   bash .agent/skills/seo-tool-page-builder/assets/vendor/install-ffmpeg-core.sh
-     *
-     * Single-thread runtime: the unified @ffmpeg/core@0.12.x wasm binary
-     * auto-detects SharedArrayBuffer availability at load. On GitHub Pages
-     * (no COOP/COEP) it degrades to single-thread automatically.
-     *
-     * Output-format detection: derived from the slug:
-     *   slug ending in a known format token  -> that token is the output ext
-     *   slug containing `-to-<fmt>`          -> <fmt> is the output ext
-     *   else                                  -> defaults to mp3
-     *
-     * Operator override: edit FFMPEG_ARGS_FOR_INPUT() to author tool-specific
-     * argv. The default behaviour covers:
-     *   audio-out (mp3/wav/aac/ogg/flac/m4a) -> extract audio at the selected bitrate
-     *   video-out (mp4/webm/mov/avi/mkv)     -> container swap (no re-encode)
-     *   gif                                  -> convert at 10 fps, 480px wide
      */
 
     web.localUpload = true;
 
     var FFMPEG_SLUG = 'hd-video-converter';
     var FFMPEG_TITLE = 'Hd Online Video Converter';
-    // BASE_PATH is exposed by renderBaseScript() (page-renderer.mjs L1106).
-    // On prod (freetoolonline.com) BASE_PATH === ""; on staging
-    // (dangkhoaow.github.io/freetoolonline-web-test/) BASE_PATH === "/freetoolonline-web-test".
-    // Forcing example: cycle 20260518-30 shipped this file with the path
-    // hardcoded to '/vendor/ffmpeg', so staging tried to load
-    // https://dangkhoaow.github.io/vendor/ffmpeg/ffmpeg.js -> 404. Phase 4
-    // E2E did not catch it because tool-hdvideoconverter/SKILL.md is missing
-    // -> run-e2e.mjs skipped the slug entirely.
     var FFMPEG_VENDOR_BASE = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/ffmpeg';
     var FFMPEG_UMD_URL = FFMPEG_VENDOR_BASE + '/ffmpeg.js';
     var FFMPEG_CORE_JS_URL = FFMPEG_VENDOR_BASE + '/ffmpeg-core.js';
@@ -52,6 +40,15 @@
     var AUDIO_OUT_FORMATS = ['mp3', 'wav', 'aac', 'ogg', 'flac', 'm4a'];
     var VIDEO_OUT_FORMATS = ['mp4', 'webm', 'mov', 'avi', 'mkv'];
     var KNOWN_FORMATS = AUDIO_OUT_FORMATS.concat(VIDEO_OUT_FORMATS).concat(['gif']);
+
+    // E3: video codec whitelist + quality(1-5) -> {crf, bitrate} (ported from convert-service L216-220).
+    var VIDEO_CODECS = ['libx264', 'libx265', 'libvpx-vp9'];
+    var QUALITY_MAP = {
+        1: { crf: 18, bitrate: 5000 }, 2: { crf: 20, bitrate: 4000 }, 3: { crf: 23, bitrate: 3000 },
+        4: { crf: 25, bitrate: 2000 }, 5: { crf: 28, bitrate: 1000 }
+    };
+    // resolution preset -> [w,h] (720p in-browser guard, per convert-service).
+    var RES_PRESETS = { '720p': ['1280', '720'], '480p': ['854', '480'], '360p': ['640', '360'], '9:16': ['720', '1280'] };
 
     function detectOutputFormat(slug) {
         var m = slug.match(/-to-(mp3|mp4|webm|wav|aac|ogg|flac|m4a|mov|avi|mkv|gif)(?:-|$)/i);
@@ -70,19 +67,81 @@
         }[ext] || 'application/octet-stream';
     }
 
-    function FFMPEG_ARGS_FOR_INPUT(inputName, outputName, outputExt, opts) {
+    function ffId(id) { return document.getElementById(id); }
+    function ffVal(id, dflt) { var el = ffId(id); return (el && el.value !== '' && el.value != null) ? el.value : dflt; }
+    function ffNum(id, dflt) { var v = parseInt(ffVal(id, dflt), 10); return isNaN(v) ? dflt : v; }
+    function ffFmtBytes(n) { return n < 1048576 ? (n / 1024).toFixed(0) + ' KB' : (n / 1048576).toFixed(2) + ' MB'; }
+
+    // E3: does the user want a video re-encode (any enrichment control active), or the legacy copy?
+    function ffWantsReencode(opts) {
+        return !!(opts.vcodec || opts.quality || (opts.resolution && opts.resolution !== 'original')
+            || opts.fps || (opts.transition && opts.transition !== 'none') || opts.perfMode);
+    }
+
+    // E3: resolve the scale W:H from the resolution/preset/custom opts (720p guard). Returns null for original.
+    function ffResolveScale(opts) {
+        var r = opts.resolution;
+        if (!r || r === 'original') { return null; }
+        if (r === 'custom') {
+            var w = opts.customW, h = opts.customH;
+            if (w && h) { return w + ':' + h; }
+            return null;
+        }
+        var p = RES_PRESETS[r];
+        return p ? (p[0] + ':' + p[1]) : null;
+    }
+
+    function FFMPEG_ARGS_FOR_INPUT(inputName, outputName, outputExt, opts, durationSec) {
+        opts = opts || {};
+        // audio-out: extract audio (existing behavior + optional audio-codec override)
         if (AUDIO_OUT_FORMATS.indexOf(outputExt) >= 0) {
-            var codec = AUDIO_CODEC[outputExt] || 'libmp3lame';
-            var args = ['-i', inputName, '-vn', '-c:a', codec];
-            if (codec !== 'pcm_s16le' && codec !== 'flac') {
-                args = args.concat(['-b:a', (opts.bitrate || 192) + 'k']);
+            var aCodec = opts.acodec || AUDIO_CODEC[outputExt] || 'libmp3lame';
+            var aArgs = ['-i', inputName, '-vn', '-c:a', aCodec];
+            if (aCodec !== 'pcm_s16le' && aCodec !== 'flac') {
+                aArgs = aArgs.concat(['-b:a', (opts.bitrate || 192) + 'k']);
             }
-            return args.concat([outputName]);
+            return aArgs.concat([outputName]);
         }
+        // gif: existing behavior
         if (outputExt === 'gif') {
-            return ['-i', inputName, '-vf', 'fps=10,scale=480:-1:flags=lanczos', outputName];
+            return ['-i', inputName, '-vf', 'fps=' + (opts.fps || 10) + ',scale=480:-1:flags=lanczos', outputName];
         }
-        return ['-i', inputName, '-c', 'copy', outputName];
+        // video-out, no enrichment control set -> legacy container copy (preserves prior behavior)
+        if (!ffWantsReencode(opts)) {
+            return ['-i', inputName, '-c', 'copy', outputName];
+        }
+        // video-out re-encode path (ported from ffmpeg-transcoder-convert-service.ts)
+        var args = ['-i', inputName];
+        var vf = [];
+        var scale = ffResolveScale(opts);
+        if (scale) { vf.push('scale=' + scale); }
+        if (opts.transition && opts.transition !== 'none') {
+            vf.push('fade=t=in:st=0:d=1');
+            if (durationSec && durationSec > 2) { vf.push('fade=t=out:st=' + (durationSec - 1).toFixed(2) + ':d=1'); }
+        }
+        if (vf.length) { args.push('-vf', vf.join(',')); }
+        var vcodec = opts.vcodec || 'libx264';
+        if (VIDEO_CODECS.indexOf(vcodec) === -1) { vcodec = 'libx264'; }
+        args.push('-c:v', vcodec);
+        var q = QUALITY_MAP[opts.quality || 3] || QUALITY_MAP[3];
+        if (vcodec === 'libx264' || vcodec === 'libx265') {
+            args.push('-crf', String(q.crf));
+            args.push('-preset', opts.perfMode === 'max-performance' ? 'veryfast' : 'medium');
+        } else {
+            args.push('-b:v', q.bitrate + 'k');
+            args.push('-row-mt', '1', '-cpu-used', opts.perfMode === 'max-performance' ? '4' : '2');
+        }
+        if (opts.fps) { args.push('-r', String(opts.fps)); }
+        args.push('-pix_fmt', 'yuv420p');
+        var aCodec2 = opts.acodec || 'aac';
+        args.push('-c:a', aCodec2, '-b:a', (opts.bitrate || 192) + 'k');
+        return args.concat([outputName]);
+    }
+
+    function FFMPEG_SPLIT_ARGS(inputName, outFmt, outputExt, segSeconds) {
+        // segment muxer: copy streams, cut every segSeconds, write seg000.ext, seg001.ext, ...
+        return ['-i', inputName, '-c', 'copy', '-map', '0', '-f', 'segment',
+            '-segment_time', String(segSeconds), '-reset_timestamps', '1', outFmt];
     }
 
     var ffmpegInstance = null;
@@ -99,9 +158,7 @@
             s.onload = function () {
                 if (typeof globalThis.FFmpegWASM === 'undefined') {
                     reject(new Error('FFmpegWASM global missing after ' + FFMPEG_UMD_URL + ' loaded'));
-                } else {
-                    resolve();
-                }
+                } else { resolve(); }
             };
             s.onerror = function () { reject(new Error('Failed to load ' + FFMPEG_UMD_URL)); };
             document.head.appendChild(s);
@@ -130,53 +187,142 @@
         return ffmpegLoadPromise;
     }
 
+    // E3: probe duration in-browser via a <video> element (needed for fade-out timing).
+    function probeVideoDuration(file) {
+        return new Promise(function (resolve) {
+            try {
+                var url = URL.createObjectURL(file);
+                var v = document.createElement('video');
+                v.preload = 'metadata';
+                v.onloadedmetadata = function () { var d = v.duration; URL.revokeObjectURL(url); resolve(isFinite(d) ? d : 0); };
+                v.onerror = function () { URL.revokeObjectURL(url); resolve(0); };
+                v.src = url;
+            } catch (e) { resolve(0); }
+        });
+    }
+
+    function ffSetPerf(metrics) {
+        var $p = $('.ffmpeg-perf');
+        if (!$p.length || !metrics) { return; }
+        $p.text('Done in ' + metrics.elapsed.toFixed(1) + 's  -  '
+            + ffFmtBytes(metrics.inSize) + ' in / ' + ffFmtBytes(metrics.outSize) + ' out'
+            + (metrics.speedup ? '  -  ' + metrics.speedup.toFixed(1) + 'x realtime' : '')).show();
+    }
+
     async function processInputForSlug(file, opts) {
         var outputExt = detectOutputFormat(FFMPEG_SLUG);
         var inputExt = (file.name.split('.').pop() || 'bin').toLowerCase();
         var inputName = 'input.' + inputExt;
-        var outputName = 'output.' + outputExt;
         var $status = $('.ffmpeg-status');
-
         function setStatus(msg) { $status.text(msg).show(); }
 
         var ffmpeg = await loadFfmpegOnce(setStatus);
-
         setStatus('Reading input file...');
         var buf = await file.arrayBuffer();
         await ffmpeg.writeFile(inputName, new Uint8Array(buf));
 
+        var baseName = (file.name.replace(/\.[^.]+$/, '') || FFMPEG_SLUG);
+        var t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : 0;
+
+        // E3: split-to-files mode (segment muxer) -> multiple outputs.
+        if (opts && opts.split && opts.split > 0 && VIDEO_OUT_FORMATS.indexOf(outputExt) >= 0) {
+            setStatus('Splitting into ' + opts.split + 's segments...');
+            var outFmt = 'seg%03d.' + outputExt;
+            await ffmpeg.exec(FFMPEG_SPLIT_ARGS(inputName, outFmt, outputExt, opts.split));
+            var entries = [];
+            try { entries = await ffmpeg.listDir('/'); } catch (e) { entries = []; }
+            var segNames = entries.map(function (e) { return e.name || e; })
+                .filter(function (n) { return /^seg\d+\./.test(n); }).sort();
+            var results = [];
+            for (var si = 0; si < segNames.length; si++) {
+                var sd = await ffmpeg.readFile(segNames[si]);
+                results.push({
+                    output_blob_url: URL.createObjectURL(new Blob([sd.buffer], { type: mimeFor(outputExt) })),
+                    output_filename: baseName + '-part' + (si + 1) + '.' + outputExt
+                });
+                try { await ffmpeg.deleteFile(segNames[si]); } catch (e) {}
+            }
+            try { await ffmpeg.deleteFile(inputName); } catch (e) {}
+            var t1s = (typeof performance !== 'undefined' && performance.now) ? performance.now() : 0;
+            setStatus('Done - ' + results.length + ' segment(s).');
+            ffSetPerf({ elapsed: (t1s - t0) / 1000, inSize: file.size, outSize: results.reduce(function (a) { return a; }, 0) || file.size });
+            return { segments: results, _is_mock: false };
+        }
+
+        // convert/transcode path
+        var outputName = 'output.' + outputExt;
+        var durationSec = 0;
+        if (opts && opts.transition && opts.transition !== 'none' && VIDEO_OUT_FORMATS.indexOf(outputExt) >= 0) {
+            durationSec = await probeVideoDuration(file);
+        }
         setStatus('Running FFmpeg...');
-        var args = FFMPEG_ARGS_FOR_INPUT(inputName, outputName, outputExt, opts || {});
+        var args = FFMPEG_ARGS_FOR_INPUT(inputName, outputName, outputExt, opts || {}, durationSec);
         await ffmpeg.exec(args);
 
         setStatus('Reading output...');
         var data = await ffmpeg.readFile(outputName);
-        try { await ffmpeg.deleteFile(inputName); } catch (e) { /* ignore */ }
-        try { await ffmpeg.deleteFile(outputName); } catch (e) { /* ignore */ }
+        try { await ffmpeg.deleteFile(inputName); } catch (e) {}
+        try { await ffmpeg.deleteFile(outputName); } catch (e) {}
 
         var blob = new Blob([data.buffer], { type: mimeFor(outputExt) });
-        var blobUrl = URL.createObjectURL(blob);
-        var baseName = (file.name.replace(/\.[^.]+$/, '') || FFMPEG_SLUG);
-        var downloadName = baseName + '.' + outputExt;
-
+        var t1 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : 0;
+        var elapsed = (t1 - t0) / 1000;
+        ffSetPerf({ elapsed: elapsed, inSize: file.size, outSize: data.length, speedup: durationSec && elapsed ? durationSec / elapsed : 0 });
         setStatus('Done.');
-        return { output_blob_url: blobUrl, output_filename: downloadName, output_mime: mimeFor(outputExt), _is_mock: false };
+        return {
+            output_blob_url: URL.createObjectURL(blob),
+            output_filename: baseName + '.' + outputExt,
+            output_mime: mimeFor(outputExt), _is_mock: false
+        };
     }
 
     function renderOutputDownload(result) {
-        var html = '<div class="imageOut" style="margin:8px 0;">'
-            + '<a href="' + result.output_blob_url + '" download="' + result.output_filename + '" '
-            + 'class="w3-button w3-blue imgOutDownBtn" style="visibility:visible;opacity:1">'
-            + 'Download ' + result.output_filename + '</a></div>';
-        $('.outputImgs').html(html);
+        var items = result.segments ? result.segments : [result];
+        var html = '<div class="imageOut" style="margin:8px 0;">';
+        for (var i = 0; i < items.length; i++) {
+            html += '<a href="' + items[i].output_blob_url + '" download="' + items[i].output_filename + '" '
+                + 'class="w3-button w3-blue imgOutDownBtn" style="visibility:visible;opacity:1;margin:2px;">'
+                + 'Download ' + items[i].output_filename + '</a>';
+        }
+        html += '</div>';
+        // batch: append (do not clobber) so multiple picked files each render a download
+        var $out = $('.outputImgs');
+        $out.append(html);
     }
 
     function readOptsFromUi() {
-        var v = $('#ffmpegBitrate').val();
-        return { bitrate: v ? parseInt(v, 10) : 192 };
+        var opts = { bitrate: ffNum('ffmpegBitrate', 192) };
+        var vc = ffVal('ffmpegVCodec', ''); if (vc) { opts.vcodec = vc; }
+        var q = ffNum('ffmpegQuality', 0); if (q >= 1 && q <= 5) { opts.quality = q; }
+        var res = ffVal('ffmpegResolution', ''); if (res) { opts.resolution = res; }
+        opts.customW = ffVal('ffmpegCustomW', ''); opts.customH = ffVal('ffmpegCustomH', '');
+        var fps = ffNum('ffmpegFps', 0); if (fps > 0) { opts.fps = fps; }
+        var ac = ffVal('ffmpegACodec', ''); if (ac) { opts.acodec = ac; }
+        var tr = ffVal('ffmpegTransition', 'none'); if (tr && tr !== 'none') { opts.transition = tr; }
+        var sp = ffNum('ffmpegSplit', 0); if (sp > 0) { opts.split = sp; }
+        var pm = ffVal('ffmpegPerfMode', ''); if (pm) { opts.perfMode = pm; }
+        return opts;
+    }
+
+    // E3: wire the display-only controls (quality-slider label + custom-size show/hide).
+    // Direct-bound: the controls exist in BODYHTML by the time the local-upload bootstrap
+    // calls loadUploadHandlersByPage (post-render). Defensive - no-op if a control is absent.
+    function ffWireControls() {
+        var q = ffId('ffmpegQuality'), ql = ffId('ffmpegQualityVal');
+        if (q && ql) { ql.textContent = q.value; $(q).on('input change', function () { ql.textContent = this.value; }); }
+        var res = ffId('ffmpegResolution');
+        if (res) {
+            var syncCustom = function () {
+                var c = document.querySelector('.ffmpeg-custom-res');
+                if (c) { c.style.display = (res.value === 'custom') ? '' : 'none'; }
+            };
+            syncCustom();
+            $(res).on('change', syncCustom);
+        }
     }
 
     function loadUploadHandlersByPage() {
+        try { ffWireControls(); } catch (e) { /* controls are optional; legacy convert still works */ }
         var onFileCompleteOrigin = onFileComplete;
         onFileComplete = async function (e, file, response) {
             onFileCompleteOrigin.call(this, e, file, response);
@@ -185,14 +331,13 @@
                 $('.outputImgs').html('<div class="w3-panel w3-pale-red"><b>' + FFMPEG_TITLE + ':</b> No file received.</div>');
                 return;
             }
-            $('.outputImgs').empty();
             $('.downloadC').addClass('w3-hide');
             try {
                 var result = await processInputForSlug(realFile, readOptsFromUi());
                 renderOutputDownload(result);
             } catch (err) {
                 console.error('hd-video-converter:', err);
-                $('.outputImgs').html('<div class="w3-panel w3-pale-red"><b>' + FFMPEG_TITLE + ':</b> '
+                $('.outputImgs').append('<div class="w3-panel w3-pale-red"><b>' + FFMPEG_TITLE + ':</b> '
                     + (err && err.message ? err.message : String(err)) + '</div>');
             }
         };
