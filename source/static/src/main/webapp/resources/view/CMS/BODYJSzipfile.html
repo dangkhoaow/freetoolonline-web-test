@@ -1,20 +1,26 @@
 <script>
+    /* =====================================================================
+     * SERVER-SIDE PATH (existing - UNCHANGED). Uploads the selected files to
+     * the backend, which builds the ZIP (supports password + AES). This is the
+     * default path and is preserved verbatim per the client-side-only / additive
+     * hybrid rule - the E2 enrichment below NEVER replaces or breaks it.
+     * ===================================================================== */
     function loadUploadHandlersByPage(){
         web.folderUpload = true;
-        
+
         buildInputObjBeforeSend = function(inputObj) {
             inputObj["inputFolder"] = "input";
             return inputObj;
         };
-        
+
         var $step1 = $('.step1'),
         $step2 = $('.step2'),
         $step3 = $('.step3'),
         $zipName = $('#zipName'),
         $password = $('#password');
-    
+
         $zipName.val('myzipped-' + getCurrentDateTime());
-        
+
         $(document).on('click','#zipBtn',function() {
             if(web.fileInfoResult.length <= 0){
                 $step3.show();
@@ -22,25 +28,25 @@
             }
             var $this = $(this),
                 oZipInfo = {};
-            
+
             oZipInfo['fileInfos'] = web.fileInfoResult;
-            oZipInfo['id'] = web.id;	
-            oZipInfo['name'] = replaceSpecialChars($('#zipName').val());	
+            oZipInfo['id'] = web.id;
+            oZipInfo['name'] = replaceSpecialChars($('#zipName').val());
             if ($password.val() !== '') {
                 oZipInfo['password'] = $password.val();
-            }	
-            oZipInfo['pageName'] = pageName;	
-            oZipInfo['customInputString'] = $('#enMethod').val();	
+            }
+            oZipInfo['pageName'] = pageName;
+            oZipInfo['customInputString'] = $('#enMethod').val();
             oZipInfo['inputFolder'] = "input";
             $step3.hide();
             $this.text('Zipping');
-            
-            callAjax(oZipInfo, 
+
+            callAjax(oZipInfo,
                     function(result){
                         $this.text('Zip');
                         $step3.show();
                         $step3.find('#downloadLink').attr('href', setOutputUrl(result, false));
-                        $step3.find('#downloadLink').text('Click here to download');				
+                        $step3.find('#downloadLink').text('Click here to download');
                     },
                     function(){
                         $this.text('Zip');
@@ -48,8 +54,172 @@
             );
         });
     };
-    
+
+    /* =====================================================================
+     * CLIENT-SIDE PATH (E2 enrichment, freetool.online -> freetoolonline migration).
+     * Behavior reference ONLY: freetool.online app/zip-compressor/components/
+     * compressor-tool.tsx (fflate). Ported to the site's verified jszip lib
+     * (zip_jszip registry; jszip.min.js already CDN-hosted), lazy-loaded on first
+     * use. Zips the user's chosen files ENTIRELY in the browser - no upload, no
+     * callAjax, ZERO backend calls. ADDITIVE: this is a second, optional mode
+     * beside the server path above; neither touches the other.
+     *
+     * Features ported: compression level 0-9 (0 = STORE, 1-9 = DEFLATE), folder-
+     * structure preservation (webkitRelativePath), real-time progress, and a
+     * compression-ratio readout.
+     *
+     * Element-ID contract (the ui_and_skill sub-step adds these to BODYHTML; every
+     * read is defensive so the server path renders unaffected before they exist):
+     *   #zfClientFile (file/folder picker)  #zfFolders (keep-folder-structure checkbox)
+     *   #zfLevel #zfLevelVal (level 0-9)     #zfClientName (zip filename, optional)
+     *   #zfClientZipBtn                      #zfProgressWrap #zfProgress #zfProgressVal
+     *   #zfRatio (ratio readout)             #zfClientDownload (download link)  #zfClientError
+     * ===================================================================== */
+    var zfJszipLoading = false;
+    var zfLastBlobUrl = null;
+
+    function zfId(id){ return document.getElementById(id); }
+
+    function zfFmtBytes(n){
+        if (n < 1024) { return n + ' B'; }
+        if (n < 1024 * 1024) { return (n / 1024).toFixed(1) + ' KB'; }
+        return (n / (1024 * 1024)).toFixed(2) + ' MB';
+    }
+
+    function zfClientError(msg){
+        var e = zfId('zfClientError');
+        if (e) { if (msg) { e.textContent = msg; e.style.display = ''; } else { e.textContent = ''; e.style.display = 'none'; } }
+    }
+
+    function zfSetProgress(pct){
+        var wrap = zfId('zfProgressWrap'); if (wrap) { wrap.style.display = pct == null ? 'none' : ''; }
+        var bar = zfId('zfProgress'); if (bar && pct != null) { bar.value = pct; }
+        var val = zfId('zfProgressVal'); if (val) { val.textContent = pct == null ? '' : (Math.round(pct) + '%'); }
+    }
+
+    function zfEnsureJszip(cb){
+        if (typeof JSZip !== 'undefined') { cb(); return; }
+        if (zfJszipLoading) { setTimeout(function(){ zfEnsureJszip(cb); }, 150); return; }
+        zfJszipLoading = true;
+        loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/jszip.min.js', function(){
+            zfJszipLoading = false;
+            cb();
+        });
+    }
+
+    // toggle the directory-picker attribute so the browser populates webkitRelativePath
+    function zfSyncFolderInput(){
+        var input = zfId('zfClientFile');
+        var folders = zfId('zfFolders');
+        if (!input) { return; }
+        if (folders && folders.checked) {
+            input.setAttribute('webkitdirectory', '');
+            input.setAttribute('directory', '');
+        } else {
+            input.removeAttribute('webkitdirectory');
+            input.removeAttribute('directory');
+        }
+    }
+
+    function zfReadLevel(){
+        var el = zfId('zfLevel');
+        var v = el ? parseInt(el.value, 10) : 6;
+        if (isNaN(v)) { v = 6; }
+        return Math.max(0, Math.min(9, v));
+    }
+
+    function zfRelPath(file, foldersOn){
+        // preserve folder structure when the user picked a directory (ports getRelativePath)
+        if (foldersOn && file.webkitRelativePath) { return file.webkitRelativePath; }
+        return file.name;
+    }
+
+    function zfClientZip(){
+        var input = zfId('zfClientFile');
+        var files = (input && input.files) ? Array.prototype.slice.call(input.files) : [];
+        var btn = zfId('zfClientZipBtn');
+        var dl = zfId('zfClientDownload');
+        var ratio = zfId('zfRatio');
+
+        zfClientError('');
+        if (dl) { dl.style.display = 'none'; dl.removeAttribute('href'); }
+        if (ratio) { ratio.textContent = ''; }
+
+        if (!files.length) { zfClientError('Choose one or more files (or a folder) to zip in your browser.'); return; }
+
+        zfEnsureJszip(function(){
+            if (typeof JSZip === 'undefined') { zfClientError('Could not load the zip library in this browser.'); return; }
+            var level = zfReadLevel();
+            var foldersOn = !!(zfId('zfFolders') && zfId('zfFolders').checked);
+            var originalSize = 0;
+            try {
+                var zip = new JSZip();
+                for (var i = 0; i < files.length; i++) {
+                    originalSize += files[i].size;
+                    // jszip accepts a File/Blob directly and preserves bytes; slashes create folders
+                    zip.file(zfRelPath(files[i], foldersOn), files[i]);
+                }
+                if (btn) { btn.disabled = true; btn.textContent = 'Zipping'; }
+                zfSetProgress(0);
+
+                var genOpts = (level === 0)
+                    ? { type: 'blob', compression: 'STORE' }
+                    : { type: 'blob', compression: 'DEFLATE', compressionOptions: { level: level } };
+
+                zip.generateAsync(genOpts, function(meta){
+                    if (meta && typeof meta.percent === 'number') { zfSetProgress(meta.percent); }
+                }).then(function(blob){
+                    zfSetProgress(100);
+                    if (zfLastBlobUrl) { try { URL.revokeObjectURL(zfLastBlobUrl); } catch(e){} }
+                    zfLastBlobUrl = URL.createObjectURL(blob);
+                    var nameEl = zfId('zfClientName');
+                    var base = (nameEl && nameEl.value) ? nameEl.value : ('myzipped-' + getCurrentDateTime());
+                    if (typeof replaceSpecialChars === 'function') { base = replaceSpecialChars(base); }
+                    if (!/\.zip$/i.test(base)) { base += '.zip'; }
+                    if (dl) {
+                        dl.setAttribute('href', zfLastBlobUrl);
+                        dl.setAttribute('download', base);
+                        dl.textContent = 'Download ' + base;
+                        dl.style.display = '';
+                    }
+                    if (ratio) {
+                        var compressed = blob.size;
+                        var pct = originalSize > 0 ? Math.round((compressed / originalSize) * 100) : 100;
+                        var saved = Math.max(0, 100 - pct);
+                        ratio.textContent = files.length + ' file(s): ' + zfFmtBytes(originalSize)
+                            + ' to ' + zfFmtBytes(compressed) + ' (' + pct + '% of original, ' + saved + '% smaller).';
+                    }
+                    if (btn) { btn.disabled = false; btn.textContent = 'Zip in browser'; }
+                }).catch(function(err){
+                    zfSetProgress(null);
+                    zfClientError('Could not create the zip: ' + (err && err.message ? err.message : 'unknown error') + '.');
+                    if (btn) { btn.disabled = false; btn.textContent = 'Zip in browser'; }
+                });
+            } catch (e) {
+                zfSetProgress(null);
+                zfClientError('Could not create the zip in this browser.');
+                if (btn) { btn.disabled = false; btn.textContent = 'Zip in browser'; }
+            }
+        });
+    }
+
+    // wire the client-mode controls (called from doAfterPageRendered, after jQuery is ready)
+    function zfClientZipInit(){
+        zfSetProgress(null);
+        zfSyncFolderInput();
+        var lvl = zfId('zfLevel'), lvlVal = zfId('zfLevelVal');
+        if (lvl && lvlVal) { lvlVal.textContent = lvl.value; }
+        // delegated handlers - robust regardless of when the BODYHTML controls mount
+        $(document).off('click.zfClient', '#zfClientZipBtn').on('click.zfClient', '#zfClientZipBtn', function(){ zfClientZip(); });
+        $(document).off('change.zfClient', '#zfFolders').on('change.zfClient', '#zfFolders', function(){ zfSyncFolderInput(); });
+        $(document).off('input.zfClient change.zfClientLvl', '#zfLevel').on('input.zfClient change.zfClientLvl', '#zfLevel', function(){
+            var v = zfId('zfLevelVal'); if (v) { v.textContent = this.value; }
+        });
+    }
+
     function doAfterPageRendered(){
         loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/file/zip-file.css');
+        // E2 additive: set up the optional in-browser zip mode if its controls are present
+        if (zfId('zfClientZipBtn') || zfId('zfClientFile')) { try { zfClientZipInit(); } catch(e){} }
     };
 </script>
