@@ -2325,6 +2325,7 @@ export const ALIAS_ROUTES = {
   '/todo-list.html': '/utility-tools/todo-list.html',
   '/unit-converter.html': '/utility-tools/unit-converter.html',
   '/color-picker.html': '/developer-tools/color-picker.html',
+  '/data-visualizer.html': '/developer-tools/data-visualizer.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3109,6 +3110,13 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-pick-a-color-online.html': 'guide/vi/how-to-pick-a-color-online.jsp',
   '/guides/id/how-to-pick-a-color-online.html': 'guide/id/how-to-pick-a-color-online.jsp',
   '/guides/de/how-to-pick-a-color-online.html': 'guide/de/how-to-pick-a-color-online.jsp',
+  '/developer-tools/data-visualizer.html': 'utility/data-visualizer.jsp',
+  '/guides/how-to-visualize-data-online.html': 'guide/how-to-visualize-data-online.jsp',
+  '/guides/pt/how-to-visualize-data-online.html': 'guide/pt/how-to-visualize-data-online.jsp',
+  '/guides/es/how-to-visualize-data-online.html': 'guide/es/how-to-visualize-data-online.jsp',
+  '/guides/vi/how-to-visualize-data-online.html': 'guide/vi/how-to-visualize-data-online.jsp',
+  '/guides/id/how-to-visualize-data-online.html': 'guide/id/how-to-visualize-data-online.jsp',
+  '/guides/de/how-to-visualize-data-online.html': 'guide/de/how-to-visualize-data-online.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
