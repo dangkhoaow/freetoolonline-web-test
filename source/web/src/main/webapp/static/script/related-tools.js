@@ -247,6 +247,7 @@ try {
     { title: "Code Editor", url: "https://freetoolonline.com/developer-tools/code-editor.html", include: !1, tags: "developer" },
     { title: "Steganography", url: "https://freetoolonline.com/image-tools/steganography.html", include: !1, tags: "image-editing" },
     { title: "How to Hide a Message in an Image (Steganography, Free + In-Browser)", url: "https://freetoolonline.com/guides/how-to-hide-a-message-in-an-image.html", include: !1, tags: "image-editing" },
+    { title: "How to Edit Code Online - Free, In Your Browser", url: "https://freetoolonline.com/guides/how-to-edit-code-online.html", include: !1, tags: "developer" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

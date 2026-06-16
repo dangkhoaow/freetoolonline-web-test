@@ -3136,9 +3136,6 @@ export const JSP_BY_ROUTE = {
   '/guides/id/how-to-turn-text-into-an-image-online.html': 'guide/id/how-to-turn-text-into-an-image-online.jsp',
   '/guides/de/how-to-turn-text-into-an-image-online.html': 'guide/de/how-to-turn-text-into-an-image-online.jsp',
   '/developer-tools/code-editor.html': 'utility/code-editor.jsp',
-  '/guides/code-editor-when.html': 'guide/code-editor-when.jsp',
-  '/guides/code-editor-step-by-step.html': 'guide/code-editor-step-by-step.jsp',
-  '/guides/code-editor-vs-alternatives.html': 'guide/code-editor-vs-alternatives.jsp',
   '/image-tools/steganography.html': 'convert/steganography.jsp',
   '/guides/how-to-hide-a-message-in-an-image.html': 'guide/how-to-hide-a-message-in-an-image.jsp',
   '/guides/pt/how-to-hide-a-message-in-an-image.html': 'guide/pt/how-to-hide-a-message-in-an-image.jsp',
@@ -3146,6 +3143,12 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-hide-a-message-in-an-image.html': 'guide/vi/how-to-hide-a-message-in-an-image.jsp',
   '/guides/id/how-to-hide-a-message-in-an-image.html': 'guide/id/how-to-hide-a-message-in-an-image.jsp',
   '/guides/de/how-to-hide-a-message-in-an-image.html': 'guide/de/how-to-hide-a-message-in-an-image.jsp',
+  '/guides/how-to-edit-code-online.html': 'guide/how-to-edit-code-online.jsp',
+  '/guides/pt/how-to-edit-code-online.html': 'guide/pt/how-to-edit-code-online.jsp',
+  '/guides/es/how-to-edit-code-online.html': 'guide/es/how-to-edit-code-online.jsp',
+  '/guides/vi/how-to-edit-code-online.html': 'guide/vi/how-to-edit-code-online.jsp',
+  '/guides/id/how-to-edit-code-online.html': 'guide/id/how-to-edit-code-online.jsp',
+  '/guides/de/how-to-edit-code-online.html': 'guide/de/how-to-edit-code-online.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
