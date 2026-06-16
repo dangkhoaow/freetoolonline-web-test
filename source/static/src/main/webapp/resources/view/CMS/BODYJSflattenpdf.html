@@ -53,3 +53,205 @@
         $('input[name=tool][value=gs]').click();
     };
 </script>
+
+<!-- E6 freetool-migration: ADDITIVE in-browser PDF compress/optimize path (pdf-lib, zero upload).
+     The server flatten path above (#flatten -> callAjax) is UNTOUCHED. This client path
+     re-saves the PDF with pdf-lib object streams (structure optimization, 3 levels) -
+     modest size reduction without re-uploading. Activates only when the client-mode
+     controls (added in ui_and_skill) are present. -->
+<script>
+    // Idempotent lazy-loader for the self-hosted pdf-lib UMD build (window.PDFLib).
+    function ftoLoadPdfLib() {
+        if (window.PDFLib && window.PDFLib.PDFDocument) { return Promise.resolve(); }
+        if (window.__ftoPdfLibPromise) { return window.__ftoPdfLibPromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/pdf-lib';
+        var url = base + '/pdf-lib.min.js';
+        window.__ftoPdfLibPromise = new Promise(function (resolve, reject) {
+            var s = document.createElement('script');
+            s.src = url; s.async = true;
+            s.onload = function () {
+                (window.PDFLib && window.PDFLib.PDFDocument)
+                    ? resolve()
+                    : reject(new Error('pdf-lib loaded but PDFLib global is missing'));
+            };
+            s.onerror = function () { reject(new Error('failed to load pdf-lib from ' + url)); };
+            document.head.appendChild(s);
+        });
+        return window.__ftoPdfLibPromise;
+    }
+
+    // Real client-side PDF structure optimization. level: 'low'|'medium'|'high'.
+    // Mirrors the source compressPdf: pdf-lib save() with object-stream options.
+    // Returns { bytes, originalSize, newSize }. This optimizes the PDF object
+    // structure; it does NOT downsample embedded images.
+    function ftoClientCompressPdf(file, level, onProgress) {
+        var OPTS = {
+            low: { useObjectStreams: false },
+            medium: { useObjectStreams: true },
+            high: { useObjectStreams: true, objectsPerTick: 20 }
+        };
+        var saveOpts = OPTS[level] || OPTS.medium;
+        return ftoLoadPdfLib().then(function () {
+            if (typeof onProgress === 'function') { onProgress(0.1); }
+            return file.arrayBuffer().then(function (buf) {
+                var originalSize = buf.byteLength;
+                return window.PDFLib.PDFDocument.load(buf, { ignoreEncryption: true }).then(function (doc) {
+                    if (typeof onProgress === 'function') { onProgress(0.5); }
+                    return doc.save(saveOpts).then(function (bytes) {
+                        if (typeof onProgress === 'function') { onProgress(1); }
+                        return { bytes: bytes, originalSize: originalSize, newSize: bytes.byteLength };
+                    });
+                });
+            });
+        });
+    }
+
+    // Guarded wiring to client-mode controls (added in ui_and_skill). No-op until then.
+    function ftoWireClientCompressPdf() {
+        var input = document.getElementById('fcClientFile');
+        var btn = document.getElementById('fcClientBtn');
+        if (!input || !btn) { return; }
+        // E6 verify-fix (2026-06-17): if BODYHTML rendered inside a hidden server-flow .step
+        // (e.g. .step2, shown only after a server upload), move this client panel OUT so the
+        // in-browser (no-upload) tool is visible without uploading. Guarded no-op when not nested.
+        var __ftoRow = btn.closest ? btn.closest('.w3-row') : null;
+        var __ftoStep = __ftoRow && __ftoRow.closest ? __ftoRow.closest('.step') : null;
+        if (__ftoStep && __ftoStep.parentNode) { __ftoStep.parentNode.insertBefore(__ftoRow, __ftoStep.nextSibling); }
+        var status = document.getElementById('fcStatus');
+        var dl = document.getElementById('fcDownload');
+        function val(id, d) { var el = document.getElementById(id); return el ? el.value : d; }
+        function setStatus(m) { if (status) { status.textContent = m; } }
+        function kb(n) { return (n / 1024).toFixed(1) + ' KB'; }
+        btn.addEventListener('click', function () {
+            var f = input.files && input.files[0];
+            if (!f) { setStatus('Select a PDF file to optimize.'); return; }
+            btn.disabled = true;
+            if (dl) { dl.style.display = 'none'; dl.removeAttribute('href'); }
+            setStatus('Optimizing in your browser ...');
+            ftoClientCompressPdf(f, val('fcLevel', 'medium'), function (frac) {
+                setStatus('Optimizing in your browser ... ' + Math.round(frac * 100) + '%');
+            }).then(function (res) {
+                var url = URL.createObjectURL(new Blob([res.bytes], { type: 'application/pdf' }));
+                if (dl) {
+                    dl.href = url;
+                    dl.download = 'optimized-' + (typeof getCurrentDateTime === 'function' ? getCurrentDateTime() : 'document') + '.pdf';
+                    dl.style.display = ''; dl.textContent = 'Download optimized PDF';
+                }
+                var saved = res.originalSize - res.newSize;
+                var pct = res.originalSize > 0 ? Math.round((saved / res.originalSize) * 100) : 0;
+                if (saved > 0) {
+                    setStatus('Done in your browser - no upload. ' + kb(res.originalSize) + ' to ' + kb(res.newSize) + ' (' + pct + '% smaller). Structure optimization does not downsample images.');
+                } else {
+                    setStatus('Done in your browser - no upload. This PDF was already compact (' + kb(res.originalSize) + '); object-stream optimization could not reduce it further. For image-heavy PDFs, downsampling on the server flatten tool above may help.');
+                }
+            }).catch(function (err) {
+                setStatus('Could not optimize in the browser: ' + (err && err.message ? err.message : 'unknown error') + '. The server flatten tool above still works.');
+            }).then(function () { btn.disabled = false; });
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', ftoWireClientCompressPdf);
+    } else {
+        ftoWireClientCompressPdf();
+    }
+</script>
+
+<!-- E6 freetool-migration: ADDITIVE in-browser PDF page-rotation path (pdf-lib, zero upload).
+     freetoolonline has no dedicated rotate-pdf page; flatten-pdf is the cluster's
+     "upload a PDF -> get a processed PDF back" tool (also hosts the client compress
+     mode above), so the in-browser rotate utility lives here. Reuses the ftoLoadPdfLib
+     loader defined in the compress block above. Server flatten path UNTOUCHED.
+     Activates only when the client-mode controls (added in ui_and_skill) are present. -->
+<script>
+    // Parse a page range into 0-based page indices, clamped to [0, count).
+    // 'all' | '2-5' | '1,3,7' | '4'. (1-based input, like the source.)
+    function ftoRotateParseRange(range, count) {
+        range = (range == null ? 'all' : String(range)).trim();
+        if (!range || range === 'all') {
+            var a = []; for (var i = 0; i < count; i++) { a.push(i); } return a;
+        }
+        var out = [];
+        range.split(',').forEach(function (part) {
+            part = part.trim(); if (!part) { return; }
+            if (part.indexOf('-') > -1) {
+                var se = part.split('-'); var s = parseInt(se[0], 10) - 1, e = parseInt(se[1], 10) - 1;
+                if (!isNaN(s) && !isNaN(e)) { for (var k = s; k <= e; k++) { out.push(k); } }
+            } else {
+                var n = parseInt(part, 10) - 1; if (!isNaN(n)) { out.push(n); }
+            }
+        });
+        out = out.filter(function (idx) { return idx >= 0 && idx < count; });
+        return out.length ? out : ftoRotateParseRange('all', count);
+    }
+
+    // Real client-side bulk page rotation. degrees: 90|180|270 (added to each page's
+    // current rotation, mod 360). Mirrors the source rotatePdfPages (pdf-lib
+    // getRotation/setRotation). Returns a Uint8Array of the rotated PDF.
+    function ftoClientRotatePdf(file, pageRange, degrees, onProgress) {
+        degrees = ((parseInt(degrees, 10) || 90) % 360 + 360) % 360;
+        return ftoLoadPdfLib().then(function () {
+            var PDFLib = window.PDFLib;
+            if (typeof onProgress === 'function') { onProgress(0.2); }
+            return file.arrayBuffer().then(function (buf) {
+                return PDFLib.PDFDocument.load(buf, { ignoreEncryption: true }).then(function (doc) {
+                    var count = doc.getPageCount();
+                    var idxs = ftoRotateParseRange(pageRange, count);
+                    idxs.forEach(function (idx) {
+                        var page = doc.getPage(idx);
+                        var cur = page.getRotation().angle || 0;
+                        page.setRotation(PDFLib.degrees((cur + degrees) % 360));
+                    });
+                    if (typeof onProgress === 'function') { onProgress(0.8); }
+                    return doc.save().then(function (bytes) {
+                        if (typeof onProgress === 'function') { onProgress(1); }
+                        return { bytes: bytes, rotated: idxs.length, total: count };
+                    });
+                });
+            });
+        });
+    }
+
+    // Guarded wiring to client-mode controls (added in ui_and_skill). No-op until then.
+    function ftoWireClientRotatePdf() {
+        var input = document.getElementById('frClientFile');
+        var btn = document.getElementById('frClientBtn');
+        if (!input || !btn) { return; }
+        // E6 verify-fix (2026-06-17): if BODYHTML rendered inside a hidden server-flow .step
+        // (e.g. .step2, shown only after a server upload), move this client panel OUT so the
+        // in-browser (no-upload) tool is visible without uploading. Guarded no-op when not nested.
+        var __ftoRow = btn.closest ? btn.closest('.w3-row') : null;
+        var __ftoStep = __ftoRow && __ftoRow.closest ? __ftoRow.closest('.step') : null;
+        if (__ftoStep && __ftoStep.parentNode) { __ftoStep.parentNode.insertBefore(__ftoRow, __ftoStep.nextSibling); }
+        var status = document.getElementById('frStatus');
+        var dl = document.getElementById('frDownload');
+        function val(id, d) { var el = document.getElementById(id); return el ? el.value : d; }
+        function setStatus(m) { if (status) { status.textContent = m; } }
+        btn.addEventListener('click', function () {
+            var f = input.files && input.files[0];
+            if (!f) { setStatus('Select a PDF file to rotate.'); return; }
+            btn.disabled = true;
+            if (dl) { dl.style.display = 'none'; dl.removeAttribute('href'); }
+            setStatus('Rotating in your browser ...');
+            ftoClientRotatePdf(f, val('frPageRange', 'all'), val('frDegrees', '90'), function (frac) {
+                setStatus('Rotating in your browser ... ' + Math.round(frac * 100) + '%');
+            }).then(function (res) {
+                var url = URL.createObjectURL(new Blob([res.bytes], { type: 'application/pdf' }));
+                if (dl) {
+                    dl.href = url;
+                    dl.download = 'rotated-' + (typeof getCurrentDateTime === 'function' ? getCurrentDateTime() : 'document') + '.pdf';
+                    dl.style.display = ''; dl.textContent = 'Download rotated PDF';
+                }
+                setStatus('Done in your browser - no upload. Rotated ' + res.rotated + ' of ' + res.total + ' page(s).');
+            }).catch(function (err) {
+                setStatus('Could not rotate in the browser: ' + (err && err.message ? err.message : 'unknown error') + '.');
+            }).then(function () { btn.disabled = false; });
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', ftoWireClientRotatePdf);
+    } else {
+        ftoWireClientRotatePdf();
+    }
+</script>

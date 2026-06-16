@@ -39,3 +39,146 @@
         });
     };
 </script>
+
+<!-- E6 freetool-migration: ADDITIVE in-browser images-to-PDF path (pdf-lib, zero upload).
+     The server path above (#convertBtn -> callAjax) is UNTOUCHED. Activates only when
+     the client-mode controls (added in ui_and_skill) are present. -->
+<script>
+    // Idempotent lazy-loader for the self-hosted pdf-lib UMD build (window.PDFLib).
+    function ftoLoadPdfLib() {
+        if (window.PDFLib && window.PDFLib.PDFDocument) { return Promise.resolve(); }
+        if (window.__ftoPdfLibPromise) { return window.__ftoPdfLibPromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/pdf-lib';
+        var url = base + '/pdf-lib.min.js';
+        window.__ftoPdfLibPromise = new Promise(function (resolve, reject) {
+            var s = document.createElement('script');
+            s.src = url; s.async = true;
+            s.onload = function () {
+                (window.PDFLib && window.PDFLib.PDFDocument)
+                    ? resolve()
+                    : reject(new Error('pdf-lib loaded but PDFLib global is missing'));
+            };
+            s.onerror = function () { reject(new Error('failed to load pdf-lib from ' + url)); };
+            document.head.appendChild(s);
+        });
+        return window.__ftoPdfLibPromise;
+    }
+
+    // Real client-side images-to-PDF. opts: { pageSize, orientation, margin,
+    // addPageNumbers, fitToPage }. Page sizes in PDF points; each image is
+    // canvas-rasterized to PNG then embedded (uniform across JPG/PNG/WebP), scaled
+    // to fit the printable area, centered, optional bottom-center page number.
+    function ftoClientImagesToPdf(files, opts, onProgress) {
+        opts = opts || {};
+        var SIZES = {
+            a4: [595.28, 841.89], letter: [612, 792], legal: [612, 1008],
+            a3: [841.89, 1190.55], a5: [419.53, 595.28], tabloid: [792, 1224]
+        };
+        var MARGINS = { none: 0, small: 20, medium: 40, large: 60 };
+        return ftoLoadPdfLib().then(function () {
+            var PDFLib = window.PDFLib;
+            var PDFDocument = PDFLib.PDFDocument, StandardFonts = PDFLib.StandardFonts, rgb = PDFLib.rgb;
+            var basePg = SIZES[opts.pageSize] || SIZES.a4;
+            var pw = basePg[0], ph = basePg[1];
+            if (opts.orientation === 'landscape') { var t = pw; pw = ph; ph = t; }
+            var margin = Object.prototype.hasOwnProperty.call(MARGINS, opts.margin) ? MARGINS[opts.margin] : MARGINS.medium;
+            var fitToPage = opts.fitToPage !== false;
+            function loadImg(file) {
+                return new Promise(function (res, rej) {
+                    var r = new FileReader();
+                    r.onload = function (e) { var im = new Image(); im.onload = function () { res(im); }; im.onerror = rej; im.src = e.target.result; };
+                    r.onerror = rej; r.readAsDataURL(file);
+                });
+            }
+            function toPngBytes(img) {
+                var c = document.createElement('canvas');
+                c.width = img.naturalWidth || img.width; c.height = img.naturalHeight || img.height;
+                c.getContext('2d').drawImage(img, 0, 0);
+                var b64 = c.toDataURL('image/png').split(',')[1];
+                var bin = atob(b64), u = new Uint8Array(bin.length);
+                for (var k = 0; k < bin.length; k++) { u[k] = bin.charCodeAt(k); }
+                return u;
+            }
+            return PDFDocument.create().then(function (pdfDoc) {
+                var fontP = opts.addPageNumbers ? pdfDoc.embedFont(StandardFonts.Helvetica) : Promise.resolve(null);
+                return fontP.then(function (font) {
+                    var i = 0;
+                    function next() {
+                        if (i >= files.length) { return pdfDoc.save(); }
+                        return loadImg(files[i]).then(function (img) {
+                            var maxW = pw - 2 * margin, maxH = ph - 2 * margin;
+                            var iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+                            var scale = 1;
+                            if (iw > maxW || ih > maxH) { scale = Math.min(maxW / iw, maxH / ih); }
+                            else if (fitToPage) { scale = Math.min(maxW / iw, maxH / ih, 2); }
+                            var dw = iw * scale, dh = ih * scale;
+                            var page = pdfDoc.addPage([pw, ph]);
+                            return pdfDoc.embedPng(toPngBytes(img)).then(function (emb) {
+                                page.drawImage(emb, { x: (pw - dw) / 2, y: (ph - dh) / 2, width: dw, height: dh });
+                                if (font) {
+                                    var label = String(i + 1), fs = 10, tw = font.widthOfTextAtSize(label, fs);
+                                    page.drawText(label, { x: (pw - tw) / 2, y: 12, size: fs, font: font, color: rgb(0.4, 0.4, 0.4) });
+                                }
+                                i++;
+                                if (typeof onProgress === 'function') { onProgress(i / files.length); }
+                                return next();
+                            });
+                        });
+                    }
+                    return next();
+                });
+            });
+        });
+    }
+
+    // Guarded wiring to the client-mode controls (added in ui_and_skill). No-op until then.
+    function ftoWireClientImagesToPdf() {
+        var input = document.getElementById('i2pClientFiles');
+        var btn = document.getElementById('i2pClientBtn');
+        if (!input || !btn) { return; }
+        // E6 verify-fix (2026-06-17): if BODYHTML rendered inside a hidden server-flow .step
+        // (e.g. .step2, shown only after a server upload), move this client panel OUT so the
+        // in-browser (no-upload) tool is visible without uploading. Guarded no-op when not nested.
+        var __ftoRow = btn.closest ? btn.closest('.w3-row') : null;
+        var __ftoStep = __ftoRow && __ftoRow.closest ? __ftoRow.closest('.step') : null;
+        if (__ftoStep && __ftoStep.parentNode) { __ftoStep.parentNode.insertBefore(__ftoRow, __ftoStep.nextSibling); }
+        var status = document.getElementById('i2pStatus');
+        var dl = document.getElementById('i2pDownload');
+        function val(id, dflt) { var el = document.getElementById(id); return el ? el.value : dflt; }
+        function checked(id) { var el = document.getElementById(id); return !!(el && el.checked); }
+        function setStatus(m) { if (status) { status.textContent = m; } }
+        btn.addEventListener('click', function () {
+            var files = input.files ? Array.prototype.slice.call(input.files) : [];
+            if (files.length < 1) { setStatus('Select at least one image to convert.'); return; }
+            btn.disabled = true;
+            if (dl) { dl.style.display = 'none'; dl.removeAttribute('href'); }
+            setStatus('Building PDF in your browser ... 0%');
+            var opts = {
+                pageSize: val('i2pPageSize', 'a4'),
+                orientation: val('i2pOrientation', 'portrait'),
+                margin: val('i2pMargin', 'medium'),
+                addPageNumbers: checked('i2pPageNumbers'),
+                fitToPage: true
+            };
+            ftoClientImagesToPdf(files, opts, function (frac) {
+                setStatus('Building PDF in your browser ... ' + Math.round(frac * 100) + '%');
+            }).then(function (bytes) {
+                var url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+                if (dl) {
+                    dl.href = url;
+                    dl.download = 'images-' + (typeof getCurrentDateTime === 'function' ? getCurrentDateTime() : 'document') + '.pdf';
+                    dl.style.display = ''; dl.textContent = 'Download PDF';
+                }
+                setStatus('Done. ' + files.length + ' image(s) placed into a PDF in your browser - no upload.');
+            }).catch(function (err) {
+                setStatus('Could not build the PDF in the browser: ' + (err && err.message ? err.message : 'unknown error') + '. The server convert above still works.');
+            }).then(function () { btn.disabled = false; });
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', ftoWireClientImagesToPdf);
+    } else {
+        ftoWireClientImagesToPdf();
+    }
+</script>
