@@ -240,6 +240,8 @@ try {
     { title: "How to Pick a Color Online - HEX, RGB, and HSL", url: "https://freetoolonline.com/guides/how-to-pick-a-color-online.html", include: !1, tags: "developer" },
     { title: "Data Visualizer", url: "https://freetoolonline.com/developer-tools/data-visualizer.html", include: !1, tags: "developer" },
     { title: "How to Visualize Data Online - Make a Chart From Your Numbers", url: "https://freetoolonline.com/guides/how-to-visualize-data-online.html", include: !1, tags: "developer" },
+    { title: "Screen Recorder", url: "https://freetoolonline.com/device-test-tools/screen-recorder.html", include: !1, tags: "device-test" },
+    { title: "How to Record Your Screen Online - Screen, Camera, or Microphone", url: "https://freetoolonline.com/guides/how-to-record-your-screen-online.html", include: !1, tags: "device-test" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

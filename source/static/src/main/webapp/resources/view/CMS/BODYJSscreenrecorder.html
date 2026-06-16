@@ -1,0 +1,399 @@
+<script>
+    // Media-recorder - fully in-browser. Reference:
+    // verified-browser-impl-registry.mjs entry `media_recorder_mediarecorder`.
+    // Page: /device-test-tools/screen-recorder.html
+    //
+    // What it does on the client:
+    //   - Pick a source: camera, camera + microphone, microphone only, or screen.
+    //   - Click Start; the browser asks permission, then records via the native
+    //     MediaRecorder API to WebM. Pause / Resume and Stop are supported, with
+    //     a live duration counter.
+    //   - Optional privacy face-blur: when the source select is video and the
+    //     Blur faces box is on, frames are drawn through a canvas pipeline that
+    //     blurs detected faces before they reach the recorder (needs the browser
+    //     FaceDetector API; falls back to a plain pass-through when absent).
+    //   - On Stop the clip is assembled into a Blob and shown as an inline
+    //     <video controls> (or <audio controls> for mic-only) plus a Download
+    //     link, inside the .outputImgs container. No upload, no backend.
+    //   - Optional Convert to MP4: re-encodes the WebM clip to H.264 MP4 fully
+    //     in the browser via the self-hosted FFmpeg.wasm vendor build (the same
+    //     /vendor/ffmpeg assets the HD video converter uses). One-time ~31MB
+    //     load on first conversion; nothing leaves the device.
+    //
+    // The framework calls doAfterPageRendered() during page startup (it fires for
+    // EVERY page once jQuery + base-script load). Do NOT call $(...) at the top
+    // level: `$` is only defined inside the hook.
+    //
+    // NOTE (freetool-migration T5 port_logic): the live face-blur canvas pipeline
+    // is ported from freetool.online lib/services/privacy-media-recorder/
+    // privacy-protection-service.ts (applyFaceBlur + processMediaStream); the
+    // WebM -> MP4 re-encode is ported from ffmpeg-processor-service.ts
+    // (processRecording + buildVideoCommand MP4 path). UI/UX is freetoolonline's
+    // own (w3.css controls built in BODYHTML); React/shadcn chrome dropped.
+    // New controls (#mrFaceBlur, #mrBlurIntensity, #mrConvertMp4, #mrConvertStatus)
+    // are defensively guarded so this runs against the current minimal BODYHTML
+    // AND the richer one the ui_and_skill sub-step builds.
+
+    web.localUpload = false;
+
+    var mrState = {
+        recorder: null, chunks: [], stream: null, sourceStream: null,
+        timerId: null, startMs: 0, pausedMs: 0, pauseStart: 0,
+        mime: '', kind: 'video',
+        // face-blur pipeline state
+        blurRaf: 0, blurVideo: null, blurCanvas: null, blurCtx: null, faceDetector: null,
+        // last clip (for MP4 conversion)
+        lastBlob: null, lastDurationSec: 0,
+    };
+
+    // -------- self-hosted FFmpeg.wasm (mirrors BODYJShdvideoconverter.html) --------
+    var MR_FFMPEG_VENDOR_BASE = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/ffmpeg';
+    var MR_FFMPEG_UMD_URL = MR_FFMPEG_VENDOR_BASE + '/ffmpeg.js';
+    var MR_FFMPEG_CORE_JS_URL = MR_FFMPEG_VENDOR_BASE + '/ffmpeg-core.js';
+    var MR_FFMPEG_CORE_WASM_URL = MR_FFMPEG_VENDOR_BASE + '/ffmpeg-core.wasm';
+    var mrFfmpegInstance = null;
+    var mrFfmpegLoadPromise = null;
+    var mrFfmpegUmdScriptPromise = null;
+
+    function mrInjectFfmpegUmdOnce() {
+        if (mrFfmpegUmdScriptPromise) return mrFfmpegUmdScriptPromise;
+        mrFfmpegUmdScriptPromise = new Promise(function (resolve, reject) {
+            if (typeof globalThis.FFmpegWASM !== 'undefined') return resolve();
+            var s = document.createElement('script');
+            s.src = MR_FFMPEG_UMD_URL;
+            s.async = true;
+            s.onload = function () {
+                if (typeof globalThis.FFmpegWASM === 'undefined') {
+                    reject(new Error('FFmpegWASM global missing after ' + MR_FFMPEG_UMD_URL + ' loaded'));
+                } else { resolve(); }
+            };
+            s.onerror = function () { reject(new Error('Failed to load ' + MR_FFMPEG_UMD_URL)); };
+            document.head.appendChild(s);
+        });
+        return mrFfmpegUmdScriptPromise;
+    }
+
+    async function mrLoadFfmpegOnce(progressCb) {
+        if (mrFfmpegInstance) return mrFfmpegInstance;
+        if (mrFfmpegLoadPromise) return mrFfmpegLoadPromise;
+        mrFfmpegLoadPromise = (async function () {
+            progressCb && progressCb('Loading FFmpeg.wasm (~31MB, one-time)...');
+            await mrInjectFfmpegUmdOnce();
+            var FFmpegCtor = globalThis.FFmpegWASM && globalThis.FFmpegWASM.FFmpeg;
+            if (!FFmpegCtor) throw new Error('globalThis.FFmpegWASM.FFmpeg missing - vendor assets out of date?');
+            var ffmpeg = new FFmpegCtor();
+            ffmpeg.on('progress', function (e) {
+                var pct = Math.round((e.progress || 0) * 100);
+                if (pct >= 0 && pct <= 100) progressCb && progressCb('Converting to MP4: ' + pct + '%');
+            });
+            await ffmpeg.load({ coreURL: MR_FFMPEG_CORE_JS_URL, wasmURL: MR_FFMPEG_CORE_WASM_URL });
+            mrFfmpegInstance = ffmpeg;
+            return ffmpeg;
+        })();
+        return mrFfmpegLoadPromise;
+    }
+
+    // Ported from ffmpeg-processor-service.ts buildVideoCommand (MP4 path) +
+    // processRecording: force WebM parsing flags + exact duration, libx264/aac MP4.
+    function mrBuildMp4Args(inputName, outputName, durationSec) {
+        var a = ['-v', 'warning', '-stats',
+                 '-fflags', '+genpts+igndts',
+                 '-analyzeduration', '2147483647', '-probesize', '2147483647',
+                 '-i', inputName];
+        if (durationSec && durationSec > 0) { a.push('-t', String(durationSec)); }
+        a.push('-c:v', 'libx264', '-preset', 'fast', '-crf', '22', '-pix_fmt', 'yuv420p',
+               '-c:a', 'aac', '-b:a', '128k',
+               '-movflags', '+faststart',
+               '-max_muxing_queue_size', '9999', '-avoid_negative_ts', 'make_zero',
+               '-y', outputName);
+        return a;
+    }
+
+    async function mrConvertToMp4(blob, durationSec, progressCb) {
+        if (!blob || !blob.size) throw new Error('No recorded clip to convert.');
+        var ffmpeg = await mrLoadFfmpegOnce(progressCb);
+        var inputName = 'input.webm';
+        var outputName = 'output.mp4';
+        progressCb && progressCb('Reading clip...');
+        var buf = await blob.arrayBuffer();
+        await ffmpeg.writeFile(inputName, new Uint8Array(buf));
+        progressCb && progressCb('Running FFmpeg...');
+        await ffmpeg.exec(mrBuildMp4Args(inputName, outputName, durationSec));
+        progressCb && progressCb('Reading output...');
+        var data = await ffmpeg.readFile(outputName);
+        try { await ffmpeg.deleteFile(inputName); } catch (e) { /* ignore */ }
+        try { await ffmpeg.deleteFile(outputName); } catch (e) { /* ignore */ }
+        if (!data || !data.byteLength || data.byteLength < 1000) {
+            throw new Error('Conversion produced an empty file. The clip may be too short.');
+        }
+        return new Blob([data.buffer], { type: 'video/mp4' });
+    }
+
+    // -------- live face-blur canvas pipeline (ported from privacy-protection-service.ts) --------
+    function mrSupportsFaceBlur() { return (typeof window !== 'undefined') && ('FaceDetector' in window); }
+
+    function mrInitFaceDetector() {
+        if (mrState.faceDetector || !mrSupportsFaceBlur()) return mrState.faceDetector;
+        try { mrState.faceDetector = new window.FaceDetector({ maxDetectedFaces: 10, fastMode: true }); }
+        catch (e) { mrState.faceDetector = null; }
+        return mrState.faceDetector;
+    }
+
+    // Draw one video frame to the canvas, blurring each detected face (source applyFaceBlur).
+    async function mrDrawBlurFrame(videoEl, intensity) {
+        var canvas = mrState.blurCanvas, ctx = mrState.blurCtx;
+        if (!ctx || videoEl.readyState < 2 || !videoEl.videoWidth) return;
+        if (canvas.width !== videoEl.videoWidth) canvas.width = videoEl.videoWidth;
+        if (canvas.height !== videoEl.videoHeight) canvas.height = videoEl.videoHeight;
+        ctx.filter = 'none';
+        ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+        if (!mrState.faceDetector) return;
+        try {
+            var faces = await mrState.faceDetector.detect(videoEl);
+            for (var i = 0; i < faces.length; i++) {
+                var bb = faces[i].boundingBox;
+                var x = bb.x, y = bb.y, w = bb.width, h = bb.height;
+                var blurRadius = Math.min(w, h) * (intensity / 20);
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(x + w / 2, y + h / 2, Math.max(w, h) / 1.5, 0, Math.PI * 2);
+                ctx.clip();
+                ctx.filter = 'blur(' + blurRadius + 'px)';
+                ctx.drawImage(videoEl,
+                    x - blurRadius, y - blurRadius, w + blurRadius * 2, h + blurRadius * 2,
+                    x - blurRadius, y - blurRadius, w + blurRadius * 2, h + blurRadius * 2);
+                ctx.restore();
+            }
+        } catch (e) { /* detection hiccup - leave the plain frame */ }
+    }
+
+    // Build a processed MediaStream from the raw stream (source processMediaStream).
+    function mrStartBlurPipeline(rawStream, intensity) {
+        return new Promise(function (resolve, reject) {
+            var videoTrack = rawStream.getVideoTracks()[0];
+            if (!videoTrack) return reject(new Error('No video track to blur.'));
+            mrInitFaceDetector();
+            mrState.blurCanvas = document.createElement('canvas');
+            mrState.blurCtx = mrState.blurCanvas.getContext('2d');
+            var st = videoTrack.getSettings ? videoTrack.getSettings() : {};
+            mrState.blurCanvas.width = st.width || 1280;
+            mrState.blurCanvas.height = st.height || 720;
+            var v = document.createElement('video');
+            v.srcObject = rawStream; v.autoplay = true; v.muted = true; v.playsInline = true;
+            mrState.blurVideo = v;
+            var out = mrState.blurCanvas.captureStream();
+            // carry the original audio tracks onto the processed stream
+            rawStream.getAudioTracks().forEach(function (t) { out.addTrack(t); });
+            var started = false;
+            function loop() {
+                mrDrawBlurFrame(v, intensity);
+                mrState.blurRaf = requestAnimationFrame(loop);
+                if (!started) { started = true; resolve(out); }
+            }
+            var pp = v.play();
+            if (pp && pp.then) { pp.then(function () { loop(); }).catch(function () { loop(); }); }
+            else { loop(); }
+        });
+    }
+
+    function mrStopBlurPipeline() {
+        if (mrState.blurRaf) { try { cancelAnimationFrame(mrState.blurRaf); } catch (e) {} mrState.blurRaf = 0; }
+        if (mrState.blurVideo) { try { mrState.blurVideo.srcObject = null; } catch (e) {} mrState.blurVideo = null; }
+        mrState.blurCanvas = null; mrState.blurCtx = null;
+    }
+
+    // -------- base recorder (scaffold baseline, unchanged) --------
+    function mrPickMime(audioOnly) {
+        var MR = window.MediaRecorder;
+        if (!MR || !MR.isTypeSupported) return '';
+        var vids = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+        var auds = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus'];
+        var list = audioOnly ? auds : vids;
+        for (var i = 0; i < list.length; i++) { if (MR.isTypeSupported(list[i])) return list[i]; }
+        return '';
+    }
+
+    function mrFmt(ms) {
+        var s = Math.floor(ms / 1000);
+        var m = Math.floor(s / 60);
+        s = s % 60;
+        return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+    }
+
+    function mrElapsed() { return (Date.now() - mrState.startMs) - mrState.pausedMs; }
+
+    function mrTick() {
+        var el = $('#mrTimer');
+        if (el.length) el.text(mrFmt(mrElapsed()));
+    }
+
+    function mrSetButtons(recording, paused) {
+        $('#mrStart').prop('disabled', recording);
+        $('#mrStop').prop('disabled', !recording);
+        $('#mrPause').prop('disabled', !recording).text(paused ? 'Resume' : 'Pause');
+        $('#mrSource').prop('disabled', recording);
+        if ($('#mrFaceBlur').length) $('#mrFaceBlur').prop('disabled', recording);
+        if ($('#mrBlurIntensity').length) $('#mrBlurIntensity').prop('disabled', recording);
+    }
+
+    function mrError(msg) { $('#mrError').text(msg).show(); }
+
+    function mrStopTracks() {
+        mrStopBlurPipeline();
+        if (mrState.stream) {
+            mrState.stream.getTracks().forEach(function (t) { try { t.stop(); } catch (e) {} });
+        }
+        if (mrState.sourceStream && mrState.sourceStream !== mrState.stream) {
+            mrState.sourceStream.getTracks().forEach(function (t) { try { t.stop(); } catch (e) {} });
+        }
+        mrState.stream = null;
+        mrState.sourceStream = null;
+    }
+
+    async function mrGetStream(source) {
+        var nav = navigator.mediaDevices;
+        if (!nav) throw new Error('This browser does not expose camera, microphone, or screen capture.');
+        if (source === 'screen') {
+            if (!nav.getDisplayMedia) throw new Error('Screen capture is not available in this browser.');
+            return await nav.getDisplayMedia({ video: true, audio: true });
+        }
+        if (source === 'camera') return await nav.getUserMedia({ video: true, audio: false });
+        if (source === 'camera-mic') return await nav.getUserMedia({ video: true, audio: true });
+        return await nav.getUserMedia({ audio: true, video: false }); // mic only
+    }
+
+    async function mrStart() {
+        $('#mrError').hide().text('');
+        $('#mrOutput').empty();
+        if ($('#mrConvertMp4').length) $('#mrConvertMp4').hide();
+        if ($('#mrConvertStatus').length) $('#mrConvertStatus').hide().text('');
+        var source = $('#mrSource').val() || 'camera';
+        var audioOnly = (source === 'mic');
+        mrState.kind = audioOnly ? 'audio' : 'video';
+        if (!window.MediaRecorder) { mrError('Your browser does not support in-browser recording (MediaRecorder API).'); return; }
+        var raw;
+        try { raw = await mrGetStream(source); }
+        catch (e) { mrError('Could not start recording: ' + (e && e.message ? e.message : 'permission denied or no device.')); return; }
+        mrState.sourceStream = raw;
+
+        // Optional privacy face-blur pipeline (video sources only).
+        var wantBlur = !audioOnly && $('#mrFaceBlur').length && $('#mrFaceBlur').is(':checked');
+        var recStream = raw;
+        if (wantBlur) {
+            var intensity = parseInt(($('#mrBlurIntensity').val() || '5'), 10) || 5;
+            try { recStream = await mrStartBlurPipeline(raw, intensity); }
+            catch (eb) { recStream = raw; mrStopBlurPipeline(); }
+            if (recStream === raw && !mrSupportsFaceBlur()) {
+                mrError('Face blur needs the browser FaceDetector API, which is not available here - recording without blur.');
+            }
+        }
+
+        mrState.stream = recStream;
+        mrState.chunks = [];
+        mrState.mime = mrPickMime(audioOnly);
+        var rec;
+        try { rec = mrState.mime ? new MediaRecorder(recStream, { mimeType: mrState.mime }) : new MediaRecorder(recStream); }
+        catch (e2) { mrError('Could not create the recorder: ' + (e2 && e2.message ? e2.message : 'unsupported format.')); mrStopTracks(); return; }
+        mrState.recorder = rec;
+        rec.ondataavailable = function (ev) { if (ev.data && ev.data.size > 0) mrState.chunks.push(ev.data); };
+        rec.onstop = mrFinish;
+        if (!audioOnly) {
+            var pv = document.getElementById('mrPreview');
+            if (pv) { pv.srcObject = recStream; pv.muted = true; var p = pv.play(); if (p && p.catch) p.catch(function () {}); $('#mrPreview').show(); }
+        }
+        // If the user ends a screen share from the browser chrome, stop recording too.
+        raw.getTracks().forEach(function (t) {
+            t.onended = function () { if (mrState.recorder && mrState.recorder.state !== 'inactive') mrState.recorder.stop(); };
+        });
+        rec.start(1000);
+        mrState.startMs = Date.now();
+        mrState.pausedMs = 0;
+        mrState.pauseStart = 0;
+        mrSetButtons(true, false);
+        mrState.timerId = setInterval(mrTick, 250);
+        mrTick();
+    }
+
+    function mrPause() {
+        var rec = mrState.recorder;
+        if (!rec) return;
+        if (rec.state === 'recording') { rec.pause(); mrState.pauseStart = Date.now(); mrSetButtons(true, true); }
+        else if (rec.state === 'paused') {
+            rec.resume();
+            if (mrState.pauseStart) { mrState.pausedMs += (Date.now() - mrState.pauseStart); mrState.pauseStart = 0; }
+            mrSetButtons(true, false);
+        }
+    }
+
+    function mrStop() {
+        var rec = mrState.recorder;
+        if (rec && rec.state !== 'inactive') rec.stop();
+    }
+
+    function mrFinish() {
+        var elapsed = mrElapsed();
+        if (mrState.timerId) { clearInterval(mrState.timerId); mrState.timerId = null; }
+        var pv = document.getElementById('mrPreview');
+        if (pv) pv.srcObject = null;
+        $('#mrPreview').hide();
+        mrStopTracks();
+        var type = mrState.mime || (mrState.kind === 'audio' ? 'audio/webm' : 'video/webm');
+        var blob = new Blob(mrState.chunks, { type: type });
+        if (!blob.size) { mrError('No data was recorded. Try recording for a moment longer.'); mrSetButtons(false, false); return; }
+        var url = URL.createObjectURL(blob);
+        var ext = (type.indexOf('ogg') >= 0) ? 'ogg' : 'webm';
+        var name = 'screen-recorder-' + mrFmt(elapsed).replace(':', 'm') + 's.' + ext;
+        mrState.lastBlob = blob;
+        mrState.lastDurationSec = Math.max(0, Math.round(elapsed / 1000));
+        var out = $('#mrOutput');
+        out.empty();
+        if (mrState.kind === 'audio') out.append('<audio controls src="' + url + '" style="width:100%;"></audio>');
+        else out.append('<video controls src="' + url + '" style="max-width:100%;"></video>');
+        out.append('<p><a href="' + url + '" download="' + name + '" class="w3-button w3-green">Download clip</a></p>');
+        // Offer in-browser MP4 conversion for video clips when the control is present.
+        if (mrState.kind === 'video' && $('#mrConvertMp4').length) {
+            $('#mrConvertMp4').prop('disabled', false).show();
+        }
+        mrSetButtons(false, false);
+    }
+
+    async function mrHandleConvert() {
+        if (!mrState.lastBlob) { return; }
+        var $btn = $('#mrConvertMp4');
+        var $st = $('#mrConvertStatus');
+        $btn.prop('disabled', true);
+        if ($st.length) $st.show();
+        function setStatus(msg) { if ($st.length) $st.text(msg); }
+        try {
+            var mp4 = await mrConvertToMp4(mrState.lastBlob, mrState.lastDurationSec, setStatus);
+            var url = URL.createObjectURL(mp4);
+            var name = 'screen-recorder-' + mrFmt(mrState.lastDurationSec * 1000).replace(':', 'm') + 's.mp4';
+            var out = $('#mrOutput');
+            out.append('<div class="mr-row"><video controls src="' + url + '" style="max-width:100%;"></video>' +
+                       '<p><a href="' + url + '" download="' + name + '" class="w3-button w3-green">Download MP4</a></p></div>');
+            setStatus('MP4 ready.');
+            $btn.hide();
+        } catch (e) {
+            setStatus('Could not convert to MP4: ' + (e && e.message ? e.message : 'unknown error.'));
+            $btn.prop('disabled', false);
+        }
+    }
+
+    function initMediaRecorder() {
+        if ($('#mrTool').length === 0) return; // not the recorder page
+        if (!window.MediaRecorder) mrError('Your browser does not support in-browser recording (MediaRecorder API).');
+        // Hide the face-blur control when the browser cannot detect faces.
+        if ($('#mrFaceBlur').length && !mrSupportsFaceBlur() && $('#mrFaceBlurRow').length) {
+            $('#mrFaceBlurRow').hide();
+        }
+        $('#mrStart').off('click.mr').on('click.mr', mrStart);
+        $('#mrPause').off('click.mr').on('click.mr', mrPause);
+        $('#mrStop').off('click.mr').on('click.mr', mrStop);
+        if ($('#mrConvertMp4').length) $('#mrConvertMp4').off('click.mr').on('click.mr', mrHandleConvert);
+        mrSetButtons(false, false);
+    }
+
+    function doAfterPageRendered() {
+        initMediaRecorder();
+    }
+</script>

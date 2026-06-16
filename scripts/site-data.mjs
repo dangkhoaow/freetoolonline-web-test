@@ -2326,6 +2326,7 @@ export const ALIAS_ROUTES = {
   '/unit-converter.html': '/utility-tools/unit-converter.html',
   '/color-picker.html': '/developer-tools/color-picker.html',
   '/data-visualizer.html': '/developer-tools/data-visualizer.html',
+  '/screen-recorder.html': '/device-test-tools/screen-recorder.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3117,6 +3118,13 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-visualize-data-online.html': 'guide/vi/how-to-visualize-data-online.jsp',
   '/guides/id/how-to-visualize-data-online.html': 'guide/id/how-to-visualize-data-online.jsp',
   '/guides/de/how-to-visualize-data-online.html': 'guide/de/how-to-visualize-data-online.jsp',
+  '/device-test-tools/screen-recorder.html': 'convert/screen-recorder.jsp',
+  '/guides/how-to-record-your-screen-online.html': 'guide/how-to-record-your-screen-online.jsp',
+  '/guides/pt/how-to-record-your-screen-online.html': 'guide/pt/how-to-record-your-screen-online.jsp',
+  '/guides/es/how-to-record-your-screen-online.html': 'guide/es/how-to-record-your-screen-online.jsp',
+  '/guides/vi/how-to-record-your-screen-online.html': 'guide/vi/how-to-record-your-screen-online.jsp',
+  '/guides/id/how-to-record-your-screen-online.html': 'guide/id/how-to-record-your-screen-online.jsp',
+  '/guides/de/how-to-record-your-screen-online.html': 'guide/de/how-to-record-your-screen-online.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
