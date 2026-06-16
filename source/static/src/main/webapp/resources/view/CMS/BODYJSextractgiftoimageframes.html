@@ -65,5 +65,173 @@
 
     function doAfterPageRendered(){
         loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/convert/extract-gif-to-image-frames.css');
+        // E5 additive: wire the in-browser frame-extraction controls if present
+        if (gfId('gfClientFile') || gfId('gfExtractBtn')) { try { gfClientInit(); } catch (e) { /* server path still works */ } }
     };
+
+    /* =====================================================================
+     * CLIENT-SIDE in-browser GIF frame extraction (E5 enrichment, freetool.online migration).
+     * Behavior reference ONLY: freetool.online lib/services/gif-processor.ts (gifuct-js + jszip).
+     * Ported to the browser-native WebCodecs ImageDecoder (NO gifuct-js needed - ImageDecoder
+     * decodes AND composites animated-GIF frames natively, handling disposal; gifuct-js is not
+     * vendored on this site) + the site-verified jszip (CDN) for the ZIP. ADDITIVE - the existing
+     * server upload path (web.includesProcess=true) above is preserved verbatim. ZERO backend on
+     * the client path (ImageDecoder + canvas + jszip CDN script + FileReader; no fetch/XHR).
+     * Features (plan row 58): batch (multi-GIF), extraction mode all/interval/specific, per-frame
+     * resize (max width), JPEG/WEBP quality, ZIP + individual download, per-file + per-frame progress.
+     *
+     * Element-ID contract (ui_and_skill adds these; all reads defensive so the page + server path
+     * render before the controls exist):
+     *   #gfClientFile (multi gif)  #gfMode (all/interval/specific)  #gfInterval  #gfSpecific
+     *   #gfFormat (png/jpeg/webp)  #gfQuality #gfQualityVal  #gfResize (max width px)  #gfExtractBtn
+     *   #gfProgressWrap #gfProgress #gfProgressVal  #gfFrames (output grid)  #gfZipBtn  #gfError
+     *   (+ .gf-interval-c / .gf-specific-c wrappers toggled by #gfMode)
+     * ===================================================================== */
+    var gfJszipLoading = false;
+    var gfLastFrames = [];
+
+    function gfId(id) { return document.getElementById(id); }
+    function gfVal(id, dflt) { var el = gfId(id); return (el && el.value !== '' && el.value != null) ? el.value : dflt; }
+    function gfNum(id, dflt) { var v = parseInt(gfVal(id, dflt), 10); return isNaN(v) ? dflt : v; }
+    function gfErr(msg) { var e = gfId('gfError'); if (e) { if (msg) { e.textContent = msg; e.style.display = ''; } else { e.textContent = ''; e.style.display = 'none'; } } }
+    function gfSetProgress(pct, label) {
+        var w = gfId('gfProgressWrap'); if (w) { w.style.display = pct == null ? 'none' : ''; }
+        var b = gfId('gfProgress'); if (b && pct != null) { b.value = pct; }
+        var v = gfId('gfProgressVal'); if (v) { v.textContent = pct == null ? '' : ((label ? label + ' ' : '') + Math.round(pct) + '%'); }
+    }
+    function gfEscape(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+    function gfExt(format) { return format === 'jpeg' ? 'jpg' : format; }
+
+    function gfEnsureJszip(cb) {
+        if (typeof JSZip !== 'undefined') { cb(); return; }
+        if (gfJszipLoading) { setTimeout(function () { gfEnsureJszip(cb); }, 150); return; }
+        gfJszipLoading = true;
+        loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/jszip.min.js', function () { gfJszipLoading = false; cb(); });
+    }
+
+    function gfSelectIndices(total, mode, interval, specific) {
+        if (mode === 'interval') {
+            var step = Math.max(1, interval || 1), out = [];
+            for (var i = 0; i < total; i += step) { out.push(i); }
+            return out;
+        }
+        if (mode === 'specific') {
+            return String(specific || '').split(',')
+                .map(function (s) { return parseInt(s.trim(), 10) - 1; }) // user enters 1-based
+                .filter(function (n) { return !isNaN(n) && n >= 0 && n < total; });
+        }
+        var all = []; for (var k = 0; k < total; k++) { all.push(k); } return all;
+    }
+
+    async function gfExtractOne(file, opts, baseProgress, span) {
+        var buf = await file.arrayBuffer();
+        var dec = new ImageDecoder({ data: buf, type: 'image/gif' });
+        await dec.tracks.ready;
+        var track = dec.tracks.selectedTrack;
+        var total = track ? track.frameCount : 0;
+        if (!total) { try { await dec.completed; total = dec.tracks.selectedTrack.frameCount; } catch (e) {} }
+        var indices = gfSelectIndices(total, opts.mode, opts.interval, opts.specific);
+        var baseName = (file.name.replace(/\.[^.]+$/, '') || 'frame');
+        var format = opts.format, ext = gfExt(format);
+        var out = [];
+        for (var n = 0; n < indices.length; n++) {
+            var idx = indices[n];
+            var res = await dec.decode({ frameIndex: idx });
+            var img = res.image; // VideoFrame - fully composited by ImageDecoder (disposal handled)
+            var w = img.displayWidth || img.codedWidth, h = img.displayHeight || img.codedHeight;
+            if (opts.resize && opts.resize > 0 && w > opts.resize) { h = Math.round(h * (opts.resize / w)); w = opts.resize; }
+            var canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            try { img.close(); } catch (e) {}
+            var blob = await new Promise(function (resolve) {
+                canvas.toBlob(function (b) { resolve(b); }, 'image/' + format, format === 'png' ? undefined : (opts.quality / 100));
+            });
+            var name = baseName + '-frame' + String(idx + 1).padStart(4, '0') + '.' + ext;
+            out.push({ name: name, blob: blob, url: URL.createObjectURL(blob) });
+            gfSetProgress(baseProgress + (span * (n + 1) / Math.max(1, indices.length)), 'frames');
+        }
+        try { dec.close(); } catch (e) {}
+        return out;
+    }
+
+    async function gfExtract() {
+        var input = gfId('gfClientFile');
+        var files = (input && input.files) ? Array.prototype.slice.call(input.files) : [];
+        gfErr('');
+        var framesHost = gfId('gfFrames'); if (framesHost) { framesHost.innerHTML = ''; }
+        gfLastFrames.forEach(function (f) { try { URL.revokeObjectURL(f.url); } catch (e) {} }); gfLastFrames = [];
+        var zipBtn = gfId('gfZipBtn'); if (zipBtn) { zipBtn.style.display = 'none'; }
+        if (!files.length) { gfErr('Choose one or more GIF files to extract frames from.'); return; }
+        if (typeof ImageDecoder === 'undefined') { gfErr('This browser does not support in-browser GIF frame extraction (WebCodecs ImageDecoder). Use the server option above, or try Chrome or Edge.'); return; }
+        var btn = gfId('gfExtractBtn'); if (btn) { btn.disabled = true; btn.textContent = 'Extracting'; }
+        var opts = {
+            mode: gfVal('gfMode', 'all'),
+            interval: gfNum('gfInterval', 5),
+            specific: gfVal('gfSpecific', ''),
+            format: (function () { var f = gfVal('gfFormat', 'png'); return ['png', 'jpeg', 'webp'].indexOf(f) >= 0 ? f : 'png'; })(),
+            quality: Math.max(1, Math.min(100, gfNum('gfQuality', 90))),
+            resize: gfNum('gfResize', 0)
+        };
+        gfSetProgress(0, 'files');
+        try {
+            var all = [];
+            for (var i = 0; i < files.length; i++) {
+                var span = 100 / files.length;
+                var frames = await gfExtractOne(files[i], opts, i * span, span);
+                all = all.concat(frames);
+            }
+            gfLastFrames = all;
+            gfRenderFrames(all);
+            gfSetProgress(100, 'done'); setTimeout(function () { gfSetProgress(null); }, 800);
+            if (all.length && zipBtn) { zipBtn.style.display = ''; }
+            if (!all.length) { gfErr('No frames were extracted. The file may not be an animated GIF.'); }
+        } catch (err) {
+            gfSetProgress(null);
+            gfErr('Could not extract frames: ' + (err && err.message ? err.message : 'unknown error') + '.');
+        }
+        if (btn) { btn.disabled = false; btn.textContent = 'Extract frames'; }
+    }
+
+    function gfRenderFrames(frames) {
+        var host = gfId('gfFrames'); if (!host) { return; }
+        var html = '';
+        for (var i = 0; i < frames.length; i++) {
+            html += '<div class="w3-col m2 gf-frame" style="padding:4px;text-align:center;">'
+                 + '<img loading="lazy" src="' + frames[i].url + '" style="max-width:100%;height:auto;border:1px solid #ddd;">'
+                 + '<a class="w3-button w3-small w3-light-grey" href="' + frames[i].url + '" download="' + gfEscape(frames[i].name) + '" style="display:block;margin-top:2px;">Download</a>'
+                 + '</div>';
+        }
+        host.innerHTML = html;
+    }
+
+    function gfZipAll() {
+        if (!gfLastFrames.length) { return; }
+        gfEnsureJszip(function () {
+            if (typeof JSZip === 'undefined') { gfErr('Could not load the zip library in this browser.'); return; }
+            var zip = new JSZip();
+            for (var i = 0; i < gfLastFrames.length; i++) { zip.file(gfLastFrames[i].name, gfLastFrames[i].blob); }
+            zip.generateAsync({ type: 'blob' }).then(function (blob) {
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'gif-frames-' + (typeof getCurrentDateTime === 'function' ? getCurrentDateTime() : 'export') + '.zip';
+                a.click();
+            }).catch(function () { gfErr('Could not build the zip file.'); });
+        });
+    }
+
+    function gfClientInit() {
+        gfSetProgress(null);
+        var mode = gfId('gfMode');
+        if (mode) {
+            var sync = function () {
+                var iv = document.querySelector('.gf-interval-c'); if (iv) { iv.style.display = (mode.value === 'interval') ? '' : 'none'; }
+                var sp = document.querySelector('.gf-specific-c'); if (sp) { sp.style.display = (mode.value === 'specific') ? '' : 'none'; }
+            };
+            sync(); $(mode).on('change', sync);
+        }
+        var q = gfId('gfQuality'), qv = gfId('gfQualityVal');
+        if (q && qv) { qv.textContent = q.value; $(q).on('input change', function () { qv.textContent = this.value; }); }
+        $(document).off('click.gfClient', '#gfExtractBtn').on('click.gfClient', '#gfExtractBtn', function () { gfExtract(); });
+        $(document).off('click.gfZip', '#gfZipBtn').on('click.gfZip', '#gfZipBtn', function () { gfZipAll(); });
+    }
 </script>
