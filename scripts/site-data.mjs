@@ -2328,6 +2328,8 @@ export const ALIAS_ROUTES = {
   '/data-visualizer.html': '/developer-tools/data-visualizer.html',
   '/screen-recorder.html': '/device-test-tools/screen-recorder.html',
   '/font-generator.html': '/utility-tools/font-generator.html',
+  '/code-editor.html': '/developer-tools/code-editor.html',
+  '/steganography.html': '/image-tools/steganography.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3133,6 +3135,17 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-turn-text-into-an-image-online.html': 'guide/vi/how-to-turn-text-into-an-image-online.jsp',
   '/guides/id/how-to-turn-text-into-an-image-online.html': 'guide/id/how-to-turn-text-into-an-image-online.jsp',
   '/guides/de/how-to-turn-text-into-an-image-online.html': 'guide/de/how-to-turn-text-into-an-image-online.jsp',
+  '/developer-tools/code-editor.html': 'utility/code-editor.jsp',
+  '/guides/code-editor-when.html': 'guide/code-editor-when.jsp',
+  '/guides/code-editor-step-by-step.html': 'guide/code-editor-step-by-step.jsp',
+  '/guides/code-editor-vs-alternatives.html': 'guide/code-editor-vs-alternatives.jsp',
+  '/image-tools/steganography.html': 'convert/steganography.jsp',
+  '/guides/how-to-hide-a-message-in-an-image.html': 'guide/how-to-hide-a-message-in-an-image.jsp',
+  '/guides/pt/how-to-hide-a-message-in-an-image.html': 'guide/pt/how-to-hide-a-message-in-an-image.jsp',
+  '/guides/es/how-to-hide-a-message-in-an-image.html': 'guide/es/how-to-hide-a-message-in-an-image.jsp',
+  '/guides/vi/how-to-hide-a-message-in-an-image.html': 'guide/vi/how-to-hide-a-message-in-an-image.jsp',
+  '/guides/id/how-to-hide-a-message-in-an-image.html': 'guide/id/how-to-hide-a-message-in-an-image.jsp',
+  '/guides/de/how-to-hide-a-message-in-an-image.html': 'guide/de/how-to-hide-a-message-in-an-image.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
