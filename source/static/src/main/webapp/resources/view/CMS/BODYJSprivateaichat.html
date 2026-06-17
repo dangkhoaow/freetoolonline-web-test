@@ -1,0 +1,168 @@
+<script>
+    // T8 freetool-migration: in-browser private AI chat (web-llm / MLC-AI, WebGPU).
+    // Logic ported from the source app/private-ai-chat (NOT its React components):
+    // lazy-load the self-hosted web-llm ESM, create an MLCEngine, reload a model
+    // (weights download once from the MLC/HF model registry, cached by the browser),
+    // and stream chat completions on-device. 100% in-browser: no upload, no backend.
+    // The ~6.6MB web-llm lib is self-hosted at /vendor/web-llm; model weights are
+    // fetched at runtime from huggingface.co/mlc-ai (intrinsic; surfaced as a caveat).
+    web.localUpload = true;
+    function loadUploadHandlersByPage() {}   // no server upload for this tool
+
+    // Curated small models suitable for in-browser load (model_id from web-llm
+    // prebuiltAppConfig). Approx one-time download per model (cached after first load).
+    var FTO_PAC_MODELS = [
+        { id: 'TinyLlama-1.1B-Chat-v1.0-q4f16_1-MLC-1k', label: 'TinyLlama 1.1B (smallest, ~0.7 GB)' },
+        { id: 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC', label: 'Qwen2.5 0.5B (tiny, ~0.5 GB)' },
+        { id: 'Llama-3.2-1B-Instruct-q4f16_1-MLC', label: 'Llama 3.2 1B (~0.9 GB)' },
+        { id: 'Llama-3.2-3B-Instruct-q4f16_1-MLC', label: 'Llama 3.2 3B (~2.3 GB)' },
+        { id: 'Phi-3-mini-4k-instruct-q4f16_1-MLC', label: 'Phi-3 mini 3.8B (~2.4 GB)' }
+    ];
+    var FTO_PAC_DEFAULT_MODEL = FTO_PAC_MODELS[0].id;
+    var FTO_PAC_SYSTEM_PROMPT = 'You are a helpful, concise assistant running privately in the browser, on the user device.';
+    var FTO_PAC_LS_MODEL = 'webllm-last-model';
+
+    var ftoPacEngine = null;        // web-llm MLCEngine (created once)
+    var ftoPacLoadedModel = null;   // model id currently reloaded into the engine
+    var ftoPacMessages = [];        // [{role, content}] chat history (system seeded on load)
+    var ftoPacGenerating = false;
+
+    // WebGPU support: synchronous capability flag + async adapter preflight (mirrors the
+    // source navigator.gpu + gpu.requestAdapter() check). No WebGPU -> the tool cannot run.
+    function ftoPacWebGpuSupported() { return typeof navigator !== 'undefined' && 'gpu' in navigator; }
+    function ftoPacWebGpuAdapter() {
+        if (!ftoPacWebGpuSupported()) { return Promise.resolve(false); }
+        try { return navigator.gpu.requestAdapter().then(function (a) { return !!a; }).catch(function () { return false; }); }
+        catch (e) { return Promise.resolve(false); }
+    }
+
+    // Idempotent lazy-loader for the self-hosted web-llm standalone ESM (window cached).
+    function ftoLoadWebLLM() {
+        if (window.__ftoWebLLM) { return Promise.resolve(window.__ftoWebLLM); }
+        if (window.__ftoWebLLMPromise) { return window.__ftoWebLLMPromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/web-llm';
+        // Dynamic import via a Blob shim so the classic (non-module) page can import an ESM.
+        window.__ftoWebLLMPromise = import(base + '/web-llm.js')
+            .then(function (mod) { window.__ftoWebLLM = mod; return mod; });
+        return window.__ftoWebLLMPromise;
+    }
+
+    // Create the engine once + (re)load the requested model. progressCb(fraction0to1, text).
+    function ftoPacLoadModel(modelId, progressCb) {
+        modelId = modelId || FTO_PAC_DEFAULT_MODEL;
+        return ftoLoadWebLLM().then(function (webllm) {
+            if (!ftoPacEngine) {
+                ftoPacEngine = new webllm.MLCEngine();
+                ftoPacEngine.setInitProgressCallback(function (report) {
+                    if (progressCb) { progressCb(typeof report.progress === 'number' ? report.progress : 0, report.text || ''); }
+                });
+            }
+            if (ftoPacLoadedModel === modelId) { return ftoPacEngine; }
+            return Promise.resolve(ftoPacEngine.reload(modelId)).then(function () {
+                ftoPacLoadedModel = modelId;
+                try { localStorage.setItem(FTO_PAC_LS_MODEL, modelId); } catch (e) {}
+                if (!ftoPacMessages.length) { ftoPacMessages.push({ role: 'system', content: FTO_PAC_SYSTEM_PROMPT }); }
+                return ftoPacEngine;
+            });
+        });
+    }
+
+    // Stream a chat completion. onToken(fullTextSoFar); onDone(fullText); onError(err).
+    function ftoPacSend(text, onToken, onDone, onError) {
+        text = (text || '').trim();
+        if (!text) { return; }
+        if (!ftoPacEngine || !ftoPacLoadedModel) { if (onError) { onError(new Error('Load a model first.')); } return; }
+        if (ftoPacGenerating) { return; }
+        ftoPacGenerating = true;
+        ftoPacMessages.push({ role: 'user', content: text });
+        var full = '';
+        ftoPacEngine.chat.completions.create({ messages: ftoPacMessages, stream: true, temperature: 0.7 })
+            .then(function (stream) {
+                (async function () {
+                    try {
+                        for await (const chunk of stream) {
+                            var d = (chunk && chunk.choices && chunk.choices[0] && chunk.choices[0].delta && chunk.choices[0].delta.content) || '';
+                            if (d) { full += d; if (onToken) { onToken(full); } }
+                        }
+                        ftoPacMessages.push({ role: 'assistant', content: full });
+                        ftoPacGenerating = false;
+                        if (onDone) { onDone(full); }
+                    } catch (err) {
+                        ftoPacGenerating = false;
+                        if (onError) { onError(err); }
+                    }
+                })();
+            })
+            .catch(function (err) { ftoPacGenerating = false; if (onError) { onError(err); } });
+    }
+
+    // Guarded wiring: the controls come from ui_and_skill (BODYHTML). No-op until then.
+    function ftoWirePrivateAiChat() {
+        var modelSel = document.getElementById('pacModel');
+        var loadBtn = document.getElementById('pacLoadBtn');
+        var sendBtn = document.getElementById('pacSendBtn');
+        var input = document.getElementById('pacInput');
+        var messages = document.getElementById('pacMessages');
+        var status = document.getElementById('pacStatus');
+        var progress = document.getElementById('pacProgress');
+        var gpuWarn = document.getElementById('pacGpuWarn');
+        if (!loadBtn || !sendBtn || !input || !messages) { return; }
+
+        function setStatus(m) { if (status) { status.textContent = m; } }
+        function setProgress(frac) { if (progress) { progress.value = Math.max(0, Math.min(1, frac || 0)); } }
+        function addBubble(role, text) {
+            var d = document.createElement('div');
+            d.className = 'w3-panel w3-round ' + (role === 'user' ? 'w3-light-grey w3-rightbar w3-border-blue' : 'w3-pale-green w3-leftbar w3-border-green');
+            var who = document.createElement('div'); who.className = 'w3-tiny w3-text-grey'; who.textContent = (role === 'user' ? 'You' : 'AI');
+            var body = document.createElement('div'); body.textContent = text || '';
+            d.appendChild(who); d.appendChild(body); messages.appendChild(d);
+            messages.scrollTop = messages.scrollHeight;
+            return body;
+        }
+
+        // WebGPU preflight: disable the tool + show the notice if unsupported.
+        ftoPacWebGpuAdapter().then(function (ok) {
+            if (!ok) {
+                if (gpuWarn) { gpuWarn.style.display = 'block'; }
+                loadBtn.disabled = true; sendBtn.disabled = true;
+                setStatus('This tool needs WebGPU. Try the latest Chrome, Edge, or Chrome on Android (desktop recommended).');
+            }
+        });
+
+        // Pre-select the last-used model.
+        try { var last = localStorage.getItem(FTO_PAC_LS_MODEL); if (last && modelSel) { modelSel.value = last; } } catch (e) {}
+
+        loadBtn.addEventListener('click', function () {
+            var modelId = modelSel ? modelSel.value : FTO_PAC_DEFAULT_MODEL;
+            loadBtn.disabled = true; if (modelSel) { modelSel.disabled = true; }
+            setStatus('Loading the model in your browser (one-time download, then cached) ...');
+            ftoPacLoadModel(modelId, function (frac, text) {
+                setProgress(frac);
+                setStatus(text || ('Loading ' + modelId + ' ... ' + Math.round((frac || 0) * 100) + '%'));
+            }).then(function () {
+                setProgress(1);
+                setStatus('Model ready - chatting on your device, no upload.');
+                sendBtn.disabled = false; input.disabled = false; input.focus();
+            }).catch(function (err) {
+                loadBtn.disabled = false; if (modelSel) { modelSel.disabled = false; }
+                setStatus('Could not load the model: ' + (err && err.message ? err.message : 'unknown error') + '.');
+            });
+        });
+
+        function doSend() {
+            var text = input.value;
+            if (!text || !text.trim() || ftoPacGenerating) { return; }
+            addBubble('user', text.trim());
+            input.value = '';
+            var aiBody = addBubble('assistant', '');
+            sendBtn.disabled = true;
+            ftoPacSend(text, function (full) { aiBody.textContent = full; messages.scrollTop = messages.scrollHeight; },
+                function () { sendBtn.disabled = false; input.focus(); },
+                function (err) { aiBody.textContent = 'Error: ' + (err && err.message ? err.message : 'generation failed') + '.'; sendBtn.disabled = false; });
+        }
+        sendBtn.addEventListener('click', doSend);
+        input.addEventListener('keydown', function (e) { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); doSend(); } });
+    }
+
+    function doAfterPageRendered() { ftoWirePrivateAiChat(); }
+</script>

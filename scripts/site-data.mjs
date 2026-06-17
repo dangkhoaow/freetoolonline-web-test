@@ -2330,6 +2330,7 @@ export const ALIAS_ROUTES = {
   '/font-generator.html': '/utility-tools/font-generator.html',
   '/code-editor.html': '/developer-tools/code-editor.html',
   '/steganography.html': '/image-tools/steganography.html',
+  '/private-ai-chat.html': '/utility-tools/private-ai-chat.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3101,6 +3102,7 @@ export const JSP_BY_ROUTE = {
   '/guides/id/how-to-make-a-to-do-list-online.html': 'guide/id/how-to-make-a-to-do-list-online.jsp',
   '/guides/de/how-to-make-a-to-do-list-online.html': 'guide/de/how-to-make-a-to-do-list-online.jsp',
   '/utility-tools/unit-converter.html': 'utility/unit-converter.jsp',
+  '/utility-tools/private-ai-chat.html': 'utility/private-ai-chat.jsp',
   '/guides/how-to-convert-units-online.html': 'guide/how-to-convert-units-online.jsp',
   '/guides/pt/how-to-convert-units-online.html': 'guide/pt/how-to-convert-units-online.jsp',
   '/guides/es/how-to-convert-units-online.html': 'guide/es/how-to-convert-units-online.jsp',
@@ -3149,6 +3151,12 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-edit-code-online.html': 'guide/vi/how-to-edit-code-online.jsp',
   '/guides/id/how-to-edit-code-online.html': 'guide/id/how-to-edit-code-online.jsp',
   '/guides/de/how-to-edit-code-online.html': 'guide/de/how-to-edit-code-online.jsp',
+  '/guides/how-to-run-a-private-ai-chat-in-your-browser.html': 'guide/how-to-run-a-private-ai-chat-in-your-browser.jsp',
+  '/guides/pt/how-to-run-a-private-ai-chat-in-your-browser.html': 'guide/pt/how-to-run-a-private-ai-chat-in-your-browser.jsp',
+  '/guides/es/how-to-run-a-private-ai-chat-in-your-browser.html': 'guide/es/how-to-run-a-private-ai-chat-in-your-browser.jsp',
+  '/guides/vi/how-to-run-a-private-ai-chat-in-your-browser.html': 'guide/vi/how-to-run-a-private-ai-chat-in-your-browser.jsp',
+  '/guides/id/how-to-run-a-private-ai-chat-in-your-browser.html': 'guide/id/how-to-run-a-private-ai-chat-in-your-browser.jsp',
+  '/guides/de/how-to-run-a-private-ai-chat-in-your-browser.html': 'guide/de/how-to-run-a-private-ai-chat-in-your-browser.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
