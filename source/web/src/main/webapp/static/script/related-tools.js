@@ -250,6 +250,7 @@ try {
     { title: "How to Hide a Message in an Image (Steganography, Free + In-Browser)", url: "https://freetoolonline.com/guides/how-to-hide-a-message-in-an-image.html", include: !1, tags: "image-editing" },
     { title: "How to Edit Code Online - Free, In Your Browser", url: "https://freetoolonline.com/guides/how-to-edit-code-online.html", include: !1, tags: "developer" },
     { title: "How to Run a Private AI Chat in Your Browser - Free, No Upload", url: "https://freetoolonline.com/guides/how-to-run-a-private-ai-chat-in-your-browser.html", include: !1, tags: "utility" },
+    { title: "Mengecilkan Ukuran Zip Online - Free Guide", url: "https://freetoolonline.com/guides/mengecilkan-ukuran-zip.html", include: !1, tags: "zip" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
