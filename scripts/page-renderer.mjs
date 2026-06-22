@@ -21,6 +21,13 @@ import { canonicalForRoute, isInfoRoute, isGuideRoute, ALIAS_ROUTES, JSP_BY_ROUT
 // become uniform (en/pt/es/vi/id/de all first-class) so hreflang signals
 // are symmetric and AI crawlers pick the locale matching the user query.
 const SUPPORTED_LOCALE_PREFIXES = new Set(['en', 'pt', 'es', 'de', 'fr', 'vi', 'it', 'ja', 'ko', 'zh', 'ru', 'id', 'tr', 'pl', 'nl', 'ar']);
+// English regional hreflang = the PREMIUM English-market tier (2026-06-22):
+// US/CA/GB/AU/IE/NZ. en-IN dropped (India isn't a premium target; `en` +
+// `x-default` still serve it). Single source of truth: used by BOTH the guide
+// locale builder AND the sitewide builder so guides + tools declare the SAME
+// English regions. Reciprocity is trivial — every en-XX points at the page's
+// own canonical (self).
+const EN_PREMIUM_REGIONS = Object.freeze(['en-US', 'en-CA', 'en-GB', 'en-AU', 'en-IE', 'en-NZ']);
 const COUNTRY_VARIANTS_BY_LANG = Object.freeze({
   pt: ['pt-BR', 'pt-PT'],
   es: ['es-ES', 'es-MX', 'es-AR', 'es-CO'],
@@ -28,8 +35,23 @@ const COUNTRY_VARIANTS_BY_LANG = Object.freeze({
   fr: ['fr-FR', 'fr-CA', 'fr-BE'],
   vi: ['vi-VN'],
   it: ['it-IT'],
-  en: ['en-US', 'en-GB', 'en-AU', 'en-CA', 'en-IN'],
+  en: EN_PREMIUM_REGIONS,
 });
+
+// Sitewide English hreflang for NON-guide pages (tools/hubs/info) — declares the
+// premium-English-region COVERAGE of a single English page. `en` + `x-default` +
+// each premium region, all pointing at the page's own canonical (self). This
+// makes the regional intent explicit + consistent with guides; it declares
+// coverage, NOT ranking priority (Google has no country dial — see
+// .agent/skills/seo-page-structure-rules/references/geo-targeting-playbook.md).
+function buildSitewideEnglishHreflang(canonicalUrl) {
+  if (!canonicalUrl) return [];
+  return [
+    { hreflang: 'en', href: canonicalUrl },
+    { hreflang: 'x-default', href: canonicalUrl },
+    ...EN_PREMIUM_REGIONS.map((hreflang) => ({ hreflang, href: canonicalUrl })),
+  ];
+}
 
 // Detect locale from a /guides/<lang>/<slug>.html route.
 // Returns null for /guides/<slug>.html (EN canonical) or non-guide routes.
@@ -286,19 +308,37 @@ function renderMetaTags(ctx) {
   // the full per-locale hreflang block (x-default + each locale + per-country
   // variants). Otherwise fall back to the legacy self + x-default + extras.
   const guideLocaleLinks = buildGuideLocaleHreflangLinks(ctx.route, ctx.siteOrigin || '');
-  const alternateLinks = guideLocaleLinks.length > 0
-    ? [
-        // Self-reference still emitted (Google's spec recommends it explicitly)
-        `<link rel='alternate' href='${canonical}' hreflang='${selfHreflang}' />`,
-        ...guideLocaleLinks.map((l) =>
-          `<link rel='alternate' href='${escapeHtml(l.href)}' hreflang='${l.hreflang}' />`
-        ),
-      ]
-    : [
-        `<link rel='alternate' href='${canonical}' hreflang='${selfHreflang}' />`,
-        xDefaultHref ? `<link rel='alternate' href='${escapeHtml(xDefaultHref)}' hreflang='x-default' />` : '',
-        ...extraHreflangs.map((lang) => `<link rel='alternate' href='${canonical}' hreflang='${lang}' />`),
-      ].filter(Boolean);
+  // Non-guide English pages (tools/hubs/info) declare premium-English-region
+  // COVERAGE sitewide (en + x-default + en-US/CA/GB/AU/IE/NZ, all -> self), so
+  // the regional intent is explicit + consistent with guides. Non-English
+  // non-guide pages (rare) keep the legacy self + x-default. Per-route EXTRA
+  // hreflang (alias targets) are preserved + deduped. Declares coverage, NOT
+  // ranking priority (Google has no country dial — see geo-targeting-playbook.md).
+  let alternateLinks;
+  if (guideLocaleLinks.length > 0) {
+    alternateLinks = [
+      // Self-reference still emitted (Google's spec recommends it explicitly)
+      `<link rel='alternate' href='${canonical}' hreflang='${selfHreflang}' />`,
+      ...guideLocaleLinks.map((l) =>
+        `<link rel='alternate' href='${escapeHtml(l.href)}' hreflang='${l.hreflang}' />`
+      ),
+    ];
+  } else {
+    const isEnglishPage = (ctx.lang || 'en') === 'en';
+    const baseLinks = isEnglishPage
+      ? buildSitewideEnglishHreflang(canonical)
+      : [
+          { hreflang: selfHreflang, href: canonical },
+          ...(xDefaultHref ? [{ hreflang: 'x-default', href: xDefaultHref }] : []),
+        ];
+    const seen = new Set(baseLinks.map((l) => l.hreflang));
+    for (const lang of extraHreflangs) {
+      if (!seen.has(lang)) { baseLinks.push({ hreflang: lang, href: canonical }); seen.add(lang); }
+    }
+    alternateLinks = baseLinks.map((l) =>
+      `<link rel='alternate' href='${escapeHtml(l.href)}' hreflang='${l.hreflang}' />`
+    );
+  }
   const mobileTitleScript = ctx.isStaging && !ctx.isHome && mobileTitle
     ? `<script>(function(){try{var t=${JSON.stringify(mobileTitle)};var m=(window.matchMedia?window.matchMedia('(max-width: 480px)').matches:((window.innerWidth||0)<=480));if(m&&t){document.title=t;}}catch(e){}})();</script>`
     : '';
@@ -333,6 +373,12 @@ function renderMetaTags(ctx) {
     `<meta property='og:description' content='${description}'/>`,
     `<meta property='og:image' content='${resolveOgImage(ctx.route)}'/>`,
     `<meta property='og:type' content='${ctx.isGuide ? 'article' : 'website'}'/>`,
+    // Primary locale signal for English pages: en_US + premium-region alternates
+    // (declares the English markets this page serves; reinforces inLanguage/USD).
+    (ctx.lang || 'en') === 'en' ? `<meta property='og:locale' content='en_US'/>` : '',
+    ...((ctx.lang || 'en') === 'en'
+      ? ['en_GB', 'en_CA', 'en_AU', 'en_IE', 'en_NZ'].map((l) => `<meta property='og:locale:alternate' content='${l}'/>`)
+      : []),
     ctx.isGuide ? `<meta property='article:author' content='freetoolonline editorial team'/>` : '',
     ctx.isGuide ? `<meta property='article:publisher' content='${escapeHtml(ctx.siteOrigin)}'/>` : '',
     ctx.isGuide && ctx.articlePublishedAt ? `<meta property='article:published_time' content='${escapeHtml(ctx.articlePublishedAt)}'/>` : '',
