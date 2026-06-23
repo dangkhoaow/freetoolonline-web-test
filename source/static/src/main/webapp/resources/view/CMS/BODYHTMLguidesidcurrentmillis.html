@@ -22,4 +22,22 @@
   <p>Nilai 10 digit hampir selalu <em>detik</em> Unix, bukan milidetik, dan bug off-by-1000 adalah satu kesalahan paling umum yang dihadapi pengembang saat bekerja dengan angka epoch. Menempel nilai 10 digit ke konverter milidetik menghasilkan tanggal era 1970 sebagai output pemeriksaan kewarasan - hasil 1970 ADALAH sinyal bahwa nilainya seharusnya dikalikan 1000 dulu. Alat ini sengaja tidak diam-diam mengalikan untuk Anda karena bentuk 10 digit yang sama juga valid untuk ID urutan dan pengidentifikasi gaya Snowflake; perkalian otomatis akan menyembunyikan bug yang nyata.</p>
   <h2>Privasi: di mana angka itu hidup</h2>
   <p>Millis sekarang dibaca dari jam sistem operasi yang sama yang digunakan browser Anda untuk merender halaman. Tidak ada JavaScript pada panduan ini atau pada alat implementasi yang mengirim nilai ke server; satu-satunya panggilan jaringan setelah pemuatan halaman adalah pengambilan aset statis dari CloudFront untuk gaya halaman dan pustaka <code>date.format.js</code>. Epoch yang ditandai privasi (dari log sesi, webhook internal, baris basis data rahasia) dapat ditempel ke konverter tanpa meninggalkan perangkat.</p>
+  <section class="ai-overview-recapture">
+    <h2>Mendapatkan nilai millis saat ini di berbagai runtime</h2>
+    <p>Setiap runtime utama menyediakan jam dengan presisi milidetik, tetapi perintah yang tepat berbeda per bahasa. Gunakan tabel berikut untuk menyalin perintah yang benar untuk lingkungan Anda, lalu tempel angka 13 digit hasilnya ke <a href="/convert-time-in-millisecond-to-date.html">Konverter Milidetik ke Tanggal</a> untuk membaca tanggal yang sesuai.</p>
+    <div class="w3-responsive">
+      <table class="w3-table-all w3-small">
+        <thead><tr><th>Runtime</th><th>Perintah</th><th>Catatan</th></tr></thead>
+        <tbody>
+          <tr><td>JavaScript / Node.js</td><td><code>Date.now()</code></td><td>Mengembalikan integer 13 digit secara langsung. <code>+new Date()</code> adalah padanan yang lebih lama.</td></tr>
+          <tr><td>Python 3</td><td><code>import time; int(time.time() * 1000)</code></td><td><code>time.time()</code> mengembalikan detik float; kalikan dengan 1000 dan potong.</td></tr>
+          <tr><td>Java / Kotlin</td><td><code>System.currentTimeMillis()</code></td><td>Mengembalikan <code>long</code>. Java 8+: <code>Instant.now().toEpochMilli()</code> adalah bentuk modern.</td></tr>
+          <tr><td>PHP</td><td><code>(int)round(microtime(true) * 1000)</code></td><td><code>microtime(true)</code> mengembalikan detik float; kalikan dan bulatkan sebelum cast.</td></tr>
+          <tr><td>Bash / Linux</td><td><code>date +%s%3N</code></td><td>Mencetak string 13 digit. Membutuhkan GNU <code>date</code>; <code>date</code> macOS tidak mendukung <code>%3N</code>.</td></tr>
+          <tr><td>C#</td><td><code>DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()</code></td><td>Tersedia sejak .NET 4.6. Mengembalikan <code>long</code> secara langsung.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Setelah mendapatkan angka 13 digit, tempel ke konverter - kolom input langsung fokus saat halaman dimuat sehingga Anda bisa tempel dan tekan Enter tanpa perlu mengklik terlebih dahulu. Konversi berjalan di browser Anda; nilai tidak pernah meninggalkan perangkat.</p>
+  </section>
 </article>

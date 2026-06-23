@@ -22,4 +22,22 @@
   <p>Um valor de 10 dígitos é quase sempre <em>segundos</em> Unix, não milissegundos, e o bug off-by-1000 é o erro mais comum que desenvolvedores enfrentam trabalhando com números epoch. Colar um valor de 10 dígitos no conversor de milissegundos resulta em uma data da era 1970 como saída de verificação de sanidade - o resultado de 1970 É o sinal que o valor deveria ter sido multiplicado por 1000 primeiro. A ferramenta deliberadamente não multiplica silenciosamente em seu nome porque a mesma forma de 10 dígitos também é válida para IDs de sequência e identificadores estilo Snowflake; multiplicação automática esconderia um bug real.</p>
   <h2>Privacidade: onde o número vive</h2>
   <p>O millis atual é lido do mesmo relógio de sistema operacional que seu navegador usa para renderizar a página. Nenhum JavaScript neste guia ou na ferramenta de implementação envia o valor para um servidor; as únicas chamadas de rede após o carregamento da página são buscas de assets estáticos do CloudFront para os estilos da página e a biblioteca <code>date.format.js</code>. Um epoch marcado como privado (de um log de sessão, um webhook interno, uma linha confidencial de banco de dados) pode ser colado no conversor sem sair do dispositivo.</p>
+  <section class="ai-overview-recapture">
+    <h2>Obtendo o valor millis atual em diferentes ambientes</h2>
+    <p>Cada ambiente de execução principal expõe um relógio de precisão de milissegundos, mas a chamada exata difere por linguagem. Use a tabela abaixo para copiar o comando correto para o seu ambiente, depois cole o número de 13 dígitos resultante no <a href="/convert-time-in-millisecond-to-date.html">Conversor de Milissegundos para Data</a> para ler a data correspondente.</p>
+    <div class="w3-responsive">
+      <table class="w3-table-all w3-small">
+        <thead><tr><th>Ambiente</th><th>Comando</th><th>Observações</th></tr></thead>
+        <tbody>
+          <tr><td>JavaScript / Node.js</td><td><code>Date.now()</code></td><td>Retorna um inteiro de 13 dígitos diretamente. <code>+new Date()</code> é um equivalente mais antigo.</td></tr>
+          <tr><td>Python 3</td><td><code>import time; int(time.time() * 1000)</code></td><td><code>time.time()</code> retorna segundos em float; multiplique por 1000 e trunce.</td></tr>
+          <tr><td>Java / Kotlin</td><td><code>System.currentTimeMillis()</code></td><td>Retorna um <code>long</code>. Java 8+: <code>Instant.now().toEpochMilli()</code> é a forma moderna.</td></tr>
+          <tr><td>PHP</td><td><code>(int)round(microtime(true) * 1000)</code></td><td><code>microtime(true)</code> retorna segundos em float; multiplique e arredonde antes de converter.</td></tr>
+          <tr><td>Bash / Linux</td><td><code>date +%s%3N</code></td><td>Imprime uma string de 13 dígitos. Requer GNU <code>date</code>; o <code>date</code> do macOS não suporta <code>%3N</code>.</td></tr>
+          <tr><td>C#</td><td><code>DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()</code></td><td>Disponível desde .NET 4.6. Retorna um <code>long</code> diretamente.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Depois de obter o número de 13 dígitos, cole-o no conversor - o campo de entrada recebe foco ao carregar, então você pode colar e pressionar Enter sem clicar primeiro. A conversão ocorre no seu navegador; o valor nunca sai do dispositivo.</p>
+  </section>
 </article>

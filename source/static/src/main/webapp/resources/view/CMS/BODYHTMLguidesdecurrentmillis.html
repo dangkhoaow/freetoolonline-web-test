@@ -21,5 +21,23 @@
   <h2>Plausibilitätsprüfung: ist Ihr Wert wirklich in Millisekunden?</h2>
   <p>Ein 10-stelliger Wert ist fast immer Unix-<em>Sekunden</em>, nicht Millisekunden, und der Off-by-1000-Bug ist der häufigste Fehler, dem Entwickler beim Arbeiten mit Epoch-Zahlen begegnen. Das Einfügen eines 10-stelligen Werts in den Millisekunden-Konverter ergibt ein Datum aus der 1970er-Ära als Plausibilitätsprüfungs-Ausgabe - das 1970er-Ergebnis IST das Signal, dass der Wert zuerst mit 1000 hätte multipliziert werden sollen. Das Tool multipliziert absichtlich nicht stillschweigend in Ihrem Namen, weil dieselbe 10-stellige Form auch für Sequenz-IDs und Snowflake-artige Identifikatoren gültig ist; automatische Multiplikation würde einen echten Bug verbergen.</p>
   <h2>Datenschutz: wo die Zahl lebt</h2>
-  <p>Die aktuellen Millis werden von derselben Betriebssystemuhr gelesen, die Ihr Browser zum Rendern der Seite verwendet. Kein JavaScript auf dieser Anleitung oder auf dem implementierenden Tool sendet den Wert an einen Server; die einzigen Netzwerkaufrufe nach dem Seitenladen sind statische Asset-Abrufe von CloudFront für die Seitenstile und die Bibliothek <code>date.format.js</code>. Eine datenschutzkritische Epoch (aus einem Session-Log, einem internen Webhook, einer vertraulichen Datenbankzeile) kann in den Konverter eingefügt werden, ohne das Gerät zu verlassen.</p>
+  <p>Die aktuellen Millis werden von derselben Betriebssystemuhr gelesen, die Ihr Browser zum Rendern der Seite verwendet. Kein JavaScript auf dieser Anleitung oder auf dem implementierenden Tool sendet den Wert an einen Server; die einzigen Netzwerkaufrufe nach dem Seitenladen sind statische Asset-Abrufe von CloudFront fuer die Seitenstile und die Bibliothek <code>date.format.js</code>. Eine datenschutzkritische Epoch (aus einem Session-Log, einem internen Webhook, einer vertraulichen Datenbankzeile) kann in den Konverter eingefuegt werden, ohne das Geraet zu verlassen.</p>
+  <section class="ai-overview-recapture">
+    <h2>Den aktuellen Millis-Wert in verschiedenen Laufzeitumgebungen abrufen</h2>
+    <p>Jede wichtige Laufzeitumgebung stellt eine Uhr mit Millisekunden-Praezision bereit, aber der genaue Aufruf unterscheidet sich je nach Sprache. Verwenden Sie die folgende Tabelle, um den richtigen Einzeiler fuer Ihre Umgebung zu kopieren, und fuegen Sie die resultierende 13-stellige Zahl dann in den <a href="/convert-time-in-millisecond-to-date.html">Millisekunden-zu-Datum-Konverter</a> ein, um das entsprechende Datum zu lesen.</p>
+    <div class="w3-responsive">
+      <table class="w3-table-all w3-small">
+        <thead><tr><th>Laufzeit</th><th>Befehl</th><th>Hinweise</th></tr></thead>
+        <tbody>
+          <tr><td>JavaScript / Node.js</td><td><code>Date.now()</code></td><td>Gibt direkt eine 13-stellige Ganzzahl zurueck. <code>+new Date()</code> ist ein aelteres Aequivalent.</td></tr>
+          <tr><td>Python 3</td><td><code>import time; int(time.time() * 1000)</code></td><td><code>time.time()</code> gibt Float-Sekunden zurueck; mit 1000 multiplizieren und abschneiden.</td></tr>
+          <tr><td>Java / Kotlin</td><td><code>System.currentTimeMillis()</code></td><td>Gibt ein <code>long</code> zurueck. Java 8+: <code>Instant.now().toEpochMilli()</code> ist die moderne Form.</td></tr>
+          <tr><td>PHP</td><td><code>(int)round(microtime(true) * 1000)</code></td><td><code>microtime(true)</code> gibt Float-Sekunden zurueck; multiplizieren und runden vor dem Cast.</td></tr>
+          <tr><td>Bash / Linux</td><td><code>date +%s%3N</code></td><td>Gibt einen 13-stelligen String aus. Erfordert GNU <code>date</code>; macOS <code>date</code> unterstuetzt <code>%3N</code> nicht.</td></tr>
+          <tr><td>C#</td><td><code>DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()</code></td><td>Verfuegbar seit .NET 4.6. Gibt direkt ein <code>long</code> zurueck.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Sobald Sie die 13-stellige Zahl haben, fuegen Sie sie in den Konverter ein - das Eingabefeld erhaelt beim Laden den Fokus, sodass Sie einfuegen und Enter druecken koennen ohne zuerst zu klicken. Die Konvertierung laeuft in Ihrem Browser; der Wert verlaesst das Geraet nicht.</p>
+  </section>
 </article>
