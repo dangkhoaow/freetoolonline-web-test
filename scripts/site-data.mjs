@@ -1153,6 +1153,9 @@ export const INFO_ROUTES = new Set([
   '/guides/id/split-pdf-online-free.html',
   // cycle 20260615-5 - split-pdf-online-free DE locale variant (EN-first locale drain COMPLETE)
   '/guides/de/split-pdf-online-free.html',
+  // cycle 20260623-54 - mengecilkan-ukuran-zip EN + PT locale variant (create_new_guide_page locale completion)
+  '/guides/mengecilkan-ukuran-zip.html',
+  '/guides/pt/mengecilkan-ukuran-zip.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -3158,6 +3161,7 @@ export const JSP_BY_ROUTE = {
   '/guides/id/how-to-run-a-private-ai-chat-in-your-browser.html': 'guide/id/how-to-run-a-private-ai-chat-in-your-browser.jsp',
   '/guides/de/how-to-run-a-private-ai-chat-in-your-browser.html': 'guide/de/how-to-run-a-private-ai-chat-in-your-browser.jsp',
   '/guides/mengecilkan-ukuran-zip.html': 'guide/mengecilkan-ukuran-zip.jsp',
+  '/guides/pt/mengecilkan-ukuran-zip.html': 'guide/pt/mengecilkan-ukuran-zip.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
