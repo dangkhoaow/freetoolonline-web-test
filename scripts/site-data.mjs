@@ -1162,6 +1162,8 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/mengecilkan-ukuran-zip.html',
   // cycle 20260624-3 - mengecilkan-ukuran-zip ID locale variant (EN-first locale drain; de remains)
   '/guides/id/mengecilkan-ukuran-zip.html',
+  // cycle 20260624-4 - mengecilkan-ukuran-zip DE locale variant (EN-first locale drain; locale-complete)
+  '/guides/de/mengecilkan-ukuran-zip.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -1917,6 +1919,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/mengecilkan-ukuran-zip.html',
   // cycle 20260624-3 - mengecilkan-ukuran-zip ID locale variant (EN-first locale drain; de remains)
   '/guides/id/mengecilkan-ukuran-zip.html',
+  // cycle 20260624-4 - mengecilkan-ukuran-zip DE locale variant (EN-first locale drain; locale-complete)
+  '/guides/de/mengecilkan-ukuran-zip.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -3175,6 +3179,8 @@ export const JSP_BY_ROUTE = {
   '/guides/es/mengecilkan-ukuran-zip.html': 'guide/es/mengecilkan-ukuran-zip.jsp',
   '/guides/vi/mengecilkan-ukuran-zip.html': 'guide/vi/mengecilkan-ukuran-zip.jsp',
   '/guides/id/mengecilkan-ukuran-zip.html': 'guide/id/mengecilkan-ukuran-zip.jsp',
+  // cycle 20260624-4 - mengecilkan-ukuran-zip DE locale variant (EN-first locale drain; locale-complete)
+  '/guides/de/mengecilkan-ukuran-zip.html': 'guide/de/mengecilkan-ukuran-zip.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
