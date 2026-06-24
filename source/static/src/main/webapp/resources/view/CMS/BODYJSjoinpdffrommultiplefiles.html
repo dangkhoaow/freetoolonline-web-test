@@ -35,3 +35,104 @@
         });
     };
 </script>
+
+<!-- E6 freetool-migration: ADDITIVE in-browser merge path (pdf-lib, zero upload).
+     The server path above (#mergeBtn -> callAjax) is UNTOUCHED. This client path
+     is a separate hybrid mode that merges entirely in the browser; it activates
+     only when the client-mode controls (added in ui_and_skill) are present. -->
+<script>
+    // Idempotent lazy-loader for the self-hosted pdf-lib UMD build (window.PDFLib).
+    // Mirrors the /vendor/ffmpeg loader pattern; BASE_PATH-aware; no third-party CDN.
+    function ftoLoadPdfLib() {
+        if (window.PDFLib && window.PDFLib.PDFDocument) { return Promise.resolve(); }
+        if (window.__ftoPdfLibPromise) { return window.__ftoPdfLibPromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/pdf-lib';
+        var url = base + '/pdf-lib.min.js';
+        window.__ftoPdfLibPromise = new Promise(function (resolve, reject) {
+            var s = document.createElement('script');
+            s.src = url; s.async = true;
+            s.onload = function () {
+                (window.PDFLib && window.PDFLib.PDFDocument)
+                    ? resolve()
+                    : reject(new Error('pdf-lib loaded but PDFLib global is missing'));
+            };
+            s.onerror = function () { reject(new Error('failed to load pdf-lib from ' + url)); };
+            document.head.appendChild(s);
+        });
+        return window.__ftoPdfLibPromise;
+    }
+
+    // Real client-side merge: create -> load each (ignoreEncryption) -> copy all
+    // pages in file order -> save. Returns a Uint8Array of the merged PDF bytes.
+    // Files merge in the order given (drag-reorder UI controls that order).
+    function ftoClientMergePdfs(files, onProgress) {
+        return ftoLoadPdfLib().then(function () {
+            var PDFDocument = window.PDFLib.PDFDocument;
+            return PDFDocument.create().then(function (merged) {
+                var i = 0;
+                function next() {
+                    if (i >= files.length) {
+                        return merged.save();
+                    }
+                    return files[i].arrayBuffer()
+                        .then(function (buf) { return PDFDocument.load(buf, { ignoreEncryption: true }); })
+                        .then(function (src) { return merged.copyPages(src, src.getPageIndices()); })
+                        .then(function (pages) {
+                            pages.forEach(function (p) { merged.addPage(p); });
+                            i++;
+                            if (typeof onProgress === 'function') { onProgress(i / files.length); }
+                            return next();
+                        });
+                }
+                return next();
+            });
+        });
+    }
+
+    // Guarded wiring: binds the in-browser merge to the client-mode controls IF
+    // they exist on the page. ui_and_skill adds #mergeClientFiles / #mergeClientBtn
+    // / #mergeClientStatus / #mergeClientDownload to BODYHTML; until then this is a
+    // no-op and the server path is the only active flow.
+    function ftoWireClientMerge() {
+        var input = document.getElementById('mergeClientFiles');
+        var btn = document.getElementById('mergeClientBtn');
+        if (!input || !btn) { return; }
+        // E6 verify-fix (2026-06-17): if BODYHTML rendered inside a hidden server-flow .step
+        // (e.g. .step2, shown only after a server upload), move this client panel OUT so the
+        // in-browser (no-upload) tool is visible without uploading. Guarded no-op when not nested.
+        var __ftoRow = btn.closest ? btn.closest('.w3-row') : null;
+        var __ftoStep = __ftoRow && __ftoRow.closest ? __ftoRow.closest('.step') : null;
+        if (__ftoStep && __ftoStep.parentNode) { __ftoStep.parentNode.insertBefore(__ftoRow, __ftoStep.nextSibling); }
+        var status = document.getElementById('mergeClientStatus');
+        var dl = document.getElementById('mergeClientDownload');
+        function setStatus(msg) { if (status) { status.textContent = msg; } }
+        btn.addEventListener('click', function () {
+            var files = input.files ? Array.prototype.slice.call(input.files) : [];
+            if (files.length < 2) { setStatus('Select at least two PDF files to merge.'); return; }
+            btn.disabled = true;
+            if (dl) { dl.style.display = 'none'; dl.removeAttribute('href'); }
+            setStatus('Merging in your browser ... 0%');
+            ftoClientMergePdfs(files, function (frac) {
+                setStatus('Merging in your browser ... ' + Math.round(frac * 100) + '%');
+            }).then(function (bytes) {
+                var blob = new Blob([bytes], { type: 'application/pdf' });
+                var url = URL.createObjectURL(blob);
+                if (dl) {
+                    dl.href = url;
+                    dl.download = 'merged-' + (typeof getCurrentDateTime === 'function' ? getCurrentDateTime() : 'document') + '.pdf';
+                    dl.style.display = '';
+                    dl.textContent = 'Download merged PDF';
+                }
+                setStatus('Done. ' + files.length + ' files merged in your browser - no upload.');
+            }).catch(function (err) {
+                setStatus('Could not merge in the browser: ' + (err && err.message ? err.message : 'unknown error') + '. The server merge above still works.');
+            }).then(function () { btn.disabled = false; });
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', ftoWireClientMerge);
+    } else {
+        ftoWireClientMerge();
+    }
+</script>

@@ -12,13 +12,16 @@
         </ol>
         <p style="margin-bottom: 0;"><b>Note:</b> MD5 is a checksum, not encryption-avoid it for passwords or sensitive data.</p>
     </div>
-    <div class="w3-panel w3-pale-yellow w3-leftbar w3-border-yellow" style="margin-top: 10px;">
-        <p><b>Can MD5 be decrypted? No.</b> MD5 is a one-way hash - the original text cannot be recovered from the hash, only guessed. The "MD5 to Text" field on this page matches your hash against a precomputed dictionary of common strings; uncommon inputs will not resolve.</p>
-        <p style="margin-bottom: 0;">If you need a <b>reversible transformation</b>, use a symmetric cipher like AES. If you need to <b>validate a password</b>, use a purpose-built hash: <b>bcrypt</b>, <b>scrypt</b>, or <b>Argon2id</b>. See <a href="/guides/md5-vs-sha256-when-to-hash.html">MD5 vs SHA-256 - when to hash with each</a> for the full decision.</p>
-    </div>
+
+<figure class="illustration">
+  <img src="/img/illustrations/feature-badge/md5converter__e080f21f.svg"
+       alt="Paste text and generate a 32-character MD5 hash instantly - the To Text field only looks up cached, previously-hashed inputs"
+       loading="lazy" width="200" height="48">
+  <figcaption>Paste text, click To MD5, and copy the 32-character hash.</figcaption>
+</figure>
 
 <br/><h2 class="text-uppercase"><b>What MD5 is good for (and what it isn't)</b></h2>
-<p>MD5 produces a 128-bit fingerprint (32 hex characters) for any input. The same input always yields the same hash, and two different inputs almost never collide in everyday use. That makes MD5 a reliable shortcut for <i>identity</i> checks: caches, ETags, dedup keys, and file-integrity comparisons. It is <b>not</b> a secure password hash - researchers have demonstrated practical collision attacks since 2004, and the speed that makes MD5 attractive for checksums is exactly what makes it cheap to brute-force when used for credentials. Pick MD5 when you need a fast, deterministic fingerprint for non-adversarial work; reach for bcrypt, scrypt, or Argon2 when a human secret is involved.</p>
+<p>MD5 produces a 128-bit fingerprint (32 hex characters) for any input. The same input always yields the same hash, and two different inputs almost never collide in everyday use. That makes MD5 a reliable shortcut for <i>identity</i> work across the use cases listed below. It is <b>not</b> a secure password hash - researchers have demonstrated practical collision attacks since 2004, and the speed that makes MD5 attractive for checksums is exactly what makes it cheap to brute-force when used for credentials. Pick MD5 when you need a fast, deterministic fingerprint for non-adversarial work; reach for bcrypt, scrypt, or Argon2 when a human secret is involved.</p>
 
 <br/><h2 class="text-uppercase"><b>Common MD5 use cases</b></h2>
 <ul>
@@ -63,15 +66,13 @@
 
 <p><b>Searched for "MD5 to text" and landed here?</b> Read <a href="/guides/md5-to-text-why-you-cannot-convert-back.html">MD5 to text - why you cannot convert it back, and what to do instead</a> - the three actions that actually answer the underlying question (verify a candidate string, look up a common short input via rainbow table, or pick a different hash for the real job).</p>
 
-<p><b>Need an MD5 fingerprint of a small file?</b> Open the file in any text editor, paste the contents into the input box, and click <b>To MD5</b> to read off the 32-hex digest. The textarea accepts up to 990 characters, which covers configuration snippets, JSON payloads, license keys, license files, and short scripts. For binary files or files larger than the textarea cap, compute the digest off-page with <code>md5sum file.ext</code> on Linux or macOS, or <code>CertUtil -hashfile file.ext MD5</code> on Windows, then paste the resulting 32-hex string into the <b>To Text</b> field on this page to look up a matching plaintext from the precomputed dictionary if the hash is a common one.</p>
-
-<p><b>Using this page as an MD5 hash generator for file contents.</b> Paste up to 990 characters of the file body straight into the top textarea, click <b>To MD5</b>, and the 32-hex fingerprint appears instantly - ready to drop into a cache key, an ETag header, a dedup ID, or a side-by-side integrity comparison against the value published by the file's origin. For text-shaped files (JSON, YAML, INI, CSV snippets, scripts) this page is the fastest route from raw bytes to a checkable hash; for larger or binary files, generate the digest locally first and use the <b>To Text</b> field above to look up a known-plaintext match.</p>
+<p><b>Need an MD5 fingerprint of a small file?</b> Open the file in any text editor, paste the contents into the top textarea, and click <b>To MD5</b> to read off the 32-hex digest instantly - ready to drop into a cache key, an ETag header, a dedup ID, or a side-by-side integrity comparison against the value published by the file's origin. The textarea accepts up to 990 characters, which covers configuration snippets, JSON, YAML, INI, and CSV payloads, license keys, license files, and short scripts; for these text-shaped files this page is the fastest route from raw bytes to a checkable hash. For binary files or files larger than the textarea cap, compute the digest off-page with <code>md5sum file.ext</code> on Linux or macOS, or <code>CertUtil -hashfile file.ext MD5</code> on Windows, then paste the resulting 32-hex string into the <b>To Text</b> field on this page to look up a matching plaintext from the precomputed dictionary if the hash is a common one.</p>
 
 <p>Read the guide: <a href="/guides/md5-hash-decrypt.html">MD5 hash decrypt: when lookup works, when it cannot</a> - the three practical cases (common dictionary input, short random input, long random input) that decide whether a precomputed table will reverse a given 32-hex hash or whether brute force runs past the age of the universe.</p>
 
 <p>Read the guide: <a href="/guides/md5-password.html">MD5 password: how to hash a password string and when MD5 is the wrong tool</a> - the split between fingerprinting a password string (MD5 is fine for cache keys and short integrity checks) and storing user passwords for authentication (MD5 is the wrong primitive; use bcrypt, argon2id, or scrypt).</p>
 
-<p><b>Why does this page's hash differ from another tool on the same text?</b> The cause is almost always bytes you cannot see. MD5 digests the exact byte sequence it receives, so a trailing blank line, Windows CRLF line endings where the source used Unix LF, or a UTF-8 byte-order mark at the start of the text each shift the 32-hex result even when every visible character matches. Two fixes settle it: paste the string without a trailing newline, and when you are really checking a file, hash the file itself rather than its pasted contents - the off-page command on the previous note removes the line-ending and encoding guesswork entirely.</p>
 <br/>
 <p>Read the guide: <a href="/guides/en/md5-decrypter.html">MD5 Decrypter - what "decryption" actually means, how to hash text, and when the cache lookup succeeds or fails</a></p>
+<p><b>Hashing as part of a broader check?</b> A digest is most useful next to the data it fingerprints. When you need a deterministic fixture ID, format the source object first in the <a href="/developer-tools/json-parser.html">JSON parser</a> so the canonical text you hash is stable across runs, and when an integrity check fails, paste the expected and computed digests into <a href="/developer-tools/text-diff.html">text diff</a> to confirm whether even a single hex character differs. The <a href="/developer-tools.html">developer tools hub</a> rounds out the format, minify, and hash workflow, all running in-browser with no upload.</p>
 <p class="byline">Reviewed by FreetoolOnline editorial team</p>

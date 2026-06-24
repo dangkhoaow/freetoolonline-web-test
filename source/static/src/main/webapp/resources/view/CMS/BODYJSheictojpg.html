@@ -148,3 +148,95 @@
         }
     };
 </script>
+
+<!-- E4 freetool-migration: ADDITIVE in-browser HEIC->JPG/PNG/WebP path (heic-to, zero upload).
+     The server multi-file convert path above (upload -> callAjax) is UNTOUCHED. This client
+     path decodes HEIC entirely on the device (libheif WASM). Activates only when the
+     client-mode controls (added in ui_and_skill) are present. -->
+<script>
+    // Idempotent lazy-loader for the self-hosted heic-to IIFE (window.HeicTo; libheif WASM inlined).
+    function ftoLoadHeicTo() {
+        if (window.HeicTo) { return Promise.resolve(); }
+        if (window.__ftoHeicToPromise) { return window.__ftoHeicToPromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/heic-to';
+        window.__ftoHeicToPromise = new Promise(function (resolve, reject) {
+            var s = document.createElement('script');
+            s.src = base + '/heic-to.js'; s.async = true;
+            s.onload = function () { window.HeicTo ? resolve() : reject(new Error('heic-to loaded but HeicTo global is missing')); };
+            s.onerror = function () { reject(new Error('failed to load heic-to from ' + base)); };
+            document.head.appendChild(s);
+        });
+        return window.__ftoHeicToPromise;
+    }
+
+    // Real client-side HEIC decode. opts: { format:'jpg'|'png'|'webp', quality:1-100 }.
+    // Mirrors the source convertHeicInBrowser: HeicTo({blob,type,quality/100}) with a 60s
+    // timeout race. Returns { blob, ext }. Zero backend calls (libheif WASM in-browser).
+    function ftoClientHeicConvert(file, opts, onProgress) {
+        opts = opts || {};
+        var fmt = (opts.format === 'png') ? 'png' : (opts.format === 'webp') ? 'webp' : 'jpg';
+        var mime = fmt === 'png' ? 'image/png' : fmt === 'webp' ? 'image/webp' : 'image/jpeg';
+        var quality = Math.min(100, Math.max(1, parseInt(opts.quality, 10) || 80)) / 100;
+        return ftoLoadHeicTo().then(function () {
+            if (typeof onProgress === 'function') { onProgress(0.2); }
+            var conv = window.HeicTo({ blob: file, type: mime, quality: quality });
+            var timeout = new Promise(function (_, rej) { setTimeout(function () { rej(new Error('Conversion timed out after 60s')); }, 60000); });
+            return Promise.race([conv, timeout]).then(function (blob) {
+                if (typeof onProgress === 'function') { onProgress(1); }
+                return { blob: blob, ext: fmt };
+            });
+        });
+    }
+
+    // Guarded wiring to the client-mode controls (added in ui_and_skill). No-op until then.
+    function ftoWireClientHeicToJpg() {
+        var input = document.getElementById('hjClientFile');
+        var btn = document.getElementById('hjClientBtn');
+        if (!input || !btn) { return; }
+        // E4 verify-fix: relocate this client panel out of any hidden server-flow .step
+        // so the in-browser (no-upload) tool is visible without uploading. No-op when not nested.
+        var __ftoRow = btn.closest ? btn.closest('.w3-row') : null;
+        var __ftoStep = __ftoRow && __ftoRow.closest ? __ftoRow.closest('.step') : null;
+        if (__ftoStep && __ftoStep.parentNode) { __ftoStep.parentNode.insertBefore(__ftoRow, __ftoStep.nextSibling); }
+        var status = document.getElementById('hjStatus');
+        var dl = document.getElementById('hjDownload');
+        function val(id, d) { var el = document.getElementById(id); return el ? el.value : d; }
+        function setStatus(m) { if (status) { status.textContent = m; } }
+        btn.addEventListener('click', function () {
+            var f = input.files && input.files[0];
+            if (!f) { setStatus('Select a HEIC file to convert.'); return; }
+            btn.disabled = true;
+            if (dl) { dl.style.display = 'none'; dl.removeAttribute('href'); }
+            setStatus('Converting in your browser ...');
+            var doConvert = function () {
+                var fmt = val('hjFormat', 'jpg');
+                return ftoClientHeicConvert(f, { format: fmt, quality: val('hjQuality', '80') }, function (frac) {
+                    setStatus('Converting in your browser ... ' + Math.round(frac * 100) + '%');
+                }).then(function (res) {
+                    var url = URL.createObjectURL(res.blob);
+                    var baseName = (f.name || 'image').replace(/\.[^.]+$/, '');
+                    if (dl) {
+                        dl.href = url; dl.download = baseName + '.' + res.ext;
+                        dl.style.display = ''; dl.textContent = 'Download .' + res.ext;
+                    }
+                    setStatus('Done in your browser - no upload. Converted to ' + res.ext.toUpperCase() + ' (' + (res.blob.size / 1024).toFixed(0) + ' KB).');
+                });
+            };
+            // Optional pre-check: warn (do not block) if the file does not look like HEIC.
+            ftoLoadHeicTo().then(function () {
+                return (window.HeicTo && window.HeicTo.isHeic) ? window.HeicTo.isHeic(f).catch(function () { return true; }) : true;
+            }).then(function (isH) {
+                if (isH === false) { setStatus('That file does not look like HEIC; trying anyway ...'); }
+                return doConvert();
+            }).catch(function (err) {
+                setStatus('Could not convert in the browser: ' + (err && err.message ? err.message : 'unknown error') + '. The server convert above still works.');
+            }).then(function () { btn.disabled = false; });
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', ftoWireClientHeicToJpg);
+    } else {
+        ftoWireClientHeicToJpg();
+    }
+</script>

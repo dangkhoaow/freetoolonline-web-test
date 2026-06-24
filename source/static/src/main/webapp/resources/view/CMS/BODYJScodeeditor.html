@@ -1,0 +1,180 @@
+<script>
+    // T7 freetool-migration: in-browser code editor (Monaco, the editor that powers VS Code).
+    // Logic ported from the source app/code-editor (NOT its React components): 18 languages,
+    // 4 themes, localStorage snippet manager, open a local file, save (File System Access API
+    // where supported, else download). Monaco (~15MB) lazy-loads on the "Launch editor" click.
+    // 100% in-browser: no upload, no backend.
+    web.localUpload = true;
+    function loadUploadHandlersByPage() {}   // no server upload for this tool
+
+    var FTO_CE_LANGS = {
+        javascript: 'JavaScript', typescript: 'TypeScript', html: 'HTML', css: 'CSS', json: 'JSON',
+        python: 'Python', java: 'Java', csharp: 'C#', cpp: 'C++', php: 'PHP', ruby: 'Ruby',
+        go: 'Go', rust: 'Rust', sql: 'SQL', markdown: 'Markdown', yaml: 'YAML', xml: 'XML', shell: 'Shell/Bash'
+    };
+    var FTO_CE_THEMES = { 'vs': 'Light', 'vs-dark': 'Dark', 'hc-black': 'High Contrast Dark', 'hc-light': 'High Contrast Light' };
+    var FTO_CE_EXT = {
+        javascript: 'js', typescript: 'ts', html: 'html', css: 'css', json: 'json', python: 'py',
+        java: 'java', csharp: 'cs', cpp: 'cpp', php: 'php', ruby: 'rb', go: 'go', rust: 'rs',
+        sql: 'sql', markdown: 'md', yaml: 'yml', xml: 'xml', shell: 'sh'
+    };
+    var FTO_CE_OPTS = {
+        automaticLayout: true, contextmenu: true, fontSize: 14, lineHeight: 21,
+        minimap: { enabled: true }, scrollBeyondLastLine: false, roundedSelection: true,
+        padding: { top: 10, bottom: 10 }, cursorBlinking: 'blink', cursorStyle: 'line',
+        wordWrap: 'on', wrappingIndent: 'same', dragAndDrop: true, formatOnPaste: true,
+        tabSize: 2, insertSpaces: true, matchBrackets: 'always', glyphMargin: true, folding: true,
+        lineNumbersMinChars: 3
+    };
+    var ftoCeEditor = null;
+
+    // Idempotent lazy-loader for the self-hosted Monaco AMD bundle (window.monaco).
+    function ftoLoadMonaco() {
+        if (window.monaco && window.monaco.editor) { return Promise.resolve(); }
+        if (window.__ftoMonacoPromise) { return window.__ftoMonacoPromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/monaco';
+        window.__ftoMonacoPromise = new Promise(function (resolve, reject) {
+            var s = document.createElement('script');
+            s.src = base + '/vs/loader.js'; s.async = true;
+            s.onload = function () {
+                try {
+                    window.require.config({ paths: { vs: base + '/vs' } });
+                    window.require(['vs/editor/editor.main'], function () {
+                        (window.monaco && window.monaco.editor) ? resolve() : reject(new Error('monaco loaded but monaco.editor is missing'));
+                    });
+                } catch (e) { reject(e); }
+            };
+            s.onerror = function () { reject(new Error('failed to load monaco loader from ' + base)); };
+            document.head.appendChild(s);
+        });
+        return window.__ftoMonacoPromise;
+    }
+
+    function ftoCreateCodeEditor(container, value, language, theme) {
+        var opts = {};
+        for (var k in FTO_CE_OPTS) { if (Object.prototype.hasOwnProperty.call(FTO_CE_OPTS, k)) { opts[k] = FTO_CE_OPTS[k]; } }
+        opts.value = value || '';
+        opts.language = language || 'javascript';
+        opts.theme = theme || 'vs-dark';
+        // monaco.editor.create APPENDS to the container; it does NOT clear existing
+        // children. Remove the "Click Launch editor" placeholder first, else it stays
+        // above the editor and pushes .monaco-editor ~200px down inside the container.
+        container.innerHTML = '';
+        ftoCeEditor = window.monaco.editor.create(container, opts);
+        return ftoCeEditor;
+    }
+
+    // localStorage snippet manager (mirrors the source localStorage persistence).
+    var FTO_CE_SNIP_KEY = 'fto_code_editor_snippets';
+    function ftoCeSnippets() { try { return JSON.parse(localStorage.getItem(FTO_CE_SNIP_KEY) || '{}'); } catch (e) { return {}; } }
+    function ftoCeSaveSnippet(name, code, lang) { var s = ftoCeSnippets(); s[name] = { code: code, lang: lang }; localStorage.setItem(FTO_CE_SNIP_KEY, JSON.stringify(s)); }
+    function ftoCeDeleteSnippet(name) { var s = ftoCeSnippets(); delete s[name]; localStorage.setItem(FTO_CE_SNIP_KEY, JSON.stringify(s)); }
+
+    // Save: File System Access API where supported, else a normal download (genuine fallback).
+    function ftoCeSave() {
+        var code = ftoCeEditor ? ftoCeEditor.getValue() : '';
+        var langEl = document.getElementById('ceLang');
+        var lang = langEl ? langEl.value : 'javascript';
+        var fname = 'code.' + (FTO_CE_EXT[lang] || 'txt');
+        if (window.showSaveFilePicker) {
+            return window.showSaveFilePicker({ suggestedName: fname })
+                .then(function (h) { return h.createWritable(); })
+                .then(function (w) { return w.write(code).then(function () { return w.close(); }); })
+                .then(function () { return 'saved'; })
+                .catch(function (e) {
+                    if (e && e.name === 'AbortError') { return 'cancelled'; }
+                    ftoCeDownload(code, fname); return 'downloaded';
+                });
+        }
+        ftoCeDownload(code, fname); return Promise.resolve('downloaded');
+    }
+    function ftoCeDownload(code, fname) {
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([code], { type: 'text/plain' }));
+        a.download = fname; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+
+    // Guarded wiring: the controls/container come from ui_and_skill (BODYHTML). No-op until then.
+    function ftoWireCodeEditor() {
+        var launch = document.getElementById('ceLaunch');
+        var container = document.getElementById('ceEditor');
+        if (!launch || !container) { return; }
+        var langEl = document.getElementById('ceLang');
+        var themeEl = document.getElementById('ceTheme');
+        var status = document.getElementById('ceStatus');
+        var fileEl = document.getElementById('ceFile');
+        var saveBtn = document.getElementById('ceSaveBtn');
+        var snipName = document.getElementById('ceSnippetName');
+        var snipSaveBtn = document.getElementById('ceSaveSnippetBtn');
+        var snipList = document.getElementById('ceSnippetList');
+        function setStatus(m) { if (status) { status.textContent = m; } }
+        function refreshSnippets() {
+            if (!snipList) { return; }
+            var s = ftoCeSnippets(); snipList.innerHTML = '';
+            Object.keys(s).forEach(function (name) {
+                var opt = document.createElement('option'); opt.value = name; opt.textContent = name; snipList.appendChild(opt);
+            });
+        }
+        launch.addEventListener('click', function () {
+            launch.disabled = true; setStatus('Loading the editor (one-time, in your browser) ...');
+            ftoLoadMonaco().then(function () {
+                if (!ftoCeEditor) {
+                    ftoCreateCodeEditor(container, '// Write code here. Pick a language; save with the File System Access API or download.\n', (langEl ? langEl.value : 'javascript'), (themeEl ? themeEl.value : 'vs-dark'));
+                }
+                container.style.minHeight = container.style.minHeight || '420px';
+                refreshSnippets();
+                setStatus('Editor ready - in your browser, no upload.');
+                if (launch.parentNode) { launch.style.display = 'none'; }
+            }).catch(function (err) {
+                launch.disabled = false;
+                setStatus('Could not load the editor: ' + (err && err.message ? err.message : 'unknown error') + '.');
+            });
+        });
+        if (langEl) { langEl.addEventListener('change', function () { if (ftoCeEditor && window.monaco) { window.monaco.editor.setModelLanguage(ftoCeEditor.getModel(), langEl.value); } }); }
+        if (themeEl) { themeEl.addEventListener('change', function () { if (window.monaco) { window.monaco.editor.setTheme(themeEl.value); } }); }
+        if (saveBtn) { saveBtn.addEventListener('click', function () { ftoCeSave().then(function (r) { setStatus(r === 'cancelled' ? 'Save cancelled.' : (r === 'saved' ? 'Saved to your chosen file.' : 'Downloaded.')); }); }); }
+        if (fileEl) {
+            fileEl.addEventListener('change', function () {
+                var f = fileEl.files && fileEl.files[0]; if (!f) { return; }
+                var r = new FileReader();
+                r.onload = function () {
+                    var content = String(r.result || '');
+                    if (ftoCeEditor) { ftoCeEditor.setValue(content); setStatus('Loaded ' + f.name + ' into the editor.'); return; }
+                    // Editor not launched yet: load monaco ONCE, create with the file content, hide launch.
+                    // Single create path (no launch.click() so monaco.editor.create never double-fires on one container).
+                    launch.disabled = true; setStatus('Loading the editor (one-time, in your browser) ...');
+                    ftoLoadMonaco().then(function () {
+                        if (!ftoCeEditor) { ftoCreateCodeEditor(container, content, (langEl ? langEl.value : 'javascript'), (themeEl ? themeEl.value : 'vs-dark')); container.style.minHeight = container.style.minHeight || '420px'; refreshSnippets(); }
+                        else { ftoCeEditor.setValue(content); }
+                        setStatus('Loaded ' + f.name + ' - editor ready, in your browser.');
+                        launch.style.display = 'none';
+                    }).catch(function (err) {
+                        launch.disabled = false;
+                        setStatus('Could not load the editor: ' + (err && err.message ? err.message : 'unknown error') + '.');
+                    });
+                };
+                r.readAsText(f);
+            });
+        }
+        if (snipSaveBtn) {
+            snipSaveBtn.addEventListener('click', function () {
+                if (!ftoCeEditor) { setStatus('Launch the editor first.'); return; }
+                var name = (snipName && snipName.value || '').trim() || ('snippet-' + (typeof getCurrentDateTime === 'function' ? getCurrentDateTime() : 'new'));
+                ftoCeSaveSnippet(name, ftoCeEditor.getValue(), (langEl ? langEl.value : 'javascript'));
+                refreshSnippets(); setStatus('Saved snippet "' + name + '" to this browser.');
+            });
+        }
+        if (snipList) {
+            snipList.addEventListener('change', function () {
+                var s = ftoCeSnippets(); var item = s[snipList.value];
+                if (item && ftoCeEditor) {
+                    ftoCeEditor.setValue(item.code || '');
+                    if (item.lang && langEl) { langEl.value = item.lang; window.monaco.editor.setModelLanguage(ftoCeEditor.getModel(), item.lang); }
+                    setStatus('Loaded snippet "' + snipList.value + '".');
+                }
+            });
+        }
+    }
+
+    function doAfterPageRendered() { ftoWireCodeEditor(); }
+</script>

@@ -1,0 +1,266 @@
+<script>
+    // BODYJS - /image-tools/steganography.html (freetool-migration T9 port_logic).
+    // Client-side LSB steganography: hide a text message inside the pixels of a PNG
+    // and read it back out. ALL processing is in-browser on canvas - no upload, no
+    // fetch, no backend. Behavior reference (logic only, UI/UX NOT copied):
+    // freetool.online lib/services/steganography-service.ts (LSB) + aes-encryption.ts.
+    // The framework calls doAfterPageRendered() on startup; jQuery $ is available there.
+    // The optional AES password layer lazy-loads crypto-js from the site CDN; if it is
+    // not present the password field disables itself and the LSB core still works.
+
+    web.localUpload = false;
+
+    // ---- LSB core (ported verbatim from steganography-service.ts; canvas-native) ----
+
+    // Max text length for a w*h image: 32-bit length header + 16 bits per char,
+    // with a conservative 96-bit metadata reserve (matches the source helper).
+    function stCalcMaxTextLength(width, height) {
+        var totalBits = width * height * 3;
+        var availableBits = totalBits - 96;
+        return Math.max(0, Math.floor(availableBits / 16));
+    }
+
+    // 16-bit-per-char UTF-16 binary (Unicode-safe), matching the source.
+    function stTextToBinary(text) {
+        var binary = "";
+        for (var i = 0; i < text.length; i++) {
+            binary += text.charCodeAt(i).toString(2).padStart(16, "0");
+        }
+        return binary;
+    }
+
+    function stBinaryToText(binary) {
+        var text = "";
+        for (var i = 0; i < binary.length; i += 16) {
+            var charCode = parseInt(binary.substr(i, 16), 2);
+            text += String.fromCharCode(charCode);
+        }
+        return text;
+    }
+
+    // Embed: 32-bit length header + text body into the LSB of R,G,B (skip alpha).
+    // Returns a NEW ImageData (does not mutate the input).
+    function stEncodeText(imageData, text) {
+        var width = imageData.width, height = imageData.height, data = imageData.data;
+        var maxLength = stCalcMaxTextLength(width, height);
+        if (text.length > maxLength) {
+            throw new Error("Message is too long. The most this image can hold is " + maxLength + " characters. Use a larger image or a shorter message.");
+        }
+        var textLengthBinary = text.length.toString(2).padStart(32, "0");
+        var binaryData = textLengthBinary + stTextToBinary(text);
+        var newData = new Uint8ClampedArray(data);
+        var binaryIndex = 0;
+        for (var i = 0; i < newData.length; i += 4) {
+            for (var j = 0; j < 3; j++) { // skip alpha at i+3
+                if (binaryIndex < binaryData.length) {
+                    newData[i + j] = (newData[i + j] & 0xfe) | parseInt(binaryData[binaryIndex], 10);
+                    binaryIndex++;
+                } else { break; }
+            }
+            if (binaryIndex >= binaryData.length) { break; }
+        }
+        return new ImageData(newData, width, height);
+    }
+
+    // Extract: read the 32-bit length, then length*16 bits of text.
+    function stDecodeText(imageData) {
+        var width = imageData.width, height = imageData.height, data = imageData.data;
+        // First pass: the 32-bit length header.
+        var headerBits = "";
+        var bits = 0;
+        for (var i = 0; i < data.length && bits < 32; i += 4) {
+            for (var j = 0; j < 3 && bits < 32; j++) {
+                headerBits += (data[i + j] & 0x01).toString();
+                bits++;
+            }
+        }
+        var textLength = parseInt(headerBits.substr(0, 32), 2);
+        if (isNaN(textLength) || textLength <= 0 || textLength > stCalcMaxTextLength(width, height)) {
+            throw new Error("No hidden message found in this image (or it was re-saved in a lossy format that erased the data).");
+        }
+        // Second pass: header + body.
+        var totalTextBits = textLength * 16 + 32;
+        var binaryData = "";
+        bits = 0;
+        for (var k = 0; k < data.length && bits < totalTextBits; k += 4) {
+            for (var m = 0; m < 3 && bits < totalTextBits; m++) {
+                binaryData += (data[k + m] & 0x01).toString();
+                bits++;
+            }
+        }
+        return stBinaryToText(binaryData.substr(32));
+    }
+
+    // ---- Image <-> canvas helpers (FileReader -> Image -> canvas; mirrors the E5 pattern) ----
+
+    function stFileToImageData(file, onOk, onErr) {
+        if (!file) { onErr("Choose an image first."); return; }
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            var img = new Image();
+            img.onload = function () {
+                try {
+                    var canvas = document.createElement("canvas");
+                    canvas.width = img.naturalWidth || img.width;
+                    canvas.height = img.naturalHeight || img.height;
+                    var ctx = canvas.getContext("2d");
+                    ctx.drawImage(img, 0, 0);
+                    // Cross-origin taint cannot happen for a user-picked file (same-origin).
+                    var id = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    onOk(id, canvas, ctx);
+                } catch (err) { onErr("Could not read this image: " + err.message); }
+            };
+            img.onerror = function () { onErr("That file is not a readable image."); };
+            img.src = e.target.result;
+        };
+        reader.onerror = function () { onErr("Could not open that file."); };
+        reader.readAsDataURL(file);
+    }
+
+    // PNG is mandatory: the LSB lives in the low bit of each pixel, and any lossy
+    // re-encode (JPEG / lossy WebP) wipes it. Always export image/png.
+    function stImageDataToPngBlob(imageData, cb) {
+        var canvas = document.createElement("canvas");
+        canvas.width = imageData.width;
+        canvas.height = imageData.height;
+        canvas.getContext("2d").putImageData(imageData, 0, 0);
+        canvas.toBlob(function (blob) { cb(blob); }, "image/png");
+    }
+
+    // ---- Optional AES password layer (lazy-loads crypto-js from the SITE CDN) ----
+    // crypto-js is not bundled in the page; it is fetched on first password use from
+    // the same self-hosted CDN that serves jszip/qrcodejs. If it is not present there
+    // yet, stEnsureCryptoJS reports false and the caller degrades to LSB-only.
+
+    var ST_CRYPTOJS_URL = "https://dkbg1jftzfsd2.cloudfront.net/script/lib/crypto-js.min.js";
+    var stCryptoTried = false;
+
+    function stEnsureCryptoJS(cb) {
+        if (typeof window !== "undefined" && window.CryptoJS) { cb(true); return; }
+        if (stCryptoTried) { cb(typeof window !== "undefined" && !!window.CryptoJS); return; }
+        stCryptoTried = true;
+        try {
+            loadScript(ST_CRYPTOJS_URL, function () { cb(typeof window !== "undefined" && !!window.CryptoJS); });
+            // loadScript may not fire its callback on a 404; poll briefly then give up.
+            setTimeout(function () { if (!(typeof window !== "undefined" && window.CryptoJS)) { cb(false); } }, 4000);
+        } catch (e) { cb(false); }
+    }
+
+    // AES-256-CBC + PBKDF2(1000) + random 128-bit salt (hex-prepended) + 'v1:' marker.
+    // Ported from aes-encryption.ts (the weak service-level XOR path is NOT ported).
+    function stAesEncrypt(plain, password) {
+        var C = window.CryptoJS;
+        var salt = C.lib.WordArray.random(128 / 8);
+        var keyAndIV = C.PBKDF2(password, salt, { keySize: 256 / 32 + 128 / 32, iterations: 1000 });
+        var key = C.lib.WordArray.create(keyAndIV.words.slice(0, 256 / 32), 256 / 8);
+        var iv = C.lib.WordArray.create(keyAndIV.words.slice(256 / 32), 128 / 8);
+        var encrypted = C.AES.encrypt("v1:" + plain, key, { iv: iv, padding: C.pad.Pkcs7, mode: C.mode.CBC });
+        return salt.toString() + encrypted.toString();
+    }
+
+    function stAesDecrypt(cipher, password) {
+        var C = window.CryptoJS;
+        var salt = C.enc.Hex.parse(cipher.substring(0, 32));
+        var ciphertext = cipher.substring(32);
+        var keyAndIV = C.PBKDF2(password, salt, { keySize: 256 / 32 + 128 / 32, iterations: 1000 });
+        var key = C.lib.WordArray.create(keyAndIV.words.slice(0, 256 / 32), 256 / 8);
+        var iv = C.lib.WordArray.create(keyAndIV.words.slice(256 / 32), 128 / 8);
+        var decrypted = C.AES.decrypt(ciphertext, key, { iv: iv, padding: C.pad.Pkcs7, mode: C.mode.CBC });
+        var out = decrypted.toString(C.enc.Utf8);
+        if (out.indexOf("v1:") === 0) { return out.substring(3); }
+        if (!out) { throw new Error("Incorrect password (or this message was not password-protected)."); }
+        return out;
+    }
+
+    // ---- defensive DOM helpers (elements exist only after ui_and_skill builds BODYHTML) ----
+    function stEl(id) { return document.getElementById(id); }
+    function stVal(id) { var e = stEl(id); return e ? e.value : ""; }
+    function stShow(sel, on) { try { $(sel).toggle(!!on); } catch (e) {} }
+    function stSetErr(msg) { var e = stEl("stError"); if (e) { e.textContent = msg || ""; e.style.display = msg ? "block" : "none"; } }
+
+    // ---- actions ----
+    function stDoEncode() {
+        stSetErr("");
+        var file = (stEl("stCoverFile") && stEl("stCoverFile").files) ? stEl("stCoverFile").files[0] : null;
+        var message = stVal("stMessage");
+        var password = stVal("stPassword");
+        if (!message) { stSetErr("Type the secret message you want to hide."); return; }
+        stFileToImageData(file, function (imageData) {
+            function embed(payload) {
+                try {
+                    var stego = stEncodeText(imageData, payload);
+                    stImageDataToPngBlob(stego, function (blob) {
+                        var url = URL.createObjectURL(blob);
+                        var out = stEl("stOutput");
+                        if (out) {
+                            out.innerHTML = '<a class="w3-button w3-light-grey imageDownloadBtn" download="stego.png" href="' + url + '">Download stego PNG</a>' +
+                                '<div class="w3-small w3-text-grey" style="margin-top:6px;">Keep this as a PNG - re-saving it as JPG would erase the hidden message.</div>';
+                        }
+                        try { $(".outputImgs").show(); } catch (e) {}
+                    });
+                } catch (err) { stSetErr(err.message); }
+            }
+            if (password) {
+                stEnsureCryptoJS(function (ok) {
+                    if (!ok) { stSetErr("Password protection needs the crypto library, which is not loaded. Hiding the message without a password instead."); embed(message); return; }
+                    try { embed(stAesEncrypt(message, password)); } catch (e) { stSetErr("Could not encrypt: " + e.message); }
+                });
+            } else { embed(message); }
+        }, stSetErr);
+    }
+
+    function stDoDecode() {
+        stSetErr("");
+        var file = (stEl("stStegoFile") && stEl("stStegoFile").files) ? stEl("stStegoFile").files[0] : null;
+        var password = stVal("stPassword");
+        stFileToImageData(file, function (imageData) {
+            var raw;
+            try { raw = stDecodeText(imageData); } catch (err) { stSetErr(err.message); return; }
+            function showText(t) { var o = stEl("stMessageOut"); if (o) { o.textContent = t; o.style.display = "block"; } try { $(".outputImgs").show(); } catch (e) {} }
+            if (password) {
+                stEnsureCryptoJS(function (ok) {
+                    if (!ok) { stSetErr("Password protection needs the crypto library, which is not loaded. Showing the raw extracted text."); showText(raw); return; }
+                    try { showText(stAesDecrypt(raw, password)); } catch (e) { stSetErr(e.message); }
+                });
+            } else { showText(raw); }
+        }, stSetErr);
+    }
+
+    function stUpdateCapacity() {
+        var file = (stEl("stCoverFile") && stEl("stCoverFile").files) ? stEl("stCoverFile").files[0] : null;
+        if (!file) return;
+        stFileToImageData(file, function (imageData) {
+            var max = stCalcMaxTextLength(imageData.width, imageData.height);
+            var cap = stEl("stCapacity");
+            if (cap) { cap.textContent = "This image can hold up to " + max + " characters."; }
+        }, function () {});
+    }
+
+    function stClientInit() {
+        var modeSel = stEl("stMode");
+        function applyMode() {
+            var mode = modeSel ? modeSel.value : "encode";
+            stShow(".st-encode-c", mode === "encode");
+            stShow(".st-decode-c", mode === "decode");
+        }
+        if (modeSel) { modeSel.addEventListener("change", applyMode); }
+        applyMode();
+        var cover = stEl("stCoverFile");
+        if (cover) { cover.addEventListener("change", stUpdateCapacity); }
+        var encBtn = stEl("stEncodeBtn");
+        if (encBtn) { encBtn.addEventListener("click", stDoEncode); }
+        var decBtn = stEl("stDecodeBtn");
+        if (decBtn) { decBtn.addEventListener("click", stDoDecode); }
+        // crypto-js is optional; probe once so the password note can reflect availability.
+        var note = stEl("stAesNote");
+        if (note) {
+            stEnsureCryptoJS(function (ok) {
+                if (!ok) { note.textContent = "Password protection is unavailable in this build (the crypto library is not loaded); the message is hidden without encryption."; note.style.display = "block"; }
+            });
+        }
+    }
+
+    function doAfterPageRendered() {
+        try { stClientInit(); } catch (e) {}
+    }
+</script>

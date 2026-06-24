@@ -1149,6 +1149,17 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/compress-pdf-online-free.html',
   '/guides/id/compress-pdf-online-free.html',
   '/guides/de/compress-pdf-online-free.html',
+  // cycle 20260615-4 - split-pdf-online-free ID locale variant (EN-first locale drain; de remains)
+  '/guides/id/split-pdf-online-free.html',
+  // cycle 20260615-5 - split-pdf-online-free DE locale variant (EN-first locale drain COMPLETE)
+  '/guides/de/split-pdf-online-free.html',
+  // cycle 20260623-54 - mengecilkan-ukuran-zip EN + PT locale variant (create_new_guide_page locale completion)
+  '/guides/mengecilkan-ukuran-zip.html',
+  '/guides/pt/mengecilkan-ukuran-zip.html',
+  // cycle 20260624 - mengecilkan-ukuran-zip ES locale variant (EN-first locale drain; vi/id/de remain)
+  '/guides/es/mengecilkan-ukuran-zip.html',
+  // cycle 20260624-2 - mengecilkan-ukuran-zip VI locale variant (EN-first locale drain; id/de remain)
+  '/guides/vi/mengecilkan-ukuran-zip.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -1888,6 +1899,20 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/compress-pdf-online-free.html',
   '/guides/id/compress-pdf-online-free.html',
   '/guides/de/compress-pdf-online-free.html',
+  // cycle 20260614-21 - split-pdf-online-free new guide (EN bare canonical; locale variants drain in later cycles per EN-first contract)
+  '/guides/split-pdf-online-free.html',
+  // cycle 20260615 - split-pdf-online-free PT locale variant (EN-first locale drain; es/vi/id/de remain)
+  '/guides/pt/split-pdf-online-free.html',
+  // cycle 20260615-2 - split-pdf-online-free ES locale variant (EN-first locale drain; vi/id/de remain)
+  '/guides/es/split-pdf-online-free.html',
+  // cycle 20260615-3 - split-pdf-online-free VI locale variant (EN-first locale drain; id/de remain)
+  '/guides/vi/split-pdf-online-free.html',
+  // cycle 20260615-4 - split-pdf-online-free ID locale variant (EN-first locale drain; de remains)
+  '/guides/id/split-pdf-online-free.html',
+  // cycle 20260615-5 - split-pdf-online-free DE locale variant (EN-first locale drain COMPLETE)
+  '/guides/de/split-pdf-online-free.html',
+  // cycle 20260624-2 - mengecilkan-ukuran-zip VI locale variant (EN-first locale drain; id/de remain)
+  '/guides/vi/mengecilkan-ukuran-zip.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -2306,6 +2331,15 @@ export const ALIAS_ROUTES = {
   '/guides/zip-unlocker-online.html': '/guides/en/zip-unlocker-online.html',
   '/guides/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html': '/guides/en/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html',
   '/regex-tester.html': '/developer-tools/regex-tester.html',
+  '/todo-list.html': '/utility-tools/todo-list.html',
+  '/unit-converter.html': '/utility-tools/unit-converter.html',
+  '/color-picker.html': '/developer-tools/color-picker.html',
+  '/data-visualizer.html': '/developer-tools/data-visualizer.html',
+  '/screen-recorder.html': '/device-test-tools/screen-recorder.html',
+  '/font-generator.html': '/utility-tools/font-generator.html',
+  '/code-editor.html': '/developer-tools/code-editor.html',
+  '/steganography.html': '/image-tools/steganography.html',
+  '/private-ai-chat.html': '/utility-tools/private-ai-chat.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3057,6 +3091,85 @@ export const JSP_BY_ROUTE = {
   // cycle 20260610-16 Phase 3 — compress-pdf-online-free new guide (EN + 5 locale variants); implementing tools /flatten-pdf.html + /pdf-to-images.html + /compress-image.html + /images-to-pdf.html + /preflight-pdf.html (cluster pdf)
   '/guides/compress-pdf-online-free.html': 'guides/compress-pdf-online-free.jsp',
   '/guides/pt/compress-pdf-online-free.html': 'guides/pt/compress-pdf-online-free.jsp', '/guides/es/compress-pdf-online-free.html': 'guides/es/compress-pdf-online-free.jsp', '/guides/vi/compress-pdf-online-free.html': 'guides/vi/compress-pdf-online-free.jsp', '/guides/id/compress-pdf-online-free.html': 'guides/id/compress-pdf-online-free.jsp', '/guides/de/compress-pdf-online-free.html': 'guides/de/compress-pdf-online-free.jsp',
+  // cycle 20260614-21 Phase 3 — split-pdf-online-free new guide (EN bare canonical; locale variants drain later per EN-first); implementing tools /pdf-tools/split-pdf-by-range.html + /pdf-tools/split-pdf-to-each-pages.html (cluster pdf)
+  '/guides/split-pdf-online-free.html': 'guides/split-pdf-online-free.jsp',
+  // cycle 20260615 Phase 3 - split-pdf-online-free PT locale variant (EN-first locale drain; es/vi/id/de remain)
+  '/guides/pt/split-pdf-online-free.html': 'guides/pt/split-pdf-online-free.jsp',
+  // cycle 20260615-2 Phase 3 - split-pdf-online-free ES locale variant (EN-first locale drain; vi/id/de remain)
+  '/guides/es/split-pdf-online-free.html': 'guides/es/split-pdf-online-free.jsp',
+  // cycle 20260615-3 Phase 3 - split-pdf-online-free VI locale variant (EN-first locale drain; id/de remain)
+  '/guides/vi/split-pdf-online-free.html': 'guides/vi/split-pdf-online-free.jsp',
+  // cycle 20260615-4 Phase 3 - split-pdf-online-free ID locale variant (EN-first locale drain; de remains)
+  '/guides/id/split-pdf-online-free.html': 'guides/id/split-pdf-online-free.jsp',
+  // cycle 20260615-5 Phase 3 - split-pdf-online-free DE locale variant (EN-first locale drain COMPLETE; en+pt+es+vi+id+de all present)
+  '/guides/de/split-pdf-online-free.html': 'guides/de/split-pdf-online-free.jsp',
+  '/utility-tools/todo-list.html': 'utility/todo-list.jsp',
+  '/guides/how-to-make-a-to-do-list-online.html': 'guide/how-to-make-a-to-do-list-online.jsp',
+  '/guides/pt/how-to-make-a-to-do-list-online.html': 'guide/pt/how-to-make-a-to-do-list-online.jsp',
+  '/guides/es/how-to-make-a-to-do-list-online.html': 'guide/es/how-to-make-a-to-do-list-online.jsp',
+  '/guides/vi/how-to-make-a-to-do-list-online.html': 'guide/vi/how-to-make-a-to-do-list-online.jsp',
+  '/guides/id/how-to-make-a-to-do-list-online.html': 'guide/id/how-to-make-a-to-do-list-online.jsp',
+  '/guides/de/how-to-make-a-to-do-list-online.html': 'guide/de/how-to-make-a-to-do-list-online.jsp',
+  '/utility-tools/unit-converter.html': 'utility/unit-converter.jsp',
+  '/utility-tools/private-ai-chat.html': 'utility/private-ai-chat.jsp',
+  '/guides/how-to-convert-units-online.html': 'guide/how-to-convert-units-online.jsp',
+  '/guides/pt/how-to-convert-units-online.html': 'guide/pt/how-to-convert-units-online.jsp',
+  '/guides/es/how-to-convert-units-online.html': 'guide/es/how-to-convert-units-online.jsp',
+  '/guides/vi/how-to-convert-units-online.html': 'guide/vi/how-to-convert-units-online.jsp',
+  '/guides/id/how-to-convert-units-online.html': 'guide/id/how-to-convert-units-online.jsp',
+  '/guides/de/how-to-convert-units-online.html': 'guide/de/how-to-convert-units-online.jsp',
+  '/developer-tools/color-picker.html': 'utility/color-picker.jsp',
+  '/guides/how-to-pick-a-color-online.html': 'guide/how-to-pick-a-color-online.jsp',
+  '/guides/pt/how-to-pick-a-color-online.html': 'guide/pt/how-to-pick-a-color-online.jsp',
+  '/guides/es/how-to-pick-a-color-online.html': 'guide/es/how-to-pick-a-color-online.jsp',
+  '/guides/vi/how-to-pick-a-color-online.html': 'guide/vi/how-to-pick-a-color-online.jsp',
+  '/guides/id/how-to-pick-a-color-online.html': 'guide/id/how-to-pick-a-color-online.jsp',
+  '/guides/de/how-to-pick-a-color-online.html': 'guide/de/how-to-pick-a-color-online.jsp',
+  '/developer-tools/data-visualizer.html': 'utility/data-visualizer.jsp',
+  '/guides/how-to-visualize-data-online.html': 'guide/how-to-visualize-data-online.jsp',
+  '/guides/pt/how-to-visualize-data-online.html': 'guide/pt/how-to-visualize-data-online.jsp',
+  '/guides/es/how-to-visualize-data-online.html': 'guide/es/how-to-visualize-data-online.jsp',
+  '/guides/vi/how-to-visualize-data-online.html': 'guide/vi/how-to-visualize-data-online.jsp',
+  '/guides/id/how-to-visualize-data-online.html': 'guide/id/how-to-visualize-data-online.jsp',
+  '/guides/de/how-to-visualize-data-online.html': 'guide/de/how-to-visualize-data-online.jsp',
+  '/device-test-tools/screen-recorder.html': 'convert/screen-recorder.jsp',
+  '/guides/how-to-record-your-screen-online.html': 'guide/how-to-record-your-screen-online.jsp',
+  '/guides/pt/how-to-record-your-screen-online.html': 'guide/pt/how-to-record-your-screen-online.jsp',
+  '/guides/es/how-to-record-your-screen-online.html': 'guide/es/how-to-record-your-screen-online.jsp',
+  '/guides/vi/how-to-record-your-screen-online.html': 'guide/vi/how-to-record-your-screen-online.jsp',
+  '/guides/id/how-to-record-your-screen-online.html': 'guide/id/how-to-record-your-screen-online.jsp',
+  '/guides/de/how-to-record-your-screen-online.html': 'guide/de/how-to-record-your-screen-online.jsp',
+  '/utility-tools/font-generator.html': 'utility/font-generator.jsp',
+  '/guides/how-to-turn-text-into-an-image-online.html': 'guide/how-to-turn-text-into-an-image-online.jsp',
+  '/guides/pt/how-to-turn-text-into-an-image-online.html': 'guide/pt/how-to-turn-text-into-an-image-online.jsp',
+  '/guides/es/how-to-turn-text-into-an-image-online.html': 'guide/es/how-to-turn-text-into-an-image-online.jsp',
+  '/guides/vi/how-to-turn-text-into-an-image-online.html': 'guide/vi/how-to-turn-text-into-an-image-online.jsp',
+  '/guides/id/how-to-turn-text-into-an-image-online.html': 'guide/id/how-to-turn-text-into-an-image-online.jsp',
+  '/guides/de/how-to-turn-text-into-an-image-online.html': 'guide/de/how-to-turn-text-into-an-image-online.jsp',
+  '/developer-tools/code-editor.html': 'utility/code-editor.jsp',
+  '/image-tools/steganography.html': 'convert/steganography.jsp',
+  '/guides/how-to-hide-a-message-in-an-image.html': 'guide/how-to-hide-a-message-in-an-image.jsp',
+  '/guides/pt/how-to-hide-a-message-in-an-image.html': 'guide/pt/how-to-hide-a-message-in-an-image.jsp',
+  '/guides/es/how-to-hide-a-message-in-an-image.html': 'guide/es/how-to-hide-a-message-in-an-image.jsp',
+  '/guides/vi/how-to-hide-a-message-in-an-image.html': 'guide/vi/how-to-hide-a-message-in-an-image.jsp',
+  '/guides/id/how-to-hide-a-message-in-an-image.html': 'guide/id/how-to-hide-a-message-in-an-image.jsp',
+  '/guides/de/how-to-hide-a-message-in-an-image.html': 'guide/de/how-to-hide-a-message-in-an-image.jsp',
+  '/guides/how-to-edit-code-online.html': 'guide/how-to-edit-code-online.jsp',
+  '/guides/pt/how-to-edit-code-online.html': 'guide/pt/how-to-edit-code-online.jsp',
+  '/guides/es/how-to-edit-code-online.html': 'guide/es/how-to-edit-code-online.jsp',
+  '/guides/vi/how-to-edit-code-online.html': 'guide/vi/how-to-edit-code-online.jsp',
+  '/guides/id/how-to-edit-code-online.html': 'guide/id/how-to-edit-code-online.jsp',
+  '/guides/de/how-to-edit-code-online.html': 'guide/de/how-to-edit-code-online.jsp',
+  '/guides/how-to-run-a-private-ai-chat-in-your-browser.html': 'guide/how-to-run-a-private-ai-chat-in-your-browser.jsp',
+  '/guides/pt/how-to-run-a-private-ai-chat-in-your-browser.html': 'guide/pt/how-to-run-a-private-ai-chat-in-your-browser.jsp',
+  '/guides/es/how-to-run-a-private-ai-chat-in-your-browser.html': 'guide/es/how-to-run-a-private-ai-chat-in-your-browser.jsp',
+  '/guides/vi/how-to-run-a-private-ai-chat-in-your-browser.html': 'guide/vi/how-to-run-a-private-ai-chat-in-your-browser.jsp',
+  '/guides/id/how-to-run-a-private-ai-chat-in-your-browser.html': 'guide/id/how-to-run-a-private-ai-chat-in-your-browser.jsp',
+  '/guides/de/how-to-run-a-private-ai-chat-in-your-browser.html': 'guide/de/how-to-run-a-private-ai-chat-in-your-browser.jsp',
+  '/guides/mengecilkan-ukuran-zip.html': 'guide/mengecilkan-ukuran-zip.jsp',
+  '/guides/pt/mengecilkan-ukuran-zip.html': 'guide/pt/mengecilkan-ukuran-zip.jsp',
+  '/guides/es/mengecilkan-ukuran-zip.html': 'guide/es/mengecilkan-ukuran-zip.jsp',
+  '/guides/vi/mengecilkan-ukuran-zip.html': 'guide/vi/mengecilkan-ukuran-zip.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

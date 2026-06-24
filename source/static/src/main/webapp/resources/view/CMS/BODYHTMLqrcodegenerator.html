@@ -1,31 +1,87 @@
 <div class="w3-container">
+    <p>Turn any text or link into a scannable QR code right in your browser - set the colors, size, and error correction, add an optional center logo, then download it as a PNG or copy it to the clipboard. Nothing is uploaded.</p>
 </div>
-<div class='step step3 w3-container'>
-    <div class='w3-row w3-container'>
-        <textarea class='w3-input w3-border' id='text' placeholder='Enter your text' name='text'></textarea>
-    </div>
-    <div class='w3-row' style="margin: 10px 0">
-        <div class='w3-container'>
-            <button type='button' id='download' class='w3-button w3-red w3-left'>Download</button>
-        </div>				
-    </div>
-</div>
-<div class='w3-container'>
-    <div class='step step3'>
-        <div class='w3-row'>
-            <div class='w3-container sourceImage'>
-                <div id="qrcode"></div>
-            </div>
+
+<style>
+    #qrTool .qr-row { margin-bottom: 14px; }
+    #qrTool label.qr-label { font-weight: bold; display: block; margin-bottom: 4px; }
+    #qrTool h3.qr-h { margin: 18px 0 6px; font-size: 1.05em; }
+    #qrTool .qr-controls { display: flex; flex-wrap: wrap; gap: 14px; }
+    #qrTool .qr-controls .qr-field { flex: 1 1 150px; }
+    #qrTool input[type="color"] { width: 60px; height: 40px; padding: 2px; vertical-align: middle; }
+    #qrTool input[type="range"] { width: 100%; vertical-align: middle; }
+    #qrTool .qr-val { font-weight: bold; }
+    #qrTool .qr-actions .w3-button { margin: 0 8px 8px 0; }
+    #qrTool .outputImgs { margin-bottom: 16px; text-align: center; }
+    #qrTool .outputImgs #qrcode { display: inline-block; }
+    #qrTool .outputImgs img.qrResult { max-width: 100%; height: auto; border: 1px solid #cccccc; border-radius: 4px; background: #ffffff; }
+    #qrTool .qr-hint { color: #777777; font-size: 0.9em; margin-top: 4px; }
+    #qrTool #qrHistory .w3-text-grey { color: #777777; }
+</style>
+
+<div id="qrTool" class="w3-container">
+    <div class="outputImgs">
+        <div class="sourceImage">
+            <div id="qrcode" aria-label="Generated QR code"></div>
         </div>
     </div>
-</div>
-
-<div class='w3-row w3-container'>
-    <div class='w3-container'>
-        <span style='display: none;color: red;' class='errorMsgAction'></span>
+    <div class="qr-row qr-actions">
+        <button type="button" id="download" class="w3-button w3-red">Download PNG</button>
+        <button type="button" id="qrCopy" class="w3-button w3-small w3-light-grey">Copy image</button>
+        <span id="qrCopyMsg" class="w3-text-green w3-small" style="display:none;"></span>
     </div>
-</div>
+    <div class="qr-row">
+        <span class="errorMsgAction w3-text-red" style="display:none;"></span>
+    </div>
 
-<div class="w3-container w3-padding-small" style="margin-top:8px">
-    <p>Type a URL, short text, contact card, or Wi-Fi credential into the field above and click Download to save a scannable QR as a PNG image. The QR is rendered in your browser without an account, so you can drop the saved PNG into a printed flyer, slide deck, or product label without re-uploading anywhere else. Longer payloads produce a denser pattern; keep the input concise to keep the QR easy to scan from arm's length.</p>
+    <h3 class="qr-h">Content</h3>
+    <div class="qr-row">
+        <textarea id="text" name="text" class="w3-input w3-border" rows="2"
+                  placeholder="Enter a URL, text, contact card, or Wi-Fi credential" style="resize: vertical;"></textarea>
+    </div>
+
+    <h3 class="qr-h">Code style</h3>
+    <div class="qr-row qr-controls">
+        <div class="qr-field">
+            <label class="qr-label" for="qrFg">Foreground color</label>
+            <input type="color" id="qrFg" class="w3-border" value="#000000" />
+        </div>
+        <div class="qr-field">
+            <label class="qr-label" for="qrBg">Background color</label>
+            <input type="color" id="qrBg" class="w3-border" value="#ffffff" />
+        </div>
+        <div class="qr-field">
+            <label class="qr-label" for="qrEcc">Error correction</label>
+            <select id="qrEcc" class="w3-select w3-border">
+                <option value="L">Low (L)</option>
+                <option value="M" selected>Medium (M)</option>
+                <option value="Q">Quartile (Q)</option>
+                <option value="H">High (H)</option>
+            </select>
+        </div>
+    </div>
+    <div class="qr-row qr-controls">
+        <div class="qr-field">
+            <label class="qr-label" for="qrSize">Size: <span id="qrSizeVal" class="qr-val">300</span> px</label>
+            <input type="range" id="qrSize" min="100" max="800" step="10" value="300" />
+        </div>
+        <div class="qr-field">
+            <label class="qr-label" for="qrQuiet">Quiet zone: <span id="qrQuietVal" class="qr-val">16</span> px</label>
+            <input type="range" id="qrQuiet" min="0" max="80" step="2" value="16" />
+        </div>
+    </div>
+    <p class="qr-hint">Higher error correction survives damage and a center logo but makes a denser code. A quiet zone is the light border scanners need to lock on.</p>
+
+    <h3 class="qr-h">Center logo (optional)</h3>
+    <div class="qr-row">
+        <input type="file" id="qrLogo" class="w3-input w3-border" accept="image/png,image/jpeg,image/gif,image/svg+xml" />
+        <button type="button" id="qrLogoClear" class="w3-button w3-small w3-light-grey" style="margin-top:8px;">Remove logo</button>
+        <p class="qr-hint">A logo is placed in the center on a white backing. Error correction is raised to High automatically so the code still scans. Max 2 MB; the image stays on your device.</p>
+    </div>
+
+    <h3 class="qr-h">Saved codes</h3>
+    <div class="qr-row">
+        <div id="qrHistory" aria-live="polite"></div>
+        <button type="button" id="qrHistoryClear" class="w3-button w3-small w3-light-grey" style="margin-top:8px;">Clear saved codes</button>
+    </div>
 </div>

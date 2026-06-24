@@ -1,0 +1,383 @@
+<script>
+    // Font styler - fully in-browser canvas text-to-PNG generator. Reference:
+    // verified-browser-impl-registry.mjs entry `text_transform_purejs`.
+    // Page: /utility-tools/font-generator.html
+    //
+    // Behavior reference (logic only, NOT UI): freetool.online
+    //   lib/services/font-generator-service.ts (generateTextImage / save+load
+    //   settings / presets) + app/font-generator/components/font-generator.tsx.
+    // The UI/UX is freetoolonline's own w3.css style (built in BODYHTML) - the
+    // React/shadcn/lucide chrome of the source is dropped per the migration
+    // UI/UX rule.
+    //
+    // What it does on the client:
+    //   - The reader types one or more lines of text and styles them: font
+    //     family (17), size, weight (100-900), style (normal/italic/oblique),
+    //     alignment (left/center/right), text + background color, letter
+    //     spacing, line height, padding, and an optional drop shadow
+    //     (color / blur / offset X / offset Y).
+    //   - The page draws the styled text onto a <canvas> and shows it live as
+    //     settings change.
+    //   - Download saves the canvas as a PNG; Copy puts the PNG on the
+    //     clipboard; Reset restores defaults.
+    //   - Current settings persist to localStorage; named presets can be
+    //     saved, loaded, and deleted (localStorage).
+    //
+    // No upload, no backend - the canvas renders locally and toDataURL() /
+    // toBlob() make the PNG in the browser. The framework calls
+    // doAfterPageRendered() during page startup (it fires for EVERY page once
+    // jQuery + base-script load). Do NOT call $(...) at the top level: `$` is
+    // only defined inside the hook.
+    //
+    // Element-ID contract consumed by BODYHTMLfontgenerator.html (built/extended
+    // at the ui_and_skill sub-step). Reads are defensive (missing control ->
+    // default) so the page keeps rendering even before every control exists:
+    //   #fsText (textarea)            #fsFontFamily (select)
+    //   #fsFontSize (number/range)    #fsFontWeight (select)
+    //   #fsFontStyle (select)         #fsTextAlign (select)
+    //   #fsColor (color)              #fsBg (color)
+    //   #fsLetterSpacing (number)     #fsLineHeight (number)
+    //   #fsPadding (number)           #fsTextShadow (checkbox)
+    //   #fsShadowColor (color)        #fsShadowBlur (number)
+    //   #fsShadowOffsetX (number)     #fsShadowOffsetY (number)
+    //   #fsCanvas (canvas)            #fsDownload / #fsCopy / #fsReset (button)
+    //   #fsPresetName (input)         #fsSavePreset (button)
+    //   #fsPresetList (container)     #fsShadowFields (wrapper, toggled)
+
+    web.localUpload = false;
+
+    var FS_SETTINGS_KEY = 'fontGeneratorSettings';
+    var FS_PRESETS_KEY = 'fontGeneratorPresets';
+
+    // Ported verbatim from defaultFontSettings (font-generator-service.ts:20-37).
+    var FS_DEFAULTS = {
+        text: 'Your Custom Text',
+        fontFamily: 'Arial',
+        fontSize: 48,
+        fontWeight: 400,
+        fontStyle: 'normal',
+        textAlign: 'center',
+        color: '#000000',
+        backgroundColor: '#ffffff',
+        letterSpacing: 0,
+        lineHeight: 1.2,
+        textShadow: false,
+        textShadowColor: '#000000',
+        textShadowBlur: 4,
+        textShadowOffsetX: 2,
+        textShadowOffsetY: 2,
+        padding: 20
+    };
+
+    function fsEl(id) { return document.getElementById(id); }
+
+    function fsNum(id, def) {
+        var e = fsEl(id);
+        if (!e) return def;
+        var v = parseFloat(e.value);
+        return isFinite(v) ? v : def;
+    }
+
+    function fsStr(id, def) {
+        var e = fsEl(id);
+        if (!e || e.value == null || e.value === '') return def;
+        return String(e.value);
+    }
+
+    function fsBool(id, def) {
+        var e = fsEl(id);
+        if (!e) return def;
+        return !!e.checked;
+    }
+
+    // Read every styling control into a settings object (source FontSettings shape).
+    function fsReadSettings() {
+        var textEl = fsEl('fsText');
+        return {
+            text: textEl ? String(textEl.value) : FS_DEFAULTS.text,
+            fontFamily: fsStr('fsFontFamily', FS_DEFAULTS.fontFamily),
+            fontSize: fsNum('fsFontSize', FS_DEFAULTS.fontSize),
+            fontWeight: fsNum('fsFontWeight', FS_DEFAULTS.fontWeight),
+            fontStyle: fsStr('fsFontStyle', FS_DEFAULTS.fontStyle),
+            textAlign: fsStr('fsTextAlign', FS_DEFAULTS.textAlign),
+            color: fsStr('fsColor', FS_DEFAULTS.color),
+            backgroundColor: fsStr('fsBg', FS_DEFAULTS.backgroundColor),
+            letterSpacing: fsNum('fsLetterSpacing', FS_DEFAULTS.letterSpacing),
+            lineHeight: fsNum('fsLineHeight', FS_DEFAULTS.lineHeight),
+            textShadow: fsBool('fsTextShadow', FS_DEFAULTS.textShadow),
+            textShadowColor: fsStr('fsShadowColor', FS_DEFAULTS.textShadowColor),
+            textShadowBlur: fsNum('fsShadowBlur', FS_DEFAULTS.textShadowBlur),
+            textShadowOffsetX: fsNum('fsShadowOffsetX', FS_DEFAULTS.textShadowOffsetX),
+            textShadowOffsetY: fsNum('fsShadowOffsetY', FS_DEFAULTS.textShadowOffsetY),
+            padding: fsNum('fsPadding', FS_DEFAULTS.padding)
+        };
+    }
+
+    // Write a settings object back into the controls (load preset / load saved / reset).
+    function fsApplySettings(s) {
+        if (!s) return;
+        function set(id, val) { var e = fsEl(id); if (e && val != null) e.value = val; }
+        function chk(id, val) { var e = fsEl(id); if (e) e.checked = !!val; }
+        set('fsText', s.text);
+        set('fsFontFamily', s.fontFamily);
+        set('fsFontSize', s.fontSize);
+        set('fsFontWeight', s.fontWeight);
+        set('fsFontStyle', s.fontStyle);
+        set('fsTextAlign', s.textAlign);
+        set('fsColor', s.color);
+        set('fsBg', s.backgroundColor);
+        set('fsLetterSpacing', s.letterSpacing);
+        set('fsLineHeight', s.lineHeight);
+        set('fsPadding', s.padding);
+        chk('fsTextShadow', s.textShadow);
+        set('fsShadowColor', s.textShadowColor);
+        set('fsShadowBlur', s.textShadowBlur);
+        set('fsShadowOffsetX', s.textShadowOffsetX);
+        set('fsShadowOffsetY', s.textShadowOffsetY);
+        fsSyncShadowFields();
+    }
+
+    // ---- localStorage settings + presets (ported from service.ts:83-133) ----
+    function fsSaveSettings(s) {
+        try { localStorage.setItem(FS_SETTINGS_KEY, JSON.stringify(s)); } catch (e) {}
+    }
+    function fsLoadSettings() {
+        try {
+            var raw = localStorage.getItem(FS_SETTINGS_KEY);
+            if (raw) return JSON.parse(raw);
+        } catch (e) {}
+        return null;
+    }
+    function fsLoadPresets() {
+        try {
+            var raw = localStorage.getItem(FS_PRESETS_KEY);
+            if (raw) { var p = JSON.parse(raw); if (p && typeof p === 'object') return p; }
+        } catch (e) {}
+        return {};
+    }
+    function fsSavePreset(name, s) {
+        if (!name) return;
+        var presets = fsLoadPresets();
+        presets[name] = s;
+        try { localStorage.setItem(FS_PRESETS_KEY, JSON.stringify(presets)); } catch (e) {}
+    }
+    function fsDeletePreset(name) {
+        var presets = fsLoadPresets();
+        if (presets[name]) {
+            delete presets[name];
+            try { localStorage.setItem(FS_PRESETS_KEY, JSON.stringify(presets)); } catch (e) {}
+        }
+    }
+
+    // Faithful port of generateTextImage (font-generator-service.ts:135-226):
+    // multi-line, per-character letter spacing, alignment, optional shadow.
+    function fsDrawToCanvas(canvas, s) {
+        if (!canvas || !canvas.getContext) return '';
+        var ctx = canvas.getContext('2d');
+        if (!ctx) return '';
+        s = s || fsReadSettings();
+
+        var text = s.text;
+        if (text.length === 0) text = ' ';
+        var fontSpec = s.fontStyle + ' ' + s.fontWeight + ' ' + s.fontSize + 'px ' + s.fontFamily;
+
+        ctx.font = fontSpec;
+        var lines = text.split('\n');
+        var lineHeight = s.fontSize * s.lineHeight;
+
+        var maxWidth = 0;
+        for (var i = 0; i < lines.length; i++) {
+            var metrics = ctx.measureText(lines[i]);
+            var lineWidth = metrics.width + s.letterSpacing * Math.max(0, lines[i].length - 1);
+            if (lineWidth > maxWidth) maxWidth = lineWidth;
+        }
+
+        var pad2 = s.padding * 2;
+        var width = Math.max(1, Math.ceil(maxWidth + pad2));
+        var height = Math.max(1, Math.ceil(lines.length * lineHeight + pad2));
+        canvas.width = width;
+        canvas.height = height;
+
+        ctx.fillStyle = s.backgroundColor;
+        ctx.fillRect(0, 0, width, height);
+
+        ctx.font = fontSpec;
+        ctx.fillStyle = s.color;
+        ctx.textBaseline = 'top';
+        ctx.textAlign = s.textAlign;
+
+        var x = s.padding;
+        if (s.textAlign === 'center') x = width / 2;
+        else if (s.textAlign === 'right') x = width - s.padding;
+
+        if (s.textShadow) {
+            ctx.shadowColor = s.textShadowColor;
+            ctx.shadowBlur = s.textShadowBlur;
+            ctx.shadowOffsetX = s.textShadowOffsetX;
+            ctx.shadowOffsetY = s.textShadowOffsetY;
+        } else {
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+        }
+
+        var y = s.padding;
+        for (var j = 0; j < lines.length; j++) {
+            var line = lines[j];
+            if (s.letterSpacing !== 0) {
+                // Per-character draw with an explicit left-edge cursor; alignment
+                // is folded into the starting X so the cursor advances left-to-right.
+                var chars = line.split('');
+                var currentX = x;
+                if (s.textAlign === 'center') {
+                    var totalC = ctx.measureText(line).width + s.letterSpacing * (chars.length - 1);
+                    currentX = x - totalC / 2;
+                } else if (s.textAlign === 'right') {
+                    var totalR = ctx.measureText(line).width + s.letterSpacing * (chars.length - 1);
+                    currentX = x - totalR;
+                }
+                var savedAlign = ctx.textAlign;
+                ctx.textAlign = 'left';
+                for (var k = 0; k < chars.length; k++) {
+                    ctx.fillText(chars[k], currentX, y);
+                    currentX += ctx.measureText(chars[k]).width + s.letterSpacing;
+                }
+                ctx.textAlign = savedAlign;
+            } else {
+                ctx.fillText(line, x, y);
+            }
+            y += lineHeight;
+        }
+
+        try { return canvas.toDataURL('image/png'); }
+        catch (e) { return ''; }
+    }
+
+    function fsRender() {
+        var canvas = fsEl('fsCanvas');
+        if (!canvas) return;
+        var s = fsReadSettings();
+        fsDrawToCanvas(canvas, s);
+        fsSaveSettings(s);
+    }
+
+    function fsDownload() {
+        var canvas = fsEl('fsCanvas');
+        if (!canvas) return;
+        var url = fsDrawToCanvas(canvas, fsReadSettings());
+        if (!url) return;
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = 'font-generator.png';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // Copy the rendered PNG to the clipboard via canvas.toBlob (no fetch, no backend).
+    function fsCopy() {
+        var canvas = fsEl('fsCanvas');
+        if (!canvas) return;
+        fsDrawToCanvas(canvas, fsReadSettings());
+        if (!canvas.toBlob || !navigator.clipboard || typeof window.ClipboardItem === 'undefined') return;
+        canvas.toBlob(function (blob) {
+            if (!blob) return;
+            try {
+                navigator.clipboard.write([new window.ClipboardItem({ 'image/png': blob })]);
+            } catch (e) {}
+        }, 'image/png');
+    }
+
+    function fsReset() {
+        fsApplySettings(FS_DEFAULTS);
+        fsRender();
+    }
+
+    // Toggle the shadow sub-controls visibility from the shadow checkbox.
+    function fsSyncShadowFields() {
+        var on = fsBool('fsTextShadow', false);
+        var wrap = fsEl('fsShadowFields');
+        if (wrap) wrap.style.display = on ? '' : 'none';
+    }
+
+    function fsRenderPresetList() {
+        var host = fsEl('fsPresetList');
+        if (!host) return;
+        var presets = fsLoadPresets();
+        var names = Object.keys(presets);
+        if (names.length === 0) {
+            host.innerHTML = '<p class="w3-text-grey">No presets saved yet. Save your current settings to create a preset.</p>';
+            return;
+        }
+        var html = '';
+        for (var i = 0; i < names.length; i++) {
+            var safe = fsEscapeHtml(names[i]);
+            html += '<div class="fs-preset-row w3-bar w3-border-bottom" style="padding:6px 0;">' +
+                '<span class="w3-bar-item" style="font-weight:bold;">' + safe + '</span>' +
+                '<button type="button" class="w3-button w3-small w3-right fs-preset-del" data-name="' + safe + '">Delete</button>' +
+                '<button type="button" class="w3-button w3-small w3-right fs-preset-load" data-name="' + safe + '">Load</button>' +
+                '</div>';
+        }
+        host.innerHTML = html;
+    }
+
+    function fsEscapeHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function initFontStyler() {
+        if ($('#fsText').length === 0) return; // not the font-styler page
+
+        // Restore saved settings, if any, before first render.
+        var saved = fsLoadSettings();
+        if (saved) fsApplySettings(saved);
+        fsSyncShadowFields();
+
+        // Re-render (and persist) whenever any styling control changes.
+        $('#fsTool').find('input, select, textarea')
+            .off('input.fs change.fs')
+            .on('input.fs change.fs', function () {
+                fsSyncShadowFields();
+                fsRender();
+            });
+
+        $('#fsDownload').off('click.fs').on('click.fs', function () { fsDownload(); });
+        $('#fsCopy').off('click.fs').on('click.fs', function () { fsCopy(); });
+        $('#fsReset').off('click.fs').on('click.fs', function () { fsReset(); });
+
+        $('#fsSavePreset').off('click.fs').on('click.fs', function () {
+            var nameEl = fsEl('fsPresetName');
+            var name = nameEl ? String(nameEl.value || '').trim() : '';
+            if (!name) return;
+            fsSavePreset(name, fsReadSettings());
+            if (nameEl) nameEl.value = '';
+            fsRenderPresetList();
+        });
+
+        // Delegated load / delete on the preset list.
+        $('#fsPresetList')
+            .off('click.fs')
+            .on('click.fs', '.fs-preset-load', function () {
+                var presets = fsLoadPresets();
+                var name = $(this).attr('data-name');
+                if (name && presets[name]) { fsApplySettings(presets[name]); fsRender(); }
+            })
+            .on('click.fs', '.fs-preset-del', function () {
+                var name = $(this).attr('data-name');
+                if (name) { fsDeletePreset(name); fsRenderPresetList(); }
+            });
+
+        fsRenderPresetList();
+        fsRender();
+    }
+
+    function doAfterPageRendered() {
+        initFontStyler();
+    }
+</script>

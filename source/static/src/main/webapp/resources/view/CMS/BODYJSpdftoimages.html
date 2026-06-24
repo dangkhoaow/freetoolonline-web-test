@@ -27,3 +27,177 @@
         loadDeferredStyle('https://dkbg1jftzfsd2.cloudfront.net/style/convert/pdf-to-images.css');
     };
 </script>
+
+<!-- E6 freetool-migration: ADDITIVE in-browser PDF-to-image path (pdf.js, zero upload).
+     The server path above (upload -> callAjax) is UNTOUCHED. Activates only when the
+     client-mode controls (added in ui_and_skill) are present. -->
+<script>
+    // Idempotent lazy-loader for the self-hosted pdf.js UMD build (window.pdfjsLib).
+    // Worker is self-hosted at /vendor/pdfjs/ (NOT a third-party CDN).
+    function ftoLoadPdfjs() {
+        if (window.pdfjsLib && window.pdfjsLib.getDocument) { return Promise.resolve(); }
+        if (window.__ftoPdfjsPromise) { return window.__ftoPdfjsPromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/pdfjs';
+        window.__ftoPdfjsPromise = new Promise(function (resolve, reject) {
+            var s = document.createElement('script');
+            s.src = base + '/pdf.min.js'; s.async = true;
+            s.onload = function () {
+                if (window.pdfjsLib && window.pdfjsLib.getDocument) {
+                    try { window.pdfjsLib.GlobalWorkerOptions.workerSrc = base + '/pdf.worker.min.js'; } catch (e) {}
+                    resolve();
+                } else { reject(new Error('pdf.js loaded but pdfjsLib global is missing')); }
+            };
+            s.onerror = function () { reject(new Error('failed to load pdf.js from ' + base)); };
+            document.head.appendChild(s);
+        });
+        return window.__ftoPdfjsPromise;
+    }
+
+    // Idempotent loader for the site's verified jszip lib (for ZIP bulk download).
+    function ftoLoadJSZip() {
+        if (typeof JSZip !== 'undefined') { return Promise.resolve(); }
+        if (window.__ftoJSZipPromise) { return window.__ftoJSZipPromise; }
+        window.__ftoJSZipPromise = new Promise(function (resolve, reject) {
+            loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/jszip.min.js', function () {
+                (typeof JSZip !== 'undefined') ? resolve() : reject(new Error('jszip loaded but JSZip global is missing'));
+            });
+        });
+        return window.__ftoJSZipPromise;
+    }
+
+    function ftoParsePageRange(range, pageCount) {
+        range = (range == null ? 'all' : String(range)).trim();
+        if (!range || range === 'all') {
+            var a = []; for (var i = 1; i <= pageCount; i++) { a.push(i); } return a;
+        }
+        var out = [];
+        range.split(',').forEach(function (part) {
+            part = part.trim(); if (!part) { return; }
+            if (part.indexOf('-') > -1) {
+                var se = part.split('-'); var s = parseInt(se[0], 10), e = parseInt(se[1], 10);
+                if (!isNaN(s) && !isNaN(e)) { for (var k = Math.max(1, s); k <= Math.min(pageCount, e); k++) { out.push(k); } }
+            } else {
+                var n = parseInt(part, 10); if (!isNaN(n) && n >= 1 && n <= pageCount) { out.push(n); }
+            }
+        });
+        return out.length ? out : ftoParsePageRange('all', pageCount);
+    }
+
+    function ftoDataUrlToBytes(dataUrl) {
+        var b64 = dataUrl.split(',')[1] || '';
+        var bin = atob(b64), u = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) { u[i] = bin.charCodeAt(i); }
+        return u;
+    }
+
+    // Real client-side PDF-to-image. opts: { format:'jpg'|'png', quality:0-100,
+    // scale:Number, pageRange:'all'|'1-3'|'1,4' }. Renders each page via pdf.js to a
+    // canvas, exports JPG (quality slider) or PNG. Returns [{ name, dataUrl }].
+    function ftoClientPdfToImages(file, opts, onProgress) {
+        opts = opts || {};
+        var format = (opts.format === 'png') ? 'png' : 'jpg';
+        var quality = Math.min(100, Math.max(1, parseInt(opts.quality, 10) || 80)) / 100;
+        var scale = parseFloat(opts.scale) || 2.0;
+        return ftoLoadPdfjs().then(function () {
+            return file.arrayBuffer().then(function (buf) {
+                return window.pdfjsLib.getDocument({ data: buf }).promise.then(function (pdf) {
+                    var pages = ftoParsePageRange(opts.pageRange, pdf.numPages);
+                    var images = [];
+                    var idx = 0;
+                    function nextPage() {
+                        if (idx >= pages.length) { return images; }
+                        var pageNum = pages[idx];
+                        return pdf.getPage(pageNum).then(function (page) {
+                            var viewport = page.getViewport({ scale: scale });
+                            var canvas = document.createElement('canvas');
+                            var ctx = canvas.getContext('2d');
+                            canvas.width = viewport.width; canvas.height = viewport.height;
+                            return page.render({ canvasContext: ctx, viewport: viewport }).promise.then(function () {
+                                var dataUrl = (format === 'jpg') ? canvas.toDataURL('image/jpeg', quality) : canvas.toDataURL('image/png');
+                                images.push({ name: 'page-' + pageNum + '.' + format, dataUrl: dataUrl });
+                                idx++;
+                                if (typeof onProgress === 'function') { onProgress(idx / pages.length); }
+                                return nextPage();
+                            });
+                        });
+                    }
+                    return Promise.resolve().then(nextPage);
+                });
+            });
+        });
+    }
+
+    // Guarded wiring to client-mode controls (added in ui_and_skill). No-op until then.
+    function ftoWireClientPdfToImages() {
+        var input = document.getElementById('p2iClientFile');
+        var btn = document.getElementById('p2iClientBtn');
+        if (!input || !btn) { return; }
+        // E6 verify-fix (2026-06-17): if BODYHTML rendered inside a hidden server-flow .step
+        // (e.g. .step2, shown only after a server upload), move this client panel OUT so the
+        // in-browser (no-upload) tool is visible without uploading. Guarded no-op when not nested.
+        var __ftoRow = btn.closest ? btn.closest('.w3-row') : null;
+        var __ftoStep = __ftoRow && __ftoRow.closest ? __ftoRow.closest('.step') : null;
+        if (__ftoStep && __ftoStep.parentNode) { __ftoStep.parentNode.insertBefore(__ftoRow, __ftoStep.nextSibling); }
+        var status = document.getElementById('p2iStatus');
+        var output = document.getElementById('p2iOutput');
+        var zipBtn = document.getElementById('p2iZipBtn');
+        function val(id, d) { var el = document.getElementById(id); return el ? el.value : d; }
+        function setStatus(m) { if (status) { status.textContent = m; } }
+        var lastImages = [];
+        btn.addEventListener('click', function () {
+            var f = input.files && input.files[0];
+            if (!f) { setStatus('Select a PDF file to convert.'); return; }
+            btn.disabled = true; lastImages = [];
+            if (output) { output.innerHTML = ''; }
+            if (zipBtn) { zipBtn.style.display = 'none'; }
+            setStatus('Rendering pages in your browser ... 0%');
+            var opts = {
+                format: val('p2iFormat', 'jpg'),
+                quality: val('p2iQuality', '80'),
+                scale: val('p2iScale', '2'),
+                pageRange: val('p2iPageRange', 'all')
+            };
+            ftoClientPdfToImages(f, opts, function (frac) {
+                setStatus('Rendering pages in your browser ... ' + Math.round(frac * 100) + '%');
+            }).then(function (images) {
+                lastImages = images;
+                if (output) {
+                    images.forEach(function (im) {
+                        var wrap = document.createElement('div'); wrap.className = 'p2i-thumb';
+                        var a = document.createElement('a'); a.href = im.dataUrl; a.download = im.name; a.textContent = 'Download ' + im.name;
+                        var img = document.createElement('img'); img.src = im.dataUrl; img.alt = im.name; img.style.maxWidth = '120px'; img.style.display = 'block';
+                        wrap.appendChild(img); wrap.appendChild(a); output.appendChild(wrap);
+                    });
+                }
+                if (zipBtn && images.length > 1) { zipBtn.style.display = ''; }
+                setStatus('Done. ' + images.length + ' page(s) rendered in your browser - no upload.');
+            }).catch(function (err) {
+                setStatus('Could not render in the browser: ' + (err && err.message ? err.message : 'unknown error') + '. The server convert above still works.');
+            }).then(function () { btn.disabled = false; });
+        });
+        if (zipBtn) {
+            zipBtn.addEventListener('click', function () {
+                if (!lastImages.length) { return; }
+                zipBtn.disabled = true; setStatus('Packaging ' + lastImages.length + ' images into a ZIP ...');
+                ftoLoadJSZip().then(function () {
+                    var zip = new JSZip();
+                    lastImages.forEach(function (im) { zip.file(im.name, ftoDataUrlToBytes(im.dataUrl)); });
+                    return zip.generateAsync({ type: 'blob' });
+                }).then(function (blob) {
+                    var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+                    a.download = 'pdf-images-' + (typeof getCurrentDateTime === 'function' ? getCurrentDateTime() : 'export') + '.zip';
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                    setStatus('ZIP downloaded - ' + lastImages.length + ' images, all built in your browser.');
+                }).catch(function (err) {
+                    setStatus('Could not build the ZIP: ' + (err && err.message ? err.message : 'unknown error') + '. Use the per-page download links above.');
+                }).then(function () { zipBtn.disabled = false; });
+            });
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', ftoWireClientPdfToImages);
+    } else {
+        ftoWireClientPdfToImages();
+    }
+</script>

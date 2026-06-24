@@ -1,0 +1,278 @@
+<script>
+    // Unit converter - fully in-browser. Logic ported from freetool.online
+    // lib/services/unit-converter-service.ts (behavior reference only; UI is
+    // freetoolonline's own per the operator UI/UX rule). No upload, no fetch,
+    // no backend: every conversion runs locally and the history persists in
+    // localStorage. The base-unit factor tables below are identical to the
+    // source's per-unit switch constants (multiply to base, divide from base);
+    // temperature uses offset formulas (base Kelvin) since it is not linear.
+    //
+    // Element IDs (provided by BODYHTMLunitconverter.html): #ucCategory (select),
+    // #ucFrom (select), #ucValue (text input), #ucTo (select), #ucResult (readonly
+    // output), #ucSwap (button), #ucError, #ucFormula, #ucHistory (ul),
+    // #ucHistoryEmpty, #ucClearHistory (button). The framework calls
+    // doAfterPageRendered() on every page; $ is only defined inside it.
+
+    web.localUpload = false;
+
+    var UC_CATEGORIES = [
+        { id: 'length', name: 'Length', units: [
+            { id: 'meter', name: 'Meter', symbol: 'm' }, { id: 'kilometer', name: 'Kilometer', symbol: 'km' },
+            { id: 'centimeter', name: 'Centimeter', symbol: 'cm' }, { id: 'millimeter', name: 'Millimeter', symbol: 'mm' },
+            { id: 'micrometer', name: 'Micrometer', symbol: 'um' }, { id: 'nanometer', name: 'Nanometer', symbol: 'nm' },
+            { id: 'mile', name: 'Mile', symbol: 'mi' }, { id: 'yard', name: 'Yard', symbol: 'yd' },
+            { id: 'foot', name: 'Foot', symbol: 'ft' }, { id: 'inch', name: 'Inch', symbol: 'in' },
+            { id: 'nautical_mile', name: 'Nautical Mile', symbol: 'nmi' }
+        ]},
+        { id: 'weight', name: 'Weight', units: [
+            { id: 'kilogram', name: 'Kilogram', symbol: 'kg' }, { id: 'gram', name: 'Gram', symbol: 'g' },
+            { id: 'milligram', name: 'Milligram', symbol: 'mg' }, { id: 'metric_ton', name: 'Metric Ton', symbol: 't' },
+            { id: 'pound', name: 'Pound', symbol: 'lb' }, { id: 'ounce', name: 'Ounce', symbol: 'oz' },
+            { id: 'stone', name: 'Stone', symbol: 'st' }, { id: 'us_ton', name: 'US Ton', symbol: 'ton' },
+            { id: 'imperial_ton', name: 'Imperial Ton', symbol: 'long ton' }
+        ]},
+        { id: 'temperature', name: 'Temperature', units: [
+            { id: 'celsius', name: 'Celsius', symbol: 'C' }, { id: 'fahrenheit', name: 'Fahrenheit', symbol: 'F' },
+            { id: 'kelvin', name: 'Kelvin', symbol: 'K' }
+        ]},
+        { id: 'area', name: 'Area', units: [
+            { id: 'square_meter', name: 'Square Meter', symbol: 'm2' }, { id: 'square_kilometer', name: 'Square Kilometer', symbol: 'km2' },
+            { id: 'square_centimeter', name: 'Square Centimeter', symbol: 'cm2' }, { id: 'square_millimeter', name: 'Square Millimeter', symbol: 'mm2' },
+            { id: 'square_mile', name: 'Square Mile', symbol: 'mi2' }, { id: 'square_yard', name: 'Square Yard', symbol: 'yd2' },
+            { id: 'square_foot', name: 'Square Foot', symbol: 'ft2' }, { id: 'square_inch', name: 'Square Inch', symbol: 'in2' },
+            { id: 'acre', name: 'Acre', symbol: 'ac' }, { id: 'hectare', name: 'Hectare', symbol: 'ha' }
+        ]},
+        { id: 'volume', name: 'Volume', units: [
+            { id: 'cubic_meter', name: 'Cubic Meter', symbol: 'm3' }, { id: 'cubic_kilometer', name: 'Cubic Kilometer', symbol: 'km3' },
+            { id: 'cubic_centimeter', name: 'Cubic Centimeter', symbol: 'cm3' }, { id: 'cubic_millimeter', name: 'Cubic Millimeter', symbol: 'mm3' },
+            { id: 'liter', name: 'Liter', symbol: 'L' }, { id: 'milliliter', name: 'Milliliter', symbol: 'mL' },
+            { id: 'us_gallon', name: 'US Gallon', symbol: 'gal' }, { id: 'us_quart', name: 'US Quart', symbol: 'qt' },
+            { id: 'us_pint', name: 'US Pint', symbol: 'pt' }, { id: 'us_cup', name: 'US Cup', symbol: 'cup' },
+            { id: 'us_fluid_ounce', name: 'US Fluid Ounce', symbol: 'fl oz' }, { id: 'us_tablespoon', name: 'US Tablespoon', symbol: 'tbsp' },
+            { id: 'us_teaspoon', name: 'US Teaspoon', symbol: 'tsp' }, { id: 'imperial_gallon', name: 'Imperial Gallon', symbol: 'gal (UK)' },
+            { id: 'imperial_quart', name: 'Imperial Quart', symbol: 'qt (UK)' }, { id: 'imperial_pint', name: 'Imperial Pint', symbol: 'pt (UK)' },
+            { id: 'imperial_fluid_ounce', name: 'Imperial Fluid Ounce', symbol: 'fl oz (UK)' }
+        ]},
+        { id: 'time', name: 'Time', units: [
+            { id: 'second', name: 'Second', symbol: 's' }, { id: 'millisecond', name: 'Millisecond', symbol: 'ms' },
+            { id: 'microsecond', name: 'Microsecond', symbol: 'us' }, { id: 'nanosecond', name: 'Nanosecond', symbol: 'ns' },
+            { id: 'minute', name: 'Minute', symbol: 'min' }, { id: 'hour', name: 'Hour', symbol: 'h' },
+            { id: 'day', name: 'Day', symbol: 'd' }, { id: 'week', name: 'Week', symbol: 'wk' },
+            { id: 'month', name: 'Month (avg)', symbol: 'mo' }, { id: 'year', name: 'Year', symbol: 'yr' },
+            { id: 'decade', name: 'Decade', symbol: 'decade' }, { id: 'century', name: 'Century', symbol: 'century' }
+        ]},
+        { id: 'speed', name: 'Speed', units: [
+            { id: 'meter_per_second', name: 'Meter per Second', symbol: 'm/s' }, { id: 'kilometer_per_hour', name: 'Kilometer per Hour', symbol: 'km/h' },
+            { id: 'mile_per_hour', name: 'Mile per Hour', symbol: 'mph' }, { id: 'foot_per_second', name: 'Foot per Second', symbol: 'ft/s' },
+            { id: 'knot', name: 'Knot', symbol: 'kn' }
+        ]},
+        { id: 'pressure', name: 'Pressure', units: [
+            { id: 'pascal', name: 'Pascal', symbol: 'Pa' }, { id: 'kilopascal', name: 'Kilopascal', symbol: 'kPa' },
+            { id: 'megapascal', name: 'Megapascal', symbol: 'MPa' }, { id: 'bar', name: 'Bar', symbol: 'bar' },
+            { id: 'psi', name: 'Pound per Square Inch', symbol: 'psi' }, { id: 'atmosphere', name: 'Atmosphere', symbol: 'atm' },
+            { id: 'torr', name: 'Torr', symbol: 'Torr' }, { id: 'millimeter_of_mercury', name: 'Millimeter of Mercury', symbol: 'mmHg' }
+        ]},
+        { id: 'energy', name: 'Energy', units: [
+            { id: 'joule', name: 'Joule', symbol: 'J' }, { id: 'kilojoule', name: 'Kilojoule', symbol: 'kJ' },
+            { id: 'calorie', name: 'Calorie', symbol: 'cal' }, { id: 'kilocalorie', name: 'Kilocalorie', symbol: 'kcal' },
+            { id: 'watt_hour', name: 'Watt Hour', symbol: 'Wh' }, { id: 'kilowatt_hour', name: 'Kilowatt Hour', symbol: 'kWh' },
+            { id: 'electronvolt', name: 'Electronvolt', symbol: 'eV' }, { id: 'british_thermal_unit', name: 'British Thermal Unit', symbol: 'BTU' },
+            { id: 'us_therm', name: 'US Therm', symbol: 'thm' }, { id: 'foot_pound', name: 'Foot-Pound', symbol: 'ft lb' }
+        ]},
+        { id: 'data', name: 'Data', units: [
+            { id: 'bit', name: 'Bit', symbol: 'b' }, { id: 'kilobit', name: 'Kilobit', symbol: 'kb' },
+            { id: 'megabit', name: 'Megabit', symbol: 'Mb' }, { id: 'gigabit', name: 'Gigabit', symbol: 'Gb' },
+            { id: 'terabit', name: 'Terabit', symbol: 'Tb' }, { id: 'byte', name: 'Byte', symbol: 'B' },
+            { id: 'kilobyte', name: 'Kilobyte', symbol: 'KB' }, { id: 'megabyte', name: 'Megabyte', symbol: 'MB' },
+            { id: 'gigabyte', name: 'Gigabyte', symbol: 'GB' }, { id: 'terabyte', name: 'Terabyte', symbol: 'TB' }
+        ]}
+    ];
+
+    // Factor to base unit per category (multiply to base, divide from base).
+    // Identical constants to the source service's per-unit switch arms.
+    var UC_FACTORS = {
+        length: { meter: 1, kilometer: 1000, centimeter: 0.01, millimeter: 0.001, micrometer: 0.000001, nanometer: 0.000000001, mile: 1609.344, yard: 0.9144, foot: 0.3048, inch: 0.0254, nautical_mile: 1852 },
+        weight: { kilogram: 1, gram: 0.001, milligram: 0.000001, metric_ton: 1000, pound: 0.45359237, ounce: 0.028349523125, stone: 6.35029318, us_ton: 907.18474, imperial_ton: 1016.0469088 },
+        area: { square_meter: 1, square_kilometer: 1000000, square_centimeter: 0.0001, square_millimeter: 0.000001, square_mile: 2589988.11, square_yard: 0.83612736, square_foot: 0.09290304, square_inch: 0.00064516, acre: 4046.8564224, hectare: 10000 },
+        volume: { cubic_meter: 1, cubic_kilometer: 1000000000, cubic_centimeter: 0.000001, cubic_millimeter: 0.000000001, liter: 0.001, milliliter: 0.000001, us_gallon: 0.00378541, us_quart: 0.000946353, us_pint: 0.000473176, us_cup: 0.000236588, us_fluid_ounce: 0.0000295735, us_tablespoon: 0.0000147868, us_teaspoon: 0.00000492892, imperial_gallon: 0.00454609, imperial_quart: 0.00113652, imperial_pint: 0.000568261, imperial_fluid_ounce: 0.0000284131 },
+        time: { second: 1, millisecond: 0.001, microsecond: 0.000001, nanosecond: 0.000000001, minute: 60, hour: 3600, day: 86400, week: 604800, month: 2629746, year: 31556952, decade: 315569520, century: 3155695200 },
+        speed: { meter_per_second: 1, kilometer_per_hour: 1000 / 3600, mile_per_hour: 0.44704, foot_per_second: 0.3048, knot: 0.514444 },
+        pressure: { pascal: 1, kilopascal: 1000, megapascal: 1000000, bar: 100000, psi: 6894.76, atmosphere: 101325, torr: 133.322, millimeter_of_mercury: 133.322 },
+        energy: { joule: 1, kilojoule: 1000, calorie: 4.184, kilocalorie: 4184, watt_hour: 3600, kilowatt_hour: 3600000, electronvolt: 1.602176634e-19, british_thermal_unit: 1055.06, us_therm: 105506000, foot_pound: 1.35582 },
+        data: { bit: 1, kilobit: 1000, megabit: 1000000, gigabit: 1000000000, terabit: 1000000000000, byte: 8, kilobyte: 8000, megabyte: 8000000, gigabyte: 8000000000, terabyte: 8000000000000 }
+    };
+
+    var UC_HISTORY_KEY = 'unitConverterHistory';
+
+    function ucGetCategory(catId) {
+        for (var i = 0; i < UC_CATEGORIES.length; i++) { if (UC_CATEGORIES[i].id === catId) return UC_CATEGORIES[i]; }
+        return null;
+    }
+    function ucGetUnitName(unitId) {
+        for (var i = 0; i < UC_CATEGORIES.length; i++) {
+            var u = UC_CATEGORIES[i].units;
+            for (var j = 0; j < u.length; j++) { if (u[j].id === unitId) return u[j].name; }
+        }
+        return unitId;
+    }
+
+    // Temperature is non-linear: convert to/from base Kelvin via offset formulas.
+    function ucTempToBase(value, unitId) {
+        if (unitId === 'celsius') return value + 273.15;
+        if (unitId === 'fahrenheit') return (value - 32) * (5 / 9) + 273.15;
+        return value; // kelvin
+    }
+    function ucTempFromBase(value, unitId) {
+        if (unitId === 'celsius') return value - 273.15;
+        if (unitId === 'fahrenheit') return (value - 273.15) * (9 / 5) + 32;
+        return value; // kelvin
+    }
+
+    function ucConvert(value, fromId, toId, catId) {
+        if (fromId === toId) return value;
+        if (catId === 'temperature') {
+            return ucTempFromBase(ucTempToBase(value, fromId), toId);
+        }
+        var f = UC_FACTORS[catId];
+        if (!f || f[fromId] == null || f[toId] == null) return value;
+        var base = value * f[fromId];
+        return base / f[toId];
+    }
+
+    // Port of formatResult: exponential for very small, integer as-is, else 6 sig digits.
+    function ucFormatResult(value) {
+        if (Math.abs(value) < 0.000001 && value !== 0) return value.toExponential(6);
+        if (Number.isInteger(value)) return String(value);
+        return value.toPrecision(6).replace(/\.?0+$/, '');
+    }
+
+    function ucFormula(catId, fromId, toId) {
+        if (catId === 'temperature') {
+            if (fromId === toId) return 'No conversion needed';
+            if (fromId === 'celsius' && toId === 'fahrenheit') return 'F = (C x 9/5) + 32';
+            if (fromId === 'fahrenheit' && toId === 'celsius') return 'C = (F - 32) x 5/9';
+            if (fromId === 'celsius' && toId === 'kelvin') return 'K = C + 273.15';
+            if (fromId === 'kelvin' && toId === 'celsius') return 'C = K - 273.15';
+            if (fromId === 'fahrenheit' && toId === 'kelvin') return 'K = (F - 32) x 5/9 + 273.15';
+            if (fromId === 'kelvin' && toId === 'fahrenheit') return 'F = (K - 273.15) x 9/5 + 32';
+            return 'No conversion needed';
+        }
+        var cat = ucGetCategory(catId);
+        return 'Conversion uses standard ' + (cat ? cat.name : catId) + ' conversion factors';
+    }
+
+    function ucGetHistory() {
+        try { var h = localStorage.getItem(UC_HISTORY_KEY); return h ? JSON.parse(h) : []; }
+        catch (e) { return []; }
+    }
+    function ucSaveHistory(fromValue, fromUnit, toUnit, toValue, category) {
+        try {
+            var history = ucGetHistory();
+            history.unshift({ id: Date.now().toString(), fromValue: fromValue, fromUnit: fromUnit, toUnit: toUnit, toValue: toValue, category: category, timestamp: Date.now() });
+            if (history.length > 50) history.pop();
+            localStorage.setItem(UC_HISTORY_KEY, JSON.stringify(history));
+        } catch (e) { /* storage blocked - in-memory conversion still works */ }
+    }
+    function ucClearHistory() {
+        try { localStorage.removeItem(UC_HISTORY_KEY); } catch (e) {}
+    }
+
+    function ucEscapeHtml(s) {
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // ---- DOM wiring (jQuery $, available inside doAfterPageRendered) ----
+
+    function ucOptionList(items, makeText) {
+        var html = '';
+        for (var i = 0; i < items.length; i++) {
+            html += '<option value="' + ucEscapeHtml(items[i].id) + '">' + ucEscapeHtml(makeText(items[i])) + '</option>';
+        }
+        return html;
+    }
+
+    function ucPopulateCategories() {
+        $('#ucCategory').html(ucOptionList(UC_CATEGORIES, function (c) { return c.name; }));
+    }
+
+    function ucPopulateUnits(catId, fromSel, toSel) {
+        var cat = ucGetCategory(catId);
+        if (!cat) return;
+        var opts = ucOptionList(cat.units, function (u) { return u.name + ' (' + u.symbol + ')'; });
+        $('#ucFrom').html(opts);
+        $('#ucTo').html(opts);
+        $('#ucFrom').val(fromSel || cat.units[0].id);
+        $('#ucTo').val(toSel || (cat.units[1] ? cat.units[1].id : cat.units[0].id));
+    }
+
+    function ucPerformConversion() {
+        var $err = $('#ucError');
+        var $res = $('#ucResult');
+        $err.text('');
+        var raw = ($('#ucValue').val() || '').trim();
+        if (!raw) { $res.val(''); $('#ucFormula').text(''); return; }
+        var num = parseFloat(raw);
+        if (isNaN(num)) { $err.text('Please enter a valid number.'); $res.val(''); return; }
+        var catId = $('#ucCategory').val();
+        var fromId = $('#ucFrom').val();
+        var toId = $('#ucTo').val();
+        var result = ucConvert(num, fromId, toId, catId);
+        $res.val(ucFormatResult(result));
+        $('#ucFormula').text(ucFormula(catId, fromId, toId));
+        ucSaveHistory(num, fromId, toId, result, catId);
+        ucRenderHistory();
+    }
+
+    function ucRenderHistory() {
+        var $list = $('#ucHistory');
+        var $empty = $('#ucHistoryEmpty');
+        if ($list.length === 0) return;
+        var items = ucGetHistory();
+        $list.empty();
+        if (!items.length) { if ($empty.length) $empty.show(); return; }
+        if ($empty.length) $empty.hide();
+        for (var i = 0; i < items.length; i++) {
+            var it = items[i];
+            $list.append(
+                '<li class="uc-history-item">' +
+                    ucEscapeHtml(ucFormatResult(it.fromValue)) + ' ' + ucEscapeHtml(ucGetUnitName(it.fromUnit)) +
+                    ' = ' + ucEscapeHtml(ucFormatResult(it.toValue)) + ' ' + ucEscapeHtml(ucGetUnitName(it.toUnit)) +
+                '</li>'
+            );
+        }
+    }
+
+    function initUnitConverter() {
+        if ($('#ucCategory').length === 0) return; // not the unit-converter page
+        ucPopulateCategories();
+        $('#ucCategory').val(UC_CATEGORIES[0].id);
+        ucPopulateUnits(UC_CATEGORIES[0].id);
+
+        $('#ucCategory').off('change.uc').on('change.uc', function () {
+            ucPopulateUnits($(this).val());
+            ucPerformConversion();
+        });
+        $('#ucValue').off('input.uc').on('input.uc', ucPerformConversion);
+        $('#ucFrom').off('change.uc').on('change.uc', ucPerformConversion);
+        $('#ucTo').off('change.uc').on('change.uc', ucPerformConversion);
+        $('#ucSwap').off('click.uc').on('click.uc', function () {
+            var f = $('#ucFrom').val(), t = $('#ucTo').val();
+            $('#ucFrom').val(t); $('#ucTo').val(f);
+            // mirror the source: move the current result into the value box
+            var r = ($('#ucResult').val() || '').trim();
+            if (r) $('#ucValue').val(r);
+            ucPerformConversion();
+        });
+        $('#ucClearHistory').off('click.uc').on('click.uc', function () {
+            ucClearHistory(); ucRenderHistory();
+        });
+
+        // initial conversion (default value seeded by BODYHTML, e.g. 1)
+        ucPerformConversion();
+        ucRenderHistory();
+    }
+
+    function doAfterPageRendered() {
+        initUnitConverter();
+    }
+</script>

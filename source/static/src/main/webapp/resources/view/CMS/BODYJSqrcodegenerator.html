@@ -1,62 +1,312 @@
 <script>
-    function waitForElementToDisplay(selector, time, callback) {
-        if(selector.attr('src')) {
-            callback();
+    /*
+     * QR Code Generator - client-side (E1 enrichment, freetool.online -> freetoolonline migration).
+     * Behavior reference ONLY (NOT UI): freetool.online lib/services/qr-code-generator-service.ts.
+     * Library: davidshimjs qrcodejs (qrcode.min.js, already CDN-hosted) + canvas compositing.
+     * ZERO backend: QR matrix + quiet-zone + logo embed + clipboard + history all run in-browser.
+     *   No fetch / XMLHttpRequest / upload POST; the optional logo is read with FileReader, never sent.
+     *
+     * Element-ID contract (existing + the controls the ui_and_skill sub-step will add; every read is
+     * defensive so the page still renders a basic QR before the enrichment controls exist):
+     *   #text (content)        #download (PNG)          #qrcode (render target)  .sourceImage  .errorMsgAction
+     *   #qrFg #qrBg (colors)   #qrSize #qrSizeVal        #qrEcc (L/M/Q/H)
+     *   #qrQuiet #qrQuietVal    #qrLogo #qrLogoClear      #qrCopy #qrCopyMsg        #qrHistory #qrHistoryClear
+     */
+    var QR_HISTORY_KEY = 'qrcode_history';
+    var QR_HISTORY_MAX = 10;
+    var QR_MAX_CONTENT = 2000;
+    var QR_LOGO_MAX_BYTES = 2 * 1024 * 1024;
+    var QR_LOGO_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml'];
+    var qrLogoDataUrl = null;   // current embedded logo (data URL) or null
+    var qrLastDataUrl = null;   // last composited PNG data URL (for download + clipboard copy)
+
+    function qrId(id){ return document.getElementById(id); }
+    function qrVal(id, dflt){ var el = qrId(id); return (el && el.value !== '' && el.value != null) ? el.value : dflt; }
+    function qrNum(id, dflt, lo, hi){
+        var v = parseInt(qrVal(id, dflt), 10);
+        if (isNaN(v)) { v = dflt; }
+        if (typeof lo === 'number') { v = Math.max(lo, v); }
+        if (typeof hi === 'number') { v = Math.min(hi, v); }
+        return v;
+    }
+    function qrShowError(msg){
+        var $e = $('.errorMsgAction');
+        if (msg) { $e.text(msg).show(); } else { $e.text('').hide(); }
+    }
+    function qrReadOptions(){
+        var ecc = (qrVal('qrEcc', 'M') || 'M').toUpperCase();
+        if (['L', 'M', 'Q', 'H'].indexOf(ecc) === -1) { ecc = 'M'; }
+        return {
+            fg: qrVal('qrFg', '#000000'),
+            bg: qrVal('qrBg', '#ffffff'),
+            size: qrNum('qrSize', 300, 100, 800),
+            ecc: ecc,
+            quiet: qrNum('qrQuiet', 16, 0, 80),
+            logo: qrLogoDataUrl
+        };
+    }
+
+    function qrRoundRect(ctx, x, y, w, h, r){
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+    }
+
+    function qrGenId(){
+        return Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+    }
+    function qrGetHistory(){
+        try { var s = localStorage.getItem(QR_HISTORY_KEY); return s ? JSON.parse(s) : []; }
+        catch (e) { return []; }
+    }
+    function qrSaveHistory(content, opts){
+        try {
+            var list = qrGetHistory();
+            var idx = -1;
+            for (var i = 0; i < list.length; i++) { if (list[i].content === content) { idx = i; break; } }
+            var entry = {
+                id: qrGenId(),
+                content: content,
+                timestamp: Date.now(),
+                options: { fg: opts.fg, bg: opts.bg, size: opts.size, ecc: opts.ecc, quiet: opts.quiet }
+            };
+            if (idx !== -1) { entry.id = list[idx].id; list.splice(idx, 1); }
+            list.unshift(entry);
+            list = list.slice(0, QR_HISTORY_MAX);
+            localStorage.setItem(QR_HISTORY_KEY, JSON.stringify(list));
+        } catch (e) {}
+    }
+    function qrDeleteHistory(id){
+        try {
+            var list = qrGetHistory().filter(function(e){ return e.id !== id; });
+            localStorage.setItem(QR_HISTORY_KEY, JSON.stringify(list));
+        } catch (e) {}
+    }
+    function qrClearHistory(){
+        try { localStorage.removeItem(QR_HISTORY_KEY); } catch (e) {}
+    }
+    function qrEscape(s){
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    function qrRenderHistory(){
+        var host = qrId('qrHistory');
+        if (!host) { return; }
+        var list = qrGetHistory();
+        if (!list.length) {
+            host.innerHTML = '<p class="w3-small w3-text-grey">No saved codes yet. Generate a code and it is kept here on this device.</p>';
+            return;
         }
-        else {
-            setTimeout(function() {
-                waitForElementToDisplay(selector, time, callback);
-            }, time);
+        var html = '';
+        for (var i = 0; i < list.length; i++) {
+            var e = list[i];
+            var label = e.content.length > 48 ? e.content.substring(0, 48) + '...' : e.content;
+            html += '<div class="w3-bar w3-border-bottom w3-small" style="padding:4px 0">'
+                 + '<span class="w3-bar-item" style="word-break:break-all">' + qrEscape(label) + '</span>'
+                 + '<button type="button" class="w3-bar-item w3-button w3-right w3-small qr-hist-del" data-qid="' + e.id + '">Delete</button>'
+                 + '<button type="button" class="w3-bar-item w3-button w3-right w3-small qr-hist-load" data-qid="' + e.id + '">Load</button>'
+                 + '</div>';
         }
-    };
+        host.innerHTML = html;
+        $('.qr-hist-load').off('click').on('click', function(){
+            var id = $(this).attr('data-qid');
+            var item = qrGetHistory().filter(function(x){ return x.id === id; })[0];
+            if (!item) { return; }
+            $('#text').val(item.content);
+            if (item.options) {
+                if (qrId('qrFg')) { $('#qrFg').val(item.options.fg); }
+                if (qrId('qrBg')) { $('#qrBg').val(item.options.bg); }
+                if (qrId('qrSize')) { $('#qrSize').val(item.options.size); var sv = qrId('qrSizeVal'); if (sv) { sv.textContent = item.options.size; } }
+                if (qrId('qrEcc')) { $('#qrEcc').val(item.options.ecc); }
+                if (qrId('qrQuiet')) { $('#qrQuiet').val(item.options.quiet); var qv = qrId('qrQuietVal'); if (qv) { qv.textContent = item.options.quiet; } }
+            }
+            if (window.qrBuild) { window.qrBuild(); }
+        });
+        $('.qr-hist-del').off('click').on('click', function(){
+            qrDeleteHistory($(this).attr('data-qid'));
+            qrRenderHistory();
+        });
+    }
+
+    function qrCopyToClipboard(){
+        if (!qrLastDataUrl) { return; }
+        var $msg = $('#qrCopyMsg');
+        function ok(){ if ($msg.length) { $msg.text('Copied to clipboard').show(); } }
+        function fail(m){ if ($msg.length) { $msg.text(m || 'Copy is not supported in this browser; use Download instead.').show(); } }
+        try {
+            if (!navigator.clipboard || typeof window.ClipboardItem === 'undefined') { fail(); return; }
+            var parts = qrLastDataUrl.split(',');
+            var bin = atob(parts[1]);
+            var arr = new Uint8Array(bin.length);
+            for (var i = 0; i < bin.length; i++) { arr[i] = bin.charCodeAt(i); }
+            var blob = new Blob([arr], { type: 'image/png' });
+            navigator.clipboard.write([ new ClipboardItem({ 'image/png': blob }) ]).then(ok).catch(function(){ fail(); });
+        } catch (e) { fail(); }
+    }
+
     function doAfterPageRendered(){
-        var $step1 = $('.step1'),
-            $step3 = $('.step3');
-    
-        $step3.show();
-        
-        $('#text').val('https://freetoolonline.com/qr-code-generator.html');
+        $('.step3').show();
+        var seed = 'https://freetoolonline.com/qr-code-generator.html';
+        if (qrId('text') && !$('#text').val()) { $('#text').val(seed); }
         $('#text').focus();
         $('.sourceImage').hide();
+
         loadScript('https://dkbg1jftzfsd2.cloudfront.net/script/lib/qrcode.min.js', function(){
-            var qrcode = new QRCode(document.getElementById("qrcode"), {
-                width : 240,
-                height : 240
-            });
-            
-            function makeCode () {	
-                qrcode.clear();
-                var elText = document.getElementById("text");
-                $('.sourceImage').hide();
-                if (elText.value) {
-                    try{
-                        $('.errorMsgAction').text('').hide();
-                        qrcode.makeCode(elText.value);
-                        $('.sourceImage').show();
-                        $('#download').show();
-                    } catch(e){
-                        $('.sourceImage').hide();
-                        $('.errorMsgAction').text('Error has occured').show();
-                        $('#download').hide();
-                    }
-                } else{
+
+            function eccLevel(ecc){
+                var m = QRCode.CorrectLevel;
+                return (ecc === 'L') ? m.L : (ecc === 'Q') ? m.Q : (ecc === 'H') ? m.H : m.M;
+            }
+
+            function finalize(outCanvas){
+                qrLastDataUrl = outCanvas.toDataURL('image/png');
+                var $host = $('#qrcode');
+                var $img = $host.find('img.qrResult');
+                if (!$img.length) {
+                    $img = $('<img class="qrResult" alt="Generated QR code" style="max-width:100%;height:auto;">');
+                    $host.append($img);
+                }
+                $host.children().not('.qrResult').hide();
+                $img.attr('src', qrLastDataUrl).show();
+                $('.sourceImage').show();
+                $('#download').show();
+                if (qrId('qrCopy')) { $('#qrCopy').show(); }
+            }
+
+            function buildBaseCanvas(opts){
+                var holder = qrId('qrScratch');
+                if (!holder) {
+                    holder = document.createElement('div');
+                    holder.id = 'qrScratch';
+                    holder.style.display = 'none';
+                    document.body.appendChild(holder);
+                }
+                holder.innerHTML = '';
+                // a logo punches a hole in the code, so force High error correction to keep it scannable
+                var effEcc = opts.logo ? 'H' : opts.ecc;
+                /* eslint-disable no-new */
+                new QRCode(holder, {
+                    text: $('#text').val(),
+                    width: opts.size,
+                    height: opts.size,
+                    colorDark: opts.fg,
+                    colorLight: opts.bg,
+                    correctLevel: eccLevel(effEcc)
+                });
+                return holder.querySelector('canvas');
+            }
+
+            function compose(opts, baseCanvas){
+                var q = opts.quiet;
+                var out = document.createElement('canvas');
+                out.width = opts.size + q * 2;
+                out.height = opts.size + q * 2;
+                var ctx = out.getContext('2d');
+                ctx.fillStyle = opts.bg;
+                ctx.fillRect(0, 0, out.width, out.height);
+                ctx.drawImage(baseCanvas, q, q, opts.size, opts.size);
+                if (!opts.logo) { finalize(out); return; }
+                var logo = new Image();
+                logo.onload = function(){
+                    var lw = Math.round(opts.size * 0.2);
+                    var lh = lw;
+                    var lx = (out.width - lw) / 2;
+                    var ly = (out.height - lh) / 2;
+                    ctx.save();
+                    ctx.fillStyle = '#ffffff';
+                    qrRoundRect(ctx, lx - 5, ly - 5, lw + 10, lh + 10, 5);
+                    ctx.fill();
+                    ctx.restore();
+                    ctx.drawImage(logo, lx, ly, lw, lh);
+                    finalize(out);
+                };
+                logo.onerror = function(){ finalize(out); };  // logo failed to load -> still emit the QR
+                logo.src = opts.logo;
+            }
+
+            function qrBuild(){
+                var text = $('#text').val();
+                if (!text) {
+                    qrShowError('');
                     $('.sourceImage').hide();
                     $('#download').hide();
+                    if (qrId('qrCopy')) { $('#qrCopy').hide(); }
+                    return;
                 }
-                
+                if (text.length > QR_MAX_CONTENT) {
+                    qrShowError('Content is too long. Keep it under ' + QR_MAX_CONTENT + ' characters so the QR stays easy to scan.');
+                    return;
+                }
+                try {
+                    qrShowError('');
+                    var opts = qrReadOptions();
+                    var base = buildBaseCanvas(opts);
+                    if (!base) { qrShowError('Could not render the QR code in this browser.'); return; }
+                    compose(opts, base);
+                    qrSaveHistory(text, opts);
+                    qrRenderHistory();
+                } catch (e) {
+                    $('.sourceImage').hide();
+                    qrShowError('Could not generate the QR code. Try shorter content.');
+                    $('#download').hide();
+                }
             }
-            makeCode();
-            $("#download").on("click", function () {
-                 var base64 = $('#qrcode').find('img').attr('src');
-                  var link = document.createElement('a');
-                  link.download = 'qr-' + getCurrentDateTime() + '.png';
-                  link.href = base64;
-                  link.target = '_blank';
-                  link.click();
+            window.qrBuild = qrBuild;
+
+            qrBuild();
+            qrRenderHistory();
+
+            $('#text').on('change keyup', qrBuild);
+            ['qrFg', 'qrBg', 'qrSize', 'qrEcc', 'qrQuiet'].forEach(function(id){
+                var el = qrId(id);
+                if (!el) { return; }
+                $(el).on('change input', function(){
+                    if (id === 'qrSize') { var sv = qrId('qrSizeVal'); if (sv) { sv.textContent = el.value; } }
+                    if (id === 'qrQuiet') { var qv = qrId('qrQuietVal'); if (qv) { qv.textContent = el.value; } }
+                    qrBuild();
+                });
             });
-            
-            $('#text').on('change keyup', function(){
-                makeCode();
+            if (qrId('qrLogo')) {
+                $('#qrLogo').on('change', function(ev){
+                    var f = ev.target.files && ev.target.files[0];
+                    if (!f) { qrLogoDataUrl = null; qrBuild(); return; }
+                    if (QR_LOGO_TYPES.indexOf(f.type) === -1) { qrShowError('Logo must be a JPEG, PNG, GIF, or SVG image.'); this.value = ''; return; }
+                    if (f.size > QR_LOGO_MAX_BYTES) { qrShowError('Logo is too large. Maximum size is 2 MB.'); this.value = ''; return; }
+                    var r = new FileReader();
+                    r.onload = function(e){ qrLogoDataUrl = e.target.result; qrShowError(''); qrBuild(); };
+                    r.onerror = function(){ qrShowError('Could not read the logo image.'); };
+                    r.readAsDataURL(f);
+                });
+            }
+            if (qrId('qrLogoClear')) {
+                $('#qrLogoClear').on('click', function(){
+                    qrLogoDataUrl = null;
+                    var li = qrId('qrLogo');
+                    if (li) { li.value = ''; }
+                    qrBuild();
+                });
+            }
+            if (qrId('qrCopy')) { $('#qrCopy').on('click', qrCopyToClipboard); }
+            if (qrId('qrHistoryClear')) {
+                $('#qrHistoryClear').on('click', function(){ qrClearHistory(); qrRenderHistory(); });
+            }
+
+            $('#download').off('click').on('click', function(){
+                var href = qrLastDataUrl;
+                if (!href) { href = $('#qrcode').find('img').attr('src'); }
+                if (!href) { return; }
+                var link = document.createElement('a');
+                link.download = 'qr-' + getCurrentDateTime() + '.png';
+                link.href = href;
+                link.target = '_blank';
+                link.click();
             });
         });
     };

@@ -18,7 +18,7 @@ const SEO_CLUSTER_GROUPS = [
       '/insights-image-optimizer.html',
       '/get-jpeg-compression-level.html',
       '/imagemagick-online.html',
-    ],
+    '/image-tools/steganography.html'],
   },
   {
     cluster: 'image-conversion',
@@ -48,7 +48,7 @@ const SEO_CLUSTER_GROUPS = [
     // Cycle 20260521-12 semantic-dedup cleanup: '/json-formatter.html' removed
     // (was semantic duplicate of /json-parser.html which is titled "JSON Parser
     // & Formatter (Tree View)" and already covers pretty-print + validate + tree).
-    routes: ['/json-parser.html', '/css-minifier.html', '/css-unminifier.html', '/js-minifier.html', '/js-unminifier.html', '/text-diff.html', '/md5-converter.html', '/css-gradient-generator.html', '/text-html-editor.html', '/developer-tools/regex-tester.html'],
+    routes: ['/json-parser.html', '/css-minifier.html', '/css-unminifier.html', '/js-minifier.html', '/js-unminifier.html', '/text-diff.html', '/md5-converter.html', '/css-gradient-generator.html', '/text-html-editor.html', '/developer-tools/regex-tester.html', '/developer-tools/color-picker.html', '/developer-tools/data-visualizer.html', '/developer-tools/code-editor.html'],
   },
   {
     cluster: 'video',
@@ -60,13 +60,13 @@ const SEO_CLUSTER_GROUPS = [
     cluster: 'device-test',
     hubRoute: '/device-test-tools.html',
     hubLabel: 'Back to Device Test Tools',
-    routes: ['/microphone-test.html', '/camera-test.html', '/lcd-test.html', '/keyboard-test.html'],
+    routes: ['/microphone-test.html', '/camera-test.html', '/lcd-test.html', '/keyboard-test.html', '/device-test-tools/screen-recorder.html'],
   },
   {
     cluster: 'utility',
     hubRoute: '/utility-tools.html',
     hubLabel: 'Back to Utility Tools',
-    routes: ['/file-compressor.html', '/convert-time-in-millisecond-to-date.html', '/get-time-in-millisecond.html', '/qr-code-generator.html', '/do-nong-do-con-truc-tuyen.html', '/cong-cu-chuyen-doi-chu-quoc-ngu-tieng-viet-thanh-tieq-viet-kieu-moi.html'],
+    routes: ['/file-compressor.html', '/convert-time-in-millisecond-to-date.html', '/get-time-in-millisecond.html', '/qr-code-generator.html', '/do-nong-do-con-truc-tuyen.html', '/cong-cu-chuyen-doi-chu-quoc-ngu-tieng-viet-thanh-tieq-viet-kieu-moi.html', '/utility-tools/todo-list.html', '/utility-tools/unit-converter.html', '/utility-tools/font-generator.html', '/utility-tools/private-ai-chat.html'],
   },
   // Phase 16 P16.G3 - register the /guides/* cluster. Cycle B activates the
   // full route list now that P16.G1 ships /guides.html. resolveHubBacklink
