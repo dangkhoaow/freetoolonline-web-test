@@ -883,6 +883,9 @@ export const INFO_ROUTES = new Set([
   // form "cropandrotateimage" does not shadow any existing primary route.
   '/guides/en/crop-and-rotate-image.html',
 
+  // cycle 20260625-6 create_new_guide_page (locale completion, EN-first drain) - pt variant of /guides/video-converter-online-free.html (held staging-only until es/vi/id/de complete).
+  '/guides/pt/video-converter-online-free.html',
+
   // 2026-05-28 plan-warm-pascal-v2 S1 multilingual migration (locale-prefixed guide URLs).
   // plan-warm-pascal-v3 S2 batch 1 (2026-05-29) - 5 locale variants of /guides/lcd-test-online.html
   '/guides/pt/lcd-test-online.html',
@@ -1181,6 +1184,8 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // cycle 20260625-6 create_new_guide_page (locale completion) - pt variant of video-converter-online-free (staging-only until es/vi/id/de complete).
+  '/guides/pt/video-converter-online-free.html',
   // plan-warm-pascal-v3 S2 batch 1 (2026-05-29) - 5 locale variants of /guides/lcd-test-online.html
   '/guides/pt/lcd-test-online.html',
   '/guides/es/lcd-test-online.html',
@@ -3182,6 +3187,8 @@ export const JSP_BY_ROUTE = {
   // cycle 20260624-4 - mengecilkan-ukuran-zip DE locale variant (EN-first locale drain; locale-complete)
   '/guides/de/mengecilkan-ukuran-zip.html': 'guide/de/mengecilkan-ukuran-zip.jsp',
   '/guides/video-converter-online-free.html': 'guide/video-converter-online-free.jsp',
+  // cycle 20260625-6 create_new_guide_page (locale completion) - pt variant (staging-only until es/vi/id/de complete).
+  '/guides/pt/video-converter-online-free.html': 'guide/pt/video-converter-online-free.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
