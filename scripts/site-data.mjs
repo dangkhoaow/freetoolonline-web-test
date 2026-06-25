@@ -3181,6 +3181,7 @@ export const JSP_BY_ROUTE = {
   '/guides/id/mengecilkan-ukuran-zip.html': 'guide/id/mengecilkan-ukuran-zip.jsp',
   // cycle 20260624-4 - mengecilkan-ukuran-zip DE locale variant (EN-first locale drain; locale-complete)
   '/guides/de/mengecilkan-ukuran-zip.html': 'guide/de/mengecilkan-ukuran-zip.jsp',
+  '/guides/video-converter-online-free.html': 'guide/video-converter-online-free.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
