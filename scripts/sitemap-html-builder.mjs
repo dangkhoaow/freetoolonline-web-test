@@ -295,7 +295,7 @@ export async function buildDynamicGuidesHubBody({ cmsRoot } = {}) {
 
   const html = `<div class='w3-container'>
     <h1><b class="text-uppercase">All Guides - Browser Tool Library</b></h1>
-    <p>Hands-on, no-fluff guides for the people landing on freetoolonline.com tools. Every guide pairs the problem to the right tool, walks the steps, and explains the trade-offs - so you finish in two minutes instead of two browser tabs. Each linked tool runs entirely in your browser; nothing uploads to a server.</p>
+    <p>Hands-on, no-fluff guides for the people landing on freetoolonline.com tools, in English plus Indonesian and Portuguese. Every guide pairs the problem to the right tool, walks the steps, and explains the trade-offs - so you finish in two minutes instead of two browser tabs. Each linked tool runs entirely in your browser; nothing uploads to a server.</p>
 
     <p>${totalGuides} guides grouped by the kind of task you came to do. If you are not sure which group your question lives in, the search box on the home page covers every guide and tool by keyword.</p>
 
