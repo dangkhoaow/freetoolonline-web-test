@@ -3364,6 +3364,12 @@ export const RELATED_GUIDES_SLUGS = new Set([
   'pdftools',
   'videotools',
   'guidescompressfolderonline',
+  // Batch 3 (2026-06-28): 5 more legacy inline-block pages.
+  'guidescreatezipfileonline',
+  'guidescropandrotateimage',
+  'guidesgiftoframe',
+  'guidesgiftoframesconverter',
+  'guidesilovezip',
 ]);
 
 export function isRelatedGuidesEnabled(route) {
@@ -3466,6 +3472,27 @@ export const RELATED_GUIDES_CURATED = {
     '/guides/en/zip-folder-online-free.html',
     '/guides/en/folder-to-zip.html',
     '/guides/en/how-to-compress-a-folder-for-email.html',
+  ],
+  // Batch 3 (2026-06-28) curated overrides.
+  'guidescreatezipfileonline': [
+    '/guides/en/online-zip-file.html',
+    '/guides/en/folder-to-zip.html',
+    '/guides/en/zip-compressor-online.html',
+    '/guides/en/compress-zip.html',
+  ],
+  'guidesgiftoframe': [
+    '/guides/en/extract-gif-frames-png-vs-jpg-which-format.html',
+    '/guides/en/gif-frames-extract-vs-frame-rate-fps-explained.html',
+  ],
+  'guidesgiftoframesconverter': [
+    '/guides/en/gif-frames-extract-vs-frame-rate-fps-explained.html',
+    '/guides/en/extract-gif-frames-png-vs-jpg-which-format.html',
+  ],
+  'guidesilovezip': [
+    '/guides/en/create-zip-file-online.html',
+    '/guides/en/online-zip-file.html',
+    '/guides/en/zip-folder-online-free.html',
+    '/guides/en/compress-zip.html',
   ],
 };
 
