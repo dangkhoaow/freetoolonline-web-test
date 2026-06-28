@@ -153,8 +153,12 @@ const RELATED_TOOLS_LIST_STYLE = 'margin-top: 0px;display: block;padding-inline-
 // plan-kahan: cap the dedicated Related-guides list so it reads as a tidy
 // curated section (like Related tools), not a wall of every tag-matched guide.
 // Tag matches are collected before title-word matches, so the kept slice is the
-// most-relevant set. Tools stay uncapped (preserves legacy behavior).
+// most-relevant set. Both sections are capped: slug-word matching (added 2026-06-28
+// to fix localized/entry-less coverage) widens the match pool, so without a tools
+// cap broad-slug guide pages produced 30+ related-tool walls. Cap keeps the leading
+// (tag-matched, then title/slug-matched) most-relevant items.
 const RELATED_GUIDES_MAX = 12;
+const RELATED_TOOLS_MAX = 12;
 const RELATED_TOOLS_STOP_WORDS = new Set(['free', 'tool', 'online', 'convert', 'converter', 'in', 'editor', 'maker', 'by', 'and']);
 const RELATED_TOOLS_TAGS_PAGE_TITLES = new Set(['tags collection', 'tags cloud:']);
 const APPLICATION_CATEGORY_BY_CLUSTER = {
@@ -412,10 +416,15 @@ function renderHeader(ctx) {
 }
 
 function renderToolSections(ctx) {
-  if (!ctx.showAds) {
+  // showRelatedLinks lets guide pages (showAds=false because they live in
+  // INFO_ROUTES) still render the internal related-tools / related-guides bands.
+  // Ads, the rating widget, the FAQ widget and the bottom ad banner stay gated on
+  // showAds. Defaults to showAds so non-guide callers are unaffected.
+  const showRelatedLinks = ctx.showRelatedLinks ?? ctx.showAds;
+  if (!ctx.showAds && !showRelatedLinks) {
     return '';
   }
-  const ratingBlock = ctx.showRating === false
+  const ratingBlock = (!ctx.showAds || ctx.showRating === false)
     ? ''
     : `<div class="w3-row page-section"><div id="star-rating-container">Loading reviews...</div></div>`;
   const relatedToolsHtml = ctx.relatedToolsHtml ?? '';
@@ -429,7 +438,7 @@ function renderToolSections(ctx) {
   // related-tools.js fallback populates `.relatedGuides` only if that container
   // exists in the DOM, so the allowlist gate also governs the client path.
   const relatedGuidesHtml = ctx.relatedGuidesHtml ?? '';
-  const relatedGuidesBlock = (ctx.showRelatedGuides && relatedGuidesHtml)
+  const relatedGuidesBlock = (showRelatedLinks && ctx.showRelatedGuides && relatedGuidesHtml)
     ? `<!-- SEO_BLOCK:RELATED_GUIDES --><div class="w3-row page-section relatedGuidesSection"><p style="margin-bottom: 0px;">Related guides:</p><div class="relatedGuides">${relatedGuidesHtml}</div></div><!-- END_SEO_BLOCK:RELATED_GUIDES -->`
     : '';
   // Cluster-hub callout - single anchor above the related-tools band. Cluster-aware
@@ -439,7 +448,14 @@ function renderToolSections(ctx) {
   const clusterHubBlock = clusterHubLink && clusterHubLink.href && clusterHubLink.label
     ? `<div class="w3-row page-section clusterHubCallout"><p style="margin: 0 0 8px;"><a href="${escapeHtml(clusterHubLink.href)}" style="color: #4caf50; font-weight: 600;">See all ${escapeHtml(clusterHubLink.label)} &rarr;</a></p></div>`
     : '';
-  return `<!-- SEO_BLOCK:RELATED_TOOLS -->${clusterHubBlock}<div class="w3-row page-section relatedToolsSection"><p style="margin-bottom: 0px;">Related tools:</p><div class="relatedTools">${relatedToolsHtml}</div>${relatedToolsTagsHtml}<script>loadRelatedTools = function(){try{var relatedEl=document.querySelector('.relatedTools');if(relatedEl&&relatedEl.children&&relatedEl.children.length>0){window.__relatedToolsRequested=!0;return;}if(window.__relatedToolsRequested)return;if(document.querySelector('script[src*="related-tools.js"]')){window.__relatedToolsRequested=!0;return;}window.__relatedToolsRequested=!0;loadScript('${ctx.relatedToolsScriptPath}?v=' + APP_VERSION, function(){});}catch(e){}};document.addEventListener('DOMContentLoaded',function(){try{if(window.__relatedToolsBootstrapped)return;window.__relatedToolsBootstrapped=!0;loadRelatedTools();}catch(e){}});</script></div>${relatedGuidesBlock}${ratingBlock}${ctx.pageFaq ? ctx.pageFaq : ''}${ctx.bottomPageBannerAd || ''}<!-- END_SEO_BLOCK:RELATED_TOOLS -->`;
+  // Related-tools band renders only when there are matched tool links - avoids an
+  // empty "Related tools:" heading on guide pages whose matches are guide-only.
+  const relatedToolsBlock = (showRelatedLinks && relatedToolsHtml)
+    ? `<div class="w3-row page-section relatedToolsSection"><p style="margin-bottom: 0px;">Related tools:</p><div class="relatedTools">${relatedToolsHtml}</div>${relatedToolsTagsHtml}<script>loadRelatedTools = function(){try{var relatedEl=document.querySelector('.relatedTools');if(relatedEl&&relatedEl.children&&relatedEl.children.length>0){window.__relatedToolsRequested=!0;return;}if(window.__relatedToolsRequested)return;if(document.querySelector('script[src*="related-tools.js"]')){window.__relatedToolsRequested=!0;return;}window.__relatedToolsRequested=!0;loadScript('${ctx.relatedToolsScriptPath}?v=' + APP_VERSION, function(){});}catch(e){}};document.addEventListener('DOMContentLoaded',function(){try{if(window.__relatedToolsBootstrapped)return;window.__relatedToolsBootstrapped=!0;loadRelatedTools();}catch(e){}});</script></div>`
+    : '';
+  // FAQ widget + bottom ad banner are ad-page surfaces - stay gated on showAds so
+  // guide pages get only the internal related-links bands, no ad banner.
+  return `<!-- SEO_BLOCK:RELATED_TOOLS -->${clusterHubBlock}${relatedToolsBlock}${relatedGuidesBlock}${ratingBlock}${ctx.showAds && ctx.pageFaq ? ctx.pageFaq : ''}${ctx.showAds ? (ctx.bottomPageBannerAd || '') : ''}<!-- END_SEO_BLOCK:RELATED_TOOLS -->`;
 }
 
 function buildJsonLdScript(payload) {
@@ -811,7 +827,24 @@ const currentTitle = String(navTitle ?? '').trim();
     }
   }
 
-  const currentTitleWords = currentTitle.toLowerCase().replace(/,/g, '').split(' ');
+  // Language-independent relevance. The URL slug is ALWAYS English kebab-case,
+  // even on localized /guides/<lang>/... routes and bare-path /guides/... routes,
+  // whereas navTitle is the (possibly non-English) display title. Matching on the
+  // display title alone means a non-English navTitle word-matches none of the
+  // English urlMaps titles -> zero related links -> NEITHER related section can
+  // render. That is the root cause of 0/945 localized guide pages (and entry-less
+  // EN guides) showing no Related-tools/Related-guides block. Merging the canonical
+  // slug words into the match pool lets every route surface related links in any
+  // locale. Tag-match (above) stays the primary signal; this augments title-match.
+  const slugWords = currentRouteKey
+    .replace(/^\//, '')
+    .replace(/\.html?$/i, '')
+    .split('-')
+    .filter(Boolean);
+  const currentTitleWords = [...new Set([
+    ...currentTitle.toLowerCase().replace(/,/g, '').split(' '),
+    ...slugWords,
+  ])];
   for (const item of items) {
     let firstMatchedWord = false;
     const titleLower = item.title.toLowerCase();
@@ -862,10 +895,11 @@ const currentTitle = String(navTitle ?? '').trim();
     guideItems.unshift(...curatedHtml);
   }
 
+  const cappedToolItems = toolItems.slice(0, RELATED_TOOLS_MAX);
   const cappedGuideItems = guideItems.slice(0, RELATED_GUIDES_MAX);
-  const hasTools = toolItems.length > 0;
+  const hasTools = cappedToolItems.length > 0;
   const hasGuides = cappedGuideItems.length > 0;
-  const listHtml = hasTools ? `<ul style="${RELATED_TOOLS_LIST_STYLE}">${toolItems.join('')}</ul>` : '';
+  const listHtml = hasTools ? `<ul style="${RELATED_TOOLS_LIST_STYLE}">${cappedToolItems.join('')}</ul>` : '';
   const guidesListHtml = hasGuides ? `<ul style="${RELATED_TOOLS_LIST_STYLE}">${cappedGuideItems.join('')}</ul>` : '';
   // Tags line stays attached to the Related-tools section (unchanged) and shows
   // whenever any link (tool or guide) matched by tag.
@@ -874,7 +908,7 @@ const currentTitle = String(navTitle ?? '').trim();
     listHtml,
     guidesListHtml,
     tagsHtml,
-    linkCount: toolItems.length,
+    linkCount: cappedToolItems.length,
     guideCount: cappedGuideItems.length,
     tagsCount: tagsHtml ? currentTags.length : 0,
   };
@@ -1301,14 +1335,25 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     bgsCollection,
     ioInfos,
   });
-  const relatedToolsState = showAds && relatedToolsData?.urlMaps
+  // Related-links (tools + guides) gate. Distinct from showAds: guide pages are
+  // registered in INFO_ROUTES (so showAds=false -> no ad slots by design), but they
+  // MUST still render internal related links - cross-guide linking is the whole
+  // point of the section. So compute related links on every tool + guide page,
+  // excluding only true info pages (about/contact/privacy/editorial), home, and the
+  // ad-backfill route. Root cause (2026-06-28): ~945 localized + most EN guide pages
+  // rendered NO related section because the computation was gated on showAds. Ads
+  // themselves are UNCHANGED - still gated on showAds.
+  const showRelatedLinks = !isHome
+    && normalizedRoute !== '/alternatead.html'
+    && (!isInfoRoute(normalizedRoute) || isGuideRoute(normalizedRoute));
+  const relatedToolsState = showRelatedLinks && relatedToolsData?.urlMaps
     ? buildRelatedToolsSsr({ route: normalizedRoute, navTitle, urlMaps: relatedToolsData.urlMaps })
     : { listHtml: '', tagsHtml: '', linkCount: 0, tagsCount: 0 };
-  // Dedicated Related-guides section gate (plan-kahan): allowlist-driven staged
-  // rollout. The guide links are always computed (partitioned out of the matched
-  // set); this flag only controls whether the section is emitted for this route.
-  const showRelatedGuides = showAds && isRelatedGuidesEnabled(normalizedRoute);
-  if (showAds && relatedToolsData?.urlMaps) {
+  // Dedicated Related-guides section gate (plan-kahan): RELATED_GUIDES_GLOBAL-driven.
+  // The guide links are always computed (partitioned out of the matched set); this
+  // flag only controls whether the section is emitted for this route.
+  const showRelatedGuides = showRelatedLinks && isRelatedGuidesEnabled(normalizedRoute);
+  if (showRelatedLinks && relatedToolsData?.urlMaps) {
     console.log(`[related-tools:ssr] ${normalizedRoute} tools=${relatedToolsState.linkCount} guides=${relatedToolsState.guideCount} tags=${relatedToolsState.tagsCount} guides_section=${showRelatedGuides ? 'on' : 'off'}.`);
   }
   // Cluster-hub link above related-tools on tool pages (not hubs/home/info).
@@ -1321,6 +1366,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   }
   const toolSections = renderToolSections({
     showAds,
+    showRelatedLinks,
     showRating,
     pageFaq: pageData.faq,
     bottomPageBannerAd: sharedFragments.bottomPageBannerAd,
@@ -1352,7 +1398,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     ? `<p class="page-mtime" style="font-size:12px;color:#5f6368;margin:8px 0 0;text-align:right;"><time itemprop="dateModified" datetime="${escapeHtml(lastUpdatedIso)}">Last updated: ${escapeHtml(lastUpdatedHuman)}</time></p>`
     : '';
   const showDisableAdsScript = showAdSlots ? `<script>isLoadAds = true;</script>` : '';
-  const toolContent = showAds ? toolSections : '';
+  const toolContent = (showAds || showRelatedLinks) ? toolSections : '';
   const showEditorialSurface = isHome || isHubPage || isGuide;
   const editorialByline = showEditorialSurface ? (sharedFragments.editorialByline || '') : '';
   const editorialTrust = showEditorialSurface ? (sharedFragments.editorialTrust || '') : '';

@@ -410,8 +410,17 @@ try {
 
   if ("" !== currentTitle) {
     if (currentTitle.toLowerCase() !== "Tags Collection".toLowerCase() && currentTitle.toLowerCase() !== "Tags cloud:".toLowerCase()) {
-      var RELATED_GUIDES_MAX = 12;
-      for (var currentTitleWords = currentTitle.toLowerCase().replace(/,/g, "").split(" "), toolsList = "", guidesList = "", guidesCount = 0, i = 0; i < urlMaps.length; i++) {
+      var RELATED_GUIDES_MAX = 12, RELATED_TOOLS_MAX = 12;
+      // Language-independent relevance parity with SSR (page-renderer.mjs): the URL
+      // slug is always English kebab-case even on localized /guides/<lang>/ routes,
+      // so merge slug words into the (possibly non-English) title words. Without this
+      // a localized page's title words match no English urlMaps title -> empty related
+      // sections. Fallback path only (SSR populates first when present).
+      var slugLeaf = (window.location.pathname.split("/").filter(function (s) { return s; }).pop() || "").replace(/\.html?$/i, "");
+      var currentTitleWords = currentTitle.toLowerCase().replace(/,/g, "").split(" ");
+      var slugWordsArr = slugLeaf.split("-").filter(function (s) { return s; });
+      for (var sw = 0; sw < slugWordsArr.length; sw++) { if (currentTitleWords.indexOf(slugWordsArr[sw]) === -1) currentTitleWords.push(slugWordsArr[sw]); }
+      for (var toolsList = "", guidesList = "", guidesCount = 0, toolsCount = 0, i = 0; i < urlMaps.length; i++) {
         var title = urlMaps[i].title;
         if (!urlMaps[i].include && !isCurrentMapItem(urlMaps[i])) {
           var matchedTags = addPagesHasTheSameTag((tags = urlMaps[i].tags.split(",")), (currentTags = getTagsFromCurrentPage(currentTitle)));
@@ -421,7 +430,7 @@ try {
             if (isGuideRelatedUrl(urlMaps[i].url)) {
               guidesCount < RELATED_GUIDES_MAX && ((guidesList += liTag), guidesCount++);
             } else {
-              toolsList += liTag;
+              toolsCount < RELATED_TOOLS_MAX && ((toolsList += liTag), toolsCount++);
             }
           }
         }
@@ -452,7 +461,7 @@ try {
               if (isGuideRelatedUrl(urlMaps[i].url)) {
                 guidesCount < RELATED_GUIDES_MAX && ((guidesList += liTitle), guidesCount++);
               } else {
-                toolsList += liTitle;
+                toolsCount < RELATED_TOOLS_MAX && ((toolsList += liTitle), toolsCount++);
               }
             } else {
               firstMatchedWord = !0;
