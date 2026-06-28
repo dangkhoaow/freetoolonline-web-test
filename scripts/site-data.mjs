@@ -3343,6 +3343,12 @@ export const RELATED_GUIDES_SLUGS = new Set([
   'cameratest',
   'composepdf',
   'unzipfile',
+  // Batch 1 (2026-06-28): legacy inline-block pages - inline block removal verified below.
+  'zipfile',
+  'md5converter',
+  'lcdtest',
+  'microphonetest',
+  'developertools',
 ]);
 
 export function isRelatedGuidesEnabled(route) {
@@ -3353,6 +3359,59 @@ export function isRelatedGuidesEnabled(route) {
     return false;
   }
 }
+
+// Per-slug curated guide URL lists (§1a of the related-guides migration runbook).
+// When a page's legacy inline "Related guides" block contains specific hand-curated
+// links that the computed tag/title-match algorithm may not surface (due to the
+// RELATED_GUIDES_MAX cap or urlMaps ordering), list those canonical /guides/en/ URLs
+// here. The renderer shows these FIRST in the dedicated section, then appends any
+// additional tag-matched guides up to RELATED_GUIDES_MAX. Paths use /guides/en/ for
+// EN-canonical guides; locale-specific guides use their own /guides/<lang>/ prefix.
+// Coverage-preserving contract (runbook §1): every URL in a page's inline block must
+// appear in urlMaps with a matching tag BEFORE the inline block is removed.
+export const RELATED_GUIDES_CURATED = {
+  'zipfile': [
+    '/guides/en/file-compressor.html',
+    '/guides/en/how-to-compress-a-zip-file.html',
+    '/guides/en/how-to-compress-a-folder.html',
+    '/guides/en/zip-folder-online-free.html',
+    '/guides/en/compress-folder-online.html',
+    '/guides/en/zip-file-size-compressor.html',
+    '/guides/en/resize-zip-file.html',
+    '/guides/es/compress-folder-to-zip-online-free.html',
+    '/guides/es/reduce-zip-size-online.html',
+    '/guides/pt/compress-zip-file.html',
+    '/guides/en/kompres-file-zip.html',
+  ],
+  'md5converter': [
+    '/guides/en/md5-vs-sha256-when-to-hash.html',
+    '/guides/en/why-md5-cannot-be-decrypted.html',
+    '/guides/en/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html',
+    '/guides/en/md5-to-text-why-you-cannot-convert-back.html',
+    '/guides/en/md5-hash-decrypt.html',
+    '/guides/en/md5-password.html',
+    '/guides/en/md5-decrypter.html',
+  ],
+  'lcdtest': [
+    '/guides/en/dead-pixel-testing-guide.html',
+    '/guides/en/how-to-test-for-dead-pixels-before-returning-a-monitor.html',
+    '/guides/en/device-test-checklist-for-remote-work.html',
+    '/guides/en/screen-display-test-synonyms.html',
+    '/guides/en/what-an-lcd-test-does-and-when-to-run-one.html',
+    '/guides/en/screen-test-online-vs-app-which-is-more-accurate.html',
+    '/guides/en/test-lcd.html',
+    '/guides/en/lcd-screen-test.html',
+    '/guides/en/lcd-test-laptop.html',
+  ],
+  'microphonetest': [
+    '/guides/en/how-to-check-webcam-and-microphone-before-an-interview.html',
+    '/guides/en/device-test-checklist-for-remote-work.html',
+    '/guides/en/microphone-test-no-sound-four-fixes.html',
+    '/guides/en/microphone-test-online-what-it-actually-checks.html',
+    '/guides/en/microphone-test-online-quiet-normal-peak-meter.html',
+    '/guides/en/test-lcd.html',
+  ],
+};
 
 export function routeToPageName(route) {
   const normalized = normalizeRoute(route);

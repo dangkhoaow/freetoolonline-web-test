@@ -1,4 +1,4 @@
-import { canonicalForRoute, isInfoRoute, isGuideRoute, isRelatedGuidesEnabled, ALIAS_ROUTES, JSP_BY_ROUTE } from './site-data.mjs';
+import { canonicalForRoute, isInfoRoute, isGuideRoute, isRelatedGuidesEnabled, RELATED_GUIDES_CURATED, routeToSlug, ALIAS_ROUTES, JSP_BY_ROUTE } from './site-data.mjs';
 
 // 2026-05-28 plan-warm-pascal-v2 S1.3 — multilingual /guides/ locale support.
 // Build a map of canonical-EN-slug → [{ lang, route, isCanonical }] for every
@@ -154,7 +154,7 @@ const RELATED_TOOLS_LIST_STYLE = 'margin-top: 0px;display: block;padding-inline-
 // curated section (like Related tools), not a wall of every tag-matched guide.
 // Tag matches are collected before title-word matches, so the kept slice is the
 // most-relevant set. Tools stay uncapped (preserves legacy behavior).
-const RELATED_GUIDES_MAX = 8;
+const RELATED_GUIDES_MAX = 12;
 const RELATED_TOOLS_STOP_WORDS = new Set(['free', 'tool', 'online', 'convert', 'converter', 'in', 'editor', 'maker', 'by', 'and']);
 const RELATED_TOOLS_TAGS_PAGE_TITLES = new Set(['tags collection', 'tags cloud:']);
 const APPLICATION_CATEGORY_BY_CLUSTER = {
@@ -691,7 +691,7 @@ function buildBreadcrumbJsonLd({ canonicalOrigin, items }) {
 }
 
 function buildRelatedToolsSsr({ route, navTitle, urlMaps }) {
-  const currentTitle = String(navTitle ?? '').trim();
+const currentTitle = String(navTitle ?? '').trim();
   const currentTitleLower = currentTitle.toLowerCase();
   const currentRoute = String(route ?? '').trim();
   const currentRouteKey = (() => {
@@ -830,6 +830,36 @@ function buildRelatedToolsSsr({ route, navTitle, urlMaps }) {
         }
       }
     }
+  }
+
+  // §1a curated overrides: promote hand-curated guide URLs (from RELATED_GUIDES_CURATED) to
+  // the front of guideItems so the coverage-preserving contract holds regardless of cap order.
+  // Root cause fix (2026-06-28): the tag-match loops may already add all curated items to
+  // guideItems (because they have matching tags), but as items #13-#79 — beyond the
+  // RELATED_GUIDES_MAX=12 cap. Simple unshift-if-absent fails because all are already present.
+  // Fix: remove each curated item from its current position in guideItems, then prepend.
+  const curatedPaths = RELATED_GUIDES_CURATED[routeToSlug(currentRoute)] ?? [];
+  if (curatedPaths.length > 0) {
+    const curatedHtml = [];
+    const curatedUrls = new Set();
+    for (const path of curatedPaths) {
+      const matchedItem = items.find((item) => {
+        try {
+          const itemPath = new URL(item.url).pathname;
+          return itemPath === path || itemPath === path.replace('/guides/en/', '/guides/');
+        } catch { return false; }
+      });
+      if (matchedItem && matchedItem.isGuide && !curatedUrls.has(matchedItem.url)) {
+        curatedHtml.push(renderLi(matchedItem, `Go to ${matchedItem.title}`, '#3b73af'));
+        curatedUrls.add(matchedItem.url);
+      }
+    }
+    // Remove curated items from their existing positions (they may be at positions > cap).
+    for (let i = guideItems.length - 1; i >= 0; i--) {
+      const m = /href="(https:\/\/freetoolonline\.com\/guides[^"]+)"/.exec(guideItems[i]);
+      if (m && curatedUrls.has(m[1])) guideItems.splice(i, 1);
+    }
+    guideItems.unshift(...curatedHtml);
   }
 
   const cappedGuideItems = guideItems.slice(0, RELATED_GUIDES_MAX);
