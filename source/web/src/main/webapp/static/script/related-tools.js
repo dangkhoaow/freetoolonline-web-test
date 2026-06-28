@@ -151,6 +151,7 @@ try {
     { title: "Online Zip File: How to Build a ZIP Archive Online", url: "https://freetoolonline.com/guides/en/online-zip-file.html", include: !1, tags: "guide,zip,compress" },
     { title: "Zip Compressor Online - When It Shrinks a Folder and When It Does Not", url: "https://freetoolonline.com/guides/en/zip-compressor-online.html", include: !1, tags: "guide,zip,compress" },
     { title: "Create Zip File Online (Free ZIP Creator, No Install, No Account)", url: "https://freetoolonline.com/guides/en/create-zip-file-online.html", include: !1, tags: "guide,zip,compress" },
+    { title: "Make a ZIP File Online - What the Tool Does and When ZIP Saves Space", url: "https://freetoolonline.com/guides/en/make-zip-file-online.html", include: !1, tags: "guide,zip,compress" },
     { title: "How to Reduce Zip File Size Online (Free)", url: "https://freetoolonline.com/guides/en/how-to-reduce-zip-file-size-online.html", include: !1, tags: "guide,zip,compress" },
     { title: "How to Convert HEIC to JPG Step by Step", url: "https://freetoolonline.com/guides/en/how-to-convert-heic-to-jpg-step-by-step.html", include: !1, tags: "guide,image-conversion,heic,jpg" },
     { title: "What an LCD Test Does (and When to Run One)", url: "https://freetoolonline.com/guides/en/what-an-lcd-test-does-and-when-to-run-one.html", include: !1, tags: "guide,device-test,lcd" },

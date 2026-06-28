@@ -3370,6 +3370,11 @@ export const RELATED_GUIDES_SLUGS = new Set([
   'guidesgiftoframe',
   'guidesgiftoframesconverter',
   'guidesilovezip',
+  // Batch 4 (2026-06-28): final 4 legacy inline-block pages.
+  'guideslcdchecker',
+  'guidesonlinezipfile',
+  'guideswhatwelearnedrunningfreeinbrowserimagetoolsfor100kmonthlyusers',
+  'guideszipunlockeronline',
 ]);
 
 export function isRelatedGuidesEnabled(route) {
@@ -3493,6 +3498,32 @@ export const RELATED_GUIDES_CURATED = {
     '/guides/en/online-zip-file.html',
     '/guides/en/zip-folder-online-free.html',
     '/guides/en/compress-zip.html',
+  ],
+  // Batch 4 (2026-06-28) curated overrides.
+  'guideslcdchecker': [
+    '/guides/en/test-lcd.html',
+    '/guides/en/what-an-lcd-test-does-and-when-to-run-one.html',
+    '/guides/en/led-test-vs-lcd-test-which-applies-to-your-screen.html',
+    '/guides/en/lcd-test-vs-display-test-which-do-you-need.html',
+    '/guides/en/screen-test-online-vs-app-which-is-more-accurate.html',
+    '/guides/en/dead-pixel-testing-guide.html',
+    '/guides/en/how-to-test-for-dead-pixels-before-returning-a-monitor.html',
+  ],
+  'guidesonlinezipfile': [
+    '/guides/en/folder-to-zip.html',
+    '/guides/en/compress-zip.html',
+    '/guides/en/make-zip-file-online.html',
+    '/guides/en/zip-compressor-online.html',
+    '/guides/en/online-zip-vs-7z-vs-rar-which-to-pick.html',
+  ],
+  'guideswhatwelearnedrunningfreeinbrowserimagetoolsfor100kmonthlyusers': [
+    '/guides/en/jpg-vs-png-for-web.html',
+    '/guides/en/heic-vs-jpg-vs-webp.html',
+    '/guides/en/mp4-vs-webm-for-web.html',
+    '/guides/en/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html',
+  ],
+  'guideszipunlockeronline': [
+    '/guides/en/pdf-password-types-owner-vs-user.html',
   ],
 };
 
