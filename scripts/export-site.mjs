@@ -24,6 +24,7 @@ import {
   loadTextIfExists,
   normalizeRoute,
   resolveJspPathForRoute,
+  routeToSlug,
   stripTrailingSlash,
 } from './site-data.mjs';
 import { parseJspPageSource, renderAlternateAdPage, renderPageDocument, renderRedirectPage } from './page-renderer.mjs';
@@ -224,12 +225,57 @@ async function loadRelatedToolsData(staticAssetsRootPath) {
       console.log('[related-tools:ssr] urlMaps payload is not an array.');
       return null;
     }
-    console.log(`[related-tools:ssr] Loaded ${urlMaps.length} urlMaps entries from related-tools.js.`);
+    // plan-kahan: attach a short one-line `desc` to every entry so the
+    // Related-tools AND Related-guides sections render "Title - desc". An
+    // explicit `desc` authored in related-tools.js wins (curated override);
+    // otherwise it is auto-seeded from the page's own BODYDESC fragment (the
+    // first sentence, capped). BODYDESC is gate-clean (R9 ASCII, truthful meta),
+    // so the derived blurb inherits that compliance. Missing BODYDESC -> no
+    // desc (link renders title-only). This makes descriptions site-wide without
+    // hand-authoring every entry; the migration runbook can still replace any
+    // auto-seeded blurb with a curated one in related-tools.js.
+    let descSeeded = 0;
+    for (const entry of urlMaps) {
+      if (entry && typeof entry.desc === 'string' && entry.desc.trim()) continue;
+      const derived = await deriveRelatedDescFromBodyDesc(entry?.url, cmsRoot);
+      if (derived) {
+        entry.desc = derived;
+        descSeeded += 1;
+      }
+    }
+    console.log(`[related-tools:ssr] Loaded ${urlMaps.length} urlMaps entries from related-tools.js (desc auto-seeded for ${descSeeded}).`);
     return { urlMaps, sourcePath: relatedToolsPath };
   } catch (error) {
     console.log(`[related-tools:ssr] Failed to parse urlMaps: ${error?.message || error}.`);
     return null;
   }
+}
+
+// plan-kahan: derive a tidy one-line blurb from a page's BODYDESC<slug>.txt.
+// Returns the first sentence (with its terminal punctuation) or a word-bounded
+// ~100-char cut; empty string when the fragment is absent/empty.
+async function deriveRelatedDescFromBodyDesc(url, cmsFragmentsRoot) {
+  if (!url) return '';
+  let route = '';
+  try {
+    route = new URL(String(url)).pathname || '';
+  } catch {
+    route = String(url);
+  }
+  const slug = routeToSlug(route);
+  if (!slug) return '';
+  const raw = await loadTextIfExists(path.join(cmsFragmentsRoot, `BODYDESC${slug}.txt`));
+  if (!raw) return '';
+  const text = String(raw).replace(/\s+/g, ' ').trim();
+  if (!text) return '';
+  const sentence = text.match(/^(.*?[.!?])(\s|$)/);
+  let blurb = sentence ? sentence[1] : text;
+  if (blurb.length > 100) {
+    blurb = blurb.slice(0, 100);
+    const lastSpace = blurb.lastIndexOf(' ');
+    if (lastSpace > 40) blurb = blurb.slice(0, lastSpace);
+  }
+  return blurb.trim();
 }
 
 async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData, canonicalOrigin, basePath, isStaging, rewriteInternalContent, sitemapDynamicBody, guidesHubDynamicBody, homeSearchData }) {

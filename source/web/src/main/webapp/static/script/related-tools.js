@@ -22,6 +22,26 @@ try {
     if (!m) return url;
     return "https://freetoolonline.com/guides/" + locale + "/" + m[1];
   }
+  // plan-kahan: dedicated Related-guides section. Client fallback mirrors the
+  // SSR partition (page-renderer.mjs) - tool links -> .relatedTools, /guides/
+  // links -> .relatedGuides - and renders an optional "- desc" blurb. The
+  // guides list is injected ONLY when a .relatedGuides container already exists
+  // in the DOM (the SSR emits it only on allowlisted routes), so the staged
+  // rollout gate is respected on the client path too.
+  function escRelDesc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+  function relatedLiHtml(url, title, color, titleAttr, desc) {
+    var d = desc ? ' - <span class="desc">' + escRelDesc(desc) + "</span>" : "";
+    return '<li class="d-inline"><a title="' + titleAttr + '" style="color: ' + color + ';" href="' + url + '">' + title + "</a>" + d + "</li>";
+  }
+  function isGuideRelatedUrl(url) {
+    return /\/guides\//.test(String(url || ""));
+  }
   var urlMaps = [
     { title: "ZIP Tools", url: "https://freetoolonline.com/zip-tools.html", include: !1, tags: "zip,pdf" },
     { title: "File Compressor: Pick the Right Tool by File Type", url: "https://freetoolonline.com/utility-tools/file-compressor.html", include: !1, tags: "compress,zip,image-editing,pdf,utility,file-compressor" },
@@ -383,21 +403,19 @@ try {
 
   if ("" !== currentTitle) {
     if (currentTitle.toLowerCase() !== "Tags Collection".toLowerCase() && currentTitle.toLowerCase() !== "Tags cloud:".toLowerCase()) {
-      for (var currentTitleWords = currentTitle.toLowerCase().replace(/,/g, "").split(" "), list = "", i = 0; i < urlMaps.length; i++) {
+      var RELATED_GUIDES_MAX = 8;
+      for (var currentTitleWords = currentTitle.toLowerCase().replace(/,/g, "").split(" "), toolsList = "", guidesList = "", guidesCount = 0, i = 0; i < urlMaps.length; i++) {
         var title = urlMaps[i].title;
         if (!urlMaps[i].include && !isCurrentMapItem(urlMaps[i])) {
           var matchedTags = addPagesHasTheSameTag((tags = urlMaps[i].tags.split(",")), (currentTags = getTagsFromCurrentPage(currentTitle)));
           if ("" !== matchedTags) {
             urlMaps[i].include = !0;
-            list =
-              list +
-              '<li class="d-inline"><a title="This tool has the same tag(s): ' +
-              matchedTags +
-              '" style="color: #4caf50;" href="' +
-              localizeRelatedUrl(urlMaps[i].url) +
-              '">' +
-              title +
-              "</a></li>";
+            var liTag = relatedLiHtml(localizeRelatedUrl(urlMaps[i].url), title, "#4caf50", "This page has the same tag(s): " + matchedTags, urlMaps[i].desc);
+            if (isGuideRelatedUrl(urlMaps[i].url)) {
+              guidesCount < RELATED_GUIDES_MAX && ((guidesList += liTag), guidesCount++);
+            } else {
+              toolsList += liTag;
+            }
           }
         }
       }
@@ -423,15 +441,12 @@ try {
           ) {
             if (firstMatchedWord) {
               urlMaps[i].include = !0;
-              list =
-                list +
-                '<li class="d-inline"><a title="Go to ' +
-                title +
-                '" style="color: #3b73af;" href="' +
-                localizeRelatedUrl(urlMaps[i].url) +
-                '">' +
-                title +
-                "</a></li>";
+              var liTitle = relatedLiHtml(localizeRelatedUrl(urlMaps[i].url), title, "#3b73af", "Go to " + title, urlMaps[i].desc);
+              if (isGuideRelatedUrl(urlMaps[i].url)) {
+                guidesCount < RELATED_GUIDES_MAX && ((guidesList += liTitle), guidesCount++);
+              } else {
+                toolsList += liTitle;
+              }
             } else {
               firstMatchedWord = !0;
             }
@@ -439,14 +454,21 @@ try {
         }
       }
 
-      if ("" !== list) {
-        list = '<ul style="margin-top: 0px;display: block;padding-inline-start: 40px;list-style-type: disc;">' + list + "</ul>";
+      var relatedUlOpen = '<ul style="margin-top: 0px;display: block;padding-inline-start: 40px;list-style-type: disc;">';
+      if ("" !== toolsList) {
         if (!hasSsrRelatedTools) {
-          relatedToolsRoot.html(list);
+          relatedToolsRoot.html(relatedUlOpen + toolsList + "</ul>");
           "" !== allCurrentTags && relatedToolsRoot.after("<p>Tags: " + allCurrentTags + "</p>");
         } else {
-          console.log("[related-tools] SSR detected; skipping client injection.");
+          console.log("[related-tools] SSR detected; skipping client tools injection.");
         }
+      }
+      // Inject guides ONLY when the allowlist-gated .relatedGuides container is
+      // present (SSR emitted it) and was not already SSR-populated.
+      var guidesRoot = $(".relatedGuides"),
+        hasSsrGuides = guidesRoot.length > 0 && guidesRoot.children().length > 0;
+      if ("" !== guidesList && guidesRoot.length > 0 && !hasSsrGuides) {
+        guidesRoot.html(relatedUlOpen + guidesList + "</ul>");
       }
     } else {
       var rawTagFromQuery = getParameterByName("tag"),

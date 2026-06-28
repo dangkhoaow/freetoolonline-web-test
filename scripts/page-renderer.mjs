@@ -1,4 +1,4 @@
-import { canonicalForRoute, isInfoRoute, isGuideRoute, ALIAS_ROUTES, JSP_BY_ROUTE } from './site-data.mjs';
+import { canonicalForRoute, isInfoRoute, isGuideRoute, isRelatedGuidesEnabled, ALIAS_ROUTES, JSP_BY_ROUTE } from './site-data.mjs';
 
 // 2026-05-28 plan-warm-pascal-v2 S1.3 — multilingual /guides/ locale support.
 // Build a map of canonical-EN-slug → [{ lang, route, isCanonical }] for every
@@ -150,6 +150,11 @@ import { buildStagingBannerHtml, normalizeBasePath, resolveCanonicalUrl } from '
 
 const SEO_CLUSTER_GROUPS = getSeoClusterGroups();
 const RELATED_TOOLS_LIST_STYLE = 'margin-top: 0px;display: block;padding-inline-start: 40px;list-style-type: disc;';
+// plan-kahan: cap the dedicated Related-guides list so it reads as a tidy
+// curated section (like Related tools), not a wall of every tag-matched guide.
+// Tag matches are collected before title-word matches, so the kept slice is the
+// most-relevant set. Tools stay uncapped (preserves legacy behavior).
+const RELATED_GUIDES_MAX = 8;
 const RELATED_TOOLS_STOP_WORDS = new Set(['free', 'tool', 'online', 'convert', 'converter', 'in', 'editor', 'maker', 'by', 'and']);
 const RELATED_TOOLS_TAGS_PAGE_TITLES = new Set(['tags collection', 'tags cloud:']);
 const APPLICATION_CATEGORY_BY_CLUSTER = {
@@ -415,6 +420,18 @@ function renderToolSections(ctx) {
     : `<div class="w3-row page-section"><div id="star-rating-container">Loading reviews...</div></div>`;
   const relatedToolsHtml = ctx.relatedToolsHtml ?? '';
   const relatedToolsTagsHtml = ctx.relatedToolsTagsHtml ?? '';
+  // Dedicated "Related guides" section (plan-kahan). Renderer-injected so it
+  // can sit directly BELOW the Related-tools block (a CMS-authored block would
+  // render above it, since the renderer appends after all body content) and so
+  // it honors the "no hardcoded related blocks in CMS" rule. Gated by the
+  // per-route allowlist (ctx.showRelatedGuides) for staged 5-pages/batch rollout;
+  // renders only when the page actually has matched guide links. The client
+  // related-tools.js fallback populates `.relatedGuides` only if that container
+  // exists in the DOM, so the allowlist gate also governs the client path.
+  const relatedGuidesHtml = ctx.relatedGuidesHtml ?? '';
+  const relatedGuidesBlock = (ctx.showRelatedGuides && relatedGuidesHtml)
+    ? `<!-- SEO_BLOCK:RELATED_GUIDES --><div class="w3-row page-section relatedGuidesSection"><p style="margin-bottom: 0px;">Related guides:</p><div class="relatedGuides">${relatedGuidesHtml}</div></div><!-- END_SEO_BLOCK:RELATED_GUIDES -->`
+    : '';
   // Cluster-hub callout - single anchor above the related-tools band. Cluster-aware
   // via seo-clusters.mjs::resolveHubBacklink. Renders only for tool pages that have
   // a resolvable cluster hub (§3.12).
@@ -422,7 +439,7 @@ function renderToolSections(ctx) {
   const clusterHubBlock = clusterHubLink && clusterHubLink.href && clusterHubLink.label
     ? `<div class="w3-row page-section clusterHubCallout"><p style="margin: 0 0 8px;"><a href="${escapeHtml(clusterHubLink.href)}" style="color: #4caf50; font-weight: 600;">See all ${escapeHtml(clusterHubLink.label)} &rarr;</a></p></div>`
     : '';
-  return `<!-- SEO_BLOCK:RELATED_TOOLS -->${clusterHubBlock}<div class="w3-row page-section relatedToolsSection"><p style="margin-bottom: 0px;">Related tools:</p><div class="relatedTools">${relatedToolsHtml}</div>${relatedToolsTagsHtml}<script>loadRelatedTools = function(){try{var relatedEl=document.querySelector('.relatedTools');if(relatedEl&&relatedEl.children&&relatedEl.children.length>0){window.__relatedToolsRequested=!0;return;}if(window.__relatedToolsRequested)return;if(document.querySelector('script[src*="related-tools.js"]')){window.__relatedToolsRequested=!0;return;}window.__relatedToolsRequested=!0;loadScript('${ctx.relatedToolsScriptPath}?v=' + APP_VERSION, function(){});}catch(e){}};document.addEventListener('DOMContentLoaded',function(){try{if(window.__relatedToolsBootstrapped)return;window.__relatedToolsBootstrapped=!0;loadRelatedTools();}catch(e){}});</script></div>${ratingBlock}${ctx.pageFaq ? ctx.pageFaq : ''}${ctx.bottomPageBannerAd || ''}<!-- END_SEO_BLOCK:RELATED_TOOLS -->`;
+  return `<!-- SEO_BLOCK:RELATED_TOOLS -->${clusterHubBlock}<div class="w3-row page-section relatedToolsSection"><p style="margin-bottom: 0px;">Related tools:</p><div class="relatedTools">${relatedToolsHtml}</div>${relatedToolsTagsHtml}<script>loadRelatedTools = function(){try{var relatedEl=document.querySelector('.relatedTools');if(relatedEl&&relatedEl.children&&relatedEl.children.length>0){window.__relatedToolsRequested=!0;return;}if(window.__relatedToolsRequested)return;if(document.querySelector('script[src*="related-tools.js"]')){window.__relatedToolsRequested=!0;return;}window.__relatedToolsRequested=!0;loadScript('${ctx.relatedToolsScriptPath}?v=' + APP_VERSION, function(){});}catch(e){}};document.addEventListener('DOMContentLoaded',function(){try{if(window.__relatedToolsBootstrapped)return;window.__relatedToolsBootstrapped=!0;loadRelatedTools();}catch(e){}});</script></div>${relatedGuidesBlock}${ratingBlock}${ctx.pageFaq ? ctx.pageFaq : ''}${ctx.bottomPageBannerAd || ''}<!-- END_SEO_BLOCK:RELATED_TOOLS -->`;
 }
 
 function buildJsonLdScript(payload) {
@@ -687,7 +704,7 @@ function buildRelatedToolsSsr({ route, navTitle, urlMaps }) {
   })();
 
   if (!currentTitle || RELATED_TOOLS_TAGS_PAGE_TITLES.has(currentTitleLower)) {
-    return { listHtml: '', tagsHtml: '', linkCount: 0, tagsCount: 0 };
+    return { listHtml: '', guidesListHtml: '', tagsHtml: '', linkCount: 0, guideCount: 0, tagsCount: 0 };
   }
 
   const items = (urlMaps ?? []).map((item) => {
@@ -706,6 +723,14 @@ function buildRelatedToolsSsr({ route, navTitle, urlMaps }) {
       title: String(item?.title ?? ''),
       url,
       tags: String(item?.tags ?? ''),
+      // Optional one-line blurb (urlMaps[].desc). Rendered as "Title - desc" in
+      // both the Related-tools and Related-guides sections. ASCII-hyphen only
+      // (locked rule R9); desc text is authored R9-clean in related-tools.js.
+      desc: String(item?.desc ?? '').trim(),
+      // A /guides/ URL routes into the dedicated Related-guides section; every
+      // other URL stays in Related-tools. Locale guide URLs (/guides/<lang>/...)
+      // also match. (plan-kahan: partition the matched links into two sections.)
+      isGuide: /\/guides\//.test(url),
       include: false,
       routeKey,
     };
@@ -760,16 +785,28 @@ function buildRelatedToolsSsr({ route, navTitle, urlMaps }) {
   };
 
   const currentTags = getTagsFromCurrentPage();
-  const listItems = [];
+  // Partitioned buckets: tools -> Related tools section, guides -> Related
+  // guides section (plan-kahan). Each <li> carries an optional "- desc" blurb.
+  const toolItems = [];
+  const guideItems = [];
+
+  // Render one <li>. Title is the colored link; the optional desc renders as
+  // plain grey text after an ASCII " - " separator (matches the legacy inline
+  // "Related guides" markup + locked rule R9 - no em/en-dash).
+  const renderLi = (item, titleAttr, color) => {
+    const descHtml = item.desc ? ` - <span class="desc">${escapeHtml(item.desc)}</span>` : '';
+    return `<li class="d-inline"><a title="${titleAttr}" style="color: ${color};" href="${item.url}">${item.title}</a>${descHtml}</li>`;
+  };
+  const pushLi = (item, html) => {
+    (item.isGuide ? guideItems : toolItems).push(html);
+  };
 
   for (const item of items) {
     if (!item.include && item.routeKey !== currentRouteKey) {
       const matchedTags = addPagesHasTheSameTag(item.tags.split(','), currentTags);
       if (matchedTags !== '') {
         item.include = true;
-        listItems.push(
-          `<li class="d-inline"><a title="This tool has the same tag(s): ${matchedTags}" style="color: #4caf50;" href="${item.url}">${item.title}</a></li>`,
-        );
+        pushLi(item, renderLi(item, `This page has the same tag(s): ${matchedTags}`, '#4caf50'));
       }
     }
   }
@@ -787,9 +824,7 @@ function buildRelatedToolsSsr({ route, navTitle, urlMaps }) {
       ) {
         if (firstMatchedWord) {
           item.include = true;
-          listItems.push(
-            `<li class="d-inline"><a title="Go to ${item.title}" style="color: #3b73af;" href="${item.url}">${item.title}</a></li>`,
-          );
+          pushLi(item, renderLi(item, `Go to ${item.title}`, '#3b73af'));
         } else {
           firstMatchedWord = true;
         }
@@ -797,10 +832,22 @@ function buildRelatedToolsSsr({ route, navTitle, urlMaps }) {
     }
   }
 
-  const hasList = listItems.length > 0;
-  const listHtml = hasList ? `<ul style="${RELATED_TOOLS_LIST_STYLE}">${listItems.join('')}</ul>` : '';
-  const tagsHtml = hasList && allCurrentTags !== '' ? `<p>Tags: ${allCurrentTags}</p>` : '';
-  return { listHtml, tagsHtml, linkCount: listItems.length, tagsCount: tagsHtml ? currentTags.length : 0 };
+  const cappedGuideItems = guideItems.slice(0, RELATED_GUIDES_MAX);
+  const hasTools = toolItems.length > 0;
+  const hasGuides = cappedGuideItems.length > 0;
+  const listHtml = hasTools ? `<ul style="${RELATED_TOOLS_LIST_STYLE}">${toolItems.join('')}</ul>` : '';
+  const guidesListHtml = hasGuides ? `<ul style="${RELATED_TOOLS_LIST_STYLE}">${cappedGuideItems.join('')}</ul>` : '';
+  // Tags line stays attached to the Related-tools section (unchanged) and shows
+  // whenever any link (tool or guide) matched by tag.
+  const tagsHtml = (hasTools || hasGuides) && allCurrentTags !== '' ? `<p>Tags: ${allCurrentTags}</p>` : '';
+  return {
+    listHtml,
+    guidesListHtml,
+    tagsHtml,
+    linkCount: toolItems.length,
+    guideCount: cappedGuideItems.length,
+    tagsCount: tagsHtml ? currentTags.length : 0,
+  };
 }
 
 function stripHtml(value) {
@@ -1227,8 +1274,12 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   const relatedToolsState = showAds && relatedToolsData?.urlMaps
     ? buildRelatedToolsSsr({ route: normalizedRoute, navTitle, urlMaps: relatedToolsData.urlMaps })
     : { listHtml: '', tagsHtml: '', linkCount: 0, tagsCount: 0 };
+  // Dedicated Related-guides section gate (plan-kahan): allowlist-driven staged
+  // rollout. The guide links are always computed (partitioned out of the matched
+  // set); this flag only controls whether the section is emitted for this route.
+  const showRelatedGuides = showAds && isRelatedGuidesEnabled(normalizedRoute);
   if (showAds && relatedToolsData?.urlMaps) {
-    console.log(`[related-tools:ssr] ${normalizedRoute} links=${relatedToolsState.linkCount} tags=${relatedToolsState.tagsCount}.`);
+    console.log(`[related-tools:ssr] ${normalizedRoute} tools=${relatedToolsState.linkCount} guides=${relatedToolsState.guideCount} tags=${relatedToolsState.tagsCount} guides_section=${showRelatedGuides ? 'on' : 'off'}.`);
   }
   // Cluster-hub link above related-tools on tool pages (not hubs/home/info).
   // resolveHubBacklink returns { href, label } for tool pages in a cluster; null otherwise.
@@ -1246,6 +1297,8 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     relatedToolsScriptPath,
     relatedToolsHtml: relatedToolsState.listHtml,
     relatedToolsTagsHtml: relatedToolsState.tagsHtml,
+    relatedGuidesHtml: relatedToolsState.guidesListHtml,
+    showRelatedGuides,
     clusterHubLink,
   });
   const relatedStyles = !hasUpload ? `<style>#content.w3-content { margin-top: 50px; }</style>` : '';

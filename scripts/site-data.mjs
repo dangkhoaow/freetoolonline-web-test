@@ -3310,6 +3310,50 @@ export function routeToSlug(route) {
   return normalized.replace(/^\//, '').replace(/\.html$/i, '').toLowerCase().replace(/[-/]/g, '');
 }
 
+// --- Related-guides dedicated section rollout (plan-kahan) ------------------
+// The renderer partitions the matched related links into a Related-tools
+// section and a dedicated Related-guides section rendered directly below it
+// (page-renderer.mjs::buildRelatedToolsSsr + renderToolSections). This allowlist
+// gates WHICH routes emit the guides section, enabling a staged 5-pages-per-
+// batch rollout that is verifiable and reversible. The allowlist is keyed by
+// CMS-fragment slug (routeToSlug output) so a single entry covers a tool URL,
+// its cluster-prefixed form, and the /guides/en/ alias. Seeded (batch 1) with
+// the slugs that historically carried an inline "Related guides:" block. The
+// migration runbook (prompts/related-guides-section-migration-runbook.md) adds
+// up to 5 slugs per batch, including each route's localized guide variants
+// (e.g. guidespt<slug>). Flip RELATED_GUIDES_GLOBAL to true to enable sitewide
+// once the backlog is drained.
+export const RELATED_GUIDES_GLOBAL = false;
+// NOTE on rollout order (coverage safety): the dedicated Related-guides section
+// is CAPPED (page-renderer.mjs RELATED_GUIDES_MAX), so it shows the most-relevant
+// computed subset - it is NOT guaranteed to contain every link from a page's
+// legacy inline "Related guides" block. Allowlisting a page that STILL has an
+// inline block would therefore both DUPLICATE the section and (if the inline
+// block is later removed) risk dropping curated internal links. So the seed
+// below is limited to pages that have NO inline block (pure-additive, zero
+// coverage risk). The migration runbook
+// (prompts/related-guides-section-migration-runbook.md) handles the 19 legacy
+// inline-block pages per batch: it removes the inline block ONLY after verifying
+// every inline guide link is reachable in the rendered section, THEN allowlists
+// the slug - so removal is coverage-preserving and never duplicated.
+export const RELATED_GUIDES_SLUGS = new Set([
+  // Phase 0 demo seed - tool pages with NO legacy inline "Related guides" block.
+  'heictojpg',
+  'jsonparser',
+  'cameratest',
+  'composepdf',
+  'unzipfile',
+]);
+
+export function isRelatedGuidesEnabled(route) {
+  if (RELATED_GUIDES_GLOBAL) return true;
+  try {
+    return RELATED_GUIDES_SLUGS.has(routeToSlug(route));
+  } catch {
+    return false;
+  }
+}
+
 export function routeToPageName(route) {
   const normalized = normalizeRoute(route);
   if (normalized === '/') {
