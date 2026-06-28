@@ -11,7 +11,9 @@
 </style>
 <div class="w3-container w3-margin-top">
     <h1 class="text-uppercase"><b>Milliseconds to date: UTC vs local time, and why it can look off</b></h1>
-    <p><em>Last reviewed 2026-05-05. The free <a href="/utility-tools/convert-time-in-millisecond-to-date.html">milliseconds-to-date converter</a> takes a Unix millisecond timestamp and returns a readable date and time. Most reader confusion is not about the conversion itself - it is about <b>which timezone</b> the readable string represents. This guide names the four values you should always read together and gives a 30-second sanity check so you never ship a date that is hours off.</em></p>
+    <p>The free <a href="/utility-tools/convert-time-in-millisecond-to-date.html">milliseconds-to-date converter</a> turns a Unix millisecond timestamp into a readable date and time. The number is timezone-free; what changes between UTC and local is only the <b>display</b>. This guide names the four values to always read together and gives a 30-second sanity check so you never ship a date that is hours off.</p>
+    <p><time itemprop="dateReviewed" datetime="2026-06-29">Last reviewed: 2026-06-29</time></p>
+    <address class="author"><a rel="author" href="/about-us.html">freetoolonline.com Editorial Team</a></address>
 
     <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
         <p style="margin-bottom: 0;"><b>30-second answer.</b> A timestamp like <code>1713538800000</code> is timezone-free - it counts milliseconds since 1970-01-01T00:00:00 UTC. The number does not move. What moves is the <em>display</em>: in UTC the same number reads "April 19, 2024, 15:00:00", in Asia/Bangkok (UTC+7) it reads "22:00:00", and in America/Los_Angeles (UTC-7) it reads "08:00:00". When your converted date "looks off by hours", the timestamp is fine - you are reading the wrong column.</p>
@@ -40,6 +42,15 @@
     <p><b>Use UTC for storage and transport.</b> Database columns, JSON over HTTP, log files, audit trails. UTC values do not drift across daylight-saving transitions and do not vary by deployment region.</p>
     <p><b>Use local time only for display.</b> Calendar invites, user-facing emails, reminders. Convert to local at the rendering layer, not in storage. The same database row should render as 22:00 Bangkok time and 08:00 LA time - that is correct, not a bug.</p>
     <p><b>Use ISO 8601 with offset for the in-between cases.</b> When you send a value to a downstream system that may not know the user's timezone, prefer the offset-included ISO form. Avoid free-text "April 19 at 10 PM" - it is unparseable.</p>
+
+    <h2 class="text-uppercase"><b>Common timezone offsets for the same timestamp</b></h2>
+    <table class="w3-table w3-bordered w3-small" style="margin:1em 0">
+        <tr><th>Timezone</th><th>UTC offset (standard)</th><th>1713538800000 in local time</th></tr>
+        <tr><td>UTC</td><td>+00:00</td><td>2024-04-19 15:00:00</td></tr>
+        <tr><td>Asia/Bangkok (TH)</td><td>+07:00</td><td>2024-04-19 22:00:00</td></tr>
+        <tr><td>America/Los_Angeles (US)</td><td>-07:00 (PDT)</td><td>2024-04-19 08:00:00</td></tr>
+        <tr><td>Europe/London (UK)</td><td>+01:00 (BST)</td><td>2024-04-19 16:00:00</td></tr>
+    </table>
 
     <h2 class="text-uppercase"><b>Companion guides</b></h2>
     <ul>
