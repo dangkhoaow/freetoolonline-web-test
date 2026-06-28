@@ -889,6 +889,9 @@ export const INFO_ROUTES = new Set([
   '/guides/es/video-converter-online-free.html',
   // cycle 20260626-2 create_new_guide_page (locale completion) - vi variant of /guides/video-converter-online-free.html (staging-only until id/de complete).
   '/guides/vi/video-converter-online-free.html',
+  // 2026-06-28 related-guides-loop: id/de locale completion for video-converter-online-free.
+  '/guides/id/video-converter-online-free.html',
+  '/guides/de/video-converter-online-free.html',
 
   // 2026-05-28 plan-warm-pascal-v2 S1 multilingual migration (locale-prefixed guide URLs).
   // plan-warm-pascal-v3 S2 batch 1 (2026-05-29) - 5 locale variants of /guides/lcd-test-online.html
@@ -1194,6 +1197,9 @@ export const GUIDE_ROUTES = new Set([
   '/guides/es/video-converter-online-free.html',
   // cycle 20260626-2 create_new_guide_page (locale completion) - vi variant of video-converter-online-free (staging-only until id/de complete).
   '/guides/vi/video-converter-online-free.html',
+  // 2026-06-28 related-guides-loop: id/de locale completion for video-converter-online-free.
+  '/guides/id/video-converter-online-free.html',
+  '/guides/de/video-converter-online-free.html',
   // plan-warm-pascal-v3 S2 batch 1 (2026-05-29) - 5 locale variants of /guides/lcd-test-online.html
   '/guides/pt/lcd-test-online.html',
   '/guides/es/lcd-test-online.html',
@@ -3201,6 +3207,9 @@ export const JSP_BY_ROUTE = {
   '/guides/es/video-converter-online-free.html': 'guide/es/video-converter-online-free.jsp',
   // cycle 20260626-2 create_new_guide_page (locale completion) - vi variant (staging-only until id/de complete).
   '/guides/vi/video-converter-online-free.html': 'guide/vi/video-converter-online-free.jsp',
+  // 2026-06-28 related-guides-loop: id/de locale completion.
+  '/guides/id/video-converter-online-free.html': 'guide/id/video-converter-online-free.jsp',
+  '/guides/de/video-converter-online-free.html': 'guide/de/video-converter-online-free.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
