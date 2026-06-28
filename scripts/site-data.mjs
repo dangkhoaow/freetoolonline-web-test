@@ -3332,7 +3332,7 @@ export function routeToSlug(route) {
 // up to 5 slugs per batch, including each route's localized guide variants
 // (e.g. guidespt<slug>). Flip RELATED_GUIDES_GLOBAL to true to enable sitewide
 // once the backlog is drained.
-export const RELATED_GUIDES_GLOBAL = false;
+export const RELATED_GUIDES_GLOBAL = true; // 2026-06-28: all 19 legacy inline blocks removed; global enable.
 // NOTE on rollout order (coverage safety): the dedicated Related-guides section
 // is CAPPED (page-renderer.mjs RELATED_GUIDES_MAX), so it shows the most-relevant
 // computed subset - it is NOT guaranteed to contain every link from a page's
