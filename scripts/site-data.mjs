@@ -61,6 +61,10 @@ export const INFO_ROUTES = new Set([
   // GSC evidence (28d): "zip folder online free" 488 imp / 16 clicks / pos 7.81 / CTR 3.28% / opportunity_score 60.41.
   // Implementing tool: /zip-file.html. Cluster: zip. Append-only (new URL).
   '/guides/en/zip-folder-online-free.html',
+  // Cycle 20260629-2 create_new_guide_page - "resize image online free" bare-query step-by-step guide.
+  // Implementing tool: /resize-image.html (client-side in-browser resizer). Cluster: image-editing. Append-only (new URL).
+  // EN-first ship; non-EN locales drain over future cycles, so the guide is held back from prod until all locales complete.
+  '/guides/en/resize-image-online-free.html',
   // Cycle 20260524-10 create_new_guide_page - "i love zip" bare-query landing (GSC 182 imp / 2 clicks / pos 6.12 / opportunity_score 29.41).
   // Implementing tool: /zip-file.html. Cluster: zip. BODYTITLE is reader-task framed (not brand-mimicking).
   '/guides/en/i-love-zip.html',
@@ -1463,6 +1467,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/en/how-to-compress-a-zip-file.html',
   // Cycle 20260519-11 create_new_guide_page - "zip folder online free" bare-query step-by-step guide (companion to /zip-file.html).
   '/guides/en/zip-folder-online-free.html',
+  // Cycle 20260629-2 create_new_guide_page - "resize image online free" bare-query step-by-step guide (companion to /resize-image.html).
+  '/guides/en/resize-image-online-free.html',
   // Cycle 20260524-10 create_new_guide_page - "i love zip" bare-query landing (companion to /zip-file.html).
   '/guides/en/i-love-zip.html',
   // Cycle 78 P78.A - "QR code error correction and scan failures" Lane-D guide (companion to /qr-code-generator.html).
@@ -2323,6 +2329,7 @@ export const ALIAS_ROUTES = {
   '/guides/read-and-compare-md5-hashes-correctly.html': '/guides/en/read-and-compare-md5-hashes-correctly.html',
   '/guides/recover-corrupt-zip-file-options.html': '/guides/en/recover-corrupt-zip-file-options.html',
   '/guides/reduce-zip-file-size-online.html': '/guides/en/reduce-zip-file-size-online.html',
+  '/guides/resize-image-online-free.html': '/guides/en/resize-image-online-free.html',
   '/guides/resize-zip-file.html': '/guides/en/resize-zip-file.html',
   '/guides/screen-display-test-synonyms.html': '/guides/en/screen-display-test-synonyms.html',
   '/guides/screen-test-for-laptop-5-minute-checklist.html': '/guides/en/screen-test-for-laptop-5-minute-checklist.html',
@@ -2427,6 +2434,8 @@ export const JSP_BY_ROUTE = {
   '/guides/en/how-to-compress-a-zip-file.html': 'guide/en/how-to-compress-a-zip-file.jsp',
   // Cycle 20260519-11 create_new_guide_page - "zip folder online free" bare-query step-by-step guide (companion to /zip-file.html).
   '/guides/en/zip-folder-online-free.html': 'guide/en/zip-folder-online-free.jsp',
+  // Cycle 20260629-2 create_new_guide_page - "resize image online free" bare-query step-by-step guide (companion to /resize-image.html).
+  '/guides/en/resize-image-online-free.html': 'guide/en/resize-image-online-free.jsp',
   // Cycle 20260524-10 create_new_guide_page - "i love zip" bare-query landing (companion to /zip-file.html).
   '/guides/en/i-love-zip.html': 'guide/en/i-love-zip.jsp',
   // Cycle 20260604-9 create_new_guide_page - "tool free" chain-breaker force-ship (chain=5 reached per CLAUDE.md L3). Reframes the bare 'tool free' query as a privacy + monetisation explainer ("Are online tools actually free?") to avoid semantic_overlap with /utility-tools.html hub. utility cluster.
