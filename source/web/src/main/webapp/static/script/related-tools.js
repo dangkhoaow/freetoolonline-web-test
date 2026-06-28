@@ -147,6 +147,7 @@ try {
     { title: "Screen / Display Test Synonyms", url: "https://freetoolonline.com/guides/en/screen-display-test-synonyms.html", include: !1, tags: "guide,device-test,lcd,screen-test,synonym" },
     { title: "Microphone Test No Sound - Four Fixes", url: "https://freetoolonline.com/guides/en/microphone-test-no-sound-four-fixes.html", include: !1, tags: "guide,device-test,utility,microphone" },
     { title: "How to Compress a File Online (Step by Step)", url: "https://freetoolonline.com/guides/en/how-to-compress-a-file-online.html", include: !1, tags: "guide,zip,compress,image-editing,pdf,video" },
+    { title: "Folder To Zip: When and How to Archive a Folder Online", url: "https://freetoolonline.com/guides/en/folder-to-zip.html", include: !1, tags: "guide,zip,compress,folder" },
     { title: "How to Reduce Zip File Size Online (Free)", url: "https://freetoolonline.com/guides/en/how-to-reduce-zip-file-size-online.html", include: !1, tags: "guide,zip,compress" },
     { title: "How to Convert HEIC to JPG Step by Step", url: "https://freetoolonline.com/guides/en/how-to-convert-heic-to-jpg-step-by-step.html", include: !1, tags: "guide,image-conversion,heic,jpg" },
     { title: "What an LCD Test Does (and When to Run One)", url: "https://freetoolonline.com/guides/en/what-an-lcd-test-does-and-when-to-run-one.html", include: !1, tags: "guide,device-test,lcd" },

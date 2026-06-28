@@ -3358,6 +3358,12 @@ export const RELATED_GUIDES_SLUGS = new Set([
   'lcdtest',
   'microphonetest',
   'developertools',
+  // Batch 2 (2026-06-28): 5 more legacy inline-block pages.
+  'devicetesttools',
+  'imageconvertertools',
+  'pdftools',
+  'videotools',
+  'guidescompressfolderonline',
 ]);
 
 export function isRelatedGuidesEnabled(route) {
@@ -3419,6 +3425,47 @@ export const RELATED_GUIDES_CURATED = {
     '/guides/en/microphone-test-online-what-it-actually-checks.html',
     '/guides/en/microphone-test-online-quiet-normal-peak-meter.html',
     '/guides/en/test-lcd.html',
+  ],
+  // Batch 1 (2026-06-28) - developertools curated override.
+  'developertools': [
+    '/guides/en/json-parser-validate-vs-format-vs-tree-view.html',
+    '/guides/en/css-minifier-vs-compressor.html',
+    '/guides/en/css-unminifier-vs-prettier-when-to-use-each.html',
+    '/guides/en/unix-timestamps-explained.html',
+    '/guides/en/milliseconds-to-date-utc-vs-local-time.html',
+    '/guides/en/image-to-base64-embed-in-html-vs-link.html',
+    '/guides/en/qr-code-error-correction-and-scan-failures.html',
+  ],
+  // Batch 2 (2026-06-28) curated overrides.
+  'devicetesttools': [
+    '/guides/en/what-an-lcd-test-does-and-when-to-run-one.html',
+    '/guides/en/dead-pixel-testing-guide.html',
+    '/guides/en/device-test-checklist-for-remote-work.html',
+    '/guides/en/how-to-test-for-dead-pixels-before-returning-a-monitor.html',
+  ],
+  'imageconvertertools': [
+    '/guides/en/heic-vs-jpg-vs-webp.html',
+    '/guides/en/how-to-convert-heic-to-jpg-step-by-step.html',
+    '/guides/en/png-vs-svg-when-to-use.html',
+    '/guides/en/jpg-vs-png-for-web.html',
+  ],
+  'pdftools': [
+    '/guides/en/pdf-password-types-owner-vs-user.html',
+    '/guides/en/pdf-editing-ladder.html',
+    '/guides/en/how-to-compress-a-file-online.html',
+    '/guides/en/file-compressor-vs-zip-what-to-pick.html',
+  ],
+  'videotools': [
+    '/guides/en/mp4-vs-webm-for-web.html',
+    '/guides/en/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html',
+    '/guides/en/what-is-a-file-compressor-and-which-to-use.html',
+    '/guides/en/how-to-compress-a-file-online.html',
+  ],
+  'guidescompressfolderonline': [
+    '/guides/en/how-to-compress-a-folder.html',
+    '/guides/en/zip-folder-online-free.html',
+    '/guides/en/folder-to-zip.html',
+    '/guides/en/how-to-compress-a-folder-for-email.html',
   ],
 };
 
