@@ -2146,6 +2146,11 @@ export const ALIAS_ROUTES = {
   // to the new clustered canonical URLs registered above. The renderer's renderRedirectPage() emits a
   // <meta refresh 0> + JS replace + <link rel=canonical> + noindex,follow page at each old URL.
   '/heic-to-jpg.html': '/image-converter-tools/heic-to-jpg.html',
+  // Cycle 20260629-3: synonym-query alias (operator-approved option-a on card
+  // new-tool-heic-jpg-converter-cannibalizes-heic-to-jpg-20260629-3). Captures the
+  // "heic jpg converter" synonym demand WITHOUT a cannibalizing new tool page -
+  // routes to the live HEIC->JPG converter. Paired CloudFront 301 entry added.
+  '/heic-jpg-converter.html': '/image-converter-tools/heic-to-jpg.html',
   '/svg-to-png.html': '/image-converter-tools/svg-to-png.html',
   '/png-to-svg.html': '/image-converter-tools/png-to-svg.html',
   '/image-to-base64.html': '/image-converter-tools/image-to-base64.html',
