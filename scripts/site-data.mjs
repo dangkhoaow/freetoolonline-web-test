@@ -3233,6 +3233,8 @@ export const JSP_BY_ROUTE = {
   '/guides/merge-pdf-online-free-unlimited.html': 'guide/merge-pdf-online-free-unlimited.jsp',
   // cycle 20260629-6 create_new_guide_page (locale completion) - pt variant of merge-pdf-online-free-unlimited (staging-only until es/vi/id/de complete).
   '/guides/pt/merge-pdf-online-free-unlimited.html': 'guide/pt/merge-pdf-online-free-unlimited.jsp',
+  // cycle 20260630-2 create_new_guide_page (locale completion) - es variant of merge-pdf-online-free-unlimited (staging-only until vi/id/de complete).
+  '/guides/es/merge-pdf-online-free-unlimited.html': 'guide/es/merge-pdf-online-free-unlimited.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
