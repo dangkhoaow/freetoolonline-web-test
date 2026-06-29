@@ -1112,7 +1112,7 @@ export function renderJspBody(innerHtml, ctx) {
   return html;
 }
 
-export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePath, isStaging, rewriteInternalContent, apiOrigin, shortenDomain, appVersion, ioVersion, deploySha, getAlterUploaderDelayMs, bgsCollection, ioInfos, unsplashKey, randomString, sharedFragments, pageData, pageAttrs, bodyHtml, themeCss, aggregateRating, relatedToolsData, lastUpdatedIso }) {
+export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePath, isStaging, rewriteInternalContent, apiOrigin, shortenDomain, appVersion, ioVersion, deploySha, getAlterUploaderDelayMs, bgsCollection, ioInfos, unsplashKey, randomString, sharedFragments, lMenu, pageData, pageAttrs, bodyHtml, themeCss, aggregateRating, relatedToolsData, lastUpdatedIso }) {
   const normalizedRoute = route;
   const normalizedBasePath = normalizeBasePath(basePath);
   const pageName = pageData.pageName;
@@ -1448,7 +1448,7 @@ ${toolContent}
 </div>
 ${sharedFragments.footer || ''}
 <div id='nav_menu' class='w3-sidebar w3-bar-block new-style-nav_menu w3-hide-small' style="display: none">
-${sharedFragments.lMenu || ''}
+${lMenu ?? sharedFragments.lMenu ?? ''}
 </div>
 <script>${gaExtendedScript}</script>
 <style type="text/css">

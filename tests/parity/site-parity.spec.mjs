@@ -13,6 +13,13 @@ import {
 
 const routes = await loadParityRoutes();
 
+// NOTE (l-menu focused-menu rollout): the per-route full-snapshot parity tests
+// below compare live prod (OLD_ORIGIN, still the ~1,150-link full-site mega
+// menu) against staging (NEW_ORIGIN, the focused per-page menu). Until the
+// build-script change is mirrored to prod, every route will diff on the
+// `#nav_menu` block - that is EXPECTED transitional churn, not a regression.
+// The targeted assertions (menu highlight / hr / related-tools) are written to
+// hold on BOTH the full and focused menus and remain meaningful throughout.
 test.describe.configure({ mode: 'parallel' });
 
 for (const route of routes) {
@@ -74,7 +81,10 @@ test('left menu highlights current route (zip-file)', async ({ browser }, testIn
   try {
     await prepareParityContext(context);
 
-    const route = '/zip-file.html';
+    // Canonical route (/zip-file.html 301-redirects here). Hitting the
+    // canonical directly avoids redirect-timing flake and guarantees a page
+    // with a rendered l-menu on both origins.
+    const route = '/zip-tools/zip-file.html';
     const oldPage = await context.newPage();
     const newPage = await context.newPage();
 
@@ -107,8 +117,8 @@ test('left menu highlights current route (zip-file)', async ({ browser }, testIn
     };
 
     const [oldState, newState] = await Promise.all([readState(oldPage), readState(newPage)]);
-    const oldHasZipActive = oldState.activeHrefs.some((href) => href.includes('/zip-file.html'));
-    const newHasZipActive = newState.activeHrefs.some((href) => href.includes('/zip-file.html'));
+    const oldHasZipActive = oldState.activeHrefs.some((href) => href.includes('/zip-tools/zip-file.html'));
+    const newHasZipActive = newState.activeHrefs.some((href) => href.includes('/zip-tools/zip-file.html'));
     const oldHasZipExpanded = oldState.expandedGroups.includes('zipMenu');
     const newHasZipExpanded = newState.expandedGroups.includes('zipMenu');
 
@@ -142,7 +152,10 @@ test('hr margin + color matches old site (zip-file)', async ({ browser }, testIn
   try {
     await prepareParityContext(context);
 
-    const route = '/zip-file.html';
+    // Canonical route (/zip-file.html 301-redirects here). Hitting the
+    // canonical directly avoids redirect-timing flake and guarantees a page
+    // with a rendered l-menu on both origins.
+    const route = '/zip-tools/zip-file.html';
     const oldPage = await context.newPage();
     const newPage = await context.newPage();
 
@@ -303,7 +316,10 @@ test('related tools SSR matches client output (zip-file)', async ({ browser }, t
   try {
     await prepareParityContext(context);
 
-    const route = '/zip-file.html';
+    // Canonical route (/zip-file.html 301-redirects here). Hitting the
+    // canonical directly avoids redirect-timing flake and guarantees a page
+    // with a rendered l-menu on both origins.
+    const route = '/zip-tools/zip-file.html';
     const page = await context.newPage();
     await page.goto(buildRouteUrl(NEW_ORIGIN, route), { waitUntil: 'load' });
     await page.waitForFunction(() => typeof window.$ === 'function', null, { timeout: 15000 }).catch(() => {});

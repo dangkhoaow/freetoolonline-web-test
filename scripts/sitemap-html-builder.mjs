@@ -559,23 +559,122 @@ function renderLMenuGuidesSection(guidesByCluster) {
   return lines.join('\n');
 }
 
+// Variant key for routes that don't belong to a single tool cluster (home,
+// info pages, anything unmatched). Gets a hub-directory menu, no cluster
+// expanded.
+const LMENU_DEFAULT_CLUSTER = 'default';
+
+function guideRouteLocale(route) {
+  const m = /^\/guides\/(en|pt|es|vi|id|de)\//.exec(route);
+  return m ? m[1] : 'en';
+}
+
+function guideRouteBareSlug(route) {
+  return route
+    .replace(/^\/guides\/(en|pt|es|vi|id|de)\//, '')
+    .replace(/^\/guides\//, '')
+    .replace(/\.html$/i, '');
+}
+
+// "All <Cluster> tools" forward-nav label derived from the cluster group's
+// "Back to <X>" hub label. ASCII only (no arrow glyph) per the R9 typography
+// rule.
+function lmenuHubLabel(group, clusterId) {
+  return (group?.hubLabel || LMENU_CLUSTER_LABELS[clusterId] || clusterId).replace(/^Back to /, 'All ');
+}
+
+// Hub-only stub for the OTHER clusters in a focused body: the cluster header
+// button + a single link to its hub page (which enumerates every tool in
+// that cluster). This is the no-orphan guarantee - every hub stays one
+// inline click away from every page, without inlining the full cross-cluster
+// tool list. Same button/group markup + id scheme as renderLMenuClusterSection
+// so myAccFunc() collapsibles and focusCurrentMenu() work unchanged.
+function renderLMenuClusterStub({ clusterId, icon, label, hubRoute, hubLabel }) {
+  const menuId = `${clusterId.replace(/-/g, '')}Menu`;
+  return [
+    `        <div class='w3-col l2 m6'>`,
+    `            <button style='font-size: 15px !important;padding: 10px 0px 10px 13px' class="w3-button w3-block w3-left-align menu-btn" onclick="myAccFunc(document.getElementById('${menuId}'))">`,
+    `                <i class="fa ${icon}" style="margin-right: 10px;"></i>`,
+    `                ${escapeHtml(label)}`,
+    `            </button>`,
+    `            <div id="${menuId}" class="w3-hide menuGroup">`,
+    `                <a class='w3-bar-item w3-button' href='https://freetoolonline.com${hubRoute}'>`,
+    `                    <i class="fa fa-circle" style="margin-right: 10px;"></i>`,
+    `                    ${escapeHtml(hubLabel)}`,
+    `                </a>`,
+    `            </div>`,
+    `        </div>`,
+  ].join('\n');
+}
+
+// Footer / info section - restores the Home + info + support links the
+// legacy static l-menu.html carried (dropped when the body went dynamic in
+// cycle 50) and surfaces /guides.html + /sitemap.html so every page links
+// inline to the full guide hub + the complete sitemap (belt-and-suspenders
+// for the no-orphan guarantee, and gives info pages a focusCurrentMenu
+// self-match). fa-circle is used throughout - it is the one icon guaranteed
+// in the curated fa subset.
+function renderLMenuFooterSection() {
+  const item = (href, label) =>
+    `                <a class='w3-bar-item w3-button' href='https://freetoolonline.com${href}'>\n                    <i class="fa fa-circle" style="margin-right: 10px;"></i>\n                    ${escapeHtml(label)}\n                </a>`;
+  return [
+    `        <div class='w3-col l2 m6'>`,
+    `            <div class="lmenu-guide-topic"><small><strong>More</strong></small></div>`,
+    item('/', 'Home'),
+    item('/guides.html', 'All guides'),
+    item('/sitemap.html', 'Full sitemap (all pages)'),
+    item('/tags.html', 'Tags collection'),
+    item('/about-us.html', 'About us'),
+    item('/contact-us.html', 'Contact us'),
+    item('/privacy-policy.html', 'Privacy policy'),
+    `        </div>`,
+  ].join('\n');
+}
+
+function wrapLMenuBody(sections) {
+  return `<div id="menu-content-id" class="menu-content">\n    <div class='w3-row-padding'>\n${sections.join('\n')}\n    </div>\n</div>`;
+}
+
 /**
- * Build the dynamic body of l-menu.html (left navigation sidebar).
- * Returns the inner block of `<div id="menu-content-id">...</div>` only -
- * the surrounding <style>/<script> blocks in the static l-menu.html
- * shell are preserved by export-site.mjs which splices this body in.
+ * Build the FOCUSED per-page l-menu bodies (replaces the previous
+ * buildDynamicLMenuBody, which inlined the SAME ~1,150-link full-site
+ * mega-menu on every page - ~460 KB/page, ~758 MB dist).
+ *
+ * Returns one compact menu body per (cluster, locale) plus a 'default'
+ * variant for home/info pages, and a resolveRouteCluster(route) that maps any
+ * rendered route to its variant key. Each focused body carries only the
+ * current cluster's tools + that locale's guides, plus a hub link to all 8
+ * clusters + /guides.html + /sitemap.html, so every page stays reachable
+ * inline (no orphan) while page weight drops ~50%. Discovery is independently
+ * covered by sitemap.xml / sitemap.html / llms.txt, so trimming the menu
+ * loses no crawl coverage.
+ *
+ * The route -> variant map is the INVERSE of the SAME bucketing used to
+ * populate the bodies, so the focus invariant holds by construction: a page
+ * is assigned the variant whose menu contains that page's own anchor, so
+ * focusCurrentMenu() always finds + highlights it. Variant key =
+ * `${clusterId}:${locale}` for tool/guide/hub pages (tools + hubs use 'en'),
+ * or 'default' for home/info/unmatched.
+ *
+ * The surrounding <style>/<script> shell of l-menu.html is preserved by
+ * export-site.mjs which splices each body in; guides stay under the single
+ * `#guidesMenu` id so the shell's locale-rewrite IIFE + focus logic are
+ * unchanged.
  */
-export async function buildDynamicLMenuBody({ cmsRoot } = {}) {
+export async function buildPerPageLMenuBodies({ cmsRoot } = {}) {
   if (!cmsRoot) {
-    throw new Error('buildDynamicLMenuBody: cmsRoot is required');
+    throw new Error('buildPerPageLMenuBodies: cmsRoot is required');
   }
 
   const aliasSourceSet = new Set(Object.keys(ALIAS_ROUTES));
   const clusterGroups = getSeoClusterGroups();
   const toolClusterMap = new Map(clusterGroups.map((g) => [g.cluster, g]));
 
-  // Bucket tools by cluster using the shared resolveClusterMemberRoutes
-  // helper. See its docblock for why JSP_BY_ROUTE is the source of truth.
+  // route -> variant key, emitted as the inverse of the bucketing below.
+  const routeToVariant = new Map();
+
+  // Tools per cluster (locale-agnostic; tools are EN-only). Also seeds the
+  // hub-route -> cluster mapping so hub pages get their own cluster variant.
   const toolsByCluster = new Map();
   for (const clusterId of LMENU_CLUSTER_ORDER) toolsByCluster.set(clusterId, []);
   for (const clusterId of LMENU_CLUSTER_ORDER) {
@@ -584,40 +683,117 @@ export async function buildDynamicLMenuBody({ cmsRoot } = {}) {
     for (const route of orderedRoutes) {
       const meta = await loadRouteMetadata(cmsRoot, route);
       toolsByCluster.get(clusterId).push(meta);
+      routeToVariant.set(route, `${clusterId}:en`);
     }
+    if (group?.hubRoute) routeToVariant.set(group.hubRoute, `${clusterId}:en`);
   }
 
-  // Bucket guides by their classified cluster. Guides sort alphabetically
-  // by title within each cluster for predictable diffs.
-  const guidesByCluster = new Map();
-  for (const clusterId of LMENU_CLUSTER_ORDER) guidesByCluster.set(clusterId, []);
-  const guideRoutes = getDynamicGuideRoutes();
-  for (const route of guideRoutes) {
-    const slug = route.replace(/^\/guides\//, '').replace(/\.html$/i, '');
-    const topic = classifyGuide(slug);
+  // Guides per (cluster, locale). classifyGuide runs on the bare slug so a
+  // locale-prefixed route classifies the same as its EN canonical. Titles
+  // sort alphabetically within each bucket for predictable diffs.
+  const guidesByClusterLocale = new Map(); // `${clusterId}:${locale}` -> meta[]
+  for (const route of getDynamicGuideRoutes()) {
+    const locale = guideRouteLocale(route);
+    const topic = classifyGuide(guideRouteBareSlug(route));
     const clusterId = GUIDE_TOPIC_TO_CLUSTER[topic] || 'utility';
+    const key = `${clusterId}:${locale}`;
+    if (!guidesByClusterLocale.has(key)) guidesByClusterLocale.set(key, []);
     const meta = await loadRouteMetadata(cmsRoot, route);
-    guidesByCluster.get(clusterId).push(meta);
+    guidesByClusterLocale.get(key).push(meta);
+    routeToVariant.set(route, key);
   }
-  for (const list of guidesByCluster.values()) {
+  for (const list of guidesByClusterLocale.values()) {
     list.sort((a, b) => a.title.localeCompare(b.title));
   }
 
-  const sections = [];
-  for (const clusterId of LMENU_CLUSTER_ORDER) {
-    sections.push(renderLMenuClusterSection({
-      clusterId,
-      icon: LMENU_CLUSTER_ICONS[clusterId],
-      label: LMENU_CLUSTER_LABELS[clusterId],
-      tools: toolsByCluster.get(clusterId) || [],
-    }));
+  // Which locales each cluster actually has guides in. Always include 'en'
+  // so tool/hub pages (which use `${cluster}:en`) get a variant even when a
+  // cluster has zero EN guides.
+  const localesByCluster = new Map();
+  for (const clusterId of LMENU_CLUSTER_ORDER) localesByCluster.set(clusterId, new Set(['en']));
+  for (const key of guidesByClusterLocale.keys()) {
+    const [clusterId, locale] = key.split(':');
+    if (localesByCluster.has(clusterId)) localesByCluster.get(clusterId).add(locale);
   }
-  // plan-warm-pascal-v3 S7: dedicated GUIDES menu item appended last.
-  // Guides are no longer interleaved into the per-cluster tool sections;
-  // readers see a single "GUIDES" entry that groups all guides by topic.
-  sections.push(renderLMenuGuidesSection(guidesByCluster));
 
-  return `<div id="menu-content-id" class="menu-content">\n    <div class='w3-row-padding'>\n${sections.join('\n')}\n    </div>\n</div>`;
+  const bodies = new Map();
+  for (const clusterId of LMENU_CLUSTER_ORDER) {
+    const group = toolClusterMap.get(clusterId);
+    const hubRoute = group?.hubRoute;
+    const hubLabel = lmenuHubLabel(group, clusterId);
+    for (const locale of localesByCluster.get(clusterId)) {
+      const sections = [];
+      // 1. Current cluster's tools, with a hub self-link first (so the hub
+      //    page self-matches focusCurrentMenu). Tools are EN-only.
+      const toolItems = [];
+      if (hubRoute) toolItems.push({ route: hubRoute, title: hubLabel });
+      toolItems.push(...(toolsByCluster.get(clusterId) || []));
+      sections.push(renderLMenuClusterSection({
+        clusterId,
+        icon: LMENU_CLUSTER_ICONS[clusterId],
+        label: LMENU_CLUSTER_LABELS[clusterId],
+        tools: toolItems,
+      }));
+      // 2. Current cluster + locale guides under the single #guidesMenu id
+      //    (reuses renderLMenuGuidesSection so the locale-rewrite IIFE + focus
+      //    logic keep working). Skipped when this cluster+locale has no guides
+      //    (no guide pages use this variant, so no focus need - avoids an
+      //    empty GUIDES dropdown).
+      const myGuides = guidesByClusterLocale.get(`${clusterId}:${locale}`) || [];
+      if (myGuides.length) {
+        const guideMap = new Map();
+        for (const c of LMENU_CLUSTER_ORDER) guideMap.set(c, c === clusterId ? myGuides : []);
+        sections.push(renderLMenuGuidesSection(guideMap));
+      }
+      // 3. The other 7 clusters as hub-only stubs (no-orphan guarantee).
+      for (const other of LMENU_CLUSTER_ORDER) {
+        if (other === clusterId) continue;
+        const og = toolClusterMap.get(other);
+        sections.push(renderLMenuClusterStub({
+          clusterId: other,
+          icon: LMENU_CLUSTER_ICONS[other],
+          label: LMENU_CLUSTER_LABELS[other],
+          hubRoute: og?.hubRoute,
+          hubLabel: lmenuHubLabel(og, other),
+        }));
+      }
+      // 4. Footer / info links.
+      sections.push(renderLMenuFooterSection());
+      bodies.set(`${clusterId}:${locale}`, wrapLMenuBody(sections));
+    }
+  }
+
+  // 'default' variant for home / info / unmatched routes: all 8 cluster hub
+  // stubs + the footer (Home/guides/sitemap/info links self-match here).
+  {
+    const sections = [];
+    for (const clusterId of LMENU_CLUSTER_ORDER) {
+      const g = toolClusterMap.get(clusterId);
+      sections.push(renderLMenuClusterStub({
+        clusterId,
+        icon: LMENU_CLUSTER_ICONS[clusterId],
+        label: LMENU_CLUSTER_LABELS[clusterId],
+        hubRoute: g?.hubRoute,
+        hubLabel: lmenuHubLabel(g, clusterId),
+      }));
+    }
+    sections.push(renderLMenuFooterSection());
+    bodies.set(LMENU_DEFAULT_CLUSTER, wrapLMenuBody(sections));
+  }
+
+  // route -> variant resolver. exact -> `${cluster}:en` -> default.
+  function resolveRouteCluster(route) {
+    const r = route && route.startsWith('/') ? route : `/${route || ''}`;
+    const exact = routeToVariant.get(r);
+    if (exact && bodies.has(exact)) return exact;
+    if (exact) {
+      const enKey = `${exact.split(':')[0]}:en`;
+      if (bodies.has(enKey)) return enKey;
+    }
+    return LMENU_DEFAULT_CLUSTER;
+  }
+
+  return { bodies, resolveRouteCluster };
 }
 
 export async function buildDynamicSitemapBody({ cmsRoot, lastReviewedIso } = {}) {

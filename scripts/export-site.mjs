@@ -31,7 +31,7 @@ import { parseJspPageSource, renderAlternateAdPage, renderPageDocument, renderRe
 import { resolvePageMtime } from './page-mtimes.mjs';
 import { createInternalContentRewriter, normalizeBasePath } from './staging-utils.mjs';
 import { writeSplitSitemaps } from './sitemap-writer.mjs';
-import { buildDynamicSitemapBody, buildDynamicGuidesHubBody, buildDynamicLMenuBody, buildDynamicHomeSearchData } from './sitemap-html-builder.mjs';
+import { buildDynamicSitemapBody, buildDynamicGuidesHubBody, buildPerPageLMenuBodies, buildDynamicHomeSearchData } from './sitemap-html-builder.mjs';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const distDir = path.resolve(repoRoot, process.env.DIST_DIR ?? 'dist');
@@ -100,15 +100,30 @@ async function main() {
   // /guides.html + l-menu just fixed.
   const homeSearchData = await buildDynamicHomeSearchData({ cmsRoot });
   console.log(`[home-search] Built dynamic datalist: ${homeSearchData.totalCount} options (${homeSearchData.toolCount} tools + ${homeSearchData.guideCount} guides).`);
-  const lMenuDynamicBody = await buildDynamicLMenuBody({ cmsRoot });
+  // l-menu is now a FOCUSED per-page menu (per cluster+locale, + a 'default'
+  // variant for home/info pages) instead of the same ~1,150-link full-site
+  // mega-menu on every page. Build one body per variant, splice each into the
+  // shared <style>/<script> shell, and select the right one per route in the
+  // render loop below via resolveRouteCluster. Discovery is unaffected
+  // (sitemap.xml / sitemap.html / llms.txt list every page); see
+  // buildPerPageLMenuBodies for the no-orphan guarantee.
+  const { bodies: lMenuBodies, resolveRouteCluster } = await buildPerPageLMenuBodies({ cmsRoot });
+  const lMenuByVariant = new Map();
   if (sharedFragments.lMenu) {
     const styleEndIdx = sharedFragments.lMenu.indexOf('</style>');
     const scriptStartIdx = sharedFragments.lMenu.indexOf('<script>', styleEndIdx >= 0 ? styleEndIdx : 0);
     if (styleEndIdx >= 0 && scriptStartIdx > styleEndIdx) {
       const cssPrefix = sharedFragments.lMenu.slice(0, styleEndIdx + '</style>'.length);
       const scriptSuffix = sharedFragments.lMenu.slice(scriptStartIdx);
-      sharedFragments.lMenu = `${cssPrefix}\n${lMenuDynamicBody}\n${scriptSuffix}`;
-      console.log(`[lmenu] Spliced dynamic body into l-menu.html (${lMenuDynamicBody.length} chars).`);
+      for (const [variant, body] of lMenuBodies) {
+        lMenuByVariant.set(variant, `${cssPrefix}\n${body}\n${scriptSuffix}`);
+      }
+      const sizes = [...lMenuByVariant.values()].map((s) => s.length);
+      const avgKb = sizes.length ? Math.round(sizes.reduce((a, b) => a + b, 0) / sizes.length / 1024) : 0;
+      console.log(`[lmenu] Built ${lMenuByVariant.size} focused per-page menu variants (avg ${avgKb} KB each).`);
+      // Back-compat: any render path that does not pass an explicit lMenu opt
+      // falls back to sharedFragments.lMenu - point it at the 'default' variant.
+      sharedFragments.lMenu = lMenuByVariant.get('default') ?? sharedFragments.lMenu;
     } else {
       console.warn('[lmenu] Could not locate </style>/<script> boundaries in l-menu.html - leaving static body in place.');
     }
@@ -130,6 +145,7 @@ async function main() {
 
   const canonicalRoutes = [];
   for (const route of routeCandidates) {
+    const lMenu = lMenuByVariant.get(resolveRouteCluster(route)) ?? sharedFragments.lMenu;
     const { html, canonical } = await renderRoute(route, {
       jspIndex,
       sharedFragments,
@@ -141,6 +157,7 @@ async function main() {
       sitemapDynamicBody,
       guidesHubDynamicBody,
       homeSearchData,
+      lMenu,
     });
     await writeOutput(outputPathForRoute(route), html);
     if (canonical) {
@@ -278,7 +295,7 @@ async function deriveRelatedDescFromBodyDesc(url, cmsFragmentsRoot) {
   return blurb.trim();
 }
 
-async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData, canonicalOrigin, basePath, isStaging, rewriteInternalContent, sitemapDynamicBody, guidesHubDynamicBody, homeSearchData }) {
+async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData, canonicalOrigin, basePath, isStaging, rewriteInternalContent, sitemapDynamicBody, guidesHubDynamicBody, homeSearchData, lMenu }) {
   const normalizedRoute = normalizeRoute(route);
 
   if (Object.prototype.hasOwnProperty.call(ALIAS_ROUTES, normalizedRoute)) {
@@ -393,6 +410,7 @@ async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData,
       unsplashKey: runtimeConfig.unsplashKey,
       randomString: runtimeConfig.randomString,
       sharedFragments,
+      lMenu,
       pageData,
       pageAttrs,
       bodyHtml,
