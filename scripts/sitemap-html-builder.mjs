@@ -619,10 +619,10 @@ function renderLMenuFooterSection() {
     `                <a class='w3-bar-item w3-button' href='https://freetoolonline.com${href}'>\n                    <i class="fa fa-circle" style="margin-right: 10px;"></i>\n                    ${escapeHtml(label)}\n                </a>`;
   return [
     `        <div class='w3-col l2 m6'>`,
-    `            <div class="lmenu-guide-topic"><small><strong>More</strong></small></div>`,
+    `            <hr/><div class="lmenu-guide-topic" style="padding: 10px 0px 10px 13px;text-transform: uppercase;"><small><strong>More</strong></small></div>`,
     item('/', 'Home'),
-    item('/guides.html', 'All guides'),
-    item('/sitemap.html', 'Full sitemap (all pages)'),
+    item('/guides.html', 'All guides'), 
+    item('/sitemap.html', 'Sitemap'),
     item('/tags.html', 'Tags collection'),
     item('/about-us.html', 'About us'),
     item('/contact-us.html', 'Contact us'),
