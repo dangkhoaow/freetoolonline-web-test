@@ -283,6 +283,7 @@ try {
     { title: "HD Video Converter - Step by Step", url: "https://freetoolonline.com/guides/en/hd-video-converter-step-by-step.html", include: !1, tags: "guide,video,converter,ffmpeg" },
     { title: "MD5 Decode Explained", url: "https://freetoolonline.com/guides/en/md5-decode.html", include: !1, tags: "guide,developer,md5,hash" },
     { title: "Are Online Tools Actually Free?", url: "https://freetoolonline.com/guides/en/tool-free.html", include: !1, tags: "guide,utility,privacy" },
+    { title: "Merge PDF Online Free - Combine PDFs in Your Browser", url: "https://freetoolonline.com/guides/merge-pdf-online-free-unlimited.html", include: !1, tags: "pdf" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

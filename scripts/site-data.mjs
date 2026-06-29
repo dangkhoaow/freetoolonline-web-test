@@ -3225,6 +3225,7 @@ export const JSP_BY_ROUTE = {
   // 2026-06-28 related-guides-loop: id/de locale completion.
   '/guides/id/video-converter-online-free.html': 'guide/id/video-converter-online-free.jsp',
   '/guides/de/video-converter-online-free.html': 'guide/de/video-converter-online-free.jsp',
+  '/guides/merge-pdf-online-free-unlimited.html': 'guide/merge-pdf-online-free-unlimited.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
