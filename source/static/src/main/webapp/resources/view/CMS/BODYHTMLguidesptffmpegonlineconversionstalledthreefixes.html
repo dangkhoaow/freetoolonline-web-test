@@ -9,11 +9,20 @@
 </style>
 <div class="w3-container w3-margin-top">
     <h1 class="text-uppercase"><b>Conversão FFmpeg Online Travada? Três Correções (e Teste de 30 Segundos)</b></h1>
-    <p><em>Última revisão: 2026-05-03. Você fez upload de um vídeo para um conversor ffmpeg online, clicou em "converter," e a barra de progresso congelou - ou nunca começou a se mover. Este guia nomeia as três causas comuns (limite de memória do navegador, aba em segundo plano, codec que a build WASM não suporta), dá uma correção de uma linha por causa, e mostra um teste de 30 segundos que te diz qual delas você atingiu.</em></p>
+    <p>Quando o <a href="/video-tools/ffmpeg-online.html">FFmpeg Online</a> trava, a causa é uma de três: o arquivo ultrapassou o limite de 2 GB de memória WASM do navegador, a aba ficou em segundo plano e o SO suspendeu o worker, ou o codec fonte não está no build WASM. Um clipe de 5 segundos a 720p em primeiro plano identifica qual.</p>
+<time itemprop="dateReviewed" datetime="2026-06-30">Last reviewed: 2026-06-30</time>
+<address class="author"><a rel="author" href="/about-us.html">freetoolonline.com Editorial Team</a></address>
 
     <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
         <p style="margin-bottom: 0;"><b>Resposta de 30 segundos.</b> O navegador ficou sem memória porque o arquivo era muito grande para WASM em aba, OU a aba foi colocada em segundo plano e o SO suspendeu o worker, OU a fonte usa um codec que a build WASM ffmpeg não inclui. Recarregue a aba e solte um arquivo pequeno de teste (por exemplo, um clipe de 5 segundos em 720p) em <a href="/video-tools/ffmpeg-online.html">a ferramenta ffmpeg online</a>. Se o clipe pequeno converte em segundos, sua falha original foi Causa 1 (memória) ou Causa 3 (codec). Se até o clipe pequeno trava, é Causa 2 (aba em segundo plano).</p>
     </div>
+
+    <table class="w3-table w3-bordered w3-small" style="margin:1em 0">
+        <tr><th>Causa</th><th>Gatilho</th><th>Correção rápida</th></tr>
+        <tr><td><b>1. Memória</b></td><td>Arquivo &gt; ~500 MB ou 4K &gt; 10 min</td><td>Apare para um clipe mais curto; ou use ffmpeg local</td></tr>
+        <tr><td><b>2. Aba em segundo plano</b></td><td>Qualquer tamanho; aba oculta durante a conversão</td><td>Mantenha a aba em primeiro plano; não bloqueie a tela</td></tr>
+        <tr><td><b>3. Codec fora do build</b></td><td>ProRes, DNxHR, JPEG 2000, containers exóticos</td><td>Re-codifique para H.264 localmente primeiro</td></tr>
+    </table>
 
     <h2 class="text-uppercase"><b>Causa 1: limite de memória do navegador no WASM ffmpeg</b></h2>
     <p>WASM ffmpeg no navegador é um ffmpeg auto-contido compilado para WebAssembly que roda inteiramente na aba. O trade-off: o módulo WASM da aba tipicamente recebe 2 GB de espaço de endereço (4 GB com builds memory64 explícitas), e um único vídeo fonte 4K mais os buffers de codificador em voo e arrays de conversão de espaço de cor pode exceder isso em clipes longos. Quando isso acontece, ffmpeg ou morre silenciosamente ou trava em uma porcentagem que nunca avança. Arquivos fonte 4K longos são o gatilho mais comum, mas uma fonte 1080p H.265 longa com áudio 5.1 também pode empurrar o limite em telefones e laptops mais antigos.</p>
