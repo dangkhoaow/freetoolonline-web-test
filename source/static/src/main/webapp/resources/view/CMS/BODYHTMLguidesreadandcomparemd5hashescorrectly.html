@@ -11,11 +11,23 @@
 </style>
 <div class="w3-container w3-margin-top">
     <h1 class="text-uppercase"><b>Read and compare MD5 hashes correctly: case, whitespace, hex format</b></h1>
-    <p><em>Last reviewed 2026-05-04. A 30-second walk-through for the moment after you generate a hash on <a href="/developer-tools/md5-converter.html">MD5 Converter</a> (or read one off a download page) and need to confirm it matches the expected value. Two MD5 hashes either represent the same 16-byte digest or they do not. Case differences, surrounding whitespace, an invisible byte-order mark, or a colon-separator format are cosmetic - the hashes are still the same. A different hex character anywhere, a different total length, or a non-hex character is a real difference - the inputs were not the same.</em></p>
+    <p>After generating a hash on <a href="/developer-tools/md5-converter.html">MD5 Converter</a>, lowercase both strings, trim whitespace, strip colon separators, then compare all 32 hex characters. Upper vs lower case, leading spaces, and colon formatting are cosmetic - the hashes still match. Any single hex digit different, or a length other than 32 characters, means the inputs differed.</p>
+<time itemprop="dateReviewed" datetime="2026-06-29">Last reviewed: 2026-06-29</time>
+<address class="author"><a rel="author" href="/about-us.html">freetoolonline.com Editorial Team</a></address>
 
     <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
         <p style="margin-bottom: 0;"><b>30-second decision.</b> Two MD5 values match when, after lowercasing both and trimming surrounding whitespace, the 32 hex characters agree position-by-position. <b>Cosmetic differences (still a match):</b> upper vs lower case (`A1B2` and `a1b2` are the same hex), trailing or leading whitespace from a careless copy-paste, an invisible UTF-8 BOM at the start when copied from a text file, and colon-separated formats (`a1:b2:c3` vs `a1b2c3`). <b>Real differences (not a match):</b> any single hex digit different, a different total length (a 40-character string is SHA-1, not MD5; 64 characters is SHA-256), and any non-hex character (`0-9` and `a-f` only).</p>
     </div>
+
+    <table class="w3-table w3-bordered w3-small" style="margin:1em 0">
+<thead><tr><th>Hash string length</th><th>Algorithm</th><th>Common use</th></tr></thead>
+<tbody>
+<tr><td>32 hex chars</td><td>MD5</td><td>File integrity checks, legacy checksums</td></tr>
+<tr><td>40 hex chars</td><td>SHA-1</td><td>Git objects, older code-signing</td></tr>
+<tr><td>64 hex chars</td><td>SHA-256</td><td>Modern security, package signing</td></tr>
+<tr><td>8 chars (decimal)</td><td>CRC32</td><td>Archive error detection</td></tr>
+</tbody>
+</table>
 
     <h2 class="text-uppercase"><b>What an MD5 hash actually is</b></h2>
     <p>An MD5 hash is the output of a function that takes any input - a string of text, a file's bytes, a stream from a download - and produces a fixed 16-byte (128-bit) digest. The bytes are the canonical value: that is what "the MD5" really is. The 32-character hexadecimal string you see on screen is just a human-readable encoding of those 16 bytes (each byte becomes two hex characters). Two writers can spell the same 16 bytes as `D41D8CD98F00B204E9800998ECF8427E` (uppercase) or `d41d8cd98f00b204e9800998ecf8427e` (lowercase) or `d4:1d:8c:d9:8f:00:b2:04:e9:80:09:98:ec:f8:42:7e` (colon-separated, common in some legacy tools) and all three are the SAME hash. The bytes are the same.</p>
