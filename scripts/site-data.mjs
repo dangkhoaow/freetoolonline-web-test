@@ -65,6 +65,8 @@ export const INFO_ROUTES = new Set([
   // Implementing tool: /resize-image.html (client-side in-browser resizer). Cluster: image-editing. Append-only (new URL).
   // EN-first ship; non-EN locales drain over future cycles, so the guide is held back from prod until all locales complete.
   '/guides/en/resize-image-online-free.html',
+  // Cycle 20260629-3 create_new_guide_page - PT locale variant of "resize image online free" (locale-drain).
+  '/guides/pt/resize-image-online-free.html',
   // Cycle 20260524-10 create_new_guide_page - "i love zip" bare-query landing (GSC 182 imp / 2 clicks / pos 6.12 / opportunity_score 29.41).
   // Implementing tool: /zip-file.html. Cluster: zip. BODYTITLE is reader-task framed (not brand-mimicking).
   '/guides/en/i-love-zip.html',
@@ -1469,6 +1471,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/en/zip-folder-online-free.html',
   // Cycle 20260629-2 create_new_guide_page - "resize image online free" bare-query step-by-step guide (companion to /resize-image.html).
   '/guides/en/resize-image-online-free.html',
+  // Cycle 20260629-3 create_new_guide_page - PT locale variant of "resize image online free" (locale-drain).
+  '/guides/pt/resize-image-online-free.html',
   // Cycle 20260524-10 create_new_guide_page - "i love zip" bare-query landing (companion to /zip-file.html).
   '/guides/en/i-love-zip.html',
   // Cycle 78 P78.A - "QR code error correction and scan failures" Lane-D guide (companion to /qr-code-generator.html).
@@ -2436,6 +2440,8 @@ export const JSP_BY_ROUTE = {
   '/guides/en/zip-folder-online-free.html': 'guide/en/zip-folder-online-free.jsp',
   // Cycle 20260629-2 create_new_guide_page - "resize image online free" bare-query step-by-step guide (companion to /resize-image.html).
   '/guides/en/resize-image-online-free.html': 'guide/en/resize-image-online-free.jsp',
+  // Cycle 20260629-3 create_new_guide_page - PT locale variant of "resize image online free" (locale-drain).
+  '/guides/pt/resize-image-online-free.html': 'guide/pt/resize-image-online-free.jsp',
   // Cycle 20260524-10 create_new_guide_page - "i love zip" bare-query landing (companion to /zip-file.html).
   '/guides/en/i-love-zip.html': 'guide/en/i-love-zip.jsp',
   // Cycle 20260604-9 create_new_guide_page - "tool free" chain-breaker force-ship (chain=5 reached per CLAUDE.md L3). Reframes the bare 'tool free' query as a privacy + monetisation explainer ("Are online tools actually free?") to avoid semantic_overlap with /utility-tools.html hub. utility cluster.
