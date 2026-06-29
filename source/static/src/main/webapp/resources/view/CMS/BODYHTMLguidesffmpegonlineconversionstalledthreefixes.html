@@ -11,11 +11,20 @@
 </style>
 <div class="w3-container w3-margin-top">
     <h1 class="text-uppercase"><b>FFmpeg Online Conversion Stalled? Three Fixes (and a 30-Second Test)</b></h1>
-    <p><em>Last reviewed 2026-05-03. You uploaded a video to an online ffmpeg converter, hit "convert," and the progress bar froze - or never started moving. This guide names the three common causes (browser memory cap, backgrounded tab, codec the WASM build does not support), gives a one-line fix per cause, and shows a 30-second test that tells you which one you hit.</em></p>
+    <p>When <a href="/video-tools/ffmpeg-online.html">FFmpeg Online</a> stalls, the cause is one of three things: the file exceeded the 2 GB browser WASM memory cap, the tab was backgrounded and the OS suspended the worker, or the source codec is not in the WASM build. A 5-second 720p test clip in the foreground tells you which one.</p>
+    <time itemprop="dateReviewed" datetime="2026-06-29">Last reviewed: 2026-06-29</time>
+    <address class="author"><a rel="author" href="/about-us.html">freetoolonline.com Editorial Team</a></address>
 
     <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
         <p style="margin-bottom: 0;"><b>30-second answer.</b> The browser ran out of memory because the file was too large for in-tab WASM, OR the tab was backgrounded and the OS suspended the worker, OR the source uses a codec the WASM ffmpeg build does not include. Reload the tab and drop a tiny test file (e.g. a 5-second 720p clip) into <a href="/video-tools/ffmpeg-online.html">the ffmpeg online tool</a>. If the small clip converts in seconds, your original failure was Cause 1 (memory) or Cause 3 (codec). If even the small clip stalls, it is Cause 2 (tab backgrounding).</p>
     </div>
+
+    <table class="w3-table w3-bordered w3-small" style="margin:1em 0">
+        <tr><th>Cause</th><th>Threshold</th><th>Quick fix</th></tr>
+        <tr><td><b>1. Memory</b></td><td>File &gt; ~500 MB or 4K &gt; 10 min</td><td>Trim to a shorter clip; or run ffmpeg locally</td></tr>
+        <tr><td><b>2. Tab backgrounded</b></td><td>Any file size; tab hidden during conversion</td><td>Keep tab in foreground; do not lock screen</td></tr>
+        <tr><td><b>3. Codec not in build</b></td><td>ProRes, DNxHR, JPEG 2000, exotic containers</td><td>Re-encode to H.264 locally first</td></tr>
+    </table>
 
     <h2 class="text-uppercase"><b>Cause 1: browser memory cap on WASM ffmpeg</b></h2>
     <p>WASM ffmpeg in the browser is a self-contained ffmpeg compiled to WebAssembly that runs entirely in the tab. The trade-off: the tab's WASM module typically gets 2 GB of address space (4 GB with explicit memory64 builds), and a single 4K source video plus the in-flight encoder buffers and color-space conversion arrays can exceed that on long clips. When that happens, ffmpeg either dies silently or stalls at a percentage that never advances. Long 4K source files are the most common trigger, but a long 1080p H.265 source with 5.1 audio can also push the limit on phones and older laptops.</p>
