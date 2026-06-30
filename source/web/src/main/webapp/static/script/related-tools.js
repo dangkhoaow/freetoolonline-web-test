@@ -284,6 +284,7 @@ try {
     { title: "MD5 Decode Explained", url: "https://freetoolonline.com/guides/en/md5-decode.html", include: !1, tags: "guide,developer,md5,hash" },
     { title: "Are Online Tools Actually Free?", url: "https://freetoolonline.com/guides/en/tool-free.html", include: !1, tags: "guide,utility,privacy" },
     { title: "Merge PDF Online Free - Combine PDFs in Your Browser", url: "https://freetoolonline.com/guides/merge-pdf-online-free-unlimited.html", include: !1, tags: "pdf" },
+    { title: "Crop Image Online Free - Drag, Preset Ratio, or Exact Pixels", url: "https://freetoolonline.com/guides/crop-image-online-free.html", include: !1, tags: "image-editing" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
