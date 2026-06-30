@@ -9,11 +9,21 @@
 </style>
 <div class="w3-container w3-margin-top">
     <h1 class="text-uppercase"><b>CSS Unminifier vs Prettier: Kapan Menggunakan Masing-masing</b></h1>
-    <p><em>Terakhir ditinjau 2026-05-05. CSS Unminifier dan Prettier keduanya adalah formatter, tetapi mereka menyelesaikan masalah yang berbeda. CSS Unminifier membaca CSS produksi yang diminifikasi dan menyebarkannya kembali sehingga setiap selektor dan deklarasi berada di barisnya sendiri - ideal untuk men-debug stylesheet yang dikirim yang sumbernya tidak Anda miliki. Prettier memformat sumber CSS yang akan Anda commit, menerapkan aturan <code>.prettierrc</code> tim Anda sehingga diff setiap developer tetap bersih. Pilih yang tepat dalam 30 detik dengan tabel di bawah, dan baca sisa panduan ini jika Anda ingin tahu mengapa pilihan yang salah menghasilkan output yang tidak konsisten. Coba <a href="/developer-tools/css-unminifier.html">CSS Unminifier</a> bersama panduan ini untuk paruh baca-CSS-terkirim.</em></p>
+    <p><a href="/developer-tools/css-unminifier.html">CSS Unminifier</a> membaca CSS produksi yang diminifikasi dan menyebarkannya kembali - satu deklarasi per baris - agar kamu bisa membaca atau men-debug CSS yang sumbernya bukan milikmu. Prettier memformat kode sumber CSS yang kamu tulis, menerapkan aturan .prettierrc tim untuk commit yang bersih. Keduanya menargetkan input berbeda; menggunakan yang salah menghasilkan output tidak konsisten.</p>
+    <p><time itemprop="dateReviewed" datetime="2026-06-30">Last reviewed: 2026-06-30</time></p>
+    <address class="author"><a rel="author" href="/about-us.html">freetoolonline.com Editorial Team</a></address>
 
     <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
         <p style="margin-bottom: 0;"><b>Jawaban 30 detik.</b> Gunakan <a href="/developer-tools/css-unminifier.html">CSS Unminifier</a> ketika input adalah stylesheet produksi yang dibangun satu baris dan tujuannya adalah untuk membacanya (debug bug spesifisitas, periksa stylesheet pihak ketiga, serahkan salinan bersih ke rekan satu tim). Gunakan Prettier ketika input adalah sumber CSS yang Anda tulis dan tujuannya adalah memformatnya untuk commit (aturan <code>.prettierrc</code> tim Anda, auto-format-saat-simpan editor Anda, hook pre-commit git Anda). Kedua alat menargetkan input yang berbeda dan menghasilkan output yang berbeda - mencampurnya adalah alasan paling umum mengapa developer melihat "format drift" di pull request.</p>
     </div>
+
+    <table class="w3-table w3-bordered w3-small" style="margin:1em 0">
+        <tr><th>Kriteria</th><th>CSS Unminifier</th><th>Prettier</th></tr>
+        <tr><td>Input</td><td>CSS produksi yang diminifikasi (1 baris panjang, ~5-200 KB)</td><td>Kode sumber CSS yang kamu tulis (mudah dibaca, di repositorimu)</td></tr>
+        <tr><td>Tujuan</td><td>Membaca atau men-debug stylesheet yang sumbernya bukan milikmu</td><td>Format untuk commit; terapkan gaya .prettierrc tim</td></tr>
+        <tr><td>Konfigurasi</td><td>Tidak ada - selalu 1 deklarasi per baris, indentasi 4 spasi</td><td>Dikendalikan oleh .prettierrc (2 atau 4 spasi, batas 80 char, tanda kutip)</td></tr>
+        <tr><td>CLI / hook</td><td>Tidak - alat khusus browser, tanpa akses sistem file atau git</td><td>Ya - npx prettier, lint-staged, Husky pre-commit hook</td></tr>
+    </table>
 
     <h2 class="text-uppercase"><b>Apa yang sebenarnya dilakukan CSS Unminifier (dan apa yang tidak bisa dilakukan)</b></h2>
     <p><a href="/developer-tools/css-unminifier.html">CSS Unminifier</a> di situs ini membaca string CSS yang diminifikasi (jenis yang diproduksi oleh <code>cssnano</code>, <code>csso</code>, <code>clean-css</code>, atau build produksi apa pun yang menjalankan CSS melalui minifier) dan memancarkan aturan yang sama dengan indentasi yang tepat, line break, dan satu deklarasi per baris. Alat ini berjalan sepenuhnya di browser Anda - halaman dibangun di sekitar parsing in-browser dari konten textarea, tanpa unggahan, tanpa akun. Salinan verbatim pada halaman alat berbunyi "stylesheet produksi yang dibangun dan Anda perlu membacanya atau mengeditnya"; itulah kasus penggunaan kanonik.</p>
