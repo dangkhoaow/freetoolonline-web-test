@@ -53,6 +53,11 @@
 
 <p>What makes this a reliable pre-call check is the pairing of a live spectrum meter with a browser permission probe: granting microphone access in the browser confirms the page can reach the device, and the waveform that then moves on the canvas as you speak confirms the mic is actually picking up sound. Seeing both - the permission cleared and the meter responding - is the proof you are call-ready, before you join the meeting or start a recording.</p>
 
+<section class="ai-overview-recapture">
+  <h3>The depth behind the waveform - what Start Microphone Capture actually builds</h3>
+  <p>When you click Start Microphone Capture, the page calls <code>navigator.mediaDevices.getUserMedia</code>, and on browsers where that interface is undefined it falls back gracefully rather than throwing, so an older engine reports a clear permission state instead of a blank screen. The granted stream is wired into a Web Audio graph - <code>window.AudioContext</code> (or <code>webkitAudioContext</code> on older WebKit builds) opens at whatever rate your driver negotiates, typically 44.1 kHz or 48 kHz, and every frame the canvas redraws from the live samples, which is why the waveform tracks your voice in real time instead of lagging a second behind. None of those samples are written to a buffer or a blob for download: the client-side path uses FileReader, canvas, and a transient blob URL purely for the in-browser render, so there is genuinely no Record control and nothing to upload. The one real tradeoff lives in the "Play sound from your microphone" checkbox - leaving it on routes the input straight to your speakers for an end-to-end loopback that confirms speakers AND mic together, but on a laptop with open speakers that same loop becomes an audible feedback howl within a second or two, so the safe pattern is to monitor through headphones or to flip the toggle off once the green level bars already prove the mic is picking up sound.</p>
+</section>
+
 <p><a href="/device-test-tools.html">&larr; Back to Device Test Tools</a></p>
 <br/>
 <address class="author"><a rel="author" href="/editorial-team.html">FreetoolOnline Editorial Team</a></address>
