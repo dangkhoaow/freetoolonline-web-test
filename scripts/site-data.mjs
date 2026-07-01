@@ -1145,6 +1145,8 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/online-diff-tool.html', '/guides/es/online-diff-tool.html', '/guides/vi/online-diff-tool.html', '/guides/id/online-diff-tool.html', '/guides/de/online-diff-tool.html',
   // plan-warm-pascal-v3 S2 batch 60 (2026-06-05) - tool-free x 5 locales (new_guide_locale_completeness gate backfill)
   '/guides/pt/tool-free.html', '/guides/es/tool-free.html', '/guides/vi/tool-free.html', '/guides/id/tool-free.html', '/guides/de/tool-free.html',
+  // cycle20260701 create_new_guide_page (locale completion) - pt variant of compress-image-online-to-50kb (staging-only until es/vi/id/de complete).
+  '/guides/pt/compress-image-online-to-50kb.html',
   // cycle 20260609-2 - md5-decrypter guide (EN + 5 locale variants)
   '/guides/en/md5-decrypter.html',
   '/guides/pt/md5-decrypter.html', '/guides/es/md5-decrypter.html', '/guides/vi/md5-decrypter.html', '/guides/id/md5-decrypter.html', '/guides/de/md5-decrypter.html',
@@ -1457,6 +1459,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/online-diff-tool.html', '/guides/es/online-diff-tool.html', '/guides/vi/online-diff-tool.html', '/guides/id/online-diff-tool.html', '/guides/de/online-diff-tool.html',
   // plan-warm-pascal-v3 S2 batch 60 (2026-06-05) - tool-free x 5 locales (new_guide_locale_completeness gate backfill)
   '/guides/pt/tool-free.html', '/guides/es/tool-free.html', '/guides/vi/tool-free.html', '/guides/id/tool-free.html', '/guides/de/tool-free.html',
+  // cycle20260701 create_new_guide_page (locale completion) - pt variant of compress-image-online-to-50kb (staging-only until es/vi/id/de complete).
+  '/guides/pt/compress-image-online-to-50kb.html',
   '/guides/en/heic-vs-jpg-vs-webp.html',
   '/guides/en/dead-pixel-testing-guide.html',
   '/guides/en/unix-timestamps-explained.html',
@@ -3261,6 +3265,8 @@ export const JSP_BY_ROUTE = {
   '/guides/de/merge-pdf-online-free-unlimited.html': 'guide/de/merge-pdf-online-free-unlimited.jsp',
   '/guides/crop-image-online-free.html': 'guide/crop-image-online-free.jsp',
   '/guides/compress-image-online-to-50kb.html': 'guide/compress-image-online-to-50kb.jsp',
+  // cycle20260701 create_new_guide_page (locale completion) - pt variant (staging-only until es/vi/id/de complete).
+  '/guides/pt/compress-image-online-to-50kb.html': 'guide/pt/compress-image-online-to-50kb.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
