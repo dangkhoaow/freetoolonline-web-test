@@ -286,6 +286,7 @@ try {
     { title: "Merge PDF Online Free - Combine PDFs in Your Browser", url: "https://freetoolonline.com/guides/merge-pdf-online-free-unlimited.html", include: !1, tags: "pdf" },
     { title: "Crop Image Online Free - Drag, Preset Ratio, or Exact Pixels", url: "https://freetoolonline.com/guides/crop-image-online-free.html", include: !1, tags: "image-editing" },
     { title: "How to Compress an Image to 50KB Online (Free)", url: "https://freetoolonline.com/guides/compress-image-online-to-50kb.html", include: !1, tags: "image-editing" },
+    { title: "How to check a laptop screen for dead pixels and backlight bleed", url: "https://freetoolonline.com/guides/cek-layar-laptop.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

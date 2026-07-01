@@ -3285,6 +3285,7 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/compress-image-online-to-50kb.html': 'guide/vi/compress-image-online-to-50kb.jsp',
   '/guides/id/compress-image-online-to-50kb.html': 'guide/id/compress-image-online-to-50kb.jsp',
   '/guides/de/compress-image-online-to-50kb.html': 'guide/de/compress-image-online-to-50kb.jsp',
+  '/guides/cek-layar-laptop.html': 'guide/cek-layar-laptop.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
