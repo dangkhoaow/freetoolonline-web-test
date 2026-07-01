@@ -269,7 +269,16 @@ export async function buildDynamicGuidesHubBody({ cmsRoot } = {}) {
   // exist on this site". Adding a guide to site-data.mjs + creating the
   // BODYTITLE/BODYDESC fragments is now sufficient - this builder picks
   // it up on the next deploy. No more hand-edit of BODYHTMLguides.html.
-  const guideRoutes = getDynamicGuideRoutes();
+  //
+  // The English hub lists English (canonical) guides ONLY. Locale variants
+  // live at /guides/<lang>/<slug>.html and stay discoverable via each guide's
+  // hreflang block, the per-(cluster,locale) left-menu, and the per-language
+  // sitemaps. Listing every locale variant here produced a ~1100-entry
+  // multilingual wall-of-text with heavy within-section duplication (the same
+  // guide restated in 6 languages side by side), which failed the Phase-6
+  // reader-eye walkthrough on axis A (cannot scan in 15s), axis C (within-page
+  // duplication) and axis D (flat unstructured dump).
+  const guideRoutes = getDynamicGuideRoutes().filter((route) => guideRouteLocale(route) === 'en');
   const guideMetaByTopic = new Map();
   for (const topic of GUIDE_TOPIC_ORDER) {
     guideMetaByTopic.set(topic, []);
@@ -295,9 +304,9 @@ export async function buildDynamicGuidesHubBody({ cmsRoot } = {}) {
 
   const html = `<div class='w3-container'>
     <h1><b class="text-uppercase">All Guides - Browser Tool Library</b></h1>
-    <p>Hands-on, no-fluff guides for the people landing on freetoolonline.com tools, in English plus Indonesian and Portuguese. Every guide pairs the problem to the right tool, walks the steps, and explains the trade-offs - so you finish in two minutes instead of two browser tabs. Each linked tool runs entirely in your browser; nothing uploads to a server.</p>
+    <p>Hands-on, no-fluff guides for the people landing on freetoolonline.com tools. Every guide pairs the problem to the right tool, walks the steps, and explains the trade-offs, so you finish in a couple of minutes instead of two browser tabs. Many linked tools run right in your browser; the file-conversion tools upload over HTTPS and clear the working copy after a short window.</p>
 
-    <p>${totalGuides} guides grouped by the kind of task you came to do. If you are not sure which group your question lives in, the search box on the home page covers every guide and tool by keyword.</p>
+    <p>${totalGuides} English guides grouped by the kind of task you came to do. Where a guide also has an Indonesian or Portuguese edition, the language link sits on the guide page itself. If you are not sure which group your question lives in, the search box on the home page covers every guide and tool by keyword.</p>
 
     <figure class="illustration">
       <img src="/img/illustrations/decision-tree-2branch/guides__12f3a7f9.svg"
