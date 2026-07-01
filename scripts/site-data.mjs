@@ -1155,6 +1155,8 @@ export const INFO_ROUTES = new Set([
   '/guides/de/compress-image-online-to-50kb.html',
   // cycle 20260702 create_new_guide_page (locale completion) - pt variant of cek-layar-laptop (staging-only until es/vi/id/de complete).
   '/guides/pt/cek-layar-laptop.html',
+  // cycle 20260702-3 create_new_guide_page (locale completion) - es/vi/id/de variants of cek-layar-laptop (bundle now locale-complete).
+  '/guides/es/cek-layar-laptop.html', '/guides/vi/cek-layar-laptop.html', '/guides/id/cek-layar-laptop.html', '/guides/de/cek-layar-laptop.html',
   // cycle 20260609-2 - md5-decrypter guide (EN + 5 locale variants)
   '/guides/en/md5-decrypter.html',
   '/guides/pt/md5-decrypter.html', '/guides/es/md5-decrypter.html', '/guides/vi/md5-decrypter.html', '/guides/id/md5-decrypter.html', '/guides/de/md5-decrypter.html',
@@ -1477,6 +1479,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/compress-image-online-to-50kb.html',
   // cycle 20260702 create_new_guide_page (locale completion) - pt variant of cek-layar-laptop (staging-only until es/vi/id/de complete).
   '/guides/pt/cek-layar-laptop.html',
+  // cycle 20260702-3 create_new_guide_page (locale completion) - es/vi/id/de variants of cek-layar-laptop (bundle now locale-complete).
+  '/guides/es/cek-layar-laptop.html', '/guides/vi/cek-layar-laptop.html', '/guides/id/cek-layar-laptop.html', '/guides/de/cek-layar-laptop.html',
   '/guides/en/heic-vs-jpg-vs-webp.html',
   '/guides/en/dead-pixel-testing-guide.html',
   '/guides/en/unix-timestamps-explained.html',
@@ -3292,6 +3296,10 @@ export const JSP_BY_ROUTE = {
   '/guides/cek-layar-laptop.html': 'guide/cek-layar-laptop.jsp',
   // cycle 20260702 create_new_guide_page (locale completion) - pt variant of cek-layar-laptop (staging-only until es/vi/id/de complete).
   '/guides/pt/cek-layar-laptop.html': 'guide/pt/cek-layar-laptop.jsp',
+  '/guides/es/cek-layar-laptop.html': 'guide/es/cek-layar-laptop.jsp',
+  '/guides/vi/cek-layar-laptop.html': 'guide/vi/cek-layar-laptop.jsp',
+  '/guides/id/cek-layar-laptop.html': 'guide/id/cek-layar-laptop.jsp',
+  '/guides/de/cek-layar-laptop.html': 'guide/de/cek-layar-laptop.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
