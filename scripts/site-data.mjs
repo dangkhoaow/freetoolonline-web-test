@@ -3260,6 +3260,7 @@ export const JSP_BY_ROUTE = {
   // cycle 20260630-6 create_new_guide_page (locale completion) - de variant of merge-pdf-online-free-unlimited (locale-complete after this).
   '/guides/de/merge-pdf-online-free-unlimited.html': 'guide/de/merge-pdf-online-free-unlimited.jsp',
   '/guides/crop-image-online-free.html': 'guide/crop-image-online-free.jsp',
+  '/guides/compress-image-online-to-50kb.html': 'guide/compress-image-online-to-50kb.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
