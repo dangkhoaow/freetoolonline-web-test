@@ -1153,6 +1153,8 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/compress-image-online-to-50kb.html',
   '/guides/id/compress-image-online-to-50kb.html',
   '/guides/de/compress-image-online-to-50kb.html',
+  // cycle 20260702 create_new_guide_page (locale completion) - pt variant of cek-layar-laptop (staging-only until es/vi/id/de complete).
+  '/guides/pt/cek-layar-laptop.html',
   // cycle 20260609-2 - md5-decrypter guide (EN + 5 locale variants)
   '/guides/en/md5-decrypter.html',
   '/guides/pt/md5-decrypter.html', '/guides/es/md5-decrypter.html', '/guides/vi/md5-decrypter.html', '/guides/id/md5-decrypter.html', '/guides/de/md5-decrypter.html',
@@ -1473,6 +1475,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/compress-image-online-to-50kb.html',
   '/guides/id/compress-image-online-to-50kb.html',
   '/guides/de/compress-image-online-to-50kb.html',
+  // cycle 20260702 create_new_guide_page (locale completion) - pt variant of cek-layar-laptop (staging-only until es/vi/id/de complete).
+  '/guides/pt/cek-layar-laptop.html',
   '/guides/en/heic-vs-jpg-vs-webp.html',
   '/guides/en/dead-pixel-testing-guide.html',
   '/guides/en/unix-timestamps-explained.html',
@@ -3286,6 +3290,8 @@ export const JSP_BY_ROUTE = {
   '/guides/id/compress-image-online-to-50kb.html': 'guide/id/compress-image-online-to-50kb.jsp',
   '/guides/de/compress-image-online-to-50kb.html': 'guide/de/compress-image-online-to-50kb.jsp',
   '/guides/cek-layar-laptop.html': 'guide/cek-layar-laptop.jsp',
+  // cycle 20260702 create_new_guide_page (locale completion) - pt variant of cek-layar-laptop (staging-only until es/vi/id/de complete).
+  '/guides/pt/cek-layar-laptop.html': 'guide/pt/cek-layar-laptop.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
