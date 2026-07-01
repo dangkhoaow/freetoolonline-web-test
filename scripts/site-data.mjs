@@ -1157,6 +1157,8 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/cek-layar-laptop.html',
   // cycle 20260702-3 create_new_guide_page (locale completion) - es/vi/id/de variants of cek-layar-laptop (bundle now locale-complete).
   '/guides/es/cek-layar-laptop.html', '/guides/vi/cek-layar-laptop.html', '/guides/id/cek-layar-laptop.html', '/guides/de/cek-layar-laptop.html',
+  // geo-sitewide-audit-runbook: ship-pending reconciliation - pt/es/vi/id/de variants of mp4-to-gif-online-free (completes the locale bundle for the EN-only stranded scaffold).
+  '/guides/pt/mp4-to-gif-online-free.html', '/guides/es/mp4-to-gif-online-free.html', '/guides/vi/mp4-to-gif-online-free.html', '/guides/id/mp4-to-gif-online-free.html', '/guides/de/mp4-to-gif-online-free.html',
   // cycle 20260609-2 - md5-decrypter guide (EN + 5 locale variants)
   '/guides/en/md5-decrypter.html',
   '/guides/pt/md5-decrypter.html', '/guides/es/md5-decrypter.html', '/guides/vi/md5-decrypter.html', '/guides/id/md5-decrypter.html', '/guides/de/md5-decrypter.html',
@@ -1481,6 +1483,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/cek-layar-laptop.html',
   // cycle 20260702-3 create_new_guide_page (locale completion) - es/vi/id/de variants of cek-layar-laptop (bundle now locale-complete).
   '/guides/es/cek-layar-laptop.html', '/guides/vi/cek-layar-laptop.html', '/guides/id/cek-layar-laptop.html', '/guides/de/cek-layar-laptop.html',
+  // geo-sitewide-audit-runbook: ship-pending reconciliation - pt/es/vi/id/de variants of mp4-to-gif-online-free (completes the locale bundle for the EN-only stranded scaffold).
+  '/guides/pt/mp4-to-gif-online-free.html', '/guides/es/mp4-to-gif-online-free.html', '/guides/vi/mp4-to-gif-online-free.html', '/guides/id/mp4-to-gif-online-free.html', '/guides/de/mp4-to-gif-online-free.html',
   '/guides/en/heic-vs-jpg-vs-webp.html',
   '/guides/en/dead-pixel-testing-guide.html',
   '/guides/en/unix-timestamps-explained.html',
@@ -3300,6 +3304,13 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/cek-layar-laptop.html': 'guide/vi/cek-layar-laptop.jsp',
   '/guides/id/cek-layar-laptop.html': 'guide/id/cek-layar-laptop.jsp',
   '/guides/de/cek-layar-laptop.html': 'guide/de/cek-layar-laptop.jsp',
+  '/guides/mp4-to-gif-online-free.html': 'guide/mp4-to-gif-online-free.jsp',
+  // geo-sitewide-audit-runbook: ship-pending reconciliation - completes the locale bundle for mp4-to-gif-online-free.
+  '/guides/pt/mp4-to-gif-online-free.html': 'guide/pt/mp4-to-gif-online-free.jsp',
+  '/guides/es/mp4-to-gif-online-free.html': 'guide/es/mp4-to-gif-online-free.jsp',
+  '/guides/vi/mp4-to-gif-online-free.html': 'guide/vi/mp4-to-gif-online-free.jsp',
+  '/guides/id/mp4-to-gif-online-free.html': 'guide/id/mp4-to-gif-online-free.jsp',
+  '/guides/de/mp4-to-gif-online-free.html': 'guide/de/mp4-to-gif-online-free.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
