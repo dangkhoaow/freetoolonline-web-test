@@ -299,6 +299,7 @@ try {
     { title: "Wheel Spinner (Wheel of Names)", url: "https://freetoolonline.com/utility-tools/wheel-spinner.html", include: !1, tags: "utility" },
     { title: "Dice Roller Online", url: "https://freetoolonline.com/utility-tools/dice-roller.html", include: !1, tags: "utility" },
     { title: "Coin Flip Online", url: "https://freetoolonline.com/utility-tools/coin-flip.html", include: !1, tags: "utility" },
+    { title: "Random Number Generator", url: "https://freetoolonline.com/utility-tools/random-number-picker.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
