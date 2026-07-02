@@ -290,6 +290,7 @@ try {
     { title: "MP4 to GIF Online Free: Trim, Resize, and Export an Animated GIF", url: "https://freetoolonline.com/guides/mp4-to-gif-online-free.html", include: !1, tags: "video" },
     { title: "PDF Filler Form Editor", url: "https://freetoolonline.com/pdf-tools/pdf-filler-form-editor.html", include: !1, tags: "pdf" },
     { title: "Audio Converter", url: "https://freetoolonline.com/image-converter-tools/audio-converter.html", include: !1, tags: "image-conversion" },
+    { title: "Code Formatter Beautifier", url: "https://freetoolonline.com/developer-tools/code-formatter-beautifier.html", include: !1, tags: "developer" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
