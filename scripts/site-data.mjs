@@ -2444,6 +2444,7 @@ export const ALIAS_ROUTES = {
   '/wheel-spinner.html': '/utility-tools/wheel-spinner.html',
   '/dice-roller.html': '/utility-tools/dice-roller.html',
   '/coin-flip.html': '/utility-tools/coin-flip.html',
+  '/random-number-picker.html': '/utility-tools/random-number-picker.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3406,6 +3407,13 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/coin-flip-step-by-step.html': 'guide/vi/coin-flip-step-by-step.jsp',
   '/guides/id/coin-flip-step-by-step.html': 'guide/id/coin-flip-step-by-step.jsp',
   '/guides/de/coin-flip-step-by-step.html': 'guide/de/coin-flip-step-by-step.jsp',
+  '/utility-tools/random-number-picker.html': 'utility/random-number-picker.jsp',
+  '/guides/random-number-generator-step-by-step.html': 'guide/random-number-generator-step-by-step.jsp',
+  '/guides/pt/random-number-generator-step-by-step.html': 'guide/pt/random-number-generator-step-by-step.jsp',
+  '/guides/es/random-number-generator-step-by-step.html': 'guide/es/random-number-generator-step-by-step.jsp',
+  '/guides/vi/random-number-generator-step-by-step.html': 'guide/vi/random-number-generator-step-by-step.jsp',
+  '/guides/id/random-number-generator-step-by-step.html': 'guide/id/random-number-generator-step-by-step.jsp',
+  '/guides/de/random-number-generator-step-by-step.html': 'guide/de/random-number-generator-step-by-step.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
