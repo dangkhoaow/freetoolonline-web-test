@@ -2427,6 +2427,7 @@ export const ALIAS_ROUTES = {
   '/code-editor.html': '/developer-tools/code-editor.html',
   '/steganography.html': '/image-tools/steganography.html',
   '/private-ai-chat.html': '/utility-tools/private-ai-chat.html',
+  '/pdf-filler-form-editor.html': '/pdf-tools/pdf-filler-form-editor.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3311,6 +3312,13 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/mp4-to-gif-online-free.html': 'guide/vi/mp4-to-gif-online-free.jsp',
   '/guides/id/mp4-to-gif-online-free.html': 'guide/id/mp4-to-gif-online-free.jsp',
   '/guides/de/mp4-to-gif-online-free.html': 'guide/de/mp4-to-gif-online-free.jsp',
+  '/pdf-tools/pdf-filler-form-editor.html': 'pdf/pdf-filler-form-editor.jsp',
+  '/guides/pdf-filler-form-editor-step-by-step.html': 'guide/pdf-filler-form-editor-step-by-step.jsp',
+  '/guides/pt/pdf-filler-form-editor-step-by-step.html': 'guide/pt/pdf-filler-form-editor-step-by-step.jsp',
+  '/guides/es/pdf-filler-form-editor-step-by-step.html': 'guide/es/pdf-filler-form-editor-step-by-step.jsp',
+  '/guides/vi/pdf-filler-form-editor-step-by-step.html': 'guide/vi/pdf-filler-form-editor-step-by-step.jsp',
+  '/guides/id/pdf-filler-form-editor-step-by-step.html': 'guide/id/pdf-filler-form-editor-step-by-step.jsp',
+  '/guides/de/pdf-filler-form-editor-step-by-step.html': 'guide/de/pdf-filler-form-editor-step-by-step.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

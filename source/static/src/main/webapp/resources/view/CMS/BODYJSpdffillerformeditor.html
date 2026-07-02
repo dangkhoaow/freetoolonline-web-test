@@ -1,0 +1,147 @@
+<script>
+    // Self-contained IN-BROWSER PDF form filler (pdf-filler-form-editor) - pdf-lib, ZERO upload.
+    // Loads a fillable PDF (AcroForm), enumerates its form fields, renders an input
+    // per field, writes the values back with pdf-lib, and offers the filled PDF for
+    // download. No server, no upload - mirrors the /vendor/pdf-lib client pattern the
+    // existing in-browser PDF tools (flatten-pdf compress/rotate) already use.
+    //
+    // NOT implemented (anti-claims, must be in tool-<slug>/SKILL.md ## NOT implemented):
+    //   - Only fills PDFs that ALREADY contain AcroForm fields; it does NOT add new
+    //     fields to a flat/scanned PDF and does NOT run OCR.
+    //   - Does not flatten by default (the downloaded PDF keeps editable fields).
+
+    function ftoLoadPdfLib() {
+        if (window.PDFLib && window.PDFLib.PDFDocument) { return Promise.resolve(); }
+        if (window.__ftoPdfLibPromise) { return window.__ftoPdfLibPromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/pdf-lib';
+        var url = base + '/pdf-lib.min.js';
+        window.__ftoPdfLibPromise = new Promise(function (resolve, reject) {
+            var s = document.createElement('script');
+            s.src = url; s.async = true;
+            s.onload = function () {
+                (window.PDFLib && window.PDFLib.PDFDocument)
+                    ? resolve()
+                    : reject(new Error('pdf-lib loaded but PDFLib global is missing'));
+            };
+            s.onerror = function () { reject(new Error('failed to load pdf-lib from ' + url)); };
+            document.head.appendChild(s);
+        });
+        return window.__ftoPdfLibPromise;
+    }
+
+    function doAfterPageRendered() {
+        var fileEl = document.getElementById('pffFile');
+        var loadBtn = document.getElementById('pffLoadBtn');
+        var fillBtn = document.getElementById('pffFillBtn');
+        var fieldsEl = document.getElementById('pffFields');
+        var actionsEl = document.getElementById('pffActions');
+        var statusEl = document.getElementById('pffStatus');
+        var errEl = document.getElementById('pffError');
+        var dl = document.getElementById('pffDownload');
+        if (!fileEl || !loadBtn || !fieldsEl) { return; }   // not the pdf-form-filler page
+
+        var loadedDoc = null, loadedForm = null, loadedFields = [];
+
+        function setStatus(m) { if (statusEl) { statusEl.textContent = m; } }
+        function setErr(m) { if (errEl) { errEl.textContent = m || ''; } }
+        function escapeName(n) { return (window.CSS && CSS.escape) ? CSS.escape(n) : String(n).replace(/["\\]/g, '\\$&'); }
+
+        loadBtn.addEventListener('click', function () {
+            setErr(''); setStatus('');
+            if (dl) { dl.style.display = 'none'; dl.removeAttribute('href'); }
+            fieldsEl.innerHTML = ''; if (actionsEl) { actionsEl.style.display = 'none'; }
+            var f = fileEl.files && fileEl.files[0];
+            if (!f) { setErr('Choose a PDF file first.'); return; }
+            loadBtn.disabled = true; setStatus('Reading the PDF in your browser ...');
+            ftoLoadPdfLib()
+                .then(function () { return f.arrayBuffer(); })
+                .then(function (buf) { return window.PDFLib.PDFDocument.load(buf, { ignoreEncryption: true }); })
+                .then(function (doc) {
+                    var PL = window.PDFLib;
+                    loadedDoc = doc; loadedForm = doc.getForm();
+                    loadedFields = [];
+                    var fields = loadedForm.getFields();
+                    fields.forEach(function (field) {
+                        var name = field.getName();
+                        var row = document.createElement('div');
+                        row.className = 'pff-field';
+                        var lab = document.createElement('label');
+                        lab.textContent = name;
+                        row.appendChild(lab);
+                        var type = 'text', control;
+                        if (PL.PDFTextField && field instanceof PL.PDFTextField) {
+                            type = 'text';
+                            control = document.createElement('input');
+                            control.type = 'text'; control.className = 'w3-input w3-border';
+                            try { control.value = field.getText() || ''; } catch (e) { void e; }
+                        } else if (PL.PDFCheckBox && field instanceof PL.PDFCheckBox) {
+                            type = 'checkbox';
+                            control = document.createElement('input'); control.type = 'checkbox';
+                            try { control.checked = field.isChecked(); } catch (e) { void e; }
+                        } else if (PL.PDFDropdown && field instanceof PL.PDFDropdown) {
+                            type = 'dropdown';
+                            control = document.createElement('select'); control.className = 'w3-select w3-border';
+                            (field.getOptions() || []).forEach(function (o) { var op = document.createElement('option'); op.value = o; op.textContent = o; control.appendChild(op); });
+                            try { var sel = field.getSelected(); if (sel && sel.length) { control.value = sel[0]; } } catch (e) { void e; }
+                        } else if (PL.PDFRadioGroup && field instanceof PL.PDFRadioGroup) {
+                            type = 'radio';
+                            control = document.createElement('select'); control.className = 'w3-select w3-border';
+                            (field.getOptions() || []).forEach(function (o) { var op = document.createElement('option'); op.value = o; op.textContent = o; control.appendChild(op); });
+                            try { var s2 = field.getSelected(); if (s2) { control.value = s2; } } catch (e) { void e; }
+                        } else if (PL.PDFOptionList && field instanceof PL.PDFOptionList) {
+                            type = 'optionlist';
+                            control = document.createElement('select'); control.className = 'w3-select w3-border';
+                            (field.getOptions() || []).forEach(function (o) { var op = document.createElement('option'); op.value = o; op.textContent = o; control.appendChild(op); });
+                        } else {
+                            type = 'unsupported';
+                            control = document.createElement('input');
+                            control.type = 'text'; control.className = 'w3-input w3-border';
+                            control.disabled = true; control.placeholder = '(unsupported field type - left unchanged)';
+                        }
+                        control.setAttribute('data-pff-name', name);
+                        control.setAttribute('data-pff-type', type);
+                        row.appendChild(control);
+                        fieldsEl.appendChild(row);
+                        loadedFields.push({ name: name, type: type, field: field });
+                    });
+                    if (loadedFields.length === 0) {
+                        setStatus('This PDF has no fillable form fields (AcroForm). This tool fills EXISTING form fields; it cannot add new fields to a flat or scanned PDF.');
+                    } else {
+                        setStatus('Loaded ' + loadedFields.length + ' form field(s). Fill them in below, then click Fill & download PDF.');
+                        if (actionsEl) { actionsEl.style.display = ''; }
+                    }
+                })
+                .catch(function (err) {
+                    setErr('Could not read the PDF: ' + (err && err.message ? err.message : 'unknown error') + '.');
+                })
+                .then(function () { loadBtn.disabled = false; });
+        });
+
+        if (fillBtn) {
+            fillBtn.addEventListener('click', function () {
+                if (!loadedDoc || !loadedForm) { setErr('Load a PDF and its form fields first.'); return; }
+                setErr(''); fillBtn.disabled = true; setStatus('Filling the form in your browser ...');
+                loadedFields.forEach(function (rec) {
+                    var el = fieldsEl.querySelector('[data-pff-name="' + escapeName(rec.name) + '"]');
+                    if (!el) { return; }
+                    try {
+                        if (rec.type === 'text') { rec.field.setText(el.value || ''); }
+                        else if (rec.type === 'checkbox') { el.checked ? rec.field.check() : rec.field.uncheck(); }
+                        else if (rec.type === 'dropdown' || rec.type === 'radio' || rec.type === 'optionlist') { if (el.value) { rec.field.select(el.value); } }
+                    } catch (e) { void e; }   // per-field error: skip that field, keep going
+                });
+                loadedDoc.save().then(function (bytes) {
+                    var url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+                    if (dl) {
+                        dl.href = url;
+                        dl.download = 'filled-' + (typeof getCurrentDateTime === 'function' ? getCurrentDateTime() : 'form') + '.pdf';
+                        dl.style.display = ''; dl.textContent = 'Download filled PDF';
+                    }
+                    setStatus('Done in your browser - no upload. Your filled PDF is ready to download.');
+                }).catch(function (err) {
+                    setErr('Could not save the filled PDF: ' + (err && err.message ? err.message : 'unknown error') + '.');
+                }).then(function () { fillBtn.disabled = false; });
+            });
+        }
+    }
+</script>
