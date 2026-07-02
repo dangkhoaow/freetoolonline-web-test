@@ -1,0 +1,76 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Code beautifier langkah demi langkah: format JavaScript, CSS, HTML, dan JSON</b></h1>
+    <p><a href="/developer-tools/code-formatter-beautifier.html">Code beautifier</a> gratis di situs ini merapikan indentasi JavaScript, CSS, dan HTML, serta mencetak JSON agar mudah dibaca, semuanya di browser. Panduan ini menjelaskan apa yang diharapkan untuk setiap jenis input, apa yang harus dilakukan saat hasilnya terlihat salah, dan kapan menggunakan alat lain.</p>
+    <p class="reviewed">Last reviewed: 2026-07-02</p>
+    <address class="author"><a rel="author" href="/about-us.html">freetoolonline.com Editorial Team</a></address>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Jawaban 30 detik.</b> Tempel kode Anda ke panel kiri <a href="/developer-tools/code-formatter-beautifier.html">code beautifier</a> dan klik Format. Alat ini memeriksa JSON terlebih dahulu, lalu menduga HTML (dimulai dengan &lt;), CSS (terlihat seperti blok aturan), atau JavaScript (semua kasus lainnya), dan merapikan hasilnya dengan indentasi dua spasi. Jika deteksinya salah, atau Anda menempel bahasa yang tidak dikenali alat ini, hasilnya tetap muncul - periksa dulu sebelum digunakan.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Memformat JavaScript</b></h2>
+    <p>Tempel potongan JavaScript - satu baris yang diminifikasi, sebuah fungsi yang disalin, atau seluruh file - lalu klik Format. Alat ini memuat salinan self-hosted dari pustaka open-source js-beautify dan memanggil formatter JavaScript-nya, yang merapikan kurung kurawal dan kurung biasa yang bertumpuk dan menempatkan setiap statement pada baris tersendiri. Menempel <code>function add(a,b){return a+b;}</code> mengembalikan fungsi yang sama tersebar di beberapa baris dengan isi diindentasi di dalam kurung kurawal. Formatter hanya mengubah spasi - tidak mengganti nama variabel, tidak menyusun ulang statement, dan tidak mengubah perilaku kode.</p>
+
+    <h2 class="text-uppercase"><b>Memformat CSS</b></h2>
+    <p>CSS terdeteksi ketika input terlihat seperti satu atau lebih blok <code>selector { properti: nilai; }</code> tanpa token khusus JavaScript (tidak ada <code>function</code>, tidak ada <code>=&gt;</code>, tidak ada <code>var</code>, <code>let</code>, atau <code>const</code>, tidak ada kurung biasa). Menempel aturan yang diminifikasi seperti <code>.card{margin:0;padding:8px;border-radius:4px}</code> mengembalikan aturan dengan setiap properti pada baris tersendiri yang diindentasi di dalam kurung kurawal. Jika potongan CSS mencampur token yang mirip JavaScript, detektor bisa mengklasifikasikannya sebagai JavaScript - tempel CSS sendiri, tanpa tag script di sekitarnya, agar deteksi tetap dapat diandalkan.</p>
+
+    <h2 class="text-uppercase"><b>Memformat HTML</b></h2>
+    <p>Input yang dimulai dengan <code>&lt;</code> diperlakukan sebagai HTML. Potongan satu baris seperti <code>&lt;div&gt;&lt;p&gt;hi&lt;/p&gt;&lt;/div&gt;</code> kembali dengan setiap tag pada baris tersendiri dan elemen anak diindentasi satu level lebih dalam dari induknya. Ini berguna untuk HTML yang disalin dengan perintah "Copy outerHTML" browser, yang biasanya datang dalam satu baris yang sulit dibaca. Formatter HTML bergantung pada formatter JavaScript dan CSS dari mesin yang sama untuk memuat lebih dulu (untuk blok <code>&lt;script&gt;</code> atau <code>&lt;style&gt;</code> apa pun di dalam markup), yang dimuat secara otomatis oleh alat ini sebelum berjalan.</p>
+
+    <h2 class="text-uppercase"><b>Memformat JSON</b></h2>
+    <p>JSON diperiksa sebelum semua yang di atas: jika input dimulai dengan <code>{</code>, <code>[</code>, tanda kutip, angka, atau salah satu dari <code>true</code>, <code>false</code>, <code>null</code>, alat ini mem-parsing-nya dan mencetaknya kembali dengan <code>JSON.stringify(value, null, 2)</code> - indentasi dua spasi, satu properti per baris. Ini adalah parsing sungguhan, bukan tebakan berbasis teks, sehingga payload yang tidak valid terdeteksi: menempel <code>{"a":1,</code> (koma di akhir tanpa apa pun setelahnya) mengembalikan pesan yang dimulai dengan <b>Invalid JSON:</b> bukan hasil yang diformat. Perbaiki error yang dilaporkan lalu tempel lagi.</p>
+
+    <h2 class="text-uppercase"><b>Saat hasilnya terlihat salah</b></h2>
+    <p>Dua hal bisa salah. Pertama, deteksi bahasa bisa meleset - ini adalah heuristik berdasarkan bentuk teks, bukan parser lengkap untuk setiap bahasa, sehingga bahasa yang tidak dibuat untuk alat ini (Python, Java, Go, dan sejenisnya) tetap diproses melalui formatter JavaScript, dan hasilnya mungkin tidak terlihat benar. Kedua, khusus untuk JSON, error parsing berarti alat ini tidak bisa memformat apa pun sampai JSON-nya valid - tempel lagi setelah memperbaiki error yang dilaporkan pesan tersebut. Kedua kasus tidak merusak input Anda: panel kiri tetap menyimpan persis apa yang Anda tempel, jadi Anda selalu bisa mencoba lagi.</p>
+
+    <h2 class="text-uppercase"><b>Code beautifier vs JSON Parser</b></h2>
+    <p>Kedua alat bisa mencetak JSON agar mudah dibaca, jadi berguna untuk tahu kapan menggunakan yang mana. Code beautifier adalah pilihan yang tepat untuk JavaScript, CSS, atau HTML, dan mencetak JSON juga sebagai efek samping. <a href="/developer-tools/json-parser.html">JSON Parser</a> adalah pilihan yang tepat ketika Anda secara khusus perlu memvalidasi payload dengan deteksi error, menjelajahi hasil sebagai pohon yang bisa diperluas, atau memeriksa tipe dan indeks array dari field tertentu - alat itu dibuat khusus untuk JSON dan menampilkan lebih banyak tentang struktur dibanding cetakan terindentasi biasa.</p>
+
+    <h2 class="text-uppercase"><b>Referensi cepat</b></h2>
+    <table class="w3-table w3-bordered w3-small" style="margin:1em 0">
+        <tr><th>Input dimulai dengan</th><th>Terdeteksi sebagai</th><th>Mesin yang dipakai</th></tr>
+        <tr><td><code>{</code>, <code>[</code>, tanda kutip, angka, atau true/false/null</td><td>JSON</td><td>JSON.stringify(value, null, 2)</td></tr>
+        <tr><td><code>&lt;</code></td><td>HTML</td><td>html_beautify (js-beautify)</td></tr>
+        <tr><td>Blok aturan, misalnya <code>selector { properti: nilai; }</code></td><td>CSS</td><td>css_beautify (js-beautify)</td></tr>
+        <tr><td>Semua kasus lainnya</td><td>JavaScript</td><td>js_beautify (js-beautify)</td></tr>
+    </table>
+
+    <h2 class="text-uppercase"><b>Privasi</b></h2>
+    <p>Pemformatan berjalan sepenuhnya di tab browser ini. Kode yang ditempel tidak pernah diunggah, dikirim ke layanan analitik, atau ditulis ke server mana pun - kode hanya ada di memori halaman sampai Anda menutup tab atau menempel yang lain.</p>
+
+    <h2 class="text-uppercase"><b>Panduan terkait</b></h2>
+    <ul>
+        <li><a href="/guides/id/json-parser-validate-vs-format-vs-tree-view.html">JSON parser: validasi vs format vs tampilan pohon</a> - panduan keputusan serupa untuk alat yang khusus JSON.</li>
+        <li><a href="/guides/id/css-minifier-vs-compressor.html">CSS minifier vs compressor</a> - pekerjaan sebaliknya: memperkecil stylesheet daripada memformatnya.</li>
+        <li><a href="/developer-tools/code-formatter-beautifier.html">Alat pemformat kode</a> - alat itu sendiri.</li>
+        <li><a href="/developer-tools.html">Hub alat developer</a> - kumpulan lengkapnya, semua berjalan di browser tanpa upload.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Pertanyaan yang sering diajukan</b></h2>
+    <details class="faq-item">
+      <summary>Apakah beautifier mengubah apa yang dilakukan kode saya?</summary>
+      <p>Tidak. Yang berubah hanya spasi dan indentasi. Logika, nilai, dan struktur JavaScript, CSS, atau HTML yang Anda tempel tetap sama.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Mengapa CSS saya diformat sebagai JavaScript?</summary>
+      <p>Deteksi bahasa adalah heuristik berdasarkan bentuk teks, bukan parser lengkap. Jika potongan CSS Anda mengandung token yang diasosiasikan detektor dengan JavaScript, kode itu bisa diklasifikasikan sebagai JavaScript. Tempel aturan CSS sendiri agar deteksi tetap dapat diandalkan.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Bisakah saya memformat Python, Java, atau bahasa lain?</summary>
+      <p>Tidak dapat diandalkan. Alat ini mengenali JavaScript, CSS, HTML, dan JSON. Bahasa lain tetap diproses melalui formatter JavaScript dan hasilnya mungkin tidak terlihat benar - periksa hasilnya sebelum mengandalkannya.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Apakah kode saya diunggah ke suatu tempat?</summary>
+      <p>Tidak. Pemformatan berjalan sepenuhnya di tab browser ini; tidak ada yang Anda tempel dikirim ke server atau layanan analitik.</p>
+    </details>
+</div>

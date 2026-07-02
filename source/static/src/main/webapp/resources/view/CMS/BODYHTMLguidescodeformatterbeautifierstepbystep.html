@@ -1,0 +1,76 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Code beautifier step by step: format JavaScript, CSS, HTML, and JSON</b></h1>
+    <p>The free <a href="/developer-tools/code-formatter-beautifier.html">code beautifier</a> on this site re-indents JavaScript, CSS, and HTML, and pretty-prints JSON, all in the browser. This guide walks through what to expect for each input type, what to do when the output looks wrong, and when to reach for a different tool instead.</p>
+    <p><time itemprop="dateReviewed" datetime="2026-07-02">Last reviewed: 2026-07-02</time></p>
+    <address class="author"><a rel="author" href="/about-us.html">freetoolonline.com Editorial Team</a></address>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> Paste your code into the left pane of the <a href="/developer-tools/code-formatter-beautifier.html">code beautifier</a> and click Format. The tool checks for JSON first, then guesses HTML (starts with &lt;), CSS (looks like rule blocks), or JavaScript (everything else), and re-indents the result with two-space indentation. If the guess is wrong, or you pasted a language the tool does not recognise, the output still appears - check it before you use it.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Formatting JavaScript</b></h2>
+    <p>Paste a JavaScript snippet - a minified one-liner, a copy-pasted function, or a whole file - and click Format. The tool loads a self-hosted copy of the open-source js-beautify library and calls its JavaScript beautifier, which re-indents nested braces and parentheses and puts statements on their own lines. Pasting <code>function add(a,b){return a+b;}</code> returns the same function spread across multiple lines with the body indented inside the braces. The beautifier changes whitespace only - it does not rename variables, reorder statements, or change how the code behaves.</p>
+
+    <h2 class="text-uppercase"><b>Formatting CSS</b></h2>
+    <p>CSS is detected when the input looks like one or more <code>selector { property: value; }</code> blocks with none of the JavaScript-only tokens (no <code>function</code>, no <code>=&gt;</code>, no <code>var</code>, <code>let</code>, or <code>const</code>, no parentheses). Pasting a minified rule like <code>.card{margin:0;padding:8px;border-radius:4px}</code> returns the rule with each property on its own indented line inside the braces. If a CSS snippet mixes in a JavaScript-like token, the detector can classify it as JavaScript instead, so the css_beautify call never runs - paste CSS on its own, without surrounding script tags, to keep detection reliable.</p>
+
+    <h2 class="text-uppercase"><b>Formatting HTML</b></h2>
+    <p>Input starting with <code>&lt;</code> is treated as HTML. A one-line snippet like <code>&lt;div&gt;&lt;p&gt;hi&lt;/p&gt;&lt;/div&gt;</code> comes back with each tag on its own line and children indented one level deeper than their parent. This is useful for HTML copied from a browser's "Copy outerHTML" command, which usually arrives as a single unreadable line. The HTML beautifier depends on the same engine's JavaScript and CSS beautifiers loading first (for any inline <code>&lt;script&gt;</code> or <code>&lt;style&gt;</code> blocks inside the markup), which the tool loads automatically before it runs.</p>
+
+    <h2 class="text-uppercase"><b>Formatting JSON</b></h2>
+    <p>JSON is checked before any of the above: if the input starts with <code>{</code>, <code>[</code>, a quote, a digit, or one of <code>true</code>, <code>false</code>, <code>null</code>, the tool parses it and prints it back with <code>JSON.stringify(value, null, 2)</code> - two-space indentation, one property per line. This is a genuine parse, not a text-based guess, so a malformed payload is caught: pasting <code>{"a":1,</code> (a trailing comma with nothing after it) returns a message starting with <b>Invalid JSON:</b> instead of a formatted result. Fix the reported error and paste again.</p>
+
+    <h2 class="text-uppercase"><b>When the output looks wrong</b></h2>
+    <p>Two things can go wrong. First, the language guess can miss - it is a heuristic based on the shape of the text, not a full parser for every language, so a language the tool was not built for (Python, Java, Go, and so on) still gets run through the JavaScript beautifier, and the result may not look right. Second, for JSON specifically, a parse error means the tool cannot format anything until the JSON is valid - re-paste after fixing the error the message reports. Neither case damages your input: the left pane keeps exactly what you pasted, so you can always try again.</p>
+
+    <h2 class="text-uppercase"><b>Code beautifier vs JSON Parser</b></h2>
+    <p>Both tools can pretty-print JSON, so it helps to know when to use which. The code beautifier is the right choice for JavaScript, CSS, or HTML, and it happens to pretty-print JSON too. The <a href="/developer-tools/json-parser.html">JSON Parser</a> is the right choice when you specifically need to validate a payload with error highlighting, browse the result as an expandable tree, or check the type and array index of a specific field - it is built for JSON only and shows more about the structure than a plain indented printout.</p>
+
+    <h2 class="text-uppercase"><b>Quick reference</b></h2>
+    <table class="w3-table w3-bordered w3-small" style="margin:1em 0">
+        <tr><th>Input starts with</th><th>Detected as</th><th>Engine used</th></tr>
+        <tr><td><code>{</code>, <code>[</code>, a quote, a digit, or true/false/null</td><td>JSON</td><td>JSON.stringify(value, null, 2)</td></tr>
+        <tr><td><code>&lt;</code></td><td>HTML</td><td>html_beautify (js-beautify)</td></tr>
+        <tr><td>Rule blocks, e.g. <code>selector { prop: value; }</code></td><td>CSS</td><td>css_beautify (js-beautify)</td></tr>
+        <tr><td>Anything else</td><td>JavaScript</td><td>js_beautify (js-beautify)</td></tr>
+    </table>
+
+    <h2 class="text-uppercase"><b>Privacy</b></h2>
+    <p>Formatting runs entirely in your browser tab. Pasted code is never uploaded, sent to an analytics service, or written to any server - it exists only in the page's memory until you close the tab or paste something else.</p>
+
+    <h2 class="text-uppercase"><b>Companion guides</b></h2>
+    <ul>
+        <li><a href="/guides/json-parser-validate-vs-format-vs-tree-view.html">JSON parser: validate vs format vs tree view</a> - the analogous decision guide for the JSON-only tool.</li>
+        <li><a href="/guides/css-minifier-vs-compressor.html">CSS minifier vs compressor</a> - the opposite job: shrinking a stylesheet instead of formatting it.</li>
+        <li><a href="/developer-tools/code-formatter-beautifier.html">Code beautifier tool</a> - the tool itself.</li>
+        <li><a href="/developer-tools.html">Developer tools hub</a> - the full set, every one running in-browser with no upload.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Frequently asked questions</b></h2>
+    <details class="faq-item">
+      <summary>Does the beautifier change what my code does?</summary>
+      <p>No. It changes whitespace and indentation only. The logic, values, and structure of the JavaScript, CSS, or HTML you pasted stay the same.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Why did my CSS get formatted as JavaScript?</summary>
+      <p>Language detection is a heuristic on the shape of the text, not a full parser. If your CSS snippet includes a token the detector associates with JavaScript, it may be classified as JavaScript instead. Paste the CSS rule on its own to keep detection reliable.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Can I format Python, Java, or another language?</summary>
+      <p>Not reliably. The tool recognises JavaScript, CSS, HTML, and JSON. Any other language still gets run through the JavaScript beautifier and the result may not look correct - check the output before you rely on it.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Is my code uploaded anywhere?</summary>
+      <p>No. Formatting runs entirely in your browser tab; nothing you paste is sent to a server or an analytics service.</p>
+    </details>
+</div>

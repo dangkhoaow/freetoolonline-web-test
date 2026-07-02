@@ -1,0 +1,76 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Formateador de codigo paso a paso: JavaScript, CSS, HTML y JSON</b></h1>
+    <p>El <a href="/developer-tools/code-formatter-beautifier.html">formateador de codigo</a> gratuito en este sitio reindenta JavaScript, CSS y HTML, y formatea JSON de forma legible, todo en el navegador. Esta guia explica que esperar de cada tipo de input, que hacer cuando el resultado parece incorrecto, y cuando usar otra herramienta.</p>
+    <p class="reviewed">Last reviewed: 2026-07-02</p>
+    <address class="author"><a rel="author" href="/about-us.html">freetoolonline.com Editorial Team</a></address>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Respuesta en 30 segundos.</b> Pegue su codigo en el panel izquierdo del <a href="/developer-tools/code-formatter-beautifier.html">formateador de codigo</a> y haga clic en Format. La herramienta verifica JSON primero, luego intenta HTML (comienza con &lt;), CSS (parece un bloque de reglas) o JavaScript (todo lo demas), y reindenta el resultado con dos espacios de indentacion. Si la deteccion se equivoca, o si pega un lenguaje que la herramienta no reconoce, el resultado aparece igual - revisalo antes de usarlo.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Formatear JavaScript</b></h2>
+    <p>Pegue un fragmento de JavaScript - una linea minificada, una funcion copiada, o un archivo completo - y haga clic en Format. La herramienta carga una copia auto-alojada de la biblioteca de codigo abierto js-beautify y llama a su formateador de JavaScript, que reindenta llaves y parentesis anidados y coloca cada instruccion en su propia linea. Pegar <code>function add(a,b){return a+b;}</code> devuelve la misma funcion repartida en varias lineas con el cuerpo indentado dentro de las llaves. El formateador solo cambia el espacio en blanco - no renombra variables, no reordena instrucciones, y no cambia el comportamiento del codigo.</p>
+
+    <h2 class="text-uppercase"><b>Formatear CSS</b></h2>
+    <p>Se detecta CSS cuando el input parece uno o mas bloques <code>selector { propiedad: valor; }</code> sin ninguno de los tokens exclusivos de JavaScript (sin <code>function</code>, sin <code>=&gt;</code>, sin <code>var</code>, <code>let</code> o <code>const</code>, sin parentesis). Pegar una regla minificada como <code>.card{margin:0;padding:8px;border-radius:4px}</code> devuelve la regla con cada propiedad en su propia linea indentada dentro de las llaves. Si un fragmento de CSS mezcla un token parecido a JavaScript, el detector puede clasificarlo como JavaScript - pegue el CSS solo, sin etiquetas de script alrededor, para mantener la deteccion fiable.</p>
+
+    <h2 class="text-uppercase"><b>Formatear HTML</b></h2>
+    <p>El input que comienza con <code>&lt;</code> se trata como HTML. Un fragmento en una linea como <code>&lt;div&gt;&lt;p&gt;hi&lt;/p&gt;&lt;/div&gt;</code> vuelve con cada etiqueta en su propia linea y los hijos indentados un nivel mas profundo que el padre. Esto es util para HTML copiado con el comando "Copy outerHTML" del navegador, que normalmente llega en una sola linea ilegible. El formateador de HTML depende de que los formateadores de JavaScript y CSS del mismo motor carguen primero (para cualquier bloque <code>&lt;script&gt;</code> o <code>&lt;style&gt;</code> dentro del markup), que la herramienta carga automaticamente antes de ejecutarse.</p>
+
+    <h2 class="text-uppercase"><b>Formatear JSON</b></h2>
+    <p>JSON se verifica antes que cualquiera de los anteriores: si el input comienza con <code>{</code>, <code>[</code>, una comilla, un digito, o uno de <code>true</code>, <code>false</code>, <code>null</code>, la herramienta lo analiza y lo imprime de vuelta con <code>JSON.stringify(value, null, 2)</code> - dos espacios de indentacion, una propiedad por linea. Esto es un analisis real, no una deteccion basada en texto, por lo que un payload invalido se detecta: pegar <code>{"a":1,</code> (una coma final sin nada despues) devuelve un mensaje que comienza con <b>Invalid JSON:</b> en vez de un resultado formateado. Corrija el error reportado y pegue de nuevo.</p>
+
+    <h2 class="text-uppercase"><b>Cuando el resultado parece incorrecto</b></h2>
+    <p>Pueden pasar dos cosas. Primero, la deteccion de lenguaje puede fallar - es una heuristica basada en la forma del texto, no un analizador completo para cada lenguaje, por lo que un lenguaje para el que la herramienta no fue construida (Python, Java, Go, etc.) igual pasa por el formateador de JavaScript, y el resultado puede no verse correcto. Segundo, para JSON especificamente, un error de analisis significa que la herramienta no puede formatear nada hasta que el JSON sea valido - pegue de nuevo despues de corregir el error que reporta el mensaje. Ningun caso danha su input: el panel izquierdo mantiene exactamente lo que pego, asi que siempre puede intentarlo de nuevo.</p>
+
+    <h2 class="text-uppercase"><b>Formateador de codigo vs JSON Parser</b></h2>
+    <p>Ambas herramientas pueden formatear JSON de forma legible, asi que ayuda saber cual usar. El formateador de codigo es la opcion correcta para JavaScript, CSS o HTML, y formatea JSON tambien como efecto secundario. El <a href="/developer-tools/json-parser.html">JSON Parser</a> es la opcion correcta cuando necesita especificamente validar un payload con deteccion de errores, explorar el resultado como un arbol expandible, o comprobar el tipo y el indice de array de un campo especifico - esta construido solo para JSON y muestra mas sobre la estructura que una impresion indentada simple.</p>
+
+    <h2 class="text-uppercase"><b>Referencia rapida</b></h2>
+    <table class="w3-table w3-bordered w3-small" style="margin:1em 0">
+        <tr><th>Input comienza con</th><th>Detectado como</th><th>Motor usado</th></tr>
+        <tr><td><code>{</code>, <code>[</code>, una comilla, un digito, o true/false/null</td><td>JSON</td><td>JSON.stringify(value, null, 2)</td></tr>
+        <tr><td><code>&lt;</code></td><td>HTML</td><td>html_beautify (js-beautify)</td></tr>
+        <tr><td>Bloques de reglas, ej. <code>selector { prop: valor; }</code></td><td>CSS</td><td>css_beautify (js-beautify)</td></tr>
+        <tr><td>Todo lo demas</td><td>JavaScript</td><td>js_beautify (js-beautify)</td></tr>
+    </table>
+
+    <h2 class="text-uppercase"><b>Privacidad</b></h2>
+    <p>El formateo se ejecuta enteramente en esta pestana del navegador. El codigo pegado nunca se sube, se envia a un servicio de analitica, ni se escribe en ningun servidor - existe solo en la memoria de la pagina hasta que cierre la pestana o pegue otra cosa.</p>
+
+    <h2 class="text-uppercase"><b>Guias relacionadas</b></h2>
+    <ul>
+        <li><a href="/guides/es/json-parser-validate-vs-format-vs-tree-view.html">JSON parser: validar vs formatear vs vista de arbol</a> - la guia de decision equivalente para la herramienta solo de JSON.</li>
+        <li><a href="/guides/es/css-minifier-vs-compressor.html">Minificador CSS vs compresor</a> - el trabajo inverso: reducir una hoja de estilo en vez de formatearla.</li>
+        <li><a href="/developer-tools/code-formatter-beautifier.html">Herramienta de formateo de codigo</a> - la herramienta en si.</li>
+        <li><a href="/developer-tools.html">Centro de herramientas para desarrolladores</a> - el conjunto completo, todas ejecutandose en el navegador sin subir nada.</li>
+    </ul>
+
+    <h2 class="text-uppercase"><b>Preguntas frecuentes</b></h2>
+    <details class="faq-item">
+      <summary>El formateador cambia lo que hace mi codigo?</summary>
+      <p>No. Solo cambia el espacio en blanco y la indentacion. La logica, los valores y la estructura del JavaScript, CSS o HTML que pego siguen siendo los mismos.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Por que mi CSS se formateo como JavaScript?</summary>
+      <p>La deteccion de lenguaje es una heuristica sobre la forma del texto, no un analizador completo. Si su fragmento de CSS incluye un token que el detector asocia con JavaScript, puede clasificarse como JavaScript. Pegue la regla CSS sola para mantener la deteccion fiable.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Puedo formatear Python, Java, u otro lenguaje?</summary>
+      <p>No de forma fiable. La herramienta reconoce JavaScript, CSS, HTML y JSON. Cualquier otro lenguaje igual pasa por el formateador de JavaScript y el resultado puede no verse correcto - revise el resultado antes de confiar en el.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Se sube mi codigo a algun lugar?</summary>
+      <p>No. El formateo se ejecuta enteramente en esta pestana del navegador; nada de lo que pega se envia a un servidor o servicio de analitica.</p>
+    </details>
+</div>
