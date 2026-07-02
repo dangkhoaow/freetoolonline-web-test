@@ -1,0 +1,146 @@
+<script>
+    // Clock / timer archetype skeleton (digital-clock) - pure JS + SVG/DOM, no upload,
+    // no backend, no external lib. Registry Gate-H entry: clock_timer_purejs.
+    // ONE skeleton serves the whole time family; the mode is dispatched from the
+    // slug: analog clock, digital clock, countdown timer, stopwatch, pomodoro.
+    // Always renders continuous visible output (a live clock / running timer) so
+    // qa-e2e-test G16 (visible output) passes with no interaction needed.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered() (called for EVERY
+    // page after base-script load). Do NOT touch the DOM at top level. In-browser
+    // tool => no upload widget.
+
+    web.localUpload = false;
+
+    var CT_SLUG = 'digital-clock';
+
+    function ctDetectMode(slug) {
+        var s = String(slug || '').toLowerCase();
+        if (/stopwatch/.test(s)) return 'stopwatch';
+        if (/pomodoro/.test(s)) return 'pomodoro';
+        if (/countdown|timer/.test(s)) return 'countdown';
+        if (/digital/.test(s)) return 'digital';
+        return 'analog'; // analog-clock / clock / world-clock default
+    }
+
+    function ctPad(n) { return (n < 10 ? '0' : '') + n; }
+
+    // ---- Analog clock (SVG hands via requestAnimationFrame) -------------------
+    function ctRenderAnalog(root) {
+        root.innerHTML =
+            '<svg id="ctClock" viewBox="0 0 200 200" width="240" height="240" role="img" aria-label="Analog clock">' +
+            '<circle cx="100" cy="100" r="96" fill="#fff" stroke="#333" stroke-width="3"/>' +
+            (function () { var t = ''; for (var h = 0; h < 12; h++) { var a = (h / 12) * 2 * Math.PI; var x1 = 100 + 82 * Math.sin(a), y1 = 100 - 82 * Math.cos(a); var x2 = 100 + 92 * Math.sin(a), y2 = 100 - 92 * Math.cos(a); t += '<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" stroke="#333" stroke-width="2"/>'; } return t; })() +
+            '<line id="ctHour" x1="100" y1="100" x2="100" y2="55" stroke="#111" stroke-width="5" stroke-linecap="round"/>' +
+            '<line id="ctMin" x1="100" y1="100" x2="100" y2="35" stroke="#111" stroke-width="3" stroke-linecap="round"/>' +
+            '<line id="ctSec" x1="100" y1="100" x2="100" y2="25" stroke="#c00" stroke-width="1.5" stroke-linecap="round"/>' +
+            '<circle cx="100" cy="100" r="4" fill="#111"/></svg>' +
+            '<div id="ctDigitalReadout" style="font:600 20px monospace;margin-top:8px;"></div>';
+        var hour = root.querySelector('#ctHour'), min = root.querySelector('#ctMin'), sec = root.querySelector('#ctSec'), ro = root.querySelector('#ctDigitalReadout');
+        function tick() {
+            var d = new Date();
+            var s = d.getSeconds() + d.getMilliseconds() / 1000;
+            var m = d.getMinutes() + s / 60;
+            var h = (d.getHours() % 12) + m / 60;
+            sec.setAttribute('transform', 'rotate(' + (s * 6) + ' 100 100)');
+            min.setAttribute('transform', 'rotate(' + (m * 6) + ' 100 100)');
+            hour.setAttribute('transform', 'rotate(' + (h * 30) + ' 100 100)');
+            ro.textContent = ctPad(d.getHours()) + ':' + ctPad(d.getMinutes()) + ':' + ctPad(d.getSeconds());
+            requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+    }
+
+    // ---- Digital clock --------------------------------------------------------
+    function ctRenderDigital(root) {
+        root.innerHTML = '<div id="ctBig" style="font:700 48px monospace;letter-spacing:2px;"></div>' +
+            '<div id="ctDate" style="font:400 16px sans-serif;color:#555;margin-top:4px;"></div>';
+        var big = root.querySelector('#ctBig'), dt = root.querySelector('#ctDate');
+        function tick() {
+            var d = new Date();
+            big.textContent = ctPad(d.getHours()) + ':' + ctPad(d.getMinutes()) + ':' + ctPad(d.getSeconds());
+            dt.textContent = d.toDateString();
+        }
+        tick(); setInterval(tick, 250);
+    }
+
+    // ---- Countdown timer ------------------------------------------------------
+    function ctRenderCountdown(root) {
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;">' +
+            'Minutes <input id="ctMin" type="number" min="0" max="999" value="5" class="w3-input w3-border" style="width:90px;display:inline-block;"> ' +
+            'Seconds <input id="ctSec" type="number" min="0" max="59" value="0" class="w3-input w3-border" style="width:90px;display:inline-block;"></div>' +
+            '<div id="ctDisp" style="font:700 44px monospace;margin:8px 0;">05:00</div>' +
+            '<button id="ctStart" type="button" class="w3-button w3-green">Start</button> ' +
+            '<button id="ctPause" type="button" class="w3-button w3-amber">Pause</button> ' +
+            '<button id="ctReset" type="button" class="w3-button w3-light-grey">Reset</button>' +
+            '<div id="ctDone" style="font-weight:bold;color:#0a0;margin-top:8px;"></div>';
+        var disp = root.querySelector('#ctDisp'), done = root.querySelector('#ctDone');
+        var remaining = 300, timer = null;
+        function readInputs() { remaining = (parseInt(root.querySelector('#ctMin').value, 10) || 0) * 60 + (parseInt(root.querySelector('#ctSec').value, 10) || 0); render(); }
+        function render() { disp.textContent = ctPad(Math.floor(remaining / 60)) + ':' + ctPad(remaining % 60); }
+        function start() { if (timer) return; if (remaining <= 0) readInputs(); done.textContent = ''; timer = setInterval(function () { if (remaining <= 0) { clearInterval(timer); timer = null; done.textContent = 'Time is up!'; return; } remaining--; render(); }, 1000); }
+        root.querySelector('#ctStart').addEventListener('click', start);
+        root.querySelector('#ctPause').addEventListener('click', function () { if (timer) { clearInterval(timer); timer = null; } });
+        root.querySelector('#ctReset').addEventListener('click', function () { if (timer) { clearInterval(timer); timer = null; } done.textContent = ''; readInputs(); });
+        root.querySelector('#ctMin').addEventListener('input', readInputs);
+        root.querySelector('#ctSec').addEventListener('input', readInputs);
+        readInputs();
+    }
+
+    // ---- Stopwatch (performance.now + laps) -----------------------------------
+    function ctRenderStopwatch(root) {
+        root.innerHTML =
+            '<div id="ctDisp" style="font:700 44px monospace;margin:8px 0;">00:00.00</div>' +
+            '<button id="ctStart" type="button" class="w3-button w3-green">Start</button> ' +
+            '<button id="ctStop" type="button" class="w3-button w3-red">Stop</button> ' +
+            '<button id="ctLap" type="button" class="w3-button w3-blue">Lap</button> ' +
+            '<button id="ctReset" type="button" class="w3-button w3-light-grey">Reset</button>' +
+            '<ol id="ctLaps" style="margin-top:8px;font-family:monospace;"></ol>';
+        var disp = root.querySelector('#ctDisp'), laps = root.querySelector('#ctLaps');
+        var start = 0, elapsed = 0, raf = null;
+        function fmt(ms) { var t = ms / 1000; var m = Math.floor(t / 60); var s = t - m * 60; return ctPad(m) + ':' + (s < 10 ? '0' : '') + s.toFixed(2); }
+        function render() { disp.textContent = fmt(elapsed + (start ? (performance.now() - start) : 0)); if (start) raf = requestAnimationFrame(render); }
+        root.querySelector('#ctStart').addEventListener('click', function () { if (start) return; start = performance.now(); render(); });
+        root.querySelector('#ctStop').addEventListener('click', function () { if (!start) return; elapsed += performance.now() - start; start = 0; if (raf) cancelAnimationFrame(raf); render(); });
+        root.querySelector('#ctLap').addEventListener('click', function () { var li = document.createElement('li'); li.textContent = fmt(elapsed + (start ? (performance.now() - start) : 0)); laps.appendChild(li); });
+        root.querySelector('#ctReset').addEventListener('click', function () { start = 0; elapsed = 0; if (raf) cancelAnimationFrame(raf); laps.innerHTML = ''; render(); });
+        render();
+    }
+
+    // ---- Pomodoro (work / break cycles) --------------------------------------
+    function ctRenderPomodoro(root) {
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;">Work <input id="ctWork" type="number" min="1" max="120" value="25" class="w3-input w3-border" style="width:80px;display:inline-block;"> min &nbsp; Break <input id="ctBreak" type="number" min="1" max="60" value="5" class="w3-input w3-border" style="width:80px;display:inline-block;"> min</div>' +
+            '<div id="ctPhase" style="font-weight:bold;">Work</div>' +
+            '<div id="ctDisp" style="font:700 44px monospace;margin:8px 0;">25:00</div>' +
+            '<button id="ctStart" type="button" class="w3-button w3-green">Start</button> ' +
+            '<button id="ctPause" type="button" class="w3-button w3-amber">Pause</button> ' +
+            '<button id="ctReset" type="button" class="w3-button w3-light-grey">Reset</button>';
+        var disp = root.querySelector('#ctDisp'), phaseEl = root.querySelector('#ctPhase');
+        var phase = 'Work', remaining = 25 * 60, timer = null;
+        function workMin() { return parseInt(root.querySelector('#ctWork').value, 10) || 25; }
+        function breakMin() { return parseInt(root.querySelector('#ctBreak').value, 10) || 5; }
+        function render() { disp.textContent = ctPad(Math.floor(remaining / 60)) + ':' + ctPad(remaining % 60); phaseEl.textContent = phase; }
+        function tick() { if (remaining <= 0) { phase = (phase === 'Work') ? 'Break' : 'Work'; remaining = (phase === 'Work' ? workMin() : breakMin()) * 60; } else { remaining--; } render(); }
+        root.querySelector('#ctStart').addEventListener('click', function () { if (timer) return; timer = setInterval(tick, 1000); });
+        root.querySelector('#ctPause').addEventListener('click', function () { if (timer) { clearInterval(timer); timer = null; } });
+        root.querySelector('#ctReset').addEventListener('click', function () { if (timer) { clearInterval(timer); timer = null; } phase = 'Work'; remaining = workMin() * 60; render(); });
+        render();
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('clockTimerTool');
+        if (!root) return; // not a clock/timer page
+        var mode = ctDetectMode(CT_SLUG);
+        try {
+            if (mode === 'digital') ctRenderDigital(root);
+            else if (mode === 'countdown') ctRenderCountdown(root);
+            else if (mode === 'stopwatch') ctRenderStopwatch(root);
+            else if (mode === 'pomodoro') ctRenderPomodoro(root);
+            else ctRenderAnalog(root);
+        } catch (e) {
+            root.textContent = 'Could not start the tool: ' + (e && e.message ? e.message : String(e));
+        }
+    }
+</script>

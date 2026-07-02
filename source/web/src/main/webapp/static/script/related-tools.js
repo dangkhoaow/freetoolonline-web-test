@@ -292,6 +292,7 @@ try {
     { title: "Audio Converter", url: "https://freetoolonline.com/image-converter-tools/audio-converter.html", include: !1, tags: "image-conversion" },
     { title: "Code Formatter Beautifier", url: "https://freetoolonline.com/developer-tools/code-formatter-beautifier.html", include: !1, tags: "developer" },
     { title: "Analog Clock Online", url: "https://freetoolonline.com/utility-tools/analog-clock.html", include: !1, tags: "utility" },
+    { title: "Digital Clock Online", url: "https://freetoolonline.com/utility-tools/digital-clock.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
