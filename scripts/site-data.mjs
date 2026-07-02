@@ -2436,6 +2436,7 @@ export const ALIAS_ROUTES = {
   '/pdf-filler-form-editor.html': '/pdf-tools/pdf-filler-form-editor.html',
   '/audio-converter.html': '/image-converter-tools/audio-converter.html',
   '/code-formatter-beautifier.html': '/developer-tools/code-formatter-beautifier.html',
+  '/analog-clock.html': '/utility-tools/analog-clock.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3342,6 +3343,13 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/code-formatter-beautifier-step-by-step.html': 'guide/vi/code-formatter-beautifier-step-by-step.jsp',
   '/guides/id/code-formatter-beautifier-step-by-step.html': 'guide/id/code-formatter-beautifier-step-by-step.jsp',
   '/guides/de/code-formatter-beautifier-step-by-step.html': 'guide/de/code-formatter-beautifier-step-by-step.jsp',
+  '/utility-tools/analog-clock.html': 'utility/analog-clock.jsp',
+  '/guides/analog-clock-step-by-step.html': 'guide/analog-clock-step-by-step.jsp',
+  '/guides/pt/analog-clock-step-by-step.html': 'guide/pt/analog-clock-step-by-step.jsp',
+  '/guides/es/analog-clock-step-by-step.html': 'guide/es/analog-clock-step-by-step.jsp',
+  '/guides/vi/analog-clock-step-by-step.html': 'guide/vi/analog-clock-step-by-step.jsp',
+  '/guides/id/analog-clock-step-by-step.html': 'guide/id/analog-clock-step-by-step.jsp',
+  '/guides/de/analog-clock-step-by-step.html': 'guide/de/analog-clock-step-by-step.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
