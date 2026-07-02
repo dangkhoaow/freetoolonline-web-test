@@ -2439,6 +2439,7 @@ export const ALIAS_ROUTES = {
   '/analog-clock.html': '/utility-tools/analog-clock.html',
   '/digital-clock.html': '/utility-tools/digital-clock.html',
   '/countdown-timer.html': '/utility-tools/countdown-timer.html',
+  '/stopwatch.html': '/utility-tools/stopwatch.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3366,6 +3367,13 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/countdown-timer-step-by-step.html': 'guide/vi/countdown-timer-step-by-step.jsp',
   '/guides/id/countdown-timer-step-by-step.html': 'guide/id/countdown-timer-step-by-step.jsp',
   '/guides/de/countdown-timer-step-by-step.html': 'guide/de/countdown-timer-step-by-step.jsp',
+  '/utility-tools/stopwatch.html': 'utility/stopwatch.jsp',
+  '/guides/stopwatch-step-by-step.html': 'guide/stopwatch-step-by-step.jsp',
+  '/guides/pt/stopwatch-step-by-step.html': 'guide/pt/stopwatch-step-by-step.jsp',
+  '/guides/es/stopwatch-step-by-step.html': 'guide/es/stopwatch-step-by-step.jsp',
+  '/guides/vi/stopwatch-step-by-step.html': 'guide/vi/stopwatch-step-by-step.jsp',
+  '/guides/id/stopwatch-step-by-step.html': 'guide/id/stopwatch-step-by-step.jsp',
+  '/guides/de/stopwatch-step-by-step.html': 'guide/de/stopwatch-step-by-step.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
