@@ -240,6 +240,9 @@ const HOWTO_ROUTES = new Set([
   // phase, so net addition is +1 -> 35/51. Answer panel authored via
   // seo-content-writer (raster-to-vector tracing 3-step).
   '/png-to-svg.html',
+  // geo-batch-99: new tool pages — each has a w3-pale-green answer panel with steps
+  '/pdf-tools/pdf-filler-form-editor.html',
+  '/image-converter-tools/audio-converter.html',
 ]);
 
 // P10.3.1 - Per-tool og:image differentiation (Phase 10 Cycle 4).
