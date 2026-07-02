@@ -293,6 +293,7 @@ try {
     { title: "Code Formatter Beautifier", url: "https://freetoolonline.com/developer-tools/code-formatter-beautifier.html", include: !1, tags: "developer" },
     { title: "Analog Clock Online", url: "https://freetoolonline.com/utility-tools/analog-clock.html", include: !1, tags: "utility" },
     { title: "Digital Clock Online", url: "https://freetoolonline.com/utility-tools/digital-clock.html", include: !1, tags: "utility" },
+    { title: "Countdown Timer Online", url: "https://freetoolonline.com/utility-tools/countdown-timer.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
