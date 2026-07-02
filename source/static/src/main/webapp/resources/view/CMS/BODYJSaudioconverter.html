@@ -1,0 +1,192 @@
+<script>
+    /* Media-converter skeleton via self-hosted FFmpeg.wasm.
+     * Wired contract per CONCRETE_BROWSER_TOOL_RULES.md section 4.
+     *
+     * Browser-only invariant: the uploaded File is processed entirely in the
+     * browser tab. NO bytes leave the device. FFmpeg.wasm runs as a WebAssembly
+     * worker; the only network calls this skeleton makes are the one-time
+     * fetches for vendor assets at the same origin.
+     *
+     * Required vendor assets (operator must install once per repo):
+     *   /vendor/ffmpeg/ffmpeg.js          (UMD main; registers globalThis.FFmpegWASM)
+     *   /vendor/ffmpeg/814.ffmpeg.js      (webpack worker chunk; must live alongside ffmpeg.js)
+     *   /vendor/ffmpeg/ffmpeg-core.js
+     *   /vendor/ffmpeg/ffmpeg-core.wasm
+     * Install command (run once per child repo):
+     *   bash .agent/skills/seo-tool-page-builder/assets/vendor/install-ffmpeg-core.sh
+     *
+     * Single-thread runtime: the unified @ffmpeg/core@0.12.x wasm binary
+     * auto-detects SharedArrayBuffer availability at load. On GitHub Pages
+     * (no COOP/COEP) it degrades to single-thread automatically.
+     *
+     * Output-format detection: derived from the slug:
+     *   slug ending in a known format token  -> that token is the output ext
+     *   slug containing `-to-<fmt>`          -> <fmt> is the output ext
+     *   else                                  -> defaults to mp3
+     *
+     * Operator override: edit FFMPEG_ARGS_FOR_INPUT() to author tool-specific
+     * argv. The default behaviour covers:
+     *   audio-out (mp3/wav/aac/ogg/flac/m4a) -> extract audio at the selected bitrate
+     *   video-out (mp4/webm/mov/avi/mkv)     -> container swap (no re-encode)
+     *   gif                                  -> convert at 10 fps, 480px wide
+     */
+
+    web.localUpload = true;
+
+    var FFMPEG_SLUG = 'audio-converter';
+    var FFMPEG_TITLE = 'Audio Converter';
+    var FFMPEG_VENDOR_BASE = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/ffmpeg';
+    var FFMPEG_UMD_URL = FFMPEG_VENDOR_BASE + '/ffmpeg.js';
+    var FFMPEG_CORE_JS_URL = FFMPEG_VENDOR_BASE + '/ffmpeg-core.js';
+    var FFMPEG_CORE_WASM_URL = FFMPEG_VENDOR_BASE + '/ffmpeg-core.wasm';
+
+    var AUDIO_CODEC = { mp3: 'libmp3lame', wav: 'pcm_s16le', aac: 'aac', ogg: 'libvorbis', flac: 'flac', m4a: 'aac' };
+    var AUDIO_OUT_FORMATS = ['mp3', 'wav', 'aac', 'ogg', 'flac', 'm4a'];
+    var VIDEO_OUT_FORMATS = ['mp4', 'webm', 'mov', 'avi', 'mkv'];
+    var KNOWN_FORMATS = AUDIO_OUT_FORMATS.concat(VIDEO_OUT_FORMATS).concat(['gif']);
+
+    function detectOutputFormat(slug) {
+        var m = slug.match(/-to-(mp3|mp4|webm|wav|aac|ogg|flac|m4a|mov|avi|mkv|gif)(?:-|$)/i);
+        if (m) return m[1].toLowerCase();
+        var tail = slug.split('-').pop().toLowerCase();
+        if (KNOWN_FORMATS.indexOf(tail) >= 0) return tail;
+        return 'mp3';
+    }
+
+    function mimeFor(ext) {
+        return {
+            mp3: 'audio/mpeg', wav: 'audio/wav', aac: 'audio/aac', ogg: 'audio/ogg',
+            flac: 'audio/flac', m4a: 'audio/mp4',
+            mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime',
+            avi: 'video/x-msvideo', mkv: 'video/x-matroska', gif: 'image/gif',
+        }[ext] || 'application/octet-stream';
+    }
+
+    function FFMPEG_ARGS_FOR_INPUT(inputName, outputName, outputExt, opts) {
+        if (AUDIO_OUT_FORMATS.indexOf(outputExt) >= 0) {
+            var codec = AUDIO_CODEC[outputExt] || 'libmp3lame';
+            var args = ['-i', inputName, '-vn', '-c:a', codec];
+            if (codec !== 'pcm_s16le' && codec !== 'flac') {
+                args = args.concat(['-b:a', (opts.bitrate || 192) + 'k']);
+            }
+            return args.concat([outputName]);
+        }
+        if (outputExt === 'gif') {
+            return ['-i', inputName, '-vf', 'fps=10,scale=480:-1:flags=lanczos', outputName];
+        }
+        return ['-i', inputName, '-c', 'copy', outputName];
+    }
+
+    var ffmpegInstance = null;
+    var ffmpegLoadPromise = null;
+    var ffmpegUmdScriptPromise = null;
+
+    function injectUmdScriptOnce() {
+        if (ffmpegUmdScriptPromise) return ffmpegUmdScriptPromise;
+        ffmpegUmdScriptPromise = new Promise(function (resolve, reject) {
+            if (typeof globalThis.FFmpegWASM !== 'undefined') return resolve();
+            var s = document.createElement('script');
+            s.src = FFMPEG_UMD_URL;
+            s.async = true;
+            s.onload = function () {
+                if (typeof globalThis.FFmpegWASM === 'undefined') {
+                    reject(new Error('FFmpegWASM global missing after ' + FFMPEG_UMD_URL + ' loaded'));
+                } else {
+                    resolve();
+                }
+            };
+            s.onerror = function () { reject(new Error('Failed to load ' + FFMPEG_UMD_URL)); };
+            document.head.appendChild(s);
+        });
+        return ffmpegUmdScriptPromise;
+    }
+
+    async function loadFfmpegOnce(progressCb) {
+        if (ffmpegInstance) return ffmpegInstance;
+        if (ffmpegLoadPromise) return ffmpegLoadPromise;
+        ffmpegLoadPromise = (async function () {
+            progressCb && progressCb('Loading FFmpeg.wasm (~31MB, one-time)...');
+            await injectUmdScriptOnce();
+            var FFmpegCtor = globalThis.FFmpegWASM && globalThis.FFmpegWASM.FFmpeg;
+            if (!FFmpegCtor) throw new Error('globalThis.FFmpegWASM.FFmpeg missing - vendor assets out of date?');
+            var ffmpeg = new FFmpegCtor();
+            ffmpeg.on('log', function (e) { progressCb && progressCb('[ffmpeg] ' + (e.message || '')); });
+            ffmpeg.on('progress', function (e) {
+                var pct = Math.round((e.progress || 0) * 100);
+                progressCb && progressCb('Converting: ' + pct + '%');
+            });
+            await ffmpeg.load({ coreURL: FFMPEG_CORE_JS_URL, wasmURL: FFMPEG_CORE_WASM_URL });
+            ffmpegInstance = ffmpeg;
+            return ffmpeg;
+        })();
+        return ffmpegLoadPromise;
+    }
+
+    async function processInputForSlug(file, opts) {
+        var outputExt = detectOutputFormat(FFMPEG_SLUG);
+        var inputExt = (file.name.split('.').pop() || 'bin').toLowerCase();
+        var inputName = 'input.' + inputExt;
+        var outputName = 'output.' + outputExt;
+        var $status = $('.ffmpeg-status');
+
+        function setStatus(msg) { $status.text(msg).show(); }
+
+        var ffmpeg = await loadFfmpegOnce(setStatus);
+
+        setStatus('Reading input file...');
+        var buf = await file.arrayBuffer();
+        await ffmpeg.writeFile(inputName, new Uint8Array(buf));
+
+        setStatus('Running FFmpeg...');
+        var args = FFMPEG_ARGS_FOR_INPUT(inputName, outputName, outputExt, opts || {});
+        await ffmpeg.exec(args);
+
+        setStatus('Reading output...');
+        var data = await ffmpeg.readFile(outputName);
+        try { await ffmpeg.deleteFile(inputName); } catch (e) { /* ignore */ }
+        try { await ffmpeg.deleteFile(outputName); } catch (e) { /* ignore */ }
+
+        var blob = new Blob([data.buffer], { type: mimeFor(outputExt) });
+        var blobUrl = URL.createObjectURL(blob);
+        var baseName = (file.name.replace(/\.[^.]+$/, '') || FFMPEG_SLUG);
+        var downloadName = baseName + '.' + outputExt;
+
+        setStatus('Done.');
+        return { output_blob_url: blobUrl, output_filename: downloadName, output_mime: mimeFor(outputExt), _is_mock: false };
+    }
+
+    function renderOutputDownload(result) {
+        var html = '<div class="imageOut" style="margin:8px 0;">'
+            + '<a href="' + result.output_blob_url + '" download="' + result.output_filename + '" '
+            + 'class="w3-button w3-blue imgOutDownBtn" style="visibility:visible;opacity:1">'
+            + 'Download ' + result.output_filename + '</a></div>';
+        $('.outputImgs').html(html);
+    }
+
+    function readOptsFromUi() {
+        var v = $('#ffmpegBitrate').val();
+        return { bitrate: v ? parseInt(v, 10) : 192 };
+    }
+
+    function loadUploadHandlersByPage() {
+        var onFileCompleteOrigin = onFileComplete;
+        onFileComplete = async function (e, file, response) {
+            onFileCompleteOrigin.call(this, e, file, response);
+            var realFile = file && file.file ? file.file : file;
+            if (!realFile || !realFile.arrayBuffer) {
+                $('.outputImgs').html('<div class="w3-panel w3-pale-red"><b>' + FFMPEG_TITLE + ':</b> No file received.</div>');
+                return;
+            }
+            $('.outputImgs').empty();
+            $('.downloadC').addClass('w3-hide');
+            try {
+                var result = await processInputForSlug(realFile, readOptsFromUi());
+                renderOutputDownload(result);
+            } catch (err) {
+                console.error('audio-converter:', err);
+                $('.outputImgs').html('<div class="w3-panel w3-pale-red"><b>' + FFMPEG_TITLE + ':</b> '
+                    + (err && err.message ? err.message : String(err)) + '</div>');
+            }
+        };
+    }
+</script>
