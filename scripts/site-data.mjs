@@ -1157,6 +1157,9 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/cek-layar-laptop.html',
   // cycle 20260702-3 create_new_guide_page (locale completion) - es/vi/id/de variants of cek-layar-laptop (bundle now locale-complete).
   '/guides/es/cek-layar-laptop.html', '/guides/vi/cek-layar-laptop.html', '/guides/id/cek-layar-laptop.html', '/guides/de/cek-layar-laptop.html',
+  // cycle 20260702 create_new_guide_page - photo-editor-online-pixlr (EN + pt/es/vi/id/de; locale-complete). Serves "photo editor online pixlr" searchers via our /photo-editor.html.
+  '/guides/photo-editor-online-pixlr.html',
+  '/guides/pt/photo-editor-online-pixlr.html', '/guides/es/photo-editor-online-pixlr.html', '/guides/vi/photo-editor-online-pixlr.html', '/guides/id/photo-editor-online-pixlr.html', '/guides/de/photo-editor-online-pixlr.html',
   // geo-sitewide-audit-runbook: ship-pending reconciliation - pt/es/vi/id/de variants of mp4-to-gif-online-free (completes the locale bundle for the EN-only stranded scaffold).
   '/guides/pt/mp4-to-gif-online-free.html', '/guides/es/mp4-to-gif-online-free.html', '/guides/vi/mp4-to-gif-online-free.html', '/guides/id/mp4-to-gif-online-free.html', '/guides/de/mp4-to-gif-online-free.html',
   // cycle 20260609-2 - md5-decrypter guide (EN + 5 locale variants)
@@ -1483,6 +1486,9 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/cek-layar-laptop.html',
   // cycle 20260702-3 create_new_guide_page (locale completion) - es/vi/id/de variants of cek-layar-laptop (bundle now locale-complete).
   '/guides/es/cek-layar-laptop.html', '/guides/vi/cek-layar-laptop.html', '/guides/id/cek-layar-laptop.html', '/guides/de/cek-layar-laptop.html',
+  // cycle 20260702 create_new_guide_page - photo-editor-online-pixlr (EN + pt/es/vi/id/de; locale-complete). Serves "photo editor online pixlr" searchers via our /photo-editor.html.
+  '/guides/photo-editor-online-pixlr.html',
+  '/guides/pt/photo-editor-online-pixlr.html', '/guides/es/photo-editor-online-pixlr.html', '/guides/vi/photo-editor-online-pixlr.html', '/guides/id/photo-editor-online-pixlr.html', '/guides/de/photo-editor-online-pixlr.html',
   // geo-sitewide-audit-runbook: ship-pending reconciliation - pt/es/vi/id/de variants of mp4-to-gif-online-free (completes the locale bundle for the EN-only stranded scaffold).
   '/guides/pt/mp4-to-gif-online-free.html', '/guides/es/mp4-to-gif-online-free.html', '/guides/vi/mp4-to-gif-online-free.html', '/guides/id/mp4-to-gif-online-free.html', '/guides/de/mp4-to-gif-online-free.html',
   '/guides/en/heic-vs-jpg-vs-webp.html',
@@ -2428,6 +2434,7 @@ export const ALIAS_ROUTES = {
   '/steganography.html': '/image-tools/steganography.html',
   '/private-ai-chat.html': '/utility-tools/private-ai-chat.html',
   '/pdf-filler-form-editor.html': '/pdf-tools/pdf-filler-form-editor.html',
+  '/audio-converter.html': '/image-converter-tools/audio-converter.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3305,6 +3312,13 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/cek-layar-laptop.html': 'guide/vi/cek-layar-laptop.jsp',
   '/guides/id/cek-layar-laptop.html': 'guide/id/cek-layar-laptop.jsp',
   '/guides/de/cek-layar-laptop.html': 'guide/de/cek-layar-laptop.jsp',
+  // cycle 20260702 create_new_guide_page - photo-editor-online-pixlr (EN + pt/es/vi/id/de; locale-complete).
+  '/guides/photo-editor-online-pixlr.html': 'guide/photo-editor-online-pixlr.jsp',
+  '/guides/pt/photo-editor-online-pixlr.html': 'guide/pt/photo-editor-online-pixlr.jsp',
+  '/guides/es/photo-editor-online-pixlr.html': 'guide/es/photo-editor-online-pixlr.jsp',
+  '/guides/vi/photo-editor-online-pixlr.html': 'guide/vi/photo-editor-online-pixlr.jsp',
+  '/guides/id/photo-editor-online-pixlr.html': 'guide/id/photo-editor-online-pixlr.jsp',
+  '/guides/de/photo-editor-online-pixlr.html': 'guide/de/photo-editor-online-pixlr.jsp',
   '/guides/mp4-to-gif-online-free.html': 'guide/mp4-to-gif-online-free.jsp',
   // geo-sitewide-audit-runbook: ship-pending reconciliation - completes the locale bundle for mp4-to-gif-online-free.
   '/guides/pt/mp4-to-gif-online-free.html': 'guide/pt/mp4-to-gif-online-free.jsp',
@@ -3319,6 +3333,7 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/pdf-filler-form-editor-step-by-step.html': 'guide/vi/pdf-filler-form-editor-step-by-step.jsp',
   '/guides/id/pdf-filler-form-editor-step-by-step.html': 'guide/id/pdf-filler-form-editor-step-by-step.jsp',
   '/guides/de/pdf-filler-form-editor-step-by-step.html': 'guide/de/pdf-filler-form-editor-step-by-step.jsp',
+  '/image-converter-tools/audio-converter.html': 'convert/audio-converter.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
