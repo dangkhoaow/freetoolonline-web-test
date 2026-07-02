@@ -300,6 +300,7 @@ try {
     { title: "Dice Roller Online", url: "https://freetoolonline.com/utility-tools/dice-roller.html", include: !1, tags: "utility" },
     { title: "Coin Flip Online", url: "https://freetoolonline.com/utility-tools/coin-flip.html", include: !1, tags: "utility" },
     { title: "Random Number Generator", url: "https://freetoolonline.com/utility-tools/random-number-picker.html", include: !1, tags: "utility" },
+    { title: "Random List Shuffler", url: "https://freetoolonline.com/utility-tools/name-shuffler.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

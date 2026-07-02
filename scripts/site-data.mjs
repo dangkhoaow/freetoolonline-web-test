@@ -2445,6 +2445,7 @@ export const ALIAS_ROUTES = {
   '/dice-roller.html': '/utility-tools/dice-roller.html',
   '/coin-flip.html': '/utility-tools/coin-flip.html',
   '/random-number-picker.html': '/utility-tools/random-number-picker.html',
+  '/name-shuffler.html': '/utility-tools/name-shuffler.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3414,6 +3415,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/random-number-generator-step-by-step.html': 'guide/vi/random-number-generator-step-by-step.jsp',
   '/guides/id/random-number-generator-step-by-step.html': 'guide/id/random-number-generator-step-by-step.jsp',
   '/guides/de/random-number-generator-step-by-step.html': 'guide/de/random-number-generator-step-by-step.jsp',
+  '/utility-tools/name-shuffler.html': 'utility/name-shuffler.jsp',
+  '/guides/random-list-shuffler-when.html': 'guide/random-list-shuffler-when.jsp',
+  '/guides/pt/random-list-shuffler-when.html': 'guide/pt/random-list-shuffler-when.jsp',
+  '/guides/es/random-list-shuffler-when.html': 'guide/es/random-list-shuffler-when.jsp',
+  '/guides/vi/random-list-shuffler-when.html': 'guide/vi/random-list-shuffler-when.jsp',
+  '/guides/id/random-list-shuffler-when.html': 'guide/id/random-list-shuffler-when.jsp',
+  '/guides/de/random-list-shuffler-when.html': 'guide/de/random-list-shuffler-when.jsp',
+  '/guides/random-list-shuffler-step-by-step.html': 'guide/random-list-shuffler-step-by-step.jsp',
+  '/guides/pt/random-list-shuffler-step-by-step.html': 'guide/pt/random-list-shuffler-step-by-step.jsp',
+  '/guides/es/random-list-shuffler-step-by-step.html': 'guide/es/random-list-shuffler-step-by-step.jsp',
+  '/guides/vi/random-list-shuffler-step-by-step.html': 'guide/vi/random-list-shuffler-step-by-step.jsp',
+  '/guides/id/random-list-shuffler-step-by-step.html': 'guide/id/random-list-shuffler-step-by-step.jsp',
+  '/guides/de/random-list-shuffler-step-by-step.html': 'guide/de/random-list-shuffler-step-by-step.jsp',
+  '/guides/random-list-shuffler-vs-alternatives.html': 'guide/random-list-shuffler-vs-alternatives.jsp',
+  '/guides/pt/random-list-shuffler-vs-alternatives.html': 'guide/pt/random-list-shuffler-vs-alternatives.jsp',
+  '/guides/es/random-list-shuffler-vs-alternatives.html': 'guide/es/random-list-shuffler-vs-alternatives.jsp',
+  '/guides/vi/random-list-shuffler-vs-alternatives.html': 'guide/vi/random-list-shuffler-vs-alternatives.jsp',
+  '/guides/id/random-list-shuffler-vs-alternatives.html': 'guide/id/random-list-shuffler-vs-alternatives.jsp',
+  '/guides/de/random-list-shuffler-vs-alternatives.html': 'guide/de/random-list-shuffler-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
