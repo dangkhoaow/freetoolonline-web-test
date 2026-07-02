@@ -297,6 +297,7 @@ try {
     { title: "Online Stopwatch", url: "https://freetoolonline.com/utility-tools/stopwatch.html", include: !1, tags: "utility" },
     { title: "Online Alarm Clock", url: "https://freetoolonline.com/utility-tools/online-alarm-clock.html", include: !1, tags: "utility" },
     { title: "Wheel Spinner (Wheel of Names)", url: "https://freetoolonline.com/utility-tools/wheel-spinner.html", include: !1, tags: "utility" },
+    { title: "Dice Roller Online", url: "https://freetoolonline.com/utility-tools/dice-roller.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

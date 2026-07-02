@@ -1,0 +1,160 @@
+<script>
+    // Random / decision archetype skeleton (dice-roller) - pure JS + canvas, no
+    // upload, no backend, no external lib. Registry Gate-H entry:
+    // random_picker_purejs. ONE skeleton serves the family; the mode is
+    // dispatched from the slug: wheel spinner (wheel-of-names), dice roller, coin
+    // flip, random-number generator, list shuffler / name picker. Fairness uses
+    // crypto.getRandomValues. Renders visible output (a wheel / result) so
+    // qa-e2e-test G16 passes.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(); no top-level DOM.
+    // In-browser tool => no upload widget.
+
+    web.localUpload = false;
+
+    var RP_SLUG = 'dice-roller';
+
+    function rpDetectMode(slug) {
+        var s = String(slug || '').toLowerCase();
+        if (/dice|\bdie\b|roll/.test(s)) return 'dice';
+        if (/coin|flip|heads|tails/.test(s)) return 'coin';
+        if (/shuffle|shuffler/.test(s)) return 'shuffle';
+        if (/number|randomizer|rng/.test(s)) return 'number';
+        return 'wheel'; // wheel / spinner / picker / name / lottery / raffle default
+    }
+
+    // Fair random float in [0,1) via crypto (falls back to Math.random).
+    function rpRand() {
+        try { var a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] / 4294967296; }
+        catch (e) { return Math.random(); }
+    }
+    function rpInt(n) { return Math.floor(rpRand() * n); }
+
+    function rpLines(v) {
+        return String(v || '').split('\n').map(function (x) { return x.trim(); }).filter(Boolean);
+    }
+
+    // ---- Wheel of names (canvas spinner) --------------------------------------
+    function rpRenderWheel(root) {
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;">' +
+            '<textarea id="rpNames" class="w3-input w3-border" rows="5" placeholder="One entry per line" style="max-width:360px;margin:0 auto;">Alice\nBob\nCharlie\nDana\nErin\nFrank</textarea></div>' +
+            '<canvas id="rpWheel" width="320" height="320" style="max-width:90vw;"></canvas>' +
+            '<div style="margin-top:8px;"><button id="rpSpin" type="button" class="w3-button w3-green w3-large">Spin</button></div>' +
+            '<div id="rpWinner" style="font:700 22px sans-serif;margin-top:10px;min-height:1.4em;color:#0a6;"></div>';
+        var cv = root.querySelector('#rpWheel'), ctx = cv.getContext('2d');
+        var winnerEl = root.querySelector('#rpWinner'), namesEl = root.querySelector('#rpNames');
+        var COLORS = ['#e57373', '#64b5f6', '#81c784', '#ffd54f', '#ba68c8', '#4db6ac', '#ff8a65', '#a1887f'];
+        var angle = 0, spinning = false;
+        function names() { var n = rpLines(namesEl.value); return n.length ? n : ['(add entries)']; }
+        function draw() {
+            var arr = names(), n = arr.length, cx = 160, cy = 160, r = 150, seg = 2 * Math.PI / n;
+            ctx.clearRect(0, 0, 320, 320);
+            for (var i = 0; i < n; i++) {
+                var a0 = angle + i * seg, a1 = a0 + seg;
+                ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, r, a0, a1); ctx.closePath();
+                ctx.fillStyle = COLORS[i % COLORS.length]; ctx.fill();
+                ctx.save(); ctx.translate(cx, cy); ctx.rotate(a0 + seg / 2);
+                ctx.fillStyle = '#222'; ctx.font = '13px sans-serif'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+                ctx.fillText(String(arr[i]).slice(0, 18), r - 10, 0); ctx.restore();
+            }
+            // pointer at top
+            ctx.fillStyle = '#111'; ctx.beginPath(); ctx.moveTo(cx - 10, 6); ctx.lineTo(cx + 10, 6); ctx.lineTo(cx, 26); ctx.closePath(); ctx.fill();
+        }
+        function spin() {
+            if (spinning) return; var arr = names(); if (arr.length < 2 || arr[0] === '(add entries)') { winnerEl.textContent = 'Add at least two entries.'; return; }
+            spinning = true; winnerEl.textContent = '';
+            var seg = 2 * Math.PI / arr.length;
+            var target = angle + (4 + rpRand() * 3) * 2 * Math.PI + rpRand() * 2 * Math.PI; // 4-7 turns + random offset
+            var start = angle, dur = 4200, t0 = performance.now();
+            function frame(now) {
+                var p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3); // ease-out cubic
+                angle = start + (target - start) * e; draw();
+                if (p < 1) { requestAnimationFrame(frame); }
+                else {
+                    spinning = false;
+                    // winner is the segment under the top pointer (at -90deg)
+                    var norm = ((-(Math.PI / 2) - angle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+                    var idx = Math.floor(norm / seg) % arr.length;
+                    winnerEl.textContent = 'Winner: ' + arr[idx];
+                }
+            }
+            requestAnimationFrame(frame);
+        }
+        namesEl.addEventListener('input', function () { if (!spinning) draw(); });
+        root.querySelector('#rpSpin').addEventListener('click', spin);
+        draw();
+    }
+
+    // ---- Dice roller ----------------------------------------------------------
+    function rpRenderDice(root) {
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;">Dice <input id="rpN" type="number" min="1" max="10" value="2" class="w3-input w3-border" style="width:80px;display:inline-block;"></div>' +
+            '<button id="rpRoll" type="button" class="w3-button w3-green w3-large">Roll</button>' +
+            '<div id="rpFaces" style="font:700 44px monospace;margin-top:12px;"></div>' +
+            '<div id="rpSum" style="font-weight:bold;margin-top:6px;"></div>';
+        var FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+        root.querySelector('#rpRoll').addEventListener('click', function () {
+            var n = Math.min(10, Math.max(1, parseInt(root.querySelector('#rpN').value, 10) || 1)), out = '', sum = 0;
+            for (var i = 0; i < n; i++) { var v = rpInt(6); sum += v + 1; out += FACES[v] + ' '; }
+            root.querySelector('#rpFaces').textContent = out;
+            root.querySelector('#rpSum').textContent = 'Total: ' + sum;
+        });
+        root.querySelector('#rpRoll').click();
+    }
+
+    // ---- Coin flip ------------------------------------------------------------
+    function rpRenderCoin(root) {
+        root.innerHTML = '<button id="rpFlip" type="button" class="w3-button w3-green w3-large">Flip</button>' +
+            '<div id="rpResult" style="font:700 40px sans-serif;margin-top:12px;"></div>';
+        root.querySelector('#rpFlip').addEventListener('click', function () {
+            root.querySelector('#rpResult').textContent = rpRand() < 0.5 ? 'Heads' : 'Tails';
+        });
+        root.querySelector('#rpFlip').click();
+    }
+
+    // ---- Random number --------------------------------------------------------
+    function rpRenderNumber(root) {
+        root.innerHTML =
+            'Min <input id="rpMin" type="number" value="1" class="w3-input w3-border" style="width:110px;display:inline-block;"> ' +
+            'Max <input id="rpMax" type="number" value="100" class="w3-input w3-border" style="width:110px;display:inline-block;"> ' +
+            '<button id="rpGen" type="button" class="w3-button w3-green">Generate</button>' +
+            '<div id="rpOut" style="font:700 44px monospace;margin-top:12px;"></div>';
+        root.querySelector('#rpGen').addEventListener('click', function () {
+            var lo = parseInt(root.querySelector('#rpMin').value, 10) || 0, hi = parseInt(root.querySelector('#rpMax').value, 10) || 0;
+            if (hi < lo) { var t = lo; lo = hi; hi = t; }
+            root.querySelector('#rpOut').textContent = String(lo + rpInt(hi - lo + 1));
+        });
+        root.querySelector('#rpGen').click();
+    }
+
+    // ---- List shuffler (Fisher-Yates + crypto) --------------------------------
+    function rpRenderShuffle(root) {
+        root.innerHTML =
+            '<textarea id="rpIn" class="w3-input w3-border" rows="6" placeholder="One item per line" style="max-width:360px;margin:0 auto;">Alice\nBob\nCharlie\nDana</textarea>' +
+            '<div style="margin-top:8px;"><button id="rpShuf" type="button" class="w3-button w3-green">Shuffle</button></div>' +
+            '<ol id="rpOut" style="margin-top:10px;text-align:left;max-width:360px;margin-left:auto;margin-right:auto;"></ol>';
+        root.querySelector('#rpShuf').addEventListener('click', function () {
+            var arr = rpLines(root.querySelector('#rpIn').value);
+            for (var i = arr.length - 1; i > 0; i--) { var j = rpInt(i + 1); var t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
+            var ol = root.querySelector('#rpOut'); ol.innerHTML = '';
+            arr.forEach(function (x) { var li = document.createElement('li'); li.textContent = x; ol.appendChild(li); });
+        });
+        root.querySelector('#rpShuf').click();
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('randomPickerTool');
+        if (!root) return; // not a random-picker page
+        var mode = rpDetectMode(RP_SLUG);
+        try {
+            if (mode === 'dice') rpRenderDice(root);
+            else if (mode === 'coin') rpRenderCoin(root);
+            else if (mode === 'number') rpRenderNumber(root);
+            else if (mode === 'shuffle') rpRenderShuffle(root);
+            else rpRenderWheel(root);
+        } catch (e) {
+            root.textContent = 'Could not start the tool: ' + (e && e.message ? e.message : String(e));
+        }
+    }
+</script>

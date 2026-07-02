@@ -2442,6 +2442,7 @@ export const ALIAS_ROUTES = {
   '/stopwatch.html': '/utility-tools/stopwatch.html',
   '/online-alarm-clock.html': '/utility-tools/online-alarm-clock.html',
   '/wheel-spinner.html': '/utility-tools/wheel-spinner.html',
+  '/dice-roller.html': '/utility-tools/dice-roller.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3390,6 +3391,13 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/wheel-spinner-wheel-names-step-by-step.html': 'guide/vi/wheel-spinner-wheel-names-step-by-step.jsp',
   '/guides/id/wheel-spinner-wheel-names-step-by-step.html': 'guide/id/wheel-spinner-wheel-names-step-by-step.jsp',
   '/guides/de/wheel-spinner-wheel-names-step-by-step.html': 'guide/de/wheel-spinner-wheel-names-step-by-step.jsp',
+  '/utility-tools/dice-roller.html': 'utility/dice-roller.jsp',
+  '/guides/dice-roller-step-by-step.html': 'guide/dice-roller-step-by-step.jsp',
+  '/guides/pt/dice-roller-step-by-step.html': 'guide/pt/dice-roller-step-by-step.jsp',
+  '/guides/es/dice-roller-step-by-step.html': 'guide/es/dice-roller-step-by-step.jsp',
+  '/guides/vi/dice-roller-step-by-step.html': 'guide/vi/dice-roller-step-by-step.jsp',
+  '/guides/id/dice-roller-step-by-step.html': 'guide/id/dice-roller-step-by-step.jsp',
+  '/guides/de/dice-roller-step-by-step.html': 'guide/de/dice-roller-step-by-step.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
