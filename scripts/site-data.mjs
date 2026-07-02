@@ -2440,6 +2440,7 @@ export const ALIAS_ROUTES = {
   '/digital-clock.html': '/utility-tools/digital-clock.html',
   '/countdown-timer.html': '/utility-tools/countdown-timer.html',
   '/stopwatch.html': '/utility-tools/stopwatch.html',
+  '/online-alarm-clock.html': '/utility-tools/online-alarm-clock.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3374,6 +3375,13 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/stopwatch-step-by-step.html': 'guide/vi/stopwatch-step-by-step.jsp',
   '/guides/id/stopwatch-step-by-step.html': 'guide/id/stopwatch-step-by-step.jsp',
   '/guides/de/stopwatch-step-by-step.html': 'guide/de/stopwatch-step-by-step.jsp',
+  '/utility-tools/online-alarm-clock.html': 'utility/online-alarm-clock.jsp',
+  '/guides/alarm-clock-step-by-step.html': 'guide/alarm-clock-step-by-step.jsp',
+  '/guides/pt/alarm-clock-step-by-step.html': 'guide/pt/alarm-clock-step-by-step.jsp',
+  '/guides/es/alarm-clock-step-by-step.html': 'guide/es/alarm-clock-step-by-step.jsp',
+  '/guides/vi/alarm-clock-step-by-step.html': 'guide/vi/alarm-clock-step-by-step.jsp',
+  '/guides/id/alarm-clock-step-by-step.html': 'guide/id/alarm-clock-step-by-step.jsp',
+  '/guides/de/alarm-clock-step-by-step.html': 'guide/de/alarm-clock-step-by-step.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
