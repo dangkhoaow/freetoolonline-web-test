@@ -243,6 +243,8 @@ const HOWTO_ROUTES = new Set([
   // geo-batch-99: new tool pages — each has a w3-pale-green answer panel with steps
   '/pdf-tools/pdf-filler-form-editor.html',
   '/image-converter-tools/audio-converter.html',
+  // geo-batch-101: code-formatter-beautifier has a w3-pale-green 3-step panel in BODYHTML
+  '/developer-tools/code-formatter-beautifier.html',
 ]);
 
 // P10.3.1 - Per-tool og:image differentiation (Phase 10 Cycle 4).
@@ -933,6 +935,30 @@ function extractFaqItems(faqHtml, pageName = '') {
   }
 
   const logPrefix = pageName ? `[faq:${pageName}]` : '[faq]';
+
+  // Fast path: faq-item class detected — extract directly from <details class="faq-item">
+  // elements without requiring a <h2>FAQ</h2> header. This handles guide pages where the
+  // FAQ is embedded inline in BODYHTML with translated headers.
+  if (/class=["'][^"']*faq-item[^"']*["']/.test(raw)) {
+    const detailsRe = /<details[^>]*class=["'][^"']*faq-item[^"']*["'][^>]*>([\s\S]*?)<\/details>/gi;
+    const items = [];
+    let dm;
+    while ((dm = detailsRe.exec(raw)) !== null) {
+      const inner = dm[1];
+      const qm = /<summary[^>]*>([\s\S]*?)<\/summary>/i.exec(inner);
+      const am = /<p[^>]*>([\s\S]*?)<\/p>/i.exec(inner);
+      if (qm && am) {
+        const question = stripHtml(qm[1]);
+        const answer = stripHtml(am[1]);
+        if (question && answer) items.push({ question, answer });
+      }
+    }
+    if (items.length > 0) {
+      console.log(`${logPrefix} FAQ items extracted via faq-item class (${items.length} entries).`);
+      return items;
+    }
+  }
+
   // Primary: canonical "Frequently Asked Questions" header.
   // Extended: also accept FAQ-variant headers ("FAQ:", "FAQs", or "FAQ <topic>")
   // so fragments whose H2 uses a non-canonical phrasing still emit FAQPage JSON-LD.
@@ -1185,8 +1211,12 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   const isHubPage = normalizedRoute.endsWith('-tools.html')
     || SEO_CLUSTER_GROUPS.some((group) => group.hubRoute === normalizedRoute);
   const showRating = showAds && !isHubPage;
-  const faqItems = extractFaqItems(pageData.faq, pageName);
-  if (pageData.faq) {
+  // For guide pages with FAQ items embedded inline in BODYHTML (no separate FAQ*.html),
+  // fall back to BODYHTML so FAQPage JSON-LD is still emitted. Tool/hub pages always use
+  // the dedicated FAQ*.html fragment only.
+  const faqSource = isGuide && !pageData.faq ? pageData.bodyHtml : pageData.faq;
+  const faqItems = extractFaqItems(faqSource, pageName);
+  if (faqSource) {
     console.log(`[faq] Parsed ${faqItems.length} FAQ entries for ${pageName}.`);
   }
   const canonicalUrl = resolveCanonicalUrl({
