@@ -2446,6 +2446,7 @@ export const ALIAS_ROUTES = {
   '/coin-flip.html': '/utility-tools/coin-flip.html',
   '/random-number-picker.html': '/utility-tools/random-number-picker.html',
   '/name-shuffler.html': '/utility-tools/name-shuffler.html',
+  '/yes-or-no-wheel.html': '/utility-tools/yes-or-no-wheel.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3434,6 +3435,13 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/random-list-shuffler-vs-alternatives.html': 'guide/vi/random-list-shuffler-vs-alternatives.jsp',
   '/guides/id/random-list-shuffler-vs-alternatives.html': 'guide/id/random-list-shuffler-vs-alternatives.jsp',
   '/guides/de/random-list-shuffler-vs-alternatives.html': 'guide/de/random-list-shuffler-vs-alternatives.jsp',
+  '/utility-tools/yes-or-no-wheel.html': 'utility/yes-or-no-wheel.jsp',
+  '/guides/yes-no-wheel-step-by-step.html': 'guide/yes-no-wheel-step-by-step.jsp',
+  '/guides/pt/yes-no-wheel-step-by-step.html': 'guide/pt/yes-no-wheel-step-by-step.jsp',
+  '/guides/es/yes-no-wheel-step-by-step.html': 'guide/es/yes-no-wheel-step-by-step.jsp',
+  '/guides/vi/yes-no-wheel-step-by-step.html': 'guide/vi/yes-no-wheel-step-by-step.jsp',
+  '/guides/id/yes-no-wheel-step-by-step.html': 'guide/id/yes-no-wheel-step-by-step.jsp',
+  '/guides/de/yes-no-wheel-step-by-step.html': 'guide/de/yes-no-wheel-step-by-step.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
