@@ -2443,6 +2443,7 @@ export const ALIAS_ROUTES = {
   '/online-alarm-clock.html': '/utility-tools/online-alarm-clock.html',
   '/wheel-spinner.html': '/utility-tools/wheel-spinner.html',
   '/dice-roller.html': '/utility-tools/dice-roller.html',
+  '/coin-flip.html': '/utility-tools/coin-flip.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3398,6 +3399,13 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/dice-roller-step-by-step.html': 'guide/vi/dice-roller-step-by-step.jsp',
   '/guides/id/dice-roller-step-by-step.html': 'guide/id/dice-roller-step-by-step.jsp',
   '/guides/de/dice-roller-step-by-step.html': 'guide/de/dice-roller-step-by-step.jsp',
+  '/utility-tools/coin-flip.html': 'utility/coin-flip.jsp',
+  '/guides/coin-flip-step-by-step.html': 'guide/coin-flip-step-by-step.jsp',
+  '/guides/pt/coin-flip-step-by-step.html': 'guide/pt/coin-flip-step-by-step.jsp',
+  '/guides/es/coin-flip-step-by-step.html': 'guide/es/coin-flip-step-by-step.jsp',
+  '/guides/vi/coin-flip-step-by-step.html': 'guide/vi/coin-flip-step-by-step.jsp',
+  '/guides/id/coin-flip-step-by-step.html': 'guide/id/coin-flip-step-by-step.jsp',
+  '/guides/de/coin-flip-step-by-step.html': 'guide/de/coin-flip-step-by-step.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
