@@ -2438,6 +2438,7 @@ export const ALIAS_ROUTES = {
   '/code-formatter-beautifier.html': '/developer-tools/code-formatter-beautifier.html',
   '/analog-clock.html': '/utility-tools/analog-clock.html',
   '/digital-clock.html': '/utility-tools/digital-clock.html',
+  '/countdown-timer.html': '/utility-tools/countdown-timer.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3358,6 +3359,13 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/digital-clock-step-by-step.html': 'guide/vi/digital-clock-step-by-step.jsp',
   '/guides/id/digital-clock-step-by-step.html': 'guide/id/digital-clock-step-by-step.jsp',
   '/guides/de/digital-clock-step-by-step.html': 'guide/de/digital-clock-step-by-step.jsp',
+  '/utility-tools/countdown-timer.html': 'utility/countdown-timer.jsp',
+  '/guides/countdown-timer-step-by-step.html': 'guide/countdown-timer-step-by-step.jsp',
+  '/guides/pt/countdown-timer-step-by-step.html': 'guide/pt/countdown-timer-step-by-step.jsp',
+  '/guides/es/countdown-timer-step-by-step.html': 'guide/es/countdown-timer-step-by-step.jsp',
+  '/guides/vi/countdown-timer-step-by-step.html': 'guide/vi/countdown-timer-step-by-step.jsp',
+  '/guides/id/countdown-timer-step-by-step.html': 'guide/id/countdown-timer-step-by-step.jsp',
+  '/guides/de/countdown-timer-step-by-step.html': 'guide/de/countdown-timer-step-by-step.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
