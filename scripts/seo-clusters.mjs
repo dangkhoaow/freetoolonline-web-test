@@ -66,7 +66,7 @@ const SEO_CLUSTER_GROUPS = [
     cluster: 'utility',
     hubRoute: '/utility-tools.html',
     hubLabel: 'Back to Utility Tools',
-    routes: ['/file-compressor.html', '/convert-time-in-millisecond-to-date.html', '/get-time-in-millisecond.html', '/qr-code-generator.html', '/do-nong-do-con-truc-tuyen.html', '/cong-cu-chuyen-doi-chu-quoc-ngu-tieng-viet-thanh-tieq-viet-kieu-moi.html', '/utility-tools/todo-list.html', '/utility-tools/unit-converter.html', '/utility-tools/font-generator.html', '/utility-tools/private-ai-chat.html', '/utility-tools/analog-clock.html', '/utility-tools/digital-clock.html', '/utility-tools/countdown-timer.html', '/utility-tools/stopwatch.html', '/utility-tools/online-alarm-clock.html'],
+    routes: ['/file-compressor.html', '/convert-time-in-millisecond-to-date.html', '/get-time-in-millisecond.html', '/qr-code-generator.html', '/do-nong-do-con-truc-tuyen.html', '/cong-cu-chuyen-doi-chu-quoc-ngu-tieng-viet-thanh-tieq-viet-kieu-moi.html', '/utility-tools/todo-list.html', '/utility-tools/unit-converter.html', '/utility-tools/font-generator.html', '/utility-tools/private-ai-chat.html', '/utility-tools/analog-clock.html', '/utility-tools/digital-clock.html', '/utility-tools/countdown-timer.html', '/utility-tools/stopwatch.html', '/utility-tools/online-alarm-clock.html', '/utility-tools/wheel-spinner.html'],
   },
   // Phase 16 P16.G3 - register the /guides/* cluster. Cycle B activates the
   // full route list now that P16.G1 ships /guides.html. resolveHubBacklink
