@@ -2449,6 +2449,7 @@ export const ALIAS_ROUTES = {
   '/yes-or-no-wheel.html': '/utility-tools/yes-or-no-wheel.html',
   '/word-counter.html': '/developer-tools/word-counter.html',
   '/sort-text-lines.html': '/developer-tools/sort-text-lines.html',
+  '/remove-duplicate-lines.html': '/developer-tools/remove-duplicate-lines.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3458,6 +3459,13 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/sort-text-lines-step-by-step.html': 'guide/vi/sort-text-lines-step-by-step.jsp',
   '/guides/id/sort-text-lines-step-by-step.html': 'guide/id/sort-text-lines-step-by-step.jsp',
   '/guides/de/sort-text-lines-step-by-step.html': 'guide/de/sort-text-lines-step-by-step.jsp',
+  '/developer-tools/remove-duplicate-lines.html': 'utility/remove-duplicate-lines.jsp',
+  '/guides/remove-duplicate-lines-step-by-step.html': 'guide/remove-duplicate-lines-step-by-step.jsp',
+  '/guides/pt/remove-duplicate-lines-step-by-step.html': 'guide/pt/remove-duplicate-lines-step-by-step.jsp',
+  '/guides/es/remove-duplicate-lines-step-by-step.html': 'guide/es/remove-duplicate-lines-step-by-step.jsp',
+  '/guides/vi/remove-duplicate-lines-step-by-step.html': 'guide/vi/remove-duplicate-lines-step-by-step.jsp',
+  '/guides/id/remove-duplicate-lines-step-by-step.html': 'guide/id/remove-duplicate-lines-step-by-step.jsp',
+  '/guides/de/remove-duplicate-lines-step-by-step.html': 'guide/de/remove-duplicate-lines-step-by-step.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
