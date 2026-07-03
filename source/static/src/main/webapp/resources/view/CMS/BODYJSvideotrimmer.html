@@ -1,0 +1,183 @@
+<script>
+    /* Media-EDITOR skeleton via self-hosted FFmpeg.wasm (trim/cut, lossless).
+     * Wired contract per CONCRETE_BROWSER_TOOL_RULES.md section 4. Sibling to
+     * converter-media-ffmpegwasm.template.html - that skeleton RE-ENCODES to a
+     * new format; this one CUTS a time range from the ORIGINAL container with
+     * `-c copy` (no re-encode, so it is fast and lossless).
+     *
+     * Browser-only invariant: the uploaded File is processed entirely in the
+     * browser tab. NO bytes leave the device. FFmpeg.wasm runs as a WebAssembly
+     * worker; the only network calls this skeleton makes are the one-time
+     * fetches for vendor assets at the same origin.
+     *
+     * Required vendor assets (already installed sitewide - see
+     * converter-media-ffmpegwasm.template.html header for the install command):
+     *   /vendor/ffmpeg/ffmpeg.js, /vendor/ffmpeg/814.ffmpeg.js,
+     *   /vendor/ffmpeg/ffmpeg-core.js, /vendor/ffmpeg/ffmpeg-core.wasm
+     *
+     * Start/End time fields (#ffmpegTrimStart / #ffmpegTrimEnd) accept plain
+     * seconds ("90") or mm:ss / h:mm:ss ("1:30"). Both are ABSOLUTE positions
+     * in the original file's timeline (matches ffmpeg's `-ss <start> -to <end>`
+     * output-option semantics when both flags follow `-i`). End blank = trim
+     * from Start to end-of-file. Output keeps the INPUT file's container/codec
+     * (no format change) since `-c copy` cannot re-encode.
+     */
+
+    web.localUpload = true;
+
+    var FFMPEG_SLUG = 'video-trimmer';
+    var FFMPEG_TITLE = 'Online Video Trimmer';
+    var FFMPEG_VENDOR_BASE = '/vendor/ffmpeg';
+    var FFMPEG_UMD_URL = FFMPEG_VENDOR_BASE + '/ffmpeg.js';
+    var FFMPEG_CORE_JS_URL = FFMPEG_VENDOR_BASE + '/ffmpeg-core.js';
+    var FFMPEG_CORE_WASM_URL = FFMPEG_VENDOR_BASE + '/ffmpeg-core.wasm';
+
+    function mimeFor(ext) {
+        return {
+            mp3: 'audio/mpeg', wav: 'audio/wav', aac: 'audio/aac', ogg: 'audio/ogg',
+            flac: 'audio/flac', m4a: 'audio/mp4',
+            mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime',
+            avi: 'video/x-msvideo', mkv: 'video/x-matroska', gif: 'image/gif',
+        }[ext] || 'application/octet-stream';
+    }
+
+    // Accepts plain seconds ("90", "12.5") or mm:ss / h:mm:ss ("1:30", "1:02:03").
+    // Returns null for an empty/unparseable string (caller treats null as "unset").
+    function parseTimeToSeconds(raw) {
+        var s = String(raw == null ? '' : raw).trim();
+        if (!s) return null;
+        if (/^\d+(\.\d+)?$/.test(s)) return parseFloat(s);
+        var parts = s.split(':');
+        if (!parts.length || parts.some(function (p) { return p !== '' && isNaN(parseFloat(p)); })) return null;
+        var secs = 0;
+        for (var i = 0; i < parts.length; i++) secs = secs * 60 + (parseFloat(parts[i]) || 0);
+        return secs;
+    }
+
+    function ffmpegArgsForTrim(inputName, outputName, opts) {
+        var args = ['-i', inputName];
+        if (opts.startSeconds != null) args = args.concat(['-ss', String(opts.startSeconds)]);
+        if (opts.endSeconds != null) args = args.concat(['-to', String(opts.endSeconds)]);
+        return args.concat(['-c', 'copy', outputName]);
+    }
+
+    var ffmpegInstance = null;
+    var ffmpegLoadPromise = null;
+    var ffmpegUmdScriptPromise = null;
+
+    function injectUmdScriptOnce() {
+        if (ffmpegUmdScriptPromise) return ffmpegUmdScriptPromise;
+        ffmpegUmdScriptPromise = new Promise(function (resolve, reject) {
+            if (typeof globalThis.FFmpegWASM !== 'undefined') return resolve();
+            var s = document.createElement('script');
+            s.src = FFMPEG_UMD_URL;
+            s.async = true;
+            s.onload = function () {
+                if (typeof globalThis.FFmpegWASM === 'undefined') {
+                    reject(new Error('FFmpegWASM global missing after ' + FFMPEG_UMD_URL + ' loaded'));
+                } else {
+                    resolve();
+                }
+            };
+            s.onerror = function () { reject(new Error('Failed to load ' + FFMPEG_UMD_URL)); };
+            document.head.appendChild(s);
+        });
+        return ffmpegUmdScriptPromise;
+    }
+
+    async function loadFfmpegOnce(progressCb) {
+        if (ffmpegInstance) return ffmpegInstance;
+        if (ffmpegLoadPromise) return ffmpegLoadPromise;
+        ffmpegLoadPromise = (async function () {
+            progressCb && progressCb('Loading FFmpeg.wasm (~31MB, one-time)...');
+            await injectUmdScriptOnce();
+            var FFmpegCtor = globalThis.FFmpegWASM && globalThis.FFmpegWASM.FFmpeg;
+            if (!FFmpegCtor) throw new Error('globalThis.FFmpegWASM.FFmpeg missing - vendor assets out of date?');
+            var ffmpeg = new FFmpegCtor();
+            ffmpeg.on('log', function (e) { progressCb && progressCb('[ffmpeg] ' + (e.message || '')); });
+            ffmpeg.on('progress', function (e) {
+                var pct = Math.round((e.progress || 0) * 100);
+                progressCb && progressCb('Trimming: ' + pct + '%');
+            });
+            await ffmpeg.load({ coreURL: FFMPEG_CORE_JS_URL, wasmURL: FFMPEG_CORE_WASM_URL });
+            ffmpegInstance = ffmpeg;
+            return ffmpeg;
+        })();
+        return ffmpegLoadPromise;
+    }
+
+    function readTrimOptsFromUi() {
+        var startRaw = $('#ffmpegTrimStart').val();
+        var endRaw = $('#ffmpegTrimEnd').val();
+        return {
+            startSeconds: parseTimeToSeconds(startRaw),
+            endSeconds: parseTimeToSeconds(endRaw),
+        };
+    }
+
+    async function processInputForSlug(file, opts) {
+        var inputExt = (file.name.split('.').pop() || 'bin').toLowerCase();
+        var inputName = 'input.' + inputExt;
+        var outputName = 'output.' + inputExt;
+        var $status = $('.ffmpeg-status');
+
+        function setStatus(msg) { $status.text(msg).show(); }
+
+        if (opts.startSeconds != null && opts.endSeconds != null && opts.endSeconds <= opts.startSeconds) {
+            throw new Error('End time must be after start time.');
+        }
+
+        var ffmpeg = await loadFfmpegOnce(setStatus);
+
+        setStatus('Reading input file...');
+        var buf = await file.arrayBuffer();
+        await ffmpeg.writeFile(inputName, new Uint8Array(buf));
+
+        setStatus('Running FFmpeg...');
+        var args = ffmpegArgsForTrim(inputName, outputName, opts);
+        await ffmpeg.exec(args);
+
+        setStatus('Reading output...');
+        var data = await ffmpeg.readFile(outputName);
+        try { await ffmpeg.deleteFile(inputName); } catch (e) { /* ignore */ }
+        try { await ffmpeg.deleteFile(outputName); } catch (e) { /* ignore */ }
+
+        var blob = new Blob([data.buffer], { type: mimeFor(inputExt) });
+        var blobUrl = URL.createObjectURL(blob);
+        var baseName = (file.name.replace(/\.[^.]+$/, '') || FFMPEG_SLUG);
+        var downloadName = baseName + '-trimmed.' + inputExt;
+
+        setStatus('Done.');
+        return { output_blob_url: blobUrl, output_filename: downloadName, output_mime: mimeFor(inputExt), _is_mock: false };
+    }
+
+    function renderOutputDownload(result) {
+        var html = '<div class="imageOut" style="margin:8px 0;">'
+            + '<a href="' + result.output_blob_url + '" download="' + result.output_filename + '" '
+            + 'class="w3-button w3-blue imgOutDownBtn" style="visibility:visible;opacity:1">'
+            + 'Download ' + result.output_filename + '</a></div>';
+        $('.outputImgs').html(html);
+    }
+
+    function loadUploadHandlersByPage() {
+        var onFileCompleteOrigin = onFileComplete;
+        onFileComplete = async function (e, file, response) {
+            onFileCompleteOrigin.call(this, e, file, response);
+            var realFile = file && file.file ? file.file : file;
+            if (!realFile || !realFile.arrayBuffer) {
+                $('.outputImgs').html('<div class="w3-panel w3-pale-red"><b>' + FFMPEG_TITLE + ':</b> No file received.</div>');
+                return;
+            }
+            $('.outputImgs').empty();
+            $('.downloadC').addClass('w3-hide');
+            try {
+                var result = await processInputForSlug(realFile, readTrimOptsFromUi());
+                renderOutputDownload(result);
+            } catch (err) {
+                console.error('video-trimmer:', err);
+                $('.outputImgs').html('<div class="w3-panel w3-pale-red"><b>' + FFMPEG_TITLE + ':</b> '
+                    + (err && err.message ? err.message : String(err)) + '</div>');
+            }
+        };
+    }
+</script>

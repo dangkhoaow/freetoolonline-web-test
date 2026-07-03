@@ -2451,6 +2451,8 @@ export const ALIAS_ROUTES = {
   '/sort-text-lines.html': '/developer-tools/sort-text-lines.html',
   '/remove-duplicate-lines.html': '/developer-tools/remove-duplicate-lines.html',
   '/reverse-text.html': '/developer-tools/reverse-text.html',
+  '/password-generator.html': '/utility-tools/password-generator.html',
+  '/video-trimmer.html': '/video-tools/video-trimmer.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3474,6 +3476,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/reverse-text-when.html': 'guide/vi/reverse-text-when.jsp',
   '/guides/id/reverse-text-when.html': 'guide/id/reverse-text-when.jsp',
   '/guides/de/reverse-text-when.html': 'guide/de/reverse-text-when.jsp',
+  '/utility-tools/password-generator.html': 'utility/password-generator.jsp',
+  '/guides/password-generator-when.html': 'guide/password-generator-when.jsp',
+  '/guides/password-generator-step-by-step.html': 'guide/password-generator-step-by-step.jsp',
+  '/guides/password-generator-vs-alternatives.html': 'guide/password-generator-vs-alternatives.jsp',
+  '/video-tools/video-trimmer.html': 'convert/video-trimmer.jsp',
+  '/guides/video-trimmer-when.html': 'guide/video-trimmer-when.jsp',
+  '/guides/video-trimmer-step-by-step.html': 'guide/video-trimmer-step-by-step.jsp',
+  '/guides/video-trimmer-vs-alternatives.html': 'guide/video-trimmer-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

@@ -306,6 +306,8 @@ try {
     { title: "Sort Text Lines", url: "https://freetoolonline.com/developer-tools/sort-text-lines.html", include: !1, tags: "developer" },
     { title: "Remove Duplicate Lines", url: "https://freetoolonline.com/developer-tools/remove-duplicate-lines.html", include: !1, tags: "developer" },
     { title: "Reverse Text", url: "https://freetoolonline.com/developer-tools/reverse-text.html", include: !1, tags: "developer" },
+    { title: "Password Generator", url: "https://freetoolonline.com/utility-tools/password-generator.html", include: !1, tags: "utility" },
+    { title: "Online Video Trimmer", url: "https://freetoolonline.com/video-tools/video-trimmer.html", include: !1, tags: "video" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
