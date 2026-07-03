@@ -31,7 +31,7 @@ import { parseJspPageSource, renderAlternateAdPage, renderPageDocument, renderRe
 import { resolvePageMtime } from './page-mtimes.mjs';
 import { createInternalContentRewriter, normalizeBasePath } from './staging-utils.mjs';
 import { writeSplitSitemaps } from './sitemap-writer.mjs';
-import { buildDynamicSitemapBody, buildDynamicGuidesHubBody, buildPerPageLMenuBodies, buildDynamicHomeSearchData } from './sitemap-html-builder.mjs';
+import { buildDynamicSitemapBody, buildDynamicGuidesHubBody, buildDynamicToolHubBodies, spliceToolHubList, buildPerPageLMenuBodies, buildDynamicHomeSearchData } from './sitemap-html-builder.mjs';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const distDir = path.resolve(repoRoot, process.env.DIST_DIR ?? 'dist');
@@ -89,6 +89,15 @@ async function main() {
   // dynamic body computed once here wins in renderRoute below.
   const guidesHubDynamicBody = await buildDynamicGuidesHubBody({ cmsRoot });
   console.log(`[guides-hub] Generated dynamic /guides.html body (${guidesHubDynamicBody.length} chars).`);
+  // Cluster tool-hub directory lists (/utility-tools.html, /pdf-tools.html,
+  // ...) regenerate on every build from the same cluster-member resolver
+  // sitemap.html + l-menu use, then splice between HUB_TOOL_LIST markers in
+  // each hub's BODYHTML. Closes the "hub page forgot the new tool" defect
+  // class (operator-caught 2026-07-03: /utility-tools.html missing 23 of 28
+  // tools) the same way /guides.html + l-menu closed theirs. Hand-curated
+  // hub prose outside the markers is untouched.
+  const toolHubBodies = await buildDynamicToolHubBodies({ cmsRoot });
+  console.log(`[tool-hub] Generated ${toolHubBodies.size} dynamic hub tool-directory lists.`);
   // l-menu (left navigation sidebar) - splice the dynamic body into the
   // static l-menu.html shell which keeps the inline <style> + <script>
   // blocks. The body is everything between </style> and the closing
@@ -156,6 +165,7 @@ async function main() {
       rewriteInternalContent,
       sitemapDynamicBody,
       guidesHubDynamicBody,
+      toolHubBodies,
       homeSearchData,
       lMenu,
     });
@@ -295,7 +305,7 @@ async function deriveRelatedDescFromBodyDesc(url, cmsFragmentsRoot) {
   return blurb.trim();
 }
 
-async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData, canonicalOrigin, basePath, isStaging, rewriteInternalContent, sitemapDynamicBody, guidesHubDynamicBody, homeSearchData, lMenu }) {
+async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData, canonicalOrigin, basePath, isStaging, rewriteInternalContent, sitemapDynamicBody, guidesHubDynamicBody, toolHubBodies, homeSearchData, lMenu }) {
   const normalizedRoute = normalizeRoute(route);
 
   if (Object.prototype.hasOwnProperty.call(ALIAS_ROUTES, normalizedRoute)) {
@@ -342,6 +352,12 @@ async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData,
   // computed once in main() wins here.
   if (normalizedRoute === '/guides.html' && guidesHubDynamicBody) {
     pageData.bodyHtml = guidesHubDynamicBody;
+  }
+  // Cluster hub tool-directory <ul> is build-generated from the cluster
+  // member resolver (see buildDynamicToolHubBodies) and spliced between the
+  // HUB_TOOL_LIST markers; hand-curated prose outside the markers survives.
+  if (toolHubBodies && toolHubBodies.has(normalizedRoute) && pageData.bodyHtml) {
+    pageData.bodyHtml = spliceToolHubList(pageData.bodyHtml, toolHubBodies.get(normalizedRoute), { route: normalizedRoute });
   }
   // Homepage: splice live counts + dynamic datalist into BODYHTML.html.
   // 3 surgical replacements preserve all surrounding hero/bento markup.

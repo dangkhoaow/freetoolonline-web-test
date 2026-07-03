@@ -482,6 +482,102 @@ async function resolveClusterMemberRoutes(group, aliasSourceSet) {
   return [...curatedCanonicals, ...tail];
 }
 
+// -------------------------------------------------------------------------- //
+// Dynamic tool-hub directory lists - same defect class as /guides.html, one //
+// level deeper. Each cluster hub page (/utility-tools.html, /pdf-tools.html, //
+// ...) hand-maintained its own tool-directory <ul> as static CMS content.   //
+// A new tool shipped via build-tool-page.mjs updates seo-clusters.mjs +     //
+// l-menu.html + sitemap.html + related-tools.js automatically, but NOTHING  //
+// ever touched the hub page's own directory list - so every hub silently   //
+// drifted stale. Operator-caught 2026-07-03: /utility-tools.html was       //
+// missing 23 of its 28 tools (every fire-19/20/21 tool); every other       //
+// cluster hub had the same gap for its own backlog (developer-tools.html   //
+// missing code-formatter-beautifier/word-counter/sort-text-lines/          //
+// remove-duplicate-lines/reverse-text; video-tools.html missing            //
+// video-trimmer; etc).                                                     //
+//                                                                           //
+// Fix: regenerate ONLY the tool-directory <ul> on every export, from the   //
+// SAME resolveClusterMemberRoutes() resolver sitemap.html + l-menu already //
+// trust (canonicalizes ALIAS_ROUTES, self-heals against any route shipped  //
+// under the hub's URL prefix but missing from seo-clusters.mjs). The       //
+// regenerated <ul> is spliced between HUB_TOOL_LIST:START/END marker       //
+// comments in the hub's BODYHTML fragment - everything else on the page    //
+// (intro prose, "common workflows", comparison tables, FAQ-adjacent        //
+// sections, illustrations, byline) is HAND-CURATED and stays untouched.    //
+// This mirrors why the fix is a targeted splice, not a full-body replace   //
+// like /guides.html: unlike the guides hub, every tool hub already carries //
+// deep Phase-6-approved prose that a full-body regenerate would destroy.   //
+// A hub missing the markers is left with its static list + a console.warn //
+// (fail-open - never breaks the build).                                   //
+// -------------------------------------------------------------------------- //
+
+const HUB_TOOL_LIST_START = '<!-- HUB_TOOL_LIST:START';
+const HUB_TOOL_LIST_END = '<!-- HUB_TOOL_LIST:END -->';
+
+function renderHubToolItem({ route, title, description }) {
+  // Mirrors the existing hand-authored hub markup shape (anchor + one-line
+  // description paragraph per <li>) so the regenerated block is visually
+  // indistinguishable from the content it replaces.
+  const descBlock = description ? `\n            <p>${escapeHtml(description)}</p>` : '';
+  return `        <li>\n            <a href="${route}">${escapeHtml(title)}</a>${descBlock}\n        </li>`;
+}
+
+/**
+ * Build the dynamic tool-directory <ul> for every cluster hub page, keyed by
+ * hubRoute. Excludes the 'guides' cluster (its own dedicated builder above).
+ * Route order follows resolveClusterMemberRoutes() (curated seo-clusters.mjs
+ * order first, then any self-healed tail) - the same order l-menu.html and
+ * sitemap.html already render, so all three surfaces stay visually
+ * consistent for the same cluster.
+ * @returns {Promise<Map<string,string>>} hubRoute -> `<ul>...</ul>` HTML
+ */
+export async function buildDynamicToolHubBodies({ cmsRoot } = {}) {
+  if (!cmsRoot) {
+    throw new Error('buildDynamicToolHubBodies: cmsRoot is required');
+  }
+  const aliasSourceSet = new Set(Object.keys(ALIAS_ROUTES));
+  const out = new Map();
+  for (const group of getSeoClusterGroups()) {
+    if (group.cluster === 'guides' || !group.hubRoute) continue;
+    const memberRoutes = await resolveClusterMemberRoutes(group, aliasSourceSet);
+    const items = [];
+    for (const route of memberRoutes) {
+      if (route === group.hubRoute) continue; // never list the hub linking to itself
+      items.push(await loadRouteMetadata(cmsRoot, route));
+    }
+    const lines = ['    <ul>'];
+    for (const item of items) lines.push(renderHubToolItem(item));
+    lines.push('    </ul>');
+    out.set(group.hubRoute, lines.join('\n'));
+  }
+  return out;
+}
+
+/**
+ * Splice a freshly-built tool-directory <ul> between the HUB_TOOL_LIST
+ * marker comments in a hub page's bodyHtml. Every other section (intro,
+ * workflows, comparison tables, FAQ prose, byline) is untouched because the
+ * splice only replaces the exact span between the markers.
+ * Fail-open: markers missing/malformed -> return bodyHtml unchanged + warn
+ * (never breaks the build; the static list just stays visible that render).
+ */
+export function spliceToolHubList(bodyHtml, ulHtml, { route } = {}) {
+  const startIdx = bodyHtml.indexOf(HUB_TOOL_LIST_START);
+  if (startIdx === -1) {
+    console.warn(`[tool-hub] No HUB_TOOL_LIST:START marker in ${route ?? 'hub'} - leaving static tool list in place.`);
+    return bodyHtml;
+  }
+  const startCommentEnd = bodyHtml.indexOf('-->', startIdx);
+  const endIdx = startCommentEnd === -1 ? -1 : bodyHtml.indexOf(HUB_TOOL_LIST_END, startCommentEnd);
+  if (startCommentEnd === -1 || endIdx === -1) {
+    console.warn(`[tool-hub] Malformed HUB_TOOL_LIST markers in ${route ?? 'hub'} - leaving static tool list in place.`);
+    return bodyHtml;
+  }
+  const before = bodyHtml.slice(0, startCommentEnd + '-->'.length);
+  const after = bodyHtml.slice(endIdx);
+  return `${before}\n${ulHtml}\n    ${after}`;
+}
+
 // classifyGuide() topic ids → cluster id. The "editorial-and-other" topic
 // is the catch-all; route it into UTILITY so no guide gets dropped.
 const GUIDE_TOPIC_TO_CLUSTER = {
