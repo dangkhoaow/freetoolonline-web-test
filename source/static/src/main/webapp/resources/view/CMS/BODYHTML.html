@@ -87,6 +87,54 @@
         <option value="Get JPEG Compression Level" data-href="/image-tools/get-jpeg-compression-level.html">
       </datalist>
 
+      <!-- Option-select handler for the search datalist (operator-caught defect
+           2026-07-03: picking a suggestion submitted the full title as
+           /tags.html?tag=<title> and readers got a fuzzy match list instead of
+           the tool). When the typed/picked value exactly matches a suggestion,
+           navigate straight to its data-href. Anything else keeps the no-JS
+           fallback: GET /tags.html?tag=<query>, handled by related-tools.js.
+           Placed AFTER </datalist> so the build-time datalist splice in
+           export-site.mjs (buildDynamicHomeSearchData) never touches it. -->
+      <script>
+      (function () {
+        var form = document.querySelector(".home-search-form");
+        var input = document.getElementById("home-search-input");
+        var datalist = document.getElementById("home-tool-list");
+        if (!form || !input || !datalist) { return; }
+        function hrefForExactOption(value) {
+          var wanted = (value || "").trim().toLowerCase();
+          if (wanted === "") { return null; }
+          var options = datalist.getElementsByTagName("option");
+          for (var i = 0; i < options.length; i++) {
+            var optionValue = (options[i].value || "").trim().toLowerCase();
+            if (optionValue === wanted) { return options[i].getAttribute("data-href"); }
+          }
+          return null;
+        }
+        // One-shot navigation guard: "change" (fires on blur/datalist pick)
+        // and "submit" can both trigger for the same interaction; navigating
+        // twice aborts the first request.
+        var navigated = false;
+        function navigateTo(href) {
+          if (navigated) { return; }
+          navigated = true;
+          window.location.href = href;
+        }
+        form.addEventListener("submit", function (event) {
+          var href = hrefForExactOption(input.value);
+          if (href) {
+            event.preventDefault();
+            navigateTo(href);
+          }
+          if (navigated) { event.preventDefault(); }
+        });
+        input.addEventListener("change", function () {
+          var href = hrefForExactOption(input.value);
+          if (href) { navigateTo(href); }
+        });
+      })();
+      </script>
+
       <div class="home-hero-chips">
         <a class="home-chip" href="/zip-tools/zip-file.html">Compress ZIP</a>
         <a class="home-chip" href="/image-converter-tools/heic-to-jpg.html">HEIC → JPG</a>

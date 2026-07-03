@@ -531,57 +531,117 @@ try {
         console.log("[related-tools] Alias tag hardwaretest -> device-test.");
       }
 
-      var normalizedQuery = tagFromQuery ? tagFromQuery.toLowerCase() : "",
-        queryTokens = normalizedQuery
-          ? normalizedQuery.split(/\s+/).filter(function (t) {
+      var normalizedQuery = tagFromQuery ? tagFromQuery.toLowerCase() : "";
+
+      // Home-search handoff: the homepage datalist suggests FULL page titles,
+      // so a no-JS submit (or a legacy cached homepage without the inline
+      // option-select handler) lands here with ?tag=<full title>. When the
+      // query is the exact title of a known page, go straight to that page
+      // instead of running the fuzzy tag search over its title words.
+      // Guide datalist options carry a " (guide)" suffix - strip it first.
+      var redirectedToExactTitle = !1,
+        exactTitleQuery = normalizedQuery.replace(/\s*\(guide\)$/, "").trim();
+      if ("" !== exactTitleQuery) {
+        for (i = 0; i < urlMaps.length; i++) {
+          if (urlMaps[i].title.toLowerCase() === exactTitleQuery) {
+            console.log("[related-tools] Query is the exact title of " + urlMaps[i].url + "; redirecting.");
+            redirectedToExactTitle = !0;
+            window.location.replace(localizeRelatedUrl(urlMaps[i].url));
+            break;
+          }
+        }
+      }
+
+      // Token hygiene: trim punctuation off token edges and drop tokens that
+      // are punctuation-only. Without this a title-style query such as
+      // "resize image online - jpg, png & webp image resizer" produced junk
+      // tokens ("-", "&", "jpg,") and "-" substring-matched nearly every
+      // hyphenated title on the site (operator-caught 2026-07-03).
+      var cleanSearchToken = function (t) {
+        return t.replace(/^[^a-z0-9]+/, "").replace(/[^a-z0-9]+$/, "");
+      };
+      var queryTokens = normalizedQuery
+        ? normalizedQuery
+            .split(/\s+/)
+            .map(cleanSearchToken)
+            .filter(function (t) {
               return "" !== t && !isSearchStopWord(t);
             })
-          : [];
+        : [];
 
-      normalizedQuery && 0 === queryTokens.length && (queryTokens = [normalizedQuery]);
+      normalizedQuery &&
+        0 === queryTokens.length &&
+        (queryTokens = [cleanSearchToken(normalizedQuery)].filter(function (t) {
+          return "" !== t;
+        }));
       console.log("[related-tools] Tag search query:", tagFromQuery);
       console.log("[related-tools] Tag search tokens:", queryTokens);
 
       list = "";
-      if ("" !== normalizedQuery) {
+      if ("" !== normalizedQuery && !redirectedToExactTitle && queryTokens.length > 0) {
+        // Score every candidate so the closest pages render first: full-phrase
+        // title match >> exact tag hits >> per-token title hits. Multi-word
+        // queries cap at the best 20 rows; single-word queries are the
+        // canonical tag-browse lists (the "#zip"-style links on every tool
+        // page) and stay uncapped.
+        var TAG_RESULTS_MAX = 20,
+          scoredMatches = [];
         for (i = 0; i < urlMaps.length; i++) {
-          var tags,
-            currentTags,
-            matchedTags,
-            titleLower,
-            titleMatch;
+          var tags, currentTags, matchedTags, titleLower;
           title = urlMaps[i].title;
           if (!urlMaps[i].include && !isCurrentMapItem(urlMaps[i])) {
             matchedTags = addPagesHasTheSameTag((tags = urlMaps[i].tags.split(",")), (currentTags = queryTokens));
             titleLower = title.toLowerCase();
-            titleMatch =
-              titleLower.indexOf(normalizedQuery) > -1 ||
-              queryTokens.some(function (t) {
-                return titleLower.indexOf(t) > -1;
-              });
-
-            if ("" !== matchedTags || titleMatch) {
-              var matchColor = "" !== matchedTags ? "#4caf50" : "#3b73af",
-                matchLabel = "" !== matchedTags ? matchedTags : ' "' + normalizedQuery + '"',
-                matchTitle = "" !== matchedTags ? "This tool has the same tag(s): " + matchedTags : "Title matches" + matchLabel;
-
+            var matchedTagCount = "" === matchedTags ? 0 : matchedTags.split(" #").length - 1,
+              matchedTitleTokens = 0;
+            for (var q = 0; q < queryTokens.length; q++) {
+              titleLower.indexOf(queryTokens[q]) > -1 && matchedTitleTokens++;
+            }
+            var score = (titleLower.indexOf(normalizedQuery) > -1 ? 8 : 0) + 3 * matchedTagCount + 2 * matchedTitleTokens;
+            if (score > 0) {
               urlMaps[i].include = !0;
-              list =
-                list +
-                '<li class="d-inline"><a title="' +
-                matchTitle +
-                '" style="color: ' +
-                matchColor +
-                ';" href="' +
-                localizeRelatedUrl(urlMaps[i].url) +
-                '">' +
-                title +
-                "</a></li>";
+              scoredMatches.push({ map: urlMaps[i], matchedTags: matchedTags, score: score, order: i });
             }
           }
         }
+        scoredMatches.sort(function (a, b) {
+          return b.score - a.score || a.order - b.order;
+        });
+        var totalMatches = scoredMatches.length,
+          capApplies = queryTokens.length > 1 && totalMatches > TAG_RESULTS_MAX;
+        capApplies && (scoredMatches = scoredMatches.slice(0, TAG_RESULTS_MAX));
+        for (i = 0; i < scoredMatches.length; i++) {
+          var matched = scoredMatches[i],
+            matchColor = "" !== matched.matchedTags ? "#4caf50" : "#3b73af",
+            matchTitle = "" !== matched.matchedTags ? "This tool has the same tag(s): " + matched.matchedTags : 'Title matches "' + escRelDesc(normalizedQuery) + '"';
+          list =
+            list +
+            '<li class="d-inline"><a title="' +
+            matchTitle +
+            '" style="color: ' +
+            matchColor +
+            ';" href="' +
+            localizeRelatedUrl(matched.map.url) +
+            '">' +
+            matched.map.title +
+            "</a></li>";
+        }
+        // Render matches inside the same padded, bulleted <ul> the Related
+        // Tools sections use. They previously landed as bare <li> nodes
+        // directly in the .tags-collection div, which drew the bullets flush
+        // against the container's left edge (operator-caught 2026-07-03).
+        // escRelDesc: the query text is URL-controlled - never inject it raw.
         "" !== list &&
-          (list = "<p>Tools matching:<b> " + (normalizedQuery.indexOf(" ") === -1 ? "#" : "") + normalizedQuery + "</b></p>" + list,
+          (list =
+            "<p>Tools matching:<b> " +
+            (normalizedQuery.indexOf(" ") === -1 ? "#" : "") +
+            escRelDesc(normalizedQuery) +
+            "</b>" +
+            (capApplies ? " (showing the " + TAG_RESULTS_MAX + " closest of " + totalMatches + " matches)" : "") +
+            "</p>" +
+            '<ul style="margin-top: 0px;display: block;padding-inline-start: 40px;list-style-type: disc;">' +
+            list +
+            "</ul>",
           $(".tags-collection").html(list));
       }
 

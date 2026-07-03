@@ -341,9 +341,10 @@ ${sections.join('\n\n')}
  * title kept in sync with each page's H1). Guides get a "(guide)" suffix so
  * the dropdown lets readers triage tools vs guides at a glance.
  *
- * data-href = canonical route. Currently the form action is GET /tags.html
- * which does its own tag-lookup; data-href is retained for a future
- * client-side option-select handler that navigates directly.
+ * data-href = canonical route, consumed by the inline option-select handler
+ * in BODYHTML.html (exact value match -> navigate straight to the page).
+ * Queries that match no option fall through to the form's GET /tags.html,
+ * where related-tools.js runs the exact-title redirect + tag/title search.
  */
 export async function buildDynamicHomeSearchData({ cmsRoot } = {}) {
   if (!cmsRoot) {
