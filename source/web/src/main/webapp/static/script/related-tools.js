@@ -115,6 +115,7 @@ try {
     { title: "JSON Parser Online: Validate vs Format vs Tree View", url: "https://freetoolonline.com/guides/en/json-parser-validate-vs-format-vs-tree-view.html", include: !1, tags: "guide,developer,json,parser" },
     { title: "Milliseconds to Date - UTC vs Local Time", url: "https://freetoolonline.com/guides/en/milliseconds-to-date-utc-vs-local-time.html", include: !1, tags: "guide,developer,milliseconds,timestamp,timezone" },
     { title: "Current Time in Milliseconds", url: "https://freetoolonline.com/guides/en/current-time-in-milliseconds.html", include: !1, tags: "guide,utility,developer,milliseconds,timestamp,epoch" },
+    { title: "Time in Milliseconds", url: "https://freetoolonline.com/guides/en/time-in-ms.html", include: !1, tags: "guide,utility,developer,milliseconds,duration,epoch" },
     { title: "PDF vs HEIC for Document Archival", url: "https://freetoolonline.com/guides/en/pdf-vs-heic-for-document-archival.html", include: !1, tags: "guide,pdf,heic,image-conversion" },
     { title: "FFmpeg Online vs Local FFmpeg", url: "https://freetoolonline.com/guides/en/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html", include: !1, tags: "guide,video,ffmpeg" },
     { title: "How to Convert 100 HEIC Photos to JPG", url: "https://freetoolonline.com/guides/en/how-to-convert-100-heic-photos-to-jpg.html", include: !1, tags: "guide,image-conversion,heic,jpg" },
