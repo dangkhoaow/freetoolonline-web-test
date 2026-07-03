@@ -247,6 +247,8 @@ const HOWTO_ROUTES = new Set([
   '/developer-tools/code-formatter-beautifier.html',
   // geo-batch-122: sort-text-lines has a 3-step <ol> in BODYHTML (extractHowToSteps fallback path)
   '/developer-tools/sort-text-lines.html',
+  // geo-batch-123: remove-duplicate-lines has a 3-step <ol> in BODYHTML (extractHowToSteps fallback path)
+  '/developer-tools/remove-duplicate-lines.html',
 ]);
 
 // P10.3.1 - Per-tool og:image differentiation (Phase 10 Cycle 4).
