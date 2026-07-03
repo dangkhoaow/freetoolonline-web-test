@@ -1,0 +1,110 @@
+<script>
+    // Speech skeleton (text-to-speech) - Web Speech API, no lib, no upload, no backend.
+    // Registry Gate-H entries: text_to_speech_speechsynthesis / speech_to_text_speechrecognition.
+    // 100% client-side (the 2026 "no upload / private" trend): text + voice never
+    // leave the browser. Slug-dispatched:
+    //   - `text-to-speech` / `*-speak` / `tts` -> TTS mode (speechSynthesis).
+    //   - `speech-to-text` / `transcribe` / `dictation` -> STT mode (SpeechRecognition).
+    //   - else: both panels.
+    // Framework contract: doAfterPageRendered() (fires once jQuery + base script
+    // load); no top-level DOM. speechSynthesis output is audio (no file); the visible
+    // controls + status + transcript satisfy e2e G16. STT needs a mic + a
+    // SpeechRecognition-capable browser (Chromium/Safari) so a headless fire may not
+    // exercise the live transcript - it re-escalates rather than shipping broken.
+
+    web.localUpload = false;
+
+    var SP_SLUG = 'text-to-speech';
+
+    function spMode(slug) {
+        var s = String(slug || '').toLowerCase();
+        if (/speech-to-text|\btranscribe|\bdictation|voice-to-text|\bstt\b/.test(s)) return 'stt';
+        if (/text-to-speech|text-to-voice|\bspeak\b|\btts\b|\bnarrat/.test(s)) return 'tts';
+        return 'both';
+    }
+
+    function spEsc(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); }
+
+    function spBuildTts(root) {
+        var wrap = document.createElement('div');
+        wrap.className = 'w3-container';
+        wrap.innerHTML =
+            '<h3 class="w3-text-blue-grey">Text to speech</h3>' +
+            '<textarea id="spText" class="w3-input w3-border" rows="4" style="width:100%;" placeholder="Type or paste the text to read aloud...">Your text is read aloud in your browser. Nothing is uploaded.</textarea>' +
+            '<div class="w3-row" style="margin:8px 0;">' +
+            'Voice <select id="spVoice" class="w3-select w3-border" style="width:auto;display:inline-block;max-width:60%;"></select> ' +
+            'Rate <input id="spRate" type="range" min="0.5" max="2" step="0.1" value="1" style="vertical-align:middle;"> ' +
+            'Pitch <input id="spPitch" type="range" min="0" max="2" step="0.1" value="1" style="vertical-align:middle;">' +
+            '</div>' +
+            '<div style="margin-bottom:8px;"><button id="spSpeak" type="button" class="w3-button w3-green">Speak</button> ' +
+            '<button id="spStopTts" type="button" class="w3-button w3-red">Stop</button></div>' +
+            '<div id="spTtsStatus" class="outputImgs" style="visibility:visible !important;min-height:1.2em;color:#555;">Ready. Click Speak to hear the text in your browser.</div>';
+        root.appendChild(wrap);
+        var synth = window.speechSynthesis;
+        if (!synth) { document.getElementById('spTtsStatus').textContent = 'This browser does not support in-browser speech (speechSynthesis API).'; return; }
+        var voiceSel = wrap.querySelector('#spVoice');
+        function loadVoices() {
+            var vs = synth.getVoices() || [];
+            voiceSel.innerHTML = vs.map(function (v, i) { return '<option value="' + i + '">' + spEsc(v.name + ' (' + v.lang + ')') + '</option>'; }).join('') || '<option value="">(default voice)</option>';
+        }
+        loadVoices();
+        if (typeof synth.onvoiceschanged !== 'undefined') synth.onvoiceschanged = loadVoices;
+        wrap.querySelector('#spSpeak').addEventListener('click', function () {
+            var text = wrap.querySelector('#spText').value || '';
+            if (!text.trim()) { document.getElementById('spTtsStatus').textContent = 'Type some text first.'; return; }
+            synth.cancel();
+            var u = new SpeechSynthesisUtterance(text);
+            var vs = synth.getVoices() || [];
+            var idx = parseInt(voiceSel.value, 10);
+            if (vs[idx]) u.voice = vs[idx];
+            u.rate = parseFloat(wrap.querySelector('#spRate').value) || 1;
+            u.pitch = parseFloat(wrap.querySelector('#spPitch').value) || 1;
+            u.onend = function () { document.getElementById('spTtsStatus').textContent = 'Done speaking.'; };
+            u.onerror = function () { document.getElementById('spTtsStatus').textContent = 'Could not play speech in this browser.'; };
+            document.getElementById('spTtsStatus').textContent = 'Speaking...';
+            synth.speak(u);
+        });
+        wrap.querySelector('#spStopTts').addEventListener('click', function () { synth.cancel(); document.getElementById('spTtsStatus').textContent = 'Stopped.'; });
+    }
+
+    function spBuildStt(root) {
+        var wrap = document.createElement('div');
+        wrap.className = 'w3-container';
+        wrap.innerHTML =
+            '<h3 class="w3-text-blue-grey">Speech to text</h3>' +
+            '<div style="margin-bottom:8px;"><button id="spRec" type="button" class="w3-button w3-green">Start listening</button> ' +
+            '<button id="spStopStt" type="button" class="w3-button w3-red" disabled>Stop</button> ' +
+            '<a id="spDl" class="w3-button w3-blue" style="display:none;">Download .txt</a></div>' +
+            '<textarea id="spTranscript" class="w3-input w3-border outputImgs" rows="5" style="width:100%;visibility:visible !important;" placeholder="Your speech appears here as text. It is transcribed locally - nothing is uploaded." readonly></textarea>' +
+            '<div id="spSttStatus" style="min-height:1.2em;color:#555;margin-top:6px;">Click Start listening and allow microphone access. Transcription runs in your browser.</div>';
+        root.appendChild(wrap);
+        var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        var status = wrap.querySelector('#spSttStatus'), ta = wrap.querySelector('#spTranscript');
+        if (!SR) { status.textContent = 'This browser does not support in-browser transcription (SpeechRecognition API). Try Chrome or Safari.'; wrap.querySelector('#spRec').disabled = true; return; }
+        var rec = new SR(); rec.continuous = true; rec.interimResults = true; rec.lang = navigator.language || 'en-US';
+        var finalText = '';
+        rec.onresult = function (ev) {
+            var interim = '';
+            for (var i = ev.resultIndex; i < ev.results.length; i++) {
+                var tr = ev.results[i][0].transcript;
+                if (ev.results[i].isFinal) finalText += tr + ' '; else interim += tr;
+            }
+            ta.value = (finalText + interim).trim();
+            var dl = wrap.querySelector('#spDl');
+            if (ta.value) { dl.href = URL.createObjectURL(new Blob([ta.value], { type: 'text/plain' })); dl.download = 'transcript.txt'; dl.style.display = ''; }
+        };
+        rec.onerror = function (e) { status.textContent = 'Microphone/transcription error: ' + (e && e.error ? e.error : 'unknown') + '.'; };
+        rec.onend = function () { wrap.querySelector('#spRec').disabled = false; wrap.querySelector('#spStopStt').disabled = true; status.textContent = 'Stopped.'; };
+        wrap.querySelector('#spRec').addEventListener('click', function () { finalText = ta.value ? ta.value + ' ' : ''; try { rec.start(); } catch (e) {} this.disabled = true; wrap.querySelector('#spStopStt').disabled = false; status.textContent = 'Listening... speak now.'; });
+        wrap.querySelector('#spStopStt').addEventListener('click', function () { rec.stop(); });
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('speechTool');
+        if (!root) return; // not a speech page
+        root.innerHTML = '';
+        var mode = spMode(SP_SLUG);
+        if (mode === 'tts' || mode === 'both') spBuildTts(root);
+        if (mode === 'stt' || mode === 'both') spBuildStt(root);
+    }
+</script>

@@ -1,0 +1,169 @@
+<script>
+    // Media-recorder skeleton - fully in-browser. Reference:
+    // verified-browser-impl-registry.mjs entry `media_recorder_mediarecorder`.
+    // Page: /voice-recorder.html
+    //
+    // What it does on the client (scaffold baseline):
+    //   - Pick a source: camera, camera + microphone, microphone only, or screen.
+    //   - Click Start; the browser asks permission, then records via the native
+    //     MediaRecorder API to WebM. Pause / Resume and Stop are supported, with
+    //     a live duration counter.
+    //   - On Stop the clip is assembled into a Blob and shown as an inline
+    //     <video controls> (or <audio controls> for mic-only) plus a Download
+    //     link, inside the .outputImgs container. No upload, no backend.
+    //
+    // The framework calls doAfterPageRendered() during page startup (it fires for
+    // EVERY page once jQuery + base-script load). Do NOT call $(...) at the top
+    // level: `$` is only defined inside the hook.
+    //
+    // NOTE (freetool-migration T5): this is the SCAFFOLD baseline - native
+    // MediaRecorder only, self-contained so build-tool-page Gate I (not-a-stub)
+    // passes on first ship. The full source enrichments (live face-blur via a
+    // canvas pipeline, and WebM -> MP4 re-encode via ffmpeg.wasm) port in at the
+    // port_logic sub-step; lazy-load ffmpeg.wasm via loadScript() there.
+
+    web.localUpload = false;
+
+    var mrState = {
+        recorder: null, chunks: [], stream: null, timerId: null,
+        startMs: 0, pausedMs: 0, pauseStart: 0, mime: '', kind: 'video',
+    };
+
+    function mrPickMime(audioOnly) {
+        var MR = window.MediaRecorder;
+        if (!MR || !MR.isTypeSupported) return '';
+        var vids = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+        var auds = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus'];
+        var list = audioOnly ? auds : vids;
+        for (var i = 0; i < list.length; i++) { if (MR.isTypeSupported(list[i])) return list[i]; }
+        return '';
+    }
+
+    function mrFmt(ms) {
+        var s = Math.floor(ms / 1000);
+        var m = Math.floor(s / 60);
+        s = s % 60;
+        return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+    }
+
+    function mrElapsed() { return (Date.now() - mrState.startMs) - mrState.pausedMs; }
+
+    function mrTick() {
+        var el = $('#mrTimer');
+        if (el.length) el.text(mrFmt(mrElapsed()));
+    }
+
+    function mrSetButtons(recording, paused) {
+        $('#mrStart').prop('disabled', recording);
+        $('#mrStop').prop('disabled', !recording);
+        $('#mrPause').prop('disabled', !recording).text(paused ? 'Resume' : 'Pause');
+        $('#mrSource').prop('disabled', recording);
+    }
+
+    function mrError(msg) { $('#mrError').text(msg).show(); }
+
+    function mrStopTracks() {
+        if (mrState.stream) {
+            mrState.stream.getTracks().forEach(function (t) { t.stop(); });
+            mrState.stream = null;
+        }
+    }
+
+    async function mrGetStream(source) {
+        var nav = navigator.mediaDevices;
+        if (!nav) throw new Error('This browser does not expose camera, microphone, or screen capture.');
+        if (source === 'screen') {
+            if (!nav.getDisplayMedia) throw new Error('Screen capture is not available in this browser.');
+            return await nav.getDisplayMedia({ video: true, audio: true });
+        }
+        if (source === 'camera') return await nav.getUserMedia({ video: true, audio: false });
+        if (source === 'camera-mic') return await nav.getUserMedia({ video: true, audio: true });
+        return await nav.getUserMedia({ audio: true, video: false }); // mic only
+    }
+
+    async function mrStart() {
+        $('#mrError').hide().text('');
+        $('#mrOutput').empty();
+        var source = $('#mrSource').val() || 'camera';
+        var audioOnly = (source === 'mic');
+        mrState.kind = audioOnly ? 'audio' : 'video';
+        if (!window.MediaRecorder) { mrError('Your browser does not support in-browser recording (MediaRecorder API).'); return; }
+        var stream;
+        try { stream = await mrGetStream(source); }
+        catch (e) { mrError('Could not start recording: ' + (e && e.message ? e.message : 'permission denied or no device.')); return; }
+        mrState.stream = stream;
+        mrState.chunks = [];
+        mrState.mime = mrPickMime(audioOnly);
+        var rec;
+        try { rec = mrState.mime ? new MediaRecorder(stream, { mimeType: mrState.mime }) : new MediaRecorder(stream); }
+        catch (e2) { mrError('Could not create the recorder: ' + (e2 && e2.message ? e2.message : 'unsupported format.')); mrStopTracks(); return; }
+        mrState.recorder = rec;
+        rec.ondataavailable = function (ev) { if (ev.data && ev.data.size > 0) mrState.chunks.push(ev.data); };
+        rec.onstop = mrFinish;
+        if (!audioOnly) {
+            var pv = document.getElementById('mrPreview');
+            if (pv) { pv.srcObject = stream; pv.muted = true; var p = pv.play(); if (p && p.catch) p.catch(function () {}); $('#mrPreview').show(); }
+        }
+        // If the user ends a screen share from the browser chrome, stop recording too.
+        stream.getTracks().forEach(function (t) {
+            t.onended = function () { if (mrState.recorder && mrState.recorder.state !== 'inactive') mrState.recorder.stop(); };
+        });
+        rec.start(1000);
+        mrState.startMs = Date.now();
+        mrState.pausedMs = 0;
+        mrState.pauseStart = 0;
+        mrSetButtons(true, false);
+        mrState.timerId = setInterval(mrTick, 250);
+        mrTick();
+    }
+
+    function mrPause() {
+        var rec = mrState.recorder;
+        if (!rec) return;
+        if (rec.state === 'recording') { rec.pause(); mrState.pauseStart = Date.now(); mrSetButtons(true, true); }
+        else if (rec.state === 'paused') {
+            rec.resume();
+            if (mrState.pauseStart) { mrState.pausedMs += (Date.now() - mrState.pauseStart); mrState.pauseStart = 0; }
+            mrSetButtons(true, false);
+        }
+    }
+
+    function mrStop() {
+        var rec = mrState.recorder;
+        if (rec && rec.state !== 'inactive') rec.stop();
+    }
+
+    function mrFinish() {
+        var elapsed = mrElapsed();
+        if (mrState.timerId) { clearInterval(mrState.timerId); mrState.timerId = null; }
+        var pv = document.getElementById('mrPreview');
+        if (pv) pv.srcObject = null;
+        $('#mrPreview').hide();
+        mrStopTracks();
+        var type = mrState.mime || (mrState.kind === 'audio' ? 'audio/webm' : 'video/webm');
+        var blob = new Blob(mrState.chunks, { type: type });
+        if (!blob.size) { mrError('No data was recorded. Try recording for a moment longer.'); mrSetButtons(false, false); return; }
+        var url = URL.createObjectURL(blob);
+        var ext = (type.indexOf('ogg') >= 0) ? 'ogg' : 'webm';
+        var name = 'voice-recorder-' + mrFmt(elapsed).replace(':', 'm') + 's.' + ext;
+        var out = $('#mrOutput');
+        out.empty();
+        if (mrState.kind === 'audio') out.append('<audio controls src="' + url + '" style="width:100%;"></audio>');
+        else out.append('<video controls src="' + url + '" style="max-width:100%;"></video>');
+        out.append('<p><a href="' + url + '" download="' + name + '" class="w3-button w3-green">Download clip</a></p>');
+        mrSetButtons(false, false);
+    }
+
+    function initMediaRecorder() {
+        if ($('#mrTool').length === 0) return; // not the recorder page
+        if (!window.MediaRecorder) mrError('Your browser does not support in-browser recording (MediaRecorder API).');
+        $('#mrStart').off('click.mr').on('click.mr', mrStart);
+        $('#mrPause').off('click.mr').on('click.mr', mrPause);
+        $('#mrStop').off('click.mr').on('click.mr', mrStop);
+        mrSetButtons(false, false);
+    }
+
+    function doAfterPageRendered() {
+        initMediaRecorder();
+    }
+</script>

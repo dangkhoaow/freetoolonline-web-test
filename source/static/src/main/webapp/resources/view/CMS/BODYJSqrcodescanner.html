@@ -1,0 +1,73 @@
+<script>
+    // QR scanner skeleton (qr-code-scanner) - decodes a QR code from an UPLOADED image,
+    // 100% in-browser (canvas getImageData + jsQR), no upload, no backend.
+    // Registry Gate-H entry: barcode_scanner_zxing. The image never leaves the
+    // browser (the 2026 "no upload / private" trend).
+    //
+    // jsQR is a UMD global loaded from a CDN (mirrors ai-image's TF_CDN). To remove
+    // the CDN dependency (site CSP), self-host at /vendor/jsqr/jsQR.js and point
+    // QR_CDN there. Camera-scan (getUserMedia live scan) is a documented enhancement
+    // that ports in later; the upload-decode path here is e2e-visible + headless-safe.
+    // Framework contract: doAfterPageRendered(); no top-level DOM; plain <input type=file>.
+
+    web.localUpload = false;
+
+    var QR_CDN = 'https://cdn.jsdelivr.net/npm/jsqr@1/dist/jsQR.js';
+
+    function ftoLoadJsQR() {
+        if (window.jsQR) { return Promise.resolve(); }
+        if (window.__ftoJsQrPromise) { return window.__ftoJsQrPromise; }
+        window.__ftoJsQrPromise = new Promise(function (resolve, reject) {
+            var s = document.createElement('script');
+            s.src = QR_CDN; s.async = true;
+            s.onload = function () { window.jsQR ? resolve() : reject(new Error('jsQR loaded but global is missing')); };
+            s.onerror = function () { reject(new Error('failed to load jsQR from ' + QR_CDN)); };
+            document.head.appendChild(s);
+        });
+        return window.__ftoJsQrPromise;
+    }
+
+    function qrEsc(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); }
+    function qrIsUrl(t) { return /^https?:\/\/\S+$/i.test(String(t || '').trim()); }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('qrScannerTool');
+        if (!root) return; // not a qr-scanner page
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;"><input type="file" id="qrFile" accept="image/*" class="w3-input w3-border" style="max-width:420px;"></div>' +
+            '<div class="w3-row outputImgs" style="visibility:visible !important;"><canvas id="qrCanvas" style="max-width:280px;border:1px solid #ddd;display:none;"></canvas></div>' +
+            '<div id="qrResult" style="margin-top:8px;"></div>' +
+            '<div id="qrStatus" style="min-height:1.2em;color:#555;margin-top:6px;">Choose an image containing a QR code. It is decoded locally - nothing is uploaded.</div>';
+        var fileEl = root.querySelector('#qrFile'), canvas = root.querySelector('#qrCanvas'), ctx = canvas.getContext('2d');
+        var resultEl = root.querySelector('#qrResult'), statusEl = root.querySelector('#qrStatus');
+        function status(m) { statusEl.textContent = m; }
+        fileEl.addEventListener('change', function () {
+            resultEl.innerHTML = '';
+            var f = fileEl.files && fileEl.files[0]; if (!f) return;
+            status('Decoding locally...');
+            var img = new Image();
+            img.onload = function () {
+                var max = 1000, scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+                canvas.width = Math.round(img.naturalWidth * scale); canvas.height = Math.round(img.naturalHeight * scale);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height); canvas.style.display = '';
+                ftoLoadJsQR().then(function () {
+                    var data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    var code = window.jsQR(data.data, data.width, data.height);
+                    if (code && code.data) {
+                        var val = code.data;
+                        resultEl.innerHTML = '<div class="w3-panel w3-pale-green w3-border" style="word-break:break-all;"><b>Decoded:</b> ' +
+                            (qrIsUrl(val) ? '<a href="' + qrEsc(val) + '" target="_blank" rel="nofollow noopener">' + qrEsc(val) + '</a>' : qrEsc(val)) +
+                            ' <button type="button" class="w3-button w3-small w3-blue" id="qrCopy">Copy</button></div>';
+                        var cp = resultEl.querySelector('#qrCopy');
+                        cp.addEventListener('click', function () { if (navigator.clipboard) navigator.clipboard.writeText(val); cp.textContent = 'Copied'; });
+                        status('QR decoded locally - no upload.');
+                    } else {
+                        status('No QR code found in that image. Try a clearer or larger image.');
+                    }
+                }).catch(function (e) { status('Could not load the QR decoder: ' + (e && e.message ? e.message : 'error') + '.'); });
+            };
+            img.onerror = function () { status('Could not read that image.'); };
+            img.src = URL.createObjectURL(f);
+        });
+    }
+</script>
