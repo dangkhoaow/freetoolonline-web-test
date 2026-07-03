@@ -2459,6 +2459,7 @@ export const ALIAS_ROUTES = {
   '/habit-tracker.html': '/utility-tools/habit-tracker.html',
   '/grocery-list.html': '/utility-tools/grocery-list.html',
   '/qr-code-scanner.html': '/utility-tools/qr-code-scanner.html',
+  '/text-repeater.html': '/developer-tools/text-repeater.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3529,6 +3530,10 @@ export const JSP_BY_ROUTE = {
   '/guides/qr-code-scanner-when.html': 'guide/qr-code-scanner-when.jsp',
   '/guides/qr-code-scanner-step-by-step.html': 'guide/qr-code-scanner-step-by-step.jsp',
   '/guides/qr-code-scanner-vs-alternatives.html': 'guide/qr-code-scanner-vs-alternatives.jsp',
+  '/developer-tools/text-repeater.html': 'utility/text-repeater.jsp',
+  '/guides/text-repeater-when.html': 'guide/text-repeater-when.jsp',
+  '/guides/text-repeater-step-by-step.html': 'guide/text-repeater-step-by-step.jsp',
+  '/guides/text-repeater-vs-alternatives.html': 'guide/text-repeater-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

@@ -314,6 +314,7 @@ try {
     { title: "Habit Tracker", url: "https://freetoolonline.com/utility-tools/habit-tracker.html", include: !1, tags: "utility" },
     { title: "Grocery List", url: "https://freetoolonline.com/utility-tools/grocery-list.html", include: !1, tags: "utility" },
     { title: "QR Code Scanner", url: "https://freetoolonline.com/utility-tools/qr-code-scanner.html", include: !1, tags: "utility" },
+    { title: "Text Repeater", url: "https://freetoolonline.com/developer-tools/text-repeater.html", include: !1, tags: "developer" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
