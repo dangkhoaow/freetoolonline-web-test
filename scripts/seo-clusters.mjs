@@ -48,7 +48,7 @@ const SEO_CLUSTER_GROUPS = [
     // Cycle 20260521-12 semantic-dedup cleanup: '/json-formatter.html' removed
     // (was semantic duplicate of /json-parser.html which is titled "JSON Parser
     // & Formatter (Tree View)" and already covers pretty-print + validate + tree).
-    routes: ['/json-parser.html', '/css-minifier.html', '/css-unminifier.html', '/js-minifier.html', '/js-unminifier.html', '/text-diff.html', '/md5-converter.html', '/css-gradient-generator.html', '/text-html-editor.html', '/developer-tools/regex-tester.html', '/developer-tools/color-picker.html', '/developer-tools/data-visualizer.html', '/developer-tools/code-editor.html', '/developer-tools/code-formatter-beautifier.html', '/developer-tools/word-counter.html'],
+    routes: ['/json-parser.html', '/css-minifier.html', '/css-unminifier.html', '/js-minifier.html', '/js-unminifier.html', '/text-diff.html', '/md5-converter.html', '/css-gradient-generator.html', '/text-html-editor.html', '/developer-tools/regex-tester.html', '/developer-tools/color-picker.html', '/developer-tools/data-visualizer.html', '/developer-tools/code-editor.html', '/developer-tools/code-formatter-beautifier.html', '/developer-tools/word-counter.html', '/developer-tools/sort-text-lines.html'],
   },
   {
     cluster: 'video',
