@@ -245,6 +245,8 @@ const HOWTO_ROUTES = new Set([
   '/image-converter-tools/audio-converter.html',
   // geo-batch-101: code-formatter-beautifier has a w3-pale-green 3-step panel in BODYHTML
   '/developer-tools/code-formatter-beautifier.html',
+  // geo-batch-122: sort-text-lines has a 3-step <ol> in BODYHTML (extractHowToSteps fallback path)
+  '/developer-tools/sort-text-lines.html',
 ]);
 
 // P10.3.1 - Per-tool og:image differentiation (Phase 10 Cycle 4).
