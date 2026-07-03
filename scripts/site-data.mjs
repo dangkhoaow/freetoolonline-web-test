@@ -2450,6 +2450,7 @@ export const ALIAS_ROUTES = {
   '/word-counter.html': '/developer-tools/word-counter.html',
   '/sort-text-lines.html': '/developer-tools/sort-text-lines.html',
   '/remove-duplicate-lines.html': '/developer-tools/remove-duplicate-lines.html',
+  '/reverse-text.html': '/developer-tools/reverse-text.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3466,6 +3467,13 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/remove-duplicate-lines-step-by-step.html': 'guide/vi/remove-duplicate-lines-step-by-step.jsp',
   '/guides/id/remove-duplicate-lines-step-by-step.html': 'guide/id/remove-duplicate-lines-step-by-step.jsp',
   '/guides/de/remove-duplicate-lines-step-by-step.html': 'guide/de/remove-duplicate-lines-step-by-step.jsp',
+  '/developer-tools/reverse-text.html': 'utility/reverse-text.jsp',
+  '/guides/reverse-text-when.html': 'guide/reverse-text-when.jsp',
+  '/guides/pt/reverse-text-when.html': 'guide/pt/reverse-text-when.jsp',
+  '/guides/es/reverse-text-when.html': 'guide/es/reverse-text-when.jsp',
+  '/guides/vi/reverse-text-when.html': 'guide/vi/reverse-text-when.jsp',
+  '/guides/id/reverse-text-when.html': 'guide/id/reverse-text-when.jsp',
+  '/guides/de/reverse-text-when.html': 'guide/de/reverse-text-when.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

@@ -1,0 +1,87 @@
+<script>
+    // Text utilities archetype (reverse-text) - pure JS, no lib, no upload, no backend.
+    // Registry Gate-H: text_utilities_purejs. ONE skeleton, slug-dispatched (robust,
+    // no VERB_HINT dependency): word/character counter, case converter, sort lines,
+    // remove duplicate lines, reverse text, text repeater, base64 encode/decode,
+    // URL encode/decode. Framework contract: doAfterPageRendered(); no top-level DOM.
+
+    web.localUpload = false;
+
+    var TU_SLUG = 'reverse-text';
+
+    function tuMode(s) {
+        s = String(s || '').toLowerCase();
+        if (/base64/.test(s)) return 'base64';
+        if (/url-enc|url-dec|urlencode|urldecode|percent-encod|\burl\b/.test(s)) return 'url';
+        if (/case/.test(s)) return 'case';
+        if (/duplicate|dedupe|dedup|unique/.test(s)) return 'dedupe';
+        if (/sort/.test(s)) return 'sort';
+        if (/reverse|reversal/.test(s)) return 'reverse';
+        if (/repeat/.test(s)) return 'repeat';
+        return 'counter'; // word-counter / character-counter default
+    }
+
+    function tuTitleCase(t) { return t.replace(/\w\S*/g, function (w) { return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase(); }); }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('textUtilitiesTool');
+        if (!root) return; // not a text-utilities page
+        var mode = tuMode(TU_SLUG);
+        var inHtml = '<textarea id="tuIn" class="w3-input w3-border" rows="6" placeholder="Type or paste text" style="max-width:560px;margin:0 auto;"></textarea>';
+        var outHtml = '<textarea id="tuOut" class="output w3-input w3-border outputImgs" readonly rows="6" placeholder="Result" style="visibility:visible !important;max-width:560px;margin:8px auto 0;"></textarea>';
+        var controls = '';
+        if (mode === 'counter') outHtml = '<div id="tuStats" class="outputImgs" style="visibility:visible !important;margin-top:10px;font-size:1.05em;"></div>';
+        else if (mode === 'case') controls = '<div class="w3-row" style="margin:8px 0;">' + ['UPPERCASE:upper', 'lowercase:lower', 'Title Case:title', 'Sentence case:sentence', 'camelCase:camel', 'snake_case:snake', 'kebab-case:kebab'].map(function (p) { var a = p.split(':'); return '<button type="button" class="w3-button w3-small w3-light-grey tu-case" data-case="' + a[1] + '" style="margin:2px;">' + a[0] + '</button>'; }).join('') + '</div>';
+        else if (mode === 'base64' || mode === 'url') controls = '<div class="w3-row" style="margin:8px 0;"><button id="tuEnc" type="button" class="w3-button w3-green">Encode</button> <button id="tuDec" type="button" class="w3-button w3-blue">Decode</button></div>';
+        else if (mode === 'sort') controls = '<div class="w3-row" style="margin:8px 0;"><button id="tuAsc" type="button" class="w3-button w3-green">Sort A-Z</button> <button id="tuDesc" type="button" class="w3-button w3-blue">Sort Z-A</button></div>';
+        else if (mode === 'repeat') controls = '<div class="w3-row" style="margin:8px 0;">Times <input id="tuN" type="number" min="1" max="10000" value="3" class="w3-input w3-border" style="width:90px;display:inline-block;"> <button id="tuRun" type="button" class="w3-button w3-green">Repeat</button></div>';
+        else controls = '<div class="w3-row" style="margin:8px 0;"><button id="tuRun" type="button" class="w3-button w3-green">Run</button></div>';
+        root.innerHTML = inHtml + controls + outHtml;
+        var inEl = root.querySelector('#tuIn'), outEl = root.querySelector('#tuOut'), stats = root.querySelector('#tuStats');
+
+        function lines(t) { return String(t || '').split('\n'); }
+        function setOut(v) { if (outEl) outEl.value = v; }
+
+        if (mode === 'counter') {
+            var run = function () {
+                var t = inEl.value || '';
+                var words = (t.trim().match(/\S+/g) || []).length;
+                var chars = t.length, noSpace = t.replace(/\s/g, '').length;
+                var sentences = (t.match(/[.!?]+(\s|$)/g) || []).length;
+                var ln = t ? lines(t).length : 0;
+                var mins = Math.max(1, Math.round(words / 200));
+                stats.innerHTML = '<b>' + words + '</b> words &nbsp; <b>' + chars + '</b> characters &nbsp; <b>' + noSpace + '</b> without spaces<br><b>' + sentences + '</b> sentences &nbsp; <b>' + ln + '</b> lines &nbsp; ~<b>' + mins + '</b> min read';
+            };
+            inEl.addEventListener('input', run); run();
+        } else if (mode === 'case') {
+            root.querySelectorAll('.tu-case').forEach(function (b) {
+                b.addEventListener('click', function () {
+                    var t = inEl.value || '', c = b.getAttribute('data-case'), o = t;
+                    if (c === 'upper') o = t.toUpperCase();
+                    else if (c === 'lower') o = t.toLowerCase();
+                    else if (c === 'title') o = tuTitleCase(t);
+                    else if (c === 'sentence') o = t.toLowerCase().replace(/(^\s*\w|[.!?]\s+\w)/g, function (m) { return m.toUpperCase(); });
+                    else if (c === 'camel') o = t.toLowerCase().replace(/[^a-z0-9]+(.)/g, function (_, ch) { return ch.toUpperCase(); });
+                    else if (c === 'snake') o = t.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+                    else if (c === 'kebab') o = t.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                    setOut(o);
+                });
+            });
+        } else if (mode === 'base64') {
+            root.querySelector('#tuEnc').addEventListener('click', function () { try { setOut(btoa(unescape(encodeURIComponent(inEl.value || '')))); } catch (e) { setOut('Encode error: ' + e.message); } });
+            root.querySelector('#tuDec').addEventListener('click', function () { try { setOut(decodeURIComponent(escape(atob((inEl.value || '').trim())))); } catch (e) { setOut('Invalid Base64: ' + e.message); } });
+        } else if (mode === 'url') {
+            root.querySelector('#tuEnc').addEventListener('click', function () { setOut(encodeURIComponent(inEl.value || '')); });
+            root.querySelector('#tuDec').addEventListener('click', function () { try { setOut(decodeURIComponent(inEl.value || '')); } catch (e) { setOut('Invalid URL encoding: ' + e.message); } });
+        } else if (mode === 'sort') {
+            root.querySelector('#tuAsc').addEventListener('click', function () { setOut(lines(inEl.value).sort(function (a, b) { return a.localeCompare(b); }).join('\n')); });
+            root.querySelector('#tuDesc').addEventListener('click', function () { setOut(lines(inEl.value).sort(function (a, b) { return b.localeCompare(a); }).join('\n')); });
+        } else if (mode === 'dedupe') {
+            root.querySelector('#tuRun').addEventListener('click', function () { var seen = {}, out = []; lines(inEl.value).forEach(function (l) { if (!Object.prototype.hasOwnProperty.call(seen, l)) { seen[l] = 1; out.push(l); } }); setOut(out.join('\n')); });
+        } else if (mode === 'reverse') {
+            root.querySelector('#tuRun').addEventListener('click', function () { setOut((inEl.value || '').split('').reverse().join('')); });
+        } else if (mode === 'repeat') {
+            root.querySelector('#tuRun').addEventListener('click', function () { var n = Math.min(10000, Math.max(1, parseInt(root.querySelector('#tuN').value, 10) || 1)); setOut(new Array(n).fill(inEl.value || '').join('\n')); });
+        }
+    }
+</script>

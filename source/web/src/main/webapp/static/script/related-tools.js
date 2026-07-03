@@ -305,6 +305,7 @@ try {
     { title: "Word Counter", url: "https://freetoolonline.com/developer-tools/word-counter.html", include: !1, tags: "developer" },
     { title: "Sort Text Lines", url: "https://freetoolonline.com/developer-tools/sort-text-lines.html", include: !1, tags: "developer" },
     { title: "Remove Duplicate Lines", url: "https://freetoolonline.com/developer-tools/remove-duplicate-lines.html", include: !1, tags: "developer" },
+    { title: "Reverse Text", url: "https://freetoolonline.com/developer-tools/reverse-text.html", include: !1, tags: "developer" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
