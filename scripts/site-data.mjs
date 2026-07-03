@@ -2448,6 +2448,7 @@ export const ALIAS_ROUTES = {
   '/name-shuffler.html': '/utility-tools/name-shuffler.html',
   '/yes-or-no-wheel.html': '/utility-tools/yes-or-no-wheel.html',
   '/word-counter.html': '/developer-tools/word-counter.html',
+  '/sort-text-lines.html': '/developer-tools/sort-text-lines.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3450,6 +3451,13 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/word-counter-step-by-step.html': 'guide/vi/word-counter-step-by-step.jsp',
   '/guides/id/word-counter-step-by-step.html': 'guide/id/word-counter-step-by-step.jsp',
   '/guides/de/word-counter-step-by-step.html': 'guide/de/word-counter-step-by-step.jsp',
+  '/developer-tools/sort-text-lines.html': 'utility/sort-text-lines.jsp',
+  '/guides/sort-text-lines-step-by-step.html': 'guide/sort-text-lines-step-by-step.jsp',
+  '/guides/pt/sort-text-lines-step-by-step.html': 'guide/pt/sort-text-lines-step-by-step.jsp',
+  '/guides/es/sort-text-lines-step-by-step.html': 'guide/es/sort-text-lines-step-by-step.jsp',
+  '/guides/vi/sort-text-lines-step-by-step.html': 'guide/vi/sort-text-lines-step-by-step.jsp',
+  '/guides/id/sort-text-lines-step-by-step.html': 'guide/id/sort-text-lines-step-by-step.jsp',
+  '/guides/de/sort-text-lines-step-by-step.html': 'guide/de/sort-text-lines-step-by-step.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
