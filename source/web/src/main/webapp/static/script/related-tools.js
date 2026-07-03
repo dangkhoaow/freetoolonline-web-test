@@ -302,6 +302,7 @@ try {
     { title: "Random Number Generator", url: "https://freetoolonline.com/utility-tools/random-number-picker.html", include: !1, tags: "utility" },
     { title: "Random List Shuffler", url: "https://freetoolonline.com/utility-tools/name-shuffler.html", include: !1, tags: "utility" },
     { title: "Yes or No Wheel", url: "https://freetoolonline.com/utility-tools/yes-or-no-wheel.html", include: !1, tags: "utility" },
+    { title: "Word Counter", url: "https://freetoolonline.com/developer-tools/word-counter.html", include: !1, tags: "developer" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
