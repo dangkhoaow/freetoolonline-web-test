@@ -3590,6 +3590,8 @@ export const JSP_BY_ROUTE = {
   '/developer-tools/text-repeater.html': 'utility/text-repeater.jsp',
   '/guides/text-repeater-when.html': 'guide/text-repeater-when.jsp',
   '/guides/text-repeater-step-by-step.html': 'guide/text-repeater-step-by-step.jsp',
+  // cycle 20260704 create_new_guide_page (locale completion) - pt variant of text-repeater-step-by-step (staging-only until es/vi/id/de complete).
+  '/guides/pt/text-repeater-step-by-step.html': 'guide/pt/text-repeater-step-by-step.jsp',
   '/guides/text-repeater-vs-alternatives.html': 'guide/text-repeater-vs-alternatives.jsp',
   '/developer-tools/base64-encoder.html': 'utility/base64-encoder.jsp',
   '/guides/base64-encoder-when.html': 'guide/base64-encoder-when.jsp',
