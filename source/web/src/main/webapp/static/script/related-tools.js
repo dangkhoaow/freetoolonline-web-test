@@ -316,6 +316,7 @@ try {
     { title: "Grocery List", url: "https://freetoolonline.com/utility-tools/grocery-list.html", include: !1, tags: "utility" },
     { title: "QR Code Scanner", url: "https://freetoolonline.com/utility-tools/qr-code-scanner.html", include: !1, tags: "utility" },
     { title: "Text Repeater", url: "https://freetoolonline.com/developer-tools/text-repeater.html", include: !1, tags: "developer" },
+    { title: "Base64 Encoder", url: "https://freetoolonline.com/developer-tools/base64-encoder.html", include: !1, tags: "developer" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
