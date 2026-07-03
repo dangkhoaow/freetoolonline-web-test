@@ -2447,6 +2447,7 @@ export const ALIAS_ROUTES = {
   '/random-number-picker.html': '/utility-tools/random-number-picker.html',
   '/name-shuffler.html': '/utility-tools/name-shuffler.html',
   '/yes-or-no-wheel.html': '/utility-tools/yes-or-no-wheel.html',
+  '/word-counter.html': '/developer-tools/word-counter.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3442,6 +3443,13 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/yes-no-wheel-step-by-step.html': 'guide/vi/yes-no-wheel-step-by-step.jsp',
   '/guides/id/yes-no-wheel-step-by-step.html': 'guide/id/yes-no-wheel-step-by-step.jsp',
   '/guides/de/yes-no-wheel-step-by-step.html': 'guide/de/yes-no-wheel-step-by-step.jsp',
+  '/developer-tools/word-counter.html': 'utility/word-counter.jsp',
+  '/guides/word-counter-step-by-step.html': 'guide/word-counter-step-by-step.jsp',
+  '/guides/pt/word-counter-step-by-step.html': 'guide/pt/word-counter-step-by-step.jsp',
+  '/guides/es/word-counter-step-by-step.html': 'guide/es/word-counter-step-by-step.jsp',
+  '/guides/vi/word-counter-step-by-step.html': 'guide/vi/word-counter-step-by-step.jsp',
+  '/guides/id/word-counter-step-by-step.html': 'guide/id/word-counter-step-by-step.jsp',
+  '/guides/de/word-counter-step-by-step.html': 'guide/de/word-counter-step-by-step.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
