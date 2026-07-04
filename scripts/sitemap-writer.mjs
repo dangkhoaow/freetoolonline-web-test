@@ -1,6 +1,7 @@
 import { readFile, stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { INFO_ROUTES, GUIDE_ROUTES, GUIDE_SITEMAP_EXCLUDE, canonicalForRoute, normalizeRoute, routeToSlug } from './site-data.mjs';
+import { isHubRoute } from './seo-clusters.mjs';
 
 const SITEMAP_FILES = ['sitemap.xml', 'sitemap-tools.xml', 'sitemap-hubs.xml', 'sitemap-guides.xml', 'sitemap-pages.xml'];
 const LLMS_FILES = ['llms.txt', 'llms-full.txt'];
@@ -476,7 +477,12 @@ export async function writeSplitSitemaps({ distDir, routes, origin, isStaging, c
   }
 
   const normalizedRoutes = unique(routes.map(normalizeRoute));
-  const hubRoutes = normalizedRoutes.filter((route) => route.endsWith('-tools.html'));
+  // fire-23: hub detection via the shared isHubRoute() helper (seo-clusters.mjs)
+  // so the non-'-tools' hubs (/games.html, /space-3d.html) land in
+  // sitemap-hubs.xml. Side effect (deliberate): /guides.html moves out of
+  // sitemap-tools.xml into sitemap-hubs.xml - it was misclassified as a tool
+  // by the old suffix test (it is a hub; llms.txt kind follows suit).
+  const hubRoutes = normalizedRoutes.filter((route) => isHubRoute(route));
   // Guides are derived DYNAMICALLY from the canonical routes that actually
   // rendered, by URL prefix. Pre-fix (cycle 50 follow-up #2) the filter was
   // `[...GUIDE_ROUTES].filter((route) => normalizedRoutes.includes(route))`
@@ -509,7 +515,7 @@ export async function writeSplitSitemaps({ distDir, routes, origin, isStaging, c
     && !INFO_ROUTES.has(route)
     && !GUIDE_ROUTES.has(route)
     && !route.startsWith('/guides/')
-    && !route.endsWith('-tools.html'));
+    && !isHubRoute(route));
   const fallbackLastmod = new Date().toISOString();
   const lastmodByRoute = new Map();
 

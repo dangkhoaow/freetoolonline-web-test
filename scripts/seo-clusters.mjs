@@ -77,6 +77,24 @@ const SEO_CLUSTER_GROUPS = [
   // guide's BODYHTML (or BODYWELCOME if present). Append-only at the
   // markup level - the existing guide BODYHTML/BODYWELCOME files are not
   // edited; the renderer adds the backlink at build time.
+  // fire-23 (2026-07-04) - two NEW reader categories, both with non-'-tools'
+  // hubs (the /guides.html precedent): browser GAMES and 3D SPACE visualizations.
+  // Riding the June-2026 in-browser game trend. Routes are appended per build
+  // by seo-tool-page-builder/scripts/lib/patch-seo-clusters.mjs, same as the
+  // 8 tool clusters. Hub detection for these non-'-tools' hubs goes through
+  // isHubRoute() below - do NOT add endsWith('-tools.html') checks elsewhere.
+  {
+    cluster: 'games',
+    hubRoute: '/games.html',
+    hubLabel: 'Back to Games',
+    routes: ['/games/snake-classic.html', '/games/retro-tank-battle.html', '/games/garden-defense.html', '/games/voxel-world-builder.html'],
+  },
+  {
+    cluster: 'space-3d',
+    hubRoute: '/space-3d.html',
+    hubLabel: 'Back to Space 3D',
+    routes: ['/space-3d/solar-system.html', '/space-3d/black-hole.html', '/space-3d/galaxy.html'],
+  },
   {
     cluster: 'guides',
     hubRoute: '/guides.html',
@@ -164,4 +182,25 @@ export function getSeoClusterGroups() {
     ...group,
     routes: [...group.routes],
   }));
+}
+
+/**
+ * True when the route is a category hub page. Two ways to be a hub:
+ *   1. The '/<x>-tools.html' naming convention (the 8 legacy tool clusters).
+ *   2. Explicit hubRoute registration in SEO_CLUSTER_GROUPS - the pattern
+ *      page-renderer.mjs introduced for /guides.html and that the fire-23
+ *      /games.html + /space-3d.html hubs rely on.
+ * Shared by export-site.mjs (showRating gate), sitemap-writer.mjs (hub vs
+ * tool sitemap split + llms.txt kind), and sitemap-html-builder.mjs (home
+ * search datalist exclusion) so hub detection cannot drift per call site
+ * again. NOTE: this also matches /guides.html - call sites that need to
+ * exclude the guides hub must do so explicitly (they already exclude
+ * /guides/* by prefix).
+ */
+export function isHubRoute(route) {
+  const normalized = normalizeRoute(route);
+  if (normalized.endsWith('-tools.html')) {
+    return true;
+  }
+  return SEO_CLUSTER_GROUPS.some((group) => group.hubRoute === normalized);
 }
