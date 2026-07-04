@@ -482,8 +482,14 @@ const LMENU_CLUSTER_ICONS = {
   developer: 'fa-code',
   'device-test': 'fa-laptop',
   utility: 'fa-tools',
-  games: 'fa-gamepad',
-  'space-3d': 'fa-globe',
+  // NOTE: the site loads a CURATED Font Awesome content-code subset
+  // (CDN fa-load.css) - only ~36 fa-* classes have a `:before` glyph. fa-gamepad
+  // and fa-globe are NOT in that subset, so they rendered as empty <i> (operator
+  // caught 2026-07-04). Use icons that ARE in the subset: fa-star (games) and
+  // fa-moon (space-3d, astronomy fit). Keep new category icons within the
+  // fa-load.css set or they will silently not render.
+  games: 'fa-star',
+  'space-3d': 'fa-moon',
 };
 
 /**
