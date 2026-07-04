@@ -1,0 +1,665 @@
+<script>
+    // 2D canvas game archetype skeleton (garden-defense) - pure JS + canvas, no upload,
+    // no backend, no external lib. Registry Gate-H entry: game_2d_canvas_purejs.
+    // ONE skeleton serves the 2D game family; the game is dispatched from the
+    // slug: snake (grid snake), tanks (arcade tank battle), defense (lane
+    // defense). All art is procedural (canvas shapes + gradients) - no sprite
+    // assets, no third-party media. Scores persist ONLY in this browser via
+    // localStorage key 'ftol-game-garden-defense'.
+    //
+    // Renders a visible start screen synchronously on load so qa-e2e-test G16
+    // (visible output) passes with no interaction. Fullscreen targets the
+    // WRAPPER div (HUD + buttons stay visible); Escape exits natively.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered() (called for EVERY
+    // page after base-script load). Do NOT touch the DOM at top level.
+
+    web.localUpload = false;
+
+    var G2D_SLUG = 'garden-defense';
+    var G2D_STORE_KEY = 'ftol-game-' + G2D_SLUG;
+
+    function g2dDetectGame(slug) {
+        var s = String(slug || '').toLowerCase();
+        if (/snake/.test(s)) return 'snake';
+        if (/tank/.test(s)) return 'tanks';
+        if (/defense|defend|garden/.test(s)) return 'defense';
+        return 'snake';
+    }
+
+    // ---- shared: persistence (localStorage is a cache - guard every access) ----
+    function g2dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(G2D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function g2dSaveStore(obj) {
+        try { localStorage.setItem(G2D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { /* quota / private mode - play continues without persistence */ }
+    }
+
+    // ---- shared: fullscreen on the wrapper (lcd-test vendor-chain pattern) ----
+    function g2dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- shared: canvas sizing (container-width scaled, DPR-aware, cap 2) ----
+    function g2dFitCanvas(canvas, logicalW, logicalH) {
+        var wrap = canvas.parentElement;
+        var avail = Math.max(240, Math.min(wrap.clientWidth - 4, 720));
+        var cssW = avail;
+        var cssH = Math.round(avail * (logicalH / logicalW));
+        // In fullscreen, fit the viewport height too (HUD needs ~120px).
+        var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+        if (fsEl && fsEl.contains(canvas)) {
+            var maxH = (window.innerHeight || cssH) - 140;
+            if (cssH > maxH) { cssH = maxH; cssW = Math.round(maxH * (logicalW / logicalH)); }
+        }
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.style.width = cssW + 'px';
+        canvas.style.height = cssH + 'px';
+        canvas.width = Math.round(logicalW * dpr);
+        canvas.height = Math.round(logicalH * dpr);
+        var ctx = canvas.getContext('2d');
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        return ctx;
+    }
+
+    // ---- shared: fixed-timestep loop -----------------------------------------
+    // update(dtMs) runs at a fixed 1000/60 step; render() once per animation frame.
+    function g2dLoop(game) {
+        var STEP = 1000 / 60;
+        var last = performance.now(), acc = 0;
+        function frame(now) {
+            var elapsed = Math.min(now - last, 250); // clamp tab-switch jumps
+            last = now;
+            if (!game.paused && !game.over) {
+                acc += elapsed;
+                while (acc >= STEP) { game.update(STEP); acc -= STEP; }
+            }
+            game.render();
+            requestAnimationFrame(frame);
+        }
+        requestAnimationFrame(frame);
+    }
+
+    // ---- shared: input (keyboard + touch swipe + on-screen pad) --------------
+    function g2dBindInput(root, handlers) {
+        window.addEventListener('keydown', function (e) {
+            var k = e.key;
+            var used = true;
+            if (k === 'ArrowUp' || k === 'w' || k === 'W') handlers.dir && handlers.dir(0, -1);
+            else if (k === 'ArrowDown' || k === 's' || k === 'S') handlers.dir && handlers.dir(0, 1);
+            else if (k === 'ArrowLeft' || k === 'a' || k === 'A') handlers.dir && handlers.dir(-1, 0);
+            else if (k === 'ArrowRight' || k === 'd' || k === 'D') handlers.dir && handlers.dir(1, 0);
+            else if (k === ' ') handlers.action && handlers.action();
+            else if (k === 'p' || k === 'P') handlers.pause && handlers.pause();
+            else used = false;
+            // Only steal the keys while the game area is on screen.
+            if (used && root.getBoundingClientRect().top < (window.innerHeight || 0)) e.preventDefault();
+        });
+        // Touch: swipe on the canvas = direction; tap = action.
+        var canvas = root.querySelector('canvas');
+        var t0 = null;
+        canvas.addEventListener('touchstart', function (e) {
+            if (e.touches.length === 1) t0 = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: performance.now() };
+        }, { passive: true });
+        canvas.addEventListener('touchend', function (e) {
+            if (!t0) return;
+            var t1 = e.changedTouches[0];
+            var dx = t1.clientX - t0.x, dy = t1.clientY - t0.y;
+            var adx = Math.abs(dx), ady = Math.abs(dy);
+            if (Math.max(adx, ady) < 18 && performance.now() - t0.t < 400) { handlers.action && handlers.action(); }
+            else if (adx > ady) { handlers.dir && handlers.dir(dx > 0 ? 1 : -1, 0); }
+            else { handlers.dir && handlers.dir(0, dy > 0 ? 1 : -1); }
+            t0 = null;
+        }, { passive: true });
+        // On-screen pad buttons (rendered by BODYHTML; visible on coarse pointers).
+        function pad(id, fn) {
+            var b = document.getElementById(id);
+            if (!b) return;
+            b.addEventListener('click', function (e) { e.preventDefault(); fn(); });
+        }
+        pad('g2dPadUp', function () { handlers.dir && handlers.dir(0, -1); });
+        pad('g2dPadDown', function () { handlers.dir && handlers.dir(0, 1); });
+        pad('g2dPadLeft', function () { handlers.dir && handlers.dir(-1, 0); });
+        pad('g2dPadRight', function () { handlers.dir && handlers.dir(1, 0); });
+        pad('g2dPadAction', function () { handlers.action && handlers.action(); });
+    }
+
+    function g2dHud(text) {
+        var el = document.getElementById('g2dHudStatus');
+        if (el) el.textContent = text;
+    }
+    function g2dScoreLine(text) {
+        var el = document.getElementById('g2dHudScore');
+        if (el) el.textContent = text;
+    }
+
+    // ================= SNAKE ==================================================
+    function g2dSnake(root, canvas) {
+        var N = 24, CELL = 20, W = N * CELL, H = N * CELL;
+        var ctx = g2dFitCanvas(canvas, W, H);
+        var store = g2dLoadStore();
+        var game = {
+            paused: false, over: false, started: false,
+            snake: [], dir: { x: 1, y: 0 }, queue: [], food: null,
+            score: 0, best: store.best || 0, moveMs: 140, sinceMove: 0,
+        };
+        function reset() {
+            game.snake = [{ x: 8, y: 12 }, { x: 7, y: 12 }, { x: 6, y: 12 }];
+            game.dir = { x: 1, y: 0 }; game.queue = [];
+            game.score = 0; game.moveMs = 140; game.sinceMove = 0;
+            game.over = false; game.started = false; game.paused = false;
+            placeFood();
+            hud();
+        }
+        function placeFood() {
+            while (true) {
+                var f = { x: Math.floor(Math.random() * N), y: Math.floor(Math.random() * N) };
+                var hit = false;
+                for (var i = 0; i < game.snake.length; i++) if (game.snake[i].x === f.x && game.snake[i].y === f.y) { hit = true; break; }
+                if (!hit) { game.food = f; return; }
+            }
+        }
+        function hud() {
+            g2dScoreLine('Score: ' + game.score + '  Best: ' + game.best);
+            g2dHud(game.over ? 'Game over - press Space or tap to restart'
+                : (!game.started ? 'Press an arrow key or swipe to start. Eat the food, avoid walls and your tail.'
+                    : (game.paused ? 'Paused - press P to resume' : 'Speed rises every 5 foods.')));
+        }
+        game.update = function (dt) {
+            if (!game.started) return;
+            game.sinceMove += dt;
+            if (game.sinceMove < game.moveMs) return;
+            game.sinceMove = 0;
+            if (game.queue.length) { game.dir = game.queue.shift(); }
+            var head = { x: game.snake[0].x + game.dir.x, y: game.snake[0].y + game.dir.y };
+            if (head.x < 0 || head.y < 0 || head.x >= N || head.y >= N) return die();
+            for (var i = 0; i < game.snake.length - 1; i++) if (game.snake[i].x === head.x && game.snake[i].y === head.y) return die();
+            game.snake.unshift(head);
+            if (head.x === game.food.x && head.y === game.food.y) {
+                game.score++;
+                if (game.score % 5 === 0 && game.moveMs > 70) game.moveMs -= 12;
+                if (game.score > game.best) { game.best = game.score; store.best = game.best; g2dSaveStore(store); }
+                placeFood();
+            } else {
+                game.snake.pop();
+            }
+            hud();
+        };
+        function die() {
+            game.over = true;
+            hud();
+        }
+        game.render = function () {
+            ctx.fillStyle = '#10331a'; ctx.fillRect(0, 0, W, H);
+            ctx.fillStyle = 'rgba(255,255,255,0.04)';
+            for (var y = 0; y < N; y++) for (var x = (y % 2); x < N; x += 2) ctx.fillRect(x * CELL, y * CELL, CELL, CELL);
+            if (game.food) {
+                ctx.fillStyle = '#e53935';
+                ctx.beginPath();
+                ctx.arc(game.food.x * CELL + CELL / 2, game.food.y * CELL + CELL / 2, CELL * 0.38, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            for (var i = game.snake.length - 1; i >= 0; i--) {
+                var s = game.snake[i];
+                ctx.fillStyle = i === 0 ? '#aeea00' : '#7cb342';
+                ctx.fillRect(s.x * CELL + 1, s.y * CELL + 1, CELL - 2, CELL - 2);
+            }
+            if (game.over) {
+                ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(0, 0, W, H);
+                ctx.fillStyle = '#fff'; ctx.font = '700 28px sans-serif'; ctx.textAlign = 'center';
+                ctx.fillText('Game over', W / 2, H / 2 - 10);
+                ctx.font = '400 16px sans-serif';
+                ctx.fillText('Score ' + game.score + ' - best ' + game.best, W / 2, H / 2 + 18);
+            } else if (!game.started) {
+                ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.fillRect(0, 0, W, H);
+                ctx.fillStyle = '#fff'; ctx.font = '700 22px sans-serif'; ctx.textAlign = 'center';
+                ctx.fillText('Snake - ready', W / 2, H / 2 - 8);
+                ctx.font = '400 15px sans-serif';
+                ctx.fillText('Arrow keys / WASD or swipe to start', W / 2, H / 2 + 18);
+            }
+        };
+        g2dBindInput(root, {
+            dir: function (x, y) {
+                if (game.over) return;
+                game.started = true;
+                var cur = game.queue.length ? game.queue[game.queue.length - 1] : game.dir;
+                if (cur.x === -x && cur.y === -y) return; // no instant reverse
+                if (game.queue.length < 3) game.queue.push({ x: x, y: y });
+                hud();
+            },
+            action: function () { if (game.over) reset(); },
+            pause: function () { if (!game.over && game.started) { game.paused = !game.paused; hud(); } },
+        });
+        reset();
+        return game;
+    }
+
+    // ================= TANKS ==================================================
+    function g2dTanks(root, canvas) {
+        var COLS = 13, ROWS = 13, T = 36, W = COLS * T, H = ROWS * T;
+        var ctx = g2dFitCanvas(canvas, W, H);
+        var store = g2dLoadStore();
+        // Tile codes: 0 empty, 1 brick (destructible), 2 steel, 3 base.
+        var game = {
+            paused: false, over: false, won: false, started: false,
+            map: [], player: null, enemies: [], bullets: [],
+            lives: 3, killed: 0, waveTotal: 6, spawnMs: 0,
+            bestKills: store.bestKills || 0,
+        };
+        function buildMap() {
+            var m = [];
+            for (var y = 0; y < ROWS; y++) { m.push([]); for (var x = 0; x < COLS; x++) m[y].push(0); }
+            // Symmetric brick pillars.
+            for (var py = 2; py <= 8; py += 3) {
+                for (var px = 1; px < COLS - 1; px += 3) {
+                    m[py][px] = 1; if (py + 1 < ROWS - 2) m[py + 1][px] = 1;
+                }
+            }
+            m[6][6] = 2; m[2][6] = 2; // steel anchors
+            // Base at bottom-center with brick shell.
+            m[ROWS - 1][6] = 3;
+            m[ROWS - 1][5] = 1; m[ROWS - 1][7] = 1;
+            m[ROWS - 2][5] = 1; m[ROWS - 2][6] = 1; m[ROWS - 2][7] = 1;
+            return m;
+        }
+        function mkTank(x, y, isPlayer) {
+            return { x: x, y: y, w: T - 8, h: T - 8, dx: 0, dy: isPlayer ? -1 : 1, speed: isPlayer ? 0.09 : 0.055, isPlayer: isPlayer, cooldown: 0, turn: 0 };
+        }
+        function reset() {
+            game.map = buildMap();
+            game.player = mkTank(4 * T + 4, (ROWS - 1) * T + 4, true);
+            game.enemies = []; game.bullets = [];
+            game.lives = 3; game.killed = 0; game.spawnMs = 0;
+            game.over = false; game.won = false; game.started = false; game.paused = false;
+            hud();
+        }
+        function hud() {
+            g2dScoreLine('Lives: ' + game.lives + '  Destroyed: ' + game.killed + '/' + game.waveTotal + '  Best: ' + game.bestKills);
+            g2dHud(game.over ? (game.won ? 'Wave cleared! Press Space or tap to play again.' : 'Game over - press Space or tap to restart')
+                : (!game.started ? 'Arrows/WASD to move, Space to fire. Defend the base marker at the bottom.'
+                    : (game.paused ? 'Paused - press P to resume' : 'Destroy all ' + game.waveTotal + ' enemy tanks. Bricks break, steel does not.')));
+        }
+        function tileAt(px, py) {
+            var tx = Math.floor(px / T), ty = Math.floor(py / T);
+            if (tx < 0 || ty < 0 || tx >= COLS || ty >= ROWS) return 2; // walls act like steel
+            return game.map[ty][tx];
+        }
+        function tankBlocked(t, nx, ny) {
+            var pts = [[nx, ny], [nx + t.w, ny], [nx, ny + t.h], [nx + t.w, ny + t.h], [nx + t.w / 2, ny], [nx + t.w / 2, ny + t.h], [nx, ny + t.h / 2], [nx + t.w, ny + t.h / 2]];
+            for (var i = 0; i < pts.length; i++) { var c = tileAt(pts[i][0], pts[i][1]); if (c === 1 || c === 2 || c === 3) return true; }
+            var others = game.enemies.concat([game.player]);
+            for (var j = 0; j < others.length; j++) {
+                var o = others[j];
+                if (o === t || !o) continue;
+                if (nx < o.x + o.w && nx + t.w > o.x && ny < o.y + o.h && ny + t.h > o.y) return true;
+            }
+            return false;
+        }
+        function moveTank(t, dt) {
+            var nx = t.x + t.dx * t.speed * dt, ny = t.y + t.dy * t.speed * dt;
+            if (!tankBlocked(t, nx, ny)) { t.x = nx; t.y = ny; return true; }
+            return false;
+        }
+        function fire(t) {
+            if (t.cooldown > 0) return;
+            t.cooldown = t.isPlayer ? 420 : 900;
+            game.bullets.push({ x: t.x + t.w / 2, y: t.y + t.h / 2, dx: t.dx, dy: t.dy, from: t.isPlayer ? 'p' : 'e' });
+        }
+        function spawnEnemy() {
+            var slots = [4, (COLS - 2) * T + 4, Math.floor(COLS / 2) * T + 4];
+            for (var i = 0; i < slots.length; i++) {
+                var e = mkTank(slots[(i + game.killed) % slots.length], 4, false);
+                if (!tankBlocked(e, e.x, e.y)) { game.enemies.push(e); return; }
+            }
+        }
+        game.update = function (dt) {
+            if (!game.started) return;
+            var spawned = game.killed + game.enemies.length;
+            game.spawnMs -= dt;
+            if (game.enemies.length < 3 && spawned < game.waveTotal && game.spawnMs <= 0) { spawnEnemy(); game.spawnMs = 2200; }
+            // player
+            var p = game.player;
+            p.cooldown = Math.max(0, p.cooldown - dt);
+            if (p.moving) moveTank(p, dt);
+            // enemies
+            for (var i = 0; i < game.enemies.length; i++) {
+                var e = game.enemies[i];
+                e.cooldown = Math.max(0, e.cooldown - dt);
+                e.turn -= dt;
+                var ok = moveTank(e, dt);
+                if (!ok || e.turn <= 0) {
+                    var dirs = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+                    // Bias toward the base (down) and the player's column.
+                    var pick = Math.random();
+                    var d = pick < 0.4 ? [0, 1] : dirs[Math.floor(Math.random() * dirs.length)];
+                    e.dx = d[0]; e.dy = d[1];
+                    e.turn = 700 + Math.random() * 1400;
+                }
+                // Fire when roughly axis-aligned with player or pointing down.
+                var alignedX = Math.abs((e.x) - (p.x)) < T * 0.6;
+                var alignedY = Math.abs((e.y) - (p.y)) < T * 0.6;
+                if ((alignedX && e.dy !== 0) || (alignedY && e.dx !== 0) || Math.random() < 0.004) fire(e);
+            }
+            // bullets
+            var SPEED = 0.32;
+            for (var b = game.bullets.length - 1; b >= 0; b--) {
+                var bl = game.bullets[b];
+                bl.x += bl.dx * SPEED * dt; bl.y += bl.dy * SPEED * dt;
+                var tx = Math.floor(bl.x / T), ty = Math.floor(bl.y / T);
+                var cell = tileAt(bl.x, bl.y);
+                if (cell === 1) { game.map[ty][tx] = 0; game.bullets.splice(b, 1); continue; }
+                if (cell === 2) { game.bullets.splice(b, 1); continue; }
+                if (cell === 3) { return lose('The base was destroyed.'); }
+                if (bl.x < 0 || bl.y < 0 || bl.x > W || bl.y > H) { game.bullets.splice(b, 1); continue; }
+                if (bl.from === 'e') {
+                    if (bl.x > p.x && bl.x < p.x + p.w && bl.y > p.y && bl.y < p.y + p.h) {
+                        game.bullets.splice(b, 1);
+                        game.lives--;
+                        if (game.lives <= 0) return lose('Out of tanks.');
+                        p.x = 4 * T + 4; p.y = (ROWS - 1) * T + 4; p.dx = 0; p.dy = -1; p.moving = false;
+                        hud();
+                        continue;
+                    }
+                } else {
+                    var hit = false;
+                    for (var k = game.enemies.length - 1; k >= 0; k--) {
+                        var en = game.enemies[k];
+                        if (bl.x > en.x && bl.x < en.x + en.w && bl.y > en.y && bl.y < en.y + en.h) {
+                            game.enemies.splice(k, 1); game.killed++; hit = true;
+                            if (game.killed > game.bestKills) { game.bestKills = game.killed; store.bestKills = game.bestKills; g2dSaveStore(store); }
+                            break;
+                        }
+                    }
+                    if (hit) { game.bullets.splice(b, 1); hud(); if (game.killed >= game.waveTotal) return win(); continue; }
+                }
+            }
+        };
+        function lose(why) { game.over = true; game.won = false; hud(); }
+        function win() { game.over = true; game.won = true; hud(); }
+        function drawTank(t) {
+            ctx.fillStyle = t.isPlayer ? '#ffd54f' : '#b0bec5';
+            ctx.fillRect(t.x, t.y, t.w, t.h);
+            ctx.fillStyle = t.isPlayer ? '#8d6e63' : '#546e7a';
+            var cx = t.x + t.w / 2, cy = t.y + t.h / 2;
+            ctx.fillRect(cx - 3, cy - 3, 6, 6);
+            ctx.strokeStyle = ctx.fillStyle; ctx.lineWidth = 5;
+            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + t.dx * (t.w / 2 + 5), cy + t.dy * (t.h / 2 + 5)); ctx.stroke();
+        }
+        game.render = function () {
+            ctx.fillStyle = '#212121'; ctx.fillRect(0, 0, W, H);
+            for (var y = 0; y < ROWS; y++) for (var x = 0; x < COLS; x++) {
+                var c = game.map[y][x];
+                if (c === 1) { ctx.fillStyle = '#a1471f'; ctx.fillRect(x * T + 1, y * T + 1, T - 2, T - 2); ctx.strokeStyle = '#7a3517'; ctx.strokeRect(x * T + 4, y * T + 4, T - 8, T - 8); }
+                else if (c === 2) { ctx.fillStyle = '#9e9e9e'; ctx.fillRect(x * T + 1, y * T + 1, T - 2, T - 2); }
+                else if (c === 3) { ctx.fillStyle = '#4caf50'; ctx.fillRect(x * T + 4, y * T + 4, T - 8, T - 8); ctx.fillStyle = '#1b5e20'; ctx.fillRect(x * T + 12, y * T + 12, T - 24, T - 24); }
+            }
+            drawTank(game.player);
+            for (var i = 0; i < game.enemies.length; i++) drawTank(game.enemies[i]);
+            ctx.fillStyle = '#fff59d';
+            for (var b = 0; b < game.bullets.length; b++) { var bl = game.bullets[b]; ctx.fillRect(bl.x - 2, bl.y - 2, 4, 4); }
+            if (game.over || !game.started) {
+                ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(0, 0, W, H);
+                ctx.fillStyle = '#fff'; ctx.font = '700 24px sans-serif'; ctx.textAlign = 'center';
+                ctx.fillText(game.over ? (game.won ? 'Wave cleared!' : 'Game over') : 'Tank battle - ready', W / 2, H / 2 - 8);
+                ctx.font = '400 15px sans-serif';
+                ctx.fillText(game.over ? 'Space or tap to play again' : 'Move to start. Space fires. Protect the green base.', W / 2, H / 2 + 18);
+            }
+        };
+        g2dBindInput(root, {
+            dir: function (x, y) {
+                if (game.over) return;
+                game.started = true;
+                var p = game.player;
+                p.dx = x; p.dy = y; p.moving = true;
+                hud();
+            },
+            action: function () {
+                if (game.over) { reset(); return; }
+                if (!game.started) { game.started = true; hud(); }
+                fire(game.player);
+            },
+            pause: function () { if (!game.over && game.started) { game.paused = !game.paused; hud(); } },
+        });
+        // Stop moving when the key lifts (keyboard only; touch moves per swipe).
+        window.addEventListener('keyup', function (e) {
+            if (/^(Arrow|w|a|s|d|W|A|S|D)/.test(e.key)) { if (game.player) game.player.moving = false; }
+        });
+        reset();
+        return game;
+    }
+
+    // ================= LANE DEFENSE ==========================================
+    function g2dDefense(root, canvas) {
+        var LANES = 5, COLS = 9, CW = 60, CH = 68, W = COLS * CW, H = LANES * CH + 26;
+        var ctx = g2dFitCanvas(canvas, W, H);
+        var store = g2dLoadStore();
+        var TYPES = {
+            shooter: { cost: 100, hp: 60, color: '#66bb6a', label: 'Shooter' },
+            battery: { cost: 50, hp: 40, color: '#ffee58', label: 'Battery' },
+            wall: { cost: 50, hp: 260, color: '#8d6e63', label: 'Wall' },
+        };
+        var game = {
+            paused: false, over: false, won: false, started: false,
+            grid: [], enemies: [], pellets: [], energy: 125, wave: 1, waves: 5,
+            toSpawn: 0, spawnMs: 0, betweenMs: 0, selected: 'shooter',
+            bestWave: store.bestWave || 0, energyMs: 0,
+        };
+        function reset() {
+            game.grid = [];
+            for (var l = 0; l < LANES; l++) { game.grid.push([]); for (var c = 0; c < COLS; c++) game.grid[l].push(null); }
+            game.enemies = []; game.pellets = [];
+            game.energy = 125; game.wave = 1; game.toSpawn = 0; game.spawnMs = 0; game.betweenMs = 2500;
+            game.over = false; game.won = false; game.started = false; game.paused = false;
+            game.energyMs = 0;
+            hud();
+            paintCards();
+        }
+        function hud() {
+            g2dScoreLine('Energy: ' + game.energy + '  Wave: ' + game.wave + '/' + game.waves + '  Best wave: ' + game.bestWave);
+            g2dHud(game.over ? (game.won ? 'Garden saved! Space or tap the canvas to play again.' : 'The invaders got through - Space or tap to retry')
+                : (!game.started ? 'Pick a defender card, then click or tap a cell to place it. First wave starts on your first placement.'
+                    : (game.paused ? 'Paused - press P to resume' : 'Shooter 100 energy - Battery 50 (makes energy) - Wall 50 (blocks). Energy also ticks in on its own.')));
+        }
+        function paintCards() {
+            var keys = ['shooter', 'battery', 'wall'];
+            for (var i = 0; i < keys.length; i++) {
+                var el = document.getElementById('g2dCard-' + keys[i]);
+                if (!el) continue;
+                el.style.outline = game.selected === keys[i] ? '3px solid #1a73e8' : '1px solid #bbb';
+                el.style.opacity = game.energy >= TYPES[keys[i]].cost ? '1' : '0.5';
+            }
+        }
+        function startWave() {
+            game.toSpawn = 3 + game.wave * 2;
+            game.spawnMs = 500;
+        }
+        game.update = function (dt) {
+            if (!game.started) return;
+            // ambient energy + battery production
+            game.energyMs += dt;
+            if (game.energyMs >= 3500) {
+                game.energyMs = 0;
+                var gain = 25;
+                for (var l0 = 0; l0 < LANES; l0++) for (var c0 = 0; c0 < COLS; c0++) {
+                    var u0 = game.grid[l0][c0];
+                    if (u0 && u0.type === 'battery') gain += 15;
+                }
+                game.energy += gain;
+                hud(); paintCards();
+            }
+            // wave sequencing: after a wave clears, pause briefly, then advance.
+            if (game.toSpawn === 0 && game.enemies.length === 0) {
+                if (game.wave >= game.waves) return win();
+                game.betweenMs -= dt;
+                if (game.betweenMs <= 0) {
+                    game.wave++;
+                    game.betweenMs = 2500;
+                    if (game.wave > game.bestWave) { game.bestWave = game.wave; store.bestWave = game.bestWave; g2dSaveStore(store); }
+                    startWave();
+                    hud();
+                }
+            } else if (game.toSpawn > 0) {
+                game.spawnMs -= dt;
+                if (game.spawnMs <= 0) {
+                    game.spawnMs = Math.max(900, 2400 - game.wave * 250);
+                    game.toSpawn--;
+                    var lane = Math.floor(Math.random() * LANES);
+                    var tier = Math.random() < Math.min(0.15 + game.wave * 0.08, 0.6) ? 2 : 1;
+                    game.enemies.push({ lane: lane, x: W + 10, hp: tier === 2 ? 110 : 60, tier: tier, speed: 0.014 + game.wave * 0.0015, eatMs: 0 });
+                }
+            }
+            // units shoot
+            for (var l = 0; l < LANES; l++) for (var c = 0; c < COLS; c++) {
+                var u = game.grid[l][c];
+                if (!u) continue;
+                if (u.type === 'shooter') {
+                    u.cd = (u.cd || 0) - dt;
+                    var target = false;
+                    for (var e0 = 0; e0 < game.enemies.length; e0++) { var en0 = game.enemies[e0]; if (en0.lane === l && en0.x > c * CW) { target = true; break; } }
+                    if (target && u.cd <= 0) { u.cd = 900; game.pellets.push({ lane: l, x: c * CW + CW * 0.7, dmg: 20 }); }
+                }
+                if (u.hp <= 0) game.grid[l][c] = null;
+            }
+            // pellets fly
+            for (var pIdx = game.pellets.length - 1; pIdx >= 0; pIdx--) {
+                var pe = game.pellets[pIdx];
+                pe.x += 0.22 * dt;
+                if (pe.x > W) { game.pellets.splice(pIdx, 1); continue; }
+                for (var e1 = 0; e1 < game.enemies.length; e1++) {
+                    var en1 = game.enemies[e1];
+                    if (en1.lane === pe.lane && Math.abs(en1.x - pe.x) < 14) {
+                        en1.hp -= pe.dmg; game.pellets.splice(pIdx, 1);
+                        if (en1.hp <= 0) game.enemies.splice(e1, 1);
+                        break;
+                    }
+                }
+            }
+            // enemies advance / eat
+            for (var e2 = game.enemies.length - 1; e2 >= 0; e2--) {
+                var en2 = game.enemies[e2];
+                var cellIdx = Math.floor((en2.x - 10) / CW);
+                var blocker = cellIdx >= 0 && cellIdx < COLS ? game.grid[en2.lane][cellIdx] : null;
+                if (blocker) {
+                    en2.eatMs += dt;
+                    if (en2.eatMs >= 600) { en2.eatMs = 0; blocker.hp -= 25; }
+                } else {
+                    en2.x -= en2.speed * dt * (en2.tier === 2 ? 0.8 : 1);
+                }
+                if (en2.x < -6) return lose();
+            }
+        };
+        function lose() { game.over = true; game.won = false; hud(); }
+        function win() {
+            if (game.waves > game.bestWave) { game.bestWave = game.waves; store.bestWave = game.bestWave; g2dSaveStore(store); }
+            game.over = true; game.won = true; hud();
+        }
+        game.render = function () {
+            ctx.fillStyle = '#1b3a1b'; ctx.fillRect(0, 0, W, H);
+            for (var l = 0; l < LANES; l++) {
+                ctx.fillStyle = l % 2 ? '#245c24' : '#2e6b2e';
+                ctx.fillRect(0, l * CH, W, CH - 2);
+                for (var c = 1; c < COLS; c++) { ctx.fillStyle = 'rgba(0,0,0,0.12)'; ctx.fillRect(c * CW, l * CH, 1, CH); }
+            }
+            for (var l1 = 0; l1 < LANES; l1++) for (var c1 = 0; c1 < COLS; c1++) {
+                var u = game.grid[l1][c1];
+                if (!u) continue;
+                var t = TYPES[u.type];
+                ctx.fillStyle = t.color;
+                ctx.fillRect(c1 * CW + 8, l1 * CH + 8, CW - 16, CH - 18);
+                ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                ctx.fillRect(c1 * CW + 8, l1 * CH + CH - 16, (CW - 16) * Math.max(u.hp, 0) / t.hp, 4);
+            }
+            for (var e = 0; e < game.enemies.length; e++) {
+                var en = game.enemies[e];
+                ctx.fillStyle = en.tier === 2 ? '#6a1b9a' : '#c62828';
+                ctx.beginPath();
+                ctx.arc(en.x, en.lane * CH + CH / 2 - 4, en.tier === 2 ? 20 : 16, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#fff'; ctx.fillRect(en.x - 12, en.lane * CH + 6, 24 * Math.max(en.hp, 0) / (en.tier === 2 ? 110 : 60), 3);
+            }
+            ctx.fillStyle = '#fffde7';
+            for (var p = 0; p < game.pellets.length; p++) { var pe = game.pellets[p]; ctx.fillRect(pe.x, pe.lane * CH + CH / 2 - 6, 8, 4); }
+            ctx.fillStyle = '#c8e6c9'; ctx.font = '600 13px sans-serif'; ctx.textAlign = 'left';
+            ctx.fillText('Invaders enter from the right - stop them before the left edge.', 8, H - 8);
+            if (game.over || !game.started) {
+                ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(0, 0, W, H);
+                ctx.fillStyle = '#fff'; ctx.font = '700 24px sans-serif'; ctx.textAlign = 'center';
+                ctx.fillText(game.over ? (game.won ? 'Garden saved!' : 'They got through') : 'Garden defense - ready', W / 2, H / 2 - 8);
+                ctx.font = '400 15px sans-serif';
+                ctx.fillText(game.over ? 'Space or tap to play again' : 'Pick a card below, then tap a cell to plant it.', W / 2, H / 2 + 18);
+            }
+        };
+        function canvasCell(evX, evY) {
+            var r = canvas.getBoundingClientRect();
+            var x = (evX - r.left) * (W / r.width), y = (evY - r.top) * (H / r.height);
+            var c = Math.floor(x / CW), l = Math.floor(y / CH);
+            if (c < 0 || l < 0 || c >= COLS || l >= LANES) return null;
+            return { lane: l, col: c };
+        }
+        function place(cell) {
+            if (!cell || game.over) return;
+            var t = TYPES[game.selected];
+            if (!t || game.grid[cell.lane][cell.col]) return;
+            if (game.energy < t.cost) { g2dHud('Not enough energy for ' + t.label + ' (' + t.cost + ') - batteries and time make more.'); return; }
+            game.energy -= t.cost;
+            game.grid[cell.lane][cell.col] = { type: game.selected, hp: t.hp };
+            if (!game.started) { game.started = true; startWave(); }
+            hud(); paintCards();
+        }
+        canvas.addEventListener('click', function (e) {
+            if (game.over) { reset(); return; }
+            place(canvasCell(e.clientX, e.clientY));
+        });
+        var cardKeys = ['shooter', 'battery', 'wall'];
+        for (var ci = 0; ci < cardKeys.length; ci++) {
+            (function (key) {
+                var el = document.getElementById('g2dCard-' + key);
+                if (el) el.addEventListener('click', function () { game.selected = key; paintCards(); });
+            })(cardKeys[ci]);
+        }
+        g2dBindInput(root, {
+            action: function () { if (game.over) reset(); },
+            pause: function () { if (!game.over && game.started) { game.paused = !game.paused; hud(); } },
+        });
+        reset();
+        return game;
+    }
+
+    // ---- bootstrap ------------------------------------------------------------
+    function doAfterPageRendered() {
+        var root = document.getElementById('gameCanvasTool');
+        if (!root) return; // not a 2D game page
+        var canvas = root.querySelector('canvas');
+        var wrapper = document.getElementById('g2dWrapper') || root;
+        try {
+            var kind = g2dDetectGame(G2D_SLUG);
+            // Defense shows the card row; the other games show the d-pad hint.
+            var cards = document.getElementById('g2dCards');
+            if (cards) cards.style.display = kind === 'defense' ? '' : 'none';
+            var game = kind === 'tanks' ? g2dTanks(root, canvas)
+                : kind === 'defense' ? g2dDefense(root, canvas)
+                    : g2dSnake(root, canvas);
+            g2dLoop(game);
+            var fsBtn = document.getElementById('g2dFullscreenBtn');
+            if (fsBtn) fsBtn.addEventListener('click', function () { g2dFullscreen(wrapper); });
+            var pauseBtn = document.getElementById('g2dPauseBtn');
+            if (pauseBtn) pauseBtn.addEventListener('click', function () { if (!game.over) { game.paused = !game.paused; } });
+            var restartBtn = document.getElementById('g2dRestartBtn');
+            if (restartBtn) restartBtn.addEventListener('click', function () { window.location.reload(); });
+            function refit() {
+                var logical = kind === 'tanks' ? [468, 468] : kind === 'defense' ? [540, 366] : [480, 480];
+                g2dFitCanvas(canvas, logical[0], logical[1]);
+            }
+            window.addEventListener('resize', refit);
+            document.addEventListener('fullscreenchange', refit);
+            document.addEventListener('webkitfullscreenchange', refit);
+        } catch (e) {
+            root.textContent = 'Could not start the game: ' + (e && e.message ? e.message : String(e));
+        }
+    }
+</script>
