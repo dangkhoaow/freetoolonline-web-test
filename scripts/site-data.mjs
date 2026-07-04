@@ -2036,6 +2036,12 @@ export const ALIAS_ROUTES = {
   // `/guides/<slug>.html`. Without this entry `/guides/` returns 404 and
   // a crawler that walks up from a guide URL may index the broken parent.
   '/guides/': '/guides.html',
+  // fire-23 (2026-07-04): same dir-index pattern for the two new non-'-tools'
+  // category hubs (games + space-3d). MUST also be mirrored into the
+  // CloudFront 301 function (two-layer redirect rule) - republish is an
+  // operator step.
+  '/games/': '/games.html',
+  '/space-3d/': '/space-3d.html',
   '/svg-to-image.html': '/image-converter-tools/svg-to-png.html',
   '/split-pdf-to-single-pages.html': '/pdf-tools/split-pdf-by-range.html',
   '/pdf-merge-from-multiple-files.html': '/pdf-tools/join-pdf-from-multiple-files.html',
@@ -2858,6 +2864,10 @@ export const JSP_BY_ROUTE = {
   '/video-tools.html': 'utility/video-tools.jsp',
   '/device-test-tools.html': 'utility/device-test-tools.jsp',
   '/utility-tools.html': 'utility/utility-tools.jsp',
+  // fire-23 (2026-07-04): the two new category hubs (non-'-tools' hubRoutes,
+  // registered in SEO_CLUSTER_GROUPS; hub detection via isHubRoute()).
+  '/games.html': 'utility/games.jsp',
+  '/space-3d.html': 'utility/space-3d.jsp',
   '/image-tools/resize-image.html': 'image/resize-image.jsp',
   '/image-tools/crop-image.html': 'image/crop-image.jsp',
   '/image-tools/compress-image.html': 'image/compress-image.jsp',

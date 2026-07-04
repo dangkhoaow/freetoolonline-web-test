@@ -31,6 +31,7 @@ import { parseJspPageSource, renderAlternateAdPage, renderPageDocument, renderRe
 import { resolvePageMtime } from './page-mtimes.mjs';
 import { createInternalContentRewriter, normalizeBasePath } from './staging-utils.mjs';
 import { writeSplitSitemaps } from './sitemap-writer.mjs';
+import { isHubRoute } from './seo-clusters.mjs';
 import { buildDynamicSitemapBody, buildDynamicGuidesHubBody, buildDynamicToolHubBodies, spliceToolHubList, buildPerPageLMenuBodies, buildDynamicHomeSearchData } from './sitemap-html-builder.mjs';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -391,7 +392,9 @@ async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData,
     slug: pageData.slug,
     jspRelativePath: jspPath,
   });
-  const isHubPage = normalizedRoute.endsWith('-tools.html');
+  // fire-23: hub detection via the shared helper so non-'-tools' hubs
+  // (/games.html, /space-3d.html, /guides.html) are treated as hubs here too.
+  const isHubPage = isHubRoute(normalizedRoute);
   const showRating = !isHubPage && !isInfoRoute(normalizedRoute) && normalizedRoute !== '/' && normalizedRoute !== '/alternatead.html';
   // P10.1.1 - AggregateRating emission gate (Path A). Until a visible rating UI
   // renders on the tool page, JSON-LD rating data violates Google's structured-data

@@ -23,7 +23,7 @@ function getDynamicGuideRoutes() {
     .filter((route) => !(route in ALIAS_ROUTES))
     .filter((route) => !GUIDE_SITEMAP_EXCLUDE.has(route));
 }
-import { getSeoClusterGroups } from './seo-clusters.mjs';
+import { getSeoClusterGroups, isHubRoute } from './seo-clusters.mjs';
 
 // Dynamic /sitemap.html body builder.
 //
@@ -53,6 +53,8 @@ const TOOL_CLUSTER_ORDER = [
   'video',
   'device-test',
   'utility',
+  'games',
+  'space-3d',
 ];
 
 const TOOL_CLUSTER_LABELS = {
@@ -64,6 +66,8 @@ const TOOL_CLUSTER_LABELS = {
   video: 'Video tools',
   'device-test': 'Device test tools',
   utility: 'Utility tools',
+  games: 'Browser games',
+  'space-3d': 'Space 3D',
 };
 
 const TOOL_CLUSTER_BLURBS = {
@@ -75,6 +79,8 @@ const TOOL_CLUSTER_BLURBS = {
   video: 'Browser-based video conversion and remixing via WebAssembly-powered FFmpeg.',
   'device-test': 'Quick browser-only checks for microphone, camera, display, and keyboard.',
   utility: 'Timestamps, QR codes, and small utilities that do not fit the other categories.',
+  games: 'Free browser games that run entirely on this page - no install, no account.',
+  'space-3d': 'Interactive 3D space visualizations that render in the browser - explore and learn.',
 };
 
 // Guide topic groups - mirrors the topical groupings on /guides.html so the
@@ -91,6 +97,8 @@ const GUIDE_TOPIC_ORDER = [
   'video',
   'device-tests',
   'developer-and-encoding',
+  'games',
+  'space',
   'editorial-and-other',
 ];
 
@@ -102,6 +110,8 @@ const GUIDE_TOPIC_LABELS = {
   video: 'Video',
   'device-tests': 'Device tests',
   'developer-and-encoding': 'Developer and encoding',
+  games: 'Browser games',
+  space: 'Space 3D',
   'editorial-and-other': 'Editorial and other',
 };
 
@@ -126,6 +136,16 @@ function classifyGuide(slug) {
   }
   if (/(^|-)(md5|sha256|css-minifier|uglifier|tree-shaking|json|yaml|toml|csv|cloud-run|text-diff|word-diff|line-diff|git-diff|base64|unix-timestamps)/.test(slug)) {
     return 'developer-and-encoding';
+  }
+  // fire-23: guides for the two new categories. Slug tokens match the 7
+  // shipped units (snake-classic, retro-tank-battle, garden-defense,
+  // voxel-world-builder / solar-system, black-hole, galaxy) + generic
+  // genre words so future game/space guides classify without edits here.
+  if (/(^|-)(snake|tank|garden-defense|voxel|browser-game|how-to-play)/.test(slug)) {
+    return 'games';
+  }
+  if (/(^|-)(solar-system|black-hole|galaxy|planet|space-3d)/.test(slug)) {
+    return 'space';
   }
   return 'editorial-and-other';
 }
@@ -362,7 +382,10 @@ export async function buildDynamicHomeSearchData({ cmsRoot } = {}) {
   const toolRoutes = Object.keys(JSP_BY_ROUTE).filter((r) => {
     if (aliasSourceSet.has(r)) return false;
     if (r === '/') return false;
-    if (r.endsWith('-tools.html')) return false;
+    // fire-23: shared isHubRoute() so the non-'-tools' hubs (/games.html,
+    // /space-3d.html, /guides.html) are excluded from the tool datalist like
+    // every other hub (hubs are browse pages, not searchable actions).
+    if (isHubRoute(r)) return false;
     if (r.startsWith('/guides/')) return false;
     if (INFO_ROUTES.has(r) && !r.startsWith('/guides/')) return false;
     return true;
@@ -377,7 +400,7 @@ export async function buildDynamicHomeSearchData({ cmsRoot } = {}) {
   const clusterPrefixOrder = [
     '/zip-tools/', '/image-tools/', '/image-converter-tools/',
     '/pdf-tools/', '/developer-tools/', '/video-tools/',
-    '/device-test-tools/', '/utility-tools/',
+    '/device-test-tools/', '/utility-tools/', '/games/', '/space-3d/',
   ];
   const clusterIndexOf = (route) => {
     for (let i = 0; i < clusterPrefixOrder.length; i++) {
@@ -433,6 +456,8 @@ const LMENU_CLUSTER_ORDER = [
   'developer',
   'device-test',
   'utility',
+  'games',
+  'space-3d',
 ];
 
 const LMENU_CLUSTER_LABELS = {
@@ -444,6 +469,8 @@ const LMENU_CLUSTER_LABELS = {
   developer: 'DEVELOPER',
   'device-test': 'DEVICE TESTS',
   utility: 'UTILITY',
+  games: 'GAMES',
+  'space-3d': 'SPACE 3D',
 };
 
 const LMENU_CLUSTER_ICONS = {
@@ -455,6 +482,8 @@ const LMENU_CLUSTER_ICONS = {
   developer: 'fa-code',
   'device-test': 'fa-laptop',
   utility: 'fa-tools',
+  games: 'fa-gamepad',
+  'space-3d': 'fa-globe',
 };
 
 /**
@@ -589,6 +618,8 @@ const GUIDE_TOPIC_TO_CLUSTER = {
   video: 'video',
   'device-tests': 'device-test',
   'developer-and-encoding': 'developer',
+  games: 'games',
+  space: 'space-3d',
   'editorial-and-other': 'utility',
 };
 
@@ -637,6 +668,8 @@ const LMENU_GUIDE_TOPIC_LABELS = {
   developer: 'Developer guides',
   'device-test': 'Device-test guides',
   utility: 'Other guides',
+  games: 'Game guides',
+  'space-3d': 'Space 3D guides',
 };
 
 function renderLMenuGuidesSection(guidesByCluster) {
