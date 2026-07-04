@@ -18,7 +18,7 @@ const SEO_CLUSTER_GROUPS = [
       '/insights-image-optimizer.html',
       '/get-jpeg-compression-level.html',
       '/imagemagick-online.html',
-    '/image-tools/steganography.html'],
+    '/image-tools/steganography.html', '/image-tools/background-remover.html'],
   },
   {
     cluster: 'image-conversion',

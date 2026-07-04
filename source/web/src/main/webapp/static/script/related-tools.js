@@ -318,6 +318,7 @@ try {
     { title: "Text Repeater", url: "https://freetoolonline.com/developer-tools/text-repeater.html", include: !1, tags: "developer" },
     { title: "Base64 Encoder", url: "https://freetoolonline.com/developer-tools/base64-encoder.html", include: !1, tags: "developer" },
     { title: "URL Decoder", url: "https://freetoolonline.com/developer-tools/url-decoder.html", include: !1, tags: "developer" },
+    { title: "AI Background Remover", url: "https://freetoolonline.com/image-tools/background-remover.html", include: !1, tags: "image-editing" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
