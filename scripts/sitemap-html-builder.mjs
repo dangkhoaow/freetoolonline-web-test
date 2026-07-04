@@ -482,14 +482,15 @@ const LMENU_CLUSTER_ICONS = {
   developer: 'fa-code',
   'device-test': 'fa-laptop',
   utility: 'fa-tools',
-  // NOTE: the site loads a CURATED Font Awesome content-code subset
-  // (CDN fa-load.css) - only ~36 fa-* classes have a `:before` glyph. fa-gamepad
-  // and fa-globe are NOT in that subset, so they rendered as empty <i> (operator
-  // caught 2026-07-04). Use icons that ARE in the subset: fa-star (games) and
-  // fa-moon (space-3d, astronomy fit). Keep new category icons within the
-  // fa-load.css set or they will silently not render.
-  games: 'fa-star',
-  'space-3d': 'fa-moon',
+  // NOTE (operator-caught 2026-07-04): the site's CDN fa-load.css only defines
+  // `:before{content}` for ~33 curated FA classes, so fa-gamepad/fa-globe (and
+  // even laptop/code/book used by older categories) render as an EMPTY <i>
+  // despite the font (full stock FontAwesome 4.7, 715 glyphs) containing them.
+  // Fix: keep the meaningful icons here and inject their two content-codes in
+  // wrapLMenuBody() below (LMENU_ICON_CONTENT_FIX) - the font has the glyphs
+  // (gamepad f11b, globe f0ac, verified), only the CSS code was missing.
+  games: 'fa-gamepad',
+  'space-3d': 'fa-globe',
 };
 
 /**
@@ -776,8 +777,16 @@ function renderLMenuFooterSection() {
   ].join('\n');
 }
 
+// LMENU_ICON_CONTENT_FIX (2026-07-04): the CDN fa-load.css subset omits the
+// `:before{content}` codes for the fire-23 category icons, so they render as an
+// empty <i> even though the loaded FontAwesome 4.7 webfont (715 glyphs) contains
+// the glyphs. Define the missing codes here, scoped under the l-menu so it can
+// never clash with the theme-toggle/rating uses of the same classes elsewhere.
+// Only category icons NOT in the curated subset need a rule.
+const LMENU_ICON_CONTENT_FIX = '<style>#menu-content-id .fa-gamepad:before{content:"\\f11b"}#menu-content-id .fa-globe:before{content:"\\f0ac"}</style>';
+
 function wrapLMenuBody(sections) {
-  return `<div id="menu-content-id" class="menu-content">\n    <div class='w3-row-padding'>\n${sections.join('\n')}\n    </div>\n</div>`;
+  return `<div id="menu-content-id" class="menu-content">${LMENU_ICON_CONTENT_FIX}\n    <div class='w3-row-padding'>\n${sections.join('\n')}\n    </div>\n</div>`;
 }
 
 /**
