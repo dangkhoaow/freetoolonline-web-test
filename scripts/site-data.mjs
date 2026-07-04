@@ -69,6 +69,8 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/resize-image-online-free.html',
   // Cycle 20260630-8 create_new_guide_page - PT locale variant of "crop image online free" (locale-drain; EN canonical at bare /guides/crop-image-online-free.html).
   '/guides/pt/crop-image-online-free.html',
+  // Cycle 20260705 create_new_guide_page - PT locale variant of "pdf to text online i love pdf" (locale-drain; EN canonical at bare /guides/pdf-to-text-online-i-love-pdf.html; 4 locales es/vi/id/de remain).
+  '/guides/pt/pdf-to-text-online-i-love-pdf.html',
   // Cycle 20260524-10 create_new_guide_page - "i love zip" bare-query landing (GSC 182 imp / 2 clicks / pos 6.12 / opportunity_score 29.41).
   // Implementing tool: /zip-file.html. Cluster: zip. BODYTITLE is reader-task framed (not brand-mimicking).
   '/guides/en/i-love-zip.html',
@@ -1523,6 +1525,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/resize-image-online-free.html',
   // Cycle 20260630-8 create_new_guide_page - PT locale variant of "crop image online free" (locale-drain; companion to /image-tools/crop-image.html).
   '/guides/pt/crop-image-online-free.html',
+  // Cycle 20260705 create_new_guide_page - PT locale variant of "pdf to text online i love pdf" (locale-drain; companion to /pdf-to-text.html).
+  '/guides/pt/pdf-to-text-online-i-love-pdf.html',
   // Cycle 20260524-10 create_new_guide_page - "i love zip" bare-query landing (companion to /zip-file.html).
   '/guides/en/i-love-zip.html',
   // Cycle 78 P78.A - "QR code error correction and scan failures" Lane-D guide (companion to /qr-code-generator.html).
@@ -2483,6 +2487,7 @@ export const ALIAS_ROUTES = {
   '/black-hole.html': '/space-3d/black-hole.html',
   '/galaxy.html': '/space-3d/galaxy.html',
   '/background-remover.html': '/image-tools/background-remover.html',
+  '/video-to-gif.html': '/video-tools/video-to-gif.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -2551,6 +2556,8 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/resize-image-online-free.html': 'guide/pt/resize-image-online-free.jsp',
   // Cycle 20260630-8 create_new_guide_page - PT locale variant of "crop image online free" (locale-drain; EN canonical at bare /guides/crop-image-online-free.html).
   '/guides/pt/crop-image-online-free.html': 'guide/pt/crop-image-online-free.jsp',
+  // Cycle 20260705 create_new_guide_page - PT locale variant of "pdf to text online i love pdf" (locale-drain; EN canonical at bare /guides/pdf-to-text-online-i-love-pdf.html).
+  '/guides/pt/pdf-to-text-online-i-love-pdf.html': 'guide/pt/pdf-to-text-online-i-love-pdf.jsp',
   // Cycle 20260524-10 create_new_guide_page - "i love zip" bare-query landing (companion to /zip-file.html).
   '/guides/en/i-love-zip.html': 'guide/en/i-love-zip.jsp',
   // Cycle 20260604-9 create_new_guide_page - "tool free" chain-breaker force-ship (chain=5 reached per CLAUDE.md L3). Reframes the bare 'tool free' query as a privacy + monetisation explainer ("Are online tools actually free?") to avoid semantic_overlap with /utility-tools.html hub. utility cluster.
@@ -3697,6 +3704,10 @@ export const JSP_BY_ROUTE = {
   '/guides/de/ai-background-remover-step-by-step.html': 'guide/de/ai-background-remover-step-by-step.jsp',
   '/guides/de/ai-background-remover-vs-alternatives.html': 'guide/de/ai-background-remover-vs-alternatives.jsp',
   '/guides/pdf-to-text-online-i-love-pdf.html': 'guide/pdf-to-text-online-i-love-pdf.jsp',
+  '/video-tools/video-to-gif.html': 'convert/video-to-gif.jsp',
+  '/guides/video-gif-converter-when.html': 'guide/video-gif-converter-when.jsp',
+  '/guides/video-gif-converter-step-by-step.html': 'guide/video-gif-converter-step-by-step.jsp',
+  '/guides/video-gif-converter-vs-alternatives.html': 'guide/video-gif-converter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

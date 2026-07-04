@@ -54,7 +54,7 @@ const SEO_CLUSTER_GROUPS = [
     cluster: 'video',
     hubRoute: '/video-tools.html',
     hubLabel: 'Back to Video Tools',
-    routes: ['/video-converter.html', '/video-maker.html', '/ffmpeg-online.html', '/hd-video-converter.html', '/video-tools/video-trimmer.html'],
+    routes: ['/video-converter.html', '/video-maker.html', '/ffmpeg-online.html', '/hd-video-converter.html', '/video-tools/video-trimmer.html', '/video-tools/video-to-gif.html'],
   },
   {
     cluster: 'device-test',
