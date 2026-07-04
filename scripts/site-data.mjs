@@ -3696,6 +3696,7 @@ export const JSP_BY_ROUTE = {
   '/guides/de/ai-background-remover-when.html': 'guide/de/ai-background-remover-when.jsp',
   '/guides/de/ai-background-remover-step-by-step.html': 'guide/de/ai-background-remover-step-by-step.jsp',
   '/guides/de/ai-background-remover-vs-alternatives.html': 'guide/de/ai-background-remover-vs-alternatives.jsp',
+  '/guides/pdf-to-text-online-i-love-pdf.html': 'guide/pdf-to-text-online-i-love-pdf.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
