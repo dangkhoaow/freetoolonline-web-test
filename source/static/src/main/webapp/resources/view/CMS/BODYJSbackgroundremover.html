@@ -1,0 +1,100 @@
+<script>
+    // In-browser AI image archetype (background-remover) - Transformers.js v4 + ONNX Runtime
+    // Web. Flagship mode: BACKGROUND REMOVER (briaai/RMBG-1.4). 100% client-side:
+    // the IMAGE never leaves the browser; only the model weights download once from
+    // the Hugging Face hub and are cached in IndexedDB (offline afterwards). WebGPU
+    // is used when available, else the WASM CPU backend. Registry Gate-H entry:
+    // ai_image_transformersjs.
+    //
+    // HONEST NOTES (operator): (1) first run downloads ~40MB of model weights; (2)
+    // Transformers.js is loaded via ESM dynamic import from a CDN - if the site CSP
+    // blocks it, self-host @huggingface/transformers under /vendor/transformers/ and
+    // point TF_CDN at it; (3) headless e2e may not exercise the model run (the input
+    // preview still renders visible output for G16). Framework contract:
+    // doAfterPageRendered(); no top-level DOM. Plain <input type=file>, no upload widget.
+
+    web.localUpload = false;
+
+    // ESM entry for Transformers.js v4 (WebGPU rewrite). Self-host + repoint here to
+    // remove the CDN dependency: '/vendor/transformers/transformers.min.js'.
+    var TF_CDN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4';
+
+    var aiModelPromise = null;
+    function aiLoadModel(setStatus) {
+        if (aiModelPromise) return aiModelPromise;
+        aiModelPromise = (async function () {
+            setStatus('Loading the AI model (first run downloads ~40MB once, then cached offline) ...');
+            var tf = await import(/* webpackIgnore: true */ TF_CDN);
+            var AutoModel = tf.AutoModel, AutoProcessor = tf.AutoProcessor, env = tf.env;
+            // Prefer WebGPU; fall back to WASM automatically inside ORT.
+            var device = ('gpu' in navigator) ? 'webgpu' : 'wasm';
+            var model = await AutoModel.from_pretrained('briaai/RMBG-1.4', { device: device, dtype: 'fp32' });
+            var processor = await AutoProcessor.from_pretrained('briaai/RMBG-1.4');
+            return { tf: tf, model: model, processor: processor, RawImage: tf.RawImage };
+        })();
+        return aiModelPromise;
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('aiImageTool');
+        if (!root) return; // not an ai-image page
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;"><input type="file" id="aiFile" accept="image/*" class="w3-input w3-border" style="max-width:420px;margin:0 auto;"></div>' +
+            '<div id="aiStatus" style="min-height:1.2em;margin:6px 0;color:#555;">Choose an image. Your image never leaves your browser - it is processed locally.</div>' +
+            '<div class="w3-row"><canvas id="aiCanvas" class="outputImgs" style="visibility:visible !important;max-width:90vw;border:1px solid #ddd;background:repeating-conic-gradient(#eee 0% 25%,#fff 0% 50%) 50%/20px 20px;"></canvas></div>' +
+            '<div style="margin-top:8px;"><button id="aiRun" type="button" class="w3-button w3-green w3-large" disabled>Remove background</button> ' +
+            '<a id="aiDownload" class="w3-button w3-blue" style="display:none;">Download PNG</a></div>' +
+            '<div id="aiErr" style="color:#b00020;margin-top:6px;min-height:1em;"></div>';
+        var fileEl = root.querySelector('#aiFile'), canvas = root.querySelector('#aiCanvas'), ctx = canvas.getContext('2d');
+        var runBtn = root.querySelector('#aiRun'), dl = root.querySelector('#aiDownload');
+        var statusEl = root.querySelector('#aiStatus'), errEl = root.querySelector('#aiErr');
+        var currentURL = null;
+        function setStatus(m) { statusEl.textContent = m; }
+        function setErr(m) { errEl.textContent = m || ''; }
+
+        // Preview on select (immediate visible output; no model needed yet -> G16).
+        fileEl.addEventListener('change', function () {
+            setErr(''); if (dl) { dl.style.display = 'none'; }
+            var f = fileEl.files && fileEl.files[0]; if (!f) return;
+            if (currentURL) URL.revokeObjectURL(currentURL);
+            currentURL = URL.createObjectURL(f);
+            var img = new Image();
+            img.onload = function () { canvas.width = img.naturalWidth; canvas.height = img.naturalHeight; ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0); runBtn.disabled = false; setStatus('Preview ready. Click Remove background to process it locally.'); };
+            img.onerror = function () { setErr('Could not read that image.'); };
+            img.src = currentURL;
+        });
+
+        runBtn.addEventListener('click', async function () {
+            if (!currentURL) { setErr('Choose an image first.'); return; }
+            setErr(''); runBtn.disabled = true;
+            try {
+                var m = await aiLoadModel(setStatus);
+                setStatus('Removing background in your browser ...');
+                var image = await m.RawImage.fromURL(currentURL);
+                var inputs = await m.processor(image);
+                var out = await m.model({ input: inputs.pixel_values });
+                // The model returns an alpha mask in [0,1]; resize to the image + composite.
+                var maskTensor = (out.output || out.alphas || out.logits);
+                var mask = await m.RawImage.fromTensor(maskTensor[0].mul(255).to('uint8')).resize(image.width, image.height);
+                canvas.width = image.width; canvas.height = image.height;
+                var pin = ctx.createImageData(image.width, image.height);
+                var src = image.rgba ? image.rgba().data : null;
+                // Draw the original then apply mask alpha.
+                var tmp = new Image(); tmp.src = currentURL;
+                await new Promise(function (r) { tmp.onload = r; });
+                ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(tmp, 0, 0, canvas.width, canvas.height);
+                var id = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                var md = mask.data;
+                for (var i = 0; i < md.length; i++) { id.data[i * 4 + 3] = md[i]; }
+                ctx.putImageData(id, 0, 0);
+                canvas.toBlob(function (blob) {
+                    var u = URL.createObjectURL(blob);
+                    dl.href = u; dl.download = 'no-background.png'; dl.style.display = '';
+                }, 'image/png');
+                setStatus('Done - background removed locally, no upload.');
+            } catch (e) {
+                setErr('Could not run the AI model: ' + (e && e.message ? e.message : String(e)) + '. (If the model failed to load, the site may need Transformers.js self-hosted under /vendor/transformers/.)');
+            } finally { runBtn.disabled = false; }
+        });
+    }
+</script>

@@ -2482,6 +2482,7 @@ export const ALIAS_ROUTES = {
   '/solar-system.html': '/space-3d/solar-system.html',
   '/black-hole.html': '/space-3d/black-hole.html',
   '/galaxy.html': '/space-3d/galaxy.html',
+  '/background-remover.html': '/image-tools/background-remover.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3676,6 +3677,25 @@ export const JSP_BY_ROUTE = {
   '/guides/galaxy-3d-simulator-when.html': 'guide/galaxy-3d-simulator-when.jsp',
   '/guides/galaxy-3d-simulator-step-by-step.html': 'guide/galaxy-3d-simulator-step-by-step.jsp',
   '/guides/galaxy-3d-simulator-vs-alternatives.html': 'guide/galaxy-3d-simulator-vs-alternatives.jsp',
+  '/image-tools/background-remover.html': 'convert/background-remover.jsp',
+  '/guides/ai-background-remover-when.html': 'guide/ai-background-remover-when.jsp',
+  '/guides/ai-background-remover-step-by-step.html': 'guide/ai-background-remover-step-by-step.jsp',
+  '/guides/ai-background-remover-vs-alternatives.html': 'guide/ai-background-remover-vs-alternatives.jsp',
+  '/guides/pt/ai-background-remover-when.html': 'guide/pt/ai-background-remover-when.jsp',
+  '/guides/pt/ai-background-remover-step-by-step.html': 'guide/pt/ai-background-remover-step-by-step.jsp',
+  '/guides/pt/ai-background-remover-vs-alternatives.html': 'guide/pt/ai-background-remover-vs-alternatives.jsp',
+  '/guides/es/ai-background-remover-when.html': 'guide/es/ai-background-remover-when.jsp',
+  '/guides/es/ai-background-remover-step-by-step.html': 'guide/es/ai-background-remover-step-by-step.jsp',
+  '/guides/es/ai-background-remover-vs-alternatives.html': 'guide/es/ai-background-remover-vs-alternatives.jsp',
+  '/guides/vi/ai-background-remover-when.html': 'guide/vi/ai-background-remover-when.jsp',
+  '/guides/vi/ai-background-remover-step-by-step.html': 'guide/vi/ai-background-remover-step-by-step.jsp',
+  '/guides/vi/ai-background-remover-vs-alternatives.html': 'guide/vi/ai-background-remover-vs-alternatives.jsp',
+  '/guides/id/ai-background-remover-when.html': 'guide/id/ai-background-remover-when.jsp',
+  '/guides/id/ai-background-remover-step-by-step.html': 'guide/id/ai-background-remover-step-by-step.jsp',
+  '/guides/id/ai-background-remover-vs-alternatives.html': 'guide/id/ai-background-remover-vs-alternatives.jsp',
+  '/guides/de/ai-background-remover-when.html': 'guide/de/ai-background-remover-when.jsp',
+  '/guides/de/ai-background-remover-step-by-step.html': 'guide/de/ai-background-remover-step-by-step.jsp',
+  '/guides/de/ai-background-remover-vs-alternatives.html': 'guide/de/ai-background-remover-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

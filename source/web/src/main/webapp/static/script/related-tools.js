@@ -325,6 +325,7 @@ try {
     { title: "Solar System 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-system.html", include: !1, tags: "space-3d" },
     { title: "Black Hole 3D Visualizer", url: "https://freetoolonline.com/space-3d/black-hole.html", include: !1, tags: "space-3d" },
     { title: "Galaxy 3D Simulator", url: "https://freetoolonline.com/space-3d/galaxy.html", include: !1, tags: "space-3d" },
+    { title: "AI Background Remover", url: "https://freetoolonline.com/image-tools/background-remover.html", include: !1, tags: "image-editing" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
