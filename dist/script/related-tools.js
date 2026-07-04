@@ -326,6 +326,8 @@ try {
     { title: "Black Hole 3D Visualizer", url: "https://freetoolonline.com/space-3d/black-hole.html", include: !1, tags: "space-3d" },
     { title: "Galaxy 3D Simulator", url: "https://freetoolonline.com/space-3d/galaxy.html", include: !1, tags: "space-3d" },
     { title: "AI Background Remover", url: "https://freetoolonline.com/image-tools/background-remover.html", include: !1, tags: "image-editing" },
+    { title: "PDF to Text Online: Extract Text Free, No Install", url: "https://freetoolonline.com/guides/pdf-to-text-online-i-love-pdf.html", include: !1, tags: "pdf" },
+    { title: "Video to GIF Converter", url: "https://freetoolonline.com/video-tools/video-to-gif.html", include: !1, tags: "video" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
