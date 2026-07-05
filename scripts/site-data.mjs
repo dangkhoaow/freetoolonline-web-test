@@ -91,6 +91,8 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/video-gif-converter-when.html',
   '/guides/id/video-gif-converter-when.html',
   '/guides/de/video-gif-converter-when.html',
+  // Cycle 20260705-22 create_new_guide_page - pt locale variant for the new EN guide /guides/audio-trimmer-step-by-step.html (new_guide_locale_completeness gate). status locale_pending_review.
+  '/guides/pt/audio-trimmer-step-by-step.html',
   // Cycle 20260524-10 create_new_guide_page - "i love zip" bare-query landing (GSC 182 imp / 2 clicks / pos 6.12 / opportunity_score 29.41).
   // Implementing tool: /zip-file.html. Cluster: zip. BODYTITLE is reader-task framed (not brand-mimicking).
   '/guides/en/i-love-zip.html',
@@ -1567,6 +1569,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/video-gif-converter-when.html',
   '/guides/id/video-gif-converter-when.html',
   '/guides/de/video-gif-converter-when.html',
+  // Cycle 20260705-22 create_new_guide_page - pt locale variant for the new EN guide /guides/audio-trimmer-step-by-step.html (new_guide_locale_completeness gate). status locale_pending_review.
+  '/guides/pt/audio-trimmer-step-by-step.html',
   // Cycle 20260524-10 create_new_guide_page - "i love zip" bare-query landing (companion to /zip-file.html).
   '/guides/en/i-love-zip.html',
   // Cycle 78 P78.A - "QR code error correction and scan failures" Lane-D guide (companion to /qr-code-generator.html).
@@ -3775,6 +3779,8 @@ export const JSP_BY_ROUTE = {
   '/video-tools/audio-trimmer.html': 'convert/audio-trimmer.jsp',
   '/guides/audio-trimmer-when.html': 'guide/audio-trimmer-when.jsp',
   '/guides/audio-trimmer-step-by-step.html': 'guide/audio-trimmer-step-by-step.jsp',
+  // Cycle 20260705-22 create_new_guide_page - pt locale variant for /guides/audio-trimmer-step-by-step.html (new_guide_locale_completeness). status locale_pending_review.
+  '/guides/pt/audio-trimmer-step-by-step.html': 'guide/pt/audio-trimmer-step-by-step.jsp',
   '/guides/audio-trimmer-vs-alternatives.html': 'guide/audio-trimmer-vs-alternatives.jsp',
   '/guides/png-to-svg-vector.html': 'guide/png-to-svg-vector.jsp',
   '/device-test-tools/gpu-test.html': 'convert/gpu-test.jsp',
