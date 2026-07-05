@@ -3773,6 +3773,7 @@ export const JSP_BY_ROUTE = {
   '/guides/audio-trimmer-when.html': 'guide/audio-trimmer-when.jsp',
   '/guides/audio-trimmer-step-by-step.html': 'guide/audio-trimmer-step-by-step.jsp',
   '/guides/audio-trimmer-vs-alternatives.html': 'guide/audio-trimmer-vs-alternatives.jsp',
+  '/guides/png-to-svg-vector.html': 'guide/png-to-svg-vector.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

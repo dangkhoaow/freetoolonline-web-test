@@ -329,6 +329,7 @@ try {
     { title: "PDF to Text Online: Extract Text Free, No Install", url: "https://freetoolonline.com/guides/pdf-to-text-online-i-love-pdf.html", include: !1, tags: "pdf" },
     { title: "Video to GIF Converter", url: "https://freetoolonline.com/video-tools/video-to-gif.html", include: !1, tags: "video" },
     { title: "Audio Trimmer", url: "https://freetoolonline.com/video-tools/audio-trimmer.html", include: !1, tags: "video" },
+    { title: "How to Turn a PNG into a Vector SVG", url: "https://freetoolonline.com/guides/png-to-svg-vector.html", include: !1, tags: "image-conversion" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
