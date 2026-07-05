@@ -140,17 +140,19 @@ function classifyGuide(slug) {
   if (/(^|-)(mp4|webm|mov|mkv|ffmpeg|hd-video|video-converter|audio-trimmer)/.test(slug)) {
     return 'video';
   }
-  if (/(^|-)(dead-pixel|lcd|microphone|webcam|camera|screen-test|screen-display|touchscreen|led-test|keyboard-tester|keyboard-test|device-test|interview|before-a-video-call)/.test(slug)) {
+  if (/(^|-)(dead-pixel|lcd|microphone|webcam|camera|screen-test|screen-display|touchscreen|led-test|keyboard-tester|keyboard-test|device-test|gpu-test|gpu-benchmark|interview|before-a-video-call)/.test(slug)) {
     return 'device-tests';
   }
   if (/(^|-)(md5|sha256|css-minifier|uglifier|tree-shaking|json|yaml|toml|csv|cloud-run|text-diff|word-diff|line-diff|git-diff|diff-tool|base64|unix-timestamps|millisecond|time-in-ms|ms-to-date|current-millis|current-time-in-milliseconds|unminify)/.test(slug)) {
     return 'developer-and-encoding';
   }
-  // fire-23: guides for the two new categories. Slug tokens match the 7
-  // shipped units (snake-classic, retro-tank-battle, garden-defense,
-  // voxel-world-builder / solar-system, black-hole, galaxy) + generic
-  // genre words so future game/space guides classify without edits here.
-  if (/(^|-)(snake|tank|garden-defense|voxel|browser-game|how-to-play)/.test(slug)) {
+  // fire-23: guides for the two new categories (fire-30 added the city +
+  // flight units). Slug tokens match the shipped units (snake-classic,
+  // retro-tank-battle, garden-defense, voxel-world-builder,
+  // city-time-machine, sky-gates-flight / solar-system, black-hole, galaxy)
+  // + generic genre words so future game/space guides classify without
+  // edits here.
+  if (/(^|-)(snake|tank|garden-defense|voxel|city-time-machine|sky-gates|browser-game|how-to-play)/.test(slug)) {
     return 'games';
   }
   if (/(^|-)(solar-system|black-hole|galaxy|planet|space-3d)/.test(slug)) {

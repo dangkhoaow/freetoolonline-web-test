@@ -60,7 +60,7 @@ const SEO_CLUSTER_GROUPS = [
     cluster: 'device-test',
     hubRoute: '/device-test-tools.html',
     hubLabel: 'Back to Device Test Tools',
-    routes: ['/microphone-test.html', '/camera-test.html', '/lcd-test.html', '/keyboard-test.html', '/device-test-tools/screen-recorder.html'],
+    routes: ['/microphone-test.html', '/camera-test.html', '/lcd-test.html', '/keyboard-test.html', '/device-test-tools/screen-recorder.html', '/device-test-tools/gpu-test.html'],
   },
   {
     cluster: 'utility',
@@ -87,7 +87,7 @@ const SEO_CLUSTER_GROUPS = [
     cluster: 'games',
     hubRoute: '/games.html',
     hubLabel: 'Back to Games',
-    routes: ['/games/snake-classic.html', '/games/retro-tank-battle.html', '/games/garden-defense.html', '/games/voxel-world-builder.html'],
+    routes: ['/games/snake-classic.html', '/games/retro-tank-battle.html', '/games/garden-defense.html', '/games/voxel-world-builder.html', '/games/sky-gates-flight.html', '/games/city-time-machine.html'],
   },
   {
     cluster: 'space-3d',

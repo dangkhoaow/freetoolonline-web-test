@@ -1,0 +1,473 @@
+<script>
+    // 3D scene archetype skeleton (gpu-test) - vendored three.js (ESM, dynamic
+    // import from /vendor/three/, NO CDN), fully client-side. Registry Gate-H
+    // entry: three_3d_scene_vendored. ONE skeleton serves the 3D family; the
+    // scene is dispatched from the slug: voxel (block-building sandbox game),
+    // solar (solar system explorer), blackhole (black hole visualization),
+    // galaxy (spiral galaxy). All geometry is procedural - no model files, no
+    // textures fetched. The space scenes are EDUCATIONAL APPROXIMATIONS, not
+    // physical simulations; scales are compressed and the info panel says so.
+    //
+    // A visible wrapper + "Loading 3D engine..." placeholder renders
+    // synchronously (G16 render-only pass); the ~0.7 MB engine lazy-loads
+    // post-paint via requestIdleCallback and is cached by the browser.
+    // Fullscreen targets the WRAPPER div (controls stay visible).
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'gpu-test';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) {
+        var s = String(slug || '').toLowerCase();
+        if (/gpu/.test(s)) return 'gputest';
+        if (/city/.test(s)) return 'city';
+        if (/sky|flight|plane|aircraft/.test(s)) return 'flight';
+        if (/voxel|builder|block/.test(s)) return 'voxel';
+        if (/solar|planet/.test(s)) return 'solar';
+        if (/black/.test(s)) return 'blackhole';
+        if (/galaxy/.test(s)) return 'galaxy';
+        return 'solar';
+    }
+
+    // Module registry: each T3D_MODULE block below registers itself here. The
+    // fragment emitter (emit-cms-fragments.mjs) PRUNES non-matching module
+    // blocks per slug, so an emitted page carries exactly one registration.
+    // Bootstrap reads the registry instead of naming modules - pruned modules
+    // simply never register and no dangling identifiers remain.
+    var T3D_REGISTRY = {};
+
+    // ---- vendored ESM loader (ftoLoadPdfLib shape, but a cached import()) ----
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - building still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- tiny procedural synth (Web Audio - NO audio files) ------------------
+    // Category rule: sound is synthesized on-device and stays SILENT until the
+    // reader clicks the page's sound toggle (autoplay-safe). blip() plays a
+    // short envelope; hum() keeps a low filtered drone a module retunes.
+    function t3dSynth() {
+        var ctx = null, master = null, humOsc = null, humOsc2 = null, humGain = null, humFilter = null, on = false;
+        function ensure() {
+            if (ctx) return;
+            var AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) return;
+            ctx = new AC();
+            master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
+        }
+        return {
+            enabled: function () { return on; },
+            toggle: function () {
+                ensure();
+                if (!ctx) return false;
+                on = !on;
+                if (ctx.state === 'suspended') { ctx.resume(); }
+                master.gain.setTargetAtTime(on ? 0.5 : 0, ctx.currentTime, 0.05);
+                return on;
+            },
+            blip: function (freq, dur, gain, type) {
+                if (!ctx || !on) return;
+                var o = ctx.createOscillator(), g = ctx.createGain();
+                o.type = type || 'sine'; o.frequency.value = freq;
+                g.gain.setValueAtTime(gain || 0.25, ctx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + (dur || 0.18));
+                o.connect(g); g.connect(master);
+                o.start(); o.stop(ctx.currentTime + (dur || 0.18) + 0.02);
+            },
+            hum: function (freq, level) {
+                if (!ctx) return;
+                if (!humOsc) {
+                    humOsc = ctx.createOscillator(); humOsc2 = ctx.createOscillator();
+                    humFilter = ctx.createBiquadFilter(); humFilter.type = 'lowpass'; humFilter.frequency.value = 320;
+                    humGain = ctx.createGain(); humGain.gain.value = 0;
+                    humOsc.type = 'triangle'; humOsc2.type = 'triangle';
+                    humOsc.connect(humFilter); humOsc2.connect(humFilter);
+                    humFilter.connect(humGain); humGain.connect(master);
+                    humOsc.start(); humOsc2.start();
+                }
+                humOsc.frequency.setTargetAtTime(freq, ctx.currentTime, 0.4);
+                humOsc2.frequency.setTargetAtTime(freq * 1.007, ctx.currentTime, 0.4);
+                humGain.gain.setTargetAtTime(level, ctx.currentTime, 0.4);
+            },
+        };
+    }
+
+    // ---- shared scene shell: renderer + camera + custom pointer-orbit --------
+    // OrbitControls is NOT vendored (jsm addons import the bare 'three'
+    // specifier); this ~40-line orbit covers drag-rotate + wheel/pinch zoom
+    // with damping and a clamped pitch.
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: opts.power ? 'high-performance' : 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            // critically-damped-ish lerp toward the goal orbit
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        function size() {
+            var w = Math.max(260, host.clientWidth);
+            var h = Math.round(w * 0.62);
+            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fsEl && fsEl.contains(host)) { h = Math.max(240, (window.innerHeight || h) - 150); }
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        host.appendChild(renderer.domElement);
+        renderer.domElement.style.touchAction = 'none';
+        renderer.domElement.style.borderRadius = '6px';
+        // pointer-orbit input (opts.noInput skips it - a module that steers its
+        // own camera, e.g. a chase-cam game or a benchmark, wires its own input)
+        if (!opts.noInput) {
+            var drag = null, pinch = null, moved = 0;
+            host.addEventListener('pointerdown', function (e) {
+                drag = { x: e.clientX, y: e.clientY }; moved = 0;
+                host.setPointerCapture && host.setPointerCapture(e.pointerId);
+            });
+            host.addEventListener('pointermove', function (e) {
+                if (!drag) return;
+                var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+                moved += Math.abs(dx) + Math.abs(dy);
+                drag = { x: e.clientX, y: e.clientY };
+                orbit.goalTheta -= dx * 0.006;
+                orbit.goalPhi = Math.min(Math.max(orbit.goalPhi - dy * 0.005, 0.15), Math.PI - 0.2);
+            });
+            host.addEventListener('pointerup', function (e) {
+                var wasClick = moved < 8;
+                drag = null;
+                if (wasClick && shell.onClick) { shell.onClick(e); }
+            });
+            host.addEventListener('wheel', function (e) {
+                e.preventDefault();
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR);
+            }, { passive: false });
+            host.addEventListener('touchstart', function (e) {
+                if (e.touches.length === 2) {
+                    pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                }
+            }, { passive: true });
+            host.addEventListener('touchmove', function (e) {
+                if (e.touches.length === 2 && pinch) {
+                    var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                    orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                    pinch = d;
+                }
+            }, { passive: true });
+        }
+        window.addEventListener('resize', size);
+        document.addEventListener('fullscreenchange', size);
+        document.addEventListener('webkitfullscreenchange', size);
+        size();
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, size: size, onClick: null,
+            ndc: function (e) {
+                var r = renderer.domElement.getBoundingClientRect();
+                return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            },
+        };
+        return shell;
+    }
+
+
+
+
+
+    /* T3D_MODULE:gputest START */
+    // ================= GPU TEST (device-test cluster) ========================
+    // Two halves: t3dGpuCaps() is a SYNCHRONOUS capability report from raw
+    // canvas.getContext probing (runs as mod.pre BEFORE the engine loads, so
+    // the page is useful immediately); t3dGpuTest() is the button-gated
+    // benchmark - one InstancedMesh whose count doubles per tier while median
+    // frame time is measured from the animation loop's dt values.
+    // HONESTY RULE: this is an indicative BROWSER benchmark, never lab-grade -
+    // the copy below says so and never compares to native benchmark suites.
+    var T3D_GPU_INFO = { renderer: 'unknown' };
+    function t3dGpuEsc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+    function t3dGpuHistory() {
+        var el = document.getElementById('t3dGpuHistory');
+        if (!el) return;
+        var runs = (t3dLoadStore().runs || []);
+        if (!runs.length) { el.innerHTML = ''; return; }
+        var out = '<b>Previous runs on this browser:</b><ul style="margin:4px 0 0 0;">';
+        for (var i = runs.length - 1; i >= 0 && i > runs.length - 6; i--) {
+            var r = runs[i];
+            out += '<li>' + t3dGpuEsc(String(r.at).slice(0, 10)) + ' - score ' + t3dGpuEsc(r.score)
+                + ' (' + Number(r.topInstances || 0).toLocaleString('en-US') + ' instances at '
+                + t3dGpuEsc(r.topFps) + ' FPS)</li>';
+        }
+        el.innerHTML = out + '</ul>';
+    }
+    function t3dGpuCaps() {
+        var gl2 = null, gl1 = null;
+        try { gl2 = document.createElement('canvas').getContext('webgl2'); } catch (e) { }
+        try { gl1 = document.createElement('canvas').getContext('webgl'); } catch (e) { }
+        var gl = gl2 || gl1;
+        var rows = [];
+        rows.push(['WebGL 2', gl2 ? 'available' : 'not available']);
+        rows.push(['WebGL 1', gl1 ? 'available' : 'not available']);
+        if (gl) {
+            var renderer = 'masked by this browser for privacy', vendor = 'masked by this browser for privacy';
+            try {
+                var dbg = gl.getExtension('WEBGL_debug_renderer_info');
+                if (dbg) {
+                    renderer = gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) || renderer;
+                    vendor = gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL) || vendor;
+                }
+            } catch (e) { }
+            T3D_GPU_INFO.renderer = renderer;
+            rows.push(['Graphics renderer', renderer]);
+            rows.push(['Graphics vendor', vendor]);
+            try { rows.push(['Max texture size', gl.getParameter(gl.MAX_TEXTURE_SIZE) + ' px']); } catch (e) { }
+            try { rows.push(['Max render buffer', gl.getParameter(gl.MAX_RENDERBUFFER_SIZE) + ' px']); } catch (e) { }
+            try {
+                var vp = gl.getParameter(gl.MAX_VIEWPORT_DIMS);
+                if (vp && vp.length === 2) rows.push(['Max viewport', vp[0] + ' x ' + vp[1]]);
+            } catch (e) { }
+            if (gl2) { try { rows.push(['MSAA samples', String(gl.getParameter(gl.MAX_SAMPLES))]); } catch (e) { } }
+        }
+        rows.push(['WebGPU', (navigator.gpu ? 'available' : 'not available') + ' (presence check only)']);
+        rows.push(['Device pixel ratio', String(window.devicePixelRatio || 1)]);
+        rows.push(['Screen', (window.screen && window.screen.width) ? window.screen.width + ' x ' + window.screen.height : 'unknown']);
+        if (navigator.hardwareConcurrency) rows.push(['CPU threads reported', String(navigator.hardwareConcurrency)]);
+        if (navigator.deviceMemory) rows.push(['Device memory reported', navigator.deviceMemory + ' GB (browser-rounded)']);
+        var el = document.getElementById('t3dGpuCapsTable');
+        if (el) {
+            var out = '<table class="w3-table w3-bordered" style="font-size:14px;"><thead><tr><th>Capability</th><th>Value</th></tr></thead><tbody>';
+            for (var i = 0; i < rows.length; i++) out += '<tr><td>' + t3dGpuEsc(rows[i][0]) + '</td><td>' + t3dGpuEsc(rows[i][1]) + '</td></tr>';
+            el.innerHTML = out + '</tbody></table>';
+        }
+        t3dGpuHistory();
+    }
+    function t3dGpuTest(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+        var dir = new THREE.DirectionalLight(0xffffff, 2.0);
+        dir.position.set(40, 60, 30);
+        scene.add(dir);
+        shell.renderer.setClearColor(0x101528, 1);
+        var group = new THREE.Group();
+        scene.add(group);
+        var geo = new THREE.IcosahedronGeometry(0.6, 0);
+        var mat = new THREE.MeshLambertMaterial({ color: 0x4fc3f7 });
+        var mesh = null;
+        var dummy = new THREE.Object3D();
+        function buildTier(count) {
+            if (mesh) { group.remove(mesh); if (mesh.dispose) mesh.dispose(); }
+            mesh = new THREE.InstancedMesh(geo, mat, count);
+            for (var i = 0; i < count; i++) {
+                dummy.position.set(0, 0, 0).randomDirection().multiplyScalar(6 + Math.pow(Math.random(), 0.5) * 22);
+                dummy.rotation.set(Math.random() * 3, Math.random() * 3, 0);
+                var s = 0.5 + Math.random();
+                dummy.scale.set(s, s, s);
+                dummy.updateMatrix();
+                mesh.setMatrixAt(i, dummy.matrix);
+            }
+            group.add(mesh);
+        }
+        buildTier(2000); // idle scene so the canvas is never empty
+        var TIERS = [1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000, 256000];
+        var bench = null; // {idx, phase, t, deltas, results:[{instances,fps}]}
+        var runBtn = document.getElementById('t3dGpuRunBtn');
+        var cancelBtn = document.getElementById('t3dGpuCancelBtn');
+        var progress = document.getElementById('t3dGpuProgress');
+        var scoreEl = document.getElementById('t3dGpuScore');
+        function say(text) { if (progress) progress.textContent = text; }
+        function setUi(running) {
+            if (runBtn) runBtn.style.display = running ? 'none' : '';
+            if (cancelBtn) cancelBtn.style.display = running ? '' : 'none';
+        }
+        function median(arr) {
+            var a = arr.slice().sort(function (x, y) { return x - y; });
+            return a.length ? a[(a.length - 1) >> 1] : 0;
+        }
+        function tierLabel() {
+            return 'Tier ' + (bench.idx + 1) + '/' + TIERS.length + ' - ' + TIERS[bench.idx].toLocaleString('en-US') + ' instances';
+        }
+        function stepTier(idx, results) {
+            buildTier(TIERS[idx]);
+            bench = { idx: idx, phase: 'warmup', t: 0, deltas: [], results: results };
+            say(tierLabel() + ' - warming up...');
+        }
+        function endBench(aborted, reason) {
+            if (!bench) return;
+            var results = bench.results;
+            bench = null;
+            setUi(false);
+            if (aborted) { say(reason); buildTier(2000); return; }
+            var score = 0, top = results.length ? results[0] : null;
+            for (var i = 0; i < results.length; i++) {
+                score += results[i].instances * Math.min(results[i].fps, 60) / 1000;
+                if (results[i].fps >= 45 && results[i].instances >= (top ? top.instances : 0)) top = results[i];
+            }
+            score = Math.round(score);
+            if (scoreEl) scoreEl.textContent = 'Score: ' + score.toLocaleString('en-US');
+            var topLine = top
+                ? 'Handled ' + top.instances.toLocaleString('en-US') + ' instanced meshes (about ' + (top.instances * 20).toLocaleString('en-US') + ' triangles) at ' + Math.round(top.fps) + ' FPS.'
+                : 'No tier completed.';
+            say('Done. ' + topLine);
+            var tbl = '<h3>Benchmark result</h3><table class="w3-table w3-bordered"><tr><th>Instances</th><th>Median FPS</th></tr>';
+            for (var j = 0; j < results.length; j++) {
+                tbl += '<tr><td>' + results[j].instances.toLocaleString('en-US') + '</td><td>' + Math.round(results[j].fps) + '</td></tr>';
+            }
+            tbl += '</table><p class="t3d-note">Frame rates above 60 count as 60 in the score so high-refresh screens stay roughly comparable. This is an indicative browser benchmark, not a lab-grade one: other tabs, battery mode, and device heat all shift the numbers, so compare scores only between runs on this same device and browser.</p>';
+            t3dInfo(tbl);
+            try {
+                var store = t3dLoadStore();
+                store.runs = store.runs || [];
+                store.runs.push({
+                    at: new Date().toISOString(), score: score,
+                    topInstances: top ? top.instances : 0, topFps: top ? Math.round(top.fps) : 0,
+                    tiers: results.map(function (r) { return { n: r.instances, fps: Math.round(r.fps) }; }),
+                    dpr: window.devicePixelRatio || 1,
+                    res: (window.screen && window.screen.width) ? window.screen.width + 'x' + window.screen.height : '',
+                    renderer: T3D_GPU_INFO.renderer,
+                });
+                while (store.runs.length > 20) store.runs.shift();
+                t3dSaveStore(store);
+            } catch (e) { }
+            t3dGpuHistory();
+            buildTier(2000);
+        }
+        if (runBtn) runBtn.addEventListener('click', function () {
+            if (bench) return;
+            if (scoreEl) scoreEl.textContent = '';
+            setUi(true);
+            stepTier(0, []);
+        });
+        if (cancelBtn) cancelBtn.addEventListener('click', function () { endBench(true, 'Run cancelled.'); });
+        document.addEventListener('visibilitychange', function () {
+            if (document.hidden && bench) endBench(true, 'Tab went to the background - run cancelled (background tabs throttle rendering, which corrupts results).');
+        });
+        shell.renderer.domElement.addEventListener('webglcontextlost', function () {
+            if (bench) endBench(true, 'The graphics context was lost - run cancelled. Reload the page and try again.');
+        });
+        t3dInfo('<h3>What this measures</h3><p>The benchmark renders one instanced mesh and doubles the instance count per tier (1,000 up to 256,000) while measuring the median frame time. It advances while the median holds 55 FPS or better and stops when it drops, so the score reflects sustained geometry throughput through your browser\'s graphics stack.</p><p class="t3d-note">Indicative browser benchmark only - not comparable to native benchmark suites, and it does not measure video memory, compute, or AI workloads. The renderer name above may be masked by your browser for privacy.</p>');
+        return function animate(dt) {
+            group.rotation.y += dt * 0.0004;
+            if (!bench) return;
+            bench.t += dt;
+            if (bench.phase === 'warmup') {
+                if (bench.t >= 1000) { bench.phase = 'measure'; bench.t = 0; bench.deltas = []; }
+                return;
+            }
+            bench.deltas.push(dt);
+            if (bench.deltas.length % 20 === 0) {
+                say(tierLabel() + ' - ' + Math.round(1000 / (median(bench.deltas) || 16.7)) + ' FPS');
+            }
+            if (bench.t >= 3000) {
+                var fps = 1000 / (median(bench.deltas) || 1000);
+                bench.results.push({ instances: TIERS[bench.idx], fps: fps });
+                if (fps >= 55 && bench.idx + 1 < TIERS.length) { stepTier(bench.idx + 1, bench.results); }
+                else { endBench(false); }
+            }
+        };
+    }
+    T3D_REGISTRY.gputest = {
+        fn: t3dGpuTest,
+        preset: { radius: 42, maxR: 140, minR: 10, phi: 1.1, power: true },
+        row: 't3dGpuControls',
+        ready: 'Drag to orbit the test scene, then click Run benchmark to measure sustained FPS.',
+        pre: t3dGpuCaps,
+    };
+    /* T3D_MODULE:gputest END */
+
+
+
+    // ---- bootstrap ------------------------------------------------------------
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return; // not a 3D scene page
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var mod = T3D_REGISTRY[kind];
+        if (!mod) { for (var kk in T3D_REGISTRY) { kind = kk; mod = T3D_REGISTRY[kk]; break; } }
+        if (!mod) { t3dStatus('No 3D scene module is registered on this page.'); return; }
+        // Show only this scene's control row (emitted pages carry only their own).
+        for (var k in T3D_REGISTRY) {
+            var rowId = T3D_REGISTRY[k].row;
+            var el = rowId ? document.getElementById(rowId) : null;
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        // Modules with a sync pre-engine paint (e.g. the GPU capability report)
+        // run it before the engine loads so the page is useful immediately.
+        if (mod.pre) { try { mod.pre(); } catch (ePre) { /* pre-paint must never block boot */ } }
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var shell = t3dShell(THREE, host, mod.preset);
+                    var animate = mod.fn(shell);
+                    if (mod.ready) t3dStatus(mod.ready);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

@@ -2529,6 +2529,9 @@ export const ALIAS_ROUTES = {
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
+  '/gpu-test.html': '/device-test-tools/gpu-test.html',
+  '/sky-gates-flight.html': '/games/sky-gates-flight.html',
+  '/city-time-machine.html': '/games/city-time-machine.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3774,6 +3777,18 @@ export const JSP_BY_ROUTE = {
   '/guides/audio-trimmer-step-by-step.html': 'guide/audio-trimmer-step-by-step.jsp',
   '/guides/audio-trimmer-vs-alternatives.html': 'guide/audio-trimmer-vs-alternatives.jsp',
   '/guides/png-to-svg-vector.html': 'guide/png-to-svg-vector.jsp',
+  '/device-test-tools/gpu-test.html': 'convert/gpu-test.jsp',
+  '/guides/gpu-test-webgl-benchmark-info-when.html': 'guide/gpu-test-webgl-benchmark-info-when.jsp',
+  '/guides/gpu-test-webgl-benchmark-info-step-by-step.html': 'guide/gpu-test-webgl-benchmark-info-step-by-step.jsp',
+  '/guides/gpu-test-webgl-benchmark-info-vs-alternatives.html': 'guide/gpu-test-webgl-benchmark-info-vs-alternatives.jsp',
+  '/games/sky-gates-flight.html': 'games/sky-gates-flight.jsp',
+  '/guides/sky-gates-flight-when.html': 'guide/sky-gates-flight-when.jsp',
+  '/guides/sky-gates-flight-step-by-step.html': 'guide/sky-gates-flight-step-by-step.jsp',
+  '/guides/sky-gates-flight-vs-alternatives.html': 'guide/sky-gates-flight-vs-alternatives.jsp',
+  '/games/city-time-machine.html': 'games/city-time-machine.jsp',
+  '/guides/city-time-machine-3d-when.html': 'guide/city-time-machine-3d-when.jsp',
+  '/guides/city-time-machine-3d-step-by-step.html': 'guide/city-time-machine-3d-step-by-step.jsp',
+  '/guides/city-time-machine-3d-vs-alternatives.html': 'guide/city-time-machine-3d-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

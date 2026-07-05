@@ -1,0 +1,620 @@
+<script>
+    // 3D scene archetype skeleton (sky-gates-flight) - vendored three.js (ESM, dynamic
+    // import from /vendor/three/, NO CDN), fully client-side. Registry Gate-H
+    // entry: three_3d_scene_vendored. ONE skeleton serves the 3D family; the
+    // scene is dispatched from the slug: voxel (block-building sandbox game),
+    // solar (solar system explorer), blackhole (black hole visualization),
+    // galaxy (spiral galaxy). All geometry is procedural - no model files, no
+    // textures fetched. The space scenes are EDUCATIONAL APPROXIMATIONS, not
+    // physical simulations; scales are compressed and the info panel says so.
+    //
+    // A visible wrapper + "Loading 3D engine..." placeholder renders
+    // synchronously (G16 render-only pass); the ~0.7 MB engine lazy-loads
+    // post-paint via requestIdleCallback and is cached by the browser.
+    // Fullscreen targets the WRAPPER div (controls stay visible).
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'sky-gates-flight';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) {
+        var s = String(slug || '').toLowerCase();
+        if (/gpu/.test(s)) return 'gputest';
+        if (/city/.test(s)) return 'city';
+        if (/sky|flight|plane|aircraft/.test(s)) return 'flight';
+        if (/voxel|builder|block/.test(s)) return 'voxel';
+        if (/solar|planet/.test(s)) return 'solar';
+        if (/black/.test(s)) return 'blackhole';
+        if (/galaxy/.test(s)) return 'galaxy';
+        return 'solar';
+    }
+
+    // Module registry: each T3D_MODULE block below registers itself here. The
+    // fragment emitter (emit-cms-fragments.mjs) PRUNES non-matching module
+    // blocks per slug, so an emitted page carries exactly one registration.
+    // Bootstrap reads the registry instead of naming modules - pruned modules
+    // simply never register and no dangling identifiers remain.
+    var T3D_REGISTRY = {};
+
+    // ---- vendored ESM loader (ftoLoadPdfLib shape, but a cached import()) ----
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - building still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- tiny procedural synth (Web Audio - NO audio files) ------------------
+    // Category rule: sound is synthesized on-device and stays SILENT until the
+    // reader clicks the page's sound toggle (autoplay-safe). blip() plays a
+    // short envelope; hum() keeps a low filtered drone a module retunes.
+    function t3dSynth() {
+        var ctx = null, master = null, humOsc = null, humOsc2 = null, humGain = null, humFilter = null, on = false;
+        function ensure() {
+            if (ctx) return;
+            var AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) return;
+            ctx = new AC();
+            master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
+        }
+        return {
+            enabled: function () { return on; },
+            toggle: function () {
+                ensure();
+                if (!ctx) return false;
+                on = !on;
+                if (ctx.state === 'suspended') { ctx.resume(); }
+                master.gain.setTargetAtTime(on ? 0.5 : 0, ctx.currentTime, 0.05);
+                return on;
+            },
+            blip: function (freq, dur, gain, type) {
+                if (!ctx || !on) return;
+                var o = ctx.createOscillator(), g = ctx.createGain();
+                o.type = type || 'sine'; o.frequency.value = freq;
+                g.gain.setValueAtTime(gain || 0.25, ctx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + (dur || 0.18));
+                o.connect(g); g.connect(master);
+                o.start(); o.stop(ctx.currentTime + (dur || 0.18) + 0.02);
+            },
+            hum: function (freq, level) {
+                if (!ctx) return;
+                if (!humOsc) {
+                    humOsc = ctx.createOscillator(); humOsc2 = ctx.createOscillator();
+                    humFilter = ctx.createBiquadFilter(); humFilter.type = 'lowpass'; humFilter.frequency.value = 320;
+                    humGain = ctx.createGain(); humGain.gain.value = 0;
+                    humOsc.type = 'triangle'; humOsc2.type = 'triangle';
+                    humOsc.connect(humFilter); humOsc2.connect(humFilter);
+                    humFilter.connect(humGain); humGain.connect(master);
+                    humOsc.start(); humOsc2.start();
+                }
+                humOsc.frequency.setTargetAtTime(freq, ctx.currentTime, 0.4);
+                humOsc2.frequency.setTargetAtTime(freq * 1.007, ctx.currentTime, 0.4);
+                humGain.gain.setTargetAtTime(level, ctx.currentTime, 0.4);
+            },
+        };
+    }
+
+    // ---- shared scene shell: renderer + camera + custom pointer-orbit --------
+    // OrbitControls is NOT vendored (jsm addons import the bare 'three'
+    // specifier); this ~40-line orbit covers drag-rotate + wheel/pinch zoom
+    // with damping and a clamped pitch.
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: opts.power ? 'high-performance' : 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            // critically-damped-ish lerp toward the goal orbit
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        function size() {
+            var w = Math.max(260, host.clientWidth);
+            var h = Math.round(w * 0.62);
+            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fsEl && fsEl.contains(host)) { h = Math.max(240, (window.innerHeight || h) - 150); }
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        host.appendChild(renderer.domElement);
+        renderer.domElement.style.touchAction = 'none';
+        renderer.domElement.style.borderRadius = '6px';
+        // pointer-orbit input (opts.noInput skips it - a module that steers its
+        // own camera, e.g. a chase-cam game or a benchmark, wires its own input)
+        if (!opts.noInput) {
+            var drag = null, pinch = null, moved = 0;
+            host.addEventListener('pointerdown', function (e) {
+                drag = { x: e.clientX, y: e.clientY }; moved = 0;
+                host.setPointerCapture && host.setPointerCapture(e.pointerId);
+            });
+            host.addEventListener('pointermove', function (e) {
+                if (!drag) return;
+                var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+                moved += Math.abs(dx) + Math.abs(dy);
+                drag = { x: e.clientX, y: e.clientY };
+                orbit.goalTheta -= dx * 0.006;
+                orbit.goalPhi = Math.min(Math.max(orbit.goalPhi - dy * 0.005, 0.15), Math.PI - 0.2);
+            });
+            host.addEventListener('pointerup', function (e) {
+                var wasClick = moved < 8;
+                drag = null;
+                if (wasClick && shell.onClick) { shell.onClick(e); }
+            });
+            host.addEventListener('wheel', function (e) {
+                e.preventDefault();
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR);
+            }, { passive: false });
+            host.addEventListener('touchstart', function (e) {
+                if (e.touches.length === 2) {
+                    pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                }
+            }, { passive: true });
+            host.addEventListener('touchmove', function (e) {
+                if (e.touches.length === 2 && pinch) {
+                    var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                    orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                    pinch = d;
+                }
+            }, { passive: true });
+        }
+        window.addEventListener('resize', size);
+        document.addEventListener('fullscreenchange', size);
+        document.addEventListener('webkitfullscreenchange', size);
+        size();
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, size: size, onClick: null,
+            ndc: function (e) {
+                var r = renderer.domElement.getBoundingClientRect();
+                return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            },
+        };
+        return shell;
+    }
+
+
+
+
+
+
+    /* T3D_MODULE:flight START */
+    // ================= SKY GATES FLIGHT (games cluster) ======================
+    // Endless-runner arcade flight: the plane stays near the origin, the world
+    // scrolls toward it. Green "+N" banner gates raise the power level, red
+    // "-N" gates drain it; zero power ends the run. Chase-cam module: the
+    // shell is created with noInput and applyCamera is REASSIGNED below, so
+    // the untouched bootstrap keeps working. Procedural low-poly meshes +
+    // CanvasTexture gate labels only - no model/sprite/audio files. Gate
+    // labels are plain numbers, so the trademark grep gate has nothing to hit.
+    function t3dFlyPre() {
+        var best = t3dLoadStore().best || null;
+        var el = document.getElementById('t3dFlyBest');
+        if (el && best) el.textContent = best.level + ' power / ' + best.distance + ' m';
+    }
+    function t3dSkyGates(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        var synth = t3dSynth();
+        shell.renderer.setClearColor(0x9fd8ef, 1);
+        scene.fog = new THREE.Fog(0x9fd8ef, 220, 640);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+        var sun = new THREE.DirectionalLight(0xfff3d0, 1.6);
+        sun.position.set(60, 120, 40);
+        scene.add(sun);
+
+        // Ocean - coarse animated grid on desktop, static sheet on low tier.
+        var OCEAN_SEG = shell.low ? 1 : 24;
+        var oceanGeo = new THREE.PlaneGeometry(1600, 1600, OCEAN_SEG, OCEAN_SEG);
+        var ocean = new THREE.Mesh(oceanGeo, new THREE.MeshLambertMaterial({ color: 0x1976d2 }));
+        ocean.rotation.x = -Math.PI / 2;
+        scene.add(ocean);
+        var oceanPos = OCEAN_SEG > 1 ? oceanGeo.attributes.position : null;
+        var oceanBase = null;
+        if (oceanPos) {
+            oceanBase = new Float32Array(oceanPos.array.length);
+            oceanBase.set(oceanPos.array);
+        }
+
+        // Plane - one Group of primitive meshes, prop is a translucent disc.
+        var plane = new THREE.Group();
+        var body = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.1, 4.2), new THREE.MeshLambertMaterial({ color: 0xffb300 }));
+        plane.add(body);
+        var nose = new THREE.Mesh(new THREE.ConeGeometry(0.55, 1.2, 8), new THREE.MeshLambertMaterial({ color: 0xe65100 }));
+        nose.rotation.x = -Math.PI / 2;
+        nose.position.z = -2.6;
+        plane.add(nose);
+        var wingMat = new THREE.MeshLambertMaterial({ color: 0xef6c00 });
+        var wing = new THREE.Mesh(new THREE.BoxGeometry(7.4, 0.18, 1.5), wingMat);
+        wing.position.z = -0.4;
+        plane.add(wing);
+        var tail = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.16, 0.9), wingMat);
+        tail.position.z = 2.0;
+        plane.add(tail);
+        var fin = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.1, 0.9), wingMat);
+        fin.position.set(0, 0.6, 2.0);
+        plane.add(fin);
+        var prop = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.1, 0.06, 16), new THREE.MeshBasicMaterial({ color: 0x37474f, transparent: true, opacity: 0.35 }));
+        prop.rotation.x = Math.PI / 2;
+        prop.position.z = -3.3;
+        plane.add(prop);
+        plane.position.set(0, 8, 0);
+        scene.add(plane);
+
+        // Scenery - fixed sets, wrapped past the camera back to the horizon.
+        var islands = [], clouds = [];
+        var i, j;
+        for (i = 0; i < (shell.low ? 4 : 6); i++) {
+            var isl = new THREE.Group();
+            var rock = new THREE.Mesh(new THREE.ConeGeometry(8, 6, 7), new THREE.MeshLambertMaterial({ color: 0xc2a476 }));
+            rock.position.y = 2.4;
+            var topc = new THREE.Mesh(new THREE.ConeGeometry(4.6, 3, 7), new THREE.MeshLambertMaterial({ color: 0x66bb6a }));
+            topc.position.y = 6.2;
+            isl.add(rock); isl.add(topc);
+            isl.position.set((Math.random() < 0.5 ? -1 : 1) * (40 + Math.random() * 120), 0, -Math.random() * 600);
+            scene.add(isl); islands.push(isl);
+        }
+        var cloudMat = new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.75 });
+        for (i = 0; i < (shell.low ? 5 : 8); i++) {
+            var cl = new THREE.Group();
+            for (j = 0; j < 4; j++) {
+                var puff = new THREE.Mesh(new THREE.SphereGeometry(2.4 + Math.random() * 2, 10, 8), cloudMat);
+                puff.position.set(j * 3 - 4.5 + Math.random(), (Math.random() - 0.5) * 1.4, (Math.random() - 0.5) * 2);
+                cl.add(puff);
+            }
+            cl.position.set((Math.random() - 0.5) * 240, 22 + Math.random() * 18, -Math.random() * 600);
+            scene.add(cl); clouds.push(cl);
+        }
+
+        // Gates - pooled Groups; the banner label is a cached CanvasTexture.
+        var gateTexCache = {};
+        function gateTexture(label, color) {
+            var key = color + '|' + label;
+            if (gateTexCache[key]) return gateTexCache[key];
+            var c = document.createElement('canvas');
+            c.width = 256; c.height = 128;
+            var x = c.getContext('2d');
+            x.fillStyle = color;
+            x.fillRect(0, 0, 256, 128);
+            x.strokeStyle = 'rgba(255,255,255,0.85)';
+            x.lineWidth = 6;
+            x.strokeRect(6, 6, 244, 116);
+            x.fillStyle = '#ffffff';
+            x.font = '700 64px sans-serif';
+            x.textAlign = 'center';
+            x.textBaseline = 'middle';
+            x.fillText(label, 128, 68);
+            gateTexCache[key] = new THREE.CanvasTexture(c);
+            return gateTexCache[key];
+        }
+        var poleMat = new THREE.MeshLambertMaterial({ color: 0x455a64 });
+        var gatePool = [];
+        for (i = 0; i < 14; i++) {
+            var g = new THREE.Group();
+            var p1 = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 8, 8), poleMat);
+            p1.position.set(-5.5, 0, 0);
+            var p2 = p1.clone();
+            p2.position.set(5.5, 0, 0);
+            var banner = new THREE.Mesh(new THREE.PlaneGeometry(10.4, 5.2), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, transparent: true }));
+            banner.position.y = 1.4;
+            g.add(p1); g.add(p2); g.add(banner);
+            g.userData = { banner: banner, value: 0, kind: 'plus', hit: false, pop: 0 };
+            g.visible = false;
+            scene.add(g);
+            gatePool.push(g);
+        }
+        function takeGate() {
+            for (var k = 0; k < gatePool.length; k++) if (!gatePool[k].visible) { gatePool[k].visible = true; return gatePool[k]; }
+            return null;
+        }
+        function setGate(g, value, kind) {
+            var label = kind === 'mult' ? 'x' + value : (kind === 'plus' ? '+' + value : '-' + value);
+            var color = kind === 'mult' ? '#f9a825' : (kind === 'plus' ? '#2e7d32' : '#c62828');
+            g.userData.banner.material.map = gateTexture(label, color);
+            g.userData.banner.material.needsUpdate = true;
+            g.userData.banner.material.opacity = 1;
+            g.userData.banner.scale.set(1, 1, 1);
+            g.userData.value = value;
+            g.userData.kind = kind;
+            g.userData.hit = false;
+            g.userData.pop = 0;
+        }
+
+        // HUD + controls
+        var levelEl = document.getElementById('t3dFlyLevel');
+        var distEl = document.getElementById('t3dFlyDist');
+        var bestEl = document.getElementById('t3dFlyBest');
+        var startBtn = document.getElementById('t3dFlyStart');
+        var restartBtn = document.getElementById('t3dFlyRestart');
+        var soundBtn = document.getElementById('t3dFlySound');
+        if (soundBtn) soundBtn.addEventListener('click', function () {
+            soundBtn.textContent = 'Sound: ' + (synth.toggle() ? 'on' : 'off');
+        });
+
+        var CORRIDOR = { x: 13, yMin: 2.5, yMax: 17 };
+        var state = null; // null until Start; {power, peak, dist, speed, elapsed, nextRowAt, over, hb}
+        var target = { x: 0, y: 8 };
+        var velX = 0, velY = 0;
+
+        function hud() {
+            if (levelEl && state) levelEl.textContent = String(state.power);
+            if (distEl && state) distEl.textContent = String(Math.round(state.dist));
+        }
+        function spawnRow() {
+            var lanes = [-9, 0, 9].sort(function () { return Math.random() - 0.5; });
+            var count = 2 + (Math.random() < 0.5 ? 1 : 0);
+            var goodIdx = Math.floor(Math.random() * count);
+            var harsh = 1 + Math.min(state.elapsed / 45, 2.5);
+            for (var k = 0; k < count; k++) {
+                var g = takeGate();
+                if (!g) return;
+                var kind, value;
+                if (k === goodIdx) { kind = 'plus'; value = 5 * (1 + Math.floor(Math.random() * 4)); }
+                else if (state.elapsed > 30 && Math.random() < 0.05) { kind = 'mult'; value = 2; }
+                else { kind = 'minus'; value = Math.max(5, Math.round(5 * (1 + Math.floor(Math.random() * 5)) * harsh / 5) * 5); }
+                setGate(g, value, kind);
+                g.position.set(lanes[k], CORRIDOR.yMin + 2.5 + Math.random() * (CORRIDOR.yMax - CORRIDOR.yMin - 5), -600);
+            }
+        }
+        function saveLast() {
+            if (!state) return;
+            var store = t3dLoadStore();
+            store.last = { level: state.power, distance: Math.round(state.dist), at: new Date().toISOString() };
+            t3dSaveStore(store);
+        }
+        function begin() {
+            for (var k = 0; k < gatePool.length; k++) gatePool[k].visible = false;
+            state = { power: 10, peak: 10, dist: 0, speed: 40, elapsed: 0, nextRowAt: 60, over: false, hb: 0 };
+            target.x = 0; target.y = 8;
+            plane.position.set(0, 8, 0);
+            if (startBtn) startBtn.style.display = 'none';
+            if (restartBtn) restartBtn.style.display = 'none';
+            hud();
+            t3dStatus('Flying - steer through the green gates and away from the red ones.');
+        }
+        function gameOver() {
+            state.over = true;
+            var finalDist = Math.round(state.dist);
+            var store = t3dLoadStore();
+            store.last = { level: 0, distance: finalDist, at: new Date().toISOString() };
+            if (!store.best || finalDist > store.best.distance) {
+                store.best = { level: state.peak, distance: finalDist, at: new Date().toISOString() };
+            }
+            t3dSaveStore(store);
+            if (bestEl && store.best) bestEl.textContent = store.best.level + ' power / ' + store.best.distance + ' m';
+            if (restartBtn) restartBtn.style.display = '';
+            t3dStatus('Run over at ' + finalDist + ' m - power hit zero. Peak power this run: ' + state.peak + '. Click Restart to fly again.');
+            synth.blip(120, 0.5, 0.3, 'square');
+        }
+        if (startBtn) startBtn.addEventListener('click', begin);
+        if (restartBtn) restartBtn.addEventListener('click', begin);
+
+        // Steering - pointer drag on the canvas host + arrow keys / WASD.
+        var host = shell.renderer.domElement;
+        var dragPt = null;
+        host.addEventListener('pointerdown', function (e) {
+            dragPt = { x: e.clientX, y: e.clientY };
+            host.setPointerCapture && host.setPointerCapture(e.pointerId);
+        });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragPt) return;
+            target.x = Math.min(Math.max(target.x + (e.clientX - dragPt.x) * 0.05, -CORRIDOR.x), CORRIDOR.x);
+            target.y = Math.min(Math.max(target.y - (e.clientY - dragPt.y) * 0.04, CORRIDOR.yMin), CORRIDOR.yMax);
+            dragPt = { x: e.clientX, y: e.clientY };
+        });
+        host.addEventListener('pointerup', function () { dragPt = null; });
+        var keys = {};
+        window.addEventListener('keydown', function (e) {
+            var t = e.target || {};
+            if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable) return;
+            var k = e.key.toLowerCase();
+            if (['arrowleft', 'arrowright', 'arrowup', 'arrowdown', 'a', 'd', 'w', 's'].indexOf(k) >= 0) {
+                keys[k] = true;
+                e.preventDefault();
+            }
+        });
+        window.addEventListener('keyup', function (e) { keys[(e.key || '').toLowerCase()] = false; });
+
+        // Chase-cam - replaces the orbit camera; bootstrap calls applyCamera as-is.
+        var camPos = new THREE.Vector3(0, 12, 18);
+        var lookAt = new THREE.Vector3();
+        shell.applyCamera = function () {
+            var wantX = plane.position.x * 0.9;
+            var wantY = plane.position.y + 4.5;
+            var wantZ = plane.position.z + 14;
+            camPos.x += (wantX - camPos.x) * 0.08;
+            camPos.y += (wantY - camPos.y) * 0.08;
+            camPos.z += (wantZ - camPos.z) * 0.08;
+            shell.camera.position.copy(camPos);
+            lookAt.set(plane.position.x, plane.position.y + 1, plane.position.z - 12);
+            shell.camera.lookAt(lookAt);
+        };
+
+        t3dInfo('<h3>How to play</h3><p>Click Start flight, then steer by dragging on the scene or with the arrow keys / WASD. Fly through green gates to add their number to your power level; red gates subtract theirs, and a gold x2 gate doubles it. When power reaches zero the run ends - distance flown is your score.</p><p class="t3d-note">Arcade game with simplified physics, not a flight simulator. Your best run is saved only in this browser. Sound is synthesized on your device and stays off until you turn it on.</p>');
+
+        var waveT = 0;
+        return function animate(dt) {
+            var dts = dt / 1000;
+            prop.rotateY(dt * 0.05);
+            waveT += dts;
+            if (oceanPos && oceanBase) {
+                for (var v = 0; v < oceanPos.count; v++) {
+                    oceanPos.array[v * 3 + 2] = oceanBase[v * 3 + 2] + Math.sin(waveT * 1.4 + v * 0.7) * 1.1;
+                }
+                oceanPos.needsUpdate = true;
+            }
+            var flying = state && !state.over && !document.hidden;
+            // keyboard steering
+            if (flying) {
+                if (keys.arrowleft || keys.a) target.x = Math.max(target.x - 26 * dts, -CORRIDOR.x);
+                if (keys.arrowright || keys.d) target.x = Math.min(target.x + 26 * dts, CORRIDOR.x);
+                if (keys.arrowup || keys.w) target.y = Math.min(target.y + 20 * dts, CORRIDOR.yMax);
+                if (keys.arrowdown || keys.s) target.y = Math.max(target.y - 20 * dts, CORRIDOR.yMin);
+            }
+            // plane easing + bank/pitch (also settles in the idle scene)
+            velX = (target.x - plane.position.x) * 4;
+            velY = (target.y - plane.position.y) * 4;
+            plane.position.x += velX * dts;
+            plane.position.y += velY * dts;
+            if (!state) plane.position.y += Math.sin(waveT * 1.8) * 0.012; // idle bob
+            plane.rotation.z = Math.max(-0.6, Math.min(0.6, -velX * 0.05));
+            plane.rotation.x = Math.max(-0.4, Math.min(0.4, velY * 0.03));
+            if (!flying) return;
+
+            state.elapsed += dts;
+            state.speed = Math.min(90, 40 + Math.floor(state.elapsed / 10) * 2);
+            state.dist += state.speed * dts;
+            state.hb += dt;
+            if (state.hb >= 5000) { state.hb = 0; saveLast(); }
+            if (state.dist >= state.nextRowAt) {
+                spawnRow();
+                state.nextRowAt += Math.max(60, 90 - state.elapsed / 4);
+            }
+            var move = state.speed * dts;
+            var k, g;
+            for (k = 0; k < islands.length; k++) {
+                islands[k].position.z += move;
+                if (islands[k].position.z > 40) {
+                    islands[k].position.z = -600 - Math.random() * 60;
+                    islands[k].position.x = (Math.random() < 0.5 ? -1 : 1) * (40 + Math.random() * 120);
+                }
+            }
+            for (k = 0; k < clouds.length; k++) {
+                clouds[k].position.z += move * 0.7;
+                if (clouds[k].position.z > 40) {
+                    clouds[k].position.z = -600 - Math.random() * 60;
+                    clouds[k].position.x = (Math.random() - 0.5) * 240;
+                }
+            }
+            for (k = 0; k < gatePool.length; k++) {
+                g = gatePool[k];
+                if (!g.visible) continue;
+                var prevZ = g.position.z;
+                g.position.z += move;
+                if (g.userData.pop > 0) {
+                    g.userData.pop = Math.max(0, g.userData.pop - dts * 3);
+                    var sc = 1 + (1 - g.userData.pop) * 0.6;
+                    g.userData.banner.scale.set(sc, sc, 1);
+                    g.userData.banner.material.opacity = g.userData.pop;
+                }
+                if (!g.userData.hit && prevZ < 0 && g.position.z >= 0) {
+                    var dx = plane.position.x - g.position.x;
+                    var dy = plane.position.y - (g.position.y + 1.4);
+                    if (Math.abs(dx) <= 5.2 && Math.abs(dy) <= 2.6) {
+                        g.userData.hit = true;
+                        g.userData.pop = 1;
+                        if (g.userData.kind === 'plus') { state.power += g.userData.value; synth.blip(880, 0.18, 0.3); }
+                        else if (g.userData.kind === 'mult') { state.power *= g.userData.value; synth.blip(1320, 0.25, 0.3); }
+                        else { state.power -= g.userData.value; synth.blip(180, 0.22, 0.3, 'square'); }
+                        state.peak = Math.max(state.peak, state.power);
+                        hud();
+                        if (state.power <= 0) { state.power = 0; hud(); gameOver(); return; }
+                    }
+                }
+                if (g.position.z > 30) g.visible = false;
+            }
+            hud();
+        };
+    }
+    T3D_REGISTRY.flight = {
+        fn: t3dSkyGates,
+        preset: { radius: 30, maxR: 120, minR: 8, phi: 1.1, noInput: true },
+        row: 't3dFlyControls',
+        ready: 'Click Start flight, then drag on the scene or use the arrow keys to steer.',
+        pre: t3dFlyPre,
+    };
+    /* T3D_MODULE:flight END */
+
+
+    // ---- bootstrap ------------------------------------------------------------
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return; // not a 3D scene page
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var mod = T3D_REGISTRY[kind];
+        if (!mod) { for (var kk in T3D_REGISTRY) { kind = kk; mod = T3D_REGISTRY[kk]; break; } }
+        if (!mod) { t3dStatus('No 3D scene module is registered on this page.'); return; }
+        // Show only this scene's control row (emitted pages carry only their own).
+        for (var k in T3D_REGISTRY) {
+            var rowId = T3D_REGISTRY[k].row;
+            var el = rowId ? document.getElementById(rowId) : null;
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        // Modules with a sync pre-engine paint (e.g. the GPU capability report)
+        // run it before the engine loads so the page is useful immediately.
+        if (mod.pre) { try { mod.pre(); } catch (ePre) { /* pre-paint must never block boot */ } }
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var shell = t3dShell(THREE, host, mod.preset);
+                    var animate = mod.fn(shell);
+                    if (mod.ready) t3dStatus(mod.ready);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

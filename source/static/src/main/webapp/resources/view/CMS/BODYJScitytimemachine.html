@@ -1,0 +1,793 @@
+<script>
+    // 3D scene archetype skeleton (city-time-machine) - vendored three.js (ESM, dynamic
+    // import from /vendor/three/, NO CDN), fully client-side. Registry Gate-H
+    // entry: three_3d_scene_vendored. ONE skeleton serves the 3D family; the
+    // scene is dispatched from the slug: voxel (block-building sandbox game),
+    // solar (solar system explorer), blackhole (black hole visualization),
+    // galaxy (spiral galaxy). All geometry is procedural - no model files, no
+    // textures fetched. The space scenes are EDUCATIONAL APPROXIMATIONS, not
+    // physical simulations; scales are compressed and the info panel says so.
+    //
+    // A visible wrapper + "Loading 3D engine..." placeholder renders
+    // synchronously (G16 render-only pass); the ~0.7 MB engine lazy-loads
+    // post-paint via requestIdleCallback and is cached by the browser.
+    // Fullscreen targets the WRAPPER div (controls stay visible).
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'city-time-machine';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) {
+        var s = String(slug || '').toLowerCase();
+        if (/gpu/.test(s)) return 'gputest';
+        if (/city/.test(s)) return 'city';
+        if (/sky|flight|plane|aircraft/.test(s)) return 'flight';
+        if (/voxel|builder|block/.test(s)) return 'voxel';
+        if (/solar|planet/.test(s)) return 'solar';
+        if (/black/.test(s)) return 'blackhole';
+        if (/galaxy/.test(s)) return 'galaxy';
+        return 'solar';
+    }
+
+    // Module registry: each T3D_MODULE block below registers itself here. The
+    // fragment emitter (emit-cms-fragments.mjs) PRUNES non-matching module
+    // blocks per slug, so an emitted page carries exactly one registration.
+    // Bootstrap reads the registry instead of naming modules - pruned modules
+    // simply never register and no dangling identifiers remain.
+    var T3D_REGISTRY = {};
+
+    // ---- vendored ESM loader (ftoLoadPdfLib shape, but a cached import()) ----
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - building still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- tiny procedural synth (Web Audio - NO audio files) ------------------
+    // Category rule: sound is synthesized on-device and stays SILENT until the
+    // reader clicks the page's sound toggle (autoplay-safe). blip() plays a
+    // short envelope; hum() keeps a low filtered drone a module retunes.
+    function t3dSynth() {
+        var ctx = null, master = null, humOsc = null, humOsc2 = null, humGain = null, humFilter = null, on = false;
+        function ensure() {
+            if (ctx) return;
+            var AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) return;
+            ctx = new AC();
+            master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
+        }
+        return {
+            enabled: function () { return on; },
+            toggle: function () {
+                ensure();
+                if (!ctx) return false;
+                on = !on;
+                if (ctx.state === 'suspended') { ctx.resume(); }
+                master.gain.setTargetAtTime(on ? 0.5 : 0, ctx.currentTime, 0.05);
+                return on;
+            },
+            blip: function (freq, dur, gain, type) {
+                if (!ctx || !on) return;
+                var o = ctx.createOscillator(), g = ctx.createGain();
+                o.type = type || 'sine'; o.frequency.value = freq;
+                g.gain.setValueAtTime(gain || 0.25, ctx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + (dur || 0.18));
+                o.connect(g); g.connect(master);
+                o.start(); o.stop(ctx.currentTime + (dur || 0.18) + 0.02);
+            },
+            hum: function (freq, level) {
+                if (!ctx) return;
+                if (!humOsc) {
+                    humOsc = ctx.createOscillator(); humOsc2 = ctx.createOscillator();
+                    humFilter = ctx.createBiquadFilter(); humFilter.type = 'lowpass'; humFilter.frequency.value = 320;
+                    humGain = ctx.createGain(); humGain.gain.value = 0;
+                    humOsc.type = 'triangle'; humOsc2.type = 'triangle';
+                    humOsc.connect(humFilter); humOsc2.connect(humFilter);
+                    humFilter.connect(humGain); humGain.connect(master);
+                    humOsc.start(); humOsc2.start();
+                }
+                humOsc.frequency.setTargetAtTime(freq, ctx.currentTime, 0.4);
+                humOsc2.frequency.setTargetAtTime(freq * 1.007, ctx.currentTime, 0.4);
+                humGain.gain.setTargetAtTime(level, ctx.currentTime, 0.4);
+            },
+        };
+    }
+
+    // ---- shared scene shell: renderer + camera + custom pointer-orbit --------
+    // OrbitControls is NOT vendored (jsm addons import the bare 'three'
+    // specifier); this ~40-line orbit covers drag-rotate + wheel/pinch zoom
+    // with damping and a clamped pitch.
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: opts.power ? 'high-performance' : 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            // critically-damped-ish lerp toward the goal orbit
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        function size() {
+            var w = Math.max(260, host.clientWidth);
+            var h = Math.round(w * 0.62);
+            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fsEl && fsEl.contains(host)) { h = Math.max(240, (window.innerHeight || h) - 150); }
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        host.appendChild(renderer.domElement);
+        renderer.domElement.style.touchAction = 'none';
+        renderer.domElement.style.borderRadius = '6px';
+        // pointer-orbit input (opts.noInput skips it - a module that steers its
+        // own camera, e.g. a chase-cam game or a benchmark, wires its own input)
+        if (!opts.noInput) {
+            var drag = null, pinch = null, moved = 0;
+            host.addEventListener('pointerdown', function (e) {
+                drag = { x: e.clientX, y: e.clientY }; moved = 0;
+                host.setPointerCapture && host.setPointerCapture(e.pointerId);
+            });
+            host.addEventListener('pointermove', function (e) {
+                if (!drag) return;
+                var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+                moved += Math.abs(dx) + Math.abs(dy);
+                drag = { x: e.clientX, y: e.clientY };
+                orbit.goalTheta -= dx * 0.006;
+                orbit.goalPhi = Math.min(Math.max(orbit.goalPhi - dy * 0.005, 0.15), Math.PI - 0.2);
+            });
+            host.addEventListener('pointerup', function (e) {
+                var wasClick = moved < 8;
+                drag = null;
+                if (wasClick && shell.onClick) { shell.onClick(e); }
+            });
+            host.addEventListener('wheel', function (e) {
+                e.preventDefault();
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR);
+            }, { passive: false });
+            host.addEventListener('touchstart', function (e) {
+                if (e.touches.length === 2) {
+                    pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                }
+            }, { passive: true });
+            host.addEventListener('touchmove', function (e) {
+                if (e.touches.length === 2 && pinch) {
+                    var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                    orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                    pinch = d;
+                }
+            }, { passive: true });
+        }
+        window.addEventListener('resize', size);
+        document.addEventListener('fullscreenchange', size);
+        document.addEventListener('webkitfullscreenchange', size);
+        size();
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, size: size, onClick: null,
+            ndc: function (e) {
+                var r = renderer.domElement.getBoundingClientRect();
+                return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            },
+        };
+        return shell;
+    }
+
+
+
+
+
+
+
+    /* T3D_MODULE:city START */
+    // ================= CITY TIME MACHINE (games cluster) ====================
+    // One procedural city block, six eras (1945-2055) driven by ONE config
+    // table. Moving the timeline morphs the block in front of the viewer:
+    // buildings shrink/regrow with a per-lot stagger, vehicles/pedestrians/
+    // street props swap, sky/fog/light crossfade. Per-lot seeded randomness is
+    // ERA-INDEPENDENT for footprint/height rank, so a lot's 1945 shop
+    // plausibly grows into its 1985 office. All geometry is primitives +
+    // runtime CanvasTextures; every sign name is INVENTED generic wording
+    // (trademark rule) and 2055 is openly speculative fiction.
+    var T3D_CITY_YEARS = ['1945', '1965', '1985', '2005', '2025', '2055'];
+    var T3D_ERAS = [
+        {
+            sky: 0xb9cfc4, fog: 260, light: 0xffe9c4, lightInt: 1.35,
+            bld: { floors: [2, 4], palette: ['#8d6e63', '#a1887f', '#9e7b5f', '#7b5e57'], roof: 'pitched', lit: 0.10, win: '#4a4136', litWin: '#ffe082' },
+            veh: { kinds: ['classic'], colors: [0x263238, 0x4e342e, 0x546e7a], count: 4, speed: 5, alt: 0 },
+            signs: ['GENERAL STORE', 'DINER', 'BARBER SHOP', 'HARDWARE', 'PHARMACY', 'TAILOR'],
+            signStyle: { bg: '#4e342e', fg: '#f5e9d0', font: 'Georgia, serif', glow: false, holo: false },
+            peds: { colors: [0x37474f, 0x5d4037, 0x455a64, 0x6d4c41], count: 6 },
+            prop: { pole: 0x3e2723, head: 0xffd54f, emissive: 0.5 },
+            hum: { f: 42, l: 0.045 },
+        },
+        {
+            sky: 0xa8d4e6, fog: 300, light: 0xfff3d9, lightInt: 1.5,
+            bld: { floors: [2, 6], palette: ['#d7ccc8', '#ffe0b2', '#b2dfdb', '#ef9a9a'], roof: 'flat', lit: 0.15, win: '#4f5a63', litWin: '#ffe082' },
+            veh: { kinds: ['fins'], colors: [0xd32f2f, 0x00897b, 0xf9a825, 0x5c6bc0], count: 5, speed: 7, alt: 0 },
+            signs: ['MOTOR LODGE', 'SODA FOUNTAIN', 'RECORD SHOP', 'LAUNDROMAT', 'FIVE AND DIME', 'BOWL-O-RAMA'],
+            signStyle: { bg: '#00695c', fg: '#ffe082', font: 'sans-serif', glow: false, holo: false },
+            peds: { colors: [0x00838f, 0xad1457, 0x6a1b9a, 0x37474f], count: 7 },
+            prop: { pole: 0x546e7a, head: 0xfff3e0, emissive: 0.4 },
+            hum: { f: 52, l: 0.05 },
+        },
+        {
+            sky: 0x9fb8d0, fog: 320, light: 0xf4e8ff, lightInt: 1.4,
+            bld: { floors: [3, 9], palette: ['#90a4ae', '#b0bec5', '#8d9ea7', '#a1887f'], roof: 'flat', lit: 0.35, win: '#37474f', litWin: '#fff59d' },
+            veh: { kinds: ['boxy'], colors: [0x455a64, 0x8d6e63, 0xc62828, 0xf5f5f5], count: 6, speed: 8, alt: 0 },
+            signs: ['VIDEO ARCADE', 'NEON NIGHTS', 'ELECTRO MART', 'PIZZA PALACE', 'CASSETTE CITY', 'FITNESS CLUB'],
+            signStyle: { bg: '#1a1a2e', fg: '#ff4081', font: 'sans-serif', glow: true, holo: false },
+            peds: { colors: [0xef6c00, 0x7b1fa2, 0x0288d1, 0x212121], count: 8 },
+            prop: { pole: 0x616161, head: 0xffab40, emissive: 0.7 },
+            hum: { f: 60, l: 0.06 },
+        },
+        {
+            sky: 0x9ecff2, fog: 360, light: 0xffffff, lightInt: 1.6,
+            bld: { floors: [4, 12], palette: ['#78909c', '#90caf9', '#b0bec5', '#81d4fa'], roof: 'flat', lit: 0.45, win: '#26323a', litWin: '#fff59d' },
+            veh: { kinds: ['modern'], colors: [0xcfd8dc, 0x263238, 0x1565c0, 0x757575], count: 6, speed: 9, alt: 0 },
+            signs: ['MOBILE WORLD', 'COFFEE CENTRAL', 'NET CAFE', 'SUSHI EXPRESS', 'CINEPLEX', 'BOOK BARN'],
+            signStyle: { bg: '#0d47a1', fg: '#ffffff', font: 'sans-serif', glow: false, holo: false },
+            peds: { colors: [0x37474f, 0x8d6e63, 0x1976d2, 0x616161], count: 8 },
+            prop: { pole: 0x78909c, head: 0xf5f5f5, emissive: 0.6 },
+            hum: { f: 68, l: 0.065 },
+        },
+        {
+            sky: 0x8fd0f5, fog: 400, light: 0xffffff, lightInt: 1.7,
+            bld: { floors: [5, 16], palette: ['#546e7a', '#80deea', '#90a4ae', '#4dd0e1'], roof: 'flat', lit: 0.5, win: '#22313a', litWin: '#e0f7fa' },
+            veh: { kinds: ['ev', 'modern'], colors: [0xffffff, 0x212121, 0x00acc1, 0x9e9e9e], count: 6, speed: 9, alt: 0 },
+            signs: ['CHARGE HUB', 'NOVA MART', 'GREEN BOWL', 'STAR DINER', 'CLOUD GYM', 'PIXEL STUDIO'],
+            signStyle: { bg: '#004d40', fg: '#a7ffeb', font: 'sans-serif', glow: true, holo: false },
+            peds: { colors: [0x263238, 0x00897b, 0x5e35b1, 0x9e9e9e], count: 8 },
+            prop: { pole: 0x90a4ae, head: 0xffffff, emissive: 0.7 },
+            hum: { f: 74, l: 0.065 },
+        },
+        {
+            sky: 0x7fb7e8, fog: 460, light: 0xeef7ff, lightInt: 1.8,
+            bld: { floors: [8, 24], palette: ['#37474f', '#455a64', '#4a6572', '#334955'], roof: 'flat', lit: 0.65, win: '#0e2b36', litWin: '#84ffff' },
+            veh: { kinds: ['hover'], colors: [0x80deea, 0xe1f5fe, 0xb39ddb, 0x80cbc4], count: 5, speed: 11, alt: 6 },
+            signs: ['SKY TRANSIT', 'AERO CAFE', 'QUANTUM MART', 'HOLO ARCADE', 'VERTICAL FARM', 'LUNA LOUNGE'],
+            signStyle: { bg: '#012a3a', fg: '#80ffea', font: 'sans-serif', glow: true, holo: true },
+            peds: { colors: [0x80cbc4, 0xb0bec5, 0x9fa8da, 0x4db6ac], count: 6 },
+            prop: { pole: 0x4a6572, head: 0x80ffea, emissive: 0.9 },
+            hum: { f: 88, l: 0.055 },
+        },
+    ];
+    var T3D_VEH_SHAPES = {
+        classic: { len: 4.2, h: 1.1, cab: 0.55, wheels: true },
+        fins: { len: 5.0, h: 0.9, cab: 0.6, wheels: true },
+        boxy: { len: 4.4, h: 1.2, cab: 0.8, wheels: true },
+        modern: { len: 4.4, h: 1.15, cab: 0.85, wheels: true },
+        ev: { len: 4.3, h: 1.2, cab: 1.0, wheels: true },
+        hover: { len: 4.6, h: 0.9, cab: 0.7, wheels: false, glow: true },
+    };
+    function t3dCityRng(seed) {
+        var a = seed >>> 0;
+        return function () {
+            a |= 0; a = a + 0x6D2B79F5 | 0;
+            var t = Math.imul(a ^ a >>> 15, 1 | a);
+            t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+            return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        };
+    }
+    function t3dCityPre() {
+        var store = t3dLoadStore();
+        var idx = (typeof store.era === 'number' && store.era >= 0 && store.era <= 5) ? store.era : 4;
+        var slider = document.getElementById('t3dCityTimeline');
+        var year = document.getElementById('t3dCityYear');
+        if (slider) slider.value = String(idx);
+        if (year) year.textContent = T3D_CITY_YEARS[idx];
+    }
+    function t3dCity(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        var synth = t3dSynth();
+        var low = shell.low;
+        scene.fog = new THREE.Fog(0x8fd0f5, 80, 400);
+        var ambient = new THREE.AmbientLight(0xffffff, 0.7);
+        var sun = new THREE.DirectionalLight(0xffffff, 1.6);
+        sun.position.set(50, 90, 30);
+        scene.add(ambient); scene.add(sun);
+
+        // ---- static ground + roads (era-independent) ----
+        var ground = new THREE.Mesh(new THREE.BoxGeometry(120, 0.1, 120), new THREE.MeshLambertMaterial({ color: 0x7d8a7d }));
+        ground.position.y = -0.05;
+        scene.add(ground);
+        var roadMat = new THREE.MeshLambertMaterial({ color: 0x37474f });
+        var roadX = new THREE.Mesh(new THREE.BoxGeometry(120, 0.06, 8), roadMat);
+        roadX.position.y = 0.03;
+        var roadZ = new THREE.Mesh(new THREE.BoxGeometry(8, 0.06, 120), roadMat);
+        roadZ.position.y = 0.03;
+        scene.add(roadX); scene.add(roadZ);
+        var walkMat = new THREE.MeshLambertMaterial({ color: 0xb0afa5 });
+        var s;
+        for (s = -1; s <= 1; s += 2) {
+            var w1 = new THREE.Mesh(new THREE.BoxGeometry(120, 0.12, 3), walkMat);
+            w1.position.set(0, 0.06, s * 5.5);
+            var w2 = new THREE.Mesh(new THREE.BoxGeometry(3, 0.12, 120), walkMat);
+            w2.position.set(s * 5.5, 0.06, 0);
+            scene.add(w1); scene.add(w2);
+        }
+        var dashMat = new THREE.MeshBasicMaterial({ color: 0xeceff1 });
+        for (s = -54; s <= 54; s += 9) {
+            if (Math.abs(s) < 6) continue;
+            var d1 = new THREE.Mesh(new THREE.BoxGeometry(3, 0.02, 0.3), dashMat);
+            d1.position.set(s, 0.07, 0);
+            var d2 = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.02, 3), dashMat);
+            d2.position.set(0, 0.07, s);
+            scene.add(d1); scene.add(d2);
+        }
+
+        // ---- cached era textures/materials ----
+        var wallMats = {}; // eraIdx|paletteIdx -> material
+        function wallMat(eraIdx, pi) {
+            var key = eraIdx + '|' + pi;
+            if (wallMats[key]) return wallMats[key];
+            var era = T3D_ERAS[eraIdx];
+            var c = document.createElement('canvas');
+            c.width = 128; c.height = 160;
+            var x = c.getContext('2d');
+            x.fillStyle = era.bld.palette[pi];
+            x.fillRect(0, 0, 128, 160);
+            var rng = t3dCityRng(eraIdx * 100 + pi + 7);
+            for (var r = 0; r < 8; r++) {
+                for (var col = 0; col < 6; col++) {
+                    x.fillStyle = rng() < era.bld.lit ? era.bld.litWin : era.bld.win;
+                    x.fillRect(8 + col * 20, 10 + r * 19, 12, 12);
+                }
+            }
+            var tex = new THREE.CanvasTexture(c);
+            wallMats[key] = new THREE.MeshLambertMaterial({ map: tex });
+            return wallMats[key];
+        }
+        var signTexes = {}; // eraIdx|text -> texture
+        function signTex(eraIdx, text) {
+            var key = eraIdx + '|' + text;
+            if (signTexes[key]) return signTexes[key];
+            var st = T3D_ERAS[eraIdx].signStyle;
+            var c = document.createElement('canvas');
+            c.width = 384; c.height = 96;
+            var x = c.getContext('2d');
+            x.fillStyle = st.bg;
+            x.fillRect(0, 0, 384, 96);
+            if (st.glow) {
+                x.shadowColor = st.fg;
+                x.shadowBlur = 16;
+            }
+            x.strokeStyle = st.fg;
+            x.lineWidth = 3;
+            x.strokeRect(5, 5, 374, 86);
+            x.fillStyle = st.fg;
+            x.font = '700 40px ' + st.font;
+            x.textAlign = 'center';
+            x.textBaseline = 'middle';
+            x.fillText(text, 192, 52);
+            signTexes[key] = new THREE.CanvasTexture(c);
+            return signTexes[key];
+        }
+
+        // ---- lots (16, static centers + era-independent seeds) ----
+        var lots = [];
+        var coords = [-30, -13, 13, 30];
+        var li = 0, cx, cz;
+        for (var ix = 0; ix < 4; ix++) {
+            for (var iz = 0; iz < 4; iz++) {
+                cx = coords[ix]; cz = coords[iz];
+                if (Math.abs(cx) === 13 || Math.abs(cz) === 13 || true) {
+                    lots.push({ x: cx, z: cz, seed: 1000 + li * 97, mesh: null, scaleY: 1 });
+                    li++;
+                }
+            }
+        }
+        function buildLot(lot, eraIdx) {
+            var era = T3D_ERAS[eraIdx];
+            var base = t3dCityRng(lot.seed);
+            var rank = base();
+            var foot = 8 + base() * 4;
+            var er = t3dCityRng(lot.seed * 31 + eraIdx * 7 + 1);
+            var floors = Math.round(era.bld.floors[0] + rank * (era.bld.floors[1] - era.bld.floors[0]));
+            var h = Math.max(3, floors * 1.9);
+            var g = new THREE.Group();
+            var mat = wallMat(eraIdx, Math.floor(er() * era.bld.palette.length));
+            var bld = new THREE.Mesh(new THREE.BoxGeometry(foot, h, foot), mat);
+            bld.position.y = h / 2;
+            g.add(bld);
+            if (era.bld.roof === 'pitched') {
+                var roof = new THREE.Mesh(new THREE.ConeGeometry(foot * 0.72, 1.8, 4), new THREE.MeshLambertMaterial({ color: 0x5d4037 }));
+                roof.rotation.y = Math.PI / 4;
+                roof.position.y = h + 0.9;
+                g.add(roof);
+            } else if (floors >= 10 && !low) {
+                var tower = new THREE.Mesh(new THREE.BoxGeometry(foot * 0.65, h * 0.45, foot * 0.65), mat);
+                tower.position.y = h + h * 0.225;
+                g.add(tower);
+            }
+            // storefront sign facing the nearer road
+            var text = era.signs[Math.floor(er() * era.signs.length)];
+            var sign = new THREE.Mesh(
+                new THREE.PlaneGeometry(6.4, 1.6),
+                new THREE.MeshBasicMaterial({ map: signTex(eraIdx, text), transparent: true, side: THREE.DoubleSide })
+            );
+            if (era.signStyle.holo) {
+                sign.position.set(0, h + 2.6, 0);
+                sign.userData.holo = true;
+            } else if (Math.abs(lot.x) <= Math.abs(lot.z)) {
+                sign.position.set(0, 2.4, -Math.sign(lot.z) * (foot / 2 + 0.08));
+                sign.rotation.y = lot.z > 0 ? Math.PI : 0;
+            } else {
+                sign.position.set(-Math.sign(lot.x) * (foot / 2 + 0.08), 2.4, 0);
+                sign.rotation.y = lot.x > 0 ? -Math.PI / 2 : Math.PI / 2;
+            }
+            sign.userData.neon = era.signStyle.glow;
+            g.add(sign);
+            g.userData.sign = sign;
+            g.position.set(lot.x, 0, lot.z);
+            return g;
+        }
+
+        // ---- vehicles / pedestrians / props (rebuilt per era) ----
+        var vehicles = [], peds = [], props = [];
+        function clearList(list) {
+            for (var k = 0; k < list.length; k++) scene.remove(list[k].obj || list[k]);
+            list.length = 0;
+        }
+        function buildVehicles(eraIdx) {
+            clearList(vehicles);
+            var era = T3D_ERAS[eraIdx];
+            var count = low ? Math.ceil(era.veh.count / 2) : era.veh.count;
+            var rng = t3dCityRng(eraIdx * 977 + 5);
+            for (var k = 0; k < count; k++) {
+                var shape = T3D_VEH_SHAPES[era.veh.kinds[Math.floor(rng() * era.veh.kinds.length)]];
+                var color = era.veh.colors[Math.floor(rng() * era.veh.colors.length)];
+                var g = new THREE.Group();
+                var mat = new THREE.MeshLambertMaterial({ color: color });
+                var body = new THREE.Mesh(new THREE.BoxGeometry(1.8, shape.h, shape.len), mat);
+                body.position.y = shape.wheels ? 0.85 : 0.6;
+                g.add(body);
+                var cab = new THREE.Mesh(new THREE.BoxGeometry(1.6, shape.cab, shape.len * 0.45), mat);
+                cab.position.set(0, body.position.y + shape.h / 2 + shape.cab / 2, shape.len * 0.02);
+                g.add(cab);
+                if (shape.wheels) {
+                    var wg = new THREE.CylinderGeometry(0.38, 0.38, 0.3, 10);
+                    var wm = new THREE.MeshLambertMaterial({ color: 0x212121 });
+                    for (var wx = -1; wx <= 1; wx += 2) {
+                        for (var wz = -1; wz <= 1; wz += 2) {
+                            var wheel = new THREE.Mesh(wg, wm);
+                            wheel.rotation.z = Math.PI / 2;
+                            wheel.position.set(wx * 0.95, 0.38, wz * shape.len * 0.32);
+                            g.add(wheel);
+                        }
+                    }
+                }
+                if (shape.glow) {
+                    var ring = new THREE.Mesh(new THREE.TorusGeometry(1.1, 0.12, 8, 20), new THREE.MeshBasicMaterial({ color: 0x84ffff, transparent: true, opacity: 0.8 }));
+                    ring.rotation.x = Math.PI / 2;
+                    ring.position.y = 0.1;
+                    g.add(ring);
+                }
+                var axis = rng() < 0.5 ? 'x' : 'z';
+                var dir = rng() < 0.5 ? 1 : -1;
+                var v = {
+                    obj: g, axis: axis, dir: dir,
+                    lane: dir * 1.9,
+                    speed: era.veh.speed * (0.8 + rng() * 0.5),
+                    alt: era.veh.alt, phase: rng() * 6,
+                    pos: -55 + rng() * 110,
+                };
+                scene.add(g);
+                vehicles.push(v);
+            }
+        }
+        function buildPeds(eraIdx) {
+            clearList(peds);
+            var era = T3D_ERAS[eraIdx];
+            var count = low ? Math.ceil(era.peds.count / 2) : era.peds.count;
+            var rng = t3dCityRng(eraIdx * 613 + 11);
+            for (var k = 0; k < count; k++) {
+                var g = new THREE.Group();
+                var color = era.peds.colors[Math.floor(rng() * era.peds.colors.length)];
+                var bodyP = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.28, 1.1, 8), new THREE.MeshLambertMaterial({ color: color }));
+                bodyP.position.y = 0.68;
+                var head = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 6), new THREE.MeshLambertMaterial({ color: 0xd7b899 }));
+                head.position.y = 1.45;
+                g.add(bodyP); g.add(head);
+                var axis = rng() < 0.5 ? 'x' : 'z';
+                var p = {
+                    obj: g, axis: axis, dir: rng() < 0.5 ? 1 : -1,
+                    line: (rng() < 0.5 ? -1 : 1) * 5.5,
+                    speed: 1.2 + rng() * 0.9, phase: rng() * 6,
+                    pos: -50 + rng() * 100,
+                };
+                scene.add(g);
+                peds.push(p);
+            }
+        }
+        function buildProps(eraIdx) {
+            clearList(props);
+            var era = T3D_ERAS[eraIdx];
+            var spots = [];
+            var offs = [-34, -20, 20, 34];
+            for (var o = 0; o < offs.length; o++) {
+                spots.push([offs[o], 7]); spots.push([offs[o], -7]);
+                spots.push([7, offs[o]]); spots.push([-7, offs[o]]);
+            }
+            var count = low ? 8 : spots.length;
+            for (var k = 0; k < count; k++) {
+                var g = new THREE.Group();
+                var pole = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.12, 3.4, 6), new THREE.MeshLambertMaterial({ color: era.prop.pole }));
+                pole.position.y = 1.7;
+                var head = new THREE.Mesh(new THREE.SphereGeometry(0.28, 8, 6), new THREE.MeshBasicMaterial({ color: era.prop.head, transparent: true, opacity: 0.5 + era.prop.emissive * 0.5 }));
+                head.position.y = 3.5;
+                g.add(pole); g.add(head);
+                g.position.set(spots[k][0], 0, spots[k][1]);
+                scene.add(g);
+                props.push(g);
+            }
+        }
+
+        // ---- era state + morph transition ----
+        var eraIdx = 4;
+        var skyFrom = new THREE.Color(0x8fd0f5), skyTo = new THREE.Color(0x8fd0f5), skyCur = new THREE.Color(0x8fd0f5);
+        var lightFrom = new THREE.Color(0xffffff), lightTo = new THREE.Color(0xffffff);
+        var intFrom = 1.7, intTo = 1.7, fogFrom = 400, fogTo = 400;
+        var trans = null; // {t, total}
+        var yearEl = document.getElementById('t3dCityYear');
+        var slider = document.getElementById('t3dCityTimeline');
+        function applyAtmosLerp(p) {
+            skyCur.copy(skyFrom).lerp(skyTo, p);
+            shell.renderer.setClearColor(skyCur, 1);
+            scene.fog.color.copy(skyCur);
+            scene.fog.far = fogFrom + (fogTo - fogFrom) * p;
+            sun.color.copy(lightFrom).lerp(lightTo, p);
+            sun.intensity = intFrom + (intTo - intFrom) * p;
+        }
+        function finishTransition() {
+            if (!trans) return;
+            for (var k = 0; k < lots.length; k++) {
+                var lot = lots[k];
+                if (lot.mesh) scene.remove(lot.mesh);
+                lot.mesh = buildLot(lot, eraIdx);
+                lot.mesh.scale.y = 1;
+                scene.add(lot.mesh);
+            }
+            applyAtmosLerp(1);
+            trans = null;
+        }
+        function setEra(idx, instant) {
+            idx = Math.min(5, Math.max(0, idx | 0));
+            if (trans) finishTransition();
+            if (idx === eraIdx && !instant) return;
+            var era = T3D_ERAS[idx];
+            eraIdx = idx;
+            if (slider) slider.value = String(idx);
+            if (yearEl) yearEl.textContent = T3D_CITY_YEARS[idx];
+            skyFrom.copy(skyCur); skyTo.set(era.sky);
+            lightFrom.copy(sun.color); lightTo.set(era.light);
+            intFrom = sun.intensity; intTo = era.lightInt;
+            fogFrom = scene.fog.far; fogTo = era.fog;
+            buildVehicles(idx);
+            buildPeds(idx);
+            buildProps(idx);
+            synth.hum(era.hum.f, era.hum.l);
+            synth.blip(520, 0.12, 0.18);
+            try {
+                var store = t3dLoadStore();
+                store.era = idx;
+                store.visited = store.visited || [];
+                if (store.visited.indexOf(idx) < 0) store.visited.push(idx);
+                t3dSaveStore(store);
+            } catch (e) { }
+            if (instant) {
+                for (var k = 0; k < lots.length; k++) {
+                    var lot = lots[k];
+                    if (lot.mesh) scene.remove(lot.mesh);
+                    lot.mesh = buildLot(lot, idx);
+                    scene.add(lot.mesh);
+                }
+                applyAtmosLerp(1);
+                return;
+            }
+            trans = { t: 0, total: lots.length * 80 + 550 };
+            for (var m = 0; m < lots.length; m++) {
+                lots[m].swapAt = m * 80;
+                lots[m].swapped = false;
+            }
+            t3dStatus('Traveling to ' + T3D_CITY_YEARS[idx] + '...');
+        }
+
+        // controls
+        if (slider) slider.addEventListener('input', function () { setEra(parseInt(slider.value, 10)); });
+        for (var lb = 0; lb <= 5; lb++) {
+            (function (n) {
+                var el = document.getElementById('t3dCityEra-' + n);
+                if (el) el.addEventListener('click', function () { setEra(n); });
+            })(lb);
+        }
+        var soundBtn = document.getElementById('t3dCitySound');
+        if (soundBtn) soundBtn.addEventListener('click', function () {
+            var on = synth.toggle();
+            soundBtn.textContent = 'Sound: ' + (on ? 'on' : 'off');
+            if (on) synth.hum(T3D_ERAS[eraIdx].hum.f, T3D_ERAS[eraIdx].hum.l);
+        });
+
+        t3dInfo('<h3>One block, six eras</h3><p>Drag to orbit the block, scroll or pinch to zoom, and move the timeline to watch the same street corner change from 1945 to 2055 - buildings, vehicles, storefront signs, street lights, and the people on the sidewalk all follow the era. Each lot keeps its own footprint through time, so the small 1945 shop grows into the same corner\'s office tower.</p><p class="t3d-note">A stylized, artistic depiction of generic architectural eras - not a historical record of any real city, and 2055 is speculative fiction. Every business name on the signs is invented. Sound is synthesized in your browser and stays off until you turn it on.</p>');
+
+        // initial build - restore the reader's last era
+        var store0 = t3dLoadStore();
+        var startIdx = (typeof store0.era === 'number' && store0.era >= 0 && store0.era <= 5) ? store0.era : 4;
+        setEra(startIdx, true);
+
+        var wave = 0;
+        return function animate(dt) {
+            var dts = dt / 1000;
+            wave += dts;
+            if (trans) {
+                trans.t += dt;
+                applyAtmosLerp(Math.min(1, trans.t / trans.total));
+                var allDone = true;
+                for (var k = 0; k < lots.length; k++) {
+                    var lot = lots[k];
+                    var lt = trans.t - lot.swapAt;
+                    if (lt < 0) { allDone = false; continue; }
+                    if (!lot.swapped) {
+                        if (lt < 250) {
+                            allDone = false;
+                            if (lot.mesh) lot.mesh.scale.y = Math.max(0.02, 1 - lt / 250);
+                        } else {
+                            if (lot.mesh) scene.remove(lot.mesh);
+                            lot.mesh = buildLot(lot, eraIdx);
+                            lot.mesh.scale.y = 0.02;
+                            scene.add(lot.mesh);
+                            lot.swapped = true;
+                            allDone = false;
+                        }
+                    } else {
+                        var gt = (lt - 250) / 300;
+                        if (gt < 1) { allDone = false; lot.mesh.scale.y = Math.max(0.02, Math.min(1, gt)); }
+                        else lot.mesh.scale.y = 1;
+                    }
+                }
+                if (allDone && trans.t >= trans.total) {
+                    trans = null;
+                    t3dStatus('Now in ' + T3D_CITY_YEARS[eraIdx] + '. Drag to orbit, scroll to zoom, click an era label to jump.');
+                }
+            }
+            var k2, v, p;
+            for (k2 = 0; k2 < vehicles.length; k2++) {
+                v = vehicles[k2];
+                v.pos += v.speed * v.dir * dts;
+                if (v.pos > 58) v.pos = -58;
+                if (v.pos < -58) v.pos = 58;
+                var y = v.alt ? v.alt + Math.sin(wave * 2 + v.phase) * 0.5 : 0;
+                if (v.axis === 'x') {
+                    v.obj.position.set(v.pos, y, v.lane);
+                    v.obj.rotation.y = v.dir > 0 ? Math.PI / 2 : -Math.PI / 2;
+                } else {
+                    v.obj.position.set(-v.lane, y, v.pos);
+                    v.obj.rotation.y = v.dir > 0 ? 0 : Math.PI;
+                }
+            }
+            for (k2 = 0; k2 < peds.length; k2++) {
+                p = peds[k2];
+                p.pos += p.speed * p.dir * dts;
+                if (p.pos > 52) p.pos = -52;
+                if (p.pos < -52) p.pos = 52;
+                var bob = Math.abs(Math.sin(wave * 6 + p.phase)) * 0.06;
+                if (p.axis === 'x') p.obj.position.set(p.pos, bob, p.line);
+                else p.obj.position.set(p.line, bob, p.pos);
+                p.obj.rotation.y = p.axis === 'x' ? (p.dir > 0 ? Math.PI / 2 : -Math.PI / 2) : (p.dir > 0 ? 0 : Math.PI);
+            }
+            // sign life: neon flicker + holo bob
+            for (k2 = 0; k2 < lots.length; k2++) {
+                var sg = lots[k2].mesh && lots[k2].mesh.userData.sign;
+                if (!sg) continue;
+                if (sg.userData.holo) {
+                    sg.position.y += Math.sin(wave * 1.6 + k2) * 0.004;
+                    sg.rotation.y += dts * 0.4;
+                    sg.material.opacity = 0.75 + Math.sin(wave * 3 + k2) * 0.15;
+                } else if (sg.userData.neon) {
+                    sg.material.opacity = 0.92 + Math.sin(wave * 11 + k2 * 2.7) * 0.08;
+                }
+            }
+        };
+    }
+    T3D_REGISTRY.city = {
+        fn: t3dCity,
+        preset: { radius: 72, maxR: 170, minR: 9, phi: 1.05, targetY: 6 },
+        row: 't3dCityControls',
+        ready: 'Drag to orbit the block, scroll to zoom, and move the timeline to change the era.',
+        pre: t3dCityPre,
+    };
+    /* T3D_MODULE:city END */
+
+    // ---- bootstrap ------------------------------------------------------------
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return; // not a 3D scene page
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var mod = T3D_REGISTRY[kind];
+        if (!mod) { for (var kk in T3D_REGISTRY) { kind = kk; mod = T3D_REGISTRY[kk]; break; } }
+        if (!mod) { t3dStatus('No 3D scene module is registered on this page.'); return; }
+        // Show only this scene's control row (emitted pages carry only their own).
+        for (var k in T3D_REGISTRY) {
+            var rowId = T3D_REGISTRY[k].row;
+            var el = rowId ? document.getElementById(rowId) : null;
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        // Modules with a sync pre-engine paint (e.g. the GPU capability report)
+        // run it before the engine loads so the page is useful immediately.
+        if (mod.pre) { try { mod.pre(); } catch (ePre) { /* pre-paint must never block boot */ } }
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var shell = t3dShell(THREE, host, mod.preset);
+                    var animate = mod.fn(shell);
+                    if (mod.ready) t3dStatus(mod.ready);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
