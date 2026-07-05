@@ -71,6 +71,26 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/crop-image-online-free.html',
   // Cycle 20260705 create_new_guide_page - PT locale variant of "pdf to text online i love pdf" (locale-drain; EN canonical at bare /guides/pdf-to-text-online-i-love-pdf.html; 4 locales es/vi/id/de remain).
   '/guides/pt/pdf-to-text-online-i-love-pdf.html',
+  // Cycle 20260705 grant-apply - non-EN locale variants (es/vi/id/de/pt) for this cycle's 4 new EN guides (new_guide_locale_completeness gate). status locale_pending_review.
+  '/guides/es/pdf-to-text-online-i-love-pdf.html',
+  '/guides/vi/pdf-to-text-online-i-love-pdf.html',
+  '/guides/id/pdf-to-text-online-i-love-pdf.html',
+  '/guides/de/pdf-to-text-online-i-love-pdf.html',
+  '/guides/pt/video-gif-converter-step-by-step.html',
+  '/guides/es/video-gif-converter-step-by-step.html',
+  '/guides/vi/video-gif-converter-step-by-step.html',
+  '/guides/id/video-gif-converter-step-by-step.html',
+  '/guides/de/video-gif-converter-step-by-step.html',
+  '/guides/pt/video-gif-converter-vs-alternatives.html',
+  '/guides/es/video-gif-converter-vs-alternatives.html',
+  '/guides/vi/video-gif-converter-vs-alternatives.html',
+  '/guides/id/video-gif-converter-vs-alternatives.html',
+  '/guides/de/video-gif-converter-vs-alternatives.html',
+  '/guides/pt/video-gif-converter-when.html',
+  '/guides/es/video-gif-converter-when.html',
+  '/guides/vi/video-gif-converter-when.html',
+  '/guides/id/video-gif-converter-when.html',
+  '/guides/de/video-gif-converter-when.html',
   // Cycle 20260524-10 create_new_guide_page - "i love zip" bare-query landing (GSC 182 imp / 2 clicks / pos 6.12 / opportunity_score 29.41).
   // Implementing tool: /zip-file.html. Cluster: zip. BODYTITLE is reader-task framed (not brand-mimicking).
   '/guides/en/i-love-zip.html',
@@ -1527,6 +1547,26 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/crop-image-online-free.html',
   // Cycle 20260705 create_new_guide_page - PT locale variant of "pdf to text online i love pdf" (locale-drain; companion to /pdf-to-text.html).
   '/guides/pt/pdf-to-text-online-i-love-pdf.html',
+  // Cycle 20260705 grant-apply - non-EN locale variants (es/vi/id/de/pt) for this cycle's 4 new EN guides (new_guide_locale_completeness gate). status locale_pending_review.
+  '/guides/es/pdf-to-text-online-i-love-pdf.html',
+  '/guides/vi/pdf-to-text-online-i-love-pdf.html',
+  '/guides/id/pdf-to-text-online-i-love-pdf.html',
+  '/guides/de/pdf-to-text-online-i-love-pdf.html',
+  '/guides/pt/video-gif-converter-step-by-step.html',
+  '/guides/es/video-gif-converter-step-by-step.html',
+  '/guides/vi/video-gif-converter-step-by-step.html',
+  '/guides/id/video-gif-converter-step-by-step.html',
+  '/guides/de/video-gif-converter-step-by-step.html',
+  '/guides/pt/video-gif-converter-vs-alternatives.html',
+  '/guides/es/video-gif-converter-vs-alternatives.html',
+  '/guides/vi/video-gif-converter-vs-alternatives.html',
+  '/guides/id/video-gif-converter-vs-alternatives.html',
+  '/guides/de/video-gif-converter-vs-alternatives.html',
+  '/guides/pt/video-gif-converter-when.html',
+  '/guides/es/video-gif-converter-when.html',
+  '/guides/vi/video-gif-converter-when.html',
+  '/guides/id/video-gif-converter-when.html',
+  '/guides/de/video-gif-converter-when.html',
   // Cycle 20260524-10 create_new_guide_page - "i love zip" bare-query landing (companion to /zip-file.html).
   '/guides/en/i-love-zip.html',
   // Cycle 78 P78.A - "QR code error correction and scan failures" Lane-D guide (companion to /qr-code-generator.html).
@@ -2488,6 +2528,7 @@ export const ALIAS_ROUTES = {
   '/galaxy.html': '/space-3d/galaxy.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
+  '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3708,6 +3749,31 @@ export const JSP_BY_ROUTE = {
   '/guides/video-gif-converter-when.html': 'guide/video-gif-converter-when.jsp',
   '/guides/video-gif-converter-step-by-step.html': 'guide/video-gif-converter-step-by-step.jsp',
   '/guides/video-gif-converter-vs-alternatives.html': 'guide/video-gif-converter-vs-alternatives.jsp',
+  // Cycle 20260705 grant-apply - non-EN locale variants for the 4 new EN guides (new_guide_locale_completeness). status locale_pending_review.
+  '/guides/es/pdf-to-text-online-i-love-pdf.html': 'guide/es/pdf-to-text-online-i-love-pdf.jsp',
+  '/guides/vi/pdf-to-text-online-i-love-pdf.html': 'guide/vi/pdf-to-text-online-i-love-pdf.jsp',
+  '/guides/id/pdf-to-text-online-i-love-pdf.html': 'guide/id/pdf-to-text-online-i-love-pdf.jsp',
+  '/guides/de/pdf-to-text-online-i-love-pdf.html': 'guide/de/pdf-to-text-online-i-love-pdf.jsp',
+  '/guides/pt/video-gif-converter-step-by-step.html': 'guide/pt/video-gif-converter-step-by-step.jsp',
+  '/guides/es/video-gif-converter-step-by-step.html': 'guide/es/video-gif-converter-step-by-step.jsp',
+  '/guides/vi/video-gif-converter-step-by-step.html': 'guide/vi/video-gif-converter-step-by-step.jsp',
+  '/guides/id/video-gif-converter-step-by-step.html': 'guide/id/video-gif-converter-step-by-step.jsp',
+  '/guides/de/video-gif-converter-step-by-step.html': 'guide/de/video-gif-converter-step-by-step.jsp',
+  '/guides/pt/video-gif-converter-vs-alternatives.html': 'guide/pt/video-gif-converter-vs-alternatives.jsp',
+  '/guides/es/video-gif-converter-vs-alternatives.html': 'guide/es/video-gif-converter-vs-alternatives.jsp',
+  '/guides/vi/video-gif-converter-vs-alternatives.html': 'guide/vi/video-gif-converter-vs-alternatives.jsp',
+  '/guides/id/video-gif-converter-vs-alternatives.html': 'guide/id/video-gif-converter-vs-alternatives.jsp',
+  '/guides/de/video-gif-converter-vs-alternatives.html': 'guide/de/video-gif-converter-vs-alternatives.jsp',
+  '/guides/pt/video-gif-converter-when.html': 'guide/pt/video-gif-converter-when.jsp',
+  '/guides/es/video-gif-converter-when.html': 'guide/es/video-gif-converter-when.jsp',
+  '/guides/vi/video-gif-converter-when.html': 'guide/vi/video-gif-converter-when.jsp',
+  '/guides/id/video-gif-converter-when.html': 'guide/id/video-gif-converter-when.jsp',
+  '/guides/de/video-gif-converter-when.html': 'guide/de/video-gif-converter-when.jsp',
+  '/video-tools/audio-trimmer.html': 'convert/audio-trimmer.jsp',
+  '/guides/audio-trimmer-when.html': 'guide/audio-trimmer-when.jsp',
+  '/guides/audio-trimmer-step-by-step.html': 'guide/audio-trimmer-step-by-step.jsp',
+  '/guides/audio-trimmer-vs-alternatives.html': 'guide/audio-trimmer-vs-alternatives.jsp',
+  '/guides/png-to-svg-vector.html': 'guide/png-to-svg-vector.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
