@@ -2528,6 +2528,7 @@ export const ALIAS_ROUTES = {
   '/galaxy.html': '/space-3d/galaxy.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
+  '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3768,6 +3769,10 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/video-gif-converter-when.html': 'guide/vi/video-gif-converter-when.jsp',
   '/guides/id/video-gif-converter-when.html': 'guide/id/video-gif-converter-when.jsp',
   '/guides/de/video-gif-converter-when.html': 'guide/de/video-gif-converter-when.jsp',
+  '/video-tools/audio-trimmer.html': 'convert/audio-trimmer.jsp',
+  '/guides/audio-trimmer-when.html': 'guide/audio-trimmer-when.jsp',
+  '/guides/audio-trimmer-step-by-step.html': 'guide/audio-trimmer-step-by-step.jsp',
+  '/guides/audio-trimmer-vs-alternatives.html': 'guide/audio-trimmer-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
