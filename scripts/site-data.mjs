@@ -2076,6 +2076,30 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/percentage-calculator-step-by-step.html',
   '/guides/de/percentage-calculator-when.html',
   '/guides/de/percentage-calculator-vs-alternatives.html',
+  // new-tool-discovery-loop-runbook fire (2026-07-06): password-generator
+  // EN + pt/es/vi/id/de guides (backfill - JSP_BY_ROUTE/CMS/JSP were already
+  // shipped by a prior fire but GUIDE_ROUTES was never populated for this
+  // slug, so all 3 angles silently lacked Article JSON-LD, Organization
+  // JSON-LD, editorial byline, AdSense loading, and sitemap-guides.xml /
+  // guides.html / llms.txt listing across every locale).
+  '/guides/password-generator-step-by-step.html',
+  '/guides/password-generator-when.html',
+  '/guides/password-generator-vs-alternatives.html',
+  '/guides/pt/password-generator-step-by-step.html',
+  '/guides/pt/password-generator-when.html',
+  '/guides/pt/password-generator-vs-alternatives.html',
+  '/guides/es/password-generator-step-by-step.html',
+  '/guides/es/password-generator-when.html',
+  '/guides/es/password-generator-vs-alternatives.html',
+  '/guides/vi/password-generator-step-by-step.html',
+  '/guides/vi/password-generator-when.html',
+  '/guides/vi/password-generator-vs-alternatives.html',
+  '/guides/id/password-generator-step-by-step.html',
+  '/guides/id/password-generator-when.html',
+  '/guides/id/password-generator-vs-alternatives.html',
+  '/guides/de/password-generator-step-by-step.html',
+  '/guides/de/password-generator-when.html',
+  '/guides/de/password-generator-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire (2026-07-06): png-to-webp companion
   // guides - full pt/es/vi/id/de locale fanout (EN routes already wired via
   // JSP_BY_ROUTE by the builder; backfilling GUIDE_ROUTES so the locale
