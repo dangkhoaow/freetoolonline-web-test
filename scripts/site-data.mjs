@@ -2679,6 +2679,9 @@ export const ALIAS_ROUTES = {
   '/png-to-webp.html': '/image-converter-tools/png-to-webp.html',
   '/jpg-to-webp.html': '/image-converter-tools/jpg-to-webp.html',
   '/webp-to-png.html': '/image-converter-tools/webp-to-png.html',
+  '/2048-game.html': '/games/2048-game.html',
+  '/city-drive-3d.html': '/games/city-drive-3d.html',
+  '/earth-3d-globe.html': '/space-3d/earth-3d-globe.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -4029,6 +4032,18 @@ export const JSP_BY_ROUTE = {
   '/guides/de/webp-png-converter-step-by-step.html': 'guide/de/webp-png-converter-step-by-step.jsp',
   '/guides/de/webp-png-converter-when.html': 'guide/de/webp-png-converter-when.jsp',
   '/guides/de/webp-png-converter-vs-alternatives.html': 'guide/de/webp-png-converter-vs-alternatives.jsp',
+  '/games/2048-game.html': 'games/2048-game.jsp',
+  '/guides/2048-game-merge-numbers-puzzle-when.html': 'guide/2048-game-merge-numbers-puzzle-when.jsp',
+  '/guides/2048-game-merge-numbers-puzzle-step-by-step.html': 'guide/2048-game-merge-numbers-puzzle-step-by-step.jsp',
+  '/guides/2048-game-merge-numbers-puzzle-vs-alternatives.html': 'guide/2048-game-merge-numbers-puzzle-vs-alternatives.jsp',
+  '/games/city-drive-3d.html': 'games/city-drive-3d.jsp',
+  '/guides/city-drive-open-world-3d-when.html': 'guide/city-drive-open-world-3d-when.jsp',
+  '/guides/city-drive-open-world-3d-step-by-step.html': 'guide/city-drive-open-world-3d-step-by-step.jsp',
+  '/guides/city-drive-open-world-3d-vs-alternatives.html': 'guide/city-drive-open-world-3d-vs-alternatives.jsp',
+  '/space-3d/earth-3d-globe.html': 'space/earth-3d-globe.jsp',
+  '/guides/earth-3d-globe-live-day-night-map-when.html': 'guide/earth-3d-globe-live-day-night-map-when.jsp',
+  '/guides/earth-3d-globe-live-day-night-map-step-by-step.html': 'guide/earth-3d-globe-live-day-night-map-step-by-step.jsp',
+  '/guides/earth-3d-globe-live-day-night-map-vs-alternatives.html': 'guide/earth-3d-globe-live-day-night-map-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
