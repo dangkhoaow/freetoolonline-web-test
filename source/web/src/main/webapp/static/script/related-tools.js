@@ -336,6 +336,7 @@ try {
     { title: "Percentage Calculator", url: "https://freetoolonline.com/utility-tools/percentage-calculator.html", include: !1, tags: "utility" },
     { title: "PNG to WebP Converter", url: "https://freetoolonline.com/image-converter-tools/png-to-webp.html", include: !1, tags: "image-conversion" },
     { title: "JPG to WebP Converter", url: "https://freetoolonline.com/image-converter-tools/jpg-to-webp.html", include: !1, tags: "image-conversion" },
+    { title: "WebP to PNG Converter", url: "https://freetoolonline.com/image-converter-tools/webp-to-png.html", include: !1, tags: "image-conversion" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
