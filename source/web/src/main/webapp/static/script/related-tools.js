@@ -333,6 +333,7 @@ try {
     { title: "GPU Test - WebGL Benchmark & Info", url: "https://freetoolonline.com/device-test-tools/gpu-test.html", include: !1, tags: "device-test" },
     { title: "Sky Gates Flight", url: "https://freetoolonline.com/games/sky-gates-flight.html", include: !1, tags: "games" },
     { title: "City Time Machine 3D", url: "https://freetoolonline.com/games/city-time-machine.html", include: !1, tags: "games" },
+    { title: "Percentage Calculator", url: "https://freetoolonline.com/utility-tools/percentage-calculator.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

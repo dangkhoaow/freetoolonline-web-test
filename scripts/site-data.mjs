@@ -2054,6 +2054,29 @@ export const GUIDE_ROUTES = new Set([
   '/guides/id/merge-pdf-online-free-unlimited.html',
   // cycle 20260630-6 - merge-pdf-online-free-unlimited DE locale variant (EN-first locale drain; locale-complete after this)
   '/guides/de/merge-pdf-online-free-unlimited.html',
+  // new-tool-discovery-loop-runbook fire (2026-07-06): percentage-calculator
+  // EN guides (backfill - the builder wired JSP_BY_ROUTE but omitted
+  // GUIDE_ROUTES, which silently drops a guide from sitemap-guides.xml /
+  // guides.html / llms.txt) + full pt/es/vi/id/de locale fanout.
+  '/guides/percentage-calculator-step-by-step.html',
+  '/guides/percentage-calculator-when.html',
+  '/guides/percentage-calculator-vs-alternatives.html',
+  '/guides/pt/percentage-calculator-step-by-step.html',
+  '/guides/pt/percentage-calculator-when.html',
+  '/guides/pt/percentage-calculator-vs-alternatives.html',
+  '/guides/es/percentage-calculator-step-by-step.html',
+  '/guides/es/percentage-calculator-when.html',
+  '/guides/es/percentage-calculator-vs-alternatives.html',
+  '/guides/vi/percentage-calculator-step-by-step.html',
+  '/guides/vi/percentage-calculator-when.html',
+  '/guides/vi/percentage-calculator-vs-alternatives.html',
+  '/guides/id/percentage-calculator-step-by-step.html',
+  '/guides/id/percentage-calculator-when.html',
+  '/guides/id/percentage-calculator-vs-alternatives.html',
+  '/guides/de/percentage-calculator-step-by-step.html',
+  '/guides/de/percentage-calculator-when.html',
+  '/guides/de/percentage-calculator-vs-alternatives.html',
+
 ]);
 
 export function isGuideRoute(route) {
@@ -2536,6 +2559,7 @@ export const ALIAS_ROUTES = {
   '/gpu-test.html': '/device-test-tools/gpu-test.html',
   '/sky-gates-flight.html': '/games/sky-gates-flight.html',
   '/city-time-machine.html': '/games/city-time-machine.html',
+  '/percentage-calculator.html': '/utility-tools/percentage-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3795,6 +3819,25 @@ export const JSP_BY_ROUTE = {
   '/guides/city-time-machine-3d-when.html': 'guide/city-time-machine-3d-when.jsp',
   '/guides/city-time-machine-3d-step-by-step.html': 'guide/city-time-machine-3d-step-by-step.jsp',
   '/guides/city-time-machine-3d-vs-alternatives.html': 'guide/city-time-machine-3d-vs-alternatives.jsp',
+  '/utility-tools/percentage-calculator.html': 'utility/percentage-calculator.jsp',
+  '/guides/percentage-calculator-when.html': 'guide/percentage-calculator-when.jsp',
+  '/guides/percentage-calculator-step-by-step.html': 'guide/percentage-calculator-step-by-step.jsp',
+  '/guides/percentage-calculator-vs-alternatives.html': 'guide/percentage-calculator-vs-alternatives.jsp',
+  '/guides/pt/percentage-calculator-step-by-step.html': 'guide/pt/percentage-calculator-step-by-step.jsp',
+  '/guides/pt/percentage-calculator-when.html': 'guide/pt/percentage-calculator-when.jsp',
+  '/guides/pt/percentage-calculator-vs-alternatives.html': 'guide/pt/percentage-calculator-vs-alternatives.jsp',
+  '/guides/es/percentage-calculator-step-by-step.html': 'guide/es/percentage-calculator-step-by-step.jsp',
+  '/guides/es/percentage-calculator-when.html': 'guide/es/percentage-calculator-when.jsp',
+  '/guides/es/percentage-calculator-vs-alternatives.html': 'guide/es/percentage-calculator-vs-alternatives.jsp',
+  '/guides/vi/percentage-calculator-step-by-step.html': 'guide/vi/percentage-calculator-step-by-step.jsp',
+  '/guides/vi/percentage-calculator-when.html': 'guide/vi/percentage-calculator-when.jsp',
+  '/guides/vi/percentage-calculator-vs-alternatives.html': 'guide/vi/percentage-calculator-vs-alternatives.jsp',
+  '/guides/id/percentage-calculator-step-by-step.html': 'guide/id/percentage-calculator-step-by-step.jsp',
+  '/guides/id/percentage-calculator-when.html': 'guide/id/percentage-calculator-when.jsp',
+  '/guides/id/percentage-calculator-vs-alternatives.html': 'guide/id/percentage-calculator-vs-alternatives.jsp',
+  '/guides/de/percentage-calculator-step-by-step.html': 'guide/de/percentage-calculator-step-by-step.jsp',
+  '/guides/de/percentage-calculator-when.html': 'guide/de/percentage-calculator-when.jsp',
+  '/guides/de/percentage-calculator-vs-alternatives.html': 'guide/de/percentage-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
