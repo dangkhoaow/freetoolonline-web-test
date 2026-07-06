@@ -17,7 +17,7 @@
     </figure>
 
     <h2 class="text-uppercase"><b>What base64 actually does</b></h2>
-    <p>Take three bytes of binary input - 24 bits. Group them as four 6-bit chunks. Map each 6-bit chunk to one of 64 ASCII characters (A-Z, a-z, 0-9, +, /). Output is now safe to put in an email body, a URL, a JSON string, or a JavaScript source file - none of which handle raw binary cleanly.</p>
+    <p>Base64 is a binary-to-text encoding that converts raw bytes into printable ASCII characters. Take three bytes of binary input - 24 bits. Group them as four 6-bit chunks. Map each 6-bit chunk to one of 64 ASCII characters (A-Z, a-z, 0-9, +, /). Output is now safe to put in an email body, a URL, a JSON string, or a JavaScript source file - none of which handle raw binary cleanly.</p>
     <p>The price is the encoding's expansion: every 3 bytes in becomes 4 bytes out. Plus padding (the "=" signs at the end) for inputs whose length is not a multiple of 3. The math is exact: encoded size = ⌈input/3⌉ × 4 bytes.</p>
 
     <h2 class="text-uppercase"><b>Right call: small inline binary in text protocols</b></h2>
@@ -37,9 +37,10 @@
     </ul>
 
     <h2 class="text-uppercase"><b>Tools and decision rules</b></h2>
-    <p>Convert in the browser - <a href="/image-converter-tools/image-to-base64.html">Image to Base64</a> for outgoing, <a href="/image-converter-tools/base64-to-image.html">Base64 to Image</a> for incoming. Both work without uploading the file.</p>
-    <p>The simple decision rule: under 4 KB and inline-friendly destination → base64 is fine. Over that or anywhere with a real binary path available → use the binary path. The full developer set is at <a href="/developer-tools.html">the developer tools hub</a>.</p>
+    <p>Three tools cover the most common base64 tasks in the browser: <a href="/developer-tools/base64-encoder.html">Base64 Encoder</a> for encoding any text or data string, <a href="/image-converter-tools/image-to-base64.html">Image to Base64</a> for outgoing binary, and <a href="/image-converter-tools/base64-to-image.html">Base64 to Image</a> for incoming. None requires an upload outside the browser.</p>
+    <p>The decision rule: under 4 KB and inline-friendly destination → base64 is fine. Over that or anywhere with a real binary path available → use the binary path. The full developer set is at <a href="/developer-tools.html">the developer tools hub</a>.</p>
 
     <h2 class="text-uppercase"><b>About the 4 KB threshold</b></h2>
     <p>The 4 KB rule of thumb is an HTTP/1.1-era heuristic for inline images in CSS data URLs - on HTTP/1.1 each separate request paid roughly 1 RTT plus header overhead, so under 4 KB an inline image was cheaper than a second request even with the base64 33 percent expansion. On HTTP/2 and HTTP/3 the request cost falls (header compression, multiplexing on one connection), and the break-even point shifts up: a separate file is faster sooner. The decision rule still holds in shape - small inline binary in a text destination is the right call; large binary that has a real binary path is the wrong call - only the exact threshold moves with the underlying protocol.</p>
+    <p>Related reading: <a href="/guides/base64-encoder-when.html">base64 encoder - when to use it</a> covers timing decisions by scenario, and <a href="/guides/base64-encoder-vs-alternatives.html">base64 encoder vs alternatives</a> compares it to other encoding schemes such as URL encoding and hex.</p>
 </div>
