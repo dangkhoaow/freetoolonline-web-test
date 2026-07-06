@@ -2,6 +2,7 @@ import { readFile, stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { INFO_ROUTES, GUIDE_ROUTES, GUIDE_SITEMAP_EXCLUDE, canonicalForRoute, normalizeRoute, routeToSlug } from './site-data.mjs';
 import { isHubRoute } from './seo-clusters.mjs';
+import { getHomeCounts, spliceCountsInText } from './home-counts.mjs';
 
 const SITEMAP_FILES = ['sitemap.xml', 'sitemap-tools.xml', 'sitemap-hubs.xml', 'sitemap-guides.xml', 'sitemap-pages.xml'];
 const LLMS_FILES = ['llms.txt', 'llms-full.txt'];
@@ -269,6 +270,10 @@ function classifyKind(route, hubRouteSet, guideRouteSet, pageRouteSet) {
 // fragment paths the sitemap lastmod loop already touches.
 async function buildLlmsEntries({ routes, cmsRoot, lastmodByRoute, hubRouteSet, guideRouteSet, pageRouteSet, origin }) {
   const entries = [];
+  // Registry-derived counts for the homepage entry - llms.txt reads the CMS
+  // fragments directly (bypassing export-site's render splice), so the same
+  // count fix is applied here. Computed once per build. See home-counts.mjs.
+  const homeCounts = getHomeCounts();
   for (const route of routes) {
     const normalized = normalizeRoute(route);
     const [title, description, bodyHtml] = await Promise.all([
@@ -276,12 +281,13 @@ async function buildLlmsEntries({ routes, cmsRoot, lastmodByRoute, hubRouteSet, 
       readCmsField(cmsRoot, normalized, 'BODYDESC', 'txt'),
       readCmsField(cmsRoot, normalized, 'BODYHTML', 'html'),
     ]);
+    const isHomeEntry = normalized === '/';
     entries.push({
       route: normalized,
       url: canonicalForRoute(origin, normalized),
       kind: classifyKind(normalized, hubRouteSet, guideRouteSet, pageRouteSet),
-      title: title || normalized,
-      description,
+      title: isHomeEntry ? spliceCountsInText(title || normalized, homeCounts) : (title || normalized),
+      description: isHomeEntry ? spliceCountsInText(description, homeCounts) : description,
       lead_snippet: firstParagraph(bodyHtml, 320),
       lastmod: lastmodByRoute?.get(normalized) || null,
     });

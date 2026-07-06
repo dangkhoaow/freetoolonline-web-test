@@ -299,8 +299,14 @@ function renderMetaTags(ctx) {
   const selfHreflang = guideLocale
     ? guideLocale
     : (isVietnamese ? 'vi-vn' : 'en-us');
-  const title = ctx.isHome ? 'Free Tool Online - 122 Browser Tools for ZIP, PDF, Image, Dev, Device' : `${ctx.browserTitle} - Free Tool Online`;
-  const ogTitle = ctx.isHome ? 'Free Tool Online - 122 Browser Tools for ZIP, PDF, Image, Dev, Device' : `Free Tool Online - ${ctx.browserTitle}`;
+  // Home title comes from BODYTITLE.txt (already the full brand-form string),
+  // count-spliced at export time from the route registry (home-counts.mjs) so
+  // the tool count can never drift from the registry again. The literal is a
+  // last-resort fallback only (empty/missing home BODYTITLE fragment).
+  const homeTitleFallback = 'Free Tool Online - 122 Browser Tools for ZIP, PDF, Image, Dev, Device';
+  const homeTitle = ctx.isHome ? (String(ctx.browserTitle ?? '').trim() || homeTitleFallback) : '';
+  const title = ctx.isHome ? homeTitle : `${ctx.browserTitle} - Free Tool Online`;
+  const ogTitle = ctx.isHome ? homeTitle : `Free Tool Online - ${ctx.browserTitle}`;
   const mobileTitleBase = String(ctx.mobileBrowserTitle ?? '').trim();
   const mobileTitle = mobileTitleBase ? `${mobileTitleBase} - Free Tool Online` : '';
   const description = escapeHtml(ctx.description || '');

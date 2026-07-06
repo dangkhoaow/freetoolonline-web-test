@@ -33,6 +33,7 @@ import { createInternalContentRewriter, normalizeBasePath } from './staging-util
 import { writeSplitSitemaps } from './sitemap-writer.mjs';
 import { isHubRoute } from './seo-clusters.mjs';
 import { buildDynamicSitemapBody, buildDynamicGuidesHubBody, buildDynamicToolHubBodies, spliceToolHubList, buildPerPageLMenuBodies, buildDynamicHomeSearchData } from './sitemap-html-builder.mjs';
+import { getHomeCounts, spliceHomeBodyHtml, spliceHomeWelcome, spliceCountsInText } from './home-counts.mjs';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const distDir = path.resolve(repoRoot, process.env.DIST_DIR ?? 'dist');
@@ -380,6 +381,37 @@ async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData,
     } else {
       console.warn(`[home-search] Only ${hit}/3 regex hits on / bodyHtml - leaving static values in place. Check BODYHTML.html structure.`);
     }
+    // 2026-07-06 operator fix: the REMAINING homepage counts were hardcoded
+    // and stale (title "122 Browser Tools" vs registry 108; bento "9 dev
+    // tools" vs registry 21; TRUSTED badge; why-bullets; BODYWELCOME prose).
+    // Same warn-on-miss splice contract, counts from home-counts.mjs (the
+    // registry-derived single source shared with the datalist above).
+    const homeCounts = getHomeCounts();
+    // TRUSTED ratings badge: best-effort live fetch (same endpoint the
+    // gated JSON-LD path uses); static 4.5/226+ stays when unavailable.
+    let homeRatings = null;
+    try {
+      homeRatings = await loadAggregateRating({ apiOrigin, pageName: pageData.pageName, route: normalizedRoute });
+    } catch { /* keep static badge */ }
+    const bodyRes = spliceHomeBodyHtml(pageData.bodyHtml, homeCounts, homeRatings);
+    pageData.bodyHtml = bodyRes.html;
+    if (bodyRes.misses.length) {
+      console.warn(`[home-counts] ${bodyRes.hits} hits, missed: ${bodyRes.misses.join(', ')} - static values left in place. Check BODYHTML.html structure.`);
+    } else {
+      console.log(`[home-counts] Spliced ${bodyRes.hits} count surfaces into / bodyHtml (tools=${homeCounts.toolCount}, guides=${homeCounts.guideCount}, categories=${homeCounts.categoryCount}${homeRatings ? `, ratings=${homeRatings.ratingValue}/${homeRatings.ratingCount}` : ''}).`);
+    }
+    if (pageData.bodyWelcome) {
+      const welcomeRes = spliceHomeWelcome(pageData.bodyWelcome, homeCounts);
+      pageData.bodyWelcome = welcomeRes.html;
+      if (welcomeRes.misses.length) {
+        console.warn(`[home-counts] BODYWELCOME missed: ${welcomeRes.misses.join(', ')}.`);
+      }
+    }
+    // Meta surfaces: <title>/og:title (renderer reads pageBrowserTitle/
+    // bodyTitle for home since this fix) + meta/og description.
+    if (pageData.bodyTitle) pageData.bodyTitle = spliceCountsInText(pageData.bodyTitle, homeCounts);
+    if (pageData.pageBrowserTitle) pageData.pageBrowserTitle = spliceCountsInText(pageData.pageBrowserTitle, homeCounts);
+    if (pageData.bodyDesc) pageData.bodyDesc = spliceCountsInText(pageData.bodyDesc, homeCounts);
   }
   // Per-page "last modified" stamp from git history of this page's CMS
   // fragments + JSP wrapper. Drives Schema.org dateModified (JSON-LD +

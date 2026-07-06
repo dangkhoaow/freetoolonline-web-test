@@ -87,13 +87,13 @@ const SEO_CLUSTER_GROUPS = [
     cluster: 'games',
     hubRoute: '/games.html',
     hubLabel: 'Back to Games',
-    routes: ['/games/snake-classic.html', '/games/retro-tank-battle.html', '/games/garden-defense.html', '/games/voxel-world-builder.html', '/games/sky-gates-flight.html', '/games/city-time-machine.html'],
+    routes: ['/games/snake-classic.html', '/games/retro-tank-battle.html', '/games/garden-defense.html', '/games/voxel-world-builder.html', '/games/sky-gates-flight.html', '/games/city-time-machine.html', '/games/2048-game.html', '/games/city-drive-3d.html'],
   },
   {
     cluster: 'space-3d',
     hubRoute: '/space-3d.html',
     hubLabel: 'Back to Space 3D',
-    routes: ['/space-3d/solar-system.html', '/space-3d/black-hole.html', '/space-3d/galaxy.html'],
+    routes: ['/space-3d/solar-system.html', '/space-3d/black-hole.html', '/space-3d/galaxy.html', '/space-3d/earth-3d-globe.html'],
   },
   {
     cluster: 'guides',

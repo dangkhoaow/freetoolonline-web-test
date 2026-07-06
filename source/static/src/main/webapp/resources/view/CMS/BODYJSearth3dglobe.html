@@ -1,0 +1,511 @@
+<script>
+    // 3D scene archetype skeleton (earth-3d-globe) - vendored three.js (ESM, dynamic
+    // import from /vendor/three/, NO CDN), fully client-side. Registry Gate-H
+    // entry: three_3d_scene_vendored. ONE skeleton serves the 3D family; the
+    // scene is dispatched from the slug: voxel (block-building sandbox game),
+    // solar (solar system explorer), blackhole (black hole visualization),
+    // galaxy (spiral galaxy), gputest (WebGL report + benchmark), city
+    // (era-timeline city block), flight (gate-flying arcade), drive (city
+    // driving arcade), earth (live day/night globe). All geometry is
+    // procedural - no model files, no textures fetched (the earth map is
+    // drawn at runtime from an embedded public-domain coastline encoding).
+    // The space scenes are EDUCATIONAL APPROXIMATIONS, not physical
+    // simulations; scales are compressed and the info panel says so.
+    //
+    // A visible wrapper + "Loading 3D engine..." placeholder renders
+    // synchronously (G16 render-only pass); the ~0.7 MB engine lazy-loads
+    // post-paint via requestIdleCallback and is cached by the browser.
+    // Fullscreen targets the WRAPPER div (controls stay visible).
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'earth-3d-globe';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) {
+        var s = String(slug || '').toLowerCase();
+        if (/gpu/.test(s)) return 'gputest';
+        if (/drive|driving/.test(s)) return 'drive';
+        if (/city/.test(s)) return 'city';
+        if (/sky|flight|plane|aircraft/.test(s)) return 'flight';
+        if (/earth|globe/.test(s)) return 'earth';
+        if (/voxel|builder|block/.test(s)) return 'voxel';
+        if (/solar|planet/.test(s)) return 'solar';
+        if (/black/.test(s)) return 'blackhole';
+        if (/galaxy/.test(s)) return 'galaxy';
+        return 'solar';
+    }
+
+    // Module registry: each T3D_MODULE block below registers itself here. The
+    // fragment emitter (emit-cms-fragments.mjs) PRUNES non-matching module
+    // blocks per slug, so an emitted page carries exactly one registration.
+    // Bootstrap reads the registry instead of naming modules - pruned modules
+    // simply never register and no dangling identifiers remain.
+    var T3D_REGISTRY = {};
+
+    // ---- vendored ESM loader (ftoLoadPdfLib shape, but a cached import()) ----
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - building still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- tiny procedural synth (Web Audio - NO audio files) ------------------
+    // Category rule: sound is synthesized on-device and stays SILENT until the
+    // reader clicks the page's sound toggle (autoplay-safe). blip() plays a
+    // short envelope; hum() keeps a low filtered drone a module retunes.
+    function t3dSynth() {
+        var ctx = null, master = null, humOsc = null, humOsc2 = null, humGain = null, humFilter = null, on = false;
+        function ensure() {
+            if (ctx) return;
+            var AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) return;
+            ctx = new AC();
+            master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
+        }
+        return {
+            enabled: function () { return on; },
+            toggle: function () {
+                ensure();
+                if (!ctx) return false;
+                on = !on;
+                if (ctx.state === 'suspended') { ctx.resume(); }
+                master.gain.setTargetAtTime(on ? 0.5 : 0, ctx.currentTime, 0.05);
+                return on;
+            },
+            blip: function (freq, dur, gain, type) {
+                if (!ctx || !on) return;
+                var o = ctx.createOscillator(), g = ctx.createGain();
+                o.type = type || 'sine'; o.frequency.value = freq;
+                g.gain.setValueAtTime(gain || 0.25, ctx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + (dur || 0.18));
+                o.connect(g); g.connect(master);
+                o.start(); o.stop(ctx.currentTime + (dur || 0.18) + 0.02);
+            },
+            hum: function (freq, level) {
+                if (!ctx) return;
+                if (!humOsc) {
+                    humOsc = ctx.createOscillator(); humOsc2 = ctx.createOscillator();
+                    humFilter = ctx.createBiquadFilter(); humFilter.type = 'lowpass'; humFilter.frequency.value = 320;
+                    humGain = ctx.createGain(); humGain.gain.value = 0;
+                    humOsc.type = 'triangle'; humOsc2.type = 'triangle';
+                    humOsc.connect(humFilter); humOsc2.connect(humFilter);
+                    humFilter.connect(humGain); humGain.connect(master);
+                    humOsc.start(); humOsc2.start();
+                }
+                humOsc.frequency.setTargetAtTime(freq, ctx.currentTime, 0.4);
+                humOsc2.frequency.setTargetAtTime(freq * 1.007, ctx.currentTime, 0.4);
+                humGain.gain.setTargetAtTime(level, ctx.currentTime, 0.4);
+            },
+        };
+    }
+
+    // ---- shared scene shell: renderer + camera + custom pointer-orbit --------
+    // OrbitControls is NOT vendored (jsm addons import the bare 'three'
+    // specifier); this ~40-line orbit covers drag-rotate + wheel/pinch zoom
+    // with damping and a clamped pitch.
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: opts.power ? 'high-performance' : 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            // critically-damped-ish lerp toward the goal orbit
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        function size() {
+            var w = Math.max(260, host.clientWidth);
+            var h = Math.round(w * 0.62);
+            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fsEl && fsEl.contains(host)) { h = Math.max(240, (window.innerHeight || h) - 150); }
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        host.appendChild(renderer.domElement);
+        renderer.domElement.style.touchAction = 'none';
+        renderer.domElement.style.borderRadius = '6px';
+        // pointer-orbit input (opts.noInput skips it - a module that steers its
+        // own camera, e.g. a chase-cam game or a benchmark, wires its own input)
+        if (!opts.noInput) {
+            var drag = null, pinch = null, moved = 0;
+            host.addEventListener('pointerdown', function (e) {
+                drag = { x: e.clientX, y: e.clientY }; moved = 0;
+                host.setPointerCapture && host.setPointerCapture(e.pointerId);
+            });
+            host.addEventListener('pointermove', function (e) {
+                if (!drag) return;
+                var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+                moved += Math.abs(dx) + Math.abs(dy);
+                drag = { x: e.clientX, y: e.clientY };
+                orbit.goalTheta -= dx * 0.006;
+                orbit.goalPhi = Math.min(Math.max(orbit.goalPhi - dy * 0.005, 0.15), Math.PI - 0.2);
+            });
+            host.addEventListener('pointerup', function (e) {
+                var wasClick = moved < 8;
+                drag = null;
+                if (wasClick && shell.onClick) { shell.onClick(e); }
+            });
+            host.addEventListener('wheel', function (e) {
+                e.preventDefault();
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR);
+            }, { passive: false });
+            host.addEventListener('touchstart', function (e) {
+                if (e.touches.length === 2) {
+                    pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                }
+            }, { passive: true });
+            host.addEventListener('touchmove', function (e) {
+                if (e.touches.length === 2 && pinch) {
+                    var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                    orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                    pinch = d;
+                }
+            }, { passive: true });
+        }
+        window.addEventListener('resize', size);
+        document.addEventListener('fullscreenchange', size);
+        document.addEventListener('webkitfullscreenchange', size);
+        size();
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, size: size, onClick: null,
+            ndc: function (e) {
+                var r = renderer.domElement.getBoundingClientRect();
+                return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            },
+        };
+        return shell;
+    }
+
+
+
+
+
+
+
+
+
+    /* T3D_MODULE:earth START */
+    // ================= EARTH 3D GLOBE (space-3d cluster) =====================
+    // A live day/night globe in the stylized vector style of an airline
+    // seatback map. Continents are drawn onto a CanvasTexture from an EMBEDDED
+    // compact encoding of the public-domain Natural Earth 1:110m land dataset
+    // (quantized to 0.1 degrees - ~4,900 points; no map tiles, no fetches).
+    // The sun's position is computed from the browser clock with the standard
+    // NOAA solar-position approximation (declination + equation of time,
+    // accurate to about a degree), so the day/night terminator is live; a
+    // scrub slider previews up to 12 hours either way. Night-side "city
+    // lights" are a stylized coastal-glow effect, NOT real light data - the
+    // facts panel says so.
+    var T3D_EARTH_COAST = '3C#53@#03;#+3##,2h#,2Z#/2Z#02T#22m#23*#132#537#9 %O#:%:#9%-#=%%#B%##B#x#E%##I%9#G%E#D%L#A 5)#K56#F5:#@5;#:5=#55,#24t#/4a#-4J#+40#+3|#/4!#34:#64E#94K#?4P#C4V#F4]#K4c#K4r#M ,!#z,2#x,@#z,8#w,/#t+y#u+o#x+q#~ +O#z+a#v+Y#w+L#x+=#z+E%! .^%2.j%0.u%1.|%,.s%-.g%,.Y%-.K%,.A%..:%2.B%4.O%2 2=%;2@%72=%329%/2-%.1z%,1m%,1r%01f%/1Y%-1Q%01Q%41]%81e%91p%91s%@1t%D1t%L1y%Q2*%R20%N22%K26%F2:%B 3M(+3I()3A(+37(*30((3)(!2~%z2|%v2|%r3(%o2y%m2p%l2j%i2d%e2]%a2Z%[2_%W2e%T2m%R2u%O2y%K2|%G3#%C3+%@3.%:3/%132%-33%)36%!35#x3/#t3)#q2t#o2p#l2i#h2X#e2K#c2?#a2/#^2%#Y1o#X1[#Y1K#X19#X1=#T1M#R1X#O1_#L1S#I1B#J12#G11#C11#?1?#:1A#61M#21e#11w#.2-#+2A#(2Z##2t!~3-!y3B!u3L!q3Q!m3^!p3o!s4)!v4@!y4Q!~4l!~5-!|5C!x5I!~5W#%5s#(6.#*6C#,6X#-6p#/7(#26x#56t#96t#=6a#=6J#:65#:62#@63#H68#J6H#L6Y#N6g#Q6s#T6~#X72#Z7A#[7H#]7X#^7h#_7u#b8)#d84#g8D#j8M#m8V#p8Y#t8N#v8R#z8Y%#8e%%8p%*8z%-9*%19/%696%89D%89I%49U%49U%89Z%=9g%;9j%79v%6:+%8:7%9:D%9:I%5:T%8:_%::k%;:v%=;)%A;4%B;=%E;D%H;L%F;V%G;^%B;e%?;q%A;u%E=%%G=4%G=8%C=B%G=M%H=Y%H=f%H=q%G=~%F?(%C?/%@?:%B?G%B?S%B?_%B?j%D?u%E@!%H@/%I@9%J@C%M@H%S@N%V@X%T@]%Q@g%O@q%O@x%LA%%IA2%LA5%PA@%RAK%UAT%VAb%XAj%ZAr%^Az%aB+%_B4%cB;%fBF%fBO%hBP%lBY%oBc%pBm%rBv%sC%%rC1%qC9%oC:%jCD%gCJ%dCV%cC^%_Cg%[Cq%[Cy%^D*%cD3%aD?%_DH%]DR%]D]%]Df%QDf%ODe%JDY%HDQ%DDR%@D_%@D]%:DW%7DR%2DZ%/Dh%.Ds%0Dy%4D~%8E*%;E0%@E2%CE8%HE@%IEK%JEU%KEa%LEf%PEi%TEp%XEz%ZF*%]F0%bF6%cF?%eFI%dFR%eF]%fFi%eFp%hFu%oFy%lG!%gG.%eG7%eGC%fGM%eGV%eG^%fGg%eGo%cGx%eH+%eH4%fH@%eHG%hHL%kHS%nHa%uHh%tHo%qHv%nI+%hI5%gI@%gIK%iIU%jI_%mIf%pIr%pIy%rJ)%pJ.%mJ5%jJB%jJI%hJU%eJc%dJn%eJv%hJ~%kK-%lK6%kKC%jKL%kKU%kK_%jKi%iKr%kL!%mL/%mL:%mLF%nLO%oLQ%tLR%xLX%uLZ%qL^%mLc%iLl%gLw%hM,%hM5%iMD%iMN%iM[%iMh%hMo%eMm%aMs%]N#%ZN1%WN@%UNN%TNX%RNe%RNl%UNu%SN~%PO-%MO9%LOG%KOL%GOW%EOa%AOl%@Ow%@P*%?P6%?PD%?PO%;PZ%9Pf%7Pm%4Pl%0Pg%-Pb%(P^%!PX#xPK#wPE#sP6#qP1#mP+#jO|#fOw#bOu#^Ot#XOt#TOz#PO~#MP(#IP;#HPA#CP-#BOv#@Oc#?OX#8OV#3OR#/OM#,OZ#(Oa!~Oj!xOv!uP,!rP;!oPT!lPY!gPx!ePz!dQ)!aQG!cQ_!_Qq!]Qq!!!!!!!!!]!#!]!.!d!B!_!D!a!F!b!J!c!M!d!N!d!P!d!Q!d!a!_!n!d!p!d#5!f#A!d#F!c#U!^#s![%2!X%Z!U%y!X(N!V(h!S)*!V)H!Y)J!^(y!_(V!b(N!f(1!h(3!m(7!q(:!t(8!y((!|%x#%%i#*()#)(B#+(Q#((d#+(u#.)!#2(y#6(l#8(]#;(G#=(3#?%x#@%q#D%d#G%Z#K%W#V%]#U%g#R%x#S(0#T(8#P(J#Q(W#S(f#V(q#Y)(#Z)(#_(~#d)%#g)4#i):#f)K#h)W#j)g#j)t#k**#n*5#p*C#r*K#q*R#q*b#r*p#p+!#p+3#r+B#q+Q#p+a#p+o#p,##p,4#p,@#s,L#u,Y#s,g#t,r#x,x#u,~#q-*#n-4#q-B#m-P#l-[#i-l#j-x#l./#k.?#j.M#h.R#l.K#p.F#s.8#t.2#x.0#|.,%+.4%).C%).P%).]%(.h%!.l#y.z#y//#z/=#~/K%!/U#|/d#~/m%+/u%%0(%!05%#0?#z0L#z0X#y0f#v0n#z0r%#0~#z12#|1=#y1E#u1R#v1]#x1i#|1u#~2+%#28%%2C%)2I%,2L%12J%52G%92D%=2A%B2=%F2=%J2?%N2C%Q2G%V2I%Z2G%_2F%d2J%h2P%k2V%o2^%r2g%u2k%y2q%~2w(%3)(%3/(*36(,3@(-3G(03M(33U(43[(23W(. 2E)A2S)92c)62])12S)12M)42J)02B)-25).2-)11|)21n)81d)?1T)K1^)I1m)B1z)=2%)C2*)J24)N2;)M2A)H 3M)]3U)W3S)T3E)Q3A)U36)P31)U3?)[3G)X Dl)lDZ)kDZ)qD])uD])wDe)tDn)rDo)p Mg*qMq*nMv*oN#*qN,*pN-*dN)*aN(*WN!*ZMv*SMt*SMm*TMg*]Mf*eM_*mM_*r Q%*pQ)*lQ1*pQ3*lQ3*gQ0*cQ)*YP~*UQ(*PPx*PPp*MPm*FPg*:P^*5PX*3PO*3PI*6P=*7P:*:PA*DPN*NPT*PP]*SPf*YPl*_Pq*gPt*jPv*oQ!*t Q7+IQ@+?QA+FQE+CQG+9QO+6QU+5Q[+9Qb+8Q_+/Q[+)QS+*QP+%QQ*zQP*xQL*sQG*lQ?*hQ=*kQ8*lQ?*tQ:*zQ/+#Q0+*Q7+-Q8+5Q8+;Q4+DQ4+FQ/+JQ(+SP|+ZQ%+ZQ-+UQ4+R PB-+P=-)P7-,P0-0P)-6O|-?Oy-BP#-BP+-=P0-9P3-6P;-0 Qa-_Qd-[Qc-UQZ-TQU-UQT-ZQX-^Q]-] Qk-eQd-cQc-gQh-iQk-iQq-lQq-g PB-xPD-pPA-qP?-pP;-sP;-| BH.-BI-yBL-uBK-pBI-mBF-sBD-pBF-hBE-dBB-bBA-WB;-LB6-=B0-)B,,sB(,hAx,eAo,aAi,dAa,gA^,lA],uAX-!AX-,AY-4A_-5A_-9Ae-BAf-IAc-MAa-TAa-^Ad-dAe-kAj-kAp-mAt-oAx-oB#-uB.-|B1.(B0.,B4.+B9.2B:.8B?.?BB.8BE.4 MS.+MV-~M^.%Mb-|Mg-wMf-sMh-jMi-eMl-dMo-YMn-TMq-MM~-HN+-CN1-?N0-;N6-4N:-*N@-,ND-%NF-)NH,vNO,pNT,lN],dN_,ZNa,UN_,NNe,FNd,;Nb,6N_,-N_,(N]+yNX+oNP+kNL+cNI+]NF+SNB+NN@+GN=+@N?+;N7+7N,+7M|+3Mv+/Mp++Mh+/Mb+1Mc+6M]+4MS+-MJ+0ME+1M?+2M3+5M-+;M++EM)+JL~+NLr+OLu+TLs+[Ln+TLe+RLk+XLl+_Lp+eLo+lLg+cLa+_L[+VLS+ZLS+bLM+iLH+mLJ+oL;+uL4+uL*+zKp+yKc+vKV+rKL+sKB+nK7+kK5+fK2+bK)+bJ|+aJr+cJk+bJd+aJ]+ZJY+ZJT+XJO+TJH+UJA+UJ5+[J/+^J/+eJ4+fJ6+hJ6+lJ7+sJ6+yJ1,+J/,1J/,6J+,?J+,BJ%,FJ!,NIx,VIv,ZI|,VIw,aI~,]J%,XJ%,^Iz,gIy,jIw,mIx,sIz,uI|,zIz-(J#-/J%-(J+-/J4-2J8-6JB-:JG-;JI-:JQ-?JW-@JY-CJ]-CJc-CJn-FJs-KJv-PJ|-UJ~-YJ~-_K+-iK/-_K4-bK0-gK3-lK8-jK9-qK@-vKC-zKH-~KH.%KL.#KL.(KQ.)KV.+K^.#Ke-xKk-xKq-wKo.!Kt.-Kx./Kw.2K|.8L).;L..:L7.=L7.CL/.FL5.HL;.ELC.ALK.?LN.@LT.;LZ.?L_.?Lb.@Lg.9Ld.4L_.0L[.0L].,LY.%LU-zLV-wL_-qLh-nLm-kLt-eLw-eL~-bM#-^M/-ZM6-^M8-eM:-iM;-oM@-wM?-|M?.#M=.,M@.4MA.6M@.9MB.@MD.FMD.IMH.LMK.GML.AMN.@MO.:MR.5MS./ Jl.QJh.PJY.WJd.YJi.VJm.S OX.TOT.TOM.UOK.WOL.[OS.YOV.W Ob.WO_.UOW._OU.fOX.fO].] K9.RK1.OK0.QK1.TK5.ZKA._KB.bKJ.eKQ.eKU.fKX.eKU.bKJ.]KB.Y JN.hJR.eJX.fJZ.bJO._JH.^JB.^JF.dJK.e K*.hK).cJr._Jd.aJd.eJl.gJr.dJy.d ON.fON.dOF.hOA.kO;.oO?.pOC.mOK.i O4.pO2.oO..qO*.uO*.wO0.s IE.uIX.tI[.xIo.tIs.mJ*.kJ6.eJ+.aIx.fIo.eId.fIY.hIM.lIF.mIB.kI..oI,.tH|.tI*/#I6/!I@.zID.y LN.|LI.tLH.~LJ/%LL/+LN/( N~.uNy.tNu.xNp/#Nn/.Np//Nq/,Nt/)Nx.|O!.x NS/*NN/)NL/%NG.~NA.zN:.zN2/!N,/(N-/+N6/)N;/*N?//N@//NA/*NG/*NJ/.NO/1NN/7NT/8NV/6NV/0 Kz/DL!/:Ku/AKm/AKg/AK_/AKb/GKo/G N_/4N[/1NY/7NW/;NS/@NM/ENF/HNH/JNN/GNQ/ENU/CNY/=N^/9 LH/WLK/GLV/AL_/LLk/RLt/RM!/NM,/KM7/IMJ/BM^/:Mf/5Mk/0Mm/*N!.~N(.wMw.vMy.oN*.iN0.]N6.]N6.XN?.VN:.TNG.PNF.MN?.LN;.ON2.PN(.RMx.XMs._Mm.hM_.mMV.jMP.gMQ.^MI.ZMD.[M7.]M..fL~.hLz.eLm.eLq.mLx.pLu.|Lp/+L[/4LS/4LD/@LA/9L;/8L9/=L9/BL1/GL=/JLE/JLD/ML3/ML//SL#/UKz/ZL0/]L5/aLG/[ KC/sK9/iK2/gK(/iJp/iJg/gJe/_Jn/UJt/YK./^K./XK)/ZK!/TJt/PK#/CJ~/@K-/2K-/,K%/)J|/,K(/4Jv/0Jt/3Ju/7Jn/?Jo/IJh/FJi/8Ji/*Jc/(J^/+Jb/4J_/@JZ/@JW/GJ[/NJ]/UJc/gJe/kJn/rJv/oK*/nK6/nKB/u Kh/pKg/hKb/iKa/bKe/[Kb/ZK]/bKY/oK[/wK_/|Ka/uKg/t I%/#Ht/#Hl//H^/7HY/?HQ/GHL/NHD/]H:/gH7/oH3/wH*0#H!0.Gu04Gk0AGj0FGp0EH(0CH108H801H@0-HI/zHT/zH]/sHd/kHk/fHg/]Hm/XHq/XHr/QHv/LI!/KI*/DI(/6 JN/wJY/nJM/mJJ/fJJ/[JA/TJ@/JJ:/9J9/=J./8J*/@I|/AIv/DIj/@If/EI^/EIU/FIT/SIO/VIJ/_II/iIJ/rIP/yIW/vIa/xIc0(Ig0*Is0,Iz04J%0:J+0@J40EJ;0LJB0TJF0TJK0OJL0KJR0HJ[0EJZ0AJS0AJU0:JN06JH0-JO/~ KO0eKP0^KP0WKM0NKI0XKE0SKH0KKE0GK70MK40TK70YK10^K.0YK)0ZJz0TJx0WJ~0aK*0dK00hK30cK;0fK?0kKF0kKE0sKM0nKN0i F-0ME~0KEx0SEv0cEz0sF)0nF.0gF30ZF10P 340v3+0u3)0v3,0y3,1!321#341# K50xK10uK.0nK+0kK!0rK%0uK)0xK*1#K01#K.0xK61) JT0nJG0eJL0lJS0rJY0yJ_1+Jb0|JY0u Jx10K#1-K,1-K,1)K%0~Jy0yJy1#Jy1+ KF13KI1%KA1*KA1%KD0yK?0vK?1!K:1#K81,K@1+K@1/K817KC16 Jr1vJx1sJ|1vJ~1sJ|1oK#1hJ~1_Jv1ZJt1RJv1JJ~1IK(1JK51EK41?K71;K616K.1;K*1CK(1?Jy1EJp1CJk1FJl1JJo1LJl1OJk1KJf1QJd1UJd1aJh1[Ji1mJl1v 2[1s2Y1q2Q1q2K1p2K1u2L1v2T1v2Y1u 1=1p191n131p1.1s1/1v131v151v1=1u1C1s1E1p 1k2,1t2*1u2,2!2,2+2)2-2)2/2#252#241|291|2@1w2:1s251u211u2-1u2,1s2(1s2#1u1|1t1w1m1t1o1t1q1m1s1i1r1b1s1]1q1V1t1W1x1c1v1j1u1n1x1i1~1i2(1c2)1e2, IV1xIN1sIF1vIE2%IJ2+IU2.I[2.I^2*IY2# %v1~%t1z%r1~%r2#%p2*%q2+%r2-%r2/%r20%s2/%w2.%y2-%z2,(!2(%y2! %p23%m23%k25%j26%k27%n26%q25 %_2:%^2:%Z2:%X2=%X2?%[2@%]2@ %N2C%L2B%I2D%J2D%K2E%M2E 0x2K0~2G1.2H112F1:2@1B291E291K271J241R241Y201X2.1Q2,1K2,1D2-132,1:21162410241,271*2?0~2?0s2A0p2C0c2E0^2G0c2I0W2J0P2E0L2E0J2B0F2A0A2B0G2E0I2I0M2K0R2M0Z2N0]2O0g2N0o2N 162U132T112Z1-2^1/2e122e162Z Jq2KJl2CJg2KJf2SJl2]Jt2fJy2cJw2[ 1;2s192l172m182r132v132w LM3jLO3gLI3aLE3dL@3bL;3ZL53^L53dL:3jLB3hLF3m @U3z@N3u@O3t@O3s@E3o@@3p@=3t@B3t@C3t@D3w@L3w ?:3z?A3w?I3w?Q3w?P3u?V3v?U3s?F3r?F3t?83v ==4;=943=:40=84+=04/=+40;u45;w4:=*49=54: ;S4[;Y4T;X4G;S4G;O4D;K4G;K4S;I4Y;N4X M740M34(M53|M03tL|3pLi3oLY3dLR3gLR3oL@3mL33hL%3hL13_L*3NK~3IKw3MKy3VKs3YKo3bKy3eL#3kL03pL73wLM3zLX3xLd42Lk4-Lz47M%4;M.4IM,4UM04[M;4^MB4OMB4GM74; ;W4g;S4^;O4a;L4h;N4k;U4o MV4|M^4yMf5!Mh4rMX4oMO4eM?4lM84aM-4aM+4kM04rM;4sM@5)MC51MN5# 2p5;2x593)592~552x552l592i5=2m5A 3+5V3#5V2q5Y2h5_2k5a2x5]3+5X +f5P+a5O+N5S+K5W+B5Z+A5^+45a+15f+15i+=5g+D5e+M5d+Q5a+V5Z+b5V 3h5h3a5^3h5c3n5_3k5[3t5X3x5[4*5W4%5P4.5R4/5M435F4.5=4*5;3|5?4!5G3|5I3o5@3i5@3p5E3f5G3Z5G3F5G3E5J3K5N3G5P3O5V3Y5h3b5n3j5q3o5q3m5n *]61*h62*e6%*m5w*i5w*c5|*_6(*X6+*W60*W63 MS5hM_5UMO5XMI5JMR5?MR56MJ5=MD55MB5?MC5IMB5TMD5[ME5kM?5tM@6*MI6/ME63MJ65ML6.MP5~MO5s 9[5x9I5r995s9C6#9=609L689S6=9]6?9h679c609e6) (76R(-6N((6Q(#6V(/6Y(56[(;6Z(B6W :+6c9x6W:*6X:56X:36P:*6G:46F:@67:G66:M6*:P6#:]5~:[5v:V5s:Y5n:Q5i:C5i:05f:+5h:!5c9t5d9m5a9g5c9v5m:%5o9o5q9l5u9w5x9q6!9s6,:*6+:,61:!679q699n6=9r6B9o6E9i6@9i6J9d6O9g6Y9o6c9w6c #e6p#^6o#W6p#P6s#Z6u#d6t 0~7/0x7)0t7*0q7-0r7.0v710z71 0b740T7/0M7/0K720R760b76 !~7A#*7?#07@#87;#D7:#C79#:77#279#.7;#!7:!|7; 0?7T0A7O0F7Q0L7N0W7K0e7H0e7C0m7D0t7@0k7;0Z7@0T7D0J7?0:78067?0)7=017C037K067T 8d7]8b7U8m7N8_7G8A7@867=8)7?7e7C7o7G7W7L7k7N7k7Q7T7S7Z7Z7l7[7|7T827Z8A7W8Q7] 1H7d1;7d197i1?7n1H7p1P7m1P7i1O7g !Y7^!b7Z!^7d!z7b#67W#,7R!t7Q!s7H!o7F!f7F!]7I!O7L!M7Q!C7R!57Q!07T!27X!#7V!+7Q!!7M!!7w!?7o!Z7e /)7x.z7u.m7x.e7w.U7|._8#.g8*.q8(.w8#.z7~ !282!!81!!88!#89!/89!?86!=84 /_7~/^7r/m7z/y7s/v7l0%7e027l097u0:8(0J8%0Y8#0h7y0i7t0a7n0h7i0g7d0R7[0D7Z077^047X0+7O0(7K/t7D/f7C/]7?/[77/P75/C7-/76z/36r/26f/C6e/G6Y/L6R/Z6T/o6P/y6L0(6G046D0A6@0Q6?0]6=0[640_6*0g5w0v5m1#5p1+5|1#620w681/6=1:6E1B6L1A6S186]1,6e186p136y107017731J701T7/1^711h7.1t7(1w6~216~216s246g2?6e2G6^2U6e2a6p2g6t2o6k2~6^3/6Q3+6J386E3C6?3S6:3Z673_6/3g6-3k6*3l5v3e5s3]5o3K5l3?5c3,5b2n5d2^5d2S5c2K5Z2=5V2-5H1z5?2*5A2:5N2Q5V2b5W2k5R2b5L2e5A2h572u523.54385A39583A54335.2t5(2k4~2^4t2V4u2U5#2i5.2W5.2L5,2M5)2C4~264y2,4v2#4o2!4n2!4h2(4c2,4c2+4f2.4d2-4a2%4_1z4_1r4]1n4]1h4[1_4X1o4Z1r4X1d4U1[4U1[4W1X4T1[4S1Y4L1R4D1Q4G1O4G1L4J1N4E1P4C1P4?1M491H411G421J481E4=1D4G1B4B1D4:1;4;1D481D4/1G4.1H4+1J3y1C3q173n103h1+3h1#3d1!3a0r3X0l3S0h3M0f3F0h3?0k350p3.0p3)0t2v0t2o0t2k0q2e0n2d0i2e0h2i0d2l0^2t0X2~0V3(0X3/0V340N3=0J3@0@390=3:073A013C0#3B/u3C/m3B/i3A/k3=/k38/m36/k35/g36/c34/Z34/S3:/J39/C3;/;3:/238/)30.w3,.r3%.o2|.o2t.p2o.r2l.n2c.l2Z.k2L.j2G.l2B.o2;.q23.x2,.z2#/#1y/11w/51r/@1u/G1v/O1x/U1z/[2#/_2,/_24/b27/i2:/t2=/~2=0*2=0-2:0-250%200!2)0%2(0!1|/|1t/x1v/v1v/v1u/x1t/x1r/v1m/w1l/v1h/w1g/u1b/s1_/r1^/p1Z/s1X/t1Z/w1X/x1X/z1Z0!1Z0#1Y0%1Y0,1Y011Y041Z051[081[0;1Z0?1Z0A1[0F1Z0G1Y0J1W0M1U0Q1T0T1Q0S1P0R1N0S1J0Q1G0P1C0O1=0P1:0P150O140N100N1-0L1+0M1(0N1#0Q0y0U0u0Z0q0^0m0^0k0c0k0d0k0g0i0l0j0p0l0v0n0y0q1%0q1#0p1,0o100m140j170h1?0g1F0n1J0o1J0s1L0|1R1(1X1(1Y1*1c1)1k1.1o111s151w151z121x1/1w1,1r1+1u1%1u0y1p0t1t0l1x0l1|0t1w0w1w1%2+1+2*1/2.13211,281+2A1#2A0|2J0z2U0|2Z0w2d0v2j0y2j0|2v0~3*0~2z0y3!0t3-0t350o360g3;0g3A0e3H0a3N0X3N0S3R0S3X0N3]0K3j0I3k0K3s0K4!0I4)0G400E4;0;4=074B074D024J/x4O/v4P/o4H/g4K/d4^/c4^/W4g/^4s/Z5,/S51/N5//H5;/K5P/F5a/F5p/=6!/16,/.65/.69/*6=.v6@.p6:.^65.W6%.I5x.;5q.35n.25k.+5l-p5i-a5h-X5e-T5c-G5W-85V-.5M-)5K,|5@,|5/,w5%,s4t,p4i,h4_,]4^,U4_,O4],E4Z,@4S,94H,%4?+w46+s42+i4++c4%+[3t+U3l+W3g+V3]+[3U+Z3O+b3N+[3[+R3Y+K3b+G3a+B3V+33G+.31+,3#+-3(+%3#*w3(*r2z*o2o*m2f*q2b*n2c*d2j*a2o*e2r*^2i*Z2a*T2_*J2[*E2R*E2J*?2G*62Q*/2[*-2W)~2K)v2E)j2:)f26)b29)U2A)P2;)P22)P2.)N2!)J1|)A1w)@1k)D1_)K1R)P1N)W1Q)^1L)e1K)v1O*(1Z*01K*31T*;1W*N1e*J1j*a1c*d1_*U1X*W1[*g1_*z1e+(1b+21a+?1e+@1k+P1r+b1w+q1t,(1w,01v,=1~,K2#,_2),u2,-32+-E2)-T1w-Y1v-^1c-i1O-t1G-|1C.+1D..1:.;10.O1%.e0|.j0w.q0p.x0i.~0l/(0g/20j/90r/A0w/H0u/M0q/H0k/M0m/O0l/X0o/Z0q/b0u/i0t/m0z/o1(/s1%/v1+/w1*/~1-0%120(160.1:031606180=160G180I160R120W1/0Z1-0b1/0d1-0e1+0h1#0k0y0j0w0g0s0d0q0d0p0b0u0Z0r0Y0q0X0l0W0j0^0i0[0f0]0d0b0_0c0[0d0W0d0V0b0U0c0P0e0N0h0O0i0O0l0L0n0H0p0E0q0D0t0A0v0B0s0@0q0=0s080t070v070y081!061#081(041+001/0.120)16/~1:0!1=0%1:0(1;0#1@/|1A/z1=/t1?/q1@/l1B/g1B/d1D/^1F/W1F/R1H/M1L/A1W/:1Z/21^/,1].~1Y.w1X.p1Z.i1]._1c.V1d.K1i.B1m.@1p.81q..1t.*1x-w2#-r2,-p21-s22-r25-t28-t2;-q2B-p2F-m2K-d2U-X2]-S2e-J2i-I2k-J2q-E2t-?2y-;3(-53(-/3.-+33-*36-!3?,y3G,z3K,r3O,o3N,i3Q,h3M,i3H,j3A,n3;,u34,w31,x31,z3-,|3--!3%-(2~-+2y-12t-42j-72f-:2a-:2Z-A2Z-E2U-I2Q-I2O-D2K-C2K-@2Q-82W-02]-+2_-,2h-*2m-!2p,v2u,u2s,s2v,l2x,f3#,g3%,k3#,o3*,o3/,h36,b39,]3A,X3G,T3O,P3X,N3^,H3e,C3f,B3i,:3j,73l,-3m,+3o,*3u+x4%+p45+p47+k4:+d4E+b4M+[4R+^4Z+^4e+Z4m+_4v+b50+_5@+[5H+X5M+Y5O+j5K+o5B+r5E+p5M+m5U+k5U+V5a+O5e+;5i+55r+65x+*6!+(6-*t64*t69*n6?*e6B*c6K*T6S*N6]*E6^*36^*%6b)j6l)a6n)M6r)?6q)*6v(v6z(k6x(m6q(g6p(Z6n(Q6k(F6i(D6n(I6x(T6|(Q7#(D6x(;6r(-6k(46f(+6]%x6X%n6U%k6Q%Z6L%W6G%K6C%D6C%96A%/6;%#68#m65#l67#w6;%(6@%36F%A6G%F6K%T6Q%V6S%_6W%a6_%g6f%Y6c%V6e%P6a%J6f%G6c%C6h%76d%16d%06j%26m%,6q#w6o#n6t#h6v#g6~#_7(#d7.#l73#o78#w79%#78%.7=%67=%?7A%;7E%67G%?7K%77K%,7I%)7F#z7I#k7G#[7J#W7N#J7T#X7X#p7^#x7^#w7X%47X%,7_#x7d#q7i#g7m#W7q#^7v#q7v%!7|%(8(%28,%=8-%Q82%Z81%k87%z84(*80(.82(A81(@8/(P8-(Z8.(q8+),8*)48))C8+)R8()^8#)r7~**7w*47v*?7z*K8!*Z7~*k8(*|8++*8%+18)+48.+;8-+M7~+[8++]7|+j8!+n8(+z8%,27|,K7w,Y7u,e7v,r7q,d7l,v7j-97k-D7m-N7g-Y7l-O7p-U7t-c7t-k7u-t7s.#7m.17n.D7i.T7k.e7k.c7q.l7s.~7o.~7f/*7n/27n/77x/,8#.x8*.y85/-8=/:8;/F86/T8+/K8# ,o8J,j8F-)8I-68D-D8I-M8E-U8:-Z8@-S8J-]8K-h8J-s8F-y8:-~83.58..I8).H8!.67~.=7x.97u.%7v-m7y-b7x-M7u--7s,x7r,r7w,e7z,Z7y,N8),T8*,f8+,t8+-)8-,m8/,V8.,H8.,C82,Z86,J86,789,A8B,H8F,e8L 1D8J1D8G188H1-8H0z8F0w8G0l8L0m8P0q8Q108P 0/8K078D0B8L0]8Q0o8F0n8@1)8C138F1K8A1Y8;1Z861o891y82298.2D8*2M7y297t2S7n2d7k2s7b3*7b3%7Y2n7M2b7Q2P7[2C7Z2B7T2L7N2Z7I2_7G2f7;2c742T76297@2I762T702U7,28701|761o7;1r7@1c7E1S7J1S7G147E1+7I127P1G7P1[7R1X7U1]7Z1j7f1h7j1d7n1S7s1=7v1E7x188%1/8%1%8+0z8(0h8#0B8)0*8,/r8-/j81/t85/f85/c8A/k8J/u8N078Q .O8Q.[8O.o8Q.r8N.h8I.x8E.v8:.e86.Z87.S8:.88D.88G.O8F.D8M MS8KMD8KM-8LM,8MM58QMD8RMR8N /C8G/68?/+8@/!8H/!8M/*8R/48T/K8T/_8R/O8I ,,87+j82+e86+L8=+O8A+W8I+b8P+V8V+z8W,08U,K8U,U8R,b8N,S8K,98D,,8; NF8_N98ZN)8[Mn8aMq8dN+8b /?8^/78Y/)8Z.u8].z8c/08e/98b Md8eMZ8[M38[L|8YLg8bLl8hLy8jM=8j .d8p.l8l.l8f.g8^.U8].J8_.J8e.88e.78l.D8l.S8o.c8o -U8k-Y8g-d8i-n8i-p8d-j8^-F8[-+8W,t8W,r8Z-/8a,X8^,J8a,X8k,c8n-%8j-98d-L8d-=8m-G8q-R8p C=80C68/Bn81Bk85BW88BV8?Bb8ABa8GBu8OBl8PC,8YC)8_CB8eCe8lD.8mDA8qDU8rD]8nDU8kD/8fCi8bCH8VC78LC%8CC)88 /28t/?8q/S8q/]8m/Y8j/g8g/m8e/|8e018d0C8f0W8g0j8f0t8b0w8]0p8Z0b8W0S8Y048W/w8W/g8X/K8[/G8c/F8h/:8l/!8m.r8q.v8u ,Y8y,X8r,P8n,G8n,28j+z8h+l8j,!8r,:8x,K8x I38sI58nIA8pI_8pIv8kJ#8gI~8bIq8^IU8XIM8UIY8SIj8QIs8SIx8LJ!8OJ58QJW8OJY8JK-8IK.8PKE8OKU8OKg8IKl8CKf8?Kr85L*81L48;LF87LW8:Ll86Ls89M,88L~8CM28GN88ANC89N^81O/83OE82OM8.OL8#OX7|Oh8!Oz8#P47~PI8!P[7tPi7wPa8#Pf8*Q-8%QD8(Qc7|Qq7wQq7MQd7HQU7IQ_7DQf7:Qk77Ql73Qi70QU72Q77+Q.7*Pw6|Ph6tPd6pPT6wP86oP36sP*6nOt6pOq6iOe6^Of6YOq6WOp6IOf6HOb6@Of6:OS64OO6)O@6%O;5tO-5kO)5rO!6)Nw6AN~6OO-6UO-6YO?6]OQ6jOd6tOv6~P#73Or72Ol7)OP6vOH7+O,7%Nk6oNs6hN[6fNL6eNL6lN;6nN.6iMh6jME6gL|6RLR68Ld67Li61Ls6/Ly64M,63M:6(M;5wM35mM25aM.5OLw5ALs58Lf5,LV4yLP4sLB4mL:4mL44rL#4kL!4gKy4hKu4dKr4aKr4XKm4VKk4TKg4QKa4OKZ4MKZ4HKY4GK^4FKd4AKm43Kp4-Kp3yKl3tKc3rKY3nKP3mKO3rKQ3zKL4,KT4.KM46KH48KG47KD46KC48KA48K=4:KA4@KC4BKB4CKE4IKD4KK=4LK84NK*4KJz4GJp4DJu4IJs4MJ|4SJu4XJm4UJa4NJY4HJO4GJJ4BJP4:JX48JX43Jb41Jm48Jv44K!44K#4.Jp4,Jk4#Jb3yJ[3rJg3mJk3cJq3XJx3PJx3HJr3FJt3@Jz3;Jx33Jv3+Jp3*Ji2xJa2jJV2]JH2SJ82KJ-2JJ%2EI|2HIu2DIg2?I[2;IW20IR20IO27IR2;ID2@I@2?I024I(2+I#1~I-1qI71dIB1]IH1TIL1AIK1.IC1%I50yI-0pHy0gHu0mHx0tHp0zHh0|Hd1)H^13HT17HK17HM1AHD1AHC14H=1!H90uH90mHB0mHF0dHH0YHM0THS0RHX0MH[0LHc0FHg0@Hg07Hf02Hg0/Hh0)Hl0#Ho/uHo/rHh/qH^/yHQ0)HP0.HJ04HI0?HE0DHF0KHD0PH@0SH=0XH70_H20eH00^H/0eH00kH30tH20~H51+H111H21=H.1CH+1OH)1]H!1fGv1aGk1XGe1YG^1[Gb1jG_1sGV2%GX2*GR2,GK24GH29GG2@GE2EGA2KG62KG72GG42AG/2CG.2BG+2CG%2DG#2@Fw2@Fk2=Fk24Ff2/FV2(FJ1tFC1nF71gF71cF21_F)1[E~1ZEy1RE|1EE~1;Ex12Ex0yEr0xEn0pEq0mEh0jEd0dE_0aEU0jEP0xEL1*EI1/ED18EA1GE?1ME41[E01pE-2!E-21E+2;Du25Dn26Da2DDe2HDb2KDU2TDM2VDJ2_DC2gD.2eCv2eCh2dCS2gCH2iC;2jC72wC22xC*2wBx2rBl2uBb3!BV3(BP31BH3@BC3?B:3BB73=B13?B338B236B53/B93#B@2~BB2xBI2tBI2pBH2lBI2iBL2fBN2cBO2aBN2hBQ2mBT2nBW2kBW2eBU2^BW2YBY2ZBY2WBc2YBk2YBq2XBx2aC%2gC.2nC12qC22pC12lC02jC12bC52YC;2VCD2TCJ2SCO2MCR2JCU2HCU2FCQ2@CP2;CL28CH21CC22CA2/C@2*CA1~C@1zC91zC31wC21rC01pC*1pC#1mC#1iBy1gBs1gBm1dBh1dBa1aB^1ZB^1WBS1SBC1NB81GB31FB01GB+1CA~1AAt1@Aq1@Ao1;Al1;Ak18Af18Ac17AZ17AW1?AX1EAV1HAT1OAQ1SAS1TAR1XAS1ZAS1_AQ1eAN1hAN1lAI1oAC1xA@2(A72/A320A,2:A+2CA,2IA#2T@y2X@t2Z@q2b@q2d@n2i@k2k@g2s@a2|@Z3*@U3*@W3/@W33@Y37@X38@U34@S3,@Q3%@N3!@K3)@F3-@?3=@=3;@B30@H3#@P2n@T2i@W2c@b2V@_2U@_2N@l2E@n2C@q27@o25@p2+@t1w@x1uA!1qA+1eA.1ZA31UAC1LAH1FAN1@AQ1;AV18AX15AX11AR1.AV1,AZ1*A]1#Ab0yAg0yAq0~A|1!B,1(B11)B51+B:1+B@1+BD1-BJ1.BN11BR11BR1.BQ1)BQ0|BO0xBM0mBH0bBB0SB70DB.07A|0*Aq/yAb/pAV/hAK/ZAI/UAG/RA@/NA;/JA8/IA6/BA3/=A1/6A-/2A(/#A).xA/.uA0.rA-.lA..iA-.dA0.]A4.RA8.PA:.KA9.AA;.7A;.%A?-zA:-sA6-lA0-fA#-b@s-[@h-P@d-O@[-G@W-E@V-=@[-4@^-/@^-,@a-,@_,z@^,v@a,t@_,p@Y,l@Q,i@E,c@A,_@B,Z@D,Y@C,T@A,L@@,D@;,?@4,8@2,7@.,2@+,-@#,#?r+s?k+m?d+i?W+e?R+d?Q+b?K+c?F+a?9+c?3+b?/+b=~+]=t+[=n+W=i+W=e+Z=b+[=[+a=[+_=Y+b=Z+h=V+o=Y+q=Y+x=S,*=N,2=F,A=?,I=9,P=7,Z=4,c=1,r=1-#=0-,=,-0=%-8;y-F;w-M;o-V;n-_;m-f;o-o;r-x;s.!;v..;x.2=#.8=).?=*.F=*.L=%.O;~.U;z.[;z.^=!.c;z.m;x.t;s.z;t.~;s/%;p//;h/9;]/E;U/N;O/X;O/[;Q/_;T/h;V/o;T/q;W/~;Y0,;U02;P04;N09;L0:;L0?;B09;=0:;807;008;+0@;%0G:x0N:q0N:h0N:_0L:V0J:F0D:@0A:50=:,0A:(0A9y0C9s0C9g0A9_0=9T089R099O099E0?9:0G910L9+0S9(0T8y0X8t0^8r0c8q0j8l0p8h0t8f0u8c0w8b0~8a1#8]1%8V1,8R1,8P1/8P118M138L158K1?8L1C8H1K8C1N8G1P8L1W8N1]8N1d8P1i8R1r8P1~8O2)8P2.8N238H278I2;8I2B8M2E8P2J8P2M8S2T8Y2[8]2]8a2d8a2i8e2p8k2s8r3!8w3)9(3*903195349?3=9;3K9A3S9B3Y9H3a9R3f9Z3j9c3t9f3|9m3|9s3v:!3w:/3u:33u:?3z:J3~:P4(:Z4+:m4-;!4.;*4,;440;@40;D4.;K4.;V43;^41;^4,;g40;h4.;c4);c3~;f3z;e3q;]3l;_3g;f3g;h3b;l3_;x3[;~3]=,3Z=93V=@3M=I3K=W3G=d3B=i3D=n3I=k3Q=n3U=v3Z=~3[?23Y?53U?93U?=3S?H3R?K3O?X3O?d3L?n3I?r3H?z3K@#3N@/3O@63M@93H@;3L@E3I@M3I@R3K@U3N@T3O@W3T@Y3[@Z3_@_3h@e3o@d3w@f3|@c4(@g4,@a4+@V4-@O4%@@4#@64+@+4,@)4(?z4#?p4,?e4,?^46?V4;?[4E?U4J?b4S?q4T?u4[@04Z@=4b@J4e@[4e@n4]@~4XA04ZA94YAG4_AH4eAF4kA@4oA84pA54sA(4~@t5(@l5-@s5/@|57@v5;A,5AA,5D@|5B@s5A@m5=@c5;@Y58@Y52@_5/@j50@h5,@[5*@N5!@H5%@J5+@@5.@A50@K54@H56@658@65=@,5;@)55?y5.?y5+?t5)?q5*?o4v?i4r?f4k?i4e?j4a?s4]?q4Z?e4Y?a4V?W4Q?S4U?T4W?M4X?H4X?:4V?C4P?=4O?64O?14T?/4R?14L?74G?34E?84@??4;??46?448?743?142?54)?.4)?#4-=z45=x4==t4C=o4H=o4K=m4L=m4N=g4R=f4V=g4^=h4b=g4d=e4e=b4h=]4j=R4n=L4q=C4t=94|=;4~=65(=65,=05-=-5)=*5,=*50=,51;~52;t5/;u5*;t5%;w4z=(4u=-4m=84e=B4e=E4b=B4_=K4[=R4X=[4S=]4Q=Z4M=T4R=L4S=G4M=O4I=N4D=I4C=D49=@48=@4;=B4C=D4E=@4J=;4O=74Q=44U=.4W=)4[;z4];r4b;i4i;b4n;^4x;X4y;P5!;K4|;F4w;A4v;64p:|4s:l4p:k4j:k4d:b4[:S4Y:R4V:L4P:H4H:L4B:F4=:D45:;43:44,:%4,9u4,9o4(9k3~9f4!9c4)9_4.9T409P4-9K4/9F4.9H469G4=9B4?9@4B9A4I9E4M9E4Q9G4W9G4[9E4_9E4d9E4k9A4o9O4v9[4u9k4u9v4s:#4t:64s:;4y:?55:35B:+5G9t5K9s5R:(5T:95Q:65^:A5X:X5b:[5j:f5l:n5n:s5q:~6(;26,;:6,;=6.;F6.;H6,;O61;M65;L6;;H6B;H6L;J6O;L6R;U6S;Y6U;c6X;b6S;_6P;a6M;f6L;d6H;a6I;X6B;Z6;;Z67;g65;f61;q63;v66=)62=.6/=562=G66=S6:=^68=_65=j65=l6:=z6?=x6G=x6O?!6U?.6Y?66Q?@6Q?B6Y?C6a?@6_?76c?66i?E6l?R6m?]6k?i6l?t6q?j6v?V6u?D6r?26o?,6u=z6x=~7*=x73=~79?-7A?F7L?M7N?L7R?=7W?+7T=y7M=|7G=k7?=U74=N7#=U6w=a6r=V6g=K6d=G6Q=B6H=46I=.6A;z6A;w6J;o6U;g6f;a6l;K6_;;6];.6c;*6n;%7-;073;M7=;b7H;u7V=57k=G7s=e8%=|8,?38+?D83?W83?k85@28.@!8+@08!@:8(@M7z@j7xA87lAB7hAB7aA57ZA!7W@N7a@G7^@W7V@X7G@g7D@o7A@p7F@j7K@q7NA17HA97KA37RAL7]AU7[A_7XAf7aA]7gAc7mAZ7sAx7pB!7jAq7iAq7cAx7_B07bB27hBI7mBn7vBv7uBl7oBx7nC%7qC:7rCK7vCV7pCd7vCW7~C^8(C~7~D27yDX7nDa7sDU7xDT7|DH7~DL8(DF80DF83DX8=Da8GDh8IE+8GE-8AD|87E*84E-8-E+7wE67qE17jDv7ZE)7YE-7]E87aE;7fEF7kE@7pED7wE77xE58!E?8/E087ED8@EB8GEG8HEL8BEH86ES85EN8=Ea8BEv8BF08;F%8EF#8OF88RFR8QFi8RFa8XFm8_Fx8_G48eGP8gGS8iGp8jGx8hH68mHK8mHM8rHW8vHq8zI*8wHt8t /;8x/68x.|8y.y8|/58|/=8y -A8z-,8w,v8z-#9#-49%-D9! ?F8~?.8w=t8z=|8~=u9(?29*?69# -F9+-89)-(9)-(9+-29--79- /%9#.p8~.h9#.c9*.c9..p9-.u9-/)9) .R9(.V8~.F9!.49(-u9).%9,-s9.-r92..91.K9- Hx9(H;8~HP91HX92Ha92H|9, =Z96=~9/=c9+=]8|=S8y=N8q=B8q=+8w=48z=!9!;i9.;a96=!99=*96=896==99=M9: ?M9??c9:?R94?393=n95=l97=]98=Q9==r9A?(9??29B BR9@BE9?B:9=B99;B-99Az9;B(9AAi9AB!9CB49CB69@B=9CBG9DBV9B HB9.H+9-Gg9/GT93GL9:G?9=GY9EGp9HH,9BHE97 0+9607920)9//o9(/[9%/F9(/99-/:90/D93//93.~96.v9;/!9A/,9D/69E/29G/K9H/X9B/k9@/|9= 2=9Z2Y9Y2p9X3+9U3*9S2j9N2O9L2F9J2]9J2E9D229A1y971e951]931=921L911E9/1M9*1D9%128~1-8x0w8u0y8s128s128q0o8k0S8n048l0!8m/j8n/i8s/|8u/v8~0!9!0A8x029%/y9)0)9-0;9/0@9200960,9=0I9;0Q9:0c9@0J9A0!9@/k9D/c9H/U9K/S9N/d9P/p9P0+9R0:9V0H9U0S9R0[9X0j9Y0~9Z1E9[1J9Z1i9[2#9[ 769_7y9V7f9R7=9R6]9Q6c9O7.9P7O9M7d9P7l9L7a9G7|9J8U9N8u9L8|9H8P9A8K9?8)9;8B9:84938,9-8,8y888s8)8r7p8o8+8j8-8a7z8a8/8V7q8U8!8Q7y8N7k8L7[8L7j8E7j8A7T8E7O8B7^8@7l887o807]8.7T827H877K817?8+7Z8+7j8*7M7z707r6j7n6^7n6S7j6E7_6-7W6%7V5q7T5c7R5X7K5X7D5S7=5C745G7,5B6~5;6r5-6q4v6z4b6z4W7%4P714?7?487F467O4(7X4,7a4!7e4/7q4@7t4D7x4F8(498!437|4*7z3v8!3u8,3y814+814A8/4.854!883s873k8:3v8E3p8I3h8O3Z8Z3M8_3M8d308j2s8k2V8j2=8j208m1w8s298v2O8w1|8y1d9!1e9)239.2Z932_972C9:2K9@2p9G3%9H2z9M3:9O3[9Q3~9Q4/9N4K9S4e9P4s9O509L4p9Q4q9U5;9[5b9[5o9_6:9a';
+    var T3D_EARTH_ALPHA = '!#%()*+,-./0123456789:;=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_abcdefghijklmnopqrstuvwxyz|~';
+    function t3dEarthRings() {
+        var idx = {}, i;
+        for (i = 0; i < T3D_EARTH_ALPHA.length; i++) idx[T3D_EARTH_ALPHA.charAt(i)] = i;
+        var B = T3D_EARTH_ALPHA.length;
+        var rings = [];
+        var parts = T3D_EARTH_COAST.split(' ');
+        for (var p = 0; p < parts.length; p++) {
+            var s = parts[p], ring = [];
+            for (var k = 0; k + 3 < s.length; k += 4) {
+                ring.push([
+                    (idx[s.charAt(k)] * B + idx[s.charAt(k + 1)]) / 10 - 180,
+                    (idx[s.charAt(k + 2)] * B + idx[s.charAt(k + 3)]) / 10 - 90,
+                ]);
+            }
+            if (ring.length >= 3) rings.push(ring);
+        }
+        return rings;
+    }
+    // Subsolar point from the browser clock - NOAA approximation (eq. of time
+    // + declination Fourier series). Good to ~1 degree; the panel discloses it.
+    function t3dEarthSun(date) {
+        var start = Date.UTC(date.getUTCFullYear(), 0, 0);
+        var doy = Math.floor((date.getTime() - start) / 86400000);
+        var y = (2 * Math.PI / 365) * (doy - 1 + (date.getUTCHours() - 12) / 24);
+        var eqtime = 229.18 * (0.000075 + 0.001868 * Math.cos(y) - 0.032077 * Math.sin(y)
+            - 0.014615 * Math.cos(2 * y) - 0.040849 * Math.sin(2 * y));
+        var decl = 0.006918 - 0.399912 * Math.cos(y) + 0.070257 * Math.sin(y)
+            - 0.006758 * Math.cos(2 * y) + 0.000907 * Math.sin(2 * y)
+            - 0.002697 * Math.cos(3 * y) + 0.00148 * Math.sin(3 * y);
+        var utcH = date.getUTCHours() + date.getUTCMinutes() / 60 + date.getUTCSeconds() / 3600;
+        var subLon = -15 * (utcH + eqtime / 60 - 12);
+        subLon = ((subLon + 540) % 360) - 180;
+        return { lat: decl * 180 / Math.PI, lon: subLon };
+    }
+    function t3dEarthClockTick() {
+        var el = document.getElementById('t3dEarthClock');
+        if (!el) return;
+        var now = new Date();
+        el.textContent = 'Local ' + now.toTimeString().slice(0, 8) + '  -  UTC ' + now.toUTCString().slice(17, 25);
+    }
+    function t3dEarthPre() {
+        t3dEarthClockTick();
+        if (!window.__t3dEarthClockTimer) window.__t3dEarthClockTimer = setInterval(t3dEarthClockTick, 1000);
+    }
+    function t3dEarth(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        var R = 10;
+        var rings = t3dEarthRings();
+        function latLonVec(lat, lon, r) {
+            // matches THREE.SphereGeometry's equirectangular UV layout
+            var phi = (90 - lat) * Math.PI / 180;
+            var theta = (lon + 180) * Math.PI / 180;
+            return new THREE.Vector3(
+                -r * Math.sin(phi) * Math.cos(theta),
+                r * Math.cos(phi),
+                r * Math.sin(phi) * Math.sin(theta)
+            );
+        }
+        function paintMap(night) {
+            var w = shell.low ? 1024 : 2048, h = w / 2;
+            var c = document.createElement('canvas');
+            c.width = w; c.height = h;
+            var x = c.getContext('2d');
+            if (night) {
+                x.fillStyle = '#020a12';
+                x.fillRect(0, 0, w, h);
+            } else {
+                var grad = x.createLinearGradient(0, 0, 0, h);
+                grad.addColorStop(0, '#2a5b82');
+                grad.addColorStop(0.5, '#1b4666');
+                grad.addColorStop(1, '#2a5b82');
+                x.fillStyle = grad;
+                x.fillRect(0, 0, w, h);
+            }
+            function px(lon) { return (lon + 180) / 360 * w; }
+            function py(lat) { return (90 - lat) / 180 * h; }
+            var r, k, ring;
+            for (r = 0; r < rings.length; r++) {
+                ring = rings[r];
+                x.beginPath();
+                x.moveTo(px(ring[0][0]), py(ring[0][1]));
+                for (k = 1; k < ring.length; k++) x.lineTo(px(ring[k][0]), py(ring[k][1]));
+                x.closePath();
+                if (night) {
+                    x.fillStyle = '#0b1522';
+                    x.fill();
+                } else {
+                    x.fillStyle = '#7ea16b';
+                    x.fill();
+                    x.strokeStyle = '#c9dcb8';
+                    x.lineWidth = w / 1024;
+                    x.stroke();
+                }
+            }
+            if (night) {
+                // stylized coastal glow - dots along coastline vertices
+                x.fillStyle = 'rgba(255,214,120,0.85)';
+                var dot = w / 1024;
+                for (r = 0; r < rings.length; r++) {
+                    ring = rings[r];
+                    if (ring.length < 12) continue;
+                    for (k = 0; k < ring.length; k += 2) {
+                        if (ring[k][1] < -58) continue; // no lights on the antarctic coast
+                        x.fillRect(px(ring[k][0]) - dot / 2, py(ring[k][1]) - dot / 2, dot, dot);
+                    }
+                }
+            } else {
+                // graticule every 30 degrees, like a seatback flight display
+                x.strokeStyle = 'rgba(255,255,255,0.16)';
+                x.lineWidth = 1;
+                var g;
+                for (g = -150; g <= 180; g += 30) { x.beginPath(); x.moveTo(px(g), 0); x.lineTo(px(g), h); x.stroke(); }
+                for (g = -60; g <= 60; g += 30) { x.beginPath(); x.moveTo(0, py(g)); x.lineTo(w, py(g)); x.stroke(); }
+                x.strokeStyle = 'rgba(255,255,255,0.3)';
+                x.beginPath(); x.moveTo(0, py(0)); x.lineTo(w, py(0)); x.stroke();
+            }
+            return new THREE.CanvasTexture(c);
+        }
+        var globe = new THREE.Mesh(
+            new THREE.SphereGeometry(R, shell.low ? 48 : 64, shell.low ? 24 : 32),
+            new THREE.MeshLambertMaterial({
+                map: paintMap(false),
+                emissive: new THREE.Color(0xffffff),
+                emissiveMap: paintMap(true),
+                emissiveIntensity: 0.9,
+            })
+        );
+        scene.add(globe);
+        var atmo = new THREE.Mesh(
+            new THREE.SphereGeometry(R * 1.06, 48, 24),
+            new THREE.MeshBasicMaterial({ color: 0x4d9fe0, transparent: true, opacity: 0.16, side: THREE.BackSide, depthWrite: false })
+        );
+        scene.add(atmo);
+        var SCOUNT = 1200;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(300 + Math.random() * 500);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.7, sizeAttenuation: false })));
+        scene.add(new THREE.AmbientLight(0xffffff, 0.14));
+        var sunLight = new THREE.DirectionalLight(0xfff6e0, 2.4);
+        scene.add(sunLight);
+        var sunMesh = new THREE.Mesh(new THREE.SphereGeometry(2.4, 16, 8), new THREE.MeshBasicMaterial({ color: 0xffd54f }));
+        scene.add(sunMesh);
+
+        var offsetH = 0;
+        var offsetEl = document.getElementById('t3dEarthOffset');
+        var offsetLabel = document.getElementById('t3dEarthOffsetLabel');
+        var nowBtn = document.getElementById('t3dEarthNow');
+        function labelOffset() {
+            if (offsetLabel) offsetLabel.textContent = offsetH === 0 ? 'now' : ('now ' + (offsetH > 0 ? '+' : '-') + Math.abs(offsetH) + ' h');
+        }
+        if (offsetEl) offsetEl.addEventListener('input', function () {
+            offsetH = parseFloat(offsetEl.value) || 0;
+            labelOffset();
+        });
+        if (nowBtn) nowBtn.addEventListener('click', function () {
+            offsetH = 0;
+            if (offsetEl) offsetEl.value = '0';
+            labelOffset();
+        });
+
+        t3dInfo('<h3>Earth - live day and night</h3><p>The lit half of the globe is where the sun is above the horizon RIGHT NOW, computed from this browser\'s clock; the dark half is in night. Drag to spin the globe, scroll or pinch to zoom in and out, click any point for its coordinates and approximate local solar time, and use the time slider to preview the terminator up to 12 hours ahead or behind.</p><table class="w3-table w3-bordered"><tr><td>Diameter</td><td>12,756 km at the equator</td></tr><tr><td>One rotation</td><td>23 h 56 min 4 s (sidereal)</td></tr><tr><td>Axial tilt</td><td>23.4 degrees - the reason the terminator leans with the seasons</td></tr><tr><td>One orbit</td><td>365.25 days</td></tr></table><p class="t3d-note">A stylized vector map in the spirit of an airline seatback display: coastlines are the public-domain Natural Earth 1:110m dataset (simplified), the sun position uses a standard approximation good to about one degree, and the night-side glow is a stylized coastal effect, not real city-light data.</p><p id="t3dEarthPick" class="t3d-note"></p>');
+
+        var ray = new THREE.Raycaster();
+        shell.onClick = function (e) {
+            ray.setFromCamera(shell.ndc(e), shell.camera);
+            var hits = ray.intersectObject(globe, false);
+            if (!hits.length) return;
+            var p = hits[0].point.clone().normalize();
+            var lat = 90 - Math.acos(Math.max(-1, Math.min(1, p.y))) * 180 / Math.PI;
+            var lon = Math.atan2(p.z, -p.x) * 180 / Math.PI - 180;
+            lon = ((lon + 540) % 360) - 180;
+            var when = new Date(Date.now() + offsetH * 3600000);
+            var sun = t3dEarthSun(when);
+            var lit = latLonVec(lat, lon, 1).dot(latLonVec(sun.lat, sun.lon, 1));
+            var utcH = when.getUTCHours() + when.getUTCMinutes() / 60;
+            var solarH = ((utcH + lon / 15) % 24 + 24) % 24;
+            var hh = Math.floor(solarH), mm = Math.floor((solarH - hh) * 60);
+            var el = document.getElementById('t3dEarthPick');
+            if (el) el.textContent = 'Selected point: ' + Math.abs(lat).toFixed(1) + (lat >= 0 ? ' N' : ' S') + ', '
+                + Math.abs(lon).toFixed(1) + (lon >= 0 ? ' E' : ' W')
+                + ' - ' + (lit > 0.03 ? 'in daylight' : (lit < -0.03 ? 'in night' : 'near the terminator'))
+                + ' - local solar time about ' + (hh < 10 ? '0' : '') + hh + ':' + (mm < 10 ? '0' : '') + mm + '.';
+        };
+
+        var subEl = document.getElementById('t3dEarthSub');
+        var subT = 1000;
+        return function animate(dt) {
+            var when = new Date(Date.now() + offsetH * 3600000);
+            var sun = t3dEarthSun(when);
+            var dir = latLonVec(sun.lat, sun.lon, 1);
+            sunLight.position.copy(dir).multiplyScalar(60);
+            sunMesh.position.copy(dir).multiplyScalar(90);
+            subT += dt;
+            if (subT >= 1000) {
+                subT = 0;
+                if (subEl) subEl.textContent = 'Sun overhead: ' + Math.abs(sun.lat).toFixed(1) + (sun.lat >= 0 ? ' N' : ' S')
+                    + ', ' + Math.abs(sun.lon).toFixed(1) + (sun.lon >= 0 ? ' E' : ' W')
+                    + (offsetH === 0 ? '' : ' (previewing ' + (offsetH > 0 ? '+' : '-') + Math.abs(offsetH) + ' h)');
+            }
+        };
+    }
+    T3D_REGISTRY.earth = {
+        fn: t3dEarth,
+        preset: { radius: 30, maxR: 90, minR: 12.5, phi: 1.25 },
+        row: 't3dEarthControls',
+        ready: 'Drag to spin the globe, scroll or pinch to zoom, click a point for its coordinates and solar time.',
+        pre: t3dEarthPre,
+    };
+    /* T3D_MODULE:earth END */
+
+    // ---- bootstrap ------------------------------------------------------------
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return; // not a 3D scene page
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var mod = T3D_REGISTRY[kind];
+        if (!mod) { for (var kk in T3D_REGISTRY) { kind = kk; mod = T3D_REGISTRY[kk]; break; } }
+        if (!mod) { t3dStatus('No 3D scene module is registered on this page.'); return; }
+        // Show only this scene's control row (emitted pages carry only their own).
+        for (var k in T3D_REGISTRY) {
+            var rowId = T3D_REGISTRY[k].row;
+            var el = rowId ? document.getElementById(rowId) : null;
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        // Modules with a sync pre-engine paint (e.g. the GPU capability report)
+        // run it before the engine loads so the page is useful immediately.
+        if (mod.pre) { try { mod.pre(); } catch (ePre) { /* pre-paint must never block boot */ } }
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var shell = t3dShell(THREE, host, mod.preset);
+                    var animate = mod.fn(shell);
+                    if (mod.ready) t3dStatus(mod.ready);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
