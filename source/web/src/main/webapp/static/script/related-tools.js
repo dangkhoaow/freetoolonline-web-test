@@ -334,6 +334,7 @@ try {
     { title: "Sky Gates Flight", url: "https://freetoolonline.com/games/sky-gates-flight.html", include: !1, tags: "games" },
     { title: "City Time Machine 3D", url: "https://freetoolonline.com/games/city-time-machine.html", include: !1, tags: "games" },
     { title: "Percentage Calculator", url: "https://freetoolonline.com/utility-tools/percentage-calculator.html", include: !1, tags: "utility" },
+    { title: "PNG to WebP Converter", url: "https://freetoolonline.com/image-converter-tools/png-to-webp.html", include: !1, tags: "image-conversion" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

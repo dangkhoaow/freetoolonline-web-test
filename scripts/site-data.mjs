@@ -2076,6 +2076,49 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/percentage-calculator-step-by-step.html',
   '/guides/de/percentage-calculator-when.html',
   '/guides/de/percentage-calculator-vs-alternatives.html',
+  // new-tool-discovery-loop-runbook fire (2026-07-06): password-generator
+  // EN + pt/es/vi/id/de guides (backfill - JSP_BY_ROUTE/CMS/JSP were already
+  // shipped by a prior fire but GUIDE_ROUTES was never populated for this
+  // slug, so all 3 angles silently lacked Article JSON-LD, Organization
+  // JSON-LD, editorial byline, AdSense loading, and sitemap-guides.xml /
+  // guides.html / llms.txt listing across every locale).
+  '/guides/password-generator-step-by-step.html',
+  '/guides/password-generator-when.html',
+  '/guides/password-generator-vs-alternatives.html',
+  '/guides/pt/password-generator-step-by-step.html',
+  '/guides/pt/password-generator-when.html',
+  '/guides/pt/password-generator-vs-alternatives.html',
+  '/guides/es/password-generator-step-by-step.html',
+  '/guides/es/password-generator-when.html',
+  '/guides/es/password-generator-vs-alternatives.html',
+  '/guides/vi/password-generator-step-by-step.html',
+  '/guides/vi/password-generator-when.html',
+  '/guides/vi/password-generator-vs-alternatives.html',
+  '/guides/id/password-generator-step-by-step.html',
+  '/guides/id/password-generator-when.html',
+  '/guides/id/password-generator-vs-alternatives.html',
+  '/guides/de/password-generator-step-by-step.html',
+  '/guides/de/password-generator-when.html',
+  '/guides/de/password-generator-vs-alternatives.html',
+  // new-tool-discovery-loop-runbook fire (2026-07-06): png-to-webp companion
+  // guides - full pt/es/vi/id/de locale fanout (EN routes already wired via
+  // JSP_BY_ROUTE by the builder; backfilling GUIDE_ROUTES so the locale
+  // variants appear in sitemap-guides-<lang>.xml / guides.html / llms.txt).
+  '/guides/pt/png-webp-converter-step-by-step.html',
+  '/guides/pt/png-webp-converter-when.html',
+  '/guides/pt/png-webp-converter-vs-alternatives.html',
+  '/guides/es/png-webp-converter-step-by-step.html',
+  '/guides/es/png-webp-converter-when.html',
+  '/guides/es/png-webp-converter-vs-alternatives.html',
+  '/guides/vi/png-webp-converter-step-by-step.html',
+  '/guides/vi/png-webp-converter-when.html',
+  '/guides/vi/png-webp-converter-vs-alternatives.html',
+  '/guides/id/png-webp-converter-step-by-step.html',
+  '/guides/id/png-webp-converter-when.html',
+  '/guides/id/png-webp-converter-vs-alternatives.html',
+  '/guides/de/png-webp-converter-step-by-step.html',
+  '/guides/de/png-webp-converter-when.html',
+  '/guides/de/png-webp-converter-vs-alternatives.html',
 
 ]);
 
@@ -2560,6 +2603,7 @@ export const ALIAS_ROUTES = {
   '/sky-gates-flight.html': '/games/sky-gates-flight.html',
   '/city-time-machine.html': '/games/city-time-machine.html',
   '/percentage-calculator.html': '/utility-tools/percentage-calculator.html',
+  '/png-to-webp.html': '/image-converter-tools/png-to-webp.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3838,6 +3882,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/percentage-calculator-step-by-step.html': 'guide/de/percentage-calculator-step-by-step.jsp',
   '/guides/de/percentage-calculator-when.html': 'guide/de/percentage-calculator-when.jsp',
   '/guides/de/percentage-calculator-vs-alternatives.html': 'guide/de/percentage-calculator-vs-alternatives.jsp',
+  '/image-converter-tools/png-to-webp.html': 'convert/png-to-webp.jsp',
+  '/guides/png-webp-converter-when.html': 'guide/png-webp-converter-when.jsp',
+  '/guides/png-webp-converter-step-by-step.html': 'guide/png-webp-converter-step-by-step.jsp',
+  '/guides/png-webp-converter-vs-alternatives.html': 'guide/png-webp-converter-vs-alternatives.jsp',
+  '/guides/pt/png-webp-converter-step-by-step.html': 'guide/pt/png-webp-converter-step-by-step.jsp',
+  '/guides/pt/png-webp-converter-when.html': 'guide/pt/png-webp-converter-when.jsp',
+  '/guides/pt/png-webp-converter-vs-alternatives.html': 'guide/pt/png-webp-converter-vs-alternatives.jsp',
+  '/guides/es/png-webp-converter-step-by-step.html': 'guide/es/png-webp-converter-step-by-step.jsp',
+  '/guides/es/png-webp-converter-when.html': 'guide/es/png-webp-converter-when.jsp',
+  '/guides/es/png-webp-converter-vs-alternatives.html': 'guide/es/png-webp-converter-vs-alternatives.jsp',
+  '/guides/vi/png-webp-converter-step-by-step.html': 'guide/vi/png-webp-converter-step-by-step.jsp',
+  '/guides/vi/png-webp-converter-when.html': 'guide/vi/png-webp-converter-when.jsp',
+  '/guides/vi/png-webp-converter-vs-alternatives.html': 'guide/vi/png-webp-converter-vs-alternatives.jsp',
+  '/guides/id/png-webp-converter-step-by-step.html': 'guide/id/png-webp-converter-step-by-step.jsp',
+  '/guides/id/png-webp-converter-when.html': 'guide/id/png-webp-converter-when.jsp',
+  '/guides/id/png-webp-converter-vs-alternatives.html': 'guide/id/png-webp-converter-vs-alternatives.jsp',
+  '/guides/de/png-webp-converter-step-by-step.html': 'guide/de/png-webp-converter-step-by-step.jsp',
+  '/guides/de/png-webp-converter-when.html': 'guide/de/png-webp-converter-when.jsp',
+  '/guides/de/png-webp-converter-vs-alternatives.html': 'guide/de/png-webp-converter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
