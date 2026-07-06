@@ -2119,6 +2119,34 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/png-webp-converter-step-by-step.html',
   '/guides/de/png-webp-converter-when.html',
   '/guides/de/png-webp-converter-vs-alternatives.html',
+  // fire33 gap backfill (found + fixed fire-34): png-to-webp EN guide routes
+  // were never added to GUIDE_ROUTES (only the locale variants were) - the
+  // JSP_BY_ROUTE-only wiring the builder does is NOT sufficient for
+  // sitemap-guides.xml / guides.html / llms.txt listing, same class of gap
+  // as the password-generator backfill above.
+  '/guides/png-webp-converter-step-by-step.html',
+  '/guides/png-webp-converter-when.html',
+  '/guides/png-webp-converter-vs-alternatives.html',
+  // new-tool-discovery-loop-runbook fire-34 (2026-07-06): jpg-to-webp
+  // companion guides - EN + full pt/es/vi/id/de locale fanout.
+  '/guides/jpg-webp-converter-step-by-step.html',
+  '/guides/jpg-webp-converter-when.html',
+  '/guides/jpg-webp-converter-vs-alternatives.html',
+  '/guides/pt/jpg-webp-converter-step-by-step.html',
+  '/guides/pt/jpg-webp-converter-when.html',
+  '/guides/pt/jpg-webp-converter-vs-alternatives.html',
+  '/guides/es/jpg-webp-converter-step-by-step.html',
+  '/guides/es/jpg-webp-converter-when.html',
+  '/guides/es/jpg-webp-converter-vs-alternatives.html',
+  '/guides/vi/jpg-webp-converter-step-by-step.html',
+  '/guides/vi/jpg-webp-converter-when.html',
+  '/guides/vi/jpg-webp-converter-vs-alternatives.html',
+  '/guides/id/jpg-webp-converter-step-by-step.html',
+  '/guides/id/jpg-webp-converter-when.html',
+  '/guides/id/jpg-webp-converter-vs-alternatives.html',
+  '/guides/de/jpg-webp-converter-step-by-step.html',
+  '/guides/de/jpg-webp-converter-when.html',
+  '/guides/de/jpg-webp-converter-vs-alternatives.html',
 
 ]);
 
@@ -2604,6 +2632,7 @@ export const ALIAS_ROUTES = {
   '/city-time-machine.html': '/games/city-time-machine.html',
   '/percentage-calculator.html': '/utility-tools/percentage-calculator.html',
   '/png-to-webp.html': '/image-converter-tools/png-to-webp.html',
+  '/jpg-to-webp.html': '/image-converter-tools/jpg-to-webp.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -3901,6 +3930,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/png-webp-converter-step-by-step.html': 'guide/de/png-webp-converter-step-by-step.jsp',
   '/guides/de/png-webp-converter-when.html': 'guide/de/png-webp-converter-when.jsp',
   '/guides/de/png-webp-converter-vs-alternatives.html': 'guide/de/png-webp-converter-vs-alternatives.jsp',
+  '/image-converter-tools/jpg-to-webp.html': 'convert/jpg-to-webp.jsp',
+  '/guides/jpg-webp-converter-when.html': 'guide/jpg-webp-converter-when.jsp',
+  '/guides/jpg-webp-converter-step-by-step.html': 'guide/jpg-webp-converter-step-by-step.jsp',
+  '/guides/jpg-webp-converter-vs-alternatives.html': 'guide/jpg-webp-converter-vs-alternatives.jsp',
+  '/guides/pt/jpg-webp-converter-step-by-step.html': 'guide/pt/jpg-webp-converter-step-by-step.jsp',
+  '/guides/pt/jpg-webp-converter-when.html': 'guide/pt/jpg-webp-converter-when.jsp',
+  '/guides/pt/jpg-webp-converter-vs-alternatives.html': 'guide/pt/jpg-webp-converter-vs-alternatives.jsp',
+  '/guides/es/jpg-webp-converter-step-by-step.html': 'guide/es/jpg-webp-converter-step-by-step.jsp',
+  '/guides/es/jpg-webp-converter-when.html': 'guide/es/jpg-webp-converter-when.jsp',
+  '/guides/es/jpg-webp-converter-vs-alternatives.html': 'guide/es/jpg-webp-converter-vs-alternatives.jsp',
+  '/guides/vi/jpg-webp-converter-step-by-step.html': 'guide/vi/jpg-webp-converter-step-by-step.jsp',
+  '/guides/vi/jpg-webp-converter-when.html': 'guide/vi/jpg-webp-converter-when.jsp',
+  '/guides/vi/jpg-webp-converter-vs-alternatives.html': 'guide/vi/jpg-webp-converter-vs-alternatives.jsp',
+  '/guides/id/jpg-webp-converter-step-by-step.html': 'guide/id/jpg-webp-converter-step-by-step.jsp',
+  '/guides/id/jpg-webp-converter-when.html': 'guide/id/jpg-webp-converter-when.jsp',
+  '/guides/id/jpg-webp-converter-vs-alternatives.html': 'guide/id/jpg-webp-converter-vs-alternatives.jsp',
+  '/guides/de/jpg-webp-converter-step-by-step.html': 'guide/de/jpg-webp-converter-step-by-step.jsp',
+  '/guides/de/jpg-webp-converter-when.html': 'guide/de/jpg-webp-converter-when.jsp',
+  '/guides/de/jpg-webp-converter-vs-alternatives.html': 'guide/de/jpg-webp-converter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
