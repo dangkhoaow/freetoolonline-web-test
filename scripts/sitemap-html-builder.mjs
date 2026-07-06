@@ -2,7 +2,6 @@ import path from 'node:path';
 import {
   ALIAS_ROUTES,
   GUIDE_ROUTES,
-  GUIDE_SITEMAP_EXCLUDE,
   INFO_ROUTES,
   JSP_BY_ROUTE,
   loadTextIfExists,
@@ -17,12 +16,9 @@ import {
 // pattern that was a STATIC intersection - any /guides/* JSP shipped
 // without a GUIDE_ROUTES register entry was silently dropped from all
 // four surfaces. See cycle 50 follow-up #2 (orphan-guide defect class).
-function getDynamicGuideRoutes() {
-  return Object.keys(JSP_BY_ROUTE)
-    .filter((route) => route.startsWith('/guides/'))
-    .filter((route) => !(route in ALIAS_ROUTES))
-    .filter((route) => !GUIDE_SITEMAP_EXCLUDE.has(route));
-}
+// 2026-07-06: implementation moved to home-counts.mjs (shared with the
+// homepage count splices so the datalist and every visible count agree).
+import { getDynamicGuideRoutes, getCanonicalToolRoutes } from './home-counts.mjs';
 import { getSeoClusterGroups, isHubRoute } from './seo-clusters.mjs';
 
 // Dynamic /sitemap.html body builder.
@@ -382,25 +378,11 @@ export async function buildDynamicHomeSearchData({ cmsRoot } = {}) {
     throw new Error('buildDynamicHomeSearchData: cmsRoot is required');
   }
 
-  const aliasSourceSet = new Set(Object.keys(ALIAS_ROUTES));
-
-  // Tools: every canonical cluster member in JSP_BY_ROUTE, EXCLUDING:
-  //   - alias source URLs (legacy non-clustered URLs that 301 to canonical)
-  //   - hub pages (end with -tools.html, no children)
-  //   - /guides/* (they live in GUIDE_ROUTES instead)
-  //   - / (home, no point in searching the home page from the home page)
-  //   - INFO_ROUTES other-than guides (about/contact/etc - not action tools)
-  const toolRoutes = Object.keys(JSP_BY_ROUTE).filter((r) => {
-    if (aliasSourceSet.has(r)) return false;
-    if (r === '/') return false;
-    // fire-23: shared isHubRoute() so the non-'-tools' hubs (/games.html,
-    // /space-3d.html, /guides.html) are excluded from the tool datalist like
-    // every other hub (hubs are browse pages, not searchable actions).
-    if (isHubRoute(r)) return false;
-    if (r.startsWith('/guides/')) return false;
-    if (INFO_ROUTES.has(r) && !r.startsWith('/guides/')) return false;
-    return true;
-  });
+  // Tools: every canonical cluster member in JSP_BY_ROUTE, excluding alias
+  // sources, hubs (incl. the fire-23 non-'-tools' hubs), /guides/*, /, and
+  // info pages. Implementation shared with the homepage count splices in
+  // home-counts.mjs so the datalist and every visible count agree.
+  const toolRoutes = getCanonicalToolRoutes();
 
   const guideRoutes = getDynamicGuideRoutes();
 
