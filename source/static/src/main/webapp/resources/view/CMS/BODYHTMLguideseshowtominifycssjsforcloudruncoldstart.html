@@ -8,11 +8,13 @@
 <p class="lead">Minificar CSS y JavaScript reduce el tiempo de cold-start en Cloud Run en ~100 ms para un bundle JS 40% mas pequeno. Esta guia cubre las recetas exactas de build-step para Cloud Run, Lambda y Cloudflare Workers, con numeros medidos.</p>
 
 <br/><h2 class="text-uppercase"><b>Por que minificacion especificamente ayuda al cold-start</b></h2>
+<p>La minificacion reduce el tiempo de cold-start al reducir tanto el bundle que la plataforma serverless debe transferir como el JavaScript que el runtime analiza antes de servir la primera solicitud.</p>
 <p><b>Transferencia de red.</b> Las plataformas serverless tiran tu container image o bundle al runtime en cold start. Bundle mas pequeno &rarr; pull mas rapido. En Cloud Run, el pull de layer de container image puede ser la mayor contribucion individual al cold-start en un servicio pequeno (~300 ms para una image de 50 MB). Cloudflare Workers tiene un cap de 1 MB en el free tier y 10 MB en el pago - minificacion es a menudo la diferencia entre caber y no caber.</p>
 <p><b>Tiempo de parse.</b> V8 (Node / Workers / Deno) hace parse de JavaScript una vez por isolate. JS minificado tiene menos tokens, menos espacios en blanco, e identificadores mas cortos - V8 hace parse ~30% mas rapido. Parse es una operacion sincrona que bloquea la primera peticion; en cold start es la diferencia entre 120 ms y 160 ms en un bundle de 500 KB.</p>
 <p><b>Eficiencia de compresion.</b> JS minificado comprime mejor bajo gzip/brotli porque espacios en blanco repetidos y comentarios no consumen el diccionario del compresor. Ahorros en la red son ~15-25% mas alla de unminified+gzip.</p>
 
 <br/><h2 class="text-uppercase"><b>Minifica en linea para una verificacion puntual</b></h2>
+<p>Para minificar un solo archivo en linea sin configuracion de build, pega el contenido en CSS Minifier o JavaScript Minifier y descarga el resultado - nada se sube a ningun servidor.</p>
 <p>Para un solo archivo o una medicion rapida antes/despues, pega en nuestras herramientas de navegador:</p>
 <ul>
 <li><a href="/developer-tools/css-minifier.html">CSS Minifier</a> - pega, minifica, descarga. Reduccion del ~60-70% en CSS tipico.</li>
@@ -50,6 +52,7 @@
 <p>lightningcss combina transpilacion (autoprefixer) y minificacion en un paso; basado en Rust, ~20&times; mas rapido que postcss+cssnano.</p>
 
 <br/><h2 class="text-uppercase"><b>Flags especificos de runtime</b></h2>
+<p>Cada runtime serverless acepta la misma salida minificada; el punto de integracion - un stage de Dockerfile, un flag de CLI o un campo de configuracion - difiere segun la plataforma.</p>
 <p><b>Cloud Run (basado en contenedor).</b> La palanca principal es el tamano de la container image. Usa un Dockerfile multi-stage: construye el bundle en un stage builder Node, luego copia la salida minificada en un stage runtime distroless. Salta source maps en produccion. Apunta a imagenes de 20-50 MB.</p>
 <p><b>AWS Lambda.</b> Lambda layers envia unminified para debuggability, el handler envia minificado. El limite de 50 MB zipeado / 250 MB descompactado rara vez topa en servicios JS, pero el costo de parse de cold-start aun se beneficia de la minificacion.</p>
 <p><b>Cloudflare Workers.</b> El cap de bundle de 1 MB (free) / 10 MB (pago) a menudo fuerza minificacion. Workers usa V8 isolates; minificacion recorta tanto el transfer como los pasos de parse. Usa la config esbuild built-in de wrangler: <code>wrangler deploy --minify</code>.</p>
@@ -70,6 +73,7 @@
 <p>Minificacion ayuda cold-start desproporcionadamente - peticiones calientes no re-hacen parse del bundle, asi que los ahorros se concentran en invocaciones frias. Para un servicio que ve trafico estable, la ganancia de cold-start es sutil; para un servicio esporadico o de bajo trafico, la ganancia es significativa.</p>
 
 <br/><h2 class="text-uppercase"><b>Lo que NO hacer</b></h2>
+<p>Cuatro practicas de build socavan activamente el rendimiento de cold-start y NO deben aparecer en un pipeline de minificacion.</p>
 <p><b>No envies unminified y dependas del gzip.</b> Gzip ayuda pero no toca el tiempo de parse. Minifica primero, luego comprime.</p>
 <p><b>No minifiques scripts inline en HTML en runtime.</b> Minifica en build. Minificacion en runtime quema CPU en cada peticion.</p>
 <p><b>No quites source maps en desarrollo.</b> Stack traces de error se vuelven ilegibles. Envia mapas como archivos <code>.map</code> separados, excluidos del bundle, servidos con el header HTTP <code>SourceMap</code> solo cuando se soliciten.</p>

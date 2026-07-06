@@ -8,11 +8,13 @@
 <p class="lead">Minify CSS va JavaScript giup giam thoi gian cold-start tren Cloud Run khoang 100 ms voi bundle JS nho hon 40%. Huong dan nay cung cap cac cong thuc build-step chinh xac cho Cloud Run, Lambda va Cloudflare Workers kem so lieu do thuc te.</p>
 
 <br/><h2 class="text-uppercase"><b>Tai sao minify dac biet giup cold-start</b></h2>
+<p>Minify giam thoi gian cold-start bang cach thu nho ca bundle ma nen tang serverless phai truyen va JavaScript ma runtime phai parse truoc khi phuc vu request dau tien.</p>
 <p><b>Truyen tai mang.</b> Cac nen tang serverless keo container image hoac bundle den runtime khi cold start. Bundle nho hon &rarr; pull nhanh hon. Tren Cloud Run, pull container image layer co the la dong gop lon nhat cho cold-start tren mot dich vu nho (~300 ms cho image 50 MB). Cloudflare Workers co cap 1 MB o free tier va 10 MB o paid - minify thuong la su khac biet giua vua va khong vua.</p>
 <p><b>Thoi gian parse.</b> V8 (Node / Workers / Deno) parse JavaScript mot lan moi isolate. JS minified co it token hon, it khoang trang hon, va id ngan hon - V8 parse nhanh hon ~30%. Parse la mot thao tac dong bo chan request dau tien; tren cold start no la su khac biet giua 120 ms va 160 ms tren bundle 500 KB.</p>
 <p><b>Hieu qua nen.</b> JS minified nen tot hon duoi gzip/brotli vi khoang trang lap lai va comment khong tieu thu tu dien cua bo nen. Tiet kiem ban toi muc ~15-25% ngoai unminified+gzip.</p>
 
 <br/><h2 class="text-uppercase"><b>Minify truc tuyen cho kiem tra mot lan</b></h2>
+<p>De minify mot tep don gian truc tuyen ma khong can setup build, dan noi dung vao CSS Minifier hoac JavaScript Minifier va tai ve ket qua - khong co gi duoc tai len server.</p>
 <p>Cho mot tep duy nhat hoac mot phep do truoc/sau nhanh, dan vao cac cong cu trinh duyet cua chung toi:</p>
 <ul>
 <li><a href="/developer-tools/css-minifier.html">CSS Minifier</a> - dan, minify, tai ve. Giam ~60-70% tren CSS dien hinh.</li>
@@ -50,6 +52,7 @@
 <p>lightningcss ket hop transpile (autoprefixer) va minify trong mot buoc; dua tren Rust, nhanh hon ~20&times; so voi postcss+cssnano.</p>
 
 <br/><h2 class="text-uppercase"><b>Flag rieng cho tung runtime</b></h2>
+<p>Moi runtime serverless chap nhan cung mot dau ra minified; diem tich hop - mot stage Dockerfile, mot flag CLI, hoac mot truong config - khac nhau theo nen tang.</p>
 <p><b>Cloud Run (dua tren container).</b> Don bay chinh la kich thuoc container image. Dung Dockerfile multi-stage: build bundle trong stage builder Node, sau do copy dau ra minified vao stage runtime distroless. Bo qua source map trong production. Nham toi image 20-50 MB.</p>
 <p><b>AWS Lambda.</b> Lambda layer gui unminified de debuggable, handler gui minified. Gioi han 50 MB zipped / 250 MB unzipped hiem khi cham tren dich vu JS, nhung chi phi parse cold-start van duoc loi tu minify.</p>
 <p><b>Cloudflare Workers.</b> Cap bundle 1 MB (free) / 10 MB (paid) thuong buoc minify. Workers dung V8 isolate; minify cat ca buoc transfer va parse. Dung config esbuild built-in cua wrangler: <code>wrangler deploy --minify</code>.</p>
@@ -70,6 +73,7 @@
 <p>Minify giup cold-start khong can xung - request am khong re-parse bundle, nen tiet kiem tap trung vao cac lan goi lanh. Voi dich vu thay luu luong on dinh, loi cold-start tinh te; voi dich vu dot bien hoac luu luong thap, loi co y nghia.</p>
 
 <br/><h2 class="text-uppercase"><b>Nhung gi KHONG nen lam</b></h2>
+<p>Bon thuc hanh build chu dong lam suy yeu hieu suat cold-start va KHONG nen xuat hien trong pipeline minify.</p>
 <p><b>Khong gui unminified va dua vao gzip.</b> Gzip giup nhung khong cham vao thoi gian parse. Minify truoc, sau do nen.</p>
 <p><b>Khong minify script inline trong HTML khi runtime.</b> Minify khi build. Minify khi runtime dot CPU tren moi request.</p>
 <p><b>Khong xoa source map trong development.</b> Stack trace loi tro nen kho doc. Gui map nhu cac tep <code>.map</code> rieng, loai khoi bundle, phuc vu voi header HTTP <code>SourceMap</code> chi khi duoc yeu cau.</p>

@@ -8,11 +8,13 @@
 <p class="lead">Minifikasi CSS dan JavaScript mengurangi cold-start di Cloud Run sekitar 100 ms untuk bundle JS 40% lebih kecil. Panduan ini mencakup resep build-step tepat untuk Cloud Run, Lambda, dan Cloudflare Workers, dengan angka sebelum/sesudah yang terukur.</p>
 
 <br/><h2 class="text-uppercase"><b>Mengapa minify khususnya membantu cold-start</b></h2>
+<p>Minifikasi mengurangi waktu cold-start dengan memperkecil bundle yang harus ditransfer platform serverless maupun JavaScript yang di-parse runtime sebelum melayani permintaan pertama.</p>
 <p><b>Transfer jaringan.</b> Platform serverless menarik container image atau bundle Anda ke runtime saat cold start. Bundle lebih kecil &rarr; pull lebih cepat. Di Cloud Run, container image layer pull dapat menjadi kontributor cold-start tunggal terbesar untuk layanan kecil (~300 ms untuk image 50 MB). Cloudflare Workers memiliki cap bundle 1 MB di free tier dan 10 MB di paid - minify sering kali adalah perbedaan antara muat dan tidak muat.</p>
 <p><b>Waktu parse.</b> V8 (Node / Workers / Deno) mem-parse JavaScript sekali per isolate. JS minified memiliki lebih sedikit token, lebih sedikit whitespace, dan identifier lebih pendek - V8 parse ~30% lebih cepat. Parse adalah operasi sinkron yang memblokir request pertama; pada cold start itu adalah perbedaan antara 120 ms dan 160 ms pada bundle 500 KB.</p>
 <p><b>Efisiensi kompresi.</b> JS minified mengkompresi lebih baik di bawah gzip/brotli karena whitespace dan komentar berulang tidak mengkonsumsi kamus kompresor. Penghematan di kabel adalah ~15-25% di luar unminified+gzip.</p>
 
 <br/><h2 class="text-uppercase"><b>Minify online untuk pemeriksaan sekali</b></h2>
+<p>Untuk minify satu file secara online tanpa setup build, tempelkan isinya ke CSS Minifier atau JavaScript Minifier dan unduh hasilnya - tidak ada yang diunggah ke server manapun.</p>
 <p>Untuk file tunggal atau pengukuran cepat sebelum/sesudah, tempel ke alat browser kami:</p>
 <ul>
 <li><a href="/developer-tools/css-minifier.html">CSS Minifier</a> - tempel, minify, unduh. Pengurangan ~60-70% pada CSS tipikal.</li>
@@ -50,6 +52,7 @@
 <p>lightningcss menggabungkan transpilation (autoprefixer) dan minifikasi dalam satu langkah; berbasis Rust, ~20&times; lebih cepat daripada postcss+cssnano.</p>
 
 <br/><h2 class="text-uppercase"><b>Flag khusus runtime</b></h2>
+<p>Setiap runtime serverless menerima output minified yang sama; titik integrasi - stage Dockerfile, flag CLI, atau field config - berbeda per platform.</p>
 <p><b>Cloud Run (berbasis container).</b> Pengungkit utama adalah ukuran container image. Gunakan Dockerfile multi-stage: build bundle di stage builder Node, lalu salin output minified ke stage runtime distroless. Lewati source map di produksi. Targetkan image 20-50 MB.</p>
 <p><b>AWS Lambda.</b> Lambda layers mengirim unminified untuk debuggability, handler mengirim minified. Batas 50 MB zipped / 250 MB unzipped jarang mengikat pada layanan JS, tetapi biaya parse cold-start masih diuntungkan dari minifikasi.</p>
 <p><b>Cloudflare Workers.</b> Cap bundle 1 MB (gratis) / 10 MB (berbayar) sering memaksa minifikasi. Workers menggunakan V8 isolate; minifikasi memotong baik langkah transfer maupun parse. Gunakan config esbuild built-in wrangler: <code>wrangler deploy --minify</code>.</p>
@@ -70,6 +73,7 @@
 <p>Minifikasi membantu cold-start secara tidak proporsional - request hangat tidak melakukan re-parse bundle, jadi penghematan terkonsentrasi pada invokasi dingin. Untuk layanan yang melihat trafik stabil, keuntungan cold-start halus; untuk layanan spiky atau trafik rendah, keuntungannya berarti.</p>
 
 <br/><h2 class="text-uppercase"><b>Apa yang TIDAK boleh dilakukan</b></h2>
+<p>Empat praktik build secara aktif merusak performa cold-start dan TIDAK boleh ada dalam pipeline minifikasi.</p>
 <p><b>Jangan kirim unminified dan mengandalkan gzip.</b> Gzip membantu tetapi tidak menyentuh waktu parse. Minify dulu, lalu kompres.</p>
 <p><b>Jangan minify script inline dalam HTML saat runtime.</b> Minify saat build. Minifikasi saat runtime membakar CPU pada setiap request.</p>
 <p><b>Jangan strip source map di development.</b> Stack trace error menjadi tidak terbaca. Kirim peta sebagai file <code>.map</code> terpisah, dikecualikan dari bundle, dilayani dengan header HTTP <code>SourceMap</code> hanya ketika diminta.</p>
