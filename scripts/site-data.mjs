@@ -4051,6 +4051,21 @@ export const JSP_BY_ROUTE = {
   '/guides/run-linux-in-browser-when.html': 'guide/run-linux-in-browser-when.jsp',
   '/guides/run-linux-in-browser-step-by-step.html': 'guide/run-linux-in-browser-step-by-step.jsp',
   '/guides/run-linux-in-browser-vs-alternatives.html': 'guide/run-linux-in-browser-vs-alternatives.jsp',
+  '/guides/pt/run-linux-in-browser-when.html': 'guide/pt/run-linux-in-browser-when.jsp',
+  '/guides/pt/run-linux-in-browser-step-by-step.html': 'guide/pt/run-linux-in-browser-step-by-step.jsp',
+  '/guides/pt/run-linux-in-browser-vs-alternatives.html': 'guide/pt/run-linux-in-browser-vs-alternatives.jsp',
+  '/guides/es/run-linux-in-browser-when.html': 'guide/es/run-linux-in-browser-when.jsp',
+  '/guides/es/run-linux-in-browser-step-by-step.html': 'guide/es/run-linux-in-browser-step-by-step.jsp',
+  '/guides/es/run-linux-in-browser-vs-alternatives.html': 'guide/es/run-linux-in-browser-vs-alternatives.jsp',
+  '/guides/vi/run-linux-in-browser-when.html': 'guide/vi/run-linux-in-browser-when.jsp',
+  '/guides/vi/run-linux-in-browser-step-by-step.html': 'guide/vi/run-linux-in-browser-step-by-step.jsp',
+  '/guides/vi/run-linux-in-browser-vs-alternatives.html': 'guide/vi/run-linux-in-browser-vs-alternatives.jsp',
+  '/guides/id/run-linux-in-browser-when.html': 'guide/id/run-linux-in-browser-when.jsp',
+  '/guides/id/run-linux-in-browser-step-by-step.html': 'guide/id/run-linux-in-browser-step-by-step.jsp',
+  '/guides/id/run-linux-in-browser-vs-alternatives.html': 'guide/id/run-linux-in-browser-vs-alternatives.jsp',
+  '/guides/de/run-linux-in-browser-when.html': 'guide/de/run-linux-in-browser-when.jsp',
+  '/guides/de/run-linux-in-browser-step-by-step.html': 'guide/de/run-linux-in-browser-step-by-step.jsp',
+  '/guides/de/run-linux-in-browser-vs-alternatives.html': 'guide/de/run-linux-in-browser-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
