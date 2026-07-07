@@ -13,6 +13,9 @@ import zlib from "node:zlib";
 const KIND = process.argv[2];
 const DIR = path.resolve(process.argv[3] || ".");
 const here = path.dirname(url.fileURLToPath(import.meta.url));
+// Locate v86's build dir from the RESOLVED module (npm may hoist the package
+// to a parent node_modules; a hardcoded ./node_modules path breaks then).
+const v86BuildDir = path.dirname(url.fileURLToPath(import.meta.resolve("v86")));
 
 const PROFILES = {
   // marker: what the serial console prints when the machine is ready.
@@ -29,7 +32,7 @@ export const CMDLINE = "root=/dev/sda rootfstype=ext4 rw modules=ext4 console=tt
 
 function makeEmulator(extra = {}) {
   return new V86({
-    wasm_path: path.join(here, "node_modules/v86/build/v86.wasm"),
+    wasm_path: path.join(v86BuildDir, "v86.wasm"),
     bios: { url: path.join(here, "seabios.bin") },
     vga_bios: { url: path.join(here, "vgabios.bin") },
     memory_size: prof.memory_mb * 1024 * 1024,

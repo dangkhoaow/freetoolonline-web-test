@@ -12,9 +12,15 @@ RUN apk add --no-cache mkinitfs \
 
 # X stack: vesa driver (v86 exposes a Bochs-VBE SVGA card), eudev so the
 # server auto-detects the emulated PS/2 keyboard and mouse.
+# Explicit lean Xfce set (the xfce4 meta-package pulled a 740MB rootfs);
+# docs/man/licenses purged - this image exists to be downloaded by browsers.
 RUN apk add --no-cache eudev udev-init-scripts udev-init-scripts-openrc \
- && apk add --no-cache xorg-server xf86-video-vesa xf86-input-libinput xinit \
- && apk add --no-cache dbus dbus-x11 xfce4 xfce4-terminal mousepad ttf-dejavu \
+ && apk add --no-cache xorg-server xf86-video-vesa xf86-input-libinput xinit xset \
+ && apk add --no-cache dbus dbus-x11 \
+ && apk add --no-cache xfwm4 xfce4-session xfce4-panel xfce4-settings xfdesktop \
+      thunar xfce4-terminal mousepad ttf-dejavu adwaita-icon-theme \
+ && rm -rf /usr/share/doc /usr/share/man /usr/share/info /usr/share/licenses \
+      /usr/share/gtk-doc /usr/share/locale \
  && test -x /usr/bin/startxfce4 \
  && test -x /usr/bin/Xorg
 

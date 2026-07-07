@@ -23,9 +23,11 @@ cp "$WORK/rootfs/boot/vmlinuz-virt" "$OUT/vmlinuz"
 cp "$WORK/rootfs/boot/initramfs-virt" "$OUT/initramfs"
 
 USED_MB="$(du -sm "$WORK/rootfs" | cut -f1)"
+echo "[build-image] $KIND largest dirs (MB):"
+du -xm -d 2 "$WORK/rootfs" 2>/dev/null | sort -rn | head -25 || true
 case "$KIND" in
 terminal) FREE_MB=192 ;;
-*) FREE_MB=384 ;;
+*) FREE_MB=256 ;;
 esac
 SIZE_MB=$((USED_MB + USED_MB / 5 + FREE_MB))
 rm -f "$OUT/image.img"
