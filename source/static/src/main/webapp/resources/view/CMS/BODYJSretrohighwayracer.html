@@ -1,0 +1,59 @@
+<script>
+    // Retro Highway Racer launcher. The game is a single self-contained HTML
+    // file (canvas-2d pseudo-3D, everything procedural - no assets, no WebGL
+    // requirement, no network calls) in an isolated same-origin iframe at
+    // games/retro-highway-racer/. Adapted from the GPL-3.0 Hue Jumper engine
+    // by Frank Force; LICENSE ships alongside the file and the page credits
+    // the upstream project. The iframe loads only when the reader presses
+    // Play, so the page itself stays render-only.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    // Relative to /games/, so it resolves under any base path (staging subpath
+    // included) without needing BASE_PATH.
+    var RHR_GAME_URL = 'retro-highway-racer/index.html';
+
+    function rhrStatus(text) {
+        var el = document.getElementById('rhrStatus');
+        if (el) el.textContent = text;
+    }
+
+    function rhrInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'rhrFrame';
+        frame.src = RHR_GAME_URL;
+        frame.title = 'Retro Highway Racer game';
+        frame.setAttribute('allow', 'fullscreen; pointer-lock');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            rhrStatus('Game loaded. Click or tap inside to start driving; R restarts.');
+            try { frame.contentWindow.focus(); } catch (e) { /* focus is best-effort */ }
+        });
+        var launch = document.getElementById('rhrLaunch');
+        if (launch && launch.parentNode === stage) { stage.removeChild(launch); }
+        stage.appendChild(frame);
+        return frame;
+    }
+
+    function doAfterPageRendered() {
+        var stage = document.getElementById('rhrStage');
+        var playBtn = document.getElementById('rhrPlayBtn');
+        if (!stage || !playBtn) return; // not this page
+
+        var fsBtn = document.getElementById('rhrFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            rhrStatus('Loading the game (a single small file)...');
+            rhrInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) { stage.requestFullscreen(); }
+            else if (stage.webkitRequestFullscreen) { stage.webkitRequestFullscreen(); }
+            var frame = document.getElementById('rhrFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) { } }
+        });
+    }
+</script>
