@@ -1,0 +1,448 @@
+<script>
+    // Retro FPS archetype (retro-fps-online) - a complete free classic-style first-person
+    // shooter (Freedoom, free-license game data) running in the browser on the
+    // Dwasm engine (PrBoom+/PrBoomX family, GPL-2.0, compiled to WebAssembly in
+    // our public assets repo). Registry Gate-H entry: dwasm_retro_fps_external.
+    //
+    // Asset model (linux-online precedent, disclosed in the tool skill): the
+    // engine + game data stream once from the project's public assets Pages
+    // site (RFPS_ASSETS_BASE below - CORS "*" verified; GitHub Releases send no
+    // CORS and cannot be used) and are cached in IndexedDB, so later visits
+    // work offline. NOTHING is fetched until the reader clicks a Start card
+    // (G16 stays render-only). One campaign per page load (the engine is a
+    // global Emscripten module); switching campaigns reloads the page.
+    //
+    // Save model: the engine itself stores in-game saves + settings in this
+    // browser (it mounts /dwasm as an Emscripten IDBFS - an IndexedDB database -
+    // and syncs on every in-game save or settings change). This page reads that
+    // same database directly for Export, and writes it for Import: a .ftolfps
+    // file is "FTOLFPS1" + u32 header length + JSON header {schema,slug,kind,
+    // engine_version,saved_at} + gzipped JSON of the save files - so a reader
+    // can move every save slot and setting to another computer.
+    //
+    // HONEST NOTES (operator): (1) no multiplayer, no accounts, no server
+    // saves, no leaderboards; (2) while the game has focus the keyboard drives
+    // the game (Esc opens its menu); (3) music is synthesized on-device by the
+    // engine (OPL2), sound effects come from the free game data; (4) saves are
+    // tied to the published engine version - a version bump invalidates old
+    // session files (stated on refusal). Framework contract:
+    // doAfterPageRendered(); no top-level DOM. Plain buttons; no upload widget.
+
+    web.localUpload = false;
+
+    var RFPS_ASSETS_BASE = 'https://dangkhoaow.github.io/ftol-vm-assets/retro-fps';
+    var RFPS_STORE_KEY = 'ftol-game-retro-fps-online';
+    var RFPS_DB_NAME = 'ftol-fps-retro-fps-online';
+    var RFPS_MAGIC = 'FTOLFPS1';
+    // The engine's own save database (Emscripten IDBFS mount). The DB version
+    // must match IDBFS.DB_VERSION in the published engine build - verified by
+    // the in-fire harness against the live assets.
+    var RFPS_SAVES_DB = '/dwasm';
+    var RFPS_SAVES_DB_VERSION = 21;
+
+    // ---- tiny helpers ---------------------------------------------------------
+    function rfpsStatus(text) {
+        var el = document.getElementById('rfpsStatus');
+        if (el) el.textContent = text;
+    }
+    function rfpsErr(text) {
+        var el = document.getElementById('rfpsErr');
+        if (el) el.textContent = text || '';
+    }
+    function rfpsMB(bytes) { return (bytes / 1048576).toFixed(bytes >= 104857600 ? 0 : 1) + ' MB'; }
+    function rfpsSupportGap() {
+        if (typeof WebAssembly !== 'object') { return 'WebAssembly'; }
+        if (typeof DecompressionStream !== 'function' || typeof CompressionStream !== 'function') { return 'CompressionStream'; }
+        if (!window.indexedDB) { return 'IndexedDB'; }
+        return null;
+    }
+    function rfpsFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+    async function rfpsGzip(buf) {
+        var s = new Response(buf).body.pipeThrough(new CompressionStream('gzip'));
+        return await new Response(s).arrayBuffer();
+    }
+    async function rfpsGunzip(buf) {
+        var s = new Response(buf).body.pipeThrough(new DecompressionStream('gzip'));
+        return await new Response(s).arrayBuffer();
+    }
+    function rfpsB64FromBytes(u8) {
+        var out = '', CH = 0x8000;
+        for (var i = 0; i < u8.length; i += CH) { out += String.fromCharCode.apply(null, u8.subarray(i, i + CH)); }
+        return btoa(out);
+    }
+    function rfpsBytesFromB64(b64) {
+        var bin = atob(b64), u8 = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) { u8[i] = bin.charCodeAt(i); }
+        return u8;
+    }
+
+    // ---- IndexedDB: our asset cache (downloads, keyed name@version) -----------
+    function rfpsDb() {
+        if (window.__rfpsDbPromise) { return window.__rfpsDbPromise; }
+        window.__rfpsDbPromise = new Promise(function (resolve, reject) {
+            var req = indexedDB.open(RFPS_DB_NAME, 1);
+            req.onupgradeneeded = function () {
+                var db = req.result;
+                if (!db.objectStoreNames.contains('assets')) { db.createObjectStore('assets'); }
+            };
+            req.onsuccess = function () { resolve(req.result); };
+            req.onerror = function () { reject(req.error || new Error('IndexedDB open failed')); };
+        });
+        return window.__rfpsDbPromise;
+    }
+    async function rfpsIdbGet(key) {
+        var db = await rfpsDb();
+        return new Promise(function (resolve, reject) {
+            var tx = db.transaction('assets', 'readonly').objectStore('assets').get(key);
+            tx.onsuccess = function () { resolve(tx.result); };
+            tx.onerror = function () { reject(tx.error); };
+        });
+    }
+    async function rfpsIdbPut(key, val) {
+        var db = await rfpsDb();
+        return new Promise(function (resolve, reject) {
+            var tx = db.transaction('assets', 'readwrite').objectStore('assets').put(val, key);
+            tx.onsuccess = function () { resolve(); };
+            tx.onerror = function () { reject(tx.error); };
+        });
+    }
+
+    // ---- the engine's save database (Emscripten IDBFS) ------------------------
+    function rfpsOpenSavesDb(createIfMissing) {
+        return new Promise(function (resolve, reject) {
+            var req = createIfMissing ? indexedDB.open(RFPS_SAVES_DB, RFPS_SAVES_DB_VERSION) : indexedDB.open(RFPS_SAVES_DB);
+            req.onupgradeneeded = function () {
+                var db = req.result;
+                if (!db.objectStoreNames.contains('FILE_DATA')) {
+                    var st = db.createObjectStore('FILE_DATA');
+                    st.createIndex('timestamp', 'timestamp');
+                }
+            };
+            req.onsuccess = function () { resolve(req.result); };
+            req.onerror = function () { reject(req.error || new Error('Could not open the save database')); };
+            req.onblocked = function () { reject(new Error('The save database is in use - close other tabs running this page.')); };
+        });
+    }
+    async function rfpsReadSaves() {
+        var db;
+        try { db = await rfpsOpenSavesDb(false); } catch (e) { return []; }
+        if (!db.objectStoreNames.contains('FILE_DATA')) { db.close(); return []; }
+        return new Promise(function (resolve, reject) {
+            var out = [];
+            var cur = db.transaction('FILE_DATA', 'readonly').objectStore('FILE_DATA').openCursor();
+            cur.onsuccess = function () {
+                var c = cur.result;
+                if (!c) { db.close(); resolve(out); return; }
+                var v = c.value || {};
+                out.push({
+                    path: String(c.key),
+                    mode: v.mode,
+                    ts: (v.timestamp && v.timestamp.getTime) ? v.timestamp.getTime() : Date.now(),
+                    b64: v.contents ? rfpsB64FromBytes(new Uint8Array(v.contents.buffer || v.contents)) : null,
+                });
+                c.continue();
+            };
+            cur.onerror = function () { db.close(); reject(cur.error); };
+        });
+    }
+    async function rfpsWriteSaves(files) {
+        var db = await rfpsOpenSavesDb(true);
+        return new Promise(function (resolve, reject) {
+            var tx = db.transaction('FILE_DATA', 'readwrite');
+            var st = tx.objectStore('FILE_DATA');
+            files.forEach(function (f) {
+                var rec = { mode: f.mode, timestamp: new Date(f.ts || Date.now()) };
+                if (f.b64 !== null && f.b64 !== undefined) {
+                    var u8 = rfpsBytesFromB64(f.b64);
+                    rec.contents = new Int8Array(u8.buffer);
+                }
+                st.put(rec, f.path);
+            });
+            tx.oncomplete = function () { db.close(); resolve(); };
+            tx.onerror = function () { db.close(); reject(tx.error); };
+        });
+    }
+
+    // ---- manifest + downloads (all click-gated) -------------------------------
+    async function rfpsManifest() {
+        if (window.__rfpsManifest) { return window.__rfpsManifest; }
+        var res = await fetch(RFPS_ASSETS_BASE + '/manifest.json');
+        if (!res.ok) { throw new Error('The game server answered HTTP ' + res.status + ' for the manifest.'); }
+        var m = await res.json();
+        if (!m || !m.phases || !m.phases.phase1) { throw new Error('The game manifest looks incomplete.'); }
+        window.__rfpsManifest = m;
+        return m;
+    }
+    async function rfpsDownload(file, expectedBytes, onProgress) {
+        var res = await fetch(RFPS_ASSETS_BASE + '/' + file);
+        if (!res.ok) { throw new Error('Download failed (HTTP ' + res.status + ') for ' + file); }
+        if (!res.body || !res.body.getReader) {
+            var whole = await res.arrayBuffer();
+            if (onProgress) onProgress(whole.byteLength, expectedBytes || whole.byteLength);
+            return whole;
+        }
+        var reader = res.body.getReader();
+        var chunks = [], loaded = 0;
+        for (;;) {
+            var step = await reader.read();
+            if (step.done) break;
+            chunks.push(step.value);
+            loaded += step.value.byteLength;
+            if (onProgress) onProgress(loaded, expectedBytes || 0);
+        }
+        var out = new Uint8Array(loaded), off = 0;
+        for (var i = 0; i < chunks.length; i++) { out.set(chunks[i], off); off += chunks[i].byteLength; }
+        return out.buffer;
+    }
+    async function rfpsGetAsset(assetDef, version, label) {
+        var key = assetDef.file + '@' + version;
+        try {
+            var hit = await rfpsIdbGet(key);
+            if (hit && hit.bytes && hit.bytes.byteLength === assetDef.bytes) {
+                rfpsProgress(label + ': using the copy already in this browser', 1, 1);
+                return hit.bytes;
+            }
+        } catch (e) { /* cache miss path below */ }
+        var buf = await rfpsDownload(assetDef.file, assetDef.bytes, function (loaded, total) {
+            rfpsProgress('Downloading ' + label + ' (' + rfpsMB(loaded) + (total ? ' of ' + rfpsMB(total) : '') + ')', loaded, total || 0);
+        });
+        try { await rfpsIdbPut(key, { bytes: buf, saved_at: Date.now() }); }
+        catch (e) { rfpsStatus('Could not cache ' + label + ' in browser storage (quota?) - it will re-download next visit.'); }
+        return buf;
+    }
+    function rfpsProgress(label, loaded, total) {
+        var row = document.getElementById('rfpsProgressRow');
+        var bar = document.getElementById('rfpsProgressBar');
+        var lab = document.getElementById('rfpsProgressLabel');
+        if (!row) return;
+        row.style.display = '';
+        if (lab) lab.textContent = label;
+        if (bar) bar.style.width = (total > 0 ? Math.min(100, Math.round(loaded / total * 100)) : 0) + '%';
+    }
+    function rfpsProgressDone() {
+        var row = document.getElementById('rfpsProgressRow');
+        if (row) row.style.display = 'none';
+    }
+
+    // ---- session container (.ftolfps) ------------------------------------------
+    function rfpsPackSession(headerObj, gzBytes) {
+        var head = new TextEncoder().encode(JSON.stringify(headerObj));
+        var magic = new TextEncoder().encode(RFPS_MAGIC);
+        var out = new Uint8Array(magic.byteLength + 4 + head.byteLength + gzBytes.byteLength);
+        out.set(magic, 0);
+        new DataView(out.buffer).setUint32(magic.byteLength, head.byteLength, true);
+        out.set(head, magic.byteLength + 4);
+        out.set(new Uint8Array(gzBytes), magic.byteLength + 4 + head.byteLength);
+        return out.buffer;
+    }
+    function rfpsUnpackSession(buf) {
+        var magic = new TextEncoder().encode(RFPS_MAGIC);
+        var bytes = new Uint8Array(buf);
+        for (var i = 0; i < magic.byteLength; i++) {
+            if (bytes[i] !== magic[i]) { throw new Error('Not a save file exported by this page (bad magic bytes).'); }
+        }
+        var headLen = new DataView(buf).getUint32(magic.byteLength, true);
+        var headStart = magic.byteLength + 4;
+        var header = JSON.parse(new TextDecoder().decode(bytes.subarray(headStart, headStart + headLen)));
+        return { header: header, gz: buf.slice(headStart + headLen) };
+    }
+
+    // ---- the game --------------------------------------------------------------
+    var rfpsGame = null; // { phase, engineVersion } - one engine per page load
+
+    async function rfpsStart(phase) {
+        rfpsErr('');
+        var gap = rfpsSupportGap();
+        if (gap) { rfpsErr('This browser is missing ' + gap + ', which the game needs. A current desktop browser will work.'); return; }
+        if (rfpsGame) { rfpsErr('A campaign is already running. Reload the page to switch.'); return; }
+        var buttons = ['rfpsStartPhase1', 'rfpsStartPhase2'];
+        buttons.forEach(function (id) { var b = document.getElementById(id); if (b) b.disabled = true; });
+        try {
+            rfpsStatus('Reading the game list...');
+            var manifest = await rfpsManifest();
+            var ph = manifest.phases[phase];
+            if (!ph) { throw new Error('Unknown campaign: ' + phase); }
+
+            try { if (navigator.storage && navigator.storage.persist) { navigator.storage.persist(); } } catch (e) { /* advisory */ }
+
+            var jsGz = await rfpsGetAsset(ph.assets.js, manifest.version, 'the engine');
+            var wasmGz = await rfpsGetAsset(ph.assets.wasm, manifest.version, 'the engine core');
+            var dataGz = await rfpsGetAsset(ph.assets.data, manifest.version, 'the game data');
+
+            rfpsProgress('Unpacking in this browser (no upload - nothing leaves this page)...', 0, 0);
+            var jsText = new TextDecoder().decode(await rfpsGunzip(jsGz));
+            var wasmBuf = await rfpsGunzip(wasmGz);
+            var dataBuf = await rfpsGunzip(dataGz);
+
+            var canvas = document.getElementById('canvas');
+            var screenWrap = document.getElementById('rfpsScreenWrap');
+            var cards = document.getElementById('rfpsCards');
+            if (cards) cards.style.display = 'none';
+            if (screenWrap) screenWrap.style.display = '';
+
+            rfpsProgress('Starting the engine...', 0, 0);
+            window.Module = {
+                canvas: canvas,
+                wasmBinary: wasmBuf,
+                getPreloadedPackage: function () { return dataBuf; },
+                arguments: ['-iwad', ph.iwad],
+                print: function (t) { if (window.console) console.log('[rfps]', t); },
+                printErr: function (t) { if (window.console) console.warn('[rfps]', t); },
+                setStatus: function (t) { if (t) rfpsStatus(t); },
+                hideConsole: function () {
+                    canvas.style.display = 'block';
+                    canvas.focus();
+                    rfpsProgressDone();
+                    rfpsStatus('Running. The keyboard drives the game while it has focus - arrows move, Ctrl fires, Space opens doors, Esc opens the game menu (save, load, settings). Nothing you do here leaves this page.');
+                    var eng = document.getElementById('rfpsInfoEngine');
+                    if (eng) eng.textContent = 'running (' + ph.label + ')';
+                    rfpsRefreshSavesInfo();
+                },
+                showConsole: function () { /* the game menu handles everything on-screen */ },
+                winResized: function () { /* canvas sizes itself */ },
+                captureMouse: function () {
+                    try { if (document.pointerLockElement === null && canvas.requestPointerLock) { canvas.requestPointerLock(); } } catch (e) { /* pointer lock denied */ }
+                },
+                softExit: function () {
+                    rfpsStatus('The game ended. Reload the page to start again - saves stay in this browser.');
+                },
+                onAbort: function (what) {
+                    rfpsProgressDone();
+                    rfpsErr('The engine stopped unexpectedly: ' + what + '. Reload the page to try again.');
+                },
+                onRuntimeInitialized: function () {
+                    var eng = document.getElementById('rfpsInfoEngine');
+                    if (eng) eng.textContent = 'engine loaded, starting ' + ph.label;
+                },
+            };
+            var gameInfo = document.getElementById('rfpsInfoGame');
+            if (gameInfo) gameInfo.textContent = ph.label + ' (' + ph.levels + '), engine ' + manifest.version;
+
+            var scriptUrl = URL.createObjectURL(new Blob([jsText], { type: 'text/javascript' }));
+            var tag = document.createElement('script');
+            tag.src = scriptUrl;
+            tag.onerror = function () {
+                rfpsProgressDone();
+                rfpsErr('The engine script failed to run in this browser.');
+            };
+            document.body.appendChild(tag);
+            rfpsGame = { phase: phase, engineVersion: manifest.version };
+        } catch (e) {
+            rfpsProgressDone();
+            var cardsEl = document.getElementById('rfpsCards');
+            if (cardsEl) cardsEl.style.display = '';
+            var wrapEl = document.getElementById('rfpsScreenWrap');
+            if (wrapEl) wrapEl.style.display = 'none';
+            rfpsErr('Could not start the game: ' + (e && e.message ? e.message : String(e)));
+            rfpsStatus('Pick a campaign to try again.');
+            buttons.forEach(function (id) { var b = document.getElementById(id); if (b) b.disabled = false; });
+        }
+    }
+
+    async function rfpsRefreshSavesInfo() {
+        var el = document.getElementById('rfpsInfoSaves');
+        if (!el) return;
+        try {
+            var files = await rfpsReadSaves();
+            var real = files.filter(function (f) { return f.b64 !== null; });
+            el.textContent = real.length
+                ? real.length + ' file(s) in this browser (saves + settings)'
+                : 'none in this browser yet - save from the game menu (Esc)';
+        } catch (e) { el.textContent = 'none in this browser yet'; }
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('retroFpsTool');
+        if (!root) return; // not a retro-fps page
+
+        // Synchronous panel state (G16): support check + storage estimate.
+        var gap = rfpsSupportGap();
+        if (gap) {
+            rfpsStatus('This browser is missing ' + gap + ', which the game needs. A current desktop browser will work.');
+            ['rfpsStartPhase1', 'rfpsStartPhase2'].forEach(function (id) {
+                var b = document.getElementById(id); if (b) b.disabled = true;
+            });
+        }
+        var stor = document.getElementById('rfpsInfoStorage');
+        if (navigator.storage && navigator.storage.estimate) {
+            navigator.storage.estimate().then(function (est) {
+                if (stor && est && est.quota) {
+                    stor.textContent = rfpsMB(est.usage || 0) + ' used of about ' + rfpsMB(est.quota) + ' available';
+                }
+            }).catch(function () { if (stor) stor.textContent = 'unknown'; });
+        } else if (stor) { stor.textContent = 'unknown'; }
+
+        var p1 = document.getElementById('rfpsStartPhase1');
+        if (p1) p1.addEventListener('click', function () { rfpsStart('phase1'); });
+        var p2 = document.getElementById('rfpsStartPhase2');
+        if (p2) p2.addEventListener('click', function () { rfpsStart('phase2'); });
+
+        var fs = document.getElementById('rfpsFullscreenBtn');
+        if (fs) fs.addEventListener('click', function () { rfpsFullscreen(document.getElementById('rfpsScreenWrap')); });
+        var stop = document.getElementById('rfpsStopBtn');
+        if (stop) stop.addEventListener('click', function () {
+            // The engine is a global module and cannot be torn down in place;
+            // it already synced saves to this browser on every in-game save.
+            location.reload();
+        });
+
+        var exp = document.getElementById('rfpsExportBtn');
+        if (exp) exp.addEventListener('click', async function () {
+            rfpsErr('');
+            rfpsStatus('Packing your saves and settings for export...');
+            try {
+                var files = await rfpsReadSaves();
+                if (!files.length) { throw new Error('No saves in this browser yet. Save from the game menu (Esc) first.'); }
+                var version = rfpsGame ? rfpsGame.engineVersion : (await rfpsManifest()).version;
+                var gz = await rfpsGzip(new TextEncoder().encode(JSON.stringify({ files: files })));
+                var header = { schema: 1, slug: 'retro-fps-online', kind: 'idbfs', engine_version: version, saved_at: new Date().toISOString() };
+                var packed = rfpsPackSession(header, gz);
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(new Blob([packed], { type: 'application/octet-stream' }));
+                var stamp = header.saved_at.slice(0, 16).replace(/[-:T]/g, '');
+                a.download = 'retro-fps-online-saves-' + stamp + '.ftolfps';
+                a.click();
+                setTimeout(function () { URL.revokeObjectURL(a.href); }, 30000);
+                rfpsStatus('Saves exported (' + rfpsMB(packed.byteLength) + '). Import the file on any machine to continue there.');
+            } catch (e) {
+                rfpsErr('Export failed: ' + (e && e.message ? e.message : String(e)));
+                rfpsStatus('Pick a campaign, or save in the game first.');
+            }
+        });
+
+        var imp = document.getElementById('rfpsImportFile');
+        if (imp) imp.addEventListener('change', async function () {
+            rfpsErr('');
+            var f = imp.files && imp.files[0];
+            if (!f) return;
+            try {
+                if (rfpsGame) { throw new Error('Stop the game first (the Stop button reloads this page), then import.'); }
+                var buf = await f.arrayBuffer();
+                var unpacked = rfpsUnpackSession(buf);
+                if (unpacked.header.slug && unpacked.header.slug !== 'retro-fps-online') {
+                    throw new Error('This file belongs to a different tool page (' + unpacked.header.slug + ').');
+                }
+                var manifest = await rfpsManifest();
+                if (unpacked.header.engine_version && unpacked.header.engine_version !== manifest.version) {
+                    throw new Error('These saves were made with engine version ' + unpacked.header.engine_version + ' but the server now provides ' + manifest.version + ' - they cannot be imported. Start fresh instead.');
+                }
+                var payload = JSON.parse(new TextDecoder().decode(await rfpsGunzip(unpacked.gz)));
+                if (!payload || !payload.files || !payload.files.length) { throw new Error('The file contains no saves.'); }
+                await rfpsWriteSaves(payload.files);
+                rfpsStatus('Saves imported (' + payload.files.length + ' file(s)). Start a campaign, press Esc, and use Load Game.');
+                rfpsRefreshSavesInfo();
+            } catch (e) {
+                rfpsErr('Could not import that file: ' + (e && e.message ? e.message : String(e)));
+            } finally { imp.value = ''; }
+        });
+
+        var eng = document.getElementById('rfpsInfoEngine');
+        if (eng) eng.textContent = 'not loaded yet - nothing downloads until you pick a campaign';
+        rfpsRefreshSavesInfo();
+    }
+</script>

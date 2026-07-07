@@ -2685,6 +2685,10 @@ export const ALIAS_ROUTES = {
   '/linux-online.html': '/utility-tools/linux-online.html',
   '/online-linux-terminal.html': '/utility-tools/linux-online.html',
   '/linux-emulator-online.html': '/utility-tools/linux-online.html',
+  '/retro-fps-online.html': '/games/retro-fps-online.html',
+  '/browser-fps.html': '/games/retro-fps-online.html',
+  '/freedoom-online.html': '/games/retro-fps-online.html',
+  '/play-fps-in-browser.html': '/games/retro-fps-online.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -4066,6 +4070,10 @@ export const JSP_BY_ROUTE = {
   '/guides/de/run-linux-in-browser-when.html': 'guide/de/run-linux-in-browser-when.jsp',
   '/guides/de/run-linux-in-browser-step-by-step.html': 'guide/de/run-linux-in-browser-step-by-step.jsp',
   '/guides/de/run-linux-in-browser-vs-alternatives.html': 'guide/de/run-linux-in-browser-vs-alternatives.jsp',
+  '/games/retro-fps-online.html': 'games/retro-fps-online.jsp',
+  '/guides/play-fps-in-browser-when.html': 'guide/play-fps-in-browser-when.jsp',
+  '/guides/play-fps-in-browser-step-by-step.html': 'guide/play-fps-in-browser-step-by-step.jsp',
+  '/guides/play-fps-in-browser-vs-alternatives.html': 'guide/play-fps-in-browser-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
