@@ -1,6 +1,6 @@
 # Linux Online - terminal image (real 32-bit Alpine Linux for the v86 emulator).
 # Build context is vm-images/ (see scripts/build-image.sh).
-FROM i386/alpine:3.24
+FROM --platform=linux/386 public.ecr.aws/docker/library/alpine:3.24
 
 # The initramfs must carry the IDE/ATA + ext4 drivers that v86's emulated
 # PIIX disk needs - write the config BEFORE linux-virt so its post-install

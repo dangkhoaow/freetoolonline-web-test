@@ -1,6 +1,6 @@
 # Linux Online - desktop image (32-bit Alpine + Xorg + Xfce for the v86 emulator).
 # Build context is vm-images/ (see scripts/build-image.sh).
-FROM i386/alpine:3.24
+FROM --platform=linux/386 public.ecr.aws/docker/library/alpine:3.24
 
 RUN apk add --no-cache mkinitfs \
  && echo 'features="base ata ext4 virtio"' > /etc/mkinitfs/mkinitfs.conf \

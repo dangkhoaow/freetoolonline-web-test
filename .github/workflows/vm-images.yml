@@ -23,8 +23,9 @@ jobs:
           node-version: 22
       - name: Build images (docker linux/386 -> raw ext4 + kernel)
         run: |
-          sudo bash vm-images/scripts/build-image.sh terminal
-          sudo bash vm-images/scripts/build-image.sh desktop
+          set -o pipefail
+          sudo bash vm-images/scripts/build-image.sh terminal 2>&1 | tee build-terminal.log
+          sudo bash vm-images/scripts/build-image.sh desktop 2>&1 | tee build-desktop.log
           sudo chown -R "$USER" vm-images/out
       - name: Fetch pinned v86 runtime + BIOS
         working-directory: vm-images/scripts
@@ -39,14 +40,31 @@ jobs:
         working-directory: vm-images/scripts
         env:
           NODE_OPTIONS: --max-old-space-size=4096
-        run: node snapshot.mjs terminal ../out/terminal
+        run: |
+          set -o pipefail
+          node snapshot.mjs terminal ../out/terminal 2>&1 | tee ../../snapshot-terminal.log
       - name: Snapshot boot state (desktop)
         working-directory: vm-images/scripts
         env:
           NODE_OPTIONS: --max-old-space-size=4096
-        run: node snapshot.mjs desktop ../out/desktop
+        run: |
+          set -o pipefail
+          node snapshot.mjs desktop ../out/desktop 2>&1 | tee ../../snapshot-desktop.log
       - name: Package + manifest
-        run: bash vm-images/scripts/package-release.sh
+        run: |
+          set -o pipefail
+          bash vm-images/scripts/package-release.sh 2>&1 | tee package.log
+      - name: Upload step logs on failure (public debug channel)
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view vm-assets-debug --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
+            gh release create vm-assets-debug --repo "$GITHUB_REPOSITORY" --prerelease \
+              --title "vm-images debug logs" --notes "Step logs from failed vm-images runs. Safe to delete."
+          for f in build-terminal.log build-desktop.log snapshot-terminal.log snapshot-desktop.log package.log; do
+            [ -s "$f" ] && gh release upload vm-assets-debug "$f" --repo "$GITHUB_REPOSITORY" --clobber || true
+          done
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
