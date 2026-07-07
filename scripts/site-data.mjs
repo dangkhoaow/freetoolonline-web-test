@@ -2682,6 +2682,9 @@ export const ALIAS_ROUTES = {
   '/2048-game.html': '/games/2048-game.html',
   '/city-drive-3d.html': '/games/city-drive-3d.html',
   '/earth-3d-globe.html': '/space-3d/earth-3d-globe.html',
+  '/linux-online.html': '/utility-tools/linux-online.html',
+  '/online-linux-terminal.html': '/utility-tools/linux-online.html',
+  '/linux-emulator-online.html': '/utility-tools/linux-online.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -4044,6 +4047,10 @@ export const JSP_BY_ROUTE = {
   '/guides/earth-3d-globe-live-day-night-map-when.html': 'guide/earth-3d-globe-live-day-night-map-when.jsp',
   '/guides/earth-3d-globe-live-day-night-map-step-by-step.html': 'guide/earth-3d-globe-live-day-night-map-step-by-step.jsp',
   '/guides/earth-3d-globe-live-day-night-map-vs-alternatives.html': 'guide/earth-3d-globe-live-day-night-map-vs-alternatives.jsp',
+  '/utility-tools/linux-online.html': 'utility/linux-online.jsp',
+  '/guides/run-linux-in-browser-when.html': 'guide/run-linux-in-browser-when.jsp',
+  '/guides/run-linux-in-browser-step-by-step.html': 'guide/run-linux-in-browser-step-by-step.jsp',
+  '/guides/run-linux-in-browser-vs-alternatives.html': 'guide/run-linux-in-browser-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

@@ -95,6 +95,7 @@ const GUIDE_TOPIC_ORDER = [
   'developer-and-encoding',
   'games',
   'space',
+  'utilities',
   'editorial-and-other',
 ];
 
@@ -108,6 +109,7 @@ const GUIDE_TOPIC_LABELS = {
   'developer-and-encoding': 'Developer and encoding',
   games: 'Browser games',
   space: 'Space 3D',
+  utilities: 'Utilities',
   'editorial-and-other': 'Editorial and other',
 };
 
@@ -141,6 +143,11 @@ function classifyGuide(slug) {
   }
   if (/(^|-)(md5|sha256|css-minifier|uglifier|tree-shaking|json|yaml|toml|csv|cloud-run|text-diff|word-diff|line-diff|git-diff|diff-tool|base64|unix-timestamps|millisecond|time-in-ms|ms-to-date|current-millis|current-time-in-milliseconds|unminify)/.test(slug)) {
     return 'developer-and-encoding';
+  }
+  // fire-32: the Linux Online VM guides (run-linux-in-browser-*) -> the
+  // existing utility topic.
+  if (/(^|-)(linux|virtual-machine)/.test(slug)) {
+    return 'utilities';
   }
   // fire-23: guides for the two new categories (fire-30 added the city +
   // flight units). Slug tokens match the shipped units (snake-classic,
@@ -620,6 +627,7 @@ const GUIDE_TOPIC_TO_CLUSTER = {
   'developer-and-encoding': 'developer',
   games: 'games',
   space: 'space-3d',
+  utilities: 'utility',
   'editorial-and-other': 'utility',
 };
 
