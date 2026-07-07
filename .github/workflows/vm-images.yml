@@ -1,0 +1,60 @@
+# Builds the Linux Online VM images (vm-images/) and publishes them as
+# GitHub Release assets. Runs only when vm-images/ changes - the Pages
+# workflow is untouched by this one.
+name: vm-images
+on:
+  push:
+    branches: [main]
+    paths: ["vm-images/**", ".github/workflows/vm-images.yml"]
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency:
+  group: vm-images
+  cancel-in-progress: true
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build images (docker linux/386 -> raw ext4 + kernel)
+        run: |
+          sudo bash vm-images/scripts/build-image.sh terminal
+          sudo bash vm-images/scripts/build-image.sh desktop
+          sudo chown -R "$USER" vm-images/out
+      - name: Fetch pinned v86 runtime + BIOS
+        working-directory: vm-images/scripts
+        run: |
+          npm i v86@0.5.424 --no-audit --no-fund
+          V86_COMMIT=2f1346b0e7d88d4cbbbcc05fe15b4e369c3de23f
+          curl -sL -o seabios.bin  "https://raw.githubusercontent.com/copy/v86/$V86_COMMIT/bios/seabios.bin"
+          curl -sL -o vgabios.bin "https://raw.githubusercontent.com/copy/v86/$V86_COMMIT/bios/vgabios.bin"
+          echo "73e3f359102e3a9982c35fce98eb7cd08f18303ac7f1ba6ebfbe6cdc1c244d98  seabios.bin" | sha256sum -c -
+          echo "a4bc0d80cc3ca028c73dafa8fee396b8d054ce87ebd8abfbd31b06b437607880  vgabios.bin" | sha256sum -c -
+      - name: Snapshot boot state (terminal)
+        working-directory: vm-images/scripts
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: node snapshot.mjs terminal ../out/terminal
+      - name: Snapshot boot state (desktop)
+        working-directory: vm-images/scripts
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: node snapshot.mjs desktop ../out/desktop
+      - name: Package + manifest
+        run: bash vm-images/scripts/package-release.sh
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="vm-assets-$(cat vm-images/VERSION)"
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
+            gh release create "$TAG" --repo "$GITHUB_REPOSITORY" \
+              --title "Linux Online VM images ($TAG)" \
+              --notes "32-bit Alpine Linux images + v86 boot-state snapshots for the Linux Online tool page. Built by the vm-images workflow from vm-images/ at $GITHUB_SHA - see vm-images/README.md for provenance and licenses."
+          gh release upload "$TAG" --repo "$GITHUB_REPOSITORY" --clobber vm-images/out/release/*
+          echo "Published: https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG"
