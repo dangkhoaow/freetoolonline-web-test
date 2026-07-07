@@ -340,6 +340,7 @@ try {
     { title: "2048 Game - Merge the Numbers Puzzle", url: "https://freetoolonline.com/games/2048-game.html", include: !1, tags: "games" },
     { title: "City Drive Open World 3D", url: "https://freetoolonline.com/games/city-drive-3d.html", include: !1, tags: "games" },
     { title: "Earth 3D Globe - Live Day & Night Map", url: "https://freetoolonline.com/space-3d/earth-3d-globe.html", include: !1, tags: "space-3d" },
+    { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

@@ -1,0 +1,478 @@
+<script>
+    // Linux VM archetype (linux-online) - real 32-bit Alpine Linux in the browser via
+    // the vendored v86 emulator (/vendor/v86/, BSD-2, single-threaded: needs NO
+    // SharedArrayBuffer / COOP / COEP). Registry Gate-H entry: v86_linux_vm_vendored.
+    //
+    // Asset model (ai-image precedent, disclosed in the tool skill): the ~5MB
+    // engine is self-hosted under /vendor/v86/. The DISK IMAGES + boot-state
+    // snapshots are too large for the site repo; they stream once from the
+    // project's public assets Pages site (LVM_ASSETS_BASE below - CORS "*" +
+    // Range verified 2026-07-07; GitHub Releases send no CORS and cannot be
+    // used) and are cached in IndexedDB, so later visits work offline. NOTHING
+    // is fetched until the reader clicks a Start card (G16 stays render-only).
+    //
+    // Session model: save_state() -> gzip (native CompressionStream) ->
+    // IndexedDB (auto-save every 5 min, toggleable, + manual Save). Export
+    // wraps the same bytes in a tiny container: "FTOLVM1!" + u32 header
+    // length + JSON header {schema,slug,kind,image_version,saved_at} + gzipped
+    // state, downloaded as .ftolvm. Import validates slug/kind/image_version
+    // against the manifest and resumes the exact machine - on any computer.
+    //
+    // HONEST NOTES (operator): (1) emulated CPU is roughly late-1990s PC class -
+    // the terminal is snappy, the desktop is usable but relaxed; (2) 32-bit x86
+    // only; (3) the VM has NO network by design; (4) writes are NOT written back
+    // to the cached image - they live in the running machine and persist only
+    // through saved sessions. Framework contract: doAfterPageRendered(); no
+    // top-level DOM. Plain buttons; no upload widget.
+
+    web.localUpload = false;
+
+    var LVM_ASSETS_BASE = 'https://dangkhoaow.github.io/ftol-vm-assets';
+    var LVM_STORE_KEY = 'ftol-vm-linux-online';
+    var LVM_DB_NAME = 'ftol-vm-linux-online';
+    var LVM_MAGIC = 'FTOLVM1!';
+
+    // ---- vendored ESM loader (ftoLoadThree shape) -----------------------------
+    function ftoLoadV86() {
+        if (window.__ftoV86Promise) { return window.__ftoV86Promise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/v86';
+        window.__ftoV86Promise = import(base + '/libv86.mjs').then(function (mod) {
+            if (!mod || !mod.V86) { throw new Error('v86 loaded but V86 is missing'); }
+            return { V86: mod.V86, base: base };
+        });
+        return window.__ftoV86Promise;
+    }
+
+    // ---- tiny helpers ---------------------------------------------------------
+    function lvmStatus(text) {
+        var el = document.getElementById('lvmStatus');
+        if (el) el.textContent = text;
+    }
+    function lvmErr(text) {
+        var el = document.getElementById('lvmErr');
+        if (el) el.textContent = text || '';
+    }
+    function lvmLoadPrefs() {
+        try { return JSON.parse(localStorage.getItem(LVM_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function lvmSavePrefs(obj) {
+        try { localStorage.setItem(LVM_STORE_KEY, JSON.stringify(obj)); } catch (e) { /* quota/private mode - non-fatal */ }
+    }
+    function lvmFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+    function lvmMB(bytes) { return (bytes / 1048576).toFixed(bytes >= 104857600 ? 0 : 1) + ' MB'; }
+    function lvmSupportGap() {
+        if (typeof WebAssembly !== 'object') { return 'WebAssembly'; }
+        if (typeof DecompressionStream !== 'function' || typeof CompressionStream !== 'function') { return 'CompressionStream'; }
+        if (!window.indexedDB) { return 'IndexedDB'; }
+        return null;
+    }
+
+    async function lvmGzip(buf) {
+        var s = new Response(buf).body.pipeThrough(new CompressionStream('gzip'));
+        return await new Response(s).arrayBuffer();
+    }
+    async function lvmGunzip(buf) {
+        var s = new Response(buf).body.pipeThrough(new DecompressionStream('gzip'));
+        return await new Response(s).arrayBuffer();
+    }
+
+    // ---- IndexedDB: 'assets' (downloads, keyed name@version), 'sessions' ------
+    function lvmDb() {
+        if (window.__lvmDbPromise) { return window.__lvmDbPromise; }
+        window.__lvmDbPromise = new Promise(function (resolve, reject) {
+            var req = indexedDB.open(LVM_DB_NAME, 1);
+            req.onupgradeneeded = function () {
+                var db = req.result;
+                if (!db.objectStoreNames.contains('assets')) { db.createObjectStore('assets'); }
+                if (!db.objectStoreNames.contains('sessions')) { db.createObjectStore('sessions'); }
+            };
+            req.onsuccess = function () { resolve(req.result); };
+            req.onerror = function () { reject(req.error || new Error('IndexedDB open failed')); };
+        });
+        return window.__lvmDbPromise;
+    }
+    async function lvmIdbGet(store, key) {
+        var db = await lvmDb();
+        return new Promise(function (resolve, reject) {
+            var tx = db.transaction(store, 'readonly').objectStore(store).get(key);
+            tx.onsuccess = function () { resolve(tx.result); };
+            tx.onerror = function () { reject(tx.error); };
+        });
+    }
+    async function lvmIdbPut(store, key, val) {
+        var db = await lvmDb();
+        return new Promise(function (resolve, reject) {
+            var tx = db.transaction(store, 'readwrite').objectStore(store).put(val, key);
+            tx.onsuccess = function () { resolve(); };
+            tx.onerror = function () { reject(tx.error); };
+        });
+    }
+    async function lvmIdbDel(store, key) {
+        var db = await lvmDb();
+        return new Promise(function (resolve, reject) {
+            var tx = db.transaction(store, 'readwrite').objectStore(store).delete(key);
+            tx.onsuccess = function () { resolve(); };
+            tx.onerror = function () { reject(tx.error); };
+        });
+    }
+
+    // ---- manifest + downloads (all click-gated) -------------------------------
+    async function lvmManifest() {
+        if (window.__lvmManifest) { return window.__lvmManifest; }
+        var res = await fetch(LVM_ASSETS_BASE + '/manifest.json');
+        if (!res.ok) { throw new Error('The image server answered HTTP ' + res.status + ' for the manifest.'); }
+        var m = await res.json();
+        if (!m || !m.images || !m.images.terminal) { throw new Error('The image manifest looks incomplete.'); }
+        window.__lvmManifest = m;
+        return m;
+    }
+
+    async function lvmDownload(file, expectedBytes, onProgress) {
+        var res = await fetch(LVM_ASSETS_BASE + '/' + file);
+        if (!res.ok) { throw new Error('Download failed (HTTP ' + res.status + ') for ' + file); }
+        if (!res.body || !res.body.getReader) {
+            var whole = await res.arrayBuffer();
+            if (onProgress) onProgress(whole.byteLength, expectedBytes || whole.byteLength);
+            return whole;
+        }
+        var reader = res.body.getReader();
+        var chunks = [], loaded = 0;
+        for (;;) {
+            var step = await reader.read();
+            if (step.done) break;
+            chunks.push(step.value);
+            loaded += step.value.byteLength;
+            if (onProgress) onProgress(loaded, expectedBytes || 0);
+        }
+        var out = new Uint8Array(loaded), off = 0;
+        for (var i = 0; i < chunks.length; i++) { out.set(chunks[i], off); off += chunks[i].byteLength; }
+        return out.buffer;
+    }
+
+    // Cached asset getter: IndexedDB hit (matching version) or download + store.
+    async function lvmGetAsset(assetDef, version, label) {
+        var key = assetDef.file + '@' + version;
+        try {
+            var hit = await lvmIdbGet('assets', key);
+            if (hit && hit.bytes && hit.bytes.byteLength === assetDef.bytes) {
+                lvmProgress(label + ': using the copy already in this browser', 1, 1);
+                return hit.bytes;
+            }
+        } catch (e) { /* cache miss path below */ }
+        var buf = await lvmDownload(assetDef.file, assetDef.bytes, function (loaded, total) {
+            lvmProgress('Downloading ' + label + ' (' + lvmMB(loaded) + (total ? ' of ' + lvmMB(total) : '') + ')', loaded, total || 0);
+        });
+        try { await lvmIdbPut('assets', key, { bytes: buf, saved_at: Date.now() }); }
+        catch (e) { lvmStatus('Could not cache ' + label + ' in browser storage (quota?) - it will re-download next visit.'); }
+        return buf;
+    }
+
+    function lvmProgress(label, loaded, total) {
+        var row = document.getElementById('lvmProgressRow');
+        var bar = document.getElementById('lvmProgressBar');
+        var lab = document.getElementById('lvmProgressLabel');
+        if (!row) return;
+        row.style.display = '';
+        if (lab) lab.textContent = label;
+        if (bar) bar.style.width = (total > 0 ? Math.min(100, Math.round(loaded / total * 100)) : 0) + '%';
+    }
+    function lvmProgressDone() {
+        var row = document.getElementById('lvmProgressRow');
+        if (row) row.style.display = 'none';
+    }
+
+    // ---- session container (.ftolvm) ------------------------------------------
+    function lvmPackSession(headerObj, gzBytes) {
+        var head = new TextEncoder().encode(JSON.stringify(headerObj));
+        var magic = new TextEncoder().encode(LVM_MAGIC);
+        var out = new Uint8Array(magic.byteLength + 4 + head.byteLength + gzBytes.byteLength);
+        out.set(magic, 0);
+        new DataView(out.buffer).setUint32(magic.byteLength, head.byteLength, true);
+        out.set(head, magic.byteLength + 4);
+        out.set(new Uint8Array(gzBytes), magic.byteLength + 4 + head.byteLength);
+        return out.buffer;
+    }
+    function lvmUnpackSession(buf) {
+        var magic = new TextEncoder().encode(LVM_MAGIC);
+        var bytes = new Uint8Array(buf);
+        for (var i = 0; i < magic.byteLength; i++) {
+            if (bytes[i] !== magic[i]) { throw new Error('Not a session file exported by this tool (bad magic bytes).'); }
+        }
+        var headLen = new DataView(buf).getUint32(magic.byteLength, true);
+        var headStart = magic.byteLength + 4;
+        var header = JSON.parse(new TextDecoder().decode(bytes.subarray(headStart, headStart + headLen)));
+        return { header: header, gz: buf.slice(headStart + headLen) };
+    }
+
+    // ---- the machine ----------------------------------------------------------
+    var lvmVm = null; // { emulator, kind, imageVersion, autosaveTimer }
+
+    async function lvmSaveSession(slot, quiet) {
+        if (!lvmVm || !lvmVm.emulator) return null;
+        var state = await lvmVm.emulator.save_state();
+        var gz = await lvmGzip(state);
+        var rec = { kind: lvmVm.kind, image_version: lvmVm.imageVersion, saved_at: Date.now(), gz: gz };
+        try {
+            await lvmIdbPut('sessions', slot, rec);
+            if (!quiet) lvmStatus('Session saved in this browser (' + lvmMB(gz.byteLength) + '). Use Export to move it to another machine.');
+            lvmRefreshSessionInfo();
+        } catch (e) {
+            if (!quiet) lvmStatus('Could not save the session (browser storage quota?). Export still works.');
+        }
+        return rec;
+    }
+
+    async function lvmRefreshSessionInfo() {
+        var el = document.getElementById('lvmInfoSession');
+        if (!el) return;
+        try {
+            var s = (await lvmIdbGet('sessions', 'manual')) || (await lvmIdbGet('sessions', 'auto'));
+            el.textContent = s ? (s.kind + ', saved ' + new Date(s.saved_at).toLocaleString() + ', ' + lvmMB(s.gz.byteLength)) : 'none in this browser';
+        } catch (e) { el.textContent = 'none in this browser'; }
+    }
+
+    function lvmShowScreen(showing) {
+        var cards = document.getElementById('lvmCards');
+        var cont = document.getElementById('lvmContinueCard');
+        var wrap = document.getElementById('lvmScreenWrap');
+        if (cards) cards.style.display = showing ? 'none' : '';
+        if (cont && showing) cont.style.display = 'none';
+        if (wrap) wrap.style.display = showing ? '' : 'none';
+    }
+
+    async function lvmStop() {
+        if (!lvmVm) return;
+        if (lvmVm.autosaveTimer) { clearInterval(lvmVm.autosaveTimer); }
+        try {
+            var auto = document.getElementById('lvmAutosave');
+            if (auto && auto.checked) { await lvmSaveSession('auto', true); }
+        } catch (e) { /* best effort */ }
+        try { lvmVm.emulator.destroy(); } catch (e) { /* already gone */ }
+        lvmVm = null;
+        lvmShowScreen(false);
+        lvmStatus('Machine stopped. Its last state was saved in this browser if auto-save was on.');
+        var eng = document.getElementById('lvmInfoEngine');
+        if (eng) eng.textContent = 'loaded, idle';
+        lvmMaybeShowContinue();
+    }
+
+    // stateGz: null = instant-boot snapshot from the image server; ArrayBuffer =
+    // a saved/imported session. Both restore on top of the pristine cached disk.
+    async function lvmStart(kind, stateGz, stateLabel) {
+        lvmErr('');
+        var gap = lvmSupportGap();
+        if (gap) { lvmErr('This browser is missing ' + gap + ', which the virtual machine needs. A current desktop browser will work.'); return; }
+        var buttons = ['lvmStartTerminal', 'lvmStartDesktop', 'lvmContinueBtn'];
+        buttons.forEach(function (id) { var b = document.getElementById(id); if (b) b.disabled = true; });
+        try {
+            lvmStatus('Reading the image list...');
+            var manifest = await lvmManifest();
+            var img = manifest.images[kind];
+            if (!img) { throw new Error('Unknown machine kind: ' + kind); }
+            if (stateGz && stateLabel && stateLabel.image_version && stateLabel.image_version !== manifest.version) {
+                throw new Error('This session was saved with image version ' + stateLabel.image_version + ' but the server now provides ' + manifest.version + ' - it cannot be resumed. Start fresh instead.');
+            }
+
+            try { if (navigator.storage && navigator.storage.persist) { navigator.storage.persist(); } } catch (e) { /* advisory */ }
+
+            var meta = document.getElementById(kind === 'terminal' ? 'lvmTerminalMeta' : 'lvmDesktopMeta');
+            var needBytes = img.assets.img.bytes + img.assets.vmlinuz.bytes + img.assets.initramfs.bytes + (stateGz ? 0 : img.assets.state.bytes);
+            if (meta) meta.textContent = 'One-time download about ' + lvmMB(needBytes) + '; cached in this browser afterwards.';
+
+            var imgGz = await lvmGetAsset(img.assets.img, manifest.version, 'the ' + kind + ' disk image');
+            var vmlinuz = await lvmGetAsset(img.assets.vmlinuz, manifest.version, 'the kernel');
+            var initramfs = await lvmGetAsset(img.assets.initramfs, manifest.version, 'the start-up files');
+            var bootStateGz = stateGz;
+            if (!bootStateGz) {
+                bootStateGz = await lvmGetAsset(img.assets.state, manifest.version, 'the instant-start snapshot');
+            }
+
+            lvmProgress('Unpacking in this browser (no upload - nothing leaves this page)...', 0, 0);
+            var imgRaw = await lvmGunzip(imgGz);
+            var stateRaw = await lvmGunzip(bootStateGz);
+
+            lvmProgress('Starting the emulator...', 0, 0);
+            var v86mod = await ftoLoadV86();
+            var eng = document.getElementById('lvmInfoEngine');
+            if (eng) eng.textContent = 'v86 (self-hosted, single-threaded)';
+            var sys = document.getElementById('lvmInfoSystem');
+            if (sys) sys.textContent = 'Alpine Linux ' + (manifest.alpine || '') + ' (32-bit x86), ' + img.memory_mb + ' MB RAM, image ' + manifest.version;
+
+            var screenEl = document.getElementById('lvmScreen');
+            lvmShowScreen(true);
+            var emulator = new v86mod.V86({
+                wasm_path: v86mod.base + '/v86.wasm',
+                bios: { url: v86mod.base + '/seabios.bin' },
+                vga_bios: { url: v86mod.base + '/vgabios.bin' },
+                memory_size: img.memory_mb * 1024 * 1024,
+                vga_memory_size: (img.vga_mb || 16) * 1024 * 1024,
+                screen_container: screenEl,
+                bzimage: { buffer: vmlinuz },
+                initrd: { buffer: initramfs },
+                cmdline: manifest.cmdline,
+                hda: { buffer: imgRaw },
+                initial_state: { buffer: stateRaw },
+                autostart: true,
+                disable_speaker: true,
+            });
+
+            lvmVm = { emulator: emulator, kind: kind, imageVersion: manifest.version, autosaveTimer: null };
+            emulator.add_listener('emulator-ready', function () {
+                lvmProgressDone();
+                lvmStatus(kind === 'terminal'
+                    ? 'Running. Click the screen, then type - try uname -a or ls /. Nothing you do here leaves the page.'
+                    : 'Running. Click the screen to use the desktop (emulated - expect a relaxed pace). Nothing you do here leaves the page.');
+                var eng2 = document.getElementById('lvmInfoEngine');
+                if (eng2) eng2.textContent = 'v86, machine running';
+            });
+            // Keyboard stays with the page until the reader clicks the screen.
+            emulator.keyboard_set_status(false);
+            screenEl.addEventListener('focus', function () { if (lvmVm) lvmVm.emulator.keyboard_set_status(true); });
+            screenEl.addEventListener('blur', function () { if (lvmVm) lvmVm.emulator.keyboard_set_status(false); });
+            if (kind === 'desktop') {
+                screenEl.addEventListener('click', function () {
+                    if (lvmVm && lvmVm.emulator.lock_mouse) { try { lvmVm.emulator.lock_mouse(); } catch (e) { /* pointer lock denied */ } }
+                });
+            }
+            // Pause the CPU while the tab is hidden (battery + fairness).
+            document.addEventListener('visibilitychange', function () {
+                if (!lvmVm) return;
+                try {
+                    if (document.hidden) { lvmVm.emulator.stop(); }
+                    else { lvmVm.emulator.run(); }
+                } catch (e) { /* stopping a stopped vm is fine */ }
+            });
+
+            var auto = document.getElementById('lvmAutosave');
+            var prefs = lvmLoadPrefs();
+            if (auto) {
+                auto.checked = prefs.autosave !== false;
+                auto.addEventListener('change', function () {
+                    var p = lvmLoadPrefs(); p.autosave = auto.checked; lvmSavePrefs(p);
+                });
+            }
+            lvmVm.autosaveTimer = setInterval(function () {
+                var a = document.getElementById('lvmAutosave');
+                if (a && a.checked && lvmVm) { lvmSaveSession('auto', true); }
+            }, 5 * 60 * 1000);
+
+            var p2 = lvmLoadPrefs(); p2.lastKind = kind; lvmSavePrefs(p2);
+        } catch (e) {
+            lvmProgressDone();
+            lvmShowScreen(false);
+            lvmErr('Could not start the machine: ' + (e && e.message ? e.message : String(e)));
+            lvmStatus('Pick Terminal or Desktop to try again.');
+        } finally {
+            buttons.forEach(function (id) { var b = document.getElementById(id); if (b) b.disabled = false; });
+        }
+    }
+
+    async function lvmMaybeShowContinue() {
+        try {
+            var s = (await lvmIdbGet('sessions', 'manual')) || (await lvmIdbGet('sessions', 'auto'));
+            var card = document.getElementById('lvmContinueCard');
+            var metaEl = document.getElementById('lvmContinueMeta');
+            if (!card || !s) return;
+            if (metaEl) metaEl.textContent = s.kind + ' machine, saved ' + new Date(s.saved_at).toLocaleString() + ' (' + lvmMB(s.gz.byteLength) + ').';
+            card.style.display = '';
+            var btn = document.getElementById('lvmContinueBtn');
+            if (btn && !btn.__lvmWired) {
+                btn.__lvmWired = true;
+                btn.addEventListener('click', function () {
+                    lvmStart(s.kind, s.gz, { image_version: s.image_version });
+                });
+            }
+        } catch (e) { /* no continue card - fresh start still works */ }
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('linuxVmTool');
+        if (!root) return; // not a linux-vm page
+
+        // Synchronous panel state (G16): support check + storage estimate.
+        var gap = lvmSupportGap();
+        if (gap) {
+            lvmStatus('This browser is missing ' + gap + ', which the virtual machine needs. A current desktop browser will work.');
+            ['lvmStartTerminal', 'lvmStartDesktop'].forEach(function (id) {
+                var b = document.getElementById(id); if (b) b.disabled = true;
+            });
+        }
+        var stor = document.getElementById('lvmInfoStorage');
+        if (navigator.storage && navigator.storage.estimate) {
+            navigator.storage.estimate().then(function (est) {
+                if (stor && est && est.quota) {
+                    stor.textContent = lvmMB(est.usage || 0) + ' used of about ' + lvmMB(est.quota) + ' available';
+                    if ((est.quota - (est.usage || 0)) < 900 * 1048576) {
+                        stor.textContent += ' - the desktop image may not fit; the terminal will.';
+                    }
+                }
+            }).catch(function () { if (stor) stor.textContent = 'unknown'; });
+        } else if (stor) { stor.textContent = 'unknown'; }
+
+        var st = document.getElementById('lvmStartTerminal');
+        if (st) st.addEventListener('click', function () { lvmStart('terminal', null, null); });
+        var sd = document.getElementById('lvmStartDesktop');
+        if (sd) sd.addEventListener('click', function () { lvmStart('desktop', null, null); });
+
+        var fs = document.getElementById('lvmFullscreenBtn');
+        if (fs) fs.addEventListener('click', function () { lvmFullscreen(document.getElementById('lvmScreen')); });
+        var cad = document.getElementById('lvmCadBtn');
+        if (cad) cad.addEventListener('click', function () {
+            if (!lvmVm) return;
+            lvmVm.emulator.keyboard_send_scancodes([0x1D, 0x38, 0x53, 0x53 | 0x80, 0x38 | 0x80, 0x1D | 0x80]);
+        });
+        var save = document.getElementById('lvmSaveBtn');
+        if (save) save.addEventListener('click', function () { lvmSaveSession('manual', false); });
+        var stop = document.getElementById('lvmStopBtn');
+        if (stop) stop.addEventListener('click', function () { lvmStop(); });
+
+        var exp = document.getElementById('lvmExportBtn');
+        if (exp) exp.addEventListener('click', async function () {
+            if (!lvmVm) return;
+            lvmStatus('Packing the session for export...');
+            try {
+                var state = await lvmVm.emulator.save_state();
+                var gz = await lvmGzip(state);
+                var header = { schema: 1, slug: 'linux-online', kind: lvmVm.kind, image_version: lvmVm.imageVersion, saved_at: new Date().toISOString() };
+                var packed = lvmPackSession(header, gz);
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(new Blob([packed], { type: 'application/octet-stream' }));
+                var stamp = header.saved_at.slice(0, 16).replace(/[-:T]/g, '');
+                a.download = 'linux-online-session-' + stamp + '.ftolvm';
+                a.click();
+                setTimeout(function () { URL.revokeObjectURL(a.href); }, 30000);
+                lvmStatus('Session exported (' + lvmMB(packed.byteLength) + '). Import it on any machine to continue there.');
+            } catch (e) {
+                lvmErr('Export failed: ' + (e && e.message ? e.message : String(e)));
+            }
+        });
+
+        var imp = document.getElementById('lvmImportFile');
+        if (imp) imp.addEventListener('change', async function () {
+            lvmErr('');
+            var f = imp.files && imp.files[0];
+            if (!f) return;
+            try {
+                var buf = await f.arrayBuffer();
+                var unpacked = lvmUnpackSession(buf);
+                if (unpacked.header.slug && unpacked.header.slug !== 'linux-online') {
+                    throw new Error('This session file belongs to a different tool page (' + unpacked.header.slug + ').');
+                }
+                if (lvmVm) { await lvmStop(); }
+                lvmStatus('Session file read - starting the ' + unpacked.header.kind + ' machine from it...');
+                await lvmStart(unpacked.header.kind, unpacked.gz, unpacked.header);
+            } catch (e) {
+                lvmErr('Could not import that file: ' + (e && e.message ? e.message : String(e)));
+            } finally { imp.value = ''; }
+        });
+
+        lvmMaybeShowContinue();
+        lvmRefreshSessionInfo();
+    }
+</script>
