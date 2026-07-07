@@ -8,7 +8,10 @@ FROM --platform=linux/386 public.ecr.aws/docker/library/alpine:3.24
 RUN apk add --no-cache mkinitfs \
  && echo 'features="base ata ext4 virtio"' > /etc/mkinitfs/mkinitfs.conf \
  && apk add --no-cache linux-virt \
- && apk add --no-cache openrc agetty vim nano htop
+ && apk add --no-cache openrc busybox-mdev-openrc agetty vim nano htop \
+ && test -x /sbin/agetty \
+ && test -f /boot/vmlinuz-virt \
+ && test -f /boot/initramfs-virt
 
 # OpenRC service set for a diskful, network-less boot.
 RUN rc-update add devfs sysinit \
