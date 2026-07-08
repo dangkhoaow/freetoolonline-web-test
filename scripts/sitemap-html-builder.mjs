@@ -51,6 +51,7 @@ const TOOL_CLUSTER_ORDER = [
   'utility',
   'games',
   'space-3d',
+  'news',
 ];
 
 const TOOL_CLUSTER_LABELS = {
@@ -64,6 +65,7 @@ const TOOL_CLUSTER_LABELS = {
   utility: 'Utility tools',
   games: 'Browser games',
   'space-3d': 'Space 3D',
+  news: 'News and updates',
 };
 
 const TOOL_CLUSTER_BLURBS = {
@@ -77,6 +79,7 @@ const TOOL_CLUSTER_BLURBS = {
   utility: 'Timestamps, QR codes, and small utilities that do not fit the other categories.',
   games: 'Free browser games that run entirely on this page - no install, no account.',
   'space-3d': 'Interactive 3D space visualizations that render in the browser - explore and learn.',
+  news: 'Dated, source-cited updates on the file formats and browser features these tools work with.',
 };
 
 // Guide topic groups - mirrors the topical groupings on /guides.html so the
@@ -400,7 +403,7 @@ export async function buildDynamicHomeSearchData({ cmsRoot } = {}) {
   const clusterPrefixOrder = [
     '/zip-tools/', '/image-tools/', '/image-converter-tools/',
     '/pdf-tools/', '/developer-tools/', '/video-tools/',
-    '/device-test-tools/', '/utility-tools/', '/games/', '/space-3d/',
+    '/device-test-tools/', '/utility-tools/', '/games/', '/space-3d/', '/news/',
   ];
   const clusterIndexOf = (route) => {
     for (let i = 0; i < clusterPrefixOrder.length; i++) {
@@ -458,6 +461,7 @@ const LMENU_CLUSTER_ORDER = [
   'utility',
   'games',
   'space-3d',
+  'news',
 ];
 
 const LMENU_CLUSTER_LABELS = {
@@ -471,6 +475,7 @@ const LMENU_CLUSTER_LABELS = {
   utility: 'UTILITY',
   games: 'GAMES',
   'space-3d': 'SPACE 3D',
+  news: 'NEWS',
 };
 
 const LMENU_CLUSTER_ICONS = {
@@ -491,6 +496,10 @@ const LMENU_CLUSTER_ICONS = {
   // (gamepad f11b, globe f0ac, verified), only the CSS code was missing.
   games: 'fa-gamepad',
   'space-3d': 'fa-globe',
+  // news-loop (2026-07-08): newspaper-o f1ea exists in the FA 4.7 webfont but
+  // not in the CDN fa-load.css curated subset - content-code injected via
+  // LMENU_ICON_CONTENT_FIX below, same as gamepad/globe.
+  news: 'fa-newspaper-o',
 };
 
 /**
@@ -784,7 +793,7 @@ function renderLMenuFooterSection() {
 // the glyphs. Define the missing codes here, scoped under the l-menu so it can
 // never clash with the theme-toggle/rating uses of the same classes elsewhere.
 // Only category icons NOT in the curated subset need a rule.
-const LMENU_ICON_CONTENT_FIX = '<style>#menu-content-id .fa-gamepad:before{content:"\\f11b"}#menu-content-id .fa-globe:before{content:"\\f0ac"}</style>';
+const LMENU_ICON_CONTENT_FIX = '<style>#menu-content-id .fa-gamepad:before{content:"\\f11b"}#menu-content-id .fa-globe:before{content:"\\f0ac"}#menu-content-id .fa-newspaper-o:before{content:"\\f1ea"}</style>';
 
 function wrapLMenuBody(sections) {
   return `<div id="menu-content-id" class="menu-content">${LMENU_ICON_CONTENT_FIX}\n    <div class='w3-row-padding'>\n${sections.join('\n')}\n    </div>\n</div>`;

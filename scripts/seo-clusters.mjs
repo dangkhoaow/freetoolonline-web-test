@@ -95,6 +95,17 @@ const SEO_CLUSTER_GROUPS = [
     hubLabel: 'Back to Space 3D',
     routes: ['/space-3d/solar-system.html', '/space-3d/black-hole.html', '/space-3d/galaxy.html', '/space-3d/earth-3d-globe.html'],
   },
+  // news-loop (2026-07-08) - dated, source-cited updates on the file formats,
+  // browser capabilities, and standards the tool clusters serve. Articles are
+  // shipped one per fire by prompts/news-discovery-loop-runbook.md; every
+  // article bridges into the tool/guide pages its story affects (topical-map
+  // support role, never a doorway). Non-'-tools' hubRoute like games/space-3d.
+  {
+    cluster: 'news',
+    hubRoute: '/news.html',
+    hubLabel: 'Back to News',
+    routes: ['/news/jpeg-xl-returns-chrome-firefox.html'],
+  },
   {
     cluster: 'guides',
     hubRoute: '/guides.html',

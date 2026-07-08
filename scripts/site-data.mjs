@@ -2229,6 +2229,10 @@ export const ALIAS_ROUTES = {
   // operator step.
   '/games/': '/games.html',
   '/space-3d/': '/space-3d.html',
+  // news-loop (2026-07-08): same dir-index pattern for the /news cluster hub.
+  // MUST also be mirrored into the CloudFront 301 function (two-layer
+  // redirect rule) - republish is an operator step.
+  '/news/': '/news.html',
   '/svg-to-image.html': '/image-converter-tools/svg-to-png.html',
   '/split-pdf-to-single-pages.html': '/pdf-tools/split-pdf-by-range.html',
   '/pdf-merge-from-multiple-files.html': '/pdf-tools/join-pdf-from-multiple-files.html',
@@ -3089,6 +3093,12 @@ export const JSP_BY_ROUTE = {
   // registered in SEO_CLUSTER_GROUPS; hub detection via isHubRoute()).
   '/games.html': 'utility/games.jsp',
   '/space-3d.html': 'utility/space-3d.jsp',
+  // news-loop (2026-07-08): the /news cluster hub (non-'-tools' hubRoute,
+  // registered in SEO_CLUSTER_GROUPS; hub detection via isHubRoute()).
+  // Article routes live at /news/<kebab-slug>.html and are shipped one per
+  // fire by prompts/news-discovery-loop-runbook.md.
+  '/news.html': 'utility/news.jsp',
+  '/news/jpeg-xl-returns-chrome-firefox.html': 'news/jpeg-xl-returns-chrome-firefox.jsp',
   '/image-tools/resize-image.html': 'image/resize-image.jsp',
   '/image-tools/crop-image.html': 'image/crop-image.jsp',
   '/image-tools/compress-image.html': 'image/compress-image.jsp',
