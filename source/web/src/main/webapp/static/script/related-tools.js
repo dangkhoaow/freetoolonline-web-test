@@ -340,6 +340,8 @@ try {
     { title: "2048 Game - Merge the Numbers Puzzle", url: "https://freetoolonline.com/games/2048-game.html", include: !1, tags: "games" },
     { title: "City Drive Open World 3D", url: "https://freetoolonline.com/games/city-drive-3d.html", include: !1, tags: "games" },
     { title: "Retro Highway Racer", url: "https://freetoolonline.com/games/retro-highway-racer.html", include: !1, tags: "games" },
+    { title: "Hover Racing", url: "https://freetoolonline.com/games/hover-racing.html", include: !1, tags: "games" },
+    { title: "Retro Arcade Shooter", url: "https://freetoolonline.com/games/retro-arcade-shooter.html", include: !1, tags: "games" },
     { title: "Earth 3D Globe - Live Day & Night Map", url: "https://freetoolonline.com/space-3d/earth-3d-globe.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },

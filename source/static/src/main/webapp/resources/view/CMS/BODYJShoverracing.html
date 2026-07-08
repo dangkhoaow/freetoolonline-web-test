@@ -1,0 +1,60 @@
+<script>
+    // Hover Racing launcher. The game is the open-source HexGL engine
+    // (Thibaut Despoulain / BKcore; repo-level MIT LICENSE + README
+    // relicense statement - full analysis in tool-hoverracing/SKILL.md),
+    // vendored as static files at games/hover-racing/ in an isolated
+    // same-origin iframe: classic scripts, relative paths, ogg audio,
+    // ~11 MB total. Google Analytics + external favicon/og tags stripped;
+    // in-game HexGL branding and the credits screen are kept as attribution.
+    // The iframe loads only when the reader presses Play.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    // Relative to /games/, so it resolves under any base path (staging subpath
+    // included) without needing BASE_PATH.
+    var HVR_GAME_URL = 'hover-racing/index.html';
+
+    function hvrStatus(text) {
+        var el = document.getElementById('hvrStatus');
+        if (el) el.textContent = text;
+    }
+
+    function hvrInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'hvrFrame';
+        frame.src = HVR_GAME_URL;
+        frame.title = 'Hover Racing game';
+        frame.setAttribute('allow', 'fullscreen; gamepad; autoplay; accelerometer; gyroscope');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            hvrStatus('Game loaded. Pick controls and quality on the menu, then press Start.');
+            try { frame.contentWindow.focus(); } catch (e) { /* focus is best-effort */ }
+        });
+        var launch = document.getElementById('hvrLaunch');
+        if (launch && launch.parentNode === stage) { stage.removeChild(launch); }
+        stage.appendChild(frame);
+        return frame;
+    }
+
+    function doAfterPageRendered() {
+        var stage = document.getElementById('hvrStage');
+        var playBtn = document.getElementById('hvrPlayBtn');
+        if (!stage || !playBtn) return; // not this page
+
+        var fsBtn = document.getElementById('hvrFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            hvrStatus('Loading the game (about 11 MB, one time - then cached)...');
+            hvrInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) { stage.requestFullscreen(); }
+            else if (stage.webkitRequestFullscreen) { stage.webkitRequestFullscreen(); }
+            var frame = document.getElementById('hvrFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) { } }
+        });
+    }
+</script>
