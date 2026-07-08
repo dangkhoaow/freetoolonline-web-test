@@ -21,6 +21,7 @@
     <p>The price is the encoding's expansion: every 3 bytes in becomes 4 bytes out. Plus padding (the "=" signs at the end) for inputs whose length is not a multiple of 3. The math is exact: encoded size = ⌈input/3⌉ × 4 bytes.</p>
 
     <h2 class="text-uppercase"><b>Right call: small inline binary in text protocols</b></h2>
+    <figure class="illustration"><img src="/img/illustrations/card-row-4/guidesbase64whentouseandwhennotto__1b0d8655.svg" alt="Four valid Base64 use cases: inline images under 4 KB, email MIME attachments, binary in JSON fields, and URL-safe binary parameters." loading="lazy" width="640" height="180"><figcaption>Pick Base64 when the destination accepts only text and the payload is small.</figcaption></figure>
     <ul>
         <li><b>Small inline images.</b> A 1 KB icon in a data URL inside CSS avoids a separate HTTP request. The 33% bloat costs 300 bytes; the saved request costs at least 1 RTT plus headers. Below ~4 KB, inline wins. Above that, a separate file with HTTP/2 multiplexing is faster.</li>
         <li><b>Email attachments.</b> SMTP and email bodies are 7-bit ASCII by tradition. MIME wraps binary attachments in base64 specifically to fit the protocol. You almost never see this directly - mail clients encode and decode automatically.</li>
@@ -29,6 +30,7 @@
     </ul>
 
     <h2 class="text-uppercase"><b>Wrong call: large payloads or fake encryption</b></h2>
+    <figure class="illustration"><img src="/img/illustrations/card-row-4/guidesbase64whentouseandwhennotto__2d0bfd9b.svg" alt="Four Base64 anti-patterns: large images in CSS, fake encoding of secrets, binary files in DB text columns, and large data transfers." loading="lazy" width="640" height="180"><figcaption>Check payload size first - skip Base64 for large files, database storage, or bulk transfers.</figcaption></figure>
     <ul>
         <li><b>Embedding large images in CSS or HTML.</b> A 500 KB photo as a data URL becomes 670 KB of base64 plus the parser overhead, plus it cannot be cached separately, plus it blocks the parser. Just link the image file.</li>
         <li><b>"Encoding" sensitive data.</b> Base64 is reversible by anyone. It is encoding, not encryption. Putting a password or API key through base64 obfuscates nothing - the decode is one click.</li>
