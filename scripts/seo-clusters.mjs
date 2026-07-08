@@ -104,7 +104,7 @@ const SEO_CLUSTER_GROUPS = [
     cluster: 'news',
     hubRoute: '/news.html',
     hubLabel: 'Back to News',
-    routes: ['/news/jpeg-xl-returns-chrome-firefox.html'],
+    routes: ['/news/jpeg-xl-returns-chrome-firefox.html', '/news/av2-codec-finalized-no-browser-support-yet.html'],
   },
   {
     cluster: 'guides',
