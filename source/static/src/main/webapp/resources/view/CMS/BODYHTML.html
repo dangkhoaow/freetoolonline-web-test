@@ -174,6 +174,66 @@
     </aside>
   </div>
 
+  <!-- ROW 1.5: knowledge explorer (2026-07-08, operator request) - desktop-only
+       (>= 1024px) Obsidian-style view of everything on the site: directory
+       tree on the left, 3D topic map on the right. Mobile + tablet keep the
+       bento tiles below; on desktop the category tiles hide (PAGESTYLE.css)
+       because the tree lists every page the tiles pointed at. The tree
+       between the KNOWLEDGE_TREE markers regenerates every build from the
+       route registry (export-site.mjs, same source as the search datalist);
+       the static fallback link keeps the section useful if the splice ever
+       misses. The 3D library loads lazily from the ftol-vm-assets CDN only
+       on desktop viewports - phones never pay for it. -->
+  <section class="bento-cell ke-shell" id="knowledge-explorer" data-base=""
+           data-lib="https://dangkhoaow.github.io/ftol-vm-assets/vendor/3d-force-graph/1.80.0/3d-force-graph.min.js"
+           aria-labelledby="ke-h">
+    <h2 id="ke-h" class="bento-h2 text-uppercase">Explore the whole site as a map</h2>
+    <p class="ke-intro">Every tool, guide, game, scene, and news update here is connected by topic. Pick a page from the directory, or explore the map - drag to rotate, scroll to zoom, click a dot to see its links, double-click to open that page.</p>
+    <div class="ke-layout">
+      <nav class="ke-tree" id="ke-tree" aria-label="All pages grouped by topic">
+        <!-- KNOWLEDGE_TREE_START -->
+        <p><a href="/sitemap.html">Browse the full page directory</a></p>
+        <!-- KNOWLEDGE_TREE_END -->
+      </nav>
+      <div class="ke-graph-pane">
+        <div class="ke-graph" id="ke-graph" aria-label="Interactive 3D map of this site's pages grouped by topic"></div>
+        <p class="ke-graph-hint" id="ke-graph-hint">Loading the 3D map...</p>
+        <div class="ke-node-card" id="ke-node-card" hidden></div>
+      </div>
+    </div>
+    <script>
+    (function () {
+      var host = document.getElementById("knowledge-explorer");
+      if (!host || !window.matchMedia) { return; }
+      var mq = window.matchMedia("(min-width: 1024px)");
+      var loaded = false;
+      function boot() {
+        if (loaded || !mq.matches) { return; }
+        loaded = true;
+        var base = host.getAttribute("data-base") || "";
+        var lib = document.createElement("script");
+        lib.src = host.getAttribute("data-lib");
+        lib.onload = function () {
+          var app = document.createElement("script");
+          app.src = base + "/script/knowledge-graph.js?v=" + (window.APP_VERSION || "1");
+          document.body.appendChild(app);
+        };
+        lib.onerror = function () {
+          var hint = document.getElementById("ke-graph-hint");
+          if (hint) { hint.textContent = "The 3D map could not load here. The directory on the left lists every page."; }
+        };
+        document.body.appendChild(lib);
+      }
+      if (mq.matches) {
+        if ("requestIdleCallback" in window) { requestIdleCallback(boot, { timeout: 3000 }); }
+        else { setTimeout(boot, 500); }
+      }
+      if (mq.addEventListener) { mq.addEventListener("change", boot); }
+      else if (mq.addListener) { mq.addListener(boot); }
+    })();
+    </script>
+  </section>
+
   <!-- ROW 2: medium-tier category tiles -->
   <div class="bento-row bento-row-2">
 
