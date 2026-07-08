@@ -7,6 +7,7 @@
     </div>
 
     <h2 class="text-uppercase"><b>Apa itu metadata EXIF, dalam istilah konkret?</b></h2>
+    <figure class="illustration"><img src="/img/illustrations/hub-spoke-4/guidesexif-directories__947cf6c4.svg" alt="Periksa struktur metadata EXIF: IFD0 untuk data gambar dasar, Exif IFD untuk pengaturan kamera, GPS IFD untuk lokasi, IFD1 untuk miniatur" loading="lazy" width="640" height="360"><figcaption>Periksa direktori IFD mana yang menyimpan setiap bidang EXIF</figcaption></figure>
     <p>EXIF singkatan dari <b>Exchangeable Image File Format</b>, didefinisikan oleh standar JEITA CP-3451C (Exif 2.3 adalah versi yang ditulis sebagian besar kamera dan ponsel hari ini). EXIF bukan pixel gambar - itu adalah blok <i>metadata</i> terpisah yang disimpan di samping pixel dalam file gambar yang sama. Blok terstruktur sebagai serangkaian bidang bertag, masing-masing dengan ID tag numerik dan nilai. Format kontainer yang menampung blok adalah TIFF (Tag-Image File Format, Adobe TIFF 6.0); EXIF mewarisi struktur direktori file gambar (IFD) TIFF, jadi blok EXIF pada dasarnya adalah file TIFF kecil yang disematkan di dalam JPEG, HEIC, atau gambar serupa.</p>
     <p>Blok EXIF diatur dalam sejumlah kecil direktori bernama, masing-masing memegang kategori bidang yang berbeda:</p>
     <ul>
@@ -19,6 +20,7 @@
     <p>Di dalam file JPEG, seluruh blok metadata ini dibungkus dalam segmen marker tunggal yang disebut <b>APP1</b>. File JPEG (per ITU-T T.81 / ISO/IEC 10918-1) memiliki satu set kecil segmen marker aplikasi bernomor APP0 hingga APP15; APP1 adalah segmen tempat EXIF tinggal (dimulai dengan byte <code>FF E1</code> diikuti panjang segmen dan string literal <code>Exif\0\0</code>). Segmen kedua yang umum, <b>APP2</b>, memegang profil warna ICC (per spesifikasi ICC.1:2010-12). Data pixel sendiri berada di segmen SOS (Start of Scan) setelah marker aplikasi.</p>
 
     <h2 class="text-uppercase"><b>Mengapa kompresi biasanya menghapus EXIF (alasan teknis)</b></h2>
+    <figure class="illustration"><img src="/img/illustrations/hub-spoke-4/guidesexif-codecs__0fd24bf2.svg" alt="Mengapa kompresi menghapus EXIF: libjpeg-turbo, Pillow dan Sharp membuang metadata secara default; ImageMagick mempertahankan tanpa flag -strip" loading="lazy" width="640" height="360"><figcaption>Sebagian besar codec JPEG membuang EXIF kecuali Anda memilih menyimpan</figcaption></figure>
     <p>Ketika alat kompresi gambar tipikal membuat JPEG lebih kecil, ia <i>tidak</i> memotong byte dari JPEG yang ada di tempat - ia <b>mengenkode ulang</b> gambar. Pipelinenya adalah: (1) <i>dekode</i> JPEG input kembali menjadi array 2D pixel RGB dalam memori, (2) <i>enkode ulang</i> pixel-pixel itu sebagai JPEG baru pada tingkat kualitas yang diminta. Encoder ulang membangun file dari awal: menulis marker SOI (Start of Image) baru, set tabel kuantisasi baru, tabel Huffman baru, dan data pixel terkompresi baru. Segmen marker aplikasi (APP0 hingga APP15) <i>bukan</i> bagian dari data pixel; mereka struktur tingkat atas yang terpisah, dan encoder hanya menulisnya jika kode pemanggil menyerahkannya secara eksplisit.</p>
     <p>Perilaku encoder default di sebagian besar pustaka populer adalah <b>tidak</b> menyalin marker aplikasi:</p>
     <ul>
@@ -31,6 +33,7 @@
     <p>Intinya: penghapusan EXIF saat kompresi adalah <i>efek samping</i> dari cara mengenkode ulang bekerja, bukan fitur privasi yang disengaja. Encoder tidak "memilih" menghapus metadata - ia hanya tidak menyalinnya kecuali diberitahu. Apakah alat Anda menyimpan atau menjatuhkan EXIF karena itu bergantung pada satu baris kode (atau satu flag CLI) di langkah enkode.</p>
 
     <h2 class="text-uppercase"><b>Apa yang ada di EXIF yang penting</b></h2>
+    <figure class="illustration"><img src="/img/illustrations/hub-spoke-4/guidesexif-fields__086daf9a.svg" alt="Tinjau bidang EXIF terpenting: koordinat GPS mengungkap alamat, stempel waktu pengambilan, ID kamera dan pengaturan eksposur" loading="lazy" width="640" height="360"><figcaption>Tinjau empat bidang EXIF - lokasi GPS adalah risiko privasi utama</figcaption></figure>
     <p>Bidang berbeda dalam blok EXIF memiliki taruhan yang sangat berbeda untuk pembaca yang berbeda. Empat bidang yang paling banyak ditanyakan pembaca:</p>
     <ul>
         <li><b>Koordinat GPS</b> (GPS IFD: <code>GPSLatitude</code>, <code>GPSLongitude</code>, <code>GPSAltitude</code>) - ditulis oleh ponsel kecuali lokasi ditolak ke aplikasi kamera. Membacanya memberi tahu siapa pun dengan file di mana foto diambil, sering dalam beberapa meter. Ini adalah satu-satunya kekhawatiran privasi paling dikutip dengan EXIF; berbagi "selfie di rumah" dengan GPS masih terlampir secara efektif berbagi alamat rumah.</li>
@@ -63,6 +66,7 @@
     <p>Untuk penghapusan batch, CLI paling sederhana adalah <code>exiftool -all= image.jpg</code> (utilitas <code>exiftool</code> menulis salinan dengan semua metadata dihapus) atau <code>jpegtran -copy none input.jpg &gt; output.jpg</code> (lossless, tanpa perubahan kualitas, tanpa EXIF). Keduanya tersedia luas.</p>
 
     <h2 class="text-uppercase"><b>Apa yang TIDAK ada di EXIF (kebingungan umum)</b></h2>
+    <figure class="illustration"><img src="/img/illustrations/hub-spoke-4/guidesexif-not-exif__39168973.svg" alt="Bandingkan apa yang BUKAN EXIF: tag IPTC/XMP, profil warna ICC, tanggal sistem file dan tanda air piksel terpisah dari EXIF" loading="lazy" width="640" height="360"><figcaption>Bandingkan IPTC/XMP, profil ICC dan tanggal sistem - tidak ada yang merupakan EXIF</figcaption></figure>
     <p>Beberapa kategori "metadata" sering disalahartikan sebagai EXIF tetapi disimpan di blok berbeda dari file - atau tidak di file sama sekali:</p>
     <ul>
         <li><b>IPTC / XMP</b> - standar metadata terpisah yang digunakan oleh editor foto untuk kata kunci, keterangan, pernyataan hak cipta, dan peringkat. Disimpan di segmen marker JPEG mereka sendiri (XMP biasanya di APP1 bersama EXIF; IPTC di blok sumber daya gambar Photoshop). Menghapus EXIF tidak selalu menghapus XMP; beberapa alat menghapus keduanya, beberapa hanya menghapus satu.</li>
