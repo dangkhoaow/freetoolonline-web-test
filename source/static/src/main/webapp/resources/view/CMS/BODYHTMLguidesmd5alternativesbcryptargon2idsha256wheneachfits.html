@@ -7,6 +7,7 @@
     </div>
 
     <h2 class="text-uppercase"><b>The decision in one table</b></h2>
+    <figure class="illustration"><img src="/img/illustrations/card-row-4/guidesmd5alternativesbcryptargon2idsha256wheneachfits__f4cb8d20.svg" alt="Four use cases mapped to the right hashing algorithm - choose Argon2id for passwords, migrate legacy MD5 DBs, use SHA-256 for adversarial integrity, and MD5 or SHA-256 for accidental corruption only" loading="lazy" width="640" height="180"><figcaption>Pick the right hash by job: passwords, legacy DB, adversarial integrity, accidental corruption</figcaption></figure>
     <div class="w3-responsive">
         <table class="w3-table-all w3-small">
             <tr><th>Use case</th><th>Pick</th><th>Why</th><th>Don't pick MD5 because</th></tr>
@@ -34,6 +35,7 @@
     <p>PBKDF2 is the password-based key-derivation function NIST blessed in 2000. It is iteration-based: you pick a count, run an underlying hash that many times, and the work factor follows. It is not memory-hard, so it is weaker than Argon2id against modern GPUs, but it is the right pick when your environment requires a FIPS 140-2 / 140-3 algorithm. Iteration count to use in 2026 with HMAC-SHA-256 underneath is <b>600,000 or higher</b> per OWASP guidance; with HMAC-SHA-512 it is <b>210,000 or higher</b>. Lower numbers are still common in legacy code; raise them on next deploy.</p>
 
     <h2 class="text-uppercase"><b>"Where does MD5 still belong" - the working list</b></h2>
+    <figure class="illustration"><img src="/img/illustrations/hub-spoke-4/guidesmd5alternativesbcryptargon2idsha256wheneachfits__c6f9280c.svg" alt="Four scenarios where MD5 remains appropriate: cache keys, ETag fingerprints, self-produced file integrity checks, and upload deduplication" loading="lazy" width="520" height="300"><figcaption>MD5 is still fine for cache keys, ETags, self-check file integrity, and deduplication</figcaption></figure>
     <ul>
         <li><b>Cache keys.</b> Hash a long URL or query string into a fixed-length key for memcached, Redis, or a filename. Collisions don't matter; speed does.</li>
         <li><b>ETag-style content fingerprints.</b> Emit MD5 of a response body as the <code>ETag</code> header so clients can revalidate without re-downloading.</li>
@@ -44,6 +46,7 @@
     <p>For all of those, <a href="/developer-tools/md5-converter.html">the MD5 converter</a> is the right surface - paste text, get the hash, copy the result.</p>
 
     <h2 class="text-uppercase"><b>Migration checklist - moving an existing app off MD5</b></h2>
+    <figure class="illustration"><img src="/img/illustrations/numbered-bars-4/guidesmd5alternativesbcryptargon2idsha256wheneachfits__ab1cb44d.svg" alt="Four-step migration plan off MD5: audit all uses in the codebase, roll passwords to Argon2id at login, replace HMAC-MD5 with HMAC-SHA-256, and move adversarial integrity to SHA-256" loading="lazy" width="640" height="200"><figcaption>Four migration steps: audit, roll passwords to Argon2id, replace HMAC-MD5, switch adversarial integrity to SHA-256</figcaption></figure>
     <ol>
         <li><b>Audit where MD5 is used.</b> Grep the codebase for <code>md5</code>, <code>MessageDigest.getInstance("MD5")</code>, <code>hashlib.md5</code>, <code>crypto.createHash('md5')</code>. Tag each use as one of: passwords, MAC, integrity, cache.</li>
         <li><b>Passwords - rolling migration.</b> Add an Argon2id verifier alongside the MD5 verifier. On next successful login, recompute the password under Argon2id, store the new verifier, drop the MD5 row. Rotate every account within 90 days; force-reset whatever is left.</li>
