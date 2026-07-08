@@ -41,6 +41,10 @@ export function getCanonicalToolRoutes() {
     if (r === '/') return false;
     if (isHubRoute(r)) return false;
     if (r.startsWith('/guides/')) return false;
+    // news-loop (2026-07-08): news articles are editorial, not tools - exclude
+    // them from the tool count/registry same as guides, or "122 tools" would
+    // silently include a news article (truthfulness classifier tripwire).
+    if (r.startsWith('/news/')) return false;
     if (INFO_ROUTES.has(r) && !r.startsWith('/guides/')) return false;
     return true;
   });
@@ -58,6 +62,17 @@ export function getDynamicGuideRoutes() {
 }
 
 /**
+ * All published news article routes, minus alias sources. Mirrors
+ * getDynamicGuideRoutes() - same shape, same reason (single source of truth
+ * for the homepage count + the news bento tile + llms/sitemap consumers).
+ */
+export function getDynamicNewsRoutes() {
+  return Object.keys(JSP_BY_ROUTE)
+    .filter((route) => route.startsWith('/news/'))
+    .filter((route) => !(route in ALIAS_ROUTES));
+}
+
+/**
  * The full count bundle. perCluster applies the same canonical-tool filter to
  * each SEO_CLUSTER_GROUPS member list so bento CTAs agree with the hubs.
  */
@@ -65,6 +80,7 @@ export function getHomeCounts() {
   const toolRoutes = getCanonicalToolRoutes();
   const toolRouteSet = new Set(toolRoutes);
   const guideRoutes = getDynamicGuideRoutes();
+  const newsRoutes = getDynamicNewsRoutes();
   // SEO_CLUSTER_GROUPS still lists some members by their LEGACY flat route
   // ('/zip-file.html') while the canonical moved to a subfolder during the
   // root->subfolder URL migration ('/zip-tools/zip-file.html', flat form now
@@ -79,16 +95,22 @@ export function getHomeCounts() {
   const perCluster = {};
   let categoryCount = 0;
   for (const group of getSeoClusterGroups()) {
-    if (group.cluster === 'guides') continue;
+    // news, like guides, is an editorial cluster, not a TOOL category - skip
+    // it here (categoryCount feeds "Our N tools fall into M categories") and
+    // count it directly from newsRoutes below so it does not need to pass the
+    // toolRouteSet filter (news articles were just excluded from that set).
+    if (group.cluster === 'guides' || group.cluster === 'news') continue;
     const canonicalMembers = new Set(
       group.routes.map(resolveCanonical).filter((r) => toolRouteSet.has(r))
     );
     perCluster[group.cluster] = canonicalMembers.size;
     if (canonicalMembers.size > 0) categoryCount += 1;
   }
+  perCluster.news = newsRoutes.length;
   return {
     toolCount: toolRoutes.length,
     guideCount: guideRoutes.length,
+    newsCount: newsRoutes.length,
     totalCount: toolRoutes.length + guideRoutes.length,
     categoryCount,
     perCluster,
@@ -136,6 +158,8 @@ export function spliceHomeBodyHtml(html, counts, ratings = null) {
     { name: 'utility_cta', re: /\d+ utilities/, to: `${c.utility} utilities` },
     { name: 'games_cta', re: /Play \d+ browser games/, to: `Play ${c.games} browser games` },
     { name: 'space3d_cta', re: /Explore \d+ scenes/, to: `Explore ${c['space-3d']} scenes` },
+    { name: 'news_cta', re: /Read \d+ updates?/, to: `Read ${c.news} ${c.news === 1 ? 'update' : 'updates'}` },
+    { name: 'news_aria', re: /aria-label="News - \d+ updates?"/, to: `aria-label="News - ${c.news} ${c.news === 1 ? 'update' : 'updates'}"` },
   ];
   if (ratings && Number.isFinite(ratings.ratingValue) && Number.isFinite(ratings.ratingCount)) {
     splices.push({

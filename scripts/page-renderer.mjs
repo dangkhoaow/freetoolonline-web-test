@@ -159,6 +159,11 @@ const RELATED_TOOLS_LIST_STYLE = 'margin-top: 0px;display: block;padding-inline-
 // (tag-matched, then title/slug-matched) most-relevant items.
 const RELATED_GUIDES_MAX = 12;
 const RELATED_TOOLS_MAX = 12;
+// news-loop (2026-07-08): dedicated Related-news bucket, same partition
+// pattern as Related-guides. Cap is small on purpose - the news corpus is
+// deliberately thin (max 3 new articles/7d per the news-discovery-loop
+// runbook's volume cap), so a wall-of-news would misrepresent the corpus.
+const RELATED_NEWS_MAX = 6;
 const RELATED_TOOLS_STOP_WORDS = new Set(['free', 'tool', 'online', 'convert', 'converter', 'in', 'editor', 'maker', 'by', 'and']);
 const RELATED_TOOLS_TAGS_PAGE_TITLES = new Set(['tags collection', 'tags cloud:']);
 const APPLICATION_CATEGORY_BY_CLUSTER = {
@@ -456,6 +461,14 @@ function renderToolSections(ctx) {
   const relatedGuidesBlock = (showRelatedLinks && ctx.showRelatedGuides && relatedGuidesHtml)
     ? `<!-- SEO_BLOCK:RELATED_GUIDES --><div class="w3-row page-section relatedGuidesSection"><p style="margin-bottom: 0px;">Related guides:</p><div class="relatedGuides">${relatedGuidesHtml}</div></div><!-- END_SEO_BLOCK:RELATED_GUIDES -->`
     : '';
+  // Dedicated "Related news" section (news-loop 2026-07-08). Same pattern as
+  // Related-guides above, minus the staged-rollout allowlist gate (news is a
+  // brand-new, deliberately thin corpus - it renders only when a page has an
+  // actual matched news link, so there is nothing to stage).
+  const relatedNewsHtml = ctx.relatedNewsHtml ?? '';
+  const relatedNewsBlock = (showRelatedLinks && relatedNewsHtml)
+    ? `<!-- SEO_BLOCK:RELATED_NEWS --><div class="w3-row page-section relatedNewsSection"><p style="margin-bottom: 0px;">Related news:</p><div class="relatedNews">${relatedNewsHtml}</div></div><!-- END_SEO_BLOCK:RELATED_NEWS -->`
+    : '';
   // Cluster-hub callout - single anchor above the related-tools band. Cluster-aware
   // via seo-clusters.mjs::resolveHubBacklink. Renders only for tool pages that have
   // a resolvable cluster hub (§3.12).
@@ -470,7 +483,7 @@ function renderToolSections(ctx) {
     : '';
   // FAQ widget + bottom ad banner are ad-page surfaces - stay gated on showAds so
   // guide pages get only the internal related-links bands, no ad banner.
-  return `<!-- SEO_BLOCK:RELATED_TOOLS -->${clusterHubBlock}${relatedToolsBlock}${relatedGuidesBlock}${ratingBlock}${ctx.showAds && ctx.pageFaq ? ctx.pageFaq : ''}${ctx.showAds ? (ctx.bottomPageBannerAd || '') : ''}<!-- END_SEO_BLOCK:RELATED_TOOLS -->`;
+  return `<!-- SEO_BLOCK:RELATED_TOOLS -->${clusterHubBlock}${relatedToolsBlock}${relatedGuidesBlock}${relatedNewsBlock}${ratingBlock}${ctx.showAds && ctx.pageFaq ? ctx.pageFaq : ''}${ctx.showAds ? (ctx.bottomPageBannerAd || '') : ''}<!-- END_SEO_BLOCK:RELATED_TOOLS -->`;
 }
 
 function buildJsonLdScript(payload) {
@@ -735,7 +748,7 @@ const currentTitle = String(navTitle ?? '').trim();
   })();
 
   if (!currentTitle || RELATED_TOOLS_TAGS_PAGE_TITLES.has(currentTitleLower)) {
-    return { listHtml: '', guidesListHtml: '', tagsHtml: '', linkCount: 0, guideCount: 0, tagsCount: 0 };
+    return { listHtml: '', guidesListHtml: '', newsListHtml: '', tagsHtml: '', linkCount: 0, guideCount: 0, newsCount: 0, tagsCount: 0 };
   }
 
   const items = (urlMaps ?? []).map((item) => {
@@ -762,6 +775,10 @@ const currentTitle = String(navTitle ?? '').trim();
       // other URL stays in Related-tools. Locale guide URLs (/guides/<lang>/...)
       // also match. (plan-kahan: partition the matched links into two sections.)
       isGuide: /\/guides\//.test(url),
+      // news-loop (2026-07-08): a /news/ URL routes into the dedicated
+      // Related-news section instead of Related-tools. Checked before isGuide
+      // is irrelevant here since the two prefixes never overlap.
+      isNews: /\/news\//.test(url),
       include: false,
       routeKey,
     };
@@ -817,9 +834,11 @@ const currentTitle = String(navTitle ?? '').trim();
 
   const currentTags = getTagsFromCurrentPage();
   // Partitioned buckets: tools -> Related tools section, guides -> Related
-  // guides section (plan-kahan). Each <li> carries an optional "- desc" blurb.
+  // guides section (plan-kahan), news -> Related news section (news-loop
+  // 2026-07-08). Each <li> carries an optional "- desc" blurb.
   const toolItems = [];
   const guideItems = [];
+  const newsItems = [];
 
   // Render one <li>. Title is the colored link; the optional desc renders as
   // plain grey text after an ASCII " - " separator (matches the legacy inline
@@ -829,6 +848,7 @@ const currentTitle = String(navTitle ?? '').trim();
     return `<li class="d-inline"><a title="${titleAttr}" style="color: ${color};" href="${item.url}">${item.title}</a>${descHtml}</li>`;
   };
   const pushLi = (item, html) => {
+    if (item.isNews) { newsItems.push(html); return; }
     (item.isGuide ? guideItems : toolItems).push(html);
   };
 
@@ -912,19 +932,24 @@ const currentTitle = String(navTitle ?? '').trim();
 
   const cappedToolItems = toolItems.slice(0, RELATED_TOOLS_MAX);
   const cappedGuideItems = guideItems.slice(0, RELATED_GUIDES_MAX);
+  const cappedNewsItems = newsItems.slice(0, RELATED_NEWS_MAX);
   const hasTools = cappedToolItems.length > 0;
   const hasGuides = cappedGuideItems.length > 0;
+  const hasNews = cappedNewsItems.length > 0;
   const listHtml = hasTools ? `<ul style="${RELATED_TOOLS_LIST_STYLE}">${cappedToolItems.join('')}</ul>` : '';
   const guidesListHtml = hasGuides ? `<ul style="${RELATED_TOOLS_LIST_STYLE}">${cappedGuideItems.join('')}</ul>` : '';
+  const newsListHtml = hasNews ? `<ul style="${RELATED_TOOLS_LIST_STYLE}">${cappedNewsItems.join('')}</ul>` : '';
   // Tags line stays attached to the Related-tools section (unchanged) and shows
-  // whenever any link (tool or guide) matched by tag.
-  const tagsHtml = (hasTools || hasGuides) && allCurrentTags !== '' ? `<p>Tags: ${allCurrentTags}</p>` : '';
+  // whenever any link (tool, guide, or news) matched by tag.
+  const tagsHtml = (hasTools || hasGuides || hasNews) && allCurrentTags !== '' ? `<p>Tags: ${allCurrentTags}</p>` : '';
   return {
     listHtml,
     guidesListHtml,
+    newsListHtml,
     tagsHtml,
     linkCount: cappedToolItems.length,
     guideCount: cappedGuideItems.length,
+    newsCount: cappedNewsItems.length,
     tagsCount: tagsHtml ? currentTags.length : 0,
   };
 }
@@ -1391,13 +1416,13 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     && (!isInfoRoute(normalizedRoute) || isGuideRoute(normalizedRoute));
   const relatedToolsState = showRelatedLinks && relatedToolsData?.urlMaps
     ? buildRelatedToolsSsr({ route: normalizedRoute, navTitle, urlMaps: relatedToolsData.urlMaps })
-    : { listHtml: '', tagsHtml: '', linkCount: 0, tagsCount: 0 };
+    : { listHtml: '', guidesListHtml: '', newsListHtml: '', tagsHtml: '', linkCount: 0, guideCount: 0, newsCount: 0, tagsCount: 0 };
   // Dedicated Related-guides section gate (plan-kahan): RELATED_GUIDES_GLOBAL-driven.
   // The guide links are always computed (partitioned out of the matched set); this
   // flag only controls whether the section is emitted for this route.
   const showRelatedGuides = showRelatedLinks && isRelatedGuidesEnabled(normalizedRoute);
   if (showRelatedLinks && relatedToolsData?.urlMaps) {
-    console.log(`[related-tools:ssr] ${normalizedRoute} tools=${relatedToolsState.linkCount} guides=${relatedToolsState.guideCount} tags=${relatedToolsState.tagsCount} guides_section=${showRelatedGuides ? 'on' : 'off'}.`);
+    console.log(`[related-tools:ssr] ${normalizedRoute} tools=${relatedToolsState.linkCount} guides=${relatedToolsState.guideCount} news=${relatedToolsState.newsCount} tags=${relatedToolsState.tagsCount} guides_section=${showRelatedGuides ? 'on' : 'off'}.`);
   }
   // Cluster-hub link above related-tools on tool pages (not hubs/home/info).
   // resolveHubBacklink returns { href, label } for tool pages in a cluster; null otherwise.
@@ -1418,6 +1443,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     relatedToolsTagsHtml: relatedToolsState.tagsHtml,
     relatedGuidesHtml: relatedToolsState.guidesListHtml,
     showRelatedGuides,
+    relatedNewsHtml: relatedToolsState.newsListHtml,
     clusterHubLink,
   });
   const relatedStyles = !hasUpload ? `<style>#content.w3-content { margin-top: 50px; }</style>` : '';
