@@ -2681,10 +2681,17 @@ export const ALIAS_ROUTES = {
   '/webp-to-png.html': '/image-converter-tools/webp-to-png.html',
   '/2048-game.html': '/games/2048-game.html',
   '/city-drive-3d.html': '/games/city-drive-3d.html',
+  '/retro-highway-racer.html': '/games/retro-highway-racer.html',
+  '/hover-racing.html': '/games/hover-racing.html',
+  '/retro-arcade-shooter.html': '/games/retro-arcade-shooter.html',
   '/earth-3d-globe.html': '/space-3d/earth-3d-globe.html',
   '/linux-online.html': '/utility-tools/linux-online.html',
   '/online-linux-terminal.html': '/utility-tools/linux-online.html',
   '/linux-emulator-online.html': '/utility-tools/linux-online.html',
+  '/retro-fps-online.html': '/games/retro-fps-online.html',
+  '/browser-fps.html': '/games/retro-fps-online.html',
+  '/freedoom-online.html': '/games/retro-fps-online.html',
+  '/play-fps-in-browser.html': '/games/retro-fps-online.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -4040,6 +4047,9 @@ export const JSP_BY_ROUTE = {
   '/guides/2048-game-merge-numbers-puzzle-step-by-step.html': 'guide/2048-game-merge-numbers-puzzle-step-by-step.jsp',
   '/guides/2048-game-merge-numbers-puzzle-vs-alternatives.html': 'guide/2048-game-merge-numbers-puzzle-vs-alternatives.jsp',
   '/games/city-drive-3d.html': 'games/city-drive-3d.jsp',
+  '/games/retro-highway-racer.html': 'games/retro-highway-racer.jsp',
+  '/games/hover-racing.html': 'games/hover-racing.jsp',
+  '/games/retro-arcade-shooter.html': 'games/retro-arcade-shooter.jsp',
   '/guides/city-drive-open-world-3d-when.html': 'guide/city-drive-open-world-3d-when.jsp',
   '/guides/city-drive-open-world-3d-step-by-step.html': 'guide/city-drive-open-world-3d-step-by-step.jsp',
   '/guides/city-drive-open-world-3d-vs-alternatives.html': 'guide/city-drive-open-world-3d-vs-alternatives.jsp',
@@ -4066,6 +4076,10 @@ export const JSP_BY_ROUTE = {
   '/guides/de/run-linux-in-browser-when.html': 'guide/de/run-linux-in-browser-when.jsp',
   '/guides/de/run-linux-in-browser-step-by-step.html': 'guide/de/run-linux-in-browser-step-by-step.jsp',
   '/guides/de/run-linux-in-browser-vs-alternatives.html': 'guide/de/run-linux-in-browser-vs-alternatives.jsp',
+  '/games/retro-fps-online.html': 'games/retro-fps-online.jsp',
+  '/guides/play-fps-in-browser-when.html': 'guide/play-fps-in-browser-when.jsp',
+  '/guides/play-fps-in-browser-step-by-step.html': 'guide/play-fps-in-browser-step-by-step.jsp',
+  '/guides/play-fps-in-browser-vs-alternatives.html': 'guide/play-fps-in-browser-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

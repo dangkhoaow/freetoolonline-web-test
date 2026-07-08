@@ -1,0 +1,66 @@
+<script>
+    // Retro Arcade Shooter launcher. The game is Underrun by Dominic
+    // Szablewski (phoboslab) - MIT licensed, js13k 2018 entry - vendored
+    // unmodified (source scripts + 4 level/texture PNGs + LICENSE.md) at
+    // games/retro-arcade-shooter/ in an isolated same-origin iframe. Music
+    // and sound are synthesized in the tab via the zlib-licensed Sonant-X
+    // library; total download is about 120 KB with no other network calls.
+    // The iframe loads only when the reader presses Play.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    // Relative to /games/, so it resolves under any base path (staging subpath
+    // included) without needing BASE_PATH.
+    var RAS_GAME_URL = 'retro-arcade-shooter/index.html';
+
+    function rasStatus(text) {
+        var el = document.getElementById('rasStatus');
+        if (el) el.textContent = text;
+    }
+
+    function rasInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'rasFrame';
+        frame.src = RAS_GAME_URL;
+        frame.title = 'Retro Arcade Shooter game';
+        frame.setAttribute('allow', 'fullscreen; autoplay');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            rasStatus('Game loaded. WASD or arrows to move, mouse to aim, click to shoot.');
+            try { frame.contentWindow.focus(); } catch (e) { /* focus is best-effort */ }
+        });
+        var launch = document.getElementById('rasLaunch');
+        if (launch && launch.parentNode === stage) { stage.removeChild(launch); }
+        stage.appendChild(frame);
+        return frame;
+    }
+
+    function doAfterPageRendered() {
+        var stage = document.getElementById('rasStage');
+        var playBtn = document.getElementById('rasPlayBtn');
+        if (!stage || !playBtn) return; // not this page
+
+        var coarse = false;
+        try { coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches; } catch (e) { }
+        if (coarse) {
+            var note = document.getElementById('rasTouchNote');
+            if (note) note.style.display = 'block';
+        }
+
+        var fsBtn = document.getElementById('rasFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            rasStatus('Loading the game (about 120 KB)...');
+            rasInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) { stage.requestFullscreen(); }
+            else if (stage.webkitRequestFullscreen) { stage.webkitRequestFullscreen(); }
+            var frame = document.getElementById('rasFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) { } }
+        });
+    }
+</script>
