@@ -1,0 +1,66 @@
+<script>
+    // Asteroid Blaster launcher. The game is a rebranded, adapted build of
+    // dmcinnes/HTML5-Asteroids (MIT licensed, 2010) - vendored at
+    // games/asteroid-blaster/ in an isolated same-origin iframe. The
+    // original bundled vector-font file had no permissive license, so it
+    // was replaced with a plain canvas font (see CREDITS.txt in the vendored
+    // folder). Total download is about 245 KB with no other network calls.
+    // The iframe loads only when the reader presses Play.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    // Relative to /games/, so it resolves under any base path (staging subpath
+    // included) without needing BASE_PATH.
+    var AB_GAME_URL = 'asteroid-blaster/index.html';
+
+    function abStatus(text) {
+        var el = document.getElementById('abStatus');
+        if (el) el.textContent = text;
+    }
+
+    function abInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'abFrame';
+        frame.src = AB_GAME_URL;
+        frame.title = 'Asteroid Blaster game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            abStatus('Game loaded. Arrow keys to turn/thrust, space to fire.');
+            try { frame.contentWindow.focus(); } catch (e) { /* focus is best-effort */ }
+        });
+        var launch = document.getElementById('abLaunch');
+        if (launch && launch.parentNode === stage) { stage.removeChild(launch); }
+        stage.appendChild(frame);
+        return frame;
+    }
+
+    function doAfterPageRendered() {
+        var stage = document.getElementById('abStage');
+        var playBtn = document.getElementById('abPlayBtn');
+        if (!stage || !playBtn) return; // not this page
+
+        var coarse = false;
+        try { coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches; } catch (e) { }
+        if (coarse) {
+            var note = document.getElementById('abTouchNote');
+            if (note) note.style.display = 'block';
+        }
+
+        var fsBtn = document.getElementById('abFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            abStatus('Loading the game (about 245 KB)...');
+            abInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) { stage.requestFullscreen(); }
+            else if (stage.webkitRequestFullscreen) { stage.webkitRequestFullscreen(); }
+            var frame = document.getElementById('abFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) { } }
+        });
+    }
+</script>
