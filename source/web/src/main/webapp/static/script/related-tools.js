@@ -42,6 +42,11 @@ try {
   function isGuideRelatedUrl(url) {
     return /\/guides\//.test(String(url || ""));
   }
+  // news-loop (2026-07-08): a /news/ URL routes into the dedicated
+  // Related-news section, mirroring the guides partition above.
+  function isNewsRelatedUrl(url) {
+    return /\/news\//.test(String(url || ""));
+  }
   var urlMaps = [
     { title: "ZIP Tools", url: "https://freetoolonline.com/zip-tools.html", include: !1, tags: "zip,pdf" },
     { title: "File Compressor: Pick the Right Tool by File Type", url: "https://freetoolonline.com/utility-tools/file-compressor.html", include: !1, tags: "compress,zip,image-editing,pdf,utility,file-compressor" },
@@ -347,6 +352,10 @@ try {
     { title: "Earth 3D Globe - Live Day & Night Map", url: "https://freetoolonline.com/space-3d/earth-3d-globe.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
+    // news-loop (2026-07-08): dated, source-cited updates. tags include the
+    // affected cluster(s) so the article surfaces via tag-match on related
+    // tool/guide pages, plus a bare "news" tag for future cross-links.
+    { title: "JPEG XL Returns to Chrome and Firefox - What Changes for You", url: "https://freetoolonline.com/news/jpeg-xl-returns-chrome-firefox.html", include: !1, tags: "news,image-conversion,jpg,heic,webp" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
@@ -478,7 +487,7 @@ try {
 
   if ("" !== currentTitle) {
     if (currentTitle.toLowerCase() !== "Tags Collection".toLowerCase() && currentTitle.toLowerCase() !== "Tags cloud:".toLowerCase()) {
-      var RELATED_GUIDES_MAX = 12, RELATED_TOOLS_MAX = 12;
+      var RELATED_GUIDES_MAX = 12, RELATED_TOOLS_MAX = 12, RELATED_NEWS_MAX = 6;
       // Language-independent relevance parity with SSR (page-renderer.mjs): the URL
       // slug is always English kebab-case even on localized /guides/<lang>/ routes,
       // so merge slug words into the (possibly non-English) title words. Without this
@@ -488,14 +497,16 @@ try {
       var currentTitleWords = currentTitle.toLowerCase().replace(/,/g, "").split(" ");
       var slugWordsArr = slugLeaf.split("-").filter(function (s) { return s; });
       for (var sw = 0; sw < slugWordsArr.length; sw++) { if (currentTitleWords.indexOf(slugWordsArr[sw]) === -1) currentTitleWords.push(slugWordsArr[sw]); }
-      for (var toolsList = "", guidesList = "", guidesCount = 0, toolsCount = 0, i = 0; i < urlMaps.length; i++) {
+      for (var toolsList = "", guidesList = "", newsList = "", guidesCount = 0, toolsCount = 0, newsCount = 0, i = 0; i < urlMaps.length; i++) {
         var title = urlMaps[i].title;
         if (!urlMaps[i].include && !isCurrentMapItem(urlMaps[i])) {
           var matchedTags = addPagesHasTheSameTag((tags = urlMaps[i].tags.split(",")), (currentTags = getTagsFromCurrentPage(currentTitle)));
           if ("" !== matchedTags) {
             urlMaps[i].include = !0;
             var liTag = relatedLiHtml(localizeRelatedUrl(urlMaps[i].url), title, "#4caf50", "This page has the same tag(s): " + matchedTags, urlMaps[i].desc);
-            if (isGuideRelatedUrl(urlMaps[i].url)) {
+            if (isNewsRelatedUrl(urlMaps[i].url)) {
+              newsCount < RELATED_NEWS_MAX && ((newsList += liTag), newsCount++);
+            } else if (isGuideRelatedUrl(urlMaps[i].url)) {
               guidesCount < RELATED_GUIDES_MAX && ((guidesList += liTag), guidesCount++);
             } else {
               toolsCount < RELATED_TOOLS_MAX && ((toolsList += liTag), toolsCount++);
@@ -526,7 +537,9 @@ try {
             if (firstMatchedWord) {
               urlMaps[i].include = !0;
               var liTitle = relatedLiHtml(localizeRelatedUrl(urlMaps[i].url), title, "#3b73af", "Go to " + title, urlMaps[i].desc);
-              if (isGuideRelatedUrl(urlMaps[i].url)) {
+              if (isNewsRelatedUrl(urlMaps[i].url)) {
+                newsCount < RELATED_NEWS_MAX && ((newsList += liTitle), newsCount++);
+              } else if (isGuideRelatedUrl(urlMaps[i].url)) {
                 guidesCount < RELATED_GUIDES_MAX && ((guidesList += liTitle), guidesCount++);
               } else {
                 toolsCount < RELATED_TOOLS_MAX && ((toolsList += liTitle), toolsCount++);
@@ -553,6 +566,14 @@ try {
         hasSsrGuides = guidesRoot.length > 0 && guidesRoot.children().length > 0;
       if ("" !== guidesList && guidesRoot.length > 0 && !hasSsrGuides) {
         guidesRoot.html(relatedUlOpen + guidesList + "</ul>");
+      }
+      // news-loop (2026-07-08): same fallback pattern as guides - inject ONLY
+      // when the .relatedNews container exists (SSR emitted it) and was not
+      // already SSR-populated.
+      var newsRoot = $(".relatedNews"),
+        hasSsrNews = newsRoot.length > 0 && newsRoot.children().length > 0;
+      if ("" !== newsList && newsRoot.length > 0 && !hasSsrNews) {
+        newsRoot.html(relatedUlOpen + newsList + "</ul>");
       }
     } else {
       var rawTagFromQuery = getParameterByName("tag"),
