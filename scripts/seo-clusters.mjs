@@ -30,7 +30,7 @@ const SEO_CLUSTER_GROUPS = [
     // /image-format-converter.html's same template paragraph. Re-tagged in related-tools.js
     // commit 765e1d8 + moved here.
     // Cycle 20260521-12 cleanup: /image-format-converter.html removed entirely (silent stub).
-    routes: ['/heic-to-jpg.html', '/svg-to-png.html', '/png-to-svg.html', '/image-to-base64.html', '/base64-to-image.html', '/extract-gif-to-image-frames.html', '/image-converter-tools/audio-converter.html', '/image-converter-tools/png-to-webp.html', '/image-converter-tools/jpg-to-webp.html', '/image-converter-tools/webp-to-png.html'],
+    routes: ['/heic-to-jpg.html', '/svg-to-png.html', '/png-to-svg.html', '/image-to-base64.html', '/base64-to-image.html', '/extract-gif-to-image-frames.html', '/image-converter-tools/audio-converter.html', '/image-converter-tools/png-to-webp.html', '/image-converter-tools/jpg-to-webp.html', '/image-converter-tools/webp-to-png.html', '/image-converter-tools/webp-to-jpg.html'],
   },
   {
     cluster: 'pdf',

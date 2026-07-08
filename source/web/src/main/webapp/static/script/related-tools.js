@@ -357,6 +357,7 @@ try {
     // affected cluster(s) so the article surfaces via tag-match on related
     // tool/guide pages, plus a bare "news" tag for future cross-links.
     { title: "JPEG XL Returns to Chrome and Firefox - What Changes for You", url: "https://freetoolonline.com/news/jpeg-xl-returns-chrome-firefox.html", include: !1, tags: "news,image-conversion,jpg,heic,webp" },
+    { title: "WebP to JPG Converter", url: "https://freetoolonline.com/image-converter-tools/webp-to-jpg.html", include: !1, tags: "image-conversion" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
