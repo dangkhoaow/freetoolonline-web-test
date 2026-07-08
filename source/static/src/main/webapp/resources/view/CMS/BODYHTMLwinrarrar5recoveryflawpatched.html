@@ -1,0 +1,40 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>WinRAR patches a heap-overflow flaw in RAR5 recovery files</b></h1>
+<p>WinRAR 7.23, released June 30, 2026, fixes a heap-overflow flaw (CVE-2026-14191) in how the app repairs multi-volume RAR5 archives. The flaw needs a crafted .rev recovery-volume file plus a repair action to trigger, and WinRAR has no auto-update, so the fix only reaches you once you download 7.23 yourself.</p>
+<p class="reviewed">Last reviewed: 2026-07-08</p>
+<time itemprop="datePublished" datetime="2026-07-08T06:00:00Z"><b>Published July 8, 2026</b></time>
+<hr/>
+
+<br/><h2 class="text-uppercase"><b>What happened</b></h2>
+<p>RARLAB shipped WinRAR 7.23 on June 30, 2026, closing a heap-overflow bug that researcher Arjun Basnet of Securin Labs reported in the code that rebuilds a damaged multi-volume archive from RAR5 recovery volumes (.rev files). A later .rev file in the set can declare a record number the code never checks against the buffer WinRAR already allocated, letting a crafted file write attacker-controlled data past the end of it. RARLAB calls it a variant of a 2023 flaw (CVE-2023-40477) that was patched only on the older RAR3 format at the time - RAR5 stayed exposed until this release. UnRAR.dll is not affected, since that library never processes recovery volumes; WinRAR, the standalone RAR/UnRAR command-line tools, and RAR for Android inherited the fix.</p>
+<p>Triggering it takes more than opening a file: a target must run "Repair archive," an <code>unrar t</code> test, or the automatic recovery WinRAR attempts on an incomplete set, against an archive shipped with a booby-trapped .rev file. Severity sits at CVSS 7.8; trackers list no public exploit code or confirmed real-world use so far - unlike an older, patched WinRAR flaw that attackers kept exploiting for months because so many installs never got updated.</p>
+<div class="w3-responsive">
+<table class="w3-table-all w3-small">
+<tr><th>Item</th><th>Detail</th></tr>
+<tr><td>Affected</td><td>WinRAR, RAR, UnRAR command-line tools (through 7.22)</td></tr>
+<tr><td>Not affected</td><td>UnRAR.dll (does not process recovery volumes)</td></tr>
+<tr><td>Fixed in</td><td>WinRAR 7.23 (June 30, 2026)</td></tr>
+<tr><td>Trigger</td><td>Repair or test operation on a crafted multi-volume RAR5 + .rev set</td></tr>
+</table>
+</div>
+
+<br/><h2 class="text-uppercase"><b>Why it matters for everyday files</b></h2>
+<p>Recovery volumes are optional .rev files some archiving tools add so a multi-part RAR set can be rebuilt if a piece goes missing or gets corrupted. Most people never touch them directly, but they still travel inside old backup sets and archives someone else forwards to you. Filtering by file extension will not catch this: the payload lives inside a normal-looking .rev file, and a gateway checking only "is this a .zip or .rar" lets that sibling file through. WinRAR also has no auto-update, so a fix released today can sit unapplied indefinitely unless someone installs it by hand.</p>
+
+<br/><h2 class="text-uppercase"><b>What to do with your files right now</b></h2>
+<ul>
+<li><b>Update desktop WinRAR by hand.</b> Check "About WinRAR" for your version, then download 7.23 or newer from the official site if you are behind - the fix will not arrive on its own.</li>
+<li><b>Skip repair on unexpected multi-volume sets.</b> If a .rar/.r00/.rev bundle arrives from someone unexpected, do not run "Repair archive" or a recovery test on it until you can verify the sender.</li>
+<li><b>Use a browser tool for plain ZIP.</b> Extracting or creating an archive - not repairing a damaged RAR set - works in the <a href="/zip-tools/unzip-file.html">online unzip tool</a> and <a href="/zip-tools/zip-file.html">online ZIP creator</a>, no desktop install needed.</li>
+<li><b>Still need RAR or 7z?</b> The <a href="/guides/en/how-to-extract-a-file-online-zip-rar-7z.html">extract-a-file routing guide</a> covers the safest option per format; the <a href="/guides/en/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html">archive format comparison</a> explains why RAR needs a dedicated app and ZIP does not.</li>
+</ul>
+
+<br/><h2 class="text-uppercase"><b>Sources</b></h2>
+<ul>
+<li><a href="https://www.win-rar.com/singlenewsview.html?L=0&amp;tx_ttnews%5Btt_news%5D=304&amp;cHash=0c65306ac391a7c5e6f3056a035efe08" rel="noopener">RARLAB / win-rar.com - WinRAR 7.23 Final released</a> (primary, June 30, 2026)</li>
+<li><a href="https://www.strix.ai/cve/CVE-2026-14191" rel="noopener">CVE-2026-14191 vulnerability record - out-of-bounds heap write in the RAR5 recovery-volume parser</a></li>
+<li><a href="https://cybersecuritynews.com/winrar-7-23-fixes-heap-overflow-vulnerability/" rel="noopener">Cyber Security News - WinRAR 7.23 Fixes Heap Overflow Vulnerability that Leads to Application Crashes</a></li>
+<li><a href="https://www.malwarebytes.com/blog/news/2026/07/winrar-flaw-could-allow-attackers-to-take-control-of-your-computer" rel="noopener">Malwarebytes - WinRAR flaw could allow attackers to take control of your computer</a></li>
+</ul>
+<p><a href="/news.html">&larr; Back to News</a></p>
+</div>
