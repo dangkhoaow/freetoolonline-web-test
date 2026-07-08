@@ -34,6 +34,7 @@ import { writeSplitSitemaps } from './sitemap-writer.mjs';
 import { isHubRoute } from './seo-clusters.mjs';
 import { buildDynamicSitemapBody, buildDynamicGuidesHubBody, buildDynamicToolHubBodies, spliceToolHubList, buildPerPageLMenuBodies, buildDynamicHomeSearchData } from './sitemap-html-builder.mjs';
 import { getHomeCounts, spliceHomeBodyHtml, spliceHomeWelcome, spliceCountsInText } from './home-counts.mjs';
+import { buildKnowledgeGraph } from './knowledge-graph.mjs';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const distDir = path.resolve(repoRoot, process.env.DIST_DIR ?? 'dist');
@@ -111,6 +112,18 @@ async function main() {
   // /guides.html + l-menu just fixed.
   const homeSearchData = await buildDynamicHomeSearchData({ cmsRoot });
   console.log(`[home-search] Built dynamic datalist: ${homeSearchData.totalCount} options (${homeSearchData.toolCount} tools + ${homeSearchData.guideCount} guides).`);
+  // Homepage knowledge explorer (desktop-only Obsidian-style view): the
+  // directory tree splices between the KNOWLEDGE_TREE markers in BODYHTML
+  // when renderRoute hits `/`, and the 3D graph data lands at
+  // dist/data/knowledge-graph.json for the lazy client script. Both derive
+  // from the same registry as the datalist above, so they can never drift.
+  const knowledgeGraphData = await buildKnowledgeGraph({ cmsRoot, relatedToolsData });
+  await mkdir(path.join(distDir, 'data'), { recursive: true });
+  await writeFile(
+    path.join(distDir, 'data', 'knowledge-graph.json'),
+    JSON.stringify(knowledgeGraphData.graph)
+  );
+  console.log(`[knowledge-graph] ${knowledgeGraphData.stats.nodeCount} nodes / ${knowledgeGraphData.stats.linkCount} links -> dist/data/knowledge-graph.json; tree ${Math.round(knowledgeGraphData.treeHtml.length / 1024)} KB.`);
   // l-menu is now a FOCUSED per-page menu (per cluster+locale, + a 'default'
   // variant for home/info pages) instead of the same ~1,150-link full-site
   // mega-menu on every page. Build one body per variant, splice each into the
@@ -169,6 +182,7 @@ async function main() {
       guidesHubDynamicBody,
       toolHubBodies,
       homeSearchData,
+      knowledgeGraphData,
       lMenu,
     });
     await writeOutput(outputPathForRoute(route), html);
@@ -307,7 +321,7 @@ async function deriveRelatedDescFromBodyDesc(url, cmsFragmentsRoot) {
   return blurb.trim();
 }
 
-async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData, canonicalOrigin, basePath, isStaging, rewriteInternalContent, sitemapDynamicBody, guidesHubDynamicBody, toolHubBodies, homeSearchData, lMenu }) {
+async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData, canonicalOrigin, basePath, isStaging, rewriteInternalContent, sitemapDynamicBody, guidesHubDynamicBody, toolHubBodies, homeSearchData, knowledgeGraphData, lMenu }) {
   const normalizedRoute = normalizeRoute(route);
 
   if (Object.prototype.hasOwnProperty.call(ALIAS_ROUTES, normalizedRoute)) {
@@ -412,6 +426,23 @@ async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData,
     if (pageData.bodyTitle) pageData.bodyTitle = spliceCountsInText(pageData.bodyTitle, homeCounts);
     if (pageData.pageBrowserTitle) pageData.pageBrowserTitle = spliceCountsInText(pageData.pageBrowserTitle, homeCounts);
     if (pageData.bodyDesc) pageData.bodyDesc = spliceCountsInText(pageData.bodyDesc, homeCounts);
+    // Knowledge explorer: regenerate the directory tree between the
+    // KNOWLEDGE_TREE markers (same warn-on-miss contract as the datalist),
+    // and stamp the deploy base path so the lazy loader + client script can
+    // fetch /data/knowledge-graph.json under a subpath deploy (staging).
+    if (knowledgeGraphData?.treeHtml) {
+      const treeRe = /<!-- KNOWLEDGE_TREE_START -->[\s\S]*?<!-- KNOWLEDGE_TREE_END -->/;
+      if (treeRe.test(pageData.bodyHtml)) {
+        pageData.bodyHtml = pageData.bodyHtml.replace(
+          treeRe,
+          `<!-- KNOWLEDGE_TREE_START -->\n${knowledgeGraphData.treeHtml}\n<!-- KNOWLEDGE_TREE_END -->`
+        );
+        pageData.bodyHtml = pageData.bodyHtml.replace('data-base=""', `data-base="${basePath}"`);
+        console.log(`[knowledge-graph] Spliced directory tree into / bodyHtml (${knowledgeGraphData.stats.nodeCount} nodes).`);
+      } else {
+        console.warn('[knowledge-graph] KNOWLEDGE_TREE markers missing in / bodyHtml - static fallback left in place.');
+      }
+    }
   }
   // Per-page "last modified" stamp from git history of this page's CMS
   // fragments + JSP wrapper. Drives Schema.org dateModified (JSON-LD +
