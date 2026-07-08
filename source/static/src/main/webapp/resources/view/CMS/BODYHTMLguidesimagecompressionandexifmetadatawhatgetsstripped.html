@@ -18,6 +18,7 @@
     </div>
 
     <h2 class="text-uppercase"><b>What is EXIF metadata, in concrete terms?</b></h2>
+    <figure class="illustration"><img src="/img/illustrations/hub-spoke-4/guidesexif-directories__947cf6c4.svg" alt="Check the EXIF metadata structure: IFD0 for base image data, Exif IFD for camera settings, GPS IFD for location, IFD1 for the thumbnail" loading="lazy" width="640" height="360"><figcaption>Check which IFD directory holds each EXIF field</figcaption></figure>
     <p>EXIF stands for <b>Exchangeable Image File Format</b>, defined by the JEITA CP-3451C standard (Exif 2.3 is the version most cameras and phones write today). EXIF is not the image pixels - it is a separate block of <i>metadata</i> stored alongside the pixels inside the same image file. The block is structured as a series of tagged fields, each with a numeric tag ID and a value. The container format that holds the block is TIFF (Tag-Image File Format, Adobe TIFF 6.0); EXIF inherits TIFF's image file directory (IFD) structure, so an EXIF block is essentially a small TIFF file embedded inside a JPEG, HEIC, or similar image.</p>
     <p>An EXIF block is organised into a small number of named directories, each holding a different category of fields:</p>
     <ul>
@@ -30,6 +31,7 @@
     <p>Inside a JPEG file, this whole metadata block is wrapped in a single marker segment called <b>APP1</b>. JPEG files (per ITU-T T.81 / ISO/IEC 10918-1) have a small set of application-marker segments numbered APP0 through APP15; APP1 is the segment EXIF lives in (it starts with the bytes <code>FF E1</code> followed by the segment length and the literal string <code>Exif\0\0</code>). A second common segment, <b>APP2</b>, holds the ICC colour profile (per the ICC.1:2010-12 specification). The pixel data itself sits in the SOS (Start of Scan) segments after the application markers.</p>
 
     <h2 class="text-uppercase"><b>Why compression usually strips EXIF (the technical reason)</b></h2>
+    <figure class="illustration"><img src="/img/illustrations/hub-spoke-4/guidesexif-codecs__0fd24bf2.svg" alt="Why compression strips EXIF: libjpeg-turbo, Pillow, and Sharp all drop metadata by default; ImageMagick keeps it without the -strip flag" loading="lazy" width="640" height="360"><figcaption>Most JPEG codecs drop EXIF unless you opt in to preserve it</figcaption></figure>
     <p>When a typical image-compression tool makes a JPEG smaller, it does <i>not</i> shave bytes off an existing JPEG in place - it <b>re-encodes</b> the image. The pipeline is: (1) <i>decode</i> the input JPEG back into a 2D array of RGB pixels in memory, (2) <i>re-encode</i> those pixels as a new JPEG at the requested quality level. The re-encoder rebuilds the file from scratch: it writes a new SOI (Start of Image) marker, a new set of quantization tables, new Huffman tables, and the new compressed pixel data. The application-marker segments (APP0 through APP15) are <i>not</i> part of the pixel data; they are separate top-level structures, and the encoder only writes them if the calling code explicitly hands them in.</p>
     <p>The default encoder behaviour in most popular libraries is to <b>not</b> copy the application markers across:</p>
     <ul>
@@ -42,6 +44,7 @@
     <p>The takeaway: EXIF stripping during compression is a <i>side-effect</i> of how re-encoding works, not a deliberate privacy feature. The encoder does not "choose" to remove metadata - it simply does not copy it across unless told to. Whether your tool keeps or drops EXIF therefore depends on a single line of code (or a single CLI flag) at the encoding step.</p>
 
     <h2 class="text-uppercase"><b>What is in EXIF that matters</b></h2>
+    <figure class="illustration"><img src="/img/illustrations/hub-spoke-4/guidesexif-fields__086daf9a.svg" alt="Review the EXIF fields that matter most: GPS coordinates reveal home address, capture timestamp, camera and lens ID, and exposure settings" loading="lazy" width="640" height="360"><figcaption>Review four EXIF fields - GPS location is the main privacy risk</figcaption></figure>
     <p>Different fields in the EXIF block have very different stakes for different readers. The four fields most readers ask about:</p>
     <ul>
         <li><b>GPS coordinates</b> (GPS IFD: <code>GPSLatitude</code>, <code>GPSLongitude</code>, <code>GPSAltitude</code>) - written by phones unless location is denied to the camera app. Reading these tells anyone with the file where the photo was taken, often to within a few metres. This is the single most-cited privacy concern with EXIF; sharing a "selfie at home" with GPS still attached effectively shares the home address.</li>
@@ -74,6 +77,7 @@
     <p>For batch stripping, the simplest CLI is <code>exiftool -all= image.jpg</code> (the <code>exiftool</code> utility writes a copy with all metadata removed) or <code>jpegtran -copy none input.jpg &gt; output.jpg</code> (lossless, no quality change, no EXIF). Both are widely available.</p>
 
     <h2 class="text-uppercase"><b>What is NOT in EXIF (common confusions)</b></h2>
+    <figure class="illustration"><img src="/img/illustrations/hub-spoke-4/guidesexif-not-exif__39168973.svg" alt="Compare what is NOT in EXIF: IPTC/XMP tags, ICC color profile, filesystem dates, and pixel watermarks are separate from EXIF" loading="lazy" width="640" height="360"><figcaption>Compare IPTC/XMP, ICC profile, and filesystem dates - none are EXIF</figcaption></figure>
     <p>A few categories of "metadata" are often confused with EXIF but are stored in different blocks of the file - or not in the file at all:</p>
     <ul>
         <li><b>IPTC / XMP</b> - separate metadata standards used by photo editors for keywords, captions, copyright statements, and ratings. Stored in their own JPEG marker segments (XMP usually in APP1 alongside EXIF; IPTC in a Photoshop image-resource block). Stripping EXIF does not always strip XMP; some tools strip both, some strip only one.</li>
