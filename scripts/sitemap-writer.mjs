@@ -4,7 +4,7 @@ import { INFO_ROUTES, GUIDE_ROUTES, GUIDE_SITEMAP_EXCLUDE, canonicalForRoute, no
 import { isHubRoute } from './seo-clusters.mjs';
 import { getHomeCounts, spliceCountsInText } from './home-counts.mjs';
 
-const SITEMAP_FILES = ['sitemap.xml', 'sitemap-tools.xml', 'sitemap-hubs.xml', 'sitemap-guides.xml', 'sitemap-pages.xml'];
+const SITEMAP_FILES = ['sitemap.xml', 'sitemap-tools.xml', 'sitemap-hubs.xml', 'sitemap-guides.xml', 'sitemap-news.xml', 'sitemap-pages.xml'];
 const LLMS_FILES = ['llms.txt', 'llms-full.txt'];
 
 // 1 MB cap on llms-full.txt body. Tools always included (citation surface);
@@ -43,6 +43,10 @@ function changefreqForKind(kind) {
     case 'hub': return 'weekly';
     case 'tool': return 'monthly';
     case 'guide': return 'monthly';
+    // news articles are dated editorial: crawled hard when fresh, then they
+    // settle. weekly is the honest average across the article lifetime; the
+    // per-URL <lastmod> (CMS fragment mtime) carries the freshness signal.
+    case 'news': return 'weekly';
     case 'page': return 'yearly';
     default: return 'monthly';
   }
@@ -54,6 +58,7 @@ function priorityForKind(kind) {
     case 'hub': return '0.9';
     case 'tool': return '0.7';
     case 'guide': return '0.7';
+    case 'news': return '0.6';
     case 'page': return '0.4';
     default: return '0.5';
   }
@@ -190,7 +195,9 @@ function buildSitemapIndexXml(origin, perLanguageGuideFiles = []) {
   // 2026-05-28 S1.5: guides split per language. sitemap-guides.xml is now a
   // BACKWARD-COMPAT pointer to the EN canonical guide sitemap; per-language
   // variants live at sitemap-guides-<lang>.xml.
-  const sitemapFiles = ['sitemap-tools.xml', 'sitemap-hubs.xml', 'sitemap-guides.xml', ...perLanguageGuideFiles, 'sitemap-pages.xml'];
+  // news-loop (2026-07-08): sitemap-news.xml delegated like the guides child
+  // sitemap - homogeneous dated-editorial kind with its own <lastmod> cadence.
+  const sitemapFiles = ['sitemap-tools.xml', 'sitemap-hubs.xml', 'sitemap-guides.xml', ...perLanguageGuideFiles, 'sitemap-news.xml', 'sitemap-pages.xml'];
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
@@ -261,6 +268,10 @@ function classifyKind(route, hubRouteSet, guideRouteSet, pageRouteSet) {
   if (route === '/') return 'home';
   if (hubRouteSet.has(route)) return 'hub';
   if (guideRouteSet.has(route)) return 'guide';
+  // news-loop (2026-07-08): membership by URL prefix, symmetric with the
+  // guides derivation in writeSplitSitemaps (the /news.html hub classifies
+  // as 'hub' above; only the /news/<slug>.html articles land here).
+  if (route.startsWith('/news/')) return 'news';
   if (pageRouteSet.has(route)) return 'page';
   return 'tool';
 }
@@ -300,10 +311,11 @@ const KIND_LABEL = {
   hub: 'Hubs',
   tool: 'Tools',
   guide: 'Guides',
+  news: 'News',
   page: 'Pages',
 };
 
-const KIND_ORDER = ['home', 'tool', 'hub', 'guide', 'page'];
+const KIND_ORDER = ['home', 'tool', 'hub', 'guide', 'news', 'page'];
 
 function buildLlmsTxt(entries, origin) {
   const lines = [];
@@ -505,9 +517,15 @@ export async function writeSplitSitemaps({ distDir, routes, origin, isStaging, c
   const guideRoutes = normalizedRoutes.filter((route) => route.startsWith('/guides/')
     && !GUIDE_SITEMAP_EXCLUDE.has(route));
   const guideRouteSet = new Set(guideRoutes);
+  // news-loop (2026-07-08): news articles derived DYNAMICALLY by URL prefix,
+  // symmetric with guides above. Any rendered route under /news/ is a news
+  // article; the /news.html hub is caught by isHubRoute() into hubRoutes.
+  const newsRoutes = normalizedRoutes.filter((route) => route.startsWith('/news/'));
+  const newsRouteSet = new Set(newsRoutes);
   const pageRoutes = [...INFO_ROUTES]
     .filter((route) => normalizedRoutes.includes(route))
-    .filter((route) => !guideRouteSet.has(route));
+    .filter((route) => !guideRouteSet.has(route))
+    .filter((route) => !newsRouteSet.has(route));
   const pageRouteSet = new Set(pageRoutes);
   const hubRouteSet = new Set(hubRoutes);
   // Cycle 50 follow-up - defence-in-depth against guide URLs leaking into
@@ -521,6 +539,7 @@ export async function writeSplitSitemaps({ distDir, routes, origin, isStaging, c
     && !INFO_ROUTES.has(route)
     && !GUIDE_ROUTES.has(route)
     && !route.startsWith('/guides/')
+    && !route.startsWith('/news/')
     && !isHubRoute(route));
   const fallbackLastmod = new Date().toISOString();
   const lastmodByRoute = new Map();
@@ -560,6 +579,7 @@ export async function writeSplitSitemaps({ distDir, routes, origin, isStaging, c
       'sitemap-guides.xml',
       buildUrlSetXml(guideBucketsByLang.en || guideRoutes, origin, lastmodByRoute, 'guide', guideHreflangByRoute),
     );
+    await writeTextFile(distDir, 'sitemap-news.xml', buildUrlSetXml(newsRoutes, origin, lastmodByRoute, 'news'));
     await writeTextFile(distDir, 'sitemap-pages.xml', buildUrlSetXml(pageRoutes, origin, lastmodByRoute, 'page'));
     await writeTextFile(distDir, 'sitemap.xml', buildSitemapIndexXml(origin, perLanguageGuideFiles));
   }

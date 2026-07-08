@@ -87,13 +87,24 @@ const SEO_CLUSTER_GROUPS = [
     cluster: 'games',
     hubRoute: '/games.html',
     hubLabel: 'Back to Games',
-    routes: ['/games/snake-classic.html', '/games/retro-tank-battle.html', '/games/garden-defense.html', '/games/voxel-world-builder.html', '/games/sky-gates-flight.html', '/games/city-time-machine.html', '/games/2048-game.html', '/games/city-drive-3d.html', '/games/retro-fps-online.html', '/games/retro-highway-racer.html', '/games/hover-racing.html', '/games/retro-arcade-shooter.html', '/games/marble-maze.html'],
+    routes: ['/games/snake-classic.html', '/games/retro-tank-battle.html', '/games/garden-defense.html', '/games/voxel-world-builder.html', '/games/sky-gates-flight.html', '/games/city-time-machine.html', '/games/2048-game.html', '/games/city-drive-3d.html', '/games/retro-fps-online.html', '/games/retro-highway-racer.html', '/games/hover-racing.html', '/games/retro-arcade-shooter.html', '/games/marble-maze.html', '/games/asteroid-blaster.html'],
   },
   {
     cluster: 'space-3d',
     hubRoute: '/space-3d.html',
     hubLabel: 'Back to Space 3D',
     routes: ['/space-3d/solar-system.html', '/space-3d/black-hole.html', '/space-3d/galaxy.html', '/space-3d/earth-3d-globe.html'],
+  },
+  // news-loop (2026-07-08) - dated, source-cited updates on the file formats,
+  // browser capabilities, and standards the tool clusters serve. Articles are
+  // shipped one per fire by prompts/news-discovery-loop-runbook.md; every
+  // article bridges into the tool/guide pages its story affects (topical-map
+  // support role, never a doorway). Non-'-tools' hubRoute like games/space-3d.
+  {
+    cluster: 'news',
+    hubRoute: '/news.html',
+    hubLabel: 'Back to News',
+    routes: ['/news/jpeg-xl-returns-chrome-firefox.html'],
   },
   {
     cluster: 'guides',
