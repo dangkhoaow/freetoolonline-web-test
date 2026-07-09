@@ -1,0 +1,61 @@
+<script>
+    // Procedural Horde Game launcher. Adapted from Stark-52/codequest (MIT, 2026)
+    // vendored at games/procedural-horde-game/ in an isolated same-origin iframe.
+    // Single index.html (~28 KB), procedural Canvas sprites + Web Audio chiptune,
+    // zero runtime dependencies. The iframe loads only when the reader presses Play.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var PHG_GAME_URL = 'procedural-horde-game/index.html';
+
+    function phgStatus(text) {
+        var el = document.getElementById('phgStatus');
+        if (el) el.textContent = text;
+    }
+
+    function phgInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'phgFrame';
+        frame.src = PHG_GAME_URL;
+        frame.title = 'Procedural Horde Game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            phgStatus('Game loaded. WASD or arrows to move; shots fire automatically.');
+            try { frame.contentWindow.focus(); } catch (e) { }
+        });
+        var launch = document.getElementById('phgLaunch');
+        if (launch && launch.parentNode === stage) { stage.removeChild(launch); }
+        stage.appendChild(frame);
+        return frame;
+    }
+
+    function doAfterPageRendered() {
+        var stage = document.getElementById('phgStage');
+        var playBtn = document.getElementById('phgPlayBtn');
+        if (!stage || !playBtn) return;
+
+        var coarse = false;
+        try { coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches; } catch (e) { }
+        if (coarse) {
+            var note = document.getElementById('phgTouchNote');
+            if (note) note.style.display = 'block';
+        }
+
+        var fsBtn = document.getElementById('phgFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            phgStatus('Loading the game (about 28 KB)...');
+            phgInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) { stage.requestFullscreen(); }
+            else if (stage.webkitRequestFullscreen) { stage.webkitRequestFullscreen(); }
+            var frame = document.getElementById('phgFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) { } }
+        });
+    }
+</script>
