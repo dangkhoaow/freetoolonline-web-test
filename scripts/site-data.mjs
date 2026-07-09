@@ -2214,6 +2214,29 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/webp-jpg-converter-step-by-step.html',
   '/guides/de/webp-jpg-converter-when.html',
   '/guides/de/webp-jpg-converter-vs-alternatives.html',
+  // new-tool-discovery-loop-runbook fire-40 (2026-07-09): grocery-list
+  // companion guides - EN GUIDE_ROUTES backfill (EN routes were shipped via
+  // JSP_BY_ROUTE only, same gap class as password-generator/habit-tracker
+  // above) + full pt/es/vi/id/de locale fanout (guide_locale_fanout drain
+  // unit grocery-list-guides, runbook SS4b).
+  '/guides/grocery-list-step-by-step.html',
+  '/guides/grocery-list-when.html',
+  '/guides/grocery-list-vs-alternatives.html',
+  '/guides/pt/grocery-list-step-by-step.html',
+  '/guides/pt/grocery-list-when.html',
+  '/guides/pt/grocery-list-vs-alternatives.html',
+  '/guides/es/grocery-list-step-by-step.html',
+  '/guides/es/grocery-list-when.html',
+  '/guides/es/grocery-list-vs-alternatives.html',
+  '/guides/vi/grocery-list-step-by-step.html',
+  '/guides/vi/grocery-list-when.html',
+  '/guides/vi/grocery-list-vs-alternatives.html',
+  '/guides/id/grocery-list-step-by-step.html',
+  '/guides/id/grocery-list-when.html',
+  '/guides/id/grocery-list-vs-alternatives.html',
+  '/guides/de/grocery-list-step-by-step.html',
+  '/guides/de/grocery-list-when.html',
+  '/guides/de/grocery-list-vs-alternatives.html',
 
 ]);
 
@@ -3123,6 +3146,7 @@ export const JSP_BY_ROUTE = {
   // fire by prompts/news-discovery-loop-runbook.md.
   '/news.html': 'utility/news.jsp',
   '/news/jpeg-xl-returns-chrome-firefox.html': 'news/jpeg-xl-returns-chrome-firefox.jsp',
+  '/news/pt/jpeg-xl-returns-chrome-firefox.html': 'news/pt/jpeg-xl-returns-chrome-firefox.jsp',
   '/news/av2-codec-finalized-no-browser-support-yet.html': 'news/av2-codec-finalized-no-browser-support-yet.jsp',
   '/news/winrar-rar5-recovery-flaw-patched.html': 'news/winrar-rar5-recovery-flaw-patched.jsp',
   '/image-tools/resize-image.html': 'image/resize-image.jsp',
@@ -3865,6 +3889,21 @@ export const JSP_BY_ROUTE = {
   '/guides/grocery-list-when.html': 'guide/grocery-list-when.jsp',
   '/guides/grocery-list-step-by-step.html': 'guide/grocery-list-step-by-step.jsp',
   '/guides/grocery-list-vs-alternatives.html': 'guide/grocery-list-vs-alternatives.jsp',
+  '/guides/pt/grocery-list-step-by-step.html': 'guide/pt/grocery-list-step-by-step.jsp',
+  '/guides/pt/grocery-list-when.html': 'guide/pt/grocery-list-when.jsp',
+  '/guides/pt/grocery-list-vs-alternatives.html': 'guide/pt/grocery-list-vs-alternatives.jsp',
+  '/guides/es/grocery-list-step-by-step.html': 'guide/es/grocery-list-step-by-step.jsp',
+  '/guides/es/grocery-list-when.html': 'guide/es/grocery-list-when.jsp',
+  '/guides/es/grocery-list-vs-alternatives.html': 'guide/es/grocery-list-vs-alternatives.jsp',
+  '/guides/vi/grocery-list-step-by-step.html': 'guide/vi/grocery-list-step-by-step.jsp',
+  '/guides/vi/grocery-list-when.html': 'guide/vi/grocery-list-when.jsp',
+  '/guides/vi/grocery-list-vs-alternatives.html': 'guide/vi/grocery-list-vs-alternatives.jsp',
+  '/guides/id/grocery-list-step-by-step.html': 'guide/id/grocery-list-step-by-step.jsp',
+  '/guides/id/grocery-list-when.html': 'guide/id/grocery-list-when.jsp',
+  '/guides/id/grocery-list-vs-alternatives.html': 'guide/id/grocery-list-vs-alternatives.jsp',
+  '/guides/de/grocery-list-step-by-step.html': 'guide/de/grocery-list-step-by-step.jsp',
+  '/guides/de/grocery-list-when.html': 'guide/de/grocery-list-when.jsp',
+  '/guides/de/grocery-list-vs-alternatives.html': 'guide/de/grocery-list-vs-alternatives.jsp',
   '/utility-tools/qr-code-scanner.html': 'utility/qr-code-scanner.jsp',
   '/guides/qr-code-scanner-when.html': 'guide/qr-code-scanner-when.jsp',
   '/guides/qr-code-scanner-step-by-step.html': 'guide/qr-code-scanner-step-by-step.jsp',

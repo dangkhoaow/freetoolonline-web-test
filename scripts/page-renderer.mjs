@@ -100,6 +100,69 @@ function getLocalizedGuideMap() {
   return map;
 }
 
+// news-loop (2026-07-09): locale siblings for /news/<slug>.html (EN) and
+// /news/<lang>/<slug>.html (non-EN). Same hreflang shape as guides.
+let _localizedNewsMap = null;
+function getLocalizedNewsMap() {
+  if (_localizedNewsMap) return _localizedNewsMap;
+  const map = new Map();
+  for (const route of Object.keys(JSP_BY_ROUTE || {})) {
+    if (!route.startsWith('/news/')) continue;
+    const localeMatch = /^\/news\/([a-z]{2})\/([^/]+)\.html$/.exec(route);
+    if (localeMatch) {
+      const lang = localeMatch[1];
+      const slug = localeMatch[2];
+      if (!SUPPORTED_LOCALE_PREFIXES.has(lang)) continue;
+      if (!map.has(slug)) map.set(slug, []);
+      map.get(slug).push({ lang, route, isCanonical: false });
+      continue;
+    }
+    const enMatch = /^\/news\/([^/]+)\.html$/.exec(route);
+    if (enMatch && !SUPPORTED_LOCALE_PREFIXES.has(enMatch[1])) {
+      const slug = enMatch[1];
+      if (!map.has(slug)) map.set(slug, []);
+      map.get(slug).push({ lang: 'en', route, isCanonical: true });
+    }
+  }
+  for (const [slug, list] of map) {
+    if (list.length === 1) map.delete(slug);
+  }
+  _localizedNewsMap = map;
+  return map;
+}
+
+function buildNewsLocaleHreflangLinks(route, siteOrigin) {
+  const map = getLocalizedNewsMap();
+  let canonicalSlug = null;
+  const localeMatch = /^\/news\/[a-z]{2}\/([^/]+)\.html$/.exec(route);
+  const enMatch = /^\/news\/([^/]+)\.html$/.exec(route);
+  if (localeMatch) canonicalSlug = localeMatch[1];
+  else if (enMatch && !SUPPORTED_LOCALE_PREFIXES.has(enMatch[1])) canonicalSlug = enMatch[1];
+  if (!canonicalSlug) return [];
+  const siblings = map.get(canonicalSlug);
+  if (!siblings || siblings.length < 2) return [];
+
+  const links = [];
+  const enSibling = siblings.find((s) => s.isCanonical);
+  if (enSibling) {
+    const enUrl = `${siteOrigin}${enSibling.route}`;
+    links.push({ hreflang: 'x-default', href: enUrl });
+    links.push({ hreflang: 'en', href: enUrl });
+    for (const cv of (COUNTRY_VARIANTS_BY_LANG.en || [])) {
+      links.push({ hreflang: cv, href: enUrl });
+    }
+  }
+  for (const s of siblings) {
+    if (s.isCanonical) continue;
+    const url = `${siteOrigin}${s.route}`;
+    links.push({ hreflang: s.lang, href: url });
+    for (const cv of (COUNTRY_VARIANTS_BY_LANG[s.lang] || [])) {
+      links.push({ hreflang: cv, href: url });
+    }
+  }
+  return links;
+}
+
 // For a given guide route (EN canonical or locale-prefixed), return the
 // full hreflang list. Returns an empty array when the guide has no locale
 // variants registered (the existing default hreflang block stays in effect).
@@ -337,6 +400,10 @@ function renderMetaTags(ctx) {
   // the full per-locale hreflang block (x-default + each locale + per-country
   // variants). Otherwise fall back to the legacy self + x-default + extras.
   const guideLocaleLinks = buildGuideLocaleHreflangLinks(ctx.route, ctx.siteOrigin || '');
+  const newsLocaleLinks = guideLocaleLinks.length === 0
+    ? buildNewsLocaleHreflangLinks(ctx.route, ctx.siteOrigin || '')
+    : [];
+  const clusterLocaleLinks = guideLocaleLinks.length > 0 ? guideLocaleLinks : newsLocaleLinks;
   // Non-guide English pages (tools/hubs/info) declare premium-English-region
   // COVERAGE sitewide (en + x-default + en-US/CA/GB/AU/IE/NZ, all -> self), so
   // the regional intent is explicit + consistent with guides. Non-English
@@ -344,11 +411,11 @@ function renderMetaTags(ctx) {
   // hreflang (alias targets) are preserved + deduped. Declares coverage, NOT
   // ranking priority (Google has no country dial — see geo-targeting-playbook.md).
   let alternateLinks;
-  if (guideLocaleLinks.length > 0) {
+  if (clusterLocaleLinks.length > 0) {
     alternateLinks = [
       // Self-reference still emitted (Google's spec recommends it explicitly)
       `<link rel='alternate' href='${canonical}' hreflang='${selfHreflang}' />`,
-      ...guideLocaleLinks.map((l) =>
+      ...clusterLocaleLinks.map((l) =>
         `<link rel='alternate' href='${escapeHtml(l.href)}' hreflang='${l.hreflang}' />`
       ),
     ];
