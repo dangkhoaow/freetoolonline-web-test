@@ -3386,6 +3386,7 @@ export const JSP_BY_ROUTE = {
   '/news/winrar-rar5-recovery-flaw-patched.html': 'news/winrar-rar5-recovery-flaw-patched.jsp',
   '/news/pt/winrar-rar5-recovery-flaw-patched.html': 'news/pt/winrar-rar5-recovery-flaw-patched.jsp',
   '/news/es/winrar-rar5-recovery-flaw-patched.html': 'news/es/winrar-rar5-recovery-flaw-patched.jsp',
+  '/news/vi/winrar-rar5-recovery-flaw-patched.html': 'news/vi/winrar-rar5-recovery-flaw-patched.jsp',
   '/image-tools/resize-image.html': 'image/resize-image.jsp',
   '/image-tools/crop-image.html': 'image/crop-image.jsp',
   '/image-tools/compress-image.html': 'image/compress-image.jsp',
