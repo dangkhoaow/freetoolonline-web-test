@@ -1,0 +1,53 @@
+<script>
+    // Pixel Pipeline Reflex launcher. Adapted from bte808/scanline-sprint (MIT, 2026)
+    // vendored at games/pixel-pipeline-reflex/ in an isolated same-origin iframe.
+    // ES modules (~48 KB), Canvas 2D reflex game, zero runtime dependencies.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var PPR_GAME_URL = 'pixel-pipeline-reflex/index.html';
+
+    function pprStatus(text) {
+        var el = document.getElementById('pprStatus');
+        if (el) el.textContent = text;
+    }
+
+    function pprInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'pprFrame';
+        frame.src = PPR_GAME_URL;
+        frame.title = 'Pixel Pipeline Reflex';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            pprStatus('Game loaded. Press Start frame inside the game, then match stages with 1-4 or taps.');
+            try { frame.contentWindow.focus(); } catch (e) { }
+        });
+        var launch = document.getElementById('pprLaunch');
+        if (launch && launch.parentNode === stage) { stage.removeChild(launch); }
+        stage.appendChild(frame);
+        return frame;
+    }
+
+    function doAfterPageRendered() {
+        var stage = document.getElementById('pprStage');
+        var playBtn = document.getElementById('pprPlayBtn');
+        if (!stage || !playBtn) return;
+
+        var fsBtn = document.getElementById('pprFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            pprStatus('Loading the game (about 48 KB)...');
+            pprInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) { stage.requestFullscreen(); }
+            else if (stage.webkitRequestFullscreen) { stage.webkitRequestFullscreen(); }
+            var frame = document.getElementById('pprFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) { } }
+        });
+    }
+</script>
