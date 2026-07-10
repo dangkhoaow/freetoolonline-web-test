@@ -206,7 +206,7 @@ export function renderTestimonialsSection(testimonials, opts = {}) {
   return (
     `<!-- SEO_BLOCK:TESTIMONIALS -->` +
     `<style>${TESTIMONIALS_CSS}</style>` +
-    `<section class="user-testimonials page-section" aria-labelledby="testimonials-h">` +
+    `<section class="user-testimonials page-section" aria-labelledby="testimonials-h" style="border: none !important;box-shadow: none !important;margin-left: 0 !important;">` +
     `<h2 id="testimonials-h" class="bento-h2 text-uppercase">${escLite(heading)}</h2>` +
     `<div class="testimonial-grid">${figures}</div>` +
     `${more}${widget}` +
