@@ -354,6 +354,7 @@ try {
     { title: "Chili Blast Shooter", url: "https://freetoolonline.com/games/chili-blast-shooter.html", include: !1, tags: "games" },
     { title: "Pixel Pipeline Reflex", url: "https://freetoolonline.com/games/pixel-pipeline-reflex.html", include: !1, tags: "games" },
     { title: "Medieval Wall Defense", url: "https://freetoolonline.com/games/medieval-wall-defense.html", include: !1, tags: "games" },
+    { title: "Cyber Slide Puzzle", url: "https://freetoolonline.com/games/cyber-slide-puzzle.html", include: !1, tags: "games" },
     { title: "Earth 3D Globe - Live Day & Night Map", url: "https://freetoolonline.com/space-3d/earth-3d-globe.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
