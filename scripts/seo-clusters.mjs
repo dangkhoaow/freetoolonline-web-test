@@ -87,7 +87,7 @@ const SEO_CLUSTER_GROUPS = [
     cluster: 'games',
     hubRoute: '/games.html',
     hubLabel: 'Back to Games',
-    routes: ['/games/snake-classic.html', '/games/retro-tank-battle.html', '/games/garden-defense.html', '/games/voxel-world-builder.html', '/games/sky-gates-flight.html', '/games/city-time-machine.html', '/games/2048-game.html', '/games/city-drive-3d.html', '/games/retro-fps-online.html', '/games/retro-highway-racer.html', '/games/hover-racing.html', '/games/retro-arcade-shooter.html', '/games/marble-maze.html', '/games/asteroid-blaster.html', '/games/hex-puzzle-blocks.html', '/games/procedural-horde-game.html', '/games/chili-blast-shooter.html', '/games/pixel-pipeline-reflex.html', '/games/medieval-wall-defense.html', '/games/cyber-slide-puzzle.html', '/games/starlight-breaker.html', '/games/night-swarm-survivor.html', '/games/neon-tower-rush.html', '/games/cyber-neon-maze.html', '/games/serpentine-3d.html'],
+    routes: ['/games/snake-classic.html', '/games/retro-tank-battle.html', '/games/garden-defense.html', '/games/voxel-world-builder.html', '/games/sky-gates-flight.html', '/games/city-time-machine.html', '/games/2048-game.html', '/games/city-drive-3d.html', '/games/retro-fps-online.html', '/games/retro-highway-racer.html', '/games/hover-racing.html', '/games/retro-arcade-shooter.html', '/games/marble-maze.html', '/games/asteroid-blaster.html', '/games/hex-puzzle-blocks.html', '/games/procedural-horde-game.html', '/games/chili-blast-shooter.html', '/games/pixel-pipeline-reflex.html', '/games/medieval-wall-defense.html', '/games/cyber-slide-puzzle.html', '/games/starlight-breaker.html', '/games/night-swarm-survivor.html', '/games/neon-tower-rush.html', '/games/cyber-neon-maze.html', '/games/serpentine-3d.html', '/games/neural-particle-life.html'],
   },
   {
     cluster: 'space-3d',
@@ -104,7 +104,7 @@ const SEO_CLUSTER_GROUPS = [
     cluster: 'news',
     hubRoute: '/news.html',
     hubLabel: 'Back to News',
-    routes: ['/news/jpeg-xl-returns-chrome-firefox.html', '/news/pt/jpeg-xl-returns-chrome-firefox.html', '/news/es/jpeg-xl-returns-chrome-firefox.html', '/news/vi/jpeg-xl-returns-chrome-firefox.html', '/news/id/jpeg-xl-returns-chrome-firefox.html', '/news/av2-codec-finalized-no-browser-support-yet.html', '/news/pt/av2-codec-finalized-no-browser-support-yet.html', '/news/es/av2-codec-finalized-no-browser-support-yet.html', '/news/winrar-rar5-recovery-flaw-patched.html', '/news/pt/winrar-rar5-recovery-flaw-patched.html'],
+    routes: ['/news/jpeg-xl-returns-chrome-firefox.html', '/news/pt/jpeg-xl-returns-chrome-firefox.html', '/news/es/jpeg-xl-returns-chrome-firefox.html', '/news/vi/jpeg-xl-returns-chrome-firefox.html', '/news/id/jpeg-xl-returns-chrome-firefox.html', '/news/av2-codec-finalized-no-browser-support-yet.html', '/news/pt/av2-codec-finalized-no-browser-support-yet.html', '/news/es/av2-codec-finalized-no-browser-support-yet.html', '/news/winrar-rar5-recovery-flaw-patched.html', '/news/pt/winrar-rar5-recovery-flaw-patched.html', '/news/es/winrar-rar5-recovery-flaw-patched.html'],
   },
   {
     cluster: 'guides',
