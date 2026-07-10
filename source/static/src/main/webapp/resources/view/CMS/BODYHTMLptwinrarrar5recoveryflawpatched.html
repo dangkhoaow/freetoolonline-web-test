@@ -1,0 +1,42 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>WinRAR corrige falha de heap-overflow nos arquivos de recuperacao RAR5</b></h1>
+<p>WinRAR 7.23, lancado em 30 de junho de 2026, corrige uma falha de heap-overflow (CVE-2026-14191) na forma como o aplicativo repara arquivos RAR5 multi-volume. A falha exige um arquivo .rev de recuperacao malicioso mais uma acao de reparo para ser acionada, e como o WinRAR nao tem atualizacao automatica, a correcao so chega a voce quando baixar a versao 7.23 manualmente.</p>
+<p class="reviewed">Last reviewed: 2026-07-08</p>
+<time itemprop="datePublished" datetime="2026-07-08T06:00:00Z"><b>Published July 8, 2026</b></time>
+<hr/>
+
+<br/><h2 class="text-uppercase"><b>O que aconteceu</b></h2>
+<p>A RARLAB lancou o WinRAR 7.23 em 30 de junho de 2026, corrigindo uma falha de heap-overflow que o pesquisador Arjun Basnet, da Securin Labs, reportou no codigo que reconstroi um arquivo multi-volume danificado a partir de volumes de recuperacao RAR5 (arquivos .rev). Um arquivo .rev posterior no conjunto pode declarar um numero de registro que o codigo nunca verifica contra o buffer que o WinRAR ja alocou, permitindo que um arquivo malicioso escreva dados controlados pelo atacante alem do fim desse buffer. A RARLAB chama isso de uma variante de uma falha de 2023 (CVE-2023-40477) que na epoca foi corrigida apenas no formato RAR3 mais antigo - o RAR5 ficou exposto ate esta versao. O UnRAR.dll nao e afetado, ja que essa biblioteca nunca processa volumes de recuperacao; o WinRAR, as ferramentas de linha de comando RAR/UnRAR e o RAR para Android herdaram a correcao.</p>
+<p>Explorar a falha exige mais do que abrir um arquivo: e preciso executar "Repair archive," um teste <code>unrar t</code>, ou a recuperacao automatica que o WinRAR tenta em um conjunto incompleto, contra um arquivo enviado com um .rev armadilhado. A gravidade fica em CVSS 7.8; os rastreadores nao listam codigo de exploracao publico nem uso confirmado no mundo real ate agora - diferente de uma falha mais antiga e ja corrigida do WinRAR que atacantes continuaram explorando por meses porque muitas instalacoes nunca foram atualizadas.</p>
+<div class="w3-responsive">
+<table class="w3-table-all w3-small">
+<tr><th>Item</th><th>Detalhe</th></tr>
+<tr><td>Afetado</td><td>WinRAR, ferramentas de linha de comando RAR e UnRAR (ate a versao 7.22)</td></tr>
+<tr><td>Nao afetado</td><td>UnRAR.dll (nao processa volumes de recuperacao)</td></tr>
+<tr><td>Corrigido em</td><td>WinRAR 7.23 (30 de junho de 2026)</td></tr>
+<tr><td>Gatilho</td><td>Operacao de reparo ou teste em um conjunto RAR5 multi-volume + .rev malicioso</td></tr>
+</table>
+</div>
+<figure class="illustration"><img src="/img/illustrations/card-row-4/winrarrar5recoveryflawpatched__6aed6519.svg" alt="Veja os quatro aspectos da falha de recuperacao RAR5: versoes afetadas, nao afetadas, correcao no WinRAR 7.23 e gatilho." loading="lazy" width="640" height="180"><figcaption>Quatro aspectos da falha de recuperacao RAR5 em resumo.</figcaption></figure>
+
+<br/><h2 class="text-uppercase"><b>Por que isso importa para seus arquivos do dia a dia</b></h2>
+<p>Volumes de recuperacao sao arquivos .rev opcionais que algumas ferramentas de compactacao adicionam para que um conjunto RAR multi-parte possa ser reconstruido se uma parte se perder ou for corrompida. A maioria das pessoas nunca toca neles diretamente, mas eles ainda viajam dentro de backups antigos e de arquivos que alguem te encaminha. Filtrar por extensao de arquivo nao resolve: o payload vive dentro de um arquivo .rev de aparencia normal, e um filtro que so verifica "isso e um .zip ou .rar" deixa esse arquivo irmao passar. O WinRAR tambem nao tem atualizacao automatica, entao uma correcao lancada hoje pode ficar sem ser aplicada indefinidamente, a menos que alguem a instale manualmente.</p>
+
+<br/><h2 class="text-uppercase"><b>O que fazer com seus arquivos agora</b></h2>
+<ul>
+<li><b>Atualize o WinRAR de mesa manualmente.</b> Veja sua versao em "About WinRAR" e baixe a 7.23 ou mais recente no site oficial se estiver atrasado - a correcao nao chega por conta propria.</li>
+<li><b>Evite reparar conjuntos multi-volume inesperados.</b> Se um pacote .rar/.r00/.rev chegar de alguem inesperado, nao execute "Repair archive" nem um teste de recuperacao nele antes de confirmar o remetente.</li>
+<li><b>Use uma ferramenta no navegador para ZIP simples.</b> Extrair ou criar um arquivo - e nao reparar um conjunto RAR danificado - funciona na <a href="/zip-tools/unzip-file.html">ferramenta online de descompactacao</a> e no <a href="/zip-tools/zip-file.html">criador de ZIP online</a>, sem instalar nada no computador.</li>
+<li><b>Ainda precisa de RAR ou 7z?</b> O <a href="/guides/en/how-to-extract-a-file-online-zip-rar-7z.html">guia de roteamento para extrair arquivos</a> mostra a opcao mais segura para cada formato; a <a href="/guides/en/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html">comparacao de formatos de arquivo</a> explica por que o RAR exige um aplicativo dedicado e o ZIP nao.</li>
+</ul>
+<figure class="illustration"><img src="/img/illustrations/card-row-4/winrarrar5recoveryflawpatched__fe665350.svg" alt="Atualize o WinRAR, evite reparos desconhecidos, use o ZIP online ou consulte o guia de roteamento." loading="lazy" width="640" height="180"><figcaption>Quatro acoes para tomar agora com seus arquivos compactados.</figcaption></figure>
+
+<br/><h2 class="text-uppercase"><b>Sources</b></h2>
+<ul>
+<li><a href="https://www.win-rar.com/singlenewsview.html?L=0&amp;tx_ttnews%5Btt_news%5D=304&amp;cHash=0c65306ac391a7c5e6f3056a035efe08" rel="noopener">RARLAB / win-rar.com - lancamento do WinRAR 7.23 Final</a> (fonte primaria, 30 de junho de 2026)</li>
+<li><a href="https://www.strix.ai/cve/CVE-2026-14191" rel="noopener">Registro da vulnerabilidade CVE-2026-14191 - escrita fora dos limites no parser de volumes de recuperacao RAR5</a></li>
+<li><a href="https://cybersecuritynews.com/winrar-7-23-fixes-heap-overflow-vulnerability/" rel="noopener">Cyber Security News - WinRAR 7.23 Fixes Heap Overflow Vulnerability that Leads to Application Crashes</a></li>
+<li><a href="https://www.malwarebytes.com/blog/news/2026/07/winrar-flaw-could-allow-attackers-to-take-control-of-your-computer" rel="noopener">Malwarebytes - WinRAR flaw could allow attackers to take control of your computer</a></li>
+</ul>
+<p><a href="/news.html">&larr; Voltar para Noticias</a></p>
+</div>
