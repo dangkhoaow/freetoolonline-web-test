@@ -1,0 +1,27 @@
+<script>
+    web.localUpload = false;
+    var GOG_GAME_URL = 'gravity-orbit-golf/index.html';
+    function gogStatus(t){ var el=document.getElementById('gogStatus'); if(el) el.textContent=t; }
+    function gogInjectFrame(stage){
+        var frame=document.createElement('iframe');
+        frame.id='gogFrame'; frame.src=GOG_GAME_URL; frame.title='Gravity Orbit Golf';
+        frame.setAttribute('allow','fullscreen'); frame.setAttribute('allowfullscreen','');
+        frame.addEventListener('load',function(){ gogStatus('Loaded. Drag to aim inside the frame.'); });
+        var launch=document.getElementById('gogLaunch');
+        if(launch&&launch.parentNode===stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+    }
+    function doAfterPageRendered(){
+        var stage=document.getElementById('gogStage'), playBtn=document.getElementById('gogPlayBtn');
+        if(!stage||!playBtn) return;
+        var fsBtn=document.getElementById('gogFullscreenBtn');
+        playBtn.addEventListener('click',function(){
+            gogStatus('Loading about ~41 KB...'); gogInjectFrame(stage);
+            if(fsBtn) fsBtn.disabled=false;
+        });
+        if(fsBtn) fsBtn.addEventListener('click',function(){
+            if(stage.requestFullscreen) stage.requestFullscreen();
+            else if(stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+        });
+    }
+</script>
