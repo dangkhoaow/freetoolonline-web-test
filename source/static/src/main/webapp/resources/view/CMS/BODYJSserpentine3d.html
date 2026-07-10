@@ -1,0 +1,35 @@
+<script>
+    web.localUpload = false;
+    var S3D_GAME_URL = 'serpentine-3d/index.html';
+    function s3dStatus(text) { var el = document.getElementById('s3dStatus'); if (el) el.textContent = text; }
+    function s3dInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 's3dFrame'; frame.src = S3D_GAME_URL; frame.title = 'Serpentine 3D';
+        frame.setAttribute('allow', 'fullscreen'); frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            s3dStatus('Game loaded. Choose a difficulty and press PLAY, then START.');
+            try { frame.contentWindow.focus(); } catch (e) {}
+        });
+        var launch = document.getElementById('s3dLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('s3dStage');
+        var playBtn = document.getElementById('s3dPlayBtn');
+        if (!stage || !playBtn) return;
+        var fsBtn = document.getElementById('s3dFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            s3dStatus('Loading the game (about ~650 KB)...');
+            s3dInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('s3dFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) {} }
+        });
+    }
+</script>
