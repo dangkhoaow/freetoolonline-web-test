@@ -3419,6 +3419,7 @@ export const JSP_BY_ROUTE = {
   '/news/es/jpeg-xl-returns-chrome-firefox.html': 'news/es/jpeg-xl-returns-chrome-firefox.jsp',
   '/news/vi/jpeg-xl-returns-chrome-firefox.html': 'news/vi/jpeg-xl-returns-chrome-firefox.jsp',
   '/news/id/jpeg-xl-returns-chrome-firefox.html': 'news/id/jpeg-xl-returns-chrome-firefox.jsp',
+  '/news/de/jpeg-xl-returns-chrome-firefox.html': 'news/de/jpeg-xl-returns-chrome-firefox.jsp',
   '/news/av2-codec-finalized-no-browser-support-yet.html': 'news/av2-codec-finalized-no-browser-support-yet.jsp',
   '/news/pt/av2-codec-finalized-no-browser-support-yet.html': 'news/pt/av2-codec-finalized-no-browser-support-yet.jsp',
   '/news/es/av2-codec-finalized-no-browser-support-yet.html': 'news/es/av2-codec-finalized-no-browser-support-yet.jsp',
