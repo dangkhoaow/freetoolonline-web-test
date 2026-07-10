@@ -3340,6 +3340,7 @@ export const JSP_BY_ROUTE = {
   '/news/id/jpeg-xl-returns-chrome-firefox.html': 'news/id/jpeg-xl-returns-chrome-firefox.jsp',
   '/news/av2-codec-finalized-no-browser-support-yet.html': 'news/av2-codec-finalized-no-browser-support-yet.jsp',
   '/news/pt/av2-codec-finalized-no-browser-support-yet.html': 'news/pt/av2-codec-finalized-no-browser-support-yet.jsp',
+  '/news/es/av2-codec-finalized-no-browser-support-yet.html': 'news/es/av2-codec-finalized-no-browser-support-yet.jsp',
   '/news/winrar-rar5-recovery-flaw-patched.html': 'news/winrar-rar5-recovery-flaw-patched.jsp',
   '/news/pt/winrar-rar5-recovery-flaw-patched.html': 'news/pt/winrar-rar5-recovery-flaw-patched.jsp',
   '/image-tools/resize-image.html': 'image/resize-image.jsp',
