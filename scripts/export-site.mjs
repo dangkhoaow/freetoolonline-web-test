@@ -35,6 +35,7 @@ import { isHubRoute } from './seo-clusters.mjs';
 import { buildDynamicSitemapBody, buildDynamicGuidesHubBody, buildDynamicToolHubBodies, spliceToolHubList, buildPerPageLMenuBodies, buildDynamicHomeSearchData } from './sitemap-html-builder.mjs';
 import { getHomeCounts, spliceHomeBodyHtml, spliceHomeWelcome, spliceCountsInText } from './home-counts.mjs';
 import { buildKnowledgeGraph } from './knowledge-graph.mjs';
+import { getFeaturedTestimonials, renderTestimonialsSection } from './testimonials.mjs';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const distDir = path.resolve(repoRoot, process.env.DIST_DIR ?? 'dist');
@@ -441,6 +442,19 @@ async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData,
         console.log(`[knowledge-graph] Spliced directory tree into / bodyHtml (${knowledgeGraphData.stats.nodeCount} nodes).`);
       } else {
         console.warn('[knowledge-graph] KNOWLEDGE_TREE markers missing in / bodyHtml - static fallback left in place.');
+      }
+    }
+    // Testimonials trust section: splice the curated featured set + Trustpilot
+    // widget between the TESTIMONIALS markers (same warn-on-miss contract).
+    const featured = getFeaturedTestimonials(6);
+    if (featured.length) {
+      const tRe = /<!-- TESTIMONIALS_START -->[\s\S]*?<!-- TESTIMONIALS_END -->/;
+      if (tRe.test(pageData.bodyHtml)) {
+        const section = renderTestimonialsSection(featured, { variant: 'home', widget: true });
+        pageData.bodyHtml = pageData.bodyHtml.replace(tRe, `<!-- TESTIMONIALS_START -->\n${section}\n<!-- TESTIMONIALS_END -->`);
+        console.log(`[testimonials] Spliced ${featured.length} featured testimonials into / bodyHtml.`);
+      } else {
+        console.warn('[testimonials] TESTIMONIALS markers missing in / bodyHtml - static fallback left in place.');
       }
     }
   }

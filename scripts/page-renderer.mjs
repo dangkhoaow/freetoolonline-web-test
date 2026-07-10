@@ -1,4 +1,5 @@
 import { canonicalForRoute, isInfoRoute, isGuideRoute, isRelatedGuidesEnabled, RELATED_GUIDES_CURATED, routeToSlug, ALIAS_ROUTES, JSP_BY_ROUTE } from './site-data.mjs';
+import { getTestimonialsForTool, renderTestimonialsSection } from './testimonials.mjs';
 
 // 2026-05-28 plan-warm-pascal-v2 S1.3 — multilingual /guides/ locale support.
 // Build a map of canonical-EN-slug → [{ lang, route, isCanonical }] for every
@@ -548,9 +549,15 @@ function renderToolSections(ctx) {
   const relatedToolsBlock = (showRelatedLinks && relatedToolsHtml)
     ? `<div class="w3-row page-section relatedToolsSection"><p style="margin-bottom: 0px;">Related tools:</p><div class="relatedTools">${relatedToolsHtml}</div>${relatedToolsTagsHtml}<script>loadRelatedTools = function(){try{var relatedEl=document.querySelector('.relatedTools');if(relatedEl&&relatedEl.children&&relatedEl.children.length>0){window.__relatedToolsRequested=!0;return;}if(window.__relatedToolsRequested)return;if(document.querySelector('script[src*="related-tools.js"]')){window.__relatedToolsRequested=!0;return;}window.__relatedToolsRequested=!0;loadScript('${ctx.relatedToolsScriptPath}?v=' + APP_VERSION, function(){});}catch(e){}};document.addEventListener('DOMContentLoaded',function(){try{if(window.__relatedToolsBootstrapped)return;window.__relatedToolsBootstrapped=!0;loadRelatedTools();}catch(e){}});</script></div>`
     : '';
+  // Testimonials sit in the "User Rating" area - directly above the rating
+  // widget - so real social proof and the star widget read as one trust unit
+  // (operator request 2026-07-10). Renders only when the tool has genuinely
+  // relevant testimonials (already filtered upstream). Gated on the same
+  // related-links flag so guide/tool pages both qualify, ad-only chrome does not.
+  const testimonialsBlock = (showRelatedLinks && ctx.testimonialsHtml) ? ctx.testimonialsHtml : '';
   // FAQ widget + bottom ad banner are ad-page surfaces - stay gated on showAds so
   // guide pages get only the internal related-links bands, no ad banner.
-  return `<!-- SEO_BLOCK:RELATED_TOOLS -->${clusterHubBlock}${relatedToolsBlock}${relatedGuidesBlock}${relatedNewsBlock}${ratingBlock}${ctx.showAds && ctx.pageFaq ? ctx.pageFaq : ''}${ctx.showAds ? (ctx.bottomPageBannerAd || '') : ''}<!-- END_SEO_BLOCK:RELATED_TOOLS -->`;
+  return `<!-- SEO_BLOCK:RELATED_TOOLS -->${clusterHubBlock}${relatedToolsBlock}${relatedGuidesBlock}${relatedNewsBlock}${testimonialsBlock}${ratingBlock}${ctx.showAds && ctx.pageFaq ? ctx.pageFaq : ''}${ctx.showAds ? (ctx.bottomPageBannerAd || '') : ''}<!-- END_SEO_BLOCK:RELATED_TOOLS -->`;
 }
 
 function buildJsonLdScript(payload) {
@@ -1499,6 +1506,22 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   if (clusterHubLink) {
     console.log(`[seo:cluster-hub] ${normalizedRoute} → ${clusterHubLink.href} (${clusterHubLink.label}).`);
   }
+  // Real-user testimonials (E-E-A-T / trust, 2026-07-10). Tool pages get the
+  // testimonials genuinely ABOUT that tool (matched by slug or its related-
+  // tools tags); pages with no tool-specific testimonial show nothing (no
+  // generic filler). Homepage testimonials are spliced into BODYHTML markers
+  // in export-site.mjs. The .user-testimonials container is excluded from the
+  // truthful-claim diff (attributed third-party quotes, not tool claims).
+  const pageMapEntry = (relatedToolsData?.urlMaps || []).find((e) => {
+    try { return new URL(String(e.url)).pathname === normalizedRoute; } catch { return false; }
+  });
+  const pageTags = pageMapEntry?.tags ? String(pageMapEntry.tags).split(',').map((s) => s.trim()).filter(Boolean) : [];
+  const pageSlug = normalizedRoute.replace(/^\//, '').replace(/\.html$/, '').split('/').pop();
+  const toolTestimonials = (!isHome && showRelatedLinks) ? getTestimonialsForTool(pageSlug, pageTags) : [];
+  const testimonialsHtml = toolTestimonials.length ? renderTestimonialsSection(toolTestimonials, { variant: 'tool' }) : '';
+  if (testimonialsHtml) {
+    console.log(`[seo:testimonials] ${normalizedRoute} rendered ${toolTestimonials.length} tool-specific testimonial(s).`);
+  }
   const toolSections = renderToolSections({
     showAds,
     showRelatedLinks,
@@ -1511,6 +1534,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     relatedGuidesHtml: relatedToolsState.guidesListHtml,
     showRelatedGuides,
     relatedNewsHtml: relatedToolsState.newsListHtml,
+    testimonialsHtml,
     clusterHubLink,
   });
   const relatedStyles = !hasUpload ? `<style>#content.w3-content { margin-top: 50px; }</style>` : '';
