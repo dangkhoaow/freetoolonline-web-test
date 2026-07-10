@@ -146,8 +146,12 @@ const SOURCE_LABEL = { trustpilot: 'Trustpilot', buymeacoffee: 'Buy Me a Coffee'
 // PAGESTYLE.css is homepage-only, so the section carries its own scoped CSS to
 // render consistently sitewide without a CloudFront/theme-file edit). One
 // section per page -> one style block per page.
+// NOTE: no box rule on the bare `.user-testimonials` selector on purpose.
+// Home renders inside .bento-cell-testimonials (PAGESTYLE neutralizes the box);
+// tool renders as a .w3-row.page-section and inherits the site card chrome
+// (white bg, border, 10px padding, card shadow, 10px bottom margin) so it
+// matches the FAQ / User Rating cards. Only INNER elements are styled here.
 const TESTIMONIALS_CSS =
-  '.user-testimonials{max-width:1240px;width:calc(100% - 20px);margin:16px auto;padding:8px 0}' +
   '.user-testimonials>h2{margin:0 0 12px}' +
   '.user-testimonials .testimonial-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}' +
   '.user-testimonials figure.testimonial{margin:0;padding:12px 16px;border:1px solid #e2e8f0;border-radius:4px;background:#fff}' +
@@ -186,7 +190,8 @@ const TP_WIDGET =
 export function renderTestimonialsSection(testimonials, opts = {}) {
   const list = Array.isArray(testimonials) ? testimonials.filter(Boolean) : [];
   if (!list.length) return '';
-  const heading = opts.heading || (opts.variant === 'tool' ? 'What users say about this tool' : 'What people say');
+  const isTool = opts.variant === 'tool';
+  const heading = opts.heading || (isTool ? 'What users say about this tool' : 'What people say');
   const figures = list.map((t) => {
     const label = SOURCE_LABEL[t.source] || 'a supporter';
     const loc = t.location ? ` (${escLite(t.location)})` : '';
@@ -203,6 +208,24 @@ export function renderTestimonialsSection(testimonials, opts = {}) {
     `<a href="${escLite(PROFILE_URLS.trustpilot)}" target="_blank" rel="noopener">Read more reviews on Trustpilot</a>` +
     ` or <a href="${escLite(PROFILE_URLS.buymeacoffee)}" target="_blank" rel="noopener">Buy Me a Coffee</a>.</p>`;
   const widget = opts.widget ? `<div class="testimonials-tp">${TP_WIDGET}</div>` : '';
+  const body = `<div class="testimonial-grid">${figures}</div>${more}${widget}`;
+  if (isTool) {
+    // Tool pages: a normal .page-section card (same margin/padding/border/
+    // shadow as the adjacent User Rating + FAQ cards) with the standard tool-
+    // page section heading. No inline chrome-strip, no homepage box rule.
+    return (
+      `<!-- SEO_BLOCK:TESTIMONIALS -->` +
+      `<style>${TESTIMONIALS_CSS}</style>` +
+      `<div class="w3-row page-section user-testimonials testimonialsSection" aria-labelledby="testimonials-h">` +
+      `<h2 id="testimonials-h" class="text-uppercase">${escLite(heading)}</h2>` +
+      `${body}` +
+      `</div>` +
+      `<!-- END_SEO_BLOCK:TESTIMONIALS -->`
+    );
+  }
+  // Homepage: bento-cell context (PAGESTYLE handles the box); card chrome is
+  // intentionally stripped so it reads as a bento tile, per the operator's
+  // homepage styling.
   return (
     `<!-- SEO_BLOCK:TESTIMONIALS -->` +
     `<style>${TESTIMONIALS_CSS}</style>` +
