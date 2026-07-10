@@ -1,0 +1,27 @@
+<script>
+    web.localUpload = false;
+    var AMS_GAME_URL = 'andromeda-star-shooter/index.html';
+    function amsStatus(t){ var el=document.getElementById('amsStatus'); if(el) el.textContent=t; }
+    function amsInjectFrame(stage){
+        var frame=document.createElement('iframe');
+        frame.id='amsFrame'; frame.src=AMS_GAME_URL; frame.title='Andromeda Star Shooter';
+        frame.setAttribute('allow','fullscreen'); frame.setAttribute('allowfullscreen','');
+        frame.addEventListener('load',function(){ amsStatus('Loaded. Click Play/Pause inside the frame to start.'); });
+        var launch=document.getElementById('amsLaunch');
+        if(launch&&launch.parentNode===stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+    }
+    function doAfterPageRendered(){
+        var stage=document.getElementById('amsStage'), playBtn=document.getElementById('amsPlayBtn');
+        if(!stage||!playBtn) return;
+        var fsBtn=document.getElementById('amsFullscreenBtn');
+        playBtn.addEventListener('click',function(){
+            amsStatus('Loading about ~45 KB...'); amsInjectFrame(stage);
+            if(fsBtn) fsBtn.disabled=false;
+        });
+        if(fsBtn) fsBtn.addEventListener('click',function(){
+            if(stage.requestFullscreen) stage.requestFullscreen();
+            else if(stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+        });
+    }
+</script>

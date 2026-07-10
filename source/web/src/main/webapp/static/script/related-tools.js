@@ -363,6 +363,7 @@ try {
     { title: "Neural Particle Life", url: "https://freetoolonline.com/games/neural-particle-life.html", include: !1, tags: "games" },
     { title: "Neon Surge Loop", url: "https://freetoolonline.com/games/neon-surge-loop.html", include: !1, tags: "games" },
     { title: "Arrow Dodge Arena", url: "https://freetoolonline.com/games/arrow-dodge-arena.html", include: !1, tags: "games" },
+    { title: "Andromeda Star Shooter", url: "https://freetoolonline.com/games/andromeda-star-shooter.html", include: !1, tags: "games" },
     { title: "Earth 3D Globe - Live Day & Night Map", url: "https://freetoolonline.com/space-3d/earth-3d-globe.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
