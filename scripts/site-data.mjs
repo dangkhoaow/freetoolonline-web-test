@@ -3485,6 +3485,7 @@ export const JSP_BY_ROUTE = {
   '/news/es/av2-codec-finalized-no-browser-support-yet.html': 'news/es/av2-codec-finalized-no-browser-support-yet.jsp',
   '/news/vi/av2-codec-finalized-no-browser-support-yet.html': 'news/vi/av2-codec-finalized-no-browser-support-yet.jsp',
   '/news/id/av2-codec-finalized-no-browser-support-yet.html': 'news/id/av2-codec-finalized-no-browser-support-yet.jsp',
+  '/news/de/av2-codec-finalized-no-browser-support-yet.html': 'news/de/av2-codec-finalized-no-browser-support-yet.jsp',
   '/news/winrar-rar5-recovery-flaw-patched.html': 'news/winrar-rar5-recovery-flaw-patched.jsp',
   '/news/pt/winrar-rar5-recovery-flaw-patched.html': 'news/pt/winrar-rar5-recovery-flaw-patched.jsp',
   '/news/es/winrar-rar5-recovery-flaw-patched.html': 'news/es/winrar-rar5-recovery-flaw-patched.jsp',
