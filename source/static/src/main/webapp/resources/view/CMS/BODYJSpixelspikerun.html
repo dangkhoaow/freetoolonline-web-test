@@ -1,0 +1,27 @@
+<script>
+    web.localUpload = false;
+    var PSR_GAME_URL = 'pixel-spike-run/index.html';
+    function psrStatus(t){ var el=document.getElementById('psrStatus'); if(el) el.textContent=t; }
+    function psrInjectFrame(stage){
+        var frame=document.createElement('iframe');
+        frame.id='psrFrame'; frame.src=PSR_GAME_URL; frame.title='Pixel Spike Run';
+        frame.setAttribute('allow','fullscreen'); frame.setAttribute('allowfullscreen','');
+        frame.addEventListener('load',function(){ psrStatus('Loaded. Tap/click/Space to jump inside the frame.'); });
+        var launch=document.getElementById('psrLaunch');
+        if(launch&&launch.parentNode===stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+    }
+    function doAfterPageRendered(){
+        var stage=document.getElementById('psrStage'), playBtn=document.getElementById('psrPlayBtn');
+        if(!stage||!playBtn) return;
+        var fsBtn=document.getElementById('psrFullscreenBtn');
+        playBtn.addEventListener('click',function(){
+            psrStatus('Loading about ~25 KB...'); psrInjectFrame(stage);
+            if(fsBtn) fsBtn.disabled=false;
+        });
+        if(fsBtn) fsBtn.addEventListener('click',function(){
+            if(stage.requestFullscreen) stage.requestFullscreen();
+            else if(stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+        });
+    }
+</script>
