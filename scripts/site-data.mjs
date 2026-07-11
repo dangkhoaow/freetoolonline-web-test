@@ -5108,6 +5108,25 @@ export const JSP_BY_ROUTE = {
   '/guides/garden-defense-when.html': 'guide/garden-defense-when.jsp',
   '/guides/garden-defense-step-by-step.html': 'guide/garden-defense-step-by-step.jsp',
   '/guides/garden-defense-vs-alternatives.html': 'guide/garden-defense-vs-alternatives.jsp',
+
+  // new-tool-discovery-loop-runbook fire-52: garden-defense-guides locale
+  // fanout (guide_locale_fanout unit_debt) - EN angles authored this fire;
+  // pt/es/de/vi/id added for all 3 angles (when/step-by-step/vs-alternatives).
+  '/guides/pt/garden-defense-when.html': 'guide/pt/garden-defense-when.jsp',
+  '/guides/pt/garden-defense-step-by-step.html': 'guide/pt/garden-defense-step-by-step.jsp',
+  '/guides/pt/garden-defense-vs-alternatives.html': 'guide/pt/garden-defense-vs-alternatives.jsp',
+  '/guides/es/garden-defense-when.html': 'guide/es/garden-defense-when.jsp',
+  '/guides/es/garden-defense-step-by-step.html': 'guide/es/garden-defense-step-by-step.jsp',
+  '/guides/es/garden-defense-vs-alternatives.html': 'guide/es/garden-defense-vs-alternatives.jsp',
+  '/guides/de/garden-defense-when.html': 'guide/de/garden-defense-when.jsp',
+  '/guides/de/garden-defense-step-by-step.html': 'guide/de/garden-defense-step-by-step.jsp',
+  '/guides/de/garden-defense-vs-alternatives.html': 'guide/de/garden-defense-vs-alternatives.jsp',
+  '/guides/vi/garden-defense-when.html': 'guide/vi/garden-defense-when.jsp',
+  '/guides/vi/garden-defense-step-by-step.html': 'guide/vi/garden-defense-step-by-step.jsp',
+  '/guides/vi/garden-defense-vs-alternatives.html': 'guide/vi/garden-defense-vs-alternatives.jsp',
+  '/guides/id/garden-defense-when.html': 'guide/id/garden-defense-when.jsp',
+  '/guides/id/garden-defense-step-by-step.html': 'guide/id/garden-defense-step-by-step.jsp',
+  '/guides/id/garden-defense-vs-alternatives.html': 'guide/id/garden-defense-vs-alternatives.jsp',
   '/games/voxel-world-builder.html': 'games/voxel-world-builder.jsp',
   '/guides/voxel-world-builder-when.html': 'guide/voxel-world-builder-when.jsp',
   '/guides/voxel-world-builder-step-by-step.html': 'guide/voxel-world-builder-step-by-step.jsp',
