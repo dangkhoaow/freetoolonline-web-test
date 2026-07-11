@@ -1,0 +1,61 @@
+<script>
+    // Hex Puzzle Blocks launcher. The game is the open-source Hextris engine
+    // (Logan Engstrom & Garrett Finucane, 2014; GNU GPL-3.0 - full analysis in
+    // tool-hexpuzzleblocks/SKILL.md), vendored as static files at
+    // games/hex-puzzle-blocks/ in an isolated same-origin iframe: classic
+    // scripts, relative paths, ~1.1 MB total. Google Analytics, an AdSense
+    // slot, a score-telemetry ping, and a dynamically-injected remote script
+    // all existed upstream and were stripped during vendoring - see the
+    // SKILL.md License analysis section. The iframe loads only when the
+    // reader presses Play.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    // Relative to /games/, so it resolves under any base path (staging subpath
+    // included) without needing BASE_PATH.
+    var HPB_GAME_URL = 'hex-puzzle-blocks/index.html';
+
+    function hpbStatus(text) {
+        var el = document.getElementById('hpbStatus');
+        if (el) el.textContent = text;
+    }
+
+    function hpbInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'hpbFrame';
+        frame.src = HPB_GAME_URL;
+        frame.title = 'Hex Puzzle Blocks game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            hpbStatus('Game loaded. Use the arrow keys (or A / D), or click / tap the left and right side, to rotate the hexagon.');
+            try { frame.contentWindow.focus(); } catch (e) { /* focus is best-effort */ }
+        });
+        var launch = document.getElementById('hpbLaunch');
+        if (launch && launch.parentNode === stage) { stage.removeChild(launch); }
+        stage.appendChild(frame);
+        return frame;
+    }
+
+    function doAfterPageRendered() {
+        var stage = document.getElementById('hpbStage');
+        var playBtn = document.getElementById('hpbPlayBtn');
+        if (!stage || !playBtn) return; // not this page
+
+        var fsBtn = document.getElementById('hpbFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            hpbStatus('Loading the game (about 1.1 MB, one time - then cached)...');
+            hpbInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) { stage.requestFullscreen(); }
+            else if (stage.webkitRequestFullscreen) { stage.webkitRequestFullscreen(); }
+            var frame = document.getElementById('hpbFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) { } }
+        });
+    }
+</script>

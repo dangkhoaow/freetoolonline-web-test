@@ -1,4 +1,5 @@
 import { canonicalForRoute, isInfoRoute, isGuideRoute, isRelatedGuidesEnabled, RELATED_GUIDES_CURATED, routeToSlug, ALIAS_ROUTES, JSP_BY_ROUTE } from './site-data.mjs';
+import { getTestimonialsForTool, renderTestimonialsSection } from './testimonials.mjs';
 
 // 2026-05-28 plan-warm-pascal-v2 S1.3 — multilingual /guides/ locale support.
 // Build a map of canonical-EN-slug → [{ lang, route, isCanonical }] for every
@@ -98,6 +99,69 @@ function getLocalizedGuideMap() {
   }
   _localizedGuideMap = map;
   return map;
+}
+
+// news-loop (2026-07-09): locale siblings for /news/<slug>.html (EN) and
+// /news/<lang>/<slug>.html (non-EN). Same hreflang shape as guides.
+let _localizedNewsMap = null;
+function getLocalizedNewsMap() {
+  if (_localizedNewsMap) return _localizedNewsMap;
+  const map = new Map();
+  for (const route of Object.keys(JSP_BY_ROUTE || {})) {
+    if (!route.startsWith('/news/')) continue;
+    const localeMatch = /^\/news\/([a-z]{2})\/([^/]+)\.html$/.exec(route);
+    if (localeMatch) {
+      const lang = localeMatch[1];
+      const slug = localeMatch[2];
+      if (!SUPPORTED_LOCALE_PREFIXES.has(lang)) continue;
+      if (!map.has(slug)) map.set(slug, []);
+      map.get(slug).push({ lang, route, isCanonical: false });
+      continue;
+    }
+    const enMatch = /^\/news\/([^/]+)\.html$/.exec(route);
+    if (enMatch && !SUPPORTED_LOCALE_PREFIXES.has(enMatch[1])) {
+      const slug = enMatch[1];
+      if (!map.has(slug)) map.set(slug, []);
+      map.get(slug).push({ lang: 'en', route, isCanonical: true });
+    }
+  }
+  for (const [slug, list] of map) {
+    if (list.length === 1) map.delete(slug);
+  }
+  _localizedNewsMap = map;
+  return map;
+}
+
+function buildNewsLocaleHreflangLinks(route, siteOrigin) {
+  const map = getLocalizedNewsMap();
+  let canonicalSlug = null;
+  const localeMatch = /^\/news\/[a-z]{2}\/([^/]+)\.html$/.exec(route);
+  const enMatch = /^\/news\/([^/]+)\.html$/.exec(route);
+  if (localeMatch) canonicalSlug = localeMatch[1];
+  else if (enMatch && !SUPPORTED_LOCALE_PREFIXES.has(enMatch[1])) canonicalSlug = enMatch[1];
+  if (!canonicalSlug) return [];
+  const siblings = map.get(canonicalSlug);
+  if (!siblings || siblings.length < 2) return [];
+
+  const links = [];
+  const enSibling = siblings.find((s) => s.isCanonical);
+  if (enSibling) {
+    const enUrl = `${siteOrigin}${enSibling.route}`;
+    links.push({ hreflang: 'x-default', href: enUrl });
+    links.push({ hreflang: 'en', href: enUrl });
+    for (const cv of (COUNTRY_VARIANTS_BY_LANG.en || [])) {
+      links.push({ hreflang: cv, href: enUrl });
+    }
+  }
+  for (const s of siblings) {
+    if (s.isCanonical) continue;
+    const url = `${siteOrigin}${s.route}`;
+    links.push({ hreflang: s.lang, href: url });
+    for (const cv of (COUNTRY_VARIANTS_BY_LANG[s.lang] || [])) {
+      links.push({ hreflang: cv, href: url });
+    }
+  }
+  return links;
 }
 
 // For a given guide route (EN canonical or locale-prefixed), return the
@@ -337,6 +401,10 @@ function renderMetaTags(ctx) {
   // the full per-locale hreflang block (x-default + each locale + per-country
   // variants). Otherwise fall back to the legacy self + x-default + extras.
   const guideLocaleLinks = buildGuideLocaleHreflangLinks(ctx.route, ctx.siteOrigin || '');
+  const newsLocaleLinks = guideLocaleLinks.length === 0
+    ? buildNewsLocaleHreflangLinks(ctx.route, ctx.siteOrigin || '')
+    : [];
+  const clusterLocaleLinks = guideLocaleLinks.length > 0 ? guideLocaleLinks : newsLocaleLinks;
   // Non-guide English pages (tools/hubs/info) declare premium-English-region
   // COVERAGE sitewide (en + x-default + en-US/CA/GB/AU/IE/NZ, all -> self), so
   // the regional intent is explicit + consistent with guides. Non-English
@@ -344,11 +412,11 @@ function renderMetaTags(ctx) {
   // hreflang (alias targets) are preserved + deduped. Declares coverage, NOT
   // ranking priority (Google has no country dial — see geo-targeting-playbook.md).
   let alternateLinks;
-  if (guideLocaleLinks.length > 0) {
+  if (clusterLocaleLinks.length > 0) {
     alternateLinks = [
       // Self-reference still emitted (Google's spec recommends it explicitly)
       `<link rel='alternate' href='${canonical}' hreflang='${selfHreflang}' />`,
-      ...guideLocaleLinks.map((l) =>
+      ...clusterLocaleLinks.map((l) =>
         `<link rel='alternate' href='${escapeHtml(l.href)}' hreflang='${l.hreflang}' />`
       ),
     ];
@@ -481,9 +549,15 @@ function renderToolSections(ctx) {
   const relatedToolsBlock = (showRelatedLinks && relatedToolsHtml)
     ? `<div class="w3-row page-section relatedToolsSection"><p style="margin-bottom: 0px;">Related tools:</p><div class="relatedTools">${relatedToolsHtml}</div>${relatedToolsTagsHtml}<script>loadRelatedTools = function(){try{var relatedEl=document.querySelector('.relatedTools');if(relatedEl&&relatedEl.children&&relatedEl.children.length>0){window.__relatedToolsRequested=!0;return;}if(window.__relatedToolsRequested)return;if(document.querySelector('script[src*="related-tools.js"]')){window.__relatedToolsRequested=!0;return;}window.__relatedToolsRequested=!0;loadScript('${ctx.relatedToolsScriptPath}?v=' + APP_VERSION, function(){});}catch(e){}};document.addEventListener('DOMContentLoaded',function(){try{if(window.__relatedToolsBootstrapped)return;window.__relatedToolsBootstrapped=!0;loadRelatedTools();}catch(e){}});</script></div>`
     : '';
+  // Testimonials sit in the "User Rating" area - directly above the rating
+  // widget - so real social proof and the star widget read as one trust unit
+  // (operator request 2026-07-10). Renders only when the tool has genuinely
+  // relevant testimonials (already filtered upstream). Gated on the same
+  // related-links flag so guide/tool pages both qualify, ad-only chrome does not.
+  const testimonialsBlock = (showRelatedLinks && ctx.testimonialsHtml) ? ctx.testimonialsHtml : '';
   // FAQ widget + bottom ad banner are ad-page surfaces - stay gated on showAds so
   // guide pages get only the internal related-links bands, no ad banner.
-  return `<!-- SEO_BLOCK:RELATED_TOOLS -->${clusterHubBlock}${relatedToolsBlock}${relatedGuidesBlock}${relatedNewsBlock}${ratingBlock}${ctx.showAds && ctx.pageFaq ? ctx.pageFaq : ''}${ctx.showAds ? (ctx.bottomPageBannerAd || '') : ''}<!-- END_SEO_BLOCK:RELATED_TOOLS -->`;
+  return `<!-- SEO_BLOCK:RELATED_TOOLS -->${clusterHubBlock}${relatedToolsBlock}${relatedGuidesBlock}${relatedNewsBlock}${testimonialsBlock}${ratingBlock}${ctx.showAds && ctx.pageFaq ? ctx.pageFaq : ''}${ctx.showAds ? (ctx.bottomPageBannerAd || '') : ''}<!-- END_SEO_BLOCK:RELATED_TOOLS -->`;
 }
 
 function buildJsonLdScript(payload) {
@@ -1432,6 +1506,22 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   if (clusterHubLink) {
     console.log(`[seo:cluster-hub] ${normalizedRoute} → ${clusterHubLink.href} (${clusterHubLink.label}).`);
   }
+  // Real-user testimonials (E-E-A-T / trust, 2026-07-10). Tool pages get the
+  // testimonials genuinely ABOUT that tool (matched by slug or its related-
+  // tools tags); pages with no tool-specific testimonial show nothing (no
+  // generic filler). Homepage testimonials are spliced into BODYHTML markers
+  // in export-site.mjs. The .user-testimonials container is excluded from the
+  // truthful-claim diff (attributed third-party quotes, not tool claims).
+  const pageMapEntry = (relatedToolsData?.urlMaps || []).find((e) => {
+    try { return new URL(String(e.url)).pathname === normalizedRoute; } catch { return false; }
+  });
+  const pageTags = pageMapEntry?.tags ? String(pageMapEntry.tags).split(',').map((s) => s.trim()).filter(Boolean) : [];
+  const pageSlug = normalizedRoute.replace(/^\//, '').replace(/\.html$/, '').split('/').pop();
+  const toolTestimonials = (!isHome && showRelatedLinks) ? getTestimonialsForTool(pageSlug, pageTags) : [];
+  const testimonialsHtml = toolTestimonials.length ? renderTestimonialsSection(toolTestimonials, { variant: 'tool' }) : '';
+  if (testimonialsHtml) {
+    console.log(`[seo:testimonials] ${normalizedRoute} rendered ${toolTestimonials.length} tool-specific testimonial(s).`);
+  }
   const toolSections = renderToolSections({
     showAds,
     showRelatedLinks,
@@ -1444,6 +1534,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     relatedGuidesHtml: relatedToolsState.guidesListHtml,
     showRelatedGuides,
     relatedNewsHtml: relatedToolsState.newsListHtml,
+    testimonialsHtml,
     clusterHubLink,
   });
   const relatedStyles = !hasUpload ? `<style>#content.w3-content { margin-top: 50px; }</style>` : '';

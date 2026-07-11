@@ -1,0 +1,42 @@
+<script>
+    // Neon Surge Loop launcher. Adapted from thegamerbay/neon-dopamine (MIT, 2026 Artem Ryazanov)
+    web.localUpload = false;
+    var NSL_GAME_URL = 'neon-surge-loop/index.html';
+    function nslStatus(text) {
+        var el = document.getElementById('nslStatus');
+        if (el) el.textContent = text;
+    }
+    function nslInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'nslFrame';
+        frame.src = NSL_GAME_URL;
+        frame.title = 'Neon Surge Loop';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            nslStatus('Game loaded. Click START GAME inside the frame.');
+            try { frame.contentWindow.focus(); } catch (e) { }
+        });
+        var launch = document.getElementById('nslLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('nslStage');
+        var playBtn = document.getElementById('nslPlayBtn');
+        if (!stage || !playBtn) return;
+        var fsBtn = document.getElementById('nslFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            nslStatus('Loading the shooter (about ~40 KB)...');
+            nslInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('nslFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) { } }
+        });
+    }
+</script>

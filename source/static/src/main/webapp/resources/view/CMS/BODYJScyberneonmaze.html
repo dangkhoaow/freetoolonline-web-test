@@ -1,0 +1,42 @@
+<script>
+    // Cyber Neon Maze launcher. Adapted from bhanu2006-24/neon-maze (MIT, 2025)
+    web.localUpload = false;
+    var CNM_GAME_URL = 'cyber-neon-maze/index.html';
+    function cnmStatus(text) {
+        var el = document.getElementById('cnmStatus');
+        if (el) el.textContent = text;
+    }
+    function cnmInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'cnmFrame';
+        frame.src = CNM_GAME_URL;
+        frame.title = 'Cyber Neon Maze';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            cnmStatus('Game loaded. Click INITIATE RUN inside the frame and allow pointer lock.');
+            try { frame.contentWindow.focus(); } catch (e) { }
+        });
+        var launch = document.getElementById('cnmLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('cnmStage');
+        var playBtn = document.getElementById('cnmPlayBtn');
+        if (!stage || !playBtn) return;
+        var fsBtn = document.getElementById('cnmFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            cnmStatus('Loading the game (about ~650 KB)...');
+            cnmInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('cnmFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) { } }
+        });
+    }
+</script>

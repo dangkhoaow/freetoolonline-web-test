@@ -1,0 +1,61 @@
+<script>
+    // Chili Blast Shooter launcher. Adapted from izag8216/pimenta (MIT, 2026)
+    // vendored at games/chili-blast-shooter/ in an isolated same-origin iframe.
+    // Single index.html (~26 KB), Canvas 2D + procedural Web Audio,
+    // zero runtime dependencies. The iframe loads only when the reader presses Play.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var CBS_GAME_URL = 'chili-blast-shooter/index.html';
+
+    function cbsStatus(text) {
+        var el = document.getElementById('cbsStatus');
+        if (el) el.textContent = text;
+    }
+
+    function cbsInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'cbsFrame';
+        frame.src = CBS_GAME_URL;
+        frame.title = 'Chili Blast Shooter';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            cbsStatus('Game loaded. WASD or arrows to move; shots fire automatically.');
+            try { frame.contentWindow.focus(); } catch (e) { }
+        });
+        var launch = document.getElementById('cbsLaunch');
+        if (launch && launch.parentNode === stage) { stage.removeChild(launch); }
+        stage.appendChild(frame);
+        return frame;
+    }
+
+    function doAfterPageRendered() {
+        var stage = document.getElementById('cbsStage');
+        var playBtn = document.getElementById('cbsPlayBtn');
+        if (!stage || !playBtn) return;
+
+        var coarse = false;
+        try { coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches; } catch (e) { }
+        if (coarse) {
+            var note = document.getElementById('cbsTouchNote');
+            if (note) note.style.display = 'block';
+        }
+
+        var fsBtn = document.getElementById('cbsFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            cbsStatus('Loading the game (about 26 KB)...');
+            cbsInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) { stage.requestFullscreen(); }
+            else if (stage.webkitRequestFullscreen) { stage.webkitRequestFullscreen(); }
+            var frame = document.getElementById('cbsFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) { } }
+        });
+    }
+</script>

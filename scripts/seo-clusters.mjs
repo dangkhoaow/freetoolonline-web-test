@@ -30,7 +30,7 @@ const SEO_CLUSTER_GROUPS = [
     // /image-format-converter.html's same template paragraph. Re-tagged in related-tools.js
     // commit 765e1d8 + moved here.
     // Cycle 20260521-12 cleanup: /image-format-converter.html removed entirely (silent stub).
-    routes: ['/heic-to-jpg.html', '/svg-to-png.html', '/png-to-svg.html', '/image-to-base64.html', '/base64-to-image.html', '/extract-gif-to-image-frames.html', '/image-converter-tools/audio-converter.html', '/image-converter-tools/png-to-webp.html', '/image-converter-tools/jpg-to-webp.html', '/image-converter-tools/webp-to-png.html'],
+    routes: ['/heic-to-jpg.html', '/svg-to-png.html', '/png-to-svg.html', '/image-to-base64.html', '/base64-to-image.html', '/extract-gif-to-image-frames.html', '/image-converter-tools/audio-converter.html', '/image-converter-tools/png-to-webp.html', '/image-converter-tools/jpg-to-webp.html', '/image-converter-tools/webp-to-png.html', '/image-converter-tools/webp-to-jpg.html', '/image-converter-tools/image-to-webp.html', '/image-converter-tools/png-to-jpg.html'],
   },
   {
     cluster: 'pdf',
@@ -66,7 +66,7 @@ const SEO_CLUSTER_GROUPS = [
     cluster: 'utility',
     hubRoute: '/utility-tools.html',
     hubLabel: 'Back to Utility Tools',
-    routes: ['/file-compressor.html', '/convert-time-in-millisecond-to-date.html', '/get-time-in-millisecond.html', '/qr-code-generator.html', '/do-nong-do-con-truc-tuyen.html', '/cong-cu-chuyen-doi-chu-quoc-ngu-tieng-viet-thanh-tieq-viet-kieu-moi.html', '/utility-tools/todo-list.html', '/utility-tools/unit-converter.html', '/utility-tools/font-generator.html', '/utility-tools/private-ai-chat.html', '/utility-tools/analog-clock.html', '/utility-tools/digital-clock.html', '/utility-tools/countdown-timer.html', '/utility-tools/stopwatch.html', '/utility-tools/online-alarm-clock.html', '/utility-tools/wheel-spinner.html', '/utility-tools/dice-roller.html', '/utility-tools/coin-flip.html', '/utility-tools/random-number-picker.html', '/utility-tools/name-shuffler.html', '/utility-tools/yes-or-no-wheel.html', '/utility-tools/password-generator.html', '/utility-tools/voice-recorder.html', '/utility-tools/text-to-speech.html', '/utility-tools/speech-to-text.html', '/utility-tools/habit-tracker.html', '/utility-tools/grocery-list.html', '/utility-tools/qr-code-scanner.html', '/utility-tools/percentage-calculator.html', '/utility-tools/linux-online.html'],
+    routes: ['/file-compressor.html', '/convert-time-in-millisecond-to-date.html', '/get-time-in-millisecond.html', '/qr-code-generator.html', '/do-nong-do-con-truc-tuyen.html', '/cong-cu-chuyen-doi-chu-quoc-ngu-tieng-viet-thanh-tieq-viet-kieu-moi.html', '/utility-tools/todo-list.html', '/utility-tools/unit-converter.html', '/utility-tools/font-generator.html', '/utility-tools/private-ai-chat.html', '/utility-tools/analog-clock.html', '/utility-tools/digital-clock.html', '/utility-tools/countdown-timer.html', '/utility-tools/stopwatch.html', '/utility-tools/online-alarm-clock.html', '/utility-tools/wheel-spinner.html', '/utility-tools/dice-roller.html', '/utility-tools/coin-flip.html', '/utility-tools/random-number-picker.html', '/utility-tools/name-shuffler.html', '/utility-tools/yes-or-no-wheel.html', '/utility-tools/password-generator.html', '/utility-tools/voice-recorder.html', '/utility-tools/text-to-speech.html', '/utility-tools/speech-to-text.html', '/utility-tools/habit-tracker.html', '/utility-tools/grocery-list.html', '/utility-tools/qr-code-scanner.html', '/utility-tools/percentage-calculator.html', '/utility-tools/linux-online.html', '/utility-tools/expense-tracker.html'],
   },
   // Phase 16 P16.G3 - register the /guides/* cluster. Cycle B activates the
   // full route list now that P16.G1 ships /guides.html. resolveHubBacklink
@@ -87,7 +87,7 @@ const SEO_CLUSTER_GROUPS = [
     cluster: 'games',
     hubRoute: '/games.html',
     hubLabel: 'Back to Games',
-    routes: ['/games/snake-classic.html', '/games/retro-tank-battle.html', '/games/garden-defense.html', '/games/voxel-world-builder.html', '/games/sky-gates-flight.html', '/games/city-time-machine.html', '/games/2048-game.html', '/games/city-drive-3d.html', '/games/retro-fps-online.html', '/games/retro-highway-racer.html', '/games/hover-racing.html', '/games/retro-arcade-shooter.html', '/games/marble-maze.html', '/games/asteroid-blaster.html'],
+    routes: ['/games/snake-classic.html', '/games/retro-tank-battle.html', '/games/garden-defense.html', '/games/voxel-world-builder.html', '/games/sky-gates-flight.html', '/games/city-time-machine.html', '/games/2048-game.html', '/games/city-drive-3d.html', '/games/retro-fps-online.html', '/games/retro-highway-racer.html', '/games/hover-racing.html', '/games/retro-arcade-shooter.html', '/games/marble-maze.html', '/games/asteroid-blaster.html', '/games/hex-puzzle-blocks.html', '/games/procedural-horde-game.html', '/games/chili-blast-shooter.html', '/games/pixel-pipeline-reflex.html', '/games/medieval-wall-defense.html', '/games/cyber-slide-puzzle.html', '/games/starlight-breaker.html', '/games/night-swarm-survivor.html', '/games/neon-tower-rush.html', '/games/cyber-neon-maze.html', '/games/serpentine-3d.html', '/games/neural-particle-life.html', '/games/neon-surge-loop.html', '/games/arrow-dodge-arena.html', '/games/andromeda-star-shooter.html', '/games/pixel-spike-run.html', '/games/orbital-radius-shooter.html', '/games/species-life-battle.html', '/games/gravity-orbit-golf.html', '/games/one-tap-platformer.html', '/games/neon-circuit-racer.html', '/games/pixel-necromancer.html', '/games/thirteen-card-duel.html'],
   },
   {
     cluster: 'space-3d',
@@ -104,7 +104,7 @@ const SEO_CLUSTER_GROUPS = [
     cluster: 'news',
     hubRoute: '/news.html',
     hubLabel: 'Back to News',
-    routes: ['/news/jpeg-xl-returns-chrome-firefox.html', '/news/av2-codec-finalized-no-browser-support-yet.html', '/news/winrar-rar5-recovery-flaw-patched.html'],
+    routes: ['/news/jpeg-xl-returns-chrome-firefox.html', '/news/pt/jpeg-xl-returns-chrome-firefox.html', '/news/es/jpeg-xl-returns-chrome-firefox.html', '/news/vi/jpeg-xl-returns-chrome-firefox.html', '/news/id/jpeg-xl-returns-chrome-firefox.html', '/news/de/jpeg-xl-returns-chrome-firefox.html', '/news/av2-codec-finalized-no-browser-support-yet.html', '/news/pt/av2-codec-finalized-no-browser-support-yet.html', '/news/es/av2-codec-finalized-no-browser-support-yet.html', '/news/vi/av2-codec-finalized-no-browser-support-yet.html', '/news/id/av2-codec-finalized-no-browser-support-yet.html', '/news/de/av2-codec-finalized-no-browser-support-yet.html', '/news/winrar-rar5-recovery-flaw-patched.html', '/news/pt/winrar-rar5-recovery-flaw-patched.html', '/news/es/winrar-rar5-recovery-flaw-patched.html', '/news/vi/winrar-rar5-recovery-flaw-patched.html', '/news/id/winrar-rar5-recovery-flaw-patched.html', '/news/de/winrar-rar5-recovery-flaw-patched.html', '/news/heic-arrived-with-ios-11.html'],
   },
   {
     cluster: 'guides',

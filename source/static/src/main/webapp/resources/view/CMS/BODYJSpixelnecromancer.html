@@ -1,0 +1,27 @@
+<script>
+    web.localUpload = false;
+    var PNR_GAME_URL = 'pixel-necromancer/index.html';
+    function pnrStatus(t){ var el=document.getElementById('pnrStatus'); if(el) el.textContent=t; }
+    function pnrInjectFrame(stage){
+        var frame=document.createElement('iframe');
+        frame.id='pnrFrame'; frame.src=PNR_GAME_URL; frame.title='Pixel Necromancer';
+        frame.setAttribute('allow','fullscreen'); frame.setAttribute('allowfullscreen','');
+        frame.addEventListener('load',function(){ pnrStatus('Loaded. Click inside the frame to begin.'); });
+        var launch=document.getElementById('pnrLaunch');
+        if(launch&&launch.parentNode===stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+    }
+    function doAfterPageRendered(){
+        var stage=document.getElementById('pnrStage'), playBtn=document.getElementById('pnrPlayBtn');
+        if(!stage||!playBtn) return;
+        var fsBtn=document.getElementById('pnrFullscreenBtn');
+        playBtn.addEventListener('click',function(){
+            pnrStatus('Loading about ~27 KB...'); pnrInjectFrame(stage);
+            if(fsBtn) fsBtn.disabled=false;
+        });
+        if(fsBtn) fsBtn.addEventListener('click',function(){
+            if(stage.requestFullscreen) stage.requestFullscreen();
+            else if(stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+        });
+    }
+</script>

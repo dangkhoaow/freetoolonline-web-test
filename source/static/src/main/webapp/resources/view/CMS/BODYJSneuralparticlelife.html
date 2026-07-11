@@ -1,0 +1,42 @@
+<script>
+    // Neural Particle Life launcher. Adapted from xcontcom/neuroparticles (MIT, 2025 Serhii Herasymov)
+    web.localUpload = false;
+    var NPL_GAME_URL = 'neural-particle-life/index.html';
+    function nplStatus(text) {
+        var el = document.getElementById('nplStatus');
+        if (el) el.textContent = text;
+    }
+    function nplInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'nplFrame';
+        frame.src = NPL_GAME_URL;
+        frame.title = 'Neural Particle Life';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            nplStatus('Simulation loaded. Click Start inside the frame.');
+            try { frame.contentWindow.focus(); } catch (e) { }
+        });
+        var launch = document.getElementById('nplLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('nplStage');
+        var playBtn = document.getElementById('nplPlayBtn');
+        if (!stage || !playBtn) return;
+        var fsBtn = document.getElementById('nplFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            nplStatus('Loading the simulation (about ~19 KB)...');
+            nplInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('nplFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) { } }
+        });
+    }
+</script>
