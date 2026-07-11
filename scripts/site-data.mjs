@@ -2767,6 +2767,26 @@ export const GUIDE_ROUTES = new Set([
   '/guides/id/glow-firefly-cat-vs-alternatives.html',
   '/guides/de/glow-firefly-cat-vs-alternatives.html',
 
+  // fire92 nova-star-barrage
+  '/guides/how-to-play-nova-star-barrage.html',
+  '/guides/pt/how-to-play-nova-star-barrage.html',
+  '/guides/es/how-to-play-nova-star-barrage.html',
+  '/guides/vi/how-to-play-nova-star-barrage.html',
+  '/guides/id/how-to-play-nova-star-barrage.html',
+  '/guides/de/how-to-play-nova-star-barrage.html',
+  '/guides/nova-star-barrage-when.html',
+  '/guides/pt/nova-star-barrage-when.html',
+  '/guides/es/nova-star-barrage-when.html',
+  '/guides/vi/nova-star-barrage-when.html',
+  '/guides/id/nova-star-barrage-when.html',
+  '/guides/de/nova-star-barrage-when.html',
+  '/guides/nova-star-barrage-vs-alternatives.html',
+  '/guides/pt/nova-star-barrage-vs-alternatives.html',
+  '/guides/es/nova-star-barrage-vs-alternatives.html',
+  '/guides/vi/nova-star-barrage-vs-alternatives.html',
+  '/guides/id/nova-star-barrage-vs-alternatives.html',
+  '/guides/de/nova-star-barrage-vs-alternatives.html',
+
   '/guides/de/gravity-orbit-golf-vs-alternatives.html',
 
   '/guides/de/species-life-battle-vs-alternatives.html',
@@ -3355,6 +3375,7 @@ export const ALIAS_ROUTES = {
   '/inferno-soul-walker.html': '/games/inferno-soul-walker.html',
   '/sketch-turf-battle.html': '/games/sketch-turf-battle.html',
   '/glow-firefly-cat.html': '/games/glow-firefly-cat.html',
+  '/nova-star-barrage.html': '/games/nova-star-barrage.html',
 
   '/gravity-orbit-golf.html': '/games/gravity-orbit-golf.html',
 
@@ -5067,6 +5088,27 @@ export const JSP_BY_ROUTE = {
   '/guides/id/glow-firefly-cat-vs-alternatives.html': 'guide/id/glow-firefly-cat-vs-alternatives.jsp',
   '/guides/de/glow-firefly-cat-vs-alternatives.html': 'guide/de/glow-firefly-cat-vs-alternatives.jsp',
   '/games/glow-firefly-cat.html': 'games/glow-firefly-cat.jsp',
+
+  // fire92 nova-star-barrage guides
+  '/guides/how-to-play-nova-star-barrage.html': 'guide/how-to-play-nova-star-barrage.jsp',
+  '/guides/pt/how-to-play-nova-star-barrage.html': 'guide/pt/how-to-play-nova-star-barrage.jsp',
+  '/guides/es/how-to-play-nova-star-barrage.html': 'guide/es/how-to-play-nova-star-barrage.jsp',
+  '/guides/vi/how-to-play-nova-star-barrage.html': 'guide/vi/how-to-play-nova-star-barrage.jsp',
+  '/guides/id/how-to-play-nova-star-barrage.html': 'guide/id/how-to-play-nova-star-barrage.jsp',
+  '/guides/de/how-to-play-nova-star-barrage.html': 'guide/de/how-to-play-nova-star-barrage.jsp',
+  '/guides/nova-star-barrage-when.html': 'guide/nova-star-barrage-when.jsp',
+  '/guides/pt/nova-star-barrage-when.html': 'guide/pt/nova-star-barrage-when.jsp',
+  '/guides/es/nova-star-barrage-when.html': 'guide/es/nova-star-barrage-when.jsp',
+  '/guides/vi/nova-star-barrage-when.html': 'guide/vi/nova-star-barrage-when.jsp',
+  '/guides/id/nova-star-barrage-when.html': 'guide/id/nova-star-barrage-when.jsp',
+  '/guides/de/nova-star-barrage-when.html': 'guide/de/nova-star-barrage-when.jsp',
+  '/guides/nova-star-barrage-vs-alternatives.html': 'guide/nova-star-barrage-vs-alternatives.jsp',
+  '/guides/pt/nova-star-barrage-vs-alternatives.html': 'guide/pt/nova-star-barrage-vs-alternatives.jsp',
+  '/guides/es/nova-star-barrage-vs-alternatives.html': 'guide/es/nova-star-barrage-vs-alternatives.jsp',
+  '/guides/vi/nova-star-barrage-vs-alternatives.html': 'guide/vi/nova-star-barrage-vs-alternatives.jsp',
+  '/guides/id/nova-star-barrage-vs-alternatives.html': 'guide/id/nova-star-barrage-vs-alternatives.jsp',
+  '/guides/de/nova-star-barrage-vs-alternatives.html': 'guide/de/nova-star-barrage-vs-alternatives.jsp',
+  '/games/nova-star-barrage.html': 'games/nova-star-barrage.jsp',
 
   '/guides/de/gravity-orbit-golf-vs-alternatives.html': 'guide/de/gravity-orbit-golf-vs-alternatives.jsp',
   '/games/gravity-orbit-golf.html': 'games/gravity-orbit-golf.jsp',
