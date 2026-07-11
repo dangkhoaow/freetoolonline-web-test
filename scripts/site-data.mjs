@@ -5046,6 +5046,25 @@ export const JSP_BY_ROUTE = {
   '/guides/retro-tank-battle-when.html': 'guide/retro-tank-battle-when.jsp',
   '/guides/retro-tank-battle-step-by-step.html': 'guide/retro-tank-battle-step-by-step.jsp',
   '/guides/retro-tank-battle-vs-alternatives.html': 'guide/retro-tank-battle-vs-alternatives.jsp',
+
+  // new-tool-discovery-loop-runbook fire-49: retro-tank-battle-guides locale
+  // fanout (guide_locale_fanout unit_debt) - EN angles shipped earlier;
+  // this fire adds pt/es/de/vi/id for all 3 angles (when/step-by-step/vs-alternatives).
+  '/guides/pt/retro-tank-battle-when.html': 'guide/pt/retro-tank-battle-when.jsp',
+  '/guides/pt/retro-tank-battle-step-by-step.html': 'guide/pt/retro-tank-battle-step-by-step.jsp',
+  '/guides/pt/retro-tank-battle-vs-alternatives.html': 'guide/pt/retro-tank-battle-vs-alternatives.jsp',
+  '/guides/es/retro-tank-battle-when.html': 'guide/es/retro-tank-battle-when.jsp',
+  '/guides/es/retro-tank-battle-step-by-step.html': 'guide/es/retro-tank-battle-step-by-step.jsp',
+  '/guides/es/retro-tank-battle-vs-alternatives.html': 'guide/es/retro-tank-battle-vs-alternatives.jsp',
+  '/guides/de/retro-tank-battle-when.html': 'guide/de/retro-tank-battle-when.jsp',
+  '/guides/de/retro-tank-battle-step-by-step.html': 'guide/de/retro-tank-battle-step-by-step.jsp',
+  '/guides/de/retro-tank-battle-vs-alternatives.html': 'guide/de/retro-tank-battle-vs-alternatives.jsp',
+  '/guides/vi/retro-tank-battle-when.html': 'guide/vi/retro-tank-battle-when.jsp',
+  '/guides/vi/retro-tank-battle-step-by-step.html': 'guide/vi/retro-tank-battle-step-by-step.jsp',
+  '/guides/vi/retro-tank-battle-vs-alternatives.html': 'guide/vi/retro-tank-battle-vs-alternatives.jsp',
+  '/guides/id/retro-tank-battle-when.html': 'guide/id/retro-tank-battle-when.jsp',
+  '/guides/id/retro-tank-battle-step-by-step.html': 'guide/id/retro-tank-battle-step-by-step.jsp',
+  '/guides/id/retro-tank-battle-vs-alternatives.html': 'guide/id/retro-tank-battle-vs-alternatives.jsp',
   '/games/garden-defense.html': 'games/garden-defense.jsp',
   '/guides/garden-defense-when.html': 'guide/garden-defense-when.jsp',
   '/guides/garden-defense-step-by-step.html': 'guide/garden-defense-step-by-step.jsp',
