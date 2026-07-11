@@ -5580,6 +5580,27 @@ export const JSP_BY_ROUTE = {
   '/guides/character-counter-when.html': 'guide/character-counter-when.jsp',
   '/guides/character-counter-step-by-step.html': 'guide/character-counter-step-by-step.jsp',
   '/guides/character-counter-vs-alternatives.html': 'guide/character-counter-vs-alternatives.jsp',
+  // gpu-test-guides (new-tool-discovery-loop, guide_locale_fanout drain) - 3 angles
+  // (when/step-by-step/vs-alternatives) x EN + pt/es/de/vi/id for the already-shipped
+  // /device-test-tools/gpu-test.html benchmark tool.
+  '/guides/gpu-test-when.html': 'guide/gpu-test-when.jsp',
+  '/guides/gpu-test-step-by-step.html': 'guide/gpu-test-step-by-step.jsp',
+  '/guides/gpu-test-vs-alternatives.html': 'guide/gpu-test-vs-alternatives.jsp',
+  '/guides/pt/gpu-test-when.html': 'guide/pt/gpu-test-when.jsp',
+  '/guides/pt/gpu-test-step-by-step.html': 'guide/pt/gpu-test-step-by-step.jsp',
+  '/guides/pt/gpu-test-vs-alternatives.html': 'guide/pt/gpu-test-vs-alternatives.jsp',
+  '/guides/es/gpu-test-when.html': 'guide/es/gpu-test-when.jsp',
+  '/guides/es/gpu-test-step-by-step.html': 'guide/es/gpu-test-step-by-step.jsp',
+  '/guides/es/gpu-test-vs-alternatives.html': 'guide/es/gpu-test-vs-alternatives.jsp',
+  '/guides/de/gpu-test-when.html': 'guide/de/gpu-test-when.jsp',
+  '/guides/de/gpu-test-step-by-step.html': 'guide/de/gpu-test-step-by-step.jsp',
+  '/guides/de/gpu-test-vs-alternatives.html': 'guide/de/gpu-test-vs-alternatives.jsp',
+  '/guides/vi/gpu-test-when.html': 'guide/vi/gpu-test-when.jsp',
+  '/guides/vi/gpu-test-step-by-step.html': 'guide/vi/gpu-test-step-by-step.jsp',
+  '/guides/vi/gpu-test-vs-alternatives.html': 'guide/vi/gpu-test-vs-alternatives.jsp',
+  '/guides/id/gpu-test-when.html': 'guide/id/gpu-test-when.jsp',
+  '/guides/id/gpu-test-step-by-step.html': 'guide/id/gpu-test-step-by-step.jsp',
+  '/guides/id/gpu-test-vs-alternatives.html': 'guide/id/gpu-test-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
