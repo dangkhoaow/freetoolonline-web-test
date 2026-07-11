@@ -367,6 +367,7 @@ try {
     { title: "Pixel Spike Run", url: "https://freetoolonline.com/games/pixel-spike-run.html", include: !1, tags: "games" },
     { title: "Orbital Radius Shooter", url: "https://freetoolonline.com/games/orbital-radius-shooter.html", include: !1, tags: "games" },
     { title: "One Tap Platformer", url: "https://freetoolonline.com/games/one-tap-platformer.html", include: !1, tags: "games" },
+    { title: "Neon Circuit Racer", url: "https://freetoolonline.com/games/neon-circuit-racer.html", include: !1, tags: "games" },
     { title: "Gravity Orbit Golf", url: "https://freetoolonline.com/games/gravity-orbit-golf.html", include: !1, tags: "games" },
     { title: "Species Life Battle", url: "https://freetoolonline.com/games/species-life-battle.html", include: !1, tags: "games" },
     { title: "Earth 3D Globe - Live Day & Night Map", url: "https://freetoolonline.com/space-3d/earth-3d-globe.html", include: !1, tags: "space-3d" },

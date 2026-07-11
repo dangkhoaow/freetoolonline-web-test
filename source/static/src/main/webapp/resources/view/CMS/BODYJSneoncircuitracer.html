@@ -1,0 +1,27 @@
+<script>
+    web.localUpload = false;
+    var NCR_GAME_URL = 'neon-circuit-racer/index.html';
+    function ncrStatus(t){ var el=document.getElementById('ncrStatus'); if(el) el.textContent=t; }
+    function ncrInjectFrame(stage){
+        var frame=document.createElement('iframe');
+        frame.id='ncrFrame'; frame.src=NCR_GAME_URL; frame.title='Neon Circuit Racer';
+        frame.setAttribute('allow','fullscreen'); frame.setAttribute('allowfullscreen','');
+        frame.addEventListener('load',function(){ ncrStatus('Loaded. Click Start race inside the frame.'); });
+        var launch=document.getElementById('ncrLaunch');
+        if(launch&&launch.parentNode===stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+    }
+    function doAfterPageRendered(){
+        var stage=document.getElementById('ncrStage'), playBtn=document.getElementById('ncrPlayBtn');
+        if(!stage||!playBtn) return;
+        var fsBtn=document.getElementById('ncrFullscreenBtn');
+        playBtn.addEventListener('click',function(){
+            ncrStatus('Loading about ~43 KB...'); ncrInjectFrame(stage);
+            if(fsBtn) fsBtn.disabled=false;
+        });
+        if(fsBtn) fsBtn.addEventListener('click',function(){
+            if(stage.requestFullscreen) stage.requestFullscreen();
+            else if(stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+        });
+    }
+</script>
