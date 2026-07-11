@@ -2708,6 +2708,26 @@ export const GUIDE_ROUTES = new Set([
   '/guides/id/inferno-soul-walker-vs-alternatives.html',
   '/guides/de/inferno-soul-walker-vs-alternatives.html',
 
+  // fire88 sketch-turf-battle
+  '/guides/how-to-play-sketch-turf-battle.html',
+  '/guides/pt/how-to-play-sketch-turf-battle.html',
+  '/guides/es/how-to-play-sketch-turf-battle.html',
+  '/guides/vi/how-to-play-sketch-turf-battle.html',
+  '/guides/id/how-to-play-sketch-turf-battle.html',
+  '/guides/de/how-to-play-sketch-turf-battle.html',
+  '/guides/sketch-turf-battle-when.html',
+  '/guides/pt/sketch-turf-battle-when.html',
+  '/guides/es/sketch-turf-battle-when.html',
+  '/guides/vi/sketch-turf-battle-when.html',
+  '/guides/id/sketch-turf-battle-when.html',
+  '/guides/de/sketch-turf-battle-when.html',
+  '/guides/sketch-turf-battle-vs-alternatives.html',
+  '/guides/pt/sketch-turf-battle-vs-alternatives.html',
+  '/guides/es/sketch-turf-battle-vs-alternatives.html',
+  '/guides/vi/sketch-turf-battle-vs-alternatives.html',
+  '/guides/id/sketch-turf-battle-vs-alternatives.html',
+  '/guides/de/sketch-turf-battle-vs-alternatives.html',
+
   '/guides/de/gravity-orbit-golf-vs-alternatives.html',
 
   '/guides/de/species-life-battle-vs-alternatives.html',
@@ -3275,6 +3295,7 @@ export const ALIAS_ROUTES = {
   '/thirteen-card-duel.html': '/games/thirteen-card-duel.html',
   '/abyss-signal-diver.html': '/games/abyss-signal-diver.html',
   '/inferno-soul-walker.html': '/games/inferno-soul-walker.html',
+  '/sketch-turf-battle.html': '/games/sketch-turf-battle.html',
 
   '/gravity-orbit-golf.html': '/games/gravity-orbit-golf.html',
 
@@ -4943,6 +4964,27 @@ export const JSP_BY_ROUTE = {
   '/guides/id/inferno-soul-walker-vs-alternatives.html': 'guide/id/inferno-soul-walker-vs-alternatives.jsp',
   '/guides/de/inferno-soul-walker-vs-alternatives.html': 'guide/de/inferno-soul-walker-vs-alternatives.jsp',
   '/games/inferno-soul-walker.html': 'games/inferno-soul-walker.jsp',
+
+  // fire88 sketch-turf-battle guides
+  '/guides/how-to-play-sketch-turf-battle.html': 'guide/how-to-play-sketch-turf-battle.jsp',
+  '/guides/pt/how-to-play-sketch-turf-battle.html': 'guide/pt/how-to-play-sketch-turf-battle.jsp',
+  '/guides/es/how-to-play-sketch-turf-battle.html': 'guide/es/how-to-play-sketch-turf-battle.jsp',
+  '/guides/vi/how-to-play-sketch-turf-battle.html': 'guide/vi/how-to-play-sketch-turf-battle.jsp',
+  '/guides/id/how-to-play-sketch-turf-battle.html': 'guide/id/how-to-play-sketch-turf-battle.jsp',
+  '/guides/de/how-to-play-sketch-turf-battle.html': 'guide/de/how-to-play-sketch-turf-battle.jsp',
+  '/guides/sketch-turf-battle-when.html': 'guide/sketch-turf-battle-when.jsp',
+  '/guides/pt/sketch-turf-battle-when.html': 'guide/pt/sketch-turf-battle-when.jsp',
+  '/guides/es/sketch-turf-battle-when.html': 'guide/es/sketch-turf-battle-when.jsp',
+  '/guides/vi/sketch-turf-battle-when.html': 'guide/vi/sketch-turf-battle-when.jsp',
+  '/guides/id/sketch-turf-battle-when.html': 'guide/id/sketch-turf-battle-when.jsp',
+  '/guides/de/sketch-turf-battle-when.html': 'guide/de/sketch-turf-battle-when.jsp',
+  '/guides/sketch-turf-battle-vs-alternatives.html': 'guide/sketch-turf-battle-vs-alternatives.jsp',
+  '/guides/pt/sketch-turf-battle-vs-alternatives.html': 'guide/pt/sketch-turf-battle-vs-alternatives.jsp',
+  '/guides/es/sketch-turf-battle-vs-alternatives.html': 'guide/es/sketch-turf-battle-vs-alternatives.jsp',
+  '/guides/vi/sketch-turf-battle-vs-alternatives.html': 'guide/vi/sketch-turf-battle-vs-alternatives.jsp',
+  '/guides/id/sketch-turf-battle-vs-alternatives.html': 'guide/id/sketch-turf-battle-vs-alternatives.jsp',
+  '/guides/de/sketch-turf-battle-vs-alternatives.html': 'guide/de/sketch-turf-battle-vs-alternatives.jsp',
+  '/games/sketch-turf-battle.html': 'games/sketch-turf-battle.jsp',
 
   '/guides/de/gravity-orbit-golf-vs-alternatives.html': 'guide/de/gravity-orbit-golf-vs-alternatives.jsp',
   '/games/gravity-orbit-golf.html': 'games/gravity-orbit-golf.jsp',
