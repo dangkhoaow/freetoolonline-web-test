@@ -1,0 +1,27 @@
+<script>
+    web.localUpload = false;
+    var ASD_GAME_URL = 'abyss-signal-diver/index.html';
+    function asdStatus(t){ var el=document.getElementById('asdStatus'); if(el) el.textContent=t; }
+    function asdInjectFrame(stage){
+        var frame=document.createElement('iframe');
+        frame.id='asdFrame'; frame.src=ASD_GAME_URL; frame.title='Abyss Signal Diver';
+        frame.setAttribute('allow','fullscreen; autoplay'); frame.setAttribute('allowfullscreen','');
+        frame.addEventListener('load',function(){ asdStatus('Loaded. Click inside for audio; use WASD + E/Q to move.'); });
+        var launch=document.getElementById('asdLaunch');
+        if(launch&&launch.parentNode===stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+    }
+    function doAfterPageRendered(){
+        var stage=document.getElementById('asdStage'), playBtn=document.getElementById('asdPlayBtn');
+        if(!stage||!playBtn) return;
+        var fsBtn=document.getElementById('asdFullscreenBtn');
+        playBtn.addEventListener('click',function(){
+            asdStatus('Loading about ~28 KB...'); asdInjectFrame(stage);
+            if(fsBtn) fsBtn.disabled=false;
+        });
+        if(fsBtn) fsBtn.addEventListener('click',function(){
+            if(stage.requestFullscreen) stage.requestFullscreen();
+            else if(stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+        });
+    }
+</script>
