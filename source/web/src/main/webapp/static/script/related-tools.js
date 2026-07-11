@@ -372,6 +372,7 @@ try {
     { title: "Pixel Necromancer", url: "https://freetoolonline.com/games/pixel-necromancer.html", include: !1, tags: "games" },
     { title: "Thirteen Card Duel", url: "https://freetoolonline.com/games/thirteen-card-duel.html", include: !1, tags: "games" },
     { title: "Abyss Signal Diver", url: "https://freetoolonline.com/games/abyss-signal-diver.html", include: !1, tags: "games" },
+    { title: "Inferno Soul Walker", url: "https://freetoolonline.com/games/inferno-soul-walker.html", include: !1, tags: "games" },
     { title: "Gravity Orbit Golf", url: "https://freetoolonline.com/games/gravity-orbit-golf.html", include: !1, tags: "games" },
     { title: "Species Life Battle", url: "https://freetoolonline.com/games/species-life-battle.html", include: !1, tags: "games" },
     { title: "Earth 3D Globe - Live Day & Night Map", url: "https://freetoolonline.com/space-3d/earth-3d-globe.html", include: !1, tags: "space-3d" },
