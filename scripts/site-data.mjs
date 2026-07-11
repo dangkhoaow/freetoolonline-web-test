@@ -3270,6 +3270,7 @@ export const ALIAS_ROUTES = {
   '/image-to-webp.html': '/image-converter-tools/image-to-webp.html',
   '/png-to-jpg.html': '/image-converter-tools/png-to-jpg.html',
   '/expense-tracker.html': '/utility-tools/expense-tracker.html',
+  '/pomodoro-timer.html': '/utility-tools/pomodoro-timer.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -5257,6 +5258,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/expense-tracker-step-by-step.html': 'guide/de/expense-tracker-step-by-step.jsp',
   '/guides/de/expense-tracker-when.html': 'guide/de/expense-tracker-when.jsp',
   '/guides/de/expense-tracker-vs-alternatives.html': 'guide/de/expense-tracker-vs-alternatives.jsp',
+  '/utility-tools/pomodoro-timer.html': 'utility/pomodoro-timer.jsp',
+  '/guides/pomodoro-timer-when.html': 'guide/pomodoro-timer-when.jsp',
+  '/guides/pomodoro-timer-step-by-step.html': 'guide/pomodoro-timer-step-by-step.jsp',
+  '/guides/pomodoro-timer-vs-alternatives.html': 'guide/pomodoro-timer-vs-alternatives.jsp',
+  '/guides/pt/pomodoro-timer-when.html': 'guide/pt/pomodoro-timer-when.jsp',
+  '/guides/pt/pomodoro-timer-step-by-step.html': 'guide/pt/pomodoro-timer-step-by-step.jsp',
+  '/guides/pt/pomodoro-timer-vs-alternatives.html': 'guide/pt/pomodoro-timer-vs-alternatives.jsp',
+  '/guides/es/pomodoro-timer-when.html': 'guide/es/pomodoro-timer-when.jsp',
+  '/guides/es/pomodoro-timer-step-by-step.html': 'guide/es/pomodoro-timer-step-by-step.jsp',
+  '/guides/es/pomodoro-timer-vs-alternatives.html': 'guide/es/pomodoro-timer-vs-alternatives.jsp',
+  '/guides/de/pomodoro-timer-when.html': 'guide/de/pomodoro-timer-when.jsp',
+  '/guides/de/pomodoro-timer-step-by-step.html': 'guide/de/pomodoro-timer-step-by-step.jsp',
+  '/guides/de/pomodoro-timer-vs-alternatives.html': 'guide/de/pomodoro-timer-vs-alternatives.jsp',
+  '/guides/vi/pomodoro-timer-when.html': 'guide/vi/pomodoro-timer-when.jsp',
+  '/guides/vi/pomodoro-timer-step-by-step.html': 'guide/vi/pomodoro-timer-step-by-step.jsp',
+  '/guides/vi/pomodoro-timer-vs-alternatives.html': 'guide/vi/pomodoro-timer-vs-alternatives.jsp',
+  '/guides/id/pomodoro-timer-when.html': 'guide/id/pomodoro-timer-when.jsp',
+  '/guides/id/pomodoro-timer-step-by-step.html': 'guide/id/pomodoro-timer-step-by-step.jsp',
+  '/guides/id/pomodoro-timer-vs-alternatives.html': 'guide/id/pomodoro-timer-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
