@@ -12,6 +12,7 @@
 	<!-- BODYHTML -->
 	${pageBodyHTML}	
 
+	<freetoolonline:welcome welcomeTest='${pageBodyWelcome}'/>
 	<freetoolonline:share-btns></freetoolonline:share-btns>
 
 	<!-- BODYJS -->
