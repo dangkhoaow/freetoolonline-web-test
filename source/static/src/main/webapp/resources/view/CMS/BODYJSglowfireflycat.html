@@ -1,0 +1,27 @@
+<script>
+    web.localUpload = false;
+    var GFC_GAME_URL = 'glow-firefly-cat/index.html';
+    function gfcStatus(t){ var el=document.getElementById('gfcStatus'); if(el) el.textContent=t; }
+    function gfcInjectFrame(stage){
+        var frame=document.createElement('iframe');
+        frame.id='gfcFrame'; frame.src=GFC_GAME_URL; frame.title='Glow Firefly Cat';
+        frame.setAttribute('allow','fullscreen'); frame.setAttribute('allowfullscreen','');
+        frame.addEventListener('load',function(){ gfcStatus('Loaded. Click inside the frame to begin.'); });
+        var launch=document.getElementById('gfcLaunch');
+        if(launch&&launch.parentNode===stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+    }
+    function doAfterPageRendered(){
+        var stage=document.getElementById('gfcStage'), playBtn=document.getElementById('gfcPlayBtn');
+        if(!stage||!playBtn) return;
+        var fsBtn=document.getElementById('gfcFullscreenBtn');
+        playBtn.addEventListener('click',function(){
+            gfcStatus('Loading about ~28 KB...'); gfcInjectFrame(stage);
+            if(fsBtn) fsBtn.disabled=false;
+        });
+        if(fsBtn) fsBtn.addEventListener('click',function(){
+            if(stage.requestFullscreen) stage.requestFullscreen();
+            else if(stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+        });
+    }
+</script>

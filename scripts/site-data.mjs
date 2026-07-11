@@ -2747,6 +2747,26 @@ export const GUIDE_ROUTES = new Set([
   '/guides/id/sketch-turf-battle-vs-alternatives.html',
   '/guides/de/sketch-turf-battle-vs-alternatives.html',
 
+  // fire90 glow-firefly-cat
+  '/guides/how-to-play-glow-firefly-cat.html',
+  '/guides/pt/how-to-play-glow-firefly-cat.html',
+  '/guides/es/how-to-play-glow-firefly-cat.html',
+  '/guides/vi/how-to-play-glow-firefly-cat.html',
+  '/guides/id/how-to-play-glow-firefly-cat.html',
+  '/guides/de/how-to-play-glow-firefly-cat.html',
+  '/guides/glow-firefly-cat-when.html',
+  '/guides/pt/glow-firefly-cat-when.html',
+  '/guides/es/glow-firefly-cat-when.html',
+  '/guides/vi/glow-firefly-cat-when.html',
+  '/guides/id/glow-firefly-cat-when.html',
+  '/guides/de/glow-firefly-cat-when.html',
+  '/guides/glow-firefly-cat-vs-alternatives.html',
+  '/guides/pt/glow-firefly-cat-vs-alternatives.html',
+  '/guides/es/glow-firefly-cat-vs-alternatives.html',
+  '/guides/vi/glow-firefly-cat-vs-alternatives.html',
+  '/guides/id/glow-firefly-cat-vs-alternatives.html',
+  '/guides/de/glow-firefly-cat-vs-alternatives.html',
+
   '/guides/de/gravity-orbit-golf-vs-alternatives.html',
 
   '/guides/de/species-life-battle-vs-alternatives.html',
@@ -3334,6 +3354,7 @@ export const ALIAS_ROUTES = {
   '/abyss-signal-diver.html': '/games/abyss-signal-diver.html',
   '/inferno-soul-walker.html': '/games/inferno-soul-walker.html',
   '/sketch-turf-battle.html': '/games/sketch-turf-battle.html',
+  '/glow-firefly-cat.html': '/games/glow-firefly-cat.html',
 
   '/gravity-orbit-golf.html': '/games/gravity-orbit-golf.html',
 
@@ -3352,6 +3373,7 @@ export const ALIAS_ROUTES = {
   '/expense-tracker.html': '/utility-tools/expense-tracker.html',
   '/pomodoro-timer.html': '/utility-tools/pomodoro-timer.html',
   '/random-name-picker.html': '/utility-tools/random-name-picker.html',
+  '/character-counter.html': '/developer-tools/character-counter.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -5025,6 +5047,27 @@ export const JSP_BY_ROUTE = {
   '/guides/de/sketch-turf-battle-vs-alternatives.html': 'guide/de/sketch-turf-battle-vs-alternatives.jsp',
   '/games/sketch-turf-battle.html': 'games/sketch-turf-battle.jsp',
 
+  // fire90 glow-firefly-cat guides
+  '/guides/how-to-play-glow-firefly-cat.html': 'guide/how-to-play-glow-firefly-cat.jsp',
+  '/guides/pt/how-to-play-glow-firefly-cat.html': 'guide/pt/how-to-play-glow-firefly-cat.jsp',
+  '/guides/es/how-to-play-glow-firefly-cat.html': 'guide/es/how-to-play-glow-firefly-cat.jsp',
+  '/guides/vi/how-to-play-glow-firefly-cat.html': 'guide/vi/how-to-play-glow-firefly-cat.jsp',
+  '/guides/id/how-to-play-glow-firefly-cat.html': 'guide/id/how-to-play-glow-firefly-cat.jsp',
+  '/guides/de/how-to-play-glow-firefly-cat.html': 'guide/de/how-to-play-glow-firefly-cat.jsp',
+  '/guides/glow-firefly-cat-when.html': 'guide/glow-firefly-cat-when.jsp',
+  '/guides/pt/glow-firefly-cat-when.html': 'guide/pt/glow-firefly-cat-when.jsp',
+  '/guides/es/glow-firefly-cat-when.html': 'guide/es/glow-firefly-cat-when.jsp',
+  '/guides/vi/glow-firefly-cat-when.html': 'guide/vi/glow-firefly-cat-when.jsp',
+  '/guides/id/glow-firefly-cat-when.html': 'guide/id/glow-firefly-cat-when.jsp',
+  '/guides/de/glow-firefly-cat-when.html': 'guide/de/glow-firefly-cat-when.jsp',
+  '/guides/glow-firefly-cat-vs-alternatives.html': 'guide/glow-firefly-cat-vs-alternatives.jsp',
+  '/guides/pt/glow-firefly-cat-vs-alternatives.html': 'guide/pt/glow-firefly-cat-vs-alternatives.jsp',
+  '/guides/es/glow-firefly-cat-vs-alternatives.html': 'guide/es/glow-firefly-cat-vs-alternatives.jsp',
+  '/guides/vi/glow-firefly-cat-vs-alternatives.html': 'guide/vi/glow-firefly-cat-vs-alternatives.jsp',
+  '/guides/id/glow-firefly-cat-vs-alternatives.html': 'guide/id/glow-firefly-cat-vs-alternatives.jsp',
+  '/guides/de/glow-firefly-cat-vs-alternatives.html': 'guide/de/glow-firefly-cat-vs-alternatives.jsp',
+  '/games/glow-firefly-cat.html': 'games/glow-firefly-cat.jsp',
+
   '/guides/de/gravity-orbit-golf-vs-alternatives.html': 'guide/de/gravity-orbit-golf-vs-alternatives.jsp',
   '/games/gravity-orbit-golf.html': 'games/gravity-orbit-golf.jsp',
 
@@ -5516,6 +5559,10 @@ export const JSP_BY_ROUTE = {
   '/guides/id/hex-puzzle-blocks-when.html': 'guide/id/hex-puzzle-blocks-when.jsp',
   '/guides/id/hex-puzzle-blocks-step-by-step.html': 'guide/id/hex-puzzle-blocks-step-by-step.jsp',
   '/guides/id/hex-puzzle-blocks-vs-alternatives.html': 'guide/id/hex-puzzle-blocks-vs-alternatives.jsp',
+  '/developer-tools/character-counter.html': 'utility/character-counter.jsp',
+  '/guides/character-counter-when.html': 'guide/character-counter-when.jsp',
+  '/guides/character-counter-step-by-step.html': 'guide/character-counter-step-by-step.jsp',
+  '/guides/character-counter-vs-alternatives.html': 'guide/character-counter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
