@@ -16,20 +16,58 @@ const execFileAsync = promisify(execFile);
 const NOW_ISO = new Date().toISOString();
 const cache = new Map();
 
-async function gitMostRecentIso(repoRoot, pathspecs) {
-  const candidates = pathspecs.filter(Boolean);
-  if (candidates.length === 0) return null;
+// Perf note (2026-07-11): this used to shell out to `git log -1 -- <paths>`
+// once PER PAGE (1000+ routes x up to 6 locales = thousands of subprocess
+// spawns, each walking full history for its own narrow pathspec). At current
+// repo scale that made every export take 15-40+ minutes and repeatedly blew
+// through the pipeline's build-gate timeout ceilings (900s, then 2400s).
+// Fix: walk history ONCE per repoRoot with --name-only and build a
+// path -> most-recent-commit-ISO map; resolvePageMtime then does an in-memory
+// lookup instead of spawning git. git log is newest-first, so the first time
+// a path is seen while iterating is its most recent modifying commit.
+const mtimeIndexPromises = new Map();
+
+async function buildMtimeIndex(repoRoot) {
   try {
     const { stdout } = await execFileAsync(
       'git',
-      ['log', '-1', '--format=%cI', '--', ...candidates],
-      { cwd: repoRoot, maxBuffer: 4 * 1024 * 1024 },
+      ['log', '--format=%x01%cI', '--name-only', '--', 'source/'],
+      { cwd: repoRoot, maxBuffer: 512 * 1024 * 1024 },
     );
-    const iso = stdout.trim();
-    return iso || null;
+    const index = new Map();
+    let currentIso = null;
+    for (const line of stdout.split('\n')) {
+      if (line.startsWith('\x01')) {
+        currentIso = line.slice(1).trim();
+        continue;
+      }
+      const file = line.trim();
+      if (!file || !currentIso) continue;
+      if (!index.has(file)) index.set(file, currentIso);
+    }
+    return index;
   } catch {
-    return null;
+    return new Map();
   }
+}
+
+function getMtimeIndex(repoRoot) {
+  if (!mtimeIndexPromises.has(repoRoot)) {
+    mtimeIndexPromises.set(repoRoot, buildMtimeIndex(repoRoot));
+  }
+  return mtimeIndexPromises.get(repoRoot);
+}
+
+async function gitMostRecentIso(repoRoot, pathspecs) {
+  const candidates = pathspecs.filter(Boolean);
+  if (candidates.length === 0) return null;
+  const index = await getMtimeIndex(repoRoot);
+  let best = null;
+  for (const candidate of candidates) {
+    const iso = index.get(candidate);
+    if (iso && (!best || iso > best)) best = iso;
+  }
+  return best;
 }
 
 export async function resolvePageMtime({ repoRoot, cmsRoot, jspRoot, slug, jspRelativePath }) {
