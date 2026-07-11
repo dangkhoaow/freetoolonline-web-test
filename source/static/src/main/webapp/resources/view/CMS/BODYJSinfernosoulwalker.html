@@ -1,0 +1,27 @@
+<script>
+    web.localUpload = false;
+    var ISW_GAME_URL = 'inferno-soul-walker/index.html';
+    function iswStatus(t){ var el=document.getElementById('iswStatus'); if(el) el.textContent=t; }
+    function iswInjectFrame(stage){
+        var frame=document.createElement('iframe');
+        frame.id='iswFrame'; frame.src=ISW_GAME_URL; frame.title='Inferno Soul Walker';
+        frame.setAttribute('allow','fullscreen; autoplay'); frame.setAttribute('allowfullscreen','');
+        frame.addEventListener('load',function(){ iswStatus('Loaded. Click inside, then WASD + Space to play.'); });
+        var launch=document.getElementById('iswLaunch');
+        if(launch&&launch.parentNode===stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+    }
+    function doAfterPageRendered(){
+        var stage=document.getElementById('iswStage'), playBtn=document.getElementById('iswPlayBtn');
+        if(!stage||!playBtn) return;
+        var fsBtn=document.getElementById('iswFullscreenBtn');
+        playBtn.addEventListener('click',function(){
+            iswStatus('Loading about ~17 KB...'); iswInjectFrame(stage);
+            if(fsBtn) fsBtn.disabled=false;
+        });
+        if(fsBtn) fsBtn.addEventListener('click',function(){
+            if(stage.requestFullscreen) stage.requestFullscreen();
+            else if(stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+        });
+    }
+</script>
