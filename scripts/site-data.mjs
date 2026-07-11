@@ -3313,6 +3313,7 @@ export const ALIAS_ROUTES = {
   '/png-to-jpg.html': '/image-converter-tools/png-to-jpg.html',
   '/expense-tracker.html': '/utility-tools/expense-tracker.html',
   '/pomodoro-timer.html': '/utility-tools/pomodoro-timer.html',
+  '/random-name-picker.html': '/utility-tools/random-name-picker.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -5046,6 +5047,25 @@ export const JSP_BY_ROUTE = {
   '/guides/retro-tank-battle-when.html': 'guide/retro-tank-battle-when.jsp',
   '/guides/retro-tank-battle-step-by-step.html': 'guide/retro-tank-battle-step-by-step.jsp',
   '/guides/retro-tank-battle-vs-alternatives.html': 'guide/retro-tank-battle-vs-alternatives.jsp',
+
+  // new-tool-discovery-loop-runbook fire-49: retro-tank-battle-guides locale
+  // fanout (guide_locale_fanout unit_debt) - EN angles shipped earlier;
+  // this fire adds pt/es/de/vi/id for all 3 angles (when/step-by-step/vs-alternatives).
+  '/guides/pt/retro-tank-battle-when.html': 'guide/pt/retro-tank-battle-when.jsp',
+  '/guides/pt/retro-tank-battle-step-by-step.html': 'guide/pt/retro-tank-battle-step-by-step.jsp',
+  '/guides/pt/retro-tank-battle-vs-alternatives.html': 'guide/pt/retro-tank-battle-vs-alternatives.jsp',
+  '/guides/es/retro-tank-battle-when.html': 'guide/es/retro-tank-battle-when.jsp',
+  '/guides/es/retro-tank-battle-step-by-step.html': 'guide/es/retro-tank-battle-step-by-step.jsp',
+  '/guides/es/retro-tank-battle-vs-alternatives.html': 'guide/es/retro-tank-battle-vs-alternatives.jsp',
+  '/guides/de/retro-tank-battle-when.html': 'guide/de/retro-tank-battle-when.jsp',
+  '/guides/de/retro-tank-battle-step-by-step.html': 'guide/de/retro-tank-battle-step-by-step.jsp',
+  '/guides/de/retro-tank-battle-vs-alternatives.html': 'guide/de/retro-tank-battle-vs-alternatives.jsp',
+  '/guides/vi/retro-tank-battle-when.html': 'guide/vi/retro-tank-battle-when.jsp',
+  '/guides/vi/retro-tank-battle-step-by-step.html': 'guide/vi/retro-tank-battle-step-by-step.jsp',
+  '/guides/vi/retro-tank-battle-vs-alternatives.html': 'guide/vi/retro-tank-battle-vs-alternatives.jsp',
+  '/guides/id/retro-tank-battle-when.html': 'guide/id/retro-tank-battle-when.jsp',
+  '/guides/id/retro-tank-battle-step-by-step.html': 'guide/id/retro-tank-battle-step-by-step.jsp',
+  '/guides/id/retro-tank-battle-vs-alternatives.html': 'guide/id/retro-tank-battle-vs-alternatives.jsp',
   '/games/garden-defense.html': 'games/garden-defense.jsp',
   '/guides/garden-defense-when.html': 'guide/garden-defense-when.jsp',
   '/guides/garden-defense-step-by-step.html': 'guide/garden-defense-step-by-step.jsp',
@@ -5209,6 +5229,24 @@ export const JSP_BY_ROUTE = {
   '/guides/2048-game-merge-numbers-puzzle-when.html': 'guide/2048-game-merge-numbers-puzzle-when.jsp',
   '/guides/2048-game-merge-numbers-puzzle-step-by-step.html': 'guide/2048-game-merge-numbers-puzzle-step-by-step.jsp',
   '/guides/2048-game-merge-numbers-puzzle-vs-alternatives.html': 'guide/2048-game-merge-numbers-puzzle-vs-alternatives.jsp',
+  // newtool-discovery-loop fire48 - pt/es/vi/id/de locale fanout for the
+  // 2048-game-merge-numbers-puzzle guide (3 angles), completing the
+  // guide_locale_fanout debt left when the EN canonical shipped fire-31/06.
+  '/guides/pt/2048-game-merge-numbers-puzzle-when.html': 'guide/pt/2048-game-merge-numbers-puzzle-when.jsp',
+  '/guides/pt/2048-game-merge-numbers-puzzle-step-by-step.html': 'guide/pt/2048-game-merge-numbers-puzzle-step-by-step.jsp',
+  '/guides/pt/2048-game-merge-numbers-puzzle-vs-alternatives.html': 'guide/pt/2048-game-merge-numbers-puzzle-vs-alternatives.jsp',
+  '/guides/es/2048-game-merge-numbers-puzzle-when.html': 'guide/es/2048-game-merge-numbers-puzzle-when.jsp',
+  '/guides/es/2048-game-merge-numbers-puzzle-step-by-step.html': 'guide/es/2048-game-merge-numbers-puzzle-step-by-step.jsp',
+  '/guides/es/2048-game-merge-numbers-puzzle-vs-alternatives.html': 'guide/es/2048-game-merge-numbers-puzzle-vs-alternatives.jsp',
+  '/guides/vi/2048-game-merge-numbers-puzzle-when.html': 'guide/vi/2048-game-merge-numbers-puzzle-when.jsp',
+  '/guides/vi/2048-game-merge-numbers-puzzle-step-by-step.html': 'guide/vi/2048-game-merge-numbers-puzzle-step-by-step.jsp',
+  '/guides/vi/2048-game-merge-numbers-puzzle-vs-alternatives.html': 'guide/vi/2048-game-merge-numbers-puzzle-vs-alternatives.jsp',
+  '/guides/id/2048-game-merge-numbers-puzzle-when.html': 'guide/id/2048-game-merge-numbers-puzzle-when.jsp',
+  '/guides/id/2048-game-merge-numbers-puzzle-step-by-step.html': 'guide/id/2048-game-merge-numbers-puzzle-step-by-step.jsp',
+  '/guides/id/2048-game-merge-numbers-puzzle-vs-alternatives.html': 'guide/id/2048-game-merge-numbers-puzzle-vs-alternatives.jsp',
+  '/guides/de/2048-game-merge-numbers-puzzle-when.html': 'guide/de/2048-game-merge-numbers-puzzle-when.jsp',
+  '/guides/de/2048-game-merge-numbers-puzzle-step-by-step.html': 'guide/de/2048-game-merge-numbers-puzzle-step-by-step.jsp',
+  '/guides/de/2048-game-merge-numbers-puzzle-vs-alternatives.html': 'guide/de/2048-game-merge-numbers-puzzle-vs-alternatives.jsp',
   '/games/city-drive-3d.html': 'games/city-drive-3d.jsp',
   '/games/retro-highway-racer.html': 'games/retro-highway-racer.jsp',
   '/games/hover-racing.html': 'games/hover-racing.jsp',
@@ -5360,6 +5398,52 @@ export const JSP_BY_ROUTE = {
   '/guides/id/pomodoro-timer-when.html': 'guide/id/pomodoro-timer-when.jsp',
   '/guides/id/pomodoro-timer-step-by-step.html': 'guide/id/pomodoro-timer-step-by-step.jsp',
   '/guides/id/pomodoro-timer-vs-alternatives.html': 'guide/id/pomodoro-timer-vs-alternatives.jsp',
+
+  // fire-48 new-tool-discovery-loop-runbook: snake-classic-guides locale
+  // fanout (guide_locale_fanout unit_debt) - EN angles shipped fire-23; this
+  // fire adds pt/es/vi/id/de for all 3 angles (when/step-by-step/vs-alternatives).
+  '/guides/pt/snake-classic-when.html': 'guide/pt/snake-classic-when.jsp',
+  '/guides/pt/snake-classic-step-by-step.html': 'guide/pt/snake-classic-step-by-step.jsp',
+  '/guides/pt/snake-classic-vs-alternatives.html': 'guide/pt/snake-classic-vs-alternatives.jsp',
+  '/guides/es/snake-classic-when.html': 'guide/es/snake-classic-when.jsp',
+  '/guides/es/snake-classic-step-by-step.html': 'guide/es/snake-classic-step-by-step.jsp',
+  '/guides/es/snake-classic-vs-alternatives.html': 'guide/es/snake-classic-vs-alternatives.jsp',
+  '/guides/de/snake-classic-when.html': 'guide/de/snake-classic-when.jsp',
+  '/guides/de/snake-classic-step-by-step.html': 'guide/de/snake-classic-step-by-step.jsp',
+  '/guides/de/snake-classic-vs-alternatives.html': 'guide/de/snake-classic-vs-alternatives.jsp',
+  '/guides/vi/snake-classic-when.html': 'guide/vi/snake-classic-when.jsp',
+  '/guides/vi/snake-classic-step-by-step.html': 'guide/vi/snake-classic-step-by-step.jsp',
+  '/guides/vi/snake-classic-vs-alternatives.html': 'guide/vi/snake-classic-vs-alternatives.jsp',
+  '/guides/id/snake-classic-when.html': 'guide/id/snake-classic-when.jsp',
+  '/guides/id/snake-classic-step-by-step.html': 'guide/id/snake-classic-step-by-step.jsp',
+  '/guides/id/snake-classic-vs-alternatives.html': 'guide/id/snake-classic-vs-alternatives.jsp',
+  '/utility-tools/random-name-picker.html': 'utility/random-name-picker.jsp',
+  '/guides/random-name-picker-when.html': 'guide/random-name-picker-when.jsp',
+  '/guides/random-name-picker-step-by-step.html': 'guide/random-name-picker-step-by-step.jsp',
+  '/guides/random-name-picker-vs-alternatives.html': 'guide/random-name-picker-vs-alternatives.jsp',
+
+  // fire-50 new-tool-discovery-loop-runbook (guide_locale_fanout unit_debt):
+  // hex-puzzle-blocks-guides - EN + pt/es/de/vi/id for all 3 angles
+  // (when/step-by-step/vs-alternatives). The game itself (hex-puzzle-blocks)
+  // shipped fire-37 with zero companion guides; this fire authors all 18.
+  '/guides/hex-puzzle-blocks-when.html': 'guide/hex-puzzle-blocks-when.jsp',
+  '/guides/hex-puzzle-blocks-step-by-step.html': 'guide/hex-puzzle-blocks-step-by-step.jsp',
+  '/guides/hex-puzzle-blocks-vs-alternatives.html': 'guide/hex-puzzle-blocks-vs-alternatives.jsp',
+  '/guides/pt/hex-puzzle-blocks-when.html': 'guide/pt/hex-puzzle-blocks-when.jsp',
+  '/guides/pt/hex-puzzle-blocks-step-by-step.html': 'guide/pt/hex-puzzle-blocks-step-by-step.jsp',
+  '/guides/pt/hex-puzzle-blocks-vs-alternatives.html': 'guide/pt/hex-puzzle-blocks-vs-alternatives.jsp',
+  '/guides/es/hex-puzzle-blocks-when.html': 'guide/es/hex-puzzle-blocks-when.jsp',
+  '/guides/es/hex-puzzle-blocks-step-by-step.html': 'guide/es/hex-puzzle-blocks-step-by-step.jsp',
+  '/guides/es/hex-puzzle-blocks-vs-alternatives.html': 'guide/es/hex-puzzle-blocks-vs-alternatives.jsp',
+  '/guides/de/hex-puzzle-blocks-when.html': 'guide/de/hex-puzzle-blocks-when.jsp',
+  '/guides/de/hex-puzzle-blocks-step-by-step.html': 'guide/de/hex-puzzle-blocks-step-by-step.jsp',
+  '/guides/de/hex-puzzle-blocks-vs-alternatives.html': 'guide/de/hex-puzzle-blocks-vs-alternatives.jsp',
+  '/guides/vi/hex-puzzle-blocks-when.html': 'guide/vi/hex-puzzle-blocks-when.jsp',
+  '/guides/vi/hex-puzzle-blocks-step-by-step.html': 'guide/vi/hex-puzzle-blocks-step-by-step.jsp',
+  '/guides/vi/hex-puzzle-blocks-vs-alternatives.html': 'guide/vi/hex-puzzle-blocks-vs-alternatives.jsp',
+  '/guides/id/hex-puzzle-blocks-when.html': 'guide/id/hex-puzzle-blocks-when.jsp',
+  '/guides/id/hex-puzzle-blocks-step-by-step.html': 'guide/id/hex-puzzle-blocks-step-by-step.jsp',
+  '/guides/id/hex-puzzle-blocks-vs-alternatives.html': 'guide/id/hex-puzzle-blocks-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
