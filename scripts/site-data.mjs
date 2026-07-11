@@ -1231,6 +1231,25 @@ export const INFO_ROUTES = new Set([
   '/guides/id/merge-pdf-online-free-unlimited.html',
   // cycle 20260630-6 - merge-pdf-online-free-unlimited DE locale variant (EN-first locale drain; locale-complete after this)
   '/guides/de/merge-pdf-online-free-unlimited.html',
+  // new-tool-discovery-loop-runbook fire - random-name-picker-guides locale fanout (EN shipped fire50; this fire adds pt/es/vi/id/de + backfills the missing EN registration).
+  '/guides/random-name-picker-when.html',
+  '/guides/random-name-picker-step-by-step.html',
+  '/guides/random-name-picker-vs-alternatives.html',
+  '/guides/pt/random-name-picker-when.html',
+  '/guides/pt/random-name-picker-step-by-step.html',
+  '/guides/pt/random-name-picker-vs-alternatives.html',
+  '/guides/es/random-name-picker-when.html',
+  '/guides/es/random-name-picker-step-by-step.html',
+  '/guides/es/random-name-picker-vs-alternatives.html',
+  '/guides/vi/random-name-picker-when.html',
+  '/guides/vi/random-name-picker-step-by-step.html',
+  '/guides/vi/random-name-picker-vs-alternatives.html',
+  '/guides/id/random-name-picker-when.html',
+  '/guides/id/random-name-picker-step-by-step.html',
+  '/guides/id/random-name-picker-vs-alternatives.html',
+  '/guides/de/random-name-picker-when.html',
+  '/guides/de/random-name-picker-step-by-step.html',
+  '/guides/de/random-name-picker-vs-alternatives.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -2775,6 +2794,25 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/expense-tracker-step-by-step.html',
   '/guides/de/expense-tracker-when.html',
   '/guides/de/expense-tracker-vs-alternatives.html',
+  // new-tool-discovery-loop-runbook fire - random-name-picker-guides locale fanout (EN shipped fire50; this fire adds pt/es/vi/id/de + backfills the missing EN registration).
+  '/guides/random-name-picker-when.html',
+  '/guides/random-name-picker-step-by-step.html',
+  '/guides/random-name-picker-vs-alternatives.html',
+  '/guides/pt/random-name-picker-when.html',
+  '/guides/pt/random-name-picker-step-by-step.html',
+  '/guides/pt/random-name-picker-vs-alternatives.html',
+  '/guides/es/random-name-picker-when.html',
+  '/guides/es/random-name-picker-step-by-step.html',
+  '/guides/es/random-name-picker-vs-alternatives.html',
+  '/guides/vi/random-name-picker-when.html',
+  '/guides/vi/random-name-picker-step-by-step.html',
+  '/guides/vi/random-name-picker-vs-alternatives.html',
+  '/guides/id/random-name-picker-when.html',
+  '/guides/id/random-name-picker-step-by-step.html',
+  '/guides/id/random-name-picker-vs-alternatives.html',
+  '/guides/de/random-name-picker-when.html',
+  '/guides/de/random-name-picker-step-by-step.html',
+  '/guides/de/random-name-picker-vs-alternatives.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -5070,6 +5108,25 @@ export const JSP_BY_ROUTE = {
   '/guides/garden-defense-when.html': 'guide/garden-defense-when.jsp',
   '/guides/garden-defense-step-by-step.html': 'guide/garden-defense-step-by-step.jsp',
   '/guides/garden-defense-vs-alternatives.html': 'guide/garden-defense-vs-alternatives.jsp',
+
+  // new-tool-discovery-loop-runbook fire-52: garden-defense-guides locale
+  // fanout (guide_locale_fanout unit_debt) - EN angles authored this fire;
+  // pt/es/de/vi/id added for all 3 angles (when/step-by-step/vs-alternatives).
+  '/guides/pt/garden-defense-when.html': 'guide/pt/garden-defense-when.jsp',
+  '/guides/pt/garden-defense-step-by-step.html': 'guide/pt/garden-defense-step-by-step.jsp',
+  '/guides/pt/garden-defense-vs-alternatives.html': 'guide/pt/garden-defense-vs-alternatives.jsp',
+  '/guides/es/garden-defense-when.html': 'guide/es/garden-defense-when.jsp',
+  '/guides/es/garden-defense-step-by-step.html': 'guide/es/garden-defense-step-by-step.jsp',
+  '/guides/es/garden-defense-vs-alternatives.html': 'guide/es/garden-defense-vs-alternatives.jsp',
+  '/guides/de/garden-defense-when.html': 'guide/de/garden-defense-when.jsp',
+  '/guides/de/garden-defense-step-by-step.html': 'guide/de/garden-defense-step-by-step.jsp',
+  '/guides/de/garden-defense-vs-alternatives.html': 'guide/de/garden-defense-vs-alternatives.jsp',
+  '/guides/vi/garden-defense-when.html': 'guide/vi/garden-defense-when.jsp',
+  '/guides/vi/garden-defense-step-by-step.html': 'guide/vi/garden-defense-step-by-step.jsp',
+  '/guides/vi/garden-defense-vs-alternatives.html': 'guide/vi/garden-defense-vs-alternatives.jsp',
+  '/guides/id/garden-defense-when.html': 'guide/id/garden-defense-when.jsp',
+  '/guides/id/garden-defense-step-by-step.html': 'guide/id/garden-defense-step-by-step.jsp',
+  '/guides/id/garden-defense-vs-alternatives.html': 'guide/id/garden-defense-vs-alternatives.jsp',
   '/games/voxel-world-builder.html': 'games/voxel-world-builder.jsp',
   '/guides/voxel-world-builder-when.html': 'guide/voxel-world-builder-when.jsp',
   '/guides/voxel-world-builder-step-by-step.html': 'guide/voxel-world-builder-step-by-step.jsp',
@@ -5421,6 +5478,21 @@ export const JSP_BY_ROUTE = {
   '/guides/random-name-picker-when.html': 'guide/random-name-picker-when.jsp',
   '/guides/random-name-picker-step-by-step.html': 'guide/random-name-picker-step-by-step.jsp',
   '/guides/random-name-picker-vs-alternatives.html': 'guide/random-name-picker-vs-alternatives.jsp',
+  '/guides/pt/random-name-picker-when.html': 'guide/pt/random-name-picker-when.jsp',
+  '/guides/pt/random-name-picker-step-by-step.html': 'guide/pt/random-name-picker-step-by-step.jsp',
+  '/guides/pt/random-name-picker-vs-alternatives.html': 'guide/pt/random-name-picker-vs-alternatives.jsp',
+  '/guides/es/random-name-picker-when.html': 'guide/es/random-name-picker-when.jsp',
+  '/guides/es/random-name-picker-step-by-step.html': 'guide/es/random-name-picker-step-by-step.jsp',
+  '/guides/es/random-name-picker-vs-alternatives.html': 'guide/es/random-name-picker-vs-alternatives.jsp',
+  '/guides/vi/random-name-picker-when.html': 'guide/vi/random-name-picker-when.jsp',
+  '/guides/vi/random-name-picker-step-by-step.html': 'guide/vi/random-name-picker-step-by-step.jsp',
+  '/guides/vi/random-name-picker-vs-alternatives.html': 'guide/vi/random-name-picker-vs-alternatives.jsp',
+  '/guides/id/random-name-picker-when.html': 'guide/id/random-name-picker-when.jsp',
+  '/guides/id/random-name-picker-step-by-step.html': 'guide/id/random-name-picker-step-by-step.jsp',
+  '/guides/id/random-name-picker-vs-alternatives.html': 'guide/id/random-name-picker-vs-alternatives.jsp',
+  '/guides/de/random-name-picker-when.html': 'guide/de/random-name-picker-when.jsp',
+  '/guides/de/random-name-picker-step-by-step.html': 'guide/de/random-name-picker-step-by-step.jsp',
+  '/guides/de/random-name-picker-vs-alternatives.html': 'guide/de/random-name-picker-vs-alternatives.jsp',
 
   // fire-50 new-tool-discovery-loop-runbook (guide_locale_fanout unit_debt):
   // hex-puzzle-blocks-guides - EN + pt/es/de/vi/id for all 3 angles
