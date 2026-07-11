@@ -379,6 +379,7 @@ try {
     { title: "JPEG XL Returns to Chrome and Firefox - What Changes for You", url: "https://freetoolonline.com/news/jpeg-xl-returns-chrome-firefox.html", include: !1, tags: "news,image-conversion,jpg,heic,webp" },
     { title: "WebP to JPG Converter", url: "https://freetoolonline.com/image-converter-tools/webp-to-jpg.html", include: !1, tags: "image-conversion" },
     { title: "Image to WebP Converter", url: "https://freetoolonline.com/image-converter-tools/image-to-webp.html", include: !1, tags: "image-conversion" },
+    { title: "PNG to JPG Converter", url: "https://freetoolonline.com/image-converter-tools/png-to-jpg.html", include: !1, tags: "image-conversion" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

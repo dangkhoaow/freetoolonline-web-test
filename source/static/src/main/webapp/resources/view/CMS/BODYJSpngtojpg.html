@@ -1,0 +1,71 @@
+<script>
+    // In-browser image format converter archetype (png-to-jpg) - Canvas toBlob, no
+    // lib, no upload, no backend. Registry Gate-H entry: image_format_converter_canvas.
+    // 100% client-side: the image never leaves the browser (2026 "no-upload image
+    // converter" trend). Slug-dispatched target format: `png-to-webp` -> webp,
+    // `jpg-to-png` -> png, `image-to-webp` -> webp; else a format selector.
+    // Formats: PNG / JPEG / WebP (canvas-native). AVIF encode is browser-dependent
+    // (Chromium); documented as best-effort. Framework contract: doAfterPageRendered();
+    // no top-level DOM. Plain <input type=file>, no server upload widget.
+
+    web.localUpload = false;
+
+    var IC_SLUG = 'png-to-jpg';
+    var IC_MIME = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', avif: 'image/avif' };
+
+    function icTargetFromSlug(slug) {
+        var s = String(slug || '').toLowerCase();
+        var m = s.match(/-to-([a-z0-9]+)/);
+        if (m && IC_MIME[m[1]]) return m[1] === 'jpeg' ? 'jpg' : m[1];
+        for (var k in IC_MIME) { if (new RegExp('\\b' + k + '\\b').test(s)) return k === 'jpeg' ? 'jpg' : k; }
+        return '';
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('imageConverterTool');
+        if (!root) return; // not an image-converter page
+        var fixed = icTargetFromSlug(IC_SLUG);
+        var fmtOptions = ['png', 'jpg', 'webp', 'avif'].map(function (f) { return '<option value="' + f + '"' + (f === fixed ? ' selected' : '') + '>' + f.toUpperCase() + '</option>'; }).join('');
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;"><input type="file" id="icFile" accept="image/*" class="w3-input w3-border" style="max-width:420px;margin:0 auto;"></div>' +
+            '<div class="w3-row" style="margin-bottom:8px;">Convert to ' +
+            '<select id="icFmt" class="w3-select w3-border" style="width:auto;display:inline-block;"' + (fixed ? ' disabled' : '') + '>' + fmtOptions + '</select>' +
+            ' <span id="icQ" style="' + (fixed === 'jpg' || fixed === 'webp' || !fixed ? '' : 'display:none;') + '">Quality <input id="icQual" type="range" min="0.3" max="1" step="0.05" value="0.9" style="vertical-align:middle;"></span></div>' +
+            '<div style="margin-bottom:8px;"><button id="icRun" type="button" class="w3-button w3-green" disabled>Convert</button> ' +
+            '<a id="icDl" class="w3-button w3-blue" style="display:none;">Download</a></div>' +
+            '<div class="w3-row outputImgs" style="visibility:visible !important;"><canvas id="icCanvas" style="max-width:90vw;border:1px solid #ddd;"></canvas></div>' +
+            '<div id="icStatus" style="min-height:1.2em;margin-top:6px;color:#555;">Choose an image. It is converted locally - nothing is uploaded.</div>';
+        var fileEl = root.querySelector('#icFile'), fmtEl = root.querySelector('#icFmt'), qualEl = root.querySelector('#icQual');
+        var runBtn = root.querySelector('#icRun'), dl = root.querySelector('#icDl'), canvas = root.querySelector('#icCanvas'), ctx = canvas.getContext('2d');
+        var statusEl = root.querySelector('#icStatus'), qWrap = root.querySelector('#icQ');
+        var loaded = null, url = null;
+        function setStatus(m) { statusEl.textContent = m; }
+        function fmt() { return fixed || fmtEl.value; }
+        function syncQ() { var f = fmt(); if (qWrap) qWrap.style.display = (f === 'jpg' || f === 'webp' || f === 'avif') ? '' : 'none'; }
+        fileEl.addEventListener('change', function () {
+            if (dl) dl.style.display = 'none';
+            var f = fileEl.files && fileEl.files[0]; if (!f) return;
+            if (url) URL.revokeObjectURL(url); url = URL.createObjectURL(f);
+            var img = new Image();
+            img.onload = function () { loaded = img; canvas.width = img.naturalWidth; canvas.height = img.naturalHeight; ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0); runBtn.disabled = false; setStatus('Preview ready. Click Convert.'); };
+            img.onerror = function () { setStatus('Could not read that image.'); };
+            img.src = url;
+        });
+        if (fmtEl) fmtEl.addEventListener('change', syncQ);
+        runBtn.addEventListener('click', function () {
+            if (!loaded) { setStatus('Choose an image first.'); return; }
+            var f = fmt(), mime = IC_MIME[f] || 'image/png';
+            // JPEG has no alpha - paint white behind transparent pixels.
+            if (f === 'jpg') { var t = ctx.getImageData(0, 0, canvas.width, canvas.height); ctx.save(); ctx.globalCompositeOperation = 'destination-over'; ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.restore(); void t; }
+            var q = (qualEl && (f === 'jpg' || f === 'webp' || f === 'avif')) ? parseFloat(qualEl.value) : undefined;
+            canvas.toBlob(function (blob) {
+                if (!blob) { setStatus('This browser cannot encode ' + f.toUpperCase() + ' on canvas. Try PNG/JPEG/WebP.'); return; }
+                var u = URL.createObjectURL(blob);
+                var base = ((fileEl.files[0] && fileEl.files[0].name) || 'image').replace(/\.[^.]+$/, '');
+                dl.href = u; dl.download = base + '.' + f; dl.style.display = ''; dl.textContent = 'Download .' + f;
+                setStatus('Converted to ' + f.toUpperCase() + ' locally - no upload. ' + Math.round(blob.size / 1024) + ' KB.');
+            }, mime, q);
+        });
+        syncQ();
+    }
+</script>
