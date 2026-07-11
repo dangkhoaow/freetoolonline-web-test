@@ -1,0 +1,27 @@
+<script>
+    web.localUpload = false;
+    var NCC_GAME_URL = 'neon-cat-chase/index.html';
+    function nccStatus(t){ var el=document.getElementById('nccStatus'); if(el) el.textContent=t; }
+    function nccInjectFrame(stage){
+        var frame=document.createElement('iframe');
+        frame.id='nccFrame'; frame.src=NCC_GAME_URL; frame.title='Neon Cat Chase';
+        frame.setAttribute('allow','fullscreen'); frame.setAttribute('allowfullscreen','');
+        frame.addEventListener('load',function(){ nccStatus('Loaded. Press Space on the title screen inside the frame.'); });
+        var launch=document.getElementById('nccLaunch');
+        if(launch&&launch.parentNode===stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+    }
+    function doAfterPageRendered(){
+        var stage=document.getElementById('nccStage'), playBtn=document.getElementById('nccPlayBtn');
+        if(!stage||!playBtn) return;
+        var fsBtn=document.getElementById('nccFullscreenBtn');
+        playBtn.addEventListener('click',function(){
+            nccStatus('Loading about ~8 KB...'); nccInjectFrame(stage);
+            if(fsBtn) fsBtn.disabled=false;
+        });
+        if(fsBtn) fsBtn.addEventListener('click',function(){
+            if(stage.requestFullscreen) stage.requestFullscreen();
+            else if(stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+        });
+    }
+</script>

@@ -377,6 +377,7 @@ try {
     { title: "Glow Firefly Cat", url: "https://freetoolonline.com/games/glow-firefly-cat.html", include: !1, tags: "games" },
     { title: "Nova Star Barrage", url: "https://freetoolonline.com/games/nova-star-barrage.html", include: !1, tags: "games" },
     { title: "Pixel Realm RPG", url: "https://freetoolonline.com/games/pixel-realm-rpg.html", include: !1, tags: "games" },
+    { title: "Neon Cat Chase", url: "https://freetoolonline.com/games/neon-cat-chase.html", include: !1, tags: "games" },
     { title: "Gravity Orbit Golf", url: "https://freetoolonline.com/games/gravity-orbit-golf.html", include: !1, tags: "games" },
     { title: "Species Life Battle", url: "https://freetoolonline.com/games/species-life-battle.html", include: !1, tags: "games" },
     { title: "Earth 3D Globe - Live Day & Night Map", url: "https://freetoolonline.com/space-3d/earth-3d-globe.html", include: !1, tags: "space-3d" },
