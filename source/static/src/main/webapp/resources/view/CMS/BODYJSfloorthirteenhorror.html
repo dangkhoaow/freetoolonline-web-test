@@ -1,0 +1,27 @@
+<script>
+    web.localUpload = false;
+    var FTH_GAME_URL = 'floor-thirteen-horror/index.html';
+    function fthStatus(t){ var el=document.getElementById('fthStatus'); if(el) el.textContent=t; }
+    function fthInjectFrame(stage){
+        var frame=document.createElement('iframe');
+        frame.id='fthFrame'; frame.src=FTH_GAME_URL; frame.title='Floor Thirteen Horror';
+        frame.setAttribute('allow','fullscreen; pointer-lock'); frame.setAttribute('allowfullscreen','');
+        frame.addEventListener('load',function(){ fthStatus('Loaded. Click inside the frame, then use WASD and mouse to explore.'); });
+        var launch=document.getElementById('fthLaunch');
+        if(launch&&launch.parentNode===stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+    }
+    function doAfterPageRendered(){
+        var stage=document.getElementById('fthStage'), playBtn=document.getElementById('fthPlayBtn');
+        if(!stage||!playBtn) return;
+        var fsBtn=document.getElementById('fthFullscreenBtn');
+        playBtn.addEventListener('click',function(){
+            fthStatus('Loading about ~17 KB...'); fthInjectFrame(stage);
+            if(fsBtn) fsBtn.disabled=false;
+        });
+        if(fsBtn) fsBtn.addEventListener('click',function(){
+            if(stage.requestFullscreen) stage.requestFullscreen();
+            else if(stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+        });
+    }
+</script>
