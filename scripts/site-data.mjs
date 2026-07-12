@@ -1327,6 +1327,14 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // new-tool-discovery-loop-runbook fire-66 (2026-07-12): GUIDE_ROUTES backfill for
+  // image-format-converter's 3 EN companion guide angles (builder wires JSP_BY_ROUTE
+  // only - same gap class documented in fires 32/56/57/62). Locale fanout (pt/es/vi/id/de)
+  // deferred to the guide-support-drain backlog (guide_locale_fanout unit
+  // image-format-converter-guides), per the fire21 EN-first precedent.
+  '/guides/image-format-converter-step-by-step.html',
+  '/guides/image-format-converter-when.html',
+  '/guides/image-format-converter-vs-alternatives.html',
   // cycle 20260625-6 create_new_guide_page (locale completion) - pt variant of video-converter-online-free (staging-only until es/vi/id/de complete).
   '/guides/pt/video-converter-online-free.html',
   // cycle 20260626 create_new_guide_page (locale completion) - es variant of video-converter-online-free (staging-only until vi/id/de complete).
@@ -3577,6 +3585,7 @@ export const ALIAS_ROUTES = {
   '/random-name-picker.html': '/utility-tools/random-name-picker.html',
   '/character-counter.html': '/developer-tools/character-counter.html',
   '/find-and-replace-text.html': '/developer-tools/find-and-replace-text.html',
+  '/image-format-converter.html': '/image-converter-tools/image-format-converter.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -5969,6 +5978,10 @@ export const JSP_BY_ROUTE = {
   '/guides/de/find-replace-text-when.html': 'guide/de/find-replace-text-when.jsp',
   '/guides/de/find-replace-text-step-by-step.html': 'guide/de/find-replace-text-step-by-step.jsp',
   '/guides/de/find-replace-text-vs-alternatives.html': 'guide/de/find-replace-text-vs-alternatives.jsp',
+  '/image-converter-tools/image-format-converter.html': 'convert/image-format-converter.jsp',
+  '/guides/image-format-converter-when.html': 'guide/image-format-converter-when.jsp',
+  '/guides/image-format-converter-step-by-step.html': 'guide/image-format-converter-step-by-step.jsp',
+  '/guides/image-format-converter-vs-alternatives.html': 'guide/image-format-converter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

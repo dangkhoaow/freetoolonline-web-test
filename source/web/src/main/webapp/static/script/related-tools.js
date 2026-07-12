@@ -396,6 +396,7 @@ try {
     { title: "Random Name Picker", url: "https://freetoolonline.com/utility-tools/random-name-picker.html", include: !1, tags: "utility" },
     { title: "Character Counter", url: "https://freetoolonline.com/developer-tools/character-counter.html", include: !1, tags: "developer" },
     { title: "Find and Replace Text", url: "https://freetoolonline.com/developer-tools/find-and-replace-text.html", include: !1, tags: "developer" },
+    { title: "Image Format Converter", url: "https://freetoolonline.com/image-converter-tools/image-format-converter.html", include: !1, tags: "image-conversion" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
