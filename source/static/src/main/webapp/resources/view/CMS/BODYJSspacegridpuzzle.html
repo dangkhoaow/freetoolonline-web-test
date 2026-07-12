@@ -1,0 +1,27 @@
+<script>
+    web.localUpload = false;
+    var SGP_GAME_URL = 'space-grid-puzzle/index.html';
+    function sgpStatus(t){ var el=document.getElementById('sgpStatus'); if(el) el.textContent=t; }
+    function sgpInjectFrame(stage){
+        var frame=document.createElement('iframe');
+        frame.id='sgpFrame'; frame.src=SGP_GAME_URL; frame.title='Space Grid Puzzle';
+        frame.setAttribute('allow','fullscreen'); frame.setAttribute('allowfullscreen','');
+        frame.addEventListener('load',function(){ sgpStatus('Loaded. Tap squares inside the frame; swipe left to skip a level.'); });
+        var launch=document.getElementById('sgpLaunch');
+        if(launch&&launch.parentNode===stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+    }
+    function doAfterPageRendered(){
+        var stage=document.getElementById('sgpStage'), playBtn=document.getElementById('sgpPlayBtn');
+        if(!stage||!playBtn) return;
+        var fsBtn=document.getElementById('sgpFullscreenBtn');
+        playBtn.addEventListener('click',function(){
+            sgpStatus('Loading about ~39 KB...'); sgpInjectFrame(stage);
+            if(fsBtn) fsBtn.disabled=false;
+        });
+        if(fsBtn) fsBtn.addEventListener('click',function(){
+            if(stage.requestFullscreen) stage.requestFullscreen();
+            else if(stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+        });
+    }
+</script>
