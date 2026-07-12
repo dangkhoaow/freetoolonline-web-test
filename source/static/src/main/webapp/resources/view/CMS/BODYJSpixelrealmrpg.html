@@ -1,0 +1,27 @@
+<script>
+    web.localUpload = false;
+    var PRR_GAME_URL = 'pixel-realm-rpg/index.html';
+    function prrStatus(t){ var el=document.getElementById('prrStatus'); if(el) el.textContent=t; }
+    function prrInjectFrame(stage){
+        var frame=document.createElement('iframe');
+        frame.id='prrFrame'; frame.src=PRR_GAME_URL; frame.title='Pixel Realm RPG';
+        frame.setAttribute('allow','fullscreen'); frame.setAttribute('allowfullscreen','');
+        frame.addEventListener('load',function(){ prrStatus('Loaded. Click New Game on the title screen inside the frame.'); });
+        var launch=document.getElementById('prrLaunch');
+        if(launch&&launch.parentNode===stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+    }
+    function doAfterPageRendered(){
+        var stage=document.getElementById('prrStage'), playBtn=document.getElementById('prrPlayBtn');
+        if(!stage||!playBtn) return;
+        var fsBtn=document.getElementById('prrFullscreenBtn');
+        playBtn.addEventListener('click',function(){
+            prrStatus('Loading about ~3.8 MB...'); prrInjectFrame(stage);
+            if(fsBtn) fsBtn.disabled=false;
+        });
+        if(fsBtn) fsBtn.addEventListener('click',function(){
+            if(stage.requestFullscreen) stage.requestFullscreen();
+            else if(stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+        });
+    }
+</script>
