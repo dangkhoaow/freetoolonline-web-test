@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/date-difference-calculator-vs-alternatives.html',
+  '/guides/date-difference-calculator-step-by-step.html',
+  '/guides/date-difference-calculator-when.html',
+  '/guides/pt/date-difference-calculator-when.html',
+  '/guides/pt/date-difference-calculator-step-by-step.html',
+  '/guides/pt/date-difference-calculator-vs-alternatives.html',
+  '/guides/es/date-difference-calculator-when.html',
+  '/guides/es/date-difference-calculator-step-by-step.html',
+  '/guides/es/date-difference-calculator-vs-alternatives.html',
+  '/guides/vi/date-difference-calculator-when.html',
+  '/guides/vi/date-difference-calculator-step-by-step.html',
+  '/guides/vi/date-difference-calculator-vs-alternatives.html',
+  '/guides/id/date-difference-calculator-when.html',
+  '/guides/id/date-difference-calculator-step-by-step.html',
+  '/guides/id/date-difference-calculator-vs-alternatives.html',
+  '/guides/de/date-difference-calculator-when.html',
+  '/guides/de/date-difference-calculator-step-by-step.html',
+  '/guides/de/date-difference-calculator-vs-alternatives.html',
   '/guides/loan-calculator-vs-alternatives.html',
   '/guides/loan-calculator-step-by-step.html',
   '/guides/loan-calculator-when.html',
@@ -1532,6 +1550,26 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // new-tool-discovery-loop-runbook fire120 (LEAN one-off, 2026-07-13):
+  // GUIDE_ROUTES backfill for date-difference-calculator's 3 EN companion
+  // guide angles' full pt/es/vi/id/de locale fanout (builder wires
+  // JSP_BY_ROUTE + INFO_ROUTES only, same recurring gap class as
+  // fires 32/56/57/62/66/84/113/115).
+  '/guides/pt/date-difference-calculator-when.html',
+  '/guides/pt/date-difference-calculator-step-by-step.html',
+  '/guides/pt/date-difference-calculator-vs-alternatives.html',
+  '/guides/es/date-difference-calculator-when.html',
+  '/guides/es/date-difference-calculator-step-by-step.html',
+  '/guides/es/date-difference-calculator-vs-alternatives.html',
+  '/guides/vi/date-difference-calculator-when.html',
+  '/guides/vi/date-difference-calculator-step-by-step.html',
+  '/guides/vi/date-difference-calculator-vs-alternatives.html',
+  '/guides/id/date-difference-calculator-when.html',
+  '/guides/id/date-difference-calculator-step-by-step.html',
+  '/guides/id/date-difference-calculator-vs-alternatives.html',
+  '/guides/de/date-difference-calculator-when.html',
+  '/guides/de/date-difference-calculator-step-by-step.html',
+  '/guides/de/date-difference-calculator-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire115 (LEAN one-off, 2026-07-12):
   // GUIDE_ROUTES backfill for add-watermark-to-pdf's 3 EN companion guide
   // angles plus their full pt/es/vi/id/de locale fanout (builder wires
@@ -4100,6 +4138,7 @@ export const ALIAS_ROUTES = {
   '/bmi-calculator.html': '/utility-tools/bmi-calculator.html',
   '/tip-calculator.html': '/utility-tools/tip-calculator.html',
   '/loan-calculator.html': '/utility-tools/loan-calculator.html',
+  '/date-difference-calculator.html': '/utility-tools/date-difference-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -6832,6 +6871,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/loan-calculator-when.html': 'guide/de/loan-calculator-when.jsp',
   '/guides/de/loan-calculator-step-by-step.html': 'guide/de/loan-calculator-step-by-step.jsp',
   '/guides/de/loan-calculator-vs-alternatives.html': 'guide/de/loan-calculator-vs-alternatives.jsp',
+  '/utility-tools/date-difference-calculator.html': 'utility/date-difference-calculator.jsp',
+  '/guides/date-difference-calculator-when.html': 'guide/date-difference-calculator-when.jsp',
+  '/guides/date-difference-calculator-step-by-step.html': 'guide/date-difference-calculator-step-by-step.jsp',
+  '/guides/date-difference-calculator-vs-alternatives.html': 'guide/date-difference-calculator-vs-alternatives.jsp',
+  '/guides/pt/date-difference-calculator-when.html': 'guide/pt/date-difference-calculator-when.jsp',
+  '/guides/pt/date-difference-calculator-step-by-step.html': 'guide/pt/date-difference-calculator-step-by-step.jsp',
+  '/guides/pt/date-difference-calculator-vs-alternatives.html': 'guide/pt/date-difference-calculator-vs-alternatives.jsp',
+  '/guides/es/date-difference-calculator-when.html': 'guide/es/date-difference-calculator-when.jsp',
+  '/guides/es/date-difference-calculator-step-by-step.html': 'guide/es/date-difference-calculator-step-by-step.jsp',
+  '/guides/es/date-difference-calculator-vs-alternatives.html': 'guide/es/date-difference-calculator-vs-alternatives.jsp',
+  '/guides/vi/date-difference-calculator-when.html': 'guide/vi/date-difference-calculator-when.jsp',
+  '/guides/vi/date-difference-calculator-step-by-step.html': 'guide/vi/date-difference-calculator-step-by-step.jsp',
+  '/guides/vi/date-difference-calculator-vs-alternatives.html': 'guide/vi/date-difference-calculator-vs-alternatives.jsp',
+  '/guides/id/date-difference-calculator-when.html': 'guide/id/date-difference-calculator-when.jsp',
+  '/guides/id/date-difference-calculator-step-by-step.html': 'guide/id/date-difference-calculator-step-by-step.jsp',
+  '/guides/id/date-difference-calculator-vs-alternatives.html': 'guide/id/date-difference-calculator-vs-alternatives.jsp',
+  '/guides/de/date-difference-calculator-when.html': 'guide/de/date-difference-calculator-when.jsp',
+  '/guides/de/date-difference-calculator-step-by-step.html': 'guide/de/date-difference-calculator-step-by-step.jsp',
+  '/guides/de/date-difference-calculator-vs-alternatives.html': 'guide/de/date-difference-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
