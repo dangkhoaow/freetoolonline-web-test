@@ -1,0 +1,27 @@
+<script>
+    web.localUpload = false;
+    var VFA_GAME_URL = 'voxel-fps-arena/index.html';
+    function vfaStatus(t){ var el=document.getElementById('vfaStatus'); if(el) el.textContent=t; }
+    function vfaInjectFrame(stage){
+        var frame=document.createElement('iframe');
+        frame.id='vfaFrame'; frame.src=VFA_GAME_URL; frame.title='Voxel FPS Arena';
+        frame.setAttribute('allow','fullscreen; pointer-lock'); frame.setAttribute('allowfullscreen','');
+        frame.addEventListener('load',function(){ vfaStatus('Loaded. Click inside the frame, then use WASD and mouse to play.'); });
+        var launch=document.getElementById('vfaLaunch');
+        if(launch&&launch.parentNode===stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+    }
+    function doAfterPageRendered(){
+        var stage=document.getElementById('vfaStage'), playBtn=document.getElementById('vfaPlayBtn');
+        if(!stage||!playBtn) return;
+        var fsBtn=document.getElementById('vfaFullscreenBtn');
+        playBtn.addEventListener('click',function(){
+            vfaStatus('Loading about ~18 KB...'); vfaInjectFrame(stage);
+            if(fsBtn) fsBtn.disabled=false;
+        });
+        if(fsBtn) fsBtn.addEventListener('click',function(){
+            if(stage.requestFullscreen) stage.requestFullscreen();
+            else if(stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+        });
+    }
+</script>
