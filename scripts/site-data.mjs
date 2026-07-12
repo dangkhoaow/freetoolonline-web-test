@@ -1437,6 +1437,14 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // new-tool-discovery-loop-runbook fire113 (LEAN one-off, 2026-07-12):
+  // GUIDE_ROUTES backfill for delete-pdf-pages's 3 EN companion guide angles
+  // (builder wires JSP_BY_ROUTE + INFO_ROUTES only, same recurring gap class as
+  // fires 32/56/57/62/66/84). Locale fanout (pt/es/vi/id/de) deferred to a
+  // follow-up fire per the guide_locale_fanout ledger units (pending).
+  '/guides/delete-pdf-pages-when.html',
+  '/guides/delete-pdf-pages-step-by-step.html',
+  '/guides/delete-pdf-pages-vs-alternatives.html',
   // new-tool-discovery-loop-runbook (LEAN one-off, 2026-07-12): rotate-pdf
   // GUIDE_ROUTES backfill (builder wired JSP_BY_ROUTE only, same recurring gap
   // class as fires 32/56/57/62/66) + full pt/es/vi/id/de locale fanout for all
