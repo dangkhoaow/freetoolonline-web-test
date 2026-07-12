@@ -14,6 +14,20 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  // new-tool-discovery-loop-runbook fire84 (2026-07-12): INFO_ROUTES/GUIDE_ROUTES
+  // backfill for strip-audio-from-video's 3 EN companion guide angles (builder
+  // wired JSP_BY_ROUTE only - same recurring gap class as fires 32/56/57/62/66,
+  // now closed at the source in emit-guide-pages.mjs::patchGuideRoute()).
+  // step-by-step also fanned out to pt/es/vi/id/de this fire; -when and
+  // -vs-alternatives locale fanout deferred to the guide-support-drain backlog.
+  '/guides/remove-audio-from-video-when.html',
+  '/guides/remove-audio-from-video-step-by-step.html',
+  '/guides/remove-audio-from-video-vs-alternatives.html',
+  '/guides/pt/remove-audio-from-video-step-by-step.html',
+  '/guides/es/remove-audio-from-video-step-by-step.html',
+  '/guides/vi/remove-audio-from-video-step-by-step.html',
+  '/guides/id/remove-audio-from-video-step-by-step.html',
+  '/guides/de/remove-audio-from-video-step-by-step.html',
   '/',
   '/about-us.html',
   '/contact-us.html',
@@ -1388,6 +1402,21 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // new-tool-discovery-loop-runbook fire84 (2026-07-12): GUIDE_ROUTES backfill for
+  // strip-audio-from-video's 3 EN companion guide angles (builder wires JSP_BY_ROUTE
+  // only - same recurring gap class as fires 32/56/57/62/66, now closed at the
+  // source in emit-guide-pages.mjs::patchGuideRoute()). step-by-step also fanned
+  // out to pt/es/vi/id/de this fire; -when and -vs-alternatives locale fanout
+  // deferred to the guide-support-drain backlog (guide_locale_fanout unit
+  // strip-audio-from-video-guides).
+  '/guides/remove-audio-from-video-when.html',
+  '/guides/remove-audio-from-video-step-by-step.html',
+  '/guides/remove-audio-from-video-vs-alternatives.html',
+  '/guides/pt/remove-audio-from-video-step-by-step.html',
+  '/guides/es/remove-audio-from-video-step-by-step.html',
+  '/guides/vi/remove-audio-from-video-step-by-step.html',
+  '/guides/id/remove-audio-from-video-step-by-step.html',
+  '/guides/de/remove-audio-from-video-step-by-step.html',
   // new-tool-discovery-loop-runbook fire-66 (2026-07-12): GUIDE_ROUTES backfill for
   // image-format-converter's 3 EN companion guide angles (builder wires JSP_BY_ROUTE
   // only - same gap class documented in fires 32/56/57/62). Locale fanout (pt/es/vi/id/de)
@@ -6303,6 +6332,11 @@ export const JSP_BY_ROUTE = {
   '/guides/remove-audio-from-video-when.html': 'guide/remove-audio-from-video-when.jsp',
   '/guides/remove-audio-from-video-step-by-step.html': 'guide/remove-audio-from-video-step-by-step.jsp',
   '/guides/remove-audio-from-video-vs-alternatives.html': 'guide/remove-audio-from-video-vs-alternatives.jsp',
+  '/guides/pt/remove-audio-from-video-step-by-step.html': 'guide/pt/remove-audio-from-video-step-by-step.jsp',
+  '/guides/es/remove-audio-from-video-step-by-step.html': 'guide/es/remove-audio-from-video-step-by-step.jsp',
+  '/guides/vi/remove-audio-from-video-step-by-step.html': 'guide/vi/remove-audio-from-video-step-by-step.jsp',
+  '/guides/id/remove-audio-from-video-step-by-step.html': 'guide/id/remove-audio-from-video-step-by-step.jsp',
+  '/guides/de/remove-audio-from-video-step-by-step.html': 'guide/de/remove-audio-from-video-step-by-step.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
