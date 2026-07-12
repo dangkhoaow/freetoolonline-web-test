@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/loan-calculator-vs-alternatives.html',
+  '/guides/loan-calculator-step-by-step.html',
+  '/guides/loan-calculator-when.html',
+  '/guides/pt/loan-calculator-when.html',
+  '/guides/pt/loan-calculator-step-by-step.html',
+  '/guides/pt/loan-calculator-vs-alternatives.html',
+  '/guides/es/loan-calculator-when.html',
+  '/guides/es/loan-calculator-step-by-step.html',
+  '/guides/es/loan-calculator-vs-alternatives.html',
+  '/guides/vi/loan-calculator-when.html',
+  '/guides/vi/loan-calculator-step-by-step.html',
+  '/guides/vi/loan-calculator-vs-alternatives.html',
+  '/guides/id/loan-calculator-when.html',
+  '/guides/id/loan-calculator-step-by-step.html',
+  '/guides/id/loan-calculator-vs-alternatives.html',
+  '/guides/de/loan-calculator-when.html',
+  '/guides/de/loan-calculator-step-by-step.html',
+  '/guides/de/loan-calculator-vs-alternatives.html',
   '/guides/tip-calculator-vs-alternatives.html',
   '/guides/tip-calculator-step-by-step.html',
   '/guides/tip-calculator-when.html',
@@ -4081,6 +4099,7 @@ export const ALIAS_ROUTES = {
   '/add-watermark-to-pdf.html': '/pdf-tools/add-watermark-to-pdf.html',
   '/bmi-calculator.html': '/utility-tools/bmi-calculator.html',
   '/tip-calculator.html': '/utility-tools/tip-calculator.html',
+  '/loan-calculator.html': '/utility-tools/loan-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -6794,6 +6813,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/tip-calculator-when.html': 'guide/de/tip-calculator-when.jsp',
   '/guides/de/tip-calculator-step-by-step.html': 'guide/de/tip-calculator-step-by-step.jsp',
   '/guides/de/tip-calculator-vs-alternatives.html': 'guide/de/tip-calculator-vs-alternatives.jsp',
+  '/utility-tools/loan-calculator.html': 'utility/loan-calculator.jsp',
+  '/guides/loan-calculator-when.html': 'guide/loan-calculator-when.jsp',
+  '/guides/loan-calculator-step-by-step.html': 'guide/loan-calculator-step-by-step.jsp',
+  '/guides/loan-calculator-vs-alternatives.html': 'guide/loan-calculator-vs-alternatives.jsp',
+  '/guides/pt/loan-calculator-when.html': 'guide/pt/loan-calculator-when.jsp',
+  '/guides/pt/loan-calculator-step-by-step.html': 'guide/pt/loan-calculator-step-by-step.jsp',
+  '/guides/pt/loan-calculator-vs-alternatives.html': 'guide/pt/loan-calculator-vs-alternatives.jsp',
+  '/guides/es/loan-calculator-when.html': 'guide/es/loan-calculator-when.jsp',
+  '/guides/es/loan-calculator-step-by-step.html': 'guide/es/loan-calculator-step-by-step.jsp',
+  '/guides/es/loan-calculator-vs-alternatives.html': 'guide/es/loan-calculator-vs-alternatives.jsp',
+  '/guides/vi/loan-calculator-when.html': 'guide/vi/loan-calculator-when.jsp',
+  '/guides/vi/loan-calculator-step-by-step.html': 'guide/vi/loan-calculator-step-by-step.jsp',
+  '/guides/vi/loan-calculator-vs-alternatives.html': 'guide/vi/loan-calculator-vs-alternatives.jsp',
+  '/guides/id/loan-calculator-when.html': 'guide/id/loan-calculator-when.jsp',
+  '/guides/id/loan-calculator-step-by-step.html': 'guide/id/loan-calculator-step-by-step.jsp',
+  '/guides/id/loan-calculator-vs-alternatives.html': 'guide/id/loan-calculator-vs-alternatives.jsp',
+  '/guides/de/loan-calculator-when.html': 'guide/de/loan-calculator-when.jsp',
+  '/guides/de/loan-calculator-step-by-step.html': 'guide/de/loan-calculator-step-by-step.jsp',
+  '/guides/de/loan-calculator-vs-alternatives.html': 'guide/de/loan-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
