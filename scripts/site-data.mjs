@@ -1310,6 +1310,16 @@ export const INFO_ROUTES = new Set([
   '/guides/id/galaxy-3d-simulator-when.html',
   '/guides/id/galaxy-3d-simulator-step-by-step.html',
   '/guides/id/galaxy-3d-simulator-vs-alternatives.html',
+  // city-time-machine-3d-when-guides - GUIDE_ROUTES/INFO_ROUTES backfill for the
+  // pre-existing EN angle (JSP_BY_ROUTE + CMS existed, never registered here -
+  // same defect class as the fire-66 backfill above) plus locale fanout
+  // pt/es/vi/id/de (new-tool-discovery-loop-runbook LEAN one-off fire).
+  '/guides/city-time-machine-3d-when.html',
+  '/guides/pt/city-time-machine-3d-when.html',
+  '/guides/es/city-time-machine-3d-when.html',
+  '/guides/de/city-time-machine-3d-when.html',
+  '/guides/vi/city-time-machine-3d-when.html',
+  '/guides/id/city-time-machine-3d-when.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -3075,6 +3085,16 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/find-replace-text-when.html',
   '/guides/de/find-replace-text-step-by-step.html',
   '/guides/de/find-replace-text-vs-alternatives.html',
+  // city-time-machine-3d-when-guides - GUIDE_ROUTES/INFO_ROUTES backfill for the
+  // pre-existing EN angle (JSP_BY_ROUTE + CMS existed, never registered here -
+  // same defect class as the fire-66 backfill above) plus locale fanout
+  // pt/es/vi/id/de (new-tool-discovery-loop-runbook LEAN one-off fire).
+  '/guides/city-time-machine-3d-when.html',
+  '/guides/pt/city-time-machine-3d-when.html',
+  '/guides/es/city-time-machine-3d-when.html',
+  '/guides/de/city-time-machine-3d-when.html',
+  '/guides/vi/city-time-machine-3d-when.html',
+  '/guides/id/city-time-machine-3d-when.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -5703,6 +5723,12 @@ export const JSP_BY_ROUTE = {
   '/guides/city-time-machine-3d-when.html': 'guide/city-time-machine-3d-when.jsp',
   '/guides/city-time-machine-3d-step-by-step.html': 'guide/city-time-machine-3d-step-by-step.jsp',
   '/guides/city-time-machine-3d-vs-alternatives.html': 'guide/city-time-machine-3d-vs-alternatives.jsp',
+  // city-time-machine-3d-when locale fanout pt/es/vi/id/de (new-tool-discovery-loop-runbook LEAN one-off fire)
+  '/guides/pt/city-time-machine-3d-when.html': 'guide/pt/city-time-machine-3d-when.jsp',
+  '/guides/es/city-time-machine-3d-when.html': 'guide/es/city-time-machine-3d-when.jsp',
+  '/guides/de/city-time-machine-3d-when.html': 'guide/de/city-time-machine-3d-when.jsp',
+  '/guides/vi/city-time-machine-3d-when.html': 'guide/vi/city-time-machine-3d-when.jsp',
+  '/guides/id/city-time-machine-3d-when.html': 'guide/id/city-time-machine-3d-when.jsp',
   '/utility-tools/percentage-calculator.html': 'utility/percentage-calculator.jsp',
   '/guides/percentage-calculator-when.html': 'guide/percentage-calculator-when.jsp',
   '/guides/percentage-calculator-step-by-step.html': 'guide/percentage-calculator-step-by-step.jsp',
