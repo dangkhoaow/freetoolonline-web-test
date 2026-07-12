@@ -1336,6 +1336,32 @@ export const INFO_ROUTES = new Set([
   '/guides/de/city-time-machine-3d-vs-alternatives.html',
   '/guides/vi/city-time-machine-3d-vs-alternatives.html',
   '/guides/id/city-time-machine-3d-vs-alternatives.html',
+  // earth-3d-globe-live-day-night-map-when - GUIDE_ROUTES/INFO_ROUTES backfill
+  // for the pre-existing EN angle (JSP_BY_ROUTE + CMS existed, never
+  // registered here - same defect class as the city-time-machine backfill
+  // above) plus locale fanout pt/es/de/vi/id (new-tool-discovery-loop-runbook
+  // LEAN one-off fire, guide-support drain per runbook 4b).
+  '/guides/earth-3d-globe-live-day-night-map-when.html',
+  '/guides/pt/earth-3d-globe-live-day-night-map-when.html',
+  '/guides/es/earth-3d-globe-live-day-night-map-when.html',
+  '/guides/de/earth-3d-globe-live-day-night-map-when.html',
+  '/guides/vi/earth-3d-globe-live-day-night-map-when.html',
+  '/guides/id/earth-3d-globe-live-day-night-map-when.html',
+  // earth-3d-globe-live-day-night-map step-by-step + vs-alternatives -
+  // same INFO_ROUTES backfill (EN angles existed in JSP_BY_ROUTE only) plus
+  // full pt/es/de/vi/id locale fanout (guide-support drain per runbook 4b).
+  '/guides/earth-3d-globe-live-day-night-map-step-by-step.html',
+  '/guides/pt/earth-3d-globe-live-day-night-map-step-by-step.html',
+  '/guides/es/earth-3d-globe-live-day-night-map-step-by-step.html',
+  '/guides/de/earth-3d-globe-live-day-night-map-step-by-step.html',
+  '/guides/vi/earth-3d-globe-live-day-night-map-step-by-step.html',
+  '/guides/id/earth-3d-globe-live-day-night-map-step-by-step.html',
+  '/guides/earth-3d-globe-live-day-night-map-vs-alternatives.html',
+  '/guides/pt/earth-3d-globe-live-day-night-map-vs-alternatives.html',
+  '/guides/es/earth-3d-globe-live-day-night-map-vs-alternatives.html',
+  '/guides/de/earth-3d-globe-live-day-night-map-vs-alternatives.html',
+  '/guides/vi/earth-3d-globe-live-day-night-map-vs-alternatives.html',
+  '/guides/id/earth-3d-globe-live-day-night-map-vs-alternatives.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -3164,6 +3190,32 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/city-time-machine-3d-vs-alternatives.html',
   '/guides/vi/city-time-machine-3d-vs-alternatives.html',
   '/guides/id/city-time-machine-3d-vs-alternatives.html',
+  // earth-3d-globe-live-day-night-map-when - GUIDE_ROUTES/INFO_ROUTES backfill
+  // for the pre-existing EN angle (JSP_BY_ROUTE + CMS existed, never
+  // registered here - same defect class as the city-time-machine backfill
+  // above) plus locale fanout pt/es/de/vi/id (new-tool-discovery-loop-runbook
+  // LEAN one-off fire, guide-support drain per runbook 4b).
+  '/guides/earth-3d-globe-live-day-night-map-when.html',
+  '/guides/pt/earth-3d-globe-live-day-night-map-when.html',
+  '/guides/es/earth-3d-globe-live-day-night-map-when.html',
+  '/guides/de/earth-3d-globe-live-day-night-map-when.html',
+  '/guides/vi/earth-3d-globe-live-day-night-map-when.html',
+  '/guides/id/earth-3d-globe-live-day-night-map-when.html',
+  // earth-3d-globe-live-day-night-map step-by-step + vs-alternatives -
+  // same GUIDE_ROUTES backfill (EN angles existed in JSP_BY_ROUTE only) plus
+  // full pt/es/de/vi/id locale fanout (guide-support drain per runbook 4b).
+  '/guides/earth-3d-globe-live-day-night-map-step-by-step.html',
+  '/guides/pt/earth-3d-globe-live-day-night-map-step-by-step.html',
+  '/guides/es/earth-3d-globe-live-day-night-map-step-by-step.html',
+  '/guides/de/earth-3d-globe-live-day-night-map-step-by-step.html',
+  '/guides/vi/earth-3d-globe-live-day-night-map-step-by-step.html',
+  '/guides/id/earth-3d-globe-live-day-night-map-step-by-step.html',
+  '/guides/earth-3d-globe-live-day-night-map-vs-alternatives.html',
+  '/guides/pt/earth-3d-globe-live-day-night-map-vs-alternatives.html',
+  '/guides/es/earth-3d-globe-live-day-night-map-vs-alternatives.html',
+  '/guides/de/earth-3d-globe-live-day-night-map-vs-alternatives.html',
+  '/guides/vi/earth-3d-globe-live-day-night-map-vs-alternatives.html',
+  '/guides/id/earth-3d-globe-live-day-night-map-vs-alternatives.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -5973,8 +6025,28 @@ export const JSP_BY_ROUTE = {
   '/guides/de/city-drive-open-world-3d-vs-alternatives.html': 'guide/de/city-drive-open-world-3d-vs-alternatives.jsp',
   '/space-3d/earth-3d-globe.html': 'space/earth-3d-globe.jsp',
   '/guides/earth-3d-globe-live-day-night-map-when.html': 'guide/earth-3d-globe-live-day-night-map-when.jsp',
+  // earth-3d-globe-live-day-night-map-when locale fanout pt/es/de/vi/id
+  // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain)
+  '/guides/pt/earth-3d-globe-live-day-night-map-when.html': 'guide/pt/earth-3d-globe-live-day-night-map-when.jsp',
+  '/guides/es/earth-3d-globe-live-day-night-map-when.html': 'guide/es/earth-3d-globe-live-day-night-map-when.jsp',
+  '/guides/de/earth-3d-globe-live-day-night-map-when.html': 'guide/de/earth-3d-globe-live-day-night-map-when.jsp',
+  '/guides/vi/earth-3d-globe-live-day-night-map-when.html': 'guide/vi/earth-3d-globe-live-day-night-map-when.jsp',
+  '/guides/id/earth-3d-globe-live-day-night-map-when.html': 'guide/id/earth-3d-globe-live-day-night-map-when.jsp',
   '/guides/earth-3d-globe-live-day-night-map-step-by-step.html': 'guide/earth-3d-globe-live-day-night-map-step-by-step.jsp',
   '/guides/earth-3d-globe-live-day-night-map-vs-alternatives.html': 'guide/earth-3d-globe-live-day-night-map-vs-alternatives.jsp',
+  // earth-3d-globe-live-day-night-map step-by-step + vs-alternatives locale
+  // fanout pt/es/de/vi/id (new-tool-discovery-loop-runbook LEAN one-off fire,
+  // guide-support drain per runbook 4b).
+  '/guides/pt/earth-3d-globe-live-day-night-map-step-by-step.html': 'guide/pt/earth-3d-globe-live-day-night-map-step-by-step.jsp',
+  '/guides/es/earth-3d-globe-live-day-night-map-step-by-step.html': 'guide/es/earth-3d-globe-live-day-night-map-step-by-step.jsp',
+  '/guides/de/earth-3d-globe-live-day-night-map-step-by-step.html': 'guide/de/earth-3d-globe-live-day-night-map-step-by-step.jsp',
+  '/guides/vi/earth-3d-globe-live-day-night-map-step-by-step.html': 'guide/vi/earth-3d-globe-live-day-night-map-step-by-step.jsp',
+  '/guides/id/earth-3d-globe-live-day-night-map-step-by-step.html': 'guide/id/earth-3d-globe-live-day-night-map-step-by-step.jsp',
+  '/guides/pt/earth-3d-globe-live-day-night-map-vs-alternatives.html': 'guide/pt/earth-3d-globe-live-day-night-map-vs-alternatives.jsp',
+  '/guides/es/earth-3d-globe-live-day-night-map-vs-alternatives.html': 'guide/es/earth-3d-globe-live-day-night-map-vs-alternatives.jsp',
+  '/guides/de/earth-3d-globe-live-day-night-map-vs-alternatives.html': 'guide/de/earth-3d-globe-live-day-night-map-vs-alternatives.jsp',
+  '/guides/vi/earth-3d-globe-live-day-night-map-vs-alternatives.html': 'guide/vi/earth-3d-globe-live-day-night-map-vs-alternatives.jsp',
+  '/guides/id/earth-3d-globe-live-day-night-map-vs-alternatives.html': 'guide/id/earth-3d-globe-live-day-night-map-vs-alternatives.jsp',
   '/utility-tools/linux-online.html': 'utility/linux-online.jsp',
   '/guides/run-linux-in-browser-when.html': 'guide/run-linux-in-browser-when.jsp',
   '/guides/run-linux-in-browser-step-by-step.html': 'guide/run-linux-in-browser-step-by-step.jsp',
