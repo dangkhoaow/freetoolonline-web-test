@@ -3784,6 +3784,7 @@ export const ALIAS_ROUTES = {
   '/character-counter.html': '/developer-tools/character-counter.html',
   '/find-and-replace-text.html': '/developer-tools/find-and-replace-text.html',
   '/image-format-converter.html': '/image-converter-tools/image-format-converter.html',
+  '/strip-audio-from-video.html': '/video-tools/strip-audio-from-video.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -6298,6 +6299,10 @@ export const JSP_BY_ROUTE = {
   '/guides/de/image-format-converter-when.html': 'guide/de/image-format-converter-when.jsp',
   '/guides/de/image-format-converter-step-by-step.html': 'guide/de/image-format-converter-step-by-step.jsp',
   '/guides/de/image-format-converter-vs-alternatives.html': 'guide/de/image-format-converter-vs-alternatives.jsp',
+  '/video-tools/strip-audio-from-video.html': 'convert/strip-audio-from-video.jsp',
+  '/guides/remove-audio-from-video-when.html': 'guide/remove-audio-from-video-when.jsp',
+  '/guides/remove-audio-from-video-step-by-step.html': 'guide/remove-audio-from-video-step-by-step.jsp',
+  '/guides/remove-audio-from-video-vs-alternatives.html': 'guide/remove-audio-from-video-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
