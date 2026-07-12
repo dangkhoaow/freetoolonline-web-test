@@ -2934,6 +2934,27 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/random-name-picker-when.html',
   '/guides/de/random-name-picker-step-by-step.html',
   '/guides/de/random-name-picker-vs-alternatives.html',
+  // sky-gates-flight-guides (newtool-discovery-loop fire58, LEAN one-off session):
+  // EN angles were already live but never registered in GUIDE_ROUTES (sitemap-guides/llms.txt
+  // discoverability); this fire adds the EN entries plus the pt/es/vi/id/de locale fanout.
+  '/guides/sky-gates-flight-when.html',
+  '/guides/sky-gates-flight-step-by-step.html',
+  '/guides/sky-gates-flight-vs-alternatives.html',
+  '/guides/pt/sky-gates-flight-when.html',
+  '/guides/pt/sky-gates-flight-step-by-step.html',
+  '/guides/pt/sky-gates-flight-vs-alternatives.html',
+  '/guides/es/sky-gates-flight-when.html',
+  '/guides/es/sky-gates-flight-step-by-step.html',
+  '/guides/es/sky-gates-flight-vs-alternatives.html',
+  '/guides/vi/sky-gates-flight-when.html',
+  '/guides/vi/sky-gates-flight-step-by-step.html',
+  '/guides/vi/sky-gates-flight-vs-alternatives.html',
+  '/guides/id/sky-gates-flight-when.html',
+  '/guides/id/sky-gates-flight-step-by-step.html',
+  '/guides/id/sky-gates-flight-vs-alternatives.html',
+  '/guides/de/sky-gates-flight-when.html',
+  '/guides/de/sky-gates-flight-step-by-step.html',
+  '/guides/de/sky-gates-flight-vs-alternatives.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -5459,6 +5480,23 @@ export const JSP_BY_ROUTE = {
   '/guides/sky-gates-flight-when.html': 'guide/sky-gates-flight-when.jsp',
   '/guides/sky-gates-flight-step-by-step.html': 'guide/sky-gates-flight-step-by-step.jsp',
   '/guides/sky-gates-flight-vs-alternatives.html': 'guide/sky-gates-flight-vs-alternatives.jsp',
+  // sky-gates-flight-guides - locale fanout pt/es/vi/id/de for all 3 angles
+  // (newtool-discovery-loop fire58, LEAN one-off session; EN angles were already live, locale fanout was pending).
+  '/guides/pt/sky-gates-flight-when.html': 'guide/pt/sky-gates-flight-when.jsp',
+  '/guides/pt/sky-gates-flight-step-by-step.html': 'guide/pt/sky-gates-flight-step-by-step.jsp',
+  '/guides/pt/sky-gates-flight-vs-alternatives.html': 'guide/pt/sky-gates-flight-vs-alternatives.jsp',
+  '/guides/es/sky-gates-flight-when.html': 'guide/es/sky-gates-flight-when.jsp',
+  '/guides/es/sky-gates-flight-step-by-step.html': 'guide/es/sky-gates-flight-step-by-step.jsp',
+  '/guides/es/sky-gates-flight-vs-alternatives.html': 'guide/es/sky-gates-flight-vs-alternatives.jsp',
+  '/guides/vi/sky-gates-flight-when.html': 'guide/vi/sky-gates-flight-when.jsp',
+  '/guides/vi/sky-gates-flight-step-by-step.html': 'guide/vi/sky-gates-flight-step-by-step.jsp',
+  '/guides/vi/sky-gates-flight-vs-alternatives.html': 'guide/vi/sky-gates-flight-vs-alternatives.jsp',
+  '/guides/id/sky-gates-flight-when.html': 'guide/id/sky-gates-flight-when.jsp',
+  '/guides/id/sky-gates-flight-step-by-step.html': 'guide/id/sky-gates-flight-step-by-step.jsp',
+  '/guides/id/sky-gates-flight-vs-alternatives.html': 'guide/id/sky-gates-flight-vs-alternatives.jsp',
+  '/guides/de/sky-gates-flight-when.html': 'guide/de/sky-gates-flight-when.jsp',
+  '/guides/de/sky-gates-flight-step-by-step.html': 'guide/de/sky-gates-flight-step-by-step.jsp',
+  '/guides/de/sky-gates-flight-vs-alternatives.html': 'guide/de/sky-gates-flight-vs-alternatives.jsp',
   '/games/city-time-machine.html': 'games/city-time-machine.jsp',
   '/guides/city-time-machine-3d-when.html': 'guide/city-time-machine-3d-when.jsp',
   '/guides/city-time-machine-3d-step-by-step.html': 'guide/city-time-machine-3d-step-by-step.jsp',
