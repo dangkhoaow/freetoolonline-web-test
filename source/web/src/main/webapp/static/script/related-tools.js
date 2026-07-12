@@ -385,6 +385,7 @@ try {
     { title: "Voxel FPS Arena", url: "https://freetoolonline.com/games/voxel-fps-arena.html", include: !1, tags: "games" },
     { title: "Lightning Math Battle", url: "https://freetoolonline.com/games/lightning-math-battle.html", include: !1, tags: "games" },
     { title: "Precision Bounce Loop", url: "https://freetoolonline.com/games/precision-bounce-loop.html", include: !1, tags: "games" },
+    { title: "Vim Motion Academy", url: "https://freetoolonline.com/games/vim-motion-academy.html", include: !1, tags: "games" },
     { title: "Gravity Orbit Golf", url: "https://freetoolonline.com/games/gravity-orbit-golf.html", include: !1, tags: "games" },
     { title: "Species Life Battle", url: "https://freetoolonline.com/games/species-life-battle.html", include: !1, tags: "games" },
     { title: "Earth 3D Globe - Live Day & Night Map", url: "https://freetoolonline.com/space-3d/earth-3d-globe.html", include: !1, tags: "space-3d" },
