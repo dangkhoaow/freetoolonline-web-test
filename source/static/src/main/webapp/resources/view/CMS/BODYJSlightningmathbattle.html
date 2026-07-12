@@ -1,0 +1,27 @@
+<script>
+    web.localUpload = false;
+    var LMB_GAME_URL = 'lightning-math-battle/index.html';
+    function lmbStatus(t){ var el=document.getElementById('lmbStatus'); if(el) el.textContent=t; }
+    function lmbInjectFrame(stage){
+        var frame=document.createElement('iframe');
+        frame.id='lmbFrame'; frame.src=LMB_GAME_URL; frame.title='Lightning Math Battle';
+        frame.setAttribute('allow','fullscreen'); frame.setAttribute('allowfullscreen','');
+        frame.addEventListener('load',function(){ lmbStatus('Loaded. Pick a mode and difficulty inside the frame, then tap answers.'); });
+        var launch=document.getElementById('lmbLaunch');
+        if(launch&&launch.parentNode===stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+    }
+    function doAfterPageRendered(){
+        var stage=document.getElementById('lmbStage'), playBtn=document.getElementById('lmbPlayBtn');
+        if(!stage||!playBtn) return;
+        var fsBtn=document.getElementById('lmbFullscreenBtn');
+        playBtn.addEventListener('click',function(){
+            lmbStatus('Loading about ~1.29 MB...'); lmbInjectFrame(stage);
+            if(fsBtn) fsBtn.disabled=false;
+        });
+        if(fsBtn) fsBtn.addEventListener('click',function(){
+            if(stage.requestFullscreen) stage.requestFullscreen();
+            else if(stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+        });
+    }
+</script>
