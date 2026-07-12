@@ -6,7 +6,7 @@
         <p style="margin-bottom: 0;"><b>Respuesta en 30 segundos.</b> La alternativa correcta a MD5 depende del trabajo. <b>Almacenar contrasenas?</b> Usa <b>Argon2id</b> (recomendacion actual de OWASP) o <b>bcrypt</b> (amplio soporte de bibliotecas). <b>Proteger integridad contra un adversario?</b> Usa <b>SHA-256</b> con HMAC. <b>Derivar una clave a partir de una contrasena?</b> Usa <b>PBKDF2</b> (entornos que requieren FIPS) o <b>Argon2id</b> en otros lugares. <b>Claves de cache, ETags, deduplicacion en datos no adversarios?</b> MD5 sigue estando bien - pasalo por el <a href="/developer-tools/md5-converter.html">conversor MD5</a>.</p>
     </div>
 
-    <h2 class="text-uppercase"><b>La decision en una tabla</b></h2>
+    <h2 class="text-uppercase"><b>La decision en una tabla</b></h2><figure class="illustration"><img src="/img/illustrations/card-row-4/guidesmd5alternativesbcryptargon2idsha256wheneachfits__f4cb8d20.svg" alt="Compare cuatro casos de uso al algoritmo hash correcto using the four points in this diagram." loading="lazy" width="640" height="180"><figcaption>Elegir el hash segun el trabajo at a glance.</figcaption></figure>
     <div class="w3-responsive">
         <table class="w3-table-all w3-small">
             <tr><th>Caso de uso</th><th>Elige</th><th>Por que</th><th>No elijas MD5 porque</th></tr>
@@ -33,7 +33,7 @@
     <h2 class="text-uppercase"><b>PBKDF2 - el camino FIPS</b></h2>
     <p>PBKDF2 es la funcion de derivacion de clave basada en contrasena que NIST bendijo en 2000. Es basada en iteraciones: eliges un conteo, ejecutas un hash subyacente esa cantidad de veces, y el factor de trabajo sigue. No es memoria-duro, asi que es mas debil que Argon2id contra GPUs modernas, pero es la eleccion correcta cuando tu entorno requiere un algoritmo FIPS 140-2 / 140-3. La cantidad de iteraciones a usar en 2026 con HMAC-SHA-256 por debajo es <b>600.000 o mas</b> por orientacion de OWASP; con HMAC-SHA-512 es <b>210.000 o mas</b>. Numeros mas bajos siguen siendo comunes en codigo legado; suberlos en el proximo deploy.</p>
 
-    <h2 class="text-uppercase"><b>"Donde MD5 sigue perteneciendo" - la lista de trabajo</b></h2>
+    <h2 class="text-uppercase"><b>"Donde MD5 sigue perteneciendo" - la lista de trabajo</b></h2><figure class="illustration"><img src="/img/illustrations/hub-spoke-4/guidesmd5alternativesbcryptargon2idsha256wheneachfits__c6f9280c.svg" alt="Compare cuatro escenarios donde MD5 sigue siendo adecuado using the four points in this diagram." loading="lazy" width="520" height="300"><figcaption>MD5 para cache, ETag, integridad, dedup at a glance.</figcaption></figure>
     <ul>
         <li><b>Claves de cache.</b> Hashea una URL larga o cadena de consulta en una clave de longitud fija para memcached, Redis, o un nombre de archivo. Las colisiones no importan; la velocidad si.</li>
         <li><b>Huellas digitales de contenido tipo ETag.</b> Emite MD5 de un cuerpo de respuesta como la cabecera <code>ETag</code> para que los clientes puedan revalidar sin volver a descargar.</li>
@@ -43,7 +43,7 @@
     </ul>
     <p>Para todos esos, <a href="/developer-tools/md5-converter.html">el conversor MD5</a> es la superficie correcta - pega texto, obten el hash, copia el resultado.</p>
 
-    <h2 class="text-uppercase"><b>Lista de verificacion de migracion - mover una app existente fuera de MD5</b></h2>
+    <h2 class="text-uppercase"><b>Lista de verificacion de migracion - mover una app existente fuera de MD5</b></h2><figure class="illustration"><img src="/img/illustrations/numbered-bars-4/guidesmd5alternativesbcryptargon2idsha256wheneachfits__ab1cb44d.svg" alt="Compare cuatro pasos de migracion fuera de MD5 using the four points in this diagram." loading="lazy" width="640" height="200"><figcaption>Auditar, Argon2id, HMAC-SHA-256, SHA-256 at a glance.</figcaption></figure>
     <ol>
         <li><b>Audita donde se usa MD5.</b> Grep la base de codigo por <code>md5</code>, <code>MessageDigest.getInstance("MD5")</code>, <code>hashlib.md5</code>, <code>crypto.createHash('md5')</code>. Etiqueta cada uso como uno de: contrasenas, MAC, integridad, cache.</li>
         <li><b>Contrasenas - migracion progresiva.</b> Anade un verificador Argon2id junto al verificador MD5. En el proximo login exitoso, recomputa la contrasena bajo Argon2id, almacena el nuevo verificador, descarta la fila MD5. Rota cada cuenta dentro de 90 dias; force-reset lo que quede.</li>

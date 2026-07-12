@@ -6,7 +6,7 @@
         <p style="margin-bottom: 0;"><b>Jawaban 30 detik.</b> Alternatif MD5 yang tepat bergantung pada pekerjaannya. <b>Menyimpan kata sandi?</b> Gunakan <b>Argon2id</b> (rekomendasi OWASP saat ini) atau <b>bcrypt</b> (dukungan pustaka luas). <b>Melindungi integritas dari musuh?</b> Gunakan <b>SHA-256</b> dengan HMAC. <b>Mengambil kunci dari kata sandi?</b> Gunakan <b>PBKDF2</b> (lingkungan yang memerlukan FIPS) atau <b>Argon2id</b> di tempat lain. <b>Kunci cache, ETag, deduplikasi pada data non-adversarial?</b> MD5 masih baik - jalankan melalui <a href="/developer-tools/md5-converter.html">konverter MD5</a>.</p>
     </div>
 
-    <h2 class="text-uppercase"><b>Keputusan dalam satu tabel</b></h2>
+    <h2 class="text-uppercase"><b>Keputusan dalam satu tabel</b></h2><figure class="illustration"><img src="/img/illustrations/card-row-4/guidesmd5alternativesbcryptargon2idsha256wheneachfits__f4cb8d20.svg" alt="Compare empat kasus pemakaian ke algoritma hash yang tepat using the four points in this diagram." loading="lazy" width="640" height="180"><figcaption>Pilih hash sesuai tugas at a glance.</figcaption></figure>
     <div class="w3-responsive">
         <table class="w3-table-all w3-small">
             <tr><th>Kasus penggunaan</th><th>Pilih</th><th>Mengapa</th><th>Jangan pilih MD5 karena</th></tr>
@@ -33,7 +33,7 @@
     <h2 class="text-uppercase"><b>PBKDF2 - jalur FIPS</b></h2>
     <p>PBKDF2 adalah fungsi derivasi kunci berbasis kata sandi yang diberkati NIST pada 2000. Berbasis iterasi: Anda memilih hitungan, menjalankan hash yang mendasarinya sebanyak itu, dan faktor kerja mengikuti. Tidak memori-keras, jadi lebih lemah dari Argon2id terhadap GPU modern, tetapi merupakan pilihan yang tepat ketika lingkungan Anda memerlukan algoritma FIPS 140-2 / 140-3. Hitungan iterasi yang digunakan pada 2026 dengan HMAC-SHA-256 di bawahnya adalah <b>600.000 atau lebih tinggi</b> per panduan OWASP; dengan HMAC-SHA-512 adalah <b>210.000 atau lebih tinggi</b>. Angka yang lebih rendah masih umum dalam kode warisan; naikkan pada deploy berikutnya.</p>
 
-    <h2 class="text-uppercase"><b>"Di mana MD5 masih cocok" - daftar kerja</b></h2>
+    <h2 class="text-uppercase"><b>"Di mana MD5 masih cocok" - daftar kerja</b></h2><figure class="illustration"><img src="/img/illustrations/hub-spoke-4/guidesmd5alternativesbcryptargon2idsha256wheneachfits__c6f9280c.svg" alt="Compare empat skenario di mana MD5 masih cocok using the four points in this diagram." loading="lazy" width="520" height="300"><figcaption>MD5 untuk cache, ETag, integritas, dedup at a glance.</figcaption></figure>
     <ul>
         <li><b>Kunci cache.</b> Hash URL panjang atau string query menjadi kunci panjang tetap untuk memcached, Redis, atau nama file. Tabrakan tidak penting; kecepatan penting.</li>
         <li><b>Sidik jari konten gaya ETag.</b> Pancarkan MD5 dari body respons sebagai header <code>ETag</code> sehingga klien dapat memvalidasi ulang tanpa mengunduh ulang.</li>
@@ -43,7 +43,7 @@
     </ul>
     <p>Untuk semua itu, <a href="/developer-tools/md5-converter.html">konverter MD5</a> adalah permukaan yang tepat - tempel teks, dapatkan hash, salin hasilnya.</p>
 
-    <h2 class="text-uppercase"><b>Daftar periksa migrasi - memindahkan aplikasi yang ada dari MD5</b></h2>
+    <h2 class="text-uppercase"><b>Daftar periksa migrasi - memindahkan aplikasi yang ada dari MD5</b></h2><figure class="illustration"><img src="/img/illustrations/numbered-bars-4/guidesmd5alternativesbcryptargon2idsha256wheneachfits__ab1cb44d.svg" alt="Compare empat langkah migrasi keluar dari MD5 using the four points in this diagram." loading="lazy" width="640" height="200"><figcaption>Audit, Argon2id, HMAC-SHA-256, SHA-256 at a glance.</figcaption></figure>
     <ol>
         <li><b>Audit di mana MD5 digunakan.</b> Grep basis kode untuk <code>md5</code>, <code>MessageDigest.getInstance("MD5")</code>, <code>hashlib.md5</code>, <code>crypto.createHash('md5')</code>. Beri tag setiap penggunaan sebagai salah satu dari: kata sandi, MAC, integritas, cache.</li>
         <li><b>Kata sandi - migrasi bergulir.</b> Tambahkan verifier Argon2id di samping verifier MD5. Pada login berikutnya yang berhasil, hitung ulang kata sandi di bawah Argon2id, simpan verifier baru, jatuhkan baris MD5. Putar setiap akun dalam 90 hari; paksa-reset apa pun yang tersisa.</li>
