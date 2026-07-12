@@ -1,0 +1,27 @@
+<script>
+    web.localUpload = false;
+    var VMA_GAME_URL = 'vim-motion-academy/index.html';
+    function vmaStatus(t){ var el=document.getElementById('vmaStatus'); if(el) el.textContent=t; }
+    function vmaInjectFrame(stage){
+        var frame=document.createElement('iframe');
+        frame.id='vmaFrame'; frame.src=VMA_GAME_URL; frame.title='Vim Motion Academy';
+        frame.setAttribute('allow','fullscreen'); frame.setAttribute('allowfullscreen','');
+        frame.addEventListener('load',function(){ vmaStatus('Loaded. Use j/k and Enter to pick a starter inside the frame.'); });
+        var launch=document.getElementById('vmaLaunch');
+        if(launch&&launch.parentNode===stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+    }
+    function doAfterPageRendered(){
+        var stage=document.getElementById('vmaStage'), playBtn=document.getElementById('vmaPlayBtn');
+        if(!stage||!playBtn) return;
+        var fsBtn=document.getElementById('vmaFullscreenBtn');
+        playBtn.addEventListener('click',function(){
+            vmaStatus('Loading about ~350 KB...'); vmaInjectFrame(stage);
+            if(fsBtn) fsBtn.disabled=false;
+        });
+        if(fsBtn) fsBtn.addEventListener('click',function(){
+            if(stage.requestFullscreen) stage.requestFullscreen();
+            else if(stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+        });
+    }
+</script>
