@@ -3010,6 +3010,26 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/sky-gates-flight-when.html',
   '/guides/de/sky-gates-flight-step-by-step.html',
   '/guides/de/sky-gates-flight-vs-alternatives.html',
+  // new-tool-discovery-loop-runbook fire62 (2026-07-12): find-and-replace-text
+  // companion guides - EN + full pt/es/vi/id/de locale fanout for all 3 angles.
+  '/guides/find-replace-text-when.html',
+  '/guides/find-replace-text-step-by-step.html',
+  '/guides/find-replace-text-vs-alternatives.html',
+  '/guides/pt/find-replace-text-when.html',
+  '/guides/pt/find-replace-text-step-by-step.html',
+  '/guides/pt/find-replace-text-vs-alternatives.html',
+  '/guides/es/find-replace-text-when.html',
+  '/guides/es/find-replace-text-step-by-step.html',
+  '/guides/es/find-replace-text-vs-alternatives.html',
+  '/guides/vi/find-replace-text-when.html',
+  '/guides/vi/find-replace-text-step-by-step.html',
+  '/guides/vi/find-replace-text-vs-alternatives.html',
+  '/guides/id/find-replace-text-when.html',
+  '/guides/id/find-replace-text-step-by-step.html',
+  '/guides/id/find-replace-text-vs-alternatives.html',
+  '/guides/de/find-replace-text-when.html',
+  '/guides/de/find-replace-text-step-by-step.html',
+  '/guides/de/find-replace-text-vs-alternatives.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -3556,6 +3576,7 @@ export const ALIAS_ROUTES = {
   '/pomodoro-timer.html': '/utility-tools/pomodoro-timer.html',
   '/random-name-picker.html': '/utility-tools/random-name-picker.html',
   '/character-counter.html': '/developer-tools/character-counter.html',
+  '/find-and-replace-text.html': '/developer-tools/find-and-replace-text.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -5929,6 +5950,25 @@ export const JSP_BY_ROUTE = {
   '/guides/character-counter-when.html': 'guide/character-counter-when.jsp',
   '/guides/character-counter-step-by-step.html': 'guide/character-counter-step-by-step.jsp',
   '/guides/character-counter-vs-alternatives.html': 'guide/character-counter-vs-alternatives.jsp',
+  '/developer-tools/find-and-replace-text.html': 'utility/find-and-replace-text.jsp',
+  '/guides/find-replace-text-when.html': 'guide/find-replace-text-when.jsp',
+  '/guides/find-replace-text-step-by-step.html': 'guide/find-replace-text-step-by-step.jsp',
+  '/guides/find-replace-text-vs-alternatives.html': 'guide/find-replace-text-vs-alternatives.jsp',
+  '/guides/pt/find-replace-text-when.html': 'guide/pt/find-replace-text-when.jsp',
+  '/guides/pt/find-replace-text-step-by-step.html': 'guide/pt/find-replace-text-step-by-step.jsp',
+  '/guides/pt/find-replace-text-vs-alternatives.html': 'guide/pt/find-replace-text-vs-alternatives.jsp',
+  '/guides/es/find-replace-text-when.html': 'guide/es/find-replace-text-when.jsp',
+  '/guides/es/find-replace-text-step-by-step.html': 'guide/es/find-replace-text-step-by-step.jsp',
+  '/guides/es/find-replace-text-vs-alternatives.html': 'guide/es/find-replace-text-vs-alternatives.jsp',
+  '/guides/vi/find-replace-text-when.html': 'guide/vi/find-replace-text-when.jsp',
+  '/guides/vi/find-replace-text-step-by-step.html': 'guide/vi/find-replace-text-step-by-step.jsp',
+  '/guides/vi/find-replace-text-vs-alternatives.html': 'guide/vi/find-replace-text-vs-alternatives.jsp',
+  '/guides/id/find-replace-text-when.html': 'guide/id/find-replace-text-when.jsp',
+  '/guides/id/find-replace-text-step-by-step.html': 'guide/id/find-replace-text-step-by-step.jsp',
+  '/guides/id/find-replace-text-vs-alternatives.html': 'guide/id/find-replace-text-vs-alternatives.jsp',
+  '/guides/de/find-replace-text-when.html': 'guide/de/find-replace-text-when.jsp',
+  '/guides/de/find-replace-text-step-by-step.html': 'guide/de/find-replace-text-step-by-step.jsp',
+  '/guides/de/find-replace-text-vs-alternatives.html': 'guide/de/find-replace-text-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

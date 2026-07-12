@@ -395,6 +395,7 @@ try {
     { title: "Expense Tracker", url: "https://freetoolonline.com/utility-tools/expense-tracker.html", include: !1, tags: "utility" },
     { title: "Random Name Picker", url: "https://freetoolonline.com/utility-tools/random-name-picker.html", include: !1, tags: "utility" },
     { title: "Character Counter", url: "https://freetoolonline.com/developer-tools/character-counter.html", include: !1, tags: "developer" },
+    { title: "Find and Replace Text", url: "https://freetoolonline.com/developer-tools/find-and-replace-text.html", include: !1, tags: "developer" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
