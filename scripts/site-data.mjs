@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/bmi-calculator-vs-alternatives.html',
+  '/guides/pt/bmi-calculator-when.html',
+  '/guides/pt/bmi-calculator-step-by-step.html',
+  '/guides/pt/bmi-calculator-vs-alternatives.html',
+  '/guides/es/bmi-calculator-when.html',
+  '/guides/es/bmi-calculator-step-by-step.html',
+  '/guides/es/bmi-calculator-vs-alternatives.html',
+  '/guides/vi/bmi-calculator-when.html',
+  '/guides/vi/bmi-calculator-step-by-step.html',
+  '/guides/vi/bmi-calculator-vs-alternatives.html',
+  '/guides/id/bmi-calculator-when.html',
+  '/guides/id/bmi-calculator-step-by-step.html',
+  '/guides/id/bmi-calculator-vs-alternatives.html',
+  '/guides/de/bmi-calculator-when.html',
+  '/guides/de/bmi-calculator-step-by-step.html',
+  '/guides/de/bmi-calculator-vs-alternatives.html',
+  '/guides/bmi-calculator-step-by-step.html',
+  '/guides/bmi-calculator-when.html',
   '/guides/add-watermark-pdf-vs-alternatives.html',
   '/guides/add-watermark-pdf-step-by-step.html',
   '/guides/add-watermark-pdf-when.html',
@@ -4043,6 +4061,7 @@ export const ALIAS_ROUTES = {
   '/rotate-pdf.html': '/pdf-tools/rotate-pdf.html',
   '/delete-pdf-pages.html': '/pdf-tools/delete-pdf-pages.html',
   '/add-watermark-to-pdf.html': '/pdf-tools/add-watermark-to-pdf.html',
+  '/bmi-calculator.html': '/utility-tools/bmi-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -6718,6 +6737,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/add-watermark-pdf-when.html': 'guide/de/add-watermark-pdf-when.jsp',
   '/guides/de/add-watermark-pdf-step-by-step.html': 'guide/de/add-watermark-pdf-step-by-step.jsp',
   '/guides/de/add-watermark-pdf-vs-alternatives.html': 'guide/de/add-watermark-pdf-vs-alternatives.jsp',
+  '/utility-tools/bmi-calculator.html': 'utility/bmi-calculator.jsp',
+  '/guides/bmi-calculator-when.html': 'guide/bmi-calculator-when.jsp',
+  '/guides/bmi-calculator-step-by-step.html': 'guide/bmi-calculator-step-by-step.jsp',
+  '/guides/bmi-calculator-vs-alternatives.html': 'guide/bmi-calculator-vs-alternatives.jsp',
+  '/guides/pt/bmi-calculator-when.html': 'guide/pt/bmi-calculator-when.jsp',
+  '/guides/pt/bmi-calculator-step-by-step.html': 'guide/pt/bmi-calculator-step-by-step.jsp',
+  '/guides/pt/bmi-calculator-vs-alternatives.html': 'guide/pt/bmi-calculator-vs-alternatives.jsp',
+  '/guides/es/bmi-calculator-when.html': 'guide/es/bmi-calculator-when.jsp',
+  '/guides/es/bmi-calculator-step-by-step.html': 'guide/es/bmi-calculator-step-by-step.jsp',
+  '/guides/es/bmi-calculator-vs-alternatives.html': 'guide/es/bmi-calculator-vs-alternatives.jsp',
+  '/guides/vi/bmi-calculator-when.html': 'guide/vi/bmi-calculator-when.jsp',
+  '/guides/vi/bmi-calculator-step-by-step.html': 'guide/vi/bmi-calculator-step-by-step.jsp',
+  '/guides/vi/bmi-calculator-vs-alternatives.html': 'guide/vi/bmi-calculator-vs-alternatives.jsp',
+  '/guides/id/bmi-calculator-when.html': 'guide/id/bmi-calculator-when.jsp',
+  '/guides/id/bmi-calculator-step-by-step.html': 'guide/id/bmi-calculator-step-by-step.jsp',
+  '/guides/id/bmi-calculator-vs-alternatives.html': 'guide/id/bmi-calculator-vs-alternatives.jsp',
+  '/guides/de/bmi-calculator-when.html': 'guide/de/bmi-calculator-when.jsp',
+  '/guides/de/bmi-calculator-step-by-step.html': 'guide/de/bmi-calculator-step-by-step.jsp',
+  '/guides/de/bmi-calculator-vs-alternatives.html': 'guide/de/bmi-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
