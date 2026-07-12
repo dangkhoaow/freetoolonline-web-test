@@ -1335,6 +1335,24 @@ export const GUIDE_ROUTES = new Set([
   '/guides/image-format-converter-step-by-step.html',
   '/guides/image-format-converter-when.html',
   '/guides/image-format-converter-vs-alternatives.html',
+  // new-tool-discovery-loop-runbook fire-70 (2026-07-12): image-format-converter-guides
+  // locale fanout (guide_locale_fanout debt registered fire69 per §4b) - pt/es/vi/id/de
+  // x 3 angles (when/step-by-step/vs-alternatives) = 15 locale bundles.
+  '/guides/pt/image-format-converter-when.html',
+  '/guides/pt/image-format-converter-step-by-step.html',
+  '/guides/pt/image-format-converter-vs-alternatives.html',
+  '/guides/es/image-format-converter-when.html',
+  '/guides/es/image-format-converter-step-by-step.html',
+  '/guides/es/image-format-converter-vs-alternatives.html',
+  '/guides/vi/image-format-converter-when.html',
+  '/guides/vi/image-format-converter-step-by-step.html',
+  '/guides/vi/image-format-converter-vs-alternatives.html',
+  '/guides/id/image-format-converter-when.html',
+  '/guides/id/image-format-converter-step-by-step.html',
+  '/guides/id/image-format-converter-vs-alternatives.html',
+  '/guides/de/image-format-converter-when.html',
+  '/guides/de/image-format-converter-step-by-step.html',
+  '/guides/de/image-format-converter-vs-alternatives.html',
   // cycle 20260625-6 create_new_guide_page (locale completion) - pt variant of video-converter-online-free (staging-only until es/vi/id/de complete).
   '/guides/pt/video-converter-online-free.html',
   // cycle 20260626 create_new_guide_page (locale completion) - es variant of video-converter-online-free (staging-only until vi/id/de complete).
@@ -6022,6 +6040,23 @@ export const JSP_BY_ROUTE = {
   '/guides/image-format-converter-when.html': 'guide/image-format-converter-when.jsp',
   '/guides/image-format-converter-step-by-step.html': 'guide/image-format-converter-step-by-step.jsp',
   '/guides/image-format-converter-vs-alternatives.html': 'guide/image-format-converter-vs-alternatives.jsp',
+  // image-format-converter-guides - locale fanout pt/es/vi/id/de for all 3 angles
+  // (newtool-discovery-loop fire-70; EN angles were already live, locale fanout was pending).
+  '/guides/pt/image-format-converter-when.html': 'guide/pt/image-format-converter-when.jsp',
+  '/guides/pt/image-format-converter-step-by-step.html': 'guide/pt/image-format-converter-step-by-step.jsp',
+  '/guides/pt/image-format-converter-vs-alternatives.html': 'guide/pt/image-format-converter-vs-alternatives.jsp',
+  '/guides/es/image-format-converter-when.html': 'guide/es/image-format-converter-when.jsp',
+  '/guides/es/image-format-converter-step-by-step.html': 'guide/es/image-format-converter-step-by-step.jsp',
+  '/guides/es/image-format-converter-vs-alternatives.html': 'guide/es/image-format-converter-vs-alternatives.jsp',
+  '/guides/vi/image-format-converter-when.html': 'guide/vi/image-format-converter-when.jsp',
+  '/guides/vi/image-format-converter-step-by-step.html': 'guide/vi/image-format-converter-step-by-step.jsp',
+  '/guides/vi/image-format-converter-vs-alternatives.html': 'guide/vi/image-format-converter-vs-alternatives.jsp',
+  '/guides/id/image-format-converter-when.html': 'guide/id/image-format-converter-when.jsp',
+  '/guides/id/image-format-converter-step-by-step.html': 'guide/id/image-format-converter-step-by-step.jsp',
+  '/guides/id/image-format-converter-vs-alternatives.html': 'guide/id/image-format-converter-vs-alternatives.jsp',
+  '/guides/de/image-format-converter-when.html': 'guide/de/image-format-converter-when.jsp',
+  '/guides/de/image-format-converter-step-by-step.html': 'guide/de/image-format-converter-step-by-step.jsp',
+  '/guides/de/image-format-converter-vs-alternatives.html': 'guide/de/image-format-converter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
