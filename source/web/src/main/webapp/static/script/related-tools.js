@@ -380,6 +380,7 @@ try {
     { title: "Neon Cat Chase", url: "https://freetoolonline.com/games/neon-cat-chase.html", include: !1, tags: "games" },
     { title: "Schematic Factory Line", url: "https://freetoolonline.com/games/schematic-factory-game.html", include: !1, tags: "games" },
     { title: "Space Grid Puzzle", url: "https://freetoolonline.com/games/space-grid-puzzle.html", include: !1, tags: "games" },
+    { title: "Thirteen Step Escape", url: "https://freetoolonline.com/games/thirteen-step-escape.html", include: !1, tags: "games" },
     { title: "Gravity Orbit Golf", url: "https://freetoolonline.com/games/gravity-orbit-golf.html", include: !1, tags: "games" },
     { title: "Species Life Battle", url: "https://freetoolonline.com/games/species-life-battle.html", include: !1, tags: "games" },
     { title: "Earth 3D Globe - Live Day & Night Map", url: "https://freetoolonline.com/space-3d/earth-3d-globe.html", include: !1, tags: "space-3d" },
