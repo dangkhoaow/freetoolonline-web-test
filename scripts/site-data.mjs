@@ -1362,6 +1362,15 @@ export const INFO_ROUTES = new Set([
   '/guides/de/earth-3d-globe-live-day-night-map-vs-alternatives.html',
   '/guides/vi/earth-3d-globe-live-day-night-map-vs-alternatives.html',
   '/guides/id/earth-3d-globe-live-day-night-map-vs-alternatives.html',
+  // play-fps-in-browser-step-by-step locale fanout pt/es/de/vi/id
+  // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
+  // per runbook 4b - the -when and -vs-alternatives angles for this guide
+  // remain EN-only pending a future fire).
+  '/guides/pt/play-fps-in-browser-step-by-step.html',
+  '/guides/es/play-fps-in-browser-step-by-step.html',
+  '/guides/de/play-fps-in-browser-step-by-step.html',
+  '/guides/vi/play-fps-in-browser-step-by-step.html',
+  '/guides/id/play-fps-in-browser-step-by-step.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -3216,6 +3225,15 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/earth-3d-globe-live-day-night-map-vs-alternatives.html',
   '/guides/vi/earth-3d-globe-live-day-night-map-vs-alternatives.html',
   '/guides/id/earth-3d-globe-live-day-night-map-vs-alternatives.html',
+  // play-fps-in-browser-step-by-step locale fanout pt/es/de/vi/id
+  // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
+  // per runbook 4b - the -when and -vs-alternatives angles for this guide
+  // remain EN-only pending a future fire).
+  '/guides/pt/play-fps-in-browser-step-by-step.html',
+  '/guides/es/play-fps-in-browser-step-by-step.html',
+  '/guides/de/play-fps-in-browser-step-by-step.html',
+  '/guides/vi/play-fps-in-browser-step-by-step.html',
+  '/guides/id/play-fps-in-browser-step-by-step.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -6070,6 +6088,14 @@ export const JSP_BY_ROUTE = {
   '/guides/play-fps-in-browser-when.html': 'guide/play-fps-in-browser-when.jsp',
   '/guides/play-fps-in-browser-step-by-step.html': 'guide/play-fps-in-browser-step-by-step.jsp',
   '/guides/play-fps-in-browser-vs-alternatives.html': 'guide/play-fps-in-browser-vs-alternatives.jsp',
+  // play-fps-in-browser-step-by-step locale fanout pt/es/de/vi/id
+  // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
+  // per runbook 4b).
+  '/guides/pt/play-fps-in-browser-step-by-step.html': 'guide/pt/play-fps-in-browser-step-by-step.jsp',
+  '/guides/es/play-fps-in-browser-step-by-step.html': 'guide/es/play-fps-in-browser-step-by-step.jsp',
+  '/guides/de/play-fps-in-browser-step-by-step.html': 'guide/de/play-fps-in-browser-step-by-step.jsp',
+  '/guides/vi/play-fps-in-browser-step-by-step.html': 'guide/vi/play-fps-in-browser-step-by-step.jsp',
+  '/guides/id/play-fps-in-browser-step-by-step.html': 'guide/id/play-fps-in-browser-step-by-step.jsp',
   '/image-converter-tools/webp-to-jpg.html': 'convert/webp-to-jpg.jsp',
   '/guides/webp-jpg-converter-when.html': 'guide/webp-jpg-converter-when.jsp',
   '/guides/webp-jpg-converter-step-by-step.html': 'guide/webp-jpg-converter-step-by-step.jsp',
