@@ -6,7 +6,7 @@
         <p style="margin-bottom: 0;"><b>30-Sekunden-Antwort.</b> Die richtige MD5-Alternative haengt vom Job ab. <b>Passwoerter speichern?</b> Verwenden Sie <b>Argon2id</b> (aktuelle OWASP-Empfehlung) oder <b>bcrypt</b> (breite Bibliotheksunterstuetzung). <b>Integritaet gegen einen Gegner schuetzen?</b> Verwenden Sie <b>SHA-256</b> mit HMAC. <b>Einen Schluessel aus einem Passwort ableiten?</b> Verwenden Sie <b>PBKDF2</b> (FIPS-erforderliche Umgebungen) oder <b>Argon2id</b> anderswo. <b>Cache-Schluessel, ETags, Deduplizierung auf nicht-gegnerischen Daten?</b> MD5 ist immer noch in Ordnung - lassen Sie es durch den <a href="/developer-tools/md5-converter.html">MD5-Konverter</a> laufen.</p>
     </div>
 
-    <h2 class="text-uppercase"><b>Die Entscheidung in einer Tabelle</b></h2>
+    <h2 class="text-uppercase"><b>Die Entscheidung in einer Tabelle</b></h2><figure class="illustration"><img src="/img/illustrations/card-row-4/guidesmd5alternativesbcryptargon2idsha256wheneachfits__f4cb8d20.svg" alt="Compare vier Anwendungsfaelle zum passenden Hash-Algorithmus using the four points in this diagram." loading="lazy" width="640" height="180"><figcaption>Richtigen Hash nach Aufgabe waehlen at a glance.</figcaption></figure>
     <div class="w3-responsive">
         <table class="w3-table-all w3-small">
             <tr><th>Anwendungsfall</th><th>Waehlen</th><th>Warum</th><th>Nicht MD5 waehlen weil</th></tr>
@@ -33,7 +33,7 @@
     <h2 class="text-uppercase"><b>PBKDF2 - der FIPS-Pfad</b></h2>
     <p>PBKDF2 ist die passwortbasierte Schluesselableitungsfunktion, die NIST 2000 gesegnet hat. Sie ist iterationsbasiert: Sie waehlen eine Anzahl, fuehren einen zugrundeliegenden Hash so oft aus, und der Arbeitsfaktor folgt. Sie ist nicht speicher-hart, also schwaecher als Argon2id gegen moderne GPUs, aber sie ist die richtige Wahl, wenn Ihre Umgebung einen FIPS 140-2 / 140-3-Algorithmus erfordert. Iterationsanzahl, die 2026 mit HMAC-SHA-256 darunter zu verwenden ist, ist <b>600.000 oder hoeher</b> gemaess OWASP-Richtlinien; mit HMAC-SHA-512 ist es <b>210.000 oder hoeher</b>. Niedrigere Zahlen sind in Legacy-Code immer noch ueblich; erhoehen Sie sie beim naechsten Deploy.</p>
 
-    <h2 class="text-uppercase"><b>"Wo MD5 immer noch hingehoert" - die Arbeitsliste</b></h2>
+    <h2 class="text-uppercase"><b>"Wo MD5 immer noch hingehoert" - die Arbeitsliste</b></h2><figure class="illustration"><img src="/img/illustrations/hub-spoke-4/guidesmd5alternativesbcryptargon2idsha256wheneachfits__c6f9280c.svg" alt="Compare vier Szenarien wo MD5 noch passt using the four points in this diagram." loading="lazy" width="520" height="300"><figcaption>MD5 fuer Cache, ETag, Integritaet, Dedup at a glance.</figcaption></figure>
     <ul>
         <li><b>Cache-Schluessel.</b> Hashen Sie eine lange URL oder Query-String in einen Schluessel fester Laenge fuer memcached, Redis oder einen Dateinamen. Kollisionen sind nicht wichtig; Geschwindigkeit schon.</li>
         <li><b>ETag-artige Inhalts-Fingerabdruecke.</b> Geben Sie MD5 eines Antwort-Bodys als <code>ETag</code>-Header aus, damit Clients ohne erneuten Download revalidieren koennen.</li>
@@ -43,7 +43,7 @@
     </ul>
     <p>Fuer all das ist <a href="/developer-tools/md5-converter.html">der MD5-Konverter</a> die richtige Oberflaeche - Text einfuegen, Hash bekommen, Ergebnis kopieren.</p>
 
-    <h2 class="text-uppercase"><b>Migrations-Checkliste - eine bestehende App von MD5 wegbewegen</b></h2>
+    <h2 class="text-uppercase"><b>Migrations-Checkliste - eine bestehende App von MD5 wegbewegen</b></h2><figure class="illustration"><img src="/img/illustrations/numbered-bars-4/guidesmd5alternativesbcryptargon2idsha256wheneachfits__ab1cb44d.svg" alt="Compare vier Migrationsschritte weg von MD5 using the four points in this diagram." loading="lazy" width="640" height="200"><figcaption>Audit, Argon2id, HMAC-SHA-256, SHA-256 at a glance.</figcaption></figure>
     <ol>
         <li><b>Auditieren Sie, wo MD5 verwendet wird.</b> Grepen Sie die Codebasis nach <code>md5</code>, <code>MessageDigest.getInstance("MD5")</code>, <code>hashlib.md5</code>, <code>crypto.createHash('md5')</code>. Markieren Sie jede Verwendung als eine von: Passwoerter, MAC, Integritaet, Cache.</li>
         <li><b>Passwoerter - rollende Migration.</b> Fuegen Sie einen Argon2id-Verifier neben dem MD5-Verifier hinzu. Beim naechsten erfolgreichen Login berechnen Sie das Passwort unter Argon2id neu, speichern den neuen Verifier, lassen die MD5-Zeile fallen. Rotieren Sie jedes Konto innerhalb von 90 Tagen; erzwingen Sie Reset fuer alles Verbliebene.</li>
