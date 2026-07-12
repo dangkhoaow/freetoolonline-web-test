@@ -410,6 +410,7 @@ try {
     { title: "BMI Calculator", url: "https://freetoolonline.com/utility-tools/bmi-calculator.html", include: !1, tags: "utility" },
     { title: "Tip Calculator", url: "https://freetoolonline.com/utility-tools/tip-calculator.html", include: !1, tags: "utility" },
     { title: "Loan Calculator", url: "https://freetoolonline.com/utility-tools/loan-calculator.html", include: !1, tags: "utility" },
+    { title: "Date Difference Calculator", url: "https://freetoolonline.com/utility-tools/date-difference-calculator.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
