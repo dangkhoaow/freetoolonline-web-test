@@ -1293,6 +1293,23 @@ export const INFO_ROUTES = new Set([
   '/guides/galaxy-3d-simulator-when.html',
   '/guides/galaxy-3d-simulator-step-by-step.html',
   '/guides/galaxy-3d-simulator-vs-alternatives.html',
+  // galaxy-3d-simulator-guides - locale fanout pt/es/vi/id/de for all 3 angles
+  // (new-tool-discovery-loop-runbook fire60, LEAN one-off session).
+  '/guides/pt/galaxy-3d-simulator-when.html',
+  '/guides/pt/galaxy-3d-simulator-step-by-step.html',
+  '/guides/pt/galaxy-3d-simulator-vs-alternatives.html',
+  '/guides/es/galaxy-3d-simulator-when.html',
+  '/guides/es/galaxy-3d-simulator-step-by-step.html',
+  '/guides/es/galaxy-3d-simulator-vs-alternatives.html',
+  '/guides/de/galaxy-3d-simulator-when.html',
+  '/guides/de/galaxy-3d-simulator-step-by-step.html',
+  '/guides/de/galaxy-3d-simulator-vs-alternatives.html',
+  '/guides/vi/galaxy-3d-simulator-when.html',
+  '/guides/vi/galaxy-3d-simulator-step-by-step.html',
+  '/guides/vi/galaxy-3d-simulator-vs-alternatives.html',
+  '/guides/id/galaxy-3d-simulator-when.html',
+  '/guides/id/galaxy-3d-simulator-step-by-step.html',
+  '/guides/id/galaxy-3d-simulator-vs-alternatives.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -5461,6 +5478,23 @@ export const JSP_BY_ROUTE = {
   '/guides/galaxy-3d-simulator-when.html': 'guide/galaxy-3d-simulator-when.jsp',
   '/guides/galaxy-3d-simulator-step-by-step.html': 'guide/galaxy-3d-simulator-step-by-step.jsp',
   '/guides/galaxy-3d-simulator-vs-alternatives.html': 'guide/galaxy-3d-simulator-vs-alternatives.jsp',
+  // galaxy-3d-simulator-guides - locale fanout pt/es/vi/id/de for all 3 angles
+  // (new-tool-discovery-loop-runbook fire60, LEAN one-off session).
+  '/guides/pt/galaxy-3d-simulator-when.html': 'guide/pt/galaxy-3d-simulator-when.jsp',
+  '/guides/pt/galaxy-3d-simulator-step-by-step.html': 'guide/pt/galaxy-3d-simulator-step-by-step.jsp',
+  '/guides/pt/galaxy-3d-simulator-vs-alternatives.html': 'guide/pt/galaxy-3d-simulator-vs-alternatives.jsp',
+  '/guides/es/galaxy-3d-simulator-when.html': 'guide/es/galaxy-3d-simulator-when.jsp',
+  '/guides/es/galaxy-3d-simulator-step-by-step.html': 'guide/es/galaxy-3d-simulator-step-by-step.jsp',
+  '/guides/es/galaxy-3d-simulator-vs-alternatives.html': 'guide/es/galaxy-3d-simulator-vs-alternatives.jsp',
+  '/guides/de/galaxy-3d-simulator-when.html': 'guide/de/galaxy-3d-simulator-when.jsp',
+  '/guides/de/galaxy-3d-simulator-step-by-step.html': 'guide/de/galaxy-3d-simulator-step-by-step.jsp',
+  '/guides/de/galaxy-3d-simulator-vs-alternatives.html': 'guide/de/galaxy-3d-simulator-vs-alternatives.jsp',
+  '/guides/vi/galaxy-3d-simulator-when.html': 'guide/vi/galaxy-3d-simulator-when.jsp',
+  '/guides/vi/galaxy-3d-simulator-step-by-step.html': 'guide/vi/galaxy-3d-simulator-step-by-step.jsp',
+  '/guides/vi/galaxy-3d-simulator-vs-alternatives.html': 'guide/vi/galaxy-3d-simulator-vs-alternatives.jsp',
+  '/guides/id/galaxy-3d-simulator-when.html': 'guide/id/galaxy-3d-simulator-when.jsp',
+  '/guides/id/galaxy-3d-simulator-step-by-step.html': 'guide/id/galaxy-3d-simulator-step-by-step.jsp',
+  '/guides/id/galaxy-3d-simulator-vs-alternatives.html': 'guide/id/galaxy-3d-simulator-vs-alternatives.jsp',
   '/image-tools/background-remover.html': 'convert/background-remover.jsp',
   '/guides/ai-background-remover-when.html': 'guide/ai-background-remover-when.jsp',
   '/guides/ai-background-remover-step-by-step.html': 'guide/ai-background-remover-step-by-step.jsp',
