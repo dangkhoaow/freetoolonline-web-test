@@ -14,9 +14,31 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/delete-pdf-pages-vs-alternatives.html',
+  '/guides/delete-pdf-pages-step-by-step.html',
+  '/guides/delete-pdf-pages-when.html',
   '/guides/rotate-pdf-vs-alternatives.html',
   '/guides/rotate-pdf-step-by-step.html',
   '/guides/rotate-pdf-when.html',
+  // new-tool-discovery-loop-runbook (LEAN one-off, 2026-07-12): rotate-pdf guide
+  // locale fanout (guide_locale_fanout unit rotate-pdf-guides, was "pending" in
+  // the ledger) - 3 EN angles x pt/es/vi/id/de, paraphrased from
+  // tool-rotatepdf/SKILL.md framing menu only.
+  '/guides/pt/rotate-pdf-when.html',
+  '/guides/pt/rotate-pdf-step-by-step.html',
+  '/guides/pt/rotate-pdf-vs-alternatives.html',
+  '/guides/es/rotate-pdf-when.html',
+  '/guides/es/rotate-pdf-step-by-step.html',
+  '/guides/es/rotate-pdf-vs-alternatives.html',
+  '/guides/vi/rotate-pdf-when.html',
+  '/guides/vi/rotate-pdf-step-by-step.html',
+  '/guides/vi/rotate-pdf-vs-alternatives.html',
+  '/guides/id/rotate-pdf-when.html',
+  '/guides/id/rotate-pdf-step-by-step.html',
+  '/guides/id/rotate-pdf-vs-alternatives.html',
+  '/guides/de/rotate-pdf-when.html',
+  '/guides/de/rotate-pdf-step-by-step.html',
+  '/guides/de/rotate-pdf-vs-alternatives.html',
   '/guides/pt/remove-audio-from-video-when.html',
   '/guides/es/remove-audio-from-video-when.html',
   '/guides/vi/remove-audio-from-video-when.html',
@@ -1415,6 +1437,28 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // new-tool-discovery-loop-runbook (LEAN one-off, 2026-07-12): rotate-pdf
+  // GUIDE_ROUTES backfill (builder wired JSP_BY_ROUTE only, same recurring gap
+  // class as fires 32/56/57/62/66) + full pt/es/vi/id/de locale fanout for all
+  // 3 EN companion guide angles (guide_locale_fanout unit rotate-pdf-guides).
+  '/guides/rotate-pdf-when.html',
+  '/guides/rotate-pdf-step-by-step.html',
+  '/guides/rotate-pdf-vs-alternatives.html',
+  '/guides/pt/rotate-pdf-when.html',
+  '/guides/pt/rotate-pdf-step-by-step.html',
+  '/guides/pt/rotate-pdf-vs-alternatives.html',
+  '/guides/es/rotate-pdf-when.html',
+  '/guides/es/rotate-pdf-step-by-step.html',
+  '/guides/es/rotate-pdf-vs-alternatives.html',
+  '/guides/vi/rotate-pdf-when.html',
+  '/guides/vi/rotate-pdf-step-by-step.html',
+  '/guides/vi/rotate-pdf-vs-alternatives.html',
+  '/guides/id/rotate-pdf-when.html',
+  '/guides/id/rotate-pdf-step-by-step.html',
+  '/guides/id/rotate-pdf-vs-alternatives.html',
+  '/guides/de/rotate-pdf-when.html',
+  '/guides/de/rotate-pdf-step-by-step.html',
+  '/guides/de/rotate-pdf-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire84 (2026-07-12): GUIDE_ROUTES backfill for
   // strip-audio-from-video's 3 EN companion guide angles (builder wires JSP_BY_ROUTE
   // only - same recurring gap class as fires 32/56/57/62/66, now closed at the
@@ -3145,6 +3189,25 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/lightning-math-battle-vs-alternatives.html',
   '/guides/id/lightning-math-battle-vs-alternatives.html',
   '/guides/de/lightning-math-battle-vs-alternatives.html',
+  // fire106 precision-bounce-loop
+  '/guides/how-to-play-precision-bounce-loop.html',
+  '/guides/pt/how-to-play-precision-bounce-loop.html',
+  '/guides/es/how-to-play-precision-bounce-loop.html',
+  '/guides/vi/how-to-play-precision-bounce-loop.html',
+  '/guides/id/how-to-play-precision-bounce-loop.html',
+  '/guides/de/how-to-play-precision-bounce-loop.html',
+  '/guides/precision-bounce-loop-when.html',
+  '/guides/pt/precision-bounce-loop-when.html',
+  '/guides/es/precision-bounce-loop-when.html',
+  '/guides/vi/precision-bounce-loop-when.html',
+  '/guides/id/precision-bounce-loop-when.html',
+  '/guides/de/precision-bounce-loop-when.html',
+  '/guides/precision-bounce-loop-vs-alternatives.html',
+  '/guides/pt/precision-bounce-loop-vs-alternatives.html',
+  '/guides/es/precision-bounce-loop-vs-alternatives.html',
+  '/guides/vi/precision-bounce-loop-vs-alternatives.html',
+  '/guides/id/precision-bounce-loop-vs-alternatives.html',
+  '/guides/de/precision-bounce-loop-vs-alternatives.html',
 
   '/guides/de/gravity-orbit-golf-vs-alternatives.html',
 
@@ -3845,6 +3908,7 @@ export const ALIAS_ROUTES = {
   '/floor-thirteen-horror.html': '/games/floor-thirteen-horror.html',
   '/voxel-fps-arena.html': '/games/voxel-fps-arena.html',
   '/lightning-math-battle.html': '/games/lightning-math-battle.html',
+  '/precision-bounce-loop.html': '/games/precision-bounce-loop.html',
 
   '/gravity-orbit-golf.html': '/games/gravity-orbit-golf.html',
 
@@ -3868,6 +3932,7 @@ export const ALIAS_ROUTES = {
   '/image-format-converter.html': '/image-converter-tools/image-format-converter.html',
   '/strip-audio-from-video.html': '/video-tools/strip-audio-from-video.html',
   '/rotate-pdf.html': '/pdf-tools/rotate-pdf.html',
+  '/delete-pdf-pages.html': '/pdf-tools/delete-pdf-pages.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -5742,6 +5807,26 @@ export const JSP_BY_ROUTE = {
   '/guides/id/lightning-math-battle-vs-alternatives.html': 'guide/id/lightning-math-battle-vs-alternatives.jsp',
   '/guides/de/lightning-math-battle-vs-alternatives.html': 'guide/de/lightning-math-battle-vs-alternatives.jsp',
   '/games/lightning-math-battle.html': 'games/lightning-math-battle.jsp',
+  // fire106 precision-bounce-loop guides
+  '/guides/how-to-play-precision-bounce-loop.html': 'guide/how-to-play-precision-bounce-loop.jsp',
+  '/guides/pt/how-to-play-precision-bounce-loop.html': 'guide/pt/how-to-play-precision-bounce-loop.jsp',
+  '/guides/es/how-to-play-precision-bounce-loop.html': 'guide/es/how-to-play-precision-bounce-loop.jsp',
+  '/guides/vi/how-to-play-precision-bounce-loop.html': 'guide/vi/how-to-play-precision-bounce-loop.jsp',
+  '/guides/id/how-to-play-precision-bounce-loop.html': 'guide/id/how-to-play-precision-bounce-loop.jsp',
+  '/guides/de/how-to-play-precision-bounce-loop.html': 'guide/de/how-to-play-precision-bounce-loop.jsp',
+  '/guides/precision-bounce-loop-when.html': 'guide/precision-bounce-loop-when.jsp',
+  '/guides/pt/precision-bounce-loop-when.html': 'guide/pt/precision-bounce-loop-when.jsp',
+  '/guides/es/precision-bounce-loop-when.html': 'guide/es/precision-bounce-loop-when.jsp',
+  '/guides/vi/precision-bounce-loop-when.html': 'guide/vi/precision-bounce-loop-when.jsp',
+  '/guides/id/precision-bounce-loop-when.html': 'guide/id/precision-bounce-loop-when.jsp',
+  '/guides/de/precision-bounce-loop-when.html': 'guide/de/precision-bounce-loop-when.jsp',
+  '/guides/precision-bounce-loop-vs-alternatives.html': 'guide/precision-bounce-loop-vs-alternatives.jsp',
+  '/guides/pt/precision-bounce-loop-vs-alternatives.html': 'guide/pt/precision-bounce-loop-vs-alternatives.jsp',
+  '/guides/es/precision-bounce-loop-vs-alternatives.html': 'guide/es/precision-bounce-loop-vs-alternatives.jsp',
+  '/guides/vi/precision-bounce-loop-vs-alternatives.html': 'guide/vi/precision-bounce-loop-vs-alternatives.jsp',
+  '/guides/id/precision-bounce-loop-vs-alternatives.html': 'guide/id/precision-bounce-loop-vs-alternatives.jsp',
+  '/guides/de/precision-bounce-loop-vs-alternatives.html': 'guide/de/precision-bounce-loop-vs-alternatives.jsp',
+  '/games/precision-bounce-loop.html': 'games/precision-bounce-loop.jsp',
 
   '/guides/de/gravity-orbit-golf-vs-alternatives.html': 'guide/de/gravity-orbit-golf-vs-alternatives.jsp',
   '/games/gravity-orbit-golf.html': 'games/gravity-orbit-golf.jsp',
@@ -6445,6 +6530,27 @@ export const JSP_BY_ROUTE = {
   '/guides/rotate-pdf-when.html': 'guide/rotate-pdf-when.jsp',
   '/guides/rotate-pdf-step-by-step.html': 'guide/rotate-pdf-step-by-step.jsp',
   '/guides/rotate-pdf-vs-alternatives.html': 'guide/rotate-pdf-vs-alternatives.jsp',
+  // new-tool-discovery-loop-runbook (LEAN one-off, 2026-07-12): rotate-pdf guide
+  // locale fanout (guide_locale_fanout unit rotate-pdf-guides).
+  '/guides/pt/rotate-pdf-when.html': 'guide/pt/rotate-pdf-when.jsp',
+  '/guides/pt/rotate-pdf-step-by-step.html': 'guide/pt/rotate-pdf-step-by-step.jsp',
+  '/guides/pt/rotate-pdf-vs-alternatives.html': 'guide/pt/rotate-pdf-vs-alternatives.jsp',
+  '/guides/es/rotate-pdf-when.html': 'guide/es/rotate-pdf-when.jsp',
+  '/guides/es/rotate-pdf-step-by-step.html': 'guide/es/rotate-pdf-step-by-step.jsp',
+  '/guides/es/rotate-pdf-vs-alternatives.html': 'guide/es/rotate-pdf-vs-alternatives.jsp',
+  '/guides/vi/rotate-pdf-when.html': 'guide/vi/rotate-pdf-when.jsp',
+  '/guides/vi/rotate-pdf-step-by-step.html': 'guide/vi/rotate-pdf-step-by-step.jsp',
+  '/guides/vi/rotate-pdf-vs-alternatives.html': 'guide/vi/rotate-pdf-vs-alternatives.jsp',
+  '/guides/id/rotate-pdf-when.html': 'guide/id/rotate-pdf-when.jsp',
+  '/guides/id/rotate-pdf-step-by-step.html': 'guide/id/rotate-pdf-step-by-step.jsp',
+  '/guides/id/rotate-pdf-vs-alternatives.html': 'guide/id/rotate-pdf-vs-alternatives.jsp',
+  '/guides/de/rotate-pdf-when.html': 'guide/de/rotate-pdf-when.jsp',
+  '/guides/de/rotate-pdf-step-by-step.html': 'guide/de/rotate-pdf-step-by-step.jsp',
+  '/guides/de/rotate-pdf-vs-alternatives.html': 'guide/de/rotate-pdf-vs-alternatives.jsp',
+  '/pdf-tools/delete-pdf-pages.html': 'pdf/delete-pdf-pages.jsp',
+  '/guides/delete-pdf-pages-when.html': 'guide/delete-pdf-pages-when.jsp',
+  '/guides/delete-pdf-pages-step-by-step.html': 'guide/delete-pdf-pages-step-by-step.jsp',
+  '/guides/delete-pdf-pages-vs-alternatives.html': 'guide/delete-pdf-pages-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
