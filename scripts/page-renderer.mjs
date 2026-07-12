@@ -794,13 +794,29 @@ function buildCollectionPageJsonLd({ canonicalOrigin, canonicalUrl, name, itemRo
   });
 }
 
+// Humanize a route's leaf segment into a Title-Case label, e.g.
+// "/video-tools/audio-trimmer.html" -> "Audio Trimmer". Breadcrumb fallback
+// so a ListItem never ships an empty `name` (Google rejects "Either name or
+// item.name should be specified", making the whole BreadcrumbList invalid /
+// ineligible for rich results - GSC flagged /video-tools/audio-trimmer.html
+// 2026-07-11 when its title fragment was absent on prod).
+function humanizeRouteLabel(route) {
+  const tail = String(route ?? '').split('?')[0].split('#')[0].replace(/\/+$/, '').split('/').pop().replace(/\.html$/i, '');
+  const words = tail.split('-').filter(Boolean).map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w));
+  return words.join(' ');
+}
+
 function buildBreadcrumbJsonLd({ canonicalOrigin, items }) {
-  const itemListElement = items.map((item, index) => ({
-    '@type': 'ListItem',
-    position: index + 1,
-    name: item.name,
-    item: canonicalForRoute(canonicalOrigin, item.route),
-  }));
+  const itemListElement = items.map((item, index) => {
+    // NEVER emit an empty crumb name: fall back to a humanized route label.
+    const name = String(item.name ?? '').trim() || humanizeRouteLabel(item.route);
+    return {
+      '@type': 'ListItem',
+      position: index + 1,
+      name,
+      item: canonicalForRoute(canonicalOrigin, item.route),
+    };
+  });
   return buildJsonLdScript({
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',

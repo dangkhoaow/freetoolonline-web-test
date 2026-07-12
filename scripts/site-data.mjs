@@ -14,6 +14,20 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  // new-tool-discovery-loop-runbook fire84 (2026-07-12): INFO_ROUTES/GUIDE_ROUTES
+  // backfill for strip-audio-from-video's 3 EN companion guide angles (builder
+  // wired JSP_BY_ROUTE only - same recurring gap class as fires 32/56/57/62/66,
+  // now closed at the source in emit-guide-pages.mjs::patchGuideRoute()).
+  // step-by-step also fanned out to pt/es/vi/id/de this fire; -when and
+  // -vs-alternatives locale fanout deferred to the guide-support-drain backlog.
+  '/guides/remove-audio-from-video-when.html',
+  '/guides/remove-audio-from-video-step-by-step.html',
+  '/guides/remove-audio-from-video-vs-alternatives.html',
+  '/guides/pt/remove-audio-from-video-step-by-step.html',
+  '/guides/es/remove-audio-from-video-step-by-step.html',
+  '/guides/vi/remove-audio-from-video-step-by-step.html',
+  '/guides/id/remove-audio-from-video-step-by-step.html',
+  '/guides/de/remove-audio-from-video-step-by-step.html',
   '/',
   '/about-us.html',
   '/contact-us.html',
@@ -1320,6 +1334,57 @@ export const INFO_ROUTES = new Set([
   '/guides/de/city-time-machine-3d-when.html',
   '/guides/vi/city-time-machine-3d-when.html',
   '/guides/id/city-time-machine-3d-when.html',
+  // city-time-machine-3d-step-by-step / -vs-alternatives - GUIDE_ROUTES/
+  // INFO_ROUTES backfill for the pre-existing EN angles (JSP_BY_ROUTE + CMS
+  // existed, never registered here - same defect class as "when" above) plus
+  // locale fanout pt/es/vi/id/de (new-tool-discovery-loop-runbook LEAN fire76).
+  '/guides/city-time-machine-3d-step-by-step.html',
+  '/guides/pt/city-time-machine-3d-step-by-step.html',
+  '/guides/es/city-time-machine-3d-step-by-step.html',
+  '/guides/de/city-time-machine-3d-step-by-step.html',
+  '/guides/vi/city-time-machine-3d-step-by-step.html',
+  '/guides/id/city-time-machine-3d-step-by-step.html',
+  '/guides/city-time-machine-3d-vs-alternatives.html',
+  '/guides/pt/city-time-machine-3d-vs-alternatives.html',
+  '/guides/es/city-time-machine-3d-vs-alternatives.html',
+  '/guides/de/city-time-machine-3d-vs-alternatives.html',
+  '/guides/vi/city-time-machine-3d-vs-alternatives.html',
+  '/guides/id/city-time-machine-3d-vs-alternatives.html',
+  // earth-3d-globe-live-day-night-map-when - GUIDE_ROUTES/INFO_ROUTES backfill
+  // for the pre-existing EN angle (JSP_BY_ROUTE + CMS existed, never
+  // registered here - same defect class as the city-time-machine backfill
+  // above) plus locale fanout pt/es/de/vi/id (new-tool-discovery-loop-runbook
+  // LEAN one-off fire, guide-support drain per runbook 4b).
+  '/guides/earth-3d-globe-live-day-night-map-when.html',
+  '/guides/pt/earth-3d-globe-live-day-night-map-when.html',
+  '/guides/es/earth-3d-globe-live-day-night-map-when.html',
+  '/guides/de/earth-3d-globe-live-day-night-map-when.html',
+  '/guides/vi/earth-3d-globe-live-day-night-map-when.html',
+  '/guides/id/earth-3d-globe-live-day-night-map-when.html',
+  // earth-3d-globe-live-day-night-map step-by-step + vs-alternatives -
+  // same INFO_ROUTES backfill (EN angles existed in JSP_BY_ROUTE only) plus
+  // full pt/es/de/vi/id locale fanout (guide-support drain per runbook 4b).
+  '/guides/earth-3d-globe-live-day-night-map-step-by-step.html',
+  '/guides/pt/earth-3d-globe-live-day-night-map-step-by-step.html',
+  '/guides/es/earth-3d-globe-live-day-night-map-step-by-step.html',
+  '/guides/de/earth-3d-globe-live-day-night-map-step-by-step.html',
+  '/guides/vi/earth-3d-globe-live-day-night-map-step-by-step.html',
+  '/guides/id/earth-3d-globe-live-day-night-map-step-by-step.html',
+  '/guides/earth-3d-globe-live-day-night-map-vs-alternatives.html',
+  '/guides/pt/earth-3d-globe-live-day-night-map-vs-alternatives.html',
+  '/guides/es/earth-3d-globe-live-day-night-map-vs-alternatives.html',
+  '/guides/de/earth-3d-globe-live-day-night-map-vs-alternatives.html',
+  '/guides/vi/earth-3d-globe-live-day-night-map-vs-alternatives.html',
+  '/guides/id/earth-3d-globe-live-day-night-map-vs-alternatives.html',
+  // play-fps-in-browser-step-by-step locale fanout pt/es/de/vi/id
+  // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
+  // per runbook 4b - the -when and -vs-alternatives angles for this guide
+  // remain EN-only pending a future fire).
+  '/guides/pt/play-fps-in-browser-step-by-step.html',
+  '/guides/es/play-fps-in-browser-step-by-step.html',
+  '/guides/de/play-fps-in-browser-step-by-step.html',
+  '/guides/vi/play-fps-in-browser-step-by-step.html',
+  '/guides/id/play-fps-in-browser-step-by-step.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -1337,6 +1402,21 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // new-tool-discovery-loop-runbook fire84 (2026-07-12): GUIDE_ROUTES backfill for
+  // strip-audio-from-video's 3 EN companion guide angles (builder wires JSP_BY_ROUTE
+  // only - same recurring gap class as fires 32/56/57/62/66, now closed at the
+  // source in emit-guide-pages.mjs::patchGuideRoute()). step-by-step also fanned
+  // out to pt/es/vi/id/de this fire; -when and -vs-alternatives locale fanout
+  // deferred to the guide-support-drain backlog (guide_locale_fanout unit
+  // strip-audio-from-video-guides).
+  '/guides/remove-audio-from-video-when.html',
+  '/guides/remove-audio-from-video-step-by-step.html',
+  '/guides/remove-audio-from-video-vs-alternatives.html',
+  '/guides/pt/remove-audio-from-video-step-by-step.html',
+  '/guides/es/remove-audio-from-video-step-by-step.html',
+  '/guides/vi/remove-audio-from-video-step-by-step.html',
+  '/guides/id/remove-audio-from-video-step-by-step.html',
+  '/guides/de/remove-audio-from-video-step-by-step.html',
   // new-tool-discovery-loop-runbook fire-66 (2026-07-12): GUIDE_ROUTES backfill for
   // image-format-converter's 3 EN companion guide angles (builder wires JSP_BY_ROUTE
   // only - same gap class documented in fires 32/56/57/62). Locale fanout (pt/es/vi/id/de)
@@ -3132,6 +3212,57 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/city-time-machine-3d-when.html',
   '/guides/vi/city-time-machine-3d-when.html',
   '/guides/id/city-time-machine-3d-when.html',
+  // city-time-machine-3d-step-by-step / -vs-alternatives - GUIDE_ROUTES/
+  // INFO_ROUTES backfill for the pre-existing EN angles (JSP_BY_ROUTE + CMS
+  // existed, never registered here - same defect class as "when" above) plus
+  // locale fanout pt/es/vi/id/de (new-tool-discovery-loop-runbook LEAN fire76).
+  '/guides/city-time-machine-3d-step-by-step.html',
+  '/guides/pt/city-time-machine-3d-step-by-step.html',
+  '/guides/es/city-time-machine-3d-step-by-step.html',
+  '/guides/de/city-time-machine-3d-step-by-step.html',
+  '/guides/vi/city-time-machine-3d-step-by-step.html',
+  '/guides/id/city-time-machine-3d-step-by-step.html',
+  '/guides/city-time-machine-3d-vs-alternatives.html',
+  '/guides/pt/city-time-machine-3d-vs-alternatives.html',
+  '/guides/es/city-time-machine-3d-vs-alternatives.html',
+  '/guides/de/city-time-machine-3d-vs-alternatives.html',
+  '/guides/vi/city-time-machine-3d-vs-alternatives.html',
+  '/guides/id/city-time-machine-3d-vs-alternatives.html',
+  // earth-3d-globe-live-day-night-map-when - GUIDE_ROUTES/INFO_ROUTES backfill
+  // for the pre-existing EN angle (JSP_BY_ROUTE + CMS existed, never
+  // registered here - same defect class as the city-time-machine backfill
+  // above) plus locale fanout pt/es/de/vi/id (new-tool-discovery-loop-runbook
+  // LEAN one-off fire, guide-support drain per runbook 4b).
+  '/guides/earth-3d-globe-live-day-night-map-when.html',
+  '/guides/pt/earth-3d-globe-live-day-night-map-when.html',
+  '/guides/es/earth-3d-globe-live-day-night-map-when.html',
+  '/guides/de/earth-3d-globe-live-day-night-map-when.html',
+  '/guides/vi/earth-3d-globe-live-day-night-map-when.html',
+  '/guides/id/earth-3d-globe-live-day-night-map-when.html',
+  // earth-3d-globe-live-day-night-map step-by-step + vs-alternatives -
+  // same GUIDE_ROUTES backfill (EN angles existed in JSP_BY_ROUTE only) plus
+  // full pt/es/de/vi/id locale fanout (guide-support drain per runbook 4b).
+  '/guides/earth-3d-globe-live-day-night-map-step-by-step.html',
+  '/guides/pt/earth-3d-globe-live-day-night-map-step-by-step.html',
+  '/guides/es/earth-3d-globe-live-day-night-map-step-by-step.html',
+  '/guides/de/earth-3d-globe-live-day-night-map-step-by-step.html',
+  '/guides/vi/earth-3d-globe-live-day-night-map-step-by-step.html',
+  '/guides/id/earth-3d-globe-live-day-night-map-step-by-step.html',
+  '/guides/earth-3d-globe-live-day-night-map-vs-alternatives.html',
+  '/guides/pt/earth-3d-globe-live-day-night-map-vs-alternatives.html',
+  '/guides/es/earth-3d-globe-live-day-night-map-vs-alternatives.html',
+  '/guides/de/earth-3d-globe-live-day-night-map-vs-alternatives.html',
+  '/guides/vi/earth-3d-globe-live-day-night-map-vs-alternatives.html',
+  '/guides/id/earth-3d-globe-live-day-night-map-vs-alternatives.html',
+  // play-fps-in-browser-step-by-step locale fanout pt/es/de/vi/id
+  // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
+  // per runbook 4b - the -when and -vs-alternatives angles for this guide
+  // remain EN-only pending a future fire).
+  '/guides/pt/play-fps-in-browser-step-by-step.html',
+  '/guides/es/play-fps-in-browser-step-by-step.html',
+  '/guides/de/play-fps-in-browser-step-by-step.html',
+  '/guides/vi/play-fps-in-browser-step-by-step.html',
+  '/guides/id/play-fps-in-browser-step-by-step.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -3682,6 +3813,7 @@ export const ALIAS_ROUTES = {
   '/character-counter.html': '/developer-tools/character-counter.html',
   '/find-and-replace-text.html': '/developer-tools/find-and-replace-text.html',
   '/image-format-converter.html': '/image-converter-tools/image-format-converter.html',
+  '/strip-audio-from-video.html': '/video-tools/strip-audio-from-video.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -5787,6 +5919,18 @@ export const JSP_BY_ROUTE = {
   '/guides/de/city-time-machine-3d-when.html': 'guide/de/city-time-machine-3d-when.jsp',
   '/guides/vi/city-time-machine-3d-when.html': 'guide/vi/city-time-machine-3d-when.jsp',
   '/guides/id/city-time-machine-3d-when.html': 'guide/id/city-time-machine-3d-when.jsp',
+  // city-time-machine-3d-step-by-step / -vs-alternatives locale fanout
+  // pt/es/vi/id/de (new-tool-discovery-loop-runbook LEAN fire76)
+  '/guides/pt/city-time-machine-3d-step-by-step.html': 'guide/pt/city-time-machine-3d-step-by-step.jsp',
+  '/guides/es/city-time-machine-3d-step-by-step.html': 'guide/es/city-time-machine-3d-step-by-step.jsp',
+  '/guides/de/city-time-machine-3d-step-by-step.html': 'guide/de/city-time-machine-3d-step-by-step.jsp',
+  '/guides/vi/city-time-machine-3d-step-by-step.html': 'guide/vi/city-time-machine-3d-step-by-step.jsp',
+  '/guides/id/city-time-machine-3d-step-by-step.html': 'guide/id/city-time-machine-3d-step-by-step.jsp',
+  '/guides/pt/city-time-machine-3d-vs-alternatives.html': 'guide/pt/city-time-machine-3d-vs-alternatives.jsp',
+  '/guides/es/city-time-machine-3d-vs-alternatives.html': 'guide/es/city-time-machine-3d-vs-alternatives.jsp',
+  '/guides/de/city-time-machine-3d-vs-alternatives.html': 'guide/de/city-time-machine-3d-vs-alternatives.jsp',
+  '/guides/vi/city-time-machine-3d-vs-alternatives.html': 'guide/vi/city-time-machine-3d-vs-alternatives.jsp',
+  '/guides/id/city-time-machine-3d-vs-alternatives.html': 'guide/id/city-time-machine-3d-vs-alternatives.jsp',
   '/utility-tools/percentage-calculator.html': 'utility/percentage-calculator.jsp',
   '/guides/percentage-calculator-when.html': 'guide/percentage-calculator-when.jsp',
   '/guides/percentage-calculator-step-by-step.html': 'guide/percentage-calculator-step-by-step.jsp',
@@ -5929,8 +6073,28 @@ export const JSP_BY_ROUTE = {
   '/guides/de/city-drive-open-world-3d-vs-alternatives.html': 'guide/de/city-drive-open-world-3d-vs-alternatives.jsp',
   '/space-3d/earth-3d-globe.html': 'space/earth-3d-globe.jsp',
   '/guides/earth-3d-globe-live-day-night-map-when.html': 'guide/earth-3d-globe-live-day-night-map-when.jsp',
+  // earth-3d-globe-live-day-night-map-when locale fanout pt/es/de/vi/id
+  // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain)
+  '/guides/pt/earth-3d-globe-live-day-night-map-when.html': 'guide/pt/earth-3d-globe-live-day-night-map-when.jsp',
+  '/guides/es/earth-3d-globe-live-day-night-map-when.html': 'guide/es/earth-3d-globe-live-day-night-map-when.jsp',
+  '/guides/de/earth-3d-globe-live-day-night-map-when.html': 'guide/de/earth-3d-globe-live-day-night-map-when.jsp',
+  '/guides/vi/earth-3d-globe-live-day-night-map-when.html': 'guide/vi/earth-3d-globe-live-day-night-map-when.jsp',
+  '/guides/id/earth-3d-globe-live-day-night-map-when.html': 'guide/id/earth-3d-globe-live-day-night-map-when.jsp',
   '/guides/earth-3d-globe-live-day-night-map-step-by-step.html': 'guide/earth-3d-globe-live-day-night-map-step-by-step.jsp',
   '/guides/earth-3d-globe-live-day-night-map-vs-alternatives.html': 'guide/earth-3d-globe-live-day-night-map-vs-alternatives.jsp',
+  // earth-3d-globe-live-day-night-map step-by-step + vs-alternatives locale
+  // fanout pt/es/de/vi/id (new-tool-discovery-loop-runbook LEAN one-off fire,
+  // guide-support drain per runbook 4b).
+  '/guides/pt/earth-3d-globe-live-day-night-map-step-by-step.html': 'guide/pt/earth-3d-globe-live-day-night-map-step-by-step.jsp',
+  '/guides/es/earth-3d-globe-live-day-night-map-step-by-step.html': 'guide/es/earth-3d-globe-live-day-night-map-step-by-step.jsp',
+  '/guides/de/earth-3d-globe-live-day-night-map-step-by-step.html': 'guide/de/earth-3d-globe-live-day-night-map-step-by-step.jsp',
+  '/guides/vi/earth-3d-globe-live-day-night-map-step-by-step.html': 'guide/vi/earth-3d-globe-live-day-night-map-step-by-step.jsp',
+  '/guides/id/earth-3d-globe-live-day-night-map-step-by-step.html': 'guide/id/earth-3d-globe-live-day-night-map-step-by-step.jsp',
+  '/guides/pt/earth-3d-globe-live-day-night-map-vs-alternatives.html': 'guide/pt/earth-3d-globe-live-day-night-map-vs-alternatives.jsp',
+  '/guides/es/earth-3d-globe-live-day-night-map-vs-alternatives.html': 'guide/es/earth-3d-globe-live-day-night-map-vs-alternatives.jsp',
+  '/guides/de/earth-3d-globe-live-day-night-map-vs-alternatives.html': 'guide/de/earth-3d-globe-live-day-night-map-vs-alternatives.jsp',
+  '/guides/vi/earth-3d-globe-live-day-night-map-vs-alternatives.html': 'guide/vi/earth-3d-globe-live-day-night-map-vs-alternatives.jsp',
+  '/guides/id/earth-3d-globe-live-day-night-map-vs-alternatives.html': 'guide/id/earth-3d-globe-live-day-night-map-vs-alternatives.jsp',
   '/utility-tools/linux-online.html': 'utility/linux-online.jsp',
   '/guides/run-linux-in-browser-when.html': 'guide/run-linux-in-browser-when.jsp',
   '/guides/run-linux-in-browser-step-by-step.html': 'guide/run-linux-in-browser-step-by-step.jsp',
@@ -5954,6 +6118,14 @@ export const JSP_BY_ROUTE = {
   '/guides/play-fps-in-browser-when.html': 'guide/play-fps-in-browser-when.jsp',
   '/guides/play-fps-in-browser-step-by-step.html': 'guide/play-fps-in-browser-step-by-step.jsp',
   '/guides/play-fps-in-browser-vs-alternatives.html': 'guide/play-fps-in-browser-vs-alternatives.jsp',
+  // play-fps-in-browser-step-by-step locale fanout pt/es/de/vi/id
+  // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
+  // per runbook 4b).
+  '/guides/pt/play-fps-in-browser-step-by-step.html': 'guide/pt/play-fps-in-browser-step-by-step.jsp',
+  '/guides/es/play-fps-in-browser-step-by-step.html': 'guide/es/play-fps-in-browser-step-by-step.jsp',
+  '/guides/de/play-fps-in-browser-step-by-step.html': 'guide/de/play-fps-in-browser-step-by-step.jsp',
+  '/guides/vi/play-fps-in-browser-step-by-step.html': 'guide/vi/play-fps-in-browser-step-by-step.jsp',
+  '/guides/id/play-fps-in-browser-step-by-step.html': 'guide/id/play-fps-in-browser-step-by-step.jsp',
   '/image-converter-tools/webp-to-jpg.html': 'convert/webp-to-jpg.jsp',
   '/guides/webp-jpg-converter-when.html': 'guide/webp-jpg-converter-when.jsp',
   '/guides/webp-jpg-converter-step-by-step.html': 'guide/webp-jpg-converter-step-by-step.jsp',
@@ -6156,6 +6328,15 @@ export const JSP_BY_ROUTE = {
   '/guides/de/image-format-converter-when.html': 'guide/de/image-format-converter-when.jsp',
   '/guides/de/image-format-converter-step-by-step.html': 'guide/de/image-format-converter-step-by-step.jsp',
   '/guides/de/image-format-converter-vs-alternatives.html': 'guide/de/image-format-converter-vs-alternatives.jsp',
+  '/video-tools/strip-audio-from-video.html': 'convert/strip-audio-from-video.jsp',
+  '/guides/remove-audio-from-video-when.html': 'guide/remove-audio-from-video-when.jsp',
+  '/guides/remove-audio-from-video-step-by-step.html': 'guide/remove-audio-from-video-step-by-step.jsp',
+  '/guides/remove-audio-from-video-vs-alternatives.html': 'guide/remove-audio-from-video-vs-alternatives.jsp',
+  '/guides/pt/remove-audio-from-video-step-by-step.html': 'guide/pt/remove-audio-from-video-step-by-step.jsp',
+  '/guides/es/remove-audio-from-video-step-by-step.html': 'guide/es/remove-audio-from-video-step-by-step.jsp',
+  '/guides/vi/remove-audio-from-video-step-by-step.html': 'guide/vi/remove-audio-from-video-step-by-step.jsp',
+  '/guides/id/remove-audio-from-video-step-by-step.html': 'guide/id/remove-audio-from-video-step-by-step.jsp',
+  '/guides/de/remove-audio-from-video-step-by-step.html': 'guide/de/remove-audio-from-video-step-by-step.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
