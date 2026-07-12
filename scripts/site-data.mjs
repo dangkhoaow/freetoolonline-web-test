@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/rotate-pdf-vs-alternatives.html',
+  '/guides/rotate-pdf-step-by-step.html',
+  '/guides/rotate-pdf-when.html',
   '/guides/pt/remove-audio-from-video-when.html',
   '/guides/es/remove-audio-from-video-when.html',
   '/guides/vi/remove-audio-from-video-when.html',
@@ -3844,6 +3847,7 @@ export const ALIAS_ROUTES = {
   '/find-and-replace-text.html': '/developer-tools/find-and-replace-text.html',
   '/image-format-converter.html': '/image-converter-tools/image-format-converter.html',
   '/strip-audio-from-video.html': '/video-tools/strip-audio-from-video.html',
+  '/rotate-pdf.html': '/pdf-tools/rotate-pdf.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -6397,6 +6401,10 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/remove-audio-from-video-vs-alternatives.html': 'guide/vi/remove-audio-from-video-vs-alternatives.jsp',
   '/guides/id/remove-audio-from-video-vs-alternatives.html': 'guide/id/remove-audio-from-video-vs-alternatives.jsp',
   '/guides/de/remove-audio-from-video-vs-alternatives.html': 'guide/de/remove-audio-from-video-vs-alternatives.jsp',
+  '/pdf-tools/rotate-pdf.html': 'pdf/rotate-pdf.jsp',
+  '/guides/rotate-pdf-when.html': 'guide/rotate-pdf-when.jsp',
+  '/guides/rotate-pdf-step-by-step.html': 'guide/rotate-pdf-step-by-step.jsp',
+  '/guides/rotate-pdf-vs-alternatives.html': 'guide/rotate-pdf-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
