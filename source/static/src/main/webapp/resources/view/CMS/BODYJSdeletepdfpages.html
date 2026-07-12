@@ -1,0 +1,150 @@
+<script>
+    // PDF multitool skeleton (delete-pdf-pages) - pdf-lib (vendored /vendor/pdf-lib), ZERO
+    // upload, no backend. Registry Gate-H entry: pdf_pdflib. 100% client-side (the
+    // 2026 "no upload PDF" trend): the PDF never leaves the browser. Slug-dispatched:
+    //   - merge / combine  -> merge N PDFs into one.
+    //   - split            -> extract a page range into a new PDF.
+    //   - rotate           -> rotate every page by a fixed clockwise angle
+    //                         (90/180/270), relative to each page's current
+    //                         rotation. Seeded 2026-07 to release the Gate-H
+    //                         registry-starvation escalation on the long-
+    //                         standing "rotate-pdf" evergreen candidate.
+    //   - delete (+ pages) -> remove a page range, keep the rest. Seeded
+    //                         2026-07-12 (fire111) to release the Gate-H
+    //                         registry-starvation escalation on the
+    //                         "delete-pdf-pages" evergreen candidate. Reuses
+    //                         the split-mode range input + pmParseRanges()
+    //                         helper, then copies the COMPLEMENT set of pages.
+    //   - compress         -> re-save with object streams (honest: a structural
+    //                         re-save that can shrink some PDFs; it does NOT
+    //                         recompress embedded raster images - see the tool-skill
+    //                         ## NOT implemented anti-claims).
+    // Framework contract: doAfterPageRendered(); no top-level DOM. Plain
+    // <input type=file>, no server upload widget.
+
+    web.localUpload = false;
+
+    var PM_SLUG = 'delete-pdf-pages';
+
+    function pmMode(slug) {
+        var s = String(slug || '').toLowerCase();
+        if (/\brotat(e|or)\b/.test(s)) return 'rotate';
+        if (/\bdelete\b/.test(s) && /\bpages?\b/.test(s)) return 'delete';
+        if (/\bsplit\b|extract-pages?/.test(s)) return 'split';
+        if (/\bcompress\b|shrink|reduce/.test(s)) return 'compress';
+        return 'merge'; // merge / combine / default
+    }
+
+    function ftoLoadPdfLib() {
+        if (window.PDFLib && window.PDFLib.PDFDocument) { return Promise.resolve(); }
+        if (window.__ftoPdfLibPromise) { return window.__ftoPdfLibPromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/pdf-lib';
+        var url = base + '/pdf-lib.min.js';
+        window.__ftoPdfLibPromise = new Promise(function (resolve, reject) {
+            var s = document.createElement('script');
+            s.src = url; s.async = true;
+            s.onload = function () { (window.PDFLib && window.PDFLib.PDFDocument) ? resolve() : reject(new Error('pdf-lib loaded but PDFLib global is missing')); };
+            s.onerror = function () { reject(new Error('failed to load pdf-lib from ' + url)); };
+            document.head.appendChild(s);
+        });
+        return window.__ftoPdfLibPromise;
+    }
+
+    function pmKb(bytes) { return Math.round(bytes / 1024) + ' KB'; }
+
+    function pmParseRanges(spec, pageCount) {
+        // "1-3,5,8-10" (1-based) -> array of 0-based page indices, clamped/deduped.
+        var out = [], seen = {};
+        String(spec || '').split(',').forEach(function (part) {
+            part = part.trim(); if (!part) return;
+            var m = part.match(/^(\d+)\s*-\s*(\d+)$/);
+            if (m) { for (var i = +m[1]; i <= +m[2]; i++) pushIdx(i); }
+            else if (/^\d+$/.test(part)) pushIdx(+part);
+        });
+        function pushIdx(oneBased) { var idx = oneBased - 1; if (idx >= 0 && idx < pageCount && !seen[idx]) { seen[idx] = 1; out.push(idx); } }
+        return out;
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('pdfMultitoolTool');
+        if (!root) return; // not a pdf-multitool page
+        var mode = pmMode(PM_SLUG);
+        var multi = (mode === 'merge');
+        var rangeRow = (mode === 'split' || mode === 'delete')
+            ? '<div class="w3-row" style="margin:8px 0;">' + (mode === 'delete' ? 'Delete pages' : 'Pages') + ' <input id="pmRange" class="w3-input w3-border" style="max-width:220px;display:inline-block;" placeholder="e.g. 1-3,5"></div>' : '';
+        var angleRow = (mode === 'rotate')
+            ? '<div class="w3-row" style="margin:8px 0;">Rotate <select id="pmAngle" class="w3-select w3-border" style="max-width:260px;display:inline-block;">' +
+              '<option value="90">90&deg; clockwise</option>' +
+              '<option value="180">180&deg;</option>' +
+              '<option value="270">270&deg; clockwise (= 90&deg; counter-clockwise)</option>' +
+              '</select></div>' : '';
+        var verb = mode === 'merge' ? 'Merge PDFs' : (mode === 'split' ? 'Extract pages' : (mode === 'rotate' ? 'Rotate PDF' : (mode === 'delete' ? 'Delete pages' : 'Compress PDF')));
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;"><input type="file" id="pmFile" accept="application/pdf,.pdf"' + (multi ? ' multiple' : '') + ' class="w3-input w3-border" style="max-width:460px;"></div>' +
+            rangeRow + angleRow +
+            '<div style="margin-bottom:8px;"><button id="pmRun" type="button" class="w3-button w3-green" disabled>' + verb + '</button> ' +
+            '<a id="pmDl" class="w3-button w3-blue" style="display:none;">Download PDF</a></div>' +
+            '<div id="pmOut" class="outputImgs" style="visibility:visible !important;min-height:1.2em;color:#555;">Choose ' + (multi ? 'two or more PDFs' : 'a PDF') + '. Everything runs locally - nothing is uploaded.</div>';
+        var fileEl = root.querySelector('#pmFile'), runBtn = root.querySelector('#pmRun'), dl = root.querySelector('#pmDl'), out = root.querySelector('#pmOut');
+        function status(m) { out.textContent = m; }
+        fileEl.addEventListener('change', function () { runBtn.disabled = !(fileEl.files && fileEl.files.length); dl.style.display = 'none'; });
+        runBtn.addEventListener('click', function () {
+            var files = fileEl.files ? Array.prototype.slice.call(fileEl.files) : [];
+            if (!files.length) { status('Choose a PDF first.'); return; }
+            runBtn.disabled = true; status('Working locally...');
+            ftoLoadPdfLib().then(async function () {
+                var PL = window.PDFLib;
+                var outDoc, name;
+                if (mode === 'merge') {
+                    outDoc = await PL.PDFDocument.create();
+                    for (var i = 0; i < files.length; i++) {
+                        var src = await PL.PDFDocument.load(await files[i].arrayBuffer(), { ignoreEncryption: true });
+                        var pages = await outDoc.copyPages(src, src.getPageIndices());
+                        pages.forEach(function (p) { outDoc.addPage(p); });
+                    }
+                    name = 'merged.pdf';
+                } else if (mode === 'split') {
+                    var src2 = await PL.PDFDocument.load(await files[0].arrayBuffer(), { ignoreEncryption: true });
+                    var idxs = pmParseRanges(root.querySelector('#pmRange').value, src2.getPageCount());
+                    if (!idxs.length) { status('Enter a valid page range (e.g. 1-3,5). The PDF has ' + src2.getPageCount() + ' pages.'); runBtn.disabled = false; return; }
+                    outDoc = await PL.PDFDocument.create();
+                    var copied = await outDoc.copyPages(src2, idxs);
+                    copied.forEach(function (p) { outDoc.addPage(p); });
+                    name = 'extracted-pages.pdf';
+                } else if (mode === 'rotate') {
+                    outDoc = await PL.PDFDocument.load(await files[0].arrayBuffer(), { ignoreEncryption: true });
+                    var deg = parseInt((root.querySelector('#pmAngle') || {}).value || '90', 10);
+                    outDoc.getPages().forEach(function (p) {
+                        var cur = (p.getRotation() && p.getRotation().angle) || 0;
+                        p.setRotation(PL.degrees((cur + deg) % 360));
+                    });
+                    name = 'rotated.pdf';
+                } else if (mode === 'delete') {
+                    var src3 = await PL.PDFDocument.load(await files[0].arrayBuffer(), { ignoreEncryption: true });
+                    var delIdxs = pmParseRanges(root.querySelector('#pmRange').value, src3.getPageCount());
+                    if (!delIdxs.length) { status('Enter a valid page range to delete (e.g. 1-3,5). The PDF has ' + src3.getPageCount() + ' pages.'); runBtn.disabled = false; return; }
+                    var delSet = {};
+                    delIdxs.forEach(function (i) { delSet[i] = 1; });
+                    var keepIdxs = [];
+                    for (var pi = 0; pi < src3.getPageCount(); pi++) { if (!delSet[pi]) keepIdxs.push(pi); }
+                    if (!keepIdxs.length) { status('Cannot delete every page - the PDF would have zero pages left.'); runBtn.disabled = false; return; }
+                    outDoc = await PL.PDFDocument.create();
+                    var copiedKeep = await outDoc.copyPages(src3, keepIdxs);
+                    copiedKeep.forEach(function (p) { outDoc.addPage(p); });
+                    name = 'pages-deleted.pdf';
+                } else { // compress = structural re-save
+                    outDoc = await PL.PDFDocument.load(await files[0].arrayBuffer(), { ignoreEncryption: true });
+                    name = 'optimized.pdf';
+                }
+                var bytes = await outDoc.save({ useObjectStreams: true });
+                var blob = new Blob([bytes], { type: 'application/pdf' });
+                var url = URL.createObjectURL(blob);
+                dl.href = url; dl.download = name; dl.style.display = '';
+                var inSize = files.reduce(function (a, f) { return a + f.size; }, 0);
+                var delta = mode === 'compress' ? (' (' + pmKb(inSize) + ' -> ' + pmKb(blob.size) + (blob.size < inSize ? ', ' + Math.round((1 - blob.size / inSize) * 100) + '% smaller' : ', already optimal') + ')') : '';
+                status('Done locally - no upload. Output ' + pmKb(blob.size) + delta + '.');
+                runBtn.disabled = false;
+            }).catch(function (e) { status('Could not process the PDF: ' + (e && e.message ? e.message : 'error') + '.'); runBtn.disabled = false; });
+        });
+    }
+</script>

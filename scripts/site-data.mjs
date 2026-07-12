@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/delete-pdf-pages-vs-alternatives.html',
+  '/guides/delete-pdf-pages-step-by-step.html',
+  '/guides/delete-pdf-pages-when.html',
   '/guides/rotate-pdf-vs-alternatives.html',
   '/guides/rotate-pdf-step-by-step.html',
   '/guides/rotate-pdf-when.html',
@@ -3909,6 +3912,7 @@ export const ALIAS_ROUTES = {
   '/image-format-converter.html': '/image-converter-tools/image-format-converter.html',
   '/strip-audio-from-video.html': '/video-tools/strip-audio-from-video.html',
   '/rotate-pdf.html': '/pdf-tools/rotate-pdf.html',
+  '/delete-pdf-pages.html': '/pdf-tools/delete-pdf-pages.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -6503,6 +6507,10 @@ export const JSP_BY_ROUTE = {
   '/guides/de/rotate-pdf-when.html': 'guide/de/rotate-pdf-when.jsp',
   '/guides/de/rotate-pdf-step-by-step.html': 'guide/de/rotate-pdf-step-by-step.jsp',
   '/guides/de/rotate-pdf-vs-alternatives.html': 'guide/de/rotate-pdf-vs-alternatives.jsp',
+  '/pdf-tools/delete-pdf-pages.html': 'pdf/delete-pdf-pages.jsp',
+  '/guides/delete-pdf-pages-when.html': 'guide/delete-pdf-pages-when.jsp',
+  '/guides/delete-pdf-pages-step-by-step.html': 'guide/delete-pdf-pages-step-by-step.jsp',
+  '/guides/delete-pdf-pages-vs-alternatives.html': 'guide/delete-pdf-pages-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

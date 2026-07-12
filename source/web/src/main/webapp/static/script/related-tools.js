@@ -403,6 +403,7 @@ try {
     { title: "Image Format Converter", url: "https://freetoolonline.com/image-converter-tools/image-format-converter.html", include: !1, tags: "image-conversion" },
     { title: "Remove Audio from Video", url: "https://freetoolonline.com/video-tools/strip-audio-from-video.html", include: !1, tags: "video" },
     { title: "Rotate PDF", url: "https://freetoolonline.com/pdf-tools/rotate-pdf.html", include: !1, tags: "pdf" },
+    { title: "Delete PDF Pages", url: "https://freetoolonline.com/pdf-tools/delete-pdf-pages.html", include: !1, tags: "pdf" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
