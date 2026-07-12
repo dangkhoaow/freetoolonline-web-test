@@ -1,0 +1,27 @@
+<script>
+    web.localUpload = false;
+    var SFG_GAME_URL = 'schematic-factory-game/index.html';
+    function sfgStatus(t){ var el=document.getElementById('sfgStatus'); if(el) el.textContent=t; }
+    function sfgInjectFrame(stage){
+        var frame=document.createElement('iframe');
+        frame.id='sfgFrame'; frame.src=SFG_GAME_URL; frame.title='Schematic Factory Line';
+        frame.setAttribute('allow','fullscreen'); frame.setAttribute('allowfullscreen','');
+        frame.addEventListener('load',function(){ sfgStatus('Loaded. Click machine slots inside the frame to expand your factory.'); });
+        var launch=document.getElementById('sfgLaunch');
+        if(launch&&launch.parentNode===stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+    }
+    function doAfterPageRendered(){
+        var stage=document.getElementById('sfgStage'), playBtn=document.getElementById('sfgPlayBtn');
+        if(!stage||!playBtn) return;
+        var fsBtn=document.getElementById('sfgFullscreenBtn');
+        playBtn.addEventListener('click',function(){
+            sfgStatus('Loading about ~456 KB...'); sfgInjectFrame(stage);
+            if(fsBtn) fsBtn.disabled=false;
+        });
+        if(fsBtn) fsBtn.addEventListener('click',function(){
+            if(stage.requestFullscreen) stage.requestFullscreen();
+            else if(stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+        });
+    }
+</script>
