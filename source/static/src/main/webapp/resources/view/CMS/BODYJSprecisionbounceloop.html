@@ -1,0 +1,27 @@
+<script>
+    web.localUpload = false;
+    var PBL_GAME_URL = 'precision-bounce-loop/index.html';
+    function pblStatus(t){ var el=document.getElementById('pblStatus'); if(el) el.textContent=t; }
+    function pblInjectFrame(stage){
+        var frame=document.createElement('iframe');
+        frame.id='pblFrame'; frame.src=PBL_GAME_URL; frame.title='Precision Bounce Loop';
+        frame.setAttribute('allow','fullscreen'); frame.setAttribute('allowfullscreen','');
+        frame.addEventListener('load',function(){ pblStatus('Loaded. Press Space inside the frame to start, then move the tablet with WASD or arrows.'); });
+        var launch=document.getElementById('pblLaunch');
+        if(launch&&launch.parentNode===stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+    }
+    function doAfterPageRendered(){
+        var stage=document.getElementById('pblStage'), playBtn=document.getElementById('pblPlayBtn');
+        if(!stage||!playBtn) return;
+        var fsBtn=document.getElementById('pblFullscreenBtn');
+        playBtn.addEventListener('click',function(){
+            pblStatus('Loading about ~1.2 MB...'); pblInjectFrame(stage);
+            if(fsBtn) fsBtn.disabled=false;
+        });
+        if(fsBtn) fsBtn.addEventListener('click',function(){
+            if(stage.requestFullscreen) stage.requestFullscreen();
+            else if(stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+        });
+    }
+</script>
