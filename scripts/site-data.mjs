@@ -1310,6 +1310,16 @@ export const INFO_ROUTES = new Set([
   '/guides/id/galaxy-3d-simulator-when.html',
   '/guides/id/galaxy-3d-simulator-step-by-step.html',
   '/guides/id/galaxy-3d-simulator-vs-alternatives.html',
+  // city-time-machine-3d-when-guides - GUIDE_ROUTES/INFO_ROUTES backfill for the
+  // pre-existing EN angle (JSP_BY_ROUTE + CMS existed, never registered here -
+  // same defect class as the fire-66 backfill above) plus locale fanout
+  // pt/es/vi/id/de (new-tool-discovery-loop-runbook LEAN one-off fire).
+  '/guides/city-time-machine-3d-when.html',
+  '/guides/pt/city-time-machine-3d-when.html',
+  '/guides/es/city-time-machine-3d-when.html',
+  '/guides/de/city-time-machine-3d-when.html',
+  '/guides/vi/city-time-machine-3d-when.html',
+  '/guides/id/city-time-machine-3d-when.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -1335,6 +1345,24 @@ export const GUIDE_ROUTES = new Set([
   '/guides/image-format-converter-step-by-step.html',
   '/guides/image-format-converter-when.html',
   '/guides/image-format-converter-vs-alternatives.html',
+  // new-tool-discovery-loop-runbook fire-70 (2026-07-12): image-format-converter-guides
+  // locale fanout (guide_locale_fanout debt registered fire69 per §4b) - pt/es/vi/id/de
+  // x 3 angles (when/step-by-step/vs-alternatives) = 15 locale bundles.
+  '/guides/pt/image-format-converter-when.html',
+  '/guides/pt/image-format-converter-step-by-step.html',
+  '/guides/pt/image-format-converter-vs-alternatives.html',
+  '/guides/es/image-format-converter-when.html',
+  '/guides/es/image-format-converter-step-by-step.html',
+  '/guides/es/image-format-converter-vs-alternatives.html',
+  '/guides/vi/image-format-converter-when.html',
+  '/guides/vi/image-format-converter-step-by-step.html',
+  '/guides/vi/image-format-converter-vs-alternatives.html',
+  '/guides/id/image-format-converter-when.html',
+  '/guides/id/image-format-converter-step-by-step.html',
+  '/guides/id/image-format-converter-vs-alternatives.html',
+  '/guides/de/image-format-converter-when.html',
+  '/guides/de/image-format-converter-step-by-step.html',
+  '/guides/de/image-format-converter-vs-alternatives.html',
   // cycle 20260625-6 create_new_guide_page (locale completion) - pt variant of video-converter-online-free (staging-only until es/vi/id/de complete).
   '/guides/pt/video-converter-online-free.html',
   // cycle 20260626 create_new_guide_page (locale completion) - es variant of video-converter-online-free (staging-only until vi/id/de complete).
@@ -3057,6 +3085,16 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/find-replace-text-when.html',
   '/guides/de/find-replace-text-step-by-step.html',
   '/guides/de/find-replace-text-vs-alternatives.html',
+  // city-time-machine-3d-when-guides - GUIDE_ROUTES/INFO_ROUTES backfill for the
+  // pre-existing EN angle (JSP_BY_ROUTE + CMS existed, never registered here -
+  // same defect class as the fire-66 backfill above) plus locale fanout
+  // pt/es/vi/id/de (new-tool-discovery-loop-runbook LEAN one-off fire).
+  '/guides/city-time-machine-3d-when.html',
+  '/guides/pt/city-time-machine-3d-when.html',
+  '/guides/es/city-time-machine-3d-when.html',
+  '/guides/de/city-time-machine-3d-when.html',
+  '/guides/vi/city-time-machine-3d-when.html',
+  '/guides/id/city-time-machine-3d-when.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -5685,6 +5723,12 @@ export const JSP_BY_ROUTE = {
   '/guides/city-time-machine-3d-when.html': 'guide/city-time-machine-3d-when.jsp',
   '/guides/city-time-machine-3d-step-by-step.html': 'guide/city-time-machine-3d-step-by-step.jsp',
   '/guides/city-time-machine-3d-vs-alternatives.html': 'guide/city-time-machine-3d-vs-alternatives.jsp',
+  // city-time-machine-3d-when locale fanout pt/es/vi/id/de (new-tool-discovery-loop-runbook LEAN one-off fire)
+  '/guides/pt/city-time-machine-3d-when.html': 'guide/pt/city-time-machine-3d-when.jsp',
+  '/guides/es/city-time-machine-3d-when.html': 'guide/es/city-time-machine-3d-when.jsp',
+  '/guides/de/city-time-machine-3d-when.html': 'guide/de/city-time-machine-3d-when.jsp',
+  '/guides/vi/city-time-machine-3d-when.html': 'guide/vi/city-time-machine-3d-when.jsp',
+  '/guides/id/city-time-machine-3d-when.html': 'guide/id/city-time-machine-3d-when.jsp',
   '/utility-tools/percentage-calculator.html': 'utility/percentage-calculator.jsp',
   '/guides/percentage-calculator-when.html': 'guide/percentage-calculator-when.jsp',
   '/guides/percentage-calculator-step-by-step.html': 'guide/percentage-calculator-step-by-step.jsp',
@@ -6022,6 +6066,23 @@ export const JSP_BY_ROUTE = {
   '/guides/image-format-converter-when.html': 'guide/image-format-converter-when.jsp',
   '/guides/image-format-converter-step-by-step.html': 'guide/image-format-converter-step-by-step.jsp',
   '/guides/image-format-converter-vs-alternatives.html': 'guide/image-format-converter-vs-alternatives.jsp',
+  // image-format-converter-guides - locale fanout pt/es/vi/id/de for all 3 angles
+  // (newtool-discovery-loop fire-70; EN angles were already live, locale fanout was pending).
+  '/guides/pt/image-format-converter-when.html': 'guide/pt/image-format-converter-when.jsp',
+  '/guides/pt/image-format-converter-step-by-step.html': 'guide/pt/image-format-converter-step-by-step.jsp',
+  '/guides/pt/image-format-converter-vs-alternatives.html': 'guide/pt/image-format-converter-vs-alternatives.jsp',
+  '/guides/es/image-format-converter-when.html': 'guide/es/image-format-converter-when.jsp',
+  '/guides/es/image-format-converter-step-by-step.html': 'guide/es/image-format-converter-step-by-step.jsp',
+  '/guides/es/image-format-converter-vs-alternatives.html': 'guide/es/image-format-converter-vs-alternatives.jsp',
+  '/guides/vi/image-format-converter-when.html': 'guide/vi/image-format-converter-when.jsp',
+  '/guides/vi/image-format-converter-step-by-step.html': 'guide/vi/image-format-converter-step-by-step.jsp',
+  '/guides/vi/image-format-converter-vs-alternatives.html': 'guide/vi/image-format-converter-vs-alternatives.jsp',
+  '/guides/id/image-format-converter-when.html': 'guide/id/image-format-converter-when.jsp',
+  '/guides/id/image-format-converter-step-by-step.html': 'guide/id/image-format-converter-step-by-step.jsp',
+  '/guides/id/image-format-converter-vs-alternatives.html': 'guide/id/image-format-converter-vs-alternatives.jsp',
+  '/guides/de/image-format-converter-when.html': 'guide/de/image-format-converter-when.jsp',
+  '/guides/de/image-format-converter-step-by-step.html': 'guide/de/image-format-converter-step-by-step.jsp',
+  '/guides/de/image-format-converter-vs-alternatives.html': 'guide/de/image-format-converter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
