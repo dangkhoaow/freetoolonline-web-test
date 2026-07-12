@@ -36,7 +36,7 @@ const SEO_CLUSTER_GROUPS = [
     cluster: 'pdf',
     hubRoute: '/pdf-tools.html',
     hubLabel: 'Back to PDF Tools',
-    routes: ['/compose-pdf.html', '/split-pdf-by-range.html', '/split-pdf-to-each-pages.html', '/join-pdf-from-multiple-files.html', '/protect-pdf-by-password.html', '/remove-pdf-password.html', '/preflight-pdf.html', '/flatten-pdf.html', '/pdf-to-text.html', '/pdf-to-images.html', '/pdf-to-html.html', '/images-to-pdf.html', '/pdf-tools/pdf-filler-form-editor.html', '/pdf-tools/rotate-pdf.html', '/pdf-tools/delete-pdf-pages.html'],
+    routes: ['/compose-pdf.html', '/split-pdf-by-range.html', '/split-pdf-to-each-pages.html', '/join-pdf-from-multiple-files.html', '/protect-pdf-by-password.html', '/remove-pdf-password.html', '/preflight-pdf.html', '/flatten-pdf.html', '/pdf-to-text.html', '/pdf-to-images.html', '/pdf-to-html.html', '/images-to-pdf.html', '/pdf-tools/pdf-filler-form-editor.html', '/pdf-tools/rotate-pdf.html', '/pdf-tools/delete-pdf-pages.html', '/pdf-tools/add-watermark-to-pdf.html'],
   },
   {
     cluster: 'developer',

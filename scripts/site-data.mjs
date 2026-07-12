@@ -14,9 +14,50 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/add-watermark-pdf-vs-alternatives.html',
+  '/guides/add-watermark-pdf-step-by-step.html',
+  '/guides/add-watermark-pdf-when.html',
+  // new-tool-discovery-loop-runbook fire115 (LEAN one-off, 2026-07-12):
+  // add-watermark-to-pdf guide locale fanout (guide_locale_fanout units
+  // add-watermark-pdf-when/-step-by-step/-vs-alternatives-guides) - 3 EN
+  // angles x pt/es/vi/id/de.
+  '/guides/pt/add-watermark-pdf-when.html',
+  '/guides/pt/add-watermark-pdf-step-by-step.html',
+  '/guides/pt/add-watermark-pdf-vs-alternatives.html',
+  '/guides/es/add-watermark-pdf-when.html',
+  '/guides/es/add-watermark-pdf-step-by-step.html',
+  '/guides/es/add-watermark-pdf-vs-alternatives.html',
+  '/guides/vi/add-watermark-pdf-when.html',
+  '/guides/vi/add-watermark-pdf-step-by-step.html',
+  '/guides/vi/add-watermark-pdf-vs-alternatives.html',
+  '/guides/id/add-watermark-pdf-when.html',
+  '/guides/id/add-watermark-pdf-step-by-step.html',
+  '/guides/id/add-watermark-pdf-vs-alternatives.html',
+  '/guides/de/add-watermark-pdf-when.html',
+  '/guides/de/add-watermark-pdf-step-by-step.html',
+  '/guides/de/add-watermark-pdf-vs-alternatives.html',
   '/guides/delete-pdf-pages-vs-alternatives.html',
   '/guides/delete-pdf-pages-step-by-step.html',
   '/guides/delete-pdf-pages-when.html',
+  // new-tool-discovery-loop-runbook fire114 (LEAN one-off, 2026-07-12): delete-pdf-pages
+  // guide locale fanout (guide_locale_fanout units delete-pdf-pages-when/-step-by-step/
+  // -vs-alternatives-guides, deferred from fire111/fire113) - 3 EN angles x
+  // pt/es/vi/id/de, paraphrased from tool-deletepdfpages/SKILL.md framing menu only.
+  '/guides/pt/delete-pdf-pages-when.html',
+  '/guides/pt/delete-pdf-pages-step-by-step.html',
+  '/guides/pt/delete-pdf-pages-vs-alternatives.html',
+  '/guides/es/delete-pdf-pages-when.html',
+  '/guides/es/delete-pdf-pages-step-by-step.html',
+  '/guides/es/delete-pdf-pages-vs-alternatives.html',
+  '/guides/vi/delete-pdf-pages-when.html',
+  '/guides/vi/delete-pdf-pages-step-by-step.html',
+  '/guides/vi/delete-pdf-pages-vs-alternatives.html',
+  '/guides/id/delete-pdf-pages-when.html',
+  '/guides/id/delete-pdf-pages-step-by-step.html',
+  '/guides/id/delete-pdf-pages-vs-alternatives.html',
+  '/guides/de/delete-pdf-pages-when.html',
+  '/guides/de/delete-pdf-pages-step-by-step.html',
+  '/guides/de/delete-pdf-pages-vs-alternatives.html',
   '/guides/rotate-pdf-vs-alternatives.html',
   '/guides/rotate-pdf-step-by-step.html',
   '/guides/rotate-pdf-when.html',
@@ -1437,14 +1478,54 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // new-tool-discovery-loop-runbook fire115 (LEAN one-off, 2026-07-12):
+  // GUIDE_ROUTES backfill for add-watermark-to-pdf's 3 EN companion guide
+  // angles plus their full pt/es/vi/id/de locale fanout (builder wires
+  // JSP_BY_ROUTE + INFO_ROUTES only, same recurring gap class as
+  // fires 32/56/57/62/66/84/113).
+  '/guides/add-watermark-pdf-when.html',
+  '/guides/add-watermark-pdf-step-by-step.html',
+  '/guides/add-watermark-pdf-vs-alternatives.html',
+  '/guides/pt/add-watermark-pdf-when.html',
+  '/guides/pt/add-watermark-pdf-step-by-step.html',
+  '/guides/pt/add-watermark-pdf-vs-alternatives.html',
+  '/guides/es/add-watermark-pdf-when.html',
+  '/guides/es/add-watermark-pdf-step-by-step.html',
+  '/guides/es/add-watermark-pdf-vs-alternatives.html',
+  '/guides/vi/add-watermark-pdf-when.html',
+  '/guides/vi/add-watermark-pdf-step-by-step.html',
+  '/guides/vi/add-watermark-pdf-vs-alternatives.html',
+  '/guides/id/add-watermark-pdf-when.html',
+  '/guides/id/add-watermark-pdf-step-by-step.html',
+  '/guides/id/add-watermark-pdf-vs-alternatives.html',
+  '/guides/de/add-watermark-pdf-when.html',
+  '/guides/de/add-watermark-pdf-step-by-step.html',
+  '/guides/de/add-watermark-pdf-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire113 (LEAN one-off, 2026-07-12):
   // GUIDE_ROUTES backfill for delete-pdf-pages's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only, same recurring gap class as
-  // fires 32/56/57/62/66/84). Locale fanout (pt/es/vi/id/de) deferred to a
-  // follow-up fire per the guide_locale_fanout ledger units (pending).
+  // fires 32/56/57/62/66/84).
   '/guides/delete-pdf-pages-when.html',
   '/guides/delete-pdf-pages-step-by-step.html',
   '/guides/delete-pdf-pages-vs-alternatives.html',
+  // new-tool-discovery-loop-runbook fire114 (LEAN one-off, 2026-07-12): delete-pdf-pages
+  // full pt/es/vi/id/de locale fanout for all 3 EN companion guide angles
+  // (guide_locale_fanout units delete-pdf-pages-when/-step-by-step/-vs-alternatives-guides).
+  '/guides/pt/delete-pdf-pages-when.html',
+  '/guides/pt/delete-pdf-pages-step-by-step.html',
+  '/guides/pt/delete-pdf-pages-vs-alternatives.html',
+  '/guides/es/delete-pdf-pages-when.html',
+  '/guides/es/delete-pdf-pages-step-by-step.html',
+  '/guides/es/delete-pdf-pages-vs-alternatives.html',
+  '/guides/vi/delete-pdf-pages-when.html',
+  '/guides/vi/delete-pdf-pages-step-by-step.html',
+  '/guides/vi/delete-pdf-pages-vs-alternatives.html',
+  '/guides/id/delete-pdf-pages-when.html',
+  '/guides/id/delete-pdf-pages-step-by-step.html',
+  '/guides/id/delete-pdf-pages-vs-alternatives.html',
+  '/guides/de/delete-pdf-pages-when.html',
+  '/guides/de/delete-pdf-pages-step-by-step.html',
+  '/guides/de/delete-pdf-pages-vs-alternatives.html',
   // new-tool-discovery-loop-runbook (LEAN one-off, 2026-07-12): rotate-pdf
   // GUIDE_ROUTES backfill (builder wired JSP_BY_ROUTE only, same recurring gap
   // class as fires 32/56/57/62/66) + full pt/es/vi/id/de locale fanout for all
@@ -3961,6 +4042,7 @@ export const ALIAS_ROUTES = {
   '/strip-audio-from-video.html': '/video-tools/strip-audio-from-video.html',
   '/rotate-pdf.html': '/pdf-tools/rotate-pdf.html',
   '/delete-pdf-pages.html': '/pdf-tools/delete-pdf-pages.html',
+  '/add-watermark-to-pdf.html': '/pdf-tools/add-watermark-to-pdf.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -6599,6 +6681,43 @@ export const JSP_BY_ROUTE = {
   '/guides/delete-pdf-pages-when.html': 'guide/delete-pdf-pages-when.jsp',
   '/guides/delete-pdf-pages-step-by-step.html': 'guide/delete-pdf-pages-step-by-step.jsp',
   '/guides/delete-pdf-pages-vs-alternatives.html': 'guide/delete-pdf-pages-vs-alternatives.jsp',
+  '/guides/pt/delete-pdf-pages-when.html': 'guide/pt/delete-pdf-pages-when.jsp',
+  '/guides/pt/delete-pdf-pages-step-by-step.html': 'guide/pt/delete-pdf-pages-step-by-step.jsp',
+  '/guides/pt/delete-pdf-pages-vs-alternatives.html': 'guide/pt/delete-pdf-pages-vs-alternatives.jsp',
+  '/guides/es/delete-pdf-pages-when.html': 'guide/es/delete-pdf-pages-when.jsp',
+  '/guides/es/delete-pdf-pages-step-by-step.html': 'guide/es/delete-pdf-pages-step-by-step.jsp',
+  '/guides/es/delete-pdf-pages-vs-alternatives.html': 'guide/es/delete-pdf-pages-vs-alternatives.jsp',
+  '/guides/vi/delete-pdf-pages-when.html': 'guide/vi/delete-pdf-pages-when.jsp',
+  '/guides/vi/delete-pdf-pages-step-by-step.html': 'guide/vi/delete-pdf-pages-step-by-step.jsp',
+  '/guides/vi/delete-pdf-pages-vs-alternatives.html': 'guide/vi/delete-pdf-pages-vs-alternatives.jsp',
+  '/guides/id/delete-pdf-pages-when.html': 'guide/id/delete-pdf-pages-when.jsp',
+  '/guides/id/delete-pdf-pages-step-by-step.html': 'guide/id/delete-pdf-pages-step-by-step.jsp',
+  '/guides/id/delete-pdf-pages-vs-alternatives.html': 'guide/id/delete-pdf-pages-vs-alternatives.jsp',
+  '/guides/de/delete-pdf-pages-when.html': 'guide/de/delete-pdf-pages-when.jsp',
+  '/guides/de/delete-pdf-pages-step-by-step.html': 'guide/de/delete-pdf-pages-step-by-step.jsp',
+  '/guides/de/delete-pdf-pages-vs-alternatives.html': 'guide/de/delete-pdf-pages-vs-alternatives.jsp',
+  '/pdf-tools/add-watermark-to-pdf.html': 'pdf/add-watermark-to-pdf.jsp',
+  '/guides/add-watermark-pdf-when.html': 'guide/add-watermark-pdf-when.jsp',
+  '/guides/add-watermark-pdf-step-by-step.html': 'guide/add-watermark-pdf-step-by-step.jsp',
+  '/guides/add-watermark-pdf-vs-alternatives.html': 'guide/add-watermark-pdf-vs-alternatives.jsp',
+  // new-tool-discovery-loop-runbook fire115 (LEAN one-off, 2026-07-12):
+  // add-watermark-to-pdf guide locale fanout (guide_locale_fanout unit
+  // add-watermark-pdf-guides).
+  '/guides/pt/add-watermark-pdf-when.html': 'guide/pt/add-watermark-pdf-when.jsp',
+  '/guides/pt/add-watermark-pdf-step-by-step.html': 'guide/pt/add-watermark-pdf-step-by-step.jsp',
+  '/guides/pt/add-watermark-pdf-vs-alternatives.html': 'guide/pt/add-watermark-pdf-vs-alternatives.jsp',
+  '/guides/es/add-watermark-pdf-when.html': 'guide/es/add-watermark-pdf-when.jsp',
+  '/guides/es/add-watermark-pdf-step-by-step.html': 'guide/es/add-watermark-pdf-step-by-step.jsp',
+  '/guides/es/add-watermark-pdf-vs-alternatives.html': 'guide/es/add-watermark-pdf-vs-alternatives.jsp',
+  '/guides/vi/add-watermark-pdf-when.html': 'guide/vi/add-watermark-pdf-when.jsp',
+  '/guides/vi/add-watermark-pdf-step-by-step.html': 'guide/vi/add-watermark-pdf-step-by-step.jsp',
+  '/guides/vi/add-watermark-pdf-vs-alternatives.html': 'guide/vi/add-watermark-pdf-vs-alternatives.jsp',
+  '/guides/id/add-watermark-pdf-when.html': 'guide/id/add-watermark-pdf-when.jsp',
+  '/guides/id/add-watermark-pdf-step-by-step.html': 'guide/id/add-watermark-pdf-step-by-step.jsp',
+  '/guides/id/add-watermark-pdf-vs-alternatives.html': 'guide/id/add-watermark-pdf-vs-alternatives.jsp',
+  '/guides/de/add-watermark-pdf-when.html': 'guide/de/add-watermark-pdf-when.jsp',
+  '/guides/de/add-watermark-pdf-step-by-step.html': 'guide/de/add-watermark-pdf-step-by-step.jsp',
+  '/guides/de/add-watermark-pdf-vs-alternatives.html': 'guide/de/add-watermark-pdf-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
