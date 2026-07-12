@@ -408,6 +408,7 @@ try {
     { title: "Delete PDF Pages", url: "https://freetoolonline.com/pdf-tools/delete-pdf-pages.html", include: !1, tags: "pdf" },
     { title: "Add Watermark to PDF", url: "https://freetoolonline.com/pdf-tools/add-watermark-to-pdf.html", include: !1, tags: "pdf" },
     { title: "BMI Calculator", url: "https://freetoolonline.com/utility-tools/bmi-calculator.html", include: !1, tags: "utility" },
+    { title: "Tip Calculator", url: "https://freetoolonline.com/utility-tools/tip-calculator.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

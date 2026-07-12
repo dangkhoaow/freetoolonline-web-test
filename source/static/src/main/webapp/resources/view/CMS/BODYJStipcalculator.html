@@ -1,0 +1,259 @@
+<script>
+    // Calculator archetype (tip-calculator) - pure JS, no lib, no upload, no backend.
+    // Registry Gate-H entries: financial_calculator_purejs (loan / mortgage /
+    // compound-interest / investment / savings / retirement / tax / annuity) and
+    // general_calculator_purejs (percentage / bmi / tip / age / date-difference).
+    // ONE skeleton, slug-dispatched: loan/mortgage amortization, compound-interest
+    // growth, percentage math, BMI, tip splitting, age-from-birthdate, and
+    // date-difference. All math is standard closed-form arithmetic - no external
+    // library needed. Framework contract: doAfterPageRendered(); no top-level DOM;
+    // in-browser tool => no upload widget.
+
+    web.localUpload = false;
+
+    var CALC_SLUG = 'tip-calculator';
+
+    function calcDetectMode(slug) {
+        var s = String(slug || '').toLowerCase();
+        if (/mortgage|loan|amortization/.test(s)) return 'loan';
+        if (/compound|invest|saving|retirement|annuity/.test(s)) return 'compound';
+        if (/bmi|body-mass/.test(s)) return 'bmi';
+        if (/\btip\b/.test(s)) return 'tip';
+        if (/percent/.test(s)) return 'percentage';
+        if (/\bage\b/.test(s)) return 'age';
+        if (/date|days/.test(s)) return 'datediff';
+        return 'percentage'; // generic fallback
+    }
+
+    function calcFmtMoney(n) {
+        if (!isFinite(n)) return '-';
+        try { return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(n); }
+        catch (e) { return '$' + n.toFixed(2); }
+    }
+    function calcFmtNum(n, d) {
+        if (!isFinite(n)) return '-';
+        try { return new Intl.NumberFormat(undefined, { maximumFractionDigits: (d == null ? 2 : d) }).format(n); }
+        catch (e) { return n.toFixed(d == null ? 2 : d); }
+    }
+    function calcNum(v, fallback) {
+        var n = parseFloat(v);
+        return isFinite(n) ? n : (fallback == null ? 0 : fallback);
+    }
+
+    // ---- Loan / mortgage amortization -----------------------------------------
+    function calcRenderLoan(root) {
+        root.innerHTML =
+            '<div class="w3-row calc-field">Loan amount <input id="clPrincipal" type="number" min="0" step="100" value="20000" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field">Annual interest rate (%) <input id="clRate" type="number" min="0" step="0.01" value="6.5" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field">Term (years) <input id="clYears" type="number" min="1" step="1" value="5" class="w3-input w3-border calc-input"></div>' +
+            '<div id="clOut" class="outputImgs" style="visibility:visible !important;margin-top:12px;font-size:1.05em;text-align:left;max-width:420px;margin-left:auto;margin-right:auto;"></div>' +
+            '<div style="margin-top:8px;"><button id="clSchedule" type="button" class="w3-button w3-light-grey w3-small">Show first 12 months</button></div>' +
+            '<div id="clScheduleOut" style="margin-top:8px;overflow-x:auto;"></div>';
+        var pEl = root.querySelector('#clPrincipal'), rEl = root.querySelector('#clRate'), yEl = root.querySelector('#clYears');
+        var outEl = root.querySelector('#clOut'), schedOut = root.querySelector('#clScheduleOut');
+        function amort() {
+            var P = Math.max(0, calcNum(pEl.value)), annualRate = Math.max(0, calcNum(rEl.value)), years = Math.max(1, calcNum(yEl.value, 1));
+            var n = Math.round(years * 12), r = (annualRate / 100) / 12;
+            var M = r > 0 ? P * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1) : P / n;
+            if (!isFinite(M)) M = 0;
+            var totalPaid = M * n, totalInterest = totalPaid - P;
+            outEl.innerHTML =
+                '<p>Monthly payment: <b>' + calcFmtMoney(M) + '</b></p>' +
+                '<p>Total paid over ' + n + ' months: <b>' + calcFmtMoney(totalPaid) + '</b></p>' +
+                '<p>Total interest: <b>' + calcFmtMoney(totalInterest) + '</b></p>';
+            return { P: P, r: r, n: n, M: M };
+        }
+        root.querySelector('#clSchedule').addEventListener('click', function () {
+            var a = amort(), rows = [], bal = a.P, show = Math.min(12, a.n);
+            for (var i = 1; i <= show; i++) {
+                var interest = bal * a.r, principal = a.M - interest;
+                bal = Math.max(0, bal - principal);
+                rows.push('<tr><td>' + i + '</td><td>' + calcFmtMoney(principal) + '</td><td>' + calcFmtMoney(interest) + '</td><td>' + calcFmtMoney(bal) + '</td></tr>');
+            }
+            schedOut.innerHTML = '<table class="w3-table w3-bordered w3-small" style="max-width:480px;margin:0 auto;">' +
+                '<tr><th>Month</th><th>Principal</th><th>Interest</th><th>Balance</th></tr>' + rows.join('') + '</table>' +
+                (a.n > show ? '<p class="w3-small">Showing the first ' + show + ' of ' + a.n + ' months.</p>' : '');
+        });
+        [pEl, rEl, yEl].forEach(function (el) { el.addEventListener('input', amort); });
+        amort();
+    }
+
+    // ---- Compound interest ------------------------------------------------------
+    function calcRenderCompound(root) {
+        root.innerHTML =
+            '<div class="w3-row calc-field">Starting principal <input id="ciPrincipal" type="number" min="0" step="100" value="5000" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field">Monthly contribution <input id="ciContribution" type="number" min="0" step="10" value="100" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field">Annual interest rate (%) <input id="ciRate" type="number" min="0" step="0.01" value="7" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field">Years <input id="ciYears" type="number" min="1" step="1" value="10" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field">Compounding <select id="ciFreq" class="w3-select w3-border calc-input">' +
+            '<option value="12">Monthly</option><option value="1">Annually</option><option value="365">Daily</option></select></div>' +
+            '<div id="ciOut" class="outputImgs" style="visibility:visible !important;margin-top:12px;font-size:1.05em;text-align:left;max-width:420px;margin-left:auto;margin-right:auto;"></div>';
+        var ids = ['ciPrincipal', 'ciContribution', 'ciRate', 'ciYears', 'ciFreq'].map(function (id) { return root.querySelector('#' + id); });
+        var outEl = root.querySelector('#ciOut');
+        function run() {
+            var P = Math.max(0, calcNum(ids[0].value)), contrib = Math.max(0, calcNum(ids[1].value));
+            var annualRate = Math.max(0, calcNum(ids[2].value)), years = Math.max(0, calcNum(ids[3].value));
+            var freq = Math.max(1, calcNum(ids[4].value, 12));
+            var periods = Math.round(years * freq), ratePerPeriod = (annualRate / 100) / freq;
+            var contribPerPeriod = contrib * (12 / freq);
+            var balance = P, totalContrib = P;
+            for (var i = 0; i < periods; i++) {
+                balance = balance * (1 + ratePerPeriod) + contribPerPeriod;
+                totalContrib += contribPerPeriod;
+            }
+            var interestEarned = balance - totalContrib;
+            outEl.innerHTML =
+                '<p>Final value: <b>' + calcFmtMoney(balance) + '</b></p>' +
+                '<p>Total contributed: <b>' + calcFmtMoney(totalContrib) + '</b></p>' +
+                '<p>Interest earned: <b>' + calcFmtMoney(Math.max(0, interestEarned)) + '</b></p>';
+        }
+        ids.forEach(function (el) { el.addEventListener('input', run); el.addEventListener('change', run); });
+        run();
+    }
+
+    // ---- Percentage calculator ---------------------------------------------------
+    function calcRenderPercentage(root) {
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;"><select id="pcMode" class="w3-select w3-border" style="max-width:360px;margin:0 auto;">' +
+            '<option value="of">What is X% of Y?</option>' +
+            '<option value="is">X is what percent of Y?</option>' +
+            '<option value="change">Percent change from X to Y</option>' +
+            '</select></div>' +
+            '<div class="w3-row calc-field"><span id="pcLabelX">X</span> <input id="pcX" type="number" step="any" value="20" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field"><span id="pcLabelY">Y</span> <input id="pcY" type="number" step="any" value="80" class="w3-input w3-border calc-input"></div>' +
+            '<div id="pcOut" class="outputImgs" style="visibility:visible !important;margin-top:12px;font-size:1.2em;font-weight:bold;"></div>';
+        var modeEl = root.querySelector('#pcMode'), xEl = root.querySelector('#pcX'), yEl = root.querySelector('#pcY'), outEl = root.querySelector('#pcOut');
+        var lblX = root.querySelector('#pcLabelX'), lblY = root.querySelector('#pcLabelY');
+        function labels() {
+            var m = modeEl.value;
+            if (m === 'of') { lblX.textContent = 'Percent (%)'; lblY.textContent = 'Of value'; }
+            else if (m === 'is') { lblX.textContent = 'Value'; lblY.textContent = 'Out of (total)'; }
+            else { lblX.textContent = 'From value'; lblY.textContent = 'To value'; }
+        }
+        function run() {
+            labels();
+            var m = modeEl.value, x = calcNum(xEl.value), y = calcNum(yEl.value);
+            if (m === 'of') outEl.textContent = calcFmtNum(x, 4) + '% of ' + calcFmtNum(y, 4) + ' = ' + calcFmtNum((x / 100) * y, 4);
+            else if (m === 'is') outEl.textContent = (y === 0 ? 'Enter a non-zero total.' : calcFmtNum(x, 4) + ' is ' + calcFmtNum((x / y) * 100, 4) + '% of ' + calcFmtNum(y, 4));
+            else outEl.textContent = (x === 0 ? 'Enter a non-zero starting value.' : 'Change: ' + calcFmtNum(((y - x) / x) * 100, 4) + '%');
+        }
+        modeEl.addEventListener('change', run);
+        xEl.addEventListener('input', run);
+        yEl.addEventListener('input', run);
+        run();
+    }
+
+    // ---- BMI calculator ----------------------------------------------------------
+    function calcRenderBmi(root) {
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;"><select id="bmUnit" class="w3-select w3-border" style="max-width:220px;margin:0 auto;">' +
+            '<option value="metric">Metric (kg / cm)</option><option value="imperial">Imperial (lb / in)</option></select></div>' +
+            '<div class="w3-row calc-field"><span id="bmWeightLabel">Weight (kg)</span> <input id="bmWeight" type="number" min="0" step="0.1" value="70" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field"><span id="bmHeightLabel">Height (cm)</span> <input id="bmHeight" type="number" min="0" step="0.1" value="175" class="w3-input w3-border calc-input"></div>' +
+            '<div id="bmOut" class="outputImgs" style="visibility:visible !important;margin-top:12px;font-size:1.1em;"></div>';
+        var unitEl = root.querySelector('#bmUnit'), wEl = root.querySelector('#bmWeight'), hEl = root.querySelector('#bmHeight'), outEl = root.querySelector('#bmOut');
+        var wLbl = root.querySelector('#bmWeightLabel'), hLbl = root.querySelector('#bmHeightLabel');
+        function category(bmi) {
+            if (bmi < 18.5) return 'Underweight';
+            if (bmi < 25) return 'Normal weight';
+            if (bmi < 30) return 'Overweight';
+            return 'Obesity';
+        }
+        function run() {
+            var metric = unitEl.value === 'metric';
+            wLbl.textContent = metric ? 'Weight (kg)' : 'Weight (lb)';
+            hLbl.textContent = metric ? 'Height (cm)' : 'Height (in)';
+            var w = Math.max(0, calcNum(wEl.value)), h = Math.max(0, calcNum(hEl.value));
+            var bmi;
+            if (metric) { var m = h / 100; bmi = m > 0 ? w / (m * m) : 0; }
+            else { bmi = h > 0 ? (703 * w) / (h * h) : 0; }
+            outEl.innerHTML = h <= 0 ? '<p>Enter a height greater than zero.</p>' :
+                '<p>BMI: <b>' + calcFmtNum(bmi, 1) + '</b></p><p>Category: <b>' + category(bmi) + '</b></p>';
+        }
+        unitEl.addEventListener('change', run);
+        wEl.addEventListener('input', run);
+        hEl.addEventListener('input', run);
+        run();
+    }
+
+    // ---- Tip calculator ------------------------------------------------------------
+    function calcRenderTip(root) {
+        root.innerHTML =
+            '<div class="w3-row calc-field">Bill amount <input id="tpBill" type="number" min="0" step="0.01" value="50" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field">Tip percent (%) <input id="tpPct" type="number" min="0" step="1" value="18" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field">Split between (people) <input id="tpPeople" type="number" min="1" step="1" value="1" class="w3-input w3-border calc-input"></div>' +
+            '<div id="tpOut" class="outputImgs" style="visibility:visible !important;margin-top:12px;font-size:1.05em;text-align:left;max-width:360px;margin-left:auto;margin-right:auto;"></div>';
+        var bEl = root.querySelector('#tpBill'), pEl = root.querySelector('#tpPct'), nEl = root.querySelector('#tpPeople'), outEl = root.querySelector('#tpOut');
+        function run() {
+            var bill = Math.max(0, calcNum(bEl.value)), pct = Math.max(0, calcNum(pEl.value)), people = Math.max(1, calcNum(nEl.value, 1));
+            var tip = bill * (pct / 100), total = bill + tip;
+            outEl.innerHTML =
+                '<p>Tip amount: <b>' + calcFmtMoney(tip) + '</b></p>' +
+                '<p>Total (bill + tip): <b>' + calcFmtMoney(total) + '</b></p>' +
+                '<p>Per person: <b>' + calcFmtMoney(total / people) + '</b></p>';
+        }
+        [bEl, pEl, nEl].forEach(function (el) { el.addEventListener('input', run); });
+        run();
+    }
+
+    // ---- Age calculator --------------------------------------------------------
+    function calcRenderAge(root) {
+        var today = new Date().toISOString().slice(0, 10);
+        root.innerHTML =
+            '<div class="w3-row calc-field">Date of birth <input id="agBirth" type="date" value="2000-01-01" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field">As of <input id="agAsOf" type="date" value="' + today + '" class="w3-input w3-border calc-input"></div>' +
+            '<div id="agOut" class="outputImgs" style="visibility:visible !important;margin-top:12px;font-size:1.05em;"></div>';
+        var bEl = root.querySelector('#agBirth'), aEl = root.querySelector('#agAsOf'), outEl = root.querySelector('#agOut');
+        function run() {
+            var b = new Date(bEl.value + 'T00:00:00'), a = new Date(aEl.value + 'T00:00:00');
+            if (isNaN(b.getTime()) || isNaN(a.getTime()) || a < b) { outEl.innerHTML = '<p>Enter a birth date on or before the "as of" date.</p>'; return; }
+            var years = a.getFullYear() - b.getFullYear(), months = a.getMonth() - b.getMonth(), days = a.getDate() - b.getDate();
+            if (days < 0) { months -= 1; days += new Date(a.getFullYear(), a.getMonth(), 0).getDate(); }
+            if (months < 0) { years -= 1; months += 12; }
+            var totalDays = Math.round((a - b) / 86400000);
+            outEl.innerHTML = '<p>Age: <b>' + years + ' years, ' + months + ' months, ' + days + ' days</b></p>' +
+                '<p>Total days lived: <b>' + calcFmtNum(totalDays, 0) + '</b></p>';
+        }
+        bEl.addEventListener('input', run);
+        aEl.addEventListener('input', run);
+        run();
+    }
+
+    // ---- Date difference calculator ---------------------------------------------
+    function calcRenderDateDiff(root) {
+        var today = new Date().toISOString().slice(0, 10);
+        root.innerHTML =
+            '<div class="w3-row calc-field">Start date <input id="ddStart" type="date" value="' + today + '" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field">End date <input id="ddEnd" type="date" value="' + today + '" class="w3-input w3-border calc-input"></div>' +
+            '<div id="ddOut" class="outputImgs" style="visibility:visible !important;margin-top:12px;font-size:1.05em;"></div>';
+        var sEl = root.querySelector('#ddStart'), eEl = root.querySelector('#ddEnd'), outEl = root.querySelector('#ddOut');
+        function run() {
+            var s = new Date(sEl.value + 'T00:00:00'), e = new Date(eEl.value + 'T00:00:00');
+            if (isNaN(s.getTime()) || isNaN(e.getTime())) { outEl.innerHTML = '<p>Enter two valid dates.</p>'; return; }
+            var ms = e - s, sign = ms < 0 ? -1 : 1, absDays = Math.round(Math.abs(ms) / 86400000);
+            var weeks = Math.floor(absDays / 7), rem = absDays % 7;
+            outEl.innerHTML = '<p>Difference: <b>' + calcFmtNum(absDays, 0) + ' days</b>' + (sign < 0 ? ' (end date is before start date)' : '') + '</p>' +
+                '<p>That is <b>' + weeks + ' weeks and ' + rem + ' days</b>.</p>';
+        }
+        sEl.addEventListener('input', run);
+        eEl.addEventListener('input', run);
+        run();
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('calculatorTool');
+        if (!root) return; // not a calculator page
+        var mode = calcDetectMode(CALC_SLUG);
+        try {
+            if (mode === 'loan') calcRenderLoan(root);
+            else if (mode === 'compound') calcRenderCompound(root);
+            else if (mode === 'bmi') calcRenderBmi(root);
+            else if (mode === 'tip') calcRenderTip(root);
+            else if (mode === 'age') calcRenderAge(root);
+            else if (mode === 'datediff') calcRenderDateDiff(root);
+            else calcRenderPercentage(root);
+        } catch (e) {
+            root.textContent = 'Could not start the tool: ' + (e && e.message ? e.message : String(e));
+        }
+    }
+</script>

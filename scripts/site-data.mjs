@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/tip-calculator-vs-alternatives.html',
+  '/guides/tip-calculator-step-by-step.html',
+  '/guides/tip-calculator-when.html',
+  '/guides/pt/tip-calculator-when.html',
+  '/guides/pt/tip-calculator-step-by-step.html',
+  '/guides/pt/tip-calculator-vs-alternatives.html',
+  '/guides/es/tip-calculator-when.html',
+  '/guides/es/tip-calculator-step-by-step.html',
+  '/guides/es/tip-calculator-vs-alternatives.html',
+  '/guides/vi/tip-calculator-when.html',
+  '/guides/vi/tip-calculator-step-by-step.html',
+  '/guides/vi/tip-calculator-vs-alternatives.html',
+  '/guides/id/tip-calculator-when.html',
+  '/guides/id/tip-calculator-step-by-step.html',
+  '/guides/id/tip-calculator-vs-alternatives.html',
+  '/guides/de/tip-calculator-when.html',
+  '/guides/de/tip-calculator-step-by-step.html',
+  '/guides/de/tip-calculator-vs-alternatives.html',
   '/guides/bmi-calculator-vs-alternatives.html',
   '/guides/pt/bmi-calculator-when.html',
   '/guides/pt/bmi-calculator-step-by-step.html',
@@ -4062,6 +4080,7 @@ export const ALIAS_ROUTES = {
   '/delete-pdf-pages.html': '/pdf-tools/delete-pdf-pages.html',
   '/add-watermark-to-pdf.html': '/pdf-tools/add-watermark-to-pdf.html',
   '/bmi-calculator.html': '/utility-tools/bmi-calculator.html',
+  '/tip-calculator.html': '/utility-tools/tip-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -6756,6 +6775,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/bmi-calculator-when.html': 'guide/de/bmi-calculator-when.jsp',
   '/guides/de/bmi-calculator-step-by-step.html': 'guide/de/bmi-calculator-step-by-step.jsp',
   '/guides/de/bmi-calculator-vs-alternatives.html': 'guide/de/bmi-calculator-vs-alternatives.jsp',
+  '/utility-tools/tip-calculator.html': 'utility/tip-calculator.jsp',
+  '/guides/tip-calculator-when.html': 'guide/tip-calculator-when.jsp',
+  '/guides/tip-calculator-step-by-step.html': 'guide/tip-calculator-step-by-step.jsp',
+  '/guides/tip-calculator-vs-alternatives.html': 'guide/tip-calculator-vs-alternatives.jsp',
+  '/guides/pt/tip-calculator-when.html': 'guide/pt/tip-calculator-when.jsp',
+  '/guides/pt/tip-calculator-step-by-step.html': 'guide/pt/tip-calculator-step-by-step.jsp',
+  '/guides/pt/tip-calculator-vs-alternatives.html': 'guide/pt/tip-calculator-vs-alternatives.jsp',
+  '/guides/es/tip-calculator-when.html': 'guide/es/tip-calculator-when.jsp',
+  '/guides/es/tip-calculator-step-by-step.html': 'guide/es/tip-calculator-step-by-step.jsp',
+  '/guides/es/tip-calculator-vs-alternatives.html': 'guide/es/tip-calculator-vs-alternatives.jsp',
+  '/guides/vi/tip-calculator-when.html': 'guide/vi/tip-calculator-when.jsp',
+  '/guides/vi/tip-calculator-step-by-step.html': 'guide/vi/tip-calculator-step-by-step.jsp',
+  '/guides/vi/tip-calculator-vs-alternatives.html': 'guide/vi/tip-calculator-vs-alternatives.jsp',
+  '/guides/id/tip-calculator-when.html': 'guide/id/tip-calculator-when.jsp',
+  '/guides/id/tip-calculator-step-by-step.html': 'guide/id/tip-calculator-step-by-step.jsp',
+  '/guides/id/tip-calculator-vs-alternatives.html': 'guide/id/tip-calculator-vs-alternatives.jsp',
+  '/guides/de/tip-calculator-when.html': 'guide/de/tip-calculator-when.jsp',
+  '/guides/de/tip-calculator-step-by-step.html': 'guide/de/tip-calculator-step-by-step.jsp',
+  '/guides/de/tip-calculator-vs-alternatives.html': 'guide/de/tip-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
