@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/file-encryption-vs-alternatives.html',
+  '/guides/file-encryption-step-by-step.html',
+  '/guides/file-encryption-when.html',
   '/guides/notepad-notes-vs-alternatives.html',
   '/guides/notepad-notes-step-by-step.html',
   '/guides/notepad-notes-when.html',
@@ -1583,6 +1586,25 @@ export const INFO_ROUTES = new Set([
   '/guides/id/moon-phases-3d-when.html',
   '/guides/id/moon-phases-3d-step-by-step.html',
   '/guides/id/moon-phases-3d-vs-alternatives.html',
+  // saturn-rings companion guides (space-3d-discovery-loop fire2)
+  '/guides/saturn-rings-when.html',
+  '/guides/saturn-rings-step-by-step.html',
+  '/guides/saturn-rings-vs-alternatives.html',
+  '/guides/pt/saturn-rings-when.html',
+  '/guides/pt/saturn-rings-step-by-step.html',
+  '/guides/pt/saturn-rings-vs-alternatives.html',
+  '/guides/es/saturn-rings-when.html',
+  '/guides/es/saturn-rings-step-by-step.html',
+  '/guides/es/saturn-rings-vs-alternatives.html',
+  '/guides/de/saturn-rings-when.html',
+  '/guides/de/saturn-rings-step-by-step.html',
+  '/guides/de/saturn-rings-vs-alternatives.html',
+  '/guides/vi/saturn-rings-when.html',
+  '/guides/vi/saturn-rings-step-by-step.html',
+  '/guides/vi/saturn-rings-vs-alternatives.html',
+  '/guides/id/saturn-rings-when.html',
+  '/guides/id/saturn-rings-step-by-step.html',
+  '/guides/id/saturn-rings-vs-alternatives.html',
   // play-fps-in-browser-step-by-step locale fanout pt/es/de/vi/id
   // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
   // per runbook 4b - the -when and -vs-alternatives angles for this guide
@@ -3684,6 +3706,25 @@ export const GUIDE_ROUTES = new Set([
   '/guides/id/moon-phases-3d-when.html',
   '/guides/id/moon-phases-3d-step-by-step.html',
   '/guides/id/moon-phases-3d-vs-alternatives.html',
+  // saturn-rings companion guides (space-3d-discovery-loop fire2)
+  '/guides/saturn-rings-when.html',
+  '/guides/saturn-rings-step-by-step.html',
+  '/guides/saturn-rings-vs-alternatives.html',
+  '/guides/pt/saturn-rings-when.html',
+  '/guides/pt/saturn-rings-step-by-step.html',
+  '/guides/pt/saturn-rings-vs-alternatives.html',
+  '/guides/es/saturn-rings-when.html',
+  '/guides/es/saturn-rings-step-by-step.html',
+  '/guides/es/saturn-rings-vs-alternatives.html',
+  '/guides/de/saturn-rings-when.html',
+  '/guides/de/saturn-rings-step-by-step.html',
+  '/guides/de/saturn-rings-vs-alternatives.html',
+  '/guides/vi/saturn-rings-when.html',
+  '/guides/vi/saturn-rings-step-by-step.html',
+  '/guides/vi/saturn-rings-vs-alternatives.html',
+  '/guides/id/saturn-rings-when.html',
+  '/guides/id/saturn-rings-step-by-step.html',
+  '/guides/id/saturn-rings-vs-alternatives.html',
   // play-fps-in-browser-step-by-step locale fanout pt/es/de/vi/id
   // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
   // per runbook 4b - the -when and -vs-alternatives angles for this guide
@@ -4232,6 +4273,7 @@ export const ALIAS_ROUTES = {
   '/species-life-battle.html': '/games/species-life-battle.html',
   '/earth-3d-globe.html': '/space-3d/earth-3d-globe.html',
   '/moon-phases-3d.html': '/space-3d/moon-phases-3d.html',
+  '/saturn-rings.html': '/space-3d/saturn-rings.html',
   '/linux-online.html': '/utility-tools/linux-online.html',
   '/online-linux-terminal.html': '/utility-tools/linux-online.html',
   '/linux-emulator-online.html': '/utility-tools/linux-online.html',
@@ -4258,6 +4300,7 @@ export const ALIAS_ROUTES = {
   '/date-difference-calculator.html': '/utility-tools/date-difference-calculator.html',
   '/video-compressor.html': '/video-tools/video-compressor.html',
   '/note-taking-app.html': '/utility-tools/note-taking-app.html',
+  '/file-encryption-tool.html': '/developer-tools/file-encryption-tool.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -6597,6 +6640,7 @@ export const JSP_BY_ROUTE = {
   '/guides/de/city-drive-open-world-3d-vs-alternatives.html': 'guide/de/city-drive-open-world-3d-vs-alternatives.jsp',
   '/space-3d/earth-3d-globe.html': 'space/earth-3d-globe.jsp',
   '/space-3d/moon-phases-3d.html': 'space/moon-phases-3d.jsp',
+  '/space-3d/saturn-rings.html': 'space/saturn-rings.jsp',
   '/guides/moon-phases-3d-when.html': 'guide/moon-phases-3d-when.jsp',
   '/guides/moon-phases-3d-step-by-step.html': 'guide/moon-phases-3d-step-by-step.jsp',
   '/guides/moon-phases-3d-vs-alternatives.html': 'guide/moon-phases-3d-vs-alternatives.jsp',
@@ -6615,6 +6659,24 @@ export const JSP_BY_ROUTE = {
   '/guides/id/moon-phases-3d-when.html': 'guide/id/moon-phases-3d-when.jsp',
   '/guides/id/moon-phases-3d-step-by-step.html': 'guide/id/moon-phases-3d-step-by-step.jsp',
   '/guides/id/moon-phases-3d-vs-alternatives.html': 'guide/id/moon-phases-3d-vs-alternatives.jsp',
+  '/guides/saturn-rings-when.html': 'guide/saturn-rings-when.jsp',
+  '/guides/saturn-rings-step-by-step.html': 'guide/saturn-rings-step-by-step.jsp',
+  '/guides/saturn-rings-vs-alternatives.html': 'guide/saturn-rings-vs-alternatives.jsp',
+  '/guides/pt/saturn-rings-when.html': 'guide/pt/saturn-rings-when.jsp',
+  '/guides/pt/saturn-rings-step-by-step.html': 'guide/pt/saturn-rings-step-by-step.jsp',
+  '/guides/pt/saturn-rings-vs-alternatives.html': 'guide/pt/saturn-rings-vs-alternatives.jsp',
+  '/guides/es/saturn-rings-when.html': 'guide/es/saturn-rings-when.jsp',
+  '/guides/es/saturn-rings-step-by-step.html': 'guide/es/saturn-rings-step-by-step.jsp',
+  '/guides/es/saturn-rings-vs-alternatives.html': 'guide/es/saturn-rings-vs-alternatives.jsp',
+  '/guides/de/saturn-rings-when.html': 'guide/de/saturn-rings-when.jsp',
+  '/guides/de/saturn-rings-step-by-step.html': 'guide/de/saturn-rings-step-by-step.jsp',
+  '/guides/de/saturn-rings-vs-alternatives.html': 'guide/de/saturn-rings-vs-alternatives.jsp',
+  '/guides/vi/saturn-rings-when.html': 'guide/vi/saturn-rings-when.jsp',
+  '/guides/vi/saturn-rings-step-by-step.html': 'guide/vi/saturn-rings-step-by-step.jsp',
+  '/guides/vi/saturn-rings-vs-alternatives.html': 'guide/vi/saturn-rings-vs-alternatives.jsp',
+  '/guides/id/saturn-rings-when.html': 'guide/id/saturn-rings-when.jsp',
+  '/guides/id/saturn-rings-step-by-step.html': 'guide/id/saturn-rings-step-by-step.jsp',
+  '/guides/id/saturn-rings-vs-alternatives.html': 'guide/id/saturn-rings-vs-alternatives.jsp',
   '/guides/earth-3d-globe-live-day-night-map-when.html': 'guide/earth-3d-globe-live-day-night-map-when.jsp',
   // earth-3d-globe-live-day-night-map-when locale fanout pt/es/de/vi/id
   // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain)
@@ -7069,6 +7131,10 @@ export const JSP_BY_ROUTE = {
   '/guides/de/notepad-notes-when.html': 'guide/de/notepad-notes-when.jsp',
   '/guides/de/notepad-notes-step-by-step.html': 'guide/de/notepad-notes-step-by-step.jsp',
   '/guides/de/notepad-notes-vs-alternatives.html': 'guide/de/notepad-notes-vs-alternatives.jsp',
+  '/developer-tools/file-encryption-tool.html': 'utility/file-encryption-tool.jsp',
+  '/guides/file-encryption-when.html': 'guide/file-encryption-when.jsp',
+  '/guides/file-encryption-step-by-step.html': 'guide/file-encryption-step-by-step.jsp',
+  '/guides/file-encryption-vs-alternatives.html': 'guide/file-encryption-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
