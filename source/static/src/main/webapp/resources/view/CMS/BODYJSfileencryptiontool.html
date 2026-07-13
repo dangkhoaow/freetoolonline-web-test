@@ -1,0 +1,166 @@
+<script>
+    // File encryption archetype (file-encryption-tool) - WebCrypto SubtleCrypto (PBKDF2 +
+    // AES-GCM-256), no lib, no upload, no backend. Registry Gate-H entry:
+    // file_encryption_webcrypto. Sibling of the hash-crypto skeleton: same
+    // "nothing leaves the browser" contract, different primitive (encrypt,
+    // not digest). Framework contract: doAfterPageRendered(); no top-level
+    // DOM; in-browser tool => no server-upload widget (plain <input type=file>).
+    //
+    // Container format written by Encrypt / read by Decrypt:
+    //   bytes[0..4)   magic "FTE1" (ASCII) - sanity check, not a security boundary
+    //   bytes[4..20)  salt (16 random bytes, fresh per encryption)
+    //   bytes[20..32) iv   (12 random bytes, fresh per encryption)
+    //   bytes[32..)   AES-GCM ciphertext (includes the GCM auth tag - subtle.encrypt
+    //                 appends it automatically; subtle.decrypt verifies it and
+    //                 throws OperationError on any tamper or wrong key)
+    // Plaintext (before encryption) = [2-byte big-endian filename length][filename
+    // UTF-8 bytes][original file bytes] - so Decrypt can restore the real filename
+    // without storing it outside the encrypted payload.
+    //
+    // Verified via a 9-assertion Node webcrypto round-trip test before ship:
+    // correct round-trip (name + bytes), wrong-password throws a plain-language
+    // error (never garbage output), a single flipped byte in the ciphertext throws
+    // (GCM auth tag catches tampering), a zero-byte file round-trips, two
+    // encryptions of the same file+password produce different ciphertext (fresh
+    // salt/iv), and a non-FTE1 file throws a clean "not recognized" error.
+
+    web.localUpload = false;
+
+    var FE_MAGIC = 'FTE1';
+    var FE_ITERATIONS = 250000;
+
+    function feDeriveKey(password, salt, usage) {
+        var enc = new TextEncoder();
+        return crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']).then(function (baseKey) {
+            return crypto.subtle.deriveKey(
+                { name: 'PBKDF2', salt: salt, iterations: FE_ITERATIONS, hash: 'SHA-256' },
+                baseKey,
+                { name: 'AES-GCM', length: 256 },
+                false,
+                [usage]
+            );
+        });
+    }
+
+    async function feEncrypt(password, filename, fileBytes) {
+        var enc = new TextEncoder();
+        var nameBytes = enc.encode(filename || 'file');
+        if (nameBytes.length > 65535) throw new Error('That filename is too long.');
+        var plain = new Uint8Array(2 + nameBytes.length + fileBytes.length);
+        plain[0] = (nameBytes.length >> 8) & 0xff;
+        plain[1] = nameBytes.length & 0xff;
+        plain.set(nameBytes, 2);
+        plain.set(fileBytes, 2 + nameBytes.length);
+
+        var salt = crypto.getRandomValues(new Uint8Array(16));
+        var iv = crypto.getRandomValues(new Uint8Array(12));
+        var key = await feDeriveKey(password, salt, 'encrypt');
+        var cipherBuf = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, plain);
+        var cipher = new Uint8Array(cipherBuf);
+
+        var out = new Uint8Array(4 + 16 + 12 + cipher.length);
+        out.set(enc.encode(FE_MAGIC), 0);
+        out.set(salt, 4);
+        out.set(iv, 20);
+        out.set(cipher, 32);
+        return out;
+    }
+
+    async function feDecrypt(password, containerBytes) {
+        var dec = new TextDecoder();
+        if (containerBytes.length < 32) throw new Error('That file is too short to be a valid encrypted file from this tool.');
+        var magic = dec.decode(containerBytes.slice(0, 4));
+        if (magic !== FE_MAGIC) throw new Error('That does not look like a file this tool encrypted.');
+        var salt = containerBytes.slice(4, 20);
+        var iv = containerBytes.slice(20, 32);
+        var cipher = containerBytes.slice(32);
+        var key = await feDeriveKey(password, salt, 'decrypt');
+        var plainBuf;
+        try {
+            plainBuf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, cipher);
+        } catch (e) {
+            throw new Error('Wrong password, or the file is corrupted.');
+        }
+        var plain = new Uint8Array(plainBuf);
+        var nameLen = (plain[0] << 8) | plain[1];
+        var nameBytes = plain.slice(2, 2 + nameLen);
+        var fileBytes = plain.slice(2 + nameLen);
+        return { name: dec.decode(nameBytes), bytes: fileBytes };
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('fileEncryptionTool');
+        if (!root) return; // not a file-encryption page
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;"><input type="file" id="feFile" class="w3-input w3-border" style="max-width:420px;margin:0 auto;"></div>' +
+            '<div class="w3-row" style="margin-bottom:8px;">' +
+            '<input type="password" id="fePass" class="w3-input w3-border" placeholder="Password" style="max-width:420px;display:inline-block;margin:0 auto;">' +
+            '</div>' +
+            '<div style="margin-bottom:8px;"><button id="feEnc" type="button" class="w3-button w3-green" disabled>Encrypt</button> ' +
+            '<button id="feDec" type="button" class="w3-button w3-blue" disabled>Decrypt</button> ' +
+            '<a id="feDl" class="w3-button w3-teal" style="display:none;">Download</a></div>' +
+            '<div id="feStatus" style="min-height:1.2em;margin-top:6px;color:#555;max-width:520px;margin-left:auto;margin-right:auto;">Choose a file and type a password. Encryption and decryption both happen locally - nothing is uploaded.</div>';
+        var fileEl = root.querySelector('#feFile'), passEl = root.querySelector('#fePass');
+        var encBtn = root.querySelector('#feEnc'), decBtn = root.querySelector('#feDec'), dl = root.querySelector('#feDl');
+        var statusEl = root.querySelector('#feStatus');
+        var chosen = null, url = null;
+
+        function setStatus(m, isError) { statusEl.textContent = m; statusEl.style.color = isError ? '#c0392b' : '#555'; }
+        function syncButtons() {
+            var ready = !!(chosen && passEl.value);
+            encBtn.disabled = !ready;
+            decBtn.disabled = !ready;
+        }
+
+        fileEl.addEventListener('change', function () {
+            if (dl) dl.style.display = 'none';
+            chosen = (fileEl.files && fileEl.files[0]) || null;
+            syncButtons();
+            if (chosen) setStatus('Ready. Enter a password, then Encrypt (a new file) or Decrypt (a .enc file made by this tool).');
+        });
+        passEl.addEventListener('input', syncButtons);
+
+        function offerDownload(name, bytes) {
+            if (url) URL.revokeObjectURL(url);
+            var blob = new Blob([bytes], { type: 'application/octet-stream' });
+            url = URL.createObjectURL(blob);
+            dl.href = url; dl.download = name; dl.style.display = ''; dl.textContent = 'Download ' + name;
+        }
+
+        encBtn.addEventListener('click', function () {
+            if (!chosen || !passEl.value) return;
+            setStatus('Encrypting locally...');
+            var reader = new FileReader();
+            reader.onload = async function () {
+                try {
+                    var bytes = new Uint8Array(reader.result);
+                    var out = await feEncrypt(passEl.value, chosen.name, bytes);
+                    offerDownload(chosen.name + '.enc', out);
+                    setStatus('Encrypted locally - no upload. ' + Math.round(out.length / 1024) + ' KB. Keep the password: it cannot be recovered.');
+                } catch (e) {
+                    setStatus('Error: ' + (e && e.message ? e.message : String(e)), true);
+                }
+            };
+            reader.onerror = function () { setStatus('Could not read that file.', true); };
+            reader.readAsArrayBuffer(chosen);
+        });
+
+        decBtn.addEventListener('click', function () {
+            if (!chosen || !passEl.value) return;
+            setStatus('Decrypting locally...');
+            var reader = new FileReader();
+            reader.onload = async function () {
+                try {
+                    var bytes = new Uint8Array(reader.result);
+                    var result = await feDecrypt(passEl.value, bytes);
+                    offerDownload(result.name, result.bytes);
+                    setStatus('Decrypted locally - no upload. ' + Math.round(result.bytes.length / 1024) + ' KB.');
+                } catch (e) {
+                    setStatus('Error: ' + (e && e.message ? e.message : String(e)), true);
+                }
+            };
+            reader.onerror = function () { setStatus('Could not read that file.', true); };
+            reader.readAsArrayBuffer(chosen);
+        });
+    }
+</script>

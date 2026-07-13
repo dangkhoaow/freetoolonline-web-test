@@ -1,0 +1,449 @@
+<script>
+    // List skeleton - localStorage-backed checklist, fully in-browser.
+    // Reference: verified-browser-impl-registry.mjs entry `generator_purejs`
+    // (the list/tracker family - P4 extended its verb_tokens with
+    // list/tracker/manager/organizer/keeper). Page: /flashcards-maker.html
+    //
+    // What it does on the client:
+    //   - Reads a new item from the text input; Add button or Enter appends it.
+    //   - Empty / whitespace-only input renders an inline validation message
+    //     next to the input (never throws).
+    //   - Each item has a checkbox (toggle done) and a delete button.
+    //   - The list persists in localStorage under a per-slug key, so it
+    //     survives a page reload. Clearing this site's browser data removes it.
+    //   - A live count of total / remaining items renders above the list.
+    //
+    // This tool processes everything in the browser, so the upload widget is
+    // disabled. The framework calls doAfterPageRendered() during page startup
+    // (it fires for EVERY page once jQuery + base-script load). Do NOT call
+    // $(...) at the top level of this inline script: `$` is only defined inside
+    // the deferred hook.
+
+    web.localUpload = false;
+
+    // NOTES mode (2026-07-13, new-tool-discovery-loop, registry entry
+    // list_tracker_localstorage): a note-taking-app slug dispatches a
+    // distinct branch below - multi-line textarea input, no done/checkbox
+    // state (a free-form note is never "done"), plus a Copy button. All
+    // other list/tracker/todo/habit/grocery slugs are UNCHANGED.
+    var LIST_IS_NOTES = /(^|-)notes?(-|$)|(^|-)notepad(-|$)/.test('flashcards-maker');
+
+    // FLASHCARDS mode (2026-07-13, new-tool-discovery-loop, Gate-H starvation
+    // release for candidate "flashcards-maker"; registry: list_tracker_localstorage):
+    // a flashcards slug dispatches a distinct branch below - front+back input
+    // (two fields, not one), items carry {front, back, known} instead of
+    // {text, done}, and a one-card-at-a-time Study widget (#listStudy in the
+    // paired BODYHTML) drives the actual studying. All other list/tracker/
+    // todo/habit/grocery/note slugs are UNCHANGED.
+    var LIST_IS_FLASHCARDS = /(^|-)flashcards?(-|$)/.test('flashcards-maker');
+
+    var LIST_STORAGE_KEY = 'ftol-list-flashcards-maker';
+    var listItems = [];
+    // Flashcards-only study state. studyOrderIds persists a shuffle order
+    // across renders (studyLiveQueueCards() below re-derives eligibility from
+    // listItems every call, but keeps any existing order for ids still
+    // eligible so a Shuffle isn't silently undone by the next add/delete).
+    var studyOrderIds = [];
+    var studyIndex = 0;
+    var studyShowingBack = false;
+
+    function listEscapeHtml(s) {
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function listLoad() {
+        try {
+            var raw = localStorage.getItem(LIST_STORAGE_KEY);
+            if (!raw) { listItems = []; return; }
+            var parsed = JSON.parse(raw);
+            listItems = Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+            // Corrupt / unparseable storage - start clean rather than throw.
+            listItems = [];
+        }
+    }
+
+    function listSave() {
+        try { localStorage.setItem(LIST_STORAGE_KEY, JSON.stringify(listItems)); }
+        catch (e) { /* storage full or blocked - the in-memory list still works this session */ }
+    }
+
+    function listMakeId() {
+        // No Date.now()/Math.random() dependency for the id beyond the wall
+        // clock; collisions across a single session are avoided with a counter.
+        return 'i' + (Date.now()).toString(36) + '-' + (listItems.length + 1);
+    }
+
+    function listRender() {
+        var $items = $('#listItems');
+        var $empty = $('#listEmpty');
+        var $count = $('#listCount');
+        if ($items.length === 0) return;
+
+        $items.empty();
+        if (!listItems.length) {
+            $empty.show();
+            $count.text('');
+            return;
+        }
+        $empty.hide();
+
+        if (LIST_IS_NOTES) {
+            for (var n = 0; n < listItems.length; n++) {
+                var note = listItems[n];
+                var noteHtml = listEscapeHtml(note.text).replace(/\n/g, '<br>');
+                $items.append(
+                    '<li class="list-item list-item-note" data-id="' + listEscapeHtml(note.id) + '">' +
+                        '<div class="list-item-main list-item-note-text">' + noteHtml + '</div>' +
+                        '<div class="list-item-note-actions">' +
+                            '<button type="button" class="w3-button w3-small w3-light-grey list-item-copy" ' +
+                                'aria-label="Copy note">Copy</button> ' +
+                            '<button type="button" class="w3-button w3-small w3-light-grey list-item-delete" ' +
+                                'aria-label="Delete note">Delete</button>' +
+                        '</div>' +
+                    '</li>'
+                );
+            }
+            $count.text(listItems.length + ' note' + (listItems.length === 1 ? '' : 's'));
+            return;
+        }
+
+        if (LIST_IS_FLASHCARDS) {
+            for (var f = 0; f < listItems.length; f++) {
+                var card = listItems[f];
+                var knownTag = card.known ? ' <span class="list-item-flashcard-known">Known</span>' : '';
+                $items.append(
+                    '<li class="list-item list-item-flashcard" data-id="' + listEscapeHtml(card.id) + '">' +
+                        '<div class="list-item-main list-item-flashcard-front">' +
+                            listEscapeHtml(card.front) + knownTag +
+                        '</div>' +
+                        '<button type="button" class="w3-button w3-small w3-light-grey list-item-delete" ' +
+                            'aria-label="Delete card">Delete</button>' +
+                    '</li>'
+                );
+            }
+            var stillLearning = listItems.filter(function (it) { return !it.known; }).length;
+            $count.text(listItems.length + ' card' + (listItems.length === 1 ? '' : 's') +
+                ', ' + stillLearning + ' still learning');
+            studyRender();
+            return;
+        }
+
+        var remaining = 0;
+        for (var i = 0; i < listItems.length; i++) {
+            var it = listItems[i];
+            if (!it.done) remaining++;
+            var doneCls = it.done ? ' list-item-done' : '';
+            var checked = it.done ? ' checked' : '';
+            $items.append(
+                '<li class="list-item' + doneCls + '" data-id="' + listEscapeHtml(it.id) + '">' +
+                    '<label class="list-item-main">' +
+                        '<input type="checkbox" class="list-item-toggle"' + checked + ' /> ' +
+                        '<span class="list-item-text">' + listEscapeHtml(it.text) + '</span>' +
+                    '</label>' +
+                    '<button type="button" class="w3-button w3-small w3-light-grey list-item-delete" ' +
+                        'aria-label="Delete item">Delete</button>' +
+                '</li>'
+            );
+        }
+        $count.text(listItems.length + ' item' + (listItems.length === 1 ? '' : 's') +
+            ', ' + remaining + ' remaining');
+    }
+
+    function listAdd() {
+        var $input = $('#listInput');
+        var $err = $('#listError');
+
+        if (LIST_IS_FLASHCARDS) {
+            var front = ($input.val() || '').trim();
+            var back = ($('#listInputBack').val() || '').trim();
+            if (!front || !back) {
+                $err.text('Fill in both the front and back before adding the card.');
+                return;
+            }
+            $err.text('');
+            listItems.unshift({ id: listMakeId(), front: front, back: back, known: false, createdAt: Date.now() });
+            listSave();
+            listRender();
+            $input.val(''); $('#listInputBack').val(''); $input.focus();
+            return;
+        }
+
+        var text = ($input.val() || '').trim();
+        if (!text) {
+            $err.text('Type something before adding it to the list.');
+            return;
+        }
+        $err.text('');
+        listItems.unshift({ id: listMakeId(), text: text, done: false, createdAt: Date.now() });
+        listSave();
+        listRender();
+        $input.val('').focus();
+    }
+
+    function listToggle(id) {
+        for (var i = 0; i < listItems.length; i++) {
+            if (listItems[i].id === id) { listItems[i].done = !listItems[i].done; break; }
+        }
+        listSave();
+        listRender();
+    }
+
+    function listDelete(id) {
+        listItems = listItems.filter(function (it) { return it.id !== id; });
+        listSave();
+        listRender();
+    }
+
+    // NOTES mode only: copy a note's raw text to the clipboard.
+    function listCopyNote(id) {
+        var found = null;
+        for (var i = 0; i < listItems.length; i++) {
+            if (listItems[i].id === id) { found = listItems[i]; break; }
+        }
+        if (!found) return;
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(found.text);
+            } else {
+                var $tmp = $('<textarea>').val(found.text).appendTo('body').select();
+                document.execCommand('copy');
+                $tmp.remove();
+            }
+        } catch (e) { /* clipboard unavailable - silently no-op, nothing to throw for */ }
+    }
+
+    // Flashcards-only: the cards currently eligible for study (not yet marked
+    // known), preserving any existing shuffle order for ids still eligible and
+    // appending newly-eligible ids (a new card, or one just un-marked) at the
+    // end - so a Shuffle is not silently undone by the very next render.
+    function studyLiveQueueCards() {
+        var eligible = listItems.filter(function (it) { return !it.known; });
+        var byId = {};
+        eligible.forEach(function (it) { byId[it.id] = it; });
+        var ordered = studyOrderIds
+            .filter(function (id) { return byId[id]; })
+            .map(function (id) { return byId[id]; });
+        var seen = {};
+        ordered.forEach(function (it) { seen[it.id] = true; });
+        eligible.forEach(function (it) { if (!seen[it.id]) ordered.push(it); });
+        studyOrderIds = ordered.map(function (it) { return it.id; });
+        return ordered;
+    }
+
+    function studyRender() {
+        var $box = $('#listStudy');
+        if ($box.length === 0) return;
+        var $face = $('#listStudyFace');
+        var $progress = $('#listStudyProgress');
+        var $actionBtns = $('#listStudyFlipBtn, #listStudyKnownBtn, #listStudyUnknownBtn');
+
+        if (!listItems.length) {
+            $face.text('No cards yet. Add your first one above to start studying.');
+            $progress.text('');
+            $actionBtns.prop('disabled', true);
+            return;
+        }
+        var queue = studyLiveQueueCards();
+        if (!queue.length) {
+            $face.text('All caught up! Every card is marked known - click "Study all again" to review them all.');
+            $progress.text('0 of ' + listItems.length + ' still learning');
+            $actionBtns.prop('disabled', true);
+            return;
+        }
+        if (studyIndex >= queue.length) studyIndex = 0;
+        $actionBtns.prop('disabled', false);
+        var card = queue[studyIndex];
+        $face.text(studyShowingBack ? card.back : card.front);
+        $('#listStudyFlipBtn').text(studyShowingBack ? 'Show question' : 'Show answer');
+        $progress.text('Card ' + (studyIndex + 1) + ' of ' + queue.length + ' still learning (' +
+            listItems.length + ' total)');
+    }
+
+    function studyFlip() {
+        studyShowingBack = !studyShowingBack;
+        studyRender();
+    }
+
+    function studyMark(known) {
+        var queue = studyLiveQueueCards();
+        if (!queue.length) return;
+        var card = queue[studyIndex];
+        for (var i = 0; i < listItems.length; i++) {
+            if (listItems[i].id === card.id) { listItems[i].known = known; break; }
+        }
+        listSave();
+        studyShowingBack = false;
+        // Do not manually advance studyIndex: studyLiveQueueCards() recomputes
+        // eligibility on the next render, so the just-answered card either
+        // drops out of the queue (known=true) or stays at this same position
+        // (known=false), which naturally surfaces the next remaining card.
+        listRender();
+    }
+
+    function studyShuffle() {
+        var ids = studyOrderIds.length ? studyOrderIds.slice() : studyLiveQueueCards().map(function (it) { return it.id; });
+        for (var i = ids.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var tmp = ids[i]; ids[i] = ids[j]; ids[j] = tmp;
+        }
+        studyOrderIds = ids;
+        studyIndex = 0;
+        studyShowingBack = false;
+        studyRender();
+    }
+
+    function studyReset() {
+        // "Study all again": clear every card's known flag so the full deck
+        // re-enters the queue. Not a spaced-repetition algorithm - see the
+        // tool-skill ## NOT implemented note.
+        listItems.forEach(function (it) { it.known = false; });
+        listSave();
+        studyOrderIds = [];
+        studyIndex = 0;
+        studyShowingBack = false;
+        listRender();
+    }
+
+    // Export / import JSON (wf-a3a5c02d): browser storage is a CACHE, not a
+    // guaranteed database - Safari evicts localStorage aggressively - so the
+    // user must be able to back up + restore their list to a file. No upload.
+    function listExport() {
+        try {
+            var blob = new Blob([JSON.stringify(listItems, null, 2)], { type: 'application/json' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url; a.download = 'flashcards-maker-backup.json';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        } catch (e) { /* nothing to export */ }
+    }
+
+    function listImport(file) {
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+            try {
+                var parsed = JSON.parse(reader.result);
+                if (!Array.isArray(parsed)) throw new Error('not a list');
+                // Merge by id (imported wins), keeping existing items not in the file.
+                var byId = {};
+                listItems.concat(parsed).forEach(function (it) {
+                    if (!it) return;
+                    if (LIST_IS_FLASHCARDS) {
+                        if (typeof it.front === 'string' && typeof it.back === 'string') {
+                            byId[it.id || listMakeId()] = { id: it.id || listMakeId(), front: it.front, back: it.back, known: !!it.known, createdAt: it.createdAt || Date.now() };
+                        }
+                    } else if (typeof it.text === 'string') {
+                        byId[it.id || listMakeId()] = { id: it.id || listMakeId(), text: it.text, done: !!it.done, createdAt: it.createdAt || Date.now() };
+                    }
+                });
+                listItems = Object.keys(byId).map(function (k) { return byId[k]; });
+                listSave(); listRender();
+                var $err = $('#listError'); if ($err.length) $err.text('Imported ' + parsed.length + ' item(s).');
+            } catch (e) {
+                var $e2 = $('#listError'); if ($e2.length) $e2.text('That file is not a valid list backup.');
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    function initList() {
+        if ($('#listInput').length === 0) return; // not a list page
+
+        if (LIST_IS_NOTES) {
+            // Swap the single-line input for a multi-line textarea (same id,
+            // so every other handler below keeps working unchanged) and
+            // relabel the UI for notes instead of checklist items.
+            var $oldInput = $('#listInput');
+            var $textarea = $('<textarea id="listInput" class="w3-input w3-border w3-col" ' +
+                'style="width: calc(100% - 130px); height: 80px; resize: vertical;" maxlength="20000" ' +
+                'placeholder="Type your note here"></textarea>');
+            $oldInput.replaceWith($textarea);
+            $('#listAddBtn').text('Save note');
+            $('label[for="listInput"]').text('Add a note');
+            $('#listEmpty').text('No notes yet. Add your first one above.');
+        } else if (LIST_IS_FLASHCARDS) {
+            // Inject a second single-line field for the card's back/answer
+            // text into the static placeholder slot, relabel the front input
+            // + Add button, and reveal the Study widget (hidden by default in
+            // the paired BODYHTML so every other list/tracker/note tool is
+            // unaffected).
+            var $backField = $(
+                '<div class="list-row" style="margin-top:6px;">' +
+                    '<label class="list-field-label" for="listInputBack">Back (answer)</label>' +
+                    '<input type="text" id="listInputBack" class="w3-input w3-border w3-col" ' +
+                        'style="width: 100%;" maxlength="500" placeholder="Type the answer" />' +
+                '</div>'
+            );
+            $('#listBackFieldSlot').append($backField);
+            $('label[for="listInput"]').text('Front (question)');
+            $('#listInput').attr('placeholder', 'Type the question');
+            $('#listAddBtn').text('Add card');
+            $('#listEmpty').text('No cards yet. Add your first one above.');
+            $('#listStudy').show();
+        }
+
+        listLoad();
+        listRender();
+
+        $('#listAddBtn').off('click.list').on('click.list', listAdd);
+        if (LIST_IS_FLASHCARDS) {
+            // Both front and back are single-line fields: Enter in either
+            // one adds the card (mirrors the default checklist behaviour).
+            $('#listInput, #listInputBack').off('keydown.list').on('keydown.list', function (e) {
+                if (e.key === 'Enter' || e.which === 13) { e.preventDefault(); listAdd(); }
+            });
+        } else if (!LIST_IS_NOTES) {
+            // Checklist items are single-line: Enter submits. Notes are
+            // multi-line, so Enter must insert a newline instead - only
+            // Ctrl/Cmd+Enter saves a note (bound separately below).
+            $('#listInput').off('keydown.list').on('keydown.list', function (e) {
+                if (e.key === 'Enter' || e.which === 13) { e.preventDefault(); listAdd(); }
+            });
+        } else {
+            $('#listInput').off('keydown.list').on('keydown.list', function (e) {
+                if ((e.key === 'Enter' || e.which === 13) && (e.metaKey || e.ctrlKey)) {
+                    e.preventDefault(); listAdd();
+                }
+            });
+        }
+        // Delegated handlers so they survive re-render.
+        $('#listItems').off('change.list', '.list-item-toggle')
+            .on('change.list', '.list-item-toggle', function () {
+                var id = $(this).closest('.list-item').attr('data-id');
+                listToggle(id);
+            });
+        $('#listItems').off('click.list', '.list-item-delete')
+            .on('click.list', '.list-item-delete', function () {
+                var id = $(this).closest('.list-item').attr('data-id');
+                listDelete(id);
+            });
+        $('#listItems').off('click.list', '.list-item-copy')
+            .on('click.list', '.list-item-copy', function () {
+                var id = $(this).closest('.list-item').attr('data-id');
+                listCopyNote(id);
+            });
+        if (LIST_IS_FLASHCARDS) {
+            $('#listStudyFlipBtn').off('click.list').on('click.list', studyFlip);
+            $('#listStudyKnownBtn').off('click.list').on('click.list', function () { studyMark(true); });
+            $('#listStudyUnknownBtn').off('click.list').on('click.list', function () { studyMark(false); });
+            $('#listStudyShuffleBtn').off('click.list').on('click.list', studyShuffle);
+            $('#listStudyResetBtn').off('click.list').on('click.list', studyReset);
+        }
+        // Export / import backup (present only when the BODYHTML includes them).
+        $('#listExport').off('click.list').on('click.list', listExport);
+        $('#listImport').off('change.list').on('change.list', function () {
+            if (this.files && this.files[0]) listImport(this.files[0]);
+            this.value = '';
+        });
+    }
+
+    function doAfterPageRendered() {
+        initList();
+    }
+</script>
