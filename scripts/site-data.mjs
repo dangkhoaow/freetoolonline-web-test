@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/jwt-decoder-vs-alternatives.html',
+  '/guides/jwt-decoder-step-by-step.html',
+  '/guides/jwt-decoder-when.html',
+  '/guides/pt/jwt-decoder-when.html',
+  '/guides/pt/jwt-decoder-step-by-step.html',
+  '/guides/pt/jwt-decoder-vs-alternatives.html',
+  '/guides/es/jwt-decoder-when.html',
+  '/guides/es/jwt-decoder-step-by-step.html',
+  '/guides/es/jwt-decoder-vs-alternatives.html',
+  '/guides/vi/jwt-decoder-when.html',
+  '/guides/vi/jwt-decoder-step-by-step.html',
+  '/guides/vi/jwt-decoder-vs-alternatives.html',
+  '/guides/id/jwt-decoder-when.html',
+  '/guides/id/jwt-decoder-step-by-step.html',
+  '/guides/id/jwt-decoder-vs-alternatives.html',
+  '/guides/de/jwt-decoder-when.html',
+  '/guides/de/jwt-decoder-step-by-step.html',
+  '/guides/de/jwt-decoder-vs-alternatives.html',
   '/guides/document-scanner-pdf-vs-alternatives.html',
   '/guides/document-scanner-pdf-step-by-step.html',
   '/guides/document-scanner-pdf-when.html',
@@ -1792,15 +1810,45 @@ export const INFO_ROUTES = new Set([
   '/guides/de/star-lifecycle-vs-alternatives.html',
   '/guides/vi/star-lifecycle-vs-alternatives.html',
   '/guides/id/star-lifecycle-vs-alternatives.html',
+  '/guides/exoplanet-transit-when.html',
+  '/guides/pt/exoplanet-transit-when.html',
+  '/guides/es/exoplanet-transit-when.html',
+  '/guides/de/exoplanet-transit-when.html',
+  '/guides/vi/exoplanet-transit-when.html',
+  '/guides/id/exoplanet-transit-when.html',
+  '/guides/exoplanet-transit-step-by-step.html',
+  '/guides/pt/exoplanet-transit-step-by-step.html',
+  '/guides/es/exoplanet-transit-step-by-step.html',
+  '/guides/de/exoplanet-transit-step-by-step.html',
+  '/guides/vi/exoplanet-transit-step-by-step.html',
+  '/guides/id/exoplanet-transit-step-by-step.html',
+  '/guides/exoplanet-transit-vs-alternatives.html',
+  '/guides/pt/exoplanet-transit-vs-alternatives.html',
+  '/guides/es/exoplanet-transit-vs-alternatives.html',
+  '/guides/de/exoplanet-transit-vs-alternatives.html',
+  '/guides/vi/exoplanet-transit-vs-alternatives.html',
+  '/guides/id/exoplanet-transit-vs-alternatives.html',
   // play-fps-in-browser-step-by-step locale fanout pt/es/de/vi/id
   // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
-  // per runbook 4b - the -when and -vs-alternatives angles for this guide
-  // remain EN-only pending a future fire).
+  // per runbook 4b).
   '/guides/pt/play-fps-in-browser-step-by-step.html',
   '/guides/es/play-fps-in-browser-step-by-step.html',
   '/guides/de/play-fps-in-browser-step-by-step.html',
   '/guides/vi/play-fps-in-browser-step-by-step.html',
   '/guides/id/play-fps-in-browser-step-by-step.html',
+  // play-fps-in-browser-when + -vs-alternatives locale fanout pt/es/de/vi/id
+  // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
+  // per runbook 4b - closes the gap the comment above used to document).
+  '/guides/pt/play-fps-in-browser-when.html',
+  '/guides/es/play-fps-in-browser-when.html',
+  '/guides/de/play-fps-in-browser-when.html',
+  '/guides/vi/play-fps-in-browser-when.html',
+  '/guides/id/play-fps-in-browser-when.html',
+  '/guides/pt/play-fps-in-browser-vs-alternatives.html',
+  '/guides/es/play-fps-in-browser-vs-alternatives.html',
+  '/guides/de/play-fps-in-browser-vs-alternatives.html',
+  '/guides/vi/play-fps-in-browser-vs-alternatives.html',
+  '/guides/id/play-fps-in-browser-vs-alternatives.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -1818,6 +1866,29 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // new-tool-discovery-loop-runbook fire142 (LEAN one-off, 2026-07-13/14):
+  // GUIDE_ROUTES backfill for jwt-decoder's 3 EN companion guide angles
+  // (builder wires JSP_BY_ROUTE + INFO_ROUTES only, same recurring gap
+  // class as fires 32/56/57/62/66/84/113/115/120) plus their full
+  // pt/es/vi/id/de locale fanout.
+  '/guides/jwt-decoder-when.html',
+  '/guides/jwt-decoder-step-by-step.html',
+  '/guides/jwt-decoder-vs-alternatives.html',
+  '/guides/pt/jwt-decoder-when.html',
+  '/guides/pt/jwt-decoder-step-by-step.html',
+  '/guides/pt/jwt-decoder-vs-alternatives.html',
+  '/guides/es/jwt-decoder-when.html',
+  '/guides/es/jwt-decoder-step-by-step.html',
+  '/guides/es/jwt-decoder-vs-alternatives.html',
+  '/guides/vi/jwt-decoder-when.html',
+  '/guides/vi/jwt-decoder-step-by-step.html',
+  '/guides/vi/jwt-decoder-vs-alternatives.html',
+  '/guides/id/jwt-decoder-when.html',
+  '/guides/id/jwt-decoder-step-by-step.html',
+  '/guides/id/jwt-decoder-vs-alternatives.html',
+  '/guides/de/jwt-decoder-when.html',
+  '/guides/de/jwt-decoder-step-by-step.html',
+  '/guides/de/jwt-decoder-vs-alternatives.html',
   // GUIDE_ROUTES locale fanout for flashcards-maker's 3 EN companion guide
   // angles - pt/es/vi/id/de.
   '/guides/pt/flashcards-spaced-repetition-when.html',
@@ -4083,15 +4154,45 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/star-lifecycle-vs-alternatives.html',
   '/guides/vi/star-lifecycle-vs-alternatives.html',
   '/guides/id/star-lifecycle-vs-alternatives.html',
+  '/guides/exoplanet-transit-when.html',
+  '/guides/pt/exoplanet-transit-when.html',
+  '/guides/es/exoplanet-transit-when.html',
+  '/guides/de/exoplanet-transit-when.html',
+  '/guides/vi/exoplanet-transit-when.html',
+  '/guides/id/exoplanet-transit-when.html',
+  '/guides/exoplanet-transit-step-by-step.html',
+  '/guides/pt/exoplanet-transit-step-by-step.html',
+  '/guides/es/exoplanet-transit-step-by-step.html',
+  '/guides/de/exoplanet-transit-step-by-step.html',
+  '/guides/vi/exoplanet-transit-step-by-step.html',
+  '/guides/id/exoplanet-transit-step-by-step.html',
+  '/guides/exoplanet-transit-vs-alternatives.html',
+  '/guides/pt/exoplanet-transit-vs-alternatives.html',
+  '/guides/es/exoplanet-transit-vs-alternatives.html',
+  '/guides/de/exoplanet-transit-vs-alternatives.html',
+  '/guides/vi/exoplanet-transit-vs-alternatives.html',
+  '/guides/id/exoplanet-transit-vs-alternatives.html',
   // play-fps-in-browser-step-by-step locale fanout pt/es/de/vi/id
   // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
-  // per runbook 4b - the -when and -vs-alternatives angles for this guide
-  // remain EN-only pending a future fire).
+  // per runbook 4b).
   '/guides/pt/play-fps-in-browser-step-by-step.html',
   '/guides/es/play-fps-in-browser-step-by-step.html',
   '/guides/de/play-fps-in-browser-step-by-step.html',
   '/guides/vi/play-fps-in-browser-step-by-step.html',
   '/guides/id/play-fps-in-browser-step-by-step.html',
+  // play-fps-in-browser-when + -vs-alternatives locale fanout pt/es/de/vi/id
+  // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
+  // per runbook 4b - closes the gap the comment above used to document).
+  '/guides/pt/play-fps-in-browser-when.html',
+  '/guides/es/play-fps-in-browser-when.html',
+  '/guides/de/play-fps-in-browser-when.html',
+  '/guides/vi/play-fps-in-browser-when.html',
+  '/guides/id/play-fps-in-browser-when.html',
+  '/guides/pt/play-fps-in-browser-vs-alternatives.html',
+  '/guides/es/play-fps-in-browser-vs-alternatives.html',
+  '/guides/de/play-fps-in-browser-vs-alternatives.html',
+  '/guides/vi/play-fps-in-browser-vs-alternatives.html',
+  '/guides/id/play-fps-in-browser-vs-alternatives.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -4639,6 +4740,7 @@ export const ALIAS_ROUTES = {
   '/solar-eclipse.html': '/space-3d/solar-eclipse.html',
   '/planet-size-comparison.html': '/space-3d/planet-size-comparison.html',
   '/star-lifecycle.html': '/space-3d/star-lifecycle.html',
+  '/exoplanet-transit.html': '/space-3d/exoplanet-transit.html',
   '/linux-online.html': '/utility-tools/linux-online.html',
   '/online-linux-terminal.html': '/utility-tools/linux-online.html',
   '/linux-emulator-online.html': '/utility-tools/linux-online.html',
@@ -4668,6 +4770,7 @@ export const ALIAS_ROUTES = {
   '/file-encryption-tool.html': '/developer-tools/file-encryption-tool.html',
   '/flashcards-maker.html': '/utility-tools/flashcards-maker.html',
   '/document-scanner.html': '/image-tools/document-scanner.html',
+  '/jwt-decoder.html': '/developer-tools/jwt-decoder.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -7015,6 +7118,7 @@ export const JSP_BY_ROUTE = {
   '/space-3d/solar-eclipse.html': 'space/solar-eclipse.jsp',
   '/space-3d/planet-size-comparison.html': 'space/planet-size-comparison.jsp',
   '/space-3d/star-lifecycle.html': 'space/star-lifecycle.jsp',
+  '/space-3d/exoplanet-transit.html': 'space/exoplanet-transit.jsp',
   '/guides/iss-orbit-tracker-when.html': 'guide/iss-orbit-tracker-when.jsp',
   '/guides/iss-orbit-tracker-step-by-step.html': 'guide/iss-orbit-tracker-step-by-step.jsp',
   '/guides/iss-orbit-tracker-vs-alternatives.html': 'guide/iss-orbit-tracker-vs-alternatives.jsp',
@@ -7105,6 +7209,24 @@ export const JSP_BY_ROUTE = {
   '/guides/de/star-lifecycle-vs-alternatives.html': 'guide/de/star-lifecycle-vs-alternatives.jsp',
   '/guides/vi/star-lifecycle-vs-alternatives.html': 'guide/vi/star-lifecycle-vs-alternatives.jsp',
   '/guides/id/star-lifecycle-vs-alternatives.html': 'guide/id/star-lifecycle-vs-alternatives.jsp',
+  '/guides/exoplanet-transit-when.html': 'guide/exoplanet-transit-when.jsp',
+  '/guides/pt/exoplanet-transit-when.html': 'guide/pt/exoplanet-transit-when.jsp',
+  '/guides/es/exoplanet-transit-when.html': 'guide/es/exoplanet-transit-when.jsp',
+  '/guides/de/exoplanet-transit-when.html': 'guide/de/exoplanet-transit-when.jsp',
+  '/guides/vi/exoplanet-transit-when.html': 'guide/vi/exoplanet-transit-when.jsp',
+  '/guides/id/exoplanet-transit-when.html': 'guide/id/exoplanet-transit-when.jsp',
+  '/guides/exoplanet-transit-step-by-step.html': 'guide/exoplanet-transit-step-by-step.jsp',
+  '/guides/pt/exoplanet-transit-step-by-step.html': 'guide/pt/exoplanet-transit-step-by-step.jsp',
+  '/guides/es/exoplanet-transit-step-by-step.html': 'guide/es/exoplanet-transit-step-by-step.jsp',
+  '/guides/de/exoplanet-transit-step-by-step.html': 'guide/de/exoplanet-transit-step-by-step.jsp',
+  '/guides/vi/exoplanet-transit-step-by-step.html': 'guide/vi/exoplanet-transit-step-by-step.jsp',
+  '/guides/id/exoplanet-transit-step-by-step.html': 'guide/id/exoplanet-transit-step-by-step.jsp',
+  '/guides/exoplanet-transit-vs-alternatives.html': 'guide/exoplanet-transit-vs-alternatives.jsp',
+  '/guides/pt/exoplanet-transit-vs-alternatives.html': 'guide/pt/exoplanet-transit-vs-alternatives.jsp',
+  '/guides/es/exoplanet-transit-vs-alternatives.html': 'guide/es/exoplanet-transit-vs-alternatives.jsp',
+  '/guides/de/exoplanet-transit-vs-alternatives.html': 'guide/de/exoplanet-transit-vs-alternatives.jsp',
+  '/guides/vi/exoplanet-transit-vs-alternatives.html': 'guide/vi/exoplanet-transit-vs-alternatives.jsp',
+  '/guides/id/exoplanet-transit-vs-alternatives.html': 'guide/id/exoplanet-transit-vs-alternatives.jsp',
   '/guides/moon-calendar-3d-when.html': 'guide/moon-calendar-3d-when.jsp',
   '/guides/moon-calendar-3d-step-by-step.html': 'guide/moon-calendar-3d-step-by-step.jsp',
   '/guides/moon-calendar-3d-vs-alternatives.html': 'guide/moon-calendar-3d-vs-alternatives.jsp',
@@ -7231,6 +7353,19 @@ export const JSP_BY_ROUTE = {
   '/guides/de/play-fps-in-browser-step-by-step.html': 'guide/de/play-fps-in-browser-step-by-step.jsp',
   '/guides/vi/play-fps-in-browser-step-by-step.html': 'guide/vi/play-fps-in-browser-step-by-step.jsp',
   '/guides/id/play-fps-in-browser-step-by-step.html': 'guide/id/play-fps-in-browser-step-by-step.jsp',
+  // play-fps-in-browser-when + -vs-alternatives locale fanout pt/es/de/vi/id
+  // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
+  // per runbook 4b - closes the gap the comment above used to document).
+  '/guides/pt/play-fps-in-browser-when.html': 'guide/pt/play-fps-in-browser-when.jsp',
+  '/guides/es/play-fps-in-browser-when.html': 'guide/es/play-fps-in-browser-when.jsp',
+  '/guides/de/play-fps-in-browser-when.html': 'guide/de/play-fps-in-browser-when.jsp',
+  '/guides/vi/play-fps-in-browser-when.html': 'guide/vi/play-fps-in-browser-when.jsp',
+  '/guides/id/play-fps-in-browser-when.html': 'guide/id/play-fps-in-browser-when.jsp',
+  '/guides/pt/play-fps-in-browser-vs-alternatives.html': 'guide/pt/play-fps-in-browser-vs-alternatives.jsp',
+  '/guides/es/play-fps-in-browser-vs-alternatives.html': 'guide/es/play-fps-in-browser-vs-alternatives.jsp',
+  '/guides/de/play-fps-in-browser-vs-alternatives.html': 'guide/de/play-fps-in-browser-vs-alternatives.jsp',
+  '/guides/vi/play-fps-in-browser-vs-alternatives.html': 'guide/vi/play-fps-in-browser-vs-alternatives.jsp',
+  '/guides/id/play-fps-in-browser-vs-alternatives.html': 'guide/id/play-fps-in-browser-vs-alternatives.jsp',
   '/image-converter-tools/webp-to-jpg.html': 'convert/webp-to-jpg.jsp',
   '/guides/webp-jpg-converter-when.html': 'guide/webp-jpg-converter-when.jsp',
   '/guides/webp-jpg-converter-step-by-step.html': 'guide/webp-jpg-converter-step-by-step.jsp',
@@ -7693,6 +7828,25 @@ export const JSP_BY_ROUTE = {
   '/guides/id/document-scanner-pdf-step-by-step.html': 'guide/id/document-scanner-pdf-step-by-step.jsp',
   '/guides/id/document-scanner-pdf-when.html': 'guide/id/document-scanner-pdf-when.jsp',
   '/guides/id/document-scanner-pdf-vs-alternatives.html': 'guide/id/document-scanner-pdf-vs-alternatives.jsp',
+  '/developer-tools/jwt-decoder.html': 'utility/jwt-decoder.jsp',
+  '/guides/jwt-decoder-when.html': 'guide/jwt-decoder-when.jsp',
+  '/guides/jwt-decoder-step-by-step.html': 'guide/jwt-decoder-step-by-step.jsp',
+  '/guides/jwt-decoder-vs-alternatives.html': 'guide/jwt-decoder-vs-alternatives.jsp',
+  '/guides/pt/jwt-decoder-when.html': 'guide/pt/jwt-decoder-when.jsp',
+  '/guides/pt/jwt-decoder-step-by-step.html': 'guide/pt/jwt-decoder-step-by-step.jsp',
+  '/guides/pt/jwt-decoder-vs-alternatives.html': 'guide/pt/jwt-decoder-vs-alternatives.jsp',
+  '/guides/es/jwt-decoder-when.html': 'guide/es/jwt-decoder-when.jsp',
+  '/guides/es/jwt-decoder-step-by-step.html': 'guide/es/jwt-decoder-step-by-step.jsp',
+  '/guides/es/jwt-decoder-vs-alternatives.html': 'guide/es/jwt-decoder-vs-alternatives.jsp',
+  '/guides/vi/jwt-decoder-when.html': 'guide/vi/jwt-decoder-when.jsp',
+  '/guides/vi/jwt-decoder-step-by-step.html': 'guide/vi/jwt-decoder-step-by-step.jsp',
+  '/guides/vi/jwt-decoder-vs-alternatives.html': 'guide/vi/jwt-decoder-vs-alternatives.jsp',
+  '/guides/id/jwt-decoder-when.html': 'guide/id/jwt-decoder-when.jsp',
+  '/guides/id/jwt-decoder-step-by-step.html': 'guide/id/jwt-decoder-step-by-step.jsp',
+  '/guides/id/jwt-decoder-vs-alternatives.html': 'guide/id/jwt-decoder-vs-alternatives.jsp',
+  '/guides/de/jwt-decoder-when.html': 'guide/de/jwt-decoder-when.jsp',
+  '/guides/de/jwt-decoder-step-by-step.html': 'guide/de/jwt-decoder-step-by-step.jsp',
+  '/guides/de/jwt-decoder-vs-alternatives.html': 'guide/de/jwt-decoder-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
