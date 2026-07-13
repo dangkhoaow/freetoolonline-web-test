@@ -1,0 +1,85 @@
+<div class="w3-container">
+    <p>Type the front (question) and back (answer) for a card and click Add card; in the Study box, click Show answer to flip a card during a study pass.</p>
+</div>
+
+<style>
+    #listTool .list-row { margin-bottom: 10px; }
+    #listTool label.list-field-label { font-weight: bold; display: block; margin-bottom: 4px; }
+    #listError { color: #b00020; font-weight: bold; margin-top: 6px; min-height: 1em; }
+    #listCount { font-weight: bold; margin: 8px 0; }
+    #listItems { list-style: none; margin: 0; padding: 0; }
+    #listItems .list-item {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 8px 4px; border-bottom: 1px solid #eeeeee;
+    }
+    #listItems .list-item-main { display: flex; align-items: center; gap: 8px; flex: 1; cursor: pointer; }
+    #listItems .list-item-text { word-break: break-word; }
+    #listItems .list-item-done .list-item-text { text-decoration: line-through; color: #888; }
+    #listEmpty { color: #777; padding: 12px 4px; }
+    /* Notes mode (2026-07-13): a note has no done-state, so it renders as a
+       card with wrapped multi-line text + Copy/Delete actions, not a checkbox row. */
+    #listItems .list-item-note { display: block; align-items: initial; }
+    #listItems .list-item-note-text { word-break: break-word; white-space: normal; cursor: default; margin-bottom: 6px; }
+    #listItems .list-item-note-actions { display: flex; gap: 8px; }
+    /* Flashcards mode (2026-07-13): the per-card management row is a simple
+       front-preview + read-only known tag - marking known/unknown happens
+       only in the Study widget below, never from this row. */
+    #listItems .list-item-flashcard-known { color: #2e7d32; font-weight: bold; font-size: 0.85em; margin-left: 6px; }
+    /* display:none by default - JS shows this ONLY for a flashcard/flashcards
+       slug (initList()), so every other list/tracker/note tool is unaffected. */
+    #listStudy { display: none; margin: 10px 0 16px; padding: 16px; border: 1px solid #ddd; border-radius: 6px; background: #fafafa; }
+    #listStudyProgress { font-weight: bold; margin-bottom: 8px; color: #555; }
+    #listStudyFace { font-size: 1.15em; min-height: 2.4em; padding: 12px; background: #fff; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px; }
+    #listStudy .list-study-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+</style>
+
+<div id="listTool" class="w3-container">
+    <div class="list-row">
+        <label class="list-field-label" for="listInput">Add an item</label>
+        <div class="w3-row">
+            <input type="text" id="listInput" class="w3-input w3-border w3-col"
+                   style="width: calc(100% - 130px);" maxlength="500"
+                   placeholder="Type an item and press Enter" />
+            <button type="button" id="listAddBtn" class="w3-button w3-red w3-right"
+                    style="width: 120px;">Add item</button>
+        </div>
+        <div id="listError" aria-live="polite"></div>
+    </div>
+
+    <!-- Flashcards mode only (2026-07-13): the JS injects a "Back (answer)"
+         field into this container right after the front input/button row
+         above. Left empty here so every non-flashcards list/tracker/note
+         tool renders nothing extra. -->
+    <div id="listBackFieldSlot"></div>
+
+    <!-- Flashcards mode only: one-card-at-a-time study widget. Hidden by
+         default (CSS above); initList() shows it ONLY for a flashcard/
+         flashcards slug and renders it immediately (even with zero cards) so
+         qa-e2e-test G16 sees visible output on load. -->
+    <div id="listStudy" aria-live="polite">
+        <div id="listStudyProgress"></div>
+        <div id="listStudyFace"></div>
+        <div class="list-study-actions">
+            <button type="button" id="listStudyFlipBtn" class="w3-button w3-blue w3-small">Show answer</button>
+            <button type="button" id="listStudyKnownBtn" class="w3-button w3-green w3-small">I knew it</button>
+            <button type="button" id="listStudyUnknownBtn" class="w3-button w3-amber w3-small">Still learning</button>
+            <button type="button" id="listStudyShuffleBtn" class="w3-button w3-light-grey w3-small">Shuffle</button>
+            <button type="button" id="listStudyResetBtn" class="w3-button w3-light-grey w3-small">Study all again</button>
+        </div>
+    </div>
+
+    <div id="listCount" aria-live="polite"></div>
+
+    <div class="list-row">
+        <ul id="listItems" aria-live="polite"></ul>
+        <div id="listEmpty">No items yet. Add your first one above.</div>
+    </div>
+
+    <div class="list-row" style="margin-top:12px;">
+        <button type="button" id="listExport" class="w3-button w3-small w3-light-grey">Export backup (JSON)</button>
+        <label class="w3-button w3-small w3-light-grey" style="cursor:pointer;">Import backup
+            <input type="file" id="listImport" accept="application/json,.json" style="display:none;" />
+        </label>
+        <p style="color:#777; font-size:0.9em; margin-top:6px;">Your list is saved in this browser only - it never leaves your device. Export a backup so you keep it if you clear your browser or switch devices (some browsers clear stored data automatically).</p>
+    </div>
+</div>

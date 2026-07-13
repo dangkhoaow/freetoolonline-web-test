@@ -391,6 +391,7 @@ try {
     { title: "Earth 3D Globe - Live Day & Night Map", url: "https://freetoolonline.com/space-3d/earth-3d-globe.html", include: !1, tags: "space-3d" },
     { title: "Moon Phases 3D Explorer", url: "https://freetoolonline.com/space-3d/moon-phases-3d.html", include: !1, tags: "space-3d" },
     { title: "Saturn Rings 3D Explorer", url: "https://freetoolonline.com/space-3d/saturn-rings.html", include: !1, tags: "space-3d" },
+    { title: "Kepler Orbits 3D Explorer", url: "https://freetoolonline.com/space-3d/kepler-orbits.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
     // news-loop (2026-07-08): dated, source-cited updates. tags include the
@@ -416,6 +417,7 @@ try {
     { title: "Video Compressor", url: "https://freetoolonline.com/video-tools/video-compressor.html", include: !1, tags: "video" },
     { title: "Notepad / Notes", url: "https://freetoolonline.com/utility-tools/note-taking-app.html", include: !1, tags: "utility" },
     { title: "File Encryption Tool", url: "https://freetoolonline.com/developer-tools/file-encryption-tool.html", include: !1, tags: "developer" },
+    { title: "Flashcards (Spaced Repetition)", url: "https://freetoolonline.com/utility-tools/flashcards-maker.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

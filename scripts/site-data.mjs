@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/flashcards-spaced-repetition-vs-alternatives.html',
+  '/guides/flashcards-spaced-repetition-step-by-step.html',
+  '/guides/flashcards-spaced-repetition-when.html',
   // new-tool-discovery-loop-runbook fire129 (LEAN one-off, 2026-07-13):
   // INFO_ROUTES locale fanout for file-encryption-tool's 3 EN companion guide
   // angles (built fire127, tool-skill verified fire127) - pt/es/vi/id/de.
@@ -1623,6 +1626,25 @@ export const INFO_ROUTES = new Set([
   '/guides/id/saturn-rings-when.html',
   '/guides/id/saturn-rings-step-by-step.html',
   '/guides/id/saturn-rings-vs-alternatives.html',
+  // kepler-orbits companion guides (space-3d-discovery-loop fire3)
+  '/guides/kepler-orbits-when.html',
+  '/guides/kepler-orbits-step-by-step.html',
+  '/guides/kepler-orbits-vs-alternatives.html',
+  '/guides/pt/kepler-orbits-when.html',
+  '/guides/pt/kepler-orbits-step-by-step.html',
+  '/guides/pt/kepler-orbits-vs-alternatives.html',
+  '/guides/es/kepler-orbits-when.html',
+  '/guides/es/kepler-orbits-step-by-step.html',
+  '/guides/es/kepler-orbits-vs-alternatives.html',
+  '/guides/de/kepler-orbits-when.html',
+  '/guides/de/kepler-orbits-step-by-step.html',
+  '/guides/de/kepler-orbits-vs-alternatives.html',
+  '/guides/vi/kepler-orbits-when.html',
+  '/guides/vi/kepler-orbits-step-by-step.html',
+  '/guides/vi/kepler-orbits-vs-alternatives.html',
+  '/guides/id/kepler-orbits-when.html',
+  '/guides/id/kepler-orbits-step-by-step.html',
+  '/guides/id/kepler-orbits-vs-alternatives.html',
   // play-fps-in-browser-step-by-step locale fanout pt/es/de/vi/id
   // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
   // per runbook 4b - the -when and -vs-alternatives angles for this guide
@@ -3766,6 +3788,25 @@ export const GUIDE_ROUTES = new Set([
   '/guides/id/saturn-rings-when.html',
   '/guides/id/saturn-rings-step-by-step.html',
   '/guides/id/saturn-rings-vs-alternatives.html',
+  // kepler-orbits companion guides (space-3d-discovery-loop fire3)
+  '/guides/kepler-orbits-when.html',
+  '/guides/kepler-orbits-step-by-step.html',
+  '/guides/kepler-orbits-vs-alternatives.html',
+  '/guides/pt/kepler-orbits-when.html',
+  '/guides/pt/kepler-orbits-step-by-step.html',
+  '/guides/pt/kepler-orbits-vs-alternatives.html',
+  '/guides/es/kepler-orbits-when.html',
+  '/guides/es/kepler-orbits-step-by-step.html',
+  '/guides/es/kepler-orbits-vs-alternatives.html',
+  '/guides/de/kepler-orbits-when.html',
+  '/guides/de/kepler-orbits-step-by-step.html',
+  '/guides/de/kepler-orbits-vs-alternatives.html',
+  '/guides/vi/kepler-orbits-when.html',
+  '/guides/vi/kepler-orbits-step-by-step.html',
+  '/guides/vi/kepler-orbits-vs-alternatives.html',
+  '/guides/id/kepler-orbits-when.html',
+  '/guides/id/kepler-orbits-step-by-step.html',
+  '/guides/id/kepler-orbits-vs-alternatives.html',
   // play-fps-in-browser-step-by-step locale fanout pt/es/de/vi/id
   // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
   // per runbook 4b - the -when and -vs-alternatives angles for this guide
@@ -4315,6 +4356,7 @@ export const ALIAS_ROUTES = {
   '/earth-3d-globe.html': '/space-3d/earth-3d-globe.html',
   '/moon-phases-3d.html': '/space-3d/moon-phases-3d.html',
   '/saturn-rings.html': '/space-3d/saturn-rings.html',
+  '/kepler-orbits.html': '/space-3d/kepler-orbits.html',
   '/linux-online.html': '/utility-tools/linux-online.html',
   '/online-linux-terminal.html': '/utility-tools/linux-online.html',
   '/linux-emulator-online.html': '/utility-tools/linux-online.html',
@@ -4342,6 +4384,7 @@ export const ALIAS_ROUTES = {
   '/video-compressor.html': '/video-tools/video-compressor.html',
   '/note-taking-app.html': '/utility-tools/note-taking-app.html',
   '/file-encryption-tool.html': '/developer-tools/file-encryption-tool.html',
+  '/flashcards-maker.html': '/utility-tools/flashcards-maker.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -6682,6 +6725,7 @@ export const JSP_BY_ROUTE = {
   '/space-3d/earth-3d-globe.html': 'space/earth-3d-globe.jsp',
   '/space-3d/moon-phases-3d.html': 'space/moon-phases-3d.jsp',
   '/space-3d/saturn-rings.html': 'space/saturn-rings.jsp',
+  '/space-3d/kepler-orbits.html': 'space/kepler-orbits.jsp',
   '/guides/moon-phases-3d-when.html': 'guide/moon-phases-3d-when.jsp',
   '/guides/moon-phases-3d-step-by-step.html': 'guide/moon-phases-3d-step-by-step.jsp',
   '/guides/moon-phases-3d-vs-alternatives.html': 'guide/moon-phases-3d-vs-alternatives.jsp',
@@ -6718,6 +6762,24 @@ export const JSP_BY_ROUTE = {
   '/guides/id/saturn-rings-when.html': 'guide/id/saturn-rings-when.jsp',
   '/guides/id/saturn-rings-step-by-step.html': 'guide/id/saturn-rings-step-by-step.jsp',
   '/guides/id/saturn-rings-vs-alternatives.html': 'guide/id/saturn-rings-vs-alternatives.jsp',
+  '/guides/kepler-orbits-when.html': 'guide/kepler-orbits-when.jsp',
+  '/guides/kepler-orbits-step-by-step.html': 'guide/kepler-orbits-step-by-step.jsp',
+  '/guides/kepler-orbits-vs-alternatives.html': 'guide/kepler-orbits-vs-alternatives.jsp',
+  '/guides/pt/kepler-orbits-when.html': 'guide/pt/kepler-orbits-when.jsp',
+  '/guides/pt/kepler-orbits-step-by-step.html': 'guide/pt/kepler-orbits-step-by-step.jsp',
+  '/guides/pt/kepler-orbits-vs-alternatives.html': 'guide/pt/kepler-orbits-vs-alternatives.jsp',
+  '/guides/es/kepler-orbits-when.html': 'guide/es/kepler-orbits-when.jsp',
+  '/guides/es/kepler-orbits-step-by-step.html': 'guide/es/kepler-orbits-step-by-step.jsp',
+  '/guides/es/kepler-orbits-vs-alternatives.html': 'guide/es/kepler-orbits-vs-alternatives.jsp',
+  '/guides/de/kepler-orbits-when.html': 'guide/de/kepler-orbits-when.jsp',
+  '/guides/de/kepler-orbits-step-by-step.html': 'guide/de/kepler-orbits-step-by-step.jsp',
+  '/guides/de/kepler-orbits-vs-alternatives.html': 'guide/de/kepler-orbits-vs-alternatives.jsp',
+  '/guides/vi/kepler-orbits-when.html': 'guide/vi/kepler-orbits-when.jsp',
+  '/guides/vi/kepler-orbits-step-by-step.html': 'guide/vi/kepler-orbits-step-by-step.jsp',
+  '/guides/vi/kepler-orbits-vs-alternatives.html': 'guide/vi/kepler-orbits-vs-alternatives.jsp',
+  '/guides/id/kepler-orbits-when.html': 'guide/id/kepler-orbits-when.jsp',
+  '/guides/id/kepler-orbits-step-by-step.html': 'guide/id/kepler-orbits-step-by-step.jsp',
+  '/guides/id/kepler-orbits-vs-alternatives.html': 'guide/id/kepler-orbits-vs-alternatives.jsp',
   '/guides/earth-3d-globe-live-day-night-map-when.html': 'guide/earth-3d-globe-live-day-night-map-when.jsp',
   // earth-3d-globe-live-day-night-map-when locale fanout pt/es/de/vi/id
   // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain)
@@ -7194,6 +7256,10 @@ export const JSP_BY_ROUTE = {
   '/guides/de/file-encryption-when.html': 'guide/de/file-encryption-when.jsp',
   '/guides/de/file-encryption-step-by-step.html': 'guide/de/file-encryption-step-by-step.jsp',
   '/guides/de/file-encryption-vs-alternatives.html': 'guide/de/file-encryption-vs-alternatives.jsp',
+  '/utility-tools/flashcards-maker.html': 'utility/flashcards-maker.jsp',
+  '/guides/flashcards-spaced-repetition-when.html': 'guide/flashcards-spaced-repetition-when.jsp',
+  '/guides/flashcards-spaced-repetition-step-by-step.html': 'guide/flashcards-spaced-repetition-step-by-step.jsp',
+  '/guides/flashcards-spaced-repetition-vs-alternatives.html': 'guide/flashcards-spaced-repetition-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
