@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/uuid-generator-vs-alternatives.html',
+  '/guides/uuid-generator-step-by-step.html',
+  '/guides/uuid-generator-when.html',
   '/guides/jwt-decoder-vs-alternatives.html',
   '/guides/jwt-decoder-step-by-step.html',
   '/guides/jwt-decoder-when.html',
@@ -4882,6 +4885,7 @@ export const ALIAS_ROUTES = {
   '/flashcards-maker.html': '/utility-tools/flashcards-maker.html',
   '/document-scanner.html': '/image-tools/document-scanner.html',
   '/jwt-decoder.html': '/developer-tools/jwt-decoder.html',
+  '/uuid-generator.html': '/developer-tools/uuid-generator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -8015,6 +8019,10 @@ export const JSP_BY_ROUTE = {
   '/guides/de/jwt-decoder-when.html': 'guide/de/jwt-decoder-when.jsp',
   '/guides/de/jwt-decoder-step-by-step.html': 'guide/de/jwt-decoder-step-by-step.jsp',
   '/guides/de/jwt-decoder-vs-alternatives.html': 'guide/de/jwt-decoder-vs-alternatives.jsp',
+  '/developer-tools/uuid-generator.html': 'utility/uuid-generator.jsp',
+  '/guides/uuid-generator-when.html': 'guide/uuid-generator-when.jsp',
+  '/guides/uuid-generator-step-by-step.html': 'guide/uuid-generator-step-by-step.jsp',
+  '/guides/uuid-generator-vs-alternatives.html': 'guide/uuid-generator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
