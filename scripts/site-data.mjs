@@ -17,6 +17,21 @@ export const INFO_ROUTES = new Set([
   '/guides/jwt-decoder-vs-alternatives.html',
   '/guides/jwt-decoder-step-by-step.html',
   '/guides/jwt-decoder-when.html',
+  '/guides/pt/jwt-decoder-when.html',
+  '/guides/pt/jwt-decoder-step-by-step.html',
+  '/guides/pt/jwt-decoder-vs-alternatives.html',
+  '/guides/es/jwt-decoder-when.html',
+  '/guides/es/jwt-decoder-step-by-step.html',
+  '/guides/es/jwt-decoder-vs-alternatives.html',
+  '/guides/vi/jwt-decoder-when.html',
+  '/guides/vi/jwt-decoder-step-by-step.html',
+  '/guides/vi/jwt-decoder-vs-alternatives.html',
+  '/guides/id/jwt-decoder-when.html',
+  '/guides/id/jwt-decoder-step-by-step.html',
+  '/guides/id/jwt-decoder-vs-alternatives.html',
+  '/guides/de/jwt-decoder-when.html',
+  '/guides/de/jwt-decoder-step-by-step.html',
+  '/guides/de/jwt-decoder-vs-alternatives.html',
   '/guides/document-scanner-pdf-vs-alternatives.html',
   '/guides/document-scanner-pdf-step-by-step.html',
   '/guides/document-scanner-pdf-when.html',
@@ -1851,6 +1866,29 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // new-tool-discovery-loop-runbook fire142 (LEAN one-off, 2026-07-13/14):
+  // GUIDE_ROUTES backfill for jwt-decoder's 3 EN companion guide angles
+  // (builder wires JSP_BY_ROUTE + INFO_ROUTES only, same recurring gap
+  // class as fires 32/56/57/62/66/84/113/115/120) plus their full
+  // pt/es/vi/id/de locale fanout.
+  '/guides/jwt-decoder-when.html',
+  '/guides/jwt-decoder-step-by-step.html',
+  '/guides/jwt-decoder-vs-alternatives.html',
+  '/guides/pt/jwt-decoder-when.html',
+  '/guides/pt/jwt-decoder-step-by-step.html',
+  '/guides/pt/jwt-decoder-vs-alternatives.html',
+  '/guides/es/jwt-decoder-when.html',
+  '/guides/es/jwt-decoder-step-by-step.html',
+  '/guides/es/jwt-decoder-vs-alternatives.html',
+  '/guides/vi/jwt-decoder-when.html',
+  '/guides/vi/jwt-decoder-step-by-step.html',
+  '/guides/vi/jwt-decoder-vs-alternatives.html',
+  '/guides/id/jwt-decoder-when.html',
+  '/guides/id/jwt-decoder-step-by-step.html',
+  '/guides/id/jwt-decoder-vs-alternatives.html',
+  '/guides/de/jwt-decoder-when.html',
+  '/guides/de/jwt-decoder-step-by-step.html',
+  '/guides/de/jwt-decoder-vs-alternatives.html',
   // GUIDE_ROUTES locale fanout for flashcards-maker's 3 EN companion guide
   // angles - pt/es/vi/id/de.
   '/guides/pt/flashcards-spaced-repetition-when.html',
@@ -7794,6 +7832,21 @@ export const JSP_BY_ROUTE = {
   '/guides/jwt-decoder-when.html': 'guide/jwt-decoder-when.jsp',
   '/guides/jwt-decoder-step-by-step.html': 'guide/jwt-decoder-step-by-step.jsp',
   '/guides/jwt-decoder-vs-alternatives.html': 'guide/jwt-decoder-vs-alternatives.jsp',
+  '/guides/pt/jwt-decoder-when.html': 'guide/pt/jwt-decoder-when.jsp',
+  '/guides/pt/jwt-decoder-step-by-step.html': 'guide/pt/jwt-decoder-step-by-step.jsp',
+  '/guides/pt/jwt-decoder-vs-alternatives.html': 'guide/pt/jwt-decoder-vs-alternatives.jsp',
+  '/guides/es/jwt-decoder-when.html': 'guide/es/jwt-decoder-when.jsp',
+  '/guides/es/jwt-decoder-step-by-step.html': 'guide/es/jwt-decoder-step-by-step.jsp',
+  '/guides/es/jwt-decoder-vs-alternatives.html': 'guide/es/jwt-decoder-vs-alternatives.jsp',
+  '/guides/vi/jwt-decoder-when.html': 'guide/vi/jwt-decoder-when.jsp',
+  '/guides/vi/jwt-decoder-step-by-step.html': 'guide/vi/jwt-decoder-step-by-step.jsp',
+  '/guides/vi/jwt-decoder-vs-alternatives.html': 'guide/vi/jwt-decoder-vs-alternatives.jsp',
+  '/guides/id/jwt-decoder-when.html': 'guide/id/jwt-decoder-when.jsp',
+  '/guides/id/jwt-decoder-step-by-step.html': 'guide/id/jwt-decoder-step-by-step.jsp',
+  '/guides/id/jwt-decoder-vs-alternatives.html': 'guide/id/jwt-decoder-vs-alternatives.jsp',
+  '/guides/de/jwt-decoder-when.html': 'guide/de/jwt-decoder-when.jsp',
+  '/guides/de/jwt-decoder-step-by-step.html': 'guide/de/jwt-decoder-step-by-step.jsp',
+  '/guides/de/jwt-decoder-vs-alternatives.html': 'guide/de/jwt-decoder-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
