@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/document-scanner-pdf-vs-alternatives.html',
+  '/guides/document-scanner-pdf-step-by-step.html',
+  '/guides/document-scanner-pdf-when.html',
+  '/guides/pt/document-scanner-pdf-step-by-step.html',
+  '/guides/pt/document-scanner-pdf-when.html',
+  '/guides/pt/document-scanner-pdf-vs-alternatives.html',
+  '/guides/es/document-scanner-pdf-step-by-step.html',
+  '/guides/es/document-scanner-pdf-when.html',
+  '/guides/es/document-scanner-pdf-vs-alternatives.html',
+  '/guides/de/document-scanner-pdf-step-by-step.html',
+  '/guides/de/document-scanner-pdf-when.html',
+  '/guides/de/document-scanner-pdf-vs-alternatives.html',
+  '/guides/vi/document-scanner-pdf-step-by-step.html',
+  '/guides/vi/document-scanner-pdf-when.html',
+  '/guides/vi/document-scanner-pdf-vs-alternatives.html',
+  '/guides/id/document-scanner-pdf-step-by-step.html',
+  '/guides/id/document-scanner-pdf-when.html',
+  '/guides/id/document-scanner-pdf-vs-alternatives.html',
   '/guides/flashcards-spaced-repetition-vs-alternatives.html',
   '/guides/flashcards-spaced-repetition-step-by-step.html',
   '/guides/flashcards-spaced-repetition-when.html',
@@ -4536,6 +4554,7 @@ export const ALIAS_ROUTES = {
   '/note-taking-app.html': '/utility-tools/note-taking-app.html',
   '/file-encryption-tool.html': '/developer-tools/file-encryption-tool.html',
   '/flashcards-maker.html': '/utility-tools/flashcards-maker.html',
+  '/document-scanner.html': '/image-tools/document-scanner.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -7485,6 +7504,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/flashcards-spaced-repetition-when.html': 'guide/de/flashcards-spaced-repetition-when.jsp',
   '/guides/de/flashcards-spaced-repetition-step-by-step.html': 'guide/de/flashcards-spaced-repetition-step-by-step.jsp',
   '/guides/de/flashcards-spaced-repetition-vs-alternatives.html': 'guide/de/flashcards-spaced-repetition-vs-alternatives.jsp',
+  '/image-tools/document-scanner.html': 'convert/document-scanner.jsp',
+  '/guides/document-scanner-pdf-when.html': 'guide/document-scanner-pdf-when.jsp',
+  '/guides/document-scanner-pdf-step-by-step.html': 'guide/document-scanner-pdf-step-by-step.jsp',
+  '/guides/document-scanner-pdf-vs-alternatives.html': 'guide/document-scanner-pdf-vs-alternatives.jsp',
+  '/guides/pt/document-scanner-pdf-step-by-step.html': 'guide/pt/document-scanner-pdf-step-by-step.jsp',
+  '/guides/pt/document-scanner-pdf-when.html': 'guide/pt/document-scanner-pdf-when.jsp',
+  '/guides/pt/document-scanner-pdf-vs-alternatives.html': 'guide/pt/document-scanner-pdf-vs-alternatives.jsp',
+  '/guides/es/document-scanner-pdf-step-by-step.html': 'guide/es/document-scanner-pdf-step-by-step.jsp',
+  '/guides/es/document-scanner-pdf-when.html': 'guide/es/document-scanner-pdf-when.jsp',
+  '/guides/es/document-scanner-pdf-vs-alternatives.html': 'guide/es/document-scanner-pdf-vs-alternatives.jsp',
+  '/guides/de/document-scanner-pdf-step-by-step.html': 'guide/de/document-scanner-pdf-step-by-step.jsp',
+  '/guides/de/document-scanner-pdf-when.html': 'guide/de/document-scanner-pdf-when.jsp',
+  '/guides/de/document-scanner-pdf-vs-alternatives.html': 'guide/de/document-scanner-pdf-vs-alternatives.jsp',
+  '/guides/vi/document-scanner-pdf-step-by-step.html': 'guide/vi/document-scanner-pdf-step-by-step.jsp',
+  '/guides/vi/document-scanner-pdf-when.html': 'guide/vi/document-scanner-pdf-when.jsp',
+  '/guides/vi/document-scanner-pdf-vs-alternatives.html': 'guide/vi/document-scanner-pdf-vs-alternatives.jsp',
+  '/guides/id/document-scanner-pdf-step-by-step.html': 'guide/id/document-scanner-pdf-step-by-step.jsp',
+  '/guides/id/document-scanner-pdf-when.html': 'guide/id/document-scanner-pdf-when.jsp',
+  '/guides/id/document-scanner-pdf-vs-alternatives.html': 'guide/id/document-scanner-pdf-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

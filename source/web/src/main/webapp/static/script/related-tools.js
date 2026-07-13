@@ -421,6 +421,7 @@ try {
     { title: "Notepad / Notes", url: "https://freetoolonline.com/utility-tools/note-taking-app.html", include: !1, tags: "utility" },
     { title: "File Encryption Tool", url: "https://freetoolonline.com/developer-tools/file-encryption-tool.html", include: !1, tags: "developer" },
     { title: "Flashcards (Spaced Repetition)", url: "https://freetoolonline.com/utility-tools/flashcards-maker.html", include: !1, tags: "utility" },
+    { title: "Document Scanner (to PDF)", url: "https://freetoolonline.com/image-tools/document-scanner.html", include: !1, tags: "image-editing" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

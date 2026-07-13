@@ -1,0 +1,173 @@
+<script>
+    // Self-contained IN-BROWSER document scanner (document-scanner) - canvas + pdf-lib,
+    // ZERO upload. Each selected photo is drawn to a canvas (optional
+    // grayscale+contrast pass for text readability), embedded as one PDF page
+    // via pdf-lib, and offered for download as a single multi-page PDF. No
+    // server, no camera-stream code path - the OS file picker already offers
+    // the device camera on mobile for a single-tap "take a photo" flow.
+    //
+    // NOT implemented (anti-claims, must be in tool-<slug>/SKILL.md ## NOT implemented):
+    //   - Does not run OCR - the output is a scanned image embedded in a PDF,
+    //     not searchable or selectable text.
+    //   - Does not auto-detect or crop to the document's edges - the full
+    //     photo becomes the page; crop before scanning if the photo includes
+    //     background outside the document.
+
+    function ftoDocScannerLoadPdfLib() {
+        if (window.PDFLib && window.PDFLib.PDFDocument) { return Promise.resolve(); }
+        if (window.__ftoPdfLibPromise) { return window.__ftoPdfLibPromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/pdf-lib';
+        var url = base + '/pdf-lib.min.js';
+        window.__ftoPdfLibPromise = new Promise(function (resolve, reject) {
+            var s = document.createElement('script');
+            s.src = url; s.async = true;
+            s.onload = function () {
+                (window.PDFLib && window.PDFLib.PDFDocument)
+                    ? resolve()
+                    : reject(new Error('pdf-lib loaded but PDFLib global is missing'));
+            };
+            s.onerror = function () { reject(new Error('failed to load pdf-lib from ' + url)); };
+            document.head.appendChild(s);
+        });
+        return window.__ftoPdfLibPromise;
+    }
+
+    // Load a File into an <img>-decoded HTMLImageElement via an object URL.
+    function ftoDocScannerLoadImage(file) {
+        return new Promise(function (resolve, reject) {
+            var url = URL.createObjectURL(file);
+            var img = new Image();
+            img.onload = function () { resolve(img); };
+            img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('could not decode image')); };
+            img.src = url;
+        });
+    }
+
+    // Draw an image to a canvas, optionally applying a grayscale + contrast-
+    // boost pass (readability aid for photographed paper). Returns
+    // {canvas, mime} where mime matches the requested output encoding.
+    function ftoDocScannerRenderCanvas(img, enhance) {
+        var canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        if (enhance) {
+            var data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            var d = data.data;
+            var contrast = 1.35; // fixed boost - readability aid, not a user-tunable slider
+            for (var i = 0; i < d.length; i += 4) {
+                var gray = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+                gray = (gray - 128) * contrast + 128;
+                gray = Math.max(0, Math.min(255, gray));
+                d[i] = d[i + 1] = d[i + 2] = gray;
+            }
+            ctx.putImageData(data, 0, 0);
+        }
+        return canvas;
+    }
+
+    function ftoDocScannerCanvasToBytes(canvas) {
+        return new Promise(function (resolve, reject) {
+            canvas.toBlob(function (blob) {
+                if (!blob) { reject(new Error('canvas encode failed')); return; }
+                var reader = new FileReader();
+                reader.onload = function () { resolve(new Uint8Array(reader.result)); };
+                reader.onerror = function () { reject(new Error('blob read failed')); };
+                reader.readAsArrayBuffer(blob);
+            }, 'image/jpeg', 0.92);
+        });
+    }
+
+    function doAfterPageRendered() {
+        var fileEl = document.getElementById('docScanFile');
+        var enhanceEl = document.getElementById('docScanEnhance');
+        var scanBtn = document.getElementById('docScanBtn');
+        var thumbsEl = document.getElementById('docScanThumbs');
+        var statusEl = document.getElementById('docScanStatus');
+        var errEl = document.getElementById('docScanError');
+        var dl = document.getElementById('docScanDownload');
+        if (!fileEl || !scanBtn || !thumbsEl) { return; }   // not the document-scanner page
+
+        function setStatus(m) { if (statusEl) { statusEl.textContent = m; } }
+        function setErr(m) { if (errEl) { errEl.textContent = m || ''; } }
+
+        function renderThumbs() {
+            thumbsEl.innerHTML = '';
+            var files = fileEl.files || [];
+            for (var i = 0; i < files.length; i++) {
+                var chip = document.createElement('span');
+                chip.className = 'doc-scan-chip';
+                chip.textContent = (i + 1) + '. ' + files[i].name;
+                thumbsEl.appendChild(chip);
+            }
+        }
+
+        fileEl.addEventListener('change', function () {
+            setErr(''); setStatus('');
+            if (dl) { dl.style.display = 'none'; dl.removeAttribute('href'); }
+            renderThumbs();
+        });
+
+        scanBtn.addEventListener('click', function () {
+            setErr(''); setStatus('');
+            if (dl) { dl.style.display = 'none'; dl.removeAttribute('href'); }
+            var files = fileEl.files ? Array.prototype.slice.call(fileEl.files) : [];
+            if (!files.length) { setErr('Choose one or more photos first.'); return; }
+            var enhance = !!(enhanceEl && enhanceEl.checked);
+            scanBtn.disabled = true;
+            setStatus('Scanning ' + files.length + ' photo(s) in your browser ...');
+
+            ftoDocScannerLoadPdfLib()
+                .then(function () { return window.PDFLib.PDFDocument.create(); })
+                .then(function (doc) {
+                    var addPagesSequentially = files.reduce(function (chain, file, idx) {
+                        return chain.then(function (skipped) {
+                            if (!/^image\//.test(file.type)) {
+                                setStatus('Skipped "' + file.name + '" - not an image file.');
+                                return skipped + 1;
+                            }
+                            return ftoDocScannerLoadImage(file)
+                                .then(function (img) {
+                                    var canvas = ftoDocScannerRenderCanvas(img, enhance);
+                                    URL.revokeObjectURL(img.src);
+                                    return ftoDocScannerCanvasToBytes(canvas).then(function (bytes) {
+                                        return doc.embedJpg(bytes).then(function (embedded) {
+                                            var page = doc.addPage([canvas.width, canvas.height]);
+                                            page.drawImage(embedded, { x: 0, y: 0, width: canvas.width, height: canvas.height });
+                                            setStatus('Scanned ' + (idx + 1) + ' of ' + files.length + ' ...');
+                                            return skipped;
+                                        });
+                                    });
+                                })
+                                .catch(function () {
+                                    setStatus('Skipped "' + file.name + '" - could not read this image.');
+                                    return skipped + 1;
+                                });
+                        });
+                    }, Promise.resolve(0));
+
+                    return addPagesSequentially.then(function (skippedCount) {
+                        if (doc.getPageCount() === 0) {
+                            throw new Error('no readable images in the selection');
+                        }
+                        return doc.save().then(function (bytes) { return { bytes: bytes, skippedCount: skippedCount }; });
+                    });
+                })
+                .then(function (result) {
+                    var url = URL.createObjectURL(new Blob([result.bytes], { type: 'application/pdf' }));
+                    if (dl) {
+                        dl.href = url;
+                        dl.download = 'scanned-' + (typeof getCurrentDateTime === 'function' ? getCurrentDateTime() : 'document') + '.pdf';
+                        dl.style.display = ''; dl.textContent = 'Download scanned PDF';
+                    }
+                    var note = result.skippedCount > 0 ? (' (' + result.skippedCount + ' file(s) skipped)') : '';
+                    setStatus('Done in your browser - no upload. Your scanned PDF is ready to download' + note + '.');
+                })
+                .catch(function (err) {
+                    setErr('Could not build the PDF: ' + (err && err.message ? err.message : 'unknown error') + '.');
+                })
+                .then(function () { scanBtn.disabled = false; });
+        });
+    }
+</script>
