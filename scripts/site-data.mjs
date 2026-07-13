@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  // new-tool-discovery-loop-runbook fire129 (LEAN one-off, 2026-07-13):
+  // INFO_ROUTES locale fanout for file-encryption-tool's 3 EN companion guide
+  // angles (built fire127, tool-skill verified fire127) - pt/es/vi/id/de.
+  '/guides/pt/file-encryption-when.html',
+  '/guides/pt/file-encryption-step-by-step.html',
+  '/guides/pt/file-encryption-vs-alternatives.html',
+  '/guides/es/file-encryption-when.html',
+  '/guides/es/file-encryption-step-by-step.html',
+  '/guides/es/file-encryption-vs-alternatives.html',
+  '/guides/vi/file-encryption-when.html',
+  '/guides/vi/file-encryption-step-by-step.html',
+  '/guides/vi/file-encryption-vs-alternatives.html',
+  '/guides/id/file-encryption-when.html',
+  '/guides/id/file-encryption-step-by-step.html',
+  '/guides/id/file-encryption-vs-alternatives.html',
+  '/guides/de/file-encryption-when.html',
+  '/guides/de/file-encryption-step-by-step.html',
+  '/guides/de/file-encryption-vs-alternatives.html',
   '/guides/file-encryption-vs-alternatives.html',
   '/guides/file-encryption-step-by-step.html',
   '/guides/file-encryption-when.html',
@@ -1631,6 +1649,29 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // new-tool-discovery-loop-runbook fire129 (LEAN one-off, 2026-07-13):
+  // GUIDE_ROUTES for file-encryption-tool's 3 EN companion guide angles
+  // (built fire127) + full pt/es/vi/id/de locale fanout (this fire) -
+  // builder wired JSP_BY_ROUTE + INFO_ROUTES only for the EN set, same
+  // recurring gap class as fires 32/56/57/62/66/84/113/115/120/122/123.
+  '/guides/file-encryption-when.html',
+  '/guides/file-encryption-step-by-step.html',
+  '/guides/file-encryption-vs-alternatives.html',
+  '/guides/pt/file-encryption-when.html',
+  '/guides/pt/file-encryption-step-by-step.html',
+  '/guides/pt/file-encryption-vs-alternatives.html',
+  '/guides/es/file-encryption-when.html',
+  '/guides/es/file-encryption-step-by-step.html',
+  '/guides/es/file-encryption-vs-alternatives.html',
+  '/guides/vi/file-encryption-when.html',
+  '/guides/vi/file-encryption-step-by-step.html',
+  '/guides/vi/file-encryption-vs-alternatives.html',
+  '/guides/id/file-encryption-when.html',
+  '/guides/id/file-encryption-step-by-step.html',
+  '/guides/id/file-encryption-vs-alternatives.html',
+  '/guides/de/file-encryption-when.html',
+  '/guides/de/file-encryption-step-by-step.html',
+  '/guides/de/file-encryption-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire122 (LEAN one-off, 2026-07-13):
   // GUIDE_ROUTES backfill for video-compressor's 3 EN companion guide angles'
   // full pt/es/vi/id/de locale fanout (builder wires JSP_BY_ROUTE + INFO_ROUTES
@@ -7135,6 +7176,24 @@ export const JSP_BY_ROUTE = {
   '/guides/file-encryption-when.html': 'guide/file-encryption-when.jsp',
   '/guides/file-encryption-step-by-step.html': 'guide/file-encryption-step-by-step.jsp',
   '/guides/file-encryption-vs-alternatives.html': 'guide/file-encryption-vs-alternatives.jsp',
+  // new-tool-discovery-loop-runbook fire129 (LEAN one-off, 2026-07-13):
+  // JSP_BY_ROUTE locale fanout for file-encryption-tool's 3 EN companion
+  // guide angles.
+  '/guides/pt/file-encryption-when.html': 'guide/pt/file-encryption-when.jsp',
+  '/guides/pt/file-encryption-step-by-step.html': 'guide/pt/file-encryption-step-by-step.jsp',
+  '/guides/pt/file-encryption-vs-alternatives.html': 'guide/pt/file-encryption-vs-alternatives.jsp',
+  '/guides/es/file-encryption-when.html': 'guide/es/file-encryption-when.jsp',
+  '/guides/es/file-encryption-step-by-step.html': 'guide/es/file-encryption-step-by-step.jsp',
+  '/guides/es/file-encryption-vs-alternatives.html': 'guide/es/file-encryption-vs-alternatives.jsp',
+  '/guides/vi/file-encryption-when.html': 'guide/vi/file-encryption-when.jsp',
+  '/guides/vi/file-encryption-step-by-step.html': 'guide/vi/file-encryption-step-by-step.jsp',
+  '/guides/vi/file-encryption-vs-alternatives.html': 'guide/vi/file-encryption-vs-alternatives.jsp',
+  '/guides/id/file-encryption-when.html': 'guide/id/file-encryption-when.jsp',
+  '/guides/id/file-encryption-step-by-step.html': 'guide/id/file-encryption-step-by-step.jsp',
+  '/guides/id/file-encryption-vs-alternatives.html': 'guide/id/file-encryption-vs-alternatives.jsp',
+  '/guides/de/file-encryption-when.html': 'guide/de/file-encryption-when.jsp',
+  '/guides/de/file-encryption-step-by-step.html': 'guide/de/file-encryption-step-by-step.jsp',
+  '/guides/de/file-encryption-vs-alternatives.html': 'guide/de/file-encryption-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
