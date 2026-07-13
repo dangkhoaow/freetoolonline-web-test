@@ -1,0 +1,60 @@
+<script>
+    // UUID generator skeleton (uuid-generator) - crypto.randomUUID(), no lib, no
+    // upload, no backend. Registry Gate-H entry: generator_purejs (slug_must_
+    // contain_any includes "uuid"; MDN reference: crypto.randomUUID()).
+    // 100% client-side: every UUID is generated locally and never leaves the
+    // browser. Framework contract: doAfterPageRendered(); renders a batch of
+    // UUIDs on load so e2e G16 has visible output with zero interaction.
+
+    web.localUpload = false;
+
+    function ugOne(opts) {
+        var id = crypto.randomUUID(); // RFC 4122 version-4 UUID
+        if (opts.upper) id = id.toUpperCase();
+        if (opts.noHyphens) id = id.replace(/-/g, '');
+        return id;
+    }
+
+    function ugBatch(opts) {
+        var n = Math.max(1, Math.min(100, opts.count | 0));
+        var out = [];
+        for (var i = 0; i < n; i++) out.push(ugOne(opts));
+        return out;
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('uuidGeneratorTool');
+        if (!root) return; // not a uuid-generator page
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;">' +
+            '<textarea id="ugOut" class="w3-input w3-border outputImgs" rows="8" readonly style="font-family:monospace;font-size:1em;visibility:visible !important;"></textarea>' +
+            '</div>' +
+            '<div class="w3-row" style="margin-bottom:8px;">' +
+            '<button id="ugGen" type="button" class="w3-button w3-green">Generate</button> ' +
+            '<button id="ugCopy" type="button" class="w3-button w3-blue">Copy all</button> ' +
+            '<span style="margin-left:6px;">How many <span id="ugCountVal">5</span></span> ' +
+            '<input id="ugCount" type="range" min="1" max="100" value="5" style="vertical-align:middle;width:160px;">' +
+            '</div>' +
+            '<div class="w3-row" style="margin-bottom:8px;">' +
+            '<label><input id="ugUpper" type="checkbox"> Uppercase</label> ' +
+            '<label style="margin-left:12px;"><input id="ugNoHyphens" type="checkbox"> No hyphens</label>' +
+            '</div>' +
+            '<div id="ugStatus" style="min-height:1.2em;color:#555;">Generated locally with the browser secure random generator (Web Crypto) - nothing is sent to a server.</div>';
+        var q = function (id) { return root.querySelector(id); };
+        function opts() { return { count: parseInt(q('#ugCount').value, 10), upper: q('#ugUpper').checked, noHyphens: q('#ugNoHyphens').checked }; }
+        function gen() {
+            var list = ugBatch(opts());
+            q('#ugOut').value = list.join('\n');
+            q('#ugStatus').textContent = 'Generated ' + list.length + ' UUID' + (list.length === 1 ? '' : 's') + '.';
+        }
+        q('#ugGen').addEventListener('click', gen);
+        q('#ugCopy').addEventListener('click', function () {
+            var v = q('#ugOut').value;
+            if (v && navigator.clipboard) navigator.clipboard.writeText(v);
+            q('#ugStatus').textContent = v ? 'Copied to clipboard.' : 'Generate a UUID first.';
+        });
+        q('#ugCount').addEventListener('input', function () { q('#ugCountVal').textContent = this.value; gen(); });
+        ['#ugUpper', '#ugNoHyphens'].forEach(function (id) { q(id).addEventListener('change', gen); });
+        gen(); // render a batch on load (visible output for e2e G16)
+    }
+</script>

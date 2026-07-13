@@ -430,6 +430,7 @@ try {
     { title: "Flashcards (Spaced Repetition)", url: "https://freetoolonline.com/utility-tools/flashcards-maker.html", include: !1, tags: "utility" },
     { title: "Document Scanner (to PDF)", url: "https://freetoolonline.com/image-tools/document-scanner.html", include: !1, tags: "image-editing" },
     { title: "JWT Decoder", url: "https://freetoolonline.com/developer-tools/jwt-decoder.html", include: !1, tags: "developer" },
+    { title: "UUID Generator", url: "https://freetoolonline.com/developer-tools/uuid-generator.html", include: !1, tags: "developer" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
