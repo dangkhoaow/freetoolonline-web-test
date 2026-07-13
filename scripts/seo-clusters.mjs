@@ -93,7 +93,7 @@ const SEO_CLUSTER_GROUPS = [
     cluster: 'space-3d',
     hubRoute: '/space-3d.html',
     hubLabel: 'Back to Space 3D',
-    routes: ['/space-3d/solar-system.html', '/space-3d/black-hole.html', '/space-3d/galaxy.html', '/space-3d/earth-3d-globe.html', '/space-3d/moon-phases-3d.html', '/space-3d/saturn-rings.html', '/space-3d/kepler-orbits.html'],
+    routes: ['/space-3d/solar-system.html', '/space-3d/black-hole.html', '/space-3d/galaxy.html', '/space-3d/earth-3d-globe.html', '/space-3d/moon-phases-3d.html', '/space-3d/saturn-rings.html', '/space-3d/kepler-orbits.html', '/space-3d/moon-calendar-3d.html'],
   },
   // news-loop (2026-07-08) - dated, source-cited updates on the file formats,
   // browser capabilities, and standards the tool clusters serve. Articles are
