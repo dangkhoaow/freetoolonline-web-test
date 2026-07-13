@@ -411,6 +411,7 @@ try {
     { title: "Tip Calculator", url: "https://freetoolonline.com/utility-tools/tip-calculator.html", include: !1, tags: "utility" },
     { title: "Loan Calculator", url: "https://freetoolonline.com/utility-tools/loan-calculator.html", include: !1, tags: "utility" },
     { title: "Date Difference Calculator", url: "https://freetoolonline.com/utility-tools/date-difference-calculator.html", include: !1, tags: "utility" },
+    { title: "Video Compressor", url: "https://freetoolonline.com/video-tools/video-compressor.html", include: !1, tags: "video" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
