@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/video-compressor-vs-alternatives.html',
+  '/guides/video-compressor-step-by-step.html',
+  '/guides/video-compressor-when.html',
+  '/guides/pt/video-compressor-when.html',
+  '/guides/pt/video-compressor-step-by-step.html',
+  '/guides/pt/video-compressor-vs-alternatives.html',
+  '/guides/es/video-compressor-when.html',
+  '/guides/es/video-compressor-step-by-step.html',
+  '/guides/es/video-compressor-vs-alternatives.html',
+  '/guides/vi/video-compressor-when.html',
+  '/guides/vi/video-compressor-step-by-step.html',
+  '/guides/vi/video-compressor-vs-alternatives.html',
+  '/guides/id/video-compressor-when.html',
+  '/guides/id/video-compressor-step-by-step.html',
+  '/guides/id/video-compressor-vs-alternatives.html',
+  '/guides/de/video-compressor-when.html',
+  '/guides/de/video-compressor-step-by-step.html',
+  '/guides/de/video-compressor-vs-alternatives.html',
   '/guides/date-difference-calculator-vs-alternatives.html',
   '/guides/date-difference-calculator-step-by-step.html',
   '/guides/date-difference-calculator-when.html',
@@ -1550,6 +1568,25 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // new-tool-discovery-loop-runbook fire122 (LEAN one-off, 2026-07-13):
+  // GUIDE_ROUTES backfill for video-compressor's 3 EN companion guide angles'
+  // full pt/es/vi/id/de locale fanout (builder wires JSP_BY_ROUTE + INFO_ROUTES
+  // only, same recurring gap class as fires 32/56/57/62/66/84/113/115/120).
+  '/guides/pt/video-compressor-when.html',
+  '/guides/pt/video-compressor-step-by-step.html',
+  '/guides/pt/video-compressor-vs-alternatives.html',
+  '/guides/es/video-compressor-when.html',
+  '/guides/es/video-compressor-step-by-step.html',
+  '/guides/es/video-compressor-vs-alternatives.html',
+  '/guides/vi/video-compressor-when.html',
+  '/guides/vi/video-compressor-step-by-step.html',
+  '/guides/vi/video-compressor-vs-alternatives.html',
+  '/guides/id/video-compressor-when.html',
+  '/guides/id/video-compressor-step-by-step.html',
+  '/guides/id/video-compressor-vs-alternatives.html',
+  '/guides/de/video-compressor-when.html',
+  '/guides/de/video-compressor-step-by-step.html',
+  '/guides/de/video-compressor-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire120 (LEAN one-off, 2026-07-13):
   // GUIDE_ROUTES backfill for date-difference-calculator's 3 EN companion
   // guide angles' full pt/es/vi/id/de locale fanout (builder wires
@@ -4139,6 +4176,7 @@ export const ALIAS_ROUTES = {
   '/tip-calculator.html': '/utility-tools/tip-calculator.html',
   '/loan-calculator.html': '/utility-tools/loan-calculator.html',
   '/date-difference-calculator.html': '/utility-tools/date-difference-calculator.html',
+  '/video-compressor.html': '/video-tools/video-compressor.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -6890,6 +6928,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/date-difference-calculator-when.html': 'guide/de/date-difference-calculator-when.jsp',
   '/guides/de/date-difference-calculator-step-by-step.html': 'guide/de/date-difference-calculator-step-by-step.jsp',
   '/guides/de/date-difference-calculator-vs-alternatives.html': 'guide/de/date-difference-calculator-vs-alternatives.jsp',
+  '/video-tools/video-compressor.html': 'convert/video-compressor.jsp',
+  '/guides/video-compressor-when.html': 'guide/video-compressor-when.jsp',
+  '/guides/video-compressor-step-by-step.html': 'guide/video-compressor-step-by-step.jsp',
+  '/guides/video-compressor-vs-alternatives.html': 'guide/video-compressor-vs-alternatives.jsp',
+  '/guides/pt/video-compressor-when.html': 'guide/pt/video-compressor-when.jsp',
+  '/guides/pt/video-compressor-step-by-step.html': 'guide/pt/video-compressor-step-by-step.jsp',
+  '/guides/pt/video-compressor-vs-alternatives.html': 'guide/pt/video-compressor-vs-alternatives.jsp',
+  '/guides/es/video-compressor-when.html': 'guide/es/video-compressor-when.jsp',
+  '/guides/es/video-compressor-step-by-step.html': 'guide/es/video-compressor-step-by-step.jsp',
+  '/guides/es/video-compressor-vs-alternatives.html': 'guide/es/video-compressor-vs-alternatives.jsp',
+  '/guides/vi/video-compressor-when.html': 'guide/vi/video-compressor-when.jsp',
+  '/guides/vi/video-compressor-step-by-step.html': 'guide/vi/video-compressor-step-by-step.jsp',
+  '/guides/vi/video-compressor-vs-alternatives.html': 'guide/vi/video-compressor-vs-alternatives.jsp',
+  '/guides/id/video-compressor-when.html': 'guide/id/video-compressor-when.jsp',
+  '/guides/id/video-compressor-step-by-step.html': 'guide/id/video-compressor-step-by-step.jsp',
+  '/guides/id/video-compressor-vs-alternatives.html': 'guide/id/video-compressor-vs-alternatives.jsp',
+  '/guides/de/video-compressor-when.html': 'guide/de/video-compressor-when.jsp',
+  '/guides/de/video-compressor-step-by-step.html': 'guide/de/video-compressor-step-by-step.jsp',
+  '/guides/de/video-compressor-vs-alternatives.html': 'guide/de/video-compressor-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
