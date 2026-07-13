@@ -14,6 +14,28 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/notepad-notes-vs-alternatives.html',
+  '/guides/notepad-notes-step-by-step.html',
+  '/guides/notepad-notes-when.html',
+  // new-tool-discovery-loop-runbook fire123 (LEAN one-off, 2026-07-13):
+  // INFO_ROUTES backfill for note-taking-app's 3 EN companion guide angles'
+  // full pt/es/vi/id/de locale fanout (builder wires JSP_BY_ROUTE only, same
+  // recurring gap class as fires 32/56/57/62/66/84/113/115/120/122).
+  '/guides/pt/notepad-notes-when.html',
+  '/guides/pt/notepad-notes-step-by-step.html',
+  '/guides/pt/notepad-notes-vs-alternatives.html',
+  '/guides/es/notepad-notes-when.html',
+  '/guides/es/notepad-notes-step-by-step.html',
+  '/guides/es/notepad-notes-vs-alternatives.html',
+  '/guides/vi/notepad-notes-when.html',
+  '/guides/vi/notepad-notes-step-by-step.html',
+  '/guides/vi/notepad-notes-vs-alternatives.html',
+  '/guides/id/notepad-notes-when.html',
+  '/guides/id/notepad-notes-step-by-step.html',
+  '/guides/id/notepad-notes-vs-alternatives.html',
+  '/guides/de/notepad-notes-when.html',
+  '/guides/de/notepad-notes-step-by-step.html',
+  '/guides/de/notepad-notes-vs-alternatives.html',
   '/guides/video-compressor-vs-alternatives.html',
   '/guides/video-compressor-step-by-step.html',
   '/guides/video-compressor-when.html',
@@ -1587,6 +1609,25 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/video-compressor-when.html',
   '/guides/de/video-compressor-step-by-step.html',
   '/guides/de/video-compressor-vs-alternatives.html',
+  // new-tool-discovery-loop-runbook fire123 (LEAN one-off, 2026-07-13):
+  // GUIDE_ROUTES backfill for note-taking-app's 3 EN companion guide angles'
+  // full pt/es/vi/id/de locale fanout (builder wires JSP_BY_ROUTE + INFO_ROUTES
+  // only, same recurring gap class as fires 32/56/57/62/66/84/113/115/120/122).
+  '/guides/pt/notepad-notes-when.html',
+  '/guides/pt/notepad-notes-step-by-step.html',
+  '/guides/pt/notepad-notes-vs-alternatives.html',
+  '/guides/es/notepad-notes-when.html',
+  '/guides/es/notepad-notes-step-by-step.html',
+  '/guides/es/notepad-notes-vs-alternatives.html',
+  '/guides/vi/notepad-notes-when.html',
+  '/guides/vi/notepad-notes-step-by-step.html',
+  '/guides/vi/notepad-notes-vs-alternatives.html',
+  '/guides/id/notepad-notes-when.html',
+  '/guides/id/notepad-notes-step-by-step.html',
+  '/guides/id/notepad-notes-vs-alternatives.html',
+  '/guides/de/notepad-notes-when.html',
+  '/guides/de/notepad-notes-step-by-step.html',
+  '/guides/de/notepad-notes-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire120 (LEAN one-off, 2026-07-13):
   // GUIDE_ROUTES backfill for date-difference-calculator's 3 EN companion
   // guide angles' full pt/es/vi/id/de locale fanout (builder wires
@@ -4177,6 +4218,7 @@ export const ALIAS_ROUTES = {
   '/loan-calculator.html': '/utility-tools/loan-calculator.html',
   '/date-difference-calculator.html': '/utility-tools/date-difference-calculator.html',
   '/video-compressor.html': '/video-tools/video-compressor.html',
+  '/note-taking-app.html': '/utility-tools/note-taking-app.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -6947,6 +6989,28 @@ export const JSP_BY_ROUTE = {
   '/guides/de/video-compressor-when.html': 'guide/de/video-compressor-when.jsp',
   '/guides/de/video-compressor-step-by-step.html': 'guide/de/video-compressor-step-by-step.jsp',
   '/guides/de/video-compressor-vs-alternatives.html': 'guide/de/video-compressor-vs-alternatives.jsp',
+  '/utility-tools/note-taking-app.html': 'utility/note-taking-app.jsp',
+  '/guides/notepad-notes-when.html': 'guide/notepad-notes-when.jsp',
+  '/guides/notepad-notes-step-by-step.html': 'guide/notepad-notes-step-by-step.jsp',
+  '/guides/notepad-notes-vs-alternatives.html': 'guide/notepad-notes-vs-alternatives.jsp',
+  // new-tool-discovery-loop-runbook fire123 (LEAN one-off, 2026-07-13):
+  // JSP_BY_ROUTE for note-taking-app's 3 EN companion guide angles' full
+  // pt/es/vi/id/de locale fanout.
+  '/guides/pt/notepad-notes-when.html': 'guide/pt/notepad-notes-when.jsp',
+  '/guides/pt/notepad-notes-step-by-step.html': 'guide/pt/notepad-notes-step-by-step.jsp',
+  '/guides/pt/notepad-notes-vs-alternatives.html': 'guide/pt/notepad-notes-vs-alternatives.jsp',
+  '/guides/es/notepad-notes-when.html': 'guide/es/notepad-notes-when.jsp',
+  '/guides/es/notepad-notes-step-by-step.html': 'guide/es/notepad-notes-step-by-step.jsp',
+  '/guides/es/notepad-notes-vs-alternatives.html': 'guide/es/notepad-notes-vs-alternatives.jsp',
+  '/guides/vi/notepad-notes-when.html': 'guide/vi/notepad-notes-when.jsp',
+  '/guides/vi/notepad-notes-step-by-step.html': 'guide/vi/notepad-notes-step-by-step.jsp',
+  '/guides/vi/notepad-notes-vs-alternatives.html': 'guide/vi/notepad-notes-vs-alternatives.jsp',
+  '/guides/id/notepad-notes-when.html': 'guide/id/notepad-notes-when.jsp',
+  '/guides/id/notepad-notes-step-by-step.html': 'guide/id/notepad-notes-step-by-step.jsp',
+  '/guides/id/notepad-notes-vs-alternatives.html': 'guide/id/notepad-notes-vs-alternatives.jsp',
+  '/guides/de/notepad-notes-when.html': 'guide/de/notepad-notes-when.jsp',
+  '/guides/de/notepad-notes-step-by-step.html': 'guide/de/notepad-notes-step-by-step.jsp',
+  '/guides/de/notepad-notes-vs-alternatives.html': 'guide/de/notepad-notes-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

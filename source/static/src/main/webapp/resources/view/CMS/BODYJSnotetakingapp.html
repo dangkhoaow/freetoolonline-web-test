@@ -1,0 +1,265 @@
+<script>
+    // List skeleton - localStorage-backed checklist, fully in-browser.
+    // Reference: verified-browser-impl-registry.mjs entry `generator_purejs`
+    // (the list/tracker family - P4 extended its verb_tokens with
+    // list/tracker/manager/organizer/keeper). Page: /note-taking-app.html
+    //
+    // What it does on the client:
+    //   - Reads a new item from the text input; Add button or Enter appends it.
+    //   - Empty / whitespace-only input renders an inline validation message
+    //     next to the input (never throws).
+    //   - Each item has a checkbox (toggle done) and a delete button.
+    //   - The list persists in localStorage under a per-slug key, so it
+    //     survives a page reload. Clearing this site's browser data removes it.
+    //   - A live count of total / remaining items renders above the list.
+    //
+    // This tool processes everything in the browser, so the upload widget is
+    // disabled. The framework calls doAfterPageRendered() during page startup
+    // (it fires for EVERY page once jQuery + base-script load). Do NOT call
+    // $(...) at the top level of this inline script: `$` is only defined inside
+    // the deferred hook.
+
+    web.localUpload = false;
+
+    // NOTES mode (2026-07-13, new-tool-discovery-loop, registry entry
+    // list_tracker_localstorage): a note-taking-app slug dispatches a
+    // distinct branch below - multi-line textarea input, no done/checkbox
+    // state (a free-form note is never "done"), plus a Copy button. All
+    // other list/tracker/todo/habit/grocery slugs are UNCHANGED.
+    var LIST_IS_NOTES = /(^|-)notes?(-|$)|(^|-)notepad(-|$)/.test('note-taking-app');
+
+    var LIST_STORAGE_KEY = 'ftol-list-note-taking-app';
+    var listItems = [];
+
+    function listEscapeHtml(s) {
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function listLoad() {
+        try {
+            var raw = localStorage.getItem(LIST_STORAGE_KEY);
+            if (!raw) { listItems = []; return; }
+            var parsed = JSON.parse(raw);
+            listItems = Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+            // Corrupt / unparseable storage - start clean rather than throw.
+            listItems = [];
+        }
+    }
+
+    function listSave() {
+        try { localStorage.setItem(LIST_STORAGE_KEY, JSON.stringify(listItems)); }
+        catch (e) { /* storage full or blocked - the in-memory list still works this session */ }
+    }
+
+    function listMakeId() {
+        // No Date.now()/Math.random() dependency for the id beyond the wall
+        // clock; collisions across a single session are avoided with a counter.
+        return 'i' + (Date.now()).toString(36) + '-' + (listItems.length + 1);
+    }
+
+    function listRender() {
+        var $items = $('#listItems');
+        var $empty = $('#listEmpty');
+        var $count = $('#listCount');
+        if ($items.length === 0) return;
+
+        $items.empty();
+        if (!listItems.length) {
+            $empty.show();
+            $count.text('');
+            return;
+        }
+        $empty.hide();
+
+        if (LIST_IS_NOTES) {
+            for (var n = 0; n < listItems.length; n++) {
+                var note = listItems[n];
+                var noteHtml = listEscapeHtml(note.text).replace(/\n/g, '<br>');
+                $items.append(
+                    '<li class="list-item list-item-note" data-id="' + listEscapeHtml(note.id) + '">' +
+                        '<div class="list-item-main list-item-note-text">' + noteHtml + '</div>' +
+                        '<div class="list-item-note-actions">' +
+                            '<button type="button" class="w3-button w3-small w3-light-grey list-item-copy" ' +
+                                'aria-label="Copy note">Copy</button> ' +
+                            '<button type="button" class="w3-button w3-small w3-light-grey list-item-delete" ' +
+                                'aria-label="Delete note">Delete</button>' +
+                        '</div>' +
+                    '</li>'
+                );
+            }
+            $count.text(listItems.length + ' note' + (listItems.length === 1 ? '' : 's'));
+            return;
+        }
+
+        var remaining = 0;
+        for (var i = 0; i < listItems.length; i++) {
+            var it = listItems[i];
+            if (!it.done) remaining++;
+            var doneCls = it.done ? ' list-item-done' : '';
+            var checked = it.done ? ' checked' : '';
+            $items.append(
+                '<li class="list-item' + doneCls + '" data-id="' + listEscapeHtml(it.id) + '">' +
+                    '<label class="list-item-main">' +
+                        '<input type="checkbox" class="list-item-toggle"' + checked + ' /> ' +
+                        '<span class="list-item-text">' + listEscapeHtml(it.text) + '</span>' +
+                    '</label>' +
+                    '<button type="button" class="w3-button w3-small w3-light-grey list-item-delete" ' +
+                        'aria-label="Delete item">Delete</button>' +
+                '</li>'
+            );
+        }
+        $count.text(listItems.length + ' item' + (listItems.length === 1 ? '' : 's') +
+            ', ' + remaining + ' remaining');
+    }
+
+    function listAdd() {
+        var $input = $('#listInput');
+        var $err = $('#listError');
+        var text = ($input.val() || '').trim();
+        if (!text) {
+            $err.text('Type something before adding it to the list.');
+            return;
+        }
+        $err.text('');
+        listItems.unshift({ id: listMakeId(), text: text, done: false, createdAt: Date.now() });
+        listSave();
+        listRender();
+        $input.val('').focus();
+    }
+
+    function listToggle(id) {
+        for (var i = 0; i < listItems.length; i++) {
+            if (listItems[i].id === id) { listItems[i].done = !listItems[i].done; break; }
+        }
+        listSave();
+        listRender();
+    }
+
+    function listDelete(id) {
+        listItems = listItems.filter(function (it) { return it.id !== id; });
+        listSave();
+        listRender();
+    }
+
+    // NOTES mode only: copy a note's raw text to the clipboard.
+    function listCopyNote(id) {
+        var found = null;
+        for (var i = 0; i < listItems.length; i++) {
+            if (listItems[i].id === id) { found = listItems[i]; break; }
+        }
+        if (!found) return;
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(found.text);
+            } else {
+                var $tmp = $('<textarea>').val(found.text).appendTo('body').select();
+                document.execCommand('copy');
+                $tmp.remove();
+            }
+        } catch (e) { /* clipboard unavailable - silently no-op, nothing to throw for */ }
+    }
+
+    // Export / import JSON (wf-a3a5c02d): browser storage is a CACHE, not a
+    // guaranteed database - Safari evicts localStorage aggressively - so the
+    // user must be able to back up + restore their list to a file. No upload.
+    function listExport() {
+        try {
+            var blob = new Blob([JSON.stringify(listItems, null, 2)], { type: 'application/json' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url; a.download = 'note-taking-app-backup.json';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        } catch (e) { /* nothing to export */ }
+    }
+
+    function listImport(file) {
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+            try {
+                var parsed = JSON.parse(reader.result);
+                if (!Array.isArray(parsed)) throw new Error('not a list');
+                // Merge by id (imported wins), keeping existing items not in the file.
+                var byId = {};
+                listItems.concat(parsed).forEach(function (it) {
+                    if (it && typeof it.text === 'string') byId[it.id || listMakeId()] = { id: it.id || listMakeId(), text: it.text, done: !!it.done, createdAt: it.createdAt || Date.now() };
+                });
+                listItems = Object.keys(byId).map(function (k) { return byId[k]; });
+                listSave(); listRender();
+                var $err = $('#listError'); if ($err.length) $err.text('Imported ' + parsed.length + ' item(s).');
+            } catch (e) {
+                var $e2 = $('#listError'); if ($e2.length) $e2.text('That file is not a valid list backup.');
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    function initList() {
+        if ($('#listInput').length === 0) return; // not a list page
+
+        if (LIST_IS_NOTES) {
+            // Swap the single-line input for a multi-line textarea (same id,
+            // so every other handler below keeps working unchanged) and
+            // relabel the UI for notes instead of checklist items.
+            var $oldInput = $('#listInput');
+            var $textarea = $('<textarea id="listInput" class="w3-input w3-border w3-col" ' +
+                'style="width: calc(100% - 130px); height: 80px; resize: vertical;" maxlength="20000" ' +
+                'placeholder="Type your note here"></textarea>');
+            $oldInput.replaceWith($textarea);
+            $('#listAddBtn').text('Save note');
+            $('label[for="listInput"]').text('Add a note');
+            $('#listEmpty').text('No notes yet. Add your first one above.');
+        }
+
+        listLoad();
+        listRender();
+
+        $('#listAddBtn').off('click.list').on('click.list', listAdd);
+        if (!LIST_IS_NOTES) {
+            // Checklist items are single-line: Enter submits. Notes are
+            // multi-line, so Enter must insert a newline instead - only
+            // Ctrl/Cmd+Enter saves a note (bound separately below).
+            $('#listInput').off('keydown.list').on('keydown.list', function (e) {
+                if (e.key === 'Enter' || e.which === 13) { e.preventDefault(); listAdd(); }
+            });
+        } else {
+            $('#listInput').off('keydown.list').on('keydown.list', function (e) {
+                if ((e.key === 'Enter' || e.which === 13) && (e.metaKey || e.ctrlKey)) {
+                    e.preventDefault(); listAdd();
+                }
+            });
+        }
+        // Delegated handlers so they survive re-render.
+        $('#listItems').off('change.list', '.list-item-toggle')
+            .on('change.list', '.list-item-toggle', function () {
+                var id = $(this).closest('.list-item').attr('data-id');
+                listToggle(id);
+            });
+        $('#listItems').off('click.list', '.list-item-delete')
+            .on('click.list', '.list-item-delete', function () {
+                var id = $(this).closest('.list-item').attr('data-id');
+                listDelete(id);
+            });
+        $('#listItems').off('click.list', '.list-item-copy')
+            .on('click.list', '.list-item-copy', function () {
+                var id = $(this).closest('.list-item').attr('data-id');
+                listCopyNote(id);
+            });
+        // Export / import backup (present only when the BODYHTML includes them).
+        $('#listExport').off('click.list').on('click.list', listExport);
+        $('#listImport').off('change.list').on('change.list', function () {
+            if (this.files && this.files[0]) listImport(this.files[0]);
+            this.value = '';
+        });
+    }
+
+    function doAfterPageRendered() {
+        initList();
+    }
+</script>
