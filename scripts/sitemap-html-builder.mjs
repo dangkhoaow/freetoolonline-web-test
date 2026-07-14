@@ -586,6 +586,7 @@ const HUB_GRID_ROLLOUT = new Set([
   '/image-tools.html',
   '/image-converter-tools.html',
   '/pdf-tools.html',
+  '/developer-tools.html',
 ]);
 
 const MINI_PICTOGRAM_DIR = fileURLToPath(new URL('../source/web/src/main/webapp/static/img/illustrations/mini-pictogram/', import.meta.url));
