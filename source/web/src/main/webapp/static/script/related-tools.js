@@ -406,6 +406,7 @@ try {
     { title: "Milky Way Map 3D Explorer", url: "https://freetoolonline.com/space-3d/milky-way-map.html", include: !1, tags: "space-3d" },
     { title: "Lagrange Points 3D Explorer", url: "https://freetoolonline.com/space-3d/lagrange-points.html", include: !1, tags: "space-3d" },
     { title: "Neutron Star Pulsar 3D Explorer", url: "https://freetoolonline.com/space-3d/neutron-star-pulsar.html", include: !1, tags: "space-3d" },
+    { title: "Gas Giant Atmosphere 3D Explorer", url: "https://freetoolonline.com/space-3d/gas-giant-atmosphere.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
