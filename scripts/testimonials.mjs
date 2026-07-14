@@ -1,12 +1,17 @@
 // testimonials.mjs - curated, PII-scrubbed real user testimonials for the
-// E-E-A-T / trust section (operator request 2026-07-10).
+// E-E-A-T / trust section (operator request 2026-07-10; PayPal source added
+// 2026-07-14).
 //
 // SOURCE OF TRUTH + CONTRACT:
-//   - Every entry is a REAL public review copied from the site's own
-//     BuyMeACoffee (buymeacoffee.com/freetoolonline.com) or Trustpilot
-//     (trustpilot.com/review/freetoolonline.com) profile. `sourceUrl` is the
-//     public profile so any quote is verifiable. NEVER invent a testimonial,
-//     a name, a rating, or a count.
+//   - Every entry is a REAL review or REAL donor thank-you note the site
+//     actually received - via its own BuyMeACoffee (buymeacoffee.com/
+//     freetoolonline.com) profile, Trustpilot (trustpilot.com/review/
+//     freetoolonline.com) profile, or the site's own PayPal donate button
+//     (`source: 'paypal'` - operator-verified from the donation-notification
+//     emails; there is no public per-quote profile page for a direct PayPal
+//     donation, so `sourceUrl` names the payment platform itself rather than
+//     a browsable review list). NEVER invent a testimonial, a name, a
+//     rating, or a count.
 //   - Reader-first + house rules: quotes are shown as VISIBLE, attributed
 //     content only; the site emits NO first-party Review / AggregateRating
 //     JSON-LD (self-serving review markup is a Google manual-action risk and
@@ -14,10 +19,16 @@
 //     carries Trustpilot's own schema instead).
 //   - Curation (applied here, not at render): keep genuine, specific,
 //     positive, on-topic quotes; DROP empty / confused / negative / bare
-//     "thanks". PII scrub: drop email-address "names"; full names -> first
-//     name + last initial; strip emoji; R9 ASCII only (fold diacritics,
-//     umlauts -> ue/oe/ae/ss). Light edits for ASCII/length only, never
-//     changing meaning.
+//     "thanks" (the PayPal batch is an operator-directed exception - all
+//     donor notes from the reviewed batch are kept, per operator request).
+//     PII scrub: drop email-address "names"; full names -> first name + last
+//     initial (donor-run businesses named as a business - "The Gilded
+//     Quill", "Your Computer Wizzard" - keep their own chosen name as-is);
+//     strip emoji; R9 ASCII only (fold diacritics, umlauts -> ue/oe/ae/ss).
+//     Light edits for ASCII/length/grammar only, never changing meaning. NO
+//     email address, NO donation amount, NO transaction id is ever stored
+//     or rendered here - those stay in the private donation-notification
+//     email only.
 //   - Because these are attributed third-party quotes (not tool-behaviour
 //     claims), qa-truthful-content-claim excludes the .user-testimonials
 //     container from its per-tool claim diff (extraction-rules.md carve-out).
@@ -133,6 +144,132 @@ export const TESTIMONIALS = [
     tools: [],
     featured: true,
   },
+
+  // --- PayPal donor notes (operator-verified from donation-notification
+  // emails, 2017-2020; operator-directed to keep the full reviewed batch).
+  // Tool-specific only where the note names or clearly implies the tool. ---
+  {
+    id: 'pp-edward-iosphotos',
+    quote: 'Thank you for the service. Needed to send photos of me to my wife, and she did not have an iOS device.',
+    author: 'Edward P.',
+    source: 'paypal',
+    sourceUrl: 'https://www.paypal.com/donate',
+    date: '2020-07-28',
+    lang: 'en',
+    tools: ['heic-to-jpg'],
+    featured: false,
+  },
+  {
+    id: 'pp-benjamin-heic',
+    quote: 'Thank you for your online HEIC converter tool.',
+    author: 'Benjamin D.',
+    source: 'paypal',
+    sourceUrl: 'https://www.paypal.com/donate',
+    date: '2019-02-01',
+    lang: 'en',
+    tools: ['heic-to-jpg'],
+    featured: false,
+  },
+  {
+    id: 'pp-maria-oldmac',
+    quote: 'Thanks for creating this tool. My old Mac just can not handle the new file format.',
+    author: 'Maria L.',
+    source: 'paypal',
+    sourceUrl: 'https://www.paypal.com/donate',
+    date: '2019-01-31',
+    lang: 'en',
+    tools: ['heic-to-jpg'],
+    featured: false,
+  },
+  {
+    id: 'pp-extraordinarygentlemen-usa',
+    quote: 'Thanks from the USA, peace, and stay safe!',
+    author: 'Extraordinary Gentlemen, LLC',
+    location: 'US',
+    source: 'paypal',
+    sourceUrl: 'https://www.paypal.com/donate',
+    date: '2020-08-20',
+    lang: 'en',
+    tools: [],
+    featured: true,
+  },
+  {
+    id: 'pp-ola100-greatservice',
+    quote: 'Thank you for your great service! Keep up the good work!',
+    author: 'ola100',
+    source: 'paypal',
+    sourceUrl: 'https://www.paypal.com/donate',
+    date: '2020-07-22',
+    lang: 'en',
+    tools: [],
+    featured: true,
+  },
+  {
+    id: 'pp-erik-danke',
+    quote: 'Danke.',
+    author: 'Erik F.',
+    source: 'paypal',
+    sourceUrl: 'https://www.paypal.com/donate',
+    date: '2020-07-07',
+    lang: 'de',
+    tools: [],
+    featured: true,
+  },
+  {
+    id: 'pp-gildedquill-holidays',
+    quote: 'Thanks for making this tool available to all. Happy holidays!',
+    author: 'The Gilded Quill',
+    source: 'paypal',
+    sourceUrl: 'https://www.paypal.com/donate',
+    date: '2019-12-04',
+    lang: 'en',
+    tools: [],
+    featured: true,
+  },
+  {
+    id: 'pp-thomas-bookmarked',
+    quote: 'Thanks for a quick and simple process, and I have bookmarked your site.',
+    author: 'Thomas T.',
+    source: 'paypal',
+    sourceUrl: 'https://www.paypal.com/donate',
+    date: '2019-12-13',
+    lang: 'en',
+    tools: [],
+    featured: true,
+  },
+  {
+    id: 'pp-computerwizzard-greattool',
+    quote: 'Thanks, guys. Great tool.',
+    author: 'Your Computer Wizzard',
+    source: 'paypal',
+    sourceUrl: 'https://www.paypal.com/donate',
+    date: '2019-04-16',
+    lang: 'en',
+    tools: [],
+    featured: true,
+  },
+  {
+    id: 'pp-michael-appavailable',
+    quote: 'Thanks for making this app available.',
+    author: 'Michael M.',
+    source: 'paypal',
+    sourceUrl: 'https://www.paypal.com/donate',
+    date: '2018-08-09',
+    lang: 'en',
+    tools: [],
+    featured: true,
+  },
+  {
+    id: 'pp-jon-thanks',
+    quote: 'Thanks!',
+    author: 'Jon D.',
+    source: 'paypal',
+    sourceUrl: 'https://www.paypal.com/donate',
+    date: '2017-12-23',
+    lang: 'en',
+    tools: [],
+    featured: true,
+  },
 ];
 
 function escLite(s) {
@@ -140,7 +277,7 @@ function escLite(s) {
     .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 }
 
-const SOURCE_LABEL = { trustpilot: 'Trustpilot', buymeacoffee: 'Buy Me a Coffee' };
+const SOURCE_LABEL = { trustpilot: 'Trustpilot', buymeacoffee: 'Buy Me a Coffee', paypal: 'PayPal' };
 
 // Self-contained styles (the section renders on the homepage AND tool pages;
 // PAGESTYLE.css is homepage-only, so the section carries its own scoped CSS to
@@ -270,12 +407,12 @@ export function validateTestimonials(list = TESTIMONIALS) {
     for (const f of ['quote', 'author', 'source', 'sourceUrl', 'lang']) {
       if (!t[f]) errors.push(`${at} missing ${f}`);
     }
-    if (!['trustpilot', 'buymeacoffee'].includes(t.source)) errors.push(`${at} bad source ${t.source}`);
+    if (!['trustpilot', 'buymeacoffee', 'paypal'].includes(t.source)) errors.push(`${at} bad source ${t.source}`);
     if (t.author && EMAIL_RE.test(t.author)) errors.push(`${at} author looks like an email/PII: ${t.author}`);
     if (t.quote && NON_ASCII_RE.test(t.quote)) errors.push(`${at} quote has non-ASCII (emoji/diacritic): ${t.quote}`);
     if (t.author && NON_ASCII_RE.test(t.author)) errors.push(`${at} author has non-ASCII: ${t.author}`);
-    if (t.sourceUrl && !/^https:\/\/(www\.)?(trustpilot\.com|buymeacoffee\.com)\//.test(t.sourceUrl)) {
-      errors.push(`${at} sourceUrl not a trustpilot/buymeacoffee profile: ${t.sourceUrl}`);
+    if (t.sourceUrl && !/^https:\/\/(www\.)?(trustpilot\.com|buymeacoffee\.com|paypal\.com)\//.test(t.sourceUrl)) {
+      errors.push(`${at} sourceUrl not a trustpilot/buymeacoffee/paypal profile: ${t.sourceUrl}`);
     }
   }
   return errors;
