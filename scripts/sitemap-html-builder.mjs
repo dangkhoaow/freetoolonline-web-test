@@ -582,6 +582,7 @@ const HUB_TOOL_LIST_END = '<!-- HUB_TOOL_LIST:END -->';
 const HUB_GRID_ROLLOUT = new Set([
   '/zip-tools.html',
   '/device-test-tools.html',
+  '/video-tools.html',
 ]);
 
 const MINI_PICTOGRAM_DIR = fileURLToPath(new URL('../source/web/src/main/webapp/static/img/illustrations/mini-pictogram/', import.meta.url));
