@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
+  // pt/es/vi/id/de locale fanout for uuid-generator's 3 EN companion guide
+  // angles (owed from fire147; guide-support drain per SS4b contract).
+  '/guides/pt/uuid-generator-when.html',
+  '/guides/pt/uuid-generator-step-by-step.html',
+  '/guides/pt/uuid-generator-vs-alternatives.html',
+  '/guides/es/uuid-generator-when.html',
+  '/guides/es/uuid-generator-step-by-step.html',
+  '/guides/es/uuid-generator-vs-alternatives.html',
+  '/guides/vi/uuid-generator-when.html',
+  '/guides/vi/uuid-generator-step-by-step.html',
+  '/guides/vi/uuid-generator-vs-alternatives.html',
+  '/guides/id/uuid-generator-when.html',
+  '/guides/id/uuid-generator-step-by-step.html',
+  '/guides/id/uuid-generator-vs-alternatives.html',
+  '/guides/de/uuid-generator-when.html',
+  '/guides/de/uuid-generator-step-by-step.html',
+  '/guides/de/uuid-generator-vs-alternatives.html',
   '/guides/uuid-generator-vs-alternatives.html',
   '/guides/uuid-generator-step-by-step.html',
   '/guides/uuid-generator-when.html',
@@ -1885,6 +1903,24 @@ export const INFO_ROUTES = new Set([
   '/guides/de/comet-orbit-vs-alternatives.html',
   '/guides/vi/comet-orbit-vs-alternatives.html',
   '/guides/id/comet-orbit-vs-alternatives.html',
+  '/guides/seasons-earth-when.html',
+  '/guides/pt/seasons-earth-when.html',
+  '/guides/es/seasons-earth-when.html',
+  '/guides/de/seasons-earth-when.html',
+  '/guides/vi/seasons-earth-when.html',
+  '/guides/id/seasons-earth-when.html',
+  '/guides/seasons-earth-step-by-step.html',
+  '/guides/pt/seasons-earth-step-by-step.html',
+  '/guides/es/seasons-earth-step-by-step.html',
+  '/guides/de/seasons-earth-step-by-step.html',
+  '/guides/vi/seasons-earth-step-by-step.html',
+  '/guides/id/seasons-earth-step-by-step.html',
+  '/guides/seasons-earth-vs-alternatives.html',
+  '/guides/pt/seasons-earth-vs-alternatives.html',
+  '/guides/es/seasons-earth-vs-alternatives.html',
+  '/guides/de/seasons-earth-vs-alternatives.html',
+  '/guides/vi/seasons-earth-vs-alternatives.html',
+  '/guides/id/seasons-earth-vs-alternatives.html',
   // play-fps-in-browser-step-by-step locale fanout pt/es/de/vi/id
   // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
   // per runbook 4b).
@@ -1923,6 +1959,29 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
+  // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
+  // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
+  // class as fires 32/56/57/62/66/84/113/115/120/142) plus their full
+  // pt/es/vi/id/de locale fanout (guide-support drain owed from fire147).
+  '/guides/uuid-generator-when.html',
+  '/guides/uuid-generator-step-by-step.html',
+  '/guides/uuid-generator-vs-alternatives.html',
+  '/guides/pt/uuid-generator-when.html',
+  '/guides/pt/uuid-generator-step-by-step.html',
+  '/guides/pt/uuid-generator-vs-alternatives.html',
+  '/guides/es/uuid-generator-when.html',
+  '/guides/es/uuid-generator-step-by-step.html',
+  '/guides/es/uuid-generator-vs-alternatives.html',
+  '/guides/vi/uuid-generator-when.html',
+  '/guides/vi/uuid-generator-step-by-step.html',
+  '/guides/vi/uuid-generator-vs-alternatives.html',
+  '/guides/id/uuid-generator-when.html',
+  '/guides/id/uuid-generator-step-by-step.html',
+  '/guides/id/uuid-generator-vs-alternatives.html',
+  '/guides/de/uuid-generator-when.html',
+  '/guides/de/uuid-generator-step-by-step.html',
+  '/guides/de/uuid-generator-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire142 (LEAN one-off, 2026-07-13/14):
   // GUIDE_ROUTES backfill for jwt-decoder's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only, same recurring gap
@@ -4283,6 +4342,24 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/comet-orbit-vs-alternatives.html',
   '/guides/vi/comet-orbit-vs-alternatives.html',
   '/guides/id/comet-orbit-vs-alternatives.html',
+  '/guides/seasons-earth-when.html',
+  '/guides/pt/seasons-earth-when.html',
+  '/guides/es/seasons-earth-when.html',
+  '/guides/de/seasons-earth-when.html',
+  '/guides/vi/seasons-earth-when.html',
+  '/guides/id/seasons-earth-when.html',
+  '/guides/seasons-earth-step-by-step.html',
+  '/guides/pt/seasons-earth-step-by-step.html',
+  '/guides/es/seasons-earth-step-by-step.html',
+  '/guides/de/seasons-earth-step-by-step.html',
+  '/guides/vi/seasons-earth-step-by-step.html',
+  '/guides/id/seasons-earth-step-by-step.html',
+  '/guides/seasons-earth-vs-alternatives.html',
+  '/guides/pt/seasons-earth-vs-alternatives.html',
+  '/guides/es/seasons-earth-vs-alternatives.html',
+  '/guides/de/seasons-earth-vs-alternatives.html',
+  '/guides/vi/seasons-earth-vs-alternatives.html',
+  '/guides/id/seasons-earth-vs-alternatives.html',
   // play-fps-in-browser-step-by-step locale fanout pt/es/de/vi/id
   // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
   // per runbook 4b).
@@ -4855,6 +4932,7 @@ export const ALIAS_ROUTES = {
   '/tidal-locking.html': '/space-3d/tidal-locking.html',
   '/asteroid-belt.html': '/space-3d/asteroid-belt.html',
   '/comet-orbit.html': '/space-3d/comet-orbit.html',
+  '/seasons-earth.html': '/space-3d/seasons-earth.html',
   '/linux-online.html': '/utility-tools/linux-online.html',
   '/online-linux-terminal.html': '/utility-tools/linux-online.html',
   '/linux-emulator-online.html': '/utility-tools/linux-online.html',
@@ -4914,6 +4992,21 @@ export const ALIAS_ROUTES = {
 // non-kebab entries to this map.
 // ─────────────────────────────────────────────────────────────────────────
 export const JSP_BY_ROUTE = {
+  '/guides/pt/uuid-generator-when.html': 'guide/pt/uuid-generator-when.jsp',
+  '/guides/pt/uuid-generator-step-by-step.html': 'guide/pt/uuid-generator-step-by-step.jsp',
+  '/guides/pt/uuid-generator-vs-alternatives.html': 'guide/pt/uuid-generator-vs-alternatives.jsp',
+  '/guides/es/uuid-generator-when.html': 'guide/es/uuid-generator-when.jsp',
+  '/guides/es/uuid-generator-step-by-step.html': 'guide/es/uuid-generator-step-by-step.jsp',
+  '/guides/es/uuid-generator-vs-alternatives.html': 'guide/es/uuid-generator-vs-alternatives.jsp',
+  '/guides/vi/uuid-generator-when.html': 'guide/vi/uuid-generator-when.jsp',
+  '/guides/vi/uuid-generator-step-by-step.html': 'guide/vi/uuid-generator-step-by-step.jsp',
+  '/guides/vi/uuid-generator-vs-alternatives.html': 'guide/vi/uuid-generator-vs-alternatives.jsp',
+  '/guides/id/uuid-generator-when.html': 'guide/id/uuid-generator-when.jsp',
+  '/guides/id/uuid-generator-step-by-step.html': 'guide/id/uuid-generator-step-by-step.jsp',
+  '/guides/id/uuid-generator-vs-alternatives.html': 'guide/id/uuid-generator-vs-alternatives.jsp',
+  '/guides/de/uuid-generator-when.html': 'guide/de/uuid-generator-when.jsp',
+  '/guides/de/uuid-generator-step-by-step.html': 'guide/de/uuid-generator-step-by-step.jsp',
+  '/guides/de/uuid-generator-vs-alternatives.html': 'guide/de/uuid-generator-vs-alternatives.jsp',
   '/': 'index.jsp',
   '/about-us.html': 'about-us.jsp',
   '/contact-us.html': 'contact-us.jsp',
@@ -7237,6 +7330,7 @@ export const JSP_BY_ROUTE = {
   '/space-3d/tidal-locking.html': 'space/tidal-locking.jsp',
   '/space-3d/asteroid-belt.html': 'space/asteroid-belt.jsp',
   '/space-3d/comet-orbit.html': 'space/comet-orbit.jsp',
+  '/space-3d/seasons-earth.html': 'space/seasons-earth.jsp',
   '/guides/iss-orbit-tracker-when.html': 'guide/iss-orbit-tracker-when.jsp',
   '/guides/iss-orbit-tracker-step-by-step.html': 'guide/iss-orbit-tracker-step-by-step.jsp',
   '/guides/iss-orbit-tracker-vs-alternatives.html': 'guide/iss-orbit-tracker-vs-alternatives.jsp',
@@ -7399,6 +7493,24 @@ export const JSP_BY_ROUTE = {
   '/guides/de/comet-orbit-vs-alternatives.html': 'guide/de/comet-orbit-vs-alternatives.jsp',
   '/guides/vi/comet-orbit-vs-alternatives.html': 'guide/vi/comet-orbit-vs-alternatives.jsp',
   '/guides/id/comet-orbit-vs-alternatives.html': 'guide/id/comet-orbit-vs-alternatives.jsp',
+  '/guides/seasons-earth-when.html': 'guide/seasons-earth-when.jsp',
+  '/guides/pt/seasons-earth-when.html': 'guide/pt/seasons-earth-when.jsp',
+  '/guides/es/seasons-earth-when.html': 'guide/es/seasons-earth-when.jsp',
+  '/guides/de/seasons-earth-when.html': 'guide/de/seasons-earth-when.jsp',
+  '/guides/vi/seasons-earth-when.html': 'guide/vi/seasons-earth-when.jsp',
+  '/guides/id/seasons-earth-when.html': 'guide/id/seasons-earth-when.jsp',
+  '/guides/seasons-earth-step-by-step.html': 'guide/seasons-earth-step-by-step.jsp',
+  '/guides/pt/seasons-earth-step-by-step.html': 'guide/pt/seasons-earth-step-by-step.jsp',
+  '/guides/es/seasons-earth-step-by-step.html': 'guide/es/seasons-earth-step-by-step.jsp',
+  '/guides/de/seasons-earth-step-by-step.html': 'guide/de/seasons-earth-step-by-step.jsp',
+  '/guides/vi/seasons-earth-step-by-step.html': 'guide/vi/seasons-earth-step-by-step.jsp',
+  '/guides/id/seasons-earth-step-by-step.html': 'guide/id/seasons-earth-step-by-step.jsp',
+  '/guides/seasons-earth-vs-alternatives.html': 'guide/seasons-earth-vs-alternatives.jsp',
+  '/guides/pt/seasons-earth-vs-alternatives.html': 'guide/pt/seasons-earth-vs-alternatives.jsp',
+  '/guides/es/seasons-earth-vs-alternatives.html': 'guide/es/seasons-earth-vs-alternatives.jsp',
+  '/guides/de/seasons-earth-vs-alternatives.html': 'guide/de/seasons-earth-vs-alternatives.jsp',
+  '/guides/vi/seasons-earth-vs-alternatives.html': 'guide/vi/seasons-earth-vs-alternatives.jsp',
+  '/guides/id/seasons-earth-vs-alternatives.html': 'guide/id/seasons-earth-vs-alternatives.jsp',
   '/guides/moon-calendar-3d-when.html': 'guide/moon-calendar-3d-when.jsp',
   '/guides/moon-calendar-3d-step-by-step.html': 'guide/moon-calendar-3d-step-by-step.jsp',
   '/guides/moon-calendar-3d-vs-alternatives.html': 'guide/moon-calendar-3d-vs-alternatives.jsp',
