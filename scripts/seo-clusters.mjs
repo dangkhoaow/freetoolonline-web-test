@@ -93,7 +93,7 @@ const SEO_CLUSTER_GROUPS = [
     cluster: 'space-3d',
     hubRoute: '/space-3d.html',
     hubLabel: 'Back to Space 3D',
-    routes: ['/space-3d/solar-system.html', '/space-3d/black-hole.html', '/space-3d/galaxy.html', '/space-3d/earth-3d-globe.html', '/space-3d/moon-phases-3d.html', '/space-3d/saturn-rings.html', '/space-3d/kepler-orbits.html', '/space-3d/moon-calendar-3d.html', '/space-3d/iss-orbit-tracker.html', '/space-3d/lunar-eclipse.html', '/space-3d/solar-eclipse.html', '/space-3d/planet-size-comparison.html', '/space-3d/star-lifecycle.html', '/space-3d/exoplanet-transit.html', '/space-3d/tidal-locking.html', '/space-3d/asteroid-belt.html', '/space-3d/comet-orbit.html', '/space-3d/seasons-earth.html'],
+    routes: ['/space-3d/solar-system.html', '/space-3d/black-hole.html', '/space-3d/galaxy.html', '/space-3d/earth-3d-globe.html', '/space-3d/moon-phases-3d.html', '/space-3d/saturn-rings.html', '/space-3d/kepler-orbits.html', '/space-3d/moon-calendar-3d.html', '/space-3d/iss-orbit-tracker.html', '/space-3d/lunar-eclipse.html', '/space-3d/solar-eclipse.html', '/space-3d/planet-size-comparison.html', '/space-3d/star-lifecycle.html', '/space-3d/exoplanet-transit.html', '/space-3d/tidal-locking.html', '/space-3d/asteroid-belt.html', '/space-3d/comet-orbit.html', '/space-3d/seasons-earth.html', '/space-3d/retrograde-motion.html'],
   },
   // news-loop (2026-07-08) - dated, source-cited updates on the file formats,
   // browser capabilities, and standards the tool clusters serve. Articles are
