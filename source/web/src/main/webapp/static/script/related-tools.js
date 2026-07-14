@@ -409,6 +409,7 @@ try {
     { title: "Gas Giant Atmosphere 3D Explorer", url: "https://freetoolonline.com/space-3d/gas-giant-atmosphere.html", include: !1, tags: "space-3d" },
     { title: "Orbital Resonance 3D Explorer", url: "https://freetoolonline.com/space-3d/orbital-resonance.html", include: !1, tags: "space-3d" },
     { title: "Stellar Magnitude Scale Explorer", url: "https://freetoolonline.com/space-3d/stellar-magnitude.html", include: !1, tags: "space-3d" },
+    { title: "Parallax Distance 3D Explorer", url: "https://freetoolonline.com/space-3d/parallax-distance.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
