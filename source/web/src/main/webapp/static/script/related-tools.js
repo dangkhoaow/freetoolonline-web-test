@@ -411,6 +411,7 @@ try {
     { title: "Stellar Magnitude Scale Explorer", url: "https://freetoolonline.com/space-3d/stellar-magnitude.html", include: !1, tags: "space-3d" },
     { title: "Parallax Distance 3D Explorer", url: "https://freetoolonline.com/space-3d/parallax-distance.html", include: !1, tags: "space-3d" },
     { title: "Ecliptic Zodiac 3D Explorer", url: "https://freetoolonline.com/space-3d/ecliptic-zodiac.html", include: !1, tags: "space-3d" },
+    { title: "Gravity Well 3D Explorer", url: "https://freetoolonline.com/space-3d/gravity-well.html", include: !1, tags: "space-3d" },
     { title: "Redshift and Doppler Shift 3D Explorer", url: "https://freetoolonline.com/space-3d/redshift-doppler.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
