@@ -1,4 +1,6 @@
 import path from 'node:path';
+import { promises as fsPromises } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import {
   ALIAS_ROUTES,
   GUIDE_ROUTES,
@@ -560,6 +562,97 @@ async function resolveClusterMemberRoutes(group, aliasSourceSet) {
 const HUB_TOOL_LIST_START = '<!-- HUB_TOOL_LIST:START';
 const HUB_TOOL_LIST_END = '<!-- HUB_TOOL_LIST:END -->';
 
+// -------------------------------------------------------------------------- //
+// Hub sub-tool GRID (2026-07-14, operator-approved). Hubs listed in          //
+// HUB_GRID_ROLLOUT render their tool directory as a responsive icon-card     //
+// grid - one mini-pictogram per <li> (exactly the section-flow-spec          //
+// subtool_list.visual_slot design) - instead of the legacy plain <ul>.       //
+// SAME <ul>/<li>/<a>/<p> semantic markup + SAME content, styled as a grid    //
+// by the scoped <style> block emitted alongside it, so every existing        //
+// consumer of the list (gates, crawlers, cluster-narrative axis H) keeps     //
+// working. Rollout is hub-by-hub via                                         //
+// prompts/hub-grid-svg-enrichment-runbook.md as each hub's pictogram set is  //
+// authored + verified; the per-member pictogram resolves BY CMS SLUG from    //
+// static/img/illustrations/mini-pictogram/<slug>__<hash8>.svg (committed by  //
+// seo-svg-diagram-author renders). A member with no pictogram degrades to a  //
+// text-only card; a hub not in the set keeps the legacy list - the build     //
+// NEVER breaks on a missing icon.                                            //
+// -------------------------------------------------------------------------- //
+
+const HUB_GRID_ROLLOUT = new Set([
+  '/zip-tools.html',
+]);
+
+const MINI_PICTOGRAM_DIR = fileURLToPath(new URL('../source/web/src/main/webapp/static/img/illustrations/mini-pictogram/', import.meta.url));
+const MINI_PICTOGRAM_PUBLIC_PREFIX = '/img/illustrations/mini-pictogram';
+
+/**
+ * slug -> { file, alt } for every committed per-tool mini-pictogram. The alt
+ * comes from the SVG's own <title> + <desc> (written at render time from the
+ * tool's verified framing menu), so the child repo builds standalone - no
+ * wrapper-repo lookup at build time. Newest render (lexicographically last
+ * hash) wins when a slug has several files. Fail-open: unreadable dir/file
+ * just means text-only cards.
+ */
+async function loadMiniPictogramMap() {
+  const map = new Map();
+  let entries = [];
+  try {
+    entries = await fsPromises.readdir(MINI_PICTOGRAM_DIR);
+  } catch {
+    return map;
+  }
+  for (const name of entries.sort()) {
+    const m = name.match(/^([a-z0-9]+)__[0-9a-f]{8}\.svg$/);
+    if (!m) continue;
+    try {
+      const svg = await fsPromises.readFile(path.join(MINI_PICTOGRAM_DIR, name), 'utf8');
+      const t = svg.match(/<title[^>]*>([^<]*)<\/title>/);
+      const d = svg.match(/<desc[^>]*>([^<]*)<\/desc>/);
+      const alt = [t?.[1], d?.[1]]
+        .filter(Boolean)
+        .map((s) => s.replace(/\s+/g, ' ').trim())
+        .filter(Boolean)
+        .map((s) => (/[.!?]$/.test(s) ? s : `${s}.`))
+        .join(' ');
+      if (alt) map.set(m[1], { file: name, alt });
+    } catch { /* unreadable file -> text-only card for that slug */ }
+  }
+  return map;
+}
+
+// Scoped style for the grid - emitted INSIDE the HUB_TOOL_LIST markers so it
+// regenerates with the list and needs no PAGESTYLE/global-CSS edit. Dark
+// theme follows the site's html.main-html.dark class convention.
+const HUB_GRID_STYLE = `    <style>
+        .hub-tool-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; padding: 0; margin: 16px 0; list-style: none; }
+        .hub-tool-grid li { margin: 0; padding: 16px 12px; border: 1px solid #dfe3e8; border-radius: 12px; background: #fafbfc; text-align: center; }
+        .hub-tool-grid li img { display: block; margin: 0 auto 8px auto; width: 64px; height: 64px; }
+        .hub-tool-grid li a { font-weight: 600; }
+        .hub-tool-grid li p { margin: 6px 0 0 0; font-size: 13.5px; color: #55606b; }
+        html.main-html.dark .hub-tool-grid li { background: #20262e; border-color: #3a434e; }
+        html.main-html.dark .hub-tool-grid li p { color: #a8b3bf; }
+    </style>`;
+
+// The alt stored inside the SVG is XML-escaped; decode the basic entities
+// before re-escaping for the HTML attribute so we never double-escape.
+function decodeBasicEntities(value) {
+  return String(value)
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, '&');
+}
+
+function renderHubToolGridItem({ route, title, description }, pict) {
+  const img = pict
+    ? `\n            <img src="${MINI_PICTOGRAM_PUBLIC_PREFIX}/${pict.file}" alt="${escapeHtml(decodeBasicEntities(pict.alt))}" loading="lazy" width="64" height="64">`
+    : '';
+  const descBlock = description ? `\n            <p>${escapeHtml(description)}</p>` : '';
+  return `        <li>${img}\n            <a href="${route}">${escapeHtml(title)}</a>${descBlock}\n        </li>`;
+}
+
 function renderHubToolItem({ route, title, description }) {
   // Mirrors the existing hand-authored hub markup shape (anchor + one-line
   // description paragraph per <li>) so the regenerated block is visually
@@ -582,6 +675,7 @@ export async function buildDynamicToolHubBodies({ cmsRoot } = {}) {
     throw new Error('buildDynamicToolHubBodies: cmsRoot is required');
   }
   const aliasSourceSet = new Set(Object.keys(ALIAS_ROUTES));
+  const pictograms = await loadMiniPictogramMap();
   const out = new Map();
   for (const group of getSeoClusterGroups()) {
     if (group.cluster === 'guides' || !group.hubRoute) continue;
@@ -591,10 +685,18 @@ export async function buildDynamicToolHubBodies({ cmsRoot } = {}) {
       if (route === group.hubRoute) continue; // never list the hub linking to itself
       items.push(await loadRouteMetadata(cmsRoot, route));
     }
-    const lines = ['    <ul>'];
-    for (const item of items) lines.push(renderHubToolItem(item));
-    lines.push('    </ul>');
-    out.set(group.hubRoute, lines.join('\n'));
+    if (HUB_GRID_ROLLOUT.has(group.hubRoute)) {
+      // Icon-card grid (same semantic <ul>, one mini-pictogram per <li>).
+      const lines = [HUB_GRID_STYLE, '    <ul class="hub-tool-grid">'];
+      for (const item of items) lines.push(renderHubToolGridItem(item, pictograms.get(item.slug)));
+      lines.push('    </ul>');
+      out.set(group.hubRoute, lines.join('\n'));
+    } else {
+      const lines = ['    <ul>'];
+      for (const item of items) lines.push(renderHubToolItem(item));
+      lines.push('    </ul>');
+      out.set(group.hubRoute, lines.join('\n'));
+    }
   }
   return out;
 }
