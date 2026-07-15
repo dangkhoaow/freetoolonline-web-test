@@ -338,6 +338,7 @@ try {
     { title: "Spinosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/spinosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Stegosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/stegosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Brachiosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/brachiosaurus.html", include: !1, tags: "dinosaur-3d" },
+    { title: "Ankylosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/ankylosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "AI Background Remover", url: "https://freetoolonline.com/image-tools/background-remover.html", include: !1, tags: "image-editing" },
     { title: "PDF to Text Online: Extract Text Free, No Install", url: "https://freetoolonline.com/guides/pdf-to-text-online-i-love-pdf.html", include: !1, tags: "pdf" },
     { title: "Video to GIF Converter", url: "https://freetoolonline.com/video-tools/video-to-gif.html", include: !1, tags: "video" },
