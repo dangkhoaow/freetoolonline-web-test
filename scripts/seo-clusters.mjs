@@ -104,7 +104,7 @@ const SEO_CLUSTER_GROUPS = [
     cluster: 'dinosaur-3d',
     hubRoute: '/dinosaur-3d.html',
     hubLabel: 'Back to Dinosaurs 3D',
-    routes: ['/dinosaur-3d/tyrannosaurus-rex.html', '/dinosaur-3d/mosasaurus.html'],
+    routes: ['/dinosaur-3d/tyrannosaurus-rex.html', '/dinosaur-3d/mosasaurus.html', '/dinosaur-3d/velociraptor.html'],
   },
   // news-loop (2026-07-08) - dated, source-cited updates on the file formats,
   // browser capabilities, and standards the tool clusters serve. Articles are
