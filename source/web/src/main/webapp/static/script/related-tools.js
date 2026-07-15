@@ -422,6 +422,7 @@ try {
     { title: "Redshift and Doppler Shift 3D Explorer", url: "https://freetoolonline.com/space-3d/redshift-doppler.html", include: !1, tags: "space-3d" },
     { title: "Hohmann Transfer 3D Explorer", url: "https://freetoolonline.com/space-3d/hohmann-transfer.html", include: !1, tags: "space-3d" },
     { title: "Binary Star System 3D Explorer", url: "https://freetoolonline.com/space-3d/binary-star-system.html", include: !1, tags: "space-3d" },
+    { title: "Galilean Moons 3D Explorer", url: "https://freetoolonline.com/space-3d/galilean-moons.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
