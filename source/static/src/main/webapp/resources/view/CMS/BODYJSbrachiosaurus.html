@@ -35,12 +35,12 @@
     var D3D_DINOS = {
         'brachiosaurus': {
             name: 'Brachiosaurus', archetype: 'sauropod',
-            lengthM: 22, heightM: 6, weightKg: 46900, eraMya: '154-153',
+            lengthM: 22, heightM: 9.4, weightKg: 46900, eraMya: '152-145',
             period: 'Late Jurassic', diet: 'Herbivore',
-            discovered: '1900, near Fruita, Colorado (Elmer S. Riggs); named 1903',
-            skin: 0x5f7a52, belly: 0xc7c2a0, pattern: 0x445a3a, eye: 0x6b4423,
-            teeth: 'none', feats: {},
-            note: 'Front legs longer than the hind legs give Brachiosaurus a sloped, giraffe-like posture and let it browse leaves up to about 9 m above the ground. No complete skeleton is known; many full-body reconstructions borrow from the closely related African sauropod Giraffatitan, once classified as a Brachiosaurus species. Length and mass estimates vary across sources (about 18-22 m; about 28-47 tonnes).'
+            discovered: 'Named by Riggs, 1903 (B. altithorax), Colorado',
+            skin: 0x6b7a5a, belly: 0xc5d0b0, pattern: 0x4a5740, eye: 0xd4a017,
+            teeth: 'beak', feats: { tallForelimbs: true },
+            note: 'Longer front legs than hind legs lifted the chest and neck high - the giraffe-like silhouette of a high browser. Figures follow the Natural History Museum (about 22 m long, about 46.9 tonnes). Soft tissue and color are unknown.'
         }
     };
 
@@ -508,16 +508,23 @@
             idleFlippers.push(makeFlipper([1.4, 2.7, 0.5], 1, 2.2, 0.95, 0.2, 0.4));
             idleFlippers.push(makeFlipper([1.4, 2.7, 0.5], -1, 2.2, 0.95, 0.2, 0.4));
         } else if (arche === 'sauropod') {
+            var tall = !!feats.tallForelimbs;
             var sTail = [[2.4, -8.5], [2.8, -5.5], [3.2, -2.5], [3.4, -0.5]];
-            var sBody = [[3.4, -0.5], [3.6, 1.0], [3.7, 2.4], [3.9, 3.6]];
+            var sBody = tall
+                ? [[3.6, -0.5], [3.9, 1.0], [4.2, 2.4], [4.5, 3.6]]
+                : [[3.4, -0.5], [3.6, 1.0], [3.7, 2.4], [3.9, 3.6]];
             dino.add(tag(d3dSpineTube(THREE, sTail, [0.12, 0.7, 1.4, 1.9], skinMat, {}), 'tail'));
-            dino.add(tag(d3dSpineTube(THREE, sBody, [1.9, 2.2, 1.7, 1.0], skinMat, {}), 'body'));
-            // long neck sweeping up
-            var sNeck = [[3.9, 3.6], [5.2, 4.6], [6.6, 5.6], [7.8, 6.4]];
-            dino.add(tag(d3dSpineTube(THREE, sNeck, [1.0, 0.75, 0.55, 0.42], skinMat, {}), 'neck'));
-            placeHead(buildHead(0.6, 'herb'), [8.3, 6.9], 0.2);
-            [[1.5, 1.3], [1.5, -1.3], [1.7, 2.6], [1.7, -2.6]].forEach(function (p) {
-                makeLeg([p[0], 3.3, p[1]], [p[0], 2.0, p[1] + 0.1], [p[0], 0.9, p[1]], [p[0], 0.12, p[1] + 0.4], 0.85, false);
+            dino.add(tag(d3dSpineTube(THREE, sBody, tall ? [2.0, 2.35, 1.85, 1.1] : [1.9, 2.2, 1.7, 1.0], skinMat, {}), 'body'));
+            // long neck sweeping up (brachiosaur: steeper rise)
+            var sNeck = tall
+                ? [[4.5, 3.6], [6.2, 5.0], [7.8, 6.6], [9.0, 7.8]]
+                : [[3.9, 3.6], [5.2, 4.6], [6.6, 5.6], [7.8, 6.4]];
+            dino.add(tag(d3dSpineTube(THREE, sNeck, tall ? [1.1, 0.8, 0.55, 0.4] : [1.0, 0.75, 0.55, 0.42], skinMat, {}), 'neck'));
+            placeHead(buildHead(0.6, 'herb'), tall ? [9.5, 8.3] : [8.3, 6.9], tall ? 0.05 : 0.2);
+            // hind shorter, front taller when tallForelimbs
+            var hindY = tall ? 3.6 : 3.3, foreY = tall ? 4.4 : 3.3;
+            [[1.5, 1.15, -1.3, hindY], [-1.5, 1.15, -1.3, hindY], [1.55, 1.05, 2.4, foreY], [-1.55, 1.05, 2.4, foreY]].forEach(function (p) {
+                makeLeg([p[0], p[3], p[2]], [p[0], p[3] - 1.2, p[2] + 0.08], [p[0], 0.85, p[2]], [p[0], 0.12, p[2] + 0.35], p[1] * 0.75, false);
             });
         } else if (arche === 'stegosaur' || arche === 'ceratopsian' || arche === 'ankylosaur') {
             // Low quadruped: horizontal back, short neck, four pillar legs.
