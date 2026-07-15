@@ -207,9 +207,12 @@ function firstSentence(text, maxChars = 160) {
   const trimmed = String(text ?? '').replace(/\s+/g, ' ').trim();
   if (!trimmed) return '';
   // Prefer a real sentence break over arbitrary truncation - readers parse
-  // a complete short sentence faster than a clipped fragment.
-  const sentenceMatch = trimmed.match(/^(.+?[.!?])(\s|$)/);
-  const candidate = sentenceMatch ? sentenceMatch[1] : trimmed;
+  // a complete short sentence faster than a clipped fragment. Protect
+  // version-like decimals (e.g. "WinRAR 7.23 fixed...") so the digit-dot
+  // is not treated as the end of the sentence (news hub + tool blurbs).
+  const protectedText = trimmed.replace(/(\d)\.(\d)/g, '$1\u0000$2');
+  const sentenceMatch = protectedText.match(/^(.+?[.!?])(\s|$)/);
+  const candidate = (sentenceMatch ? sentenceMatch[1] : protectedText).replace(/\u0000/g, '.');
   if (candidate.length <= maxChars) return candidate;
   return `${candidate.slice(0, maxChars - 1).trimEnd()}...`;
 }
@@ -608,6 +611,7 @@ const HUB_GRID_ROLLOUT = new Set([
   '/utility-tools.html',
   '/games.html',
   '/dinosaur-3d.html',
+  '/news.html',
 ]);
 
 const MINI_PICTOGRAM_DIR = fileURLToPath(new URL('../source/web/src/main/webapp/static/img/illustrations/mini-pictogram/', import.meta.url));
