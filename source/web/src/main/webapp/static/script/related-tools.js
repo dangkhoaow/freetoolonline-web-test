@@ -335,6 +335,7 @@ try {
     { title: "Mosasaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/mosasaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Velociraptor 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/velociraptor.html", include: !1, tags: "dinosaur-3d" },
     { title: "Triceratops 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/triceratops.html", include: !1, tags: "dinosaur-3d" },
+    { title: "Spinosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/spinosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "AI Background Remover", url: "https://freetoolonline.com/image-tools/background-remover.html", include: !1, tags: "image-editing" },
     { title: "PDF to Text Online: Extract Text Free, No Install", url: "https://freetoolonline.com/guides/pdf-to-text-online-i-love-pdf.html", include: !1, tags: "pdf" },
     { title: "Video to GIF Converter", url: "https://freetoolonline.com/video-tools/video-to-gif.html", include: !1, tags: "video" },
