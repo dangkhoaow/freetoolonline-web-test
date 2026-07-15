@@ -5459,8 +5459,12 @@ export const ALIAS_ROUTES = {
   // operator step.
   '/games/': '/games.html',
   '/space-3d/': '/space-3d.html',
+  // dinosaur-loop (2026-07-15): dir-index alias for the /dinosaur-3d cluster
   // hub. MUST also be mirrored into the CloudFront 301 function (two-layer
-  // redirect rule) - republish is an operator step.
+  // redirect rule) - republish is an operator step. (Restored 2026-07-16: a
+  // merge mis-resolution dropped this one-time seed entry - see the gate
+  // _lib/hub-cluster-wiring-check.mjs. KEEP BOTH SIDES in site-data conflicts.)
+  '/dinosaur-3d/': '/dinosaur-3d.html',
   // news-loop (2026-07-08): same dir-index pattern for the /news cluster hub.
   // MUST also be mirrored into the CloudFront 301 function (two-layer
   // redirect rule) - republish is an operator step.
@@ -6460,7 +6464,15 @@ export const JSP_BY_ROUTE = {
   // registered in SEO_CLUSTER_GROUPS; hub detection via isHubRoute()).
   '/games.html': 'utility/games.jsp',
   '/space-3d.html': 'utility/space-3d.jsp',
+  // dinosaur-loop (2026-07-15): the /dinosaur-3d cluster hub (non-'-tools'
   // hubRoute, registered in SEO_CLUSTER_GROUPS; hub detection via isHubRoute()).
+  // Member routes live at /dinosaur-3d/<slug>.html (JSP folder: dinosaur/).
+  // (Restored 2026-07-16: a merge mis-resolution - staging f9f3e96c3 mirrored by
+  // prod ba56def7 - dropped this one-time seed entry and 404'd the live hub.
+  // Gate: _lib/hub-cluster-wiring-check.mjs cluster_hub_route_unregistered.
+  // When resolving site-data.mjs conflicts, KEEP BOTH SIDES - never drop the
+  // other loop's block.)
+  '/dinosaur-3d.html': 'utility/dinosaur-3d.jsp',
   // news-loop (2026-07-08): the /news cluster hub (non-'-tools' hubRoute,
   // registered in SEO_CLUSTER_GROUPS; hub detection via isHubRoute()).
   // Article routes live at /news/<kebab-slug>.html and are shipped one per
