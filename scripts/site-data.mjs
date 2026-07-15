@@ -2371,6 +2371,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/tyrannosaurus-rex-size-comparison.html',
   '/guides/id/tyrannosaurus-rex-size-comparison.html',
   '/guides/de/tyrannosaurus-rex-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire3 (2026-07-15): tyrannosaurus-rex-3d-viewer-vs-ar-apps
+  // (EN + pt/es/vi/id/de) - vs-alternatives angle for the T. rex viewer.
+  '/guides/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html',
+  '/guides/es/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html',
+  '/guides/id/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html',
+  '/guides/de/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -7901,6 +7909,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/tyrannosaurus-rex-size-comparison.html': 'guide/vi/tyrannosaurus-rex-size-comparison.jsp',
   '/guides/id/tyrannosaurus-rex-size-comparison.html': 'guide/id/tyrannosaurus-rex-size-comparison.jsp',
   '/guides/de/tyrannosaurus-rex-size-comparison.html': 'guide/de/tyrannosaurus-rex-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire3 (2026-07-15): tyrannosaurus-rex-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
+  '/guides/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html': 'guide/tyrannosaurus-rex-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html': 'guide/pt/tyrannosaurus-rex-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html': 'guide/es/tyrannosaurus-rex-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html': 'guide/vi/tyrannosaurus-rex-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html': 'guide/id/tyrannosaurus-rex-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html': 'guide/de/tyrannosaurus-rex-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
