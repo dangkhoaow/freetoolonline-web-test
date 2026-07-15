@@ -5087,10 +5087,8 @@ export const ALIAS_ROUTES = {
   // operator step.
   '/games/': '/games.html',
   '/space-3d/': '/space-3d.html',
-  // dinosaur-loop (2026-07-15): dir-index alias for the /dinosaur-3d cluster
   // hub. MUST also be mirrored into the CloudFront 301 function (two-layer
   // redirect rule) - republish is an operator step.
-  '/dinosaur-3d/': '/dinosaur-3d.html',
   // news-loop (2026-07-08): same dir-index pattern for the /news cluster hub.
   // MUST also be mirrored into the CloudFront 301 function (two-layer
   // redirect rule) - republish is an operator step.
@@ -5535,10 +5533,7 @@ export const ALIAS_ROUTES = {
   '/solar-system.html': '/space-3d/solar-system.html',
   '/black-hole.html': '/space-3d/black-hole.html',
   '/galaxy.html': '/space-3d/galaxy.html',
-  // dinosaur-loop (2026-07-15): flat-slug aliases -> canonical /dinosaur-3d/ URLs.
   // MUST be mirrored into the CloudFront 301 function (two-layer redirect rule).
-  '/tyrannosaurus-rex.html': '/dinosaur-3d/tyrannosaurus-rex.html',
-  '/mosasaurus.html': '/dinosaur-3d/mosasaurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -6070,10 +6065,7 @@ export const JSP_BY_ROUTE = {
   // registered in SEO_CLUSTER_GROUPS; hub detection via isHubRoute()).
   '/games.html': 'utility/games.jsp',
   '/space-3d.html': 'utility/space-3d.jsp',
-  // dinosaur-loop (2026-07-15): the /dinosaur-3d cluster hub (non-'-tools'
   // hubRoute, registered in SEO_CLUSTER_GROUPS; hub detection via isHubRoute()).
-  // Member routes live at /dinosaur-3d/<slug>.html (JSP folder: dinosaur/).
-  '/dinosaur-3d.html': 'utility/dinosaur-3d.jsp',
   // news-loop (2026-07-08): the /news cluster hub (non-'-tools' hubRoute,
   // registered in SEO_CLUSTER_GROUPS; hub detection via isHubRoute()).
   // Article routes live at /news/<kebab-slug>.html and are shipped one per
@@ -7716,9 +7708,6 @@ export const JSP_BY_ROUTE = {
   '/guides/id/voxel-world-builder-step-by-step.html': 'guide/id/voxel-world-builder-step-by-step.jsp',
   '/guides/id/voxel-world-builder-vs-alternatives.html': 'guide/id/voxel-world-builder-vs-alternatives.jsp',
   '/space-3d/solar-system.html': 'space/solar-system.jsp',
-  // dinosaur-loop (2026-07-15): /dinosaur-3d cluster members (JSP folder: dinosaur/).
-  '/dinosaur-3d/tyrannosaurus-rex.html': 'dinosaur/tyrannosaurus-rex.jsp',
-  '/dinosaur-3d/mosasaurus.html': 'dinosaur/mosasaurus.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
