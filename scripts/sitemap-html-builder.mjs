@@ -53,6 +53,7 @@ const TOOL_CLUSTER_ORDER = [
   'utility',
   'games',
   'space-3d',
+  'dinosaur-3d',
   'news',
 ];
 
@@ -67,6 +68,7 @@ const TOOL_CLUSTER_LABELS = {
   utility: 'Utility tools',
   games: 'Browser games',
   'space-3d': 'Space 3D',
+  'dinosaur-3d': 'Dinosaurs 3D',
   news: 'News and updates',
 };
 
@@ -81,6 +83,7 @@ const TOOL_CLUSTER_BLURBS = {
   utility: 'Timestamps, QR codes, and small utilities that do not fit the other categories.',
   games: 'Free browser games that run entirely on this page - no install, no account.',
   'space-3d': 'Interactive 3D space visualizations that render in the browser - explore and learn.',
+  'dinosaur-3d': 'Interactive 3D dinosaur viewers that render in the browser - rotate, scale against a human, and read real fossil figures.',
   news: 'Dated, source-cited updates on the file formats and browser features these tools work with.',
 };
 
@@ -100,6 +103,7 @@ const GUIDE_TOPIC_ORDER = [
   'developer-and-encoding',
   'games',
   'space',
+  'dinosaurs',
   'utilities',
   'editorial-and-other',
 ];
@@ -114,6 +118,7 @@ const GUIDE_TOPIC_LABELS = {
   'developer-and-encoding': 'Developer and encoding',
   games: 'Browser games',
   space: 'Space 3D',
+  dinosaurs: 'Dinosaurs 3D',
   utilities: 'Utilities',
   'editorial-and-other': 'Editorial and other',
 };
@@ -165,6 +170,12 @@ function classifyGuide(slug) {
   }
   if (/(^|-)(solar-system|black-hole|galaxy|planet|space-3d|earth-3d)/.test(slug)) {
     return 'space';
+  }
+  // dinosaur-loop (2026-07-15): guides for the /dinosaur-3d cluster. Species
+  // tokens + generic paleo words so future dinosaur guides classify without
+  // edits here.
+  if (/(^|-)(dinosaur|dino|rex|raptor|saurus|ceratops|triceratops|stegosaur|ankylosaur|mosasaur|pterosaur|pteranodon|fossil|jurassic|cretaceous|prehistoric)/.test(slug)) {
+    return 'dinosaurs';
   }
   return 'editorial-and-other';
 }
@@ -405,7 +416,7 @@ export async function buildDynamicHomeSearchData({ cmsRoot } = {}) {
   const clusterPrefixOrder = [
     '/zip-tools/', '/image-tools/', '/image-converter-tools/',
     '/pdf-tools/', '/developer-tools/', '/video-tools/',
-    '/device-test-tools/', '/utility-tools/', '/games/', '/space-3d/', '/news/',
+    '/device-test-tools/', '/utility-tools/', '/games/', '/space-3d/', '/dinosaur-3d/', '/news/',
   ];
   const clusterIndexOf = (route) => {
     for (let i = 0; i < clusterPrefixOrder.length; i++) {
@@ -463,6 +474,7 @@ const LMENU_CLUSTER_ORDER = [
   'utility',
   'games',
   'space-3d',
+  'dinosaur-3d',
   'news',
 ];
 
@@ -477,6 +489,7 @@ const LMENU_CLUSTER_LABELS = {
   utility: 'UTILITY',
   games: 'GAMES',
   'space-3d': 'SPACE 3D',
+  'dinosaur-3d': 'DINOSAURS 3D',
   news: 'NEWS',
 };
 
@@ -498,6 +511,10 @@ const LMENU_CLUSTER_ICONS = {
   // (gamepad f11b, globe f0ac, verified), only the CSS code was missing.
   games: 'fa-gamepad',
   'space-3d': 'fa-globe',
+  // dinosaur-loop (2026-07-15): fa-paw (f1b0) exists in the FA 4.7 webfont but
+  // not in the CDN fa-load.css curated subset - content-code injected via
+  // LMENU_ICON_CONTENT_FIX below, same as gamepad/globe/newspaper-o.
+  'dinosaur-3d': 'fa-paw',
   // news-loop (2026-07-08): newspaper-o f1ea exists in the FA 4.7 webfont but
   // not in the CDN fa-load.css curated subset - content-code injected via
   // LMENU_ICON_CONTENT_FIX below, same as gamepad/globe.
@@ -589,6 +606,7 @@ const HUB_GRID_ROLLOUT = new Set([
   '/developer-tools.html',
   '/space-3d.html',
   '/utility-tools.html',
+  '/games.html',
 ]);
 
 const MINI_PICTOGRAM_DIR = fileURLToPath(new URL('../source/web/src/main/webapp/static/img/illustrations/mini-pictogram/', import.meta.url));
@@ -746,6 +764,7 @@ const GUIDE_TOPIC_TO_CLUSTER = {
   'developer-and-encoding': 'developer',
   games: 'games',
   space: 'space-3d',
+  dinosaurs: 'dinosaur-3d',
   utilities: 'utility',
   'editorial-and-other': 'utility',
 };
@@ -903,7 +922,7 @@ function renderLMenuFooterSection() {
 // the glyphs. Define the missing codes here, scoped under the l-menu so it can
 // never clash with the theme-toggle/rating uses of the same classes elsewhere.
 // Only category icons NOT in the curated subset need a rule.
-const LMENU_ICON_CONTENT_FIX = '<style>#menu-content-id .fa-gamepad:before{content:"\\f11b"}#menu-content-id .fa-globe:before{content:"\\f0ac"}#menu-content-id .fa-newspaper-o:before{content:"\\f1ea"}</style>';
+const LMENU_ICON_CONTENT_FIX = '<style>#menu-content-id .fa-gamepad:before{content:"\\f11b"}#menu-content-id .fa-globe:before{content:"\\f0ac"}#menu-content-id .fa-newspaper-o:before{content:"\\f1ea"}#menu-content-id .fa-paw:before{content:"\\f1b0"}</style>';
 
 function wrapLMenuBody(sections) {
   return `<div id="menu-content-id" class="menu-content">${LMENU_ICON_CONTENT_FIX}\n    <div class='w3-row-padding'>\n${sections.join('\n')}\n    </div>\n</div>`;

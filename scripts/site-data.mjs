@@ -2227,6 +2227,24 @@ export const INFO_ROUTES = new Set([
   '/guides/de/hohmann-transfer-vs-alternatives.html',
   '/guides/vi/hohmann-transfer-vs-alternatives.html',
   '/guides/id/hohmann-transfer-vs-alternatives.html',
+  '/guides/binary-star-system-step-by-step.html',
+  '/guides/pt/binary-star-system-step-by-step.html',
+  '/guides/es/binary-star-system-step-by-step.html',
+  '/guides/de/binary-star-system-step-by-step.html',
+  '/guides/vi/binary-star-system-step-by-step.html',
+  '/guides/id/binary-star-system-step-by-step.html',
+  '/guides/binary-star-system-when.html',
+  '/guides/pt/binary-star-system-when.html',
+  '/guides/es/binary-star-system-when.html',
+  '/guides/de/binary-star-system-when.html',
+  '/guides/vi/binary-star-system-when.html',
+  '/guides/id/binary-star-system-when.html',
+  '/guides/binary-star-system-vs-alternatives.html',
+  '/guides/pt/binary-star-system-vs-alternatives.html',
+  '/guides/es/binary-star-system-vs-alternatives.html',
+  '/guides/de/binary-star-system-vs-alternatives.html',
+  '/guides/vi/binary-star-system-vs-alternatives.html',
+  '/guides/id/binary-star-system-vs-alternatives.html',
   // play-fps-in-browser-step-by-step locale fanout pt/es/de/vi/id
   // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
   // per runbook 4b).
@@ -4972,6 +4990,24 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/hohmann-transfer-vs-alternatives.html',
   '/guides/vi/hohmann-transfer-vs-alternatives.html',
   '/guides/id/hohmann-transfer-vs-alternatives.html',
+  '/guides/binary-star-system-step-by-step.html',
+  '/guides/pt/binary-star-system-step-by-step.html',
+  '/guides/es/binary-star-system-step-by-step.html',
+  '/guides/de/binary-star-system-step-by-step.html',
+  '/guides/vi/binary-star-system-step-by-step.html',
+  '/guides/id/binary-star-system-step-by-step.html',
+  '/guides/binary-star-system-when.html',
+  '/guides/pt/binary-star-system-when.html',
+  '/guides/es/binary-star-system-when.html',
+  '/guides/de/binary-star-system-when.html',
+  '/guides/vi/binary-star-system-when.html',
+  '/guides/id/binary-star-system-when.html',
+  '/guides/binary-star-system-vs-alternatives.html',
+  '/guides/pt/binary-star-system-vs-alternatives.html',
+  '/guides/es/binary-star-system-vs-alternatives.html',
+  '/guides/de/binary-star-system-vs-alternatives.html',
+  '/guides/vi/binary-star-system-vs-alternatives.html',
+  '/guides/id/binary-star-system-vs-alternatives.html',
   // play-fps-in-browser-step-by-step locale fanout pt/es/de/vi/id
   // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
   // per runbook 4b).
@@ -5051,8 +5087,10 @@ export const ALIAS_ROUTES = {
   // operator step.
   '/games/': '/games.html',
   '/space-3d/': '/space-3d.html',
+  // dinosaur-loop (2026-07-15): dir-index alias for the /dinosaur-3d cluster
   // hub. MUST also be mirrored into the CloudFront 301 function (two-layer
   // redirect rule) - republish is an operator step.
+  '/dinosaur-3d/': '/dinosaur-3d.html',
   // news-loop (2026-07-08): same dir-index pattern for the /news cluster hub.
   // MUST also be mirrored into the CloudFront 301 function (two-layer
   // redirect rule) - republish is an operator step.
@@ -5497,7 +5535,10 @@ export const ALIAS_ROUTES = {
   '/solar-system.html': '/space-3d/solar-system.html',
   '/black-hole.html': '/space-3d/black-hole.html',
   '/galaxy.html': '/space-3d/galaxy.html',
+  // dinosaur-loop (2026-07-15): flat-slug aliases -> canonical /dinosaur-3d/ URLs.
   // MUST be mirrored into the CloudFront 301 function (two-layer redirect rule).
+  '/tyrannosaurus-rex.html': '/dinosaur-3d/tyrannosaurus-rex.html',
+  '/mosasaurus.html': '/dinosaur-3d/mosasaurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -5587,6 +5628,7 @@ export const ALIAS_ROUTES = {
   '/mars-terrain.html': '/space-3d/mars-terrain.html',
   '/redshift-doppler.html': '/space-3d/redshift-doppler.html',
   '/hohmann-transfer.html': '/space-3d/hohmann-transfer.html',
+  '/binary-star-system.html': '/space-3d/binary-star-system.html',
   '/linux-online.html': '/utility-tools/linux-online.html',
   '/online-linux-terminal.html': '/utility-tools/linux-online.html',
   '/linux-emulator-online.html': '/utility-tools/linux-online.html',
@@ -6028,7 +6070,10 @@ export const JSP_BY_ROUTE = {
   // registered in SEO_CLUSTER_GROUPS; hub detection via isHubRoute()).
   '/games.html': 'utility/games.jsp',
   '/space-3d.html': 'utility/space-3d.jsp',
+  // dinosaur-loop (2026-07-15): the /dinosaur-3d cluster hub (non-'-tools'
   // hubRoute, registered in SEO_CLUSTER_GROUPS; hub detection via isHubRoute()).
+  // Member routes live at /dinosaur-3d/<slug>.html (JSP folder: dinosaur/).
+  '/dinosaur-3d.html': 'utility/dinosaur-3d.jsp',
   // news-loop (2026-07-08): the /news cluster hub (non-'-tools' hubRoute,
   // registered in SEO_CLUSTER_GROUPS; hub detection via isHubRoute()).
   // Article routes live at /news/<kebab-slug>.html and are shipped one per
@@ -7671,6 +7716,9 @@ export const JSP_BY_ROUTE = {
   '/guides/id/voxel-world-builder-step-by-step.html': 'guide/id/voxel-world-builder-step-by-step.jsp',
   '/guides/id/voxel-world-builder-vs-alternatives.html': 'guide/id/voxel-world-builder-vs-alternatives.jsp',
   '/space-3d/solar-system.html': 'space/solar-system.jsp',
+  // dinosaur-loop (2026-07-15): /dinosaur-3d cluster members (JSP folder: dinosaur/).
+  '/dinosaur-3d/tyrannosaurus-rex.html': 'dinosaur/tyrannosaurus-rex.jsp',
+  '/dinosaur-3d/mosasaurus.html': 'dinosaur/mosasaurus.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
@@ -8003,6 +8051,7 @@ export const JSP_BY_ROUTE = {
   '/space-3d/mars-terrain.html': 'space/mars-terrain.jsp',
   '/space-3d/redshift-doppler.html': 'space/redshift-doppler.jsp',
   '/space-3d/hohmann-transfer.html': 'space/hohmann-transfer.jsp',
+  '/space-3d/binary-star-system.html': 'space/binary-star-system.jsp',
   '/guides/iss-orbit-tracker-when.html': 'guide/iss-orbit-tracker-when.jsp',
   '/guides/iss-orbit-tracker-step-by-step.html': 'guide/iss-orbit-tracker-step-by-step.jsp',
   '/guides/iss-orbit-tracker-vs-alternatives.html': 'guide/iss-orbit-tracker-vs-alternatives.jsp',
@@ -8489,6 +8538,24 @@ export const JSP_BY_ROUTE = {
   '/guides/de/hohmann-transfer-vs-alternatives.html': 'guide/de/hohmann-transfer-vs-alternatives.jsp',
   '/guides/vi/hohmann-transfer-vs-alternatives.html': 'guide/vi/hohmann-transfer-vs-alternatives.jsp',
   '/guides/id/hohmann-transfer-vs-alternatives.html': 'guide/id/hohmann-transfer-vs-alternatives.jsp',
+  '/guides/binary-star-system-step-by-step.html': 'guide/binary-star-system-step-by-step.jsp',
+  '/guides/pt/binary-star-system-step-by-step.html': 'guide/pt/binary-star-system-step-by-step.jsp',
+  '/guides/es/binary-star-system-step-by-step.html': 'guide/es/binary-star-system-step-by-step.jsp',
+  '/guides/de/binary-star-system-step-by-step.html': 'guide/de/binary-star-system-step-by-step.jsp',
+  '/guides/vi/binary-star-system-step-by-step.html': 'guide/vi/binary-star-system-step-by-step.jsp',
+  '/guides/id/binary-star-system-step-by-step.html': 'guide/id/binary-star-system-step-by-step.jsp',
+  '/guides/binary-star-system-when.html': 'guide/binary-star-system-when.jsp',
+  '/guides/pt/binary-star-system-when.html': 'guide/pt/binary-star-system-when.jsp',
+  '/guides/es/binary-star-system-when.html': 'guide/es/binary-star-system-when.jsp',
+  '/guides/de/binary-star-system-when.html': 'guide/de/binary-star-system-when.jsp',
+  '/guides/vi/binary-star-system-when.html': 'guide/vi/binary-star-system-when.jsp',
+  '/guides/id/binary-star-system-when.html': 'guide/id/binary-star-system-when.jsp',
+  '/guides/binary-star-system-vs-alternatives.html': 'guide/binary-star-system-vs-alternatives.jsp',
+  '/guides/pt/binary-star-system-vs-alternatives.html': 'guide/pt/binary-star-system-vs-alternatives.jsp',
+  '/guides/es/binary-star-system-vs-alternatives.html': 'guide/es/binary-star-system-vs-alternatives.jsp',
+  '/guides/de/binary-star-system-vs-alternatives.html': 'guide/de/binary-star-system-vs-alternatives.jsp',
+  '/guides/vi/binary-star-system-vs-alternatives.html': 'guide/vi/binary-star-system-vs-alternatives.jsp',
+  '/guides/id/binary-star-system-vs-alternatives.html': 'guide/id/binary-star-system-vs-alternatives.jsp',
   '/guides/moon-calendar-3d-when.html': 'guide/moon-calendar-3d-when.jsp',
   '/guides/moon-calendar-3d-step-by-step.html': 'guide/moon-calendar-3d-step-by-step.jsp',
   '/guides/moon-calendar-3d-vs-alternatives.html': 'guide/moon-calendar-3d-vs-alternatives.jsp',
