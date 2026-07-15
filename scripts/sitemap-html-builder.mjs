@@ -607,6 +607,7 @@ const HUB_GRID_ROLLOUT = new Set([
   '/space-3d.html',
   '/utility-tools.html',
   '/games.html',
+  '/dinosaur-3d.html',
 ]);
 
 const MINI_PICTOGRAM_DIR = fileURLToPath(new URL('../source/web/src/main/webapp/static/img/illustrations/mini-pictogram/', import.meta.url));
