@@ -158,6 +158,8 @@ export function spliceHomeBodyHtml(html, counts, ratings = null) {
     { name: 'utility_cta', re: /\d+ utilities/, to: `${c.utility} utilities` },
     { name: 'games_cta', re: /Play \d+ browser games/, to: `Play ${c.games} browser games` },
     { name: 'space3d_cta', re: /Explore \d+ scenes/, to: `Explore ${c['space-3d']} scenes` },
+    { name: 'dinosaur3d_cta', re: /View \d+ dinosaurs in 3D/, to: `View ${c['dinosaur-3d']} ${c['dinosaur-3d'] === 1 ? 'dinosaur' : 'dinosaurs'} in 3D` },
+    { name: 'dinosaur3d_aria', re: /aria-label="Dinosaurs 3D - \d+ interactive viewers?"/, to: `aria-label="Dinosaurs 3D - ${c['dinosaur-3d']} interactive ${c['dinosaur-3d'] === 1 ? 'viewer' : 'viewers'}"` },
     { name: 'news_cta', re: /Read \d+ updates?/, to: `Read ${c.news} ${c.news === 1 ? 'update' : 'updates'}` },
     { name: 'news_aria', re: /aria-label="News - \d+ updates?"/, to: `aria-label="News - ${c.news} ${c.news === 1 ? 'update' : 'updates'}"` },
   ];
