@@ -8116,6 +8116,8 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/stegosaurus.html': 'dinosaur/stegosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire7 (2026-07-15): brachiosaurus (first shipped sauropod archetype).
   '/dinosaur-3d/brachiosaurus.html': 'dinosaur/brachiosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire8 (2026-07-16): ankylosaurus (armor + clubTail).
+  '/dinosaur-3d/ankylosaurus.html': 'dinosaur/ankylosaurus.jsp',
   // dinosaur-3d-guides-loop-runbook fire1 (2026-07-15): how-to-view-tyrannosaurus-rex-in-3d
   // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
   '/guides/how-to-view-tyrannosaurus-rex-in-3d.html': 'guide/how-to-view-tyrannosaurus-rex-in-3d.jsp',
