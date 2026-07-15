@@ -75,6 +75,132 @@
         else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
     }
 
+    // ---- OPTIONAL photoreal asset layer (progressive enhancement) --------
+    // G16 CONTRACT: the procedural model is the INSTANT first paint. AFTER it
+    // paints, we OPTIONALLY fetch a real, free-licensed glTF/GLB for this species
+    // from the shared ftol-vm-assets CDN (per the runbook licence gate), verify
+    // its sha256, IndexedDB-cache it, and swap it in for the procedural body. ANY
+    // failure (no manifest, no entry for this species, network / parse / WebGL
+    // error) leaves the procedural model exactly as-is - zero regression. NO CDN
+    // engine and NO jsm bare-specifier: GLTFLoader is the self-contained vendored
+    // ESM build at /vendor/three/gltf-loader.module.js.
+    var D3D_ASSET_CDN = 'https://dangkhoaow.github.io/ftol-vm-assets/dinosaur-3d';
+    var D3D_ASSET_DB = 'ftol-dino3d-assets';
+    function d3dIdbOpen() {
+        return new Promise(function (resolve, reject) {
+            var req = indexedDB.open(D3D_ASSET_DB, 1);
+            req.onupgradeneeded = function () { if (!req.result.objectStoreNames.contains('assets')) { req.result.createObjectStore('assets', { keyPath: 'key' }); } };
+            req.onsuccess = function () { resolve(req.result); };
+            req.onerror = function () { reject(req.error || new Error('IndexedDB open failed')); };
+        });
+    }
+    function d3dIdbGet(key) {
+        return d3dIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readonly');
+                var rq = tx.objectStore('assets').get(key);
+                rq.onsuccess = function () { resolve(rq.result ? rq.result.blob : null); };
+                rq.onerror = function () { resolve(null); };
+            });
+        }).catch(function () { return null; });
+    }
+    function d3dIdbPut(key, blob) {
+        return d3dIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readwrite');
+                tx.objectStore('assets').put({ key: key, blob: blob });
+                tx.oncomplete = function () { resolve(true); };
+                tx.onerror = function () { resolve(false); };
+            });
+        }).catch(function () { return false; });
+    }
+    function d3dSha256Hex(buf) {
+        return crypto.subtle.digest('SHA-256', buf).then(function (hash) {
+            var b = new Uint8Array(hash), hex = '';
+            for (var i = 0; i < b.length; i++) hex += b[i].toString(16).padStart(2, '0');
+            return hex;
+        });
+    }
+    var __d3dGltfPromise = null;
+    function d3dLoadGLTFLoader() {
+        if (__d3dGltfPromise) return __d3dGltfPromise;
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        __d3dGltfPromise = import(base + '/gltf-loader.module.js').then(function (mod) {
+            if (!mod || !mod.GLTFLoader) throw new Error('GLTFLoader missing from vendored module');
+            return mod.GLTFLoader;
+        });
+        return __d3dGltfPromise;
+    }
+    function d3dFetchAssetBuffer(entry, version) {
+        var idbKey = D3D_SLUG + '@' + version + ':' + entry.file;
+        return d3dIdbGet(idbKey).then(function (cached) {
+            if (cached) return cached.arrayBuffer();
+            return fetch(D3D_ASSET_CDN + '/' + entry.file).then(function (r) {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.arrayBuffer();
+            }).then(function (buf) {
+                return d3dSha256Hex(buf).then(function (hex) {
+                    if (entry.sha256 && hex !== entry.sha256) throw new Error('sha256 mismatch on ' + entry.file);
+                    try { d3dIdbPut(idbKey, new Blob([buf])); } catch (e) {}
+                    return buf;
+                });
+            });
+        });
+    }
+    // Normalise a loaded glTF scene to the procedural framing (uniform scale so
+    // its longest axis fills the frame; centred over the origin; sitting on the
+    // y=0 ground), add a neutral PBR environment, then swap it in for the
+    // procedural body. Rotation is driven by shell.rotTarget afterwards.
+    function d3dInstallModel(shell, obj, entry) {
+        var THREE = shell.THREE;
+        var root = new THREE.Group();
+        root.add(obj);
+        var box = new THREE.Box3().setFromObject(obj);
+        var size = new THREE.Vector3(); box.getSize(size);
+        var longest = Math.max(size.x, size.y, size.z) || 1;
+        var target = entry.targetLenUnits || 13;
+        obj.scale.setScalar(target / longest);
+        box.setFromObject(obj); var c = new THREE.Vector3(); box.getCenter(c);
+        obj.position.x -= c.x;
+        obj.position.z -= c.z;
+        obj.position.y -= box.min.y;
+        if (typeof entry.yaw === 'number') root.rotation.y = entry.yaw;
+        if (typeof entry.pitch === 'number') root.rotation.x = entry.pitch;
+        try {
+            var pmrem = new THREE.PMREMGenerator(shell.renderer);
+            var envScene = new THREE.Scene();
+            envScene.background = new THREE.Color(0x9fb4c7);
+            shell.scene.environment = pmrem.fromScene(envScene, 0.03).texture;
+        } catch (e) {}
+        if (shell.dino) shell.dino.visible = false;
+        shell.scene.add(root);
+        shell.rotTarget = root;
+    }
+    function d3dLoadModel(shell, spec) {
+        if (typeof indexedDB === 'undefined' || typeof fetch !== 'function' || typeof crypto === 'undefined' || !crypto.subtle) return;
+        fetch(D3D_ASSET_CDN + '/manifest.json', { cache: 'no-cache' })
+            .then(function (r) { if (!r.ok) throw new Error('no manifest'); return r.json(); })
+            .then(function (manifest) {
+                var entry = manifest && manifest.models && manifest.models[D3D_SLUG];
+                if (!entry || !entry.file) return; // nothing published for this species yet - stay procedural
+                return d3dFetchAssetBuffer(entry, manifest.version || '0').then(function (buf) {
+                    return d3dLoadGLTFLoader().then(function (GLTFLoader) {
+                        return new Promise(function (resolve, reject) {
+                            new GLTFLoader().parse(buf, '', function (gltf) { resolve(gltf); }, function (e) { reject(e); });
+                        });
+                    }).then(function (gltf) {
+                        var obj = gltf.scene || (gltf.scenes && gltf.scenes[0]);
+                        if (!obj) throw new Error('glTF has no scene');
+                        d3dInstallModel(shell, obj, entry);
+                        shell.assetInfo = { kind: entry.kind || 'fleshed', license: entry.license || '', credit: entry.credit || '', source: entry.source_url || '' };
+                        if (typeof shell.refreshFacts === 'function') shell.refreshFacts();
+                        d3dStatus('Showing a real 3D model of this species. Drag to rotate, scroll or pinch to zoom.');
+                    });
+                });
+            })
+            .catch(function () { /* stay procedural - G16 first paint preserved */ });
+    }
+
     // ---- shared scene shell: renderer + camera + custom pointer-orbit ----
     // (same archetype as the space-3d t3dShell; OrbitControls is not vendored)
     function d3dShell(THREE, host, opts) {
@@ -445,6 +571,8 @@
 
         dino.position.y = 0;
         scene.add(dino);
+        shell.dino = dino;
+        shell.rotTarget = dino;
 
         // ---- size-vs-human scale figure (honest ratio) ------------------
         var human = new THREE.Group();
@@ -478,12 +606,22 @@
                 '<tr><td>When it lived</td><td>' + s.eraMya + ' Mya (' + s.period + ')</td></tr>' +
                 '<tr><td>Diet</td><td>' + s.diet + '</td></tr>' +
                 (s.discovered ? '<tr><td>Described</td><td>' + s.discovered + '</td></tr>' : '');
+            var ai = shell.assetInfo;
+            var disclosure;
+            if (ai && ai.kind === 'skeleton') {
+                disclosure = 'This is a real digitised specimen scan' + (ai.credit ? ' (' + ai.credit + ')' : '') + '. The figures above are real published values.';
+            } else if (ai) {
+                disclosure = 'The 3D model is an artistic reconstruction' + (ai.credit ? ' (' + ai.credit + ')' : '') + ' - fossils do not preserve soft tissue or color, so skin and color are interpretive. The figures above are real published values.';
+            } else {
+                disclosure = 'Skin and color are an artistic reconstruction - fossils do not preserve soft tissue or color. The figures above are real published values.';
+            }
             t3dInfoDino('<h3>' + s.name + '</h3><table class="w3-table w3-bordered">' + rows + '</table>' +
                 (s.note ? '<p>' + s.note + '</p>' : '') +
-                '<p class="d3d-note">Skin and color are an artistic reconstruction - fossils do not preserve soft tissue or color. The figures above are real published values.</p>');
+                '<p class="d3d-note">' + disclosure + '</p>');
         }
         function t3dInfoDino(html) { d3dInfo(html); }
         speciesFacts();
+        shell.refreshFacts = speciesFacts;
         var ray = new THREE.Raycaster();
         shell.onClick = function (e) {
             ray.setFromCamera(shell.ndc(e), shell.camera);
@@ -508,17 +646,20 @@
 
         var phase = 0;
         return function animate(dt) {
-            if (autoRotate) dino.rotation.y += dt * 0.00028;
+            var rt = shell.rotTarget || dino;
+            if (autoRotate) rt.rotation.y += dt * 0.00028;
             phase += dt * 0.003;
-            var breathe = 1 + Math.sin(phase) * 0.012;
-            dino.scale.z = breathe;
-            if (walking) {
-                dino.position.y = Math.abs(Math.sin(phase)) * 0.12;
-                for (var i = 0; i < idleLegs.length; i++) idleLegs[i].rotation.x = Math.sin(phase * 2 + i * Math.PI) * 0.22;
-                for (var f = 0; f < idleFlippers.length; f++) idleFlippers[f].rotation.x = Math.sin(phase * 2 + f) * 0.25;
-            } else {
-                dino.position.y = 0;
-                for (var j = 0; j < idleLegs.length; j++) idleLegs[j].rotation.x *= 0.9;
+            if (rt === dino) {
+                var breathe = 1 + Math.sin(phase) * 0.012;
+                dino.scale.z = breathe;
+                if (walking) {
+                    dino.position.y = Math.abs(Math.sin(phase)) * 0.12;
+                    for (var i = 0; i < idleLegs.length; i++) idleLegs[i].rotation.x = Math.sin(phase * 2 + i * Math.PI) * 0.22;
+                    for (var f = 0; f < idleFlippers.length; f++) idleFlippers[f].rotation.x = Math.sin(phase * 2 + f) * 0.25;
+                } else {
+                    dino.position.y = 0;
+                    for (var j = 0; j < idleLegs.length; j++) idleLegs[j].rotation.x *= 0.9;
+                }
             }
         };
     }
@@ -556,6 +697,7 @@
                         shell.applyCamera();
                         shell.renderer.render(shell.scene, shell.camera);
                     });
+                    try { d3dLoadModel(shell, spec); } catch (e) {}
                 } catch (err) {
                     d3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
                 }
