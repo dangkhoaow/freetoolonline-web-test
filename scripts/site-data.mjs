@@ -2245,6 +2245,24 @@ export const INFO_ROUTES = new Set([
   '/guides/de/binary-star-system-vs-alternatives.html',
   '/guides/vi/binary-star-system-vs-alternatives.html',
   '/guides/id/binary-star-system-vs-alternatives.html',
+  '/guides/galilean-moons-step-by-step.html',
+  '/guides/pt/galilean-moons-step-by-step.html',
+  '/guides/es/galilean-moons-step-by-step.html',
+  '/guides/de/galilean-moons-step-by-step.html',
+  '/guides/vi/galilean-moons-step-by-step.html',
+  '/guides/id/galilean-moons-step-by-step.html',
+  '/guides/galilean-moons-when.html',
+  '/guides/pt/galilean-moons-when.html',
+  '/guides/es/galilean-moons-when.html',
+  '/guides/de/galilean-moons-when.html',
+  '/guides/vi/galilean-moons-when.html',
+  '/guides/id/galilean-moons-when.html',
+  '/guides/galilean-moons-vs-alternatives.html',
+  '/guides/pt/galilean-moons-vs-alternatives.html',
+  '/guides/es/galilean-moons-vs-alternatives.html',
+  '/guides/de/galilean-moons-vs-alternatives.html',
+  '/guides/vi/galilean-moons-vs-alternatives.html',
+  '/guides/id/galilean-moons-vs-alternatives.html',
   // play-fps-in-browser-step-by-step locale fanout pt/es/de/vi/id
   // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
   // per runbook 4b).
@@ -5016,6 +5034,24 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/binary-star-system-vs-alternatives.html',
   '/guides/vi/binary-star-system-vs-alternatives.html',
   '/guides/id/binary-star-system-vs-alternatives.html',
+  '/guides/galilean-moons-step-by-step.html',
+  '/guides/pt/galilean-moons-step-by-step.html',
+  '/guides/es/galilean-moons-step-by-step.html',
+  '/guides/de/galilean-moons-step-by-step.html',
+  '/guides/vi/galilean-moons-step-by-step.html',
+  '/guides/id/galilean-moons-step-by-step.html',
+  '/guides/galilean-moons-when.html',
+  '/guides/pt/galilean-moons-when.html',
+  '/guides/es/galilean-moons-when.html',
+  '/guides/de/galilean-moons-when.html',
+  '/guides/vi/galilean-moons-when.html',
+  '/guides/id/galilean-moons-when.html',
+  '/guides/galilean-moons-vs-alternatives.html',
+  '/guides/pt/galilean-moons-vs-alternatives.html',
+  '/guides/es/galilean-moons-vs-alternatives.html',
+  '/guides/de/galilean-moons-vs-alternatives.html',
+  '/guides/vi/galilean-moons-vs-alternatives.html',
+  '/guides/id/galilean-moons-vs-alternatives.html',
   // play-fps-in-browser-step-by-step locale fanout pt/es/de/vi/id
   // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
   // per runbook 4b).
@@ -5095,10 +5131,8 @@ export const ALIAS_ROUTES = {
   // operator step.
   '/games/': '/games.html',
   '/space-3d/': '/space-3d.html',
-  // dinosaur-loop (2026-07-15): dir-index alias for the /dinosaur-3d cluster
   // hub. MUST also be mirrored into the CloudFront 301 function (two-layer
   // redirect rule) - republish is an operator step.
-  '/dinosaur-3d/': '/dinosaur-3d.html',
   // news-loop (2026-07-08): same dir-index pattern for the /news cluster hub.
   // MUST also be mirrored into the CloudFront 301 function (two-layer
   // redirect rule) - republish is an operator step.
@@ -5543,7 +5577,6 @@ export const ALIAS_ROUTES = {
   '/solar-system.html': '/space-3d/solar-system.html',
   '/black-hole.html': '/space-3d/black-hole.html',
   '/galaxy.html': '/space-3d/galaxy.html',
-  // dinosaur-loop (2026-07-15): flat-slug aliases -> canonical /dinosaur-3d/ URLs.
   // MUST be mirrored into the CloudFront 301 function (two-layer redirect rule).
   '/tyrannosaurus-rex.html': '/dinosaur-3d/tyrannosaurus-rex.html',
   '/mosasaurus.html': '/dinosaur-3d/mosasaurus.html',
@@ -5639,6 +5672,7 @@ export const ALIAS_ROUTES = {
   '/redshift-doppler.html': '/space-3d/redshift-doppler.html',
   '/hohmann-transfer.html': '/space-3d/hohmann-transfer.html',
   '/binary-star-system.html': '/space-3d/binary-star-system.html',
+  '/galilean-moons.html': '/space-3d/galilean-moons.html',
   '/linux-online.html': '/utility-tools/linux-online.html',
   '/online-linux-terminal.html': '/utility-tools/linux-online.html',
   '/linux-emulator-online.html': '/utility-tools/linux-online.html',
@@ -6080,10 +6114,7 @@ export const JSP_BY_ROUTE = {
   // registered in SEO_CLUSTER_GROUPS; hub detection via isHubRoute()).
   '/games.html': 'utility/games.jsp',
   '/space-3d.html': 'utility/space-3d.jsp',
-  // dinosaur-loop (2026-07-15): the /dinosaur-3d cluster hub (non-'-tools'
   // hubRoute, registered in SEO_CLUSTER_GROUPS; hub detection via isHubRoute()).
-  // Member routes live at /dinosaur-3d/<slug>.html (JSP folder: dinosaur/).
-  '/dinosaur-3d.html': 'utility/dinosaur-3d.jsp',
   // news-loop (2026-07-08): the /news cluster hub (non-'-tools' hubRoute,
   // registered in SEO_CLUSTER_GROUPS; hub detection via isHubRoute()).
   // Article routes live at /news/<kebab-slug>.html and are shipped one per
@@ -8072,6 +8103,7 @@ export const JSP_BY_ROUTE = {
   '/space-3d/redshift-doppler.html': 'space/redshift-doppler.jsp',
   '/space-3d/hohmann-transfer.html': 'space/hohmann-transfer.jsp',
   '/space-3d/binary-star-system.html': 'space/binary-star-system.jsp',
+  '/space-3d/galilean-moons.html': 'space/galilean-moons.jsp',
   '/guides/iss-orbit-tracker-when.html': 'guide/iss-orbit-tracker-when.jsp',
   '/guides/iss-orbit-tracker-step-by-step.html': 'guide/iss-orbit-tracker-step-by-step.jsp',
   '/guides/iss-orbit-tracker-vs-alternatives.html': 'guide/iss-orbit-tracker-vs-alternatives.jsp',
@@ -8576,6 +8608,24 @@ export const JSP_BY_ROUTE = {
   '/guides/de/binary-star-system-vs-alternatives.html': 'guide/de/binary-star-system-vs-alternatives.jsp',
   '/guides/vi/binary-star-system-vs-alternatives.html': 'guide/vi/binary-star-system-vs-alternatives.jsp',
   '/guides/id/binary-star-system-vs-alternatives.html': 'guide/id/binary-star-system-vs-alternatives.jsp',
+  '/guides/galilean-moons-step-by-step.html': 'guide/galilean-moons-step-by-step.jsp',
+  '/guides/pt/galilean-moons-step-by-step.html': 'guide/pt/galilean-moons-step-by-step.jsp',
+  '/guides/es/galilean-moons-step-by-step.html': 'guide/es/galilean-moons-step-by-step.jsp',
+  '/guides/de/galilean-moons-step-by-step.html': 'guide/de/galilean-moons-step-by-step.jsp',
+  '/guides/vi/galilean-moons-step-by-step.html': 'guide/vi/galilean-moons-step-by-step.jsp',
+  '/guides/id/galilean-moons-step-by-step.html': 'guide/id/galilean-moons-step-by-step.jsp',
+  '/guides/galilean-moons-when.html': 'guide/galilean-moons-when.jsp',
+  '/guides/pt/galilean-moons-when.html': 'guide/pt/galilean-moons-when.jsp',
+  '/guides/es/galilean-moons-when.html': 'guide/es/galilean-moons-when.jsp',
+  '/guides/de/galilean-moons-when.html': 'guide/de/galilean-moons-when.jsp',
+  '/guides/vi/galilean-moons-when.html': 'guide/vi/galilean-moons-when.jsp',
+  '/guides/id/galilean-moons-when.html': 'guide/id/galilean-moons-when.jsp',
+  '/guides/galilean-moons-vs-alternatives.html': 'guide/galilean-moons-vs-alternatives.jsp',
+  '/guides/pt/galilean-moons-vs-alternatives.html': 'guide/pt/galilean-moons-vs-alternatives.jsp',
+  '/guides/es/galilean-moons-vs-alternatives.html': 'guide/es/galilean-moons-vs-alternatives.jsp',
+  '/guides/de/galilean-moons-vs-alternatives.html': 'guide/de/galilean-moons-vs-alternatives.jsp',
+  '/guides/vi/galilean-moons-vs-alternatives.html': 'guide/vi/galilean-moons-vs-alternatives.jsp',
+  '/guides/id/galilean-moons-vs-alternatives.html': 'guide/id/galilean-moons-vs-alternatives.jsp',
   '/guides/moon-calendar-3d-when.html': 'guide/moon-calendar-3d-when.jsp',
   '/guides/moon-calendar-3d-step-by-step.html': 'guide/moon-calendar-3d-step-by-step.jsp',
   '/guides/moon-calendar-3d-vs-alternatives.html': 'guide/moon-calendar-3d-vs-alternatives.jsp',
