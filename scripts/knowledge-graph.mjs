@@ -47,6 +47,7 @@ const TREE_FOLDER_LABELS = {
   utility: 'Utilities',
   games: 'Games',
   'space-3d': 'Space 3D',
+  'dinosaur-3d': 'Dinosaur 3D',
   news: 'News',
   guides: 'Guides',
 };
