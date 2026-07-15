@@ -5582,6 +5582,8 @@ export const ALIAS_ROUTES = {
   '/mosasaurus.html': '/dinosaur-3d/mosasaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire2 (2026-07-15): flat-slug alias for velociraptor.
   '/velociraptor.html': '/dinosaur-3d/velociraptor.html',
+  // dinosaur-3d-discovery-loop-runbook fire3 (2026-07-15): flat-slug alias for triceratops.
+  '/triceratops.html': '/dinosaur-3d/triceratops.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -7762,6 +7764,8 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/mosasaurus.html': 'dinosaur/mosasaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire2 (2026-07-15): velociraptor (raptor archetype).
   '/dinosaur-3d/velociraptor.html': 'dinosaur/velociraptor.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire3 (2026-07-15): triceratops (ceratopsian archetype).
+  '/dinosaur-3d/triceratops.html': 'dinosaur/triceratops.jsp',
   // dinosaur-3d-guides-loop-runbook fire1 (2026-07-15): how-to-view-tyrannosaurus-rex-in-3d
   // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
   '/guides/how-to-view-tyrannosaurus-rex-in-3d.html': 'guide/how-to-view-tyrannosaurus-rex-in-3d.jsp',
