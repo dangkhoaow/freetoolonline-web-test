@@ -2209,6 +2209,24 @@ export const INFO_ROUTES = new Set([
   '/guides/de/redshift-doppler-vs-alternatives.html',
   '/guides/vi/redshift-doppler-vs-alternatives.html',
   '/guides/id/redshift-doppler-vs-alternatives.html',
+  '/guides/hohmann-transfer-when.html',
+  '/guides/pt/hohmann-transfer-when.html',
+  '/guides/es/hohmann-transfer-when.html',
+  '/guides/de/hohmann-transfer-when.html',
+  '/guides/vi/hohmann-transfer-when.html',
+  '/guides/id/hohmann-transfer-when.html',
+  '/guides/hohmann-transfer-step-by-step.html',
+  '/guides/pt/hohmann-transfer-step-by-step.html',
+  '/guides/es/hohmann-transfer-step-by-step.html',
+  '/guides/de/hohmann-transfer-step-by-step.html',
+  '/guides/vi/hohmann-transfer-step-by-step.html',
+  '/guides/id/hohmann-transfer-step-by-step.html',
+  '/guides/hohmann-transfer-vs-alternatives.html',
+  '/guides/pt/hohmann-transfer-vs-alternatives.html',
+  '/guides/es/hohmann-transfer-vs-alternatives.html',
+  '/guides/de/hohmann-transfer-vs-alternatives.html',
+  '/guides/vi/hohmann-transfer-vs-alternatives.html',
+  '/guides/id/hohmann-transfer-vs-alternatives.html',
   // play-fps-in-browser-step-by-step locale fanout pt/es/de/vi/id
   // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
   // per runbook 4b).
@@ -4936,6 +4954,24 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/redshift-doppler-vs-alternatives.html',
   '/guides/vi/redshift-doppler-vs-alternatives.html',
   '/guides/id/redshift-doppler-vs-alternatives.html',
+  '/guides/hohmann-transfer-when.html',
+  '/guides/pt/hohmann-transfer-when.html',
+  '/guides/es/hohmann-transfer-when.html',
+  '/guides/de/hohmann-transfer-when.html',
+  '/guides/vi/hohmann-transfer-when.html',
+  '/guides/id/hohmann-transfer-when.html',
+  '/guides/hohmann-transfer-step-by-step.html',
+  '/guides/pt/hohmann-transfer-step-by-step.html',
+  '/guides/es/hohmann-transfer-step-by-step.html',
+  '/guides/de/hohmann-transfer-step-by-step.html',
+  '/guides/vi/hohmann-transfer-step-by-step.html',
+  '/guides/id/hohmann-transfer-step-by-step.html',
+  '/guides/hohmann-transfer-vs-alternatives.html',
+  '/guides/pt/hohmann-transfer-vs-alternatives.html',
+  '/guides/es/hohmann-transfer-vs-alternatives.html',
+  '/guides/de/hohmann-transfer-vs-alternatives.html',
+  '/guides/vi/hohmann-transfer-vs-alternatives.html',
+  '/guides/id/hohmann-transfer-vs-alternatives.html',
   // play-fps-in-browser-step-by-step locale fanout pt/es/de/vi/id
   // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
   // per runbook 4b).
@@ -5015,6 +5051,8 @@ export const ALIAS_ROUTES = {
   // operator step.
   '/games/': '/games.html',
   '/space-3d/': '/space-3d.html',
+  // hub. MUST also be mirrored into the CloudFront 301 function (two-layer
+  // redirect rule) - republish is an operator step.
   // news-loop (2026-07-08): same dir-index pattern for the /news cluster hub.
   // MUST also be mirrored into the CloudFront 301 function (two-layer
   // redirect rule) - republish is an operator step.
@@ -5459,6 +5497,7 @@ export const ALIAS_ROUTES = {
   '/solar-system.html': '/space-3d/solar-system.html',
   '/black-hole.html': '/space-3d/black-hole.html',
   '/galaxy.html': '/space-3d/galaxy.html',
+  // MUST be mirrored into the CloudFront 301 function (two-layer redirect rule).
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -5547,6 +5586,7 @@ export const ALIAS_ROUTES = {
   '/aurora.html': '/space-3d/aurora.html',
   '/mars-terrain.html': '/space-3d/mars-terrain.html',
   '/redshift-doppler.html': '/space-3d/redshift-doppler.html',
+  '/hohmann-transfer.html': '/space-3d/hohmann-transfer.html',
   '/linux-online.html': '/utility-tools/linux-online.html',
   '/online-linux-terminal.html': '/utility-tools/linux-online.html',
   '/linux-emulator-online.html': '/utility-tools/linux-online.html',
@@ -5988,6 +6028,7 @@ export const JSP_BY_ROUTE = {
   // registered in SEO_CLUSTER_GROUPS; hub detection via isHubRoute()).
   '/games.html': 'utility/games.jsp',
   '/space-3d.html': 'utility/space-3d.jsp',
+  // hubRoute, registered in SEO_CLUSTER_GROUPS; hub detection via isHubRoute()).
   // news-loop (2026-07-08): the /news cluster hub (non-'-tools' hubRoute,
   // registered in SEO_CLUSTER_GROUPS; hub detection via isHubRoute()).
   // Article routes live at /news/<kebab-slug>.html and are shipped one per
@@ -7961,6 +8002,7 @@ export const JSP_BY_ROUTE = {
   '/space-3d/aurora.html': 'space/aurora.jsp',
   '/space-3d/mars-terrain.html': 'space/mars-terrain.jsp',
   '/space-3d/redshift-doppler.html': 'space/redshift-doppler.jsp',
+  '/space-3d/hohmann-transfer.html': 'space/hohmann-transfer.jsp',
   '/guides/iss-orbit-tracker-when.html': 'guide/iss-orbit-tracker-when.jsp',
   '/guides/iss-orbit-tracker-step-by-step.html': 'guide/iss-orbit-tracker-step-by-step.jsp',
   '/guides/iss-orbit-tracker-vs-alternatives.html': 'guide/iss-orbit-tracker-vs-alternatives.jsp',
@@ -8429,6 +8471,24 @@ export const JSP_BY_ROUTE = {
   '/guides/de/redshift-doppler-vs-alternatives.html': 'guide/de/redshift-doppler-vs-alternatives.jsp',
   '/guides/vi/redshift-doppler-vs-alternatives.html': 'guide/vi/redshift-doppler-vs-alternatives.jsp',
   '/guides/id/redshift-doppler-vs-alternatives.html': 'guide/id/redshift-doppler-vs-alternatives.jsp',
+  '/guides/hohmann-transfer-when.html': 'guide/hohmann-transfer-when.jsp',
+  '/guides/pt/hohmann-transfer-when.html': 'guide/pt/hohmann-transfer-when.jsp',
+  '/guides/es/hohmann-transfer-when.html': 'guide/es/hohmann-transfer-when.jsp',
+  '/guides/de/hohmann-transfer-when.html': 'guide/de/hohmann-transfer-when.jsp',
+  '/guides/vi/hohmann-transfer-when.html': 'guide/vi/hohmann-transfer-when.jsp',
+  '/guides/id/hohmann-transfer-when.html': 'guide/id/hohmann-transfer-when.jsp',
+  '/guides/hohmann-transfer-step-by-step.html': 'guide/hohmann-transfer-step-by-step.jsp',
+  '/guides/pt/hohmann-transfer-step-by-step.html': 'guide/pt/hohmann-transfer-step-by-step.jsp',
+  '/guides/es/hohmann-transfer-step-by-step.html': 'guide/es/hohmann-transfer-step-by-step.jsp',
+  '/guides/de/hohmann-transfer-step-by-step.html': 'guide/de/hohmann-transfer-step-by-step.jsp',
+  '/guides/vi/hohmann-transfer-step-by-step.html': 'guide/vi/hohmann-transfer-step-by-step.jsp',
+  '/guides/id/hohmann-transfer-step-by-step.html': 'guide/id/hohmann-transfer-step-by-step.jsp',
+  '/guides/hohmann-transfer-vs-alternatives.html': 'guide/hohmann-transfer-vs-alternatives.jsp',
+  '/guides/pt/hohmann-transfer-vs-alternatives.html': 'guide/pt/hohmann-transfer-vs-alternatives.jsp',
+  '/guides/es/hohmann-transfer-vs-alternatives.html': 'guide/es/hohmann-transfer-vs-alternatives.jsp',
+  '/guides/de/hohmann-transfer-vs-alternatives.html': 'guide/de/hohmann-transfer-vs-alternatives.jsp',
+  '/guides/vi/hohmann-transfer-vs-alternatives.html': 'guide/vi/hohmann-transfer-vs-alternatives.jsp',
+  '/guides/id/hohmann-transfer-vs-alternatives.html': 'guide/id/hohmann-transfer-vs-alternatives.jsp',
   '/guides/moon-calendar-3d-when.html': 'guide/moon-calendar-3d-when.jsp',
   '/guides/moon-calendar-3d-step-by-step.html': 'guide/moon-calendar-3d-step-by-step.jsp',
   '/guides/moon-calendar-3d-vs-alternatives.html': 'guide/moon-calendar-3d-vs-alternatives.jsp',
