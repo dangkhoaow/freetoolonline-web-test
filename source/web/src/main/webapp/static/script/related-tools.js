@@ -457,6 +457,7 @@ try {
     { title: "Supernova Remnant 3D Explorer", url: "https://freetoolonline.com/space-3d/supernova-remnant.html", include: !1, tags: "space-3d" },
     { title: "Planetary Nebula 3D Explorer", url: "https://freetoolonline.com/space-3d/planetary-nebula.html", include: !1, tags: "space-3d" },
     { title: "Venus Retrograde Rotation 3D Explorer", url: "https://freetoolonline.com/space-3d/venus-retrograde-rotation.html", include: !1, tags: "space-3d" },
+    { title: "Gravitational Slingshot 3D Explorer", url: "https://freetoolonline.com/space-3d/gravitational-slingshot.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
