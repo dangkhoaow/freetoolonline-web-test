@@ -455,6 +455,7 @@ try {
     { title: "Solar Analemma 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-analemma.html", include: !1, tags: "space-3d" },
     { title: "Saturn Hexagon 3D Explorer", url: "https://freetoolonline.com/space-3d/saturn-hexagon.html", include: !1, tags: "space-3d" },
     { title: "Supernova Remnant 3D Explorer", url: "https://freetoolonline.com/space-3d/supernova-remnant.html", include: !1, tags: "space-3d" },
+    { title: "Planetary Nebula 3D Explorer", url: "https://freetoolonline.com/space-3d/planetary-nebula.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
