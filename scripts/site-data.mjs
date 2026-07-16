@@ -6113,6 +6113,8 @@ export const ALIAS_ROUTES = {
   '/diplodocus.html': '/dinosaur-3d/diplodocus.html',
   // dinosaur-3d-discovery-loop-runbook fire53 (2026-07-16): flat-slug alias for apatosaurus.
   '/apatosaurus.html': '/dinosaur-3d/apatosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire54 (2026-07-16): flat-slug alias for carnotaurus.
+  '/carnotaurus.html': '/dinosaur-3d/carnotaurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -8347,6 +8349,11 @@ export const JSP_BY_ROUTE = {
   // no tallForelimbs feat, same body posture as Diplodocus; differentiated via a stockier/
   // heavier published-figure profile + its Brontosaurus naming-history framing).
   '/dinosaur-3d/apatosaurus.html': 'dinosaur/apatosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire54 (2026-07-16): carnotaurus (theropod archetype,
+  // additive feats.horns=true branch for paired brow horns, scoped to this page's own copy
+  // of buildHead() only; South American abelisaurid, Late Cretaceous, real preserved skin
+  // impressions, forelimbs even more vestigial than Tyrannosaurus rex's).
+  '/dinosaur-3d/carnotaurus.html': 'dinosaur/carnotaurus.jsp',
   // dinosaur-3d-guides-loop-runbook fire1 (2026-07-15): how-to-view-tyrannosaurus-rex-in-3d
   // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
   '/guides/how-to-view-tyrannosaurus-rex-in-3d.html': 'guide/how-to-view-tyrannosaurus-rex-in-3d.jsp',
