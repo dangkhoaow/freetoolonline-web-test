@@ -2501,6 +2501,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/how-to-view-velociraptor-in-3d.html',
   '/guides/id/how-to-view-velociraptor-in-3d.html',
   '/guides/de/how-to-view-velociraptor-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire8 (2026-07-16): velociraptor-size-comparison
+  // (EN + pt/es/vi/id/de) - size angle for the Velociraptor viewer.
+  '/guides/velociraptor-size-comparison.html',
+  '/guides/pt/velociraptor-size-comparison.html',
+  '/guides/es/velociraptor-size-comparison.html',
+  '/guides/vi/velociraptor-size-comparison.html',
+  '/guides/id/velociraptor-size-comparison.html',
+  '/guides/de/velociraptor-size-comparison.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -5937,6 +5945,8 @@ export const ALIAS_ROUTES = {
   // commit supplies the actual JSP + 7 CMS fragments + mini-pictogram that
   // make the entry real; kept as one merged alias line, not a duplicate.)
   '/ankylosaurus.html': '/dinosaur-3d/ankylosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire15 (2026-07-16): flat-slug alias for parasaurolophus.
+  '/parasaurolophus.html': '/dinosaur-3d/parasaurolophus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -8146,6 +8156,10 @@ export const JSP_BY_ROUTE = {
   // species - this content's specimen-level Carpenter 2004 citations + new distinct armor/club click facts
   // were kept as the richer version; see the ledger for the full reconciliation note).
   '/dinosaur-3d/ankylosaurus.html': 'dinosaur/ankylosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire15 (2026-07-16): parasaurolophus (theropod-body archetype
+  // reused generically for a bipedal-capable hadrosaur, `feats.crest` long tube head crest, additively
+  // tagged as its own clickable 'crest' part with a dedicated fact).
+  '/dinosaur-3d/parasaurolophus.html': 'dinosaur/parasaurolophus.jsp',
   // dinosaur-3d-guides-loop-runbook fire1 (2026-07-15): how-to-view-tyrannosaurus-rex-in-3d
   // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
   '/guides/how-to-view-tyrannosaurus-rex-in-3d.html': 'guide/how-to-view-tyrannosaurus-rex-in-3d.jsp',
@@ -8202,6 +8216,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-view-velociraptor-in-3d.html': 'guide/vi/how-to-view-velociraptor-in-3d.jsp',
   '/guides/id/how-to-view-velociraptor-in-3d.html': 'guide/id/how-to-view-velociraptor-in-3d.jsp',
   '/guides/de/how-to-view-velociraptor-in-3d.html': 'guide/de/how-to-view-velociraptor-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire8 (2026-07-16): velociraptor-size-comparison
+  // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
+  '/guides/velociraptor-size-comparison.html': 'guide/velociraptor-size-comparison.jsp',
+  '/guides/pt/velociraptor-size-comparison.html': 'guide/pt/velociraptor-size-comparison.jsp',
+  '/guides/es/velociraptor-size-comparison.html': 'guide/es/velociraptor-size-comparison.jsp',
+  '/guides/vi/velociraptor-size-comparison.html': 'guide/vi/velociraptor-size-comparison.jsp',
+  '/guides/id/velociraptor-size-comparison.html': 'guide/id/velociraptor-size-comparison.jsp',
+  '/guides/de/velociraptor-size-comparison.html': 'guide/de/velociraptor-size-comparison.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
