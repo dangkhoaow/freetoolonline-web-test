@@ -17,6 +17,22 @@ export const INFO_ROUTES = new Set([
   '/guides/image-text-ocr-vs-alternatives.html',
   '/guides/image-text-ocr-step-by-step.html',
   '/guides/image-text-ocr-when.html',
+  // new-tool-discovery-loop-runbook fire182 (2026-07-16): image-to-text-ocr locale fanout
+  '/guides/pt/image-text-ocr-when.html',
+  '/guides/es/image-text-ocr-when.html',
+  '/guides/vi/image-text-ocr-when.html',
+  '/guides/id/image-text-ocr-when.html',
+  '/guides/de/image-text-ocr-when.html',
+  '/guides/pt/image-text-ocr-step-by-step.html',
+  '/guides/es/image-text-ocr-step-by-step.html',
+  '/guides/vi/image-text-ocr-step-by-step.html',
+  '/guides/id/image-text-ocr-step-by-step.html',
+  '/guides/de/image-text-ocr-step-by-step.html',
+  '/guides/pt/image-text-ocr-vs-alternatives.html',
+  '/guides/es/image-text-ocr-vs-alternatives.html',
+  '/guides/vi/image-text-ocr-vs-alternatives.html',
+  '/guides/id/image-text-ocr-vs-alternatives.html',
+  '/guides/de/image-text-ocr-vs-alternatives.html',
   '/guides/hash-generator-sha-256-512-vs-alternatives.html',
   '/guides/hash-generator-sha-256-512-step-by-step.html',
   '/guides/hash-generator-sha-256-512-when.html',
@@ -2634,6 +2650,26 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // new-tool-discovery-loop-runbook fire182 (2026-07-16): image-to-text-ocr companion
+  // guides (3 angles x EN + pt/es/vi/id/de) - locale bundle complete this commit.
+  '/guides/image-text-ocr-when.html',
+  '/guides/pt/image-text-ocr-when.html',
+  '/guides/es/image-text-ocr-when.html',
+  '/guides/vi/image-text-ocr-when.html',
+  '/guides/id/image-text-ocr-when.html',
+  '/guides/de/image-text-ocr-when.html',
+  '/guides/image-text-ocr-step-by-step.html',
+  '/guides/pt/image-text-ocr-step-by-step.html',
+  '/guides/es/image-text-ocr-step-by-step.html',
+  '/guides/vi/image-text-ocr-step-by-step.html',
+  '/guides/id/image-text-ocr-step-by-step.html',
+  '/guides/de/image-text-ocr-step-by-step.html',
+  '/guides/image-text-ocr-vs-alternatives.html',
+  '/guides/pt/image-text-ocr-vs-alternatives.html',
+  '/guides/es/image-text-ocr-vs-alternatives.html',
+  '/guides/vi/image-text-ocr-vs-alternatives.html',
+  '/guides/id/image-text-ocr-vs-alternatives.html',
+  '/guides/de/image-text-ocr-vs-alternatives.html',
   // dinosaur-3d-guides-loop-runbook fire1 (2026-07-15): how-to-view-tyrannosaurus-rex-in-3d
   // (EN + pt/es/vi/id/de) - first guide angle for the T. rex viewer.
   '/guides/how-to-view-tyrannosaurus-rex-in-3d.html',
@@ -10437,6 +10473,22 @@ export const JSP_BY_ROUTE = {
   '/guides/image-text-ocr-when.html': 'guide/image-text-ocr-when.jsp',
   '/guides/image-text-ocr-step-by-step.html': 'guide/image-text-ocr-step-by-step.jsp',
   '/guides/image-text-ocr-vs-alternatives.html': 'guide/image-text-ocr-vs-alternatives.jsp',
+  // new-tool-discovery-loop-runbook fire182 (2026-07-16): image-to-text-ocr locale fanout
+  '/guides/pt/image-text-ocr-when.html': 'guide/pt/image-text-ocr-when.jsp',
+  '/guides/es/image-text-ocr-when.html': 'guide/es/image-text-ocr-when.jsp',
+  '/guides/vi/image-text-ocr-when.html': 'guide/vi/image-text-ocr-when.jsp',
+  '/guides/id/image-text-ocr-when.html': 'guide/id/image-text-ocr-when.jsp',
+  '/guides/de/image-text-ocr-when.html': 'guide/de/image-text-ocr-when.jsp',
+  '/guides/pt/image-text-ocr-step-by-step.html': 'guide/pt/image-text-ocr-step-by-step.jsp',
+  '/guides/es/image-text-ocr-step-by-step.html': 'guide/es/image-text-ocr-step-by-step.jsp',
+  '/guides/vi/image-text-ocr-step-by-step.html': 'guide/vi/image-text-ocr-step-by-step.jsp',
+  '/guides/id/image-text-ocr-step-by-step.html': 'guide/id/image-text-ocr-step-by-step.jsp',
+  '/guides/de/image-text-ocr-step-by-step.html': 'guide/de/image-text-ocr-step-by-step.jsp',
+  '/guides/pt/image-text-ocr-vs-alternatives.html': 'guide/pt/image-text-ocr-vs-alternatives.jsp',
+  '/guides/es/image-text-ocr-vs-alternatives.html': 'guide/es/image-text-ocr-vs-alternatives.jsp',
+  '/guides/vi/image-text-ocr-vs-alternatives.html': 'guide/vi/image-text-ocr-vs-alternatives.jsp',
+  '/guides/id/image-text-ocr-vs-alternatives.html': 'guide/id/image-text-ocr-vs-alternatives.jsp',
+  '/guides/de/image-text-ocr-vs-alternatives.html': 'guide/de/image-text-ocr-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
