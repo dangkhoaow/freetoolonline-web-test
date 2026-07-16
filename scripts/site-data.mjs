@@ -5985,6 +5985,8 @@ export const ALIAS_ROUTES = {
   '/parasaurolophus.html': '/dinosaur-3d/parasaurolophus.html',
   // dinosaur-3d-discovery-loop-runbook fire9 (2026-07-16): flat-slug alias for pteranodon.
   '/pteranodon.html': '/dinosaur-3d/pteranodon.html',
+  // dinosaur-3d-discovery-loop-runbook (2026-07-16): flat-slug alias for allosaurus.
+  '/allosaurus.html': '/dinosaur-3d/allosaurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -8201,6 +8203,9 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/parasaurolophus.html': 'dinosaur/parasaurolophus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire9 (2026-07-16): pteranodon (pterosaur + wings/crest).
   '/dinosaur-3d/pteranodon.html': 'dinosaur/pteranodon.jsp',
+  // dinosaur-3d-discovery-loop-runbook (2026-07-16): allosaurus (theropod archetype, reuses
+  // the generic base body with no special feats; Late Jurassic apex predator).
+  '/dinosaur-3d/allosaurus.html': 'dinosaur/allosaurus.jsp',
   // dinosaur-3d-guides-loop-runbook fire1 (2026-07-15): how-to-view-tyrannosaurus-rex-in-3d
   // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
   '/guides/how-to-view-tyrannosaurus-rex-in-3d.html': 'guide/how-to-view-tyrannosaurus-rex-in-3d.jsp',
