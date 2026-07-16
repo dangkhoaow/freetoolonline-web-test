@@ -38,6 +38,24 @@ export const INFO_ROUTES = new Set([
   '/guides/de/text-case-converter-when.html',
   '/guides/de/text-case-converter-step-by-step.html',
   '/guides/de/text-case-converter-vs-alternatives.html',
+  // new-tool-discovery-loop-runbook fire166 (LEAN one-off, 2026-07-16):
+  // pt/es/vi/id/de locale fanout for hash-generator's 3 EN companion guide
+  // angles (owed since fire162; guide-support drain per SS4b contract).
+  '/guides/pt/hash-generator-sha-256-512-when.html',
+  '/guides/pt/hash-generator-sha-256-512-step-by-step.html',
+  '/guides/pt/hash-generator-sha-256-512-vs-alternatives.html',
+  '/guides/es/hash-generator-sha-256-512-when.html',
+  '/guides/es/hash-generator-sha-256-512-step-by-step.html',
+  '/guides/es/hash-generator-sha-256-512-vs-alternatives.html',
+  '/guides/vi/hash-generator-sha-256-512-when.html',
+  '/guides/vi/hash-generator-sha-256-512-step-by-step.html',
+  '/guides/vi/hash-generator-sha-256-512-vs-alternatives.html',
+  '/guides/id/hash-generator-sha-256-512-when.html',
+  '/guides/id/hash-generator-sha-256-512-step-by-step.html',
+  '/guides/id/hash-generator-sha-256-512-vs-alternatives.html',
+  '/guides/de/hash-generator-sha-256-512-when.html',
+  '/guides/de/hash-generator-sha-256-512-step-by-step.html',
+  '/guides/de/hash-generator-sha-256-512-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // pt/es/vi/id/de locale fanout for uuid-generator's 3 EN companion guide
   // angles (owed from fire147; guide-support drain per SS4b contract).
@@ -10127,6 +10145,24 @@ export const JSP_BY_ROUTE = {
   '/guides/de/text-case-converter-when.html': 'guide/de/text-case-converter-when.jsp',
   '/guides/de/text-case-converter-step-by-step.html': 'guide/de/text-case-converter-step-by-step.jsp',
   '/guides/de/text-case-converter-vs-alternatives.html': 'guide/de/text-case-converter-vs-alternatives.jsp',
+  // new-tool-discovery-loop-runbook fire166 (LEAN one-off, 2026-07-16):
+  // pt/es/vi/id/de locale fanout for hash-generator's 3 EN companion guide
+  // angles (owed since fire162; guide-support drain per SS4b contract).
+  '/guides/pt/hash-generator-sha-256-512-when.html': 'guide/pt/hash-generator-sha-256-512-when.jsp',
+  '/guides/pt/hash-generator-sha-256-512-step-by-step.html': 'guide/pt/hash-generator-sha-256-512-step-by-step.jsp',
+  '/guides/pt/hash-generator-sha-256-512-vs-alternatives.html': 'guide/pt/hash-generator-sha-256-512-vs-alternatives.jsp',
+  '/guides/es/hash-generator-sha-256-512-when.html': 'guide/es/hash-generator-sha-256-512-when.jsp',
+  '/guides/es/hash-generator-sha-256-512-step-by-step.html': 'guide/es/hash-generator-sha-256-512-step-by-step.jsp',
+  '/guides/es/hash-generator-sha-256-512-vs-alternatives.html': 'guide/es/hash-generator-sha-256-512-vs-alternatives.jsp',
+  '/guides/vi/hash-generator-sha-256-512-when.html': 'guide/vi/hash-generator-sha-256-512-when.jsp',
+  '/guides/vi/hash-generator-sha-256-512-step-by-step.html': 'guide/vi/hash-generator-sha-256-512-step-by-step.jsp',
+  '/guides/vi/hash-generator-sha-256-512-vs-alternatives.html': 'guide/vi/hash-generator-sha-256-512-vs-alternatives.jsp',
+  '/guides/id/hash-generator-sha-256-512-when.html': 'guide/id/hash-generator-sha-256-512-when.jsp',
+  '/guides/id/hash-generator-sha-256-512-step-by-step.html': 'guide/id/hash-generator-sha-256-512-step-by-step.jsp',
+  '/guides/id/hash-generator-sha-256-512-vs-alternatives.html': 'guide/id/hash-generator-sha-256-512-vs-alternatives.jsp',
+  '/guides/de/hash-generator-sha-256-512-when.html': 'guide/de/hash-generator-sha-256-512-when.jsp',
+  '/guides/de/hash-generator-sha-256-512-step-by-step.html': 'guide/de/hash-generator-sha-256-512-step-by-step.jsp',
+  '/guides/de/hash-generator-sha-256-512-vs-alternatives.html': 'guide/de/hash-generator-sha-256-512-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
