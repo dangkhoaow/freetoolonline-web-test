@@ -6406,6 +6406,8 @@ export const ALIAS_ROUTES = {
   '/iguanodon.html': '/dinosaur-3d/iguanodon.html',
   // dinosaur-3d-discovery-loop-runbook fire63 (2026-07-16): flat-slug alias for pachycephalosaurus.
   '/pachycephalosaurus.html': '/dinosaur-3d/pachycephalosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire64 (2026-07-17): flat-slug alias for gallimimus.
+  '/gallimimus.html': '/dinosaur-3d/gallimimus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -8673,6 +8675,12 @@ export const JSP_BY_ROUTE = {
   // flag (smooth rounded dome mesh on the head) on buildHead(), scoped to this
   // page's own copy only - no existing feats flag targeted a domed skull.
   '/dinosaur-3d/pachycephalosaurus.html': 'dinosaur/pachycephalosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire64 (2026-07-17): Gallimimus viewer -
+  // theropod archetype (bipedal, toothless beak via existing teeth:'beak' value)
+  // with a NEW additive feats.longNeck flag (taller/longer neck sweep + smaller
+  // head scale) on the theropod/raptor branch, scoped to this page's own copy
+  // only - no existing feats flag targeted an elongated ornithomimosaur neck.
+  '/dinosaur-3d/gallimimus.html': 'dinosaur/gallimimus.jsp',
   // dinosaur-3d-guides-loop-runbook fire1 (2026-07-15): how-to-view-tyrannosaurus-rex-in-3d
   // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
   '/guides/how-to-view-tyrannosaurus-rex-in-3d.html': 'guide/how-to-view-tyrannosaurus-rex-in-3d.jsp',
