@@ -6083,6 +6083,8 @@ export const ALIAS_ROUTES = {
   '/allosaurus.html': '/dinosaur-3d/allosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire36 (2026-07-16): flat-slug alias for giganotosaurus.
   '/giganotosaurus.html': '/dinosaur-3d/giganotosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire40 (2026-07-16): flat-slug alias for diplodocus.
+  '/diplodocus.html': '/dinosaur-3d/diplodocus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -8309,6 +8311,10 @@ export const JSP_BY_ROUTE = {
   // dinosaur-3d-discovery-loop-runbook fire36 (2026-07-16): giganotosaurus (theropod archetype,
   // feats.bigHead=true for its proportionally huge skull; Late Cretaceous South American apex predator).
   '/dinosaur-3d/giganotosaurus.html': 'dinosaur/giganotosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire40 (2026-07-16): diplodocus (sauropod archetype,
+  // no tallForelimbs feat -> lower/more level neck posture, differentiating it from the already
+  // shipped Brachiosaurus; the longest-not-tallest sauropod, whip-like tail, Late Jurassic).
+  '/dinosaur-3d/diplodocus.html': 'dinosaur/diplodocus.jsp',
   // dinosaur-3d-guides-loop-runbook fire1 (2026-07-15): how-to-view-tyrannosaurus-rex-in-3d
   // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
   '/guides/how-to-view-tyrannosaurus-rex-in-3d.html': 'guide/how-to-view-tyrannosaurus-rex-in-3d.jsp',
