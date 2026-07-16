@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/hash-generator-sha-256-512-vs-alternatives.html',
+  '/guides/hash-generator-sha-256-512-step-by-step.html',
+  '/guides/hash-generator-sha-256-512-when.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // pt/es/vi/id/de locale fanout for uuid-generator's 3 EN companion guide
   // angles (owed from fire147; guide-support drain per SS4b contract).
@@ -6155,6 +6158,7 @@ export const ALIAS_ROUTES = {
   '/document-scanner.html': '/image-tools/document-scanner.html',
   '/jwt-decoder.html': '/developer-tools/jwt-decoder.html',
   '/uuid-generator.html': '/developer-tools/uuid-generator.html',
+  '/hash-generator.html': '/developer-tools/hash-generator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -9992,6 +9996,10 @@ export const JSP_BY_ROUTE = {
   '/guides/uuid-generator-when.html': 'guide/uuid-generator-when.jsp',
   '/guides/uuid-generator-step-by-step.html': 'guide/uuid-generator-step-by-step.jsp',
   '/guides/uuid-generator-vs-alternatives.html': 'guide/uuid-generator-vs-alternatives.jsp',
+  '/developer-tools/hash-generator.html': 'utility/hash-generator.jsp',
+  '/guides/hash-generator-sha-256-512-when.html': 'guide/hash-generator-sha-256-512-when.jsp',
+  '/guides/hash-generator-sha-256-512-step-by-step.html': 'guide/hash-generator-sha-256-512-step-by-step.jsp',
+  '/guides/hash-generator-sha-256-512-vs-alternatives.html': 'guide/hash-generator-sha-256-512-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
