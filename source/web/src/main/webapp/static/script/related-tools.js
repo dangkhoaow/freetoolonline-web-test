@@ -460,6 +460,7 @@ try {
     { title: "Gravitational Slingshot 3D Explorer", url: "https://freetoolonline.com/space-3d/gravitational-slingshot.html", include: !1, tags: "space-3d" },
     { title: "Three-Body Problem 3D Explorer", url: "https://freetoolonline.com/space-3d/three-body-problem.html", include: !1, tags: "space-3d" },
     { title: "Meteor Shower Radiant 3D Explorer", url: "https://freetoolonline.com/space-3d/meteor-shower-radiant.html", include: !1, tags: "space-3d" },
+    { title: "Kuiper Belt and Oort Cloud 3D Explorer", url: "https://freetoolonline.com/space-3d/kuiper-belt-oort-cloud.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
