@@ -442,6 +442,7 @@ try {
     { title: "Sun Structure 3D Explorer", url: "https://freetoolonline.com/space-3d/sun-structure.html", include: !1, tags: "space-3d" },
     { title: "Orbital Velocity 3D Explorer", url: "https://freetoolonline.com/space-3d/orbital-velocity.html", include: !1, tags: "space-3d" },
     { title: "Earth Magnetosphere 3D Explorer", url: "https://freetoolonline.com/space-3d/earth-magnetosphere.html", include: !1, tags: "space-3d" },
+    { title: "Sunspot Activity 3D Explorer", url: "https://freetoolonline.com/space-3d/sunspot-cycle.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
