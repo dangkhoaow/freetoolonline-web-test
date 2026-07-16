@@ -1,0 +1,45 @@
+<script>
+    // Hash generator archetype (hash-generator) - WebCrypto SubtleCrypto, no lib, no
+    // upload, no backend. Registry Gate-H entry: hash_webcrypto. Hashes text with
+    // SHA-1 / SHA-256 / SHA-384 / SHA-512 locally; nothing leaves the browser.
+    // MD5 is intentionally NOT here (WebCrypto omits it as insecure) - the site's
+    // /md5-converter.html covers MD5. Framework contract: doAfterPageRendered();
+    // no top-level DOM; in-browser tool => no upload widget.
+
+    web.localUpload = false;
+
+    async function hcDigest(algo, text) {
+        var enc = new TextEncoder().encode(String(text || ''));
+        var buf = await crypto.subtle.digest(algo, enc);
+        var bytes = new Uint8Array(buf), hex = '';
+        for (var i = 0; i < bytes.length; i++) hex += bytes[i].toString(16).padStart(2, '0');
+        return hex;
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('hashCryptoTool');
+        if (!root) return; // not a hash-generator page
+        root.innerHTML =
+            '<textarea id="hcIn" class="w3-input w3-border" rows="5" placeholder="Type or paste text to hash" style="max-width:520px;margin:0 auto;"></textarea>' +
+            '<div class="w3-row" style="margin:8px 0;">Algorithm ' +
+            '<select id="hcAlgo" class="w3-select w3-border" style="width:auto;display:inline-block;">' +
+            '<option value="SHA-256">SHA-256</option><option value="SHA-1">SHA-1</option>' +
+            '<option value="SHA-384">SHA-384</option><option value="SHA-512">SHA-512</option></select></div>' +
+            '<div id="hcOut" class="outputImgs" style="visibility:visible !important;font-family:monospace;word-break:break-all;background:#f7f7f7;border:1px solid #ddd;border-radius:4px;padding:10px;min-height:2em;max-width:520px;margin:0 auto;text-align:left;"></div>' +
+            '<div style="margin-top:8px;"><button id="hcCopy" type="button" class="w3-button w3-blue">Copy</button></div>';
+        var inEl = root.querySelector('#hcIn'), algoEl = root.querySelector('#hcAlgo'), outEl = root.querySelector('#hcOut');
+        async function run() {
+            var t = inEl.value || '';
+            if (!t) { outEl.textContent = ''; return; }
+            try { outEl.textContent = await hcDigest(algoEl.value, t); }
+            catch (e) { outEl.textContent = 'Error: ' + (e && e.message ? e.message : String(e)); }
+        }
+        inEl.addEventListener('input', run);
+        algoEl.addEventListener('change', run);
+        root.querySelector('#hcCopy').addEventListener('click', function () {
+            var v = outEl.textContent || ''; if (!v) return;
+            try { navigator.clipboard.writeText(v); } catch (e) { void e; }
+        });
+        run();
+    }
+</script>
