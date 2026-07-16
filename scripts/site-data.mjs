@@ -20,6 +20,24 @@ export const INFO_ROUTES = new Set([
   '/guides/text-case-converter-vs-alternatives.html',
   '/guides/text-case-converter-step-by-step.html',
   '/guides/text-case-converter-when.html',
+  // new-tool-discovery-loop-runbook fire165 (LEAN one-off, 2026-07-16):
+  // pt/es/vi/id/de locale fanout for case-converter's 3 EN companion guide
+  // angles (guide-support drain per SS4b contract).
+  '/guides/pt/text-case-converter-when.html',
+  '/guides/pt/text-case-converter-step-by-step.html',
+  '/guides/pt/text-case-converter-vs-alternatives.html',
+  '/guides/es/text-case-converter-when.html',
+  '/guides/es/text-case-converter-step-by-step.html',
+  '/guides/es/text-case-converter-vs-alternatives.html',
+  '/guides/vi/text-case-converter-when.html',
+  '/guides/vi/text-case-converter-step-by-step.html',
+  '/guides/vi/text-case-converter-vs-alternatives.html',
+  '/guides/id/text-case-converter-when.html',
+  '/guides/id/text-case-converter-step-by-step.html',
+  '/guides/id/text-case-converter-vs-alternatives.html',
+  '/guides/de/text-case-converter-when.html',
+  '/guides/de/text-case-converter-step-by-step.html',
+  '/guides/de/text-case-converter-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // pt/es/vi/id/de locale fanout for uuid-generator's 3 EN companion guide
   // angles (owed from fire147; guide-support drain per SS4b contract).
@@ -10089,6 +10107,26 @@ export const JSP_BY_ROUTE = {
   '/guides/text-case-converter-when.html': 'guide/text-case-converter-when.jsp',
   '/guides/text-case-converter-step-by-step.html': 'guide/text-case-converter-step-by-step.jsp',
   '/guides/text-case-converter-vs-alternatives.html': 'guide/text-case-converter-vs-alternatives.jsp',
+  // new-tool-discovery-loop-runbook fire165 (LEAN one-off, 2026-07-16):
+  // pt/es/vi/id/de locale fanout for case-converter's 3 EN companion guide
+  // angles (guide-support drain per SS4b contract; case-converter-guides
+  // unit in guide_locale_fanout.unit_status). Re-applied after a concurrent
+  // sibling commit reset this file mid-fire.
+  '/guides/pt/text-case-converter-when.html': 'guide/pt/text-case-converter-when.jsp',
+  '/guides/pt/text-case-converter-step-by-step.html': 'guide/pt/text-case-converter-step-by-step.jsp',
+  '/guides/pt/text-case-converter-vs-alternatives.html': 'guide/pt/text-case-converter-vs-alternatives.jsp',
+  '/guides/es/text-case-converter-when.html': 'guide/es/text-case-converter-when.jsp',
+  '/guides/es/text-case-converter-step-by-step.html': 'guide/es/text-case-converter-step-by-step.jsp',
+  '/guides/es/text-case-converter-vs-alternatives.html': 'guide/es/text-case-converter-vs-alternatives.jsp',
+  '/guides/vi/text-case-converter-when.html': 'guide/vi/text-case-converter-when.jsp',
+  '/guides/vi/text-case-converter-step-by-step.html': 'guide/vi/text-case-converter-step-by-step.jsp',
+  '/guides/vi/text-case-converter-vs-alternatives.html': 'guide/vi/text-case-converter-vs-alternatives.jsp',
+  '/guides/id/text-case-converter-when.html': 'guide/id/text-case-converter-when.jsp',
+  '/guides/id/text-case-converter-step-by-step.html': 'guide/id/text-case-converter-step-by-step.jsp',
+  '/guides/id/text-case-converter-vs-alternatives.html': 'guide/id/text-case-converter-vs-alternatives.jsp',
+  '/guides/de/text-case-converter-when.html': 'guide/de/text-case-converter-when.jsp',
+  '/guides/de/text-case-converter-step-by-step.html': 'guide/de/text-case-converter-step-by-step.jsp',
+  '/guides/de/text-case-converter-vs-alternatives.html': 'guide/de/text-case-converter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
