@@ -6141,6 +6141,8 @@ export const ALIAS_ROUTES = {
   '/apatosaurus.html': '/dinosaur-3d/apatosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire54 (2026-07-16): flat-slug alias for carnotaurus.
   '/carnotaurus.html': '/dinosaur-3d/carnotaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire58 (2026-07-16): flat-slug alias for dilophosaurus.
+  '/dilophosaurus.html': '/dinosaur-3d/dilophosaurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -8381,6 +8383,11 @@ export const JSP_BY_ROUTE = {
   // of buildHead() only; South American abelisaurid, Late Cretaceous, real preserved skin
   // impressions, forelimbs even more vestigial than Tyrannosaurus rex's).
   '/dinosaur-3d/carnotaurus.html': 'dinosaur/carnotaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire58 (2026-07-16): Dilophosaurus - Early
+  // Jurassic twin-crested theropod, Kayenta Formation, Arizona; theropod archetype
+  // with an additive twin-fin-crest rewrite of feats.crest, scoped to this page's
+  // own copy of buildHead() only.
+  '/dinosaur-3d/dilophosaurus.html': 'dinosaur/dilophosaurus.jsp',
   // dinosaur-3d-guides-loop-runbook fire1 (2026-07-15): how-to-view-tyrannosaurus-rex-in-3d
   // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
   '/guides/how-to-view-tyrannosaurus-rex-in-3d.html': 'guide/how-to-view-tyrannosaurus-rex-in-3d.jsp',
