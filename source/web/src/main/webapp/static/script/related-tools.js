@@ -347,6 +347,7 @@ try {
     { title: "Apatosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/apatosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Carnotaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/carnotaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Dilophosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/dilophosaurus.html", include: !1, tags: "dinosaur-3d" },
+    { title: "Iguanodon 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/iguanodon.html", include: !1, tags: "dinosaur-3d" },
     { title: "AI Background Remover", url: "https://freetoolonline.com/image-tools/background-remover.html", include: !1, tags: "image-editing" },
     { title: "PDF to Text Online: Extract Text Free, No Install", url: "https://freetoolonline.com/guides/pdf-to-text-online-i-love-pdf.html", include: !1, tags: "pdf" },
     { title: "Video to GIF Converter", url: "https://freetoolonline.com/video-tools/video-to-gif.html", include: !1, tags: "video" },
