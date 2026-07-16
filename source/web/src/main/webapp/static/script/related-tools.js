@@ -473,6 +473,7 @@ try {
     { title: "JWT Decoder", url: "https://freetoolonline.com/developer-tools/jwt-decoder.html", include: !1, tags: "developer" },
     { title: "UUID Generator", url: "https://freetoolonline.com/developer-tools/uuid-generator.html", include: !1, tags: "developer" },
     { title: "Hash Generator (SHA-256/512)", url: "https://freetoolonline.com/developer-tools/hash-generator.html", include: !1, tags: "developer" },
+    { title: "Text Case Converter", url: "https://freetoolonline.com/developer-tools/case-converter.html", include: !1, tags: "developer" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
