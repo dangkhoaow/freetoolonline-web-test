@@ -464,6 +464,7 @@ try {
     { title: "Kuiper Belt and Oort Cloud 3D Explorer", url: "https://freetoolonline.com/space-3d/kuiper-belt-oort-cloud.html", include: !1, tags: "space-3d" },
     { title: "Jupiter Magnetosphere 3D Explorer", url: "https://freetoolonline.com/space-3d/jupiter-magnetosphere.html", include: !1, tags: "space-3d" },
     { title: "Light Cone 3D Explorer", url: "https://freetoolonline.com/space-3d/light-cone.html", include: !1, tags: "space-3d" },
+    { title: "Spacetime Curvature 3D Explorer", url: "https://freetoolonline.com/space-3d/spacetime-curvature.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
