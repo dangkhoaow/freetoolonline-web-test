@@ -1,0 +1,55 @@
+<script>
+    // Claudicus Quest launcher. The game is the open-source Claudicus engine
+    // (Brian Benzinger; MIT - full analysis in tool-claudicusquest/SKILL.md),
+    // vendored at static/games/claudicus-quest/ in an isolated same-origin iframe:
+    // ~132 KB HTML + JS + CSS, no analytics, no CDN. The iframe loads only when
+    // the reader presses Play.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var CQ_GAME_URL = 'claudicus-quest/index.html';
+
+    function cqStatus(text) {
+        var el = document.getElementById('cqStatus');
+        if (el) el.textContent = text;
+    }
+
+    function cqInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'cqFrame';
+        frame.src = CQ_GAME_URL;
+        frame.title = 'Claudicus Quest game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            cqStatus('Game loaded. Choose New Game or Continue on the title screen.');
+            try { frame.contentWindow.focus(); } catch (e) { /* focus is best-effort */ }
+        });
+        var launch = document.getElementById('cqLaunch');
+        if (launch && launch.parentNode === stage) { stage.removeChild(launch); }
+        stage.appendChild(frame);
+        return frame;
+    }
+
+    function doAfterPageRendered() {
+        var stage = document.getElementById('cqStage');
+        var playBtn = document.getElementById('cqPlayBtn');
+        if (!stage || !playBtn) return;
+
+        var fsBtn = document.getElementById('cqFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            cqStatus('Loading the game (about 132 KB, one time - then cached)...');
+            cqInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) { stage.requestFullscreen(); }
+            else if (stage.webkitRequestFullscreen) { stage.webkitRequestFullscreen(); }
+            var frame = document.getElementById('cqFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) { } }
+        });
+    }
+</script>
