@@ -490,6 +490,7 @@ try {
     { title: "Stellar Parallax 3D Explorer", url: "https://freetoolonline.com/space-3d/stellar-parallax.html", include: !1, tags: "space-3d" },
     { title: "Einstein Ring 3D Explorer", url: "https://freetoolonline.com/space-3d/einstein-ring.html", include: !1, tags: "space-3d" },
     { title: "Galaxy Tidal Tails 3D Explorer", url: "https://freetoolonline.com/space-3d/tidal-tails.html", include: !1, tags: "space-3d" },
+    { title: "Jupiter Trojan Asteroids 3D Explorer", url: "https://freetoolonline.com/space-3d/trojan-asteroids.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
