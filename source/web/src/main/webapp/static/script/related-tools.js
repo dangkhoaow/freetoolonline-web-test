@@ -391,6 +391,7 @@ try {
     { title: "Mono Grid Duel", url: "https://freetoolonline.com/games/mono-grid-duel.html", include: !1, tags: "games" },
     { title: "Pipe Rotate Puzzle", url: "https://freetoolonline.com/games/pipe-rotate-puzzle.html", include: !1, tags: "games" },
     { title: "Black Hole Square", url: "https://freetoolonline.com/games/black-hole-square.html", include: !1, tags: "games" },
+    { title: "Pixel Park Puzzle", url: "https://freetoolonline.com/games/pixel-park-puzzle.html", include: !1, tags: "games" },
     { title: "Asteroid Blaster", url: "https://freetoolonline.com/games/asteroid-blaster.html", include: !1, tags: "games" },
     { title: "Hex Puzzle Blocks", url: "https://freetoolonline.com/games/hex-puzzle-blocks.html", include: !1, tags: "games" },
     { title: "Procedural Horde Game", url: "https://freetoolonline.com/games/procedural-horde-game.html", include: !1, tags: "games" },
