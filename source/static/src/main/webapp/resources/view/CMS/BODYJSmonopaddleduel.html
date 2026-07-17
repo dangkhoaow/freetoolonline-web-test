@@ -1,0 +1,48 @@
+<script>
+    web.localUpload = false;
+    var MPD_GAME_URL = 'mono-paddle-duel/index.html';
+    function mpdStatus(text) {
+        var el = document.getElementById('mpdStatus');
+        if (el) el.textContent = text;
+    }
+    function mpdInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'mpdFrame';
+        frame.src = MPD_GAME_URL;
+        frame.title = 'Mono Paddle Duel game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            mpdStatus('Game loaded. Use Settings for 1P/2P, difficulty, side, and target score.');
+            try { frame.contentWindow.focus(); } catch (e) {}
+        });
+        var launch = document.getElementById('mpdLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('mpdStage');
+        var playBtn = document.getElementById('mpdPlayBtn');
+        if (!stage || !playBtn) return;
+        if (playBtn.dataset.bound === '1') return;
+        playBtn.dataset.bound = '1';
+        var fsBtn = document.getElementById('mpdFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            mpdStatus('Loading the game (about 54 KB, one time - then cached)...');
+            mpdInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('mpdFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) {} }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', doAfterPageRendered);
+    } else {
+        doAfterPageRendered();
+    }
+</script>
