@@ -469,6 +469,7 @@ try {
     { title: "Gravitational Waves 3D Explorer", url: "https://freetoolonline.com/space-3d/gravitational-waves.html", include: !1, tags: "space-3d" },
     { title: "Hill Sphere 3D Explorer", url: "https://freetoolonline.com/space-3d/hill-sphere.html", include: !1, tags: "space-3d" },
     { title: "Cepheid Variable Star 3D Explorer", url: "https://freetoolonline.com/space-3d/cepheid-variable.html", include: !1, tags: "space-3d" },
+    { title: "Expanding Universe 3D Explorer", url: "https://freetoolonline.com/space-3d/expanding-universe.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
