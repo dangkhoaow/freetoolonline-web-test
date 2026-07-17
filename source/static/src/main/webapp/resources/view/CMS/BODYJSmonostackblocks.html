@@ -1,0 +1,48 @@
+<script>
+    web.localUpload = false;
+    var MSB_GAME_URL = 'mono-stack-blocks/index.html';
+    function msbStatus(text) {
+        var el = document.getElementById('msbStatus');
+        if (el) el.textContent = text;
+    }
+    function msbInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'msbFrame';
+        frame.src = MSB_GAME_URL;
+        frame.title = 'Mono Stack Blocks game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            msbStatus('Game loaded. Arrows move, Space hard drop, C hold, P pause, R restart.');
+            try { frame.contentWindow.focus(); } catch (e) {}
+        });
+        var launch = document.getElementById('msbLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('msbStage');
+        var playBtn = document.getElementById('msbPlayBtn');
+        if (!stage || !playBtn) return;
+        if (playBtn.dataset.bound === '1') return;
+        playBtn.dataset.bound = '1';
+        var fsBtn = document.getElementById('msbFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            msbStatus('Loading the game (about 58 KB, one time - then cached)...');
+            msbInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('msbFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) {} }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', doAfterPageRendered);
+    } else {
+        doAfterPageRendered();
+    }
+</script>
