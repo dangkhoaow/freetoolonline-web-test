@@ -372,6 +372,7 @@ try {
     { title: "Hover Racing", url: "https://freetoolonline.com/games/hover-racing.html", include: !1, tags: "games" },
     { title: "Retro Arcade Shooter", url: "https://freetoolonline.com/games/retro-arcade-shooter.html", include: !1, tags: "games" },
     { title: "Marble Maze", url: "https://freetoolonline.com/games/marble-maze.html", include: !1, tags: "games" },
+    { title: "Globe Siege", url: "https://freetoolonline.com/games/globe-siege.html", include: !1, tags: "games" },
     { title: "Asteroid Blaster", url: "https://freetoolonline.com/games/asteroid-blaster.html", include: !1, tags: "games" },
     { title: "Hex Puzzle Blocks", url: "https://freetoolonline.com/games/hex-puzzle-blocks.html", include: !1, tags: "games" },
     { title: "Procedural Horde Game", url: "https://freetoolonline.com/games/procedural-horde-game.html", include: !1, tags: "games" },

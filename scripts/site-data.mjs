@@ -9893,6 +9893,7 @@ export const JSP_BY_ROUTE = {
   '/games/hover-racing.html': 'games/hover-racing.jsp',
   '/games/retro-arcade-shooter.html': 'games/retro-arcade-shooter.jsp',
   '/games/marble-maze.html': 'games/marble-maze.jsp',
+  '/games/globe-siege.html': 'games/globe-siege.jsp',
   '/games/asteroid-blaster.html': 'games/asteroid-blaster.jsp',
   '/games/hex-puzzle-blocks.html': 'games/hex-puzzle-blocks.jsp',
   '/games/procedural-horde-game.html': 'games/procedural-horde-game.jsp',
