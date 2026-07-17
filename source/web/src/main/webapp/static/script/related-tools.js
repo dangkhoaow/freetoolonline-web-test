@@ -498,6 +498,7 @@ try {
     { title: "Hash Generator (SHA-256/512)", url: "https://freetoolonline.com/developer-tools/hash-generator.html", include: !1, tags: "developer" },
     { title: "Text Case Converter", url: "https://freetoolonline.com/developer-tools/case-converter.html", include: !1, tags: "developer" },
     { title: "Image to Text (OCR)", url: "https://freetoolonline.com/image-tools/image-to-text-ocr.html", include: !1, tags: "image-editing" },
+    { title: "Passport Photo Maker", url: "https://freetoolonline.com/image-tools/passport-photo-maker.html", include: !1, tags: "image-editing" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

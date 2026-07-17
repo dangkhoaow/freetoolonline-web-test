@@ -14,6 +14,27 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/passport-photo-maker-vs-alternatives.html',
+  '/guides/passport-photo-maker-step-by-step.html',
+  '/guides/passport-photo-maker-when.html',
+  // new-tool-discovery-loop-runbook fire211 (2026-07-17): passport-photo-maker
+  // locale fanout (pt/es/vi/id/de) for the 3 EN companion guide angles - locale
+  // bundle complete this commit (new-guide locale-completeness hard gate).
+  '/guides/pt/passport-photo-maker-when.html',
+  '/guides/es/passport-photo-maker-when.html',
+  '/guides/vi/passport-photo-maker-when.html',
+  '/guides/id/passport-photo-maker-when.html',
+  '/guides/de/passport-photo-maker-when.html',
+  '/guides/pt/passport-photo-maker-step-by-step.html',
+  '/guides/es/passport-photo-maker-step-by-step.html',
+  '/guides/vi/passport-photo-maker-step-by-step.html',
+  '/guides/id/passport-photo-maker-step-by-step.html',
+  '/guides/de/passport-photo-maker-step-by-step.html',
+  '/guides/pt/passport-photo-maker-vs-alternatives.html',
+  '/guides/es/passport-photo-maker-vs-alternatives.html',
+  '/guides/vi/passport-photo-maker-vs-alternatives.html',
+  '/guides/id/passport-photo-maker-vs-alternatives.html',
+  '/guides/de/passport-photo-maker-vs-alternatives.html',
   '/guides/image-text-ocr-vs-alternatives.html',
   '/guides/image-text-ocr-step-by-step.html',
   '/guides/image-text-ocr-when.html',
@@ -2812,6 +2833,27 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // new-tool-discovery-loop-runbook fire211 (2026-07-17): passport-photo-maker
+  // companion guides (3 angles x EN + pt/es/vi/id/de) - locale bundle complete
+  // this commit.
+  '/guides/passport-photo-maker-when.html',
+  '/guides/pt/passport-photo-maker-when.html',
+  '/guides/es/passport-photo-maker-when.html',
+  '/guides/vi/passport-photo-maker-when.html',
+  '/guides/id/passport-photo-maker-when.html',
+  '/guides/de/passport-photo-maker-when.html',
+  '/guides/passport-photo-maker-step-by-step.html',
+  '/guides/pt/passport-photo-maker-step-by-step.html',
+  '/guides/es/passport-photo-maker-step-by-step.html',
+  '/guides/vi/passport-photo-maker-step-by-step.html',
+  '/guides/id/passport-photo-maker-step-by-step.html',
+  '/guides/de/passport-photo-maker-step-by-step.html',
+  '/guides/passport-photo-maker-vs-alternatives.html',
+  '/guides/pt/passport-photo-maker-vs-alternatives.html',
+  '/guides/es/passport-photo-maker-vs-alternatives.html',
+  '/guides/vi/passport-photo-maker-vs-alternatives.html',
+  '/guides/id/passport-photo-maker-vs-alternatives.html',
+  '/guides/de/passport-photo-maker-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire182 (2026-07-16): image-to-text-ocr companion
   // guides (3 angles x EN + pt/es/vi/id/de) - locale bundle complete this commit.
   '/guides/image-text-ocr-when.html',
@@ -6620,6 +6662,7 @@ export const ALIAS_ROUTES = {
   '/hash-generator.html': '/developer-tools/hash-generator.html',
   '/case-converter.html': '/developer-tools/case-converter.html',
   '/image-to-text-ocr.html': '/image-tools/image-to-text-ocr.html',
+  '/passport-photo-maker.html': '/image-tools/passport-photo-maker.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -10926,6 +10969,26 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/image-text-ocr-vs-alternatives.html': 'guide/vi/image-text-ocr-vs-alternatives.jsp',
   '/guides/id/image-text-ocr-vs-alternatives.html': 'guide/id/image-text-ocr-vs-alternatives.jsp',
   '/guides/de/image-text-ocr-vs-alternatives.html': 'guide/de/image-text-ocr-vs-alternatives.jsp',
+  '/image-tools/passport-photo-maker.html': 'convert/passport-photo-maker.jsp',
+  '/guides/passport-photo-maker-when.html': 'guide/passport-photo-maker-when.jsp',
+  '/guides/passport-photo-maker-step-by-step.html': 'guide/passport-photo-maker-step-by-step.jsp',
+  '/guides/passport-photo-maker-vs-alternatives.html': 'guide/passport-photo-maker-vs-alternatives.jsp',
+  // new-tool-discovery-loop-runbook fire211 (2026-07-17): passport-photo-maker locale fanout.
+  '/guides/pt/passport-photo-maker-when.html': 'guide/pt/passport-photo-maker-when.jsp',
+  '/guides/es/passport-photo-maker-when.html': 'guide/es/passport-photo-maker-when.jsp',
+  '/guides/vi/passport-photo-maker-when.html': 'guide/vi/passport-photo-maker-when.jsp',
+  '/guides/id/passport-photo-maker-when.html': 'guide/id/passport-photo-maker-when.jsp',
+  '/guides/de/passport-photo-maker-when.html': 'guide/de/passport-photo-maker-when.jsp',
+  '/guides/pt/passport-photo-maker-step-by-step.html': 'guide/pt/passport-photo-maker-step-by-step.jsp',
+  '/guides/es/passport-photo-maker-step-by-step.html': 'guide/es/passport-photo-maker-step-by-step.jsp',
+  '/guides/vi/passport-photo-maker-step-by-step.html': 'guide/vi/passport-photo-maker-step-by-step.jsp',
+  '/guides/id/passport-photo-maker-step-by-step.html': 'guide/id/passport-photo-maker-step-by-step.jsp',
+  '/guides/de/passport-photo-maker-step-by-step.html': 'guide/de/passport-photo-maker-step-by-step.jsp',
+  '/guides/pt/passport-photo-maker-vs-alternatives.html': 'guide/pt/passport-photo-maker-vs-alternatives.jsp',
+  '/guides/es/passport-photo-maker-vs-alternatives.html': 'guide/es/passport-photo-maker-vs-alternatives.jsp',
+  '/guides/vi/passport-photo-maker-vs-alternatives.html': 'guide/vi/passport-photo-maker-vs-alternatives.jsp',
+  '/guides/id/passport-photo-maker-vs-alternatives.html': 'guide/id/passport-photo-maker-vs-alternatives.jsp',
+  '/guides/de/passport-photo-maker-vs-alternatives.html': 'guide/de/passport-photo-maker-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
