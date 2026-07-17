@@ -3403,6 +3403,38 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/parasaurolophus-3d-viewer-vs-ar-apps.html',
   '/guides/id/parasaurolophus-3d-viewer-vs-ar-apps.html',
   '/guides/de/parasaurolophus-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire28 (2026-07-17): how-to-view-pteranodon-in-3d
+  // EN + pt/es/vi/id/de companion guides (step-by-step)
+  '/guides/how-to-view-pteranodon-in-3d.html',
+  '/guides/pt/how-to-view-pteranodon-in-3d.html',
+  '/guides/es/how-to-view-pteranodon-in-3d.html',
+  '/guides/vi/how-to-view-pteranodon-in-3d.html',
+  '/guides/id/how-to-view-pteranodon-in-3d.html',
+  '/guides/de/how-to-view-pteranodon-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire29 (2026-07-17): pteranodon-size-comparison
+  // EN + pt/es/vi/id/de companion guides (size)
+  '/guides/pteranodon-size-comparison.html',
+  '/guides/pt/pteranodon-size-comparison.html',
+  '/guides/es/pteranodon-size-comparison.html',
+  '/guides/vi/pteranodon-size-comparison.html',
+  '/guides/id/pteranodon-size-comparison.html',
+  '/guides/de/pteranodon-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire30 (2026-07-17): pteranodon-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides (vs AR/museum/static)
+  '/guides/pteranodon-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/pteranodon-3d-viewer-vs-ar-apps.html',
+  '/guides/es/pteranodon-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/pteranodon-3d-viewer-vs-ar-apps.html',
+  '/guides/id/pteranodon-3d-viewer-vs-ar-apps.html',
+  '/guides/de/pteranodon-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire31 (2026-07-17): how-to-view-allosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides (step-by-step)
+  '/guides/how-to-view-allosaurus-in-3d.html',
+  '/guides/pt/how-to-view-allosaurus-in-3d.html',
+  '/guides/es/how-to-view-allosaurus-in-3d.html',
+  '/guides/vi/how-to-view-allosaurus-in-3d.html',
+  '/guides/id/how-to-view-allosaurus-in-3d.html',
+  '/guides/de/how-to-view-allosaurus-in-3d.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -9455,6 +9487,38 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/parasaurolophus-3d-viewer-vs-ar-apps.html': 'guide/vi/parasaurolophus-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/parasaurolophus-3d-viewer-vs-ar-apps.html': 'guide/id/parasaurolophus-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/parasaurolophus-3d-viewer-vs-ar-apps.html': 'guide/de/parasaurolophus-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire28 (2026-07-17): how-to-view-pteranodon-in-3d
+  // EN + pt/es/vi/id/de JSP wrappers
+  '/guides/how-to-view-pteranodon-in-3d.html': 'guide/how-to-view-pteranodon-in-3d.jsp',
+  '/guides/pt/how-to-view-pteranodon-in-3d.html': 'guide/pt/how-to-view-pteranodon-in-3d.jsp',
+  '/guides/es/how-to-view-pteranodon-in-3d.html': 'guide/es/how-to-view-pteranodon-in-3d.jsp',
+  '/guides/vi/how-to-view-pteranodon-in-3d.html': 'guide/vi/how-to-view-pteranodon-in-3d.jsp',
+  '/guides/id/how-to-view-pteranodon-in-3d.html': 'guide/id/how-to-view-pteranodon-in-3d.jsp',
+  '/guides/de/how-to-view-pteranodon-in-3d.html': 'guide/de/how-to-view-pteranodon-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire29 (2026-07-17): pteranodon-size-comparison
+  // EN + pt/es/vi/id/de JSP wrappers
+  '/guides/pteranodon-size-comparison.html': 'guide/pteranodon-size-comparison.jsp',
+  '/guides/pt/pteranodon-size-comparison.html': 'guide/pt/pteranodon-size-comparison.jsp',
+  '/guides/es/pteranodon-size-comparison.html': 'guide/es/pteranodon-size-comparison.jsp',
+  '/guides/vi/pteranodon-size-comparison.html': 'guide/vi/pteranodon-size-comparison.jsp',
+  '/guides/id/pteranodon-size-comparison.html': 'guide/id/pteranodon-size-comparison.jsp',
+  '/guides/de/pteranodon-size-comparison.html': 'guide/de/pteranodon-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire30 (2026-07-17): pteranodon-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de JSP wrappers
+  '/guides/pteranodon-3d-viewer-vs-ar-apps.html': 'guide/pteranodon-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/pteranodon-3d-viewer-vs-ar-apps.html': 'guide/pt/pteranodon-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/pteranodon-3d-viewer-vs-ar-apps.html': 'guide/es/pteranodon-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/pteranodon-3d-viewer-vs-ar-apps.html': 'guide/vi/pteranodon-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/pteranodon-3d-viewer-vs-ar-apps.html': 'guide/id/pteranodon-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/pteranodon-3d-viewer-vs-ar-apps.html': 'guide/de/pteranodon-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire31 (2026-07-17): how-to-view-allosaurus-in-3d
+  // EN + pt/es/vi/id/de JSP wrappers
+  '/guides/how-to-view-allosaurus-in-3d.html': 'guide/how-to-view-allosaurus-in-3d.jsp',
+  '/guides/pt/how-to-view-allosaurus-in-3d.html': 'guide/pt/how-to-view-allosaurus-in-3d.jsp',
+  '/guides/es/how-to-view-allosaurus-in-3d.html': 'guide/es/how-to-view-allosaurus-in-3d.jsp',
+  '/guides/vi/how-to-view-allosaurus-in-3d.html': 'guide/vi/how-to-view-allosaurus-in-3d.jsp',
+  '/guides/id/how-to-view-allosaurus-in-3d.html': 'guide/id/how-to-view-allosaurus-in-3d.jsp',
+  '/guides/de/how-to-view-allosaurus-in-3d.html': 'guide/de/how-to-view-allosaurus-in-3d.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
