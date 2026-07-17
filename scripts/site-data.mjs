@@ -3575,6 +3575,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/giganotosaurus-size-comparison.html',
   '/guides/id/giganotosaurus-size-comparison.html',
   '/guides/de/giganotosaurus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire36 (2026-07-17): giganotosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides (vs AR/museum/static)
+  '/guides/giganotosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/giganotosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/giganotosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/giganotosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/giganotosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/giganotosaurus-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -9749,6 +9757,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/giganotosaurus-size-comparison.html': 'guide/vi/giganotosaurus-size-comparison.jsp',
   '/guides/id/giganotosaurus-size-comparison.html': 'guide/id/giganotosaurus-size-comparison.jsp',
   '/guides/de/giganotosaurus-size-comparison.html': 'guide/de/giganotosaurus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire36 (2026-07-17): giganotosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de JSP wrappers
+  '/guides/giganotosaurus-3d-viewer-vs-ar-apps.html': 'guide/giganotosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/giganotosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/giganotosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/giganotosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/giganotosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/giganotosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/giganotosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/giganotosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/giganotosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/giganotosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/giganotosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
