@@ -5370,6 +5370,25 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/how-to-play-mono-paddle-duel.html',
   '/guides/de/mono-paddle-duel-when.html',
   '/guides/de/mono-paddle-duel-vs-alternatives.html',
+  // game-discovery-loop-runbook fire124 (2026-07-18): head-soccer-arena companion guides
+  '/guides/how-to-play-head-soccer-arena.html',
+  '/guides/head-soccer-arena-when.html',
+  '/guides/head-soccer-arena-vs-alternatives.html',
+  '/guides/pt/how-to-play-head-soccer-arena.html',
+  '/guides/pt/head-soccer-arena-when.html',
+  '/guides/pt/head-soccer-arena-vs-alternatives.html',
+  '/guides/es/how-to-play-head-soccer-arena.html',
+  '/guides/es/head-soccer-arena-when.html',
+  '/guides/es/head-soccer-arena-vs-alternatives.html',
+  '/guides/vi/how-to-play-head-soccer-arena.html',
+  '/guides/vi/head-soccer-arena-when.html',
+  '/guides/vi/head-soccer-arena-vs-alternatives.html',
+  '/guides/id/how-to-play-head-soccer-arena.html',
+  '/guides/id/head-soccer-arena-when.html',
+  '/guides/id/head-soccer-arena-vs-alternatives.html',
+  '/guides/de/how-to-play-head-soccer-arena.html',
+  '/guides/de/head-soccer-arena-when.html',
+  '/guides/de/head-soccer-arena-vs-alternatives.html',
 
 
 
@@ -7572,6 +7591,7 @@ export const ALIAS_ROUTES = {
   '/mono-minefield-grid.html': '/games/mono-minefield-grid.html',
   '/space-pi-defense.html': '/games/space-pi-defense.html',
   '/mono-paddle-duel.html': '/games/mono-paddle-duel.html',
+  '/head-soccer-arena.html': '/games/head-soccer-arena.html',
 
   '/gravity-orbit-golf.html': '/games/gravity-orbit-golf.html',
 
@@ -9167,6 +9187,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/how-to-play-mono-paddle-duel.html': 'guide/de/how-to-play-mono-paddle-duel.jsp',
   '/guides/de/mono-paddle-duel-when.html': 'guide/de/mono-paddle-duel-when.jsp',
   '/guides/de/mono-paddle-duel-vs-alternatives.html': 'guide/de/mono-paddle-duel-vs-alternatives.jsp',
+  // game-discovery-loop-runbook fire124 (2026-07-18): head-soccer-arena companion guides
+  '/guides/how-to-play-head-soccer-arena.html': 'guide/how-to-play-head-soccer-arena.jsp',
+  '/guides/head-soccer-arena-when.html': 'guide/head-soccer-arena-when.jsp',
+  '/guides/head-soccer-arena-vs-alternatives.html': 'guide/head-soccer-arena-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-head-soccer-arena.html': 'guide/pt/how-to-play-head-soccer-arena.jsp',
+  '/guides/pt/head-soccer-arena-when.html': 'guide/pt/head-soccer-arena-when.jsp',
+  '/guides/pt/head-soccer-arena-vs-alternatives.html': 'guide/pt/head-soccer-arena-vs-alternatives.jsp',
+  '/guides/es/how-to-play-head-soccer-arena.html': 'guide/es/how-to-play-head-soccer-arena.jsp',
+  '/guides/es/head-soccer-arena-when.html': 'guide/es/head-soccer-arena-when.jsp',
+  '/guides/es/head-soccer-arena-vs-alternatives.html': 'guide/es/head-soccer-arena-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-head-soccer-arena.html': 'guide/vi/how-to-play-head-soccer-arena.jsp',
+  '/guides/vi/head-soccer-arena-when.html': 'guide/vi/head-soccer-arena-when.jsp',
+  '/guides/vi/head-soccer-arena-vs-alternatives.html': 'guide/vi/head-soccer-arena-vs-alternatives.jsp',
+  '/guides/id/how-to-play-head-soccer-arena.html': 'guide/id/how-to-play-head-soccer-arena.jsp',
+  '/guides/id/head-soccer-arena-when.html': 'guide/id/head-soccer-arena-when.jsp',
+  '/guides/id/head-soccer-arena-vs-alternatives.html': 'guide/id/head-soccer-arena-vs-alternatives.jsp',
+  '/guides/de/how-to-play-head-soccer-arena.html': 'guide/de/how-to-play-head-soccer-arena.jsp',
+  '/guides/de/head-soccer-arena-when.html': 'guide/de/head-soccer-arena-when.jsp',
+  '/guides/de/head-soccer-arena-vs-alternatives.html': 'guide/de/head-soccer-arena-vs-alternatives.jsp',
 
 
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle guides
@@ -10622,6 +10661,7 @@ export const JSP_BY_ROUTE = {
   '/games/mono-minefield-grid.html': 'games/mono-minefield-grid.jsp',
   '/games/space-pi-defense.html': 'games/space-pi-defense.jsp',
   '/games/mono-paddle-duel.html': 'games/mono-paddle-duel.jsp',
+  '/games/head-soccer-arena.html': 'games/head-soccer-arena.jsp',
   '/games/asteroid-blaster.html': 'games/asteroid-blaster.jsp',
   '/games/hex-puzzle-blocks.html': 'games/hex-puzzle-blocks.jsp',
   '/games/procedural-horde-game.html': 'games/procedural-horde-game.jsp',

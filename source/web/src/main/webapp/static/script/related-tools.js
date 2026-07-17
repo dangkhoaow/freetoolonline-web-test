@@ -383,6 +383,7 @@ try {
     { title: "Mono Minefield Grid", url: "https://freetoolonline.com/games/mono-minefield-grid.html", include: !1, tags: "games" },
     { title: "Space Pi Defense", url: "https://freetoolonline.com/games/space-pi-defense.html", include: !1, tags: "games" },
     { title: "Mono Paddle Duel", url: "https://freetoolonline.com/games/mono-paddle-duel.html", include: !1, tags: "games" },
+    { title: "Head Soccer Arena", url: "https://freetoolonline.com/games/head-soccer-arena.html", include: !1, tags: "games" },
     { title: "Asteroid Blaster", url: "https://freetoolonline.com/games/asteroid-blaster.html", include: !1, tags: "games" },
     { title: "Hex Puzzle Blocks", url: "https://freetoolonline.com/games/hex-puzzle-blocks.html", include: !1, tags: "games" },
     { title: "Procedural Horde Game", url: "https://freetoolonline.com/games/procedural-horde-game.html", include: !1, tags: "games" },
