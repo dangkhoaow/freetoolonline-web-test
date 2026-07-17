@@ -533,6 +533,7 @@ try {
     { title: "Earth-Moon Barycenter 3D Explorer", url: "https://freetoolonline.com/space-3d/earth-moon-barycenter.html", include: !1, tags: "space-3d" },
     { title: "Lunar Nodes and Eclipse Seasons 3D Explorer", url: "https://freetoolonline.com/space-3d/lunar-nodes-eclipse-seasons.html", include: !1, tags: "space-3d" },
     { title: "Venus Phases (Galileo) 3D Explorer", url: "https://freetoolonline.com/space-3d/venus-phases-galileo.html", include: !1, tags: "space-3d" },
+    { title: "Shepherd Moons 3D Explorer", url: "https://freetoolonline.com/space-3d/shepherd-moons.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
