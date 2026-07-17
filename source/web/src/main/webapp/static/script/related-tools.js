@@ -479,6 +479,7 @@ try {
     { title: "Celestial Coordinate Systems 3D Explorer", url: "https://freetoolonline.com/space-3d/coordinate-systems-sky.html", include: !1, tags: "space-3d" },
     { title: "Cosmic Microwave Background 3D Explorer", url: "https://freetoolonline.com/space-3d/cmb-sky.html", include: !1, tags: "space-3d" },
     { title: "Stellar Nucleosynthesis 3D Explorer", url: "https://freetoolonline.com/space-3d/stellar-nucleosynthesis.html", include: !1, tags: "space-3d" },
+    { title: "Moon Libration 3D Explorer", url: "https://freetoolonline.com/space-3d/moon-libration.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
