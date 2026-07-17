@@ -58,29 +58,33 @@ function escapeRegExp(value) {
 export function createInternalContentRewriter({ siteOrigin, basePath = '', routeCandidates = [] }) {
   const normalizedOrigin = stripTrailingSlash(siteOrigin);
   const normalizedBasePath = normalizeBasePath(basePath);
-  const replacements = [];
-  const seen = new Set();
 
-  const register = (source, target) => {
-    if (!source || !target || seen.has(source)) {
+  // Non-route static path prefixes keep the original per-pattern pass (constant
+  // count, ~5 patterns - cost is negligible and prefix-shaped sources like
+  // /img/illustrations don't fit the route-token scan below).
+  const staticReplacements = [];
+  const seenStatic = new Set();
+
+  const registerStatic = (source, target) => {
+    if (!source || !target || seenStatic.has(source)) {
       return;
     }
 
-    seen.add(source);
-    replacements.push({
+    seenStatic.add(source);
+    staticReplacements.push({
       source,
       target,
       pattern: new RegExp(`(^|[^A-Za-z0-9_-])(${escapeRegExp(source)})(?=$|[^A-Za-z0-9_-])`, 'g'),
     });
   };
 
-  register(
+  registerStatic(
     '/script/related-tools.js',
     normalizedBasePath ? `${normalizedBasePath}/script/related-tools.js` : '/script/related-tools.js',
   );
-  register('/view/donate.html', normalizedBasePath ? `${normalizedBasePath}/view/donate.html` : '/view/donate.html');
-  register('/view/rating.html', normalizedBasePath ? `${normalizedBasePath}/view/rating.html` : '/view/rating.html');
-  register('/view/top-page-banner-ad.html', normalizedBasePath ? `${normalizedBasePath}/view/top-page-banner-ad.html` : '/view/top-page-banner-ad.html');
+  registerStatic('/view/donate.html', normalizedBasePath ? `${normalizedBasePath}/view/donate.html` : '/view/donate.html');
+  registerStatic('/view/rating.html', normalizedBasePath ? `${normalizedBasePath}/view/rating.html` : '/view/rating.html');
+  registerStatic('/view/top-page-banner-ad.html', normalizedBasePath ? `${normalizedBasePath}/view/top-page-banner-ad.html` : '/view/top-page-banner-ad.html');
 
   // Cycle 20260524-10: register the /img/illustrations subtree so SVG illustrations
   // shipped by the svg_illustration_author strategy resolve under the staging
@@ -90,8 +94,30 @@ export function createInternalContentRewriter({ siteOrigin, basePath = '', route
   // regression on cycle 10 caught the asset 404. Append-only registration; prod
   // builds (basePath="") get no-op replacement.
   if (normalizedBasePath) {
-    register('/img/illustrations', `${normalizedBasePath}/img/illustrations`);
+    registerStatic('/img/illustrations', `${normalizedBasePath}/img/illustrations`);
   }
+
+  // Perf note (2026-07-17): route rewrites used to compile one RegExp per
+  // registered form (absolute + relative = 2 per route) and run EVERY pattern
+  // as its own .replace() pass over each page's full HTML. At 5.2k routes that
+  // is ~10.5k sequential regex passes per page - O(routes x page bytes) per
+  // page, O(routes^2) per build. The Pages build grew 6min -> 70min as the
+  // route map grew 823 -> 4.7k routes (route count x per-page cost both scale
+  // with routes). Replaced with ONE URL-token scan + Map lookup below:
+  // per-page cost is O(page bytes) and no longer scales with route count.
+  // Boundary semantics ((^|[^A-Za-z0-9_-]) prefix, (?=$|[^A-Za-z0-9_-])
+  // lookahead) are preserved exactly; the token charset [A-Za-z0-9/_-] plus a
+  // literal .html tail matches the normalized route shapes and fails through
+  // to a Map miss (leave text untouched) for any non-registered token, which
+  // is byte-identical to the old per-pattern boundary behavior.
+  const routeTargets = new Map();
+
+  const registerRoute = (source, target) => {
+    if (!source || !target || routeTargets.has(source)) {
+      return;
+    }
+    routeTargets.set(source, target);
+  };
 
   for (const candidate of routeCandidates) {
     const sourceRoute = normalizeRoute(candidate);
@@ -108,9 +134,11 @@ export function createInternalContentRewriter({ siteOrigin, basePath = '', route
       : sourceRoute;
     const targetUrl = canonicalForRoute(normalizedOrigin, targetRoute);
 
-    register(`https://freetoolonline.com${sourceRoute}`, targetUrl);
-    register(sourceRoute, targetUrl);
+    registerRoute(`https://freetoolonline.com${sourceRoute}`, targetUrl);
+    registerRoute(sourceRoute, targetUrl);
   }
+
+  const ROUTE_TOKEN_PATTERN = /(^|[^A-Za-z0-9_-])((?:https:\/\/freetoolonline\.com)?\/[A-Za-z0-9/_-]+\.html)(?=$|[^A-Za-z0-9_-])/g;
 
   return (value) => {
     let text = String(value ?? '');
@@ -118,9 +146,14 @@ export function createInternalContentRewriter({ siteOrigin, basePath = '', route
       return text;
     }
 
-    for (const { pattern, target } of replacements) {
+    for (const { pattern, target } of staticReplacements) {
       text = text.replace(pattern, (_, prefix) => `${prefix}${target}`);
     }
+
+    text = text.replace(ROUTE_TOKEN_PATTERN, (match, prefix, token) => {
+      const target = routeTargets.get(token);
+      return target === undefined ? match : `${prefix}${target}`;
+    });
 
     return text;
   };
