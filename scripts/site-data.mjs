@@ -5616,6 +5616,26 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/pixel-park-puzzle-when.html',
   '/guides/de/pixel-park-puzzle-vs-alternatives.html',
 
+  // game-discovery-loop-runbook fire132 (2026-07-18): wash-the-cat companion guides
+  '/guides/how-to-play-wash-the-cat.html',
+  '/guides/wash-the-cat-when.html',
+  '/guides/wash-the-cat-vs-alternatives.html',
+  '/guides/pt/how-to-play-wash-the-cat.html',
+  '/guides/pt/wash-the-cat-when.html',
+  '/guides/pt/wash-the-cat-vs-alternatives.html',
+  '/guides/es/how-to-play-wash-the-cat.html',
+  '/guides/es/wash-the-cat-when.html',
+  '/guides/es/wash-the-cat-vs-alternatives.html',
+  '/guides/vi/how-to-play-wash-the-cat.html',
+  '/guides/vi/wash-the-cat-when.html',
+  '/guides/vi/wash-the-cat-vs-alternatives.html',
+  '/guides/id/how-to-play-wash-the-cat.html',
+  '/guides/id/wash-the-cat-when.html',
+  '/guides/id/wash-the-cat-vs-alternatives.html',
+  '/guides/de/how-to-play-wash-the-cat.html',
+  '/guides/de/wash-the-cat-when.html',
+  '/guides/de/wash-the-cat-vs-alternatives.html',
+
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle
   '/guides/how-to-play-cyber-slide-puzzle.html',
   '/guides/cyber-slide-puzzle-when.html',
@@ -7826,6 +7846,7 @@ export const ALIAS_ROUTES = {
   '/pipe-rotate-puzzle.html': '/games/pipe-rotate-puzzle.html',
   '/black-hole-square.html': '/games/black-hole-square.html',
   '/pixel-park-puzzle.html': '/games/pixel-park-puzzle.html',
+  '/wash-the-cat.html': '/games/wash-the-cat.html',
 
   '/gravity-orbit-golf.html': '/games/gravity-orbit-golf.html',
 
@@ -9562,6 +9583,26 @@ export const JSP_BY_ROUTE = {
   '/guides/de/pixel-park-puzzle-when.html': 'guide/de/pixel-park-puzzle-when.jsp',
   '/guides/de/pixel-park-puzzle-vs-alternatives.html': 'guide/de/pixel-park-puzzle-vs-alternatives.jsp',
 
+  // game-discovery-loop-runbook fire132 (2026-07-18): wash-the-cat companion guides
+  '/guides/how-to-play-wash-the-cat.html': 'guide/how-to-play-wash-the-cat.jsp',
+  '/guides/wash-the-cat-when.html': 'guide/wash-the-cat-when.jsp',
+  '/guides/wash-the-cat-vs-alternatives.html': 'guide/wash-the-cat-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-wash-the-cat.html': 'guide/pt/how-to-play-wash-the-cat.jsp',
+  '/guides/pt/wash-the-cat-when.html': 'guide/pt/wash-the-cat-when.jsp',
+  '/guides/pt/wash-the-cat-vs-alternatives.html': 'guide/pt/wash-the-cat-vs-alternatives.jsp',
+  '/guides/es/how-to-play-wash-the-cat.html': 'guide/es/how-to-play-wash-the-cat.jsp',
+  '/guides/es/wash-the-cat-when.html': 'guide/es/wash-the-cat-when.jsp',
+  '/guides/es/wash-the-cat-vs-alternatives.html': 'guide/es/wash-the-cat-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-wash-the-cat.html': 'guide/vi/how-to-play-wash-the-cat.jsp',
+  '/guides/vi/wash-the-cat-when.html': 'guide/vi/wash-the-cat-when.jsp',
+  '/guides/vi/wash-the-cat-vs-alternatives.html': 'guide/vi/wash-the-cat-vs-alternatives.jsp',
+  '/guides/id/how-to-play-wash-the-cat.html': 'guide/id/how-to-play-wash-the-cat.jsp',
+  '/guides/id/wash-the-cat-when.html': 'guide/id/wash-the-cat-when.jsp',
+  '/guides/id/wash-the-cat-vs-alternatives.html': 'guide/id/wash-the-cat-vs-alternatives.jsp',
+  '/guides/de/how-to-play-wash-the-cat.html': 'guide/de/how-to-play-wash-the-cat.jsp',
+  '/guides/de/wash-the-cat-when.html': 'guide/de/wash-the-cat-when.jsp',
+  '/guides/de/wash-the-cat-vs-alternatives.html': 'guide/de/wash-the-cat-vs-alternatives.jsp',
+
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle guides
   '/guides/how-to-play-cyber-slide-puzzle.html': 'guide/how-to-play-cyber-slide-puzzle.jsp',
   '/guides/cyber-slide-puzzle-when.html': 'guide/cyber-slide-puzzle-when.jsp',
@@ -11038,6 +11079,7 @@ export const JSP_BY_ROUTE = {
   '/games/pipe-rotate-puzzle.html': 'games/pipe-rotate-puzzle.jsp',
   '/games/black-hole-square.html': 'games/black-hole-square.jsp',
   '/games/pixel-park-puzzle.html': 'games/pixel-park-puzzle.jsp',
+  '/games/wash-the-cat.html': 'games/wash-the-cat.jsp',
   '/games/asteroid-blaster.html': 'games/asteroid-blaster.jsp',
   '/games/hex-puzzle-blocks.html': 'games/hex-puzzle-blocks.jsp',
   '/games/procedural-horde-game.html': 'games/procedural-horde-game.jsp',
