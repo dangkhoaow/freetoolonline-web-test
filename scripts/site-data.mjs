@@ -6975,6 +6975,8 @@ export const ALIAS_ROUTES = {
   '/deinonychus.html': '/dinosaur-3d/deinonychus.html',
   // dinosaur-3d-discovery-loop-runbook fire68 (2026-07-17): flat-slug alias for utahraptor.
   '/utahraptor.html': '/dinosaur-3d/utahraptor.html',
+  // dinosaur-3d-discovery-loop-runbook fire69 (2026-07-17): flat-slug alias for baryonyx.
+  '/baryonyx.html': '/dinosaur-3d/baryonyx.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -9283,6 +9285,10 @@ export const JSP_BY_ROUTE = {
   // that Jurassic Park's on-screen "Velociraptor" was actually sized on.
   '/dinosaur-3d/deinonychus.html': 'dinosaur/deinonychus.jsp',
   '/dinosaur-3d/utahraptor.html': 'dinosaur/utahraptor.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire69 (2026-07-17): Baryonyx - spinosaurid
+  // sibling of the shipped Spinosaurus, distinct discovery story (1983 Surrey,
+  // England clay pit) + no sail + the "heavy claw" giant thumb-claw anatomy.
+  '/dinosaur-3d/baryonyx.html': 'dinosaur/baryonyx.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
