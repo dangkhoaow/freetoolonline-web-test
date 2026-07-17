@@ -1,0 +1,334 @@
+<script>
+    /* Media-EDITOR skeleton via self-hosted FFmpeg.wasm (trim/cut, split,
+     * strip-audio, or compress, lossless except compress). Wired contract per
+     * CONCRETE_BROWSER_TOOL_RULES.md section 4. Sibling to
+     * converter-media-ffmpegwasm.template.html - that skeleton RE-ENCODES to
+     * a new format; this one edits the ORIGINAL container in-place with
+     * `-c copy` (no re-encode, so it is fast and lossless) except 'compress'.
+     *
+     * Four modes, dispatched from the slug (FFMPEG_MODE below) - 'strip-audio'
+     * added new-tool-discovery-loop fire79, 2026-07-12; 'compress' added
+     * fire122, 2026-07-12; 'split' added new-tool-discovery-loop fire252,
+     * 2026-07-17 (root-cause fix - a "video-splitter" candidate cleared every
+     * ship gate incl. Gate-H `media_editor_ffmpegwasm`, whose verb_tokens list
+     * includes splitter/merger/joiner/normalizer/reverser/fader, but NONE of
+     * those verbs was actually dispatched by this skeleton before this fix -
+     * they all silently fell through to the 'trim' default, so a page titled
+     * "Video Splitter" would have shipped functionally IDENTICAL to the
+     * existing /video-trimmer.html: one time-range cut, one output file. That
+     * is a truthful-claim mismatch (the copy promises "split into pieces";
+     * the tool would produce one clipped segment), caught before ship by
+     * manually tracing FFMPEG_MODE's dispatch regex against 'video-splitter'.
+     * 'split' is now a REAL mode. 'merger'/'joiner' are STILL NOT implemented
+     * (they need multi-file input, a fundamentally different upload UI) - a
+     * slug using those verbs still silently aliases to 'trim'. Do NOT ship a
+     * "merger"/"joiner"-verb tool from this skeleton without first adding a
+     * genuine multi-file merge mode; verify FFMPEG_MODE's actual dispatch
+     * value for any new slug before shipping, never trust the registry's
+     * verb_tokens list alone as proof a mode exists.
+     *   - 'trim'        (default - trim/cut/join/concat verbs):
+     *                    cuts a time range via `-ss <start> -to <end> -c copy`.
+     *   - 'split'       (split/splitter/divide/divider verbs): cuts the input
+     *                    at ONE split point into TWO lossless output files
+     *                    (`-to <point> -c copy` + `-ss <point> -c copy`), each
+     *                    downloadable separately. Rejects a split point that
+     *                    is <= 0.
+     *   - 'strip-audio' (strip/remove verbs + an `audio` slug token): drops
+     *                    the ENTIRE audio track via `-c:v copy -an`, keeping
+     *                    the video stream byte-identical. Rejects audio-only
+     *                    inputs (no video track to keep) with a clear error.
+     *   - 'compress'    (compressor/compress verbs): a REAL re-encode (unlike
+     *                    the other modes, which use lossless `-c copy`) -
+     *                    keeps the SAME container/extension but shrinks the
+     *                    file via a 3-tier CRF quality knob. mp4/mov/avi/mkv
+     *                    re-encode libx264+aac; webm re-encodes libvpx-vp9+
+     *                    opus. Rejects audio-only inputs with a clear error
+     *                    (this tool has no video track to shrink).
+     *
+     * Browser-only invariant: the uploaded File is processed entirely in the
+     * browser tab. NO bytes leave the device. FFmpeg.wasm runs as a WebAssembly
+     * worker; the only network calls this skeleton makes are the one-time
+     * fetches for vendor assets at the same origin.
+     *
+     * Required vendor assets (already installed sitewide - see
+     * converter-media-ffmpegwasm.template.html header for the install command):
+     *   /vendor/ffmpeg/ffmpeg.js, /vendor/ffmpeg/814.ffmpeg.js,
+     *   /vendor/ffmpeg/ffmpeg-core.js, /vendor/ffmpeg/ffmpeg-core.wasm
+     *
+     * Start/End time fields (#ffmpegTrimStart / #ffmpegTrimEnd) - 'trim' mode
+     * only, hidden at runtime for 'strip-audio' (single-click, no extra
+     * controls needed). Accept plain seconds ("90") or mm:ss / h:mm:ss
+     * ("1:30"). Both are ABSOLUTE positions in the original file's timeline
+     * (matches ffmpeg's `-ss <start> -to <end>` output-option semantics when
+     * both flags follow `-i`). End blank = trim from Start to end-of-file.
+     * Output keeps the INPUT file's container/codec (no format change) since
+     * `-c copy` cannot re-encode.
+     */
+
+    web.localUpload = true;
+
+    var FFMPEG_SLUG = 'video-splitter';
+    var FFMPEG_TITLE = 'Video Splitter';
+    var FFMPEG_MODE = /\bcompress/.test(FFMPEG_SLUG)
+        ? 'compress'
+        : (/\b(split|divide)/.test(FFMPEG_SLUG)
+            ? 'split'
+            : ((/\b(strip|remove)/.test(FFMPEG_SLUG) && /\baudio\b/.test(FFMPEG_SLUG)) ? 'strip-audio' : 'trim'));
+    var AUDIO_ONLY_EXTS = { mp3: 1, wav: 1, aac: 1, ogg: 1, flac: 1, m4a: 1 };
+    var FFMPEG_VENDOR_BASE = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/ffmpeg';
+    var FFMPEG_UMD_URL = FFMPEG_VENDOR_BASE + '/ffmpeg.js';
+    var FFMPEG_CORE_JS_URL = FFMPEG_VENDOR_BASE + '/ffmpeg-core.js';
+    var FFMPEG_CORE_WASM_URL = FFMPEG_VENDOR_BASE + '/ffmpeg-core.wasm';
+
+    function mimeFor(ext) {
+        return {
+            mp3: 'audio/mpeg', wav: 'audio/wav', aac: 'audio/aac', ogg: 'audio/ogg',
+            flac: 'audio/flac', m4a: 'audio/mp4',
+            mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime',
+            avi: 'video/x-msvideo', mkv: 'video/x-matroska', gif: 'image/gif',
+        }[ext] || 'application/octet-stream';
+    }
+
+    // Accepts plain seconds ("90", "12.5") or mm:ss / h:mm:ss ("1:30", "1:02:03").
+    // Returns null for an empty/unparseable string (caller treats null as "unset").
+    function parseTimeToSeconds(raw) {
+        var s = String(raw == null ? '' : raw).trim();
+        if (!s) return null;
+        if (/^\d+(\.\d+)?$/.test(s)) return parseFloat(s);
+        var parts = s.split(':');
+        if (!parts.length || parts.some(function (p) { return p !== '' && isNaN(parseFloat(p)); })) return null;
+        var secs = 0;
+        for (var i = 0; i < parts.length; i++) secs = secs * 60 + (parseFloat(parts[i]) || 0);
+        return secs;
+    }
+
+    function ffmpegArgsForTrim(inputName, outputName, opts) {
+        var args = ['-i', inputName];
+        if (opts.startSeconds != null) args = args.concat(['-ss', String(opts.startSeconds)]);
+        if (opts.endSeconds != null) args = args.concat(['-to', String(opts.endSeconds)]);
+        return args.concat(['-c', 'copy', outputName]);
+    }
+
+    // 'split' mode - ONE split point cuts the input into TWO lossless parts.
+    // Part 1 keeps [0, splitPoint); part 2 keeps [splitPoint, end]. Each call
+    // is a separate `-c copy` invocation (fast, no re-encode).
+    function ffmpegArgsForSplitPart1(inputName, outputName, splitSeconds) {
+        return ['-i', inputName, '-to', String(splitSeconds), '-c', 'copy', outputName];
+    }
+    function ffmpegArgsForSplitPart2(inputName, outputName, splitSeconds) {
+        return ['-i', inputName, '-ss', String(splitSeconds), '-c', 'copy', outputName];
+    }
+
+    function ffmpegArgsForStripAudio(inputName, outputName) {
+        // -c:v copy keeps the video stream byte-identical (no re-encode);
+        // -an drops every audio stream entirely.
+        return ['-i', inputName, '-c:v', 'copy', '-an', outputName];
+    }
+
+    // CRF re-encode bands per quality tier. libx264 CRF range is 0(lossless)-51
+    // (worst); libvpx-vp9 uses a wider 0-63 range at the roughly-equivalent
+    // perceptual band, plus `-b:v 0` to force constant-quality mode instead of
+    // bitrate-targeted mode. See verified-browser-impl-registry.mjs
+    // media_editor_ffmpegwasm reference notes for the source (FFmpeg wiki).
+    var COMPRESS_CRF_BY_QUALITY = {
+        smaller: { h264: 32, vp9: 36 },
+        balanced: { h264: 28, vp9: 32 },
+        higher: { h264: 23, vp9: 28 },
+    };
+
+    function ffmpegArgsForCompress(inputName, outputName, ext, quality) {
+        var crf = COMPRESS_CRF_BY_QUALITY[quality] || COMPRESS_CRF_BY_QUALITY.balanced;
+        var codecArgs = (ext === 'webm')
+            ? ['-c:v', 'libvpx-vp9', '-crf', String(crf.vp9), '-b:v', '0', '-c:a', 'libopus', '-b:a', '96k']
+            : ['-c:v', 'libx264', '-crf', String(crf.h264), '-preset', 'veryfast', '-c:a', 'aac', '-b:a', '128k'];
+        return ['-i', inputName].concat(codecArgs, [outputName]);
+    }
+
+    var ffmpegInstance = null;
+    var ffmpegLoadPromise = null;
+    var ffmpegUmdScriptPromise = null;
+
+    function injectUmdScriptOnce() {
+        if (ffmpegUmdScriptPromise) return ffmpegUmdScriptPromise;
+        ffmpegUmdScriptPromise = new Promise(function (resolve, reject) {
+            if (typeof globalThis.FFmpegWASM !== 'undefined') return resolve();
+            var s = document.createElement('script');
+            s.src = FFMPEG_UMD_URL;
+            s.async = true;
+            s.onload = function () {
+                if (typeof globalThis.FFmpegWASM === 'undefined') {
+                    reject(new Error('FFmpegWASM global missing after ' + FFMPEG_UMD_URL + ' loaded'));
+                } else {
+                    resolve();
+                }
+            };
+            s.onerror = function () { reject(new Error('Failed to load ' + FFMPEG_UMD_URL)); };
+            document.head.appendChild(s);
+        });
+        return ffmpegUmdScriptPromise;
+    }
+
+    async function loadFfmpegOnce(progressCb) {
+        if (ffmpegInstance) return ffmpegInstance;
+        if (ffmpegLoadPromise) return ffmpegLoadPromise;
+        ffmpegLoadPromise = (async function () {
+            progressCb && progressCb('Loading FFmpeg.wasm (~31MB, one-time)...');
+            await injectUmdScriptOnce();
+            var FFmpegCtor = globalThis.FFmpegWASM && globalThis.FFmpegWASM.FFmpeg;
+            if (!FFmpegCtor) throw new Error('globalThis.FFmpegWASM.FFmpeg missing - vendor assets out of date?');
+            var ffmpeg = new FFmpegCtor();
+            ffmpeg.on('log', function (e) { progressCb && progressCb('[ffmpeg] ' + (e.message || '')); });
+            ffmpeg.on('progress', function (e) {
+                var pct = Math.round((e.progress || 0) * 100);
+                var verb = FFMPEG_MODE === 'strip-audio' ? 'Removing audio: ' : (FFMPEG_MODE === 'compress' ? 'Compressing: ' : (FFMPEG_MODE === 'split' ? 'Splitting: ' : 'Trimming: '));
+                progressCb && progressCb(verb + pct + '%');
+            });
+            await ffmpeg.load({ coreURL: FFMPEG_CORE_JS_URL, wasmURL: FFMPEG_CORE_WASM_URL });
+            ffmpegInstance = ffmpeg;
+            return ffmpeg;
+        })();
+        return ffmpegLoadPromise;
+    }
+
+    function readTrimOptsFromUi() {
+        var startRaw = $('#ffmpegTrimStart').val();
+        var endRaw = $('#ffmpegTrimEnd').val();
+        return {
+            startSeconds: parseTimeToSeconds(startRaw),
+            endSeconds: parseTimeToSeconds(endRaw),
+        };
+    }
+
+    function readSplitAtFromUi() {
+        return parseTimeToSeconds($('#ffmpegSplitAt').val());
+    }
+
+    function readCompressQualityFromUi() {
+        var v = $('#ffmpegCompressQuality').val();
+        return COMPRESS_CRF_BY_QUALITY[v] ? v : 'balanced';
+    }
+
+    function readOutputFile(ffmpeg, outputName, inputExt) {
+        return ffmpeg.readFile(outputName).then(function (data) {
+            var blob = new Blob([data.buffer], { type: mimeFor(inputExt) });
+            return URL.createObjectURL(blob);
+        });
+    }
+
+    async function processInputForSlug(file, opts) {
+        var inputExt = (file.name.split('.').pop() || 'bin').toLowerCase();
+        var inputName = 'input.' + inputExt;
+        var $status = $('.ffmpeg-status');
+
+        function setStatus(msg) { $status.text(msg).show(); }
+
+        if (FFMPEG_MODE === 'strip-audio') {
+            if (AUDIO_ONLY_EXTS[inputExt]) {
+                throw new Error('This tool removes the audio track from a VIDEO file. The uploaded .' + inputExt + ' file has no video track to keep.');
+            }
+        } else if (FFMPEG_MODE === 'compress') {
+            if (AUDIO_ONLY_EXTS[inputExt]) {
+                throw new Error('This tool compresses VIDEO files. The uploaded .' + inputExt + ' file has no video track to shrink - use an audio-specific tool for audio-only files.');
+            }
+        } else if (FFMPEG_MODE === 'split') {
+            if (!(opts.splitSeconds > 0)) {
+                throw new Error('Enter a split point greater than 0:00 (mm:ss or seconds).');
+            }
+        } else if (opts.startSeconds != null && opts.endSeconds != null && opts.endSeconds <= opts.startSeconds) {
+            throw new Error('End time must be after start time.');
+        }
+
+        var ffmpeg = await loadFfmpegOnce(setStatus);
+
+        setStatus('Reading input file...');
+        var buf = await file.arrayBuffer();
+        await ffmpeg.writeFile(inputName, new Uint8Array(buf));
+
+        var baseName = (file.name.replace(/\.[^.]+$/, '') || FFMPEG_SLUG);
+
+        if (FFMPEG_MODE === 'split') {
+            var part1Name = 'output1.' + inputExt;
+            var part2Name = 'output2.' + inputExt;
+
+            setStatus('Running FFmpeg (part 1 of 2)...');
+            await ffmpeg.exec(ffmpegArgsForSplitPart1(inputName, part1Name, opts.splitSeconds));
+            setStatus('Running FFmpeg (part 2 of 2)...');
+            await ffmpeg.exec(ffmpegArgsForSplitPart2(inputName, part2Name, opts.splitSeconds));
+
+            setStatus('Reading output...');
+            var url1 = await readOutputFile(ffmpeg, part1Name, inputExt);
+            var url2 = await readOutputFile(ffmpeg, part2Name, inputExt);
+            try { await ffmpeg.deleteFile(inputName); } catch (e) { /* ignore */ }
+            try { await ffmpeg.deleteFile(part1Name); } catch (e) { /* ignore */ }
+            try { await ffmpeg.deleteFile(part2Name); } catch (e) { /* ignore */ }
+
+            setStatus('Done.');
+            return [
+                { output_blob_url: url1, output_filename: baseName + '-part1.' + inputExt, output_mime: mimeFor(inputExt), _is_mock: false },
+                { output_blob_url: url2, output_filename: baseName + '-part2.' + inputExt, output_mime: mimeFor(inputExt), _is_mock: false },
+            ];
+        }
+
+        var outputName = 'output.' + inputExt;
+        setStatus('Running FFmpeg...');
+        var args = FFMPEG_MODE === 'strip-audio'
+            ? ffmpegArgsForStripAudio(inputName, outputName)
+            : (FFMPEG_MODE === 'compress'
+                ? ffmpegArgsForCompress(inputName, outputName, inputExt, readCompressQualityFromUi())
+                : ffmpegArgsForTrim(inputName, outputName, opts));
+        await ffmpeg.exec(args);
+
+        setStatus('Reading output...');
+        var blobUrl = await readOutputFile(ffmpeg, outputName, inputExt);
+        try { await ffmpeg.deleteFile(inputName); } catch (e) { /* ignore */ }
+        try { await ffmpeg.deleteFile(outputName); } catch (e) { /* ignore */ }
+
+        var modeSuffix = FFMPEG_MODE === 'strip-audio' ? '-no-audio' : (FFMPEG_MODE === 'compress' ? '-compressed' : '-trimmed');
+        var downloadName = baseName + modeSuffix + '.' + inputExt;
+
+        setStatus('Done.');
+        return { output_blob_url: blobUrl, output_filename: downloadName, output_mime: mimeFor(inputExt), _is_mock: false };
+    }
+
+    function renderOutputDownload(result) {
+        var results = Array.isArray(result) ? result : [result];
+        var html = results.map(function (r) {
+            return '<div class="imageOut" style="margin:8px 0;">'
+                + '<a href="' + r.output_blob_url + '" download="' + r.output_filename + '" '
+                + 'class="w3-button w3-blue imgOutDownBtn" style="visibility:visible;opacity:1">'
+                + 'Download ' + r.output_filename + '</a></div>';
+        }).join('');
+        $('.outputImgs').html(html);
+    }
+
+    function loadUploadHandlersByPage() {
+        // strip-audio/compress/split need no start+end time-range controls -
+        // hide the trim-only fields at runtime rather than branching the
+        // static BODYHTML skeleton. compress/split each reveal their own
+        // dedicated option block instead.
+        if (FFMPEG_MODE === 'strip-audio' || FFMPEG_MODE === 'compress' || FFMPEG_MODE === 'split') $('.ffmpeg-edit-options').hide();
+        if (FFMPEG_MODE === 'compress') $('.ffmpeg-compress-options').show();
+        if (FFMPEG_MODE === 'split') $('.ffmpeg-split-options').show();
+
+        var onFileCompleteOrigin = onFileComplete;
+        onFileComplete = async function (e, file, response) {
+            onFileCompleteOrigin.call(this, e, file, response);
+            var realFile = file && file.file ? file.file : file;
+            if (!realFile || !realFile.arrayBuffer) {
+                $('.outputImgs').html('<div class="w3-panel w3-pale-red"><b>' + FFMPEG_TITLE + ':</b> No file received.</div>');
+                return;
+            }
+            $('.outputImgs').empty();
+            $('.downloadC').addClass('w3-hide');
+            try {
+                var opts = FFMPEG_MODE === 'split' ? { splitSeconds: readSplitAtFromUi() } : readTrimOptsFromUi();
+                var result = await processInputForSlug(realFile, opts);
+                renderOutputDownload(result);
+            } catch (err) {
+                console.error('video-splitter:', err);
+                $('.outputImgs').html('<div class="w3-panel w3-pale-red"><b>' + FFMPEG_TITLE + ':</b> '
+                    + (err && err.message ? err.message : String(err)) + '</div>');
+            }
+        };
+    }
+</script>
