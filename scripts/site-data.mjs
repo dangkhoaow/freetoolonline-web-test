@@ -3978,6 +3978,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/how-to-view-apatosaurus-in-3d.html',
   '/guides/id/how-to-view-apatosaurus-in-3d.html',
   '/guides/de/how-to-view-apatosaurus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire41 (2026-07-18): apatosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides (size)
+  '/guides/apatosaurus-size-comparison.html',
+  '/guides/pt/apatosaurus-size-comparison.html',
+  '/guides/es/apatosaurus-size-comparison.html',
+  '/guides/vi/apatosaurus-size-comparison.html',
+  '/guides/id/apatosaurus-size-comparison.html',
+  '/guides/de/apatosaurus-size-comparison.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -7924,6 +7932,8 @@ export const ALIAS_ROUTES = {
   '/edmontosaurus.html': '/dinosaur-3d/edmontosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire76 (2026-07-18): flat-slug alias for protoceratops.
   '/protoceratops.html': '/dinosaur-3d/protoceratops.html',
+  // dinosaur-3d-discovery-loop-runbook fire77 (2026-07-18): flat-slug alias for ceratosaurus.
+  '/ceratosaurus.html': '/dinosaur-3d/ceratosaurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -11058,6 +11068,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-view-apatosaurus-in-3d.html': 'guide/vi/how-to-view-apatosaurus-in-3d.jsp',
   '/guides/id/how-to-view-apatosaurus-in-3d.html': 'guide/id/how-to-view-apatosaurus-in-3d.jsp',
   '/guides/de/how-to-view-apatosaurus-in-3d.html': 'guide/de/how-to-view-apatosaurus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire41 (2026-07-18): apatosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides (size)
+  '/guides/apatosaurus-size-comparison.html': 'guide/apatosaurus-size-comparison.jsp',
+  '/guides/pt/apatosaurus-size-comparison.html': 'guide/pt/apatosaurus-size-comparison.jsp',
+  '/guides/es/apatosaurus-size-comparison.html': 'guide/es/apatosaurus-size-comparison.jsp',
+  '/guides/vi/apatosaurus-size-comparison.html': 'guide/vi/apatosaurus-size-comparison.jsp',
+  '/guides/id/apatosaurus-size-comparison.html': 'guide/id/apatosaurus-size-comparison.jsp',
+  '/guides/de/apatosaurus-size-comparison.html': 'guide/de/apatosaurus-size-comparison.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
