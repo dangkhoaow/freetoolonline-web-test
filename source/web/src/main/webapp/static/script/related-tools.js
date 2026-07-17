@@ -488,6 +488,7 @@ try {
     { title: "Gravitational Redshift 3D Explorer", url: "https://freetoolonline.com/space-3d/gravitational-redshift.html", include: !1, tags: "space-3d" },
     { title: "Cosmic Ray Air Shower 3D Explorer", url: "https://freetoolonline.com/space-3d/cosmic-ray-shower.html", include: !1, tags: "space-3d" },
     { title: "Stellar Parallax 3D Explorer", url: "https://freetoolonline.com/space-3d/stellar-parallax.html", include: !1, tags: "space-3d" },
+    { title: "Einstein Ring 3D Explorer", url: "https://freetoolonline.com/space-3d/einstein-ring.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
