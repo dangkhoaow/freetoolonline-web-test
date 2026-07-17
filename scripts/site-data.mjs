@@ -7212,6 +7212,7 @@ export const ALIAS_ROUTES = {
   '/lightning-math-battle.html': '/games/lightning-math-battle.html',
   '/precision-bounce-loop.html': '/games/precision-bounce-loop.html',
   '/vim-motion-academy.html': '/games/vim-motion-academy.html',
+  '/void-trader.html': '/games/void-trader.html',
 
   '/gravity-orbit-golf.html': '/games/gravity-orbit-golf.html',
 
@@ -10073,6 +10074,7 @@ export const JSP_BY_ROUTE = {
   '/games/retro-arcade-shooter.html': 'games/retro-arcade-shooter.jsp',
   '/games/marble-maze.html': 'games/marble-maze.jsp',
   '/games/globe-siege.html': 'games/globe-siege.jsp',
+  '/games/void-trader.html': 'games/void-trader.jsp',
   '/games/asteroid-blaster.html': 'games/asteroid-blaster.jsp',
   '/games/hex-puzzle-blocks.html': 'games/hex-puzzle-blocks.jsp',
   '/games/procedural-horde-game.html': 'games/procedural-horde-game.jsp',
