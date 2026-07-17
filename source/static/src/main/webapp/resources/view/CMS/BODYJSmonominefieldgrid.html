@@ -1,0 +1,41 @@
+<script>
+    web.localUpload = false;
+    var MMG_GAME_URL = 'mono-minefield-grid/index.html';
+    function mmgStatus(text) {
+        var el = document.getElementById('mmgStatus');
+        if (el) el.textContent = text;
+    }
+    function mmgInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'mmgFrame';
+        frame.src = MMG_GAME_URL;
+        frame.title = 'Mono Minefield Grid game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            mmgStatus('Game loaded. Clear the grid; use Settings for Easy / Medium / Hard.');
+            try { frame.contentWindow.focus(); } catch (e) {}
+        });
+        var launch = document.getElementById('mmgLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('mmgStage');
+        var playBtn = document.getElementById('mmgPlayBtn');
+        if (!stage || !playBtn) return;
+        var fsBtn = document.getElementById('mmgFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            mmgStatus('Loading the game (about 52 KB, one time - then cached)...');
+            mmgInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('mmgFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) {} }
+        });
+    }
+</script>

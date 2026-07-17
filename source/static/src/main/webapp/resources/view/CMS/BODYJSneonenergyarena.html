@@ -1,0 +1,51 @@
+<script>
+    // Neon Energy Arena launcher. Engine: ou178/neon-deep-space (MIT),
+    // vendored at static/games/neon-energy-arena/ in a same-origin iframe:
+    // ~90 KB HTML + JS + CSS, no analytics, no CDN. Iframe loads on Play.
+
+    web.localUpload = false;
+
+    var NEA_GAME_URL = 'neon-energy-arena/index.html';
+
+    function neaStatus(text) {
+        var el = document.getElementById('neaStatus');
+        if (el) el.textContent = text;
+    }
+
+    function neaInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'neaFrame';
+        frame.src = NEA_GAME_URL;
+        frame.title = 'Neon Energy Arena game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            neaStatus('Game loaded. Press Start run, or open the Upgrade shop.');
+            try { frame.contentWindow.focus(); } catch (e) { }
+        });
+        var launch = document.getElementById('neaLaunch');
+        if (launch && launch.parentNode === stage) { stage.removeChild(launch); }
+        stage.appendChild(frame);
+        return frame;
+    }
+
+    function doAfterPageRendered() {
+        var stage = document.getElementById('neaStage');
+        var playBtn = document.getElementById('neaPlayBtn');
+        if (!stage || !playBtn) return;
+
+        var fsBtn = document.getElementById('neaFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            neaStatus('Loading the game (about 90 KB, one time - then cached)...');
+            neaInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) { stage.requestFullscreen(); }
+            else if (stage.webkitRequestFullscreen) { stage.webkitRequestFullscreen(); }
+            var frame = document.getElementById('neaFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) { } }
+        });
+    }
+</script>
