@@ -7121,6 +7121,8 @@ export const ALIAS_ROUTES = {
   '/utahraptor.html': '/dinosaur-3d/utahraptor.html',
   // dinosaur-3d-discovery-loop-runbook fire69 (2026-07-17): flat-slug alias for baryonyx.
   '/baryonyx.html': '/dinosaur-3d/baryonyx.html',
+  // dinosaur-3d-discovery-loop-runbook fire70 (2026-07-17): flat-slug alias for plesiosaurus.
+  '/plesiosaurus.html': '/dinosaur-3d/plesiosaurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -9457,6 +9459,12 @@ export const JSP_BY_ROUTE = {
   // sibling of the shipped Spinosaurus, distinct discovery story (1983 Surrey,
   // England clay pit) + no sail + the "heavy claw" giant thumb-claw anatomy.
   '/dinosaur-3d/baryonyx.html': 'dinosaur/baryonyx.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire70 (2026-07-17): Plesiosaurus viewer -
+  // a marine reptile (not a dinosaur) with a genuinely different body shape from
+  // the shipped Mosasaurus: short round torso, extremely long flexible neck, tiny
+  // head, no tail fluke. New additive `longNeck` branch on the marine archetype
+  // (existing mosasaur branch untouched).
+  '/dinosaur-3d/plesiosaurus.html': 'dinosaur/plesiosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
