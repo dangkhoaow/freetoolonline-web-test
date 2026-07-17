@@ -5033,6 +5033,13 @@ export const GUIDE_ROUTES = new Set([
   '/guides/id/void-trader-when.html',
   '/guides/de/how-to-play-void-trader.html',
   '/guides/de/void-trader-when.html',
+  // game-discovery-loop-runbook (2026-07-17): void-trader vs-alternatives
+  '/guides/void-trader-vs-alternatives.html',
+  '/guides/pt/void-trader-vs-alternatives.html',
+  '/guides/es/void-trader-vs-alternatives.html',
+  '/guides/vi/void-trader-vs-alternatives.html',
+  '/guides/id/void-trader-vs-alternatives.html',
+  '/guides/de/void-trader-vs-alternatives.html',
 
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle
   '/guides/how-to-play-cyber-slide-puzzle.html',
@@ -8671,6 +8678,13 @@ export const JSP_BY_ROUTE = {
   '/guides/id/void-trader-when.html': 'guide/id/void-trader-when.jsp',
   '/guides/de/how-to-play-void-trader.html': 'guide/de/how-to-play-void-trader.jsp',
   '/guides/de/void-trader-when.html': 'guide/de/void-trader-when.jsp',
+  // game-discovery-loop-runbook (2026-07-17): void-trader vs-alternatives
+  '/guides/void-trader-vs-alternatives.html': 'guide/void-trader-vs-alternatives.jsp',
+  '/guides/pt/void-trader-vs-alternatives.html': 'guide/pt/void-trader-vs-alternatives.jsp',
+  '/guides/es/void-trader-vs-alternatives.html': 'guide/es/void-trader-vs-alternatives.jsp',
+  '/guides/vi/void-trader-vs-alternatives.html': 'guide/vi/void-trader-vs-alternatives.jsp',
+  '/guides/id/void-trader-vs-alternatives.html': 'guide/id/void-trader-vs-alternatives.jsp',
+  '/guides/de/void-trader-vs-alternatives.html': 'guide/de/void-trader-vs-alternatives.jsp',
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle guides
   '/guides/how-to-play-cyber-slide-puzzle.html': 'guide/how-to-play-cyber-slide-puzzle.jsp',
   '/guides/cyber-slide-puzzle-when.html': 'guide/cyber-slide-puzzle-when.jsp',
