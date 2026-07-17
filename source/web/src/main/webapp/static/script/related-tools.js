@@ -386,6 +386,7 @@ try {
     { title: "Mono Paddle Duel", url: "https://freetoolonline.com/games/mono-paddle-duel.html", include: !1, tags: "games" },
     { title: "Head Soccer Arena", url: "https://freetoolonline.com/games/head-soccer-arena.html", include: !1, tags: "games" },
     { title: "Idle Capitalist Loop", url: "https://freetoolonline.com/games/idle-capitalist-loop.html", include: !1, tags: "games" },
+    { title: "Mono Stack Blocks", url: "https://freetoolonline.com/games/mono-stack-blocks.html", include: !1, tags: "games" },
     { title: "Asteroid Blaster", url: "https://freetoolonline.com/games/asteroid-blaster.html", include: !1, tags: "games" },
     { title: "Hex Puzzle Blocks", url: "https://freetoolonline.com/games/hex-puzzle-blocks.html", include: !1, tags: "games" },
     { title: "Procedural Horde Game", url: "https://freetoolonline.com/games/procedural-horde-game.html", include: !1, tags: "games" },

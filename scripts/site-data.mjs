@@ -5444,6 +5444,25 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/how-to-play-idle-capitalist-loop.html',
   '/guides/de/idle-capitalist-loop-when.html',
   '/guides/de/idle-capitalist-loop-vs-alternatives.html',
+  // game-discovery-loop-runbook fire126 (2026-07-17): mono-stack-blocks companion guides
+  '/guides/how-to-play-mono-stack-blocks.html',
+  '/guides/mono-stack-blocks-when.html',
+  '/guides/mono-stack-blocks-vs-alternatives.html',
+  '/guides/pt/how-to-play-mono-stack-blocks.html',
+  '/guides/pt/mono-stack-blocks-when.html',
+  '/guides/pt/mono-stack-blocks-vs-alternatives.html',
+  '/guides/es/how-to-play-mono-stack-blocks.html',
+  '/guides/es/mono-stack-blocks-when.html',
+  '/guides/es/mono-stack-blocks-vs-alternatives.html',
+  '/guides/vi/how-to-play-mono-stack-blocks.html',
+  '/guides/vi/mono-stack-blocks-when.html',
+  '/guides/vi/mono-stack-blocks-vs-alternatives.html',
+  '/guides/id/how-to-play-mono-stack-blocks.html',
+  '/guides/id/mono-stack-blocks-when.html',
+  '/guides/id/mono-stack-blocks-vs-alternatives.html',
+  '/guides/de/how-to-play-mono-stack-blocks.html',
+  '/guides/de/mono-stack-blocks-when.html',
+  '/guides/de/mono-stack-blocks-vs-alternatives.html',
 
 
 
@@ -7650,6 +7669,7 @@ export const ALIAS_ROUTES = {
   '/mono-paddle-duel.html': '/games/mono-paddle-duel.html',
   '/head-soccer-arena.html': '/games/head-soccer-arena.html',
   '/idle-capitalist-loop.html': '/games/idle-capitalist-loop.html',
+  '/mono-stack-blocks.html': '/games/mono-stack-blocks.html',
 
   '/gravity-orbit-golf.html': '/games/gravity-orbit-golf.html',
 
@@ -9285,6 +9305,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/how-to-play-idle-capitalist-loop.html': 'guide/de/how-to-play-idle-capitalist-loop.jsp',
   '/guides/de/idle-capitalist-loop-when.html': 'guide/de/idle-capitalist-loop-when.jsp',
   '/guides/de/idle-capitalist-loop-vs-alternatives.html': 'guide/de/idle-capitalist-loop-vs-alternatives.jsp',
+  // game-discovery-loop-runbook fire126 (2026-07-17): mono-stack-blocks companion guides
+  '/guides/how-to-play-mono-stack-blocks.html': 'guide/how-to-play-mono-stack-blocks.jsp',
+  '/guides/mono-stack-blocks-when.html': 'guide/mono-stack-blocks-when.jsp',
+  '/guides/mono-stack-blocks-vs-alternatives.html': 'guide/mono-stack-blocks-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-mono-stack-blocks.html': 'guide/pt/how-to-play-mono-stack-blocks.jsp',
+  '/guides/pt/mono-stack-blocks-when.html': 'guide/pt/mono-stack-blocks-when.jsp',
+  '/guides/pt/mono-stack-blocks-vs-alternatives.html': 'guide/pt/mono-stack-blocks-vs-alternatives.jsp',
+  '/guides/es/how-to-play-mono-stack-blocks.html': 'guide/es/how-to-play-mono-stack-blocks.jsp',
+  '/guides/es/mono-stack-blocks-when.html': 'guide/es/mono-stack-blocks-when.jsp',
+  '/guides/es/mono-stack-blocks-vs-alternatives.html': 'guide/es/mono-stack-blocks-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-mono-stack-blocks.html': 'guide/vi/how-to-play-mono-stack-blocks.jsp',
+  '/guides/vi/mono-stack-blocks-when.html': 'guide/vi/mono-stack-blocks-when.jsp',
+  '/guides/vi/mono-stack-blocks-vs-alternatives.html': 'guide/vi/mono-stack-blocks-vs-alternatives.jsp',
+  '/guides/id/how-to-play-mono-stack-blocks.html': 'guide/id/how-to-play-mono-stack-blocks.jsp',
+  '/guides/id/mono-stack-blocks-when.html': 'guide/id/mono-stack-blocks-when.jsp',
+  '/guides/id/mono-stack-blocks-vs-alternatives.html': 'guide/id/mono-stack-blocks-vs-alternatives.jsp',
+  '/guides/de/how-to-play-mono-stack-blocks.html': 'guide/de/how-to-play-mono-stack-blocks.jsp',
+  '/guides/de/mono-stack-blocks-when.html': 'guide/de/mono-stack-blocks-when.jsp',
+  '/guides/de/mono-stack-blocks-vs-alternatives.html': 'guide/de/mono-stack-blocks-vs-alternatives.jsp',
 
 
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle guides
@@ -10749,6 +10788,7 @@ export const JSP_BY_ROUTE = {
   '/games/mono-paddle-duel.html': 'games/mono-paddle-duel.jsp',
   '/games/head-soccer-arena.html': 'games/head-soccer-arena.jsp',
   '/games/idle-capitalist-loop.html': 'games/idle-capitalist-loop.jsp',
+  '/games/mono-stack-blocks.html': 'games/mono-stack-blocks.jsp',
   '/games/asteroid-blaster.html': 'games/asteroid-blaster.jsp',
   '/games/hex-puzzle-blocks.html': 'games/hex-puzzle-blocks.jsp',
   '/games/procedural-horde-game.html': 'games/procedural-horde-game.jsp',
