@@ -3114,6 +3114,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/brachiosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/id/brachiosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/de/brachiosaurus-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire22 (2026-07-17): how-to-view-ankylosaurus-in-3d
+  // (EN + pt/es/vi/id/de) - how-to angle for the Ankylosaurus viewer.
+  '/guides/how-to-view-ankylosaurus-in-3d.html',
+  '/guides/pt/how-to-view-ankylosaurus-in-3d.html',
+  '/guides/es/how-to-view-ankylosaurus-in-3d.html',
+  '/guides/vi/how-to-view-ankylosaurus-in-3d.html',
+  '/guides/id/how-to-view-ankylosaurus-in-3d.html',
+  '/guides/de/how-to-view-ankylosaurus-in-3d.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -8898,6 +8906,10 @@ export const JSP_BY_ROUTE = {
   // dedicated click-fact) - no existing feats flag targeted oversized forelimbs;
   // scoped to this page's own BODYJS copy only.
   '/dinosaur-3d/therizinosaurus.html': 'dinosaur/therizinosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
+  // raptor archetype (same code path already shipped for velociraptor) - no new
+  // archetype branch or feature flag required; the real, larger dromaeosaurid
+  // that Jurassic Park's on-screen "Velociraptor" was actually sized on.
   // dinosaur-3d-guides-loop-runbook fire1 (2026-07-15): how-to-view-tyrannosaurus-rex-in-3d
   // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
   '/guides/how-to-view-tyrannosaurus-rex-in-3d.html': 'guide/how-to-view-tyrannosaurus-rex-in-3d.jsp',
@@ -9066,6 +9078,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/brachiosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/brachiosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/brachiosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/brachiosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/brachiosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/brachiosaurus-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire22 (2026-07-17): how-to-view-ankylosaurus-in-3d
+  // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
+  '/guides/how-to-view-ankylosaurus-in-3d.html': 'guide/how-to-view-ankylosaurus-in-3d.jsp',
+  '/guides/pt/how-to-view-ankylosaurus-in-3d.html': 'guide/pt/how-to-view-ankylosaurus-in-3d.jsp',
+  '/guides/es/how-to-view-ankylosaurus-in-3d.html': 'guide/es/how-to-view-ankylosaurus-in-3d.jsp',
+  '/guides/vi/how-to-view-ankylosaurus-in-3d.html': 'guide/vi/how-to-view-ankylosaurus-in-3d.jsp',
+  '/guides/id/how-to-view-ankylosaurus-in-3d.html': 'guide/id/how-to-view-ankylosaurus-in-3d.jsp',
+  '/guides/de/how-to-view-ankylosaurus-in-3d.html': 'guide/de/how-to-view-ankylosaurus-in-3d.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
