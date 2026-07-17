@@ -3052,6 +3052,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/brachiosaurus-size-comparison.html',
   '/guides/id/brachiosaurus-size-comparison.html',
   '/guides/de/brachiosaurus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire21 (2026-07-17): brachiosaurus-3d-viewer-vs-ar-apps
+  // (EN + pt/es/vi/id/de) - vs-alternatives angle for the Brachiosaurus viewer.
+  '/guides/brachiosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/brachiosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/brachiosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/brachiosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/brachiosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/brachiosaurus-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -8993,6 +9001,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/brachiosaurus-size-comparison.html': 'guide/vi/brachiosaurus-size-comparison.jsp',
   '/guides/id/brachiosaurus-size-comparison.html': 'guide/id/brachiosaurus-size-comparison.jsp',
   '/guides/de/brachiosaurus-size-comparison.html': 'guide/de/brachiosaurus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire21 (2026-07-17): brachiosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
+  '/guides/brachiosaurus-3d-viewer-vs-ar-apps.html': 'guide/brachiosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/brachiosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/brachiosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/brachiosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/brachiosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/brachiosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/brachiosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/brachiosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/brachiosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/brachiosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/brachiosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
