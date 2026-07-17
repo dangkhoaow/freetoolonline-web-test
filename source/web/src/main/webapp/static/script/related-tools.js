@@ -546,6 +546,7 @@ try {
     { title: "Date Difference Calculator", url: "https://freetoolonline.com/utility-tools/date-difference-calculator.html", include: !1, tags: "utility" },
     { title: "Video Compressor", url: "https://freetoolonline.com/video-tools/video-compressor.html", include: !1, tags: "video" },
     { title: "Video Splitter", url: "https://freetoolonline.com/video-tools/video-splitter.html", include: !1, tags: "video" },
+    { title: "Video Merger", url: "https://freetoolonline.com/video-tools/video-merger.html", include: !1, tags: "video" },
     { title: "Notepad / Notes", url: "https://freetoolonline.com/utility-tools/note-taking-app.html", include: !1, tags: "utility" },
     { title: "File Encryption Tool", url: "https://freetoolonline.com/developer-tools/file-encryption-tool.html", include: !1, tags: "developer" },
     { title: "Flashcards (Spaced Repetition)", url: "https://freetoolonline.com/utility-tools/flashcards-maker.html", include: !1, tags: "utility" },
