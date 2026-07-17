@@ -5718,6 +5718,26 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/retro-highway-racer-when.html',
   '/guides/de/retro-highway-racer-vs-alternatives.html',
 
+  // new-tool-discovery-loop-runbook fire305 (2026-07-18): hover-racing companion guides
+  '/guides/how-to-play-hover-racing.html',
+  '/guides/hover-racing-when.html',
+  '/guides/hover-racing-vs-alternatives.html',
+  '/guides/pt/how-to-play-hover-racing.html',
+  '/guides/pt/hover-racing-when.html',
+  '/guides/pt/hover-racing-vs-alternatives.html',
+  '/guides/es/how-to-play-hover-racing.html',
+  '/guides/es/hover-racing-when.html',
+  '/guides/es/hover-racing-vs-alternatives.html',
+  '/guides/vi/how-to-play-hover-racing.html',
+  '/guides/vi/hover-racing-when.html',
+  '/guides/vi/hover-racing-vs-alternatives.html',
+  '/guides/id/how-to-play-hover-racing.html',
+  '/guides/id/hover-racing-when.html',
+  '/guides/id/hover-racing-vs-alternatives.html',
+  '/guides/de/how-to-play-hover-racing.html',
+  '/guides/de/hover-racing-when.html',
+  '/guides/de/hover-racing-vs-alternatives.html',
+
   // game-discovery-loop-runbook fire133 (2026-07-18): ritual-catacombs companion guides
   '/guides/how-to-play-ritual-catacombs.html',
   '/guides/ritual-catacombs-when.html',
@@ -9754,6 +9774,26 @@ export const JSP_BY_ROUTE = {
   '/guides/de/how-to-play-retro-highway-racer.html': 'guide/de/how-to-play-retro-highway-racer.jsp',
   '/guides/de/retro-highway-racer-when.html': 'guide/de/retro-highway-racer-when.jsp',
   '/guides/de/retro-highway-racer-vs-alternatives.html': 'guide/de/retro-highway-racer-vs-alternatives.jsp',
+
+  // new-tool-discovery-loop-runbook fire305 (2026-07-18): hover-racing companion guides
+  '/guides/how-to-play-hover-racing.html': 'guide/how-to-play-hover-racing.jsp',
+  '/guides/hover-racing-when.html': 'guide/hover-racing-when.jsp',
+  '/guides/hover-racing-vs-alternatives.html': 'guide/hover-racing-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-hover-racing.html': 'guide/pt/how-to-play-hover-racing.jsp',
+  '/guides/pt/hover-racing-when.html': 'guide/pt/hover-racing-when.jsp',
+  '/guides/pt/hover-racing-vs-alternatives.html': 'guide/pt/hover-racing-vs-alternatives.jsp',
+  '/guides/es/how-to-play-hover-racing.html': 'guide/es/how-to-play-hover-racing.jsp',
+  '/guides/es/hover-racing-when.html': 'guide/es/hover-racing-when.jsp',
+  '/guides/es/hover-racing-vs-alternatives.html': 'guide/es/hover-racing-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-hover-racing.html': 'guide/vi/how-to-play-hover-racing.jsp',
+  '/guides/vi/hover-racing-when.html': 'guide/vi/hover-racing-when.jsp',
+  '/guides/vi/hover-racing-vs-alternatives.html': 'guide/vi/hover-racing-vs-alternatives.jsp',
+  '/guides/id/how-to-play-hover-racing.html': 'guide/id/how-to-play-hover-racing.jsp',
+  '/guides/id/hover-racing-when.html': 'guide/id/hover-racing-when.jsp',
+  '/guides/id/hover-racing-vs-alternatives.html': 'guide/id/hover-racing-vs-alternatives.jsp',
+  '/guides/de/how-to-play-hover-racing.html': 'guide/de/how-to-play-hover-racing.jsp',
+  '/guides/de/hover-racing-when.html': 'guide/de/hover-racing-when.jsp',
+  '/guides/de/hover-racing-vs-alternatives.html': 'guide/de/hover-racing-vs-alternatives.jsp',
 
   // game-discovery-loop-runbook fire133 (2026-07-18): ritual-catacombs companion guides
   '/guides/how-to-play-ritual-catacombs.html': 'guide/how-to-play-ritual-catacombs.jsp',
