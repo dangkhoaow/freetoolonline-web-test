@@ -1,0 +1,184 @@
+<script>
+    // In-browser AI image archetype (photo-restoration) - Transformers.js v4 + ONNX Runtime
+    // Web. ONE skeleton serves two modes, dispatched from the slug (mirrors the
+    // clock-timer / random-picker / calculator slug-dispatch idiom):
+    //   - BACKGROUND REMOVER (default; briaai/RMBG-1.4, segmentation + alpha mask)
+    //   - RESTORATION (Xenova/swin2SR-compressed-sr-x4-48, image-to-image 4x
+    //     denoise/deblock/upscale of a compressed or blurry photo)
+    // 100% client-side: the IMAGE never leaves the browser; only the model weights
+    // download once from the Hugging Face hub and are cached in IndexedDB (offline
+    // afterwards). WebGPU is used when available, else the WASM CPU backend.
+    // Registry Gate-H entries: ai_image_transformersjs (background-remover mode),
+    // ai_image_restoration_transformersjs (restoration mode).
+    //
+    // RESTORATION MODE - verified in a real headless-Chromium browser (WASM path;
+    // new-tool-discovery-loop, 2026-07-17) before this skeleton was authored, per
+    // CLAUDE.md root-cause-discipline (isolation test before claiming a fix):
+    // Xenova/swin2SR-compressed-sr-x4-48 genuinely denoises/deblocks + 4x-upscales a
+    // JPEG-compression-degraded synthetic photo (crisp text/edges, no blocking
+    // artifacts in the output) - confirms the model is NOT a no-op/garbage output.
+    // TRUTHFULNESS SCOPE (load-bearing - do not widen without re-verifying): this
+    // model is a FIXED 4x super-resolution/deblocking network. It does NOT remove
+    // scratches, tears, stains, or repair physical damage, and it does NOT colorize.
+    // The tool-skill claim catalogue + all reader copy MUST describe it as
+    // "sharpens, denoises, and upscales 4x a blurry or compressed photo" - never
+    // "repairs damage" or "fixes scratches". Inference is SLOW on WASM (measured
+    // ~55-70s for a 256x192 input on a software-rendered CPU path with no WebGPU;
+    // real end-user GPUs with WebGPU should be substantially faster) - the input is
+    // capped to a 512px long edge before inference (AI_RESTORE_MAX_EDGE) specifically
+    // so a full-resolution real photo does not push WASM inference past a couple of
+    // minutes; the status text sets that expectation honestly instead of guessing.
+    //
+    // HONEST NOTES (operator, both modes): (1) first run downloads model weights
+    // (~40MB background-remover; swin2SR restoration model is a separate download,
+    // also cached); (2) Transformers.js is loaded via ESM dynamic import from a CDN -
+    // if the site CSP blocks it, self-host @huggingface/transformers under
+    // /vendor/transformers/ and point TF_CDN at it; (3) headless e2e may not exercise
+    // the full model run (the input preview still renders visible output for G16).
+    // Framework contract: doAfterPageRendered(); no top-level DOM. Plain
+    // <input type=file>, no upload widget.
+
+    web.localUpload = false;
+
+    var AI_SLUG = 'photo-restoration';
+    var AI_RESTORE_MAX_EDGE = 512;
+
+    function aiDetectMode(slug) {
+        if (/restor|repair/i.test(slug)) return 'restoration';
+        return 'background-remover';
+    }
+
+    // ESM entry for Transformers.js v4 (WebGPU rewrite). Self-host + repoint here to
+    // remove the CDN dependency: '/vendor/transformers/transformers.min.js'.
+    var TF_CDN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4';
+
+    var aiModelPromise = null;
+    function aiLoadModel(setStatus, mode) {
+        if (aiModelPromise) return aiModelPromise;
+        aiModelPromise = (async function () {
+            var tf = await import(/* webpackIgnore: true */ TF_CDN);
+            var env = tf.env;
+            // Prefer WebGPU; fall back to WASM automatically inside ORT.
+            var device = ('gpu' in navigator) ? 'webgpu' : 'wasm';
+            if (mode === 'restoration') {
+                setStatus('Loading the restoration model (first run downloads the model once, then cached offline) ...');
+                var restorer = await tf.pipeline('image-to-image', 'Xenova/swin2SR-compressed-sr-x4-48', { device: device, dtype: 'fp32' });
+                return { tf: tf, restorer: restorer, RawImage: tf.RawImage, device: device };
+            }
+            setStatus('Loading the AI model (first run downloads ~40MB once, then cached offline) ...');
+            var AutoModel = tf.AutoModel, AutoProcessor = tf.AutoProcessor;
+            var model = await AutoModel.from_pretrained('briaai/RMBG-1.4', { device: device, dtype: 'fp32' });
+            var processor = await AutoProcessor.from_pretrained('briaai/RMBG-1.4');
+            return { tf: tf, model: model, processor: processor, RawImage: tf.RawImage, device: device };
+        })();
+        return aiModelPromise;
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('aiImageTool');
+        if (!root) return; // not an ai-image page
+        var mode = aiDetectMode(AI_SLUG);
+        var isRestore = mode === 'restoration';
+        var runLabel = isRestore ? 'Restore & upscale 4x' : 'Remove background';
+        var introText = isRestore
+            ? 'Choose a blurry or compressed photo. Your image never leaves your browser - it is processed locally.'
+            : 'Choose an image. Your image never leaves your browser - it is processed locally.';
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;"><input type="file" id="aiFile" accept="image/*" class="w3-input w3-border" style="max-width:420px;margin:0 auto;"></div>' +
+            '<div id="aiStatus" style="min-height:1.2em;margin:6px 0;color:#555;">' + introText + '</div>' +
+            '<div class="w3-row"><canvas id="aiCanvas" class="outputImgs" style="visibility:visible !important;max-width:90vw;border:1px solid #ddd;background:repeating-conic-gradient(#eee 0% 25%,#fff 0% 50%) 50%/20px 20px;"></canvas></div>' +
+            '<div style="margin-top:8px;"><button id="aiRun" type="button" class="w3-button w3-green w3-large" disabled>' + runLabel + '</button> ' +
+            '<a id="aiDownload" class="w3-button w3-blue" style="display:none;">Download PNG</a></div>' +
+            '<div id="aiErr" style="color:#b00020;margin-top:6px;min-height:1em;"></div>';
+        var fileEl = root.querySelector('#aiFile'), canvas = root.querySelector('#aiCanvas'), ctx = canvas.getContext('2d');
+        var runBtn = root.querySelector('#aiRun'), dl = root.querySelector('#aiDownload');
+        var statusEl = root.querySelector('#aiStatus'), errEl = root.querySelector('#aiErr');
+        var currentURL = null;
+        function setStatus(m) { statusEl.textContent = m; }
+        function setErr(m) { errEl.textContent = m || ''; }
+
+        // Preview on select (immediate visible output; no model needed yet -> G16).
+        fileEl.addEventListener('change', function () {
+            setErr(''); if (dl) { dl.style.display = 'none'; }
+            var f = fileEl.files && fileEl.files[0]; if (!f) return;
+            if (currentURL) URL.revokeObjectURL(currentURL);
+            currentURL = URL.createObjectURL(f);
+            var img = new Image();
+            img.onload = function () {
+                canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+                ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0);
+                runBtn.disabled = false;
+                setStatus('Preview ready. Click "' + runLabel + '" to process it locally' + (isRestore ? ' (can take up to a minute on the first run while the model warms up).' : '.'));
+            };
+            img.onerror = function () { setErr('Could not read that image.'); };
+            img.src = currentURL;
+        });
+
+        // Downscale the source image so its longest edge <= maxEdge, returning a
+        // data URL. Keeps WASM restoration inference bounded for large real photos
+        // (the model itself always outputs 4x the INPUT it is given).
+        function aiResizeToDataUrl(sourceImg, maxEdge) {
+            var w = sourceImg.naturalWidth || sourceImg.width, h = sourceImg.naturalHeight || sourceImg.height;
+            var scale = Math.min(1, maxEdge / Math.max(w, h));
+            var tw = Math.max(1, Math.round(w * scale)), th = Math.max(1, Math.round(h * scale));
+            var tmpCanvas = document.createElement('canvas');
+            tmpCanvas.width = tw; tmpCanvas.height = th;
+            tmpCanvas.getContext('2d').drawImage(sourceImg, 0, 0, tw, th);
+            return { dataUrl: tmpCanvas.toDataURL('image/png'), resized: scale < 1 };
+        }
+
+        runBtn.addEventListener('click', async function () {
+            if (!currentURL) { setErr('Choose an image first.'); return; }
+            setErr(''); runBtn.disabled = true;
+            try {
+                var m = await aiLoadModel(setStatus, mode);
+                if (isRestore) {
+                    var srcImg = new Image(); srcImg.src = currentURL;
+                    await new Promise(function (r) { srcImg.onload = r; });
+                    var resizeInfo = aiResizeToDataUrl(srcImg, AI_RESTORE_MAX_EDGE);
+                    setStatus('Restoring and upscaling in your browser' + (m.device === 'wasm' ? ' (WASM - this can take up to a minute)' : '') + ' ...' + (resizeInfo.resized ? ' (large photo resized before processing)' : ''));
+                    var inputImage = await m.RawImage.fromURL(resizeInfo.dataUrl);
+                    var output = await m.restorer(inputImage);
+                    var resultImg = Array.isArray(output) ? output[0] : output;
+                    canvas.width = resultImg.width; canvas.height = resultImg.height;
+                    var n = resultImg.width * resultImg.height;
+                    var rgba = new Uint8ClampedArray(n * 4);
+                    for (var i = 0; i < n; i++) {
+                        for (var c = 0; c < resultImg.channels; c++) rgba[i * 4 + Math.min(c, 2)] = resultImg.data[i * resultImg.channels + c];
+                        if (resultImg.channels < 3) { rgba[i * 4 + 1] = rgba[i * 4]; rgba[i * 4 + 2] = rgba[i * 4]; }
+                        rgba[i * 4 + 3] = 255;
+                    }
+                    ctx.putImageData(new ImageData(rgba, resultImg.width, resultImg.height), 0, 0);
+                    canvas.toBlob(function (blob) {
+                        var u = URL.createObjectURL(blob);
+                        dl.href = u; dl.download = 'restored-photo.png'; dl.style.display = '';
+                    }, 'image/png');
+                    setStatus('Done - sharpened, denoised, and upscaled 4x locally, no upload.');
+                } else {
+                    setStatus('Removing background in your browser ...');
+                    var image = await m.RawImage.fromURL(currentURL);
+                    var inputs = await m.processor(image);
+                    var out = await m.model({ input: inputs.pixel_values });
+                    // The model returns an alpha mask in [0,1]; resize to the image + composite.
+                    var maskTensor = (out.output || out.alphas || out.logits);
+                    var mask = await m.RawImage.fromTensor(maskTensor[0].mul(255).to('uint8')).resize(image.width, image.height);
+                    canvas.width = image.width; canvas.height = image.height;
+                    var tmp = new Image(); tmp.src = currentURL;
+                    await new Promise(function (r) { tmp.onload = r; });
+                    ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(tmp, 0, 0, canvas.width, canvas.height);
+                    var id = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    var md = mask.data;
+                    for (var j = 0; j < md.length; j++) { id.data[j * 4 + 3] = md[j]; }
+                    ctx.putImageData(id, 0, 0);
+                    canvas.toBlob(function (blob) {
+                        var u = URL.createObjectURL(blob);
+                        dl.href = u; dl.download = 'no-background.png'; dl.style.display = '';
+                    }, 'image/png');
+                    setStatus('Done - background removed locally, no upload.');
+                }
+            } catch (e) {
+                setErr('Could not run the AI model: ' + (e && e.message ? e.message : String(e)) + '. (If the model failed to load, the site may need Transformers.js self-hosted under /vendor/transformers/.)');
+            } finally { runBtn.disabled = false; }
+        });
+    }
+</script>
