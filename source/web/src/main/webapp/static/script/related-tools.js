@@ -379,6 +379,7 @@ try {
     { title: "Layer Flip Platformer", url: "https://freetoolonline.com/games/layer-flip-platformer.html", include: !1, tags: "games" },
     { title: "Violence Town", url: "https://freetoolonline.com/games/violence-town.html", include: !1, tags: "games" },
     { title: "Claudicus Quest", url: "https://freetoolonline.com/games/claudicus-quest.html", include: !1, tags: "games" },
+    { title: "Neon Energy Arena", url: "https://freetoolonline.com/games/neon-energy-arena.html", include: !1, tags: "games" },
     { title: "Asteroid Blaster", url: "https://freetoolonline.com/games/asteroid-blaster.html", include: !1, tags: "games" },
     { title: "Hex Puzzle Blocks", url: "https://freetoolonline.com/games/hex-puzzle-blocks.html", include: !1, tags: "games" },
     { title: "Procedural Horde Game", url: "https://freetoolonline.com/games/procedural-horde-game.html", include: !1, tags: "games" },
