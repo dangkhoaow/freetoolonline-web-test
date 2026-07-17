@@ -5500,6 +5500,25 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/how-to-play-mono-grid-duel.html',
   '/guides/de/mono-grid-duel-when.html',
   '/guides/de/mono-grid-duel-vs-alternatives.html',
+  // game-discovery-loop-runbook fire129 (2026-07-17): pipe-rotate-puzzle companion guides
+  '/guides/how-to-play-pipe-rotate-puzzle.html',
+  '/guides/pipe-rotate-puzzle-when.html',
+  '/guides/pipe-rotate-puzzle-vs-alternatives.html',
+  '/guides/pt/how-to-play-pipe-rotate-puzzle.html',
+  '/guides/pt/pipe-rotate-puzzle-when.html',
+  '/guides/pt/pipe-rotate-puzzle-vs-alternatives.html',
+  '/guides/es/how-to-play-pipe-rotate-puzzle.html',
+  '/guides/es/pipe-rotate-puzzle-when.html',
+  '/guides/es/pipe-rotate-puzzle-vs-alternatives.html',
+  '/guides/vi/how-to-play-pipe-rotate-puzzle.html',
+  '/guides/vi/pipe-rotate-puzzle-when.html',
+  '/guides/vi/pipe-rotate-puzzle-vs-alternatives.html',
+  '/guides/id/how-to-play-pipe-rotate-puzzle.html',
+  '/guides/id/pipe-rotate-puzzle-when.html',
+  '/guides/id/pipe-rotate-puzzle-vs-alternatives.html',
+  '/guides/de/how-to-play-pipe-rotate-puzzle.html',
+  '/guides/de/pipe-rotate-puzzle-when.html',
+  '/guides/de/pipe-rotate-puzzle-vs-alternatives.html',
 
 
 
@@ -7708,6 +7727,7 @@ export const ALIAS_ROUTES = {
   '/idle-capitalist-loop.html': '/games/idle-capitalist-loop.html',
   '/mono-stack-blocks.html': '/games/mono-stack-blocks.html',
   '/mono-grid-duel.html': '/games/mono-grid-duel.html',
+  '/pipe-rotate-puzzle.html': '/games/pipe-rotate-puzzle.html',
 
   '/gravity-orbit-golf.html': '/games/gravity-orbit-golf.html',
 
@@ -9382,6 +9402,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/how-to-play-mono-grid-duel.html': 'guide/de/how-to-play-mono-grid-duel.jsp',
   '/guides/de/mono-grid-duel-when.html': 'guide/de/mono-grid-duel-when.jsp',
   '/guides/de/mono-grid-duel-vs-alternatives.html': 'guide/de/mono-grid-duel-vs-alternatives.jsp',
+  // game-discovery-loop-runbook fire129 (2026-07-17): pipe-rotate-puzzle companion guides
+  '/guides/how-to-play-pipe-rotate-puzzle.html': 'guide/how-to-play-pipe-rotate-puzzle.jsp',
+  '/guides/pipe-rotate-puzzle-when.html': 'guide/pipe-rotate-puzzle-when.jsp',
+  '/guides/pipe-rotate-puzzle-vs-alternatives.html': 'guide/pipe-rotate-puzzle-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-pipe-rotate-puzzle.html': 'guide/pt/how-to-play-pipe-rotate-puzzle.jsp',
+  '/guides/pt/pipe-rotate-puzzle-when.html': 'guide/pt/pipe-rotate-puzzle-when.jsp',
+  '/guides/pt/pipe-rotate-puzzle-vs-alternatives.html': 'guide/pt/pipe-rotate-puzzle-vs-alternatives.jsp',
+  '/guides/es/how-to-play-pipe-rotate-puzzle.html': 'guide/es/how-to-play-pipe-rotate-puzzle.jsp',
+  '/guides/es/pipe-rotate-puzzle-when.html': 'guide/es/pipe-rotate-puzzle-when.jsp',
+  '/guides/es/pipe-rotate-puzzle-vs-alternatives.html': 'guide/es/pipe-rotate-puzzle-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-pipe-rotate-puzzle.html': 'guide/vi/how-to-play-pipe-rotate-puzzle.jsp',
+  '/guides/vi/pipe-rotate-puzzle-when.html': 'guide/vi/pipe-rotate-puzzle-when.jsp',
+  '/guides/vi/pipe-rotate-puzzle-vs-alternatives.html': 'guide/vi/pipe-rotate-puzzle-vs-alternatives.jsp',
+  '/guides/id/how-to-play-pipe-rotate-puzzle.html': 'guide/id/how-to-play-pipe-rotate-puzzle.jsp',
+  '/guides/id/pipe-rotate-puzzle-when.html': 'guide/id/pipe-rotate-puzzle-when.jsp',
+  '/guides/id/pipe-rotate-puzzle-vs-alternatives.html': 'guide/id/pipe-rotate-puzzle-vs-alternatives.jsp',
+  '/guides/de/how-to-play-pipe-rotate-puzzle.html': 'guide/de/how-to-play-pipe-rotate-puzzle.jsp',
+  '/guides/de/pipe-rotate-puzzle-when.html': 'guide/de/pipe-rotate-puzzle-when.jsp',
+  '/guides/de/pipe-rotate-puzzle-vs-alternatives.html': 'guide/de/pipe-rotate-puzzle-vs-alternatives.jsp',
 
 
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle guides
@@ -10848,6 +10887,7 @@ export const JSP_BY_ROUTE = {
   '/games/idle-capitalist-loop.html': 'games/idle-capitalist-loop.jsp',
   '/games/mono-stack-blocks.html': 'games/mono-stack-blocks.jsp',
   '/games/mono-grid-duel.html': 'games/mono-grid-duel.jsp',
+  '/games/pipe-rotate-puzzle.html': 'games/pipe-rotate-puzzle.jsp',
   '/games/asteroid-blaster.html': 'games/asteroid-blaster.jsp',
   '/games/hex-puzzle-blocks.html': 'games/hex-puzzle-blocks.jsp',
   '/games/procedural-horde-game.html': 'games/procedural-horde-game.jsp',
