@@ -525,6 +525,7 @@ try {
     { title: "Magnetic Reconnection 3D Explorer", url: "https://freetoolonline.com/space-3d/magnetic-reconnection.html", include: !1, tags: "space-3d" },
     { title: "Apsidal Precession 3D Explorer", url: "https://freetoolonline.com/space-3d/apsidal-precession.html", include: !1, tags: "space-3d" },
     { title: "Synodic Lunar Month 3D Explorer", url: "https://freetoolonline.com/space-3d/synodic-lunar-month.html", include: !1, tags: "space-3d" },
+    { title: "Earth-Moon Barycenter 3D Explorer", url: "https://freetoolonline.com/space-3d/earth-moon-barycenter.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
