@@ -5578,7 +5578,25 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/black-hole-square-when.html',
   '/guides/de/black-hole-square-vs-alternatives.html',
 
-
+  // game-discovery-loop-runbook fire131 (2026-07-18): pixel-park-puzzle companion guides
+  '/guides/how-to-play-pixel-park-puzzle.html',
+  '/guides/pixel-park-puzzle-when.html',
+  '/guides/pixel-park-puzzle-vs-alternatives.html',
+  '/guides/pt/how-to-play-pixel-park-puzzle.html',
+  '/guides/pt/pixel-park-puzzle-when.html',
+  '/guides/pt/pixel-park-puzzle-vs-alternatives.html',
+  '/guides/es/how-to-play-pixel-park-puzzle.html',
+  '/guides/es/pixel-park-puzzle-when.html',
+  '/guides/es/pixel-park-puzzle-vs-alternatives.html',
+  '/guides/vi/how-to-play-pixel-park-puzzle.html',
+  '/guides/vi/pixel-park-puzzle-when.html',
+  '/guides/vi/pixel-park-puzzle-vs-alternatives.html',
+  '/guides/id/how-to-play-pixel-park-puzzle.html',
+  '/guides/id/pixel-park-puzzle-when.html',
+  '/guides/id/pixel-park-puzzle-vs-alternatives.html',
+  '/guides/de/how-to-play-pixel-park-puzzle.html',
+  '/guides/de/pixel-park-puzzle-when.html',
+  '/guides/de/pixel-park-puzzle-vs-alternatives.html',
 
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle
   '/guides/how-to-play-cyber-slide-puzzle.html',
@@ -7789,6 +7807,7 @@ export const ALIAS_ROUTES = {
   '/mono-grid-duel.html': '/games/mono-grid-duel.html',
   '/pipe-rotate-puzzle.html': '/games/pipe-rotate-puzzle.html',
   '/black-hole-square.html': '/games/black-hole-square.html',
+  '/pixel-park-puzzle.html': '/games/pixel-park-puzzle.html',
 
   '/gravity-orbit-golf.html': '/games/gravity-orbit-golf.html',
 
@@ -9504,6 +9523,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/black-hole-square-when.html': 'guide/de/black-hole-square-when.jsp',
   '/guides/de/black-hole-square-vs-alternatives.html': 'guide/de/black-hole-square-vs-alternatives.jsp',
 
+  // game-discovery-loop-runbook fire131 (2026-07-18): pixel-park-puzzle companion guides
+  '/guides/how-to-play-pixel-park-puzzle.html': 'guide/how-to-play-pixel-park-puzzle.jsp',
+  '/guides/pixel-park-puzzle-when.html': 'guide/pixel-park-puzzle-when.jsp',
+  '/guides/pixel-park-puzzle-vs-alternatives.html': 'guide/pixel-park-puzzle-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-pixel-park-puzzle.html': 'guide/pt/how-to-play-pixel-park-puzzle.jsp',
+  '/guides/pt/pixel-park-puzzle-when.html': 'guide/pt/pixel-park-puzzle-when.jsp',
+  '/guides/pt/pixel-park-puzzle-vs-alternatives.html': 'guide/pt/pixel-park-puzzle-vs-alternatives.jsp',
+  '/guides/es/how-to-play-pixel-park-puzzle.html': 'guide/es/how-to-play-pixel-park-puzzle.jsp',
+  '/guides/es/pixel-park-puzzle-when.html': 'guide/es/pixel-park-puzzle-when.jsp',
+  '/guides/es/pixel-park-puzzle-vs-alternatives.html': 'guide/es/pixel-park-puzzle-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-pixel-park-puzzle.html': 'guide/vi/how-to-play-pixel-park-puzzle.jsp',
+  '/guides/vi/pixel-park-puzzle-when.html': 'guide/vi/pixel-park-puzzle-when.jsp',
+  '/guides/vi/pixel-park-puzzle-vs-alternatives.html': 'guide/vi/pixel-park-puzzle-vs-alternatives.jsp',
+  '/guides/id/how-to-play-pixel-park-puzzle.html': 'guide/id/how-to-play-pixel-park-puzzle.jsp',
+  '/guides/id/pixel-park-puzzle-when.html': 'guide/id/pixel-park-puzzle-when.jsp',
+  '/guides/id/pixel-park-puzzle-vs-alternatives.html': 'guide/id/pixel-park-puzzle-vs-alternatives.jsp',
+  '/guides/de/how-to-play-pixel-park-puzzle.html': 'guide/de/how-to-play-pixel-park-puzzle.jsp',
+  '/guides/de/pixel-park-puzzle-when.html': 'guide/de/pixel-park-puzzle-when.jsp',
+  '/guides/de/pixel-park-puzzle-vs-alternatives.html': 'guide/de/pixel-park-puzzle-vs-alternatives.jsp',
 
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle guides
   '/guides/how-to-play-cyber-slide-puzzle.html': 'guide/how-to-play-cyber-slide-puzzle.jsp',
@@ -10980,6 +11018,7 @@ export const JSP_BY_ROUTE = {
   '/games/mono-grid-duel.html': 'games/mono-grid-duel.jsp',
   '/games/pipe-rotate-puzzle.html': 'games/pipe-rotate-puzzle.jsp',
   '/games/black-hole-square.html': 'games/black-hole-square.jsp',
+  '/games/pixel-park-puzzle.html': 'games/pixel-park-puzzle.jsp',
   '/games/asteroid-blaster.html': 'games/asteroid-blaster.jsp',
   '/games/hex-puzzle-blocks.html': 'games/hex-puzzle-blocks.jsp',
   '/games/procedural-horde-game.html': 'games/procedural-horde-game.jsp',
