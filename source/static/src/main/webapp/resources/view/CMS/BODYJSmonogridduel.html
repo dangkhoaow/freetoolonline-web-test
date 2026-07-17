@@ -1,0 +1,48 @@
+<script>
+    web.localUpload = false;
+    var MGD_GAME_URL = 'mono-grid-duel/index.html';
+    function mgdStatus(text) {
+        var el = document.getElementById('mgdStatus');
+        if (el) el.textContent = text;
+    }
+    function mgdInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'mgdFrame';
+        frame.src = MGD_GAME_URL;
+        frame.title = 'Mono Grid Duel game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            mgdStatus('Game loaded. Click cells or use numpad/arrows. R restarts. Settings for CPU difficulty.');
+            try { frame.contentWindow.focus(); } catch (e) {}
+        });
+        var launch = document.getElementById('mgdLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('mgdStage');
+        var playBtn = document.getElementById('mgdPlayBtn');
+        if (!stage || !playBtn) return;
+        if (playBtn.dataset.bound === '1') return;
+        playBtn.dataset.bound = '1';
+        var fsBtn = document.getElementById('mgdFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            mgdStatus('Loading the game (about 64 KB, one time - then cached)...');
+            mgdInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('mgdFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) {} }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', doAfterPageRendered);
+    } else {
+        doAfterPageRendered();
+    }
+</script>

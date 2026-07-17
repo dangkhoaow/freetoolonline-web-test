@@ -5481,6 +5481,25 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/how-to-play-mono-stack-blocks.html',
   '/guides/de/mono-stack-blocks-when.html',
   '/guides/de/mono-stack-blocks-vs-alternatives.html',
+  // game-discovery-loop-runbook fire127 (2026-07-18): mono-grid-duel companion guides
+  '/guides/how-to-play-mono-grid-duel.html',
+  '/guides/mono-grid-duel-when.html',
+  '/guides/mono-grid-duel-vs-alternatives.html',
+  '/guides/pt/how-to-play-mono-grid-duel.html',
+  '/guides/pt/mono-grid-duel-when.html',
+  '/guides/pt/mono-grid-duel-vs-alternatives.html',
+  '/guides/es/how-to-play-mono-grid-duel.html',
+  '/guides/es/mono-grid-duel-when.html',
+  '/guides/es/mono-grid-duel-vs-alternatives.html',
+  '/guides/vi/how-to-play-mono-grid-duel.html',
+  '/guides/vi/mono-grid-duel-when.html',
+  '/guides/vi/mono-grid-duel-vs-alternatives.html',
+  '/guides/id/how-to-play-mono-grid-duel.html',
+  '/guides/id/mono-grid-duel-when.html',
+  '/guides/id/mono-grid-duel-vs-alternatives.html',
+  '/guides/de/how-to-play-mono-grid-duel.html',
+  '/guides/de/mono-grid-duel-when.html',
+  '/guides/de/mono-grid-duel-vs-alternatives.html',
 
 
 
@@ -7688,6 +7707,7 @@ export const ALIAS_ROUTES = {
   '/head-soccer-arena.html': '/games/head-soccer-arena.html',
   '/idle-capitalist-loop.html': '/games/idle-capitalist-loop.html',
   '/mono-stack-blocks.html': '/games/mono-stack-blocks.html',
+  '/mono-grid-duel.html': '/games/mono-grid-duel.html',
 
   '/gravity-orbit-golf.html': '/games/gravity-orbit-golf.html',
 
@@ -9343,6 +9363,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/how-to-play-mono-stack-blocks.html': 'guide/de/how-to-play-mono-stack-blocks.jsp',
   '/guides/de/mono-stack-blocks-when.html': 'guide/de/mono-stack-blocks-when.jsp',
   '/guides/de/mono-stack-blocks-vs-alternatives.html': 'guide/de/mono-stack-blocks-vs-alternatives.jsp',
+  // game-discovery-loop-runbook fire127 (2026-07-18): mono-grid-duel companion guides
+  '/guides/how-to-play-mono-grid-duel.html': 'guide/how-to-play-mono-grid-duel.jsp',
+  '/guides/mono-grid-duel-when.html': 'guide/mono-grid-duel-when.jsp',
+  '/guides/mono-grid-duel-vs-alternatives.html': 'guide/mono-grid-duel-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-mono-grid-duel.html': 'guide/pt/how-to-play-mono-grid-duel.jsp',
+  '/guides/pt/mono-grid-duel-when.html': 'guide/pt/mono-grid-duel-when.jsp',
+  '/guides/pt/mono-grid-duel-vs-alternatives.html': 'guide/pt/mono-grid-duel-vs-alternatives.jsp',
+  '/guides/es/how-to-play-mono-grid-duel.html': 'guide/es/how-to-play-mono-grid-duel.jsp',
+  '/guides/es/mono-grid-duel-when.html': 'guide/es/mono-grid-duel-when.jsp',
+  '/guides/es/mono-grid-duel-vs-alternatives.html': 'guide/es/mono-grid-duel-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-mono-grid-duel.html': 'guide/vi/how-to-play-mono-grid-duel.jsp',
+  '/guides/vi/mono-grid-duel-when.html': 'guide/vi/mono-grid-duel-when.jsp',
+  '/guides/vi/mono-grid-duel-vs-alternatives.html': 'guide/vi/mono-grid-duel-vs-alternatives.jsp',
+  '/guides/id/how-to-play-mono-grid-duel.html': 'guide/id/how-to-play-mono-grid-duel.jsp',
+  '/guides/id/mono-grid-duel-when.html': 'guide/id/mono-grid-duel-when.jsp',
+  '/guides/id/mono-grid-duel-vs-alternatives.html': 'guide/id/mono-grid-duel-vs-alternatives.jsp',
+  '/guides/de/how-to-play-mono-grid-duel.html': 'guide/de/how-to-play-mono-grid-duel.jsp',
+  '/guides/de/mono-grid-duel-when.html': 'guide/de/mono-grid-duel-when.jsp',
+  '/guides/de/mono-grid-duel-vs-alternatives.html': 'guide/de/mono-grid-duel-vs-alternatives.jsp',
 
 
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle guides
@@ -10808,6 +10847,7 @@ export const JSP_BY_ROUTE = {
   '/games/head-soccer-arena.html': 'games/head-soccer-arena.jsp',
   '/games/idle-capitalist-loop.html': 'games/idle-capitalist-loop.jsp',
   '/games/mono-stack-blocks.html': 'games/mono-stack-blocks.jsp',
+  '/games/mono-grid-duel.html': 'games/mono-grid-duel.jsp',
   '/games/asteroid-blaster.html': 'games/asteroid-blaster.jsp',
   '/games/hex-puzzle-blocks.html': 'games/hex-puzzle-blocks.jsp',
   '/games/procedural-horde-game.html': 'games/procedural-horde-game.jsp',
