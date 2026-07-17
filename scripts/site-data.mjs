@@ -14,6 +14,27 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  // new-tool-discovery-loop-runbook fire285 (2026-07-17/18): video-merger
+  // companion guides (3 angles x EN + pt/es/vi/id/de) - paraphrased from
+  // tool-videomerger/SKILL.md framing menu only.
+  '/guides/video-merger-when.html',
+  '/guides/pt/video-merger-when.html',
+  '/guides/es/video-merger-when.html',
+  '/guides/vi/video-merger-when.html',
+  '/guides/id/video-merger-when.html',
+  '/guides/de/video-merger-when.html',
+  '/guides/video-merger-step-by-step.html',
+  '/guides/pt/video-merger-step-by-step.html',
+  '/guides/es/video-merger-step-by-step.html',
+  '/guides/vi/video-merger-step-by-step.html',
+  '/guides/id/video-merger-step-by-step.html',
+  '/guides/de/video-merger-step-by-step.html',
+  '/guides/video-merger-vs-alternatives.html',
+  '/guides/pt/video-merger-vs-alternatives.html',
+  '/guides/es/video-merger-vs-alternatives.html',
+  '/guides/vi/video-merger-vs-alternatives.html',
+  '/guides/id/video-merger-vs-alternatives.html',
+  '/guides/de/video-merger-vs-alternatives.html',
   '/guides/video-splitter-vs-alternatives.html',
   '/guides/video-splitter-step-by-step.html',
   '/guides/video-splitter-when.html',
@@ -7866,6 +7887,7 @@ export const ALIAS_ROUTES = {
   '/age-calculator.html': '/utility-tools/age-calculator.html',
   '/photo-restoration.html': '/image-tools/photo-restoration.html',
   '/video-splitter.html': '/video-tools/video-splitter.html',
+  '/video-merger.html': '/video-tools/video-merger.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -13416,6 +13438,29 @@ export const JSP_BY_ROUTE = {
   '/guides/de/video-splitter-when.html': 'guide/de/video-splitter-when.jsp',
   '/guides/de/video-splitter-step-by-step.html': 'guide/de/video-splitter-step-by-step.jsp',
   '/guides/de/video-splitter-vs-alternatives.html': 'guide/de/video-splitter-vs-alternatives.jsp',
+  // new-tool-discovery-loop-runbook fire285 (2026-07-17/18): video-merger
+  // (resolves the 30+ fire Gate-H registry-starvation escalation - see
+  // gate-h-registry-starvation-video-merger-1784295044378.json) + its 3 EN
+  // companion guide angles x pt/es/vi/id/de locale fanout.
+  '/video-tools/video-merger.html': 'convert/video-merger.jsp',
+  '/guides/video-merger-when.html': 'guide/video-merger-when.jsp',
+  '/guides/video-merger-step-by-step.html': 'guide/video-merger-step-by-step.jsp',
+  '/guides/video-merger-vs-alternatives.html': 'guide/video-merger-vs-alternatives.jsp',
+  '/guides/pt/video-merger-when.html': 'guide/pt/video-merger-when.jsp',
+  '/guides/pt/video-merger-step-by-step.html': 'guide/pt/video-merger-step-by-step.jsp',
+  '/guides/pt/video-merger-vs-alternatives.html': 'guide/pt/video-merger-vs-alternatives.jsp',
+  '/guides/es/video-merger-when.html': 'guide/es/video-merger-when.jsp',
+  '/guides/es/video-merger-step-by-step.html': 'guide/es/video-merger-step-by-step.jsp',
+  '/guides/es/video-merger-vs-alternatives.html': 'guide/es/video-merger-vs-alternatives.jsp',
+  '/guides/vi/video-merger-when.html': 'guide/vi/video-merger-when.jsp',
+  '/guides/vi/video-merger-step-by-step.html': 'guide/vi/video-merger-step-by-step.jsp',
+  '/guides/vi/video-merger-vs-alternatives.html': 'guide/vi/video-merger-vs-alternatives.jsp',
+  '/guides/id/video-merger-when.html': 'guide/id/video-merger-when.jsp',
+  '/guides/id/video-merger-step-by-step.html': 'guide/id/video-merger-step-by-step.jsp',
+  '/guides/id/video-merger-vs-alternatives.html': 'guide/id/video-merger-vs-alternatives.jsp',
+  '/guides/de/video-merger-when.html': 'guide/de/video-merger-when.jsp',
+  '/guides/de/video-merger-step-by-step.html': 'guide/de/video-merger-step-by-step.jsp',
+  '/guides/de/video-merger-vs-alternatives.html': 'guide/de/video-merger-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
