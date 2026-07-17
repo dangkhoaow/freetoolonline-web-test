@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/age-calculator-vs-alternatives.html',
+  '/guides/age-calculator-step-by-step.html',
+  '/guides/age-calculator-when.html',
   '/guides/passport-photo-maker-vs-alternatives.html',
   '/guides/passport-photo-maker-step-by-step.html',
   '/guides/passport-photo-maker-when.html',
@@ -4311,6 +4314,30 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/percentage-calculator-step-by-step.html',
   '/guides/de/percentage-calculator-when.html',
   '/guides/de/percentage-calculator-vs-alternatives.html',
+  // new-tool-discovery-loop-runbook fire248 (2026-07-17): age-calculator EN +
+  // pt/es/vi/id/de guides (proactive GUIDE_ROUTES registration alongside the
+  // builder's INFO_ROUTES entry, to avoid the same sitemap-guides.xml /
+  // guides.html / llms.txt drop that percentage-calculator + date-difference-
+  // calculator needed a later backfill for - see the block above and the
+  // block at line ~3359).
+  '/guides/age-calculator-when.html',
+  '/guides/age-calculator-step-by-step.html',
+  '/guides/age-calculator-vs-alternatives.html',
+  '/guides/pt/age-calculator-when.html',
+  '/guides/pt/age-calculator-step-by-step.html',
+  '/guides/pt/age-calculator-vs-alternatives.html',
+  '/guides/es/age-calculator-when.html',
+  '/guides/es/age-calculator-step-by-step.html',
+  '/guides/es/age-calculator-vs-alternatives.html',
+  '/guides/vi/age-calculator-when.html',
+  '/guides/vi/age-calculator-step-by-step.html',
+  '/guides/vi/age-calculator-vs-alternatives.html',
+  '/guides/id/age-calculator-when.html',
+  '/guides/id/age-calculator-step-by-step.html',
+  '/guides/id/age-calculator-vs-alternatives.html',
+  '/guides/de/age-calculator-when.html',
+  '/guides/de/age-calculator-step-by-step.html',
+  '/guides/de/age-calculator-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire (2026-07-06): password-generator
   // EN + pt/es/vi/id/de guides (backfill - JSP_BY_ROUTE/CMS/JSP were already
   // shipped by a prior fire but GUIDE_ROUTES was never populated for this
@@ -6886,6 +6913,7 @@ export const ALIAS_ROUTES = {
   '/case-converter.html': '/developer-tools/case-converter.html',
   '/image-to-text-ocr.html': '/image-tools/image-to-text-ocr.html',
   '/passport-photo-maker.html': '/image-tools/passport-photo-maker.html',
+  '/age-calculator.html': '/utility-tools/age-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -11447,6 +11475,27 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/passport-photo-maker-vs-alternatives.html': 'guide/vi/passport-photo-maker-vs-alternatives.jsp',
   '/guides/id/passport-photo-maker-vs-alternatives.html': 'guide/id/passport-photo-maker-vs-alternatives.jsp',
   '/guides/de/passport-photo-maker-vs-alternatives.html': 'guide/de/passport-photo-maker-vs-alternatives.jsp',
+  '/utility-tools/age-calculator.html': 'utility/age-calculator.jsp',
+  '/guides/age-calculator-when.html': 'guide/age-calculator-when.jsp',
+  '/guides/age-calculator-step-by-step.html': 'guide/age-calculator-step-by-step.jsp',
+  '/guides/age-calculator-vs-alternatives.html': 'guide/age-calculator-vs-alternatives.jsp',
+  // new-tool-discovery-loop-runbook fire248 (2026-07-17): age-calculator
+  // pt/es/vi/id/de locale fanout (locked-locale contract, 3 angles x 5 locales).
+  '/guides/pt/age-calculator-when.html': 'guide/pt/age-calculator-when.jsp',
+  '/guides/pt/age-calculator-step-by-step.html': 'guide/pt/age-calculator-step-by-step.jsp',
+  '/guides/pt/age-calculator-vs-alternatives.html': 'guide/pt/age-calculator-vs-alternatives.jsp',
+  '/guides/es/age-calculator-when.html': 'guide/es/age-calculator-when.jsp',
+  '/guides/es/age-calculator-step-by-step.html': 'guide/es/age-calculator-step-by-step.jsp',
+  '/guides/es/age-calculator-vs-alternatives.html': 'guide/es/age-calculator-vs-alternatives.jsp',
+  '/guides/vi/age-calculator-when.html': 'guide/vi/age-calculator-when.jsp',
+  '/guides/vi/age-calculator-step-by-step.html': 'guide/vi/age-calculator-step-by-step.jsp',
+  '/guides/vi/age-calculator-vs-alternatives.html': 'guide/vi/age-calculator-vs-alternatives.jsp',
+  '/guides/id/age-calculator-when.html': 'guide/id/age-calculator-when.jsp',
+  '/guides/id/age-calculator-step-by-step.html': 'guide/id/age-calculator-step-by-step.jsp',
+  '/guides/id/age-calculator-vs-alternatives.html': 'guide/id/age-calculator-vs-alternatives.jsp',
+  '/guides/de/age-calculator-when.html': 'guide/de/age-calculator-when.jsp',
+  '/guides/de/age-calculator-step-by-step.html': 'guide/de/age-calculator-step-by-step.jsp',
+  '/guides/de/age-calculator-vs-alternatives.html': 'guide/de/age-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

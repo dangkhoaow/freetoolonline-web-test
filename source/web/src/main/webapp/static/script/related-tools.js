@@ -510,6 +510,7 @@ try {
     { title: "Text Case Converter", url: "https://freetoolonline.com/developer-tools/case-converter.html", include: !1, tags: "developer" },
     { title: "Image to Text (OCR)", url: "https://freetoolonline.com/image-tools/image-to-text-ocr.html", include: !1, tags: "image-editing" },
     { title: "Passport Photo Maker", url: "https://freetoolonline.com/image-tools/passport-photo-maker.html", include: !1, tags: "image-editing" },
+    { title: "Age Calculator", url: "https://freetoolonline.com/utility-tools/age-calculator.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
