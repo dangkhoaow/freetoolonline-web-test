@@ -624,9 +624,29 @@ const MINI_PICTOGRAM_PUBLIC_PREFIX = '/img/illustrations/mini-pictogram';
  * wrapper-repo lookup at build time. Newest render (lexicographically last
  * hash) wins when a slug has several files. Fail-open: unreadable dir/file
  * just means text-only cards.
+ *
+ * Naming contract (2026-07-17 fix): preferred filename is
+ * `<cmsSlug>__<8hex>.svg` from seo-svg-diagram-author. Space-3d ships were
+ * hand-writing `<cmsSlug>__hand.svg` instead; those were invisible to the
+ * hash-only regex and the hub card rendered text-only. Accept `__hand.svg`
+ * as a FALLBACK (rank 0); a hash8 file (rank 1) always wins when both exist.
  */
+function pictogramAltFromSvg(svg, slug) {
+  const t = svg.match(/<title[^>]*>([^<]*)<\/title>/);
+  const d = svg.match(/<desc[^>]*>([^<]*)<\/desc>/);
+  const aria = svg.match(/\baria-label="([^"]+)"/);
+  const alt = [t?.[1], d?.[1], aria?.[1]]
+    .filter(Boolean)
+    .map((s) => s.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .map((s) => (/[.!?]$/.test(s) ? s : `${s}.`))
+    .join(' ');
+  return alt || `${slug} tool icon.`;
+}
+
 async function loadMiniPictogramMap() {
   const map = new Map();
+  const rank = new Map(); // slug -> 0 hand | 1 hash8
   let entries = [];
   try {
     entries = await fsPromises.readdir(MINI_PICTOGRAM_DIR);
@@ -634,19 +654,16 @@ async function loadMiniPictogramMap() {
     return map;
   }
   for (const name of entries.sort()) {
-    const m = name.match(/^([a-z0-9]+)__[0-9a-f]{8}\.svg$/);
+    const m = name.match(/^([a-z0-9]+)__(?:([0-9a-f]{8})|(hand))\.svg$/);
     if (!m) continue;
+    const slug = m[1];
+    const thisRank = m[2] ? 1 : 0;
+    if ((rank.get(slug) ?? -1) > thisRank) continue;
     try {
       const svg = await fsPromises.readFile(path.join(MINI_PICTOGRAM_DIR, name), 'utf8');
-      const t = svg.match(/<title[^>]*>([^<]*)<\/title>/);
-      const d = svg.match(/<desc[^>]*>([^<]*)<\/desc>/);
-      const alt = [t?.[1], d?.[1]]
-        .filter(Boolean)
-        .map((s) => s.replace(/\s+/g, ' ').trim())
-        .filter(Boolean)
-        .map((s) => (/[.!?]$/.test(s) ? s : `${s}.`))
-        .join(' ');
-      if (alt) map.set(m[1], { file: name, alt });
+      const alt = pictogramAltFromSvg(svg, slug);
+      map.set(slug, { file: name, alt });
+      rank.set(slug, thisRank);
     } catch { /* unreadable file -> text-only card for that slug */ }
   }
   return map;
