@@ -377,6 +377,7 @@ try {
     { title: "Globe Siege", url: "https://freetoolonline.com/games/globe-siege.html", include: !1, tags: "games" },
     { title: "Void Trader", url: "https://freetoolonline.com/games/void-trader.html", include: !1, tags: "games" },
     { title: "Layer Flip Platformer", url: "https://freetoolonline.com/games/layer-flip-platformer.html", include: !1, tags: "games" },
+    { title: "Violence Town", url: "https://freetoolonline.com/games/violence-town.html", include: !1, tags: "games" },
     { title: "Asteroid Blaster", url: "https://freetoolonline.com/games/asteroid-blaster.html", include: !1, tags: "games" },
     { title: "Hex Puzzle Blocks", url: "https://freetoolonline.com/games/hex-puzzle-blocks.html", include: !1, tags: "games" },
     { title: "Procedural Horde Game", url: "https://freetoolonline.com/games/procedural-horde-game.html", include: !1, tags: "games" },
