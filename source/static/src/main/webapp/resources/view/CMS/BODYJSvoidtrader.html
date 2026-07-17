@@ -1,0 +1,58 @@
+<script>
+    // Void Trader launcher. The game is the open-source Orbitron engine
+    // (Daniel Silva Perez; MIT - full analysis in tool-voidtrader/SKILL.md),
+    // vendored as a single static file at games/void-trader/ in an isolated
+    // same-origin iframe: one ~50 KB HTML file, Canvas 2D + Web Audio, no
+    // asset files, no analytics, no CDN. The iframe loads only when the
+    // reader presses Play.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    // Relative to /games/, so it resolves under any base path (staging subpath
+    // included) without needing BASE_PATH.
+    var VT_GAME_URL = 'void-trader/index.html';
+
+    function vtStatus(text) {
+        var el = document.getElementById('vtStatus');
+        if (el) el.textContent = text;
+    }
+
+    function vtInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'vtFrame';
+        frame.src = VT_GAME_URL;
+        frame.title = 'Void Trader game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            vtStatus('Game loaded. Press LAUNCH, then WASD to fly, mouse to aim, E to dock.');
+            try { frame.contentWindow.focus(); } catch (e) { /* focus is best-effort */ }
+        });
+        var launch = document.getElementById('vtLaunch');
+        if (launch && launch.parentNode === stage) { stage.removeChild(launch); }
+        stage.appendChild(frame);
+        return frame;
+    }
+
+    function doAfterPageRendered() {
+        var stage = document.getElementById('vtStage');
+        var playBtn = document.getElementById('vtPlayBtn');
+        if (!stage || !playBtn) return; // not this page
+
+        var fsBtn = document.getElementById('vtFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            vtStatus('Loading the game (about 50 KB, one time - then cached)...');
+            vtInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) { stage.requestFullscreen(); }
+            else if (stage.webkitRequestFullscreen) { stage.webkitRequestFullscreen(); }
+            var frame = document.getElementById('vtFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) { } }
+        });
+    }
+</script>
