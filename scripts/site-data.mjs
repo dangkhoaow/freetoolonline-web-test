@@ -5654,6 +5654,26 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/wash-the-cat-when.html',
   '/guides/de/wash-the-cat-vs-alternatives.html',
 
+  // game-discovery-loop-runbook fire133 (2026-07-18): ritual-catacombs companion guides
+  '/guides/how-to-play-ritual-catacombs.html',
+  '/guides/ritual-catacombs-when.html',
+  '/guides/ritual-catacombs-vs-alternatives.html',
+  '/guides/pt/how-to-play-ritual-catacombs.html',
+  '/guides/pt/ritual-catacombs-when.html',
+  '/guides/pt/ritual-catacombs-vs-alternatives.html',
+  '/guides/es/how-to-play-ritual-catacombs.html',
+  '/guides/es/ritual-catacombs-when.html',
+  '/guides/es/ritual-catacombs-vs-alternatives.html',
+  '/guides/vi/how-to-play-ritual-catacombs.html',
+  '/guides/vi/ritual-catacombs-when.html',
+  '/guides/vi/ritual-catacombs-vs-alternatives.html',
+  '/guides/id/how-to-play-ritual-catacombs.html',
+  '/guides/id/ritual-catacombs-when.html',
+  '/guides/id/ritual-catacombs-vs-alternatives.html',
+  '/guides/de/how-to-play-ritual-catacombs.html',
+  '/guides/de/ritual-catacombs-when.html',
+  '/guides/de/ritual-catacombs-vs-alternatives.html',
+
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle
   '/guides/how-to-play-cyber-slide-puzzle.html',
   '/guides/cyber-slide-puzzle-when.html',
@@ -7867,6 +7887,7 @@ export const ALIAS_ROUTES = {
   '/black-hole-square.html': '/games/black-hole-square.html',
   '/pixel-park-puzzle.html': '/games/pixel-park-puzzle.html',
   '/wash-the-cat.html': '/games/wash-the-cat.html',
+  '/ritual-catacombs.html': '/games/ritual-catacombs.html',
 
   '/gravity-orbit-golf.html': '/games/gravity-orbit-golf.html',
 
@@ -9624,6 +9645,26 @@ export const JSP_BY_ROUTE = {
   '/guides/de/wash-the-cat-when.html': 'guide/de/wash-the-cat-when.jsp',
   '/guides/de/wash-the-cat-vs-alternatives.html': 'guide/de/wash-the-cat-vs-alternatives.jsp',
 
+  // game-discovery-loop-runbook fire133 (2026-07-18): ritual-catacombs companion guides
+  '/guides/how-to-play-ritual-catacombs.html': 'guide/how-to-play-ritual-catacombs.jsp',
+  '/guides/ritual-catacombs-when.html': 'guide/ritual-catacombs-when.jsp',
+  '/guides/ritual-catacombs-vs-alternatives.html': 'guide/ritual-catacombs-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-ritual-catacombs.html': 'guide/pt/how-to-play-ritual-catacombs.jsp',
+  '/guides/pt/ritual-catacombs-when.html': 'guide/pt/ritual-catacombs-when.jsp',
+  '/guides/pt/ritual-catacombs-vs-alternatives.html': 'guide/pt/ritual-catacombs-vs-alternatives.jsp',
+  '/guides/es/how-to-play-ritual-catacombs.html': 'guide/es/how-to-play-ritual-catacombs.jsp',
+  '/guides/es/ritual-catacombs-when.html': 'guide/es/ritual-catacombs-when.jsp',
+  '/guides/es/ritual-catacombs-vs-alternatives.html': 'guide/es/ritual-catacombs-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-ritual-catacombs.html': 'guide/vi/how-to-play-ritual-catacombs.jsp',
+  '/guides/vi/ritual-catacombs-when.html': 'guide/vi/ritual-catacombs-when.jsp',
+  '/guides/vi/ritual-catacombs-vs-alternatives.html': 'guide/vi/ritual-catacombs-vs-alternatives.jsp',
+  '/guides/id/how-to-play-ritual-catacombs.html': 'guide/id/how-to-play-ritual-catacombs.jsp',
+  '/guides/id/ritual-catacombs-when.html': 'guide/id/ritual-catacombs-when.jsp',
+  '/guides/id/ritual-catacombs-vs-alternatives.html': 'guide/id/ritual-catacombs-vs-alternatives.jsp',
+  '/guides/de/how-to-play-ritual-catacombs.html': 'guide/de/how-to-play-ritual-catacombs.jsp',
+  '/guides/de/ritual-catacombs-when.html': 'guide/de/ritual-catacombs-when.jsp',
+  '/guides/de/ritual-catacombs-vs-alternatives.html': 'guide/de/ritual-catacombs-vs-alternatives.jsp',
+
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle guides
   '/guides/how-to-play-cyber-slide-puzzle.html': 'guide/how-to-play-cyber-slide-puzzle.jsp',
   '/guides/cyber-slide-puzzle-when.html': 'guide/cyber-slide-puzzle-when.jsp',
@@ -11109,6 +11150,7 @@ export const JSP_BY_ROUTE = {
   '/games/black-hole-square.html': 'games/black-hole-square.jsp',
   '/games/pixel-park-puzzle.html': 'games/pixel-park-puzzle.jsp',
   '/games/wash-the-cat.html': 'games/wash-the-cat.jsp',
+  '/games/ritual-catacombs.html': 'games/ritual-catacombs.jsp',
   '/games/asteroid-blaster.html': 'games/asteroid-blaster.jsp',
   '/games/hex-puzzle-blocks.html': 'games/hex-puzzle-blocks.jsp',
   '/games/procedural-horde-game.html': 'games/procedural-horde-game.jsp',
