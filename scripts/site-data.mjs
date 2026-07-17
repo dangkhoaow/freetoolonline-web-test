@@ -7894,6 +7894,8 @@ export const ALIAS_ROUTES = {
   '/edmontosaurus.html': '/dinosaur-3d/edmontosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire76 (2026-07-18): flat-slug alias for protoceratops.
   '/protoceratops.html': '/dinosaur-3d/protoceratops.html',
+  // dinosaur-3d-discovery-loop-runbook fire77 (2026-07-18): flat-slug alias for ceratosaurus.
+  '/ceratosaurus.html': '/dinosaur-3d/ceratosaurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
