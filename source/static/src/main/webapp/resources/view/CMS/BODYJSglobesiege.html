@@ -1,0 +1,59 @@
+<script>
+    // Globe Siege launcher. The game is the open-source Earth Defense engine
+    // (TaoweNlin; MIT - full analysis + English-rebrand note in
+    // tool-globesiege/SKILL.md), vendored as static files at
+    // games/globe-siege/ in an isolated same-origin iframe: a single
+    // Vite/Three.js bundle, relative paths, ~0.65 MB total. No analytics or
+    // CDN calls existed upstream. The iframe loads only when the reader
+    // presses Play.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    // Relative to /games/, so it resolves under any base path (staging subpath
+    // included) without needing BASE_PATH.
+    var GSG_GAME_URL = 'globe-siege/index.html';
+
+    function gsgStatus(text) {
+        var el = document.getElementById('gsgStatus');
+        if (el) el.textContent = text;
+    }
+
+    function gsgInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'gsgFrame';
+        frame.src = GSG_GAME_URL;
+        frame.title = 'Globe Siege game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            gsgStatus('Game loaded. Drag to rotate the planet, scroll to zoom, click a land cell to build.');
+            try { frame.contentWindow.focus(); } catch (e) { /* focus is best-effort */ }
+        });
+        var launch = document.getElementById('gsgLaunch');
+        if (launch && launch.parentNode === stage) { stage.removeChild(launch); }
+        stage.appendChild(frame);
+        return frame;
+    }
+
+    function doAfterPageRendered() {
+        var stage = document.getElementById('gsgStage');
+        var playBtn = document.getElementById('gsgPlayBtn');
+        if (!stage || !playBtn) return; // not this page
+
+        var fsBtn = document.getElementById('gsgFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            gsgStatus('Loading the game (about 0.65 MB, one time - then cached)...');
+            gsgInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) { stage.requestFullscreen(); }
+            else if (stage.webkitRequestFullscreen) { stage.webkitRequestFullscreen(); }
+            var frame = document.getElementById('gsgFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) { } }
+        });
+    }
+</script>
