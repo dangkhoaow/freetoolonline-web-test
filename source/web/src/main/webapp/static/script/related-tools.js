@@ -498,6 +498,7 @@ try {
     { title: "Solar Granulation 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-granulation.html", include: !1, tags: "space-3d" },
     { title: "Kirkwood Gaps 3D Explorer", url: "https://freetoolonline.com/space-3d/kirkwood-gaps.html", include: !1, tags: "space-3d" },
     { title: "Equation of Time 3D Explorer", url: "https://freetoolonline.com/space-3d/equation-of-time.html", include: !1, tags: "space-3d" },
+    { title: "Zodiacal Light 3D Explorer", url: "https://freetoolonline.com/space-3d/zodiacal-light.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
