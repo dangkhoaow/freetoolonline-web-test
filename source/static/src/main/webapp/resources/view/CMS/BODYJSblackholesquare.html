@@ -1,0 +1,48 @@
+<script>
+    web.localUpload = false;
+    var BHS_GAME_URL = 'black-hole-square/index.html';
+    function bhsStatus(text) {
+        var el = document.getElementById('bhsStatus');
+        if (el) el.textContent = text;
+    }
+    function bhsInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'bhsFrame';
+        frame.src = BHS_GAME_URL;
+        frame.title = 'Black Hole Square game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            bhsStatus('Game loaded. Tap squares to clear them. Swipe left to skip, swipe right to reset or go back.');
+            try { frame.contentWindow.focus(); } catch (e) {}
+        });
+        var launch = document.getElementById('bhsLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('bhsStage');
+        var playBtn = document.getElementById('bhsPlayBtn');
+        if (!stage || !playBtn) return;
+        if (playBtn.dataset.bound === '1') return;
+        playBtn.dataset.bound = '1';
+        var fsBtn = document.getElementById('bhsFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            bhsStatus('Loading the game (about 40 KB, one time - then cached)...');
+            bhsInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('bhsFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) {} }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', doAfterPageRendered);
+    } else {
+        doAfterPageRendered();
+    }
+</script>
