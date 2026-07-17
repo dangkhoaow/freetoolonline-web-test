@@ -5407,6 +5407,25 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/how-to-play-head-soccer-arena.html',
   '/guides/de/head-soccer-arena-when.html',
   '/guides/de/head-soccer-arena-vs-alternatives.html',
+  // game-discovery-loop-runbook fire125 (2026-07-18): idle-capitalist-loop companion guides
+  '/guides/how-to-play-idle-capitalist-loop.html',
+  '/guides/idle-capitalist-loop-when.html',
+  '/guides/idle-capitalist-loop-vs-alternatives.html',
+  '/guides/pt/how-to-play-idle-capitalist-loop.html',
+  '/guides/pt/idle-capitalist-loop-when.html',
+  '/guides/pt/idle-capitalist-loop-vs-alternatives.html',
+  '/guides/es/how-to-play-idle-capitalist-loop.html',
+  '/guides/es/idle-capitalist-loop-when.html',
+  '/guides/es/idle-capitalist-loop-vs-alternatives.html',
+  '/guides/vi/how-to-play-idle-capitalist-loop.html',
+  '/guides/vi/idle-capitalist-loop-when.html',
+  '/guides/vi/idle-capitalist-loop-vs-alternatives.html',
+  '/guides/id/how-to-play-idle-capitalist-loop.html',
+  '/guides/id/idle-capitalist-loop-when.html',
+  '/guides/id/idle-capitalist-loop-vs-alternatives.html',
+  '/guides/de/how-to-play-idle-capitalist-loop.html',
+  '/guides/de/idle-capitalist-loop-when.html',
+  '/guides/de/idle-capitalist-loop-vs-alternatives.html',
 
 
 
@@ -7610,6 +7629,7 @@ export const ALIAS_ROUTES = {
   '/space-pi-defense.html': '/games/space-pi-defense.html',
   '/mono-paddle-duel.html': '/games/mono-paddle-duel.html',
   '/head-soccer-arena.html': '/games/head-soccer-arena.html',
+  '/idle-capitalist-loop.html': '/games/idle-capitalist-loop.html',
 
   '/gravity-orbit-golf.html': '/games/gravity-orbit-golf.html',
 
@@ -9225,6 +9245,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/how-to-play-head-soccer-arena.html': 'guide/de/how-to-play-head-soccer-arena.jsp',
   '/guides/de/head-soccer-arena-when.html': 'guide/de/head-soccer-arena-when.jsp',
   '/guides/de/head-soccer-arena-vs-alternatives.html': 'guide/de/head-soccer-arena-vs-alternatives.jsp',
+  // game-discovery-loop-runbook fire125 (2026-07-18): idle-capitalist-loop companion guides
+  '/guides/how-to-play-idle-capitalist-loop.html': 'guide/how-to-play-idle-capitalist-loop.jsp',
+  '/guides/idle-capitalist-loop-when.html': 'guide/idle-capitalist-loop-when.jsp',
+  '/guides/idle-capitalist-loop-vs-alternatives.html': 'guide/idle-capitalist-loop-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-idle-capitalist-loop.html': 'guide/pt/how-to-play-idle-capitalist-loop.jsp',
+  '/guides/pt/idle-capitalist-loop-when.html': 'guide/pt/idle-capitalist-loop-when.jsp',
+  '/guides/pt/idle-capitalist-loop-vs-alternatives.html': 'guide/pt/idle-capitalist-loop-vs-alternatives.jsp',
+  '/guides/es/how-to-play-idle-capitalist-loop.html': 'guide/es/how-to-play-idle-capitalist-loop.jsp',
+  '/guides/es/idle-capitalist-loop-when.html': 'guide/es/idle-capitalist-loop-when.jsp',
+  '/guides/es/idle-capitalist-loop-vs-alternatives.html': 'guide/es/idle-capitalist-loop-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-idle-capitalist-loop.html': 'guide/vi/how-to-play-idle-capitalist-loop.jsp',
+  '/guides/vi/idle-capitalist-loop-when.html': 'guide/vi/idle-capitalist-loop-when.jsp',
+  '/guides/vi/idle-capitalist-loop-vs-alternatives.html': 'guide/vi/idle-capitalist-loop-vs-alternatives.jsp',
+  '/guides/id/how-to-play-idle-capitalist-loop.html': 'guide/id/how-to-play-idle-capitalist-loop.jsp',
+  '/guides/id/idle-capitalist-loop-when.html': 'guide/id/idle-capitalist-loop-when.jsp',
+  '/guides/id/idle-capitalist-loop-vs-alternatives.html': 'guide/id/idle-capitalist-loop-vs-alternatives.jsp',
+  '/guides/de/how-to-play-idle-capitalist-loop.html': 'guide/de/how-to-play-idle-capitalist-loop.jsp',
+  '/guides/de/idle-capitalist-loop-when.html': 'guide/de/idle-capitalist-loop-when.jsp',
+  '/guides/de/idle-capitalist-loop-vs-alternatives.html': 'guide/de/idle-capitalist-loop-vs-alternatives.jsp',
 
 
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle guides
@@ -10681,6 +10720,7 @@ export const JSP_BY_ROUTE = {
   '/games/space-pi-defense.html': 'games/space-pi-defense.jsp',
   '/games/mono-paddle-duel.html': 'games/mono-paddle-duel.jsp',
   '/games/head-soccer-arena.html': 'games/head-soccer-arena.jsp',
+  '/games/idle-capitalist-loop.html': 'games/idle-capitalist-loop.jsp',
   '/games/asteroid-blaster.html': 'games/asteroid-blaster.jsp',
   '/games/hex-puzzle-blocks.html': 'games/hex-puzzle-blocks.jsp',
   '/games/procedural-horde-game.html': 'games/procedural-horde-game.jsp',
