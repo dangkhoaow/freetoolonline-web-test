@@ -503,6 +503,7 @@ try {
     { title: "Equation of Time 3D Explorer", url: "https://freetoolonline.com/space-3d/equation-of-time.html", include: !1, tags: "space-3d" },
     { title: "Zodiacal Light 3D Explorer", url: "https://freetoolonline.com/space-3d/zodiacal-light.html", include: !1, tags: "space-3d" },
     { title: "Stellar Proper Motion 3D Explorer", url: "https://freetoolonline.com/space-3d/stellar-proper-motion.html", include: !1, tags: "space-3d" },
+    { title: "Aberration of Starlight 3D Explorer", url: "https://freetoolonline.com/space-3d/aberration-of-starlight.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
