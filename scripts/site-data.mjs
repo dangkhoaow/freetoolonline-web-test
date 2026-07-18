@@ -6995,6 +6995,26 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/black-cat-hot-tin-roof-when.html',
   '/guides/de/black-cat-hot-tin-roof-vs-alternatives.html',
 
+  // game-discovery-loop-runbook fire148 (2026-07-18): machine-guard-corps companion guides
+  '/guides/how-to-play-machine-guard-corps.html',
+  '/guides/machine-guard-corps-when.html',
+  '/guides/machine-guard-corps-vs-alternatives.html',
+  '/guides/pt/how-to-play-machine-guard-corps.html',
+  '/guides/pt/machine-guard-corps-when.html',
+  '/guides/pt/machine-guard-corps-vs-alternatives.html',
+  '/guides/es/how-to-play-machine-guard-corps.html',
+  '/guides/es/machine-guard-corps-when.html',
+  '/guides/es/machine-guard-corps-vs-alternatives.html',
+  '/guides/vi/how-to-play-machine-guard-corps.html',
+  '/guides/vi/machine-guard-corps-when.html',
+  '/guides/vi/machine-guard-corps-vs-alternatives.html',
+  '/guides/id/how-to-play-machine-guard-corps.html',
+  '/guides/id/machine-guard-corps-when.html',
+  '/guides/id/machine-guard-corps-vs-alternatives.html',
+  '/guides/de/how-to-play-machine-guard-corps.html',
+  '/guides/de/machine-guard-corps-when.html',
+  '/guides/de/machine-guard-corps-vs-alternatives.html',
+
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle
   '/guides/how-to-play-cyber-slide-puzzle.html',
   '/guides/cyber-slide-puzzle-when.html',
@@ -9294,6 +9314,7 @@ export const ALIAS_ROUTES = {
   '/darkline-paws.html': '/games/darkline-paws.html',
   '/mor-chess-2.html': '/games/mor-chess-2.html',
   '/black-cat-hot-tin-roof.html': '/games/black-cat-hot-tin-roof.html',
+  '/machine-guard-corps.html': '/games/machine-guard-corps.html',
 
   '/gravity-orbit-golf.html': '/games/gravity-orbit-golf.html',
 
@@ -11463,6 +11484,26 @@ export const JSP_BY_ROUTE = {
   '/guides/de/black-cat-hot-tin-roof-when.html': 'guide/de/black-cat-hot-tin-roof-when.jsp',
   '/guides/de/black-cat-hot-tin-roof-vs-alternatives.html': 'guide/de/black-cat-hot-tin-roof-vs-alternatives.jsp',
 
+  // game-discovery-loop-runbook fire148 (2026-07-18): machine-guard-corps companion guides
+  '/guides/how-to-play-machine-guard-corps.html': 'guide/how-to-play-machine-guard-corps.jsp',
+  '/guides/machine-guard-corps-when.html': 'guide/machine-guard-corps-when.jsp',
+  '/guides/machine-guard-corps-vs-alternatives.html': 'guide/machine-guard-corps-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-machine-guard-corps.html': 'guide/pt/how-to-play-machine-guard-corps.jsp',
+  '/guides/pt/machine-guard-corps-when.html': 'guide/pt/machine-guard-corps-when.jsp',
+  '/guides/pt/machine-guard-corps-vs-alternatives.html': 'guide/pt/machine-guard-corps-vs-alternatives.jsp',
+  '/guides/es/how-to-play-machine-guard-corps.html': 'guide/es/how-to-play-machine-guard-corps.jsp',
+  '/guides/es/machine-guard-corps-when.html': 'guide/es/machine-guard-corps-when.jsp',
+  '/guides/es/machine-guard-corps-vs-alternatives.html': 'guide/es/machine-guard-corps-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-machine-guard-corps.html': 'guide/vi/how-to-play-machine-guard-corps.jsp',
+  '/guides/vi/machine-guard-corps-when.html': 'guide/vi/machine-guard-corps-when.jsp',
+  '/guides/vi/machine-guard-corps-vs-alternatives.html': 'guide/vi/machine-guard-corps-vs-alternatives.jsp',
+  '/guides/id/how-to-play-machine-guard-corps.html': 'guide/id/how-to-play-machine-guard-corps.jsp',
+  '/guides/id/machine-guard-corps-when.html': 'guide/id/machine-guard-corps-when.jsp',
+  '/guides/id/machine-guard-corps-vs-alternatives.html': 'guide/id/machine-guard-corps-vs-alternatives.jsp',
+  '/guides/de/how-to-play-machine-guard-corps.html': 'guide/de/how-to-play-machine-guard-corps.jsp',
+  '/guides/de/machine-guard-corps-when.html': 'guide/de/machine-guard-corps-when.jsp',
+  '/guides/de/machine-guard-corps-vs-alternatives.html': 'guide/de/machine-guard-corps-vs-alternatives.jsp',
+
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle guides
   '/guides/how-to-play-cyber-slide-puzzle.html': 'guide/how-to-play-cyber-slide-puzzle.jsp',
   '/guides/cyber-slide-puzzle-when.html': 'guide/cyber-slide-puzzle-when.jsp',
@@ -13615,6 +13656,7 @@ export const JSP_BY_ROUTE = {
   '/games/darkline-paws.html': 'games/darkline-paws.jsp',
   '/games/mor-chess-2.html': 'games/mor-chess-2.jsp',
   '/games/black-cat-hot-tin-roof.html': 'games/black-cat-hot-tin-roof.jsp',
+  '/games/machine-guard-corps.html': 'games/machine-guard-corps.jsp',
   '/games/asteroid-blaster.html': 'games/asteroid-blaster.jsp',
   '/games/hex-puzzle-blocks.html': 'games/hex-puzzle-blocks.jsp',
   '/games/procedural-horde-game.html': 'games/procedural-horde-game.jsp',
