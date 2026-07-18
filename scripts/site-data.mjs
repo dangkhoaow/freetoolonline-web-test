@@ -4654,6 +4654,9 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/jwt-decoder-vs-alternatives.html',
   // GUIDE_ROUTES locale fanout for flashcards-maker's 3 EN companion guide
   // angles - pt/es/vi/id/de.
+  '/guides/flashcards-spaced-repetition-when.html',
+  '/guides/flashcards-spaced-repetition-step-by-step.html',
+  '/guides/flashcards-spaced-repetition-vs-alternatives.html',
   '/guides/pt/flashcards-spaced-repetition-when.html',
   '/guides/pt/flashcards-spaced-repetition-step-by-step.html',
   '/guides/pt/flashcards-spaced-repetition-vs-alternatives.html',
