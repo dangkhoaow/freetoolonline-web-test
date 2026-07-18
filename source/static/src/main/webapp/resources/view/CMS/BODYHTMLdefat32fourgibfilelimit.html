@@ -1,0 +1,40 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>FAT32 4-GiB-Dateilimit - warum grosse Videos auf USB scheitern</b></h1>
+<p>FAT32 ist weiterhin das Standardformat auf vielen USB-Sticks und SD-Karten, und es verweigert jede Datei groesser als 4 GiB minus 1 Byte (4.294.967.295 Byte). Freier Platz auf dem Stick hilft nicht - ein 4,7-GB-Video, ein Disk-Image oder ein Spiele-Download scheitert beim Kopieren, auch wenn das Laufwerk leer aussieht. Der zuverlaessige Weg ist, auf exFAT oder NTFS neu zu formatieren, oder die Nutzlast mit einem <a href="/zip-tools/zip-file.html">ZIP-Datei-Tool</a> in kleinere Teile zu zerlegen.</p>
+<p class="reviewed">Last reviewed: 2026-07-18</p>
+<time itemprop="datePublished" datetime="2026-07-18T00:00:00Z"><b>Published July 18, 2026</b></time>
+<hr/>
+
+<br/><h2 class="text-uppercase"><b>Was passiert ist</b></h2>
+<p>Die Dateisystem-Vergleichstabelle von Microsoft nennt die maximale Dateigroesse von FAT32 mit 4 GiB. Diese Grenze stammt aus einem 32-Bit-Feld fuer die Dateilaenge im FAT-Verzeichniseintrag, also ist die groesste zulaessige Groesse 2^32 - 1 Byte. Das Volume selbst kann viel groesser sein; die Grenze pro Datei ist getrennt vom freien Platz, den der Stick meldet. exFAT und NTFS nennen in derselben Microsoft-Tabelle eine theoretische Maximalgroesse von 2^64 - 1 Byte, weshalb ein Neuformatieren desselben Sticks das Kopieren meist gelingen laesst.</p>
+<p>Geprueft gegen Microsoft Learn (File System Functionality Comparison) und die FAT-Dokumentation am 18 July 2026:</p>
+<div class="w3-responsive">
+<table class="w3-table-all w3-small">
+<tr><th>Dateisystem</th><th>Max. Groesse einer Datei</th><th>Typische USB-Nutzung</th></tr>
+<tr><td>FAT32</td><td>4 GiB - 1 Byte</td><td>Standard auf vielen guenstigen USB-Sticks und Kamera-Karten</td></tr>
+<tr><td>exFAT</td><td>2^64 - 1 Byte (praktisch unbegrenzt fuer Medien)</td><td>Plattformuebergreifend fuer grosse Dateien auf USB / SD</td></tr>
+<tr><td>NTFS</td><td>2^64 - 1 Byte</td><td>Windows-eigene externe Laufwerke</td></tr>
+</table>
+</div>
+<p>Diese Grenze gehoert seit dem FAT32-Entwurf Mitte der 1990er dazu. Sie beisst 2026 noch, weil Haendler weiter FAT32-formatierte Sticks fuer maximale Kompatibilitaet ausliefern, waehrend Alltagsdateien - 4K-Video, Windows-ISOs, Spiele-Installer - regelmaessig 4 GiB ueberschreiten.</p>
+
+<br/><h2 class="text-uppercase"><b>Warum das fuer Alltagsdateien zaehlt</b></h2>
+<p>Die Fehlermeldung sagt oft, der Stick sei voll, obwohl er es nicht ist. Das System lehnt eine einzelne zu grosse Datei ab, nicht den gesamten freien Platz. Diese Diskrepanz zeigt sich beim Verschieben eines Kamera-Dumps, beim Kopieren einer Spiele-ISO fuer einen Freund oder beim Speichern einer langen Bildschirmaufnahme direkt auf USB. Geraete, die nur FAT32 lesen (manche TVs, Autoradios, aeltere Kameras), koennen einen exFAT- oder NTFS-Stick ohne Neuformatieren nicht lesen, daher ist die Formatwahl ein Kompromiss zwischen Unterstuetzung grosser Dateien und breitester Wiedergabe.</p>
+
+<br/><h2 class="text-uppercase"><b>Was Sie jetzt mit Ihren Dateien tun</b></h2><figure class="illustration"><img src="/img/illustrations/card-row-4/fat32fourgibfilelimit__cbcada59.svg" alt="Compare four options when a FAT32 stick rejects a file near 4 GiB: split ZIP parts, extract off the stick, reformat to exFAT, or use NTFS." loading="lazy" width="640" height="180"><figcaption>Vier Optionen, wenn ein FAT32-Stick die 4-GiB-Grenze erreicht.</figcaption></figure>
+<p>Wenn ein Kopiervorgang um die 4-GiB-Marke auf einem Stick mit freiem Platz scheitert, decken diese Optionen die ueblichen Faelle ab:</p>
+<ul>
+<li><b>Die Nutzlast in ZIP-Teile unter 4 GiB zerlegen.</b> Das <a href="/zip-tools/zip-file.html">ZIP-Datei-Tool</a> kann einen grossen Ordner in ein Archiv packen, dessen Groesse Sie vor dem USB-Kopieren pruefen.</li>
+<li><b>Archive zuerst auf einem vollwertigen Laufwerk entpacken.</b> Das <a href="/zip-tools/unzip-file.html">Entpacken-Tool</a> und der <a href="/guides/en/how-to-extract-a-file-online-zip-rar-7z.html">ZIP-RAR-7Z-Entpacken-Leitfaden</a> halten den Entpackschritt vom begrenzten Stick fern.</li>
+<li><b>Den Stick auf exFAT neu formatieren, wenn jedes Geraet im Weg es unterstuetzt.</b> Das entfernt die 4-GiB-Grenze und bleibt auf aktuellem Windows, macOS und vielen Kameras nutzbar.</li>
+<li><b>NTFS verwenden, wenn der Stick im reinen Windows-Ablauf bleibt.</b> Gleicher Spielraum fuer grosse Dateien; schwaechere Unterstuetzung bei gesperrten TVs und manchen Konsolen.</li>
+</ul>
+
+<br/><h2 class="text-uppercase"><b>Sources</b></h2>
+<ul>
+<li><a href="https://learn.microsoft.com/en-us/windows/win32/fileio/filesystem-functionality-comparison" rel="noopener">Microsoft Learn - File System Functionality Comparison</a> (checked 2026-07-18)</li>
+<li><a href="https://learn.microsoft.com/en-us/windows/win32/fileio/exfat-specification" rel="noopener">Microsoft Learn - exFAT specification</a></li>
+<li><a href="https://en.wikipedia.org/wiki/File_Allocation_Table" rel="noopener">Wikipedia - File Allocation Table</a> (FAT32 max file size = 4,294,967,295 bytes)</li>
+</ul>
+<p><a href="/news.html">&larr; Back to News</a></p>
+</div>

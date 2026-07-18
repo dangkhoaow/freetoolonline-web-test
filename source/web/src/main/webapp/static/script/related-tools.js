@@ -574,6 +574,7 @@ try {
     { title: "Van Allen Belts 3D Explorer", url: "https://freetoolonline.com/space-3d/van-allen-belts.html", include: !1, tags: "space-3d" },
     { title: "Circumbinary Planet 3D Explorer", url: "https://freetoolonline.com/space-3d/circumbinary-planet.html", include: !1, tags: "space-3d" },
     { title: "Debris Disk 3D Explorer", url: "https://freetoolonline.com/space-3d/debris-disk.html", include: !1, tags: "space-3d" },
+    { title: "Brown Dwarf 3D Explorer", url: "https://freetoolonline.com/space-3d/brown-dwarf.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
