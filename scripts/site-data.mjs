@@ -11226,6 +11226,7 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/cryolophosaurus.html': 'dinosaur/cryolophosaurus.jsp',
   '/dinosaur-3d/concavenator.html': 'dinosaur/concavenator.jsp',
   '/dinosaur-3d/albertaceratops.html': 'dinosaur/albertaceratops.jsp',
+  '/dinosaur-3d/tsintaosaurus.html': 'dinosaur/tsintaosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
