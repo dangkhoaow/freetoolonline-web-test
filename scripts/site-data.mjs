@@ -6112,6 +6112,26 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/cat-hop-cloud-when.html',
   '/guides/de/cat-hop-cloud-vs-alternatives.html',
 
+  // game-discovery-loop-runbook fire139 (2026-07-18): herd-cats-home companion guides
+  '/guides/how-to-play-herd-cats-home.html',
+  '/guides/herd-cats-home-when.html',
+  '/guides/herd-cats-home-vs-alternatives.html',
+  '/guides/pt/how-to-play-herd-cats-home.html',
+  '/guides/pt/herd-cats-home-when.html',
+  '/guides/pt/herd-cats-home-vs-alternatives.html',
+  '/guides/es/how-to-play-herd-cats-home.html',
+  '/guides/es/herd-cats-home-when.html',
+  '/guides/es/herd-cats-home-vs-alternatives.html',
+  '/guides/vi/how-to-play-herd-cats-home.html',
+  '/guides/vi/herd-cats-home-when.html',
+  '/guides/vi/herd-cats-home-vs-alternatives.html',
+  '/guides/id/how-to-play-herd-cats-home.html',
+  '/guides/id/herd-cats-home-when.html',
+  '/guides/id/herd-cats-home-vs-alternatives.html',
+  '/guides/de/how-to-play-herd-cats-home.html',
+  '/guides/de/herd-cats-home-when.html',
+  '/guides/de/herd-cats-home-vs-alternatives.html',
+
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle
   '/guides/how-to-play-cyber-slide-puzzle.html',
   '/guides/cyber-slide-puzzle-when.html',
@@ -8351,6 +8371,7 @@ export const ALIAS_ROUTES = {
   '/unlucky-crossing.html': '/games/unlucky-crossing.html',
   '/mystic-card-paw.html': '/games/mystic-card-paw.html',
   '/cat-hop-cloud.html': '/games/cat-hop-cloud.html',
+  '/herd-cats-home.html': '/games/herd-cats-home.html',
 
   '/gravity-orbit-golf.html': '/games/gravity-orbit-golf.html',
 
@@ -10353,6 +10374,26 @@ export const JSP_BY_ROUTE = {
   '/guides/de/cat-hop-cloud-when.html': 'guide/de/cat-hop-cloud-when.jsp',
   '/guides/de/cat-hop-cloud-vs-alternatives.html': 'guide/de/cat-hop-cloud-vs-alternatives.jsp',
 
+  // game-discovery-loop-runbook fire139 (2026-07-18): herd-cats-home companion guides
+  '/guides/how-to-play-herd-cats-home.html': 'guide/how-to-play-herd-cats-home.jsp',
+  '/guides/herd-cats-home-when.html': 'guide/herd-cats-home-when.jsp',
+  '/guides/herd-cats-home-vs-alternatives.html': 'guide/herd-cats-home-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-herd-cats-home.html': 'guide/pt/how-to-play-herd-cats-home.jsp',
+  '/guides/pt/herd-cats-home-when.html': 'guide/pt/herd-cats-home-when.jsp',
+  '/guides/pt/herd-cats-home-vs-alternatives.html': 'guide/pt/herd-cats-home-vs-alternatives.jsp',
+  '/guides/es/how-to-play-herd-cats-home.html': 'guide/es/how-to-play-herd-cats-home.jsp',
+  '/guides/es/herd-cats-home-when.html': 'guide/es/herd-cats-home-when.jsp',
+  '/guides/es/herd-cats-home-vs-alternatives.html': 'guide/es/herd-cats-home-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-herd-cats-home.html': 'guide/vi/how-to-play-herd-cats-home.jsp',
+  '/guides/vi/herd-cats-home-when.html': 'guide/vi/herd-cats-home-when.jsp',
+  '/guides/vi/herd-cats-home-vs-alternatives.html': 'guide/vi/herd-cats-home-vs-alternatives.jsp',
+  '/guides/id/how-to-play-herd-cats-home.html': 'guide/id/how-to-play-herd-cats-home.jsp',
+  '/guides/id/herd-cats-home-when.html': 'guide/id/herd-cats-home-when.jsp',
+  '/guides/id/herd-cats-home-vs-alternatives.html': 'guide/id/herd-cats-home-vs-alternatives.jsp',
+  '/guides/de/how-to-play-herd-cats-home.html': 'guide/de/how-to-play-herd-cats-home.jsp',
+  '/guides/de/herd-cats-home-when.html': 'guide/de/herd-cats-home-when.jsp',
+  '/guides/de/herd-cats-home-vs-alternatives.html': 'guide/de/herd-cats-home-vs-alternatives.jsp',
+
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle guides
   '/guides/how-to-play-cyber-slide-puzzle.html': 'guide/how-to-play-cyber-slide-puzzle.jsp',
   '/guides/cyber-slide-puzzle-when.html': 'guide/cyber-slide-puzzle-when.jsp',
@@ -12035,6 +12076,7 @@ export const JSP_BY_ROUTE = {
   '/games/unlucky-crossing.html': 'games/unlucky-crossing.jsp',
   '/games/mystic-card-paw.html': 'games/mystic-card-paw.jsp',
   '/games/cat-hop-cloud.html': 'games/cat-hop-cloud.jsp',
+  '/games/herd-cats-home.html': 'games/herd-cats-home.jsp',
   '/games/asteroid-blaster.html': 'games/asteroid-blaster.jsp',
   '/games/hex-puzzle-blocks.html': 'games/hex-puzzle-blocks.jsp',
   '/games/procedural-horde-game.html': 'games/procedural-horde-game.jsp',
