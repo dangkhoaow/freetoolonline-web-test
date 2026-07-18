@@ -4877,6 +4877,9 @@ export const GUIDE_ROUTES = new Set([
   // GUIDE_ROUTES backfill for note-taking-app's 3 EN companion guide angles'
   // full pt/es/vi/id/de locale fanout (builder wires JSP_BY_ROUTE + INFO_ROUTES
   // only, same recurring gap class as fires 32/56/57/62/66/84/113/115/120/122).
+  '/guides/notepad-notes-when.html',
+  '/guides/notepad-notes-step-by-step.html',
+  '/guides/notepad-notes-vs-alternatives.html',
   '/guides/pt/notepad-notes-when.html',
   '/guides/pt/notepad-notes-step-by-step.html',
   '/guides/pt/notepad-notes-vs-alternatives.html',
