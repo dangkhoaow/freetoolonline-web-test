@@ -4084,6 +4084,22 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/iguanodon-3d-viewer-vs-ar-apps.html',
   '/guides/id/iguanodon-3d-viewer-vs-ar-apps.html',
   '/guides/de/iguanodon-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire52 (2026-07-18): how-to-view-pachycephalosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides (step-by-step)
+  '/guides/how-to-view-pachycephalosaurus-in-3d.html',
+  '/guides/pt/how-to-view-pachycephalosaurus-in-3d.html',
+  '/guides/es/how-to-view-pachycephalosaurus-in-3d.html',
+  '/guides/vi/how-to-view-pachycephalosaurus-in-3d.html',
+  '/guides/id/how-to-view-pachycephalosaurus-in-3d.html',
+  '/guides/de/how-to-view-pachycephalosaurus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire53 (2026-07-18): pachycephalosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides (size)
+  '/guides/pachycephalosaurus-size-comparison.html',
+  '/guides/pt/pachycephalosaurus-size-comparison.html',
+  '/guides/es/pachycephalosaurus-size-comparison.html',
+  '/guides/vi/pachycephalosaurus-size-comparison.html',
+  '/guides/id/pachycephalosaurus-size-comparison.html',
+  '/guides/de/pachycephalosaurus-size-comparison.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -8118,6 +8134,8 @@ export const ALIAS_ROUTES = {
   '/microraptor.html': '/dinosaur-3d/microraptor.html',
   // dinosaur-3d-discovery-loop-runbook fire81: majungasaurus alias.
   '/majungasaurus.html': '/dinosaur-3d/majungasaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire82: cryolophosaurus alias.
+  '/cryolophosaurus.html': '/dinosaur-3d/cryolophosaurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -11023,6 +11041,7 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/microraptor.html': 'dinosaur/microraptor.jsp',
   // dinosaur-3d-discovery-loop-runbook fire81: Majungasaurus viewer.
   '/dinosaur-3d/majungasaurus.html': 'dinosaur/majungasaurus.jsp',
+  '/dinosaur-3d/cryolophosaurus.html': 'dinosaur/cryolophosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -11435,6 +11454,22 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/iguanodon-3d-viewer-vs-ar-apps.html': 'guide/vi/iguanodon-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/iguanodon-3d-viewer-vs-ar-apps.html': 'guide/id/iguanodon-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/iguanodon-3d-viewer-vs-ar-apps.html': 'guide/de/iguanodon-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire52 (2026-07-18): how-to-view-pachycephalosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides (step-by-step)
+  '/guides/how-to-view-pachycephalosaurus-in-3d.html': 'guide/how-to-view-pachycephalosaurus-in-3d.jsp',
+  '/guides/pt/how-to-view-pachycephalosaurus-in-3d.html': 'guide/pt/how-to-view-pachycephalosaurus-in-3d.jsp',
+  '/guides/es/how-to-view-pachycephalosaurus-in-3d.html': 'guide/es/how-to-view-pachycephalosaurus-in-3d.jsp',
+  '/guides/vi/how-to-view-pachycephalosaurus-in-3d.html': 'guide/vi/how-to-view-pachycephalosaurus-in-3d.jsp',
+  '/guides/id/how-to-view-pachycephalosaurus-in-3d.html': 'guide/id/how-to-view-pachycephalosaurus-in-3d.jsp',
+  '/guides/de/how-to-view-pachycephalosaurus-in-3d.html': 'guide/de/how-to-view-pachycephalosaurus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire53 (2026-07-18): pachycephalosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides (size)
+  '/guides/pachycephalosaurus-size-comparison.html': 'guide/pachycephalosaurus-size-comparison.jsp',
+  '/guides/pt/pachycephalosaurus-size-comparison.html': 'guide/pt/pachycephalosaurus-size-comparison.jsp',
+  '/guides/es/pachycephalosaurus-size-comparison.html': 'guide/es/pachycephalosaurus-size-comparison.jsp',
+  '/guides/vi/pachycephalosaurus-size-comparison.html': 'guide/vi/pachycephalosaurus-size-comparison.jsp',
+  '/guides/id/pachycephalosaurus-size-comparison.html': 'guide/id/pachycephalosaurus-size-comparison.jsp',
+  '/guides/de/pachycephalosaurus-size-comparison.html': 'guide/de/pachycephalosaurus-size-comparison.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
