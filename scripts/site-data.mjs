@@ -6599,6 +6599,26 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/desk-cat-coder-when.html',
   '/guides/de/desk-cat-coder-vs-alternatives.html',
 
+  // game-discovery-loop-runbook fire143 (2026-07-18): boing-cat-platformer companion guides
+  '/guides/how-to-play-boing-cat-platformer.html',
+  '/guides/boing-cat-platformer-when.html',
+  '/guides/boing-cat-platformer-vs-alternatives.html',
+  '/guides/pt/how-to-play-boing-cat-platformer.html',
+  '/guides/pt/boing-cat-platformer-when.html',
+  '/guides/pt/boing-cat-platformer-vs-alternatives.html',
+  '/guides/es/how-to-play-boing-cat-platformer.html',
+  '/guides/es/boing-cat-platformer-when.html',
+  '/guides/es/boing-cat-platformer-vs-alternatives.html',
+  '/guides/vi/how-to-play-boing-cat-platformer.html',
+  '/guides/vi/boing-cat-platformer-when.html',
+  '/guides/vi/boing-cat-platformer-vs-alternatives.html',
+  '/guides/id/how-to-play-boing-cat-platformer.html',
+  '/guides/id/boing-cat-platformer-when.html',
+  '/guides/id/boing-cat-platformer-vs-alternatives.html',
+  '/guides/de/how-to-play-boing-cat-platformer.html',
+  '/guides/de/boing-cat-platformer-when.html',
+  '/guides/de/boing-cat-platformer-vs-alternatives.html',
+
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle
   '/guides/how-to-play-cyber-slide-puzzle.html',
   '/guides/cyber-slide-puzzle-when.html',
@@ -8878,6 +8898,7 @@ export const ALIAS_ROUTES = {
   '/herd-cats-home.html': '/games/herd-cats-home.html',
   '/seasonal-witchcat.html': '/games/seasonal-witchcat.html',
   '/desk-cat-coder.html': '/games/desk-cat-coder.html',
+  '/boing-cat-platformer.html': '/games/boing-cat-platformer.html',
 
   '/gravity-orbit-golf.html': '/games/gravity-orbit-golf.html',
 
@@ -10948,6 +10969,26 @@ export const JSP_BY_ROUTE = {
   '/guides/de/desk-cat-coder-when.html': 'guide/de/desk-cat-coder-when.jsp',
   '/guides/de/desk-cat-coder-vs-alternatives.html': 'guide/de/desk-cat-coder-vs-alternatives.jsp',
 
+  // game-discovery-loop-runbook fire143 (2026-07-18): boing-cat-platformer companion guides
+  '/guides/how-to-play-boing-cat-platformer.html': 'guide/how-to-play-boing-cat-platformer.jsp',
+  '/guides/boing-cat-platformer-when.html': 'guide/boing-cat-platformer-when.jsp',
+  '/guides/boing-cat-platformer-vs-alternatives.html': 'guide/boing-cat-platformer-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-boing-cat-platformer.html': 'guide/pt/how-to-play-boing-cat-platformer.jsp',
+  '/guides/pt/boing-cat-platformer-when.html': 'guide/pt/boing-cat-platformer-when.jsp',
+  '/guides/pt/boing-cat-platformer-vs-alternatives.html': 'guide/pt/boing-cat-platformer-vs-alternatives.jsp',
+  '/guides/es/how-to-play-boing-cat-platformer.html': 'guide/es/how-to-play-boing-cat-platformer.jsp',
+  '/guides/es/boing-cat-platformer-when.html': 'guide/es/boing-cat-platformer-when.jsp',
+  '/guides/es/boing-cat-platformer-vs-alternatives.html': 'guide/es/boing-cat-platformer-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-boing-cat-platformer.html': 'guide/vi/how-to-play-boing-cat-platformer.jsp',
+  '/guides/vi/boing-cat-platformer-when.html': 'guide/vi/boing-cat-platformer-when.jsp',
+  '/guides/vi/boing-cat-platformer-vs-alternatives.html': 'guide/vi/boing-cat-platformer-vs-alternatives.jsp',
+  '/guides/id/how-to-play-boing-cat-platformer.html': 'guide/id/how-to-play-boing-cat-platformer.jsp',
+  '/guides/id/boing-cat-platformer-when.html': 'guide/id/boing-cat-platformer-when.jsp',
+  '/guides/id/boing-cat-platformer-vs-alternatives.html': 'guide/id/boing-cat-platformer-vs-alternatives.jsp',
+  '/guides/de/how-to-play-boing-cat-platformer.html': 'guide/de/how-to-play-boing-cat-platformer.jsp',
+  '/guides/de/boing-cat-platformer-when.html': 'guide/de/boing-cat-platformer-when.jsp',
+  '/guides/de/boing-cat-platformer-vs-alternatives.html': 'guide/de/boing-cat-platformer-vs-alternatives.jsp',
+
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle guides
   '/guides/how-to-play-cyber-slide-puzzle.html': 'guide/how-to-play-cyber-slide-puzzle.jsp',
   '/guides/cyber-slide-puzzle-when.html': 'guide/cyber-slide-puzzle-when.jsp',
@@ -13000,6 +13041,7 @@ export const JSP_BY_ROUTE = {
   '/games/herd-cats-home.html': 'games/herd-cats-home.jsp',
   '/games/seasonal-witchcat.html': 'games/seasonal-witchcat.jsp',
   '/games/desk-cat-coder.html': 'games/desk-cat-coder.jsp',
+  '/games/boing-cat-platformer.html': 'games/boing-cat-platformer.jsp',
   '/games/asteroid-blaster.html': 'games/asteroid-blaster.jsp',
   '/games/hex-puzzle-blocks.html': 'games/hex-puzzle-blocks.jsp',
   '/games/procedural-horde-game.html': 'games/procedural-horde-game.jsp',

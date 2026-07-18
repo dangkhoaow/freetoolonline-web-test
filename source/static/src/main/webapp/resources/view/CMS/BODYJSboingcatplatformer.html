@@ -1,0 +1,48 @@
+<script>
+    if (typeof web !== "undefined") web.localUpload = false;
+    var BCP_GAME_URL = 'boing-cat-platformer/index.html';
+    function bcpStatus(text) {
+        var el = document.getElementById('bcpStatus');
+        if (el) el.textContent = text;
+    }
+    function bcpInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'bcpFrame';
+        frame.src = BCP_GAME_URL;
+        frame.title = 'Boing Cat Platformer game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            bcpStatus('Game loaded. Press Space (or a gamepad button) to start.');
+            try { frame.contentWindow.focus(); } catch (e) {}
+        });
+        var launch = document.getElementById('bcpLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('bcpStage');
+        var playBtn = document.getElementById('bcpPlayBtn');
+        if (!stage || !playBtn) return;
+        if (playBtn.dataset.bound === '1') return;
+        playBtn.dataset.bound = '1';
+        var fsBtn = document.getElementById('bcpFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            bcpStatus('Loading the game (about 130 KB, one time - then cached)...');
+            bcpInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('bcpFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) {} }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', doAfterPageRendered);
+    } else {
+        doAfterPageRendered();
+    }
+</script>
