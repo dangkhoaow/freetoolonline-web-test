@@ -5899,6 +5899,26 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/cat-typing-race-when.html',
   '/guides/de/cat-typing-race-vs-alternatives.html',
 
+  // game-discovery-loop-runbook fire136 (2026-07-18): unlucky-crossing companion guides
+  '/guides/how-to-play-unlucky-crossing.html',
+  '/guides/unlucky-crossing-when.html',
+  '/guides/unlucky-crossing-vs-alternatives.html',
+  '/guides/pt/how-to-play-unlucky-crossing.html',
+  '/guides/pt/unlucky-crossing-when.html',
+  '/guides/pt/unlucky-crossing-vs-alternatives.html',
+  '/guides/es/how-to-play-unlucky-crossing.html',
+  '/guides/es/unlucky-crossing-when.html',
+  '/guides/es/unlucky-crossing-vs-alternatives.html',
+  '/guides/vi/how-to-play-unlucky-crossing.html',
+  '/guides/vi/unlucky-crossing-when.html',
+  '/guides/vi/unlucky-crossing-vs-alternatives.html',
+  '/guides/id/how-to-play-unlucky-crossing.html',
+  '/guides/id/unlucky-crossing-when.html',
+  '/guides/id/unlucky-crossing-vs-alternatives.html',
+  '/guides/de/how-to-play-unlucky-crossing.html',
+  '/guides/de/unlucky-crossing-when.html',
+  '/guides/de/unlucky-crossing-vs-alternatives.html',
+
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle
   '/guides/how-to-play-cyber-slide-puzzle.html',
   '/guides/cyber-slide-puzzle-when.html',
@@ -8123,6 +8143,7 @@ export const ALIAS_ROUTES = {
   '/ritual-catacombs.html': '/games/ritual-catacombs.html',
   '/potion-brew-shop.html': '/games/potion-brew-shop.html',
   '/cat-typing-race.html': '/games/cat-typing-race.html',
+  '/unlucky-crossing.html': '/games/unlucky-crossing.html',
 
   '/gravity-orbit-golf.html': '/games/gravity-orbit-golf.html',
 
@@ -10007,6 +10028,26 @@ export const JSP_BY_ROUTE = {
   '/guides/de/cat-typing-race-when.html': 'guide/de/cat-typing-race-when.jsp',
   '/guides/de/cat-typing-race-vs-alternatives.html': 'guide/de/cat-typing-race-vs-alternatives.jsp',
 
+  // game-discovery-loop-runbook fire136 (2026-07-18): unlucky-crossing companion guides
+  '/guides/how-to-play-unlucky-crossing.html': 'guide/how-to-play-unlucky-crossing.jsp',
+  '/guides/unlucky-crossing-when.html': 'guide/unlucky-crossing-when.jsp',
+  '/guides/unlucky-crossing-vs-alternatives.html': 'guide/unlucky-crossing-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-unlucky-crossing.html': 'guide/pt/how-to-play-unlucky-crossing.jsp',
+  '/guides/pt/unlucky-crossing-when.html': 'guide/pt/unlucky-crossing-when.jsp',
+  '/guides/pt/unlucky-crossing-vs-alternatives.html': 'guide/pt/unlucky-crossing-vs-alternatives.jsp',
+  '/guides/es/how-to-play-unlucky-crossing.html': 'guide/es/how-to-play-unlucky-crossing.jsp',
+  '/guides/es/unlucky-crossing-when.html': 'guide/es/unlucky-crossing-when.jsp',
+  '/guides/es/unlucky-crossing-vs-alternatives.html': 'guide/es/unlucky-crossing-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-unlucky-crossing.html': 'guide/vi/how-to-play-unlucky-crossing.jsp',
+  '/guides/vi/unlucky-crossing-when.html': 'guide/vi/unlucky-crossing-when.jsp',
+  '/guides/vi/unlucky-crossing-vs-alternatives.html': 'guide/vi/unlucky-crossing-vs-alternatives.jsp',
+  '/guides/id/how-to-play-unlucky-crossing.html': 'guide/id/how-to-play-unlucky-crossing.jsp',
+  '/guides/id/unlucky-crossing-when.html': 'guide/id/unlucky-crossing-when.jsp',
+  '/guides/id/unlucky-crossing-vs-alternatives.html': 'guide/id/unlucky-crossing-vs-alternatives.jsp',
+  '/guides/de/how-to-play-unlucky-crossing.html': 'guide/de/how-to-play-unlucky-crossing.jsp',
+  '/guides/de/unlucky-crossing-when.html': 'guide/de/unlucky-crossing-when.jsp',
+  '/guides/de/unlucky-crossing-vs-alternatives.html': 'guide/de/unlucky-crossing-vs-alternatives.jsp',
+
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle guides
   '/guides/how-to-play-cyber-slide-puzzle.html': 'guide/how-to-play-cyber-slide-puzzle.jsp',
   '/guides/cyber-slide-puzzle-when.html': 'guide/cyber-slide-puzzle-when.jsp',
@@ -11582,6 +11623,7 @@ export const JSP_BY_ROUTE = {
   '/games/ritual-catacombs.html': 'games/ritual-catacombs.jsp',
   '/games/potion-brew-shop.html': 'games/potion-brew-shop.jsp',
   '/games/cat-typing-race.html': 'games/cat-typing-race.jsp',
+  '/games/unlucky-crossing.html': 'games/unlucky-crossing.jsp',
   '/games/asteroid-blaster.html': 'games/asteroid-blaster.jsp',
   '/games/hex-puzzle-blocks.html': 'games/hex-puzzle-blocks.jsp',
   '/games/procedural-horde-game.html': 'games/procedural-horde-game.jsp',
