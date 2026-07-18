@@ -4228,6 +4228,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/baryonyx-3d-viewer-vs-ar-apps.html',
   '/guides/id/baryonyx-3d-viewer-vs-ar-apps.html',
   '/guides/de/baryonyx-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire70 (2026-07-18): how-to-view-plesiosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides (how-to)
+  '/guides/how-to-view-plesiosaurus-in-3d.html',
+  '/guides/pt/how-to-view-plesiosaurus-in-3d.html',
+  '/guides/es/how-to-view-plesiosaurus-in-3d.html',
+  '/guides/vi/how-to-view-plesiosaurus-in-3d.html',
+  '/guides/id/how-to-view-plesiosaurus-in-3d.html',
+  '/guides/de/how-to-view-plesiosaurus-in-3d.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -8376,6 +8384,8 @@ export const ALIAS_ROUTES = {
   '/gorgosaurus.html': '/dinosaur-3d/gorgosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire89: dimetrodon.
   '/dimetrodon.html': '/dinosaur-3d/dimetrodon.html',
+  // dinosaur-3d-discovery-loop-runbook fire90: ichthyovenator.
+  '/ichthyovenator.html': '/dinosaur-3d/ichthyovenator.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -11390,6 +11400,7 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/tylosaurus.html': 'dinosaur/tylosaurus.jsp',
   '/dinosaur-3d/gorgosaurus.html': 'dinosaur/gorgosaurus.jsp',
   '/dinosaur-3d/dimetrodon.html': 'dinosaur/dimetrodon.jsp',
+  '/dinosaur-3d/ichthyovenator.html': 'dinosaur/ichthyovenator.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -11946,6 +11957,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/baryonyx-3d-viewer-vs-ar-apps.html': 'guide/vi/baryonyx-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/baryonyx-3d-viewer-vs-ar-apps.html': 'guide/id/baryonyx-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/baryonyx-3d-viewer-vs-ar-apps.html': 'guide/de/baryonyx-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire70 (2026-07-18): how-to-view-plesiosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides (how-to)
+  '/guides/how-to-view-plesiosaurus-in-3d.html': 'guide/how-to-view-plesiosaurus-in-3d.jsp',
+  '/guides/pt/how-to-view-plesiosaurus-in-3d.html': 'guide/pt/how-to-view-plesiosaurus-in-3d.jsp',
+  '/guides/es/how-to-view-plesiosaurus-in-3d.html': 'guide/es/how-to-view-plesiosaurus-in-3d.jsp',
+  '/guides/vi/how-to-view-plesiosaurus-in-3d.html': 'guide/vi/how-to-view-plesiosaurus-in-3d.jsp',
+  '/guides/id/how-to-view-plesiosaurus-in-3d.html': 'guide/id/how-to-view-plesiosaurus-in-3d.jsp',
+  '/guides/de/how-to-view-plesiosaurus-in-3d.html': 'guide/de/how-to-view-plesiosaurus-in-3d.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
