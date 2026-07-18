@@ -5620,26 +5620,27 @@
 
         var earth = new THREE.Mesh(new THREE.SphereGeometry(1.5, 28, 20), new THREE.MeshStandardMaterial({ color: 0x2f6fb0, roughness: 0.85 }));
         earth.position.x = EARTH_X; scene.add(earth);
-        var magSphere = new THREE.Mesh(new THREE.SphereGeometry(2.4, 20, 14), new THREE.MeshBasicMaterial({ color: 0x66aaff, transparent: true, opacity: 0.14, wireframe: true }));
+        var magSphere = new THREE.Mesh(new THREE.SphereGeometry(2.4, 20, 14), new THREE.MeshBasicMaterial({ color: 0x66aaff, transparent: true, opacity: 0.07, wireframe: true }));
         magSphere.position.x = EARTH_X; scene.add(magSphere);
 
         // aurora rings: a "normal, quiet-day" ring fixed near the poles for
         // comparison, and the real Carrington-storm ring that grows to
         // reach the real cited ~23-25 deg-from-equator boundary
-        function ringAtLat(latDeg, color, opacity) {
+        function ringAtLat(latDeg, color, opacity, thickness) {
             var latRad = latDeg * Math.PI / 180;
             var y = Math.sin(latRad) * 1.52, ringR = Math.cos(latRad) * 1.52;
-            var geo = new THREE.RingGeometry(ringR * 0.94, ringR, 40);
-            var mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: opacity, side: THREE.DoubleSide }));
+            var geo = new THREE.RingGeometry(ringR * thickness, ringR * 1.02, 48);
+            var mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: opacity, side: THREE.DoubleSide, depthTest: false }));
             mesh.rotation.x = Math.PI / 2; mesh.position.set(EARTH_X, y, 0);
             return mesh;
         }
-        var normalRingN = ringAtLat(90 - T3D_CE_AURORA_NORMAL_DEG, 0x66ffcc, 0.55);
-        var normalRingS = ringAtLat(-(90 - T3D_CE_AURORA_NORMAL_DEG), 0x66ffcc, 0.55);
+        var normalRingN = ringAtLat(90 - T3D_CE_AURORA_NORMAL_DEG, 0x66ffcc, 0.75, 0.86);
+        var normalRingS = ringAtLat(-(90 - T3D_CE_AURORA_NORMAL_DEG), 0x66ffcc, 0.75, 0.86);
         scene.add(normalRingN); scene.add(normalRingS);
-        var stormRingN = ringAtLat(90 - T3D_CE_AURORA_CARRINGTON_DEG, 0x8fffb0, 0);
-        var stormRingS = ringAtLat(-(90 - T3D_CE_AURORA_CARRINGTON_DEG), 0x8fffb0, 0);
+        var stormRingN = ringAtLat(90 - T3D_CE_AURORA_CARRINGTON_DEG, 0x66ff9a, 0, 0.88);
+        var stormRingS = ringAtLat(-(90 - T3D_CE_AURORA_CARRINGTON_DEG), 0x66ff9a, 0, 0.88);
         scene.add(stormRingN); scene.add(stormRingS);
+        stormRingN.material.blending = THREE.AdditiveBlending; stormRingS.material.blending = THREE.AdditiveBlending;
 
         // CME cloud that travels from Sun to Earth
         var N = shell.low ? 900 : 1800;
@@ -5708,7 +5709,7 @@
 
             var impactT = Math.max(0, Math.min(1, (t - 4.5) / 2.2));
             var fadeT = t > 6.7 ? Math.max(0, 1 - (t - 6.7) / 2.0) : 1;
-            var stormOpacity = impactT * fadeT * 0.85;
+            var stormOpacity = impactT * fadeT;
             stormRingN.material.opacity = stormOpacity; stormRingS.material.opacity = stormOpacity;
             var pulse = 1 + Math.sin(t * 6) * 0.03 * impactT;
             magSphere.scale.setScalar(pulse * (1 - impactT * 0.12));
