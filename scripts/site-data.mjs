@@ -4975,6 +4975,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/gorgosaurus-size-comparison.html',
   '/guides/id/gorgosaurus-size-comparison.html',
   '/guides/de/gorgosaurus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire123 (2026-07-19): gorgosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/gorgosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/gorgosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/gorgosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/gorgosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/gorgosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/gorgosaurus-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -5005,6 +5013,24 @@ export const GUIDE_ROUTES = new Set([
   // guide angles' full pt/es/vi/id/de locale fanout (builder wires
   // JSP_BY_ROUTE + INFO_ROUTES only, same recurring gap class as
   // fires 32/56/57/62/66/84/113/115).
+  '/guides/date-difference-calculator-when.html',
+  '/guides/date-difference-calculator-step-by-step.html',
+  '/guides/date-difference-calculator-vs-alternatives.html',
+  '/guides/pt/date-difference-calculator-when.html',
+  '/guides/pt/date-difference-calculator-step-by-step.html',
+  '/guides/pt/date-difference-calculator-vs-alternatives.html',
+  '/guides/es/date-difference-calculator-when.html',
+  '/guides/es/date-difference-calculator-step-by-step.html',
+  '/guides/es/date-difference-calculator-vs-alternatives.html',
+  '/guides/vi/date-difference-calculator-when.html',
+  '/guides/vi/date-difference-calculator-step-by-step.html',
+  '/guides/vi/date-difference-calculator-vs-alternatives.html',
+  '/guides/id/date-difference-calculator-when.html',
+  '/guides/id/date-difference-calculator-step-by-step.html',
+  '/guides/id/date-difference-calculator-vs-alternatives.html',
+  '/guides/de/date-difference-calculator-when.html',
+  '/guides/de/date-difference-calculator-step-by-step.html',
+  '/guides/de/date-difference-calculator-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire115 (LEAN one-off, 2026-07-12):
   // GUIDE_ROUTES backfill for add-watermark-to-pdf's 3 EN companion guide
   // angles plus their full pt/es/vi/id/de locale fanout (builder wires
@@ -6420,6 +6446,26 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/how-to-play-solo-battlefield.html',
   '/guides/de/solo-battlefield-when.html',
   '/guides/de/solo-battlefield-vs-alternatives.html',
+
+  // game-discovery-loop-runbook fire150 (2026-07-18): feast-night companion guides
+  '/guides/how-to-play-feast-night.html',
+  '/guides/feast-night-when.html',
+  '/guides/feast-night-vs-alternatives.html',
+  '/guides/pt/how-to-play-feast-night.html',
+  '/guides/pt/feast-night-when.html',
+  '/guides/pt/feast-night-vs-alternatives.html',
+  '/guides/es/how-to-play-feast-night.html',
+  '/guides/es/feast-night-when.html',
+  '/guides/es/feast-night-vs-alternatives.html',
+  '/guides/vi/how-to-play-feast-night.html',
+  '/guides/vi/feast-night-when.html',
+  '/guides/vi/feast-night-vs-alternatives.html',
+  '/guides/id/how-to-play-feast-night.html',
+  '/guides/id/feast-night-when.html',
+  '/guides/id/feast-night-vs-alternatives.html',
+  '/guides/de/how-to-play-feast-night.html',
+  '/guides/de/feast-night-when.html',
+  '/guides/de/feast-night-vs-alternatives.html',
 
   // game-discovery-loop-runbook fire140 (2026-07-18): seasonal-witchcat companion guides
   '/guides/how-to-play-seasonal-witchcat.html',
@@ -8012,6 +8058,7 @@ export const ALIAS_ROUTES = {
   '/cat-hop-cloud.html': '/games/cat-hop-cloud.html',
   '/herd-cats-home.html': '/games/herd-cats-home.html',
   '/solo-battlefield.html': '/games/solo-battlefield.html',
+  '/feast-night.html': '/games/feast-night.html',
   '/seasonal-witchcat.html': '/games/seasonal-witchcat.html',
   '/desk-cat-coder.html': '/games/desk-cat-coder.html',
   '/boing-cat-platformer.html': '/games/boing-cat-platformer.html',
@@ -10094,6 +10141,26 @@ export const JSP_BY_ROUTE = {
   '/guides/de/solo-battlefield-when.html': 'guide/de/solo-battlefield-when.jsp',
   '/guides/de/solo-battlefield-vs-alternatives.html': 'guide/de/solo-battlefield-vs-alternatives.jsp',
 
+  // game-discovery-loop-runbook fire150 (2026-07-18): feast-night companion guides
+  '/guides/how-to-play-feast-night.html': 'guide/how-to-play-feast-night.jsp',
+  '/guides/feast-night-when.html': 'guide/feast-night-when.jsp',
+  '/guides/feast-night-vs-alternatives.html': 'guide/feast-night-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-feast-night.html': 'guide/pt/how-to-play-feast-night.jsp',
+  '/guides/pt/feast-night-when.html': 'guide/pt/feast-night-when.jsp',
+  '/guides/pt/feast-night-vs-alternatives.html': 'guide/pt/feast-night-vs-alternatives.jsp',
+  '/guides/es/how-to-play-feast-night.html': 'guide/es/how-to-play-feast-night.jsp',
+  '/guides/es/feast-night-when.html': 'guide/es/feast-night-when.jsp',
+  '/guides/es/feast-night-vs-alternatives.html': 'guide/es/feast-night-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-feast-night.html': 'guide/vi/how-to-play-feast-night.jsp',
+  '/guides/vi/feast-night-when.html': 'guide/vi/feast-night-when.jsp',
+  '/guides/vi/feast-night-vs-alternatives.html': 'guide/vi/feast-night-vs-alternatives.jsp',
+  '/guides/id/how-to-play-feast-night.html': 'guide/id/how-to-play-feast-night.jsp',
+  '/guides/id/feast-night-when.html': 'guide/id/feast-night-when.jsp',
+  '/guides/id/feast-night-vs-alternatives.html': 'guide/id/feast-night-vs-alternatives.jsp',
+  '/guides/de/how-to-play-feast-night.html': 'guide/de/how-to-play-feast-night.jsp',
+  '/guides/de/feast-night-when.html': 'guide/de/feast-night-when.jsp',
+  '/guides/de/feast-night-vs-alternatives.html': 'guide/de/feast-night-vs-alternatives.jsp',
+
   // game-discovery-loop-runbook fire140 (2026-07-18): seasonal-witchcat companion guides
   '/guides/how-to-play-seasonal-witchcat.html': 'guide/how-to-play-seasonal-witchcat.jsp',
   '/guides/seasonal-witchcat-when.html': 'guide/seasonal-witchcat-when.jsp',
@@ -12149,6 +12216,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/gorgosaurus-size-comparison.html': 'guide/vi/gorgosaurus-size-comparison.jsp',
   '/guides/id/gorgosaurus-size-comparison.html': 'guide/id/gorgosaurus-size-comparison.jsp',
   '/guides/de/gorgosaurus-size-comparison.html': 'guide/de/gorgosaurus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire123 (2026-07-19): gorgosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/gorgosaurus-3d-viewer-vs-ar-apps.html': 'guide/gorgosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/gorgosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/gorgosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/gorgosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/gorgosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/gorgosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/gorgosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/gorgosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/gorgosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/gorgosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/gorgosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
@@ -12437,6 +12512,7 @@ export const JSP_BY_ROUTE = {
   '/games/cat-hop-cloud.html': 'games/cat-hop-cloud.jsp',
   '/games/herd-cats-home.html': 'games/herd-cats-home.jsp',
   '/games/solo-battlefield.html': 'games/solo-battlefield.jsp',
+  '/games/feast-night.html': 'games/feast-night.jsp',
   '/games/seasonal-witchcat.html': 'games/seasonal-witchcat.jsp',
   '/games/desk-cat-coder.html': 'games/desk-cat-coder.jsp',
   '/games/boing-cat-platformer.html': 'games/boing-cat-platformer.jsp',
