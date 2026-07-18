@@ -8772,6 +8772,8 @@ export const ALIAS_ROUTES = {
   // Restored 2026-07-18: full CMS×7 + JSP + pictogram were already shipped;
   // batch738 falsely dropped registry while files remained in tree.
   '/coelophysis.html': '/dinosaur-3d/coelophysis.html',
+  // dinosaur-3d-discovery-loop-runbook fire101: quetzalcoatlus.
+  '/quetzalcoatlus.html': '/dinosaur-3d/quetzalcoatlus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -11845,6 +11847,7 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/brontotherium.html': 'dinosaur/brontotherium.jsp',
   '/dinosaur-3d/hybodus.html': 'dinosaur/hybodus.jsp',
   '/dinosaur-3d/coelophysis.html': 'dinosaur/coelophysis.jsp',
+  '/dinosaur-3d/quetzalcoatlus.html': 'dinosaur/quetzalcoatlus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
