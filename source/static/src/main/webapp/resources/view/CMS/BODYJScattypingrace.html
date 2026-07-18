@@ -1,0 +1,57 @@
+<script>
+    web.localUpload = false;
+    var CTR_GAME_URL = 'cat-typing-race/index.html';
+    function ctrStatus(text) {
+        var el = document.getElementById('ctrStatus');
+        if (el) el.textContent = text;
+    }
+    function ctrInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'ctrFrame';
+        frame.src = CTR_GAME_URL;
+        frame.title = 'Cat Typing Race game';
+        frame.setAttribute('allow', 'fullscreen; autoplay');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            ctrStatus('Game loaded. Click inside the canvas, press J to start, then type A-Z to match letters.');
+            try {
+                var doc = frame.contentDocument;
+                var c = doc && doc.querySelector('canvas');
+                if (c) c.focus();
+            } catch (e) {}
+        });
+        var launch = document.getElementById('ctrLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('ctrStage');
+        var playBtn = document.getElementById('ctrPlayBtn');
+        if (!stage || !playBtn) return;
+        if (playBtn.dataset.bound === '1') return;
+        playBtn.dataset.bound = '1';
+        var fsBtn = document.getElementById('ctrFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            ctrStatus('Loading the game (about 28 KB, one time - then cached)...');
+            ctrInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('ctrFrame');
+            if (frame) {
+                try {
+                    var c = frame.contentDocument && frame.contentDocument.querySelector('canvas');
+                    if (c) c.focus();
+                } catch (e) {}
+            }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', doAfterPageRendered);
+    } else {
+        doAfterPageRendered();
+    }
+</script>

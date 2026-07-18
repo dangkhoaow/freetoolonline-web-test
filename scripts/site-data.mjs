@@ -5786,6 +5786,26 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/potion-brew-shop-when.html',
   '/guides/de/potion-brew-shop-vs-alternatives.html',
 
+  // game-discovery-loop-runbook fire135 (2026-07-18): cat-typing-race companion guides
+  '/guides/how-to-play-cat-typing-race.html',
+  '/guides/cat-typing-race-when.html',
+  '/guides/cat-typing-race-vs-alternatives.html',
+  '/guides/pt/how-to-play-cat-typing-race.html',
+  '/guides/pt/cat-typing-race-when.html',
+  '/guides/pt/cat-typing-race-vs-alternatives.html',
+  '/guides/es/how-to-play-cat-typing-race.html',
+  '/guides/es/cat-typing-race-when.html',
+  '/guides/es/cat-typing-race-vs-alternatives.html',
+  '/guides/vi/how-to-play-cat-typing-race.html',
+  '/guides/vi/cat-typing-race-when.html',
+  '/guides/vi/cat-typing-race-vs-alternatives.html',
+  '/guides/id/how-to-play-cat-typing-race.html',
+  '/guides/id/cat-typing-race-when.html',
+  '/guides/id/cat-typing-race-vs-alternatives.html',
+  '/guides/de/how-to-play-cat-typing-race.html',
+  '/guides/de/cat-typing-race-when.html',
+  '/guides/de/cat-typing-race-vs-alternatives.html',
+
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle
   '/guides/how-to-play-cyber-slide-puzzle.html',
   '/guides/cyber-slide-puzzle-when.html',
@@ -8005,6 +8025,7 @@ export const ALIAS_ROUTES = {
   '/wash-the-cat.html': '/games/wash-the-cat.html',
   '/ritual-catacombs.html': '/games/ritual-catacombs.html',
   '/potion-brew-shop.html': '/games/potion-brew-shop.html',
+  '/cat-typing-race.html': '/games/cat-typing-race.html',
 
   '/gravity-orbit-golf.html': '/games/gravity-orbit-golf.html',
 
@@ -9846,6 +9867,26 @@ export const JSP_BY_ROUTE = {
   '/guides/de/potion-brew-shop-when.html': 'guide/de/potion-brew-shop-when.jsp',
   '/guides/de/potion-brew-shop-vs-alternatives.html': 'guide/de/potion-brew-shop-vs-alternatives.jsp',
 
+  // game-discovery-loop-runbook fire135 (2026-07-18): cat-typing-race companion guides
+  '/guides/how-to-play-cat-typing-race.html': 'guide/how-to-play-cat-typing-race.jsp',
+  '/guides/cat-typing-race-when.html': 'guide/cat-typing-race-when.jsp',
+  '/guides/cat-typing-race-vs-alternatives.html': 'guide/cat-typing-race-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-cat-typing-race.html': 'guide/pt/how-to-play-cat-typing-race.jsp',
+  '/guides/pt/cat-typing-race-when.html': 'guide/pt/cat-typing-race-when.jsp',
+  '/guides/pt/cat-typing-race-vs-alternatives.html': 'guide/pt/cat-typing-race-vs-alternatives.jsp',
+  '/guides/es/how-to-play-cat-typing-race.html': 'guide/es/how-to-play-cat-typing-race.jsp',
+  '/guides/es/cat-typing-race-when.html': 'guide/es/cat-typing-race-when.jsp',
+  '/guides/es/cat-typing-race-vs-alternatives.html': 'guide/es/cat-typing-race-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-cat-typing-race.html': 'guide/vi/how-to-play-cat-typing-race.jsp',
+  '/guides/vi/cat-typing-race-when.html': 'guide/vi/cat-typing-race-when.jsp',
+  '/guides/vi/cat-typing-race-vs-alternatives.html': 'guide/vi/cat-typing-race-vs-alternatives.jsp',
+  '/guides/id/how-to-play-cat-typing-race.html': 'guide/id/how-to-play-cat-typing-race.jsp',
+  '/guides/id/cat-typing-race-when.html': 'guide/id/cat-typing-race-when.jsp',
+  '/guides/id/cat-typing-race-vs-alternatives.html': 'guide/id/cat-typing-race-vs-alternatives.jsp',
+  '/guides/de/how-to-play-cat-typing-race.html': 'guide/de/how-to-play-cat-typing-race.jsp',
+  '/guides/de/cat-typing-race-when.html': 'guide/de/cat-typing-race-when.jsp',
+  '/guides/de/cat-typing-race-vs-alternatives.html': 'guide/de/cat-typing-race-vs-alternatives.jsp',
+
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle guides
   '/guides/how-to-play-cyber-slide-puzzle.html': 'guide/how-to-play-cyber-slide-puzzle.jsp',
   '/guides/cyber-slide-puzzle-when.html': 'guide/cyber-slide-puzzle-when.jsp',
@@ -11358,6 +11399,7 @@ export const JSP_BY_ROUTE = {
   '/games/wash-the-cat.html': 'games/wash-the-cat.jsp',
   '/games/ritual-catacombs.html': 'games/ritual-catacombs.jsp',
   '/games/potion-brew-shop.html': 'games/potion-brew-shop.jsp',
+  '/games/cat-typing-race.html': 'games/cat-typing-race.jsp',
   '/games/asteroid-blaster.html': 'games/asteroid-blaster.jsp',
   '/games/hex-puzzle-blocks.html': 'games/hex-puzzle-blocks.jsp',
   '/games/procedural-horde-game.html': 'games/procedural-horde-game.jsp',
