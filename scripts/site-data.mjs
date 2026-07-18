@@ -4020,6 +4020,46 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/how-to-view-carnotaurus-in-3d.html',
   '/guides/id/how-to-view-carnotaurus-in-3d.html',
   '/guides/de/how-to-view-carnotaurus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire44 (2026-07-18): carnotaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides (size)
+  '/guides/carnotaurus-size-comparison.html',
+  '/guides/pt/carnotaurus-size-comparison.html',
+  '/guides/es/carnotaurus-size-comparison.html',
+  '/guides/vi/carnotaurus-size-comparison.html',
+  '/guides/id/carnotaurus-size-comparison.html',
+  '/guides/de/carnotaurus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire45 (2026-07-18): carnotaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides (vs-ar)
+  '/guides/carnotaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/carnotaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/carnotaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/carnotaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/carnotaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/carnotaurus-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire46 (2026-07-18): how-to-view-dilophosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides (how-to)
+  '/guides/how-to-view-dilophosaurus-in-3d.html',
+  '/guides/pt/how-to-view-dilophosaurus-in-3d.html',
+  '/guides/es/how-to-view-dilophosaurus-in-3d.html',
+  '/guides/vi/how-to-view-dilophosaurus-in-3d.html',
+  '/guides/id/how-to-view-dilophosaurus-in-3d.html',
+  '/guides/de/how-to-view-dilophosaurus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire47 (2026-07-18): dilophosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides (size)
+  '/guides/dilophosaurus-size-comparison.html',
+  '/guides/pt/dilophosaurus-size-comparison.html',
+  '/guides/es/dilophosaurus-size-comparison.html',
+  '/guides/vi/dilophosaurus-size-comparison.html',
+  '/guides/id/dilophosaurus-size-comparison.html',
+  '/guides/de/dilophosaurus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire48 (2026-07-18): dilophosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides (vs-ar)
+  '/guides/dilophosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/dilophosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/dilophosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/dilophosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/dilophosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/dilophosaurus-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -8007,6 +8047,10 @@ export const ALIAS_ROUTES = {
   '/protoceratops.html': '/dinosaur-3d/protoceratops.html',
   // dinosaur-3d-discovery-loop-runbook fire77 (2026-07-18): flat-slug alias for ceratosaurus.
   '/ceratosaurus.html': '/dinosaur-3d/ceratosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire78: brontosaurus alias.
+  '/brontosaurus.html': '/dinosaur-3d/brontosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire79: megalosaurus alias.
+  '/megalosaurus.html': '/dinosaur-3d/megalosaurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -10863,6 +10907,10 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/protoceratops.html': 'dinosaur/protoceratops.jsp',
   // dinosaur-3d-discovery-loop-runbook fire77: Ceratosaurus viewer.
   '/dinosaur-3d/ceratosaurus.html': 'dinosaur/ceratosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire78: Brontosaurus viewer.
+  '/dinosaur-3d/brontosaurus.html': 'dinosaur/brontosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire79: Megalosaurus viewer.
+  '/dinosaur-3d/megalosaurus.html': 'dinosaur/megalosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -11211,6 +11259,46 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-view-carnotaurus-in-3d.html': 'guide/vi/how-to-view-carnotaurus-in-3d.jsp',
   '/guides/id/how-to-view-carnotaurus-in-3d.html': 'guide/id/how-to-view-carnotaurus-in-3d.jsp',
   '/guides/de/how-to-view-carnotaurus-in-3d.html': 'guide/de/how-to-view-carnotaurus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire44 (2026-07-18): carnotaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides (size)
+  '/guides/carnotaurus-size-comparison.html': 'guide/carnotaurus-size-comparison.jsp',
+  '/guides/pt/carnotaurus-size-comparison.html': 'guide/pt/carnotaurus-size-comparison.jsp',
+  '/guides/es/carnotaurus-size-comparison.html': 'guide/es/carnotaurus-size-comparison.jsp',
+  '/guides/vi/carnotaurus-size-comparison.html': 'guide/vi/carnotaurus-size-comparison.jsp',
+  '/guides/id/carnotaurus-size-comparison.html': 'guide/id/carnotaurus-size-comparison.jsp',
+  '/guides/de/carnotaurus-size-comparison.html': 'guide/de/carnotaurus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire45 (2026-07-18): carnotaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides (vs-ar)
+  '/guides/carnotaurus-3d-viewer-vs-ar-apps.html': 'guide/carnotaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/carnotaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/carnotaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/carnotaurus-3d-viewer-vs-ar-apps.html': 'guide/es/carnotaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/carnotaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/carnotaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/carnotaurus-3d-viewer-vs-ar-apps.html': 'guide/id/carnotaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/carnotaurus-3d-viewer-vs-ar-apps.html': 'guide/de/carnotaurus-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire46 (2026-07-18): how-to-view-dilophosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides (how-to)
+  '/guides/how-to-view-dilophosaurus-in-3d.html': 'guide/how-to-view-dilophosaurus-in-3d.jsp',
+  '/guides/pt/how-to-view-dilophosaurus-in-3d.html': 'guide/pt/how-to-view-dilophosaurus-in-3d.jsp',
+  '/guides/es/how-to-view-dilophosaurus-in-3d.html': 'guide/es/how-to-view-dilophosaurus-in-3d.jsp',
+  '/guides/vi/how-to-view-dilophosaurus-in-3d.html': 'guide/vi/how-to-view-dilophosaurus-in-3d.jsp',
+  '/guides/id/how-to-view-dilophosaurus-in-3d.html': 'guide/id/how-to-view-dilophosaurus-in-3d.jsp',
+  '/guides/de/how-to-view-dilophosaurus-in-3d.html': 'guide/de/how-to-view-dilophosaurus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire47 (2026-07-18): dilophosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides (size)
+  '/guides/dilophosaurus-size-comparison.html': 'guide/dilophosaurus-size-comparison.jsp',
+  '/guides/pt/dilophosaurus-size-comparison.html': 'guide/pt/dilophosaurus-size-comparison.jsp',
+  '/guides/es/dilophosaurus-size-comparison.html': 'guide/es/dilophosaurus-size-comparison.jsp',
+  '/guides/vi/dilophosaurus-size-comparison.html': 'guide/vi/dilophosaurus-size-comparison.jsp',
+  '/guides/id/dilophosaurus-size-comparison.html': 'guide/id/dilophosaurus-size-comparison.jsp',
+  '/guides/de/dilophosaurus-size-comparison.html': 'guide/de/dilophosaurus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire48 (2026-07-18): dilophosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides (vs-ar)
+  '/guides/dilophosaurus-3d-viewer-vs-ar-apps.html': 'guide/dilophosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/dilophosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/dilophosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/dilophosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/dilophosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/dilophosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/dilophosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/dilophosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/dilophosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/dilophosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/dilophosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
