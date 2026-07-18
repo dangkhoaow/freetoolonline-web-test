@@ -6073,6 +6073,26 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/mystic-card-paw-when.html',
   '/guides/de/mystic-card-paw-vs-alternatives.html',
 
+  // game-discovery-loop-runbook fire138 (2026-07-18): cat-hop-cloud companion guides
+  '/guides/how-to-play-cat-hop-cloud.html',
+  '/guides/cat-hop-cloud-when.html',
+  '/guides/cat-hop-cloud-vs-alternatives.html',
+  '/guides/pt/how-to-play-cat-hop-cloud.html',
+  '/guides/pt/cat-hop-cloud-when.html',
+  '/guides/pt/cat-hop-cloud-vs-alternatives.html',
+  '/guides/es/how-to-play-cat-hop-cloud.html',
+  '/guides/es/cat-hop-cloud-when.html',
+  '/guides/es/cat-hop-cloud-vs-alternatives.html',
+  '/guides/vi/how-to-play-cat-hop-cloud.html',
+  '/guides/vi/cat-hop-cloud-when.html',
+  '/guides/vi/cat-hop-cloud-vs-alternatives.html',
+  '/guides/id/how-to-play-cat-hop-cloud.html',
+  '/guides/id/cat-hop-cloud-when.html',
+  '/guides/id/cat-hop-cloud-vs-alternatives.html',
+  '/guides/de/how-to-play-cat-hop-cloud.html',
+  '/guides/de/cat-hop-cloud-when.html',
+  '/guides/de/cat-hop-cloud-vs-alternatives.html',
+
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle
   '/guides/how-to-play-cyber-slide-puzzle.html',
   '/guides/cyber-slide-puzzle-when.html',
@@ -8311,6 +8331,7 @@ export const ALIAS_ROUTES = {
   '/cat-typing-race.html': '/games/cat-typing-race.html',
   '/unlucky-crossing.html': '/games/unlucky-crossing.html',
   '/mystic-card-paw.html': '/games/mystic-card-paw.html',
+  '/cat-hop-cloud.html': '/games/cat-hop-cloud.html',
 
   '/gravity-orbit-golf.html': '/games/gravity-orbit-golf.html',
 
@@ -10274,6 +10295,26 @@ export const JSP_BY_ROUTE = {
   '/guides/de/mystic-card-paw-when.html': 'guide/de/mystic-card-paw-when.jsp',
   '/guides/de/mystic-card-paw-vs-alternatives.html': 'guide/de/mystic-card-paw-vs-alternatives.jsp',
 
+  // game-discovery-loop-runbook fire138 (2026-07-18): cat-hop-cloud companion guides
+  '/guides/how-to-play-cat-hop-cloud.html': 'guide/how-to-play-cat-hop-cloud.jsp',
+  '/guides/cat-hop-cloud-when.html': 'guide/cat-hop-cloud-when.jsp',
+  '/guides/cat-hop-cloud-vs-alternatives.html': 'guide/cat-hop-cloud-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-cat-hop-cloud.html': 'guide/pt/how-to-play-cat-hop-cloud.jsp',
+  '/guides/pt/cat-hop-cloud-when.html': 'guide/pt/cat-hop-cloud-when.jsp',
+  '/guides/pt/cat-hop-cloud-vs-alternatives.html': 'guide/pt/cat-hop-cloud-vs-alternatives.jsp',
+  '/guides/es/how-to-play-cat-hop-cloud.html': 'guide/es/how-to-play-cat-hop-cloud.jsp',
+  '/guides/es/cat-hop-cloud-when.html': 'guide/es/cat-hop-cloud-when.jsp',
+  '/guides/es/cat-hop-cloud-vs-alternatives.html': 'guide/es/cat-hop-cloud-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-cat-hop-cloud.html': 'guide/vi/how-to-play-cat-hop-cloud.jsp',
+  '/guides/vi/cat-hop-cloud-when.html': 'guide/vi/cat-hop-cloud-when.jsp',
+  '/guides/vi/cat-hop-cloud-vs-alternatives.html': 'guide/vi/cat-hop-cloud-vs-alternatives.jsp',
+  '/guides/id/how-to-play-cat-hop-cloud.html': 'guide/id/how-to-play-cat-hop-cloud.jsp',
+  '/guides/id/cat-hop-cloud-when.html': 'guide/id/cat-hop-cloud-when.jsp',
+  '/guides/id/cat-hop-cloud-vs-alternatives.html': 'guide/id/cat-hop-cloud-vs-alternatives.jsp',
+  '/guides/de/how-to-play-cat-hop-cloud.html': 'guide/de/how-to-play-cat-hop-cloud.jsp',
+  '/guides/de/cat-hop-cloud-when.html': 'guide/de/cat-hop-cloud-when.jsp',
+  '/guides/de/cat-hop-cloud-vs-alternatives.html': 'guide/de/cat-hop-cloud-vs-alternatives.jsp',
+
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle guides
   '/guides/how-to-play-cyber-slide-puzzle.html': 'guide/how-to-play-cyber-slide-puzzle.jsp',
   '/guides/cyber-slide-puzzle-when.html': 'guide/cyber-slide-puzzle-when.jsp',
@@ -11954,6 +11995,7 @@ export const JSP_BY_ROUTE = {
   '/games/cat-typing-race.html': 'games/cat-typing-race.jsp',
   '/games/unlucky-crossing.html': 'games/unlucky-crossing.jsp',
   '/games/mystic-card-paw.html': 'games/mystic-card-paw.jsp',
+  '/games/cat-hop-cloud.html': 'games/cat-hop-cloud.jsp',
   '/games/asteroid-blaster.html': 'games/asteroid-blaster.jsp',
   '/games/hex-puzzle-blocks.html': 'games/hex-puzzle-blocks.jsp',
   '/games/procedural-horde-game.html': 'games/procedural-horde-game.jsp',
