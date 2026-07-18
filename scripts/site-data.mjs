@@ -4060,6 +4060,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/dilophosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/id/dilophosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/de/dilophosaurus-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire49 (2026-07-18): how-to-view-iguanodon-in-3d
+  // EN + pt/es/vi/id/de companion guides (step-by-step)
+  '/guides/how-to-view-iguanodon-in-3d.html',
+  '/guides/pt/how-to-view-iguanodon-in-3d.html',
+  '/guides/es/how-to-view-iguanodon-in-3d.html',
+  '/guides/vi/how-to-view-iguanodon-in-3d.html',
+  '/guides/id/how-to-view-iguanodon-in-3d.html',
+  '/guides/de/how-to-view-iguanodon-in-3d.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -8071,6 +8079,8 @@ export const ALIAS_ROUTES = {
   '/brontosaurus.html': '/dinosaur-3d/brontosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire79: megalosaurus alias.
   '/megalosaurus.html': '/dinosaur-3d/megalosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire80: microraptor alias.
+  '/microraptor.html': '/dinosaur-3d/microraptor.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -10952,6 +10962,8 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/brontosaurus.html': 'dinosaur/brontosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire79: Megalosaurus viewer.
   '/dinosaur-3d/megalosaurus.html': 'dinosaur/megalosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire80: Microraptor viewer.
+  '/dinosaur-3d/microraptor.html': 'dinosaur/microraptor.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -11340,6 +11352,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/dilophosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/dilophosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/dilophosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/dilophosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/dilophosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/dilophosaurus-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire49 (2026-07-18): how-to-view-iguanodon-in-3d
+  // EN + pt/es/vi/id/de companion guides (step-by-step)
+  '/guides/how-to-view-iguanodon-in-3d.html': 'guide/how-to-view-iguanodon-in-3d.jsp',
+  '/guides/pt/how-to-view-iguanodon-in-3d.html': 'guide/pt/how-to-view-iguanodon-in-3d.jsp',
+  '/guides/es/how-to-view-iguanodon-in-3d.html': 'guide/es/how-to-view-iguanodon-in-3d.jsp',
+  '/guides/vi/how-to-view-iguanodon-in-3d.html': 'guide/vi/how-to-view-iguanodon-in-3d.jsp',
+  '/guides/id/how-to-view-iguanodon-in-3d.html': 'guide/id/how-to-view-iguanodon-in-3d.jsp',
+  '/guides/de/how-to-view-iguanodon-in-3d.html': 'guide/de/how-to-view-iguanodon-in-3d.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
