@@ -5639,15 +5639,16 @@
         var glow = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 18), glowMat);
         scene.add(glow);
 
-        // fixed Jupiter reference sphere (1 Mjup, ~1 Rjup) for constant-scale comparison
-        var jupRef = new THREE.Mesh(new THREE.SphereGeometry(T3D_BD_JUP_R, 24, 16), new THREE.MeshStandardMaterial({ color: 0xd8b98a, roughness: 0.8 }));
-        jupRef.position.set(9, -3, 0);
-        scene.add(jupRef);
-
         // a literal mass "ruler" - a line from 0 to 95 Mjup with ticks at the
         // two real category boundaries (13, 80) plus the real Teide 1 estimate
         var RULER_LEN = 16, RULER_MAX = 95;
         function ruX(mj) { return -RULER_LEN / 2 + (mj / RULER_MAX) * RULER_LEN; }
+
+        // fixed Jupiter reference sphere (1 Mjup, ~1 Rjup) parked right over
+        // its own 1-Mjup mark for constant-scale comparison
+        var jupRef = new THREE.Mesh(new THREE.SphereGeometry(T3D_BD_JUP_R, 24, 16), new THREE.MeshStandardMaterial({ color: 0xd8b98a, roughness: 0.8 }));
+        jupRef.position.set(ruX(1), -3.2, 0);
+        scene.add(jupRef);
         var rulerPts = [new THREE.Vector3(ruX(0), -6, 0), new THREE.Vector3(ruX(RULER_MAX), -6, 0)];
         scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(rulerPts), new THREE.LineBasicMaterial({ color: 0x556, transparent: true, opacity: 0.6 })));
         [13, 80].forEach(function (mj) {
@@ -5671,7 +5672,7 @@
                 + '<tr><td>Radius across that range</td><td>stays within about 30% of Jupiter\'s</td></tr>'
                 + '<tr><td>First confirmed brown dwarf</td><td>Teide 1, 1995 (about 55 Jupiter masses)</td></tr>'
                 + '</table>'
-                + '<p class="t3d-note">An honest color note: real brown dwarfs are far dimmer in visible light than shown here by default - toggle "Realistic dim" to see it. The name is actually a misnomer: to the human eye most would look magenta, purple, or nearly black, not brown. The Jupiter sphere at right and the ruler below are fixed reference points, not to relative orbital scale.</p>';
+                + '<p class="t3d-note">An honest color note: real brown dwarfs are far dimmer in visible light than shown here by default - toggle "Realistic dim" to see it. The name is actually a misnomer: to the human eye most would look magenta, purple, or nearly black, not brown. The small tan sphere parked over the ruler\'s 1-Jupiter-mass mark is a fixed size reference, not to orbital scale.</p>';
             t3dInfo(html);
         }
         function updateStatus() {
