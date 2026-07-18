@@ -415,7 +415,10 @@ function resolvePageIdentity(route, siteOrigin, toolName) {
   if (!pictoFile || !_safeExists(path.join(PICTO_DIR, pictoFile))) return null;
   const origin = (siteOrigin || '').replace(/\/$/, '');
   const svgUrl = `${origin}/img/illustrations/mini-pictogram/${pictoFile}`;
-  const altName = (toolName || 'tool').replace(/\s*-\s*.*$/, '').trim() || 'tool';
+  // \s+-\s+ (NOT \s*-\s*) so a bare hyphen inside a compound word ("In-Browser")
+  // is not mistaken for the " - subtitle" separator (2026-07-18 bug: truncated
+  // "In-Browser HD Video Converter - No Upload Required" down to just "In").
+  const altName = (toolName || 'tool').replace(/\s+-\s+.*$/, '').trim() || 'tool';
   const headerIconImg = `<img class="headerLogoImg" src="${svgUrl}" width="43" height="43" alt="${escapeHtml(altName)} icon" loading="eager" decoding="async">`;
   const ogPng = path.join(OG_DIR, `${slug}.png`);
   const touchPng = path.join(TOUCH_DIR, `${slug}-180.png`);
