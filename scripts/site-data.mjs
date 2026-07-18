@@ -5005,6 +5005,24 @@ export const GUIDE_ROUTES = new Set([
   // guide angles' full pt/es/vi/id/de locale fanout (builder wires
   // JSP_BY_ROUTE + INFO_ROUTES only, same recurring gap class as
   // fires 32/56/57/62/66/84/113/115).
+  '/guides/date-difference-calculator-when.html',
+  '/guides/date-difference-calculator-step-by-step.html',
+  '/guides/date-difference-calculator-vs-alternatives.html',
+  '/guides/pt/date-difference-calculator-when.html',
+  '/guides/pt/date-difference-calculator-step-by-step.html',
+  '/guides/pt/date-difference-calculator-vs-alternatives.html',
+  '/guides/es/date-difference-calculator-when.html',
+  '/guides/es/date-difference-calculator-step-by-step.html',
+  '/guides/es/date-difference-calculator-vs-alternatives.html',
+  '/guides/vi/date-difference-calculator-when.html',
+  '/guides/vi/date-difference-calculator-step-by-step.html',
+  '/guides/vi/date-difference-calculator-vs-alternatives.html',
+  '/guides/id/date-difference-calculator-when.html',
+  '/guides/id/date-difference-calculator-step-by-step.html',
+  '/guides/id/date-difference-calculator-vs-alternatives.html',
+  '/guides/de/date-difference-calculator-when.html',
+  '/guides/de/date-difference-calculator-step-by-step.html',
+  '/guides/de/date-difference-calculator-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire115 (LEAN one-off, 2026-07-12):
   // GUIDE_ROUTES backfill for add-watermark-to-pdf's 3 EN companion guide
   // angles plus their full pt/es/vi/id/de locale fanout (builder wires
