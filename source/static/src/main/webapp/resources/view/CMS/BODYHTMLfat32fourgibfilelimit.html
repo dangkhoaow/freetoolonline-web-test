@@ -1,0 +1,40 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>FAT32 4 GiB file limit - why large videos fail on USB</b></h1>
+<p>FAT32 still ships on many USB sticks and SD cards, and it refuses any single file larger than 4 GiB minus 1 byte (4,294,967,295 bytes). Free space on the stick does not help - a 4.7 GB video, disk image, or game download fails the copy even when the drive looks empty. The reliable workaround is to reformat to exFAT or NTFS, or to split the payload into smaller pieces with a <a href="/zip-tools/zip-file.html">ZIP file tool</a>.</p>
+<p class="reviewed">Last reviewed: 2026-07-18</p>
+<time itemprop="datePublished" datetime="2026-07-18T00:00:00Z"><b>Published July 18, 2026</b></time>
+<hr/>
+
+<br/><h2 class="text-uppercase"><b>What happened</b></h2>
+<p>Microsoft's file-system comparison table lists FAT32's maximum file size as 4 GiB. That ceiling comes from a 32-bit file-length field in the FAT directory entry, so the largest legal size is 2^32 - 1 bytes - not a round 4,294,967,296. The volume itself can be much larger; the per-file cap is separate from how much free space the stick reports. exFAT and NTFS both advertise a theoretical max file size of 2^64 - 1 bytes in the same Microsoft table, which is why reformatting the same stick usually makes the copy succeed.</p>
+<p>Checked against Microsoft Learn (File System Functionality Comparison) and the FAT family documentation on 18 July 2026:</p>
+<div class="w3-responsive">
+<table class="w3-table-all w3-small">
+<tr><th>File system</th><th>Max single-file size</th><th>Typical USB use</th></tr>
+<tr><td>FAT32</td><td>4 GiB - 1 byte</td><td>Default on many cheap USB sticks and camera cards</td></tr>
+<tr><td>exFAT</td><td>2^64 - 1 bytes (practically unlimited for media)</td><td>Cross-platform large-file USB / SD</td></tr>
+<tr><td>NTFS</td><td>2^64 - 1 bytes</td><td>Windows-native external drives</td></tr>
+</table>
+</div>
+<p>The limit has been part of FAT32 since the mid-1990s design. It still bites in 2026 because retailers keep shipping FAT32-formatted sticks for maximum device compatibility, while everyday files - 4K video, Windows ISOs, game installers - routinely exceed 4 GiB.</p>
+
+<br/><h2 class="text-uppercase"><b>Why it matters for everyday files</b></h2>
+<p>Why it matters for everyday files: the error message often says the stick is full when it is not. The OS is rejecting one oversized file, not the free-space total. That mismatch shows up when moving a camera dump, copying a game ISO for a friend, or saving a long screen recording straight to USB. Devices that only speak FAT32 (some TVs, car stereos, older cameras) cannot read an exFAT or NTFS stick without a reformat, so the format choice is a trade-off between large-file support and widest playback compatibility.</p>
+
+<br/><h2 class="text-uppercase"><b>What to do with your files right now</b></h2>
+<p>If a copy fails around the 4 GiB mark on a stick that still shows free space, these options cover the usual cases:</p>
+<ul>
+<li><b>Split the payload into ZIP parts under 4 GiB.</b> The <a href="/zip-tools/zip-file.html">ZIP file tool</a> can pack a large folder into an archive you can size-check before the USB copy.</li>
+<li><b>Extract archives on a full-size drive first.</b> The <a href="/zip-tools/unzip-file.html">unzip file tool</a> and the <a href="/guides/en/how-to-extract-a-file-online-zip-rar-7z.html">extract ZIP RAR 7Z guide</a> keep the expand step off the limited stick.</li>
+<li><b>Reformat the stick to exFAT when every device in the path supports it.</b> That removes the 4 GiB ceiling while staying usable on current Windows, macOS, and many cameras.</li>
+<li><b>Use NTFS when the stick stays in a Windows-only workflow.</b> Same large-file headroom; weaker support on locked-down TVs and some consoles.</li>
+</ul>
+
+<br/><h2 class="text-uppercase"><b>Sources</b></h2>
+<ul>
+<li><a href="https://learn.microsoft.com/en-us/windows/win32/fileio/filesystem-functionality-comparison" rel="noopener">Microsoft Learn - File System Functionality Comparison</a> (checked 2026-07-18)</li>
+<li><a href="https://learn.microsoft.com/en-us/windows/win32/fileio/exfat-specification" rel="noopener">Microsoft Learn - exFAT specification</a></li>
+<li><a href="https://en.wikipedia.org/wiki/File_Allocation_Table" rel="noopener">Wikipedia - File Allocation Table</a> (FAT32 max file size = 4,294,967,295 bytes)</li>
+</ul>
+<p><a href="/news.html">&larr; Back to News</a></p>
+</div>
