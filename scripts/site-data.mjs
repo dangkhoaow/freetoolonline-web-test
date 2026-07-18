@@ -4294,6 +4294,30 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/pachyrhinosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/id/pachyrhinosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/de/pachyrhinosaurus-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire76 (2026-07-18): how-to-view-ground-sloth-in-3d
+  // EN + pt/es/vi/id/de companion guides (how-to)
+  '/guides/how-to-view-ground-sloth-in-3d.html',
+  '/guides/pt/how-to-view-ground-sloth-in-3d.html',
+  '/guides/es/how-to-view-ground-sloth-in-3d.html',
+  '/guides/vi/how-to-view-ground-sloth-in-3d.html',
+  '/guides/id/how-to-view-ground-sloth-in-3d.html',
+  '/guides/de/how-to-view-ground-sloth-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire77 (2026-07-18): ground-sloth-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/ground-sloth-size-comparison.html',
+  '/guides/pt/ground-sloth-size-comparison.html',
+  '/guides/es/ground-sloth-size-comparison.html',
+  '/guides/vi/ground-sloth-size-comparison.html',
+  '/guides/id/ground-sloth-size-comparison.html',
+  '/guides/de/ground-sloth-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire78 (2026-07-18): ground-sloth-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/ground-sloth-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/ground-sloth-3d-viewer-vs-ar-apps.html',
+  '/guides/es/ground-sloth-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/ground-sloth-3d-viewer-vs-ar-apps.html',
+  '/guides/id/ground-sloth-3d-viewer-vs-ar-apps.html',
+  '/guides/de/ground-sloth-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -8446,6 +8470,10 @@ export const ALIAS_ROUTES = {
   '/ichthyovenator.html': '/dinosaur-3d/ichthyovenator.html',
   // dinosaur-3d-discovery-loop-runbook fire91: ampelosaurus.
   '/ampelosaurus.html': '/dinosaur-3d/ampelosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire92: seismosaurus.
+  '/seismosaurus.html': '/dinosaur-3d/seismosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire93: stygimoloch.
+  '/stygimoloch.html': '/dinosaur-3d/stygimoloch.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -11464,6 +11492,8 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/dimetrodon.html': 'dinosaur/dimetrodon.jsp',
   '/dinosaur-3d/ichthyovenator.html': 'dinosaur/ichthyovenator.jsp',
   '/dinosaur-3d/ampelosaurus.html': 'dinosaur/ampelosaurus.jsp',
+  '/dinosaur-3d/seismosaurus.html': 'dinosaur/seismosaurus.jsp',
+  '/dinosaur-3d/stygimoloch.html': 'dinosaur/stygimoloch.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -12068,6 +12098,30 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/pachyrhinosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/pachyrhinosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/pachyrhinosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/pachyrhinosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/pachyrhinosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/pachyrhinosaurus-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire76 (2026-07-18): how-to-view-ground-sloth-in-3d
+  // EN + pt/es/vi/id/de companion guides (how-to)
+  '/guides/how-to-view-ground-sloth-in-3d.html': 'guide/how-to-view-ground-sloth-in-3d.jsp',
+  '/guides/pt/how-to-view-ground-sloth-in-3d.html': 'guide/pt/how-to-view-ground-sloth-in-3d.jsp',
+  '/guides/es/how-to-view-ground-sloth-in-3d.html': 'guide/es/how-to-view-ground-sloth-in-3d.jsp',
+  '/guides/vi/how-to-view-ground-sloth-in-3d.html': 'guide/vi/how-to-view-ground-sloth-in-3d.jsp',
+  '/guides/id/how-to-view-ground-sloth-in-3d.html': 'guide/id/how-to-view-ground-sloth-in-3d.jsp',
+  '/guides/de/how-to-view-ground-sloth-in-3d.html': 'guide/de/how-to-view-ground-sloth-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire77 (2026-07-18): ground-sloth-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/ground-sloth-size-comparison.html': 'guide/ground-sloth-size-comparison.jsp',
+  '/guides/pt/ground-sloth-size-comparison.html': 'guide/pt/ground-sloth-size-comparison.jsp',
+  '/guides/es/ground-sloth-size-comparison.html': 'guide/es/ground-sloth-size-comparison.jsp',
+  '/guides/vi/ground-sloth-size-comparison.html': 'guide/vi/ground-sloth-size-comparison.jsp',
+  '/guides/id/ground-sloth-size-comparison.html': 'guide/id/ground-sloth-size-comparison.jsp',
+  '/guides/de/ground-sloth-size-comparison.html': 'guide/de/ground-sloth-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire78 (2026-07-18): ground-sloth-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/ground-sloth-3d-viewer-vs-ar-apps.html': 'guide/ground-sloth-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/ground-sloth-3d-viewer-vs-ar-apps.html': 'guide/pt/ground-sloth-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/ground-sloth-3d-viewer-vs-ar-apps.html': 'guide/es/ground-sloth-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/ground-sloth-3d-viewer-vs-ar-apps.html': 'guide/vi/ground-sloth-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/ground-sloth-3d-viewer-vs-ar-apps.html': 'guide/id/ground-sloth-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/ground-sloth-3d-viewer-vs-ar-apps.html': 'guide/de/ground-sloth-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
