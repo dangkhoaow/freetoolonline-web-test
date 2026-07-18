@@ -1,0 +1,48 @@
+<script>
+    if (typeof web !== "undefined") web.localUpload = false;
+    var SBF_GAME_URL = 'solo-battlefield/index.html';
+    function sbfStatus(text) {
+        var el = document.getElementById('sbfStatus');
+        if (el) el.textContent = text;
+    }
+    function sbfInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'sbfFrame';
+        frame.src = SBF_GAME_URL;
+        frame.title = 'Solo Battlefield game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            sbfStatus('Game loaded. Move with WASD and click to strike.');
+            try { frame.contentWindow.focus(); } catch (e) {}
+        });
+        var launch = document.getElementById('sbfLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('sbfStage');
+        var playBtn = document.getElementById('sbfPlayBtn');
+        if (!stage || !playBtn) return;
+        if (playBtn.dataset.bound === '1') return;
+        playBtn.dataset.bound = '1';
+        var fsBtn = document.getElementById('sbfFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            sbfStatus('Loading the game (about 12 KB, one time - then cached)...');
+            sbfInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('sbfFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) {} }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', doAfterPageRendered);
+    } else {
+        doAfterPageRendered();
+    }
+</script>
