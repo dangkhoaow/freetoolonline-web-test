@@ -578,6 +578,7 @@ try {
     { title: "Debris Disk 3D Explorer", url: "https://freetoolonline.com/space-3d/debris-disk.html", include: !1, tags: "space-3d" },
     { title: "Brown Dwarf 3D Explorer", url: "https://freetoolonline.com/space-3d/brown-dwarf.html", include: !1, tags: "space-3d" },
     { title: "Kilonova 3D Explorer", url: "https://freetoolonline.com/space-3d/kilonova.html", include: !1, tags: "space-3d" },
+    { title: "Carrington Event 3D Explorer", url: "https://freetoolonline.com/space-3d/carrington-event.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
