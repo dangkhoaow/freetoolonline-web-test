@@ -53,7 +53,8 @@ async function proveAt(width) {
   await page.waitForTimeout(1500);
   const shot2 = await frame.locator('canvas').screenshot();
   const changed = Buffer.compare(shot1, shot2) !== 0;
-  const gameErrors = errors.filter((e) => !/get-rating|403|favicon|Failed to load resource/i.test(e));
+  // Framework heath-check CORS + iframe pointer-lock WrongDocumentError are not game-origin failures.
+  const gameErrors = errors.filter((e) => !/get-rating|403|favicon|Failed to load resource|heath-check|Access-Control-Allow-Origin|WrongDocumentError|pointer lock/i.test(e));
   await browser.close();
   server.close();
   return { width, changed, b1: shot1.length, b2: shot2.length, gameErrors };
