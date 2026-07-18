@@ -1,0 +1,793 @@
+<script>
+    // ===================================================================
+    // DINOSAUR 3D VIEWER - scene archetype (dinosaur-3d cluster)
+    // -------------------------------------------------------------------
+    // Vendored three.js (ESM, dynamic import from /vendor/three/, NO CDN),
+    // fully client-side. ONE skeleton serves the whole /dinosaur-3d/*
+    // family; the species is dispatched from D3D_SLUG against the embedded
+    // D3D_DINOS catalogue. Every dinosaur is assembled procedurally from
+    // three.js PRIMITIVES by the single data-driven builder d3dBuildDino()
+    // reading a per-species spec (body archetype + skin colors + eye + teeth
+    // + feature flags). No model files, no textures fetched by default.
+    //
+    // HONESTY: the scene is an ARTIST'S RECONSTRUCTION, not a scientific
+    // model. Fossils do not preserve soft tissue or color, so skin/color are
+    // interpretive; the info panel says so. Every NUMBER shown (length,
+    // weight, era, discovery) is a REAL published figure from the per-tool
+    // SKILL.md truth source.
+    //
+    // A visible wrapper + "Loading 3D engine..." placeholder renders
+    // synchronously (G16 render-only pass); the ~0.7 MB engine lazy-loads
+    // post-paint via requestIdleCallback and is cached by the browser.
+    // Fullscreen targets the WRAPPER div (controls stay visible).
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var D3D_SLUG = 'gryponyx';
+    var D3D_STORE_KEY = 'ftol-dino-' + D3D_SLUG;
+
+    // ---- species catalogue (one entry per page; the loop authors one BODYJS
+    // per species with only that species' spec). Numbers are real published
+    // figures; they are shown in the facts panel and MUST match the per-tool
+    // SKILL.md truth source. archetype: theropod | sauropod | ceratopsian
+    // | stegosaur | ankylosaur | marine | pterosaur | raptor.
+    var D3D_DINOS = {
+        'gryponyx': {
+            name: 'Gryponyx', archetype: 'theropod',
+            lengthM: 5, heightM: 1.8, weightKg: 485, eraMya: '201-190',
+            period: 'Early Jurassic', diet: 'Herbivore (sauropodomorph)',
+            discovered: '1911 (Broom)',
+            skin: 0x8a7352, belly: 0xd4c4a0, pattern: 0x5a4a32, eye: 0x2c3e50,
+            teeth: 'beak', feats: {},
+            note: 'Early Jurassic hooked-claw sauropodomorph from South Africa (Upper Elliot Formation). Length about 5 m. Mass poorly constrained; one secondary estimate about 485 kg. Named by Broom 1911; historically entangled with Massospondylus, but Vasconcelos and Yates argued it is distinctive. Soft-tissue color is artistic.'
+        }
+    };
+
+    function d3dSpec() {
+        return D3D_DINOS[D3D_SLUG] || {
+            name: 'Dinosaur', archetype: 'theropod', lengthM: 8, heightM: 3,
+            weightKg: 2000, eraMya: '?', period: 'Mesozoic', diet: 'Unknown',
+            discovered: '', skin: 0x7d8b5a, belly: 0xc2b98f, pattern: 0x5a6640,
+            eye: 0xc0392b, teeth: 'conical', feats: {}, note: ''
+        };
+    }
+
+    // ---- vendored ESM loader (cached import()) --------------------------
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function d3dStatus(text) { var el = document.getElementById('d3dStatus'); if (el) el.textContent = text; }
+    function d3dInfo(html) { var el = document.getElementById('d3dInfoPanel'); if (el) el.innerHTML = html; }
+    function d3dLoadStore() { try { return JSON.parse(localStorage.getItem(D3D_STORE_KEY) || '{}') || {}; } catch (e) { return {}; } }
+    function d3dSaveStore(obj) { try { localStorage.setItem(D3D_STORE_KEY, JSON.stringify(obj)); } catch (e) {} }
+    function d3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- OPTIONAL photoreal asset layer (progressive enhancement) --------
+    // G16 CONTRACT: the procedural model is the INSTANT first paint. AFTER it
+    // paints, we OPTIONALLY fetch a real, free-licensed glTF/GLB for this species
+    // from the shared ftol-vm-assets CDN (per the runbook licence gate), verify
+    // its sha256, IndexedDB-cache it, and swap it in for the procedural body. ANY
+    // failure (no manifest, no entry for this species, network / parse / WebGL
+    // error) leaves the procedural model exactly as-is - zero regression. NO CDN
+    // engine and NO jsm bare-specifier: GLTFLoader is the self-contained vendored
+    // ESM build at /vendor/three/gltf-loader.module.js.
+    var D3D_ASSET_CDN = 'https://dangkhoaow.github.io/ftol-vm-assets/dinosaur-3d';
+    var D3D_ASSET_DB = 'ftol-dino3d-assets';
+    function d3dIdbOpen() {
+        return new Promise(function (resolve, reject) {
+            var req = indexedDB.open(D3D_ASSET_DB, 1);
+            req.onupgradeneeded = function () { if (!req.result.objectStoreNames.contains('assets')) { req.result.createObjectStore('assets', { keyPath: 'key' }); } };
+            req.onsuccess = function () { resolve(req.result); };
+            req.onerror = function () { reject(req.error || new Error('IndexedDB open failed')); };
+        });
+    }
+    function d3dIdbGet(key) {
+        return d3dIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readonly');
+                var rq = tx.objectStore('assets').get(key);
+                rq.onsuccess = function () { resolve(rq.result ? rq.result.blob : null); };
+                rq.onerror = function () { resolve(null); };
+            });
+        }).catch(function () { return null; });
+    }
+    function d3dIdbPut(key, blob) {
+        return d3dIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readwrite');
+                tx.objectStore('assets').put({ key: key, blob: blob });
+                tx.oncomplete = function () { resolve(true); };
+                tx.onerror = function () { resolve(false); };
+            });
+        }).catch(function () { return false; });
+    }
+    function d3dSha256Hex(buf) {
+        return crypto.subtle.digest('SHA-256', buf).then(function (hash) {
+            var b = new Uint8Array(hash), hex = '';
+            for (var i = 0; i < b.length; i++) hex += b[i].toString(16).padStart(2, '0');
+            return hex;
+        });
+    }
+    var __d3dGltfPromise = null;
+    function d3dLoadGLTFLoader() {
+        if (__d3dGltfPromise) return __d3dGltfPromise;
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        __d3dGltfPromise = import(base + '/gltf-loader.module.js').then(function (mod) {
+            if (!mod || !mod.GLTFLoader) throw new Error('GLTFLoader missing from vendored module');
+            return mod.GLTFLoader;
+        });
+        return __d3dGltfPromise;
+    }
+    function d3dFetchAssetBuffer(entry, version) {
+        var idbKey = D3D_SLUG + '@' + version + ':' + entry.file;
+        return d3dIdbGet(idbKey).then(function (cached) {
+            if (cached) return cached.arrayBuffer();
+            return fetch(D3D_ASSET_CDN + '/' + entry.file).then(function (r) {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.arrayBuffer();
+            }).then(function (buf) {
+                return d3dSha256Hex(buf).then(function (hex) {
+                    if (entry.sha256 && hex !== entry.sha256) throw new Error('sha256 mismatch on ' + entry.file);
+                    try { d3dIdbPut(idbKey, new Blob([buf])); } catch (e) {}
+                    return buf;
+                });
+            });
+        });
+    }
+    // Normalise a loaded glTF scene to the procedural framing (uniform scale so
+    // its longest axis fills the frame; centred over the origin; sitting on the
+    // y=0 ground), add a neutral PBR environment, then swap it in for the
+    // procedural body. Rotation is driven by shell.rotTarget afterwards.
+    function d3dInstallModel(shell, obj, entry) {
+        var THREE = shell.THREE;
+        var root = new THREE.Group();
+        root.add(obj);
+        var box = new THREE.Box3().setFromObject(obj);
+        var size = new THREE.Vector3(); box.getSize(size);
+        var longest = Math.max(size.x, size.y, size.z) || 1;
+        var target = entry.targetLenUnits || 13;
+        obj.scale.setScalar(target / longest);
+        box.setFromObject(obj); var c = new THREE.Vector3(); box.getCenter(c);
+        obj.position.x -= c.x;
+        obj.position.z -= c.z;
+        obj.position.y -= box.min.y;
+        if (typeof entry.yaw === 'number') root.rotation.y = entry.yaw;
+        if (typeof entry.pitch === 'number') root.rotation.x = entry.pitch;
+        try {
+            var pmrem = new THREE.PMREMGenerator(shell.renderer);
+            var envScene = new THREE.Scene();
+            envScene.background = new THREE.Color(0x9fb4c7);
+            shell.scene.environment = pmrem.fromScene(envScene, 0.03).texture;
+        } catch (e) {}
+        if (shell.dino) shell.dino.visible = false;
+        shell.scene.add(root);
+        shell.rotTarget = root;
+    }
+    function d3dLoadModel(shell, spec) {
+        if (typeof indexedDB === 'undefined' || typeof fetch !== 'function' || typeof crypto === 'undefined' || !crypto.subtle) return;
+        fetch(D3D_ASSET_CDN + '/manifest.json', { cache: 'no-cache' })
+            .then(function (r) { if (!r.ok) throw new Error('no manifest'); return r.json(); })
+            .then(function (manifest) {
+                var entry = manifest && manifest.models && manifest.models[D3D_SLUG];
+                if (!entry || !entry.file) return; // nothing published for this species yet - stay procedural
+                return d3dFetchAssetBuffer(entry, manifest.version || '0').then(function (buf) {
+                    return d3dLoadGLTFLoader().then(function (GLTFLoader) {
+                        return new Promise(function (resolve, reject) {
+                            new GLTFLoader().parse(buf, '', function (gltf) { resolve(gltf); }, function (e) { reject(e); });
+                        });
+                    }).then(function (gltf) {
+                        var obj = gltf.scene || (gltf.scenes && gltf.scenes[0]);
+                        if (!obj) throw new Error('glTF has no scene');
+                        d3dInstallModel(shell, obj, entry);
+                        shell.assetInfo = { kind: entry.kind || 'fleshed', license: entry.license || '', credit: entry.credit || '', source: entry.source_url || '' };
+                        if (typeof shell.refreshFacts === 'function') shell.refreshFacts();
+                        d3dStatus('Showing a real 3D model of this species. Drag to rotate, scroll or pinch to zoom.');
+                    });
+                });
+            })
+            .catch(function () { /* stay procedural - G16 first paint preserved */ });
+    }
+
+    // ---- shared scene shell: renderer + camera + custom pointer-orbit ----
+    // (same archetype as the space-3d t3dShell; OrbitControls is not vendored)
+    function d3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 50, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.9, phi: opts.phi || 1.25,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.9, goalPhi: opts.phi || 1.25,
+            minR: opts.minR || 4, maxR: opts.maxR || 400
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        function size() {
+            var w = Math.max(260, host.clientWidth);
+            var h = Math.round(w * 0.62);
+            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fsEl && fsEl.contains(host)) { h = Math.max(240, (window.innerHeight || h) - 150); }
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        host.appendChild(renderer.domElement);
+        renderer.domElement.style.touchAction = 'none';
+        renderer.domElement.style.borderRadius = '6px';
+        var drag = null, pinch = null, moved = 0;
+        host.addEventListener('pointerdown', function (e) { drag = { x: e.clientX, y: e.clientY }; moved = 0; host.setPointerCapture && host.setPointerCapture(e.pointerId); });
+        host.addEventListener('pointermove', function (e) {
+            if (!drag) return;
+            var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+            moved += Math.abs(dx) + Math.abs(dy);
+            drag = { x: e.clientX, y: e.clientY };
+            orbit.goalTheta -= dx * 0.006;
+            orbit.goalPhi = Math.min(Math.max(orbit.goalPhi - dy * 0.005, 0.15), Math.PI - 0.2);
+        });
+        host.addEventListener('pointerup', function (e) { var wasClick = moved < 8; drag = null; if (wasClick && shell.onClick) { shell.onClick(e); } });
+        host.addEventListener('wheel', function (e) { e.preventDefault(); orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR); }, { passive: false });
+        host.addEventListener('touchstart', function (e) { if (e.touches.length === 2) { pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); } }, { passive: true });
+        host.addEventListener('touchmove', function (e) {
+            if (e.touches.length === 2 && pinch) {
+                var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                pinch = d;
+            }
+        }, { passive: true });
+        window.addEventListener('resize', size);
+        document.addEventListener('fullscreenchange', size);
+        document.addEventListener('webkitfullscreenchange', size);
+        size();
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, size: size, onClick: null,
+            ndc: function (e) { var r = renderer.domElement.getBoundingClientRect(); return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1); }
+        };
+        return shell;
+    }
+
+    // ---- shared organic-geometry helpers --------------------------------
+    // The old builder placed disjoint primitives (an upright egg torso, a
+    // floating head, arms splayed sideways) so nothing read as a dinosaur.
+    // The fix: sweep ONE continuous tapered body along an archetype spine
+    // curve (d3dSpineTube), then attach a shaped head, posed digitigrade
+    // legs (d3dBone), tucked arms, and per-archetype extras. The spine is
+    // kept planar (x=0) so the swept ring frame never twists.
+
+    // A generalized tube: sweep a circle of per-sample radius along a
+    // Catmull-Rom spine given as [y,z] control points. squash scales the
+    // vertical (dorsoventral) axis; side axis is world X so it never twists.
+    function d3dSpineTube(THREE, ctrl, radii, mat, opts) {
+        opts = opts || {};
+        var TS = opts.tubular || 90, RS = opts.radial || 18, squash = opts.squash || 1;
+        var vch = ctrl.map(function (p) { return new THREE.Vector3(0, p[0], p[1]); });
+        var curve = new THREE.CatmullRomCurve3(vch, false, 'catmullrom', 0.5);
+        var pts = curve.getPoints(TS);
+        function radAt(t) {
+            var x = t * (radii.length - 1), i0 = Math.floor(x), i1 = Math.min(radii.length - 1, i0 + 1), f = x - i0;
+            return radii[i0] * (1 - f) + radii[i1] * f;
+        }
+        var X = new THREE.Vector3(1, 0, 0);
+        var pos = [], idx = [];
+        for (var i = 0; i <= TS; i++) {
+            var t = i / TS, P = pts[i];
+            var pa = pts[Math.max(0, i - 1)], pb = pts[Math.min(TS, i + 1)];
+            var T = new THREE.Vector3().subVectors(pb, pa);
+            if (T.lengthSq() < 1e-9) T.set(0, 0, 1);
+            T.normalize();
+            var up = new THREE.Vector3().crossVectors(T, X);
+            if (up.lengthSq() < 1e-9) up.set(0, 1, 0); else up.normalize();
+            var r = radAt(t);
+            for (var j = 0; j <= RS; j++) {
+                var v = j / RS * Math.PI * 2, c = Math.cos(v), s = Math.sin(v);
+                pos.push(
+                    P.x + X.x * c * r + up.x * s * r * squash,
+                    P.y + X.y * c * r + up.y * s * r * squash,
+                    P.z + X.z * c * r + up.z * s * r * squash
+                );
+            }
+        }
+        for (var a = 1; a <= TS; a++) {
+            for (var b = 1; b <= RS; b++) {
+                var i00 = (RS + 1) * (a - 1) + (b - 1), i10 = (RS + 1) * a + (b - 1),
+                    i11 = (RS + 1) * a + b, i01 = (RS + 1) * (a - 1) + b;
+                idx.push(i00, i10, i01, i10, i11, i01);
+            }
+        }
+        var g = new THREE.BufferGeometry();
+        g.setIndex(idx);
+        g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+        g.computeVertexNormals();
+        return new THREE.Mesh(g, mat);
+    }
+
+    // A tapered bone (limb segment) between two points.
+    function d3dBone(THREE, a, b, r0, r1, mat) {
+        var dir = new THREE.Vector3().subVectors(b, a), len = dir.length();
+        if (len < 1e-6) len = 0.01;
+        var m = new THREE.Mesh(new THREE.CylinderGeometry(r1, r0, len, 10), mat);
+        m.position.copy(a).addScaledVector(dir, 0.5);
+        m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
+        return m;
+    }
+
+    // ---- the ONE data-driven dinosaur builder ---------------------------
+    // Builds a species from the spine sweep + posed appendages per spec.
+    function d3dBuildDino(shell, spec) {
+        var THREE = shell.THREE, scene = shell.scene;
+        var feats = spec.feats || {};
+        var arche = spec.archetype;
+        var aquatic = !!feats.aquatic || arche === 'marine';
+
+        // lighting + ground
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        var key = new THREE.DirectionalLight(0xfff2dc, 1.7); key.position.set(16, 30, 18); scene.add(key);
+        var rim = new THREE.DirectionalLight(0x9fc0ff, 0.45); rim.position.set(-18, 12, -16); scene.add(rim);
+        var ground = new THREE.Mesh(
+            new THREE.CircleGeometry(34, 56),
+            new THREE.MeshStandardMaterial({ color: aquatic ? 0x123a4d : 0x6b5b3e, roughness: 0.97, transparent: aquatic, opacity: aquatic ? 0.5 : 1 })
+        );
+        ground.rotation.x = -Math.PI / 2; ground.position.y = -0.02; scene.add(ground);
+
+        var skinMat = new THREE.MeshStandardMaterial({ color: spec.skin, roughness: 0.85, metalness: 0.02 });
+        var bellyMat = new THREE.MeshStandardMaterial({ color: spec.belly, roughness: 0.9 });
+        var patMat = new THREE.MeshStandardMaterial({ color: spec.pattern, roughness: 0.85 });
+        var toothMat = new THREE.MeshStandardMaterial({ color: 0xf4efe2, roughness: 0.4 });
+        var clawMat = new THREE.MeshStandardMaterial({ color: 0x2b2b2b, roughness: 0.5 });
+
+        var dino = new THREE.Group();
+        var clickTargets = [];
+        function tag(mesh, part) { mesh.userData = { part: part }; clickTargets.push(mesh); return mesh; }
+
+        // ---- head (kind = theropod | raptor | marine | herb) ------------
+        function buildHead(scale, kind) {
+            var head = new THREE.Group();
+            var longSnout = (kind === 'marine');
+            var craniumD = longSnout ? 1.1 : 1.2, snoutD = longSnout ? 2.6 : 1.3;
+            var w = (kind === 'raptor' ? 0.6 : longSnout ? 0.75 : 0.95) * scale;
+            // cranium
+            var cranium = tag(new THREE.Mesh(new THREE.BoxGeometry(w * 1.05, 0.85 * scale, craniumD * scale), skinMat), 'head');
+            cranium.position.set(0, 0, 0); head.add(cranium);
+            // tapered snout (front)
+            var snout = new THREE.Mesh(new THREE.CylinderGeometry(w * 0.42, w * 0.55, snoutD * scale, 4), skinMat);
+            snout.rotation.x = Math.PI / 2; snout.rotation.y = Math.PI / 4;
+            snout.position.set(0, longSnout ? -0.02 * scale : 0.02 * scale, (craniumD * 0.5 + snoutD * 0.42) * scale);
+            head.add(snout);
+            // lower jaw (hinged, slightly open)
+            var jaw = new THREE.Group();
+            var jawLen = (craniumD * 0.5 + snoutD) * scale;
+            var jawMesh = new THREE.Mesh(new THREE.BoxGeometry(w * 0.8, 0.28 * scale, jawLen), skinMat);
+            jawMesh.position.set(0, -0.42 * scale, jawLen * 0.42);
+            jaw.add(jawMesh);
+            jaw.rotation.x = -0.12;
+            head.add(jaw);
+            head.userData.jaw = jaw;
+            // teeth along upper + lower jaw front
+            if (spec.teeth !== 'none' && spec.teeth !== 'beak') {
+                var tCount = longSnout ? 8 : 5, tSize = (spec.teeth === 'serrated' ? 0.16 : 0.13) * scale;
+                var tGeo = new THREE.ConeGeometry(tSize, tSize * (spec.teeth === 'serrated' ? 3 : 2.4), 5);
+                for (var ti = 0; ti < tCount; ti++) {
+                    var fz = (craniumD * 0.5 + snoutD * (ti / (tCount - 1)) * 0.85) * scale;
+                    [-1, 1].forEach(function (sx) {
+                        var tu = new THREE.Mesh(tGeo, toothMat);
+                        tu.position.set(sx * w * 0.34, -0.28 * scale, fz); tu.rotation.x = Math.PI; head.add(tu);
+                        var tl = new THREE.Mesh(tGeo, toothMat);
+                        tl.position.set(sx * w * 0.32, -0.34 * scale, fz); jaw.add(tl);
+                    });
+                }
+            }
+            // eyes (sclera + iris + pupil), forward-set on the cranium
+            [-1, 1].forEach(function (sx) {
+                var e = new THREE.Group();
+                var er = 0.2 * scale;
+                e.add(new THREE.Mesh(new THREE.SphereGeometry(er, 14, 10), new THREE.MeshStandardMaterial({ color: 0xfbf6e9, roughness: 0.3 })));
+                var iris = new THREE.Mesh(new THREE.SphereGeometry(er * 0.62, 12, 8), new THREE.MeshStandardMaterial({ color: spec.eye, emissive: spec.eye, emissiveIntensity: 0.3, roughness: 0.2 }));
+                iris.position.z = er * 0.6; e.add(iris);
+                var pup = new THREE.Mesh(new THREE.SphereGeometry(er * 0.3, 10, 8), new THREE.MeshBasicMaterial({ color: 0x000000 }));
+                pup.position.z = er * 0.85; e.add(pup);
+                e.position.set(sx * w * 0.5, 0.22 * scale, longSnout ? craniumD * 0.2 * scale : craniumD * 0.28 * scale);
+                e.rotation.y = sx * 0.4;
+                // brow ridge
+                var brow = new THREE.Mesh(new THREE.BoxGeometry(w * 0.34, 0.12 * scale, 0.42 * scale), skinMat);
+                brow.position.set(sx * w * 0.48, 0.42 * scale, craniumD * 0.2 * scale); head.add(brow);
+                head.add(e);
+            });
+            if (feats.crest) {
+                var crest = tag(new THREE.Mesh(new THREE.ConeGeometry(0.28 * scale, 1.5 * scale, 10), patMat), 'crest');
+                crest.position.set(0, 0.7 * scale, -0.1 * scale); crest.rotation.x = -0.6; head.add(crest);
+            }
+            return head;
+        }
+
+        // place + orient a head group at a spine end
+        function placeHead(head, pos, pitch) {
+            head.position.set(0, pos[0], pos[1]);
+            head.rotation.x = pitch || 0;
+            dino.add(head);
+            return head;
+        }
+
+        // build a pivoted leg (swings at the hip); toe gets an optional claw
+        var idleLegs = [];
+        function makeLeg(hip, knee, ankle, toe, r, sickle) {
+            var leg = new THREE.Group();
+            leg.position.set(hip[0], hip[1], hip[2]);
+            var H = new THREE.Vector3(0, 0, 0),
+                K = new THREE.Vector3(knee[0] - hip[0], knee[1] - hip[1], knee[2] - hip[2]),
+                A = new THREE.Vector3(ankle[0] - hip[0], ankle[1] - hip[1], ankle[2] - hip[2]),
+                Tp = new THREE.Vector3(toe[0] - hip[0], toe[1] - hip[1], toe[2] - hip[2]);
+            leg.add(tag(d3dBone(THREE, H, K, r * 1.15, r * 0.7, skinMat), 'leg'));
+            leg.add(tag(d3dBone(THREE, K, A, r * 0.7, r * 0.42, skinMat), 'leg'));
+            leg.add(tag(d3dBone(THREE, A, Tp, r * 0.42, r * 0.3, skinMat), 'leg'));
+            if (sickle) {
+                var claw = new THREE.Mesh(new THREE.ConeGeometry(r * 0.16, r * 1.1, 6), clawMat);
+                claw.position.copy(Tp).add(new THREE.Vector3(0, r * 0.1, r * 0.2));
+                claw.rotation.x = -1.9; leg.add(claw);
+            }
+            dino.add(leg); idleLegs.push(leg);
+            return leg;
+        }
+
+        // small tucked arm (theropod/raptor), with 2 claws and an optional
+        // thumb spike (dinosaur-3d-discovery-loop, this species' own copy
+        // only - additive feature flag, no other shipped species touched).
+        function makeArm(shoulder, len, ang, side, big, spike) {
+            var arm = new THREE.Group();
+            arm.position.set(side * shoulder[0], shoulder[1], shoulder[2]);
+            var r = big ? 0.16 : 0.12;
+            var elbow = new THREE.Vector3(side * 0.1, -len * 0.55, len * 0.5);
+            var hand = new THREE.Vector3(side * 0.12, -len * 0.9, len * 0.95);
+            arm.add(d3dBone(THREE, new THREE.Vector3(0, 0, 0), elbow, r, r * 0.8, skinMat));
+            arm.add(tag(d3dBone(THREE, elbow, hand, r * 0.8, r * 0.5, skinMat), 'arm'));
+            [-1, 1].forEach(function (fx) {
+                var cl = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.3, 5), clawMat);
+                cl.position.copy(hand).add(new THREE.Vector3(fx * 0.06, -0.12, 0.1)); cl.rotation.x = 1.2; arm.add(cl);
+            });
+            if (spike) {
+                var thumb = tag(new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.5, 6), toothMat), 'thumbSpike');
+                thumb.position.copy(hand).add(new THREE.Vector3(-side * 0.1, 0.08, 0.05));
+                thumb.rotation.x = 0.25; thumb.rotation.z = -side * 0.55;
+                arm.add(thumb);
+            }
+            arm.rotation.x = ang;
+            dino.add(arm);
+            return arm;
+        }
+
+        // flattened paddle flipper (marine)
+        function makeFlipper(pos, side, len, wide, pitch, yaw) {
+            var fl = new THREE.Group();
+            var paddle = tag(new THREE.Mesh(new THREE.SphereGeometry(1, 14, 10), skinMat), 'flipper');
+            paddle.scale.set(wide, 0.18, len);
+            paddle.position.set(0, 0, len * 0.6);
+            fl.add(paddle);
+            fl.position.set(side * pos[0], pos[1], pos[2]);
+            fl.rotation.set(pitch || 0, side * (yaw || 0), side * -0.5);
+            dino.add(fl);
+            return fl;
+        }
+
+        var idleFlippers = [];
+
+        // ================= ARCHETYPE ASSEMBLY ============================
+        if (arche === 'marine') {
+            // one long streamlined body along z, head at +z, fluke at -z
+            var mSpine = [[3.0, -8.6], [3.0, -6.2], [3.05, -3.2], [3.1, 0.2], [3.12, 3.2], [3.05, 5.6], [3.0, 7.0]];
+            var mRad = [0.14, 0.85, 1.45, 1.7, 1.35, 0.85, 0.5];
+            var mtail = tag(d3dSpineTube(THREE, mSpine.slice(0, 4), [0.14, 0.85, 1.45, 1.7], skinMat, { squash: 1.05 }), 'tail');
+            var mbody = tag(d3dSpineTube(THREE, mSpine.slice(2), [1.45, 1.7, 1.35, 0.85, 0.5], skinMat, { squash: 1.05 }), 'body');
+            dino.add(mtail); dino.add(mbody);
+            // belly stripe underside (thin lighter tube)
+            var mbelly = d3dSpineTube(THREE, mSpine, mRad.map(function (r) { return r * 0.55; }), bellyMat, { squash: 0.5 });
+            mbelly.position.y = -0.55; dino.add(mbelly);
+            placeHead(buildHead(0.95, 'marine'), [3.02, 8.4], 0.02);
+            // vertical tail fluke (down-turned, mosasaur style)
+            var fluke = tag(new THREE.Mesh(new THREE.BoxGeometry(0.12, 3.0, 1.7), patMat), 'tail');
+            fluke.position.set(0, 2.4, -9.4); fluke.rotation.x = 0.25; dino.add(fluke);
+            // 4 paddle flippers
+            idleFlippers.push(makeFlipper([1.5, 2.7, 4.4], 1, 2.6, 1.1, 0.2, 0.5));
+            idleFlippers.push(makeFlipper([1.5, 2.7, 4.4], -1, 2.6, 1.1, 0.2, 0.5));
+            idleFlippers.push(makeFlipper([1.4, 2.7, 0.5], 1, 2.2, 0.95, 0.2, 0.4));
+            idleFlippers.push(makeFlipper([1.4, 2.7, 0.5], -1, 2.2, 0.95, 0.2, 0.4));
+        } else if (arche === 'sauropod') {
+            var sTail = [[2.4, -8.5], [2.8, -5.5], [3.2, -2.5], [3.4, -0.5]];
+            var sBody = [[3.4, -0.5], [3.6, 1.0], [3.7, 2.4], [3.9, 3.6]];
+            dino.add(tag(d3dSpineTube(THREE, sTail, [0.12, 0.7, 1.4, 1.9], skinMat, {}), 'tail'));
+            dino.add(tag(d3dSpineTube(THREE, sBody, [1.9, 2.2, 1.7, 1.0], skinMat, {}), 'body'));
+            // long neck sweeping up
+            var sNeck = [[3.9, 3.6], [5.2, 4.6], [6.6, 5.6], [7.8, 6.4]];
+            dino.add(tag(d3dSpineTube(THREE, sNeck, [1.0, 0.75, 0.55, 0.42], skinMat, {}), 'neck'));
+            placeHead(buildHead(0.6, 'herb'), [8.3, 6.9], 0.2);
+            [[1.5, 1.3], [1.5, -1.3], [1.7, 2.6], [1.7, -2.6]].forEach(function (p) {
+                makeLeg([p[0], 3.3, p[1]], [p[0], 2.0, p[1] + 0.1], [p[0], 0.9, p[1]], [p[0], 0.12, p[1] + 0.4], 0.85, false);
+            });
+        } else if (arche === 'stegosaur' || arche === 'ceratopsian' || arche === 'ankylosaur') {
+            // Low quadruped: horizontal back, short neck, four pillar legs.
+            var qTail = [[2.6, -7.6], [2.9, -5.2], [3.1, -2.8], [3.2, -1.0]];
+            var qTailR = [0.18, 0.55, 0.95, 1.35];
+            var qBody = [[3.2, -1.0], [3.35, 0.6], [3.4, 2.2], [3.35, 3.6]];
+            var qBodyR = [1.35, 1.7, 1.55, 1.05];
+            dino.add(tag(d3dSpineTube(THREE, qTail, qTailR, skinMat, { squash: 1.05 }), 'tail'));
+            dino.add(tag(d3dSpineTube(THREE, qBody, qBodyR, skinMat, { squash: 1.1 }), 'body'));
+            var qBelly = qBody.map(function (pt) { return [pt[0] - 0.4, pt[1]]; });
+            dino.add(d3dSpineTube(THREE, qBelly, qBodyR.map(function (r) { return r * 0.7; }), bellyMat, { squash: 0.75 }));
+            var qNeck = [[3.35, 3.6], [3.55, 4.4], [3.7, 5.0]];
+            dino.add(tag(d3dSpineTube(THREE, qNeck, [1.05, 0.7, 0.48], skinMat, {}), 'neck'));
+            placeHead(buildHead(0.78, 'herb'), [3.85, 5.55], 0.15);
+            // pillar legs (front + hind)
+            [[1.15, 1.15, 2.8], [-1.15, 1.15, 2.8], [1.25, 1.2, -0.6], [-1.25, 1.2, -0.6]].forEach(function (p) {
+                makeLeg([p[0], 3.2, p[2]], [p[0], 2.0, p[2] + 0.05], [p[0], 0.85, p[2]], [p[0], 0.12, p[2] + 0.35], p[1] * 0.75, false);
+            });
+            // Stegosaurus: kite plates along the back + thagomizer spikes
+            if (arche === 'stegosaur' && feats.plates) {
+                for (var pI = 0; pI < 8; pI++) {
+                    var hPlate = 1.9 - Math.abs(pI - 3.5) * 0.18;
+                    var plate = tag(new THREE.Mesh(new THREE.ConeGeometry(0.12, hPlate, 4), patMat), 'plate');
+                    plate.position.set((pI % 2 ? 0.18 : -0.18), 4.55 + (hPlate * 0.15), -3.2 + pI * 0.95);
+                    plate.scale.z = 1.55;
+                    plate.rotation.y = Math.PI / 4;
+                    dino.add(plate);
+                }
+            }
+            if (arche === 'stegosaur' && feats.spikes) {
+                [[-0.55, 3.5, -7.2], [0.55, 3.5, -7.2], [-0.55, 3.35, -8.0], [0.55, 3.35, -8.0]].forEach(function (sp) {
+                    var spike = tag(new THREE.Mesh(new THREE.ConeGeometry(0.11, 1.55, 6), toothMat), 'spike');
+                    spike.position.set(sp[0], sp[1], sp[2]);
+                    spike.rotation.x = 1.35;
+                    dino.add(spike);
+                });
+            }
+            if (arche === 'ankylosaur') {
+                // Additive extension (dinosaur-3d-discovery-loop fire14, this
+                // species' own copy only): armor studs are now tagged and
+                // clickable ('armor' part), and the tail club has its own
+                // dedicated 'club' part fact distinct from the generic tail.
+                for (var aI = 0; aI < 10; aI++) {
+                    var stud = tag(new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.4, 6), patMat), 'armor');
+                    stud.position.set((aI % 2 ? 0.85 : -0.85), 4.1, -3 + aI * 0.7);
+                    dino.add(stud);
+                }
+                if (feats.clubTail) {
+                    var club = tag(new THREE.Mesh(new THREE.SphereGeometry(1, 12, 10), patMat), 'club');
+                    club.position.set(0, 2.9, -8.6); dino.add(club);
+                }
+            }
+            if (feats.frill || feats.horns) {
+                // ceratopsian extras on the already-placed head's first mesh group
+                var cranium = dino.children[dino.children.length - 1];
+                if (feats.frill) {
+                    var frill = tag(new THREE.Mesh(new THREE.CircleGeometry(1.9, 20), patMat), 'frill');
+                    frill.position.set(0, 0.25, -1.0); frill.material.side = THREE.DoubleSide;
+                    if (cranium && cranium.isGroup) cranium.add(frill); else dino.add(frill);
+                }
+                if (feats.horns) {
+                    [[-0.45, 0.55, 0.7], [0.45, 0.55, 0.7], [0, 0.15, 1.35]].forEach(function (hp, hi) {
+                        var horn = new THREE.Mesh(new THREE.ConeGeometry(0.12, hi === 2 ? 0.7 : 1.35, 8), toothMat);
+                        horn.position.set(hp[0], hp[1], hp[2]); horn.rotation.x = -0.4;
+                        if (cranium && cranium.isGroup) cranium.add(horn); else dino.add(horn);
+                    });
+                }
+            }
+        } else {
+            // theropod / raptor / generic biped (also a decent fallback for
+            // ceratopsian/stegosaur/ankylosaur until a dedicated branch lands)
+            var raptor = (arche === 'raptor');
+            var big = !!feats.bigHead;
+            // Iconic modern posture: back roughly HORIZONTAL, tail raised off
+            // the ground as a counterweight, neck curving up to a forward-held
+            // head. (The old spine rose steeply hip->head and drooped the tail
+            // to the floor, which read as a hunched kangaroo, not a theropod.)
+            var tTail = raptor
+                ? [[2.9, -7.8], [3.1, -5.2], [3.3, -2.9], [3.4, -1.2]]
+                : [[2.7, -7.9], [3.1, -5.3], [3.35, -2.9], [3.45, -1.2]];
+            var tTailR = raptor ? [0.05, 0.22, 0.52, 0.9] : [0.12, 0.55, 1.0, 1.45];
+            var tBody = raptor
+                ? [[3.4, -1.2], [3.5, 0.3], [3.6, 1.5], [3.9, 2.5], [4.4, 3.2]]
+                : [[3.45, -1.2], [3.6, 0.4], [3.8, 1.9], [4.1, 3.0], [4.6, 3.8]];
+            var tBodyR = raptor ? [0.9, 1.02, 0.92, 0.68, 0.48] : [1.45, 1.82, 1.55, 1.05, 0.72];
+            dino.add(tag(d3dSpineTube(THREE, tTail, tTailR, skinMat, { squash: 1.0 }), 'tail'));
+            dino.add(tag(d3dSpineTube(THREE, tBody, tBodyR, skinMat, { squash: 1.05 }), 'body'));
+            // belly (lighter underside)
+            var uBody = tBody.map(function (p) { return [p[0] - 0.35, p[1]]; });
+            dino.add(d3dSpineTube(THREE, uBody, tBodyR.map(function (r) { return r * 0.72; }), bellyMat, { squash: 0.7 }));
+            // neck tube connects the shoulder to the head base (no floating head)
+            var bEnd = tBody[tBody.length - 1], bR = tBodyR[tBodyR.length - 1];
+            var headBase = raptor ? [4.8, 3.6] : [5.1, 4.5];
+            dino.add(tag(d3dSpineTube(THREE, [bEnd, [ (bEnd[0]+headBase[0])/2, (bEnd[1]+headBase[1])/2 ], headBase], [bR, bR * 0.8, raptor ? 0.34 : 0.52], skinMat, {}), 'neck'));
+            var headScale = raptor ? 0.6 : (big ? 1.15 : 0.92);
+            placeHead(buildHead(headScale, raptor ? 'raptor' : 'theropod'), [headBase[0] + (raptor ? 0.05 : 0.1), headBase[1] + (raptor ? 0.35 : 0.5)], raptor ? 0.22 : 0.32);
+            // hind legs (digitigrade Z-bend), pivot at hip; long enough that the
+            // horizontal tail clears the ground
+            var hipY = raptor ? 3.4 : 3.5, hipZ = -0.85, hx = raptor ? 0.72 : 1.05, legR = raptor ? 0.4 : 0.85;
+            [-1, 1].forEach(function (sx) {
+                makeLeg(
+                    [sx * hx, hipY, hipZ],
+                    [sx * hx, hipY - (raptor ? 1.3 : 1.7), hipZ + 0.95],
+                    [sx * hx, hipY - (raptor ? 2.2 : 2.7), hipZ - 0.25],
+                    [sx * hx, 0.12, hipZ + 1.0],
+                    legR, raptor
+                );
+            });
+            // arms tucked at the chest (raptors longer, T. rex tiny; a species
+            // whose spec sets feats.thumbSpike gets a conical hand spike on
+            // each arm - Iguanodon's signature feature)
+            var shoulder = raptor ? [0.55, 3.5, 1.5] : [0.72, 3.9, 1.8];
+            if (raptor) { makeArm(shoulder, 1.5, 0.6, 1, true); makeArm(shoulder, 1.5, 0.6, -1, true); }
+            else if (feats.tinyArms || arche === 'theropod') { makeArm(shoulder, 0.95, 0.7, 1, false, !!feats.thumbSpike); makeArm(shoulder, 0.95, 0.7, -1, false, !!feats.thumbSpike); }
+            if (feats.sail) {
+                var sail = new THREE.Mesh(new THREE.BoxGeometry(0.14, 3.2, 5.2), patMat);
+                sail.position.set(0, 5.4, 0.4); dino.add(sail);
+            }
+        }
+
+        dino.position.y = 0;
+        scene.add(dino);
+        shell.dino = dino;
+        shell.rotTarget = dino;
+
+        // ---- size-vs-human scale figure (honest ratio) ------------------
+        var human = new THREE.Group();
+        (function () {
+            var hMat = new THREE.MeshStandardMaterial({ color: 0x37474f, roughness: 0.9 });
+            var body = new THREE.Mesh((THREE.CapsuleGeometry ? new THREE.CapsuleGeometry(0.26, 0.95, 4, 10) : new THREE.CylinderGeometry(0.26, 0.26, 1.4, 10)), hMat);
+            body.position.y = 1.05;
+            var head = new THREE.Mesh(new THREE.SphereGeometry(0.2, 12, 10), hMat); head.position.y = 1.7;
+            human.add(body); human.add(head);
+            var worldLen = 12, unitPerM = worldLen / (spec.lengthM || 8);
+            human.scale.setScalar(unitPerM);
+            human.position.set(arche === 'sauropod' ? 6.5 : 7.5, 0, arche === 'marine' ? -3 : 3.2);
+            human.visible = false;
+            scene.add(human);
+        })();
+
+        // ---- facts panel + click-to-inspect -----------------------------
+        var PART_FACTS = {
+            head: 'Head - the skull shape follows the fossil; the fleshy profile (lips, color) is an artist reconstruction.',
+            body: 'Body - torso volume estimated from rib and hip bones plus muscle-attachment scars.',
+            neck: 'Neck - vertebra count and length are from the fossil; posture is debated between studies.',
+            tail: 'Tail - counterbalanced the body over the hips; some species also used it as a weapon or for propulsion.',
+            leg: 'Limb - bone thickness and fossil trackways inform stance and speed estimates.',
+            arm: 'Arm - short but strongly muscled; the number of fingers is known from the fossil hand.',
+            flipper: 'Flipper - a paddle-shaped limb for steering in water (marine reptiles, not dinosaurs).',
+            plate: 'Back plate - one of the kite-shaped plates along the spine. Exact use is debated (display, defense, temperature); fossils preserve bone, not soft coverings.',
+            spike: 'Tail spike - part of the thagomizer, the paired spikes near the tip of the tail. Likely a defensive weapon.',
+            armor: 'Armor plate - one of the bony knobs and plates (osteoderms) that covered the back and flanks, ranging from about 1 to 35.5 cm across. Fused half-rings of these plates also protected the neck.',
+            club: 'Tail club - known from a single specimen about 60 cm long, 49 cm wide, and 19 cm tall, made of two large osteoderms fused with a row of smaller ones at the midline. Likely swung as a defensive weapon; fossils cannot fully settle how it was used.',
+            crest: 'Head crest - a long, hollow, backward-curving tube formed by the nasal passages. Its shape differs by species: long and straight in P. tubicen, short and curved in P. cyrtocristatus. The exact function is debated; sound resonance, species and sex recognition, and heat regulation have all been proposed.',
+            thumbSpike: 'Thumb spike - a large conical spike on each hand, not on the nose. Gideon Mantell, who named Iguanodon in 1825, first reconstructed this spike as a horn on the animal\'s nose; the 1878 discovery of about 38 near-complete skeletons at Bernissart, Belgium, showed its real position on the hand. Its exact use (defense, foraging, or fighting between rivals) is still debated.'
+        };
+        function speciesFacts() {
+            var s = spec;
+            var rows = '<tr><td>Length</td><td>' + s.lengthM + ' m</td></tr>' +
+                '<tr><td>Weight</td><td>' + (s.weightKg >= 1000 ? (s.weightKg / 1000).toFixed(1) + ' t' : s.weightKg + ' kg') + '</td></tr>' +
+                '<tr><td>When it lived</td><td>' + s.eraMya + ' Mya (' + s.period + ')</td></tr>' +
+                '<tr><td>Diet</td><td>' + s.diet + '</td></tr>' +
+                (s.discovered ? '<tr><td>Described</td><td>' + s.discovered + '</td></tr>' : '');
+            var ai = shell.assetInfo;
+            var disclosure;
+            if (ai && ai.kind === 'skeleton') {
+                disclosure = 'This is a real digitised specimen scan' + (ai.credit ? ' (' + ai.credit + ')' : '') + '. The figures above are real published values.';
+            } else if (ai) {
+                disclosure = 'The 3D model is an artistic reconstruction' + (ai.credit ? ' (' + ai.credit + ')' : '') + ' - fossils do not preserve soft tissue or color, so skin and color are interpretive. The figures above are real published values.';
+            } else {
+                disclosure = 'Skin and color are an artistic reconstruction - fossils do not preserve soft tissue or color. The figures above are real published values.';
+            }
+            t3dInfoDino('<h3>' + s.name + '</h3><table class="w3-table w3-bordered">' + rows + '</table>' +
+                (s.note ? '<p>' + s.note + '</p>' : '') +
+                '<p class="d3d-note">' + disclosure + '</p>');
+        }
+        function t3dInfoDino(html) { d3dInfo(html); }
+        speciesFacts();
+        shell.refreshFacts = speciesFacts;
+        var ray = new THREE.Raycaster();
+        shell.onClick = function (e) {
+            ray.setFromCamera(shell.ndc(e), shell.camera);
+            var hits = ray.intersectObjects(clickTargets, true);
+            if (!hits.length) { speciesFacts(); return; }
+            var o = hits[0].object; var part = o.userData && o.userData.part;
+            if (!part && o.parent && o.parent.userData) part = o.parent.userData.part;
+            var txt = PART_FACTS[part] || '';
+            if (txt) d3dInfo('<h3>' + spec.name + ' - ' + part + '</h3><p>' + txt + '</p><p class="d3d-note">Click empty space to return to the fact sheet.</p>');
+            else speciesFacts();
+        };
+
+        // ---- controls: rotate / idle motion / size-vs-human -------------
+        var autoRotate = true;
+        var rotBtn = document.getElementById('d3dRotateBtn');
+        if (rotBtn) rotBtn.addEventListener('click', function () { autoRotate = !autoRotate; rotBtn.textContent = autoRotate ? 'Stop rotation' : 'Auto-rotate'; });
+        var walking = false;
+        var walkBtn = document.getElementById('d3dWalkBtn');
+        if (walkBtn) walkBtn.addEventListener('click', function () { walking = !walking; walkBtn.textContent = walking ? 'Stand still' : 'Idle motion'; });
+        var scaleBtn = document.getElementById('d3dScaleBtn');
+        if (scaleBtn) scaleBtn.addEventListener('click', function () { human.visible = !human.visible; scaleBtn.textContent = human.visible ? 'Hide human' : 'Size vs human'; });
+
+        var phase = 0;
+        return function animate(dt) {
+            var rt = shell.rotTarget || dino;
+            if (autoRotate) rt.rotation.y += dt * 0.00028;
+            phase += dt * 0.003;
+            if (rt === dino) {
+                var breathe = 1 + Math.sin(phase) * 0.012;
+                dino.scale.z = breathe;
+                if (walking) {
+                    dino.position.y = Math.abs(Math.sin(phase)) * 0.12;
+                    for (var i = 0; i < idleLegs.length; i++) idleLegs[i].rotation.x = Math.sin(phase * 2 + i * Math.PI) * 0.22;
+                    for (var f = 0; f < idleFlippers.length; f++) idleFlippers[f].rotation.x = Math.sin(phase * 2 + f) * 0.25;
+                } else {
+                    dino.position.y = 0;
+                    for (var j = 0; j < idleLegs.length; j++) idleLegs[j].rotation.x *= 0.9;
+                }
+            }
+        };
+    }
+
+    // ---- bootstrap -------------------------------------------------------
+    function doAfterPageRendered() {
+        var host = document.getElementById('d3dCanvasHost');
+        var root = document.getElementById('dinoSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('d3dWrapper') || root;
+        var spec = d3dSpec();
+        var fsBtn = document.getElementById('d3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { d3dFullscreen(wrapper); });
+        d3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var big = (spec.lengthM || 8) > 14;
+                    var _ar = spec.archetype, _marine = _ar === 'marine';
+                    var _quad = (_ar === 'stegosaur' || _ar === 'ceratopsian' || _ar === 'ankylosaur');
+                    var shell = d3dShell(THREE, host, {
+                        radius: _marine ? 30 : (_ar === 'sauropod' ? 26 : (_quad ? 20 : 19)),
+                        minR: 10, maxR: 90,
+                        theta: _marine ? 1.45 : 1.75,
+                        phi: 1.12,
+                        targetY: _ar === 'sauropod' ? 5 : (_marine ? 3 : (_quad ? 2.8 : 3.2))
+                    });
+                    var animate = d3dBuildDino(shell, spec);
+                    d3dStatus('Drag to rotate, scroll or pinch to zoom, click a body part for a fact.');
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                    try { d3dLoadModel(shell, spec); } catch (e) {}
+                } catch (err) {
+                    d3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) { d3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err)); });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

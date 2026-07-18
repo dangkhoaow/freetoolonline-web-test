@@ -380,6 +380,7 @@ try {
     { title: "Avaceratops 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/avaceratops.html", include: !1, tags: "dinosaur-3d" },
     { title: "Titanoboa 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/titanoboa.html", include: !1, tags: "dinosaur-3d" },
     { title: "Moropus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/moropus.html", include: !1, tags: "dinosaur-3d" },
+    { title: "Gryponyx 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/gryponyx.html", include: !1, tags: "dinosaur-3d" },
     { title: "AI Background Remover", url: "https://freetoolonline.com/image-tools/background-remover.html", include: !1, tags: "image-editing" },
     { title: "PDF to Text Online: Extract Text Free, No Install", url: "https://freetoolonline.com/guides/pdf-to-text-online-i-love-pdf.html", include: !1, tags: "pdf" },
     { title: "Video to GIF Converter", url: "https://freetoolonline.com/video-tools/video-to-gif.html", include: !1, tags: "video" },
