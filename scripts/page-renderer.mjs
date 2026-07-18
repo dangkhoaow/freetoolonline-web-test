@@ -1,5 +1,8 @@
 import { canonicalForRoute, isInfoRoute, isGuideRoute, isRelatedGuidesEnabled, RELATED_GUIDES_CURATED, routeToSlug, ALIAS_ROUTES, JSP_BY_ROUTE } from './site-data.mjs';
 import { getTestimonialsForTool, renderTestimonialsSection } from './testimonials.mjs';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // 2026-05-28 plan-warm-pascal-v2 S1.3 — multilingual /guides/ locale support.
 // Build a map of canonical-EN-slug → [{ lang, route, isCanonical }] for every
@@ -358,6 +361,83 @@ function resolveOgImage(route) {
   return TOOL_OG_IMAGE_MAP[route] ?? DEFAULT_OG_IMAGE;
 }
 
+// ---------------------------------------------------------------------------
+// Per-page pictogram identity (2026-07-18, header-pictogram-swap-runbook).
+// A page ENROLLED in header-pictogram-enrolled.json (committed IN THIS child
+// repo so CI builds standalone) gets its own PICTORIAL mini-pictogram in
+// three places, all resolved from ONE per-slug source: the header logo slot
+// (CDN <img>, replacing the shared inline gear), the og:image/twitter:image
+// share-card (rasterized 1200x630 PNG), and the favicon/apple-touch-icon.
+// Enrollment is the gate: the runbook enrolls a slug ONLY once its pictogram
+// is pictorial_ok (audit-pictorial-pictograms.mjs) + its raster assets are
+// generated + committed. The renderer TRUSTS the enrolled set but still
+// checks each asset exists on disk (graceful degradation -> falls back to the
+// gear logo / default og-image, never breaks the build).
+const __pr_dir = path.dirname(fileURLToPath(import.meta.url));
+const __child_root = path.resolve(__pr_dir, '..');
+const __static_root = path.join(__child_root, 'source', 'web', 'src', 'main', 'webapp', 'static');
+const PICTO_DIR = path.join(__static_root, 'img', 'illustrations', 'mini-pictogram');
+const OG_DIR = path.join(__static_root, 'img', 'og');
+const TOUCH_DIR = path.join(__static_root, 'img', 'icon');
+const ENROLL_PATH = path.join(__pr_dir, 'header-pictogram-enrolled.json');
+
+function _safeExists(p) { try { return fs.existsSync(p); } catch { return false; } }
+
+const _pageIdentityCache = (() => {
+  let enrolled = new Set();
+  let wordmark = true;
+  try {
+    const raw = JSON.parse(fs.readFileSync(ENROLL_PATH, 'utf8'));
+    enrolled = new Set(Array.isArray(raw.slugs) ? raw.slugs : []);
+    if (raw.wordmark === false) wordmark = false;
+  } catch { /* no enrollment file -> feature inert, gear logo everywhere */ }
+  // Index newest mini-pictogram file per cms slug.
+  const picto = new Map();
+  try {
+    for (const f of fs.readdirSync(PICTO_DIR)) {
+      const m = f.match(/^([a-z0-9]+)__[0-9a-f]{8}\.svg$/);
+      if (!m) continue;
+      const prev = picto.get(m[1]);
+      if (!prev || f > prev) picto.set(m[1], f);
+    }
+  } catch { /* no dir -> nothing to resolve */ }
+  return { enrolled, wordmark, picto };
+})();
+
+// Returns { headerIconImg, ogImageUrl, touchIconUrl, faviconSvgUrl } for an
+// enrolled route, or null. `toolName` (short, from BODYTITLE) supplies the
+// truthful <img alt>.
+function resolvePageIdentity(route, siteOrigin, toolName) {
+  const slug = routeToSlug(route);
+  const { enrolled, picto } = _pageIdentityCache;
+  if (!enrolled.has(slug)) return null;
+  const pictoFile = picto.get(slug);
+  if (!pictoFile || !_safeExists(path.join(PICTO_DIR, pictoFile))) return null;
+  const origin = (siteOrigin || '').replace(/\/$/, '');
+  const svgUrl = `${origin}/img/illustrations/mini-pictogram/${pictoFile}`;
+  const altName = (toolName || 'tool').replace(/\s*-\s*.*$/, '').trim() || 'tool';
+  const headerIconImg = `<img class="headerLogoImg" src="${svgUrl}" width="43" height="43" alt="${escapeHtml(altName)} icon" loading="eager" decoding="async">`;
+  const ogPng = path.join(OG_DIR, `${slug}.png`);
+  const touchPng = path.join(TOUCH_DIR, `${slug}-180.png`);
+  return {
+    headerIconImg,
+    ogImageUrl: _safeExists(ogPng) ? `${origin}/img/og/${slug}.png` : null,
+    touchIconUrl: _safeExists(touchPng) ? `${origin}/img/icon/${slug}-180.png` : null,
+    faviconSvgUrl: svgUrl,
+  };
+}
+
+function pageIdentityWordmarkEnabled() { return _pageIdentityCache.wordmark; }
+
+// Self-contained header-pictogram CSS, injected inline with the header ONLY
+// when a page is enrolled (header-pictogram-swap-runbook). It must ship WITH
+// the render because the gear-logo .headerLogo rules live in the prebuilt
+// CloudFront common.css (not deployable here) + the homepage-only PAGESTYLE;
+// this inline <style> comes after that <link> and uses 2-class specificity +
+// !important to own the pictogram box (the gear's padding/width hacks, tuned
+// for an inline <svg>, otherwise clip the <img>).
+const HEADER_PICT_STYLE = `<style>.headerLogo.headerLogoPict{width:auto!important;height:43px!important;padding:0 8px 0 5px!important;display:inline-flex!important;align-items:center;gap:7px;pointer-events:auto!important;background:none!important;position:static!important}.headerLogo.headerLogoPict>img.headerLogoImg{width:32px!important;height:32px!important;min-width:32px;object-fit:contain;display:block;position:static!important;top:auto!important;left:auto!important;flex:0 0 auto}.headerLogo.headerLogoPict .siteWordmark{font-weight:800;font-size:17px;letter-spacing:-0.2px;color:var(--logo-navy,#00436e);white-space:nowrap;line-height:1}.main-html.dark .headerLogo.headerLogoPict .siteWordmark{color:#e8e8ea}</style>`;
+
 function renderMetaTags(ctx) {
   const canonicalUrl = ctx.canonicalUrl;
   const siteUrl = canonicalForRoute(ctx.siteOrigin, ctx.route);
@@ -468,7 +548,10 @@ function renderMetaTags(ctx) {
     ctx.isStaging ? `<meta name="robots" content="noindex, nofollow">` : '',
     `<meta property='og:title' content='${escapeHtml(ogTitle)}'/>`,
     `<meta property='og:description' content='${description}'/>`,
-    `<meta property='og:image' content='${resolveOgImage(ctx.route)}'/>`,
+    `<meta property='og:image' content='${ctx.pageOgImage || resolveOgImage(ctx.route)}'/>`,
+    // Per-page share-cards are 1200x630 (twitter:card summary_large_image);
+    // declaring dimensions helps crawlers render the large card immediately.
+    ...(ctx.pageOgImage ? [`<meta property='og:image:width' content='1200'/>`, `<meta property='og:image:height' content='630'/>`] : []),
     `<meta property='og:type' content='${ctx.isGuide ? 'article' : 'website'}'/>`,
     // Primary locale signal for English pages: en_US + premium-region alternates
     // (declares the English markets this page serves; reinforces inLanguage/USD).
@@ -486,11 +569,15 @@ function renderMetaTags(ctx) {
     `<meta name="twitter:title" content='${escapeHtml(ctx.browserTitle)}'/>`,
     `<meta name="twitter:creator" content="@freetoolonline1"/>`,
     `<meta name="twitter:description" content='${description}'>`,
-    `<meta name="twitter:image:src" content="https://dkbg1jftzfsd2.cloudfront.net/image/logo.200x200.png"/>`,
+    `<meta name="twitter:image:src" content="${ctx.pageOgImage || 'https://dkbg1jftzfsd2.cloudfront.net/image/logo.200x200.png'}"/>`,
     `<meta name="twitter:url" content='${canonical}'/>`,
     ...alternateLinks,
     `<link rel="canonical" href="${canonical}" />`,
     `<link rel='shortcut icon' type='image/png' href='https://dkbg1jftzfsd2.cloudfront.net/favicon.32x32.png'/>`,
+    // Per-page pictogram favicon (modern browsers prefer the SVG) + apple
+    // touch icon, so the tool has a distinct tab + home-screen mark.
+    ctx.pageFaviconSvg ? `<link rel='icon' type='image/svg+xml' href='${ctx.pageFaviconSvg}'/>` : '',
+    ctx.pageTouchIcon ? `<link rel='apple-touch-icon' sizes='180x180' href='${ctx.pageTouchIcon}'/>` : '',
     ctx.jsonLd,
     `<link rel="stylesheet" type="text/css" href="https://dkbg1jftzfsd2.cloudfront.net/style/common.css?v=${escapeHtml(ctx.appVersion)}" />`,
     `<style>${unwrapStyleBlock(ctx.themeCss)}${ctx.pageStyle ? `\n${ctx.pageStyle}` : ''}${ctx.customStyle ? `\n${ctx.customStyle}` : ''}</style>`,
@@ -499,8 +586,21 @@ function renderMetaTags(ctx) {
 
 function renderHeader(ctx) {
   const pageTitleText = ctx.pageTitle || ctx.browserTitle;
-  const logo = ctx.pageSvgLogo || DEFAULT_PAGE_SVG_LOGO;
-  return `<header class="w3-top navBarContainer"><div class='w3-bar w3-card-2 new-style-nav-bar' id="mainNavBar"><label title="Toggle Dark Mode/Light Mode" class="dark-ctn toggle-switch"><input id="dark-tgl" class="w3-check" type="checkbox"><span class="slider"></span><span class="mode-icon"><i class="fas fa-sun sun-icon"></i><i class="fas fa-moon moon-icon"></i></span></label><button title="Show or hide the menu" class='w3-bar-item w3-button fa fa-bars menuToogle hide' href='javascript:void(0);' style='width: 40px' onclick='toggleMenu()'> <i class="fa fa-caret-down" style="display: inline;opacity: 0;"></i><i class="fa fa-caret-up" style="display: none;opacity: 0;"></i></button><div id='paypalDonateContainer'><form title="Donate via PayPal" class="w3-right paypalBtn" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank"><input type="hidden" name="cmd" value="_s-xclick" /><input type="hidden" name="hosted_button_id" value="W56TRR5BUFEGQ" /><input type="hidden" name="currency_code" value="USD" /><button id="donateBtnID" name="submit" alt="PayPal - The safer, easier way to pay online!" class="w3-button w3-orange donateBtn new-style-donateBtn"><i class="fa fa-paypal"></i> Donate </button></form></div><a id="buyMeACoffeeBtnID" target="_blank" href="https://www.buymeacoffee.com/freetoolonline.com" alt="Buy Me A Coffee" class="w3-button w3-orange donateBtn new-style-donateBtn buy-me-a-coffee" style="margin-top: 8.5px;float: right;margin-right: 10px;"><i class="fa fa-coffee"></i> Buy Me A Coffee</a><a class="w3-bar-item w3-button headerLogo color" href="${escapeHtml(ctx.siteOrigin)}" title="Go to Home page">${logo}</a><a title='Click to reload this page' href='${escapeHtml(ctx.siteOrigin)}${escapeHtml(ctx.pageUrl)}' class='w3-dropdown-hover pageNameContainer' ${ctx.hasSettings ? '' : "style='max-width: calc(100% - 100px)'"}>${pageTitleText ? `<div class='w3-padding-large w3-button navPageName'>${escapeHtml(pageTitleText)}</div>` : ''}</a>${ctx.showAds ? `<button style="display: none" id="disableAds" title='Click to disable ads' onclick="disableAds()" class="settingsBtn w3-right new-style-donateBtn"><i class="fa fa-file-image"></i>&nbsp;Disable Ads</button>` : ''}${ctx.hasSettings ? `<button title='Click to open the tool settings' onclick="document.getElementById('settings').style.display='block'" class="settingsBtn w3-right new-style-donateBtn"><i class="fa fa-cog"></i>&nbsp;Settings</button>` : ''}</div></header>`;
+  const usePict = !!ctx.pageHeaderIcon;
+  const logo = ctx.pageHeaderIcon || ctx.pageSvgLogo || DEFAULT_PAGE_SVG_LOGO;
+  // Brand-preservation (header-pictogram-swap-runbook HARD RULE 3): when the
+  // gear brand mark is replaced by a per-page pictogram, keep the site name
+  // visible INSIDE the same home-link anchor (span, not a nested <a>) so the
+  // brand is not erased and the wordmark stays glued to the icon. The
+  // headerLogoPict modifier owns its own box (the gear's padding/width hacks
+  // in style-all-default.tag are tuned for an inline <svg> and clip an <img>).
+  const wordmarkSpan = (usePict && pageIdentityWordmarkEnabled())
+    ? `<span class="siteWordmark">FreeToolOnline</span>`
+    : '';
+  const headerLogoClass = usePict
+    ? 'w3-bar-item w3-button headerLogo headerLogoPict color'
+    : 'w3-bar-item w3-button headerLogo color';
+  return `${usePict ? HEADER_PICT_STYLE : ''}<header class="w3-top navBarContainer"><div class='w3-bar w3-card-2 new-style-nav-bar' id="mainNavBar"><label title="Toggle Dark Mode/Light Mode" class="dark-ctn toggle-switch"><input id="dark-tgl" class="w3-check" type="checkbox"><span class="slider"></span><span class="mode-icon"><i class="fas fa-sun sun-icon"></i><i class="fas fa-moon moon-icon"></i></span></label><button title="Show or hide the menu" class='w3-bar-item w3-button fa fa-bars menuToogle hide' href='javascript:void(0);' style='width: 40px' onclick='toggleMenu()'> <i class="fa fa-caret-down" style="display: inline;opacity: 0;"></i><i class="fa fa-caret-up" style="display: none;opacity: 0;"></i></button><div id='paypalDonateContainer'><form title="Donate via PayPal" class="w3-right paypalBtn" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank"><input type="hidden" name="cmd" value="_s-xclick" /><input type="hidden" name="hosted_button_id" value="W56TRR5BUFEGQ" /><input type="hidden" name="currency_code" value="USD" /><button id="donateBtnID" name="submit" alt="PayPal - The safer, easier way to pay online!" class="w3-button w3-orange donateBtn new-style-donateBtn"><i class="fa fa-paypal"></i> Donate </button></form></div><a id="buyMeACoffeeBtnID" target="_blank" href="https://www.buymeacoffee.com/freetoolonline.com" alt="Buy Me A Coffee" class="w3-button w3-orange donateBtn new-style-donateBtn buy-me-a-coffee" style="margin-top: 8.5px;float: right;margin-right: 10px;"><i class="fa fa-coffee"></i> Buy Me A Coffee</a><a class="${headerLogoClass}" href="${escapeHtml(ctx.siteOrigin)}" title="Go to Home page">${logo}${wordmarkSpan}</a><a title='Click to reload this page' href='${escapeHtml(ctx.siteOrigin)}${escapeHtml(ctx.pageUrl)}' class='w3-dropdown-hover pageNameContainer' ${ctx.hasSettings ? '' : "style='max-width: calc(100% - 100px)'"}>${pageTitleText ? `<div class='w3-padding-large w3-button navPageName'>${escapeHtml(pageTitleText)}</div>` : ''}</a>${ctx.showAds ? `<button style="display: none" id="disableAds" title='Click to disable ads' onclick="disableAds()" class="settingsBtn w3-right new-style-donateBtn"><i class="fa fa-file-image"></i>&nbsp;Disable Ads</button>` : ''}${ctx.hasSettings ? `<button title='Click to open the tool settings' onclick="document.getElementById('settings').style.display='block'" class="settingsBtn w3-right new-style-donateBtn"><i class="fa fa-cog"></i>&nbsp;Settings</button>` : ''}</div></header>`;
 }
 
 function renderToolSections(ctx) {
@@ -1308,6 +1408,9 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   // that explicitly want a JSP-driven title) or BODYTITLE if neither override exists.
   const browserTitle = pageData.pageBrowserTitle || resolveAttr(pageAttrs.browserTitle) || pageData.bodyTitle;
   const pageTitle = resolveAttr(pageAttrs.pageTitle) || '';
+  // Per-page pictogram identity (header icon + og-image + favicon), null unless
+  // the slug is enrolled + assets exist (header-pictogram-swap-runbook).
+  const pageIdentity = resolvePageIdentity(normalizedRoute, siteOrigin, browserTitle);
   const description = resolveAttr(pageAttrs.description) || pageData.bodyDesc || '';
   const keyword = resolveAttr(pageAttrs.keyword) || pageData.bodyKeyword || '';
   const customStyle = resolveAttr(pageAttrs.customStyle) || '';
@@ -1463,6 +1566,9 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     jsonLd: jsonLdBlock,
     appVersion,
     deploySha,
+    pageOgImage: pageIdentity?.ogImageUrl || null,
+    pageFaviconSvg: pageIdentity?.faviconSvgUrl || null,
+    pageTouchIcon: pageIdentity?.touchIconUrl || null,
   });
   const titleText = navTitle;
   const body = renderJspBody(bodyHtml, {
@@ -1599,7 +1705,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
 ${gtmNoscript}
 ${renderBaseScript({ siteOrigin, apiOrigin, pageUrl, pageName, appVersion, ioVersion, getAlterUploaderDelayMs, bgsCollection, ioInfos, unsplashKey, randomString, basePath: normalizedBasePath })}
 ${showDisableAdsScript}
-${renderHeader({ siteOrigin, pageUrl, pageName, browserTitle, pageTitle, hasSettings, showAds, pageSvgLogo: sharedFragments.pageSvgLogo, })}
+${renderHeader({ siteOrigin, pageUrl, pageName, browserTitle, pageTitle, hasSettings, showAds, pageSvgLogo: sharedFragments.pageSvgLogo, pageHeaderIcon: pageIdentity?.headerIconImg || null, })}
 ${stagingBanner}
 <div class='w3-content' id='content'>
 <div class='w3-row'>
