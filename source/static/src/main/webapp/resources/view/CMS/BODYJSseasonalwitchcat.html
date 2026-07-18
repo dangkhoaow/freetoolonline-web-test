@@ -1,0 +1,48 @@
+<script>
+    if (typeof web !== "undefined") web.localUpload = false;
+    var SWC_GAME_URL = 'seasonal-witchcat/index.html';
+    function swcStatus(text) {
+        var el = document.getElementById('swcStatus');
+        if (el) el.textContent = text;
+    }
+    function swcInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'swcFrame';
+        frame.src = SWC_GAME_URL;
+        frame.title = 'Seasonal Witchcat game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            swcStatus('Game loaded. Move with WASD or arrows; Space shoots and uses season stones.');
+            try { frame.contentWindow.focus(); } catch (e) {}
+        });
+        var launch = document.getElementById('swcLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('swcStage');
+        var playBtn = document.getElementById('swcPlayBtn');
+        if (!stage || !playBtn) return;
+        if (playBtn.dataset.bound === '1') return;
+        playBtn.dataset.bound = '1';
+        var fsBtn = document.getElementById('swcFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            swcStatus('Loading the game (about 34 KB, one time - then cached)...');
+            swcInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('swcFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) {} }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', doAfterPageRendered);
+    } else {
+        doAfterPageRendered();
+    }
+</script>

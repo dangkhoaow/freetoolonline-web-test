@@ -6371,6 +6371,26 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/herd-cats-home-when.html',
   '/guides/de/herd-cats-home-vs-alternatives.html',
 
+  // game-discovery-loop-runbook fire140 (2026-07-18): seasonal-witchcat companion guides
+  '/guides/how-to-play-seasonal-witchcat.html',
+  '/guides/seasonal-witchcat-when.html',
+  '/guides/seasonal-witchcat-vs-alternatives.html',
+  '/guides/pt/how-to-play-seasonal-witchcat.html',
+  '/guides/pt/seasonal-witchcat-when.html',
+  '/guides/pt/seasonal-witchcat-vs-alternatives.html',
+  '/guides/es/how-to-play-seasonal-witchcat.html',
+  '/guides/es/seasonal-witchcat-when.html',
+  '/guides/es/seasonal-witchcat-vs-alternatives.html',
+  '/guides/vi/how-to-play-seasonal-witchcat.html',
+  '/guides/vi/seasonal-witchcat-when.html',
+  '/guides/vi/seasonal-witchcat-vs-alternatives.html',
+  '/guides/id/how-to-play-seasonal-witchcat.html',
+  '/guides/id/seasonal-witchcat-when.html',
+  '/guides/id/seasonal-witchcat-vs-alternatives.html',
+  '/guides/de/how-to-play-seasonal-witchcat.html',
+  '/guides/de/seasonal-witchcat-when.html',
+  '/guides/de/seasonal-witchcat-vs-alternatives.html',
+
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle
   '/guides/how-to-play-cyber-slide-puzzle.html',
   '/guides/cyber-slide-puzzle-when.html',
@@ -8636,6 +8656,7 @@ export const ALIAS_ROUTES = {
   '/mystic-card-paw.html': '/games/mystic-card-paw.html',
   '/cat-hop-cloud.html': '/games/cat-hop-cloud.html',
   '/herd-cats-home.html': '/games/herd-cats-home.html',
+  '/seasonal-witchcat.html': '/games/seasonal-witchcat.html',
 
   '/gravity-orbit-golf.html': '/games/gravity-orbit-golf.html',
 
@@ -10662,6 +10683,26 @@ export const JSP_BY_ROUTE = {
   '/guides/de/herd-cats-home-when.html': 'guide/de/herd-cats-home-when.jsp',
   '/guides/de/herd-cats-home-vs-alternatives.html': 'guide/de/herd-cats-home-vs-alternatives.jsp',
 
+  // game-discovery-loop-runbook fire140 (2026-07-18): seasonal-witchcat companion guides
+  '/guides/how-to-play-seasonal-witchcat.html': 'guide/how-to-play-seasonal-witchcat.jsp',
+  '/guides/seasonal-witchcat-when.html': 'guide/seasonal-witchcat-when.jsp',
+  '/guides/seasonal-witchcat-vs-alternatives.html': 'guide/seasonal-witchcat-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-seasonal-witchcat.html': 'guide/pt/how-to-play-seasonal-witchcat.jsp',
+  '/guides/pt/seasonal-witchcat-when.html': 'guide/pt/seasonal-witchcat-when.jsp',
+  '/guides/pt/seasonal-witchcat-vs-alternatives.html': 'guide/pt/seasonal-witchcat-vs-alternatives.jsp',
+  '/guides/es/how-to-play-seasonal-witchcat.html': 'guide/es/how-to-play-seasonal-witchcat.jsp',
+  '/guides/es/seasonal-witchcat-when.html': 'guide/es/seasonal-witchcat-when.jsp',
+  '/guides/es/seasonal-witchcat-vs-alternatives.html': 'guide/es/seasonal-witchcat-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-seasonal-witchcat.html': 'guide/vi/how-to-play-seasonal-witchcat.jsp',
+  '/guides/vi/seasonal-witchcat-when.html': 'guide/vi/seasonal-witchcat-when.jsp',
+  '/guides/vi/seasonal-witchcat-vs-alternatives.html': 'guide/vi/seasonal-witchcat-vs-alternatives.jsp',
+  '/guides/id/how-to-play-seasonal-witchcat.html': 'guide/id/how-to-play-seasonal-witchcat.jsp',
+  '/guides/id/seasonal-witchcat-when.html': 'guide/id/seasonal-witchcat-when.jsp',
+  '/guides/id/seasonal-witchcat-vs-alternatives.html': 'guide/id/seasonal-witchcat-vs-alternatives.jsp',
+  '/guides/de/how-to-play-seasonal-witchcat.html': 'guide/de/how-to-play-seasonal-witchcat.jsp',
+  '/guides/de/seasonal-witchcat-when.html': 'guide/de/seasonal-witchcat-when.jsp',
+  '/guides/de/seasonal-witchcat-vs-alternatives.html': 'guide/de/seasonal-witchcat-vs-alternatives.jsp',
+
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle guides
   '/guides/how-to-play-cyber-slide-puzzle.html': 'guide/how-to-play-cyber-slide-puzzle.jsp',
   '/guides/cyber-slide-puzzle-when.html': 'guide/cyber-slide-puzzle-when.jsp',
@@ -12556,6 +12597,7 @@ export const JSP_BY_ROUTE = {
   '/games/mystic-card-paw.html': 'games/mystic-card-paw.jsp',
   '/games/cat-hop-cloud.html': 'games/cat-hop-cloud.jsp',
   '/games/herd-cats-home.html': 'games/herd-cats-home.jsp',
+  '/games/seasonal-witchcat.html': 'games/seasonal-witchcat.jsp',
   '/games/asteroid-blaster.html': 'games/asteroid-blaster.jsp',
   '/games/hex-puzzle-blocks.html': 'games/hex-puzzle-blocks.jsp',
   '/games/procedural-horde-game.html': 'games/procedural-horde-game.jsp',
