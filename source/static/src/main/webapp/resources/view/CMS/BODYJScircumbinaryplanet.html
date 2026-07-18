@@ -5596,13 +5596,16 @@
         scene.add(new THREE.Points(bgGeo, new THREE.PointsMaterial({ color: 0x596488, size: 0.24, transparent: true, opacity: 0.5 })));
 
         // the two stars (Kepler-16A, a K dwarf; Kepler-16B, a smaller red dwarf)
-        var starA = new THREE.Mesh(new THREE.SphereGeometry(0.5, 26, 20), new THREE.MeshBasicMaterial({ color: 0xffb84d }));
-        var starB = new THREE.Mesh(new THREE.SphereGeometry(0.26, 20, 16), new THREE.MeshBasicMaterial({ color: 0xd8583a }));
-        scene.add(starA); scene.add(starB);
+        // - enlarged well beyond real proportions so both remain visible next
+        // to their orbit scale (disclosed in the facts panel and FAQ)
+        var starA = new THREE.Mesh(new THREE.SphereGeometry(0.85, 26, 20), new THREE.MeshBasicMaterial({ color: 0xffb84d }));
+        var starB = new THREE.Mesh(new THREE.SphereGeometry(0.5, 20, 16), new THREE.MeshBasicMaterial({ color: 0xd8583a }));
+        var starAGlow = new THREE.Mesh(new THREE.SphereGeometry(1.15, 18, 14), new THREE.MeshBasicMaterial({ color: 0xffb84d, transparent: true, opacity: 0.18 }));
+        scene.add(starA); scene.add(starB); scene.add(starAGlow);
         scene.add(new THREE.PointLight(0xfff2cc, 1.4, 0, 0));
 
         // the circumbinary planet (Kepler-16b, Saturn-like gas giant)
-        var planet = new THREE.Mesh(new THREE.SphereGeometry(0.38, 22, 16), new THREE.MeshLambertMaterial({ color: 0xd8c48a }));
+        var planet = new THREE.Mesh(new THREE.SphereGeometry(0.62, 22, 16), new THREE.MeshLambertMaterial({ color: 0xd8c48a }));
         scene.add(planet);
 
         // orbit trail guide rings (toggle) - real semimajor axes
@@ -5649,6 +5652,7 @@
                 if (state.nuBin > Math.PI * 2) state.nuBin -= Math.PI * 2;
                 var bx = rBin * Math.cos(state.nuBin) * SCALE, bz = rBin * Math.sin(state.nuBin) * SCALE;
                 starA.position.set(-bx * (T3D_CBP_MB / Mtot), 0, -bz * (T3D_CBP_MB / Mtot));
+                starAGlow.position.copy(starA.position);
                 starB.position.set(bx * (T3D_CBP_MA / Mtot), 0, bz * (T3D_CBP_MA / Mtot));
 
                 var rPl = T3D_CBP_APL * (1 - T3D_CBP_EPL * T3D_CBP_EPL) / (1 + T3D_CBP_EPL * Math.cos(state.nuPl));
@@ -14411,7 +14415,7 @@
             ftoLoadThree().then(function (THREE) {
                 try {
                     var presets = {
-                        circumbinaryplanet: { radius: 14, maxR: 36, minR: 4, phi: 1.1 },
+                        circumbinaryplanet: { radius: 11, maxR: 32, minR: 4, phi: 1.1 },
                         vanallenbelts: { radius: 34, maxR: 80, minR: 10, phi: 1.05 },
                         occultationlunar: { radius: 16, maxR: 45, minR: 8, phi: 1.15 },
                         protoplanetarydisk: { radius: 75, maxR: 190, minR: 16, phi: 1.05 },
