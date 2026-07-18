@@ -10793,6 +10793,8 @@ export const JSP_BY_ROUTE = {
   // bpy/Blender was available this session) - ships with a real model, no
   // BLOCKED_NO_MODEL parking needed.
   '/dinosaur-3d/protoceratops.html': 'dinosaur/protoceratops.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire77: Ceratosaurus viewer.
+  '/dinosaur-3d/ceratosaurus.html': 'dinosaur/ceratosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
