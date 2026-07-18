@@ -1,0 +1,48 @@
+<script>
+    web.localUpload = false;
+    var UCX_GAME_URL = 'unlucky-crossing/index.html';
+    function ucxStatus(text) {
+        var el = document.getElementById('ucxStatus');
+        if (el) el.textContent = text;
+    }
+    function ucxInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'ucxFrame';
+        frame.src = UCX_GAME_URL;
+        frame.title = 'Unlucky Crossing game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            ucxStatus('Game loaded. Click Start, then use arrow keys or WASD. Up advances a row; Left/Right strafe.');
+            try { frame.contentWindow.focus(); } catch (e) {}
+        });
+        var launch = document.getElementById('ucxLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('ucxStage');
+        var playBtn = document.getElementById('ucxPlayBtn');
+        if (!stage || !playBtn) return;
+        if (playBtn.dataset.bound === '1') return;
+        playBtn.dataset.bound = '1';
+        var fsBtn = document.getElementById('ucxFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            ucxStatus('Loading the game (about 72 KB, one time - then cached)...');
+            ucxInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('ucxFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) {} }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', doAfterPageRendered);
+    } else {
+        doAfterPageRendered();
+    }
+</script>

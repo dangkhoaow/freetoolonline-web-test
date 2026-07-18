@@ -402,6 +402,7 @@ try {
     { title: "Ritual Catacombs", url: "https://freetoolonline.com/games/ritual-catacombs.html", include: !1, tags: "games" },
     { title: "Potion Brew Shop", url: "https://freetoolonline.com/games/potion-brew-shop.html", include: !1, tags: "games" },
     { title: "Cat Typing Race", url: "https://freetoolonline.com/games/cat-typing-race.html", include: !1, tags: "games" },
+    { title: "Unlucky Crossing", url: "https://freetoolonline.com/games/unlucky-crossing.html", include: !1, tags: "games" },
     { title: "Asteroid Blaster", url: "https://freetoolonline.com/games/asteroid-blaster.html", include: !1, tags: "games" },
     { title: "Hex Puzzle Blocks", url: "https://freetoolonline.com/games/hex-puzzle-blocks.html", include: !1, tags: "games" },
     { title: "Procedural Horde Game", url: "https://freetoolonline.com/games/procedural-horde-game.html", include: !1, tags: "games" },
