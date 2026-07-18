@@ -8726,8 +8726,10 @@ export const ALIAS_ROUTES = {
   '/brontotherium.html': '/dinosaur-3d/brontotherium.html',
   // dinosaur-3d-discovery-loop-runbook fire99: hybodus.
   '/hybodus.html': '/dinosaur-3d/hybodus.html',
-  // dinosaur-3d-discovery-loop-runbook fire100: coelophysis.
-  '/coelophysis.html': '/dinosaur-3d/coelophysis.html',
+  // coelophysis alias/JSP_BY_ROUTE removed 2026-07-18 (topical-map batch738):
+  // fire100 registered /dinosaur-3d/coelophysis.html without JSP+CMS, which
+  // wedged the staging-route-bundle-gate for every sibling push. Re-add only
+  // with the full bundle (JSP + BODYTITLE + BODYHTML).
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -11798,7 +11800,6 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/gryponyx.html': 'dinosaur/gryponyx.jsp',
   '/dinosaur-3d/brontotherium.html': 'dinosaur/brontotherium.jsp',
   '/dinosaur-3d/hybodus.html': 'dinosaur/hybodus.jsp',
-  '/dinosaur-3d/coelophysis.html': 'dinosaur/coelophysis.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
