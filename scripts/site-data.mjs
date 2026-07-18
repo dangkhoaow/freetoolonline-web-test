@@ -4220,6 +4220,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/baryonyx-size-comparison.html',
   '/guides/id/baryonyx-size-comparison.html',
   '/guides/de/baryonyx-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire69 (2026-07-18): baryonyx-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides (vs-ar)
+  '/guides/baryonyx-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/baryonyx-3d-viewer-vs-ar-apps.html',
+  '/guides/es/baryonyx-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/baryonyx-3d-viewer-vs-ar-apps.html',
+  '/guides/id/baryonyx-3d-viewer-vs-ar-apps.html',
+  '/guides/de/baryonyx-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -11930,6 +11938,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/baryonyx-size-comparison.html': 'guide/vi/baryonyx-size-comparison.jsp',
   '/guides/id/baryonyx-size-comparison.html': 'guide/id/baryonyx-size-comparison.jsp',
   '/guides/de/baryonyx-size-comparison.html': 'guide/de/baryonyx-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire69 (2026-07-18): baryonyx-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides (vs-ar)
+  '/guides/baryonyx-3d-viewer-vs-ar-apps.html': 'guide/baryonyx-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/baryonyx-3d-viewer-vs-ar-apps.html': 'guide/pt/baryonyx-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/baryonyx-3d-viewer-vs-ar-apps.html': 'guide/es/baryonyx-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/baryonyx-3d-viewer-vs-ar-apps.html': 'guide/vi/baryonyx-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/baryonyx-3d-viewer-vs-ar-apps.html': 'guide/id/baryonyx-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/baryonyx-3d-viewer-vs-ar-apps.html': 'guide/de/baryonyx-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
