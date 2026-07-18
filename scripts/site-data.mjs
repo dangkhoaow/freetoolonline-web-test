@@ -5611,6 +5611,9 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/png-jpg-converter-when.html',
   '/guides/de/png-jpg-converter-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire-75 (2026-07-12): city-drive-open-world-3d
+  '/guides/city-drive-open-world-3d-when.html',
+  '/guides/city-drive-open-world-3d-step-by-step.html',
+  '/guides/city-drive-open-world-3d-vs-alternatives.html',
   // companion guides (EN shipped fire-23; this fire adds pt/es/vi/id/de locale
   // fanout for all 3 angles - guide-support drain per runbook 4b).
   '/guides/pt/city-drive-open-world-3d-when.html',
@@ -9170,6 +9173,7 @@ export const JSP_BY_ROUTE = {
   '/news/de/heic-arrived-with-ios-11.html': 'news/de/heic-arrived-with-ios-11.jsp',
   '/news/fat32-four-gib-file-limit.html': 'news/fat32-four-gib-file-limit.jsp',
   '/news/pt/fat32-four-gib-file-limit.html': 'news/pt/fat32-four-gib-file-limit.jsp',
+  '/news/es/fat32-four-gib-file-limit.html': 'news/es/fat32-four-gib-file-limit.jsp',
   '/image-tools/resize-image.html': 'image/resize-image.jsp',
   '/image-tools/crop-image.html': 'image/crop-image.jsp',
   '/image-tools/compress-image.html': 'image/compress-image.jsp',
