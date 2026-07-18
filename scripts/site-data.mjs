@@ -5503,6 +5503,9 @@ export const GUIDE_ROUTES = new Set([
   // guides.html / llms.txt drop that percentage-calculator + date-difference-
   // calculator needed a later backfill for - see the block above and the
   // block at line ~3359).
+  '/guides/age-calculator-when.html',
+  '/guides/age-calculator-step-by-step.html',
+  '/guides/age-calculator-vs-alternatives.html',
   '/guides/pt/age-calculator-when.html',
   '/guides/pt/age-calculator-step-by-step.html',
   '/guides/pt/age-calculator-vs-alternatives.html',
