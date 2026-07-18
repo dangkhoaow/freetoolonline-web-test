@@ -600,6 +600,7 @@ try {
     { title: "Chelyabinsk Meteor 3D Explorer", url: "https://freetoolonline.com/space-3d/chelyabinsk-meteor.html", include: !1, tags: "space-3d" },
     { title: "Enceladus Geysers 3D Explorer", url: "https://freetoolonline.com/space-3d/enceladus-geysers.html", include: !1, tags: "space-3d" },
     { title: "Phobos Stickney Crater 3D Explorer", url: "https://freetoolonline.com/space-3d/phobos-stickney.html", include: !1, tags: "space-3d" },
+    { title: "Vesta Rheasilvia Basin 3D Explorer", url: "https://freetoolonline.com/space-3d/vesta-rheasilvia.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },

@@ -1635,7 +1635,6 @@ export const INFO_ROUTES = new Set([
   // geo-sitewide-audit-runbook: ship-pending reconciliation - pt/es/vi/id/de variants of mp4-to-gif-online-free (completes the locale bundle for the EN-only stranded scaffold).
   '/guides/pt/mp4-to-gif-online-free.html', '/guides/es/mp4-to-gif-online-free.html', '/guides/vi/mp4-to-gif-online-free.html', '/guides/id/mp4-to-gif-online-free.html', '/guides/de/mp4-to-gif-online-free.html',
   // cycle 20260609-2 - md5-decrypter guide (EN + 5 locale variants)
-  '/guides/en/md5-decrypter.html',
   '/guides/pt/md5-decrypter.html', '/guides/es/md5-decrypter.html', '/guides/vi/md5-decrypter.html', '/guides/id/md5-decrypter.html', '/guides/de/md5-decrypter.html',
   '/guides/pt/compress-folder.html', // pt canonical of /guides/compactar-pasta.html
   '/guides/pt/compress-zip-file.html', // pt canonical of /guides/comprimir-arquivo-zip.html
@@ -2711,6 +2710,7 @@ export const INFO_ROUTES = new Set([
   '/guides/de/chelyabinsk-meteor-vs-alternatives.html',
   '/guides/de/enceladus-geysers-vs-alternatives.html',
   '/guides/de/phobos-stickney-vs-alternatives.html',
+  '/guides/de/vesta-rheasilvia-vs-alternatives.html',
   '/guides/id/jupiter-magnetosphere-vs-alternatives.html',
   '/guides/id/light-cone-vs-alternatives.html',
   '/guides/id/spacetime-curvature-vs-alternatives.html',
@@ -2773,6 +2773,7 @@ export const INFO_ROUTES = new Set([
   '/guides/id/chelyabinsk-meteor-vs-alternatives.html',
   '/guides/id/enceladus-geysers-vs-alternatives.html',
   '/guides/id/phobos-stickney-vs-alternatives.html',
+  '/guides/id/vesta-rheasilvia-vs-alternatives.html',
   '/guides/vi/jupiter-magnetosphere-vs-alternatives.html',
   '/guides/vi/light-cone-vs-alternatives.html',
   '/guides/vi/spacetime-curvature-vs-alternatives.html',
@@ -2835,6 +2836,7 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/chelyabinsk-meteor-vs-alternatives.html',
   '/guides/vi/enceladus-geysers-vs-alternatives.html',
   '/guides/vi/phobos-stickney-vs-alternatives.html',
+  '/guides/vi/vesta-rheasilvia-vs-alternatives.html',
   '/guides/es/jupiter-magnetosphere-vs-alternatives.html',
   '/guides/es/light-cone-vs-alternatives.html',
   '/guides/es/spacetime-curvature-vs-alternatives.html',
@@ -2897,6 +2899,7 @@ export const INFO_ROUTES = new Set([
   '/guides/es/chelyabinsk-meteor-vs-alternatives.html',
   '/guides/es/enceladus-geysers-vs-alternatives.html',
   '/guides/es/phobos-stickney-vs-alternatives.html',
+  '/guides/es/vesta-rheasilvia-vs-alternatives.html',
   '/guides/pt/jupiter-magnetosphere-vs-alternatives.html',
   '/guides/pt/light-cone-vs-alternatives.html',
   '/guides/pt/spacetime-curvature-vs-alternatives.html',
@@ -2959,6 +2962,7 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/chelyabinsk-meteor-vs-alternatives.html',
   '/guides/pt/enceladus-geysers-vs-alternatives.html',
   '/guides/pt/phobos-stickney-vs-alternatives.html',
+  '/guides/pt/vesta-rheasilvia-vs-alternatives.html',
   '/guides/jupiter-magnetosphere-vs-alternatives.html',
   '/guides/light-cone-vs-alternatives.html',
   '/guides/spacetime-curvature-vs-alternatives.html',
@@ -3021,6 +3025,7 @@ export const INFO_ROUTES = new Set([
   '/guides/chelyabinsk-meteor-vs-alternatives.html',
   '/guides/enceladus-geysers-vs-alternatives.html',
   '/guides/phobos-stickney-vs-alternatives.html',
+  '/guides/vesta-rheasilvia-vs-alternatives.html',
   '/guides/de/kuiper-belt-oort-cloud-when.html',
   '/guides/id/kuiper-belt-oort-cloud-when.html',
   '/guides/vi/kuiper-belt-oort-cloud-when.html',
@@ -3089,6 +3094,7 @@ export const INFO_ROUTES = new Set([
   '/guides/de/chelyabinsk-meteor-when.html',
   '/guides/de/enceladus-geysers-when.html',
   '/guides/de/phobos-stickney-when.html',
+  '/guides/de/vesta-rheasilvia-when.html',
   '/guides/id/jupiter-magnetosphere-when.html',
   '/guides/id/light-cone-when.html',
   '/guides/id/spacetime-curvature-when.html',
@@ -3151,6 +3157,7 @@ export const INFO_ROUTES = new Set([
   '/guides/id/chelyabinsk-meteor-when.html',
   '/guides/id/enceladus-geysers-when.html',
   '/guides/id/phobos-stickney-when.html',
+  '/guides/id/vesta-rheasilvia-when.html',
   '/guides/vi/jupiter-magnetosphere-when.html',
   '/guides/vi/light-cone-when.html',
   '/guides/vi/spacetime-curvature-when.html',
@@ -3213,6 +3220,7 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/chelyabinsk-meteor-when.html',
   '/guides/vi/enceladus-geysers-when.html',
   '/guides/vi/phobos-stickney-when.html',
+  '/guides/vi/vesta-rheasilvia-when.html',
   '/guides/es/jupiter-magnetosphere-when.html',
   '/guides/es/light-cone-when.html',
   '/guides/es/spacetime-curvature-when.html',
@@ -3275,6 +3283,7 @@ export const INFO_ROUTES = new Set([
   '/guides/es/chelyabinsk-meteor-when.html',
   '/guides/es/enceladus-geysers-when.html',
   '/guides/es/phobos-stickney-when.html',
+  '/guides/es/vesta-rheasilvia-when.html',
   '/guides/pt/jupiter-magnetosphere-when.html',
   '/guides/pt/light-cone-when.html',
   '/guides/pt/spacetime-curvature-when.html',
@@ -3337,6 +3346,7 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/chelyabinsk-meteor-when.html',
   '/guides/pt/enceladus-geysers-when.html',
   '/guides/pt/phobos-stickney-when.html',
+  '/guides/pt/vesta-rheasilvia-when.html',
   '/guides/jupiter-magnetosphere-when.html',
   '/guides/light-cone-when.html',
   '/guides/spacetime-curvature-when.html',
@@ -3399,6 +3409,7 @@ export const INFO_ROUTES = new Set([
   '/guides/chelyabinsk-meteor-when.html',
   '/guides/enceladus-geysers-when.html',
   '/guides/phobos-stickney-when.html',
+  '/guides/vesta-rheasilvia-when.html',
   '/guides/de/kuiper-belt-oort-cloud-step-by-step.html',
   '/guides/id/kuiper-belt-oort-cloud-step-by-step.html',
   '/guides/vi/kuiper-belt-oort-cloud-step-by-step.html',
@@ -3467,6 +3478,7 @@ export const INFO_ROUTES = new Set([
   '/guides/de/chelyabinsk-meteor-step-by-step.html',
   '/guides/de/enceladus-geysers-step-by-step.html',
   '/guides/de/phobos-stickney-step-by-step.html',
+  '/guides/de/vesta-rheasilvia-step-by-step.html',
   '/guides/id/jupiter-magnetosphere-step-by-step.html',
   '/guides/id/light-cone-step-by-step.html',
   '/guides/id/spacetime-curvature-step-by-step.html',
@@ -3529,6 +3541,7 @@ export const INFO_ROUTES = new Set([
   '/guides/id/chelyabinsk-meteor-step-by-step.html',
   '/guides/id/enceladus-geysers-step-by-step.html',
   '/guides/id/phobos-stickney-step-by-step.html',
+  '/guides/id/vesta-rheasilvia-step-by-step.html',
   '/guides/vi/jupiter-magnetosphere-step-by-step.html',
   '/guides/vi/light-cone-step-by-step.html',
   '/guides/vi/spacetime-curvature-step-by-step.html',
@@ -3591,6 +3604,7 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/chelyabinsk-meteor-step-by-step.html',
   '/guides/vi/enceladus-geysers-step-by-step.html',
   '/guides/vi/phobos-stickney-step-by-step.html',
+  '/guides/vi/vesta-rheasilvia-step-by-step.html',
   '/guides/es/jupiter-magnetosphere-step-by-step.html',
   '/guides/es/light-cone-step-by-step.html',
   '/guides/es/spacetime-curvature-step-by-step.html',
@@ -3653,6 +3667,7 @@ export const INFO_ROUTES = new Set([
   '/guides/es/chelyabinsk-meteor-step-by-step.html',
   '/guides/es/enceladus-geysers-step-by-step.html',
   '/guides/es/phobos-stickney-step-by-step.html',
+  '/guides/es/vesta-rheasilvia-step-by-step.html',
   '/guides/pt/jupiter-magnetosphere-step-by-step.html',
   '/guides/pt/light-cone-step-by-step.html',
   '/guides/pt/spacetime-curvature-step-by-step.html',
@@ -3715,6 +3730,7 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/chelyabinsk-meteor-step-by-step.html',
   '/guides/pt/enceladus-geysers-step-by-step.html',
   '/guides/pt/phobos-stickney-step-by-step.html',
+  '/guides/pt/vesta-rheasilvia-step-by-step.html',
   '/guides/jupiter-magnetosphere-step-by-step.html',
   '/guides/light-cone-step-by-step.html',
   '/guides/spacetime-curvature-step-by-step.html',
@@ -3777,6 +3793,7 @@ export const INFO_ROUTES = new Set([
   '/guides/chelyabinsk-meteor-step-by-step.html',
   '/guides/enceladus-geysers-step-by-step.html',
   '/guides/phobos-stickney-step-by-step.html',
+  '/guides/vesta-rheasilvia-step-by-step.html',
   '/guides/de/meteor-shower-radiant-when.html',
   '/guides/id/meteor-shower-radiant-when.html',
   '/guides/vi/meteor-shower-radiant-when.html',
@@ -3962,44 +3979,8 @@ export const GUIDE_ROUTES = new Set([
   // new-tool-discovery-loop-runbook fire211 (2026-07-17): passport-photo-maker
   // companion guides (3 angles x EN + pt/es/vi/id/de) - locale bundle complete
   // this commit.
-  '/guides/passport-photo-maker-when.html',
-  '/guides/pt/passport-photo-maker-when.html',
-  '/guides/es/passport-photo-maker-when.html',
-  '/guides/vi/passport-photo-maker-when.html',
-  '/guides/id/passport-photo-maker-when.html',
-  '/guides/de/passport-photo-maker-when.html',
-  '/guides/passport-photo-maker-step-by-step.html',
-  '/guides/pt/passport-photo-maker-step-by-step.html',
-  '/guides/es/passport-photo-maker-step-by-step.html',
-  '/guides/vi/passport-photo-maker-step-by-step.html',
-  '/guides/id/passport-photo-maker-step-by-step.html',
-  '/guides/de/passport-photo-maker-step-by-step.html',
-  '/guides/passport-photo-maker-vs-alternatives.html',
-  '/guides/pt/passport-photo-maker-vs-alternatives.html',
-  '/guides/es/passport-photo-maker-vs-alternatives.html',
-  '/guides/vi/passport-photo-maker-vs-alternatives.html',
-  '/guides/id/passport-photo-maker-vs-alternatives.html',
-  '/guides/de/passport-photo-maker-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire182 (2026-07-16): image-to-text-ocr companion
   // guides (3 angles x EN + pt/es/vi/id/de) - locale bundle complete this commit.
-  '/guides/image-text-ocr-when.html',
-  '/guides/pt/image-text-ocr-when.html',
-  '/guides/es/image-text-ocr-when.html',
-  '/guides/vi/image-text-ocr-when.html',
-  '/guides/id/image-text-ocr-when.html',
-  '/guides/de/image-text-ocr-when.html',
-  '/guides/image-text-ocr-step-by-step.html',
-  '/guides/pt/image-text-ocr-step-by-step.html',
-  '/guides/es/image-text-ocr-step-by-step.html',
-  '/guides/vi/image-text-ocr-step-by-step.html',
-  '/guides/id/image-text-ocr-step-by-step.html',
-  '/guides/de/image-text-ocr-step-by-step.html',
-  '/guides/image-text-ocr-vs-alternatives.html',
-  '/guides/pt/image-text-ocr-vs-alternatives.html',
-  '/guides/es/image-text-ocr-vs-alternatives.html',
-  '/guides/vi/image-text-ocr-vs-alternatives.html',
-  '/guides/id/image-text-ocr-vs-alternatives.html',
-  '/guides/de/image-text-ocr-vs-alternatives.html',
   // dinosaur-3d-guides-loop-runbook fire1 (2026-07-15): how-to-view-tyrannosaurus-rex-in-3d
   // (EN + pt/es/vi/id/de) - first guide angle for the T. rex viewer.
   '/guides/how-to-view-tyrannosaurus-rex-in-3d.html',
@@ -4960,232 +4941,60 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/tylosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/id/tylosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/de/tylosaurus-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire121 (2026-07-19): how-to-view-gorgosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-gorgosaurus-in-3d.html',
+  '/guides/pt/how-to-view-gorgosaurus-in-3d.html',
+  '/guides/es/how-to-view-gorgosaurus-in-3d.html',
+  '/guides/vi/how-to-view-gorgosaurus-in-3d.html',
+  '/guides/id/how-to-view-gorgosaurus-in-3d.html',
+  '/guides/de/how-to-view-gorgosaurus-in-3d.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
   // class as fires 32/56/57/62/66/84/113/115/120/142) plus their full
   // pt/es/vi/id/de locale fanout (guide-support drain owed from fire147).
-  '/guides/uuid-generator-when.html',
-  '/guides/uuid-generator-step-by-step.html',
-  '/guides/uuid-generator-vs-alternatives.html',
-  '/guides/pt/uuid-generator-when.html',
-  '/guides/pt/uuid-generator-step-by-step.html',
-  '/guides/pt/uuid-generator-vs-alternatives.html',
-  '/guides/es/uuid-generator-when.html',
-  '/guides/es/uuid-generator-step-by-step.html',
-  '/guides/es/uuid-generator-vs-alternatives.html',
-  '/guides/vi/uuid-generator-when.html',
-  '/guides/vi/uuid-generator-step-by-step.html',
-  '/guides/vi/uuid-generator-vs-alternatives.html',
-  '/guides/id/uuid-generator-when.html',
-  '/guides/id/uuid-generator-step-by-step.html',
-  '/guides/id/uuid-generator-vs-alternatives.html',
-  '/guides/de/uuid-generator-when.html',
-  '/guides/de/uuid-generator-step-by-step.html',
-  '/guides/de/uuid-generator-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire142 (LEAN one-off, 2026-07-13/14):
   // GUIDE_ROUTES backfill for jwt-decoder's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only, same recurring gap
   // class as fires 32/56/57/62/66/84/113/115/120) plus their full
   // pt/es/vi/id/de locale fanout.
-  '/guides/jwt-decoder-when.html',
-  '/guides/jwt-decoder-step-by-step.html',
-  '/guides/jwt-decoder-vs-alternatives.html',
-  '/guides/pt/jwt-decoder-when.html',
-  '/guides/pt/jwt-decoder-step-by-step.html',
-  '/guides/pt/jwt-decoder-vs-alternatives.html',
-  '/guides/es/jwt-decoder-when.html',
-  '/guides/es/jwt-decoder-step-by-step.html',
-  '/guides/es/jwt-decoder-vs-alternatives.html',
-  '/guides/vi/jwt-decoder-when.html',
-  '/guides/vi/jwt-decoder-step-by-step.html',
-  '/guides/vi/jwt-decoder-vs-alternatives.html',
-  '/guides/id/jwt-decoder-when.html',
-  '/guides/id/jwt-decoder-step-by-step.html',
-  '/guides/id/jwt-decoder-vs-alternatives.html',
-  '/guides/de/jwt-decoder-when.html',
-  '/guides/de/jwt-decoder-step-by-step.html',
-  '/guides/de/jwt-decoder-vs-alternatives.html',
   // GUIDE_ROUTES locale fanout for flashcards-maker's 3 EN companion guide
   // angles - pt/es/vi/id/de.
-  '/guides/flashcards-spaced-repetition-when.html',
-  '/guides/flashcards-spaced-repetition-step-by-step.html',
-  '/guides/flashcards-spaced-repetition-vs-alternatives.html',
-  '/guides/pt/flashcards-spaced-repetition-when.html',
-  '/guides/pt/flashcards-spaced-repetition-step-by-step.html',
-  '/guides/pt/flashcards-spaced-repetition-vs-alternatives.html',
-  '/guides/es/flashcards-spaced-repetition-when.html',
-  '/guides/es/flashcards-spaced-repetition-step-by-step.html',
-  '/guides/es/flashcards-spaced-repetition-vs-alternatives.html',
-  '/guides/vi/flashcards-spaced-repetition-when.html',
-  '/guides/vi/flashcards-spaced-repetition-step-by-step.html',
-  '/guides/vi/flashcards-spaced-repetition-vs-alternatives.html',
-  '/guides/id/flashcards-spaced-repetition-when.html',
-  '/guides/id/flashcards-spaced-repetition-step-by-step.html',
-  '/guides/id/flashcards-spaced-repetition-vs-alternatives.html',
-  '/guides/de/flashcards-spaced-repetition-when.html',
-  '/guides/de/flashcards-spaced-repetition-step-by-step.html',
-  '/guides/de/flashcards-spaced-repetition-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire129 (LEAN one-off, 2026-07-13):
   // GUIDE_ROUTES for file-encryption-tool's 3 EN companion guide angles
   // (built fire127) + full pt/es/vi/id/de locale fanout (this fire) -
   // builder wired JSP_BY_ROUTE + INFO_ROUTES only for the EN set, same
   // recurring gap class as fires 32/56/57/62/66/84/113/115/120/122/123.
-  '/guides/file-encryption-when.html',
-  '/guides/file-encryption-step-by-step.html',
-  '/guides/file-encryption-vs-alternatives.html',
-  '/guides/pt/file-encryption-when.html',
-  '/guides/pt/file-encryption-step-by-step.html',
-  '/guides/pt/file-encryption-vs-alternatives.html',
-  '/guides/es/file-encryption-when.html',
-  '/guides/es/file-encryption-step-by-step.html',
-  '/guides/es/file-encryption-vs-alternatives.html',
-  '/guides/vi/file-encryption-when.html',
-  '/guides/vi/file-encryption-step-by-step.html',
-  '/guides/vi/file-encryption-vs-alternatives.html',
-  '/guides/id/file-encryption-when.html',
-  '/guides/id/file-encryption-step-by-step.html',
-  '/guides/id/file-encryption-vs-alternatives.html',
-  '/guides/de/file-encryption-when.html',
-  '/guides/de/file-encryption-step-by-step.html',
-  '/guides/de/file-encryption-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire122 (LEAN one-off, 2026-07-13):
   // GUIDE_ROUTES backfill for video-compressor's 3 EN companion guide angles'
   // full pt/es/vi/id/de locale fanout (builder wires JSP_BY_ROUTE + INFO_ROUTES
   // only, same recurring gap class as fires 32/56/57/62/66/84/113/115/120).
-  '/guides/video-compressor-when.html',
-  '/guides/video-compressor-step-by-step.html',
-  '/guides/video-compressor-vs-alternatives.html',
-  '/guides/pt/video-compressor-when.html',
-  '/guides/pt/video-compressor-step-by-step.html',
-  '/guides/pt/video-compressor-vs-alternatives.html',
-  '/guides/es/video-compressor-when.html',
-  '/guides/es/video-compressor-step-by-step.html',
-  '/guides/es/video-compressor-vs-alternatives.html',
-  '/guides/vi/video-compressor-when.html',
-  '/guides/vi/video-compressor-step-by-step.html',
-  '/guides/vi/video-compressor-vs-alternatives.html',
-  '/guides/id/video-compressor-when.html',
-  '/guides/id/video-compressor-step-by-step.html',
-  '/guides/id/video-compressor-vs-alternatives.html',
-  '/guides/de/video-compressor-when.html',
-  '/guides/de/video-compressor-step-by-step.html',
-  '/guides/de/video-compressor-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire123 (LEAN one-off, 2026-07-13):
   // GUIDE_ROUTES backfill for note-taking-app's 3 EN companion guide angles'
   // full pt/es/vi/id/de locale fanout (builder wires JSP_BY_ROUTE + INFO_ROUTES
   // only, same recurring gap class as fires 32/56/57/62/66/84/113/115/120/122).
-  '/guides/notepad-notes-when.html',
-  '/guides/notepad-notes-step-by-step.html',
-  '/guides/notepad-notes-vs-alternatives.html',
-  '/guides/pt/notepad-notes-when.html',
-  '/guides/pt/notepad-notes-step-by-step.html',
-  '/guides/pt/notepad-notes-vs-alternatives.html',
-  '/guides/es/notepad-notes-when.html',
-  '/guides/es/notepad-notes-step-by-step.html',
-  '/guides/es/notepad-notes-vs-alternatives.html',
-  '/guides/vi/notepad-notes-when.html',
-  '/guides/vi/notepad-notes-step-by-step.html',
-  '/guides/vi/notepad-notes-vs-alternatives.html',
-  '/guides/id/notepad-notes-when.html',
-  '/guides/id/notepad-notes-step-by-step.html',
-  '/guides/id/notepad-notes-vs-alternatives.html',
-  '/guides/de/notepad-notes-when.html',
-  '/guides/de/notepad-notes-step-by-step.html',
-  '/guides/de/notepad-notes-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire120 (LEAN one-off, 2026-07-13):
   // GUIDE_ROUTES backfill for date-difference-calculator's 3 EN companion
   // guide angles' full pt/es/vi/id/de locale fanout (builder wires
   // JSP_BY_ROUTE + INFO_ROUTES only, same recurring gap class as
   // fires 32/56/57/62/66/84/113/115).
-  '/guides/date-difference-calculator-when.html',
-  '/guides/date-difference-calculator-step-by-step.html',
-  '/guides/date-difference-calculator-vs-alternatives.html',
-  '/guides/pt/date-difference-calculator-when.html',
-  '/guides/pt/date-difference-calculator-step-by-step.html',
-  '/guides/pt/date-difference-calculator-vs-alternatives.html',
-  '/guides/es/date-difference-calculator-when.html',
-  '/guides/es/date-difference-calculator-step-by-step.html',
-  '/guides/es/date-difference-calculator-vs-alternatives.html',
-  '/guides/vi/date-difference-calculator-when.html',
-  '/guides/vi/date-difference-calculator-step-by-step.html',
-  '/guides/vi/date-difference-calculator-vs-alternatives.html',
-  '/guides/id/date-difference-calculator-when.html',
-  '/guides/id/date-difference-calculator-step-by-step.html',
-  '/guides/id/date-difference-calculator-vs-alternatives.html',
-  '/guides/de/date-difference-calculator-when.html',
-  '/guides/de/date-difference-calculator-step-by-step.html',
-  '/guides/de/date-difference-calculator-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire115 (LEAN one-off, 2026-07-12):
   // GUIDE_ROUTES backfill for add-watermark-to-pdf's 3 EN companion guide
   // angles plus their full pt/es/vi/id/de locale fanout (builder wires
   // JSP_BY_ROUTE + INFO_ROUTES only, same recurring gap class as
   // fires 32/56/57/62/66/84/113).
-  '/guides/add-watermark-pdf-when.html',
-  '/guides/add-watermark-pdf-step-by-step.html',
-  '/guides/add-watermark-pdf-vs-alternatives.html',
-  '/guides/pt/add-watermark-pdf-when.html',
-  '/guides/pt/add-watermark-pdf-step-by-step.html',
-  '/guides/pt/add-watermark-pdf-vs-alternatives.html',
-  '/guides/es/add-watermark-pdf-when.html',
-  '/guides/es/add-watermark-pdf-step-by-step.html',
-  '/guides/es/add-watermark-pdf-vs-alternatives.html',
-  '/guides/vi/add-watermark-pdf-when.html',
-  '/guides/vi/add-watermark-pdf-step-by-step.html',
-  '/guides/vi/add-watermark-pdf-vs-alternatives.html',
-  '/guides/id/add-watermark-pdf-when.html',
-  '/guides/id/add-watermark-pdf-step-by-step.html',
-  '/guides/id/add-watermark-pdf-vs-alternatives.html',
-  '/guides/de/add-watermark-pdf-when.html',
-  '/guides/de/add-watermark-pdf-step-by-step.html',
-  '/guides/de/add-watermark-pdf-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire113 (LEAN one-off, 2026-07-12):
   // GUIDE_ROUTES backfill for delete-pdf-pages's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only, same recurring gap class as
   // fires 32/56/57/62/66/84).
-  '/guides/delete-pdf-pages-when.html',
-  '/guides/delete-pdf-pages-step-by-step.html',
-  '/guides/delete-pdf-pages-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire114 (LEAN one-off, 2026-07-12): delete-pdf-pages
   // full pt/es/vi/id/de locale fanout for all 3 EN companion guide angles
   // (guide_locale_fanout units delete-pdf-pages-when/-step-by-step/-vs-alternatives-guides).
-  '/guides/pt/delete-pdf-pages-when.html',
-  '/guides/pt/delete-pdf-pages-step-by-step.html',
-  '/guides/pt/delete-pdf-pages-vs-alternatives.html',
-  '/guides/es/delete-pdf-pages-when.html',
-  '/guides/es/delete-pdf-pages-step-by-step.html',
-  '/guides/es/delete-pdf-pages-vs-alternatives.html',
-  '/guides/vi/delete-pdf-pages-when.html',
-  '/guides/vi/delete-pdf-pages-step-by-step.html',
-  '/guides/vi/delete-pdf-pages-vs-alternatives.html',
-  '/guides/id/delete-pdf-pages-when.html',
-  '/guides/id/delete-pdf-pages-step-by-step.html',
-  '/guides/id/delete-pdf-pages-vs-alternatives.html',
-  '/guides/de/delete-pdf-pages-when.html',
-  '/guides/de/delete-pdf-pages-step-by-step.html',
-  '/guides/de/delete-pdf-pages-vs-alternatives.html',
   // new-tool-discovery-loop-runbook (LEAN one-off, 2026-07-12): rotate-pdf
   // GUIDE_ROUTES backfill (builder wired JSP_BY_ROUTE only, same recurring gap
   // class as fires 32/56/57/62/66) + full pt/es/vi/id/de locale fanout for all
   // 3 EN companion guide angles (guide_locale_fanout unit rotate-pdf-guides).
-  '/guides/rotate-pdf-when.html',
-  '/guides/rotate-pdf-step-by-step.html',
-  '/guides/rotate-pdf-vs-alternatives.html',
-  '/guides/pt/rotate-pdf-when.html',
-  '/guides/pt/rotate-pdf-step-by-step.html',
-  '/guides/pt/rotate-pdf-vs-alternatives.html',
-  '/guides/es/rotate-pdf-when.html',
-  '/guides/es/rotate-pdf-step-by-step.html',
-  '/guides/es/rotate-pdf-vs-alternatives.html',
-  '/guides/vi/rotate-pdf-when.html',
-  '/guides/vi/rotate-pdf-step-by-step.html',
-  '/guides/vi/rotate-pdf-vs-alternatives.html',
-  '/guides/id/rotate-pdf-when.html',
-  '/guides/id/rotate-pdf-step-by-step.html',
-  '/guides/id/rotate-pdf-vs-alternatives.html',
-  '/guides/de/rotate-pdf-when.html',
-  '/guides/de/rotate-pdf-step-by-step.html',
-  '/guides/de/rotate-pdf-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire84 (2026-07-12): GUIDE_ROUTES backfill for
   // strip-audio-from-video's 3 EN companion guide angles (builder wires JSP_BY_ROUTE
   // only - same recurring gap class as fires 32/56/57/62/66, now closed at the
@@ -5193,14 +5002,6 @@ export const GUIDE_ROUTES = new Set([
   // out to pt/es/vi/id/de this fire; -when and -vs-alternatives locale fanout
   // deferred to the guide-support-drain backlog (guide_locale_fanout unit
   // strip-audio-from-video-guides).
-  '/guides/remove-audio-from-video-when.html',
-  '/guides/remove-audio-from-video-step-by-step.html',
-  '/guides/remove-audio-from-video-vs-alternatives.html',
-  '/guides/pt/remove-audio-from-video-step-by-step.html',
-  '/guides/es/remove-audio-from-video-step-by-step.html',
-  '/guides/vi/remove-audio-from-video-step-by-step.html',
-  '/guides/id/remove-audio-from-video-step-by-step.html',
-  '/guides/de/remove-audio-from-video-step-by-step.html',
   // new-tool-discovery-loop-runbook fire-66 (2026-07-12): GUIDE_ROUTES backfill for
   // image-format-converter's 3 EN companion guide angles (builder wires JSP_BY_ROUTE
   // only - same gap class documented in fires 32/56/57/62). Locale fanout (pt/es/vi/id/de)
@@ -5228,464 +5029,153 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/image-format-converter-step-by-step.html',
   '/guides/de/image-format-converter-vs-alternatives.html',
   // cycle 20260625-6 create_new_guide_page (locale completion) - pt variant of video-converter-online-free (staging-only until es/vi/id/de complete).
-  '/guides/pt/video-converter-online-free.html',
   // cycle 20260626 create_new_guide_page (locale completion) - es variant of video-converter-online-free (staging-only until vi/id/de complete).
-  '/guides/es/video-converter-online-free.html',
   // cycle 20260626-2 create_new_guide_page (locale completion) - vi variant of video-converter-online-free (staging-only until id/de complete).
-  '/guides/vi/video-converter-online-free.html',
   // 2026-06-28 related-guides-loop: id/de locale completion for video-converter-online-free.
-  '/guides/id/video-converter-online-free.html',
-  '/guides/de/video-converter-online-free.html',
   // plan-warm-pascal-v3 S2 batch 1 (2026-05-29) - 5 locale variants of /guides/lcd-test-online.html
-  '/guides/pt/lcd-test-online.html',
-  '/guides/es/lcd-test-online.html',
-  '/guides/vi/lcd-test-online.html',
-  '/guides/id/lcd-test-online.html',
-  '/guides/de/lcd-test-online.html',
   // plan-warm-pascal-v3 S2 batch 2 (2026-05-29) - 5 locale variants of /guides/convert-milliseconds-to-date.html
-  '/guides/pt/convert-milliseconds-to-date.html',
-  '/guides/es/convert-milliseconds-to-date.html',
-  '/guides/vi/convert-milliseconds-to-date.html',
-  '/guides/id/convert-milliseconds-to-date.html',
-  '/guides/de/convert-milliseconds-to-date.html',
   // plan-warm-pascal-v3 S2 batch 3 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/lcd-screen-test.html', '/guides/es/lcd-screen-test.html', '/guides/vi/lcd-screen-test.html', '/guides/id/lcd-screen-test.html', '/guides/de/lcd-screen-test.html',
-  '/guides/pt/hd-video-converter-when.html', '/guides/es/hd-video-converter-when.html', '/guides/vi/hd-video-converter-when.html', '/guides/id/hd-video-converter-when.html', '/guides/de/hd-video-converter-when.html',
-  '/guides/pt/json-formatter-when.html', '/guides/es/json-formatter-when.html', '/guides/vi/json-formatter-when.html', '/guides/id/json-formatter-when.html', '/guides/de/json-formatter-when.html',
   // plan-warm-pascal-v3 S2 batch 4 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/zip-file-converter.html', '/guides/es/zip-file-converter.html', '/guides/vi/zip-file-converter.html', '/guides/id/zip-file-converter.html', '/guides/de/zip-file-converter.html',
-  '/guides/pt/online-zip-file-compressor.html', '/guides/es/online-zip-file-compressor.html', '/guides/vi/online-zip-file-compressor.html', '/guides/id/online-zip-file-compressor.html', '/guides/de/online-zip-file-compressor.html',
-  '/guides/pt/led-test.html', '/guides/es/led-test.html', '/guides/vi/led-test.html', '/guides/id/led-test.html', '/guides/de/led-test.html',
   // plan-warm-pascal-v3 S2 batch 5 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/hd-video-converter-step-by-step.html', '/guides/es/hd-video-converter-step-by-step.html', '/guides/vi/hd-video-converter-step-by-step.html', '/guides/id/hd-video-converter-step-by-step.html', '/guides/de/hd-video-converter-step-by-step.html',
-  '/guides/pt/compress-zip-file-to-smaller-size.html', '/guides/es/compress-zip-file-to-smaller-size.html', '/guides/vi/compress-zip-file-to-smaller-size.html', '/guides/id/compress-zip-file-to-smaller-size.html', '/guides/de/compress-zip-file-to-smaller-size.html',
-  '/guides/pt/hd-video-converter-vs-alternatives.html', '/guides/es/hd-video-converter-vs-alternatives.html', '/guides/vi/hd-video-converter-vs-alternatives.html', '/guides/id/hd-video-converter-vs-alternatives.html', '/guides/de/hd-video-converter-vs-alternatives.html',
   // plan-warm-pascal-v3 S2 batch 6 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/compress-zip.html', '/guides/es/compress-zip.html', '/guides/vi/compress-zip.html', '/guides/id/compress-zip.html', '/guides/de/compress-zip.html',
-  '/guides/pt/gif-into-frames.html', '/guides/es/gif-into-frames.html', '/guides/vi/gif-into-frames.html', '/guides/id/gif-into-frames.html', '/guides/de/gif-into-frames.html',
-  '/guides/pt/reduce-zip-file-size-online.html', '/guides/es/reduce-zip-file-size-online.html', '/guides/vi/reduce-zip-file-size-online.html', '/guides/id/reduce-zip-file-size-online.html', '/guides/de/reduce-zip-file-size-online.html',
   // plan-warm-pascal-v3 S2 batch 7 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/json-formatter-step-by-step.html', '/guides/es/json-formatter-step-by-step.html', '/guides/vi/json-formatter-step-by-step.html', '/guides/id/json-formatter-step-by-step.html', '/guides/de/json-formatter-step-by-step.html',
-  '/guides/pt/zip-compress.html', '/guides/es/zip-compress.html', '/guides/vi/zip-compress.html', '/guides/id/zip-compress.html', '/guides/de/zip-compress.html',
-  '/guides/pt/json-formatter-vs-alternatives.html', '/guides/es/json-formatter-vs-alternatives.html', '/guides/vi/json-formatter-vs-alternatives.html', '/guides/id/json-formatter-vs-alternatives.html', '/guides/de/json-formatter-vs-alternatives.html',
   // plan-warm-pascal-v3 S2 batch 8 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/unlock-zip-file-online.html', '/guides/es/unlock-zip-file-online.html', '/guides/vi/unlock-zip-file-online.html', '/guides/id/unlock-zip-file-online.html', '/guides/de/unlock-zip-file-online.html',
-  '/guides/pt/how-to-zip-multiple-files-into-one.html', '/guides/es/how-to-zip-multiple-files-into-one.html', '/guides/vi/how-to-zip-multiple-files-into-one.html', '/guides/id/how-to-zip-multiple-files-into-one.html', '/guides/de/how-to-zip-multiple-files-into-one.html',
-  '/guides/pt/crop-and-rotate-image.html', '/guides/es/crop-and-rotate-image.html', '/guides/vi/crop-and-rotate-image.html', '/guides/id/crop-and-rotate-image.html', '/guides/de/crop-and-rotate-image.html',
   // plan-warm-pascal-v3 S2 batch 9 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-compress-zip-file-to-smaller-size.html', '/guides/es/how-to-compress-zip-file-to-smaller-size.html', '/guides/vi/how-to-compress-zip-file-to-smaller-size.html', '/guides/id/how-to-compress-zip-file-to-smaller-size.html', '/guides/de/how-to-compress-zip-file-to-smaller-size.html',
-  '/guides/pt/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html', '/guides/es/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html', '/guides/vi/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html', '/guides/id/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html', '/guides/de/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html',
-  '/guides/pt/how-to-check-camera-quality-on-your-phone.html', '/guides/es/how-to-check-camera-quality-on-your-phone.html', '/guides/vi/how-to-check-camera-quality-on-your-phone.html', '/guides/id/how-to-check-camera-quality-on-your-phone.html', '/guides/de/how-to-check-camera-quality-on-your-phone.html',
   // plan-warm-pascal-v3 S2 batch 10 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/online-zip-vs-7z-vs-rar-which-to-pick.html', '/guides/es/online-zip-vs-7z-vs-rar-which-to-pick.html', '/guides/vi/online-zip-vs-7z-vs-rar-which-to-pick.html', '/guides/id/online-zip-vs-7z-vs-rar-which-to-pick.html', '/guides/de/online-zip-vs-7z-vs-rar-which-to-pick.html',
-  '/guides/pt/jpg-vs-jpeg-are-they-the-same.html', '/guides/es/jpg-vs-jpeg-are-they-the-same.html', '/guides/vi/jpg-vs-jpeg-are-they-the-same.html', '/guides/id/jpg-vs-jpeg-are-they-the-same.html', '/guides/de/jpg-vs-jpeg-are-they-the-same.html',
-  '/guides/pt/iphone-photo-format-explained-heic-jpg-png-raw.html', '/guides/es/iphone-photo-format-explained-heic-jpg-png-raw.html', '/guides/vi/iphone-photo-format-explained-heic-jpg-png-raw.html', '/guides/id/iphone-photo-format-explained-heic-jpg-png-raw.html', '/guides/de/iphone-photo-format-explained-heic-jpg-png-raw.html',
   // plan-warm-pascal-v3 S2 batch 11 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/zip-size-reducer.html', '/guides/es/zip-size-reducer.html', '/guides/vi/zip-size-reducer.html', '/guides/id/zip-size-reducer.html', '/guides/de/zip-size-reducer.html',
-  '/guides/pt/zip-folder-online-free.html', '/guides/es/zip-folder-online-free.html', '/guides/vi/zip-folder-online-free.html', '/guides/id/zip-folder-online-free.html', '/guides/de/zip-folder-online-free.html',
-  '/guides/pt/svg-to-png-when-to-rasterize-an-svg.html', '/guides/es/svg-to-png-when-to-rasterize-an-svg.html', '/guides/vi/svg-to-png-when-to-rasterize-an-svg.html', '/guides/id/svg-to-png-when-to-rasterize-an-svg.html', '/guides/de/svg-to-png-when-to-rasterize-an-svg.html',
   // plan-warm-pascal-v3 S2 batch 12 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/compress-zip-size.html', '/guides/es/compress-zip-size.html', '/guides/vi/compress-zip-size.html', '/guides/id/compress-zip-size.html', '/guides/de/compress-zip-size.html',
-  '/guides/pt/create-zip-file-online.html', '/guides/es/create-zip-file-online.html', '/guides/vi/create-zip-file-online.html', '/guides/id/create-zip-file-online.html', '/guides/de/create-zip-file-online.html',
-  '/guides/pt/css-minifier-vs-compressor.html', '/guides/es/css-minifier-vs-compressor.html', '/guides/vi/css-minifier-vs-compressor.html', '/guides/id/css-minifier-vs-compressor.html', '/guides/de/css-minifier-vs-compressor.html',
   // plan-warm-pascal-v3 S2 batch 13 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/compress-folder-online.html', '/guides/es/compress-folder-online.html', '/guides/vi/compress-folder-online.html', '/guides/id/compress-folder-online.html', '/guides/de/compress-folder-online.html',
-  '/guides/pt/csv-vs-json-data-formats.html', '/guides/es/csv-vs-json-data-formats.html', '/guides/vi/csv-vs-json-data-formats.html', '/guides/id/csv-vs-json-data-formats.html', '/guides/de/csv-vs-json-data-formats.html',
-  '/guides/pt/dead-pixel-testing-guide.html', '/guides/es/dead-pixel-testing-guide.html', '/guides/vi/dead-pixel-testing-guide.html', '/guides/id/dead-pixel-testing-guide.html', '/guides/de/dead-pixel-testing-guide.html',
   // plan-warm-pascal-v3 S2 batch 14 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/current-millis.html', '/guides/es/current-millis.html', '/guides/vi/current-millis.html', '/guides/id/current-millis.html', '/guides/de/current-millis.html',
-  '/guides/pt/camera-check.html', '/guides/es/camera-check.html', '/guides/vi/camera-check.html', '/guides/id/camera-check.html', '/guides/de/camera-check.html',
-  '/guides/pt/compress-jpeg-without-losing-quality-quality-vs-size.html', '/guides/es/compress-jpeg-without-losing-quality-quality-vs-size.html', '/guides/vi/compress-jpeg-without-losing-quality-quality-vs-size.html', '/guides/id/compress-jpeg-without-losing-quality-quality-vs-size.html', '/guides/de/compress-jpeg-without-losing-quality-quality-vs-size.html',
   // plan-warm-pascal-v3 S2 batch 15 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/current-time-in-milliseconds.html', '/guides/es/current-time-in-milliseconds.html', '/guides/vi/current-time-in-milliseconds.html', '/guides/id/current-time-in-milliseconds.html', '/guides/de/current-time-in-milliseconds.html',
   // Cycle 20260703-4 create_new_guide_page - "time in ms" (utility cluster, companion to /get-time-in-millisecond.html). 5 locale variants.
-  '/guides/pt/time-in-ms.html', '/guides/es/time-in-ms.html', '/guides/vi/time-in-ms.html', '/guides/id/time-in-ms.html', '/guides/de/time-in-ms.html',
-  '/guides/pt/camera-mirror-vs-flip-explained.html', '/guides/es/camera-mirror-vs-flip-explained.html', '/guides/vi/camera-mirror-vs-flip-explained.html', '/guides/id/camera-mirror-vs-flip-explained.html', '/guides/de/camera-mirror-vs-flip-explained.html',
-  '/guides/pt/compressed-jpg-looks-blurry-three-causes.html', '/guides/es/compressed-jpg-looks-blurry-three-causes.html', '/guides/vi/compressed-jpg-looks-blurry-three-causes.html', '/guides/id/compressed-jpg-looks-blurry-three-causes.html', '/guides/de/compressed-jpg-looks-blurry-three-causes.html',
   // plan-warm-pascal-v3 S2 batch 16 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/camera-test-permission-blocked-how-to-allow-it.html', '/guides/es/camera-test-permission-blocked-how-to-allow-it.html', '/guides/vi/camera-test-permission-blocked-how-to-allow-it.html', '/guides/id/camera-test-permission-blocked-how-to-allow-it.html', '/guides/de/camera-test-permission-blocked-how-to-allow-it.html',
-  '/guides/pt/css-minifier-vs-uglifier-vs-tree-shaking.html', '/guides/es/css-minifier-vs-uglifier-vs-tree-shaking.html', '/guides/vi/css-minifier-vs-uglifier-vs-tree-shaking.html', '/guides/id/css-minifier-vs-uglifier-vs-tree-shaking.html', '/guides/de/css-minifier-vs-uglifier-vs-tree-shaking.html',
-  '/guides/pt/download-link-not-appearing-after-conversion-five-fixes.html', '/guides/es/download-link-not-appearing-after-conversion-five-fixes.html', '/guides/vi/download-link-not-appearing-after-conversion-five-fixes.html', '/guides/id/download-link-not-appearing-after-conversion-five-fixes.html', '/guides/de/download-link-not-appearing-after-conversion-five-fixes.html',
   // plan-warm-pascal-v3 S2 batch 17 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/camera-test-vs-webcam-test-which-do-you-need.html', '/guides/es/camera-test-vs-webcam-test-which-do-you-need.html', '/guides/vi/camera-test-vs-webcam-test-which-do-you-need.html', '/guides/id/camera-test-vs-webcam-test-which-do-you-need.html', '/guides/de/camera-test-vs-webcam-test-which-do-you-need.html',
   // Cycle 20260610-13 - LCD test for laptop screens (device-test) - 5 locale variants
-  '/guides/pt/lcd-test-laptop.html', '/guides/es/lcd-test-laptop.html', '/guides/vi/lcd-test-laptop.html', '/guides/id/lcd-test-laptop.html', '/guides/de/lcd-test-laptop.html',
-  '/guides/pt/device-test-checklist-for-remote-work.html', '/guides/es/device-test-checklist-for-remote-work.html', '/guides/vi/device-test-checklist-for-remote-work.html', '/guides/id/device-test-checklist-for-remote-work.html', '/guides/de/device-test-checklist-for-remote-work.html',
-  '/guides/pt/before-a-video-call-which-tools-to-run.html', '/guides/es/before-a-video-call-which-tools-to-run.html', '/guides/vi/before-a-video-call-which-tools-to-run.html', '/guides/id/before-a-video-call-which-tools-to-run.html', '/guides/de/before-a-video-call-which-tools-to-run.html',
   // plan-warm-pascal-v3 S2 batch 18 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/extract-gif-frames-png-vs-jpg-which-format.html', '/guides/es/extract-gif-frames-png-vs-jpg-which-format.html', '/guides/vi/extract-gif-frames-png-vs-jpg-which-format.html', '/guides/id/extract-gif-frames-png-vs-jpg-which-format.html', '/guides/de/extract-gif-frames-png-vs-jpg-which-format.html',
-  '/guides/pt/how-to-compress-a-file-online.html', '/guides/es/how-to-compress-a-file-online.html', '/guides/vi/how-to-compress-a-file-online.html', '/guides/id/how-to-compress-a-file-online.html', '/guides/de/how-to-compress-a-file-online.html',
-  '/guides/pt/ffmpeg-online-conversion-stalled-three-fixes.html', '/guides/es/ffmpeg-online-conversion-stalled-three-fixes.html', '/guides/vi/ffmpeg-online-conversion-stalled-three-fixes.html', '/guides/id/ffmpeg-online-conversion-stalled-three-fixes.html', '/guides/de/ffmpeg-online-conversion-stalled-three-fixes.html',
   // plan-warm-pascal-v3 S2 batch 19 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/camera-test-shows-black-screen-four-fixes.html', '/guides/es/camera-test-shows-black-screen-four-fixes.html', '/guides/vi/camera-test-shows-black-screen-four-fixes.html', '/guides/id/camera-test-shows-black-screen-four-fixes.html', '/guides/de/camera-test-shows-black-screen-four-fixes.html',
-  '/guides/pt/file-compressor.html', '/guides/es/file-compressor.html', '/guides/vi/file-compressor.html', '/guides/id/file-compressor.html', '/guides/de/file-compressor.html',
-  '/guides/pt/gif-frame-extractor.html', '/guides/es/gif-frame-extractor.html', '/guides/vi/gif-frame-extractor.html', '/guides/id/gif-frame-extractor.html', '/guides/de/gif-frame-extractor.html',
   // Cycle 20260610-12 P12.D - 5 locale variants for gif-to-frames-converter
-  '/guides/pt/gif-to-frames-converter.html', '/guides/es/gif-to-frames-converter.html', '/guides/vi/gif-to-frames-converter.html', '/guides/id/gif-to-frames-converter.html', '/guides/de/gif-to-frames-converter.html',
   // Cycle 20260610-14 - 5 locale variants for gif-to-frame
-  '/guides/pt/gif-to-frame.html', '/guides/es/gif-to-frame.html', '/guides/vi/gif-to-frame.html', '/guides/id/gif-to-frame.html', '/guides/de/gif-to-frame.html',
   // plan-warm-pascal-v3 S2 batch 20 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-choose-a-compression-level.html', '/guides/es/how-to-choose-a-compression-level.html', '/guides/vi/how-to-choose-a-compression-level.html', '/guides/id/how-to-choose-a-compression-level.html', '/guides/de/how-to-choose-a-compression-level.html',
-  '/guides/pt/heic-vs-jpg-vs-webp.html', '/guides/es/heic-vs-jpg-vs-webp.html', '/guides/vi/heic-vs-jpg-vs-webp.html', '/guides/id/heic-vs-jpg-vs-webp.html', '/guides/de/heic-vs-jpg-vs-webp.html',
-  '/guides/pt/ffmpeg-online-vs-video-converter-which-to-pick.html', '/guides/es/ffmpeg-online-vs-video-converter-which-to-pick.html', '/guides/vi/ffmpeg-online-vs-video-converter-which-to-pick.html', '/guides/id/ffmpeg-online-vs-video-converter-which-to-pick.html', '/guides/de/ffmpeg-online-vs-video-converter-which-to-pick.html',
   // plan-warm-pascal-v3 S2 batch 21 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/base64-when-to-use-and-when-not-to.html', '/guides/es/base64-when-to-use-and-when-not-to.html', '/guides/vi/base64-when-to-use-and-when-not-to.html', '/guides/id/base64-when-to-use-and-when-not-to.html', '/guides/de/base64-when-to-use-and-when-not-to.html',
-  '/guides/pt/how-to-check-webcam-and-microphone-before-an-interview.html', '/guides/es/how-to-check-webcam-and-microphone-before-an-interview.html', '/guides/vi/how-to-check-webcam-and-microphone-before-an-interview.html', '/guides/id/how-to-check-webcam-and-microphone-before-an-interview.html', '/guides/de/how-to-check-webcam-and-microphone-before-an-interview.html',
-  '/guides/pt/how-to-compress-a-folder.html', '/guides/es/how-to-compress-a-folder.html', '/guides/vi/how-to-compress-a-folder.html', '/guides/id/how-to-compress-a-folder.html', '/guides/de/how-to-compress-a-folder.html',
   // plan-warm-pascal-v3 S2 batch 22 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/compress-zip-file-to-100kb.html', '/guides/es/compress-zip-file-to-100kb.html', '/guides/vi/compress-zip-file-to-100kb.html', '/guides/id/compress-zip-file-to-100kb.html', '/guides/de/compress-zip-file-to-100kb.html',
-  '/guides/pt/gif-frames-extract-vs-frame-rate-fps-explained.html', '/guides/es/gif-frames-extract-vs-frame-rate-fps-explained.html', '/guides/vi/gif-frames-extract-vs-frame-rate-fps-explained.html', '/guides/id/gif-frames-extract-vs-frame-rate-fps-explained.html', '/guides/de/gif-frames-extract-vs-frame-rate-fps-explained.html',
-  '/guides/pt/heic-vs-jpg-converter-when-each-wins.html', '/guides/es/heic-vs-jpg-converter-when-each-wins.html', '/guides/vi/heic-vs-jpg-converter-when-each-wins.html', '/guides/id/heic-vs-jpg-converter-when-each-wins.html', '/guides/de/heic-vs-jpg-converter-when-each-wins.html',
   // plan-warm-pascal-v3 S2 batch 23 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/compress-zip-file-to-2mb.html', '/guides/es/compress-zip-file-to-2mb.html', '/guides/vi/compress-zip-file-to-2mb.html', '/guides/id/compress-zip-file-to-2mb.html', '/guides/de/compress-zip-file-to-2mb.html',
-  '/guides/pt/folder-to-zip.html', '/guides/es/folder-to-zip.html', '/guides/vi/folder-to-zip.html', '/guides/id/folder-to-zip.html', '/guides/de/folder-to-zip.html',
-  '/guides/pt/css-unminifier-vs-prettier-when-to-use-each.html', '/guides/es/css-unminifier-vs-prettier-when-to-use-each.html', '/guides/vi/css-unminifier-vs-prettier-when-to-use-each.html', '/guides/id/css-unminifier-vs-prettier-when-to-use-each.html', '/guides/de/css-unminifier-vs-prettier-when-to-use-each.html',
   // plan-warm-pascal-v3 S2 batch 24 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html', '/guides/es/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html', '/guides/vi/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html', '/guides/id/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html', '/guides/de/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html',
-  '/guides/pt/file-compressor-vs-zip-what-to-pick.html', '/guides/es/file-compressor-vs-zip-what-to-pick.html', '/guides/vi/file-compressor-vs-zip-what-to-pick.html', '/guides/id/file-compressor-vs-zip-what-to-pick.html', '/guides/de/file-compressor-vs-zip-what-to-pick.html',
-  '/guides/pt/how-to-compress-a-folder-for-email.html', '/guides/es/how-to-compress-a-folder-for-email.html', '/guides/vi/how-to-compress-a-folder-for-email.html', '/guides/id/how-to-compress-a-folder-for-email.html', '/guides/de/how-to-compress-a-folder-for-email.html',
   // plan-warm-pascal-v3 S2 batch 25 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/gif-frame-extractor-output-looks-wrong-three-causes.html', '/guides/es/gif-frame-extractor-output-looks-wrong-three-causes.html', '/guides/vi/gif-frame-extractor-output-looks-wrong-three-causes.html', '/guides/id/gif-frame-extractor-output-looks-wrong-three-causes.html', '/guides/de/gif-frame-extractor-output-looks-wrong-three-causes.html',
-  '/guides/pt/heic-to-jpg-claims-what-actually-works.html', '/guides/es/heic-to-jpg-claims-what-actually-works.html', '/guides/vi/heic-to-jpg-claims-what-actually-works.html', '/guides/id/heic-to-jpg-claims-what-actually-works.html', '/guides/de/heic-to-jpg-claims-what-actually-works.html',
-  '/guides/pt/how-to-compress-a-jpg-for-email-attachment-limits.html', '/guides/es/how-to-compress-a-jpg-for-email-attachment-limits.html', '/guides/vi/how-to-compress-a-jpg-for-email-attachment-limits.html', '/guides/id/how-to-compress-a-jpg-for-email-attachment-limits.html', '/guides/de/how-to-compress-a-jpg-for-email-attachment-limits.html',
   // plan-warm-pascal-v3 S2 batch 26 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/free-online-tools-that-work-without-uploading-files.html', '/guides/es/free-online-tools-that-work-without-uploading-files.html', '/guides/vi/free-online-tools-that-work-without-uploading-files.html', '/guides/id/free-online-tools-that-work-without-uploading-files.html', '/guides/de/free-online-tools-that-work-without-uploading-files.html',
-  '/guides/pt/how-to-compress-a-zip-file.html', '/guides/es/how-to-compress-a-zip-file.html', '/guides/vi/how-to-compress-a-zip-file.html', '/guides/id/how-to-compress-a-zip-file.html', '/guides/de/how-to-compress-a-zip-file.html',
-  '/guides/pt/jpg-vs-png-for-web.html', '/guides/es/jpg-vs-png-for-web.html', '/guides/vi/jpg-vs-png-for-web.html', '/guides/id/jpg-vs-png-for-web.html', '/guides/de/jpg-vs-png-for-web.html',
   // plan-warm-pascal-v3 S2 batch 27 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-extract-a-file-online-zip-rar-7z.html', '/guides/es/how-to-extract-a-file-online-zip-rar-7z.html', '/guides/vi/how-to-extract-a-file-online-zip-rar-7z.html', '/guides/id/how-to-extract-a-file-online-zip-rar-7z.html', '/guides/de/how-to-extract-a-file-online-zip-rar-7z.html',
-  '/guides/pt/how-to-test-a-keyboard-online-step-by-step.html', '/guides/es/how-to-test-a-keyboard-online-step-by-step.html', '/guides/vi/how-to-test-a-keyboard-online-step-by-step.html', '/guides/id/how-to-test-a-keyboard-online-step-by-step.html', '/guides/de/how-to-test-a-keyboard-online-step-by-step.html',
-  '/guides/pt/how-to-tell-if-a-jpg-was-compressed-too-much.html', '/guides/es/how-to-tell-if-a-jpg-was-compressed-too-much.html', '/guides/vi/how-to-tell-if-a-jpg-was-compressed-too-much.html', '/guides/id/how-to-tell-if-a-jpg-was-compressed-too-much.html', '/guides/de/how-to-tell-if-a-jpg-was-compressed-too-much.html',
   // plan-warm-pascal-v3 S2 batch 28 (2026-05-30) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-convert-heic-to-jpg-step-by-step.html', '/guides/es/how-to-convert-heic-to-jpg-step-by-step.html', '/guides/vi/how-to-convert-heic-to-jpg-step-by-step.html', '/guides/id/how-to-convert-heic-to-jpg-step-by-step.html', '/guides/de/how-to-convert-heic-to-jpg-step-by-step.html',
-  '/guides/pt/how-to-test-a-touchscreen-for-bad-spots.html', '/guides/es/how-to-test-a-touchscreen-for-bad-spots.html', '/guides/vi/how-to-test-a-touchscreen-for-bad-spots.html', '/guides/id/how-to-test-a-touchscreen-for-bad-spots.html', '/guides/de/how-to-test-a-touchscreen-for-bad-spots.html',
-  '/guides/pt/how-to-minify-css-js-for-cloud-run-cold-start.html', '/guides/es/how-to-minify-css-js-for-cloud-run-cold-start.html', '/guides/vi/how-to-minify-css-js-for-cloud-run-cold-start.html', '/guides/id/how-to-minify-css-js-for-cloud-run-cold-start.html', '/guides/de/how-to-minify-css-js-for-cloud-run-cold-start.html',
   // plan-warm-pascal-v3 S2 batch 29 (2026-05-30) - 5 locale variants × 3 guides; CROSSES 50% MILESTONE
-  '/guides/pt/how-to-flatten-a-pdf-and-when-to-do-it.html', '/guides/es/how-to-flatten-a-pdf-and-when-to-do-it.html', '/guides/vi/how-to-flatten-a-pdf-and-when-to-do-it.html', '/guides/id/how-to-flatten-a-pdf-and-when-to-do-it.html', '/guides/de/how-to-flatten-a-pdf-and-when-to-do-it.html',
-  '/guides/pt/how-to-crop-and-rotate-an-image.html', '/guides/es/how-to-crop-and-rotate-an-image.html', '/guides/vi/how-to-crop-and-rotate-an-image.html', '/guides/id/how-to-crop-and-rotate-an-image.html', '/guides/de/how-to-crop-and-rotate-an-image.html',
-  '/guides/pt/how-to-compress-a-zip-file-to-a-specific-size.html', '/guides/es/how-to-compress-a-zip-file-to-a-specific-size.html', '/guides/vi/how-to-compress-a-zip-file-to-a-specific-size.html', '/guides/id/how-to-compress-a-zip-file-to-a-specific-size.html', '/guides/de/how-to-compress-a-zip-file-to-a-specific-size.html',
   // plan-warm-pascal-v3 S2 batch 30 (2026-05-30) - 5 locale variants × 3 guides; PAST 50% R14 threshold
-  '/guides/pt/how-to-sign-pdf-after-removing-a-password.html', '/guides/es/how-to-sign-pdf-after-removing-a-password.html', '/guides/vi/how-to-sign-pdf-after-removing-a-password.html', '/guides/id/how-to-sign-pdf-after-removing-a-password.html', '/guides/de/how-to-sign-pdf-after-removing-a-password.html',
-  '/guides/pt/how-to-test-for-dead-pixels-before-returning-a-monitor.html', '/guides/es/how-to-test-for-dead-pixels-before-returning-a-monitor.html', '/guides/vi/how-to-test-for-dead-pixels-before-returning-a-monitor.html', '/guides/id/how-to-test-for-dead-pixels-before-returning-a-monitor.html', '/guides/de/how-to-test-for-dead-pixels-before-returning-a-monitor.html',
-  '/guides/pt/image-to-base64-embed-in-html-vs-link.html', '/guides/es/image-to-base64-embed-in-html-vs-link.html', '/guides/vi/image-to-base64-embed-in-html-vs-link.html', '/guides/id/image-to-base64-embed-in-html-vs-link.html', '/guides/de/image-to-base64-embed-in-html-vs-link.html',
   // plan-warm-pascal-v3 S2 batch 31 (2026-05-30) - 5 locale variants × 3 guides
-  '/guides/pt/mp4-vs-mov-vs-mkv-which-container-when.html', '/guides/es/mp4-vs-mov-vs-mkv-which-container-when.html', '/guides/vi/mp4-vs-mov-vs-mkv-which-container-when.html', '/guides/id/mp4-vs-mov-vs-mkv-which-container-when.html', '/guides/de/mp4-vs-mov-vs-mkv-which-container-when.html',
-  '/guides/pt/pdf-password-types-owner-vs-user.html', '/guides/es/pdf-password-types-owner-vs-user.html', '/guides/vi/pdf-password-types-owner-vs-user.html', '/guides/id/pdf-password-types-owner-vs-user.html', '/guides/de/pdf-password-types-owner-vs-user.html',
-  '/guides/pt/png-to-svg-when-to-vectorize-a-raster-image.html', '/guides/es/png-to-svg-when-to-vectorize-a-raster-image.html', '/guides/vi/png-to-svg-when-to-vectorize-a-raster-image.html', '/guides/id/png-to-svg-when-to-vectorize-a-raster-image.html', '/guides/de/png-to-svg-when-to-vectorize-a-raster-image.html',
   // plan-warm-pascal-v3 S2 batch 32 (2026-05-30) - 5 locale variants × 3 guides
-  '/guides/pt/microphone-test-online-what-it-actually-checks.html', '/guides/es/microphone-test-online-what-it-actually-checks.html', '/guides/vi/microphone-test-online-what-it-actually-checks.html', '/guides/id/microphone-test-online-what-it-actually-checks.html', '/guides/de/microphone-test-online-what-it-actually-checks.html',
-  '/guides/pt/unix-timestamps-explained.html', '/guides/es/unix-timestamps-explained.html', '/guides/vi/unix-timestamps-explained.html', '/guides/id/unix-timestamps-explained.html', '/guides/de/unix-timestamps-explained.html',
-  '/guides/pt/why-heic-wont-open-on-windows-three-fixes.html', '/guides/es/why-heic-wont-open-on-windows-three-fixes.html', '/guides/vi/why-heic-wont-open-on-windows-three-fixes.html', '/guides/id/why-heic-wont-open-on-windows-three-fixes.html', '/guides/de/why-heic-wont-open-on-windows-three-fixes.html',
   // plan-warm-pascal-v3 S2 batch 33 (2026-05-30) - 5 locale variants × 3 guides
-  '/guides/pt/imagemagick-online-vs-task-specific-tools-which-to-pick.html', '/guides/es/imagemagick-online-vs-task-specific-tools-which-to-pick.html', '/guides/vi/imagemagick-online-vs-task-specific-tools-which-to-pick.html', '/guides/id/imagemagick-online-vs-task-specific-tools-which-to-pick.html', '/guides/de/imagemagick-online-vs-task-specific-tools-which-to-pick.html',
-  '/guides/pt/json-parser-validate-vs-format-vs-tree-view.html', '/guides/es/json-parser-validate-vs-format-vs-tree-view.html', '/guides/vi/json-parser-validate-vs-format-vs-tree-view.html', '/guides/id/json-parser-validate-vs-format-vs-tree-view.html', '/guides/de/json-parser-validate-vs-format-vs-tree-view.html',
-  '/guides/pt/pdf-editing-ladder.html', '/guides/es/pdf-editing-ladder.html', '/guides/vi/pdf-editing-ladder.html', '/guides/id/pdf-editing-ladder.html', '/guides/de/pdf-editing-ladder.html',
   // plan-warm-pascal-v3 S2 batch 34 (2026-05-30) - 5 locale variants × 3 guides
-  '/guides/pt/keyboard-tester-online-rollover-vs-anti-ghosting.html', '/guides/es/keyboard-tester-online-rollover-vs-anti-ghosting.html', '/guides/vi/keyboard-tester-online-rollover-vs-anti-ghosting.html', '/guides/id/keyboard-tester-online-rollover-vs-anti-ghosting.html', '/guides/de/keyboard-tester-online-rollover-vs-anti-ghosting.html',
-  '/guides/pt/mp4-vs-webm-for-web.html', '/guides/es/mp4-vs-webm-for-web.html', '/guides/vi/mp4-vs-webm-for-web.html', '/guides/id/mp4-vs-webm-for-web.html', '/guides/de/mp4-vs-webm-for-web.html',
-  '/guides/pt/png-vs-svg-when-to-use.html', '/guides/es/png-vs-svg-when-to-use.html', '/guides/vi/png-vs-svg-when-to-use.html', '/guides/id/png-vs-svg-when-to-use.html', '/guides/de/png-vs-svg-when-to-use.html',
   // plan-warm-pascal-v3 S2 batch 35 (2026-05-30) - 5 locale variants × 3 guides
-  '/guides/pt/json-vs-yaml-vs-toml-config-formats-explained.html', '/guides/es/json-vs-yaml-vs-toml-config-formats-explained.html', '/guides/vi/json-vs-yaml-vs-toml-config-formats-explained.html', '/guides/id/json-vs-yaml-vs-toml-config-formats-explained.html', '/guides/de/json-vs-yaml-vs-toml-config-formats-explained.html',
-  '/guides/pt/pdf-preflight-online-what-it-actually-checks.html', '/guides/es/pdf-preflight-online-what-it-actually-checks.html', '/guides/vi/pdf-preflight-online-what-it-actually-checks.html', '/guides/id/pdf-preflight-online-what-it-actually-checks.html', '/guides/de/pdf-preflight-online-what-it-actually-checks.html',
-  '/guides/pt/recover-corrupt-zip-file-options.html', '/guides/es/recover-corrupt-zip-file-options.html', '/guides/vi/recover-corrupt-zip-file-options.html', '/guides/id/recover-corrupt-zip-file-options.html', '/guides/de/recover-corrupt-zip-file-options.html',
   // plan-warm-pascal-v3 S2 batch 36 (2026-05-30) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-extract-frames-from-a-gif-for-a-social-post.html', '/guides/es/how-to-extract-frames-from-a-gif-for-a-social-post.html', '/guides/vi/how-to-extract-frames-from-a-gif-for-a-social-post.html', '/guides/id/how-to-extract-frames-from-a-gif-for-a-social-post.html', '/guides/de/how-to-extract-frames-from-a-gif-for-a-social-post.html',
-  '/guides/pt/keyboard-test-keys-not-detected-four-fixes.html', '/guides/es/keyboard-test-keys-not-detected-four-fixes.html', '/guides/vi/keyboard-test-keys-not-detected-four-fixes.html', '/guides/id/keyboard-test-keys-not-detected-four-fixes.html', '/guides/de/keyboard-test-keys-not-detected-four-fixes.html',
-  '/guides/pt/pdf-vs-heic-for-document-archival.html', '/guides/es/pdf-vs-heic-for-document-archival.html', '/guides/vi/pdf-vs-heic-for-document-archival.html', '/guides/id/pdf-vs-heic-for-document-archival.html', '/guides/de/pdf-vs-heic-for-document-archival.html',
   // plan-warm-pascal-v3 S2 batch 37 (2026-05-30) - 5 locale variants × 3 guides
-  '/guides/pt/microphone-test-no-sound-four-fixes.html', '/guides/es/microphone-test-no-sound-four-fixes.html', '/guides/vi/microphone-test-no-sound-four-fixes.html', '/guides/id/microphone-test-no-sound-four-fixes.html', '/guides/de/microphone-test-no-sound-four-fixes.html',
-  '/guides/pt/why-md5-cannot-be-decrypted.html', '/guides/es/why-md5-cannot-be-decrypted.html', '/guides/vi/why-md5-cannot-be-decrypted.html', '/guides/id/why-md5-cannot-be-decrypted.html', '/guides/de/why-md5-cannot-be-decrypted.html',
-  '/guides/pt/how-to-convert-100-heic-photos-to-jpg.html', '/guides/es/how-to-convert-100-heic-photos-to-jpg.html', '/guides/vi/how-to-convert-100-heic-photos-to-jpg.html', '/guides/id/how-to-convert-100-heic-photos-to-jpg.html', '/guides/de/how-to-convert-100-heic-photos-to-jpg.html',
   // plan-warm-pascal-v3 S2 batch 38 (2026-05-30) - 5 locale variants × 3 guides
-  '/guides/pt/zip-password-types-strong-vs-weak-explained.html', '/guides/es/zip-password-types-strong-vs-weak-explained.html', '/guides/vi/zip-password-types-strong-vs-weak-explained.html', '/guides/id/zip-password-types-strong-vs-weak-explained.html', '/guides/de/zip-password-types-strong-vs-weak-explained.html',
-  '/guides/pt/md5-vs-sha256-when-to-hash.html', '/guides/es/md5-vs-sha256-when-to-hash.html', '/guides/vi/md5-vs-sha256-when-to-hash.html', '/guides/id/md5-vs-sha256-when-to-hash.html', '/guides/de/md5-vs-sha256-when-to-hash.html',
-  '/guides/pt/how-to-convert-iphone-photo-to-jpg.html', '/guides/es/how-to-convert-iphone-photo-to-jpg.html', '/guides/vi/how-to-convert-iphone-photo-to-jpg.html', '/guides/id/how-to-convert-iphone-photo-to-jpg.html', '/guides/de/how-to-convert-iphone-photo-to-jpg.html',
   // plan-warm-pascal-v3 S2 batch 39 (2026-05-30) - 5 locale variants × 3 guides
-  '/guides/pt/microphone-test-permission-blocked-how-to-allow-it.html', '/guides/es/microphone-test-permission-blocked-how-to-allow-it.html', '/guides/vi/microphone-test-permission-blocked-how-to-allow-it.html', '/guides/id/microphone-test-permission-blocked-how-to-allow-it.html', '/guides/de/microphone-test-permission-blocked-how-to-allow-it.html',
-  '/guides/pt/qr-code-error-correction-and-scan-failures.html', '/guides/es/qr-code-error-correction-and-scan-failures.html', '/guides/vi/qr-code-error-correction-and-scan-failures.html', '/guides/id/qr-code-error-correction-and-scan-failures.html', '/guides/de/qr-code-error-correction-and-scan-failures.html',
-  '/guides/pt/how-to-split-a-gif-into-frames-for-editing.html', '/guides/es/how-to-split-a-gif-into-frames-for-editing.html', '/guides/vi/how-to-split-a-gif-into-frames-for-editing.html', '/guides/id/how-to-split-a-gif-into-frames-for-editing.html', '/guides/de/how-to-split-a-gif-into-frames-for-editing.html',
   // plan-warm-pascal-v3 S2 batch 40 (2026-05-30) - 5 locale variants × 3 guides
-  '/guides/pt/microphone-test-online-quiet-normal-peak-meter.html', '/guides/es/microphone-test-online-quiet-normal-peak-meter.html', '/guides/vi/microphone-test-online-quiet-normal-peak-meter.html', '/guides/id/microphone-test-online-quiet-normal-peak-meter.html', '/guides/de/microphone-test-online-quiet-normal-peak-meter.html',
-  '/guides/pt/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html', '/guides/es/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html', '/guides/vi/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html', '/guides/id/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html', '/guides/de/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html',
-  '/guides/pt/photo-editor-vs-graphics-app-vs-batch-processor.html', '/guides/es/photo-editor-vs-graphics-app-vs-batch-processor.html', '/guides/vi/photo-editor-vs-graphics-app-vs-batch-processor.html', '/guides/id/photo-editor-vs-graphics-app-vs-batch-processor.html', '/guides/de/photo-editor-vs-graphics-app-vs-batch-processor.html',
   // plan-warm-pascal-v3 S2 batch 41 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/zip-password-recovery-online.html', '/guides/es/zip-password-recovery-online.html', '/guides/vi/zip-password-recovery-online.html', '/guides/id/zip-password-recovery-online.html', '/guides/de/zip-password-recovery-online.html',
-  '/guides/pt/qr-code-generator-best-practices.html', '/guides/es/qr-code-generator-best-practices.html', '/guides/vi/qr-code-generator-best-practices.html', '/guides/id/qr-code-generator-best-practices.html', '/guides/de/qr-code-generator-best-practices.html',
-  '/guides/pt/when-to-compress-vs-convert-an-image.html', '/guides/es/when-to-compress-vs-convert-an-image.html', '/guides/vi/when-to-compress-vs-convert-an-image.html', '/guides/id/when-to-compress-vs-convert-an-image.html', '/guides/de/when-to-compress-vs-convert-an-image.html',
   // plan-warm-pascal-v3 S2 batch 42 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-zip-folder-online-step-by-step.html', '/guides/es/how-to-zip-folder-online-step-by-step.html', '/guides/vi/how-to-zip-folder-online-step-by-step.html', '/guides/id/how-to-zip-folder-online-step-by-step.html', '/guides/de/how-to-zip-folder-online-step-by-step.html',
-  '/guides/pt/oled-test-vs-lcd-test-what-changes-on-oled.html', '/guides/es/oled-test-vs-lcd-test-what-changes-on-oled.html', '/guides/vi/oled-test-vs-lcd-test-what-changes-on-oled.html', '/guides/id/oled-test-vs-lcd-test-what-changes-on-oled.html', '/guides/de/oled-test-vs-lcd-test-what-changes-on-oled.html',
-  '/guides/pt/milliseconds-to-date-utc-vs-local-time.html', '/guides/es/milliseconds-to-date-utc-vs-local-time.html', '/guides/vi/milliseconds-to-date-utc-vs-local-time.html', '/guides/id/milliseconds-to-date-utc-vs-local-time.html', '/guides/de/milliseconds-to-date-utc-vs-local-time.html',
   // plan-warm-pascal-v3 S2 batch 43 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-reduce-zip-file-size.html', '/guides/es/how-to-reduce-zip-file-size.html', '/guides/vi/how-to-reduce-zip-file-size.html', '/guides/id/how-to-reduce-zip-file-size.html', '/guides/de/how-to-reduce-zip-file-size.html',
-  '/guides/pt/screen-test-online-vs-app-which-is-more-accurate.html', '/guides/es/screen-test-online-vs-app-which-is-more-accurate.html', '/guides/vi/screen-test-online-vs-app-which-is-more-accurate.html', '/guides/id/screen-test-online-vs-app-which-is-more-accurate.html', '/guides/de/screen-test-online-vs-app-which-is-more-accurate.html',
-  '/guides/pt/image-compression-and-exif-metadata-what-gets-stripped.html', '/guides/es/image-compression-and-exif-metadata-what-gets-stripped.html', '/guides/vi/image-compression-and-exif-metadata-what-gets-stripped.html', '/guides/id/image-compression-and-exif-metadata-what-gets-stripped.html', '/guides/de/image-compression-and-exif-metadata-what-gets-stripped.html',
   // plan-warm-pascal-v3 S2 batch 44 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-reduce-zip-file-size-online.html', '/guides/es/how-to-reduce-zip-file-size-online.html', '/guides/vi/how-to-reduce-zip-file-size-online.html', '/guides/id/how-to-reduce-zip-file-size-online.html', '/guides/de/how-to-reduce-zip-file-size-online.html',
-  '/guides/pt/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html', '/guides/es/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html', '/guides/vi/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html', '/guides/id/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html', '/guides/de/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html',
-  '/guides/pt/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html', '/guides/es/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html', '/guides/vi/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html', '/guides/id/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html', '/guides/de/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html',
   // plan-warm-pascal-v3 S2 batch 45 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-make-a-zip-file-smaller.html', '/guides/es/how-to-make-a-zip-file-smaller.html', '/guides/vi/how-to-make-a-zip-file-smaller.html', '/guides/id/how-to-make-a-zip-file-smaller.html', '/guides/de/how-to-make-a-zip-file-smaller.html',
-  '/guides/pt/long-number-millisecond-or-second.html', '/guides/es/long-number-millisecond-or-second.html', '/guides/vi/long-number-millisecond-or-second.html', '/guides/id/long-number-millisecond-or-second.html', '/guides/de/long-number-millisecond-or-second.html',
-  '/guides/pt/lcd-test-what-it-checks.html', '/guides/es/lcd-test-what-it-checks.html', '/guides/vi/lcd-test-what-it-checks.html', '/guides/id/lcd-test-what-it-checks.html', '/guides/de/lcd-test-what-it-checks.html',
   // plan-warm-pascal-v3 S2 batch 46 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/zip-file-converter-what-it-actually-does.html', '/guides/es/zip-file-converter-what-it-actually-does.html', '/guides/vi/zip-file-converter-what-it-actually-does.html', '/guides/id/zip-file-converter-what-it-actually-does.html', '/guides/de/zip-file-converter-what-it-actually-does.html',
-  '/guides/pt/md5-to-text-why-you-cannot-convert-back.html', '/guides/es/md5-to-text-why-you-cannot-convert-back.html', '/guides/vi/md5-to-text-why-you-cannot-convert-back.html', '/guides/id/md5-to-text-why-you-cannot-convert-back.html', '/guides/de/md5-to-text-why-you-cannot-convert-back.html',
-  '/guides/pt/lcd-test-vs-display-test-which-do-you-need.html', '/guides/es/lcd-test-vs-display-test-which-do-you-need.html', '/guides/vi/lcd-test-vs-display-test-which-do-you-need.html', '/guides/id/lcd-test-vs-display-test-which-do-you-need.html', '/guides/de/lcd-test-vs-display-test-which-do-you-need.html',
   // plan-warm-pascal-v3 S2 batch 47 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/what-is-a-file-compressor-and-which-to-use.html', '/guides/es/what-is-a-file-compressor-and-which-to-use.html', '/guides/vi/what-is-a-file-compressor-and-which-to-use.html', '/guides/id/what-is-a-file-compressor-and-which-to-use.html', '/guides/de/what-is-a-file-compressor-and-which-to-use.html',
-  '/guides/pt/read-and-compare-md5-hashes-correctly.html', '/guides/es/read-and-compare-md5-hashes-correctly.html', '/guides/vi/read-and-compare-md5-hashes-correctly.html', '/guides/id/read-and-compare-md5-hashes-correctly.html', '/guides/de/read-and-compare-md5-hashes-correctly.html',
-  '/guides/pt/what-an-lcd-test-does-and-when-to-run-one.html', '/guides/es/what-an-lcd-test-does-and-when-to-run-one.html', '/guides/vi/what-an-lcd-test-does-and-when-to-run-one.html', '/guides/id/what-an-lcd-test-does-and-when-to-run-one.html', '/guides/de/what-an-lcd-test-does-and-when-to-run-one.html',
   // plan-warm-pascal-v3 S2 batch 48 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html', '/guides/es/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html', '/guides/vi/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html', '/guides/id/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html', '/guides/de/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html',
-  '/guides/pt/unminify-js.html', '/guides/es/unminify-js.html', '/guides/vi/unminify-js.html', '/guides/id/unminify-js.html', '/guides/de/unminify-js.html',
-  '/guides/pt/screen-test-for-laptop-5-minute-checklist.html', '/guides/es/screen-test-for-laptop-5-minute-checklist.html', '/guides/vi/screen-test-for-laptop-5-minute-checklist.html', '/guides/id/screen-test-for-laptop-5-minute-checklist.html', '/guides/de/screen-test-for-laptop-5-minute-checklist.html',
   // plan-warm-pascal-v3 S2 batch 49 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/file-compressor-online-when-to-zip-vs-when-to-compress-image.html', '/guides/es/file-compressor-online-when-to-zip-vs-when-to-compress-image.html', '/guides/vi/file-compressor-online-when-to-zip-vs-when-to-compress-image.html', '/guides/id/file-compressor-online-when-to-zip-vs-when-to-compress-image.html', '/guides/de/file-compressor-online-when-to-zip-vs-when-to-compress-image.html',
-  '/guides/pt/md5-decode.html', '/guides/es/md5-decode.html', '/guides/vi/md5-decode.html', '/guides/id/md5-decode.html', '/guides/de/md5-decode.html',
-  '/guides/pt/millisecond-to-date.html', '/guides/es/millisecond-to-date.html', '/guides/vi/millisecond-to-date.html', '/guides/id/millisecond-to-date.html', '/guides/de/millisecond-to-date.html',
   // plan-warm-pascal-v3 S2 batch 50 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/zip-password-unlocker.html', '/guides/es/zip-password-unlocker.html', '/guides/vi/zip-password-unlocker.html', '/guides/id/zip-password-unlocker.html', '/guides/de/zip-password-unlocker.html',
-  '/guides/pt/md5-password.html', '/guides/es/md5-password.html', '/guides/vi/md5-password.html', '/guides/id/md5-password.html', '/guides/de/md5-password.html',
-  '/guides/pt/screen-test-vs-camera-test-pick-the-right-tool.html', '/guides/es/screen-test-vs-camera-test-pick-the-right-tool.html', '/guides/vi/screen-test-vs-camera-test-pick-the-right-tool.html', '/guides/id/screen-test-vs-camera-test-pick-the-right-tool.html', '/guides/de/screen-test-vs-camera-test-pick-the-right-tool.html',
   // plan-warm-pascal-v3 S2 batch 51 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/zip-file-size-compressor.html', '/guides/es/zip-file-size-compressor.html', '/guides/vi/zip-file-size-compressor.html', '/guides/id/zip-file-size-compressor.html', '/guides/de/zip-file-size-compressor.html',
-  '/guides/pt/md5-hash-decrypt.html', '/guides/es/md5-hash-decrypt.html', '/guides/vi/md5-hash-decrypt.html', '/guides/id/md5-hash-decrypt.html', '/guides/de/md5-hash-decrypt.html',
-  '/guides/pt/led-test-vs-lcd-test-which-applies-to-your-screen.html', '/guides/es/led-test-vs-lcd-test-which-applies-to-your-screen.html', '/guides/vi/led-test-vs-lcd-test-which-applies-to-your-screen.html', '/guides/id/led-test-vs-lcd-test-which-applies-to-your-screen.html', '/guides/de/led-test-vs-lcd-test-which-applies-to-your-screen.html',
   // plan-warm-pascal-v3 S2 batch 52 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/resize-zip-file.html', '/guides/es/resize-zip-file.html', '/guides/vi/resize-zip-file.html', '/guides/id/resize-zip-file.html', '/guides/de/resize-zip-file.html',
-  '/guides/pt/md5-decrypt-online.html', '/guides/es/md5-decrypt-online.html', '/guides/vi/md5-decrypt-online.html', '/guides/id/md5-decrypt-online.html', '/guides/de/md5-decrypt-online.html',
-  '/guides/pt/ms-to-date.html', '/guides/es/ms-to-date.html', '/guides/vi/ms-to-date.html', '/guides/id/ms-to-date.html', '/guides/de/ms-to-date.html',
   // plan-warm-pascal-v3 S2 batch 53 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/zip-compressor.html', '/guides/es/zip-compressor.html', '/guides/vi/zip-compressor.html', '/guides/id/zip-compressor.html', '/guides/de/zip-compressor.html',
-  '/guides/pt/lcd-checker.html', '/guides/es/lcd-checker.html', '/guides/vi/lcd-checker.html', '/guides/id/lcd-checker.html', '/guides/de/lcd-checker.html',
-  '/guides/pt/online-zip-file.html', '/guides/es/online-zip-file.html', '/guides/vi/online-zip-file.html', '/guides/id/online-zip-file.html', '/guides/de/online-zip-file.html',
   // plan-warm-pascal-v3 S2 batch 54 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/test-lcd.html', '/guides/es/test-lcd.html', '/guides/vi/test-lcd.html', '/guides/id/test-lcd.html', '/guides/de/test-lcd.html',
-  '/guides/pt/i-love-zip.html', '/guides/es/i-love-zip.html', '/guides/vi/i-love-zip.html', '/guides/id/i-love-zip.html', '/guides/de/i-love-zip.html',
-  '/guides/pt/zip-compressor-online.html', '/guides/es/zip-compressor-online.html', '/guides/vi/zip-compressor-online.html', '/guides/id/zip-compressor-online.html', '/guides/de/zip-compressor-online.html',
   // plan-warm-pascal-v3 S2 batch 55 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/screen-display-test-synonyms.html', '/guides/es/screen-display-test-synonyms.html', '/guides/vi/screen-display-test-synonyms.html', '/guides/id/screen-display-test-synonyms.html', '/guides/de/screen-display-test-synonyms.html',
-  '/guides/pt/kompres-file-zip.html', '/guides/es/kompres-file-zip.html', '/guides/vi/kompres-file-zip.html', '/guides/id/kompres-file-zip.html', '/guides/de/kompres-file-zip.html',
-  '/guides/pt/zip-unlocker-online.html', '/guides/es/zip-unlocker-online.html', '/guides/vi/zip-unlocker-online.html', '/guides/id/zip-unlocker-online.html', '/guides/de/zip-unlocker-online.html',
   // plan-warm-pascal-v3 S2 batch 56 (2026-05-31) - 5 locale variants × 2 guides (FINAL substantive batch)
-  '/guides/pt/kompres-zip.html', '/guides/es/kompres-zip.html', '/guides/vi/kompres-zip.html', '/guides/id/kompres-zip.html', '/guides/de/kompres-zip.html',
-  '/guides/pt/zip-file-compressor-online.html', '/guides/es/zip-file-compressor-online.html', '/guides/vi/zip-file-compressor-online.html', '/guides/id/zip-file-compressor-online.html', '/guides/de/zip-file-compressor-online.html',
   // plan-warm-pascal-v3 S2 batch 57 (2026-05-31) - 5 locale variants × 2 guides (NEW make-zip-file-online + split-gif-into-frames; ledger expanded 166 -> 168 targeted)
-  '/guides/pt/make-zip-file-online.html', '/guides/es/make-zip-file-online.html', '/guides/vi/make-zip-file-online.html', '/guides/id/make-zip-file-online.html', '/guides/de/make-zip-file-online.html',
-  '/guides/pt/split-gif-into-frames.html', '/guides/es/split-gif-into-frames.html', '/guides/vi/split-gif-into-frames.html', '/guides/id/split-gif-into-frames.html', '/guides/de/split-gif-into-frames.html',
   // plan-warm-pascal-v3 S2 batch 58 (2026-06-01) - 5 locale variants × 1 guide (tes-lcd; CLOSURE batch reaching 100% route-level coverage)
-  '/guides/pt/tes-lcd.html', '/guides/es/tes-lcd.html', '/guides/vi/tes-lcd.html', '/guides/id/tes-lcd.html', '/guides/de/tes-lcd.html',
   // plan-warm-pascal-v3 S2 batch 59 (2026-06-05) - 5 locale variants x 2 NEW guides (file-to-zip, online-diff-tool; backfill of pipeline-created EN-only guides)
-  '/guides/pt/file-to-zip.html', '/guides/es/file-to-zip.html', '/guides/vi/file-to-zip.html', '/guides/id/file-to-zip.html', '/guides/de/file-to-zip.html',
-  '/guides/pt/online-diff-tool.html', '/guides/es/online-diff-tool.html', '/guides/vi/online-diff-tool.html', '/guides/id/online-diff-tool.html', '/guides/de/online-diff-tool.html',
   // plan-warm-pascal-v3 S2 batch 60 (2026-06-05) - tool-free x 5 locales (new_guide_locale_completeness gate backfill)
-  '/guides/pt/tool-free.html', '/guides/es/tool-free.html', '/guides/vi/tool-free.html', '/guides/id/tool-free.html', '/guides/de/tool-free.html',
   // cycle20260701 create_new_guide_page (locale completion) - pt variant of compress-image-online-to-50kb (staging-only until es/vi/id/de complete).
   '/guides/compress-image-online-to-50kb.html',
-  '/guides/pt/compress-image-online-to-50kb.html',
   // cycle20260701-2 create_new_guide_page (locale completion) - es variant (staging-only until vi/id/de complete).
-  '/guides/es/compress-image-online-to-50kb.html',
   // cycle20260701-3 create_new_guide_page (locale completion) - vi/id/de complete the bundle.
-  '/guides/vi/compress-image-online-to-50kb.html',
-  '/guides/id/compress-image-online-to-50kb.html',
-  '/guides/de/compress-image-online-to-50kb.html',
   // cycle 20260702 create_new_guide_page (locale completion) - pt variant of cek-layar-laptop (staging-only until es/vi/id/de complete).
-  '/guides/pt/cek-layar-laptop.html',
   // cycle 20260702-3 create_new_guide_page (locale completion) - es/vi/id/de variants of cek-layar-laptop (bundle now locale-complete).
-  '/guides/es/cek-layar-laptop.html', '/guides/vi/cek-layar-laptop.html', '/guides/id/cek-layar-laptop.html', '/guides/de/cek-layar-laptop.html',
   // cycle 20260702 create_new_guide_page - photo-editor-online-pixlr (EN + pt/es/vi/id/de; locale-complete). Serves "photo editor online pixlr" searchers via our /photo-editor.html.
-  '/guides/photo-editor-online-pixlr.html',
-  '/guides/pt/photo-editor-online-pixlr.html', '/guides/es/photo-editor-online-pixlr.html', '/guides/vi/photo-editor-online-pixlr.html', '/guides/id/photo-editor-online-pixlr.html', '/guides/de/photo-editor-online-pixlr.html',
   // geo-sitewide-audit-runbook: ship-pending reconciliation - pt/es/vi/id/de variants of mp4-to-gif-online-free (completes the locale bundle for the EN-only stranded scaffold).
-  '/guides/pt/mp4-to-gif-online-free.html', '/guides/es/mp4-to-gif-online-free.html', '/guides/vi/mp4-to-gif-online-free.html', '/guides/id/mp4-to-gif-online-free.html', '/guides/de/mp4-to-gif-online-free.html',
-  '/guides/en/heic-vs-jpg-vs-webp.html',
-  '/guides/en/dead-pixel-testing-guide.html',
-  '/guides/en/unix-timestamps-explained.html',
-  '/guides/en/pdf-password-types-owner-vs-user.html',
-  '/guides/en/png-vs-svg-when-to-use.html',
-  '/guides/en/css-minifier-vs-compressor.html',
   // Cycle 74 P74.B - JSON parser sub-feature disambiguation Lane-D guide.
-  '/guides/en/json-parser-validate-vs-format-vs-tree-view.html',
   // Cycle 75 P75.B - milliseconds-to-date UTC-vs-local-time Lane-D guide.
-  '/guides/en/milliseconds-to-date-utc-vs-local-time.html',
   // Cycle 20260524-19 P19.F create_new_guide_page - "current time in milliseconds" bare-query Lane-D guide (utility cluster, companion to /get-time-in-millisecond.html).
   '/guides/en/current-time-in-milliseconds.html',
   // Cycle 20260703-4 create_new_guide_page - "time in ms" bare-query Lane-D guide (utility cluster, companion to /get-time-in-millisecond.html).
   '/guides/en/time-in-ms.html',
   // Cycle 76 P76.A - screen-test-online-vs-app accuracy Lane-D guide (device-test cluster).
-  '/guides/en/screen-test-online-vs-app-which-is-more-accurate.html',
   // Cycle 77 P77.A - "compress ZIP to a specific size" Lane-D append-only guide.
-  '/guides/en/how-to-compress-a-zip-file-to-a-specific-size.html',
   // Cycle 20260519-10 create_new_guide_page - "how to compress a zip file" bare-query step-by-step guide.
-  '/guides/en/how-to-compress-a-zip-file.html',
   // Cycle 20260519-11 create_new_guide_page - "zip folder online free" bare-query step-by-step guide (companion to /zip-file.html).
-  '/guides/en/zip-folder-online-free.html',
   // Cycle 20260629-2 create_new_guide_page - "resize image online free" bare-query step-by-step guide (companion to /resize-image.html).
-  '/guides/en/resize-image-online-free.html',
   // Cycle 20260629-3 create_new_guide_page - PT locale variant of "resize image online free" (locale-drain).
-  '/guides/pt/resize-image-online-free.html',
   // Cycle 20260630-8 create_new_guide_page - PT locale variant of "crop image online free" (locale-drain; companion to /image-tools/crop-image.html).
-  '/guides/pt/crop-image-online-free.html',
   // Cycle 20260705 create_new_guide_page - PT locale variant of "pdf to text online i love pdf" (locale-drain; companion to /pdf-to-text.html).
-  '/guides/pt/pdf-to-text-online-i-love-pdf.html',
   // Cycle 20260705 grant-apply - non-EN locale variants (es/vi/id/de/pt) for this cycle's 4 new EN guides (new_guide_locale_completeness gate). status locale_pending_review.
-  '/guides/es/pdf-to-text-online-i-love-pdf.html',
-  '/guides/vi/pdf-to-text-online-i-love-pdf.html',
-  '/guides/id/pdf-to-text-online-i-love-pdf.html',
-  '/guides/de/pdf-to-text-online-i-love-pdf.html',
-  '/guides/pt/video-gif-converter-step-by-step.html',
-  '/guides/es/video-gif-converter-step-by-step.html',
-  '/guides/vi/video-gif-converter-step-by-step.html',
-  '/guides/id/video-gif-converter-step-by-step.html',
-  '/guides/de/video-gif-converter-step-by-step.html',
-  '/guides/pt/video-gif-converter-vs-alternatives.html',
-  '/guides/es/video-gif-converter-vs-alternatives.html',
-  '/guides/vi/video-gif-converter-vs-alternatives.html',
-  '/guides/id/video-gif-converter-vs-alternatives.html',
-  '/guides/de/video-gif-converter-vs-alternatives.html',
   '/guides/video-gif-converter-when.html',
   '/guides/video-gif-converter-step-by-step.html',
   '/guides/video-gif-converter-vs-alternatives.html',
-  '/guides/pt/video-gif-converter-when.html',
-  '/guides/es/video-gif-converter-when.html',
-  '/guides/vi/video-gif-converter-when.html',
-  '/guides/id/video-gif-converter-when.html',
-  '/guides/de/video-gif-converter-when.html',
   // Cycle 20260705-22 create_new_guide_page - pt locale variant for the new EN guide /guides/audio-trimmer-step-by-step.html (new_guide_locale_completeness gate). status locale_pending_review.
   '/guides/audio-trimmer-when.html',
   '/guides/audio-trimmer-step-by-step.html',
   '/guides/audio-trimmer-vs-alternatives.html',
-  '/guides/pt/audio-trimmer-step-by-step.html',
   // Cycle 20260524-10 create_new_guide_page - "i love zip" bare-query landing (companion to /zip-file.html).
-  '/guides/en/i-love-zip.html',
   // Cycle 78 P78.A - "QR code error correction and scan failures" Lane-D guide (companion to /qr-code-generator.html).
-  '/guides/en/qr-code-error-correction-and-scan-failures.html',
   // Cycle 79 P79.B - "Image to Base64: embed in HTML/CSS vs link the image file" Lane-D guide.
-  '/guides/en/image-to-base64-embed-in-html-vs-link.html',
   // Cycle 80 P80.G - "How to test a touchscreen for bad spots" Lane-D guide (device-test cluster).
-  '/guides/en/how-to-test-a-touchscreen-for-bad-spots.html',
   // Cycle 81 P81.A - "Webcam mirror vs flip explained" Lane-D guide (camera-test sub-cluster).
-  '/guides/en/camera-mirror-vs-flip-explained.html',
   // Cycle 82 P82.A - "CSS Unminifier vs Prettier: when to use each" Lane-D guide (developer / CSS sub-cluster).
-  '/guides/en/css-unminifier-vs-prettier-when-to-use-each.html',
   // Cycle 83 P83.A - "LED test vs LCD test: which applies to your screen?" Lane-D guide (device-test / lcd-test sub-cluster).
-  '/guides/en/led-test-vs-lcd-test-which-applies-to-your-screen.html',
   // Cycle 233 P233.E - "OLED test vs LCD test: what changes on an OLED panel" Lane-D guide (device-test / lcd-test sub-cluster, companion to /lcd-test.html). Multi-cycle skeleton phase 1.
-  '/guides/en/oled-test-vs-lcd-test-what-changes-on-oled.html',
   // Cycle 20260517-7 P7.A - "LED test" Lane-D create_new_guide_page (device-test / lcd-test sub-cluster, companion to /lcd-test.html). GSC 28d "led test" 888 imp at pos 8.5 CTR 2% with no dedicated short-tail guide; existing /guides/led-test-vs-lcd-test-which-applies-to-your-screen.html answers the disambiguation question but the bare "led test" query lands on /lcd-test.html with no on-page framing. New URL routes the short query to the implementing tool with one paragraph of context. Append-only.
   '/guides/en/led-test.html',
   // Cycle 84 P84.A - "How to compress a JPG for email attachment size limits" Lane-D guide (image-conversion / compression sub-cluster, companion to /compress-image.html).
-  '/guides/en/how-to-compress-a-jpg-for-email-attachment-limits.html',
   // Cycle 85 P85.A - "Microphone test levels: what quiet, normal, and peak mean" Lane-D guide (device-test / microphone-test sub-cluster, companion to /microphone-test.html).
-  '/guides/en/microphone-test-online-quiet-normal-peak-meter.html',
   // Cycle 86 P86.A - "Camera test permission blocked: how to allow camera access in your browser" Lane-D guide (device-test / camera-test sub-cluster, companion to /camera-test.html).
-  '/guides/en/camera-test-permission-blocked-how-to-allow-it.html',
   // Cycle 87 P87.A - "Microphone test permission blocked: how to allow mic access in your browser" Lane-D guide (device-test / microphone-test sub-cluster, companion to /microphone-test.html, symmetric peer to cycle-86 P86.A).
-  '/guides/en/microphone-test-permission-blocked-how-to-allow-it.html',
   // Phase 8 Cycle 3 §3.4 greenfield guides.
-  '/guides/en/mp4-vs-webm-for-web.html',
-  '/guides/en/jpg-vs-png-for-web.html',
-  '/guides/en/md5-vs-sha256-when-to-hash.html',
-  '/guides/en/csv-vs-json-data-formats.html',
-  '/guides/en/pdf-vs-heic-for-document-archival.html',
-  '/guides/en/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html',
-  '/guides/en/how-to-convert-100-heic-photos-to-jpg.html',
-  '/guides/en/how-to-test-for-dead-pixels-before-returning-a-monitor.html',
-  '/guides/en/how-to-sign-pdf-after-removing-a-password.html',
-  '/guides/en/how-to-extract-frames-from-a-gif-for-a-social-post.html',
-  '/guides/en/how-to-check-webcam-and-microphone-before-an-interview.html',
-  '/guides/en/how-to-minify-css-js-for-cloud-run-cold-start.html',
-  '/guides/en/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html',
   // Phase 10 Cycle 4 P10.3.4.
-  '/guides/en/when-to-compress-vs-convert-an-image.html',
   // Phase 11 Cycle 4 P11.3.3.
-  '/guides/en/how-to-compress-a-folder-for-email.html',
   // Phase 11 Cycle 5 P11.2.1 + P11.3.5.
-  '/guides/en/device-test-checklist-for-remote-work.html',
-  '/guides/en/pdf-editing-ladder.html',
   // Phase 13 Cycle 2.1 P13.2.1.
-  '/guides/en/file-compressor-vs-zip-what-to-pick.html',
   // Phase 13 Cycle 2.2 P13.2.2.
-  '/guides/en/heic-vs-jpg-converter-when-each-wins.html',
   // Phase 16 Cycle A P16.N1 / P16.N2 / P16.N4.
-  '/guides/en/what-is-a-file-compressor-and-which-to-use.html',
-  '/guides/en/how-to-compress-a-file-online.html',
-  '/guides/en/how-to-reduce-zip-file-size-online.html',
-  '/guides/en/how-to-reduce-zip-file-size.html',
   // Cycle 121 P121.G - "file compressor" HEAD-query aggregator landing.
-  '/guides/en/file-compressor.html',
   // Cycle 122 P122.A - "test lcd" / "lcd tester" / "lcd test online" HEAD-query
   // disambiguation aggregator (combined ~7.7K impr/28d at pos 5-8); routes
   // intent to /lcd-test.html action tool.
-  '/guides/en/test-lcd.html',
   // Cycle 20260518-30 P30.E - "lcd checker" / "lcd check" / "monitor checker"
   // / "screen checker" Lane-D guide. Sibling to /guides/test-lcd.html for
   // the verification-framing query family. Same destination tool.
-  '/guides/en/lcd-checker.html',
   // Phase 16 Cycle B P16.N11 / P16.N16.
-  '/guides/en/how-to-convert-heic-to-jpg-step-by-step.html',
-  '/guides/en/what-an-lcd-test-does-and-when-to-run-one.html',
   // Cycle 20260517-6 create_new_guide_page - "ms to date" synonym-coverage guide.
-  '/guides/en/ms-to-date.html',
   // Cycle 20260517-21 create_new_guide_page - "convert milliseconds to date" exact-match landing (GSC 482 imp / 3 clicks / pos 6.02 / CTR 0.62% / opp 79.59). Implementing tool: /convert-time-in-millisecond-to-date.html. Non-cannibalizing - existing ms-to-date covers the short synonym; this guide covers the full natural-language query.
   '/guides/en/convert-milliseconds-to-date.html',
   // Cycle 20260520-12 create_new_guide_page - "millisecond to date" singular-noun landing (GSC 368 imp / 2 clicks / pos 6.86 / CTR 0.54% / opp 53.38). Implementing tool: /convert-time-in-millisecond-to-date.html. Non-cannibalizing - existing /guides/ms-to-date.html covers the abbreviated synonym; /guides/convert-milliseconds-to-date.html covers the verb-led natural-language plural; this guide covers the bare singular-noun query.
   '/guides/en/millisecond-to-date.html',
-  '/guides/en/how-to-make-a-zip-file-smaller.html',
-  '/guides/en/how-to-compress-zip-file-to-smaller-size.html',
   // Cycle 20260517-9 create_new_guide_page - exact-match "compress zip file to smaller size" landing.
-  '/guides/en/compress-zip-file-to-smaller-size.html',
-  '/guides/en/compress-zip-file-to-100kb.html',
   // Cycle 20260521-12 P29.A create_new_guide_page - "compress zip file to 2mb" enterprise-SMTP-cap-specific landing. Operator-approved via card cycle29-create_new_guide_page-compresszipfileto2mb-cannibalisation-1779338089590 (option a). 2 MB is the historical Exchange / SMTP-relay / legacy-webmail attachment cap; distinct angle from the 100kb sibling. Implementing tool /zip-file.html.
-  '/guides/en/compress-zip-file-to-2mb.html',
   // Cycle 20260517-10 create_new_guide_page - exact-match "zip size reducer" landing (GSC 605 imp / 56 clicks / pos 5.67 / CTR 9.26%; opportunity_score 96.84).
-  '/guides/en/zip-size-reducer.html',
   // Cycle 20260519-12 create_new_guide_page - exact-match "zip file size compressor" landing (GSC 354 imp / 44 clicks / pos 5.43 / CTR 12.43%; opportunity_score 57.07). Implementing tool /zip-file.html. Append-only; non-cannibalizing vs /guides/how-to-make-a-zip-file-smaller.html, /guides/zip-size-reducer.html, /guides/compress-zip-file-to-smaller-size.html (each targets a distinct head-tail intent).
-  '/guides/en/zip-file-size-compressor.html',
   // Cycle 20260519-15 create_new_guide_page — "resize zip file" routing/disambiguation Lane-D guide (GSC 406 imp / 19 clicks / pos 6.83 / CTR 4.68%; opportunity_score 56.6). Distinguishing role: addresses the three-way wording ambiguity (shrink vs split vs shrink-photo-inputs-first), routes to the existing shrink / split / image-resize guides — not a 10th compress-zip duplicate.
-  '/guides/en/resize-zip-file.html',
   // Cycle 20260520-16 create_new_guide_page — Indonesian-language guide "kompres file zip" (GSC 338 imp / 13 clicks / pos 6.36 / CTR 3.85%; opportunity_score 51.12). Implementing tool /zip-file.html. Companion sibling to /guides/comprimir-zip-online.html (Spanish) and /guides/compactar-pasta.html (Portuguese).
-  '/guides/en/kompres-file-zip.html',
   // Cycle 20260523-5 P52.I create_new_guide_page — Indonesian-language size-question guide "kompres zip" (GSC 248 imp / 18 clicks / pos 7.42 / CTR 7.26%; opportunity_score 30.98). Implementing tool /zip-file.html. SIZE-focused sibling to /guides/kompres-file-zip.html (broader Indonesian bundle/privacy guide).
-  '/guides/en/kompres-zip.html',
-  '/guides/en/online-zip-vs-7z-vs-rar-which-to-pick.html',
-  '/guides/en/how-to-zip-multiple-files-into-one.html',
-  '/guides/en/how-to-zip-folder-online-step-by-step.html',
-  '/guides/en/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html',
-  '/guides/en/recover-corrupt-zip-file-options.html',
-  '/guides/en/iphone-photo-format-explained-heic-jpg-png-raw.html',
-  '/guides/en/how-to-convert-iphone-photo-to-jpg.html',
-  '/guides/en/jpg-vs-jpeg-are-they-the-same.html',
-  '/guides/en/svg-to-png-when-to-rasterize-an-svg.html',
-  '/guides/en/how-to-check-camera-quality-on-your-phone.html',
-  '/guides/en/microphone-test-online-what-it-actually-checks.html',
-  '/guides/en/keyboard-tester-online-rollover-vs-anti-ghosting.html',
-  '/guides/en/why-md5-cannot-be-decrypted.html',
   // Cycle 20260518-24 P24.E — "md5 decode" reader-vocabulary routing guide (distinguishing role).
-  '/guides/en/md5-decode.html',
   // Cycle 20260518-28 — "md5 decrypt online" wording routing guide. Same one-way truth as md5-decode but framed
   // around the "decrypt" search wording (more specific; carries the password-recovery sub-intent). Distinct from
   // /guides/why-md5-cannot-be-decrypted.html (cryptographic walkthrough) and /guides/md5-decode.html (broader
   // wording routing). Outbound link to /md5-converter.html.
-  '/guides/en/md5-decrypt-online.html',
   // Cycle 20260520-17 — "md5 hash decrypt" dictionary-attack-feasibility guide.
-  '/guides/en/md5-hash-decrypt.html',
-  '/guides/en/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html',
-  '/guides/en/json-vs-yaml-vs-toml-config-formats-explained.html',
-  '/guides/en/css-minifier-vs-uglifier-vs-tree-shaking.html',
-  '/guides/en/base64-when-to-use-and-when-not-to.html',
-  '/guides/en/how-to-split-a-gif-into-frames-for-editing.html',
-  '/guides/en/how-to-crop-and-rotate-an-image.html',
-  '/guides/en/photo-editor-vs-graphics-app-vs-batch-processor.html',
-  '/guides/en/mp4-vs-mov-vs-mkv-which-container-when.html',
-  '/guides/en/free-online-tools-that-work-without-uploading-files.html',
-  '/guides/en/qr-code-generator-best-practices.html',
   // Cycle 20260520-10 - "gif into frames" head-query guide; companion to /extract-gif-to-image-frames.html
   '/guides/en/gif-into-frames.html',
   // Workstream B sample batch - 2026-04-30
-  '/guides/en/how-to-compress-a-folder.html',
-  '/guides/en/lcd-test-what-it-checks.html',
   // /guides/lcdtest.html ALIAS → /guides/lcd-test-online.html (cycle 20260514-6-followup)
   // — see ALIAS_ROUTES. The kebab URL below is the canonical one in sitemap-guides.xml.
   '/guides/en/lcd-test-online.html',
@@ -5699,72 +5189,43 @@ export const GUIDE_ROUTES = new Set([
   // no longer publishes it. The JSP_BY_ROUTE entry stays so the URL still
   // renders (200, not 404) for any inbound link that already references it.
   // Cycle 19 P19.4 - screen/display/monitor synonym disambiguation guide.
-  '/guides/en/screen-display-test-synonyms.html',
   // Cycle 27 P27.C - keyboard-test how-to guide (Lane-D PA-mode mandatory).
-  '/guides/en/how-to-test-a-keyboard-online-step-by-step.html',
   // Cycle 28 P28.A - PNG vs JPG output-format comparison guide for the
   // /extract-gif-to-image-frames.html tool (Lane-D PA-mode mandatory;
   // image-editing cluster).
-  '/guides/en/extract-gif-frames-png-vs-jpg-which-format.html',
   // Cycle 29 P29.B - GIF frames vs GIF frame rate (FPS) explainer; same
   // tool, orthogonal question to cycle-28 P28.A. Lane-D PA-mode mandatory;
   // image-editing cluster.
-  '/guides/en/gif-frames-extract-vs-frame-rate-fps-explained.html',
   // Cycle 30 P30.A - MD5 alternatives (bcrypt vs Argon2id vs SHA-256)
   // decision guide. Lane-D PA-mode mandatory; guide,developer cluster.
-  '/guides/en/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html',
   // Cycle 31 P31.A - camera-test black-screen diagnostic-flow guide.
-  '/guides/en/camera-test-shows-black-screen-four-fixes.html',
   // Cycle 34 P34.A - microphone-test no-sound diagnostic-flow guide.
-  '/guides/en/microphone-test-no-sound-four-fixes.html',
   // Cycle 35 P35.A - keyboard-test keys-not-detected diagnostic-flow guide.
-  '/guides/en/keyboard-test-keys-not-detected-four-fixes.html',
   // Cycle 37 P37.A - JPEG quality-vs-size decision-table guide for /compress-image.html.
-  '/guides/en/compress-jpeg-without-losing-quality-quality-vs-size.html',
   // Cycle 38 P38.A - "is this long number a timestamp?" diagnostic-flow guide.
-  '/guides/en/long-number-millisecond-or-second.html',
   // Cycle 39 P39.A - "compressed JPG looks blurry, why?" reactive diagnostic-flow guide.
-  '/guides/en/compressed-jpg-looks-blurry-three-causes.html',
   // Cycle 40 P40.A - "online ffmpeg conversion stalled, why?" reactive diagnostic-flow guide.
-  '/guides/en/ffmpeg-online-conversion-stalled-three-fixes.html',
   // Cycle 41 P41.A - "GIF frame extractor output looks wrong, why?" reactive diagnostic-flow guide.
-  '/guides/en/gif-frame-extractor-output-looks-wrong-three-causes.html',
   // Cycle 20260514-9 create_new_guide_page - "gif frame extractor" head-term
   // Lane-D guide. Implementing tool: /extract-gif-to-image-frames.html.
-  '/guides/en/gif-frame-extractor.html',
   // Cycle 20260610-12 P12.D - gif-to-frames-converter (utility cluster)
-  '/guides/en/gif-to-frames-converter.html',
   // Cycle 42 P42.A - "LCD test vs display test vs monitor test - which one do you actually need?" reactive disambiguation-flow guide.
-  '/guides/en/lcd-test-vs-display-test-which-do-you-need.html',
   // Cycle 43 P43.B - "Camera test vs webcam test vs camera quality - which one do you actually need?" reactive disambiguation-flow guide.
-  '/guides/en/camera-test-vs-webcam-test-which-do-you-need.html',
   // Cycle 20260610-13 - LCD test for laptop screens (device-test)
-  '/guides/en/lcd-test-laptop.html',
   // Cycle 73 P73.B - "Screen test vs camera test - which one do you actually need?" cross-cluster disambiguation Lane-D guide.
-  '/guides/en/screen-test-vs-camera-test-pick-the-right-tool.html',
   // Cycle 44 P44.A - "MD5 to text - why you cannot convert it back, and what to do instead" disambiguation/decision guide.
-  '/guides/en/md5-to-text-why-you-cannot-convert-back.html',
   // Cycle 46 P46.B - "Before a video call - which tools to run (screen / camera / microphone)" pre-call checklist guide.
-  '/guides/en/before-a-video-call-which-tools-to-run.html',
   // Cycle 48 P48.A - laptop-specific screen-test 5-minute checklist guide (Bing under-served laptop reader-task gap).
-  '/guides/en/screen-test-for-laptop-5-minute-checklist.html',
   // Cycle 49 P49.A - "FFmpeg Online vs Video Converter - which tool to open" routing guide (GSC "ffmpeg online" op_score 270.97 row).
-  '/guides/en/ffmpeg-online-vs-video-converter-which-to-pick.html',
   // Cycle 50 P50.A - "ImageMagick Online vs Task-Specific Tools - which to pick" routing guide (image-editing-cluster parallel to cycle 49 P49.A; GA4 /imagemagick-online.html 114 sess / 0.51 engagement cohort).
-  '/guides/en/imagemagick-online-vs-task-specific-tools-which-to-pick.html',
   // Cycle 51 P51.A - "File Compressor Online: ZIP a Folder vs Compress an Image" routing guide (GSC "file compressor" 258,156 imp / 0.04% CTR / pos 9.9 / 12,797 missed clicks 28d - cross-cluster routing surface for the head term that neither /zip-file.html nor /compress-image.html owns alone).
   // Cycle 46 (20260522-7) P46.H — "Camera Check" synonym-disambiguation guide. GSC "camera check" 451 imp / 5 clicks / pos 11.85 28d (opportunity score 37.63). Routes the reader to /camera-test.html (the implementing tool) while explaining the synonym mapping ("camera check" = "camera test") and the three end-states (allowed / blocked / ignored). Sibling guides: camera-test-permission-blocked-how-to-allow-it (permissions deep-dive), camera-test-shows-black-screen-four-fixes (hardware failures), camera-mirror-vs-flip-explained (preview semantics).
-  '/guides/en/camera-check.html',
-  '/guides/en/file-compressor-online-when-to-zip-vs-when-to-compress-image.html',
   // Cycle 53 P53.A - "How to Extract a File Online - ZIP, RAR, 7z" routing guide (GSC "extract file online" -9.3 pos in 7d, "file zipper" -8.9 pos; neither owned by an existing guide. .zip -> /unzip-file.html; .rar / .7z -> local OS tool; forgotten-password .zip -> /remove-zip-password.html).
-  '/guides/en/how-to-extract-a-file-online-zip-rar-7z.html',
   // Cycle 54 P54.A - "How to choose a compression level - quality vs file size, with examples" guide. Captures the long-tail "compress image to 100kb / 200kb / 500kb" + "what compression level should I use" decision intent on /compress-image.html. Routes to /resize-image.html when pixel dimensions matter and to format-choice guides when the format is wrong. Append-only Lane-D guide.
-  '/guides/en/how-to-choose-a-compression-level.html',
   // Cycle 55 P55.A - "ZIP password types - strong vs weak, explained" guide.
   // Trust-gate education on /remove-zip-password.html (top-2 traffic ZIP-cluster URL).
   // Explains legacy ZIP 2.0 vs WinZip AES-256, password strength interaction, and the
   // 30-second decision flow before a reader uploads. Append-only Lane-D guide; non-ZIP-cluster URL.
-  '/guides/en/zip-password-types-strong-vs-weak-explained.html',
   // Cycle 56 P56.A - "PDF preflight online: what it actually checks" guide.
   // Lane-D fresh-capture on the search-vocabulary gap upstream of /preflight-pdf.html
   // (Bing pos 3-20 across the preflight/validator/check vocabulary). PDF cluster
@@ -5772,37 +5233,30 @@ export const GUIDE_ROUTES = new Set([
   // Explains preflight as a check step (not a fix step), what /preflight-pdf.html
   // validates (PDF/A archival conformance), and what is out-of-scope (PDF/X print,
   // signature legal-validity, corrupt-PDF repair, PDF/UA). Append-only Lane-D guide.
-  '/guides/en/pdf-preflight-online-what-it-actually-checks.html',
   // Cycle 58 P58.A - "Read and compare MD5 hashes correctly" guide.
   // Post-conversion verification flow downstream of /md5-converter.html.
   // Distinct from 4 existing MD5 guides; covers cosmetic vs real
   // differences (case, whitespace, BOM, hex format) plus the 5-step
   // compare flow. Append-only Lane-D guide; non-ZIP cluster.
-  '/guides/en/read-and-compare-md5-hashes-correctly.html',
   // Cycle 59 P59.A - "How to tell if a JPG was compressed too much"
   // guide. Bridges /get-jpeg-compression-level.html (assess-after the
   // upload). Distinct from /guides/how-to-choose-a-compression-level
   // (choose-before). Image-conversion / image-editing cluster;
   // non-ZIP; append-only Lane-D guide.
-  '/guides/en/how-to-tell-if-a-jpg-was-compressed-too-much.html',
   // Cycle 60 P60.A - "How to flatten a PDF - and when to do it" guide.
   // Bridges /flatten-pdf.html (server-side flatten via FlattenPdfService).
   // Distinct from 6 existing PDF guides. PDF cluster; non-ZIP;
   // append-only Lane-D guide.
-  '/guides/en/how-to-flatten-a-pdf-and-when-to-do-it.html',
   // Cycle 61 P61.A - "PNG to SVG - when to vectorize a raster image"
   // guide. Bridges /png-to-svg.html (server-side raster-to-vector
   // via the freetoolonline AWS service). Image-conversion cluster;
   // non-ZIP; append-only Lane-D guide.
-  '/guides/en/png-to-svg-when-to-vectorize-a-raster-image.html',
   // Cycle 62 P62.E - "Download link not appearing after conversion -
   // 5 fixes" diagnostic guide. Bridges multiple converter tools.
   // Troubleshooting cluster; non-ZIP; append-only Lane-D guide.
-  '/guides/en/download-link-not-appearing-after-conversion-five-fixes.html',
   // Cycle 64 P64.A - "Why HEIC won't open on Windows - three quick
   // fixes" troubleshooting guide. Bridges /heic-to-jpg.html top revenue
   // page; image-conversion cluster; non-ZIP; append-only Lane-D guide.
-  '/guides/en/why-heic-wont-open-on-windows-three-fixes.html',
   // Cycle 70 P70.A - "Zip file converter - what it actually does"
   // disambiguation guide. Targets the GSC `zip file converter` /
   // `zip files online` / `make zip file online` / `folder to zip
@@ -5812,28 +5266,21 @@ export const GUIDE_ROUTES = new Set([
   // /heic-to-jpg.html, /compose-pdf.html. NO satellite backlink on
   // /zip-file.html (ZIP-CRITICAL-CARE 24h cooldown). Cluster: zip
   // entry-point. Lane-D PA-mode mandatory; non-ZIP-cluster identity.
-  '/guides/en/zip-file-converter-what-it-actually-does.html',
   // Cycle 20260519-1 - bare-query "zip file converter" guide.
-  '/guides/en/zip-file-converter.html',
   // Cycle 71 P71.F - "HEIC to JPG: what the converter actually does
   // (and what it does not)" trust-anchor guide. Source-cited claims
   // from tool-heictojpg/SKILL.md (libheif, SlimJpg, EXIF toggle, quality
   // slider, multi-format output). Anti-claims also surfaced (NOT
   // browser-only, NOT account-gated, does NOT extract live-photo
   // motion). Lane-D PA-mode mandatory; image-conversion cluster.
-  '/guides/en/heic-to-jpg-claims-what-actually-works.html',
   // Backfill: cycle 88 + cycle 90 guides were added to INFO_ROUTES but
   // omitted from GUIDE_ROUTES. Without GUIDE_ROUTES membership they
   // lose Article JSON-LD, Organization JSON-LD, editorial-byline, AND
   // (post-2026-05-11 showAdSlots split) AdSense loading. Append-only.
-  '/guides/en/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html',
-  '/guides/en/image-compression-and-exif-metadata-what-gets-stripped.html',
   // Cycle1 of 20260513-5 P5.A - "Zip compressor" Lane-D guide. Phase A
   // skeleton (route + JSP wrapper) only. Kebab URL per granted cards.
-  '/guides/en/zip-compressor.html',
   // Cycle6 of 20260513-6 — "Compress ZIP" Lane-D guide. Phase A skeleton
   // (route + JSP wrapper) only. Kebab + singular guide/ JSP subdir.
-  '/guides/en/compress-zip.html',
   // Cycle 20260515-16 — "Compress ZIP Size" Lane-D guide. Complete single-cycle
   // ship: compressibility table + DEFLATE level explainer + routing to
   // /zip-tools/zip-file.html. Cluster=zip.
@@ -5877,20 +5324,17 @@ export const GUIDE_ROUTES = new Set([
   // pos 6.17 / CTR 21.3% / opportunity_score 87.95. Sourced from
   // tool-removezippassword/SKILL.md F1-F7 + N2 + N6 (the tool unlocks when
   // password is KNOWN; explicitly does NOT crack unknown passwords).
-  '/guides/en/zip-password-recovery-online.html',
   // Cycle 20260518-22 create_new_guide_page - "Zip compressor online" Lane-D
   // guide. Cluster: zip. GSC 611 imp / 57 clicks / pos 6.99 / CTR 9.33% /
   // opportunity_score 79.22. Sourced from tool-zipfile/SKILL.md M1-M7 +
   // tool-guidescompresszip/SKILL.md C1-C6 (size question vs archive question;
   // browser-creator routing; sibling-guide vocabulary disambiguation).
-  '/guides/en/zip-compressor-online.html',
   // Cycle 20260518-23 create_new_guide_page - "Folder to zip" Lane-D guide
   // (zip cluster, companion to /zip-tools/zip-file.html). GSC 773 imp / 13
   // clicks / pos 9.73 / CTR 1.68% / opportunity_score 78.12 — folder-to-archive
   // intent. Paraphrases tool-ziptools/SKILL.md M1 (one-click routing) and
   // tool-guidescompresszip/SKILL.md C1-C5 (size question vs archive question
   // for folder inputs).
-  '/guides/en/folder-to-zip.html',
   // Cycle 20260605-3 create_new_guide_page - "File To Zip" Lane-D guide (zip
   // cluster, GSC "file to zip" 305 imp / 4 clicks / pos 10.05 / CTR 1.31% /
   // opportunity_score 29.96). Companion to /zip-file.html (server-side upload
@@ -5899,20 +5343,15 @@ export const GUIDE_ROUTES = new Set([
   // /guides/folder-to-zip.html for folder-input variant. Kebab URL passes URL
   // convention regex; smashed form "filetozip" does not shadow any existing
   // primary route.
-  '/guides/en/file-to-zip.html',
   // Cycle 20260605-4 create_new_guide_page - "Online diff tool" Lane-D guide.
   // Companion to /developer-tools/text-diff.html.
-  '/guides/en/online-diff-tool.html',
   // Cycle 20260605-8 create_new_guide_page - "common::md5::gethash64string" Lane-D.
   // Companion to /md5-converter.html. Sourced from tool-md5converter/SKILL.md M1+M2.
-  '/guides/en/common-md5-gethash64string.html',
-  '/guides/pt/common-md5-gethash64string.html', '/guides/es/common-md5-gethash64string.html', '/guides/vi/common-md5-gethash64string.html', '/guides/id/common-md5-gethash64string.html', '/guides/de/common-md5-gethash64string.html',
   // Cycle 20260518-25 create_new_guide_page - "Online Zip File" Lane-D guide
   // (zip cluster, companion to /zip-tools/zip-file.html). GSC 573 imp / 12
   // clicks / pos 7.39 / CTR 2.09% / opportunity_score 75.94 — "online zip file"
   // intent (zip-file as a noun, not as a verb). Paraphrases tool-zipfile/SKILL.md
   // M1-M7 (in-browser creator) and tool-ziptools/SKILL.md M1 (one-click routing).
-  '/guides/en/online-zip-file.html',
   // Cycle 20260518-31 create_new_guide_page - "Create Zip File Online" Lane-D
   // guide (zip cluster, companion to /zip-tools/zip-file.html). GSC 702 imp /
   // 8 clicks / pos 10.08 / CTR 1.14% / opportunity_score 68.87 - "create zip
@@ -5920,7 +5359,6 @@ export const GUIDE_ROUTES = new Set([
   // tool-zipfile/SKILL.md implemented features (upload + server-side build +
   // optional password + cross-platform output) and the existing in-browser
   // creator copy in BODYHTMLzipfile / BODYWELCOMEzipfile.
-  '/guides/en/create-zip-file-online.html',
   // Cycle 20260518-33 create_new_guide_page - "Tes LCD" Lane-D guide (device-test
   // cluster, companion to /lcd-test.html). GSC 503 imp / 17 clicks / pos 7.38 /
   // CTR 3.38% / opportunity_score 65.84 - Indonesian-language "tes lcd" intent
@@ -5947,7 +5385,6 @@ export const GUIDE_ROUTES = new Set([
   // Cycle 20260521-20 P37.H create_new_guide_page (zip cluster, Portuguese).
   // Cycle 20260520-11 new_guide_page_proposal (developer cluster):
   // implementing tool /js-unminifier.html.
-  '/guides/en/unminify-js.html',
   // Cycle 20260520-13 new_guide_page_proposal (device-test cluster, companion
   // to /lcd-test.html). "lcd screen test" head-tail query. Paraphrases
   // tool-lcdtest/SKILL.md F1-F5. Kebab slug /guides/lcd-screen-test.html
@@ -5977,7 +5414,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/en/zip-unlocker-online.html',
   // Cycle 20260523-3 (cycle 50) create_new_guide_page - "crop and rotate image"
   // Lane-D guide (image-editing cluster, companion to /crop-image.html).
-  '/guides/en/crop-and-rotate-image.html',
   // Backfill cycle 20260523-followup-1: /guides/md5-password.html (cycle 50
   // P50.H, real-work floor) + /guides/comprimir-arquivo-zip.html (cycle
   // 20260522-10 P10.E, Portuguese zip cluster) were added to INFO_ROUTES +
@@ -5989,7 +5425,6 @@ export const GUIDE_ROUTES = new Set([
   // export-site.mjs so /guides.html joins /sitemap.html as a build-generated
   // artifact, closing the "agent edits BODYHTMLguides.html by hand and forgets
   // an entry" defect class permanently. See sitemap-html-builder.mjs.
-  '/guides/en/md5-password.html',
   // Cycle 20260524-18 create_new_guide_page - "Compress Folder Online" Lane-D
   // guide (zip cluster, companion to /zip-file.html). GSC 28d 1243 imp /
   // 112 clicks / pos 5.01 / CTR 9.01% / opportunity_score 225.55. The query
@@ -6004,18 +5439,8 @@ export const GUIDE_ROUTES = new Set([
   '/guides/en/compress-folder-online.html',
   // cycle 20260610-15 - front-camera-test new guide (EN bare canonical + 5 locale variants)
   '/guides/front-camera-test.html',
-  '/guides/pt/front-camera-test.html',
-  '/guides/es/front-camera-test.html',
-  '/guides/vi/front-camera-test.html',
-  '/guides/id/front-camera-test.html',
-  '/guides/de/front-camera-test.html',
   // cycle 20260610-16 - compress-pdf-online-free new guide (EN bare canonical + 5 locale variants)
   '/guides/compress-pdf-online-free.html',
-  '/guides/pt/compress-pdf-online-free.html',
-  '/guides/es/compress-pdf-online-free.html',
-  '/guides/vi/compress-pdf-online-free.html',
-  '/guides/id/compress-pdf-online-free.html',
-  '/guides/de/compress-pdf-online-free.html',
   // cycle 20260614-21 - split-pdf-online-free new guide (EN bare canonical; locale variants drain in later cycles per EN-first contract)
   '/guides/split-pdf-online-free.html',
   // cycle 20260615 - split-pdf-online-free PT locale variant (EN-first locale drain; es/vi/id/de remain)
@@ -6025,21 +5450,13 @@ export const GUIDE_ROUTES = new Set([
   // cycle 20260615-3 - split-pdf-online-free VI locale variant (EN-first locale drain; id/de remain)
   '/guides/vi/split-pdf-online-free.html',
   // cycle 20260615-4 - split-pdf-online-free ID locale variant (EN-first locale drain; de remains)
-  '/guides/id/split-pdf-online-free.html',
   // cycle 20260615-5 - split-pdf-online-free DE locale variant (EN-first locale drain COMPLETE)
-  '/guides/de/split-pdf-online-free.html',
   // cycle 20260624-2 - mengecilkan-ukuran-zip VI locale variant (EN-first locale drain; id/de remain)
-  '/guides/vi/mengecilkan-ukuran-zip.html',
   // cycle 20260624-3 - mengecilkan-ukuran-zip ID locale variant (EN-first locale drain; de remains)
-  '/guides/id/mengecilkan-ukuran-zip.html',
   // cycle 20260624-4 - mengecilkan-ukuran-zip DE locale variant (EN-first locale drain; locale-complete)
-  '/guides/de/mengecilkan-ukuran-zip.html',
   // cycle 20260630-4 - merge-pdf-online-free-unlimited VI locale variant (EN-first locale drain; id/de remain)
-  '/guides/vi/merge-pdf-online-free-unlimited.html',
   // cycle 20260630-5 - merge-pdf-online-free-unlimited ID locale variant (EN-first locale drain; de remains)
-  '/guides/id/merge-pdf-online-free-unlimited.html',
   // cycle 20260630-6 - merge-pdf-online-free-unlimited DE locale variant (EN-first locale drain; locale-complete after this)
-  '/guides/de/merge-pdf-online-free-unlimited.html',
   // new-tool-discovery-loop-runbook fire (2026-07-06): percentage-calculator
   // EN guides (backfill - the builder wired JSP_BY_ROUTE but omitted
   // GUIDE_ROUTES, which silently drops a guide from sitemap-guides.xml /
@@ -7801,24 +7218,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/expense-tracker-when.html',
   '/guides/de/expense-tracker-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire - random-name-picker-guides locale fanout (EN shipped fire50; this fire adds pt/es/vi/id/de + backfills the missing EN registration).
-  '/guides/random-name-picker-when.html',
-  '/guides/random-name-picker-step-by-step.html',
-  '/guides/random-name-picker-vs-alternatives.html',
-  '/guides/pt/random-name-picker-when.html',
-  '/guides/pt/random-name-picker-step-by-step.html',
-  '/guides/pt/random-name-picker-vs-alternatives.html',
-  '/guides/es/random-name-picker-when.html',
-  '/guides/es/random-name-picker-step-by-step.html',
-  '/guides/es/random-name-picker-vs-alternatives.html',
-  '/guides/vi/random-name-picker-when.html',
-  '/guides/vi/random-name-picker-step-by-step.html',
-  '/guides/vi/random-name-picker-vs-alternatives.html',
-  '/guides/id/random-name-picker-when.html',
-  '/guides/id/random-name-picker-step-by-step.html',
-  '/guides/id/random-name-picker-vs-alternatives.html',
-  '/guides/de/random-name-picker-when.html',
-  '/guides/de/random-name-picker-step-by-step.html',
-  '/guides/de/random-name-picker-vs-alternatives.html',
   // sky-gates-flight-guides (newtool-discovery-loop fire58, LEAN one-off session):
   // EN angles were already live but never registered in GUIDE_ROUTES (sitemap-guides/llms.txt
   // discoverability); this fire adds the EN entries plus the pt/es/vi/id/de locale fanout.
@@ -7864,859 +7263,34 @@ export const GUIDE_ROUTES = new Set([
   // pre-existing EN angle (JSP_BY_ROUTE + CMS existed, never registered here -
   // same defect class as the fire-66 backfill above) plus locale fanout
   // pt/es/vi/id/de (new-tool-discovery-loop-runbook LEAN one-off fire).
-  '/guides/city-time-machine-3d-when.html',
-  '/guides/pt/city-time-machine-3d-when.html',
-  '/guides/es/city-time-machine-3d-when.html',
-  '/guides/de/city-time-machine-3d-when.html',
-  '/guides/vi/city-time-machine-3d-when.html',
-  '/guides/id/city-time-machine-3d-when.html',
   // city-time-machine-3d-step-by-step / -vs-alternatives - GUIDE_ROUTES/
   // INFO_ROUTES backfill for the pre-existing EN angles (JSP_BY_ROUTE + CMS
   // existed, never registered here - same defect class as "when" above) plus
   // locale fanout pt/es/vi/id/de (new-tool-discovery-loop-runbook LEAN fire76).
-  '/guides/city-time-machine-3d-step-by-step.html',
-  '/guides/pt/city-time-machine-3d-step-by-step.html',
-  '/guides/es/city-time-machine-3d-step-by-step.html',
-  '/guides/de/city-time-machine-3d-step-by-step.html',
-  '/guides/vi/city-time-machine-3d-step-by-step.html',
-  '/guides/id/city-time-machine-3d-step-by-step.html',
-  '/guides/city-time-machine-3d-vs-alternatives.html',
-  '/guides/pt/city-time-machine-3d-vs-alternatives.html',
-  '/guides/es/city-time-machine-3d-vs-alternatives.html',
-  '/guides/de/city-time-machine-3d-vs-alternatives.html',
-  '/guides/vi/city-time-machine-3d-vs-alternatives.html',
-  '/guides/id/city-time-machine-3d-vs-alternatives.html',
   // earth-3d-globe-live-day-night-map-when - GUIDE_ROUTES/INFO_ROUTES backfill
   // for the pre-existing EN angle (JSP_BY_ROUTE + CMS existed, never
   // registered here - same defect class as the city-time-machine backfill
   // above) plus locale fanout pt/es/de/vi/id (new-tool-discovery-loop-runbook
   // LEAN one-off fire, guide-support drain per runbook 4b).
-  '/guides/earth-3d-globe-live-day-night-map-when.html',
-  '/guides/pt/earth-3d-globe-live-day-night-map-when.html',
-  '/guides/es/earth-3d-globe-live-day-night-map-when.html',
-  '/guides/de/earth-3d-globe-live-day-night-map-when.html',
-  '/guides/vi/earth-3d-globe-live-day-night-map-when.html',
-  '/guides/id/earth-3d-globe-live-day-night-map-when.html',
   // earth-3d-globe-live-day-night-map step-by-step + vs-alternatives -
   // same GUIDE_ROUTES backfill (EN angles existed in JSP_BY_ROUTE only) plus
   // full pt/es/de/vi/id locale fanout (guide-support drain per runbook 4b).
-  '/guides/earth-3d-globe-live-day-night-map-step-by-step.html',
-  '/guides/pt/earth-3d-globe-live-day-night-map-step-by-step.html',
-  '/guides/es/earth-3d-globe-live-day-night-map-step-by-step.html',
-  '/guides/de/earth-3d-globe-live-day-night-map-step-by-step.html',
-  '/guides/vi/earth-3d-globe-live-day-night-map-step-by-step.html',
-  '/guides/id/earth-3d-globe-live-day-night-map-step-by-step.html',
-  '/guides/earth-3d-globe-live-day-night-map-vs-alternatives.html',
-  '/guides/pt/earth-3d-globe-live-day-night-map-vs-alternatives.html',
-  '/guides/es/earth-3d-globe-live-day-night-map-vs-alternatives.html',
-  '/guides/de/earth-3d-globe-live-day-night-map-vs-alternatives.html',
-  '/guides/vi/earth-3d-globe-live-day-night-map-vs-alternatives.html',
-  '/guides/id/earth-3d-globe-live-day-night-map-vs-alternatives.html',
   // moon-phases-3d companion guides (space-3d-discovery-loop fire1)
-  '/guides/moon-phases-3d-when.html',
-  '/guides/moon-phases-3d-step-by-step.html',
-  '/guides/moon-phases-3d-vs-alternatives.html',
-  '/guides/pt/moon-phases-3d-when.html',
-  '/guides/pt/moon-phases-3d-step-by-step.html',
-  '/guides/pt/moon-phases-3d-vs-alternatives.html',
-  '/guides/es/moon-phases-3d-when.html',
-  '/guides/es/moon-phases-3d-step-by-step.html',
-  '/guides/es/moon-phases-3d-vs-alternatives.html',
-  '/guides/de/moon-phases-3d-when.html',
-  '/guides/de/moon-phases-3d-step-by-step.html',
-  '/guides/de/moon-phases-3d-vs-alternatives.html',
-  '/guides/vi/moon-phases-3d-when.html',
-  '/guides/vi/moon-phases-3d-step-by-step.html',
-  '/guides/vi/moon-phases-3d-vs-alternatives.html',
-  '/guides/id/moon-phases-3d-when.html',
-  '/guides/id/moon-phases-3d-step-by-step.html',
-  '/guides/id/moon-phases-3d-vs-alternatives.html',
   // saturn-rings companion guides (space-3d-discovery-loop fire2)
-  '/guides/saturn-rings-when.html',
-  '/guides/saturn-rings-step-by-step.html',
-  '/guides/saturn-rings-vs-alternatives.html',
-  '/guides/pt/saturn-rings-when.html',
-  '/guides/pt/saturn-rings-step-by-step.html',
-  '/guides/pt/saturn-rings-vs-alternatives.html',
-  '/guides/es/saturn-rings-when.html',
-  '/guides/es/saturn-rings-step-by-step.html',
-  '/guides/es/saturn-rings-vs-alternatives.html',
-  '/guides/de/saturn-rings-when.html',
-  '/guides/de/saturn-rings-step-by-step.html',
-  '/guides/de/saturn-rings-vs-alternatives.html',
-  '/guides/vi/saturn-rings-when.html',
-  '/guides/vi/saturn-rings-step-by-step.html',
-  '/guides/vi/saturn-rings-vs-alternatives.html',
-  '/guides/id/saturn-rings-when.html',
-  '/guides/id/saturn-rings-step-by-step.html',
-  '/guides/id/saturn-rings-vs-alternatives.html',
   // kepler-orbits companion guides (space-3d-discovery-loop fire3)
-  '/guides/kepler-orbits-when.html',
-  '/guides/kepler-orbits-step-by-step.html',
-  '/guides/kepler-orbits-vs-alternatives.html',
-  '/guides/pt/kepler-orbits-when.html',
-  '/guides/pt/kepler-orbits-step-by-step.html',
-  '/guides/pt/kepler-orbits-vs-alternatives.html',
-  '/guides/es/kepler-orbits-when.html',
-  '/guides/es/kepler-orbits-step-by-step.html',
-  '/guides/es/kepler-orbits-vs-alternatives.html',
-  '/guides/de/kepler-orbits-when.html',
-  '/guides/de/kepler-orbits-step-by-step.html',
-  '/guides/de/kepler-orbits-vs-alternatives.html',
-  '/guides/vi/kepler-orbits-when.html',
-  '/guides/vi/kepler-orbits-step-by-step.html',
-  '/guides/vi/kepler-orbits-vs-alternatives.html',
-  '/guides/id/kepler-orbits-when.html',
-  '/guides/id/kepler-orbits-step-by-step.html',
-  '/guides/id/kepler-orbits-vs-alternatives.html',
   // moon-calendar-3d companion guides (space-3d-discovery-loop fire4)
-  '/guides/moon-calendar-3d-when.html',
-  '/guides/moon-calendar-3d-step-by-step.html',
-  '/guides/moon-calendar-3d-vs-alternatives.html',
-  '/guides/pt/moon-calendar-3d-when.html',
-  '/guides/pt/moon-calendar-3d-step-by-step.html',
-  '/guides/pt/moon-calendar-3d-vs-alternatives.html',
-  '/guides/es/moon-calendar-3d-when.html',
-  '/guides/es/moon-calendar-3d-step-by-step.html',
-  '/guides/es/moon-calendar-3d-vs-alternatives.html',
-  '/guides/de/moon-calendar-3d-when.html',
-  '/guides/de/moon-calendar-3d-step-by-step.html',
-  '/guides/de/moon-calendar-3d-vs-alternatives.html',
-  '/guides/vi/moon-calendar-3d-when.html',
-  '/guides/vi/moon-calendar-3d-step-by-step.html',
-  '/guides/vi/moon-calendar-3d-vs-alternatives.html',
-  '/guides/id/moon-calendar-3d-when.html',
-  '/guides/id/moon-calendar-3d-step-by-step.html',
-  '/guides/id/moon-calendar-3d-vs-alternatives.html',
   // iss-orbit-tracker companion guides (space-3d-discovery-loop fire5)
-  '/guides/iss-orbit-tracker-when.html',
-  '/guides/iss-orbit-tracker-step-by-step.html',
-  '/guides/iss-orbit-tracker-vs-alternatives.html',
-  '/guides/pt/iss-orbit-tracker-when.html',
-  '/guides/pt/iss-orbit-tracker-step-by-step.html',
-  '/guides/pt/iss-orbit-tracker-vs-alternatives.html',
-  '/guides/es/iss-orbit-tracker-when.html',
-  '/guides/es/iss-orbit-tracker-step-by-step.html',
-  '/guides/es/iss-orbit-tracker-vs-alternatives.html',
-  '/guides/de/iss-orbit-tracker-when.html',
-  '/guides/de/iss-orbit-tracker-step-by-step.html',
-  '/guides/de/iss-orbit-tracker-vs-alternatives.html',
-  '/guides/vi/iss-orbit-tracker-when.html',
-  '/guides/vi/iss-orbit-tracker-step-by-step.html',
-  '/guides/vi/iss-orbit-tracker-vs-alternatives.html',
-  '/guides/id/iss-orbit-tracker-when.html',
-  '/guides/id/iss-orbit-tracker-step-by-step.html',
-  '/guides/id/iss-orbit-tracker-vs-alternatives.html',
   // lunar-eclipse companion guides (space-3d-discovery-loop fire6)
-  '/guides/lunar-eclipse-when.html',
-  '/guides/lunar-eclipse-step-by-step.html',
-  '/guides/lunar-eclipse-vs-alternatives.html',
-  '/guides/pt/lunar-eclipse-when.html',
-  '/guides/pt/lunar-eclipse-step-by-step.html',
-  '/guides/pt/lunar-eclipse-vs-alternatives.html',
-  '/guides/es/lunar-eclipse-when.html',
-  '/guides/es/lunar-eclipse-step-by-step.html',
-  '/guides/es/lunar-eclipse-vs-alternatives.html',
-  '/guides/de/lunar-eclipse-when.html',
-  '/guides/de/lunar-eclipse-step-by-step.html',
-  '/guides/de/lunar-eclipse-vs-alternatives.html',
-  '/guides/vi/lunar-eclipse-when.html',
-  '/guides/vi/lunar-eclipse-step-by-step.html',
-  '/guides/vi/lunar-eclipse-vs-alternatives.html',
-  '/guides/id/lunar-eclipse-when.html',
-  '/guides/id/lunar-eclipse-step-by-step.html',
-  '/guides/id/lunar-eclipse-vs-alternatives.html',
   // solar-eclipse companion guides (space-3d-discovery-loop fire7)
-  '/guides/solar-eclipse-when.html',
-  '/guides/solar-eclipse-step-by-step.html',
-  '/guides/solar-eclipse-vs-alternatives.html',
-  '/guides/pt/solar-eclipse-when.html',
-  '/guides/pt/solar-eclipse-step-by-step.html',
-  '/guides/pt/solar-eclipse-vs-alternatives.html',
-  '/guides/es/solar-eclipse-when.html',
-  '/guides/es/solar-eclipse-step-by-step.html',
-  '/guides/es/solar-eclipse-vs-alternatives.html',
-  '/guides/de/solar-eclipse-when.html',
-  '/guides/de/solar-eclipse-step-by-step.html',
-  '/guides/de/solar-eclipse-vs-alternatives.html',
-  '/guides/vi/solar-eclipse-when.html',
-  '/guides/vi/solar-eclipse-step-by-step.html',
-  '/guides/vi/solar-eclipse-vs-alternatives.html',
-  '/guides/id/solar-eclipse-when.html',
-  '/guides/id/solar-eclipse-step-by-step.html',
-  '/guides/id/solar-eclipse-vs-alternatives.html',
-  '/guides/planet-size-comparison-when.html',
-  '/guides/pt/planet-size-comparison-when.html',
-  '/guides/es/planet-size-comparison-when.html',
-  '/guides/de/planet-size-comparison-when.html',
-  '/guides/vi/planet-size-comparison-when.html',
-  '/guides/id/planet-size-comparison-when.html',
-  '/guides/planet-size-comparison-step-by-step.html',
-  '/guides/pt/planet-size-comparison-step-by-step.html',
-  '/guides/es/planet-size-comparison-step-by-step.html',
-  '/guides/de/planet-size-comparison-step-by-step.html',
-  '/guides/vi/planet-size-comparison-step-by-step.html',
-  '/guides/id/planet-size-comparison-step-by-step.html',
-  '/guides/planet-size-comparison-vs-alternatives.html',
-  '/guides/pt/planet-size-comparison-vs-alternatives.html',
-  '/guides/es/planet-size-comparison-vs-alternatives.html',
-  '/guides/de/planet-size-comparison-vs-alternatives.html',
-  '/guides/vi/planet-size-comparison-vs-alternatives.html',
-  '/guides/id/planet-size-comparison-vs-alternatives.html',
-  '/guides/star-lifecycle-when.html',
-  '/guides/pt/star-lifecycle-when.html',
-  '/guides/es/star-lifecycle-when.html',
-  '/guides/de/star-lifecycle-when.html',
-  '/guides/vi/star-lifecycle-when.html',
-  '/guides/id/star-lifecycle-when.html',
-  '/guides/star-lifecycle-step-by-step.html',
-  '/guides/pt/star-lifecycle-step-by-step.html',
-  '/guides/es/star-lifecycle-step-by-step.html',
-  '/guides/de/star-lifecycle-step-by-step.html',
-  '/guides/vi/star-lifecycle-step-by-step.html',
-  '/guides/id/star-lifecycle-step-by-step.html',
-  '/guides/star-lifecycle-vs-alternatives.html',
-  '/guides/pt/star-lifecycle-vs-alternatives.html',
-  '/guides/es/star-lifecycle-vs-alternatives.html',
-  '/guides/de/star-lifecycle-vs-alternatives.html',
-  '/guides/vi/star-lifecycle-vs-alternatives.html',
-  '/guides/id/star-lifecycle-vs-alternatives.html',
-  '/guides/exoplanet-transit-when.html',
-  '/guides/pt/exoplanet-transit-when.html',
-  '/guides/es/exoplanet-transit-when.html',
-  '/guides/de/exoplanet-transit-when.html',
-  '/guides/vi/exoplanet-transit-when.html',
-  '/guides/id/exoplanet-transit-when.html',
-  '/guides/exoplanet-transit-step-by-step.html',
-  '/guides/pt/exoplanet-transit-step-by-step.html',
-  '/guides/es/exoplanet-transit-step-by-step.html',
-  '/guides/de/exoplanet-transit-step-by-step.html',
-  '/guides/vi/exoplanet-transit-step-by-step.html',
-  '/guides/id/exoplanet-transit-step-by-step.html',
-  '/guides/exoplanet-transit-vs-alternatives.html',
-  '/guides/pt/exoplanet-transit-vs-alternatives.html',
-  '/guides/es/exoplanet-transit-vs-alternatives.html',
-  '/guides/de/exoplanet-transit-vs-alternatives.html',
-  '/guides/vi/exoplanet-transit-vs-alternatives.html',
-  '/guides/id/exoplanet-transit-vs-alternatives.html',
-  '/guides/tidal-locking-when.html',
-  '/guides/pt/tidal-locking-when.html',
-  '/guides/es/tidal-locking-when.html',
-  '/guides/de/tidal-locking-when.html',
-  '/guides/vi/tidal-locking-when.html',
-  '/guides/id/tidal-locking-when.html',
-  '/guides/tidal-locking-step-by-step.html',
-  '/guides/pt/tidal-locking-step-by-step.html',
-  '/guides/es/tidal-locking-step-by-step.html',
-  '/guides/de/tidal-locking-step-by-step.html',
-  '/guides/vi/tidal-locking-step-by-step.html',
-  '/guides/id/tidal-locking-step-by-step.html',
-  '/guides/tidal-locking-vs-alternatives.html',
-  '/guides/pt/tidal-locking-vs-alternatives.html',
-  '/guides/es/tidal-locking-vs-alternatives.html',
-  '/guides/de/tidal-locking-vs-alternatives.html',
-  '/guides/vi/tidal-locking-vs-alternatives.html',
-  '/guides/id/tidal-locking-vs-alternatives.html',
-  '/guides/asteroid-belt-when.html',
-  '/guides/pt/asteroid-belt-when.html',
-  '/guides/es/asteroid-belt-when.html',
-  '/guides/de/asteroid-belt-when.html',
-  '/guides/vi/asteroid-belt-when.html',
-  '/guides/id/asteroid-belt-when.html',
-  '/guides/asteroid-belt-step-by-step.html',
-  '/guides/pt/asteroid-belt-step-by-step.html',
-  '/guides/es/asteroid-belt-step-by-step.html',
-  '/guides/de/asteroid-belt-step-by-step.html',
-  '/guides/vi/asteroid-belt-step-by-step.html',
-  '/guides/id/asteroid-belt-step-by-step.html',
-  '/guides/asteroid-belt-vs-alternatives.html',
-  '/guides/pt/asteroid-belt-vs-alternatives.html',
-  '/guides/es/asteroid-belt-vs-alternatives.html',
-  '/guides/de/asteroid-belt-vs-alternatives.html',
-  '/guides/vi/asteroid-belt-vs-alternatives.html',
-  '/guides/id/asteroid-belt-vs-alternatives.html',
-  '/guides/comet-orbit-when.html',
-  '/guides/pt/comet-orbit-when.html',
-  '/guides/es/comet-orbit-when.html',
-  '/guides/de/comet-orbit-when.html',
-  '/guides/vi/comet-orbit-when.html',
-  '/guides/id/comet-orbit-when.html',
-  '/guides/comet-orbit-step-by-step.html',
-  '/guides/pt/comet-orbit-step-by-step.html',
-  '/guides/es/comet-orbit-step-by-step.html',
-  '/guides/de/comet-orbit-step-by-step.html',
-  '/guides/vi/comet-orbit-step-by-step.html',
-  '/guides/id/comet-orbit-step-by-step.html',
-  '/guides/comet-orbit-vs-alternatives.html',
-  '/guides/pt/comet-orbit-vs-alternatives.html',
-  '/guides/es/comet-orbit-vs-alternatives.html',
-  '/guides/de/comet-orbit-vs-alternatives.html',
-  '/guides/vi/comet-orbit-vs-alternatives.html',
-  '/guides/id/comet-orbit-vs-alternatives.html',
-  '/guides/seasons-earth-when.html',
-  '/guides/pt/seasons-earth-when.html',
-  '/guides/es/seasons-earth-when.html',
-  '/guides/de/seasons-earth-when.html',
-  '/guides/vi/seasons-earth-when.html',
-  '/guides/id/seasons-earth-when.html',
-  '/guides/seasons-earth-step-by-step.html',
-  '/guides/pt/seasons-earth-step-by-step.html',
-  '/guides/es/seasons-earth-step-by-step.html',
-  '/guides/de/seasons-earth-step-by-step.html',
-  '/guides/vi/seasons-earth-step-by-step.html',
-  '/guides/id/seasons-earth-step-by-step.html',
-  '/guides/seasons-earth-vs-alternatives.html',
-  '/guides/pt/seasons-earth-vs-alternatives.html',
-  '/guides/es/seasons-earth-vs-alternatives.html',
-  '/guides/de/seasons-earth-vs-alternatives.html',
-  '/guides/vi/seasons-earth-vs-alternatives.html',
-  '/guides/id/seasons-earth-vs-alternatives.html',
-  '/guides/retrograde-motion-when.html',
-  '/guides/pt/retrograde-motion-when.html',
-  '/guides/es/retrograde-motion-when.html',
-  '/guides/de/retrograde-motion-when.html',
-  '/guides/vi/retrograde-motion-when.html',
-  '/guides/id/retrograde-motion-when.html',
-  '/guides/retrograde-motion-step-by-step.html',
-  '/guides/pt/retrograde-motion-step-by-step.html',
-  '/guides/es/retrograde-motion-step-by-step.html',
-  '/guides/de/retrograde-motion-step-by-step.html',
-  '/guides/vi/retrograde-motion-step-by-step.html',
-  '/guides/id/retrograde-motion-step-by-step.html',
-  '/guides/retrograde-motion-vs-alternatives.html',
-  '/guides/pt/retrograde-motion-vs-alternatives.html',
-  '/guides/es/retrograde-motion-vs-alternatives.html',
-  '/guides/de/retrograde-motion-vs-alternatives.html',
-  '/guides/vi/retrograde-motion-vs-alternatives.html',
-  '/guides/id/retrograde-motion-vs-alternatives.html',
-  '/guides/milky-way-map-when.html',
-  '/guides/pt/milky-way-map-when.html',
-  '/guides/es/milky-way-map-when.html',
-  '/guides/de/milky-way-map-when.html',
-  '/guides/vi/milky-way-map-when.html',
-  '/guides/id/milky-way-map-when.html',
-  '/guides/milky-way-map-step-by-step.html',
-  '/guides/pt/milky-way-map-step-by-step.html',
-  '/guides/es/milky-way-map-step-by-step.html',
-  '/guides/de/milky-way-map-step-by-step.html',
-  '/guides/vi/milky-way-map-step-by-step.html',
-  '/guides/id/milky-way-map-step-by-step.html',
-  '/guides/milky-way-map-vs-alternatives.html',
-  '/guides/pt/milky-way-map-vs-alternatives.html',
-  '/guides/es/milky-way-map-vs-alternatives.html',
-  '/guides/de/milky-way-map-vs-alternatives.html',
-  '/guides/vi/milky-way-map-vs-alternatives.html',
-  '/guides/id/milky-way-map-vs-alternatives.html',
-  '/guides/lagrange-points-when.html',
-  '/guides/pt/lagrange-points-when.html',
-  '/guides/es/lagrange-points-when.html',
-  '/guides/de/lagrange-points-when.html',
-  '/guides/vi/lagrange-points-when.html',
-  '/guides/id/lagrange-points-when.html',
-  '/guides/lagrange-points-step-by-step.html',
-  '/guides/pt/lagrange-points-step-by-step.html',
-  '/guides/es/lagrange-points-step-by-step.html',
-  '/guides/de/lagrange-points-step-by-step.html',
-  '/guides/vi/lagrange-points-step-by-step.html',
-  '/guides/id/lagrange-points-step-by-step.html',
-  '/guides/lagrange-points-vs-alternatives.html',
-  '/guides/pt/lagrange-points-vs-alternatives.html',
-  '/guides/es/lagrange-points-vs-alternatives.html',
-  '/guides/de/lagrange-points-vs-alternatives.html',
-  '/guides/vi/lagrange-points-vs-alternatives.html',
-  '/guides/id/lagrange-points-vs-alternatives.html',
-  '/guides/neutron-star-pulsar-when.html',
-  '/guides/pt/neutron-star-pulsar-when.html',
-  '/guides/es/neutron-star-pulsar-when.html',
-  '/guides/de/neutron-star-pulsar-when.html',
-  '/guides/vi/neutron-star-pulsar-when.html',
-  '/guides/id/neutron-star-pulsar-when.html',
-  '/guides/neutron-star-pulsar-step-by-step.html',
-  '/guides/pt/neutron-star-pulsar-step-by-step.html',
-  '/guides/es/neutron-star-pulsar-step-by-step.html',
-  '/guides/de/neutron-star-pulsar-step-by-step.html',
-  '/guides/vi/neutron-star-pulsar-step-by-step.html',
-  '/guides/id/neutron-star-pulsar-step-by-step.html',
-  '/guides/neutron-star-pulsar-vs-alternatives.html',
-  '/guides/pt/neutron-star-pulsar-vs-alternatives.html',
-  '/guides/es/neutron-star-pulsar-vs-alternatives.html',
-  '/guides/de/neutron-star-pulsar-vs-alternatives.html',
-  '/guides/vi/neutron-star-pulsar-vs-alternatives.html',
-  '/guides/id/neutron-star-pulsar-vs-alternatives.html',
-  '/guides/gas-giant-atmosphere-when.html',
-  '/guides/pt/gas-giant-atmosphere-when.html',
-  '/guides/es/gas-giant-atmosphere-when.html',
-  '/guides/de/gas-giant-atmosphere-when.html',
-  '/guides/vi/gas-giant-atmosphere-when.html',
-  '/guides/id/gas-giant-atmosphere-when.html',
-  '/guides/gas-giant-atmosphere-step-by-step.html',
-  '/guides/pt/gas-giant-atmosphere-step-by-step.html',
-  '/guides/es/gas-giant-atmosphere-step-by-step.html',
-  '/guides/de/gas-giant-atmosphere-step-by-step.html',
-  '/guides/vi/gas-giant-atmosphere-step-by-step.html',
-  '/guides/id/gas-giant-atmosphere-step-by-step.html',
-  '/guides/gas-giant-atmosphere-vs-alternatives.html',
-  '/guides/pt/gas-giant-atmosphere-vs-alternatives.html',
-  '/guides/es/gas-giant-atmosphere-vs-alternatives.html',
-  '/guides/de/gas-giant-atmosphere-vs-alternatives.html',
-  '/guides/vi/gas-giant-atmosphere-vs-alternatives.html',
-  '/guides/id/gas-giant-atmosphere-vs-alternatives.html',
-  '/guides/orbital-resonance-when.html',
-  '/guides/pt/orbital-resonance-when.html',
-  '/guides/es/orbital-resonance-when.html',
-  '/guides/de/orbital-resonance-when.html',
-  '/guides/vi/orbital-resonance-when.html',
-  '/guides/id/orbital-resonance-when.html',
-  '/guides/orbital-resonance-step-by-step.html',
-  '/guides/pt/orbital-resonance-step-by-step.html',
-  '/guides/es/orbital-resonance-step-by-step.html',
-  '/guides/de/orbital-resonance-step-by-step.html',
-  '/guides/vi/orbital-resonance-step-by-step.html',
-  '/guides/id/orbital-resonance-step-by-step.html',
-  '/guides/orbital-resonance-vs-alternatives.html',
-  '/guides/pt/orbital-resonance-vs-alternatives.html',
-  '/guides/es/orbital-resonance-vs-alternatives.html',
-  '/guides/de/orbital-resonance-vs-alternatives.html',
-  '/guides/vi/orbital-resonance-vs-alternatives.html',
-  '/guides/id/orbital-resonance-vs-alternatives.html',
-  '/guides/stellar-magnitude-when.html',
-  '/guides/pt/stellar-magnitude-when.html',
-  '/guides/es/stellar-magnitude-when.html',
-  '/guides/de/stellar-magnitude-when.html',
-  '/guides/vi/stellar-magnitude-when.html',
-  '/guides/id/stellar-magnitude-when.html',
-  '/guides/stellar-magnitude-step-by-step.html',
-  '/guides/pt/stellar-magnitude-step-by-step.html',
-  '/guides/es/stellar-magnitude-step-by-step.html',
-  '/guides/de/stellar-magnitude-step-by-step.html',
-  '/guides/vi/stellar-magnitude-step-by-step.html',
-  '/guides/id/stellar-magnitude-step-by-step.html',
-  '/guides/stellar-magnitude-vs-alternatives.html',
-  '/guides/pt/stellar-magnitude-vs-alternatives.html',
-  '/guides/es/stellar-magnitude-vs-alternatives.html',
-  '/guides/de/stellar-magnitude-vs-alternatives.html',
-  '/guides/vi/stellar-magnitude-vs-alternatives.html',
-  '/guides/id/stellar-magnitude-vs-alternatives.html',
-  '/guides/parallax-distance-when.html',
-  '/guides/pt/parallax-distance-when.html',
-  '/guides/es/parallax-distance-when.html',
-  '/guides/de/parallax-distance-when.html',
-  '/guides/vi/parallax-distance-when.html',
-  '/guides/id/parallax-distance-when.html',
-  '/guides/parallax-distance-step-by-step.html',
-  '/guides/pt/parallax-distance-step-by-step.html',
-  '/guides/es/parallax-distance-step-by-step.html',
-  '/guides/de/parallax-distance-step-by-step.html',
-  '/guides/vi/parallax-distance-step-by-step.html',
-  '/guides/id/parallax-distance-step-by-step.html',
-  '/guides/parallax-distance-vs-alternatives.html',
-  '/guides/pt/parallax-distance-vs-alternatives.html',
-  '/guides/es/parallax-distance-vs-alternatives.html',
-  '/guides/de/parallax-distance-vs-alternatives.html',
-  '/guides/vi/parallax-distance-vs-alternatives.html',
-  '/guides/id/parallax-distance-vs-alternatives.html',
-  '/guides/ecliptic-zodiac-when.html',
-  '/guides/pt/ecliptic-zodiac-when.html',
-  '/guides/es/ecliptic-zodiac-when.html',
-  '/guides/de/ecliptic-zodiac-when.html',
-  '/guides/vi/ecliptic-zodiac-when.html',
-  '/guides/id/ecliptic-zodiac-when.html',
-  '/guides/ecliptic-zodiac-step-by-step.html',
-  '/guides/pt/ecliptic-zodiac-step-by-step.html',
-  '/guides/es/ecliptic-zodiac-step-by-step.html',
-  '/guides/de/ecliptic-zodiac-step-by-step.html',
-  '/guides/vi/ecliptic-zodiac-step-by-step.html',
-  '/guides/id/ecliptic-zodiac-step-by-step.html',
-  '/guides/ecliptic-zodiac-vs-alternatives.html',
-  '/guides/pt/ecliptic-zodiac-vs-alternatives.html',
-  '/guides/es/ecliptic-zodiac-vs-alternatives.html',
-  '/guides/de/ecliptic-zodiac-vs-alternatives.html',
-  '/guides/vi/ecliptic-zodiac-vs-alternatives.html',
-  '/guides/id/ecliptic-zodiac-vs-alternatives.html',
-  '/guides/gravity-well-when.html',
-  '/guides/pt/gravity-well-when.html',
-  '/guides/es/gravity-well-when.html',
-  '/guides/de/gravity-well-when.html',
-  '/guides/vi/gravity-well-when.html',
-  '/guides/id/gravity-well-when.html',
-  '/guides/gravity-well-step-by-step.html',
-  '/guides/pt/gravity-well-step-by-step.html',
-  '/guides/es/gravity-well-step-by-step.html',
-  '/guides/de/gravity-well-step-by-step.html',
-  '/guides/vi/gravity-well-step-by-step.html',
-  '/guides/id/gravity-well-step-by-step.html',
-  '/guides/gravity-well-vs-alternatives.html',
-  '/guides/pt/gravity-well-vs-alternatives.html',
-  '/guides/es/gravity-well-vs-alternatives.html',
-  '/guides/de/gravity-well-vs-alternatives.html',
-  '/guides/vi/gravity-well-vs-alternatives.html',
-  '/guides/id/gravity-well-vs-alternatives.html',
-  '/guides/constellation-sphere-when.html',
-  '/guides/pt/constellation-sphere-when.html',
-  '/guides/es/constellation-sphere-when.html',
-  '/guides/de/constellation-sphere-when.html',
-  '/guides/vi/constellation-sphere-when.html',
-  '/guides/id/constellation-sphere-when.html',
-  '/guides/constellation-sphere-step-by-step.html',
-  '/guides/pt/constellation-sphere-step-by-step.html',
-  '/guides/es/constellation-sphere-step-by-step.html',
-  '/guides/de/constellation-sphere-step-by-step.html',
-  '/guides/vi/constellation-sphere-step-by-step.html',
-  '/guides/id/constellation-sphere-step-by-step.html',
-  '/guides/constellation-sphere-vs-alternatives.html',
-  '/guides/pt/constellation-sphere-vs-alternatives.html',
-  '/guides/es/constellation-sphere-vs-alternatives.html',
-  '/guides/de/constellation-sphere-vs-alternatives.html',
-  '/guides/vi/constellation-sphere-vs-alternatives.html',
-  '/guides/id/constellation-sphere-vs-alternatives.html',
-  '/guides/black-body-radiation-when.html',
-  '/guides/pt/black-body-radiation-when.html',
-  '/guides/es/black-body-radiation-when.html',
-  '/guides/de/black-body-radiation-when.html',
-  '/guides/vi/black-body-radiation-when.html',
-  '/guides/id/black-body-radiation-when.html',
-  '/guides/black-body-radiation-step-by-step.html',
-  '/guides/pt/black-body-radiation-step-by-step.html',
-  '/guides/es/black-body-radiation-step-by-step.html',
-  '/guides/de/black-body-radiation-step-by-step.html',
-  '/guides/vi/black-body-radiation-step-by-step.html',
-  '/guides/id/black-body-radiation-step-by-step.html',
-  '/guides/black-body-radiation-vs-alternatives.html',
-  '/guides/pt/black-body-radiation-vs-alternatives.html',
-  '/guides/es/black-body-radiation-vs-alternatives.html',
-  '/guides/de/black-body-radiation-vs-alternatives.html',
-  '/guides/vi/black-body-radiation-vs-alternatives.html',
-  '/guides/id/black-body-radiation-vs-alternatives.html',
-  '/guides/sidereal-vs-solar-day-when.html',
-  '/guides/pt/sidereal-vs-solar-day-when.html',
-  '/guides/es/sidereal-vs-solar-day-when.html',
-  '/guides/de/sidereal-vs-solar-day-when.html',
-  '/guides/vi/sidereal-vs-solar-day-when.html',
-  '/guides/id/sidereal-vs-solar-day-when.html',
-  '/guides/sidereal-vs-solar-day-step-by-step.html',
-  '/guides/pt/sidereal-vs-solar-day-step-by-step.html',
-  '/guides/es/sidereal-vs-solar-day-step-by-step.html',
-  '/guides/de/sidereal-vs-solar-day-step-by-step.html',
-  '/guides/vi/sidereal-vs-solar-day-step-by-step.html',
-  '/guides/id/sidereal-vs-solar-day-step-by-step.html',
-  '/guides/sidereal-vs-solar-day-vs-alternatives.html',
-  '/guides/pt/sidereal-vs-solar-day-vs-alternatives.html',
-  '/guides/es/sidereal-vs-solar-day-vs-alternatives.html',
-  '/guides/de/sidereal-vs-solar-day-vs-alternatives.html',
-  '/guides/vi/sidereal-vs-solar-day-vs-alternatives.html',
-  '/guides/id/sidereal-vs-solar-day-vs-alternatives.html',
-  '/guides/aurora-when.html',
-  '/guides/pt/aurora-when.html',
-  '/guides/es/aurora-when.html',
-  '/guides/de/aurora-when.html',
-  '/guides/vi/aurora-when.html',
-  '/guides/id/aurora-when.html',
-  '/guides/aurora-step-by-step.html',
-  '/guides/pt/aurora-step-by-step.html',
-  '/guides/es/aurora-step-by-step.html',
-  '/guides/de/aurora-step-by-step.html',
-  '/guides/vi/aurora-step-by-step.html',
-  '/guides/id/aurora-step-by-step.html',
-  '/guides/aurora-vs-alternatives.html',
-  '/guides/pt/aurora-vs-alternatives.html',
-  '/guides/es/aurora-vs-alternatives.html',
-  '/guides/de/aurora-vs-alternatives.html',
-  '/guides/vi/aurora-vs-alternatives.html',
-  '/guides/id/aurora-vs-alternatives.html',
-  '/guides/mars-terrain-when.html',
-  '/guides/pt/mars-terrain-when.html',
-  '/guides/es/mars-terrain-when.html',
-  '/guides/de/mars-terrain-when.html',
-  '/guides/vi/mars-terrain-when.html',
-  '/guides/id/mars-terrain-when.html',
-  '/guides/mars-terrain-step-by-step.html',
-  '/guides/pt/mars-terrain-step-by-step.html',
-  '/guides/es/mars-terrain-step-by-step.html',
-  '/guides/de/mars-terrain-step-by-step.html',
-  '/guides/vi/mars-terrain-step-by-step.html',
-  '/guides/id/mars-terrain-step-by-step.html',
-  '/guides/mars-terrain-vs-alternatives.html',
-  '/guides/pt/mars-terrain-vs-alternatives.html',
-  '/guides/es/mars-terrain-vs-alternatives.html',
-  '/guides/de/mars-terrain-vs-alternatives.html',
-  '/guides/vi/mars-terrain-vs-alternatives.html',
-  '/guides/id/mars-terrain-vs-alternatives.html',
-  '/guides/redshift-doppler-when.html',
-  '/guides/pt/redshift-doppler-when.html',
-  '/guides/es/redshift-doppler-when.html',
-  '/guides/de/redshift-doppler-when.html',
-  '/guides/vi/redshift-doppler-when.html',
-  '/guides/id/redshift-doppler-when.html',
-  '/guides/redshift-doppler-step-by-step.html',
-  '/guides/pt/redshift-doppler-step-by-step.html',
-  '/guides/es/redshift-doppler-step-by-step.html',
-  '/guides/de/redshift-doppler-step-by-step.html',
-  '/guides/vi/redshift-doppler-step-by-step.html',
-  '/guides/id/redshift-doppler-step-by-step.html',
-  '/guides/redshift-doppler-vs-alternatives.html',
-  '/guides/pt/redshift-doppler-vs-alternatives.html',
-  '/guides/es/redshift-doppler-vs-alternatives.html',
-  '/guides/de/redshift-doppler-vs-alternatives.html',
-  '/guides/vi/redshift-doppler-vs-alternatives.html',
-  '/guides/id/redshift-doppler-vs-alternatives.html',
-  '/guides/hohmann-transfer-when.html',
-  '/guides/pt/hohmann-transfer-when.html',
-  '/guides/es/hohmann-transfer-when.html',
-  '/guides/de/hohmann-transfer-when.html',
-  '/guides/vi/hohmann-transfer-when.html',
-  '/guides/id/hohmann-transfer-when.html',
-  '/guides/hohmann-transfer-step-by-step.html',
-  '/guides/pt/hohmann-transfer-step-by-step.html',
-  '/guides/es/hohmann-transfer-step-by-step.html',
-  '/guides/de/hohmann-transfer-step-by-step.html',
-  '/guides/vi/hohmann-transfer-step-by-step.html',
-  '/guides/id/hohmann-transfer-step-by-step.html',
-  '/guides/hohmann-transfer-vs-alternatives.html',
-  '/guides/pt/hohmann-transfer-vs-alternatives.html',
-  '/guides/es/hohmann-transfer-vs-alternatives.html',
-  '/guides/de/hohmann-transfer-vs-alternatives.html',
-  '/guides/vi/hohmann-transfer-vs-alternatives.html',
-  '/guides/id/hohmann-transfer-vs-alternatives.html',
-  '/guides/binary-star-system-step-by-step.html',
-  '/guides/pt/binary-star-system-step-by-step.html',
-  '/guides/es/binary-star-system-step-by-step.html',
-  '/guides/de/binary-star-system-step-by-step.html',
-  '/guides/vi/binary-star-system-step-by-step.html',
-  '/guides/id/binary-star-system-step-by-step.html',
-  '/guides/binary-star-system-when.html',
-  '/guides/pt/binary-star-system-when.html',
-  '/guides/es/binary-star-system-when.html',
-  '/guides/de/binary-star-system-when.html',
-  '/guides/vi/binary-star-system-when.html',
-  '/guides/id/binary-star-system-when.html',
-  '/guides/binary-star-system-vs-alternatives.html',
-  '/guides/pt/binary-star-system-vs-alternatives.html',
-  '/guides/es/binary-star-system-vs-alternatives.html',
-  '/guides/de/binary-star-system-vs-alternatives.html',
-  '/guides/vi/binary-star-system-vs-alternatives.html',
-  '/guides/id/binary-star-system-vs-alternatives.html',
-  '/guides/galilean-moons-step-by-step.html',
-  '/guides/pt/galilean-moons-step-by-step.html',
-  '/guides/es/galilean-moons-step-by-step.html',
-  '/guides/de/galilean-moons-step-by-step.html',
-  '/guides/vi/galilean-moons-step-by-step.html',
-  '/guides/id/galilean-moons-step-by-step.html',
-  '/guides/galilean-moons-when.html',
-  '/guides/pt/galilean-moons-when.html',
-  '/guides/es/galilean-moons-when.html',
-  '/guides/de/galilean-moons-when.html',
-  '/guides/vi/galilean-moons-when.html',
-  '/guides/id/galilean-moons-when.html',
-  '/guides/galilean-moons-vs-alternatives.html',
-  '/guides/pt/galilean-moons-vs-alternatives.html',
-  '/guides/es/galilean-moons-vs-alternatives.html',
-  '/guides/de/galilean-moons-vs-alternatives.html',
-  '/guides/vi/galilean-moons-vs-alternatives.html',
-  '/guides/id/galilean-moons-vs-alternatives.html',
-  '/guides/tides-earth-moon-step-by-step.html',
-  '/guides/pt/tides-earth-moon-step-by-step.html',
-  '/guides/es/tides-earth-moon-step-by-step.html',
-  '/guides/de/tides-earth-moon-step-by-step.html',
-  '/guides/vi/tides-earth-moon-step-by-step.html',
-  '/guides/id/tides-earth-moon-step-by-step.html',
-  '/guides/tides-earth-moon-when.html',
-  '/guides/pt/tides-earth-moon-when.html',
-  '/guides/es/tides-earth-moon-when.html',
-  '/guides/de/tides-earth-moon-when.html',
-  '/guides/vi/tides-earth-moon-when.html',
-  '/guides/id/tides-earth-moon-when.html',
-  '/guides/tides-earth-moon-vs-alternatives.html',
-  '/guides/pt/tides-earth-moon-vs-alternatives.html',
-  '/guides/es/tides-earth-moon-vs-alternatives.html',
-  '/guides/de/tides-earth-moon-vs-alternatives.html',
-  '/guides/vi/tides-earth-moon-vs-alternatives.html',
-  '/guides/id/tides-earth-moon-vs-alternatives.html',
-  '/guides/solar-wind-heliosphere-step-by-step.html',
-  '/guides/pt/solar-wind-heliosphere-step-by-step.html',
-  '/guides/es/solar-wind-heliosphere-step-by-step.html',
-  '/guides/de/solar-wind-heliosphere-step-by-step.html',
-  '/guides/vi/solar-wind-heliosphere-step-by-step.html',
-  '/guides/id/solar-wind-heliosphere-step-by-step.html',
-  '/guides/solar-wind-heliosphere-when.html',
-  '/guides/pt/solar-wind-heliosphere-when.html',
-  '/guides/es/solar-wind-heliosphere-when.html',
-  '/guides/de/solar-wind-heliosphere-when.html',
-  '/guides/vi/solar-wind-heliosphere-when.html',
-  '/guides/id/solar-wind-heliosphere-when.html',
-  '/guides/solar-wind-heliosphere-vs-alternatives.html',
-  '/guides/pt/solar-wind-heliosphere-vs-alternatives.html',
-  '/guides/es/solar-wind-heliosphere-vs-alternatives.html',
-  '/guides/de/solar-wind-heliosphere-vs-alternatives.html',
-  '/guides/vi/solar-wind-heliosphere-vs-alternatives.html',
-  '/guides/id/solar-wind-heliosphere-vs-alternatives.html',
-  '/guides/escape-velocity-step-by-step.html',
-  '/guides/pt/escape-velocity-step-by-step.html',
-  '/guides/es/escape-velocity-step-by-step.html',
-  '/guides/de/escape-velocity-step-by-step.html',
-  '/guides/vi/escape-velocity-step-by-step.html',
-  '/guides/id/escape-velocity-step-by-step.html',
-  '/guides/escape-velocity-when.html',
-  '/guides/pt/escape-velocity-when.html',
-  '/guides/es/escape-velocity-when.html',
-  '/guides/de/escape-velocity-when.html',
-  '/guides/vi/escape-velocity-when.html',
-  '/guides/id/escape-velocity-when.html',
-  '/guides/escape-velocity-vs-alternatives.html',
-  '/guides/pt/escape-velocity-vs-alternatives.html',
-  '/guides/es/escape-velocity-vs-alternatives.html',
-  '/guides/de/escape-velocity-vs-alternatives.html',
-  '/guides/vi/escape-velocity-vs-alternatives.html',
-  '/guides/id/escape-velocity-vs-alternatives.html',
-  '/guides/habitable-zone-step-by-step.html',
-  '/guides/pt/habitable-zone-step-by-step.html',
-  '/guides/es/habitable-zone-step-by-step.html',
-  '/guides/de/habitable-zone-step-by-step.html',
-  '/guides/vi/habitable-zone-step-by-step.html',
-  '/guides/id/habitable-zone-step-by-step.html',
-  '/guides/habitable-zone-when.html',
-  '/guides/pt/habitable-zone-when.html',
-  '/guides/es/habitable-zone-when.html',
-  '/guides/de/habitable-zone-when.html',
-  '/guides/vi/habitable-zone-when.html',
-  '/guides/id/habitable-zone-when.html',
-  '/guides/habitable-zone-vs-alternatives.html',
-  '/guides/pt/habitable-zone-vs-alternatives.html',
-  '/guides/es/habitable-zone-vs-alternatives.html',
-  '/guides/de/habitable-zone-vs-alternatives.html',
-  '/guides/vi/habitable-zone-vs-alternatives.html',
-  '/guides/id/habitable-zone-vs-alternatives.html',
-  '/guides/cosmic-distance-ladder-step-by-step.html',
-  '/guides/pt/cosmic-distance-ladder-step-by-step.html',
-  '/guides/es/cosmic-distance-ladder-step-by-step.html',
-  '/guides/de/cosmic-distance-ladder-step-by-step.html',
-  '/guides/vi/cosmic-distance-ladder-step-by-step.html',
-  '/guides/id/cosmic-distance-ladder-step-by-step.html',
-  '/guides/cosmic-distance-ladder-when.html',
-  '/guides/pt/cosmic-distance-ladder-when.html',
-  '/guides/es/cosmic-distance-ladder-when.html',
-  '/guides/de/cosmic-distance-ladder-when.html',
-  '/guides/vi/cosmic-distance-ladder-when.html',
-  '/guides/id/cosmic-distance-ladder-when.html',
-  '/guides/cosmic-distance-ladder-vs-alternatives.html',
-  '/guides/pt/cosmic-distance-ladder-vs-alternatives.html',
-  '/guides/es/cosmic-distance-ladder-vs-alternatives.html',
-  '/guides/de/cosmic-distance-ladder-vs-alternatives.html',
-  '/guides/vi/cosmic-distance-ladder-vs-alternatives.html',
-  '/guides/id/cosmic-distance-ladder-vs-alternatives.html',
-  '/guides/precession-equinoxes-step-by-step.html',
-  '/guides/pt/precession-equinoxes-step-by-step.html',
-  '/guides/es/precession-equinoxes-step-by-step.html',
-  '/guides/de/precession-equinoxes-step-by-step.html',
-  '/guides/vi/precession-equinoxes-step-by-step.html',
-  '/guides/id/precession-equinoxes-step-by-step.html',
-  '/guides/precession-equinoxes-when.html',
-  '/guides/pt/precession-equinoxes-when.html',
-  '/guides/es/precession-equinoxes-when.html',
-  '/guides/de/precession-equinoxes-when.html',
-  '/guides/vi/precession-equinoxes-when.html',
-  '/guides/id/precession-equinoxes-when.html',
-  '/guides/precession-equinoxes-vs-alternatives.html',
-  '/guides/pt/precession-equinoxes-vs-alternatives.html',
-  '/guides/es/precession-equinoxes-vs-alternatives.html',
-  '/guides/de/precession-equinoxes-vs-alternatives.html',
-  '/guides/vi/precession-equinoxes-vs-alternatives.html',
-  '/guides/id/precession-equinoxes-vs-alternatives.html',
-  '/guides/hr-diagram-step-by-step.html',
-  '/guides/pt/hr-diagram-step-by-step.html',
-  '/guides/es/hr-diagram-step-by-step.html',
-  '/guides/de/hr-diagram-step-by-step.html',
-  '/guides/vi/hr-diagram-step-by-step.html',
-  '/guides/id/hr-diagram-step-by-step.html',
-  '/guides/hr-diagram-when.html',
-  '/guides/pt/hr-diagram-when.html',
-  '/guides/es/hr-diagram-when.html',
-  '/guides/de/hr-diagram-when.html',
-  '/guides/vi/hr-diagram-when.html',
-  '/guides/id/hr-diagram-when.html',
-  '/guides/hr-diagram-vs-alternatives.html',
-  '/guides/pt/hr-diagram-vs-alternatives.html',
-  '/guides/es/hr-diagram-vs-alternatives.html',
-  '/guides/de/hr-diagram-vs-alternatives.html',
-  '/guides/vi/hr-diagram-vs-alternatives.html',
-  '/guides/id/hr-diagram-vs-alternatives.html',
-  '/guides/sun-structure-step-by-step.html',
-  '/guides/pt/sun-structure-step-by-step.html',
-  '/guides/es/sun-structure-step-by-step.html',
-  '/guides/de/sun-structure-step-by-step.html',
-  '/guides/vi/sun-structure-step-by-step.html',
-  '/guides/id/sun-structure-step-by-step.html',
-  '/guides/sun-structure-when.html',
-  '/guides/pt/sun-structure-when.html',
-  '/guides/es/sun-structure-when.html',
-  '/guides/de/sun-structure-when.html',
-  '/guides/vi/sun-structure-when.html',
-  '/guides/id/sun-structure-when.html',
-  '/guides/sun-structure-vs-alternatives.html',
-  '/guides/pt/sun-structure-vs-alternatives.html',
-  '/guides/es/sun-structure-vs-alternatives.html',
-  '/guides/de/sun-structure-vs-alternatives.html',
-  '/guides/vi/sun-structure-vs-alternatives.html',
-  '/guides/id/sun-structure-vs-alternatives.html',
-  '/guides/orbital-velocity-step-by-step.html',
-  '/guides/pt/orbital-velocity-step-by-step.html',
-  '/guides/es/orbital-velocity-step-by-step.html',
-  '/guides/de/orbital-velocity-step-by-step.html',
-  '/guides/vi/orbital-velocity-step-by-step.html',
-  '/guides/id/orbital-velocity-step-by-step.html',
-  '/guides/orbital-velocity-when.html',
-  '/guides/pt/orbital-velocity-when.html',
-  '/guides/es/orbital-velocity-when.html',
-  '/guides/de/orbital-velocity-when.html',
-  '/guides/vi/orbital-velocity-when.html',
-  '/guides/id/orbital-velocity-when.html',
-  '/guides/orbital-velocity-vs-alternatives.html',
-  '/guides/pt/orbital-velocity-vs-alternatives.html',
-  '/guides/es/orbital-velocity-vs-alternatives.html',
-  '/guides/de/orbital-velocity-vs-alternatives.html',
-  '/guides/vi/orbital-velocity-vs-alternatives.html',
-  '/guides/id/orbital-velocity-vs-alternatives.html',
-  '/guides/de/earth-magnetosphere-vs-alternatives.html',
-  '/guides/id/earth-magnetosphere-vs-alternatives.html',
-  '/guides/vi/earth-magnetosphere-vs-alternatives.html',
-  '/guides/es/earth-magnetosphere-vs-alternatives.html',
-  '/guides/pt/earth-magnetosphere-vs-alternatives.html',
-  '/guides/earth-magnetosphere-vs-alternatives.html',
-  '/guides/de/earth-magnetosphere-when.html',
-  '/guides/id/earth-magnetosphere-when.html',
-  '/guides/vi/earth-magnetosphere-when.html',
-  '/guides/es/earth-magnetosphere-when.html',
-  '/guides/pt/earth-magnetosphere-when.html',
-  '/guides/earth-magnetosphere-when.html',
-  '/guides/de/earth-magnetosphere-step-by-step.html',
-  '/guides/id/earth-magnetosphere-step-by-step.html',
-  '/guides/vi/earth-magnetosphere-step-by-step.html',
-  '/guides/es/earth-magnetosphere-step-by-step.html',
-  '/guides/pt/earth-magnetosphere-step-by-step.html',
-  '/guides/earth-magnetosphere-step-by-step.html',
   // play-fps-in-browser-step-by-step locale fanout pt/es/de/vi/id
   '/guides/play-fps-in-browser-when.html',
   '/guides/play-fps-in-browser-step-by-step.html',
   '/guides/play-fps-in-browser-vs-alternatives.html',
   // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
   // per runbook 4b).
-  '/guides/pt/play-fps-in-browser-step-by-step.html',
-  '/guides/es/play-fps-in-browser-step-by-step.html',
-  '/guides/de/play-fps-in-browser-step-by-step.html',
-  '/guides/vi/play-fps-in-browser-step-by-step.html',
-  '/guides/id/play-fps-in-browser-step-by-step.html',
   // play-fps-in-browser-when + -vs-alternatives locale fanout pt/es/de/vi/id
   // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
   // per runbook 4b - closes the gap the comment above used to document).
-  '/guides/pt/play-fps-in-browser-when.html',
-  '/guides/es/play-fps-in-browser-when.html',
-  '/guides/de/play-fps-in-browser-when.html',
-  '/guides/vi/play-fps-in-browser-when.html',
-  '/guides/id/play-fps-in-browser-when.html',
-  '/guides/pt/play-fps-in-browser-vs-alternatives.html',
-  '/guides/es/play-fps-in-browser-vs-alternatives.html',
-  '/guides/de/play-fps-in-browser-vs-alternatives.html',
-  '/guides/vi/play-fps-in-browser-vs-alternatives.html',
-  '/guides/id/play-fps-in-browser-vs-alternatives.html',
   // character-counter guide locale fanout (new-tool-discovery-loop-runbook,
   // LEAN one-off fire): registers the 3 pre-existing EN angles (previously
   // missing from GUIDE_ROUTES despite being live in JSP_BY_ROUTE) plus the
@@ -9562,6 +8136,7 @@ export const ALIAS_ROUTES = {
   '/chelyabinsk-meteor.html': '/space-3d/chelyabinsk-meteor.html',
   '/enceladus-geysers.html': '/space-3d/enceladus-geysers.html',
   '/phobos-stickney.html': '/space-3d/phobos-stickney.html',
+  '/vesta-rheasilvia.html': '/space-3d/vesta-rheasilvia.html',
   '/linux-online.html': '/utility-tools/linux-online.html',
   '/online-linux-terminal.html': '/utility-tools/linux-online.html',
   '/linux-emulator-online.html': '/utility-tools/linux-online.html',
@@ -10056,6 +8631,7 @@ export const JSP_BY_ROUTE = {
   '/news/vi/7-zip-rar5-motw-bypass.html': 'news/vi/7-zip-rar5-motw-bypass.jsp',
   '/news/id/7-zip-rar5-motw-bypass.html': 'news/id/7-zip-rar5-motw-bypass.jsp',
   '/news/de/7-zip-rar5-motw-bypass.html': 'news/de/7-zip-rar5-motw-bypass.jsp',
+  '/news/adobe-acrobat-apsb26-63.html': 'news/adobe-acrobat-apsb26-63.jsp',
   '/news/pt/fat32-four-gib-file-limit.html': 'news/pt/fat32-four-gib-file-limit.jsp',
   '/news/es/fat32-four-gib-file-limit.html': 'news/es/fat32-four-gib-file-limit.jsp',
   '/news/vi/fat32-four-gib-file-limit.html': 'news/vi/fat32-four-gib-file-limit.jsp',
@@ -13570,6 +12146,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/tylosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/tylosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/tylosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/tylosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/tylosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/tylosaurus-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire121 (2026-07-19): how-to-view-gorgosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-gorgosaurus-in-3d.html': 'guide/how-to-view-gorgosaurus-in-3d.jsp',
+  '/guides/pt/how-to-view-gorgosaurus-in-3d.html': 'guide/pt/how-to-view-gorgosaurus-in-3d.jsp',
+  '/guides/es/how-to-view-gorgosaurus-in-3d.html': 'guide/es/how-to-view-gorgosaurus-in-3d.jsp',
+  '/guides/vi/how-to-view-gorgosaurus-in-3d.html': 'guide/vi/how-to-view-gorgosaurus-in-3d.jsp',
+  '/guides/id/how-to-view-gorgosaurus-in-3d.html': 'guide/id/how-to-view-gorgosaurus-in-3d.jsp',
+  '/guides/de/how-to-view-gorgosaurus-in-3d.html': 'guide/de/how-to-view-gorgosaurus-in-3d.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
@@ -14057,6 +12641,7 @@ export const JSP_BY_ROUTE = {
   '/space-3d/chelyabinsk-meteor.html': 'space/chelyabinsk-meteor.jsp',
   '/space-3d/enceladus-geysers.html': 'space/enceladus-geysers.jsp',
   '/space-3d/phobos-stickney.html': 'space/phobos-stickney.jsp',
+  '/space-3d/vesta-rheasilvia.html': 'space/vesta-rheasilvia.jsp',
   '/guides/escape-velocity-step-by-step.html': 'guide/escape-velocity-step-by-step.jsp',
   '/guides/pt/escape-velocity-step-by-step.html': 'guide/pt/escape-velocity-step-by-step.jsp',
   '/guides/es/escape-velocity-step-by-step.html': 'guide/es/escape-velocity-step-by-step.jsp',
@@ -14253,6 +12838,7 @@ export const JSP_BY_ROUTE = {
   '/guides/chelyabinsk-meteor-vs-alternatives.html': 'guide/chelyabinsk-meteor-vs-alternatives.jsp',
   '/guides/enceladus-geysers-vs-alternatives.html': 'guide/enceladus-geysers-vs-alternatives.jsp',
   '/guides/phobos-stickney-vs-alternatives.html': 'guide/phobos-stickney-vs-alternatives.jsp',
+  '/guides/vesta-rheasilvia-vs-alternatives.html': 'guide/vesta-rheasilvia-vs-alternatives.jsp',
   '/guides/comet-tail-types-when.html': 'guide/comet-tail-types-when.jsp',
   '/guides/protoplanetary-disk-when.html': 'guide/protoplanetary-disk-when.jsp',
   '/guides/occultation-lunar-when.html': 'guide/occultation-lunar-when.jsp',
@@ -14272,6 +12858,7 @@ export const JSP_BY_ROUTE = {
   '/guides/chelyabinsk-meteor-when.html': 'guide/chelyabinsk-meteor-when.jsp',
   '/guides/enceladus-geysers-when.html': 'guide/enceladus-geysers-when.jsp',
   '/guides/phobos-stickney-when.html': 'guide/phobos-stickney-when.jsp',
+  '/guides/vesta-rheasilvia-when.html': 'guide/vesta-rheasilvia-when.jsp',
   '/guides/comet-tail-types-step-by-step.html': 'guide/comet-tail-types-step-by-step.jsp',
   '/guides/protoplanetary-disk-step-by-step.html': 'guide/protoplanetary-disk-step-by-step.jsp',
   '/guides/occultation-lunar-step-by-step.html': 'guide/occultation-lunar-step-by-step.jsp',
@@ -14291,6 +12878,7 @@ export const JSP_BY_ROUTE = {
   '/guides/chelyabinsk-meteor-step-by-step.html': 'guide/chelyabinsk-meteor-step-by-step.jsp',
   '/guides/enceladus-geysers-step-by-step.html': 'guide/enceladus-geysers-step-by-step.jsp',
   '/guides/phobos-stickney-step-by-step.html': 'guide/phobos-stickney-step-by-step.jsp',
+  '/guides/vesta-rheasilvia-step-by-step.html': 'guide/vesta-rheasilvia-step-by-step.jsp',
   '/guides/shepherd-moons-when.html': 'guide/shepherd-moons-when.jsp',
   '/guides/shepherd-moons-step-by-step.html': 'guide/shepherd-moons-step-by-step.jsp',
   '/guides/venus-phases-galileo-when.html': 'guide/venus-phases-galileo-when.jsp',
@@ -14479,6 +13067,7 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/chelyabinsk-meteor-vs-alternatives.html': 'guide/pt/chelyabinsk-meteor-vs-alternatives.jsp',
   '/guides/pt/enceladus-geysers-vs-alternatives.html': 'guide/pt/enceladus-geysers-vs-alternatives.jsp',
   '/guides/pt/phobos-stickney-vs-alternatives.html': 'guide/pt/phobos-stickney-vs-alternatives.jsp',
+  '/guides/pt/vesta-rheasilvia-vs-alternatives.html': 'guide/pt/vesta-rheasilvia-vs-alternatives.jsp',
   '/guides/pt/kuiper-belt-oort-cloud-when.html': 'guide/pt/kuiper-belt-oort-cloud-when.jsp',
   '/guides/pt/jupiter-magnetosphere-when.html': 'guide/pt/jupiter-magnetosphere-when.jsp',
   '/guides/pt/light-cone-when.html': 'guide/pt/light-cone-when.jsp',
@@ -14542,6 +13131,7 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/chelyabinsk-meteor-when.html': 'guide/pt/chelyabinsk-meteor-when.jsp',
   '/guides/pt/enceladus-geysers-when.html': 'guide/pt/enceladus-geysers-when.jsp',
   '/guides/pt/phobos-stickney-when.html': 'guide/pt/phobos-stickney-when.jsp',
+  '/guides/pt/vesta-rheasilvia-when.html': 'guide/pt/vesta-rheasilvia-when.jsp',
   '/guides/pt/kuiper-belt-oort-cloud-step-by-step.html': 'guide/pt/kuiper-belt-oort-cloud-step-by-step.jsp',
   '/guides/pt/jupiter-magnetosphere-step-by-step.html': 'guide/pt/jupiter-magnetosphere-step-by-step.jsp',
   '/guides/pt/light-cone-step-by-step.html': 'guide/pt/light-cone-step-by-step.jsp',
@@ -14605,6 +13195,7 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/chelyabinsk-meteor-step-by-step.html': 'guide/pt/chelyabinsk-meteor-step-by-step.jsp',
   '/guides/pt/enceladus-geysers-step-by-step.html': 'guide/pt/enceladus-geysers-step-by-step.jsp',
   '/guides/pt/phobos-stickney-step-by-step.html': 'guide/pt/phobos-stickney-step-by-step.jsp',
+  '/guides/pt/vesta-rheasilvia-step-by-step.html': 'guide/pt/vesta-rheasilvia-step-by-step.jsp',
   '/guides/pt/meteor-shower-radiant-when.html': 'guide/pt/meteor-shower-radiant-when.jsp',
   '/guides/pt/meteor-shower-radiant-step-by-step.html': 'guide/pt/meteor-shower-radiant-step-by-step.jsp',
   '/guides/pt/three-body-problem-when.html': 'guide/pt/three-body-problem-when.jsp',
@@ -14705,6 +13296,7 @@ export const JSP_BY_ROUTE = {
   '/guides/es/chelyabinsk-meteor-vs-alternatives.html': 'guide/es/chelyabinsk-meteor-vs-alternatives.jsp',
   '/guides/es/enceladus-geysers-vs-alternatives.html': 'guide/es/enceladus-geysers-vs-alternatives.jsp',
   '/guides/es/phobos-stickney-vs-alternatives.html': 'guide/es/phobos-stickney-vs-alternatives.jsp',
+  '/guides/es/vesta-rheasilvia-vs-alternatives.html': 'guide/es/vesta-rheasilvia-vs-alternatives.jsp',
   '/guides/es/kuiper-belt-oort-cloud-when.html': 'guide/es/kuiper-belt-oort-cloud-when.jsp',
   '/guides/es/jupiter-magnetosphere-when.html': 'guide/es/jupiter-magnetosphere-when.jsp',
   '/guides/es/light-cone-when.html': 'guide/es/light-cone-when.jsp',
@@ -14768,6 +13360,7 @@ export const JSP_BY_ROUTE = {
   '/guides/es/chelyabinsk-meteor-when.html': 'guide/es/chelyabinsk-meteor-when.jsp',
   '/guides/es/enceladus-geysers-when.html': 'guide/es/enceladus-geysers-when.jsp',
   '/guides/es/phobos-stickney-when.html': 'guide/es/phobos-stickney-when.jsp',
+  '/guides/es/vesta-rheasilvia-when.html': 'guide/es/vesta-rheasilvia-when.jsp',
   '/guides/es/kuiper-belt-oort-cloud-step-by-step.html': 'guide/es/kuiper-belt-oort-cloud-step-by-step.jsp',
   '/guides/es/jupiter-magnetosphere-step-by-step.html': 'guide/es/jupiter-magnetosphere-step-by-step.jsp',
   '/guides/es/light-cone-step-by-step.html': 'guide/es/light-cone-step-by-step.jsp',
@@ -14831,6 +13424,7 @@ export const JSP_BY_ROUTE = {
   '/guides/es/chelyabinsk-meteor-step-by-step.html': 'guide/es/chelyabinsk-meteor-step-by-step.jsp',
   '/guides/es/enceladus-geysers-step-by-step.html': 'guide/es/enceladus-geysers-step-by-step.jsp',
   '/guides/es/phobos-stickney-step-by-step.html': 'guide/es/phobos-stickney-step-by-step.jsp',
+  '/guides/es/vesta-rheasilvia-step-by-step.html': 'guide/es/vesta-rheasilvia-step-by-step.jsp',
   '/guides/es/meteor-shower-radiant-when.html': 'guide/es/meteor-shower-radiant-when.jsp',
   '/guides/es/meteor-shower-radiant-step-by-step.html': 'guide/es/meteor-shower-radiant-step-by-step.jsp',
   '/guides/es/three-body-problem-when.html': 'guide/es/three-body-problem-when.jsp',
@@ -14931,6 +13525,7 @@ export const JSP_BY_ROUTE = {
   '/guides/de/chelyabinsk-meteor-vs-alternatives.html': 'guide/de/chelyabinsk-meteor-vs-alternatives.jsp',
   '/guides/de/enceladus-geysers-vs-alternatives.html': 'guide/de/enceladus-geysers-vs-alternatives.jsp',
   '/guides/de/phobos-stickney-vs-alternatives.html': 'guide/de/phobos-stickney-vs-alternatives.jsp',
+  '/guides/de/vesta-rheasilvia-vs-alternatives.html': 'guide/de/vesta-rheasilvia-vs-alternatives.jsp',
   '/guides/de/kuiper-belt-oort-cloud-when.html': 'guide/de/kuiper-belt-oort-cloud-when.jsp',
   '/guides/de/jupiter-magnetosphere-when.html': 'guide/de/jupiter-magnetosphere-when.jsp',
   '/guides/de/light-cone-when.html': 'guide/de/light-cone-when.jsp',
@@ -14994,6 +13589,7 @@ export const JSP_BY_ROUTE = {
   '/guides/de/chelyabinsk-meteor-when.html': 'guide/de/chelyabinsk-meteor-when.jsp',
   '/guides/de/enceladus-geysers-when.html': 'guide/de/enceladus-geysers-when.jsp',
   '/guides/de/phobos-stickney-when.html': 'guide/de/phobos-stickney-when.jsp',
+  '/guides/de/vesta-rheasilvia-when.html': 'guide/de/vesta-rheasilvia-when.jsp',
   '/guides/de/kuiper-belt-oort-cloud-step-by-step.html': 'guide/de/kuiper-belt-oort-cloud-step-by-step.jsp',
   '/guides/de/jupiter-magnetosphere-step-by-step.html': 'guide/de/jupiter-magnetosphere-step-by-step.jsp',
   '/guides/de/light-cone-step-by-step.html': 'guide/de/light-cone-step-by-step.jsp',
@@ -15057,6 +13653,7 @@ export const JSP_BY_ROUTE = {
   '/guides/de/chelyabinsk-meteor-step-by-step.html': 'guide/de/chelyabinsk-meteor-step-by-step.jsp',
   '/guides/de/enceladus-geysers-step-by-step.html': 'guide/de/enceladus-geysers-step-by-step.jsp',
   '/guides/de/phobos-stickney-step-by-step.html': 'guide/de/phobos-stickney-step-by-step.jsp',
+  '/guides/de/vesta-rheasilvia-step-by-step.html': 'guide/de/vesta-rheasilvia-step-by-step.jsp',
   '/guides/de/meteor-shower-radiant-when.html': 'guide/de/meteor-shower-radiant-when.jsp',
   '/guides/de/meteor-shower-radiant-step-by-step.html': 'guide/de/meteor-shower-radiant-step-by-step.jsp',
   '/guides/de/three-body-problem-when.html': 'guide/de/three-body-problem-when.jsp',
@@ -15157,6 +13754,7 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/chelyabinsk-meteor-vs-alternatives.html': 'guide/vi/chelyabinsk-meteor-vs-alternatives.jsp',
   '/guides/vi/enceladus-geysers-vs-alternatives.html': 'guide/vi/enceladus-geysers-vs-alternatives.jsp',
   '/guides/vi/phobos-stickney-vs-alternatives.html': 'guide/vi/phobos-stickney-vs-alternatives.jsp',
+  '/guides/vi/vesta-rheasilvia-vs-alternatives.html': 'guide/vi/vesta-rheasilvia-vs-alternatives.jsp',
   '/guides/vi/kuiper-belt-oort-cloud-when.html': 'guide/vi/kuiper-belt-oort-cloud-when.jsp',
   '/guides/vi/jupiter-magnetosphere-when.html': 'guide/vi/jupiter-magnetosphere-when.jsp',
   '/guides/vi/light-cone-when.html': 'guide/vi/light-cone-when.jsp',
@@ -15220,6 +13818,7 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/chelyabinsk-meteor-when.html': 'guide/vi/chelyabinsk-meteor-when.jsp',
   '/guides/vi/enceladus-geysers-when.html': 'guide/vi/enceladus-geysers-when.jsp',
   '/guides/vi/phobos-stickney-when.html': 'guide/vi/phobos-stickney-when.jsp',
+  '/guides/vi/vesta-rheasilvia-when.html': 'guide/vi/vesta-rheasilvia-when.jsp',
   '/guides/vi/kuiper-belt-oort-cloud-step-by-step.html': 'guide/vi/kuiper-belt-oort-cloud-step-by-step.jsp',
   '/guides/vi/jupiter-magnetosphere-step-by-step.html': 'guide/vi/jupiter-magnetosphere-step-by-step.jsp',
   '/guides/vi/light-cone-step-by-step.html': 'guide/vi/light-cone-step-by-step.jsp',
@@ -15283,6 +13882,7 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/chelyabinsk-meteor-step-by-step.html': 'guide/vi/chelyabinsk-meteor-step-by-step.jsp',
   '/guides/vi/enceladus-geysers-step-by-step.html': 'guide/vi/enceladus-geysers-step-by-step.jsp',
   '/guides/vi/phobos-stickney-step-by-step.html': 'guide/vi/phobos-stickney-step-by-step.jsp',
+  '/guides/vi/vesta-rheasilvia-step-by-step.html': 'guide/vi/vesta-rheasilvia-step-by-step.jsp',
   '/guides/vi/meteor-shower-radiant-when.html': 'guide/vi/meteor-shower-radiant-when.jsp',
   '/guides/vi/meteor-shower-radiant-step-by-step.html': 'guide/vi/meteor-shower-radiant-step-by-step.jsp',
   '/guides/vi/three-body-problem-when.html': 'guide/vi/three-body-problem-when.jsp',
@@ -15383,6 +13983,7 @@ export const JSP_BY_ROUTE = {
   '/guides/id/chelyabinsk-meteor-vs-alternatives.html': 'guide/id/chelyabinsk-meteor-vs-alternatives.jsp',
   '/guides/id/enceladus-geysers-vs-alternatives.html': 'guide/id/enceladus-geysers-vs-alternatives.jsp',
   '/guides/id/phobos-stickney-vs-alternatives.html': 'guide/id/phobos-stickney-vs-alternatives.jsp',
+  '/guides/id/vesta-rheasilvia-vs-alternatives.html': 'guide/id/vesta-rheasilvia-vs-alternatives.jsp',
   '/guides/id/kuiper-belt-oort-cloud-when.html': 'guide/id/kuiper-belt-oort-cloud-when.jsp',
   '/guides/id/jupiter-magnetosphere-when.html': 'guide/id/jupiter-magnetosphere-when.jsp',
   '/guides/id/light-cone-when.html': 'guide/id/light-cone-when.jsp',
@@ -15446,6 +14047,7 @@ export const JSP_BY_ROUTE = {
   '/guides/id/chelyabinsk-meteor-when.html': 'guide/id/chelyabinsk-meteor-when.jsp',
   '/guides/id/enceladus-geysers-when.html': 'guide/id/enceladus-geysers-when.jsp',
   '/guides/id/phobos-stickney-when.html': 'guide/id/phobos-stickney-when.jsp',
+  '/guides/id/vesta-rheasilvia-when.html': 'guide/id/vesta-rheasilvia-when.jsp',
   '/guides/id/kuiper-belt-oort-cloud-step-by-step.html': 'guide/id/kuiper-belt-oort-cloud-step-by-step.jsp',
   '/guides/id/jupiter-magnetosphere-step-by-step.html': 'guide/id/jupiter-magnetosphere-step-by-step.jsp',
   '/guides/id/light-cone-step-by-step.html': 'guide/id/light-cone-step-by-step.jsp',
@@ -15509,6 +14111,7 @@ export const JSP_BY_ROUTE = {
   '/guides/id/chelyabinsk-meteor-step-by-step.html': 'guide/id/chelyabinsk-meteor-step-by-step.jsp',
   '/guides/id/enceladus-geysers-step-by-step.html': 'guide/id/enceladus-geysers-step-by-step.jsp',
   '/guides/id/phobos-stickney-step-by-step.html': 'guide/id/phobos-stickney-step-by-step.jsp',
+  '/guides/id/vesta-rheasilvia-step-by-step.html': 'guide/id/vesta-rheasilvia-step-by-step.jsp',
   '/guides/id/meteor-shower-radiant-when.html': 'guide/id/meteor-shower-radiant-when.jsp',
   '/guides/id/meteor-shower-radiant-step-by-step.html': 'guide/id/meteor-shower-radiant-step-by-step.jsp',
   '/guides/id/three-body-problem-when.html': 'guide/id/three-body-problem-when.jsp',
@@ -17083,11 +15686,9 @@ export const RELATED_GUIDES_CURATED = {
   ],
   'microphonetest': [
     '/guides/en/how-to-check-webcam-and-microphone-before-an-interview.html',
-    '/guides/en/device-test-checklist-for-remote-work.html',
     '/guides/en/microphone-test-no-sound-four-fixes.html',
     '/guides/en/microphone-test-online-what-it-actually-checks.html',
     '/guides/en/microphone-test-online-quiet-normal-peak-meter.html',
-    '/guides/en/test-lcd.html',
   ],
   // Batch 1 (2026-06-28) - developertools curated override.
   'developertools': [
@@ -17101,10 +15702,6 @@ export const RELATED_GUIDES_CURATED = {
   ],
   // Batch 2 (2026-06-28) curated overrides.
   'devicetesttools': [
-    '/guides/en/what-an-lcd-test-does-and-when-to-run-one.html',
-    '/guides/en/dead-pixel-testing-guide.html',
-    '/guides/en/device-test-checklist-for-remote-work.html',
-    '/guides/en/how-to-test-for-dead-pixels-before-returning-a-monitor.html',
   ],
   'imageconvertertools': [
     '/guides/en/heic-vs-jpg-vs-webp.html',
@@ -17122,18 +15719,14 @@ export const RELATED_GUIDES_CURATED = {
     '/guides/en/mp4-vs-webm-for-web.html',
     '/guides/en/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html',
     '/guides/en/what-is-a-file-compressor-and-which-to-use.html',
-    '/guides/en/how-to-compress-a-file-online.html',
   ],
   'guidescompressfolderonline': [
-    '/guides/en/how-to-compress-a-folder.html',
-    '/guides/en/zip-folder-online-free.html',
     '/guides/en/folder-to-zip.html',
     '/guides/en/how-to-compress-a-folder-for-email.html',
   ],
   // Batch 3 (2026-06-28) curated overrides.
   'guidescreatezipfileonline': [
     '/guides/en/online-zip-file.html',
-    '/guides/en/folder-to-zip.html',
     '/guides/en/zip-compressor-online.html',
     '/guides/en/compress-zip.html',
   ],
@@ -17142,40 +15735,22 @@ export const RELATED_GUIDES_CURATED = {
     '/guides/en/gif-frames-extract-vs-frame-rate-fps-explained.html',
   ],
   'guidesgiftoframesconverter': [
-    '/guides/en/gif-frames-extract-vs-frame-rate-fps-explained.html',
-    '/guides/en/extract-gif-frames-png-vs-jpg-which-format.html',
   ],
   'guidesilovezip': [
     '/guides/en/create-zip-file-online.html',
-    '/guides/en/online-zip-file.html',
-    '/guides/en/zip-folder-online-free.html',
-    '/guides/en/compress-zip.html',
   ],
   // Batch 4 (2026-06-28) curated overrides.
   'guideslcdchecker': [
-    '/guides/en/test-lcd.html',
-    '/guides/en/what-an-lcd-test-does-and-when-to-run-one.html',
     '/guides/en/led-test-vs-lcd-test-which-applies-to-your-screen.html',
     '/guides/en/lcd-test-vs-display-test-which-do-you-need.html',
-    '/guides/en/screen-test-online-vs-app-which-is-more-accurate.html',
-    '/guides/en/dead-pixel-testing-guide.html',
-    '/guides/en/how-to-test-for-dead-pixels-before-returning-a-monitor.html',
   ],
   'guidesonlinezipfile': [
-    '/guides/en/folder-to-zip.html',
-    '/guides/en/compress-zip.html',
     '/guides/en/make-zip-file-online.html',
-    '/guides/en/zip-compressor-online.html',
     '/guides/en/online-zip-vs-7z-vs-rar-which-to-pick.html',
   ],
   'guideswhatwelearnedrunningfreeinbrowserimagetoolsfor100kmonthlyusers': [
-    '/guides/en/jpg-vs-png-for-web.html',
-    '/guides/en/heic-vs-jpg-vs-webp.html',
-    '/guides/en/mp4-vs-webm-for-web.html',
-    '/guides/en/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html',
   ],
   'guideszipunlockeronline': [
-    '/guides/en/pdf-password-types-owner-vs-user.html',
   ],
 };
 
