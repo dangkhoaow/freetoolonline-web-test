@@ -5474,6 +5474,7 @@ export const GUIDE_ROUTES = new Set([
   // plan-warm-pascal-v3 S2 batch 60 (2026-06-05) - tool-free x 5 locales (new_guide_locale_completeness gate backfill)
   '/guides/pt/tool-free.html', '/guides/es/tool-free.html', '/guides/vi/tool-free.html', '/guides/id/tool-free.html', '/guides/de/tool-free.html',
   // cycle20260701 create_new_guide_page (locale completion) - pt variant of compress-image-online-to-50kb (staging-only until es/vi/id/de complete).
+  '/guides/compress-image-online-to-50kb.html',
   '/guides/pt/compress-image-online-to-50kb.html',
   // cycle20260701-2 create_new_guide_page (locale completion) - es variant (staging-only until vi/id/de complete).
   '/guides/es/compress-image-online-to-50kb.html',
