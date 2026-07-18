@@ -4725,6 +4725,9 @@ export const GUIDE_ROUTES = new Set([
   // GUIDE_ROUTES backfill for video-compressor's 3 EN companion guide angles'
   // full pt/es/vi/id/de locale fanout (builder wires JSP_BY_ROUTE + INFO_ROUTES
   // only, same recurring gap class as fires 32/56/57/62/66/84/113/115/120).
+  '/guides/video-compressor-when.html',
+  '/guides/video-compressor-step-by-step.html',
+  '/guides/video-compressor-vs-alternatives.html',
   '/guides/pt/video-compressor-when.html',
   '/guides/pt/video-compressor-step-by-step.html',
   '/guides/pt/video-compressor-vs-alternatives.html',
