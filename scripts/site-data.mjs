@@ -4827,6 +4827,9 @@ export const GUIDE_ROUTES = new Set([
   // guide angles' full pt/es/vi/id/de locale fanout (builder wires
   // JSP_BY_ROUTE + INFO_ROUTES only, same recurring gap class as
   // fires 32/56/57/62/66/84/113/115).
+  '/guides/date-difference-calculator-when.html',
+  '/guides/date-difference-calculator-step-by-step.html',
+  '/guides/date-difference-calculator-vs-alternatives.html',
   '/guides/pt/date-difference-calculator-when.html',
   '/guides/pt/date-difference-calculator-step-by-step.html',
   '/guides/pt/date-difference-calculator-vs-alternatives.html',
