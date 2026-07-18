@@ -4092,6 +4092,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/how-to-view-pachycephalosaurus-in-3d.html',
   '/guides/id/how-to-view-pachycephalosaurus-in-3d.html',
   '/guides/de/how-to-view-pachycephalosaurus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire53 (2026-07-18): pachycephalosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides (size)
+  '/guides/pachycephalosaurus-size-comparison.html',
+  '/guides/pt/pachycephalosaurus-size-comparison.html',
+  '/guides/es/pachycephalosaurus-size-comparison.html',
+  '/guides/vi/pachycephalosaurus-size-comparison.html',
+  '/guides/id/pachycephalosaurus-size-comparison.html',
+  '/guides/de/pachycephalosaurus-size-comparison.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -11454,6 +11462,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-view-pachycephalosaurus-in-3d.html': 'guide/vi/how-to-view-pachycephalosaurus-in-3d.jsp',
   '/guides/id/how-to-view-pachycephalosaurus-in-3d.html': 'guide/id/how-to-view-pachycephalosaurus-in-3d.jsp',
   '/guides/de/how-to-view-pachycephalosaurus-in-3d.html': 'guide/de/how-to-view-pachycephalosaurus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire53 (2026-07-18): pachycephalosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides (size)
+  '/guides/pachycephalosaurus-size-comparison.html': 'guide/pachycephalosaurus-size-comparison.jsp',
+  '/guides/pt/pachycephalosaurus-size-comparison.html': 'guide/pt/pachycephalosaurus-size-comparison.jsp',
+  '/guides/es/pachycephalosaurus-size-comparison.html': 'guide/es/pachycephalosaurus-size-comparison.jsp',
+  '/guides/vi/pachycephalosaurus-size-comparison.html': 'guide/vi/pachycephalosaurus-size-comparison.jsp',
+  '/guides/id/pachycephalosaurus-size-comparison.html': 'guide/id/pachycephalosaurus-size-comparison.jsp',
+  '/guides/de/pachycephalosaurus-size-comparison.html': 'guide/de/pachycephalosaurus-size-comparison.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
