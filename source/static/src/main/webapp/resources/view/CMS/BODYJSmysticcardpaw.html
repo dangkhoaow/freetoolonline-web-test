@@ -1,0 +1,48 @@
+<script>
+    web.localUpload = false;
+    var MCP_GAME_URL = 'mystic-card-paw/index.html';
+    function mcpStatus(text) {
+        var el = document.getElementById('mcpStatus');
+        if (el) el.textContent = text;
+    }
+    function mcpInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'mcpFrame';
+        frame.src = MCP_GAME_URL;
+        frame.title = 'Mystic Card Paw game';
+        frame.setAttribute('allow', 'fullscreen; autoplay');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            mcpStatus('Game loaded. Tap the title screen on the main canvas to start, then click cards to build a five-card combo.');
+            try { frame.contentWindow.focus(); } catch (e) {}
+        });
+        var launch = document.getElementById('mcpLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('mcpStage');
+        var playBtn = document.getElementById('mcpPlayBtn');
+        if (!stage || !playBtn) return;
+        if (playBtn.dataset.bound === '1') return;
+        playBtn.dataset.bound = '1';
+        var fsBtn = document.getElementById('mcpFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            mcpStatus('Loading the game (about 36 KB, one time - then cached)...');
+            mcpInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('mcpFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) {} }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', doAfterPageRendered);
+    } else {
+        doAfterPageRendered();
+    }
+</script>
