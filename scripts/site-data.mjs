@@ -7877,6 +7877,9 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/earth-magnetosphere-step-by-step.html',
   '/guides/earth-magnetosphere-step-by-step.html',
   // play-fps-in-browser-step-by-step locale fanout pt/es/de/vi/id
+  '/guides/play-fps-in-browser-when.html',
+  '/guides/play-fps-in-browser-step-by-step.html',
+  '/guides/play-fps-in-browser-vs-alternatives.html',
   // (new-tool-discovery-loop-runbook LEAN one-off fire, guide-support drain
   // per runbook 4b).
   '/guides/pt/play-fps-in-browser-step-by-step.html',
