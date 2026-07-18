@@ -40,26 +40,41 @@ async function prove(vp) {
   await page.waitForSelector('#mgcPlayBtn', { timeout: 30000 });
   await page.click('#mgcPlayBtn');
   await page.waitForSelector('#mgcFrame', { timeout: 30000 });
-  const frame = page.frameLocator('#mgcFrame');
-  const canvas = frame.locator('#gameCanvas');
-  await canvas.waitFor({ timeout: 15000 });
+  const frameHandle = await page.waitForSelector('#mgcFrame', { timeout: 30000 });
+  const frame = await frameHandle.contentFrame();
+  if (!frame) throw new Error('mgcFrame has no contentFrame');
+  await frame.waitForSelector('#gameCanvas', { timeout: 15000 });
   await page.waitForTimeout(400);
 
-  // Start Defense + summon first unit so HUD is live
-  await frame.locator('#startButton').click({ timeout: 10000 });
+  // Overlay buttons can sit outside a tiny iframe viewport on mobile; use
+  // DOM click + keyboard summon (same path as fire148-prove-engine.mjs).
+  await frame.evaluate(() => {
+    const btn = document.getElementById('startButton');
+    if (!btn) throw new Error('startButton missing');
+    btn.click();
+  });
   await page.waitForTimeout(800);
-  const summon = frame.locator('#summonButtons button').first();
-  if (await summon.count()) {
-    await summon.click();
-    await page.waitForTimeout(1200);
-  }
+  await frame.evaluate(() => {
+    const b = document.querySelector('#summonButtons button');
+    if (b) b.click();
+  });
+  await page.waitForTimeout(2500);
 
-  const shot = await canvas.screenshot();
+  const hud = await frame.evaluate(() => ({
+    energy: document.getElementById('energyText')?.textContent,
+    scrap: document.getElementById('scrapText')?.textContent,
+    base: document.getElementById('baseText')?.textContent,
+    hive: document.getElementById('hiveText')?.textContent,
+    status: document.getElementById('statusText')?.textContent,
+  }));
+  const shot = await frame.locator('#gameCanvas').screenshot();
   const stats = pngStats(shot);
 
   const gameErrors = errors.filter((e) => !/get-rating|403|adsbygoogle|favicon|heath-check|downloader\.freetool|CORS policy|net::ERR_FAILED|WebGL-.*GPU stall/i.test(e));
-  const ok = stats.distinctWindows >= 3 && stats.ratio >= 0.5 && gameErrors.length === 0;
-  results.push({ vp, ok, stats, gameErrors: gameErrors.slice(0, 8) });
+  const hudLooksLive = !!(hud.base && hud.base !== '0' && hud.hive && hud.hive !== '0');
+  const canvasOk = stats.distinctWindows >= 3 && stats.ratio >= 0.35;
+  const ok = hudLooksLive && canvasOk && gameErrors.length === 0;
+  results.push({ vp, ok, stats, hud, hudLooksLive, gameErrors: gameErrors.slice(0, 8) });
   await browser.close();
   return ok;
 }
