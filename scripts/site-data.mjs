@@ -6527,6 +6527,26 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/seasonal-witchcat-when.html',
   '/guides/de/seasonal-witchcat-vs-alternatives.html',
 
+  // game-discovery-loop-runbook fire142 (2026-07-18): desk-cat-coder companion guides
+  '/guides/how-to-play-desk-cat-coder.html',
+  '/guides/desk-cat-coder-when.html',
+  '/guides/desk-cat-coder-vs-alternatives.html',
+  '/guides/pt/how-to-play-desk-cat-coder.html',
+  '/guides/pt/desk-cat-coder-when.html',
+  '/guides/pt/desk-cat-coder-vs-alternatives.html',
+  '/guides/es/how-to-play-desk-cat-coder.html',
+  '/guides/es/desk-cat-coder-when.html',
+  '/guides/es/desk-cat-coder-vs-alternatives.html',
+  '/guides/vi/how-to-play-desk-cat-coder.html',
+  '/guides/vi/desk-cat-coder-when.html',
+  '/guides/vi/desk-cat-coder-vs-alternatives.html',
+  '/guides/id/how-to-play-desk-cat-coder.html',
+  '/guides/id/desk-cat-coder-when.html',
+  '/guides/id/desk-cat-coder-vs-alternatives.html',
+  '/guides/de/how-to-play-desk-cat-coder.html',
+  '/guides/de/desk-cat-coder-when.html',
+  '/guides/de/desk-cat-coder-vs-alternatives.html',
+
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle
   '/guides/how-to-play-cyber-slide-puzzle.html',
   '/guides/cyber-slide-puzzle-when.html',
@@ -8722,8 +8742,10 @@ export const ALIAS_ROUTES = {
   '/brontotherium.html': '/dinosaur-3d/brontotherium.html',
   // dinosaur-3d-discovery-loop-runbook fire99: hybodus.
   '/hybodus.html': '/dinosaur-3d/hybodus.html',
-  // dinosaur-3d-discovery-loop-runbook fire100: coelophysis.
-  '/coelophysis.html': '/dinosaur-3d/coelophysis.html',
+  // coelophysis alias/JSP_BY_ROUTE removed 2026-07-18 (topical-map batch738):
+  // fire100 registered /dinosaur-3d/coelophysis.html without JSP+CMS, which
+  // wedged the staging-route-bundle-gate for every sibling push. Re-add only
+  // with the full bundle (JSP + BODYTITLE + BODYHTML).
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -8801,6 +8823,7 @@ export const ALIAS_ROUTES = {
   '/cat-hop-cloud.html': '/games/cat-hop-cloud.html',
   '/herd-cats-home.html': '/games/herd-cats-home.html',
   '/seasonal-witchcat.html': '/games/seasonal-witchcat.html',
+  '/desk-cat-coder.html': '/games/desk-cat-coder.html',
 
   '/gravity-orbit-golf.html': '/games/gravity-orbit-golf.html',
 
@@ -10847,6 +10870,26 @@ export const JSP_BY_ROUTE = {
   '/guides/de/seasonal-witchcat-when.html': 'guide/de/seasonal-witchcat-when.jsp',
   '/guides/de/seasonal-witchcat-vs-alternatives.html': 'guide/de/seasonal-witchcat-vs-alternatives.jsp',
 
+  // game-discovery-loop-runbook fire142 (2026-07-18): desk-cat-coder companion guides
+  '/guides/how-to-play-desk-cat-coder.html': 'guide/how-to-play-desk-cat-coder.jsp',
+  '/guides/desk-cat-coder-when.html': 'guide/desk-cat-coder-when.jsp',
+  '/guides/desk-cat-coder-vs-alternatives.html': 'guide/desk-cat-coder-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-desk-cat-coder.html': 'guide/pt/how-to-play-desk-cat-coder.jsp',
+  '/guides/pt/desk-cat-coder-when.html': 'guide/pt/desk-cat-coder-when.jsp',
+  '/guides/pt/desk-cat-coder-vs-alternatives.html': 'guide/pt/desk-cat-coder-vs-alternatives.jsp',
+  '/guides/es/how-to-play-desk-cat-coder.html': 'guide/es/how-to-play-desk-cat-coder.jsp',
+  '/guides/es/desk-cat-coder-when.html': 'guide/es/desk-cat-coder-when.jsp',
+  '/guides/es/desk-cat-coder-vs-alternatives.html': 'guide/es/desk-cat-coder-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-desk-cat-coder.html': 'guide/vi/how-to-play-desk-cat-coder.jsp',
+  '/guides/vi/desk-cat-coder-when.html': 'guide/vi/desk-cat-coder-when.jsp',
+  '/guides/vi/desk-cat-coder-vs-alternatives.html': 'guide/vi/desk-cat-coder-vs-alternatives.jsp',
+  '/guides/id/how-to-play-desk-cat-coder.html': 'guide/id/how-to-play-desk-cat-coder.jsp',
+  '/guides/id/desk-cat-coder-when.html': 'guide/id/desk-cat-coder-when.jsp',
+  '/guides/id/desk-cat-coder-vs-alternatives.html': 'guide/id/desk-cat-coder-vs-alternatives.jsp',
+  '/guides/de/how-to-play-desk-cat-coder.html': 'guide/de/how-to-play-desk-cat-coder.jsp',
+  '/guides/de/desk-cat-coder-when.html': 'guide/de/desk-cat-coder-when.jsp',
+  '/guides/de/desk-cat-coder-vs-alternatives.html': 'guide/de/desk-cat-coder-vs-alternatives.jsp',
+
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle guides
   '/guides/how-to-play-cyber-slide-puzzle.html': 'guide/how-to-play-cyber-slide-puzzle.jsp',
   '/guides/cyber-slide-puzzle-when.html': 'guide/cyber-slide-puzzle-when.jsp',
@@ -11773,7 +11816,6 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/gryponyx.html': 'dinosaur/gryponyx.jsp',
   '/dinosaur-3d/brontotherium.html': 'dinosaur/brontotherium.jsp',
   '/dinosaur-3d/hybodus.html': 'dinosaur/hybodus.jsp',
-  '/dinosaur-3d/coelophysis.html': 'dinosaur/coelophysis.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -12882,6 +12924,7 @@ export const JSP_BY_ROUTE = {
   '/games/cat-hop-cloud.html': 'games/cat-hop-cloud.jsp',
   '/games/herd-cats-home.html': 'games/herd-cats-home.jsp',
   '/games/seasonal-witchcat.html': 'games/seasonal-witchcat.jsp',
+  '/games/desk-cat-coder.html': 'games/desk-cat-coder.jsp',
   '/games/asteroid-blaster.html': 'games/asteroid-blaster.jsp',
   '/games/hex-puzzle-blocks.html': 'games/hex-puzzle-blocks.jsp',
   '/games/procedural-horde-game.html': 'games/procedural-horde-game.jsp',
