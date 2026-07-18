@@ -5536,6 +5536,9 @@ export const GUIDE_ROUTES = new Set([
   '/guides/id/video-gif-converter-when.html',
   '/guides/de/video-gif-converter-when.html',
   // Cycle 20260705-22 create_new_guide_page - pt locale variant for the new EN guide /guides/audio-trimmer-step-by-step.html (new_guide_locale_completeness gate). status locale_pending_review.
+  '/guides/audio-trimmer-when.html',
+  '/guides/audio-trimmer-step-by-step.html',
+  '/guides/audio-trimmer-vs-alternatives.html',
   '/guides/pt/audio-trimmer-step-by-step.html',
   // Cycle 20260524-10 create_new_guide_page - "i love zip" bare-query landing (companion to /zip-file.html).
   '/guides/en/i-love-zip.html',
