@@ -4400,6 +4400,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/ceratosaurus-size-comparison.html',
   '/guides/id/ceratosaurus-size-comparison.html',
   '/guides/de/ceratosaurus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire87 (2026-07-18): ceratosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/ceratosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/ceratosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/ceratosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/ceratosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/ceratosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/ceratosaurus-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -12285,6 +12293,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/ceratosaurus-size-comparison.html': 'guide/vi/ceratosaurus-size-comparison.jsp',
   '/guides/id/ceratosaurus-size-comparison.html': 'guide/id/ceratosaurus-size-comparison.jsp',
   '/guides/de/ceratosaurus-size-comparison.html': 'guide/de/ceratosaurus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire87 (2026-07-18): ceratosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/ceratosaurus-3d-viewer-vs-ar-apps.html': 'guide/ceratosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/ceratosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/ceratosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/ceratosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/ceratosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/ceratosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/ceratosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/ceratosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/ceratosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/ceratosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/ceratosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
