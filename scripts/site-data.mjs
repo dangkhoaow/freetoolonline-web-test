@@ -4733,6 +4733,9 @@ export const GUIDE_ROUTES = new Set([
   // GUIDE_ROUTES backfill for video-compressor's 3 EN companion guide angles'
   // full pt/es/vi/id/de locale fanout (builder wires JSP_BY_ROUTE + INFO_ROUTES
   // only, same recurring gap class as fires 32/56/57/62/66/84/113/115/120).
+  '/guides/video-compressor-when.html',
+  '/guides/video-compressor-step-by-step.html',
+  '/guides/video-compressor-vs-alternatives.html',
   '/guides/pt/video-compressor-when.html',
   '/guides/pt/video-compressor-step-by-step.html',
   '/guides/pt/video-compressor-vs-alternatives.html',
@@ -6681,6 +6684,26 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/how-to-play-boing-cat-platformer.html',
   '/guides/de/boing-cat-platformer-when.html',
   '/guides/de/boing-cat-platformer-vs-alternatives.html',
+
+  // game-discovery-loop-runbook fire145 (2026-07-18): darkline-paws companion guides
+  '/guides/how-to-play-darkline-paws.html',
+  '/guides/darkline-paws-when.html',
+  '/guides/darkline-paws-vs-alternatives.html',
+  '/guides/pt/how-to-play-darkline-paws.html',
+  '/guides/pt/darkline-paws-when.html',
+  '/guides/pt/darkline-paws-vs-alternatives.html',
+  '/guides/es/how-to-play-darkline-paws.html',
+  '/guides/es/darkline-paws-when.html',
+  '/guides/es/darkline-paws-vs-alternatives.html',
+  '/guides/vi/how-to-play-darkline-paws.html',
+  '/guides/vi/darkline-paws-when.html',
+  '/guides/vi/darkline-paws-vs-alternatives.html',
+  '/guides/id/how-to-play-darkline-paws.html',
+  '/guides/id/darkline-paws-when.html',
+  '/guides/id/darkline-paws-vs-alternatives.html',
+  '/guides/de/how-to-play-darkline-paws.html',
+  '/guides/de/darkline-paws-when.html',
+  '/guides/de/darkline-paws-vs-alternatives.html',
 
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle
   '/guides/how-to-play-cyber-slide-puzzle.html',
@@ -8966,6 +8989,7 @@ export const ALIAS_ROUTES = {
   '/seasonal-witchcat.html': '/games/seasonal-witchcat.html',
   '/desk-cat-coder.html': '/games/desk-cat-coder.html',
   '/boing-cat-platformer.html': '/games/boing-cat-platformer.html',
+  '/darkline-paws.html': '/games/darkline-paws.html',
 
   '/gravity-orbit-golf.html': '/games/gravity-orbit-golf.html',
 
@@ -9076,6 +9100,7 @@ export const ALIAS_ROUTES = {
   '/circumbinary-planet.html': '/space-3d/circumbinary-planet.html',
   '/debris-disk.html': '/space-3d/debris-disk.html',
   '/brown-dwarf.html': '/space-3d/brown-dwarf.html',
+  '/kilonova.html': '/space-3d/kilonova.html',
   '/linux-online.html': '/utility-tools/linux-online.html',
   '/online-linux-terminal.html': '/utility-tools/linux-online.html',
   '/linux-emulator-online.html': '/utility-tools/linux-online.html',
@@ -11058,6 +11083,26 @@ export const JSP_BY_ROUTE = {
   '/guides/de/how-to-play-boing-cat-platformer.html': 'guide/de/how-to-play-boing-cat-platformer.jsp',
   '/guides/de/boing-cat-platformer-when.html': 'guide/de/boing-cat-platformer-when.jsp',
   '/guides/de/boing-cat-platformer-vs-alternatives.html': 'guide/de/boing-cat-platformer-vs-alternatives.jsp',
+
+  // game-discovery-loop-runbook fire145 (2026-07-18): darkline-paws companion guides
+  '/guides/how-to-play-darkline-paws.html': 'guide/how-to-play-darkline-paws.jsp',
+  '/guides/darkline-paws-when.html': 'guide/darkline-paws-when.jsp',
+  '/guides/darkline-paws-vs-alternatives.html': 'guide/darkline-paws-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-darkline-paws.html': 'guide/pt/how-to-play-darkline-paws.jsp',
+  '/guides/pt/darkline-paws-when.html': 'guide/pt/darkline-paws-when.jsp',
+  '/guides/pt/darkline-paws-vs-alternatives.html': 'guide/pt/darkline-paws-vs-alternatives.jsp',
+  '/guides/es/how-to-play-darkline-paws.html': 'guide/es/how-to-play-darkline-paws.jsp',
+  '/guides/es/darkline-paws-when.html': 'guide/es/darkline-paws-when.jsp',
+  '/guides/es/darkline-paws-vs-alternatives.html': 'guide/es/darkline-paws-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-darkline-paws.html': 'guide/vi/how-to-play-darkline-paws.jsp',
+  '/guides/vi/darkline-paws-when.html': 'guide/vi/darkline-paws-when.jsp',
+  '/guides/vi/darkline-paws-vs-alternatives.html': 'guide/vi/darkline-paws-vs-alternatives.jsp',
+  '/guides/id/how-to-play-darkline-paws.html': 'guide/id/how-to-play-darkline-paws.jsp',
+  '/guides/id/darkline-paws-when.html': 'guide/id/darkline-paws-when.jsp',
+  '/guides/id/darkline-paws-vs-alternatives.html': 'guide/id/darkline-paws-vs-alternatives.jsp',
+  '/guides/de/how-to-play-darkline-paws.html': 'guide/de/how-to-play-darkline-paws.jsp',
+  '/guides/de/darkline-paws-when.html': 'guide/de/darkline-paws-when.jsp',
+  '/guides/de/darkline-paws-vs-alternatives.html': 'guide/de/darkline-paws-vs-alternatives.jsp',
 
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle guides
   '/guides/how-to-play-cyber-slide-puzzle.html': 'guide/how-to-play-cyber-slide-puzzle.jsp',
@@ -13138,6 +13183,7 @@ export const JSP_BY_ROUTE = {
   '/games/seasonal-witchcat.html': 'games/seasonal-witchcat.jsp',
   '/games/desk-cat-coder.html': 'games/desk-cat-coder.jsp',
   '/games/boing-cat-platformer.html': 'games/boing-cat-platformer.jsp',
+  '/games/darkline-paws.html': 'games/darkline-paws.jsp',
   '/games/asteroid-blaster.html': 'games/asteroid-blaster.jsp',
   '/games/hex-puzzle-blocks.html': 'games/hex-puzzle-blocks.jsp',
   '/games/procedural-horde-game.html': 'games/procedural-horde-game.jsp',
@@ -13317,6 +13363,7 @@ export const JSP_BY_ROUTE = {
   '/space-3d/circumbinary-planet.html': 'space/circumbinary-planet.jsp',
   '/space-3d/debris-disk.html': 'space/debris-disk.jsp',
   '/space-3d/brown-dwarf.html': 'space/brown-dwarf.jsp',
+  '/space-3d/kilonova.html': 'space/kilonova.jsp',
   '/guides/escape-velocity-step-by-step.html': 'guide/escape-velocity-step-by-step.jsp',
   '/guides/pt/escape-velocity-step-by-step.html': 'guide/pt/escape-velocity-step-by-step.jsp',
   '/guides/es/escape-velocity-step-by-step.html': 'guide/es/escape-velocity-step-by-step.jsp',
