@@ -11874,7 +11874,6 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/gryponyx.html': 'dinosaur/gryponyx.jsp',
   '/dinosaur-3d/brontotherium.html': 'dinosaur/brontotherium.jsp',
   '/dinosaur-3d/hybodus.html': 'dinosaur/hybodus.jsp',
-  '/dinosaur-3d/coelophysis.html': 'dinosaur/coelophysis.jsp',
   '/dinosaur-3d/quetzalcoatlus.html': 'dinosaur/quetzalcoatlus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
