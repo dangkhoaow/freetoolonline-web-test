@@ -8599,6 +8599,7 @@ export const JSP_BY_ROUTE = {
   '/news/vi/7-zip-rar5-motw-bypass.html': 'news/vi/7-zip-rar5-motw-bypass.jsp',
   '/news/id/7-zip-rar5-motw-bypass.html': 'news/id/7-zip-rar5-motw-bypass.jsp',
   '/news/de/7-zip-rar5-motw-bypass.html': 'news/de/7-zip-rar5-motw-bypass.jsp',
+  '/news/adobe-acrobat-apsb26-63.html': 'news/adobe-acrobat-apsb26-63.jsp',
   '/news/pt/fat32-four-gib-file-limit.html': 'news/pt/fat32-four-gib-file-limit.jsp',
   '/news/es/fat32-four-gib-file-limit.html': 'news/es/fat32-four-gib-file-limit.jsp',
   '/news/vi/fat32-four-gib-file-limit.html': 'news/vi/fat32-four-gib-file-limit.jsp',
