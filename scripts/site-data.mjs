@@ -4116,6 +4116,46 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/how-to-view-gallimimus-in-3d.html',
   '/guides/id/how-to-view-gallimimus-in-3d.html',
   '/guides/de/how-to-view-gallimimus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire56 (2026-07-18): gallimimus-size-comparison
+  // EN + pt/es/vi/id/de companion guides (size)
+  '/guides/gallimimus-size-comparison.html',
+  '/guides/pt/gallimimus-size-comparison.html',
+  '/guides/es/gallimimus-size-comparison.html',
+  '/guides/vi/gallimimus-size-comparison.html',
+  '/guides/id/gallimimus-size-comparison.html',
+  '/guides/de/gallimimus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire57 (2026-07-18): gallimimus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides (vs-ar)
+  '/guides/gallimimus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/gallimimus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/gallimimus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/gallimimus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/gallimimus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/gallimimus-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire58 (2026-07-18): how-to-view-therizinosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides (how-to)
+  '/guides/how-to-view-therizinosaurus-in-3d.html',
+  '/guides/pt/how-to-view-therizinosaurus-in-3d.html',
+  '/guides/es/how-to-view-therizinosaurus-in-3d.html',
+  '/guides/vi/how-to-view-therizinosaurus-in-3d.html',
+  '/guides/id/how-to-view-therizinosaurus-in-3d.html',
+  '/guides/de/how-to-view-therizinosaurus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire59 (2026-07-18): therizinosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides (size)
+  '/guides/therizinosaurus-size-comparison.html',
+  '/guides/pt/therizinosaurus-size-comparison.html',
+  '/guides/es/therizinosaurus-size-comparison.html',
+  '/guides/vi/therizinosaurus-size-comparison.html',
+  '/guides/id/therizinosaurus-size-comparison.html',
+  '/guides/de/therizinosaurus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire60 (2026-07-18): therizinosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides (vs-ar)
+  '/guides/therizinosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/therizinosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/therizinosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/therizinosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/therizinosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/therizinosaurus-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -8191,6 +8231,12 @@ export const ALIAS_ROUTES = {
   '/majungasaurus.html': '/dinosaur-3d/majungasaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire82: cryolophosaurus alias.
   '/cryolophosaurus.html': '/dinosaur-3d/cryolophosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire83: concavenator alias.
+  '/concavenator.html': '/dinosaur-3d/concavenator.html',
+  // dinosaur-3d-discovery-loop-runbook fire84: albertaceratops alias.
+  '/albertaceratops.html': '/dinosaur-3d/albertaceratops.html',
+  // dinosaur-3d-discovery-loop-runbook fire85: tsintaosaurus.
+  '/tsintaosaurus.html': '/dinosaur-3d/tsintaosaurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -11137,6 +11183,8 @@ export const JSP_BY_ROUTE = {
   // dinosaur-3d-discovery-loop-runbook fire81: Majungasaurus viewer.
   '/dinosaur-3d/majungasaurus.html': 'dinosaur/majungasaurus.jsp',
   '/dinosaur-3d/cryolophosaurus.html': 'dinosaur/cryolophosaurus.jsp',
+  '/dinosaur-3d/concavenator.html': 'dinosaur/concavenator.jsp',
+  '/dinosaur-3d/albertaceratops.html': 'dinosaur/albertaceratops.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -11581,6 +11629,46 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-view-gallimimus-in-3d.html': 'guide/vi/how-to-view-gallimimus-in-3d.jsp',
   '/guides/id/how-to-view-gallimimus-in-3d.html': 'guide/id/how-to-view-gallimimus-in-3d.jsp',
   '/guides/de/how-to-view-gallimimus-in-3d.html': 'guide/de/how-to-view-gallimimus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire56 (2026-07-18): gallimimus-size-comparison
+  // EN + pt/es/vi/id/de companion guides (size)
+  '/guides/gallimimus-size-comparison.html': 'guide/gallimimus-size-comparison.jsp',
+  '/guides/pt/gallimimus-size-comparison.html': 'guide/pt/gallimimus-size-comparison.jsp',
+  '/guides/es/gallimimus-size-comparison.html': 'guide/es/gallimimus-size-comparison.jsp',
+  '/guides/vi/gallimimus-size-comparison.html': 'guide/vi/gallimimus-size-comparison.jsp',
+  '/guides/id/gallimimus-size-comparison.html': 'guide/id/gallimimus-size-comparison.jsp',
+  '/guides/de/gallimimus-size-comparison.html': 'guide/de/gallimimus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire57 (2026-07-18): gallimimus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides (vs-ar)
+  '/guides/gallimimus-3d-viewer-vs-ar-apps.html': 'guide/gallimimus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/gallimimus-3d-viewer-vs-ar-apps.html': 'guide/pt/gallimimus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/gallimimus-3d-viewer-vs-ar-apps.html': 'guide/es/gallimimus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/gallimimus-3d-viewer-vs-ar-apps.html': 'guide/vi/gallimimus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/gallimimus-3d-viewer-vs-ar-apps.html': 'guide/id/gallimimus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/gallimimus-3d-viewer-vs-ar-apps.html': 'guide/de/gallimimus-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire58 (2026-07-18): how-to-view-therizinosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides (how-to)
+  '/guides/how-to-view-therizinosaurus-in-3d.html': 'guide/how-to-view-therizinosaurus-in-3d.jsp',
+  '/guides/pt/how-to-view-therizinosaurus-in-3d.html': 'guide/pt/how-to-view-therizinosaurus-in-3d.jsp',
+  '/guides/es/how-to-view-therizinosaurus-in-3d.html': 'guide/es/how-to-view-therizinosaurus-in-3d.jsp',
+  '/guides/vi/how-to-view-therizinosaurus-in-3d.html': 'guide/vi/how-to-view-therizinosaurus-in-3d.jsp',
+  '/guides/id/how-to-view-therizinosaurus-in-3d.html': 'guide/id/how-to-view-therizinosaurus-in-3d.jsp',
+  '/guides/de/how-to-view-therizinosaurus-in-3d.html': 'guide/de/how-to-view-therizinosaurus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire59 (2026-07-18): therizinosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides (size)
+  '/guides/therizinosaurus-size-comparison.html': 'guide/therizinosaurus-size-comparison.jsp',
+  '/guides/pt/therizinosaurus-size-comparison.html': 'guide/pt/therizinosaurus-size-comparison.jsp',
+  '/guides/es/therizinosaurus-size-comparison.html': 'guide/es/therizinosaurus-size-comparison.jsp',
+  '/guides/vi/therizinosaurus-size-comparison.html': 'guide/vi/therizinosaurus-size-comparison.jsp',
+  '/guides/id/therizinosaurus-size-comparison.html': 'guide/id/therizinosaurus-size-comparison.jsp',
+  '/guides/de/therizinosaurus-size-comparison.html': 'guide/de/therizinosaurus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire60 (2026-07-18): therizinosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides (vs-ar)
+  '/guides/therizinosaurus-3d-viewer-vs-ar-apps.html': 'guide/therizinosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/therizinosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/therizinosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/therizinosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/therizinosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/therizinosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/therizinosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/therizinosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/therizinosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/therizinosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/therizinosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
