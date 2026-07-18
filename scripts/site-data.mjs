@@ -6923,6 +6923,26 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/mor-chess-2-when.html',
   '/guides/de/mor-chess-2-vs-alternatives.html',
 
+  // game-discovery-loop-runbook fire147 (2026-07-18): black-cat-hot-tin-roof companion guides
+  '/guides/how-to-play-black-cat-hot-tin-roof.html',
+  '/guides/black-cat-hot-tin-roof-when.html',
+  '/guides/black-cat-hot-tin-roof-vs-alternatives.html',
+  '/guides/pt/how-to-play-black-cat-hot-tin-roof.html',
+  '/guides/pt/black-cat-hot-tin-roof-when.html',
+  '/guides/pt/black-cat-hot-tin-roof-vs-alternatives.html',
+  '/guides/es/how-to-play-black-cat-hot-tin-roof.html',
+  '/guides/es/black-cat-hot-tin-roof-when.html',
+  '/guides/es/black-cat-hot-tin-roof-vs-alternatives.html',
+  '/guides/vi/how-to-play-black-cat-hot-tin-roof.html',
+  '/guides/vi/black-cat-hot-tin-roof-when.html',
+  '/guides/vi/black-cat-hot-tin-roof-vs-alternatives.html',
+  '/guides/id/how-to-play-black-cat-hot-tin-roof.html',
+  '/guides/id/black-cat-hot-tin-roof-when.html',
+  '/guides/id/black-cat-hot-tin-roof-vs-alternatives.html',
+  '/guides/de/how-to-play-black-cat-hot-tin-roof.html',
+  '/guides/de/black-cat-hot-tin-roof-when.html',
+  '/guides/de/black-cat-hot-tin-roof-vs-alternatives.html',
+
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle
   '/guides/how-to-play-cyber-slide-puzzle.html',
   '/guides/cyber-slide-puzzle-when.html',
@@ -9217,6 +9237,7 @@ export const ALIAS_ROUTES = {
   '/boing-cat-platformer.html': '/games/boing-cat-platformer.html',
   '/darkline-paws.html': '/games/darkline-paws.html',
   '/mor-chess-2.html': '/games/mor-chess-2.html',
+  '/black-cat-hot-tin-roof.html': '/games/black-cat-hot-tin-roof.html',
 
   '/gravity-orbit-golf.html': '/games/gravity-orbit-golf.html',
 
@@ -11363,6 +11384,26 @@ export const JSP_BY_ROUTE = {
   '/guides/de/mor-chess-2-when.html': 'guide/de/mor-chess-2-when.jsp',
   '/guides/de/mor-chess-2-vs-alternatives.html': 'guide/de/mor-chess-2-vs-alternatives.jsp',
 
+  // game-discovery-loop-runbook fire147 (2026-07-18): black-cat-hot-tin-roof companion guides
+  '/guides/how-to-play-black-cat-hot-tin-roof.html': 'guide/how-to-play-black-cat-hot-tin-roof.jsp',
+  '/guides/black-cat-hot-tin-roof-when.html': 'guide/black-cat-hot-tin-roof-when.jsp',
+  '/guides/black-cat-hot-tin-roof-vs-alternatives.html': 'guide/black-cat-hot-tin-roof-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-black-cat-hot-tin-roof.html': 'guide/pt/how-to-play-black-cat-hot-tin-roof.jsp',
+  '/guides/pt/black-cat-hot-tin-roof-when.html': 'guide/pt/black-cat-hot-tin-roof-when.jsp',
+  '/guides/pt/black-cat-hot-tin-roof-vs-alternatives.html': 'guide/pt/black-cat-hot-tin-roof-vs-alternatives.jsp',
+  '/guides/es/how-to-play-black-cat-hot-tin-roof.html': 'guide/es/how-to-play-black-cat-hot-tin-roof.jsp',
+  '/guides/es/black-cat-hot-tin-roof-when.html': 'guide/es/black-cat-hot-tin-roof-when.jsp',
+  '/guides/es/black-cat-hot-tin-roof-vs-alternatives.html': 'guide/es/black-cat-hot-tin-roof-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-black-cat-hot-tin-roof.html': 'guide/vi/how-to-play-black-cat-hot-tin-roof.jsp',
+  '/guides/vi/black-cat-hot-tin-roof-when.html': 'guide/vi/black-cat-hot-tin-roof-when.jsp',
+  '/guides/vi/black-cat-hot-tin-roof-vs-alternatives.html': 'guide/vi/black-cat-hot-tin-roof-vs-alternatives.jsp',
+  '/guides/id/how-to-play-black-cat-hot-tin-roof.html': 'guide/id/how-to-play-black-cat-hot-tin-roof.jsp',
+  '/guides/id/black-cat-hot-tin-roof-when.html': 'guide/id/black-cat-hot-tin-roof-when.jsp',
+  '/guides/id/black-cat-hot-tin-roof-vs-alternatives.html': 'guide/id/black-cat-hot-tin-roof-vs-alternatives.jsp',
+  '/guides/de/how-to-play-black-cat-hot-tin-roof.html': 'guide/de/how-to-play-black-cat-hot-tin-roof.jsp',
+  '/guides/de/black-cat-hot-tin-roof-when.html': 'guide/de/black-cat-hot-tin-roof-when.jsp',
+  '/guides/de/black-cat-hot-tin-roof-vs-alternatives.html': 'guide/de/black-cat-hot-tin-roof-vs-alternatives.jsp',
+
   // game-discovery-loop-runbook fire16 (2026-07-10): cyber-slide-puzzle guides
   '/guides/how-to-play-cyber-slide-puzzle.html': 'guide/how-to-play-cyber-slide-puzzle.jsp',
   '/guides/cyber-slide-puzzle-when.html': 'guide/cyber-slide-puzzle-when.jsp',
@@ -13496,6 +13537,7 @@ export const JSP_BY_ROUTE = {
   '/games/boing-cat-platformer.html': 'games/boing-cat-platformer.jsp',
   '/games/darkline-paws.html': 'games/darkline-paws.jsp',
   '/games/mor-chess-2.html': 'games/mor-chess-2.jsp',
+  '/games/black-cat-hot-tin-roof.html': 'games/black-cat-hot-tin-roof.jsp',
   '/games/asteroid-blaster.html': 'games/asteroid-blaster.jsp',
   '/games/hex-puzzle-blocks.html': 'games/hex-puzzle-blocks.jsp',
   '/games/procedural-horde-game.html': 'games/procedural-horde-game.jsp',
