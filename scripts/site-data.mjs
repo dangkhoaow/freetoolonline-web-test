@@ -4993,6 +4993,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/gorgosaurus-size-comparison.html',
   '/guides/id/gorgosaurus-size-comparison.html',
   '/guides/de/gorgosaurus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire123 (2026-07-19): gorgosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/gorgosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/gorgosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/gorgosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/gorgosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/gorgosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/gorgosaurus-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -5023,6 +5031,24 @@ export const GUIDE_ROUTES = new Set([
   // guide angles' full pt/es/vi/id/de locale fanout (builder wires
   // JSP_BY_ROUTE + INFO_ROUTES only, same recurring gap class as
   // fires 32/56/57/62/66/84/113/115).
+  '/guides/date-difference-calculator-when.html',
+  '/guides/date-difference-calculator-step-by-step.html',
+  '/guides/date-difference-calculator-vs-alternatives.html',
+  '/guides/pt/date-difference-calculator-when.html',
+  '/guides/pt/date-difference-calculator-step-by-step.html',
+  '/guides/pt/date-difference-calculator-vs-alternatives.html',
+  '/guides/es/date-difference-calculator-when.html',
+  '/guides/es/date-difference-calculator-step-by-step.html',
+  '/guides/es/date-difference-calculator-vs-alternatives.html',
+  '/guides/vi/date-difference-calculator-when.html',
+  '/guides/vi/date-difference-calculator-step-by-step.html',
+  '/guides/vi/date-difference-calculator-vs-alternatives.html',
+  '/guides/id/date-difference-calculator-when.html',
+  '/guides/id/date-difference-calculator-step-by-step.html',
+  '/guides/id/date-difference-calculator-vs-alternatives.html',
+  '/guides/de/date-difference-calculator-when.html',
+  '/guides/de/date-difference-calculator-step-by-step.html',
+  '/guides/de/date-difference-calculator-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire115 (LEAN one-off, 2026-07-12):
   // GUIDE_ROUTES backfill for add-watermark-to-pdf's 3 EN companion guide
   // angles plus their full pt/es/vi/id/de locale fanout (builder wires
@@ -12210,6 +12236,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/gorgosaurus-size-comparison.html': 'guide/vi/gorgosaurus-size-comparison.jsp',
   '/guides/id/gorgosaurus-size-comparison.html': 'guide/id/gorgosaurus-size-comparison.jsp',
   '/guides/de/gorgosaurus-size-comparison.html': 'guide/de/gorgosaurus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire123 (2026-07-19): gorgosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/gorgosaurus-3d-viewer-vs-ar-apps.html': 'guide/gorgosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/gorgosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/gorgosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/gorgosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/gorgosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/gorgosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/gorgosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/gorgosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/gorgosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/gorgosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/gorgosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
