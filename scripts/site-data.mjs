@@ -4352,6 +4352,22 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/ichthyosaurus-size-comparison.html',
   '/guides/id/ichthyosaurus-size-comparison.html',
   '/guides/de/ichthyosaurus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire81 (2026-07-18): ichthyosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/ichthyosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/ichthyosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/ichthyosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/ichthyosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/ichthyosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/ichthyosaurus-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire82 (2026-07-18): how-to-view-edmontosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-edmontosaurus-in-3d.html',
+  '/guides/pt/how-to-view-edmontosaurus-in-3d.html',
+  '/guides/es/how-to-view-edmontosaurus-in-3d.html',
+  '/guides/vi/how-to-view-edmontosaurus-in-3d.html',
+  '/guides/id/how-to-view-edmontosaurus-in-3d.html',
+  '/guides/de/how-to-view-edmontosaurus-in-3d.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -12183,6 +12199,22 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/ichthyosaurus-size-comparison.html': 'guide/vi/ichthyosaurus-size-comparison.jsp',
   '/guides/id/ichthyosaurus-size-comparison.html': 'guide/id/ichthyosaurus-size-comparison.jsp',
   '/guides/de/ichthyosaurus-size-comparison.html': 'guide/de/ichthyosaurus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire81 (2026-07-18): ichthyosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/ichthyosaurus-3d-viewer-vs-ar-apps.html': 'guide/ichthyosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/ichthyosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/ichthyosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/ichthyosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/ichthyosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/ichthyosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/ichthyosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/ichthyosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/ichthyosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/ichthyosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/ichthyosaurus-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire82 (2026-07-18): how-to-view-edmontosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-edmontosaurus-in-3d.html': 'guide/how-to-view-edmontosaurus-in-3d.jsp',
+  '/guides/pt/how-to-view-edmontosaurus-in-3d.html': 'guide/pt/how-to-view-edmontosaurus-in-3d.jsp',
+  '/guides/es/how-to-view-edmontosaurus-in-3d.html': 'guide/es/how-to-view-edmontosaurus-in-3d.jsp',
+  '/guides/vi/how-to-view-edmontosaurus-in-3d.html': 'guide/vi/how-to-view-edmontosaurus-in-3d.jsp',
+  '/guides/id/how-to-view-edmontosaurus-in-3d.html': 'guide/id/how-to-view-edmontosaurus-in-3d.jsp',
+  '/guides/de/how-to-view-edmontosaurus-in-3d.html': 'guide/de/how-to-view-edmontosaurus-in-3d.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
