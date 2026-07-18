@@ -583,6 +583,8 @@ try {
     { title: "Kilonova 3D Explorer", url: "https://freetoolonline.com/space-3d/kilonova.html", include: !1, tags: "space-3d" },
     { title: "Carrington Event 3D Explorer", url: "https://freetoolonline.com/space-3d/carrington-event.html", include: !1, tags: "space-3d" },
     { title: "TRAPPIST-1 3D Explorer", url: "https://freetoolonline.com/space-3d/trappist-1.html", include: !1, tags: "space-3d" },
+    { title: "Tabby's Star 3D Explorer", url: "https://freetoolonline.com/space-3d/tabbys-star.html", include: !1, tags: "space-3d" },
+    { title: "'Oumuamua 3D Explorer", url: "https://freetoolonline.com/space-3d/oumuamua.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
