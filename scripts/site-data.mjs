@@ -8216,6 +8216,8 @@ export const ALIAS_ROUTES = {
   '/concavenator.html': '/dinosaur-3d/concavenator.html',
   // dinosaur-3d-discovery-loop-runbook fire84: albertaceratops alias.
   '/albertaceratops.html': '/dinosaur-3d/albertaceratops.html',
+  // dinosaur-3d-discovery-loop-runbook fire85: tsintaosaurus.
+  '/tsintaosaurus.html': '/dinosaur-3d/tsintaosaurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
