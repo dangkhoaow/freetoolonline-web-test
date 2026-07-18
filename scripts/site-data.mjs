@@ -8281,6 +8281,8 @@ export const ALIAS_ROUTES = {
   '/albertaceratops.html': '/dinosaur-3d/albertaceratops.html',
   // dinosaur-3d-discovery-loop-runbook fire85: tsintaosaurus.
   '/tsintaosaurus.html': '/dinosaur-3d/tsintaosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire86: ornithomimus.
+  '/ornithomimus.html': '/dinosaur-3d/ornithomimus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -11251,6 +11253,7 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/concavenator.html': 'dinosaur/concavenator.jsp',
   '/dinosaur-3d/albertaceratops.html': 'dinosaur/albertaceratops.jsp',
   '/dinosaur-3d/tsintaosaurus.html': 'dinosaur/tsintaosaurus.jsp',
+  '/dinosaur-3d/ornithomimus.html': 'dinosaur/ornithomimus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
