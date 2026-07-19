@@ -625,6 +625,7 @@ try {
     { title: "Satellite Orbit Classes 3D Explorer", url: "https://freetoolonline.com/space-3d/satellite-orbit-classes.html", include: !1, tags: "space-3d" },
     { title: "Dwarf Planet Size Comparison 3D Explorer", url: "https://freetoolonline.com/space-3d/dwarf-planet-comparison.html", include: !1, tags: "space-3d" },
     { title: "Sagittarius A* Star Orbit 3D Explorer", url: "https://freetoolonline.com/space-3d/sagittarius-a-star.html", include: !1, tags: "space-3d" },
+    { title: "Impact Crater Formation 3D Explorer", url: "https://freetoolonline.com/space-3d/impact-crater-formation.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },

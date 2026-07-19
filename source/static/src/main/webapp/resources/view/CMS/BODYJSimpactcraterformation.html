@@ -1,0 +1,349 @@
+<script>
+    // 3D scene archetype skeleton (impact-crater-formation) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side.
+    // Registry Gate-H entry: three_3d_scene_vendored. Built LEAN from the shared
+    // t3d* skeleton (see BODYJSsolarsystem.html) - this file implements ONE
+    // scene only (craterformation), not the full accumulated scene set, to
+    // avoid the per-page payload bloat that crept into later copies of this
+    // skeleton. All geometry is procedural - no model files, no textures
+    // fetched. This is an EDUCATIONAL APPROXIMATION, not a physical simulation;
+    // sizes are compressed and the crater-diameter scaling is an illustrative
+    // rule of thumb, and the info panel says so.
+    //
+    // A visible wrapper + "Loading 3D engine..." placeholder renders
+    // synchronously (G16 render-only pass); the ~0.7 MB engine lazy-loads
+    // post-paint via requestIdleCallback and is cached by the browser.
+    // Fullscreen targets the WRAPPER div (controls stay visible).
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'impact-crater-formation';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) {
+        return 'craterformation';
+    }
+
+    // ---- vendored ESM loader (ftoLoadPdfLib shape, but a cached import()) ----
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - building still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- shared scene shell: renderer + camera + custom pointer-orbit --------
+    // OrbitControls is NOT vendored (jsm addons import the bare 'three'
+    // specifier); this ~40-line orbit covers drag-rotate + wheel/pinch zoom
+    // with damping and a clamped pitch.
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        function size() {
+            var w = Math.max(260, host.clientWidth);
+            var h = Math.round(w * 0.62);
+            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fsEl && fsEl.contains(host)) { h = Math.max(240, (window.innerHeight || h) - 150); }
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        host.appendChild(renderer.domElement);
+        renderer.domElement.style.touchAction = 'none';
+        renderer.domElement.style.borderRadius = '6px';
+        var drag = null, pinch = null, moved = 0;
+        host.addEventListener('pointerdown', function (e) {
+            drag = { x: e.clientX, y: e.clientY }; moved = 0;
+            host.setPointerCapture && host.setPointerCapture(e.pointerId);
+        });
+        host.addEventListener('pointermove', function (e) {
+            if (!drag) return;
+            var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+            moved += Math.abs(dx) + Math.abs(dy);
+            drag = { x: e.clientX, y: e.clientY };
+            orbit.goalTheta -= dx * 0.006;
+            orbit.goalPhi = Math.min(Math.max(orbit.goalPhi - dy * 0.005, 0.15), Math.PI - 0.2);
+        });
+        host.addEventListener('pointerup', function (e) {
+            var wasClick = moved < 8;
+            drag = null;
+            if (wasClick && shell.onClick) { shell.onClick(e); }
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR);
+        }, { passive: false });
+        host.addEventListener('touchstart', function (e) {
+            if (e.touches.length === 2) {
+                pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            }
+        }, { passive: true });
+        host.addEventListener('touchmove', function (e) {
+            if (e.touches.length === 2 && pinch) {
+                var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                pinch = d;
+            }
+        }, { passive: true });
+        window.addEventListener('resize', size);
+        document.addEventListener('fullscreenchange', size);
+        document.addEventListener('webkitfullscreenchange', size);
+        size();
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, size: size, onClick: null,
+            ndc: function (e) {
+                var r = renderer.domElement.getBoundingClientRect();
+                return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            },
+        };
+        return shell;
+    }
+
+    // ================= IMPACT CRATER FORMATION ===============================
+    // Three real, well-documented terrestrial impact craters rendered as rim +
+    // depression pairs on a shared ground plane, plus one adjustable "test"
+    // crater driven by an impactor-diameter slider. On-screen radius uses a
+    // SQUARE-ROOT compression of the real diameter so the smallest (Barringer,
+    // ~1.19 km) stays visible next to the largest (Vredefort, ~300 km) - the
+    // facts table always shows the real, uncompressed figures.
+    var T3D_CRATERS = [
+        {
+            name: 'Barringer Crater (Meteor Crater)', place: 'Arizona, USA',
+            diameterKm: 1.19, ageYears: 50000, impactorNote: 'an iron meteorite about 50 m across',
+            color: 0xb08968
+        },
+        {
+            name: 'Chicxulub crater', place: 'Yucatan Peninsula, Mexico',
+            diameterKm: 180, ageYears: 66000000, impactorNote: 'an asteroid or comet roughly 10-15 km across',
+            color: 0x8d6e63
+        },
+        {
+            name: 'Vredefort Dome', place: 'Free State, South Africa',
+            diameterKm: 300, ageYears: 2023000000, impactorNote: 'an object estimated at 10-15 km across (impactor size is less certain at this age)',
+            color: 0x6d6560
+        }
+    ];
+    // On-screen radius mapping: sqrt(diameterKm) * SCALE, so the visual sizes
+    // stay comparable while preserving relative ordering (bigger crater always
+    // reads bigger on screen).
+    var T3D_CRATER_SCALE = 3.1;
+    function t3dCraterScreenRadius(diameterKm) {
+        return Math.sqrt(diameterKm) * T3D_CRATER_SCALE;
+    }
+    function t3dFormatAge(years) {
+        if (years >= 1000000000) return (years / 1000000000).toFixed(2) + ' billion years ago';
+        if (years >= 1000000) return Math.round(years / 1000000) + ' million years ago';
+        return years.toLocaleString('en-US') + ' years ago';
+    }
+    function t3dCraterFormation(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+        var sun = new THREE.DirectionalLight(0xfff3d0, 1.1);
+        sun.position.set(60, 90, 40);
+        scene.add(sun);
+
+        var ground = new THREE.Mesh(
+            new THREE.CircleGeometry(120, 64),
+            new THREE.MeshLambertMaterial({ color: 0x9c8b73 })
+        );
+        ground.rotation.x = -Math.PI / 2;
+        scene.add(ground);
+
+        var positions3 = [
+            new THREE.Vector3(-40, 0, -18),
+            new THREE.Vector3(24, 0, 30),
+            new THREE.Vector3(46, 0, -34)
+        ];
+        var craterGroups = [];
+        function buildCraterMesh(diameterKm, color) {
+            var rOuter = t3dCraterScreenRadius(diameterKm);
+            var group = new THREE.Group();
+            var rim = new THREE.Mesh(
+                new THREE.TorusGeometry(rOuter, Math.max(0.35, rOuter * 0.05), 8, 64),
+                new THREE.MeshLambertMaterial({ color: color })
+            );
+            rim.rotation.x = Math.PI / 2;
+            rim.position.y = 0.05;
+            group.add(rim);
+            var bowl = new THREE.Mesh(
+                new THREE.SphereGeometry(rOuter * 0.94, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2.1),
+                new THREE.MeshLambertMaterial({ color: 0x40372c, side: THREE.BackSide })
+            );
+            bowl.rotation.x = Math.PI;
+            bowl.position.y = rOuter * 0.16;
+            group.add(bowl);
+            return group;
+        }
+        for (var i = 0; i < T3D_CRATERS.length; i++) {
+            var c = T3D_CRATERS[i];
+            var g = buildCraterMesh(c.diameterKm, c.color);
+            g.position.copy(positions3[i]);
+            g.userData = { kind: 'real', idx: i };
+            scene.add(g);
+            craterGroups.push(g);
+        }
+
+        // Adjustable test crater, driven by the impactor-diameter slider using
+        // the widely-cited simple-crater rule of thumb: final crater diameter
+        // is roughly 20x the impactor diameter (for a typical ~20 km/s rocky
+        // impact on land). This is an illustrative approximation, not a solver
+        // - real ratios vary with impact speed, angle, and target rock.
+        var testPos = new THREE.Vector3(-4, 0, -66);
+        var testGroup = null;
+        function testDiameterKm(impactorM) {
+            return (impactorM * 20) / 1000;
+        }
+        function rebuildTest(impactorM) {
+            if (testGroup) { scene.remove(testGroup); testGroup.traverse(function (o) { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); }
+            var dKm = testDiameterKm(impactorM);
+            testGroup = buildCraterMesh(dKm, 0xd32f2f);
+            testGroup.position.copy(testPos);
+            testGroup.userData = { kind: 'test' };
+            scene.add(testGroup);
+            return dKm;
+        }
+        var currentTestDiameterKm = rebuildTest(50);
+
+        function realFacts(idx) {
+            var c = T3D_CRATERS[idx];
+            t3dInfo('<h3>' + c.name + '</h3><p>' + c.place + '.</p>' +
+                '<table class="w3-table w3-bordered"><tr><td>Diameter</td><td>' + c.diameterKm.toLocaleString('en-US') + ' km</td></tr>' +
+                '<tr><td>Age</td><td>about ' + t3dFormatAge(c.ageYears) + '</td></tr>' +
+                '<tr><td>Impactor</td><td>' + c.impactorNote + '</td></tr></table>' +
+                '<p class="t3d-note">On-screen crater size uses a square-root scale so Barringer stays visible next to Vredefort - the table above has the real diameters.</p>');
+        }
+        function testFacts(impactorM, dKm) {
+            var impactorLabel = impactorM >= 1000 ? (impactorM / 1000).toFixed(1) + ' km' : Math.round(impactorM) + ' m';
+            t3dInfo('<h3>Test impactor</h3><p>An impactor about ' + impactorLabel + ' across.</p>' +
+                '<table class="w3-table w3-bordered"><tr><td>Illustrative crater diameter</td><td>' + (dKm < 1 ? Math.round(dKm * 1000) + ' m' : dKm.toFixed(dKm < 10 ? 2 : 0) + ' km') + '</td></tr>' +
+                '<tr><td>Rule used</td><td>crater diameter is about 20x the impactor diameter (a common approximation for simple bowl craters)</td></tr></table>' +
+                '<p class="t3d-note">This is an illustrative scaling rule, not a physics solver - real crater size also depends on impact speed, angle, and target rock. Drag the slider to compare against the three real craters.</p>');
+        }
+        realFacts(0);
+
+        var ray = new THREE.Raycaster();
+        shell.onClick = function (e) {
+            ray.setFromCamera(shell.ndc(e), shell.camera);
+            var targets = craterGroups.concat(testGroup ? [testGroup] : []);
+            var hitList = [];
+            for (var t = 0; t < targets.length; t++) { hitList = hitList.concat(targets[t].children); }
+            var hits = ray.intersectObjects(hitList, false);
+            if (!hits.length) return;
+            var obj = hits[0].object.parent;
+            if (obj.userData.kind === 'real') { realFacts(obj.userData.idx); }
+            else if (obj.userData.kind === 'test') { testFacts(parseFloat(slider ? slider.value : '50'), currentTestDiameterKm); }
+        };
+
+        var slider = document.getElementById('t3dCraterImpactorSlider');
+        var sliderLabel = document.getElementById('t3dCraterImpactorLabel');
+        function applySlider() {
+            var v = parseFloat(slider.value);
+            currentTestDiameterKm = rebuildTest(v);
+            var impactorLabel = v >= 1000 ? (v / 1000).toFixed(1) + ' km' : Math.round(v) + ' m';
+            var craterLabel = currentTestDiameterKm < 1 ? Math.round(currentTestDiameterKm * 1000) + ' m' : currentTestDiameterKm.toFixed(currentTestDiameterKm < 10 ? 2 : 0) + ' km';
+            if (sliderLabel) sliderLabel.textContent = 'Impactor ' + impactorLabel + ' -> illustrative crater ' + craterLabel;
+            testFacts(v, currentTestDiameterKm);
+        }
+        if (slider) { slider.addEventListener('input', applySlider); applySlider(); }
+
+        return function animate(dt) {
+            sun.position.x = 60 * Math.cos(Date.now() * 0.00002);
+            sun.position.z = 40 * Math.sin(Date.now() * 0.00002);
+        };
+    }
+
+    // ---- bootstrap ------------------------------------------------------------
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return; // not a 3D scene page
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { craterformation: 't3dCraterControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = {
+                        craterformation: { radius: 130, maxR: 280, minR: 20, phi: 1.05, targetY: 0 }
+                    };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dCraterFormation(shell);
+                    t3dStatus('Drag to orbit, scroll or pinch to zoom, click a crater for facts, or use the impactor slider below.');
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
