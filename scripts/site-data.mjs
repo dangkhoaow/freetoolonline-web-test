@@ -5518,6 +5518,30 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/alioramus-3d-viewer-vs-ar-apps.html',
   '/guides/id/alioramus-3d-viewer-vs-ar-apps.html',
   '/guides/de/alioramus-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire166 (2026-07-20): how-to-view-doliosauriscus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-doliosauriscus-in-3d.html',
+  '/guides/pt/how-to-view-doliosauriscus-in-3d.html',
+  '/guides/es/how-to-view-doliosauriscus-in-3d.html',
+  '/guides/vi/how-to-view-doliosauriscus-in-3d.html',
+  '/guides/id/how-to-view-doliosauriscus-in-3d.html',
+  '/guides/de/how-to-view-doliosauriscus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire167 (2026-07-20): doliosauriscus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/doliosauriscus-size-comparison.html',
+  '/guides/pt/doliosauriscus-size-comparison.html',
+  '/guides/es/doliosauriscus-size-comparison.html',
+  '/guides/vi/doliosauriscus-size-comparison.html',
+  '/guides/id/doliosauriscus-size-comparison.html',
+  '/guides/de/doliosauriscus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire168 (2026-07-20): doliosauriscus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/doliosauriscus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/doliosauriscus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/doliosauriscus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/doliosauriscus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/doliosauriscus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/doliosauriscus-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -13538,6 +13562,30 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/alioramus-3d-viewer-vs-ar-apps.html': 'guide/vi/alioramus-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/alioramus-3d-viewer-vs-ar-apps.html': 'guide/id/alioramus-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/alioramus-3d-viewer-vs-ar-apps.html': 'guide/de/alioramus-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire166 (2026-07-20): how-to-view-doliosauriscus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-doliosauriscus-in-3d.html': 'guide/how-to-view-doliosauriscus-in-3d.jsp',
+  '/guides/pt/how-to-view-doliosauriscus-in-3d.html': 'guide/pt/how-to-view-doliosauriscus-in-3d.jsp',
+  '/guides/es/how-to-view-doliosauriscus-in-3d.html': 'guide/es/how-to-view-doliosauriscus-in-3d.jsp',
+  '/guides/vi/how-to-view-doliosauriscus-in-3d.html': 'guide/vi/how-to-view-doliosauriscus-in-3d.jsp',
+  '/guides/id/how-to-view-doliosauriscus-in-3d.html': 'guide/id/how-to-view-doliosauriscus-in-3d.jsp',
+  '/guides/de/how-to-view-doliosauriscus-in-3d.html': 'guide/de/how-to-view-doliosauriscus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire167 (2026-07-20): doliosauriscus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/doliosauriscus-size-comparison.html': 'guide/doliosauriscus-size-comparison.jsp',
+  '/guides/pt/doliosauriscus-size-comparison.html': 'guide/pt/doliosauriscus-size-comparison.jsp',
+  '/guides/es/doliosauriscus-size-comparison.html': 'guide/es/doliosauriscus-size-comparison.jsp',
+  '/guides/vi/doliosauriscus-size-comparison.html': 'guide/vi/doliosauriscus-size-comparison.jsp',
+  '/guides/id/doliosauriscus-size-comparison.html': 'guide/id/doliosauriscus-size-comparison.jsp',
+  '/guides/de/doliosauriscus-size-comparison.html': 'guide/de/doliosauriscus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire168 (2026-07-20): doliosauriscus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/doliosauriscus-3d-viewer-vs-ar-apps.html': 'guide/doliosauriscus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/doliosauriscus-3d-viewer-vs-ar-apps.html': 'guide/pt/doliosauriscus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/doliosauriscus-3d-viewer-vs-ar-apps.html': 'guide/es/doliosauriscus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/doliosauriscus-3d-viewer-vs-ar-apps.html': 'guide/vi/doliosauriscus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/doliosauriscus-3d-viewer-vs-ar-apps.html': 'guide/id/doliosauriscus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/doliosauriscus-3d-viewer-vs-ar-apps.html': 'guide/de/doliosauriscus-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
