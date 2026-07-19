@@ -5202,6 +5202,22 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/how-to-view-avaceratops-in-3d.html',
   '/guides/id/how-to-view-avaceratops-in-3d.html',
   '/guides/de/how-to-view-avaceratops-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire140 (2026-07-19): avaceratops-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/avaceratops-size-comparison.html',
+  '/guides/pt/avaceratops-size-comparison.html',
+  '/guides/es/avaceratops-size-comparison.html',
+  '/guides/vi/avaceratops-size-comparison.html',
+  '/guides/id/avaceratops-size-comparison.html',
+  '/guides/de/avaceratops-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire141 (2026-07-19): avaceratops-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/avaceratops-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/avaceratops-3d-viewer-vs-ar-apps.html',
+  '/guides/es/avaceratops-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/avaceratops-3d-viewer-vs-ar-apps.html',
+  '/guides/id/avaceratops-3d-viewer-vs-ar-apps.html',
+  '/guides/de/avaceratops-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -5223,6 +5239,24 @@ export const GUIDE_ROUTES = new Set([
   // GUIDE_ROUTES backfill for video-compressor's 3 EN companion guide angles'
   // full pt/es/vi/id/de locale fanout (builder wires JSP_BY_ROUTE + INFO_ROUTES
   // only, same recurring gap class as fires 32/56/57/62/66/84/113/115/120).
+  '/guides/video-compressor-when.html',
+  '/guides/video-compressor-step-by-step.html',
+  '/guides/video-compressor-vs-alternatives.html',
+  '/guides/pt/video-compressor-when.html',
+  '/guides/pt/video-compressor-step-by-step.html',
+  '/guides/pt/video-compressor-vs-alternatives.html',
+  '/guides/es/video-compressor-when.html',
+  '/guides/es/video-compressor-step-by-step.html',
+  '/guides/es/video-compressor-vs-alternatives.html',
+  '/guides/vi/video-compressor-when.html',
+  '/guides/vi/video-compressor-step-by-step.html',
+  '/guides/vi/video-compressor-vs-alternatives.html',
+  '/guides/id/video-compressor-when.html',
+  '/guides/id/video-compressor-step-by-step.html',
+  '/guides/id/video-compressor-vs-alternatives.html',
+  '/guides/de/video-compressor-when.html',
+  '/guides/de/video-compressor-step-by-step.html',
+  '/guides/de/video-compressor-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire123 (LEAN one-off, 2026-07-13):
   // GUIDE_ROUTES backfill for note-taking-app's 3 EN companion guide angles'
   // full pt/es/vi/id/de locale fanout (builder wires JSP_BY_ROUTE + INFO_ROUTES
@@ -8316,6 +8350,8 @@ export const ALIAS_ROUTES = {
   '/alioramus.html': '/dinosaur-3d/alioramus.html',
   // dinosaur-3d-discovery-loop-runbook fire110: doliosauriscus alias.
   '/doliosauriscus.html': '/dinosaur-3d/doliosauriscus.html',
+  // dinosaur-3d-discovery-loop-runbook fire113: mamenchisaurus alias.
+  '/mamenchisaurus.html': '/dinosaur-3d/mamenchisaurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -11646,6 +11682,7 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/shuangmiaosaurus.html': 'dinosaur/shuangmiaosaurus.jsp',
   '/dinosaur-3d/alioramus.html': 'dinosaur/alioramus.jsp',
   '/dinosaur-3d/doliosauriscus.html': 'dinosaur/doliosauriscus.jsp',
+  '/dinosaur-3d/mamenchisaurus.html': 'dinosaur/mamenchisaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -12762,6 +12799,22 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-view-avaceratops-in-3d.html': 'guide/vi/how-to-view-avaceratops-in-3d.jsp',
   '/guides/id/how-to-view-avaceratops-in-3d.html': 'guide/id/how-to-view-avaceratops-in-3d.jsp',
   '/guides/de/how-to-view-avaceratops-in-3d.html': 'guide/de/how-to-view-avaceratops-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire140 (2026-07-19): avaceratops-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/avaceratops-size-comparison.html': 'guide/avaceratops-size-comparison.jsp',
+  '/guides/pt/avaceratops-size-comparison.html': 'guide/pt/avaceratops-size-comparison.jsp',
+  '/guides/es/avaceratops-size-comparison.html': 'guide/es/avaceratops-size-comparison.jsp',
+  '/guides/vi/avaceratops-size-comparison.html': 'guide/vi/avaceratops-size-comparison.jsp',
+  '/guides/id/avaceratops-size-comparison.html': 'guide/id/avaceratops-size-comparison.jsp',
+  '/guides/de/avaceratops-size-comparison.html': 'guide/de/avaceratops-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire141 (2026-07-19): avaceratops-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/avaceratops-3d-viewer-vs-ar-apps.html': 'guide/avaceratops-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/avaceratops-3d-viewer-vs-ar-apps.html': 'guide/pt/avaceratops-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/avaceratops-3d-viewer-vs-ar-apps.html': 'guide/es/avaceratops-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/avaceratops-3d-viewer-vs-ar-apps.html': 'guide/vi/avaceratops-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/avaceratops-3d-viewer-vs-ar-apps.html': 'guide/id/avaceratops-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/avaceratops-3d-viewer-vs-ar-apps.html': 'guide/de/avaceratops-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
