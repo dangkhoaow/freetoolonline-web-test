@@ -1,0 +1,48 @@
+<script>
+    if (typeof web !== "undefined") web.localUpload = false;
+    var TCF_GAME_URL = 'thirteen-case-files/index.html';
+    function tcfStatus(text) {
+        var el = document.getElementById('tcfStatus');
+        if (el) el.textContent = text;
+    }
+    function tcfInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'tcfFrame';
+        frame.src = TCF_GAME_URL;
+        frame.title = 'Thirteen Case Files game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            tcfStatus('Game loaded. Click or touch on the canvas to read reports and choose protect or arrest.');
+            try { frame.contentWindow.focus(); } catch (e) {}
+        });
+        var launch = document.getElementById('tcfLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('tcfStage');
+        var playBtn = document.getElementById('tcfPlayBtn');
+        if (!stage || !playBtn) return;
+        if (playBtn.dataset.bound === '1') return;
+        playBtn.dataset.bound = '1';
+        var fsBtn = document.getElementById('tcfFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            tcfStatus('Loading the game (about 10 KB, one time - then cached)...');
+            tcfInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('tcfFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) {} }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', doAfterPageRendered);
+    } else {
+        doAfterPageRendered();
+    }
+</script>
