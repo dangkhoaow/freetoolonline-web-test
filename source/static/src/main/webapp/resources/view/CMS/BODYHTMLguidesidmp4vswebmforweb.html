@@ -40,12 +40,12 @@
 <p>Browser berjalan dari atas ke bawah pada daftar <code>&lt;source&gt;</code>, memilih <code>type</code> pertama yang dikenalinya, dan mengabaikan sisanya. Menyajikan AV1 dulu menangkap ~60% perangkat 2026 yang memiliki decode AV1 hardware; VP9 menangkap sebagian besar sisanya; H.264 menjamin fallback 100%.</p>
 
 <br/><h2 class="text-uppercase"><b>Tiga keputusan produksi nyata</b></h2>
-<p><b>Keputusan 1 - Klip sosial pendek untuk jangkauan terluas.</b> &rarr; <b>MP4 (H.264)</b> saja. Encode sekali. Setiap browser, setiap platform sosial, setiap klien email memutarnya. Penghematan bandwidth VP9/AV1 tidak menjustifikasi waktu encode dan perangkat tepi yang akan Anda lewatkan.</p>
+<p>Tiga keputusan produksi nyata untuk MP4 vs WebM untuk web adalah autoplay hero, kompatibilitas unduhan, dan master arsip - kirim MP4 H.264 untuk jangkauan, tambah WebM saat mengoptimalkan bobot Chrome.</p>
 <p><b>Keputusan 2 - Video hero latar belakang di situs marketing pada 1080p, loop 15 detik.</b> &rarr; <b>MP4 (H.264) + WebM (VP9)</b>. File VP9 dikirim pada ~60% ukuran H.264, yang berarti pemuatan halaman lebih cepat untuk pengunjung dengan koneksi lambat. File H.264 adalah fallback untuk siapa saja yang browsernya melewati WebM. Waktu encode kecil (sekali, klip 15 detik).</p>
 <p><b>Keputusan 3 - Pustaka streaming format panjang (layanan VOD, platform kursus, video 30+ menit).</b> &rarr; <b>AV1 (WebM) + VP9 (WebM) + H.264 (MP4)</b>. File AV1 menghemat egress CDN substansial pada skala. File VP9 menutupi setiap browser modern. File H.264 adalah fallback universal. Encode pada hardware GPU atau pipeline batch; waktu encode 10&times; AV1 penting ketika perpustakaan memiliki ribuan video.</p>
 
 <br/><h2 class="text-uppercase"><b>Resep encoding</b></h2>
-<p><b>H.264 (MP4) - universal yang aman.</b> Sebuah one-liner FFmpeg tunggal mencapai titik manis untuk pengiriman web: <code>ffmpeg -i in.mov -c:v libx264 -crf 23 -preset medium -c:a aac -b:a 128k -movflags +faststart out.mp4</code>. Flag <code>+faststart</code> menempatkan atom <code>moov</code> di awal file sehingga browser dapat memulai pemutaran sebelum file lengkap diunduh.</p>
+<p>Resep encoding di MP4 vs WebM untuk web: jaga tangga CRF pendek untuk MP4 H.264, ekspor kembar WebM VP9 saat bobot halaman penting, dan jangan pernah terbitkan hanya WebM tanpa fallback MP4.</p>
 <p><b>VP9 (WebM) - keseimbangan kompresi/kompatibilitas terbaik.</b> Gunakan encoding dua-pass untuk kualitas konsisten pada bitrate target. <code>-c:v libvpx-vp9 -b:v 0 -crf 31 -row-mt 1 -c:a libopus -b:a 96k</code>. Flag <code>-row-mt 1</code> mengaktifkan multi-threading berbasis baris yang memotong waktu encode kira-kira setengah pada CPU modern.</p>
 <p><b>AV1 (WebM) - kompresi maksimum.</b> SVT-AV1 adalah encoder yang dipilih industri: <code>-c:v libsvtav1 -crf 35 -preset 6 -c:a libopus -b:a 96k</code>. Preset 6 adalah keseimbangan default antara kecepatan dan kompresi; preset lebih rendah (4, 5) menyukai kualitas dengan biaya encode yang jauh lebih lama.</p>
 
@@ -54,7 +54,7 @@
 <p>Klien email hampir tidak pernah merender <code>&lt;video&gt;</code> secara native. Jika video ada di newsletter email, ekspor <b>GIF</b> animasi pendek atau tautan MP4 ke landing page - baik WebM maupun tag video HTML5 inline tidak membantu.</p>
 
 <br/><h2 class="text-uppercase"><b>Mengonversi antar format</b></h2>
-<p><a href="/video-tools/video-converter.html">konverter video</a> kami menangani MP4 &harr; WebM di browser dengan FFmpeg.wasm - tanpa unggah, tanpa instalasi. Untuk konversi batch format panjang, instal FFmpeg secara lokal dan gunakan resep di atas; konverter dalam-browser dibatasi oleh RAM yang tersedia (biasanya 2-4 GB per tab), yang bekerja untuk klip individu tetapi tidak untuk katalog 50 video. Lihat <a href="/guides/id/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">panduan perbandingan FFmpeg online vs lokal</a> untuk kapan masing-masing menang.</p>
+<p>Mengonversi antar format untuk MP4 vs WebM untuk web: buka Video Converter, pilih kontainer target, dan cek ulang audio - WebM sunyi tetap butuh kembar MP4 untuk pengguna Safari.</p>
 
 <br/><h2 class="text-uppercase"><b>Alat terkait</b></h2>
 <ul>

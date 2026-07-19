@@ -9,7 +9,7 @@
     </div>
 
     <h2 class="text-uppercase"><b>Was der Pegelanzeiger tatsaechlich zeigt</b></h2>
-    <p>Der Balken (oder die animierte Wellenform) auf einem Browser-Mikrofon-Test ist kein "ist Ihr Mikrofon an"-Indikator - es ist eine Echtzeit-Amplituden-Anzeige der digitalen Audio-Samples, die Ihr Browser erfasst. In jedem Frame liest die Seite einen Brocken von PCM-Samples aus dem <code>AnalyserNode</code> der Web Audio API und rendert den Peak- (oder RMS-) Wert als vertikale Balkenhoehe oder horizontale Wellenform-Linie. Wenn Sie sprechen, erzeugen die Luftdruckvariationen an der Mikrofonkapsel Spannungsvariationen im Mikrofon-Preamp; der OS-Audiotreiber digitalisiert diese Variationen in 16-Bit- (oder 32-Bit-Float-) Samples; der Browser uebergibt die Samples an die Seite; die Seite zeichnet sie. <em>Was Sie sehen, ist das tatsaechliche Audio-Signal, nicht eine Berechtigungs-/Verbindungs-Lampe.</em></p>
+    <p>Was der Pegelanzeiger tatsaechlich zeigt beim Mikrofon-Test leise / normal / Peak: wie laut der Browser Ihr Mikro jetzt hoert - ein bewegter Balken beweist die Kette, nicht den idealen Gain.</p>
     <p>Das ist wichtig, weil ein sich bewegender Anzeiger gleichzeitig Beweis fuer drei Dinge ist: das Mikrofon ist ausgewaehlt und nicht stumm geschaltet, der OS-Audio-Stack liefert Samples an den Browser, und die Seite hat die Berechtigung, sie zu lesen. Umgekehrt bedeutet ein flacher Anzeiger, dass die Kette irgendwo gebrochen ist - was <a href="/guides/de/microphone-test-no-sound-four-fixes.html">Microphone test no sound: 4 fixes that work</a> Ihnen zeigt, wie Sie es loesen. Dieser Leitfaden setzt da an, wo jener endet: der Anzeiger bewegt sich, aber ist der Pegel <em>richtig</em>?</p>
 
     <h2 class="text-uppercase"><b>Leise, normal und Peak: die drei Regionen des Anzeigers</b></h2>
@@ -22,7 +22,7 @@
     <p>Die Asymmetrie ist beabsichtigt: digitales Audio hat eine harte Decke (Vollskala = 0 dBFS) und einen weichen Boden (Raumrauschen + elektronisches Rauschen). Sie wollen Headroom unter der Decke, weil Clipping destruktiv und irreversibel ist, waehrend extra Abstand vom Boden Sie nur einen kleinen Betrag des Signal-Rausch-Verhaeltnisses kostet, den der Hoerer auf einem typischen Anruf nicht hoeren wird.</p>
 
     <h2 class="text-uppercase"><b>Was der Test Ihnen ueber Ihren Pegel nicht sagen kann</b></h2>
-    <p>Ein Pegelanzeiger auf Browser-Seite zeigt den Pegel, nachdem mehrere Upstream-Stufen das Signal bereits beruehrt haben. Sie sehen, was der Browser sieht, nicht was aus der Mikrofonkapsel kam. Diese Luecke ist in drei Faellen wichtig:</p>
+    <p>Was der Test Ihnen ueber Ihren Pegel nicht sagen kann beim Mikrofon-Test: absolute Studio-Kalibrierung - leise, normal und Peak sind relative Regionen auf dieser Seite, keine dBFS-Laborwerte.</p>
     <ul>
         <li><b>Die automatische Gain-Kontrolle (AGC) des Betriebssystems kann aktiv sein.</b> Windows ("Listen to this device" + "Microphone Boost"), macOS ("Use ambient noise reduction") und viele USB-Headset-Treiber laufen eine Software-AGC, die leise Eingabe verstaerkt und laute Eingabe abschwaecht, bevor der Browser die Samples sieht. Ein Anzeiger, der "perfekt" aussieht, wenn AGC eingeschaltet ist, kann eine grundsaetzlich schwache (oder verrauschte) Mikrofon-Position verbergen. Fuer eine Aufnahme-Grade-Anzeige deaktivieren Sie OS-Ebene-AGC in den OS-Audio-Einstellungen, dann testen Sie erneut.</li>
         <li><b>Browser koennen ihre eigene Rauschunterdrueckung und Echo-Aufhebung anwenden.</b> Chromes Standard-<code>getUserMedia</code>-Einschraenkungen aktivieren <code>echoCancellation</code>, <code>noiseSuppression</code> und <code>autoGainControl</code>. Einige Testseiten deaktivieren diese Einschraenkungen (sodass Sie rohe Eingabe sehen); andere lassen sie an (sodass Sie das verarbeitete Signal sehen, das Zoom und Meet erhalten wuerden). Die Anzeigerlesung kann zwischen den beiden Modi um ein bis zwei Skalendrittel verschieben. Der Browser-Mikrofon-Test auf dieser Site (siehe <a href="/device-test-tools/microphone-test.html">Tool-Seite</a>) rendert das Live-Mess-Canvas vom rohen <code>AnalyserNode</code>, sodass Sie das Signal vor der Meeting-App-Verarbeitungsschicht sehen.</li>
@@ -30,7 +30,7 @@
     </ul>
 
     <h2 class="text-uppercase"><b>Ziele nach Anwendungsfall</b></h2>
-    <p>Das "normale" mittlere-Drittel-Ziel oben ist der anruf-bereite Standard. Verschiedene nachgelagerte Verwendungen haben unterschiedliche Optima:</p>
+    <p>Ziele nach Anwendungsfall fuer Mikrofon-Test leise / normal / Peak: Sprache im mittleren Drittel fuer Calls halten; Headroom unter der Peak-Zone lassen damit ein Lachen nicht mittendrin clippt.</p>
     <ul>
         <li><b>Videokonferenz (Zoom, Google Meet, Microsoft Teams).</b> Mitte der Skala bei betonten Woertern. Meeting-Apps sind tolerant gegenueber einem weiten Eingangsbereich, weil ihre eigenen Gain-Stufen auf der Empfangsseite renormalisieren. Die groesseren Risiken sind Clipping (das sie nicht beheben koennen) und uebermaessiges Raumrauschen (das sie teilweise unterdruecken, aber nicht eliminieren koennen).</li>
         <li><b>Podcast- oder Interview-Aufnahme.</b> Etwa ein Drittel der Skala bei betonten Woertern. Podcaster arbeiten in dBFS (Dezibel relativ zur Vollskala) und zielen auf etwa -18 dBFS bis -12 dBFS durchschnittlich ("LUFS"-Pegel sind aehnlich in Form). Das niedrigere Ziel laesst Headroom fuer laute Reaktionen und Post-Produktions-Normalisierung. Wenn Ihre Aufnahme-App numerische dBFS zeigt, bevorzugen Sie diese Zahlen; der visuelle Anzeiger ist nur ein Proxy.</li>
@@ -53,7 +53,7 @@
     <p>Wenn alle drei korrekt sind und der Anzeiger immer noch nahe dem Boden schwebt, kann der Mikrofon-Preamp ausfallen oder der OS-Treiber den Kanal unter dem Eingangslautstaerke-Slider stumm schalten. Probieren Sie das Mikrofon in einer anderen Anwendung (Voice Memos auf macOS, Sound Recorder auf Windows), um die Schicht zu isolieren; wenn die andere Anwendung auch ein schwaches Signal zeigt, liegt der Fehler unterhalb der Browser-Schicht.</p>
 
     <h2 class="text-uppercase"><b>Wenn der Anzeiger oben pinnt (Clipping)</b></h2>
-    <p>Persistente Peaks an Vollskala ruinieren Anrufaudio: der Hoerer hoert eine summende Kante an jeder Silbe und die zugrunde liegende Sprachqualitaet. Drei schnelle Korrekturen:</p>
+    <p>Wenn der Anzeiger oben pinnt (Clipping) beim Mikrofon-Test: OS- oder Browser-Mikro-Gain senken vor dem Interview - ein roter Balken bedeutet Verzerrung die die Call-App auch hoert.</p>
     <ol>
         <li><b>Senken Sie den Mikrofon-Eingangs-Gain in den OS-Audioeinstellungen.</b> Dieselben Steuerelemente wie oben; schieben Sie nach unten statt nach oben.</li>
         <li><b>Bewegen Sie sich leicht zurueck vom Mikrofon.</b> Drei bis fuenf Zentimeter extra Abstand sind normalerweise genug, um den Pegel aus der Clipping-Zone herauszuholen, ohne Verstaendlichkeit zu verlieren.</li>

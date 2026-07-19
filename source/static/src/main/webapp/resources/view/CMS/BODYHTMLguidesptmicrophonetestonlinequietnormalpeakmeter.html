@@ -9,7 +9,7 @@
     </div>
 
     <h2 class="text-uppercase"><b>O que o medidor de nivel realmente mostra</b></h2>
-    <p>A barra (ou forma de onda animada) neste tipo de teste nao e um indicador "seu mic esta ligado" - e uma leitura em tempo real da amplitude dos samples de audio digital que seu navegador esta capturando. A cada quadro a pagina le um pedaco de samples PCM do <code>AnalyserNode</code> da Web Audio API e renderiza o valor de pico (ou RMS) como uma altura de barra vertical ou uma linha horizontal de forma de onda. Quando voce fala, as variacoes de pressao do ar na capsula do mic produzem variacoes de tensao no preamp do mic; o driver de audio do SO digitaliza essas variacoes em samples de 16 bits (ou 32 bits float); o navegador entrega os samples a pagina; a pagina os desenha. <em>O que voce ve e o sinal de audio real, nao uma luz de permissao/conexao.</em></p>
+    <p>O que o medidor de nivel realmente mostra em Teste de microfone quieto / normal / peak e o quao alto o navegador ouve seu mic agora - uma barra em movimento prova a cadeia, nao que o ganho seja ideal.</p>
     <p>Isso importa porque um medidor em movimento e prova de tres coisas ao mesmo tempo: o mic esta selecionado e nao silenciado, a pilha de audio do SO esta entregando samples ao navegador, e a pagina tem permissao para le-los. Por outro lado, um medidor plano significa que a cadeia esta quebrada em algum lugar - que e o que <a href="/guides/pt/microphone-test-no-sound-four-fixes.html">Microphone test no sound: 4 fixes that work</a> mostra como resolver. Este guia continua de onde aquele termina: o medidor esta se movendo, mas o nivel esta <em>certo</em>?</p>
 
     <h2 class="text-uppercase"><b>Silencioso, normal e peak: as tres regioes do medidor</b></h2>
@@ -22,7 +22,7 @@
     <p>A assimetria e intencional: o audio digital tem um teto duro (escala completa = 0 dBFS) e um piso suave (ruido de sala + ruido eletronico). Voce quer headroom abaixo do teto porque o clipping e destrutivo e irreversivel, enquanto distancia extra do piso so custa uma pequena quantidade de razao sinal-ruido que o ouvinte nao ouvira em uma chamada tipica.</p>
 
     <h2 class="text-uppercase"><b>O que o teste nao pode te dizer sobre seu nivel</b></h2>
-    <p>Um medidor de nivel do lado do navegador mostra o nivel depois que varios estagios upstream ja tocaram o sinal. Voce ve o que o navegador ve, nao o que saiu da capsula do microfone. Essa lacuna importa em tres casos:</p>
+    <p>O que o teste nao pode te dizer sobre seu nivel no Microphone Test e calibracao de estudio absoluta - quieto, normal e peak sao regioes relativas nesta pagina, nao numeros dBFS de laboratorio.</p>
     <ul>
         <li><b>O controle automatico de ganho (AGC) do sistema operacional pode estar ativo.</b> Windows ("Escutar este dispositivo" + "Microphone Boost"), macOS ("Usar reducao de ruido ambiente") e muitos drivers de headset USB rodam um AGC de software que aumenta entrada baixa e atenua entrada alta antes que o navegador veja os samples. Um medidor que parece "perfeito" quando o AGC esta ligado pode esconder uma posicao de mic fundamentalmente fraca (ou ruidosa). Para uma leitura grade-gravacao, desative o AGC no nivel do SO nas configuracoes de audio, depois teste novamente.</li>
         <li><b>Navegadores podem aplicar sua propria supressao de ruido e cancelamento de eco.</b> As restricoes padrao do <code>getUserMedia</code> do Chrome habilitam <code>echoCancellation</code>, <code>noiseSuppression</code>, e <code>autoGainControl</code>. Algumas paginas de teste desabilitam essas restricoes (entao voce ve a entrada bruta); outras as deixam ligadas (entao voce ve o sinal processado que Zoom e Meet receberiam). A leitura do medidor pode mudar um a dois tercos de escala entre os dois modos. Esta ferramenta (ver a <a href="/device-test-tools/microphone-test.html">pagina da ferramenta</a>) renderiza o canvas de medicao ao vivo do <code>AnalyserNode</code> bruto, entao voce ve o sinal antes da camada de processamento do app de reuniao.</li>
@@ -30,7 +30,7 @@
     </ul>
 
     <h2 class="text-uppercase"><b>Alvos por caso de uso</b></h2>
-    <p>O alvo "normal" do terco do meio acima e o padrao pronto para chamada. Diferentes usos a jusante tem otimos diferentes:</p>
+    <p>Alvos por caso de uso para Teste de microfone quieto / normal / peak: mantenha a fala no terco do meio para chamadas; deixe folga abaixo da zona peak para uma risada nao clipar no meio da frase.</p>
     <ul>
         <li><b>Reuniao de video (Zoom, Google Meet, Microsoft Teams).</b> Meio da escala em palavras enfatizadas. Apps de reuniao toleram uma ampla faixa de entrada porque seus proprios estagios de ganho renormalizam do lado de recepcao. Os riscos maiores sao clipping (que eles nao podem corrigir) e ruido de sala excessivo (que eles podem parcialmente suprimir mas nao eliminar).</li>
         <li><b>Gravacao de podcast ou entrevista.</b> Cerca de um terco da escala em palavras enfatizadas. Podcasters trabalham em dBFS (decibeis relativos a escala completa) e miram em torno de -18 dBFS a -12 dBFS medio (niveis "LUFS" sao similares em formato). O alvo mais baixo deixa headroom para reacoes altas e normalizacao em pos-producao. Se seu app de gravacao mostra dBFS numerico, prefira esses numeros; o medidor visual e apenas um proxy.</li>
@@ -53,7 +53,7 @@
     <p>Se todas as tres estao corretas e o medidor ainda paira perto do chao, o preamp do mic pode estar falhando ou o driver do SO pode estar silenciando o canal abaixo do controle de volume de entrada. Tente o mic em outro aplicativo (Voice Memos no macOS, Sound Recorder no Windows) para isolar a camada; se o outro aplicativo tambem mostra um sinal fraco, a falha esta abaixo da camada do navegador.</p>
 
     <h2 class="text-uppercase"><b>Se o medidor esta fixo no topo (clipping)</b></h2>
-    <p>Picos persistentes em escala completa arruinam o audio da chamada: o ouvinte ouve uma borda zumbidora em cada silaba e a qualidade de voz subjacente. Tres correcoes rapidas:</p>
+    <p>Se o medidor esta fixo no topo (clipping) no Microphone Test, baixe o ganho do mic no SO ou navegador antes da entrevista - barra no vermelho significa distorcao que o app de chamada tambem vai ouvir.</p>
     <ol>
         <li><b>Diminua o ganho de entrada do mic nas configuracoes de som do SO.</b> Mesmos controles acima; deslize para baixo em vez de para cima.</li>
         <li><b>Afaste-se ligeiramente do mic.</b> Tres a cinco centimetros de distancia extra geralmente sao suficientes para tirar o nivel da zona de clipping sem perder inteligibilidade.</li>

@@ -15,10 +15,10 @@
   </table>
 
   <h2>Por que la mayoria de ZIPs no se encogen</h2>
-  <p>El trabajo de un archivo ZIP es dos cosas: agrupar muchos archivos en un solo contenedor y (opcionalmente) comprimirlos. El paso de compresion usa DEFLATE, que lee cada archivo de entrada buscando patrones de bytes repetidos y los reemplaza con tokens mas cortos. El texto plano - registros, CSV, JSON, codigo fuente, formatos de imagen sin comprimir como BMP o TIFF sin comprimir - contiene mucha repeticion, asi que DEFLATE lo encoge mucho; reducciones de 50-70% son normales en archivos ricos en texto. JPG, MP4, MP3 y la mayoria de PDFs ya pasaron por un compresor de dominio especifico (cuantizacion JPEG para fotos, codec AAC o MP3 para audio, H.264 / H.265 para video), asi que el flujo de bytes le parece ruido a DEFLATE. El resultado es que el ZIP solo anade la sobrecarga del contenedor (cabeceras de archivo, registro de directorio) sin encontrar ahorros. La salida suele ser 0-5% mas pequena, ocasionalmente 1-2% mas grande.</p>
+  <p>Por que la mayoria de ZIPs no se encogen en Como reducir el tamano de un ZIP: los miembros JPG, MP4 y PDF ya estan comprimidos - Zip Compressor no inventa bytes libres hasta que recomprimas esos archivos primero.</p>
 
   <h2>El flujo que realmente reduce el tamano</h2>
-  <p>Si el objetivo es "hacer mas pequena esta entrega", separa el contenido comprimible del ya comprimido antes de comprimir:</p>
+  <p>El flujo que realmente reduce el tamano en Como reducir el tamano de un ZIP: extrae, comprime fotos y video con la herramienta correcta, luego reconstruye el archivo para que el ZIP herede los miembros mas pequenos.</p>
   <ol>
     <li><b>Identifica los archivos pesados.</b> Ordena la carpeta por tamano. Los uno o dos archivos del tope casi siempre representan el 80% del total, y normalmente son fotos, grabaciones de pantalla o PDFs.</li>
     <li><b>Reduce los archivos pesados por separado.</b> Redimensiona una foto de 4000x3000 a 2000x1500 con <a href="/image-tools/resize-image.html">Resize Image</a>; recomprime con menor calidad usando <a href="/image-tools/compress-image.html">Compress Image</a>; recorta un video con las herramientas de video en <a href="/video-tools.html">/video-tools.html</a>; aplana un PDF pesado con <a href="/pdf-tools.html">Compress PDF</a>.</li>
@@ -27,7 +27,7 @@
   <p>El resultado final es un ZIP cuyo tamano lo dominan los nuevos archivos de medios mas pequenos. El paso del ZIP es el ultimo 5%, no el primer 95%.</p>
 
   <h2>Y el deslizador de nivel de compresion?</h2>
-  <p>Algunas herramientas ZIP exponen un nivel (Store / Fast / Normal / Maximum / Ultra). El deslizador principalmente intercambia tiempo de CPU del lado del remitente por unos por ciento extra de reduccion de tamano:</p>
+  <p>Y el deslizador de nivel de compresion? Es un ajuste fino en Zip Compressor despues de que los miembros ya se puedan reducir - al maximo en un ZIP de MP4s el archivo casi no cambia.</p>
   <ul>
     <li><b>Store</b> - sin compresion. Util solo cuando la velocidad importa mas que el tamano (una carpeta muy grande subida por una conexion lenta donde la CPU es el cuello de botella).</li>
     <li><b>Fast / Normal (DEFLATE por defecto)</b> - el ajuste estandar. Mejor equilibrio entre tiempo de build y tamano. <i>Usa este a menos que tengas una razon para no hacerlo.</i></li>
@@ -36,7 +36,7 @@
   <p>Si tu ZIP no encogio, el deslizador de nivel es la perilla equivocada para girar. Las entradas no son comprimibles, punto final - y necesitas el paso de preprocesamiento de arriba.</p>
 
   <h2>Nota de enrutamiento de sinonimos</h2>
-  <p>Si escribiste "compress ZIP" en vez de "como reducir el tamano de archivo ZIP", la misma respuesta vive en <a href="/guides/es/compress-zip.html">/guides/es/compress-zip.html</a> en lenguaje ligeramente distinto - la guia de desambiguacion para esa formulacion. La guia companera en <a href="/guides/es/how-to-reduce-zip-file-size-online.html">/guides/es/how-to-reduce-zip-file-size-online.html</a> cubre la misma consulta para lectores que incluyen "online" en su busqueda. Ambas rutas enlazan de vuelta al mismo creador de ZIP en el navegador en <a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a>, asi que el siguiente clic es el mismo independientemente de la formulacion usada.</p>
+  <p>Nota de enrutamiento de sinonimos para Como reducir el tamano de un ZIP: busquedas como hacer ZIP mas pequeno caen en el mismo flujo - reduce los miembros pesados, luego vuelve a comprimir.</p>
 
   <h2>Preguntas frecuentes</h2>
   <details class="faq-item">
@@ -57,5 +57,5 @@
   </details>
 
   <h2>Resumen en una linea</h2>
-  <p>Para reducir el tamano de un archivo ZIP: no empieces en el paso del ZIP. Ordena la carpeta por tamano, encoge los archivos de medios pesados por separado (redimensiona, recodifica), despues comprime los archivos optimizados al nivel de compresion por defecto. El ZIP es el paquete; la ganancia de tamano ocurre rio arriba de el.</p>
+  <p>Resumen en una linea para Como reducir el tamano de un ZIP: reduce fotos y videos dentro, luego zip de nuevo - no esperes que el deslizador del archivo solo recorte medios ya comprimidos.</p>
 </article>

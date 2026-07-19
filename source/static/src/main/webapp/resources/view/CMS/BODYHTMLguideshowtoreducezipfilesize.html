@@ -15,10 +15,10 @@
   </table>
 
   <h2>Why most ZIPs do not shrink</h2>
-  <p>The job of a ZIP file is two things: bundle many files into one container and (optionally) compress them. The compression step uses DEFLATE, which reads each input file looking for repeated byte patterns and replaces them with shorter tokens. Plain text - logs, CSV, JSON, source code, uncompressed image formats like BMP or uncompressed TIFF - contains lots of repetition, so DEFLATE shrinks it heavily; 50-70% size reductions are normal on text-heavy archives. JPG, MP4, MP3, and most PDFs have already been through a domain-specific compressor (JPEG quantisation for photos, AAC or MP3 codec for audio, H.264 / H.265 for video), so the byte stream looks like noise to DEFLATE. The result is that the ZIP only adds the container overhead (file headers, directory record) without finding savings. The output is usually 0-5% smaller, occasionally 1-2% larger.</p>
+  <p>Why most ZIPs do not shrink on How to reduce ZIP file size: JPG, MP4, and PDF members are already compressed, so Zip Compressor cannot invent free bytes until you recompress those files first.</p>
 
   <h2>The workflow that actually reduces the size</h2>
-  <p>If the goal is "make this delivery smaller", separate compressible content from already-compressed content before you ZIP:</p>
+  <p>The workflow that actually reduces the size on How to reduce ZIP file size: extract, compress photos and video with the right tool, then rebuild the archive so the new ZIP inherits the smaller members.</p>
   <ol>
     <li><b>Identify the heavy files.</b> Sort the folder by size. The top one or two files almost always account for 80% of the total, and they are usually photos, screen recordings, or PDFs.</li>
     <li><b>Reduce the heavy files separately.</b> Resize a 4000x3000 photo to 2000x1500 with <a href="/image-tools/resize-image.html">Resize Image</a>; re-compress at a lower quality with <a href="/image-tools/compress-image.html">Compress Image</a>; trim a video with the video tools at <a href="/video-tools.html">/video-tools.html</a>; flatten a heavy PDF with <a href="/pdf-tools.html">Compress PDF</a>.</li>
@@ -27,7 +27,7 @@
   <p>The end result is a ZIP whose size is dominated by the new, smaller media files. The ZIP step is the last 5%, not the first 95%.</p>
 
   <h2>What about the compression-level slider?</h2>
-  <p>Some ZIP tools expose a level (Store / Fast / Normal / Maximum / Ultra). The slider mainly trades CPU time on the sender side against a few extra percent of size reduction:</p>
+  <p>What about the compression-level slider is that it is only a fine-tune on Zip Compressor after members are already shrinkable - maxing the slider on a ZIP of MP4s still leaves the archive almost the same size.</p>
   <ul>
     <li><b>Store</b> - no compression. Useful only when speed matters more than size (a very large folder being uploaded over a slow connection where the CPU is the bottleneck).</li>
     <li><b>Fast / Normal (DEFLATE default)</b> - the standard setting. Best balance of build time and size. <i>Use this unless you have a reason not to.</i></li>
@@ -36,6 +36,7 @@
   <p>If your ZIP did not shrink, the level slider is the wrong knob to turn. The inputs are not compressible, full stop - and you need the preprocessing step above.</p>
 
   <h2>Synonym-routing note</h2>
+<p>Synonym-routing note for How to reduce ZIP file size: searches like make ZIP smaller and compress ZIP more land on the same workflow - shrink the heavy members, then rebuild.</p>
   <p>If you typed "compress ZIP" instead of "how to reduce ZIP file size", the same answer lives at <a href="/guides/compress-zip.html">/guides/compress-zip.html</a> in slightly different language - the disambiguation guide for that phrasing. The companion guide at <a href="/guides/how-to-reduce-zip-file-size-online.html">/guides/how-to-reduce-zip-file-size-online.html</a> covers the same query for readers who include "online" in their search. Both routes link back to the same in-browser ZIP creator at <a href="/zip-tools/zip-file.html">/zip-tools/zip-file.html</a>, so the next click is the same regardless of which wording you used.</p>
 
   <h2>FAQ</h2>
@@ -57,5 +58,5 @@
   </details>
 
   <h2>One-line takeaway</h2>
-  <p>To reduce a ZIP file's size: do not start at the ZIP step. Sort the folder by size, shrink the heavy media files separately (resize, re-encode), then ZIP the optimised files at the default compression level. The ZIP is the bundle; the size win happens upstream of it.</p>
+  <p>One-line takeaway for How to reduce ZIP file size: shrink the photos and videos inside, then zip again - do not expect the archive slider alone to cut already-compressed media.</p>
 </article>

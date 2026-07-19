@@ -38,12 +38,12 @@
 <p>The browser walks the <code>&lt;source&gt;</code> list top-down, picks the first <code>type</code> it recognises, and ignores the rest. Serving AV1 first captures the ~60% of 2026 devices that have hardware AV1 decode; VP9 catches most of the rest; H.264 guarantees 100% fallback.</p>
 
 <br/><h2 class="text-uppercase"><b>The three real production decisions</b></h2>
-<p><b>Decision 1 - Short social clip for broadest reach.</b> &rarr; <b>MP4 (H.264)</b> only. Encode once. Every browser, every social platform, every email client plays it. Bandwidth savings of VP9/AV1 do not justify the encode time and the edge-case devices you'd miss.</p>
+<p>The three real production decisions for MP4 vs WebM for web are hero autoplay, download compatibility, and archive masters - ship MP4 H.264 for reach, add WebM when you optimize Chrome-weight pages.</p>
 <p><b>Decision 2 - Background hero video on a marketing site at 1080p, 15-second loop.</b> &rarr; <b>MP4 (H.264) + WebM (VP9)</b>. The VP9 file ships at ~60% of the H.264 size, which means a faster page load for visitors on slow connections. The H.264 file is the fallback for anyone whose browser skips WebM. Encode time is small (one-time, 15-second clip).</p>
 <p><b>Decision 3 - Long-form streaming library (VOD service, course platform, 30+ minute videos).</b> &rarr; <b>AV1 (WebM) + VP9 (WebM) + H.264 (MP4)</b>. The AV1 files save substantial CDN egress at scale. The VP9 files cover every modern browser. The H.264 files are the universal fallback. Encode on GPU hardware or a batch pipeline; AV1's 10&times; encode time matters when the library has thousands of videos.</p>
 
 <br/><h2 class="text-uppercase"><b>Encoding recipes</b></h2>
-<p><b>H.264 (MP4) - the safe universal.</b> A single FFmpeg one-liner hits the sweet spot for web delivery: <code>ffmpeg -i in.mov -c:v libx264 -crf 23 -preset medium -c:a aac -b:a 128k -movflags +faststart out.mp4</code>. The <code>+faststart</code> flag puts the <code>moov</code> atom at the start of the file so a browser can begin playback before the full file downloads.</p>
+<p>Encoding recipes on MP4 vs WebM for web: keep a short CRF ladder for H.264 MP4, export a VP9 WebM twin when page weight matters, and never publish only WebM without an MP4 fallback.</p>
 <p><b>VP9 (WebM) - best compression/compatibility balance.</b> Use two-pass encoding for consistent quality at a target bitrate. <code>-c:v libvpx-vp9 -b:v 0 -crf 31 -row-mt 1 -c:a libopus -b:a 96k</code>. The <code>-row-mt 1</code> flag enables row-based multi-threading that cuts encode time roughly in half on modern CPUs.</p>
 <p><b>AV1 (WebM) - maximum compression.</b> SVT-AV1 is the encoder the industry settled on: <code>-c:v libsvtav1 -crf 35 -preset 6 -c:a libopus -b:a 96k</code>. Preset 6 is the default balance between speed and compression; lower presets (4, 5) favour quality at the cost of much longer encodes.</p>
 
@@ -52,7 +52,7 @@
 <p>Email clients almost never render <code>&lt;video&gt;</code> natively. If the video is in an email newsletter, export a short animated <b>GIF</b> or an MP4 link to a landing page - neither WebM nor an inline HTML5 video tag help.</p>
 
 <br/><h2 class="text-uppercase"><b>Converting between formats</b></h2>
-<p>Our <a href="/video-tools/video-converter.html">video converter</a> handles MP4 &harr; WebM in the browser with FFmpeg.wasm - no upload, no install. For long-form batch conversion, install FFmpeg locally and use the recipes above; the in-browser converter is bounded by your available RAM (typically 2-4 GB per tab), which works for individual clips but not a 50-video catalog. See our <a href="/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">FFmpeg online vs local comparison guide</a> for when each wins.</p>
+<p>Converting between formats for MP4 vs WebM for web: open Video Converter, pick the target container, and re-check audio - a silent WebM still needs an MP4 twin for Safari users.</p>
 
 <br/><h2 class="text-uppercase"><b>Related tools</b></h2>
 <ul>
