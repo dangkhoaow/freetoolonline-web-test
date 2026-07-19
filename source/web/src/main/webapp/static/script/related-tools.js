@@ -614,6 +614,7 @@ try {
     { title: "Iapetus Equatorial Ridge 3D Explorer", url: "https://freetoolonline.com/space-3d/iapetus-equatorial-ridge.html", include: !1, tags: "space-3d" },
     { title: "Mimas Herschel Crater 3D Explorer", url: "https://freetoolonline.com/space-3d/mimas-herschel.html", include: !1, tags: "space-3d" },
     { title: "Hyperion Sponge Moon 3D Explorer", url: "https://freetoolonline.com/space-3d/hyperion-sponge.html", include: !1, tags: "space-3d" },
+    { title: "Triton Cantaloupe Terrain 3D Explorer", url: "https://freetoolonline.com/space-3d/triton-cantaloupe.html", include: !1, tags: "space-3d" },
     { title: "Wormhole (Einstein-Rosen Bridge) 3D Explorer", url: "https://freetoolonline.com/space-3d/wormhole.html", include: !1, tags: "space-3d" },
     { title: "Satellite Orbit Classes 3D Explorer", url: "https://freetoolonline.com/space-3d/satellite-orbit-classes.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
