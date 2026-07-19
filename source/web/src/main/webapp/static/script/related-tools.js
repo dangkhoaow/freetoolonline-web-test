@@ -448,6 +448,7 @@ try {
     { title: "Thirteen Hours", url: "https://freetoolonline.com/games/thirteen-hours.html", include: !1, tags: "games" },
     { title: "Quantum Shift", url: "https://freetoolonline.com/games/quantum-shift.html", include: !1, tags: "games" },
     { title: "Rollermaze", url: "https://freetoolonline.com/games/roller-maze-escape.html", include: !1, tags: "games" },
+    { title: "Thirteen Case Files", url: "https://freetoolonline.com/games/thirteen-case-files.html", include: !1, tags: "games" },
     { title: "Seasonal Witchcat", url: "https://freetoolonline.com/games/seasonal-witchcat.html", include: !1, tags: "games" },
     { title: "Desk Cat Coder", url: "https://freetoolonline.com/games/desk-cat-coder.html", include: !1, tags: "games" },
     { title: "Boing Cat Platformer", url: "https://freetoolonline.com/games/boing-cat-platformer.html", include: !1, tags: "games" },
