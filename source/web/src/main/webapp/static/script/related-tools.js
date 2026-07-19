@@ -344,6 +344,7 @@ try {
     { title: "Allosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/allosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Giganotosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/giganotosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Diplodocus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/diplodocus.html", include: !1, tags: "dinosaur-3d" },
+    { title: "Barosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/barosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Apatosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/apatosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Carnotaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/carnotaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Dilophosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/dilophosaurus.html", include: !1, tags: "dinosaur-3d" },
