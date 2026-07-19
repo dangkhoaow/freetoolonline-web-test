@@ -439,7 +439,7 @@ function pageIdentityWordmarkEnabled() { return _pageIdentityCache.wordmark; }
 // this inline <style> comes after that <link> and uses 2-class specificity +
 // !important to own the pictogram box (the gear's padding/width hacks, tuned
 // for an inline <svg>, otherwise clip the <img>).
-const HEADER_PICT_STYLE = `<style>.headerLogo.headerLogoPict{width:auto!important;height:43px!important;padding:0 8px 0 5px!important;display:inline-flex!important;align-items:center;gap:7px;pointer-events:auto!important;background:none!important;position:static!important}.headerLogo.headerLogoPict>img.headerLogoImg{width:32px!important;height:32px!important;min-width:32px;object-fit:contain;display:block;position:static!important;top:auto!important;left:auto!important;flex:0 0 auto}.headerLogo.headerLogoPict .siteWordmark{font-weight:800;font-size:17px;letter-spacing:-0.2px;color:var(--logo-navy,#00436e);white-space:nowrap;line-height:1}.main-html.dark .headerLogo.headerLogoPict .siteWordmark{color:#e8e8ea}</style>`;
+const HEADER_PICT_STYLE = `<style>.headerLogo.headerLogoPict{width:auto!important;height:43px!important;padding:0 8px 0 5px!important;display:inline-flex!important;align-items:center;gap:7px;pointer-events:auto!important;background:none!important;position:static!important}.headerLogo.headerLogoPict>img.headerLogoImg{width:32px!important;height:32px!important;min-width:32px;object-fit:contain;display:block;position:static!important;top:auto!important;left:auto!important;flex:0 0 auto}.headerLogo.headerLogoPict .siteWordmark{font-weight:800;font-size:17px;letter-spacing:-0.2px;color:var(--logo-navy,#00436e);white-space:nowrap;line-height:1}.main-html.dark .headerLogo.headerLogoPict .siteWordmark{color:#e8e8ea} @media (min-width: 1000px) {body.scrolled .headerLogoPict + .pageNameContainer {margin-left:12px!important;}}}</style>`;
 
 function renderMetaTags(ctx) {
   const canonicalUrl = ctx.canonicalUrl;
@@ -598,7 +598,7 @@ function renderHeader(ctx) {
   // headerLogoPict modifier owns its own box (the gear's padding/width hacks
   // in style-all-default.tag are tuned for an inline <svg> and clip an <img>).
   const wordmarkSpan = (usePict && pageIdentityWordmarkEnabled())
-    ? `<span class="siteWordmark">FreeToolOnline</span>`
+    ? `<span class="siteWordmark w3-hide-small">FreeToolOnline</span>`
     : '';
   const headerLogoClass = usePict
     ? 'w3-bar-item w3-button headerLogo headerLogoPict color'
