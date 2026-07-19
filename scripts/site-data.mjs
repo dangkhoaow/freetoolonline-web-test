@@ -5294,6 +5294,24 @@ export const GUIDE_ROUTES = new Set([
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only, same recurring gap
   // class as fires 32/56/57/62/66/84/113/115/120) plus their full
   // pt/es/vi/id/de locale fanout.
+  '/guides/jwt-decoder-when.html',
+  '/guides/jwt-decoder-step-by-step.html',
+  '/guides/jwt-decoder-vs-alternatives.html',
+  '/guides/pt/jwt-decoder-when.html',
+  '/guides/pt/jwt-decoder-step-by-step.html',
+  '/guides/pt/jwt-decoder-vs-alternatives.html',
+  '/guides/es/jwt-decoder-when.html',
+  '/guides/es/jwt-decoder-step-by-step.html',
+  '/guides/es/jwt-decoder-vs-alternatives.html',
+  '/guides/vi/jwt-decoder-when.html',
+  '/guides/vi/jwt-decoder-step-by-step.html',
+  '/guides/vi/jwt-decoder-vs-alternatives.html',
+  '/guides/id/jwt-decoder-when.html',
+  '/guides/id/jwt-decoder-step-by-step.html',
+  '/guides/id/jwt-decoder-vs-alternatives.html',
+  '/guides/de/jwt-decoder-when.html',
+  '/guides/de/jwt-decoder-step-by-step.html',
+  '/guides/de/jwt-decoder-vs-alternatives.html',
   // GUIDE_ROUTES locale fanout for flashcards-maker's 3 EN companion guide
   // angles - pt/es/vi/id/de.
   // new-tool-discovery-loop-runbook fire129 (LEAN one-off, 2026-07-13):
