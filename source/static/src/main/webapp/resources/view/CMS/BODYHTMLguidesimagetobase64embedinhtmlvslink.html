@@ -20,7 +20,7 @@
     </div>
 
     <h2 class="text-uppercase"><b>Why two options exist at all</b></h2>
-    <p>An HTML or CSS file is a text format. An image (PNG, JPG, WebP, SVG-as-binary) is binary. To put an image inline in a text file you encode the binary as base64 (a 64-character ASCII alphabet) and wrap it in a <code>data:image/png;base64,...</code> URL. The browser decodes the data URL on the fly and treats the result as if it had been fetched. The alternative is a normal file path, which the browser fetches over HTTP and caches independently.</p>
+    <p>Why two options exist at all on Image to Base64 embed vs link: embedding packs pixels into the HTML or CSS string; linking keeps a separate image URL the browser can cache and parallel-fetch.</p>
     <p>Both work. Neither is universally better. The decision is about size, cache behaviour, and how often the image changes.</p>
 
     <h2 class="text-uppercase"><b>The decision rule (decision table)</b></h2>
@@ -36,10 +36,11 @@
             <tr><td>any size</td><td>SVG used as a CSS mask or background</td><td>no</td><td><b>Embed</b> the SVG as a data URL (text-mode SVG; no base64 needed) for IE-free CSS gradients and masks</td></tr>
         </table>
     </div>
-    <p>The break-even on the request side comes from how many bytes a single HTTP request costs. On HTTP/2 over a warm connection, that is roughly one round-trip plus a few hundred bytes of headers. On HTTP/1.1 with a cold connection, the cost can be a full RTT plus TLS plus connection setup - several KB equivalent. The "embed under 4 KB" guideline assumes HTTP/1.1; on HTTP/2 the breakeven shifts down to roughly 1 KB.</p>
+    <p>The decision rule (decision table) for Image to Base64 embed vs link: embed tiny icons under a few KB; link photos, screenshots, and anything you reuse across pages.</p>
 
     <h2 class="text-uppercase"><b>What you give up by embedding</b></h2>
-    <figure class="illustration"><img src="/img/illustrations/card-row-4/guidesimagetobase64embedinhtmlvslink__7c943275.svg" alt="See four tradeoffs when embedding Base64: no browser cache, no independent updates, 33% size overhead, no CDN delivery." loading="lazy" width="640" height="180"><figcaption>These four cache and size benefits disappear when you embed.</figcaption></figure>
+    <p>What you give up by embedding is independent caching and a slim HTML document - Image to Base64 packs about 33% more bytes into the page and re-downloads those image bytes on every HTML change.</p>
+<figure class="illustration"><img src="/img/illustrations/card-row-4/guidesimagetobase64embedinhtmlvslink__7c943275.svg" alt="See four tradeoffs when embedding Base64: no browser cache, no independent updates, 33% size overhead, no CDN delivery." loading="lazy" width="640" height="180"><figcaption>These four cache and size benefits disappear when you embed.</figcaption></figure>
     <ul>
         <li><b>Browser cache.</b> A linked image is fetched once and served from cache for every subsequent page. An embedded data URL is re-parsed and re-decoded for every page that includes the host CSS / HTML. The HOST file is cached, but the cost of decoding the data URL is paid on every page render.</li>
         <li><b>Independent updates.</b> A linked image can be replaced without redeploying the HTML or CSS. An embedded data URL ships with the host file, so updating the image means redeploying every page that ships that CSS.</li>
@@ -48,14 +49,15 @@
     </ul>
 
     <h2 class="text-uppercase"><b>What you give up by linking (the case for embedding)</b></h2>
-    <ul>
+    <p>What you give up by linking (the case for embedding) is a zero-extra-request single file - Image to Base64 embedding wins for tiny UI glyphs, offline HTML snippets, and one-file emails when the icon stays tiny.</p>
+<ul>
         <li><b>One extra request.</b> On HTTP/1.1 with a cold connection this can be 50-200 ms; on HTTP/2 it is closer to one RTT plus a few hundred bytes. For a critical above-the-fold icon this can be the difference between a flash of unstyled content and a clean first paint.</li>
         <li><b>Email body images.</b> Email clients vary wildly in handling external images; many block them by default for privacy. CID-attached or base64-inlined images render predictably. (Most mail clients still prefer CID over base64 in the body, but base64 in MIME parts is the underlying mechanism.)</li>
         <li><b>Self-contained snapshots.</b> A single HTML file with embedded images is a complete snapshot - useful for reports, archived docs, single-file demos, and ".eml" exports. Linked images require the path to keep working; embedded ones do not.</li>
     </ul>
 
     <h2 class="text-uppercase"><b>The 30-second sanity check</b></h2>
-    <p>Open the file you are about to ship in a text editor and look at the <code>data:image/...;base64,</code> string. Three quick checks:</p>
+    <p>The 30-second sanity check for Image to Base64 embed vs link: if the encoded string is longer than the surrounding markup, link the file instead of pasting Base64 into the page.</p>
     <ol>
         <li><b>Length.</b> If the encoded string is over ~6,000 characters (≈ 4 KB raw), do not embed. Link the file instead.</li>
         <li><b>Reuse count.</b> Search the codebase for the exact string. If the same data URL appears in 3+ files, you are paying the encoding penalty 3+ times. Link it.</li>

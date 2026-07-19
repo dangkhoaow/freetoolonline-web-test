@@ -16,7 +16,7 @@
     </div>
 
     <h2 class="text-uppercase"><b>Por que duas opcoes existem em primeiro lugar</b></h2>
-    <p>Um arquivo HTML ou CSS e um formato de texto. Uma imagem (PNG, JPG, WebP, SVG-como-binario) e binaria. Para colocar uma imagem inline em um arquivo de texto voce codifica o binario como base64 (um alfabeto ASCII de 64 caracteres) e envolve em uma URL <code>data:image/png;base64,...</code>. O navegador decodifica a URL de dados no momento e trata o resultado como se tivesse sido buscado. A alternativa e um caminho normal de arquivo, que o navegador busca por HTTP e armazena em cache independentemente.</p>
+    <p>Por que duas opcoes existem em primeiro lugar em Image to Base64 embutir vs link: embutir coloca pixels na string HTML/CSS; linkar mantem uma URL de imagem que o navegador pode cachear e buscar em paralelo.</p>
     <p>Ambos funcionam. Nenhum e universalmente melhor. A decisao e sobre tamanho, comportamento de cache, e quao frequentemente a imagem muda.</p>
 
     <h2 class="text-uppercase"><b>A regra de decisao (tabela de decisao)</b></h2><figure class="illustration"><img src="/img/illustrations/card-row-4/guidesimagetobase64embedinhtmlvslink__4f3e962e.svg" alt="See base64 embed vs link: embed freely under 1 KB, embed for 1-2 pages at 1-4 KB, link for 3+ pages, always link over 4 KB." loading="lazy" width="640" height="180"><figcaption>Use tamanho e reuso para escolher embed ou link.</figcaption></figure>
@@ -31,9 +31,10 @@
             <tr><td>qualquer tamanho</td><td>SVG usado como mascara ou background CSS</td><td>nao</td><td><b>Embutir</b> o SVG como uma URL de dados (SVG modo texto; sem base64 necessario) para gradientes CSS e mascaras sem IE</td></tr>
         </table>
     </div>
-    <p>O ponto de equilibrio no lado da requisicao vem de quantos bytes uma unica requisicao HTTP custa. Em HTTP/2 sobre uma conexao aquecida, isso e aproximadamente uma viagem de ida-e-volta mais algumas centenas de bytes de cabecalhos. Em HTTP/1.1 com uma conexao fria, o custo pode ser um RTT completo mais TLS mais setup de conexao - varios KB equivalentes. A diretriz "embutir abaixo de 4 KB" assume HTTP/1.1; em HTTP/2 o ponto de equilibrio desce para aproximadamente 1 KB.</p>
+    <p>A regra de decisao (tabela de decisao) para Image to Base64 embutir vs link: embuta icones minimos sob poucos KB; linke fotos, capturas e qualquer asset reutilizado.</p>
 
-    <h2 class="text-uppercase"><b>O que voce abre mao embutindo</b></h2><figure class="illustration"><img src="/img/illustrations/card-row-4/guidesimagetobase64embedinhtmlvslink__7c943275.svg" alt="See four tradeoffs when embedding Base64: no browser cache, no independent updates, 33% size overhead, no CDN delivery." loading="lazy" width="640" height="180"><figcaption>Estes quatro beneficios de cache e tamanho somem no embed.</figcaption></figure>
+    <h2 class="text-uppercase"><b>O que voce abre mao embutindo</b></h2><p>O que voce abre mao embutindo e cache independente e HTML enxuto - Image to Base64 coloca cerca de 33% mais bytes na pagina e baixa de novo esses bytes de imagem a cada mudanca de HTML.</p>
+<figure class="illustration"><img src="/img/illustrations/card-row-4/guidesimagetobase64embedinhtmlvslink__7c943275.svg" alt="See four tradeoffs when embedding Base64: no browser cache, no independent updates, 33% size overhead, no CDN delivery." loading="lazy" width="640" height="180"><figcaption>Estes quatro beneficios de cache e tamanho somem no embed.</figcaption></figure>
     <ul>
         <li><b>Cache do navegador.</b> Uma imagem vinculada e buscada uma vez e servida do cache para cada pagina subsequente. Uma URL de dados embutida e re-parseada e re-decodificada para cada pagina que inclui o CSS / HTML hospedeiro. O arquivo HOSPEDEIRO e armazenado em cache, mas o custo de decodificar a URL de dados e pago em cada renderizacao de pagina.</li>
         <li><b>Atualizacoes independentes.</b> Uma imagem vinculada pode ser substituida sem reimplantar o HTML ou CSS. Uma URL de dados embutida envia com o arquivo hospedeiro, entao atualizar a imagem significa reimplantar cada pagina que envia esse CSS.</li>
@@ -42,14 +43,15 @@
     </ul>
 
     <h2 class="text-uppercase"><b>O que voce abre mao vinculando (o caso para embutir)</b></h2>
-    <ul>
+    <p>O que voce abre mao vinculando (o caso para embutir) e um arquivo unico sem request extra - Image to Base64 embutir ganha em glifos UI minimos, HTML offline e emails de um arquivo quando o icone continua pequeno.</p>
+<ul>
         <li><b>Uma requisicao extra.</b> Em HTTP/1.1 com uma conexao fria isso pode ser 50-200 ms; em HTTP/2 e mais perto de um RTT mais algumas centenas de bytes. Para um icone above-the-fold critico isso pode ser a diferenca entre um flash de conteudo sem estilo e uma primeira pintura limpa.</li>
         <li><b>Imagens de corpo de email.</b> Clientes de email variam loucamente no tratamento de imagens externas; muitos bloqueiam por padrao por privacidade. Imagens CID-anexadas ou base64-inline renderizam previsivelmente. (A maioria dos clientes de email ainda prefere CID sobre base64 no corpo, mas base64 em partes MIME e o mecanismo subjacente.)</li>
         <li><b>Snapshots auto-contidos.</b> Um unico arquivo HTML com imagens embutidas e um snapshot completo - util para relatorios, documentos arquivados, demos de arquivo unico, e exports ".eml". Imagens vinculadas requerem que o caminho continue funcionando; embutidas nao.</li>
     </ul>
 
     <h2 class="text-uppercase"><b>A verificacao de sanidade em 30 segundos</b></h2>
-    <p>Abra o arquivo que voce esta prestes a enviar em um editor de texto e olhe a string <code>data:image/...;base64,</code>. Tres verificacoes rapidas:</p>
+    <p>A verificacao de sanidade em 30 segundos para Image to Base64 embutir vs link: se a string codificada for maior que o markup ao redor, linke o arquivo em vez de colar Base64 na pagina.</p>
     <ol>
         <li><b>Comprimento.</b> Se a string codificada esta acima de ~6.000 caracteres (≈ 4 KB brutos), nao embuta. Vincule o arquivo em vez disso.</li>
         <li><b>Contagem de reutilizacao.</b> Procure a base de codigo pela string exata. Se a mesma URL de dados aparece em 3+ arquivos, voce esta pagando a penalidade de codificacao 3+ vezes. Vincule.</li>
