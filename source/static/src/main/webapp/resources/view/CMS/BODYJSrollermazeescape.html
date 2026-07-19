@@ -1,0 +1,48 @@
+<script>
+    if (typeof web !== "undefined") web.localUpload = false;
+    var RMZ_GAME_URL = 'roller-maze-escape/index.html';
+    function rmzStatus(text) {
+        var el = document.getElementById('rmzStatus');
+        if (el) el.textContent = text;
+    }
+    function rmzInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'rmzFrame';
+        frame.src = RMZ_GAME_URL;
+        frame.title = 'Rollermaze game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            rmzStatus('Game loaded. Use arrow keys or WASD to roll; reach the forest before the timer hits zero.');
+            try { frame.contentWindow.focus(); } catch (e) {}
+        });
+        var launch = document.getElementById('rmzLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('rmzStage');
+        var playBtn = document.getElementById('rmzPlayBtn');
+        if (!stage || !playBtn) return;
+        if (playBtn.dataset.bound === '1') return;
+        playBtn.dataset.bound = '1';
+        var fsBtn = document.getElementById('rmzFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            rmzStatus('Loading the game (about 59 KB, one time - then cached)...');
+            rmzInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('rmzFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) {} }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', doAfterPageRendered);
+    } else {
+        doAfterPageRendered();
+    }
+</script>
