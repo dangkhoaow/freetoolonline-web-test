@@ -437,6 +437,7 @@ try {
     { title: "Herd Cats Home", url: "https://freetoolonline.com/games/herd-cats-home.html", include: !1, tags: "games" },
     { title: "Solo Battlefield", url: "https://freetoolonline.com/games/solo-battlefield.html", include: !1, tags: "games" },
     { title: "Feast Night", url: "https://freetoolonline.com/games/feast-night.html", include: !1, tags: "games" },
+    { title: "Rune Keeper", url: "https://freetoolonline.com/games/rune-keeper.html", include: !1, tags: "games" },
     { title: "Seasonal Witchcat", url: "https://freetoolonline.com/games/seasonal-witchcat.html", include: !1, tags: "games" },
     { title: "Desk Cat Coder", url: "https://freetoolonline.com/games/desk-cat-coder.html", include: !1, tags: "games" },
     { title: "Boing Cat Platformer", url: "https://freetoolonline.com/games/boing-cat-platformer.html", include: !1, tags: "games" },
