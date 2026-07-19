@@ -5258,9 +5258,27 @@ export const GUIDE_ROUTES = new Set([
   // GUIDE_ROUTES backfill for delete-pdf-pages's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only, same recurring gap class as
   // fires 32/56/57/62/66/84).
+  '/guides/delete-pdf-pages-when.html',
+  '/guides/delete-pdf-pages-step-by-step.html',
+  '/guides/delete-pdf-pages-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire114 (LEAN one-off, 2026-07-12): delete-pdf-pages
   // full pt/es/vi/id/de locale fanout for all 3 EN companion guide angles
   // (guide_locale_fanout units delete-pdf-pages-when/-step-by-step/-vs-alternatives-guides).
+  '/guides/pt/delete-pdf-pages-when.html',
+  '/guides/pt/delete-pdf-pages-step-by-step.html',
+  '/guides/pt/delete-pdf-pages-vs-alternatives.html',
+  '/guides/es/delete-pdf-pages-when.html',
+  '/guides/es/delete-pdf-pages-step-by-step.html',
+  '/guides/es/delete-pdf-pages-vs-alternatives.html',
+  '/guides/vi/delete-pdf-pages-when.html',
+  '/guides/vi/delete-pdf-pages-step-by-step.html',
+  '/guides/vi/delete-pdf-pages-vs-alternatives.html',
+  '/guides/id/delete-pdf-pages-when.html',
+  '/guides/id/delete-pdf-pages-step-by-step.html',
+  '/guides/id/delete-pdf-pages-vs-alternatives.html',
+  '/guides/de/delete-pdf-pages-when.html',
+  '/guides/de/delete-pdf-pages-step-by-step.html',
+  '/guides/de/delete-pdf-pages-vs-alternatives.html',
   // new-tool-discovery-loop-runbook (LEAN one-off, 2026-07-12): rotate-pdf
   // GUIDE_ROUTES backfill (builder wired JSP_BY_ROUTE only, same recurring gap
   // class as fires 32/56/57/62/66) + full pt/es/vi/id/de locale fanout for all
