@@ -8604,6 +8604,8 @@ export const ALIAS_ROUTES = {
   '/concavenator.html': '/dinosaur-3d/concavenator.html',
   // dinosaur-3d-discovery-loop-runbook fire84: albertaceratops alias.
   '/albertaceratops.html': '/dinosaur-3d/albertaceratops.html',
+  // dinosaur-3d-discovery-loop-runbook fire124: pentaceratops alias.
+  '/pentaceratops.html': '/dinosaur-3d/pentaceratops.html',
   // dinosaur-3d-discovery-loop-runbook fire85: tsintaosaurus.
   '/tsintaosaurus.html': '/dinosaur-3d/tsintaosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire86: ornithomimus.
@@ -12068,6 +12070,7 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/cryolophosaurus.html': 'dinosaur/cryolophosaurus.jsp',
   '/dinosaur-3d/concavenator.html': 'dinosaur/concavenator.jsp',
   '/dinosaur-3d/albertaceratops.html': 'dinosaur/albertaceratops.jsp',
+  '/dinosaur-3d/pentaceratops.html': 'dinosaur/pentaceratops.jsp',
   '/dinosaur-3d/tsintaosaurus.html': 'dinosaur/tsintaosaurus.jsp',
   '/dinosaur-3d/ornithomimus.html': 'dinosaur/ornithomimus.jsp',
   '/dinosaur-3d/tylosaurus.html': 'dinosaur/tylosaurus.jsp',

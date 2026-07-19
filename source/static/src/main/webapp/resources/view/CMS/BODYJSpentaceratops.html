@@ -1,0 +1,527 @@
+<script>
+    // ===================================================================
+    // DINOSAUR 3D VIEWER - scene archetype (dinosaur-3d cluster)
+    // -------------------------------------------------------------------
+    // Vendored three.js (ESM, dynamic import from /vendor/three/, NO CDN),
+    // fully client-side. ONE skeleton serves the whole /dinosaur-3d/*
+    // family; the species is dispatched from D3D_SLUG against the embedded
+    // D3D_DINOS catalogue. Every dinosaur is assembled procedurally from
+    // three.js PRIMITIVES by the single data-driven builder d3dBuildDino()
+    // reading a per-species spec (body archetype + skin colors + eye + teeth
+    // + feature flags). No model files, no textures fetched by default.
+    //
+    // HONESTY: the scene is an ARTIST'S RECONSTRUCTION, not a scientific
+    // model. Fossils do not preserve soft tissue or color, so skin/color are
+    // interpretive; the info panel says so. Every NUMBER shown (length,
+    // weight, era, discovery) is a REAL published figure from the per-tool
+    // SKILL.md truth source.
+    //
+    // A visible wrapper + "Loading 3D engine..." placeholder renders
+    // synchronously (G16 render-only pass); the ~0.7 MB engine lazy-loads
+    // post-paint via requestIdleCallback and is cached by the browser.
+    // Fullscreen targets the WRAPPER div (controls stay visible).
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var D3D_SLUG = 'pentaceratops';
+    var D3D_STORE_KEY = 'ftol-dino-' + D3D_SLUG;
+
+    // ---- species catalogue (one entry per page; the loop authors one BODYJS
+    // per species with only that species' spec). Numbers are real published
+    // figures; they are shown in the facts panel and MUST match the per-tool
+    // SKILL.md truth source. archetype: theropod | sauropod | ceratopsian
+    // | stegosaur | ankylosaur | marine | pterosaur | raptor.
+        var D3D_DINOS = {
+        'pentaceratops': {
+            name: 'Pentaceratops', archetype: 'ceratopsian',
+            lengthM: 6, heightM: 2.4, weightKg: 2500, eraMya: '76-73',
+            period: 'Late Cretaceous', diet: 'Herbivore', discovered: '1923 (Osborn)',
+            skin: 0x8a7f6e, belly: 0xd8c9a8, pattern: 0x5c5142,
+            eye: 0x3a2c1e, teeth: 'beak', feats: { frill: true, horns: true },
+            note: 'Named for five horn-like projections on the face - two brow horns, one nose horn, two smaller cheek projections - beneath one of the largest frills of any ceratopsid. Length about 5.5-7 m (commonly cited near 6 m); mass about 2.5-3 t. Lived about 76-73 Mya in the San Juan Basin, New Mexico. Distinct from Triceratops (three horns, chasmosaurine but no cheek projections) and Albertaceratops (earlier centrosaurine from Alberta, no cheek projections).'
+        }
+    };
+
+    function d3dSpec() {
+        return D3D_DINOS[D3D_SLUG] || {
+            name: 'Dinosaur', archetype: 'theropod', lengthM: 8, heightM: 3,
+            weightKg: 2000, eraMya: '?', period: 'Mesozoic', diet: 'Unknown',
+            discovered: '', skin: 0x7d8b5a, belly: 0xc2b98f, pattern: 0x5a6640,
+            eye: 0xc0392b, teeth: 'conical', feats: {}, note: ''
+        };
+    }
+
+    // ---- vendored ESM loader (cached import()) --------------------------
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function d3dStatus(text) { var el = document.getElementById('d3dStatus'); if (el) el.textContent = text; }
+    function d3dInfo(html) { var el = document.getElementById('d3dInfoPanel'); if (el) el.innerHTML = html; }
+    function d3dLoadStore() { try { return JSON.parse(localStorage.getItem(D3D_STORE_KEY) || '{}') || {}; } catch (e) { return {}; } }
+    function d3dSaveStore(obj) { try { localStorage.setItem(D3D_STORE_KEY, JSON.stringify(obj)); } catch (e) {} }
+    function d3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- OPTIONAL photoreal asset layer (progressive enhancement) --------
+    // G16 CONTRACT: the procedural model is the INSTANT first paint. AFTER it
+    // paints, we OPTIONALLY fetch a real, free-licensed glTF/GLB for this species
+    // from the shared ftol-vm-assets CDN (per the runbook licence gate), verify
+    // its sha256, IndexedDB-cache it, and swap it in for the procedural body. ANY
+    // failure (no manifest, no entry for this species, network / parse / WebGL
+    // error) leaves the procedural model exactly as-is - zero regression. NO CDN
+    // engine and NO jsm bare-specifier: GLTFLoader is the self-contained vendored
+    // ESM build at /vendor/three/gltf-loader.module.js.
+    var D3D_ASSET_CDN = 'https://dangkhoaow.github.io/ftol-vm-assets/dinosaur-3d';
+    var D3D_ASSET_DB = 'ftol-dino3d-assets';
+    function d3dIdbOpen() {
+        return new Promise(function (resolve, reject) {
+            var req = indexedDB.open(D3D_ASSET_DB, 1);
+            req.onupgradeneeded = function () { if (!req.result.objectStoreNames.contains('assets')) { req.result.createObjectStore('assets', { keyPath: 'key' }); } };
+            req.onsuccess = function () { resolve(req.result); };
+            req.onerror = function () { reject(req.error || new Error('IndexedDB open failed')); };
+        });
+    }
+    function d3dIdbGet(key) {
+        return d3dIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readonly');
+                var rq = tx.objectStore('assets').get(key);
+                rq.onsuccess = function () { resolve(rq.result ? rq.result.blob : null); };
+                rq.onerror = function () { resolve(null); };
+            });
+        }).catch(function () { return null; });
+    }
+    function d3dIdbPut(key, blob) {
+        return d3dIdbOpen().then(function (db) {
+            return new Promise(function (resolve) {
+                var tx = db.transaction('assets', 'readwrite');
+                tx.objectStore('assets').put({ key: key, blob: blob });
+                tx.oncomplete = function () { resolve(true); };
+                tx.onerror = function () { resolve(false); };
+            });
+        }).catch(function () { return false; });
+    }
+    function d3dSha256Hex(buf) {
+        return crypto.subtle.digest('SHA-256', buf).then(function (hash) {
+            var b = new Uint8Array(hash), hex = '';
+            for (var i = 0; i < b.length; i++) hex += b[i].toString(16).padStart(2, '0');
+            return hex;
+        });
+    }
+    var __d3dGltfPromise = null;
+    function d3dLoadGLTFLoader() {
+        if (__d3dGltfPromise) return __d3dGltfPromise;
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        __d3dGltfPromise = import(base + '/gltf-loader.module.js').then(function (mod) {
+            if (!mod || !mod.GLTFLoader) throw new Error('GLTFLoader missing from vendored module');
+            return mod.GLTFLoader;
+        });
+        return __d3dGltfPromise;
+    }
+    function d3dFetchAssetBuffer(entry, version) {
+        var idbKey = D3D_SLUG + '@' + version + ':' + entry.file;
+        return d3dIdbGet(idbKey).then(function (cached) {
+            if (cached) return cached.arrayBuffer();
+            return fetch(D3D_ASSET_CDN + '/' + entry.file).then(function (r) {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.arrayBuffer();
+            }).then(function (buf) {
+                return d3dSha256Hex(buf).then(function (hex) {
+                    if (entry.sha256 && hex !== entry.sha256) throw new Error('sha256 mismatch on ' + entry.file);
+                    try { d3dIdbPut(idbKey, new Blob([buf])); } catch (e) {}
+                    return buf;
+                });
+            });
+        });
+    }
+    // Normalise a loaded glTF scene to the procedural framing (uniform scale so
+    // its longest axis fills the frame; centred over the origin; sitting on the
+    // y=0 ground), add a neutral PBR environment, then swap it in for the
+    // procedural body. Rotation is driven by shell.rotTarget afterwards.
+    function d3dInstallModel(shell, obj, entry) {
+        var THREE = shell.THREE;
+        var root = new THREE.Group();
+        root.add(obj);
+        var box = new THREE.Box3().setFromObject(obj);
+        var size = new THREE.Vector3(); box.getSize(size);
+        var longest = Math.max(size.x, size.y, size.z) || 1;
+        var target = entry.targetLenUnits || 13;
+        obj.scale.setScalar(target / longest);
+        box.setFromObject(obj); var c = new THREE.Vector3(); box.getCenter(c);
+        obj.position.x -= c.x;
+        obj.position.z -= c.z;
+        obj.position.y -= box.min.y;
+        if (typeof entry.yaw === 'number') root.rotation.y = entry.yaw;
+        if (typeof entry.pitch === 'number') root.rotation.x = entry.pitch;
+        try {
+            var pmrem = new THREE.PMREMGenerator(shell.renderer);
+            var envScene = new THREE.Scene();
+            envScene.background = new THREE.Color(0x9fb4c7);
+            shell.scene.environment = pmrem.fromScene(envScene, 0.03).texture;
+        } catch (e) {}
+        if (shell.dino) shell.dino.visible = false;
+        shell.scene.add(root);
+        shell.rotTarget = root;
+    }
+    function d3dLoadModel(shell, spec) {
+        if (typeof indexedDB === 'undefined' || typeof fetch !== 'function' || typeof crypto === 'undefined' || !crypto.subtle) return;
+        fetch(D3D_ASSET_CDN + '/manifest.json', { cache: 'no-cache' })
+            .then(function (r) { if (!r.ok) throw new Error('no manifest'); return r.json(); })
+            .then(function (manifest) {
+                var entry = manifest && manifest.models && manifest.models[D3D_SLUG];
+                if (!entry || !entry.file) return; // nothing published for this species yet - stay procedural
+                return d3dFetchAssetBuffer(entry, manifest.version || '0').then(function (buf) {
+                    return d3dLoadGLTFLoader().then(function (GLTFLoader) {
+                        return new Promise(function (resolve, reject) {
+                            new GLTFLoader().parse(buf, '', function (gltf) { resolve(gltf); }, function (e) { reject(e); });
+                        });
+                    }).then(function (gltf) {
+                        var obj = gltf.scene || (gltf.scenes && gltf.scenes[0]);
+                        if (!obj) throw new Error('glTF has no scene');
+                        d3dInstallModel(shell, obj, entry);
+                        shell.assetInfo = { kind: entry.kind || 'fleshed', license: entry.license || '', credit: entry.credit || '', source: entry.source_url || '' };
+                        if (typeof shell.refreshFacts === 'function') shell.refreshFacts();
+                        d3dStatus('Showing a real 3D model of this species. Drag to rotate, scroll or pinch to zoom.');
+                    });
+                });
+            })
+            .catch(function () { /* stay procedural - G16 first paint preserved */ });
+    }
+
+    // ---- shared scene shell: renderer + camera + custom pointer-orbit ----
+    // (same archetype as the space-3d t3dShell; OrbitControls is not vendored)
+    function d3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 50, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.9, phi: opts.phi || 1.25,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.9, goalPhi: opts.phi || 1.25,
+            minR: opts.minR || 4, maxR: opts.maxR || 400
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        function size() {
+            var w = Math.max(260, host.clientWidth);
+            var h = Math.round(w * 0.62);
+            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fsEl && fsEl.contains(host)) { h = Math.max(240, (window.innerHeight || h) - 150); }
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        host.appendChild(renderer.domElement);
+        renderer.domElement.style.touchAction = 'none';
+        renderer.domElement.style.borderRadius = '6px';
+        var drag = null, pinch = null, moved = 0;
+        host.addEventListener('pointerdown', function (e) { drag = { x: e.clientX, y: e.clientY }; moved = 0; host.setPointerCapture && host.setPointerCapture(e.pointerId); });
+        host.addEventListener('pointermove', function (e) {
+            if (!drag) return;
+            var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+            moved += Math.abs(dx) + Math.abs(dy);
+            drag = { x: e.clientX, y: e.clientY };
+            orbit.goalTheta -= dx * 0.006;
+            orbit.goalPhi = Math.min(Math.max(orbit.goalPhi - dy * 0.005, 0.15), Math.PI - 0.2);
+        });
+        host.addEventListener('pointerup', function (e) { var wasClick = moved < 8; drag = null; if (wasClick && shell.onClick) { shell.onClick(e); } });
+        host.addEventListener('wheel', function (e) { e.preventDefault(); orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR); }, { passive: false });
+        host.addEventListener('touchstart', function (e) { if (e.touches.length === 2) { pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); } }, { passive: true });
+        host.addEventListener('touchmove', function (e) {
+            if (e.touches.length === 2 && pinch) {
+                var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                pinch = d;
+            }
+        }, { passive: true });
+        window.addEventListener('resize', size);
+        document.addEventListener('fullscreenchange', size);
+        document.addEventListener('webkitfullscreenchange', size);
+        size();
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, size: size, onClick: null,
+            ndc: function (e) { var r = renderer.domElement.getBoundingClientRect(); return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1); }
+        };
+        return shell;
+    }
+
+    // ---- the ONE data-driven dinosaur builder ---------------------------
+    // Builds a species from primitives per spec. Returns { animate, parts }.
+    function d3dBuildDino(shell, spec) {
+        var THREE = shell.THREE, scene = shell.scene;
+        var feats = spec.feats || {};
+
+        // lighting + ground
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+        var key = new THREE.DirectionalLight(0xfff0d8, 1.9); key.position.set(18, 30, 16); scene.add(key);
+        var rim = new THREE.DirectionalLight(0x88aaff, 0.5); rim.position.set(-16, 12, -14); scene.add(rim);
+
+        var aquatic = !!feats.aquatic;
+        var ground = new THREE.Mesh(
+            new THREE.CircleGeometry(30, 48),
+            new THREE.MeshStandardMaterial({ color: aquatic ? 0x14435a : 0x6b5b3e, roughness: 0.98, transparent: aquatic, opacity: aquatic ? 0.55 : 1 })
+        );
+        ground.rotation.x = -Math.PI / 2; ground.position.y = -0.02; scene.add(ground);
+
+        // Model space: the dinosaur is normalized to ~12 world units long,
+        // regardless of real length; a "size vs human" toggle adds a 1.8 m
+        // scale figure sized to the REAL length ratio so the comparison is honest.
+        var skinMat = new THREE.MeshStandardMaterial({ color: spec.skin, roughness: 0.86, metalness: 0.02, flatShading: false });
+        var bellyMat = new THREE.MeshStandardMaterial({ color: spec.belly, roughness: 0.9 });
+        var patternMat = new THREE.MeshStandardMaterial({ color: spec.pattern, roughness: 0.85 });
+        var toothMat = new THREE.MeshStandardMaterial({ color: 0xf4efe2, roughness: 0.4 });
+
+        var dino = new THREE.Group();
+        var clickTargets = [];
+        function tag(mesh, part) { mesh.userData = { part: part }; clickTargets.push(mesh); return mesh; }
+        function limb(len, r0, r1, mat) { var m = new THREE.Mesh(new THREE.CylinderGeometry(r1, r0, len, 12), mat); return m; }
+
+        // ---- eyes with sclera + iris + pupil (ref: serpentine-3d) --------
+        function makeEyePair(headGroup, hx, hy, hz, r) {
+            [-1, 1].forEach(function (s) {
+                var e = new THREE.Group();
+                var sclera = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 10), new THREE.MeshStandardMaterial({ color: 0xfbf6e9, roughness: 0.3 }));
+                var iris = new THREE.Mesh(new THREE.SphereGeometry(r * 0.62, 12, 8), new THREE.MeshStandardMaterial({ color: spec.eye, emissive: spec.eye, emissiveIntensity: 0.35, roughness: 0.2 }));
+                iris.position.z = r * 0.55;
+                var pupil = new THREE.Mesh(new THREE.SphereGeometry(r * 0.3, 10, 8), new THREE.MeshBasicMaterial({ color: 0x000000 }));
+                pupil.position.z = r * 0.82;
+                e.add(sclera); e.add(iris); e.add(pupil);
+                e.position.set(hx * s, hy, hz);
+                e.rotation.y = s * 0.5;
+                headGroup.add(e);
+            });
+        }
+        function makeTeeth(jawGroup, half, count, size, downward) {
+            if (spec.teeth === 'none' || spec.teeth === 'beak') return;
+            var tg = new THREE.ConeGeometry(size, size * (spec.teeth === 'serrated' ? 3.2 : 2.4), 6);
+            for (var i = 0; i < count; i++) {
+                [-1, 1].forEach(function (s) {
+                    var t = new THREE.Mesh(tg, toothMat);
+                    var f = (i / (count - 1));
+                    t.position.set(s * half * 0.7, downward ? -size : size, (0.2 + f * 0.7) * half * 2 - half);
+                    t.rotation.x = downward ? Math.PI : 0;
+                    jawGroup.add(t);
+                });
+            }
+        }
+
+        // ---- HEAD (built into a group so it can face + open jaw) ---------
+        function buildHead(scaleHead) {
+            var head = new THREE.Group();
+            var skull = tag(new THREE.Mesh(new THREE.SphereGeometry(1, 16, 12), skinMat), 'head');
+            skull.scale.set(1.15 * scaleHead, 0.95 * scaleHead, 1.7 * scaleHead);
+            head.add(skull);
+            // snout
+            var snout = new THREE.Mesh(new THREE.CylinderGeometry(0.55 * scaleHead, 0.85 * scaleHead, 1.6 * scaleHead, 12), skinMat);
+            snout.rotation.x = Math.PI / 2; snout.position.z = 1.4 * scaleHead; head.add(snout);
+            // jaw
+            var jaw = new THREE.Group();
+            var jawMesh = new THREE.Mesh(new THREE.BoxGeometry(1.0 * scaleHead, 0.4 * scaleHead, 2.0 * scaleHead), skinMat);
+            jawMesh.position.set(0, -0.4 * scaleHead, 0.9 * scaleHead); jaw.add(jawMesh);
+            makeTeeth(jaw, 0.5 * scaleHead, 5, 0.14 * scaleHead, false);
+            head.add(jaw);
+            makeTeeth(head, 0.5 * scaleHead, 5, 0.14 * scaleHead, true);
+            makeEyePair(head, 0.7 * scaleHead, 0.45 * scaleHead, 0.7 * scaleHead, 0.26 * scaleHead);
+            if (feats.crest) { var crest = new THREE.Mesh(new THREE.ConeGeometry(0.3 * scaleHead, 1.6 * scaleHead, 8), patternMat); crest.position.set(0, 0.9 * scaleHead, 0.2 * scaleHead); crest.rotation.x = -0.5; head.add(crest); }
+            if (feats.frill) { var frill = tag(new THREE.Mesh(new THREE.CircleGeometry(2.4 * scaleHead, 20), patternMat), 'frill'); frill.position.set(0, 0.3 * scaleHead, -1.2 * scaleHead); frill.material.side = THREE.DoubleSide; head.add(frill); }
+            if (feats.horns) {
+                [[-0.5, 0.9, 0.8], [0.5, 0.9, 0.8], [0, 1.1, -0.2]].forEach(function (p, i) {
+                    var horn = new THREE.Mesh(new THREE.ConeGeometry(0.16 * scaleHead, (i === 2 ? 0.8 : 1.5) * scaleHead, 8), toothMat);
+                    horn.position.set(p[0] * scaleHead, p[1] * scaleHead, p[2] * scaleHead); horn.rotation.x = -0.35; head.add(horn);
+                });
+            }
+            head.userData = { jaw: jaw };
+            return head;
+        }
+
+        // ---- archetype assembly ------------------------------------------
+        var arche = spec.archetype;
+        var idle = { legPhase: 0, walking: false };
+
+        if (arche === 'sauropod') {
+            var body = tag(new THREE.Mesh(new THREE.SphereGeometry(2.4, 20, 16), skinMat), 'body'); body.scale.set(1, 1, 1.9); body.position.y = 3.2; dino.add(body);
+            var belly = new THREE.Mesh(new THREE.SphereGeometry(2.1, 16, 12), bellyMat); belly.scale.set(1, 0.7, 1.8); belly.position.set(0, 2.7, 0); dino.add(belly);
+            var neck = tag(limb(7, 0.5, 1.1, skinMat), 'neck'); neck.position.set(0, 5.5, 3.2); neck.rotation.x = -0.9; dino.add(neck);
+            var head = buildHead(0.7); head.position.set(0, 8.6, 6.0); head.scale.setScalar(0.9); dino.add(head);
+            var tail = tag(limb(9, 0.2, 1.2, skinMat), 'tail'); tail.position.set(0, 3.0, -5.2); tail.rotation.x = 1.15; dino.add(tail);
+            [[-1.4, 1.2], [1.4, 1.2], [-1.4, -1.6], [1.4, -1.6]].forEach(function (p) { var l = tag(limb(3.4, 0.9, 0.7, skinMat), 'leg'); l.position.set(p[0], 1.6, p[1]); dino.add(l); });
+        } else if (arche === 'marine') {
+            var mb = tag(new THREE.Mesh(new THREE.SphereGeometry(1.8, 20, 14), skinMat), 'body'); mb.scale.set(1, 1.05, 3.6); mb.position.y = 3; dino.add(mb);
+            var mbelly = new THREE.Mesh(new THREE.SphereGeometry(1.5, 16, 12), bellyMat); mbelly.scale.set(1, 0.7, 3.4); mbelly.position.set(0, 2.5, 0); dino.add(mbelly);
+            var mhead = buildHead(0.85); mhead.position.set(0, 3.1, 6.4); dino.add(mhead);
+            var fluke = tag(new THREE.Mesh(new THREE.ConeGeometry(1.4, 5, 10), skinMat), 'tail'); fluke.rotation.x = -Math.PI / 2; fluke.position.set(0, 3, -7.5); dino.add(fluke);
+            if (feats.tailFluke) { var fin = new THREE.Mesh(new THREE.BoxGeometry(0.2, 3.2, 1.6), patternMat); fin.position.set(0, 3, -9.5); dino.add(fin); }
+            if (feats.flippers) { [[-2, 1.5, 1], [2, 1.5, 1], [-1.8, 2.5, -2], [1.8, 2.5, -2]].forEach(function (p) { var fl = tag(new THREE.Mesh(new THREE.BoxGeometry(0.2, 1.2, 3), skinMat), 'flipper'); fl.position.set(p[0], p[1], p[2]); fl.rotation.z = p[0] < 0 ? -0.5 : 0.5; dino.add(fl); }); }
+        } else if (arche === 'pterosaur') {
+            var pb = tag(new THREE.Mesh(new THREE.SphereGeometry(1.1, 16, 12), skinMat), 'body'); pb.scale.set(1, 1, 2); pb.position.y = 4; dino.add(pb);
+            var phead = buildHead(0.8); phead.position.set(0, 4.6, 2.6); dino.add(phead);
+            [-1, 1].forEach(function (s) { var wing = tag(new THREE.Mesh(new THREE.BoxGeometry(9, 0.15, 3), patternMat), 'wing'); wing.position.set(s * 5.2, 4.2, 0); wing.rotation.z = s * 0.15; wing.userData = { part: 'wing', wingSide: s }; dino.add(wing); });
+        } else {
+            // theropod / raptor / ceratopsian / stegosaur / ankylosaur share a
+            // bipedal-or-quadruped torso; quad flag for the armored/plated ones.
+            var quad = (arche === 'ceratopsian' || arche === 'stegosaur' || arche === 'ankylosaur');
+            var torso = tag(new THREE.Mesh(new THREE.SphereGeometry(1.9, 20, 16), skinMat), 'body'); torso.scale.set(1, 1.1, 2.2); torso.position.y = quad ? 3 : 4.2; dino.add(torso);
+            var tbelly = new THREE.Mesh(new THREE.SphereGeometry(1.6, 16, 12), bellyMat); tbelly.scale.set(1, 0.8, 2.1); tbelly.position.set(0, quad ? 2.5 : 3.7, 0); dino.add(tbelly);
+            var neckT = tag(limb(quad ? 1.6 : 2.4, 0.7, 1.0, skinMat), 'neck'); neckT.position.set(0, quad ? 3.6 : 5.4, 2.2); neckT.rotation.x = quad ? -0.4 : -0.8; dino.add(neckT);
+            var headScale = feats.bigHead ? 1.25 : (arche === 'raptor' ? 0.7 : 0.95);
+            var head2 = buildHead(headScale);
+            head2.position.set(0, quad ? 4.2 : 6.4, quad ? 3.6 : 3.4); dino.add(head2);
+            var tail2 = tag(limb(quad ? 6 : 8, 0.2, 1.3, skinMat), 'tail'); tail2.position.set(0, quad ? 3 : 4.0, quad ? -4.2 : -4.6); tail2.rotation.x = quad ? 1.35 : 1.05; dino.add(tail2);
+            // hind legs (big) - clickable
+            var hind = [];
+            [-1, 1].forEach(function (s) { var l = tag(limb(quad ? 3 : 4.4, 1.0, 0.6, skinMat), 'leg'); l.position.set(s * 1.2, quad ? 1.5 : 2.2, -0.8); dino.add(l); hind.push(l); });
+            if (quad) { [-1, 1].forEach(function (s) { var fl = tag(limb(2.6, 0.8, 0.5, skinMat), 'leg'); fl.position.set(s * 1.2, 1.3, 1.6); dino.add(fl); }); }
+            else if (feats.tinyArms) { [-1, 1].forEach(function (s) { var a = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 1.2, 8), skinMat); a.position.set(s * 1.2, 4.2, 1.6); a.rotation.x = 0.6; dino.add(a); }); }
+            else { [-1, 1].forEach(function (s) { var a2 = limb(2.4, 0.3, 0.25, skinMat); a2.position.set(s * 1.3, 4, 1.4); a2.rotation.x = 0.7; dino.add(a2); }); }
+            idle.hind = hind;
+            // ceratopsian frill/horns handled in buildHead via feats
+            if (arche === 'stegosaur' && feats.plates) {
+                for (var pI = 0; pI < 8; pI++) { var plate = new THREE.Mesh(new THREE.ConeGeometry(0.1, 1.6 - Math.abs(pI - 3.5) * 0.12, 4), patternMat); plate.position.set(0, 4.6, -3 + pI * 0.9); plate.scale.z = 1.6; dino.add(plate); }
+                [[-0.6, -4.5], [0.6, -4.5], [-0.6, -5.2], [0.6, -5.2]].forEach(function (p) { var sp = new THREE.Mesh(new THREE.ConeGeometry(0.12, 1.4, 6), toothMat); sp.position.set(p[0], 3.6, p[1]); sp.rotation.x = 1.4; dino.add(sp); });
+            }
+            if (arche === 'ankylosaur') {
+                for (var aI = 0; aI < 10; aI++) { var stud = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.4, 6), patternMat); stud.position.set((aI % 2 ? 0.8 : -0.8), 4.2, -3 + aI * 0.7); dino.add(stud); }
+                if (feats.clubTail) { var club = tag(new THREE.Mesh(new THREE.SphereGeometry(1, 12, 10), patternMat), 'tail'); club.position.set(0, 3, -8.5); dino.add(club); }
+            }
+            if (feats.sail) { var sail = new THREE.Mesh(new THREE.BoxGeometry(0.15, 3, 5), patternMat); sail.position.set(0, 5.6, -0.5); dino.add(sail); }
+        }
+
+        dino.position.y = 0;
+        scene.add(dino);
+        shell.dino = dino;
+        shell.rotTarget = dino;
+
+        // ---- size-vs-human scale figure (honest ratio) -------------------
+        var human = new THREE.Group();
+        (function () {
+            var hMat = new THREE.MeshStandardMaterial({ color: 0x455a64, roughness: 0.9 });
+            var torsoH = new THREE.Mesh(new THREE.CapsuleGeometry ? new THREE.CapsuleGeometry(0.28, 0.9, 4, 8) : new THREE.CylinderGeometry(0.28, 0.28, 1.3, 8), hMat); torsoH.position.y = 1.1;
+            var headH = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 8), hMat); headH.position.y = 1.75;
+            human.add(torsoH); human.add(headH);
+            // scale the whole dino group so its REAL length maps to model length 12,
+            // then place a 1.8 m human at the same world scale.
+            var worldLen = 12; // model units the dino spans
+            var unitPerM = worldLen / (spec.lengthM || 8);
+            human.scale.setScalar(unitPerM); // 1.8 m tall figure at true ratio
+            human.position.set(spec.archetype === 'sauropod' ? 6 : 8, 0, spec.archetype === 'marine' ? -2 : 3);
+            human.visible = false;
+            scene.add(human);
+        })();
+
+        // ---- facts panel + click-to-inspect ------------------------------
+        var PART_FACTS = {
+            head: 'Head - reconstructed skull shape. Fossils fix the bone; the fleshy profile (lips, color) is interpretive.',
+            body: 'Body - torso volume estimated from rib and hip bones plus muscle-attachment scars.',
+            neck: 'Neck - vertebra count and length are from the fossil; posture is debated between studies.',
+            tail: 'Tail - counterbalanced the body; some species used it as a weapon or for propulsion.',
+            leg: 'Limb - bone thickness and trackway fossils inform stance and speed estimates.',
+            teeth: 'Teeth - tooth shape is preserved in fossils and indicates diet.',
+            frill: 'Frill - a solid bony shield extending from the back of the skull; likely used for display and species recognition as well as defense.',
+            wing: 'Wing - a membrane stretched on an elongated finger (pterosaurs are flying reptiles, not dinosaurs).',
+            flipper: 'Flipper - a paddle-shaped limb for steering in water.'
+        };
+        function speciesFacts() {
+            var s = spec;
+            var rows = '<tr><td>Length</td><td>' + s.lengthM + ' m</td></tr>' +
+                '<tr><td>Weight</td><td>' + (s.weightKg >= 1000 ? (s.weightKg / 1000).toFixed(1) + ' t' : s.weightKg + ' kg') + '</td></tr>' +
+                '<tr><td>When it lived</td><td>' + s.eraMya + ' Mya (' + s.period + ')</td></tr>' +
+                '<tr><td>Diet</td><td>' + s.diet + '</td></tr>' +
+                (s.discovered ? '<tr><td>Described</td><td>' + s.discovered + '</td></tr>' : '');
+            d3dInfo('<h3>' + s.name + '</h3><table class="w3-table w3-bordered">' + rows + '</table>' +
+                (s.note ? '<p>' + s.note + '</p>' : '') +
+                '<p class="d3d-note">Skin and color are an artistic reconstruction - fossils do not preserve soft tissue or color. The figures above are real published values.</p>');
+        }
+        speciesFacts();
+        var ray = new THREE.Raycaster();
+        shell.onClick = function (e) {
+            ray.setFromCamera(shell.ndc(e), shell.camera);
+            var hits = ray.intersectObjects(clickTargets, false);
+            if (!hits.length) { speciesFacts(); return; }
+            var part = hits[0].object.userData.part;
+            var txt = PART_FACTS[part] || '';
+            if (txt) d3dInfo('<h3>' + spec.name + ' - ' + part + '</h3><p>' + txt + '</p><p class="d3d-note">Click empty space to return to the fact sheet.</p>');
+        };
+
+        // ---- controls: rotate / walk / scale figure ----------------------
+        var autoRotate = true;
+        var rotBtn = document.getElementById('d3dRotateBtn');
+        if (rotBtn) rotBtn.addEventListener('click', function () { autoRotate = !autoRotate; rotBtn.textContent = autoRotate ? 'Stop rotation' : 'Auto-rotate'; });
+        var walkBtn = document.getElementById('d3dWalkBtn');
+        if (walkBtn) walkBtn.addEventListener('click', function () { idle.walking = !idle.walking; walkBtn.textContent = idle.walking ? 'Stand still' : 'Idle motion'; });
+        var scaleBtn = document.getElementById('d3dScaleBtn');
+        if (scaleBtn) scaleBtn.addEventListener('click', function () { human.visible = !human.visible; scaleBtn.textContent = human.visible ? 'Hide human' : 'Size vs human'; });
+
+        return function animate(dt) {
+            if (autoRotate) (shell.rotTarget || dino).rotation.y += dt * 0.00025;
+            idle.legPhase += dt * 0.003;
+            // breathing + subtle idle sway
+            var breathe = 1 + Math.sin(idle.legPhase) * 0.01;
+            dino.scale.y = breathe;
+            if (idle.walking && idle.hind) {
+                idle.hind.forEach(function (l, i) { l.rotation.x = Math.sin(idle.legPhase * 2 + i * Math.PI) * 0.25; });
+            }
+        };
+    }
+
+    // ---- bootstrap -------------------------------------------------------
+    function doAfterPageRendered() {
+        var host = document.getElementById('d3dCanvasHost');
+        var root = document.getElementById('dinoSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('d3dWrapper') || root;
+        var spec = d3dSpec();
+        var fsBtn = document.getElementById('d3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { d3dFullscreen(wrapper); });
+        d3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var big = (spec.lengthM || 8) > 14;
+                    var shell = d3dShell(THREE, host, { radius: spec.archetype === 'sauropod' ? 26 : 20, minR: 10, maxR: 90, theta: 1.75, phi: 1.12, targetY: spec.archetype === 'sauropod' ? 5 : 3.2 });
+                    var animate = d3dBuildDino(shell, spec);
+                    d3dStatus('Drag to rotate, scroll or pinch to zoom, click a body part for a fact.');
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                    try { d3dLoadModel(shell, spec); } catch (e) {}
+                } catch (err) {
+                    d3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) { d3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err)); });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
