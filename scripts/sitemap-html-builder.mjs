@@ -168,7 +168,7 @@ function classifyGuide(slug) {
   if (/(^|-)(snake|tank|garden-defense|voxel|city-time-machine|sky-gates|2048|city-drive|browser-game|how-to-play|fps|freedoom|highway|hover|shooter|horde|procedural)/.test(slug)) {
     return 'games';
   }
-  if (/(^|-)(solar-system|black-hole|galaxy|planet|space-3d|earth-3d)/.test(slug)) {
+  if (/(^|-)(solar-system|black-hole|galaxy|planet|space-3d|earth-3d|sagittarius)/.test(slug)) {
     return 'space';
   }
   // dinosaur-loop (2026-07-15): guides for the /dinosaur-3d cluster. Species
