@@ -8,10 +8,11 @@
 <p class="lead">MD5 y SHA-256 producen huellas digitales de longitud fija de cualquier entrada, pero solo SHA-256 es seguro contra entradas adversariales. La resistencia a colisiones de MD5 fallo en 2004. Para firmas digitales, use SHA-256. Para verificaciones de integridad no adversariales, MD5 sigue siendo valido.</p>
 
 <br/><h2 class="text-uppercase"><b>Que hace realmente una funcion de hash</b></h2>
-<p>Una funcion de hash toma bytes de entrada de cualquier longitud y devuelve un digest de longitud fija. La misma entrada siempre produce el mismo digest. Cambiar un solo bit de entrada produce un digest completamente diferente (el efecto avalancha). El digest es unidireccional - no puedes reconstruir la entrada desde el digest.</p>
+<p>Que hace realmente una funcion de hash en la guia MD5 vs SHA-256: convierte cualquier entrada en una huella de longitud fija - mismos bytes dan el mismo digest, un bit cambia la salida.</p>
 <p>MD5 devuelve 128 bits (32 caracteres hex). SHA-256 devuelve 256 bits (64 caracteres hex). Ambos son deterministas. Ambos son rapidos. Ambos no revelan nada sobre la estructura de la entrada desde la salida.</p>
 
 <br/><h2 class="text-uppercase"><b>Comparacion lado a lado</b></h2>
+<p>Comparacion lado a lado en MD5 vs SHA-256: MD5 es de 128 bits y esta roto por colisiones; SHA-256 es de 256 bits y sigue siendo el default para integridad y firmas en 2026.</p>
 <figure class="illustration"><img src="/img/illustrations/card-row-4/guidesesmd5vssha256whentohash-comparison__462b04d4.svg" alt="See MD5 at a glance: 128-bit digest, designed 1991 by Ron Rivest, MD4 lineage, and known collision resistance breaks." loading="lazy" width="640" height="180"><figcaption>MD5 at a glance: four key properties before you decide whether to use it or SHA-256.</figcaption></figure>
 <div class="w3-responsive">
 <table class="w3-table-all w3-small"><tr><th>Atributo</th><th>MD5</th><th>SHA-256</th></tr>
@@ -27,26 +28,26 @@
 </div>
 
 <br/><h2 class="text-uppercase"><b>Por que MD5 esta roto y que significa realmente eso</b></h2>
-<p>Una colision son dos entradas diferentes que producen el mismo digest. La resistencia a colisiones de MD5 fue teoricamente rota en 2004 y practicamente rota para 2008 - un investigador puede crear dos archivos con digests MD5 identicos en segundos en hardware de consumo. Esto rompio el uso de MD5 en firmas digitales (el malware Flame forjo una firma de Windows Update en 2012), certificados TLS (todas las principales CAs dejaron de emitir certs firmados con MD5 para 2014), y cualquier contexto donde un adversario puede influir en las entradas.</p>
+<p>Por que MD5 esta roto y que significa realmente eso: un atacante puede crear dos archivos distintos con el mismo MD5, asi que MD5 solo no prueba que una descarga este intacta.</p>
 <p>La resistencia de segunda preimagen de MD5 es mas debil que la de SHA-256 pero no tiene ataque practico conocido contra entradas arbitrarias ya existentes. Esa es la ventana estrecha donde MD5 sigue siendo seguro: confirmar que un digest ya computado coincide con un archivo que descargaste, cuando ningun adversario tuvo la oportunidad de crear una colision contra ese archivo especifico.</p>
 
 <br/><h2 class="text-uppercase"><b>Cuando MD5 sigue estando bien</b></h2>
-<p><b>Integridad de archivo para entornos no adversariales.</b> Una descarga de ISO Linux publica un MD5 junto con la imagen; si el hash coincide, tu descarga no fue corrupta en transito. No hay adversario creando un ISO forjado contra ese MD5 especifico - tendrian que publicar su archivo en el sitio upstream primero.</p>
+<p>Cuando MD5 sigue estando bien en la guia MD5 vs SHA-256: checksums rapidos sin seguridad, manifiestos legacy o detectar corrupcion accidental cuando nadie te ataca.</p>
 <p><b>Caches de de-duplicacion.</b> Un proxy de cache indexa objetos por MD5 de su contenido para detectar repeticiones. Las colisiones en este contexto son benignas - dos objetos diferentes con el mismo MD5 significan una falla de cache, sin consecuencia de seguridad.</p>
 <p><b>Fingerprint de filas de base de datos.</b> "Ha cambiado este registro desde la ultima sincronizacion?" - MD5 la fila, compara con digest almacenado. Mas rapido que SHA-256; el modelo de adversario esta ausente.</p>
 <p><b>Direccionamiento de contenido Git.</b> Git usa SHA-1 (pronto SHA-256), no MD5 - pero la justificacion del diseno se aplica: para un almacen direccionado por contenido donde confias en el escritor, un hash de 128 bits es suficiente si la colision no es un vector de ataque.</p>
 
 <br/><h2 class="text-uppercase"><b>Cuando SHA-256 es la eleccion correcta</b></h2>
-<p><b>Firmas digitales.</b> Certificados TLS, firma de codigo, firma JWT - dondequiera que un atacante gane al forjar una firma, usa SHA-256 o mas fuerte.</p>
+<p>Cuando SHA-256 es la eleccion correcta: hashes de release, cadenas de certificados, objetos Git y cualquier caso donde un tercero pueda forjar un MD5 en colision.</p>
 <p><b>Cert pinning y huellas digitales de clave publica.</b> La huella digital SHA-256 de la clave publica de un certificado es el estandar para pinning.</p>
 <p><b>Blockchain y almacenamiento direccionable por contenido donde adversarios participan.</b> Bitcoin usa SHA-256 dos veces (SHA-256d) para encabezados de bloque e identificadores de transaccion. Cualquier almacen donde usuarios contribuyen contenido y colisiones pueden ser explotadas necesita SHA-256.</p>
 <p><b>HMAC para autenticacion de mensajes.</b> HMAC-SHA-256 es la linea base para firma de solicitud de API (AWS Signature v4, GitHub webhooks, Stripe). HMAC-MD5 todavia se usa en algunos protocolos legacy pero esta cada vez mas marcado por escaneres de cumplimiento.</p>
 
 <br/><h2 class="text-uppercase"><b>Que usar para contrasenas (spoiler: ninguno)</b></h2>
-<p>No uses MD5 o SHA-256 directamente para almacenamiento de contrasenas. Ambos son rapidos - eso es malo para contrasenas. Un atacante con un digest filtrado puede probar miles de millones de contrasenas candidatas por segundo en una GPU. Usa una <b>funcion de hash de contrasena</b>: <b>Argon2id</b> (recomendacion OWASP 2025), <b>bcrypt</b>, o <b>scrypt</b>. Estas funciones son intencionalmente lentas y exigentes en memoria, asi que un atacante puede probar solo miles de candidatos por segundo, no miles de millones.</p>
+<p>Que usar para contrasenas (spoiler: ninguno) es un hash lento como Argon2 o bcrypt - ni MD5 ni SHA-256 desnudos del string de la contrasena son almacenamiento aceptable.</p>
 
 <br/><h2 class="text-uppercase"><b>Realidad de rendimiento en 2026</b></h2>
-<p>MD5 sigue siendo ~1,7&times; mas rapido que SHA-256 en una CPU sin SHA-NI. En CPUs con Intel SHA-NI (Goldmont+, 2017) o extensiones crypto ARMv8 (Cortex-A53 en adelante), SHA-256 realmente iguala o excede el throughput de MD5 - la brecha de velocidad que motivo elegir MD5 en los 2000 ya no se mantiene.</p>
+<p>Realidad de rendimiento en 2026 para MD5 vs SHA-256: ambos terminan archivos grandes en el navegador en segundos - elige SHA-256 por confianza, no porque MD5 sea mucho mas rapido en uploads tipicos.</p>
 <p>JavaScript en el navegador con WebCrypto (<code>crypto.subtle.digest('SHA-256', data)</code>) alcanza ~200 MB/s en un laptop moderno. Nuestro <a href="/developer-tools/md5-converter.html">conversor MD5</a> ejecuta MD5 a velocidad similar via una implementacion wasm.</p>
 
 <br/><h2 class="text-uppercase"><b>MD5 o SHA-256: la regla de la frontera de confianza</b></h2>

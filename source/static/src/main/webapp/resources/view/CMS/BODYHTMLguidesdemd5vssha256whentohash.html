@@ -8,10 +8,11 @@
 <p class="lead">MD5 und SHA-256 erzeugen beide Fingerabdruecke fester Laenge aus beliebigen Eingaben, aber nur SHA-256 ist sicher gegen feindliche Eingaben. MD5-Kollisionsresistenz versagte 2004. Fuer digitale Signaturen nutzen Sie SHA-256. Fuer nicht-adversarische Integritaetspruefungen ist MD5 noch in Ordnung.</p>
 
 <br/><h2 class="text-uppercase"><b>Was eine Hash-Funktion tatsaechlich tut</b></h2>
-<p>Eine Hash-Funktion nimmt Eingabebytes beliebiger Laenge und gibt einen Digest fester Laenge zurueck. Dieselbe Eingabe erzeugt immer denselben Digest. Das Aendern eines einzelnen Bits der Eingabe erzeugt einen voellig anderen Digest (der Lawineneffekt). Der Digest ist einseitig - Sie koennen die Eingabe nicht aus dem Digest rekonstruieren.</p>
+<p>Was eine Hash-Funktion tatsaechlich tut im MD5-vs-SHA-256-Guide: beliebige Eingabe wird zu einem festen Fingerabdruck - gleiche Bytes ergeben immer denselben Digest, ein Bit aendert die Ausgabe.</p>
 <p>MD5 gibt 128 Bit zurueck (32 Hex-Zeichen). SHA-256 gibt 256 Bit zurueck (64 Hex-Zeichen). Beide sind deterministisch. Beide sind schnell. Beide enthuellen nichts ueber die Eingabestruktur aus der Ausgabe.</p>
 
 <br/><h2 class="text-uppercase"><b>Vergleich Seite an Seite</b></h2>
+<p>Vergleich Seite an Seite bei MD5 vs SHA-256: MD5 ist 128 Bit und kollisionsgebrochen; SHA-256 ist 256 Bit und 2026 noch der Standard fuer Integritaet und Signaturen.</p>
 <figure class="illustration"><img src="/img/illustrations/card-row-4/guidesdemd5vssha256whentohash-comparison__462b04d4.svg" alt="See MD5 at a glance: 128-bit digest, designed 1991 by Ron Rivest, MD4 lineage, and known collision resistance breaks." loading="lazy" width="640" height="180"><figcaption>MD5 at a glance: four key properties before you decide whether to use it or SHA-256.</figcaption></figure>
 <div class="w3-responsive">
 <table class="w3-table-all w3-small"><tr><th>Attribut</th><th>MD5</th><th>SHA-256</th></tr>
@@ -27,26 +28,26 @@
 </div>
 
 <br/><h2 class="text-uppercase"><b>Warum MD5 gebrochen ist und was das wirklich bedeutet</b></h2>
-<p>Eine Kollision sind zwei unterschiedliche Eingaben, die denselben Digest erzeugen. MD5s Kollisionsresistenz wurde 2004 theoretisch gebrochen und 2008 praktisch gebrochen - ein Forscher kann zwei Dateien mit identischen MD5-Digests in Sekunden auf Consumer-Hardware erstellen. Dies brach MD5s Nutzung in digitalen Signaturen (die Flame-Malware faelschte eine Windows-Update-Signatur 2012), TLS-Zertifikaten (alle grossen CAs hoerten 2014 auf, MD5-signierte Certs auszustellen) und jedem Kontext, in dem ein Angreifer die Eingaben beeinflussen kann.</p>
+<p>Warum MD5 gebrochen ist und was das wirklich bedeutet: Angreifer koennen zwei unterschiedliche Dateien mit gleichem MD5 bauen - MD5 allein beweist keinen unmanipulierten Download.</p>
 <p>MD5s Zweite-Vorbildresistenz ist schwaecher als SHA-256s, hat aber keinen bekannten praktischen Angriff gegen beliebige bereits existierende Eingaben. Das ist das schmale Fenster, in dem MD5 noch sicher ist: bestaetigen, dass ein bereits berechneter Digest mit einer Datei uebereinstimmt, die Sie heruntergeladen haben, wenn kein Angreifer die Chance hatte, eine Kollision gegen diese spezifische Datei zu erstellen.</p>
 
 <br/><h2 class="text-uppercase"><b>Wann MD5 noch in Ordnung ist</b></h2>
-<p><b>Dateiintegritaet fuer nicht-adversarische Umgebungen.</b> Ein Linux-ISO-Download veroeffentlicht ein MD5 neben dem Image; wenn der Hash uebereinstimmt, wurde Ihr Download nicht beim Transport beschaedigt. Es gibt keinen Angreifer, der ein gefaelschtes ISO gegen dieses spezifische MD5 erstellt - sie muessten ihre Datei zuerst auf der Upstream-Seite veroeffentlichen.</p>
+<p>Wann MD5 noch in Ordnung ist im MD5-vs-SHA-256-Guide: schnelle Nicht-Sicherheits-Checksummen, Legacy-Manifeste oder zufaellige Korruption erkennen wenn niemand angreift.</p>
 <p><b>De-Duplikations-Caches.</b> Ein Caching-Proxy schluesselt Objekte nach MD5 ihres Inhalts, um Wiederholungen zu erkennen. Kollisionen in diesem Kontext sind harmlos - zwei verschiedene Objekte mit demselben MD5 bedeuten einen Cache-Fehlschlag, keine Sicherheitsfolge.</p>
 <p><b>Datenbankzeilen-Fingerprinting.</b> "Hat sich dieser Datensatz seit der letzten Synchronisierung geaendert?" - MD5 der Zeile, mit gespeichertem Digest vergleichen. Schneller als SHA-256; das Angreifermodell fehlt.</p>
 <p><b>Git-Inhaltsadressierung.</b> Git verwendet SHA-1 (bald SHA-256), nicht MD5 - aber die Designbegruendung gilt: fuer einen inhaltsadressierten Speicher, wo Sie dem Schreiber vertrauen, ist ein 128-Bit-Hash ausreichend, wenn Kollision kein Angriffsvektor ist.</p>
 
 <br/><h2 class="text-uppercase"><b>Wann SHA-256 die richtige Wahl ist</b></h2>
-<p><b>Digitale Signaturen.</b> TLS-Zertifikate, Code-Signierung, JWT-Signierung - ueberall wo ein Angreifer durch das Faelschen einer Signatur gewinnt, verwenden Sie SHA-256 oder staerker.</p>
+<p>Wann SHA-256 die richtige Wahl ist: Release-Hashes, Zertifikatsketten, Git-Objekte und jeder Fall in dem jemand eine kollidierende MD5 faelschen koennte.</p>
 <p><b>Cert Pinning und Public-Key-Fingerprints.</b> Der SHA-256-Fingerprint des oeffentlichen Schluessels eines Zertifikats ist der Standard fuer Pinning.</p>
 <p><b>Blockchain und inhaltsadressierbare Speicherung, wo Angreifer teilnehmen.</b> Bitcoin verwendet SHA-256 zweimal (SHA-256d) fuer Block-Header und Transaktions-IDs. Jeder Speicher, in dem Benutzer Inhalte beitragen und Kollisionen ausgenutzt werden koennten, benoetigt SHA-256.</p>
 <p><b>HMAC fuer Nachrichten-Authentifizierung.</b> HMAC-SHA-256 ist die Basis fuer API-Request-Signierung (AWS Signature v4, GitHub Webhooks, Stripe). HMAC-MD5 wird noch in einigen Legacy-Protokollen verwendet, aber zunehmend von Compliance-Scannern markiert.</p>
 
 <br/><h2 class="text-uppercase"><b>Was fuer Passwoerter verwenden (Spoiler: keines)</b></h2>
-<p>Verwenden Sie nicht MD5 oder SHA-256 direkt fuer Passwortspeicherung. Beide sind schnell - das ist schlecht fuer Passwoerter. Ein Angreifer mit einem geleakten Digest kann Milliarden von Kandidatenpasswoertern pro Sekunde auf einer GPU testen. Verwenden Sie eine <b>Passwort-Hash-Funktion</b>: <b>Argon2id</b> (OWASP-2025-Empfehlung), <b>bcrypt</b> oder <b>scrypt</b>. Diese Funktionen sind absichtlich langsam und speicherhungrig, sodass ein Angreifer nur Tausende von Kandidaten pro Sekunde testen kann, nicht Milliarden.</p>
+<p>Was fuer Passwoerter verwenden (Spoiler: keines) ist ein langsamer Password-Hash wie Argon2 oder bcrypt - weder nacktes MD5 noch nacktes SHA-256 des Passwortstrings ist akzeptable Speicherung.</p>
 
 <br/><h2 class="text-uppercase"><b>Leistungsrealitaet in 2026</b></h2>
-<p>MD5 ist immer noch ~1,7&times; schneller als SHA-256 auf einer CPU ohne SHA-NI. Auf CPUs mit Intel SHA-NI (Goldmont+, 2017) oder ARMv8-Crypto-Erweiterungen (Cortex-A53 und weiter) entspricht SHA-256 tatsaechlich dem MD5-Durchsatz oder uebersteigt ihn - die Geschwindigkeitsluecke, die in den 2000ern die Wahl von MD5 motivierte, gilt nicht mehr.</p>
+<p>Leistungsrealitaet in 2026 fuer MD5 vs SHA-256: beide schaffen grosse Dateien im Browser in Sekunden - waehlen Sie SHA-256 fuer Vertrauen, nicht weil MD5 fuer typische Uploads spuerbar schneller waere.</p>
 <p>In-Browser-JavaScript mit WebCrypto (<code>crypto.subtle.digest('SHA-256', data)</code>) erreicht ~200 MB/s auf einem modernen Laptop. Unser <a href="/developer-tools/md5-converter.html">MD5-Konverter</a> fuehrt MD5 mit aehnlicher Geschwindigkeit via wasm-Implementierung aus.</p>
 
 <br/><h2 class="text-uppercase"><b>MD5 oder SHA-256: die Vertrauensgrenzen-Regel</b></h2>
