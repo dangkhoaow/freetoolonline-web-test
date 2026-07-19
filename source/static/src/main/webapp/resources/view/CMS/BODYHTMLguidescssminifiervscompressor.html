@@ -30,7 +30,7 @@
 
 <br/><h2 class="text-uppercase"><b>Why both matter - the compounding effect</b></h2>
 <figure class="illustration"><img src="/img/illustrations/card-row-4/guidescssminifiervscompressor-stages__04876441.svg" alt="CSS file size at each stage: source 100 KB, after minification 55 KB, after minification plus gzip 15 KB, after minification plus Brotli 11 KB" loading="lazy" width="640" height="180"><figcaption>Compare the two stages: combine minification and transport compression to reach 89% reduction.</figcaption></figure>
-<p>Minification and compression are complementary. Minification removes redundancy the CSS parser doesn't need; compression recognises remaining patterns at the byte level.</p>
+<p>Why both matter - the compounding effect of CSS minifier vs compressor: minify first to drop comments and whitespace, then gzip/brotli for transport - skipping either leaves bytes on the wire that the other step would have removed.</p>
 <div class="w3-responsive">
 <table class="w3-table-all w3-small">
 <tr><th>Stage</th><th>Example size</th><th>Reduction from source</th></tr>
@@ -45,7 +45,7 @@
 
 <br/><h2 class="text-uppercase"><b>The correct order in a deploy pipeline</b></h2>
 <figure class="illustration"><img src="/img/illustrations/numbered-bars-4/guidescssminifiervscompressor-pipeline__43daf607.svg" alt="CSS deploy pipeline in order: write readable CSS, build step minifies, CDN or server adds gzip or Brotli, then set long cache headers and cache-bust filenames" loading="lazy" width="640" height="280"><figcaption>Run minification at build time, compression at serve time - never pre-compress to .gz.</figcaption></figure>
-<p>Run minification at <b>build time</b>. Compression happens at <b>serve time</b> - usually by the CDN, web server, or a compressor running in front of the app. Never pre-compress the CSS into <code>.css.gz</code> files and skip runtime compression; browsers without gzip support (vanishingly rare but real) will then fail to load the style sheet entirely.</p>
+<p>The correct order in a deploy pipeline for CSS minify vs compress: run CSS Minifier (or your build minify) before the CDN/edge compression layer - compressing unminified CSS still works, but you pay for characters the browser never needed.</p>
 <ol>
     <li><b>Write readable CSS</b> with whitespace, comments, and descriptive selectors. Source for humans.</li>
     <li><b>Build step runs the minifier</b> on every <code>.css</code> file, producing artifacts like <code>main.min.css</code>. Deploy these artifacts.</li>
@@ -55,7 +55,7 @@
 <p>If your deploy platform doesn't handle compression automatically, enable it at the CDN layer (Cloudflare, Fastly, CloudFront) rather than inside the app server - compression is CPU-bound and CDNs are optimised for it.</p>
 
 <br/><h2 class="text-uppercase"><b>Measuring: verify both steps are working</b></h2>
-<p>Open DevTools &rarr; Network tab &rarr; click the CSS file &rarr; check two columns:</p>
+<p>Measuring: verify both steps are working by comparing original vs minified byte size in CSS Minifier, then check Content-Encoding on the live response - if either delta is near zero, that stage is missing.</p>
 <ul>
     <li><b>Size</b>: the transferred bytes (after compression). On a minified + Brotli-compressed 100&nbsp;KB source, this should read ~11&nbsp;KB.</li>
     <li><b>Content-Encoding</b> header in the response: <code>br</code> for Brotli, <code>gzip</code> for gzip, nothing for un-compressed.</li>
@@ -63,7 +63,7 @@
 <p>If the <code>Size</code> column shows 55&nbsp;KB on a 100&nbsp;KB source CSS, you have minification but no compression - check the CDN/server configuration. If it shows 100&nbsp;KB, neither step ran - check the build output and re-deploy.</p>
 
 <br/><h2 class="text-uppercase"><b>Common edge cases</b></h2>
-<p><b>Inline CSS in HTML.</b> <code>&lt;style&gt;...&lt;/style&gt;</code> blocks embedded in the HTML are compressed as part of the HTML response, not separately. Still minify them if the build produces them (some CSS-in-JS libraries do), because compressed HTML is billed by bytes too.</p>
+<p>Common edge cases for CSS minify vs compressor: already-minified vendor bundles gain little from a second minify; source maps must point at the pre-minify file; and some older proxies mishandle brotli - keep gzip as fallback.</p>
 <p><b>Source maps.</b> Minifiers can emit a source map (<code>.css.map</code>) that maps the minified output back to readable source, enabling DevTools to show the original file during debugging. Source maps are only downloaded when DevTools is open, so they don't affect regular user traffic. Serve them with the same compression policy as the CSS.</p>
 <p><b>CSS-in-JS / runtime styles.</b> Libraries like styled-components generate CSS at runtime. Minification of the JS that generates the CSS still applies; the CSS itself is injected into the DOM as a dynamic <code>&lt;style&gt;</code> block and never hits the network as a separate file.</p>
 <p><b>Tailwind / Atomic CSS.</b> Utility-first frameworks produce enormous raw CSS that trims down to a few KB after PurgeCSS/JIT removes unused rules. The "minifier vs compressor" question is dwarfed by the tree-shaking stage. Verify the final minified + compressed bundle size before optimising either minification or compression.</p>

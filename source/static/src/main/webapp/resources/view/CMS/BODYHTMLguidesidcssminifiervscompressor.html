@@ -31,7 +31,7 @@
 <p>Kompresi adalah <b>tingkat pengangkutan</b>: byte file CSS di disk tidak berubah; server membungkus respons dalam amplop terkompresi dan browser membukanya di sisi lain. File sumber tetap CSS biasa; respons HTTP membawa lebih sedikit byte melalui jaringan.</p>
 
 <br/><h2 class="text-uppercase"><b>Mengapa keduanya penting - efek bertingkat</b></h2><figure class="illustration"><img src="/img/illustrations/card-row-4/guidescssminifiervscompressor-stages__04876441.svg" alt="Compare ukuran CSS di setiap tahap pipeline using the four points in this diagram." loading="lazy" width="640" height="180"><figcaption>Tahap minify plus gzip/Brotli at a glance.</figcaption></figure>
-<p>Minifikasi dan kompresi saling melengkapi. Minifikasi menghapus redundansi yang tidak diperlukan parser CSS; kompresi mengenali pola yang tersisa di tingkat byte.</p>
+<p>Mengapa keduanya penting - efek bertingkat: minify dulu (komentar/whitespace), lalu gzip/brotli untuk transport - melewatkan salah satu menyisakan byte di kabel.</p>
 <div class="w3-responsive">
 <table class="w3-table-all w3-small">
 <tr><th>Tahap</th><th>Ukuran contoh</th><th>Pengurangan dari sumber</th></tr>
@@ -45,7 +45,7 @@
 <p>Baris terakhir adalah jebakannya: mengirim CSS yang tidak diminifikasi dengan gzip masih memotong unduhan ~78%, yang terdengar bagus sampai Anda membandingkannya dengan 89% yang Anda dapat dengan kedua langkah. Pada bundle CSS tipikal 250&nbsp;KB, selisihnya adalah ~25&nbsp;KB per pemuatan halaman - dikalikan dengan trafik Anda, itu bandwidth nyata.</p>
 
 <br/><h2 class="text-uppercase"><b>Urutan yang benar dalam pipeline deploy</b></h2><figure class="illustration"><img src="/img/illustrations/numbered-bars-4/guidescssminifiervscompressor-pipeline__43daf607.svg" alt="Compare pipeline deploy CSS dalam urutan yang benar using the four points in this diagram." loading="lazy" width="640" height="280"><figcaption>Minify saat build lalu compress saat serve at a glance.</figcaption></figure>
-<p>Jalankan minifikasi pada <b>waktu build</b>. Kompresi terjadi pada <b>waktu serve</b> - biasanya oleh CDN, server web, atau kompresor yang berjalan di depan aplikasi. Jangan pernah mengompresi CSS terlebih dahulu menjadi file <code>.css.gz</code> dan melewati kompresi runtime; browser tanpa dukungan gzip (sangat jarang tapi nyata) kemudian akan gagal memuat style sheet sama sekali.</p>
+<p>Urutan yang benar dalam pipeline deploy: CSS Minifier (atau minify build) sebelum lapisan CDN/edge - mengompres CSS belum minify tetap jalan, tapi Anda bayar karakter yang browser tidak butuh.</p>
 <ol>
     <li><b>Tulis CSS yang dapat dibaca</b> dengan whitespace, komentar, dan selector deskriptif. Sumber untuk manusia.</li>
     <li><b>Langkah build menjalankan minifier</b> pada setiap file <code>.css</code>, menghasilkan artefak seperti <code>main.min.css</code>. Deploy artefak ini.</li>
@@ -55,7 +55,7 @@
 <p>Jika platform deploy Anda tidak menangani kompresi secara otomatis, aktifkan di lapisan CDN (Cloudflare, Fastly, CloudFront) daripada di dalam server aplikasi - kompresi terikat CPU dan CDN dioptimalkan untuk itu.</p>
 
 <br/><h2 class="text-uppercase"><b>Mengukur: verifikasi kedua langkah bekerja</b></h2>
-<p>Buka DevTools &rarr; tab Network &rarr; klik file CSS &rarr; periksa dua kolom:</p>
+<p>Mengukur: verifikasi kedua langkah bekerja - bandingkan ukuran asli vs minify di CSS Minifier, lalu Content-Encoding respons live; delta hampir nol = tahap hilang.</p>
 <ul>
     <li><b>Size</b>: byte yang ditransfer (setelah kompresi). Pada CSS sumber 100&nbsp;KB yang diminifikasi + dikompresi Brotli, ini harus terbaca ~11&nbsp;KB.</li>
     <li>Header <b>Content-Encoding</b> dalam respons: <code>br</code> untuk Brotli, <code>gzip</code> untuk gzip, kosong untuk yang tidak terkompresi.</li>
@@ -63,7 +63,7 @@
 <p>Jika kolom <code>Size</code> menunjukkan 55&nbsp;KB pada CSS sumber 100&nbsp;KB, Anda punya minifikasi tetapi tidak ada kompresi - periksa konfigurasi CDN/server. Jika menunjukkan 100&nbsp;KB, tidak ada langkah yang berjalan - periksa output build dan deploy ulang.</p>
 
 <br/><h2 class="text-uppercase"><b>Kasus tepi umum</b></h2>
-<p><b>CSS inline di HTML.</b> Blok <code>&lt;style&gt;...&lt;/style&gt;</code> yang disematkan di HTML dikompresi sebagai bagian dari respons HTML, bukan secara terpisah. Tetap minifikasi mereka jika build menghasilkannya (beberapa library CSS-in-JS melakukannya), karena HTML yang dikompresi juga dihitung berdasarkan byte.</p>
+<p>Kasus tepi umum: bundle vendor sudah minify hampir tidak mengecil; source map ke pre-minify; sebagian proxy bermasalah dengan brotli - simpan gzip sebagai cadangan.</p>
 <p><b>Source maps.</b> Minifier dapat memancarkan source map (<code>.css.map</code>) yang memetakan output yang diminifikasi kembali ke sumber yang dapat dibaca, memungkinkan DevTools menampilkan file asli saat debugging. Source maps hanya diunduh saat DevTools terbuka, sehingga tidak memengaruhi trafik pengguna reguler. Sajikan mereka dengan kebijakan kompresi yang sama dengan CSS.</p>
 <p><b>CSS-in-JS / gaya runtime.</b> Library seperti styled-components menghasilkan CSS pada runtime. Minifikasi JS yang menghasilkan CSS masih berlaku; CSS itu sendiri disuntikkan ke DOM sebagai blok <code>&lt;style&gt;</code> dinamis dan tidak pernah mencapai jaringan sebagai file terpisah.</p>
 <p><b>Tailwind / Atomic CSS.</b> Framework utility-first menghasilkan CSS mentah yang sangat besar yang dipangkas menjadi beberapa KB setelah PurgeCSS/JIT menghapus aturan yang tidak digunakan. Pertanyaan "minifier vs compressor" dikalahkan oleh tahap tree-shaking. Verifikasi ukuran bundle akhir yang diminifikasi + dikompresi sebelum mengoptimalkan minifikasi atau kompresi.</p>

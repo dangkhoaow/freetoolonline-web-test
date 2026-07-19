@@ -8,10 +8,11 @@
 <p>Jalankan <a href="/video-tools/ffmpeg-online.html">FFmpeg online</a> di tab browser - tanpa instalasi, privasi penuh, bekerja di perangkat apa pun. Instal FFmpeg lokal untuk encoding perangkat keras, file di atas 2 GB, atau suite codec lengkap. Panduan ini membandingkan keduanya dalam hal kecepatan, batas ukuran file, dan privasi.</p>
 
 <br/><h2 class="text-uppercase"><b>Apa sebenarnya setiap permukaan</b></h2>
-<p><b>FFmpeg online (ffmpeg.wasm)</b> adalah port FFmpeg yang dikompilasi ke WebAssembly yang berjalan di dalam tab browser. File video yang Anda pilih dibaca ke sistem file dalam-memori di dalam tab; FFmpeg berjalan terhadap sistem file virtual itu; output ditulis kembali ke memori dan ditawarkan sebagai unduhan. Tidak ada yang meninggalkan perangkat Anda.</p>
+<p>Apa sebenarnya setiap permukaan: FFmpeg Online adalah build WASM browser; FFmpeg lokal adalah CLI - resep sama, batas ukuran/GPU/batch berbeda.</p>
 <p><b>FFmpeg lokal</b> adalah biner native yang diinstal via manajer paket Anda (<code>brew install ffmpeg</code>, <code>apt install ffmpeg</code>, Chocolatey, scoop). Biner berjalan dengan akses OS penuh: membaca dari disk, menulis ke disk, menggunakan setiap inti CPU, memanfaatkan encoder hardware (NVENC, QSV, VideoToolbox) jika tersedia.</p>
 
-<br/><h2 class="text-uppercase"><b>Perbandingan berdampingan</b></h2><figure class="illustration"><img src="/img/illustrations/card-row-4/guidesffmpegonlinevslocalffmpegwheneachwins__3181c243.svg" alt="Compare FFmpeg browser dan FFmpeg lokal pada empat poin using the four points in this diagram." loading="lazy" width="640" height="180"><figcaption>Browser tanpa install, lokal 4x lebih cepat dengan hardware encoder.</figcaption></figure>
+<br/><h2 class="text-uppercase"><b>Perbandingan berdampingan</b></h2><p>Perbandingan berdampingan FFmpeg online vs lokal: browser unggul untuk file kecil, tanpa instal, byte di perangkat; lokal unggul untuk multi-GB, batch malam, dan encoder hardware.</p>
+<figure class="illustration"><img src="/img/illustrations/card-row-4/guidesffmpegonlinevslocalffmpegwheneachwins__3181c243.svg" alt="Compare FFmpeg browser dan FFmpeg lokal pada empat poin using the four points in this diagram." loading="lazy" width="640" height="180"><figcaption>Browser tanpa install, lokal 4x lebih cepat dengan hardware encoder.</figcaption></figure>
 <div class="w3-responsive">
 <table class="w3-table-all w3-small">
 <tr><th>Atribut</th><th>FFmpeg online (wasm browser)</th><th>FFmpeg lokal</th></tr>
@@ -28,7 +29,7 @@
 </div>
 
 <br/><h2 class="text-uppercase"><b>Pilih FFmpeg browser untuk: file kecil, tanpa instal, privasi</b></h2>
-<p><b>Konversi satu kali dari satu file di bawah 2 GB.</b> Anda memiliki satu MOV dari ponsel Anda yang perlu menjadi MP4 untuk email. Membuka halaman browser lebih cepat daripada menginstal alat CLI yang akan Anda gunakan sekali tahun ini.</p>
+<p>Pilih FFmpeg browser untuk: file kecil, tanpa instal, privasi - buka FFmpeg Online, tempel resep singkat, unduh tanpa terminal.</p>
 <p><b>Konten sensitif privasi.</b> Draf video yang tidak ingin Anda unggah ke konverter online gratis. Wasm di browser adalah satu-satunya cara untuk menjamin file tetap di perangkat Anda tanpa menginstal FFmpeg secara lokal.</p>
 <p><b>Menggunakan mesin di mana Anda tidak dapat menginstal perangkat lunak.</b> Laptop kerja dengan izin instal yang dikunci, lab sekolah, kios perpustakaan. Jika browser dapat memuat halaman, FFmpeg berjalan.</p>
 <p><b>Mengajar atau mendemonstrasikan perintah FFmpeg tertentu.</b> Konsol dalam browser menampilkan output log FFmpeg secara real time; siswa dapat melihat pipeline yang sama yang berjalan secara lokal.</p>
@@ -40,11 +41,11 @@
 <p><b>Codec yang tidak biasa atau filter eksperimental.</b> Jika Anda membutuhkan filter yang memerlukan flag build FFmpeg tertentu (<code>libx265</code> dengan tuning x265, <code>libfdk_aac</code>, <code>libaom-av1</code>), FFmpeg lokal yang diinstal dari sumber dengan flag yang diperlukan adalah satu-satunya jalan.</p>
 
 <br/><h2 class="text-uppercase"><b>Apa arti "online" di alat kami</b></h2>
-<p><a href="/video-tools/ffmpeg-online.html">FFmpeg online</a> kami berjalan sepenuhnya di browser Anda. Kode FFmpeg adalah WebAssembly yang dikompilasi dari sumber yang sama dengan CLI. Saat Anda memilih file, itu dibaca ke sistem file yang diemulasi emscripten di dalam tab. Saat FFmpeg berjalan, itu membaca dari sistem file virtual itu dan menulis ke sana. Saat selesai, file output diserahkan kepada Anda sebagai unduhan via URL Blob. Pada titik mana pun file tidak melakukan perjalanan melalui jaringan.</p>
+<p>Apa arti "online" di alat kami adalah FFmpeg Online menjalankan build WASM di tab - resep di perangkat pada jalur terdokumentasi.</p>
 <p>Halaman menampilkan baris perintah FFmpeg yang sebenarnya dan log FFmpeg langsung - sehingga Anda dapat menyalin perintah persis untuk menjalankannya nanti di CLI untuk file yang lebih besar, lihat <a href="/guides/id/mp4-vs-webm-for-web.html">panduan MP4 vs WebM</a> kami untuk keputusan tingkat format.</p>
 
 <br/><h2 class="text-uppercase"><b>Lima resep konkret yang bekerja di kedua permukaan</b></h2>
-<p><b>Konversi MOV ke MP4 (H.264).</b> <code>ffmpeg -i in.mov -c:v libx264 -crf 23 -preset medium -c:a aac -b:a 128k -movflags +faststart out.mp4</code> - bekerja secara identik di browser dan CLI.</p>
+<p>Lima resep konkret yang bekerja di kedua permukaan: remux MP4, scale 720p, audio AAC, potong -ss/-to, GIF palettegen - di lokal hanya ubah path dan flag hardware.</p>
 <p><b>Pangkas klip antara dua timestamp.</b> <code>ffmpeg -ss 00:00:30 -to 00:01:45 -i in.mp4 -c copy out.mp4</code> - <code>-c copy</code> menghindari pengkodean ulang, membuat ini instan.</p>
 <p><b>Ekstrak audio sebagai MP3.</b> <code>ffmpeg -i in.mp4 -vn -c:a libmp3lame -q:a 2 out.mp3</code>.</p>
 <p><b>Ubah ukuran ke 720p mempertahankan rasio aspek.</b> <code>ffmpeg -i in.mp4 -vf "scale=-2:720" -c:a copy out.mp4</code>.</p>
