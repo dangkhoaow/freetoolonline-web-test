@@ -5428,6 +5428,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/sauropelta-3d-viewer-vs-ar-apps.html',
   '/guides/id/sauropelta-3d-viewer-vs-ar-apps.html',
   '/guides/de/sauropelta-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire157 (2026-07-20): how-to-view-brachylophosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-brachylophosaurus-in-3d.html',
+  '/guides/pt/how-to-view-brachylophosaurus-in-3d.html',
+  '/guides/es/how-to-view-brachylophosaurus-in-3d.html',
+  '/guides/vi/how-to-view-brachylophosaurus-in-3d.html',
+  '/guides/id/how-to-view-brachylophosaurus-in-3d.html',
+  '/guides/de/how-to-view-brachylophosaurus-in-3d.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -8622,6 +8630,8 @@ export const ALIAS_ROUTES = {
   '/concavenator.html': '/dinosaur-3d/concavenator.html',
   // dinosaur-3d-discovery-loop-runbook fire84: albertaceratops alias.
   '/albertaceratops.html': '/dinosaur-3d/albertaceratops.html',
+  // dinosaur-3d-discovery-loop-runbook fire124: pentaceratops alias.
+  '/pentaceratops.html': '/dinosaur-3d/pentaceratops.html',
   // dinosaur-3d-discovery-loop-runbook fire85: tsintaosaurus.
   '/tsintaosaurus.html': '/dinosaur-3d/tsintaosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire86: ornithomimus.
@@ -12087,6 +12097,7 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/cryolophosaurus.html': 'dinosaur/cryolophosaurus.jsp',
   '/dinosaur-3d/concavenator.html': 'dinosaur/concavenator.jsp',
   '/dinosaur-3d/albertaceratops.html': 'dinosaur/albertaceratops.jsp',
+  '/dinosaur-3d/pentaceratops.html': 'dinosaur/pentaceratops.jsp',
   '/dinosaur-3d/tsintaosaurus.html': 'dinosaur/tsintaosaurus.jsp',
   '/dinosaur-3d/ornithomimus.html': 'dinosaur/ornithomimus.jsp',
   '/dinosaur-3d/tylosaurus.html': 'dinosaur/tylosaurus.jsp',
@@ -13369,6 +13380,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/sauropelta-3d-viewer-vs-ar-apps.html': 'guide/vi/sauropelta-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/sauropelta-3d-viewer-vs-ar-apps.html': 'guide/id/sauropelta-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/sauropelta-3d-viewer-vs-ar-apps.html': 'guide/de/sauropelta-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire157 (2026-07-20): how-to-view-brachylophosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-brachylophosaurus-in-3d.html': 'guide/how-to-view-brachylophosaurus-in-3d.jsp',
+  '/guides/pt/how-to-view-brachylophosaurus-in-3d.html': 'guide/pt/how-to-view-brachylophosaurus-in-3d.jsp',
+  '/guides/es/how-to-view-brachylophosaurus-in-3d.html': 'guide/es/how-to-view-brachylophosaurus-in-3d.jsp',
+  '/guides/vi/how-to-view-brachylophosaurus-in-3d.html': 'guide/vi/how-to-view-brachylophosaurus-in-3d.jsp',
+  '/guides/id/how-to-view-brachylophosaurus-in-3d.html': 'guide/id/how-to-view-brachylophosaurus-in-3d.jsp',
+  '/guides/de/how-to-view-brachylophosaurus-in-3d.html': 'guide/de/how-to-view-brachylophosaurus-in-3d.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
