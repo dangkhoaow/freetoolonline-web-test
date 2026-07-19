@@ -8843,6 +8843,8 @@ export const ALIAS_ROUTES = {
   '/deinocheirus.html': '/dinosaur-3d/deinocheirus.html',
   // dinosaur-3d-discovery-loop-runbook fire115: ostafrikasaurus alias (fallback after tyrannotitan Daz reject).
   '/ostafrikasaurus.html': '/dinosaur-3d/ostafrikasaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire139: torvosaurus alias.
+  '/torvosaurus.html': '/dinosaur-3d/torvosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire85: tsintaosaurus.
   '/tsintaosaurus.html': '/dinosaur-3d/tsintaosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire86: ornithomimus.
@@ -12317,6 +12319,8 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/deinocheirus.html': 'dinosaur/deinocheirus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire115: ostafrikasaurus (spinosaurid tooth taxon; Tendaguru).
   '/dinosaur-3d/ostafrikasaurus.html': 'dinosaur/ostafrikasaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire139: torvosaurus (Morrison Formation megalosaurid).
+  '/dinosaur-3d/torvosaurus.html': 'dinosaur/torvosaurus.jsp',
   '/dinosaur-3d/tsintaosaurus.html': 'dinosaur/tsintaosaurus.jsp',
   '/dinosaur-3d/ornithomimus.html': 'dinosaur/ornithomimus.jsp',
   '/dinosaur-3d/tylosaurus.html': 'dinosaur/tylosaurus.jsp',
