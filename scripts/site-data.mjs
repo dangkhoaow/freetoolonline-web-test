@@ -8169,6 +8169,8 @@ export const ALIAS_ROUTES = {
   '/shuangmiaosaurus.html': '/dinosaur-3d/shuangmiaosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire109: alioramus alias.
   '/alioramus.html': '/dinosaur-3d/alioramus.html',
+  // dinosaur-3d-discovery-loop-runbook fire110: doliosauriscus alias.
+  '/doliosauriscus.html': '/dinosaur-3d/doliosauriscus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -11453,6 +11455,7 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/brachylophosaurus.html': 'dinosaur/brachylophosaurus.jsp',
   '/dinosaur-3d/shuangmiaosaurus.html': 'dinosaur/shuangmiaosaurus.jsp',
   '/dinosaur-3d/alioramus.html': 'dinosaur/alioramus.jsp',
+  '/dinosaur-3d/doliosauriscus.html': 'dinosaur/doliosauriscus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
