@@ -9208,6 +9208,7 @@ export const JSP_BY_ROUTE = {
   '/news/id/heic-arrived-with-ios-11.html': 'news/id/heic-arrived-with-ios-11.jsp',
   '/news/de/heic-arrived-with-ios-11.html': 'news/de/heic-arrived-with-ios-11.jsp',
   '/news/fat32-four-gib-file-limit.html': 'news/fat32-four-gib-file-limit.jsp',
+  '/news/windows-11-fat32-format-2tb.html': 'news/windows-11-fat32-format-2tb.jsp',
   '/news/7-zip-rar5-motw-bypass.html': 'news/7-zip-rar5-motw-bypass.jsp',
   '/news/pt/7-zip-rar5-motw-bypass.html': 'news/pt/7-zip-rar5-motw-bypass.jsp',
   '/news/es/7-zip-rar5-motw-bypass.html': 'news/es/7-zip-rar5-motw-bypass.jsp',
