@@ -5268,6 +5268,30 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/how-to-view-moropus-in-3d.html',
   '/guides/id/how-to-view-moropus-in-3d.html',
   '/guides/de/how-to-view-moropus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire146 (2026-07-19): moropus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/moropus-size-comparison.html',
+  '/guides/pt/moropus-size-comparison.html',
+  '/guides/es/moropus-size-comparison.html',
+  '/guides/vi/moropus-size-comparison.html',
+  '/guides/id/moropus-size-comparison.html',
+  '/guides/de/moropus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire147 (2026-07-19): moropus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/moropus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/moropus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/moropus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/moropus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/moropus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/moropus-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire148 (2026-07-19): how-to-view-titanosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-titanosaurus-in-3d.html',
+  '/guides/pt/how-to-view-titanosaurus-in-3d.html',
+  '/guides/es/how-to-view-titanosaurus-in-3d.html',
+  '/guides/vi/how-to-view-titanosaurus-in-3d.html',
+  '/guides/id/how-to-view-titanosaurus-in-3d.html',
+  '/guides/de/how-to-view-titanosaurus-in-3d.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -5278,6 +5302,24 @@ export const GUIDE_ROUTES = new Set([
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only, same recurring gap
   // class as fires 32/56/57/62/66/84/113/115/120) plus their full
   // pt/es/vi/id/de locale fanout.
+  '/guides/jwt-decoder-when.html',
+  '/guides/jwt-decoder-step-by-step.html',
+  '/guides/jwt-decoder-vs-alternatives.html',
+  '/guides/pt/jwt-decoder-when.html',
+  '/guides/pt/jwt-decoder-step-by-step.html',
+  '/guides/pt/jwt-decoder-vs-alternatives.html',
+  '/guides/es/jwt-decoder-when.html',
+  '/guides/es/jwt-decoder-step-by-step.html',
+  '/guides/es/jwt-decoder-vs-alternatives.html',
+  '/guides/vi/jwt-decoder-when.html',
+  '/guides/vi/jwt-decoder-step-by-step.html',
+  '/guides/vi/jwt-decoder-vs-alternatives.html',
+  '/guides/id/jwt-decoder-when.html',
+  '/guides/id/jwt-decoder-step-by-step.html',
+  '/guides/id/jwt-decoder-vs-alternatives.html',
+  '/guides/de/jwt-decoder-when.html',
+  '/guides/de/jwt-decoder-step-by-step.html',
+  '/guides/de/jwt-decoder-vs-alternatives.html',
   // GUIDE_ROUTES locale fanout for flashcards-maker's 3 EN companion guide
   // angles - pt/es/vi/id/de.
   // new-tool-discovery-loop-runbook fire129 (LEAN one-off, 2026-07-13):
@@ -8461,6 +8503,8 @@ export const ALIAS_ROUTES = {
   '/compsognathus.html': '/dinosaur-3d/compsognathus.html',
   // dinosaur-3d-discovery-loop-runbook fire113: mamenchisaurus alias.
   '/mamenchisaurus.html': '/dinosaur-3d/mamenchisaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire119: troodon alias.
+  '/troodon.html': '/dinosaur-3d/troodon.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -11841,6 +11885,7 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/doliosauriscus.html': 'dinosaur/doliosauriscus.jsp',
   '/dinosaur-3d/compsognathus.html': 'dinosaur/compsognathus.jsp',
   '/dinosaur-3d/mamenchisaurus.html': 'dinosaur/mamenchisaurus.jsp',
+  '/dinosaur-3d/troodon.html': 'dinosaur/troodon.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -13005,6 +13050,30 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-view-moropus-in-3d.html': 'guide/vi/how-to-view-moropus-in-3d.jsp',
   '/guides/id/how-to-view-moropus-in-3d.html': 'guide/id/how-to-view-moropus-in-3d.jsp',
   '/guides/de/how-to-view-moropus-in-3d.html': 'guide/de/how-to-view-moropus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire146 (2026-07-19): moropus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/moropus-size-comparison.html': 'guide/moropus-size-comparison.jsp',
+  '/guides/pt/moropus-size-comparison.html': 'guide/pt/moropus-size-comparison.jsp',
+  '/guides/es/moropus-size-comparison.html': 'guide/es/moropus-size-comparison.jsp',
+  '/guides/vi/moropus-size-comparison.html': 'guide/vi/moropus-size-comparison.jsp',
+  '/guides/id/moropus-size-comparison.html': 'guide/id/moropus-size-comparison.jsp',
+  '/guides/de/moropus-size-comparison.html': 'guide/de/moropus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire147 (2026-07-19): moropus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/moropus-3d-viewer-vs-ar-apps.html': 'guide/moropus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/moropus-3d-viewer-vs-ar-apps.html': 'guide/pt/moropus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/moropus-3d-viewer-vs-ar-apps.html': 'guide/es/moropus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/moropus-3d-viewer-vs-ar-apps.html': 'guide/vi/moropus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/moropus-3d-viewer-vs-ar-apps.html': 'guide/id/moropus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/moropus-3d-viewer-vs-ar-apps.html': 'guide/de/moropus-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire148 (2026-07-19): how-to-view-titanosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-titanosaurus-in-3d.html': 'guide/how-to-view-titanosaurus-in-3d.jsp',
+  '/guides/pt/how-to-view-titanosaurus-in-3d.html': 'guide/pt/how-to-view-titanosaurus-in-3d.jsp',
+  '/guides/es/how-to-view-titanosaurus-in-3d.html': 'guide/es/how-to-view-titanosaurus-in-3d.jsp',
+  '/guides/vi/how-to-view-titanosaurus-in-3d.html': 'guide/vi/how-to-view-titanosaurus-in-3d.jsp',
+  '/guides/id/how-to-view-titanosaurus-in-3d.html': 'guide/id/how-to-view-titanosaurus-in-3d.jsp',
+  '/guides/de/how-to-view-titanosaurus-in-3d.html': 'guide/de/how-to-view-titanosaurus-in-3d.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
