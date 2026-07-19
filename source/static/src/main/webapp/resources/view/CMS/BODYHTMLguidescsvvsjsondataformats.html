@@ -12,6 +12,7 @@
 <p><b>JSON (JavaScript Object Notation)</b> is a recursive structured format: objects (key-value maps), arrays (ordered lists), strings, numbers, booleans, and null. The formal spec is short (<a href="https://www.rfc-editor.org/rfc/rfc8259">RFC 8259</a>); every modern language ships a JSON parser in the standard library; interoperability is near-universal.</p>
 
 <br/><h2 class="text-uppercase"><b>Side-by-side comparison</b></h2>
+<p>Side-by-side comparison of CSV vs JSON: CSV is flat rows under one header line; JSON nests objects and arrays. Pick CSV when a spreadsheet user may be next; pick JSON when hierarchy or optional fields matter.</p>
 <figure class="illustration"><img src="/img/illustrations/card-row-4/guidescsvvsjsondataformats__eff4a73e.svg" alt="Compare CSV and JSON in this side-by-side comparison: data shape flat versus nested, value types strings versus typed, file size CSV lighter, and parse speed CSV faster" loading="lazy" width="640" height="180"><figcaption>Compare CSV and JSON: pick CSV for flat tabular data, pick JSON when nesting or typing is needed.</figcaption></figure>
 <div class="w3-responsive">
 <table class="w3-table-all w3-small">
@@ -29,13 +30,13 @@
 </div>
 
 <br/><h2 class="text-uppercase"><b>When CSV wins</b></h2>
-<p><b>Tabular data with a stable schema.</b> User exports from a database, transaction logs, census records, analytics dumps - anything that's naturally rows and columns ships smaller and parses faster as CSV.</p>
+<p>When CSV wins: tabular data with a stable schema - database exports, transaction logs, census dumps - where every row shares the same columns and a spreadsheet is a realistic next step.</p>
 <p><b>Spreadsheet round-trips.</b> If a stakeholder is going to open the file in Excel, Google Sheets, or Numbers, CSV is the format that round-trips without surprises. JSON opens in a text editor; few non-developers can read a 5,000-line JSON file.</p>
 <p><b>Streaming large datasets.</b> Processing a 10 GB file one row at a time is idiomatic in CSV: read a line, parse, emit, discard. JSON Lines achieves the same, but plain JSON (a single top-level array) requires the whole file in memory to parse correctly.</p>
 <p><b>Data warehouse loads.</b> Every warehouse (BigQuery, Snowflake, Redshift, DuckDB) has an optimised CSV loader. JSON loaders exist but are typically slower because of the shape ambiguity.</p>
 
 <br/><h2 class="text-uppercase"><b>When JSON wins</b></h2>
-<p><b>Nested or hierarchical data.</b> A user record with a list of past orders, each order with a list of line items, each line item with a list of variants - JSON expresses this in one object; CSV requires either denormalisation (one row per line item, repeated header) or embedded JSON strings in cells (the worst of both formats).</p>
+<p>When JSON wins: nested or hierarchical data - a user with orders, each order with line items - where optional fields and arrays would force awkward CSV column sprawl.</p>
 <p><b>HTTP APIs.</b> Every REST and GraphQL API in the modern web returns JSON. It's the default. Don't return CSV from an API unless the caller explicitly asks.</p>
 <p><b>Configuration files.</b> Typed values (booleans, nulls, numbers) matter in config - CSV would require parsing every field as string and casting, inviting type bugs. JSON preserves types. YAML preserves types and adds comments - often the better choice for human-edited config.</p>
 <p><b>Heterogeneous records.</b> If your data has optional fields, polymorphic shapes, or records with different schemas, JSON's freedom maps naturally; CSV forces the union of all columns with blanks where a field is absent.</p>
@@ -48,13 +49,13 @@
 <p>It retains JSON's typing and nesting while allowing line-by-line streaming like CSV. Most log-processing tools, data warehouses, and stream processors accept it natively. Choose JSON Lines when you need JSON's shape flexibility and CSV's streaming friendliness.</p>
 
 <br/><h2 class="text-uppercase"><b>Common gotchas when picking CSV</b></h2>
-<p><b>Commas in fields.</b> If any field can contain a comma (addresses, descriptions, product names), the field must be quoted. Naive <code>split(',')</code> parsers break immediately. Use a real CSV parser (Python <code>csv</code>, Node <code>fast-csv</code>, Go <code>encoding/csv</code>).</p>
+<p>Common gotchas when picking CSV: commas inside fields need quoting, encodings differ (UTF-8 vs Windows), and a missing header line makes the first data row look like column names - JSON avoids delimiter quoting but brings its own nesting cost.</p>
 <p><b>Encoding.</b> Excel on Windows defaults to UTF-16 LE with BOM; most tools expect UTF-8. Always specify encoding when exporting; add a UTF-8 BOM if Excel interop matters.</p>
 <p><b>Date formats.</b> "2026-04-20" and "04/20/2026" are both ambiguous without region. Prefer ISO 8601 (<code>YYYY-MM-DDTHH:mm:ss.sssZ</code>) and document the timezone. See our <a href="/guides/unix-timestamps-explained.html">unix timestamps guide</a> for the epoch alternative.</p>
 <p><b>Trailing newlines + BOM.</b> Some CSV writers add both; some parsers silently add a blank record or an unreadable field. Test round-trip on a representative sample.</p>
 
 <br/><h2 class="text-uppercase"><b>Converting between formats</b></h2>
-<p>In-browser conversion is feasible for small to medium files. For JSON structure inspection, our <a href="/developer-tools.html">developer tools hub</a> links to the <a href="/developer-tools/data-visualizer.html">data visualizer</a>, jsonparser, text-diff, and minifiers - the data visualizer renders CSV and JSON as interactive charts in the browser without writing code. For CSV, use <code>pandas.read_csv</code> / <code>pandas.to_json</code> locally for files &gt; 100 MB; browser memory caps conversion at ~500 MB per tab in practice.</p>
+<p>Converting between formats in the browser works for small to medium files: flatten nested JSON into columns carefully, or wrap CSV rows as objects. For structure inspection, open the developer tools hub JSON tools linked from this guide.</p>
 
 <br/><h2 class="text-uppercase"><b>The decision rule for CSV vs JSON in one sentence</b></h2>
 <p>If your rows fit a single header line of column names and a spreadsheet user is at least possibly downstream, ship CSV - the format is the lowest-common-denominator export every BI tool, every database loader, and Excel can ingest without code. If any row needs nested objects, arrays, or typed numbers / booleans / nulls preserved through the round-trip, ship JSON, and switch to JSON Lines (`.jsonl`) when the file is large enough that a single top-level array would force the consumer to load the whole document into memory at once. The two formats are not interchangeable: CSV loses types and nesting on the way out, and JSON gains a parser dependency the spreadsheet team may not have on the way in.</p>

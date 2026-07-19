@@ -12,7 +12,8 @@
 <p><b>CSV (valores separados por vírgula)</b> é um formato em texto puro: um registro por linha, campos separados por um delimitador (vírgula, tabulação, ponto e vírgula ou pipe), linha de cabeçalho opcional, aspas em campos opcionais. Não há uma única especificação formal - <a href="https://datatracker.ietf.org/doc/html/rfc4180">RFC 4180</a> codificou o subconjunto comum em 2005, mas o CSV do mundo real varia em delimitador, caractere de aspas, regras de escape, codificação, e se linhas em branco são permitidas.</p>
 <p><b>JSON (JavaScript Object Notation)</b> é um formato estruturado recursivo: objetos (mapas chave-valor), arrays (listas ordenadas), strings, números, booleanos e null. A especificação formal é curta (<a href="https://www.rfc-editor.org/rfc/rfc8259">RFC 8259</a>); toda linguagem moderna traz um parser JSON na biblioteca padrão; a interoperabilidade é quase universal.</p>
 
-<br/><h2 class="text-uppercase"><b>Comparação lado a lado</b></h2><figure class="illustration"><img src="/img/illustrations/card-row-4/guidescsvvsjsondataformats__eff4a73e.svg" alt="Compare CSV e JSON em forma, tipos, tamanho e velocidade using the four points in this diagram." loading="lazy" width="640" height="180"><figcaption>CSV para tabelas planas, JSON quando ha aninhamento ou tipos.</figcaption></figure>
+<br/><h2 class="text-uppercase"><b>Comparação lado a lado</b></h2><p>Comparacao lado a lado CSV vs JSON: CSV sao linhas planas sob um cabecalho; JSON aninha objetos e arrays. CSV se planilha vem depois; JSON se hierarquia importa.</p>
+<figure class="illustration"><img src="/img/illustrations/card-row-4/guidescsvvsjsondataformats__eff4a73e.svg" alt="Compare CSV e JSON em forma, tipos, tamanho e velocidade using the four points in this diagram." loading="lazy" width="640" height="180"><figcaption>CSV para tabelas planas, JSON quando ha aninhamento ou tipos.</figcaption></figure>
 <div class="w3-responsive">
 <table class="w3-table-all w3-small">
 <tr><th>Atributo</th><th>CSV</th><th>JSON</th></tr>
@@ -29,13 +30,13 @@
 </div>
 
 <br/><h2 class="text-uppercase"><b>Quando CSV vence</b></h2>
-<p><b>Dados tabulares com esquema estável.</b> Exportações de usuários de um banco de dados, logs de transações, registros censitários, dumps de analytics - qualquer coisa naturalmente em linhas e colunas é menor e mais rápida de parsear como CSV.</p>
+<p>Quando CSV vence: dados tabulares com esquema estavel - exportacoes de BD, logs, censos - mesmas colunas por linha e planilha como proximo passo.</p>
 <p><b>Idas e voltas para planilha.</b> Se um stakeholder vai abrir o arquivo no Excel, Google Planilhas ou Numbers, CSV é o formato que vai e volta sem surpresas. JSON abre em um editor de texto; poucos não-desenvolvedores conseguem ler um arquivo JSON de 5.000 linhas.</p>
 <p><b>Streaming de grandes datasets.</b> Processar um arquivo de 10 GB uma linha por vez é idiomático em CSV: leia uma linha, parse, emita, descarte. JSON Lines atinge o mesmo, mas JSON puro (um único array de nível superior) requer o arquivo inteiro em memória para ser parseado corretamente.</p>
 <p><b>Cargas em data warehouse.</b> Todo warehouse (BigQuery, Snowflake, Redshift, DuckDB) tem um loader CSV otimizado. Loaders JSON existem mas são tipicamente mais lentos por causa da ambiguidade de forma.</p>
 
 <br/><h2 class="text-uppercase"><b>Quando JSON vence</b></h2>
-<p><b>Dados aninhados ou hierárquicos.</b> Um registro de usuário com uma lista de pedidos passados, cada pedido com uma lista de itens de linha, cada item de linha com uma lista de variantes - JSON expressa isto em um objeto; CSV requer ou desnormalização (uma linha por item de linha, cabeçalho repetido) ou strings JSON embutidas em células (o pior dos dois formatos).</p>
+<p>Quando JSON vence: dados aninhados - usuario com pedidos e itens - campos opcionais e arrays sem espalhar colunas CSV.</p>
 <p><b>APIs HTTP.</b> Toda API REST e GraphQL na web moderna retorna JSON. É o padrão. Não retorne CSV de uma API a menos que o chamador explicitamente peça.</p>
 <p><b>Arquivos de configuração.</b> Valores tipados (booleanos, nulls, números) importam em configuração - CSV requereria parsing de cada campo como string e cast, convidando bugs de tipo. JSON preserva tipos. YAML preserva tipos e adiciona comentários - frequentemente a melhor escolha para configuração editada por humanos.</p>
 <p><b>Registros heterogêneos.</b> Se seus dados têm campos opcionais, formas polimórficas, ou registros com esquemas diferentes, a liberdade do JSON mapeia naturalmente; CSV força a união de todas as colunas com espaços em branco onde um campo está ausente.</p>
