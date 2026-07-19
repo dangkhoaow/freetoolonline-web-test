@@ -40,12 +40,12 @@
 <p>El navegador recorre la lista <code>&lt;source&gt;</code> de arriba hacia abajo, escoge el primer <code>type</code> que reconoce e ignora el resto. Servir AV1 primero captura el ~60% de los dispositivos de 2026 que tienen decodificacion AV1 por hardware; VP9 atrapa la mayor parte del resto; H.264 garantiza fallback 100%.</p>
 
 <br/><h2 class="text-uppercase"><b>Las tres decisiones reales de produccion</b></h2>
-<p><b>Decision 1 - Clip social corto para alcance amplio.</b> &rarr; <b>MP4 (H.264)</b> solamente. Codifica una vez. Cada navegador, cada plataforma social, cada cliente de email lo reproduce. Los ahorros de banda de VP9/AV1 no justifican el tiempo de codificacion y los dispositivos de borde que perderias.</p>
+<p>Las tres decisiones reales de produccion para MP4 vs WebM para web son autoplay hero, compatibilidad de descarga y masters de archivo - publica MP4 H.264 por alcance, anade WebM cuando optimizas peso en Chrome.</p>
 <p><b>Decision 2 - Video hero de fondo en un sitio de marketing a 1080p, loop de 15 segundos.</b> &rarr; <b>MP4 (H.264) + WebM (VP9)</b>. El archivo VP9 sale a ~60% del tamano H.264, lo que significa carga de pagina mas rapida para visitantes con conexiones lentas. El archivo H.264 es el fallback para cualquiera cuyo navegador omita WebM. El tiempo de codificacion es pequeno (una vez, clip de 15 segundos).</p>
 <p><b>Decision 3 - Biblioteca de streaming de formato largo (servicio VOD, plataforma de cursos, videos de 30+ minutos).</b> &rarr; <b>AV1 (WebM) + VP9 (WebM) + H.264 (MP4)</b>. Los archivos AV1 ahorran salida sustancial de CDN a escala. Los archivos VP9 cubren todos los navegadores modernos. Los archivos H.264 son el fallback universal. Codifica en hardware GPU o pipeline por lotes; el tiempo de codificacion 10&times; de AV1 importa cuando la biblioteca tiene miles de videos.</p>
 
 <br/><h2 class="text-uppercase"><b>Recetas de codificacion</b></h2>
-<p><b>H.264 (MP4) - el universal seguro.</b> Un solo one-liner de FFmpeg da en el punto dulce para entrega web: <code>ffmpeg -i in.mov -c:v libx264 -crf 23 -preset medium -c:a aac -b:a 128k -movflags +faststart out.mp4</code>. La bandera <code>+faststart</code> coloca el atomo <code>moov</code> al inicio del archivo para que un navegador pueda comenzar la reproduccion antes de que el archivo completo se descargue.</p>
+<p>Recetas de codificacion en MP4 vs WebM para web: mantén una escalera CRF corta para MP4 H.264, exporta un gemelo WebM VP9 cuando importe el peso, y nunca publiques solo WebM sin fallback MP4.</p>
 <p><b>VP9 (WebM) - mejor equilibrio compresion/compatibilidad.</b> Usa codificacion en dos pasadas para calidad consistente a un bitrate objetivo. <code>-c:v libvpx-vp9 -b:v 0 -crf 31 -row-mt 1 -c:a libopus -b:a 96k</code>. La bandera <code>-row-mt 1</code> activa multi-threading por filas que corta el tiempo de codificacion aproximadamente a la mitad en CPUs modernos.</p>
 <p><b>AV1 (WebM) - compresion maxima.</b> SVT-AV1 es el encoder en el que la industria se asento: <code>-c:v libsvtav1 -crf 35 -preset 6 -c:a libopus -b:a 96k</code>. Preset 6 es el equilibrio por defecto entre velocidad y compresion; presets inferiores (4, 5) favorecen la calidad a costa de codificaciones mucho mas largas.</p>
 
@@ -54,7 +54,7 @@
 <p>Los clientes de email casi nunca renderizan <code>&lt;video&gt;</code> de forma nativa. Si el video esta en un boletin de email, exporta un breve <b>GIF</b> animado o un enlace MP4 a una landing page - ni WebM ni una etiqueta de video HTML5 inline ayudan.</p>
 
 <br/><h2 class="text-uppercase"><b>Convertir entre formatos</b></h2>
-<p>Nuestro <a href="/video-tools/video-converter.html">conversor de video</a> maneja MP4 &harr; WebM en el navegador con FFmpeg.wasm - sin subida, sin instalacion. Para conversion por lotes de formato largo, instala FFmpeg localmente y usa las recetas anteriores; el conversor en el navegador esta limitado por tu RAM disponible (tipicamente 2-4 GB por pestana), que funciona para clips individuales pero no para un catalogo de 50 videos. Ve nuestra <a href="/guides/es/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html">guia comparativa FFmpeg online vs local</a> para cuando gana cada uno.</p>
+<p>Convertir entre formatos para MP4 vs WebM para web: abre Video Converter, elige el contenedor destino y revisa el audio - un WebM silencioso aun necesita un gemelo MP4 para usuarios Safari.</p>
 
 <br/><h2 class="text-uppercase"><b>Herramientas relacionadas</b></h2>
 <ul>

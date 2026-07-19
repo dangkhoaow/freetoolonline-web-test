@@ -9,7 +9,7 @@
     </div>
 
     <h2 class="text-uppercase"><b>Apa yang sebenarnya ditunjukkan meter level</b></h2>
-    <p>Bar (atau bentuk gelombang animasi) pada tes mikrofon browser bukan indikator "apakah mic Anda menyala" - itu adalah pembacaan amplitudo real-time dari sampel audio digital yang sedang ditangkap browser Anda. Setiap frame halaman membaca potongan sampel PCM dari <code>AnalyserNode</code> Web Audio API dan merender nilai peak (atau RMS) sebagai tinggi bar vertikal atau garis bentuk gelombang horizontal. Ketika Anda berbicara, variasi tekanan udara di kapsul mic menghasilkan variasi tegangan di preamp mic; driver audio OS mendigitalisasi variasi tersebut menjadi sampel 16-bit (atau 32-bit float); browser menyerahkan sampel ke halaman; halaman menggambarnya. <em>Apa yang Anda lihat adalah sinyal audio sebenarnya, bukan lampu izin/koneksi.</em></p>
+    <p>Apa yang sebenarnya ditunjukkan meter level di Tes mikrofon sunyi / normal / peak adalah seberapa keras browser mendengar mic Anda sekarang - bar bergerak membuktikan rantai bekerja, bukan bahwa gain sudah ideal.</p>
     <p>Ini penting karena meter yang bergerak adalah bukti tiga hal sekaligus: mic dipilih dan tidak dibisukan, stack audio OS mengirimkan sampel ke browser, dan halaman memiliki izin untuk membacanya. Sebaliknya, meter datar berarti rantai rusak di suatu tempat - yang adalah apa yang <a href="/guides/id/microphone-test-no-sound-four-fixes.html">Microphone test no sound: 4 fixes that work</a> jelaskan cara menyelesaikannya. Panduan ini melanjutkan dari tempat itu berakhir: meter bergerak, tetapi apakah level <em>tepat</em>?</p>
 
     <h2 class="text-uppercase"><b>Sunyi, normal, dan peak: tiga wilayah meter</b></h2>
@@ -22,7 +22,7 @@
     <p>Asimetri itu disengaja: audio digital memiliki langit-langit keras (skala penuh = 0 dBFS) dan lantai lembut (kebisingan ruangan + kebisingan elektronik). Anda ingin headroom di bawah langit-langit karena clipping bersifat destruktif dan tidak dapat dipulihkan, sementara jarak ekstra dari lantai hanya menghabiskan sedikit rasio sinyal-ke-kebisingan yang tidak akan didengar pendengar pada panggilan tipikal.</p>
 
     <h2 class="text-uppercase"><b>Apa yang tes tidak dapat beritahu Anda tentang level Anda</b></h2>
-    <p>Meter level sisi browser menunjukkan level setelah beberapa tahap upstream sudah menyentuh sinyal. Anda melihat apa yang dilihat browser, bukan apa yang keluar dari kapsul mikrofon. Kesenjangan itu penting dalam tiga kasus:</p>
+    <p>Apa yang tes tidak dapat beritahu Anda tentang level Anda di Microphone Test adalah kalibrasi studio absolut - sunyi, normal, dan peak adalah wilayah relatif di halaman ini, bukan angka dBFS lab.</p>
     <ul>
         <li><b>Kontrol gain otomatis (AGC) tingkat sistem operasi mungkin aktif.</b> Windows ("Listen to this device" + "Microphone Boost"), macOS ("Use ambient noise reduction"), dan banyak driver headset USB menjalankan AGC software yang meningkatkan input pelan dan menurunkan input keras sebelum browser melihat sampel. Meter yang terlihat "sempurna" ketika AGC aktif dapat menyembunyikan posisi mic yang secara fundamental lemah (atau berisik). Untuk pembacaan kelas-rekaman, nonaktifkan AGC tingkat OS di pengaturan audio OS, lalu tes ulang.</li>
         <li><b>Browser dapat menerapkan supresi kebisingan dan pembatalan gema sendiri.</b> Batasan default <code>getUserMedia</code> Chrome mengaktifkan <code>echoCancellation</code>, <code>noiseSuppression</code>, dan <code>autoGainControl</code>. Beberapa halaman tes menonaktifkan batasan tersebut (sehingga Anda melihat input mentah); yang lain membiarkannya aktif (sehingga Anda melihat sinyal yang diproses yang akan diterima Zoom dan Meet). Pembacaan meter dapat bergeser satu hingga dua sepertiga skala antara dua mode. Tes mikrofon browser di situs ini (lihat <a href="/device-test-tools/microphone-test.html">halaman alat</a>) merender canvas pengukuran langsung dari <code>AnalyserNode</code> mentah sehingga Anda melihat sinyal sebelum lapisan pemrosesan aplikasi rapat.</li>
@@ -30,7 +30,7 @@
     </ul>
 
     <h2 class="text-uppercase"><b>Target berdasarkan kasus penggunaan</b></h2>
-    <p>Target sepertiga tengah "normal" di atas adalah default siap-panggilan. Penggunaan hilir yang berbeda memiliki optimum yang berbeda:</p>
+    <p>Target berdasarkan kasus penggunaan untuk Tes mikrofon sunyi / normal / peak: jaga ucapan di sepertiga tengah untuk panggilan; sisakan headroom di bawah zona peak agar tawa tidak clip di tengah kalimat.</p>
     <ul>
         <li><b>Rapat video (Zoom, Google Meet, Microsoft Teams).</b> Tengah skala pada kata yang ditekankan. Aplikasi rapat toleran dengan rentang input lebar karena tahap gain mereka sendiri menormalisasi ulang di sisi penerima. Risiko lebih besar adalah clipping (yang tidak bisa mereka perbaiki) dan kebisingan ruangan yang berlebihan (yang dapat mereka tekan sebagian tetapi tidak hilangkan).</li>
         <li><b>Rekaman podcast atau wawancara.</b> Sekitar sepertiga skala pada kata yang ditekankan. Podcaster bekerja dalam dBFS (desibel relatif terhadap skala penuh) dan menargetkan sekitar -18 dBFS hingga -12 dBFS rata-rata (level "LUFS" mirip dalam bentuk). Target lebih rendah meninggalkan headroom untuk reaksi keras dan normalisasi pasca-produksi. Jika aplikasi rekaman Anda menampilkan dBFS numerik, lebih suka angka tersebut; meter visual hanyalah proxy.</li>
@@ -53,7 +53,7 @@
     <p>Jika ketiganya benar dan meter masih melayang dekat lantai, preamp mic mungkin gagal atau driver OS mungkin membisukan saluran di bawah slider volume input. Coba mic di aplikasi lain (Voice Memos di macOS, Sound Recorder di Windows) untuk mengisolasi lapisan; jika aplikasi lain juga menunjukkan sinyal lemah, kesalahan di bawah lapisan browser.</p>
 
     <h2 class="text-uppercase"><b>Jika meter menempel di atas (clipping)</b></h2>
-    <p>Peak persisten pada skala penuh merusak audio panggilan: pendengar mendengar tepi berdengung pada setiap suku kata dan kualitas suara yang mendasarinya. Tiga perbaikan cepat:</p>
+    <p>Jika meter menempel di atas (clipping) di Microphone Test, turunkan gain mic OS atau browser sebelum wawancara - bar merah berarti distorsi yang juga didengar app panggilan.</p>
     <ol>
         <li><b>Turunkan gain input mic di pengaturan suara OS.</b> Kontrol yang sama di atas; geser ke bawah alih-alih ke atas.</li>
         <li><b>Mundur sedikit dari mic.</b> Tiga hingga lima sentimeter jarak ekstra biasanya cukup untuk menurunkan level dari zona clipping tanpa kehilangan kejelasan.</li>
