@@ -11,7 +11,8 @@
 <p><b>CSV (nilai dipisahkan koma)</b> adalah format teks biasa: satu record per baris, field dipisahkan oleh pembatas (koma, tab, titik koma, atau pipe), baris header opsional, kuotasi field opsional. Tidak ada satu spesifikasi formal - <a href="https://datatracker.ietf.org/doc/html/rfc4180">RFC 4180</a> mengkodifikasi subset umum pada 2005, tetapi CSV dunia nyata bervariasi pada pembatas, karakter kuotasi, aturan escape, encoding, dan apakah baris kosong diizinkan.</p>
 <p><b>JSON (JavaScript Object Notation)</b> adalah format terstruktur rekursif: objek (peta kunci-nilai), array (daftar terurut), string, angka, boolean, dan null. Spesifikasi formalnya singkat (<a href="https://www.rfc-editor.org/rfc/rfc8259">RFC 8259</a>); setiap bahasa modern menyertakan parser JSON di pustaka standar; interoperabilitasnya hampir universal.</p>
 
-<br/><h2 class="text-uppercase"><b>Perbandingan berdampingan</b></h2><figure class="illustration"><img src="/img/illustrations/card-row-4/guidescsvvsjsondataformats__eff4a73e.svg" alt="Compare CSV dan JSON pada bentuk, tipe, ukuran, dan kecepatan using the four points in this diagram." loading="lazy" width="640" height="180"><figcaption>CSV untuk tabel datar, JSON jika perlu nest atau tipe.</figcaption></figure>
+<br/><h2 class="text-uppercase"><b>Perbandingan berdampingan</b></h2><p>Perbandingan berdampingan CSV vs JSON: CSV baris datar di bawah header; JSON menyarang objek dan array. CSV jika spreadsheet menyusul; JSON jika hierarki penting.</p>
+<figure class="illustration"><img src="/img/illustrations/card-row-4/guidescsvvsjsondataformats__eff4a73e.svg" alt="Compare CSV dan JSON pada bentuk, tipe, ukuran, dan kecepatan using the four points in this diagram." loading="lazy" width="640" height="180"><figcaption>CSV untuk tabel datar, JSON jika perlu nest atau tipe.</figcaption></figure>
 <div class="w3-responsive">
 <table class="w3-table-all w3-small">
 <tr><th>Atribut</th><th>CSV</th><th>JSON</th></tr>
@@ -28,13 +29,13 @@
 </div>
 
 <br/><h2 class="text-uppercase"><b>Kapan CSV menang</b></h2>
-<p><b>Data tabular dengan skema stabil.</b> Ekspor pengguna dari basis data, log transaksi, catatan sensus, dump analitik - apa pun yang secara alami baris dan kolom dikirim lebih kecil dan diparse lebih cepat sebagai CSV.</p>
+<p>Kapan CSV menang: data tabular skema stabil - ekspor DB, log, sensus - kolom sama per baris dan spreadsheet masuk akal.</p>
 <p><b>Perjalanan bolak-balik spreadsheet.</b> Jika stakeholder akan membuka file di Excel, Google Sheets, atau Numbers, CSV adalah format yang bolak-balik tanpa kejutan. JSON terbuka di editor teks; sedikit non-pengembang yang dapat membaca file JSON 5.000 baris.</p>
 <p><b>Streaming dataset besar.</b> Memproses file 10 GB satu baris pada satu waktu adalah idiomatik dalam CSV: baca satu baris, parse, pancarkan, buang. JSON Lines mencapai hal yang sama, tetapi JSON biasa (satu array tingkat atas tunggal) memerlukan seluruh file di memori untuk diparse dengan benar.</p>
 <p><b>Pemuatan data warehouse.</b> Setiap warehouse (BigQuery, Snowflake, Redshift, DuckDB) memiliki loader CSV yang dioptimalkan. Loader JSON ada tetapi biasanya lebih lambat karena ambiguitas bentuk.</p>
 
 <br/><h2 class="text-uppercase"><b>Kapan JSON menang</b></h2>
-<p><b>Data bersarang atau hierarkis.</b> Sebuah record pengguna dengan daftar pesanan sebelumnya, setiap pesanan dengan daftar item baris, setiap item baris dengan daftar varian - JSON mengekspresikan ini dalam satu objek; CSV memerlukan denormalisasi (satu baris per item baris, header berulang) atau string JSON tertanam dalam sel (yang terburuk dari kedua format).</p>
+<p>Kapan JSON menang: data bersarang - pengguna dengan pesanan dan item - field opsional dan array tanpa kolom CSV berlebih.</p>
 <p><b>API HTTP.</b> Setiap REST dan GraphQL API di web modern mengembalikan JSON. Itu default. Jangan kembalikan CSV dari API kecuali penelepon memintanya secara eksplisit.</p>
 <p><b>File konfigurasi.</b> Nilai bertipe (boolean, null, angka) penting dalam konfigurasi - CSV akan memerlukan parsing setiap field sebagai string dan casting, mengundang bug tipe. JSON mempertahankan tipe. YAML mempertahankan tipe dan menambah komentar - sering kali pilihan yang lebih baik untuk konfigurasi yang diedit manusia.</p>
 <p><b>Record heterogen.</b> Jika data Anda memiliki field opsional, bentuk polimorfis, atau record dengan skema berbeda, kebebasan JSON dipetakan secara alami; CSV memaksa penyatuan semua kolom dengan kosong di mana field tidak ada.</p>
