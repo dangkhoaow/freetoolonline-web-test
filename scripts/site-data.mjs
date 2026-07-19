@@ -5236,6 +5236,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/avaceratops-3d-viewer-vs-ar-apps.html',
   '/guides/id/avaceratops-3d-viewer-vs-ar-apps.html',
   '/guides/de/avaceratops-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire142 (2026-07-19): how-to-view-titanoboa-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-titanoboa-in-3d.html',
+  '/guides/pt/how-to-view-titanoboa-in-3d.html',
+  '/guides/es/how-to-view-titanoboa-in-3d.html',
+  '/guides/vi/how-to-view-titanoboa-in-3d.html',
+  '/guides/id/how-to-view-titanoboa-in-3d.html',
+  '/guides/de/how-to-view-titanoboa-in-3d.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -8368,6 +8376,7 @@ export const ALIAS_ROUTES = {
   '/alioramus.html': '/dinosaur-3d/alioramus.html',
   // dinosaur-3d-discovery-loop-runbook fire110: doliosauriscus alias.
   '/doliosauriscus.html': '/dinosaur-3d/doliosauriscus.html',
+  '/compsognathus.html': '/dinosaur-3d/compsognathus.html',
   // dinosaur-3d-discovery-loop-runbook fire113: mamenchisaurus alias.
   '/mamenchisaurus.html': '/dinosaur-3d/mamenchisaurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
@@ -11706,6 +11715,7 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/shuangmiaosaurus.html': 'dinosaur/shuangmiaosaurus.jsp',
   '/dinosaur-3d/alioramus.html': 'dinosaur/alioramus.jsp',
   '/dinosaur-3d/doliosauriscus.html': 'dinosaur/doliosauriscus.jsp',
+  '/dinosaur-3d/compsognathus.html': 'dinosaur/compsognathus.jsp',
   '/dinosaur-3d/mamenchisaurus.html': 'dinosaur/mamenchisaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
@@ -12839,6 +12849,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/avaceratops-3d-viewer-vs-ar-apps.html': 'guide/vi/avaceratops-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/avaceratops-3d-viewer-vs-ar-apps.html': 'guide/id/avaceratops-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/avaceratops-3d-viewer-vs-ar-apps.html': 'guide/de/avaceratops-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire142 (2026-07-19): how-to-view-titanoboa-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-titanoboa-in-3d.html': 'guide/how-to-view-titanoboa-in-3d.jsp',
+  '/guides/pt/how-to-view-titanoboa-in-3d.html': 'guide/pt/how-to-view-titanoboa-in-3d.jsp',
+  '/guides/es/how-to-view-titanoboa-in-3d.html': 'guide/es/how-to-view-titanoboa-in-3d.jsp',
+  '/guides/vi/how-to-view-titanoboa-in-3d.html': 'guide/vi/how-to-view-titanoboa-in-3d.jsp',
+  '/guides/id/how-to-view-titanoboa-in-3d.html': 'guide/id/how-to-view-titanoboa-in-3d.jsp',
+  '/guides/de/how-to-view-titanoboa-in-3d.html': 'guide/de/how-to-view-titanoboa-in-3d.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
