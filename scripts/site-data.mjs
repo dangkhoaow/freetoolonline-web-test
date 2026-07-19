@@ -5025,6 +5025,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/dimetrodon-3d-viewer-vs-ar-apps.html',
   '/guides/id/dimetrodon-3d-viewer-vs-ar-apps.html',
   '/guides/de/dimetrodon-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire127 (2026-07-19): how-to-view-ichthyovenator-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-ichthyovenator-in-3d.html',
+  '/guides/pt/how-to-view-ichthyovenator-in-3d.html',
+  '/guides/es/how-to-view-ichthyovenator-in-3d.html',
+  '/guides/vi/how-to-view-ichthyovenator-in-3d.html',
+  '/guides/id/how-to-view-ichthyovenator-in-3d.html',
+  '/guides/de/how-to-view-ichthyovenator-in-3d.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -12292,6 +12300,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/dimetrodon-3d-viewer-vs-ar-apps.html': 'guide/vi/dimetrodon-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/dimetrodon-3d-viewer-vs-ar-apps.html': 'guide/id/dimetrodon-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/dimetrodon-3d-viewer-vs-ar-apps.html': 'guide/de/dimetrodon-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire127 (2026-07-19): how-to-view-ichthyovenator-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-ichthyovenator-in-3d.html': 'guide/how-to-view-ichthyovenator-in-3d.jsp',
+  '/guides/pt/how-to-view-ichthyovenator-in-3d.html': 'guide/pt/how-to-view-ichthyovenator-in-3d.jsp',
+  '/guides/es/how-to-view-ichthyovenator-in-3d.html': 'guide/es/how-to-view-ichthyovenator-in-3d.jsp',
+  '/guides/vi/how-to-view-ichthyovenator-in-3d.html': 'guide/vi/how-to-view-ichthyovenator-in-3d.jsp',
+  '/guides/id/how-to-view-ichthyovenator-in-3d.html': 'guide/id/how-to-view-ichthyovenator-in-3d.jsp',
+  '/guides/de/how-to-view-ichthyovenator-in-3d.html': 'guide/de/how-to-view-ichthyovenator-in-3d.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
