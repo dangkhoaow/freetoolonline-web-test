@@ -8,10 +8,11 @@
 <p>Execute o <a href="/video-tools/ffmpeg-online.html">FFmpeg online</a> no navegador - sem instalacao, privacidade total, funciona em qualquer dispositivo. Instale o FFmpeg local para codificacao por hardware, arquivos acima de 2 GB ou a suite completa de codecs. Este guia compara os dois em velocidade, limites de tamanho e privacidade.</p>
 
 <br/><h2 class="text-uppercase"><b>O que cada superficie realmente e</b></h2>
-<p><b>FFmpeg online (ffmpeg.wasm)</b> e uma portacao do FFmpeg compilada para WebAssembly que roda dentro de uma aba do navegador. O arquivo de video que voce escolhe e lido em um sistema de arquivos em memoria dentro da aba; o FFmpeg roda contra esse sistema de arquivos virtual; a saida e escrita de volta na memoria e oferecida como um download. Nada deixa seu dispositivo.</p>
+<p>O que cada superficie realmente e: FFmpeg Online e o build WASM do navegador; FFmpeg local e a CLI - mesmas receitas, limites diferentes de tamanho, GPU e lotes.</p>
 <p><b>FFmpeg local</b> e o binario nativo instalado via seu gerenciador de pacotes (<code>brew install ffmpeg</code>, <code>apt install ffmpeg</code>, Chocolatey, scoop). O binario roda com acesso total ao SO: le do disco, escreve no disco, usa todos os nucleos da CPU, acessa codificadores de hardware (NVENC, QSV, VideoToolbox) quando disponiveis.</p>
 
-<br/><h2 class="text-uppercase"><b>Comparacao lado a lado</b></h2><figure class="illustration"><img src="/img/illustrations/card-row-4/guidesffmpegonlinevslocalffmpegwheneachwins__3181c243.svg" alt="Compare FFmpeg no navegador e FFmpeg local em quatro pontos using the four points in this diagram." loading="lazy" width="640" height="180"><figcaption>Navegador sem instalar, local 4x mais rapido com encoder de hardware.</figcaption></figure>
+<br/><h2 class="text-uppercase"><b>Comparacao lado a lado</b></h2><p>Comparacao lado a lado de FFmpeg online vs local: navegador vence em arquivos pequenos, sem instalar e bytes no dispositivo; local vence em multi-GB, lotes e encoders de hardware.</p>
+<figure class="illustration"><img src="/img/illustrations/card-row-4/guidesffmpegonlinevslocalffmpegwheneachwins__3181c243.svg" alt="Compare FFmpeg no navegador e FFmpeg local em quatro pontos using the four points in this diagram." loading="lazy" width="640" height="180"><figcaption>Navegador sem instalar, local 4x mais rapido com encoder de hardware.</figcaption></figure>
 <div class="w3-responsive">
 <table class="w3-table-all w3-small">
 <tr><th>Atributo</th><th>FFmpeg online (wasm de navegador)</th><th>FFmpeg local</th></tr>
@@ -28,7 +29,7 @@
 </div>
 
 <br/><h2 class="text-uppercase"><b>Escolha FFmpeg do navegador para: arquivos pequenos, sem instalacao, privacidade</b></h2>
-<p><b>Conversao unica de um unico arquivo abaixo de 2 GB.</b> Voce tem um unico MOV do seu telefone que precisa ser MP4 para um email. Abrir a pagina do navegador e mais rapido do que instalar uma ferramenta CLI que voce usara uma vez este ano.</p>
+<p>Escolha FFmpeg do navegador para: arquivos pequenos, sem instalacao, privacidade - abra FFmpeg Online, cole uma receita curta e baixe sem terminal.</p>
 <p><b>Conteudo sensivel a privacidade.</b> Um rascunho de video que voce nao quer enviar para um conversor online gratuito. O wasm no navegador e a unica maneira de garantir que o arquivo permaneca no seu dispositivo sem instalar FFmpeg localmente.</p>
 <p><b>Usando uma maquina onde voce nao pode instalar software.</b> Um laptop de trabalho com permissoes de instalacao bloqueadas, um laboratorio escolar, um quiosque de biblioteca. Se o navegador pode carregar a pagina, FFmpeg roda.</p>
 <p><b>Ensinando ou demonstrando um comando FFmpeg especifico.</b> O console no navegador mostra a saida de log do FFmpeg em tempo real; estudantes podem ver o mesmo pipeline que roda localmente.</p>
@@ -40,11 +41,11 @@
 <p><b>Codecs incomuns ou filtros experimentais.</b> Se voce precisa de um filtro que requer uma flag de build especifica do FFmpeg (<code>libx265</code> com tuning x265, <code>libfdk_aac</code>, <code>libaom-av1</code>), FFmpeg local instalado da fonte com as flags requeridas e o unico caminho.</p>
 
 <br/><h2 class="text-uppercase"><b>O que "online" significa em nossa ferramenta</b></h2>
-<p>Nosso <a href="/video-tools/ffmpeg-online.html">FFmpeg online</a> roda inteiramente no seu navegador. O codigo FFmpeg e WebAssembly compilado da mesma fonte que a CLI. Quando voce escolhe um arquivo, ele e lido em um sistema de arquivos emulado por emscripten dentro da aba. Quando o FFmpeg roda, ele le desse sistema de arquivos virtual e escreve nele. Quando termina, o arquivo de saida e entregue como download via uma URL Blob. Em nenhum momento o arquivo viaja pela rede.</p>
+<p>O que "online" significa em nossa ferramenta e que FFmpeg Online roda o build WASM na aba - a receita executa no dispositivo no caminho documentado.</p>
 <p>A pagina mostra a linha de comando real do FFmpeg e o log FFmpeg ao vivo - entao voce pode copiar o comando exato para executa-lo depois na CLI para arquivos maiores, veja nosso <a href="/guides/pt/mp4-vs-webm-for-web.html">guia MP4 vs WebM</a> para decisoes em nivel de formato.</p>
 
 <br/><h2 class="text-uppercase"><b>Cinco receitas concretas que funcionam em ambas as superficies</b></h2>
-<p><b>Converter MOV para MP4 (H.264).</b> <code>ffmpeg -i in.mov -c:v libx264 -crf 23 -preset medium -c:a aac -b:a 128k -movflags +faststart out.mp4</code> - funciona identicamente no navegador e na CLI.</p>
+<p>Cinco receitas concretas que funcionam em ambas as superficies: remux MP4, escala 720p, audio AAC, corte -ss/-to e GIF com palettegen - no local so mude caminhos e flags de hardware.</p>
 <p><b>Recortar um clipe entre dois timestamps.</b> <code>ffmpeg -ss 00:00:30 -to 00:01:45 -i in.mp4 -c copy out.mp4</code> - <code>-c copy</code> evita re-codificacao, tornando isso instantaneo.</p>
 <p><b>Extrair audio como MP3.</b> <code>ffmpeg -i in.mp4 -vn -c:a libmp3lame -q:a 2 out.mp3</code>.</p>
 <p><b>Redimensionar para 720p preservando a proporcao.</b> <code>ffmpeg -i in.mp4 -vf "scale=-2:720" -c:a copy out.mp4</code>.</p>

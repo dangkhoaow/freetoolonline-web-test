@@ -31,7 +31,7 @@
 <p>Nen o <b>muc truyen tai</b>: byte cua tep CSS tren dia khong thay doi; may chu boc phan hoi trong mot phong bi nen va trinh duyet boc ra o dau kia. Tep nguon van la CSS thuan; phan hoi HTTP mang it byte hon qua duong truyen.</p>
 
 <br/><h2 class="text-uppercase"><b>Tai sao ca hai deu quan trong - hieu ung cong don</b></h2><figure class="illustration"><img src="/img/illustrations/card-row-4/guidescssminifiervscompressor-stages__04876441.svg" alt="Compare kich thuoc CSS o tung buoc pipeline using the four points in this diagram." loading="lazy" width="640" height="180"><figcaption>Cac buoc minify va gzip/Brotli at a glance.</figcaption></figure>
-<p>Rut gon va nen bo tro cho nhau. Rut gon loai bo du thua ma parser CSS khong can; nen nhan biet cac khuon mau con lai o muc byte.</p>
+<p>Tai sao ca hai deu quan trong - hieu ung cong don: minify truoc (comment/khoang trang), roi gzip/brotli khi truyen - bo mot buoc de lai byte tren duong truyen.</p>
 <div class="w3-responsive">
 <table class="w3-table-all w3-small">
 <tr><th>Giai doan</th><th>Kich thuoc mau</th><th>Giam so voi nguon</th></tr>
@@ -45,7 +45,7 @@
 <p>Dong cuoi la cai bay: gui CSS chua rut gon voi gzip van cat tai xuong ~78%, nghe co ve tuyet cho den khi ban so voi 89% ban nhan duoc voi ca hai buoc. Tren mot bundle CSS dien hinh 250&nbsp;KB, chenh lech la ~25&nbsp;KB moi lan tai trang - nhan len voi luu luong cua ban, do la bang thong thuc.</p>
 
 <br/><h2 class="text-uppercase"><b>Thu tu dung trong pipeline trien khai</b></h2><figure class="illustration"><img src="/img/illustrations/numbered-bars-4/guidescssminifiervscompressor-pipeline__43daf607.svg" alt="Compare pipeline deploy CSS theo dung thu tu using the four points in this diagram." loading="lazy" width="640" height="280"><figcaption>Minify luc build roi compress luc serve at a glance.</figcaption></figure>
-<p>Chay rut gon o <b>thoi diem build</b>. Nen dien ra o <b>thoi diem phuc vu</b> - thuong boi CDN, may chu web hoac trinh nen chay truoc app. Dung bao gio nen san CSS thanh tep <code>.css.gz</code> va bo qua nen runtime; cac trinh duyet khong ho tro gzip (rat hiem nhung co that) khi do se that bai tai hoan toan style sheet.</p>
+<p>Thu tu dung trong pipeline trien khai: CSS Minifier (hoac minify build) truoc lop CDN/edge - nen CSS chua minify van duoc, nhung ban tra cho ky tu trinh duyet khong can.</p>
 <ol>
     <li><b>Viet CSS de doc</b> voi khoang trang, chu thich va bo chon mo ta. Nguon cho con nguoi.</li>
     <li><b>Buoc build chay trinh rut gon</b> tren moi tep <code>.css</code>, tao artifact nhu <code>main.min.css</code>. Trien khai cac artifact nay.</li>
@@ -55,7 +55,7 @@
 <p>Neu nen tang trien khai cua ban khong tu xu ly nen, bat o lop CDN (Cloudflare, Fastly, CloudFront) thay vi ben trong may chu ung dung - nen ton CPU va CDN duoc toi uu cho viec do.</p>
 
 <br/><h2 class="text-uppercase"><b>Do luong: xac nhan ca hai buoc dang hoat dong</b></h2>
-<p>Mo DevTools &rarr; tab Network &rarr; nhan vao tep CSS &rarr; kiem tra hai cot:</p>
+<p>Do luong: xac nhan ca hai buoc dang hoat dong - so sanh kich thuoc goc vs minify trong CSS Minifier, roi Content-Encoding tren live; delta gan 0 = thieu buoc.</p>
 <ul>
     <li><b>Size</b>: so byte truyen (sau khi nen). Tren CSS nguon 100&nbsp;KB da rut gon + nen Brotli, phai doc ~11&nbsp;KB.</li>
     <li>Header <b>Content-Encoding</b> trong phan hoi: <code>br</code> cho Brotli, <code>gzip</code> cho gzip, khong co gi neu khong nen.</li>
@@ -63,7 +63,7 @@
 <p>Neu cot <code>Size</code> hien thi 55&nbsp;KB tren CSS nguon 100&nbsp;KB, ban co rut gon nhung khong nen - kiem tra cau hinh CDN/may chu. Neu hien thi 100&nbsp;KB, khong co buoc nao chay - kiem tra dau ra build va trien khai lai.</p>
 
 <br/><h2 class="text-uppercase"><b>Cac truong hop bien thong dung</b></h2>
-<p><b>CSS noi tuyen trong HTML.</b> Cac khoi <code>&lt;style&gt;...&lt;/style&gt;</code> nhung trong HTML duoc nen nhu mot phan cua phan hoi HTML, khong rieng biet. Van rut gon chung neu build san sinh ra (mot so thu vien CSS-in-JS lam vay), vi HTML da nen cung duoc tinh bang byte.</p>
+<p>Cac truong hop bien thong dung: bundle vendor da minify it loi; source map tro ve pre-minify; mot so proxy loi brotli - giu gzip du phong.</p>
 <p><b>Source map.</b> Trinh rut gon co the phat ra source map (<code>.css.map</code>) anh xa dau ra rut gon lai ve nguon de doc, cho phep DevTools hien thi tep goc khi go loi. Source map chi duoc tai khi DevTools mo, nen khong anh huong luu luong nguoi dung thuong. Phuc vu chung voi cung chinh sach nen nhu CSS.</p>
 <p><b>CSS-in-JS / kieu chay runtime.</b> Cac thu vien nhu styled-components tao CSS tai thoi diem runtime. Rut gon JS sinh ra CSS van ap dung; CSS duoc tiem vao DOM duoi dang khoi <code>&lt;style&gt;</code> dong va khong bao gio cham mang duoi dang tep rieng.</p>
 <p><b>Tailwind / Atomic CSS.</b> Cac framework utility-first sinh ra CSS tho khong lo thu hep xuong vai KB sau khi PurgeCSS/JIT loai bo luat khong dung. Cau hoi "trinh rut gon vs trinh nen" bi lu mo boi giai doan tree-shaking. Xac nhan kich thuoc bundle cuoi da rut gon + nen truoc khi toi uu rut gon hoac nen.</p>

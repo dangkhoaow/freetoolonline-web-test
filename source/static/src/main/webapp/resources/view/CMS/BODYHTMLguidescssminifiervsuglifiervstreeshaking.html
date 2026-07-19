@@ -7,21 +7,21 @@
     </div>
 
     <h2 class="text-uppercase"><b>Minifier - whitespace and comments</b></h2>
-    <p>The simplest tactic: take 10 KB of formatted CSS or JS and strip every space, newline, and comment that does not affect parsing. The output works identically to the input but takes 30-50% less space. This is what <a href="/developer-tools/css-minifier.html">the CSS minifier</a> does for stylesheets.</p>
+    <p>Minifier - whitespace and comments: CSS Minifier strips characters the browser ignores so the stylesheet ships smaller - it does not rename selectors or drop unused rules the way an uglifier or tree-shaker would.</p>
     <p>Modern CSS minifiers go further than whitespace: collapse <code>0px</code> to <code>0</code>, replace <code>#ffffff</code> with <code>#fff</code>, remove redundant default values, merge adjacent selectors with identical rules. Each one shaves a small percentage; the cumulative effect is meaningful.</p>
 
     <h2 class="text-uppercase"><b>Uglifier - rename to save bytes</b></h2>
-    <p>Specific to JavaScript. Takes <code>const calculateMonthlyTotal = ...</code> and renames it to <code>const a = ...</code>. The shorter name is smaller. Repeated across thousands of identifiers, the savings stack.</p>
+    <p>Uglifier - rename to save bytes: shortens identifiers where safe in JS/CSS pipelines - riskier on CSS than a plain minifier because class names often must match HTML and runtime strings.</p>
     <p>Uglifier requires understanding the code's scope rules - you can rename a local variable freely, but renaming a global breaks anything that depends on the name. Tools like Terser, esbuild, and SWC do this safely by analyzing the scope graph.</p>
     <p>For CSS, the equivalent is renaming class names. Build pipelines that hash CSS classes to <code>.a</code>, <code>.b</code>, <code>.c</code> save bytes the same way - but only work when the HTML is built with the same pipeline so the references match.</p>
 
     <h2 class="text-uppercase"><b>Tree-shaking - delete what nothing uses</b></h2>
-    <p>The big one. When you import a library and use one function out of fifty, naive bundling ships all fifty. Tree-shaking analyzes the import graph and includes only the functions actually called by your app's entry point. Forty-nine functions disappear from the output bundle.</p>
+    <p>Tree-shaking - delete what nothing uses: build tools drop unused exports after static analysis - it needs a module graph; pasting into CSS Minifier alone cannot recover or shake a bundled app.</p>
     <p>Tree-shaking requires the source code to be in a format that supports the analysis - native ES modules ("import" / "export") rather than CommonJS ("require"). Library authors have spent years migrating to ESM specifically to make tree-shaking effective for their consumers.</p>
     <p>For CSS, tree-shaking has a parallel called PurgeCSS or TailwindCSS's JIT mode: scan the HTML and only include CSS rules that match an actual class name in the markup. Tailwind ships with thousands of utility classes; the production build includes only the ones in use.</p>
 
     <h2 class="text-uppercase"><b>What to reach for first</b></h2>
-    <p>Use all three when the build pipeline supports them. The order: tree-shake first (eliminates the biggest chunks), then minify and uglify the result. Modern bundlers (Vite, esbuild, Rollup, Webpack 5+) do all three in one pass with a single config flag.</p>
+    <p>What to reach for first is CSS Minifier for a stylesheet you already authored; add bundler tree-shaking in the app build; treat uglify as an advanced JS step, not the first CSS fix among minifier vs uglifier vs tree-shaking.</p>
     <p>For a non-bundled project where you just want a smaller stylesheet, run <a href="/developer-tools/css-minifier.html">the CSS minifier</a> on the final CSS. For broader content on these techniques, see <a href="/guides/css-minifier-vs-compressor.html">CSS minifier vs compressor</a> or <a href="/guides/how-to-minify-css-js-for-cloud-run-cold-start.html">how to minify CSS and JS for Cloud Run cold start</a>. The full set: <a href="/developer-tools.html">developer tools hub</a>.</p>
     <p class="reviewed"><time itemprop="dateReviewed" datetime="2026-07-01">Last reviewed: 2026-07-01</time></p>
     <address class="author"><a rel="author" href="/about-us.html">FreetoolOnline editorial team</a></address>

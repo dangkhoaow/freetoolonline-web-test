@@ -8,10 +8,11 @@
 <address class="author"><a rel="author" href="/editorial-team.html">Free Tool Online editorial team</a></address>
 
 <br/><h2 class="text-uppercase"><b>What each surface actually is</b></h2>
-<p><b>FFmpeg online (ffmpeg.wasm)</b> is a port of FFmpeg compiled to WebAssembly that runs inside a browser tab. The video file you pick is read into an in-memory file system inside the tab; FFmpeg runs against that virtual file system; the output is written back to memory and offered as a download. Nothing leaves your device.</p>
-<p><b>Local FFmpeg</b> is the native binary installed via your package manager (<code>brew install ffmpeg</code>, <code>apt install ffmpeg</code>, Chocolatey, scoop). The binary runs with full OS access: reads from disk, writes to disk, uses every CPU core, taps hardware encoders (NVENC, QSV, VideoToolbox) when available.</p>
+<p>What each surface actually is: FFmpeg Online (ffmpeg.wasm) is the browser WebAssembly build on this site; local FFmpeg is the CLI you install - same recipe language, different limits on file size, GPU encoders, and batch scripts.</p>
+<p>What each surface actually is: FFmpeg Online is the browser build of FFmpeg on this site; local FFmpeg is the CLI you install on your machine - same recipe language, different limits on file size, GPU encoders, and batch scripts.</p>
 
 <br/><h2 class="text-uppercase"><b>Side-by-side comparison</b></h2>
+<p>Side-by-side comparison of FFmpeg online vs local FFmpeg: browser wins for small files, no install, and keeping bytes on-device; local wins for multi-GB inputs, overnight batches, and hardware encoders the WASM build cannot reach.</p>
 <figure class="illustration"><img src="/img/illustrations/card-row-4/guidesffmpegonlinevslocalffmpegwheneachwins__3181c243.svg" alt="Browser FFmpeg versus local FFmpeg on four attributes: install is zero versus local install, input size capped at 2 GB versus disk, encode speed local is 4 times faster, hardware encoder no versus yes" loading="lazy" width="640" height="180"><figcaption>Compare browser and local FFmpeg: pick browser for no-install convenience, pick local for 4x faster hardware encoding.</figcaption></figure>
 <div class="w3-responsive">
 <table class="w3-table-all w3-small">
@@ -29,7 +30,7 @@
 </div>
 
 <br/><h2 class="text-uppercase"><b>Pick browser FFmpeg for: small files, no install, privacy</b></h2>
-<p><b>One-off conversion of a single file under 2 GB.</b> You have a single MOV from your phone that needs to be MP4 for an email. Opening the browser page is faster than installing a CLI tool you'll use once this year.</p>
+<p>Pick browser FFmpeg for: small files, no install, privacy - open FFmpeg Online, paste a short recipe, download the result when you need a one-off convert without touching a terminal.</p>
 <p><b>Privacy-sensitive content.</b> A draft video you don't want to upload to a free online converter. In-browser wasm is the only way to guarantee the file stays on your device short of installing FFmpeg locally.</p>
 <p><b>Using a machine where you can't install software.</b> A work laptop with locked-down install permissions, a school lab, a library kiosk. If the browser can load the page, FFmpeg runs.</p>
 <p><b>Teaching or demonstrating a specific FFmpeg command.</b> The in-browser console shows the FFmpeg log output in real time; students can see the same pipeline that runs locally.</p>
@@ -41,11 +42,11 @@
 <p><b>Uncommon codecs or experimental filters.</b> If you need a filter that requires a specific FFmpeg build flag (<code>libx265</code> with x265 tuning, <code>libfdk_aac</code>, <code>libaom-av1</code>), local FFmpeg installed from source with the required flags is the only path.</p>
 
 <br/><h2 class="text-uppercase"><b>What "online" means in our tool</b></h2>
-<p>Our <a href="/video-tools/ffmpeg-online.html">FFmpeg online</a> runs entirely in your browser. The FFmpeg code is WebAssembly compiled from the same source as the CLI. When you pick a file, it's read into an emscripten-emulated file system inside the tab. When FFmpeg runs, it reads from that virtual file system and writes to it. When it finishes, the output file is handed to you as a download via a Blob URL. At no point does the file travel over the network.</p>
+<p>What "online" means in our tool is that FFmpeg Online runs the WASM build in your browser tab - the recipe executes on-device for the documented path, not as a permanent cloud encode farm for your file.</p>
 <p>The page shows the actual FFmpeg command line and the live FFmpeg log - so you can copy the exact command to run it later on the CLI for larger files, see our <a href="/guides/mp4-vs-webm-for-web.html">MP4 vs WebM guide</a> for format-level decisions.</p>
 
 <br/><h2 class="text-uppercase"><b>Five concrete recipes that work on both surfaces</b></h2>
-<p><b>Convert MOV to MP4 (H.264).</b> <code>ffmpeg -i in.mov -c:v libx264 -crf 23 -preset medium -c:a aac -b:a 128k -movflags +faststart out.mp4</code> - works identically in the browser and the CLI.</p>
+<p>Five concrete recipes that work on both surfaces (browser FFmpeg Online and local CLI): MP4 remux, scale to 720p, extract audio AAC, cut with -ss/-to, and GIF via palettegen - change only paths and hardware flags when you move to local.</p>
 <p><b>Trim a clip between two timestamps.</b> <code>ffmpeg -ss 00:00:30 -to 00:01:45 -i in.mp4 -c copy out.mp4</code> - <code>-c copy</code> avoids re-encoding, making this instant.</p>
 <p><b>Extract audio as MP3.</b> <code>ffmpeg -i in.mp4 -vn -c:a libmp3lame -q:a 2 out.mp3</code>.</p>
 <p><b>Resize to 720p preserving aspect ratio.</b> <code>ffmpeg -i in.mp4 -vf "scale=-2:720" -c:a copy out.mp4</code>.</p>

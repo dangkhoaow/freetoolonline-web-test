@@ -7,21 +7,21 @@
     </div>
 
     <h2 class="text-uppercase"><b>Minifier - whitespace dan komentar</b></h2>
-    <p>Taktik paling sederhana: ambil 10 KB CSS atau JS yang diformat dan hapus setiap spasi, baris baru, dan komentar yang tidak memengaruhi parsing. Output bekerja identik dengan input tetapi menempati 30-50% lebih sedikit ruang. Ini yang dilakukan <a href="/developer-tools/css-minifier.html">CSS minifier</a> untuk stylesheet.</p>
+    <p>Minifier - whitespace dan komentar: CSS Minifier membuang karakter yang diabaikan browser - tidak mengganti nama selector atau membuang rule tak terpakai seperti uglifier/tree-shaker.</p>
     <p>Minifier CSS modern melangkah lebih jauh dari whitespace: meruntuhkan <code>0px</code> ke <code>0</code>, mengganti <code>#ffffff</code> dengan <code>#fff</code>, menghapus nilai default berlebih, menggabungkan selector berdekatan dengan aturan identik. Masing-masing mengurangi persentase kecil; efek kumulatifnya bermakna.</p>
 
     <h2 class="text-uppercase"><b>Uglifier - ubah nama untuk menghemat byte</b></h2>
-    <p>Khusus untuk JavaScript. Mengambil <code>const calculateMonthlyTotal = ...</code> dan mengubah namanya menjadi <code>const a = ...</code>. Nama lebih pendek lebih kecil. Diulang melintasi ribuan pengidentifikasi, penghematan bertumpuk.</p>
+    <p>Uglifier - ubah nama untuk menghemat byte: memperpendek identifier jika aman - lebih berisiko di CSS daripada minify polos karena class harus cocok dengan HTML dan runtime.</p>
     <p>Uglifier membutuhkan pemahaman aturan lingkup kode - Anda dapat mengganti nama variabel lokal dengan bebas, tetapi mengganti nama global memecahkan apa pun yang bergantung pada nama. Alat seperti Terser, esbuild, dan SWC melakukan ini dengan aman dengan menganalisis grafik lingkup.</p>
     <p>Untuk CSS, ekuivalennya adalah mengubah nama kelas. Pipeline build yang meng-hash kelas CSS menjadi <code>.a</code>, <code>.b</code>, <code>.c</code> menghemat byte dengan cara yang sama - tetapi hanya bekerja ketika HTML dibangun dengan pipeline yang sama sehingga referensi cocok.</p>
 
     <h2 class="text-uppercase"><b>Tree-shaking - hapus apa yang tidak ada yang menggunakan</b></h2>
-    <p>Yang besar. Ketika Anda mengimpor pustaka dan menggunakan satu fungsi dari lima puluh, bundling naif mengirim semua lima puluh. Tree-shaking menganalisis grafik impor dan menyertakan hanya fungsi yang sebenarnya dipanggil oleh entry point aplikasi Anda. Empat puluh sembilan fungsi menghilang dari bundle output.</p>
+    <p>Tree-shaking - hapus apa yang tidak ada yang menggunakan: build membuang export tak terpakai setelah analisis - butuh graf modul; CSS Minifier saja tidak bisa shake app.</p>
     <p>Tree-shaking membutuhkan kode sumber dalam format yang mendukung analisis - modul ES asli ("import" / "export") daripada CommonJS ("require"). Penulis pustaka telah menghabiskan bertahun-tahun bermigrasi ke ESM khusus untuk membuat tree-shaking efektif bagi konsumen mereka.</p>
     <p>Untuk CSS, tree-shaking memiliki paralel yang disebut PurgeCSS atau mode JIT TailwindCSS: memindai HTML dan hanya menyertakan aturan CSS yang cocok dengan nama kelas aktual dalam markup. Tailwind mengirimkan ribuan kelas utilitas; build produksi hanya menyertakan yang digunakan.</p>
 
     <h2 class="text-uppercase"><b>Apa yang dicari pertama</b></h2>
-    <p>Gunakan ketiganya ketika pipeline build mendukung mereka. Urutannya: tree-shake terlebih dahulu (menghilangkan potongan terbesar), lalu minify dan uglify hasilnya. Bundler modern (Vite, esbuild, Rollup, Webpack 5+) melakukan ketiganya dalam satu lewatan dengan satu flag konfigurasi.</p>
+    <p>Apa yang dicari pertama adalah CSS Minifier untuk stylesheet yang sudah Anda tulis; tree-shaking di build app; uglify sebagai langkah JS lanjutan, bukan perbaikan CSS pertama.</p>
     <p>Untuk proyek non-bundled di mana Anda hanya ingin stylesheet lebih kecil, jalankan <a href="/developer-tools/css-minifier.html">CSS minifier</a> pada CSS akhir. Untuk konten lebih luas tentang teknik-teknik ini, lihat <a href="/guides/id/css-minifier-vs-compressor.html">CSS minifier vs compressor</a> atau <a href="/guides/id/how-to-minify-css-js-for-cloud-run-cold-start.html">cara meminify CSS dan JS untuk Cloud Run cold start</a>. Set lengkap: <a href="/developer-tools.html">hub alat pengembang</a>.</p>
     <p class="reviewed"><time itemprop="dateReviewed" datetime="2026-07-01">Last reviewed: 2026-07-01</time></p>
     <address class="author"><a rel="author" href="/about-us.html">FreetoolOnline editorial team</a></address>
