@@ -5302,6 +5302,24 @@ export const GUIDE_ROUTES = new Set([
   // GUIDE_ROUTES backfill (builder wired JSP_BY_ROUTE only, same recurring gap
   // class as fires 32/56/57/62/66) + full pt/es/vi/id/de locale fanout for all
   // 3 EN companion guide angles (guide_locale_fanout unit rotate-pdf-guides).
+  '/guides/rotate-pdf-when.html',
+  '/guides/rotate-pdf-step-by-step.html',
+  '/guides/rotate-pdf-vs-alternatives.html',
+  '/guides/pt/rotate-pdf-when.html',
+  '/guides/pt/rotate-pdf-step-by-step.html',
+  '/guides/pt/rotate-pdf-vs-alternatives.html',
+  '/guides/es/rotate-pdf-when.html',
+  '/guides/es/rotate-pdf-step-by-step.html',
+  '/guides/es/rotate-pdf-vs-alternatives.html',
+  '/guides/vi/rotate-pdf-when.html',
+  '/guides/vi/rotate-pdf-step-by-step.html',
+  '/guides/vi/rotate-pdf-vs-alternatives.html',
+  '/guides/id/rotate-pdf-when.html',
+  '/guides/id/rotate-pdf-step-by-step.html',
+  '/guides/id/rotate-pdf-vs-alternatives.html',
+  '/guides/de/rotate-pdf-when.html',
+  '/guides/de/rotate-pdf-step-by-step.html',
+  '/guides/de/rotate-pdf-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire84 (2026-07-12): GUIDE_ROUTES backfill for
   // strip-audio-from-video's 3 EN companion guide angles (builder wires JSP_BY_ROUTE
   // only - same recurring gap class as fires 32/56/57/62/66, now closed at the
