@@ -5086,6 +5086,24 @@ export const GUIDE_ROUTES = new Set([
   // angles plus their full pt/es/vi/id/de locale fanout (builder wires
   // JSP_BY_ROUTE + INFO_ROUTES only, same recurring gap class as
   // fires 32/56/57/62/66/84/113).
+  '/guides/add-watermark-pdf-when.html',
+  '/guides/add-watermark-pdf-step-by-step.html',
+  '/guides/add-watermark-pdf-vs-alternatives.html',
+  '/guides/pt/add-watermark-pdf-when.html',
+  '/guides/pt/add-watermark-pdf-step-by-step.html',
+  '/guides/pt/add-watermark-pdf-vs-alternatives.html',
+  '/guides/es/add-watermark-pdf-when.html',
+  '/guides/es/add-watermark-pdf-step-by-step.html',
+  '/guides/es/add-watermark-pdf-vs-alternatives.html',
+  '/guides/vi/add-watermark-pdf-when.html',
+  '/guides/vi/add-watermark-pdf-step-by-step.html',
+  '/guides/vi/add-watermark-pdf-vs-alternatives.html',
+  '/guides/id/add-watermark-pdf-when.html',
+  '/guides/id/add-watermark-pdf-step-by-step.html',
+  '/guides/id/add-watermark-pdf-vs-alternatives.html',
+  '/guides/de/add-watermark-pdf-when.html',
+  '/guides/de/add-watermark-pdf-step-by-step.html',
+  '/guides/de/add-watermark-pdf-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire113 (LEAN one-off, 2026-07-12):
   // GUIDE_ROUTES backfill for delete-pdf-pages's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only, same recurring gap class as
