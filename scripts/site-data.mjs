@@ -5550,6 +5550,22 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/how-to-view-brontotherium-in-3d.html',
   '/guides/id/how-to-view-brontotherium-in-3d.html',
   '/guides/de/how-to-view-brontotherium-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire170 (2026-07-20): brontotherium-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/brontotherium-size-comparison.html',
+  '/guides/pt/brontotherium-size-comparison.html',
+  '/guides/es/brontotherium-size-comparison.html',
+  '/guides/vi/brontotherium-size-comparison.html',
+  '/guides/id/brontotherium-size-comparison.html',
+  '/guides/de/brontotherium-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire171 (2026-07-20): brontotherium-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/brontotherium-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/brontotherium-3d-viewer-vs-ar-apps.html',
+  '/guides/es/brontotherium-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/brontotherium-3d-viewer-vs-ar-apps.html',
+  '/guides/id/brontotherium-3d-viewer-vs-ar-apps.html',
+  '/guides/de/brontotherium-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -8755,6 +8771,8 @@ export const ALIAS_ROUTES = {
   '/giganotosaurus.html': '/dinosaur-3d/giganotosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire40 (2026-07-16): flat-slug alias for diplodocus.
   '/diplodocus.html': '/dinosaur-3d/diplodocus.html',
+  // dinosaur-3d-discovery-loop-runbook fire134 (2026-07-20): flat-slug alias for barosaurus.
+  '/barosaurus.html': '/dinosaur-3d/barosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire53 (2026-07-16): flat-slug alias for apatosaurus.
   '/apatosaurus.html': '/dinosaur-3d/apatosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire54 (2026-07-16): flat-slug alias for carnotaurus.
@@ -12166,6 +12184,10 @@ export const JSP_BY_ROUTE = {
   // no tallForelimbs feat -> lower/more level neck posture, differentiating it from the already
   // shipped Brachiosaurus; the longest-not-tallest sauropod, whip-like tail, Late Jurassic).
   '/dinosaur-3d/diplodocus.html': 'dinosaur/diplodocus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire134 (2026-07-20): barosaurus (sauropod archetype,
+  // no feature-flag override - a close relative of Diplodocus, differentiated via longer neck /
+  // shorter tail figures + the Supersaurus source-conflict caveat + the AMNH rearing-pose caveat).
+  '/dinosaur-3d/barosaurus.html': 'dinosaur/barosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire53 (2026-07-16): apatosaurus (sauropod archetype,
   // no tallForelimbs feat, same body posture as Diplodocus; differentiated via a stockier/
   // heavier published-figure profile + its Brontosaurus naming-history framing).
@@ -13661,6 +13683,22 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-view-brontotherium-in-3d.html': 'guide/vi/how-to-view-brontotherium-in-3d.jsp',
   '/guides/id/how-to-view-brontotherium-in-3d.html': 'guide/id/how-to-view-brontotherium-in-3d.jsp',
   '/guides/de/how-to-view-brontotherium-in-3d.html': 'guide/de/how-to-view-brontotherium-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire170 (2026-07-20): brontotherium-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/brontotherium-size-comparison.html': 'guide/brontotherium-size-comparison.jsp',
+  '/guides/pt/brontotherium-size-comparison.html': 'guide/pt/brontotherium-size-comparison.jsp',
+  '/guides/es/brontotherium-size-comparison.html': 'guide/es/brontotherium-size-comparison.jsp',
+  '/guides/vi/brontotherium-size-comparison.html': 'guide/vi/brontotherium-size-comparison.jsp',
+  '/guides/id/brontotherium-size-comparison.html': 'guide/id/brontotherium-size-comparison.jsp',
+  '/guides/de/brontotherium-size-comparison.html': 'guide/de/brontotherium-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire171 (2026-07-20): brontotherium-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/brontotherium-3d-viewer-vs-ar-apps.html': 'guide/brontotherium-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/brontotherium-3d-viewer-vs-ar-apps.html': 'guide/pt/brontotherium-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/brontotherium-3d-viewer-vs-ar-apps.html': 'guide/es/brontotherium-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/brontotherium-3d-viewer-vs-ar-apps.html': 'guide/vi/brontotherium-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/brontotherium-3d-viewer-vs-ar-apps.html': 'guide/id/brontotherium-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/brontotherium-3d-viewer-vs-ar-apps.html': 'guide/de/brontotherium-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
