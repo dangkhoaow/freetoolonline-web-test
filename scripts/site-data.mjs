@@ -5260,6 +5260,22 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/titanoboa-3d-viewer-vs-ar-apps.html',
   '/guides/id/titanoboa-3d-viewer-vs-ar-apps.html',
   '/guides/de/titanoboa-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire145 (2026-07-19): how-to-view-moropus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-moropus-in-3d.html',
+  '/guides/pt/how-to-view-moropus-in-3d.html',
+  '/guides/es/how-to-view-moropus-in-3d.html',
+  '/guides/vi/how-to-view-moropus-in-3d.html',
+  '/guides/id/how-to-view-moropus-in-3d.html',
+  '/guides/de/how-to-view-moropus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire146 (2026-07-19): moropus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/moropus-size-comparison.html',
+  '/guides/pt/moropus-size-comparison.html',
+  '/guides/es/moropus-size-comparison.html',
+  '/guides/vi/moropus-size-comparison.html',
+  '/guides/id/moropus-size-comparison.html',
+  '/guides/de/moropus-size-comparison.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -12948,6 +12964,22 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/titanoboa-3d-viewer-vs-ar-apps.html': 'guide/vi/titanoboa-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/titanoboa-3d-viewer-vs-ar-apps.html': 'guide/id/titanoboa-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/titanoboa-3d-viewer-vs-ar-apps.html': 'guide/de/titanoboa-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire145 (2026-07-19): how-to-view-moropus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-moropus-in-3d.html': 'guide/how-to-view-moropus-in-3d.jsp',
+  '/guides/pt/how-to-view-moropus-in-3d.html': 'guide/pt/how-to-view-moropus-in-3d.jsp',
+  '/guides/es/how-to-view-moropus-in-3d.html': 'guide/es/how-to-view-moropus-in-3d.jsp',
+  '/guides/vi/how-to-view-moropus-in-3d.html': 'guide/vi/how-to-view-moropus-in-3d.jsp',
+  '/guides/id/how-to-view-moropus-in-3d.html': 'guide/id/how-to-view-moropus-in-3d.jsp',
+  '/guides/de/how-to-view-moropus-in-3d.html': 'guide/de/how-to-view-moropus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire146 (2026-07-19): moropus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/moropus-size-comparison.html': 'guide/moropus-size-comparison.jsp',
+  '/guides/pt/moropus-size-comparison.html': 'guide/pt/moropus-size-comparison.jsp',
+  '/guides/es/moropus-size-comparison.html': 'guide/es/moropus-size-comparison.jsp',
+  '/guides/vi/moropus-size-comparison.html': 'guide/vi/moropus-size-comparison.jsp',
+  '/guides/id/moropus-size-comparison.html': 'guide/id/moropus-size-comparison.jsp',
+  '/guides/de/moropus-size-comparison.html': 'guide/de/moropus-size-comparison.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
