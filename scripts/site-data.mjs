@@ -5460,6 +5460,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/how-to-view-shuangmiaosaurus-in-3d.html',
   '/guides/id/how-to-view-shuangmiaosaurus-in-3d.html',
   '/guides/de/how-to-view-shuangmiaosaurus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire161 (2026-07-20): shuangmiaosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/shuangmiaosaurus-size-comparison.html',
+  '/guides/pt/shuangmiaosaurus-size-comparison.html',
+  '/guides/es/shuangmiaosaurus-size-comparison.html',
+  '/guides/vi/shuangmiaosaurus-size-comparison.html',
+  '/guides/id/shuangmiaosaurus-size-comparison.html',
+  '/guides/de/shuangmiaosaurus-size-comparison.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -8656,6 +8664,8 @@ export const ALIAS_ROUTES = {
   '/albertaceratops.html': '/dinosaur-3d/albertaceratops.html',
   // dinosaur-3d-discovery-loop-runbook fire124: pentaceratops alias.
   '/pentaceratops.html': '/dinosaur-3d/pentaceratops.html',
+  // dinosaur-3d-discovery-loop-runbook fire114: deinocheirus alias.
+  '/deinocheirus.html': '/dinosaur-3d/deinocheirus.html',
   // dinosaur-3d-discovery-loop-runbook fire85: tsintaosaurus.
   '/tsintaosaurus.html': '/dinosaur-3d/tsintaosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire86: ornithomimus.
@@ -13436,6 +13446,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-view-shuangmiaosaurus-in-3d.html': 'guide/vi/how-to-view-shuangmiaosaurus-in-3d.jsp',
   '/guides/id/how-to-view-shuangmiaosaurus-in-3d.html': 'guide/id/how-to-view-shuangmiaosaurus-in-3d.jsp',
   '/guides/de/how-to-view-shuangmiaosaurus-in-3d.html': 'guide/de/how-to-view-shuangmiaosaurus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire161 (2026-07-20): shuangmiaosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/shuangmiaosaurus-size-comparison.html': 'guide/shuangmiaosaurus-size-comparison.jsp',
+  '/guides/pt/shuangmiaosaurus-size-comparison.html': 'guide/pt/shuangmiaosaurus-size-comparison.jsp',
+  '/guides/es/shuangmiaosaurus-size-comparison.html': 'guide/es/shuangmiaosaurus-size-comparison.jsp',
+  '/guides/vi/shuangmiaosaurus-size-comparison.html': 'guide/vi/shuangmiaosaurus-size-comparison.jsp',
+  '/guides/id/shuangmiaosaurus-size-comparison.html': 'guide/id/shuangmiaosaurus-size-comparison.jsp',
+  '/guides/de/shuangmiaosaurus-size-comparison.html': 'guide/de/shuangmiaosaurus-size-comparison.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
