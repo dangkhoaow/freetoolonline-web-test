@@ -5558,6 +5558,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/brontotherium-size-comparison.html',
   '/guides/id/brontotherium-size-comparison.html',
   '/guides/de/brontotherium-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire171 (2026-07-20): brontotherium-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/brontotherium-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/brontotherium-3d-viewer-vs-ar-apps.html',
+  '/guides/es/brontotherium-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/brontotherium-3d-viewer-vs-ar-apps.html',
+  '/guides/id/brontotherium-3d-viewer-vs-ar-apps.html',
+  '/guides/de/brontotherium-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -8188,6 +8196,65 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/character-counter-when.html',
   '/guides/de/character-counter-step-by-step.html',
   '/guides/de/character-counter-vs-alternatives.html',
+  // space3d-fire-mirror: backfill missing GUIDE_ROUTES entries for dwarf-planet-comparison / haumea-elongated / impact-crater-formation / triton-cantaloupe (were in INFO_ROUTES + JSP_BY_ROUTE but missing here, so sitemap-guides.xml never published them)
+  '/guides/dwarf-planet-comparison-step-by-step.html',
+  '/guides/pt/dwarf-planet-comparison-step-by-step.html',
+  '/guides/es/dwarf-planet-comparison-step-by-step.html',
+  '/guides/vi/dwarf-planet-comparison-step-by-step.html',
+  '/guides/id/dwarf-planet-comparison-step-by-step.html',
+  '/guides/de/dwarf-planet-comparison-step-by-step.html',
+  '/guides/dwarf-planet-comparison-when.html',
+  '/guides/pt/dwarf-planet-comparison-when.html',
+  '/guides/es/dwarf-planet-comparison-when.html',
+  '/guides/vi/dwarf-planet-comparison-when.html',
+  '/guides/id/dwarf-planet-comparison-when.html',
+  '/guides/de/dwarf-planet-comparison-when.html',
+  '/guides/dwarf-planet-comparison-vs-alternatives.html',
+  '/guides/pt/dwarf-planet-comparison-vs-alternatives.html',
+  '/guides/es/dwarf-planet-comparison-vs-alternatives.html',
+  '/guides/vi/dwarf-planet-comparison-vs-alternatives.html',
+  '/guides/id/dwarf-planet-comparison-vs-alternatives.html',
+  '/guides/de/dwarf-planet-comparison-vs-alternatives.html',
+  '/guides/impact-crater-formation-step-by-step.html',
+  '/guides/pt/impact-crater-formation-step-by-step.html',
+  '/guides/es/impact-crater-formation-step-by-step.html',
+  '/guides/vi/impact-crater-formation-step-by-step.html',
+  '/guides/id/impact-crater-formation-step-by-step.html',
+  '/guides/de/impact-crater-formation-step-by-step.html',
+  '/guides/impact-crater-formation-when.html',
+  '/guides/pt/impact-crater-formation-when.html',
+  '/guides/es/impact-crater-formation-when.html',
+  '/guides/vi/impact-crater-formation-when.html',
+  '/guides/id/impact-crater-formation-when.html',
+  '/guides/de/impact-crater-formation-when.html',
+  '/guides/impact-crater-formation-vs-alternatives.html',
+  '/guides/pt/impact-crater-formation-vs-alternatives.html',
+  '/guides/es/impact-crater-formation-vs-alternatives.html',
+  '/guides/vi/impact-crater-formation-vs-alternatives.html',
+  '/guides/id/impact-crater-formation-vs-alternatives.html',
+  '/guides/de/impact-crater-formation-vs-alternatives.html',
+  '/guides/de/triton-cantaloupe-vs-alternatives.html',
+  '/guides/de/haumea-elongated-vs-alternatives.html',
+  '/guides/id/triton-cantaloupe-vs-alternatives.html',
+  '/guides/id/haumea-elongated-vs-alternatives.html',
+  '/guides/vi/triton-cantaloupe-vs-alternatives.html',
+  '/guides/vi/haumea-elongated-vs-alternatives.html',
+  '/guides/es/triton-cantaloupe-vs-alternatives.html',
+  '/guides/es/haumea-elongated-vs-alternatives.html',
+  '/guides/pt/triton-cantaloupe-vs-alternatives.html',
+  '/guides/pt/haumea-elongated-vs-alternatives.html',
+  '/guides/triton-cantaloupe-vs-alternatives.html',
+  '/guides/haumea-elongated-vs-alternatives.html',
+  '/guides/de/triton-cantaloupe-when.html',
+  '/guides/de/haumea-elongated-when.html',
+  '/guides/id/triton-cantaloupe-when.html',
+  '/guides/id/haumea-elongated-when.html',
+  '/guides/vi/triton-cantaloupe-when.html',
+  '/guides/vi/haumea-elongated-when.html',
+  '/guides/es/triton-cantaloupe-when.html',
+  '/guides/es/haumea-elongated-when.html',
+  '/guides/pt/triton-cantaloupe-when.html',
+  '/guides/pt/haumea-elongated-when.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -8704,6 +8771,8 @@ export const ALIAS_ROUTES = {
   '/giganotosaurus.html': '/dinosaur-3d/giganotosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire40 (2026-07-16): flat-slug alias for diplodocus.
   '/diplodocus.html': '/dinosaur-3d/diplodocus.html',
+  // dinosaur-3d-discovery-loop-runbook fire134 (2026-07-20): flat-slug alias for barosaurus.
+  '/barosaurus.html': '/dinosaur-3d/barosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire53 (2026-07-16): flat-slug alias for apatosaurus.
   '/apatosaurus.html': '/dinosaur-3d/apatosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire54 (2026-07-16): flat-slug alias for carnotaurus.
@@ -12115,6 +12184,10 @@ export const JSP_BY_ROUTE = {
   // no tallForelimbs feat -> lower/more level neck posture, differentiating it from the already
   // shipped Brachiosaurus; the longest-not-tallest sauropod, whip-like tail, Late Jurassic).
   '/dinosaur-3d/diplodocus.html': 'dinosaur/diplodocus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire134 (2026-07-20): barosaurus (sauropod archetype,
+  // no feature-flag override - a close relative of Diplodocus, differentiated via longer neck /
+  // shorter tail figures + the Supersaurus source-conflict caveat + the AMNH rearing-pose caveat).
+  '/dinosaur-3d/barosaurus.html': 'dinosaur/barosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire53 (2026-07-16): apatosaurus (sauropod archetype,
   // no tallForelimbs feat, same body posture as Diplodocus; differentiated via a stockier/
   // heavier published-figure profile + its Brontosaurus naming-history framing).
@@ -13618,6 +13691,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/brontotherium-size-comparison.html': 'guide/vi/brontotherium-size-comparison.jsp',
   '/guides/id/brontotherium-size-comparison.html': 'guide/id/brontotherium-size-comparison.jsp',
   '/guides/de/brontotherium-size-comparison.html': 'guide/de/brontotherium-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire171 (2026-07-20): brontotherium-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/brontotherium-3d-viewer-vs-ar-apps.html': 'guide/brontotherium-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/brontotherium-3d-viewer-vs-ar-apps.html': 'guide/pt/brontotherium-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/brontotherium-3d-viewer-vs-ar-apps.html': 'guide/es/brontotherium-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/brontotherium-3d-viewer-vs-ar-apps.html': 'guide/vi/brontotherium-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/brontotherium-3d-viewer-vs-ar-apps.html': 'guide/id/brontotherium-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/brontotherium-3d-viewer-vs-ar-apps.html': 'guide/de/brontotherium-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
