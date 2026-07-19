@@ -1,0 +1,41 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>libheif 1.22.0 patches HEIC heap overflow CVE-2026-32740</b></h1>
+<p>On 19 May 2026, strukturag released libheif 1.22.0 with a large security batch. The headline fix is CVE-2026-32740 (CVSS 8.8): a crafted HEIC or AVIF grid image can write 64 bytes past a chroma-plane heap buffer during normal decode. If you open untrusted phone photos or social downloads in a desktop viewer that embeds an older libheif, update the app - or convert first with a browser tool such as <a href="/heic-to-jpg.html">HEIC to JPG</a> when you only need a JPEG.</p>
+<p class="reviewed">Last reviewed: 2026-07-19</p>
+<time itemprop="datePublished" datetime="2026-07-19T00:00:00Z"><b>Published July 19, 2026</b></time>
+<hr/>
+
+<br/><h2 class="text-uppercase"><b>What happened</b></h2>
+<p>libheif is the common open-source HEIF/AVIF library behind many Linux viewers, thumbnailers, and CLI converters. GitHub advisory GHSA-frfr-f3vg-2g6j and NVD describe CVE-2026-32740 as a heap-buffer-overflow write in grid tile chroma compositing for versions through 1.21.2. The trigger is a specially built HEIF/AVIF with a 1x4 grid of odd-height tiles under YCbCr 4:2:0. The release notes for v1.22.0 list that CVE plus a long set of related integer-overflow, OOB, and uninitialized-memory fixes (about eighteen advisories in the Security section). Opening the file with a default build is enough to hit the path - no special plugin required.</p>
+<div class="w3-responsive">
+<table class="w3-table-all w3-small">
+<tr><th>Detail</th><th>Value</th></tr>
+<tr><td>Library</td><td>libheif (strukturag)</td></tr>
+<tr><td>Fixed release</td><td>1.22.0 (2026-05-19)</td></tr>
+<tr><td>Key CVE</td><td>CVE-2026-32740 (CVSS 8.8)</td></tr>
+<tr><td>Affected</td><td>libheif &lt;= 1.21.2</td></tr>
+<tr><td>Trigger</td><td>Crafted HEIC/AVIF grid decode</td></tr>
+<tr><td>Advisory</td><td>GHSA-frfr-f3vg-2g6j</td></tr>
+</table>
+</div>
+
+<br/><h2 class="text-uppercase"><b>Why it matters for everyday files</b></h2>
+<p>iPhone and many Android cameras still land photos as HEIC. Friends send them over chat; archives hold years of .heic side by side with JPEG. Desktop apps that decode those files often pull in libheif rather than Apple's stack. A heap write on open means a hostile image is not just "won't preview" - it can corrupt memory in the same process that holds your other files. That is the same class of risk as a hostile PDF in a desktop reader. Browser conversion paths that never install a local libheif build are a practical way to handle one-off untrusted HEIC drops. For background on why HEIC showed up on phones in the first place, see <a href="/news/heic-arrived-with-ios-11.html">HEIC arrived with iOS 11</a>.</p>
+
+<br/><h2 class="text-uppercase"><b>What to do with your files right now</b></h2>
+<p>If you decode HEIC or AVIF on a desktop or server:</p>
+<ul>
+<li><b>Update libheif to 1.22.0 or newer</b> in package managers, app stores, or any self-built converter (heif-dec / heif-convert).</li>
+<li><b>Rebuild or upgrade viewers</b> that statically link libheif - a distro package bump may not cover a bundled app binary.</li>
+<li><b>Treat unexpected .heic/.avif attachments as untrusted</b> until the decoder is patched; prefer a browser convert such as <a href="/heic-to-jpg.html">HEIC to JPG</a> when you only need a shareable JPEG.</li>
+<li><b>Keep a JPEG or PNG copy</b> of important photos if you still share across PCs that lag on HEIC decode (see the HEIC history note above).</li>
+</ul>
+
+<br/><h2 class="text-uppercase"><b>Sources</b></h2>
+<ul>
+<li><a href="https://github.com/strukturag/libheif/security/advisories/GHSA-frfr-f3vg-2g6j" rel="noopener">GitHub Security Advisory GHSA-frfr-f3vg-2g6j (CVE-2026-32740)</a> (checked 2026-07-19)</li>
+<li><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-32740" rel="noopener">NVD - CVE-2026-32740</a></li>
+<li><a href="https://github.com/strukturag/libheif/releases/tag/v1.22.0" rel="noopener">libheif v1.22.0 release notes</a></li>
+</ul>
+<p><a href="/news.html">&larr; Back to News</a></p>
+</div>

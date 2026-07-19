@@ -8935,6 +8935,7 @@ export const JSP_BY_ROUTE = {
   '/news/id/7-zip-rar5-motw-bypass.html': 'news/id/7-zip-rar5-motw-bypass.jsp',
   '/news/de/7-zip-rar5-motw-bypass.html': 'news/de/7-zip-rar5-motw-bypass.jsp',
   '/news/adobe-acrobat-apsb26-63.html': 'news/adobe-acrobat-apsb26-63.jsp',
+  '/news/libheif-cve-2026-32740.html': 'news/libheif-cve-2026-32740.jsp',
   '/news/pt/adobe-acrobat-apsb26-63.html': 'news/pt/adobe-acrobat-apsb26-63.jsp',
   '/news/es/adobe-acrobat-apsb26-63.html': 'news/es/adobe-acrobat-apsb26-63.jsp',
   '/news/vi/adobe-acrobat-apsb26-63.html': 'news/vi/adobe-acrobat-apsb26-63.jsp',
