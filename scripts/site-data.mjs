@@ -5239,6 +5239,24 @@ export const GUIDE_ROUTES = new Set([
   // GUIDE_ROUTES backfill for video-compressor's 3 EN companion guide angles'
   // full pt/es/vi/id/de locale fanout (builder wires JSP_BY_ROUTE + INFO_ROUTES
   // only, same recurring gap class as fires 32/56/57/62/66/84/113/115/120).
+  '/guides/video-compressor-when.html',
+  '/guides/video-compressor-step-by-step.html',
+  '/guides/video-compressor-vs-alternatives.html',
+  '/guides/pt/video-compressor-when.html',
+  '/guides/pt/video-compressor-step-by-step.html',
+  '/guides/pt/video-compressor-vs-alternatives.html',
+  '/guides/es/video-compressor-when.html',
+  '/guides/es/video-compressor-step-by-step.html',
+  '/guides/es/video-compressor-vs-alternatives.html',
+  '/guides/vi/video-compressor-when.html',
+  '/guides/vi/video-compressor-step-by-step.html',
+  '/guides/vi/video-compressor-vs-alternatives.html',
+  '/guides/id/video-compressor-when.html',
+  '/guides/id/video-compressor-step-by-step.html',
+  '/guides/id/video-compressor-vs-alternatives.html',
+  '/guides/de/video-compressor-when.html',
+  '/guides/de/video-compressor-step-by-step.html',
+  '/guides/de/video-compressor-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire123 (LEAN one-off, 2026-07-13):
   // GUIDE_ROUTES backfill for note-taking-app's 3 EN companion guide angles'
   // full pt/es/vi/id/de locale fanout (builder wires JSP_BY_ROUTE + INFO_ROUTES
