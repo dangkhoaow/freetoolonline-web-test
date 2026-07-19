@@ -5468,6 +5468,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/shuangmiaosaurus-size-comparison.html',
   '/guides/id/shuangmiaosaurus-size-comparison.html',
   '/guides/de/shuangmiaosaurus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire162 (2026-07-20): shuangmiaosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/shuangmiaosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/shuangmiaosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/shuangmiaosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/shuangmiaosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/shuangmiaosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/shuangmiaosaurus-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -13454,6 +13462,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/shuangmiaosaurus-size-comparison.html': 'guide/vi/shuangmiaosaurus-size-comparison.jsp',
   '/guides/id/shuangmiaosaurus-size-comparison.html': 'guide/id/shuangmiaosaurus-size-comparison.jsp',
   '/guides/de/shuangmiaosaurus-size-comparison.html': 'guide/de/shuangmiaosaurus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire162 (2026-07-20): shuangmiaosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/shuangmiaosaurus-3d-viewer-vs-ar-apps.html': 'guide/shuangmiaosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/shuangmiaosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/shuangmiaosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/shuangmiaosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/shuangmiaosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/shuangmiaosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/shuangmiaosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/shuangmiaosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/shuangmiaosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/shuangmiaosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/shuangmiaosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
