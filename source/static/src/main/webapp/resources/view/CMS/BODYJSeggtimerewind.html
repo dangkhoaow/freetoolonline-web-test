@@ -1,0 +1,48 @@
+<script>
+    if (typeof web !== "undefined") web.localUpload = false;
+    var ETR_GAME_URL = 'egg-time-rewind/index.html';
+    function etrStatus(text) {
+        var el = document.getElementById('etrStatus');
+        if (el) el.textContent = text;
+    }
+    function etrInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'etrFrame';
+        frame.src = ETR_GAME_URL;
+        frame.title = 'Egg Time Rewind game';
+        frame.setAttribute('allow', 'fullscreen; gamepad');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            etrStatus('Game loaded. WASD/arrows to move, Space/click to shoot. R resets.');
+            try { frame.contentWindow.focus(); } catch (e) {}
+        });
+        var launch = document.getElementById('etrLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('etrStage');
+        var playBtn = document.getElementById('etrPlayBtn');
+        if (!stage || !playBtn) return;
+        if (playBtn.dataset.bound === '1') return;
+        playBtn.dataset.bound = '1';
+        var fsBtn = document.getElementById('etrFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            etrStatus('Loading the game (about 60 KB, one time - then cached)...');
+            etrInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('etrFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) {} }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', doAfterPageRendered);
+    } else {
+        doAfterPageRendered();
+    }
+</script>

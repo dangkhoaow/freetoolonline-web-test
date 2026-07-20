@@ -1,0 +1,413 @@
+<script>
+    // Text-to-text converter skeleton — pure JS string transform.
+    // Wired contract per CONCRETE_BROWSER_TOOL_RULES.md section 4.
+    //
+    // Cycle 20260520 REAL fix: replaced the legacy "throw new Error('not implemented')"
+    // stub with a verb-aware dispatch (formatter / validator / parser / minifier /
+    // beautifier / encoder / decoder). The skeleton now ships a WORKING
+    // convertForSlug() out of the box for the most common text-transform verbs,
+    // so a builder ship is never a broken-on-first-click stub.
+    //
+    // Builder substitutes:
+    //   markdown-to-html       -> the candidate's kebab-case slug
+    //     -> one of: formatter, validator, parser, minifier,
+    //                            beautifier, encoder-base64, decoder-base64,
+    //                            (empty string when the slug has no recognised verb)
+    // The dispatch below picks an impl from the VERB_HINT first, then falls back
+    // to scanning the slug itself. If neither matches a known verb, the function
+    // returns the input unchanged + sets `_is_passthrough: true` so the UI shows
+    // an informational banner — but it does NOT throw. Operator can replace the
+    // body afterwards; the page never breaks on first click.
+
+    web.localUpload = false;
+
+    var SLUG_HINT = 'markdown-to-html';
+    var VERB_HINT = '';
+
+    function detectVerb(slug, verbHint) {
+        var s = String(slug || '').toLowerCase();
+        var v = String(verbHint || '').toLowerCase();
+        if (v) return v;
+        if (/\b(format|formatter|beautif|pretty)\b/.test(s)) return 'formatter';
+        if (/\b(valid|validator|lint|check)\b/.test(s))    return 'validator';
+        if (/\b(pars|parser|tree|view|viewer|inspector|explorer)\b/.test(s)) return 'parser';
+        if (/\b(minif|compact|compress|uglify)\b/.test(s)) return 'minifier';
+        if (/\b(diff|compare|comparator)\b/.test(s))      return 'diff';
+        if (/base64.*(encode|encoder)/.test(s) || /\bto-base64\b/.test(s))   return 'encoder-base64';
+        if (/base64.*(decode|decoder)/.test(s) || /\bfrom-base64\b/.test(s)) return 'decoder-base64';
+        if (/\b(url-encode|urlencode|escape-url)\b/.test(s)) return 'encoder-url';
+        if (/\b(url-decode|urldecode|unescape-url)\b/.test(s)) return 'decoder-url';
+        // 2026-07-13 addition: JWT (JSON Web Token) decode. Checked before the
+        // generic decoder fallthrough so a "jwt-decoder" slug gets the real
+        // 3-segment base64url decode below instead of the passthrough no-op.
+        if (/\bjwt\b/.test(s)) return 'decoder-jwt';
+        // 2026-07-20: JSON sample -> TypeScript interfaces (new-tool-discovery fire333).
+        if (/\bjson-to-typescript\b|\bjson-to-ts\b/.test(s)) return 'json-to-typescript';
+        // 2026-07-20: Markdown -> sanitized HTML (new-tool-discovery fire335; Gate-H markdown_renderer).
+        if (/\bmarkdown-to-html\b|\bmd-to-html\b|\bmarkdown\b/.test(s)) return 'markdown-to-html';
+        return '';
+    }
+
+    // Lazy-load self-hosted marked + DOMPurify (XSS-safe markdown preview).
+    function ftoLoadMarkdownLibs() {
+        if (window.__ftoMarkdownLibsPromise) { return window.__ftoMarkdownLibsPromise; }
+        function load1(src) {
+            return new Promise(function (resolve, reject) {
+                if (document.querySelector('script[data-fto-md="' + src + '"]')) { resolve(); return; }
+                var s = document.createElement('script');
+                s.src = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/markdown/' + src;
+                s.async = true;
+                s.setAttribute('data-fto-md', src);
+                s.onload = function () { resolve(); };
+                s.onerror = function () { reject(new Error('failed to load ' + src)); };
+                document.head.appendChild(s);
+            });
+        }
+        window.__ftoMarkdownLibsPromise = load1('marked.min.js').then(function () {
+            return load1('purify.min.js');
+        });
+        return window.__ftoMarkdownLibsPromise;
+    }
+
+    function ftoMarkdownToHtml(md) {
+        var parse = (window.marked && (window.marked.parse || window.marked)) || null;
+        var purify = (window.DOMPurify && window.DOMPurify.sanitize) || null;
+        if (typeof parse !== 'function' || typeof purify !== 'function') {
+            throw new Error('Markdown libraries unavailable');
+        }
+        var raw = parse(String(md || ''));
+        return purify(raw);
+    }
+
+    // Pure-JS JSON sample -> TypeScript interface/type generator (2026-07-20).
+    function ftoJsonToTypescript(jsonValue, rootName) {
+        var interfaces = [];
+        var nameCounts = {};
+
+        function safeName(n) {
+            var x = String(n || 'Item').replace(/[^a-zA-Z0-9_]/g, '_');
+            if (/^[0-9]/.test(x)) { x = '_' + x; }
+            return x || 'Item';
+        }
+
+        function uniqueName(base) {
+            var b = safeName(base);
+            if (!nameCounts[b]) { nameCounts[b] = 1; return b; }
+            nameCounts[b] += 1;
+            return b + nameCounts[b];
+        }
+
+        function capitalize(s) {
+            return String(s || '').charAt(0).toUpperCase() + String(s || '').slice(1);
+        }
+
+        function typeOf(value, propName) {
+            if (value === null) { return 'null'; }
+            var t = typeof value;
+            if (t === 'string') { return 'string'; }
+            if (t === 'boolean') { return 'boolean'; }
+            if (t === 'number') { return 'number'; }
+            if (Array.isArray(value)) {
+                if (value.length === 0) { return 'unknown[]'; }
+                var types = [];
+                var seen = {};
+                for (var i = 0; i < value.length; i++) {
+                    var ty = typeOf(value[i], propName + 'Item');
+                    if (!seen[ty]) { seen[ty] = true; types.push(ty); }
+                }
+                if (types.length === 1) { return types[0] + '[]'; }
+                return '(' + types.join(' | ') + ')[]';
+            }
+            if (t === 'object') { return buildInterface(value, propName); }
+            return 'unknown';
+        }
+
+        function buildInterface(obj, nameHint) {
+            var iname = uniqueName(nameHint);
+            var lines = ['export interface ' + iname + ' {'];
+            var keys = Object.keys(obj);
+            for (var k = 0; k < keys.length; k++) {
+                var key = keys[k];
+                var propKey = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key) ? key : JSON.stringify(key);
+                var val = obj[key];
+                var optional = (val === null) ? '?' : '';
+                var ty = (val === null) ? 'unknown | null' : typeOf(val, iname + capitalize(key));
+                lines.push('  ' + propKey + optional + ': ' + ty + ';');
+            }
+            lines.push('}');
+            interfaces.push(lines.join('\n'));
+            return iname;
+        }
+
+        var rootType = typeOf(jsonValue, rootName);
+        var out = interfaces.reverse().join('\n\n');
+        if (out) { out += '\n\n'; }
+        out += 'export type ' + safeName(rootName) + ' = ' + rootType + ';\n';
+        return out.trim();
+    }
+
+    // Base64URL (RFC 4648 sec 5) -> UTF-8 text. JWT segments use base64url
+    // (- / _ instead of + /, no padding), which atob() cannot decode directly.
+    function base64UrlDecode(seg) {
+        var b64 = String(seg || '').replace(/-/g, '+').replace(/_/g, '/');
+        while (b64.length % 4) { b64 += '='; }
+        var bin = atob(b64);
+        try {
+            return decodeURIComponent(Array.prototype.map.call(bin, function (c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+        } catch (e) {
+            return bin;
+        }
+    }
+
+    // Decode (NOT verify) a JWT: split on '.', base64url-decode + JSON.parse
+    // the header and payload segments, surface exp/iat as human dates, and
+    // show the signature as an opaque raw string. Verifying the signature
+    // requires the issuer's secret/public key, which never reaches the
+    // browser — this tool is a decoder, not a validator.
+    function decodeJwt(token) {
+        var parts = String(token || '').trim().split('.');
+        if (parts.length !== 3) {
+            return 'Not a JWT: expected 3 dot-separated parts (header.payload.signature), found ' + parts.length + '.';
+        }
+        var header, payload;
+        try { header = JSON.parse(base64UrlDecode(parts[0])); }
+        catch (e) { return 'Invalid JWT header: could not base64url-decode/parse segment 1 (' + e.message + ').'; }
+        try { payload = JSON.parse(base64UrlDecode(parts[1])); }
+        catch (e) { return 'Invalid JWT payload: could not base64url-decode/parse segment 2 (' + e.message + ').'; }
+        var out = 'HEADER:\n' + JSON.stringify(header, null, 2) + '\n\nPAYLOAD:\n' + JSON.stringify(payload, null, 2);
+        if (payload && typeof payload.exp === 'number') {
+            var expDate = new Date(payload.exp * 1000);
+            out += '\n\nexp (expiry): ' + expDate.toISOString() + (expDate.getTime() < Date.now() ? '  [EXPIRED]' : '  [not yet expired]');
+        }
+        if (payload && typeof payload.iat === 'number') {
+            out += '\niat (issued at): ' + new Date(payload.iat * 1000).toISOString();
+        }
+        out += '\n\nSIGNATURE (raw, shown but NOT verified):\n' + parts[2];
+        out += '\n\nNote: this decodes the token structure only. Verifying the signature needs the issuer\'s secret/public key, which never leaves your server.';
+        return out;
+    }
+
+    function isJsonInput(s) {
+        var t = (s || '').trim();
+        return t.length > 0 && (t[0] === '{' || t[0] === '[' || t[0] === '"' || /^(true|false|null|-?\d)/.test(t));
+    }
+
+    // Idempotent lazy-loader for the self-hosted js-beautify UMD bundles
+    // (window.js_beautify / css_beautify / html_beautify), vendored at
+    // /vendor/js-beautify/ (mirrors the /vendor/pdf-lib loader convention).
+    // Loaded ONLY on the first non-JSON code-beautify input so JSON / base64 /
+    // url / diff verbs never pay for it. Order matters: html_beautify depends
+    // on js_beautify + css_beautify.
+    function ftoLoadJsBeautify() {
+        if (window.js_beautify && window.css_beautify && window.html_beautify) { return Promise.resolve(); }
+        if (window.__ftoJsBeautifyPromise) { return window.__ftoJsBeautifyPromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/js-beautify';
+        function load1(file) {
+            return new Promise(function (resolve, reject) {
+                var s = document.createElement('script');
+                s.src = base + '/' + file; s.async = true;
+                s.onload = function () { resolve(); };
+                s.onerror = function () { reject(new Error('failed to load ' + file)); };
+                document.head.appendChild(s);
+            });
+        }
+        window.__ftoJsBeautifyPromise = load1('beautify.min.js')
+            .then(function () { return load1('beautify-css.min.js'); })
+            .then(function () { return load1('beautify-html.min.js'); });
+        return window.__ftoJsBeautifyPromise;
+    }
+
+    // Heuristic language detection for the code beautifier (JSON handled before this).
+    function detectCodeLang(s) {
+        var t = (s || '').trim();
+        if (!t) { return 'js'; }
+        if (t[0] === '<') { return 'html'; }                       // <!doctype, <html, <svg, xml...
+        // CSS: `selector { prop: value; }` blocks and none of the JS-only tokens.
+        if (/[^{}]*\{[^{}]*:[^{}]*\}/.test(t) && !/\b(function|=>|var\s|let\s|const\s|import\s|export\s)/.test(t) && t.indexOf('(') < 0) { return 'css'; }
+        return 'js';
+    }
+
+    async function convertForSlug(inputText, opts) {
+        var text = String(inputText || '');
+        if (!text.trim()) return { output_text: '', _is_mock: false };
+        var verb = detectVerb(SLUG_HINT, VERB_HINT);
+
+        // JSON-family verbs default to JSON pretty-print / validate. The slug
+        // family is the most common shipped target (json-formatter, -editor,
+        // -viewer, -validator, -compare) so we give it a real working impl.
+        if (verb === 'formatter' || verb === 'beautifier') {
+            if (isJsonInput(text)) {
+                try {
+                    var obj = JSON.parse(text);
+                    return { output_text: JSON.stringify(obj, null, 2), _is_mock: false, _verb: verb };
+                } catch (e) {
+                    return { output_text: 'Invalid JSON: ' + e.message, _is_mock: false, _verb: verb, _error: true };
+                }
+            }
+            // Non-JSON code -> REAL beautify via the self-hosted js-beautify vendor
+            // (2026-07-02). Auto-detect CSS / HTML / JS and call the matching
+            // beautifier global. This is what makes a `code-formatter` slug a genuine
+            // code beautifier rather than a JSON-only pretty-printer.
+            var lang = detectCodeLang(text);
+            try {
+                await ftoLoadJsBeautify();
+                var opts = { indent_size: 2, end_with_newline: false, preserve_newlines: true };
+                var out = null;
+                if (lang === 'css' && window.css_beautify) { out = window.css_beautify(text, opts); }
+                else if (lang === 'html' && window.html_beautify) { out = window.html_beautify(text, opts); }
+                else if (window.js_beautify) { out = window.js_beautify(text, opts); }
+                if (typeof out === 'string' && out.length) {
+                    return { output_text: out, _is_mock: false, _verb: verb, _lang: lang };
+                }
+            } catch (e) { /* vendor unavailable -> safe fallback below (never crash) */ }
+            // Fallback: structural whitespace-normalise, labelled honestly.
+            return { output_text: text.replace(/\r\n/g, '\n').replace(/[ \t]+\n/g, '\n').trim(), _is_mock: false, _verb: verb, _lang: lang, _note: 'structural normalise (beautifier engine unavailable)' };
+        }
+
+        if (verb === 'validator' || verb === 'parser') {
+            if (isJsonInput(text)) {
+                try {
+                    var parsed = JSON.parse(text);
+                    var kind = Array.isArray(parsed) ? ('array (' + parsed.length + ' items)')
+                             : (parsed === null ? 'null'
+                             : (typeof parsed === 'object' ? ('object (' + Object.keys(parsed).length + ' keys)')
+                             : (typeof parsed)));
+                    return { output_text: 'Valid JSON. Root type: ' + kind + '.\n\nPretty-printed:\n' + JSON.stringify(parsed, null, 2), _is_mock: false, _verb: verb };
+                } catch (e) {
+                    return { output_text: 'Invalid JSON at: ' + e.message, _is_mock: false, _verb: verb, _error: true };
+                }
+            }
+            return { output_text: 'Input is not JSON (no leading {, [, ", true, false, null, or digit). Use the formatter / encoder tools for plain text.', _is_mock: false, _verb: verb, _error: true };
+        }
+
+        if (verb === 'minifier') {
+            if (isJsonInput(text)) {
+                try {
+                    return { output_text: JSON.stringify(JSON.parse(text)), _is_mock: false, _verb: verb };
+                } catch (e) {
+                    return { output_text: 'Invalid JSON: ' + e.message, _is_mock: false, _verb: verb, _error: true };
+                }
+            }
+            return { output_text: text.replace(/\s+/g, ' ').trim(), _is_mock: false, _verb: verb };
+        }
+
+        if (verb === 'encoder-base64') {
+            try { return { output_text: btoa(unescape(encodeURIComponent(text))), _is_mock: false, _verb: verb }; }
+            catch (e) { return { output_text: 'Base64 encode error: ' + e.message, _is_mock: false, _verb: verb, _error: true }; }
+        }
+        if (verb === 'decoder-base64') {
+            try { return { output_text: decodeURIComponent(escape(atob(text))), _is_mock: false, _verb: verb }; }
+            catch (e) { return { output_text: 'Base64 decode error: ' + e.message, _is_mock: false, _verb: verb, _error: true }; }
+        }
+        if (verb === 'encoder-url') { return { output_text: encodeURIComponent(text), _is_mock: false, _verb: verb }; }
+        if (verb === 'decoder-url') {
+            try { return { output_text: decodeURIComponent(text), _is_mock: false, _verb: verb }; }
+            catch (e) { return { output_text: 'URL decode error: ' + e.message, _is_mock: false, _verb: verb, _error: true }; }
+        }
+        if (verb === 'decoder-jwt') {
+            return { output_text: decodeJwt(text), _is_mock: false, _verb: verb };
+        }
+
+        if (verb === 'diff') {
+            // Diff requires two inputs — the dispatcher returns a hint when only
+            // one is provided. Real tools should override the UI to expose a
+            // second input box and substitute a real diff impl.
+            return { output_text: 'Diff tools need two inputs. This page is a single-input scaffold; replace the BODYHTML to add a second input + a diff library (e.g., diff-match-patch).', _is_mock: false, _verb: verb, _error: true };
+        }
+
+        if (verb === 'json-to-typescript') {
+            try {
+                var parsedTs = JSON.parse(text);
+                return { output_text: ftoJsonToTypescript(parsedTs, 'Root'), _is_mock: false, _verb: verb };
+            } catch (e) {
+                return { output_text: 'Invalid JSON: ' + e.message, _is_mock: false, _verb: verb, _error: true };
+            }
+        }
+
+        if (verb === 'markdown-to-html') {
+            try {
+                await ftoLoadMarkdownLibs();
+                var html = ftoMarkdownToHtml(text);
+                return { output_text: html, _is_mock: false, _verb: verb, _html: true };
+            } catch (e) {
+                return { output_text: 'Markdown convert error: ' + e.message, _is_mock: false, _verb: verb, _error: true };
+            }
+        }
+
+        // No recognised verb -> passthrough (NOT a throw — page must never crash).
+        return { output_text: text, _is_mock: false, _is_passthrough: true, _verb: '(none)' };
+    }
+
+    // In-browser tool (no upload widget): bootstrap via doAfterPageRendered(),
+    // which the base script calls on every page. The legacy
+    // loadUploadHandlersByPage() hook only fires on upload-layout pages.
+    function doAfterPageRendered() {
+        // Bind to the IDs the bodyhtml-skeletons/converter-text.template.html
+        // ships (cycle 20260521-12 paired-template fix): #inputText (input
+        // textarea), #convertButton (the verb-name action button),
+        // #outputText (readonly output textarea), #clearInputButton +
+        // #copyOutputButton. Selectors are no-ops if absent so legacy
+        // BODYHTML.template.html (image-tool placeholder) doesn't throw.
+        var $in = $('#inputText');
+        var $out = $('#outputText');
+        if ($in.length === 0 || $out.length === 0) return;
+        // Markdown preview pane (Gate-H markdown_renderer two-pane acceptance).
+        var mdVerb = detectVerb(SLUG_HINT, VERB_HINT);
+        var $preview = $('#mdPreview');
+        if (mdVerb === 'markdown-to-html' && $preview.length === 0) {
+            var $pane = $('<div class="w3-container" style="margin-top:12px;"></div>');
+            $pane.append('<div class="w3-bar w3-margin-bottom"><button type="button" id="mdModePreview" class="w3-button w3-red w3-small">Preview</button><button type="button" id="mdModeSource" class="w3-button w3-light-grey w3-small">HTML source</button></div>');
+            $pane.append('<div id="mdPreview" class="markdown-body w3-border w3-padding" style="min-height:180px;background:#fff;overflow:auto;"></div>');
+            $out.closest('.ui-editor').append($pane);
+            $preview = $('#mdPreview');
+            window.__ftoMdMode = 'preview';
+            $('#mdModePreview').on('click', function () {
+                window.__ftoMdMode = 'preview';
+                $preview.show(); $out.hide();
+                $(this).addClass('w3-red').removeClass('w3-light-grey');
+                $('#mdModeSource').addClass('w3-light-grey').removeClass('w3-red');
+            });
+            $('#mdModeSource').on('click', function () {
+                window.__ftoMdMode = 'source';
+                $preview.hide(); $out.show();
+                $(this).addClass('w3-red').removeClass('w3-light-grey');
+                $('#mdModePreview').addClass('w3-light-grey').removeClass('w3-red');
+            });
+            $out.hide();
+        }
+        async function run() {
+            var text = $in.val() || '';
+            if (!text.trim()) {
+                $out.val('');
+                if ($preview && $preview.length) { $preview.html(''); }
+                return;
+            }
+            try {
+                var r = await convertForSlug(text, {});
+                $out.val(r.output_text || '');
+                if ($preview && $preview.length && r._html) {
+                    $preview.html(r.output_text || '');
+                }
+            } catch (err) {
+                $out.val('Error: ' + (err.message || String(err)));
+            }
+        }
+        $in.off('input').on('input', run);
+        $('#convertButton').off('click').on('click', run);
+        // Also support the legacy #runBtn id in case it's authored that way.
+        $('#runBtn').off('click').on('click', run);
+        $('#clearInputButton').off('click').on('click', function () {
+            $in.val(''); $out.val(''); if ($preview && $preview.length) { $preview.html(''); } $in.focus();
+        });
+        $('#copyOutputButton').off('click').on('click', function () {
+            var v = $out.val() || '';
+            if (!v) return;
+            try { navigator.clipboard.writeText(v); } catch (e) { $out.select(); document.execCommand('copy'); }
+        });
+        // Auto-run on first paint if the textarea already has prefilled text
+        // (e.g. operator-provided example). No-op when empty.
+        if (($in.val() || '').trim()) run();
+    }
+</script>

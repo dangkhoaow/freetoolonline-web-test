@@ -202,6 +202,24 @@ export const INFO_ROUTES = new Set([
   '/guides/de/json-typescript-interface-generator-vs-alternatives.html',
   '/guides/json-typescript-interface-generator-step-by-step.html',
   '/guides/json-typescript-interface-generator-vs-alternatives.html',
+  '/guides/markdown-html-previewer-when.html',
+  '/guides/markdown-html-previewer-step-by-step.html',
+  '/guides/markdown-html-previewer-vs-alternatives.html',
+  '/guides/pt/markdown-html-previewer-when.html',
+  '/guides/pt/markdown-html-previewer-step-by-step.html',
+  '/guides/pt/markdown-html-previewer-vs-alternatives.html',
+  '/guides/es/markdown-html-previewer-when.html',
+  '/guides/es/markdown-html-previewer-step-by-step.html',
+  '/guides/es/markdown-html-previewer-vs-alternatives.html',
+  '/guides/vi/markdown-html-previewer-when.html',
+  '/guides/vi/markdown-html-previewer-step-by-step.html',
+  '/guides/vi/markdown-html-previewer-vs-alternatives.html',
+  '/guides/id/markdown-html-previewer-when.html',
+  '/guides/id/markdown-html-previewer-step-by-step.html',
+  '/guides/id/markdown-html-previewer-vs-alternatives.html',
+  '/guides/de/markdown-html-previewer-when.html',
+  '/guides/de/markdown-html-previewer-step-by-step.html',
+  '/guides/de/markdown-html-previewer-vs-alternatives.html',
   '/guides/pt/jwt-decoder-when.html',
   '/guides/pt/jwt-decoder-step-by-step.html',
   '/guides/pt/jwt-decoder-vs-alternatives.html',
@@ -5910,6 +5928,70 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/how-to-view-deinocheirus-in-3d.html',
   '/guides/id/how-to-view-deinocheirus-in-3d.html',
   '/guides/de/how-to-view-deinocheirus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire206 (2026-07-20): deinocheirus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/deinocheirus-size-comparison.html',
+  '/guides/pt/deinocheirus-size-comparison.html',
+  '/guides/es/deinocheirus-size-comparison.html',
+  '/guides/vi/deinocheirus-size-comparison.html',
+  '/guides/id/deinocheirus-size-comparison.html',
+  '/guides/de/deinocheirus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire207 (2026-07-20): deinocheirus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/deinocheirus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/deinocheirus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/deinocheirus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/deinocheirus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/deinocheirus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/deinocheirus-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire208 (2026-07-20): how-to-view-barosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-barosaurus-in-3d.html',
+  '/guides/pt/how-to-view-barosaurus-in-3d.html',
+  '/guides/es/how-to-view-barosaurus-in-3d.html',
+  '/guides/vi/how-to-view-barosaurus-in-3d.html',
+  '/guides/id/how-to-view-barosaurus-in-3d.html',
+  '/guides/de/how-to-view-barosaurus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire209 (2026-07-20): barosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/barosaurus-size-comparison.html',
+  '/guides/pt/barosaurus-size-comparison.html',
+  '/guides/es/barosaurus-size-comparison.html',
+  '/guides/vi/barosaurus-size-comparison.html',
+  '/guides/id/barosaurus-size-comparison.html',
+  '/guides/de/barosaurus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire210 (2026-07-20): barosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/barosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/barosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/barosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/barosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/barosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/barosaurus-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire211 (2026-07-20): how-to-view-torvosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-torvosaurus-in-3d.html',
+  '/guides/pt/how-to-view-torvosaurus-in-3d.html',
+  '/guides/es/how-to-view-torvosaurus-in-3d.html',
+  '/guides/vi/how-to-view-torvosaurus-in-3d.html',
+  '/guides/id/how-to-view-torvosaurus-in-3d.html',
+  '/guides/de/how-to-view-torvosaurus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire212 (2026-07-20): torvosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/torvosaurus-size-comparison.html',
+  '/guides/pt/torvosaurus-size-comparison.html',
+  '/guides/es/torvosaurus-size-comparison.html',
+  '/guides/vi/torvosaurus-size-comparison.html',
+  '/guides/id/torvosaurus-size-comparison.html',
+  '/guides/de/torvosaurus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire213 (2026-07-20): torvosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/torvosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/torvosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/torvosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/torvosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/torvosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/torvosaurus-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -7698,6 +7780,25 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/how-to-play-rock-paper-neural.html',
   '/guides/de/rock-paper-neural-when.html',
   '/guides/de/rock-paper-neural-vs-alternatives.html',
+  // game-discovery-loop-runbook fire161 (2026-07-20): eggtimerewind companion guides
+  '/guides/how-to-play-egg-time-rewind.html',
+  '/guides/egg-time-rewind-when.html',
+  '/guides/egg-time-rewind-vs-alternatives.html',
+  '/guides/pt/how-to-play-egg-time-rewind.html',
+  '/guides/pt/egg-time-rewind-when.html',
+  '/guides/pt/egg-time-rewind-vs-alternatives.html',
+  '/guides/es/how-to-play-egg-time-rewind.html',
+  '/guides/es/egg-time-rewind-when.html',
+  '/guides/es/egg-time-rewind-vs-alternatives.html',
+  '/guides/vi/how-to-play-egg-time-rewind.html',
+  '/guides/vi/egg-time-rewind-when.html',
+  '/guides/vi/egg-time-rewind-vs-alternatives.html',
+  '/guides/id/how-to-play-egg-time-rewind.html',
+  '/guides/id/egg-time-rewind-when.html',
+  '/guides/id/egg-time-rewind-vs-alternatives.html',
+  '/guides/de/how-to-play-egg-time-rewind.html',
+  '/guides/de/egg-time-rewind-when.html',
+  '/guides/de/egg-time-rewind-vs-alternatives.html',
   // game-discovery-loop-runbook fire161 (2026-07-20): isocitysandbox companion guides
   '/guides/how-to-play-iso-city-sandbox.html',
   '/guides/pt/how-to-play-iso-city-sandbox.html',
@@ -8738,6 +8839,7 @@ export function isGuideRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  '/markdown-to-html.html': '/developer-tools/markdown-to-html.html',
   // Hub directory-form safety redirects (added 2026-05-11). Search engines
   // and external links may guess `/cluster-tools/` from the clustered tool
   // URLs (`/cluster-tools/<slug>.html`). Without these entries GitHub Pages
@@ -9368,6 +9470,8 @@ export const ALIAS_ROUTES = {
   '/acrocanthosaurus.html': '/dinosaur-3d/acrocanthosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire149 (2026-07-20): flat-slug alias for chasmosaurus.
   '/chasmosaurus.html': '/dinosaur-3d/chasmosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire151 (2026-07-20): flat-slug alias for psittacosaurus (Oviraptor STL REJECT fallback).
+  '/psittacosaurus.html': '/dinosaur-3d/psittacosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire150 (2026-07-20): flat-slug alias for abelisaurus.
   '/abelisaurus.html': '/dinosaur-3d/abelisaurus.html',
 
@@ -9467,6 +9571,7 @@ export const ALIAS_ROUTES = {
   '/googol-stopping-game.html': '/games/googol-stopping-game.html',
   '/bangbang-artillery.html': '/games/bangbang-artillery.html',
   '/rock-paper-neural.html': '/games/rock-paper-neural.html',
+  '/egg-time-rewind.html': '/games/egg-time-rewind.html',
   '/iso-city-sandbox.html': '/games/iso-city-sandbox.html',
   '/seasonal-witchcat.html': '/games/seasonal-witchcat.html',
   '/desk-cat-coder.html': '/games/desk-cat-coder.html',
@@ -9609,6 +9714,7 @@ export const ALIAS_ROUTES = {
   '/satellite-orbit-classes.html': '/space-3d/satellite-orbit-classes.html',
   '/sagittarius-a-star.html': '/space-3d/sagittarius-a-star.html',
   '/andromeda-collision.html': '/space-3d/andromeda-collision.html',
+  '/geocentric-vs-heliocentric.html': '/space-3d/geocentric-vs-heliocentric.html',
   '/dwarf-planet-comparison.html': '/space-3d/dwarf-planet-comparison.html',
   '/impact-crater-formation.html': '/space-3d/impact-crater-formation.html',
   '/moon-formation-giant-impact.html': '/space-3d/moon-formation-giant-impact.html',
@@ -11800,6 +11906,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/how-to-play-rock-paper-neural.html': 'guide/de/how-to-play-rock-paper-neural.jsp',
   '/guides/de/rock-paper-neural-when.html': 'guide/de/rock-paper-neural-when.jsp',
   '/guides/de/rock-paper-neural-vs-alternatives.html': 'guide/de/rock-paper-neural-vs-alternatives.jsp',
+  // game-discovery-loop-runbook fire161 (2026-07-20): eggtimerewind companion guides
+  '/guides/how-to-play-egg-time-rewind.html': 'guide/how-to-play-egg-time-rewind.jsp',
+  '/guides/egg-time-rewind-when.html': 'guide/egg-time-rewind-when.jsp',
+  '/guides/egg-time-rewind-vs-alternatives.html': 'guide/egg-time-rewind-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-egg-time-rewind.html': 'guide/pt/how-to-play-egg-time-rewind.jsp',
+  '/guides/pt/egg-time-rewind-when.html': 'guide/pt/egg-time-rewind-when.jsp',
+  '/guides/pt/egg-time-rewind-vs-alternatives.html': 'guide/pt/egg-time-rewind-vs-alternatives.jsp',
+  '/guides/es/how-to-play-egg-time-rewind.html': 'guide/es/how-to-play-egg-time-rewind.jsp',
+  '/guides/es/egg-time-rewind-when.html': 'guide/es/egg-time-rewind-when.jsp',
+  '/guides/es/egg-time-rewind-vs-alternatives.html': 'guide/es/egg-time-rewind-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-egg-time-rewind.html': 'guide/vi/how-to-play-egg-time-rewind.jsp',
+  '/guides/vi/egg-time-rewind-when.html': 'guide/vi/egg-time-rewind-when.jsp',
+  '/guides/vi/egg-time-rewind-vs-alternatives.html': 'guide/vi/egg-time-rewind-vs-alternatives.jsp',
+  '/guides/id/how-to-play-egg-time-rewind.html': 'guide/id/how-to-play-egg-time-rewind.jsp',
+  '/guides/id/egg-time-rewind-when.html': 'guide/id/egg-time-rewind-when.jsp',
+  '/guides/id/egg-time-rewind-vs-alternatives.html': 'guide/id/egg-time-rewind-vs-alternatives.jsp',
+  '/guides/de/how-to-play-egg-time-rewind.html': 'guide/de/how-to-play-egg-time-rewind.jsp',
+  '/guides/de/egg-time-rewind-when.html': 'guide/de/egg-time-rewind-when.jsp',
+  '/guides/de/egg-time-rewind-vs-alternatives.html': 'guide/de/egg-time-rewind-vs-alternatives.jsp',
   // game-discovery-loop-runbook fire161 (2026-07-20): isocitysandbox companion guides
   '/guides/how-to-play-iso-city-sandbox.html': 'guide/how-to-play-iso-city-sandbox.jsp',
   '/guides/pt/how-to-play-iso-city-sandbox.html': 'guide/pt/how-to-play-iso-city-sandbox.jsp',
@@ -14582,6 +14707,70 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-view-deinocheirus-in-3d.html': 'guide/vi/how-to-view-deinocheirus-in-3d.jsp',
   '/guides/id/how-to-view-deinocheirus-in-3d.html': 'guide/id/how-to-view-deinocheirus-in-3d.jsp',
   '/guides/de/how-to-view-deinocheirus-in-3d.html': 'guide/de/how-to-view-deinocheirus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire206 (2026-07-20): deinocheirus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/deinocheirus-size-comparison.html': 'guide/deinocheirus-size-comparison.jsp',
+  '/guides/pt/deinocheirus-size-comparison.html': 'guide/pt/deinocheirus-size-comparison.jsp',
+  '/guides/es/deinocheirus-size-comparison.html': 'guide/es/deinocheirus-size-comparison.jsp',
+  '/guides/vi/deinocheirus-size-comparison.html': 'guide/vi/deinocheirus-size-comparison.jsp',
+  '/guides/id/deinocheirus-size-comparison.html': 'guide/id/deinocheirus-size-comparison.jsp',
+  '/guides/de/deinocheirus-size-comparison.html': 'guide/de/deinocheirus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire207 (2026-07-20): deinocheirus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/deinocheirus-3d-viewer-vs-ar-apps.html': 'guide/deinocheirus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/deinocheirus-3d-viewer-vs-ar-apps.html': 'guide/pt/deinocheirus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/deinocheirus-3d-viewer-vs-ar-apps.html': 'guide/es/deinocheirus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/deinocheirus-3d-viewer-vs-ar-apps.html': 'guide/vi/deinocheirus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/deinocheirus-3d-viewer-vs-ar-apps.html': 'guide/id/deinocheirus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/deinocheirus-3d-viewer-vs-ar-apps.html': 'guide/de/deinocheirus-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire208 (2026-07-20): how-to-view-barosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-barosaurus-in-3d.html': 'guide/how-to-view-barosaurus-in-3d.jsp',
+  '/guides/pt/how-to-view-barosaurus-in-3d.html': 'guide/pt/how-to-view-barosaurus-in-3d.jsp',
+  '/guides/es/how-to-view-barosaurus-in-3d.html': 'guide/es/how-to-view-barosaurus-in-3d.jsp',
+  '/guides/vi/how-to-view-barosaurus-in-3d.html': 'guide/vi/how-to-view-barosaurus-in-3d.jsp',
+  '/guides/id/how-to-view-barosaurus-in-3d.html': 'guide/id/how-to-view-barosaurus-in-3d.jsp',
+  '/guides/de/how-to-view-barosaurus-in-3d.html': 'guide/de/how-to-view-barosaurus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire209 (2026-07-20): barosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/barosaurus-size-comparison.html': 'guide/barosaurus-size-comparison.jsp',
+  '/guides/pt/barosaurus-size-comparison.html': 'guide/pt/barosaurus-size-comparison.jsp',
+  '/guides/es/barosaurus-size-comparison.html': 'guide/es/barosaurus-size-comparison.jsp',
+  '/guides/vi/barosaurus-size-comparison.html': 'guide/vi/barosaurus-size-comparison.jsp',
+  '/guides/id/barosaurus-size-comparison.html': 'guide/id/barosaurus-size-comparison.jsp',
+  '/guides/de/barosaurus-size-comparison.html': 'guide/de/barosaurus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire210 (2026-07-20): barosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/barosaurus-3d-viewer-vs-ar-apps.html': 'guide/barosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/barosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/barosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/barosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/barosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/barosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/barosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/barosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/barosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/barosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/barosaurus-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire211 (2026-07-20): how-to-view-torvosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-torvosaurus-in-3d.html': 'guide/how-to-view-torvosaurus-in-3d.jsp',
+  '/guides/pt/how-to-view-torvosaurus-in-3d.html': 'guide/pt/how-to-view-torvosaurus-in-3d.jsp',
+  '/guides/es/how-to-view-torvosaurus-in-3d.html': 'guide/es/how-to-view-torvosaurus-in-3d.jsp',
+  '/guides/vi/how-to-view-torvosaurus-in-3d.html': 'guide/vi/how-to-view-torvosaurus-in-3d.jsp',
+  '/guides/id/how-to-view-torvosaurus-in-3d.html': 'guide/id/how-to-view-torvosaurus-in-3d.jsp',
+  '/guides/de/how-to-view-torvosaurus-in-3d.html': 'guide/de/how-to-view-torvosaurus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire212 (2026-07-20): torvosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/torvosaurus-size-comparison.html': 'guide/torvosaurus-size-comparison.jsp',
+  '/guides/pt/torvosaurus-size-comparison.html': 'guide/pt/torvosaurus-size-comparison.jsp',
+  '/guides/es/torvosaurus-size-comparison.html': 'guide/es/torvosaurus-size-comparison.jsp',
+  '/guides/vi/torvosaurus-size-comparison.html': 'guide/vi/torvosaurus-size-comparison.jsp',
+  '/guides/id/torvosaurus-size-comparison.html': 'guide/id/torvosaurus-size-comparison.jsp',
+  '/guides/de/torvosaurus-size-comparison.html': 'guide/de/torvosaurus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire213 (2026-07-20): torvosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/torvosaurus-3d-viewer-vs-ar-apps.html': 'guide/torvosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/torvosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/torvosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/torvosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/torvosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/torvosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/torvosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/torvosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/torvosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/torvosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/torvosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
@@ -14881,6 +15070,7 @@ export const JSP_BY_ROUTE = {
   '/games/googol-stopping-game.html': 'games/googol-stopping-game.jsp',
   '/games/bangbang-artillery.html': 'games/bangbang-artillery.jsp',
   '/games/rock-paper-neural.html': 'games/rock-paper-neural.jsp',
+  '/games/egg-time-rewind.html': 'games/egg-time-rewind.jsp',
   '/games/iso-city-sandbox.html': 'games/iso-city-sandbox.jsp',
   '/games/seasonal-witchcat.html': 'games/seasonal-witchcat.jsp',
   '/games/desk-cat-coder.html': 'games/desk-cat-coder.jsp',
@@ -15092,6 +15282,7 @@ export const JSP_BY_ROUTE = {
   '/space-3d/satellite-orbit-classes.html': 'space/satellite-orbit-classes.jsp',
   '/space-3d/sagittarius-a-star.html': 'space/sagittarius-a-star.jsp',
   '/space-3d/andromeda-collision.html': 'space/andromeda-collision.jsp',
+  '/space-3d/geocentric-vs-heliocentric.html': 'space/geocentric-vs-heliocentric.jsp',
   '/space-3d/dwarf-planet-comparison.html': 'space/dwarf-planet-comparison.jsp',
   '/space-3d/impact-crater-formation.html': 'space/impact-crater-formation.jsp',
   '/space-3d/moon-formation-giant-impact.html': 'space/moon-formation-giant-impact.jsp',
@@ -18208,6 +18399,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/video-merger-step-by-step.html': 'guide/de/video-merger-step-by-step.jsp',
   '/guides/de/video-merger-vs-alternatives.html': 'guide/de/video-merger-vs-alternatives.jsp',
   '/developer-tools/json-to-typescript.html': 'utility/json-to-typescript.jsp',
+  '/developer-tools/markdown-to-html.html': 'utility/markdown-to-html.jsp',
+  '/guides/markdown-html-previewer-when.html': 'guide/markdown-html-previewer-when.jsp',
+  '/guides/markdown-html-previewer-step-by-step.html': 'guide/markdown-html-previewer-step-by-step.jsp',
+  '/guides/markdown-html-previewer-vs-alternatives.html': 'guide/markdown-html-previewer-vs-alternatives.jsp',
+  '/guides/pt/markdown-html-previewer-when.html': 'guide/pt/markdown-html-previewer-when.jsp',
+  '/guides/pt/markdown-html-previewer-step-by-step.html': 'guide/pt/markdown-html-previewer-step-by-step.jsp',
+  '/guides/pt/markdown-html-previewer-vs-alternatives.html': 'guide/pt/markdown-html-previewer-vs-alternatives.jsp',
+  '/guides/es/markdown-html-previewer-when.html': 'guide/es/markdown-html-previewer-when.jsp',
+  '/guides/es/markdown-html-previewer-step-by-step.html': 'guide/es/markdown-html-previewer-step-by-step.jsp',
+  '/guides/es/markdown-html-previewer-vs-alternatives.html': 'guide/es/markdown-html-previewer-vs-alternatives.jsp',
+  '/guides/vi/markdown-html-previewer-when.html': 'guide/vi/markdown-html-previewer-when.jsp',
+  '/guides/vi/markdown-html-previewer-step-by-step.html': 'guide/vi/markdown-html-previewer-step-by-step.jsp',
+  '/guides/vi/markdown-html-previewer-vs-alternatives.html': 'guide/vi/markdown-html-previewer-vs-alternatives.jsp',
+  '/guides/id/markdown-html-previewer-when.html': 'guide/id/markdown-html-previewer-when.jsp',
+  '/guides/id/markdown-html-previewer-step-by-step.html': 'guide/id/markdown-html-previewer-step-by-step.jsp',
+  '/guides/id/markdown-html-previewer-vs-alternatives.html': 'guide/id/markdown-html-previewer-vs-alternatives.jsp',
+  '/guides/de/markdown-html-previewer-when.html': 'guide/de/markdown-html-previewer-when.jsp',
+  '/guides/de/markdown-html-previewer-step-by-step.html': 'guide/de/markdown-html-previewer-step-by-step.jsp',
+  '/guides/de/markdown-html-previewer-vs-alternatives.html': 'guide/de/markdown-html-previewer-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

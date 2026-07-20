@@ -1,0 +1,381 @@
+<script>
+    // 3D scene archetype skeleton (geocentric-vs-heliocentric) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton (see BODYJSsolarsystem.html) - this file
+    // implements ONE scene only (geohelio), not the full accumulated scene set,
+    // to avoid the per-page payload bloat that crept into earlier copies of this
+    // skeleton. All geometry is procedural - no model files, no textures fetched.
+    //
+    // This is an EDUCATIONAL APPROXIMATION, not a physical simulation or a
+    // historically exact reconstruction of Ptolemy's specific epicycle
+    // parameters. The geocentric view is produced by re-centering the SAME real
+    // heliocentric orbits on Earth (a vector subtraction) - this is the true
+    // geometric origin of the retrograde loop that Ptolemy's deferent-and-
+    // epicycle construction was built to approximate without vector math and
+    // without knowing Earth orbits the Sun. The info panel discloses this.
+    //
+    // A visible wrapper + "Loading 3D engine..." placeholder renders
+    // synchronously (G16 render-only pass); the ~0.7 MB engine lazy-loads
+    // post-paint via requestIdleCallback and is cached by the browser.
+    // Fullscreen targets the WRAPPER div (controls stay visible).
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'geocentric-vs-heliocentric';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) {
+        return 'geohelio';
+    }
+
+    // ---- vendored ESM loader (ftoLoadPdfLib shape, but a cached import()) ----
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - building still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- shared scene shell: renderer + camera + custom pointer-orbit --------
+    // OrbitControls is NOT vendored (jsm addons import the bare 'three'
+    // specifier); this ~40-line orbit covers drag-rotate + wheel/pinch zoom
+    // with damping and a clamped pitch.
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        function size() {
+            var w = Math.max(260, host.clientWidth);
+            var h = Math.round(w * 0.62);
+            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fsEl && fsEl.contains(host)) { h = Math.max(240, (window.innerHeight || h) - 150); }
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        host.appendChild(renderer.domElement);
+        renderer.domElement.style.touchAction = 'none';
+        renderer.domElement.style.borderRadius = '6px';
+        var drag = null, pinch = null, moved = 0;
+        host.addEventListener('pointerdown', function (e) {
+            drag = { x: e.clientX, y: e.clientY }; moved = 0;
+            host.setPointerCapture && host.setPointerCapture(e.pointerId);
+        });
+        host.addEventListener('pointermove', function (e) {
+            if (!drag) return;
+            var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+            moved += Math.abs(dx) + Math.abs(dy);
+            drag = { x: e.clientX, y: e.clientY };
+            orbit.goalTheta -= dx * 0.006;
+            orbit.goalPhi = Math.min(Math.max(orbit.goalPhi - dy * 0.005, 0.15), Math.PI - 0.2);
+        });
+        host.addEventListener('pointerup', function (e) {
+            var wasClick = moved < 8;
+            drag = null;
+            if (wasClick && shell.onClick) { shell.onClick(e); }
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR);
+        }, { passive: false });
+        host.addEventListener('touchstart', function (e) {
+            if (e.touches.length === 2) {
+                pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            }
+        }, { passive: true });
+        host.addEventListener('touchmove', function (e) {
+            if (e.touches.length === 2 && pinch) {
+                var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                pinch = d;
+            }
+        }, { passive: true });
+        window.addEventListener('resize', size);
+        document.addEventListener('fullscreenchange', size);
+        document.addEventListener('webkitfullscreenchange', size);
+        size();
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, size: size, onClick: null,
+            ndc: function (e) {
+                var r = renderer.domElement.getBoundingClientRect();
+                return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            },
+        };
+        return shell;
+    }
+
+    // ================= GEOCENTRIC VS HELIOCENTRIC ============================
+    // Real heliocentric circular orbits for Earth (1 AU) and Mars (1.52 AU),
+    // published sidereal periods (Earth 365.25 d, Mars 686.98 d - NASA
+    // Planetary Fact Sheet). The heliocentric view plots those orbits directly
+    // around the Sun. The geocentric view re-centers the SAME positions on
+    // Earth (heliocentric Mars minus heliocentric Earth) - this vector shift is
+    // the actual geometric reason Mars traces a backward loop as seen from
+    // Earth near opposition. Ptolemy modeled this same loop with a deferent
+    // circle plus a smaller epicycle circle - a working, centuries-durable
+    // approximation of the path shown here, built without vector math and
+    // without knowing Earth orbits the Sun. This page does not draw Ptolemy's
+    // specific historical epicycle radii (not a single verifiable figure) - it
+    // draws the real orbits and lets the reader see why an epicycle was needed.
+    var T3D_GH_EARTH_R = 8;
+    var T3D_GH_MARS_R = 12.2;
+    var T3D_GH_EARTH_PERIOD_D = 365.25;
+    var T3D_GH_MARS_PERIOD_D = 686.98;
+    var T3D_GH_SYNODIC_D = 779.9;
+    function t3dGeoHelio(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x02040c, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+        var glow = new THREE.PointLight(0xfff3c4, 1.3, 260);
+        scene.add(glow);
+
+        var nE = (Math.PI * 2) / T3D_GH_EARTH_PERIOD_D;
+        var nM = (Math.PI * 2) / T3D_GH_MARS_PERIOD_D;
+        function helioPos(which, day) {
+            var r = which === 'earth' ? T3D_GH_EARTH_R : T3D_GH_MARS_R;
+            var a = which === 'earth' ? day * nE : (day * nM + Math.PI);
+            return new THREE.Vector3(Math.cos(a) * r, 0, Math.sin(a) * r);
+        }
+        function geoAngleDeg(day) {
+            var e = helioPos('earth', day), m = helioPos('mars', day);
+            return Math.atan2(m.z - e.z, m.x - e.x) * 180 / Math.PI;
+        }
+        function isRetro(day) {
+            var a0 = geoAngleDeg(day - 0.5), a1 = geoAngleDeg(day + 0.5);
+            var d = a1 - a0;
+            if (d > 180) d -= 360;
+            if (d < -180) d += 360;
+            return d < 0;
+        }
+
+        // Orbit rings (heliocentric mode reference)
+        function ring(r, color) {
+            var pts = [];
+            for (var i = 0; i <= 96; i++) {
+                var a = (i / 96) * Math.PI * 2;
+                pts.push(new THREE.Vector3(Math.cos(a) * r, 0, Math.sin(a) * r));
+            }
+            var line = new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints(pts),
+                new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: 0.4 })
+            );
+            scene.add(line);
+            return line;
+        }
+        var earthRing = ring(T3D_GH_EARTH_R, 0x64b5f6);
+        var marsRing = ring(T3D_GH_MARS_R, 0xff8a65);
+
+        var sun = new THREE.Mesh(new THREE.SphereGeometry(1.3, 26, 18), new THREE.MeshBasicMaterial({ color: 0xffd54f }));
+        scene.add(sun);
+        var earth = new THREE.Mesh(new THREE.SphereGeometry(0.55, 20, 16), new THREE.MeshLambertMaterial({ color: 0x42a5f5, emissive: 0x102040 }));
+        scene.add(earth);
+        var mars = new THREE.Mesh(new THREE.SphereGeometry(0.42, 18, 14), new THREE.MeshLambertMaterial({ color: 0xe57373, emissive: 0x301010 }));
+        scene.add(mars);
+        var los = new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]),
+            new THREE.LineBasicMaterial({ color: 0xffee58, transparent: true, opacity: 0.75 })
+        );
+        scene.add(los);
+
+        // Fading trail of Mars-as-seen-from-Earth (only meaningful in geo mode)
+        var TRAIL_N = 90;
+        var trailGeo = new THREE.BufferGeometry();
+        var trailPos = new Float32Array(TRAIL_N * 3);
+        trailGeo.setAttribute('position', new THREE.BufferAttribute(trailPos, 3));
+        var trail = new THREE.Line(trailGeo, new THREE.LineBasicMaterial({ color: 0xce93d8, transparent: true, opacity: 0.85 }));
+        scene.add(trail);
+
+        var day = 40;
+        var mode = 'geo';
+        var playing = true;
+
+        function rebuildTrail() {
+            for (var i = 0; i < TRAIL_N; i++) {
+                var td = day - (TRAIL_N - 1) + i;
+                var e = helioPos('earth', td), m = helioPos('mars', td);
+                trailPos[i * 3] = m.x - e.x;
+                trailPos[i * 3 + 1] = 0;
+                trailPos[i * 3 + 2] = m.z - e.z;
+            }
+            trailGeo.attributes.position.needsUpdate = true;
+        }
+
+        function panelHtml() {
+            var retro = isRetro(day);
+            return '<h3>' + (mode === 'geo' ? 'Ptolemaic (geocentric) view' : 'Copernican (heliocentric) view') + '</h3>' +
+                '<p>' + (mode === 'geo'
+                    ? 'Earth sits fixed at the center. The Sun and Mars are plotted at their real positions relative to Earth. Watch the purple trail - Mars loops backward for a stretch near opposition, which is exactly the motion Ptolemy\'s epicycles were built to reproduce.'
+                    : 'The Sun sits fixed at the center. Earth and Mars both move on simple circular orbits. Earth, on the faster inside track, periodically overtakes Mars - that overtaking is the entire cause of the backward loop seen from Earth.') + '</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Ptolemy\'s Almagest</td><td>geocentric model dominant for about 1,400 years (~2nd century AD onward)</td></tr>' +
+                '<tr><td>Copernicus</td><td>proposed heliocentrism around 1515; published <i>De revolutionibus</i> in 1543</td></tr>' +
+                '<tr><td>Galileo</td><td>observed 4 moons orbiting Jupiter starting 1610-01-07 - evidence not everything orbits Earth</td></tr>' +
+                '<tr><td>Newton</td><td>1687 <i>Principia</i> supplied the physics (gravity) that settled the case for heliocentrism</td></tr>' +
+                '<tr><td>Mars synodic period</td><td>about ' + T3D_GH_SYNODIC_D + ' days</td></tr>' +
+                '<tr><td>Current motion (day ' + Math.round(day) + ')</td><td>' + (retro ? 'Retrograde (apparent backward loop)' : 'Direct (normal eastward motion)') + '</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation, not a physical simulation and not a historical reconstruction of Ptolemy\'s specific epicycle circles. The geocentric view here is built by re-centering the real heliocentric orbits on Earth - the same geometric loop Ptolemy approximated with deferents and epicycles, without vector math and without knowing Earth orbits the Sun.</p>';
+        }
+
+        function applyMode() {
+            var geoBtn = document.getElementById('t3dGeoHelioModeBtn-geo');
+            var helioBtn = document.getElementById('t3dGeoHelioModeBtn-helio');
+            if (geoBtn) geoBtn.className = 'w3-button ' + (mode === 'geo' ? 'w3-amber' : 'w3-light-grey');
+            if (helioBtn) helioBtn.className = 'w3-button ' + (mode === 'helio' ? 'w3-amber' : 'w3-light-grey');
+            earthRing.visible = mode === 'helio';
+            marsRing.visible = mode === 'helio';
+            trail.visible = mode === 'geo';
+            shell.orbit.target.set(0, 0, 0);
+            shell.orbit.goalRadius = mode === 'geo' ? 42 : 55;
+            shell.orbit.minR = mode === 'geo' ? 14 : 18;
+            shell.orbit.maxR = mode === 'geo' ? 140 : 190;
+        }
+
+        function applyDay(d) {
+            day = d;
+            var e = helioPos('earth', d), m = helioPos('mars', d);
+            if (mode === 'helio') {
+                sun.position.set(0, 0, 0);
+                earth.position.copy(e);
+                mars.position.copy(m);
+            } else {
+                sun.position.set(-e.x, 0, -e.z);
+                earth.position.set(0, 0, 0);
+                mars.position.set(m.x - e.x, 0, m.z - e.z);
+                rebuildTrail();
+            }
+            los.geometry.attributes.position.setXYZ(0, earth.position.x, earth.position.y, earth.position.z);
+            los.geometry.attributes.position.setXYZ(1, mars.position.x, mars.position.y, mars.position.z);
+            los.geometry.attributes.position.needsUpdate = true;
+            var slider = document.getElementById('t3dGeoHelioDay');
+            var label = document.getElementById('t3dGeoHelioDayLabel');
+            if (slider && Math.round(parseFloat(slider.value || '0')) !== Math.round(day)) slider.value = String(day);
+            if (label) label.textContent = Math.round(day) + ' d';
+            t3dInfo(panelHtml());
+        }
+
+        function setMode(next) {
+            mode = next;
+            applyMode();
+            applyDay(day);
+        }
+        setMode('geo');
+
+        var geoBtn = document.getElementById('t3dGeoHelioModeBtn-geo');
+        var helioBtn = document.getElementById('t3dGeoHelioModeBtn-helio');
+        if (geoBtn) geoBtn.addEventListener('click', function () { setMode('geo'); });
+        if (helioBtn) helioBtn.addEventListener('click', function () { setMode('helio'); });
+        var playBtn = document.getElementById('t3dGeoHelioPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            playing = !playing;
+            playBtn.textContent = playing ? 'Pause' : 'Play';
+        });
+        var slider = document.getElementById('t3dGeoHelioDay');
+        if (slider) slider.addEventListener('input', function () {
+            playing = false;
+            if (playBtn) playBtn.textContent = 'Play';
+            applyDay(parseFloat(slider.value || '0'));
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle Ptolemaic/Copernican or scrub the day slider.');
+        return function animate(dt) {
+            if (!playing) return;
+            var next = day + (dt / 1000) * 6;
+            if (next > T3D_GH_SYNODIC_D * 2) next -= T3D_GH_SYNODIC_D * 2;
+            applyDay(next);
+        };
+    }
+
+    // ---- bootstrap ------------------------------------------------------------
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return; // not a 3D scene page
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { geohelio: 't3dGeoHelioControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = {
+                        geohelio: { radius: 42, maxR: 140, minR: 14, phi: 1.25, theta: 0.4, targetY: 0 }
+                    };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dGeoHelio(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
