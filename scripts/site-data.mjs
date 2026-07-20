@@ -5682,6 +5682,30 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/how-to-view-hybodus-in-3d.html',
   '/guides/id/how-to-view-hybodus-in-3d.html',
   '/guides/de/how-to-view-hybodus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire182 (2026-07-20): hybodus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/hybodus-size-comparison.html',
+  '/guides/pt/hybodus-size-comparison.html',
+  '/guides/es/hybodus-size-comparison.html',
+  '/guides/vi/hybodus-size-comparison.html',
+  '/guides/id/hybodus-size-comparison.html',
+  '/guides/de/hybodus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire183 (2026-07-20): hybodus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/hybodus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/hybodus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/hybodus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/hybodus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/hybodus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/hybodus-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire184 (2026-07-20): how-to-view-quetzalcoatlus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-quetzalcoatlus-in-3d.html',
+  '/guides/pt/how-to-view-quetzalcoatlus-in-3d.html',
+  '/guides/es/how-to-view-quetzalcoatlus-in-3d.html',
+  '/guides/vi/how-to-view-quetzalcoatlus-in-3d.html',
+  '/guides/id/how-to-view-quetzalcoatlus-in-3d.html',
+  '/guides/de/how-to-view-quetzalcoatlus-in-3d.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -8945,6 +8969,8 @@ export const ALIAS_ROUTES = {
   '/diplodocus.html': '/dinosaur-3d/diplodocus.html',
   // dinosaur-3d-discovery-loop-runbook fire134 (2026-07-20): flat-slug alias for barosaurus.
   '/barosaurus.html': '/dinosaur-3d/barosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire147 (2026-07-20): flat-slug alias for amargasaurus.
+  '/amargasaurus.html': '/dinosaur-3d/amargasaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire53 (2026-07-16): flat-slug alias for apatosaurus.
   '/apatosaurus.html': '/dinosaur-3d/apatosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire54 (2026-07-16): flat-slug alias for carnotaurus.
@@ -12413,6 +12439,10 @@ export const JSP_BY_ROUTE = {
   // no feature-flag override - a close relative of Diplodocus, differentiated via longer neck /
   // shorter tail figures + the Supersaurus source-conflict caveat + the AMNH rearing-pose caveat).
   '/dinosaur-3d/barosaurus.html': 'dinosaur/barosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire147 (2026-07-20): amargasaurus (sauropod archetype,
+  // additive feats.neckSpines branch for twin parallel neural-spine rows along the neck;
+  // dicraeosaurid, Early Cretaceous Argentina, shorter neck than classic diplodocids).
+  '/dinosaur-3d/amargasaurus.html': 'dinosaur/amargasaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire53 (2026-07-16): apatosaurus (sauropod archetype,
   // no tallForelimbs feat, same body posture as Diplodocus; differentiated via a stockier/
   // heavier published-figure profile + its Brontosaurus naming-history framing).
@@ -14021,6 +14051,30 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-view-hybodus-in-3d.html': 'guide/vi/how-to-view-hybodus-in-3d.jsp',
   '/guides/id/how-to-view-hybodus-in-3d.html': 'guide/id/how-to-view-hybodus-in-3d.jsp',
   '/guides/de/how-to-view-hybodus-in-3d.html': 'guide/de/how-to-view-hybodus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire182 (2026-07-20): hybodus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/hybodus-size-comparison.html': 'guide/hybodus-size-comparison.jsp',
+  '/guides/pt/hybodus-size-comparison.html': 'guide/pt/hybodus-size-comparison.jsp',
+  '/guides/es/hybodus-size-comparison.html': 'guide/es/hybodus-size-comparison.jsp',
+  '/guides/vi/hybodus-size-comparison.html': 'guide/vi/hybodus-size-comparison.jsp',
+  '/guides/id/hybodus-size-comparison.html': 'guide/id/hybodus-size-comparison.jsp',
+  '/guides/de/hybodus-size-comparison.html': 'guide/de/hybodus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire183 (2026-07-20): hybodus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/hybodus-3d-viewer-vs-ar-apps.html': 'guide/hybodus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/hybodus-3d-viewer-vs-ar-apps.html': 'guide/pt/hybodus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/hybodus-3d-viewer-vs-ar-apps.html': 'guide/es/hybodus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/hybodus-3d-viewer-vs-ar-apps.html': 'guide/vi/hybodus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/hybodus-3d-viewer-vs-ar-apps.html': 'guide/id/hybodus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/hybodus-3d-viewer-vs-ar-apps.html': 'guide/de/hybodus-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire184 (2026-07-20): how-to-view-quetzalcoatlus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-quetzalcoatlus-in-3d.html': 'guide/how-to-view-quetzalcoatlus-in-3d.jsp',
+  '/guides/pt/how-to-view-quetzalcoatlus-in-3d.html': 'guide/pt/how-to-view-quetzalcoatlus-in-3d.jsp',
+  '/guides/es/how-to-view-quetzalcoatlus-in-3d.html': 'guide/es/how-to-view-quetzalcoatlus-in-3d.jsp',
+  '/guides/vi/how-to-view-quetzalcoatlus-in-3d.html': 'guide/vi/how-to-view-quetzalcoatlus-in-3d.jsp',
+  '/guides/id/how-to-view-quetzalcoatlus-in-3d.html': 'guide/id/how-to-view-quetzalcoatlus-in-3d.jsp',
+  '/guides/de/how-to-view-quetzalcoatlus-in-3d.html': 'guide/de/how-to-view-quetzalcoatlus-in-3d.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
