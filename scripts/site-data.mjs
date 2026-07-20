@@ -9451,6 +9451,8 @@ export const ALIAS_ROUTES = {
   '/acrocanthosaurus.html': '/dinosaur-3d/acrocanthosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire149 (2026-07-20): flat-slug alias for chasmosaurus.
   '/chasmosaurus.html': '/dinosaur-3d/chasmosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire151 (2026-07-20): flat-slug alias for psittacosaurus (Oviraptor STL REJECT fallback).
+  '/psittacosaurus.html': '/dinosaur-3d/psittacosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire150 (2026-07-20): flat-slug alias for abelisaurus.
   '/abelisaurus.html': '/dinosaur-3d/abelisaurus.html',
 
