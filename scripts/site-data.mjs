@@ -5682,6 +5682,22 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/how-to-view-hybodus-in-3d.html',
   '/guides/id/how-to-view-hybodus-in-3d.html',
   '/guides/de/how-to-view-hybodus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire182 (2026-07-20): hybodus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/hybodus-size-comparison.html',
+  '/guides/pt/hybodus-size-comparison.html',
+  '/guides/es/hybodus-size-comparison.html',
+  '/guides/vi/hybodus-size-comparison.html',
+  '/guides/id/hybodus-size-comparison.html',
+  '/guides/de/hybodus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire183 (2026-07-20): hybodus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/hybodus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/hybodus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/hybodus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/hybodus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/hybodus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/hybodus-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -13988,6 +14004,22 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-view-hybodus-in-3d.html': 'guide/vi/how-to-view-hybodus-in-3d.jsp',
   '/guides/id/how-to-view-hybodus-in-3d.html': 'guide/id/how-to-view-hybodus-in-3d.jsp',
   '/guides/de/how-to-view-hybodus-in-3d.html': 'guide/de/how-to-view-hybodus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire182 (2026-07-20): hybodus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/hybodus-size-comparison.html': 'guide/hybodus-size-comparison.jsp',
+  '/guides/pt/hybodus-size-comparison.html': 'guide/pt/hybodus-size-comparison.jsp',
+  '/guides/es/hybodus-size-comparison.html': 'guide/es/hybodus-size-comparison.jsp',
+  '/guides/vi/hybodus-size-comparison.html': 'guide/vi/hybodus-size-comparison.jsp',
+  '/guides/id/hybodus-size-comparison.html': 'guide/id/hybodus-size-comparison.jsp',
+  '/guides/de/hybodus-size-comparison.html': 'guide/de/hybodus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire183 (2026-07-20): hybodus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/hybodus-3d-viewer-vs-ar-apps.html': 'guide/hybodus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/hybodus-3d-viewer-vs-ar-apps.html': 'guide/pt/hybodus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/hybodus-3d-viewer-vs-ar-apps.html': 'guide/es/hybodus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/hybodus-3d-viewer-vs-ar-apps.html': 'guide/vi/hybodus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/hybodus-3d-viewer-vs-ar-apps.html': 'guide/id/hybodus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/hybodus-3d-viewer-vs-ar-apps.html': 'guide/de/hybodus-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
