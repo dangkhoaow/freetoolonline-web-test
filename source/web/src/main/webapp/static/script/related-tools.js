@@ -683,6 +683,7 @@ try {
     { title: "Age Calculator", url: "https://freetoolonline.com/utility-tools/age-calculator.html", include: !1, tags: "utility" },
     { title: "AI Photo Restoration", url: "https://freetoolonline.com/image-tools/photo-restoration.html", include: !1, tags: "image-editing" },
     { title: "JSON to TypeScript Interface Generator", url: "https://freetoolonline.com/developer-tools/json-to-typescript.html", include: !1, tags: "developer" },
+    { title: "Markdown to HTML Previewer", url: "https://freetoolonline.com/developer-tools/markdown-to-html.html", include: !1, tags: "developer" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

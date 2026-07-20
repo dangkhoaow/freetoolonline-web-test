@@ -202,6 +202,24 @@ export const INFO_ROUTES = new Set([
   '/guides/de/json-typescript-interface-generator-vs-alternatives.html',
   '/guides/json-typescript-interface-generator-step-by-step.html',
   '/guides/json-typescript-interface-generator-vs-alternatives.html',
+  '/guides/markdown-html-previewer-when.html',
+  '/guides/markdown-html-previewer-step-by-step.html',
+  '/guides/markdown-html-previewer-vs-alternatives.html',
+  '/guides/pt/markdown-html-previewer-when.html',
+  '/guides/pt/markdown-html-previewer-step-by-step.html',
+  '/guides/pt/markdown-html-previewer-vs-alternatives.html',
+  '/guides/es/markdown-html-previewer-when.html',
+  '/guides/es/markdown-html-previewer-step-by-step.html',
+  '/guides/es/markdown-html-previewer-vs-alternatives.html',
+  '/guides/vi/markdown-html-previewer-when.html',
+  '/guides/vi/markdown-html-previewer-step-by-step.html',
+  '/guides/vi/markdown-html-previewer-vs-alternatives.html',
+  '/guides/id/markdown-html-previewer-when.html',
+  '/guides/id/markdown-html-previewer-step-by-step.html',
+  '/guides/id/markdown-html-previewer-vs-alternatives.html',
+  '/guides/de/markdown-html-previewer-when.html',
+  '/guides/de/markdown-html-previewer-step-by-step.html',
+  '/guides/de/markdown-html-previewer-vs-alternatives.html',
   '/guides/pt/jwt-decoder-when.html',
   '/guides/pt/jwt-decoder-step-by-step.html',
   '/guides/pt/jwt-decoder-vs-alternatives.html',
@@ -8743,6 +8761,7 @@ export function isGuideRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  '/markdown-to-html.html': '/developer-tools/markdown-to-html.html',
   // Hub directory-form safety redirects (added 2026-05-11). Search engines
   // and external links may guess `/cluster-tools/` from the clustered tool
   // URLs (`/cluster-tools/<slug>.html`). Without these entries GitHub Pages
@@ -18218,6 +18237,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/video-merger-step-by-step.html': 'guide/de/video-merger-step-by-step.jsp',
   '/guides/de/video-merger-vs-alternatives.html': 'guide/de/video-merger-vs-alternatives.jsp',
   '/developer-tools/json-to-typescript.html': 'utility/json-to-typescript.jsp',
+  '/developer-tools/markdown-to-html.html': 'utility/markdown-to-html.jsp',
+  '/guides/markdown-html-previewer-when.html': 'guide/markdown-html-previewer-when.jsp',
+  '/guides/markdown-html-previewer-step-by-step.html': 'guide/markdown-html-previewer-step-by-step.jsp',
+  '/guides/markdown-html-previewer-vs-alternatives.html': 'guide/markdown-html-previewer-vs-alternatives.jsp',
+  '/guides/pt/markdown-html-previewer-when.html': 'guide/pt/markdown-html-previewer-when.jsp',
+  '/guides/pt/markdown-html-previewer-step-by-step.html': 'guide/pt/markdown-html-previewer-step-by-step.jsp',
+  '/guides/pt/markdown-html-previewer-vs-alternatives.html': 'guide/pt/markdown-html-previewer-vs-alternatives.jsp',
+  '/guides/es/markdown-html-previewer-when.html': 'guide/es/markdown-html-previewer-when.jsp',
+  '/guides/es/markdown-html-previewer-step-by-step.html': 'guide/es/markdown-html-previewer-step-by-step.jsp',
+  '/guides/es/markdown-html-previewer-vs-alternatives.html': 'guide/es/markdown-html-previewer-vs-alternatives.jsp',
+  '/guides/vi/markdown-html-previewer-when.html': 'guide/vi/markdown-html-previewer-when.jsp',
+  '/guides/vi/markdown-html-previewer-step-by-step.html': 'guide/vi/markdown-html-previewer-step-by-step.jsp',
+  '/guides/vi/markdown-html-previewer-vs-alternatives.html': 'guide/vi/markdown-html-previewer-vs-alternatives.jsp',
+  '/guides/id/markdown-html-previewer-when.html': 'guide/id/markdown-html-previewer-when.jsp',
+  '/guides/id/markdown-html-previewer-step-by-step.html': 'guide/id/markdown-html-previewer-step-by-step.jsp',
+  '/guides/id/markdown-html-previewer-vs-alternatives.html': 'guide/id/markdown-html-previewer-vs-alternatives.jsp',
+  '/guides/de/markdown-html-previewer-when.html': 'guide/de/markdown-html-previewer-when.jsp',
+  '/guides/de/markdown-html-previewer-step-by-step.html': 'guide/de/markdown-html-previewer-step-by-step.jsp',
+  '/guides/de/markdown-html-previewer-vs-alternatives.html': 'guide/de/markdown-html-previewer-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
