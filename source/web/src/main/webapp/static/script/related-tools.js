@@ -643,6 +643,7 @@ try {
     { title: "Moon Formation Giant Impact 3D Explorer", url: "https://freetoolonline.com/space-3d/moon-formation-giant-impact.html", include: !1, tags: "space-3d" },
     { title: "Axial Tilt Comparison 3D Explorer", url: "https://freetoolonline.com/space-3d/axial-tilt-comparison.html", include: !1, tags: "space-3d" },
     { title: "Milky Way - Andromeda Collision 3D Explorer", url: "https://freetoolonline.com/space-3d/andromeda-collision.html", include: !1, tags: "space-3d" },
+    { title: "Geocentric vs Heliocentric 3D Explorer", url: "https://freetoolonline.com/space-3d/geocentric-vs-heliocentric.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
