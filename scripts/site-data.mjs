@@ -5796,6 +5796,22 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/how-to-view-compsognathus-in-3d.html',
   '/guides/id/how-to-view-compsognathus-in-3d.html',
   '/guides/de/how-to-view-compsognathus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire194 (2026-07-20): compsognathus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/compsognathus-size-comparison.html',
+  '/guides/pt/compsognathus-size-comparison.html',
+  '/guides/es/compsognathus-size-comparison.html',
+  '/guides/vi/compsognathus-size-comparison.html',
+  '/guides/id/compsognathus-size-comparison.html',
+  '/guides/de/compsognathus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire195 (2026-07-20): compsognathus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/compsognathus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/compsognathus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/compsognathus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/compsognathus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/compsognathus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/compsognathus-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -14273,6 +14289,22 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-view-compsognathus-in-3d.html': 'guide/vi/how-to-view-compsognathus-in-3d.jsp',
   '/guides/id/how-to-view-compsognathus-in-3d.html': 'guide/id/how-to-view-compsognathus-in-3d.jsp',
   '/guides/de/how-to-view-compsognathus-in-3d.html': 'guide/de/how-to-view-compsognathus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire194 (2026-07-20): compsognathus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/compsognathus-size-comparison.html': 'guide/compsognathus-size-comparison.jsp',
+  '/guides/pt/compsognathus-size-comparison.html': 'guide/pt/compsognathus-size-comparison.jsp',
+  '/guides/es/compsognathus-size-comparison.html': 'guide/es/compsognathus-size-comparison.jsp',
+  '/guides/vi/compsognathus-size-comparison.html': 'guide/vi/compsognathus-size-comparison.jsp',
+  '/guides/id/compsognathus-size-comparison.html': 'guide/id/compsognathus-size-comparison.jsp',
+  '/guides/de/compsognathus-size-comparison.html': 'guide/de/compsognathus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire195 (2026-07-20): compsognathus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/compsognathus-3d-viewer-vs-ar-apps.html': 'guide/compsognathus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/compsognathus-3d-viewer-vs-ar-apps.html': 'guide/pt/compsognathus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/compsognathus-3d-viewer-vs-ar-apps.html': 'guide/es/compsognathus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/compsognathus-3d-viewer-vs-ar-apps.html': 'guide/vi/compsognathus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/compsognathus-3d-viewer-vs-ar-apps.html': 'guide/id/compsognathus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/compsognathus-3d-viewer-vs-ar-apps.html': 'guide/de/compsognathus-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
