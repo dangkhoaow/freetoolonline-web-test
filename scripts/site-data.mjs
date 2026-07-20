@@ -5992,6 +5992,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/torvosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/id/torvosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/de/torvosaurus-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire214 (2026-07-20): how-to-view-sarcosuchus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-sarcosuchus-in-3d.html',
+  '/guides/pt/how-to-view-sarcosuchus-in-3d.html',
+  '/guides/es/how-to-view-sarcosuchus-in-3d.html',
+  '/guides/vi/how-to-view-sarcosuchus-in-3d.html',
+  '/guides/id/how-to-view-sarcosuchus-in-3d.html',
+  '/guides/de/how-to-view-sarcosuchus-in-3d.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -9483,6 +9491,8 @@ export const ALIAS_ROUTES = {
   '/postosuchus.html': '/dinosaur-3d/postosuchus.html',
   // dinosaur-3d-discovery-loop-runbook fire: kentrosaurus alias.
   '/kentrosaurus.html': '/dinosaur-3d/kentrosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire226 (2026-07-20): flat-slug alias for becklespinax.
+  '/becklespinax.html': '/dinosaur-3d/becklespinax.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -13067,6 +13077,11 @@ export const JSP_BY_ROUTE = {
   // re-verified this fire (Printables seth the yutyrannus, CC-BY-SA 4.0,
   // vendored to ftol-vm-assets commit c3f7362).
   '/dinosaur-3d/kentrosaurus.html': 'dinosaur/kentrosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire226 (2026-07-20): Becklespinax viewer -
+  // theropod archetype, feats.dorsalRidge + tinyArms (shared branch with
+  // Acrocanthosaurus); seth the yutyrannus CC-BY-SA 4.0 via Printables,
+  // vendored to ftol-vm-assets commit 90a2fa7.
+  '/dinosaur-3d/becklespinax.html': 'dinosaur/becklespinax.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -14775,6 +14790,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/torvosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/torvosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/torvosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/torvosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/torvosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/torvosaurus-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire214 (2026-07-20): how-to-view-sarcosuchus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-sarcosuchus-in-3d.html': 'guide/how-to-view-sarcosuchus-in-3d.jsp',
+  '/guides/pt/how-to-view-sarcosuchus-in-3d.html': 'guide/pt/how-to-view-sarcosuchus-in-3d.jsp',
+  '/guides/es/how-to-view-sarcosuchus-in-3d.html': 'guide/es/how-to-view-sarcosuchus-in-3d.jsp',
+  '/guides/vi/how-to-view-sarcosuchus-in-3d.html': 'guide/vi/how-to-view-sarcosuchus-in-3d.jsp',
+  '/guides/id/how-to-view-sarcosuchus-in-3d.html': 'guide/id/how-to-view-sarcosuchus-in-3d.jsp',
+  '/guides/de/how-to-view-sarcosuchus-in-3d.html': 'guide/de/how-to-view-sarcosuchus-in-3d.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
