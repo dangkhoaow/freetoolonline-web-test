@@ -8926,6 +8926,8 @@ export const ALIAS_ROUTES = {
   '/diplodocus.html': '/dinosaur-3d/diplodocus.html',
   // dinosaur-3d-discovery-loop-runbook fire134 (2026-07-20): flat-slug alias for barosaurus.
   '/barosaurus.html': '/dinosaur-3d/barosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire147 (2026-07-20): flat-slug alias for amargasaurus.
+  '/amargasaurus.html': '/dinosaur-3d/amargasaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire53 (2026-07-16): flat-slug alias for apatosaurus.
   '/apatosaurus.html': '/dinosaur-3d/apatosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire54 (2026-07-16): flat-slug alias for carnotaurus.
@@ -12374,6 +12376,10 @@ export const JSP_BY_ROUTE = {
   // no feature-flag override - a close relative of Diplodocus, differentiated via longer neck /
   // shorter tail figures + the Supersaurus source-conflict caveat + the AMNH rearing-pose caveat).
   '/dinosaur-3d/barosaurus.html': 'dinosaur/barosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire147 (2026-07-20): amargasaurus (sauropod archetype,
+  // additive feats.neckSpines branch for twin parallel neural-spine rows along the neck;
+  // dicraeosaurid, Early Cretaceous Argentina, shorter neck than classic diplodocids).
+  '/dinosaur-3d/amargasaurus.html': 'dinosaur/amargasaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire53 (2026-07-16): apatosaurus (sauropod archetype,
   // no tallForelimbs feat, same body posture as Diplodocus; differentiated via a stockier/
   // heavier published-figure profile + its Brontosaurus naming-history framing).
