@@ -2427,6 +2427,24 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/sagittarius-a-star-vs-alternatives.html',
   '/guides/id/sagittarius-a-star-vs-alternatives.html',
   '/guides/de/sagittarius-a-star-vs-alternatives.html',
+  '/guides/andromeda-collision-step-by-step.html',
+  '/guides/pt/andromeda-collision-step-by-step.html',
+  '/guides/es/andromeda-collision-step-by-step.html',
+  '/guides/vi/andromeda-collision-step-by-step.html',
+  '/guides/id/andromeda-collision-step-by-step.html',
+  '/guides/de/andromeda-collision-step-by-step.html',
+  '/guides/andromeda-collision-when.html',
+  '/guides/pt/andromeda-collision-when.html',
+  '/guides/es/andromeda-collision-when.html',
+  '/guides/vi/andromeda-collision-when.html',
+  '/guides/id/andromeda-collision-when.html',
+  '/guides/de/andromeda-collision-when.html',
+  '/guides/andromeda-collision-vs-alternatives.html',
+  '/guides/pt/andromeda-collision-vs-alternatives.html',
+  '/guides/es/andromeda-collision-vs-alternatives.html',
+  '/guides/vi/andromeda-collision-vs-alternatives.html',
+  '/guides/id/andromeda-collision-vs-alternatives.html',
+  '/guides/de/andromeda-collision-vs-alternatives.html',
   '/guides/impact-crater-formation-step-by-step.html',
   '/guides/pt/impact-crater-formation-step-by-step.html',
   '/guides/es/impact-crater-formation-step-by-step.html',
@@ -5788,6 +5806,54 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/mamenchisaurus-3d-viewer-vs-ar-apps.html',
   '/guides/id/mamenchisaurus-3d-viewer-vs-ar-apps.html',
   '/guides/de/mamenchisaurus-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire193 (2026-07-20): how-to-view-compsognathus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-compsognathus-in-3d.html',
+  '/guides/pt/how-to-view-compsognathus-in-3d.html',
+  '/guides/es/how-to-view-compsognathus-in-3d.html',
+  '/guides/vi/how-to-view-compsognathus-in-3d.html',
+  '/guides/id/how-to-view-compsognathus-in-3d.html',
+  '/guides/de/how-to-view-compsognathus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire194 (2026-07-20): compsognathus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/compsognathus-size-comparison.html',
+  '/guides/pt/compsognathus-size-comparison.html',
+  '/guides/es/compsognathus-size-comparison.html',
+  '/guides/vi/compsognathus-size-comparison.html',
+  '/guides/id/compsognathus-size-comparison.html',
+  '/guides/de/compsognathus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire195 (2026-07-20): compsognathus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/compsognathus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/compsognathus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/compsognathus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/compsognathus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/compsognathus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/compsognathus-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire196 (2026-07-20): how-to-view-troodon-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-troodon-in-3d.html',
+  '/guides/pt/how-to-view-troodon-in-3d.html',
+  '/guides/es/how-to-view-troodon-in-3d.html',
+  '/guides/vi/how-to-view-troodon-in-3d.html',
+  '/guides/id/how-to-view-troodon-in-3d.html',
+  '/guides/de/how-to-view-troodon-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire197 (2026-07-20): troodon-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/troodon-size-comparison.html',
+  '/guides/pt/troodon-size-comparison.html',
+  '/guides/es/troodon-size-comparison.html',
+  '/guides/vi/troodon-size-comparison.html',
+  '/guides/id/troodon-size-comparison.html',
+  '/guides/de/troodon-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire198 (2026-07-20): troodon-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/troodon-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/troodon-3d-viewer-vs-ar-apps.html',
+  '/guides/es/troodon-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/troodon-3d-viewer-vs-ar-apps.html',
+  '/guides/id/troodon-3d-viewer-vs-ar-apps.html',
+  '/guides/de/troodon-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -9209,6 +9275,9 @@ export const ALIAS_ROUTES = {
   '/acrocanthosaurus.html': '/dinosaur-3d/acrocanthosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire149 (2026-07-20): flat-slug alias for chasmosaurus.
   '/chasmosaurus.html': '/dinosaur-3d/chasmosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire150 (2026-07-20): flat-slug alias for abelisaurus.
+  '/abelisaurus.html': '/dinosaur-3d/abelisaurus.html',
+
   // dinosaur-3d-discovery-loop-runbook fire123: albertosaurus alias.
   '/albertosaurus.html': '/dinosaur-3d/albertosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire145: sarcosuchus alias.
@@ -9445,6 +9514,7 @@ export const ALIAS_ROUTES = {
   '/wormhole.html': '/space-3d/wormhole.html',
   '/satellite-orbit-classes.html': '/space-3d/satellite-orbit-classes.html',
   '/sagittarius-a-star.html': '/space-3d/sagittarius-a-star.html',
+  '/andromeda-collision.html': '/space-3d/andromeda-collision.html',
   '/dwarf-planet-comparison.html': '/space-3d/dwarf-planet-comparison.html',
   '/impact-crater-formation.html': '/space-3d/impact-crater-formation.html',
   '/moon-formation-giant-impact.html': '/space-3d/moon-formation-giant-impact.html',
@@ -9940,6 +10010,7 @@ export const JSP_BY_ROUTE = {
   '/news/fat32-four-gib-file-limit.html': 'news/fat32-four-gib-file-limit.jsp',
   '/news/windows-11-fat32-format-2tb.html': 'news/windows-11-fat32-format-2tb.jsp',
   '/news/mp3-patents-expired-2017.html': 'news/mp3-patents-expired-2017.jsp',
+  '/news/pt/mp3-patents-expired-2017.html': 'news/pt/mp3-patents-expired-2017.jsp',
   '/news/7-zip-rar5-motw-bypass.html': 'news/7-zip-rar5-motw-bypass.jsp',
   '/news/pt/7-zip-rar5-motw-bypass.html': 'news/pt/7-zip-rar5-motw-bypass.jsp',
   '/news/es/7-zip-rar5-motw-bypass.html': 'news/es/7-zip-rar5-motw-bypass.jsp',
@@ -12735,6 +12806,10 @@ export const JSP_BY_ROUTE = {
   // dinosaur-3d-discovery-loop-runbook fire149 (2026-07-20): chasmosaurus (ceratopsian archetype,
   // feats.frill + horns; Model Magic CC0 Printables 1766773, vendored ftol-vm-assets 3a474c8).
   '/dinosaur-3d/chasmosaurus.html': 'dinosaur/chasmosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire150 (2026-07-20): abelisaurus (theropod archetype,
+  // feats.tinyArms; skull-only honesty; Model Magic CC0 Printables 1767713, vendored ftol-vm-assets 07ed1d2).
+  '/dinosaur-3d/abelisaurus.html': 'dinosaur/abelisaurus.jsp',
+
   '/dinosaur-3d/albertosaurus.html': 'dinosaur/albertosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire145 (2026-07-20): Sarcosuchus viewer -
   // new 'crocodilian' sprawled-gait archetype (Printables seth the yutyrannus,
@@ -14289,6 +14364,54 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/mamenchisaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/mamenchisaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/mamenchisaurus-3d-viewer-vs-ar-apps.html': 'guide/id/mamenchisaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/mamenchisaurus-3d-viewer-vs-ar-apps.html': 'guide/de/mamenchisaurus-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire193 (2026-07-20): how-to-view-compsognathus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-compsognathus-in-3d.html': 'guide/how-to-view-compsognathus-in-3d.jsp',
+  '/guides/pt/how-to-view-compsognathus-in-3d.html': 'guide/pt/how-to-view-compsognathus-in-3d.jsp',
+  '/guides/es/how-to-view-compsognathus-in-3d.html': 'guide/es/how-to-view-compsognathus-in-3d.jsp',
+  '/guides/vi/how-to-view-compsognathus-in-3d.html': 'guide/vi/how-to-view-compsognathus-in-3d.jsp',
+  '/guides/id/how-to-view-compsognathus-in-3d.html': 'guide/id/how-to-view-compsognathus-in-3d.jsp',
+  '/guides/de/how-to-view-compsognathus-in-3d.html': 'guide/de/how-to-view-compsognathus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire194 (2026-07-20): compsognathus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/compsognathus-size-comparison.html': 'guide/compsognathus-size-comparison.jsp',
+  '/guides/pt/compsognathus-size-comparison.html': 'guide/pt/compsognathus-size-comparison.jsp',
+  '/guides/es/compsognathus-size-comparison.html': 'guide/es/compsognathus-size-comparison.jsp',
+  '/guides/vi/compsognathus-size-comparison.html': 'guide/vi/compsognathus-size-comparison.jsp',
+  '/guides/id/compsognathus-size-comparison.html': 'guide/id/compsognathus-size-comparison.jsp',
+  '/guides/de/compsognathus-size-comparison.html': 'guide/de/compsognathus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire195 (2026-07-20): compsognathus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/compsognathus-3d-viewer-vs-ar-apps.html': 'guide/compsognathus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/compsognathus-3d-viewer-vs-ar-apps.html': 'guide/pt/compsognathus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/compsognathus-3d-viewer-vs-ar-apps.html': 'guide/es/compsognathus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/compsognathus-3d-viewer-vs-ar-apps.html': 'guide/vi/compsognathus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/compsognathus-3d-viewer-vs-ar-apps.html': 'guide/id/compsognathus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/compsognathus-3d-viewer-vs-ar-apps.html': 'guide/de/compsognathus-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire196 (2026-07-20): how-to-view-troodon-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-troodon-in-3d.html': 'guide/how-to-view-troodon-in-3d.jsp',
+  '/guides/pt/how-to-view-troodon-in-3d.html': 'guide/pt/how-to-view-troodon-in-3d.jsp',
+  '/guides/es/how-to-view-troodon-in-3d.html': 'guide/es/how-to-view-troodon-in-3d.jsp',
+  '/guides/vi/how-to-view-troodon-in-3d.html': 'guide/vi/how-to-view-troodon-in-3d.jsp',
+  '/guides/id/how-to-view-troodon-in-3d.html': 'guide/id/how-to-view-troodon-in-3d.jsp',
+  '/guides/de/how-to-view-troodon-in-3d.html': 'guide/de/how-to-view-troodon-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire197 (2026-07-20): troodon-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/troodon-size-comparison.html': 'guide/troodon-size-comparison.jsp',
+  '/guides/pt/troodon-size-comparison.html': 'guide/pt/troodon-size-comparison.jsp',
+  '/guides/es/troodon-size-comparison.html': 'guide/es/troodon-size-comparison.jsp',
+  '/guides/vi/troodon-size-comparison.html': 'guide/vi/troodon-size-comparison.jsp',
+  '/guides/id/troodon-size-comparison.html': 'guide/id/troodon-size-comparison.jsp',
+  '/guides/de/troodon-size-comparison.html': 'guide/de/troodon-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire198 (2026-07-20): troodon-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/troodon-3d-viewer-vs-ar-apps.html': 'guide/troodon-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/troodon-3d-viewer-vs-ar-apps.html': 'guide/pt/troodon-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/troodon-3d-viewer-vs-ar-apps.html': 'guide/es/troodon-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/troodon-3d-viewer-vs-ar-apps.html': 'guide/vi/troodon-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/troodon-3d-viewer-vs-ar-apps.html': 'guide/id/troodon-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/troodon-3d-viewer-vs-ar-apps.html': 'guide/de/troodon-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
@@ -14797,6 +14920,7 @@ export const JSP_BY_ROUTE = {
   '/space-3d/wormhole.html': 'space/wormhole.jsp',
   '/space-3d/satellite-orbit-classes.html': 'space/satellite-orbit-classes.jsp',
   '/space-3d/sagittarius-a-star.html': 'space/sagittarius-a-star.jsp',
+  '/space-3d/andromeda-collision.html': 'space/andromeda-collision.jsp',
   '/space-3d/dwarf-planet-comparison.html': 'space/dwarf-planet-comparison.jsp',
   '/space-3d/impact-crater-formation.html': 'space/impact-crater-formation.jsp',
   '/space-3d/moon-formation-giant-impact.html': 'space/moon-formation-giant-impact.jsp',
@@ -16957,6 +17081,24 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/sagittarius-a-star-vs-alternatives.html': 'guide/vi/sagittarius-a-star-vs-alternatives.jsp',
   '/guides/id/sagittarius-a-star-vs-alternatives.html': 'guide/id/sagittarius-a-star-vs-alternatives.jsp',
   '/guides/de/sagittarius-a-star-vs-alternatives.html': 'guide/de/sagittarius-a-star-vs-alternatives.jsp',
+  '/guides/andromeda-collision-step-by-step.html': 'guide/andromeda-collision-step-by-step.jsp',
+  '/guides/pt/andromeda-collision-step-by-step.html': 'guide/pt/andromeda-collision-step-by-step.jsp',
+  '/guides/es/andromeda-collision-step-by-step.html': 'guide/es/andromeda-collision-step-by-step.jsp',
+  '/guides/vi/andromeda-collision-step-by-step.html': 'guide/vi/andromeda-collision-step-by-step.jsp',
+  '/guides/id/andromeda-collision-step-by-step.html': 'guide/id/andromeda-collision-step-by-step.jsp',
+  '/guides/de/andromeda-collision-step-by-step.html': 'guide/de/andromeda-collision-step-by-step.jsp',
+  '/guides/andromeda-collision-when.html': 'guide/andromeda-collision-when.jsp',
+  '/guides/pt/andromeda-collision-when.html': 'guide/pt/andromeda-collision-when.jsp',
+  '/guides/es/andromeda-collision-when.html': 'guide/es/andromeda-collision-when.jsp',
+  '/guides/vi/andromeda-collision-when.html': 'guide/vi/andromeda-collision-when.jsp',
+  '/guides/id/andromeda-collision-when.html': 'guide/id/andromeda-collision-when.jsp',
+  '/guides/de/andromeda-collision-when.html': 'guide/de/andromeda-collision-when.jsp',
+  '/guides/andromeda-collision-vs-alternatives.html': 'guide/andromeda-collision-vs-alternatives.jsp',
+  '/guides/pt/andromeda-collision-vs-alternatives.html': 'guide/pt/andromeda-collision-vs-alternatives.jsp',
+  '/guides/es/andromeda-collision-vs-alternatives.html': 'guide/es/andromeda-collision-vs-alternatives.jsp',
+  '/guides/vi/andromeda-collision-vs-alternatives.html': 'guide/vi/andromeda-collision-vs-alternatives.jsp',
+  '/guides/id/andromeda-collision-vs-alternatives.html': 'guide/id/andromeda-collision-vs-alternatives.jsp',
+  '/guides/de/andromeda-collision-vs-alternatives.html': 'guide/de/andromeda-collision-vs-alternatives.jsp',
   '/guides/pt/dwarf-planet-comparison-vs-alternatives.html': 'guide/pt/dwarf-planet-comparison-vs-alternatives.jsp',
   '/guides/es/dwarf-planet-comparison-vs-alternatives.html': 'guide/es/dwarf-planet-comparison-vs-alternatives.jsp',
   '/guides/vi/dwarf-planet-comparison-vs-alternatives.html': 'guide/vi/dwarf-planet-comparison-vs-alternatives.jsp',
