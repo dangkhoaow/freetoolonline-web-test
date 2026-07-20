@@ -5978,6 +5978,46 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/barosaurus-size-comparison.html',
   '/guides/id/barosaurus-size-comparison.html',
   '/guides/de/barosaurus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire210 (2026-07-20): barosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/barosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/barosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/barosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/barosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/barosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/barosaurus-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire211 (2026-07-20): how-to-view-torvosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-torvosaurus-in-3d.html',
+  '/guides/pt/how-to-view-torvosaurus-in-3d.html',
+  '/guides/es/how-to-view-torvosaurus-in-3d.html',
+  '/guides/vi/how-to-view-torvosaurus-in-3d.html',
+  '/guides/id/how-to-view-torvosaurus-in-3d.html',
+  '/guides/de/how-to-view-torvosaurus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire212 (2026-07-20): torvosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/torvosaurus-size-comparison.html',
+  '/guides/pt/torvosaurus-size-comparison.html',
+  '/guides/es/torvosaurus-size-comparison.html',
+  '/guides/vi/torvosaurus-size-comparison.html',
+  '/guides/id/torvosaurus-size-comparison.html',
+  '/guides/de/torvosaurus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire213 (2026-07-20): torvosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/torvosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/torvosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/torvosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/torvosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/torvosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/torvosaurus-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire214 (2026-07-20): how-to-view-sarcosuchus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-sarcosuchus-in-3d.html',
+  '/guides/pt/how-to-view-sarcosuchus-in-3d.html',
+  '/guides/es/how-to-view-sarcosuchus-in-3d.html',
+  '/guides/vi/how-to-view-sarcosuchus-in-3d.html',
+  '/guides/id/how-to-view-sarcosuchus-in-3d.html',
+  '/guides/de/how-to-view-sarcosuchus-in-3d.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -7766,6 +7806,44 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/how-to-play-rock-paper-neural.html',
   '/guides/de/rock-paper-neural-when.html',
   '/guides/de/rock-paper-neural-vs-alternatives.html',
+  // game-discovery-loop-runbook fire161 (2026-07-20): eggtimerewind companion guides
+  '/guides/how-to-play-egg-time-rewind.html',
+  '/guides/egg-time-rewind-when.html',
+  '/guides/egg-time-rewind-vs-alternatives.html',
+  '/guides/pt/how-to-play-egg-time-rewind.html',
+  '/guides/pt/egg-time-rewind-when.html',
+  '/guides/pt/egg-time-rewind-vs-alternatives.html',
+  '/guides/es/how-to-play-egg-time-rewind.html',
+  '/guides/es/egg-time-rewind-when.html',
+  '/guides/es/egg-time-rewind-vs-alternatives.html',
+  '/guides/vi/how-to-play-egg-time-rewind.html',
+  '/guides/vi/egg-time-rewind-when.html',
+  '/guides/vi/egg-time-rewind-vs-alternatives.html',
+  '/guides/id/how-to-play-egg-time-rewind.html',
+  '/guides/id/egg-time-rewind-when.html',
+  '/guides/id/egg-time-rewind-vs-alternatives.html',
+  '/guides/de/how-to-play-egg-time-rewind.html',
+  '/guides/de/egg-time-rewind-when.html',
+  '/guides/de/egg-time-rewind-vs-alternatives.html',
+  // game-discovery-loop-runbook fire161 (2026-07-20): isocitysandbox companion guides
+  '/guides/how-to-play-iso-city-sandbox.html',
+  '/guides/pt/how-to-play-iso-city-sandbox.html',
+  '/guides/es/how-to-play-iso-city-sandbox.html',
+  '/guides/vi/how-to-play-iso-city-sandbox.html',
+  '/guides/id/how-to-play-iso-city-sandbox.html',
+  '/guides/de/how-to-play-iso-city-sandbox.html',
+  '/guides/iso-city-sandbox-when.html',
+  '/guides/pt/iso-city-sandbox-when.html',
+  '/guides/es/iso-city-sandbox-when.html',
+  '/guides/vi/iso-city-sandbox-when.html',
+  '/guides/id/iso-city-sandbox-when.html',
+  '/guides/de/iso-city-sandbox-when.html',
+  '/guides/iso-city-sandbox-vs-alternatives.html',
+  '/guides/pt/iso-city-sandbox-vs-alternatives.html',
+  '/guides/es/iso-city-sandbox-vs-alternatives.html',
+  '/guides/vi/iso-city-sandbox-vs-alternatives.html',
+  '/guides/id/iso-city-sandbox-vs-alternatives.html',
+  '/guides/de/iso-city-sandbox-vs-alternatives.html',
 
   // game-discovery-loop-runbook fire140 (2026-07-18): seasonal-witchcat companion guides
   '/guides/how-to-play-seasonal-witchcat.html',
@@ -9436,6 +9514,8 @@ export const ALIAS_ROUTES = {
   '/acrocanthosaurus.html': '/dinosaur-3d/acrocanthosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire149 (2026-07-20): flat-slug alias for chasmosaurus.
   '/chasmosaurus.html': '/dinosaur-3d/chasmosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire151 (2026-07-20): flat-slug alias for psittacosaurus (Oviraptor STL REJECT fallback).
+  '/psittacosaurus.html': '/dinosaur-3d/psittacosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire150 (2026-07-20): flat-slug alias for abelisaurus.
   '/abelisaurus.html': '/dinosaur-3d/abelisaurus.html',
 
@@ -9447,6 +9527,8 @@ export const ALIAS_ROUTES = {
   '/postosuchus.html': '/dinosaur-3d/postosuchus.html',
   // dinosaur-3d-discovery-loop-runbook fire: kentrosaurus alias.
   '/kentrosaurus.html': '/dinosaur-3d/kentrosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire226 (2026-07-20): flat-slug alias for becklespinax.
+  '/becklespinax.html': '/dinosaur-3d/becklespinax.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -9535,6 +9617,8 @@ export const ALIAS_ROUTES = {
   '/googol-stopping-game.html': '/games/googol-stopping-game.html',
   '/bangbang-artillery.html': '/games/bangbang-artillery.html',
   '/rock-paper-neural.html': '/games/rock-paper-neural.html',
+  '/egg-time-rewind.html': '/games/egg-time-rewind.html',
+  '/iso-city-sandbox.html': '/games/iso-city-sandbox.html',
   '/seasonal-witchcat.html': '/games/seasonal-witchcat.html',
   '/desk-cat-coder.html': '/games/desk-cat-coder.html',
   '/boing-cat-platformer.html': '/games/boing-cat-platformer.html',
@@ -10175,6 +10259,8 @@ export const JSP_BY_ROUTE = {
   '/news/mp3-patents-expired-2017.html': 'news/mp3-patents-expired-2017.jsp',
   '/news/pt/mp3-patents-expired-2017.html': 'news/pt/mp3-patents-expired-2017.jsp',
   '/news/es/mp3-patents-expired-2017.html': 'news/es/mp3-patents-expired-2017.jsp',
+  '/news/vi/mp3-patents-expired-2017.html': 'news/vi/mp3-patents-expired-2017.jsp',
+  '/news/id/mp3-patents-expired-2017.html': 'news/id/mp3-patents-expired-2017.jsp',
   '/news/7-zip-rar5-motw-bypass.html': 'news/7-zip-rar5-motw-bypass.jsp',
   '/news/pt/7-zip-rar5-motw-bypass.html': 'news/pt/7-zip-rar5-motw-bypass.jsp',
   '/news/es/7-zip-rar5-motw-bypass.html': 'news/es/7-zip-rar5-motw-bypass.jsp',
@@ -11869,6 +11955,44 @@ export const JSP_BY_ROUTE = {
   '/guides/de/how-to-play-rock-paper-neural.html': 'guide/de/how-to-play-rock-paper-neural.jsp',
   '/guides/de/rock-paper-neural-when.html': 'guide/de/rock-paper-neural-when.jsp',
   '/guides/de/rock-paper-neural-vs-alternatives.html': 'guide/de/rock-paper-neural-vs-alternatives.jsp',
+  // game-discovery-loop-runbook fire161 (2026-07-20): eggtimerewind companion guides
+  '/guides/how-to-play-egg-time-rewind.html': 'guide/how-to-play-egg-time-rewind.jsp',
+  '/guides/egg-time-rewind-when.html': 'guide/egg-time-rewind-when.jsp',
+  '/guides/egg-time-rewind-vs-alternatives.html': 'guide/egg-time-rewind-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-egg-time-rewind.html': 'guide/pt/how-to-play-egg-time-rewind.jsp',
+  '/guides/pt/egg-time-rewind-when.html': 'guide/pt/egg-time-rewind-when.jsp',
+  '/guides/pt/egg-time-rewind-vs-alternatives.html': 'guide/pt/egg-time-rewind-vs-alternatives.jsp',
+  '/guides/es/how-to-play-egg-time-rewind.html': 'guide/es/how-to-play-egg-time-rewind.jsp',
+  '/guides/es/egg-time-rewind-when.html': 'guide/es/egg-time-rewind-when.jsp',
+  '/guides/es/egg-time-rewind-vs-alternatives.html': 'guide/es/egg-time-rewind-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-egg-time-rewind.html': 'guide/vi/how-to-play-egg-time-rewind.jsp',
+  '/guides/vi/egg-time-rewind-when.html': 'guide/vi/egg-time-rewind-when.jsp',
+  '/guides/vi/egg-time-rewind-vs-alternatives.html': 'guide/vi/egg-time-rewind-vs-alternatives.jsp',
+  '/guides/id/how-to-play-egg-time-rewind.html': 'guide/id/how-to-play-egg-time-rewind.jsp',
+  '/guides/id/egg-time-rewind-when.html': 'guide/id/egg-time-rewind-when.jsp',
+  '/guides/id/egg-time-rewind-vs-alternatives.html': 'guide/id/egg-time-rewind-vs-alternatives.jsp',
+  '/guides/de/how-to-play-egg-time-rewind.html': 'guide/de/how-to-play-egg-time-rewind.jsp',
+  '/guides/de/egg-time-rewind-when.html': 'guide/de/egg-time-rewind-when.jsp',
+  '/guides/de/egg-time-rewind-vs-alternatives.html': 'guide/de/egg-time-rewind-vs-alternatives.jsp',
+  // game-discovery-loop-runbook fire161 (2026-07-20): isocitysandbox companion guides
+  '/guides/how-to-play-iso-city-sandbox.html': 'guide/how-to-play-iso-city-sandbox.jsp',
+  '/guides/pt/how-to-play-iso-city-sandbox.html': 'guide/pt/how-to-play-iso-city-sandbox.jsp',
+  '/guides/es/how-to-play-iso-city-sandbox.html': 'guide/es/how-to-play-iso-city-sandbox.jsp',
+  '/guides/vi/how-to-play-iso-city-sandbox.html': 'guide/vi/how-to-play-iso-city-sandbox.jsp',
+  '/guides/id/how-to-play-iso-city-sandbox.html': 'guide/id/how-to-play-iso-city-sandbox.jsp',
+  '/guides/de/how-to-play-iso-city-sandbox.html': 'guide/de/how-to-play-iso-city-sandbox.jsp',
+  '/guides/iso-city-sandbox-when.html': 'guide/iso-city-sandbox-when.jsp',
+  '/guides/pt/iso-city-sandbox-when.html': 'guide/pt/iso-city-sandbox-when.jsp',
+  '/guides/es/iso-city-sandbox-when.html': 'guide/es/iso-city-sandbox-when.jsp',
+  '/guides/vi/iso-city-sandbox-when.html': 'guide/vi/iso-city-sandbox-when.jsp',
+  '/guides/id/iso-city-sandbox-when.html': 'guide/id/iso-city-sandbox-when.jsp',
+  '/guides/de/iso-city-sandbox-when.html': 'guide/de/iso-city-sandbox-when.jsp',
+  '/guides/iso-city-sandbox-vs-alternatives.html': 'guide/iso-city-sandbox-vs-alternatives.jsp',
+  '/guides/pt/iso-city-sandbox-vs-alternatives.html': 'guide/pt/iso-city-sandbox-vs-alternatives.jsp',
+  '/guides/es/iso-city-sandbox-vs-alternatives.html': 'guide/es/iso-city-sandbox-vs-alternatives.jsp',
+  '/guides/vi/iso-city-sandbox-vs-alternatives.html': 'guide/vi/iso-city-sandbox-vs-alternatives.jsp',
+  '/guides/id/iso-city-sandbox-vs-alternatives.html': 'guide/id/iso-city-sandbox-vs-alternatives.jsp',
+  '/guides/de/iso-city-sandbox-vs-alternatives.html': 'guide/de/iso-city-sandbox-vs-alternatives.jsp',
 
   // game-discovery-loop-runbook fire140 (2026-07-18): seasonal-witchcat companion guides
   '/guides/how-to-play-seasonal-witchcat.html': 'guide/how-to-play-seasonal-witchcat.jsp',
@@ -12973,6 +13097,9 @@ export const JSP_BY_ROUTE = {
   // dinosaur-3d-discovery-loop-runbook fire150 (2026-07-20): abelisaurus (theropod archetype,
   // feats.tinyArms; skull-only honesty; Model Magic CC0 Printables 1767713, vendored ftol-vm-assets 07ed1d2).
   '/dinosaur-3d/abelisaurus.html': 'dinosaur/abelisaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire151 (2026-07-20): psittacosaurus (ceratopsian archetype,
+  // Model Magic CC0 Printables 1753562 after Oviraptor 1757494 morphology REJECT; vendored ftol-vm-assets 5ac2905).
+  '/dinosaur-3d/psittacosaurus.html': 'dinosaur/psittacosaurus.jsp',
 
   '/dinosaur-3d/albertosaurus.html': 'dinosaur/albertosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire145 (2026-07-20): Sarcosuchus viewer -
@@ -12988,6 +13115,11 @@ export const JSP_BY_ROUTE = {
   // re-verified this fire (Printables seth the yutyrannus, CC-BY-SA 4.0,
   // vendored to ftol-vm-assets commit c3f7362).
   '/dinosaur-3d/kentrosaurus.html': 'dinosaur/kentrosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire226 (2026-07-20): Becklespinax viewer -
+  // theropod archetype, feats.dorsalRidge + tinyArms (shared branch with
+  // Acrocanthosaurus); seth the yutyrannus CC-BY-SA 4.0 via Printables,
+  // vendored to ftol-vm-assets commit 90a2fa7.
+  '/dinosaur-3d/becklespinax.html': 'dinosaur/becklespinax.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -14664,6 +14796,46 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/barosaurus-size-comparison.html': 'guide/vi/barosaurus-size-comparison.jsp',
   '/guides/id/barosaurus-size-comparison.html': 'guide/id/barosaurus-size-comparison.jsp',
   '/guides/de/barosaurus-size-comparison.html': 'guide/de/barosaurus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire210 (2026-07-20): barosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/barosaurus-3d-viewer-vs-ar-apps.html': 'guide/barosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/barosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/barosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/barosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/barosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/barosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/barosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/barosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/barosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/barosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/barosaurus-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire211 (2026-07-20): how-to-view-torvosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-torvosaurus-in-3d.html': 'guide/how-to-view-torvosaurus-in-3d.jsp',
+  '/guides/pt/how-to-view-torvosaurus-in-3d.html': 'guide/pt/how-to-view-torvosaurus-in-3d.jsp',
+  '/guides/es/how-to-view-torvosaurus-in-3d.html': 'guide/es/how-to-view-torvosaurus-in-3d.jsp',
+  '/guides/vi/how-to-view-torvosaurus-in-3d.html': 'guide/vi/how-to-view-torvosaurus-in-3d.jsp',
+  '/guides/id/how-to-view-torvosaurus-in-3d.html': 'guide/id/how-to-view-torvosaurus-in-3d.jsp',
+  '/guides/de/how-to-view-torvosaurus-in-3d.html': 'guide/de/how-to-view-torvosaurus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire212 (2026-07-20): torvosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/torvosaurus-size-comparison.html': 'guide/torvosaurus-size-comparison.jsp',
+  '/guides/pt/torvosaurus-size-comparison.html': 'guide/pt/torvosaurus-size-comparison.jsp',
+  '/guides/es/torvosaurus-size-comparison.html': 'guide/es/torvosaurus-size-comparison.jsp',
+  '/guides/vi/torvosaurus-size-comparison.html': 'guide/vi/torvosaurus-size-comparison.jsp',
+  '/guides/id/torvosaurus-size-comparison.html': 'guide/id/torvosaurus-size-comparison.jsp',
+  '/guides/de/torvosaurus-size-comparison.html': 'guide/de/torvosaurus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire213 (2026-07-20): torvosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/torvosaurus-3d-viewer-vs-ar-apps.html': 'guide/torvosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/torvosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/torvosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/torvosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/torvosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/torvosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/torvosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/torvosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/torvosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/torvosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/torvosaurus-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire214 (2026-07-20): how-to-view-sarcosuchus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-sarcosuchus-in-3d.html': 'guide/how-to-view-sarcosuchus-in-3d.jsp',
+  '/guides/pt/how-to-view-sarcosuchus-in-3d.html': 'guide/pt/how-to-view-sarcosuchus-in-3d.jsp',
+  '/guides/es/how-to-view-sarcosuchus-in-3d.html': 'guide/es/how-to-view-sarcosuchus-in-3d.jsp',
+  '/guides/vi/how-to-view-sarcosuchus-in-3d.html': 'guide/vi/how-to-view-sarcosuchus-in-3d.jsp',
+  '/guides/id/how-to-view-sarcosuchus-in-3d.html': 'guide/id/how-to-view-sarcosuchus-in-3d.jsp',
+  '/guides/de/how-to-view-sarcosuchus-in-3d.html': 'guide/de/how-to-view-sarcosuchus-in-3d.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
@@ -14963,6 +15135,8 @@ export const JSP_BY_ROUTE = {
   '/games/googol-stopping-game.html': 'games/googol-stopping-game.jsp',
   '/games/bangbang-artillery.html': 'games/bangbang-artillery.jsp',
   '/games/rock-paper-neural.html': 'games/rock-paper-neural.jsp',
+  '/games/egg-time-rewind.html': 'games/egg-time-rewind.jsp',
+  '/games/iso-city-sandbox.html': 'games/iso-city-sandbox.jsp',
   '/games/seasonal-witchcat.html': 'games/seasonal-witchcat.jsp',
   '/games/desk-cat-coder.html': 'games/desk-cat-coder.jsp',
   '/games/boing-cat-platformer.html': 'games/boing-cat-platformer.jsp',
