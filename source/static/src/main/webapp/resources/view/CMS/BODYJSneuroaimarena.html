@@ -1,0 +1,48 @@
+<script>
+    if (typeof web !== "undefined") web.localUpload = false;
+    var NAA_GAME_URL = 'neuro-aim-arena/index.html';
+    function naaStatus(text) {
+        var el = document.getElementById('naaStatus');
+        if (el) el.textContent = text;
+    }
+    function naaInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'naaFrame';
+        frame.src = NAA_GAME_URL;
+        frame.title = 'Neuro Aim Arena game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            naaStatus('Game loaded. Click the canvas to start, then WASD + mouse aim/shoot.');
+            try { frame.contentWindow.focus(); } catch (e) {}
+        });
+        var launch = document.getElementById('naaLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('naaStage');
+        var playBtn = document.getElementById('naaPlayBtn');
+        if (!stage || !playBtn) return;
+        if (playBtn.dataset.bound === '1') return;
+        playBtn.dataset.bound = '1';
+        var fsBtn = document.getElementById('naaFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            naaStatus('Loading the game (about 160 KB, one time - then cached)...');
+            naaInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('naaFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) {} }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', doAfterPageRendered);
+    } else {
+        doAfterPageRendered();
+    }
+</script>
