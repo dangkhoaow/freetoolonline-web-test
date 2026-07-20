@@ -5684,6 +5684,62 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/gryponyx-size-comparison.html',
   '/guides/id/gryponyx-size-comparison.html',
   '/guides/de/gryponyx-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire180 (2026-07-20): gryponyx-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/gryponyx-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/gryponyx-3d-viewer-vs-ar-apps.html',
+  '/guides/es/gryponyx-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/gryponyx-3d-viewer-vs-ar-apps.html',
+  '/guides/id/gryponyx-3d-viewer-vs-ar-apps.html',
+  '/guides/de/gryponyx-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire181 (2026-07-20): how-to-view-hybodus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-hybodus-in-3d.html',
+  '/guides/pt/how-to-view-hybodus-in-3d.html',
+  '/guides/es/how-to-view-hybodus-in-3d.html',
+  '/guides/vi/how-to-view-hybodus-in-3d.html',
+  '/guides/id/how-to-view-hybodus-in-3d.html',
+  '/guides/de/how-to-view-hybodus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire182 (2026-07-20): hybodus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/hybodus-size-comparison.html',
+  '/guides/pt/hybodus-size-comparison.html',
+  '/guides/es/hybodus-size-comparison.html',
+  '/guides/vi/hybodus-size-comparison.html',
+  '/guides/id/hybodus-size-comparison.html',
+  '/guides/de/hybodus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire183 (2026-07-20): hybodus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/hybodus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/hybodus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/hybodus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/hybodus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/hybodus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/hybodus-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire184 (2026-07-20): how-to-view-quetzalcoatlus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-quetzalcoatlus-in-3d.html',
+  '/guides/pt/how-to-view-quetzalcoatlus-in-3d.html',
+  '/guides/es/how-to-view-quetzalcoatlus-in-3d.html',
+  '/guides/vi/how-to-view-quetzalcoatlus-in-3d.html',
+  '/guides/id/how-to-view-quetzalcoatlus-in-3d.html',
+  '/guides/de/how-to-view-quetzalcoatlus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire185 (2026-07-20): quetzalcoatlus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/quetzalcoatlus-size-comparison.html',
+  '/guides/pt/quetzalcoatlus-size-comparison.html',
+  '/guides/es/quetzalcoatlus-size-comparison.html',
+  '/guides/vi/quetzalcoatlus-size-comparison.html',
+  '/guides/id/quetzalcoatlus-size-comparison.html',
+  '/guides/de/quetzalcoatlus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire186 (2026-07-20): quetzalcoatlus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/quetzalcoatlus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/quetzalcoatlus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/quetzalcoatlus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/quetzalcoatlus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/quetzalcoatlus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/quetzalcoatlus-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -7434,6 +7490,25 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/how-to-play-googol-stopping-game.html',
   '/guides/de/googol-stopping-game-when.html',
   '/guides/de/googol-stopping-game-vs-alternatives.html',
+  // game-discovery-loop-runbook fire159 (2026-07-20): bangbangartillery companion guides
+  '/guides/how-to-play-bangbang-artillery.html',
+  '/guides/bangbang-artillery-when.html',
+  '/guides/bangbang-artillery-vs-alternatives.html',
+  '/guides/pt/how-to-play-bangbang-artillery.html',
+  '/guides/pt/bangbang-artillery-when.html',
+  '/guides/pt/bangbang-artillery-vs-alternatives.html',
+  '/guides/es/how-to-play-bangbang-artillery.html',
+  '/guides/es/bangbang-artillery-when.html',
+  '/guides/es/bangbang-artillery-vs-alternatives.html',
+  '/guides/vi/how-to-play-bangbang-artillery.html',
+  '/guides/vi/bangbang-artillery-when.html',
+  '/guides/vi/bangbang-artillery-vs-alternatives.html',
+  '/guides/id/how-to-play-bangbang-artillery.html',
+  '/guides/id/bangbang-artillery-when.html',
+  '/guides/id/bangbang-artillery-vs-alternatives.html',
+  '/guides/de/how-to-play-bangbang-artillery.html',
+  '/guides/de/bangbang-artillery-when.html',
+  '/guides/de/bangbang-artillery-vs-alternatives.html',
 
   // game-discovery-loop-runbook fire140 (2026-07-18): seasonal-witchcat companion guides
   '/guides/how-to-play-seasonal-witchcat.html',
@@ -8946,6 +9021,8 @@ export const ALIAS_ROUTES = {
   '/diplodocus.html': '/dinosaur-3d/diplodocus.html',
   // dinosaur-3d-discovery-loop-runbook fire134 (2026-07-20): flat-slug alias for barosaurus.
   '/barosaurus.html': '/dinosaur-3d/barosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire147 (2026-07-20): flat-slug alias for amargasaurus.
+  '/amargasaurus.html': '/dinosaur-3d/amargasaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire53 (2026-07-16): flat-slug alias for apatosaurus.
   '/apatosaurus.html': '/dinosaur-3d/apatosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire54 (2026-07-16): flat-slug alias for carnotaurus.
@@ -9061,12 +9138,16 @@ export const ALIAS_ROUTES = {
   '/mamenchisaurus.html': '/dinosaur-3d/mamenchisaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire119: troodon alias.
   '/troodon.html': '/dinosaur-3d/troodon.html',
+  // dinosaur-3d-discovery-loop-runbook fire148 (2026-07-20): flat-slug alias for acrocanthosaurus.
+  '/acrocanthosaurus.html': '/dinosaur-3d/acrocanthosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire123: albertosaurus alias.
   '/albertosaurus.html': '/dinosaur-3d/albertosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire145: sarcosuchus alias.
   '/sarcosuchus.html': '/dinosaur-3d/sarcosuchus.html',
   // dinosaur-3d-discovery-loop-runbook fire146: postosuchus alias.
   '/postosuchus.html': '/dinosaur-3d/postosuchus.html',
+  // dinosaur-3d-discovery-loop-runbook fire: kentrosaurus alias.
+  '/kentrosaurus.html': '/dinosaur-3d/kentrosaurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -9153,6 +9234,7 @@ export const ALIAS_ROUTES = {
   '/roller-maze-escape.html': '/games/roller-maze-escape.html',
   '/thirteen-case-files.html': '/games/thirteen-case-files.html',
   '/googol-stopping-game.html': '/games/googol-stopping-game.html',
+  '/bangbang-artillery.html': '/games/bangbang-artillery.html',
   '/seasonal-witchcat.html': '/games/seasonal-witchcat.html',
   '/desk-cat-coder.html': '/games/desk-cat-coder.html',
   '/boing-cat-platformer.html': '/games/boing-cat-platformer.html',
@@ -11444,6 +11526,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/how-to-play-googol-stopping-game.html': 'guide/de/how-to-play-googol-stopping-game.jsp',
   '/guides/de/googol-stopping-game-when.html': 'guide/de/googol-stopping-game-when.jsp',
   '/guides/de/googol-stopping-game-vs-alternatives.html': 'guide/de/googol-stopping-game-vs-alternatives.jsp',
+  // game-discovery-loop-runbook fire159 (2026-07-20): bangbangartillery companion guides
+  '/guides/how-to-play-bangbang-artillery.html': 'guide/how-to-play-bangbang-artillery.jsp',
+  '/guides/bangbang-artillery-when.html': 'guide/bangbang-artillery-when.jsp',
+  '/guides/bangbang-artillery-vs-alternatives.html': 'guide/bangbang-artillery-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-bangbang-artillery.html': 'guide/pt/how-to-play-bangbang-artillery.jsp',
+  '/guides/pt/bangbang-artillery-when.html': 'guide/pt/bangbang-artillery-when.jsp',
+  '/guides/pt/bangbang-artillery-vs-alternatives.html': 'guide/pt/bangbang-artillery-vs-alternatives.jsp',
+  '/guides/es/how-to-play-bangbang-artillery.html': 'guide/es/how-to-play-bangbang-artillery.jsp',
+  '/guides/es/bangbang-artillery-when.html': 'guide/es/bangbang-artillery-when.jsp',
+  '/guides/es/bangbang-artillery-vs-alternatives.html': 'guide/es/bangbang-artillery-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-bangbang-artillery.html': 'guide/vi/how-to-play-bangbang-artillery.jsp',
+  '/guides/vi/bangbang-artillery-when.html': 'guide/vi/bangbang-artillery-when.jsp',
+  '/guides/vi/bangbang-artillery-vs-alternatives.html': 'guide/vi/bangbang-artillery-vs-alternatives.jsp',
+  '/guides/id/how-to-play-bangbang-artillery.html': 'guide/id/how-to-play-bangbang-artillery.jsp',
+  '/guides/id/bangbang-artillery-when.html': 'guide/id/bangbang-artillery-when.jsp',
+  '/guides/id/bangbang-artillery-vs-alternatives.html': 'guide/id/bangbang-artillery-vs-alternatives.jsp',
+  '/guides/de/how-to-play-bangbang-artillery.html': 'guide/de/how-to-play-bangbang-artillery.jsp',
+  '/guides/de/bangbang-artillery-when.html': 'guide/de/bangbang-artillery-when.jsp',
+  '/guides/de/bangbang-artillery-vs-alternatives.html': 'guide/de/bangbang-artillery-vs-alternatives.jsp',
 
   // game-discovery-loop-runbook fire140 (2026-07-18): seasonal-witchcat companion guides
   '/guides/how-to-play-seasonal-witchcat.html': 'guide/how-to-play-seasonal-witchcat.jsp',
@@ -12393,6 +12494,10 @@ export const JSP_BY_ROUTE = {
   // no feature-flag override - a close relative of Diplodocus, differentiated via longer neck /
   // shorter tail figures + the Supersaurus source-conflict caveat + the AMNH rearing-pose caveat).
   '/dinosaur-3d/barosaurus.html': 'dinosaur/barosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire147 (2026-07-20): amargasaurus (sauropod archetype,
+  // additive feats.neckSpines branch for twin parallel neural-spine rows along the neck;
+  // dicraeosaurid, Early Cretaceous Argentina, shorter neck than classic diplodocids).
+  '/dinosaur-3d/amargasaurus.html': 'dinosaur/amargasaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire53 (2026-07-16): apatosaurus (sauropod archetype,
   // no tallForelimbs feat, same body posture as Diplodocus; differentiated via a stockier/
   // heavier published-figure profile + its Brontosaurus naming-history framing).
@@ -12535,6 +12640,9 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/compsognathus.html': 'dinosaur/compsognathus.jsp',
   '/dinosaur-3d/mamenchisaurus.html': 'dinosaur/mamenchisaurus.jsp',
   '/dinosaur-3d/troodon.html': 'dinosaur/troodon.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire148 (2026-07-20): acrocanthosaurus (theropod archetype,
+  // feats.dorsalRidge + tinyArms; Model Magic CC0 Printables 1768652, vendored ftol-vm-assets 3a3f32e).
+  '/dinosaur-3d/acrocanthosaurus.html': 'dinosaur/acrocanthosaurus.jsp',
   '/dinosaur-3d/albertosaurus.html': 'dinosaur/albertosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire145 (2026-07-20): Sarcosuchus viewer -
   // new 'crocodilian' sprawled-gait archetype (Printables seth the yutyrannus,
@@ -12544,6 +12652,11 @@ export const JSP_BY_ROUTE = {
   // new 'rauisuchian' sub-erect quadruped archetype (Printables seth the yutyrannus,
   // CC-BY-SA 4.0, vendored to ftol-vm-assets commit abae90d).
   '/dinosaur-3d/postosuchus.html': 'dinosaur/postosuchus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire (2026-07-20): Kentrosaurus viewer -
+  // stegosaur archetype (shared with the already-shipped Stegosaurus), model
+  // re-verified this fire (Printables seth the yutyrannus, CC-BY-SA 4.0,
+  // vendored to ftol-vm-assets commit c3f7362).
+  '/dinosaur-3d/kentrosaurus.html': 'dinosaur/kentrosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -13980,6 +14093,62 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/gryponyx-size-comparison.html': 'guide/vi/gryponyx-size-comparison.jsp',
   '/guides/id/gryponyx-size-comparison.html': 'guide/id/gryponyx-size-comparison.jsp',
   '/guides/de/gryponyx-size-comparison.html': 'guide/de/gryponyx-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire180 (2026-07-20): gryponyx-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/gryponyx-3d-viewer-vs-ar-apps.html': 'guide/gryponyx-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/gryponyx-3d-viewer-vs-ar-apps.html': 'guide/pt/gryponyx-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/gryponyx-3d-viewer-vs-ar-apps.html': 'guide/es/gryponyx-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/gryponyx-3d-viewer-vs-ar-apps.html': 'guide/vi/gryponyx-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/gryponyx-3d-viewer-vs-ar-apps.html': 'guide/id/gryponyx-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/gryponyx-3d-viewer-vs-ar-apps.html': 'guide/de/gryponyx-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire181 (2026-07-20): how-to-view-hybodus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-hybodus-in-3d.html': 'guide/how-to-view-hybodus-in-3d.jsp',
+  '/guides/pt/how-to-view-hybodus-in-3d.html': 'guide/pt/how-to-view-hybodus-in-3d.jsp',
+  '/guides/es/how-to-view-hybodus-in-3d.html': 'guide/es/how-to-view-hybodus-in-3d.jsp',
+  '/guides/vi/how-to-view-hybodus-in-3d.html': 'guide/vi/how-to-view-hybodus-in-3d.jsp',
+  '/guides/id/how-to-view-hybodus-in-3d.html': 'guide/id/how-to-view-hybodus-in-3d.jsp',
+  '/guides/de/how-to-view-hybodus-in-3d.html': 'guide/de/how-to-view-hybodus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire182 (2026-07-20): hybodus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/hybodus-size-comparison.html': 'guide/hybodus-size-comparison.jsp',
+  '/guides/pt/hybodus-size-comparison.html': 'guide/pt/hybodus-size-comparison.jsp',
+  '/guides/es/hybodus-size-comparison.html': 'guide/es/hybodus-size-comparison.jsp',
+  '/guides/vi/hybodus-size-comparison.html': 'guide/vi/hybodus-size-comparison.jsp',
+  '/guides/id/hybodus-size-comparison.html': 'guide/id/hybodus-size-comparison.jsp',
+  '/guides/de/hybodus-size-comparison.html': 'guide/de/hybodus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire183 (2026-07-20): hybodus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/hybodus-3d-viewer-vs-ar-apps.html': 'guide/hybodus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/hybodus-3d-viewer-vs-ar-apps.html': 'guide/pt/hybodus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/hybodus-3d-viewer-vs-ar-apps.html': 'guide/es/hybodus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/hybodus-3d-viewer-vs-ar-apps.html': 'guide/vi/hybodus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/hybodus-3d-viewer-vs-ar-apps.html': 'guide/id/hybodus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/hybodus-3d-viewer-vs-ar-apps.html': 'guide/de/hybodus-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire184 (2026-07-20): how-to-view-quetzalcoatlus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-quetzalcoatlus-in-3d.html': 'guide/how-to-view-quetzalcoatlus-in-3d.jsp',
+  '/guides/pt/how-to-view-quetzalcoatlus-in-3d.html': 'guide/pt/how-to-view-quetzalcoatlus-in-3d.jsp',
+  '/guides/es/how-to-view-quetzalcoatlus-in-3d.html': 'guide/es/how-to-view-quetzalcoatlus-in-3d.jsp',
+  '/guides/vi/how-to-view-quetzalcoatlus-in-3d.html': 'guide/vi/how-to-view-quetzalcoatlus-in-3d.jsp',
+  '/guides/id/how-to-view-quetzalcoatlus-in-3d.html': 'guide/id/how-to-view-quetzalcoatlus-in-3d.jsp',
+  '/guides/de/how-to-view-quetzalcoatlus-in-3d.html': 'guide/de/how-to-view-quetzalcoatlus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire185 (2026-07-20): quetzalcoatlus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/quetzalcoatlus-size-comparison.html': 'guide/quetzalcoatlus-size-comparison.jsp',
+  '/guides/pt/quetzalcoatlus-size-comparison.html': 'guide/pt/quetzalcoatlus-size-comparison.jsp',
+  '/guides/es/quetzalcoatlus-size-comparison.html': 'guide/es/quetzalcoatlus-size-comparison.jsp',
+  '/guides/vi/quetzalcoatlus-size-comparison.html': 'guide/vi/quetzalcoatlus-size-comparison.jsp',
+  '/guides/id/quetzalcoatlus-size-comparison.html': 'guide/id/quetzalcoatlus-size-comparison.jsp',
+  '/guides/de/quetzalcoatlus-size-comparison.html': 'guide/de/quetzalcoatlus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire186 (2026-07-20): quetzalcoatlus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/quetzalcoatlus-3d-viewer-vs-ar-apps.html': 'guide/quetzalcoatlus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/quetzalcoatlus-3d-viewer-vs-ar-apps.html': 'guide/pt/quetzalcoatlus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/quetzalcoatlus-3d-viewer-vs-ar-apps.html': 'guide/es/quetzalcoatlus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/quetzalcoatlus-3d-viewer-vs-ar-apps.html': 'guide/vi/quetzalcoatlus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/quetzalcoatlus-3d-viewer-vs-ar-apps.html': 'guide/id/quetzalcoatlus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/quetzalcoatlus-3d-viewer-vs-ar-apps.html': 'guide/de/quetzalcoatlus-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
@@ -14277,6 +14446,7 @@ export const JSP_BY_ROUTE = {
   '/games/roller-maze-escape.html': 'games/roller-maze-escape.jsp',
   '/games/thirteen-case-files.html': 'games/thirteen-case-files.jsp',
   '/games/googol-stopping-game.html': 'games/googol-stopping-game.jsp',
+  '/games/bangbang-artillery.html': 'games/bangbang-artillery.jsp',
   '/games/seasonal-witchcat.html': 'games/seasonal-witchcat.jsp',
   '/games/desk-cat-coder.html': 'games/desk-cat-coder.jsp',
   '/games/boing-cat-platformer.html': 'games/boing-cat-platformer.jsp',
