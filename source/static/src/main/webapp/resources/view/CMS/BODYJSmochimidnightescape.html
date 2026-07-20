@@ -1,0 +1,48 @@
+<script>
+    if (typeof web !== "undefined") web.localUpload = false;
+    var MME_GAME_URL = 'mochi-midnight-escape/index.html';
+    function mmeStatus(text) {
+        var el = document.getElementById('mmeStatus');
+        if (el) el.textContent = text;
+    }
+    function mmeInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'mmeFrame';
+        frame.src = MME_GAME_URL;
+        frame.title = 'Mochi and the Midnight Escape game';
+        frame.setAttribute('allow', 'fullscreen; gamepad');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            mmeStatus('Game loaded. Use WASD or arrows to move, Up/W to jump, Enter/Space to confirm.');
+            try { frame.contentWindow.focus(); } catch (e) {}
+        });
+        var launch = document.getElementById('mmeLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('mmeStage');
+        var playBtn = document.getElementById('mmePlayBtn');
+        if (!stage || !playBtn) return;
+        if (playBtn.dataset.bound === '1') return;
+        playBtn.dataset.bound = '1';
+        var fsBtn = document.getElementById('mmeFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            mmeStatus('Loading the game (about 52 KB, one time - then cached)...');
+            mmeInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('mmeFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) {} }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', doAfterPageRendered);
+    } else {
+        doAfterPageRendered();
+    }
+</script>
