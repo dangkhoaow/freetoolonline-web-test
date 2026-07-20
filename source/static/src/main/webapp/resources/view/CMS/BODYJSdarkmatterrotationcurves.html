@@ -1,0 +1,335 @@
+<script>
+    // 3D scene archetype skeleton (dark-matter-rotation-curves) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Registry Gate-H entry: three_3d_scene_vendored. Built LEAN
+    // from the shared t3d* skeleton (see BODYJSsolarsystem.html) - this file
+    // implements ONE scene only (rotationcurve), not the full accumulated
+    // scene set. All geometry is procedural - no model files, no textures
+    // fetched. This is an EDUCATIONAL APPROXIMATION of the galaxy
+    // rotation-curve / dark-matter-evidence story, NOT a gravitational
+    // simulation; the "predicted" curve is an illustrative Keplerian-decline
+    // shape (not a per-galaxy measured figure), while the "observed" curve
+    // uses the cited Milky Way figures - the info panel discloses this split.
+    //
+    // A visible wrapper + "Loading 3D engine..." placeholder renders
+    // synchronously (G16 render-only pass); the ~0.7 MB engine lazy-loads
+    // post-paint via requestIdleCallback and is cached by the browser.
+    // Fullscreen targets the WRAPPER div (controls stay visible).
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'dark-matter-rotation-curves';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) {
+        return 'rotationcurve';
+    }
+
+    // ---- vendored ESM loader (ftoLoadPdfLib shape, but a cached import()) ----
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - building still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- shared scene shell: renderer + camera + custom pointer-orbit --------
+    // OrbitControls is NOT vendored (jsm addons import the bare 'three'
+    // specifier); this ~40-line orbit covers drag-rotate + wheel/pinch zoom
+    // with damping and a clamped pitch.
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        function size() {
+            var w = Math.max(260, host.clientWidth);
+            var h = Math.round(w * 0.62);
+            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fsEl && fsEl.contains(host)) { h = Math.max(240, (window.innerHeight || h) - 150); }
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        host.appendChild(renderer.domElement);
+        renderer.domElement.style.touchAction = 'none';
+        renderer.domElement.style.borderRadius = '6px';
+        var drag = null, pinch = null, moved = 0;
+        host.addEventListener('pointerdown', function (e) {
+            drag = { x: e.clientX, y: e.clientY }; moved = 0;
+            host.setPointerCapture && host.setPointerCapture(e.pointerId);
+        });
+        host.addEventListener('pointermove', function (e) {
+            if (!drag) return;
+            var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+            moved += Math.abs(dx) + Math.abs(dy);
+            drag = { x: e.clientX, y: e.clientY };
+            orbit.goalTheta -= dx * 0.006;
+            orbit.goalPhi = Math.min(Math.max(orbit.goalPhi - dy * 0.005, 0.15), Math.PI - 0.2);
+        });
+        host.addEventListener('pointerup', function (e) {
+            var wasClick = moved < 8;
+            drag = null;
+            if (wasClick && shell.onClick) { shell.onClick(e); }
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR);
+        }, { passive: false });
+        host.addEventListener('touchstart', function (e) {
+            if (e.touches.length === 2) {
+                pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            }
+        }, { passive: true });
+        host.addEventListener('touchmove', function (e) {
+            if (e.touches.length === 2 && pinch) {
+                var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                pinch = d;
+            }
+        }, { passive: true });
+        window.addEventListener('resize', size);
+        document.addEventListener('fullscreenchange', size);
+        document.addEventListener('webkitfullscreenchange', size);
+        size();
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, size: size, onClick: null,
+            ndc: function (e) {
+                var r = renderer.domElement.getBoundingClientRect();
+                return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            },
+        };
+        return shell;
+    }
+
+    // ================= DARK MATTER ROTATION CURVES ============================
+    // A flat disk of stars (visible/baryonic matter) plus a toggleable, faint,
+    // much larger particle halo standing in for the hypothesized dark-matter
+    // halo. A radius slider drags a highlighted "test star" around a circular
+    // orbit and drives two rising 3D line traces: the OBSERVED Milky Way
+    // rotation curve (cited real figures - roughly flat near 220-240 km/s
+    // out past the edge of the visible disk) and an illustrative KEPLERIAN
+    // DECLINE curve showing what the speed would have to do if only the
+    // visible disk's mass were pulling on that test star. The widening gap
+    // between the two curves beyond the visible disk's edge is the classic
+    // rotation-curve evidence for dark matter (Rubin, Ford & Thonnard,
+    // 1970s-1980s spiral-galaxy surveys).
+    var T3D_ROT_R_EDGE = 10;   // kpc - roughly where the Milky Way's visible stars/gas thin out
+    var T3D_ROT_R_MAX = 25;    // kpc - directly-measured flat-curve range (stellar tracers)
+    var T3D_ROT_V_FLAT = 220;  // km/s - widely used rounded figure for the Sun's/flat-curve speed
+    var T3D_ROT_SCALE = 3.4;   // scene units per kpc (compressed for on-screen readability)
+
+    function t3dRotObservedKmS(rKpc) {
+        if (rKpc <= T3D_ROT_R_EDGE) { return T3D_ROT_V_FLAT * (rKpc / T3D_ROT_R_EDGE); }
+        return T3D_ROT_V_FLAT; // flat within the directly-measured stellar-tracer range
+    }
+    function t3dRotPredictedKmS(rKpc) {
+        if (rKpc <= T3D_ROT_R_EDGE) { return T3D_ROT_V_FLAT * (rKpc / T3D_ROT_R_EDGE); }
+        return T3D_ROT_V_FLAT * Math.sqrt(T3D_ROT_R_EDGE / rKpc); // illustrative Keplerian decline
+    }
+
+    function t3dRotationCurve(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+        var core = new THREE.PointLight(0xfff1c0, 1.1, 400);
+        core.position.set(0, 6, 0);
+        scene.add(core);
+
+        // Visible (baryonic) disk: denser near the center, thinning toward the edge.
+        var DISK_N = 3600;
+        var diskGeo = new THREE.BufferGeometry();
+        var diskPos = new Float32Array(DISK_N * 3);
+        var diskCol = new Float32Array(DISK_N * 3);
+        var warmColor = new THREE.Color(0xffd9a0), coolColor = new THREE.Color(0x9fd0ff);
+        for (var i = 0; i < DISK_N; i++) {
+            var rk = Math.pow(Math.random(), 0.55) * T3D_ROT_R_EDGE; // denser toward center
+            var ang = Math.random() * Math.PI * 2;
+            var rs = rk * T3D_ROT_SCALE;
+            diskPos[i * 3] = Math.cos(ang) * rs;
+            diskPos[i * 3 + 1] = (Math.random() - 0.5) * 0.6;
+            diskPos[i * 3 + 2] = Math.sin(ang) * rs;
+            var mix = Math.min(1, rk / T3D_ROT_R_EDGE);
+            var c = warmColor.clone().lerp(coolColor, mix);
+            diskCol[i * 3] = c.r; diskCol[i * 3 + 1] = c.g; diskCol[i * 3 + 2] = c.b;
+        }
+        diskGeo.setAttribute('position', new THREE.BufferAttribute(diskPos, 3));
+        diskGeo.setAttribute('color', new THREE.BufferAttribute(diskCol, 3));
+        var disk = new THREE.Points(diskGeo, new THREE.PointsMaterial({ size: 0.5, vertexColors: true, sizeAttenuation: true, transparent: true, opacity: 0.9 }));
+        scene.add(disk);
+
+        // Dark-matter halo: much larger radius, sparse, faint, spherical (not flat) -
+        // it is INFERRED from the rotation curve, never directly imaged, so it is
+        // rendered as a dim translucent shell, toggleable, and always labeled as such.
+        var HALO_N = 1800, HALO_R_KPC = T3D_ROT_R_MAX * 1.7;
+        var haloGeo = new THREE.BufferGeometry();
+        var haloPos = new Float32Array(HALO_N * 3);
+        for (var h = 0; h < HALO_N; h++) {
+            var u = Math.random(), v = Math.random();
+            var theta2 = Math.acos(2 * v - 1), phi2 = 2 * Math.PI * u;
+            var rr = (0.35 + 0.65 * Math.random()) * HALO_R_KPC * T3D_ROT_SCALE;
+            haloPos[h * 3] = rr * Math.sin(theta2) * Math.cos(phi2);
+            haloPos[h * 3 + 1] = rr * Math.cos(theta2) * 0.6; // slightly flattened
+            haloPos[h * 3 + 2] = rr * Math.sin(theta2) * Math.sin(phi2);
+        }
+        haloGeo.setAttribute('position', new THREE.BufferAttribute(haloPos, 3));
+        var halo = new THREE.Points(haloGeo, new THREE.PointsMaterial({ color: 0x6a5acd, size: 0.7, sizeAttenuation: true, transparent: true, opacity: 0.16 }));
+        halo.visible = true;
+        scene.add(halo);
+
+        // Test-star marker, orbiting at the slider-selected radius.
+        var marker = new THREE.Mesh(new THREE.SphereGeometry(0.9, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+        scene.add(marker);
+        var markerAngle = 0;
+
+        // Two rising curve traces: observed (cyan) vs predicted-from-visible-mass-only (orange).
+        function buildCurveLine(fn, color) {
+            var pts = [];
+            for (var rr2 = 0; rr2 <= T3D_ROT_R_MAX; rr2 += 0.5) {
+                var y = (fn(rr2) / T3D_ROT_V_FLAT) * 9; // height mapped from km/s, compressed
+                pts.push(new THREE.Vector3(rr2 * T3D_ROT_SCALE, y + 10, 0));
+            }
+            var geo = new THREE.BufferGeometry().setFromPoints(pts);
+            return new THREE.Line(geo, new THREE.LineBasicMaterial({ color: color, linewidth: 2 }));
+        }
+        var observedLine = buildCurveLine(t3dRotObservedKmS, 0x35d0e0);
+        var predictedLine = buildCurveLine(t3dRotPredictedKmS, 0xff8a3d);
+        observedLine.position.z = -6; predictedLine.position.z = -6;
+        scene.add(observedLine, predictedLine);
+
+        var haloShown = true;
+        function setRadius(rKpc) {
+            rKpc = Math.max(0.3, Math.min(T3D_ROT_R_MAX, rKpc));
+            var rs = rKpc * T3D_ROT_SCALE;
+            marker.position.set(Math.cos(markerAngle) * rs, 0, Math.sin(markerAngle) * rs);
+            var obs = t3dRotObservedKmS(rKpc).toFixed(0);
+            var pred = t3dRotPredictedKmS(rKpc).toFixed(0);
+            var gap = (obs - pred);
+            var gapLine = gap > 5
+                ? '<p class="t3d-note">At this radius the visible-mass-only prediction falls ' + gap + ' km/s short of what is actually observed - that gap is the rotation-curve evidence for a dark-matter halo.</p>'
+                : '<p class="t3d-note">Inside the main visible disk, the predicted and observed speeds are close - the gap opens up past the edge of the visible disk.</p>';
+            t3dInfo('<h3>Radius: ' + rKpc.toFixed(1) + ' kpc</h3>' +
+                '<table class="w3-table w3-bordered"><tr><td>Observed speed (real, Milky Way)</td><td>~' + obs + ' km/s</td></tr>' +
+                '<tr><td>Predicted from visible mass alone</td><td>~' + pred + ' km/s (illustrative)</td></tr></table>' +
+                gapLine);
+            var label = document.getElementById('t3dRotRadiusLabel');
+            if (label) label.textContent = rKpc.toFixed(1) + ' kpc';
+        }
+        setRadius(8.1);
+
+        var slider = document.getElementById('t3dRotRadiusSlider');
+        if (slider) {
+            slider.addEventListener('input', function () { setRadius(parseFloat(slider.value)); });
+        }
+        var haloBtn = document.getElementById('t3dRotHaloToggle');
+        if (haloBtn) {
+            haloBtn.addEventListener('click', function () {
+                haloShown = !haloShown;
+                halo.visible = haloShown;
+                haloBtn.textContent = haloShown ? 'Hide dark-matter halo (inferred)' : 'Show dark-matter halo (inferred)';
+            });
+        }
+
+        shell.onClick = function () { /* no per-object facts click target on this scene */ };
+
+        return function animate(dt) {
+            disk.rotation.y += dt * 0.00006;
+            halo.rotation.y -= dt * 0.00002;
+            markerAngle += dt * 0.0004;
+            var rNow = parseFloat((slider && slider.value) || 8.1);
+            marker.position.set(Math.cos(markerAngle) * rNow * T3D_ROT_SCALE, 0, Math.sin(markerAngle) * rNow * T3D_ROT_SCALE);
+        };
+    }
+
+    // ---- bootstrap ------------------------------------------------------------
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return; // not a 3D scene page
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { rotationcurve: 't3dRotControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = {
+                        rotationcurve: { radius: 110, maxR: 320, minR: 20, phi: 1.15, targetY: 5 }
+                    };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dRotationCurve(shell);
+                    t3dStatus('Drag to orbit, scroll or pinch to zoom, or move the radius slider below.');
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

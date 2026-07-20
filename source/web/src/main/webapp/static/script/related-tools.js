@@ -645,6 +645,7 @@ try {
     { title: "Sagittarius A* Star Orbit 3D Explorer", url: "https://freetoolonline.com/space-3d/sagittarius-a-star.html", include: !1, tags: "space-3d" },
     { title: "Impact Crater Formation 3D Explorer", url: "https://freetoolonline.com/space-3d/impact-crater-formation.html", include: !1, tags: "space-3d" },
     { title: "Moon Formation Giant Impact 3D Explorer", url: "https://freetoolonline.com/space-3d/moon-formation-giant-impact.html", include: !1, tags: "space-3d" },
+    { title: "Dark Matter Rotation Curves 3D Explorer", url: "https://freetoolonline.com/space-3d/dark-matter-rotation-curves.html", include: !1, tags: "space-3d" },
     { title: "Axial Tilt Comparison 3D Explorer", url: "https://freetoolonline.com/space-3d/axial-tilt-comparison.html", include: !1, tags: "space-3d" },
     { title: "Milky Way - Andromeda Collision 3D Explorer", url: "https://freetoolonline.com/space-3d/andromeda-collision.html", include: !1, tags: "space-3d" },
     { title: "Geocentric vs Heliocentric 3D Explorer", url: "https://freetoolonline.com/space-3d/geocentric-vs-heliocentric.html", include: !1, tags: "space-3d" },
