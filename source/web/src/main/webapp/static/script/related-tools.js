@@ -669,6 +669,7 @@ try {
     { title: "Passport Photo Maker", url: "https://freetoolonline.com/image-tools/passport-photo-maker.html", include: !1, tags: "image-editing" },
     { title: "Age Calculator", url: "https://freetoolonline.com/utility-tools/age-calculator.html", include: !1, tags: "utility" },
     { title: "AI Photo Restoration", url: "https://freetoolonline.com/image-tools/photo-restoration.html", include: !1, tags: "image-editing" },
+    { title: "JSON to TypeScript Interface Generator", url: "https://freetoolonline.com/developer-tools/json-to-typescript.html", include: !1, tags: "developer" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
