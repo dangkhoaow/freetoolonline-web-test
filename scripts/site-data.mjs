@@ -5780,6 +5780,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/mamenchisaurus-size-comparison.html',
   '/guides/id/mamenchisaurus-size-comparison.html',
   '/guides/de/mamenchisaurus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire192 (2026-07-20): mamenchisaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/mamenchisaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/mamenchisaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/mamenchisaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/mamenchisaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/mamenchisaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/mamenchisaurus-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -14234,6 +14242,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/mamenchisaurus-size-comparison.html': 'guide/vi/mamenchisaurus-size-comparison.jsp',
   '/guides/id/mamenchisaurus-size-comparison.html': 'guide/id/mamenchisaurus-size-comparison.jsp',
   '/guides/de/mamenchisaurus-size-comparison.html': 'guide/de/mamenchisaurus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire192 (2026-07-20): mamenchisaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/mamenchisaurus-3d-viewer-vs-ar-apps.html': 'guide/mamenchisaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/mamenchisaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/mamenchisaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/mamenchisaurus-3d-viewer-vs-ar-apps.html': 'guide/es/mamenchisaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/mamenchisaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/mamenchisaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/mamenchisaurus-3d-viewer-vs-ar-apps.html': 'guide/id/mamenchisaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/mamenchisaurus-3d-viewer-vs-ar-apps.html': 'guide/de/mamenchisaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
