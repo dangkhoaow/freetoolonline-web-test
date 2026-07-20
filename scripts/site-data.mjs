@@ -12603,6 +12603,9 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/compsognathus.html': 'dinosaur/compsognathus.jsp',
   '/dinosaur-3d/mamenchisaurus.html': 'dinosaur/mamenchisaurus.jsp',
   '/dinosaur-3d/troodon.html': 'dinosaur/troodon.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire148 (2026-07-20): acrocanthosaurus (theropod archetype,
+  // feats.dorsalRidge + tinyArms; Model Magic CC0 Printables 1768652, vendored ftol-vm-assets 3a3f32e).
+  '/dinosaur-3d/acrocanthosaurus.html': 'dinosaur/acrocanthosaurus.jsp',
   '/dinosaur-3d/albertosaurus.html': 'dinosaur/albertosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire145 (2026-07-20): Sarcosuchus viewer -
   // new 'crocodilian' sprawled-gait archetype (Printables seth the yutyrannus,
