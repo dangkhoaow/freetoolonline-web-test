@@ -6194,6 +6194,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/psittacosaurus-size-comparison.html',
   '/guides/id/psittacosaurus-size-comparison.html',
   '/guides/de/psittacosaurus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire237 (2026-07-21): psittacosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/psittacosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/psittacosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/psittacosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/psittacosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/psittacosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/psittacosaurus-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -15227,6 +15235,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/psittacosaurus-size-comparison.html': 'guide/vi/psittacosaurus-size-comparison.jsp',
   '/guides/id/psittacosaurus-size-comparison.html': 'guide/id/psittacosaurus-size-comparison.jsp',
   '/guides/de/psittacosaurus-size-comparison.html': 'guide/de/psittacosaurus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire237 (2026-07-21): psittacosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/psittacosaurus-3d-viewer-vs-ar-apps.html': 'guide/psittacosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/psittacosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/psittacosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/psittacosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/psittacosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/psittacosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/psittacosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/psittacosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/psittacosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/psittacosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/psittacosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
