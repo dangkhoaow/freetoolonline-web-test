@@ -9002,6 +9002,8 @@ export const ALIAS_ROUTES = {
   '/albertosaurus.html': '/dinosaur-3d/albertosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire145: sarcosuchus alias.
   '/sarcosuchus.html': '/dinosaur-3d/sarcosuchus.html',
+  // dinosaur-3d-discovery-loop-runbook fire146: postosuchus alias.
+  '/postosuchus.html': '/dinosaur-3d/postosuchus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -12454,6 +12456,10 @@ export const JSP_BY_ROUTE = {
   // new 'crocodilian' sprawled-gait archetype (Printables seth the yutyrannus,
   // CC-BY-SA 4.0, vendored to ftol-vm-assets commit abae90d).
   '/dinosaur-3d/sarcosuchus.html': 'dinosaur/sarcosuchus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire146 (2026-07-20): Postosuchus viewer -
+  // new 'rauisuchian' sub-erect quadruped archetype (Printables seth the yutyrannus,
+  // CC-BY-SA 4.0, vendored to ftol-vm-assets commit abae90d).
+  '/dinosaur-3d/postosuchus.html': 'dinosaur/postosuchus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid

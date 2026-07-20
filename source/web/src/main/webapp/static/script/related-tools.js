@@ -374,6 +374,7 @@ try {
     { title: "Ostafrikasaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/ostafrikasaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Torvosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/torvosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Sarcosuchus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/sarcosuchus.html", include: !1, tags: "dinosaur-3d" },
+    { title: "Postosuchus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/postosuchus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Tsintaosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/tsintaosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Ornithomimus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/ornithomimus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Tylosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/tylosaurus.html", include: !1, tags: "dinosaur-3d" },
