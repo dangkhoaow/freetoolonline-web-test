@@ -6218,6 +6218,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/becklespinax-size-comparison.html',
   '/guides/id/becklespinax-size-comparison.html',
   '/guides/de/becklespinax-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire240 (2026-07-21): becklespinax-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/becklespinax-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/becklespinax-3d-viewer-vs-ar-apps.html',
+  '/guides/es/becklespinax-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/becklespinax-3d-viewer-vs-ar-apps.html',
+  '/guides/id/becklespinax-3d-viewer-vs-ar-apps.html',
+  '/guides/de/becklespinax-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -15275,6 +15283,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/becklespinax-size-comparison.html': 'guide/vi/becklespinax-size-comparison.jsp',
   '/guides/id/becklespinax-size-comparison.html': 'guide/id/becklespinax-size-comparison.jsp',
   '/guides/de/becklespinax-size-comparison.html': 'guide/de/becklespinax-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire240 (2026-07-21): becklespinax-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/becklespinax-3d-viewer-vs-ar-apps.html': 'guide/becklespinax-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/becklespinax-3d-viewer-vs-ar-apps.html': 'guide/pt/becklespinax-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/becklespinax-3d-viewer-vs-ar-apps.html': 'guide/es/becklespinax-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/becklespinax-3d-viewer-vs-ar-apps.html': 'guide/vi/becklespinax-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/becklespinax-3d-viewer-vs-ar-apps.html': 'guide/id/becklespinax-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/becklespinax-3d-viewer-vs-ar-apps.html': 'guide/de/becklespinax-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
