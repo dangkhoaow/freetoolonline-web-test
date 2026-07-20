@@ -696,6 +696,7 @@ try {
     { title: "JSON to TypeScript Interface Generator", url: "https://freetoolonline.com/developer-tools/json-to-typescript.html", include: !1, tags: "developer" },
     { title: "Markdown to HTML Previewer", url: "https://freetoolonline.com/developer-tools/markdown-to-html.html", include: !1, tags: "developer" },
     { title: "HTML to Markdown Converter", url: "https://freetoolonline.com/developer-tools/html-to-markdown.html", include: !1, tags: "developer" },
+    { title: "Color Contrast Checker (WCAG)", url: "https://freetoolonline.com/developer-tools/wcag-contrast-checker.html", include: !1, tags: "developer" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/color-contrast-checker-wcag-vs-alternatives.html',
+  '/guides/de/color-contrast-checker-wcag-vs-alternatives.html',
+  '/guides/id/color-contrast-checker-wcag-vs-alternatives.html',
+  '/guides/vi/color-contrast-checker-wcag-vs-alternatives.html',
+  '/guides/es/color-contrast-checker-wcag-vs-alternatives.html',
+  '/guides/pt/color-contrast-checker-wcag-vs-alternatives.html',
+  '/guides/color-contrast-checker-wcag-step-by-step.html',
+  '/guides/de/color-contrast-checker-wcag-step-by-step.html',
+  '/guides/id/color-contrast-checker-wcag-step-by-step.html',
+  '/guides/vi/color-contrast-checker-wcag-step-by-step.html',
+  '/guides/es/color-contrast-checker-wcag-step-by-step.html',
+  '/guides/pt/color-contrast-checker-wcag-step-by-step.html',
+  '/guides/color-contrast-checker-wcag-when.html',
+  '/guides/de/color-contrast-checker-wcag-when.html',
+  '/guides/id/color-contrast-checker-wcag-when.html',
+  '/guides/vi/color-contrast-checker-wcag-when.html',
+  '/guides/es/color-contrast-checker-wcag-when.html',
+  '/guides/pt/color-contrast-checker-wcag-when.html',
   '/guides/html-markdown-converter-vs-alternatives.html',
   '/guides/de/html-markdown-converter-vs-alternatives.html',
   '/guides/id/html-markdown-converter-vs-alternatives.html',
@@ -10171,6 +10189,7 @@ export const ALIAS_ROUTES = {
   '/video-merger.html': '/video-tools/video-merger.html',
   '/json-to-typescript.html': '/developer-tools/json-to-typescript.html',
   '/html-to-markdown.html': '/developer-tools/html-to-markdown.html',
+  '/wcag-contrast-checker.html': '/developer-tools/wcag-contrast-checker.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -19243,6 +19262,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/html-markdown-converter-vs-alternatives.html': 'guide/vi/html-markdown-converter-vs-alternatives.jsp',
   '/guides/es/html-markdown-converter-vs-alternatives.html': 'guide/es/html-markdown-converter-vs-alternatives.jsp',
   '/guides/pt/html-markdown-converter-vs-alternatives.html': 'guide/pt/html-markdown-converter-vs-alternatives.jsp',
+  '/developer-tools/wcag-contrast-checker.html': 'utility/wcag-contrast-checker.jsp',
+  '/guides/color-contrast-checker-wcag-when.html': 'guide/color-contrast-checker-wcag-when.jsp',
+  '/guides/de/color-contrast-checker-wcag-when.html': 'guide/de/color-contrast-checker-wcag-when.jsp',
+  '/guides/id/color-contrast-checker-wcag-when.html': 'guide/id/color-contrast-checker-wcag-when.jsp',
+  '/guides/vi/color-contrast-checker-wcag-when.html': 'guide/vi/color-contrast-checker-wcag-when.jsp',
+  '/guides/es/color-contrast-checker-wcag-when.html': 'guide/es/color-contrast-checker-wcag-when.jsp',
+  '/guides/pt/color-contrast-checker-wcag-when.html': 'guide/pt/color-contrast-checker-wcag-when.jsp',
+  '/guides/color-contrast-checker-wcag-step-by-step.html': 'guide/color-contrast-checker-wcag-step-by-step.jsp',
+  '/guides/de/color-contrast-checker-wcag-step-by-step.html': 'guide/de/color-contrast-checker-wcag-step-by-step.jsp',
+  '/guides/id/color-contrast-checker-wcag-step-by-step.html': 'guide/id/color-contrast-checker-wcag-step-by-step.jsp',
+  '/guides/vi/color-contrast-checker-wcag-step-by-step.html': 'guide/vi/color-contrast-checker-wcag-step-by-step.jsp',
+  '/guides/es/color-contrast-checker-wcag-step-by-step.html': 'guide/es/color-contrast-checker-wcag-step-by-step.jsp',
+  '/guides/pt/color-contrast-checker-wcag-step-by-step.html': 'guide/pt/color-contrast-checker-wcag-step-by-step.jsp',
+  '/guides/color-contrast-checker-wcag-vs-alternatives.html': 'guide/color-contrast-checker-wcag-vs-alternatives.jsp',
+  '/guides/de/color-contrast-checker-wcag-vs-alternatives.html': 'guide/de/color-contrast-checker-wcag-vs-alternatives.jsp',
+  '/guides/id/color-contrast-checker-wcag-vs-alternatives.html': 'guide/id/color-contrast-checker-wcag-vs-alternatives.jsp',
+  '/guides/vi/color-contrast-checker-wcag-vs-alternatives.html': 'guide/vi/color-contrast-checker-wcag-vs-alternatives.jsp',
+  '/guides/es/color-contrast-checker-wcag-vs-alternatives.html': 'guide/es/color-contrast-checker-wcag-vs-alternatives.jsp',
+  '/guides/pt/color-contrast-checker-wcag-vs-alternatives.html': 'guide/pt/color-contrast-checker-wcag-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
