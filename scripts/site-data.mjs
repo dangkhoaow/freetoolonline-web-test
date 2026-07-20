@@ -5650,6 +5650,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/gigantoraptor-3d-viewer-vs-ar-apps.html',
   '/guides/id/gigantoraptor-3d-viewer-vs-ar-apps.html',
   '/guides/de/gigantoraptor-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire178 (2026-07-20): how-to-view-gryponyx-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-gryponyx-in-3d.html',
+  '/guides/pt/how-to-view-gryponyx-in-3d.html',
+  '/guides/es/how-to-view-gryponyx-in-3d.html',
+  '/guides/vi/how-to-view-gryponyx-in-3d.html',
+  '/guides/id/how-to-view-gryponyx-in-3d.html',
+  '/guides/de/how-to-view-gryponyx-in-3d.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -9013,6 +9021,8 @@ export const ALIAS_ROUTES = {
   '/albertosaurus.html': '/dinosaur-3d/albertosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire145: sarcosuchus alias.
   '/sarcosuchus.html': '/dinosaur-3d/sarcosuchus.html',
+  // dinosaur-3d-discovery-loop-runbook fire146: postosuchus alias.
+  '/postosuchus.html': '/dinosaur-3d/postosuchus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -12485,6 +12495,10 @@ export const JSP_BY_ROUTE = {
   // new 'crocodilian' sprawled-gait archetype (Printables seth the yutyrannus,
   // CC-BY-SA 4.0, vendored to ftol-vm-assets commit abae90d).
   '/dinosaur-3d/sarcosuchus.html': 'dinosaur/sarcosuchus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire146 (2026-07-20): Postosuchus viewer -
+  // new 'rauisuchian' sub-erect quadruped archetype (Printables seth the yutyrannus,
+  // CC-BY-SA 4.0, vendored to ftol-vm-assets commit abae90d).
+  '/dinosaur-3d/postosuchus.html': 'dinosaur/postosuchus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -13905,6 +13919,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/gigantoraptor-3d-viewer-vs-ar-apps.html': 'guide/vi/gigantoraptor-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/gigantoraptor-3d-viewer-vs-ar-apps.html': 'guide/id/gigantoraptor-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/gigantoraptor-3d-viewer-vs-ar-apps.html': 'guide/de/gigantoraptor-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire178 (2026-07-20): how-to-view-gryponyx-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-gryponyx-in-3d.html': 'guide/how-to-view-gryponyx-in-3d.jsp',
+  '/guides/pt/how-to-view-gryponyx-in-3d.html': 'guide/pt/how-to-view-gryponyx-in-3d.jsp',
+  '/guides/es/how-to-view-gryponyx-in-3d.html': 'guide/es/how-to-view-gryponyx-in-3d.jsp',
+  '/guides/vi/how-to-view-gryponyx-in-3d.html': 'guide/vi/how-to-view-gryponyx-in-3d.jsp',
+  '/guides/id/how-to-view-gryponyx-in-3d.html': 'guide/id/how-to-view-gryponyx-in-3d.jsp',
+  '/guides/de/how-to-view-gryponyx-in-3d.html': 'guide/de/how-to-view-gryponyx-in-3d.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
