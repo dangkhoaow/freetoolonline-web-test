@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/html-markdown-converter-vs-alternatives.html',
+  '/guides/de/html-markdown-converter-vs-alternatives.html',
+  '/guides/id/html-markdown-converter-vs-alternatives.html',
+  '/guides/vi/html-markdown-converter-vs-alternatives.html',
+  '/guides/es/html-markdown-converter-vs-alternatives.html',
+  '/guides/pt/html-markdown-converter-vs-alternatives.html',
+  '/guides/html-markdown-converter-step-by-step.html',
+  '/guides/de/html-markdown-converter-step-by-step.html',
+  '/guides/id/html-markdown-converter-step-by-step.html',
+  '/guides/vi/html-markdown-converter-step-by-step.html',
+  '/guides/es/html-markdown-converter-step-by-step.html',
+  '/guides/pt/html-markdown-converter-step-by-step.html',
+  '/guides/html-markdown-converter-when.html',
+  '/guides/de/html-markdown-converter-when.html',
+  '/guides/id/html-markdown-converter-when.html',
+  '/guides/vi/html-markdown-converter-when.html',
+  '/guides/es/html-markdown-converter-when.html',
+  '/guides/pt/html-markdown-converter-when.html',
   // new-tool-discovery-loop-runbook fire285 (2026-07-17/18): video-merger
   // companion guides (3 angles x EN + pt/es/vi/id/de) - paraphrased from
   // tool-videomerger/SKILL.md framing menu only.
@@ -10058,6 +10076,7 @@ export const ALIAS_ROUTES = {
   '/video-splitter.html': '/video-tools/video-splitter.html',
   '/video-merger.html': '/video-tools/video-merger.html',
   '/json-to-typescript.html': '/developer-tools/json-to-typescript.html',
+  '/html-to-markdown.html': '/developer-tools/html-to-markdown.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -19006,6 +19025,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/markdown-html-previewer-when.html': 'guide/de/markdown-html-previewer-when.jsp',
   '/guides/de/markdown-html-previewer-step-by-step.html': 'guide/de/markdown-html-previewer-step-by-step.jsp',
   '/guides/de/markdown-html-previewer-vs-alternatives.html': 'guide/de/markdown-html-previewer-vs-alternatives.jsp',
+  '/developer-tools/html-to-markdown.html': 'utility/html-to-markdown.jsp',
+  '/guides/html-markdown-converter-when.html': 'guide/html-markdown-converter-when.jsp',
+  '/guides/de/html-markdown-converter-when.html': 'guide/de/html-markdown-converter-when.jsp',
+  '/guides/id/html-markdown-converter-when.html': 'guide/id/html-markdown-converter-when.jsp',
+  '/guides/vi/html-markdown-converter-when.html': 'guide/vi/html-markdown-converter-when.jsp',
+  '/guides/es/html-markdown-converter-when.html': 'guide/es/html-markdown-converter-when.jsp',
+  '/guides/pt/html-markdown-converter-when.html': 'guide/pt/html-markdown-converter-when.jsp',
+  '/guides/html-markdown-converter-step-by-step.html': 'guide/html-markdown-converter-step-by-step.jsp',
+  '/guides/de/html-markdown-converter-step-by-step.html': 'guide/de/html-markdown-converter-step-by-step.jsp',
+  '/guides/id/html-markdown-converter-step-by-step.html': 'guide/id/html-markdown-converter-step-by-step.jsp',
+  '/guides/vi/html-markdown-converter-step-by-step.html': 'guide/vi/html-markdown-converter-step-by-step.jsp',
+  '/guides/es/html-markdown-converter-step-by-step.html': 'guide/es/html-markdown-converter-step-by-step.jsp',
+  '/guides/pt/html-markdown-converter-step-by-step.html': 'guide/pt/html-markdown-converter-step-by-step.jsp',
+  '/guides/html-markdown-converter-vs-alternatives.html': 'guide/html-markdown-converter-vs-alternatives.jsp',
+  '/guides/de/html-markdown-converter-vs-alternatives.html': 'guide/de/html-markdown-converter-vs-alternatives.jsp',
+  '/guides/id/html-markdown-converter-vs-alternatives.html': 'guide/id/html-markdown-converter-vs-alternatives.jsp',
+  '/guides/vi/html-markdown-converter-vs-alternatives.html': 'guide/vi/html-markdown-converter-vs-alternatives.jsp',
+  '/guides/es/html-markdown-converter-vs-alternatives.html': 'guide/es/html-markdown-converter-vs-alternatives.jsp',
+  '/guides/pt/html-markdown-converter-vs-alternatives.html': 'guide/pt/html-markdown-converter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
