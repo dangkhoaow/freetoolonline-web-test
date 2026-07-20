@@ -9888,6 +9888,8 @@ export const ALIAS_ROUTES = {
   '/becklespinax.html': '/dinosaur-3d/becklespinax.html',
   // dinosaur-3d-discovery-loop-runbook fire (2026-07-20): flat-slug alias for oviraptor.
   '/oviraptor.html': '/dinosaur-3d/oviraptor.html',
+  // dinosaur-3d-discovery-loop-runbook fire (2026-07-21): flat-slug alias for pinacosaurus.
+  '/pinacosaurus.html': '/dinosaur-3d/pinacosaurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -13551,6 +13553,12 @@ export const JSP_BY_ROUTE = {
   // claw, which Oviraptor's oviraptorid anatomy did not have); model-first
   // via ftol-vm-assets manifest entry "oviraptor" (CC0, Model Magic).
   '/dinosaur-3d/oviraptor.html': 'dinosaur/oviraptor.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire (2026-07-21): Pinacosaurus viewer -
+  // ankylosaur archetype (same code path already shipped for ankylosaurus) -
+  // distinguishing feature is the mysterious multi-holed nostril anatomy +
+  // 20+ mostly-juvenile skeletons (herd evidence); model-first via
+  // ftol-vm-assets manifest entry "pinacosaurus" (already vendored).
+  '/dinosaur-3d/pinacosaurus.html': 'dinosaur/pinacosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
