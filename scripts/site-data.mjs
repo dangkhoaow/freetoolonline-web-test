@@ -5650,6 +5650,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/gigantoraptor-3d-viewer-vs-ar-apps.html',
   '/guides/id/gigantoraptor-3d-viewer-vs-ar-apps.html',
   '/guides/de/gigantoraptor-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire178 (2026-07-20): how-to-view-gryponyx-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-gryponyx-in-3d.html',
+  '/guides/pt/how-to-view-gryponyx-in-3d.html',
+  '/guides/es/how-to-view-gryponyx-in-3d.html',
+  '/guides/vi/how-to-view-gryponyx-in-3d.html',
+  '/guides/id/how-to-view-gryponyx-in-3d.html',
+  '/guides/de/how-to-view-gryponyx-in-3d.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -7381,6 +7389,25 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/how-to-play-thirteen-case-files.html',
   '/guides/de/thirteen-case-files-when.html',
   '/guides/de/thirteen-case-files-vs-alternatives.html',
+  // game-discovery-loop-runbook fire158 (2026-07-20): googolstoppinggame companion guides
+  '/guides/how-to-play-googol-stopping-game.html',
+  '/guides/googol-stopping-game-when.html',
+  '/guides/googol-stopping-game-vs-alternatives.html',
+  '/guides/pt/how-to-play-googol-stopping-game.html',
+  '/guides/pt/googol-stopping-game-when.html',
+  '/guides/pt/googol-stopping-game-vs-alternatives.html',
+  '/guides/es/how-to-play-googol-stopping-game.html',
+  '/guides/es/googol-stopping-game-when.html',
+  '/guides/es/googol-stopping-game-vs-alternatives.html',
+  '/guides/vi/how-to-play-googol-stopping-game.html',
+  '/guides/vi/googol-stopping-game-when.html',
+  '/guides/vi/googol-stopping-game-vs-alternatives.html',
+  '/guides/id/how-to-play-googol-stopping-game.html',
+  '/guides/id/googol-stopping-game-when.html',
+  '/guides/id/googol-stopping-game-vs-alternatives.html',
+  '/guides/de/how-to-play-googol-stopping-game.html',
+  '/guides/de/googol-stopping-game-when.html',
+  '/guides/de/googol-stopping-game-vs-alternatives.html',
 
   // game-discovery-loop-runbook fire140 (2026-07-18): seasonal-witchcat companion guides
   '/guides/how-to-play-seasonal-witchcat.html',
@@ -8992,6 +9019,10 @@ export const ALIAS_ROUTES = {
   '/troodon.html': '/dinosaur-3d/troodon.html',
   // dinosaur-3d-discovery-loop-runbook fire123: albertosaurus alias.
   '/albertosaurus.html': '/dinosaur-3d/albertosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire145: sarcosuchus alias.
+  '/sarcosuchus.html': '/dinosaur-3d/sarcosuchus.html',
+  // dinosaur-3d-discovery-loop-runbook fire146: postosuchus alias.
+  '/postosuchus.html': '/dinosaur-3d/postosuchus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -9077,6 +9108,7 @@ export const ALIAS_ROUTES = {
   '/quantum-shift.html': '/games/quantum-shift.html',
   '/roller-maze-escape.html': '/games/roller-maze-escape.html',
   '/thirteen-case-files.html': '/games/thirteen-case-files.html',
+  '/googol-stopping-game.html': '/games/googol-stopping-game.html',
   '/seasonal-witchcat.html': '/games/seasonal-witchcat.html',
   '/desk-cat-coder.html': '/games/desk-cat-coder.html',
   '/boing-cat-platformer.html': '/games/boing-cat-platformer.html',
@@ -11348,6 +11380,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/how-to-play-thirteen-case-files.html': 'guide/de/how-to-play-thirteen-case-files.jsp',
   '/guides/de/thirteen-case-files-when.html': 'guide/de/thirteen-case-files-when.jsp',
   '/guides/de/thirteen-case-files-vs-alternatives.html': 'guide/de/thirteen-case-files-vs-alternatives.jsp',
+  // game-discovery-loop-runbook fire158 (2026-07-20): googolstoppinggame companion guides
+  '/guides/how-to-play-googol-stopping-game.html': 'guide/how-to-play-googol-stopping-game.jsp',
+  '/guides/googol-stopping-game-when.html': 'guide/googol-stopping-game-when.jsp',
+  '/guides/googol-stopping-game-vs-alternatives.html': 'guide/googol-stopping-game-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-googol-stopping-game.html': 'guide/pt/how-to-play-googol-stopping-game.jsp',
+  '/guides/pt/googol-stopping-game-when.html': 'guide/pt/googol-stopping-game-when.jsp',
+  '/guides/pt/googol-stopping-game-vs-alternatives.html': 'guide/pt/googol-stopping-game-vs-alternatives.jsp',
+  '/guides/es/how-to-play-googol-stopping-game.html': 'guide/es/how-to-play-googol-stopping-game.jsp',
+  '/guides/es/googol-stopping-game-when.html': 'guide/es/googol-stopping-game-when.jsp',
+  '/guides/es/googol-stopping-game-vs-alternatives.html': 'guide/es/googol-stopping-game-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-googol-stopping-game.html': 'guide/vi/how-to-play-googol-stopping-game.jsp',
+  '/guides/vi/googol-stopping-game-when.html': 'guide/vi/googol-stopping-game-when.jsp',
+  '/guides/vi/googol-stopping-game-vs-alternatives.html': 'guide/vi/googol-stopping-game-vs-alternatives.jsp',
+  '/guides/id/how-to-play-googol-stopping-game.html': 'guide/id/how-to-play-googol-stopping-game.jsp',
+  '/guides/id/googol-stopping-game-when.html': 'guide/id/googol-stopping-game-when.jsp',
+  '/guides/id/googol-stopping-game-vs-alternatives.html': 'guide/id/googol-stopping-game-vs-alternatives.jsp',
+  '/guides/de/how-to-play-googol-stopping-game.html': 'guide/de/how-to-play-googol-stopping-game.jsp',
+  '/guides/de/googol-stopping-game-when.html': 'guide/de/googol-stopping-game-when.jsp',
+  '/guides/de/googol-stopping-game-vs-alternatives.html': 'guide/de/googol-stopping-game-vs-alternatives.jsp',
 
   // game-discovery-loop-runbook fire140 (2026-07-18): seasonal-witchcat companion guides
   '/guides/how-to-play-seasonal-witchcat.html': 'guide/how-to-play-seasonal-witchcat.jsp',
@@ -12440,6 +12491,14 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/mamenchisaurus.html': 'dinosaur/mamenchisaurus.jsp',
   '/dinosaur-3d/troodon.html': 'dinosaur/troodon.jsp',
   '/dinosaur-3d/albertosaurus.html': 'dinosaur/albertosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire145 (2026-07-20): Sarcosuchus viewer -
+  // new 'crocodilian' sprawled-gait archetype (Printables seth the yutyrannus,
+  // CC-BY-SA 4.0, vendored to ftol-vm-assets commit abae90d).
+  '/dinosaur-3d/sarcosuchus.html': 'dinosaur/sarcosuchus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire146 (2026-07-20): Postosuchus viewer -
+  // new 'rauisuchian' sub-erect quadruped archetype (Printables seth the yutyrannus,
+  // CC-BY-SA 4.0, vendored to ftol-vm-assets commit abae90d).
+  '/dinosaur-3d/postosuchus.html': 'dinosaur/postosuchus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -13860,6 +13919,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/gigantoraptor-3d-viewer-vs-ar-apps.html': 'guide/vi/gigantoraptor-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/gigantoraptor-3d-viewer-vs-ar-apps.html': 'guide/id/gigantoraptor-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/gigantoraptor-3d-viewer-vs-ar-apps.html': 'guide/de/gigantoraptor-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire178 (2026-07-20): how-to-view-gryponyx-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-gryponyx-in-3d.html': 'guide/how-to-view-gryponyx-in-3d.jsp',
+  '/guides/pt/how-to-view-gryponyx-in-3d.html': 'guide/pt/how-to-view-gryponyx-in-3d.jsp',
+  '/guides/es/how-to-view-gryponyx-in-3d.html': 'guide/es/how-to-view-gryponyx-in-3d.jsp',
+  '/guides/vi/how-to-view-gryponyx-in-3d.html': 'guide/vi/how-to-view-gryponyx-in-3d.jsp',
+  '/guides/id/how-to-view-gryponyx-in-3d.html': 'guide/id/how-to-view-gryponyx-in-3d.jsp',
+  '/guides/de/how-to-view-gryponyx-in-3d.html': 'guide/de/how-to-view-gryponyx-in-3d.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
@@ -14156,6 +14223,7 @@ export const JSP_BY_ROUTE = {
   '/games/quantum-shift.html': 'games/quantum-shift.jsp',
   '/games/roller-maze-escape.html': 'games/roller-maze-escape.jsp',
   '/games/thirteen-case-files.html': 'games/thirteen-case-files.jsp',
+  '/games/googol-stopping-game.html': 'games/googol-stopping-game.jsp',
   '/games/seasonal-witchcat.html': 'games/seasonal-witchcat.jsp',
   '/games/desk-cat-coder.html': 'games/desk-cat-coder.jsp',
   '/games/boing-cat-platformer.html': 'games/boing-cat-platformer.jsp',
