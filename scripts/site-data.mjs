@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/html-markdown-converter-vs-alternatives.html',
+  '/guides/de/html-markdown-converter-vs-alternatives.html',
+  '/guides/id/html-markdown-converter-vs-alternatives.html',
+  '/guides/vi/html-markdown-converter-vs-alternatives.html',
+  '/guides/es/html-markdown-converter-vs-alternatives.html',
+  '/guides/pt/html-markdown-converter-vs-alternatives.html',
+  '/guides/html-markdown-converter-step-by-step.html',
+  '/guides/de/html-markdown-converter-step-by-step.html',
+  '/guides/id/html-markdown-converter-step-by-step.html',
+  '/guides/vi/html-markdown-converter-step-by-step.html',
+  '/guides/es/html-markdown-converter-step-by-step.html',
+  '/guides/pt/html-markdown-converter-step-by-step.html',
+  '/guides/html-markdown-converter-when.html',
+  '/guides/de/html-markdown-converter-when.html',
+  '/guides/id/html-markdown-converter-when.html',
+  '/guides/vi/html-markdown-converter-when.html',
+  '/guides/es/html-markdown-converter-when.html',
+  '/guides/pt/html-markdown-converter-when.html',
   // new-tool-discovery-loop-runbook fire285 (2026-07-17/18): video-merger
   // companion guides (3 angles x EN + pt/es/vi/id/de) - paraphrased from
   // tool-videomerger/SKILL.md framing menu only.
@@ -6146,6 +6164,110 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/abelisaurus-size-comparison.html',
   '/guides/id/abelisaurus-size-comparison.html',
   '/guides/de/abelisaurus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire231 (2026-07-21): abelisaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/abelisaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/abelisaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/abelisaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/abelisaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/abelisaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/abelisaurus-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire232 (2026-07-21): how-to-view-chasmosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-chasmosaurus-in-3d.html',
+  '/guides/pt/how-to-view-chasmosaurus-in-3d.html',
+  '/guides/es/how-to-view-chasmosaurus-in-3d.html',
+  '/guides/vi/how-to-view-chasmosaurus-in-3d.html',
+  '/guides/id/how-to-view-chasmosaurus-in-3d.html',
+  '/guides/de/how-to-view-chasmosaurus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire233 (2026-07-21): chasmosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/chasmosaurus-size-comparison.html',
+  '/guides/pt/chasmosaurus-size-comparison.html',
+  '/guides/es/chasmosaurus-size-comparison.html',
+  '/guides/vi/chasmosaurus-size-comparison.html',
+  '/guides/id/chasmosaurus-size-comparison.html',
+  '/guides/de/chasmosaurus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire234 (2026-07-21): chasmosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/chasmosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/chasmosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/chasmosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/chasmosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/chasmosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/chasmosaurus-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire235 (2026-07-21): how-to-view-psittacosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-psittacosaurus-in-3d.html',
+  '/guides/pt/how-to-view-psittacosaurus-in-3d.html',
+  '/guides/es/how-to-view-psittacosaurus-in-3d.html',
+  '/guides/vi/how-to-view-psittacosaurus-in-3d.html',
+  '/guides/id/how-to-view-psittacosaurus-in-3d.html',
+  '/guides/de/how-to-view-psittacosaurus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire236 (2026-07-21): psittacosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/psittacosaurus-size-comparison.html',
+  '/guides/pt/psittacosaurus-size-comparison.html',
+  '/guides/es/psittacosaurus-size-comparison.html',
+  '/guides/vi/psittacosaurus-size-comparison.html',
+  '/guides/id/psittacosaurus-size-comparison.html',
+  '/guides/de/psittacosaurus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire237 (2026-07-21): psittacosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/psittacosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/psittacosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/psittacosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/psittacosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/psittacosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/psittacosaurus-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire238 (2026-07-21): how-to-view-becklespinax-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-becklespinax-in-3d.html',
+  '/guides/pt/how-to-view-becklespinax-in-3d.html',
+  '/guides/es/how-to-view-becklespinax-in-3d.html',
+  '/guides/vi/how-to-view-becklespinax-in-3d.html',
+  '/guides/id/how-to-view-becklespinax-in-3d.html',
+  '/guides/de/how-to-view-becklespinax-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire239 (2026-07-21): becklespinax-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/becklespinax-size-comparison.html',
+  '/guides/pt/becklespinax-size-comparison.html',
+  '/guides/es/becklespinax-size-comparison.html',
+  '/guides/vi/becklespinax-size-comparison.html',
+  '/guides/id/becklespinax-size-comparison.html',
+  '/guides/de/becklespinax-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire240 (2026-07-21): becklespinax-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/becklespinax-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/becklespinax-3d-viewer-vs-ar-apps.html',
+  '/guides/es/becklespinax-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/becklespinax-3d-viewer-vs-ar-apps.html',
+  '/guides/id/becklespinax-3d-viewer-vs-ar-apps.html',
+  '/guides/de/becklespinax-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire241 (2026-07-21): how-to-view-ostafrikasaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-ostafrikasaurus-in-3d.html',
+  '/guides/pt/how-to-view-ostafrikasaurus-in-3d.html',
+  '/guides/es/how-to-view-ostafrikasaurus-in-3d.html',
+  '/guides/vi/how-to-view-ostafrikasaurus-in-3d.html',
+  '/guides/id/how-to-view-ostafrikasaurus-in-3d.html',
+  '/guides/de/how-to-view-ostafrikasaurus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire242 (2026-07-21): ostafrikasaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/ostafrikasaurus-size-comparison.html',
+  '/guides/pt/ostafrikasaurus-size-comparison.html',
+  '/guides/es/ostafrikasaurus-size-comparison.html',
+  '/guides/vi/ostafrikasaurus-size-comparison.html',
+  '/guides/id/ostafrikasaurus-size-comparison.html',
+  '/guides/de/ostafrikasaurus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire243 (2026-07-21): ostafrikasaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/ostafrikasaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/ostafrikasaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/ostafrikasaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/ostafrikasaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/ostafrikasaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/ostafrikasaurus-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -7991,6 +8113,25 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/neuro-aim-arena-vs-alternatives.html',
   '/guides/id/neuro-aim-arena-vs-alternatives.html',
   '/guides/de/neuro-aim-arena-vs-alternatives.html',
+  // game-discovery-loop-runbook fire164 (2026-07-20): flexboxfroggy companion guides
+  '/guides/how-to-play-flexbox-froggy.html',
+  '/guides/pt/how-to-play-flexbox-froggy.html',
+  '/guides/es/how-to-play-flexbox-froggy.html',
+  '/guides/vi/how-to-play-flexbox-froggy.html',
+  '/guides/id/how-to-play-flexbox-froggy.html',
+  '/guides/de/how-to-play-flexbox-froggy.html',
+  '/guides/flexbox-froggy-when.html',
+  '/guides/pt/flexbox-froggy-when.html',
+  '/guides/es/flexbox-froggy-when.html',
+  '/guides/vi/flexbox-froggy-when.html',
+  '/guides/id/flexbox-froggy-when.html',
+  '/guides/de/flexbox-froggy-when.html',
+  '/guides/flexbox-froggy-vs-alternatives.html',
+  '/guides/pt/flexbox-froggy-vs-alternatives.html',
+  '/guides/es/flexbox-froggy-vs-alternatives.html',
+  '/guides/vi/flexbox-froggy-vs-alternatives.html',
+  '/guides/id/flexbox-froggy-vs-alternatives.html',
+  '/guides/de/flexbox-froggy-vs-alternatives.html',
 
   // game-discovery-loop-runbook fire140 (2026-07-18): seasonal-witchcat companion guides
   '/guides/how-to-play-seasonal-witchcat.html',
@@ -9767,6 +9908,7 @@ export const ALIAS_ROUTES = {
   '/egg-time-rewind.html': '/games/egg-time-rewind.html',
   '/iso-city-sandbox.html': '/games/iso-city-sandbox.html',
   '/neuro-aim-arena.html': '/games/neuro-aim-arena.html',
+  '/flexbox-froggy.html': '/games/flexbox-froggy.html',
   '/seasonal-witchcat.html': '/games/seasonal-witchcat.html',
   '/desk-cat-coder.html': '/games/desk-cat-coder.html',
   '/boing-cat-platformer.html': '/games/boing-cat-platformer.html',
@@ -9954,6 +10096,7 @@ export const ALIAS_ROUTES = {
   '/video-splitter.html': '/video-tools/video-splitter.html',
   '/video-merger.html': '/video-tools/video-merger.html',
   '/json-to-typescript.html': '/developer-tools/json-to-typescript.html',
+  '/html-to-markdown.html': '/developer-tools/html-to-markdown.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -12160,6 +12303,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/neuro-aim-arena-vs-alternatives.html': 'guide/vi/neuro-aim-arena-vs-alternatives.jsp',
   '/guides/id/neuro-aim-arena-vs-alternatives.html': 'guide/id/neuro-aim-arena-vs-alternatives.jsp',
   '/guides/de/neuro-aim-arena-vs-alternatives.html': 'guide/de/neuro-aim-arena-vs-alternatives.jsp',
+  // game-discovery-loop-runbook fire164 (2026-07-20): flexboxfroggy companion guides
+  '/guides/how-to-play-flexbox-froggy.html': 'guide/how-to-play-flexbox-froggy.jsp',
+  '/guides/pt/how-to-play-flexbox-froggy.html': 'guide/pt/how-to-play-flexbox-froggy.jsp',
+  '/guides/es/how-to-play-flexbox-froggy.html': 'guide/es/how-to-play-flexbox-froggy.jsp',
+  '/guides/vi/how-to-play-flexbox-froggy.html': 'guide/vi/how-to-play-flexbox-froggy.jsp',
+  '/guides/id/how-to-play-flexbox-froggy.html': 'guide/id/how-to-play-flexbox-froggy.jsp',
+  '/guides/de/how-to-play-flexbox-froggy.html': 'guide/de/how-to-play-flexbox-froggy.jsp',
+  '/guides/flexbox-froggy-when.html': 'guide/flexbox-froggy-when.jsp',
+  '/guides/pt/flexbox-froggy-when.html': 'guide/pt/flexbox-froggy-when.jsp',
+  '/guides/es/flexbox-froggy-when.html': 'guide/es/flexbox-froggy-when.jsp',
+  '/guides/vi/flexbox-froggy-when.html': 'guide/vi/flexbox-froggy-when.jsp',
+  '/guides/id/flexbox-froggy-when.html': 'guide/id/flexbox-froggy-when.jsp',
+  '/guides/de/flexbox-froggy-when.html': 'guide/de/flexbox-froggy-when.jsp',
+  '/guides/flexbox-froggy-vs-alternatives.html': 'guide/flexbox-froggy-vs-alternatives.jsp',
+  '/guides/pt/flexbox-froggy-vs-alternatives.html': 'guide/pt/flexbox-froggy-vs-alternatives.jsp',
+  '/guides/es/flexbox-froggy-vs-alternatives.html': 'guide/es/flexbox-froggy-vs-alternatives.jsp',
+  '/guides/vi/flexbox-froggy-vs-alternatives.html': 'guide/vi/flexbox-froggy-vs-alternatives.jsp',
+  '/guides/id/flexbox-froggy-vs-alternatives.html': 'guide/id/flexbox-froggy-vs-alternatives.jsp',
+  '/guides/de/flexbox-froggy-vs-alternatives.html': 'guide/de/flexbox-froggy-vs-alternatives.jsp',
 
   // game-discovery-loop-runbook fire140 (2026-07-18): seasonal-witchcat companion guides
   '/guides/how-to-play-seasonal-witchcat.html': 'guide/how-to-play-seasonal-witchcat.jsp',
@@ -15131,6 +15293,110 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/abelisaurus-size-comparison.html': 'guide/vi/abelisaurus-size-comparison.jsp',
   '/guides/id/abelisaurus-size-comparison.html': 'guide/id/abelisaurus-size-comparison.jsp',
   '/guides/de/abelisaurus-size-comparison.html': 'guide/de/abelisaurus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire231 (2026-07-21): abelisaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/abelisaurus-3d-viewer-vs-ar-apps.html': 'guide/abelisaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/abelisaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/abelisaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/abelisaurus-3d-viewer-vs-ar-apps.html': 'guide/es/abelisaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/abelisaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/abelisaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/abelisaurus-3d-viewer-vs-ar-apps.html': 'guide/id/abelisaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/abelisaurus-3d-viewer-vs-ar-apps.html': 'guide/de/abelisaurus-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire232 (2026-07-21): how-to-view-chasmosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-chasmosaurus-in-3d.html': 'guide/how-to-view-chasmosaurus-in-3d.jsp',
+  '/guides/pt/how-to-view-chasmosaurus-in-3d.html': 'guide/pt/how-to-view-chasmosaurus-in-3d.jsp',
+  '/guides/es/how-to-view-chasmosaurus-in-3d.html': 'guide/es/how-to-view-chasmosaurus-in-3d.jsp',
+  '/guides/vi/how-to-view-chasmosaurus-in-3d.html': 'guide/vi/how-to-view-chasmosaurus-in-3d.jsp',
+  '/guides/id/how-to-view-chasmosaurus-in-3d.html': 'guide/id/how-to-view-chasmosaurus-in-3d.jsp',
+  '/guides/de/how-to-view-chasmosaurus-in-3d.html': 'guide/de/how-to-view-chasmosaurus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire233 (2026-07-21): chasmosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/chasmosaurus-size-comparison.html': 'guide/chasmosaurus-size-comparison.jsp',
+  '/guides/pt/chasmosaurus-size-comparison.html': 'guide/pt/chasmosaurus-size-comparison.jsp',
+  '/guides/es/chasmosaurus-size-comparison.html': 'guide/es/chasmosaurus-size-comparison.jsp',
+  '/guides/vi/chasmosaurus-size-comparison.html': 'guide/vi/chasmosaurus-size-comparison.jsp',
+  '/guides/id/chasmosaurus-size-comparison.html': 'guide/id/chasmosaurus-size-comparison.jsp',
+  '/guides/de/chasmosaurus-size-comparison.html': 'guide/de/chasmosaurus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire234 (2026-07-21): chasmosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/chasmosaurus-3d-viewer-vs-ar-apps.html': 'guide/chasmosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/chasmosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/chasmosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/chasmosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/chasmosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/chasmosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/chasmosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/chasmosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/chasmosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/chasmosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/chasmosaurus-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire235 (2026-07-21): how-to-view-psittacosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-psittacosaurus-in-3d.html': 'guide/how-to-view-psittacosaurus-in-3d.jsp',
+  '/guides/pt/how-to-view-psittacosaurus-in-3d.html': 'guide/pt/how-to-view-psittacosaurus-in-3d.jsp',
+  '/guides/es/how-to-view-psittacosaurus-in-3d.html': 'guide/es/how-to-view-psittacosaurus-in-3d.jsp',
+  '/guides/vi/how-to-view-psittacosaurus-in-3d.html': 'guide/vi/how-to-view-psittacosaurus-in-3d.jsp',
+  '/guides/id/how-to-view-psittacosaurus-in-3d.html': 'guide/id/how-to-view-psittacosaurus-in-3d.jsp',
+  '/guides/de/how-to-view-psittacosaurus-in-3d.html': 'guide/de/how-to-view-psittacosaurus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire236 (2026-07-21): psittacosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/psittacosaurus-size-comparison.html': 'guide/psittacosaurus-size-comparison.jsp',
+  '/guides/pt/psittacosaurus-size-comparison.html': 'guide/pt/psittacosaurus-size-comparison.jsp',
+  '/guides/es/psittacosaurus-size-comparison.html': 'guide/es/psittacosaurus-size-comparison.jsp',
+  '/guides/vi/psittacosaurus-size-comparison.html': 'guide/vi/psittacosaurus-size-comparison.jsp',
+  '/guides/id/psittacosaurus-size-comparison.html': 'guide/id/psittacosaurus-size-comparison.jsp',
+  '/guides/de/psittacosaurus-size-comparison.html': 'guide/de/psittacosaurus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire237 (2026-07-21): psittacosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/psittacosaurus-3d-viewer-vs-ar-apps.html': 'guide/psittacosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/psittacosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/psittacosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/psittacosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/psittacosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/psittacosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/psittacosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/psittacosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/psittacosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/psittacosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/psittacosaurus-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire238 (2026-07-21): how-to-view-becklespinax-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-becklespinax-in-3d.html': 'guide/how-to-view-becklespinax-in-3d.jsp',
+  '/guides/pt/how-to-view-becklespinax-in-3d.html': 'guide/pt/how-to-view-becklespinax-in-3d.jsp',
+  '/guides/es/how-to-view-becklespinax-in-3d.html': 'guide/es/how-to-view-becklespinax-in-3d.jsp',
+  '/guides/vi/how-to-view-becklespinax-in-3d.html': 'guide/vi/how-to-view-becklespinax-in-3d.jsp',
+  '/guides/id/how-to-view-becklespinax-in-3d.html': 'guide/id/how-to-view-becklespinax-in-3d.jsp',
+  '/guides/de/how-to-view-becklespinax-in-3d.html': 'guide/de/how-to-view-becklespinax-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire239 (2026-07-21): becklespinax-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/becklespinax-size-comparison.html': 'guide/becklespinax-size-comparison.jsp',
+  '/guides/pt/becklespinax-size-comparison.html': 'guide/pt/becklespinax-size-comparison.jsp',
+  '/guides/es/becklespinax-size-comparison.html': 'guide/es/becklespinax-size-comparison.jsp',
+  '/guides/vi/becklespinax-size-comparison.html': 'guide/vi/becklespinax-size-comparison.jsp',
+  '/guides/id/becklespinax-size-comparison.html': 'guide/id/becklespinax-size-comparison.jsp',
+  '/guides/de/becklespinax-size-comparison.html': 'guide/de/becklespinax-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire240 (2026-07-21): becklespinax-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/becklespinax-3d-viewer-vs-ar-apps.html': 'guide/becklespinax-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/becklespinax-3d-viewer-vs-ar-apps.html': 'guide/pt/becklespinax-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/becklespinax-3d-viewer-vs-ar-apps.html': 'guide/es/becklespinax-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/becklespinax-3d-viewer-vs-ar-apps.html': 'guide/vi/becklespinax-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/becklespinax-3d-viewer-vs-ar-apps.html': 'guide/id/becklespinax-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/becklespinax-3d-viewer-vs-ar-apps.html': 'guide/de/becklespinax-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire241 (2026-07-21): how-to-view-ostafrikasaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-ostafrikasaurus-in-3d.html': 'guide/how-to-view-ostafrikasaurus-in-3d.jsp',
+  '/guides/pt/how-to-view-ostafrikasaurus-in-3d.html': 'guide/pt/how-to-view-ostafrikasaurus-in-3d.jsp',
+  '/guides/es/how-to-view-ostafrikasaurus-in-3d.html': 'guide/es/how-to-view-ostafrikasaurus-in-3d.jsp',
+  '/guides/vi/how-to-view-ostafrikasaurus-in-3d.html': 'guide/vi/how-to-view-ostafrikasaurus-in-3d.jsp',
+  '/guides/id/how-to-view-ostafrikasaurus-in-3d.html': 'guide/id/how-to-view-ostafrikasaurus-in-3d.jsp',
+  '/guides/de/how-to-view-ostafrikasaurus-in-3d.html': 'guide/de/how-to-view-ostafrikasaurus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire242 (2026-07-21): ostafrikasaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/ostafrikasaurus-size-comparison.html': 'guide/ostafrikasaurus-size-comparison.jsp',
+  '/guides/pt/ostafrikasaurus-size-comparison.html': 'guide/pt/ostafrikasaurus-size-comparison.jsp',
+  '/guides/es/ostafrikasaurus-size-comparison.html': 'guide/es/ostafrikasaurus-size-comparison.jsp',
+  '/guides/vi/ostafrikasaurus-size-comparison.html': 'guide/vi/ostafrikasaurus-size-comparison.jsp',
+  '/guides/id/ostafrikasaurus-size-comparison.html': 'guide/id/ostafrikasaurus-size-comparison.jsp',
+  '/guides/de/ostafrikasaurus-size-comparison.html': 'guide/de/ostafrikasaurus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire243 (2026-07-21): ostafrikasaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/ostafrikasaurus-3d-viewer-vs-ar-apps.html': 'guide/ostafrikasaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/ostafrikasaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/ostafrikasaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/ostafrikasaurus-3d-viewer-vs-ar-apps.html': 'guide/es/ostafrikasaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/ostafrikasaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/ostafrikasaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/ostafrikasaurus-3d-viewer-vs-ar-apps.html': 'guide/id/ostafrikasaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/ostafrikasaurus-3d-viewer-vs-ar-apps.html': 'guide/de/ostafrikasaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
@@ -15433,6 +15699,7 @@ export const JSP_BY_ROUTE = {
   '/games/egg-time-rewind.html': 'games/egg-time-rewind.jsp',
   '/games/iso-city-sandbox.html': 'games/iso-city-sandbox.jsp',
   '/games/neuro-aim-arena.html': 'games/neuro-aim-arena.jsp',
+  '/games/flexbox-froggy.html': 'games/flexbox-froggy.jsp',
   '/games/seasonal-witchcat.html': 'games/seasonal-witchcat.jsp',
   '/games/desk-cat-coder.html': 'games/desk-cat-coder.jsp',
   '/games/boing-cat-platformer.html': 'games/boing-cat-platformer.jsp',
@@ -18798,6 +19065,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/markdown-html-previewer-when.html': 'guide/de/markdown-html-previewer-when.jsp',
   '/guides/de/markdown-html-previewer-step-by-step.html': 'guide/de/markdown-html-previewer-step-by-step.jsp',
   '/guides/de/markdown-html-previewer-vs-alternatives.html': 'guide/de/markdown-html-previewer-vs-alternatives.jsp',
+  '/developer-tools/html-to-markdown.html': 'utility/html-to-markdown.jsp',
+  '/guides/html-markdown-converter-when.html': 'guide/html-markdown-converter-when.jsp',
+  '/guides/de/html-markdown-converter-when.html': 'guide/de/html-markdown-converter-when.jsp',
+  '/guides/id/html-markdown-converter-when.html': 'guide/id/html-markdown-converter-when.jsp',
+  '/guides/vi/html-markdown-converter-when.html': 'guide/vi/html-markdown-converter-when.jsp',
+  '/guides/es/html-markdown-converter-when.html': 'guide/es/html-markdown-converter-when.jsp',
+  '/guides/pt/html-markdown-converter-when.html': 'guide/pt/html-markdown-converter-when.jsp',
+  '/guides/html-markdown-converter-step-by-step.html': 'guide/html-markdown-converter-step-by-step.jsp',
+  '/guides/de/html-markdown-converter-step-by-step.html': 'guide/de/html-markdown-converter-step-by-step.jsp',
+  '/guides/id/html-markdown-converter-step-by-step.html': 'guide/id/html-markdown-converter-step-by-step.jsp',
+  '/guides/vi/html-markdown-converter-step-by-step.html': 'guide/vi/html-markdown-converter-step-by-step.jsp',
+  '/guides/es/html-markdown-converter-step-by-step.html': 'guide/es/html-markdown-converter-step-by-step.jsp',
+  '/guides/pt/html-markdown-converter-step-by-step.html': 'guide/pt/html-markdown-converter-step-by-step.jsp',
+  '/guides/html-markdown-converter-vs-alternatives.html': 'guide/html-markdown-converter-vs-alternatives.jsp',
+  '/guides/de/html-markdown-converter-vs-alternatives.html': 'guide/de/html-markdown-converter-vs-alternatives.jsp',
+  '/guides/id/html-markdown-converter-vs-alternatives.html': 'guide/id/html-markdown-converter-vs-alternatives.jsp',
+  '/guides/vi/html-markdown-converter-vs-alternatives.html': 'guide/vi/html-markdown-converter-vs-alternatives.jsp',
+  '/guides/es/html-markdown-converter-vs-alternatives.html': 'guide/es/html-markdown-converter-vs-alternatives.jsp',
+  '/guides/pt/html-markdown-converter-vs-alternatives.html': 'guide/pt/html-markdown-converter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
