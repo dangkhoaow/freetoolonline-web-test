@@ -1,0 +1,368 @@
+<script>
+    // 3D scene archetype skeleton (moon-formation-giant-impact) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Registry Gate-H entry: three_3d_scene_vendored. Built LEAN
+    // from the shared t3d* skeleton (see BODYJSsolarsystem.html) - this file
+    // implements ONE scene only (moonformation), not the full accumulated
+    // scene set. All geometry is procedural - no model files, no textures
+    // fetched. This is an EDUCATIONAL APPROXIMATION of the giant-impact
+    // hypothesis, NOT a physics simulation; sizes/distances are compressed
+    // and the impact/debris/accretion timeline is illustrative staging, not
+    // an N-body or SPH solver - the info panel says so.
+    //
+    // A visible wrapper + "Loading 3D engine..." placeholder renders
+    // synchronously (G16 render-only pass); the ~0.7 MB engine lazy-loads
+    // post-paint via requestIdleCallback and is cached by the browser.
+    // Fullscreen targets the WRAPPER div (controls stay visible).
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'moon-formation-giant-impact';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) {
+        return 'moonformation';
+    }
+
+    // ---- vendored ESM loader (ftoLoadPdfLib shape, but a cached import()) ----
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - building still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- shared scene shell: renderer + camera + custom pointer-orbit --------
+    // OrbitControls is NOT vendored (jsm addons import the bare 'three'
+    // specifier); this ~40-line orbit covers drag-rotate + wheel/pinch zoom
+    // with damping and a clamped pitch.
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        function size() {
+            var w = Math.max(260, host.clientWidth);
+            var h = Math.round(w * 0.62);
+            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fsEl && fsEl.contains(host)) { h = Math.max(240, (window.innerHeight || h) - 150); }
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        host.appendChild(renderer.domElement);
+        renderer.domElement.style.touchAction = 'none';
+        renderer.domElement.style.borderRadius = '6px';
+        var drag = null, pinch = null, moved = 0;
+        host.addEventListener('pointerdown', function (e) {
+            drag = { x: e.clientX, y: e.clientY }; moved = 0;
+            host.setPointerCapture && host.setPointerCapture(e.pointerId);
+        });
+        host.addEventListener('pointermove', function (e) {
+            if (!drag) return;
+            var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+            moved += Math.abs(dx) + Math.abs(dy);
+            drag = { x: e.clientX, y: e.clientY };
+            orbit.goalTheta -= dx * 0.006;
+            orbit.goalPhi = Math.min(Math.max(orbit.goalPhi - dy * 0.005, 0.15), Math.PI - 0.2);
+        });
+        host.addEventListener('pointerup', function (e) {
+            var wasClick = moved < 8;
+            drag = null;
+            if (wasClick && shell.onClick) { shell.onClick(e); }
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR);
+        }, { passive: false });
+        host.addEventListener('touchstart', function (e) {
+            if (e.touches.length === 2) {
+                pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            }
+        }, { passive: true });
+        host.addEventListener('touchmove', function (e) {
+            if (e.touches.length === 2 && pinch) {
+                var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                pinch = d;
+            }
+        }, { passive: true });
+        window.addEventListener('resize', size);
+        document.addEventListener('fullscreenchange', size);
+        document.addEventListener('webkitfullscreenchange', size);
+        size();
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, size: size, onClick: null,
+            ndc: function (e) {
+                var r = renderer.domElement.getBoundingClientRect();
+                return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            },
+        };
+        return shell;
+    }
+
+    // ================= MOON FORMATION - GIANT IMPACT =========================
+    // Five staged views of the giant-impact hypothesis: proto-Earth and the
+    // Mars-sized protoplanet Theia approach on a converging path, collide at
+    // an oblique angle, throw a debris disk into orbit, the disk coalesces
+    // into the Moon, and the Moon settles into its present-day orbit. A
+    // stage slider (0-4) jumps between the five views; each stage's facts
+    // panel cites the published figures. This is an educational approximation
+    // of a widely-cited hypothesis, not an N-body or SPH impact simulation.
+    var T3D_MOONFORM_STAGES = [
+        {
+            key: 0, label: 'Before impact (~4.5 billion years ago)',
+            html: '<h3>Before impact</h3><p>Proto-Earth (about 90% of its current mass) and Theia, a Mars-sized protoplanet, close in on a collision course during the early Hadean eon.</p>' +
+                '<table class="w3-table w3-bordered"><tr><td>Theia size</td><td>roughly Mars-sized</td></tr>' +
+                '<tr><td>Theia mass (canonical model)</td><td>about 10% of Earth\'s mass</td></tr>' +
+                '<tr><td>Closing speed (far field)</td><td>under 4 km/s</td></tr></table>' +
+                '<p class="t3d-note">Some alternative models put Theia\'s mass as high as 30-45% of Earth\'s - the exact figure is still debated.</p>'
+        },
+        {
+            key: 1, label: 'Impact',
+            html: '<h3>Impact</h3><p>Theia strikes proto-Earth at a shallow, oblique angle of roughly 45 degrees, at over 9.3 km/s at the moment of contact.</p>' +
+                '<table class="w3-table w3-bordered"><tr><td>Impact angle</td><td>about 45 degrees (oblique, not head-on)</td></tr>' +
+                '<tr><td>Impact speed</td><td>over 9.3 km/s at contact</td></tr>' +
+                '<tr><td>Estimated timing</td><td>about 4.5 billion years ago (Hadean eon)</td></tr></table>' +
+                '<p class="t3d-note">Lunar rock oxygen-isotope ratios suggest heavy mixing between Theia and proto-Earth material - part of why the impact angle is modeled as oblique rather than head-on.</p>'
+        },
+        {
+            key: 2, label: 'Debris disk',
+            html: '<h3>Debris disk</h3><p>Vaporized and molten mantle material from both bodies is thrown into orbit, forming a glowing disk around the young Earth.</p>' +
+                '<table class="w3-table w3-bordered"><tr><td>Disk material</td><td>mostly Theia mantle, plus some Earth mantle</td></tr>' +
+                '<tr><td>Two possible remnants today</td><td>the LLSVPs - two continent-sized dense regions deep in Earth\'s mantle, hypothesized by 2023 impact simulations to be leftover Theia material</td></tr></table>' +
+                '<p class="t3d-note">How much of the disk was Earth material versus Theia material is still an open research question.</p>'
+        },
+        {
+            key: 3, label: 'Moon accretion',
+            html: '<h3>Moon accretion</h3><p>The debris disk cools and clumps together under its own gravity into a single body - the Moon.</p>' +
+                '<table class="w3-table w3-bordered"><tr><td>Accretion timescale</td><td>debated: classic models suggest decades to about 100 years for the bulk of the disk to accrete; some 2022 simulations propose part of the Moon could have formed within hours to days by direct ejection into orbit</td></tr></table>' +
+                '<p class="t3d-note">There is genuine scientific disagreement here - this scene does not pick a single number, it shows the range published in the literature.</p>'
+        },
+        {
+            key: 4, label: 'Present-day orbit',
+            html: '<h3>Present-day orbit</h3><p>Today the Moon orbits Earth at a mean distance of about 384,400 km, with a diameter of about 3,474 km - about 27% of Earth\'s diameter.</p>' +
+                '<table class="w3-table w3-bordered"><tr><td>Mean Earth-Moon distance</td><td>about 384,400 km (roughly 30 Earth diameters)</td></tr>' +
+                '<tr><td>Moon diameter</td><td>about 3,474 km (about 27% of Earth\'s diameter)</td></tr></table>' +
+                '<p class="t3d-note">The Moon is still slowly drifting away from Earth today, at about 3.8 cm per year, measured by laser reflectors left on the surface by Apollo astronauts.</p>'
+        }
+    ];
+    function t3dMoonFormation(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+        var sun = new THREE.DirectionalLight(0xfff3d0, 1.15);
+        sun.position.set(60, 50, 60);
+        scene.add(sun);
+        scene.add(new THREE.Mesh(
+            new THREE.SphereGeometry(0.4, 12, 12),
+            new THREE.MeshBasicMaterial({ color: 0xfff3d0 })
+        )).position.set(60, 50, 60);
+
+        var EARTH_R = 8, THEIA_R = 4.2, MOON_R = 2.2;
+        var earth = new THREE.Mesh(
+            new THREE.SphereGeometry(EARTH_R, 32, 24),
+            new THREE.MeshLambertMaterial({ color: 0x2f6f6a })
+        );
+        earth.userData = { kind: 'earth' };
+        scene.add(earth);
+
+        var theia = new THREE.Mesh(
+            new THREE.SphereGeometry(THEIA_R, 24, 18),
+            new THREE.MeshLambertMaterial({ color: 0xb5522e })
+        );
+        theia.userData = { kind: 'theia' };
+        scene.add(theia);
+
+        var moon = new THREE.Mesh(
+            new THREE.SphereGeometry(MOON_R, 20, 16),
+            new THREE.MeshLambertMaterial({ color: 0x9b9b9b })
+        );
+        moon.userData = { kind: 'moon' };
+        moon.visible = false;
+        scene.add(moon);
+
+        // Debris disk: a ring of small points that appears at stage 2, thins
+        // out through stage 3 as it "accretes" into the Moon, and disappears
+        // by stage 4.
+        var DEBRIS_N = 420;
+        var debrisGeo = new THREE.BufferGeometry();
+        var basePos = new Float32Array(DEBRIS_N * 3);
+        for (var i = 0; i < DEBRIS_N; i++) {
+            var a = Math.random() * Math.PI * 2;
+            var r = EARTH_R * 1.6 + Math.random() * EARTH_R * 1.8;
+            basePos[i * 3] = Math.cos(a) * r;
+            basePos[i * 3 + 1] = (Math.random() - 0.5) * 1.6;
+            basePos[i * 3 + 2] = Math.sin(a) * r;
+        }
+        debrisGeo.setAttribute('position', new THREE.BufferAttribute(basePos.slice(), 3));
+        var debris = new THREE.Points(debrisGeo, new THREE.PointsMaterial({ color: 0xd9b48c, size: 0.5, sizeAttenuation: true }));
+        debris.visible = false;
+        scene.add(debris);
+
+        var stageIdx = 0;
+        function applyStage(idx) {
+            stageIdx = Math.max(0, Math.min(4, idx));
+            var approachT = stageIdx === 0 ? 1 : 0; // 1 = far apart, 0 = touching
+            if (stageIdx === 0) {
+                earth.visible = true; theia.visible = true; moon.visible = false; debris.visible = false;
+                earth.position.set(-6, 0, 0);
+                theia.position.set(6 + THEIA_R * 1.4, 3, -3);
+            } else if (stageIdx === 1) {
+                earth.visible = true; theia.visible = true; moon.visible = false; debris.visible = false;
+                earth.position.set(-2, 0, 0);
+                theia.position.set(EARTH_R * 0.62, THEIA_R * 0.5, -THEIA_R * 0.3);
+            } else if (stageIdx === 2) {
+                earth.visible = true; theia.visible = false; moon.visible = false; debris.visible = true;
+                earth.position.set(0, 0, 0);
+                var pos = debrisGeo.attributes.position;
+                for (var j = 0; j < DEBRIS_N; j++) {
+                    pos.array[j * 3] = basePos[j * 3];
+                    pos.array[j * 3 + 1] = basePos[j * 3 + 1];
+                    pos.array[j * 3 + 2] = basePos[j * 3 + 2];
+                }
+                pos.needsUpdate = true;
+            } else if (stageIdx === 3) {
+                earth.visible = true; theia.visible = false; moon.visible = true; debris.visible = true;
+                earth.position.set(0, 0, 0);
+                moon.position.set(EARTH_R * 2.6, 0, 0);
+                var pos2 = debrisGeo.attributes.position;
+                for (var k = 0; k < DEBRIS_N; k++) {
+                    var shrink = 0.35;
+                    pos2.array[k * 3] = basePos[k * 3] * shrink + (Math.random() - 0.5) * 1.5 + EARTH_R * 2.6;
+                    pos2.array[k * 3 + 1] = basePos[k * 3 + 1] * shrink;
+                    pos2.array[k * 3 + 2] = basePos[k * 3 + 2] * shrink + (Math.random() - 0.5) * 1.5;
+                }
+                pos2.needsUpdate = true;
+            } else {
+                earth.visible = true; theia.visible = false; moon.visible = true; debris.visible = false;
+                earth.position.set(0, 0, 0);
+                moon.position.set(EARTH_R * 3.4, 0, 0);
+            }
+            var s = T3D_MOONFORM_STAGES[stageIdx];
+            t3dInfo(s.html);
+            var label = document.getElementById('t3dMoonStageLabel');
+            if (label) label.textContent = s.label;
+        }
+        applyStage(0);
+
+        var ray = new THREE.Raycaster();
+        shell.onClick = function (e) {
+            ray.setFromCamera(shell.ndc(e), shell.camera);
+            var targets = [earth, theia, moon].filter(function (o) { return o.visible; });
+            var hits = ray.intersectObjects(targets, false);
+            if (!hits.length) return;
+            var kind = hits[0].object.userData.kind;
+            if (kind === 'earth') t3dInfo('<h3>Proto-Earth / Earth</h3><p>The larger of the two colliding bodies; at the time of impact it already held roughly 90% of Earth\'s current mass.</p>');
+            else if (kind === 'theia') t3dInfo('<h3>Theia</h3><p>A Mars-sized protoplanet; canonical models put its mass at about 10% of Earth\'s (some alternative models suggest 30-45%).</p>');
+            else if (kind === 'moon') t3dInfo('<h3>The Moon</h3><p>About 3,474 km across (about 27% of Earth\'s diameter), orbiting at a mean distance of about 384,400 km today.</p>');
+        };
+
+        var slider = document.getElementById('t3dMoonStageSlider');
+        if (slider) {
+            slider.addEventListener('input', function () { applyStage(parseInt(slider.value, 10)); });
+        }
+
+        var moonOrbitAngle = 0;
+        return function animate(dt) {
+            theia.rotation.y += dt * 0.0006;
+            earth.rotation.y += dt * 0.0004;
+            if (stageIdx === 4 && moon.visible) {
+                moonOrbitAngle += dt * 0.00035;
+                moon.position.set(Math.cos(moonOrbitAngle) * EARTH_R * 3.4, 0, Math.sin(moonOrbitAngle) * EARTH_R * 3.4);
+            }
+        };
+    }
+
+    // ---- bootstrap ------------------------------------------------------------
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return; // not a 3D scene page
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { moonformation: 't3dMoonControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = {
+                        moonformation: { radius: 70, maxR: 220, minR: 15, phi: 1.1, targetY: 0 }
+                    };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dMoonFormation(shell);
+                    t3dStatus('Drag to orbit, scroll or pinch to zoom, click a body for facts, or use the stage slider below.');
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
