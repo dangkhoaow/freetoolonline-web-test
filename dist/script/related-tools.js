@@ -340,6 +340,7 @@ try {
     { title: "Brachiosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/brachiosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Ankylosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/ankylosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Parasaurolophus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/parasaurolophus.html", include: !1, tags: "dinosaur-3d" },
+    { title: "Lambeosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/lambeosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Pteranodon 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/pteranodon.html", include: !1, tags: "dinosaur-3d" },
     { title: "Allosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/allosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Giganotosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/giganotosaurus.html", include: !1, tags: "dinosaur-3d" },
