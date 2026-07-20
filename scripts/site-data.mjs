@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/html-markdown-converter-vs-alternatives.html',
+  '/guides/de/html-markdown-converter-vs-alternatives.html',
+  '/guides/id/html-markdown-converter-vs-alternatives.html',
+  '/guides/vi/html-markdown-converter-vs-alternatives.html',
+  '/guides/es/html-markdown-converter-vs-alternatives.html',
+  '/guides/pt/html-markdown-converter-vs-alternatives.html',
+  '/guides/html-markdown-converter-step-by-step.html',
+  '/guides/de/html-markdown-converter-step-by-step.html',
+  '/guides/id/html-markdown-converter-step-by-step.html',
+  '/guides/vi/html-markdown-converter-step-by-step.html',
+  '/guides/es/html-markdown-converter-step-by-step.html',
+  '/guides/pt/html-markdown-converter-step-by-step.html',
+  '/guides/html-markdown-converter-when.html',
+  '/guides/de/html-markdown-converter-when.html',
+  '/guides/id/html-markdown-converter-when.html',
+  '/guides/vi/html-markdown-converter-when.html',
+  '/guides/es/html-markdown-converter-when.html',
+  '/guides/pt/html-markdown-converter-when.html',
   // new-tool-discovery-loop-runbook fire285 (2026-07-17/18): video-merger
   // companion guides (3 angles x EN + pt/es/vi/id/de) - paraphrased from
   // tool-videomerger/SKILL.md framing menu only.
@@ -6234,6 +6252,22 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/how-to-view-ostafrikasaurus-in-3d.html',
   '/guides/id/how-to-view-ostafrikasaurus-in-3d.html',
   '/guides/de/how-to-view-ostafrikasaurus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire242 (2026-07-21): ostafrikasaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/ostafrikasaurus-size-comparison.html',
+  '/guides/pt/ostafrikasaurus-size-comparison.html',
+  '/guides/es/ostafrikasaurus-size-comparison.html',
+  '/guides/vi/ostafrikasaurus-size-comparison.html',
+  '/guides/id/ostafrikasaurus-size-comparison.html',
+  '/guides/de/ostafrikasaurus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire243 (2026-07-21): ostafrikasaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/ostafrikasaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/ostafrikasaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/ostafrikasaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/ostafrikasaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/ostafrikasaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/ostafrikasaurus-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -8079,6 +8113,25 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/neuro-aim-arena-vs-alternatives.html',
   '/guides/id/neuro-aim-arena-vs-alternatives.html',
   '/guides/de/neuro-aim-arena-vs-alternatives.html',
+  // game-discovery-loop-runbook fire164 (2026-07-20): flexboxfroggy companion guides
+  '/guides/how-to-play-flexbox-froggy.html',
+  '/guides/pt/how-to-play-flexbox-froggy.html',
+  '/guides/es/how-to-play-flexbox-froggy.html',
+  '/guides/vi/how-to-play-flexbox-froggy.html',
+  '/guides/id/how-to-play-flexbox-froggy.html',
+  '/guides/de/how-to-play-flexbox-froggy.html',
+  '/guides/flexbox-froggy-when.html',
+  '/guides/pt/flexbox-froggy-when.html',
+  '/guides/es/flexbox-froggy-when.html',
+  '/guides/vi/flexbox-froggy-when.html',
+  '/guides/id/flexbox-froggy-when.html',
+  '/guides/de/flexbox-froggy-when.html',
+  '/guides/flexbox-froggy-vs-alternatives.html',
+  '/guides/pt/flexbox-froggy-vs-alternatives.html',
+  '/guides/es/flexbox-froggy-vs-alternatives.html',
+  '/guides/vi/flexbox-froggy-vs-alternatives.html',
+  '/guides/id/flexbox-froggy-vs-alternatives.html',
+  '/guides/de/flexbox-froggy-vs-alternatives.html',
 
   // game-discovery-loop-runbook fire140 (2026-07-18): seasonal-witchcat companion guides
   '/guides/how-to-play-seasonal-witchcat.html',
@@ -9855,6 +9908,7 @@ export const ALIAS_ROUTES = {
   '/egg-time-rewind.html': '/games/egg-time-rewind.html',
   '/iso-city-sandbox.html': '/games/iso-city-sandbox.html',
   '/neuro-aim-arena.html': '/games/neuro-aim-arena.html',
+  '/flexbox-froggy.html': '/games/flexbox-froggy.html',
   '/seasonal-witchcat.html': '/games/seasonal-witchcat.html',
   '/desk-cat-coder.html': '/games/desk-cat-coder.html',
   '/boing-cat-platformer.html': '/games/boing-cat-platformer.html',
@@ -10042,6 +10096,7 @@ export const ALIAS_ROUTES = {
   '/video-splitter.html': '/video-tools/video-splitter.html',
   '/video-merger.html': '/video-tools/video-merger.html',
   '/json-to-typescript.html': '/developer-tools/json-to-typescript.html',
+  '/html-to-markdown.html': '/developer-tools/html-to-markdown.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -12248,6 +12303,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/neuro-aim-arena-vs-alternatives.html': 'guide/vi/neuro-aim-arena-vs-alternatives.jsp',
   '/guides/id/neuro-aim-arena-vs-alternatives.html': 'guide/id/neuro-aim-arena-vs-alternatives.jsp',
   '/guides/de/neuro-aim-arena-vs-alternatives.html': 'guide/de/neuro-aim-arena-vs-alternatives.jsp',
+  // game-discovery-loop-runbook fire164 (2026-07-20): flexboxfroggy companion guides
+  '/guides/how-to-play-flexbox-froggy.html': 'guide/how-to-play-flexbox-froggy.jsp',
+  '/guides/pt/how-to-play-flexbox-froggy.html': 'guide/pt/how-to-play-flexbox-froggy.jsp',
+  '/guides/es/how-to-play-flexbox-froggy.html': 'guide/es/how-to-play-flexbox-froggy.jsp',
+  '/guides/vi/how-to-play-flexbox-froggy.html': 'guide/vi/how-to-play-flexbox-froggy.jsp',
+  '/guides/id/how-to-play-flexbox-froggy.html': 'guide/id/how-to-play-flexbox-froggy.jsp',
+  '/guides/de/how-to-play-flexbox-froggy.html': 'guide/de/how-to-play-flexbox-froggy.jsp',
+  '/guides/flexbox-froggy-when.html': 'guide/flexbox-froggy-when.jsp',
+  '/guides/pt/flexbox-froggy-when.html': 'guide/pt/flexbox-froggy-when.jsp',
+  '/guides/es/flexbox-froggy-when.html': 'guide/es/flexbox-froggy-when.jsp',
+  '/guides/vi/flexbox-froggy-when.html': 'guide/vi/flexbox-froggy-when.jsp',
+  '/guides/id/flexbox-froggy-when.html': 'guide/id/flexbox-froggy-when.jsp',
+  '/guides/de/flexbox-froggy-when.html': 'guide/de/flexbox-froggy-when.jsp',
+  '/guides/flexbox-froggy-vs-alternatives.html': 'guide/flexbox-froggy-vs-alternatives.jsp',
+  '/guides/pt/flexbox-froggy-vs-alternatives.html': 'guide/pt/flexbox-froggy-vs-alternatives.jsp',
+  '/guides/es/flexbox-froggy-vs-alternatives.html': 'guide/es/flexbox-froggy-vs-alternatives.jsp',
+  '/guides/vi/flexbox-froggy-vs-alternatives.html': 'guide/vi/flexbox-froggy-vs-alternatives.jsp',
+  '/guides/id/flexbox-froggy-vs-alternatives.html': 'guide/id/flexbox-froggy-vs-alternatives.jsp',
+  '/guides/de/flexbox-froggy-vs-alternatives.html': 'guide/de/flexbox-froggy-vs-alternatives.jsp',
 
   // game-discovery-loop-runbook fire140 (2026-07-18): seasonal-witchcat companion guides
   '/guides/how-to-play-seasonal-witchcat.html': 'guide/how-to-play-seasonal-witchcat.jsp',
@@ -15307,6 +15381,22 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-view-ostafrikasaurus-in-3d.html': 'guide/vi/how-to-view-ostafrikasaurus-in-3d.jsp',
   '/guides/id/how-to-view-ostafrikasaurus-in-3d.html': 'guide/id/how-to-view-ostafrikasaurus-in-3d.jsp',
   '/guides/de/how-to-view-ostafrikasaurus-in-3d.html': 'guide/de/how-to-view-ostafrikasaurus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire242 (2026-07-21): ostafrikasaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/ostafrikasaurus-size-comparison.html': 'guide/ostafrikasaurus-size-comparison.jsp',
+  '/guides/pt/ostafrikasaurus-size-comparison.html': 'guide/pt/ostafrikasaurus-size-comparison.jsp',
+  '/guides/es/ostafrikasaurus-size-comparison.html': 'guide/es/ostafrikasaurus-size-comparison.jsp',
+  '/guides/vi/ostafrikasaurus-size-comparison.html': 'guide/vi/ostafrikasaurus-size-comparison.jsp',
+  '/guides/id/ostafrikasaurus-size-comparison.html': 'guide/id/ostafrikasaurus-size-comparison.jsp',
+  '/guides/de/ostafrikasaurus-size-comparison.html': 'guide/de/ostafrikasaurus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire243 (2026-07-21): ostafrikasaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/ostafrikasaurus-3d-viewer-vs-ar-apps.html': 'guide/ostafrikasaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/ostafrikasaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/ostafrikasaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/ostafrikasaurus-3d-viewer-vs-ar-apps.html': 'guide/es/ostafrikasaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/ostafrikasaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/ostafrikasaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/ostafrikasaurus-3d-viewer-vs-ar-apps.html': 'guide/id/ostafrikasaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/ostafrikasaurus-3d-viewer-vs-ar-apps.html': 'guide/de/ostafrikasaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
@@ -15609,6 +15699,7 @@ export const JSP_BY_ROUTE = {
   '/games/egg-time-rewind.html': 'games/egg-time-rewind.jsp',
   '/games/iso-city-sandbox.html': 'games/iso-city-sandbox.jsp',
   '/games/neuro-aim-arena.html': 'games/neuro-aim-arena.jsp',
+  '/games/flexbox-froggy.html': 'games/flexbox-froggy.jsp',
   '/games/seasonal-witchcat.html': 'games/seasonal-witchcat.jsp',
   '/games/desk-cat-coder.html': 'games/desk-cat-coder.jsp',
   '/games/boing-cat-platformer.html': 'games/boing-cat-platformer.jsp',
@@ -18974,6 +19065,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/markdown-html-previewer-when.html': 'guide/de/markdown-html-previewer-when.jsp',
   '/guides/de/markdown-html-previewer-step-by-step.html': 'guide/de/markdown-html-previewer-step-by-step.jsp',
   '/guides/de/markdown-html-previewer-vs-alternatives.html': 'guide/de/markdown-html-previewer-vs-alternatives.jsp',
+  '/developer-tools/html-to-markdown.html': 'utility/html-to-markdown.jsp',
+  '/guides/html-markdown-converter-when.html': 'guide/html-markdown-converter-when.jsp',
+  '/guides/de/html-markdown-converter-when.html': 'guide/de/html-markdown-converter-when.jsp',
+  '/guides/id/html-markdown-converter-when.html': 'guide/id/html-markdown-converter-when.jsp',
+  '/guides/vi/html-markdown-converter-when.html': 'guide/vi/html-markdown-converter-when.jsp',
+  '/guides/es/html-markdown-converter-when.html': 'guide/es/html-markdown-converter-when.jsp',
+  '/guides/pt/html-markdown-converter-when.html': 'guide/pt/html-markdown-converter-when.jsp',
+  '/guides/html-markdown-converter-step-by-step.html': 'guide/html-markdown-converter-step-by-step.jsp',
+  '/guides/de/html-markdown-converter-step-by-step.html': 'guide/de/html-markdown-converter-step-by-step.jsp',
+  '/guides/id/html-markdown-converter-step-by-step.html': 'guide/id/html-markdown-converter-step-by-step.jsp',
+  '/guides/vi/html-markdown-converter-step-by-step.html': 'guide/vi/html-markdown-converter-step-by-step.jsp',
+  '/guides/es/html-markdown-converter-step-by-step.html': 'guide/es/html-markdown-converter-step-by-step.jsp',
+  '/guides/pt/html-markdown-converter-step-by-step.html': 'guide/pt/html-markdown-converter-step-by-step.jsp',
+  '/guides/html-markdown-converter-vs-alternatives.html': 'guide/html-markdown-converter-vs-alternatives.jsp',
+  '/guides/de/html-markdown-converter-vs-alternatives.html': 'guide/de/html-markdown-converter-vs-alternatives.jsp',
+  '/guides/id/html-markdown-converter-vs-alternatives.html': 'guide/id/html-markdown-converter-vs-alternatives.jsp',
+  '/guides/vi/html-markdown-converter-vs-alternatives.html': 'guide/vi/html-markdown-converter-vs-alternatives.jsp',
+  '/guides/es/html-markdown-converter-vs-alternatives.html': 'guide/es/html-markdown-converter-vs-alternatives.jsp',
+  '/guides/pt/html-markdown-converter-vs-alternatives.html': 'guide/pt/html-markdown-converter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
