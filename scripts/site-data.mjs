@@ -9652,6 +9652,8 @@ export const ALIAS_ROUTES = {
   '/ankylosaurus.html': '/dinosaur-3d/ankylosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire15 (2026-07-16): flat-slug alias for parasaurolophus.
   '/parasaurolophus.html': '/dinosaur-3d/parasaurolophus.html',
+  // dinosaur-3d-discovery-loop-runbook fire238 (2026-07-20): flat-slug alias for lambeosaurus.
+  '/lambeosaurus.html': '/dinosaur-3d/lambeosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire9 (2026-07-16): flat-slug alias for pteranodon.
   '/pteranodon.html': '/dinosaur-3d/pteranodon.html',
   // dinosaur-3d-discovery-loop-runbook (2026-07-16): flat-slug alias for allosaurus.
@@ -13216,6 +13218,10 @@ export const JSP_BY_ROUTE = {
   // reused generically for a bipedal-capable hadrosaur, `feats.crest` long tube head crest, additively
   // tagged as its own clickable 'crest' part with a dedicated fact).
   '/dinosaur-3d/parasaurolophus.html': 'dinosaur/parasaurolophus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire238 (2026-07-20): lambeosaurus (theropod archetype,
+  // reuses the existing feats.crest branch shared with parasaurolophus/saurolophus; hollow
+  // hatchet-shaped crest, third distinct crest shape among this site's hadrosaurs).
+  '/dinosaur-3d/lambeosaurus.html': 'dinosaur/lambeosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire9 (2026-07-16): pteranodon (pterosaur + wings/crest).
   '/dinosaur-3d/pteranodon.html': 'dinosaur/pteranodon.jsp',
   // dinosaur-3d-discovery-loop-runbook (2026-07-16): allosaurus (theropod archetype, reuses
