@@ -9164,6 +9164,8 @@ export const ALIAS_ROUTES = {
   '/troodon.html': '/dinosaur-3d/troodon.html',
   // dinosaur-3d-discovery-loop-runbook fire148 (2026-07-20): flat-slug alias for acrocanthosaurus.
   '/acrocanthosaurus.html': '/dinosaur-3d/acrocanthosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire149 (2026-07-20): flat-slug alias for chasmosaurus.
+  '/chasmosaurus.html': '/dinosaur-3d/chasmosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire123: albertosaurus alias.
   '/albertosaurus.html': '/dinosaur-3d/albertosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire145: sarcosuchus alias.
@@ -12667,6 +12669,9 @@ export const JSP_BY_ROUTE = {
   // dinosaur-3d-discovery-loop-runbook fire148 (2026-07-20): acrocanthosaurus (theropod archetype,
   // feats.dorsalRidge + tinyArms; Model Magic CC0 Printables 1768652, vendored ftol-vm-assets 3a3f32e).
   '/dinosaur-3d/acrocanthosaurus.html': 'dinosaur/acrocanthosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire149 (2026-07-20): chasmosaurus (ceratopsian archetype,
+  // feats.frill + horns; Model Magic CC0 Printables 1766773, vendored ftol-vm-assets 3a474c8).
+  '/dinosaur-3d/chasmosaurus.html': 'dinosaur/chasmosaurus.jsp',
   '/dinosaur-3d/albertosaurus.html': 'dinosaur/albertosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire145 (2026-07-20): Sarcosuchus viewer -
   // new 'crocodilian' sprawled-gait archetype (Printables seth the yutyrannus,
