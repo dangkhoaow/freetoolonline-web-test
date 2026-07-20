@@ -9843,6 +9843,8 @@ export const ALIAS_ROUTES = {
   '/kentrosaurus.html': '/dinosaur-3d/kentrosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire226 (2026-07-20): flat-slug alias for becklespinax.
   '/becklespinax.html': '/dinosaur-3d/becklespinax.html',
+  // dinosaur-3d-discovery-loop-runbook fire (2026-07-20): flat-slug alias for oviraptor.
+  '/oviraptor.html': '/dinosaur-3d/oviraptor.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -13480,6 +13482,12 @@ export const JSP_BY_ROUTE = {
   // Acrocanthosaurus); seth the yutyrannus CC-BY-SA 4.0 via Printables,
   // vendored to ftol-vm-assets commit 90a2fa7.
   '/dinosaur-3d/becklespinax.html': 'dinosaur/becklespinax.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire (2026-07-20): Oviraptor viewer -
+  // raptor archetype with teeth:'beak' (toothless) and a new additive
+  // feats.noSickle flag (skips the raptor-archetype's enlarged sickle toe
+  // claw, which Oviraptor's oviraptorid anatomy did not have); model-first
+  // via ftol-vm-assets manifest entry "oviraptor" (CC0, Model Magic).
+  '/dinosaur-3d/oviraptor.html': 'dinosaur/oviraptor.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
