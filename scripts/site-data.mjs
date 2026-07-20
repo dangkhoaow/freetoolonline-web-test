@@ -5674,6 +5674,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/gryponyx-3d-viewer-vs-ar-apps.html',
   '/guides/id/gryponyx-3d-viewer-vs-ar-apps.html',
   '/guides/de/gryponyx-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire181 (2026-07-20): how-to-view-hybodus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-hybodus-in-3d.html',
+  '/guides/pt/how-to-view-hybodus-in-3d.html',
+  '/guides/es/how-to-view-hybodus-in-3d.html',
+  '/guides/vi/how-to-view-hybodus-in-3d.html',
+  '/guides/id/how-to-view-hybodus-in-3d.html',
+  '/guides/de/how-to-view-hybodus-in-3d.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -9058,6 +9066,8 @@ export const ALIAS_ROUTES = {
   '/sarcosuchus.html': '/dinosaur-3d/sarcosuchus.html',
   // dinosaur-3d-discovery-loop-runbook fire146: postosuchus alias.
   '/postosuchus.html': '/dinosaur-3d/postosuchus.html',
+  // dinosaur-3d-discovery-loop-runbook fire: kentrosaurus alias.
+  '/kentrosaurus.html': '/dinosaur-3d/kentrosaurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -12554,6 +12564,11 @@ export const JSP_BY_ROUTE = {
   // new 'rauisuchian' sub-erect quadruped archetype (Printables seth the yutyrannus,
   // CC-BY-SA 4.0, vendored to ftol-vm-assets commit abae90d).
   '/dinosaur-3d/postosuchus.html': 'dinosaur/postosuchus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire (2026-07-20): Kentrosaurus viewer -
+  // stegosaur archetype (shared with the already-shipped Stegosaurus), model
+  // re-verified this fire (Printables seth the yutyrannus, CC-BY-SA 4.0,
+  // vendored to ftol-vm-assets commit c3f7362).
+  '/dinosaur-3d/kentrosaurus.html': 'dinosaur/kentrosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -13998,6 +14013,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/gryponyx-3d-viewer-vs-ar-apps.html': 'guide/vi/gryponyx-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/gryponyx-3d-viewer-vs-ar-apps.html': 'guide/id/gryponyx-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/gryponyx-3d-viewer-vs-ar-apps.html': 'guide/de/gryponyx-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire181 (2026-07-20): how-to-view-hybodus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-hybodus-in-3d.html': 'guide/how-to-view-hybodus-in-3d.jsp',
+  '/guides/pt/how-to-view-hybodus-in-3d.html': 'guide/pt/how-to-view-hybodus-in-3d.jsp',
+  '/guides/es/how-to-view-hybodus-in-3d.html': 'guide/es/how-to-view-hybodus-in-3d.jsp',
+  '/guides/vi/how-to-view-hybodus-in-3d.html': 'guide/vi/how-to-view-hybodus-in-3d.jsp',
+  '/guides/id/how-to-view-hybodus-in-3d.html': 'guide/id/how-to-view-hybodus-in-3d.jsp',
+  '/guides/de/how-to-view-hybodus-in-3d.html': 'guide/de/how-to-view-hybodus-in-3d.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
