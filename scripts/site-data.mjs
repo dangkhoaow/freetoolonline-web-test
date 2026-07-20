@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/color-contrast-checker-wcag-vs-alternatives.html',
+  '/guides/de/color-contrast-checker-wcag-vs-alternatives.html',
+  '/guides/id/color-contrast-checker-wcag-vs-alternatives.html',
+  '/guides/vi/color-contrast-checker-wcag-vs-alternatives.html',
+  '/guides/es/color-contrast-checker-wcag-vs-alternatives.html',
+  '/guides/pt/color-contrast-checker-wcag-vs-alternatives.html',
+  '/guides/color-contrast-checker-wcag-step-by-step.html',
+  '/guides/de/color-contrast-checker-wcag-step-by-step.html',
+  '/guides/id/color-contrast-checker-wcag-step-by-step.html',
+  '/guides/vi/color-contrast-checker-wcag-step-by-step.html',
+  '/guides/es/color-contrast-checker-wcag-step-by-step.html',
+  '/guides/pt/color-contrast-checker-wcag-step-by-step.html',
+  '/guides/color-contrast-checker-wcag-when.html',
+  '/guides/de/color-contrast-checker-wcag-when.html',
+  '/guides/id/color-contrast-checker-wcag-when.html',
+  '/guides/vi/color-contrast-checker-wcag-when.html',
+  '/guides/es/color-contrast-checker-wcag-when.html',
+  '/guides/pt/color-contrast-checker-wcag-when.html',
   '/guides/html-markdown-converter-vs-alternatives.html',
   '/guides/de/html-markdown-converter-vs-alternatives.html',
   '/guides/id/html-markdown-converter-vs-alternatives.html',
@@ -6300,6 +6318,22 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/how-to-view-oviraptor-in-3d.html',
   '/guides/id/how-to-view-oviraptor-in-3d.html',
   '/guides/de/how-to-view-oviraptor-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire248 (2026-07-21): oviraptor-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/oviraptor-size-comparison.html',
+  '/guides/pt/oviraptor-size-comparison.html',
+  '/guides/es/oviraptor-size-comparison.html',
+  '/guides/vi/oviraptor-size-comparison.html',
+  '/guides/id/oviraptor-size-comparison.html',
+  '/guides/de/oviraptor-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire249 (2026-07-21): oviraptor-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/oviraptor-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/oviraptor-3d-viewer-vs-ar-apps.html',
+  '/guides/es/oviraptor-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/oviraptor-3d-viewer-vs-ar-apps.html',
+  '/guides/id/oviraptor-3d-viewer-vs-ar-apps.html',
+  '/guides/de/oviraptor-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -9892,6 +9926,8 @@ export const ALIAS_ROUTES = {
   '/becklespinax.html': '/dinosaur-3d/becklespinax.html',
   // dinosaur-3d-discovery-loop-runbook fire (2026-07-20): flat-slug alias for oviraptor.
   '/oviraptor.html': '/dinosaur-3d/oviraptor.html',
+  // dinosaur-3d-discovery-loop-runbook fire (2026-07-21): flat-slug alias for pinacosaurus.
+  '/pinacosaurus.html': '/dinosaur-3d/pinacosaurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -10174,6 +10210,7 @@ export const ALIAS_ROUTES = {
   '/video-merger.html': '/video-tools/video-merger.html',
   '/json-to-typescript.html': '/developer-tools/json-to-typescript.html',
   '/html-to-markdown.html': '/developer-tools/html-to-markdown.html',
+  '/wcag-contrast-checker.html': '/developer-tools/wcag-contrast-checker.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -13576,6 +13613,12 @@ export const JSP_BY_ROUTE = {
   // claw, which Oviraptor's oviraptorid anatomy did not have); model-first
   // via ftol-vm-assets manifest entry "oviraptor" (CC0, Model Magic).
   '/dinosaur-3d/oviraptor.html': 'dinosaur/oviraptor.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire (2026-07-21): Pinacosaurus viewer -
+  // ankylosaur archetype (same code path already shipped for ankylosaurus) -
+  // distinguishing feature is the mysterious multi-holed nostril anatomy +
+  // 20+ mostly-juvenile skeletons (herd evidence); model-first via
+  // ftol-vm-assets manifest entry "pinacosaurus" (already vendored).
+  '/dinosaur-3d/pinacosaurus.html': 'dinosaur/pinacosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -15556,6 +15599,22 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-view-oviraptor-in-3d.html': 'guide/vi/how-to-view-oviraptor-in-3d.jsp',
   '/guides/id/how-to-view-oviraptor-in-3d.html': 'guide/id/how-to-view-oviraptor-in-3d.jsp',
   '/guides/de/how-to-view-oviraptor-in-3d.html': 'guide/de/how-to-view-oviraptor-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire248 (2026-07-21): oviraptor-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/oviraptor-size-comparison.html': 'guide/oviraptor-size-comparison.jsp',
+  '/guides/pt/oviraptor-size-comparison.html': 'guide/pt/oviraptor-size-comparison.jsp',
+  '/guides/es/oviraptor-size-comparison.html': 'guide/es/oviraptor-size-comparison.jsp',
+  '/guides/vi/oviraptor-size-comparison.html': 'guide/vi/oviraptor-size-comparison.jsp',
+  '/guides/id/oviraptor-size-comparison.html': 'guide/id/oviraptor-size-comparison.jsp',
+  '/guides/de/oviraptor-size-comparison.html': 'guide/de/oviraptor-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire249 (2026-07-21): oviraptor-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/oviraptor-3d-viewer-vs-ar-apps.html': 'guide/oviraptor-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/oviraptor-3d-viewer-vs-ar-apps.html': 'guide/pt/oviraptor-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/oviraptor-3d-viewer-vs-ar-apps.html': 'guide/es/oviraptor-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/oviraptor-3d-viewer-vs-ar-apps.html': 'guide/vi/oviraptor-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/oviraptor-3d-viewer-vs-ar-apps.html': 'guide/id/oviraptor-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/oviraptor-3d-viewer-vs-ar-apps.html': 'guide/de/oviraptor-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
@@ -19245,6 +19304,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/html-markdown-converter-vs-alternatives.html': 'guide/vi/html-markdown-converter-vs-alternatives.jsp',
   '/guides/es/html-markdown-converter-vs-alternatives.html': 'guide/es/html-markdown-converter-vs-alternatives.jsp',
   '/guides/pt/html-markdown-converter-vs-alternatives.html': 'guide/pt/html-markdown-converter-vs-alternatives.jsp',
+  '/developer-tools/wcag-contrast-checker.html': 'utility/wcag-contrast-checker.jsp',
+  '/guides/color-contrast-checker-wcag-when.html': 'guide/color-contrast-checker-wcag-when.jsp',
+  '/guides/de/color-contrast-checker-wcag-when.html': 'guide/de/color-contrast-checker-wcag-when.jsp',
+  '/guides/id/color-contrast-checker-wcag-when.html': 'guide/id/color-contrast-checker-wcag-when.jsp',
+  '/guides/vi/color-contrast-checker-wcag-when.html': 'guide/vi/color-contrast-checker-wcag-when.jsp',
+  '/guides/es/color-contrast-checker-wcag-when.html': 'guide/es/color-contrast-checker-wcag-when.jsp',
+  '/guides/pt/color-contrast-checker-wcag-when.html': 'guide/pt/color-contrast-checker-wcag-when.jsp',
+  '/guides/color-contrast-checker-wcag-step-by-step.html': 'guide/color-contrast-checker-wcag-step-by-step.jsp',
+  '/guides/de/color-contrast-checker-wcag-step-by-step.html': 'guide/de/color-contrast-checker-wcag-step-by-step.jsp',
+  '/guides/id/color-contrast-checker-wcag-step-by-step.html': 'guide/id/color-contrast-checker-wcag-step-by-step.jsp',
+  '/guides/vi/color-contrast-checker-wcag-step-by-step.html': 'guide/vi/color-contrast-checker-wcag-step-by-step.jsp',
+  '/guides/es/color-contrast-checker-wcag-step-by-step.html': 'guide/es/color-contrast-checker-wcag-step-by-step.jsp',
+  '/guides/pt/color-contrast-checker-wcag-step-by-step.html': 'guide/pt/color-contrast-checker-wcag-step-by-step.jsp',
+  '/guides/color-contrast-checker-wcag-vs-alternatives.html': 'guide/color-contrast-checker-wcag-vs-alternatives.jsp',
+  '/guides/de/color-contrast-checker-wcag-vs-alternatives.html': 'guide/de/color-contrast-checker-wcag-vs-alternatives.jsp',
+  '/guides/id/color-contrast-checker-wcag-vs-alternatives.html': 'guide/id/color-contrast-checker-wcag-vs-alternatives.jsp',
+  '/guides/vi/color-contrast-checker-wcag-vs-alternatives.html': 'guide/vi/color-contrast-checker-wcag-vs-alternatives.jsp',
+  '/guides/es/color-contrast-checker-wcag-vs-alternatives.html': 'guide/es/color-contrast-checker-wcag-vs-alternatives.jsp',
+  '/guides/pt/color-contrast-checker-wcag-vs-alternatives.html': 'guide/pt/color-contrast-checker-wcag-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

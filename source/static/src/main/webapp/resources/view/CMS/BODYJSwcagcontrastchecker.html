@@ -1,0 +1,172 @@
+<script>
+    // Color tools skeleton - fully in-browser. Reference:
+    // verified-browser-impl-registry.mjs entry `color_tools_purejs`. Page: /wcag-contrast-checker.html
+    //
+    // Modes:
+    //   - color-picker (default): HEX / RGB / HSL readout + live swatch
+    //   - contrast / wcag: foreground + background colors, W3C relative-luminance
+    //     contrast ratio, AA/AAA verdicts for normal + large text
+    //
+    // No upload, no backend. The framework calls doAfterPageRendered() during
+    // page startup (it fires for EVERY page once jQuery + base-script load). Do
+    // NOT call $(...) at the top level: `$` is only defined inside the hook.
+
+    web.localUpload = false;
+
+    function cpDetectMode() {
+        var s = String('wcag-contrast-checker' || '').toLowerCase();
+        if (/\bcontrast\b|\bwcag\b/.test(s)) return 'contrast';
+        return 'picker';
+    }
+
+    function cpHexToRgb(hex) {
+        var h = String(hex || '').replace('#', '').trim();
+        if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+        if (!/^[0-9a-fA-F]{6}$/.test(h)) return null;
+        var n = parseInt(h, 16);
+        return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+    }
+
+    function cpRgbToHex(r, g, b) {
+        function byte(n) {
+            var s = Math.max(0, Math.min(255, n | 0)).toString(16);
+            return s.length === 1 ? '0' + s : s;
+        }
+        return ('#' + byte(r) + byte(g) + byte(b)).toUpperCase();
+    }
+
+    function cpNormalizeHex(raw) {
+        var rgb = cpHexToRgb(raw);
+        if (!rgb) return null;
+        return cpRgbToHex(rgb.r, rgb.g, rgb.b);
+    }
+
+    function cpRgbToHsl(r, g, b) {
+        r /= 255; g /= 255; b /= 255;
+        var max = Math.max(r, g, b), min = Math.min(r, g, b);
+        var h, s, l = (max + min) / 2;
+        if (max === min) {
+            h = 0; s = 0;
+        } else {
+            var d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            if (max === r) { h = (g - b) / d + (g < b ? 6 : 0); }
+            else if (max === g) { h = (b - r) / d + 2; }
+            else { h = (r - g) / d + 4; }
+            h /= 6;
+        }
+        return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+    }
+
+    // W3C WCAG 2.1 relative luminance + contrast ratio
+    // https://www.w3.org/TR/WCAG21/#dfn-relative-luminance
+    function cpChannelL(c) {
+        var s = c / 255;
+        return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+    }
+
+    function cpRelativeLuminance(rgb) {
+        return 0.2126 * cpChannelL(rgb.r) + 0.7152 * cpChannelL(rgb.g) + 0.0722 * cpChannelL(rgb.b);
+    }
+
+    function cpContrastRatio(fgRgb, bgRgb) {
+        var L1 = cpRelativeLuminance(fgRgb);
+        var L2 = cpRelativeLuminance(bgRgb);
+        var lighter = Math.max(L1, L2);
+        var darker = Math.min(L1, L2);
+        return (lighter + 0.05) / (darker + 0.05);
+    }
+
+    function cpFormatRatio(ratio) {
+        return (Math.round(ratio * 100) / 100).toFixed(2) + ' : 1';
+    }
+
+    function cpSetBadge(el, pass, label) {
+        el.text(label + (pass ? ' PASS' : ' FAIL'));
+        el.toggleClass('cp-pass', !!pass);
+        el.toggleClass('cp-fail', !pass);
+    }
+
+    function cpRenderPicker(hex) {
+        var rgb = cpHexToRgb(hex);
+        if (!rgb) return;
+        var hsl = cpRgbToHsl(rgb.r, rgb.g, rgb.b);
+        $('#cpHex').text(String(hex).toUpperCase());
+        $('#cpRgb').text('rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ')');
+        $('#cpHsl').text('hsl(' + hsl.h + ', ' + hsl.s + '%, ' + hsl.l + '%)');
+        $('#cpSwatch').css('background-color', hex);
+    }
+
+    function cpCopy(text) {
+        if (!text) return;
+        try { navigator.clipboard.writeText(text); }
+        catch (e) { /* clipboard unavailable - silent no-op */ }
+    }
+
+    function cpRenderContrast() {
+        var fgHex = cpNormalizeHex($('#cpFgHex').val() || $('#cpFgInput').val());
+        var bgHex = cpNormalizeHex($('#cpBgHex').val() || $('#cpBgInput').val());
+        if (!fgHex || !bgHex) {
+            $('#cpContrastRatio').text('-');
+            return;
+        }
+        $('#cpFgHex').val(fgHex);
+        $('#cpBgHex').val(bgHex);
+        $('#cpFgInput').val(fgHex.toLowerCase());
+        $('#cpBgInput').val(bgHex.toLowerCase());
+
+        var fg = cpHexToRgb(fgHex);
+        var bg = cpHexToRgb(bgHex);
+        var ratio = cpContrastRatio(fg, bg);
+        $('#cpContrastRatio').text(cpFormatRatio(ratio));
+
+        // WCAG: AA normal >= 4.5, AA large >= 3.0, AAA normal >= 7.0, AAA large >= 4.5
+        cpSetBadge($('#cpAaNormal'), ratio >= 4.5, 'AA normal text');
+        cpSetBadge($('#cpAaLarge'), ratio >= 3.0, 'AA large text');
+        cpSetBadge($('#cpAaaNormal'), ratio >= 7.0, 'AAA normal text');
+        cpSetBadge($('#cpAaaLarge'), ratio >= 4.5, 'AAA large text');
+
+        $('#cpContrastPreview').css({ color: fgHex, backgroundColor: bgHex });
+    }
+
+    function initColorPicker() {
+        if ($('#cpInput').length === 0) return;
+        $('#cpTool').prop('hidden', false);
+        cpRenderPicker($('#cpInput').val() || '#3366ff');
+        $('#cpInput').off('input.cp change.cp').on('input.cp change.cp', function () {
+            cpRenderPicker($(this).val() || '');
+        });
+        $('#cpCopyHex').off('click.cp').on('click.cp', function () { cpCopy($('#cpHex').text()); });
+        $('#cpCopyRgb').off('click.cp').on('click.cp', function () { cpCopy($('#cpRgb').text()); });
+        $('#cpCopyHsl').off('click.cp').on('click.cp', function () { cpCopy($('#cpHsl').text()); });
+    }
+
+    function initContrastChecker() {
+        if ($('#cpFgInput').length === 0) return;
+        $('#cpContrastTool').prop('hidden', false);
+        cpRenderContrast();
+        $('#cpFgInput, #cpBgInput').off('input.cp change.cp').on('input.cp change.cp', function () {
+            var id = this.id === 'cpFgInput' ? '#cpFgHex' : '#cpBgHex';
+            $(id).val($(this).val());
+            cpRenderContrast();
+        });
+        $('#cpFgHex, #cpBgHex').off('change.cp blur.cp').on('change.cp blur.cp', function () {
+            var norm = cpNormalizeHex($(this).val());
+            if (norm) $(this).val(norm);
+            cpRenderContrast();
+        });
+        $('#cpSwapColors').off('click.cp').on('click.cp', function () {
+            var fg = $('#cpFgHex').val();
+            var bg = $('#cpBgHex').val();
+            $('#cpFgHex').val(bg);
+            $('#cpBgHex').val(fg);
+            cpRenderContrast();
+        });
+    }
+
+    function doAfterPageRendered() {
+        var mode = cpDetectMode();
+        if (mode === 'contrast') initContrastChecker();
+        else initColorPicker();
+    }
+</script>
