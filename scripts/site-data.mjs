@@ -6018,6 +6018,30 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/how-to-view-sarcosuchus-in-3d.html',
   '/guides/id/how-to-view-sarcosuchus-in-3d.html',
   '/guides/de/how-to-view-sarcosuchus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire215 (2026-07-20): sarcosuchus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/sarcosuchus-size-comparison.html',
+  '/guides/pt/sarcosuchus-size-comparison.html',
+  '/guides/es/sarcosuchus-size-comparison.html',
+  '/guides/vi/sarcosuchus-size-comparison.html',
+  '/guides/id/sarcosuchus-size-comparison.html',
+  '/guides/de/sarcosuchus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire216 (2026-07-20): sarcosuchus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/sarcosuchus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/sarcosuchus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/sarcosuchus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/sarcosuchus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/sarcosuchus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/sarcosuchus-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire217 (2026-07-20): how-to-view-kentrosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-kentrosaurus-in-3d.html',
+  '/guides/pt/how-to-view-kentrosaurus-in-3d.html',
+  '/guides/es/how-to-view-kentrosaurus-in-3d.html',
+  '/guides/vi/how-to-view-kentrosaurus-in-3d.html',
+  '/guides/id/how-to-view-kentrosaurus-in-3d.html',
+  '/guides/de/how-to-view-kentrosaurus-in-3d.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -14836,6 +14860,30 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-view-sarcosuchus-in-3d.html': 'guide/vi/how-to-view-sarcosuchus-in-3d.jsp',
   '/guides/id/how-to-view-sarcosuchus-in-3d.html': 'guide/id/how-to-view-sarcosuchus-in-3d.jsp',
   '/guides/de/how-to-view-sarcosuchus-in-3d.html': 'guide/de/how-to-view-sarcosuchus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire215 (2026-07-20): sarcosuchus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/sarcosuchus-size-comparison.html': 'guide/sarcosuchus-size-comparison.jsp',
+  '/guides/pt/sarcosuchus-size-comparison.html': 'guide/pt/sarcosuchus-size-comparison.jsp',
+  '/guides/es/sarcosuchus-size-comparison.html': 'guide/es/sarcosuchus-size-comparison.jsp',
+  '/guides/vi/sarcosuchus-size-comparison.html': 'guide/vi/sarcosuchus-size-comparison.jsp',
+  '/guides/id/sarcosuchus-size-comparison.html': 'guide/id/sarcosuchus-size-comparison.jsp',
+  '/guides/de/sarcosuchus-size-comparison.html': 'guide/de/sarcosuchus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire216 (2026-07-20): sarcosuchus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/sarcosuchus-3d-viewer-vs-ar-apps.html': 'guide/sarcosuchus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/sarcosuchus-3d-viewer-vs-ar-apps.html': 'guide/pt/sarcosuchus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/sarcosuchus-3d-viewer-vs-ar-apps.html': 'guide/es/sarcosuchus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/sarcosuchus-3d-viewer-vs-ar-apps.html': 'guide/vi/sarcosuchus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/sarcosuchus-3d-viewer-vs-ar-apps.html': 'guide/id/sarcosuchus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/sarcosuchus-3d-viewer-vs-ar-apps.html': 'guide/de/sarcosuchus-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire217 (2026-07-20): how-to-view-kentrosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-kentrosaurus-in-3d.html': 'guide/how-to-view-kentrosaurus-in-3d.jsp',
+  '/guides/pt/how-to-view-kentrosaurus-in-3d.html': 'guide/pt/how-to-view-kentrosaurus-in-3d.jsp',
+  '/guides/es/how-to-view-kentrosaurus-in-3d.html': 'guide/es/how-to-view-kentrosaurus-in-3d.jsp',
+  '/guides/vi/how-to-view-kentrosaurus-in-3d.html': 'guide/vi/how-to-view-kentrosaurus-in-3d.jsp',
+  '/guides/id/how-to-view-kentrosaurus-in-3d.html': 'guide/id/how-to-view-kentrosaurus-in-3d.jsp',
+  '/guides/de/how-to-view-kentrosaurus-in-3d.html': 'guide/de/how-to-view-kentrosaurus-in-3d.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
