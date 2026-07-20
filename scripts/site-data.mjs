@@ -9947,6 +9947,7 @@ export const JSP_BY_ROUTE = {
   '/news/fat32-four-gib-file-limit.html': 'news/fat32-four-gib-file-limit.jsp',
   '/news/windows-11-fat32-format-2tb.html': 'news/windows-11-fat32-format-2tb.jsp',
   '/news/mp3-patents-expired-2017.html': 'news/mp3-patents-expired-2017.jsp',
+  '/news/pt/mp3-patents-expired-2017.html': 'news/pt/mp3-patents-expired-2017.jsp',
   '/news/7-zip-rar5-motw-bypass.html': 'news/7-zip-rar5-motw-bypass.jsp',
   '/news/pt/7-zip-rar5-motw-bypass.html': 'news/pt/7-zip-rar5-motw-bypass.jsp',
   '/news/es/7-zip-rar5-motw-bypass.html': 'news/es/7-zip-rar5-motw-bypass.jsp',
