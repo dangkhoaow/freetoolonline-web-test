@@ -406,6 +406,7 @@ try {
     { title: "Compsognathus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/compsognathus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Mamenchisaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/mamenchisaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Troodon 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/troodon.html", include: !1, tags: "dinosaur-3d" },
+    { title: "Acrocanthosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/acrocanthosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Albertosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/albertosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "AI Background Remover", url: "https://freetoolonline.com/image-tools/background-remover.html", include: !1, tags: "image-editing" },
     { title: "PDF to Text Online: Extract Text Free, No Install", url: "https://freetoolonline.com/guides/pdf-to-text-online-i-love-pdf.html", include: !1, tags: "pdf" },

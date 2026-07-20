@@ -5706,6 +5706,22 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/how-to-view-quetzalcoatlus-in-3d.html',
   '/guides/id/how-to-view-quetzalcoatlus-in-3d.html',
   '/guides/de/how-to-view-quetzalcoatlus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire185 (2026-07-20): quetzalcoatlus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/quetzalcoatlus-size-comparison.html',
+  '/guides/pt/quetzalcoatlus-size-comparison.html',
+  '/guides/es/quetzalcoatlus-size-comparison.html',
+  '/guides/vi/quetzalcoatlus-size-comparison.html',
+  '/guides/id/quetzalcoatlus-size-comparison.html',
+  '/guides/de/quetzalcoatlus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire186 (2026-07-20): quetzalcoatlus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/quetzalcoatlus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/quetzalcoatlus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/quetzalcoatlus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/quetzalcoatlus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/quetzalcoatlus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/quetzalcoatlus-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -9086,6 +9102,8 @@ export const ALIAS_ROUTES = {
   '/mamenchisaurus.html': '/dinosaur-3d/mamenchisaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire119: troodon alias.
   '/troodon.html': '/dinosaur-3d/troodon.html',
+  // dinosaur-3d-discovery-loop-runbook fire148 (2026-07-20): flat-slug alias for acrocanthosaurus.
+  '/acrocanthosaurus.html': '/dinosaur-3d/acrocanthosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire123: albertosaurus alias.
   '/albertosaurus.html': '/dinosaur-3d/albertosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire145: sarcosuchus alias.
@@ -12585,6 +12603,9 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/compsognathus.html': 'dinosaur/compsognathus.jsp',
   '/dinosaur-3d/mamenchisaurus.html': 'dinosaur/mamenchisaurus.jsp',
   '/dinosaur-3d/troodon.html': 'dinosaur/troodon.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire148 (2026-07-20): acrocanthosaurus (theropod archetype,
+  // feats.dorsalRidge + tinyArms; Model Magic CC0 Printables 1768652, vendored ftol-vm-assets 3a3f32e).
+  '/dinosaur-3d/acrocanthosaurus.html': 'dinosaur/acrocanthosaurus.jsp',
   '/dinosaur-3d/albertosaurus.html': 'dinosaur/albertosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire145 (2026-07-20): Sarcosuchus viewer -
   // new 'crocodilian' sprawled-gait archetype (Printables seth the yutyrannus,
@@ -14075,6 +14096,22 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-view-quetzalcoatlus-in-3d.html': 'guide/vi/how-to-view-quetzalcoatlus-in-3d.jsp',
   '/guides/id/how-to-view-quetzalcoatlus-in-3d.html': 'guide/id/how-to-view-quetzalcoatlus-in-3d.jsp',
   '/guides/de/how-to-view-quetzalcoatlus-in-3d.html': 'guide/de/how-to-view-quetzalcoatlus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire185 (2026-07-20): quetzalcoatlus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/quetzalcoatlus-size-comparison.html': 'guide/quetzalcoatlus-size-comparison.jsp',
+  '/guides/pt/quetzalcoatlus-size-comparison.html': 'guide/pt/quetzalcoatlus-size-comparison.jsp',
+  '/guides/es/quetzalcoatlus-size-comparison.html': 'guide/es/quetzalcoatlus-size-comparison.jsp',
+  '/guides/vi/quetzalcoatlus-size-comparison.html': 'guide/vi/quetzalcoatlus-size-comparison.jsp',
+  '/guides/id/quetzalcoatlus-size-comparison.html': 'guide/id/quetzalcoatlus-size-comparison.jsp',
+  '/guides/de/quetzalcoatlus-size-comparison.html': 'guide/de/quetzalcoatlus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire186 (2026-07-20): quetzalcoatlus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/quetzalcoatlus-3d-viewer-vs-ar-apps.html': 'guide/quetzalcoatlus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/quetzalcoatlus-3d-viewer-vs-ar-apps.html': 'guide/pt/quetzalcoatlus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/quetzalcoatlus-3d-viewer-vs-ar-apps.html': 'guide/es/quetzalcoatlus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/quetzalcoatlus-3d-viewer-vs-ar-apps.html': 'guide/vi/quetzalcoatlus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/quetzalcoatlus-3d-viewer-vs-ar-apps.html': 'guide/id/quetzalcoatlus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/quetzalcoatlus-3d-viewer-vs-ar-apps.html': 'guide/de/quetzalcoatlus-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
