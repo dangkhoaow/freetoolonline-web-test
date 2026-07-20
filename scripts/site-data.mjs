@@ -6146,6 +6146,38 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/abelisaurus-size-comparison.html',
   '/guides/id/abelisaurus-size-comparison.html',
   '/guides/de/abelisaurus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire231 (2026-07-21): abelisaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/abelisaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/abelisaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/abelisaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/abelisaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/abelisaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/abelisaurus-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire232 (2026-07-21): how-to-view-chasmosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-chasmosaurus-in-3d.html',
+  '/guides/pt/how-to-view-chasmosaurus-in-3d.html',
+  '/guides/es/how-to-view-chasmosaurus-in-3d.html',
+  '/guides/vi/how-to-view-chasmosaurus-in-3d.html',
+  '/guides/id/how-to-view-chasmosaurus-in-3d.html',
+  '/guides/de/how-to-view-chasmosaurus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire233 (2026-07-21): chasmosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/chasmosaurus-size-comparison.html',
+  '/guides/pt/chasmosaurus-size-comparison.html',
+  '/guides/es/chasmosaurus-size-comparison.html',
+  '/guides/vi/chasmosaurus-size-comparison.html',
+  '/guides/id/chasmosaurus-size-comparison.html',
+  '/guides/de/chasmosaurus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire234 (2026-07-21): chasmosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/chasmosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/chasmosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/chasmosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/chasmosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/chasmosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/chasmosaurus-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -15131,6 +15163,38 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/abelisaurus-size-comparison.html': 'guide/vi/abelisaurus-size-comparison.jsp',
   '/guides/id/abelisaurus-size-comparison.html': 'guide/id/abelisaurus-size-comparison.jsp',
   '/guides/de/abelisaurus-size-comparison.html': 'guide/de/abelisaurus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire231 (2026-07-21): abelisaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/abelisaurus-3d-viewer-vs-ar-apps.html': 'guide/abelisaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/abelisaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/abelisaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/abelisaurus-3d-viewer-vs-ar-apps.html': 'guide/es/abelisaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/abelisaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/abelisaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/abelisaurus-3d-viewer-vs-ar-apps.html': 'guide/id/abelisaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/abelisaurus-3d-viewer-vs-ar-apps.html': 'guide/de/abelisaurus-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire232 (2026-07-21): how-to-view-chasmosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-chasmosaurus-in-3d.html': 'guide/how-to-view-chasmosaurus-in-3d.jsp',
+  '/guides/pt/how-to-view-chasmosaurus-in-3d.html': 'guide/pt/how-to-view-chasmosaurus-in-3d.jsp',
+  '/guides/es/how-to-view-chasmosaurus-in-3d.html': 'guide/es/how-to-view-chasmosaurus-in-3d.jsp',
+  '/guides/vi/how-to-view-chasmosaurus-in-3d.html': 'guide/vi/how-to-view-chasmosaurus-in-3d.jsp',
+  '/guides/id/how-to-view-chasmosaurus-in-3d.html': 'guide/id/how-to-view-chasmosaurus-in-3d.jsp',
+  '/guides/de/how-to-view-chasmosaurus-in-3d.html': 'guide/de/how-to-view-chasmosaurus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire233 (2026-07-21): chasmosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/chasmosaurus-size-comparison.html': 'guide/chasmosaurus-size-comparison.jsp',
+  '/guides/pt/chasmosaurus-size-comparison.html': 'guide/pt/chasmosaurus-size-comparison.jsp',
+  '/guides/es/chasmosaurus-size-comparison.html': 'guide/es/chasmosaurus-size-comparison.jsp',
+  '/guides/vi/chasmosaurus-size-comparison.html': 'guide/vi/chasmosaurus-size-comparison.jsp',
+  '/guides/id/chasmosaurus-size-comparison.html': 'guide/id/chasmosaurus-size-comparison.jsp',
+  '/guides/de/chasmosaurus-size-comparison.html': 'guide/de/chasmosaurus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire234 (2026-07-21): chasmosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/chasmosaurus-3d-viewer-vs-ar-apps.html': 'guide/chasmosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/chasmosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/chasmosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/chasmosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/chasmosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/chasmosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/chasmosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/chasmosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/chasmosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/chasmosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/chasmosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
