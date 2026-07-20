@@ -6242,6 +6242,14 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/ostafrikasaurus-size-comparison.html',
   '/guides/id/ostafrikasaurus-size-comparison.html',
   '/guides/de/ostafrikasaurus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire243 (2026-07-21): ostafrikasaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/ostafrikasaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/ostafrikasaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/ostafrikasaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/ostafrikasaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/ostafrikasaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/ostafrikasaurus-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -15323,6 +15331,14 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/ostafrikasaurus-size-comparison.html': 'guide/vi/ostafrikasaurus-size-comparison.jsp',
   '/guides/id/ostafrikasaurus-size-comparison.html': 'guide/id/ostafrikasaurus-size-comparison.jsp',
   '/guides/de/ostafrikasaurus-size-comparison.html': 'guide/de/ostafrikasaurus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire243 (2026-07-21): ostafrikasaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/ostafrikasaurus-3d-viewer-vs-ar-apps.html': 'guide/ostafrikasaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/ostafrikasaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/ostafrikasaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/ostafrikasaurus-3d-viewer-vs-ar-apps.html': 'guide/es/ostafrikasaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/ostafrikasaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/ostafrikasaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/ostafrikasaurus-3d-viewer-vs-ar-apps.html': 'guide/id/ostafrikasaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/ostafrikasaurus-3d-viewer-vs-ar-apps.html': 'guide/de/ostafrikasaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
