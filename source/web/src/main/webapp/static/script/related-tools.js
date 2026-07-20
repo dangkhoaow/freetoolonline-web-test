@@ -363,6 +363,7 @@ try {
     { title: "Edmontosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/edmontosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Protoceratops 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/protoceratops.html", include: !1, tags: "dinosaur-3d" },
     { title: "Chasmosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/chasmosaurus.html", include: !1, tags: "dinosaur-3d" },
+    { title: "Abelisaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/abelisaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Ceratosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/ceratosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Brontosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/brontosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Megalosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/megalosaurus.html", include: !1, tags: "dinosaur-3d" },
