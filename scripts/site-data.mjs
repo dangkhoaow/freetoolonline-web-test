@@ -6286,6 +6286,30 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/ostafrikasaurus-3d-viewer-vs-ar-apps.html',
   '/guides/id/ostafrikasaurus-3d-viewer-vs-ar-apps.html',
   '/guides/de/ostafrikasaurus-3d-viewer-vs-ar-apps.html',
+  // dinosaur-3d-guides-loop-runbook fire244 (2026-07-21): how-to-view-lambeosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-lambeosaurus-in-3d.html',
+  '/guides/pt/how-to-view-lambeosaurus-in-3d.html',
+  '/guides/es/how-to-view-lambeosaurus-in-3d.html',
+  '/guides/vi/how-to-view-lambeosaurus-in-3d.html',
+  '/guides/id/how-to-view-lambeosaurus-in-3d.html',
+  '/guides/de/how-to-view-lambeosaurus-in-3d.html',
+  // dinosaur-3d-guides-loop-runbook fire245 (2026-07-21): lambeosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/lambeosaurus-size-comparison.html',
+  '/guides/pt/lambeosaurus-size-comparison.html',
+  '/guides/es/lambeosaurus-size-comparison.html',
+  '/guides/vi/lambeosaurus-size-comparison.html',
+  '/guides/id/lambeosaurus-size-comparison.html',
+  '/guides/de/lambeosaurus-size-comparison.html',
+  // dinosaur-3d-guides-loop-runbook fire246 (2026-07-21): lambeosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/lambeosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/pt/lambeosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/es/lambeosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/vi/lambeosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/lambeosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/de/lambeosaurus-3d-viewer-vs-ar-apps.html',
   // new-tool-discovery-loop-runbook fire148 (LEAN one-off, 2026-07-14):
   // GUIDE_ROUTES backfill for uuid-generator's 3 EN companion guide angles
   // (builder wires JSP_BY_ROUTE + INFO_ROUTES only - same recurring gap
@@ -8150,6 +8174,25 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/flexbox-froggy-vs-alternatives.html',
   '/guides/id/flexbox-froggy-vs-alternatives.html',
   '/guides/de/flexbox-froggy-vs-alternatives.html',
+  // game-discovery-loop-runbook fire165 (2026-07-21): gridgarden companion guides
+  '/guides/how-to-play-grid-garden.html',
+  '/guides/pt/how-to-play-grid-garden.html',
+  '/guides/es/how-to-play-grid-garden.html',
+  '/guides/vi/how-to-play-grid-garden.html',
+  '/guides/id/how-to-play-grid-garden.html',
+  '/guides/de/how-to-play-grid-garden.html',
+  '/guides/grid-garden-when.html',
+  '/guides/pt/grid-garden-when.html',
+  '/guides/es/grid-garden-when.html',
+  '/guides/vi/grid-garden-when.html',
+  '/guides/id/grid-garden-when.html',
+  '/guides/de/grid-garden-when.html',
+  '/guides/grid-garden-vs-alternatives.html',
+  '/guides/pt/grid-garden-vs-alternatives.html',
+  '/guides/es/grid-garden-vs-alternatives.html',
+  '/guides/vi/grid-garden-vs-alternatives.html',
+  '/guides/id/grid-garden-vs-alternatives.html',
+  '/guides/de/grid-garden-vs-alternatives.html',
 
   // game-discovery-loop-runbook fire140 (2026-07-18): seasonal-witchcat companion guides
   '/guides/how-to-play-seasonal-witchcat.html',
@@ -9837,6 +9880,8 @@ export const ALIAS_ROUTES = {
   '/kentrosaurus.html': '/dinosaur-3d/kentrosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire226 (2026-07-20): flat-slug alias for becklespinax.
   '/becklespinax.html': '/dinosaur-3d/becklespinax.html',
+  // dinosaur-3d-discovery-loop-runbook fire (2026-07-20): flat-slug alias for oviraptor.
+  '/oviraptor.html': '/dinosaur-3d/oviraptor.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -9929,6 +9974,7 @@ export const ALIAS_ROUTES = {
   '/iso-city-sandbox.html': '/games/iso-city-sandbox.html',
   '/neuro-aim-arena.html': '/games/neuro-aim-arena.html',
   '/flexbox-froggy.html': '/games/flexbox-froggy.html',
+  '/grid-garden.html': '/games/grid-garden.html',
   '/seasonal-witchcat.html': '/games/seasonal-witchcat.html',
   '/desk-cat-coder.html': '/games/desk-cat-coder.html',
   '/boing-cat-platformer.html': '/games/boing-cat-platformer.html',
@@ -10573,6 +10619,7 @@ export const JSP_BY_ROUTE = {
   '/news/es/mp3-patents-expired-2017.html': 'news/es/mp3-patents-expired-2017.jsp',
   '/news/vi/mp3-patents-expired-2017.html': 'news/vi/mp3-patents-expired-2017.jsp',
   '/news/id/mp3-patents-expired-2017.html': 'news/id/mp3-patents-expired-2017.jsp',
+  '/news/de/mp3-patents-expired-2017.html': 'news/de/mp3-patents-expired-2017.jsp',
   '/news/7-zip-rar5-motw-bypass.html': 'news/7-zip-rar5-motw-bypass.jsp',
   '/news/pt/7-zip-rar5-motw-bypass.html': 'news/pt/7-zip-rar5-motw-bypass.jsp',
   '/news/es/7-zip-rar5-motw-bypass.html': 'news/es/7-zip-rar5-motw-bypass.jsp',
@@ -12343,6 +12390,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/flexbox-froggy-vs-alternatives.html': 'guide/vi/flexbox-froggy-vs-alternatives.jsp',
   '/guides/id/flexbox-froggy-vs-alternatives.html': 'guide/id/flexbox-froggy-vs-alternatives.jsp',
   '/guides/de/flexbox-froggy-vs-alternatives.html': 'guide/de/flexbox-froggy-vs-alternatives.jsp',
+  // game-discovery-loop-runbook fire165 (2026-07-21): gridgarden companion guides
+  '/guides/how-to-play-grid-garden.html': 'guide/how-to-play-grid-garden.jsp',
+  '/guides/pt/how-to-play-grid-garden.html': 'guide/pt/how-to-play-grid-garden.jsp',
+  '/guides/es/how-to-play-grid-garden.html': 'guide/es/how-to-play-grid-garden.jsp',
+  '/guides/vi/how-to-play-grid-garden.html': 'guide/vi/how-to-play-grid-garden.jsp',
+  '/guides/id/how-to-play-grid-garden.html': 'guide/id/how-to-play-grid-garden.jsp',
+  '/guides/de/how-to-play-grid-garden.html': 'guide/de/how-to-play-grid-garden.jsp',
+  '/guides/grid-garden-when.html': 'guide/grid-garden-when.jsp',
+  '/guides/pt/grid-garden-when.html': 'guide/pt/grid-garden-when.jsp',
+  '/guides/es/grid-garden-when.html': 'guide/es/grid-garden-when.jsp',
+  '/guides/vi/grid-garden-when.html': 'guide/vi/grid-garden-when.jsp',
+  '/guides/id/grid-garden-when.html': 'guide/id/grid-garden-when.jsp',
+  '/guides/de/grid-garden-when.html': 'guide/de/grid-garden-when.jsp',
+  '/guides/grid-garden-vs-alternatives.html': 'guide/grid-garden-vs-alternatives.jsp',
+  '/guides/pt/grid-garden-vs-alternatives.html': 'guide/pt/grid-garden-vs-alternatives.jsp',
+  '/guides/es/grid-garden-vs-alternatives.html': 'guide/es/grid-garden-vs-alternatives.jsp',
+  '/guides/vi/grid-garden-vs-alternatives.html': 'guide/vi/grid-garden-vs-alternatives.jsp',
+  '/guides/id/grid-garden-vs-alternatives.html': 'guide/id/grid-garden-vs-alternatives.jsp',
+  '/guides/de/grid-garden-vs-alternatives.html': 'guide/de/grid-garden-vs-alternatives.jsp',
 
   // game-discovery-loop-runbook fire140 (2026-07-18): seasonal-witchcat companion guides
   '/guides/how-to-play-seasonal-witchcat.html': 'guide/how-to-play-seasonal-witchcat.jsp',
@@ -13474,6 +13540,12 @@ export const JSP_BY_ROUTE = {
   // Acrocanthosaurus); seth the yutyrannus CC-BY-SA 4.0 via Printables,
   // vendored to ftol-vm-assets commit 90a2fa7.
   '/dinosaur-3d/becklespinax.html': 'dinosaur/becklespinax.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire (2026-07-20): Oviraptor viewer -
+  // raptor archetype with teeth:'beak' (toothless) and a new additive
+  // feats.noSickle flag (skips the raptor-archetype's enlarged sickle toe
+  // claw, which Oviraptor's oviraptorid anatomy did not have); model-first
+  // via ftol-vm-assets manifest entry "oviraptor" (CC0, Model Magic).
+  '/dinosaur-3d/oviraptor.html': 'dinosaur/oviraptor.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -15422,6 +15494,30 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/ostafrikasaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/ostafrikasaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/ostafrikasaurus-3d-viewer-vs-ar-apps.html': 'guide/id/ostafrikasaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/ostafrikasaurus-3d-viewer-vs-ar-apps.html': 'guide/de/ostafrikasaurus-3d-viewer-vs-ar-apps.jsp',
+  // dinosaur-3d-guides-loop-runbook fire244 (2026-07-21): how-to-view-lambeosaurus-in-3d
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/how-to-view-lambeosaurus-in-3d.html': 'guide/how-to-view-lambeosaurus-in-3d.jsp',
+  '/guides/pt/how-to-view-lambeosaurus-in-3d.html': 'guide/pt/how-to-view-lambeosaurus-in-3d.jsp',
+  '/guides/es/how-to-view-lambeosaurus-in-3d.html': 'guide/es/how-to-view-lambeosaurus-in-3d.jsp',
+  '/guides/vi/how-to-view-lambeosaurus-in-3d.html': 'guide/vi/how-to-view-lambeosaurus-in-3d.jsp',
+  '/guides/id/how-to-view-lambeosaurus-in-3d.html': 'guide/id/how-to-view-lambeosaurus-in-3d.jsp',
+  '/guides/de/how-to-view-lambeosaurus-in-3d.html': 'guide/de/how-to-view-lambeosaurus-in-3d.jsp',
+  // dinosaur-3d-guides-loop-runbook fire245 (2026-07-21): lambeosaurus-size-comparison
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/lambeosaurus-size-comparison.html': 'guide/lambeosaurus-size-comparison.jsp',
+  '/guides/pt/lambeosaurus-size-comparison.html': 'guide/pt/lambeosaurus-size-comparison.jsp',
+  '/guides/es/lambeosaurus-size-comparison.html': 'guide/es/lambeosaurus-size-comparison.jsp',
+  '/guides/vi/lambeosaurus-size-comparison.html': 'guide/vi/lambeosaurus-size-comparison.jsp',
+  '/guides/id/lambeosaurus-size-comparison.html': 'guide/id/lambeosaurus-size-comparison.jsp',
+  '/guides/de/lambeosaurus-size-comparison.html': 'guide/de/lambeosaurus-size-comparison.jsp',
+  // dinosaur-3d-guides-loop-runbook fire246 (2026-07-21): lambeosaurus-3d-viewer-vs-ar-apps
+  // EN + pt/es/vi/id/de companion guides
+  '/guides/lambeosaurus-3d-viewer-vs-ar-apps.html': 'guide/lambeosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/pt/lambeosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/lambeosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/es/lambeosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/lambeosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/vi/lambeosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/lambeosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/id/lambeosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/lambeosaurus-3d-viewer-vs-ar-apps.jsp',
+  '/guides/de/lambeosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/lambeosaurus-3d-viewer-vs-ar-apps.jsp',
   '/guides/solar-system-3d-explorer-when.html': 'guide/solar-system-3d-explorer-when.jsp',
   '/guides/solar-system-3d-explorer-step-by-step.html': 'guide/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/solar-system-3d-explorer-vs-alternatives.html': 'guide/solar-system-3d-explorer-vs-alternatives.jsp',
@@ -15725,6 +15821,7 @@ export const JSP_BY_ROUTE = {
   '/games/iso-city-sandbox.html': 'games/iso-city-sandbox.jsp',
   '/games/neuro-aim-arena.html': 'games/neuro-aim-arena.jsp',
   '/games/flexbox-froggy.html': 'games/flexbox-froggy.jsp',
+  '/games/grid-garden.html': 'games/grid-garden.jsp',
   '/games/seasonal-witchcat.html': 'games/seasonal-witchcat.jsp',
   '/games/desk-cat-coder.html': 'games/desk-cat-coder.jsp',
   '/games/boing-cat-platformer.html': 'games/boing-cat-platformer.jsp',
