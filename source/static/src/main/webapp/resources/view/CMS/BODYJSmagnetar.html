@@ -1,0 +1,292 @@
+<script>
+    // 3D scene archetype skeleton (magnetar) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (magnetar).
+    // All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not a magnetohydrodynamics model.
+    // A teaching neutron-star sphere with exaggerated field lines and a
+    // log-scale field-strength comparison, plus a giant-flare pulse cue.
+    //
+    // Published figures (NASA Chandra / Swift J1818.0-1607, cross-checked 2026-07-21):
+    //   - Magnetar fields about 10^14 to 10^15 Gauss (~a million billion Gauss)
+    //   - Earth ~1 Gauss; fridge magnet ~100 Gauss (NASA Chandra contrast)
+    //   - Ordinary pulsar fields about 10^8 to 10^12 Gauss
+    //   - Quantum critical field about 4.4 x 10^13 Gauss
+    //   - ~31 known magnetars out of ~3,000 known neutron stars (Swift discovery, 2020-03-12)
+    //   - Distinct from neutron-star-pulsar (lighthouse-beam / rotation emphasis)
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'magnetar';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'magnetar'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Field comparison steps (log Gauss teaching ladder)
+    var T3D_MG_STEPS = [
+        { id: 'earth', label: 'Earth', gauss: 1, note: '~1 Gauss (NASA Chandra contrast)' },
+        { id: 'fridge', label: 'Fridge magnet', gauss: 100, note: '~100 Gauss (NASA Chandra contrast)' },
+        { id: 'mri', label: 'MRI-class', gauss: 1e4, note: 'Teaching ~10^4 Gauss medical-MRI order' },
+        { id: 'pulsar', label: 'Ordinary pulsar', gauss: 1e10, note: 'About 10^8 to 10^12 Gauss (typical pulsar range)' },
+        { id: 'magnetar', label: 'Magnetar', gauss: 1e15, note: 'About 10^14 to 10^15 Gauss (~a million billion Gauss)' }
+    ];
+    var T3D_MG_KNOWN = 31;
+    var T3D_MG_NS = 3000;
+    var T3D_MG_QED = 4.4e13;
+
+    function t3dMagnetar(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03050c, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.28));
+        var key = new THREE.DirectionalLight(0xb3e5fc, 0.7);
+        key.position.set(10, 14, 8);
+        scene.add(key);
+
+        var star = new THREE.Mesh(
+            new THREE.SphereGeometry(1.35, shell.low ? 24 : 40, shell.low ? 18 : 28),
+            new THREE.MeshStandardMaterial({ color: 0xe3f2fd, emissive: 0x1565c0, emissiveIntensity: 0.35, roughness: 0.35, roughness: 0.55 })
+        );
+        scene.add(star);
+
+        var fieldGroup = new THREE.Group();
+        scene.add(fieldGroup);
+        var loopN = shell.low ? 8 : 14;
+        var loops = [];
+        for (var i = 0; i < loopN; i++) {
+            var pts = [];
+            var a0 = (i / loopN) * Math.PI * 2;
+            for (var j = 0; j <= 64; j++) {
+                var t = (j / 64) * Math.PI * 2;
+                var R = 2.2 + 0.55 * Math.sin(t);
+                var x = R * Math.cos(t) * Math.cos(a0);
+                var y = 1.6 * Math.sin(t);
+                var z = R * Math.cos(t) * Math.sin(a0);
+                pts.push(new THREE.Vector3(x, y, z));
+            }
+            var curve = new THREE.CatmullRomCurve3(pts, true);
+            var tube = new THREE.Mesh(
+                new THREE.TubeGeometry(curve, 48, 0.035, 5, true),
+                new THREE.MeshBasicMaterial({ color: 0x80deea, transparent: true, opacity: 0.55 })
+            );
+            fieldGroup.add(tube);
+            loops.push(tube);
+        }
+
+        var flare = new THREE.Mesh(
+            new THREE.SphereGeometry(1.6, 16, 12),
+            new THREE.MeshBasicMaterial({ color: 0xffeb3b, transparent: true, opacity: 0 })
+        );
+        scene.add(flare);
+
+        var stepIdx = 4; // magnetar default
+        var flareAmt = 0.55;
+        var spin = 0;
+        var pulse = 0;
+
+        function fmtG(g) {
+            if (g >= 1e6) return '~10^' + Math.round(Math.log10(g)) + ' Gauss';
+            return '~' + g.toLocaleString() + ' Gauss';
+        }
+
+        function panelHtml() {
+            var step = T3D_MG_STEPS[stepIdx];
+            return '<h3>Magnetar field strength</h3>' +
+                '<p>Scrub the comparison ladder from Earth-scale fields up to magnetar strength, then pulse a teaching giant-flare flash.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Comparison step</td><td>' + step.label + '</td></tr>' +
+                '<tr><td>Teaching field</td><td>' + fmtG(step.gauss) + '</td></tr>' +
+                '<tr><td>Magnetar published range</td><td>~10^14 to 10^15 Gauss</td></tr>' +
+                '<tr><td>Earth / fridge (NASA Chandra)</td><td>~1 G / ~100 G</td></tr>' +
+                '<tr><td>Ordinary pulsar range</td><td>~10^8 to 10^12 Gauss</td></tr>' +
+                '<tr><td>Quantum critical field</td><td>~4.4 x 10^13 Gauss</td></tr>' +
+                '<tr><td>Census (Swift 2020)</td><td>~' + T3D_MG_KNOWN + ' known magnetars of ~' + T3D_MG_NS.toLocaleString() + ' neutron stars</td></tr>' +
+                '<tr><td>Flare pulse (scrub)</td><td>' + Math.round(flareAmt * 100) + '%</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation - field lines and flash are teaching cues, not a magnetohydrodynamics model. Distinct from the neutron-star pulsar explorer (lighthouse-beam / rotation emphasis).</p>';
+        }
+
+        function apply() {
+            var step = T3D_MG_STEPS[stepIdx];
+            var t = stepIdx / (T3D_MG_STEPS.length - 1);
+            var glow = 0.2 + t * 0.85;
+            star.material.emissiveIntensity = glow;
+            for (var i = 0; i < loops.length; i++) {
+                loops[i].material.opacity = 0.18 + t * 0.7;
+                loops[i].scale.setScalar(0.85 + t * 0.55);
+            }
+            var sEl = document.getElementById('t3dMgStep');
+            var sLab = document.getElementById('t3dMgStepLabel');
+            var fEl = document.getElementById('t3dMgFlare');
+            var fLab = document.getElementById('t3dMgFlareLabel');
+            if (sEl && parseInt(sEl.value, 10) !== stepIdx) sEl.value = String(stepIdx);
+            if (sLab) sLab.textContent = step.label + ' (' + fmtG(step.gauss) + ')';
+            if (fEl && Math.round(parseFloat(fEl.value || '0')) !== Math.round(flareAmt * 100)) fEl.value = String(Math.round(flareAmt * 100));
+            if (fLab) fLab.textContent = Math.round(flareAmt * 100) + '% pulse';
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ stepIdx: stepIdx, flareAmt: flareAmt }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.stepIdx === 'number') stepIdx = Math.max(0, Math.min(T3D_MG_STEPS.length - 1, Math.round(store.stepIdx)));
+        if (typeof store.flareAmt === 'number') flareAmt = store.flareAmt;
+        apply();
+
+        var sEl = document.getElementById('t3dMgStep');
+        if (sEl) sEl.addEventListener('input', function () {
+            stepIdx = parseInt(sEl.value || '4', 10);
+            apply();
+        });
+        var fEl = document.getElementById('t3dMgFlare');
+        if (fEl) fEl.addEventListener('input', function () {
+            flareAmt = parseFloat(fEl.value || '55') / 100;
+            apply();
+        });
+        var resetBtn = document.getElementById('t3dMgResetBtn');
+        if (resetBtn) resetBtn.addEventListener('click', function () {
+            stepIdx = 4; flareAmt = 0.55; apply();
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Scrub field comparison or flare pulse.');
+        return function animate(dt) {
+            spin += dt * 0.00035;
+            pulse += dt * 0.004;
+            star.rotation.y = spin;
+            fieldGroup.rotation.y = spin * 0.85;
+            var flash = flareAmt * (0.15 + 0.85 * Math.max(0, Math.sin(pulse)));
+            flare.material.opacity = flash * (0.25 + stepIdx * 0.12);
+            flare.scale.setScalar(1 + flash * 0.8);
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { magnetar: 't3dMgControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { magnetar: { radius: 12, maxR: 40, minR: 5, phi: 1.05, theta: 0.5, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dMagnetar(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
