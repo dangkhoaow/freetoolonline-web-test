@@ -60,7 +60,7 @@ const SEO_CLUSTER_GROUPS = [
     cluster: 'device-test',
     hubRoute: '/device-test-tools.html',
     hubLabel: 'Back to Device Test Tools',
-    routes: ['/microphone-test.html', '/camera-test.html', '/lcd-test.html', '/keyboard-test.html', '/device-test-tools/screen-recorder.html', '/device-test-tools/gpu-test.html'],
+    routes: ['/microphone-test.html', '/camera-test.html', '/lcd-test.html', '/keyboard-test.html', '/device-test-tools/screen-recorder.html', '/device-test-tools/gpu-test.html', '/device-test-tools/speaker-test.html'],
   },
   {
     cluster: 'utility',
