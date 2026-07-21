@@ -1,0 +1,283 @@
+<script>
+    // 3D scene archetype skeleton (white-dwarf-chandrasekhar-limit) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (whitedwarf).
+    // All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not a stellar-structure integrator.
+    // A teaching white-dwarf sphere shrinks as mass climbs toward the
+    // Chandrasekhar ceiling, with a density readout and a past-limit collapse cue.
+    //
+    // Published figures (Chandrasekhar / NASA Chandra Field Guide, cross-checked 2026-07-21):
+    //   - Classical Chandrasekhar limit ~1.44 solar masses (non-rotating, non-magnetized)
+    //   - Often quoted ~1.4 solar masses in NASA Chandra explainers
+    //   - Near-limit white dwarf: Earth-sized radius (~0.01 solar radii) holding ~1 solar mass
+    //   - Mean density on the order of ~1 tonne per cubic centimetre (~10^6 g/cm^3)
+    //   - Electron degeneracy pressure supports the star below the limit
+    //   - Exceeding the limit -> collapse / Type Ia pathway (see sibling explorers)
+    //   - Distinct from star-lifecycle (broad evolution) and type-ia-supernova-standard-candle (distance use)
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'white-dwarf-chandrasekhar-limit';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'whitedwarf'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    var T3D_WD_LIMIT = 1.44;
+    var T3D_WD_LIMIT_NOTE = 1.4;
+    var T3D_WD_MASS_LO = 0.30;
+    var T3D_WD_MASS_HI = 1.55;
+    var T3D_WD_TYPICAL = 0.60;
+
+    function t3dWhiteDwarf(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x07080f, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.32));
+        var key = new THREE.DirectionalLight(0xfff8e1, 0.75);
+        key.position.set(8, 12, 6);
+        scene.add(key);
+
+        var earthRef = new THREE.Mesh(
+            new THREE.SphereGeometry(1.0, 20, 16),
+            new THREE.MeshBasicMaterial({ color: 0x4fc3f7, transparent: true, opacity: 0.12, wireframe: true })
+        );
+        scene.add(earthRef);
+
+        var star = new THREE.Mesh(
+            new THREE.SphereGeometry(1.0, shell.low ? 24 : 36, shell.low ? 18 : 28),
+            new THREE.MeshStandardMaterial({ color: 0xfff3e0, emissive: 0xff8f00, emissiveIntensity: 0.45, roughness: 0.25, roughness: 0.65 })
+        );
+        scene.add(star);
+
+        var limitRing = new THREE.Mesh(
+            new THREE.RingGeometry(2.55, 2.75, 48),
+            new THREE.MeshBasicMaterial({ color: 0xff5252, side: THREE.DoubleSide, transparent: true, opacity: 0.55 })
+        );
+        limitRing.rotation.x = Math.PI / 2;
+        scene.add(limitRing);
+
+        var collapseFlash = new THREE.Mesh(
+            new THREE.SphereGeometry(1.2, 16, 12),
+            new THREE.MeshBasicMaterial({ color: 0xffeb3b, transparent: true, opacity: 0 })
+        );
+        scene.add(collapseFlash);
+
+        var massMsun = T3D_WD_TYPICAL;
+        var spin = 0;
+        var flashT = 0;
+
+        function teachingRadius(m) {
+            // Approximate mass-radius: shrinks as mass rises; collapses visually past limit
+            var clamped = Math.min(m, T3D_WD_LIMIT - 0.001);
+            var t = (clamped - T3D_WD_MASS_LO) / (T3D_WD_LIMIT - T3D_WD_MASS_LO);
+            var r = 1.55 - t * 1.05; // ~Earth-comparable near limit (teaching scale)
+            if (m >= T3D_WD_LIMIT) r = 0.22;
+            return Math.max(0.18, r);
+        }
+
+        function teachingDensity(m) {
+            // Order-of-magnitude teaching density rising toward ~1 tonne/cm^3 near limit
+            var t = Math.min(1, Math.max(0, (m - T3D_WD_MASS_LO) / (T3D_WD_LIMIT - T3D_WD_MASS_LO)));
+            var dens = 1e4 * Math.pow(10, t * 2); // 1e4 -> ~1e6 g/cm^3
+            if (m >= T3D_WD_LIMIT) dens = 1e7;
+            return dens;
+        }
+
+        function fmtDens(d) {
+            if (d >= 1e6) return '~' + (d / 1e6).toFixed(1) + ' tonne/cm^3 (~10^6 g/cm^3 order)';
+            if (d >= 1e5) return '~' + Math.round(d / 1e5) / 10 + ' x 10^5 g/cm^3';
+            return '~' + Math.round(d).toLocaleString() + ' g/cm^3';
+        }
+
+        function panelHtml() {
+            var past = massMsun >= T3D_WD_LIMIT;
+            return '<h3>White dwarf mass ceiling</h3>' +
+                '<p>Scrub mass toward the Chandrasekhar limit and watch the teaching star shrink while density climbs. Past the limit, a collapse cue fires.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Teaching mass (scrub)</td><td>' + massMsun.toFixed(2) + ' Msun</td></tr>' +
+                '<tr><td>Chandrasekhar limit</td><td>~' + T3D_WD_LIMIT.toFixed(2) + ' Msun (classical; often ~' + T3D_WD_LIMIT_NOTE + ' in NASA Chandra notes)</td></tr>' +
+                '<tr><td>Teaching radius scale</td><td>' + (past ? 'collapse cue (past limit)' : 'shrinks toward Earth-sized (~0.01 Rsun near limit)') + '</td></tr>' +
+                '<tr><td>Teaching density</td><td>' + fmtDens(teachingDensity(massMsun)) + '</td></tr>' +
+                '<tr><td>Support below limit</td><td>Electron degeneracy pressure</td></tr>' +
+                '<tr><td>Past the limit</td><td>' + (past ? 'Collapse / Type Ia pathway cue' : 'Stable teaching white dwarf') + '</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation - mass-radius curve is a teaching map onto published order-of-magnitude figures, not a stellar-structure integrator. Distinct from the star-lifecycle overview and from Type Ia standard-candle distance use.</p>';
+        }
+
+        function apply() {
+            var r = teachingRadius(massMsun);
+            star.scale.setScalar(r);
+            var past = massMsun >= T3D_WD_LIMIT;
+            star.material.emissiveIntensity = past ? 0.95 : (0.35 + (massMsun / T3D_WD_LIMIT) * 0.45);
+            star.material.color.setHex(past ? 0xffcdd2 : 0xfff3e0);
+            limitRing.material.opacity = past ? 0.9 : 0.45;
+            earthRef.material.opacity = 0.10 + (1 - r) * 0.08;
+            var mEl = document.getElementById('t3dWdMass');
+            var mLab = document.getElementById('t3dWdMassLabel');
+            if (mEl && Math.abs(parseFloat(mEl.value || '0') - massMsun) > 0.005) mEl.value = String(massMsun.toFixed(2));
+            if (mLab) mLab.textContent = massMsun.toFixed(2) + ' Msun' + (past ? ' (past limit)' : '');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ massMsun: massMsun }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.massMsun === 'number') massMsun = store.massMsun;
+        apply();
+
+        var mEl = document.getElementById('t3dWdMass');
+        if (mEl) mEl.addEventListener('input', function () {
+            massMsun = parseFloat(mEl.value || String(T3D_WD_TYPICAL));
+            if (massMsun >= T3D_WD_LIMIT) flashT = 1.2;
+            apply();
+        });
+        var resetBtn = document.getElementById('t3dWdResetBtn');
+        if (resetBtn) resetBtn.addEventListener('click', function () {
+            massMsun = T3D_WD_TYPICAL; flashT = 0; apply();
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Scrub mass toward ~1.44 Msun.');
+        return function animate(dt) {
+            spin += dt * 0.00025;
+            star.rotation.y = spin;
+            if (flashT > 0) {
+                flashT = Math.max(0, flashT - dt * 0.0015);
+                collapseFlash.material.opacity = flashT * 0.55;
+                collapseFlash.scale.setScalar(1.2 + (1.2 - flashT) * 1.5);
+            } else {
+                collapseFlash.material.opacity = 0;
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { whitedwarf: 't3dWdControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { whitedwarf: { radius: 10, maxR: 36, minR: 4, phi: 1.1, theta: 0.45, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dWhiteDwarf(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
