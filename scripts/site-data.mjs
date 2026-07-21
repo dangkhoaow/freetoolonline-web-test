@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/gamepad-controller-test-vs-alternatives.html',
+  '/guides/de/gamepad-controller-test-vs-alternatives.html',
+  '/guides/id/gamepad-controller-test-vs-alternatives.html',
+  '/guides/vi/gamepad-controller-test-vs-alternatives.html',
+  '/guides/es/gamepad-controller-test-vs-alternatives.html',
+  '/guides/pt/gamepad-controller-test-vs-alternatives.html',
+  '/guides/gamepad-controller-test-step-by-step.html',
+  '/guides/de/gamepad-controller-test-step-by-step.html',
+  '/guides/id/gamepad-controller-test-step-by-step.html',
+  '/guides/vi/gamepad-controller-test-step-by-step.html',
+  '/guides/es/gamepad-controller-test-step-by-step.html',
+  '/guides/pt/gamepad-controller-test-step-by-step.html',
+  '/guides/gamepad-controller-test-when.html',
+  '/guides/de/gamepad-controller-test-when.html',
+  '/guides/id/gamepad-controller-test-when.html',
+  '/guides/vi/gamepad-controller-test-when.html',
+  '/guides/es/gamepad-controller-test-when.html',
+  '/guides/pt/gamepad-controller-test-when.html',
   '/guides/mouse-test-buttons-scroll-vs-alternatives.html',
   '/guides/de/mouse-test-buttons-scroll-vs-alternatives.html',
   '/guides/id/mouse-test-buttons-scroll-vs-alternatives.html',
@@ -4452,6 +4470,25 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // fire344 gamepad-test companion guides
+  '/guides/gamepad-controller-test-when.html',
+  '/guides/pt/gamepad-controller-test-when.html',
+  '/guides/es/gamepad-controller-test-when.html',
+  '/guides/vi/gamepad-controller-test-when.html',
+  '/guides/id/gamepad-controller-test-when.html',
+  '/guides/de/gamepad-controller-test-when.html',
+  '/guides/gamepad-controller-test-step-by-step.html',
+  '/guides/pt/gamepad-controller-test-step-by-step.html',
+  '/guides/es/gamepad-controller-test-step-by-step.html',
+  '/guides/vi/gamepad-controller-test-step-by-step.html',
+  '/guides/id/gamepad-controller-test-step-by-step.html',
+  '/guides/de/gamepad-controller-test-step-by-step.html',
+  '/guides/gamepad-controller-test-vs-alternatives.html',
+  '/guides/pt/gamepad-controller-test-vs-alternatives.html',
+  '/guides/es/gamepad-controller-test-vs-alternatives.html',
+  '/guides/vi/gamepad-controller-test-vs-alternatives.html',
+  '/guides/id/gamepad-controller-test-vs-alternatives.html',
+  '/guides/de/gamepad-controller-test-vs-alternatives.html',
   // fire343 mouse-test companion guides
   '/guides/mouse-test-buttons-scroll-when.html',
   '/guides/pt/mouse-test-buttons-scroll-when.html',
@@ -10785,6 +10822,7 @@ export const ALIAS_ROUTES = {
   '/image-metadata-remover.html': '/image-tools/image-metadata-remover.html',
   '/image-color-palette-extractor.html': '/image-tools/image-color-palette-extractor.html',
   '/mouse-test.html': '/device-test-tools/mouse-test.html',
+  '/gamepad-test.html': '/device-test-tools/gamepad-test.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -20285,6 +20323,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/mouse-test-buttons-scroll-vs-alternatives.html': 'guide/vi/mouse-test-buttons-scroll-vs-alternatives.jsp',
   '/guides/es/mouse-test-buttons-scroll-vs-alternatives.html': 'guide/es/mouse-test-buttons-scroll-vs-alternatives.jsp',
   '/guides/pt/mouse-test-buttons-scroll-vs-alternatives.html': 'guide/pt/mouse-test-buttons-scroll-vs-alternatives.jsp',
+  '/device-test-tools/gamepad-test.html': 'convert/gamepad-test.jsp',
+  '/guides/gamepad-controller-test-when.html': 'guide/gamepad-controller-test-when.jsp',
+  '/guides/de/gamepad-controller-test-when.html': 'guide/de/gamepad-controller-test-when.jsp',
+  '/guides/id/gamepad-controller-test-when.html': 'guide/id/gamepad-controller-test-when.jsp',
+  '/guides/vi/gamepad-controller-test-when.html': 'guide/vi/gamepad-controller-test-when.jsp',
+  '/guides/es/gamepad-controller-test-when.html': 'guide/es/gamepad-controller-test-when.jsp',
+  '/guides/pt/gamepad-controller-test-when.html': 'guide/pt/gamepad-controller-test-when.jsp',
+  '/guides/gamepad-controller-test-step-by-step.html': 'guide/gamepad-controller-test-step-by-step.jsp',
+  '/guides/de/gamepad-controller-test-step-by-step.html': 'guide/de/gamepad-controller-test-step-by-step.jsp',
+  '/guides/id/gamepad-controller-test-step-by-step.html': 'guide/id/gamepad-controller-test-step-by-step.jsp',
+  '/guides/vi/gamepad-controller-test-step-by-step.html': 'guide/vi/gamepad-controller-test-step-by-step.jsp',
+  '/guides/es/gamepad-controller-test-step-by-step.html': 'guide/es/gamepad-controller-test-step-by-step.jsp',
+  '/guides/pt/gamepad-controller-test-step-by-step.html': 'guide/pt/gamepad-controller-test-step-by-step.jsp',
+  '/guides/gamepad-controller-test-vs-alternatives.html': 'guide/gamepad-controller-test-vs-alternatives.jsp',
+  '/guides/de/gamepad-controller-test-vs-alternatives.html': 'guide/de/gamepad-controller-test-vs-alternatives.jsp',
+  '/guides/id/gamepad-controller-test-vs-alternatives.html': 'guide/id/gamepad-controller-test-vs-alternatives.jsp',
+  '/guides/vi/gamepad-controller-test-vs-alternatives.html': 'guide/vi/gamepad-controller-test-vs-alternatives.jsp',
+  '/guides/es/gamepad-controller-test-vs-alternatives.html': 'guide/es/gamepad-controller-test-vs-alternatives.jsp',
+  '/guides/pt/gamepad-controller-test-vs-alternatives.html': 'guide/pt/gamepad-controller-test-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
