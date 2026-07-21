@@ -9970,6 +9970,8 @@ export const ALIAS_ROUTES = {
   '/oviraptor.html': '/dinosaur-3d/oviraptor.html',
   // dinosaur-3d-discovery-loop-runbook fire (2026-07-21): flat-slug alias for pinacosaurus.
   '/pinacosaurus.html': '/dinosaur-3d/pinacosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire87 (2026-07-21): flat-slug alias for monolophosaurus.
+  '/monolophosaurus.html': '/dinosaur-3d/monolophosaurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -13662,6 +13664,12 @@ export const JSP_BY_ROUTE = {
   // 20+ mostly-juvenile skeletons (herd evidence); model-first via
   // ftol-vm-assets manifest entry "pinacosaurus" (already vendored).
   '/dinosaur-3d/pinacosaurus.html': 'dinosaur/pinacosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire87 (2026-07-21): Monolophosaurus viewer -
+  // theropod archetype with feats.crest (single fused nasal+lacrimal crest,
+  // distinct from Dilophosaurus's paired crests and Cryolophosaurus's
+  // forward-swept crest); model-first via ftol-vm-assets manifest entry
+  // "monolophosaurus" (already vendored, CC-BY-SA 4.0).
+  '/dinosaur-3d/monolophosaurus.html': 'dinosaur/monolophosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid

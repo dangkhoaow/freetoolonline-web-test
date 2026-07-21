@@ -369,6 +369,7 @@ try {
     { title: "Becklespinax 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/becklespinax.html", include: !1, tags: "dinosaur-3d" },
     { title: "Oviraptor 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/oviraptor.html", include: !1, tags: "dinosaur-3d" },
     { title: "Pinacosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/pinacosaurus.html", include: !1, tags: "dinosaur-3d" },
+    { title: "Monolophosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/monolophosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Ceratosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/ceratosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Brontosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/brontosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Megalosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/megalosaurus.html", include: !1, tags: "dinosaur-3d" },
