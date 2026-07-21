@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/speaker-audio-channel-test-vs-alternatives.html',
+  '/guides/speaker-audio-channel-test-step-by-step.html',
+  '/guides/speaker-audio-channel-test-when.html',
+  '/guides/de/speaker-audio-channel-test-vs-alternatives.html',
+  '/guides/de/speaker-audio-channel-test-step-by-step.html',
+  '/guides/de/speaker-audio-channel-test-when.html',
+  '/guides/id/speaker-audio-channel-test-vs-alternatives.html',
+  '/guides/id/speaker-audio-channel-test-step-by-step.html',
+  '/guides/id/speaker-audio-channel-test-when.html',
+  '/guides/vi/speaker-audio-channel-test-vs-alternatives.html',
+  '/guides/vi/speaker-audio-channel-test-step-by-step.html',
+  '/guides/vi/speaker-audio-channel-test-when.html',
+  '/guides/es/speaker-audio-channel-test-vs-alternatives.html',
+  '/guides/es/speaker-audio-channel-test-step-by-step.html',
+  '/guides/es/speaker-audio-channel-test-when.html',
+  '/guides/pt/speaker-audio-channel-test-vs-alternatives.html',
+  '/guides/pt/speaker-audio-channel-test-step-by-step.html',
+  '/guides/pt/speaker-audio-channel-test-when.html',
   '/guides/svg-optimizer-minifier-vs-alternatives.html',
   '/guides/de/svg-optimizer-minifier-vs-alternatives.html',
   '/guides/id/svg-optimizer-minifier-vs-alternatives.html',
@@ -10320,6 +10338,7 @@ export const ALIAS_ROUTES = {
   '/html-to-markdown.html': '/developer-tools/html-to-markdown.html',
   '/wcag-contrast-checker.html': '/developer-tools/wcag-contrast-checker.html',
   '/svg-optimizer.html': '/developer-tools/svg-optimizer.html',
+  '/speaker-test.html': '/device-test-tools/speaker-test.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -19549,6 +19568,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/svg-optimizer-minifier-vs-alternatives.html': 'guide/vi/svg-optimizer-minifier-vs-alternatives.jsp',
   '/guides/es/svg-optimizer-minifier-vs-alternatives.html': 'guide/es/svg-optimizer-minifier-vs-alternatives.jsp',
   '/guides/pt/svg-optimizer-minifier-vs-alternatives.html': 'guide/pt/svg-optimizer-minifier-vs-alternatives.jsp',
+  '/device-test-tools/speaker-test.html': 'convert/speaker-test.jsp',
+  '/guides/speaker-audio-channel-test-when.html': 'guide/speaker-audio-channel-test-when.jsp',
+  '/guides/de/speaker-audio-channel-test-vs-alternatives.html': 'guide/de/speaker-audio-channel-test-vs-alternatives.jsp',
+  '/guides/de/speaker-audio-channel-test-step-by-step.html': 'guide/de/speaker-audio-channel-test-step-by-step.jsp',
+  '/guides/de/speaker-audio-channel-test-when.html': 'guide/de/speaker-audio-channel-test-when.jsp',
+  '/guides/id/speaker-audio-channel-test-vs-alternatives.html': 'guide/id/speaker-audio-channel-test-vs-alternatives.jsp',
+  '/guides/id/speaker-audio-channel-test-step-by-step.html': 'guide/id/speaker-audio-channel-test-step-by-step.jsp',
+  '/guides/id/speaker-audio-channel-test-when.html': 'guide/id/speaker-audio-channel-test-when.jsp',
+  '/guides/vi/speaker-audio-channel-test-vs-alternatives.html': 'guide/vi/speaker-audio-channel-test-vs-alternatives.jsp',
+  '/guides/vi/speaker-audio-channel-test-step-by-step.html': 'guide/vi/speaker-audio-channel-test-step-by-step.jsp',
+  '/guides/vi/speaker-audio-channel-test-when.html': 'guide/vi/speaker-audio-channel-test-when.jsp',
+  '/guides/es/speaker-audio-channel-test-vs-alternatives.html': 'guide/es/speaker-audio-channel-test-vs-alternatives.jsp',
+  '/guides/es/speaker-audio-channel-test-step-by-step.html': 'guide/es/speaker-audio-channel-test-step-by-step.jsp',
+  '/guides/es/speaker-audio-channel-test-when.html': 'guide/es/speaker-audio-channel-test-when.jsp',
+  '/guides/pt/speaker-audio-channel-test-vs-alternatives.html': 'guide/pt/speaker-audio-channel-test-vs-alternatives.jsp',
+  '/guides/pt/speaker-audio-channel-test-step-by-step.html': 'guide/pt/speaker-audio-channel-test-step-by-step.jsp',
+  '/guides/pt/speaker-audio-channel-test-when.html': 'guide/pt/speaker-audio-channel-test-when.jsp',
+  '/guides/speaker-audio-channel-test-step-by-step.html': 'guide/speaker-audio-channel-test-step-by-step.jsp',
+  '/guides/speaker-audio-channel-test-vs-alternatives.html': 'guide/speaker-audio-channel-test-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
