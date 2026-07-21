@@ -914,9 +914,7 @@ export const INFO_ROUTES = new Set([
   // Cycle 20260519-15 create_new_guide_page — "resize zip file" routing/disambiguation Lane-D guide (GSC 406 imp / 19 clicks / pos 6.83 / CTR 4.68%; opportunity_score 56.6). Distinguishing role: addresses the three-way wording ambiguity (shrink vs split vs shrink-photo-inputs-first), routes to the existing shrink / split / image-resize guides — not a 10th compress-zip duplicate.
   '/guides/en/resize-zip-file.html',
   // Cycle 20260520-16 create_new_guide_page — Indonesian-language guide "kompres file zip" (GSC 338 imp / 13 clicks / pos 6.36 / CTR 3.85%; opportunity_score 51.12). Implementing tool /zip-file.html. Companion sibling to /guides/comprimir-zip-online.html (Spanish) and /guides/compactar-pasta.html (Portuguese).
-  '/guides/en/kompres-file-zip.html',
   // Cycle 20260523-5 P52.I create_new_guide_page — Indonesian-language size-question guide "kompres zip" (GSC 248 imp / 18 clicks / pos 7.42 / CTR 7.26%; opportunity_score 30.98). Implementing tool /zip-file.html. SIZE-focused sibling to /guides/kompres-file-zip.html (broader Indonesian bundle/privacy guide).
-  '/guides/en/kompres-zip.html',
   '/guides/en/online-zip-vs-7z-vs-rar-which-to-pick.html',
   '/guides/en/how-to-zip-multiple-files-into-one.html',
   '/guides/en/how-to-zip-folder-online-step-by-step.html',
@@ -6962,7 +6960,6 @@ export const GUIDE_ROUTES = new Set([
   // toggle + reset + display metrics + no-upload disclosure). Kebab slug
   // /guides/tes-lcd.html does not shadow any existing primary tool route
   // (urlToSlug() smashes to "teslcd" which is not in JSP_BY_ROUTE).
-  '/guides/en/tes-lcd.html',
   // Cycle 20260518-29 create_new_guide_page - "zip password unlocker" Lane-D
   // guide (zip cluster, companion to /remove-zip-password.html). GSC 432 imp /
   // 44 clicks / pos 5.29 / CTR 10.18% / opportunity_score 73.32. Honest framing:
@@ -9568,6 +9565,13 @@ export function isGuideRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  // 2026-07-21 P1#6 mixed-language merge (review/20260720): en-tree Indonesian-
+  // slug guides 301 to their id/ twins - the id twin now WINS on clicks in all
+  // three pairs (357v27, 112v71, 64v12; gsc_top_pages_guides 2026-06-23..07-18)
+  // and Indonesian-language queries belong on Indonesian-language pages.
+  '/guides/en/tes-lcd.html': '/guides/id/tes-lcd.html',
+  '/guides/en/kompres-file-zip.html': '/guides/id/kompres-file-zip.html',
+  '/guides/en/kompres-zip.html': '/guides/id/kompres-zip.html',
   // 2026-07-21 P1#5 ZIP-permutation consolidation (review/20260720): near-
   // duplicate phrasings 301 to the click-winning canonical intent (how-to-
   // reduce-zip-file-size-online, 55 clk/28d) or the tool page for tool-name
@@ -10021,8 +10025,8 @@ export const ALIAS_ROUTES = {
   '/guides/json-vs-yaml-vs-toml-config-formats-explained.html': '/guides/en/json-vs-yaml-vs-toml-config-formats-explained.html',
   '/guides/keyboard-test-keys-not-detected-four-fixes.html': '/guides/en/keyboard-test-keys-not-detected-four-fixes.html',
   '/guides/keyboard-tester-online-rollover-vs-anti-ghosting.html': '/guides/en/keyboard-tester-online-rollover-vs-anti-ghosting.html',
-  '/guides/kompres-file-zip.html': '/guides/en/kompres-file-zip.html',
-  '/guides/kompres-zip.html': '/guides/en/kompres-zip.html',
+  '/guides/kompres-file-zip.html': '/guides/id/kompres-file-zip.html',
+  '/guides/kompres-zip.html': '/guides/id/kompres-zip.html',
   '/guides/lcd-checker.html': '/guides/en/lcd-checker.html',
   '/guides/lcd-screen-test.html': '/guides/en/lcd-screen-test.html',
   '/guides/lcd-test-online.html': '/guides/en/lcd-test-online.html',
@@ -10073,7 +10077,7 @@ export const ALIAS_ROUTES = {
   '/guides/screen-test-vs-camera-test-pick-the-right-tool.html': '/guides/en/screen-test-vs-camera-test-pick-the-right-tool.html',
   '/guides/split-gif-into-frames.html': '/guides/en/split-gif-into-frames.html',
   '/guides/svg-to-png-when-to-rasterize-an-svg.html': '/guides/en/svg-to-png-when-to-rasterize-an-svg.html',
-  '/guides/tes-lcd.html': '/guides/en/tes-lcd.html',
+  '/guides/tes-lcd.html': '/guides/id/tes-lcd.html',
   '/guides/test-lcd.html': '/guides/en/test-lcd.html',
   '/guides/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html': '/guides/en/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html',
   '/guides/tool-free.html': '/guides/en/tool-free.html',
@@ -10760,14 +10764,12 @@ export const JSP_BY_ROUTE = {
   // Cycle 20260518-33 create_new_guide_page - "Tes LCD" Lane-D guide (device-test
   // cluster, companion to /lcd-test.html). Indonesian-language guide for the
   // "tes lcd" search intent. Paraphrases tool-lcdtest/SKILL.md F1-F5.
-  '/guides/en/tes-lcd.html': 'guide/en/tes-lcd.jsp',
   // Cycle 20260520-16 create_new_guide_page - "Kompres File Zip" Lane-D guide
   // (zip cluster, Indonesian-language sibling to /guides/comprimir-zip-online.html).
   // Companion to /zip-file.html. GSC 28d "kompres file zip" 338 imp / 13 clicks /
   // pos 6.36 / CTR 3.85% / opportunity_score 51.12. Paraphrases tool-zipfile
   // implemented features (server-side bundling, optional AES password, S3-backed
   // download with short retention) into Indonesian reader-task prose.
-  '/guides/en/kompres-file-zip.html': 'guide/en/kompres-file-zip.jsp',
   // Cycle 20260523-5 P52.I create_new_guide_page - "Kompres Zip" Lane-D guide
   // (zip cluster, Indonesian-language SIZE-QUESTION companion to /guides/kompres-file-zip.html).
   // Companion to /zip-file.html. GSC 28d "kompres zip" 248 imp / 18 clicks / pos 7.42
@@ -10776,7 +10778,6 @@ export const JSP_BY_ROUTE = {
   // this guide focuses on the SIZE question (kapan ZIP mengecilkan ukuran), the sibling
   // covers the broader BUNDLE/PRIVACY workflow - the two pages mirror /guides/compress-zip.html
   // (size) vs the bigger English compress-zip guide family.
-  '/guides/en/kompres-zip.html': 'guide/en/kompres-zip.jsp',
   // Cycle 20260518-25 create_new_guide_page - "Online Zip File" Lane-D guide. Companion to /zip-tools/zip-file.html. Sourced from tool-zipfile/SKILL.md M1-M7 + tool-ziptools/SKILL.md M1.
   '/guides/en/online-zip-file.html': 'guide/en/online-zip-file.jsp',
   // Cycle 20260518-31 create_new_guide_page - "Create Zip File Online" Lane-D guide. Companion to /zip-tools/zip-file.html. Sourced from tool-zipfile/SKILL.md implemented features + BODYHTMLzipfile reader-task copy.
@@ -20243,7 +20244,6 @@ export const RELATED_GUIDES_CURATED = {
     '/guides/es/compress-folder-to-zip-online-free.html',
     '/guides/es/reduce-zip-size-online.html',
     '/guides/pt/compress-zip-file.html',
-    '/guides/en/kompres-file-zip.html',
   ],
   'md5converter': [
     '/guides/en/md5-vs-sha256-when-to-hash.html',
