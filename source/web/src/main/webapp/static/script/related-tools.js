@@ -738,6 +738,7 @@ try {
     { title: "SQL Formatter & Beautifier", url: "https://freetoolonline.com/developer-tools/sql-formatter.html", include: !1, tags: "developer" },
     { title: "Morse Code Translator", url: "https://freetoolonline.com/utility-tools/morse-code-translator.html", include: !1, tags: "utility" },
     { title: "Online Metronome", url: "https://freetoolonline.com/utility-tools/metronome.html", include: !1, tags: "utility" },
+    { title: "Favicon Generator", url: "https://freetoolonline.com/image-tools/favicon-generator.html", include: !1, tags: "image-editing" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

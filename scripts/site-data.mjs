@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/favicon-generator-vs-alternatives.html',
+  '/guides/de/favicon-generator-vs-alternatives.html',
+  '/guides/id/favicon-generator-vs-alternatives.html',
+  '/guides/vi/favicon-generator-vs-alternatives.html',
+  '/guides/es/favicon-generator-vs-alternatives.html',
+  '/guides/pt/favicon-generator-vs-alternatives.html',
+  '/guides/favicon-generator-step-by-step.html',
+  '/guides/de/favicon-generator-step-by-step.html',
+  '/guides/id/favicon-generator-step-by-step.html',
+  '/guides/vi/favicon-generator-step-by-step.html',
+  '/guides/es/favicon-generator-step-by-step.html',
+  '/guides/pt/favicon-generator-step-by-step.html',
+  '/guides/favicon-generator-when.html',
+  '/guides/de/favicon-generator-when.html',
+  '/guides/id/favicon-generator-when.html',
+  '/guides/vi/favicon-generator-when.html',
+  '/guides/es/favicon-generator-when.html',
+  '/guides/pt/favicon-generator-when.html',
   '/guides/metronome-vs-alternatives.html',
   '/guides/de/metronome-vs-alternatives.html',
   '/guides/id/metronome-vs-alternatives.html',
@@ -11226,6 +11244,7 @@ export const ALIAS_ROUTES = {
   '/sql-formatter.html': '/developer-tools/sql-formatter.html',
   '/morse-code-translator.html': '/utility-tools/morse-code-translator.html',
   '/metronome.html': '/utility-tools/metronome.html',
+  '/favicon-generator.html': '/image-tools/favicon-generator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -20984,6 +21003,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/metronome-vs-alternatives.html': 'guide/vi/metronome-vs-alternatives.jsp',
   '/guides/es/metronome-vs-alternatives.html': 'guide/es/metronome-vs-alternatives.jsp',
   '/guides/pt/metronome-vs-alternatives.html': 'guide/pt/metronome-vs-alternatives.jsp',
+  '/image-tools/favicon-generator.html': 'convert/favicon-generator.jsp',
+  '/guides/favicon-generator-when.html': 'guide/favicon-generator-when.jsp',
+  '/guides/de/favicon-generator-when.html': 'guide/de/favicon-generator-when.jsp',
+  '/guides/id/favicon-generator-when.html': 'guide/id/favicon-generator-when.jsp',
+  '/guides/vi/favicon-generator-when.html': 'guide/vi/favicon-generator-when.jsp',
+  '/guides/es/favicon-generator-when.html': 'guide/es/favicon-generator-when.jsp',
+  '/guides/pt/favicon-generator-when.html': 'guide/pt/favicon-generator-when.jsp',
+  '/guides/favicon-generator-step-by-step.html': 'guide/favicon-generator-step-by-step.jsp',
+  '/guides/de/favicon-generator-step-by-step.html': 'guide/de/favicon-generator-step-by-step.jsp',
+  '/guides/id/favicon-generator-step-by-step.html': 'guide/id/favicon-generator-step-by-step.jsp',
+  '/guides/vi/favicon-generator-step-by-step.html': 'guide/vi/favicon-generator-step-by-step.jsp',
+  '/guides/es/favicon-generator-step-by-step.html': 'guide/es/favicon-generator-step-by-step.jsp',
+  '/guides/pt/favicon-generator-step-by-step.html': 'guide/pt/favicon-generator-step-by-step.jsp',
+  '/guides/favicon-generator-vs-alternatives.html': 'guide/favicon-generator-vs-alternatives.jsp',
+  '/guides/de/favicon-generator-vs-alternatives.html': 'guide/de/favicon-generator-vs-alternatives.jsp',
+  '/guides/id/favicon-generator-vs-alternatives.html': 'guide/id/favicon-generator-vs-alternatives.jsp',
+  '/guides/vi/favicon-generator-vs-alternatives.html': 'guide/vi/favicon-generator-vs-alternatives.jsp',
+  '/guides/es/favicon-generator-vs-alternatives.html': 'guide/es/favicon-generator-vs-alternatives.jsp',
+  '/guides/pt/favicon-generator-vs-alternatives.html': 'guide/pt/favicon-generator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

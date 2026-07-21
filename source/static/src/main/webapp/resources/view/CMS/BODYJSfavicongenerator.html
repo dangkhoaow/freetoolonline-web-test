@@ -1,0 +1,203 @@
+<script>
+    // Favicon Generator (favicon-generator) - canvas resize to standard icon sizes + PNG-in-ICO.
+    // Registry Gate-H entry: imageediting_generator_purejs.
+    // Visible size list + empty grid on load so qa-e2e-test G16 passes.
+    // Plain <input type=file>; web.localUpload=false (no server upload widget).
+    // No external lib, no backend, no mic.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered().
+
+    web.localUpload = false;
+
+    var FG_SLUG = 'favicon-generator';
+    var FG_SIZES = [16, 32, 48, 180, 192, 512];
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('faviconGeneratorTool');
+        if (!root) return;
+
+        var fileEl = document.getElementById('fgFile');
+        var grid = document.getElementById('fgGrid');
+        var statusEl = document.getElementById('fgStatus');
+        var sizesEl = document.getElementById('fgSizes');
+        var dlIco = document.getElementById('fgDlIco');
+        var dl32 = document.getElementById('fgDl32');
+        var dl180 = document.getElementById('fgDl180');
+        var blobs = {};
+        var icoUrl = null;
+
+        function setStatus(msg) {
+            if (statusEl) statusEl.textContent = msg;
+            console.log('[favicon-generator] status=', msg);
+        }
+
+        function revokeUrl(a) {
+            if (a && a.dataset && a.dataset.url) {
+                try { URL.revokeObjectURL(a.dataset.url); } catch (e) {}
+                a.dataset.url = '';
+            }
+        }
+
+        function bindDownload(a, blob, name) {
+            if (!a || !blob) return;
+            revokeUrl(a);
+            var url = URL.createObjectURL(blob);
+            a.href = url;
+            a.download = name;
+            a.dataset.url = url;
+            a.style.display = 'inline-block';
+        }
+
+        function renderEmptyGrid() {
+            if (!grid) return;
+            var html = '';
+            for (var i = 0; i < FG_SIZES.length; i++) {
+                var s = FG_SIZES[i];
+                html += '<div class="fg-card" data-size="' + s + '">' +
+                    '<canvas width="' + s + '" height="' + s + '" style="width:' + Math.min(64, s) + 'px;height:' + Math.min(64, s) + 'px;"></canvas>' +
+                    '<div>' + s + 'x' + s + '</div></div>';
+            }
+            grid.innerHTML = html;
+            if (sizesEl) sizesEl.textContent = 'Sizes: 16, 32, 48, 180, 192, 512 (PNG) + favicon.ico';
+        }
+
+        function canvasToPngBlob(canvas) {
+            return new Promise(function (resolve, reject) {
+                if (!canvas.toBlob) {
+                    try {
+                        var data = canvas.toDataURL('image/png');
+                        var bin = atob(data.split(',')[1]);
+                        var arr = new Uint8Array(bin.length);
+                        for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+                        resolve(new Blob([arr], { type: 'image/png' }));
+                    } catch (e) { reject(e); }
+                    return;
+                }
+                canvas.toBlob(function (b) {
+                    if (!b) reject(new Error('toBlob failed'));
+                    else resolve(b);
+                }, 'image/png');
+            });
+        }
+
+        function buildPngIco(pngBlobs) {
+            // Modern ICO: ICONDIR + ICONDIRENTRY[] + embedded PNG payloads
+            var count = pngBlobs.length;
+            var headerSize = 6 + (16 * count);
+            var parts = [];
+            var offset = headerSize;
+            var entries = [];
+            for (var i = 0; i < count; i++) {
+                var u8 = new Uint8Array(pngBlobs[i]);
+                entries.push({ size: u8.length, offset: offset, bytes: u8 });
+                offset += u8.length;
+            }
+            var buf = new ArrayBuffer(offset);
+            var view = new DataView(buf);
+            var out = new Uint8Array(buf);
+            view.setUint16(0, 0, true);
+            view.setUint16(2, 1, true);
+            view.setUint16(4, count, true);
+            for (var j = 0; j < count; j++) {
+                var e = entries[j];
+                var base = 6 + j * 16;
+                var dim = FG_SIZES[j] >= 256 ? 0 : FG_SIZES[j];
+                out[base] = dim;
+                out[base + 1] = dim;
+                out[base + 2] = 0;
+                out[base + 3] = 0;
+                view.setUint16(base + 4, 1, true);
+                view.setUint16(base + 6, 32, true);
+                view.setUint32(base + 8, e.size, true);
+                view.setUint32(base + 12, e.offset, true);
+                out.set(e.bytes, e.offset);
+            }
+            return new Blob([buf], { type: 'image/x-icon' });
+        }
+
+        function drawCover(ctx, img, size) {
+            ctx.clearRect(0, 0, size, size);
+            var iw = img.naturalWidth || img.width;
+            var ih = img.naturalHeight || img.height;
+            var scale = Math.max(size / iw, size / ih);
+            var dw = iw * scale;
+            var dh = ih * scale;
+            var dx = (size - dw) / 2;
+            var dy = (size - dh) / 2;
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, dx, dy, dw, dh);
+        }
+
+        async function processImage(img) {
+            blobs = {};
+            if (icoUrl) { try { URL.revokeObjectURL(icoUrl); } catch (e) {} icoUrl = null; }
+            var pngForIco = [];
+            var icoSizes = [16, 32, 48];
+            renderEmptyGrid();
+            var cards = grid.querySelectorAll('.fg-card');
+            for (var i = 0; i < FG_SIZES.length; i++) {
+                var size = FG_SIZES[i];
+                var card = cards[i];
+                var canvas = card ? card.querySelector('canvas') : null;
+                if (!canvas) continue;
+                canvas.width = size;
+                canvas.height = size;
+                drawCover(canvas.getContext('2d'), img, size);
+                var blob = await canvasToPngBlob(canvas);
+                blobs[size] = blob;
+                if (icoSizes.indexOf(size) !== -1) pngForIco.push(await blob.arrayBuffer());
+                var a = document.createElement('a');
+                a.className = 'w3-button w3-tiny w3-light-grey';
+                a.textContent = 'PNG';
+                a.download = 'favicon-' + size + 'x' + size + '.png';
+                var url = URL.createObjectURL(blob);
+                a.href = url;
+                a.dataset.url = url;
+                var old = card.querySelector('a');
+                if (old) { revokeUrl(old); old.remove(); }
+                card.appendChild(a);
+            }
+            var icoBlob = buildPngIco(pngForIco);
+            bindDownload(dlIco, icoBlob, 'favicon.ico');
+            bindDownload(dl32, blobs[32], 'favicon-32x32.png');
+            bindDownload(dl180, blobs[180], 'apple-touch-icon-180.png');
+            setStatus('Ready - download favicon.ico or individual PNGs. Processing stayed in this tab.');
+            console.log('[favicon-generator] processed sizes=', FG_SIZES.join(','));
+        }
+
+        function onFile(file) {
+            if (!file) return;
+            if (!/^image\//.test(file.type) && !/\.(png|jpe?g|webp|gif|bmp)$/i.test(file.name || '')) {
+                setStatus('Please choose an image file (PNG, JPEG, WebP, GIF, or BMP).');
+                return;
+            }
+            setStatus('Loading ' + (file.name || 'image') + '...');
+            var url = URL.createObjectURL(file);
+            var img = new Image();
+            img.onload = function () {
+                URL.revokeObjectURL(url);
+                processImage(img).catch(function (err) {
+                    setStatus('Could not generate favicons: ' + (err && err.message ? err.message : String(err)));
+                });
+            };
+            img.onerror = function () {
+                URL.revokeObjectURL(url);
+                setStatus('Could not read that image. Try a different PNG or JPEG.');
+            };
+            img.src = url;
+        }
+
+        if (fileEl) {
+            fileEl.addEventListener('change', function () {
+                var f = fileEl.files && fileEl.files[0];
+                console.log('[favicon-generator] file chosen', f && f.name, f && f.type);
+                onFile(f);
+            });
+        }
+
+        renderEmptyGrid();
+        setStatus('Choose an image. Resizing runs in this tab - nothing is uploaded.');
+        console.log('[favicon-generator] wired slug=' + FG_SLUG);
+    }
+</script>
