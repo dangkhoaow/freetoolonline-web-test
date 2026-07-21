@@ -484,6 +484,7 @@ try {
     { title: "Miami Mice", url: "https://freetoolonline.com/games/miami-mice.html", include: !1, tags: "games" },
     { title: "Orbital Order", url: "https://freetoolonline.com/games/orbital-order.html", include: !1, tags: "games" },
     { title: "Spike Sprint", url: "https://freetoolonline.com/games/spike-sprint.html", include: !1, tags: "games" },
+    { title: "Neon Deep Space", url: "https://freetoolonline.com/games/neon-deep-space.html", include: !1, tags: "games" },
     { title: "Egg Time Rewind", url: "https://freetoolonline.com/games/egg-time-rewind.html", include: !1, tags: "games" },
     { title: "Seasonal Witchcat", url: "https://freetoolonline.com/games/seasonal-witchcat.html", include: !1, tags: "games" },
     { title: "Desk Cat Coder", url: "https://freetoolonline.com/games/desk-cat-coder.html", include: !1, tags: "games" },
