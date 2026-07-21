@@ -1,0 +1,43 @@
+<div class="w3-container">
+<h1 class="text-uppercase"><b>7-Zip CVE-2026-14266 XZ overflow - update to 26.02</b></h1>
+<p>On 15 July 2026 the Zero Day Initiative published ZDI-26-444 for CVE-2026-14266: crafted XZ chunked data can overflow a heap buffer in 7-Zip and run code if you open a malicious archive. The fix already shipped in 7-Zip 26.02 on 25 June 2026. Because 7-Zip has no auto-update, you must install 26.02 yourself, then keep treating untrusted archives carefully when you <a href="/zip-tools/unzip-file.html">extract a file</a>.</p>
+<p class="reviewed">Last reviewed: 2026-07-21</p>
+<time itemprop="datePublished" datetime="2026-07-21T00:00:00Z"><b>Published July 21, 2026</b></time>
+<hr/>
+
+<br/><h2 class="text-uppercase"><b>What happened</b></h2>
+<p>ZDI advisory ZDI-26-444 (ZDI-CAN-30169), credited to Landon Peng of Lunbun LLC, describes a heap-based buffer overflow while 7-Zip processes XZ chunked data. User interaction is required: the victim must open a malicious file or visit a page that feeds crafted XZ input. ZDI states the issue is fixed in 7-Zip 26.02. Independent coverage from BleepingComputer matches that timeline - 26.02 released 25 June 2026, public advisory on 15 July 2026 - and notes 7-Zip does not update itself. The vendor history file at 7-zip.org lists 26.02 on 2026-06-25 with "Some bugs and vulnerabilities were fixed" without naming the CVE; ZDI is the source that ties the fix to CVE-2026-14266.</p>
+<div class="w3-responsive">
+<table class="w3-table-all w3-small">
+<tr><th>Detail</th><th>Value</th></tr>
+<tr><td>Identifier</td><td>CVE-2026-14266 (ZDI-26-444)</td></tr>
+<tr><td>Flaw type</td><td>Heap-based buffer overflow in XZ chunked-data handling</td></tr>
+<tr><td>User interaction</td><td>Required (open crafted archive / malicious page)</td></tr>
+<tr><td>Fixed version</td><td>7-Zip 26.02 (2026-06-25)</td></tr>
+<tr><td>Public advisory</td><td>2026-07-15 (ZDI coordinated disclosure)</td></tr>
+<tr><td>Related but separate</td><td>CVE-2026-58052 MotW bypass on RAR5 - still a distinct issue on 26.02</td></tr>
+</table>
+</div>
+<p>Do not confuse this with the earlier NTFS-handler overflow CVE-2026-48095 (fixed in 26.01 per the vendor history) or with the RAR5 Mark-of-the-Web bypass tracked as CVE-2026-58052. Updating to 26.02 closes the XZ overflow path ZDI described; it does not automatically mean every other 7-Zip advisory is gone.</p>
+
+<br/><h2 class="text-uppercase"><b>Why it matters for everyday files</b></h2>
+<p>XZ shows up inside software packages, backup streams, and nested archives people open without thinking twice. A heap overflow during decode turns a routine "extract this download" click into a code-execution risk in the 7-Zip process. The practical gap is operational: many machines stay on older 7-Zip builds for months because nothing prompts an upgrade. Email and chat attachments that look like ordinary .xz / .7z / .tar.xz payloads are exactly the habit this site's archive tools are built around - peek first, then decide whether a desktop extract is worth it.</p>
+
+<br/><h2 class="text-uppercase"><b>What to do with your files right now</b></h2>
+<p>Concrete steps that close the XZ overflow risk:</p>
+<ul>
+<li><b>Install 7-Zip 26.02 or newer from the official site.</b> Download only from 7-zip.org (or the vendor GitHub releases mirror). Check Help - About so the build string shows 26.02 or later.</li>
+<li><b>Hunt for bundled 7z.dll copies.</b> Other apps sometimes ship an old decoder that your OS installer never replaces. Prefer those apps' own updates when they lag behind 26.02.</li>
+<li><b>Peek before you unpack untrusted archives.</b> Use the <a href="/zip-tools/unzip-file.html">unzip file tool</a> and the <a href="/guides/en/how-to-extract-a-file-online-zip-rar-7z.html">extract ZIP RAR 7Z guide</a> to see what is inside before you extract onto your desktop with a local 7-Zip build.</li>
+<li><b>Keep MotW and SmartScreen habits.</b> CVE-2026-14266 is about XZ decode memory safety; a separate RAR5 MotW bypass can still matter on Windows. Treat archives from unknown senders as hostile until proven otherwise.</li>
+</ul>
+
+<br/><h2 class="text-uppercase"><b>Sources</b></h2>
+<ul>
+<li><a href="https://www.zerodayinitiative.com/advisories/ZDI-26-444/" rel="noopener">Zero Day Initiative - ZDI-26-444 (CVE-2026-14266)</a> (checked 2026-07-21)</li>
+<li><a href="https://www.bleepingcomputer.com/news/security/update-now-7-zip-fixes-rce-flaw-exploitable-with-malicious-archives/" rel="noopener">BleepingComputer - 7-Zip fixes RCE flaw in malicious archives</a></li>
+<li><a href="https://www.7-zip.org/history.txt" rel="noopener">7-Zip history.txt - 26.02 2026-06-25</a></li>
+<li><a href="https://www.7-zip.org/download.html" rel="noopener">7-Zip official download page</a></li>
+</ul>
+<p><a href="/news.html">&larr; Back to News</a></p>
+</div>
