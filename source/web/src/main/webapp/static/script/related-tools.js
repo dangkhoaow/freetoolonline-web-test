@@ -716,6 +716,7 @@ try {
     { title: "SVG Optimizer & Minifier", url: "https://freetoolonline.com/developer-tools/svg-optimizer.html", include: !1, tags: "developer" },
     { title: "Speaker & Audio Channel Test", url: "https://freetoolonline.com/device-test-tools/speaker-test.html", include: !1, tags: "device-test" },
     { title: "Image EXIF Metadata Viewer", url: "https://freetoolonline.com/image-tools/image-exif-viewer.html", include: !1, tags: "image-editing" },
+    { title: "Image Metadata (EXIF) Remover", url: "https://freetoolonline.com/image-tools/image-metadata-remover.html", include: !1, tags: "image-editing" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
