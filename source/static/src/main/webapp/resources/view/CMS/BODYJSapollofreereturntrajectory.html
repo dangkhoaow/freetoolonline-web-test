@@ -1,0 +1,385 @@
+<script>
+    // 3D scene archetype skeleton (apollo-free-return-trajectory) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton (see BODYJSsolarsystem.html) - this file
+    // implements ONE scene only (freereturn), not the full accumulated scene set.
+    // All geometry is procedural - no model files, no textures fetched.
+    //
+    // This is an EDUCATIONAL APPROXIMATION, not a physics engine and not a
+    // historically exact reconstruction of Apollo 13's patched-conic burns. The
+    // free-return path is a parametric teaching curve tuned to show how a lunar
+    // flyby can return a craft to Earth without a lunar-orbit insertion burn.
+    // The info panel discloses this. Distances and body sizes are compressed.
+    //
+    // Published figures cited (NASA NTRS Apollo 13 GNC Challenges + mission
+    // reports, cross-checked 2026-07-21):
+    //   - Early Apollo free-return design PC ~60 nmi (~110 km) lunar altitude
+    //   - Apollo 13 after DPS free-return restore: PC ~135 nmi (~250 km)
+    //   - Pre-restore hybrid Earth perigee ~2,500 nmi (no atmosphere capture)
+    //   - Furthest humans from Earth at Apollo 13 PC: 400,171 km
+    //   - DPS-1 free-return restore burn: 34.23 s at GET 61:29:43
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'apollo-free-return-trajectory';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) {
+        return 'freereturn';
+    }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        function size() {
+            var w = Math.max(260, host.clientWidth);
+            var h = Math.round(w * 0.62);
+            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fsEl && fsEl.contains(host)) { h = Math.max(240, (window.innerHeight || h) - 150); }
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        host.appendChild(renderer.domElement);
+        renderer.domElement.style.touchAction = 'none';
+        renderer.domElement.style.borderRadius = '6px';
+        var drag = null, pinch = null, moved = 0;
+        host.addEventListener('pointerdown', function (e) {
+            drag = { x: e.clientX, y: e.clientY }; moved = 0;
+            host.setPointerCapture && host.setPointerCapture(e.pointerId);
+        });
+        host.addEventListener('pointermove', function (e) {
+            if (!drag) return;
+            var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+            moved += Math.abs(dx) + Math.abs(dy);
+            drag = { x: e.clientX, y: e.clientY };
+            orbit.goalTheta -= dx * 0.006;
+            orbit.goalPhi = Math.min(Math.max(orbit.goalPhi - dy * 0.005, 0.15), Math.PI - 0.2);
+        });
+        host.addEventListener('pointerup', function (e) {
+            var wasClick = moved < 8;
+            drag = null;
+            if (wasClick && shell.onClick) { shell.onClick(e); }
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR);
+        }, { passive: false });
+        host.addEventListener('touchstart', function (e) {
+            if (e.touches.length === 2) {
+                pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            }
+        }, { passive: true });
+        host.addEventListener('touchmove', function (e) {
+            if (e.touches.length === 2 && pinch) {
+                var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                pinch = d;
+            }
+        }, { passive: true });
+        window.addEventListener('resize', size);
+        document.addEventListener('fullscreenchange', size);
+        document.addEventListener('webkitfullscreenchange', size);
+        size();
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, size: size, onClick: null,
+            ndc: function (e) {
+                var r = renderer.domElement.getBoundingClientRect();
+                return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            },
+        };
+        return shell;
+    }
+
+    var T3D_FR_MOON_X = 42;
+    var T3D_FR_EARTH_R = 2.2;
+    var T3D_FR_MOON_R = 0.85;
+    var T3D_FR_ATMO_R = 2.55;
+    var T3D_FR_PC_FREE_KM = 110;
+    var T3D_FR_PC_A13_KM = 250;
+    var T3D_FR_A13_MAX_KM = 400171;
+    var T3D_FR_HYBRID_PERIGEE_NMI = 2500;
+    var T3D_FR_DPS1_S = 34.23;
+
+    function t3dFreeReturn(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x02040c, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+        var sun = new THREE.DirectionalLight(0xfff3c4, 1.1);
+        sun.position.set(-40, 30, 20);
+        scene.add(sun);
+
+        var earth = new THREE.Mesh(
+            new THREE.SphereGeometry(T3D_FR_EARTH_R, 28, 20),
+            new THREE.MeshLambertMaterial({ color: 0x42a5f5, emissive: 0x102040 })
+        );
+        scene.add(earth);
+        var atmo = new THREE.Mesh(
+            new THREE.SphereGeometry(T3D_FR_ATMO_R, 28, 20),
+            new THREE.MeshBasicMaterial({ color: 0x90caf9, transparent: true, opacity: 0.18, wireframe: true })
+        );
+        scene.add(atmo);
+        var moon = new THREE.Mesh(
+            new THREE.SphereGeometry(T3D_FR_MOON_R, 20, 16),
+            new THREE.MeshLambertMaterial({ color: 0xcfd8dc, emissive: 0x222222 })
+        );
+        moon.position.set(T3D_FR_MOON_X, 0, 0);
+        scene.add(moon);
+
+        var axis = new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(T3D_FR_MOON_X, 0, 0)
+            ]),
+            new THREE.LineBasicMaterial({ color: 0x546e7a, transparent: true, opacity: 0.55 })
+        );
+        scene.add(axis);
+
+        function freePos(t) {
+            t = ((t % 1) + 1) % 1;
+            var mx = T3D_FR_MOON_X;
+            if (t < 0.42) {
+                var u = t / 0.42;
+                return new THREE.Vector3(
+                    T3D_FR_EARTH_R + 0.6 + (mx - 4.2) * u,
+                    0,
+                    9.5 * Math.sin(u * Math.PI)
+                );
+            }
+            if (t < 0.58) {
+                var u2 = (t - 0.42) / 0.16;
+                var ang = Math.PI * 0.2 + u2 * Math.PI * 1.6;
+                var r = 3.15;
+                return new THREE.Vector3(mx + r * Math.cos(ang), 0, r * Math.sin(ang));
+            }
+            var u3 = (t - 0.58) / 0.42;
+            return new THREE.Vector3(
+                (mx - 4.2) * (1 - u3) + (T3D_FR_EARTH_R + 0.6) * u3,
+                0,
+                -9.5 * Math.sin(u3 * Math.PI)
+            );
+        }
+        function hybridPos(t) {
+            t = ((t % 1) + 1) % 1;
+            if (t < 0.58) return freePos(t);
+            var u = (t - 0.58) / 0.42;
+            return new THREE.Vector3(
+                (T3D_FR_MOON_X - 4.2) * (1 - u) + 13.5 * u,
+                0,
+                -14.5 * Math.sin(u * Math.PI)
+            );
+        }
+
+        function buildPath(fn, color, opacity) {
+            var pts = [];
+            var n = shell.low ? 90 : 160;
+            for (var i = 0; i <= n; i++) pts.push(fn(i / n));
+            var line = new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints(pts),
+                new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: opacity })
+            );
+            scene.add(line);
+            return line;
+        }
+        var freePath = buildPath(freePos, 0x81c784, 0.95);
+        var hybridPath = buildPath(hybridPos, 0xffb74d, 0.55);
+
+        var craft = new THREE.Mesh(
+            new THREE.SphereGeometry(0.35, 12, 10),
+            new THREE.MeshBasicMaterial({ color: 0xffee58 })
+        );
+        scene.add(craft);
+        var craftTrail = new THREE.Mesh(
+            new THREE.ConeGeometry(0.18, 0.7, 8),
+            new THREE.MeshBasicMaterial({ color: 0xfff59d })
+        );
+        craftTrail.rotation.z = Math.PI / 2;
+        scene.add(craftTrail);
+
+        var phase = 0.12;
+        var mode = 'free';
+        var playing = true;
+
+        function phaseLabel(p) {
+            if (p < 0.42) return 'Trans-lunar coast (outbound)';
+            if (p < 0.58) return 'Lunar flyby / pericynthion';
+            return mode === 'free' ? 'Earth-return corridor' : 'Hybrid miss (high Earth perigee)';
+        }
+        function panelHtml() {
+            var nearPc = phase >= 0.42 && phase <= 0.58;
+            var pcKm = mode === 'free' ? T3D_FR_PC_FREE_KM : T3D_FR_PC_A13_KM;
+            return '<h3>' + (mode === 'free' ? 'Free-return path' : 'Hybrid (non-free-return) path') + '</h3>' +
+                '<p>' + (mode === 'free'
+                    ? 'Lunar gravity bends the craft behind the Moon and aims it back toward Earth\'s atmosphere corridor - no lunar-orbit insertion burn is required for the return geometry.'
+                    : 'Like Apollo 13 after mid-course correction MCC-2, the hybrid path still flies by the Moon but would leave Earth perigee near ' + T3D_FR_HYBRID_PERIGEE_NMI.toLocaleString() + ' nmi - too high for atmosphere capture without another burn.') + '</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Phase</td><td>' + phaseLabel(phase) + ' (' + Math.round(phase * 100) + '%)</td></tr>' +
+                '<tr><td>Early Apollo free-return PC</td><td>~' + T3D_FR_PC_FREE_KM + ' km (~60 nmi) lunar altitude</td></tr>' +
+                '<tr><td>Apollo 13 restored free-return PC</td><td>~' + T3D_FR_PC_A13_KM + ' km (~135 nmi)</td></tr>' +
+                '<tr><td>Apollo 13 furthest from Earth</td><td>' + T3D_FR_A13_MAX_KM.toLocaleString() + ' km (at pericynthion)</td></tr>' +
+                '<tr><td>Pre-restore hybrid Earth perigee</td><td>~' + T3D_FR_HYBRID_PERIGEE_NMI.toLocaleString() + ' nmi (no capture)</td></tr>' +
+                '<tr><td>DPS-1 free-return restore burn</td><td>' + T3D_FR_DPS1_S + ' s at GET 61:29:43</td></tr>' +
+                '<tr><td>Teaching PC marker (this path)</td><td>~' + pcKm + ' km class' + (nearPc ? ' - craft near flyby now' : '') + '</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation, not a physics engine and not a patched-conic reconstruction of Apollo burns. On-screen sizes and Earth-Moon distance are compressed for readability - the table holds the real published figures (NASA NTRS Apollo 13 GNC Challenges / mission reports).</p>';
+        }
+
+        function applyPhase(p) {
+            phase = Math.max(0, Math.min(0.999, p));
+            var pos = mode === 'free' ? freePos(phase) : hybridPos(phase);
+            craft.position.copy(pos);
+            var ahead = mode === 'free' ? freePos(phase + 0.01) : hybridPos(phase + 0.01);
+            craftTrail.position.set((pos.x + ahead.x) / 2, 0, (pos.z + ahead.z) / 2);
+            freePath.visible = true;
+            hybridPath.visible = mode === 'hybrid';
+            freePath.material.opacity = mode === 'free' ? 0.95 : 0.35;
+            var slider = document.getElementById('t3dFreeReturnPhase');
+            var label = document.getElementById('t3dFreeReturnPhaseLabel');
+            if (slider && Math.round(parseFloat(slider.value || '0')) !== Math.round(phase * 100)) {
+                slider.value = String(Math.round(phase * 100));
+            }
+            if (label) label.textContent = Math.round(phase * 100) + '%';
+            t3dInfo(panelHtml());
+        }
+
+        function setMode(next) {
+            mode = next;
+            var freeBtn = document.getElementById('t3dFreeReturnModeBtn-free');
+            var hybBtn = document.getElementById('t3dFreeReturnModeBtn-hybrid');
+            if (freeBtn) freeBtn.className = 'w3-button ' + (mode === 'free' ? 'w3-amber' : 'w3-light-grey');
+            if (hybBtn) hybBtn.className = 'w3-button ' + (mode === 'hybrid' ? 'w3-amber' : 'w3-light-grey');
+            shell.orbit.target.set(T3D_FR_MOON_X * 0.45, 0, 0);
+            applyPhase(phase);
+            try { t3dSaveStore({ mode: mode, phase: phase }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (store && (store.mode === 'free' || store.mode === 'hybrid')) mode = store.mode;
+        if (typeof store.phase === 'number') phase = store.phase;
+        setMode(mode);
+
+        var freeBtn = document.getElementById('t3dFreeReturnModeBtn-free');
+        var hybBtn = document.getElementById('t3dFreeReturnModeBtn-hybrid');
+        if (freeBtn) freeBtn.addEventListener('click', function () { setMode('free'); });
+        if (hybBtn) hybBtn.addEventListener('click', function () { setMode('hybrid'); });
+        var playBtn = document.getElementById('t3dFreeReturnPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            playing = !playing;
+            playBtn.textContent = playing ? 'Pause' : 'Play';
+        });
+        var slider = document.getElementById('t3dFreeReturnPhase');
+        if (slider) slider.addEventListener('input', function () {
+            playing = false;
+            if (playBtn) playBtn.textContent = 'Play';
+            applyPhase(parseFloat(slider.value || '0') / 100);
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle free-return vs hybrid, or scrub the phase slider.');
+        return function animate(dt) {
+            if (!playing) return;
+            var next = phase + (dt / 1000) * 0.04;
+            if (next >= 1) next -= 1;
+            applyPhase(next);
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { freereturn: 't3dFreeReturnControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = {
+                        freereturn: { radius: 55, maxR: 160, minR: 18, phi: 1.15, theta: 0.55, targetY: 0 }
+                    };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dFreeReturn(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

@@ -1,0 +1,340 @@
+<script>
+    // 3D scene archetype skeleton (pluto-charon-double-planet) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (plutocharon).
+    // All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not a gravity integrator. Pluto and Charon
+    // follow circular mutual orbits around their barycenter with published
+    // New Horizons / JPL figures. Distances are compressed for readability.
+    // Both bodies stay tidally locked (same faces toward each other).
+    //
+    // Published figures (NASA New Horizons / JPL, cross-checked 2026-07-21):
+    //   - Pluto mean radius: 1188.3 km
+    //   - Charon mean radius: 606 km
+    //   - Pluto mass: 1.303e22 kg; Charon mass: 1.586e21 kg (~8.2:1)
+    //   - Mutual separation (center-to-center): ~19,591 km
+    //   - Barycenter distance from Pluto center: ~2,110 km (OUTSIDE Pluto)
+    //   - Synchronous orbital period: 6.387 days; both tidally locked
+    //   - Distinct from earth-moon-barycenter (barycenter INSIDE Earth) and
+    //     dwarf-planet-comparison (size lineup, not mutual orbit mechanics)
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'pluto-charon-double-planet';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'plutocharon'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        function size() {
+            var w = Math.max(260, host.clientWidth);
+            var h = Math.round(w * 0.62);
+            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fsEl && fsEl.contains(host)) { h = Math.max(240, (window.innerHeight || h) - 150); }
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        host.appendChild(renderer.domElement);
+        renderer.domElement.style.touchAction = 'none';
+        renderer.domElement.style.borderRadius = '6px';
+        var drag = null, pinch = null, moved = 0;
+        host.addEventListener('pointerdown', function (e) {
+            drag = { x: e.clientX, y: e.clientY }; moved = 0;
+            host.setPointerCapture && host.setPointerCapture(e.pointerId);
+        });
+        host.addEventListener('pointermove', function (e) {
+            if (!drag) return;
+            var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+            moved += Math.abs(dx) + Math.abs(dy);
+            drag = { x: e.clientX, y: e.clientY };
+            orbit.goalTheta -= dx * 0.006;
+            orbit.goalPhi = Math.min(Math.max(orbit.goalPhi - dy * 0.005, 0.15), Math.PI - 0.2);
+        });
+        host.addEventListener('pointerup', function (e) {
+            var wasClick = moved < 8;
+            drag = null;
+            if (wasClick && shell.onClick) { shell.onClick(e); }
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR);
+        }, { passive: false });
+        host.addEventListener('touchstart', function (e) {
+            if (e.touches.length === 2) {
+                pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            }
+        }, { passive: true });
+        host.addEventListener('touchmove', function (e) {
+            if (e.touches.length === 2 && pinch) {
+                var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                pinch = d;
+            }
+        }, { passive: true });
+        window.addEventListener('resize', size);
+        document.addEventListener('fullscreenchange', size);
+        document.addEventListener('webkitfullscreenchange', size);
+        size();
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, size: size, onClick: null,
+            ndc: function (e) {
+                var r = renderer.domElement.getBoundingClientRect();
+                return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            },
+        };
+        return shell;
+    }
+
+    // ================= PLUTO-CHARON DOUBLE PLANET ============================
+    // Scene units: Pluto mean radius maps to 2.0 so both bodies stay readable
+    // while the mutual gap stays compressed vs true km scale.
+    var T3D_PC_PLUTO_R_KM = 1188.3;
+    var T3D_PC_CHARON_R_KM = 606;
+    var T3D_PC_SEP_KM = 19591;
+    var T3D_PC_BARY_FROM_PLUTO_KM = 2110;
+    var T3D_PC_PERIOD_DAYS = 6.387;
+    var T3D_PC_MASS_PLUTO = 1.303e22;
+    var T3D_PC_MASS_CHARON = 1.586e21;
+    var T3D_PC_SCENE_PLUTO_R = 2.0;
+    var T3D_PC_KM_PER_UNIT = T3D_PC_PLUTO_R_KM / T3D_PC_SCENE_PLUTO_R;
+
+    function t3dPc(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03060e, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.42));
+        var key = new THREE.DirectionalLight(0xfff2d6, 0.95);
+        key.position.set(18, 22, 14);
+        scene.add(key);
+
+        var plutoR = T3D_PC_SCENE_PLUTO_R;
+        var charonR = T3D_PC_CHARON_R_KM / T3D_PC_KM_PER_UNIT;
+        var rPluto = T3D_PC_BARY_FROM_PLUTO_KM / T3D_PC_KM_PER_UNIT;
+        var rCharon = (T3D_PC_SEP_KM - T3D_PC_BARY_FROM_PLUTO_KM) / T3D_PC_KM_PER_UNIT;
+
+        var bary = new THREE.Mesh(
+            new THREE.SphereGeometry(0.28, 12, 10),
+            new THREE.MeshBasicMaterial({ color: 0x69f0ae })
+        );
+        scene.add(bary);
+        var baryRing = new THREE.Mesh(
+            new THREE.RingGeometry(0.38, 0.52, 28),
+            new THREE.MeshBasicMaterial({ color: 0x69f0ae, side: THREE.DoubleSide, transparent: true, opacity: 0.55 })
+        );
+        baryRing.rotation.x = Math.PI / 2;
+        scene.add(baryRing);
+
+        var pluto = new THREE.Mesh(
+            new THREE.SphereGeometry(plutoR, shell.low ? 18 : 28, shell.low ? 14 : 20),
+            new THREE.MeshLambertMaterial({ color: 0xc4a484, emissive: 0x2a1c12 })
+        );
+        scene.add(pluto);
+        var plutoMark = new THREE.Mesh(
+            new THREE.SphereGeometry(0.18, 8, 6),
+            new THREE.MeshBasicMaterial({ color: 0xff7043 })
+        );
+        pluto.add(plutoMark);
+        plutoMark.position.set(plutoR * 0.92, 0, 0);
+
+        var charon = new THREE.Mesh(
+            new THREE.SphereGeometry(charonR, shell.low ? 14 : 22, shell.low ? 12 : 16),
+            new THREE.MeshLambertMaterial({ color: 0x90a4ae, emissive: 0x121820 })
+        );
+        scene.add(charon);
+        var charonMark = new THREE.Mesh(
+            new THREE.SphereGeometry(0.12, 8, 6),
+            new THREE.MeshBasicMaterial({ color: 0x4fc3f7 })
+        );
+        charon.add(charonMark);
+        charonMark.position.set(charonR * 0.92, 0, 0);
+
+        function makeOrbit(radius, color, opacity) {
+            var pts = [];
+            for (var i = 0; i <= 96; i++) {
+                var a = (i / 96) * Math.PI * 2;
+                pts.push(new THREE.Vector3(Math.cos(a) * radius, 0, Math.sin(a) * radius));
+            }
+            return new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints(pts),
+                new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: opacity })
+            );
+        }
+        scene.add(makeOrbit(rPluto, 0xc4a484, 0.45));
+        scene.add(makeOrbit(rCharon, 0x90a4ae, 0.4));
+
+        var phase = 0; // 0..1 of mutual orbit
+        var playing = true;
+
+        function panelHtml() {
+            var baryOutside = T3D_PC_BARY_FROM_PLUTO_KM > T3D_PC_PLUTO_R_KM;
+            return '<h3>Pluto-Charon double planet</h3>' +
+                '<p>Both worlds orbit a shared barycenter that sits <b>outside</b> Pluto. Scrub orbital phase to watch the mutual, tidally locked dance.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Pluto mean radius</td><td>' + T3D_PC_PLUTO_R_KM.toLocaleString() + ' km</td></tr>' +
+                '<tr><td>Charon mean radius</td><td>' + T3D_PC_CHARON_R_KM.toLocaleString() + ' km</td></tr>' +
+                '<tr><td>Pluto mass</td><td>' + T3D_PC_MASS_PLUTO.toExponential(3) + ' kg</td></tr>' +
+                '<tr><td>Charon mass</td><td>' + T3D_PC_MASS_CHARON.toExponential(3) + ' kg</td></tr>' +
+                '<tr><td>Mass ratio Pluto:Charon</td><td>~8.2 : 1</td></tr>' +
+                '<tr><td>Mutual separation (center-to-center)</td><td>~' + T3D_PC_SEP_KM.toLocaleString() + ' km</td></tr>' +
+                '<tr><td>Barycenter from Pluto center</td><td>~' + T3D_PC_BARY_FROM_PLUTO_KM.toLocaleString() + ' km (' +
+                (baryOutside ? 'outside Pluto - exceeds ' + T3D_PC_PLUTO_R_KM + ' km radius' : 'inside Pluto') + ')</td></tr>' +
+                '<tr><td>Synchronous orbital period</td><td>' + T3D_PC_PERIOD_DAYS + ' days (both tidally locked)</td></tr>' +
+                '<tr><td>Orbital phase</td><td>' + Math.round(phase * 100) + '%</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation, not a gravity integrator. On-screen distances are compressed for readability; radii and barycenter location use published NASA New Horizons / JPL figures. Distinct from the Earth-Moon barycenter page (barycenter inside Earth) and the dwarf-planet comparison page (size lineup, not mutual orbit).</p>';
+        }
+
+        function applyPhase(p) {
+            phase = Math.max(0, Math.min(0.999, p));
+            var ang = phase * Math.PI * 2;
+            // Opposite sides of the barycenter; tidal lock keeps face markers toward each other.
+            pluto.position.set(Math.cos(ang) * rPluto, 0, Math.sin(ang) * rPluto);
+            charon.position.set(Math.cos(ang + Math.PI) * rCharon, 0, Math.sin(ang + Math.PI) * rCharon);
+            pluto.rotation.y = ang + Math.PI;
+            charon.rotation.y = ang;
+            var slider = document.getElementById('t3dPcPhase');
+            var label = document.getElementById('t3dPcPhaseLabel');
+            if (slider && Math.round(parseFloat(slider.value || '0')) !== Math.round(phase * 100)) {
+                slider.value = String(Math.round(phase * 100));
+            }
+            if (label) label.textContent = Math.round(phase * 100) + '%';
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ phase: phase }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.phase === 'number') phase = store.phase;
+        applyPhase(phase);
+
+        var phaseEl = document.getElementById('t3dPcPhase');
+        if (phaseEl) phaseEl.addEventListener('input', function () {
+            playing = false;
+            var playBtn = document.getElementById('t3dPcPlayBtn');
+            if (playBtn) playBtn.textContent = 'Play';
+            applyPhase(parseFloat(phaseEl.value || '0') / 100);
+        });
+        var playBtn = document.getElementById('t3dPcPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            playing = !playing;
+            playBtn.textContent = playing ? 'Pause' : 'Play';
+        });
+        var resetBtn = document.getElementById('t3dPcResetBtn');
+        if (resetBtn) resetBtn.addEventListener('click', function () {
+            applyPhase(0);
+            playing = true;
+            if (playBtn) playBtn.textContent = 'Pause';
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Scrub phase or press Play to advance the mutual orbit.');
+        return function animate(dt) {
+            if (!playing) return;
+            // One full mutual orbit compressed into ~18 teaching seconds (real period 6.387 days).
+            var teachSec = 18;
+            var next = phase + (dt / 1000) / teachSec;
+            if (next >= 1) next = 0;
+            applyPhase(next);
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { plutocharon: 't3dPcControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { plutocharon: { radius: 52, maxR: 160, minR: 14, phi: 1.15, theta: 0.55, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    shell.orbit.target.set(0, 0, 0);
+                    var animate = t3dPc(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
