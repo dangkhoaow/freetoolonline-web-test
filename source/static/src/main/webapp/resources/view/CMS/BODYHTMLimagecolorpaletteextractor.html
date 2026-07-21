@@ -1,0 +1,127 @@
+<div class="w3-container">
+    <p>Choose a local image and extract the top HEX colors from its pixels.</p>
+</div>
+
+<style>
+    #cpTool .cp-row { margin-bottom: 14px; }
+    #cpTool label.cp-label { font-weight: bold; display: block; margin-bottom: 4px; }
+    #cpSwatch { display: inline-block; width: 64px; height: 48px; border: 1px solid #cccccc; vertical-align: middle; margin-left: 10px; border-radius: 4px; }
+    #cpTool .cp-readout { font-family: monospace; font-size: 1.05em; }
+    #cpTool .cp-readout .cp-val { font-weight: bold; }
+    #cpTool .cp-readout .w3-button { margin-left: 8px; }
+    #cpContrastTool .cp-row { margin-bottom: 14px; }
+    #cpContrastTool label.cp-label { font-weight: bold; display: block; margin-bottom: 4px; }
+    #cpContrastTool .cp-pair { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; }
+    #cpContrastTool .cp-pair > div { min-width: 140px; }
+    #cpContrastPreview {
+        margin-top: 8px; padding: 16px 18px; border: 1px solid #cccccc; border-radius: 4px;
+        font-size: 16px; line-height: 1.4;
+    }
+    #cpContrastPreview .cp-preview-large { font-size: 24px; font-weight: bold; margin-top: 8px; }
+    #cpContrastRatio { font-family: monospace; font-size: 1.35em; font-weight: bold; }
+    #cpContrastVerdicts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+    #cpContrastVerdicts .cp-badge {
+        display: inline-block; padding: 6px 10px; border-radius: 4px; font-size: 0.95em; border: 1px solid #bbbbbb;
+    }
+    #cpContrastVerdicts .cp-pass { background: #e8f5e9; border-color: #81c784; }
+    #cpContrastVerdicts .cp-fail { background: #ffebee; border-color: #e57373; }
+    #cpPaletteTool .cp-row { margin-bottom: 14px; }
+    #cpPaletteTool label.cp-label { font-weight: bold; display: block; margin-bottom: 4px; }
+    #cpPalettePreview {
+        max-width: 100%; max-height: 220px; display: none; margin: 10px 0;
+        border: 1px solid #cccccc; border-radius: 4px; background: #fafafa;
+    }
+    #cpPalettePreview.show { display: block; }
+    #cpPaletteSwatches { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+    #cpPaletteSwatches .cp-swatch-btn {
+        display: flex; flex-direction: column; align-items: center; gap: 4px;
+        min-width: 88px; padding: 8px; border: 1px solid #cccccc; border-radius: 4px;
+        background: #fff; cursor: pointer; font-family: monospace; font-size: 12px;
+    }
+    #cpPaletteSwatches .cp-swatch-chip {
+        width: 64px; height: 40px; border-radius: 3px; border: 1px solid #bbbbbb;
+    }
+    #cpPaletteStatus { font-family: monospace; min-height: 1.4em; margin-top: 8px; }
+</style>
+
+<div id="cpTool" class="w3-container" hidden>
+    <div class="cp-row">
+        <label class="cp-label" for="cpInput">Pick a color</label>
+        <input type="color" id="cpInput" class="w3-border" value="#3366ff"
+               style="width: 80px; height: 48px; padding: 2px;" />
+        <span id="cpSwatch" aria-hidden="true"></span>
+    </div>
+
+    <div class="cp-row cp-readout">
+        HEX: <span class="cp-val" id="cpHex" aria-live="polite"></span>
+        <button type="button" id="cpCopyHex" class="w3-button w3-small w3-light-grey">Copy</button>
+    </div>
+    <div class="cp-row cp-readout">
+        RGB: <span class="cp-val" id="cpRgb" aria-live="polite"></span>
+        <button type="button" id="cpCopyRgb" class="w3-button w3-small w3-light-grey">Copy</button>
+    </div>
+    <div class="cp-row cp-readout">
+        HSL: <span class="cp-val" id="cpHsl" aria-live="polite"></span>
+        <button type="button" id="cpCopyHsl" class="w3-button w3-small w3-light-grey">Copy</button>
+    </div>
+</div>
+
+<div id="cpContrastTool" class="w3-container" hidden>
+    <div class="cp-row cp-pair">
+        <div>
+            <label class="cp-label" for="cpFgInput">Text (foreground)</label>
+            <input type="color" id="cpFgInput" class="w3-border" value="#111111"
+                   style="width: 80px; height: 48px; padding: 2px;" />
+            <input type="text" id="cpFgHex" class="w3-input w3-border" value="#111111"
+                   style="width: 110px; display: inline-block; margin-left: 8px; font-family: monospace;"
+                   aria-label="Foreground hex" />
+        </div>
+        <div>
+            <label class="cp-label" for="cpBgInput">Background</label>
+            <input type="color" id="cpBgInput" class="w3-border" value="#ffffff"
+                   style="width: 80px; height: 48px; padding: 2px;" />
+            <input type="text" id="cpBgHex" class="w3-input w3-border" value="#ffffff"
+                   style="width: 110px; display: inline-block; margin-left: 8px; font-family: monospace;"
+                   aria-label="Background hex" />
+        </div>
+        <div>
+            <button type="button" id="cpSwapColors" class="w3-button w3-light-grey">Swap colors</button>
+        </div>
+    </div>
+
+    <div class="cp-row">
+        <div>Contrast ratio: <span id="cpContrastRatio" aria-live="polite">-</span></div>
+        <div id="cpContrastVerdicts" aria-live="polite">
+            <span id="cpAaNormal" class="cp-badge">AA normal text</span>
+            <span id="cpAaLarge" class="cp-badge">AA large text</span>
+            <span id="cpAaaNormal" class="cp-badge">AAA normal text</span>
+            <span id="cpAaaLarge" class="cp-badge">AAA large text</span>
+        </div>
+    </div>
+
+    <div id="cpContrastPreview" aria-live="polite">
+        <div>Sample normal text (16px) - can you read this clearly?</div>
+        <div class="cp-preview-large">Sample large text (24px bold)</div>
+    </div>
+</div>
+
+<div id="cpPaletteTool" class="w3-container" hidden>
+    <div class="cp-row">
+        <label class="cp-label" for="cpPaletteFile">Image file</label>
+        <input type="file" id="cpPaletteFile" class="w3-input w3-border" accept="image/*">
+    </div>
+    <div class="cp-row">
+        <label class="cp-label" for="cpPaletteCount">Colors to extract</label>
+        <select id="cpPaletteCount" class="w3-select w3-border" style="max-width: 120px;">
+            <option value="5">5</option>
+            <option value="8" selected>8</option>
+            <option value="12">12</option>
+            <option value="16">16</option>
+        </select>
+        <button type="button" id="cpPaletteExtract" class="w3-button w3-blue" style="margin-left: 10px;">Extract Palette</button>
+        <button type="button" id="cpPaletteClear" class="w3-button w3-light-grey" style="margin-left: 6px;">Clear</button>
+    </div>
+    <img id="cpPalettePreview" alt="Selected image preview" />
+    <div id="cpPaletteSwatches" aria-live="polite"></div>
+    <div id="cpPaletteStatus" aria-live="polite">Choose an image, then click Extract Palette. Sampling stays in the browser.</div>
+</div>

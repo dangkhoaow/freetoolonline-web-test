@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/image-color-palette-extractor-vs-alternatives.html',
+  '/guides/de/image-color-palette-extractor-vs-alternatives.html',
+  '/guides/id/image-color-palette-extractor-vs-alternatives.html',
+  '/guides/vi/image-color-palette-extractor-vs-alternatives.html',
+  '/guides/es/image-color-palette-extractor-vs-alternatives.html',
+  '/guides/pt/image-color-palette-extractor-vs-alternatives.html',
+  '/guides/image-color-palette-extractor-step-by-step.html',
+  '/guides/de/image-color-palette-extractor-step-by-step.html',
+  '/guides/id/image-color-palette-extractor-step-by-step.html',
+  '/guides/vi/image-color-palette-extractor-step-by-step.html',
+  '/guides/es/image-color-palette-extractor-step-by-step.html',
+  '/guides/pt/image-color-palette-extractor-step-by-step.html',
+  '/guides/image-color-palette-extractor-when.html',
+  '/guides/de/image-color-palette-extractor-when.html',
+  '/guides/id/image-color-palette-extractor-when.html',
+  '/guides/vi/image-color-palette-extractor-when.html',
+  '/guides/es/image-color-palette-extractor-when.html',
+  '/guides/pt/image-color-palette-extractor-when.html',
   '/guides/image-exif-metadata-viewer-vs-alternatives.html',
   '/guides/de/image-exif-metadata-viewer-vs-alternatives.html',
   '/guides/id/image-exif-metadata-viewer-vs-alternatives.html',
@@ -4379,6 +4397,25 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // fire342 image-color-palette-extractor companion guides
+  '/guides/image-color-palette-extractor-when.html',
+  '/guides/de/image-color-palette-extractor-when.html',
+  '/guides/id/image-color-palette-extractor-when.html',
+  '/guides/vi/image-color-palette-extractor-when.html',
+  '/guides/es/image-color-palette-extractor-when.html',
+  '/guides/pt/image-color-palette-extractor-when.html',
+  '/guides/image-color-palette-extractor-step-by-step.html',
+  '/guides/de/image-color-palette-extractor-step-by-step.html',
+  '/guides/id/image-color-palette-extractor-step-by-step.html',
+  '/guides/vi/image-color-palette-extractor-step-by-step.html',
+  '/guides/es/image-color-palette-extractor-step-by-step.html',
+  '/guides/pt/image-color-palette-extractor-step-by-step.html',
+  '/guides/image-color-palette-extractor-vs-alternatives.html',
+  '/guides/de/image-color-palette-extractor-vs-alternatives.html',
+  '/guides/id/image-color-palette-extractor-vs-alternatives.html',
+  '/guides/vi/image-color-palette-extractor-vs-alternatives.html',
+  '/guides/es/image-color-palette-extractor-vs-alternatives.html',
+  '/guides/pt/image-color-palette-extractor-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire341 (2026-07-21): image-metadata-remover companion guides
   '/guides/image-metadata-exif-remover-vs-alternatives.html',
   '/guides/de/image-metadata-exif-remover-vs-alternatives.html',
@@ -10630,6 +10667,7 @@ export const ALIAS_ROUTES = {
   '/speaker-test.html': '/device-test-tools/speaker-test.html',
   '/image-exif-viewer.html': '/image-tools/image-exif-viewer.html',
   '/image-metadata-remover.html': '/image-tools/image-metadata-remover.html',
+  '/image-color-palette-extractor.html': '/image-tools/image-color-palette-extractor.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -20049,6 +20087,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/image-exif-metadata-viewer-vs-alternatives.html': 'guide/vi/image-exif-metadata-viewer-vs-alternatives.jsp',
   '/guides/es/image-exif-metadata-viewer-vs-alternatives.html': 'guide/es/image-exif-metadata-viewer-vs-alternatives.jsp',
   '/guides/pt/image-exif-metadata-viewer-vs-alternatives.html': 'guide/pt/image-exif-metadata-viewer-vs-alternatives.jsp',
+  '/image-tools/image-color-palette-extractor.html': 'convert/image-color-palette-extractor.jsp',
+  '/guides/image-color-palette-extractor-when.html': 'guide/image-color-palette-extractor-when.jsp',
+  '/guides/de/image-color-palette-extractor-when.html': 'guide/de/image-color-palette-extractor-when.jsp',
+  '/guides/id/image-color-palette-extractor-when.html': 'guide/id/image-color-palette-extractor-when.jsp',
+  '/guides/vi/image-color-palette-extractor-when.html': 'guide/vi/image-color-palette-extractor-when.jsp',
+  '/guides/es/image-color-palette-extractor-when.html': 'guide/es/image-color-palette-extractor-when.jsp',
+  '/guides/pt/image-color-palette-extractor-when.html': 'guide/pt/image-color-palette-extractor-when.jsp',
+  '/guides/image-color-palette-extractor-step-by-step.html': 'guide/image-color-palette-extractor-step-by-step.jsp',
+  '/guides/de/image-color-palette-extractor-step-by-step.html': 'guide/de/image-color-palette-extractor-step-by-step.jsp',
+  '/guides/id/image-color-palette-extractor-step-by-step.html': 'guide/id/image-color-palette-extractor-step-by-step.jsp',
+  '/guides/vi/image-color-palette-extractor-step-by-step.html': 'guide/vi/image-color-palette-extractor-step-by-step.jsp',
+  '/guides/es/image-color-palette-extractor-step-by-step.html': 'guide/es/image-color-palette-extractor-step-by-step.jsp',
+  '/guides/pt/image-color-palette-extractor-step-by-step.html': 'guide/pt/image-color-palette-extractor-step-by-step.jsp',
+  '/guides/image-color-palette-extractor-vs-alternatives.html': 'guide/image-color-palette-extractor-vs-alternatives.jsp',
+  '/guides/de/image-color-palette-extractor-vs-alternatives.html': 'guide/de/image-color-palette-extractor-vs-alternatives.jsp',
+  '/guides/id/image-color-palette-extractor-vs-alternatives.html': 'guide/id/image-color-palette-extractor-vs-alternatives.jsp',
+  '/guides/vi/image-color-palette-extractor-vs-alternatives.html': 'guide/vi/image-color-palette-extractor-vs-alternatives.jsp',
+  '/guides/es/image-color-palette-extractor-vs-alternatives.html': 'guide/es/image-color-palette-extractor-vs-alternatives.jsp',
+  '/guides/pt/image-color-palette-extractor-vs-alternatives.html': 'guide/pt/image-color-palette-extractor-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

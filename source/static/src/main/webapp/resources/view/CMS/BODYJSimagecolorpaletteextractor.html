@@ -1,0 +1,309 @@
+<script>
+    // Color tools skeleton - fully in-browser. Reference:
+    // verified-browser-impl-registry.mjs entry `color_tools_purejs`. Page: /image-color-palette-extractor.html
+    //
+    // Modes:
+    //   - color-picker (default): HEX / RGB / HSL readout + live swatch
+    //   - contrast / wcag: foreground + background colors, W3C relative-luminance
+    //     contrast ratio, AA/AAA verdicts for normal + large text
+    //   - palette / extractor: local image -> canvas sample -> top-N hex swatches
+    //     with one-click copy (fire342 image-color-palette-extractor)
+    //
+    // No upload, no backend. The framework calls doAfterPageRendered() during
+    // page startup (it fires for EVERY page once jQuery + base-script load). Do
+    // NOT call $(...) at the top level: `$` is only defined inside the hook.
+
+    web.localUpload = false;
+
+    function cpDetectMode() {
+        var s = String('image-color-palette-extractor' || '').toLowerCase();
+        if (/\bpalette\b|\bextractor\b/.test(s)) return 'palette';
+        if (/\bcontrast\b|\bwcag\b/.test(s)) return 'contrast';
+        return 'picker';
+    }
+
+    function cpHexToRgb(hex) {
+        var h = String(hex || '').replace('#', '').trim();
+        if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+        if (!/^[0-9a-fA-F]{6}$/.test(h)) return null;
+        var n = parseInt(h, 16);
+        return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+    }
+
+    function cpRgbToHex(r, g, b) {
+        function byte(n) {
+            var s = Math.max(0, Math.min(255, n | 0)).toString(16);
+            return s.length === 1 ? '0' + s : s;
+        }
+        return ('#' + byte(r) + byte(g) + byte(b)).toUpperCase();
+    }
+
+    function cpNormalizeHex(raw) {
+        var rgb = cpHexToRgb(raw);
+        if (!rgb) return null;
+        return cpRgbToHex(rgb.r, rgb.g, rgb.b);
+    }
+
+    function cpRgbToHsl(r, g, b) {
+        r /= 255; g /= 255; b /= 255;
+        var max = Math.max(r, g, b), min = Math.min(r, g, b);
+        var h, s, l = (max + min) / 2;
+        if (max === min) {
+            h = 0; s = 0;
+        } else {
+            var d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            if (max === r) { h = (g - b) / d + (g < b ? 6 : 0); }
+            else if (max === g) { h = (b - r) / d + 2; }
+            else { h = (r - g) / d + 4; }
+            h /= 6;
+        }
+        return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+    }
+
+    function cpChannelL(c) {
+        var s = c / 255;
+        return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+    }
+
+    function cpRelativeLuminance(rgb) {
+        return 0.2126 * cpChannelL(rgb.r) + 0.7152 * cpChannelL(rgb.g) + 0.0722 * cpChannelL(rgb.b);
+    }
+
+    function cpContrastRatio(fgRgb, bgRgb) {
+        var L1 = cpRelativeLuminance(fgRgb);
+        var L2 = cpRelativeLuminance(bgRgb);
+        var lighter = Math.max(L1, L2);
+        var darker = Math.min(L1, L2);
+        return (lighter + 0.05) / (darker + 0.05);
+    }
+
+    function cpFormatRatio(ratio) {
+        return (Math.round(ratio * 100) / 100).toFixed(2) + ' : 1';
+    }
+
+    function cpSetBadge(el, pass, label) {
+        el.text(label + (pass ? ' PASS' : ' FAIL'));
+        el.toggleClass('cp-pass', !!pass);
+        el.toggleClass('cp-fail', !pass);
+    }
+
+    function cpRenderPicker(hex) {
+        var rgb = cpHexToRgb(hex);
+        if (!rgb) return;
+        var hsl = cpRgbToHsl(rgb.r, rgb.g, rgb.b);
+        $('#cpHex').text(String(hex).toUpperCase());
+        $('#cpRgb').text('rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ')');
+        $('#cpHsl').text('hsl(' + hsl.h + ', ' + hsl.s + '%, ' + hsl.l + '%)');
+        $('#cpSwatch').css('background-color', hex);
+    }
+
+    function cpCopy(text) {
+        if (!text) return;
+        try { navigator.clipboard.writeText(text); }
+        catch (e) { /* clipboard unavailable - silent no-op */ }
+    }
+
+    function cpRenderContrast() {
+        var fgHex = cpNormalizeHex($('#cpFgHex').val() || $('#cpFgInput').val());
+        var bgHex = cpNormalizeHex($('#cpBgHex').val() || $('#cpBgInput').val());
+        if (!fgHex || !bgHex) {
+            $('#cpContrastRatio').text('-');
+            return;
+        }
+        $('#cpFgHex').val(fgHex);
+        $('#cpBgHex').val(bgHex);
+        $('#cpFgInput').val(fgHex.toLowerCase());
+        $('#cpBgInput').val(bgHex.toLowerCase());
+
+        var fg = cpHexToRgb(fgHex);
+        var bg = cpHexToRgb(bgHex);
+        var ratio = cpContrastRatio(fg, bg);
+        $('#cpContrastRatio').text(cpFormatRatio(ratio));
+
+        cpSetBadge($('#cpAaNormal'), ratio >= 4.5, 'AA normal text');
+        cpSetBadge($('#cpAaLarge'), ratio >= 3.0, 'AA large text');
+        cpSetBadge($('#cpAaaNormal'), ratio >= 7.0, 'AAA normal text');
+        cpSetBadge($('#cpAaaLarge'), ratio >= 4.5, 'AAA large text');
+
+        $('#cpContrastPreview').css({ color: fgHex, backgroundColor: bgHex });
+    }
+
+    function initColorPicker() {
+        if ($('#cpInput').length === 0) return;
+        $('#cpTool').prop('hidden', false);
+        cpRenderPicker($('#cpInput').val() || '#3366ff');
+        $('#cpInput').off('input.cp change.cp').on('input.cp change.cp', function () {
+            cpRenderPicker($(this).val() || '');
+        });
+        $('#cpCopyHex').off('click.cp').on('click.cp', function () { cpCopy($('#cpHex').text()); });
+        $('#cpCopyRgb').off('click.cp').on('click.cp', function () { cpCopy($('#cpRgb').text()); });
+        $('#cpCopyHsl').off('click.cp').on('click.cp', function () { cpCopy($('#cpHsl').text()); });
+    }
+
+    function initContrastChecker() {
+        if ($('#cpFgInput').length === 0) return;
+        $('#cpContrastTool').prop('hidden', false);
+        cpRenderContrast();
+        $('#cpFgInput, #cpBgInput').off('input.cp change.cp').on('input.cp change.cp', function () {
+            var id = this.id === 'cpFgInput' ? '#cpFgHex' : '#cpBgHex';
+            $(id).val($(this).val());
+            cpRenderContrast();
+        });
+        $('#cpFgHex, #cpBgHex').off('change.cp blur.cp').on('change.cp blur.cp', function () {
+            var norm = cpNormalizeHex($(this).val());
+            if (norm) $(this).val(norm);
+            cpRenderContrast();
+        });
+        $('#cpSwapColors').off('click.cp').on('click.cp', function () {
+            var fg = $('#cpFgHex').val();
+            var bg = $('#cpBgHex').val();
+            $('#cpFgHex').val(bg);
+            $('#cpBgHex').val(fg);
+            cpRenderContrast();
+        });
+    }
+
+    var cpPaletteFile = null;
+
+    function cpPaletteStatus(msg) {
+        $('#cpPaletteStatus').text(msg || '');
+    }
+
+    function cpExtractPaletteFromImage(img, count) {
+        var maxSide = 160;
+        var w = img.naturalWidth || img.width;
+        var h = img.naturalHeight || img.height;
+        if (!w || !h) return [];
+        var scale = Math.min(1, maxSide / Math.max(w, h));
+        var cw = Math.max(1, Math.round(w * scale));
+        var ch = Math.max(1, Math.round(h * scale));
+        var canvas = document.createElement('canvas');
+        canvas.width = cw;
+        canvas.height = ch;
+        var ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(img, 0, 0, cw, ch);
+        var data = ctx.getImageData(0, 0, cw, ch).data;
+        var buckets = {};
+        var step = 4; // 16 levels per channel
+        for (var i = 0; i < data.length; i += 4) {
+            var a = data[i + 3];
+            if (a < 128) continue;
+            var r = data[i] - (data[i] % step);
+            var g = data[i + 1] - (data[i + 1] % step);
+            var b = data[i + 2] - (data[i + 2] % step);
+            var key = r + ',' + g + ',' + b;
+            if (!buckets[key]) buckets[key] = { r: r, g: g, b: b, n: 0, rs: 0, gs: 0, bs: 0 };
+            buckets[key].n += 1;
+            buckets[key].rs += data[i];
+            buckets[key].gs += data[i + 1];
+            buckets[key].bs += data[i + 2];
+        }
+        var list = [];
+        for (var k in buckets) {
+            if (!Object.prototype.hasOwnProperty.call(buckets, k)) continue;
+            var bx = buckets[k];
+            list.push({
+                r: Math.round(bx.rs / bx.n),
+                g: Math.round(bx.gs / bx.n),
+                b: Math.round(bx.bs / bx.n),
+                n: bx.n
+            });
+        }
+        list.sort(function (a, b) { return b.n - a.n; });
+        var out = [];
+        var seen = {};
+        for (var j = 0; j < list.length && out.length < count; j++) {
+            var hex = cpRgbToHex(list[j].r, list[j].g, list[j].b);
+            if (seen[hex]) continue;
+            seen[hex] = true;
+            out.push(hex);
+        }
+        return out;
+    }
+
+    function cpRenderPaletteSwatches(hexes) {
+        var box = $('#cpPaletteSwatches');
+        box.empty();
+        hexes.forEach(function (hex) {
+            var btn = $('<button type="button" class="cp-swatch-btn"></button>');
+            btn.attr('data-color', hex);
+            btn.attr('title', 'Copy ' + hex);
+            btn.append($('<span class="cp-swatch-chip"></span>').css('background-color', hex));
+            btn.append($('<span></span>').text(hex));
+            btn.on('click', function () {
+                cpCopy(hex);
+                cpPaletteStatus('Copied ' + hex + ' to clipboard.');
+            });
+            box.append(btn);
+        });
+    }
+
+    function cpRunPaletteExtract() {
+        if (!cpPaletteFile) {
+            cpPaletteStatus('Choose an image file first.');
+            return;
+        }
+        var count = parseInt($('#cpPaletteCount').val(), 10) || 8;
+        cpPaletteStatus('Extracting palette in the browser...');
+        var url = URL.createObjectURL(cpPaletteFile);
+        var img = new Image();
+        img.onload = function () {
+            try {
+                var hexes = cpExtractPaletteFromImage(img, count);
+                URL.revokeObjectURL(url);
+                if (!hexes.length) {
+                    cpPaletteStatus('No opaque pixels found. Try another image.');
+                    return;
+                }
+                cpRenderPaletteSwatches(hexes);
+                cpPaletteStatus('Extracted ' + hexes.length + ' colors. Click a swatch to copy HEX.');
+            } catch (err) {
+                URL.revokeObjectURL(url);
+                cpPaletteStatus('Could not sample this image.');
+            }
+        };
+        img.onerror = function () {
+            URL.revokeObjectURL(url);
+            cpPaletteStatus('Could not load that image file.');
+        };
+        img.src = url;
+    }
+
+    function initPaletteExtractor() {
+        if ($('#cpPaletteFile').length === 0) return;
+        $('#cpPaletteTool').prop('hidden', false);
+        cpPaletteStatus('Choose an image, then click Extract Palette. Sampling stays in the browser.');
+        $('#cpPaletteFile').off('change.cp').on('change.cp', function () {
+            var f = this.files && this.files[0];
+            cpPaletteFile = f || null;
+            $('#cpPaletteSwatches').empty();
+            var preview = document.getElementById('cpPalettePreview');
+            if (!f) {
+                $(preview).removeClass('show').attr('src', '');
+                cpPaletteStatus('Choose an image, then click Extract Palette. Sampling stays in the browser.');
+                return;
+            }
+            var url = URL.createObjectURL(f);
+            preview.onload = function () { URL.revokeObjectURL(url); };
+            preview.src = url;
+            $(preview).addClass('show');
+            cpPaletteStatus('Image ready. Click Extract Palette.');
+        });
+        $('#cpPaletteExtract').off('click.cp').on('click.cp', cpRunPaletteExtract);
+        $('#cpPaletteClear').off('click.cp').on('click.cp', function () {
+            cpPaletteFile = null;
+            $('#cpPaletteFile').val('');
+            $('#cpPaletteSwatches').empty();
+            $('#cpPalettePreview').removeClass('show').attr('src', '');
+            cpPaletteStatus('Cleared. Choose an image to start again.');
+        });
+    }
+
+    function doAfterPageRendered() {
+        var mode = cpDetectMode();
+        if (mode === 'contrast') initContrastChecker();
+        else if (mode === 'palette') initPaletteExtractor();
+        else initColorPicker();
+    }
+</script>
