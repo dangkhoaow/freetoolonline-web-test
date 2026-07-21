@@ -1,0 +1,48 @@
+<script>
+    if (typeof web !== "undefined") web.localUpload = false;
+    var QOP_GAME_URL = 'quantum-optics-puzzle/index.html';
+    function qopStatus(text) {
+        var el = document.getElementById('qopStatus');
+        if (el) el.textContent = text;
+    }
+    function qopInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'qopFrame';
+        frame.src = QOP_GAME_URL;
+        frame.title = 'Quantum Optics Puzzle game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            qopStatus('Game loaded. Pick a level from the list, then place optics tiles.');
+            try { frame.contentWindow.focus(); } catch (e) {}
+        });
+        var launch = document.getElementById('qopLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('qopStage');
+        var playBtn = document.getElementById('qopPlayBtn');
+        if (!stage || !playBtn) return;
+        if (playBtn.dataset.bound === '1') return;
+        playBtn.dataset.bound = '1';
+        var fsBtn = document.getElementById('qopFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            qopStatus('Loading the game (about 1.2 MB, one time - then cached)...');
+            qopInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('qopFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) {} }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', doAfterPageRendered);
+    } else {
+        doAfterPageRendered();
+    }
+</script>
