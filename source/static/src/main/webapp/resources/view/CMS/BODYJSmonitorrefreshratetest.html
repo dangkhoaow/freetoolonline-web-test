@@ -1,0 +1,127 @@
+<script>
+    // Monitor refresh-rate (Hz) test - fully in-browser. Registry: device_tester_mediastream.
+    // Page: /monitor-refresh-rate-test.html
+    //
+    // Samples requestAnimationFrame timestamps after an explicit Start click.
+    // Estimates Hz from median frame delta. No getUserMedia, no upload, no backend.
+
+    web.localUpload = false;
+
+    function doAfterPageRendered() {
+        var running = false;
+        var rafId = 0;
+        var lastTs = 0;
+        var deltas = [];
+        var frames = 0;
+        var MAX_SAMPLES = 180;
+
+        function $(sel) { return window.jQuery ? window.jQuery(sel) : null; }
+
+        function setCue(msg) {
+            var el = document.getElementById('rrCue');
+            if (el) el.textContent = msg;
+        }
+
+        function setHz(hz) {
+            var el = document.getElementById('rrHz');
+            if (!el) return;
+            if (hz == null || !isFinite(hz)) el.textContent = '-- Hz';
+            else el.textContent = hz.toFixed(1) + ' Hz';
+            var bar = document.getElementById('rrBar');
+            if (bar && hz != null && isFinite(hz)) {
+                var pct = Math.max(0, Math.min(100, (hz / 240) * 100));
+                bar.style.width = pct + '%';
+            }
+        }
+
+        function setStats(avgDelta) {
+            var el = document.getElementById('rrStats');
+            if (!el) return;
+            el.textContent = 'frames: ' + frames +
+                ' | avgDelta: ' + (avgDelta != null && isFinite(avgDelta) ? avgDelta.toFixed(2) + ' ms' : '-- ms') +
+                ' | samples: ' + deltas.length;
+        }
+
+        function median(arr) {
+            if (!arr.length) return null;
+            var a = arr.slice().sort(function (x, y) { return x - y; });
+            var mid = Math.floor(a.length / 2);
+            return a.length % 2 ? a[mid] : (a[mid - 1] + a[mid]) / 2;
+        }
+
+        function mean(arr) {
+            if (!arr.length) return null;
+            var s = 0;
+            for (var i = 0; i < arr.length; i++) s += arr[i];
+            return s / arr.length;
+        }
+
+        function tick(ts) {
+            if (!running) return;
+            if (lastTs > 0) {
+                var d = ts - lastTs;
+                if (d > 0 && d < 100) {
+                    deltas.push(d);
+                    if (deltas.length > MAX_SAMPLES) deltas.shift();
+                    frames += 1;
+                    var med = median(deltas);
+                    var avg = mean(deltas);
+                    var hz = med ? (1000 / med) : null;
+                    setHz(hz);
+                    setStats(avg);
+                    setCue('Sampling. Median frame delta ' +
+                        (med != null ? med.toFixed(2) + ' ms' : '--') +
+                        ' -> ~' + (hz != null ? hz.toFixed(1) : '--') + ' Hz. Keep this tab visible.');
+                }
+            }
+            lastTs = ts;
+            rafId = window.requestAnimationFrame(tick);
+        }
+
+        function start() {
+            if (running) return;
+            running = true;
+            lastTs = 0;
+            var panel = document.getElementById('rrPanel');
+            if (panel) panel.classList.add('rr-running');
+            setCue('Measuring. Keep this tab in the foreground - background tabs throttle rAF.');
+            setStats(null);
+            rafId = window.requestAnimationFrame(tick);
+        }
+
+        function stop() {
+            running = false;
+            if (rafId) window.cancelAnimationFrame(rafId);
+            rafId = 0;
+            var panel = document.getElementById('rrPanel');
+            if (panel) panel.classList.remove('rr-running');
+            var med = median(deltas);
+            var hz = med ? (1000 / med) : null;
+            setHz(hz);
+            setStats(mean(deltas));
+            setCue(hz != null
+                ? ('Stopped at ~' + hz.toFixed(1) + ' Hz from ' + deltas.length + ' samples. Reset to clear.')
+                : 'Stopped. Not enough samples yet - Start again and keep the tab visible.');
+        }
+
+        function reset() {
+            stop();
+            deltas = [];
+            frames = 0;
+            lastTs = 0;
+            setHz(null);
+            setStats(null);
+            setCue('Ready. Click Start measuring to sample requestAnimationFrame timing in this tab. Nothing is uploaded.');
+        }
+
+        $('#rrStart').off('click.rr').on('click.rr', function () { start(); });
+        $('#rrStop').off('click.rr').on('click.rr', function () { stop(); });
+        $('#rrReset').off('click.rr').on('click.rr', function () { reset(); });
+
+        // Visible idle output for e2e G16 before any interaction
+        setCue('Ready. Click Start measuring to sample requestAnimationFrame timing in this tab. Nothing is uploaded.');
+        setHz(null);
+        setStats(null);
+        console.log('[monitor-refresh-rate-test] wired: ftoRefreshRate / rAF Hz sampler');
+    }
+</script>
