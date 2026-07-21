@@ -628,7 +628,6 @@ export const INFO_ROUTES = new Set([
   // GSC evidence (28d): "how to compress a zip file" 557 imp / 8 clicks / pos 8.8 / CTR 1.43% / opportunity_score 62.38.
   // Distinct intent from the "to a specific size" / "to smaller size" / "to 100kb" siblings: this captures the bare-query
   // reader who just wants the 3-step recipe. Implementing tool: /zip-file.html. Append-only (new URL).
-  '/guides/en/how-to-compress-a-zip-file.html',
   // Cycle 20260519-11 create_new_guide_page - "zip folder online free" bare-query step-by-step guide.
   // GSC evidence (28d): "zip folder online free" 488 imp / 16 clicks / pos 7.81 / CTR 3.28% / opportunity_score 60.41.
   // Implementing tool: /zip-file.html. Cluster: zip. Append-only (new URL).
@@ -869,14 +868,12 @@ export const INFO_ROUTES = new Set([
   // existing -online suffix variant covers users who type "online";
   // this bare-form covers users who omit it). 723 imp / 5.39 pos /
   // 7.5% CTR per GSC 28d.
-  '/guides/en/how-to-reduce-zip-file-size.html',
   // Cycle 20260520-9 create_new_guide_page - exact-match "reduce zip
   // file size online" landing (GSC 397 imp / 54 clicks / pos 5.01 /
   // CTR 13.6% / opportunity_score 68.46). Implementing tool /zip-file.html.
   // Append-only; non-cannibalizing vs how-to-reduce-zip-file-size-online
   // (this guide is the bare-noun phrase, the existing one is the how-to
   // framing for the same intent family).
-  '/guides/en/reduce-zip-file-size-online.html',
   // Phase 16 Cycle B P16.N11 - "convert heic to jpg" head query
   // (5,500+ impr / <2% CTR / pos 11-24). Pure step-by-step how-to;
   // pairs with existing heic-vs-jpg-vs-webp (which covers the WHEN).
@@ -890,17 +887,12 @@ export const INFO_ROUTES = new Set([
   // Phase 16 cycle 8 N-series - 25 new long-form guides. INFO_ROUTES
   // membership disables ads + rating widget (matching the rest of the
   // /guides/* cluster); see page-renderer.mjs showAds gate.
-  '/guides/en/how-to-make-a-zip-file-smaller.html',
-  '/guides/en/how-to-compress-zip-file-to-smaller-size.html',
   // Cycle 20260517-9 create_new_guide_page - exact-match "compress zip file to smaller size" landing.
-  '/guides/en/compress-zip-file-to-smaller-size.html',
   '/guides/en/compress-zip-file-to-100kb.html',
   // Cycle 20260521-12 P29.A create_new_guide_page - "compress zip file to 2mb" enterprise-SMTP-cap-specific landing. Operator-approved via card cycle29-create_new_guide_page-compresszipfileto2mb-cannibalisation-1779338089590 (option a). 2 MB is the historical Exchange / SMTP-relay / legacy-webmail attachment cap; distinct angle from the 100kb sibling. Implementing tool /zip-file.html.
   '/guides/en/compress-zip-file-to-2mb.html',
   // Cycle 20260517-10 create_new_guide_page - exact-match "zip size reducer" landing (GSC 605 imp / 56 clicks / pos 5.67 / CTR 9.26%; opportunity_score 96.84).
-  '/guides/en/zip-size-reducer.html',
   // Cycle 20260519-12 create_new_guide_page - exact-match "zip file size compressor" landing (GSC 354 imp / 44 clicks / pos 5.43 / CTR 12.43%; opportunity_score 57.07). Implementing tool /zip-file.html. Append-only; non-cannibalizing vs /guides/how-to-make-a-zip-file-smaller.html, /guides/zip-size-reducer.html, /guides/compress-zip-file-to-smaller-size.html (each targets a distinct head-tail intent).
-  '/guides/en/zip-file-size-compressor.html',
   // Cycle 20260519-15 create_new_guide_page — "resize zip file" routing/disambiguation Lane-D guide (GSC 406 imp / 19 clicks / pos 6.83 / CTR 4.68%; opportunity_score 56.6). Distinguishing role: addresses the three-way wording ambiguity (shrink vs split vs shrink-photo-inputs-first), routes to the existing shrink / split / image-resize guides — not a 10th compress-zip duplicate.
   '/guides/en/resize-zip-file.html',
   // Cycle 20260520-16 create_new_guide_page — Indonesian-language guide "kompres file zip" (GSC 338 imp / 13 clicks / pos 6.36 / CTR 3.85%; opportunity_score 51.12). Implementing tool /zip-file.html. Companion sibling to /guides/comprimir-zip-online.html (Spanish) and /guides/compactar-pasta.html (Portuguese).
@@ -1230,7 +1222,6 @@ export const INFO_ROUTES = new Set([
   // (verified cycle 11 WD) without editing any of them. Cluster:
   // guide,zip,image-editing. Lane-D PA-mode mandatory; non-ZIP-rewrite
   // (only links to ZIP cluster URLs - ZIP-CRITICAL-CARE preserved).
-  '/guides/en/file-compressor-online-when-to-zip-vs-when-to-compress-image.html',
   // Cycle 53 P53.A - "How to Extract a File Online - ZIP, RAR, 7z" routing
   // guide. The reverse-direction inverse of cycle-51's file-compressor
   // guide. Recovers the GSC "extract file online" query (-9.3 pos in 7d:
@@ -1382,7 +1373,6 @@ export const INFO_ROUTES = new Set([
   // compresszipfile-scaffold-url-convention-1778622900000 (20260513-3)
   // and howtocompressafolder-scaffold-url-convention-1778626954066
   // (20260513-4) and ships the kebab-corrected URL.
-  '/guides/en/zip-compressor.html',
   // Cycle6 of 20260513-6 — "Compress ZIP" Lane-D append-only guide
   // (zip cluster, companion to /zip-tools/zip-file.html and
   // /guides/zip-compressor.html). Phase A skeleton only — JSP wrapper +
@@ -1392,7 +1382,6 @@ export const INFO_ROUTES = new Set([
   // convention established by the prior granted cards (six cards now in
   // chain: filecompressor, lcdtest, zipfilecompressor, compresszipfile,
   // howtocompressafolder, zipcompressor; this is the seventh).
-  '/guides/en/compress-zip.html',
   // Cycle 20260518-21 create_new_guide_page - "Zip password recovery online"
   // Lane-D truthful-framing guide (zip cluster, GSC "zip password recovery
   // online" 690 imp / 147 clicks / pos 6.17 / CTR 21.3% / opportunity_score
@@ -1412,7 +1401,6 @@ export const INFO_ROUTES = new Set([
   // and /guides/zip-compressor.html (the bare-query sibling). Singular
   // kebab URL passes the URL convention regex; smashed form
   // "zipcompressoronline" does not shadow any existing primary route.
-  '/guides/en/zip-compressor-online.html',
   // Cycle 20260518-23 create_new_guide_page - "Folder to zip" Lane-D guide
   // (zip cluster, GSC "folder to zip" 773 imp / 13 clicks / pos 9.73 /
   // CTR 1.68% / opportunity_score 78.12). Companion to /zip-tools/zip-file.html
@@ -1516,26 +1504,20 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/json-formatter-when.html', '/guides/es/json-formatter-when.html', '/guides/vi/json-formatter-when.html', '/guides/id/json-formatter-when.html', '/guides/de/json-formatter-when.html',
   // plan-warm-pascal-v3 S2 batch 4 (2026-05-29) - 5 locale variants × 3 guides (zip-file-converter + online-zip-file-compressor + led-test)
   '/guides/pt/zip-file-converter.html', '/guides/es/zip-file-converter.html', '/guides/vi/zip-file-converter.html', '/guides/id/zip-file-converter.html', '/guides/de/zip-file-converter.html',
-  '/guides/pt/online-zip-file-compressor.html', '/guides/es/online-zip-file-compressor.html', '/guides/vi/online-zip-file-compressor.html', '/guides/id/online-zip-file-compressor.html', '/guides/de/online-zip-file-compressor.html',
   '/guides/pt/led-test.html', '/guides/es/led-test.html', '/guides/vi/led-test.html', '/guides/id/led-test.html', '/guides/de/led-test.html',
   // plan-warm-pascal-v3 S2 batch 5 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/hd-video-converter-step-by-step.html', '/guides/es/hd-video-converter-step-by-step.html', '/guides/vi/hd-video-converter-step-by-step.html', '/guides/id/hd-video-converter-step-by-step.html', '/guides/de/hd-video-converter-step-by-step.html',
-  '/guides/pt/compress-zip-file-to-smaller-size.html', '/guides/es/compress-zip-file-to-smaller-size.html', '/guides/vi/compress-zip-file-to-smaller-size.html', '/guides/id/compress-zip-file-to-smaller-size.html', '/guides/de/compress-zip-file-to-smaller-size.html',
   '/guides/pt/hd-video-converter-vs-alternatives.html', '/guides/es/hd-video-converter-vs-alternatives.html', '/guides/vi/hd-video-converter-vs-alternatives.html', '/guides/id/hd-video-converter-vs-alternatives.html', '/guides/de/hd-video-converter-vs-alternatives.html',
   // plan-warm-pascal-v3 S2 batch 6 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/compress-zip.html', '/guides/es/compress-zip.html', '/guides/vi/compress-zip.html', '/guides/id/compress-zip.html', '/guides/de/compress-zip.html',
   '/guides/pt/gif-into-frames.html', '/guides/es/gif-into-frames.html', '/guides/vi/gif-into-frames.html', '/guides/id/gif-into-frames.html', '/guides/de/gif-into-frames.html',
-  '/guides/pt/reduce-zip-file-size-online.html', '/guides/es/reduce-zip-file-size-online.html', '/guides/vi/reduce-zip-file-size-online.html', '/guides/id/reduce-zip-file-size-online.html', '/guides/de/reduce-zip-file-size-online.html',
   // plan-warm-pascal-v3 S2 batch 7 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/json-formatter-step-by-step.html', '/guides/es/json-formatter-step-by-step.html', '/guides/vi/json-formatter-step-by-step.html', '/guides/id/json-formatter-step-by-step.html', '/guides/de/json-formatter-step-by-step.html',
-  '/guides/pt/zip-compress.html', '/guides/es/zip-compress.html', '/guides/vi/zip-compress.html', '/guides/id/zip-compress.html', '/guides/de/zip-compress.html',
   '/guides/pt/json-formatter-vs-alternatives.html', '/guides/es/json-formatter-vs-alternatives.html', '/guides/vi/json-formatter-vs-alternatives.html', '/guides/id/json-formatter-vs-alternatives.html', '/guides/de/json-formatter-vs-alternatives.html',
   // plan-warm-pascal-v3 S2 batch 8 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/unlock-zip-file-online.html', '/guides/es/unlock-zip-file-online.html', '/guides/vi/unlock-zip-file-online.html', '/guides/id/unlock-zip-file-online.html', '/guides/de/unlock-zip-file-online.html',
   '/guides/pt/how-to-zip-multiple-files-into-one.html', '/guides/es/how-to-zip-multiple-files-into-one.html', '/guides/vi/how-to-zip-multiple-files-into-one.html', '/guides/id/how-to-zip-multiple-files-into-one.html', '/guides/de/how-to-zip-multiple-files-into-one.html',
   '/guides/pt/crop-and-rotate-image.html', '/guides/es/crop-and-rotate-image.html', '/guides/vi/crop-and-rotate-image.html', '/guides/id/crop-and-rotate-image.html', '/guides/de/crop-and-rotate-image.html',
   // plan-warm-pascal-v3 S2 batch 9 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-compress-zip-file-to-smaller-size.html', '/guides/es/how-to-compress-zip-file-to-smaller-size.html', '/guides/vi/how-to-compress-zip-file-to-smaller-size.html', '/guides/id/how-to-compress-zip-file-to-smaller-size.html', '/guides/de/how-to-compress-zip-file-to-smaller-size.html',
   '/guides/pt/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html', '/guides/es/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html', '/guides/vi/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html', '/guides/id/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html', '/guides/de/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html',
   '/guides/pt/how-to-check-camera-quality-on-your-phone.html', '/guides/es/how-to-check-camera-quality-on-your-phone.html', '/guides/vi/how-to-check-camera-quality-on-your-phone.html', '/guides/id/how-to-check-camera-quality-on-your-phone.html', '/guides/de/how-to-check-camera-quality-on-your-phone.html',
   // plan-warm-pascal-v3 S2 batch 10 (2026-05-29) - 5 locale variants × 3 guides
@@ -1543,11 +1525,9 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/jpg-vs-jpeg-are-they-the-same.html', '/guides/es/jpg-vs-jpeg-are-they-the-same.html', '/guides/vi/jpg-vs-jpeg-are-they-the-same.html', '/guides/id/jpg-vs-jpeg-are-they-the-same.html', '/guides/de/jpg-vs-jpeg-are-they-the-same.html',
   '/guides/pt/iphone-photo-format-explained-heic-jpg-png-raw.html', '/guides/es/iphone-photo-format-explained-heic-jpg-png-raw.html', '/guides/vi/iphone-photo-format-explained-heic-jpg-png-raw.html', '/guides/id/iphone-photo-format-explained-heic-jpg-png-raw.html', '/guides/de/iphone-photo-format-explained-heic-jpg-png-raw.html',
   // plan-warm-pascal-v3 S2 batch 11 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/zip-size-reducer.html', '/guides/es/zip-size-reducer.html', '/guides/vi/zip-size-reducer.html', '/guides/id/zip-size-reducer.html', '/guides/de/zip-size-reducer.html',
   '/guides/pt/zip-folder-online-free.html', '/guides/es/zip-folder-online-free.html', '/guides/vi/zip-folder-online-free.html', '/guides/id/zip-folder-online-free.html', '/guides/de/zip-folder-online-free.html',
   '/guides/pt/svg-to-png-when-to-rasterize-an-svg.html', '/guides/es/svg-to-png-when-to-rasterize-an-svg.html', '/guides/vi/svg-to-png-when-to-rasterize-an-svg.html', '/guides/id/svg-to-png-when-to-rasterize-an-svg.html', '/guides/de/svg-to-png-when-to-rasterize-an-svg.html',
   // plan-warm-pascal-v3 S2 batch 12 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/compress-zip-size.html', '/guides/es/compress-zip-size.html', '/guides/vi/compress-zip-size.html', '/guides/id/compress-zip-size.html', '/guides/de/compress-zip-size.html',
   '/guides/pt/create-zip-file-online.html', '/guides/es/create-zip-file-online.html', '/guides/vi/create-zip-file-online.html', '/guides/id/create-zip-file-online.html', '/guides/de/create-zip-file-online.html',
   '/guides/pt/css-minifier-vs-compressor.html', '/guides/es/css-minifier-vs-compressor.html', '/guides/vi/css-minifier-vs-compressor.html', '/guides/id/css-minifier-vs-compressor.html', '/guides/de/css-minifier-vs-compressor.html',
   // plan-warm-pascal-v3 S2 batch 13 (2026-05-29) - 5 locale variants × 3 guides
@@ -1612,7 +1592,6 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/how-to-compress-a-jpg-for-email-attachment-limits.html', '/guides/es/how-to-compress-a-jpg-for-email-attachment-limits.html', '/guides/vi/how-to-compress-a-jpg-for-email-attachment-limits.html', '/guides/id/how-to-compress-a-jpg-for-email-attachment-limits.html', '/guides/de/how-to-compress-a-jpg-for-email-attachment-limits.html',
   // plan-warm-pascal-v3 S2 batch 26 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/free-online-tools-that-work-without-uploading-files.html', '/guides/es/free-online-tools-that-work-without-uploading-files.html', '/guides/vi/free-online-tools-that-work-without-uploading-files.html', '/guides/id/free-online-tools-that-work-without-uploading-files.html', '/guides/de/free-online-tools-that-work-without-uploading-files.html',
-  '/guides/pt/how-to-compress-a-zip-file.html', '/guides/es/how-to-compress-a-zip-file.html', '/guides/vi/how-to-compress-a-zip-file.html', '/guides/id/how-to-compress-a-zip-file.html', '/guides/de/how-to-compress-a-zip-file.html',
   '/guides/pt/jpg-vs-png-for-web.html', '/guides/es/jpg-vs-png-for-web.html', '/guides/vi/jpg-vs-png-for-web.html', '/guides/id/jpg-vs-png-for-web.html', '/guides/de/jpg-vs-png-for-web.html',
   // plan-warm-pascal-v3 S2 batch 27 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/how-to-extract-a-file-online-zip-rar-7z.html', '/guides/es/how-to-extract-a-file-online-zip-rar-7z.html', '/guides/vi/how-to-extract-a-file-online-zip-rar-7z.html', '/guides/id/how-to-extract-a-file-online-zip-rar-7z.html', '/guides/de/how-to-extract-a-file-online-zip-rar-7z.html',
@@ -1679,7 +1658,6 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/oled-test-vs-lcd-test-what-changes-on-oled.html', '/guides/es/oled-test-vs-lcd-test-what-changes-on-oled.html', '/guides/vi/oled-test-vs-lcd-test-what-changes-on-oled.html', '/guides/id/oled-test-vs-lcd-test-what-changes-on-oled.html', '/guides/de/oled-test-vs-lcd-test-what-changes-on-oled.html',
   '/guides/pt/milliseconds-to-date-utc-vs-local-time.html', '/guides/es/milliseconds-to-date-utc-vs-local-time.html', '/guides/vi/milliseconds-to-date-utc-vs-local-time.html', '/guides/id/milliseconds-to-date-utc-vs-local-time.html', '/guides/de/milliseconds-to-date-utc-vs-local-time.html',
   // plan-warm-pascal-v3 S2 batch 43 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-reduce-zip-file-size.html', '/guides/es/how-to-reduce-zip-file-size.html', '/guides/vi/how-to-reduce-zip-file-size.html', '/guides/id/how-to-reduce-zip-file-size.html', '/guides/de/how-to-reduce-zip-file-size.html',
   '/guides/pt/screen-test-online-vs-app-which-is-more-accurate.html', '/guides/es/screen-test-online-vs-app-which-is-more-accurate.html', '/guides/vi/screen-test-online-vs-app-which-is-more-accurate.html', '/guides/id/screen-test-online-vs-app-which-is-more-accurate.html', '/guides/de/screen-test-online-vs-app-which-is-more-accurate.html',
   '/guides/pt/image-compression-and-exif-metadata-what-gets-stripped.html', '/guides/es/image-compression-and-exif-metadata-what-gets-stripped.html', '/guides/vi/image-compression-and-exif-metadata-what-gets-stripped.html', '/guides/id/image-compression-and-exif-metadata-what-gets-stripped.html', '/guides/de/image-compression-and-exif-metadata-what-gets-stripped.html',
   // plan-warm-pascal-v3 S2 batch 44 (2026-05-31) - 5 locale variants × 3 guides
@@ -1687,7 +1665,6 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html', '/guides/es/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html', '/guides/vi/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html', '/guides/id/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html', '/guides/de/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html',
   '/guides/pt/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html', '/guides/es/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html', '/guides/vi/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html', '/guides/id/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html', '/guides/de/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html',
   // plan-warm-pascal-v3 S2 batch 45 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-make-a-zip-file-smaller.html', '/guides/es/how-to-make-a-zip-file-smaller.html', '/guides/vi/how-to-make-a-zip-file-smaller.html', '/guides/id/how-to-make-a-zip-file-smaller.html', '/guides/de/how-to-make-a-zip-file-smaller.html',
   '/guides/pt/long-number-millisecond-or-second.html', '/guides/es/long-number-millisecond-or-second.html', '/guides/vi/long-number-millisecond-or-second.html', '/guides/id/long-number-millisecond-or-second.html', '/guides/de/long-number-millisecond-or-second.html',
   '/guides/pt/lcd-test-what-it-checks.html', '/guides/es/lcd-test-what-it-checks.html', '/guides/vi/lcd-test-what-it-checks.html', '/guides/id/lcd-test-what-it-checks.html', '/guides/de/lcd-test-what-it-checks.html',
   // plan-warm-pascal-v3 S2 batch 46 (2026-05-31) - 5 locale variants × 3 guides
@@ -1703,7 +1680,6 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/unminify-js.html', '/guides/es/unminify-js.html', '/guides/vi/unminify-js.html', '/guides/id/unminify-js.html', '/guides/de/unminify-js.html',
   '/guides/pt/screen-test-for-laptop-5-minute-checklist.html', '/guides/es/screen-test-for-laptop-5-minute-checklist.html', '/guides/vi/screen-test-for-laptop-5-minute-checklist.html', '/guides/id/screen-test-for-laptop-5-minute-checklist.html', '/guides/de/screen-test-for-laptop-5-minute-checklist.html',
   // plan-warm-pascal-v3 S2 batch 49 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/file-compressor-online-when-to-zip-vs-when-to-compress-image.html', '/guides/es/file-compressor-online-when-to-zip-vs-when-to-compress-image.html', '/guides/vi/file-compressor-online-when-to-zip-vs-when-to-compress-image.html', '/guides/id/file-compressor-online-when-to-zip-vs-when-to-compress-image.html', '/guides/de/file-compressor-online-when-to-zip-vs-when-to-compress-image.html',
   '/guides/pt/md5-decode.html', '/guides/es/md5-decode.html', '/guides/vi/md5-decode.html', '/guides/id/md5-decode.html', '/guides/de/md5-decode.html',
   '/guides/pt/millisecond-to-date.html', '/guides/es/millisecond-to-date.html', '/guides/vi/millisecond-to-date.html', '/guides/id/millisecond-to-date.html', '/guides/de/millisecond-to-date.html',
   // plan-warm-pascal-v3 S2 batch 50 (2026-05-31) - 5 locale variants × 3 guides
@@ -1711,7 +1687,6 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/md5-password.html', '/guides/es/md5-password.html', '/guides/vi/md5-password.html', '/guides/id/md5-password.html', '/guides/de/md5-password.html',
   '/guides/pt/screen-test-vs-camera-test-pick-the-right-tool.html', '/guides/es/screen-test-vs-camera-test-pick-the-right-tool.html', '/guides/vi/screen-test-vs-camera-test-pick-the-right-tool.html', '/guides/id/screen-test-vs-camera-test-pick-the-right-tool.html', '/guides/de/screen-test-vs-camera-test-pick-the-right-tool.html',
   // plan-warm-pascal-v3 S2 batch 51 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/zip-file-size-compressor.html', '/guides/es/zip-file-size-compressor.html', '/guides/vi/zip-file-size-compressor.html', '/guides/id/zip-file-size-compressor.html', '/guides/de/zip-file-size-compressor.html',
   '/guides/pt/md5-hash-decrypt.html', '/guides/es/md5-hash-decrypt.html', '/guides/vi/md5-hash-decrypt.html', '/guides/id/md5-hash-decrypt.html', '/guides/de/md5-hash-decrypt.html',
   '/guides/pt/led-test-vs-lcd-test-which-applies-to-your-screen.html', '/guides/es/led-test-vs-lcd-test-which-applies-to-your-screen.html', '/guides/vi/led-test-vs-lcd-test-which-applies-to-your-screen.html', '/guides/id/led-test-vs-lcd-test-which-applies-to-your-screen.html', '/guides/de/led-test-vs-lcd-test-which-applies-to-your-screen.html',
   // plan-warm-pascal-v3 S2 batch 52 (2026-05-31) - 5 locale variants × 3 guides
@@ -1719,20 +1694,17 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/md5-decrypt-online.html', '/guides/es/md5-decrypt-online.html', '/guides/vi/md5-decrypt-online.html', '/guides/id/md5-decrypt-online.html', '/guides/de/md5-decrypt-online.html',
   '/guides/pt/ms-to-date.html', '/guides/es/ms-to-date.html', '/guides/vi/ms-to-date.html', '/guides/id/ms-to-date.html', '/guides/de/ms-to-date.html',
   // plan-warm-pascal-v3 S2 batch 53 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/zip-compressor.html', '/guides/es/zip-compressor.html', '/guides/vi/zip-compressor.html', '/guides/id/zip-compressor.html', '/guides/de/zip-compressor.html',
   '/guides/pt/lcd-checker.html', '/guides/es/lcd-checker.html', '/guides/vi/lcd-checker.html', '/guides/id/lcd-checker.html', '/guides/de/lcd-checker.html',
   '/guides/pt/online-zip-file.html', '/guides/es/online-zip-file.html', '/guides/vi/online-zip-file.html', '/guides/id/online-zip-file.html', '/guides/de/online-zip-file.html',
   // plan-warm-pascal-v3 S2 batch 54 (2026-05-31) - 5 locale variants × 3 guides
   '/guides/pt/test-lcd.html', '/guides/es/test-lcd.html', '/guides/vi/test-lcd.html', '/guides/id/test-lcd.html', '/guides/de/test-lcd.html',
   '/guides/pt/i-love-zip.html', '/guides/es/i-love-zip.html', '/guides/vi/i-love-zip.html', '/guides/id/i-love-zip.html', '/guides/de/i-love-zip.html',
-  '/guides/pt/zip-compressor-online.html', '/guides/es/zip-compressor-online.html', '/guides/vi/zip-compressor-online.html', '/guides/id/zip-compressor-online.html', '/guides/de/zip-compressor-online.html',
   // plan-warm-pascal-v3 S2 batch 55 (2026-05-31) - 5 locale variants × 3 guides
   '/guides/pt/screen-display-test-synonyms.html', '/guides/es/screen-display-test-synonyms.html', '/guides/vi/screen-display-test-synonyms.html', '/guides/id/screen-display-test-synonyms.html', '/guides/de/screen-display-test-synonyms.html',
   '/guides/pt/kompres-file-zip.html', '/guides/es/kompres-file-zip.html', '/guides/vi/kompres-file-zip.html', '/guides/id/kompres-file-zip.html', '/guides/de/kompres-file-zip.html',
   '/guides/pt/zip-unlocker-online.html', '/guides/es/zip-unlocker-online.html', '/guides/vi/zip-unlocker-online.html', '/guides/id/zip-unlocker-online.html', '/guides/de/zip-unlocker-online.html',
   // plan-warm-pascal-v3 S2 batch 56 (2026-05-31) - 5 locale variants × 2 guides (FINAL substantive batch; 163 of 166 guides complete; 3 stubs noindex deferred)
   '/guides/pt/kompres-zip.html', '/guides/es/kompres-zip.html', '/guides/vi/kompres-zip.html', '/guides/id/kompres-zip.html', '/guides/de/kompres-zip.html',
-  '/guides/pt/zip-file-compressor-online.html', '/guides/es/zip-file-compressor-online.html', '/guides/vi/zip-file-compressor-online.html', '/guides/id/zip-file-compressor-online.html', '/guides/de/zip-file-compressor-online.html',
   // plan-warm-pascal-v3 S2 batch 57 (2026-05-31) - 5 locale variants × 2 guides (NEW make-zip-file-online + split-gif-into-frames, post-ledger-166 expansion to 168 targeted)
   '/guides/pt/make-zip-file-online.html', '/guides/es/make-zip-file-online.html', '/guides/vi/make-zip-file-online.html', '/guides/id/make-zip-file-online.html', '/guides/de/make-zip-file-online.html',
   '/guides/pt/split-gif-into-frames.html', '/guides/es/split-gif-into-frames.html', '/guides/vi/split-gif-into-frames.html', '/guides/id/split-gif-into-frames.html', '/guides/de/split-gif-into-frames.html',
@@ -6873,7 +6845,6 @@ export const GUIDE_ROUTES = new Set([
   // Cycle 20260515-16 — "Compress ZIP Size" Lane-D guide. Complete single-cycle
   // ship: compressibility table + DEFLATE level explainer + routing to
   // /zip-tools/zip-file.html. Cluster=zip.
-  '/guides/en/compress-zip-size.html',
   // Cycle 20260515-12 — "Make Zip File Online" Lane-D guide (zip cluster,
   // companion to /zip-tools/zip-file.html). Complete single-cycle ship.
   '/guides/en/make-zip-file-online.html',
@@ -6897,17 +6868,14 @@ export const GUIDE_ROUTES = new Set([
   // cluster head-query; 799 imp / 73 clicks / pos 6.2 / CTR 9.1% per 28d
   // GSC; opportunity_score 117.19). Companion to /zip-tools/zip-file.html.
   // Phase A complete single-cycle ship.
-  '/guides/en/zip-file-compressor-online.html',
   // Cycle 20260517-8 — "Online Zip File Compressor" Lane-D create_new_guide_page
   // (zip cluster head-query sibling; 634 imp / 27 clicks / pos 5.93 / CTR 4.3%
   // per 28d GSC; opportunity_score 102.3). Companion to /zip-tools/zip-file.html.
   // Complete single-cycle ship per cycle 20260514-5 contract.
-  '/guides/en/online-zip-file-compressor.html',
   // Cycle 20260518-20 create_new_guide_page - "Zip Compress" Lane-D guide (zip
   // cluster head-query sibling; 744 imp / 26 clicks / pos 7.71 / CTR 3.49%
   // per 28d GSC; opportunity_score 93.06). Companion to /zip-tools/zip-file.html.
   // Complete single-cycle ship per cycle 20260514-5 contract.
-  '/guides/en/zip-compress.html',
   // Cycle 20260518-21 create_new_guide_page - "Zip password recovery online"
   // Lane-D truthful-framing guide. Cluster: zip. GSC 690 imp / 147 clicks /
   // pos 6.17 / CTR 21.3% / opportunity_score 87.95. Sourced from
@@ -9563,6 +9531,106 @@ export function isGuideRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  // 2026-07-21 P1#5 ZIP-permutation consolidation (review/20260720): near-
+  // duplicate phrasings 301 to the click-winning canonical intent (how-to-
+  // reduce-zip-file-size-online, 55 clk/28d) or the tool page for tool-name
+  // queries. Data basis: seo-reports/20260721-insight gsc_top_pages_guides.
+  '/guides/en/how-to-reduce-zip-file-size.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
+  '/guides/pt/how-to-reduce-zip-file-size.html': '/guides/pt/how-to-reduce-zip-file-size-online.html',
+  '/guides/es/how-to-reduce-zip-file-size.html': '/guides/es/how-to-reduce-zip-file-size-online.html',
+  '/guides/vi/how-to-reduce-zip-file-size.html': '/guides/vi/how-to-reduce-zip-file-size-online.html',
+  '/guides/id/how-to-reduce-zip-file-size.html': '/guides/id/how-to-reduce-zip-file-size-online.html',
+  '/guides/de/how-to-reduce-zip-file-size.html': '/guides/de/how-to-reduce-zip-file-size-online.html',
+  '/guides/en/reduce-zip-file-size-online.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
+  '/guides/pt/reduce-zip-file-size-online.html': '/guides/pt/how-to-reduce-zip-file-size-online.html',
+  '/guides/es/reduce-zip-file-size-online.html': '/guides/es/how-to-reduce-zip-file-size-online.html',
+  '/guides/vi/reduce-zip-file-size-online.html': '/guides/vi/how-to-reduce-zip-file-size-online.html',
+  '/guides/id/reduce-zip-file-size-online.html': '/guides/id/how-to-reduce-zip-file-size-online.html',
+  '/guides/de/reduce-zip-file-size-online.html': '/guides/de/how-to-reduce-zip-file-size-online.html',
+  '/guides/en/compress-zip-file-to-smaller-size.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
+  '/guides/pt/compress-zip-file-to-smaller-size.html': '/guides/pt/how-to-reduce-zip-file-size-online.html',
+  '/guides/es/compress-zip-file-to-smaller-size.html': '/guides/es/how-to-reduce-zip-file-size-online.html',
+  '/guides/vi/compress-zip-file-to-smaller-size.html': '/guides/vi/how-to-reduce-zip-file-size-online.html',
+  '/guides/id/compress-zip-file-to-smaller-size.html': '/guides/id/how-to-reduce-zip-file-size-online.html',
+  '/guides/de/compress-zip-file-to-smaller-size.html': '/guides/de/how-to-reduce-zip-file-size-online.html',
+  '/guides/en/how-to-compress-zip-file-to-smaller-size.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
+  '/guides/pt/how-to-compress-zip-file-to-smaller-size.html': '/guides/pt/how-to-reduce-zip-file-size-online.html',
+  '/guides/es/how-to-compress-zip-file-to-smaller-size.html': '/guides/es/how-to-reduce-zip-file-size-online.html',
+  '/guides/vi/how-to-compress-zip-file-to-smaller-size.html': '/guides/vi/how-to-reduce-zip-file-size-online.html',
+  '/guides/id/how-to-compress-zip-file-to-smaller-size.html': '/guides/id/how-to-reduce-zip-file-size-online.html',
+  '/guides/de/how-to-compress-zip-file-to-smaller-size.html': '/guides/de/how-to-reduce-zip-file-size-online.html',
+  '/guides/en/how-to-make-a-zip-file-smaller.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
+  '/guides/pt/how-to-make-a-zip-file-smaller.html': '/guides/pt/how-to-reduce-zip-file-size-online.html',
+  '/guides/es/how-to-make-a-zip-file-smaller.html': '/guides/es/how-to-reduce-zip-file-size-online.html',
+  '/guides/vi/how-to-make-a-zip-file-smaller.html': '/guides/vi/how-to-reduce-zip-file-size-online.html',
+  '/guides/id/how-to-make-a-zip-file-smaller.html': '/guides/id/how-to-reduce-zip-file-size-online.html',
+  '/guides/de/how-to-make-a-zip-file-smaller.html': '/guides/de/how-to-reduce-zip-file-size-online.html',
+  '/guides/en/compress-zip-size.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
+  '/guides/pt/compress-zip-size.html': '/guides/pt/how-to-reduce-zip-file-size-online.html',
+  '/guides/es/compress-zip-size.html': '/guides/es/how-to-reduce-zip-file-size-online.html',
+  '/guides/vi/compress-zip-size.html': '/guides/vi/how-to-reduce-zip-file-size-online.html',
+  '/guides/id/compress-zip-size.html': '/guides/id/how-to-reduce-zip-file-size-online.html',
+  '/guides/de/compress-zip-size.html': '/guides/de/how-to-reduce-zip-file-size-online.html',
+  '/guides/en/zip-file-size-compressor.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
+  '/guides/pt/zip-file-size-compressor.html': '/guides/pt/how-to-reduce-zip-file-size-online.html',
+  '/guides/es/zip-file-size-compressor.html': '/guides/es/how-to-reduce-zip-file-size-online.html',
+  '/guides/vi/zip-file-size-compressor.html': '/guides/vi/how-to-reduce-zip-file-size-online.html',
+  '/guides/id/zip-file-size-compressor.html': '/guides/id/how-to-reduce-zip-file-size-online.html',
+  '/guides/de/zip-file-size-compressor.html': '/guides/de/how-to-reduce-zip-file-size-online.html',
+  '/guides/en/zip-size-reducer.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
+  '/guides/pt/zip-size-reducer.html': '/guides/pt/how-to-reduce-zip-file-size-online.html',
+  '/guides/es/zip-size-reducer.html': '/guides/es/how-to-reduce-zip-file-size-online.html',
+  '/guides/vi/zip-size-reducer.html': '/guides/vi/how-to-reduce-zip-file-size-online.html',
+  '/guides/id/zip-size-reducer.html': '/guides/id/how-to-reduce-zip-file-size-online.html',
+  '/guides/de/zip-size-reducer.html': '/guides/de/how-to-reduce-zip-file-size-online.html',
+  '/guides/en/how-to-compress-a-zip-file.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
+  '/guides/pt/how-to-compress-a-zip-file.html': '/guides/pt/how-to-reduce-zip-file-size-online.html',
+  '/guides/es/how-to-compress-a-zip-file.html': '/guides/es/how-to-reduce-zip-file-size-online.html',
+  '/guides/vi/how-to-compress-a-zip-file.html': '/guides/vi/how-to-reduce-zip-file-size-online.html',
+  '/guides/id/how-to-compress-a-zip-file.html': '/guides/id/how-to-reduce-zip-file-size-online.html',
+  '/guides/de/how-to-compress-a-zip-file.html': '/guides/de/how-to-reduce-zip-file-size-online.html',
+  '/guides/en/zip-compressor.html': '/zip-tools/zip-file.html',
+  '/guides/pt/zip-compressor.html': '/zip-tools/zip-file.html',
+  '/guides/es/zip-compressor.html': '/zip-tools/zip-file.html',
+  '/guides/vi/zip-compressor.html': '/zip-tools/zip-file.html',
+  '/guides/id/zip-compressor.html': '/zip-tools/zip-file.html',
+  '/guides/de/zip-compressor.html': '/zip-tools/zip-file.html',
+  '/guides/en/zip-compressor-online.html': '/zip-tools/zip-file.html',
+  '/guides/pt/zip-compressor-online.html': '/zip-tools/zip-file.html',
+  '/guides/es/zip-compressor-online.html': '/zip-tools/zip-file.html',
+  '/guides/vi/zip-compressor-online.html': '/zip-tools/zip-file.html',
+  '/guides/id/zip-compressor-online.html': '/zip-tools/zip-file.html',
+  '/guides/de/zip-compressor-online.html': '/zip-tools/zip-file.html',
+  '/guides/en/online-zip-file-compressor.html': '/zip-tools/zip-file.html',
+  '/guides/pt/online-zip-file-compressor.html': '/zip-tools/zip-file.html',
+  '/guides/es/online-zip-file-compressor.html': '/zip-tools/zip-file.html',
+  '/guides/vi/online-zip-file-compressor.html': '/zip-tools/zip-file.html',
+  '/guides/id/online-zip-file-compressor.html': '/zip-tools/zip-file.html',
+  '/guides/de/online-zip-file-compressor.html': '/zip-tools/zip-file.html',
+  '/guides/en/zip-compress.html': '/zip-tools/zip-file.html',
+  '/guides/pt/zip-compress.html': '/zip-tools/zip-file.html',
+  '/guides/es/zip-compress.html': '/zip-tools/zip-file.html',
+  '/guides/vi/zip-compress.html': '/zip-tools/zip-file.html',
+  '/guides/id/zip-compress.html': '/zip-tools/zip-file.html',
+  '/guides/de/zip-compress.html': '/zip-tools/zip-file.html',
+  '/guides/en/compress-zip.html': '/zip-tools/zip-file.html',
+  '/guides/pt/compress-zip.html': '/zip-tools/zip-file.html',
+  '/guides/es/compress-zip.html': '/zip-tools/zip-file.html',
+  '/guides/vi/compress-zip.html': '/zip-tools/zip-file.html',
+  '/guides/id/compress-zip.html': '/zip-tools/zip-file.html',
+  '/guides/de/compress-zip.html': '/zip-tools/zip-file.html',
+  '/guides/en/zip-file-compressor-online.html': '/zip-tools/zip-file.html',
+  '/guides/pt/zip-file-compressor-online.html': '/zip-tools/zip-file.html',
+  '/guides/es/zip-file-compressor-online.html': '/zip-tools/zip-file.html',
+  '/guides/vi/zip-file-compressor-online.html': '/zip-tools/zip-file.html',
+  '/guides/id/zip-file-compressor-online.html': '/zip-tools/zip-file.html',
+  '/guides/de/zip-file-compressor-online.html': '/zip-tools/zip-file.html',
+  '/guides/en/file-compressor-online-when-to-zip-vs-when-to-compress-image.html': '/guides/en/file-compressor-vs-zip-what-to-pick.html',
+  '/guides/pt/file-compressor-online-when-to-zip-vs-when-to-compress-image.html': '/guides/pt/file-compressor-vs-zip-what-to-pick.html',
+  '/guides/es/file-compressor-online-when-to-zip-vs-when-to-compress-image.html': '/guides/es/file-compressor-vs-zip-what-to-pick.html',
+  '/guides/vi/file-compressor-online-when-to-zip-vs-when-to-compress-image.html': '/guides/vi/file-compressor-vs-zip-what-to-pick.html',
+  '/guides/id/file-compressor-online-when-to-zip-vs-when-to-compress-image.html': '/guides/id/file-compressor-vs-zip-what-to-pick.html',
+  '/guides/de/file-compressor-online-when-to-zip-vs-when-to-compress-image.html': '/guides/de/file-compressor-vs-zip-what-to-pick.html',
   '/markdown-to-html.html': '/developer-tools/markdown-to-html.html',
   // Hub directory-form safety redirects (added 2026-05-11). Search engines
   // and external links may guess `/cluster-tools/` from the clustered tool
@@ -9683,9 +9751,9 @@ export const ALIAS_ROUTES = {
   '/compress-zip.html': '/zip-tools/zip-file.html',
   // Cycle148 P148.A — capture bare URL traffic for "how to make a zip file smaller" head-query (~2,429 imp / 28d, pos 5.6, CTR 0.33% per GSC; 113 missed clicks). Bare URL currently 200-serves the GitHub-Pages 404 fallback (homepage HTML, canonical=/) so Google routes those clicks to a generic index instead of the actual ZIP-compress tool.
   // Cycle173 P173.B amendment (2026-05-10) — operator-granted P171.B + P172.B (zip_care chain length=11). Re-target alias from /zip-file.html (generic ZIP tool, doesn't directly answer the head query "how to make a zip file smaller") to /guides/how-to-make-a-zip-file-smaller.html (long-form guide that already exists since Phase-16 cycle-8 N-series; ranks for the same query). Consolidates the 2,429 imp/28d 301 traffic into ONE canonical destination instead of two cannibalizing pages. ZIP-CARE preserved — no edit to indexed copy on /zip-file.html or /guides/how-to-make-a-zip-file-smaller.html; route table edit only. Tier-A protocol applied: pre-deploy snapshot at seo-reports/20260510-47/zip-pre-deploy/howtomakeazipfilesmaller/, halved Day +1/+3/+7 rollback thresholds, four-skill gate N/A (route-only change). Operator approve evidence: seo-reports/20260510-45/.approvals/granted/P171.B-howtomakeazipfilesmaller-zip-care-cooldown.json (2026-05-10T09:58:14.373Z) + seo-reports/20260510-46/.approvals/granted/P172.B-howtomakeazipfilesmaller-zip-care-cooldown.json (2026-05-10T09:58:18.077Z).
-  '/how-to-make-a-zip-file-smaller.html': '/guides/en/how-to-make-a-zip-file-smaller.html',
+  '/how-to-make-a-zip-file-smaller.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
   // Cycle 20260519-18 P18.E (create_new_guide_page re-route per cannibalization grant cycle 17). Capture bare-query traffic for "make zip file smaller" (369 imp / 24 clicks / pos 6.17 / CTR 6.5% per GSC) without splitting rank with the existing canonical guide. Bare URL /guides/make-zip-file-smaller.html aliases to /guides/how-to-make-a-zip-file-smaller.html (the canonical long-form guide). Per cycle 17 grant `new-guide-make-zip-file-smaller-cannibalization-cycle17` option (b) — "re-route the synth to /guides/how-to-make-a-zip-file-smaller.html". Route-table-only edit; no indexed-copy change.
-  '/guides/make-zip-file-smaller.html': '/guides/en/how-to-make-a-zip-file-smaller.html',
+  '/guides/make-zip-file-smaller.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
   // Cycle 20260519-18 P18.F (new_tool_page_discovery re-route per cannibalization grant cycle 16+17). Capture bare-URL traffic for trending-tool candidate cand-50f0efbf185cfb91 ("Image Compressor Online", cycles_seen=19, confidence=0.65) without splitting rank with /compress-image.html canonical. Bare URL /image-compressor.html aliases to /compress-image.html (the canonical client-side image compression tool). Per cycle 16+17 grants `new-tool-image-compressor-cannibalization-intent-overlap-cycle16` option (b/c) — rename to a non-overlapping slug OR drop from candidate pool. Alias is the lightest-touch realisation of intent capture without cannibalization. Route-table-only edit; no indexed-copy change.
   '/image-compressor.html': '/compress-image.html',
   // Cycle149 P149.A — capture bare URL traffic for "zip file size reducer" head-query (2,754 imp / 28d, pos 5.66, CTR 10.46% per GSC; 288 clicks routed to homepage). Bare URL currently 200-serves the GitHub-Pages 404 fallback (homepage HTML, canonical=/). Aliasing to /zip-file.html re-routes the 288 clicks/28d to the actual ZIP-compress action page (ZIP-CARE preserved — no edit to /zip-file.html HTML). Same alias-only playbook as P141.A / P142.A / P143.A / P144.A / P145.A / P146.A / P147.A / P148.A.
@@ -9832,9 +9900,9 @@ export const ALIAS_ROUTES = {
   '/guides/compress-jpeg-without-losing-quality-quality-vs-size.html': '/guides/en/compress-jpeg-without-losing-quality-quality-vs-size.html',
   '/guides/compress-zip-file-to-100kb.html': '/guides/en/compress-zip-file-to-100kb.html',
   '/guides/compress-zip-file-to-2mb.html': '/guides/en/compress-zip-file-to-2mb.html',
-  '/guides/compress-zip-file-to-smaller-size.html': '/guides/en/compress-zip-file-to-smaller-size.html',
-  '/guides/compress-zip-size.html': '/guides/en/compress-zip-size.html',
-  '/guides/compress-zip.html': '/guides/en/compress-zip.html',
+  '/guides/compress-zip-file-to-smaller-size.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
+  '/guides/compress-zip-size.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
+  '/guides/compress-zip.html': '/zip-tools/zip-file.html',
   '/guides/compressed-jpg-looks-blurry-three-causes.html': '/guides/en/compressed-jpg-looks-blurry-three-causes.html',
   '/guides/convert-milliseconds-to-date.html': '/guides/en/convert-milliseconds-to-date.html',
   '/guides/create-zip-file-online.html': '/guides/en/create-zip-file-online.html',
@@ -9853,7 +9921,7 @@ export const ALIAS_ROUTES = {
   '/guides/ffmpeg-online-conversion-stalled-three-fixes.html': '/guides/en/ffmpeg-online-conversion-stalled-three-fixes.html',
   '/guides/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html': '/guides/en/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html',
   '/guides/ffmpeg-online-vs-video-converter-which-to-pick.html': '/guides/en/ffmpeg-online-vs-video-converter-which-to-pick.html',
-  '/guides/file-compressor-online-when-to-zip-vs-when-to-compress-image.html': '/guides/en/file-compressor-online-when-to-zip-vs-when-to-compress-image.html',
+  '/guides/file-compressor-online-when-to-zip-vs-when-to-compress-image.html': '/guides/en/file-compressor-vs-zip-what-to-pick.html',
   '/guides/file-compressor-vs-zip-what-to-pick.html': '/guides/en/file-compressor-vs-zip-what-to-pick.html',
   '/guides/file-compressor.html': '/guides/en/file-compressor.html',
   '/guides/file-to-zip.html': '/guides/en/file-to-zip.html',
@@ -9881,8 +9949,8 @@ export const ALIAS_ROUTES = {
   '/guides/how-to-compress-a-folder.html': '/guides/en/how-to-compress-a-folder.html',
   '/guides/how-to-compress-a-jpg-for-email-attachment-limits.html': '/guides/en/how-to-compress-a-jpg-for-email-attachment-limits.html',
   '/guides/how-to-compress-a-zip-file-to-a-specific-size.html': '/guides/en/how-to-compress-a-zip-file-to-a-specific-size.html',
-  '/guides/how-to-compress-a-zip-file.html': '/guides/en/how-to-compress-a-zip-file.html',
-  '/guides/how-to-compress-zip-file-to-smaller-size.html': '/guides/en/how-to-compress-zip-file-to-smaller-size.html',
+  '/guides/how-to-compress-a-zip-file.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
+  '/guides/how-to-compress-zip-file-to-smaller-size.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
   '/guides/how-to-convert-100-heic-photos-to-jpg.html': '/guides/en/how-to-convert-100-heic-photos-to-jpg.html',
   '/guides/how-to-convert-heic-to-jpg-step-by-step.html': '/guides/en/how-to-convert-heic-to-jpg-step-by-step.html',
   '/guides/how-to-convert-iphone-photo-to-jpg.html': '/guides/en/how-to-convert-iphone-photo-to-jpg.html',
@@ -9890,10 +9958,10 @@ export const ALIAS_ROUTES = {
   '/guides/how-to-extract-a-file-online-zip-rar-7z.html': '/guides/en/how-to-extract-a-file-online-zip-rar-7z.html',
   '/guides/how-to-extract-frames-from-a-gif-for-a-social-post.html': '/guides/en/how-to-extract-frames-from-a-gif-for-a-social-post.html',
   '/guides/how-to-flatten-a-pdf-and-when-to-do-it.html': '/guides/en/how-to-flatten-a-pdf-and-when-to-do-it.html',
-  '/guides/how-to-make-a-zip-file-smaller.html': '/guides/en/how-to-make-a-zip-file-smaller.html',
+  '/guides/how-to-make-a-zip-file-smaller.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
   '/guides/how-to-minify-css-js-for-cloud-run-cold-start.html': '/guides/en/how-to-minify-css-js-for-cloud-run-cold-start.html',
   '/guides/how-to-reduce-zip-file-size-online.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
-  '/guides/how-to-reduce-zip-file-size.html': '/guides/en/how-to-reduce-zip-file-size.html',
+  '/guides/how-to-reduce-zip-file-size.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
   '/guides/how-to-sign-pdf-after-removing-a-password.html': '/guides/en/how-to-sign-pdf-after-removing-a-password.html',
   '/guides/how-to-split-a-gif-into-frames-for-editing.html': '/guides/en/how-to-split-a-gif-into-frames-for-editing.html',
   '/guides/how-to-tell-if-a-jpg-was-compressed-too-much.html': '/guides/en/how-to-tell-if-a-jpg-was-compressed-too-much.html',
@@ -9944,7 +10012,7 @@ export const ALIAS_ROUTES = {
   '/guides/mp4-vs-webm-for-web.html': '/guides/en/mp4-vs-webm-for-web.html',
   '/guides/ms-to-date.html': '/guides/en/ms-to-date.html',
   '/guides/oled-test-vs-lcd-test-what-changes-on-oled.html': '/guides/en/oled-test-vs-lcd-test-what-changes-on-oled.html',
-  '/guides/online-zip-file-compressor.html': '/guides/en/online-zip-file-compressor.html',
+  '/guides/online-zip-file-compressor.html': '/zip-tools/zip-file.html',
   '/guides/online-zip-file.html': '/guides/en/online-zip-file.html',
   '/guides/online-zip-vs-7z-vs-rar-which-to-pick.html': '/guides/en/online-zip-vs-7z-vs-rar-which-to-pick.html',
   '/guides/pdf-editing-ladder.html': '/guides/en/pdf-editing-ladder.html',
@@ -9959,7 +10027,7 @@ export const ALIAS_ROUTES = {
   '/guides/qr-code-generator-best-practices.html': '/guides/en/qr-code-generator-best-practices.html',
   '/guides/read-and-compare-md5-hashes-correctly.html': '/guides/en/read-and-compare-md5-hashes-correctly.html',
   '/guides/recover-corrupt-zip-file-options.html': '/guides/en/recover-corrupt-zip-file-options.html',
-  '/guides/reduce-zip-file-size-online.html': '/guides/en/reduce-zip-file-size-online.html',
+  '/guides/reduce-zip-file-size-online.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
   '/guides/resize-image-online-free.html': '/guides/en/resize-image-online-free.html',
   '/guides/resize-zip-file.html': '/guides/en/resize-zip-file.html',
   '/guides/screen-display-test-synonyms.html': '/guides/en/screen-display-test-synonyms.html',
@@ -9981,18 +10049,18 @@ export const ALIAS_ROUTES = {
   '/guides/when-to-compress-vs-convert-an-image.html': '/guides/en/when-to-compress-vs-convert-an-image.html',
   '/guides/why-heic-wont-open-on-windows-three-fixes.html': '/guides/en/why-heic-wont-open-on-windows-three-fixes.html',
   '/guides/why-md5-cannot-be-decrypted.html': '/guides/en/why-md5-cannot-be-decrypted.html',
-  '/guides/zip-compress.html': '/guides/en/zip-compress.html',
-  '/guides/zip-compressor-online.html': '/guides/en/zip-compressor-online.html',
-  '/guides/zip-compressor.html': '/guides/en/zip-compressor.html',
-  '/guides/zip-file-compressor-online.html': '/guides/en/zip-file-compressor-online.html',
+  '/guides/zip-compress.html': '/zip-tools/zip-file.html',
+  '/guides/zip-compressor-online.html': '/zip-tools/zip-file.html',
+  '/guides/zip-compressor.html': '/zip-tools/zip-file.html',
+  '/guides/zip-file-compressor-online.html': '/zip-tools/zip-file.html',
   '/guides/zip-file-converter-what-it-actually-does.html': '/guides/en/zip-file-converter-what-it-actually-does.html',
   '/guides/zip-file-converter.html': '/guides/en/zip-file-converter.html',
-  '/guides/zip-file-size-compressor.html': '/guides/en/zip-file-size-compressor.html',
+  '/guides/zip-file-size-compressor.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
   '/guides/zip-folder-online-free.html': '/guides/en/zip-folder-online-free.html',
   '/guides/zip-password-recovery-online.html': '/guides/en/zip-password-recovery-online.html',
   '/guides/zip-password-types-strong-vs-weak-explained.html': '/guides/en/zip-password-types-strong-vs-weak-explained.html',
   '/guides/zip-password-unlocker.html': '/guides/en/zip-password-unlocker.html',
-  '/guides/zip-size-reducer.html': '/guides/en/zip-size-reducer.html',
+  '/guides/zip-size-reducer.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
   '/guides/zip-unlocker-online.html': '/guides/en/zip-unlocker-online.html',
   '/guides/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html': '/guides/en/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html',
   '/regex-tester.html': '/developer-tools/regex-tester.html',
@@ -10594,7 +10662,6 @@ export const JSP_BY_ROUTE = {
   // Cycle 77 P77.A - "compress ZIP to a specific size" Lane-D append-only guide.
   '/guides/en/how-to-compress-a-zip-file-to-a-specific-size.html': 'guide/en/how-to-compress-a-zip-file-to-a-specific-size.jsp',
   // Cycle 20260519-10 create_new_guide_page - "how to compress a zip file" bare-query step-by-step guide (companion to /zip-file.html).
-  '/guides/en/how-to-compress-a-zip-file.html': 'guide/en/how-to-compress-a-zip-file.jsp',
   // Cycle 20260519-11 create_new_guide_page - "zip folder online free" bare-query step-by-step guide (companion to /zip-file.html).
   '/guides/en/zip-folder-online-free.html': 'guide/en/zip-folder-online-free.jsp',
   // Cycle 20260629-2 create_new_guide_page - "resize image online free" bare-query step-by-step guide (companion to /resize-image.html).
@@ -10635,13 +10702,10 @@ export const JSP_BY_ROUTE = {
   // Cycle 20260519-14 create_new_guide_page - "Comprimir Carpeta Zip Online Gratis" Lane-D guide (zip cluster, Spanish folder-compression intent; companion to /zip-file.html). Native-Spanish prose authored against tool-zipfile SKILL features. Complete single-cycle ship per cycle 20260514-5 contract.
   // Cycle 20260523-4 create_new_guide_page - "Reducir Tamaño Zip Online" Lane-D synonym-landing guide (zip cluster, Spanish size-reduction wording; companion to /zip-tools/zip-file.html). Routes to /guides/comprimir-zip-online.html for the compression-wording context. Complete single-cycle ship per cycle 20260514-5 contract.
   // Cycle 20260517-8 create_new_guide_page - "Online Zip File Compressor" Lane-D guide (zip cluster head-query sibling, companion to /zip-tools/zip-file.html). Complete single-cycle ship per cycle 20260514-5 contract.
-  '/guides/en/online-zip-file-compressor.html': 'guide/en/online-zip-file-compressor.jsp',
   // Cycle 20260518-20 create_new_guide_page - "Zip Compress" Lane-D guide (zip cluster head-query sibling, companion to /zip-tools/zip-file.html). Complete single-cycle ship per cycle 20260514-5 contract.
-  '/guides/en/zip-compress.html': 'guide/en/zip-compress.jsp',
   // Cycle 20260518-21 create_new_guide_page - "Zip password recovery online" Lane-D truthful-framing guide. Companion to /zip-tools/remove-zip-password.html. Source: tool-removezippassword/SKILL.md F1-F7 + N2 + N6.
   '/guides/en/zip-password-recovery-online.html': 'guide/en/zip-password-recovery-online.jsp',
   // Cycle 20260518-22 create_new_guide_page - "Zip compressor online" Lane-D guide (zip cluster head-query sibling, companion to /zip-tools/zip-file.html and /guides/zip-compressor.html). Complete single-cycle ship per cycle 20260514-5 contract.
-  '/guides/en/zip-compressor-online.html': 'guide/en/zip-compressor-online.jsp',
   // Cycle 20260518-23 create_new_guide_page - "Folder to zip" Lane-D guide. Companion to /zip-tools/zip-file.html. Sourced from tool-ziptools/SKILL.md M1 + tool-guidescompresszip/SKILL.md C1-C5.
   '/guides/en/folder-to-zip.html': 'guide/en/folder-to-zip.jsp',
   // Cycle 20260605-3 create_new_guide_page - "File to zip" Lane-D guide. Companion to /zip-file.html. Sourced from tool-zipfile/SKILL.md M1+M2+M3.
@@ -10772,11 +10836,8 @@ export const JSP_BY_ROUTE = {
   '/guides/en/lcd-checker.html': 'guide/en/lcd-checker.jsp',
   '/guides/en/how-to-compress-a-file-online.html': 'guide/en/how-to-compress-a-file-online.jsp',
   '/guides/en/how-to-reduce-zip-file-size-online.html': 'guide/en/how-to-reduce-zip-file-size-online.jsp',
-  '/guides/en/how-to-reduce-zip-file-size.html': 'guide/en/how-to-reduce-zip-file-size.jsp',
   // Cycle 20260520-9 create_new_guide_page - bare-noun landing for "reduce zip file size online" (implementing tool /zip-file.html).
-  '/guides/en/reduce-zip-file-size-online.html': 'guide/en/reduce-zip-file-size-online.jsp',
   // Cycle 20260515-15 — "Zip File Compressor Online" Lane-D guide.
-  '/guides/en/zip-file-compressor-online.html': 'guide/en/zip-file-compressor-online.jsp',
   // Phase 16 Cycle B P16.G1 hub + P16.N11 + P16.N16.
   '/guides.html': 'utility/guides.jsp',
   '/guides/en/how-to-convert-heic-to-jpg-step-by-step.html': 'guide/en/how-to-convert-heic-to-jpg-step-by-step.jsp',
@@ -10790,17 +10851,12 @@ export const JSP_BY_ROUTE = {
   // Phase 16 cycle 8 N-series guides (25 new).
 
   // Phase 16 cycle 8 N-series guides (25 new).
-  '/guides/en/how-to-make-a-zip-file-smaller.html': 'guide/en/how-to-make-a-zip-file-smaller.jsp',
-  '/guides/en/how-to-compress-zip-file-to-smaller-size.html': 'guide/en/how-to-compress-zip-file-to-smaller-size.jsp',
   // Cycle 20260517-9 create_new_guide_page - exact-match "compress zip file to smaller size" landing.
-  '/guides/en/compress-zip-file-to-smaller-size.html': 'guide/en/compress-zip-file-to-smaller-size.jsp',
   '/guides/en/compress-zip-file-to-100kb.html': 'guide/en/compress-zip-file-to-100kb.jsp',
   // Cycle 20260521-12 P29.A create_new_guide_page - operator-approved "compress zip file to 2mb" enterprise-SMTP-cap-specific landing.
   '/guides/en/compress-zip-file-to-2mb.html': 'guide/en/compress-zip-file-to-2mb.jsp',
   // Cycle 20260517-10 create_new_guide_page - exact-match "zip size reducer" landing.
-  '/guides/en/zip-size-reducer.html': 'guide/en/zip-size-reducer.jsp',
   // Cycle 20260519-12 create_new_guide_page — /guides/zip-file-size-compressor.html (implementing tool /zip-file.html).
-  '/guides/en/zip-file-size-compressor.html': 'guide/en/zip-file-size-compressor.jsp',
   '/guides/en/online-zip-vs-7z-vs-rar-which-to-pick.html': 'guide/en/online-zip-vs-7z-vs-rar-which-to-pick.jsp',
   '/guides/en/how-to-zip-multiple-files-into-one.html': 'guide/en/how-to-zip-multiple-files-into-one.jsp',
   '/guides/en/how-to-zip-folder-online-step-by-step.html': 'guide/en/how-to-zip-folder-online-step-by-step.jsp',
@@ -10841,7 +10897,6 @@ export const JSP_BY_ROUTE = {
   '/guides/en/screen-test-for-laptop-5-minute-checklist.html': 'guide/en/screen-test-for-laptop-5-minute-checklist.jsp',
   '/guides/en/ffmpeg-online-vs-video-converter-which-to-pick.html': 'guide/en/ffmpeg-online-vs-video-converter-which-to-pick.jsp',
   '/guides/en/imagemagick-online-vs-task-specific-tools-which-to-pick.html': 'guide/en/imagemagick-online-vs-task-specific-tools-which-to-pick.jsp',
-  '/guides/en/file-compressor-online-when-to-zip-vs-when-to-compress-image.html': 'guide/en/file-compressor-online-when-to-zip-vs-when-to-compress-image.jsp',
   '/guides/en/how-to-extract-a-file-online-zip-rar-7z.html': 'guide/en/how-to-extract-a-file-online-zip-rar-7z.jsp',
   '/guides/en/how-to-choose-a-compression-level.html': 'guide/en/how-to-choose-a-compression-level.jsp',
   '/guides/en/zip-password-types-strong-vs-weak-explained.html': 'guide/en/zip-password-types-strong-vs-weak-explained.jsp',
@@ -10890,12 +10945,9 @@ export const JSP_BY_ROUTE = {
   // Cycle1 of 20260513-5 P5.A - "Zip compressor" Lane-D guide. Phase A
   // skeleton (route + JSP wrapper) only. Kebab URL + guide/ singular
   // subdir per granted-card convention.
-  '/guides/en/zip-compressor.html': 'guide/en/zip-compressor.jsp',
   // Cycle6 of 20260513-6 — "Compress ZIP" Lane-D guide. Phase A skeleton.
   // Kebab URL + guide/ singular subdir per granted-card convention.
-  '/guides/en/compress-zip.html': 'guide/en/compress-zip.jsp',
   // Cycle 20260515-16 — "Compress ZIP Size" Lane-D guide.
-  '/guides/en/compress-zip-size.html': 'guide/en/compress-zip-size.jsp',
   // Cycle 20260519-15 create_new_guide_page — "resize zip file" wording-disambiguation Lane-D guide (GSC 406 imp / 19 clicks / pos 6.83 / CTR 4.68%; opportunity_score 56.6). Implementing tool /zip-tools/zip-file.html. Append-only routing/disambiguation guide (NOT a 10th compress-zip duplicate); distinguishes from /guides/how-to-make-a-zip-file-smaller.html, /guides/zip-size-reducer.html, /guides/compress-zip-size.html (which all assume "shrink"), by addressing the three-way reader intent ambiguity (shrink vs split vs shrink-inputs-first).
   '/guides/en/resize-zip-file.html': 'guide/en/resize-zip-file.jsp',
 
@@ -11141,26 +11193,20 @@ export const JSP_BY_ROUTE = {
   '/guides/de/json-formatter-when.html': 'guide/de/json-formatter-when.jsp',
   // plan-warm-pascal-v3 S2 batch 4 (2026-05-29) - 5 locale variants × 3 guides (zip-file-converter + online-zip-file-compressor + led-test)
   '/guides/pt/zip-file-converter.html': 'guide/pt/zip-file-converter.jsp', '/guides/es/zip-file-converter.html': 'guide/es/zip-file-converter.jsp', '/guides/vi/zip-file-converter.html': 'guide/vi/zip-file-converter.jsp', '/guides/id/zip-file-converter.html': 'guide/id/zip-file-converter.jsp', '/guides/de/zip-file-converter.html': 'guide/de/zip-file-converter.jsp',
-  '/guides/pt/online-zip-file-compressor.html': 'guide/pt/online-zip-file-compressor.jsp', '/guides/es/online-zip-file-compressor.html': 'guide/es/online-zip-file-compressor.jsp', '/guides/vi/online-zip-file-compressor.html': 'guide/vi/online-zip-file-compressor.jsp', '/guides/id/online-zip-file-compressor.html': 'guide/id/online-zip-file-compressor.jsp', '/guides/de/online-zip-file-compressor.html': 'guide/de/online-zip-file-compressor.jsp',
   '/guides/pt/led-test.html': 'guide/pt/led-test.jsp', '/guides/es/led-test.html': 'guide/es/led-test.jsp', '/guides/vi/led-test.html': 'guide/vi/led-test.jsp', '/guides/id/led-test.html': 'guide/id/led-test.jsp', '/guides/de/led-test.html': 'guide/de/led-test.jsp',
   // plan-warm-pascal-v3 S2 batch 5 (2026-05-29) - 5 locale variants × 3 guides (hd-video-converter-step-by-step + compress-zip-file-to-smaller-size + hd-video-converter-vs-alternatives)
   '/guides/pt/hd-video-converter-step-by-step.html': 'guide/pt/hd-video-converter-step-by-step.jsp', '/guides/es/hd-video-converter-step-by-step.html': 'guide/es/hd-video-converter-step-by-step.jsp', '/guides/vi/hd-video-converter-step-by-step.html': 'guide/vi/hd-video-converter-step-by-step.jsp', '/guides/id/hd-video-converter-step-by-step.html': 'guide/id/hd-video-converter-step-by-step.jsp', '/guides/de/hd-video-converter-step-by-step.html': 'guide/de/hd-video-converter-step-by-step.jsp',
-  '/guides/pt/compress-zip-file-to-smaller-size.html': 'guide/pt/compress-zip-file-to-smaller-size.jsp', '/guides/es/compress-zip-file-to-smaller-size.html': 'guide/es/compress-zip-file-to-smaller-size.jsp', '/guides/vi/compress-zip-file-to-smaller-size.html': 'guide/vi/compress-zip-file-to-smaller-size.jsp', '/guides/id/compress-zip-file-to-smaller-size.html': 'guide/id/compress-zip-file-to-smaller-size.jsp', '/guides/de/compress-zip-file-to-smaller-size.html': 'guide/de/compress-zip-file-to-smaller-size.jsp',
   '/guides/pt/hd-video-converter-vs-alternatives.html': 'guide/pt/hd-video-converter-vs-alternatives.jsp', '/guides/es/hd-video-converter-vs-alternatives.html': 'guide/es/hd-video-converter-vs-alternatives.jsp', '/guides/vi/hd-video-converter-vs-alternatives.html': 'guide/vi/hd-video-converter-vs-alternatives.jsp', '/guides/id/hd-video-converter-vs-alternatives.html': 'guide/id/hd-video-converter-vs-alternatives.jsp', '/guides/de/hd-video-converter-vs-alternatives.html': 'guide/de/hd-video-converter-vs-alternatives.jsp',
   // plan-warm-pascal-v3 S2 batch 6 (2026-05-29) - 5 locale variants × 3 guides (compress-zip + gif-into-frames + reduce-zip-file-size-online)
-  '/guides/pt/compress-zip.html': 'guide/pt/compress-zip.jsp', '/guides/es/compress-zip.html': 'guide/es/compress-zip.jsp', '/guides/vi/compress-zip.html': 'guide/vi/compress-zip.jsp', '/guides/id/compress-zip.html': 'guide/id/compress-zip.jsp', '/guides/de/compress-zip.html': 'guide/de/compress-zip.jsp',
   '/guides/pt/gif-into-frames.html': 'guide/pt/gif-into-frames.jsp', '/guides/es/gif-into-frames.html': 'guide/es/gif-into-frames.jsp', '/guides/vi/gif-into-frames.html': 'guide/vi/gif-into-frames.jsp', '/guides/id/gif-into-frames.html': 'guide/id/gif-into-frames.jsp', '/guides/de/gif-into-frames.html': 'guide/de/gif-into-frames.jsp',
-  '/guides/pt/reduce-zip-file-size-online.html': 'guide/pt/reduce-zip-file-size-online.jsp', '/guides/es/reduce-zip-file-size-online.html': 'guide/es/reduce-zip-file-size-online.jsp', '/guides/vi/reduce-zip-file-size-online.html': 'guide/vi/reduce-zip-file-size-online.jsp', '/guides/id/reduce-zip-file-size-online.html': 'guide/id/reduce-zip-file-size-online.jsp', '/guides/de/reduce-zip-file-size-online.html': 'guide/de/reduce-zip-file-size-online.jsp',
   // plan-warm-pascal-v3 S2 batch 7 (2026-05-29) - 5 locale variants × 3 guides (json-formatter-step-by-step + zip-compress + json-formatter-vs-alternatives)
   '/guides/pt/json-formatter-step-by-step.html': 'guide/pt/json-formatter-step-by-step.jsp', '/guides/es/json-formatter-step-by-step.html': 'guide/es/json-formatter-step-by-step.jsp', '/guides/vi/json-formatter-step-by-step.html': 'guide/vi/json-formatter-step-by-step.jsp', '/guides/id/json-formatter-step-by-step.html': 'guide/id/json-formatter-step-by-step.jsp', '/guides/de/json-formatter-step-by-step.html': 'guide/de/json-formatter-step-by-step.jsp',
-  '/guides/pt/zip-compress.html': 'guide/pt/zip-compress.jsp', '/guides/es/zip-compress.html': 'guide/es/zip-compress.jsp', '/guides/vi/zip-compress.html': 'guide/vi/zip-compress.jsp', '/guides/id/zip-compress.html': 'guide/id/zip-compress.jsp', '/guides/de/zip-compress.html': 'guide/de/zip-compress.jsp',
   '/guides/pt/json-formatter-vs-alternatives.html': 'guide/pt/json-formatter-vs-alternatives.jsp', '/guides/es/json-formatter-vs-alternatives.html': 'guide/es/json-formatter-vs-alternatives.jsp', '/guides/vi/json-formatter-vs-alternatives.html': 'guide/vi/json-formatter-vs-alternatives.jsp', '/guides/id/json-formatter-vs-alternatives.html': 'guide/id/json-formatter-vs-alternatives.jsp', '/guides/de/json-formatter-vs-alternatives.html': 'guide/de/json-formatter-vs-alternatives.jsp',
   // plan-warm-pascal-v3 S2 batch 8 (2026-05-29) - 5 locale variants × 3 guides (unlock-zip-file-online + how-to-zip-multiple-files-into-one + crop-and-rotate-image)
   '/guides/pt/unlock-zip-file-online.html': 'guide/pt/unlock-zip-file-online.jsp', '/guides/es/unlock-zip-file-online.html': 'guide/es/unlock-zip-file-online.jsp', '/guides/vi/unlock-zip-file-online.html': 'guide/vi/unlock-zip-file-online.jsp', '/guides/id/unlock-zip-file-online.html': 'guide/id/unlock-zip-file-online.jsp', '/guides/de/unlock-zip-file-online.html': 'guide/de/unlock-zip-file-online.jsp',
   '/guides/pt/how-to-zip-multiple-files-into-one.html': 'guide/pt/how-to-zip-multiple-files-into-one.jsp', '/guides/es/how-to-zip-multiple-files-into-one.html': 'guide/es/how-to-zip-multiple-files-into-one.jsp', '/guides/vi/how-to-zip-multiple-files-into-one.html': 'guide/vi/how-to-zip-multiple-files-into-one.jsp', '/guides/id/how-to-zip-multiple-files-into-one.html': 'guide/id/how-to-zip-multiple-files-into-one.jsp', '/guides/de/how-to-zip-multiple-files-into-one.html': 'guide/de/how-to-zip-multiple-files-into-one.jsp',
   '/guides/pt/crop-and-rotate-image.html': 'guide/pt/crop-and-rotate-image.jsp', '/guides/es/crop-and-rotate-image.html': 'guide/es/crop-and-rotate-image.jsp', '/guides/vi/crop-and-rotate-image.html': 'guide/vi/crop-and-rotate-image.jsp', '/guides/id/crop-and-rotate-image.html': 'guide/id/crop-and-rotate-image.jsp', '/guides/de/crop-and-rotate-image.html': 'guide/de/crop-and-rotate-image.jsp',
   // plan-warm-pascal-v3 S2 batch 9 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-compress-zip-file-to-smaller-size.html': 'guide/pt/how-to-compress-zip-file-to-smaller-size.jsp', '/guides/es/how-to-compress-zip-file-to-smaller-size.html': 'guide/es/how-to-compress-zip-file-to-smaller-size.jsp', '/guides/vi/how-to-compress-zip-file-to-smaller-size.html': 'guide/vi/how-to-compress-zip-file-to-smaller-size.jsp', '/guides/id/how-to-compress-zip-file-to-smaller-size.html': 'guide/id/how-to-compress-zip-file-to-smaller-size.jsp', '/guides/de/how-to-compress-zip-file-to-smaller-size.html': 'guide/de/how-to-compress-zip-file-to-smaller-size.jsp',
   '/guides/pt/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html': 'guide/pt/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.jsp', '/guides/es/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html': 'guide/es/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.jsp', '/guides/vi/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html': 'guide/vi/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.jsp', '/guides/id/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html': 'guide/id/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.jsp', '/guides/de/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html': 'guide/de/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.jsp',
   '/guides/pt/how-to-check-camera-quality-on-your-phone.html': 'guide/pt/how-to-check-camera-quality-on-your-phone.jsp', '/guides/es/how-to-check-camera-quality-on-your-phone.html': 'guide/es/how-to-check-camera-quality-on-your-phone.jsp', '/guides/vi/how-to-check-camera-quality-on-your-phone.html': 'guide/vi/how-to-check-camera-quality-on-your-phone.jsp', '/guides/id/how-to-check-camera-quality-on-your-phone.html': 'guide/id/how-to-check-camera-quality-on-your-phone.jsp', '/guides/de/how-to-check-camera-quality-on-your-phone.html': 'guide/de/how-to-check-camera-quality-on-your-phone.jsp',
   // plan-warm-pascal-v3 S2 batch 10 (2026-05-29) - 5 locale variants × 3 guides
@@ -11168,11 +11214,9 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/jpg-vs-jpeg-are-they-the-same.html': 'guide/pt/jpg-vs-jpeg-are-they-the-same.jsp', '/guides/es/jpg-vs-jpeg-are-they-the-same.html': 'guide/es/jpg-vs-jpeg-are-they-the-same.jsp', '/guides/vi/jpg-vs-jpeg-are-they-the-same.html': 'guide/vi/jpg-vs-jpeg-are-they-the-same.jsp', '/guides/id/jpg-vs-jpeg-are-they-the-same.html': 'guide/id/jpg-vs-jpeg-are-they-the-same.jsp', '/guides/de/jpg-vs-jpeg-are-they-the-same.html': 'guide/de/jpg-vs-jpeg-are-they-the-same.jsp',
   '/guides/pt/iphone-photo-format-explained-heic-jpg-png-raw.html': 'guide/pt/iphone-photo-format-explained-heic-jpg-png-raw.jsp', '/guides/es/iphone-photo-format-explained-heic-jpg-png-raw.html': 'guide/es/iphone-photo-format-explained-heic-jpg-png-raw.jsp', '/guides/vi/iphone-photo-format-explained-heic-jpg-png-raw.html': 'guide/vi/iphone-photo-format-explained-heic-jpg-png-raw.jsp', '/guides/id/iphone-photo-format-explained-heic-jpg-png-raw.html': 'guide/id/iphone-photo-format-explained-heic-jpg-png-raw.jsp', '/guides/de/iphone-photo-format-explained-heic-jpg-png-raw.html': 'guide/de/iphone-photo-format-explained-heic-jpg-png-raw.jsp',
   // plan-warm-pascal-v3 S2 batch 11 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/zip-size-reducer.html': 'guide/pt/zip-size-reducer.jsp', '/guides/es/zip-size-reducer.html': 'guide/es/zip-size-reducer.jsp', '/guides/vi/zip-size-reducer.html': 'guide/vi/zip-size-reducer.jsp', '/guides/id/zip-size-reducer.html': 'guide/id/zip-size-reducer.jsp', '/guides/de/zip-size-reducer.html': 'guide/de/zip-size-reducer.jsp',
   '/guides/pt/zip-folder-online-free.html': 'guide/pt/zip-folder-online-free.jsp', '/guides/es/zip-folder-online-free.html': 'guide/es/zip-folder-online-free.jsp', '/guides/vi/zip-folder-online-free.html': 'guide/vi/zip-folder-online-free.jsp', '/guides/id/zip-folder-online-free.html': 'guide/id/zip-folder-online-free.jsp', '/guides/de/zip-folder-online-free.html': 'guide/de/zip-folder-online-free.jsp',
   '/guides/pt/svg-to-png-when-to-rasterize-an-svg.html': 'guide/pt/svg-to-png-when-to-rasterize-an-svg.jsp', '/guides/es/svg-to-png-when-to-rasterize-an-svg.html': 'guide/es/svg-to-png-when-to-rasterize-an-svg.jsp', '/guides/vi/svg-to-png-when-to-rasterize-an-svg.html': 'guide/vi/svg-to-png-when-to-rasterize-an-svg.jsp', '/guides/id/svg-to-png-when-to-rasterize-an-svg.html': 'guide/id/svg-to-png-when-to-rasterize-an-svg.jsp', '/guides/de/svg-to-png-when-to-rasterize-an-svg.html': 'guide/de/svg-to-png-when-to-rasterize-an-svg.jsp',
   // plan-warm-pascal-v3 S2 batch 12 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/compress-zip-size.html': 'guide/pt/compress-zip-size.jsp', '/guides/es/compress-zip-size.html': 'guide/es/compress-zip-size.jsp', '/guides/vi/compress-zip-size.html': 'guide/vi/compress-zip-size.jsp', '/guides/id/compress-zip-size.html': 'guide/id/compress-zip-size.jsp', '/guides/de/compress-zip-size.html': 'guide/de/compress-zip-size.jsp',
   '/guides/pt/create-zip-file-online.html': 'guide/pt/create-zip-file-online.jsp', '/guides/es/create-zip-file-online.html': 'guide/es/create-zip-file-online.jsp', '/guides/vi/create-zip-file-online.html': 'guide/vi/create-zip-file-online.jsp', '/guides/id/create-zip-file-online.html': 'guide/id/create-zip-file-online.jsp', '/guides/de/create-zip-file-online.html': 'guide/de/create-zip-file-online.jsp',
   '/guides/pt/css-minifier-vs-compressor.html': 'guide/pt/css-minifier-vs-compressor.jsp', '/guides/es/css-minifier-vs-compressor.html': 'guide/es/css-minifier-vs-compressor.jsp', '/guides/vi/css-minifier-vs-compressor.html': 'guide/vi/css-minifier-vs-compressor.jsp', '/guides/id/css-minifier-vs-compressor.html': 'guide/id/css-minifier-vs-compressor.jsp', '/guides/de/css-minifier-vs-compressor.html': 'guide/de/css-minifier-vs-compressor.jsp',
   // plan-warm-pascal-v3 S2 batch 13 (2026-05-29) - 5 locale variants × 3 guides
@@ -11236,7 +11280,6 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/how-to-compress-a-jpg-for-email-attachment-limits.html': 'guide/pt/how-to-compress-a-jpg-for-email-attachment-limits.jsp', '/guides/es/how-to-compress-a-jpg-for-email-attachment-limits.html': 'guide/es/how-to-compress-a-jpg-for-email-attachment-limits.jsp', '/guides/vi/how-to-compress-a-jpg-for-email-attachment-limits.html': 'guide/vi/how-to-compress-a-jpg-for-email-attachment-limits.jsp', '/guides/id/how-to-compress-a-jpg-for-email-attachment-limits.html': 'guide/id/how-to-compress-a-jpg-for-email-attachment-limits.jsp', '/guides/de/how-to-compress-a-jpg-for-email-attachment-limits.html': 'guide/de/how-to-compress-a-jpg-for-email-attachment-limits.jsp',
   // plan-warm-pascal-v3 S2 batch 26 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/free-online-tools-that-work-without-uploading-files.html': 'guide/pt/free-online-tools-that-work-without-uploading-files.jsp', '/guides/es/free-online-tools-that-work-without-uploading-files.html': 'guide/es/free-online-tools-that-work-without-uploading-files.jsp', '/guides/vi/free-online-tools-that-work-without-uploading-files.html': 'guide/vi/free-online-tools-that-work-without-uploading-files.jsp', '/guides/id/free-online-tools-that-work-without-uploading-files.html': 'guide/id/free-online-tools-that-work-without-uploading-files.jsp', '/guides/de/free-online-tools-that-work-without-uploading-files.html': 'guide/de/free-online-tools-that-work-without-uploading-files.jsp',
-  '/guides/pt/how-to-compress-a-zip-file.html': 'guide/pt/how-to-compress-a-zip-file.jsp', '/guides/es/how-to-compress-a-zip-file.html': 'guide/es/how-to-compress-a-zip-file.jsp', '/guides/vi/how-to-compress-a-zip-file.html': 'guide/vi/how-to-compress-a-zip-file.jsp', '/guides/id/how-to-compress-a-zip-file.html': 'guide/id/how-to-compress-a-zip-file.jsp', '/guides/de/how-to-compress-a-zip-file.html': 'guide/de/how-to-compress-a-zip-file.jsp',
   '/guides/pt/jpg-vs-png-for-web.html': 'guide/pt/jpg-vs-png-for-web.jsp', '/guides/es/jpg-vs-png-for-web.html': 'guide/es/jpg-vs-png-for-web.jsp', '/guides/vi/jpg-vs-png-for-web.html': 'guide/vi/jpg-vs-png-for-web.jsp', '/guides/id/jpg-vs-png-for-web.html': 'guide/id/jpg-vs-png-for-web.jsp', '/guides/de/jpg-vs-png-for-web.html': 'guide/de/jpg-vs-png-for-web.jsp',
   // plan-warm-pascal-v3 S2 batch 27 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/how-to-extract-a-file-online-zip-rar-7z.html': 'guide/pt/how-to-extract-a-file-online-zip-rar-7z.jsp', '/guides/es/how-to-extract-a-file-online-zip-rar-7z.html': 'guide/es/how-to-extract-a-file-online-zip-rar-7z.jsp', '/guides/vi/how-to-extract-a-file-online-zip-rar-7z.html': 'guide/vi/how-to-extract-a-file-online-zip-rar-7z.jsp', '/guides/id/how-to-extract-a-file-online-zip-rar-7z.html': 'guide/id/how-to-extract-a-file-online-zip-rar-7z.jsp', '/guides/de/how-to-extract-a-file-online-zip-rar-7z.html': 'guide/de/how-to-extract-a-file-online-zip-rar-7z.jsp',
@@ -11303,7 +11346,6 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/oled-test-vs-lcd-test-what-changes-on-oled.html': 'guide/pt/oled-test-vs-lcd-test-what-changes-on-oled.jsp', '/guides/es/oled-test-vs-lcd-test-what-changes-on-oled.html': 'guide/es/oled-test-vs-lcd-test-what-changes-on-oled.jsp', '/guides/vi/oled-test-vs-lcd-test-what-changes-on-oled.html': 'guide/vi/oled-test-vs-lcd-test-what-changes-on-oled.jsp', '/guides/id/oled-test-vs-lcd-test-what-changes-on-oled.html': 'guide/id/oled-test-vs-lcd-test-what-changes-on-oled.jsp', '/guides/de/oled-test-vs-lcd-test-what-changes-on-oled.html': 'guide/de/oled-test-vs-lcd-test-what-changes-on-oled.jsp',
   '/guides/pt/milliseconds-to-date-utc-vs-local-time.html': 'guide/pt/milliseconds-to-date-utc-vs-local-time.jsp', '/guides/es/milliseconds-to-date-utc-vs-local-time.html': 'guide/es/milliseconds-to-date-utc-vs-local-time.jsp', '/guides/vi/milliseconds-to-date-utc-vs-local-time.html': 'guide/vi/milliseconds-to-date-utc-vs-local-time.jsp', '/guides/id/milliseconds-to-date-utc-vs-local-time.html': 'guide/id/milliseconds-to-date-utc-vs-local-time.jsp', '/guides/de/milliseconds-to-date-utc-vs-local-time.html': 'guide/de/milliseconds-to-date-utc-vs-local-time.jsp',
   // plan-warm-pascal-v3 S2 batch 43 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-reduce-zip-file-size.html': 'guide/pt/how-to-reduce-zip-file-size.jsp', '/guides/es/how-to-reduce-zip-file-size.html': 'guide/es/how-to-reduce-zip-file-size.jsp', '/guides/vi/how-to-reduce-zip-file-size.html': 'guide/vi/how-to-reduce-zip-file-size.jsp', '/guides/id/how-to-reduce-zip-file-size.html': 'guide/id/how-to-reduce-zip-file-size.jsp', '/guides/de/how-to-reduce-zip-file-size.html': 'guide/de/how-to-reduce-zip-file-size.jsp',
   '/guides/pt/screen-test-online-vs-app-which-is-more-accurate.html': 'guide/pt/screen-test-online-vs-app-which-is-more-accurate.jsp', '/guides/es/screen-test-online-vs-app-which-is-more-accurate.html': 'guide/es/screen-test-online-vs-app-which-is-more-accurate.jsp', '/guides/vi/screen-test-online-vs-app-which-is-more-accurate.html': 'guide/vi/screen-test-online-vs-app-which-is-more-accurate.jsp', '/guides/id/screen-test-online-vs-app-which-is-more-accurate.html': 'guide/id/screen-test-online-vs-app-which-is-more-accurate.jsp', '/guides/de/screen-test-online-vs-app-which-is-more-accurate.html': 'guide/de/screen-test-online-vs-app-which-is-more-accurate.jsp',
   '/guides/pt/image-compression-and-exif-metadata-what-gets-stripped.html': 'guide/pt/image-compression-and-exif-metadata-what-gets-stripped.jsp', '/guides/es/image-compression-and-exif-metadata-what-gets-stripped.html': 'guide/es/image-compression-and-exif-metadata-what-gets-stripped.jsp', '/guides/vi/image-compression-and-exif-metadata-what-gets-stripped.html': 'guide/vi/image-compression-and-exif-metadata-what-gets-stripped.jsp', '/guides/id/image-compression-and-exif-metadata-what-gets-stripped.html': 'guide/id/image-compression-and-exif-metadata-what-gets-stripped.jsp', '/guides/de/image-compression-and-exif-metadata-what-gets-stripped.html': 'guide/de/image-compression-and-exif-metadata-what-gets-stripped.jsp',
   // plan-warm-pascal-v3 S2 batch 44 (2026-05-31) - 5 locale variants × 3 guides
@@ -11311,7 +11353,6 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html': 'guide/pt/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.jsp', '/guides/es/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html': 'guide/es/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.jsp', '/guides/vi/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html': 'guide/vi/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.jsp', '/guides/id/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html': 'guide/id/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.jsp', '/guides/de/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html': 'guide/de/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.jsp',
   '/guides/pt/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html': 'guide/pt/qr-code-content-types-url-vcard-wifi-text-which-to-pick.jsp', '/guides/es/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html': 'guide/es/qr-code-content-types-url-vcard-wifi-text-which-to-pick.jsp', '/guides/vi/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html': 'guide/vi/qr-code-content-types-url-vcard-wifi-text-which-to-pick.jsp', '/guides/id/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html': 'guide/id/qr-code-content-types-url-vcard-wifi-text-which-to-pick.jsp', '/guides/de/qr-code-content-types-url-vcard-wifi-text-which-to-pick.html': 'guide/de/qr-code-content-types-url-vcard-wifi-text-which-to-pick.jsp',
   // plan-warm-pascal-v3 S2 batch 45 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-make-a-zip-file-smaller.html': 'guide/pt/how-to-make-a-zip-file-smaller.jsp', '/guides/es/how-to-make-a-zip-file-smaller.html': 'guide/es/how-to-make-a-zip-file-smaller.jsp', '/guides/vi/how-to-make-a-zip-file-smaller.html': 'guide/vi/how-to-make-a-zip-file-smaller.jsp', '/guides/id/how-to-make-a-zip-file-smaller.html': 'guide/id/how-to-make-a-zip-file-smaller.jsp', '/guides/de/how-to-make-a-zip-file-smaller.html': 'guide/de/how-to-make-a-zip-file-smaller.jsp',
   '/guides/pt/long-number-millisecond-or-second.html': 'guide/pt/long-number-millisecond-or-second.jsp', '/guides/es/long-number-millisecond-or-second.html': 'guide/es/long-number-millisecond-or-second.jsp', '/guides/vi/long-number-millisecond-or-second.html': 'guide/vi/long-number-millisecond-or-second.jsp', '/guides/id/long-number-millisecond-or-second.html': 'guide/id/long-number-millisecond-or-second.jsp', '/guides/de/long-number-millisecond-or-second.html': 'guide/de/long-number-millisecond-or-second.jsp',
   '/guides/pt/lcd-test-what-it-checks.html': 'guide/pt/lcd-test-what-it-checks.jsp', '/guides/es/lcd-test-what-it-checks.html': 'guide/es/lcd-test-what-it-checks.jsp', '/guides/vi/lcd-test-what-it-checks.html': 'guide/vi/lcd-test-what-it-checks.jsp', '/guides/id/lcd-test-what-it-checks.html': 'guide/id/lcd-test-what-it-checks.jsp', '/guides/de/lcd-test-what-it-checks.html': 'guide/de/lcd-test-what-it-checks.jsp',
   // plan-warm-pascal-v3 S2 batch 46 (2026-05-31) - 5 locale variants × 3 guides
@@ -11327,7 +11368,6 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/unminify-js.html': 'guide/pt/unminify-js.jsp', '/guides/es/unminify-js.html': 'guide/es/unminify-js.jsp', '/guides/vi/unminify-js.html': 'guide/vi/unminify-js.jsp', '/guides/id/unminify-js.html': 'guide/id/unminify-js.jsp', '/guides/de/unminify-js.html': 'guide/de/unminify-js.jsp',
   '/guides/pt/screen-test-for-laptop-5-minute-checklist.html': 'guide/pt/screen-test-for-laptop-5-minute-checklist.jsp', '/guides/es/screen-test-for-laptop-5-minute-checklist.html': 'guide/es/screen-test-for-laptop-5-minute-checklist.jsp', '/guides/vi/screen-test-for-laptop-5-minute-checklist.html': 'guide/vi/screen-test-for-laptop-5-minute-checklist.jsp', '/guides/id/screen-test-for-laptop-5-minute-checklist.html': 'guide/id/screen-test-for-laptop-5-minute-checklist.jsp', '/guides/de/screen-test-for-laptop-5-minute-checklist.html': 'guide/de/screen-test-for-laptop-5-minute-checklist.jsp',
   // plan-warm-pascal-v3 S2 batch 49 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/file-compressor-online-when-to-zip-vs-when-to-compress-image.html': 'guide/pt/file-compressor-online-when-to-zip-vs-when-to-compress-image.jsp', '/guides/es/file-compressor-online-when-to-zip-vs-when-to-compress-image.html': 'guide/es/file-compressor-online-when-to-zip-vs-when-to-compress-image.jsp', '/guides/vi/file-compressor-online-when-to-zip-vs-when-to-compress-image.html': 'guide/vi/file-compressor-online-when-to-zip-vs-when-to-compress-image.jsp', '/guides/id/file-compressor-online-when-to-zip-vs-when-to-compress-image.html': 'guide/id/file-compressor-online-when-to-zip-vs-when-to-compress-image.jsp', '/guides/de/file-compressor-online-when-to-zip-vs-when-to-compress-image.html': 'guide/de/file-compressor-online-when-to-zip-vs-when-to-compress-image.jsp',
   '/guides/pt/md5-decode.html': 'guide/pt/md5-decode.jsp', '/guides/es/md5-decode.html': 'guide/es/md5-decode.jsp', '/guides/vi/md5-decode.html': 'guide/vi/md5-decode.jsp', '/guides/id/md5-decode.html': 'guide/id/md5-decode.jsp', '/guides/de/md5-decode.html': 'guide/de/md5-decode.jsp',
   '/guides/pt/millisecond-to-date.html': 'guide/pt/millisecond-to-date.jsp', '/guides/es/millisecond-to-date.html': 'guide/es/millisecond-to-date.jsp', '/guides/vi/millisecond-to-date.html': 'guide/vi/millisecond-to-date.jsp', '/guides/id/millisecond-to-date.html': 'guide/id/millisecond-to-date.jsp', '/guides/de/millisecond-to-date.html': 'guide/de/millisecond-to-date.jsp',
   // plan-warm-pascal-v3 S2 batch 50 (2026-05-31) - 5 locale variants × 3 guides
@@ -11335,7 +11375,6 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/md5-password.html': 'guide/pt/md5-password.jsp', '/guides/es/md5-password.html': 'guide/es/md5-password.jsp', '/guides/vi/md5-password.html': 'guide/vi/md5-password.jsp', '/guides/id/md5-password.html': 'guide/id/md5-password.jsp', '/guides/de/md5-password.html': 'guide/de/md5-password.jsp',
   '/guides/pt/screen-test-vs-camera-test-pick-the-right-tool.html': 'guide/pt/screen-test-vs-camera-test-pick-the-right-tool.jsp', '/guides/es/screen-test-vs-camera-test-pick-the-right-tool.html': 'guide/es/screen-test-vs-camera-test-pick-the-right-tool.jsp', '/guides/vi/screen-test-vs-camera-test-pick-the-right-tool.html': 'guide/vi/screen-test-vs-camera-test-pick-the-right-tool.jsp', '/guides/id/screen-test-vs-camera-test-pick-the-right-tool.html': 'guide/id/screen-test-vs-camera-test-pick-the-right-tool.jsp', '/guides/de/screen-test-vs-camera-test-pick-the-right-tool.html': 'guide/de/screen-test-vs-camera-test-pick-the-right-tool.jsp',
   // plan-warm-pascal-v3 S2 batch 51 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/zip-file-size-compressor.html': 'guide/pt/zip-file-size-compressor.jsp', '/guides/es/zip-file-size-compressor.html': 'guide/es/zip-file-size-compressor.jsp', '/guides/vi/zip-file-size-compressor.html': 'guide/vi/zip-file-size-compressor.jsp', '/guides/id/zip-file-size-compressor.html': 'guide/id/zip-file-size-compressor.jsp', '/guides/de/zip-file-size-compressor.html': 'guide/de/zip-file-size-compressor.jsp',
   '/guides/pt/md5-hash-decrypt.html': 'guide/pt/md5-hash-decrypt.jsp', '/guides/es/md5-hash-decrypt.html': 'guide/es/md5-hash-decrypt.jsp', '/guides/vi/md5-hash-decrypt.html': 'guide/vi/md5-hash-decrypt.jsp', '/guides/id/md5-hash-decrypt.html': 'guide/id/md5-hash-decrypt.jsp', '/guides/de/md5-hash-decrypt.html': 'guide/de/md5-hash-decrypt.jsp',
   '/guides/pt/led-test-vs-lcd-test-which-applies-to-your-screen.html': 'guide/pt/led-test-vs-lcd-test-which-applies-to-your-screen.jsp', '/guides/es/led-test-vs-lcd-test-which-applies-to-your-screen.html': 'guide/es/led-test-vs-lcd-test-which-applies-to-your-screen.jsp', '/guides/vi/led-test-vs-lcd-test-which-applies-to-your-screen.html': 'guide/vi/led-test-vs-lcd-test-which-applies-to-your-screen.jsp', '/guides/id/led-test-vs-lcd-test-which-applies-to-your-screen.html': 'guide/id/led-test-vs-lcd-test-which-applies-to-your-screen.jsp', '/guides/de/led-test-vs-lcd-test-which-applies-to-your-screen.html': 'guide/de/led-test-vs-lcd-test-which-applies-to-your-screen.jsp',
   // plan-warm-pascal-v3 S2 batch 52 (2026-05-31) - 5 locale variants × 3 guides
@@ -11343,20 +11382,17 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/md5-decrypt-online.html': 'guide/pt/md5-decrypt-online.jsp', '/guides/es/md5-decrypt-online.html': 'guide/es/md5-decrypt-online.jsp', '/guides/vi/md5-decrypt-online.html': 'guide/vi/md5-decrypt-online.jsp', '/guides/id/md5-decrypt-online.html': 'guide/id/md5-decrypt-online.jsp', '/guides/de/md5-decrypt-online.html': 'guide/de/md5-decrypt-online.jsp',
   '/guides/pt/ms-to-date.html': 'guide/pt/ms-to-date.jsp', '/guides/es/ms-to-date.html': 'guide/es/ms-to-date.jsp', '/guides/vi/ms-to-date.html': 'guide/vi/ms-to-date.jsp', '/guides/id/ms-to-date.html': 'guide/id/ms-to-date.jsp', '/guides/de/ms-to-date.html': 'guide/de/ms-to-date.jsp',
   // plan-warm-pascal-v3 S2 batch 53 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/zip-compressor.html': 'guide/pt/zip-compressor.jsp', '/guides/es/zip-compressor.html': 'guide/es/zip-compressor.jsp', '/guides/vi/zip-compressor.html': 'guide/vi/zip-compressor.jsp', '/guides/id/zip-compressor.html': 'guide/id/zip-compressor.jsp', '/guides/de/zip-compressor.html': 'guide/de/zip-compressor.jsp',
   '/guides/pt/lcd-checker.html': 'guide/pt/lcd-checker.jsp', '/guides/es/lcd-checker.html': 'guide/es/lcd-checker.jsp', '/guides/vi/lcd-checker.html': 'guide/vi/lcd-checker.jsp', '/guides/id/lcd-checker.html': 'guide/id/lcd-checker.jsp', '/guides/de/lcd-checker.html': 'guide/de/lcd-checker.jsp',
   '/guides/pt/online-zip-file.html': 'guide/pt/online-zip-file.jsp', '/guides/es/online-zip-file.html': 'guide/es/online-zip-file.jsp', '/guides/vi/online-zip-file.html': 'guide/vi/online-zip-file.jsp', '/guides/id/online-zip-file.html': 'guide/id/online-zip-file.jsp', '/guides/de/online-zip-file.html': 'guide/de/online-zip-file.jsp',
   // plan-warm-pascal-v3 S2 batch 54 (2026-05-31) - 5 locale variants × 3 guides
   '/guides/pt/test-lcd.html': 'guide/pt/test-lcd.jsp', '/guides/es/test-lcd.html': 'guide/es/test-lcd.jsp', '/guides/vi/test-lcd.html': 'guide/vi/test-lcd.jsp', '/guides/id/test-lcd.html': 'guide/id/test-lcd.jsp', '/guides/de/test-lcd.html': 'guide/de/test-lcd.jsp',
   '/guides/pt/i-love-zip.html': 'guide/pt/i-love-zip.jsp', '/guides/es/i-love-zip.html': 'guide/es/i-love-zip.jsp', '/guides/vi/i-love-zip.html': 'guide/vi/i-love-zip.jsp', '/guides/id/i-love-zip.html': 'guide/id/i-love-zip.jsp', '/guides/de/i-love-zip.html': 'guide/de/i-love-zip.jsp',
-  '/guides/pt/zip-compressor-online.html': 'guide/pt/zip-compressor-online.jsp', '/guides/es/zip-compressor-online.html': 'guide/es/zip-compressor-online.jsp', '/guides/vi/zip-compressor-online.html': 'guide/vi/zip-compressor-online.jsp', '/guides/id/zip-compressor-online.html': 'guide/id/zip-compressor-online.jsp', '/guides/de/zip-compressor-online.html': 'guide/de/zip-compressor-online.jsp',
   // plan-warm-pascal-v3 S2 batch 55 (2026-05-31) - 5 locale variants × 3 guides
   '/guides/pt/screen-display-test-synonyms.html': 'guide/pt/screen-display-test-synonyms.jsp', '/guides/es/screen-display-test-synonyms.html': 'guide/es/screen-display-test-synonyms.jsp', '/guides/vi/screen-display-test-synonyms.html': 'guide/vi/screen-display-test-synonyms.jsp', '/guides/id/screen-display-test-synonyms.html': 'guide/id/screen-display-test-synonyms.jsp', '/guides/de/screen-display-test-synonyms.html': 'guide/de/screen-display-test-synonyms.jsp',
   '/guides/pt/kompres-file-zip.html': 'guide/pt/kompres-file-zip.jsp', '/guides/es/kompres-file-zip.html': 'guide/es/kompres-file-zip.jsp', '/guides/vi/kompres-file-zip.html': 'guide/vi/kompres-file-zip.jsp', '/guides/id/kompres-file-zip.html': 'guide/id/kompres-file-zip.jsp', '/guides/de/kompres-file-zip.html': 'guide/de/kompres-file-zip.jsp',
   '/guides/pt/zip-unlocker-online.html': 'guide/pt/zip-unlocker-online.jsp', '/guides/es/zip-unlocker-online.html': 'guide/es/zip-unlocker-online.jsp', '/guides/vi/zip-unlocker-online.html': 'guide/vi/zip-unlocker-online.jsp', '/guides/id/zip-unlocker-online.html': 'guide/id/zip-unlocker-online.jsp', '/guides/de/zip-unlocker-online.html': 'guide/de/zip-unlocker-online.jsp',
   // plan-warm-pascal-v3 S2 batch 56 (2026-05-31) - 5 locale variants × 2 guides (FINAL substantive batch)
   '/guides/pt/kompres-zip.html': 'guide/pt/kompres-zip.jsp', '/guides/es/kompres-zip.html': 'guide/es/kompres-zip.jsp', '/guides/vi/kompres-zip.html': 'guide/vi/kompres-zip.jsp', '/guides/id/kompres-zip.html': 'guide/id/kompres-zip.jsp', '/guides/de/kompres-zip.html': 'guide/de/kompres-zip.jsp',
-  '/guides/pt/zip-file-compressor-online.html': 'guide/pt/zip-file-compressor-online.jsp', '/guides/es/zip-file-compressor-online.html': 'guide/es/zip-file-compressor-online.jsp', '/guides/vi/zip-file-compressor-online.html': 'guide/vi/zip-file-compressor-online.jsp', '/guides/id/zip-file-compressor-online.html': 'guide/id/zip-file-compressor-online.jsp', '/guides/de/zip-file-compressor-online.html': 'guide/de/zip-file-compressor-online.jsp',
   // plan-warm-pascal-v3 S2 batch 57 (2026-05-31) - 5 locale variants × 2 guides (NEW make-zip-file-online + split-gif-into-frames; ledger expanded 166 -> 168 targeted)
   '/guides/pt/make-zip-file-online.html': 'guide/pt/make-zip-file-online.jsp', '/guides/es/make-zip-file-online.html': 'guide/es/make-zip-file-online.jsp', '/guides/vi/make-zip-file-online.html': 'guide/vi/make-zip-file-online.jsp', '/guides/id/make-zip-file-online.html': 'guide/id/make-zip-file-online.jsp', '/guides/de/make-zip-file-online.html': 'guide/de/make-zip-file-online.jsp',
   '/guides/pt/split-gif-into-frames.html': 'guide/pt/split-gif-into-frames.jsp', '/guides/es/split-gif-into-frames.html': 'guide/es/split-gif-into-frames.jsp', '/guides/vi/split-gif-into-frames.html': 'guide/vi/split-gif-into-frames.jsp', '/guides/id/split-gif-into-frames.html': 'guide/id/split-gif-into-frames.jsp', '/guides/de/split-gif-into-frames.html': 'guide/de/split-gif-into-frames.jsp',
@@ -20143,11 +20179,9 @@ export function isRelatedGuidesEnabled(route) {
 export const RELATED_GUIDES_CURATED = {
   'zipfile': [
     '/guides/en/file-compressor.html',
-    '/guides/en/how-to-compress-a-zip-file.html',
     '/guides/en/how-to-compress-a-folder.html',
     '/guides/en/zip-folder-online-free.html',
     '/guides/en/compress-folder-online.html',
-    '/guides/en/zip-file-size-compressor.html',
     '/guides/en/resize-zip-file.html',
     '/guides/es/compress-folder-to-zip-online-free.html',
     '/guides/es/reduce-zip-size-online.html',
@@ -20217,8 +20251,6 @@ export const RELATED_GUIDES_CURATED = {
   // Batch 3 (2026-06-28) curated overrides.
   'guidescreatezipfileonline': [
     '/guides/en/online-zip-file.html',
-    '/guides/en/zip-compressor-online.html',
-    '/guides/en/compress-zip.html',
   ],
   'guidesgiftoframe': [
     '/guides/en/extract-gif-frames-png-vs-jpg-which-format.html',
