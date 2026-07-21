@@ -480,6 +480,8 @@ try {
     { title: "Swing Block Tower", url: "https://freetoolonline.com/games/swing-block-tower.html", include: !1, tags: "games" },
     { title: "Star Fuel Battle", url: "https://freetoolonline.com/games/star-fuel-battle.html", include: !1, tags: "games" },
     { title: "Progress Knight", url: "https://freetoolonline.com/games/progress-knight.html", include: !1, tags: "games" },
+    { title: "Miami Mice", url: "https://freetoolonline.com/games/miami-mice.html", include: !1, tags: "games" },
+    { title: "Orbital Order", url: "https://freetoolonline.com/games/orbital-order.html", include: !1, tags: "games" },
     { title: "Egg Time Rewind", url: "https://freetoolonline.com/games/egg-time-rewind.html", include: !1, tags: "games" },
     { title: "Seasonal Witchcat", url: "https://freetoolonline.com/games/seasonal-witchcat.html", include: !1, tags: "games" },
     { title: "Desk Cat Coder", url: "https://freetoolonline.com/games/desk-cat-coder.html", include: !1, tags: "games" },
