@@ -487,6 +487,7 @@ try {
     { title: "Neon Deep Space", url: "https://freetoolonline.com/games/neon-deep-space.html", include: !1, tags: "games" },
     { title: "Vim Master", url: "https://freetoolonline.com/games/vim-master.html", include: !1, tags: "games" },
     { title: "Quantum Optics Puzzle", url: "https://freetoolonline.com/games/quantum-optics-puzzle.html", include: !1, tags: "games" },
+    { title: "Eight Ball Pool", url: "https://freetoolonline.com/games/eight-ball-pool.html", include: !1, tags: "games" },
     { title: "Egg Time Rewind", url: "https://freetoolonline.com/games/egg-time-rewind.html", include: !1, tags: "games" },
     { title: "Seasonal Witchcat", url: "https://freetoolonline.com/games/seasonal-witchcat.html", include: !1, tags: "games" },
     { title: "Desk Cat Coder", url: "https://freetoolonline.com/games/desk-cat-coder.html", include: !1, tags: "games" },

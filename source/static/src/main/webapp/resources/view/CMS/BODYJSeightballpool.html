@@ -1,0 +1,48 @@
+<script>
+    if (typeof web !== "undefined") web.localUpload = false;
+    var EBP_GAME_URL = 'eight-ball-pool/index.html';
+    function ebpStatus(text) {
+        var el = document.getElementById('ebpStatus');
+        if (el) el.textContent = text;
+    }
+    function ebpInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'ebpFrame';
+        frame.src = EBP_GAME_URL;
+        frame.title = 'Eight Ball Pool game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            ebpStatus('Game loaded. Pick 1P or 2P from the menu, then aim and shoot.');
+            try { frame.contentWindow.focus(); } catch (e) {}
+        });
+        var launch = document.getElementById('ebpLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('ebpStage');
+        var playBtn = document.getElementById('ebpPlayBtn');
+        if (!stage || !playBtn) return;
+        if (playBtn.dataset.bound === '1') return;
+        playBtn.dataset.bound = '1';
+        var fsBtn = document.getElementById('ebpFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            ebpStatus('Loading the game (about 13 MB, one time - then cached)...');
+            ebpInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('ebpFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) {} }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', doAfterPageRendered);
+    } else {
+        doAfterPageRendered();
+    }
+</script>
