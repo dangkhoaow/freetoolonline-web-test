@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/sql-formatter-beautifier-vs-alternatives.html',
+  '/guides/de/sql-formatter-beautifier-vs-alternatives.html',
+  '/guides/id/sql-formatter-beautifier-vs-alternatives.html',
+  '/guides/vi/sql-formatter-beautifier-vs-alternatives.html',
+  '/guides/es/sql-formatter-beautifier-vs-alternatives.html',
+  '/guides/pt/sql-formatter-beautifier-vs-alternatives.html',
+  '/guides/sql-formatter-beautifier-step-by-step.html',
+  '/guides/de/sql-formatter-beautifier-step-by-step.html',
+  '/guides/id/sql-formatter-beautifier-step-by-step.html',
+  '/guides/vi/sql-formatter-beautifier-step-by-step.html',
+  '/guides/es/sql-formatter-beautifier-step-by-step.html',
+  '/guides/pt/sql-formatter-beautifier-step-by-step.html',
+  '/guides/sql-formatter-beautifier-when.html',
+  '/guides/de/sql-formatter-beautifier-when.html',
+  '/guides/id/sql-formatter-beautifier-when.html',
+  '/guides/vi/sql-formatter-beautifier-when.html',
+  '/guides/es/sql-formatter-beautifier-when.html',
+  '/guides/pt/sql-formatter-beautifier-when.html',
   '/guides/monitor-refresh-rate-test-hz-vs-alternatives.html',
   '/guides/de/monitor-refresh-rate-test-hz-vs-alternatives.html',
   '/guides/id/monitor-refresh-rate-test-hz-vs-alternatives.html',
@@ -11014,6 +11032,7 @@ export const ALIAS_ROUTES = {
   '/gamepad-test.html': '/device-test-tools/gamepad-test.html',
   '/touchscreen-test.html': '/device-test-tools/touchscreen-test.html',
   '/monitor-refresh-rate-test.html': '/device-test-tools/monitor-refresh-rate-test.html',
+  '/sql-formatter.html': '/developer-tools/sql-formatter.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -20634,6 +20653,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/monitor-refresh-rate-test-hz-vs-alternatives.html': 'guide/vi/monitor-refresh-rate-test-hz-vs-alternatives.jsp',
   '/guides/es/monitor-refresh-rate-test-hz-vs-alternatives.html': 'guide/es/monitor-refresh-rate-test-hz-vs-alternatives.jsp',
   '/guides/pt/monitor-refresh-rate-test-hz-vs-alternatives.html': 'guide/pt/monitor-refresh-rate-test-hz-vs-alternatives.jsp',
+  '/developer-tools/sql-formatter.html': 'utility/sql-formatter.jsp',
+  '/guides/sql-formatter-beautifier-when.html': 'guide/sql-formatter-beautifier-when.jsp',
+  '/guides/de/sql-formatter-beautifier-when.html': 'guide/de/sql-formatter-beautifier-when.jsp',
+  '/guides/id/sql-formatter-beautifier-when.html': 'guide/id/sql-formatter-beautifier-when.jsp',
+  '/guides/vi/sql-formatter-beautifier-when.html': 'guide/vi/sql-formatter-beautifier-when.jsp',
+  '/guides/es/sql-formatter-beautifier-when.html': 'guide/es/sql-formatter-beautifier-when.jsp',
+  '/guides/pt/sql-formatter-beautifier-when.html': 'guide/pt/sql-formatter-beautifier-when.jsp',
+  '/guides/sql-formatter-beautifier-step-by-step.html': 'guide/sql-formatter-beautifier-step-by-step.jsp',
+  '/guides/de/sql-formatter-beautifier-step-by-step.html': 'guide/de/sql-formatter-beautifier-step-by-step.jsp',
+  '/guides/id/sql-formatter-beautifier-step-by-step.html': 'guide/id/sql-formatter-beautifier-step-by-step.jsp',
+  '/guides/vi/sql-formatter-beautifier-step-by-step.html': 'guide/vi/sql-formatter-beautifier-step-by-step.jsp',
+  '/guides/es/sql-formatter-beautifier-step-by-step.html': 'guide/es/sql-formatter-beautifier-step-by-step.jsp',
+  '/guides/pt/sql-formatter-beautifier-step-by-step.html': 'guide/pt/sql-formatter-beautifier-step-by-step.jsp',
+  '/guides/sql-formatter-beautifier-vs-alternatives.html': 'guide/sql-formatter-beautifier-vs-alternatives.jsp',
+  '/guides/de/sql-formatter-beautifier-vs-alternatives.html': 'guide/de/sql-formatter-beautifier-vs-alternatives.jsp',
+  '/guides/id/sql-formatter-beautifier-vs-alternatives.html': 'guide/id/sql-formatter-beautifier-vs-alternatives.jsp',
+  '/guides/vi/sql-formatter-beautifier-vs-alternatives.html': 'guide/vi/sql-formatter-beautifier-vs-alternatives.jsp',
+  '/guides/es/sql-formatter-beautifier-vs-alternatives.html': 'guide/es/sql-formatter-beautifier-vs-alternatives.jsp',
+  '/guides/pt/sql-formatter-beautifier-vs-alternatives.html': 'guide/pt/sql-formatter-beautifier-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
