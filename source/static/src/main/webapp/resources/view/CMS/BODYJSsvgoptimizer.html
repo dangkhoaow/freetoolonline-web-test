@@ -1,0 +1,154 @@
+<script>
+    // SVG Optimizer - fully in-browser. Registry: svg_optimizer_purejs.
+    // Page: /svg-optimizer.html
+    //
+    // Paste SVG markup, strip comments + collapse insignificant whitespace,
+    // drop editor metadata blocks, show byte savings + live preview. No upload,
+    // no backend. Framework calls doAfterPageRendered() after jQuery loads.
+
+    web.localUpload = false;
+
+    function ftoSvgByteLen(s) {
+        try { return new TextEncoder().encode(String(s || '')).length; }
+        catch (e) { return String(s || '').length; }
+    }
+
+    function ftoIsIgnorableText(node) {
+        if (!node || node.nodeType !== 3) return false;
+        return !/\S/.test(node.nodeValue || '');
+    }
+
+    function ftoShouldDropElement(el) {
+        if (!el || el.nodeType !== 1) return false;
+        var tag = String(el.tagName || '').toLowerCase();
+        // Editor / tooling metadata that never affects render
+        if (tag === 'metadata') return true;
+        if (tag === 'sodipodi:namedview') return true;
+        if (tag.indexOf('inkscape:') === 0 && tag !== 'inkscape:path-effect') return false;
+        // Keep title/desc for accessibility - do not drop
+        return false;
+    }
+
+    function ftoWalkClean(node) {
+        if (!node || !node.childNodes) return;
+        var kids = Array.prototype.slice.call(node.childNodes);
+        for (var i = 0; i < kids.length; i++) {
+            var child = kids[i];
+            if (child.nodeType === 8) {
+                // XML/HTML comment
+                node.removeChild(child);
+                continue;
+            }
+            if (child.nodeType === 1) {
+                if (ftoShouldDropElement(child)) {
+                    node.removeChild(child);
+                    continue;
+                }
+                // Drop inkscape / sodipodi attributes on remaining elements
+                if (child.attributes && child.attributes.length) {
+                    var attrs = Array.prototype.slice.call(child.attributes);
+                    for (var a = 0; a < attrs.length; a++) {
+                        var name = String(attrs[a].name || '').toLowerCase();
+                        if (name.indexOf('inkscape:') === 0 || name.indexOf('sodipodi:') === 0) {
+                            child.removeAttribute(attrs[a].name);
+                        }
+                    }
+                }
+                ftoWalkClean(child);
+                continue;
+            }
+            if (ftoIsIgnorableText(child)) {
+                node.removeChild(child);
+            }
+        }
+    }
+
+    function ftoOptimizeSvg(src) {
+        var raw = String(src || '').trim();
+        if (!raw) return { ok: false, error: 'Paste SVG markup first.' };
+        // Strip XML comments before parse (DOMParser keeps some as nodes; belt+suspenders)
+        raw = raw.replace(/<!--[\s\S]*?-->/g, '');
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(raw, 'image/svg+xml');
+        var parseErr = doc.querySelector('parsererror');
+        if (parseErr) {
+            return { ok: false, error: 'Could not parse SVG. Check for unclosed tags or invalid markup.' };
+        }
+        var root = doc.documentElement;
+        if (!root || String(root.tagName || '').toLowerCase() !== 'svg') {
+            return { ok: false, error: 'Root element must be <svg>.' };
+        }
+        ftoWalkClean(root);
+        var serializer = new XMLSerializer();
+        var out = serializer.serializeToString(root);
+        // Collapse whitespace between tags only (keep text node content intact already)
+        out = out.replace(/>\s+</g, '><');
+        // Drop XML declaration if serializer added one
+        out = out.replace(/^<\?xml[^?]*\?>\s*/i, '');
+        return { ok: true, output: out };
+    }
+
+    function ftoSvgOptRenderStats(input, output) {
+        var inB = ftoSvgByteLen(input);
+        var outB = ftoSvgByteLen(output);
+        var saved = inB > 0 ? Math.max(0, Math.round((1 - (outB / inB)) * 100)) : 0;
+        $('#svgOptInBytes').text(String(inB));
+        $('#svgOptOutBytes').text(String(outB));
+        $('#svgOptSaved').text(String(saved));
+    }
+
+    function ftoSvgOptPreview(svgMarkup) {
+        var box = $('#svgOptPreview');
+        box.empty();
+        if (!svgMarkup) return;
+        try {
+            // Sanitize-ish: only inject if it parses as svg
+            var r = ftoOptimizeSvg(svgMarkup);
+            var markup = r.ok ? r.output : svgMarkup;
+            box.html(markup);
+        } catch (e) {
+            box.text('Preview unavailable.');
+        }
+    }
+
+    function ftoSvgOptRun() {
+        var input = $('#svgOptInput').val() || '';
+        var r = ftoOptimizeSvg(input);
+        if (!r.ok) {
+            $('#svgOptOutput').val(r.error || 'Optimize failed.');
+            ftoSvgOptRenderStats(input, '');
+            $('#svgOptPreview').empty();
+            return;
+        }
+        $('#svgOptOutput').val(r.output);
+        ftoSvgOptRenderStats(input, r.output);
+        ftoSvgOptPreview(r.output);
+    }
+
+    function ftoSvgOptCopy() {
+        var t = $('#svgOptOutput').val() || '';
+        if (!t) return;
+        try { navigator.clipboard.writeText(t); }
+        catch (e) { /* clipboard blocked - silent */ }
+    }
+
+    function initSvgOptimizer() {
+        if ($('#svgOptInput').length === 0) return;
+        $('#svgOptRun').off('click.svgopt').on('click.svgopt', ftoSvgOptRun);
+        $('#svgOptClear').off('click.svgopt').on('click.svgopt', function () {
+            $('#svgOptInput').val('');
+            $('#svgOptOutput').val('');
+            ftoSvgOptRenderStats('', '');
+            $('#svgOptPreview').empty();
+        });
+        $('#svgOptCopy').off('click.svgopt').on('click.svgopt', ftoSvgOptCopy);
+        $('#svgOptInput').off('input.svgopt').on('input.svgopt', function () {
+            // Live stats on input length only; optimize on button
+            ftoSvgOptRenderStats($(this).val() || '', $('#svgOptOutput').val() || '');
+        });
+    }
+
+    function doAfterPageRendered() {
+        initSvgOptimizer();
+    }
+</script>

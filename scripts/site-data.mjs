@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/svg-optimizer-minifier-vs-alternatives.html',
+  '/guides/de/svg-optimizer-minifier-vs-alternatives.html',
+  '/guides/id/svg-optimizer-minifier-vs-alternatives.html',
+  '/guides/vi/svg-optimizer-minifier-vs-alternatives.html',
+  '/guides/es/svg-optimizer-minifier-vs-alternatives.html',
+  '/guides/pt/svg-optimizer-minifier-vs-alternatives.html',
+  '/guides/svg-optimizer-minifier-step-by-step.html',
+  '/guides/de/svg-optimizer-minifier-step-by-step.html',
+  '/guides/id/svg-optimizer-minifier-step-by-step.html',
+  '/guides/vi/svg-optimizer-minifier-step-by-step.html',
+  '/guides/es/svg-optimizer-minifier-step-by-step.html',
+  '/guides/pt/svg-optimizer-minifier-step-by-step.html',
+  '/guides/svg-optimizer-minifier-when.html',
+  '/guides/de/svg-optimizer-minifier-when.html',
+  '/guides/id/svg-optimizer-minifier-when.html',
+  '/guides/vi/svg-optimizer-minifier-when.html',
+  '/guides/es/svg-optimizer-minifier-when.html',
+  '/guides/pt/svg-optimizer-minifier-when.html',
   '/guides/color-contrast-checker-wcag-vs-alternatives.html',
   '/guides/de/color-contrast-checker-wcag-vs-alternatives.html',
   '/guides/id/color-contrast-checker-wcag-vs-alternatives.html',
@@ -10227,6 +10245,7 @@ export const ALIAS_ROUTES = {
   '/json-to-typescript.html': '/developer-tools/json-to-typescript.html',
   '/html-to-markdown.html': '/developer-tools/html-to-markdown.html',
   '/wcag-contrast-checker.html': '/developer-tools/wcag-contrast-checker.html',
+  '/svg-optimizer.html': '/developer-tools/svg-optimizer.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -19355,6 +19374,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/color-contrast-checker-wcag-vs-alternatives.html': 'guide/vi/color-contrast-checker-wcag-vs-alternatives.jsp',
   '/guides/es/color-contrast-checker-wcag-vs-alternatives.html': 'guide/es/color-contrast-checker-wcag-vs-alternatives.jsp',
   '/guides/pt/color-contrast-checker-wcag-vs-alternatives.html': 'guide/pt/color-contrast-checker-wcag-vs-alternatives.jsp',
+  '/developer-tools/svg-optimizer.html': 'utility/svg-optimizer.jsp',
+  '/guides/svg-optimizer-minifier-when.html': 'guide/svg-optimizer-minifier-when.jsp',
+  '/guides/de/svg-optimizer-minifier-when.html': 'guide/de/svg-optimizer-minifier-when.jsp',
+  '/guides/id/svg-optimizer-minifier-when.html': 'guide/id/svg-optimizer-minifier-when.jsp',
+  '/guides/vi/svg-optimizer-minifier-when.html': 'guide/vi/svg-optimizer-minifier-when.jsp',
+  '/guides/es/svg-optimizer-minifier-when.html': 'guide/es/svg-optimizer-minifier-when.jsp',
+  '/guides/pt/svg-optimizer-minifier-when.html': 'guide/pt/svg-optimizer-minifier-when.jsp',
+  '/guides/svg-optimizer-minifier-step-by-step.html': 'guide/svg-optimizer-minifier-step-by-step.jsp',
+  '/guides/de/svg-optimizer-minifier-step-by-step.html': 'guide/de/svg-optimizer-minifier-step-by-step.jsp',
+  '/guides/id/svg-optimizer-minifier-step-by-step.html': 'guide/id/svg-optimizer-minifier-step-by-step.jsp',
+  '/guides/vi/svg-optimizer-minifier-step-by-step.html': 'guide/vi/svg-optimizer-minifier-step-by-step.jsp',
+  '/guides/es/svg-optimizer-minifier-step-by-step.html': 'guide/es/svg-optimizer-minifier-step-by-step.jsp',
+  '/guides/pt/svg-optimizer-minifier-step-by-step.html': 'guide/pt/svg-optimizer-minifier-step-by-step.jsp',
+  '/guides/svg-optimizer-minifier-vs-alternatives.html': 'guide/svg-optimizer-minifier-vs-alternatives.jsp',
+  '/guides/de/svg-optimizer-minifier-vs-alternatives.html': 'guide/de/svg-optimizer-minifier-vs-alternatives.jsp',
+  '/guides/id/svg-optimizer-minifier-vs-alternatives.html': 'guide/id/svg-optimizer-minifier-vs-alternatives.jsp',
+  '/guides/vi/svg-optimizer-minifier-vs-alternatives.html': 'guide/vi/svg-optimizer-minifier-vs-alternatives.jsp',
+  '/guides/es/svg-optimizer-minifier-vs-alternatives.html': 'guide/es/svg-optimizer-minifier-vs-alternatives.jsp',
+  '/guides/pt/svg-optimizer-minifier-vs-alternatives.html': 'guide/pt/svg-optimizer-minifier-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
