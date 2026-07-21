@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/morse-code-translator-vs-alternatives.html',
+  '/guides/de/morse-code-translator-vs-alternatives.html',
+  '/guides/id/morse-code-translator-vs-alternatives.html',
+  '/guides/vi/morse-code-translator-vs-alternatives.html',
+  '/guides/es/morse-code-translator-vs-alternatives.html',
+  '/guides/pt/morse-code-translator-vs-alternatives.html',
+  '/guides/morse-code-translator-step-by-step.html',
+  '/guides/de/morse-code-translator-step-by-step.html',
+  '/guides/id/morse-code-translator-step-by-step.html',
+  '/guides/vi/morse-code-translator-step-by-step.html',
+  '/guides/es/morse-code-translator-step-by-step.html',
+  '/guides/pt/morse-code-translator-step-by-step.html',
+  '/guides/morse-code-translator-when.html',
+  '/guides/de/morse-code-translator-when.html',
+  '/guides/id/morse-code-translator-when.html',
+  '/guides/vi/morse-code-translator-when.html',
+  '/guides/es/morse-code-translator-when.html',
+  '/guides/pt/morse-code-translator-when.html',
   '/guides/sql-formatter-beautifier-vs-alternatives.html',
   '/guides/de/sql-formatter-beautifier-vs-alternatives.html',
   '/guides/id/sql-formatter-beautifier-vs-alternatives.html',
@@ -11072,6 +11090,7 @@ export const ALIAS_ROUTES = {
   '/touchscreen-test.html': '/device-test-tools/touchscreen-test.html',
   '/monitor-refresh-rate-test.html': '/device-test-tools/monitor-refresh-rate-test.html',
   '/sql-formatter.html': '/developer-tools/sql-formatter.html',
+  '/morse-code-translator.html': '/utility-tools/morse-code-translator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -20731,6 +20750,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/sql-formatter-beautifier-vs-alternatives.html': 'guide/vi/sql-formatter-beautifier-vs-alternatives.jsp',
   '/guides/es/sql-formatter-beautifier-vs-alternatives.html': 'guide/es/sql-formatter-beautifier-vs-alternatives.jsp',
   '/guides/pt/sql-formatter-beautifier-vs-alternatives.html': 'guide/pt/sql-formatter-beautifier-vs-alternatives.jsp',
+  '/utility-tools/morse-code-translator.html': 'utility/morse-code-translator.jsp',
+  '/guides/morse-code-translator-when.html': 'guide/morse-code-translator-when.jsp',
+  '/guides/de/morse-code-translator-when.html': 'guide/de/morse-code-translator-when.jsp',
+  '/guides/id/morse-code-translator-when.html': 'guide/id/morse-code-translator-when.jsp',
+  '/guides/vi/morse-code-translator-when.html': 'guide/vi/morse-code-translator-when.jsp',
+  '/guides/es/morse-code-translator-when.html': 'guide/es/morse-code-translator-when.jsp',
+  '/guides/pt/morse-code-translator-when.html': 'guide/pt/morse-code-translator-when.jsp',
+  '/guides/morse-code-translator-step-by-step.html': 'guide/morse-code-translator-step-by-step.jsp',
+  '/guides/de/morse-code-translator-step-by-step.html': 'guide/de/morse-code-translator-step-by-step.jsp',
+  '/guides/id/morse-code-translator-step-by-step.html': 'guide/id/morse-code-translator-step-by-step.jsp',
+  '/guides/vi/morse-code-translator-step-by-step.html': 'guide/vi/morse-code-translator-step-by-step.jsp',
+  '/guides/es/morse-code-translator-step-by-step.html': 'guide/es/morse-code-translator-step-by-step.jsp',
+  '/guides/pt/morse-code-translator-step-by-step.html': 'guide/pt/morse-code-translator-step-by-step.jsp',
+  '/guides/morse-code-translator-vs-alternatives.html': 'guide/morse-code-translator-vs-alternatives.jsp',
+  '/guides/de/morse-code-translator-vs-alternatives.html': 'guide/de/morse-code-translator-vs-alternatives.jsp',
+  '/guides/id/morse-code-translator-vs-alternatives.html': 'guide/id/morse-code-translator-vs-alternatives.jsp',
+  '/guides/vi/morse-code-translator-vs-alternatives.html': 'guide/vi/morse-code-translator-vs-alternatives.jsp',
+  '/guides/es/morse-code-translator-vs-alternatives.html': 'guide/es/morse-code-translator-vs-alternatives.jsp',
+  '/guides/pt/morse-code-translator-vs-alternatives.html': 'guide/pt/morse-code-translator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
