@@ -1,0 +1,141 @@
+<script>
+    // Speaker & Audio Channel Test - fully in-browser. Registry: device_tester_mediastream.
+    // Page: /speaker-test.html
+    //
+    // Play a short oscillator tone on Left / Right / Both via StereoPannerNode.
+    // No microphone, no upload, no backend. User click starts AudioContext
+    // (autoplay policy). Framework calls doAfterPageRendered() after jQuery loads.
+
+    web.localUpload = false;
+
+    function doAfterPageRendered() {
+        var ctx = null;
+        var osc = null;
+        var gain = null;
+        var pan = null;
+        var meterTimer = null;
+        var activeBtn = null;
+
+        function $(sel) { return window.jQuery ? window.jQuery(sel) : null; }
+
+        function ensureCtx() {
+            if (ctx) return ctx;
+            var AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) throw new Error('Web Audio API not supported in this browser.');
+            ctx = new AC();
+            return ctx;
+        }
+
+        function setStatus(msg) {
+            var el = document.getElementById('spkCue');
+            if (el) el.textContent = msg;
+        }
+
+        function setMeter(pct) {
+            var el = document.getElementById('spkMeter');
+            if (el) el.style.width = Math.max(0, Math.min(100, pct)) + '%';
+        }
+
+        function clearActive() {
+            ['spkLeft', 'spkRight', 'spkBoth'].forEach(function (id) {
+                var b = document.getElementById(id);
+                if (b) b.classList.remove('spk-btn-active');
+            });
+            activeBtn = null;
+        }
+
+        function stopTone() {
+            if (meterTimer) { clearInterval(meterTimer); meterTimer = null; }
+            setMeter(0);
+            try {
+                if (osc) { osc.stop(); osc.disconnect(); }
+            } catch (e) { /* already stopped */ }
+            try { if (gain) gain.disconnect(); } catch (e2) {}
+            try { if (pan) pan.disconnect(); } catch (e3) {}
+            osc = null; gain = null; pan = null;
+            clearActive();
+        }
+
+        function freqHz() {
+            var el = document.getElementById('spkFreq');
+            var v = el ? Number(el.value) : 440;
+            if (!isFinite(v) || v < 220) v = 220;
+            if (v > 2000) v = 2000;
+            return v;
+        }
+
+        function playChannel(channel, btnId) {
+            // channel: -1 left, 0 both, +1 right
+            stopTone();
+            try {
+                ensureCtx();
+                if (ctx.state === 'suspended') {
+                    ctx.resume().then(function () { startOsc(channel, btnId); }).catch(function (err) {
+                        setStatus('Could not start audio: ' + (err && err.message ? err.message : String(err)));
+                    });
+                } else {
+                    startOsc(channel, btnId);
+                }
+            } catch (err) {
+                setStatus(err && err.message ? err.message : String(err));
+            }
+        }
+
+        function startOsc(channel, btnId) {
+            var f = freqHz();
+            osc = ctx.createOscillator();
+            osc.type = 'sine';
+            osc.frequency.value = f;
+            gain = ctx.createGain();
+            gain.gain.value = 0.18;
+            pan = ctx.createStereoPanner();
+            pan.pan.value = channel;
+            osc.connect(gain);
+            gain.connect(pan);
+            pan.connect(ctx.destination);
+            osc.start();
+            // Auto-stop after 2.5s so a forgotten tone cannot loop forever
+            var stopAt = ctx.currentTime + 2.5;
+            gain.gain.setValueAtTime(0.18, ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.0, stopAt);
+            osc.stop(stopAt + 0.05);
+
+            var label = channel < 0 ? 'LEFT' : (channel > 0 ? 'RIGHT' : 'BOTH');
+            setStatus('Playing ' + f + ' Hz on ' + label + ' channel for ~2.5 seconds. Use headphones to confirm L/R.');
+            activeBtn = document.getElementById(btnId);
+            if (activeBtn) activeBtn.classList.add('spk-btn-active');
+
+            var t0 = Date.now();
+            meterTimer = setInterval(function () {
+                var elapsed = (Date.now() - t0) / 2500;
+                if (elapsed >= 1) {
+                    setMeter(0);
+                    clearInterval(meterTimer);
+                    meterTimer = null;
+                    clearActive();
+                    setStatus('Tone finished. Click Play Left / Right / Both again, or change the frequency.');
+                    osc = null; gain = null; pan = null;
+                    return;
+                }
+                // Simple pulse for visible G16 output
+                setMeter(20 + 60 * Math.abs(Math.sin(elapsed * Math.PI * 4)));
+            }, 50);
+        }
+
+        $('#spkFreq').off('input.spk').on('input.spk', function () {
+            var f = freqHz();
+            var lab = document.getElementById('spkFreqLabel');
+            if (lab) lab.textContent = f + ' Hz';
+            this.setAttribute('aria-valuenow', String(f));
+        });
+        $('#spkLeft').off('click.spk').on('click.spk', function () { playChannel(-1, 'spkLeft'); });
+        $('#spkRight').off('click.spk').on('click.spk', function () { playChannel(1, 'spkRight'); });
+        $('#spkBoth').off('click.spk').on('click.spk', function () { playChannel(0, 'spkBoth'); });
+        $('#spkStop').off('click.spk').on('click.spk', function () {
+            stopTone();
+            setStatus('Stopped. Click Play Left / Right / Both to test again.');
+        });
+
+        console.log('[speaker-test] wired: ftoSpeakerTest / StereoPanner L-R-Both');
+    }
+</script>
