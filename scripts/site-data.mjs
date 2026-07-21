@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/touchscreen-test-vs-alternatives.html',
+  '/guides/de/touchscreen-test-vs-alternatives.html',
+  '/guides/id/touchscreen-test-vs-alternatives.html',
+  '/guides/vi/touchscreen-test-vs-alternatives.html',
+  '/guides/es/touchscreen-test-vs-alternatives.html',
+  '/guides/pt/touchscreen-test-vs-alternatives.html',
+  '/guides/touchscreen-test-step-by-step.html',
+  '/guides/de/touchscreen-test-step-by-step.html',
+  '/guides/id/touchscreen-test-step-by-step.html',
+  '/guides/vi/touchscreen-test-step-by-step.html',
+  '/guides/es/touchscreen-test-step-by-step.html',
+  '/guides/pt/touchscreen-test-step-by-step.html',
+  '/guides/touchscreen-test-when.html',
+  '/guides/de/touchscreen-test-when.html',
+  '/guides/id/touchscreen-test-when.html',
+  '/guides/vi/touchscreen-test-when.html',
+  '/guides/es/touchscreen-test-when.html',
+  '/guides/pt/touchscreen-test-when.html',
   '/guides/gamepad-controller-test-vs-alternatives.html',
   '/guides/de/gamepad-controller-test-vs-alternatives.html',
   '/guides/id/gamepad-controller-test-vs-alternatives.html',
@@ -4470,6 +4488,25 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // fire345 touchscreen-test companion guides
+  '/guides/touchscreen-test-when.html',
+  '/guides/pt/touchscreen-test-when.html',
+  '/guides/es/touchscreen-test-when.html',
+  '/guides/vi/touchscreen-test-when.html',
+  '/guides/id/touchscreen-test-when.html',
+  '/guides/de/touchscreen-test-when.html',
+  '/guides/touchscreen-test-step-by-step.html',
+  '/guides/pt/touchscreen-test-step-by-step.html',
+  '/guides/es/touchscreen-test-step-by-step.html',
+  '/guides/vi/touchscreen-test-step-by-step.html',
+  '/guides/id/touchscreen-test-step-by-step.html',
+  '/guides/de/touchscreen-test-step-by-step.html',
+  '/guides/touchscreen-test-vs-alternatives.html',
+  '/guides/pt/touchscreen-test-vs-alternatives.html',
+  '/guides/es/touchscreen-test-vs-alternatives.html',
+  '/guides/vi/touchscreen-test-vs-alternatives.html',
+  '/guides/id/touchscreen-test-vs-alternatives.html',
+  '/guides/de/touchscreen-test-vs-alternatives.html',
   // fire344 gamepad-test companion guides
   '/guides/gamepad-controller-test-when.html',
   '/guides/pt/gamepad-controller-test-when.html',
@@ -10823,6 +10860,7 @@ export const ALIAS_ROUTES = {
   '/image-color-palette-extractor.html': '/image-tools/image-color-palette-extractor.html',
   '/mouse-test.html': '/device-test-tools/mouse-test.html',
   '/gamepad-test.html': '/device-test-tools/gamepad-test.html',
+  '/touchscreen-test.html': '/device-test-tools/touchscreen-test.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -20342,6 +20380,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/gamepad-controller-test-vs-alternatives.html': 'guide/vi/gamepad-controller-test-vs-alternatives.jsp',
   '/guides/es/gamepad-controller-test-vs-alternatives.html': 'guide/es/gamepad-controller-test-vs-alternatives.jsp',
   '/guides/pt/gamepad-controller-test-vs-alternatives.html': 'guide/pt/gamepad-controller-test-vs-alternatives.jsp',
+  '/device-test-tools/touchscreen-test.html': 'convert/touchscreen-test.jsp',
+  '/guides/touchscreen-test-when.html': 'guide/touchscreen-test-when.jsp',
+  '/guides/de/touchscreen-test-when.html': 'guide/de/touchscreen-test-when.jsp',
+  '/guides/id/touchscreen-test-when.html': 'guide/id/touchscreen-test-when.jsp',
+  '/guides/vi/touchscreen-test-when.html': 'guide/vi/touchscreen-test-when.jsp',
+  '/guides/es/touchscreen-test-when.html': 'guide/es/touchscreen-test-when.jsp',
+  '/guides/pt/touchscreen-test-when.html': 'guide/pt/touchscreen-test-when.jsp',
+  '/guides/touchscreen-test-step-by-step.html': 'guide/touchscreen-test-step-by-step.jsp',
+  '/guides/de/touchscreen-test-step-by-step.html': 'guide/de/touchscreen-test-step-by-step.jsp',
+  '/guides/id/touchscreen-test-step-by-step.html': 'guide/id/touchscreen-test-step-by-step.jsp',
+  '/guides/vi/touchscreen-test-step-by-step.html': 'guide/vi/touchscreen-test-step-by-step.jsp',
+  '/guides/es/touchscreen-test-step-by-step.html': 'guide/es/touchscreen-test-step-by-step.jsp',
+  '/guides/pt/touchscreen-test-step-by-step.html': 'guide/pt/touchscreen-test-step-by-step.jsp',
+  '/guides/touchscreen-test-vs-alternatives.html': 'guide/touchscreen-test-vs-alternatives.jsp',
+  '/guides/de/touchscreen-test-vs-alternatives.html': 'guide/de/touchscreen-test-vs-alternatives.jsp',
+  '/guides/id/touchscreen-test-vs-alternatives.html': 'guide/id/touchscreen-test-vs-alternatives.jsp',
+  '/guides/vi/touchscreen-test-vs-alternatives.html': 'guide/vi/touchscreen-test-vs-alternatives.jsp',
+  '/guides/es/touchscreen-test-vs-alternatives.html': 'guide/es/touchscreen-test-vs-alternatives.jsp',
+  '/guides/pt/touchscreen-test-vs-alternatives.html': 'guide/pt/touchscreen-test-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

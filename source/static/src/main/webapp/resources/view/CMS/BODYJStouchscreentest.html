@@ -1,0 +1,156 @@
+<script>
+    // Touchscreen / multi-touch test - fully in-browser. Registry: device_tester_mediastream.
+    // Page: /touchscreen-test.html
+    //
+    // Listens for touchstart / touchmove / touchend (and pointer fallback) on a
+    // local pad. Shows up to 5 contact points + counts. No getUserMedia, no
+    // upload, no backend. Framework calls doAfterPageRendered() after jQuery.
+
+    web.localUpload = false;
+
+    function doAfterPageRendered() {
+        var listening = false;
+        var touches = 0;
+        var moves = 0;
+        var maxFingers = 0;
+
+        function $(sel) { return window.jQuery ? window.jQuery(sel) : null; }
+
+        function setCue(msg) {
+            var el = document.getElementById('tsCue');
+            if (el) el.textContent = msg;
+        }
+
+        function setStats() {
+            var el = document.getElementById('tsStats');
+            if (el) {
+                el.textContent = 'touches: ' + touches + ' | moves: ' + moves +
+                    ' | maxFingers: ' + maxFingers;
+            }
+        }
+
+        function clearDots() {
+            for (var i = 0; i < 5; i++) {
+                var d = document.getElementById('tsDot' + i);
+                if (d) d.style.display = 'none';
+            }
+        }
+
+        function placeTouches(list, pad) {
+            if (!pad) return;
+            var r = pad.getBoundingClientRect();
+            var n = Math.min(list.length, 5);
+            if (n > maxFingers) maxFingers = n;
+            for (var i = 0; i < 5; i++) {
+                var d = document.getElementById('tsDot' + i);
+                if (!d) continue;
+                if (i >= n) { d.style.display = 'none'; continue; }
+                var t = list[i];
+                var lx = Math.max(0, Math.min(r.width, t.clientX - r.left));
+                var ly = Math.max(0, Math.min(r.height, t.clientY - r.top));
+                d.style.display = 'block';
+                d.style.left = lx + 'px';
+                d.style.top = ly + 'px';
+            }
+        }
+
+        function enable() {
+            listening = true;
+            var pad = document.getElementById('tsPad');
+            if (pad) pad.classList.add('ts-listening');
+            setCue('Listening. Touch the pad with one or more fingers (or click/drag with a mouse). Default scroll is blocked on the pad.');
+            setStats();
+        }
+
+        function reset() {
+            touches = 0; moves = 0; maxFingers = 0;
+            clearDots();
+            setStats();
+            setCue(listening
+                ? 'Counters reset. Keep touching the pad.'
+                : 'Counters reset. Click Enable touch listening to start.');
+        }
+
+        function activeList(e) {
+            if (e.touches && e.touches.length) {
+                var arr = [];
+                for (var i = 0; i < e.touches.length; i++) arr.push(e.touches[i]);
+                return arr;
+            }
+            if (typeof e.clientX === 'number') {
+                return [{ clientX: e.clientX, clientY: e.clientY }];
+            }
+            return [];
+        }
+
+        var pad = document.getElementById('tsPad');
+        if (pad) {
+            pad.addEventListener('touchstart', function (e) {
+                if (!listening) enable();
+                touches += 1;
+                var list = activeList(e);
+                placeTouches(list, pad);
+                setCue('touchstart  fingers=' + list.length +
+                    (list[0] ? ('  x=' + Math.round(list[0].clientX) + ' y=' + Math.round(list[0].clientY)) : ''));
+                setStats();
+                e.preventDefault();
+            }, { passive: false });
+
+            pad.addEventListener('touchmove', function (e) {
+                if (!listening) return;
+                moves += 1;
+                var list = activeList(e);
+                placeTouches(list, pad);
+                setCue('touchmove  fingers=' + list.length +
+                    (list[0] ? ('  x=' + Math.round(list[0].clientX) + ' y=' + Math.round(list[0].clientY)) : ''));
+                setStats();
+                e.preventDefault();
+            }, { passive: false });
+
+            pad.addEventListener('touchend', function (e) {
+                if (!listening) return;
+                var list = activeList(e);
+                placeTouches(list, pad);
+                if (!list.length) clearDots();
+                setCue('touchend  remaining=' + list.length);
+                setStats();
+                e.preventDefault();
+            }, { passive: false });
+
+            pad.addEventListener('touchcancel', function () {
+                if (!listening) return;
+                clearDots();
+                setCue('touchcancel - contacts cleared');
+            });
+
+            // Mouse / pointer fallback so desktop e2e and mouse users still get output
+            pad.addEventListener('mousedown', function (e) {
+                if (!listening) enable();
+                touches += 1;
+                placeTouches([{ clientX: e.clientX, clientY: e.clientY }], pad);
+                setCue('pointer down  x=' + Math.round(e.clientX) + ' y=' + Math.round(e.clientY));
+                setStats();
+            });
+            pad.addEventListener('mousemove', function (e) {
+                if (!listening || e.buttons === 0) return;
+                moves += 1;
+                placeTouches([{ clientX: e.clientX, clientY: e.clientY }], pad);
+                setCue('pointer move  x=' + Math.round(e.clientX) + ' y=' + Math.round(e.clientY));
+                setStats();
+            });
+            pad.addEventListener('mouseup', function () {
+                if (!listening) return;
+                clearDots();
+                setCue('pointer up');
+            });
+        }
+
+        $('#tsEnable').off('click.ts').on('click.ts', function () { enable(); });
+        $('#tsReset').off('click.ts').on('click.ts', function () { reset(); });
+
+        // Visible idle output for e2e G16 before any interaction
+        setCue('Ready. Click Enable touch listening, then touch or click the pad. Coordinates stay in this tab - nothing is uploaded.');
+        setStats();
+        console.log('[touchscreen-test] wired: ftoTouchscreenTest / multi-touch pad + pointer fallback');
+    }
+</script>
