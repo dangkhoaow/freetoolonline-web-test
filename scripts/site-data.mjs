@@ -10445,6 +10445,8 @@ export const ALIAS_ROUTES = {
   '/monolophosaurus.html': '/dinosaur-3d/monolophosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire (2026-07-21): flat-slug alias for suchomimus.
   '/suchomimus.html': '/dinosaur-3d/suchomimus.html',
+  // dinosaur-3d-discovery-loop-runbook fire239 (2026-07-21): flat-slug alias for ouranosaurus.
+  '/ouranosaurus.html': '/dinosaur-3d/ouranosaurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -14370,6 +14372,9 @@ export const JSP_BY_ROUTE = {
   // both siblings - Elrhaz Formation, Niger); model-first via ftol-vm-assets
   // manifest entry "suchomimus" (vendored this cycle, CC-BY-SA 4.0).
   '/dinosaur-3d/suchomimus.html': 'dinosaur/suchomimus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire239 (2026-07-21): ouranosaurus (sail-backed iguanodontian;
+  // model-first via ftol-vm-assets ouranosaurus.glb, CC-BY-SA 4.0 seth the yutyrannus).
+  '/dinosaur-3d/ouranosaurus.html': 'dinosaur/ouranosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
