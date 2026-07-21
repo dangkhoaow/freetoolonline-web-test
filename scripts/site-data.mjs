@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/monitor-refresh-rate-test-hz-vs-alternatives.html',
+  '/guides/de/monitor-refresh-rate-test-hz-vs-alternatives.html',
+  '/guides/id/monitor-refresh-rate-test-hz-vs-alternatives.html',
+  '/guides/vi/monitor-refresh-rate-test-hz-vs-alternatives.html',
+  '/guides/es/monitor-refresh-rate-test-hz-vs-alternatives.html',
+  '/guides/pt/monitor-refresh-rate-test-hz-vs-alternatives.html',
+  '/guides/monitor-refresh-rate-test-hz-step-by-step.html',
+  '/guides/de/monitor-refresh-rate-test-hz-step-by-step.html',
+  '/guides/id/monitor-refresh-rate-test-hz-step-by-step.html',
+  '/guides/vi/monitor-refresh-rate-test-hz-step-by-step.html',
+  '/guides/es/monitor-refresh-rate-test-hz-step-by-step.html',
+  '/guides/pt/monitor-refresh-rate-test-hz-step-by-step.html',
+  '/guides/monitor-refresh-rate-test-hz-when.html',
+  '/guides/de/monitor-refresh-rate-test-hz-when.html',
+  '/guides/id/monitor-refresh-rate-test-hz-when.html',
+  '/guides/vi/monitor-refresh-rate-test-hz-when.html',
+  '/guides/es/monitor-refresh-rate-test-hz-when.html',
+  '/guides/pt/monitor-refresh-rate-test-hz-when.html',
   '/guides/touchscreen-test-vs-alternatives.html',
   '/guides/de/touchscreen-test-vs-alternatives.html',
   '/guides/id/touchscreen-test-vs-alternatives.html',
@@ -4525,6 +4543,25 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // fire346 monitor-refresh-rate-test companion guides
+  '/guides/monitor-refresh-rate-test-hz-when.html',
+  '/guides/pt/monitor-refresh-rate-test-hz-when.html',
+  '/guides/es/monitor-refresh-rate-test-hz-when.html',
+  '/guides/vi/monitor-refresh-rate-test-hz-when.html',
+  '/guides/id/monitor-refresh-rate-test-hz-when.html',
+  '/guides/de/monitor-refresh-rate-test-hz-when.html',
+  '/guides/monitor-refresh-rate-test-hz-step-by-step.html',
+  '/guides/pt/monitor-refresh-rate-test-hz-step-by-step.html',
+  '/guides/es/monitor-refresh-rate-test-hz-step-by-step.html',
+  '/guides/vi/monitor-refresh-rate-test-hz-step-by-step.html',
+  '/guides/id/monitor-refresh-rate-test-hz-step-by-step.html',
+  '/guides/de/monitor-refresh-rate-test-hz-step-by-step.html',
+  '/guides/monitor-refresh-rate-test-hz-vs-alternatives.html',
+  '/guides/pt/monitor-refresh-rate-test-hz-vs-alternatives.html',
+  '/guides/es/monitor-refresh-rate-test-hz-vs-alternatives.html',
+  '/guides/vi/monitor-refresh-rate-test-hz-vs-alternatives.html',
+  '/guides/id/monitor-refresh-rate-test-hz-vs-alternatives.html',
+  '/guides/de/monitor-refresh-rate-test-hz-vs-alternatives.html',
   // fire345 touchscreen-test companion guides
   '/guides/touchscreen-test-when.html',
   '/guides/pt/touchscreen-test-when.html',
@@ -10938,6 +10975,7 @@ export const ALIAS_ROUTES = {
   '/mouse-test.html': '/device-test-tools/mouse-test.html',
   '/gamepad-test.html': '/device-test-tools/gamepad-test.html',
   '/touchscreen-test.html': '/device-test-tools/touchscreen-test.html',
+  '/monitor-refresh-rate-test.html': '/device-test-tools/monitor-refresh-rate-test.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -20518,6 +20556,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/touchscreen-test-vs-alternatives.html': 'guide/vi/touchscreen-test-vs-alternatives.jsp',
   '/guides/es/touchscreen-test-vs-alternatives.html': 'guide/es/touchscreen-test-vs-alternatives.jsp',
   '/guides/pt/touchscreen-test-vs-alternatives.html': 'guide/pt/touchscreen-test-vs-alternatives.jsp',
+  '/device-test-tools/monitor-refresh-rate-test.html': 'convert/monitor-refresh-rate-test.jsp',
+  '/guides/monitor-refresh-rate-test-hz-when.html': 'guide/monitor-refresh-rate-test-hz-when.jsp',
+  '/guides/de/monitor-refresh-rate-test-hz-when.html': 'guide/de/monitor-refresh-rate-test-hz-when.jsp',
+  '/guides/id/monitor-refresh-rate-test-hz-when.html': 'guide/id/monitor-refresh-rate-test-hz-when.jsp',
+  '/guides/vi/monitor-refresh-rate-test-hz-when.html': 'guide/vi/monitor-refresh-rate-test-hz-when.jsp',
+  '/guides/es/monitor-refresh-rate-test-hz-when.html': 'guide/es/monitor-refresh-rate-test-hz-when.jsp',
+  '/guides/pt/monitor-refresh-rate-test-hz-when.html': 'guide/pt/monitor-refresh-rate-test-hz-when.jsp',
+  '/guides/monitor-refresh-rate-test-hz-step-by-step.html': 'guide/monitor-refresh-rate-test-hz-step-by-step.jsp',
+  '/guides/de/monitor-refresh-rate-test-hz-step-by-step.html': 'guide/de/monitor-refresh-rate-test-hz-step-by-step.jsp',
+  '/guides/id/monitor-refresh-rate-test-hz-step-by-step.html': 'guide/id/monitor-refresh-rate-test-hz-step-by-step.jsp',
+  '/guides/vi/monitor-refresh-rate-test-hz-step-by-step.html': 'guide/vi/monitor-refresh-rate-test-hz-step-by-step.jsp',
+  '/guides/es/monitor-refresh-rate-test-hz-step-by-step.html': 'guide/es/monitor-refresh-rate-test-hz-step-by-step.jsp',
+  '/guides/pt/monitor-refresh-rate-test-hz-step-by-step.html': 'guide/pt/monitor-refresh-rate-test-hz-step-by-step.jsp',
+  '/guides/monitor-refresh-rate-test-hz-vs-alternatives.html': 'guide/monitor-refresh-rate-test-hz-vs-alternatives.jsp',
+  '/guides/de/monitor-refresh-rate-test-hz-vs-alternatives.html': 'guide/de/monitor-refresh-rate-test-hz-vs-alternatives.jsp',
+  '/guides/id/monitor-refresh-rate-test-hz-vs-alternatives.html': 'guide/id/monitor-refresh-rate-test-hz-vs-alternatives.jsp',
+  '/guides/vi/monitor-refresh-rate-test-hz-vs-alternatives.html': 'guide/vi/monitor-refresh-rate-test-hz-vs-alternatives.jsp',
+  '/guides/es/monitor-refresh-rate-test-hz-vs-alternatives.html': 'guide/es/monitor-refresh-rate-test-hz-vs-alternatives.jsp',
+  '/guides/pt/monitor-refresh-rate-test-hz-vs-alternatives.html': 'guide/pt/monitor-refresh-rate-test-hz-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

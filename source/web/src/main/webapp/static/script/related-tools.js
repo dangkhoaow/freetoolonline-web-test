@@ -727,6 +727,7 @@ try {
     { title: "Mouse Test (Buttons & Scroll)", url: "https://freetoolonline.com/device-test-tools/mouse-test.html", include: !1, tags: "device-test" },
     { title: "Gamepad / Controller Test", url: "https://freetoolonline.com/device-test-tools/gamepad-test.html", include: !1, tags: "device-test" },
     { title: "Touchscreen Test", url: "https://freetoolonline.com/device-test-tools/touchscreen-test.html", include: !1, tags: "device-test" },
+    { title: "Monitor Refresh Rate Test (Hz)", url: "https://freetoolonline.com/device-test-tools/monitor-refresh-rate-test.html", include: !1, tags: "device-test" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
