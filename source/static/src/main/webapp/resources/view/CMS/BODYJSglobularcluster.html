@@ -1,0 +1,345 @@
+<script>
+    // 3D scene archetype skeleton (globular-cluster) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (globular).
+    // All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not an N-body stellar dynamics model.
+    // A teaching star swarm shows core density vs halo extent.
+    //
+    // Published figures (NASA / ESA / standard catalogs, cross-checked 2026-07-21):
+    //   - ~150 known Milky Way globular clusters (up to ~200 estimated behind the disk)
+    //   - Age: 11-13 billion years (among the oldest known stellar systems)
+    //   - Diameter: about 50-450 light-years
+    //   - Star count: about 10,000 to ~10 million (Omega Centauri ~10 million)
+    //   - Distinct from milky-way-map (galaxy structure) and constellation-sphere (stick figures)
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    // 3D scene archetype skeleton (pluto-charon-double-planet) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (plutocharon).
+    // All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not a gravity integrator. Pluto and Charon
+    // follow circular mutual orbits around their barycenter with published
+    // New Horizons / JPL figures. Distances are compressed for readability.
+    // Both bodies stay tidally locked (same faces toward each other).
+    //
+    // Published figures (NASA New Horizons / JPL, cross-checked 2026-07-21):
+    //   - Pluto mean radius: 1188.3 km
+    //   - Charon mean radius: 606 km
+    //   - Pluto mass: 1.303e22 kg; Charon mass: 1.586e21 kg (~8.2:1)
+    //   - Mutual separation (center-to-center): ~19,591 km
+    //   - Barycenter distance from Pluto center: ~2,110 km (OUTSIDE Pluto)
+    //   - Synchronous orbital period: 6.387 days; both tidally locked
+    //   - Distinct from earth-moon-barycenter (barycenter INSIDE Earth) and
+    //     dwarf-planet-comparison (size lineup, not mutual orbit mechanics)
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'globular-cluster';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'globular'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        function size() {
+            var w = Math.max(260, host.clientWidth);
+            var h = Math.round(w * 0.62);
+            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fsEl && fsEl.contains(host)) { h = Math.max(240, (window.innerHeight || h) - 150); }
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        host.appendChild(renderer.domElement);
+        renderer.domElement.style.touchAction = 'none';
+        renderer.domElement.style.borderRadius = '6px';
+        var drag = null, pinch = null, moved = 0;
+        host.addEventListener('pointerdown', function (e) {
+            drag = { x: e.clientX, y: e.clientY }; moved = 0;
+            host.setPointerCapture && host.setPointerCapture(e.pointerId);
+        });
+        host.addEventListener('pointermove', function (e) {
+            if (!drag) return;
+            var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+            moved += Math.abs(dx) + Math.abs(dy);
+            drag = { x: e.clientX, y: e.clientY };
+            orbit.goalTheta -= dx * 0.006;
+            orbit.goalPhi = Math.min(Math.max(orbit.goalPhi - dy * 0.005, 0.15), Math.PI - 0.2);
+        });
+        host.addEventListener('pointerup', function (e) {
+            var wasClick = moved < 8;
+            drag = null;
+            if (wasClick && shell.onClick) { shell.onClick(e); }
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR);
+        }, { passive: false });
+        host.addEventListener('touchstart', function (e) {
+            if (e.touches.length === 2) {
+                pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            }
+        }, { passive: true });
+        host.addEventListener('touchmove', function (e) {
+            if (e.touches.length === 2 && pinch) {
+                var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                pinch = d;
+            }
+        }, { passive: true });
+        window.addEventListener('resize', size);
+        document.addEventListener('fullscreenchange', size);
+        document.addEventListener('webkitfullscreenchange', size);
+        size();
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, size: size, onClick: null,
+            ndc: function (e) {
+                var r = renderer.domElement.getBoundingClientRect();
+                return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            },
+        };
+        return shell;
+    }
+
+        var T3D_GC_N_MIN = 10000;
+    var T3D_GC_N_MAX = 10000000;
+    var T3D_GC_N_TYPICAL = 100000;
+    var T3D_GC_DIAM_LO = 50;
+    var T3D_GC_DIAM_HI = 450;
+    var T3D_GC_AGE_LO = 11;
+    var T3D_GC_AGE_HI = 13;
+    var T3D_GC_KNOWN = 150;
+    var T3D_GC_EST = 200;
+
+    function t3dGlobular(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x02040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+        var key = new THREE.DirectionalLight(0xfff3e0, 0.55);
+        key.position.set(12, 18, 10);
+        scene.add(key);
+
+        var Nvis = shell.low ? 1400 : 3200;
+        var geo = new THREE.BufferGeometry();
+        var pos = new Float32Array(Nvis * 3);
+        var col = new Float32Array(Nvis * 3);
+        var base = new Float32Array(Nvis * 3);
+        for (var i = 0; i < Nvis; i++) {
+            // King-like: denser toward core
+            var u = Math.pow(Math.random(), 1.7);
+            var th = Math.acos(2 * Math.random() - 1);
+            var ph = Math.random() * Math.PI * 2;
+            var r = u;
+            base[i * 3] = r * Math.sin(th) * Math.cos(ph);
+            base[i * 3 + 1] = r * Math.sin(th) * Math.sin(ph);
+            base[i * 3 + 2] = r * Math.cos(th);
+            var hot = Math.random() > 0.82;
+            var c = hot
+                ? new THREE.Color().setHSL(0.12 + Math.random() * 0.05, 0.55, 0.78)
+                : new THREE.Color().setHSL(0.58 + Math.random() * 0.08, 0.35, 0.62 + Math.random() * 0.2);
+            col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
+        }
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+        var cloud = new THREE.Points(geo, new THREE.PointsMaterial({
+            size: shell.low ? 0.09 : 0.07, vertexColors: true, transparent: true, opacity: 0.95, sizeAttenuation: true
+        }));
+        scene.add(cloud);
+
+        var coreMark = new THREE.Mesh(
+            new THREE.SphereGeometry(0.35, 12, 10),
+            new THREE.MeshBasicMaterial({ color: 0xffc107, transparent: true, opacity: 0.35 })
+        );
+        scene.add(coreMark);
+        var haloRing = new THREE.Mesh(
+            new THREE.RingGeometry(7.6, 7.9, 48),
+            new THREE.MeshBasicMaterial({ color: 0x546e7a, side: THREE.DoubleSide, transparent: true, opacity: 0.45 })
+        );
+        haloRing.rotation.x = Math.PI / 2;
+        scene.add(haloRing);
+
+        var starCount = T3D_GC_N_TYPICAL;
+        var diamLy = 100;
+        var spin = 0;
+
+        function panelHtml() {
+            return '<h3>Globular cluster</h3>' +
+                '<p>A dense, ancient sphere of stars. Scrub teaching star count and diameter to see how a packed core sits inside a wider halo.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Teaching star count (scrub)</td><td>' + Math.round(starCount).toLocaleString() + '</td></tr>' +
+                '<tr><td>Published star-count range</td><td>~' + T3D_GC_N_MIN.toLocaleString() + ' to ~' + T3D_GC_N_MAX.toLocaleString() + ' (Omega Centauri ~10 million)</td></tr>' +
+                '<tr><td>Teaching diameter (scrub)</td><td>~' + Math.round(diamLy) + ' light-years</td></tr>' +
+                '<tr><td>Published diameter range</td><td>~' + T3D_GC_DIAM_LO + '-' + T3D_GC_DIAM_HI + ' light-years</td></tr>' +
+                '<tr><td>Age</td><td>~' + T3D_GC_AGE_LO + '-' + T3D_GC_AGE_HI + ' billion years</td></tr>' +
+                '<tr><td>Milky Way census</td><td>~' + T3D_GC_KNOWN + ' known (up to ~' + T3D_GC_EST + ' estimated)</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation, not an N-body stellar dynamics model. On-screen star count is a teaching sample; the scrubber maps onto the published 10,000 to ~10 million range. Distinct from the Milky Way map page (galaxy structure) and the constellation sphere page (stick-figure sky lore).</p>';
+        }
+
+        function apply() {
+            // Map log star count to visual density scale; diameter to outer radius
+            var logMin = Math.log10(T3D_GC_N_MIN);
+            var logMax = Math.log10(T3D_GC_N_MAX);
+            var t = (Math.log10(Math.max(T3D_GC_N_MIN, Math.min(T3D_GC_N_MAX, starCount))) - logMin) / (logMax - logMin);
+            var R = 3.2 + (diamLy - T3D_GC_DIAM_LO) / (T3D_GC_DIAM_HI - T3D_GC_DIAM_LO) * 5.2;
+            var coreTight = 0.35 + (1 - t) * 0.45;
+            for (var i = 0; i < Nvis; i++) {
+                var rr = Math.pow(Math.abs(base[i * 3] * base[i * 3] + base[i * 3 + 1] * base[i * 3 + 1] + base[i * 3 + 2] * base[i * 3 + 2]), 0.5) || 0.001;
+                // denser packing when star count high
+                var scale = R * (coreTight + (1 - coreTight) * rr) / Math.max(rr, 0.08);
+                // Actually distribute using base unit vectors * radius profile
+                var ux = base[i * 3], uy = base[i * 3 + 1], uz = base[i * 3 + 2];
+                var rad = Math.sqrt(ux * ux + uy * uy + uz * uz) || 1;
+                var profile = Math.pow(rad, 0.65 + (1 - t) * 0.5);
+                var outR = R * profile;
+                pos[i * 3] = (ux / rad) * outR;
+                pos[i * 3 + 1] = (uy / rad) * outR;
+                pos[i * 3 + 2] = (uz / rad) * outR;
+            }
+            geo.attributes.position.needsUpdate = true;
+            coreMark.scale.setScalar(0.8 + t * 0.9);
+            haloRing.scale.setScalar(R / 7.75);
+            var nEl = document.getElementById('t3dGcStars');
+            var nLab = document.getElementById('t3dGcStarsLabel');
+            var dEl = document.getElementById('t3dGcDiam');
+            var dLab = document.getElementById('t3dGcDiamLabel');
+            if (nEl && Math.round(parseFloat(nEl.value || '0')) !== Math.round(starCount)) nEl.value = String(Math.round(starCount));
+            if (nLab) nLab.textContent = Math.round(starCount).toLocaleString() + ' stars';
+            if (dEl && Math.round(parseFloat(dEl.value || '0')) !== Math.round(diamLy)) dEl.value = String(Math.round(diamLy));
+            if (dLab) dLab.textContent = Math.round(diamLy) + ' ly';
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ starCount: starCount, diamLy: diamLy }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.starCount === 'number') starCount = store.starCount;
+        if (typeof store.diamLy === 'number') diamLy = store.diamLy;
+        apply();
+
+        var nEl = document.getElementById('t3dGcStars');
+        if (nEl) nEl.addEventListener('input', function () {
+            starCount = parseFloat(nEl.value || String(T3D_GC_N_TYPICAL));
+            apply();
+        });
+        var dEl = document.getElementById('t3dGcDiam');
+        if (dEl) dEl.addEventListener('input', function () {
+            diamLy = parseFloat(dEl.value || '100');
+            apply();
+        });
+        var resetBtn = document.getElementById('t3dGcResetBtn');
+        if (resetBtn) resetBtn.addEventListener('click', function () {
+            starCount = T3D_GC_N_TYPICAL;
+            diamLy = 100;
+            apply();
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Scrub star count or diameter.');
+        return function animate(dt) {
+            spin += dt * 0.00008;
+            cloud.rotation.y = spin;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { globular: 't3dGcControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { globular: { radius: 18, maxR: 60, minR: 6, phi: 1.1, theta: 0.4, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dGlobular(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
