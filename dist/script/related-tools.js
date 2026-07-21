@@ -705,6 +705,7 @@ try {
     { title: "HTML to Markdown Converter", url: "https://freetoolonline.com/developer-tools/html-to-markdown.html", include: !1, tags: "developer" },
     { title: "Color Contrast Checker (WCAG)", url: "https://freetoolonline.com/developer-tools/wcag-contrast-checker.html", include: !1, tags: "developer" },
     { title: "SVG Optimizer & Minifier", url: "https://freetoolonline.com/developer-tools/svg-optimizer.html", include: !1, tags: "developer" },
+    { title: "Speaker & Audio Channel Test", url: "https://freetoolonline.com/device-test-tools/speaker-test.html", include: !1, tags: "device-test" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
