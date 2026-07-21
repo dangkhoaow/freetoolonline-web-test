@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/metronome-vs-alternatives.html',
+  '/guides/de/metronome-vs-alternatives.html',
+  '/guides/id/metronome-vs-alternatives.html',
+  '/guides/vi/metronome-vs-alternatives.html',
+  '/guides/es/metronome-vs-alternatives.html',
+  '/guides/pt/metronome-vs-alternatives.html',
+  '/guides/metronome-step-by-step.html',
+  '/guides/de/metronome-step-by-step.html',
+  '/guides/id/metronome-step-by-step.html',
+  '/guides/vi/metronome-step-by-step.html',
+  '/guides/es/metronome-step-by-step.html',
+  '/guides/pt/metronome-step-by-step.html',
+  '/guides/metronome-when.html',
+  '/guides/de/metronome-when.html',
+  '/guides/id/metronome-when.html',
+  '/guides/vi/metronome-when.html',
+  '/guides/es/metronome-when.html',
+  '/guides/pt/metronome-when.html',
   '/guides/morse-code-translator-vs-alternatives.html',
   '/guides/de/morse-code-translator-vs-alternatives.html',
   '/guides/id/morse-code-translator-vs-alternatives.html',
@@ -11130,6 +11148,7 @@ export const ALIAS_ROUTES = {
   '/monitor-refresh-rate-test.html': '/device-test-tools/monitor-refresh-rate-test.html',
   '/sql-formatter.html': '/developer-tools/sql-formatter.html',
   '/morse-code-translator.html': '/utility-tools/morse-code-translator.html',
+  '/metronome.html': '/utility-tools/metronome.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -20830,6 +20849,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/morse-code-translator-vs-alternatives.html': 'guide/vi/morse-code-translator-vs-alternatives.jsp',
   '/guides/es/morse-code-translator-vs-alternatives.html': 'guide/es/morse-code-translator-vs-alternatives.jsp',
   '/guides/pt/morse-code-translator-vs-alternatives.html': 'guide/pt/morse-code-translator-vs-alternatives.jsp',
+  '/utility-tools/metronome.html': 'utility/metronome.jsp',
+  '/guides/metronome-when.html': 'guide/metronome-when.jsp',
+  '/guides/de/metronome-when.html': 'guide/de/metronome-when.jsp',
+  '/guides/id/metronome-when.html': 'guide/id/metronome-when.jsp',
+  '/guides/vi/metronome-when.html': 'guide/vi/metronome-when.jsp',
+  '/guides/es/metronome-when.html': 'guide/es/metronome-when.jsp',
+  '/guides/pt/metronome-when.html': 'guide/pt/metronome-when.jsp',
+  '/guides/metronome-step-by-step.html': 'guide/metronome-step-by-step.jsp',
+  '/guides/de/metronome-step-by-step.html': 'guide/de/metronome-step-by-step.jsp',
+  '/guides/id/metronome-step-by-step.html': 'guide/id/metronome-step-by-step.jsp',
+  '/guides/vi/metronome-step-by-step.html': 'guide/vi/metronome-step-by-step.jsp',
+  '/guides/es/metronome-step-by-step.html': 'guide/es/metronome-step-by-step.jsp',
+  '/guides/pt/metronome-step-by-step.html': 'guide/pt/metronome-step-by-step.jsp',
+  '/guides/metronome-vs-alternatives.html': 'guide/metronome-vs-alternatives.jsp',
+  '/guides/de/metronome-vs-alternatives.html': 'guide/de/metronome-vs-alternatives.jsp',
+  '/guides/id/metronome-vs-alternatives.html': 'guide/id/metronome-vs-alternatives.jsp',
+  '/guides/vi/metronome-vs-alternatives.html': 'guide/vi/metronome-vs-alternatives.jsp',
+  '/guides/es/metronome-vs-alternatives.html': 'guide/es/metronome-vs-alternatives.jsp',
+  '/guides/pt/metronome-vs-alternatives.html': 'guide/pt/metronome-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

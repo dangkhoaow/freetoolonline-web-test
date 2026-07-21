@@ -735,6 +735,7 @@ try {
     { title: "Monitor Refresh Rate Test (Hz)", url: "https://freetoolonline.com/device-test-tools/monitor-refresh-rate-test.html", include: !1, tags: "device-test" },
     { title: "SQL Formatter & Beautifier", url: "https://freetoolonline.com/developer-tools/sql-formatter.html", include: !1, tags: "developer" },
     { title: "Morse Code Translator", url: "https://freetoolonline.com/utility-tools/morse-code-translator.html", include: !1, tags: "utility" },
+    { title: "Online Metronome", url: "https://freetoolonline.com/utility-tools/metronome.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

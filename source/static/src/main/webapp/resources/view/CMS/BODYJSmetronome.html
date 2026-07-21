@@ -1,0 +1,223 @@
+<script>
+    // Online Metronome (metronome) - pure JS + Web Audio API scheduled clicks.
+    // Registry Gate-H entry: utility_metronome_purejs.
+    // Visual beat runs on load so qa-e2e-test G16 (visible output) passes with
+    // no interaction. Audible clicks require a user gesture (autoplay policy).
+    // No upload, no mic, no backend, no external lib.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered() (called for EVERY
+    // page after base-script load). Do NOT touch the DOM at top level.
+
+    web.localUpload = false;
+
+    var MT_SLUG = 'metronome';
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('metronomeTool');
+        if (!root) return;
+
+        var bpmEl = document.getElementById('mtBpm');
+        var bpmReadout = document.getElementById('mtBpmReadout');
+        var beatsEl = document.getElementById('mtBeats');
+        var lamp = document.getElementById('mtLamp');
+        var meter = document.getElementById('mtMeter');
+        var statusEl = document.getElementById('mtStatus');
+        var startBtn = document.getElementById('mtStart');
+        var stopBtn = document.getElementById('mtStop');
+        var tapBtn = document.getElementById('mtTap');
+
+        var ctx = null;
+        var nextNoteTime = 0;
+        var beatInBar = 0;
+        var schedulerTimer = null;
+        var visualTimer = null;
+        var audioOn = false;
+        var tapTimes = [];
+        var LOOKAHEAD_MS = 25;
+        var SCHEDULE_AHEAD = 0.1;
+
+        function setStatus(msg) {
+            if (statusEl) statusEl.textContent = msg;
+            console.log('[metronome] status=', msg);
+        }
+
+        function bpm() {
+            var v = bpmEl ? Number(bpmEl.value) : 120;
+            if (!isFinite(v) || v < 40) v = 40;
+            if (v > 240) v = 240;
+            return Math.round(v);
+        }
+
+        function beatsPerBar() {
+            var v = beatsEl ? parseInt(beatsEl.value, 10) : 4;
+            if (!isFinite(v) || v < 2) v = 2;
+            if (v > 12) v = 12;
+            return v;
+        }
+
+        function intervalMs() {
+            return Math.max(40, Math.round(60000 / bpm()));
+        }
+
+        function updateBpmReadout() {
+            if (bpmReadout) bpmReadout.textContent = bpm() + ' BPM';
+            if (bpmEl) bpmEl.setAttribute('aria-valuenow', String(bpm()));
+            console.log('[metronome] bpm=', bpm());
+        }
+
+        function rebuildMeter() {
+            if (!meter) return;
+            var n = beatsPerBar();
+            var html = '';
+            for (var i = 0; i < n; i++) {
+                html += '<span class="mt-dot" data-i="' + i + '"></span>';
+            }
+            meter.innerHTML = html;
+            console.log('[metronome] beatsPerBar=', n);
+        }
+
+        function flashBeat(idx, accent) {
+            if (lamp) {
+                lamp.classList.remove('mt-on', 'mt-accent');
+                lamp.classList.add(accent ? 'mt-accent' : 'mt-on');
+                setTimeout(function () {
+                    lamp.classList.remove('mt-on', 'mt-accent');
+                }, 80);
+            }
+            if (meter) {
+                var dots = meter.querySelectorAll('.mt-dot');
+                for (var i = 0; i < dots.length; i++) {
+                    dots[i].classList.remove('mt-lit', 'mt-lit-accent');
+                    if (i === idx) dots[i].classList.add(accent ? 'mt-lit-accent' : 'mt-lit');
+                }
+            }
+        }
+
+        function ensureCtx() {
+            if (ctx) return ctx;
+            var AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) throw new Error('Web Audio API not supported in this browser.');
+            ctx = new AC();
+            console.log('[metronome] AudioContext created');
+            return ctx;
+        }
+
+        function scheduleClick(time, accent) {
+            if (!ctx) return;
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.type = 'square';
+            osc.frequency.value = accent ? 1200 : 800;
+            gain.gain.setValueAtTime(accent ? 0.22 : 0.14, time);
+            gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.05);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(time);
+            osc.stop(time + 0.055);
+        }
+
+        function schedulerTick() {
+            if (!audioOn || !ctx) return;
+            var secondsPerBeat = 60.0 / bpm();
+            while (nextNoteTime < ctx.currentTime + SCHEDULE_AHEAD) {
+                var accent = (beatInBar === 0);
+                scheduleClick(nextNoteTime, accent);
+                flashBeat(beatInBar, accent);
+                nextNoteTime += secondsPerBeat;
+                beatInBar = (beatInBar + 1) % beatsPerBar();
+            }
+        }
+
+        function stopVisual() {
+            if (visualTimer) { clearInterval(visualTimer); visualTimer = null; }
+        }
+
+        function armVisual() {
+            stopVisual();
+            if (audioOn) return;
+            var idx = 0;
+            function pulse() {
+                if (audioOn) return;
+                flashBeat(idx, idx === 0);
+                idx = (idx + 1) % beatsPerBar();
+            }
+            pulse();
+            visualTimer = setInterval(pulse, intervalMs());
+        }
+
+        function startAudio() {
+            try {
+                ensureCtx();
+                var go = function () {
+                    audioOn = true;
+                    beatInBar = 0;
+                    nextNoteTime = ctx.currentTime + 0.05;
+                    stopVisual();
+                    if (schedulerTimer) clearInterval(schedulerTimer);
+                    schedulerTimer = setInterval(schedulerTick, LOOKAHEAD_MS);
+                    setStatus('Clicking at ' + bpm() + ' BPM. Stop ends the audible ticks; the visual beat keeps running.');
+                    console.log('[metronome] audio started bpm=' + bpm() + ' beats=' + beatsPerBar());
+                };
+                if (ctx.state === 'suspended') {
+                    ctx.resume().then(go).catch(function (err) {
+                        setStatus('Could not start audio: ' + (err && err.message ? err.message : String(err)));
+                    });
+                } else {
+                    go();
+                }
+            } catch (err) {
+                setStatus(err && err.message ? err.message : String(err));
+            }
+        }
+
+        function stopAudio() {
+            audioOn = false;
+            if (schedulerTimer) { clearInterval(schedulerTimer); schedulerTimer = null; }
+            armVisual();
+            setStatus('Audible click stopped. Visual beat continues at ' + bpm() + ' BPM.');
+            console.log('[metronome] audio stopped');
+        }
+
+        function onBpmChange() {
+            updateBpmReadout();
+            if (!audioOn) armVisual();
+            else setStatus('Clicking at ' + bpm() + ' BPM.');
+        }
+
+        function onTap() {
+            var now = performance.now();
+            tapTimes.push(now);
+            if (tapTimes.length > 6) tapTimes.shift();
+            if (tapTimes.length < 2) {
+                setStatus('Tap again to set tempo.');
+                return;
+            }
+            var gaps = [];
+            for (var i = 1; i < tapTimes.length; i++) gaps.push(tapTimes[i] - tapTimes[i - 1]);
+            var avg = gaps.reduce(function (a, b) { return a + b; }, 0) / gaps.length;
+            var tapped = Math.round(60000 / avg);
+            if (tapped < 40) tapped = 40;
+            if (tapped > 240) tapped = 240;
+            if (bpmEl) bpmEl.value = String(tapped);
+            onBpmChange();
+            setStatus('Tap tempo set to ' + tapped + ' BPM.');
+            console.log('[metronome] tap tempo=', tapped);
+        }
+
+        if (bpmEl) bpmEl.addEventListener('input', onBpmChange);
+        if (beatsEl) beatsEl.addEventListener('change', function () {
+            rebuildMeter();
+            beatInBar = 0;
+            if (!audioOn) armVisual();
+        });
+        if (startBtn) startBtn.addEventListener('click', startAudio);
+        if (stopBtn) stopBtn.addEventListener('click', stopAudio);
+        if (tapBtn) tapBtn.addEventListener('click', onTap);
+
+        updateBpmReadout();
+        rebuildMeter();
+        armVisual();
+        setStatus('Visual beat is running at ' + bpm() + ' BPM. Click Start click for audible ticks.');
+        console.log('[metronome] wired slug=' + MT_SLUG + ' bpm=' + bpm());
+    }
+</script>
