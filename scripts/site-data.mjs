@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/gamepad-controller-test-vs-alternatives.html',
+  '/guides/de/gamepad-controller-test-vs-alternatives.html',
+  '/guides/id/gamepad-controller-test-vs-alternatives.html',
+  '/guides/vi/gamepad-controller-test-vs-alternatives.html',
+  '/guides/es/gamepad-controller-test-vs-alternatives.html',
+  '/guides/pt/gamepad-controller-test-vs-alternatives.html',
+  '/guides/gamepad-controller-test-step-by-step.html',
+  '/guides/de/gamepad-controller-test-step-by-step.html',
+  '/guides/id/gamepad-controller-test-step-by-step.html',
+  '/guides/vi/gamepad-controller-test-step-by-step.html',
+  '/guides/es/gamepad-controller-test-step-by-step.html',
+  '/guides/pt/gamepad-controller-test-step-by-step.html',
+  '/guides/gamepad-controller-test-when.html',
+  '/guides/de/gamepad-controller-test-when.html',
+  '/guides/id/gamepad-controller-test-when.html',
+  '/guides/vi/gamepad-controller-test-when.html',
+  '/guides/es/gamepad-controller-test-when.html',
+  '/guides/pt/gamepad-controller-test-when.html',
   '/guides/mouse-test-buttons-scroll-vs-alternatives.html',
   '/guides/de/mouse-test-buttons-scroll-vs-alternatives.html',
   '/guides/id/mouse-test-buttons-scroll-vs-alternatives.html',
@@ -4417,6 +4435,7 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/particle-clicker-vs-alternatives.html',
   '/guides/id/particle-clicker-vs-alternatives.html',
   '/guides/de/particle-clicker-vs-alternatives.html',
+<<<<<<< HEAD
   // game-discovery-loop-runbook fire179 (2026-07-21): thehousepointclick companion guides
   '/guides/how-to-play-the-house-pointclick.html',
   '/guides/pt/how-to-play-the-house-pointclick.html',
@@ -4436,6 +4455,26 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/the-house-pointclick-vs-alternatives.html',
   '/guides/id/the-house-pointclick-vs-alternatives.html',
   '/guides/de/the-house-pointclick-vs-alternatives.html',
+=======
+  '/guides/apollo-free-return-trajectory-step-by-step.html',
+  '/guides/apollo-free-return-trajectory-when.html',
+  '/guides/apollo-free-return-trajectory-vs-alternatives.html',
+  '/guides/pt/apollo-free-return-trajectory-step-by-step.html',
+  '/guides/pt/apollo-free-return-trajectory-when.html',
+  '/guides/pt/apollo-free-return-trajectory-vs-alternatives.html',
+  '/guides/es/apollo-free-return-trajectory-step-by-step.html',
+  '/guides/es/apollo-free-return-trajectory-when.html',
+  '/guides/es/apollo-free-return-trajectory-vs-alternatives.html',
+  '/guides/vi/apollo-free-return-trajectory-step-by-step.html',
+  '/guides/vi/apollo-free-return-trajectory-when.html',
+  '/guides/vi/apollo-free-return-trajectory-vs-alternatives.html',
+  '/guides/id/apollo-free-return-trajectory-step-by-step.html',
+  '/guides/id/apollo-free-return-trajectory-when.html',
+  '/guides/id/apollo-free-return-trajectory-vs-alternatives.html',
+  '/guides/de/apollo-free-return-trajectory-step-by-step.html',
+  '/guides/de/apollo-free-return-trajectory-when.html',
+  '/guides/de/apollo-free-return-trajectory-vs-alternatives.html',
+>>>>>>> origin/main
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -4453,6 +4492,25 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // fire344 gamepad-test companion guides
+  '/guides/gamepad-controller-test-when.html',
+  '/guides/pt/gamepad-controller-test-when.html',
+  '/guides/es/gamepad-controller-test-when.html',
+  '/guides/vi/gamepad-controller-test-when.html',
+  '/guides/id/gamepad-controller-test-when.html',
+  '/guides/de/gamepad-controller-test-when.html',
+  '/guides/gamepad-controller-test-step-by-step.html',
+  '/guides/pt/gamepad-controller-test-step-by-step.html',
+  '/guides/es/gamepad-controller-test-step-by-step.html',
+  '/guides/vi/gamepad-controller-test-step-by-step.html',
+  '/guides/id/gamepad-controller-test-step-by-step.html',
+  '/guides/de/gamepad-controller-test-step-by-step.html',
+  '/guides/gamepad-controller-test-vs-alternatives.html',
+  '/guides/pt/gamepad-controller-test-vs-alternatives.html',
+  '/guides/es/gamepad-controller-test-vs-alternatives.html',
+  '/guides/vi/gamepad-controller-test-vs-alternatives.html',
+  '/guides/id/gamepad-controller-test-vs-alternatives.html',
+  '/guides/de/gamepad-controller-test-vs-alternatives.html',
   // fire343 mouse-test companion guides
   '/guides/mouse-test-buttons-scroll-when.html',
   '/guides/pt/mouse-test-buttons-scroll-when.html',
@@ -9707,6 +9765,24 @@ export const GUIDE_ROUTES = new Set([
   '/guides/es/haumea-elongated-when.html',
   '/guides/pt/triton-cantaloupe-when.html',
   '/guides/pt/haumea-elongated-when.html',
+  '/guides/apollo-free-return-trajectory-step-by-step.html',
+  '/guides/apollo-free-return-trajectory-when.html',
+  '/guides/apollo-free-return-trajectory-vs-alternatives.html',
+  '/guides/pt/apollo-free-return-trajectory-step-by-step.html',
+  '/guides/pt/apollo-free-return-trajectory-when.html',
+  '/guides/pt/apollo-free-return-trajectory-vs-alternatives.html',
+  '/guides/es/apollo-free-return-trajectory-step-by-step.html',
+  '/guides/es/apollo-free-return-trajectory-when.html',
+  '/guides/es/apollo-free-return-trajectory-vs-alternatives.html',
+  '/guides/vi/apollo-free-return-trajectory-step-by-step.html',
+  '/guides/vi/apollo-free-return-trajectory-when.html',
+  '/guides/vi/apollo-free-return-trajectory-vs-alternatives.html',
+  '/guides/id/apollo-free-return-trajectory-step-by-step.html',
+  '/guides/id/apollo-free-return-trajectory-when.html',
+  '/guides/id/apollo-free-return-trajectory-vs-alternatives.html',
+  '/guides/de/apollo-free-return-trajectory-step-by-step.html',
+  '/guides/de/apollo-free-return-trajectory-when.html',
+  '/guides/de/apollo-free-return-trajectory-vs-alternatives.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -10483,6 +10559,8 @@ export const ALIAS_ROUTES = {
   '/monolophosaurus.html': '/dinosaur-3d/monolophosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire (2026-07-21): flat-slug alias for suchomimus.
   '/suchomimus.html': '/dinosaur-3d/suchomimus.html',
+  // dinosaur-3d-discovery-loop-runbook fire239 (2026-07-21): flat-slug alias for ouranosaurus.
+  '/ouranosaurus.html': '/dinosaur-3d/ouranosaurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -10737,6 +10815,7 @@ export const ALIAS_ROUTES = {
   '/moon-formation-giant-impact.html': '/space-3d/moon-formation-giant-impact.html',
   '/dark-matter-rotation-curves.html': '/space-3d/dark-matter-rotation-curves.html',
   '/axial-tilt-comparison.html': '/space-3d/axial-tilt-comparison.html',
+  '/apollo-free-return-trajectory.html': '/space-3d/apollo-free-return-trajectory.html',
   '/linux-online.html': '/utility-tools/linux-online.html',
   '/online-linux-terminal.html': '/utility-tools/linux-online.html',
   '/linux-emulator-online.html': '/utility-tools/linux-online.html',
@@ -10785,6 +10864,7 @@ export const ALIAS_ROUTES = {
   '/image-metadata-remover.html': '/image-tools/image-metadata-remover.html',
   '/image-color-palette-extractor.html': '/image-tools/image-color-palette-extractor.html',
   '/mouse-test.html': '/device-test-tools/mouse-test.html',
+  '/gamepad-test.html': '/device-test-tools/gamepad-test.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -14428,6 +14508,9 @@ export const JSP_BY_ROUTE = {
   // both siblings - Elrhaz Formation, Niger); model-first via ftol-vm-assets
   // manifest entry "suchomimus" (vendored this cycle, CC-BY-SA 4.0).
   '/dinosaur-3d/suchomimus.html': 'dinosaur/suchomimus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire239 (2026-07-21): ouranosaurus (sail-backed iguanodontian;
+  // model-first via ftol-vm-assets ouranosaurus.glb, CC-BY-SA 4.0 seth the yutyrannus).
+  '/dinosaur-3d/ouranosaurus.html': 'dinosaur/ouranosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -16982,6 +17065,7 @@ export const JSP_BY_ROUTE = {
   '/space-3d/moon-formation-giant-impact.html': 'space/moon-formation-giant-impact.jsp',
   '/space-3d/dark-matter-rotation-curves.html': 'space/dark-matter-rotation-curves.jsp',
   '/space-3d/axial-tilt-comparison.html': 'space/axial-tilt-comparison.jsp',
+  '/space-3d/apollo-free-return-trajectory.html': 'space/apollo-free-return-trajectory.jsp',
   '/guides/escape-velocity-step-by-step.html': 'guide/escape-velocity-step-by-step.jsp',
   '/guides/pt/escape-velocity-step-by-step.html': 'guide/pt/escape-velocity-step-by-step.jsp',
   '/guides/es/escape-velocity-step-by-step.html': 'guide/es/escape-velocity-step-by-step.jsp',
@@ -19233,6 +19317,24 @@ export const JSP_BY_ROUTE = {
   '/guides/de/axial-tilt-comparison-step-by-step.html': 'guide/de/axial-tilt-comparison-step-by-step.jsp',
   '/guides/de/axial-tilt-comparison-when.html': 'guide/de/axial-tilt-comparison-when.jsp',
   '/guides/de/axial-tilt-comparison-vs-alternatives.html': 'guide/de/axial-tilt-comparison-vs-alternatives.jsp',
+  '/guides/apollo-free-return-trajectory-step-by-step.html': 'guide/apollo-free-return-trajectory-step-by-step.jsp',
+  '/guides/apollo-free-return-trajectory-when.html': 'guide/apollo-free-return-trajectory-when.jsp',
+  '/guides/apollo-free-return-trajectory-vs-alternatives.html': 'guide/apollo-free-return-trajectory-vs-alternatives.jsp',
+  '/guides/pt/apollo-free-return-trajectory-step-by-step.html': 'guide/pt/apollo-free-return-trajectory-step-by-step.jsp',
+  '/guides/pt/apollo-free-return-trajectory-when.html': 'guide/pt/apollo-free-return-trajectory-when.jsp',
+  '/guides/pt/apollo-free-return-trajectory-vs-alternatives.html': 'guide/pt/apollo-free-return-trajectory-vs-alternatives.jsp',
+  '/guides/es/apollo-free-return-trajectory-step-by-step.html': 'guide/es/apollo-free-return-trajectory-step-by-step.jsp',
+  '/guides/es/apollo-free-return-trajectory-when.html': 'guide/es/apollo-free-return-trajectory-when.jsp',
+  '/guides/es/apollo-free-return-trajectory-vs-alternatives.html': 'guide/es/apollo-free-return-trajectory-vs-alternatives.jsp',
+  '/guides/vi/apollo-free-return-trajectory-step-by-step.html': 'guide/vi/apollo-free-return-trajectory-step-by-step.jsp',
+  '/guides/vi/apollo-free-return-trajectory-when.html': 'guide/vi/apollo-free-return-trajectory-when.jsp',
+  '/guides/vi/apollo-free-return-trajectory-vs-alternatives.html': 'guide/vi/apollo-free-return-trajectory-vs-alternatives.jsp',
+  '/guides/id/apollo-free-return-trajectory-step-by-step.html': 'guide/id/apollo-free-return-trajectory-step-by-step.jsp',
+  '/guides/id/apollo-free-return-trajectory-when.html': 'guide/id/apollo-free-return-trajectory-when.jsp',
+  '/guides/id/apollo-free-return-trajectory-vs-alternatives.html': 'guide/id/apollo-free-return-trajectory-vs-alternatives.jsp',
+  '/guides/de/apollo-free-return-trajectory-step-by-step.html': 'guide/de/apollo-free-return-trajectory-step-by-step.jsp',
+  '/guides/de/apollo-free-return-trajectory-when.html': 'guide/de/apollo-free-return-trajectory-when.jsp',
+  '/guides/de/apollo-free-return-trajectory-vs-alternatives.html': 'guide/de/apollo-free-return-trajectory-vs-alternatives.jsp',
   '/guides/pt/hohmann-transfer-when.html': 'guide/pt/hohmann-transfer-when.jsp',
   '/guides/es/hohmann-transfer-when.html': 'guide/es/hohmann-transfer-when.jsp',
   '/guides/de/hohmann-transfer-when.html': 'guide/de/hohmann-transfer-when.jsp',
@@ -20283,6 +20385,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/mouse-test-buttons-scroll-vs-alternatives.html': 'guide/vi/mouse-test-buttons-scroll-vs-alternatives.jsp',
   '/guides/es/mouse-test-buttons-scroll-vs-alternatives.html': 'guide/es/mouse-test-buttons-scroll-vs-alternatives.jsp',
   '/guides/pt/mouse-test-buttons-scroll-vs-alternatives.html': 'guide/pt/mouse-test-buttons-scroll-vs-alternatives.jsp',
+  '/device-test-tools/gamepad-test.html': 'convert/gamepad-test.jsp',
+  '/guides/gamepad-controller-test-when.html': 'guide/gamepad-controller-test-when.jsp',
+  '/guides/de/gamepad-controller-test-when.html': 'guide/de/gamepad-controller-test-when.jsp',
+  '/guides/id/gamepad-controller-test-when.html': 'guide/id/gamepad-controller-test-when.jsp',
+  '/guides/vi/gamepad-controller-test-when.html': 'guide/vi/gamepad-controller-test-when.jsp',
+  '/guides/es/gamepad-controller-test-when.html': 'guide/es/gamepad-controller-test-when.jsp',
+  '/guides/pt/gamepad-controller-test-when.html': 'guide/pt/gamepad-controller-test-when.jsp',
+  '/guides/gamepad-controller-test-step-by-step.html': 'guide/gamepad-controller-test-step-by-step.jsp',
+  '/guides/de/gamepad-controller-test-step-by-step.html': 'guide/de/gamepad-controller-test-step-by-step.jsp',
+  '/guides/id/gamepad-controller-test-step-by-step.html': 'guide/id/gamepad-controller-test-step-by-step.jsp',
+  '/guides/vi/gamepad-controller-test-step-by-step.html': 'guide/vi/gamepad-controller-test-step-by-step.jsp',
+  '/guides/es/gamepad-controller-test-step-by-step.html': 'guide/es/gamepad-controller-test-step-by-step.jsp',
+  '/guides/pt/gamepad-controller-test-step-by-step.html': 'guide/pt/gamepad-controller-test-step-by-step.jsp',
+  '/guides/gamepad-controller-test-vs-alternatives.html': 'guide/gamepad-controller-test-vs-alternatives.jsp',
+  '/guides/de/gamepad-controller-test-vs-alternatives.html': 'guide/de/gamepad-controller-test-vs-alternatives.jsp',
+  '/guides/id/gamepad-controller-test-vs-alternatives.html': 'guide/id/gamepad-controller-test-vs-alternatives.jsp',
+  '/guides/vi/gamepad-controller-test-vs-alternatives.html': 'guide/vi/gamepad-controller-test-vs-alternatives.jsp',
+  '/guides/es/gamepad-controller-test-vs-alternatives.html': 'guide/es/gamepad-controller-test-vs-alternatives.jsp',
+  '/guides/pt/gamepad-controller-test-vs-alternatives.html': 'guide/pt/gamepad-controller-test-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

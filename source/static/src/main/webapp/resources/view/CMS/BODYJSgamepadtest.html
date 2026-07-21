@@ -1,0 +1,188 @@
+<script>
+    // Gamepad / controller test - fully in-browser. Registry: device_tester_mediastream.
+    // Page: /gamepad-test.html
+    //
+    // Uses the Gamepad API (navigator.getGamepads + gamepadconnected). Polls
+    // buttons and axes after an explicit Enable click. No getUserMedia, no
+    // upload, no backend. Framework calls doAfterPageRendered() after jQuery.
+
+    web.localUpload = false;
+
+    function doAfterPageRendered() {
+        var listening = false;
+        var polls = 0;
+        var presses = 0;
+        var rafId = 0;
+        var lastPadCount = 0;
+        var btnEls = [];
+
+        function $(sel) { return window.jQuery ? window.jQuery(sel) : null; }
+
+        function setCue(msg) {
+            var el = document.getElementById('gpCue');
+            if (el) el.textContent = msg;
+        }
+
+        function setStats(padCount) {
+            var el = document.getElementById('gpStats');
+            if (el) {
+                el.textContent = 'polls: ' + polls + ' | presses: ' + presses +
+                    ' | pads: ' + (padCount != null ? padCount : lastPadCount);
+            }
+        }
+
+        function ensureButtons(n) {
+            var wrap = document.getElementById('gpBtns');
+            if (!wrap) return;
+            if (btnEls.length === n) return;
+            wrap.innerHTML = '';
+            btnEls = [];
+            for (var i = 0; i < n; i++) {
+                var span = document.createElement('span');
+                span.id = 'gpBtn' + i;
+                span.textContent = String(i);
+                wrap.appendChild(span);
+                btnEls.push(span);
+            }
+        }
+
+        function renderAxes(axes) {
+            var axesEl = document.getElementById('gpAxes');
+            var barsEl = document.getElementById('gpAxisBars');
+            if (!axesEl) return;
+            if (!axes || !axes.length) {
+                axesEl.textContent = 'axes: (none)';
+                if (barsEl) barsEl.innerHTML = '';
+                return;
+            }
+            var parts = [];
+            if (barsEl) barsEl.innerHTML = '';
+            for (var i = 0; i < axes.length; i++) {
+                var v = Number(axes[i]);
+                if (!isFinite(v)) v = 0;
+                parts.push('a' + i + '=' + v.toFixed(3));
+                if (barsEl) {
+                    var lab = document.createElement('div');
+                    lab.style.fontFamily = 'monospace';
+                    lab.style.fontSize = '12px';
+                    lab.textContent = 'axis ' + i;
+                    var wrap = document.createElement('div');
+                    wrap.className = 'gp-bar-wrap';
+                    var bar = document.createElement('div');
+                    bar.className = 'gp-bar';
+                    // map [-1,1] -> [0%,100%]
+                    var pct = Math.max(0, Math.min(100, ((v + 1) / 2) * 100));
+                    bar.style.width = pct + '%';
+                    wrap.appendChild(bar);
+                    barsEl.appendChild(lab);
+                    barsEl.appendChild(wrap);
+                }
+            }
+            axesEl.textContent = parts.join('  ');
+        }
+
+        function listPads(pads) {
+            var el = document.getElementById('gpList');
+            if (!el) return;
+            var live = [];
+            for (var i = 0; i < pads.length; i++) {
+                if (pads[i]) live.push(pads[i]);
+            }
+            lastPadCount = live.length;
+            if (!live.length) {
+                el.textContent = 'No pad exposed yet. Press any button on the controller after Enable - most browsers hide pads until then.';
+                return;
+            }
+            var lines = [];
+            for (var j = 0; j < live.length; j++) {
+                var g = live[j];
+                lines.push('#' + g.index + '  ' + (g.id || 'gamepad') +
+                    '  buttons=' + (g.buttons ? g.buttons.length : 0) +
+                    '  axes=' + (g.axes ? g.axes.length : 0));
+            }
+            el.textContent = lines.join('\n');
+        }
+
+        function tick() {
+            if (!listening) return;
+            polls += 1;
+            var pads = (navigator.getGamepads && navigator.getGamepads()) || [];
+            listPads(pads);
+            var primary = null;
+            for (var i = 0; i < pads.length; i++) {
+                if (pads[i]) { primary = pads[i]; break; }
+            }
+            if (primary && primary.buttons) {
+                ensureButtons(primary.buttons.length);
+                var anyDown = false;
+                for (var b = 0; b < primary.buttons.length; b++) {
+                    var pressed = !!(primary.buttons[b] && (primary.buttons[b].pressed || primary.buttons[b].value > 0.5));
+                    if (btnEls[b]) {
+                        if (pressed) btnEls[b].classList.add('gp-on');
+                        else btnEls[b].classList.remove('gp-on');
+                    }
+                    if (pressed) anyDown = true;
+                }
+                if (anyDown) {
+                    presses += 1;
+                    setCue('button activity on #' + primary.index + '  mapping=' + (primary.mapping || 'standard') +
+                        '  timestamp=' + Math.round(primary.timestamp || 0));
+                }
+                renderAxes(primary.axes || []);
+            } else {
+                renderAxes([]);
+            }
+            setStats(lastPadCount);
+            rafId = window.requestAnimationFrame(tick);
+        }
+
+        function enable() {
+            if (!navigator.getGamepads) {
+                setCue('This browser has no Gamepad API. Try Chrome, Edge, or Firefox with a USB/Bluetooth controller.');
+                setStats(0);
+                return;
+            }
+            listening = true;
+            var panel = document.getElementById('gpPanel');
+            if (panel) panel.classList.add('gp-listening');
+            setCue('Polling. Press any button on the controller so the browser exposes the pad. Values stay in this tab.');
+            setStats(lastPadCount);
+            if (rafId) window.cancelAnimationFrame(rafId);
+            rafId = window.requestAnimationFrame(tick);
+        }
+
+        function reset() {
+            presses = 0;
+            polls = 0;
+            for (var i = 0; i < btnEls.length; i++) {
+                if (btnEls[i]) btnEls[i].classList.remove('gp-on');
+            }
+            renderAxes([]);
+            setStats(lastPadCount);
+            setCue(listening
+                ? 'Readout reset. Keep the controller connected and press a button.'
+                : 'Readout reset. Click Enable gamepad polling to start.');
+        }
+
+        window.addEventListener('gamepadconnected', function (e) {
+            var g = e.gamepad;
+            setCue('Connected #' + g.index + '  ' + (g.id || 'gamepad') +
+                '  buttons=' + (g.buttons ? g.buttons.length : 0));
+            if (listening) listPads((navigator.getGamepads && navigator.getGamepads()) || []);
+            setStats(lastPadCount);
+        });
+        window.addEventListener('gamepaddisconnected', function (e) {
+            setCue('Disconnected #' + (e.gamepad ? e.gamepad.index : '?') + '. Reconnect and press a button.');
+            if (listening) listPads((navigator.getGamepads && navigator.getGamepads()) || []);
+            setStats(lastPadCount);
+        });
+
+        $('#gpEnable').off('click.gp').on('click.gp', function () { enable(); });
+        $('#gpReset').off('click.gp').on('click.gp', function () { reset(); });
+
+        // Visible idle output for e2e G16 before any interaction
+        setCue('Ready. Click Enable gamepad polling, then press a button on your controller. Values stay in this tab - nothing is uploaded.');
+        setStats(0);
+        console.log('[gamepad-test] wired: ftoGamepadTest / Gamepad API poll buttons+axes');
+    }
+</script>
