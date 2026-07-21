@@ -1,0 +1,48 @@
+<script>
+    if (typeof web !== "undefined") web.localUpload = false;
+    var ESM_GAME_URL = 'emoji-slot-machine/index.html';
+    function esmStatus(text) {
+        var el = document.getElementById('esmStatus');
+        if (el) el.textContent = text;
+    }
+    function esmInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'esmFrame';
+        frame.src = ESM_GAME_URL;
+        frame.title = 'Emoji Slot Machine game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            esmStatus('Game loaded. Pick 1P or 2P from the menu, then aim and shoot.');
+            try { frame.contentWindow.focus(); } catch (e) {}
+        });
+        var launch = document.getElementById('esmLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('esmStage');
+        var playBtn = document.getElementById('esmPlayBtn');
+        if (!stage || !playBtn) return;
+        if (playBtn.dataset.bound === '1') return;
+        playBtn.dataset.bound = '1';
+        var fsBtn = document.getElementById('esmFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            esmStatus('Loading the game (about 13 MB, one time - then cached)...');
+            esmInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('esmFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) {} }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', doAfterPageRendered);
+    } else {
+        doAfterPageRendered();
+    }
+</script>
