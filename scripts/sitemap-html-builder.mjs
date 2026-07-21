@@ -165,7 +165,7 @@ function classifyGuide(slug) {
   // city-time-machine, sky-gates-flight / solar-system, black-hole, galaxy)
   // + generic genre words so future game/space guides classify without
   // edits here.
-  if (/(^|-)(snake|tank|garden-defense|voxel|city-time-machine|sky-gates|2048|city-drive|browser-game|how-to-play|fps|freedoom|highway|hover|shooter|horde|procedural|server-survival|survival-td)/.test(slug)) {
+  if (/(^|-)(snake|tank|garden-defense|voxel|city-time-machine|sky-gates|2048|city-drive|browser-game|how-to-play|fps|freedoom|highway|hover|shooter|horde|procedural|server-survival|survival-td|connect-four|connect-four-ai)/.test(slug)) {
     return 'games';
   }
   if (/(^|-)(solar-system|black-hole|galaxy|planet|space-3d|earth-3d|sagittarius)/.test(slug)) {

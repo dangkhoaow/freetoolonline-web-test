@@ -496,6 +496,7 @@ try {
     { title: "Particle Clicker", url: "https://freetoolonline.com/games/particle-clicker.html", include: !1, tags: "games" },
     { title: "The House Point and Click", url: "https://freetoolonline.com/games/the-house-pointclick.html", include: !1, tags: "games" },
     { title: "Server Survival TD", url: "https://freetoolonline.com/games/server-survival-td.html", include: !1, tags: "games" },
+    { title: "Connect Four AI", url: "https://freetoolonline.com/games/connect-four-ai.html", include: !1, tags: "games" },
     { title: "Egg Time Rewind", url: "https://freetoolonline.com/games/egg-time-rewind.html", include: !1, tags: "games" },
     { title: "Seasonal Witchcat", url: "https://freetoolonline.com/games/seasonal-witchcat.html", include: !1, tags: "games" },
     { title: "Desk Cat Coder", url: "https://freetoolonline.com/games/desk-cat-coder.html", include: !1, tags: "games" },

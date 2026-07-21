@@ -1,0 +1,48 @@
+<script>
+    if (typeof web !== "undefined") web.localUpload = false;
+    var CFA_GAME_URL = 'https://gh-static.freetool.online/games/connect-four-ai/index.html';
+    function cfaStatus(text) {
+        var el = document.getElementById('cfaStatus');
+        if (el) el.textContent = text;
+    }
+    function cfaInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'cfaFrame';
+        frame.src = CFA_GAME_URL;
+        frame.title = 'Connect Four AI game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            cfaStatus('Game loaded. Pick a mode, then click a column to drop a disc.');
+            try { frame.contentWindow.focus(); } catch (e) {}
+        });
+        var launch = document.getElementById('cfaLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('cfaStage');
+        var playBtn = document.getElementById('cfaPlayBtn');
+        if (!stage || !playBtn) return;
+        if (playBtn.dataset.bound === '1') return;
+        playBtn.dataset.bound = '1';
+        var fsBtn = document.getElementById('cfaFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            cfaStatus('Loading the game (about 40 KB)...');
+            cfaInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('cfaFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) {} }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', doAfterPageRendered);
+    } else {
+        doAfterPageRendered();
+    }
+</script>
