@@ -102,10 +102,20 @@
         box.empty();
         if (!svgMarkup) return;
         try {
-            // Sanitize-ish: only inject if it parses as svg
-            var r = ftoOptimizeSvg(svgMarkup);
-            var markup = r.ok ? r.output : svgMarkup;
-            box.html(markup);
+            var parser = new DOMParser();
+            var doc = parser.parseFromString(String(svgMarkup), 'image/svg+xml');
+            if (doc.querySelector('parsererror')) {
+                box.text('Preview unavailable.');
+                return;
+            }
+            var root = doc.documentElement;
+            if (!root || String(root.tagName || '').toLowerCase() !== 'svg') {
+                box.text('Preview unavailable.');
+                return;
+            }
+            // Append via importNode - never jQuery .html() on raw markup (can trip
+            // HTML parser / inline-script edge cases on some UAs).
+            box[0].appendChild(document.importNode(root, true));
         } catch (e) {
             box.text('Preview unavailable.');
         }
