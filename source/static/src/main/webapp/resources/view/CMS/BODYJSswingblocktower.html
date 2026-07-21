@@ -1,0 +1,48 @@
+<script>
+    if (typeof web !== "undefined") web.localUpload = false;
+    var SBT_GAME_URL = 'swing-block-tower/index.html';
+    function sbtStatus(text) {
+        var el = document.getElementById('sbtStatus');
+        if (el) el.textContent = text;
+    }
+    function sbtInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'sbtFrame';
+        frame.src = SBT_GAME_URL;
+        frame.title = 'Swing Block Tower game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            sbtStatus('Game loaded. Tap Start inside the game, then tap or click to drop each block.');
+            try { frame.contentWindow.focus(); } catch (e) {}
+        });
+        var launch = document.getElementById('sbtLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('sbtStage');
+        var playBtn = document.getElementById('sbtPlayBtn');
+        if (!stage || !playBtn) return;
+        if (playBtn.dataset.bound === '1') return;
+        playBtn.dataset.bound = '1';
+        var fsBtn = document.getElementById('sbtFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            sbtStatus('Loading the game (about 2 MB, one time - then cached)...');
+            sbtInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('sbtFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) {} }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', doAfterPageRendered);
+    } else {
+        doAfterPageRendered();
+    }
+</script>
