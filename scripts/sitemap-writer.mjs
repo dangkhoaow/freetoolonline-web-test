@@ -2,6 +2,8 @@ import { readFile, stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { INFO_ROUTES, GUIDE_ROUTES, GUIDE_SITEMAP_EXCLUDE, canonicalForRoute, normalizeRoute, routeToSlug } from './site-data.mjs';
 import { isHubRoute } from './seo-clusters.mjs';
+import { resolveRouteGitLastmod } from './page-mtimes.mjs';
+import { existsSync } from 'node:fs';
 import { getHomeCounts, spliceCountsInText } from './home-counts.mjs';
 
 const SITEMAP_FILES = ['sitemap.xml', 'sitemap-tools.xml', 'sitemap-hubs.xml', 'sitemap-guides.xml', 'sitemap-news.xml', 'sitemap-pages.xml'];
@@ -153,11 +155,40 @@ function buildCmsFileCandidates(route) {
   ));
 }
 
+// Walk up from cmsRoot to the repo root (dir containing .git). Bounded so a
+// pathological layout cannot loop; returns null when no repo is found.
+function deriveRepoRootFromCmsRoot(cmsRoot) {
+  let dir = path.resolve(cmsRoot);
+  for (let i = 0; i < 12; i++) {
+    if (existsSync(path.join(dir, '.git'))) return dir;
+    const parent = path.dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return null;
+}
+
 async function resolveLastmodForRoute({ route, cmsRoot, fallbackLastmod }) {
   const normalizedRoute = normalizeRoute(route);
   if (!cmsRoot) {
     console.log(`[sitemap] lastmod fallback for ${normalizedRoute}: cmsRoot missing.`);
     return fallbackLastmod;
+  }
+
+  // 2026-07-21 (review/20260720 P1#7): git-history lastmod FIRST. The old
+  // fs-stat path silently reported build time for every route on CI because
+  // `actions/checkout` resets all mtimes - Google then discards <lastmod>
+  // sitewide as unreliable. The git index (page-mtimes.mjs, one `git log
+  // --name-only` walk shared with the renderer's dateModified) gives the real
+  // last-modifying commit per route. The stat path stays as a local/shallow-
+  // checkout fallback only.
+  const repoRoot = deriveRepoRootFromCmsRoot(cmsRoot);
+  if (repoRoot) {
+    const gitIso = await resolveRouteGitLastmod({ repoRoot, cmsRoot, slug: routeToSlug(normalizedRoute) });
+    if (gitIso) {
+      console.log(`[sitemap] lastmod for ${normalizedRoute}: ${gitIso} (source=git).`);
+      return gitIso;
+    }
   }
 
   const candidates = buildCmsFileCandidates(normalizedRoute);
@@ -183,7 +214,7 @@ async function resolveLastmodForRoute({ route, cmsRoot, fallbackLastmod }) {
   }
 
   const lastmod = new Date(newestMtimeMs).toISOString();
-  console.log(`[sitemap] lastmod for ${normalizedRoute}: ${lastmod} (sources=${matchedCount}).`);
+  console.log(`[sitemap] lastmod for ${normalizedRoute}: ${lastmod} (sources=${matchedCount}, source=fs-stat fallback).`);
   return lastmod;
 }
 

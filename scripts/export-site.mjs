@@ -28,7 +28,7 @@ import {
   stripTrailingSlash,
 } from './site-data.mjs';
 import { parseJspPageSource, renderAlternateAdPage, renderPageDocument, renderRedirectPage } from './page-renderer.mjs';
-import { resolvePageMtime } from './page-mtimes.mjs';
+import { resolvePageMtime, resolvePageCreated } from './page-mtimes.mjs';
 import { createInternalContentRewriter, normalizeBasePath } from './staging-utils.mjs';
 import { writeSplitSitemaps } from './sitemap-writer.mjs';
 import { isHubRoute } from './seo-clusters.mjs';
@@ -469,6 +469,17 @@ async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData,
     slug: pageData.slug,
     jspRelativePath: jspPath,
   });
+  // Real first-publish date (earliest creating commit across the page's
+  // fragments). Replaces the hardcoded 2026-04-19 anchor on guide Article
+  // JSON-LD (review/20260720 P1#7). Null on shallow checkouts -> renderer
+  // falls back to the legacy anchor.
+  const createdIso = await resolvePageCreated({
+    repoRoot,
+    cmsRoot,
+    jspRoot,
+    slug: pageData.slug,
+    jspRelativePath: jspPath,
+  });
   // fire-23: hub detection via the shared helper so non-'-tools' hubs
   // (/games.html, /space-3d.html, /guides.html) are treated as hubs here too.
   const isHubPage = isHubRoute(normalizedRoute);
@@ -514,6 +525,7 @@ async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData,
       aggregateRating,
       relatedToolsData,
       lastUpdatedIso,
+      createdIso,
     }),
     canonical: true,
   };

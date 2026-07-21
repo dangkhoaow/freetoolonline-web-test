@@ -1369,7 +1369,7 @@ export function renderJspBody(innerHtml, ctx) {
   return html;
 }
 
-export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePath, isStaging, rewriteInternalContent, apiOrigin, shortenDomain, appVersion, ioVersion, deploySha, getAlterUploaderDelayMs, bgsCollection, ioInfos, unsplashKey, randomString, sharedFragments, lMenu, pageData, pageAttrs, bodyHtml, themeCss, aggregateRating, relatedToolsData, lastUpdatedIso }) {
+export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePath, isStaging, rewriteInternalContent, apiOrigin, shortenDomain, appVersion, ioVersion, deploySha, getAlterUploaderDelayMs, bgsCollection, ioInfos, unsplashKey, randomString, sharedFragments, lMenu, pageData, pageAttrs, bodyHtml, themeCss, aggregateRating, relatedToolsData, lastUpdatedIso, createdIso }) {
   const normalizedRoute = route;
   const normalizedBasePath = normalizeBasePath(basePath);
   const pageName = pageData.pageName;
@@ -1515,19 +1515,22 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     console.log(`[schema:org] Injected Organization JSON-LD on ${normalizedRoute}.`);
   }
   // Article JSON-LD for /guides/* routes. Uses the page's browserTitle as
-  // headline, meta description as abstract, the 2026-04-19 publish anchor
-  // (matches the visible <time> element in each guide BODYHTML), and a
-  // dateModified derived from the most recent commit that touched the
-  // guide's own CMS fragments / JSP wrapper. Falls back to the publish
-  // date when no per-page mtime is available.
+  // headline, meta description as abstract, the REAL first-publish date
+  // (earliest git commit that created any of the guide's CMS fragments /
+  // JSP wrapper - see resolvePageCreated in page-mtimes.mjs; review/20260720
+  // P1#7 replaced the hardcoded 2026-04-19 anchor, which stamped 6.9k
+  // articles "published" the same second), and a dateModified derived from
+  // the most recent commit that touched the same files. The 2026-04-19
+  // anchor survives only as the shallow-checkout fallback.
+  const publishedIso = createdIso || '2026-04-19T08:00:00Z';
   const articleJsonLd = isGuide
     ? buildArticleJsonLd({
         canonicalUrl,
         canonicalOrigin,
         headline: browserTitle,
         description,
-        datePublished: '2026-04-19T08:00:00Z',
-        dateModified: lastUpdatedIso || '2026-04-19T08:00:00Z',
+        datePublished: publishedIso,
+        dateModified: lastUpdatedIso || publishedIso,
       })
     : '';
   if (articleJsonLd) {
@@ -1554,8 +1557,8 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     isHome,
     isStaging,
     isGuide,
-    articlePublishedAt: isGuide ? '2026-04-19T08:00:00Z' : '',
-    articleModifiedAt: isGuide ? (lastUpdatedIso || '2026-04-19T08:00:00Z') : '',
+    articlePublishedAt: isGuide ? publishedIso : '',
+    articleModifiedAt: isGuide ? (lastUpdatedIso || publishedIso) : '',
     browserTitle,
     mobileBrowserTitle: pageData.pageBrowserTitleMobile,
     description,
