@@ -677,7 +677,7 @@ try {
     { title: "Axial Tilt Comparison 3D Explorer", url: "https://freetoolonline.com/space-3d/axial-tilt-comparison.html", include: !1, tags: "space-3d" },
     { title: "Milky Way - Andromeda Collision 3D Explorer", url: "https://freetoolonline.com/space-3d/andromeda-collision.html", include: !1, tags: "space-3d" },
     { title: "Geocentric vs Heliocentric 3D Explorer", url: "https://freetoolonline.com/space-3d/geocentric-vs-heliocentric.html", include: !1, tags: "space-3d" },
-    { title: "Globular Cluster 3D Explorer", url: "https://freetoolonline.com/space-3d/globular-cluster.html", include: !1, tags: "space-3d" },
+    { title: "Globular Star Swarm 3D Explorer", url: "https://freetoolonline.com/space-3d/globular-cluster.html", include: !1, tags: "space-3d" },
     { title: "Pluto-Charon Double Planet 3D Explorer", url: "https://freetoolonline.com/space-3d/pluto-charon-double-planet.html", include: !1, tags: "space-3d" },
     { title: "Coronal Mass Ejection 3D Explorer", url: "https://freetoolonline.com/space-3d/coronal-mass-ejection.html", include: !1, tags: "space-3d" },
     { title: "Apollo Free-Return Trajectory 3D Explorer", url: "https://freetoolonline.com/space-3d/apollo-free-return-trajectory.html", include: !1, tags: "space-3d" },
@@ -685,7 +685,7 @@ try {
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
     // news-loop (2026-07-08): dated, source-cited updates. tags include the
-    // affected cluster(s) so the article surfaces via tag-match on related
+    // affected star swarm(s) so the article surfaces via tag-match on related
     // tool/guide pages, plus a bare "news" tag for future cross-links.
     { title: "JPEG XL Returns to Chrome and Firefox - What Changes for You", url: "https://freetoolonline.com/news/jpeg-xl-returns-chrome-firefox.html", include: !1, tags: "news,image-conversion,jpg,heic,webp" },
     { title: "WebP to JPG Converter", url: "https://freetoolonline.com/image-converter-tools/webp-to-jpg.html", include: !1, tags: "image-conversion" },
