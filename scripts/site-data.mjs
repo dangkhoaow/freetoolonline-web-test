@@ -8410,6 +8410,25 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/orbital-order-vs-alternatives.html',
   '/guides/id/orbital-order-vs-alternatives.html',
   '/guides/de/orbital-order-vs-alternatives.html',
+  // game-discovery-loop-runbook fire172 (2026-07-21): spikesprint companion guides
+  '/guides/how-to-play-spike-sprint.html',
+  '/guides/pt/how-to-play-spike-sprint.html',
+  '/guides/es/how-to-play-spike-sprint.html',
+  '/guides/vi/how-to-play-spike-sprint.html',
+  '/guides/id/how-to-play-spike-sprint.html',
+  '/guides/de/how-to-play-spike-sprint.html',
+  '/guides/spike-sprint-when.html',
+  '/guides/pt/spike-sprint-when.html',
+  '/guides/es/spike-sprint-when.html',
+  '/guides/vi/spike-sprint-when.html',
+  '/guides/id/spike-sprint-when.html',
+  '/guides/de/spike-sprint-when.html',
+  '/guides/spike-sprint-vs-alternatives.html',
+  '/guides/pt/spike-sprint-vs-alternatives.html',
+  '/guides/es/spike-sprint-vs-alternatives.html',
+  '/guides/vi/spike-sprint-vs-alternatives.html',
+  '/guides/id/spike-sprint-vs-alternatives.html',
+  '/guides/de/spike-sprint-vs-alternatives.html',
 
   // game-discovery-loop-runbook fire140 (2026-07-18): seasonal-witchcat companion guides
   '/guides/how-to-play-seasonal-witchcat.html',
@@ -10107,6 +10126,8 @@ export const ALIAS_ROUTES = {
   '/pinacosaurus.html': '/dinosaur-3d/pinacosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire87 (2026-07-21): flat-slug alias for monolophosaurus.
   '/monolophosaurus.html': '/dinosaur-3d/monolophosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire (2026-07-21): flat-slug alias for suchomimus.
+  '/suchomimus.html': '/dinosaur-3d/suchomimus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -10206,6 +10227,7 @@ export const ALIAS_ROUTES = {
   '/progress-knight.html': '/games/progress-knight.html',
   '/miami-mice.html': '/games/miami-mice.html',
   '/orbital-order.html': '/games/orbital-order.html',
+  '/spike-sprint.html': '/games/spike-sprint.html',
   '/seasonal-witchcat.html': '/games/seasonal-witchcat.html',
   '/desk-cat-coder.html': '/games/desk-cat-coder.html',
   '/boing-cat-platformer.html': '/games/boing-cat-platformer.html',
@@ -12759,6 +12781,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/orbital-order-vs-alternatives.html': 'guide/vi/orbital-order-vs-alternatives.jsp',
   '/guides/id/orbital-order-vs-alternatives.html': 'guide/id/orbital-order-vs-alternatives.jsp',
   '/guides/de/orbital-order-vs-alternatives.html': 'guide/de/orbital-order-vs-alternatives.jsp',
+  // game-discovery-loop-runbook fire172 (2026-07-21): spikesprint companion guides
+  '/guides/how-to-play-spike-sprint.html': 'guide/how-to-play-spike-sprint.jsp',
+  '/guides/pt/how-to-play-spike-sprint.html': 'guide/pt/how-to-play-spike-sprint.jsp',
+  '/guides/es/how-to-play-spike-sprint.html': 'guide/es/how-to-play-spike-sprint.jsp',
+  '/guides/vi/how-to-play-spike-sprint.html': 'guide/vi/how-to-play-spike-sprint.jsp',
+  '/guides/id/how-to-play-spike-sprint.html': 'guide/id/how-to-play-spike-sprint.jsp',
+  '/guides/de/how-to-play-spike-sprint.html': 'guide/de/how-to-play-spike-sprint.jsp',
+  '/guides/spike-sprint-when.html': 'guide/spike-sprint-when.jsp',
+  '/guides/pt/spike-sprint-when.html': 'guide/pt/spike-sprint-when.jsp',
+  '/guides/es/spike-sprint-when.html': 'guide/es/spike-sprint-when.jsp',
+  '/guides/vi/spike-sprint-when.html': 'guide/vi/spike-sprint-when.jsp',
+  '/guides/id/spike-sprint-when.html': 'guide/id/spike-sprint-when.jsp',
+  '/guides/de/spike-sprint-when.html': 'guide/de/spike-sprint-when.jsp',
+  '/guides/spike-sprint-vs-alternatives.html': 'guide/spike-sprint-vs-alternatives.jsp',
+  '/guides/pt/spike-sprint-vs-alternatives.html': 'guide/pt/spike-sprint-vs-alternatives.jsp',
+  '/guides/es/spike-sprint-vs-alternatives.html': 'guide/es/spike-sprint-vs-alternatives.jsp',
+  '/guides/vi/spike-sprint-vs-alternatives.html': 'guide/vi/spike-sprint-vs-alternatives.jsp',
+  '/guides/id/spike-sprint-vs-alternatives.html': 'guide/id/spike-sprint-vs-alternatives.jsp',
+  '/guides/de/spike-sprint-vs-alternatives.html': 'guide/de/spike-sprint-vs-alternatives.jsp',
 
   // game-discovery-loop-runbook fire140 (2026-07-18): seasonal-witchcat companion guides
   '/guides/how-to-play-seasonal-witchcat.html': 'guide/how-to-play-seasonal-witchcat.jsp',
@@ -13915,6 +13956,13 @@ export const JSP_BY_ROUTE = {
   // forward-swept crest); model-first via ftol-vm-assets manifest entry
   // "monolophosaurus" (already vendored, CC-BY-SA 4.0).
   '/dinosaur-3d/monolophosaurus.html': 'dinosaur/monolophosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire (2026-07-21): Suchomimus viewer -
+  // theropod archetype with feats.lowSail (new additive branch, low ridge of
+  // short neural spines - distinct from Spinosaurus's tall feats.sail and
+  // from Baryonyx's feats:{}; larger than Baryonyx, different formation from
+  // both siblings - Elrhaz Formation, Niger); model-first via ftol-vm-assets
+  // manifest entry "suchomimus" (vendored this cycle, CC-BY-SA 4.0).
+  '/dinosaur-3d/suchomimus.html': 'dinosaur/suchomimus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -16245,6 +16293,7 @@ export const JSP_BY_ROUTE = {
   '/games/progress-knight.html': 'games/progress-knight.jsp',
   '/games/miami-mice.html': 'games/miami-mice.jsp',
   '/games/orbital-order.html': 'games/orbital-order.jsp',
+  '/games/spike-sprint.html': 'games/spike-sprint.jsp',
   '/games/seasonal-witchcat.html': 'games/seasonal-witchcat.jsp',
   '/games/desk-cat-coder.html': 'games/desk-cat-coder.jsp',
   '/games/boing-cat-platformer.html': 'games/boing-cat-platformer.jsp',

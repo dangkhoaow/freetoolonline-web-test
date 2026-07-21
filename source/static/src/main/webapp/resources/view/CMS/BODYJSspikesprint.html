@@ -1,0 +1,48 @@
+<script>
+    if (typeof web !== "undefined") web.localUpload = false;
+    var SSP_GAME_URL = 'spike-sprint/index.html';
+    function sspStatus(text) {
+        var el = document.getElementById('sspStatus');
+        if (el) el.textContent = text;
+    }
+    function sspInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'sspFrame';
+        frame.src = SSP_GAME_URL;
+        frame.title = 'Spike Sprint game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            sspStatus('Game loaded. Tap or press Space to jump.');
+            try { frame.contentWindow.focus(); } catch (e) {}
+        });
+        var launch = document.getElementById('sspLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('sspStage');
+        var playBtn = document.getElementById('sspPlayBtn');
+        if (!stage || !playBtn) return;
+        if (playBtn.dataset.bound === '1') return;
+        playBtn.dataset.bound = '1';
+        var fsBtn = document.getElementById('sspFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            sspStatus('Loading the game (about 25 KB, one time - then cached)...');
+            sspInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('sspFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) {} }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', doAfterPageRendered);
+    } else {
+        doAfterPageRendered();
+    }
+</script>
