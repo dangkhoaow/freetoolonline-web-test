@@ -4435,7 +4435,6 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/particle-clicker-vs-alternatives.html',
   '/guides/id/particle-clicker-vs-alternatives.html',
   '/guides/de/particle-clicker-vs-alternatives.html',
-<<<<<<< HEAD
   // game-discovery-loop-runbook fire179 (2026-07-21): thehousepointclick companion guides
   '/guides/how-to-play-the-house-pointclick.html',
   '/guides/pt/how-to-play-the-house-pointclick.html',
@@ -4455,7 +4454,6 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/the-house-pointclick-vs-alternatives.html',
   '/guides/id/the-house-pointclick-vs-alternatives.html',
   '/guides/de/the-house-pointclick-vs-alternatives.html',
-=======
   '/guides/apollo-free-return-trajectory-step-by-step.html',
   '/guides/apollo-free-return-trajectory-when.html',
   '/guides/apollo-free-return-trajectory-vs-alternatives.html',
@@ -4474,7 +4472,6 @@ export const INFO_ROUTES = new Set([
   '/guides/de/apollo-free-return-trajectory-step-by-step.html',
   '/guides/de/apollo-free-return-trajectory-when.html',
   '/guides/de/apollo-free-return-trajectory-vs-alternatives.html',
->>>>>>> origin/main
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
