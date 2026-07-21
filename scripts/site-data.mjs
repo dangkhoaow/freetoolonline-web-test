@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/image-exif-metadata-viewer-vs-alternatives.html',
+  '/guides/de/image-exif-metadata-viewer-vs-alternatives.html',
+  '/guides/id/image-exif-metadata-viewer-vs-alternatives.html',
+  '/guides/vi/image-exif-metadata-viewer-vs-alternatives.html',
+  '/guides/es/image-exif-metadata-viewer-vs-alternatives.html',
+  '/guides/pt/image-exif-metadata-viewer-vs-alternatives.html',
+  '/guides/image-exif-metadata-viewer-step-by-step.html',
+  '/guides/de/image-exif-metadata-viewer-step-by-step.html',
+  '/guides/id/image-exif-metadata-viewer-step-by-step.html',
+  '/guides/vi/image-exif-metadata-viewer-step-by-step.html',
+  '/guides/es/image-exif-metadata-viewer-step-by-step.html',
+  '/guides/pt/image-exif-metadata-viewer-step-by-step.html',
+  '/guides/image-exif-metadata-viewer-when.html',
+  '/guides/de/image-exif-metadata-viewer-when.html',
+  '/guides/id/image-exif-metadata-viewer-when.html',
+  '/guides/vi/image-exif-metadata-viewer-when.html',
+  '/guides/es/image-exif-metadata-viewer-when.html',
+  '/guides/pt/image-exif-metadata-viewer-when.html',
   '/guides/speaker-audio-channel-test-vs-alternatives.html',
   '/guides/speaker-audio-channel-test-step-by-step.html',
   '/guides/speaker-audio-channel-test-when.html',
@@ -10319,6 +10337,7 @@ export const ALIAS_ROUTES = {
   '/wcag-contrast-checker.html': '/developer-tools/wcag-contrast-checker.html',
   '/svg-optimizer.html': '/developer-tools/svg-optimizer.html',
   '/speaker-test.html': '/device-test-tools/speaker-test.html',
+  '/image-exif-viewer.html': '/image-tools/image-exif-viewer.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -19547,6 +19566,25 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/speaker-audio-channel-test-when.html': 'guide/pt/speaker-audio-channel-test-when.jsp',
   '/guides/speaker-audio-channel-test-step-by-step.html': 'guide/speaker-audio-channel-test-step-by-step.jsp',
   '/guides/speaker-audio-channel-test-vs-alternatives.html': 'guide/speaker-audio-channel-test-vs-alternatives.jsp',
+  '/image-tools/image-exif-viewer.html': 'convert/image-exif-viewer.jsp',
+  '/guides/image-exif-metadata-viewer-when.html': 'guide/image-exif-metadata-viewer-when.jsp',
+  '/guides/de/image-exif-metadata-viewer-when.html': 'guide/de/image-exif-metadata-viewer-when.jsp',
+  '/guides/id/image-exif-metadata-viewer-when.html': 'guide/id/image-exif-metadata-viewer-when.jsp',
+  '/guides/vi/image-exif-metadata-viewer-when.html': 'guide/vi/image-exif-metadata-viewer-when.jsp',
+  '/guides/es/image-exif-metadata-viewer-when.html': 'guide/es/image-exif-metadata-viewer-when.jsp',
+  '/guides/pt/image-exif-metadata-viewer-when.html': 'guide/pt/image-exif-metadata-viewer-when.jsp',
+  '/guides/image-exif-metadata-viewer-step-by-step.html': 'guide/image-exif-metadata-viewer-step-by-step.jsp',
+  '/guides/de/image-exif-metadata-viewer-step-by-step.html': 'guide/de/image-exif-metadata-viewer-step-by-step.jsp',
+  '/guides/id/image-exif-metadata-viewer-step-by-step.html': 'guide/id/image-exif-metadata-viewer-step-by-step.jsp',
+  '/guides/vi/image-exif-metadata-viewer-step-by-step.html': 'guide/vi/image-exif-metadata-viewer-step-by-step.jsp',
+  '/guides/es/image-exif-metadata-viewer-step-by-step.html': 'guide/es/image-exif-metadata-viewer-step-by-step.jsp',
+  '/guides/pt/image-exif-metadata-viewer-step-by-step.html': 'guide/pt/image-exif-metadata-viewer-step-by-step.jsp',
+  '/guides/image-exif-metadata-viewer-vs-alternatives.html': 'guide/image-exif-metadata-viewer-vs-alternatives.jsp',
+  '/guides/de/image-exif-metadata-viewer-vs-alternatives.html': 'guide/de/image-exif-metadata-viewer-vs-alternatives.jsp',
+  '/guides/id/image-exif-metadata-viewer-vs-alternatives.html': 'guide/id/image-exif-metadata-viewer-vs-alternatives.jsp',
+  '/guides/vi/image-exif-metadata-viewer-vs-alternatives.html': 'guide/vi/image-exif-metadata-viewer-vs-alternatives.jsp',
+  '/guides/es/image-exif-metadata-viewer-vs-alternatives.html': 'guide/es/image-exif-metadata-viewer-vs-alternatives.jsp',
+  '/guides/pt/image-exif-metadata-viewer-vs-alternatives.html': 'guide/pt/image-exif-metadata-viewer-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

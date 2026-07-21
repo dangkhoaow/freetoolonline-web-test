@@ -1,0 +1,223 @@
+<script>
+    // Image EXIF Metadata Viewer - fully in-browser. Registry: image_metadata_extractor_exifr.
+    // Page: /image-exif-viewer.html
+    //
+    // Load local image -> exifr.parse (vendored /vendor/exifr/exifr.umd.js) ->
+    // grouped Camera / Date / GPS / Other tables. Optional canvas re-encode strip.
+    // No upload. Framework calls doAfterPageRendered() after jQuery loads.
+
+    web.localUpload = false;
+
+    function doAfterPageRendered() {
+        var fileInput = document.getElementById('exifFile');
+        var btnRead = document.getElementById('exifRead');
+        var btnClear = document.getElementById('exifClear');
+        var btnStrip = document.getElementById('exifStrip');
+        var preview = document.getElementById('exifPreview');
+        var statusEl = document.getElementById('exifStatus');
+        var sections = document.getElementById('exifSections');
+        var gpsWarn = document.getElementById('exifGpsWarn');
+        var gpsText = document.getElementById('exifGpsText');
+        var mapLink = document.getElementById('exifMapLink');
+        var currentFile = null;
+        var previewUrl = null;
+        var exifrReady = null;
+
+        function setStatus(msg) {
+            if (statusEl) statusEl.textContent = msg;
+        }
+
+        function loadExifr() {
+            if (window.exifr && typeof window.exifr.parse === 'function') {
+                return Promise.resolve(window.exifr);
+            }
+            if (exifrReady) return exifrReady;
+            exifrReady = new Promise(function (resolve, reject) {
+                var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/exifr/exifr.umd.js';
+                var s = document.createElement('script');
+                s.src = base;
+                s.async = true;
+                s.onload = function () {
+                    if (window.exifr && typeof window.exifr.parse === 'function') resolve(window.exifr);
+                    else reject(new Error('exifr loaded but parse() missing'));
+                };
+                s.onerror = function () { reject(new Error('Failed to load /vendor/exifr/exifr.umd.js')); };
+                document.head.appendChild(s);
+            });
+            return exifrReady;
+        }
+
+        function esc(s) {
+            return String(s == null ? '' : s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function pick(obj, keys) {
+            var out = {};
+            if (!obj) return out;
+            for (var i = 0; i < keys.length; i++) {
+                var k = keys[i];
+                if (obj[k] != null && obj[k] !== '') out[k] = obj[k];
+            }
+            return out;
+        }
+
+        function renderTable(title, rows) {
+            var keys = Object.keys(rows || {});
+            if (!keys.length) return '';
+            var html = '<div class="exif-section"><h3><b>' + esc(title) + '</b></h3><table class="exif-table w3-table">';
+            for (var i = 0; i < keys.length; i++) {
+                var k = keys[i];
+                var v = rows[k];
+                if (v instanceof Date) v = v.toISOString();
+                else if (typeof v === 'object') {
+                    try { v = JSON.stringify(v); } catch (e) { v = String(v); }
+                }
+                html += '<tr><th>' + esc(k) + '</th><td>' + esc(v) + '</td></tr>';
+            }
+            html += '</table></div>';
+            return html;
+        }
+
+        function clearUi() {
+            if (previewUrl) { try { URL.revokeObjectURL(previewUrl); } catch (e) {} previewUrl = null; }
+            currentFile = null;
+            if (fileInput) fileInput.value = '';
+            if (preview) { preview.style.display = 'none'; preview.removeAttribute('src'); }
+            if (sections) sections.innerHTML = '';
+            if (gpsWarn) gpsWarn.classList.remove('show');
+            if (btnRead) btnRead.disabled = true;
+            if (btnStrip) btnStrip.disabled = true;
+            setStatus('Choose an image, then click Read Metadata. Parsing stays in the browser.');
+        }
+
+        function onFilePicked() {
+            var f = fileInput && fileInput.files && fileInput.files[0];
+            if (!f) { clearUi(); return; }
+            if (previewUrl) { try { URL.revokeObjectURL(previewUrl); } catch (e) {} }
+            currentFile = f;
+            previewUrl = URL.createObjectURL(f);
+            if (preview) {
+                preview.src = previewUrl;
+                preview.style.display = 'block';
+            }
+            if (btnRead) btnRead.disabled = false;
+            if (btnStrip) btnStrip.disabled = false;
+            if (sections) sections.innerHTML = '';
+            if (gpsWarn) gpsWarn.classList.remove('show');
+            setStatus('Ready: ' + f.name + ' (' + Math.round(f.size / 1024) + ' KB). Click Read Metadata.');
+        }
+
+        function readMeta() {
+            if (!currentFile) { setStatus('Choose an image first.'); return; }
+            setStatus('Loading parser...');
+            loadExifr().then(function (exifr) {
+                setStatus('Parsing metadata in the browser...');
+                return exifr.parse(currentFile, { translateKeys: true, reviveValues: true, mergeOutput: true });
+            }).then(function (data) {
+                data = data || {};
+                var camera = pick(data, [
+                    'Make', 'Model', 'LensModel', 'Lens', 'FocalLength', 'FNumber', 'ISO',
+                    'ExposureTime', 'ShutterSpeedValue', 'Flash', 'WhiteBalance', 'Orientation'
+                ]);
+                var dates = pick(data, [
+                    'DateTimeOriginal', 'CreateDate', 'ModifyDate', 'OffsetTimeOriginal', 'OffsetTime'
+                ]);
+                var gps = pick(data, [
+                    'latitude', 'longitude', 'GPSLatitude', 'GPSLongitude', 'GPSAltitude',
+                    'GPSImgDirection', 'GPSDateStamp'
+                ]);
+                // Normalize GPS from exifr helpers when present
+                if (data.latitude != null) gps.latitude = data.latitude;
+                if (data.longitude != null) gps.longitude = data.longitude;
+                var other = {};
+                Object.keys(data).forEach(function (k) {
+                    if (camera[k] != null || dates[k] != null || gps[k] != null) return;
+                    if (/^(thumbnail|MakerNote)$/i.test(k)) return;
+                    other[k] = data[k];
+                });
+                // Cap Other to keep page readable
+                var otherKeys = Object.keys(other).slice(0, 40);
+                var otherTrim = {};
+                for (var i = 0; i < otherKeys.length; i++) otherTrim[otherKeys[i]] = other[otherKeys[i]];
+
+                var html = '';
+                html += renderTable('Camera', camera);
+                html += renderTable('Date / Time', dates);
+                html += renderTable('GPS', gps);
+                html += renderTable('Other', otherTrim);
+                if (!html) html = '<p><b>No EXIF / IPTC / XMP tags found</b> in this file (or the format has none).</p>';
+                if (sections) sections.innerHTML = html;
+
+                var lat = data.latitude != null ? Number(data.latitude) : null;
+                var lon = data.longitude != null ? Number(data.longitude) : null;
+                if (lat != null && lon != null && isFinite(lat) && isFinite(lon)) {
+                    if (gpsText) gpsText.textContent = ' Coordinates: ' + lat.toFixed(5) + ', ' + lon.toFixed(5) + '.';
+                    if (mapLink) {
+                        mapLink.href = 'https://www.openstreetmap.org/?mlat=' + encodeURIComponent(lat) +
+                            '&mlon=' + encodeURIComponent(lon) + '#map=15/' + encodeURIComponent(lat) + '/' + encodeURIComponent(lon);
+                    }
+                    if (gpsWarn) gpsWarn.classList.add('show');
+                } else if (gpsWarn) {
+                    gpsWarn.classList.remove('show');
+                }
+
+                var n = Object.keys(data).length;
+                setStatus('Parsed ' + n + ' tag(s) from ' + currentFile.name + '. Nothing was uploaded.');
+            }).catch(function (err) {
+                if (sections) sections.innerHTML = '';
+                if (gpsWarn) gpsWarn.classList.remove('show');
+                setStatus('Could not parse metadata: ' + (err && err.message ? err.message : String(err)));
+            });
+        }
+
+        function stripMeta() {
+            if (!currentFile) { setStatus('Choose an image first.'); return; }
+            setStatus('Re-encoding on a canvas to drop metadata...');
+            var url = URL.createObjectURL(currentFile);
+            var img = new Image();
+            img.onload = function () {
+                try {
+                    var canvas = document.createElement('canvas');
+                    canvas.width = img.naturalWidth || img.width;
+                    canvas.height = img.naturalHeight || img.height;
+                    var ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    canvas.toBlob(function (blob) {
+                        URL.revokeObjectURL(url);
+                        if (!blob) { setStatus('Canvas export failed in this browser.'); return; }
+                        var a = document.createElement('a');
+                        a.href = URL.createObjectURL(blob);
+                        a.download = (currentFile.name.replace(/\.[^.]+$/, '') || 'image') + '-no-exif.jpg';
+                        document.body.appendChild(a);
+                        a.click();
+                        setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+                        setStatus('Downloaded JPEG without EXIF (canvas re-encode at 0.95 quality).');
+                    }, 'image/jpeg', 0.95);
+                } catch (e) {
+                    URL.revokeObjectURL(url);
+                    setStatus('Strip failed: ' + (e && e.message ? e.message : String(e)));
+                }
+            };
+            img.onerror = function () {
+                URL.revokeObjectURL(url);
+                setStatus('Could not decode this image for canvas strip (try JPEG/PNG/WebP).');
+            };
+            img.src = url;
+        }
+
+        if (window.jQuery) {
+            $('#exifFile').off('change.exif').on('change.exif', onFilePicked);
+            $('#exifRead').off('click.exif').on('click.exif', readMeta);
+            $('#exifClear').off('click.exif').on('click.exif', clearUi);
+            $('#exifStrip').off('click.exif').on('click.exif', stripMeta);
+        } else {
+            fileInput && fileInput.addEventListener('change', onFilePicked);
+            btnRead && btnRead.addEventListener('click', readMeta);
+            btnClear && btnClear.addEventListener('click', clearUi);
+            btnStrip && btnStrip.addEventListener('click', stripMeta);
+        }
+        console.log('[image-exif-viewer] wired: exifr.parse + canvas strip');
+    }
+</script>
