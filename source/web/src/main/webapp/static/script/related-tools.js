@@ -376,6 +376,7 @@ try {
     { title: "Ouranosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/ouranosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Archaeopteryx 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/archaeopteryx.html", include: !1, tags: "dinosaur-3d" },
     { title: "Corythosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/corythosaurus.html", include: !1, tags: "dinosaur-3d" },
+    { title: "Daspletosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/daspletosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Ceratosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/ceratosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Brontosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/brontosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Megalosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/megalosaurus.html", include: !1, tags: "dinosaur-3d" },

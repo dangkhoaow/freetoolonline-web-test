@@ -10816,6 +10816,8 @@ export const ALIAS_ROUTES = {
   '/ouranosaurus.html': '/dinosaur-3d/ouranosaurus.html',
   '/archaeopteryx.html': '/dinosaur-3d/archaeopteryx.html',
   '/corythosaurus.html': '/dinosaur-3d/corythosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook (2026-07-21): flat-slug alias for daspletosaurus.
+  '/daspletosaurus.html': '/dinosaur-3d/daspletosaurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -14798,6 +14800,9 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/archaeopteryx.html': 'dinosaur/archaeopteryx.jsp',
   // dinosaur-3d-discovery-loop-runbook fire241 (2026-07-21): corythosaurus
   '/dinosaur-3d/corythosaurus.html': 'dinosaur/corythosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook (2026-07-21): daspletosaurus (Alberta tyrannosaurine;
+  // model-first via ftol-vm-assets daspletosaurus.glb, CC-BY-SA DragonArtist15).
+  '/dinosaur-3d/daspletosaurus.html': 'dinosaur/daspletosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
