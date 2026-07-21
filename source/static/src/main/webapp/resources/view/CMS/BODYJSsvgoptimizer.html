@@ -66,8 +66,10 @@
     function ftoOptimizeSvg(src) {
         var raw = String(src || '').trim();
         if (!raw) return { ok: false, error: 'Paste SVG markup first.' };
-        // Strip XML comments before parse (DOMParser keeps some as nodes; belt+suspenders)
-        raw = raw.replace(/<!--[\s\S]*?-->/g, '');
+        // Strip XML comments before parse (DOMParser keeps some as nodes; belt+suspenders).
+        // Build the regex from string parts so the HTML exporter cannot eat <!-- ... -->
+        // as a real HTML comment when this BODYJS is inlined into the page.
+        raw = raw.replace(new RegExp('<' + '!--[\\s\\S]*?--' + '>', 'g'), '');
         var parser = new DOMParser();
         var doc = parser.parseFromString(raw, 'image/svg+xml');
         var parseErr = doc.querySelector('parsererror');
