@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/mouse-test-buttons-scroll-vs-alternatives.html',
+  '/guides/de/mouse-test-buttons-scroll-vs-alternatives.html',
+  '/guides/id/mouse-test-buttons-scroll-vs-alternatives.html',
+  '/guides/vi/mouse-test-buttons-scroll-vs-alternatives.html',
+  '/guides/es/mouse-test-buttons-scroll-vs-alternatives.html',
+  '/guides/pt/mouse-test-buttons-scroll-vs-alternatives.html',
+  '/guides/mouse-test-buttons-scroll-step-by-step.html',
+  '/guides/de/mouse-test-buttons-scroll-step-by-step.html',
+  '/guides/id/mouse-test-buttons-scroll-step-by-step.html',
+  '/guides/vi/mouse-test-buttons-scroll-step-by-step.html',
+  '/guides/es/mouse-test-buttons-scroll-step-by-step.html',
+  '/guides/pt/mouse-test-buttons-scroll-step-by-step.html',
+  '/guides/mouse-test-buttons-scroll-when.html',
+  '/guides/de/mouse-test-buttons-scroll-when.html',
+  '/guides/id/mouse-test-buttons-scroll-when.html',
+  '/guides/vi/mouse-test-buttons-scroll-when.html',
+  '/guides/es/mouse-test-buttons-scroll-when.html',
+  '/guides/pt/mouse-test-buttons-scroll-when.html',
   '/guides/image-color-palette-extractor-vs-alternatives.html',
   '/guides/de/image-color-palette-extractor-vs-alternatives.html',
   '/guides/id/image-color-palette-extractor-vs-alternatives.html',
@@ -4416,6 +4434,25 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // fire343 mouse-test companion guides
+  '/guides/mouse-test-buttons-scroll-when.html',
+  '/guides/pt/mouse-test-buttons-scroll-when.html',
+  '/guides/es/mouse-test-buttons-scroll-when.html',
+  '/guides/vi/mouse-test-buttons-scroll-when.html',
+  '/guides/id/mouse-test-buttons-scroll-when.html',
+  '/guides/de/mouse-test-buttons-scroll-when.html',
+  '/guides/mouse-test-buttons-scroll-step-by-step.html',
+  '/guides/pt/mouse-test-buttons-scroll-step-by-step.html',
+  '/guides/es/mouse-test-buttons-scroll-step-by-step.html',
+  '/guides/vi/mouse-test-buttons-scroll-step-by-step.html',
+  '/guides/id/mouse-test-buttons-scroll-step-by-step.html',
+  '/guides/de/mouse-test-buttons-scroll-step-by-step.html',
+  '/guides/mouse-test-buttons-scroll-vs-alternatives.html',
+  '/guides/pt/mouse-test-buttons-scroll-vs-alternatives.html',
+  '/guides/es/mouse-test-buttons-scroll-vs-alternatives.html',
+  '/guides/vi/mouse-test-buttons-scroll-vs-alternatives.html',
+  '/guides/id/mouse-test-buttons-scroll-vs-alternatives.html',
+  '/guides/de/mouse-test-buttons-scroll-vs-alternatives.html',
   // fire342 image-color-palette-extractor companion guides
   '/guides/image-color-palette-extractor-when.html',
   '/guides/de/image-color-palette-extractor-when.html',
@@ -10708,6 +10745,7 @@ export const ALIAS_ROUTES = {
   '/image-exif-viewer.html': '/image-tools/image-exif-viewer.html',
   '/image-metadata-remover.html': '/image-tools/image-metadata-remover.html',
   '/image-color-palette-extractor.html': '/image-tools/image-color-palette-extractor.html',
+  '/mouse-test.html': '/device-test-tools/mouse-test.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -20167,6 +20205,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/image-color-palette-extractor-vs-alternatives.html': 'guide/vi/image-color-palette-extractor-vs-alternatives.jsp',
   '/guides/es/image-color-palette-extractor-vs-alternatives.html': 'guide/es/image-color-palette-extractor-vs-alternatives.jsp',
   '/guides/pt/image-color-palette-extractor-vs-alternatives.html': 'guide/pt/image-color-palette-extractor-vs-alternatives.jsp',
+  '/device-test-tools/mouse-test.html': 'convert/mouse-test.jsp',
+  '/guides/mouse-test-buttons-scroll-when.html': 'guide/mouse-test-buttons-scroll-when.jsp',
+  '/guides/de/mouse-test-buttons-scroll-when.html': 'guide/de/mouse-test-buttons-scroll-when.jsp',
+  '/guides/id/mouse-test-buttons-scroll-when.html': 'guide/id/mouse-test-buttons-scroll-when.jsp',
+  '/guides/vi/mouse-test-buttons-scroll-when.html': 'guide/vi/mouse-test-buttons-scroll-when.jsp',
+  '/guides/es/mouse-test-buttons-scroll-when.html': 'guide/es/mouse-test-buttons-scroll-when.jsp',
+  '/guides/pt/mouse-test-buttons-scroll-when.html': 'guide/pt/mouse-test-buttons-scroll-when.jsp',
+  '/guides/mouse-test-buttons-scroll-step-by-step.html': 'guide/mouse-test-buttons-scroll-step-by-step.jsp',
+  '/guides/de/mouse-test-buttons-scroll-step-by-step.html': 'guide/de/mouse-test-buttons-scroll-step-by-step.jsp',
+  '/guides/id/mouse-test-buttons-scroll-step-by-step.html': 'guide/id/mouse-test-buttons-scroll-step-by-step.jsp',
+  '/guides/vi/mouse-test-buttons-scroll-step-by-step.html': 'guide/vi/mouse-test-buttons-scroll-step-by-step.jsp',
+  '/guides/es/mouse-test-buttons-scroll-step-by-step.html': 'guide/es/mouse-test-buttons-scroll-step-by-step.jsp',
+  '/guides/pt/mouse-test-buttons-scroll-step-by-step.html': 'guide/pt/mouse-test-buttons-scroll-step-by-step.jsp',
+  '/guides/mouse-test-buttons-scroll-vs-alternatives.html': 'guide/mouse-test-buttons-scroll-vs-alternatives.jsp',
+  '/guides/de/mouse-test-buttons-scroll-vs-alternatives.html': 'guide/de/mouse-test-buttons-scroll-vs-alternatives.jsp',
+  '/guides/id/mouse-test-buttons-scroll-vs-alternatives.html': 'guide/id/mouse-test-buttons-scroll-vs-alternatives.jsp',
+  '/guides/vi/mouse-test-buttons-scroll-vs-alternatives.html': 'guide/vi/mouse-test-buttons-scroll-vs-alternatives.jsp',
+  '/guides/es/mouse-test-buttons-scroll-vs-alternatives.html': 'guide/es/mouse-test-buttons-scroll-vs-alternatives.jsp',
+  '/guides/pt/mouse-test-buttons-scroll-vs-alternatives.html': 'guide/pt/mouse-test-buttons-scroll-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

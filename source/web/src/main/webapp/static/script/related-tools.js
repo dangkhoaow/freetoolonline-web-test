@@ -719,6 +719,7 @@ try {
     { title: "Image EXIF Metadata Viewer", url: "https://freetoolonline.com/image-tools/image-exif-viewer.html", include: !1, tags: "image-editing" },
     { title: "Image Metadata (EXIF) Remover", url: "https://freetoolonline.com/image-tools/image-metadata-remover.html", include: !1, tags: "image-editing" },
     { title: "Image Color Palette Extractor", url: "https://freetoolonline.com/image-tools/image-color-palette-extractor.html", include: !1, tags: "image-editing" },
+    { title: "Mouse Test (Buttons & Scroll)", url: "https://freetoolonline.com/device-test-tools/mouse-test.html", include: !1, tags: "device-test" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

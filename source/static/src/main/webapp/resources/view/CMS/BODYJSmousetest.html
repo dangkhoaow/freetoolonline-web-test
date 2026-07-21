@@ -1,0 +1,125 @@
+<script>
+    // Mouse / pointer test - fully in-browser. Registry: device_tester_mediastream.
+    // Page: /mouse-test.html
+    //
+    // Listens for mousemove / mousedown / mouseup / wheel on a local pad.
+    // Shows clientX/Y, button index, and wheel delta. No getUserMedia, no
+    // upload, no backend. Framework calls doAfterPageRendered() after jQuery.
+
+    web.localUpload = false;
+
+    function doAfterPageRendered() {
+        var listening = false;
+        var moves = 0;
+        var clicks = 0;
+        var wheelTicks = 0;
+        var lastWheel = 0;
+
+        function $(sel) { return window.jQuery ? window.jQuery(sel) : null; }
+
+        function setCue(msg) {
+            var el = document.getElementById('mtCue');
+            if (el) el.textContent = msg;
+        }
+
+        function setStats() {
+            var el = document.getElementById('mtStats');
+            if (el) {
+                el.textContent = 'moves: ' + moves + ' | clicks: ' + clicks +
+                    ' | wheel: ' + wheelTicks + ' (last deltaY ' + lastWheel + ')';
+            }
+        }
+
+        function setBtn(idx, on) {
+            var el = document.getElementById('mtBtn' + idx);
+            if (!el) return;
+            if (on) el.classList.add('mt-on');
+            else el.classList.remove('mt-on');
+        }
+
+        function clearBtns() {
+            setBtn(0, false); setBtn(1, false); setBtn(2, false);
+        }
+
+        function placeCross(x, y, pad) {
+            var cross = document.getElementById('mtCross');
+            if (!cross || !pad) return;
+            var r = pad.getBoundingClientRect();
+            var lx = Math.max(0, Math.min(r.width, x - r.left));
+            var ly = Math.max(0, Math.min(r.height, y - r.top));
+            cross.style.display = 'block';
+            cross.style.left = lx + 'px';
+            cross.style.top = ly + 'px';
+        }
+
+        function enable() {
+            listening = true;
+            var pad = document.getElementById('mtPad');
+            if (pad) pad.classList.add('mt-listening');
+            setCue('Listening. Move, click (L/M/R), or scroll on the pad. Right-click is captured here so the browser menu does not steal the event.');
+            setStats();
+        }
+
+        function reset() {
+            moves = 0; clicks = 0; wheelTicks = 0; lastWheel = 0;
+            clearBtns();
+            var cross = document.getElementById('mtCross');
+            if (cross) cross.style.display = 'none';
+            setStats();
+            setCue(listening
+                ? 'Counters reset. Keep moving or clicking on the pad.'
+                : 'Counters reset. Click Enable mouse listening to start.');
+        }
+
+        var pad = document.getElementById('mtPad');
+        if (pad) {
+            pad.addEventListener('mousemove', function (e) {
+                if (!listening) return;
+                moves += 1;
+                placeCross(e.clientX, e.clientY, pad);
+                setCue('move  x=' + Math.round(e.clientX) + ' y=' + Math.round(e.clientY) +
+                    '  buttons=' + e.buttons);
+                setStats();
+            });
+            pad.addEventListener('mousedown', function (e) {
+                if (!listening) enable();
+                clicks += 1;
+                setBtn(e.button, true);
+                placeCross(e.clientX, e.clientY, pad);
+                var name = e.button === 0 ? 'LEFT' : (e.button === 1 ? 'MIDDLE' : (e.button === 2 ? 'RIGHT' : ('B' + e.button)));
+                setCue('down  ' + name + ' (button ' + e.button + ')  x=' + Math.round(e.clientX) +
+                    ' y=' + Math.round(e.clientY));
+                setStats();
+                e.preventDefault();
+            });
+            pad.addEventListener('mouseup', function (e) {
+                if (!listening) return;
+                setBtn(e.button, false);
+                var name = e.button === 0 ? 'LEFT' : (e.button === 1 ? 'MIDDLE' : (e.button === 2 ? 'RIGHT' : ('B' + e.button)));
+                setCue('up    ' + name + ' (button ' + e.button + ')  x=' + Math.round(e.clientX) +
+                    ' y=' + Math.round(e.clientY));
+            });
+            pad.addEventListener('contextmenu', function (e) {
+                if (!listening) return;
+                e.preventDefault();
+            });
+            pad.addEventListener('wheel', function (e) {
+                if (!listening) enable();
+                wheelTicks += 1;
+                lastWheel = Math.round(e.deltaY);
+                setCue('wheel deltaY=' + lastWheel + '  x=' + Math.round(e.clientX) +
+                    ' y=' + Math.round(e.clientY));
+                setStats();
+                e.preventDefault();
+            }, { passive: false });
+        }
+
+        $('#mtEnable').off('click.mt').on('click.mt', function () { enable(); });
+        $('#mtReset').off('click.mt').on('click.mt', function () { reset(); });
+
+        // Visible idle output for e2e G16 before any interaction
+        setCue('Ready. Click Enable mouse listening (or click the pad) to start. Coordinates stay in this tab - nothing is uploaded.');
+        setStats();
+        console.log('[mouse-test] wired: ftoMouseTest / pointer pad L-M-R + wheel');
+    }
+</script>
