@@ -11076,6 +11076,7 @@ export const ALIAS_ROUTES = {
   '/arrow-dodge-arena.html': '/games/arrow-dodge-arena.html',
   '/andromeda-star-shooter.html': '/games/andromeda-star-shooter.html',
   '/pixel-spike-run.html': '/games/pixel-spike-run.html',
+  '/games/space-huggers-platformer.html': 'games/space-huggers-platformer.jsp',
   '/orbital-radius-shooter.html': '/games/orbital-radius-shooter.html',
   '/one-tap-platformer.html': '/games/one-tap-platformer.html',
   '/neon-circuit-racer.html': '/games/neon-circuit-racer.html',
