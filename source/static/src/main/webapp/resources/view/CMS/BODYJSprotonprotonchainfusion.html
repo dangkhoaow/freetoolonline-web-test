@@ -1,0 +1,390 @@
+<script>
+    // 3D scene archetype skeleton (proton-proton-chain-fusion) - vendored three.js (ESM,
+    // dynamic import from /vendor/three/, NO CDN), fully client-side. Built LEAN from the
+    // shared t3d* skeleton - ONE scene only. All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not a physical simulation. This page walks through the
+    // three real reaction steps of the PP-I branch of the proton-proton chain - the
+    // pathway that fuses hydrogen into helium in the core of the Sun and most other
+    // main-sequence stars. Nucleon "colors" (red proton, gray neutron, orange positron,
+    // cyan neutrino streak, yellow gamma streak) are a coding convention for legibility,
+    // not real particle colors - real nucleons are far too small to have color. Particle
+    // identity is not tracked step to step because protons and neutrons of the same kind
+    // are quantum-mechanically indistinguishable; only the real counts and real released
+    // energy per step are factual claims.
+    //
+    // Published figures (NASA/JPL solar-interior fact sheets; Bahcall & Pinsonneault,
+    // "Solar models" Rev. Mod. Phys. 64, 885 (1992) and standard nuclear-astrophysics
+    // Q-value tables e.g. Adelberger et al., Rev. Mod. Phys. 83, 195 (2011); verified
+    // 2026-07-23):
+    //   - Step 1: p + p -> d + e+ + ve, releases about 1.44 MeV total (0.42 MeV kinetic +
+    //     1.02 MeV when the positron later annihilates with an electron). This step is
+    //     mediated by the weak force (a proton must convert to a neutron), so it is
+    //     astronomically rare per collision - a given proton in the Sun's core waits
+    //     about 9 billion years on average before this happens to it.
+    //   - Step 2: d + p -> He-3 + gamma, releases 5.49 MeV. Fast once a deuteron exists -
+    //     typically within about 1 second.
+    //   - Step 3: He-3 + He-3 -> He-4 + 2p, releases 12.86 MeV. This is the PP-I branch,
+    //     the dominant pathway (about 86%) at the Sun's core conditions of about
+    //     15 million K and about 150 g/cm3 density (roughly 13x the density of solid
+    //     lead).
+    //   - Net for one full chain (steps 1 and 2 each happen twice to build two He-3
+    //     nuclei before step 3 combines them): 4 protons -> 1 helium-4 nucleus + 2
+    //     positrons + 2 neutrinos + 2 gamma-ray photons, releasing 26.73 MeV total
+    //     (about 2 percent escapes the Sun directly as neutrinos; the rest eventually
+    //     reaches the surface as light).
+    //   - The pp-chain supplies about 98-99% of the Sun's total energy output (the CNO
+    //     cycle supplies the rest). The Sun fuses about 600 million tonnes of hydrogen
+    //     into helium every second this way, converting about 4 million tonnes of mass
+    //     directly into energy (E = mc^2) every second.
+    //
+    // Distinct from Sun Structure (the layered geography of the Sun's interior: core,
+    // radiative zone, convective zone, photosphere - no reaction chemistry), Black Body
+    // Radiation (color vs temperature via Wien's law - no nuclear reactions), and Main
+    // Sequence Lifetime (how long a star of a given mass burns - no reaction steps) -
+    // THIS page is the particle-level reaction cascade itself: the three real steps that
+    // convert hydrogen to helium, one step at a time.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'proton-proton-chain-fusion';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'ppchainfusion'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Published figures (see header comment for sources). One entry per real reaction step.
+    var T3D_PP_STEPS = [
+        { n: 1, equation: 'p + p &rarr; d + e<sup>+</sup> + &nu;<sub>e</sub>', mev: 1.44, times: 2,
+          note: 'The bottleneck step. A proton must convert to a neutron via the weak force at the same instant it fuses - astronomically rare per collision. A given proton in the Sun’s core waits about 9 billion years on average before this happens to it.' },
+        { n: 2, equation: 'd + p &rarr; <sup>3</sup>He + &gamma;', mev: 5.49, times: 2,
+          note: 'Fast once a deuteron exists - typically within about 1 second.' },
+        { n: 3, equation: '<sup>3</sup>He + <sup>3</sup>He &rarr; <sup>4</sup>He + 2p', mev: 12.86, times: 1,
+          note: 'This is the PP-I branch, the dominant pathway (about 86%) at the Sun’s core conditions of about 15 million K and about 150 g/cm3 density.' }
+    ];
+    var T3D_PP_NET_MEV = 26.73;
+
+    function t3dMkNucleon(THREE, isProton) {
+        var geo = new THREE.SphereGeometry(1.05, 20, 16);
+        var mat = new THREE.MeshPhongMaterial({
+            color: isProton ? 0xff5252 : 0xb0bec5,
+            emissive: isProton ? 0x330000 : 0x14181c,
+            shininess: 40
+        });
+        return new THREE.Mesh(geo, mat);
+    }
+
+    function t3dPPChainFusion(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0x445566, 0.6));
+        var glow = new THREE.PointLight(0xfff4e0, 2.4, 0, 2);
+        glow.position.set(0, 6, 14);
+        scene.add(glow);
+        var fill = new THREE.PointLight(0xff8a50, 1.4, 0, 2);
+        fill.position.set(-20, -10, 10);
+        scene.add(fill);
+
+        // Dense, per-star-colored field (warm plasma flecks near the reaction,
+        // cool distant stars farther out) - gives the frame real per-pixel
+        // detail so the scene reads as "inside a busy stellar core", not empty
+        // space with a few flat spheres.
+        var starfieldCount = shell.low ? 900 : 1700;
+        var spos = new Float32Array(starfieldCount * 3);
+        var scol = new Float32Array(starfieldCount * 3);
+        var tmpColor = new THREE.Color();
+        for (var s = 0; s < starfieldCount; s++) {
+            var dist = 18 + Math.random() * 95;
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(dist);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+            var warm = dist < 45;
+            tmpColor.setHSL(warm ? (0.02 + Math.random() * 0.08) : (0.55 + Math.random() * 0.12), warm ? 0.8 : 0.35, warm ? (0.45 + Math.random() * 0.35) : (0.55 + Math.random() * 0.35));
+            scol[s * 3] = tmpColor.r; scol[s * 3 + 1] = tmpColor.g; scol[s * 3 + 2] = tmpColor.b;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        sgeo.setAttribute('color', new THREE.BufferAttribute(scol, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ size: 0.55, sizeAttenuation: true, vertexColors: true })));
+
+        var liveGroup = new THREE.Group();
+        scene.add(liveGroup);
+        var ejecta = []; // { mesh, dir(Vector3), speed, bornAt }
+        var stepElapsedMs = 0;
+        var step = 0; // 0 = idle/ready, 1..3 = the 3 real steps
+
+        function clearLive() {
+            while (liveGroup.children.length) {
+                var m = liveGroup.children.pop();
+                if (m.geometry) m.geometry.dispose();
+                if (m.material) m.material.dispose();
+            }
+            ejecta.length = 0;
+        }
+
+        function addNucleon(isProton, x, y, z) {
+            var mesh = t3dMkNucleon(THREE, isProton);
+            mesh.position.set(x, y, z);
+            liveGroup.add(mesh);
+            return mesh;
+        }
+
+        function addEjecta(isPositronOrGamma, colorHex, fromX, fromY, fromZ, dirX, dirY, dirZ) {
+            var geo = isPositronOrGamma
+                ? new THREE.SphereGeometry(0.42, 10, 8)
+                : new THREE.BoxGeometry(0.18, 0.18, 1.6);
+            var mat = new THREE.MeshBasicMaterial({ color: colorHex, transparent: true, opacity: 1 });
+            var mesh = new THREE.Mesh(geo, mat);
+            mesh.position.set(fromX, fromY, fromZ);
+            var dir = new THREE.Vector3(dirX, dirY, dirZ).normalize();
+            if (!isPositronOrGamma) { mesh.lookAt(mesh.position.clone().add(dir)); }
+            liveGroup.add(mesh);
+            ejecta.push({ mesh: mesh, dir: dir, speed: isPositronOrGamma ? 0.012 : 0.026, bornAt: 0 });
+        }
+
+        function buildStep(n) {
+            clearLive();
+            stepElapsedMs = 0;
+            if (n === 0) {
+                // Ready: two starting proton pairs plus two spare protons waiting off to the side.
+                addNucleon(true, -9, 1.2, 0); addNucleon(true, -9, -1.2, 0);
+                addNucleon(true, 9, 1.2, 0); addNucleon(true, 9, -1.2, 0);
+                addNucleon(true, -15, 3.4, 0); // spare A
+                addNucleon(true, 15, 3.4, 0);  // spare B
+            } else if (n === 1) {
+                // Deuterons formed (1p+1n each); spares still waiting; positron+neutrino ejected.
+                addNucleon(true, -9.4, 0.3, 0); addNucleon(false, -8.6, -0.3, 0);
+                addNucleon(true, 9.4, 0.3, 0); addNucleon(false, 8.6, -0.3, 0);
+                addNucleon(true, -15, 3.4, 0);
+                addNucleon(true, 15, 3.4, 0);
+                addEjecta(true, 0xffee58, -9, 0, 0, -0.3, 1, 0.4);   // positron A
+                addEjecta(false, 0x4fc3f7, -9, 0, 0, -0.2, -1, -0.5); // neutrino A (streak)
+                addEjecta(true, 0xffee58, 9, 0, 0, 0.3, 1, -0.4);
+                addEjecta(false, 0x4fc3f7, 9, 0, 0, 0.2, -1, 0.5);
+            } else if (n === 2) {
+                // He-3 formed (2p+1n each); gamma ejected; spares consumed.
+                addNucleon(true, -9.5, 0.4, 0); addNucleon(true, -8.5, 0.4, 0); addNucleon(false, -9, -0.5, 0);
+                addNucleon(true, 9.5, 0.4, 0); addNucleon(true, 8.5, 0.4, 0); addNucleon(false, 9, -0.5, 0);
+                addEjecta(false, 0xffd54f, -9, 0.3, 0, -0.3, 1, 0.2);
+                addEjecta(false, 0xffd54f, 9, 0.3, 0, 0.3, 1, -0.2);
+            } else if (n === 3) {
+                // He-4 formed at center (2p+2n); two free protons ejected back to rest positions.
+                addNucleon(true, -0.55, 0.55, 0); addNucleon(true, 0.55, 0.55, 0);
+                addNucleon(false, -0.55, -0.55, 0); addNucleon(false, 0.55, -0.55, 0);
+                addEjecta(true, 0xff5252, 0, 0, 0, -1, -0.5, 0.3);
+                addEjecta(true, 0xff5252, 0, 0, 0, 1, 0.5, -0.3);
+            }
+        }
+
+        function factsHtmlFor(n) {
+            if (n === 0) {
+                var rows = T3D_PP_STEPS.map(function (d) {
+                    return '<tr><td>Step ' + d.n + (d.times > 1 ? ' (x' + d.times + ')' : '') + '</td><td>' + d.equation + '</td><td>' + d.mev.toFixed(2) + ' MeV</td></tr>';
+                }).join('');
+                return '<h3>The proton-proton chain (PP-I)</h3>' +
+                    '<p>Six protons enter, one helium-4 nucleus and two protons come out. Click a step button to watch it happen.</p>' +
+                    '<table class="w3-table w3-bordered w3-small"><tr><th>Reaction</th><th>Equation</th><th>Releases</th></tr>' + rows + '</table>' +
+                    '<p class="t3d-note">Net for one full chain: 4 protons &rarr; 1 helium-4 + 2 positrons + 2 neutrinos + 2 gamma rays, releasing ' + T3D_PP_NET_MEV.toFixed(2) + ' MeV. This chain supplies about 98-99% of the Sun’s energy output.</p>';
+            }
+            var d = T3D_PP_STEPS[n - 1];
+            return '<h3>Step ' + d.n + (d.times > 1 ? ' (happens twice per chain)' : '') + '</h3>' +
+                '<p style="font-size:16px;">' + d.equation + '</p>' +
+                '<table class="w3-table w3-bordered w3-small"><tr><td>Releases</td><td>' + d.mev.toFixed(2) + ' MeV' + (d.times > 1 ? ' x ' + d.times + ' = ' + (d.mev * d.times).toFixed(2) + ' MeV' : '') + '</td></tr></table>' +
+                '<p class="t3d-note">' + d.note + '</p>';
+        }
+
+        function setStep(n) {
+            step = n;
+            buildStep(n);
+            factsForCurrent();
+            try { t3dSaveStore({ step: step }); } catch (e) {}
+            var label = document.getElementById('t3dPpStepLabel');
+            if (label) label.textContent = n === 0 ? 'Ready - click a step to begin' : (n === 3 ? 'Chain complete - helium-4 formed' : ('Step ' + n + ' of 3'));
+        }
+        function factsForCurrent() { t3dInfo(factsHtmlFor(step)); }
+
+        var store = t3dLoadStore();
+        setStep(typeof store.step === 'number' && store.step >= 0 && store.step <= 3 ? store.step : 0);
+
+        for (var b = 1; b <= 3; b++) {
+            (function (n) {
+                var btn = document.getElementById('t3dPpStepBtn' + n);
+                if (btn) btn.addEventListener('click', function () { setStep(n); });
+            })(b);
+        }
+        var resetBtn = document.getElementById('t3dPpResetBtn');
+        if (resetBtn) resetBtn.addEventListener('click', function () { setStep(0); autoPlayOn = false; syncAutoBtn(); });
+
+        var autoPlayOn = false, autoTimerMs = 0;
+        function syncAutoBtn() {
+            var btn = document.getElementById('t3dPpAutoBtn');
+            if (btn) btn.textContent = autoPlayOn ? 'Stop auto-play' : 'Auto-play';
+        }
+        var autoBtn = document.getElementById('t3dPpAutoBtn');
+        if (autoBtn) autoBtn.addEventListener('click', function () {
+            autoPlayOn = !autoPlayOn;
+            autoTimerMs = 0;
+            syncAutoBtn();
+        });
+
+        t3dStatus('Drag to orbit, scroll or pinch to zoom. Click a step button to watch that reaction happen.');
+        return function animate(dt) {
+            stepElapsedMs += dt;
+            if (autoPlayOn) {
+                autoTimerMs += dt;
+                if (autoTimerMs > 3200) {
+                    autoTimerMs = 0;
+                    setStep(step >= 3 ? 0 : step + 1);
+                }
+            }
+            for (var i = ejecta.length - 1; i >= 0; i--) {
+                var e = ejecta[i];
+                e.bornAt += dt;
+                e.mesh.position.addScaledVector(e.dir, e.speed * dt);
+                var life = Math.max(0, 1 - e.bornAt / 1200);
+                e.mesh.material.opacity = life;
+                if (life <= 0) {
+                    liveGroup.remove(e.mesh);
+                    e.mesh.geometry.dispose(); e.mesh.material.dispose();
+                    ejecta.splice(i, 1);
+                }
+            }
+            // Brief fusion "pulse" on the newly-formed nuclei just after a step change.
+            var pulse = 1 + 0.3 * Math.max(0, 1 - stepElapsedMs / 400);
+            liveGroup.children.forEach(function (m) {
+                if (ejecta.some(function (e) { return e.mesh === m; })) return;
+                m.scale.setScalar(pulse);
+            });
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { ppchainfusion: 't3dPpControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { ppchainfusion: { radius: 34, maxR: 90, minR: 12, phi: 1.1, theta: 0.5, targetY: 0 } };
+                    var shellCtx = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dPPChainFusion(shellCtx);
+                    var last = performance.now();
+                    shellCtx.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shellCtx.applyCamera();
+                        shellCtx.renderer.render(shellCtx.scene, shellCtx.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
