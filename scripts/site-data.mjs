@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/html-entity-encoder-decoder-vs-alternatives.html',
+  '/guides/html-entity-encoder-decoder-step-by-step.html',
+  '/guides/html-entity-encoder-decoder-when.html',
+  '/guides/pt/html-entity-encoder-decoder-when.html',
+  '/guides/pt/html-entity-encoder-decoder-step-by-step.html',
+  '/guides/pt/html-entity-encoder-decoder-vs-alternatives.html',
+  '/guides/es/html-entity-encoder-decoder-when.html',
+  '/guides/es/html-entity-encoder-decoder-step-by-step.html',
+  '/guides/es/html-entity-encoder-decoder-vs-alternatives.html',
+  '/guides/vi/html-entity-encoder-decoder-when.html',
+  '/guides/vi/html-entity-encoder-decoder-step-by-step.html',
+  '/guides/vi/html-entity-encoder-decoder-vs-alternatives.html',
+  '/guides/id/html-entity-encoder-decoder-when.html',
+  '/guides/id/html-entity-encoder-decoder-step-by-step.html',
+  '/guides/id/html-entity-encoder-decoder-vs-alternatives.html',
+  '/guides/de/html-entity-encoder-decoder-when.html',
+  '/guides/de/html-entity-encoder-decoder-step-by-step.html',
+  '/guides/de/html-entity-encoder-decoder-vs-alternatives.html',
   '/guides/video-speed-changer-vs-alternatives.html',
   '/guides/video-speed-changer-step-by-step.html',
   '/guides/video-speed-changer-when.html',
@@ -11656,6 +11674,7 @@ export const ALIAS_ROUTES = {
   '/add-page-numbers-to-pdf.html': '/pdf-tools/add-page-numbers-to-pdf.html',
   '/organize-pdf-pages.html': '/pdf-tools/organize-pdf-pages.html',
   '/video-speed-changer.html': '/video-tools/video-speed-changer.html',
+  '/html-entity-encoder.html': '/developer-tools/html-entity-encoder.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -21694,6 +21713,25 @@ export const JSP_BY_ROUTE = {
   '/guides/video-speed-changer-when.html': 'guide/video-speed-changer-when.jsp',
   '/guides/video-speed-changer-step-by-step.html': 'guide/video-speed-changer-step-by-step.jsp',
   '/guides/video-speed-changer-vs-alternatives.html': 'guide/video-speed-changer-vs-alternatives.jsp',
+  '/developer-tools/html-entity-encoder.html': 'utility/html-entity-encoder.jsp',
+  '/guides/html-entity-encoder-decoder-when.html': 'guide/html-entity-encoder-decoder-when.jsp',
+  '/guides/html-entity-encoder-decoder-step-by-step.html': 'guide/html-entity-encoder-decoder-step-by-step.jsp',
+  '/guides/html-entity-encoder-decoder-vs-alternatives.html': 'guide/html-entity-encoder-decoder-vs-alternatives.jsp',
+  '/guides/pt/html-entity-encoder-decoder-when.html': 'guide/pt/html-entity-encoder-decoder-when.jsp',
+  '/guides/pt/html-entity-encoder-decoder-step-by-step.html': 'guide/pt/html-entity-encoder-decoder-step-by-step.jsp',
+  '/guides/pt/html-entity-encoder-decoder-vs-alternatives.html': 'guide/pt/html-entity-encoder-decoder-vs-alternatives.jsp',
+  '/guides/es/html-entity-encoder-decoder-when.html': 'guide/es/html-entity-encoder-decoder-when.jsp',
+  '/guides/es/html-entity-encoder-decoder-step-by-step.html': 'guide/es/html-entity-encoder-decoder-step-by-step.jsp',
+  '/guides/es/html-entity-encoder-decoder-vs-alternatives.html': 'guide/es/html-entity-encoder-decoder-vs-alternatives.jsp',
+  '/guides/vi/html-entity-encoder-decoder-when.html': 'guide/vi/html-entity-encoder-decoder-when.jsp',
+  '/guides/vi/html-entity-encoder-decoder-step-by-step.html': 'guide/vi/html-entity-encoder-decoder-step-by-step.jsp',
+  '/guides/vi/html-entity-encoder-decoder-vs-alternatives.html': 'guide/vi/html-entity-encoder-decoder-vs-alternatives.jsp',
+  '/guides/id/html-entity-encoder-decoder-when.html': 'guide/id/html-entity-encoder-decoder-when.jsp',
+  '/guides/id/html-entity-encoder-decoder-step-by-step.html': 'guide/id/html-entity-encoder-decoder-step-by-step.jsp',
+  '/guides/id/html-entity-encoder-decoder-vs-alternatives.html': 'guide/id/html-entity-encoder-decoder-vs-alternatives.jsp',
+  '/guides/de/html-entity-encoder-decoder-when.html': 'guide/de/html-entity-encoder-decoder-when.jsp',
+  '/guides/de/html-entity-encoder-decoder-step-by-step.html': 'guide/de/html-entity-encoder-decoder-step-by-step.jsp',
+  '/guides/de/html-entity-encoder-decoder-vs-alternatives.html': 'guide/de/html-entity-encoder-decoder-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
