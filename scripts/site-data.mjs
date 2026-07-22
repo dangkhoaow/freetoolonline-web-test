@@ -14817,6 +14817,7 @@ export const JSP_BY_ROUTE = {
   // dinosaur-loop (2026-07-15): /dinosaur-3d cluster members (JSP folder: dinosaur/).
   '/dinosaur-3d/tyrannosaurus-rex.html': 'dinosaur/tyrannosaurus-rex.jsp',
   '/dinosaur-3d/mosasaurus.html': 'dinosaur/mosasaurus.jsp',
+    '/dinosaur-3d/plesiosaurus.html': 'dinosaur/plesiosaurus.jsp',
   '/dinosaur-3d/yutyrannus.html': 'dinosaur/yutyrannus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire278 (2026-07-22): megalosaurus (theropod archetype).
   '/dinosaur-3d/megalosaurus.html': 'dinosaur/megalosaurus.jsp',
