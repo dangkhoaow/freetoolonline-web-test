@@ -11498,6 +11498,7 @@ export const ALIAS_ROUTES = {
   '/algol-eclipsing-binary.html': '/space-3d/algol-eclipsing-binary.html',
   '/main-sequence-lifetime.html': '/space-3d/main-sequence-lifetime.html',
   '/earth-perihelion-aphelion.html': '/space-3d/earth-perihelion-aphelion.html',
+  '/exoplanet-atmosphere-spectroscopy.html': '/space-3d/exoplanet-atmosphere-spectroscopy.html',
   '/image-watermark.html': '/image-tools/image-watermark.html',
 };
 
@@ -21354,6 +21355,7 @@ export const JSP_BY_ROUTE = {
   '/space-3d/algol-eclipsing-binary.html': 'space/algol-eclipsing-binary.jsp',
   '/space-3d/main-sequence-lifetime.html': 'space/main-sequence-lifetime.jsp',
   '/space-3d/earth-perihelion-aphelion.html': 'space/earth-perihelion-aphelion.jsp',
+  '/space-3d/exoplanet-atmosphere-spectroscopy.html': 'space/exoplanet-atmosphere-spectroscopy.jsp',
   '/guides/earth-perihelion-aphelion-step-by-step.html': 'guide/earth-perihelion-aphelion-step-by-step.jsp',
   '/guides/earth-perihelion-aphelion-when.html': 'guide/earth-perihelion-aphelion-when.jsp',
   '/guides/earth-perihelion-aphelion-vs-alternatives.html': 'guide/earth-perihelion-aphelion-vs-alternatives.jsp',

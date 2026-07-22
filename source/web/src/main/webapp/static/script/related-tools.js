@@ -690,6 +690,7 @@ try {
     { title: "Algol Eclipsing Binary 3D Explorer", url: "https://freetoolonline.com/space-3d/algol-eclipsing-binary.html", include: !1, tags: "space-3d" },
     { title: "Main-Sequence Lifetime 3D Explorer", url: "https://freetoolonline.com/space-3d/main-sequence-lifetime.html", include: !1, tags: "space-3d" },
     { title: "Earth Perihelion & Aphelion 3D Explorer", url: "https://freetoolonline.com/space-3d/earth-perihelion-aphelion.html", include: !1, tags: "space-3d" },
+    { title: "Exoplanet Atmosphere Spectroscopy 3D Explorer", url: "https://freetoolonline.com/space-3d/exoplanet-atmosphere-spectroscopy.html", include: !1, tags: "space-3d" },
     { title: "Pluto-Charon Double Planet 3D Explorer", url: "https://freetoolonline.com/space-3d/pluto-charon-double-planet.html", include: !1, tags: "space-3d" },
     { title: "Coronal Mass Ejection 3D Explorer", url: "https://freetoolonline.com/space-3d/coronal-mass-ejection.html", include: !1, tags: "space-3d" },
     { title: "Apollo Free-Return Trajectory 3D Explorer", url: "https://freetoolonline.com/space-3d/apollo-free-return-trajectory.html", include: !1, tags: "space-3d" },

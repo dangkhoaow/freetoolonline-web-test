@@ -1,0 +1,380 @@
+<script>
+    // 3D scene archetype skeleton (exoplanet-atmosphere-spectroscopy) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only.
+    // All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not a spectroscopy pipeline. The 3D view shows
+    // a transiting hot-Saturn planet with a translucent atmosphere shell; the 2D
+    // spectrum panel is a smooth model calibrated to real published band
+    // positions and detections, not raw instrument data.
+    //
+    // Published figures (NASA JWST press materials + the JWST Transiting
+    // Exoplanet Community Early Release Science (ERS) program papers on
+    // WASP-39b, Nature 2023; cross-checked 2026-07-22):
+    //   - WASP-39b: a "hot Saturn" (mass close to Saturn's, radius strongly
+    //     inflated at about 1.27 Jupiter radii), orbiting a Sun-like G-type
+    //     star about 700 light-years away, orbital period about 4.055 days,
+    //     near-circular orbit
+    //   - JWST ERS observations (2022, four instruments: NIRISS, NIRCam,
+    //     NIRSpec, MIRI) produced the first definitive detection of carbon
+    //     dioxide (CO2) in an exoplanet atmosphere, plus water vapor (H2O) and
+    //     sulfur dioxide (SO2) - the SO2 detection was the first evidence of
+    //     photochemistry (sunlight-driven chemical reactions) in an exoplanet
+    //     atmosphere
+    //   - Methane (CH4) was notably NOT strongly detected, which itself was a
+    //     useful clue about disequilibrium chemistry in the atmosphere
+    //   - Approximate white-light transit depth (Rp/Rstar)^2: about 2.1%
+    //   - Molecular absorption bands fall at characteristic wavelengths -
+    //     H2O near 1.4, 1.9 and 2.7 micrometers; CH4 near 3.3 micrometers;
+    //     SO2 near 4.05 micrometers; CO2 near 4.3 micrometers (standard
+    //     infrared molecular spectroscopy reference values)
+    //   - JWST wavelength coverage used for this technique: NIRISS about
+    //     0.6-2.8 micrometers, NIRSpec about 0.6-5.3 micrometers
+    //
+    // Distinct from exoplanet-transit (teaches the light-curve DIP: does a
+    // planet exist and how big is it) - THIS page teaches what the dip looks
+    // like color-by-color (wavelength-by-wavelength), which is how an
+    // atmosphere's composition is read out.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'exoplanet-atmosphere-spectroscopy';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'exoplanetatmospherespectroscopy'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Published figures (see header comment for sources).
+    var T3D_EAS_DIST_LY = 700;
+    var T3D_EAS_PERIOD_D = 4.055;
+    var T3D_EAS_DEPTH_PCT = 2.1;
+    var T3D_EAS_JWST_NIRISS_UM = '0.6-2.8';
+    var T3D_EAS_JWST_NIRSPEC_UM = '0.6-5.3';
+    var T3D_EAS_MIN_UM = 0.6, T3D_EAS_MAX_UM = 5.3;
+    var T3D_EAS_MOLECULES = [
+        { id: 'h2o', label: 'Water (H2O)', color: 0x64b5f6, bands: [1.4, 1.9, 2.7], strength: 0.5, detected: true, on: true },
+        { id: 'co2', label: 'Carbon dioxide (CO2)', color: 0xff8a65, bands: [4.3], strength: 0.85, detected: true, on: true },
+        { id: 'so2', label: 'Sulfur dioxide (SO2)', color: 0xba68c8, bands: [4.05], strength: 0.3, detected: true, on: true },
+        { id: 'ch4', label: 'Methane (CH4)', color: 0x81c784, bands: [3.3], strength: 0.06, detected: false, on: false }
+    ];
+
+    function t3dEasTransitFactor(t) {
+        // Trapezoid transit window centered on the orbit: flat continuum
+        // outside, ramped ingress/egress, flat plateau at mid-transit - when
+        // the atmosphere's limb is actually being sampled by starlight.
+        if (t < 0.30 || t > 0.70) return 0;
+        if (t < 0.38) return (t - 0.30) / 0.08;
+        if (t > 0.62) return (0.70 - t) / 0.08;
+        return 1;
+    }
+
+    function t3dEasGaussianBump(x, center, widthUm, heightPct) {
+        var d = (x - center) / widthUm;
+        return heightPct * Math.exp(-d * d);
+    }
+
+    function t3dEasDrawSpectrum(canvas, transitFactor) {
+        if (!canvas || !canvas.getContext) return;
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        var cssW = canvas.clientWidth || 320, cssH = canvas.clientHeight || 140;
+        if (canvas.width !== Math.round(cssW * dpr) || canvas.height !== Math.round(cssH * dpr)) {
+            canvas.width = Math.round(cssW * dpr);
+            canvas.height = Math.round(cssH * dpr);
+        }
+        var ctx = canvas.getContext('2d');
+        var w = canvas.width, h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = '#0a0e14';
+        ctx.fillRect(0, 0, w, h);
+        var padTop = 12 * dpr, padBottom = 16 * dpr, plotH = h - padTop - padBottom;
+        var maxDepth = T3D_EAS_DEPTH_PCT + 1.3;
+        function yFor(depthPct) { return padTop + (1 - depthPct / maxDepth) * plotH; }
+        function xFor(um) { return ((um - T3D_EAS_MIN_UM) / (T3D_EAS_MAX_UM - T3D_EAS_MIN_UM)) * w; }
+        // baseline continuum guide
+        ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+        ctx.lineWidth = Math.max(1, 1 * dpr);
+        ctx.beginPath(); ctx.moveTo(0, yFor(T3D_EAS_DEPTH_PCT * transitFactor)); ctx.lineTo(w, yFor(T3D_EAS_DEPTH_PCT * transitFactor)); ctx.stroke();
+        ctx.strokeStyle = '#ffd54f';
+        ctx.lineWidth = Math.max(1.2, 1.6 * dpr);
+        ctx.beginPath();
+        var N = 220;
+        for (var i = 0; i <= N; i++) {
+            var um = T3D_EAS_MIN_UM + (i / N) * (T3D_EAS_MAX_UM - T3D_EAS_MIN_UM);
+            var depth = T3D_EAS_DEPTH_PCT * transitFactor;
+            for (var m = 0; m < T3D_EAS_MOLECULES.length; m++) {
+                var mol = T3D_EAS_MOLECULES[m];
+                if (!mol.on) continue;
+                for (var b = 0; b < mol.bands.length; b++) {
+                    depth += t3dEasGaussianBump(um, mol.bands[b], 0.12, mol.strength * transitFactor);
+                }
+            }
+            var x = xFor(um), y = yFor(depth);
+            if (i === 0) { ctx.moveTo(x, y); } else { ctx.lineTo(x, y); }
+        }
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(255,255,255,0.65)';
+        ctx.font = (11 * dpr) + 'px sans-serif';
+        ctx.fillText('Transit depth vs wavelength (micrometers, ' + T3D_EAS_MIN_UM + '-' + T3D_EAS_MAX_UM + ')', 6 * dpr, 12 * dpr);
+    }
+
+    function t3dExoplanetAtmosphereSpectroscopy(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x020308, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.28));
+
+        var SCOUNT = shell.low ? 250 : 500;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(20 + Math.random() * 50);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xb0bec5, size: 0.3, sizeAttenuation: false })));
+
+        var group = new THREE.Group();
+        scene.add(group);
+        var star = new THREE.Mesh(
+            new THREE.SphereGeometry(4.4, 48, 36),
+            new THREE.MeshBasicMaterial({ color: 0xfff2c2 })
+        );
+        group.add(star);
+        var starGlow = new THREE.Mesh(new THREE.SphereGeometry(4.9, 24, 16), new THREE.MeshBasicMaterial({ color: 0xffe9a8, transparent: true, opacity: 0.16, depthWrite: false }));
+        star.add(starGlow);
+
+        var planetR = 0.95;
+        var planet = new THREE.Mesh(
+            new THREE.SphereGeometry(planetR, 32, 22),
+            new THREE.MeshLambertMaterial({ color: 0xd9b98c, emissive: 0x151006 })
+        );
+        group.add(planet);
+        var planetLight = new THREE.PointLight(0xffffff, 0.6, 30);
+        star.add(planetLight);
+        var atmos = new THREE.Mesh(
+            new THREE.SphereGeometry(planetR * 1.32, 28, 20),
+            new THREE.MeshBasicMaterial({ color: 0x64b5f6, transparent: true, opacity: 0.06, depthWrite: false })
+        );
+        planet.add(atmos);
+
+        // Orbit path: theta sweeps a half-lap from one side of the star,
+        // through the front face (the transit), to the other side - so the
+        // planet is a CLEARLY SEPARATE, visible sphere for most of the
+        // slider range and only approaches/crosses the star's disc near
+        // mid-transit (progress 0.5), matching the transit-factor window.
+        var orbitR = 9.2;
+        var progress = 0.2;
+        var playing = false;
+
+        function activeMolecule() {
+            for (var i = 0; i < T3D_EAS_MOLECULES.length; i++) { if (T3D_EAS_MOLECULES[i].on) return T3D_EAS_MOLECULES[i]; }
+            return null;
+        }
+
+        function moleculeListHtml() {
+            var rows = '';
+            for (var i = 0; i < T3D_EAS_MOLECULES.length; i++) {
+                var mol = T3D_EAS_MOLECULES[i];
+                rows += '<tr><td>' + mol.label + '</td><td>' + mol.bands.join(', ') + ' um</td><td>' + (mol.detected ? 'Detected (WASP-39b, JWST 2022)' : 'Not strongly detected') + '</td></tr>';
+            }
+            return rows;
+        }
+
+        function facts(inTransit) {
+            var mol = activeMolecule();
+            var status = inTransit ? 'In transit - atmosphere limb sampled' : 'Outside transit - no atmosphere signal';
+            var html = '<h3>' + status + '</h3>' +
+                '<p>WASP-39b is a highly inflated "hot Saturn" about 700 light-years away, orbiting its star every 4.055 days. In 2022 JWST\'s four instruments together produced the first definitive detection of carbon dioxide in an exoplanet atmosphere, plus water vapor and sulfur dioxide - the SO2 was the first evidence of sunlight-driven atmospheric chemistry found on any exoplanet.</p>' +
+                '<table class="w3-table w3-bordered"><tr><th>Molecule</th><th>Band position</th><th>Status on WASP-39b</th></tr>' + moleculeListHtml() + '</table>' +
+                '<p class="t3d-note">Educational approximation - the spectrum panel is a smooth model calibrated to the real published band positions and WASP-39b detections, not raw instrument data. Toggle a molecule and scrub the transit slider: absorption bumps only appear during the transit window, because that is the only time starlight actually passes through the planet\'s atmosphere on its way to the telescope.</p>';
+            t3dInfo(html);
+        }
+
+        function applyProgress(p) {
+            progress = Math.max(0, Math.min(1, p));
+            var theta = (progress - 0.5) * Math.PI;
+            planet.position.set(Math.sin(theta) * orbitR, 0, Math.cos(theta) * orbitR);
+            var tf = t3dEasTransitFactor(progress);
+            var dim = 1 - 0.22 * tf;
+            star.material.color.setRGB(1 * dim, 0.95 * dim, 0.76 * dim);
+            atmos.material.opacity = 0.06 + tf * 0.34;
+            var mol = activeMolecule();
+            if (mol) { atmos.material.color.setHex(mol.color); }
+            var slider = document.getElementById('t3dEasProgress');
+            var label = document.getElementById('t3dEasProgressLabel');
+            if (slider) slider.value = String(Math.round(progress * 100));
+            if (label) label.textContent = (tf > 0 ? 'In transit' : 'Outside transit') + ' - ' + Math.round(progress * 100) + '%';
+            var canvas = document.getElementById('t3dEasSpectrum');
+            t3dEasDrawSpectrum(canvas, tf);
+            facts(tf > 0);
+            try { t3dSaveStore({ progress: progress }); } catch (e) {}
+        }
+
+        function setMolecule(id, on) {
+            for (var i = 0; i < T3D_EAS_MOLECULES.length; i++) {
+                if (T3D_EAS_MOLECULES[i].id === id) { T3D_EAS_MOLECULES[i].on = on; }
+                var btn = document.getElementById('t3dEasMolBtn-' + T3D_EAS_MOLECULES[i].id);
+                if (btn) btn.className = 'w3-button ' + (T3D_EAS_MOLECULES[i].on ? 'w3-amber' : 'w3-light-grey');
+            }
+            applyProgress(progress);
+        }
+
+        var store = t3dLoadStore();
+        applyProgress(typeof store.progress === 'number' ? store.progress : progress);
+        T3D_EAS_MOLECULES.forEach(function (mol) {
+            var btn = document.getElementById('t3dEasMolBtn-' + mol.id);
+            if (btn) btn.addEventListener('click', function () { setMolecule(mol.id, !mol.on); });
+        });
+
+        var playBtn = document.getElementById('t3dEasPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            playing = !playing;
+            playBtn.textContent = playing ? 'Pause orbit' : 'Play orbit';
+        });
+        var slider = document.getElementById('t3dEasProgress');
+        if (slider) slider.addEventListener('input', function () {
+            playing = false;
+            if (playBtn) playBtn.textContent = 'Play orbit';
+            applyProgress(parseFloat(slider.value || '0') / 100);
+        });
+        var midBtn = document.getElementById('t3dEasMidTransitBtn');
+        if (midBtn) midBtn.addEventListener('click', function () { playing = false; if (playBtn) playBtn.textContent = 'Play orbit'; applyProgress(0.5); });
+        window.addEventListener('resize', function () { t3dEasDrawSpectrum(document.getElementById('t3dEasSpectrum'), t3dEasTransitFactor(progress)); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle a molecule, scrub the transit slider, or jump to mid-transit.');
+        return function animate(dt) {
+            if (playing) { applyProgress(progress + (dt / 1000) * 0.06); if (progress >= 1) applyProgress(0); }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { exoplanetatmospherespectroscopy: 't3dEasControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { exoplanetatmospherespectroscopy: { radius: 16, maxR: 45, minR: 5, phi: 1.1, theta: 0.4, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dExoplanetAtmosphereSpectroscopy(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
