@@ -162,6 +162,11 @@
         var THREE = shell.THREE;
         var root = new THREE.Group();
         root.add(obj);
+        // Orientation correction FIRST (manifest yaw/pitch, e.g. Z-up STL->glTF
+        // conversions) so the scale/centre/ground maths below sees the FINAL pose.
+        if (typeof entry.yaw === 'number') obj.rotation.y = entry.yaw;
+        if (typeof entry.pitch === 'number') obj.rotation.x = entry.pitch;
+        obj.updateMatrixWorld(true);
         var box = new THREE.Box3().setFromObject(obj);
         var size = new THREE.Vector3(); box.getSize(size);
         var longest = Math.max(size.x, size.y, size.z) || 1;
@@ -171,8 +176,6 @@
         obj.position.x -= c.x;
         obj.position.z -= c.z;
         obj.position.y -= box.min.y;
-        if (typeof entry.yaw === 'number') root.rotation.y = entry.yaw;
-        if (typeof entry.pitch === 'number') root.rotation.x = entry.pitch;
         try {
             var pmrem = new THREE.PMREMGenerator(shell.renderer);
             var envScene = new THREE.Scene();
