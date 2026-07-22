@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/add-page-numbers-pdf-vs-alternatives.html',
+  '/guides/add-page-numbers-pdf-step-by-step.html',
+  '/guides/add-page-numbers-pdf-when.html',
   '/guides/add-watermark-image-vs-alternatives.html',
   '/guides/de/add-watermark-image-vs-alternatives.html',
   '/guides/id/add-watermark-image-vs-alternatives.html',
@@ -11500,6 +11503,7 @@ export const ALIAS_ROUTES = {
   '/earth-perihelion-aphelion.html': '/space-3d/earth-perihelion-aphelion.html',
   '/exoplanet-atmosphere-spectroscopy.html': '/space-3d/exoplanet-atmosphere-spectroscopy.html',
   '/image-watermark.html': '/image-tools/image-watermark.html',
+  '/add-page-numbers-to-pdf.html': '/pdf-tools/add-page-numbers-to-pdf.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -21430,6 +21434,10 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/add-watermark-image-vs-alternatives.html': 'guide/vi/add-watermark-image-vs-alternatives.jsp',
   '/guides/es/add-watermark-image-vs-alternatives.html': 'guide/es/add-watermark-image-vs-alternatives.jsp',
   '/guides/pt/add-watermark-image-vs-alternatives.html': 'guide/pt/add-watermark-image-vs-alternatives.jsp',
+  '/pdf-tools/add-page-numbers-to-pdf.html': 'pdf/add-page-numbers-to-pdf.jsp',
+  '/guides/add-page-numbers-pdf-when.html': 'guide/add-page-numbers-pdf-when.jsp',
+  '/guides/add-page-numbers-pdf-step-by-step.html': 'guide/add-page-numbers-pdf-step-by-step.jsp',
+  '/guides/add-page-numbers-pdf-vs-alternatives.html': 'guide/add-page-numbers-pdf-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
