@@ -10854,6 +10854,8 @@ export const ALIAS_ROUTES = {
   // MUST be mirrored into the CloudFront 301 function (two-layer redirect rule).
   '/tyrannosaurus-rex.html': '/dinosaur-3d/tyrannosaurus-rex.html',
   '/mosasaurus.html': '/dinosaur-3d/mosasaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire278 (2026-07-22): flat-slug alias for megalosaurus.
+  '/megalosaurus.html': '/dinosaur-3d/megalosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire2 (2026-07-15): flat-slug alias for velociraptor.
   '/velociraptor.html': '/dinosaur-3d/velociraptor.html',
   // dinosaur-3d-discovery-loop-runbook fire3 (2026-07-15): flat-slug alias for triceratops.
@@ -14812,6 +14814,8 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/tyrannosaurus-rex.html': 'dinosaur/tyrannosaurus-rex.jsp',
   '/dinosaur-3d/mosasaurus.html': 'dinosaur/mosasaurus.jsp',
   '/dinosaur-3d/yutyrannus.html': 'dinosaur/yutyrannus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire278 (2026-07-22): megalosaurus (theropod archetype).
+  '/dinosaur-3d/megalosaurus.html': 'dinosaur/megalosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire2 (2026-07-15): velociraptor (raptor archetype).
   '/dinosaur-3d/velociraptor.html': 'dinosaur/velociraptor.jsp',
   // dinosaur-3d-discovery-loop-runbook fire3 (2026-07-15): triceratops (ceratopsian archetype).
@@ -17137,7 +17141,6 @@ export const JSP_BY_ROUTE = {
   '/guides/de/black-hole-3d-visualizer-step-by-step.html': 'guide/de/black-hole-3d-visualizer-step-by-step.jsp',
   '/guides/de/black-hole-3d-visualizer-vs-alternatives.html': 'guide/de/black-hole-3d-visualizer-vs-alternatives.jsp',
   '/space-3d/galaxy.html': 'space/galaxy.jsp',
-  '/space-3d/proton-proton-chain-fusion.html': 'space/proton-proton-chain-fusion.jsp',
   '/guides/galaxy-3d-simulator-when.html': 'guide/galaxy-3d-simulator-when.jsp',
   '/guides/galaxy-3d-simulator-step-by-step.html': 'guide/galaxy-3d-simulator-step-by-step.jsp',
   '/guides/galaxy-3d-simulator-vs-alternatives.html': 'guide/galaxy-3d-simulator-vs-alternatives.jsp',
