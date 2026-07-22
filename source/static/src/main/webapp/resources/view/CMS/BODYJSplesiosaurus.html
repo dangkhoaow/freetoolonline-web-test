@@ -35,12 +35,12 @@
     var D3D_DINOS = {
         'plesiosaurus': {
             name: 'Plesiosaurus', archetype: 'marine',
-            lengthM: 3.5, heightM: 1.0, weightKg: 90, eraMya: '199-175',
-            period: 'Early Jurassic', diet: 'Carnivore (fish and small marine prey)',
-            discovered: '1821, Lyme Regis, England (named by Conybeare & De la Beche); a near-complete skeleton found by Mary Anning in 1823 first revealed the true body plan',
-            skin: 0x4a6d5c, belly: 0xd8d4b8, pattern: 0x2c4a3d, eye: 0x1a1a1a,
-            teeth: 'conical', feats: { flippers: true, longNeck: true, aquatic: true },
-            note: 'A marine reptile, not a dinosaur, known for an extremely long, flexible neck used to reach prey. Published length estimates range roughly 3-5 m; weight estimates vary widely across sources, from about 90 kg up to roughly 450 kg for large individuals.'
+            lengthM: 3.5, heightM: 0.8, weightKg: 150, eraMya: '199-175',
+            period: 'Early Jurassic', diet: 'Carnivore (small prey: fish, crustaceans)',
+            discovered: 'Mary Anning, 1823; named Conybeare & de la Beche, 1821',
+            skin: 0x2e5c42, belly: 0x5a8e6f, pattern: 0x1a3d2a, eye: 0xe8d500,
+            teeth: 'conical', feats: { longNeck: true, flippers: true, shortTail: true, aquatic: true },
+            note: 'Skin and color are artistic reconstruction. Fossils preserve no soft tissue or color. Published figures shown above are scientific estimates. Not a dinosaur - a marine reptile (Sauropterygia) with a long flexible neck, four paddle flippers, and a short tail.'
         }
     };
 
@@ -491,27 +491,7 @@
         var idleFlippers = [];
 
         // ================= ARCHETYPE ASSEMBLY ============================
-        if (arche === 'marine' && feats.longNeck) {
-            // Plesiosaur-style body: short rounded torso, ONE very long slender
-            // neck reaching forward to a small head, a short tapered tail (no
-            // vertical fluke), and 4 broad paddle flippers fore + aft. Additive
-            // branch alongside the existing mosasaur-style marine body below -
-            // that branch is untouched (dinosaur-3d-discovery-loop-runbook,
-            // plesiosaurus, fire70).
-            var pTail = [[2.6, -5.4], [2.7, -3.6], [2.75, -1.8]];
-            var pBody = [[2.75, -1.8], [2.9, -0.2], [2.95, 1.6], [2.9, 3.0]];
-            var pNeck = [[2.9, 3.0], [3.3, 5.4], [3.7, 7.8], [3.9, 9.8]];
-            dino.add(tag(d3dSpineTube(THREE, pTail, [0.1, 0.55, 0.95], skinMat, { squash: 1.0 }), 'tail'));
-            dino.add(tag(d3dSpineTube(THREE, pBody, [0.95, 1.35, 1.3, 0.85], skinMat, { squash: 1.0 }), 'body'));
-            dino.add(tag(d3dSpineTube(THREE, pNeck, [0.85, 0.5, 0.32, 0.22], skinMat, { squash: 1.0 }), 'neck'));
-            var pbelly = d3dSpineTube(THREE, pBody, [0.95, 1.35, 1.3, 0.85].map(function (r) { return r * 0.55; }), bellyMat, { squash: 0.5 });
-            pbelly.position.y = -0.5; dino.add(pbelly);
-            placeHead(buildHead(0.42, 'marine'), [3.95, 10.2], 0.05);
-            idleFlippers.push(makeFlipper([1.1, 2.6, 1.6], 1, 1.9, 0.85, 0.15, 0.45));
-            idleFlippers.push(makeFlipper([1.1, 2.6, 1.6], -1, 1.9, 0.85, 0.15, 0.45));
-            idleFlippers.push(makeFlipper([1.0, 2.5, -1.4], 1, 1.6, 0.7, 0.15, 0.4));
-            idleFlippers.push(makeFlipper([1.0, 2.5, -1.4], -1, 1.6, 0.7, 0.15, 0.4));
-        } else if (arche === 'marine') {
+        if (arche === 'marine') {
             // one long streamlined body along z, head at +z, fluke at -z
             var mSpine = [[3.0, -8.6], [3.0, -6.2], [3.05, -3.2], [3.1, 0.2], [3.12, 3.2], [3.05, 5.6], [3.0, 7.0]];
             var mRad = [0.14, 0.85, 1.45, 1.7, 1.35, 0.85, 0.5];
@@ -702,9 +682,8 @@
                 try {
                     var big = (spec.lengthM || 8) > 14;
                     var _ar = spec.archetype, _marine = _ar === 'marine';
-                    var _longNeck = _marine && spec.feats && spec.feats.longNeck;
                     var shell = d3dShell(THREE, host, {
-                        radius: _marine ? (_longNeck ? 34 : 30) : (_ar === 'sauropod' ? 26 : 19),
+                        radius: _marine ? 30 : (_ar === 'sauropod' ? 26 : 19),
                         minR: 10, maxR: 90,
                         theta: _marine ? 1.45 : 1.75,
                         phi: 1.12,
