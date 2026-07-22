@@ -21198,6 +21198,7 @@ export const JSP_BY_ROUTE = {
   '/guides/de/titan-methane-lakes-step-by-step.html': 'guide/de/titan-methane-lakes-step-by-step.jsp',
   '/guides/de/titan-methane-lakes-when.html': 'guide/de/titan-methane-lakes-when.jsp',
   '/guides/de/titan-methane-lakes-vs-alternatives.html': 'guide/de/titan-methane-lakes-vs-alternatives.jsp',
+  '/games/tower-building-game.html': 'games/tower-building-game.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

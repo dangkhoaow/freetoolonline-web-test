@@ -1,0 +1,59 @@
+<script>
+  // Tower Building Game launcher - CDN-hosted at https://gh-static.freetool.online/games/tower-building-game/
+  const GAME_CDN_URL = 'https://gh-static.freetool.online/games/tower-building-game/';
+  const GAME_SLUG = 'towerbuildinggame';
+
+  function loadTowerBuildingGame() {
+    const container = document.getElementById('game-iframe-mount');
+    const launcher = document.querySelector('.game-launcher');
+
+    if (!container) return;
+
+    // Create iframe with cross-origin attributes
+    const iframe = document.createElement('iframe');
+    iframe.src = GAME_CDN_URL;
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.border = 'none';
+    iframe.allow = 'fullscreen; gamepad; autoplay';
+    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-top-navigation');
+
+    container.appendChild(iframe);
+    container.style.display = 'block';
+    launcher.style.display = 'none';
+
+    // Namespace localStorage to ftol:towerbuildinggame:*
+    // The game's code should be intercepted and re-routed, but as a fallback:
+    const originalSetItem = localStorage.setItem;
+    const originalGetItem = localStorage.getItem;
+    const originalRemoveItem = localStorage.removeItem;
+
+    window.localStorage.setItem = function(key, value) {
+      const namespacedKey = 'ftol:' + GAME_SLUG + ':' + key;
+      return originalSetItem.call(localStorage, namespacedKey, value);
+    };
+    window.localStorage.getItem = function(key) {
+      const namespacedKey = 'ftol:' + GAME_SLUG + ':' + key;
+      return originalGetItem.call(localStorage, namespacedKey);
+    };
+    window.localStorage.removeItem = function(key) {
+      const namespacedKey = 'ftol:' + GAME_SLUG + ':' + key;
+      return originalRemoveItem.call(localStorage, namespacedKey);
+    };
+
+    // Request focus on the iframe (may be restricted by sandbox)
+    try {
+      iframe.contentWindow.focus();
+    } catch(e) {
+      // Cross-origin restriction - that's OK
+    }
+  }
+
+  // Wire up the Play button
+  document.addEventListener('DOMContentLoaded', function() {
+    const playBtn = document.getElementById('play-game-btn');
+    if (playBtn) {
+      playBtn.addEventListener('click', loadTowerBuildingGame);
+    }
+  });
+</script>
