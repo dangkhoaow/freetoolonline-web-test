@@ -11343,6 +11343,8 @@ export const ALIAS_ROUTES = {
   '/gorgonops.html': '/dinosaur-3d/gorgonops.html',
   // dinosaur-3d-discovery-loop-runbook (2026-07-23): flat-slug alias for woolly-mammoth.
   '/woolly-mammoth.html': '/dinosaur-3d/woolly-mammoth.html',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-23): flat-slug alias for styracosaurus.
+  '/styracosaurus.html': '/dinosaur-3d/styracosaurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -15410,6 +15412,12 @@ export const JSP_BY_ROUTE = {
   // the ground-sloth/brontotherium/moropus quadruped-mammal pattern; model-first
   // via ftol-vm-assets woolly-mammoth.glb, CC-BY-SA 4.0 Printables.
   '/dinosaur-3d/woolly-mammoth.html': 'dinosaur/woolly-mammoth.jsp',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-23): Styracosaurus viewer -
+  // centrosaurine ceratopsian (spiked frill + single nose horn, no brow horns,
+  // distinct from the chasmosaurine Triceratops); ceratopsian archetype reusing the
+  // triceratops/pachyrhinosaurus/wendiceratops branch; model-first via ftol-vm-assets
+  // styracosaurus.glb, CC-BY-SA 4.0 Printables (manifest pitch=pi orientation fix).
+  '/dinosaur-3d/styracosaurus.html': 'dinosaur/styracosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
