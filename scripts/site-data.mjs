@@ -11157,6 +11157,8 @@ export const ALIAS_ROUTES = {
   '/daspletosaurus.html': '/dinosaur-3d/daspletosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire243 (2026-07-21): flat-slug alias for maiasaura.
   '/maiasaura.html': '/dinosaur-3d/maiasaura.html',
+  // dinosaur-3d-discovery-loop-runbook (2026-07-22): flat-slug alias for dakotaraptor.
+  '/dakotaraptor.html': '/dinosaur-3d/dakotaraptor.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -15203,6 +15205,10 @@ export const JSP_BY_ROUTE = {
   // dinosaur-3d-discovery-loop-runbook fire243 (2026-07-21): maiasaura (USA hadrosaurine;
   // model-first via ftol-vm-assets maiasaura.glb, CC-BY Pan Wolodyjowski).
   '/dinosaur-3d/maiasaura.html': 'dinosaur/maiasaura.jsp',
+  // dinosaur-3d-discovery-loop-runbook (2026-07-22): dakotaraptor (Hell Creek giant
+  // dromaeosaurid; raptor archetype reusing the deinonychus/utahraptor/velociraptor
+  // branch; model-first via ftol-vm-assets dakotaraptor.glb, CC-BY-SA 4.0 Printables).
+  '/dinosaur-3d/dakotaraptor.html': 'dinosaur/dakotaraptor.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
