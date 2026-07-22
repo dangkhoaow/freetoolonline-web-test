@@ -1,182 +1,242 @@
-<!-- Space-3D: Io's Active Volcanoes (Real-Time Juno Data) -->
 <script>
-var T3D_SLUG = 'io-volcanoes-realtime';
+    // 3D scene archetype skeleton (io-volcanoes-realtime) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (io-volcanoes-realtime).
+    // All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not a volcanology model. A teaching moon sphere
+    // with clickable hotspot markers at real published volcano coordinates.
+    //
+    // Published figures (NASA Juno / Galileo Io pages):
+    //   - Io radius about 1,821 km; the most volcanically active body known
+    //     (about 400+ active volcanoes; some catalogues list ~500 hotspots)
+    //   - Marker set: 10 major confirmed volcanoes (Pele, Loki Patera, Marduk,
+    //     Prometheus, Tvashtar, Thor, Pillan, Amirani, Maui, Culann) with
+    //     approximate IAU coordinates, published hotspot temperatures (700-1700 K)
+    //     and plume heights (120-500 km)
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
 
-// Load three.js + shell
-ftoLoadThree().then(THREE => {
-  const hostEl = document.getElementById('t3dWrapper');
-  if (!hostEl) return console.error('No t3dWrapper found');
+    web.localUpload = false;
 
-  const shell = t3dShell(THREE, hostEl, { low: (/mobile|android/i.test(navigator.userAgent)) });
-  const scene = shell.scene;
+    var T3D_SLUG = 'io-volcanoes-realtime';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
 
-  // Presets: Io's viewing geometry
-  const presets = {
-    iovolcanoesrealtime: {
-      radius: 80,
-      minR: 20,
-      maxR: 180,
-      phi: 1.0,
-      fov: 50,
-      targetY: 0
+    function t3dDetectScene(slug) { return 'iovolcanoesrealtime'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
     }
-  };
-  Object.assign(shell.presets || {}, presets);
 
-  // Build the Io visualizer
-  function t3dIoVolcanoes(shell) {
-    const THREE = shell.THREE;
-    const scene = shell.scene;
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
 
-    // Io sphere: 1,821 km radius (scaled to 60 units for 3D comfort)
-    const ioScale = 60 / 1821;
-    const ioRadius = 60;
-    const ioGeom = new THREE.SphereGeometry(ioRadius, 128, 64);
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if ('ResizeObserver' in window) {
+            try { new ResizeObserver(function () { resize(); }).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
 
-    // Io's real surface color (sulfurous yellow/orange)
-    const ioMaterial = new THREE.MeshPhongMaterial({
-      color: 0xFFDD00,
-      emissive: 0xFFAA00,
-      emissiveIntensity: 0.2,
-      shininess: 10
-    });
-    const ioMesh = new THREE.Mesh(ioGeom, ioMaterial);
-    scene.add(ioMesh);
-
-    // Real active volcanoes: Juno + Galileo confirmed locations (IAU coords)
-    // Simplified subset of ~50 major volcanoes (full catalogue: ~500)
-    const volcanoes = [
-      { name: 'Pele', lat: -46, lon: 257, temp: 1700, height: 500 },
-      { name: 'Loki Patera', lat: 19, lon: 308, temp: 1300, height: 350 },
-      { name: 'Marduk', lat: 28, lon: 329, temp: 1100, height: 250 },
-      { name: 'Prometheus', lat: 2, lon: 153, temp: 900, height: 200 },
-      { name: 'Tvashtar', lat: 65, lon: 287, temp: 1200, height: 400 },
-      { name: 'Thor', lat: 27, lon: 125, temp: 800, height: 150 },
-      { name: 'Pillan', lat: -51, lon: 257, temp: 950, height: 280 },
-      { name: 'Amirani', lat: -6, lon: 119, temp: 850, height: 170 },
-      { name: 'Maui', lat: -28, lon: 120, temp: 750, height: 140 },
-      { name: 'Culann', lat: -27, lon: 51, temp: 700, height: 120 }
+    // Real named volcanoes (Juno + Galileo confirmed; approximate IAU coords,
+    // published hotspot temperatures in kelvin and plume heights in km).
+    var T3D_IO_VOLCANOES = [
+        { name: 'Pele', lat: -46, lon: 257, temp: 1700, height: 500 },
+        { name: 'Loki Patera', lat: 19, lon: 308, temp: 1300, height: 350 },
+        { name: 'Marduk', lat: 28, lon: 329, temp: 1100, height: 250 },
+        { name: 'Prometheus', lat: 2, lon: 153, temp: 900, height: 200 },
+        { name: 'Tvashtar', lat: 65, lon: 287, temp: 1200, height: 400 },
+        { name: 'Thor', lat: 27, lon: 125, temp: 800, height: 150 },
+        { name: 'Pillan', lat: -51, lon: 257, temp: 950, height: 280 },
+        { name: 'Amirani', lat: -6, lon: 119, temp: 850, height: 170 },
+        { name: 'Maui', lat: -28, lon: 120, temp: 750, height: 140 },
+        { name: 'Culann', lat: -27, lon: 51, temp: 700, height: 120 }
     ];
 
-    // Convert lat/lon to 3D positions on sphere
-    const volcanoMarkers = new THREE.Group();
-    scene.add(volcanoMarkers);
+    function t3dIoVolcanoes(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
 
-    volcanoes.forEach((v, i) => {
-      const lat = v.lat * Math.PI / 180;
-      const lon = v.lon * Math.PI / 180;
+        var ioRadius = 60;
+        var ioMesh = new THREE.Mesh(
+            new THREE.SphereGeometry(ioRadius, shell.low ? 48 : 96, shell.low ? 32 : 64),
+            new THREE.MeshPhongMaterial({ color: 0xFFDD00, emissive: 0xFFAA00, emissiveIntensity: 0.2, shininess: 10 })
+        );
+        scene.add(ioMesh);
 
-      const x = ioRadius * Math.cos(lat) * Math.cos(lon);
-      const y = ioRadius * Math.sin(lat);
-      const z = ioRadius * Math.cos(lat) * Math.sin(lon);
-
-      // Hotspot marker: red sphere on surface
-      const hotspotGeom = new THREE.SphereGeometry(2, 16, 16);
-      const hotspotMat = new THREE.MeshBasicMaterial({ color: 0xFF3300 });
-      const hotspot = new THREE.Mesh(hotspotGeom, hotspotMat);
-      hotspot.position.set(x, y, z);
-      hotspot.userData = v;
-      volcanoMarkers.add(hotspot);
-    });
-
-    // Lighting
-    const sunLight = new THREE.DirectionalLight(0xFFFFFF, 1.2);
-    sunLight.position.set(50, 30, 50);
-    scene.add(sunLight);
-
-    const ambLight = new THREE.AmbientLight(0x666666, 0.6);
-    scene.add(ambLight);
-
-    // Animate loop: slow auto-rotation + clickable hotspots
-    let selectedVolcano = null;
-    let autoRotate = true;
-
-    shell.onClick = (raycaster, mouse) => {
-      const intersects = raycaster.intersectObjects(volcanoMarkers.children);
-      if (intersects.length > 0) {
-        selectedVolcano = intersects[0].object.userData;
-        const info = `<b>${selectedVolcano.name}</b><br>
-          Temperature: ${selectedVolcano.temp}K<br>
-          Height: ${selectedVolcano.height} km<br>
-          Real NASA Juno data`;
-        t3dInfo(info);
-        autoRotate = false;
-      } else {
-        autoRotate = true;
-        t3dInfo('Click a volcano for details. Real Juno-era coordinates.');
-      }
-    };
-
-    return function animate(dt) {
-      // Auto-rotate Io
-      if (autoRotate) {
-        ioMesh.rotation.y += 0.0001 * dt;
-      }
-
-      // Pulse selected hotspot
-      if (selectedVolcano) {
-        volcanoMarkers.children.forEach(h => {
-          if (h.userData === selectedVolcano) {
-            h.scale.setScalar(1 + 0.3 * Math.sin(Date.now() * 0.005));
-          } else {
-            h.scale.setScalar(1);
-          }
+        var volcanoMarkers = new THREE.Group();
+        ioMesh.add(volcanoMarkers);
+        T3D_IO_VOLCANOES.forEach(function (v) {
+            var lat = v.lat * Math.PI / 180, lon = v.lon * Math.PI / 180;
+            var hotspot = new THREE.Mesh(
+                new THREE.SphereGeometry(2, 16, 16),
+                new THREE.MeshBasicMaterial({ color: 0xFF3300 })
+            );
+            hotspot.position.set(
+                ioRadius * Math.cos(lat) * Math.cos(lon),
+                ioRadius * Math.sin(lat),
+                ioRadius * Math.cos(lat) * Math.sin(lon)
+            );
+            hotspot.userData = v;
+            volcanoMarkers.add(hotspot);
         });
-      }
-    };
-  }
 
-  // Detect & dispatch scene
-  function t3dDetectScene(slug) {
-    if (/io|volcano/.test(slug)) return 'iovolcanoesrealtime';
-    if (/solar|sun/.test(slug)) return 'solar';
-    if (/black|hole/.test(slug)) return 'blackhole';
-    if (/gala|milky/.test(slug)) return 'galaxy';
-    if (/earth|globe/.test(slug)) return 'earth';
-    return 'solar';
-  }
+        var sun = new THREE.DirectionalLight(0xFFFFFF, 1.2);
+        sun.position.set(50, 30, 50);
+        scene.add(sun);
+        scene.add(new THREE.AmbientLight(0x666666, 0.6));
 
-  const kind = t3dDetectScene(T3D_SLUG);
-  const animate =
-    kind === 'iovolcanoesrealtime' ? t3dIoVolcanoes(shell) :
-    kind === 'solar' ? t3dSolar(shell) :
-    kind === 'blackhole' ? t3dBlackHole(shell) :
-    kind === 'galaxy' ? t3dGalaxy(shell) :
-    kind === 'earth' ? t3dEarth(shell) :
-    t3dSolar(shell);
+        function panelHtml(sel) {
+            var head = sel
+                ? '<h3>' + sel.name + '</h3>' +
+                  '<table class="w3-table w3-bordered">' +
+                  '<tr><td>Hotspot temperature</td><td>about ' + sel.temp + ' K</td></tr>' +
+                  '<tr><td>Plume height</td><td>up to about ' + sel.height + ' km</td></tr>' +
+                  '<tr><td>Source</td><td>NASA Juno / Galileo published data</td></tr>' +
+                  '</table>'
+                : '<h3>Io: the most volcanically active body known</h3>' +
+                  '<p>Io has hundreds of active volcanoes. Click any red hotspot for its name, published hotspot temperature, and plume height.</p>';
+            return head + '<p class="t3d-note">Educational approximation - marker sizes are exaggerated for visibility; coordinates are approximate IAU positions, not a precise map.</p>';
+        }
 
-  // Boot sequence (ref: existing scenes)
-  function boot() {
-    const presetKey = kind;
-    if (presets[presetKey]) {
-      const p = presets[presetKey];
-      shell.orbit.radius = p.radius;
-      shell.orbit.minR = p.minR;
-      shell.orbit.maxR = p.maxR;
-      shell.orbit.phi = p.phi;
-      shell.camera.fov = p.fov;
-      shell.camera.updateProjectionMatrix();
-      if (p.targetY !== undefined) shell.orbit.targetY = p.targetY;
+        var selected = null, autoRotate = true;
+        t3dInfo(panelHtml(null));
+
+        // click-to-select via raycast on the marker group
+        var raycaster = new THREE.Raycaster(), ndc = new THREE.Vector2();
+        var downAt = null;
+        shell.renderer.domElement.addEventListener('pointerdown', function (e) { downAt = { x: e.clientX, y: e.clientY }; });
+        shell.renderer.domElement.addEventListener('pointerup', function (e) {
+            if (!downAt) return;
+            var moved = Math.abs(e.clientX - downAt.x) + Math.abs(e.clientY - downAt.y);
+            downAt = null;
+            if (moved > 6) return; // it was a drag, not a click
+            var r = shell.renderer.domElement.getBoundingClientRect();
+            ndc.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+            ndc.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+            raycaster.setFromCamera(ndc, shell.camera);
+            var hits = raycaster.intersectObjects(volcanoMarkers.children);
+            if (hits.length > 0) {
+                selected = hits[0].object.userData;
+                autoRotate = false;
+                t3dInfo(panelHtml(selected));
+            } else {
+                selected = null;
+                autoRotate = true;
+                t3dInfo(panelHtml(null));
+            }
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Click a red hotspot for volcano data.');
+        var pulse = 0;
+        return function animate(dt) {
+            if (autoRotate) { ioMesh.rotation.y += 0.0001 * dt; }
+            pulse += dt;
+            volcanoMarkers.children.forEach(function (h) {
+                h.scale.setScalar(h.userData === selected ? (1 + 0.3 * Math.sin(pulse * 0.005)) : 1);
+            });
+        };
     }
 
-    // Show status
-    t3dStatus('Preparing Io 3D explorer...');
-
-    // Info panel (real figures)
-    t3dInfo('Io has ~500 active volcanoes - the most geologically active body in the Solar System.<br>Click any red hotspot for temperature, height, and NASA Juno mission data.');
-
-    shell.setAnimationLoop((time) => {
-      const dt = Math.min(time - (shell.lastTime || 0), 100);
-      shell.lastTime = time;
-      animate(dt);
-      shell.applyCamera();
-      shell.renderer.render(scene, shell.camera);
-    });
-
-    t3dStatus('Ready.');
-  }
-
-  // Idle callback to boot after paint
-  requestIdleCallback(boot, { timeout: 2500 });
-});
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var wrapper = document.getElementById('t3dWrapper') || host;
+        if (!host) return;
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var shell = t3dShell(THREE, host, { radius: 140, minR: 70, maxR: 320, phi: 1.0, theta: 0.5, fov: 50, targetY: 0 });
+                    var animate = t3dIoVolcanoes(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
 </script>
