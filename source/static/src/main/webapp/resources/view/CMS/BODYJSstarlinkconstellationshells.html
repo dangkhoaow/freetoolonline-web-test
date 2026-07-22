@@ -1,0 +1,307 @@
+<script>
+    // 3D scene archetype skeleton (starlink-constellation-shells) - vendored three.js (ESM,
+    // dynamic import from /vendor/three/, NO CDN), fully client-side. Built LEAN from the
+    // shared t3d* skeleton - ONE scene only. All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not a live tracker. This page draws the FIVE orbital
+    // shells of SpaceX's first-generation Starlink constellation as authorized by the
+    // U.S. FCC (docket SAT-LOA-20170726-00110 and its amendments; final Gen1 shell
+    // configuration reported after the 2021 amendment). Real altitudes only span about
+    // 540-570 km (0.5% of Earth's radius apart), so this page EXAGGERATES the radial
+    // gap between shells for visual legibility - the info panel discloses this. Each
+    // shell's tilt (inclination) IS drawn at its real angle. Satellite dots per shell
+    // are a fixed illustrative sample (about 60-90 dots), not a 1:1 count - the real
+    // published satellite count is shown in the facts panel and table as text.
+    //
+    // Published figures (FCC authorization; cross-checked against NASASpaceFlight.com's
+    // 2021 shell-completion reporting and the APNIC Blog's 2024 FCC-filing walkthrough;
+    // verified 2026-07-23):
+    //   - Shell 1: 550 km altitude, 53.0 deg inclination, 1,584 satellites (72 orbital
+    //     planes x 22 satellites per plane)
+    //   - Shell 2: 540 km altitude, 53.2 deg inclination, 1,584 satellites
+    //   - Shell 3: 570 km altitude, 70.0 deg inclination, 720 satellites
+    //   - Shell 4: 560 km altitude, 97.6 deg inclination (near-polar, sun-synchronous-
+    //     type), 348 satellites
+    //   - Shell 5: 560 km altitude, 97.6 deg inclination, 172 satellites
+    //   - Design total across all five shells: 4,408 satellites (Gen1 phase-1 build-out)
+    //
+    // Distinct from Satellite Orbit Classes (generic LEO/MEO/GEO altitude-band
+    // classification, no specific constellation) and ISS Orbit Tracker (a single
+    // spacecraft's one orbit) - THIS page is one real megaconstellation's multi-shell
+    // structure: five distinct altitude-and-inclination bands, each with its own real
+    // published satellite count.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'starlink-constellation-shells';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'starlinkshells'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Published figures (see header comment for sources). One entry per real shell.
+    var T3D_SHELLS = [
+        { id: 1, altKm: 550, inclDeg: 53.0, sats: 1584, planes: 72, perPlane: 22, color: 0x4fc3f7, label: 'Shell 1' },
+        { id: 2, altKm: 540, inclDeg: 53.2, sats: 1584, planes: null, perPlane: null, color: 0x81c784, label: 'Shell 2' },
+        { id: 3, altKm: 570, inclDeg: 70.0, sats: 720, planes: null, perPlane: null, color: 0xffca28, label: 'Shell 3' },
+        { id: 4, altKm: 560, inclDeg: 97.6, sats: 348, planes: null, perPlane: null, color: 0xff8a65, label: 'Shell 4' },
+        { id: 5, altKm: 560, inclDeg: 97.6, sats: 172, planes: null, perPlane: null, color: 0xba68c8, label: 'Shell 5' }
+    ];
+    var T3D_TOTAL_SATS = 4408;
+
+    function t3dStarlinkShells(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x02030a, 1);
+        scene.add(new THREE.AmbientLight(0x445566, 0.55));
+        var sunLight = new THREE.DirectionalLight(0xfff4e0, 1.1);
+        sunLight.position.set(50, 40, 30);
+        scene.add(sunLight);
+
+        var SCOUNT = shell.low ? 220 : 450;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(70 + Math.random() * 100);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xb0bec5, size: 0.35, sizeAttenuation: false })));
+
+        var earthR = 12;
+        var earth = new THREE.Mesh(
+            new THREE.SphereGeometry(earthR, 56, 36),
+            new THREE.MeshPhongMaterial({ color: 0x1d5a78, emissive: 0x050c12, shininess: 10 })
+        );
+        scene.add(earth);
+        var atmos = new THREE.Mesh(
+            new THREE.SphereGeometry(earthR * 1.012, 40, 28),
+            new THREE.MeshBasicMaterial({ color: 0x66aaff, transparent: true, opacity: 0.08, depthWrite: false })
+        );
+        scene.add(atmos);
+
+        // Exaggerated radial spacing for legibility - see header comment. Real
+        // altitudes (540-570 km) are within 0.5% of Earth's radius of each other.
+        var ringGroups = [];
+        var dotCounts = [90, 90, 60, 35, 22]; // illustrative sample sizes, roughly proportional to real sat counts
+        T3D_SHELLS.forEach(function (def, idx) {
+            var ringR = earthR * (1.32 + idx * 0.16);
+            var inclRad = def.inclDeg * Math.PI / 180;
+            var group = new THREE.Group();
+            group.rotation.x = inclRad;
+
+            var ringGeo = new THREE.TorusGeometry(ringR, 0.05, 8, 96);
+            var ringMat = new THREE.MeshBasicMaterial({ color: def.color, transparent: true, opacity: 0.55 });
+            var ringMesh = new THREE.Mesh(ringGeo, ringMat);
+            ringMesh.rotation.x = Math.PI / 2;
+            group.add(ringMesh);
+
+            var n = dotCounts[idx] || 40;
+            var dotGeo = new THREE.SphereGeometry(0.16, 6, 6);
+            var dotMat = new THREE.MeshBasicMaterial({ color: def.color });
+            var dotsMesh = new THREE.InstancedMesh(dotGeo, dotMat, n);
+            for (var i = 0; i < n; i++) {
+                var a = (i / n) * Math.PI * 2;
+                var m = new THREE.Matrix4().makeTranslation(Math.cos(a) * ringR, 0, Math.sin(a) * ringR);
+                dotsMesh.setMatrixAt(i, m);
+            }
+            dotsMesh.instanceMatrix.needsUpdate = true;
+            group.add(dotsMesh);
+
+            scene.add(group);
+            ringGroups.push({ def: def, group: group, ringMat: ringMat, dotMat: dotMat, spin: 0 });
+        });
+
+        var selected = -1; // -1 = show all
+
+        function factsHtmlFor(idx) {
+            if (idx < 0) {
+                var rows = T3D_SHELLS.map(function (d) {
+                    return '<tr><td>' + d.label + '</td><td>' + d.altKm + ' km</td><td>' + d.inclDeg.toFixed(1) + ' deg</td><td>' + d.sats.toLocaleString() + '</td></tr>';
+                }).join('');
+                return '<h3>All five Starlink shells</h3>' +
+                    '<p>Each colored ring is one real orbital shell from SpaceX\'s FCC-authorized Gen1 constellation plan. Click a shell button to isolate it.</p>' +
+                    '<table class="w3-table w3-bordered w3-small"><tr><th>Shell</th><th>Altitude</th><th>Inclination</th><th>Satellites</th></tr>' + rows + '</table>' +
+                    '<p class="t3d-note">Design total across all five shells: ' + T3D_TOTAL_SATS.toLocaleString() + ' satellites. Radial spacing between shells is exaggerated for visibility - real altitudes are all within 540-570 km.</p>';
+            }
+            var d = T3D_SHELLS[idx];
+            var planeLine = d.planes ? ('<tr><td>Orbital planes</td><td>' + d.planes + ' planes x ' + d.perPlane + ' satellites each</td></tr>') : '';
+            return '<h3>' + d.label + '</h3>' +
+                '<table class="w3-table w3-bordered w3-small">' +
+                '<tr><td>Altitude</td><td>' + d.altKm + ' km</td></tr>' +
+                '<tr><td>Inclination</td><td>' + d.inclDeg.toFixed(1) + ' degrees</td></tr>' +
+                '<tr><td>Satellites (design)</td><td>' + d.sats.toLocaleString() + '</td></tr>' +
+                planeLine +
+                '</table>' +
+                '<p class="t3d-note">Source: FCC authorization for SpaceX Starlink Gen1 (docket SAT-LOA-20170726-00110 and amendments).</p>';
+        }
+
+        function applySelection() {
+            ringGroups.forEach(function (rg, idx) {
+                var dim = (selected >= 0 && selected !== idx);
+                rg.ringMat.opacity = dim ? 0.12 : 0.6;
+                rg.dotMat.opacity = dim ? 0.15 : 1;
+                rg.dotMat.transparent = dim;
+            });
+            t3dInfo(factsHtmlFor(selected));
+            try { t3dSaveStore({ selected: selected }); } catch (e) {}
+            var label = document.getElementById('t3dStarlinkSelectedLabel');
+            if (label) label.textContent = selected < 0 ? 'Showing all 5 shells' : ('Showing ' + T3D_SHELLS[selected].label);
+        }
+
+        var store = t3dLoadStore();
+        selected = typeof store.selected === 'number' ? store.selected : -1;
+        applySelection();
+
+        for (var b = 1; b <= 5; b++) {
+            (function (shellIdx) {
+                var btn = document.getElementById('t3dStarlinkShellBtn' + (shellIdx + 1));
+                if (btn) btn.addEventListener('click', function () {
+                    selected = (selected === shellIdx) ? -1 : shellIdx;
+                    applySelection();
+                });
+            })(b - 1);
+        }
+        var allBtn = document.getElementById('t3dStarlinkAllBtn');
+        if (allBtn) allBtn.addEventListener('click', function () {
+            selected = -1;
+            applySelection();
+        });
+
+        t3dStatus('Drag to orbit Earth, scroll or pinch to zoom. Click a shell button to isolate it.');
+        return function animate(dt) {
+            var spinRate = dt * 0.00006;
+            ringGroups.forEach(function (rg) { rg.group.rotation.y += spinRate; });
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { starlinkshells: 't3dStarlinkControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { starlinkshells: { radius: 42, maxR: 130, minR: 18, phi: 1.05, theta: 0.5, targetY: 0 } };
+                    var shellCtx = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dStarlinkShells(shellCtx);
+                    var last = performance.now();
+                    shellCtx.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shellCtx.applyCamera();
+                        shellCtx.renderer.render(shellCtx.scene, shellCtx.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
