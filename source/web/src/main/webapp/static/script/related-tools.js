@@ -757,6 +757,7 @@ try {
     { title: "Add Watermark to Image", url: "https://freetoolonline.com/image-tools/image-watermark.html", include: !1, tags: "image-editing" },
     { title: "Add Page Numbers to PDF", url: "https://freetoolonline.com/pdf-tools/add-page-numbers-to-pdf.html", include: !1, tags: "pdf" },
     { title: "Reorder & Organize PDF Pages", url: "https://freetoolonline.com/pdf-tools/organize-pdf-pages.html", include: !1, tags: "pdf" },
+    { title: "Video Speed Changer", url: "https://freetoolonline.com/video-tools/video-speed-changer.html", include: !1, tags: "video" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

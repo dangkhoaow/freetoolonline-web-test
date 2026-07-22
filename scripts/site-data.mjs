@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/video-speed-changer-vs-alternatives.html',
+  '/guides/video-speed-changer-step-by-step.html',
+  '/guides/video-speed-changer-when.html',
   '/guides/reorder-organize-pdf-pages-vs-alternatives.html',
   '/guides/reorder-organize-pdf-pages-step-by-step.html',
   '/guides/reorder-organize-pdf-pages-when.html',
@@ -11652,6 +11655,7 @@ export const ALIAS_ROUTES = {
   '/image-watermark.html': '/image-tools/image-watermark.html',
   '/add-page-numbers-to-pdf.html': '/pdf-tools/add-page-numbers-to-pdf.html',
   '/organize-pdf-pages.html': '/pdf-tools/organize-pdf-pages.html',
+  '/video-speed-changer.html': '/video-tools/video-speed-changer.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -21686,6 +21690,10 @@ export const JSP_BY_ROUTE = {
   '/guides/de/reorder-organize-pdf-pages-step-by-step.html': 'guide/de/reorder-organize-pdf-pages-step-by-step.jsp',
   '/guides/de/reorder-organize-pdf-pages-when.html': 'guide/de/reorder-organize-pdf-pages-when.jsp',
   '/guides/de/reorder-organize-pdf-pages-vs-alternatives.html': 'guide/de/reorder-organize-pdf-pages-vs-alternatives.jsp',
+  '/video-tools/video-speed-changer.html': 'convert/video-speed-changer.jsp',
+  '/guides/video-speed-changer-when.html': 'guide/video-speed-changer-when.jsp',
+  '/guides/video-speed-changer-step-by-step.html': 'guide/video-speed-changer-step-by-step.jsp',
+  '/guides/video-speed-changer-vs-alternatives.html': 'guide/video-speed-changer-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
