@@ -693,6 +693,7 @@ try {
     { title: "Earth Perihelion & Aphelion 3D Explorer", url: "https://freetoolonline.com/space-3d/earth-perihelion-aphelion.html", include: !1, tags: "space-3d" },
     { title: "Exoplanet Atmosphere Spectroscopy 3D Explorer", url: "https://freetoolonline.com/space-3d/exoplanet-atmosphere-spectroscopy.html", include: !1, tags: "space-3d" },
     { title: "Saros Cycle Eclipse Explorer 3D", url: "https://freetoolonline.com/space-3d/saros-cycle.html", include: !1, tags: "space-3d" },
+    { title: "Starlink Constellation Shells 3D Explorer", url: "https://freetoolonline.com/space-3d/starlink-constellation-shells.html", include: !1, tags: "space-3d" },
     { title: "Pluto-Charon Double Planet 3D Explorer", url: "https://freetoolonline.com/space-3d/pluto-charon-double-planet.html", include: !1, tags: "space-3d" },
     { title: "Coronal Mass Ejection 3D Explorer", url: "https://freetoolonline.com/space-3d/coronal-mass-ejection.html", include: !1, tags: "space-3d" },
     { title: "Apollo Free-Return Trajectory 3D Explorer", url: "https://freetoolonline.com/space-3d/apollo-free-return-trajectory.html", include: !1, tags: "space-3d" },
