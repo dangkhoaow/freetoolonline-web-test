@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/add-watermark-image-vs-alternatives.html',
+  '/guides/add-watermark-image-step-by-step.html',
+  '/guides/add-watermark-image-when.html',
   '/guides/favicon-generator-vs-alternatives.html',
   '/guides/de/favicon-generator-vs-alternatives.html',
   '/guides/id/favicon-generator-vs-alternatives.html',
@@ -11441,6 +11444,8 @@ export const ALIAS_ROUTES = {
   '/titan-methane-lakes.html': '/space-3d/titan-methane-lakes.html',
   '/algol-eclipsing-binary.html': '/space-3d/algol-eclipsing-binary.html',
   '/main-sequence-lifetime.html': '/space-3d/main-sequence-lifetime.html',
+  '/earth-perihelion-aphelion.html': '/space-3d/earth-perihelion-aphelion.html',
+  '/image-watermark.html': '/image-tools/image-watermark.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -21291,6 +21296,7 @@ export const JSP_BY_ROUTE = {
   '/guides/de/titan-methane-lakes-vs-alternatives.html': 'guide/de/titan-methane-lakes-vs-alternatives.jsp',
   '/space-3d/algol-eclipsing-binary.html': 'space/algol-eclipsing-binary.jsp',
   '/space-3d/main-sequence-lifetime.html': 'space/main-sequence-lifetime.jsp',
+  '/space-3d/earth-perihelion-aphelion.html': 'space/earth-perihelion-aphelion.jsp',
   '/guides/algol-eclipsing-binary-step-by-step.html': 'guide/algol-eclipsing-binary-step-by-step.jsp',
   '/guides/algol-eclipsing-binary-when.html': 'guide/algol-eclipsing-binary-when.jsp',
   '/guides/algol-eclipsing-binary-vs-alternatives.html': 'guide/algol-eclipsing-binary-vs-alternatives.jsp',
@@ -21328,6 +21334,10 @@ export const JSP_BY_ROUTE = {
   '/guides/de/main-sequence-lifetime-when.html': 'guide/de/main-sequence-lifetime-when.jsp',
   '/guides/de/main-sequence-lifetime-vs-alternatives.html': 'guide/de/main-sequence-lifetime-vs-alternatives.jsp',
   '/games/tower-building-game.html': 'games/tower-building-game.jsp',
+  '/image-tools/image-watermark.html': 'convert/image-watermark.jsp',
+  '/guides/add-watermark-image-when.html': 'guide/add-watermark-image-when.jsp',
+  '/guides/add-watermark-image-step-by-step.html': 'guide/add-watermark-image-step-by-step.jsp',
+  '/guides/add-watermark-image-vs-alternatives.html': 'guide/add-watermark-image-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
