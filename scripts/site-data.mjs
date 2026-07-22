@@ -14811,6 +14811,7 @@ export const JSP_BY_ROUTE = {
   // dinosaur-loop (2026-07-15): /dinosaur-3d cluster members (JSP folder: dinosaur/).
   '/dinosaur-3d/tyrannosaurus-rex.html': 'dinosaur/tyrannosaurus-rex.jsp',
   '/dinosaur-3d/mosasaurus.html': 'dinosaur/mosasaurus.jsp',
+  '/dinosaur-3d/yutyrannus.html': 'dinosaur/yutyrannus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire2 (2026-07-15): velociraptor (raptor archetype).
   '/dinosaur-3d/velociraptor.html': 'dinosaur/velociraptor.jsp',
   // dinosaur-3d-discovery-loop-runbook fire3 (2026-07-15): triceratops (ceratopsian archetype).
@@ -17441,6 +17442,7 @@ export const JSP_BY_ROUTE = {
   '/games/pixel-spike-run.html': 'games/pixel-spike-run.jsp',
   '/games/orbital-radius-shooter.html': 'games/orbital-radius-shooter.jsp',
   '/games/species-life-battle.html': 'games/species-life-battle.jsp',
+  '/games/tower-building-game.html': 'games/tower-building-game.jsp',
   '/guides/city-drive-open-world-3d-when.html': 'guide/city-drive-open-world-3d-when.jsp',
   '/guides/city-drive-open-world-3d-step-by-step.html': 'guide/city-drive-open-world-3d-step-by-step.jsp',
   '/guides/city-drive-open-world-3d-vs-alternatives.html': 'guide/city-drive-open-world-3d-vs-alternatives.jsp',
