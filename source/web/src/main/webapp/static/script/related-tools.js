@@ -331,6 +331,7 @@ try {
     { title: "Solar System 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-system.html", include: !1, tags: "space-3d" },
     { title: "Black Hole 3D Visualizer", url: "https://freetoolonline.com/space-3d/black-hole.html", include: !1, tags: "space-3d" },
     { title: "Galaxy 3D Simulator", url: "https://freetoolonline.com/space-3d/galaxy.html", include: !1, tags: "space-3d" },
+    { title: "Io Volcanoes 3D Explorer", url: "https://freetoolonline.com/space-3d/io-volcanoes.html", include: !1, tags: "space-3d" },
     { title: "Tyrannosaurus rex 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/tyrannosaurus-rex.html", include: !1, tags: "dinosaur-3d" },
     { title: "Mosasaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/mosasaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Velociraptor 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/velociraptor.html", include: !1, tags: "dinosaur-3d" },

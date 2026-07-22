@@ -10851,6 +10851,7 @@ export const ALIAS_ROUTES = {
   '/solar-system.html': '/space-3d/solar-system.html',
   '/black-hole.html': '/space-3d/black-hole.html',
   '/galaxy.html': '/space-3d/galaxy.html',
+  '/io-volcanoes.html': '/space-3d/io-volcanoes.html',
   // MUST be mirrored into the CloudFront 301 function (two-layer redirect rule).
   '/tyrannosaurus-rex.html': '/dinosaur-3d/tyrannosaurus-rex.html',
   '/mosasaurus.html': '/dinosaur-3d/mosasaurus.html',
@@ -14812,6 +14813,7 @@ export const JSP_BY_ROUTE = {
   '/guides/id/voxel-world-builder-step-by-step.html': 'guide/id/voxel-world-builder-step-by-step.jsp',
   '/guides/id/voxel-world-builder-vs-alternatives.html': 'guide/id/voxel-world-builder-vs-alternatives.jsp',
   '/space-3d/solar-system.html': 'space/solar-system.jsp',
+  '/space-3d/io-volcanoes.html': 'space/io-volcanoes.jsp',
   // dinosaur-loop (2026-07-15): /dinosaur-3d cluster members (JSP folder: dinosaur/).
   '/dinosaur-3d/tyrannosaurus-rex.html': 'dinosaur/tyrannosaurus-rex.jsp',
   '/dinosaur-3d/mosasaurus.html': 'dinosaur/mosasaurus.jsp',
