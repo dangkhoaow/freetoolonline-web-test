@@ -10855,6 +10855,8 @@ export const ALIAS_ROUTES = {
   // MUST be mirrored into the CloudFront 301 function (two-layer redirect rule).
   '/tyrannosaurus-rex.html': '/dinosaur-3d/tyrannosaurus-rex.html',
   '/mosasaurus.html': '/dinosaur-3d/mosasaurus.html',
+  // dinosaur-3d-discovery-loop-runbook fire71 (2026-07-22): flat-slug alias for ground-sloth.
+  '/ground-sloth.html': '/dinosaur-3d/ground-sloth.html',
   // dinosaur-3d-discovery-loop-runbook fire278 (2026-07-22): flat-slug alias for megalosaurus.
   '/megalosaurus.html': '/dinosaur-3d/megalosaurus.html',
   // dinosaur-3d-discovery-loop-runbook fire2 (2026-07-15): flat-slug alias for velociraptor.
@@ -14818,6 +14820,8 @@ export const JSP_BY_ROUTE = {
   '/dinosaur-3d/tyrannosaurus-rex.html': 'dinosaur/tyrannosaurus-rex.jsp',
   '/dinosaur-3d/mosasaurus.html': 'dinosaur/mosasaurus.jsp',
     '/dinosaur-3d/plesiosaurus.html': 'dinosaur/plesiosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook fire71 (2026-07-22): ground-sloth (quadruped megafauna, Pleistocene, not a dinosaur).
+  '/dinosaur-3d/ground-sloth.html': 'dinosaur/ground-sloth.jsp',
   '/dinosaur-3d/yutyrannus.html': 'dinosaur/yutyrannus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire278 (2026-07-22): megalosaurus (theropod archetype).
   '/dinosaur-3d/megalosaurus.html': 'dinosaur/megalosaurus.jsp',
