@@ -1,0 +1,270 @@
+<script>
+    // 3D scene archetype skeleton (titan-methane-lakes) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (titan-methane-lakes).
+    // All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not a hydrology or atmosphere model.
+    // A teaching moon sphere (core + subsurface ocean + ice shell + schematic
+    // polar lake patches + haze shell) with Haze and Cutaway toggles.
+    //
+    // Published figures (NASA Cassini / Huygens Titan pages, cross-checked 2026-07-21):
+    //   - Atmosphere ~95% nitrogen / ~5% methane, detectable to about 600 km altitude
+    //   - Surface pressure about 1.45x Earth sea level (about 60% higher)
+    //   - Surface temperature about -179 C (94 K)
+    //   - Cassini radar-mapped methane/ethane lakes and seas near the poles,
+    //     a few percent of the surface; Kraken Mare (largest, ~400,000 sq km),
+    //     Ligeia Mare (depth to ~160 m, Cassini radar altimetry)
+    //   - Subsurface liquid-water ocean about 55-80 km beneath the ice shell
+    //   - Huygens landed 2005-01-14, farthest landing by a human-made craft,
+    //     transmitted 90+ minutes of surface data
+    //   - Distinct from enceladus-geysers (plumes, no lakes/thick atmosphere)
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'titan-methane-lakes';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'titanmethanelakes'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Schematic polar-lake positions (Kraken Mare, Ligeia Mare, Punga Mare -
+    // approximate north-polar locations per Cassini radar mapping; sizes
+    // exaggerated for visibility, not a precise map).
+    var T3D_TML_LAKES = [
+        { lat: 80, lon: 10, rx: 0.34, ry: 0.20 },
+        { lat: 78, lon: -50, rx: 0.20, ry: 0.13 },
+        { lat: 85, lon: 140, rx: 0.11, ry: 0.08 }
+    ];
+
+    function t3dTitanMethaneLakes(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+        var key = new THREE.DirectionalLight(0xfff3d6, 0.85);
+        key.position.set(8, 10, 6);
+        scene.add(key);
+
+        var core = new THREE.Mesh(
+            new THREE.SphereGeometry(0.55, shell.low ? 16 : 26, shell.low ? 12 : 18),
+            new THREE.MeshStandardMaterial({ color: 0x8d7a63, roughness: 0.9 })
+        );
+        scene.add(core);
+
+        var ocean = new THREE.Mesh(
+            new THREE.SphereGeometry(0.75, shell.low ? 18 : 28, shell.low ? 14 : 20),
+            new THREE.MeshStandardMaterial({ color: 0x2a6f97, roughness: 0.25, transparent: true, opacity: 0.85 })
+        );
+        scene.add(ocean);
+
+        var iceShell = new THREE.Mesh(
+            new THREE.SphereGeometry(0.95, shell.low ? 20 : 30, shell.low ? 16 : 22),
+            new THREE.MeshStandardMaterial({ color: 0xcbb99a, roughness: 0.85, transparent: true, opacity: 1 })
+        );
+        scene.add(iceShell);
+
+        var lakeGroup = new THREE.Group();
+        T3D_TML_LAKES.forEach(function (l) {
+            var geo = new THREE.CircleGeometry(1, 24);
+            geo.scale(l.rx, l.ry, 1);
+            var mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x0c1a2b, side: THREE.DoubleSide }));
+            var phi = THREE.MathUtils.degToRad(90 - l.lat);
+            var theta = THREE.MathUtils.degToRad(l.lon);
+            mesh.position.setFromSphericalCoords(0.955, phi, theta);
+            mesh.lookAt(0, 0, 0);
+            lakeGroup.add(mesh);
+        });
+        scene.add(lakeGroup);
+
+        var haze = new THREE.Mesh(
+            new THREE.SphereGeometry(1.28, shell.low ? 18 : 26, shell.low ? 14 : 18),
+            new THREE.MeshBasicMaterial({ color: 0xe08a3c, transparent: true, opacity: 0.55, depthWrite: false })
+        );
+        scene.add(haze);
+        var hazeOuter = new THREE.Mesh(
+            new THREE.SphereGeometry(1.42, shell.low ? 16 : 22, shell.low ? 12 : 16),
+            new THREE.MeshBasicMaterial({ color: 0xf0b46a, transparent: true, opacity: 0.22, depthWrite: false })
+        );
+        scene.add(hazeOuter);
+
+        var hazeOn = true, cutawayOn = false, spin = 0;
+
+        function panelHtml() {
+            return '<h3>Titan: methane lakes and thick atmosphere</h3>' +
+                '<p>Toggle Haze off to reveal the radar-mapped polar seas; toggle Cutaway on to see the ice shell and the subsurface ocean.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Atmosphere</td><td>~95% nitrogen, ~5% methane, to ~600 km altitude</td></tr>' +
+                '<tr><td>Surface pressure</td><td>~1.45x Earth sea level (about 60% higher)</td></tr>' +
+                '<tr><td>Surface temperature</td><td>about -179 C (94 K)</td></tr>' +
+                '<tr><td>Largest sea</td><td>Kraken Mare, roughly 400,000 sq km</td></tr>' +
+                '<tr><td>Ligeia Mare depth</td><td>up to about 160 m (Cassini radar altimetry)</td></tr>' +
+                '<tr><td>Subsurface ocean</td><td>liquid water ~55-80 km beneath the ice shell</td></tr>' +
+                '<tr><td>Huygens landing</td><td>2005-01-14, farthest landing by a human-made craft</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation - haze thickness, layer sizes, and lake positions are exaggerated and schematic, not a precise radar map. Distinct from the Enceladus Geysers explorer (plumes, no lakes).</p>';
+        }
+
+        function apply() {
+            haze.material.opacity = hazeOn ? 0.55 : 0.0;
+            hazeOuter.material.opacity = hazeOn ? 0.22 : 0.0;
+            iceShell.material.opacity = cutawayOn ? 0.28 : 1.0;
+            var hb = document.getElementById('t3dTmlHazeBtn');
+            if (hb) hb.textContent = 'Haze: ' + (hazeOn ? 'On' : 'Off');
+            var cb = document.getElementById('t3dTmlCutawayBtn');
+            if (cb) cb.textContent = 'Cutaway: ' + (cutawayOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ hazeOn: hazeOn, cutawayOn: cutawayOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.hazeOn === 'boolean') hazeOn = store.hazeOn;
+        if (typeof store.cutawayOn === 'boolean') cutawayOn = store.cutawayOn;
+        apply();
+
+        var hazeBtn = document.getElementById('t3dTmlHazeBtn');
+        if (hazeBtn) hazeBtn.addEventListener('click', function () { hazeOn = !hazeOn; apply(); });
+        var cutawayBtn = document.getElementById('t3dTmlCutawayBtn');
+        if (cutawayBtn) cutawayBtn.addEventListener('click', function () { cutawayOn = !cutawayOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle Haze or Cutaway.');
+        return function animate(dt) {
+            spin += dt * 0.00025;
+            core.rotation.y = spin;
+            ocean.rotation.y = spin * 0.9;
+            iceShell.rotation.y = spin * 0.85;
+            lakeGroup.rotation.y = spin * 0.85;
+            haze.rotation.y = spin * 0.6;
+            hazeOuter.rotation.y = spin * 0.45;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { titanmethanelakes: 't3dTmlControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { titanmethanelakes: { radius: 8, maxR: 30, minR: 3, phi: 1.05, theta: 0.5, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dTitanMethaneLakes(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

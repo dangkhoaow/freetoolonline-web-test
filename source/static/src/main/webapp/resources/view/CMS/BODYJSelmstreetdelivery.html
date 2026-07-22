@@ -1,0 +1,48 @@
+<script>
+    if (typeof web !== "undefined") web.localUpload = false;
+    var ESD_GAME_URL = 'https://gh-static.freetool.online/games/elm-street-delivery/index.html';
+    function esdStatus(text) {
+        var el = document.getElementById('esdStatus');
+        if (el) el.textContent = text;
+    }
+    function esdInjectFrame(stage) {
+        var frame = document.createElement('iframe');
+        frame.id = 'esdFrame';
+        frame.src = ESD_GAME_URL;
+        frame.title = 'Elm Street Delivery game';
+        frame.setAttribute('allow', 'fullscreen');
+        frame.setAttribute('allowfullscreen', '');
+        frame.addEventListener('load', function () {
+            esdStatus('Game loaded. Click to start, then click houses and the warehouse to plan deliveries.');
+            try { frame.contentWindow.focus(); } catch (e) {}
+        });
+        var launch = document.getElementById('esdLaunch');
+        if (launch && launch.parentNode === stage) stage.removeChild(launch);
+        stage.appendChild(frame);
+        return frame;
+    }
+    function doAfterPageRendered() {
+        var stage = document.getElementById('esdStage');
+        var playBtn = document.getElementById('esdPlayBtn');
+        if (!stage || !playBtn) return;
+        if (playBtn.dataset.bound === '1') return;
+        playBtn.dataset.bound = '1';
+        var fsBtn = document.getElementById('esdFullscreenBtn');
+        playBtn.addEventListener('click', function () {
+            esdStatus('Loading the game (about 3 MB)...');
+            esdInjectFrame(stage);
+            if (fsBtn) fsBtn.disabled = false;
+        });
+        if (fsBtn) fsBtn.addEventListener('click', function () {
+            if (stage.requestFullscreen) stage.requestFullscreen();
+            else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+            var frame = document.getElementById('esdFrame');
+            if (frame) { try { frame.contentWindow.focus(); } catch (e) {} }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', doAfterPageRendered);
+    } else {
+        doAfterPageRendered();
+    }
+</script>
