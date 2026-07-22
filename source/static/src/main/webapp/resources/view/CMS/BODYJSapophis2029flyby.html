@@ -1,0 +1,292 @@
+<script>
+    // 3D scene archetype skeleton (apophis-2029-flyby) - vendored three.js (ESM,
+    // dynamic import from /vendor/three/, NO CDN), fully client-side. Built LEAN from
+    // the shared t3d* skeleton - ONE scene only. All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not an orbital simulation. This page draws asteroid
+    // 99942 Apophis's real 13 April 2029 close approach to Earth as a SIMPLIFIED
+    // STRAIGHT-LINE path that passes Earth at the real published minimum distance -
+    // it is not a numerically integrated hyperbolic trajectory. Apophis itself is
+    // drawn far larger than true scale (a ~375 m object would be invisible at this
+    // zoom) so it can be seen and clicked.
+    //
+    // Published figures (NASA JPL Center for Near-Earth Object Studies close-approach
+    // tables + ESA NEOCC; both independently published and in agreement; verified
+    // 2026-07-23):
+    //   - Close approach date: 13 April 2029
+    //   - Minimum distance: about 31,600 km (about 19,600 miles) from Earth's SURFACE -
+    //     closer to Earth than the geostationary satellite ring (about 35,786 km
+    //     altitude)
+    //   - Diameter: about 340-450 m (radar-refined estimate about 375 m)
+    //   - Will be naked-eye visible (about magnitude 3) over parts of the Eastern
+    //     Hemisphere (Africa, Europe, western Asia) during the flyby
+    //   - Radar tracking has ruled out any impact risk for at least the next 100 years
+    //
+    // Distinct from Bennu / OSIRIS-REx (a sample-return TARGET asteroid, no Earth
+    // flyby) and Impact Crater Formation (what happens when something DOES hit) -
+    // THIS page is a real predicted near-miss flyby geometry event, not an impact and
+    // not a sample-return mission.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'apophis-2029-flyby';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'apophisflyby'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Published figures (see header comment for sources).
+    var EARTH_R = 6;                 // scene units for Earth's radius
+    var EARTH_REAL_KM = 6371;        // Earth mean radius, km
+    var SCENE_SCALE = EARTH_R / EARTH_REAL_KM;
+    var GEO_ALT_KM = 35786;          // geostationary altitude, km
+    var GEO_RADIUS_KM = EARTH_REAL_KM + GEO_ALT_KM;
+    var GEO_RADIUS_SCENE = GEO_RADIUS_KM * SCENE_SCALE;
+    var APOPHIS_SURFACE_MIN_KM = 31600; // NASA JPL CNEOS closest-approach distance from Earth's surface
+    var APOPHIS_MIN_RADIUS_KM = EARTH_REAL_KM + APOPHIS_SURFACE_MIN_KM;
+    var APOPHIS_MIN_RADIUS_SCENE = APOPHIS_MIN_RADIUS_KM * SCENE_SCALE;
+    var DAY_SPEED_SCENE = 7; // scene units of lateral travel per day-offset unit (illustrative, not a real velocity readout)
+
+    function t3dApophisPosition(dayOffset) {
+        // Simplified straight-line flyby: perpendicular offset = real minimum distance,
+        // lateral travel scaled by day-offset. NOT an integrated orbital path.
+        return { x: dayOffset * DAY_SPEED_SCENE, y: 0, z: APOPHIS_MIN_RADIUS_SCENE };
+    }
+
+    function t3dApophisFlyby(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x040611, 1);
+        scene.add(new THREE.AmbientLight(0x445566, 0.55));
+        var sunLight = new THREE.DirectionalLight(0xfff4e0, 1.1);
+        sunLight.position.set(50, 40, 30);
+        scene.add(sunLight);
+
+        var starCount = shell.low ? 200 : 420;
+        var spos = new Float32Array(starCount * 3);
+        for (var s = 0; s < starCount; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(80 + Math.random() * 120);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xb0bec5, size: 0.35, sizeAttenuation: false })));
+
+        var earth = new THREE.Mesh(
+            new THREE.SphereGeometry(EARTH_R, 56, 36),
+            new THREE.MeshPhongMaterial({ color: 0x1d5a78, emissive: 0x050c12, shininess: 10 })
+        );
+        scene.add(earth);
+        var atmos = new THREE.Mesh(
+            new THREE.SphereGeometry(EARTH_R * 1.02, 40, 28),
+            new THREE.MeshBasicMaterial({ color: 0x66aaff, transparent: true, opacity: 0.09, depthWrite: false })
+        );
+        scene.add(atmos);
+
+        var geoRing = new THREE.Mesh(
+            new THREE.TorusGeometry(GEO_RADIUS_SCENE, 0.06, 8, 96),
+            new THREE.MeshBasicMaterial({ color: 0x4fc3f7, transparent: true, opacity: 0.5 })
+        );
+        geoRing.rotation.x = Math.PI / 2;
+        scene.add(geoRing);
+
+        // Flyby path trace (visual guide, drawn once for the full -3..+3 day range).
+        var pathPts = [];
+        for (var d = -30; d <= 30; d++) {
+            var p = t3dApophisPosition(d / 10);
+            pathPts.push(new THREE.Vector3(p.x, p.y, p.z));
+        }
+        var pathGeo = new THREE.BufferGeometry().setFromPoints(pathPts);
+        scene.add(new THREE.Line(pathGeo, new THREE.LineBasicMaterial({ color: 0xffca28, transparent: true, opacity: 0.55 })));
+
+        var apophis = new THREE.Mesh(
+            new THREE.SphereGeometry(0.42, 10, 8),
+            new THREE.MeshBasicMaterial({ color: 0xffca28 })
+        );
+        scene.add(apophis);
+        var glow = new THREE.Mesh(
+            new THREE.SphereGeometry(0.75, 10, 8),
+            new THREE.MeshBasicMaterial({ color: 0xffe082, transparent: true, opacity: 0.25, depthWrite: false })
+        );
+        apophis.add(glow);
+
+        function factsHtmlFor(dayOffset) {
+            var pos = t3dApophisPosition(dayOffset);
+            var rScene = Math.sqrt(pos.x * pos.x + pos.z * pos.z);
+            var rKm = rScene / SCENE_SCALE;
+            var surfaceKm = Math.round(rKm - EARTH_REAL_KM);
+            var insideGeo = rKm < GEO_RADIUS_KM;
+            var atClosest = Math.abs(dayOffset) < 0.02;
+            var dateLabel = atClosest ? '13 April 2029 (closest approach)' : (dayOffset < 0 ? (Math.abs(dayOffset).toFixed(1) + ' day(s) before 13 April 2029') : (dayOffset.toFixed(1) + ' day(s) after 13 April 2029'));
+            return '<h3>Asteroid 99942 Apophis</h3>' +
+                '<table class="w3-table w3-bordered w3-small">' +
+                '<tr><td>Date</td><td>' + dateLabel + '</td></tr>' +
+                '<tr><td>Distance from Earth\'s surface</td><td>' + surfaceKm.toLocaleString() + ' km' + (atClosest ? ' (real published minimum)' : ' (simplified path estimate)') + '</td></tr>' +
+                '<tr><td>Inside geostationary ring?</td><td>' + (insideGeo ? 'Yes' : 'No') + '</td></tr>' +
+                '<tr><td>Diameter</td><td>about 340-450 m (radar estimate ~375 m)</td></tr>' +
+                '<tr><td>Impact risk</td><td>Ruled out for at least 100 years (NASA JPL CNEOS)</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">At closest approach Apophis passes about 31,600 km from Earth\'s surface - closer than the geostationary satellite ring at about 35,786 km altitude. Source: NASA JPL Center for Near-Earth Object Studies + ESA NEOCC close-approach tables.</p>';
+        }
+
+        function applyDay(dayOffset) {
+            var pos = t3dApophisPosition(dayOffset);
+            apophis.position.set(pos.x, pos.y, pos.z);
+            t3dInfo(factsHtmlFor(dayOffset));
+            var slider = document.getElementById('t3dApophisSlider');
+            if (slider) slider.value = String(dayOffset);
+            var label = document.getElementById('t3dApophisDayLabel');
+            var atClosest = Math.abs(dayOffset) < 0.02;
+            if (label) label.textContent = atClosest ? 'Closest approach - 13 Apr 2029' : (dayOffset < 0 ? (Math.abs(dayOffset).toFixed(1) + ' day(s) before closest approach') : (dayOffset.toFixed(1) + ' day(s) after closest approach'));
+            try { t3dSaveStore({ dayOffset: dayOffset }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        var initialDay = (typeof store.dayOffset === 'number') ? store.dayOffset : -3;
+        applyDay(initialDay);
+
+        var sliderEl = document.getElementById('t3dApophisSlider');
+        if (sliderEl) {
+            sliderEl.addEventListener('input', function () { applyDay(parseFloat(sliderEl.value)); });
+        }
+        var closestBtn = document.getElementById('t3dApophisClosestBtn');
+        if (closestBtn) closestBtn.addEventListener('click', function () { applyDay(0); });
+        var resetBtn = document.getElementById('t3dApophisResetBtn');
+        if (resetBtn) resetBtn.addEventListener('click', function () { applyDay(-3); });
+
+        t3dStatus('Drag to orbit Earth, scroll or pinch to zoom. Drag the slider to move through the flyby.');
+        return function animate(dt) {
+            apophis.rotation.y += dt * 0.001;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { apophisflyby: 't3dApophisControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { apophisflyby: { radius: 85, maxR: 220, minR: 25, phi: 1.05, theta: 0.5, targetY: 0 } };
+                    var shellCtx = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dApophisFlyby(shellCtx);
+                    var last = performance.now();
+                    shellCtx.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shellCtx.applyCamera();
+                        shellCtx.renderer.render(shellCtx.scene, shellCtx.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
