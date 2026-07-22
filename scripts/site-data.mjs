@@ -11166,6 +11166,7 @@ export const ALIAS_ROUTES = {
 
   '/species-life-battle.html': '/games/species-life-battle.html',
   '/earth-3d-globe.html': '/space-3d/earth-3d-globe.html',
+  '/io-volcanoes-realtime.html': '/space-3d/io-volcanoes-realtime.html',
   '/moon-phases-3d.html': '/space-3d/moon-phases-3d.html',
   '/saturn-rings.html': '/space-3d/saturn-rings.html',
   '/kepler-orbits.html': '/space-3d/kepler-orbits.html',
@@ -17502,6 +17503,7 @@ export const JSP_BY_ROUTE = {
   '/space-3d/galilean-moons.html': 'space/galilean-moons.jsp',
   '/space-3d/tides-earth-moon.html': 'space/tides-earth-moon.jsp',
   '/space-3d/solar-wind-heliosphere.html': 'space/solar-wind-heliosphere.jsp',
+  '/space-3d/io-volcanoes-realtime.html': 'space/io-volcanoes-realtime.jsp',
   '/guides/tides-earth-moon-step-by-step.html': 'guide/tides-earth-moon-step-by-step.jsp',
   '/guides/pt/tides-earth-moon-step-by-step.html': 'guide/pt/tides-earth-moon-step-by-step.jsp',
   '/guides/es/tides-earth-moon-step-by-step.html': 'guide/es/tides-earth-moon-step-by-step.jsp',
@@ -17644,6 +17646,7 @@ export const JSP_BY_ROUTE = {
   '/space-3d/magnetar.html': 'space/magnetar.jsp',
   '/space-3d/white-dwarf-chandrasekhar-limit.html': 'space/white-dwarf-chandrasekhar-limit.jsp',
   '/space-3d/apollo-free-return-trajectory.html': 'space/apollo-free-return-trajectory.jsp',
+  '/space-3d/io-volcanoes-realtime.html': 'space/io-volcanoes-realtime.jsp',
   '/guides/escape-velocity-step-by-step.html': 'guide/escape-velocity-step-by-step.jsp',
   '/guides/pt/escape-velocity-step-by-step.html': 'guide/pt/escape-velocity-step-by-step.jsp',
   '/guides/es/escape-velocity-step-by-step.html': 'guide/es/escape-velocity-step-by-step.jsp',
