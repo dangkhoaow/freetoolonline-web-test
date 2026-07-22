@@ -17137,6 +17137,7 @@ export const JSP_BY_ROUTE = {
   '/guides/de/black-hole-3d-visualizer-step-by-step.html': 'guide/de/black-hole-3d-visualizer-step-by-step.jsp',
   '/guides/de/black-hole-3d-visualizer-vs-alternatives.html': 'guide/de/black-hole-3d-visualizer-vs-alternatives.jsp',
   '/space-3d/galaxy.html': 'space/galaxy.jsp',
+  '/space-3d/proton-proton-chain-fusion.html': 'space/proton-proton-chain-fusion.jsp',
   '/guides/galaxy-3d-simulator-when.html': 'guide/galaxy-3d-simulator-when.jsp',
   '/guides/galaxy-3d-simulator-step-by-step.html': 'guide/galaxy-3d-simulator-step-by-step.jsp',
   '/guides/galaxy-3d-simulator-vs-alternatives.html': 'guide/galaxy-3d-simulator-vs-alternatives.jsp',
