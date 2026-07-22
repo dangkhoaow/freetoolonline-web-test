@@ -381,6 +381,7 @@ try {
     { title: "Maiasaura 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/maiasaura.html", include: !1, tags: "dinosaur-3d" },
     { title: "Dakotaraptor 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/dakotaraptor.html", include: !1, tags: "dinosaur-3d" },
     { title: "Gorgonops 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/gorgonops.html", include: !1, tags: "dinosaur-3d" },
+    { title: "Woolly Mammoth 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/woolly-mammoth.html", include: !1, tags: "dinosaur-3d" },
     { title: "Ceratosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/ceratosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Brontosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/brontosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Megalosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/megalosaurus.html", include: !1, tags: "dinosaur-3d" },

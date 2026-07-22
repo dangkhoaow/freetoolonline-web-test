@@ -11320,6 +11320,8 @@ export const ALIAS_ROUTES = {
   '/dakotaraptor.html': '/dinosaur-3d/dakotaraptor.html',
   // dinosaur-3d-discovery-loop-runbook (2026-07-23): flat-slug alias for gorgonops.
   '/gorgonops.html': '/dinosaur-3d/gorgonops.html',
+  // dinosaur-3d-discovery-loop-runbook (2026-07-23): flat-slug alias for woolly-mammoth.
+  '/woolly-mammoth.html': '/dinosaur-3d/woolly-mammoth.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -15380,6 +15382,11 @@ export const JSP_BY_ROUTE = {
   // archetype reusing the dimetrodon sail-less quadruped approximation; model-first
   // via ftol-vm-assets gorgonops.glb, CC-BY-SA 4.0 Printables.
   '/dinosaur-3d/gorgonops.html': 'dinosaur/gorgonops.jsp',
+  // dinosaur-3d-discovery-loop-runbook (2026-07-23): Woolly Mammoth viewer - Ice
+  // Age proboscidean (not a dinosaur), ceratopsian-fallback archetype reusing
+  // the ground-sloth/brontotherium/moropus quadruped-mammal pattern; model-first
+  // via ftol-vm-assets woolly-mammoth.glb, CC-BY-SA 4.0 Printables.
+  '/dinosaur-3d/woolly-mammoth.html': 'dinosaur/woolly-mammoth.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
