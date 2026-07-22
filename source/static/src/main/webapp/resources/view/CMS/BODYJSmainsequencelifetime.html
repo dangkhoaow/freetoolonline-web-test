@@ -1,0 +1,147 @@
+<!-- Main-Sequence Lifetime Explorer (Hertzsprung-Russell Diagram with Time Evolution) -->
+<!-- Real figures: Lifetime ∝ M^-2.5; Sun ~10 Gy; O-type ~10 My. Educational approximation, not a GR solver. -->
+<script>
+var T3D_SLUG = 'main-sequence-lifetime';
+
+(function initScene() {
+  // Lazy-load three.js after page paint
+  requestIdleCallback(boot, { timeout: 2500 });
+
+  function boot() {
+    ftoLoadThree().then(THREE => {
+      const host = document.getElementById('t3dWrapper');
+      if (!host) return;
+      
+      const shell = t3dShell(THREE, host, { 
+        radius: 150, minR: 50, maxR: 500, phi: 1.0, theta: 0.5, targetY: 0 
+      });
+      
+      // Initialize scene
+      shell.scene.background = new THREE.Color(0x0a0e27);
+      
+      // Axes: Luminosity (Y-axis, log), Temperature (X-axis, log, reversed for HR diagram)
+      // HR Diagram: hot stars LEFT, cool stars RIGHT; bright stars UP, dim stars DOWN
+      
+      // Create sun position as reference (0,0 at Sun's Teff=5778K, Lbol=1 Lsun)
+      const sunLog_Teff = Math.log10(5778);
+      const sunLog_L = 0; // 1 Lsun by def
+      
+      // Function: compute stellar lifetime given mass (in solar masses)
+      function mainSeqLifetime_Gy(M) {
+        // Lifetime ∝ M^-2.5 relative to Sun (10 Gy at M=1)
+        return 10 * Math.pow(M, -2.5);
+      }
+      
+      // Function: compute Teff given mass (on main sequence, Teff ∝ M^0.57)
+      function mainSeq_Teff(M) {
+        // Sun ~ 5778 K; scales with mass exponent ~0.57
+        return 5778 * Math.pow(M, 0.57);
+      }
+      
+      // Function: compute Luminosity given mass (on main sequence, L ∝ M^3.5)
+      function mainSeq_Lbol(M) {
+        // In Lsun; M in Msun
+        return Math.pow(M, 3.5);
+      }
+      
+      // Create HR diagram grid
+      const starField = new THREE.Group();
+      
+      // Sample 20 masses from 0.5 Msun to 20 Msun
+      const masses = [];
+      for (let i = 0; i <= 20; i++) {
+        masses.push(0.5 + i * 1);
+      }
+      
+      const stars = {};
+      masses.forEach(M => {
+        const Teff = mainSeq_Teff(M);
+        const L = mainSeq_Lbol(M);
+        const logT = Math.log10(Teff) - sunLog_Teff; // Offset from Sun, reversed for HR diagram
+        const logL = Math.log10(Math.max(L, 0.01)); // Avoid log(0)
+        
+        // Map to 3D space: X = -logT (reversed), Y = logL, Z small
+        const geometry = new THREE.SphereGeometry(0.8, 8, 8);
+        const color = new THREE.Color();
+        // Teff-based color: cool red, hot blue (simplified blackbody)
+        const hue = (1 - Math.min(Teff / 10000, 1)) * 0.7; // 0=red, 0.7=blue
+        color.setHSL(hue, 0.8, 0.5);
+        const material = new THREE.MeshPhongMaterial({ color });
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(-logT * 30, logL * 30, 0);
+        starField.add(mesh);
+        
+        stars[M] = {
+          mesh,
+          M,
+          Teff,
+          L,
+          lifetime: mainSeqLifetime_Gy(M)
+        };
+      });
+      
+      shell.scene.add(starField);
+      
+      // Axes
+      const axesHelper = new THREE.AxesHelper(50);
+      shell.scene.add(axesHelper);
+      
+      // Add a Sun marker
+      const sunGeo = new THREE.SphereGeometry(1.5, 16, 16);
+      const sunMat = new THREE.MeshBasicMaterial({ color: 0xFFDD00 });
+      const sunMesh = new THREE.Mesh(sunGeo, sunMat);
+      sunMesh.position.set(0, 0, 0);
+      shell.scene.add(sunMesh);
+      
+      // Info panel
+      t3dInfo(`
+        <b>Stellar Main-Sequence Lifetime</b><br/>
+        <b>Real data:</b><br/>
+        Lifetime ∝ M<sup>-2.5</sup><br/>
+        Sun lifetime: ~10 Gy<br/>
+        O-type lifetime: ~10 My<br/>
+        <br/>
+        <b>Educational approximation:</b> Not a simulation, tuned to show real relationships.
+        Diagram displays stars on the main sequence (HR diagram). Hot massive stars (left) burn fuel fast and live short lives. Cool low-mass stars (right) burn slowly and live long.
+      `);
+      
+      // Animation loop: slow time sweep through stellar age
+      let timeParam = 0;
+      
+      const animate = (dt) => {
+        timeParam += dt * 0.0001; // Slow time sweep
+        if (timeParam > 1) timeParam = 0; // Loop
+        
+        // Optionally dim stars based on age for visual evolution effect
+        Object.values(stars).forEach(s => {
+          const age_Gy = s.lifetime * timeParam; // Current age
+          const brightness = 0.3 + 0.7 * (1 - timeParam); // Brighten early, dim late
+          s.mesh.material.opacity = brightness;
+        });
+        
+        t3dStatus(`Time: ${(timeParam * 100).toFixed(0)}% through main sequence`);
+      };
+      
+      shell.scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+      
+      return animate;
+    });
+  }
+})();
+</script>
+
+<div id="t3dWrapper" style="width:100%;height:400px;position:relative;margin:10px 0;">
+  <div id="t3dCanvasHost" style="width:100%;height:100%;"></div>
+  <div id="t3dStatus" style="position:absolute;bottom:5px;left:5px;background:rgba(0,0,0,0.7);color:#fff;padding:5px;font-size:11px;"></div>
+  <div id="t3dInfoPanel" style="position:absolute;bottom:5px;right:5px;background:rgba(0,0,0,0.8);color:#fff;padding:8px;font-size:12px;max-width:200px;"></div>
+  <button onclick="t3dFullscreen()" style="position:absolute;top:5px;right:5px;padding:5px 10px;background:#333;color:#fff;border:1px solid #666;cursor:pointer;font-size:12px;">⛶ Fullscreen</button>
+</div>
+
+<style>
+  #t3dCanvasHost canvas,
+  #t3dCanvasHost canvas[data-canvas] {
+    max-width: 100% !important;
+    height: auto !important;
+    display: block;
+  }
+</style>
