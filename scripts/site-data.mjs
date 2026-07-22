@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/reorder-organize-pdf-pages-vs-alternatives.html',
+  '/guides/reorder-organize-pdf-pages-step-by-step.html',
+  '/guides/reorder-organize-pdf-pages-when.html',
   '/guides/add-page-numbers-pdf-vs-alternatives.html',
   '/guides/de/add-page-numbers-pdf-vs-alternatives.html',
   '/guides/id/add-page-numbers-pdf-vs-alternatives.html',
@@ -4853,6 +4856,24 @@ export const INFO_ROUTES = new Set([
   '/guides/de/main-sequence-lifetime-step-by-step.html',
   '/guides/de/main-sequence-lifetime-when.html',
   '/guides/de/main-sequence-lifetime-vs-alternatives.html',
+  '/guides/starlink-constellation-shells-step-by-step.html',
+  '/guides/starlink-constellation-shells-when.html',
+  '/guides/starlink-constellation-shells-vs-alternatives.html',
+  '/guides/pt/starlink-constellation-shells-step-by-step.html',
+  '/guides/pt/starlink-constellation-shells-when.html',
+  '/guides/pt/starlink-constellation-shells-vs-alternatives.html',
+  '/guides/es/starlink-constellation-shells-step-by-step.html',
+  '/guides/es/starlink-constellation-shells-when.html',
+  '/guides/es/starlink-constellation-shells-vs-alternatives.html',
+  '/guides/vi/starlink-constellation-shells-step-by-step.html',
+  '/guides/vi/starlink-constellation-shells-when.html',
+  '/guides/vi/starlink-constellation-shells-vs-alternatives.html',
+  '/guides/id/starlink-constellation-shells-step-by-step.html',
+  '/guides/id/starlink-constellation-shells-when.html',
+  '/guides/id/starlink-constellation-shells-vs-alternatives.html',
+  '/guides/de/starlink-constellation-shells-step-by-step.html',
+  '/guides/de/starlink-constellation-shells-when.html',
+  '/guides/de/starlink-constellation-shells-vs-alternatives.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -10437,6 +10458,24 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/main-sequence-lifetime-step-by-step.html',
   '/guides/de/main-sequence-lifetime-when.html',
   '/guides/de/main-sequence-lifetime-vs-alternatives.html',
+  '/guides/starlink-constellation-shells-step-by-step.html',
+  '/guides/starlink-constellation-shells-when.html',
+  '/guides/starlink-constellation-shells-vs-alternatives.html',
+  '/guides/pt/starlink-constellation-shells-step-by-step.html',
+  '/guides/pt/starlink-constellation-shells-when.html',
+  '/guides/pt/starlink-constellation-shells-vs-alternatives.html',
+  '/guides/es/starlink-constellation-shells-step-by-step.html',
+  '/guides/es/starlink-constellation-shells-when.html',
+  '/guides/es/starlink-constellation-shells-vs-alternatives.html',
+  '/guides/vi/starlink-constellation-shells-step-by-step.html',
+  '/guides/vi/starlink-constellation-shells-when.html',
+  '/guides/vi/starlink-constellation-shells-vs-alternatives.html',
+  '/guides/id/starlink-constellation-shells-step-by-step.html',
+  '/guides/id/starlink-constellation-shells-when.html',
+  '/guides/id/starlink-constellation-shells-vs-alternatives.html',
+  '/guides/de/starlink-constellation-shells-step-by-step.html',
+  '/guides/de/starlink-constellation-shells-when.html',
+  '/guides/de/starlink-constellation-shells-vs-alternatives.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -11556,6 +11595,7 @@ export const ALIAS_ROUTES = {
   '/saros-cycle.html': '/space-3d/saros-cycle.html',
   '/image-watermark.html': '/image-tools/image-watermark.html',
   '/add-page-numbers-to-pdf.html': '/pdf-tools/add-page-numbers-to-pdf.html',
+  '/organize-pdf-pages.html': '/pdf-tools/organize-pdf-pages.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -21524,6 +21564,10 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/add-page-numbers-pdf-vs-alternatives.html': 'guide/vi/add-page-numbers-pdf-vs-alternatives.jsp',
   '/guides/es/add-page-numbers-pdf-vs-alternatives.html': 'guide/es/add-page-numbers-pdf-vs-alternatives.jsp',
   '/guides/pt/add-page-numbers-pdf-vs-alternatives.html': 'guide/pt/add-page-numbers-pdf-vs-alternatives.jsp',
+  '/pdf-tools/organize-pdf-pages.html': 'pdf/organize-pdf-pages.jsp',
+  '/guides/reorder-organize-pdf-pages-when.html': 'guide/reorder-organize-pdf-pages-when.jsp',
+  '/guides/reorder-organize-pdf-pages-step-by-step.html': 'guide/reorder-organize-pdf-pages-step-by-step.jsp',
+  '/guides/reorder-organize-pdf-pages-vs-alternatives.html': 'guide/reorder-organize-pdf-pages-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
