@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/yaml-json-converter-vs-alternatives.html',
+  '/guides/yaml-json-converter-step-by-step.html',
+  '/guides/yaml-json-converter-when.html',
   '/guides/csv-json-converter-vs-alternatives.html',
   '/guides/csv-json-converter-step-by-step.html',
   '/guides/csv-json-converter-when.html',
@@ -11871,6 +11874,8 @@ export const ALIAS_ROUTES = {
   '/panoplosaurus.html': '/dinosaur-3d/panoplosaurus.html',
   // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-23): flat-slug alias for denversaurus.
   '/denversaurus.html': '/dinosaur-3d/denversaurus.html',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-23): flat-slug alias for sinosauropteryx.
+  '/sinosauropteryx.html': '/dinosaur-3d/sinosauropteryx.html',
 
   // dinosaur-3d-discovery-loop-runbook fire123: albertosaurus alias.
   '/albertosaurus.html': '/dinosaur-3d/albertosaurus.html',
@@ -12266,6 +12271,7 @@ export const ALIAS_ROUTES = {
   '/number-base-converter.html': '/developer-tools/number-base-converter.html',
   '/csv-to-json-converter.html': '/developer-tools/csv-to-json-converter.html',
   '/roman-numeral-converter.html': '/utility-tools/roman-numeral-converter.html',
+  '/yaml-to-json-converter.html': '/developer-tools/yaml-to-json-converter.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -15929,6 +15935,11 @@ export const JSP_BY_ROUTE = {
   // archetype, no clubTail/spikes feats, same body plan as Panoplosaurus but a wider triangular
   // skull; model-first via ftol-vm-assets denversaurus.glb, CC-BY 4.0 Pan Wolodyjowski via Printables).
   '/dinosaur-3d/denversaurus.html': 'dinosaur/denversaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-23): sinosauropteryx (theropod archetype,
+  // tinyArms feat, same body plan as Compsognathus - the first dinosaur confirmed to carry
+  // feather-like filaments and the first with melanosome-confirmed original color; model-first via
+  // ftol-vm-assets sinosauropteryx.glb, CC-BY-SA 4.0 DragonArtist15 via Printables).
+  '/dinosaur-3d/sinosauropteryx.html': 'dinosaur/sinosauropteryx.jsp',
   // dinosaur-3d-discovery-loop-runbook fire151 (2026-07-20): psittacosaurus (ceratopsian archetype,
   // Model Magic CC0 Printables 1753562 after Oviraptor 1757494 morphology REJECT; vendored ftol-vm-assets 5ac2905).
   '/dinosaur-3d/psittacosaurus.html': 'dinosaur/psittacosaurus.jsp',
@@ -22671,6 +22682,10 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/roman-numeral-converter-vs-alternatives.html': 'guide/vi/roman-numeral-converter-vs-alternatives.jsp',
   '/guides/es/roman-numeral-converter-vs-alternatives.html': 'guide/es/roman-numeral-converter-vs-alternatives.jsp',
   '/guides/pt/roman-numeral-converter-vs-alternatives.html': 'guide/pt/roman-numeral-converter-vs-alternatives.jsp',
+  '/developer-tools/yaml-to-json-converter.html': 'utility/yaml-to-json-converter.jsp',
+  '/guides/yaml-json-converter-when.html': 'guide/yaml-json-converter-when.jsp',
+  '/guides/yaml-json-converter-step-by-step.html': 'guide/yaml-json-converter-step-by-step.jsp',
+  '/guides/yaml-json-converter-vs-alternatives.html': 'guide/yaml-json-converter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
