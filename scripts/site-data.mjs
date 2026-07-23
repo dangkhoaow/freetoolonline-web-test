@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/pdf-compressor-vs-alternatives.html',
+  '/guides/pdf-compressor-step-by-step.html',
+  '/guides/pdf-compressor-when.html',
   '/guides/yaml-json-converter-vs-alternatives.html',
   '/guides/yaml-json-converter-step-by-step.html',
   '/guides/yaml-json-converter-when.html',
@@ -12230,6 +12233,7 @@ export const ALIAS_ROUTES = {
   '/magnetar.html': '/space-3d/magnetar.html',
   '/fast-radio-bursts.html': '/space-3d/fast-radio-bursts.html',
   '/yarkovsky-effect.html': '/space-3d/yarkovsky-effect.html',
+  '/torino-impact-hazard-scale.html': '/space-3d/torino-impact-hazard-scale.html',
   '/white-dwarf-chandrasekhar-limit.html': '/space-3d/white-dwarf-chandrasekhar-limit.html',
   '/apollo-free-return-trajectory.html': '/space-3d/apollo-free-return-trajectory.html',
   '/linux-online.html': '/utility-tools/linux-online.html',
@@ -12310,6 +12314,7 @@ export const ALIAS_ROUTES = {
   '/csv-to-json-converter.html': '/developer-tools/csv-to-json-converter.html',
   '/roman-numeral-converter.html': '/utility-tools/roman-numeral-converter.html',
   '/yaml-to-json-converter.html': '/developer-tools/yaml-to-json-converter.html',
+  '/pdf-compressor.html': '/pdf-tools/pdf-compressor.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -18651,6 +18656,7 @@ export const JSP_BY_ROUTE = {
   '/space-3d/magnetar.html': 'space/magnetar.jsp',
   '/space-3d/fast-radio-bursts.html': 'space/fast-radio-bursts.jsp',
   '/space-3d/yarkovsky-effect.html': 'space/yarkovsky-effect.jsp',
+  '/space-3d/torino-impact-hazard-scale.html': 'space/torino-impact-hazard-scale.jsp',
   '/space-3d/white-dwarf-chandrasekhar-limit.html': 'space/white-dwarf-chandrasekhar-limit.jsp',
   '/space-3d/apollo-free-return-trajectory.html': 'space/apollo-free-return-trajectory.jsp',
   '/space-3d/io-volcanoes-realtime.html': 'space/io-volcanoes-realtime.jsp',
@@ -22743,6 +22749,10 @@ export const JSP_BY_ROUTE = {
   '/guides/yaml-json-converter-when.html': 'guide/yaml-json-converter-when.jsp',
   '/guides/yaml-json-converter-step-by-step.html': 'guide/yaml-json-converter-step-by-step.jsp',
   '/guides/yaml-json-converter-vs-alternatives.html': 'guide/yaml-json-converter-vs-alternatives.jsp',
+  '/pdf-tools/pdf-compressor.html': 'pdf/pdf-compressor.jsp',
+  '/guides/pdf-compressor-when.html': 'guide/pdf-compressor-when.jsp',
+  '/guides/pdf-compressor-step-by-step.html': 'guide/pdf-compressor-step-by-step.jsp',
+  '/guides/pdf-compressor-vs-alternatives.html': 'guide/pdf-compressor-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
