@@ -780,6 +780,7 @@ try {
     { title: "Lorem Ipsum Placeholder Text Generator", url: "https://freetoolonline.com/developer-tools/lorem-ipsum-generator.html", include: !1, tags: "developer" },
     { title: "Number Base Converter (Binary/Hex/Octal/Decimal)", url: "https://freetoolonline.com/developer-tools/number-base-converter.html", include: !1, tags: "developer" },
     { title: "CSV to JSON Converter", url: "https://freetoolonline.com/developer-tools/csv-to-json-converter.html", include: !1, tags: "developer" },
+    { title: "Roman Numeral Converter", url: "https://freetoolonline.com/utility-tools/roman-numeral-converter.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
