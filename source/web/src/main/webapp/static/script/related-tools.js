@@ -373,6 +373,7 @@ try {
     { title: "Monolophosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/monolophosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Wendiceratops 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/wendiceratops.html", include: !1, tags: "dinosaur-3d" },
     { title: "Panoplosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/panoplosaurus.html", include: !1, tags: "dinosaur-3d" },
+    { title: "Denversaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/denversaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Suchomimus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/suchomimus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Ouranosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/ouranosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Archaeopteryx 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/archaeopteryx.html", include: !1, tags: "dinosaur-3d" },

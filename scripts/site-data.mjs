@@ -11797,6 +11797,8 @@ export const ALIAS_ROUTES = {
   '/wendiceratops.html': '/dinosaur-3d/wendiceratops.html',
   // dinosaur-3d-discovery-loop-runbook (2026-07-21): flat-slug alias for panoplosaurus.
   '/panoplosaurus.html': '/dinosaur-3d/panoplosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-23): flat-slug alias for denversaurus.
+  '/denversaurus.html': '/dinosaur-3d/denversaurus.html',
 
   // dinosaur-3d-discovery-loop-runbook fire123: albertosaurus alias.
   '/albertosaurus.html': '/dinosaur-3d/albertosaurus.html',
@@ -15850,6 +15852,10 @@ export const JSP_BY_ROUTE = {
   // no clubTail/spikes feats - the differentiator vs Ankylosaurus/Pinacosaurus; model-first via
   // ftol-vm-assets panoplosaurus.glb, CC-BY 4.0 Pan Wolodyjowski via Printables).
   '/dinosaur-3d/panoplosaurus.html': 'dinosaur/panoplosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-23): denversaurus (ankylosaur/nodosaurid
+  // archetype, no clubTail/spikes feats, same body plan as Panoplosaurus but a wider triangular
+  // skull; model-first via ftol-vm-assets denversaurus.glb, CC-BY 4.0 Pan Wolodyjowski via Printables).
+  '/dinosaur-3d/denversaurus.html': 'dinosaur/denversaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire151 (2026-07-20): psittacosaurus (ceratopsian archetype,
   // Model Magic CC0 Printables 1753562 after Oviraptor 1757494 morphology REJECT; vendored ftol-vm-assets 5ac2905).
   '/dinosaur-3d/psittacosaurus.html': 'dinosaur/psittacosaurus.jsp',
