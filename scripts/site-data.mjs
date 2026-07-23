@@ -5327,6 +5327,25 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/roman-numeral-converter-vs-alternatives.html',
   '/guides/es/roman-numeral-converter-vs-alternatives.html',
   '/guides/pt/roman-numeral-converter-vs-alternatives.html',
+  // chariklo-rings companion guides (space-3d-discovery-loop LEAN fire, 2026-07-24)
+  '/guides/chariklo-rings-when.html',
+  '/guides/chariklo-rings-step-by-step.html',
+  '/guides/chariklo-rings-vs-alternatives.html',
+  '/guides/pt/chariklo-rings-when.html',
+  '/guides/pt/chariklo-rings-step-by-step.html',
+  '/guides/pt/chariklo-rings-vs-alternatives.html',
+  '/guides/es/chariklo-rings-when.html',
+  '/guides/es/chariklo-rings-step-by-step.html',
+  '/guides/es/chariklo-rings-vs-alternatives.html',
+  '/guides/vi/chariklo-rings-when.html',
+  '/guides/vi/chariklo-rings-step-by-step.html',
+  '/guides/vi/chariklo-rings-vs-alternatives.html',
+  '/guides/id/chariklo-rings-when.html',
+  '/guides/id/chariklo-rings-step-by-step.html',
+  '/guides/id/chariklo-rings-vs-alternatives.html',
+  '/guides/de/chariklo-rings-when.html',
+  '/guides/de/chariklo-rings-step-by-step.html',
+  '/guides/de/chariklo-rings-vs-alternatives.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -11276,6 +11295,25 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/yaml-json-converter-vs-alternatives.html',
   '/guides/es/yaml-json-converter-vs-alternatives.html',
   '/guides/pt/yaml-json-converter-vs-alternatives.html',
+  // chariklo-rings companion guides (space-3d-discovery-loop LEAN fire, 2026-07-24)
+  '/guides/chariklo-rings-when.html',
+  '/guides/chariklo-rings-step-by-step.html',
+  '/guides/chariklo-rings-vs-alternatives.html',
+  '/guides/pt/chariklo-rings-when.html',
+  '/guides/pt/chariklo-rings-step-by-step.html',
+  '/guides/pt/chariklo-rings-vs-alternatives.html',
+  '/guides/es/chariklo-rings-when.html',
+  '/guides/es/chariklo-rings-step-by-step.html',
+  '/guides/es/chariklo-rings-vs-alternatives.html',
+  '/guides/vi/chariklo-rings-when.html',
+  '/guides/vi/chariklo-rings-step-by-step.html',
+  '/guides/vi/chariklo-rings-vs-alternatives.html',
+  '/guides/id/chariklo-rings-when.html',
+  '/guides/id/chariklo-rings-step-by-step.html',
+  '/guides/id/chariklo-rings-vs-alternatives.html',
+  '/guides/de/chariklo-rings-when.html',
+  '/guides/de/chariklo-rings-step-by-step.html',
+  '/guides/de/chariklo-rings-vs-alternatives.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -12091,6 +12129,11 @@ export const ALIAS_ROUTES = {
   // backlog candidate is the same species as the already-shipped ground-sloth page (Megatherium
   // americanum). Captures the scientific-name search term without shipping a duplicate page (gate 4).
   '/megatherium.html': '/dinosaur-3d/ground-sloth.html',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-24): flat-slug alias for smilodon.
+  '/smilodon.html': '/dinosaur-3d/smilodon.html',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-24): synonym alias - the popular
+  // vernacular name "saber-tooth tiger" for the same species (gate 4 dedup).
+  '/saber-tooth-tiger.html': '/dinosaur-3d/smilodon.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -12362,6 +12405,7 @@ export const ALIAS_ROUTES = {
   '/fast-radio-bursts.html': '/space-3d/fast-radio-bursts.html',
   '/yarkovsky-effect.html': '/space-3d/yarkovsky-effect.html',
   '/torino-impact-hazard-scale.html': '/space-3d/torino-impact-hazard-scale.html',
+  '/chariklo-rings.html': '/space-3d/chariklo-rings.html',
   '/gps-time-dilation.html': '/space-3d/gps-time-dilation.html',
   '/white-dwarf-chandrasekhar-limit.html': '/space-3d/white-dwarf-chandrasekhar-limit.html',
   '/apollo-free-return-trajectory.html': '/space-3d/apollo-free-return-trajectory.html',
@@ -16226,6 +16270,12 @@ export const JSP_BY_ROUTE = {
   // pitch=0 (no rotation) is the correct orientation; the manifest pitch field
   // was removed at the ftol-vm-assets CDN repo before this page was authored.
   '/dinosaur-3d/yi-qi.html': 'dinosaur/yi-qi.jsp',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-24): Smilodon
+  // (sabre-tooth cat) viewer - NEW 'quadruped' archetype (level-backed 4-leg
+  // body, first species to use it) + NEW 'feline' head kind with sabre
+  // canines. Model-first via ftol-vm-assets smilodon.glb (CC0, itch.io "Low
+  // Poly Ice Age" pack by Riley - same pack as woolly-mammoth/ground-sloth).
+  '/dinosaur-3d/smilodon.html': 'dinosaur/smilodon.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -18796,6 +18846,7 @@ export const JSP_BY_ROUTE = {
   '/space-3d/fast-radio-bursts.html': 'space/fast-radio-bursts.jsp',
   '/space-3d/yarkovsky-effect.html': 'space/yarkovsky-effect.jsp',
   '/space-3d/torino-impact-hazard-scale.html': 'space/torino-impact-hazard-scale.jsp',
+  '/space-3d/chariklo-rings.html': 'space/chariklo-rings.jsp',
   '/space-3d/gps-time-dilation.html': 'space/gps-time-dilation.jsp',
   '/space-3d/white-dwarf-chandrasekhar-limit.html': 'space/white-dwarf-chandrasekhar-limit.jsp',
   '/space-3d/apollo-free-return-trajectory.html': 'space/apollo-free-return-trajectory.jsp',
@@ -22884,6 +22935,24 @@ export const JSP_BY_ROUTE = {
   '/guides/de/torino-impact-hazard-scale-step-by-step.html': 'guide/de/torino-impact-hazard-scale-step-by-step.jsp',
   '/guides/de/torino-impact-hazard-scale-when.html': 'guide/de/torino-impact-hazard-scale-when.jsp',
   '/guides/de/torino-impact-hazard-scale-vs-alternatives.html': 'guide/de/torino-impact-hazard-scale-vs-alternatives.jsp',
+  '/guides/chariklo-rings-when.html': 'guide/chariklo-rings-when.jsp',
+  '/guides/chariklo-rings-step-by-step.html': 'guide/chariklo-rings-step-by-step.jsp',
+  '/guides/chariklo-rings-vs-alternatives.html': 'guide/chariklo-rings-vs-alternatives.jsp',
+  '/guides/pt/chariklo-rings-when.html': 'guide/pt/chariklo-rings-when.jsp',
+  '/guides/pt/chariklo-rings-step-by-step.html': 'guide/pt/chariklo-rings-step-by-step.jsp',
+  '/guides/pt/chariklo-rings-vs-alternatives.html': 'guide/pt/chariklo-rings-vs-alternatives.jsp',
+  '/guides/es/chariklo-rings-when.html': 'guide/es/chariklo-rings-when.jsp',
+  '/guides/es/chariklo-rings-step-by-step.html': 'guide/es/chariklo-rings-step-by-step.jsp',
+  '/guides/es/chariklo-rings-vs-alternatives.html': 'guide/es/chariklo-rings-vs-alternatives.jsp',
+  '/guides/vi/chariklo-rings-when.html': 'guide/vi/chariklo-rings-when.jsp',
+  '/guides/vi/chariklo-rings-step-by-step.html': 'guide/vi/chariklo-rings-step-by-step.jsp',
+  '/guides/vi/chariklo-rings-vs-alternatives.html': 'guide/vi/chariklo-rings-vs-alternatives.jsp',
+  '/guides/id/chariklo-rings-when.html': 'guide/id/chariklo-rings-when.jsp',
+  '/guides/id/chariklo-rings-step-by-step.html': 'guide/id/chariklo-rings-step-by-step.jsp',
+  '/guides/id/chariklo-rings-vs-alternatives.html': 'guide/id/chariklo-rings-vs-alternatives.jsp',
+  '/guides/de/chariklo-rings-when.html': 'guide/de/chariklo-rings-when.jsp',
+  '/guides/de/chariklo-rings-step-by-step.html': 'guide/de/chariklo-rings-step-by-step.jsp',
+  '/guides/de/chariklo-rings-vs-alternatives.html': 'guide/de/chariklo-rings-vs-alternatives.jsp',
   '/guides/gps-time-dilation-step-by-step.html': 'guide/gps-time-dilation-step-by-step.jsp',
   '/guides/gps-time-dilation-when.html': 'guide/gps-time-dilation-when.jsp',
   '/guides/gps-time-dilation-vs-alternatives.html': 'guide/gps-time-dilation-vs-alternatives.jsp',

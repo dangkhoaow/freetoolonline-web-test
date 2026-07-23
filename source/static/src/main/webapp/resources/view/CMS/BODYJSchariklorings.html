@@ -1,0 +1,315 @@
+<script>
+    // 3D scene archetype skeleton (Chariklo Rings) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side.
+    // Forked from the torino-impact-hazard-scale shape - ONE scene only
+    // (a small-body ring explorer with a Saturn-scale comparison toggle).
+    // All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not a to-scale physical simulation. A
+    // teaching scene: the Centaur 10199 Chariklo and its two real rings,
+    // plus a toggle that zooms out on one consistent scale (1 unit = 200 km)
+    // to place Saturn's much larger ring system in view for comparison.
+    //
+    // Published figures (cross-checked via WebSearch 2026-07-24):
+    //   - 10199 Chariklo: a Centaur (small icy body orbiting the Sun between
+    //     Saturn and Uranus) with a mean diameter of about 250 km.
+    //   - On 2013-06-03, a team led by Felipe Braga-Ribas observed a stellar
+    //     occultation by Chariklo and detected two dense, narrow rings -
+    //     published in Nature 2014 (Braga-Ribas et al., "A ring system
+    //     detected around the Centaur (10199) Chariklo"). This was the
+    //     first ring system ever confirmed around a body smaller than a
+    //     giant planet.
+    //   - Inner ring: radius about 391 km from Chariklo's center, width
+    //     about 7 km. Outer ring: radius about 405 km, width about 3 km.
+    //     Gap between the two rings: about 9 km.
+    //   - Saturn equatorial radius: about 60,268 km (NASA fact sheet).
+    //     Saturn's main ring system (D ring through A ring) spans from
+    //     about 66,900 km to about 136,780 km from Saturn's center
+    //     (NASA/JPL Cassini-derived ring geometry).
+    //   - Distinct from saturn-rings.html (the giant-planet ring system used
+    //     here only as the comparison scale) - this page is specifically
+    //     about the smallest known ring system and its 2013 discovery story.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'chariklorings';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'chariklorings'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Real published figures (see header comment for sources). One
+    // consistent scale is used for every object in this scene:
+    var T3D_KM_PER_UNIT = 200;
+    var T3D_CHARIKLO_RADIUS_KM = 125;      // mean diameter ~250 km / 2
+    var T3D_INNER_RING_RADIUS_KM = 391;
+    var T3D_OUTER_RING_RADIUS_KM = 405;
+    var T3D_SATURN_RADIUS_KM = 60268;
+    var T3D_SATURN_RING_INNER_KM = 66900;  // D ring inner edge
+    var T3D_SATURN_RING_OUTER_KM = 136780; // A ring outer edge
+    var T3D_SATURN_OFFSET_X = 1000; // scene units, keeps the two groups apart
+
+    function t3dCharikloRings(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+        var sunLight = new THREE.DirectionalLight(0xfff3d6, 1.05);
+        sunLight.position.set(12, 8, 10);
+        scene.add(sunLight);
+
+        // Starfield backdrop
+        var starN = shell.low ? 260 : 520;
+        var starPos = new Float32Array(starN * 3);
+        for (var s = 0; s < starN; s++) {
+            var r = 30 + Math.random() * 50;
+            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+            starPos[s * 3] = r * Math.sin(ph) * Math.cos(th);
+            starPos[s * 3 + 1] = r * Math.cos(ph) * 0.55;
+            starPos[s * 3 + 2] = r * Math.sin(ph) * Math.sin(th) - 8;
+        }
+        var starGeo = new THREE.BufferGeometry();
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        var stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xaad4ff, size: 0.3, sizeAttenuation: true, transparent: true, opacity: 0.7 }));
+        scene.add(stars);
+
+        var charikloGroup = new THREE.Group();
+        scene.add(charikloGroup);
+
+        // Chariklo body (procedural, deformed icosahedron - a generic
+        // irregular-body approximation; Chariklo's precise 3D shape model
+        // carries real uncertainty).
+        var bodyR = T3D_CHARIKLO_RADIUS_KM / T3D_KM_PER_UNIT;
+        var astGeo = new THREE.IcosahedronGeometry(bodyR, 1);
+        var posAttr = astGeo.attributes.position;
+        for (var v = 0; v < posAttr.count; v++) {
+            var px = posAttr.getX(v), py = posAttr.getY(v), pz = posAttr.getZ(v);
+            var n = 1 + (Math.sin(px * 5.2 + py * 2.7) * 0.14) + (Math.cos(pz * 4.1 + px * 1.6) * 0.10);
+            posAttr.setXYZ(v, px * n, py * n, pz * n);
+        }
+        astGeo.computeVertexNormals();
+        var chariklo = new THREE.Mesh(astGeo, new THREE.MeshStandardMaterial({ color: 0x9aa3ad, roughness: 0.92, metalness: 0.04 }));
+        charikloGroup.add(chariklo);
+
+        // Two real rings (radius to real relative scale; ring WIDTH
+        // enlarged on screen for visibility - real widths are only a
+        // few km, sub-pixel at any reasonable render distance).
+        var innerR = T3D_INNER_RING_RADIUS_KM / T3D_KM_PER_UNIT;
+        var outerR = T3D_OUTER_RING_RADIUS_KM / T3D_KM_PER_UNIT;
+        var ringInner = new THREE.Mesh(
+            new THREE.RingGeometry(innerR - 0.025, innerR + 0.025, 64),
+            new THREE.MeshBasicMaterial({ color: 0xd7dee3, transparent: true, opacity: 0.9, side: THREE.DoubleSide })
+        );
+        ringInner.rotation.x = -Math.PI / 2;
+        charikloGroup.add(ringInner);
+        var ringOuter = new THREE.Mesh(
+            new THREE.RingGeometry(outerR - 0.02, outerR + 0.02, 64),
+            new THREE.MeshBasicMaterial({ color: 0xb9c2c9, transparent: true, opacity: 0.85, side: THREE.DoubleSide })
+        );
+        ringOuter.rotation.x = -Math.PI / 2;
+        charikloGroup.add(ringOuter);
+
+        // Saturn comparison group, same km-per-unit scale, offset well
+        // away from Chariklo so both can share one camera when zoomed out.
+        var saturnGroup = new THREE.Group();
+        saturnGroup.position.x = T3D_SATURN_OFFSET_X;
+        scene.add(saturnGroup);
+        var saturnR = T3D_SATURN_RADIUS_KM / T3D_KM_PER_UNIT;
+        var saturnBody = new THREE.Mesh(
+            new THREE.SphereGeometry(saturnR, 28, 20),
+            new THREE.MeshStandardMaterial({ color: 0xd9c9a3, roughness: 0.85, metalness: 0.05 })
+        );
+        saturnGroup.add(saturnBody);
+        var saturnRingInnerU = T3D_SATURN_RING_INNER_KM / T3D_KM_PER_UNIT;
+        var saturnRingOuterU = T3D_SATURN_RING_OUTER_KM / T3D_KM_PER_UNIT;
+        var saturnRingBand = new THREE.Mesh(
+            new THREE.RingGeometry(saturnRingInnerU, saturnRingOuterU, 96),
+            new THREE.MeshBasicMaterial({ color: 0xffe0b2, transparent: true, opacity: 0.35, side: THREE.DoubleSide })
+        );
+        saturnRingBand.rotation.x = -Math.PI / 2;
+        saturnGroup.add(saturnRingBand);
+
+        var compareOn = false;
+        var goalTargetX = 0;
+
+        function panelHtml() {
+            return '<h3>Chariklo Rings</h3>' +
+                '<p>10199 Chariklo (a Centaur, mean diameter about 250 km) - the first ring system ever confirmed around a body smaller than a giant planet, discovered by stellar occultation on 2013-06-03 (Braga-Ribas et al. 2014, Nature).</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Inner ring</td><td>radius ~391 km, width ~7 km</td></tr>' +
+                '<tr><td>Outer ring</td><td>radius ~405 km, width ~3 km</td></tr>' +
+                '<tr><td>Gap</td><td>~9 km</td></tr>' +
+                '<tr><td>Saturn main rings (D-A)</td><td>~66,900 km to ~136,780 km from center</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">' + (compareOn
+                    ? 'Comparison view: Chariklo (left) shrinks to a speck next to Saturn\'s ring span (right) on this one consistent scale.'
+                    : 'Close-up view: toggle the button below the scene to zoom out and compare against Saturn.') + '</p>' +
+                '<p class="t3d-note">Educational approximation - Chariklo\'s exact shape is simplified and both ring widths are enlarged for visibility. Body size, ring radii/widths/gap, and the Saturn comparison distances are the real published figures on one consistent scale.</p>';
+        }
+
+        function apply() {
+            goalTargetX = compareOn ? (T3D_SATURN_OFFSET_X * 0.42) : 0;
+            shell.orbit.goalRadius = compareOn ? 1400 : 6;
+            shell.orbit.goalPhi = compareOn ? 1.25 : 1.1;
+            shell.orbit.minR = compareOn ? 200 : 1;
+            shell.orbit.maxR = compareOn ? 2600 : 40;
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ compareOn: compareOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.compareOn === 'boolean') compareOn = store.compareOn;
+        apply();
+
+        var compareBtn = document.getElementById('t3dCharikloCompareBtn');
+        function updateBtnLabel() {
+            if (compareBtn) compareBtn.textContent = compareOn ? 'Zoom back in on Chariklo' : 'Compare to Saturn\'s rings';
+        }
+        updateBtnLabel();
+        if (compareBtn) compareBtn.addEventListener('click', function () {
+            compareOn = !compareOn;
+            updateBtnLabel();
+            apply();
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the button below to compare scale against Saturn.');
+        return function animate(dt) {
+            stars.rotation.y += dt * 0.00002;
+            charikloGroup.rotation.y += dt * 0.00018;
+            saturnGroup.rotation.y += dt * 0.00006;
+            shell.orbit.target.x += (goalTargetX - shell.orbit.target.x) * 0.06;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { chariklorings: 't3dCharikloControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { chariklorings: { radius: 6, maxR: 40, minR: 1, phi: 1.1, theta: 0.6, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dCharikloRings(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
