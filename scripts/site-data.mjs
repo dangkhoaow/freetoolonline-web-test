@@ -11432,6 +11432,10 @@ export const ALIAS_ROUTES = {
   '/woolly-mammoth.html': '/dinosaur-3d/woolly-mammoth.html',
   // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-23): flat-slug alias for styracosaurus.
   '/styracosaurus.html': '/dinosaur-3d/styracosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-23): synonym alias - the "megatherium"
+  // backlog candidate is the same species as the already-shipped ground-sloth page (Megatherium
+  // americanum). Captures the scientific-name search term without shipping a duplicate page (gate 4).
+  '/megatherium.html': '/dinosaur-3d/ground-sloth.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
