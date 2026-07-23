@@ -1,0 +1,383 @@
+<script>
+    // 3D scene archetype skeleton (twilight-types) - vendored three.js (ESM,
+    // dynamic import from /vendor/three/, NO CDN), fully client-side. Built LEAN
+    // from the shared t3d* skeleton - ONE scene only. All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not a physical simulation. This scene grades the
+    // twilight transition zone around Earth's terminator into the three officially
+    // defined bands (civil / nautical / astronomical) and lets a reader move a
+    // latitude slider and season buttons to find where "white nights" happen. The
+    // globe is deliberately viewed pole-on to a FIXED Sun direction (world +Y) so
+    // all three bands render as complete rings at once - this is not a realistic
+    // side-on day/night view of Earth. The latitude/season midnight-depression
+    // figure uses the standard idealized spherical-astronomy formula (flat
+    // sea-level horizon, no atmospheric refraction), not a full-precision
+    // ephemeris.
+    //
+    // Published figures (U.S. Naval Observatory, "Rise, Set, and Twilight
+    // Definitions", aa.usno.navy.mil/faq/RST_defs; U.S. National Weather Service,
+    // "Definitions of Twilight", weather.gov/fsd/twilight; verified 2026-07-23):
+    //   - Civil twilight: begins/ends when the Sun's center is geometrically 6
+    //     degrees below the horizon (0-6 degrees below horizon).
+    //   - Nautical twilight: begins/ends at 12 degrees below the horizon
+    //     (6-12 degrees below horizon).
+    //   - Astronomical twilight: begins/ends at 18 degrees below the horizon
+    //     (12-18 degrees below horizon). Past 18 degrees is full night.
+    //   - Near the equator the Sun's path meets the horizon at a steep angle, so
+    //     total twilight (sunset to full astronomical darkness) lasts roughly
+    //     70 minutes year-round.
+    //   - Near latitude 60.5 degrees North or South, around that hemisphere's
+    //     summer solstice, the Sun's center never drops the full 6 degrees below
+    //     the horizon at local midnight - continuous civil twilight all night,
+    //     the "white nights" effect seen in cities such as Saint Petersburg and
+    //     Reykjavik (about 59.9N and 64.1N).
+    //   - The midnight solar-depression figure at a given latitude and season
+    //     follows the standard spherical-astronomy identity: depression at local
+    //     midnight (degrees) is approximately 90 minus the latitude minus the
+    //     Sun's declination for that season (about +23.44 at the June solstice in
+    //     the Northern Hemisphere, 0 at the equinoxes, about -23.44 at the
+    //     December solstice) - this page computes that figure directly, it does
+    //     not look it up from a table.
+    //
+    // Distinct from Earth 3D Globe (a live approximate sun position on a rotating
+    // Earth, not the three defined twilight bands), Seasons on Earth (why Earth
+    // has seasons via axial tilt, not the twilight-band classification), and
+    // Solar Eclipse (a specific eclipse event and its geometry, not everyday
+    // twilight banding).
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'twilight-types';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'twilighttypes'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Published figures (see header comment for sources).
+    var T3D_TW_CIVIL_DEG = 6;
+    var T3D_TW_NAUTICAL_DEG = 12;
+    var T3D_TW_ASTRO_DEG = 18;
+    var T3D_TW_JUNE_DECL = 23.44;
+    var T3D_TW_DEC_DECL = -23.44;
+
+    function t3dTwZoneForDepression(dep) {
+        if (dep < 0) return { label: 'Sun above horizon (midnight sun / daylight)', key: 'day' };
+        if (dep <= T3D_TW_CIVIL_DEG) return { label: 'Civil twilight', key: 'civil' };
+        if (dep <= T3D_TW_NAUTICAL_DEG) return { label: 'Nautical twilight', key: 'nautical' };
+        if (dep <= T3D_TW_ASTRO_DEG) return { label: 'Astronomical twilight', key: 'astro' };
+        return { label: 'Full night', key: 'night' };
+    }
+
+    function t3dTwMidnightDepression(latDeg, declDeg) {
+        var signedDecl = latDeg >= 0 ? declDeg : -declDeg;
+        return 90 - Math.abs(latDeg) - signedDecl;
+    }
+
+    function t3dTwilightTypes(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        var DEG = Math.PI / 180;
+        shell.renderer.setClearColor(0x030712, 1);
+        scene.add(new THREE.AmbientLight(0x445566, 0.55));
+        var sun = new THREE.DirectionalLight(0xfff4e0, 1.35);
+        sun.position.set(0, 30, 4);
+        scene.add(sun);
+        var sunMesh = new THREE.Mesh(new THREE.SphereGeometry(1.1, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffe083 }));
+        sunMesh.position.set(0, 22, 3);
+        scene.add(sunMesh);
+
+        // Distant starfield for spatial context (not real star catalogue positions).
+        var starCount = shell.low ? 500 : 1000;
+        var spos = new Float32Array(starCount * 3);
+        for (var s = 0; s < starCount; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(60 + Math.random() * 60);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0x8899aa, size: 0.4, sizeAttenuation: true })));
+
+        // Earth - a simple procedural sphere, not photorealistic imagery. The
+        // scene is viewed pole-on to the FIXED Sun direction (world +Y), so this
+        // is not Earth's real rotation axis - it is the Sun-relative frame the
+        // twilight bands are defined in.
+        var earth = new THREE.Mesh(
+            new THREE.SphereGeometry(6, 40, 30),
+            new THREE.MeshPhongMaterial({ color: 0x1c5d8f, emissive: 0x081018, shininess: 10 })
+        );
+        scene.add(earth);
+        var landBits = new THREE.Mesh(
+            new THREE.SphereGeometry(6.01, 24, 16),
+            new THREE.MeshPhongMaterial({ color: 0x2f7d4a, transparent: true, opacity: 0.35, flatShading: true })
+        );
+        landBits.scale.set(1, 0.97, 1);
+        scene.add(landBits);
+
+        // Twilight bands as latitude-style caps/rings around the Sun-facing pole
+        // (polar angle 0 = point directly facing the Sun). depression = polarAngle
+        // - 90, so civil/nautical/astronomical map to fixed polar-angle ranges.
+        var bandDefs = [
+            { key: 'day', thetaStart: 0, thetaLength: 90, radius: 6.02, color: 0xffe9a8, opacity: 0.22, label: 'Daylight (Sun above horizon)' },
+            { key: 'civil', thetaStart: 90, thetaLength: T3D_TW_CIVIL_DEG, radius: 6.03, color: 0xffb74d, opacity: 0.72, label: 'Civil twilight (0-6° below horizon)' },
+            { key: 'nautical', thetaStart: 90 + T3D_TW_CIVIL_DEG, thetaLength: T3D_TW_NAUTICAL_DEG - T3D_TW_CIVIL_DEG, radius: 6.035, color: 0x4fc3f7, opacity: 0.72, label: 'Nautical twilight (6-12° below horizon)' },
+            { key: 'astro', thetaStart: 90 + T3D_TW_NAUTICAL_DEG, thetaLength: T3D_TW_ASTRO_DEG - T3D_TW_NAUTICAL_DEG, radius: 6.04, color: 0x5c6bc0, opacity: 0.75, label: 'Astronomical twilight (12-18° below horizon)' },
+            { key: 'night', thetaStart: 90 + T3D_TW_ASTRO_DEG, thetaLength: 180 - (90 + T3D_TW_ASTRO_DEG), radius: 6.045, color: 0x0a0f1e, opacity: 0.5, label: 'Full night' }
+        ];
+        bandDefs.forEach(function (b) {
+            var geo = new THREE.SphereGeometry(b.radius, 48, 6, 0, Math.PI * 2, b.thetaStart * DEG, b.thetaLength * DEG);
+            var mat = new THREE.MeshBasicMaterial({ color: b.color, transparent: true, opacity: b.opacity, side: THREE.DoubleSide, depthWrite: false });
+            scene.add(new THREE.Mesh(geo, mat));
+        });
+
+        // Depression-angle dial marker - a thin bright ring rebuilt on slider change.
+        var dialMesh = new THREE.Mesh(
+            new THREE.SphereGeometry(6.07, 48, 4, 0, Math.PI * 2, 90 * DEG, 1 * DEG),
+            new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95, side: THREE.DoubleSide, depthWrite: false })
+        );
+        scene.add(dialMesh);
+        function rebuildDial(depDeg) {
+            dialMesh.geometry.dispose();
+            var start = Math.max(0, Math.min(179, 90 + depDeg - 0.5)) * DEG;
+            dialMesh.geometry = new THREE.SphereGeometry(6.07, 48, 4, 0, Math.PI * 2, start, 1 * DEG);
+        }
+
+        // Latitude/season "local midnight" marker - a small glowing dot placed by
+        // spherical trig (see t3dTwMidnightDepression), not by animating rotation.
+        var markerMesh = new THREE.Mesh(new THREE.SphereGeometry(0.3, 16, 12), new THREE.MeshBasicMaterial({ color: 0x69f0ae }));
+        scene.add(markerMesh);
+        function placeMarker(latDeg, declDeg) {
+            var dep = t3dTwMidnightDepression(latDeg, declDeg);
+            var polarDeg = Math.max(0, Math.min(180, 90 + dep));
+            var polarRad = polarDeg * DEG;
+            var r = 6.12;
+            markerMesh.position.set(r * Math.sin(polarRad), r * Math.cos(polarRad), 0.15);
+            return dep;
+        }
+
+        var degValue = T3D_TW_CIVIL_DEG;
+        var latValue = 64;
+        var declValue = T3D_TW_JUNE_DECL;
+        var seasonLabel = 'June solstice (Northern Hemisphere summer)';
+
+        function bandRowsHtml() {
+            return bandDefs.map(function (b) { return '<tr><td>' + b.label + '</td></tr>'; }).join('');
+        }
+
+        function factsHtml() {
+            var dialZone = t3dTwZoneForDepression(degValue);
+            var midnightDep = t3dTwMidnightDepression(latValue, declValue);
+            var midnightZone = t3dTwZoneForDepression(midnightDep);
+            var isWhiteNight = midnightDep >= 0 && midnightDep <= T3D_TW_CIVIL_DEG;
+            var latLabel = Math.abs(latValue) + '°' + (latValue >= 0 ? 'N' : 'S');
+            var html = '<h3>Depression dial: ' + degValue + '° below horizon</h3>' +
+                '<p>The bright ring on the globe marks where the Sun sits exactly ' + degValue + ' degrees below the horizon right now - that is <b>' + dialZone.label + '</b>.</p>' +
+                '<table class="w3-table w3-bordered w3-small"><tr><th>Band shown on globe</th></tr>' + bandRowsHtml() + '</table>' +
+                '<h3>Latitude ' + latLabel + ', ' + seasonLabel + '</h3>' +
+                '<p>At local midnight here, the Sun would sit about ' + midnightDep.toFixed(1) + ' degrees below the horizon - <b>' + midnightZone.label + '</b>' +
+                (isWhiteNight ? ' (a "white night": the sky never gets past civil twilight all night)' : '') + '.</p>' +
+                '<p class="t3d-note">Civil 0-6&deg;, nautical 6-12&deg;, astronomical 12-18&deg; below horizon (USNO). Near the equator total twilight lasts roughly 70 minutes; white nights start near 60.5&deg; latitude at that hemisphere\'s summer solstice.</p>';
+            return html;
+        }
+
+        function refresh() {
+            rebuildDial(degValue);
+            placeMarker(latValue, declValue);
+            t3dInfo(factsHtml());
+            try { t3dSaveStore({ deg: degValue, lat: latValue, decl: declValue }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.deg === 'number' && store.deg >= 0 && store.deg <= 18) degValue = store.deg;
+        if (typeof store.lat === 'number' && store.lat >= -80 && store.lat <= 80) latValue = store.lat;
+        if (typeof store.decl === 'number') {
+            declValue = store.decl;
+            seasonLabel = declValue > 5 ? 'June solstice (Northern Hemisphere summer)' : (declValue < -5 ? 'December solstice (Northern Hemisphere winter)' : 'Equinox');
+        }
+        refresh();
+
+        var degSlider = document.getElementById('t3dTwilightDegSlider');
+        var degLabel = document.getElementById('t3dTwilightDegLabel');
+        function syncDegLabel() {
+            var zone = t3dTwZoneForDepression(degValue);
+            if (degLabel) degLabel.textContent = 'Depression angle: ' + degValue + '° below horizon (' + zone.label + ')';
+            if (degSlider) degSlider.value = String(degValue);
+        }
+        syncDegLabel();
+        if (degSlider) {
+            degSlider.addEventListener('input', function () {
+                degValue = Math.max(0, Math.min(18, parseInt(degSlider.value, 10) || 0));
+                syncDegLabel();
+                refresh();
+            });
+        }
+
+        var latSlider = document.getElementById('t3dTwilightLatSlider');
+        var latLabelEl = document.getElementById('t3dTwilightLatLabel');
+        function syncLatLabel() {
+            var abs = Math.abs(latValue);
+            if (latLabelEl) latLabelEl.textContent = 'Latitude: ' + abs + '°' + (latValue >= 0 ? 'N' : 'S');
+            if (latSlider) latSlider.value = String(latValue);
+        }
+        syncLatLabel();
+        if (latSlider) {
+            latSlider.addEventListener('input', function () {
+                latValue = Math.max(-80, Math.min(80, parseInt(latSlider.value, 10) || 0));
+                syncLatLabel();
+                refresh();
+            });
+        }
+
+        function setSeason(decl, label) {
+            declValue = decl; seasonLabel = label; refresh();
+        }
+        var juneBtn = document.getElementById('t3dTwilightSeasonJuneBtn');
+        var eqBtn = document.getElementById('t3dTwilightSeasonEquinoxBtn');
+        var decBtn = document.getElementById('t3dTwilightSeasonDecBtn');
+        if (juneBtn) juneBtn.addEventListener('click', function () { setSeason(T3D_TW_JUNE_DECL, 'June solstice (Northern Hemisphere summer)'); });
+        if (eqBtn) eqBtn.addEventListener('click', function () { setSeason(0, 'Equinox'); });
+        if (decBtn) decBtn.addEventListener('click', function () { setSeason(T3D_TW_DEC_DECL, 'December solstice (Northern Hemisphere winter)'); });
+
+        var resetBtn = document.getElementById('t3dTwilightResetBtn');
+        if (resetBtn) resetBtn.addEventListener('click', function () {
+            degValue = T3D_TW_CIVIL_DEG; latValue = 64; declValue = T3D_TW_JUNE_DECL;
+            seasonLabel = 'June solstice (Northern Hemisphere summer)';
+            syncDegLabel(); syncLatLabel(); refresh();
+        });
+
+        t3dStatus('Drag to orbit, scroll or pinch to zoom. Move the depression dial or the latitude slider, or pick a season below.');
+        return function animate(dt) {
+            earth.rotation.y += dt * 0.00004;
+            landBits.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { twilighttypes: 't3dTwilightControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { twilighttypes: { radius: 20, maxR: 60, minR: 9, phi: 1.05, theta: 0.5, targetY: 0 } };
+                    var shellCtx = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dTwilightTypes(shellCtx);
+                    var last = performance.now();
+                    shellCtx.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shellCtx.applyCamera();
+                        shellCtx.renderer.render(shellCtx.scene, shellCtx.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

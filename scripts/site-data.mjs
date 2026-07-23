@@ -17,6 +17,22 @@ export const INFO_ROUTES = new Set([
   '/guides/lorem-ipsum-placeholder-text-generator-vs-alternatives.html',
   '/guides/lorem-ipsum-placeholder-text-generator-step-by-step.html',
   '/guides/lorem-ipsum-placeholder-text-generator-when.html',
+  // new-tool-discovery-loop-runbook fire369: lorem-ipsum-generator locale fanout (pt/es/vi/id/de x 3 angles)
+  '/guides/pt/lorem-ipsum-placeholder-text-generator-when.html',
+  '/guides/es/lorem-ipsum-placeholder-text-generator-when.html',
+  '/guides/vi/lorem-ipsum-placeholder-text-generator-when.html',
+  '/guides/id/lorem-ipsum-placeholder-text-generator-when.html',
+  '/guides/de/lorem-ipsum-placeholder-text-generator-when.html',
+  '/guides/pt/lorem-ipsum-placeholder-text-generator-step-by-step.html',
+  '/guides/es/lorem-ipsum-placeholder-text-generator-step-by-step.html',
+  '/guides/vi/lorem-ipsum-placeholder-text-generator-step-by-step.html',
+  '/guides/id/lorem-ipsum-placeholder-text-generator-step-by-step.html',
+  '/guides/de/lorem-ipsum-placeholder-text-generator-step-by-step.html',
+  '/guides/pt/lorem-ipsum-placeholder-text-generator-vs-alternatives.html',
+  '/guides/es/lorem-ipsum-placeholder-text-generator-vs-alternatives.html',
+  '/guides/vi/lorem-ipsum-placeholder-text-generator-vs-alternatives.html',
+  '/guides/id/lorem-ipsum-placeholder-text-generator-vs-alternatives.html',
+  '/guides/de/lorem-ipsum-placeholder-text-generator-vs-alternatives.html',
   '/guides/password-strength-checker-vs-alternatives.html',
   '/guides/password-strength-checker-step-by-step.html',
   '/guides/password-strength-checker-when.html',
@@ -5085,6 +5101,24 @@ export const INFO_ROUTES = new Set([
   '/guides/de/space-debris-kessler-step-by-step.html',
   '/guides/de/space-debris-kessler-when.html',
   '/guides/de/space-debris-kessler-vs-alternatives.html',
+  '/guides/twilight-types-step-by-step.html',
+  '/guides/twilight-types-when.html',
+  '/guides/twilight-types-vs-alternatives.html',
+  '/guides/pt/twilight-types-step-by-step.html',
+  '/guides/pt/twilight-types-when.html',
+  '/guides/pt/twilight-types-vs-alternatives.html',
+  '/guides/es/twilight-types-step-by-step.html',
+  '/guides/es/twilight-types-when.html',
+  '/guides/es/twilight-types-vs-alternatives.html',
+  '/guides/vi/twilight-types-step-by-step.html',
+  '/guides/vi/twilight-types-when.html',
+  '/guides/vi/twilight-types-vs-alternatives.html',
+  '/guides/id/twilight-types-step-by-step.html',
+  '/guides/id/twilight-types-when.html',
+  '/guides/id/twilight-types-vs-alternatives.html',
+  '/guides/de/twilight-types-step-by-step.html',
+  '/guides/de/twilight-types-when.html',
+  '/guides/de/twilight-types-vs-alternatives.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -5102,6 +5136,28 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // new-tool-discovery-loop-runbook fire369: lorem-ipsum-generator guides were
+  // never registered in GUIDE_ROUTES (EN missing too, same gap password-strength-checker
+  // had at fire366) - backfilling EN + full pt/es/vi/id/de locale fanout so all 18
+  // routes get Article JSON-LD + sitemap-guides.xml / guides.html / llms.txt listing.
+  '/guides/lorem-ipsum-placeholder-text-generator-when.html',
+  '/guides/pt/lorem-ipsum-placeholder-text-generator-when.html',
+  '/guides/es/lorem-ipsum-placeholder-text-generator-when.html',
+  '/guides/vi/lorem-ipsum-placeholder-text-generator-when.html',
+  '/guides/id/lorem-ipsum-placeholder-text-generator-when.html',
+  '/guides/de/lorem-ipsum-placeholder-text-generator-when.html',
+  '/guides/lorem-ipsum-placeholder-text-generator-step-by-step.html',
+  '/guides/pt/lorem-ipsum-placeholder-text-generator-step-by-step.html',
+  '/guides/es/lorem-ipsum-placeholder-text-generator-step-by-step.html',
+  '/guides/vi/lorem-ipsum-placeholder-text-generator-step-by-step.html',
+  '/guides/id/lorem-ipsum-placeholder-text-generator-step-by-step.html',
+  '/guides/de/lorem-ipsum-placeholder-text-generator-step-by-step.html',
+  '/guides/lorem-ipsum-placeholder-text-generator-vs-alternatives.html',
+  '/guides/pt/lorem-ipsum-placeholder-text-generator-vs-alternatives.html',
+  '/guides/es/lorem-ipsum-placeholder-text-generator-vs-alternatives.html',
+  '/guides/vi/lorem-ipsum-placeholder-text-generator-vs-alternatives.html',
+  '/guides/id/lorem-ipsum-placeholder-text-generator-vs-alternatives.html',
+  '/guides/de/lorem-ipsum-placeholder-text-generator-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire366: password-strength-checker guides were
   // never registered in GUIDE_ROUTES (EN missing too, same gap password-generator had) -
   // backfilling EN + full pt/es/vi/id/de locale fanout so all 18 routes get
@@ -10817,6 +10873,24 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/space-debris-kessler-step-by-step.html',
   '/guides/de/space-debris-kessler-when.html',
   '/guides/de/space-debris-kessler-vs-alternatives.html',
+  '/guides/twilight-types-step-by-step.html',
+  '/guides/twilight-types-when.html',
+  '/guides/twilight-types-vs-alternatives.html',
+  '/guides/pt/twilight-types-step-by-step.html',
+  '/guides/pt/twilight-types-when.html',
+  '/guides/pt/twilight-types-vs-alternatives.html',
+  '/guides/es/twilight-types-step-by-step.html',
+  '/guides/es/twilight-types-when.html',
+  '/guides/es/twilight-types-vs-alternatives.html',
+  '/guides/vi/twilight-types-step-by-step.html',
+  '/guides/vi/twilight-types-when.html',
+  '/guides/vi/twilight-types-vs-alternatives.html',
+  '/guides/id/twilight-types-step-by-step.html',
+  '/guides/id/twilight-types-when.html',
+  '/guides/id/twilight-types-vs-alternatives.html',
+  '/guides/de/twilight-types-step-by-step.html',
+  '/guides/de/twilight-types-when.html',
+  '/guides/de/twilight-types-vs-alternatives.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -11616,6 +11690,8 @@ export const ALIAS_ROUTES = {
   '/styracosaurus.html': '/dinosaur-3d/styracosaurus.html',
   // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-23): flat-slug alias for estemmenosuchus.
   '/estemmenosuchus.html': '/dinosaur-3d/estemmenosuchus.html',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-23): flat-slug alias for placodus.
+  '/placodus.html': '/dinosaur-3d/placodus.html',
   // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-23): synonym alias - the "megatherium"
   // backlog candidate is the same species as the already-shipped ground-sloth page (Megatherium
   // americanum). Captures the scientific-name search term without shipping a duplicate page (gate 4).
@@ -11849,6 +11925,7 @@ export const ALIAS_ROUTES = {
   '/circumbinary-planet.html': '/space-3d/circumbinary-planet.html',
   '/debris-disk.html': '/space-3d/debris-disk.html',
   '/space-debris-kessler.html': '/space-3d/space-debris-kessler.html',
+  '/twilight-types.html': '/space-3d/twilight-types.html',
   '/brown-dwarf.html': '/space-3d/brown-dwarf.html',
   '/kilonova.html': '/space-3d/kilonova.html',
   '/carrington-event.html': '/space-3d/carrington-event.html',
@@ -15708,6 +15785,13 @@ export const JSP_BY_ROUTE = {
   // woolly-mammoth quadruped-mammal pattern; model-first via ftol-vm-assets
   // estemmenosuchus.glb, CC-BY 4.0 Printables (already Y-up, no pitch/yaw needed).
   '/dinosaur-3d/estemmenosuchus.html': 'dinosaur/estemmenosuchus.jsp',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-23): Placodus viewer -
+  // Triassic placodont marine reptile (not a dinosaur), stocky quadruped with
+  // shellfish-crushing teeth; ceratopsian-fallback archetype (empty feats, no
+  // frill/horns/armor) reused purely for the plain quadruped body shape;
+  // model-first via ftol-vm-assets placodus.glb, CC-BY 4.0 Printables (already
+  // correctly oriented, confirmed via bilateral symmetry test, no pitch/yaw needed).
+  '/dinosaur-3d/placodus.html': 'dinosaur/placodus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -18237,6 +18321,7 @@ export const JSP_BY_ROUTE = {
   '/space-3d/circumbinary-planet.html': 'space/circumbinary-planet.jsp',
   '/space-3d/debris-disk.html': 'space/debris-disk.jsp',
   '/space-3d/space-debris-kessler.html': 'space/space-debris-kessler.jsp',
+  '/space-3d/twilight-types.html': 'space/twilight-types.jsp',
   '/space-3d/brown-dwarf.html': 'space/brown-dwarf.jsp',
   '/space-3d/kilonova.html': 'space/kilonova.jsp',
   '/space-3d/carrington-event.html': 'space/carrington-event.jsp',
@@ -21931,6 +22016,24 @@ export const JSP_BY_ROUTE = {
   '/guides/de/space-debris-kessler-step-by-step.html': 'guide/de/space-debris-kessler-step-by-step.jsp',
   '/guides/de/space-debris-kessler-when.html': 'guide/de/space-debris-kessler-when.jsp',
   '/guides/de/space-debris-kessler-vs-alternatives.html': 'guide/de/space-debris-kessler-vs-alternatives.jsp',
+  '/guides/twilight-types-step-by-step.html': 'guide/twilight-types-step-by-step.jsp',
+  '/guides/twilight-types-when.html': 'guide/twilight-types-when.jsp',
+  '/guides/twilight-types-vs-alternatives.html': 'guide/twilight-types-vs-alternatives.jsp',
+  '/guides/pt/twilight-types-step-by-step.html': 'guide/pt/twilight-types-step-by-step.jsp',
+  '/guides/pt/twilight-types-when.html': 'guide/pt/twilight-types-when.jsp',
+  '/guides/pt/twilight-types-vs-alternatives.html': 'guide/pt/twilight-types-vs-alternatives.jsp',
+  '/guides/es/twilight-types-step-by-step.html': 'guide/es/twilight-types-step-by-step.jsp',
+  '/guides/es/twilight-types-when.html': 'guide/es/twilight-types-when.jsp',
+  '/guides/es/twilight-types-vs-alternatives.html': 'guide/es/twilight-types-vs-alternatives.jsp',
+  '/guides/vi/twilight-types-step-by-step.html': 'guide/vi/twilight-types-step-by-step.jsp',
+  '/guides/vi/twilight-types-when.html': 'guide/vi/twilight-types-when.jsp',
+  '/guides/vi/twilight-types-vs-alternatives.html': 'guide/vi/twilight-types-vs-alternatives.jsp',
+  '/guides/id/twilight-types-step-by-step.html': 'guide/id/twilight-types-step-by-step.jsp',
+  '/guides/id/twilight-types-when.html': 'guide/id/twilight-types-when.jsp',
+  '/guides/id/twilight-types-vs-alternatives.html': 'guide/id/twilight-types-vs-alternatives.jsp',
+  '/guides/de/twilight-types-step-by-step.html': 'guide/de/twilight-types-step-by-step.jsp',
+  '/guides/de/twilight-types-when.html': 'guide/de/twilight-types-when.jsp',
+  '/guides/de/twilight-types-vs-alternatives.html': 'guide/de/twilight-types-vs-alternatives.jsp',
   '/guides/starlink-constellation-shells-step-by-step.html': 'guide/starlink-constellation-shells-step-by-step.jsp',
   '/guides/starlink-constellation-shells-when.html': 'guide/starlink-constellation-shells-when.jsp',
   '/guides/starlink-constellation-shells-vs-alternatives.html': 'guide/starlink-constellation-shells-vs-alternatives.jsp',
@@ -22195,6 +22298,22 @@ export const JSP_BY_ROUTE = {
   '/guides/lorem-ipsum-placeholder-text-generator-when.html': 'guide/lorem-ipsum-placeholder-text-generator-when.jsp',
   '/guides/lorem-ipsum-placeholder-text-generator-step-by-step.html': 'guide/lorem-ipsum-placeholder-text-generator-step-by-step.jsp',
   '/guides/lorem-ipsum-placeholder-text-generator-vs-alternatives.html': 'guide/lorem-ipsum-placeholder-text-generator-vs-alternatives.jsp',
+  // new-tool-discovery-loop-runbook fire369: lorem-ipsum-generator locale fanout
+  '/guides/pt/lorem-ipsum-placeholder-text-generator-when.html': 'guide/pt/lorem-ipsum-placeholder-text-generator-when.jsp',
+  '/guides/es/lorem-ipsum-placeholder-text-generator-when.html': 'guide/es/lorem-ipsum-placeholder-text-generator-when.jsp',
+  '/guides/vi/lorem-ipsum-placeholder-text-generator-when.html': 'guide/vi/lorem-ipsum-placeholder-text-generator-when.jsp',
+  '/guides/id/lorem-ipsum-placeholder-text-generator-when.html': 'guide/id/lorem-ipsum-placeholder-text-generator-when.jsp',
+  '/guides/de/lorem-ipsum-placeholder-text-generator-when.html': 'guide/de/lorem-ipsum-placeholder-text-generator-when.jsp',
+  '/guides/pt/lorem-ipsum-placeholder-text-generator-step-by-step.html': 'guide/pt/lorem-ipsum-placeholder-text-generator-step-by-step.jsp',
+  '/guides/es/lorem-ipsum-placeholder-text-generator-step-by-step.html': 'guide/es/lorem-ipsum-placeholder-text-generator-step-by-step.jsp',
+  '/guides/vi/lorem-ipsum-placeholder-text-generator-step-by-step.html': 'guide/vi/lorem-ipsum-placeholder-text-generator-step-by-step.jsp',
+  '/guides/id/lorem-ipsum-placeholder-text-generator-step-by-step.html': 'guide/id/lorem-ipsum-placeholder-text-generator-step-by-step.jsp',
+  '/guides/de/lorem-ipsum-placeholder-text-generator-step-by-step.html': 'guide/de/lorem-ipsum-placeholder-text-generator-step-by-step.jsp',
+  '/guides/pt/lorem-ipsum-placeholder-text-generator-vs-alternatives.html': 'guide/pt/lorem-ipsum-placeholder-text-generator-vs-alternatives.jsp',
+  '/guides/es/lorem-ipsum-placeholder-text-generator-vs-alternatives.html': 'guide/es/lorem-ipsum-placeholder-text-generator-vs-alternatives.jsp',
+  '/guides/vi/lorem-ipsum-placeholder-text-generator-vs-alternatives.html': 'guide/vi/lorem-ipsum-placeholder-text-generator-vs-alternatives.jsp',
+  '/guides/id/lorem-ipsum-placeholder-text-generator-vs-alternatives.html': 'guide/id/lorem-ipsum-placeholder-text-generator-vs-alternatives.jsp',
+  '/guides/de/lorem-ipsum-placeholder-text-generator-vs-alternatives.html': 'guide/de/lorem-ipsum-placeholder-text-generator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
