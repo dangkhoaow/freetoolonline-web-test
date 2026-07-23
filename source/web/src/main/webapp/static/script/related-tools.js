@@ -696,6 +696,7 @@ try {
     { title: "Algol Eclipsing Binary 3D Explorer", url: "https://freetoolonline.com/space-3d/algol-eclipsing-binary.html", include: !1, tags: "space-3d" },
     { title: "Main-Sequence Lifetime 3D Explorer", url: "https://freetoolonline.com/space-3d/main-sequence-lifetime.html", include: !1, tags: "space-3d" },
     { title: "Earth Perihelion & Aphelion 3D Explorer", url: "https://freetoolonline.com/space-3d/earth-perihelion-aphelion.html", include: !1, tags: "space-3d" },
+    { title: "Galactic Coordinate Transforms 3D Explorer", url: "https://freetoolonline.com/space-3d/galactic-coordinate-transforms.html", include: !1, tags: "space-3d" },
     { title: "Exoplanet Atmosphere Spectroscopy 3D Explorer", url: "https://freetoolonline.com/space-3d/exoplanet-atmosphere-spectroscopy.html", include: !1, tags: "space-3d" },
     { title: "Saros Cycle Eclipse Explorer 3D", url: "https://freetoolonline.com/space-3d/saros-cycle.html", include: !1, tags: "space-3d" },
     { title: "Starlink Constellation Shells 3D Explorer", url: "https://freetoolonline.com/space-3d/starlink-constellation-shells.html", include: !1, tags: "space-3d" },
