@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/csv-json-converter-vs-alternatives.html',
+  '/guides/csv-json-converter-step-by-step.html',
+  '/guides/csv-json-converter-when.html',
   '/guides/number-base-converter-binary-hex-octal-decimal-step-by-step.html',
   '/guides/number-base-converter-binary-hex-octal-decimal-when.html',
   // new-tool-discovery-loop-runbook fire371: 3rd EN angle (the builder's
@@ -11761,6 +11764,8 @@ export const ALIAS_ROUTES = {
   '/placodus.html': '/dinosaur-3d/placodus.html',
   // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-23): flat-slug alias for beipiaosaurus.
   '/beipiaosaurus.html': '/dinosaur-3d/beipiaosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-23): flat-slug alias for dunkleosteus.
+  '/dunkleosteus.html': '/dinosaur-3d/dunkleosteus.html',
   // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-23): synonym alias - the "megatherium"
   // backlog candidate is the same species as the already-shipped ground-sloth page (Megatherium
   // americanum). Captures the scientific-name search term without shipping a duplicate page (gate 4).
@@ -12111,6 +12116,7 @@ export const ALIAS_ROUTES = {
   '/password-strength-checker.html': '/developer-tools/password-strength-checker.html',
   '/lorem-ipsum-generator.html': '/developer-tools/lorem-ipsum-generator.html',
   '/number-base-converter.html': '/developer-tools/number-base-converter.html',
+  '/csv-to-json-converter.html': '/developer-tools/csv-to-json-converter.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -15869,6 +15875,11 @@ export const JSP_BY_ROUTE = {
   // theropod archetype (feats.longArms), model-first via ftol-vm-assets
   // beipiaosaurus.glb (CC-BY-SA 4.0, DragonArtist15/Printables), render-verified.
   '/dinosaur-3d/beipiaosaurus.html': 'dinosaur/beipiaosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-23): Dunkleosteus viewer -
+  // marine archetype (armored Devonian placoderm fish, not a dinosaur), model-first
+  // via ftol-vm-assets dunkleosteus.glb (CC-BY, StormCrow13/Printables) - raw STL was
+  // Z-up, rotation baked into the exported geometry, render-verified.
+  '/dinosaur-3d/dunkleosteus.html': 'dinosaur/dunkleosteus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -22432,6 +22443,10 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/number-base-converter-vs-alternatives.html': 'guide/vi/number-base-converter-vs-alternatives.jsp',
   '/guides/id/number-base-converter-vs-alternatives.html': 'guide/id/number-base-converter-vs-alternatives.jsp',
   '/guides/de/number-base-converter-vs-alternatives.html': 'guide/de/number-base-converter-vs-alternatives.jsp',
+  '/developer-tools/csv-to-json-converter.html': 'utility/csv-to-json-converter.jsp',
+  '/guides/csv-json-converter-when.html': 'guide/csv-json-converter-when.jsp',
+  '/guides/csv-json-converter-step-by-step.html': 'guide/csv-json-converter-step-by-step.jsp',
+  '/guides/csv-json-converter-vs-alternatives.html': 'guide/csv-json-converter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
