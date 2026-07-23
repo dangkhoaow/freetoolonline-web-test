@@ -383,6 +383,7 @@ try {
     { title: "Gorgonops 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/gorgonops.html", include: !1, tags: "dinosaur-3d" },
     { title: "Woolly Mammoth 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/woolly-mammoth.html", include: !1, tags: "dinosaur-3d" },
     { title: "Styracosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/styracosaurus.html", include: !1, tags: "dinosaur-3d" },
+    { title: "Estemmenosuchus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/estemmenosuchus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Ceratosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/ceratosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Brontosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/brontosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Megalosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/megalosaurus.html", include: !1, tags: "dinosaur-3d" },

@@ -11486,6 +11486,8 @@ export const ALIAS_ROUTES = {
   '/woolly-mammoth.html': '/dinosaur-3d/woolly-mammoth.html',
   // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-23): flat-slug alias for styracosaurus.
   '/styracosaurus.html': '/dinosaur-3d/styracosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-23): flat-slug alias for estemmenosuchus.
+  '/estemmenosuchus.html': '/dinosaur-3d/estemmenosuchus.html',
   // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-23): synonym alias - the "megatherium"
   // backlog candidate is the same species as the already-shipped ground-sloth page (Megatherium
   // americanum). Captures the scientific-name search term without shipping a duplicate page (gate 4).
@@ -15567,6 +15569,12 @@ export const JSP_BY_ROUTE = {
   // triceratops/pachyrhinosaurus/wendiceratops branch; model-first via ftol-vm-assets
   // styracosaurus.glb, CC-BY-SA 4.0 Printables (manifest pitch=pi orientation fix).
   '/dinosaur-3d/styracosaurus.html': 'dinosaur/styracosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-23): Estemmenosuchus viewer -
+  // Permian dinocephalian therapsid (not a dinosaur) with paired bony head-crowns,
+  // ceratopsian-fallback archetype reusing the ground-sloth/brontotherium/moropus/
+  // woolly-mammoth quadruped-mammal pattern; model-first via ftol-vm-assets
+  // estemmenosuchus.glb, CC-BY 4.0 Printables (already Y-up, no pitch/yaw needed).
+  '/dinosaur-3d/estemmenosuchus.html': 'dinosaur/estemmenosuchus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
