@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/css-box-shadow-generator-vs-alternatives.html',
+  '/guides/css-box-shadow-generator-step-by-step.html',
+  '/guides/css-box-shadow-generator-when.html',
   '/guides/barcode-generator-ean-upc-code128-vs-alternatives.html',
   '/guides/de/barcode-generator-ean-upc-code128-vs-alternatives.html',
   '/guides/id/barcode-generator-ean-upc-code128-vs-alternatives.html',
@@ -12190,6 +12193,8 @@ export const ALIAS_ROUTES = {
   // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-24): synonym alias - the popular
   // vernacular name "saber-tooth tiger" for the same species (gate 4 dedup).
   '/saber-tooth-tiger.html': '/dinosaur-3d/smilodon.html',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-24): flat-slug alias for saurosuchus.
+  '/saurosuchus.html': '/dinosaur-3d/saurosuchus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -12546,6 +12551,7 @@ export const ALIAS_ROUTES = {
   '/yaml-to-json-converter.html': '/developer-tools/yaml-to-json-converter.html',
   '/pdf-compressor.html': '/pdf-tools/pdf-compressor.html',
   '/barcode-generator.html': '/utility-tools/barcode-generator.html',
+  '/css-box-shadow-generator.html': '/developer-tools/css-box-shadow-generator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -16334,6 +16340,11 @@ export const JSP_BY_ROUTE = {
   // canines. Model-first via ftol-vm-assets smilodon.glb (CC0, itch.io "Low
   // Poly Ice Age" pack by Riley - same pack as woolly-mammoth/ground-sloth).
   '/dinosaur-3d/smilodon.html': 'dinosaur/smilodon.jsp',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-24): Saurosuchus
+  // viewer - reuses the existing 'rauisuchian' archetype (shared with
+  // Postosuchus, fire146). Model-first via ftol-vm-assets saurosuchus.glb
+  // (CC-BY-SA 4.0, Printables "seth the yutyrannus", commit 366a370).
+  '/dinosaur-3d/saurosuchus.html': 'dinosaur/saurosuchus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -23125,6 +23136,10 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/barcode-generator-ean-upc-code128-vs-alternatives.html': 'guide/vi/barcode-generator-ean-upc-code128-vs-alternatives.jsp',
   '/guides/es/barcode-generator-ean-upc-code128-vs-alternatives.html': 'guide/es/barcode-generator-ean-upc-code128-vs-alternatives.jsp',
   '/guides/pt/barcode-generator-ean-upc-code128-vs-alternatives.html': 'guide/pt/barcode-generator-ean-upc-code128-vs-alternatives.jsp',
+  '/developer-tools/css-box-shadow-generator.html': 'utility/css-box-shadow-generator.jsp',
+  '/guides/css-box-shadow-generator-when.html': 'guide/css-box-shadow-generator-when.jsp',
+  '/guides/css-box-shadow-generator-step-by-step.html': 'guide/css-box-shadow-generator-step-by-step.jsp',
+  '/guides/css-box-shadow-generator-vs-alternatives.html': 'guide/css-box-shadow-generator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
