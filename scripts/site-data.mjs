@@ -17,6 +17,22 @@ export const INFO_ROUTES = new Set([
   '/guides/csv-json-converter-vs-alternatives.html',
   '/guides/csv-json-converter-step-by-step.html',
   '/guides/csv-json-converter-when.html',
+  // new-tool-discovery-loop-runbook fire376: csv-to-json-converter locale fanout (pt/es/vi/id/de x 3 angles)
+  '/guides/pt/csv-json-converter-when.html',
+  '/guides/es/csv-json-converter-when.html',
+  '/guides/vi/csv-json-converter-when.html',
+  '/guides/id/csv-json-converter-when.html',
+  '/guides/de/csv-json-converter-when.html',
+  '/guides/pt/csv-json-converter-step-by-step.html',
+  '/guides/es/csv-json-converter-step-by-step.html',
+  '/guides/vi/csv-json-converter-step-by-step.html',
+  '/guides/id/csv-json-converter-step-by-step.html',
+  '/guides/de/csv-json-converter-step-by-step.html',
+  '/guides/pt/csv-json-converter-vs-alternatives.html',
+  '/guides/es/csv-json-converter-vs-alternatives.html',
+  '/guides/vi/csv-json-converter-vs-alternatives.html',
+  '/guides/id/csv-json-converter-vs-alternatives.html',
+  '/guides/de/csv-json-converter-vs-alternatives.html',
   '/guides/number-base-converter-binary-hex-octal-decimal-step-by-step.html',
   '/guides/number-base-converter-binary-hex-octal-decimal-when.html',
   // new-tool-discovery-loop-runbook fire371: 3rd EN angle (the builder's
@@ -10961,6 +10977,28 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/twilight-types-step-by-step.html',
   '/guides/de/twilight-types-when.html',
   '/guides/de/twilight-types-vs-alternatives.html',
+  // new-tool-discovery-loop-runbook fire376: csv-to-json-converter guides were
+  // never registered in GUIDE_ROUTES (EN missing too, same gap password-strength-checker/
+  // lorem-ipsum-generator/number-base-converter had) - backfilling EN + full
+  // pt/es/vi/id/de locale fanout so all 18 guides get Article JSON-LD + hreflang.
+  '/guides/csv-json-converter-vs-alternatives.html',
+  '/guides/csv-json-converter-step-by-step.html',
+  '/guides/csv-json-converter-when.html',
+  '/guides/pt/csv-json-converter-when.html',
+  '/guides/es/csv-json-converter-when.html',
+  '/guides/vi/csv-json-converter-when.html',
+  '/guides/id/csv-json-converter-when.html',
+  '/guides/de/csv-json-converter-when.html',
+  '/guides/pt/csv-json-converter-step-by-step.html',
+  '/guides/es/csv-json-converter-step-by-step.html',
+  '/guides/vi/csv-json-converter-step-by-step.html',
+  '/guides/id/csv-json-converter-step-by-step.html',
+  '/guides/de/csv-json-converter-step-by-step.html',
+  '/guides/pt/csv-json-converter-vs-alternatives.html',
+  '/guides/es/csv-json-converter-vs-alternatives.html',
+  '/guides/vi/csv-json-converter-vs-alternatives.html',
+  '/guides/id/csv-json-converter-vs-alternatives.html',
+  '/guides/de/csv-json-converter-vs-alternatives.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -22447,6 +22485,22 @@ export const JSP_BY_ROUTE = {
   '/guides/csv-json-converter-when.html': 'guide/csv-json-converter-when.jsp',
   '/guides/csv-json-converter-step-by-step.html': 'guide/csv-json-converter-step-by-step.jsp',
   '/guides/csv-json-converter-vs-alternatives.html': 'guide/csv-json-converter-vs-alternatives.jsp',
+  // new-tool-discovery-loop-runbook fire376: csv-to-json-converter locale fanout
+  '/guides/pt/csv-json-converter-when.html': 'guide/pt/csv-json-converter-when.jsp',
+  '/guides/es/csv-json-converter-when.html': 'guide/es/csv-json-converter-when.jsp',
+  '/guides/vi/csv-json-converter-when.html': 'guide/vi/csv-json-converter-when.jsp',
+  '/guides/id/csv-json-converter-when.html': 'guide/id/csv-json-converter-when.jsp',
+  '/guides/de/csv-json-converter-when.html': 'guide/de/csv-json-converter-when.jsp',
+  '/guides/pt/csv-json-converter-step-by-step.html': 'guide/pt/csv-json-converter-step-by-step.jsp',
+  '/guides/es/csv-json-converter-step-by-step.html': 'guide/es/csv-json-converter-step-by-step.jsp',
+  '/guides/vi/csv-json-converter-step-by-step.html': 'guide/vi/csv-json-converter-step-by-step.jsp',
+  '/guides/id/csv-json-converter-step-by-step.html': 'guide/id/csv-json-converter-step-by-step.jsp',
+  '/guides/de/csv-json-converter-step-by-step.html': 'guide/de/csv-json-converter-step-by-step.jsp',
+  '/guides/pt/csv-json-converter-vs-alternatives.html': 'guide/pt/csv-json-converter-vs-alternatives.jsp',
+  '/guides/es/csv-json-converter-vs-alternatives.html': 'guide/es/csv-json-converter-vs-alternatives.jsp',
+  '/guides/vi/csv-json-converter-vs-alternatives.html': 'guide/vi/csv-json-converter-vs-alternatives.jsp',
+  '/guides/id/csv-json-converter-vs-alternatives.html': 'guide/id/csv-json-converter-vs-alternatives.jsp',
+  '/guides/de/csv-json-converter-vs-alternatives.html': 'guide/de/csv-json-converter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
