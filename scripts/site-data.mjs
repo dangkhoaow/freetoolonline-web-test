@@ -17,6 +17,22 @@ export const INFO_ROUTES = new Set([
   '/guides/password-strength-checker-vs-alternatives.html',
   '/guides/password-strength-checker-step-by-step.html',
   '/guides/password-strength-checker-when.html',
+  // new-tool-discovery-loop-runbook fire366: password-strength-checker locale fanout (pt/es/vi/id/de x 3 angles)
+  '/guides/pt/password-strength-checker-when.html',
+  '/guides/es/password-strength-checker-when.html',
+  '/guides/vi/password-strength-checker-when.html',
+  '/guides/id/password-strength-checker-when.html',
+  '/guides/de/password-strength-checker-when.html',
+  '/guides/pt/password-strength-checker-step-by-step.html',
+  '/guides/es/password-strength-checker-step-by-step.html',
+  '/guides/vi/password-strength-checker-step-by-step.html',
+  '/guides/id/password-strength-checker-step-by-step.html',
+  '/guides/de/password-strength-checker-step-by-step.html',
+  '/guides/pt/password-strength-checker-vs-alternatives.html',
+  '/guides/es/password-strength-checker-vs-alternatives.html',
+  '/guides/vi/password-strength-checker-vs-alternatives.html',
+  '/guides/id/password-strength-checker-vs-alternatives.html',
+  '/guides/de/password-strength-checker-vs-alternatives.html',
   '/guides/compound-interest-calculator-vs-alternatives.html',
   '/guides/de/compound-interest-calculator-vs-alternatives.html',
   '/guides/id/compound-interest-calculator-vs-alternatives.html',
@@ -5047,6 +5063,28 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // new-tool-discovery-loop-runbook fire366: password-strength-checker guides were
+  // never registered in GUIDE_ROUTES (EN missing too, same gap password-generator had) -
+  // backfilling EN + full pt/es/vi/id/de locale fanout so all 18 routes get
+  // Article JSON-LD + sitemap-guides.xml / guides.html / llms.txt listing.
+  '/guides/password-strength-checker-when.html',
+  '/guides/pt/password-strength-checker-when.html',
+  '/guides/es/password-strength-checker-when.html',
+  '/guides/vi/password-strength-checker-when.html',
+  '/guides/id/password-strength-checker-when.html',
+  '/guides/de/password-strength-checker-when.html',
+  '/guides/password-strength-checker-step-by-step.html',
+  '/guides/pt/password-strength-checker-step-by-step.html',
+  '/guides/es/password-strength-checker-step-by-step.html',
+  '/guides/vi/password-strength-checker-step-by-step.html',
+  '/guides/id/password-strength-checker-step-by-step.html',
+  '/guides/de/password-strength-checker-step-by-step.html',
+  '/guides/password-strength-checker-vs-alternatives.html',
+  '/guides/pt/password-strength-checker-vs-alternatives.html',
+  '/guides/es/password-strength-checker-vs-alternatives.html',
+  '/guides/vi/password-strength-checker-vs-alternatives.html',
+  '/guides/id/password-strength-checker-vs-alternatives.html',
+  '/guides/de/password-strength-checker-vs-alternatives.html',
   // fire346 monitor-refresh-rate-test companion guides
   '/guides/monitor-refresh-rate-test-hz-when.html',
   '/guides/pt/monitor-refresh-rate-test-hz-when.html',
@@ -22022,6 +22060,21 @@ export const JSP_BY_ROUTE = {
   '/guides/password-strength-checker-when.html': 'guide/password-strength-checker-when.jsp',
   '/guides/password-strength-checker-step-by-step.html': 'guide/password-strength-checker-step-by-step.jsp',
   '/guides/password-strength-checker-vs-alternatives.html': 'guide/password-strength-checker-vs-alternatives.jsp',
+  '/guides/pt/password-strength-checker-when.html': 'guide/pt/password-strength-checker-when.jsp',
+  '/guides/es/password-strength-checker-when.html': 'guide/es/password-strength-checker-when.jsp',
+  '/guides/vi/password-strength-checker-when.html': 'guide/vi/password-strength-checker-when.jsp',
+  '/guides/id/password-strength-checker-when.html': 'guide/id/password-strength-checker-when.jsp',
+  '/guides/de/password-strength-checker-when.html': 'guide/de/password-strength-checker-when.jsp',
+  '/guides/pt/password-strength-checker-step-by-step.html': 'guide/pt/password-strength-checker-step-by-step.jsp',
+  '/guides/es/password-strength-checker-step-by-step.html': 'guide/es/password-strength-checker-step-by-step.jsp',
+  '/guides/vi/password-strength-checker-step-by-step.html': 'guide/vi/password-strength-checker-step-by-step.jsp',
+  '/guides/id/password-strength-checker-step-by-step.html': 'guide/id/password-strength-checker-step-by-step.jsp',
+  '/guides/de/password-strength-checker-step-by-step.html': 'guide/de/password-strength-checker-step-by-step.jsp',
+  '/guides/pt/password-strength-checker-vs-alternatives.html': 'guide/pt/password-strength-checker-vs-alternatives.jsp',
+  '/guides/es/password-strength-checker-vs-alternatives.html': 'guide/es/password-strength-checker-vs-alternatives.jsp',
+  '/guides/vi/password-strength-checker-vs-alternatives.html': 'guide/vi/password-strength-checker-vs-alternatives.jsp',
+  '/guides/id/password-strength-checker-vs-alternatives.html': 'guide/id/password-strength-checker-vs-alternatives.jsp',
+  '/guides/de/password-strength-checker-vs-alternatives.html': 'guide/de/password-strength-checker-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
