@@ -1,0 +1,362 @@
+<script>
+    // 3D scene archetype skeleton (space-debris-kessler) - vendored three.js (ESM,
+    // dynamic import from /vendor/three/, NO CDN), fully client-side. Built LEAN from
+    // the shared t3d* skeleton - ONE scene only. All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not a physical simulation. This scene shows tracked
+    // debris + satellite density across four altitude bands in low Earth orbit (LEO)
+    // and lets a reader scrub between 2007 and 2026 to see how the total tracked-object
+    // count has grown. Point positions within each altitude band are randomly scattered
+    // for legibility, not the real catalogued positions of specific objects, and the
+    // altitude bands themselves are drawn with exaggerated spacing (not to scale) so the
+    // four bands are visually distinguishable - real LEO shells are a thin sliver
+    // relative to Earth's radius. Point counts scale with the year slider and represent
+    // a proportional share of the cited totals, not a literal one-dot-per-object count.
+    //
+    // Published figures (ESA Space Environment Report, esa.int/Space_Safety/Space_Debris;
+    // eoPortal Orbital Debris reference, eoportal.org; verified 2026-07-23):
+    //   - ESA space surveillance networks track more than 40,000 objects larger than
+    //     10cm in orbit as of 2026, including about 11,000 active satellites.
+    //   - ESA's MASTER-8 statistical model estimates about 1.2 million debris fragments
+    //     1-10cm across, and more than 140 million fragments smaller than 1cm - none of
+    //     these smaller fragments are individually tracked.
+    //   - Total tracked mass in orbit is more than 15,000 tonnes, concentrated in LEO.
+    //   - The LEO tracked-object count grew from about 13,000 in 2007 to about 44,800 in
+    //     2026 per the ESA Space Environment Report - this page's year slider
+    //     interpolates a straight line between those two published endpoints; the real
+    //     growth was not linear (see the two historical-event buttons below the slider).
+    //   - The 2007 Fengyun-1C Chinese anti-satellite missile test alone created more
+    //     than 3,500 tracked fragments in a single event, in a roughly 850km orbit.
+    //   - The 2009 Iridium-33 / Cosmos-2251 collision is the reference case for an
+    //     accidental collision generating trackable debris, near 790km altitude.
+    //   - ESA's Space Environment Report 2025 finding: even with zero further launches,
+    //     the in-orbit tracked-object count keeps rising for 200+ years, because
+    //     fragmentation currently outpaces atmospheric decay at several LEO altitude
+    //     bands between about 520km and 1000km.
+    //   - Kessler syndrome (named for NASA scientist Donald Kessler, who described it in
+    //     1978) is the debris-density threshold beyond which collisions generate new
+    //     debris faster than natural atmospheric decay removes it.
+    //
+    // Distinct from ISS Orbit Tracker (one real spacecraft's ephemeris, not debris
+    // density), Satellite Orbit Classes (LEO/MEO/GEO/HEO regime classification, not
+    // growth over time), Van Allen Belts (natural radiation, not artificial debris), and
+    // Asteroid Belt / Kirkwood Gaps (the natural asteroid belt, not artificial orbital
+    // debris) - THIS page is specifically about human-made tracked debris density around
+    // Earth and how it has grown from 2007 to 2026.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'space-debris-kessler';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'debriskessler'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Published figures (see header comment for sources).
+    var T3D_DEBRIS_YEAR_MIN = 2007;
+    var T3D_DEBRIS_YEAR_MAX = 2026;
+    var T3D_DEBRIS_COUNT_2007 = 13000;
+    var T3D_DEBRIS_COUNT_2026 = 44800;
+    var T3D_DEBRIS_BANDS = [
+        { key: 'a', label: '400-500km (ISS region)', radius: 7.1, weight: 0.16, color: 0x66d9ff },
+        { key: 'b', label: '500-600km (Starlink mega-constellation shell)', radius: 7.7, weight: 0.22, color: 0x4fc3f7 },
+        { key: 'c', label: '600-1000km (fastest-growing fragmentation zone)', radius: 8.5, weight: 0.42, color: 0xffb74d },
+        { key: 'd', label: '1000-2000km (upper LEO)', radius: 9.5, weight: 0.20, color: 0xb0bec5 }
+    ];
+    var T3D_DEBRIS_EVENTS = {
+        2007: {
+            title: 'Fengyun-1C anti-satellite test (2007)',
+            body: 'China’s 2007 Fengyun-1C anti-satellite missile test intentionally destroyed a satellite in a roughly 850km orbit, creating more than 3,500 tracked fragments in a single event - among the largest debris-generating events on record.'
+        },
+        2009: {
+            title: 'Iridium-33 / Cosmos-2251 collision (2009)',
+            body: 'In February 2009 the active Iridium-33 satellite and the defunct Cosmos-2251 satellite collided accidentally near 790km altitude - the reference case for an unintentional collision generating trackable debris, and a key data point behind Kessler-syndrome cascade-risk analysis.'
+        }
+    };
+
+    function t3dDebrisCountForYear(year) {
+        var t = Math.max(0, Math.min(1, (year - T3D_DEBRIS_YEAR_MIN) / (T3D_DEBRIS_YEAR_MAX - T3D_DEBRIS_YEAR_MIN)));
+        return Math.round(T3D_DEBRIS_COUNT_2007 + (T3D_DEBRIS_COUNT_2026 - T3D_DEBRIS_COUNT_2007) * t);
+    }
+
+    function t3dSpaceDebrisKessler(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x030712, 1);
+        scene.add(new THREE.AmbientLight(0x445566, 0.55));
+        var sun = new THREE.DirectionalLight(0xfff4e0, 1.3);
+        sun.position.set(20, 14, 18);
+        scene.add(sun);
+
+        // Distant starfield for spatial context (not real star catalogue positions).
+        var starCount = shell.low ? 500 : 1000;
+        var spos = new Float32Array(starCount * 3);
+        for (var s = 0; s < starCount; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(60 + Math.random() * 60);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0x8899aa, size: 0.4, sizeAttenuation: true })));
+
+        // Earth - a simple procedural sphere, not photorealistic imagery.
+        var earth = new THREE.Mesh(
+            new THREE.SphereGeometry(6, 32, 24),
+            new THREE.MeshPhongMaterial({ color: 0x1c5d8f, emissive: 0x0a1f2e, shininess: 12 })
+        );
+        scene.add(earth);
+        var landBits = new THREE.Mesh(
+            new THREE.SphereGeometry(6.01, 20, 14),
+            new THREE.MeshPhongMaterial({ color: 0x2f7d4a, transparent: true, opacity: 0.4, flatShading: true })
+        );
+        landBits.scale.set(1, 0.97, 1);
+        scene.add(landBits);
+
+        var bandMeshes = {}; // key -> THREE.Points
+        var highlightStarlink = false;
+        var currentYear = T3D_DEBRIS_YEAR_MAX;
+        var selectedEventYear = null;
+
+        function disposeBand(key) {
+            var m = bandMeshes[key];
+            if (!m) return;
+            scene.remove(m);
+            m.geometry.dispose();
+            m.material.dispose();
+            delete bandMeshes[key];
+        }
+
+        function buildBands(year) {
+            var totalCount = t3dDebrisCountForYear(year);
+            var visualBudget = shell.low ? 420 : 900;
+            T3D_DEBRIS_BANDS.forEach(function (band) {
+                disposeBand(band.key);
+                var n = Math.max(24, Math.round(visualBudget * band.weight * (totalCount / T3D_DEBRIS_COUNT_2026)));
+                var pos = new Float32Array(n * 3);
+                for (var i = 0; i < n; i++) {
+                    var dir = new THREE.Vector3().randomDirection();
+                    var r = band.radius + (Math.random() - 0.5) * 0.22;
+                    pos[i * 3] = dir.x * r;
+                    pos[i * 3 + 1] = dir.y * r;
+                    pos[i * 3 + 2] = dir.z * r;
+                }
+                var geo = new THREE.BufferGeometry();
+                geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+                var isStarlinkBand = band.key === 'b';
+                var color = (isStarlinkBand && highlightStarlink) ? 0x69f0ae : band.color;
+                var size = (isStarlinkBand && highlightStarlink) ? 0.62 : 0.42;
+                var mat = new THREE.PointsMaterial({ color: color, size: size, sizeAttenuation: true, transparent: true, opacity: (highlightStarlink && !isStarlinkBand) ? 0.35 : 0.9 });
+                var pts = new THREE.Points(geo, mat);
+                scene.add(pts);
+                bandMeshes[band.key] = pts;
+            });
+        }
+
+        function bandRowsHtml() {
+            return T3D_DEBRIS_BANDS.map(function (b) {
+                return '<tr><td>' + b.label + '</td></tr>';
+            }).join('');
+        }
+
+        function factsHtml() {
+            var count = t3dDebrisCountForYear(currentYear);
+            var event = selectedEventYear ? T3D_DEBRIS_EVENTS[selectedEventYear] : null;
+            var html = '<h3>Tracked LEO objects, year ' + currentYear + '</h3>' +
+                '<p>About <b>' + count.toLocaleString('en-US') + '</b> tracked objects (illustrative straight-line interpolation between the published 2007 figure of about 13,000 and the 2026 figure of about 44,800 - real growth included step-jumps from events like the two below, not a smooth line).</p>' +
+                '<table class="w3-table w3-bordered w3-small"><tr><th>Altitude band shown</th></tr>' + bandRowsHtml() + '</table>' +
+                '<p class="t3d-note">As of 2026: more than 40,000 tracked objects &gt;10cm (about 11,000 active satellites); ESA’s MASTER-8 model estimates about 1.2 million untracked fragments 1-10cm and more than 140 million fragments &lt;1cm. Total tracked mass in orbit exceeds 15,000 tonnes.</p>';
+            if (event) {
+                html += '<div class="w3-panel w3-pale-yellow w3-leftbar w3-border-yellow"><h4>' + event.title + '</h4><p>' + event.body + '</p></div>';
+            }
+            return html;
+        }
+
+        function refresh() {
+            buildBands(currentYear);
+            t3dInfo(factsHtml());
+            try { t3dSaveStore({ year: currentYear, highlightStarlink: highlightStarlink }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        currentYear = (typeof store.year === 'number' && store.year >= T3D_DEBRIS_YEAR_MIN && store.year <= T3D_DEBRIS_YEAR_MAX) ? store.year : T3D_DEBRIS_YEAR_MAX;
+        highlightStarlink = !!store.highlightStarlink;
+        refresh();
+
+        var slider = document.getElementById('t3dDebrisYearSlider');
+        var yearLabel = document.getElementById('t3dDebrisYearLabel');
+        function syncSliderLabel() {
+            if (yearLabel) yearLabel.textContent = 'Year: ' + currentYear;
+            if (slider) slider.value = String(currentYear);
+        }
+        syncSliderLabel();
+        if (slider) {
+            slider.addEventListener('input', function () {
+                currentYear = Math.max(T3D_DEBRIS_YEAR_MIN, Math.min(T3D_DEBRIS_YEAR_MAX, parseInt(slider.value, 10) || T3D_DEBRIS_YEAR_MAX));
+                selectedEventYear = null;
+                syncSliderLabel();
+                refresh();
+            });
+        }
+        var toggleBtn = document.getElementById('t3dDebrisStarlinkToggle');
+        function syncToggleBtn() {
+            if (toggleBtn) toggleBtn.textContent = highlightStarlink ? 'Stop highlighting 550km shell' : 'Highlight 550km Starlink shell';
+        }
+        syncToggleBtn();
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function () {
+                highlightStarlink = !highlightStarlink;
+                syncToggleBtn();
+                refresh();
+            });
+        }
+        var event2007Btn = document.getElementById('t3dDebrisEventBtn2007');
+        var event2009Btn = document.getElementById('t3dDebrisEventBtn2009');
+        if (event2007Btn) event2007Btn.addEventListener('click', function () {
+            currentYear = 2007; selectedEventYear = 2007; syncSliderLabel(); refresh();
+        });
+        if (event2009Btn) event2009Btn.addEventListener('click', function () {
+            currentYear = 2009; selectedEventYear = 2009; syncSliderLabel(); refresh();
+        });
+        var resetBtn = document.getElementById('t3dDebrisResetBtn');
+        if (resetBtn) resetBtn.addEventListener('click', function () {
+            currentYear = T3D_DEBRIS_YEAR_MAX; selectedEventYear = null; highlightStarlink = false;
+            syncSliderLabel(); syncToggleBtn(); refresh();
+        });
+
+        t3dStatus('Drag to orbit, scroll or pinch to zoom. Move the year slider or click an event button below.');
+        return function animate(dt) {
+            earth.rotation.y += dt * 0.00006;
+            landBits.rotation.y += dt * 0.00006;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { debriskessler: 't3dDebrisControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { debriskessler: { radius: 22, maxR: 70, minR: 9, phi: 1.15, theta: 0.6, targetY: 0 } };
+                    var shellCtx = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dSpaceDebrisKessler(shellCtx);
+                    var last = performance.now();
+                    shellCtx.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shellCtx.applyCamera();
+                        shellCtx.renderer.render(shellCtx.scene, shellCtx.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

@@ -655,6 +655,7 @@ try {
     { title: "Van Allen Belts 3D Explorer", url: "https://freetoolonline.com/space-3d/van-allen-belts.html", include: !1, tags: "space-3d" },
     { title: "Circumbinary Planet 3D Explorer", url: "https://freetoolonline.com/space-3d/circumbinary-planet.html", include: !1, tags: "space-3d" },
     { title: "Debris Disk 3D Explorer", url: "https://freetoolonline.com/space-3d/debris-disk.html", include: !1, tags: "space-3d" },
+    { title: "Space Debris & Kessler Syndrome 3D Explorer", url: "https://freetoolonline.com/space-3d/space-debris-kessler.html", include: !1, tags: "space-3d" },
     { title: "Brown Dwarf 3D Explorer", url: "https://freetoolonline.com/space-3d/brown-dwarf.html", include: !1, tags: "space-3d" },
     { title: "Kilonova 3D Explorer", url: "https://freetoolonline.com/space-3d/kilonova.html", include: !1, tags: "space-3d" },
     { title: "Carrington Event 3D Explorer", url: "https://freetoolonline.com/space-3d/carrington-event.html", include: !1, tags: "space-3d" },
