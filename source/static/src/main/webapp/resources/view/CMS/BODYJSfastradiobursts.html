@@ -1,0 +1,400 @@
+<script>
+    // 3D scene archetype skeleton (fast radio bursts) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side.
+    // Built LEAN, forked from the magnetar/neutron-star-pulsar shape - ONE
+    // scene only (fast radio bursts). All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not a radio-astronomy pipeline simulation.
+    // A teaching scene: a distant host-galaxy source, an Earth/CHIME receiver
+    // marker, a propagating millisecond pulse whose channels are staggered by
+    // a dispersion delay (higher radio frequencies arrive first), plotted live
+    // on a frequency-vs-time waterfall canvas (the real diagnostic astronomers
+    // use to confirm a fast radio burst).
+    //
+    // Published figures (cross-checked via WebSearch 2026-07-23):
+    //   - Lorimer Burst / FRB 010724 (Lorimer et al. 2007): duration < 5 ms,
+    //     dispersion measure (DM) 375 +/- 1 pc/cm^3, peak flux ~30 Jy, found in
+    //     archival Parkes 64m data - the first published fast radio burst.
+    //   - FRB 121102 (Spitler et al. 2014 discovery): DM ~557 pc/cm^3; the
+    //     first fast radio burst confirmed to repeat (2016).
+    //   - FRB 180916.J0158+65 (CHIME/FRB Collaboration, Nature 2020): a
+    //     16.35 +/- 0.15 day periodic activity cycle - bursts arrive only in a
+    //     ~5-day active window, then about 11 days of quiet. Localized to a
+    //     spiral galaxy at ~149.0 +/- 0.9 Mpc (z = 0.0337).
+    //   - CHIME telescope: 400-800 MHz band, four 20m x 100m half-cylinder
+    //     reflectors at DRAO, Penticton BC; ~200 sq-deg instantaneous field
+    //     of view.
+    //   - SGR 1935+2154 / FRB 200428 (2020-04-28): a Milky Way magnetar
+    //     ~30,000 ly away produced the first confirmed Galactic fast radio
+    //     burst, detected in 93 of 1,024 CHIME beams and coincident with a
+    //     hard X-ray burst - the first direct FRB-magnetar link.
+    //   - Distinct from magnetar.html (steady-state field-strength explorer)
+    //     and neutron-star-pulsar.html (regular periodic timing) - this page
+    //     teaches the millisecond one-off-or-repeating extragalactic flash and
+    //     why its dispersion sweep acts as a distance ruler.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'fastradiobursts';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'fastradiobursts'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Source comparison steps (published figures only - no invented numbers)
+    var T3D_FRB_STEPS = [
+        { id: 'lorimer', label: 'Lorimer Burst (2007)', dm: 375, dmNote: '375 +/- 1 pc/cm^3', duration: '< 5 ms', extra: 'Peak flux ~30 Jy - the first published fast radio burst (Parkes 64m archival data).', klass: 'One-off' },
+        { id: 'frb121102', label: 'FRB 121102', dm: 557, dmNote: '~557 pc/cm^3 at discovery', duration: 'a few ms', extra: 'The first fast radio burst confirmed to repeat (2016).', klass: 'Repeating (first confirmed)' },
+        { id: 'frb180916', label: 'FRB 180916.J0158+65', dm: null, dmNote: 'not shown here - see the activity-cycle figure instead', duration: 'a few ms per burst', extra: 'A 16.35 +/- 0.15 day activity cycle: bursts only in a ~5-day active window, then ~11 quiet days. Host galaxy at ~149 Mpc.', klass: 'Repeating, periodic (CHIME)' }
+    ];
+    var T3D_FRB_CHANNELS = 7; // teaching channel count across the CHIME 400-800 MHz band
+    var T3D_FRB_LO = 400, T3D_FRB_HI = 800; // MHz
+
+    function t3dFastRadioBursts(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.22));
+        var key = new THREE.DirectionalLight(0x9fc8ff, 0.6);
+        key.position.set(8, 12, 10);
+        scene.add(key);
+
+        // Starfield backdrop
+        var starN = shell.low ? 260 : 520;
+        var starPos = new Float32Array(starN * 3);
+        for (var s = 0; s < starN; s++) {
+            var r = 55 + Math.random() * 70;
+            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+            starPos[s * 3] = r * Math.sin(ph) * Math.cos(th);
+            starPos[s * 3 + 1] = r * Math.cos(ph) * 0.55;
+            starPos[s * 3 + 2] = r * Math.sin(ph) * Math.sin(th) - 20;
+        }
+        var starGeo = new THREE.BufferGeometry();
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        var stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xaad4ff, size: 0.35, sizeAttenuation: true, transparent: true, opacity: 0.75 }));
+        scene.add(stars);
+
+        // Distant host-galaxy source marker (compressed-scale teaching position)
+        var sourcePos = new THREE.Vector3(-2, 2.2, -34);
+        var sourceGlow = new THREE.Mesh(new THREE.SphereGeometry(1.1, 20, 14), new THREE.MeshBasicMaterial({ color: 0xffcc80, transparent: true, opacity: 0.85 }));
+        sourceGlow.position.copy(sourcePos);
+        scene.add(sourceGlow);
+        var haloN = shell.low ? 60 : 140;
+        var haloPos = new Float32Array(haloN * 3);
+        for (var h = 0; h < haloN; h++) {
+            var rr = 1.6 + Math.random() * 3.2, aa = Math.random() * Math.PI * 2;
+            haloPos[h * 3] = sourcePos.x + rr * Math.cos(aa);
+            haloPos[h * 3 + 1] = sourcePos.y + (Math.random() - 0.5) * 0.6;
+            haloPos[h * 3 + 2] = sourcePos.z + rr * Math.sin(aa);
+        }
+        var haloGeo = new THREE.BufferGeometry();
+        haloGeo.setAttribute('position', new THREE.BufferAttribute(haloPos, 3));
+        var halo = new THREE.Points(haloGeo, new THREE.PointsMaterial({ color: 0xffe0a3, size: 0.22, transparent: true, opacity: 0.55 }));
+        scene.add(halo);
+
+        // Earth marker + a stylized CHIME half-cylinder reflector (real shape: 4 half-cylinders)
+        var earthPos = new THREE.Vector3(0, 0, 6);
+        var earth = new THREE.Mesh(new THREE.SphereGeometry(0.55, 20, 14), new THREE.MeshStandardMaterial({ color: 0x2979ff, emissive: 0x0d47a1, emissiveIntensity: 0.5, roughness: 0.5 }));
+        earth.position.copy(earthPos);
+        scene.add(earth);
+        var chimeGroup = new THREE.Group();
+        chimeGroup.position.set(earthPos.x, earthPos.y - 0.05, earthPos.z + 1.4);
+        for (var c = 0; c < 4; c++) {
+            var refl = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.42, 0.42, 1.5, 16, 1, true, 0, Math.PI),
+                new THREE.MeshStandardMaterial({ color: 0xcfd8dc, metalness: 0.3, roughness: 0.4, side: THREE.DoubleSide })
+            );
+            refl.rotation.z = Math.PI / 2;
+            refl.rotation.y = Math.PI;
+            refl.position.set((c - 1.5) * 0.5, 0, 0);
+            chimeGroup.add(refl);
+        }
+        chimeGroup.scale.setScalar(0.6);
+        scene.add(chimeGroup);
+
+        // Travel path from source to Earth (gentle arc)
+        var mid = sourcePos.clone().lerp(earthPos, 0.5).add(new THREE.Vector3(3, 3.4, 0));
+        var pathCurve = new THREE.CatmullRomCurve3([sourcePos, mid, earthPos]);
+        var pathLine = new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(pathCurve.getPoints(40)),
+            new THREE.LineBasicMaterial({ color: 0x455a64, transparent: true, opacity: 0.35 })
+        );
+        scene.add(pathLine);
+
+        var stepIdx = 0;
+        var playing = false;
+        var playT = 0; // ms elapsed since Play pressed
+        var channels = []; // { freqMHz, delayFrac, arrived, mesh }
+        var burstGroup = new THREE.Group();
+        scene.add(burstGroup);
+        var flash = new THREE.Mesh(new THREE.SphereGeometry(0.9, 14, 10), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0 }));
+        flash.position.copy(earthPos);
+        scene.add(flash);
+
+        var wfCanvas = document.getElementById('t3dFrbWaterfall');
+        var wfCtx = wfCanvas ? wfCanvas.getContext('2d') : null;
+
+        function freqColor(freqMHz) {
+            var t = (freqMHz - T3D_FRB_LO) / (T3D_FRB_HI - T3D_FRB_LO); // 0 (400MHz,red) .. 1 (800MHz,blue)
+            var r = Math.round(255 * (1 - t) + 90 * t);
+            var g = Math.round(90 * (1 - t) + 170 * t);
+            var b = Math.round(60 * (1 - t) + 255 * t);
+            return (r << 16) | (g << 8) | b;
+        }
+
+        function clearWaterfall() {
+            if (!wfCtx) return;
+            wfCtx.fillStyle = '#04060c';
+            wfCtx.fillRect(0, 0, wfCanvas.width, wfCanvas.height);
+            wfCtx.strokeStyle = '#243040';
+            wfCtx.strokeRect(0.5, 0.5, wfCanvas.width - 1, wfCanvas.height - 1);
+            wfCtx.fillStyle = '#7c93a8';
+            wfCtx.font = '10px sans-serif';
+            wfCtx.fillText('800 MHz', 4, 12);
+            wfCtx.fillText('400 MHz', 4, wfCanvas.height - 6);
+            wfCtx.fillText('time ->', wfCanvas.width - 46, wfCanvas.height - 6);
+        }
+
+        function startPlay() {
+            playing = true; playT = 0;
+            burstGroup.clear();
+            channels = [];
+            var step = T3D_FRB_STEPS[stepIdx];
+            // Dispersion delay scales with DM * (1/f^2 - 1/f_hi^2) - HIGHER radio
+            // frequencies arrive FIRST (near-zero relative delay at f_hi), LOWER
+            // frequencies arrive LAST (largest relative delay at f_lo). This is the
+            // real dispersion-sweep direction astronomers use to confirm a burst.
+            // For the periodic repeater (no displayed DM) reuse a mid-range teaching
+            // spread so the sweep still reads clearly - never labelled with an
+            // invented DM figure.
+            var dmForSweep = step.dm || 460;
+            var maxDelay = 0;
+            for (var i = 0; i < T3D_FRB_CHANNELS; i++) {
+                var f = T3D_FRB_LO + (i / (T3D_FRB_CHANNELS - 1)) * (T3D_FRB_HI - T3D_FRB_LO);
+                var raw = dmForSweep * (1 / (f * f) - 1 / (T3D_FRB_HI * T3D_FRB_HI));
+                maxDelay = Math.max(maxDelay, raw);
+                channels.push({ freqMHz: f, rawDelay: raw, arrived: false });
+            }
+            for (var j = 0; j < channels.length; j++) {
+                channels[j].delayFrac = maxDelay > 0 ? channels[j].rawDelay / maxDelay : 0; // 0 (first, high f) .. 1 (last, low f)
+                var m = new THREE.Mesh(new THREE.SphereGeometry(0.18, 10, 8), new THREE.MeshBasicMaterial({ color: freqColor(channels[j].freqMHz) }));
+                m.position.copy(sourcePos);
+                burstGroup.add(m);
+                channels[j].mesh = m;
+            }
+            clearWaterfall();
+        }
+
+        function fmtDM(step) { return step.dm ? (step.dmNote) : step.dmNote; }
+
+        function panelHtml() {
+            var step = T3D_FRB_STEPS[stepIdx];
+            return '<h3>Fast radio burst source</h3>' +
+                '<p>Play the burst to watch higher radio frequencies arrive first - the dispersion sweep that confirms a real fast radio burst.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Source</td><td>' + step.label + '</td></tr>' +
+                '<tr><td>Class</td><td>' + step.klass + '</td></tr>' +
+                '<tr><td>Dispersion measure</td><td>' + fmtDM(step) + '</td></tr>' +
+                '<tr><td>Duration</td><td>' + step.duration + '</td></tr>' +
+                '<tr><td>Notes</td><td>' + step.extra + '</td></tr>' +
+                '<tr><td>CHIME receiver band</td><td>400-800 MHz (four 20m x 100m half-cylinder reflectors, DRAO)</td></tr>' +
+                '<tr><td>Galactic FRB link</td><td>SGR 1935+2154 (FRB 200428), 2020-04-28, first confirmed FRB-magnetar source</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation - positions and delay are compressed and exaggerated for teaching, not a pipeline simulation. Distinct from the magnetar and neutron-star pulsar explorers (steady-state field and rotation, not a millisecond flash).</p>';
+        }
+
+        var sEl = document.getElementById('t3dFrbStep');
+        var sLab = document.getElementById('t3dFrbStepLabel');
+        function apply() {
+            var step = T3D_FRB_STEPS[stepIdx];
+            if (sEl && parseInt(sEl.value, 10) !== stepIdx) sEl.value = String(stepIdx);
+            if (sLab) sLab.textContent = step.label;
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ stepIdx: stepIdx }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.stepIdx === 'number') stepIdx = Math.max(0, Math.min(T3D_FRB_STEPS.length - 1, Math.round(store.stepIdx)));
+        clearWaterfall();
+        apply();
+
+        if (sEl) sEl.addEventListener('input', function () {
+            stepIdx = parseInt(sEl.value || '0', 10);
+            playing = false;
+            apply();
+        });
+        var playBtn = document.getElementById('t3dFrbPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () { startPlay(); });
+        var resetBtn = document.getElementById('t3dFrbResetBtn');
+        if (resetBtn) resetBtn.addEventListener('click', function () {
+            stepIdx = 0; playing = false; apply(); clearWaterfall();
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Pick a source, then press Play Burst.');
+        return function animate(dt) {
+            stars.rotation.y += dt * 0.00002;
+            sourceGlow.material.opacity = 0.7 + 0.25 * Math.sin(performance.now() * 0.0015);
+            chimeGroup.rotation.y = 0.15 * Math.sin(performance.now() * 0.0006);
+
+            if (playing) {
+                playT += dt;
+                var totalMs = 2600;
+                var allArrived = true;
+                for (var i = 0; i < channels.length; i++) {
+                    var ch = channels[i];
+                    var startAt = ch.delayFrac * (totalMs * 0.55);
+                    var travel = totalMs * 0.62;
+                    var localT = Math.max(0, Math.min(1, (playT - startAt) / travel));
+                    if (localT < 1) allArrived = false;
+                    var p = pathCurve.getPoint(localT);
+                    ch.mesh.position.copy(p);
+                    if (localT >= 1 && !ch.arrived) {
+                        ch.arrived = true;
+                        flash.material.opacity = 0.5;
+                        if (wfCtx) {
+                            var x = 6 + Math.round((playT / totalMs) * (wfCanvas.width - 14));
+                            var yFrac = (ch.freqMHz - T3D_FRB_LO) / (T3D_FRB_HI - T3D_FRB_LO);
+                            var y = Math.round((wfCanvas.height - 14) * (1 - yFrac)) + 8;
+                            wfCtx.fillStyle = 'rgb(' + ((freqColor(ch.freqMHz) >> 16) & 255) + ',' + ((freqColor(ch.freqMHz) >> 8) & 255) + ',' + (freqColor(ch.freqMHz) & 255) + ')';
+                            wfCtx.beginPath(); wfCtx.arc(x, y, 3, 0, Math.PI * 2); wfCtx.fill();
+                        }
+                    }
+                }
+                flash.material.opacity = Math.max(0, flash.material.opacity - dt * 0.0025);
+                if (allArrived && playT > totalMs + 200) { playing = false; }
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { fastradiobursts: 't3dFrbControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { fastradiobursts: { radius: 24, maxR: 80, minR: 6, phi: 1.1, theta: 0.35, targetY: 1 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dFastRadioBursts(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
