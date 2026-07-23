@@ -1,0 +1,100 @@
+<script>
+    // CSS Box-Shadow Generator (css-box-shadow-generator) - pure JS + CSS
+    // string construction, no upload, no backend, no vendored lib. Registry
+    // Gate-H entry: text_transform_purejs. Distinct from css-gradient-generator
+    // (which builds a multi-color linear-gradient background + animation
+    // keyframes) - this tool builds a single box-shadow declaration (offset,
+    // blur, spread, color/opacity, inset) with a live preview swatch. Renders
+    // with default values on page load (no click required) so the box-shadow
+    // preview and generated CSS are visible immediately, mirroring the
+    // password-strength-checker / barcode-generator "render on load" contract.
+
+    web.localUpload = false;
+
+    function cbsgHexToRgb(hex) {
+        var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || '#000000');
+        if (!m) return { r: 0, g: 0, b: 0 };
+        return { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16) };
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('cssBoxShadowGeneratorTool');
+        if (!root) return; // not a css-box-shadow-generator page
+
+        root.innerHTML =
+            '<div class="w3-row">' +
+            '<div class="w3-col m6" style="padding-right:12px;">' +
+            '<div style="margin-bottom:10px;"><label>Horizontal offset: <span id="cbsgXVal">10</span>px</label>' +
+            '<input id="cbsgX" type="range" min="-50" max="50" value="10" class="w3-input"></div>' +
+            '<div style="margin-bottom:10px;"><label>Vertical offset: <span id="cbsgYVal">10</span>px</label>' +
+            '<input id="cbsgY" type="range" min="-50" max="50" value="10" class="w3-input"></div>' +
+            '<div style="margin-bottom:10px;"><label>Blur radius: <span id="cbsgBlurVal">20</span>px</label>' +
+            '<input id="cbsgBlur" type="range" min="0" max="100" value="20" class="w3-input"></div>' +
+            '<div style="margin-bottom:10px;"><label>Spread radius: <span id="cbsgSpreadVal">0</span>px</label>' +
+            '<input id="cbsgSpread" type="range" min="-50" max="50" value="0" class="w3-input"></div>' +
+            '<div style="margin-bottom:10px;"><label>Shadow color</label><br>' +
+            '<input id="cbsgColor" type="color" value="#000000" style="width:60px;height:32px;vertical-align:middle;">' +
+            '<label style="margin-left:12px;">Opacity: <span id="cbsgOpacityVal">0.35</span></label>' +
+            '<input id="cbsgOpacity" type="range" min="0" max="1" step="0.05" value="0.35" class="w3-input" style="display:inline-block;width:120px;vertical-align:middle;margin-left:6px;"></div>' +
+            '<div style="margin-bottom:10px;"><label><input id="cbsgInset" type="checkbox" class="w3-check"> Inset (inner shadow)</label></div>' +
+            '</div>' +
+            '<div class="w3-col m6" style="padding-left:12px;">' +
+            '<div id="cbsgPreviewWrap" style="display:flex;align-items:center;justify-content:center;min-height:180px;background:#f4f4f4;border-radius:6px;">' +
+            '<div id="cbsgPreviewBox" style="width:120px;height:120px;background:#ffffff;border-radius:8px;"></div>' +
+            '</div>' +
+            '<div class="outputImgs" style="margin-top:12px;">' +
+            '<pre id="cbsgOutput" class="w3-padding w3-light-grey" style="white-space:pre-wrap;word-break:break-all;visibility:visible"></pre>' +
+            '<button id="cbsgCopyBtn" type="button" class="w3-button w3-blue" style="margin-top:6px;">Copy CSS</button>' +
+            '<span id="cbsgCopyStatus" style="margin-left:8px;color:#555;"></span>' +
+            '</div>' +
+            '</div>' +
+            '</div>';
+
+        var q = function (id) { return root.querySelector(id); };
+
+        function render() {
+            var x = q('#cbsgX').value;
+            var y = q('#cbsgY').value;
+            var blur = q('#cbsgBlur').value;
+            var spread = q('#cbsgSpread').value;
+            var color = q('#cbsgColor').value;
+            var opacity = q('#cbsgOpacity').value;
+            var inset = q('#cbsgInset').checked;
+
+            q('#cbsgXVal').textContent = x;
+            q('#cbsgYVal').textContent = y;
+            q('#cbsgBlurVal').textContent = blur;
+            q('#cbsgSpreadVal').textContent = spread;
+            q('#cbsgOpacityVal').textContent = opacity;
+
+            var rgb = cbsgHexToRgb(color);
+            var rgba = 'rgba(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ', ' + opacity + ')';
+            var shadowValue = (inset ? 'inset ' : '') + x + 'px ' + y + 'px ' + blur + 'px ' + spread + 'px ' + rgba;
+            var css = 'box-shadow: ' + shadowValue + ';';
+
+            q('#cbsgPreviewBox').style.boxShadow = shadowValue;
+            q('#cbsgOutput').textContent = css;
+        }
+
+        ['#cbsgX', '#cbsgY', '#cbsgBlur', '#cbsgSpread', '#cbsgColor', '#cbsgOpacity', '#cbsgInset'].forEach(function (sel) {
+            q(sel).addEventListener('input', render);
+            q(sel).addEventListener('change', render);
+        });
+
+        q('#cbsgCopyBtn').addEventListener('click', function () {
+            var text = q('#cbsgOutput').textContent;
+            var status = q('#cbsgCopyStatus');
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(function () {
+                    status.textContent = 'Copied.';
+                }).catch(function () {
+                    status.textContent = 'Could not copy - select the text manually.';
+                });
+            } else {
+                status.textContent = 'Select the text above and copy manually.';
+            }
+        });
+
+        render(); // render immediately with defaults - no click required
+    }
+</script>
