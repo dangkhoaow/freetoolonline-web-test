@@ -1,0 +1,160 @@
+<script>
+    // Number-base converter skeleton (number-base-converter) - pure JS BigInt arithmetic,
+    // no lib, no upload, no backend. Registry Gate-H entry:
+    // number_base_converter_purejs. Converts a value between binary / octal /
+    // decimal / hexadecimal / any custom base 2-36 entirely in the browser.
+    // Uses manual digit-by-digit BigInt conversion (not Number.parseInt /
+    // (n).toString(base)) so it stays exact for values beyond
+    // Number.MAX_SAFE_INTEGER (2^53-1) - a plain hex string like
+    // "ffffffffffffffff" (2^64-1) would silently lose precision through the
+    // native Number path. Framework contract: doAfterPageRendered(); renders
+    // a worked example on load so e2e G16 has visible output with zero
+    // interaction.
+
+    web.localUpload = false;
+
+    var NBC_DIGITS = '0123456789abcdefghijklmnopqrstuvwxyz';
+
+    function nbcDigitValue(ch) {
+        var idx = NBC_DIGITS.indexOf(ch.toLowerCase());
+        return idx; // -1 when not a valid digit character at all
+    }
+
+    // Parse `raw` (a string of digits, optionally prefixed with '-') in
+    // `fromBase` (2-36) into a BigInt. Throws a plain-language Error on any
+    // invalid character so the UI can show exactly which digit is wrong.
+    function nbcParse(raw, fromBase) {
+        var s = String(raw || '').trim();
+        if (!s) throw new Error('Enter a number to convert.');
+        var negative = false;
+        if (s[0] === '-') { negative = true; s = s.slice(1); }
+        else if (s[0] === '+') { s = s.slice(1); }
+        // Common prefixes are accepted and stripped so pasted values (0x.., 0b.., 0o..) just work.
+        if (fromBase === 16 && /^0x/i.test(s)) s = s.slice(2);
+        if (fromBase === 2 && /^0b/i.test(s)) s = s.slice(2);
+        if (fromBase === 8 && /^0o/i.test(s)) s = s.slice(2);
+        if (!s) throw new Error('Enter a number to convert.');
+        var value = 0n;
+        var base = BigInt(fromBase);
+        for (var i = 0; i < s.length; i++) {
+            var d = nbcDigitValue(s[i]);
+            if (d < 0 || d >= fromBase) {
+                throw new Error('"' + s[i] + '" is not a valid base-' + fromBase + ' digit (position ' + (i + 1) + ').');
+            }
+            value = value * base + BigInt(d);
+        }
+        return negative ? -value : value;
+    }
+
+    // Render `value` (a BigInt) in `toBase` (2-36) as a lowercase digit string.
+    function nbcFormat(value, toBase) {
+        if (value === 0n) return '0';
+        var negative = value < 0n;
+        var v = negative ? -value : value;
+        var base = BigInt(toBase);
+        var out = '';
+        while (v > 0n) {
+            var rem = Number(v % base);
+            out = NBC_DIGITS[rem] + out;
+            v = v / base;
+        }
+        return (negative ? '-' : '') + out;
+    }
+
+    var NBC_BASE_LABEL = { 2: 'Binary', 8: 'Octal', 10: 'Decimal', 16: 'Hexadecimal' };
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('numberBaseConverterTool');
+        if (!root) return; // not a number-base-converter page
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:10px;">' +
+            '<input id="nbcIn" class="w3-input w3-border" type="text" placeholder="e.g. ff, 1010, 255" style="max-width:420px;margin:0 auto;font-family:monospace;">' +
+            '</div>' +
+            '<div class="w3-row" style="margin-bottom:10px;">' +
+            '<label>From ' +
+            '<select id="nbcFrom" class="w3-select w3-border" style="width:auto;display:inline-block;">' +
+            '<option value="16" selected>Hexadecimal (base 16)</option>' +
+            '<option value="10">Decimal (base 10)</option>' +
+            '<option value="8">Octal (base 8)</option>' +
+            '<option value="2">Binary (base 2)</option>' +
+            '<option value="custom-from">Custom base...</option>' +
+            '</select></label> ' +
+            '<input id="nbcFromCustom" type="number" min="2" max="36" value="16" class="w3-input w3-border" style="display:none;width:70px;">' +
+            '<span style="margin:0 10px;">&rarr;</span>' +
+            '<label>To ' +
+            '<select id="nbcTo" class="w3-select w3-border" style="width:auto;display:inline-block;">' +
+            '<option value="10" selected>Decimal (base 10)</option>' +
+            '<option value="16">Hexadecimal (base 16)</option>' +
+            '<option value="8">Octal (base 8)</option>' +
+            '<option value="2">Binary (base 2)</option>' +
+            '<option value="custom-to">Custom base...</option>' +
+            '</select></label> ' +
+            '<input id="nbcToCustom" type="number" min="2" max="36" value="10" class="w3-input w3-border" style="display:none;width:70px;">' +
+            '</div>' +
+            '<div class="w3-row" style="margin-bottom:8px;">' +
+            '<button id="nbcSwap" type="button" class="w3-button w3-light-grey">Swap</button>' +
+            '</div>' +
+            '<div id="nbcOut" class="outputImgs" style="visibility:visible !important;font-family:monospace;font-size:1.2em;word-break:break-all;background:#f7f7f7;border:1px solid #ddd;border-radius:4px;padding:10px;min-height:2em;max-width:520px;margin:0 auto;text-align:left;"></div>' +
+            '<div style="margin-top:8px;"><button id="nbcCopy" type="button" class="w3-button w3-blue">Copy result</button></div>';
+
+        var q = function (sel) { return root.querySelector(sel); };
+        var inEl = q('#nbcIn'), fromEl = q('#nbcFrom'), toEl = q('#nbcTo');
+        var fromCustomEl = q('#nbcFromCustom'), toCustomEl = q('#nbcToCustom'), outEl = q('#nbcOut');
+
+        function effectiveBase(selectEl, customEl) {
+            if (selectEl.value.indexOf('custom') === 0) {
+                var n = parseInt(customEl.value, 10);
+                if (!(n >= 2 && n <= 36)) return null;
+                return n;
+            }
+            return parseInt(selectEl.value, 10);
+        }
+
+        function baseLabel(n) { return NBC_BASE_LABEL[n] || ('base ' + n); }
+
+        function run() {
+            fromCustomEl.style.display = fromEl.value.indexOf('custom') === 0 ? 'inline-block' : 'none';
+            toCustomEl.style.display = toEl.value.indexOf('custom') === 0 ? 'inline-block' : 'none';
+            var fromBase = effectiveBase(fromEl, fromCustomEl);
+            var toBase = effectiveBase(toEl, toCustomEl);
+            if (!fromBase || !toBase) { outEl.textContent = 'Choose a custom base between 2 and 36.'; return; }
+            try {
+                var value = nbcParse(inEl.value, fromBase);
+                var result = nbcFormat(value, toBase);
+                outEl.textContent = result;
+                outEl.setAttribute('data-nbc-result', result);
+            } catch (e) {
+                outEl.textContent = 'Error: ' + (e && e.message ? e.message : String(e));
+                outEl.removeAttribute('data-nbc-result');
+            }
+        }
+
+        q('#nbcSwap').addEventListener('click', function () {
+            var fromWasCustom = fromEl.value.indexOf('custom') === 0;
+            var toWasCustom = toEl.value.indexOf('custom') === 0;
+            var fromVal = fromWasCustom ? fromCustomEl.value : fromEl.value;
+            var toVal = toWasCustom ? toCustomEl.value : toEl.value;
+            var lastResult = outEl.getAttribute('data-nbc-result');
+            if (lastResult) inEl.value = lastResult;
+            fromEl.value = toWasCustom ? 'custom-from' : toVal;
+            toEl.value = fromWasCustom ? 'custom-to' : fromVal;
+            if (toWasCustom) fromCustomEl.value = toVal;
+            if (fromWasCustom) toCustomEl.value = fromVal;
+            run();
+        });
+
+        inEl.addEventListener('input', run);
+        fromEl.addEventListener('change', run);
+        toEl.addEventListener('change', run);
+        fromCustomEl.addEventListener('input', run);
+        toCustomEl.addEventListener('input', run);
+        q('#nbcCopy').addEventListener('click', function () {
+            var v = outEl.getAttribute('data-nbc-result');
+            if (v && navigator.clipboard) { try { navigator.clipboard.writeText(v); } catch (e) { void e; } }
+        });
+
+        // Worked example on load (visible output for e2e G16, zero interaction).
+        inEl.value = 'ff';
+        run();
+    }
+</script>
