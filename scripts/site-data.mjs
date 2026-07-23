@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/password-strength-checker-vs-alternatives.html',
+  '/guides/password-strength-checker-step-by-step.html',
+  '/guides/password-strength-checker-when.html',
   '/guides/compound-interest-calculator-vs-alternatives.html',
   '/guides/de/compound-interest-calculator-vs-alternatives.html',
   '/guides/id/compound-interest-calculator-vs-alternatives.html',
@@ -2702,6 +2705,18 @@ export const INFO_ROUTES = new Set([
   '/guides/de/aurora-vs-alternatives.html',
   '/guides/vi/aurora-vs-alternatives.html',
   '/guides/id/aurora-vs-alternatives.html',
+  '/guides/europa-subsurface-ocean-step-by-step.html',
+  '/guides/pt/europa-subsurface-ocean-step-by-step.html',
+  '/guides/es/europa-subsurface-ocean-step-by-step.html',
+  '/guides/de/europa-subsurface-ocean-step-by-step.html',
+  '/guides/vi/europa-subsurface-ocean-step-by-step.html',
+  '/guides/id/europa-subsurface-ocean-step-by-step.html',
+  '/guides/europa-subsurface-ocean-when.html',
+  '/guides/pt/europa-subsurface-ocean-when.html',
+  '/guides/es/europa-subsurface-ocean-when.html',
+  '/guides/de/europa-subsurface-ocean-when.html',
+  '/guides/vi/europa-subsurface-ocean-when.html',
+  '/guides/id/europa-subsurface-ocean-when.html',
   '/guides/mars-terrain-when.html',
   '/guides/pt/mars-terrain-when.html',
   '/guides/es/mars-terrain-when.html',
@@ -11746,6 +11761,7 @@ export const ALIAS_ROUTES = {
   '/satellite-orbit-classes.html': '/space-3d/satellite-orbit-classes.html',
   '/sagittarius-a-star.html': '/space-3d/sagittarius-a-star.html',
   '/andromeda-collision.html': '/space-3d/andromeda-collision.html',
+  '/europa-subsurface-ocean.html': '/space-3d/europa-subsurface-ocean.html',
   '/geocentric-vs-heliocentric.html': '/space-3d/geocentric-vs-heliocentric.html',
   '/dwarf-planet-comparison.html': '/space-3d/dwarf-planet-comparison.html',
   '/impact-crater-formation.html': '/space-3d/impact-crater-formation.html',
@@ -11828,6 +11844,7 @@ export const ALIAS_ROUTES = {
   '/video-speed-changer.html': '/video-tools/video-speed-changer.html',
   '/html-entity-encoder.html': '/developer-tools/html-entity-encoder.html',
   '/compound-interest-calculator.html': '/utility-tools/compound-interest-calculator.html',
+  '/password-strength-checker.html': '/developer-tools/password-strength-checker.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -18129,6 +18146,7 @@ export const JSP_BY_ROUTE = {
   '/space-3d/satellite-orbit-classes.html': 'space/satellite-orbit-classes.jsp',
   '/space-3d/sagittarius-a-star.html': 'space/sagittarius-a-star.jsp',
   '/space-3d/andromeda-collision.html': 'space/andromeda-collision.jsp',
+  '/space-3d/europa-subsurface-ocean.html': 'space/europa-subsurface-ocean.jsp',
   '/space-3d/geocentric-vs-heliocentric.html': 'space/geocentric-vs-heliocentric.jsp',
   '/space-3d/dwarf-planet-comparison.html': 'space/dwarf-planet-comparison.jsp',
   '/space-3d/impact-crater-formation.html': 'space/impact-crater-formation.jsp',
@@ -20212,6 +20230,18 @@ export const JSP_BY_ROUTE = {
   '/guides/de/aurora-vs-alternatives.html': 'guide/de/aurora-vs-alternatives.jsp',
   '/guides/vi/aurora-vs-alternatives.html': 'guide/vi/aurora-vs-alternatives.jsp',
   '/guides/id/aurora-vs-alternatives.html': 'guide/id/aurora-vs-alternatives.jsp',
+  '/guides/europa-subsurface-ocean-step-by-step.html': 'guide/europa-subsurface-ocean-step-by-step.jsp',
+  '/guides/pt/europa-subsurface-ocean-step-by-step.html': 'guide/pt/europa-subsurface-ocean-step-by-step.jsp',
+  '/guides/es/europa-subsurface-ocean-step-by-step.html': 'guide/es/europa-subsurface-ocean-step-by-step.jsp',
+  '/guides/de/europa-subsurface-ocean-step-by-step.html': 'guide/de/europa-subsurface-ocean-step-by-step.jsp',
+  '/guides/vi/europa-subsurface-ocean-step-by-step.html': 'guide/vi/europa-subsurface-ocean-step-by-step.jsp',
+  '/guides/id/europa-subsurface-ocean-step-by-step.html': 'guide/id/europa-subsurface-ocean-step-by-step.jsp',
+  '/guides/europa-subsurface-ocean-when.html': 'guide/europa-subsurface-ocean-when.jsp',
+  '/guides/pt/europa-subsurface-ocean-when.html': 'guide/pt/europa-subsurface-ocean-when.jsp',
+  '/guides/es/europa-subsurface-ocean-when.html': 'guide/es/europa-subsurface-ocean-when.jsp',
+  '/guides/de/europa-subsurface-ocean-when.html': 'guide/de/europa-subsurface-ocean-when.jsp',
+  '/guides/vi/europa-subsurface-ocean-when.html': 'guide/vi/europa-subsurface-ocean-when.jsp',
+  '/guides/id/europa-subsurface-ocean-when.html': 'guide/id/europa-subsurface-ocean-when.jsp',
   '/guides/mars-terrain-when.html': 'guide/mars-terrain-when.jsp',
   '/guides/pt/mars-terrain-when.html': 'guide/pt/mars-terrain-when.jsp',
   '/guides/es/mars-terrain-when.html': 'guide/es/mars-terrain-when.jsp',
@@ -21988,6 +22018,10 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/compound-interest-calculator-vs-alternatives.html': 'guide/vi/compound-interest-calculator-vs-alternatives.jsp',
   '/guides/es/compound-interest-calculator-vs-alternatives.html': 'guide/es/compound-interest-calculator-vs-alternatives.jsp',
   '/guides/pt/compound-interest-calculator-vs-alternatives.html': 'guide/pt/compound-interest-calculator-vs-alternatives.jsp',
+  '/developer-tools/password-strength-checker.html': 'utility/password-strength-checker.jsp',
+  '/guides/password-strength-checker-when.html': 'guide/password-strength-checker-when.jsp',
+  '/guides/password-strength-checker-step-by-step.html': 'guide/password-strength-checker-step-by-step.jsp',
+  '/guides/password-strength-checker-vs-alternatives.html': 'guide/password-strength-checker-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
