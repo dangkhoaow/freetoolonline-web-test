@@ -1,0 +1,381 @@
+<script>
+    // 3D scene archetype skeleton (dart-asteroid-deflection) - vendored three.js (ESM,
+    // dynamic import from /vendor/three/, NO CDN), fully client-side. Built from the
+    // shared t3d* skeleton (see BODYJSapophis2029flyby.html) - ONE scene only. All
+    // geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not an orbital simulation. This page draws the
+    // Didymos-Dimorphos binary asteroid system and NASA's DART kinetic-impact test as
+    // a simplified two-state explorer (before impact / after impact), not a
+    // numerically integrated gravitational simulation. Didymos and Dimorphos are
+    // drawn larger relative to their orbital separation than true scale so both
+    // bodies stay visible and clickable. The DART probe's inbound flight is a
+    // straight-line animation timed for clarity, not the real multi-year cruise
+    // trajectory. The BEFORE/AFTER orbital speed change shown IS drawn from the real
+    // published period-change ratio (33 minutes out of an 11h55m period), so the
+    // relative speed-up is scientifically accurate even though the absolute loop
+    // duration is sped up for visualization.
+    //
+    // Published figures (NASA / Johns Hopkins APL DART mission; peer-reviewed orbit
+    // result: Thomas et al., "Orbital period change of Dimorphos due to the DART
+    // kinetic impact", Nature, 2023; verified 2026-07-24):
+    //   - Impact date/time: 26 September 2022, 23:14 UTC
+    //   - DART spacecraft mass at impact: about 579 kg (579.4 +/- 0.7 kg)
+    //   - Impact speed: about 6.14 km/s (about 22,530 km/h, about 14,000 mph)
+    //   - Distance from Earth at impact: about 11 million km (about 6.8 million miles)
+    //   - Didymos diameter: about 780 m; Dimorphos diameter: about 160 m
+    //   - Dimorphos's orbital period around Didymos before impact: 11 h 55 min
+    //   - Orbital period change: -33 +/- 1 minutes (about 11 h 22 min after impact)
+    //   - NASA's minimum-success threshold was a change of 73 seconds or more - the
+    //     real result exceeded it by more than 25 times
+    //   - This was the first full-scale test of the kinetic-impactor asteroid
+    //     deflection technique and the first time humanity measurably changed the
+    //     motion of a celestial body
+    //
+    // Distinct from Apophis 2029 Flyby (a predicted natural near-miss, no impact and
+    // no spacecraft), Chelyabinsk Meteor (an object that already reached the ground),
+    // Impact Crater Formation (generic impactor/crater-scaling physics), and
+    // Yarkovsky Effect (passive thermal drift, no spacecraft) - THIS page is a real,
+    // completed, deliberate spacecraft-impact deflection TEST with a measured before/
+    // after orbital result.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'dart-asteroid-deflection';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'dartimpact'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Published figures (see header comment for sources).
+    var PERIOD_BEFORE_MIN = 715;      // 11 h 55 min, real published pre-impact period
+    var PERIOD_AFTER_MIN = 682;       // 11 h 22 min, real published post-impact period (change -33 min)
+    var PERIOD_CHANGE_MIN = PERIOD_BEFORE_MIN - PERIOD_AFTER_MIN; // 33
+    var MIN_SUCCESS_THRESHOLD_SEC = 73;
+    var LOOP_SECONDS_BEFORE = 14;     // visualization speed-up only (not real time)
+    var LOOP_SECONDS_AFTER = LOOP_SECONDS_BEFORE * (PERIOD_AFTER_MIN / PERIOD_BEFORE_MIN); // preserves the REAL ratio
+    var ORBIT_R = 12;                 // scene units, Dimorphos orbit radius around Didymos
+    var DIDYMOS_R = 4;                // scene units
+    var DIMORPHOS_R = 0.85;           // scene units (Dimorphos:Didymos diameter ratio ~160:780, sized up for visibility)
+    var DART_START = { x: 26, y: 6, z: -18 }; // scene units, off-scene inbound start point
+    var DART_FLIGHT_SECONDS = 1.6;
+
+    function t3dFactsHtml(state) {
+        var periodLabel = state === 'after' ? '11 h 22 min' : '11 h 55 min';
+        var changeRow = state === 'after'
+            ? '<tr><td>Change vs before</td><td>-33 min (more than 25x the 73 s minimum-success threshold)</td></tr>'
+            : '<tr><td>Change vs before</td><td>- (click "Fire DART" to replay the impact)</td></tr>';
+        return '<h3>DART vs Dimorphos</h3>' +
+            '<table class="w3-table w3-bordered w3-small">' +
+            '<tr><td>State</td><td>' + (state === 'after' ? 'After impact' : 'Before impact') + '</td></tr>' +
+            '<tr><td>Dimorphos orbital period around Didymos</td><td>' + periodLabel + '</td></tr>' +
+            changeRow +
+            '<tr><td>Impact date</td><td>26 September 2022, 23:14 UTC</td></tr>' +
+            '<tr><td>DART mass at impact</td><td>about 579 kg</td></tr>' +
+            '<tr><td>Impact speed</td><td>about 6.14 km/s (about 22,530 km/h)</td></tr>' +
+            '<tr><td>Distance from Earth at impact</td><td>about 11 million km</td></tr>' +
+            '</table>' +
+            '<p class="t3d-note">Source: NASA / Johns Hopkins APL DART mission; orbital-period-change result peer-reviewed in Nature (Thomas et al., 2023). NASA\'s minimum success threshold was a 73-second change - DART exceeded it by more than 25 times.</p>';
+    }
+
+    function t3dDartImpact(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x040611, 1);
+        scene.add(new THREE.AmbientLight(0x445566, 0.6));
+        var sunLight = new THREE.DirectionalLight(0xfff4e0, 1.1);
+        sunLight.position.set(40, 35, 25);
+        scene.add(sunLight);
+
+        var starCount = shell.low ? 200 : 420;
+        var spos = new Float32Array(starCount * 3);
+        for (var s = 0; s < starCount; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(70 + Math.random() * 110);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xb0bec5, size: 0.35, sizeAttenuation: false })));
+
+        var pivot = new THREE.Group();
+        scene.add(pivot);
+
+        var didymos = new THREE.Mesh(
+            new THREE.SphereGeometry(DIDYMOS_R, 40, 28),
+            new THREE.MeshPhongMaterial({ color: 0x8d7b6b, emissive: 0x0a0705, shininess: 6, flatShading: true })
+        );
+        pivot.add(didymos);
+
+        var orbitLine = new THREE.Mesh(
+            new THREE.TorusGeometry(ORBIT_R, 0.04, 6, 96),
+            new THREE.MeshBasicMaterial({ color: 0x4fc3f7, transparent: true, opacity: 0.35 })
+        );
+        orbitLine.rotation.x = Math.PI / 2;
+        pivot.add(orbitLine);
+
+        var dimorphosGroup = new THREE.Group();
+        pivot.add(dimorphosGroup);
+        var dimorphos = new THREE.Mesh(
+            new THREE.SphereGeometry(DIMORPHOS_R, 24, 16),
+            new THREE.MeshPhongMaterial({ color: 0x9e9384, emissive: 0x0a0705, shininess: 6, flatShading: true })
+        );
+        dimorphosGroup.add(dimorphos);
+
+        var dart = new THREE.Mesh(
+            new THREE.ConeGeometry(0.35, 1.1, 8),
+            new THREE.MeshBasicMaterial({ color: 0xffca28 })
+        );
+        dart.visible = false;
+        scene.add(dart);
+
+        var ejectaGeo = new THREE.BufferGeometry();
+        var ejectaCount = shell.low ? 60 : 140;
+        var ejectaPos = new Float32Array(ejectaCount * 3);
+        var ejectaVel = [];
+        for (var e = 0; e < ejectaCount; e++) {
+            ejectaPos[e * 3] = 0; ejectaPos[e * 3 + 1] = 0; ejectaPos[e * 3 + 2] = 0;
+            ejectaVel.push(new THREE.Vector3().randomDirection().multiplyScalar(0.02 + Math.random() * 0.05));
+        }
+        ejectaGeo.setAttribute('position', new THREE.BufferAttribute(ejectaPos, 3));
+        var ejectaMat = new THREE.PointsMaterial({ color: 0xffe0b2, size: 0.18, transparent: true, opacity: 0 });
+        var ejecta = new THREE.Points(ejectaGeo, ejectaMat);
+        scene.add(ejecta);
+
+        var st = {
+            phase: 'before',            // 'before' | 'firing' | 'settling' | 'after'
+            angle: 0,
+            omega: (Math.PI * 2) / LOOP_SECONDS_BEFORE,
+            dartT: 0,
+            ejectaT: 0,
+            ejectaActive: false
+        };
+
+        function updateLabelAndFacts() {
+            var label = document.getElementById('t3dDartStateLabel');
+            if (label) {
+                label.textContent = st.phase === 'after'
+                    ? 'After impact - Dimorphos orbit: 11h 22m (-33 min)'
+                    : (st.phase === 'firing' ? 'DART inbound...' : 'Before impact - Dimorphos orbit: 11h 55m');
+            }
+            t3dInfo(t3dFactsHtml(st.phase === 'after' ? 'after' : 'before'));
+        }
+
+        function setPhase(phase) {
+            st.phase = phase;
+            if (phase === 'before') {
+                st.omega = (Math.PI * 2) / LOOP_SECONDS_BEFORE;
+            } else if (phase === 'after') {
+                st.omega = (Math.PI * 2) / LOOP_SECONDS_AFTER;
+            }
+            updateLabelAndFacts();
+        }
+
+        var store = t3dLoadStore();
+        setPhase(store.impacted ? 'after' : 'before');
+
+        var fireBtn = document.getElementById('t3dDartFireBtn');
+        if (fireBtn) {
+            fireBtn.addEventListener('click', function () {
+                if (st.phase !== 'before') return;
+                st.phase = 'firing';
+                st.dartT = 0;
+                dart.visible = true;
+                dart.position.set(DART_START.x, DART_START.y, DART_START.z);
+                t3dStatus('DART inbound at about 6.14 km/s...');
+                updateLabelAndFacts();
+            });
+        }
+        var resetBtn = document.getElementById('t3dDartResetBtn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function () {
+                dart.visible = false;
+                ejectaMat.opacity = 0;
+                st.ejectaActive = false;
+                st.angle = 0;
+                setPhase('before');
+                try { t3dSaveStore({ impacted: false }); } catch (e) {}
+                t3dStatus('Reset. Click "Fire DART" to replay the impact.');
+            });
+        }
+
+        t3dStatus('Drag to orbit, scroll or pinch to zoom. Click "Fire DART" to replay the impact.');
+        return function animate(dt) {
+            var dtSec = dt / 1000;
+            didymos.rotation.y += dtSec * 0.12;
+
+            if (st.phase === 'firing') {
+                st.dartT += dtSec;
+                var tt = Math.min(1, st.dartT / DART_FLIGHT_SECONDS);
+                var targetPos = new THREE.Vector3();
+                dimorphosGroup.getWorldPosition(targetPos);
+                dart.position.set(
+                    DART_START.x + (targetPos.x - DART_START.x) * tt,
+                    DART_START.y + (targetPos.y - DART_START.y) * tt,
+                    DART_START.z + (targetPos.z - DART_START.z) * tt
+                );
+                dart.lookAt(targetPos);
+                if (tt >= 1) {
+                    dart.visible = false;
+                    st.ejectaActive = true;
+                    st.ejectaT = 0;
+                    ejecta.position.copy(targetPos);
+                    var posAttr = ejectaGeo.getAttribute('position');
+                    for (var i = 0; i < ejectaCount; i++) {
+                        posAttr.array[i * 3] = 0; posAttr.array[i * 3 + 1] = 0; posAttr.array[i * 3 + 2] = 0;
+                    }
+                    posAttr.needsUpdate = true;
+                    ejectaMat.opacity = 1;
+                    setPhase('after');
+                    try { t3dSaveStore({ impacted: true }); } catch (e) {}
+                    t3dStatus('Impact! Dimorphos\'s orbit just sped up to the real measured post-impact period.');
+                }
+            }
+
+            if (st.ejectaActive) {
+                st.ejectaT += dtSec;
+                var posAttr2 = ejectaGeo.getAttribute('position');
+                for (var j = 0; j < ejectaCount; j++) {
+                    posAttr2.array[j * 3] += ejectaVel[j].x;
+                    posAttr2.array[j * 3 + 1] += ejectaVel[j].y;
+                    posAttr2.array[j * 3 + 2] += ejectaVel[j].z;
+                }
+                posAttr2.needsUpdate = true;
+                ejectaMat.opacity = Math.max(0, 1 - st.ejectaT / 2.5);
+                if (st.ejectaT > 2.5) { st.ejectaActive = false; }
+            }
+
+            st.angle += st.omega * dtSec;
+            dimorphosGroup.position.set(Math.cos(st.angle) * ORBIT_R, 0, Math.sin(st.angle) * ORBIT_R);
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { dartimpact: 't3dDartControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { dartimpact: { radius: 34, maxR: 140, minR: 10, phi: 1.05, theta: 0.5, targetY: 0 } };
+                    var shellCtx = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dDartImpact(shellCtx);
+                    var last = performance.now();
+                    shellCtx.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shellCtx.applyCamera();
+                        shellCtx.renderer.render(shellCtx.scene, shellCtx.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
