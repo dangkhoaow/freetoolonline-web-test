@@ -708,6 +708,7 @@ try {
     { title: "Chariklo Rings 3D Explorer", url: "https://freetoolonline.com/space-3d/chariklo-rings.html", include: !1, tags: "space-3d" },
     { title: "DART Asteroid Deflection 3D Explorer", url: "https://freetoolonline.com/space-3d/dart-asteroid-deflection.html", include: !1, tags: "space-3d" },
     { title: "GPS Time Dilation 3D Explorer", url: "https://freetoolonline.com/space-3d/gps-time-dilation.html", include: !1, tags: "space-3d" },
+    { title: "Curiosity Rover Traverse 3D Explorer", url: "https://freetoolonline.com/space-3d/curiosity-rover-traverse.html", include: !1, tags: "space-3d" },
     { title: "Globular Star Swarm 3D Explorer", url: "https://freetoolonline.com/space-3d/globular-cluster.html", include: !1, tags: "space-3d" },
     { title: "Titan Methane Lakes 3D Explorer", url: "https://freetoolonline.com/space-3d/titan-methane-lakes.html", include: !1, tags: "space-3d" },
     { title: "Algol Eclipsing Binary 3D Explorer", url: "https://freetoolonline.com/space-3d/algol-eclipsing-binary.html", include: !1, tags: "space-3d" },
