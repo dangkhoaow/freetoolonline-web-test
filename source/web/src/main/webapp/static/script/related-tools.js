@@ -694,6 +694,7 @@ try {
     { title: "Geocentric vs Heliocentric 3D Explorer", url: "https://freetoolonline.com/space-3d/geocentric-vs-heliocentric.html", include: !1, tags: "space-3d" },
     { title: "White Dwarf Chandrasekhar Limit 3D Explorer", url: "https://freetoolonline.com/space-3d/white-dwarf-chandrasekhar-limit.html", include: !1, tags: "space-3d" },
     { title: "Magnetar 3D Explorer", url: "https://freetoolonline.com/space-3d/magnetar.html", include: !1, tags: "space-3d" },
+    { title: "Fast Radio Burst 3D Explorer", url: "https://freetoolonline.com/space-3d/fast-radio-bursts.html", include: !1, tags: "space-3d" },
     { title: "Globular Star Swarm 3D Explorer", url: "https://freetoolonline.com/space-3d/globular-cluster.html", include: !1, tags: "space-3d" },
     { title: "Titan Methane Lakes 3D Explorer", url: "https://freetoolonline.com/space-3d/titan-methane-lakes.html", include: !1, tags: "space-3d" },
     { title: "Algol Eclipsing Binary 3D Explorer", url: "https://freetoolonline.com/space-3d/algol-eclipsing-binary.html", include: !1, tags: "space-3d" },
