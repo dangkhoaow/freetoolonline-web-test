@@ -1,0 +1,359 @@
+<script>
+    // 3D scene archetype skeleton (venus-runaway-greenhouse) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only.
+    // All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not a live radiative-transfer or climate
+    // model. The atmosphere-thickness slider is ILLUSTRATIVE ONLY - it
+    // changes the visual haze color/opacity to show the qualitative idea
+    // that a thicker CO2 blanket traps more heat. It does NOT compute a
+    // temperature from an invented formula. The ONE real number shown is
+    // Venus's own measured surface temperature (464 C / 737 K), displayed
+    // only at the real-Venus composition point (96.5% CO2) on the slider,
+    // reached via the snap button or by dragging within the highlighted
+    // zone. This is disclosed in-scene, in the BODYWELCOME copy, and in
+    // the FAQ.
+    //
+    // Published figures (NASA Venus Fact Sheet (NSSDCA) + NASA Mercury Fact
+    // Sheet (NSSDCA) + NASA Science "Temperatures Across Our Solar System",
+    // cross-checked via web search 2026-07-23):
+    //   - Venus surface temperature: about 464 C (737 K), essentially
+    //     constant day and night because the thick atmosphere redistributes
+    //     heat. Hotter than any other planet, including Mercury.
+    //   - Venus surface pressure: about 92 bar (about 92 times Earth's).
+    //   - Venus atmosphere composition: about 96.5% carbon dioxide, about
+    //     3.5% nitrogen.
+    //   - Venus sulfuric-acid cloud deck: about 48-70 km altitude.
+    //   - Venus Bond albedo: 0.76 (reflects about 76% of incoming sunlight -
+    //     more than any other planet).
+    //   - Venus average distance from the Sun: about 0.72 AU (about 108
+    //     million km).
+    //   - Mercury average distance from the Sun: about 0.39 AU (about 58
+    //     million km) - Mercury receives far more sunlight per square meter
+    //     than Venus does.
+    //   - Mercury dayside maximum surface temperature: about 430 C (800 F),
+    //     at the hottest equatorial "hot pole" points that face the Sun at
+    //     perihelion. Mercury's night side falls to about -180 C, since it
+    //     has essentially no atmosphere to hold heat.
+    //   - Venus radius about 6,052 km; Mercury radius about 2,440 km (ratio
+    //     about 0.40).
+    //   - Earth surface pressure for comparison: about 1 bar.
+    //
+    // Distinct from venus-retrograde-rotation (covers Venus's backwards
+    // spin direction and day length) and venus-phases-galileo (covers the
+    // telescope-visible phases of Venus as seen from Earth) - THIS page
+    // covers the atmosphere's energy balance: why a planet that reflects
+    // most of its sunlight away is still the hottest planet in the solar
+    // system.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'venus-runaway-greenhouse';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'venusrunawaygreenhouse'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Published figures (see header comment for sources).
+    var T3D_VRG_REAL_TEMP_C = 464;
+    var T3D_VRG_REAL_TEMP_K = 737;
+    var T3D_VRG_REAL_CO2_PCT = 96.5;
+    var T3D_VRG_PRESSURE_BAR = 92;
+    var T3D_VRG_CLOUD_FROM_KM = 48;
+    var T3D_VRG_CLOUD_TO_KM = 70;
+    var T3D_VRG_ALBEDO = 0.76;
+    var T3D_VRG_DIST_AU = 0.72;
+    var T3D_VRG_MERCURY_DIST_AU = 0.39;
+    var T3D_VRG_MERCURY_MAX_C = 430;
+    var T3D_VRG_MERCURY_MIN_C = -180;
+    var T3D_VRG_EARTH_PRESSURE_BAR = 1;
+    var T3D_VRG_RADIUS_RATIO_MERCURY = 0.40;
+
+    function t3dVrgBand(pct) {
+        if (pct >= T3D_VRG_REAL_CO2_PCT - 2 && pct <= T3D_VRG_REAL_CO2_PCT + 2) return 'real';
+        if (pct < 20) return 'thin';
+        if (pct < 50) return 'moderate';
+        if (pct < 85) return 'thick';
+        return 'verythick';
+    }
+    var T3D_VRG_BAND_COLOR = { thin: 0x64b5f6, moderate: 0xffd54f, thick: 0xffa726, verythick: 0xff7043, real: 0xff3d00 };
+    var T3D_VRG_BAND_LABEL = {
+        thin: 'Thin illustrative blanket - a thin CO2 layer traps little heat (this is a qualitative illustration, not a computed temperature).',
+        moderate: 'Moderate illustrative blanket - more CO2 traps more outgoing heat (qualitative illustration only).',
+        thick: 'Thick illustrative blanket - approaching a thick greenhouse atmosphere (qualitative illustration only).',
+        verythick: 'Very thick illustrative blanket - close to a runaway-greenhouse atmosphere (qualitative illustration only).',
+        real: 'Real Venus composition (about 96.5% CO2). Measured surface temperature: about 464 C (737 K) - constant day and night, and hotter than any other planet.'
+    };
+
+    function t3dVenusRunawayGreenhouse(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+        var sun = new THREE.DirectionalLight(0xffffff, 0.6);
+        sun.position.set(40, 25, 20);
+        scene.add(sun);
+
+        var R = 9;
+
+        // Starfield backdrop.
+        var SCOUNT = shell.low ? 400 : 800;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(35 + Math.random() * 60);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.3, sizeAttenuation: false })));
+
+        // Venus surface sphere.
+        var venus = new THREE.Mesh(
+            new THREE.SphereGeometry(R, 48, 32),
+            new THREE.MeshLambertMaterial({ color: 0x8a6d3b })
+        );
+        scene.add(venus);
+
+        // Sulfuric-acid cloud-deck shell (48-70 km compressed to a thin
+        // visible band just above the surface - not to scale; the real
+        // cloud deck is under 1.2% of Venus's 6,052 km radius).
+        var cloudDeck = new THREE.Mesh(
+            new THREE.SphereGeometry(R * 1.06, 40, 28),
+            new THREE.MeshBasicMaterial({ color: 0xfff3c4, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false })
+        );
+        scene.add(cloudDeck);
+
+        // Illustrative greenhouse-haze shell - color/opacity driven by the
+        // slider, NOT by a computed temperature.
+        var hazeShell = new THREE.Mesh(
+            new THREE.SphereGeometry(R * 1.16, 40, 28),
+            new THREE.MeshBasicMaterial({ color: T3D_VRG_BAND_COLOR.real, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false })
+        );
+        scene.add(hazeShell);
+
+        // Mercury comparison sphere, off to the side. Toggleable.
+        var mercuryR = R * T3D_VRG_RADIUS_RATIO_MERCURY;
+        var mercury = new THREE.Mesh(
+            new THREE.SphereGeometry(mercuryR, 32, 24),
+            new THREE.MeshLambertMaterial({ color: 0x9e9e9e })
+        );
+        mercury.position.set(R * 2.6, 0, 0);
+        scene.add(mercury);
+
+        // Pressure-comparison bars (Venus / Earth / Mercury), toggleable.
+        // Heights use a compressed sqrt scale for legibility - the exact
+        // published numbers are in the facts table, not just the bar height.
+        var pressureGroup = new THREE.Group();
+        var pressureData = [
+            { label: 'Venus', bar: T3D_VRG_PRESSURE_BAR, color: 0xff7043 },
+            { label: 'Earth', bar: T3D_VRG_EARTH_PRESSURE_BAR, color: 0x42a5f5 },
+            { label: 'Mercury', bar: 0.0000000000001, color: 0x9e9e9e }
+        ];
+        var maxH = R * 1.5;
+        pressureData.forEach(function (d, i) {
+            var h = Math.max(0.25, Math.sqrt(d.bar / T3D_VRG_PRESSURE_BAR) * maxH);
+            var box = new THREE.Mesh(
+                new THREE.BoxGeometry(R * 0.28, h, R * 0.28),
+                new THREE.MeshLambertMaterial({ color: d.color })
+            );
+            box.position.set(-R * 2.6 + i * R * 0.7, h / 2, 0);
+            pressureGroup.add(box);
+        });
+        pressureGroup.visible = false;
+        scene.add(pressureGroup);
+
+        function facts(pct) {
+            var band = t3dVrgBand(pct);
+            return '<h3>Illustrative CO2 blanket: ' + Math.round(pct) + '%</h3>' +
+                '<p>' + T3D_VRG_BAND_LABEL[band] + '</p>' +
+                (band === 'real'
+                    ? '<p>Venus reflects 76% of incoming sunlight (Bond albedo 0.76) - more than any other planet - yet is still the hottest planet in the solar system. Mercury, with almost no atmosphere, absorbs far more sunlight (it orbits at 0.39 AU, about half Venus\'s 0.72 AU distance) but its dayside still tops out around 430 C, and its night side plunges to about -180 C. Venus stays at about 464 C everywhere, all the time - the atmosphere, not the sunlight, sets the temperature.</p>'
+                    : '<p>Drag to 96.5%, or press "Real Venus", to see the real measured figure.</p>') +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Venus surface temperature</td><td>about 464 C (737 K), day and night</td></tr>' +
+                '<tr><td>Venus surface pressure</td><td>about 92 bar</td></tr>' +
+                '<tr><td>Venus atmosphere</td><td>about 96.5% CO2, about 3.5% N2</td></tr>' +
+                '<tr><td>Venus cloud deck</td><td>about 48-70 km (sulfuric acid)</td></tr>' +
+                '<tr><td>Venus Bond albedo</td><td>0.76 (reflects 76% of sunlight)</td></tr>' +
+                '<tr><td>Venus distance from Sun</td><td>about 0.72 AU</td></tr>' +
+                '<tr><td>Mercury distance from Sun</td><td>about 0.39 AU (closer to the Sun)</td></tr>' +
+                '<tr><td>Mercury dayside max</td><td>about 430 C ("hot poles")</td></tr>' +
+                '<tr><td>Mercury night min</td><td>about -180 C</td></tr>' +
+                '<tr><td>Earth surface pressure</td><td>about 1 bar</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation - the slider changes only the haze color/opacity to illustrate the qualitative idea that more greenhouse gas traps more heat. It does not compute a temperature from a physics model. The one real number (464 C / 737 K) is Venus\'s own measured surface temperature, shown at Venus\'s real composition point.</p>';
+        }
+
+        var pct = T3D_VRG_REAL_CO2_PCT;
+        function setPct(p) {
+            pct = Math.max(0, Math.min(100, p));
+            var band = t3dVrgBand(pct);
+            var color = T3D_VRG_BAND_COLOR[band];
+            hazeShell.material.color.setHex(color);
+            hazeShell.material.opacity = 0.14 + (pct / 100) * 0.28;
+            var slider = document.getElementById('t3dVrgCo2');
+            var label = document.getElementById('t3dVrgCo2Label');
+            if (slider) slider.value = String(Math.round(pct));
+            if (label) label.textContent = Math.round(pct) + '%' + (band === 'real' ? ' (real Venus)' : ' (illustrative)');
+            t3dInfo(facts(pct));
+            try { t3dSaveStore({ pct: pct }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        setPct(typeof store.pct === 'number' ? store.pct : T3D_VRG_REAL_CO2_PCT);
+
+        var slider = document.getElementById('t3dVrgCo2');
+        if (slider) slider.addEventListener('input', function () { setPct(parseFloat(slider.value || '0')); });
+
+        var resetBtn = document.getElementById('t3dVrgReset');
+        if (resetBtn) resetBtn.addEventListener('click', function () { setPct(T3D_VRG_REAL_CO2_PCT); });
+
+        var mercuryToggle = document.getElementById('t3dVrgToggleMercury');
+        if (mercuryToggle) mercuryToggle.addEventListener('change', function () { mercury.visible = mercuryToggle.checked; });
+
+        var cloudToggle = document.getElementById('t3dVrgToggleCloud');
+        if (cloudToggle) cloudToggle.addEventListener('change', function () { cloudDeck.visible = cloudToggle.checked; });
+
+        var pressureToggle = document.getElementById('t3dVrgTogglePressure');
+        if (pressureToggle) pressureToggle.addEventListener('change', function () { pressureGroup.visible = pressureToggle.checked; });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Drag the slider, or press "Real Venus" to see the measured figure.');
+        return function animate(dt) {
+            venus.rotation.y += dt / 1000 * 0.02;
+            cloudDeck.rotation.y += dt / 1000 * 0.05;
+            hazeShell.rotation.y -= dt / 1000 * 0.015;
+            mercury.rotation.y += dt / 1000 * 0.04;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { venusrunawaygreenhouse: 't3dVrgControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { venusrunawaygreenhouse: { radius: 34, maxR: 90, minR: 14, phi: 1.05, theta: 0.55, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dVenusRunawayGreenhouse(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
