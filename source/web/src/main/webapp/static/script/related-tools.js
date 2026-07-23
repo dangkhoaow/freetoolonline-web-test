@@ -762,6 +762,7 @@ try {
     { title: "Reorder & Organize PDF Pages", url: "https://freetoolonline.com/pdf-tools/organize-pdf-pages.html", include: !1, tags: "pdf" },
     { title: "Video Speed Changer", url: "https://freetoolonline.com/video-tools/video-speed-changer.html", include: !1, tags: "video" },
     { title: "HTML Entity Encoder & Decoder", url: "https://freetoolonline.com/developer-tools/html-entity-encoder.html", include: !1, tags: "developer" },
+    { title: "Compound Interest Calculator", url: "https://freetoolonline.com/utility-tools/compound-interest-calculator.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

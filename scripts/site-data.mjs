@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/compound-interest-calculator-vs-alternatives.html',
+  '/guides/de/compound-interest-calculator-vs-alternatives.html',
+  '/guides/id/compound-interest-calculator-vs-alternatives.html',
+  '/guides/vi/compound-interest-calculator-vs-alternatives.html',
+  '/guides/es/compound-interest-calculator-vs-alternatives.html',
+  '/guides/pt/compound-interest-calculator-vs-alternatives.html',
+  '/guides/compound-interest-calculator-step-by-step.html',
+  '/guides/de/compound-interest-calculator-step-by-step.html',
+  '/guides/id/compound-interest-calculator-step-by-step.html',
+  '/guides/vi/compound-interest-calculator-step-by-step.html',
+  '/guides/es/compound-interest-calculator-step-by-step.html',
+  '/guides/pt/compound-interest-calculator-step-by-step.html',
+  '/guides/compound-interest-calculator-when.html',
+  '/guides/de/compound-interest-calculator-when.html',
+  '/guides/id/compound-interest-calculator-when.html',
+  '/guides/vi/compound-interest-calculator-when.html',
+  '/guides/es/compound-interest-calculator-when.html',
+  '/guides/pt/compound-interest-calculator-when.html',
   '/guides/html-entity-encoder-decoder-vs-alternatives.html',
   '/guides/html-entity-encoder-decoder-step-by-step.html',
   '/guides/html-entity-encoder-decoder-when.html',
@@ -11770,6 +11788,7 @@ export const ALIAS_ROUTES = {
   '/organize-pdf-pages.html': '/pdf-tools/organize-pdf-pages.html',
   '/video-speed-changer.html': '/video-tools/video-speed-changer.html',
   '/html-entity-encoder.html': '/developer-tools/html-entity-encoder.html',
+  '/compound-interest-calculator.html': '/utility-tools/compound-interest-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -21886,6 +21905,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/html-entity-encoder-decoder-when.html': 'guide/de/html-entity-encoder-decoder-when.jsp',
   '/guides/de/html-entity-encoder-decoder-step-by-step.html': 'guide/de/html-entity-encoder-decoder-step-by-step.jsp',
   '/guides/de/html-entity-encoder-decoder-vs-alternatives.html': 'guide/de/html-entity-encoder-decoder-vs-alternatives.jsp',
+  '/utility-tools/compound-interest-calculator.html': 'utility/compound-interest-calculator.jsp',
+  '/guides/compound-interest-calculator-when.html': 'guide/compound-interest-calculator-when.jsp',
+  '/guides/de/compound-interest-calculator-when.html': 'guide/de/compound-interest-calculator-when.jsp',
+  '/guides/id/compound-interest-calculator-when.html': 'guide/id/compound-interest-calculator-when.jsp',
+  '/guides/vi/compound-interest-calculator-when.html': 'guide/vi/compound-interest-calculator-when.jsp',
+  '/guides/es/compound-interest-calculator-when.html': 'guide/es/compound-interest-calculator-when.jsp',
+  '/guides/pt/compound-interest-calculator-when.html': 'guide/pt/compound-interest-calculator-when.jsp',
+  '/guides/compound-interest-calculator-step-by-step.html': 'guide/compound-interest-calculator-step-by-step.jsp',
+  '/guides/de/compound-interest-calculator-step-by-step.html': 'guide/de/compound-interest-calculator-step-by-step.jsp',
+  '/guides/id/compound-interest-calculator-step-by-step.html': 'guide/id/compound-interest-calculator-step-by-step.jsp',
+  '/guides/vi/compound-interest-calculator-step-by-step.html': 'guide/vi/compound-interest-calculator-step-by-step.jsp',
+  '/guides/es/compound-interest-calculator-step-by-step.html': 'guide/es/compound-interest-calculator-step-by-step.jsp',
+  '/guides/pt/compound-interest-calculator-step-by-step.html': 'guide/pt/compound-interest-calculator-step-by-step.jsp',
+  '/guides/compound-interest-calculator-vs-alternatives.html': 'guide/compound-interest-calculator-vs-alternatives.jsp',
+  '/guides/de/compound-interest-calculator-vs-alternatives.html': 'guide/de/compound-interest-calculator-vs-alternatives.jsp',
+  '/guides/id/compound-interest-calculator-vs-alternatives.html': 'guide/id/compound-interest-calculator-vs-alternatives.jsp',
+  '/guides/vi/compound-interest-calculator-vs-alternatives.html': 'guide/vi/compound-interest-calculator-vs-alternatives.jsp',
+  '/guides/es/compound-interest-calculator-vs-alternatives.html': 'guide/es/compound-interest-calculator-vs-alternatives.jsp',
+  '/guides/pt/compound-interest-calculator-vs-alternatives.html': 'guide/pt/compound-interest-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
