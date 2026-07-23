@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/lorem-ipsum-placeholder-text-generator-vs-alternatives.html',
+  '/guides/lorem-ipsum-placeholder-text-generator-step-by-step.html',
+  '/guides/lorem-ipsum-placeholder-text-generator-when.html',
   '/guides/password-strength-checker-vs-alternatives.html',
   '/guides/password-strength-checker-step-by-step.html',
   '/guides/password-strength-checker-when.html',
@@ -11957,6 +11960,7 @@ export const ALIAS_ROUTES = {
   '/html-entity-encoder.html': '/developer-tools/html-entity-encoder.html',
   '/compound-interest-calculator.html': '/utility-tools/compound-interest-calculator.html',
   '/password-strength-checker.html': '/developer-tools/password-strength-checker.html',
+  '/lorem-ipsum-generator.html': '/developer-tools/lorem-ipsum-generator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -22187,6 +22191,10 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/password-strength-checker-vs-alternatives.html': 'guide/vi/password-strength-checker-vs-alternatives.jsp',
   '/guides/id/password-strength-checker-vs-alternatives.html': 'guide/id/password-strength-checker-vs-alternatives.jsp',
   '/guides/de/password-strength-checker-vs-alternatives.html': 'guide/de/password-strength-checker-vs-alternatives.jsp',
+  '/developer-tools/lorem-ipsum-generator.html': 'utility/lorem-ipsum-generator.jsp',
+  '/guides/lorem-ipsum-placeholder-text-generator-when.html': 'guide/lorem-ipsum-placeholder-text-generator-when.jsp',
+  '/guides/lorem-ipsum-placeholder-text-generator-step-by-step.html': 'guide/lorem-ipsum-placeholder-text-generator-step-by-step.jsp',
+  '/guides/lorem-ipsum-placeholder-text-generator-vs-alternatives.html': 'guide/lorem-ipsum-placeholder-text-generator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
