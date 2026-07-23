@@ -1,0 +1,383 @@
+<script>
+    // 3D scene archetype skeleton (Yarkovsky effect) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side.
+    // Built LEAN, forked from the fast-radio-bursts/magnetar shape - ONE
+    // scene only (Yarkovsky thermal-drift explorer). All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not an orbital-dynamics simulation. A teaching
+    // scene: a spinning, irregular rocky asteroid with a thermal-lag "hot spot"
+    // that trails local noon, re-emitting absorbed sunlight with a delay. That
+    // lag gives the re-emitted photons a net recoil direction - prograde
+    // rotators get a push that adds orbital energy (semimajor axis grows over
+    // time); retrograde rotators get a push that removes orbital energy
+    // (semimajor axis shrinks). An orbit ring and a cumulative-drift readout
+    // scrub forward in elapsed years using a straight-line extrapolation of the
+    // one real measured rate below - never an invented number.
+    //
+    // Published figures (cross-checked via WebSearch 2026-07-23):
+    //   - Asteroid 101955 Bennu is a measured RETROGRADE rotator. Its Yarkovsky
+    //     semimajor-axis drift was measured precisely via years of radar/optical
+    //     astrometry plus OSIRIS-REx radio tracking: da/dt = -284.6 +/- 1.5
+    //     meters/year (Chesley et al. 2014, Icarus, refined post-OSIRIS-REx by
+    //     JPL) - a shrinking orbit, consistent with retrograde rotation.
+    //   - Cumulative positional shift of about 160-185 km measured 1999-2012
+    //     from the drift (NASA JPL / Chesley et al. 2014).
+    //   - NASA JPL described the thrust magnitude driving this drift as "about
+    //     the same as the weight of three grapes" - vanishingly small per
+    //     instant, but large when compounded over years to decades.
+    //   - The Yarkovsky effect is the dominant non-gravitational orbit-shifting
+    //     force for asteroids roughly 10 m to 10 km in size - much smaller or
+    //     larger bodies are dominated by other effects.
+    //   - Bennu's refined orbit (informed by the measured Yarkovsky drift) put
+    //     its cumulative impact probability through the year 2300 at about
+    //     1-in-1750 (NASA JPL, post-OSIRIS-REx refinement).
+    //   - The "Prograde" toggle below MIRRORS Bennu's real measured magnitude
+    //     with the opposite sign to teach the general rule (prograde => orbit
+    //     grows; retrograde => orbit shrinks). It is explicitly labelled as a
+    //     teaching mirror, not a second measured asteroid.
+    //   - Distinct from gravitational-slingshot.html and hohmann-transfer.html
+    //     (impulsive/gravitational maneuvers) and hill-sphere.html /
+    //     roche-limit.html (gravitational boundary explorers) - this is the
+    //     only non-gravitational, sunlight-powered orbital-drift mechanism in
+    //     the backlog.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'yarkovskyeffect';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'yarkovskyeffect'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Real published figure (only one measured rate exists - Bennu, retrograde).
+    var T3D_YARK_BENNU_RATE_M_PER_YEAR = 284.6; // magnitude; sign applied by direction
+    var T3D_YARK_MAX_YEARS = 100;
+
+    function t3dYarkovskyEffect(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.42));
+        var fillLight = new THREE.DirectionalLight(0x9fc8ff, 0.35);
+        fillLight.position.set(6, 8, 10);
+        scene.add(fillLight);
+
+        // Starfield backdrop
+        var starN = shell.low ? 260 : 520;
+        var starPos = new Float32Array(starN * 3);
+        for (var s = 0; s < starN; s++) {
+            var r = 40 + Math.random() * 60;
+            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+            starPos[s * 3] = r * Math.sin(ph) * Math.cos(th);
+            starPos[s * 3 + 1] = r * Math.cos(ph) * 0.55;
+            starPos[s * 3 + 2] = r * Math.sin(ph) * Math.sin(th) - 10;
+        }
+        var starGeo = new THREE.BufferGeometry();
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        var stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xaad4ff, size: 0.3, sizeAttenuation: true, transparent: true, opacity: 0.7 }));
+        scene.add(stars);
+
+        // Sun marker (off to one side), providing directional "sunlight"
+        var sunPos = new THREE.Vector3(-14, 3, -6);
+        var sun = new THREE.Mesh(new THREE.SphereGeometry(1.4, 20, 14), new THREE.MeshBasicMaterial({ color: 0xffd54f }));
+        sun.position.copy(sunPos);
+        scene.add(sun);
+        var sunLight = new THREE.PointLight(0xfff3c4, 2.2, 0, 1.4);
+        sunLight.position.copy(sunPos);
+        scene.add(sunLight);
+
+        // Orbit-center marker (small, distinct from Sun so the ring reads as
+        // "this asteroid's orbit", not "the Sun's position")
+        var orbitCenter = new THREE.Vector3(0, 0, 0);
+
+        // Irregular rocky asteroid (deformed icosahedron, procedural)
+        var astGeo = new THREE.IcosahedronGeometry(1.6, 1);
+        var posAttr = astGeo.attributes.position;
+        for (var v = 0; v < posAttr.count; v++) {
+            var px = posAttr.getX(v), py = posAttr.getY(v), pz = posAttr.getZ(v);
+            var n = 1 + (Math.sin(px * 3.1 + py * 1.7) * 0.14) + (Math.cos(pz * 2.3 + px * 0.9) * 0.10);
+            posAttr.setXYZ(v, px * n, py * n, pz * n);
+        }
+        astGeo.computeVertexNormals();
+        var asteroid = new THREE.Mesh(astGeo, new THREE.MeshStandardMaterial({ color: 0x6d5a4a, roughness: 0.95, metalness: 0.05 }));
+        scene.add(asteroid);
+
+        // Thermal-lag hot spot: fixed offset behind local noon on the asteroid's
+        // own rotating frame (child of the asteroid mesh so it rotates with it).
+        var hotSpotAngle = 0.9; // radians of lag behind the sub-solar meridian
+        var hotSpot = new THREE.Mesh(new THREE.SphereGeometry(0.34, 14, 10), new THREE.MeshBasicMaterial({ color: 0xff7043, transparent: true, opacity: 0.9 }));
+        hotSpot.position.set(1.75 * Math.cos(hotSpotAngle), 0.3, 1.75 * Math.sin(hotSpotAngle));
+        asteroid.add(hotSpot);
+
+        // Recoil-thrust arrow, attached at the hot spot, pointing outward along
+        // the hot-spot radial direction - the teaching cue for net photon-recoil
+        // direction. Color flips with the direction toggle (green = orbit-energy
+        // gain / prograde; red = orbit-energy loss / retrograde).
+        var arrowDir = new THREE.Vector3(Math.cos(hotSpotAngle), 0, Math.sin(hotSpotAngle)).normalize();
+        var thrustArrow = new THREE.ArrowHelper(arrowDir, hotSpot.position.clone(), 1.4, 0xff5252, 0.4, 0.22);
+        asteroid.add(thrustArrow);
+
+        // Spin axis (thin rod through the body, tilted slightly for realism)
+        var axisGeo = new THREE.CylinderGeometry(0.03, 0.03, 4.2, 6);
+        var axis = new THREE.Mesh(axisGeo, new THREE.MeshBasicMaterial({ color: 0x90a4ae, transparent: true, opacity: 0.55 }));
+        axis.rotation.z = 0.18;
+        asteroid.add(axis);
+
+        // Orbit ring (a flattened circle around the orbit center). Radius
+        // animates as elapsed years advance - exaggerated for visibility; the
+        // numeric drift readout uses the real unscaled rate.
+        var ringSegs = 96;
+        var ringBase = 9.5;
+        var ringGeo = new THREE.BufferGeometry();
+        var ringPos = new Float32Array((ringSegs + 1) * 3);
+        var ring = new THREE.LineLoop(ringGeo, new THREE.LineBasicMaterial({ color: 0x64b5f6, transparent: true, opacity: 0.55 }));
+        scene.add(ring);
+        function setRingRadius(r) {
+            for (var i = 0; i <= ringSegs; i++) {
+                var a = (i / ringSegs) * Math.PI * 2;
+                ringPos[i * 3] = orbitCenter.x + r * Math.cos(a);
+                ringPos[i * 3 + 1] = orbitCenter.y;
+                ringPos[i * 3 + 2] = orbitCenter.z + r * Math.sin(a);
+            }
+            ringGeo.setAttribute('position', new THREE.BufferAttribute(ringPos, 3));
+            ringGeo.attributes.position.needsUpdate = true;
+        }
+        setRingRadius(ringBase);
+
+        // A marker riding on the ring so the shrink/grow reads as "this body's
+        // orbit", not an abstract line.
+        var orbitMarker = new THREE.Mesh(new THREE.SphereGeometry(0.28, 12, 8), new THREE.MeshStandardMaterial({ color: 0x90caf9, emissive: 0x1565c0, emissiveIntensity: 0.4 }));
+        scene.add(orbitMarker);
+
+        var direction = 'retrograde'; // 'retrograde' (measured, Bennu) | 'prograde' (teaching mirror)
+        var years = 0;
+        var playing = false;
+        var orbitAngle = 0;
+
+        function driftRateMPerYear() {
+            return direction === 'retrograde' ? -T3D_YARK_BENNU_RATE_M_PER_YEAR : T3D_YARK_BENNU_RATE_M_PER_YEAR;
+        }
+        function cumulativeDriftM() { return driftRateMPerYear() * years; }
+
+        // Visual exaggeration factor only - the numeric readout below is the
+        // real, unscaled meters. 1 scene unit of ring-radius change per ~2200 km
+        // of real cumulative drift, chosen purely so 100 years is visible.
+        var VISUAL_KM_PER_UNIT = 2200;
+        function ringRadiusForYears(y) {
+            var driftKm = (driftRateMPerYear() * y) / 1000;
+            return Math.max(3.5, ringBase + driftKm / VISUAL_KM_PER_UNIT);
+        }
+
+        function fmtKm(m) { return (m / 1000).toFixed(2); }
+
+        function panelHtml() {
+            var rateSigned = driftRateMPerYear();
+            var cumM = cumulativeDriftM();
+            var label = direction === 'retrograde' ? 'Retrograde (Bennu, measured)' : 'Prograde (teaching mirror)';
+            var senseWord = rateSigned < 0 ? 'shrinking' : 'growing';
+            return '<h3>Yarkovsky thermal drift</h3>' +
+                '<p>The hot spot trails local noon; re-emitted heat gives a tiny recoil push that compounds over years.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Rotation</td><td>' + label + '</td></tr>' +
+                '<tr><td>Measured rate (Bennu)</td><td>-284.6 +/- 1.5 m/year (Chesley et al. 2014, JPL-refined)</td></tr>' +
+                '<tr><td>This rotation\'s rate</td><td>' + (rateSigned > 0 ? '+' : '') + rateSigned.toFixed(1) + ' m/year (orbit ' + senseWord + ')</td></tr>' +
+                '<tr><td>Elapsed time</td><td>' + years + ' years</td></tr>' +
+                '<tr><td>Cumulative drift</td><td>' + (cumM > 0 ? '+' : '') + fmtKm(cumM) + ' km (linear extrapolation)</td></tr>' +
+                '<tr><td>1999-2012 measured shift</td><td>about 160-185 km (radar/optical astrometry + OSIRIS-REx tracking)</td></tr>' +
+                '<tr><td>Thrust magnitude</td><td>"about the weight of three grapes" (NASA JPL)</td></tr>' +
+                '<tr><td>Dominant for</td><td>asteroids roughly 10 m to 10 km across</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation - the hot-spot lag angle, arrow, and ring-radius change are exaggerated for teaching, not a to-scale orbital-dynamics simulation. The Prograde option mirrors Bennu\'s real measured magnitude with the sign flipped to teach the general rule - it is not a second measured asteroid.</p>';
+        }
+
+        var dirEl = document.getElementById('t3dYarkDirection');
+        var yearsEl = document.getElementById('t3dYarkYears');
+        var yearsLab = document.getElementById('t3dYarkYearsLabel');
+        function apply() {
+            if (dirEl && dirEl.value !== direction) dirEl.value = direction;
+            if (yearsEl && parseInt(yearsEl.value, 10) !== years) yearsEl.value = String(years);
+            if (yearsLab) yearsLab.textContent = years + ' yr';
+            setRingRadius(ringRadiusForYears(years));
+            var col = direction === 'retrograde' ? 0xff5252 : 0x66bb6a;
+            thrustArrow.setColor(new THREE.Color(col));
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ direction: direction, years: years }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (store.direction === 'prograde' || store.direction === 'retrograde') direction = store.direction;
+        if (typeof store.years === 'number') years = Math.max(0, Math.min(T3D_YARK_MAX_YEARS, Math.round(store.years)));
+        apply();
+
+        if (dirEl) dirEl.addEventListener('change', function () {
+            direction = dirEl.value === 'prograde' ? 'prograde' : 'retrograde';
+            apply();
+        });
+        if (yearsEl) yearsEl.addEventListener('input', function () {
+            years = parseInt(yearsEl.value || '0', 10);
+            playing = false;
+            apply();
+        });
+        var playBtn = document.getElementById('t3dYarkPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () { playing = !playing; });
+        var resetBtn = document.getElementById('t3dYarkResetBtn');
+        if (resetBtn) resetBtn.addEventListener('click', function () {
+            years = 0; playing = false; apply();
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Pick a rotation sense, then scrub or play elapsed years.');
+        var yearsAccum = 0;
+        return function animate(dt) {
+            stars.rotation.y += dt * 0.00002;
+            asteroid.rotation.y += dt * 0.0011 * (direction === 'retrograde' ? -1 : 1);
+            sun.material && (sun.scale.setScalar(1 + 0.03 * Math.sin(performance.now() * 0.002)));
+
+            orbitAngle += dt * 0.00018;
+            var curR = ringRadiusForYears(years);
+            orbitMarker.position.set(orbitCenter.x + curR * Math.cos(orbitAngle), orbitCenter.y, orbitCenter.z + curR * Math.sin(orbitAngle));
+
+            if (playing) {
+                yearsAccum += dt * 0.02; // ~5s to scrub the full 100-year range
+                if (yearsAccum >= 1) {
+                    var add = Math.floor(yearsAccum);
+                    yearsAccum -= add;
+                    years = Math.min(T3D_YARK_MAX_YEARS, years + add);
+                    if (years >= T3D_YARK_MAX_YEARS) { playing = false; }
+                    apply();
+                }
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { yarkovskyeffect: 't3dYarkControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { yarkovskyeffect: { radius: 20, maxR: 70, minR: 5, phi: 1.1, theta: 0.4, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dYarkovskyEffect(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
