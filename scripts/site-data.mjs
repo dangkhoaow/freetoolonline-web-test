@@ -11969,6 +11969,8 @@ export const ALIAS_ROUTES = {
   '/denversaurus.html': '/dinosaur-3d/denversaurus.html',
   // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-23): flat-slug alias for sinosauropteryx.
   '/sinosauropteryx.html': '/dinosaur-3d/sinosauropteryx.html',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-23): flat-slug alias for yi-qi.
+  '/yi-qi.html': '/dinosaur-3d/yi-qi.html',
 
   // dinosaur-3d-discovery-loop-runbook fire123: albertosaurus alias.
   '/albertosaurus.html': '/dinosaur-3d/albertosaurus.html',
@@ -16140,6 +16142,16 @@ export const JSP_BY_ROUTE = {
   // via ftol-vm-assets dunkleosteus.glb (CC-BY, StormCrow13/Printables) - raw STL was
   // Z-up, rotation baked into the exported geometry, render-verified.
   '/dinosaur-3d/dunkleosteus.html': 'dinosaur/dunkleosteus.jsp',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-23): Yi qi viewer -
+  // pterosaur archetype (small membrane-winged scansoriopterygid dinosaur, wings
+  // feature reused from the pteranodon branch) - model-first via ftol-vm-assets
+  // yi-qi.glb (CC-BY-SA, DragonArtist15/Printables). This fire also FIXED the
+  // model's manifest orientation: a prior fire's unverified pitch=+pi/2 guess
+  // was render-probed (local Playwright+swiftshader harness replicating the
+  // exact d3dInstallModel rotate-before-normalize pipeline) and found WRONG -
+  // pitch=0 (no rotation) is the correct orientation; the manifest pitch field
+  // was removed at the ftol-vm-assets CDN repo before this page was authored.
+  '/dinosaur-3d/yi-qi.html': 'dinosaur/yi-qi.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid

@@ -376,6 +376,7 @@ try {
     { title: "Denversaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/denversaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Sinosauropteryx 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/sinosauropteryx.html", include: !1, tags: "dinosaur-3d" },
     { title: "Yutyrannus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/yutyrannus.html", include: !1, tags: "dinosaur-3d" },
+    { title: "Yi qi 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/yi-qi.html", include: !1, tags: "dinosaur-3d" },
     { title: "Suchomimus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/suchomimus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Ouranosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/ouranosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Archaeopteryx 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/archaeopteryx.html", include: !1, tags: "dinosaur-3d" },
