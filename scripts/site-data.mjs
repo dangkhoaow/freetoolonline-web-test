@@ -17,6 +17,22 @@ export const INFO_ROUTES = new Set([
   '/guides/css-grid-layout-generator-vs-alternatives.html',
   '/guides/css-grid-layout-generator-step-by-step.html',
   '/guides/css-grid-layout-generator-when.html',
+  // new-tool-discovery-loop-runbook fire386: css-grid-generator guide locale fanout (pt/es/vi/id/de x 3 angles)
+  '/guides/pt/css-grid-layout-generator-step-by-step.html',
+  '/guides/es/css-grid-layout-generator-step-by-step.html',
+  '/guides/vi/css-grid-layout-generator-step-by-step.html',
+  '/guides/id/css-grid-layout-generator-step-by-step.html',
+  '/guides/de/css-grid-layout-generator-step-by-step.html',
+  '/guides/pt/css-grid-layout-generator-when.html',
+  '/guides/es/css-grid-layout-generator-when.html',
+  '/guides/vi/css-grid-layout-generator-when.html',
+  '/guides/id/css-grid-layout-generator-when.html',
+  '/guides/de/css-grid-layout-generator-when.html',
+  '/guides/pt/css-grid-layout-generator-vs-alternatives.html',
+  '/guides/es/css-grid-layout-generator-vs-alternatives.html',
+  '/guides/vi/css-grid-layout-generator-vs-alternatives.html',
+  '/guides/id/css-grid-layout-generator-vs-alternatives.html',
+  '/guides/de/css-grid-layout-generator-vs-alternatives.html',
   '/guides/css-box-shadow-generator-vs-alternatives.html',
   '/guides/css-box-shadow-generator-step-by-step.html',
   '/guides/css-box-shadow-generator-when.html',
@@ -11485,6 +11501,25 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/css-box-shadow-generator-vs-alternatives.html',
   '/guides/id/css-box-shadow-generator-vs-alternatives.html',
   '/guides/de/css-box-shadow-generator-vs-alternatives.html',
+  // new-tool-discovery-loop-runbook fire386: css-grid-generator guide locale fanout (pt/es/vi/id/de x 3 angles; EN backfilled - was only in INFO_ROUTES)
+  '/guides/css-grid-layout-generator-step-by-step.html',
+  '/guides/css-grid-layout-generator-when.html',
+  '/guides/css-grid-layout-generator-vs-alternatives.html',
+  '/guides/pt/css-grid-layout-generator-step-by-step.html',
+  '/guides/es/css-grid-layout-generator-step-by-step.html',
+  '/guides/vi/css-grid-layout-generator-step-by-step.html',
+  '/guides/id/css-grid-layout-generator-step-by-step.html',
+  '/guides/de/css-grid-layout-generator-step-by-step.html',
+  '/guides/pt/css-grid-layout-generator-when.html',
+  '/guides/es/css-grid-layout-generator-when.html',
+  '/guides/vi/css-grid-layout-generator-when.html',
+  '/guides/id/css-grid-layout-generator-when.html',
+  '/guides/de/css-grid-layout-generator-when.html',
+  '/guides/pt/css-grid-layout-generator-vs-alternatives.html',
+  '/guides/es/css-grid-layout-generator-vs-alternatives.html',
+  '/guides/vi/css-grid-layout-generator-vs-alternatives.html',
+  '/guides/id/css-grid-layout-generator-vs-alternatives.html',
+  '/guides/de/css-grid-layout-generator-vs-alternatives.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -12307,6 +12342,8 @@ export const ALIAS_ROUTES = {
   '/saber-tooth-tiger.html': '/dinosaur-3d/smilodon.html',
   // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-24): flat-slug alias for saurosuchus.
   '/saurosuchus.html': '/dinosaur-3d/saurosuchus.html',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-24): flat-slug alias for anchiornis.
+  '/anchiornis.html': '/dinosaur-3d/anchiornis.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -16460,6 +16497,12 @@ export const JSP_BY_ROUTE = {
   // Postosuchus, fire146). Model-first via ftol-vm-assets saurosuchus.glb
   // (CC-BY-SA 4.0, Printables "seth the yutyrannus", commit 366a370).
   '/dinosaur-3d/saurosuchus.html': 'dinosaur/saurosuchus.jsp',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-24): Anchiornis
+  // viewer - theropod archetype (tiny-arms stand-in, same as sinosauropteryx),
+  // one of the oldest known feathered dinosaurs and a four-winged paravian.
+  // Model-first via ftol-vm-assets anchiornis.glb (CC-BY-SA 4.0, Printables
+  // "DragonArtist15", same creator as the already-vendored psittacosaurus).
+  '/dinosaur-3d/anchiornis.html': 'dinosaur/anchiornis.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -23313,6 +23356,22 @@ export const JSP_BY_ROUTE = {
   '/guides/css-grid-layout-generator-when.html': 'guide/css-grid-layout-generator-when.jsp',
   '/guides/css-grid-layout-generator-step-by-step.html': 'guide/css-grid-layout-generator-step-by-step.jsp',
   '/guides/css-grid-layout-generator-vs-alternatives.html': 'guide/css-grid-layout-generator-vs-alternatives.jsp',
+  // new-tool-discovery-loop-runbook fire386: css-grid-generator guide locale fanout (pt/es/vi/id/de x 3 angles)
+  '/guides/pt/css-grid-layout-generator-step-by-step.html': 'guide/pt/css-grid-layout-generator-step-by-step.jsp',
+  '/guides/pt/css-grid-layout-generator-when.html': 'guide/pt/css-grid-layout-generator-when.jsp',
+  '/guides/pt/css-grid-layout-generator-vs-alternatives.html': 'guide/pt/css-grid-layout-generator-vs-alternatives.jsp',
+  '/guides/es/css-grid-layout-generator-step-by-step.html': 'guide/es/css-grid-layout-generator-step-by-step.jsp',
+  '/guides/es/css-grid-layout-generator-when.html': 'guide/es/css-grid-layout-generator-when.jsp',
+  '/guides/es/css-grid-layout-generator-vs-alternatives.html': 'guide/es/css-grid-layout-generator-vs-alternatives.jsp',
+  '/guides/vi/css-grid-layout-generator-step-by-step.html': 'guide/vi/css-grid-layout-generator-step-by-step.jsp',
+  '/guides/vi/css-grid-layout-generator-when.html': 'guide/vi/css-grid-layout-generator-when.jsp',
+  '/guides/vi/css-grid-layout-generator-vs-alternatives.html': 'guide/vi/css-grid-layout-generator-vs-alternatives.jsp',
+  '/guides/id/css-grid-layout-generator-step-by-step.html': 'guide/id/css-grid-layout-generator-step-by-step.jsp',
+  '/guides/id/css-grid-layout-generator-when.html': 'guide/id/css-grid-layout-generator-when.jsp',
+  '/guides/id/css-grid-layout-generator-vs-alternatives.html': 'guide/id/css-grid-layout-generator-vs-alternatives.jsp',
+  '/guides/de/css-grid-layout-generator-step-by-step.html': 'guide/de/css-grid-layout-generator-step-by-step.jsp',
+  '/guides/de/css-grid-layout-generator-when.html': 'guide/de/css-grid-layout-generator-when.jsp',
+  '/guides/de/css-grid-layout-generator-vs-alternatives.html': 'guide/de/css-grid-layout-generator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

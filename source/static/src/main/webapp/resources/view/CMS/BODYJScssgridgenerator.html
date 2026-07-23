@@ -1,0 +1,103 @@
+<script>
+    // CSS Grid Layout Generator (css-grid-generator) - pure JS + CSS string
+    // construction, no upload, no backend, no vendored lib. Registry Gate-H
+    // entry: text_transform_purejs. Distinct from css-gradient-generator
+    // (background gradients) and css-box-shadow-generator (shadow
+    // declarations) - this tool builds a CSS Grid container declaration
+    // (grid-template-columns / grid-template-rows / gap) with a live preview
+    // of the resulting cell layout. Renders with default values on page load
+    // (no click required) so the grid preview and generated CSS are visible
+    // immediately, mirroring the css-box-shadow-generator "render on load"
+    // contract.
+
+    web.localUpload = false;
+
+    var CGG_MAX_CELLS = 72; // 12 cols x 6 rows cap - keeps the preview light
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('cssGridGeneratorTool');
+        if (!root) return; // not a css-grid-generator page
+
+        root.innerHTML =
+            '<div class="w3-row">' +
+            '<div class="w3-col m6" style="padding-right:12px;">' +
+            '<div style="margin-bottom:10px;"><label>Columns: <span id="cggColsVal">4</span></label>' +
+            '<input id="cggCols" type="range" min="1" max="12" value="4" class="w3-input"></div>' +
+            '<div style="margin-bottom:10px;"><label>Rows: <span id="cggRowsVal">3</span></label>' +
+            '<input id="cggRows" type="range" min="1" max="6" value="3" class="w3-input"></div>' +
+            '<div style="margin-bottom:10px;"><label>Column gap: <span id="cggColGapVal">10</span>px</label>' +
+            '<input id="cggColGap" type="range" min="0" max="50" value="10" class="w3-input"></div>' +
+            '<div style="margin-bottom:10px;"><label>Row gap: <span id="cggRowGapVal">10</span>px</label>' +
+            '<input id="cggRowGap" type="range" min="0" max="50" value="10" class="w3-input"></div>' +
+            '</div>' +
+            '<div class="w3-col m6" style="padding-left:12px;">' +
+            '<div id="cggPreviewWrap" style="padding:10px;background:#f4f4f4;border-radius:6px;">' +
+            '<div id="cggPreviewGrid" style="display:grid;min-height:160px;"></div>' +
+            '</div>' +
+            '<div class="outputImgs" style="margin-top:12px;">' +
+            '<pre id="cggOutput" class="w3-padding w3-light-grey" style="white-space:pre-wrap;word-break:break-all;visibility:visible"></pre>' +
+            '<button id="cggCopyBtn" type="button" class="w3-button w3-blue" style="margin-top:6px;">Copy CSS</button>' +
+            '<span id="cggCopyStatus" style="margin-left:8px;color:#555;"></span>' +
+            '</div>' +
+            '</div>' +
+            '</div>';
+
+        var q = function (id) { return root.querySelector(id); };
+
+        function render() {
+            var cols = parseInt(q('#cggCols').value, 10);
+            var rows = parseInt(q('#cggRows').value, 10);
+            var colGap = q('#cggColGap').value;
+            var rowGap = q('#cggRowGap').value;
+
+            q('#cggColsVal').textContent = cols;
+            q('#cggRowsVal').textContent = rows;
+            q('#cggColGapVal').textContent = colGap;
+            q('#cggRowGapVal').textContent = rowGap;
+
+            var previewGrid = q('#cggPreviewGrid');
+            previewGrid.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
+            previewGrid.style.gridTemplateRows = 'repeat(' + rows + ', 1fr)';
+            previewGrid.style.columnGap = colGap + 'px';
+            previewGrid.style.rowGap = rowGap + 'px';
+
+            var cellCount = Math.min(cols * rows, CGG_MAX_CELLS);
+            var cellsHtml = '';
+            for (var i = 0; i < cellCount; i++) {
+                cellsHtml += '<div style="background:#4c8bf5;border-radius:4px;min-height:24px;"></div>';
+            }
+            previewGrid.innerHTML = cellsHtml;
+
+            var css = '.container {\n' +
+                '  display: grid;\n' +
+                '  grid-template-columns: repeat(' + cols + ', 1fr);\n' +
+                '  grid-template-rows: repeat(' + rows + ', 1fr);\n' +
+                '  column-gap: ' + colGap + 'px;\n' +
+                '  row-gap: ' + rowGap + 'px;\n' +
+                '}';
+
+            q('#cggOutput').textContent = css;
+        }
+
+        ['#cggCols', '#cggRows', '#cggColGap', '#cggRowGap'].forEach(function (sel) {
+            q(sel).addEventListener('input', render);
+            q(sel).addEventListener('change', render);
+        });
+
+        q('#cggCopyBtn').addEventListener('click', function () {
+            var text = q('#cggOutput').textContent;
+            var status = q('#cggCopyStatus');
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(function () {
+                    status.textContent = 'Copied.';
+                }).catch(function () {
+                    status.textContent = 'Could not copy - select the text manually.';
+                });
+            } else {
+                status.textContent = 'Select the text above and copy manually.';
+            }
+        });
+
+        render(); // render immediately with defaults - no click required
+    }
+</script>
