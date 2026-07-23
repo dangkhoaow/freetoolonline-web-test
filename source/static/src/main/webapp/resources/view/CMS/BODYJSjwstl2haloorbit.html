@@ -1,0 +1,1220 @@
+<script>
+    // 3D scene archetype skeleton (kepler-orbits) - vendored three.js (ESM, dynamic
+    // import from /vendor/three/, NO CDN), fully client-side. Registry Gate-H
+    // entry: three_3d_scene_vendored. ONE skeleton serves the 3D family; the
+    // scene is dispatched from the slug: voxel (block-building sandbox game),
+    // solar (solar system explorer), blackhole (black hole visualization),
+    // galaxy (spiral galaxy). All geometry is procedural - no model files, no
+    // textures fetched. The space scenes are EDUCATIONAL APPROXIMATIONS, not
+    // physical simulations; scales are compressed and the info panel says so.
+    //
+    // A visible wrapper + "Loading 3D engine..." placeholder renders
+    // synchronously (G16 render-only pass); the ~0.7 MB engine lazy-loads
+    // post-paint via requestIdleCallback and is cached by the browser.
+    // Fullscreen targets the WRAPPER div (controls stay visible).
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'jwst-l2-halo-orbit';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) {
+        var s = String(slug || '').toLowerCase();
+        if (/voxel|builder|block/.test(s)) return 'voxel';
+        if (/jwst|webb.*l2|l2.*halo|halo.*orbit/.test(s)) return 'jwstl2haloorbit';
+        if (/iss|orbit.*tracker/.test(s)) return 'issorbittracker';
+        if (/moon.*calendar|calendar.*moon/.test(s)) return 'mooncalendar3d';
+        if (/moon.*phase|phases-3d/.test(s)) return 'moonphases3d';
+        if (/kepler|kepler-orbits/.test(s)) return 'keplerorbits';
+        if (/saturn|rings/.test(s)) return 'saturnrings';
+        if (/solar|planet/.test(s)) return 'solar';
+        if (/black/.test(s)) return 'blackhole';
+        if (/galaxy/.test(s)) return 'galaxy';
+        return 'solar';
+    }
+
+    // ---- vendored ESM loader (ftoLoadPdfLib shape, but a cached import()) ----
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - building still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- shared scene shell: renderer + camera + custom pointer-orbit --------
+    // OrbitControls is NOT vendored (jsm addons import the bare 'three'
+    // specifier); this ~40-line orbit covers drag-rotate + wheel/pinch zoom
+    // with damping and a clamped pitch.
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            // critically-damped-ish lerp toward the goal orbit
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        function size() {
+            var w = Math.max(260, host.clientWidth);
+            var h = Math.round(w * 0.62);
+            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fsEl && fsEl.contains(host)) { h = Math.max(240, (window.innerHeight || h) - 150); }
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        host.appendChild(renderer.domElement);
+        renderer.domElement.style.touchAction = 'none';
+        renderer.domElement.style.borderRadius = '6px';
+        // pointer-orbit input
+        var drag = null, pinch = null, moved = 0;
+        host.addEventListener('pointerdown', function (e) {
+            drag = { x: e.clientX, y: e.clientY }; moved = 0;
+            host.setPointerCapture && host.setPointerCapture(e.pointerId);
+        });
+        host.addEventListener('pointermove', function (e) {
+            if (!drag) return;
+            var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+            moved += Math.abs(dx) + Math.abs(dy);
+            drag = { x: e.clientX, y: e.clientY };
+            orbit.goalTheta -= dx * 0.006;
+            orbit.goalPhi = Math.min(Math.max(orbit.goalPhi - dy * 0.005, 0.15), Math.PI - 0.2);
+        });
+        host.addEventListener('pointerup', function (e) {
+            var wasClick = moved < 8;
+            drag = null;
+            if (wasClick && shell.onClick) { shell.onClick(e); }
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR);
+        }, { passive: false });
+        host.addEventListener('touchstart', function (e) {
+            if (e.touches.length === 2) {
+                pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            }
+        }, { passive: true });
+        host.addEventListener('touchmove', function (e) {
+            if (e.touches.length === 2 && pinch) {
+                var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                pinch = d;
+            }
+        }, { passive: true });
+        window.addEventListener('resize', size);
+        document.addEventListener('fullscreenchange', size);
+        document.addEventListener('webkitfullscreenchange', size);
+        size();
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, size: size, onClick: null,
+            ndc: function (e) {
+                var r = renderer.domElement.getBoundingClientRect();
+                return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            },
+        };
+        return shell;
+    }
+
+    // ================= SOLAR SYSTEM ==========================================
+    // Display scale is COMPRESSED (planet sizes ~1000x vs distances) so all 8
+    // planets fit one screen; the facts table carries the real figures.
+    var T3D_PLANETS = [
+        { name: 'Mercury', color: 0x9e9e9e, r: 0.9, orbit: 16, periodDays: 88, realKm: 4879, au: 0.39 },
+        { name: 'Venus', color: 0xffcc80, r: 1.4, orbit: 22, periodDays: 225, realKm: 12104, au: 0.72 },
+        { name: 'Earth', color: 0x42a5f5, r: 1.5, orbit: 29, periodDays: 365, realKm: 12756, au: 1.0 },
+        { name: 'Mars', color: 0xef5350, r: 1.1, orbit: 36, periodDays: 687, realKm: 6792, au: 1.52 },
+        { name: 'Jupiter', color: 0xd7a86e, r: 4.4, orbit: 50, periodDays: 4333, realKm: 142984, au: 5.2 },
+        { name: 'Saturn', color: 0xf0e0a2, r: 3.8, orbit: 64, periodDays: 10756, realKm: 120536, au: 9.58 },
+        { name: 'Uranus', color: 0x80deea, r: 2.4, orbit: 76, periodDays: 30687, realKm: 51118, au: 19.2 },
+        { name: 'Neptune', color: 0x5c6bc0, r: 2.3, orbit: 86, periodDays: 60190, realKm: 49528, au: 30.05 },
+    ];
+    function t3dSolar(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+        var sunLight = new THREE.PointLight(0xfff3d0, 1400, 0, 1.8);
+        scene.add(sunLight);
+        var sun = new THREE.Mesh(new THREE.SphereGeometry(7, 32, 16), new THREE.MeshBasicMaterial({ color: 0xffd54f }));
+        sun.userData = { kind: 'sun' };
+        scene.add(sun);
+        var planets = [];
+        for (var i = 0; i < T3D_PLANETS.length; i++) {
+            var p = T3D_PLANETS[i];
+            var mesh = new THREE.Mesh(
+                new THREE.SphereGeometry(p.r, 24, 12),
+                new THREE.MeshLambertMaterial({ color: p.color })
+            );
+            mesh.userData = { kind: 'planet', idx: i, angle: Math.random() * Math.PI * 2 };
+            scene.add(mesh);
+            var ring = new THREE.Mesh(
+                new THREE.TorusGeometry(p.orbit, 0.06, 6, 96),
+                new THREE.MeshBasicMaterial({ color: 0x37474f })
+            );
+            ring.rotation.x = Math.PI / 2;
+            scene.add(ring);
+            if (p.name === 'Saturn') {
+                var sr = new THREE.Mesh(new THREE.TorusGeometry(p.r * 1.8, 0.35, 6, 48), new THREE.MeshLambertMaterial({ color: 0xd8cba8 }));
+                sr.rotation.x = Math.PI / 2.4;
+                mesh.add(sr);
+            }
+            planets.push(mesh);
+        }
+        var speedEl = document.getElementById('t3dSpeed');
+        var paused = false;
+        var pauseBtn = document.getElementById('t3dPauseBtn');
+        if (pauseBtn) pauseBtn.addEventListener('click', function () { paused = !paused; pauseBtn.textContent = paused ? 'Resume orbits' : 'Pause orbits'; });
+        function facts(idx) {
+            if (idx === -1) {
+                t3dInfo('<h3>The Sun</h3><p>A main-sequence star holding 99.8 percent of the solar system\'s mass. Diameter about 1,392,000 km - 109 Earths across.</p><p class="t3d-note">Scale note: sizes and distances on screen are compressed so all eight planets fit one view; the numbers here are the real ones.</p>');
+                return;
+            }
+            var p = T3D_PLANETS[idx];
+            var period = p.periodDays >= 1000 ? (p.periodDays / 365.25).toFixed(1) + ' years' : p.periodDays + ' days';
+            t3dInfo('<h3>' + p.name + '</h3><table class="w3-table w3-bordered"><tr><td>Diameter</td><td>' + p.realKm.toLocaleString('en-US') + ' km</td></tr><tr><td>Distance from sun</td><td>' + p.au + ' AU</td></tr><tr><td>Orbital period</td><td>' + period + '</td></tr></table><p class="t3d-note">On-screen sizes and distances are compressed for readability - this table has the real figures.</p>');
+        }
+        facts(-1);
+        var ray = new THREE.Raycaster();
+        shell.onClick = function (e) {
+            ray.setFromCamera(shell.ndc(e), shell.camera);
+            var hits = ray.intersectObjects([sun].concat(planets), false);
+            if (!hits.length) return;
+            var u = hits[0].object.userData;
+            facts(u.kind === 'sun' ? -1 : u.idx);
+        };
+        return function animate(dt) {
+            if (paused) return;
+            var mult = speedEl ? parseFloat(speedEl.value || '1') : 1;
+            for (var i = 0; i < planets.length; i++) {
+                var mesh = planets[i], p = T3D_PLANETS[i];
+                // one real Earth year = ~12 on-screen seconds at 1x
+                mesh.userData.angle += (dt / 1000) * (365.25 / p.periodDays) * mult * (Math.PI * 2 / 12);
+                mesh.position.set(Math.cos(mesh.userData.angle) * p.orbit, 0, Math.sin(mesh.userData.angle) * p.orbit);
+                mesh.rotation.y += dt * 0.0004;
+            }
+        };
+    }
+
+    // ================= ISS ORBIT TRACKER =======================================
+    // Procedural low-Earth orbit of the ISS around Earth - educational, not live tracking.
+    var T3D_ISS_ALT_KM = 408;
+    var T3D_ISS_PERIOD_MIN = 92.9;
+    var T3D_ISS_SPEED_KMS = 7.66;
+    var T3D_ISS_INCL_DEG = 51.64;
+    var T3D_ISS_ORBITS_PER_DAY = 15.5;
+    var T3D_EARTH_RADIUS_KM = 6371;
+    function t3dIssOrbitTracker(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x02040c, 1);
+        scene.add(new THREE.AmbientLight(0x334455, 0.35));
+        var sun = new THREE.DirectionalLight(0xffffff, 1.1);
+        sun.position.set(80, 40, 60);
+        scene.add(sun);
+        var earthR = 12;
+        var orbitR = earthR * (1 + T3D_ISS_ALT_KM / T3D_EARTH_RADIUS_KM);
+        var incl = T3D_ISS_INCL_DEG * Math.PI / 180;
+        var earth = new THREE.Mesh(
+            new THREE.SphereGeometry(earthR, 48, 32),
+            new THREE.MeshPhongMaterial({ color: 0x2e7d9a, emissive: 0x0a1a22, shininess: 12 })
+        );
+        scene.add(earth);
+        var atmos = new THREE.Mesh(
+            new THREE.SphereGeometry(earthR * 1.02, 32, 24),
+            new THREE.MeshBasicMaterial({ color: 0x66aaff, transparent: true, opacity: 0.12, depthWrite: false })
+        );
+        scene.add(atmos);
+        var orbitPts = [];
+        for (var i = 0; i <= 128; i++) {
+            var a = (i / 128) * Math.PI * 2;
+            orbitPts.push(new THREE.Vector3(
+                Math.cos(a) * orbitR,
+                Math.sin(a) * orbitR * Math.sin(incl),
+                Math.sin(a) * orbitR * Math.cos(incl)
+            ));
+        }
+        var orbitLine = new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(orbitPts),
+            new THREE.LineBasicMaterial({ color: 0x90caf9, transparent: true, opacity: 0.55 })
+        );
+        scene.add(orbitLine);
+        var iss = new THREE.Mesh(
+            new THREE.BoxGeometry(1.4, 0.7, 0.7),
+            new THREE.MeshLambertMaterial({ color: 0xe0e0e0 })
+        );
+        var panel = new THREE.Mesh(
+            new THREE.BoxGeometry(2.8, 0.08, 0.5),
+            new THREE.MeshLambertMaterial({ color: 0xb0bec5 })
+        );
+        panel.position.set(0, 0.5, 0);
+        iss.add(panel);
+        scene.add(iss);
+        var trackGeo = new THREE.BufferGeometry();
+        var trackMax = 220;
+        var trackPos = new Float32Array(trackMax * 3);
+        trackGeo.setAttribute('position', new THREE.BufferAttribute(trackPos, 3));
+        var trackLine = new THREE.Line(trackGeo, new THREE.LineBasicMaterial({ color: 0xffeb3b, transparent: true, opacity: 0.75 }));
+        scene.add(trackLine);
+        var trackCount = 0;
+        var showTrack = true;
+        var phase = 0;
+        var playing = true;
+        var speed = 1;
+        function issPos(theta) {
+            return new THREE.Vector3(
+                Math.cos(theta) * orbitR,
+                Math.sin(theta) * orbitR * Math.sin(incl),
+                Math.sin(theta) * orbitR * Math.cos(incl)
+            );
+        }
+        function groundPoint(theta) {
+            var p = issPos(theta).clone().normalize().multiplyScalar(earthR * 1.001);
+            return p;
+        }
+        function pushTrack(theta) {
+            if (!showTrack) return;
+            var g = groundPoint(theta);
+            var idx = trackCount % trackMax;
+            trackPos[idx * 3] = g.x;
+            trackPos[idx * 3 + 1] = g.y;
+            trackPos[idx * 3 + 2] = g.z;
+            trackCount++;
+            var n = Math.min(trackCount, trackMax);
+            trackGeo.setDrawRange(0, n);
+            trackGeo.attributes.position.needsUpdate = true;
+        }
+        function setInfo() {
+            t3dInfo('<h3>ISS low-Earth orbit</h3><p>Procedural orbit of the International Space Station around Earth. The yellow line is the ground track - where the station passes over the surface. This is an educational visualization, not live tracking.</p><table class="w3-table w3-bordered"><tr><td>Mean altitude</td><td>' + T3D_ISS_ALT_KM + ' km</td></tr><tr><td>Orbital period</td><td>' + T3D_ISS_PERIOD_MIN + ' min</td></tr><tr><td>Orbital speed</td><td>' + T3D_ISS_SPEED_KMS + ' km/s</td></tr><tr><td>Inclination</td><td>' + T3D_ISS_INCL_DEG + ' deg</td></tr><tr><td>Orbits per day</td><td>' + T3D_ISS_ORBITS_PER_DAY + '</td></tr></table><p class="t3d-note">Earth and orbit sizes are compressed for readability. Figures are NASA published values. This is not a physical simulation and does not show tonight\'s pass times.</p>');
+        }
+        setInfo();
+        function syncIss() {
+            var p = issPos(phase);
+            iss.position.copy(p);
+            iss.lookAt(p.clone().add(new THREE.Vector3(0, 1, 0)));
+            pushTrack(phase);
+        }
+        syncIss();
+        var playBtn = document.getElementById('t3dIssPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () { playing = !playing; playBtn.textContent = playing ? 'Pause orbit' : 'Play orbit'; });
+        var trackBtn = document.getElementById('t3dIssTrackBtn');
+        if (trackBtn) trackBtn.addEventListener('click', function () { showTrack = !showTrack; trackLine.visible = showTrack; trackBtn.textContent = showTrack ? 'Hide ground track' : 'Show ground track'; if (!showTrack) { trackCount = 0; trackGeo.setDrawRange(0, 0); } });
+        var speedEl = document.getElementById('t3dIssSpeed');
+        if (speedEl) speedEl.addEventListener('input', function () { speed = parseFloat(speedEl.value || '1'); });
+        var phaseEl = document.getElementById('t3dIssPhase');
+        var phaseLabel = document.getElementById('t3dIssPhaseLabel');
+        if (phaseEl) phaseEl.addEventListener('input', function () {
+            playing = false;
+            if (playBtn) playBtn.textContent = 'Play orbit';
+            phase = (parseFloat(phaseEl.value || '0') / 100) * Math.PI * 2;
+            if (phaseLabel) phaseLabel.textContent = parseFloat(phaseEl.value || '0').toFixed(0) + '%';
+            syncIss();
+        });
+        t3dStatus('Drag to orbit Earth, scroll to zoom. Watch the ISS circle Earth and read the ground track.');
+        return function animate(dt) {
+            if (!playing) return;
+            phase += (dt / 1000) * (Math.PI * 2 / (T3D_ISS_PERIOD_MIN * 60)) * speed * 8;
+            if (phase > Math.PI * 2) phase -= Math.PI * 2;
+            if (phaseEl && !phaseEl.matches(':active')) {
+                var pct = (phase / (Math.PI * 2)) * 100;
+                phaseEl.value = String(pct);
+                if (phaseLabel) phaseLabel.textContent = pct.toFixed(0) + '%';
+            }
+            syncIss();
+        };
+    }
+
+    // ================= JWST L2 HALO ORBIT ====================================
+    // Sun-Earth-L2 geometry with the James Webb Space Telescope's halo orbit
+    // around L2. The halo path is a simplified tilted-loop Lissajous
+    // approximation of the real quasi-periodic halo orbit - not a precomputed
+    // ephemeris. Sources disagree on the exact period (NASA Science: ~168
+    // days; STScI docs: ~180 days) - both are cited, never averaged.
+    var T3D_JWST_L2_DIST_KM = 1500000;
+    var T3D_JWST_PERIOD_DAYS_NASA = 168;
+    var T3D_JWST_PERIOD_DAYS_STSCI = 180;
+    var T3D_JWST_HALO_MIN_KM = 250000;
+    var T3D_JWST_HALO_MAX_KM = 832000;
+    var T3D_JWST_MAX_OOP_KM = 520000;
+    var T3D_JWST_MAX_EARTH_DIST_KM = 1800000;
+    var T3D_JWST_MAX_SUN_ANGLE_DEG = 33;
+    var T3D_JWST_STATIONKEEP_DAYS = 21;
+    function t3dJwstL2HaloOrbit(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x02040c, 1);
+        scene.add(new THREE.AmbientLight(0x334455, 0.3));
+        // Background stars so the canvas always paints pixels.
+        var SCOUNT = shell.low ? 400 : 900;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(140 + Math.random() * 200);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.5, sizeAttenuation: false })));
+        // Sun (compressed, symbolic distance - not to scale) lights the scene
+        // from -X, matching Webb always sitting on the anti-sun side of Earth.
+        var sunPos = new THREE.Vector3(-70, 0, 0);
+        var sunLight = new THREE.DirectionalLight(0xfff3d0, 1.3);
+        sunLight.position.copy(sunPos.clone().normalize().multiplyScalar(-1));
+        scene.add(sunLight);
+        var sun = new THREE.Mesh(new THREE.SphereGeometry(5, 24, 12), new THREE.MeshBasicMaterial({ color: 0xffd54f }));
+        sun.position.copy(sunPos);
+        scene.add(sun);
+        // Earth at the origin.
+        var earth = new THREE.Mesh(new THREE.SphereGeometry(3, 32, 16), new THREE.MeshLambertMaterial({ color: 0x42a5f5 }));
+        scene.add(earth);
+        // L2 point: on the Earth-Sun line, on the far side of Earth from the Sun.
+        var l2Pos = new THREE.Vector3(28, 0, 0);
+        var l2Marker = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 10), new THREE.MeshBasicMaterial({ color: 0x90caf9 }));
+        l2Marker.position.copy(l2Pos);
+        scene.add(l2Marker);
+        var sunLine = new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([sunPos, l2Pos]),
+            new THREE.LineBasicMaterial({ color: 0x455a64, transparent: true, opacity: 0.4 })
+        );
+        scene.add(sunLine);
+        // Halo path: a tilted ellipse loop centered at L2 - vertical (out-of-
+        // ecliptic) amplitude dominates, a smaller in-plane wobble gives it
+        // visible 3D depth so it reads as "halo", not a flat ring.
+        var haloAy = 7, haloAx = 2.6, haloAz = 3.4;
+        function haloPoint(theta) {
+            return new THREE.Vector3(
+                l2Pos.x + haloAx * Math.cos(theta),
+                haloAy * Math.sin(theta),
+                haloAz * Math.cos(theta) * 0.9
+            );
+        }
+        var haloPts = [];
+        for (var hi = 0; hi <= 128; hi++) { haloPts.push(haloPoint((hi / 128) * Math.PI * 2)); }
+        var haloLine = new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(haloPts),
+            new THREE.LineBasicMaterial({ color: 0x81d4fa, transparent: true, opacity: 0.7 })
+        );
+        scene.add(haloLine);
+        // Station-keeping burn markers, spaced every ~21 days along the path.
+        var stationGroup = new THREE.Group();
+        var period = T3D_JWST_PERIOD_DAYS_NASA;
+        for (var d = T3D_JWST_STATIONKEEP_DAYS; d < period; d += T3D_JWST_STATIONKEEP_DAYS) {
+            var burnP = haloPoint((d / period) * Math.PI * 2);
+            var burnDot = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffab40 }));
+            burnDot.position.copy(burnP);
+            stationGroup.add(burnDot);
+        }
+        scene.add(stationGroup);
+        // Webb spacecraft: a small bus + a flat sunshield panel that always
+        // faces the Sun (its shadow side, away from the sun, holds the
+        // instruments) - the "sunshield always in shadow" geometry.
+        var webb = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.5, 0.5), new THREE.MeshLambertMaterial({ color: 0xe0e0e0 }));
+        scene.add(webb);
+        var shield = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 1.1), new THREE.MeshLambertMaterial({ color: 0xfafafa, side: THREE.DoubleSide }));
+        scene.add(shield);
+        var instruments = new THREE.Mesh(new THREE.SphereGeometry(0.32, 12, 8), new THREE.MeshLambertMaterial({ color: 0x37474f }));
+        scene.add(instruments);
+        var haloDay = 0;
+        var playing = false;
+        var showBurns = true;
+        function updateWebb(day) {
+            haloDay = Math.max(0, Math.min(period, day));
+            var theta = (haloDay / period) * Math.PI * 2;
+            var pos = haloPoint(theta);
+            webb.position.copy(pos);
+            var sunDir = pos.clone().sub(sunPos).normalize();
+            instruments.position.copy(pos.clone().add(sunDir.clone().multiplyScalar(0.55)));
+            shield.position.copy(pos.clone().sub(sunDir.clone().multiplyScalar(0.5)));
+            shield.lookAt(shield.position.clone().add(sunDir));
+            var label = document.getElementById('t3dJwstDayLabel');
+            if (label) label.textContent = haloDay.toFixed(0) + ' d';
+            var slider = document.getElementById('t3dJwstDay');
+            if (slider && Math.abs(parseFloat(slider.value) - haloDay) > 0.3) slider.value = String(haloDay);
+        }
+        function factsHtml() {
+            return '<h3>Webb\'s halo orbit around Sun-Earth L2</h3><p>The blue loop is a simplified halo path around the L2 point - the white line is the Sun-Earth-L2 axis. The small panel on Webb always keeps its bright face toward the Sun so the dark instrument side stays in shadow.</p><table class="w3-table w3-bordered"><tr><td>Earth-to-L2 distance</td><td>about ' + T3D_JWST_L2_DIST_KM.toLocaleString('en-US') + ' km (about 4x the Earth-Moon distance)</td></tr><tr><td>Halo orbit period</td><td>NASA Science cites about ' + T3D_JWST_PERIOD_DAYS_NASA + ' days; STScI docs cite about ' + T3D_JWST_PERIOD_DAYS_STSCI + ' days (sources differ slightly)</td></tr><tr><td>Halo distance from L2</td><td>about ' + T3D_JWST_HALO_MIN_KM.toLocaleString('en-US') + '-' + T3D_JWST_HALO_MAX_KM.toLocaleString('en-US') + ' km</td></tr><tr><td>Max out-of-ecliptic excursion</td><td>about ' + T3D_JWST_MAX_OOP_KM.toLocaleString('en-US') + ' km</td></tr><tr><td>Max Earth-Webb distance</td><td>about ' + T3D_JWST_MAX_EARTH_DIST_KM.toLocaleString('en-US') + ' km</td></tr><tr><td>Max Sun-Earth-Webb angle</td><td>under ' + T3D_JWST_MAX_SUN_ANGLE_DEG + ' degrees</td></tr><tr><td>Station-keeping burns</td><td>about every ' + T3D_JWST_STATIONKEEP_DAYS + ' days (orange dots)</td></tr></table><p class="t3d-note">Educational visualization - the halo loop is a simplified Lissajous-style approximation of the real quasi-periodic orbit, not a precomputed ephemeris, and on-screen distances are compressed for readability. The table figures are the real published NASA/STScI values. This is not a physical simulation.</p>';
+        }
+        t3dInfo(factsHtml());
+        updateWebb(0);
+        var slider = document.getElementById('t3dJwstDay');
+        if (slider) slider.addEventListener('input', function () {
+            playing = false;
+            var pb = document.getElementById('t3dJwstPlayBtn');
+            if (pb) pb.textContent = 'Play orbit';
+            updateWebb(parseFloat(slider.value || '0'));
+        });
+        var playBtn = document.getElementById('t3dJwstPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () { playing = !playing; playBtn.textContent = playing ? 'Pause orbit' : 'Play orbit'; });
+        var burnBtn = document.getElementById('t3dJwstBurnBtn');
+        if (burnBtn) burnBtn.addEventListener('click', function () {
+            showBurns = !showBurns;
+            stationGroup.visible = showBurns;
+            burnBtn.textContent = showBurns ? 'Hide burn markers' : 'Show burn markers';
+        });
+        var ray = new THREE.Raycaster();
+        shell.onClick = function (e) {
+            ray.setFromCamera(shell.ndc(e), shell.camera);
+            var hits = ray.intersectObjects([webb, l2Marker, sun], false);
+            if (!hits.length) return;
+            t3dInfo(factsHtml());
+        };
+        t3dStatus('Drag to orbit, scroll to zoom. Scrub the halo-day slider or press Play orbit to move Webb around L2.');
+        return function animate(dt) {
+            if (!playing) return;
+            updateWebb(haloDay + (dt / 1000) * (period / 26));
+            if (haloDay >= period) updateWebb(0);
+        };
+    }
+
+    // ================= MOON CALENDAR 3D ==========================================
+    // Face-on Moon with phase by calendar day, faint earthshine on the dark limb,
+    // and a libration wobble. Educational - not an ephemeris or tonight's sky.
+    var T3D_CAL_SYNODIC = 29.53;
+    var T3D_LIB_LONG_DEG = 7.9;
+    var T3D_LIB_LAT_DEG = 6.7;
+    function t3dMoonCalendar3d(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x050810, 1);
+        scene.add(new THREE.AmbientLight(0x1a2030, 0.25));
+        var sunLight = new THREE.DirectionalLight(0xfff8e8, 1.25);
+        scene.add(sunLight);
+        var earthShine = new THREE.DirectionalLight(0x6688aa, 0.22);
+        scene.add(earthShine);
+        var SCOUNT = shell.low ? 350 : 800;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(90 + Math.random() * 140);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.5, sizeAttenuation: false })));
+        var moon = new THREE.Mesh(
+            new THREE.SphereGeometry(5.5, 48, 32),
+            new THREE.MeshLambertMaterial({ color: 0xb0bec5 })
+        );
+        scene.add(moon);
+        var day = 0;
+        var playing = false;
+        var librationOn = true;
+        var libT = 0;
+        function phaseName(t) {
+            if (t < 0.03 || t > 0.97) return 'New Moon';
+            if (t < 0.22) return 'Waxing Crescent';
+            if (t < 0.28) return 'First Quarter';
+            if (t < 0.47) return 'Waxing Gibbous';
+            if (t < 0.53) return 'Full Moon';
+            if (t < 0.72) return 'Waning Gibbous';
+            if (t < 0.78) return 'Last Quarter';
+            return 'Waning Crescent';
+        }
+        function setDay(d) {
+            day = Math.max(0, Math.min(T3D_CAL_SYNODIC, d));
+            var t = day / T3D_CAL_SYNODIC;
+            var ang = t * Math.PI * 2;
+            sunLight.position.set(Math.cos(ang) * 40, 6, Math.sin(ang) * 40);
+            earthShine.position.set(-Math.cos(ang) * 30, -2, -Math.sin(ang) * 30);
+            var label = document.getElementById('t3dCalendarDayLabel');
+            if (label) label.textContent = day.toFixed(1) + ' d';
+            var slider = document.getElementById('t3dCalendarDay');
+            if (slider && parseFloat(slider.value) !== day) slider.value = String(day);
+            t3dInfo('<h3>' + phaseName(t) + '</h3><p>Calendar day ' + day.toFixed(1) + ' of ' + T3D_CAL_SYNODIC + ' in a synodic month.</p><table class="w3-table w3-bordered"><tr><td>Libration in longitude</td><td>+/-' + T3D_LIB_LONG_DEG + ' deg</td></tr><tr><td>Libration in latitude</td><td>+/-' + T3D_LIB_LAT_DEG + ' deg</td></tr><tr><td>Surface visible over time</td><td>about 59% of the lunar surface</td></tr><tr><td>Synodic month</td><td>' + T3D_CAL_SYNODIC + ' days</td></tr></table><p>Faint light on the dark limb is earthshine - sunlight reflected from Earth. The slow wobble is libration, which lets us peek slightly around the edges over a month.</p><p class="t3d-note">Educational calendar visualization - not an ephemeris and not matched to tonight\'s date. This is not a physical simulation.</p>');
+        }
+        setDay(0);
+        var slider = document.getElementById('t3dCalendarDay');
+        if (slider) slider.addEventListener('input', function () { playing = false; var pb = document.getElementById('t3dCalendarPlayBtn'); if (pb) pb.textContent = 'Play month'; setDay(parseFloat(slider.value || '0')); });
+        var playBtn = document.getElementById('t3dCalendarPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () { playing = !playing; playBtn.textContent = playing ? 'Pause month' : 'Play month'; });
+        var libBtn = document.getElementById('t3dLibrationBtn');
+        if (libBtn) { libBtn.textContent = librationOn ? 'Hide libration' : 'Show libration'; libBtn.addEventListener('click', function () { librationOn = !librationOn; libBtn.textContent = librationOn ? 'Hide libration' : 'Show libration'; if (!librationOn) { moon.rotation.x = 0; moon.rotation.y = 0; } }); }
+        t3dStatus('Drag to orbit the Moon, scroll to zoom. Slide calendar day or press Play month.');
+        return function animate(dt) {
+            if (librationOn) {
+                libT += dt / 1000;
+                moon.rotation.y = Math.sin(libT * 0.35) * T3D_LIB_LONG_DEG * Math.PI / 180;
+                moon.rotation.x = Math.sin(libT * 0.21) * T3D_LIB_LAT_DEG * Math.PI / 180;
+            }
+            if (!playing) return;
+            setDay(day + (dt / 1000) * (T3D_CAL_SYNODIC / 30));
+            if (day >= T3D_CAL_SYNODIC) setDay(0);
+        };
+    }
+
+    // ================= KEPLER ORBITS ===========================================
+    // Ellipse with Sun at one focus; motion follows Kepler's equation (equal-area
+    // sweep in equal time). Educational visualization - not an N-body integrator.
+    var T3D_KEPLER_PRESETS = {
+        mercury: { name: 'Mercury', aAu: 0.387, e: 0.206, color: 0x9e9e9e },
+        earth: { name: 'Earth', aAu: 1.0, e: 0.017, color: 0x42a5f5 },
+        halley: { name: "Halley's comet", aAu: 17.8, e: 0.967, color: 0xb0bec5 }
+    };
+    function t3dSolveKepler(M, ecc) {
+        var E = M;
+        for (var i = 0; i < 10; i++) E = M + ecc * Math.sin(E);
+        return E;
+    }
+    function t3dKeplerOrbits(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x050810, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.42));
+        var sunLight = new THREE.DirectionalLight(0xfff0d0, 1.1);
+        sunLight.position.set(20, 30, 18);
+        scene.add(sunLight);
+        var SCOUNT = shell.low ? 300 : 700;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(80 + Math.random() * 120);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.45, sizeAttenuation: false })));
+        var sun = new THREE.Mesh(new THREE.SphereGeometry(2.2, 32, 16), new THREE.MeshBasicMaterial({ color: 0xffd54f }));
+        scene.add(sun);
+        var state = { aAu: 1.0, e: 0.017, color: 0x42a5f5, name: 'Earth', M: 0, paused: false, showSweep: true };
+        var orbitLine, planet, sweepMesh, sweepVerts = [];
+        function auToScene(aAu) { return 8 + aAu * 4.5; }
+        function periodYears(aAu) { return Math.pow(aAu, 1.5); }
+        function posFromE(E, aScene, ecc) {
+            var b = aScene * Math.sqrt(1 - ecc * ecc);
+            return new THREE.Vector3(aScene * (Math.cos(E) - ecc), 0, b * Math.sin(E));
+        }
+        function rebuildOrbit() {
+            if (orbitLine) { scene.remove(orbitLine); orbitLine.geometry.dispose(); orbitLine.material.dispose(); }
+            var aScene = auToScene(state.aAu), ecc = state.e, pts = [];
+            for (var i = 0; i <= 128; i++) {
+                var E = (i / 128) * Math.PI * 2;
+                var p = posFromE(E, aScene, ecc);
+                pts.push(p.x, p.y, p.z);
+            }
+            var g = new THREE.BufferGeometry();
+            g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+            orbitLine = new THREE.Line(g, new THREE.LineBasicMaterial({ color: 0x546e7a }));
+            scene.add(orbitLine);
+            if (planet) { scene.remove(planet); }
+            planet = new THREE.Mesh(
+                new THREE.SphereGeometry(Math.max(0.7, 1.6 - state.e * 0.4), 20, 12),
+                new THREE.MeshLambertMaterial({ color: state.color })
+            );
+            scene.add(planet);
+            sweepVerts = [];
+            if (sweepMesh) { scene.remove(sweepMesh); sweepMesh.geometry.dispose(); sweepMesh.material.dispose(); sweepMesh = null; }
+            updateFacts();
+        }
+        function updateSweep(prev, curr) {
+            if (!state.showSweep || !prev || !curr) return;
+            sweepVerts.push(prev.x, prev.y, prev.z, 0, 0, 0, curr.x, curr.y, curr.z);
+            if (sweepVerts.length > 360) sweepVerts = sweepVerts.slice(-360);
+            if (sweepMesh) { scene.remove(sweepMesh); sweepMesh.geometry.dispose(); }
+            var sg = new THREE.BufferGeometry();
+            sg.setAttribute('position', new THREE.Float32BufferAttribute(sweepVerts, 3));
+            sweepMesh = new THREE.Mesh(sg, new THREE.MeshBasicMaterial({ color: 0x26a69a, transparent: true, opacity: 0.22, side: THREE.DoubleSide }));
+            scene.add(sweepMesh);
+        }
+        function updateFacts() {
+            var Ty = periodYears(state.aAu).toFixed(state.aAu > 5 ? 1 : 3);
+            var a3 = Math.pow(state.aAu, 3).toFixed(3);
+            var t2 = Math.pow(periodYears(state.aAu), 2).toFixed(3);
+            t3dInfo('<h3>' + state.name + ' orbit</h3><table class="w3-table w3-bordered"><tr><td>Semi-major axis a</td><td>' + state.aAu + ' AU</td></tr><tr><td>Eccentricity e</td><td>' + state.e + '</td></tr><tr><td>Orbital period T</td><td>' + Ty + ' yr</td></tr><tr><td>T squared</td><td>' + t2 + ' yr^2</td></tr><tr><td>a cubed</td><td>' + a3 + ' AU^3</td></tr></table><p>Kepler\'s 1st law: the path is an ellipse with the Sun at one focus. 2nd law: equal areas in equal times (teal wedges). 3rd law: T^2 is proportional to a^3.</p><p class="t3d-note">Educational visualization using Kepler\'s equation - not a full gravity integrator. On-screen orbit size is scaled for readability; AU and year figures are real.</p>');
+        }
+        rebuildOrbit();
+        var prevPos = null;
+        function applyPreset(key) {
+            var p = T3D_KEPLER_PRESETS[key];
+            if (!p) return;
+            state.aAu = p.aAu; state.e = p.e; state.color = p.color; state.name = p.name; state.M = 0;
+            var eccEl = document.getElementById('t3dKeplerEcc');
+            if (eccEl) eccEl.value = String(p.e);
+            rebuildOrbit();
+        }
+        ['mercury', 'earth', 'halley'].forEach(function (key) {
+            var btn = document.getElementById('t3dKeplerBtn-' + key);
+            if (btn) btn.addEventListener('click', function () { applyPreset(key); });
+        });
+        var eccSlider = document.getElementById('t3dKeplerEcc');
+        if (eccSlider) eccSlider.addEventListener('input', function () {
+            state.e = Math.min(0.97, Math.max(0, parseFloat(eccSlider.value || '0.017')));
+            state.name = 'Custom orbit';
+            rebuildOrbit();
+        });
+        var playBtn = document.getElementById('t3dKeplerPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            state.paused = !state.paused;
+            playBtn.textContent = state.paused ? 'Play orbit' : 'Pause orbit';
+        });
+        var sweepBtn = document.getElementById('t3dKeplerSweepBtn');
+        if (sweepBtn) sweepBtn.addEventListener('click', function () {
+            state.showSweep = !state.showSweep;
+            sweepBtn.textContent = state.showSweep ? 'Hide area wedges' : 'Show area wedges';
+            if (!state.showSweep && sweepMesh) { scene.remove(sweepMesh); sweepMesh.geometry.dispose(); sweepMesh.material.dispose(); sweepMesh = null; sweepVerts = []; }
+        });
+        return function animate(dt) {
+            if (state.paused) return;
+            var aScene = auToScene(state.aAu), ecc = state.e;
+            var Ty = periodYears(state.aAu);
+            var n = (Math.PI * 2) / (Ty * 12);
+            state.M += (dt / 1000) * n;
+            if (state.M > Math.PI * 2) state.M -= Math.PI * 2;
+            var E = t3dSolveKepler(state.M, ecc);
+            var pos = posFromE(E, aScene, ecc);
+            if (planet) planet.position.copy(pos);
+            updateSweep(prevPos, pos);
+            prevPos = pos.clone();
+        };
+    }
+
+    // ================= SATURN RINGS ==========================================
+    // Main-ring radii from Saturn center (km, NASA/PDS Ring-Moon Node). Scene
+    // scale compresses 60,268 km equatorial radius to a 6-unit sphere.
+    var T3D_SATURN_R_KM = 60268;
+    var T3D_CASSINI_INNER_KM = 117580;
+    var T3D_CASSINI_OUTER_KM = 122170;
+    var T3D_A_RING_OUTER_KM = 136775;
+    var T3D_RING_THICKNESS_M = 10;
+    function t3dSaturnRings(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x050810, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.38));
+        var sunLight = new THREE.DirectionalLight(0xfff0d0, 1.15);
+        sunLight.position.set(35, 22, 28);
+        scene.add(sunLight);
+        var SCOUNT = shell.low ? 350 : 800;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(90 + Math.random() * 140);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.5, sizeAttenuation: false })));
+        function kmToR(km) { return (km / T3D_SATURN_R_KM) * 6; }
+        var saturn = new THREE.Mesh(
+            new THREE.SphereGeometry(6, 48, 24),
+            new THREE.MeshLambertMaterial({ color: 0xd4b483 })
+        );
+        scene.add(saturn);
+        var ringGroup = new THREE.Group();
+        var ringDefs = [
+            { key: 'c', name: 'C Ring', inner: 74658, outer: 92000, color: 0x9e9e9e, opacity: 0.42 },
+            { key: 'b', name: 'B Ring', inner: 92000, outer: 117580, color: 0xe8dfc8, opacity: 0.88 },
+            { key: 'a', name: 'A Ring', inner: 122170, outer: 136775, color: 0xf3ead6, opacity: 0.78 }
+        ];
+        var ringMeshes = [];
+        for (var i = 0; i < ringDefs.length; i++) {
+            var rd = ringDefs[i];
+            var mid = (rd.inner + rd.outer) * 0.5;
+            var halfW = (rd.outer - rd.inner) * 0.5;
+            var torus = new THREE.Mesh(
+                new THREE.TorusGeometry(kmToR(mid), kmToR(halfW), 8, 96),
+                new THREE.MeshLambertMaterial({ color: rd.color, emissive: 0x000000, transparent: true, opacity: rd.opacity, side: THREE.DoubleSide })
+            );
+            torus.rotation.x = Math.PI / 2;
+            torus.userData = { kind: 'ring', key: rd.key, name: rd.name };
+            ringGroup.add(torus);
+            ringMeshes.push(torus);
+        }
+        // Cassini Division gap marker (thin dark band)
+        var cassiniMid = (T3D_CASSINI_INNER_KM + T3D_CASSINI_OUTER_KM) * 0.5;
+        var cassiniHalf = (T3D_CASSINI_OUTER_KM - T3D_CASSINI_INNER_KM) * 0.5;
+        var cassiniBand = new THREE.Mesh(
+            new THREE.TorusGeometry(kmToR(cassiniMid), kmToR(cassiniHalf) * 0.55, 6, 72),
+            new THREE.MeshBasicMaterial({ color: 0x1a2030, transparent: true, opacity: 0.95, side: THREE.DoubleSide })
+        );
+        cassiniBand.rotation.x = Math.PI / 2;
+        cassiniBand.userData = { kind: 'cassini', name: 'Cassini Division' };
+        ringGroup.add(cassiniBand);
+        ringMeshes.push(cassiniBand);
+        scene.add(ringGroup);
+        var tiltDeg = 26;
+        function applyTilt(deg) {
+            tiltDeg = deg;
+            ringGroup.rotation.x = Math.PI / 2;
+            ringGroup.rotation.z = (deg - 26) * Math.PI / 180;
+        }
+        applyTilt(26);
+        function factsHtml(name) {
+            return '<h3>' + name + '</h3><table class="w3-table w3-bordered"><tr><td>Cassini Division width</td><td>~4,700 km (117,580-122,170 km from Saturn center)</td></tr><tr><td>A Ring outer edge</td><td>~136,775 km from Saturn center</td></tr><tr><td>Typical ring thickness</td><td>~10 m</td></tr><tr><td>Composition</td><td>&gt;95% water ice (NASA Cassini)</td></tr></table><p class="t3d-note">Educational visualization - ring radii follow published km values but vertical thickness is exaggerated millions of times so the bands are visible; this is not a physical simulation.</p>';
+        }
+        t3dInfo(factsHtml('Saturn main rings'));
+        var ray = new THREE.Raycaster();
+        shell.onClick = function (e) {
+            ray.setFromCamera(shell.ndc(e), shell.camera);
+            var hits = ray.intersectObjects(ringMeshes, false);
+            if (!hits.length) return;
+            var u = hits[0].object.userData;
+            t3dInfo(factsHtml(u.name));
+        };
+        var tiltSlider = document.getElementById('t3dRingTilt');
+        if (tiltSlider) tiltSlider.addEventListener('input', function () { applyTilt(parseFloat(tiltSlider.value || '26')); });
+        function highlight(key) {
+            for (var j = 0; j < ringMeshes.length; j++) {
+                var m = ringMeshes[j];
+                if (!m.material || !m.material.emissive) continue;
+                var on = key && m.userData.key === key;
+                m.material.emissive.setHex(on ? 0x333322 : 0x000000);
+            }
+        }
+        ['c', 'b', 'a', 'cassini'].forEach(function (key) {
+            var btn = document.getElementById('t3dRingBtn-' + key);
+            if (!btn) return;
+            btn.addEventListener('click', function () {
+                if (key === 'cassini') t3dInfo(factsHtml('Cassini Division'));
+                else {
+                    for (var k = 0; k < ringDefs.length; k++) {
+                        if (ringDefs[k].key === key) { t3dInfo(factsHtml(ringDefs[k].name)); break; }
+                    }
+                }
+                highlight(key === 'cassini' ? null : key);
+            });
+        });
+        t3dStatus('Drag to orbit, scroll or pinch to zoom. Click a ring band or use the C / B / A / Cassini buttons.');
+        return function animate() { /* static rings; camera damping in shell */ };
+    }
+
+    // ================= MOON PHASES 3D ======================================
+    // Compressed Sun-Earth-Moon geometry; Lambert shading shows the lit
+    // hemisphere. Phase day 0-29.53 maps to one synodic month (NASA 29.53 d).
+    var T3D_SYNODIC_D = 29.53;
+    var T3D_SIDEREAL_D = 27.32;
+    var T3D_MOON_DIST_KM = 384400;
+    var T3D_MOON_INCL_DEG = 5.14;
+    function t3dMoonPhases3d(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0a1020, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+        var sunLight = new THREE.DirectionalLight(0xfff3d0, 1.35);
+        sunLight.position.set(-80, 12, 10);
+        scene.add(sunLight);
+        // Background stars so the canvas always paints pixels.
+        var SCOUNT = shell.low ? 400 : 900;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(120 + Math.random() * 180);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.55, sizeAttenuation: false })));
+        var sun = new THREE.Mesh(new THREE.SphereGeometry(5, 24, 12), new THREE.MeshBasicMaterial({ color: 0xffd54f }));
+        sun.position.set(-72, 0, 0);
+        scene.add(sun);
+        var earth = new THREE.Mesh(new THREE.SphereGeometry(3.2, 32, 16), new THREE.MeshLambertMaterial({ color: 0x42a5f5 }));
+        scene.add(earth);
+        var moonOrbitR = 14;
+        var moon = new THREE.Mesh(new THREE.SphereGeometry(1.15, 32, 16), new THREE.MeshLambertMaterial({ color: 0xb0bec5 }));
+        scene.add(moon);
+        var orbitRing = new THREE.Mesh(
+            new THREE.TorusGeometry(moonOrbitR, 0.04, 6, 96),
+            new THREE.MeshBasicMaterial({ color: 0x455a64, transparent: true, opacity: 0.55 })
+        );
+        orbitRing.rotation.x = Math.PI / 2;
+        scene.add(orbitRing);
+        var phaseDay = 0;
+        var playing = false;
+        function phaseName(t) {
+            if (t < 0.03 || t > 0.97) return 'New Moon';
+            if (t < 0.22) return 'Waxing Crescent';
+            if (t < 0.28) return 'First Quarter';
+            if (t < 0.47) return 'Waxing Gibbous';
+            if (t < 0.53) return 'Full Moon';
+            if (t < 0.72) return 'Waning Gibbous';
+            if (t < 0.78) return 'Last Quarter';
+            return 'Waning Crescent';
+        }
+        function updateFacts(day) {
+            var t = day / T3D_SYNODIC_D;
+            t3dInfo('<h3>' + phaseName(t) + '</h3><p>Phase day ' + day.toFixed(1) + ' of ' + T3D_SYNODIC_D + ' (synodic month).</p><table class="w3-table w3-bordered"><tr><td>Synodic month</td><td>' + T3D_SYNODIC_D + ' days</td></tr><tr><td>Sidereal month</td><td>' + T3D_SIDEREAL_D + ' days</td></tr><tr><td>Mean Earth-Moon distance</td><td>' + T3D_MOON_DIST_KM.toLocaleString('en-US') + ' km</td></tr><tr><td>Orbit inclination</td><td>' + T3D_MOON_INCL_DEG + ' deg to ecliptic</td></tr></table><p class="t3d-note">Educational visualization - on-screen sizes and distances are compressed so the Sun, Earth, and Moon fit one view; the table has the real NASA figures. This is not a physical simulation and does not match tonight\'s sky.</p>');
+        }
+        function setPhaseDay(day) {
+            phaseDay = Math.max(0, Math.min(T3D_SYNODIC_D, day));
+            var ang = (phaseDay / T3D_SYNODIC_D) * Math.PI * 2;
+            // New moon at angle PI (moon between Earth and Sun along -X)
+            moon.position.set(Math.cos(ang + Math.PI) * moonOrbitR, 0, Math.sin(ang + Math.PI) * moonOrbitR);
+            updateFacts(phaseDay);
+            var label = document.getElementById('t3dPhaseDayLabel');
+            if (label) label.textContent = phaseDay.toFixed(1) + ' d';
+            var slider = document.getElementById('t3dPhaseDay');
+            if (slider && parseFloat(slider.value) !== phaseDay) slider.value = String(phaseDay);
+        }
+        setPhaseDay(0);
+        var slider = document.getElementById('t3dPhaseDay');
+        if (slider) slider.addEventListener('input', function () { playing = false; var pb = document.getElementById('t3dPhasePlayBtn'); if (pb) pb.textContent = 'Play month'; setPhaseDay(parseFloat(slider.value || '0')); });
+        var playBtn = document.getElementById('t3dPhasePlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () { playing = !playing; playBtn.textContent = playing ? 'Pause month' : 'Play month'; });
+        t3dStatus('Drag to orbit, scroll or pinch to zoom. Slide phase day 0-' + T3D_SYNODIC_D + ' or press Play month.');
+        return function animate(dt) {
+            if (!playing) return;
+            // 1x: full synodic month in ~30 seconds
+            setPhaseDay(phaseDay + (dt / 1000) * (T3D_SYNODIC_D / 30));
+            if (phaseDay >= T3D_SYNODIC_D) setPhaseDay(0);
+        };
+    }
+
+    // ================= BLACK HOLE ============================================
+    function t3dBlackHole(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+        // Event horizon: a light-swallowing sphere.
+        var horizon = new THREE.Mesh(new THREE.SphereGeometry(6, 48, 24), new THREE.MeshBasicMaterial({ color: 0x000000 }));
+        scene.add(horizon);
+        var glow = new THREE.Mesh(new THREE.SphereGeometry(6.35, 48, 24), new THREE.MeshBasicMaterial({ color: 0x3949ab, transparent: true, opacity: 0.22, side: THREE.BackSide }));
+        scene.add(glow);
+        // Accretion disk: particles on orbits, inner ones faster and hotter.
+        var COUNT = shell.low ? 12000 : 32000;
+        var pos = new Float32Array(COUNT * 3);
+        var col = new Float32Array(COUNT * 3);
+        var meta = [];
+        var color = new THREE.Color();
+        for (var i = 0; i < COUNT; i++) {
+            var rad = 8.5 + Math.pow(Math.random(), 1.6) * 26;
+            var ang = Math.random() * Math.PI * 2;
+            var thick = (Math.random() - 0.5) * (0.4 + (rad - 8.5) * 0.08);
+            meta.push({ rad: rad, ang: ang, y: thick });
+            // heat ramp: inner = near-white, outer = deep orange/red
+            var t = (rad - 8.5) / 26;
+            color.setHSL(0.08 - t * 0.06, 1.0, 0.72 - t * 0.42);
+            col[i * 3] = color.r; col[i * 3 + 1] = color.g; col[i * 3 + 2] = color.b;
+        }
+        var geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+        var disk = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.22, vertexColors: true, transparent: true, opacity: 0.95, depthWrite: false }));
+        disk.rotation.x = 0.28;
+        scene.add(disk);
+        // Background stars.
+        var SCOUNT = 1500;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(320 + Math.random() * 500);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.7, sizeAttenuation: false })));
+        t3dInfo('<h3>Black hole - what you are seeing</h3><p>The black sphere marks the event horizon - the boundary light cannot leave. The glowing ring is an accretion disk: gas spiraling inward, friction-heated so the inner edge glows hottest. Inner particles orbit faster, as real disks do.</p><table class="w3-table w3-bordered"><tr><td>Sagittarius A*</td><td>about 4.3 million solar masses, about 26,000 light-years away (our galaxy\'s center)</td></tr><tr><td>M87*</td><td>about 6.5 billion solar masses - the first black hole ever imaged (2019)</td></tr><tr><td>Event-horizon size</td><td>roughly 3 km of radius per solar mass, so a 10-solar-mass black hole spans about 60 km</td></tr></table><p class="t3d-note">This is an artistic, educational approximation - it does not solve general relativity, and effects like gravitational lensing are only hinted at. The figures in the table are real.</p>');
+        var pa = disk.geometry.attributes.position.array;
+        return function animate(dt) {
+            for (var i = 0; i < COUNT; i++) {
+                var m = meta[i];
+                m.ang += (dt / 1000) * (2.2 / Math.pow(m.rad / 10, 1.5)); // inner orbits faster
+                pa[i * 3] = Math.cos(m.ang) * m.rad;
+                pa[i * 3 + 1] = m.y;
+                pa[i * 3 + 2] = Math.sin(m.ang) * m.rad;
+            }
+            disk.geometry.attributes.position.needsUpdate = true;
+            glow.rotation.y += dt * 0.0001;
+        };
+    }
+
+    // ================= GALAXY =================================================
+    function t3dGalaxy(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        var group = null;
+        function build(seed) {
+            if (group) { scene.remove(group); group.traverse(function (o) { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); }
+            group = new THREE.Group();
+            var COUNT = shell.low ? 30000 : 100000;
+            var ARMS = 3 + Math.floor(seed * 2.999);
+            var pos = new Float32Array(COUNT * 3);
+            var col = new Float32Array(COUNT * 3);
+            var color = new THREE.Color();
+            for (var i = 0; i < COUNT; i++) {
+                var rad = Math.pow(Math.random(), 0.6) * 42;
+                var arm = i % ARMS;
+                var armAngle = (arm / ARMS) * Math.PI * 2;
+                var spiral = rad * 0.16;
+                var spread = (Math.random() - 0.5) * (0.5 + rad * 0.05) * (Math.random() < 0.1 ? 3 : 1);
+                var ang = armAngle + spiral + spread * 0.25;
+                var y = (Math.random() - 0.5) * Math.max(0.4, 5.5 - rad * 0.12);
+                pos[i * 3] = Math.cos(ang) * rad + (Math.random() - 0.5) * 1.2;
+                pos[i * 3 + 1] = y;
+                pos[i * 3 + 2] = Math.sin(ang) * rad + (Math.random() - 0.5) * 1.2;
+                var t = rad / 42;
+                // warm core -> blue-white arms
+                color.setHSL(0.12 - t * 0.04 + (Math.random() < 0.25 ? 0.45 : 0), 0.8, 0.55 + (1 - t) * 0.2);
+                col[i * 3] = color.r; col[i * 3 + 1] = color.g; col[i * 3 + 2] = color.b;
+            }
+            var geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+            group.add(new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.18, vertexColors: true, transparent: true, opacity: 0.9, depthWrite: false })));
+            var core = new THREE.Mesh(new THREE.SphereGeometry(2.6, 24, 12), new THREE.MeshBasicMaterial({ color: 0xfff2cc, transparent: true, opacity: 0.85 }));
+            group.add(core);
+            scene.add(group);
+            t3dStatus('Rendering ' + COUNT.toLocaleString('en-US') + ' points in ' + ARMS + ' spiral arms - drag to rotate, scroll to zoom.');
+        }
+        build(Math.random());
+        var regen = document.getElementById('t3dRegen');
+        if (regen) regen.addEventListener('click', function () { build(Math.random()); });
+        t3dInfo('<h3>A spiral galaxy</h3><p>Each point is a rendered star-stand-in; real spiral galaxies hold vastly more.</p><table class="w3-table w3-bordered"><tr><td>Milky Way stars</td><td>more than 100 billion</td></tr><tr><td>Milky Way diameter</td><td>about 100,000 light-years</td></tr><tr><td>Sun\'s position</td><td>about 26,000 light-years from the center</td></tr><tr><td>One solar orbit</td><td>about 230 million years</td></tr></table><p class="t3d-note">The spiral shape here is parametric art tuned to look right, not a gravitational model - the table figures are real.</p>');
+        return function animate(dt) {
+            if (group) group.rotation.y += dt * 0.00006;
+        };
+    }
+
+    // ================= VOXEL WORLD BUILDER (game cluster) ====================
+    function t3dVoxel(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        var N = 48, MAXY = 32;
+        var TYPES = [
+            { name: 'Grass', color: 0x66bb6a },
+            { name: 'Dirt', color: 0x8d6e63 },
+            { name: 'Stone', color: 0x90a4ae },
+            { name: 'Wood', color: 0xa1887f },
+            { name: 'Sand', color: 0xfff176 },
+            { name: 'Water', color: 0x4fc3f7 },
+        ];
+        var sun = new THREE.DirectionalLight(0xffffff, 2.2);
+        sun.position.set(30, 60, 20);
+        var ambient = new THREE.AmbientLight(0xffffff, 0.75);
+        scene.add(sun); scene.add(ambient);
+        var day = true;
+        function applyDayNight() {
+            shell.renderer.setClearColor(day ? 0x87ceeb : 0x0d1330, 1);
+            sun.intensity = day ? 2.2 : 0.35;
+            ambient.intensity = day ? 0.75 : 0.28;
+            var b = document.getElementById('t3dDayNight');
+            if (b) b.textContent = day ? 'Night' : 'Day';
+        }
+        // Ground plane (clickable base).
+        var ground = new THREE.Mesh(
+            new THREE.BoxGeometry(N, 1, N),
+            new THREE.MeshLambertMaterial({ color: 0x7cb342 })
+        );
+        ground.position.set(0, -0.5, 0);
+        scene.add(ground);
+        var grid = new THREE.GridHelper(N, N, 0x33691e, 0x558b2f);
+        grid.position.y = 0.01;
+        scene.add(grid);
+        // Block store: key "x,y,z" -> type index. Coordinates are integer cell
+        // centers in [-N/2, N/2).
+        var blocks = {};
+        var meshes = []; // one InstancedMesh per type, rebuilt on edit
+        var unit = new THREE.BoxGeometry(1, 1, 1);
+        var dummy = new THREE.Object3D();
+        function rebuild() {
+            for (var i = 0; i < meshes.length; i++) { scene.remove(meshes[i]); }
+            meshes = [];
+            var byType = [];
+            for (var t = 0; t < TYPES.length; t++) byType.push([]);
+            var keys = Object.keys(blocks);
+            for (var k = 0; k < keys.length; k++) byType[blocks[keys[k]]].push(keys[k]);
+            for (var ty = 0; ty < TYPES.length; ty++) {
+                var list = byType[ty];
+                if (!list.length) { meshes.push(null); continue; }
+                var mat = new THREE.MeshLambertMaterial({ color: TYPES[ty].color, transparent: ty === 5, opacity: ty === 5 ? 0.8 : 1 });
+                var im = new THREE.InstancedMesh(unit, mat, list.length);
+                for (var j = 0; j < list.length; j++) {
+                    var c = list[j].split(',');
+                    dummy.position.set(parseInt(c[0], 10) + 0.5, parseInt(c[1], 10) + 0.5, parseInt(c[2], 10) + 0.5);
+                    dummy.updateMatrix();
+                    im.setMatrixAt(j, dummy.matrix);
+                }
+                im.userData = { keys: list };
+                scene.add(im);
+                meshes.push(im);
+            }
+            var count = keys.length;
+            t3dStatus(count + ' block' + (count === 1 ? '' : 's') + ' placed - ' + (mode === 'place' ? 'click to place ' + TYPES[selected].name : 'click a block to remove it') + '. Drag to orbit, scroll to zoom.');
+        }
+        var saveTimer = null;
+        function scheduleSave() {
+            if (saveTimer) clearTimeout(saveTimer);
+            saveTimer = setTimeout(function () {
+                var store = t3dLoadStore();
+                store.world = blocks; store.savedAt = new Date().toISOString();
+                t3dSaveStore(store);
+            }, 600);
+        }
+        // starter cottage so the first view is not empty
+        function seedWorld() {
+            var w = {};
+            for (var x = -3; x <= 1; x++) for (var z = -2; z <= 2; z++) w[x + ',0,' + z] = 4;
+            for (var y = 0; y < 3; y++) {
+                for (var x2 = 4; x2 <= 8; x2++) for (var z2 = -2; z2 <= 2; z2++) {
+                    if (y < 2 && (x2 === 4 || x2 === 8 || z2 === -2 || z2 === 2)) w[x2 + ',' + y + ',' + z2] = (y === 0 ? 2 : 3);
+                    if (y === 2) w[x2 + ',' + y + ',' + z2] = 3;
+                }
+            }
+            delete w['4,0,0']; delete w['4,1,0']; // doorway
+            for (var g = -8; g <= -5; g++) w[g + ',0,' + (g % 2 ? 1 : -1)] = 0;
+            return w;
+        }
+        var store0 = t3dLoadStore();
+        blocks = (store0.world && typeof store0.world === 'object') ? store0.world : seedWorld();
+        var selected = 0, mode = 'place';
+        function paintHotbar() {
+            for (var i = 0; i < TYPES.length; i++) {
+                var b = document.getElementById('t3dHot-' + i);
+                if (b) b.style.outline = i === selected ? '3px solid #1a73e8' : '1px solid #999';
+            }
+            var pm = document.getElementById('t3dModePlace'), rm = document.getElementById('t3dModeRemove');
+            if (pm) pm.className = 'w3-button ' + (mode === 'place' ? 'w3-blue' : 'w3-white w3-border');
+            if (rm) rm.className = 'w3-button ' + (mode === 'remove' ? 'w3-blue' : 'w3-white w3-border');
+        }
+        for (var hb = 0; hb < TYPES.length; hb++) {
+            (function (i) {
+                var b = document.getElementById('t3dHot-' + i);
+                if (b) {
+                    b.style.background = '#' + TYPES[i].color.toString(16).padStart(6, '0');
+                    b.title = TYPES[i].name;
+                    b.addEventListener('click', function () { selected = i; mode = 'place'; paintHotbar(); rebuild(); });
+                }
+            })(hb);
+        }
+        var pmBtn = document.getElementById('t3dModePlace'), rmBtn = document.getElementById('t3dModeRemove');
+        if (pmBtn) pmBtn.addEventListener('click', function () { mode = 'place'; paintHotbar(); rebuild(); });
+        if (rmBtn) rmBtn.addEventListener('click', function () { mode = 'remove'; paintHotbar(); rebuild(); });
+        var dnBtn = document.getElementById('t3dDayNight');
+        if (dnBtn) dnBtn.addEventListener('click', function () { day = !day; applyDayNight(); });
+        var exBtn = document.getElementById('t3dExport');
+        if (exBtn) exBtn.addEventListener('click', function () {
+            var blob = new Blob([JSON.stringify({ world: blocks, exportedAt: new Date().toISOString() }, null, 1)], { type: 'application/json' });
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = T3D_SLUG + '-world.json';
+            document.body.appendChild(a); a.click(); a.remove();
+        });
+        var clrBtn = document.getElementById('t3dClear');
+        if (clrBtn) clrBtn.addEventListener('click', function () {
+            blocks = {}; rebuild(); scheduleSave();
+        });
+        var ray = new THREE.Raycaster();
+        shell.onClick = function (e) {
+            ray.setFromCamera(shell.ndc(e), shell.camera);
+            var targets = [ground];
+            for (var i = 0; i < meshes.length; i++) if (meshes[i]) targets.push(meshes[i]);
+            var hits = ray.intersectObjects(targets, false);
+            if (!hits.length) return;
+            var hit = hits[0];
+            if (mode === 'remove') {
+                if (hit.object === ground) return;
+                var key = hit.object.userData.keys[hit.instanceId];
+                delete blocks[key];
+                rebuild(); scheduleSave();
+                return;
+            }
+            // place adjacent to the face that was hit
+            var p = hit.point.clone().add(hit.face.normal.clone().multiplyScalar(0.5));
+            var x = Math.floor(p.x), y = Math.floor(p.y), z = Math.floor(p.z);
+            if (x < -N / 2 || x >= N / 2 || z < -N / 2 || z >= N / 2 || y < 0 || y >= MAXY) {
+                t3dStatus('That spot is outside the ' + N + 'x' + N + ' build area (height cap ' + MAXY + ').');
+                return;
+            }
+            var key2 = x + ',' + y + ',' + z;
+            if (blocks[key2] !== undefined) return;
+            if (Object.keys(blocks).length >= 20000) { t3dStatus('Block cap reached (20,000) - remove some blocks or clear the world.'); return; }
+            blocks[key2] = selected;
+            rebuild(); scheduleSave();
+        };
+        applyDayNight();
+        paintHotbar();
+        rebuild();
+        t3dInfo('<h3>Voxel World Builder</h3><p>A finite ' + N + 'x' + N + ' block sandbox with a height cap of ' + MAXY + '. Pick a block from the hotbar, click the ground or a block face to place, switch to Remove to take blocks away. The world autosaves to this browser\'s local storage and Export downloads it as a JSON file.</p><p class="t3d-note">Saves live only in this browser - clearing site data clears the world, so Export anything you want to keep.</p>');
+        return function animate() { /* static world; camera damping runs in the shell */ };
+    }
+
+    // ---- bootstrap ------------------------------------------------------------
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return; // not a 3D scene page
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        // Show only this scene's control row.
+        var rows = { solar: 't3dSolarControls', galaxy: 't3dGalaxyControls', voxel: 't3dVoxelControls', moonphases3d: 't3dMoonPhases3dControls', saturnrings: 't3dSaturnRingsControls', keplerorbits: 't3dKeplerOrbitsControls', mooncalendar3d: 't3dMoonCalendar3dControls', issorbittracker: 't3dIssOrbitTrackerControls', jwstl2haloorbit: 't3dJwstL2HaloOrbitControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = {
+                        solar: { radius: 120, maxR: 260, minR: 20, phi: 1.05 },
+                        blackhole: { radius: 60, maxR: 200, minR: 14, phi: 1.25 },
+                        galaxy: { radius: 70, maxR: 220, minR: 10, phi: 0.9 },
+                        voxel: { radius: 46, maxR: 120, minR: 8, phi: 1.0, targetY: 3 },
+                        moonphases3d: { radius: 52, maxR: 130, minR: 12, phi: 1.1 },
+                        issorbittracker: { radius: 42, maxR: 120, minR: 14, phi: 1.15 },
+                        mooncalendar3d: { radius: 28, maxR: 90, minR: 10, phi: 1.1 },
+                        keplerorbits: { radius: 55, maxR: 160, minR: 12, phi: 1.2 },
+                        saturnrings: { radius: 48, maxR: 120, minR: 10, phi: 1.05 },
+                        jwstl2haloorbit: { radius: 50, maxR: 150, minR: 12, phi: 1.15 },
+                    };
+                    var shell = t3dShell(THREE, host, presets[kind] || presets.issorbittracker);
+                    var animate = kind === 'voxel' ? t3dVoxel(shell)
+                        : kind === 'blackhole' ? t3dBlackHole(shell)
+                            : kind === 'galaxy' ? t3dGalaxy(shell)
+                                : kind === 'moonphases3d' ? t3dMoonPhases3d(shell)
+                                    : kind === 'saturnrings' ? t3dSaturnRings(shell)
+                                        : kind === 'keplerorbits' ? t3dKeplerOrbits(shell)
+                                            : kind === 'mooncalendar3d' ? t3dMoonCalendar3d(shell)
+                                                : kind === 'issorbittracker' ? t3dIssOrbitTracker(shell)
+                                                    : kind === 'jwstl2haloorbit' ? t3dJwstL2HaloOrbit(shell)
+                                                        : t3dSolar(shell);
+                    if (kind !== 'galaxy' && kind !== 'voxel' && kind !== 'moonphases3d' && kind !== 'saturnrings' && kind !== 'keplerorbits' && kind !== 'mooncalendar3d' && kind !== 'issorbittracker' && kind !== 'jwstl2haloorbit') t3dStatus('Drag to orbit, scroll or pinch to zoom, click objects for facts.');
+                    if (kind === 'voxel') { /* status set by rebuild() */ }
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
