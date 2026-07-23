@@ -20,6 +20,22 @@ export const INFO_ROUTES = new Set([
   // auto-emitted title exceeded the 60-char slug KEBAB_LIMIT and was silently
   // skipped - authored by hand with a shorter slug).
   '/guides/number-base-converter-vs-alternatives.html',
+  // new-tool-discovery-loop-runbook fire372: number-base-converter locale fanout (pt/es/vi/id/de x 3 angles)
+  '/guides/pt/number-base-converter-binary-hex-octal-decimal-when.html',
+  '/guides/es/number-base-converter-binary-hex-octal-decimal-when.html',
+  '/guides/vi/number-base-converter-binary-hex-octal-decimal-when.html',
+  '/guides/id/number-base-converter-binary-hex-octal-decimal-when.html',
+  '/guides/de/number-base-converter-binary-hex-octal-decimal-when.html',
+  '/guides/pt/number-base-converter-binary-hex-octal-decimal-step-by-step.html',
+  '/guides/es/number-base-converter-binary-hex-octal-decimal-step-by-step.html',
+  '/guides/vi/number-base-converter-binary-hex-octal-decimal-step-by-step.html',
+  '/guides/id/number-base-converter-binary-hex-octal-decimal-step-by-step.html',
+  '/guides/de/number-base-converter-binary-hex-octal-decimal-step-by-step.html',
+  '/guides/pt/number-base-converter-vs-alternatives.html',
+  '/guides/es/number-base-converter-vs-alternatives.html',
+  '/guides/vi/number-base-converter-vs-alternatives.html',
+  '/guides/id/number-base-converter-vs-alternatives.html',
+  '/guides/de/number-base-converter-vs-alternatives.html',
   '/guides/lorem-ipsum-placeholder-text-generator-vs-alternatives.html',
   '/guides/lorem-ipsum-placeholder-text-generator-step-by-step.html',
   '/guides/lorem-ipsum-placeholder-text-generator-when.html',
@@ -5152,6 +5168,22 @@ export const GUIDE_ROUTES = new Set([
   '/guides/number-base-converter-binary-hex-octal-decimal-step-by-step.html',
   '/guides/number-base-converter-binary-hex-octal-decimal-when.html',
   '/guides/number-base-converter-vs-alternatives.html',
+  // new-tool-discovery-loop-runbook fire372: number-base-converter locale fanout
+  '/guides/pt/number-base-converter-binary-hex-octal-decimal-when.html',
+  '/guides/es/number-base-converter-binary-hex-octal-decimal-when.html',
+  '/guides/vi/number-base-converter-binary-hex-octal-decimal-when.html',
+  '/guides/id/number-base-converter-binary-hex-octal-decimal-when.html',
+  '/guides/de/number-base-converter-binary-hex-octal-decimal-when.html',
+  '/guides/pt/number-base-converter-binary-hex-octal-decimal-step-by-step.html',
+  '/guides/es/number-base-converter-binary-hex-octal-decimal-step-by-step.html',
+  '/guides/vi/number-base-converter-binary-hex-octal-decimal-step-by-step.html',
+  '/guides/id/number-base-converter-binary-hex-octal-decimal-step-by-step.html',
+  '/guides/de/number-base-converter-binary-hex-octal-decimal-step-by-step.html',
+  '/guides/pt/number-base-converter-vs-alternatives.html',
+  '/guides/es/number-base-converter-vs-alternatives.html',
+  '/guides/vi/number-base-converter-vs-alternatives.html',
+  '/guides/id/number-base-converter-vs-alternatives.html',
+  '/guides/de/number-base-converter-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire369: lorem-ipsum-generator guides were
   // never registered in GUIDE_ROUTES (EN missing too, same gap password-strength-checker
   // had at fire366) - backfilling EN + full pt/es/vi/id/de locale fanout so all 18
@@ -22343,6 +22375,22 @@ export const JSP_BY_ROUTE = {
   '/guides/number-base-converter-binary-hex-octal-decimal-when.html': 'guide/number-base-converter-binary-hex-octal-decimal-when.jsp',
   '/guides/number-base-converter-binary-hex-octal-decimal-step-by-step.html': 'guide/number-base-converter-binary-hex-octal-decimal-step-by-step.jsp',
   '/guides/number-base-converter-vs-alternatives.html': 'guide/number-base-converter-vs-alternatives.jsp',
+  // new-tool-discovery-loop-runbook fire372: number-base-converter locale fanout
+  '/guides/pt/number-base-converter-binary-hex-octal-decimal-when.html': 'guide/pt/number-base-converter-binary-hex-octal-decimal-when.jsp',
+  '/guides/es/number-base-converter-binary-hex-octal-decimal-when.html': 'guide/es/number-base-converter-binary-hex-octal-decimal-when.jsp',
+  '/guides/vi/number-base-converter-binary-hex-octal-decimal-when.html': 'guide/vi/number-base-converter-binary-hex-octal-decimal-when.jsp',
+  '/guides/id/number-base-converter-binary-hex-octal-decimal-when.html': 'guide/id/number-base-converter-binary-hex-octal-decimal-when.jsp',
+  '/guides/de/number-base-converter-binary-hex-octal-decimal-when.html': 'guide/de/number-base-converter-binary-hex-octal-decimal-when.jsp',
+  '/guides/pt/number-base-converter-binary-hex-octal-decimal-step-by-step.html': 'guide/pt/number-base-converter-binary-hex-octal-decimal-step-by-step.jsp',
+  '/guides/es/number-base-converter-binary-hex-octal-decimal-step-by-step.html': 'guide/es/number-base-converter-binary-hex-octal-decimal-step-by-step.jsp',
+  '/guides/vi/number-base-converter-binary-hex-octal-decimal-step-by-step.html': 'guide/vi/number-base-converter-binary-hex-octal-decimal-step-by-step.jsp',
+  '/guides/id/number-base-converter-binary-hex-octal-decimal-step-by-step.html': 'guide/id/number-base-converter-binary-hex-octal-decimal-step-by-step.jsp',
+  '/guides/de/number-base-converter-binary-hex-octal-decimal-step-by-step.html': 'guide/de/number-base-converter-binary-hex-octal-decimal-step-by-step.jsp',
+  '/guides/pt/number-base-converter-vs-alternatives.html': 'guide/pt/number-base-converter-vs-alternatives.jsp',
+  '/guides/es/number-base-converter-vs-alternatives.html': 'guide/es/number-base-converter-vs-alternatives.jsp',
+  '/guides/vi/number-base-converter-vs-alternatives.html': 'guide/vi/number-base-converter-vs-alternatives.jsp',
+  '/guides/id/number-base-converter-vs-alternatives.html': 'guide/id/number-base-converter-vs-alternatives.jsp',
+  '/guides/de/number-base-converter-vs-alternatives.html': 'guide/de/number-base-converter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
