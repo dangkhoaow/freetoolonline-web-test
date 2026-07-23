@@ -1,0 +1,388 @@
+<script>
+    // 3D scene archetype skeleton (Photon Sphere & ISCO Explorer) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Built LEAN, forked from the yarkovsky-effect single-scene
+    // shape. ONE scene only. All geometry is procedural.
+    //
+    // EDUCATIONAL, IDEALIZED KERR-SOLUTION EXPLORER - not a numerical-
+    // relativity or ray-traced simulation. The event horizon, ergosphere,
+    // photon-sphere rings, and ISCO rings ARE drawn to the exact relative
+    // sizes given by the analytic Kerr vacuum solution (all four radii are
+    // computed LIVE from the real closed-form GR formulas below, in units of
+    // M = GM/c^2, never invented or interpolated). The ergosphere is rendered
+    // as a simplified oblate-spheroid approximation of its true (non-embeddable
+    // in flat 3D) shape - explicitly disclosed. Frame-dragging is shown as
+    // rotating arrow sprites near the ergosphere; this is the same Lense-
+    // Thirring effect Gravity Probe B measured around EARTH (2004-2011), not
+    // a direct black-hole measurement - vastly amplified here by the Kerr
+    // solution's strong-field spin term, never claimed as a second GPB result.
+    //
+    // Published figures / formulas (cross-checked via WebSearch 2026-07-23/24):
+    //   - Schwarzschild (non-spinning, a*=0) photon sphere: r = 1.5 Rs = 3M
+    //     (unstable circular photon orbit). ISCO: r = 3 Rs = 6M (innermost
+    //     stable circular orbit for massive test particles). Rs = 2M.
+    //   - Kerr (spinning) exact formulas (Bardeen, Press & Teukolsky 1972,
+    //     ApJ 178:347 "Rotating Black Holes: Locally Nonrotating Frames,
+    //     Energy Extraction, and Scalar Synchrotron Radiation"):
+    //       event horizon:  r_h = M + sqrt(M^2 - a^2)
+    //       photon orbit:   r_ph = 2M * (1 + cos((2/3) * acos(mp a*)))
+    //                       (minus sign for prograde, plus for retrograde)
+    //       ISCO:           r_isco = M * (3 + Z2 -+ sqrt((3-Z1)(3+Z1+2Z2)))
+    //                       Z1 = 1 + cbrt(1-a*^2)(cbrt(1+a*)+cbrt(1-a*))
+    //                       Z2 = sqrt(3 a*^2 + Z1^2)  (minus for prograde)
+    //   - Extremal (a*->1) limits: prograde ISCO -> 1M, retrograde ISCO -> 9M;
+    //     prograde photon orbit -> 1M, retrograde photon orbit -> 4M;
+    //     horizon -> 1M. All four verified numerically against the formulas.
+    //   - Ergosphere equatorial (static-limit) radius = 2M for ANY spin - a
+    //     fixed value independent of a*, verified from r_static(theta=pi/2) =
+    //     M + sqrt(M^2 - a^2 cos^2(theta)) = M + M = 2M.
+    //   - Astrophysical spin ceiling: Kip Thorne (1974) showed accretion-disk
+    //     torque asymptotically limits a real black hole's spin to about
+    //     a* = 0.998 (the "Thorne limit") - true a*=1 is not physically
+    //     reached. At a*=0.998 the exact formula above gives prograde ISCO
+    //     ~= 1.237 M (verified by direct computation, not looked up).
+    //   - Event Horizon Telescope (EHT) 2019 M87* and 2022 Sagittarius A*
+    //     images show a bright ring consistent with the GR-predicted lensed
+    //     photon ring (theoretical Schwarzschild shadow diameter = 3*sqrt(3)*M
+    //     ~= 2.6 Rs) - the strongest present observational support for the
+    //     photon-orbit physics this scene visualizes, cited in the panel.
+    //   - Frame dragging (Lense-Thirring precession): confirmed around Earth
+    //     by Gravity Probe B (NASA, 2004-2011) to about 19% precision - the
+    //     same physical effect the Kerr solution predicts far more strongly
+    //     near a spinning black hole.
+    //   - Distinct from black-hole.html (a non-spinning, point-mass artistic
+    //     accretion-disk-glow explorer with no spin parameter and no photon-
+    //     sphere/ISCO geometry) - this page is the only spin-parameter Kerr
+    //     geodesic explorer in the space-3d cluster.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'photonsphereiscoexplorer';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'photonsphereiscoexplorer'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // --- Exact Kerr formulas (Bardeen, Press & Teukolsky 1972), units of M ---
+    function t3dHorizonM(aStar) { return 1 + Math.sqrt(Math.max(0, 1 - aStar * aStar)); }
+    function t3dPhotonM(aStar, prograde) {
+        var arg = prograde ? -aStar : aStar;
+        return 2 * (1 + Math.cos((2 / 3) * Math.acos(Math.max(-1, Math.min(1, arg)))));
+    }
+    function t3dIscoM(aStar, prograde) {
+        var a2 = aStar * aStar;
+        var Z1 = 1 + Math.cbrt(1 - a2) * (Math.cbrt(1 + aStar) + Math.cbrt(1 - aStar));
+        var Z2 = Math.sqrt(3 * a2 + Z1 * Z1);
+        var sign = prograde ? -1 : 1;
+        return 3 + Z2 + sign * Math.sqrt((3 - Z1) * (3 + Z1 + 2 * Z2));
+    }
+    var T3D_ERGO_EQUATOR_M = 2; // static-limit radius at the equator - fixed for any spin
+
+    function t3dPhotonSphereIscoExplorer(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.38));
+
+        // Starfield backdrop
+        var starN = shell.low ? 260 : 520;
+        var starPos = new Float32Array(starN * 3);
+        for (var s = 0; s < starN; s++) {
+            var r = 40 + Math.random() * 60;
+            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+            starPos[s * 3] = r * Math.sin(ph) * Math.cos(th);
+            starPos[s * 3 + 1] = r * Math.cos(ph) * 0.55;
+            starPos[s * 3 + 2] = r * Math.sin(ph) * Math.sin(th) - 10;
+        }
+        var starGeo = new THREE.BufferGeometry();
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        var stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xaad4ff, size: 0.3, sizeAttenuation: true, transparent: true, opacity: 0.7 }));
+        scene.add(stars);
+
+        // Event horizon (black sphere). Radius updates live with spin.
+        var horizon = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 24), new THREE.MeshBasicMaterial({ color: 0x000000 }));
+        scene.add(horizon);
+        var horizonRim = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 24), new THREE.MeshBasicMaterial({ color: 0x552200, wireframe: true, transparent: true, opacity: 0.18 }));
+        scene.add(horizonRim);
+
+        // Ergosphere - simplified oblate-spheroid approximation (equator fixed
+        // at 2M; poles pulled in to the horizon radius as spin increases).
+        var ergoGeo = new THREE.SphereGeometry(T3D_ERGO_EQUATOR_M, 28, 20);
+        var ergo = new THREE.Mesh(ergoGeo, new THREE.MeshBasicMaterial({ color: 0x7e57c2, transparent: true, opacity: 0.14, side: THREE.DoubleSide, wireframe: false }));
+        scene.add(ergo);
+        var ergoWire = new THREE.Mesh(ergoGeo.clone(), new THREE.MeshBasicMaterial({ color: 0xb39ddb, transparent: true, opacity: 0.32, wireframe: true }));
+        scene.add(ergoWire);
+
+        // Spin axis rod (through the poles)
+        var axis = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 6, 6), new THREE.MeshBasicMaterial({ color: 0x90a4ae, transparent: true, opacity: 0.5 }));
+        scene.add(axis);
+
+        function makeRing(radiusM, color) {
+            var segs = 96;
+            var geo = new THREE.BufferGeometry();
+            var pos = new Float32Array((segs + 1) * 3);
+            for (var i = 0; i <= segs; i++) {
+                var a = (i / segs) * Math.PI * 2;
+                pos[i * 3] = radiusM * Math.cos(a);
+                pos[i * 3 + 1] = 0;
+                pos[i * 3 + 2] = radiusM * Math.sin(a);
+            }
+            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            var ring = new THREE.LineLoop(geo, new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: 0.85 }));
+            ring.__radiusM = radiusM;
+            return ring;
+        }
+        function setRingRadius(ring, radiusM) {
+            var segs = 96;
+            var attr = ring.geometry.attributes.position;
+            for (var i = 0; i <= segs; i++) {
+                var a = (i / segs) * Math.PI * 2;
+                attr.setXYZ(i, radiusM * Math.cos(a), 0, radiusM * Math.sin(a));
+            }
+            attr.needsUpdate = true;
+            ring.__radiusM = radiusM;
+        }
+
+        var COL_PHOTON_PRO = 0x26c6da, COL_PHOTON_RETRO = 0xec407a;
+        var COL_ISCO_PRO = 0x66bb6a, COL_ISCO_RETRO = 0xffa726;
+
+        var ringPhotonPro = makeRing(3, COL_PHOTON_PRO); scene.add(ringPhotonPro);
+        var ringPhotonRetro = makeRing(3, COL_PHOTON_RETRO); scene.add(ringPhotonRetro);
+        var ringIscoPro = makeRing(6, COL_ISCO_PRO); scene.add(ringIscoPro);
+        var ringIscoRetro = makeRing(6, COL_ISCO_RETRO); scene.add(ringIscoRetro);
+
+        function markerFor(color) {
+            return new THREE.Mesh(new THREE.SphereGeometry(0.12, 12, 8), new THREE.MeshStandardMaterial({ color: color, emissive: color, emissiveIntensity: 0.6 }));
+        }
+        var photonMarkerPro = markerFor(COL_PHOTON_PRO); scene.add(photonMarkerPro);
+        var iscoMarkerPro = markerFor(COL_ISCO_PRO); scene.add(iscoMarkerPro);
+
+        // Frame-dragging arrow sprites near the ergosphere equator, spinning
+        // with the black hole's rotation sense to cue Lense-Thirring dragging.
+        var dragArrows = [];
+        var dragCount = shell.low ? 6 : 10;
+        for (var d = 0; d < dragCount; d++) {
+            var da = (d / dragCount) * Math.PI * 2;
+            var arrow = new THREE.ArrowHelper(new THREE.Vector3(-Math.sin(da), 0, Math.cos(da)), new THREE.Vector3(0, 0, 0), 0.9, 0xba68c8, 0.22, 0.14);
+            arrow.__baseAngle = da;
+            scene.add(arrow);
+            dragArrows.push(arrow);
+        }
+        function placeDragArrows(equatorR) {
+            for (var i = 0; i < dragArrows.length; i++) {
+                var ang = dragArrows[i].__baseAngle;
+                dragArrows[i].position.set(equatorR * Math.cos(ang), 0, equatorR * Math.sin(ang));
+            }
+        }
+
+        var aStar = 0; // dimensionless Kerr spin parameter a* = a/M, 0..0.998
+
+        function fmtM(v) { return v.toFixed(3) + ' M'; }
+        function fmtRs(v) { return (v / 2).toFixed(3) + ' Rs'; }
+
+        function panelHtml() {
+            var rh = t3dHorizonM(aStar);
+            var phPro = t3dPhotonM(aStar, true), phRetro = t3dPhotonM(aStar, false);
+            var isPro = t3dIscoM(aStar, true), isRetro = t3dIscoM(aStar, false);
+            return '<h3>Kerr geodesics at a* = ' + aStar.toFixed(3) + '</h3>' +
+                '<p>Radii computed live from the exact Kerr formulas (Bardeen, Press &amp; Teukolsky 1972). M = GM/c^2; Rs = 2M.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Event horizon</td><td>' + fmtM(rh) + ' (' + fmtRs(rh) + ')</td></tr>' +
+                '<tr><td>Ergosphere (equator, fixed)</td><td>' + fmtM(T3D_ERGO_EQUATOR_M) + ' (' + fmtRs(T3D_ERGO_EQUATOR_M) + ')</td></tr>' +
+                '<tr><td>Photon orbit, prograde</td><td>' + fmtM(phPro) + ' (' + fmtRs(phPro) + ')</td></tr>' +
+                '<tr><td>Photon orbit, retrograde</td><td>' + fmtM(phRetro) + ' (' + fmtRs(phRetro) + ')</td></tr>' +
+                '<tr><td>ISCO, prograde</td><td>' + fmtM(isPro) + ' (' + fmtRs(isPro) + ')</td></tr>' +
+                '<tr><td>ISCO, retrograde</td><td>' + fmtM(isRetro) + ' (' + fmtRs(isRetro) + ')</td></tr>' +
+                '<tr><td>Schwarzschild reference (a*=0)</td><td>photon 1.5 Rs, ISCO 3 Rs</td></tr>' +
+                '<tr><td>Thorne astrophysical spin ceiling</td><td>a* ~= 0.998 (accretion-torque limit, Thorne 1974)</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Idealized Kerr vacuum solution - the four radii above are exact GR results at this spin, not an artistic guess. The ergosphere is drawn as a simplified oblate-spheroid approximation of its true shape. Frame-dragging arrows illustrate the same Lense-Thirring effect Gravity Probe B measured around Earth (2004-2011, ~19% precision) - this is not a second measurement of a black hole, just the same physics amplified by strong gravity and spin.</p>';
+        }
+
+        var spinEl = document.getElementById('t3dPsiSpin');
+        var spinLab = document.getElementById('t3dPsiSpinLabel');
+        function apply() {
+            if (spinEl && parseFloat(spinEl.value) !== aStar) spinEl.value = String(aStar);
+            if (spinLab) spinLab.textContent = 'a* = ' + aStar.toFixed(3);
+
+            var rh = t3dHorizonM(aStar);
+            horizon.scale.setScalar(rh);
+            horizonRim.scale.setScalar(rh);
+
+            var flatten = Math.max(0.05, rh / T3D_ERGO_EQUATOR_M);
+            ergo.scale.set(1, flatten, 1);
+            ergoWire.scale.set(1, flatten, 1);
+
+            setRingRadius(ringPhotonPro, t3dPhotonM(aStar, true));
+            setRingRadius(ringPhotonRetro, t3dPhotonM(aStar, false));
+            setRingRadius(ringIscoPro, t3dIscoM(aStar, true));
+            setRingRadius(ringIscoRetro, t3dIscoM(aStar, false));
+            placeDragArrows(T3D_ERGO_EQUATOR_M);
+
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ aStar: aStar }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.aStar === 'number' && store.aStar >= 0 && store.aStar <= 0.998) aStar = store.aStar;
+        apply();
+
+        if (spinEl) spinEl.addEventListener('input', function () {
+            aStar = Math.max(0, Math.min(0.998, parseFloat(spinEl.value || '0')));
+            apply();
+        });
+        var resetBtn = document.getElementById('t3dPsiResetBtn');
+        if (resetBtn) resetBtn.addEventListener('click', function () { aStar = 0; apply(); });
+        var extremalBtn = document.getElementById('t3dPsiExtremalBtn');
+        if (extremalBtn) extremalBtn.addEventListener('click', function () { aStar = 0.998; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Drag the spin slider to watch every ring shrink or grow live.');
+        var orbitAngle = 0, photonAngle = 0;
+        return function animate(dt) {
+            stars.rotation.y += dt * 0.00002;
+            var spinDir = 1;
+            orbitAngle += dt * 0.00012 * spinDir;
+            photonAngle += dt * 0.00034 * spinDir;
+            for (var i = 0; i < dragArrows.length; i++) {
+                dragArrows[i].__baseAngle += dt * 0.0009 * (0.4 + aStar);
+            }
+            placeDragArrows(T3D_ERGO_EQUATOR_M);
+            var rIsco = ringIscoPro.__radiusM, rPhoton = ringPhotonPro.__radiusM;
+            iscoMarkerPro.position.set(rIsco * Math.cos(orbitAngle), 0, rIsco * Math.sin(orbitAngle));
+            photonMarkerPro.position.set(rPhoton * Math.cos(photonAngle), 0, rPhoton * Math.sin(photonAngle));
+            ergoWire.rotation.y += dt * 0.00006 * (0.5 + aStar);
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { photonsphereiscoexplorer: 't3dPsiControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { photonsphereiscoexplorer: { radius: 14, maxR: 60, minR: 3, phi: 1.15, theta: 0.5, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dPhotonSphereIscoExplorer(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
