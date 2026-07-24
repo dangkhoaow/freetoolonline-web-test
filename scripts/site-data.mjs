@@ -19501,7 +19501,6 @@ export const JSP_BY_ROUTE = {
   '/space-3d/fast-radio-bursts.html': 'space/fast-radio-bursts.jsp',
   '/space-3d/yarkovsky-effect.html': 'space/yarkovsky-effect.jsp',
   '/space-3d/torino-impact-hazard-scale.html': 'space/torino-impact-hazard-scale.jsp',
-  '/space-3d/kp-index-geomagnetic-storm-scale.html': 'space/kp-index-geomagnetic-storm-scale.jsp',
   '/space-3d/chariklo-rings.html': 'space/chariklo-rings.jsp',
   '/space-3d/dart-asteroid-deflection.html': 'space/dart-asteroid-deflection.jsp',
   '/space-3d/gps-time-dilation.html': 'space/gps-time-dilation.jsp',
