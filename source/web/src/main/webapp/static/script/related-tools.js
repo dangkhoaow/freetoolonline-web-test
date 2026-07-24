@@ -383,6 +383,7 @@ try {
     { title: "Mapusaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/mapusaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Ophthalmosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/ophthalmosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Elasmotherium 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/elasmotherium.html", include: !1, tags: "dinosaur-3d" },
+    { title: "Austroraptor 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/austroraptor.html", include: !1, tags: "dinosaur-3d" },
     { title: "Suchomimus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/suchomimus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Ouranosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/ouranosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Archaeopteryx 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/archaeopteryx.html", include: !1, tags: "dinosaur-3d" },
