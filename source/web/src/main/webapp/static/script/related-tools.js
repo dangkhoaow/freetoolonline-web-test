@@ -713,6 +713,7 @@ try {
     { title: "DART Asteroid Deflection 3D Explorer", url: "https://freetoolonline.com/space-3d/dart-asteroid-deflection.html", include: !1, tags: "space-3d" },
     { title: "GPS Time Dilation 3D Explorer", url: "https://freetoolonline.com/space-3d/gps-time-dilation.html", include: !1, tags: "space-3d" },
     { title: "Curiosity Rover Traverse 3D Explorer", url: "https://freetoolonline.com/space-3d/curiosity-rover-traverse.html", include: !1, tags: "space-3d" },
+    { title: "Great Red Spot Jupiter 3D Explorer", url: "https://freetoolonline.com/space-3d/great-red-spot-jupiter.html", include: !1, tags: "space-3d" },
     { title: "Photon Sphere & ISCO 3D Explorer", url: "https://freetoolonline.com/space-3d/photon-sphere-isco-explorer.html", include: !1, tags: "space-3d" },
     { title: "Proxima Centauri System 3D Explorer", url: "https://freetoolonline.com/space-3d/proxima-centauri-system.html", include: !1, tags: "space-3d" },
     { title: "Globular Star Swarm 3D Explorer", url: "https://freetoolonline.com/space-3d/globular-cluster.html", include: !1, tags: "space-3d" },
