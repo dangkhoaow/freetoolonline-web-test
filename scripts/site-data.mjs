@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/tdee-calorie-calculator-vs-alternatives.html',
+  '/guides/tdee-calorie-calculator-step-by-step.html',
+  '/guides/tdee-calorie-calculator-when.html',
   '/guides/css-grid-layout-generator-vs-alternatives.html',
   '/guides/css-grid-layout-generator-step-by-step.html',
   '/guides/css-grid-layout-generator-when.html',
@@ -12743,6 +12746,7 @@ export const ALIAS_ROUTES = {
   '/barcode-generator.html': '/utility-tools/barcode-generator.html',
   '/css-box-shadow-generator.html': '/developer-tools/css-box-shadow-generator.html',
   '/css-grid-generator.html': '/developer-tools/css-grid-generator.html',
+  '/tdee-calorie-calculator.html': '/utility-tools/tdee-calorie-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -23431,6 +23435,10 @@ export const JSP_BY_ROUTE = {
   '/guides/de/css-grid-layout-generator-step-by-step.html': 'guide/de/css-grid-layout-generator-step-by-step.jsp',
   '/guides/de/css-grid-layout-generator-when.html': 'guide/de/css-grid-layout-generator-when.jsp',
   '/guides/de/css-grid-layout-generator-vs-alternatives.html': 'guide/de/css-grid-layout-generator-vs-alternatives.jsp',
+  '/utility-tools/tdee-calorie-calculator.html': 'utility/tdee-calorie-calculator.jsp',
+  '/guides/tdee-calorie-calculator-when.html': 'guide/tdee-calorie-calculator-when.jsp',
+  '/guides/tdee-calorie-calculator-step-by-step.html': 'guide/tdee-calorie-calculator-step-by-step.jsp',
+  '/guides/tdee-calorie-calculator-vs-alternatives.html': 'guide/tdee-calorie-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
