@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/random-team-group-generator-vs-alternatives.html',
+  '/guides/random-team-group-generator-step-by-step.html',
+  '/guides/random-team-group-generator-when.html',
   '/guides/user-agent-parser-vs-alternatives.html',
   '/guides/de/user-agent-parser-vs-alternatives.html',
   '/guides/id/user-agent-parser-vs-alternatives.html',
@@ -12679,6 +12682,10 @@ export const ALIAS_ROUTES = {
   '/mapusaurus.html': '/dinosaur-3d/mapusaurus.html',
   // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-24): flat-slug alias for ophthalmosaurus.
   '/ophthalmosaurus.html': '/dinosaur-3d/ophthalmosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-24): flat-slug alias for elasmotherium
+  // (plus the popular nickname as a synonym alias, gate 4 dedup).
+  '/elasmotherium.html': '/dinosaur-3d/elasmotherium.html',
+  '/siberian-unicorn.html': '/dinosaur-3d/elasmotherium.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -13051,6 +13058,7 @@ export const ALIAS_ROUTES = {
   '/aspect-ratio-calculator.html': '/utility-tools/aspect-ratio-calculator.html',
   '/subnet-calculator.html': '/utility-tools/subnet-calculator.html',
   '/user-agent-parser.html': '/developer-tools/user-agent-parser.html',
+  '/random-team-generator.html': '/utility-tools/random-team-generator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -16870,6 +16878,15 @@ export const JSP_BY_ROUTE = {
   // decimation-blocked lead by dropping 152 tiny print-support components
   // before decimating, preserving the body + both eye bulges intact.
   '/dinosaur-3d/ophthalmosaurus.html': 'dinosaur/ophthalmosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-24): Elasmotherium
+  // viewer - new heavy-mammal archetype (quad body, single nasalBoss feat,
+  // additive branch in this page's own d3dBuildDino copy), the "Siberian
+  // unicorn" giant Pleistocene rhino - not a dinosaur, same category as the
+  // already-shipped woolly-mammoth/ground-sloth/smilodon/brontotherium. Model-
+  // first via ftol-vm-assets elasmotherium.glb (CC-BY 4.0, Printables "Pan
+  // Wolodyjowski") - new bare-STL conversion path (tools/stl2glb.py), +90deg
+  // rotation about X empirically solved via 4 candidate render views.
+  '/dinosaur-3d/elasmotherium.html': 'dinosaur/elasmotherium.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -23938,6 +23955,10 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/user-agent-parser-vs-alternatives.html': 'guide/vi/user-agent-parser-vs-alternatives.jsp',
   '/guides/es/user-agent-parser-vs-alternatives.html': 'guide/es/user-agent-parser-vs-alternatives.jsp',
   '/guides/pt/user-agent-parser-vs-alternatives.html': 'guide/pt/user-agent-parser-vs-alternatives.jsp',
+  '/utility-tools/random-team-generator.html': 'utility/random-team-generator.jsp',
+  '/guides/random-team-group-generator-when.html': 'guide/random-team-group-generator-when.jsp',
+  '/guides/random-team-group-generator-step-by-step.html': 'guide/random-team-group-generator-step-by-step.jsp',
+  '/guides/random-team-group-generator-vs-alternatives.html': 'guide/random-team-group-generator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
