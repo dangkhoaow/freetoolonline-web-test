@@ -12899,6 +12899,8 @@ export const ALIAS_ROUTES = {
   '/siberian-unicorn.html': '/dinosaur-3d/elasmotherium.html',
   // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-25): flat-slug alias for austroraptor.
   '/austroraptor.html': '/dinosaur-3d/austroraptor.html',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-25): flat-slug alias for magyarosaurus.
+  '/magyarosaurus.html': '/dinosaur-3d/magyarosaurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -13173,6 +13175,7 @@ export const ALIAS_ROUTES = {
   '/fast-radio-bursts.html': '/space-3d/fast-radio-bursts.html',
   '/yarkovsky-effect.html': '/space-3d/yarkovsky-effect.html',
   '/torino-impact-hazard-scale.html': '/space-3d/torino-impact-hazard-scale.html',
+  '/voyager-interstellar-position.html': '/space-3d/voyager-interstellar-position.html',
   '/kp-index-geomagnetic-storm-scale.html': '/space-3d/kp-index-geomagnetic-storm-scale.html',
   '/helioseismology-sun-oscillation.html': '/space-3d/helioseismology-sun-oscillation.html',
   '/olympus-mons-mars-volcano.html': '/space-3d/olympus-mons-mars-volcano.html',
@@ -17116,6 +17119,14 @@ export const JSP_BY_ROUTE = {
   // skull. Model-first via ftol-vm-assets austroraptor.glb (CC-BY-SA 4.0,
   // Printables "DragonArtist15"), sourced + vendored in a prior fire.
   '/dinosaur-3d/austroraptor.html': 'dinosaur/austroraptor.jsp',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-25): Magyarosaurus
+  // viewer - sauropod archetype (no new feature flag needed; the existing
+  // sauropod branch already reads as a correctly-standing dwarf sauropod at
+  // this species' scale). Model-first via ftol-vm-assets magyarosaurus.glb
+  // (CC-BY 4.0, Printables "Pan Wolodyjowski"), sourced + vendored this fire;
+  // orientation solved via a two-step baked rotation (Y+90 then X+90),
+  // empirically verified via headless render before export.
+  '/dinosaur-3d/magyarosaurus.html': 'dinosaur/magyarosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -19709,6 +19720,7 @@ export const JSP_BY_ROUTE = {
   '/space-3d/fast-radio-bursts.html': 'space/fast-radio-bursts.jsp',
   '/space-3d/yarkovsky-effect.html': 'space/yarkovsky-effect.jsp',
   '/space-3d/torino-impact-hazard-scale.html': 'space/torino-impact-hazard-scale.jsp',
+  '/space-3d/voyager-interstellar-position.html': 'space/voyager-interstellar-position.jsp',
   '/space-3d/kp-index-geomagnetic-storm-scale.html': 'space/kp-index-geomagnetic-storm-scale.jsp',
   '/space-3d/helioseismology-sun-oscillation.html': 'space/helioseismology-sun-oscillation.jsp',
   '/space-3d/olympus-mons-mars-volcano.html': 'space/olympus-mons-mars-volcano.jsp',

@@ -1,0 +1,398 @@
+<script>
+    // 3D scene archetype skeleton (Voyager Interstellar Position) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Built LEAN, forked from the torino-impact-hazard-scale
+    // shape - ONE scene only (a distance-tracker explorer). All geometry is
+    // procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not a live-telemetry or orbital-dynamics
+    // simulation. A teaching scene: the Sun at the center, a scaled-down
+    // radial marker for Earth's orbit and the Kuiper Belt for context, a
+    // simplified spherical heliopause shell, and Voyager 1 / Voyager 2
+    // markers placed at their real (as-of-date) distance from the Sun,
+    // compressed onto a single screen. Marker DIRECTION (angle around the
+    // Sun) is illustrative only, not the spacecraft's real sky position.
+    //
+    // Published figures (cross-checked via WebSearch 2026-07-24):
+    //   - Voyager 1: launched 1977-09-05; crossed the heliopause 2012-08-25
+    //     (NASA JPL); distance from the Sun approximately 170 AU as of
+    //     2026-01-09 (about 25.43 billion km), increasing at roughly 3.6
+    //     AU/year since it has coasted at a constant ~17 km/s with no
+    //     propulsion since its last planetary flyby (Saturn, 1980); one-way
+    //     radio signal light-time approximately 23.5 hours; expected to
+    //     reach one light-day from Earth (~173.8 AU) around 2026-11-18
+    //     (NASA JPL, Voyager project manager Suzy Dodd).
+    //   - Voyager 2: launched 1977-08-20; crossed the heliopause 2018-11-05
+    //     (NASA JPL); distance from the Sun approximately 142.5 AU as of
+    //     early 2026 (about 21.32 billion km); crossed the termination
+    //     shock (the heliosheath's inner boundary) at 84 AU in August 2007.
+    //   - The heliopause is the outer edge of the heliosphere where solar
+    //     wind pressure balances the interstellar medium; it is asymmetric
+    //     (not a perfect sphere), roughly 110-122 AU where each Voyager
+    //     actually crossed it. This scene shows it as a simplified sphere
+    //     and discloses the simplification.
+    //   - The Kuiper Belt extends roughly 30-50 AU from the Sun (NASA).
+    //   - Both spacecraft still transmit limited science data (magnetometer
+    //     and plasma-wave instruments); NASA has been powering down
+    //     instruments for decades as their plutonium-238 RTGs lose about 4
+    //     watts of power per year.
+    //
+    // Distinct from pale-blue-dot.html (a single historic 1990 photograph
+    // looking back at Earth) and kuiper-belt-oort-cloud.html (the belt/cloud
+    // structure itself, cross-linked here for outer-scale context) - this
+    // page tracks the two spacecraft's real, still-changing distance from
+    // the Sun and the interstellar-space milestone each one already passed.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'voyagerinterstellarposition';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'voyagerinterstellarposition'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Real published anchor figures (launch date + a stated as-of distance).
+    // The scrub slider interpolates a straight line between (launchYear, 0
+    // AU) and (2026, currentAu) - an average-rate approximation that
+    // smooths over the several planetary-flyby years before each probe
+    // settled into a constant-velocity interstellar coast. The disclosed
+    // "as of" distance itself is the real NASA JPL-sourced figure.
+    var T3D_VOYAGER = {
+        v1: {
+            label: 'Voyager 1', launchYear: 1977.68, currentAu: 170, asOf: '2026-01-09',
+            heliopauseIso: '2012-08-25', lightHours: '23.5', angleDeg: 35,
+            note: 'Crossed the heliopause into interstellar space on 2012-08-25. Coasting at a constant ~17 km/s (no propulsion) since its last planetary flyby, Saturn in 1980, so its distance grows about 3.6 AU every year. Expected to reach one light-day from Earth (~173.8 AU) around 2026-11-18.'
+        },
+        v2: {
+            label: 'Voyager 2', launchYear: 1977.63, currentAu: 142.5, asOf: 'early 2026',
+            heliopauseIso: '2018-11-05', lightHours: null, angleDeg: 200,
+            note: 'Crossed the heliopause into interstellar space on 2018-11-05, six years after Voyager 1. It visited all four giant planets (Jupiter, Saturn, Uranus, Neptune) before coasting outward, so it is closer to the Sun than Voyager 1 despite launching first. It crossed the termination shock - the heliosheath’s inner boundary - at 84 AU in August 2007.'
+        }
+    };
+    var T3D_KUIPER_AU = 40;   // Kuiper Belt spans roughly 30-50 AU; 40 AU marks its middle.
+    var T3D_HELIOPAUSE_AU = 120; // simplified spherical average of the ~110-122 AU real (asymmetric) crossing range.
+
+    function t3dAuToScene(au) { return 2.2 + 0.46 * Math.sqrt(Math.max(0, au)); }
+
+    function t3dVoyagerInterstellarPosition(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+
+        // Starfield backdrop
+        var starN = shell.low ? 300 : 600;
+        var starPos = new Float32Array(starN * 3);
+        for (var s = 0; s < starN; s++) {
+            var r = 20 + Math.random() * 20;
+            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+            starPos[s * 3] = r * Math.sin(ph) * Math.cos(th);
+            starPos[s * 3 + 1] = r * Math.cos(ph) * 0.5;
+            starPos[s * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+        }
+        var starGeo = new THREE.BufferGeometry();
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        var stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xaad4ff, size: 0.25, sizeAttenuation: true, transparent: true, opacity: 0.65 }));
+        scene.add(stars);
+
+        // Sun (procedural glowing sphere + point light)
+        var sun = new THREE.Mesh(
+            new THREE.SphereGeometry(0.22, 24, 18),
+            new THREE.MeshBasicMaterial({ color: 0xffe08a })
+        );
+        scene.add(sun);
+        var sunGlow = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffcc66, transparent: true, opacity: 0.28 }));
+        scene.add(sunGlow);
+        scene.add(new THREE.PointLight(0xfff2cc, 1.2, 30));
+
+        // Earth's orbit ring (1 AU) - a scale anchor, not a planet model.
+        var earthRingR = t3dAuToScene(1);
+        var earthRing = new THREE.Mesh(new THREE.RingGeometry(earthRingR - 0.01, earthRingR + 0.01, 64), new THREE.MeshBasicMaterial({ color: 0x4fc3f7, transparent: true, opacity: 0.55, side: THREE.DoubleSide }));
+        earthRing.rotation.x = Math.PI / 2;
+        scene.add(earthRing);
+
+        // Kuiper Belt (torus around 30-50 AU, shown at its 40 AU midpoint)
+        var kuiperR = t3dAuToScene(T3D_KUIPER_AU);
+        var kuiper = new THREE.Mesh(
+            new THREE.TorusGeometry(kuiperR, t3dAuToScene(50) - t3dAuToScene(30), 8, 96),
+            new THREE.MeshBasicMaterial({ color: 0x8d99ae, transparent: true, opacity: 0.16, side: THREE.DoubleSide })
+        );
+        kuiper.rotation.x = Math.PI / 2;
+        scene.add(kuiper);
+
+        // Heliopause (simplified spherical shell, wireframe)
+        var heliopauseR = t3dAuToScene(T3D_HELIOPAUSE_AU);
+        var heliopause = new THREE.Mesh(
+            new THREE.SphereGeometry(heliopauseR, 24, 16),
+            new THREE.MeshBasicMaterial({ color: 0x66bb6a, wireframe: true, transparent: true, opacity: 0.22 })
+        );
+        scene.add(heliopause);
+
+        function makeProbe(color) {
+            var g = new THREE.Group();
+            var body = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.5, 8), new THREE.MeshStandardMaterial({ color: color, roughness: 0.6, metalness: 0.3, emissive: color, emissiveIntensity: 0.25 }));
+            body.rotation.x = Math.PI / 2;
+            g.add(body);
+            var dish = new THREE.Mesh(new THREE.CircleGeometry(0.22, 16), new THREE.MeshBasicMaterial({ color: 0xeeeeee, side: THREE.DoubleSide }));
+            dish.position.z = 0.32;
+            g.add(dish);
+            var glow = new THREE.Mesh(new THREE.SphereGeometry(0.34, 12, 10), new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.22 }));
+            g.add(glow);
+            return g;
+        }
+        var v1Mesh = makeProbe(0xffab40);
+        var v2Mesh = makeProbe(0x64ffda);
+        scene.add(v1Mesh);
+        scene.add(v2Mesh);
+
+        function rayLine(color) {
+            var geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0)]);
+            return new THREE.Line(geo, new THREE.LineDashedMaterial({ color: color, dashSize: 0.25, gapSize: 0.15, transparent: true, opacity: 0.55 }));
+        }
+        var v1Ray = rayLine(0xffab40), v2Ray = rayLine(0x64ffda);
+        scene.add(v1Ray);
+        scene.add(v2Ray);
+
+        var missionYear = 2026; // scrub position, 1977..2026
+        var selectedKey = 'v1'; // which facts card is shown
+
+        function auAtYear(v, year) {
+            var elapsed = year - v.launchYear;
+            if (elapsed <= 0) return 0;
+            var full = 2026 - v.launchYear;
+            var frac = Math.min(1, elapsed / full);
+            return v.currentAu * frac;
+        }
+
+        function placeProbe(mesh, ray, v, year) {
+            var au = auAtYear(v, year);
+            var r = t3dAuToScene(au);
+            var a = v.angleDeg * Math.PI / 180;
+            var x = r * Math.cos(a), z = r * Math.sin(a);
+            mesh.position.set(x, 0.15, z);
+            mesh.lookAt(0, 0.15, 0);
+            var pts = [new THREE.Vector3(0, 0, 0), new THREE.Vector3(x, 0.15, z)];
+            ray.geometry.setFromPoints(pts);
+            ray.computeLineDistances();
+            return au;
+        }
+
+        function fmtAu(au) { return au.toFixed(1) + ' AU'; }
+
+        function panelHtml() {
+            if (selectedKey === 'sun') {
+                return '<h3>The Sun</h3><p>Center of the scale. Both Voyager probes launched from Earth’s orbit (1 AU, the blue ring) in 1977 and have been heading outward ever since.</p>' +
+                    '<p class="t3d-note">Educational approximation - distances are compressed with a square-root scale so the Kuiper Belt, the heliopause, and both probes fit in one view; the real gaps between them are far larger in a straight linear scale.</p>';
+            }
+            if (selectedKey === 'earthorbit') {
+                return '<h3>Earth’s orbit (1 AU)</h3><p>1 astronomical unit (AU) is the average Earth-Sun distance, about 150 million km. It is the scale anchor every other distance on this page is measured against.</p>';
+            }
+            if (selectedKey === 'kuiperbelt') {
+                return '<h3>Kuiper Belt</h3><p>A disk of icy bodies extending roughly 30 to 50 AU from the Sun (NASA). Pluto orbits inside it. Both Voyagers crossed this region decades before reaching interstellar space.</p>' +
+                    '<p class="t3d-note">For the belt’s structure and the more distant Oort Cloud, see the <a href="/space-3d/kuiper-belt-oort-cloud.html">Kuiper Belt and Oort Cloud 3D Explorer</a>.</p>';
+            }
+            if (selectedKey === 'heliopause') {
+                return '<h3>The heliopause</h3><p>The outer edge of the heliosphere, where the pressure of the solar wind balances the surrounding interstellar medium. Voyager 1 crossed it at about 121 AU (2012-08-25); Voyager 2 crossed it at about 119 AU (2018-11-05).</p>' +
+                    '<p class="t3d-note">Educational approximation - the real heliopause is asymmetric (comet-shaped, pushed by the Sun’s motion through the galaxy), not the plain sphere shown here at an averaged ~120 AU.</p>';
+            }
+            var v = T3D_VOYAGER[selectedKey];
+            var au = auAtYear(v, missionYear);
+            return '<h3>' + v.label + '</h3>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Distance at year ' + Math.round(missionYear) + '</td><td>' + fmtAu(au) + '</td></tr>' +
+                '<tr><td>Real distance, as of</td><td>' + fmtAu(v.currentAu) + ' (' + v.asOf + ', NASA JPL)</td></tr>' +
+                '<tr><td>Crossed the heliopause</td><td>' + v.heliopauseIso + '</td></tr>' +
+                (v.lightHours ? '<tr><td>One-way radio signal delay</td><td>about ' + v.lightHours + ' hours</td></tr>' : '') +
+                '</table>' +
+                '<p>' + v.note + '</p>' +
+                '<p class="t3d-note">The scrub slider is a straight-line approximation between launch (0 AU) and today’s published distance - it smooths over the years each probe spent flying past planets before settling into a constant-speed coast. The marker’s DIRECTION around the Sun is illustrative, not the spacecraft’s real position in the sky.</p>';
+        }
+
+        var selEl = document.getElementById('t3dVoyagerObject');
+        var scrubEl = document.getElementById('t3dVoyagerScrub');
+        var scrubLab = document.getElementById('t3dVoyagerScrubLabel');
+
+        function apply() {
+            if (selEl && selEl.value !== selectedKey) selEl.value = selectedKey;
+            placeProbe(v1Mesh, v1Ray, T3D_VOYAGER.v1, missionYear);
+            placeProbe(v2Mesh, v2Ray, T3D_VOYAGER.v2, missionYear);
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ year: missionYear, sel: selectedKey }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.year === 'number' && store.year >= 1977 && store.year <= 2026) missionYear = store.year;
+        if (store.sel && (T3D_VOYAGER[store.sel] || store.sel === 'sun' || store.sel === 'earthorbit' || store.sel === 'kuiperbelt' || store.sel === 'heliopause')) selectedKey = store.sel;
+        if (scrubEl) { scrubEl.value = String(Math.round(missionYear)); }
+        if (scrubLab) { scrubLab.textContent = Math.round(missionYear) + ' (' + Math.max(0, Math.round(missionYear - 1977)) + ' yrs since launch)'; }
+        apply();
+
+        if (selEl) selEl.addEventListener('change', function () {
+            selectedKey = selEl.value || selectedKey;
+            apply();
+        });
+        var playing = false;
+        var playBtn = document.getElementById('t3dVoyagerPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            if (missionYear >= 2026) missionYear = 1977;
+            playing = !playing;
+        });
+        if (scrubEl) scrubEl.addEventListener('input', function () {
+            missionYear = Math.max(1977, Math.min(2026, parseInt(scrubEl.value || '2026', 10)));
+            playing = false;
+            if (scrubLab) scrubLab.textContent = Math.round(missionYear) + ' (' + Math.max(0, Math.round(missionYear - 1977)) + ' yrs since launch)';
+            apply();
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Scrub the mission year or pick an object below.');
+        return function animate(dt) {
+            stars.rotation.y += dt * 0.00002;
+            sun.rotation.y += dt * 0.0003;
+            sunGlow.scale.setScalar(1 + 0.04 * Math.sin(performance.now() * 0.0015));
+            v1Mesh.rotation.y += dt * 0.0006;
+            v2Mesh.rotation.y += dt * 0.0006;
+
+            if (playing) {
+                missionYear += dt * 0.0000035 * (2026 - 1977);
+                if (missionYear >= 2026) { missionYear = 2026; playing = false; }
+                if (scrubEl) scrubEl.value = String(Math.round(missionYear));
+                if (scrubLab) scrubLab.textContent = Math.round(missionYear) + ' (' + Math.max(0, Math.round(missionYear - 1977)) + ' yrs since launch)';
+                placeProbe(v1Mesh, v1Ray, T3D_VOYAGER.v1, missionYear);
+                placeProbe(v2Mesh, v2Ray, T3D_VOYAGER.v2, missionYear);
+                if (Math.round(missionYear) % 5 === 0) { t3dInfo(panelHtml()); }
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { voyagerinterstellarposition: 't3dVoyagerControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { voyagerinterstellarposition: { radius: 14, maxR: 40, minR: 3, phi: 1.1, theta: 0.5, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dVoyagerInterstellarPosition(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
