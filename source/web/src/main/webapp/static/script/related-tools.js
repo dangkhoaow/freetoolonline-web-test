@@ -718,6 +718,7 @@ try {
     { title: "Photon Sphere & ISCO 3D Explorer", url: "https://freetoolonline.com/space-3d/photon-sphere-isco-explorer.html", include: !1, tags: "space-3d" },
     { title: "Relativistic Jets & Doppler Beaming 3D Explorer", url: "https://freetoolonline.com/space-3d/relativistic-jets-agn.html", include: !1, tags: "space-3d" },
     { title: "Olbers' Paradox 3D Explorer", url: "https://freetoolonline.com/space-3d/olbers-paradox.html", include: !1, tags: "space-3d" },
+    { title: "Io Plasma Torus 3D Explorer", url: "https://freetoolonline.com/space-3d/io-plasma-torus.html", include: !1, tags: "space-3d" },
     { title: "Proxima Centauri System 3D Explorer", url: "https://freetoolonline.com/space-3d/proxima-centauri-system.html", include: !1, tags: "space-3d" },
     { title: "Globular Star Swarm 3D Explorer", url: "https://freetoolonline.com/space-3d/globular-cluster.html", include: !1, tags: "space-3d" },
     { title: "Titan Methane Lakes 3D Explorer", url: "https://freetoolonline.com/space-3d/titan-methane-lakes.html", include: !1, tags: "space-3d" },
