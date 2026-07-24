@@ -12622,6 +12622,8 @@ export const ALIAS_ROUTES = {
   '/pinocchio-rex.html': '/dinosaur-3d/qianzhousaurus.html',
   // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-24): flat-slug alias for mapusaurus.
   '/mapusaurus.html': '/dinosaur-3d/mapusaurus.html',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-24): flat-slug alias for ophthalmosaurus.
+  '/ophthalmosaurus.html': '/dinosaur-3d/ophthalmosaurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -16802,6 +16804,14 @@ export const JSP_BY_ROUTE = {
   // known from a 7-9 individual bonebed. Model-first via ftol-vm-assets
   // mapusaurus.glb (CC-BY-SA 4.0, Printables "seth the yutyrannus", commit 9e11585).
   '/dinosaur-3d/mapusaurus.html': 'dinosaur/mapusaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-24): Ophthalmosaurus
+  // viewer - marine archetype (dorsalFin feat, same code path as ichthyosaurus),
+  // a huge-eyed ichthyosaur distinguished by the largest eyes of any known
+  // vertebrate. Model-first via ftol-vm-assets ophthalmosaurus.glb (CC-BY 4.0,
+  // Printables "chrism1994", commit 00784ea) - resolved a prior fire's
+  // decimation-blocked lead by dropping 152 tiny print-support components
+  // before decimating, preserving the body + both eye bulges intact.
+  '/dinosaur-3d/ophthalmosaurus.html': 'dinosaur/ophthalmosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
