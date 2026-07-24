@@ -1,0 +1,346 @@
+<script>
+    // 3D scene archetype skeleton (Solar Flare Classification) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Built LEAN, forked from the helioseismology-sun-oscillation
+    // single-scene shape. All geometry is procedural (sphere + torus loop +
+    // point-sprite burst + a ring sweep on the Earth companion) - no CDN asset
+    // is used or required.
+    //
+    // EDUCATIONAL APPROXIMATION, not a physical simulation. Flare brightness,
+    // loop size, particle-burst intensity, and the Earth ring's angular sweep
+    // are an artistic stand-in for scale, not a rendered radiative-transfer or
+    // magnetic-reconnection model, and not a precise ground-truth blackout
+    // footprint map. This is disclosed in the info panel and the FAQ.
+    //
+    // Published figures (cross-checked via WebSearch/NOAA SWPC 2026-07-24/25):
+    //   - GOES classifies solar flares by peak soft X-ray flux in the 1-8
+    //     angstrom band into letter classes, each a power-of-10 step: A <1e-7
+    //     W/m^2, B 1e-7 to <1e-6, C 1e-6 to <1e-5, M 1e-5 to <1e-4, X >=1e-4
+    //     W/m^2 (open-ended, no formal upper cap). Each letter subdivides
+    //     linearly 1.0-9.9 (e.g. M5 = 5e-5 W/m^2, X1 = 1e-4 W/m^2).
+    //   - NOAA SWPC's 5-level Radio Blackout (R) scale ties directly to flare
+    //     class: R1=M1 (1e-5 W/m^2, minor), R2=M5 (5e-5, moderate - SWPC issues
+    //     an alert at this level), R3=X1 (1e-4, strong), R4=X10 (1e-3, severe),
+    //     R5=X20 (2e-3, extreme).
+    //   - The largest confirmed flare on record is the X28 flare of 4 Nov 2003
+    //     (the "Halloween storms"); the GOES sensor saturated near its peak, so
+    //     the true value may have been higher.
+    //   - Distinct from coronal-mass-ejection.html (the plasma-ejection
+    //     trajectory), aurora.html / kp-index-geomagnetic-storm-scale.html /
+    //     carrington-event.html (geomagnetic-storm effects and one historic
+    //     event), and sunspot-cycle.html (11-year spot-count cycle) - this page
+    //     is specifically the GOES X-ray flare MAGNITUDE SCALE itself.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'solarflareclassification';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'solarflareclassification'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 50, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.05, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Real published figures (see header comment for sources: NOAA SWPC).
+    var T3D_SF_CLASSES = [
+        { key: 'A', label: 'A (quiet)', flux: 'below 1e-7 W/m^2', rscale: null, rscaleLabel: 'No NOAA Radio Blackout (R) rating', note: 'Background/quiet-Sun level - not counted as a real flare.', level: 0 },
+        { key: 'B', label: 'B', flux: '1e-7 to below 1e-6 W/m^2', rscale: null, rscaleLabel: 'No NOAA Radio Blackout (R) rating', note: 'Weak; no measurable effect on Earth.', level: 1 },
+        { key: 'C', label: 'C', flux: '1e-6 to below 1e-5 W/m^2', rscale: null, rscaleLabel: 'No NOAA Radio Blackout (R) rating', note: 'Common; minor or no effect on Earth.', level: 2 },
+        { key: 'M1', label: 'M1', flux: '1e-5 W/m^2', rscale: 'R1', rscaleLabel: 'R1 - Minor', note: 'Weak HF radio degradation on the sunlit side, strongest near the sub-solar point.', level: 3 },
+        { key: 'M5', label: 'M5', flux: '5e-5 W/m^2', rscale: 'R2', rscaleLabel: 'R2 - Moderate', note: 'Limited HF radio blackout for tens of minutes. NOAA SWPC issues an alert at this level.', level: 4 },
+        { key: 'X1', label: 'X1', flux: '1e-4 W/m^2', rscale: 'R3', rscaleLabel: 'R3 - Strong', note: 'Wide-area HF blackout for about an hour over the sunlit hemisphere.', level: 5 },
+        { key: 'X10', label: 'X10', flux: '1e-3 W/m^2', rscale: 'R4', rscaleLabel: 'R4 - Severe', note: 'HF blackout over most of the sunlit hemisphere for one to two hours.', level: 6 },
+        { key: 'X20', label: 'X20', flux: '2e-3 W/m^2', rscale: 'R5', rscaleLabel: 'R5 - Extreme', note: 'Complete HF radio blackout across the entire sunlit hemisphere. The largest confirmed flare on record, X28 on 4 Nov 2003, exceeded this level before the GOES sensor saturated.', level: 7 },
+    ];
+
+    function t3dSolarFlareClassification(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x05070f, 1);
+        scene.add(new THREE.AmbientLight(0xfff2d8, 0.5));
+
+        var starN = shell.low ? 180 : 380;
+        var starPos = new Float32Array(starN * 3);
+        for (var s = 0; s < starN; s++) {
+            var r = 90 + Math.random() * 120;
+            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+            starPos[s * 3] = r * Math.sin(ph) * Math.cos(th);
+            starPos[s * 3 + 1] = r * Math.cos(ph);
+            starPos[s * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+        }
+        var starGeo = new THREE.BufferGeometry();
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xbfd6ff, size: 0.5, sizeAttenuation: true, transparent: true, opacity: 0.5 })));
+
+        var SUN_R = 9;
+        var sunMesh = new THREE.Mesh(
+            new THREE.SphereGeometry(SUN_R, shell.low ? 32 : 56, shell.low ? 22 : 40),
+            new THREE.MeshStandardMaterial({ color: 0xff8a00, emissive: 0xffa726, emissiveIntensity: 0.55, roughness: 0.9 })
+        );
+        sunMesh.position.set(-14, 0, 0);
+        scene.add(sunMesh);
+        var sunLight = new THREE.PointLight(0xfff2d0, 700, 0, 1.6);
+        sunLight.position.copy(sunMesh.position);
+        scene.add(sunLight);
+
+        // ---- flare loop: a torus arc anchored on the sun's surface ----
+        var flareGroup = new THREE.Group();
+        flareGroup.position.copy(sunMesh.position);
+        var loopGeo = new THREE.TorusGeometry(3.2, 0.35, 12, 48, Math.PI * 1.5);
+        var loopMat = new THREE.MeshBasicMaterial({ color: 0xffe082, transparent: true, opacity: 0.85 });
+        var loopMesh = new THREE.Mesh(loopGeo, loopMat);
+        loopMesh.position.set(SUN_R * 0.7, SUN_R * 0.55, SUN_R * 0.3);
+        loopMesh.rotation.set(0.6, 0.3, 0.4);
+        flareGroup.add(loopMesh);
+        var flareGlow = new THREE.Mesh(
+            new THREE.SphereGeometry(1.4, 16, 12),
+            new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9 })
+        );
+        flareGlow.position.copy(loopMesh.position);
+        flareGroup.add(flareGlow);
+        scene.add(flareGroup);
+
+        // ---- particle burst launched from the flare site ----
+        var MAX_PARTICLES = shell.low ? 160 : 340;
+        var burstGeo = new THREE.BufferGeometry();
+        var burstPos = new Float32Array(MAX_PARTICLES * 3);
+        var burstVel = [];
+        for (var i = 0; i < MAX_PARTICLES; i++) {
+            burstPos[i * 3] = loopMesh.position.x; burstPos[i * 3 + 1] = loopMesh.position.y; burstPos[i * 3 + 2] = loopMesh.position.z;
+            var a1 = Math.random() * Math.PI * 2, a2 = Math.random() * Math.PI * 2;
+            burstVel.push({ x: Math.cos(a1) * 0.4, y: Math.sin(a1) * 0.4 + 0.15, z: Math.sin(a2) * 0.4, life: Math.random() });
+        }
+        burstGeo.setAttribute('position', new THREE.BufferAttribute(burstPos, 3));
+        var burstMat = new THREE.PointsMaterial({ color: 0xffcc66, size: 0.28, sizeAttenuation: true, transparent: true, opacity: 0.9 });
+        var burstPoints = new THREE.Points(burstGeo, burstMat);
+        scene.add(burstPoints);
+
+        // ---- Earth companion + radio-blackout reach ring ----
+        var EARTH_DIST = 26, EARTH_R = 1.7;
+        var earthGroup = new THREE.Group();
+        earthGroup.position.set(EARTH_DIST, -1, 6);
+        var earthMesh = new THREE.Mesh(
+            new THREE.SphereGeometry(EARTH_R, 28, 20),
+            new THREE.MeshStandardMaterial({ color: 0x2f6fb3, roughness: 0.85 })
+        );
+        earthGroup.add(earthMesh);
+        var reachRing = new THREE.Mesh(
+            new THREE.RingGeometry(EARTH_R * 1.25, EARTH_R * 1.55, 48, 1, 0, 0.001),
+            new THREE.MeshBasicMaterial({ color: 0xff5252, side: THREE.DoubleSide, transparent: true, opacity: 0.85 })
+        );
+        reachRing.rotation.x = -Math.PI / 2.4;
+        earthGroup.add(reachRing);
+        scene.add(earthGroup);
+
+        var classIdx = 5; // default to X1 / R3 so the reach ring is visible on first paint
+        var color = new THREE.Color();
+
+        function panelHtml() {
+            var c = T3D_SF_CLASSES[classIdx];
+            return '<h3>GOES flare class ' + c.label + '</h3>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Peak soft X-ray flux (1-8 angstrom band)</td><td>' + c.flux + '</td></tr>' +
+                '<tr><td>NOAA Radio Blackout rating</td><td>' + c.rscaleLabel + '</td></tr>' +
+                '<tr><td>Real-world effect</td><td>' + c.note + '</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation - flare brightness, particle-burst size, and the Earth reach ring are scaled for visibility and are not a rendered physics model or a precise blackout footprint map. The flux and R-scale figures above are the real NOAA SWPC ones.</p>';
+        }
+
+        function saveState() { try { t3dSaveStore({ classIdx: classIdx }); } catch (e) {} }
+
+        var store = t3dLoadStore();
+        if (typeof store.classIdx === 'number' && store.classIdx >= 0 && store.classIdx < T3D_SF_CLASSES.length) classIdx = store.classIdx;
+
+        var slider = document.getElementById('t3dFlareSlider');
+        var labelEl = document.getElementById('t3dFlareLabel');
+        if (slider) slider.value = String(classIdx);
+
+        function applyClass() {
+            var c = T3D_SF_CLASSES[classIdx];
+            if (labelEl) labelEl.textContent = 'Class ' + c.label + ' (' + c.rscaleLabel + ')';
+            var frac = c.level / (T3D_SF_CLASSES.length - 1);
+            var scale = 0.35 + frac * 1.5;
+            loopMesh.scale.setScalar(scale);
+            flareGlow.scale.setScalar(0.6 + frac * 2.2);
+            var glow = 0.15 + frac * 0.9;
+            loopMat.opacity = Math.min(1, 0.35 + frac * 0.7);
+            color.setHSL(0.12 - frac * 0.05, 1, Math.min(0.92, 0.55 + frac * 0.4));
+            flareGlow.material.color.copy(color);
+            sunMesh.material.emissiveIntensity = 0.4 + frac * 0.9;
+            // reach ring: hidden for A/B/C (no R-scale), grows toward a near-full
+            // sweep at X20/R5. thetaLength is an artistic stand-in, not a mapped
+            // ground-truth footprint - disclosed in the panel + FAQ.
+            var sweep = c.rscale ? (0.35 + ((c.level - 3) / 4) * 5.6) : 0.001;
+            reachRing.geometry.dispose();
+            reachRing.geometry = new THREE.RingGeometry(EARTH_R * 1.25, EARTH_R * 1.55, 48, 1, 0, sweep);
+            reachRing.visible = !!c.rscale;
+            t3dInfo(panelHtml());
+        }
+        applyClass();
+
+        if (slider) slider.addEventListener('input', function () {
+            classIdx = Math.max(0, Math.min(T3D_SF_CLASSES.length - 1, parseInt(slider.value || '5', 10)));
+            applyClass();
+            saveState();
+        });
+
+        t3dStatus('Drag to orbit, scroll or pinch to zoom. Drag the class slider to step through A through X20.');
+
+        var t = 0;
+        return function animate(dt) {
+            t += dt / 1000;
+            var frac = T3D_SF_CLASSES[classIdx].level / (T3D_SF_CLASSES.length - 1);
+            var pulse = 1 + Math.sin(t * 3) * 0.05 * (0.3 + frac);
+            flareGlow.scale.multiplyScalar(1); // keep explicit scale set in applyClass
+            flareGlow.material.opacity = 0.75 + Math.sin(t * 5) * 0.15 * (0.3 + frac);
+            var pos = burstGeo.attributes.position;
+            var speed = (0.4 + frac * 2.2) * (dt / 1000) * 8;
+            for (var i = 0; i < MAX_PARTICLES; i++) {
+                var v = burstVel[i];
+                v.life -= dt / 1000 * (0.25 + frac * 0.5);
+                if (v.life <= 0) {
+                    pos.setXYZ(i, loopMesh.position.x, loopMesh.position.y, loopMesh.position.z);
+                    var a1 = Math.random() * Math.PI * 2, a2 = Math.random() * Math.PI * 2;
+                    v.x = Math.cos(a1) * 0.4; v.y = Math.sin(a1) * 0.4 + 0.15; v.z = Math.sin(a2) * 0.4;
+                    v.life = 1;
+                } else {
+                    pos.setX(i, pos.getX(i) + v.x * speed);
+                    pos.setY(i, pos.getY(i) + v.y * speed);
+                    pos.setZ(i, pos.getZ(i) + v.z * speed);
+                }
+            }
+            pos.needsUpdate = true;
+            earthGroup.rotation.y += dt * 0.0002;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { solarflareclassification: 't3dFlareControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { solarflareclassification: { radius: 42, maxR: 110, minR: 16, phi: 1.15, theta: 0.5, targetY: -2, fov: 50 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dSolarFlareClassification(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
