@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/user-agent-parser-vs-alternatives.html',
+  '/guides/user-agent-parser-step-by-step.html',
+  '/guides/user-agent-parser-when.html',
   '/guides/subnet-calculator-ipv4-cidr-vs-alternatives.html',
   '/guides/subnet-calculator-ipv4-cidr-step-by-step.html',
   '/guides/subnet-calculator-ipv4-cidr-when.html',
@@ -12905,6 +12908,7 @@ export const ALIAS_ROUTES = {
   '/great-red-spot-jupiter.html': '/space-3d/great-red-spot-jupiter.html',
   '/photon-sphere-isco-explorer.html': '/space-3d/photon-sphere-isco-explorer.html',
   '/relativistic-jets-agn.html': '/space-3d/relativistic-jets-agn.html',
+  '/olbers-paradox.html': '/space-3d/olbers-paradox.html',
   '/white-dwarf-chandrasekhar-limit.html': '/space-3d/white-dwarf-chandrasekhar-limit.html',
   '/apollo-free-return-trajectory.html': '/space-3d/apollo-free-return-trajectory.html',
   '/linux-online.html': '/utility-tools/linux-online.html',
@@ -12993,6 +12997,7 @@ export const ALIAS_ROUTES = {
   '/scientific-calculator.html': '/utility-tools/scientific-calculator.html',
   '/aspect-ratio-calculator.html': '/utility-tools/aspect-ratio-calculator.html',
   '/subnet-calculator.html': '/utility-tools/subnet-calculator.html',
+  '/user-agent-parser.html': '/developer-tools/user-agent-parser.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -19412,6 +19417,7 @@ export const JSP_BY_ROUTE = {
   '/space-3d/great-red-spot-jupiter.html': 'space/great-red-spot-jupiter.jsp',
   '/space-3d/photon-sphere-isco-explorer.html': 'space/photon-sphere-isco-explorer.jsp',
   '/space-3d/relativistic-jets-agn.html': 'space/relativistic-jets-agn.jsp',
+  '/space-3d/olbers-paradox.html': 'space/olbers-paradox.jsp',
   '/space-3d/white-dwarf-chandrasekhar-limit.html': 'space/white-dwarf-chandrasekhar-limit.jsp',
   '/space-3d/apollo-free-return-trajectory.html': 'space/apollo-free-return-trajectory.jsp',
   '/space-3d/io-volcanoes-realtime.html': 'space/io-volcanoes-realtime.jsp',
@@ -23841,6 +23847,10 @@ export const JSP_BY_ROUTE = {
   '/guides/subnet-calculator-ipv4-cidr-when.html': 'guide/subnet-calculator-ipv4-cidr-when.jsp',
   '/guides/subnet-calculator-ipv4-cidr-step-by-step.html': 'guide/subnet-calculator-ipv4-cidr-step-by-step.jsp',
   '/guides/subnet-calculator-ipv4-cidr-vs-alternatives.html': 'guide/subnet-calculator-ipv4-cidr-vs-alternatives.jsp',
+  '/developer-tools/user-agent-parser.html': 'utility/user-agent-parser.jsp',
+  '/guides/user-agent-parser-when.html': 'guide/user-agent-parser-when.jsp',
+  '/guides/user-agent-parser-step-by-step.html': 'guide/user-agent-parser-step-by-step.jsp',
+  '/guides/user-agent-parser-vs-alternatives.html': 'guide/user-agent-parser-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
