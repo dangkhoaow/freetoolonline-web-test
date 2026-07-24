@@ -15,8 +15,23 @@ export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
   '/guides/cron-expression-parser-vs-alternatives.html',
+  '/guides/de/cron-expression-parser-vs-alternatives.html',
+  '/guides/id/cron-expression-parser-vs-alternatives.html',
+  '/guides/vi/cron-expression-parser-vs-alternatives.html',
+  '/guides/es/cron-expression-parser-vs-alternatives.html',
+  '/guides/pt/cron-expression-parser-vs-alternatives.html',
   '/guides/cron-expression-parser-step-by-step.html',
+  '/guides/de/cron-expression-parser-step-by-step.html',
+  '/guides/id/cron-expression-parser-step-by-step.html',
+  '/guides/vi/cron-expression-parser-step-by-step.html',
+  '/guides/es/cron-expression-parser-step-by-step.html',
+  '/guides/pt/cron-expression-parser-step-by-step.html',
   '/guides/cron-expression-parser-when.html',
+  '/guides/de/cron-expression-parser-when.html',
+  '/guides/id/cron-expression-parser-when.html',
+  '/guides/vi/cron-expression-parser-when.html',
+  '/guides/es/cron-expression-parser-when.html',
+  '/guides/pt/cron-expression-parser-when.html',
   // new-tool-discovery-loop-runbook fire402: random-team-group-generator
   // guides (EN + pt/es/vi/id/de locale fanout). Re-added after a concurrent
   // sibling lane's "fix CI build failure - remove leaked sibling registry
@@ -24058,8 +24073,23 @@ export const JSP_BY_ROUTE = {
   '/guides/de/random-team-group-generator-vs-alternatives.html': 'guide/de/random-team-group-generator-vs-alternatives.jsp',
   '/developer-tools/cron-expression-parser.html': 'utility/cron-expression-parser.jsp',
   '/guides/cron-expression-parser-when.html': 'guide/cron-expression-parser-when.jsp',
+  '/guides/de/cron-expression-parser-when.html': 'guide/de/cron-expression-parser-when.jsp',
+  '/guides/id/cron-expression-parser-when.html': 'guide/id/cron-expression-parser-when.jsp',
+  '/guides/vi/cron-expression-parser-when.html': 'guide/vi/cron-expression-parser-when.jsp',
+  '/guides/es/cron-expression-parser-when.html': 'guide/es/cron-expression-parser-when.jsp',
+  '/guides/pt/cron-expression-parser-when.html': 'guide/pt/cron-expression-parser-when.jsp',
   '/guides/cron-expression-parser-step-by-step.html': 'guide/cron-expression-parser-step-by-step.jsp',
+  '/guides/de/cron-expression-parser-step-by-step.html': 'guide/de/cron-expression-parser-step-by-step.jsp',
+  '/guides/id/cron-expression-parser-step-by-step.html': 'guide/id/cron-expression-parser-step-by-step.jsp',
+  '/guides/vi/cron-expression-parser-step-by-step.html': 'guide/vi/cron-expression-parser-step-by-step.jsp',
+  '/guides/es/cron-expression-parser-step-by-step.html': 'guide/es/cron-expression-parser-step-by-step.jsp',
+  '/guides/pt/cron-expression-parser-step-by-step.html': 'guide/pt/cron-expression-parser-step-by-step.jsp',
   '/guides/cron-expression-parser-vs-alternatives.html': 'guide/cron-expression-parser-vs-alternatives.jsp',
+  '/guides/de/cron-expression-parser-vs-alternatives.html': 'guide/de/cron-expression-parser-vs-alternatives.jsp',
+  '/guides/id/cron-expression-parser-vs-alternatives.html': 'guide/id/cron-expression-parser-vs-alternatives.jsp',
+  '/guides/vi/cron-expression-parser-vs-alternatives.html': 'guide/vi/cron-expression-parser-vs-alternatives.jsp',
+  '/guides/es/cron-expression-parser-vs-alternatives.html': 'guide/es/cron-expression-parser-vs-alternatives.jsp',
+  '/guides/pt/cron-expression-parser-vs-alternatives.html': 'guide/pt/cron-expression-parser-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
