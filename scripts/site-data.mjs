@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/signature-maker-draw-download-vs-alternatives.html',
+  '/guides/de/signature-maker-draw-download-vs-alternatives.html',
+  '/guides/id/signature-maker-draw-download-vs-alternatives.html',
+  '/guides/vi/signature-maker-draw-download-vs-alternatives.html',
+  '/guides/es/signature-maker-draw-download-vs-alternatives.html',
+  '/guides/pt/signature-maker-draw-download-vs-alternatives.html',
+  '/guides/signature-maker-draw-download-step-by-step.html',
+  '/guides/de/signature-maker-draw-download-step-by-step.html',
+  '/guides/id/signature-maker-draw-download-step-by-step.html',
+  '/guides/vi/signature-maker-draw-download-step-by-step.html',
+  '/guides/es/signature-maker-draw-download-step-by-step.html',
+  '/guides/pt/signature-maker-draw-download-step-by-step.html',
+  '/guides/signature-maker-draw-download-when.html',
+  '/guides/de/signature-maker-draw-download-when.html',
+  '/guides/id/signature-maker-draw-download-when.html',
+  '/guides/vi/signature-maker-draw-download-when.html',
+  '/guides/es/signature-maker-draw-download-when.html',
+  '/guides/pt/signature-maker-draw-download-when.html',
   '/guides/cron-expression-parser-vs-alternatives.html',
   '/guides/de/cron-expression-parser-vs-alternatives.html',
   '/guides/id/cron-expression-parser-vs-alternatives.html',
@@ -13137,6 +13155,7 @@ export const ALIAS_ROUTES = {
   '/user-agent-parser.html': '/developer-tools/user-agent-parser.html',
   '/random-team-generator.html': '/utility-tools/random-team-generator.html',
   '/cron-expression-parser.html': '/developer-tools/cron-expression-parser.html',
+  '/signature-maker.html': '/image-tools/signature-maker.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -24090,6 +24109,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/cron-expression-parser-vs-alternatives.html': 'guide/vi/cron-expression-parser-vs-alternatives.jsp',
   '/guides/es/cron-expression-parser-vs-alternatives.html': 'guide/es/cron-expression-parser-vs-alternatives.jsp',
   '/guides/pt/cron-expression-parser-vs-alternatives.html': 'guide/pt/cron-expression-parser-vs-alternatives.jsp',
+  '/image-tools/signature-maker.html': 'convert/signature-maker.jsp',
+  '/guides/signature-maker-draw-download-when.html': 'guide/signature-maker-draw-download-when.jsp',
+  '/guides/de/signature-maker-draw-download-when.html': 'guide/de/signature-maker-draw-download-when.jsp',
+  '/guides/id/signature-maker-draw-download-when.html': 'guide/id/signature-maker-draw-download-when.jsp',
+  '/guides/vi/signature-maker-draw-download-when.html': 'guide/vi/signature-maker-draw-download-when.jsp',
+  '/guides/es/signature-maker-draw-download-when.html': 'guide/es/signature-maker-draw-download-when.jsp',
+  '/guides/pt/signature-maker-draw-download-when.html': 'guide/pt/signature-maker-draw-download-when.jsp',
+  '/guides/signature-maker-draw-download-step-by-step.html': 'guide/signature-maker-draw-download-step-by-step.jsp',
+  '/guides/de/signature-maker-draw-download-step-by-step.html': 'guide/de/signature-maker-draw-download-step-by-step.jsp',
+  '/guides/id/signature-maker-draw-download-step-by-step.html': 'guide/id/signature-maker-draw-download-step-by-step.jsp',
+  '/guides/vi/signature-maker-draw-download-step-by-step.html': 'guide/vi/signature-maker-draw-download-step-by-step.jsp',
+  '/guides/es/signature-maker-draw-download-step-by-step.html': 'guide/es/signature-maker-draw-download-step-by-step.jsp',
+  '/guides/pt/signature-maker-draw-download-step-by-step.html': 'guide/pt/signature-maker-draw-download-step-by-step.jsp',
+  '/guides/signature-maker-draw-download-vs-alternatives.html': 'guide/signature-maker-draw-download-vs-alternatives.jsp',
+  '/guides/de/signature-maker-draw-download-vs-alternatives.html': 'guide/de/signature-maker-draw-download-vs-alternatives.jsp',
+  '/guides/id/signature-maker-draw-download-vs-alternatives.html': 'guide/id/signature-maker-draw-download-vs-alternatives.jsp',
+  '/guides/vi/signature-maker-draw-download-vs-alternatives.html': 'guide/vi/signature-maker-draw-download-vs-alternatives.jsp',
+  '/guides/es/signature-maker-draw-download-vs-alternatives.html': 'guide/es/signature-maker-draw-download-vs-alternatives.jsp',
+  '/guides/pt/signature-maker-draw-download-vs-alternatives.html': 'guide/pt/signature-maker-draw-download-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

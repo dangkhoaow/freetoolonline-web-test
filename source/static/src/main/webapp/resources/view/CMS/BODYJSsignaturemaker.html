@@ -1,0 +1,179 @@
+<script>
+    // Signature-drawing archetype (signature-maker) - pure JS + Canvas 2D, no upload,
+    // no backend, no external lib. Registry Gate-H entry: signature_maker_canvas.
+    // Freehand draw-and-download signature pad: pointer/mouse/touch input,
+    // adjustable pen color + width, Undo last stroke, Clear, and Download as
+    // PNG (opaque white background or transparent background). Every stroke is
+    // recorded as a list of points so the transparent-background export can be
+    // replayed onto a fresh canvas without the strokes seen through a
+    // background-removal filter (a real re-render, not a color-key hack).
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(); no top-level DOM.
+    // In-browser tool => no upload widget.
+
+    web.localUpload = false;
+
+    var SM_STROKES = [];      // [{color, width, points:[{x,y}, ...]}]
+    var SM_CURRENT = null;    // stroke currently being drawn
+    var SM_DRAWING = false;
+    var SM_DPR = 1;
+
+    function smSetupCanvasSize(cv) {
+        var cssW = Math.min(560, cv.parentElement.clientWidth || 560);
+        var cssH = Math.round(cssW * 0.42);
+        SM_DPR = window.devicePixelRatio || 1;
+        cv.style.width = cssW + 'px';
+        cv.style.height = cssH + 'px';
+        cv.width = Math.round(cssW * SM_DPR);
+        cv.height = Math.round(cssH * SM_DPR);
+    }
+
+    function smRedrawAll(ctx, cv, transparent) {
+        ctx.setTransform(SM_DPR, 0, 0, SM_DPR, 0, 0);
+        var cssW = cv.width / SM_DPR, cssH = cv.height / SM_DPR;
+        ctx.clearRect(0, 0, cssW, cssH);
+        if (!transparent) {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, cssW, cssH);
+        }
+        for (var i = 0; i < SM_STROKES.length; i++) smDrawStroke(ctx, SM_STROKES[i]);
+    }
+
+    function smDrawStroke(ctx, stroke) {
+        var pts = stroke.points;
+        if (!pts.length) return;
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = stroke.color;
+        ctx.lineWidth = stroke.width;
+        if (pts.length === 1) {
+            // A tap with no movement still leaves a visible dot.
+            ctx.beginPath();
+            ctx.arc(pts[0].x, pts[0].y, stroke.width / 2, 0, Math.PI * 2);
+            ctx.fillStyle = stroke.color;
+            ctx.fill();
+            return;
+        }
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x, pts[0].y);
+        for (var i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+        ctx.stroke();
+    }
+
+    function smPointFromEvent(cv, evt) {
+        var rect = cv.getBoundingClientRect();
+        var clientX = evt.clientX, clientY = evt.clientY;
+        if (evt.touches && evt.touches.length) { clientX = evt.touches[0].clientX; clientY = evt.touches[0].clientY; }
+        return { x: clientX - rect.left, y: clientY - rect.top };
+    }
+
+    function smRenderSignaturePad(root) {
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:10px;">' +
+            '<label style="margin-right:12px;">Pen color ' +
+            '<select id="smColor" class="w3-select w3-border" style="width:auto;display:inline-block;margin-left:6px;">' +
+            '<option value="#111111" selected>Black</option>' +
+            '<option value="#0b3d91">Blue</option>' +
+            '<option value="#7a0019">Maroon</option>' +
+            '</select></label>' +
+            '<label>Pen width ' +
+            '<input id="smWidth" type="range" min="1" max="8" step="0.5" value="2.5" style="vertical-align:middle;margin-left:6px;"></label>' +
+            '</div>' +
+            '<canvas id="smCanvas" style="border:2px dashed #9e9e9e;border-radius:6px;background:#fff;touch-action:none;cursor:crosshair;max-width:100%;"></canvas>' +
+            '<div class="w3-row" style="margin-top:10px;">' +
+            '<button id="smUndo" type="button" class="w3-button w3-light-grey">Undo</button> ' +
+            '<button id="smClear" type="button" class="w3-button w3-light-grey">Clear</button> ' +
+            '<label style="margin-left:10px;"><input id="smTransparent" type="checkbox" class="w3-check"> Transparent background</label> ' +
+            '<button id="smDownload" type="button" class="w3-button w3-green" style="margin-left:10px;">Download PNG</button>' +
+            '</div>' +
+            '<p id="smHint" class="w3-small" style="color:#888;margin-top:6px;">Draw with your mouse, finger, or stylus above.</p>';
+
+        var cv = root.querySelector('#smCanvas');
+        var ctx = cv.getContext('2d');
+        var colorEl = root.querySelector('#smColor');
+        var widthEl = root.querySelector('#smWidth');
+        var transparentEl = root.querySelector('#smTransparent');
+        var hintEl = root.querySelector('#smHint');
+
+        function resizeAndRedraw() {
+            smSetupCanvasSize(cv);
+            smRedrawAll(ctx, cv, false);
+        }
+        resizeAndRedraw();
+        window.addEventListener('resize', resizeAndRedraw);
+
+        function pointerDown(evt) {
+            evt.preventDefault();
+            SM_DRAWING = true;
+            if (cv.setPointerCapture && evt.pointerId != null) { try { cv.setPointerCapture(evt.pointerId); } catch (e) {} }
+            var p = smPointFromEvent(cv, evt);
+            SM_CURRENT = { color: colorEl.value, width: parseFloat(widthEl.value) || 2.5, points: [p] };
+            SM_STROKES.push(SM_CURRENT);
+            smDrawStroke(ctx, SM_CURRENT);
+        }
+        function pointerMove(evt) {
+            if (!SM_DRAWING || !SM_CURRENT) return;
+            evt.preventDefault();
+            var p = smPointFromEvent(cv, evt);
+            SM_CURRENT.points.push(p);
+            // Draw only the newest segment for smooth, cheap incremental strokes.
+            ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+            ctx.strokeStyle = SM_CURRENT.color; ctx.lineWidth = SM_CURRENT.width;
+            var pts = SM_CURRENT.points, n = pts.length;
+            if (n >= 2) {
+                ctx.beginPath();
+                ctx.moveTo(pts[n - 2].x, pts[n - 2].y);
+                ctx.lineTo(pts[n - 1].x, pts[n - 1].y);
+                ctx.stroke();
+            }
+        }
+        function pointerUp() { SM_DRAWING = false; SM_CURRENT = null; }
+
+        if (window.PointerEvent) {
+            cv.addEventListener('pointerdown', pointerDown);
+            cv.addEventListener('pointermove', pointerMove);
+            cv.addEventListener('pointerup', pointerUp);
+            cv.addEventListener('pointercancel', pointerUp);
+        } else {
+            cv.addEventListener('mousedown', pointerDown);
+            cv.addEventListener('mousemove', pointerMove);
+            window.addEventListener('mouseup', pointerUp);
+            cv.addEventListener('touchstart', pointerDown, { passive: false });
+            cv.addEventListener('touchmove', pointerMove, { passive: false });
+            cv.addEventListener('touchend', pointerUp);
+        }
+
+        root.querySelector('#smUndo').addEventListener('click', function () {
+            SM_STROKES.pop();
+            smRedrawAll(ctx, cv, false);
+        });
+        root.querySelector('#smClear').addEventListener('click', function () {
+            SM_STROKES = [];
+            smRedrawAll(ctx, cv, false);
+        });
+        root.querySelector('#smDownload').addEventListener('click', function () {
+            if (!SM_STROKES.length) { hintEl.textContent = 'Draw a signature first, then download.'; return; }
+            var out = document.createElement('canvas');
+            out.width = cv.width; out.height = cv.height;
+            var octx = out.getContext('2d');
+            octx.setTransform(SM_DPR, 0, 0, SM_DPR, 0, 0);
+            var cssW = out.width / SM_DPR, cssH = out.height / SM_DPR;
+            if (!transparentEl.checked) { octx.fillStyle = '#ffffff'; octx.fillRect(0, 0, cssW, cssH); }
+            for (var i = 0; i < SM_STROKES.length; i++) smDrawStroke(octx, SM_STROKES[i]);
+            out.toBlob(function (blob) {
+                if (!blob) { hintEl.textContent = 'Could not export the image in this browser.'; return; }
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url; a.download = 'signature.png';
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+            }, 'image/png');
+        });
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('signatureMakerTool');
+        if (!root) return; // not a signature-maker page
+        smRenderSignaturePad(root);
+    }
+</script>
