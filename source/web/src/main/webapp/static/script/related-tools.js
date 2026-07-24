@@ -811,6 +811,7 @@ try {
     { title: "Scientific Calculator", url: "https://freetoolonline.com/utility-tools/scientific-calculator.html", include: !1, tags: "utility" },
     { title: "Aspect Ratio Calculator", url: "https://freetoolonline.com/utility-tools/aspect-ratio-calculator.html", include: !1, tags: "utility" },
     { title: "Subnet Calculator (IPv4 CIDR)", url: "https://freetoolonline.com/utility-tools/subnet-calculator.html", include: !1, tags: "utility" },
+    { title: "User Agent Parser", url: "https://freetoolonline.com/developer-tools/user-agent-parser.html", include: !1, tags: "developer" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
