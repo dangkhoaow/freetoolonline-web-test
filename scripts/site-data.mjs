@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/aspect-ratio-calculator-vs-alternatives.html',
+  '/guides/aspect-ratio-calculator-step-by-step.html',
+  '/guides/aspect-ratio-calculator-when.html',
   '/guides/scientific-calculator-vs-alternatives.html',
   '/guides/scientific-calculator-step-by-step.html',
   '/guides/scientific-calculator-when.html',
@@ -3576,6 +3579,25 @@ export const INFO_ROUTES = new Set([
   '/guides/id/jwst-l2-halo-orbit-when.html',
   '/guides/id/jwst-l2-halo-orbit-step-by-step.html',
   '/guides/id/jwst-l2-halo-orbit-vs-alternatives.html',
+  // type-ia-supernova-standard-candle companion guides (space-3d-discovery-loop-runbook fire3, 2026-07-24)
+  '/guides/type-ia-supernova-standard-candle-step-by-step.html',
+  '/guides/type-ia-supernova-standard-candle-when.html',
+  '/guides/type-ia-supernova-standard-candle-vs-alternatives.html',
+  '/guides/pt/type-ia-supernova-standard-candle-step-by-step.html',
+  '/guides/pt/type-ia-supernova-standard-candle-when.html',
+  '/guides/pt/type-ia-supernova-standard-candle-vs-alternatives.html',
+  '/guides/es/type-ia-supernova-standard-candle-step-by-step.html',
+  '/guides/es/type-ia-supernova-standard-candle-when.html',
+  '/guides/es/type-ia-supernova-standard-candle-vs-alternatives.html',
+  '/guides/de/type-ia-supernova-standard-candle-step-by-step.html',
+  '/guides/de/type-ia-supernova-standard-candle-when.html',
+  '/guides/de/type-ia-supernova-standard-candle-vs-alternatives.html',
+  '/guides/vi/type-ia-supernova-standard-candle-step-by-step.html',
+  '/guides/vi/type-ia-supernova-standard-candle-when.html',
+  '/guides/vi/type-ia-supernova-standard-candle-vs-alternatives.html',
+  '/guides/id/type-ia-supernova-standard-candle-step-by-step.html',
+  '/guides/id/type-ia-supernova-standard-candle-when.html',
+  '/guides/id/type-ia-supernova-standard-candle-vs-alternatives.html',
   // yarkovsky-effect companion guides (space-3d-discovery-loop LEAN fire, 2026-07-23)
   '/guides/yarkovsky-effect-step-by-step.html',
   '/guides/yarkovsky-effect-when.html',
@@ -12634,6 +12656,7 @@ export const ALIAS_ROUTES = {
   '/moon-calendar-3d.html': '/space-3d/moon-calendar-3d.html',
   '/iss-orbit-tracker.html': '/space-3d/iss-orbit-tracker.html',
   '/jwst-l2-halo-orbit.html': '/space-3d/jwst-l2-halo-orbit.html',
+  '/type-ia-supernova-standard-candle.html': '/space-3d/type-ia-supernova-standard-candle.html',
   '/lunar-eclipse.html': '/space-3d/lunar-eclipse.html',
   '/solar-eclipse.html': '/space-3d/solar-eclipse.html',
   '/planet-size-comparison.html': '/space-3d/planet-size-comparison.html',
@@ -12868,6 +12891,7 @@ export const ALIAS_ROUTES = {
   '/css-grid-generator.html': '/developer-tools/css-grid-generator.html',
   '/tdee-calorie-calculator.html': '/utility-tools/tdee-calorie-calculator.html',
   '/scientific-calculator.html': '/utility-tools/scientific-calculator.html',
+  '/aspect-ratio-calculator.html': '/utility-tools/aspect-ratio-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -16323,7 +16347,6 @@ export const JSP_BY_ROUTE = {
     '/dinosaur-3d/plesiosaurus.html': 'dinosaur/plesiosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire71 (2026-07-22): ground-sloth (quadruped megafauna, Pleistocene, not a dinosaur).
   '/dinosaur-3d/ground-sloth.html': 'dinosaur/ground-sloth.jsp',
-  '/dinosaur-3d/yutyrannus.html': 'dinosaur/yutyrannus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire278 (2026-07-22): megalosaurus (theropod archetype).
   '/dinosaur-3d/megalosaurus.html': 'dinosaur/megalosaurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire2 (2026-07-15): velociraptor (raptor archetype).
@@ -19067,6 +19090,8 @@ export const JSP_BY_ROUTE = {
   '/space-3d/moon-calendar-3d.html': 'space/moon-calendar-3d.jsp',
   '/space-3d/iss-orbit-tracker.html': 'space/iss-orbit-tracker.jsp',
   '/space-3d/jwst-l2-halo-orbit.html': 'space/jwst-l2-halo-orbit.jsp',
+  // space-3d-discovery-loop-runbook fire3 (2026-07-24): type-ia-supernova-standard-candle (accretion/explosion + distance-modulus standard-candle math).
+  '/space-3d/type-ia-supernova-standard-candle.html': 'space/type-ia-supernova-standard-candle.jsp',
   '/space-3d/lunar-eclipse.html': 'space/lunar-eclipse.jsp',
   '/space-3d/solar-eclipse.html': 'space/solar-eclipse.jsp',
   '/space-3d/planet-size-comparison.html': 'space/planet-size-comparison.jsp',
@@ -20763,6 +20788,24 @@ export const JSP_BY_ROUTE = {
   '/guides/id/jwst-l2-halo-orbit-when.html': 'guide/id/jwst-l2-halo-orbit-when.jsp',
   '/guides/id/jwst-l2-halo-orbit-step-by-step.html': 'guide/id/jwst-l2-halo-orbit-step-by-step.jsp',
   '/guides/id/jwst-l2-halo-orbit-vs-alternatives.html': 'guide/id/jwst-l2-halo-orbit-vs-alternatives.jsp',
+  '/guides/type-ia-supernova-standard-candle-step-by-step.html': 'guide/type-ia-supernova-standard-candle-step-by-step.jsp',
+  '/guides/type-ia-supernova-standard-candle-when.html': 'guide/type-ia-supernova-standard-candle-when.jsp',
+  '/guides/type-ia-supernova-standard-candle-vs-alternatives.html': 'guide/type-ia-supernova-standard-candle-vs-alternatives.jsp',
+  '/guides/pt/type-ia-supernova-standard-candle-step-by-step.html': 'guide/pt/type-ia-supernova-standard-candle-step-by-step.jsp',
+  '/guides/pt/type-ia-supernova-standard-candle-when.html': 'guide/pt/type-ia-supernova-standard-candle-when.jsp',
+  '/guides/pt/type-ia-supernova-standard-candle-vs-alternatives.html': 'guide/pt/type-ia-supernova-standard-candle-vs-alternatives.jsp',
+  '/guides/es/type-ia-supernova-standard-candle-step-by-step.html': 'guide/es/type-ia-supernova-standard-candle-step-by-step.jsp',
+  '/guides/es/type-ia-supernova-standard-candle-when.html': 'guide/es/type-ia-supernova-standard-candle-when.jsp',
+  '/guides/es/type-ia-supernova-standard-candle-vs-alternatives.html': 'guide/es/type-ia-supernova-standard-candle-vs-alternatives.jsp',
+  '/guides/de/type-ia-supernova-standard-candle-step-by-step.html': 'guide/de/type-ia-supernova-standard-candle-step-by-step.jsp',
+  '/guides/de/type-ia-supernova-standard-candle-when.html': 'guide/de/type-ia-supernova-standard-candle-when.jsp',
+  '/guides/de/type-ia-supernova-standard-candle-vs-alternatives.html': 'guide/de/type-ia-supernova-standard-candle-vs-alternatives.jsp',
+  '/guides/vi/type-ia-supernova-standard-candle-step-by-step.html': 'guide/vi/type-ia-supernova-standard-candle-step-by-step.jsp',
+  '/guides/vi/type-ia-supernova-standard-candle-when.html': 'guide/vi/type-ia-supernova-standard-candle-when.jsp',
+  '/guides/vi/type-ia-supernova-standard-candle-vs-alternatives.html': 'guide/vi/type-ia-supernova-standard-candle-vs-alternatives.jsp',
+  '/guides/id/type-ia-supernova-standard-candle-step-by-step.html': 'guide/id/type-ia-supernova-standard-candle-step-by-step.jsp',
+  '/guides/id/type-ia-supernova-standard-candle-when.html': 'guide/id/type-ia-supernova-standard-candle-when.jsp',
+  '/guides/id/type-ia-supernova-standard-candle-vs-alternatives.html': 'guide/id/type-ia-supernova-standard-candle-vs-alternatives.jsp',
   '/guides/id/kuiper-belt-oort-cloud-when.html': 'guide/id/kuiper-belt-oort-cloud-when.jsp',
   '/guides/id/jupiter-magnetosphere-when.html': 'guide/id/jupiter-magnetosphere-when.jsp',
   '/guides/id/light-cone-when.html': 'guide/id/light-cone-when.jsp',
@@ -23622,6 +23665,10 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/scientific-calculator-vs-alternatives.html': 'guide/vi/scientific-calculator-vs-alternatives.jsp',
   '/guides/id/scientific-calculator-vs-alternatives.html': 'guide/id/scientific-calculator-vs-alternatives.jsp',
   '/guides/de/scientific-calculator-vs-alternatives.html': 'guide/de/scientific-calculator-vs-alternatives.jsp',
+  '/utility-tools/aspect-ratio-calculator.html': 'utility/aspect-ratio-calculator.jsp',
+  '/guides/aspect-ratio-calculator-when.html': 'guide/aspect-ratio-calculator-when.jsp',
+  '/guides/aspect-ratio-calculator-step-by-step.html': 'guide/aspect-ratio-calculator-step-by-step.jsp',
+  '/guides/aspect-ratio-calculator-vs-alternatives.html': 'guide/aspect-ratio-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
