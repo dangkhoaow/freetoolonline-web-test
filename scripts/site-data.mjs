@@ -14,6 +14,29 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  // new-tool-discovery-loop-runbook fire402: random-team-group-generator
+  // guides (EN + pt/es/vi/id/de locale fanout). Re-added after a concurrent
+  // sibling lane's "fix CI build failure - remove leaked sibling registry
+  // entries" commit stripped the uncommitted registration this fire made
+  // earlier (same race-condition hazard fire397/fire398 documented).
+  '/guides/random-team-group-generator-when.html',
+  '/guides/random-team-group-generator-step-by-step.html',
+  '/guides/random-team-group-generator-vs-alternatives.html',
+  '/guides/pt/random-team-group-generator-when.html',
+  '/guides/pt/random-team-group-generator-step-by-step.html',
+  '/guides/pt/random-team-group-generator-vs-alternatives.html',
+  '/guides/es/random-team-group-generator-when.html',
+  '/guides/es/random-team-group-generator-step-by-step.html',
+  '/guides/es/random-team-group-generator-vs-alternatives.html',
+  '/guides/vi/random-team-group-generator-when.html',
+  '/guides/vi/random-team-group-generator-step-by-step.html',
+  '/guides/vi/random-team-group-generator-vs-alternatives.html',
+  '/guides/id/random-team-group-generator-when.html',
+  '/guides/id/random-team-group-generator-step-by-step.html',
+  '/guides/id/random-team-group-generator-vs-alternatives.html',
+  '/guides/de/random-team-group-generator-when.html',
+  '/guides/de/random-team-group-generator-step-by-step.html',
+  '/guides/de/random-team-group-generator-vs-alternatives.html',
   '/guides/user-agent-parser-vs-alternatives.html',
   '/guides/de/user-agent-parser-vs-alternatives.html',
   '/guides/id/user-agent-parser-vs-alternatives.html',
@@ -12957,6 +12980,7 @@ export const ALIAS_ROUTES = {
   '/fast-radio-bursts.html': '/space-3d/fast-radio-bursts.html',
   '/yarkovsky-effect.html': '/space-3d/yarkovsky-effect.html',
   '/torino-impact-hazard-scale.html': '/space-3d/torino-impact-hazard-scale.html',
+  '/kp-index-geomagnetic-storm-scale.html': '/space-3d/kp-index-geomagnetic-storm-scale.html',
   '/chariklo-rings.html': '/space-3d/chariklo-rings.html',
   '/dart-asteroid-deflection.html': '/space-3d/dart-asteroid-deflection.html',
   '/gps-time-dilation.html': '/space-3d/gps-time-dilation.html',
@@ -13055,6 +13079,7 @@ export const ALIAS_ROUTES = {
   '/aspect-ratio-calculator.html': '/utility-tools/aspect-ratio-calculator.html',
   '/subnet-calculator.html': '/utility-tools/subnet-calculator.html',
   '/user-agent-parser.html': '/developer-tools/user-agent-parser.html',
+  '/random-team-generator.html': '/utility-tools/random-team-generator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -19476,6 +19501,7 @@ export const JSP_BY_ROUTE = {
   '/space-3d/fast-radio-bursts.html': 'space/fast-radio-bursts.jsp',
   '/space-3d/yarkovsky-effect.html': 'space/yarkovsky-effect.jsp',
   '/space-3d/torino-impact-hazard-scale.html': 'space/torino-impact-hazard-scale.jsp',
+  '/space-3d/kp-index-geomagnetic-storm-scale.html': 'space/kp-index-geomagnetic-storm-scale.jsp',
   '/space-3d/chariklo-rings.html': 'space/chariklo-rings.jsp',
   '/space-3d/dart-asteroid-deflection.html': 'space/dart-asteroid-deflection.jsp',
   '/space-3d/gps-time-dilation.html': 'space/gps-time-dilation.jsp',
@@ -23951,6 +23977,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/user-agent-parser-vs-alternatives.html': 'guide/vi/user-agent-parser-vs-alternatives.jsp',
   '/guides/es/user-agent-parser-vs-alternatives.html': 'guide/es/user-agent-parser-vs-alternatives.jsp',
   '/guides/pt/user-agent-parser-vs-alternatives.html': 'guide/pt/user-agent-parser-vs-alternatives.jsp',
+  '/utility-tools/random-team-generator.html': 'utility/random-team-generator.jsp',
+  '/guides/random-team-group-generator-when.html': 'guide/random-team-group-generator-when.jsp',
+  '/guides/random-team-group-generator-step-by-step.html': 'guide/random-team-group-generator-step-by-step.jsp',
+  '/guides/random-team-group-generator-vs-alternatives.html': 'guide/random-team-group-generator-vs-alternatives.jsp',
+  '/guides/pt/random-team-group-generator-when.html': 'guide/pt/random-team-group-generator-when.jsp',
+  '/guides/pt/random-team-group-generator-step-by-step.html': 'guide/pt/random-team-group-generator-step-by-step.jsp',
+  '/guides/pt/random-team-group-generator-vs-alternatives.html': 'guide/pt/random-team-group-generator-vs-alternatives.jsp',
+  '/guides/es/random-team-group-generator-when.html': 'guide/es/random-team-group-generator-when.jsp',
+  '/guides/es/random-team-group-generator-step-by-step.html': 'guide/es/random-team-group-generator-step-by-step.jsp',
+  '/guides/es/random-team-group-generator-vs-alternatives.html': 'guide/es/random-team-group-generator-vs-alternatives.jsp',
+  '/guides/vi/random-team-group-generator-when.html': 'guide/vi/random-team-group-generator-when.jsp',
+  '/guides/vi/random-team-group-generator-step-by-step.html': 'guide/vi/random-team-group-generator-step-by-step.jsp',
+  '/guides/vi/random-team-group-generator-vs-alternatives.html': 'guide/vi/random-team-group-generator-vs-alternatives.jsp',
+  '/guides/id/random-team-group-generator-when.html': 'guide/id/random-team-group-generator-when.jsp',
+  '/guides/id/random-team-group-generator-step-by-step.html': 'guide/id/random-team-group-generator-step-by-step.jsp',
+  '/guides/id/random-team-group-generator-vs-alternatives.html': 'guide/id/random-team-group-generator-vs-alternatives.jsp',
+  '/guides/de/random-team-group-generator-when.html': 'guide/de/random-team-group-generator-when.jsp',
+  '/guides/de/random-team-group-generator-step-by-step.html': 'guide/de/random-team-group-generator-step-by-step.jsp',
+  '/guides/de/random-team-group-generator-vs-alternatives.html': 'guide/de/random-team-group-generator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
