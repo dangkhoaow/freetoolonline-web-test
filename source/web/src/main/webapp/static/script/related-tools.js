@@ -820,6 +820,7 @@ try {
     { title: "Cron Expression Parser", url: "https://freetoolonline.com/developer-tools/cron-expression-parser.html", include: !1, tags: "developer" },
     { title: "Signature Maker", url: "https://freetoolonline.com/image-tools/signature-maker.html", include: !1, tags: "image-editing" },
     { title: "Time Zone Converter", url: "https://freetoolonline.com/utility-tools/time-zone-converter.html", include: !1, tags: "utility" },
+    { title: "Meme Maker", url: "https://freetoolonline.com/image-tools/meme-maker.html", include: !1, tags: "image-editing" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/meme-maker-vs-alternatives.html',
+  '/guides/de/meme-maker-vs-alternatives.html',
+  '/guides/id/meme-maker-vs-alternatives.html',
+  '/guides/vi/meme-maker-vs-alternatives.html',
+  '/guides/es/meme-maker-vs-alternatives.html',
+  '/guides/pt/meme-maker-vs-alternatives.html',
+  '/guides/meme-maker-step-by-step.html',
+  '/guides/de/meme-maker-step-by-step.html',
+  '/guides/id/meme-maker-step-by-step.html',
+  '/guides/vi/meme-maker-step-by-step.html',
+  '/guides/es/meme-maker-step-by-step.html',
+  '/guides/pt/meme-maker-step-by-step.html',
+  '/guides/meme-maker-when.html',
+  '/guides/de/meme-maker-when.html',
+  '/guides/id/meme-maker-when.html',
+  '/guides/vi/meme-maker-when.html',
+  '/guides/es/meme-maker-when.html',
+  '/guides/pt/meme-maker-when.html',
   '/guides/time-zone-converter-vs-alternatives.html',
   '/guides/de/time-zone-converter-vs-alternatives.html',
   '/guides/id/time-zone-converter-vs-alternatives.html',
@@ -13297,6 +13315,7 @@ export const ALIAS_ROUTES = {
   '/cron-expression-parser.html': '/developer-tools/cron-expression-parser.html',
   '/signature-maker.html': '/image-tools/signature-maker.html',
   '/time-zone-converter.html': '/utility-tools/time-zone-converter.html',
+  '/meme-maker.html': '/image-tools/meme-maker.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -24363,6 +24382,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/time-zone-converter-vs-alternatives.html': 'guide/vi/time-zone-converter-vs-alternatives.jsp',
   '/guides/es/time-zone-converter-vs-alternatives.html': 'guide/es/time-zone-converter-vs-alternatives.jsp',
   '/guides/pt/time-zone-converter-vs-alternatives.html': 'guide/pt/time-zone-converter-vs-alternatives.jsp',
+  '/image-tools/meme-maker.html': 'convert/meme-maker.jsp',
+  '/guides/meme-maker-when.html': 'guide/meme-maker-when.jsp',
+  '/guides/de/meme-maker-when.html': 'guide/de/meme-maker-when.jsp',
+  '/guides/id/meme-maker-when.html': 'guide/id/meme-maker-when.jsp',
+  '/guides/vi/meme-maker-when.html': 'guide/vi/meme-maker-when.jsp',
+  '/guides/es/meme-maker-when.html': 'guide/es/meme-maker-when.jsp',
+  '/guides/pt/meme-maker-when.html': 'guide/pt/meme-maker-when.jsp',
+  '/guides/meme-maker-step-by-step.html': 'guide/meme-maker-step-by-step.jsp',
+  '/guides/de/meme-maker-step-by-step.html': 'guide/de/meme-maker-step-by-step.jsp',
+  '/guides/id/meme-maker-step-by-step.html': 'guide/id/meme-maker-step-by-step.jsp',
+  '/guides/vi/meme-maker-step-by-step.html': 'guide/vi/meme-maker-step-by-step.jsp',
+  '/guides/es/meme-maker-step-by-step.html': 'guide/es/meme-maker-step-by-step.jsp',
+  '/guides/pt/meme-maker-step-by-step.html': 'guide/pt/meme-maker-step-by-step.jsp',
+  '/guides/meme-maker-vs-alternatives.html': 'guide/meme-maker-vs-alternatives.jsp',
+  '/guides/de/meme-maker-vs-alternatives.html': 'guide/de/meme-maker-vs-alternatives.jsp',
+  '/guides/id/meme-maker-vs-alternatives.html': 'guide/id/meme-maker-vs-alternatives.jsp',
+  '/guides/vi/meme-maker-vs-alternatives.html': 'guide/vi/meme-maker-vs-alternatives.jsp',
+  '/guides/es/meme-maker-vs-alternatives.html': 'guide/es/meme-maker-vs-alternatives.jsp',
+  '/guides/pt/meme-maker-vs-alternatives.html': 'guide/pt/meme-maker-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

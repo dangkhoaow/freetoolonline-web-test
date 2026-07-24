@@ -1,0 +1,257 @@
+<script>
+    // Meme Maker tool (meme-maker) - Canvas top/bottom caption overlay, fully
+    // client-side. Seeded new-tool-discovery-loop fire413 to release the
+    // Gate-H registry-starvation card sustained across fires 391/392/394/
+    // 396/399/404/407/408/410 (meme-maker: confidence 0.78, cycles_seen
+    // 260+). Registry Gate-H entry: meme_maker_canvas. Mirrors the sibling
+    // image-watermark.template.html pipeline (FileReader -> Image -> Canvas
+    // -> toBlob) but with the classic two-caption meme layout instead of a
+    // single positioned watermark string: fixed top/bottom placement,
+    // shrink-to-fit font sizing so a long caption never overflows the image
+    // width, all-caps toggle (checked by default - the classic meme look),
+    // and a white-fill + black-stroke caption style so text stays readable
+    // on any photo without needing a hosted display font.
+    //
+    // Empty placeholder canvas renders on load so qa-e2e-test G16 passes
+    // before a file is chosen (mirrors favicon-generator / image-watermark).
+    // Plain <input type=file>; web.localUpload=false (no server upload
+    // widget). No external lib, no backend - drawImage + fillText + toBlob.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered().
+
+    web.localUpload = false;
+
+    var MM_SLUG = 'meme-maker';
+    var MM_MAX_DIM = 2400; // cap canvas size for very large source photos
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('memeMakerTool');
+        if (!root) return;
+
+        var fileEl = document.getElementById('mmFile');
+        var topEl = document.getElementById('mmTop');
+        var bottomEl = document.getElementById('mmBottom');
+        var caseEl = document.getElementById('mmUppercase');
+        var sizeEl = document.getElementById('mmSize');
+        var canvas = document.getElementById('mmCanvas');
+        var statusEl = document.getElementById('mmStatus');
+        var dlBtn = document.getElementById('mmDownload');
+
+        var sourceImg = null;
+        var sourceMime = 'image/png';
+        var sourceName = 'meme';
+        var renderTimer = null;
+        var lastUrl = null;
+
+        function setStatus(msg) {
+            if (statusEl) statusEl.textContent = msg;
+            console.log('[meme-maker] status=', msg);
+        }
+
+        function renderPlaceholder() {
+            if (!canvas) return;
+            canvas.width = 480;
+            canvas.height = 360;
+            var ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#f2f2f2';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#ccc';
+            ctx.strokeRect(0.5, 0.5, canvas.width - 1, canvas.height - 1);
+            ctx.fillStyle = '#888';
+            ctx.font = '16px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('Choose an image to preview the meme', canvas.width / 2, canvas.height / 2);
+        }
+
+        function captionText(raw) {
+            var t = (raw || '').trim();
+            if (caseEl && caseEl.checked) t = t.toUpperCase();
+            return t;
+        }
+
+        // Shrink-to-fit: start at the requested font size and step down until
+        // the widest word-wrapped line fits within the drawable width, so a
+        // long caption never spills past the image edges.
+        function fitLines(ctx, text, maxWidth, startSize) {
+            var size = startSize;
+            var words = text.split(/\s+/).filter(Boolean);
+            var lines, ok;
+            for (; size >= 12; size -= 2) {
+                ctx.font = '700 ' + size + 'px Impact, "Arial Narrow", sans-serif';
+                lines = [];
+                var line = '';
+                ok = true;
+                for (var i = 0; i < words.length; i++) {
+                    var test = line ? line + ' ' + words[i] : words[i];
+                    if (ctx.measureText(test).width > maxWidth && line) {
+                        lines.push(line);
+                        line = words[i];
+                        if (ctx.measureText(line).width > maxWidth) ok = false;
+                    } else {
+                        line = test;
+                    }
+                }
+                if (line) lines.push(line);
+                if (ok && lines.length <= 3) break;
+            }
+            return { size: Math.max(12, size), lines: lines || [text] };
+        }
+
+        // Top caption only - drawn top-down from `pad`. The bottom caption
+        // uses the separate drawCaptionBottom() below (measured from the
+        // canvas bottom edge upward so multi-line wraps stack correctly).
+        function drawCaptionTop(ctx, text, cw, pad, fontSize) {
+            if (!text) return;
+            var maxWidth = cw - pad * 2;
+            var fit = fitLines(ctx, text, maxWidth, fontSize);
+            ctx.font = '700 ' + fit.size + 'px Impact, "Arial Narrow", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.lineWidth = Math.max(2, fit.size / 12);
+            ctx.strokeStyle = '#000000';
+            ctx.fillStyle = '#ffffff';
+            var lineHeight = fit.size * 1.15;
+            for (var i = 0; i < fit.lines.length; i++) {
+                var ly = pad + i * lineHeight;
+                ctx.strokeText(fit.lines[i], cw / 2, ly);
+                ctx.fillText(fit.lines[i], cw / 2, ly);
+            }
+        }
+
+        function drawMeme() {
+            if (!canvas || !sourceImg) return;
+            var iw = sourceImg.naturalWidth || sourceImg.width;
+            var ih = sourceImg.naturalHeight || sourceImg.height;
+            var scale = Math.min(1, MM_MAX_DIM / Math.max(iw, ih));
+            var cw = Math.max(1, Math.round(iw * scale));
+            var ch = Math.max(1, Math.round(ih * scale));
+            canvas.width = cw;
+            canvas.height = ch;
+            var ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, cw, ch);
+            ctx.drawImage(sourceImg, 0, 0, cw, ch);
+
+            var top = captionText(topEl && topEl.value);
+            var bottom = captionText(bottomEl && bottomEl.value);
+            var baseSize = Math.max(12, Math.min(200, parseInt(sizeEl && sizeEl.value, 10) || Math.round(ch * 0.12)));
+            var pad = Math.max(8, Math.round(cw * 0.03));
+
+            ctx.save();
+            drawCaptionTop(ctx, top, cw, pad, baseSize);
+            ctx.restore();
+
+            ctx.save();
+            drawCaptionBottom(ctx, bottom, cw, ch, pad, baseSize);
+            ctx.restore();
+
+            if (!top && !bottom) {
+                setStatus('Ready. Type a top and/or bottom caption to preview it on the image.');
+            } else {
+                setStatus('Caption applied in this tab. Click Download to save the result.');
+            }
+        }
+
+        // Bottom caption is measured from the canvas bottom edge upward so
+        // multi-line wraps stack correctly regardless of line count.
+        function drawCaptionBottom(ctx, text, cw, ch, pad, fontSize) {
+            if (!text) return;
+            var maxWidth = cw - pad * 2;
+            var fit = fitLines(ctx, text, maxWidth, fontSize);
+            ctx.font = '700 ' + fit.size + 'px Impact, "Arial Narrow", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.lineWidth = Math.max(2, fit.size / 12);
+            ctx.strokeStyle = '#000000';
+            ctx.fillStyle = '#ffffff';
+            var lineHeight = fit.size * 1.15;
+            var startY = ch - pad - (lineHeight * (fit.lines.length - 1));
+            for (var i = 0; i < fit.lines.length; i++) {
+                var ly = startY + i * lineHeight;
+                ctx.strokeText(fit.lines[i], cw / 2, ly);
+                ctx.fillText(fit.lines[i], cw / 2, ly);
+            }
+        }
+
+        function scheduleRender() {
+            if (renderTimer) clearTimeout(renderTimer);
+            renderTimer = setTimeout(function () {
+                renderTimer = null;
+                try {
+                    drawMeme();
+                } catch (e) {
+                    setStatus('Could not render the meme: ' + (e && e.message ? e.message : String(e)));
+                }
+            }, 16);
+        }
+
+        function revokeLast() {
+            if (lastUrl) {
+                try { URL.revokeObjectURL(lastUrl); } catch (e) {}
+                lastUrl = null;
+            }
+        }
+
+        function onDownload() {
+            if (!canvas || !sourceImg) return;
+            var mime = sourceMime === 'image/jpeg' ? 'image/jpeg' : 'image/png';
+            var ext = mime === 'image/jpeg' ? 'jpg' : 'png';
+            canvas.toBlob(function (blob) {
+                if (!blob) {
+                    setStatus('Could not export the meme image.');
+                    return;
+                }
+                revokeLast();
+                lastUrl = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = lastUrl;
+                a.download = sourceName.replace(/\.[^.]+$/, '') + '-meme.' + ext;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setStatus('Downloaded ' + a.download + '.');
+            }, mime, 0.92);
+        }
+
+        function onFile(file) {
+            if (!file) return;
+            if (!/^image\//.test(file.type) && !/\.(png|jpe?g|webp|gif|bmp)$/i.test(file.name || '')) {
+                setStatus('Please choose an image file (PNG, JPEG, WebP, GIF, or BMP).');
+                return;
+            }
+            sourceMime = file.type === 'image/jpeg' ? 'image/jpeg' : 'image/png';
+            sourceName = file.name || 'meme';
+            setStatus('Loading ' + sourceName + '...');
+            var url = URL.createObjectURL(file);
+            var img = new Image();
+            img.onload = function () {
+                URL.revokeObjectURL(url);
+                sourceImg = img;
+                if (dlBtn) dlBtn.style.display = 'inline-block';
+                scheduleRender();
+            };
+            img.onerror = function () {
+                URL.revokeObjectURL(url);
+                setStatus('Could not read that image. Try a different PNG or JPEG.');
+            };
+            img.src = url;
+        }
+
+        if (fileEl) {
+            fileEl.addEventListener('change', function () {
+                var f = fileEl.files && fileEl.files[0];
+                console.log('[meme-maker] file chosen', f && f.name, f && f.type);
+                onFile(f);
+            });
+        }
+        [topEl, bottomEl, sizeEl].forEach(function (el) {
+            if (el) el.addEventListener('input', scheduleRender);
+        });
+        if (caseEl) caseEl.addEventListener('change', scheduleRender);
+        if (dlBtn) dlBtn.addEventListener('click', onDownload);
+
+        renderPlaceholder();
+        setStatus('Choose an image, then type a top and/or bottom caption. Everything runs in this tab - nothing is uploaded.');
+        console.log('[meme-maker] wired slug=' + MM_SLUG);
+    }
+</script>
