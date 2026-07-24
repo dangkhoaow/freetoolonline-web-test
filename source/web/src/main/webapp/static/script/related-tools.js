@@ -380,6 +380,7 @@ try {
     { title: "Saurosuchus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/saurosuchus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Anchiornis 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/anchiornis.html", include: !1, tags: "dinosaur-3d" },
     { title: "Qianzhousaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/qianzhousaurus.html", include: !1, tags: "dinosaur-3d" },
+    { title: "Mapusaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/mapusaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Suchomimus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/suchomimus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Ouranosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/ouranosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Archaeopteryx 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/archaeopteryx.html", include: !1, tags: "dinosaur-3d" },
