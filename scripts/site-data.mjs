@@ -14,9 +14,6 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
-  '/guides/random-team-group-generator-vs-alternatives.html',
-  '/guides/random-team-group-generator-step-by-step.html',
-  '/guides/random-team-group-generator-when.html',
   '/guides/user-agent-parser-vs-alternatives.html',
   '/guides/de/user-agent-parser-vs-alternatives.html',
   '/guides/id/user-agent-parser-vs-alternatives.html',
@@ -13058,7 +13055,6 @@ export const ALIAS_ROUTES = {
   '/aspect-ratio-calculator.html': '/utility-tools/aspect-ratio-calculator.html',
   '/subnet-calculator.html': '/utility-tools/subnet-calculator.html',
   '/user-agent-parser.html': '/developer-tools/user-agent-parser.html',
-  '/random-team-generator.html': '/utility-tools/random-team-generator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -23955,10 +23951,6 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/user-agent-parser-vs-alternatives.html': 'guide/vi/user-agent-parser-vs-alternatives.jsp',
   '/guides/es/user-agent-parser-vs-alternatives.html': 'guide/es/user-agent-parser-vs-alternatives.jsp',
   '/guides/pt/user-agent-parser-vs-alternatives.html': 'guide/pt/user-agent-parser-vs-alternatives.jsp',
-  '/utility-tools/random-team-generator.html': 'utility/random-team-generator.jsp',
-  '/guides/random-team-group-generator-when.html': 'guide/random-team-group-generator-when.jsp',
-  '/guides/random-team-group-generator-step-by-step.html': 'guide/random-team-group-generator-step-by-step.jsp',
-  '/guides/random-team-group-generator-vs-alternatives.html': 'guide/random-team-group-generator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
