@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/cron-expression-parser-vs-alternatives.html',
+  '/guides/cron-expression-parser-step-by-step.html',
+  '/guides/cron-expression-parser-when.html',
   // new-tool-discovery-loop-runbook fire402: random-team-group-generator
   // guides (EN + pt/es/vi/id/de locale fanout). Re-added after a concurrent
   // sibling lane's "fix CI build failure - remove leaked sibling registry
@@ -13118,6 +13121,7 @@ export const ALIAS_ROUTES = {
   '/subnet-calculator.html': '/utility-tools/subnet-calculator.html',
   '/user-agent-parser.html': '/developer-tools/user-agent-parser.html',
   '/random-team-generator.html': '/utility-tools/random-team-generator.html',
+  '/cron-expression-parser.html': '/developer-tools/cron-expression-parser.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -24052,6 +24056,10 @@ export const JSP_BY_ROUTE = {
   '/guides/de/random-team-group-generator-when.html': 'guide/de/random-team-group-generator-when.jsp',
   '/guides/de/random-team-group-generator-step-by-step.html': 'guide/de/random-team-group-generator-step-by-step.jsp',
   '/guides/de/random-team-group-generator-vs-alternatives.html': 'guide/de/random-team-group-generator-vs-alternatives.jsp',
+  '/developer-tools/cron-expression-parser.html': 'utility/cron-expression-parser.jsp',
+  '/guides/cron-expression-parser-when.html': 'guide/cron-expression-parser-when.jsp',
+  '/guides/cron-expression-parser-step-by-step.html': 'guide/cron-expression-parser-step-by-step.jsp',
+  '/guides/cron-expression-parser-vs-alternatives.html': 'guide/cron-expression-parser-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

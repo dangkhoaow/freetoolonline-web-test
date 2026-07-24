@@ -815,6 +815,7 @@ try {
     { title: "Subnet Calculator (IPv4 CIDR)", url: "https://freetoolonline.com/utility-tools/subnet-calculator.html", include: !1, tags: "utility" },
     { title: "User Agent Parser", url: "https://freetoolonline.com/developer-tools/user-agent-parser.html", include: !1, tags: "developer" },
     { title: "Random Team & Group Generator", url: "https://freetoolonline.com/utility-tools/random-team-generator.html", include: !1, tags: "utility" },
+    { title: "Cron Expression Parser", url: "https://freetoolonline.com/developer-tools/cron-expression-parser.html", include: !1, tags: "developer" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
