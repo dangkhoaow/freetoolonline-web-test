@@ -1,0 +1,379 @@
+<script>
+    // 3D scene archetype skeleton (Sun Red Giant Future) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side.
+    // Built LEAN, forked from the curiosity-rover-traverse shape - ONE scene
+    // only (an 8-epoch timeline scrub of the Sun's future evolution with a
+    // planet-survival overlay for Mercury, Venus, Earth, and Mars).
+    //
+    // EDUCATIONAL APPROXIMATION, not a stellar-evolution simulation. A
+    // teaching scene: the Sun's radius, color, and the four inner planets'
+    // visibility change at 8 discrete, real published milestones - never a
+    // continuous physics solve.
+    //
+    // Published figures (cross-checked via WebSearch 2026-07-24; sources:
+    // NASA/ESA stellar-evolution overviews, Schroder & Smith 2008 MNRAS
+    // "Distant future of the Sun and Earth revisited", Wikipedia "Helium
+    // flash" citing standard stellar-evolution models, Penn State ASTRO 801
+    // "The Final Stages of the Evolution of a Sun-like Star", NASA Imagine
+    // the Universe "White Dwarfs"):
+    //   - The Sun is about 4.6 billion years old now and is slowly
+    //     brightening - roughly 10% more luminous per billion years.
+    //   - In about 1 billion years, rising solar output is expected to begin
+    //     ending Earth's surface habitability (oceans evaporating) well
+    //     before any red-giant expansion.
+    //   - In about 5 billion years the Sun exhausts core hydrogen and leaves
+    //     the main sequence, beginning to swell into a subgiant and then a
+    //     giant.
+    //   - The outer envelope then expands quickly - within roughly 5 million
+    //     years it sweeps past Mercury's orbit, then Venus's, engulfing both.
+    //   - At the tip of the red-giant branch (commonly cited around 7.6
+    //     billion years from now), the Sun's radius reaches roughly 100 to
+    //     200 times today's radius (sources differ; some models cite even
+    //     larger AGB-tip radii), close to 1 AU, with luminosity roughly a few
+    //     thousand times today's.
+    //   - Earth's fate at that point is a genuine, unresolved scientific
+    //     debate: most detailed models (e.g. Schroder & Smith 2008) conclude
+    //     Earth is engulfed and vaporized, because tidal drag and the
+    //     Sun's extended atmosphere overcome the outward drift caused by
+    //     solar mass loss; a newer (2025) observational study of Sun-like
+    //     stars leaves open a chance Earth's orbit widens enough to escape.
+    //     This page discloses both positions rather than picking one.
+    //   - A brief core helium flash - a thermal-runaway ignition of the
+    //     triple-alpha process in the Sun's degenerate helium core - occurs
+    //     about 1.2 billion years after the Sun leaves the main sequence.
+    //   - After the flash, stable core-helium burning (the horizontal
+    //     branch) is followed by a second, faster expansion (the asymptotic
+    //     giant branch), shedding much of the Sun's remaining mass as a slow
+    //     wind.
+    //   - The ejected outer layers glow briefly as a planetary nebula around
+    //     the exposed core, which then cools for billions of years as a
+    //     white dwarf - roughly Earth-sized, holding very roughly half the
+    //     Sun's present mass.
+    //   - Distinct from star-lifecycle.html (a generic explorer covering
+    //     solar-mass vs massive-star endings for ANY star) - THIS page is
+    //     OUR Sun's specific timeline with a per-planet survival overlay for
+    //     Mercury, Venus, Earth, and Mars.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'sunredgiantfuture';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'sunredgiantfuture'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Real published Sun future-evolution epochs (NASA/ESA + Schroder & Smith
+    // 2008 MNRAS + Penn State ASTRO 801 + NASA Imagine the Universe, cross-
+    // checked via WebSearch 2026-07-24). Each epoch is a discrete, citable
+    // milestone - never an interpolated "current state" claim. sunRadiusUnits
+    // is a COMPRESSED on-screen display value, never claimed to be to scale;
+    // the real figure is in "fact". planets[] lists Mercury/Venus/Earth/Mars
+    // visibility at that epoch ('visible' | 'engulfed' | 'uncertain').
+    var T3D_SUN_EPOCHS = [
+        { label: 'Today', years: '0 (Sun is about 4.6 billion years old)', sunRadiusUnits: 3.0, sunColor: 0xfff2c9,
+          planets: { mercury: 'visible', venus: 'visible', earth: 'visible', mars: 'visible' },
+          fact: 'The Sun shines steadily on the main sequence at about 1 solar radius (roughly 696,000 km) and 1x its current luminosity, slowly brightening by roughly 10% per billion years.' },
+        { label: '+1 billion years', years: '1,000,000,000', sunRadiusUnits: 3.15, sunColor: 0xffe9a8,
+          planets: { mercury: 'visible', venus: 'visible', earth: 'visible', mars: 'visible' },
+          fact: 'The Sun is roughly 10% brighter than today. Rising solar output is expected to begin ending Earth surface habitability - oceans evaporating - well before any red-giant expansion.' },
+        { label: '+5 billion years - leaves the main sequence', years: '5,000,000,000', sunRadiusUnits: 3.6, sunColor: 0xffb35c,
+          planets: { mercury: 'visible', venus: 'visible', earth: 'visible', mars: 'visible' },
+          fact: 'Core hydrogen runs out. The Sun begins swelling into a subgiant and then a giant, radius climbing beyond 1 solar radius for the first time.' },
+        { label: 'Rapid expansion - Mercury and Venus engulfed', years: '~5,000,000 years after leaving the main sequence', sunRadiusUnits: 4.6, sunColor: 0xff8a3d,
+          planets: { mercury: 'engulfed', venus: 'engulfed', earth: 'visible', mars: 'visible' },
+          fact: 'The outer envelope races outward and sweeps past Mercury, then Venus, engulfing both within roughly 5 million years of leaving the main sequence.' },
+        { label: 'Tip of the red-giant branch (~7.6 billion years from now)', years: '~7,600,000,000', sunRadiusUnits: 7.2, sunColor: 0xff5a3c,
+          planets: { mercury: 'engulfed', venus: 'engulfed', earth: 'uncertain', mars: 'visible' },
+          fact: 'Radius reaches roughly 100 to 200 times today value (sources differ), close to 1 AU; luminosity is roughly a few thousand times today value. Earth fate is genuinely debated: most detailed models (Schroder and Smith, 2008) conclude Earth is engulfed, while a newer 2025 study of Sun-like stars leaves open a chance its orbit widens enough to escape.' },
+        { label: 'Core helium flash', years: '~1,200,000,000 years after leaving the main sequence', sunRadiusUnits: 3.4, sunColor: 0xfff6d0,
+          planets: { mercury: 'engulfed', venus: 'engulfed', earth: 'uncertain', mars: 'visible' },
+          fact: 'A brief thermal-runaway ignition burns helium into carbon via the triple-alpha process in the Sun degenerate core. The outer layers contract and dim somewhat right after.' },
+        { label: 'Horizontal branch, then a second (AGB) expansion', years: 'following the helium flash', sunRadiusUnits: 5.6, sunColor: 0xff7a3a,
+          planets: { mercury: 'engulfed', venus: 'engulfed', earth: 'uncertain', mars: 'visible' },
+          fact: 'Stable helium-shell burning is followed by a second, faster expansion (the asymptotic giant branch), shedding much of the Sun remaining mass as a slow wind.' },
+        { label: 'Final state - planetary nebula and white dwarf', years: 'billions of years further on', sunRadiusUnits: 0.9, sunColor: 0xdff2ff,
+          planets: { mercury: 'engulfed', venus: 'engulfed', earth: 'uncertain', mars: 'visible' },
+          fact: 'The outer layers are gently ejected, glowing briefly as a planetary nebula around the exposed core, which then cools for billions of years as a white dwarf - roughly Earth-sized, holding very roughly half the Sun present mass.' }
+    ];
+
+    var T3D_PLANET_ORBIT = { mercury: 5.2, venus: 6.6, earth: 8.4, mars: 11.2 };
+    var T3D_PLANET_COLOR = { mercury: 0x9e9e9e, venus: 0xe0c28a, earth: 0x4d90d8, mars: 0xc1622d };
+    var T3D_PLANET_LABEL = { mercury: 'Mercury', venus: 'Venus', earth: 'Earth', mars: 'Mars' };
+
+    function t3dSunRedGiantFuture(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x05060c, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+        // Starfield backdrop
+        var starN = shell.low ? 220 : 460;
+        var starPos = new Float32Array(starN * 3);
+        for (var s = 0; s < starN; s++) {
+            var r = 70 + Math.random() * 90;
+            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+            starPos[s * 3] = r * Math.sin(ph) * Math.cos(th);
+            starPos[s * 3 + 1] = r * Math.cos(ph) * 0.6;
+            starPos[s * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+        }
+        var starGeo = new THREE.BufferGeometry();
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.3, sizeAttenuation: true, transparent: true, opacity: 0.55 })));
+
+        // The Sun - a single sphere whose radius + color change per epoch
+        // (compressed display scale - never claimed to be real AU/km scale;
+        // the real figure lives in the facts panel).
+        var sunGeo = new THREE.SphereGeometry(1, 32, 24);
+        var sunMat = new THREE.MeshBasicMaterial({ color: 0xfff2c9 });
+        var sun = new THREE.Mesh(sunGeo, sunMat);
+        scene.add(sun);
+        var sunGlow = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 18), new THREE.MeshBasicMaterial({ color: 0xfff2c9, transparent: true, opacity: 0.18 }));
+        scene.add(sunGlow);
+
+        // Planetary-nebula ring (only visible + fading in at the final epoch)
+        var nebula = new THREE.Mesh(
+            new THREE.TorusGeometry(3.2, 0.9, 12, 48),
+            new THREE.MeshBasicMaterial({ color: 0x7dafa3, transparent: true, opacity: 0 })
+        );
+        nebula.rotation.x = Math.PI / 2.3;
+        scene.add(nebula);
+
+        // Planet groups: an orbit ring (line) + a small sphere per planet.
+        var planetMeshes = {}, orbitLines = {}, planetAngle = {};
+        var pk;
+        for (pk in T3D_PLANET_ORBIT) {
+            var orbitR = T3D_PLANET_ORBIT[pk];
+            var ringPts = [];
+            for (var a = 0; a <= 64; a++) {
+                var t = (a / 64) * Math.PI * 2;
+                ringPts.push(new THREE.Vector3(orbitR * Math.cos(t), 0, orbitR * Math.sin(t)));
+            }
+            var ringGeo = new THREE.BufferGeometry().setFromPoints(ringPts);
+            var ringLine = new THREE.Line(ringGeo, new THREE.LineBasicMaterial({ color: 0x445566, transparent: true, opacity: 0.5 }));
+            scene.add(ringLine);
+            orbitLines[pk] = ringLine;
+
+            var pMesh = new THREE.Mesh(new THREE.SphereGeometry(0.34, 16, 12), new THREE.MeshStandardMaterial({ color: T3D_PLANET_COLOR[pk] }));
+            scene.add(pMesh);
+            planetMeshes[pk] = pMesh;
+            planetAngle[pk] = Math.random() * Math.PI * 2;
+        }
+        var sunLight = new THREE.PointLight(0xffffff, 1.4, 0, 0);
+        scene.add(sunLight);
+
+        var epochIndex = 0; // 0..T3D_SUN_EPOCHS.length-1
+
+        function statusWord(state) {
+            if (state === 'engulfed') return 'engulfed by the Sun';
+            if (state === 'uncertain') return 'fate genuinely debated (see facts panel)';
+            return 'still orbiting normally';
+        }
+
+        function panelHtml() {
+            var ep = T3D_SUN_EPOCHS[epochIndex];
+            var rows = '';
+            for (var i = 0; i < T3D_SUN_EPOCHS.length; i++) {
+                var e2 = T3D_SUN_EPOCHS[i];
+                rows += '<tr' + (i === epochIndex ? ' style="background:#fff3cd;"' : '') + '>' +
+                    '<td>' + e2.label + '</td>' +
+                    '<td>' + e2.years + '</td>' +
+                    '</tr>';
+            }
+            var planetRows = '';
+            var pk2;
+            for (pk2 in ep.planets) {
+                planetRows += '<tr><td>' + T3D_PLANET_LABEL[pk2] + '</td><td>' + statusWord(ep.planets[pk2]) + '</td></tr>';
+            }
+            return '<h3>Epoch ' + (epochIndex + 1) + ' of ' + T3D_SUN_EPOCHS.length + '</h3>' +
+                '<p><b>' + ep.label + '</b> (' + ep.years + ' from now)</p>' +
+                '<p>' + ep.fact + '</p>' +
+                '<div class="w3-responsive"><table class="w3-table w3-bordered w3-small">' +
+                '<tr><th>Planet</th><th>Status this epoch</th></tr>' + planetRows + '</table></div>' +
+                '<div class="w3-responsive"><table class="w3-table w3-bordered w3-small">' +
+                '<tr><th>Epoch</th><th>Time from now</th></tr>' + rows + '</table></div>' +
+                '<p class="t3d-note">Educational approximation - the Sun on-screen radius and color are a compressed teaching scale, not a to-scale rendering of the real AU/solar-radii figures cited above and in the facts table. Every year figure, radius range, and the described planet outcome is a real, independently published estimate; where sources genuinely disagree (Earth exact fate at the red-giant tip), both positions are disclosed rather than one being picked as fact.</p>';
+        }
+
+        var idxEl = document.getElementById('t3dSunEpochScrub');
+        var idxLab = document.getElementById('t3dSunEpochLabel');
+
+        function apply() {
+            var ep = T3D_SUN_EPOCHS[epochIndex];
+            sun.scale.setScalar(ep.sunRadiusUnits);
+            sunGlow.scale.setScalar(ep.sunRadiusUnits * 1.25);
+            sun.material.color.setHex(ep.sunColor);
+            sunGlow.material.color.setHex(ep.sunColor);
+            nebula.material.opacity = (epochIndex === T3D_SUN_EPOCHS.length - 1) ? 0.35 : 0;
+            nebula.scale.setScalar(ep.sunRadiusUnits * 1.05);
+
+            var pk3;
+            for (pk3 in ep.planets) {
+                var state = ep.planets[pk3];
+                var mesh = planetMeshes[pk3];
+                if (state === 'engulfed') { mesh.visible = false; orbitLines[pk3].material.opacity = 0.12; }
+                else if (state === 'uncertain') { mesh.visible = true; mesh.material.transparent = true; mesh.material.opacity = 0.4; orbitLines[pk3].material.opacity = 0.3; }
+                else { mesh.visible = true; mesh.material.transparent = false; mesh.material.opacity = 1; orbitLines[pk3].material.opacity = 0.5; }
+            }
+            if (idxLab) idxLab.textContent = ep.label;
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ epochIndex: epochIndex }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.epochIndex === 'number' && store.epochIndex >= 0 && store.epochIndex < T3D_SUN_EPOCHS.length) {
+            epochIndex = store.epochIndex;
+        }
+        if (idxEl) idxEl.value = String(epochIndex);
+        apply();
+
+        if (idxEl) idxEl.addEventListener('input', function () {
+            epochIndex = Math.max(0, Math.min(T3D_SUN_EPOCHS.length - 1, parseInt(idxEl.value || '0', 10)));
+            apply();
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Scrub the epoch slider to move through the Sun future - Mercury, Venus, Earth, and Mars react per epoch.');
+        return function animate(dt) {
+            var pkk;
+            for (pkk in T3D_PLANET_ORBIT) {
+                if (!planetMeshes[pkk].visible) continue;
+                planetAngle[pkk] += dt * 0.00018;
+                var orbitR = T3D_PLANET_ORBIT[pkk];
+                planetMeshes[pkk].position.set(orbitR * Math.cos(planetAngle[pkk]), 0, orbitR * Math.sin(planetAngle[pkk]));
+            }
+            sun.rotation.y += dt * 0.00005;
+            if (epochIndex === 5) { sunGlow.scale.setScalar(T3D_SUN_EPOCHS[5].sunRadiusUnits * (1.25 + 0.06 * Math.sin(performance.now() * 0.01))); }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { sunredgiantfuture: 't3dSunEpochControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { sunredgiantfuture: { radius: 26, maxR: 90, minR: 6, phi: 1.05, theta: 0.6, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dSunRedGiantFuture(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
