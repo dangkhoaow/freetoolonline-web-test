@@ -1,0 +1,326 @@
+<script>
+    // 3D scene archetype skeleton (Helioseismology Sun Oscillation) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Built LEAN, forked from the olympus-mons-mars-volcano
+    // single-scene shape. All geometry is procedural (vertex-displaced sphere +
+    // wedge-cutaway shells) - no CDN asset is used or required.
+    //
+    // EDUCATIONAL APPROXIMATION, not a physical simulation. The real Sun's
+    // five-minute oscillation (p-mode) involves surface motions of only a few
+    // hundred meters per second - far too slow and subtle to notice directly at
+    // this camera scale, so the ripple pattern, its speed, and its red/blue
+    // Doppler-style coloring are exaggerated for visibility. This is disclosed
+    // in the info panel and the FAQ.
+    //
+    // Published figures (cross-checked via WebSearch/NSO/PNAS/arXiv 2026-07-23/24):
+    //   - Characteristic p-mode ("five-minute") oscillation period: about 5
+    //     minutes (about 3 millihertz). Millions of resonant modes are observed
+    //     simultaneously by SOHO, GONG, and SDO/HMI.
+    //   - Base of the convection zone: independently measured by helioseismic
+    //     inversion at 0.713 +/- 0.001 solar radii.
+    //   - Tachocline (rotation-rate shear layer between the differentially
+    //     rotating convection zone and the uniformly rotating radiative
+    //     interior): located at roughly 0.69-0.72 solar radii depending on
+    //     inversion method/latitude, with a thickness of about 0.006-0.05 solar
+    //     radii. Leading candidate site for the Sun's 11-year magnetic dynamo.
+    //   - Distinct from sun-structure.html (a static layer-cutaway diagram) -
+    //     this page is specifically about the wave-probing DIAGNOSTIC METHOD,
+    //     not a second static cutaway. Also distinct from solar-granulation.html
+    //     (a surface convection-cell close-up, not the seismic technique).
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'helioseismologysunoscillation';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'helioseismologysunoscillation'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 50, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.05, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Real published figures (see header comment for sources).
+    var T3D_HS_BASE_R = 10;
+    var T3D_HS_TACHO_FRAC = 0.713; // measured base of the convection zone (solar radii)
+    var T3D_HS_MODES = [
+        { l: 4, m: 2, label: 'l=4, m=2' },
+        { l: 6, m: 3, label: 'l=6, m=3' },
+        { l: 9, m: 5, label: 'l=9, m=5' },
+    ];
+
+    function t3dHelioseismologySunOscillation(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x05070f, 1);
+        scene.add(new THREE.AmbientLight(0xfff2d8, 0.55));
+        var sunLight = new THREE.PointLight(0xfff6da, 900, 0, 1.6);
+        sunLight.position.set(30, 22, 26);
+        scene.add(sunLight);
+
+        var starN = shell.low ? 200 : 420;
+        var starPos = new Float32Array(starN * 3);
+        for (var s = 0; s < starN; s++) {
+            var r = 90 + Math.random() * 120;
+            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+            starPos[s * 3] = r * Math.sin(ph) * Math.cos(th);
+            starPos[s * 3 + 1] = r * Math.cos(ph);
+            starPos[s * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+        }
+        var starGeo = new THREE.BufferGeometry();
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xbfd6ff, size: 0.5, sizeAttenuation: true, transparent: true, opacity: 0.55 })));
+
+        // ---- surface oscillation sphere: vertex-displaced + Doppler-style colored ----
+        var segs = shell.low ? 40 : 72;
+        var surfGeo = new THREE.SphereGeometry(T3D_HS_BASE_R, segs, Math.round(segs * 0.62));
+        var basePos = surfGeo.attributes.position.array.slice();
+        var dirs = [];
+        for (var i = 0; i < surfGeo.attributes.position.count; i++) {
+            var x = basePos[i * 3], y = basePos[i * 3 + 1], z = basePos[i * 3 + 2];
+            var rr = Math.sqrt(x * x + y * y + z * z) || 1;
+            dirs.push({
+                nx: x / rr, ny: y / rr, nz: z / rr,
+                theta: Math.atan2(z, x),
+                phi: Math.acos(Math.max(-1, Math.min(1, y / rr))),
+            });
+        }
+        var surfColors = new Float32Array(surfGeo.attributes.position.count * 3);
+        surfGeo.setAttribute('color', new THREE.BufferAttribute(surfColors, 3));
+        var surfMesh = new THREE.Mesh(surfGeo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, metalness: 0.0, emissive: 0x140700, emissiveIntensity: 0.4 }));
+        scene.add(surfMesh);
+
+        // ---- interior cutaway: two wedge shells + a tachocline boundary ring ----
+        var cutawayGroup = new THREE.Group();
+        var WEDGE = Math.PI * 1.45; // leave a wedge open so the cut faces show
+        function wedgeShell(radius, color, opacity) {
+            var g = new THREE.SphereGeometry(radius, 40, 24, 0, WEDGE);
+            var m = new THREE.MeshStandardMaterial({ color: color, roughness: 0.9, transparent: opacity < 1, opacity: opacity, side: THREE.DoubleSide });
+            return new THREE.Mesh(g, m);
+        }
+        var interiorMesh = wedgeShell(T3D_HS_BASE_R * T3D_HS_TACHO_FRAC, 0xd84315, 1);
+        var convectionMesh = wedgeShell(T3D_HS_BASE_R, 0xffca28, 0.5);
+        var tachoRing = new THREE.Mesh(
+            new THREE.TorusGeometry(T3D_HS_BASE_R * T3D_HS_TACHO_FRAC, 0.06, 8, 64, WEDGE),
+            new THREE.MeshBasicMaterial({ color: 0x80f2ff })
+        );
+        tachoRing.rotation.x = Math.PI / 2;
+        cutawayGroup.add(interiorMesh, convectionMesh, tachoRing);
+        cutawayGroup.visible = false;
+        scene.add(cutawayGroup);
+
+        var modeIdx = 0, amplitude = 0.55, cutaway = false;
+        var color = new THREE.Color();
+
+        function panelHtml() {
+            return '<h3>Helioseismology - the Sun\'s five-minute pulse</h3>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Oscillation period</td><td>about 5 minutes (about 3 mHz)</td></tr>' +
+                '<tr><td>Resonant modes tracked</td><td>millions, via SOHO / GONG / SDO-HMI</td></tr>' +
+                '<tr><td>Measured convection-zone base</td><td>0.713 +/- 0.001 solar radii</td></tr>' +
+                '<tr><td>Tachocline location</td><td>about 0.69-0.72 solar radii; thickness about 0.006-0.05 solar radii</td></tr>' +
+                '<tr><td>Pattern shown</td><td>' + T3D_HS_MODES[modeIdx].label + ' (simplified example)</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation - the real oscillation is far slower and subtler than shown here; this animation is sped up and exaggerated for visibility. The figures above are the real measured ones.</p>';
+        }
+
+        function applyCutaway() {
+            surfMesh.visible = !cutaway;
+            cutawayGroup.visible = cutaway;
+            var btn = document.getElementById('t3dHelioCutawayBtn');
+            if (btn) btn.textContent = cutaway ? 'Show surface oscillation' : 'Show interior cutaway';
+        }
+        function saveState() {
+            try { t3dSaveStore({ amplitude: amplitude, cutaway: cutaway, modeIdx: modeIdx }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.amplitude === 'number' && store.amplitude >= 0 && store.amplitude <= 1) amplitude = store.amplitude;
+        if (typeof store.cutaway === 'boolean') cutaway = store.cutaway;
+        if (typeof store.modeIdx === 'number' && store.modeIdx >= 0 && store.modeIdx < T3D_HS_MODES.length) modeIdx = store.modeIdx;
+
+        var ampSlider = document.getElementById('t3dHelioAmpSlider');
+        var ampLabel = document.getElementById('t3dHelioAmpLabel');
+        var cutawayBtn = document.getElementById('t3dHelioCutawayBtn');
+        var modeBtn = document.getElementById('t3dHelioModeBtn');
+        var modeLabelEl = document.getElementById('t3dHelioModeLabel');
+
+        if (ampSlider) ampSlider.value = String(Math.round(amplitude * 100));
+        if (ampLabel) ampLabel.textContent = Math.round(amplitude * 100) + '%';
+        applyCutaway();
+        if (modeLabelEl) modeLabelEl.textContent = 'Pattern shown: ' + T3D_HS_MODES[modeIdx].label + ' - the real Sun combines millions of these at once.';
+        t3dInfo(panelHtml());
+
+        if (ampSlider) ampSlider.addEventListener('input', function () {
+            amplitude = Math.max(0, Math.min(1, parseInt(ampSlider.value || '55', 10) / 100));
+            if (ampLabel) ampLabel.textContent = Math.round(amplitude * 100) + '%';
+            saveState();
+        });
+        if (cutawayBtn) cutawayBtn.addEventListener('click', function () {
+            cutaway = !cutaway;
+            applyCutaway();
+            t3dInfo(panelHtml());
+            saveState();
+        });
+        if (modeBtn) modeBtn.addEventListener('click', function () {
+            modeIdx = (modeIdx + 1) % T3D_HS_MODES.length;
+            if (modeLabelEl) modeLabelEl.textContent = 'Pattern shown: ' + T3D_HS_MODES[modeIdx].label + ' - the real Sun combines millions of these at once.';
+            t3dInfo(panelHtml());
+            saveState();
+        });
+
+        t3dStatus('Drag to orbit, scroll or pinch to zoom. Toggle the interior cutaway or drag the amplitude slider.');
+
+        var t = 0;
+        return function animate(dt) {
+            t += dt / 1000;
+            if (!cutaway) {
+                var mode = T3D_HS_MODES[modeIdx];
+                var pos = surfGeo.attributes.position;
+                var colAttr = surfGeo.attributes.color;
+                var speed = 1.6; // exaggerated for visibility - see disclosure
+                for (var i = 0; i < dirs.length; i++) {
+                    var d = dirs[i];
+                    var wave = Math.sin(mode.l * d.phi + t * speed) * Math.cos(mode.m * d.theta);
+                    var disp = T3D_HS_BASE_R * (1 + amplitude * 0.05 * wave);
+                    pos.setXYZ(i, d.nx * disp, d.ny * disp, d.nz * disp);
+                    if (wave >= 0) { color.setRGB(0.85 + wave * 0.15, 0.35 - wave * 0.1, 0.18); }
+                    else { color.setRGB(0.15, 0.35 + wave * -0.15, 0.75 + wave * -0.2); }
+                    colAttr.setXYZ(i, color.r, color.g, color.b);
+                }
+                pos.needsUpdate = true;
+                colAttr.needsUpdate = true;
+            } else {
+                cutawayGroup.rotation.y += dt * 0.00012;
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { helioseismologysunoscillation: 't3dHelioControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { helioseismologysunoscillation: { radius: 30, maxR: 90, minR: 12, phi: 1.1, theta: 0.6, targetY: 0, fov: 50 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dHelioseismologySunOscillation(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
