@@ -17,6 +17,22 @@ export const INFO_ROUTES = new Set([
   '/guides/tdee-calorie-calculator-vs-alternatives.html',
   '/guides/tdee-calorie-calculator-step-by-step.html',
   '/guides/tdee-calorie-calculator-when.html',
+  // new-tool-discovery-loop-runbook fire389: tdee-calorie-calculator guide locale fanout (pt/es/vi/id/de x 3 angles)
+  '/guides/pt/tdee-calorie-calculator-when.html',
+  '/guides/es/tdee-calorie-calculator-when.html',
+  '/guides/vi/tdee-calorie-calculator-when.html',
+  '/guides/id/tdee-calorie-calculator-when.html',
+  '/guides/de/tdee-calorie-calculator-when.html',
+  '/guides/pt/tdee-calorie-calculator-step-by-step.html',
+  '/guides/es/tdee-calorie-calculator-step-by-step.html',
+  '/guides/vi/tdee-calorie-calculator-step-by-step.html',
+  '/guides/id/tdee-calorie-calculator-step-by-step.html',
+  '/guides/de/tdee-calorie-calculator-step-by-step.html',
+  '/guides/pt/tdee-calorie-calculator-vs-alternatives.html',
+  '/guides/es/tdee-calorie-calculator-vs-alternatives.html',
+  '/guides/vi/tdee-calorie-calculator-vs-alternatives.html',
+  '/guides/id/tdee-calorie-calculator-vs-alternatives.html',
+  '/guides/de/tdee-calorie-calculator-vs-alternatives.html',
   '/guides/css-grid-layout-generator-vs-alternatives.html',
   '/guides/css-grid-layout-generator-step-by-step.html',
   '/guides/css-grid-layout-generator-when.html',
@@ -5497,6 +5513,29 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // new-tool-discovery-loop-runbook fire389: tdee-calorie-calculator guides (all
+  // 3 EN angles) were never registered in GUIDE_ROUTES - same builder gap
+  // fire366/fire369/fire371 already backfilled (patchGuideRoute() loops over both
+  // INFO_ROUTES and GUIDE_ROUTES, but the pre-existing entries above only ever
+  // landed in INFO_ROUTES) - backfilling EN + full pt/es/vi/id/de locale fanout.
+  '/guides/tdee-calorie-calculator-when.html',
+  '/guides/tdee-calorie-calculator-step-by-step.html',
+  '/guides/tdee-calorie-calculator-vs-alternatives.html',
+  '/guides/pt/tdee-calorie-calculator-when.html',
+  '/guides/es/tdee-calorie-calculator-when.html',
+  '/guides/vi/tdee-calorie-calculator-when.html',
+  '/guides/id/tdee-calorie-calculator-when.html',
+  '/guides/de/tdee-calorie-calculator-when.html',
+  '/guides/pt/tdee-calorie-calculator-step-by-step.html',
+  '/guides/es/tdee-calorie-calculator-step-by-step.html',
+  '/guides/vi/tdee-calorie-calculator-step-by-step.html',
+  '/guides/id/tdee-calorie-calculator-step-by-step.html',
+  '/guides/de/tdee-calorie-calculator-step-by-step.html',
+  '/guides/pt/tdee-calorie-calculator-vs-alternatives.html',
+  '/guides/es/tdee-calorie-calculator-vs-alternatives.html',
+  '/guides/vi/tdee-calorie-calculator-vs-alternatives.html',
+  '/guides/id/tdee-calorie-calculator-vs-alternatives.html',
+  '/guides/de/tdee-calorie-calculator-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire371: number-base-converter guides
   // (all 3 EN angles) were never registered in GUIDE_ROUTES - same builder gap
   // fire366/fire369 already backfilled for password-strength-checker /
@@ -23450,6 +23489,22 @@ export const JSP_BY_ROUTE = {
   '/guides/tdee-calorie-calculator-when.html': 'guide/tdee-calorie-calculator-when.jsp',
   '/guides/tdee-calorie-calculator-step-by-step.html': 'guide/tdee-calorie-calculator-step-by-step.jsp',
   '/guides/tdee-calorie-calculator-vs-alternatives.html': 'guide/tdee-calorie-calculator-vs-alternatives.jsp',
+  // new-tool-discovery-loop-runbook fire389: tdee-calorie-calculator guide locale fanout (pt/es/vi/id/de x 3 angles)
+  '/guides/pt/tdee-calorie-calculator-when.html': 'guide/pt/tdee-calorie-calculator-when.jsp',
+  '/guides/es/tdee-calorie-calculator-when.html': 'guide/es/tdee-calorie-calculator-when.jsp',
+  '/guides/vi/tdee-calorie-calculator-when.html': 'guide/vi/tdee-calorie-calculator-when.jsp',
+  '/guides/id/tdee-calorie-calculator-when.html': 'guide/id/tdee-calorie-calculator-when.jsp',
+  '/guides/de/tdee-calorie-calculator-when.html': 'guide/de/tdee-calorie-calculator-when.jsp',
+  '/guides/pt/tdee-calorie-calculator-step-by-step.html': 'guide/pt/tdee-calorie-calculator-step-by-step.jsp',
+  '/guides/es/tdee-calorie-calculator-step-by-step.html': 'guide/es/tdee-calorie-calculator-step-by-step.jsp',
+  '/guides/vi/tdee-calorie-calculator-step-by-step.html': 'guide/vi/tdee-calorie-calculator-step-by-step.jsp',
+  '/guides/id/tdee-calorie-calculator-step-by-step.html': 'guide/id/tdee-calorie-calculator-step-by-step.jsp',
+  '/guides/de/tdee-calorie-calculator-step-by-step.html': 'guide/de/tdee-calorie-calculator-step-by-step.jsp',
+  '/guides/pt/tdee-calorie-calculator-vs-alternatives.html': 'guide/pt/tdee-calorie-calculator-vs-alternatives.jsp',
+  '/guides/es/tdee-calorie-calculator-vs-alternatives.html': 'guide/es/tdee-calorie-calculator-vs-alternatives.jsp',
+  '/guides/vi/tdee-calorie-calculator-vs-alternatives.html': 'guide/vi/tdee-calorie-calculator-vs-alternatives.jsp',
+  '/guides/id/tdee-calorie-calculator-vs-alternatives.html': 'guide/id/tdee-calorie-calculator-vs-alternatives.jsp',
+  '/guides/de/tdee-calorie-calculator-vs-alternatives.html': 'guide/de/tdee-calorie-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
