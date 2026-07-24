@@ -803,6 +803,7 @@ try {
     { title: "CSS Box-Shadow Generator", url: "https://freetoolonline.com/developer-tools/css-box-shadow-generator.html", include: !1, tags: "developer" },
     { title: "CSS Grid Layout Generator", url: "https://freetoolonline.com/developer-tools/css-grid-generator.html", include: !1, tags: "developer" },
     { title: "TDEE & Calorie Calculator", url: "https://freetoolonline.com/utility-tools/tdee-calorie-calculator.html", include: !1, tags: "utility" },
+    { title: "Scientific Calculator", url: "https://freetoolonline.com/utility-tools/scientific-calculator.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

@@ -14,6 +14,25 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/scientific-calculator-vs-alternatives.html',
+  '/guides/scientific-calculator-step-by-step.html',
+  '/guides/scientific-calculator-when.html',
+  // new-tool-discovery-loop-runbook fire390: scientific-calculator guide locale fanout (pt/es/vi/id/de x 3 angles)
+  '/guides/pt/scientific-calculator-when.html',
+  '/guides/es/scientific-calculator-when.html',
+  '/guides/vi/scientific-calculator-when.html',
+  '/guides/id/scientific-calculator-when.html',
+  '/guides/de/scientific-calculator-when.html',
+  '/guides/pt/scientific-calculator-step-by-step.html',
+  '/guides/es/scientific-calculator-step-by-step.html',
+  '/guides/vi/scientific-calculator-step-by-step.html',
+  '/guides/id/scientific-calculator-step-by-step.html',
+  '/guides/de/scientific-calculator-step-by-step.html',
+  '/guides/pt/scientific-calculator-vs-alternatives.html',
+  '/guides/es/scientific-calculator-vs-alternatives.html',
+  '/guides/vi/scientific-calculator-vs-alternatives.html',
+  '/guides/id/scientific-calculator-vs-alternatives.html',
+  '/guides/de/scientific-calculator-vs-alternatives.html',
   '/guides/tdee-calorie-calculator-vs-alternatives.html',
   '/guides/tdee-calorie-calculator-step-by-step.html',
   '/guides/tdee-calorie-calculator-when.html',
@@ -5531,6 +5550,27 @@ export const INFO_ROUTES = new Set([
 // the URL still renders (200, not 404) for inbound links, but sitemap-guides.xml
 // no longer publishes it. Used for legacy non-kebab URLs that already shipped.
 export const GUIDE_ROUTES = new Set([
+  // new-tool-discovery-loop-runbook fire390: scientific-calculator guides (all
+  // 3 EN angles) were never registered in GUIDE_ROUTES - same builder gap as
+  // fire385/fire389 - backfilling EN + full pt/es/vi/id/de locale fanout.
+  '/guides/scientific-calculator-when.html',
+  '/guides/scientific-calculator-step-by-step.html',
+  '/guides/scientific-calculator-vs-alternatives.html',
+  '/guides/pt/scientific-calculator-when.html',
+  '/guides/es/scientific-calculator-when.html',
+  '/guides/vi/scientific-calculator-when.html',
+  '/guides/id/scientific-calculator-when.html',
+  '/guides/de/scientific-calculator-when.html',
+  '/guides/pt/scientific-calculator-step-by-step.html',
+  '/guides/es/scientific-calculator-step-by-step.html',
+  '/guides/vi/scientific-calculator-step-by-step.html',
+  '/guides/id/scientific-calculator-step-by-step.html',
+  '/guides/de/scientific-calculator-step-by-step.html',
+  '/guides/pt/scientific-calculator-vs-alternatives.html',
+  '/guides/es/scientific-calculator-vs-alternatives.html',
+  '/guides/vi/scientific-calculator-vs-alternatives.html',
+  '/guides/id/scientific-calculator-vs-alternatives.html',
+  '/guides/de/scientific-calculator-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire389: tdee-calorie-calculator guides (all
   // 3 EN angles) were never registered in GUIDE_ROUTES - same builder gap
   // fire366/fire369/fire371 already backfilled (patchGuideRoute() loops over both
@@ -12827,6 +12867,7 @@ export const ALIAS_ROUTES = {
   '/css-box-shadow-generator.html': '/developer-tools/css-box-shadow-generator.html',
   '/css-grid-generator.html': '/developer-tools/css-grid-generator.html',
   '/tdee-calorie-calculator.html': '/utility-tools/tdee-calorie-calculator.html',
+  '/scientific-calculator.html': '/utility-tools/scientific-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -23561,6 +23602,26 @@ export const JSP_BY_ROUTE = {
   '/guides/de/sun-red-giant-future-vs-alternatives.html': 'guide/de/sun-red-giant-future-vs-alternatives.jsp',
   '/guides/vi/sun-red-giant-future-vs-alternatives.html': 'guide/vi/sun-red-giant-future-vs-alternatives.jsp',
   '/guides/id/sun-red-giant-future-vs-alternatives.html': 'guide/id/sun-red-giant-future-vs-alternatives.jsp',
+  '/utility-tools/scientific-calculator.html': 'utility/scientific-calculator.jsp',
+  '/guides/scientific-calculator-when.html': 'guide/scientific-calculator-when.jsp',
+  '/guides/scientific-calculator-step-by-step.html': 'guide/scientific-calculator-step-by-step.jsp',
+  '/guides/scientific-calculator-vs-alternatives.html': 'guide/scientific-calculator-vs-alternatives.jsp',
+  // new-tool-discovery-loop-runbook fire390: scientific-calculator guide locale fanout (pt/es/vi/id/de x 3 angles)
+  '/guides/pt/scientific-calculator-when.html': 'guide/pt/scientific-calculator-when.jsp',
+  '/guides/es/scientific-calculator-when.html': 'guide/es/scientific-calculator-when.jsp',
+  '/guides/vi/scientific-calculator-when.html': 'guide/vi/scientific-calculator-when.jsp',
+  '/guides/id/scientific-calculator-when.html': 'guide/id/scientific-calculator-when.jsp',
+  '/guides/de/scientific-calculator-when.html': 'guide/de/scientific-calculator-when.jsp',
+  '/guides/pt/scientific-calculator-step-by-step.html': 'guide/pt/scientific-calculator-step-by-step.jsp',
+  '/guides/es/scientific-calculator-step-by-step.html': 'guide/es/scientific-calculator-step-by-step.jsp',
+  '/guides/vi/scientific-calculator-step-by-step.html': 'guide/vi/scientific-calculator-step-by-step.jsp',
+  '/guides/id/scientific-calculator-step-by-step.html': 'guide/id/scientific-calculator-step-by-step.jsp',
+  '/guides/de/scientific-calculator-step-by-step.html': 'guide/de/scientific-calculator-step-by-step.jsp',
+  '/guides/pt/scientific-calculator-vs-alternatives.html': 'guide/pt/scientific-calculator-vs-alternatives.jsp',
+  '/guides/es/scientific-calculator-vs-alternatives.html': 'guide/es/scientific-calculator-vs-alternatives.jsp',
+  '/guides/vi/scientific-calculator-vs-alternatives.html': 'guide/vi/scientific-calculator-vs-alternatives.jsp',
+  '/guides/id/scientific-calculator-vs-alternatives.html': 'guide/id/scientific-calculator-vs-alternatives.jsp',
+  '/guides/de/scientific-calculator-vs-alternatives.html': 'guide/de/scientific-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
