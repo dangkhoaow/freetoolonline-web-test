@@ -14,6 +14,25 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/gpa-calculator-vs-alternatives.html',
+  // new-tool-discovery-loop-runbook fire475: gpa-calculator pt/es/vi/id/de guide locale fanout
+  '/guides/pt/gpa-calculator-when.html',
+  '/guides/pt/gpa-calculator-step-by-step.html',
+  '/guides/pt/gpa-calculator-vs-alternatives.html',
+  '/guides/es/gpa-calculator-when.html',
+  '/guides/es/gpa-calculator-step-by-step.html',
+  '/guides/es/gpa-calculator-vs-alternatives.html',
+  '/guides/vi/gpa-calculator-when.html',
+  '/guides/vi/gpa-calculator-step-by-step.html',
+  '/guides/vi/gpa-calculator-vs-alternatives.html',
+  '/guides/id/gpa-calculator-when.html',
+  '/guides/id/gpa-calculator-step-by-step.html',
+  '/guides/id/gpa-calculator-vs-alternatives.html',
+  '/guides/de/gpa-calculator-when.html',
+  '/guides/de/gpa-calculator-step-by-step.html',
+  '/guides/de/gpa-calculator-vs-alternatives.html',
+  '/guides/gpa-calculator-step-by-step.html',
+  '/guides/gpa-calculator-when.html',
   '/guides/jpg-avif-converter-vs-alternatives.html',
   '/guides/jpg-avif-converter-step-by-step.html',
   '/guides/jpg-avif-converter-when.html',
@@ -13686,6 +13705,7 @@ export const ALIAS_ROUTES = {
   '/strong-lensing-multiple-images.html': '/space-3d/strong-lensing-multiple-images.html',
   '/interstellar-travel-timescales.html': '/space-3d/interstellar-travel-timescales.html',
   '/jpg-to-avif-converter.html': '/image-converter-tools/jpg-to-avif-converter.html',
+  '/gpa-calculator.html': '/utility-tools/gpa-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -25003,6 +25023,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/jpg-avif-converter-when.html': 'guide/de/jpg-avif-converter-when.jsp',
   '/guides/de/jpg-avif-converter-step-by-step.html': 'guide/de/jpg-avif-converter-step-by-step.jsp',
   '/guides/de/jpg-avif-converter-vs-alternatives.html': 'guide/de/jpg-avif-converter-vs-alternatives.jsp',
+  '/utility-tools/gpa-calculator.html': 'utility/gpa-calculator.jsp',
+  '/guides/gpa-calculator-when.html': 'guide/gpa-calculator-when.jsp',
+  '/guides/gpa-calculator-step-by-step.html': 'guide/gpa-calculator-step-by-step.jsp',
+  '/guides/gpa-calculator-vs-alternatives.html': 'guide/gpa-calculator-vs-alternatives.jsp',
+  '/guides/pt/gpa-calculator-when.html': 'guide/pt/gpa-calculator-when.jsp',
+  '/guides/pt/gpa-calculator-step-by-step.html': 'guide/pt/gpa-calculator-step-by-step.jsp',
+  '/guides/pt/gpa-calculator-vs-alternatives.html': 'guide/pt/gpa-calculator-vs-alternatives.jsp',
+  '/guides/es/gpa-calculator-when.html': 'guide/es/gpa-calculator-when.jsp',
+  '/guides/es/gpa-calculator-step-by-step.html': 'guide/es/gpa-calculator-step-by-step.jsp',
+  '/guides/es/gpa-calculator-vs-alternatives.html': 'guide/es/gpa-calculator-vs-alternatives.jsp',
+  '/guides/vi/gpa-calculator-when.html': 'guide/vi/gpa-calculator-when.jsp',
+  '/guides/vi/gpa-calculator-step-by-step.html': 'guide/vi/gpa-calculator-step-by-step.jsp',
+  '/guides/vi/gpa-calculator-vs-alternatives.html': 'guide/vi/gpa-calculator-vs-alternatives.jsp',
+  '/guides/id/gpa-calculator-when.html': 'guide/id/gpa-calculator-when.jsp',
+  '/guides/id/gpa-calculator-step-by-step.html': 'guide/id/gpa-calculator-step-by-step.jsp',
+  '/guides/id/gpa-calculator-vs-alternatives.html': 'guide/id/gpa-calculator-vs-alternatives.jsp',
+  '/guides/de/gpa-calculator-when.html': 'guide/de/gpa-calculator-when.jsp',
+  '/guides/de/gpa-calculator-step-by-step.html': 'guide/de/gpa-calculator-step-by-step.jsp',
+  '/guides/de/gpa-calculator-vs-alternatives.html': 'guide/de/gpa-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
