@@ -381,6 +381,7 @@ try {
     { title: "Anchiornis 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/anchiornis.html", include: !1, tags: "dinosaur-3d" },
     { title: "Qianzhousaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/qianzhousaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Mapusaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/mapusaurus.html", include: !1, tags: "dinosaur-3d" },
+    { title: "Tyrannotitan 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/tyrannotitan.html", include: !1, tags: "dinosaur-3d" },
     { title: "Ophthalmosaurus 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/ophthalmosaurus.html", include: !1, tags: "dinosaur-3d" },
     { title: "Elasmotherium 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/elasmotherium.html", include: !1, tags: "dinosaur-3d" },
     { title: "Austroraptor 3D Viewer", url: "https://freetoolonline.com/dinosaur-3d/austroraptor.html", include: !1, tags: "dinosaur-3d" },

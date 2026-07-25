@@ -13016,6 +13016,8 @@ export const ALIAS_ROUTES = {
   '/pinocchio-rex.html': '/dinosaur-3d/qianzhousaurus.html',
   // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-24): flat-slug alias for mapusaurus.
   '/mapusaurus.html': '/dinosaur-3d/mapusaurus.html',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-25): flat-slug alias for tyrannotitan.
+  '/tyrannotitan.html': '/dinosaur-3d/tyrannotitan.html',
   // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-24): flat-slug alias for ophthalmosaurus.
   '/ophthalmosaurus.html': '/dinosaur-3d/ophthalmosaurus.html',
   // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-24): flat-slug alias for elasmotherium
@@ -17221,6 +17223,14 @@ export const JSP_BY_ROUTE = {
   // known from a 7-9 individual bonebed. Model-first via ftol-vm-assets
   // mapusaurus.glb (CC-BY-SA 4.0, Printables "seth the yutyrannus", commit 9e11585).
   '/dinosaur-3d/mapusaurus.html': 'dinosaur/mapusaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-25): Tyrannotitan
+  // viewer - theropod archetype (bigHead, same code path as giganotosaurus/
+  // mapusaurus), a giant carcharodontosaurid (tribe Giganotosaurini) from the
+  // Cerro Barcino Formation, Chubut, Argentina, known mostly from an
+  // incomplete skull + a nearly-complete femur. Model-first via ftol-vm-assets
+  // tyrannotitan.glb (CC-BY-SA 4.0, Printables "seth the yutyrannus", derivative
+  // of a CC-BY-4.0 Sketchfab original by Sammy The Citipati).
+  '/dinosaur-3d/tyrannotitan.html': 'dinosaur/tyrannotitan.jsp',
   // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-24): Ophthalmosaurus
   // viewer - marine archetype (dorsalFin feat, same code path as ichthyosaurus),
   // a huge-eyed ichthyosaur distinguished by the largest eyes of any known
