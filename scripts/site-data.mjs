@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/white-noise-ambient-sound-generator-vs-alternatives.html',
+  '/guides/white-noise-ambient-sound-generator-step-by-step.html',
+  '/guides/white-noise-ambient-sound-generator-when.html',
   '/guides/meme-maker-vs-alternatives.html',
   '/guides/de/meme-maker-vs-alternatives.html',
   '/guides/id/meme-maker-vs-alternatives.html',
@@ -13316,6 +13319,7 @@ export const ALIAS_ROUTES = {
   '/signature-maker.html': '/image-tools/signature-maker.html',
   '/time-zone-converter.html': '/utility-tools/time-zone-converter.html',
   '/meme-maker.html': '/image-tools/meme-maker.html',
+  '/white-noise-generator.html': '/utility-tools/white-noise-generator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -24401,6 +24405,10 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/meme-maker-vs-alternatives.html': 'guide/vi/meme-maker-vs-alternatives.jsp',
   '/guides/es/meme-maker-vs-alternatives.html': 'guide/es/meme-maker-vs-alternatives.jsp',
   '/guides/pt/meme-maker-vs-alternatives.html': 'guide/pt/meme-maker-vs-alternatives.jsp',
+  '/utility-tools/white-noise-generator.html': 'utility/white-noise-generator.jsp',
+  '/guides/white-noise-ambient-sound-generator-when.html': 'guide/white-noise-ambient-sound-generator-when.jsp',
+  '/guides/white-noise-ambient-sound-generator-step-by-step.html': 'guide/white-noise-ambient-sound-generator-step-by-step.jsp',
+  '/guides/white-noise-ambient-sound-generator-vs-alternatives.html': 'guide/white-noise-ambient-sound-generator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
