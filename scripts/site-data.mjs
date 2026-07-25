@@ -5896,6 +5896,22 @@ export const INFO_ROUTES = new Set([
   '/guides/de/mercury-spin-orbit-resonance-step-by-step.html',
   '/guides/de/mercury-spin-orbit-resonance-when.html',
   '/guides/de/mercury-spin-orbit-resonance-vs-alternatives.html',
+  // jpg-avif-converter locale fanout (new-tool-discovery-loop-runbook fire438, 2026-07-25)
+  '/guides/pt/jpg-avif-converter-when.html',
+  '/guides/pt/jpg-avif-converter-step-by-step.html',
+  '/guides/pt/jpg-avif-converter-vs-alternatives.html',
+  '/guides/es/jpg-avif-converter-when.html',
+  '/guides/es/jpg-avif-converter-step-by-step.html',
+  '/guides/es/jpg-avif-converter-vs-alternatives.html',
+  '/guides/vi/jpg-avif-converter-when.html',
+  '/guides/vi/jpg-avif-converter-step-by-step.html',
+  '/guides/vi/jpg-avif-converter-vs-alternatives.html',
+  '/guides/id/jpg-avif-converter-when.html',
+  '/guides/id/jpg-avif-converter-step-by-step.html',
+  '/guides/id/jpg-avif-converter-vs-alternatives.html',
+  '/guides/de/jpg-avif-converter-when.html',
+  '/guides/de/jpg-avif-converter-step-by-step.html',
+  '/guides/de/jpg-avif-converter-vs-alternatives.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -12227,6 +12243,25 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/mercury-spin-orbit-resonance-step-by-step.html',
   '/guides/de/mercury-spin-orbit-resonance-when.html',
   '/guides/de/mercury-spin-orbit-resonance-vs-alternatives.html',
+  // jpg-avif-converter locale fanout (new-tool-discovery-loop-runbook fire438, 2026-07-25)
+  '/guides/jpg-avif-converter-when.html',
+  '/guides/jpg-avif-converter-step-by-step.html',
+  '/guides/jpg-avif-converter-vs-alternatives.html',
+  '/guides/pt/jpg-avif-converter-when.html',
+  '/guides/pt/jpg-avif-converter-step-by-step.html',
+  '/guides/pt/jpg-avif-converter-vs-alternatives.html',
+  '/guides/es/jpg-avif-converter-when.html',
+  '/guides/es/jpg-avif-converter-step-by-step.html',
+  '/guides/es/jpg-avif-converter-vs-alternatives.html',
+  '/guides/vi/jpg-avif-converter-when.html',
+  '/guides/vi/jpg-avif-converter-step-by-step.html',
+  '/guides/vi/jpg-avif-converter-vs-alternatives.html',
+  '/guides/id/jpg-avif-converter-when.html',
+  '/guides/id/jpg-avif-converter-step-by-step.html',
+  '/guides/id/jpg-avif-converter-vs-alternatives.html',
+  '/guides/de/jpg-avif-converter-when.html',
+  '/guides/de/jpg-avif-converter-step-by-step.html',
+  '/guides/de/jpg-avif-converter-vs-alternatives.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -24649,6 +24684,22 @@ export const JSP_BY_ROUTE = {
   '/guides/de/mercury-spin-orbit-resonance-step-by-step.html': 'guide/de/mercury-spin-orbit-resonance-step-by-step.jsp',
   '/guides/de/mercury-spin-orbit-resonance-when.html': 'guide/de/mercury-spin-orbit-resonance-when.jsp',
   '/guides/de/mercury-spin-orbit-resonance-vs-alternatives.html': 'guide/de/mercury-spin-orbit-resonance-vs-alternatives.jsp',
+  // jpg-avif-converter locale fanout (new-tool-discovery-loop-runbook fire438, 2026-07-25)
+  '/guides/pt/jpg-avif-converter-when.html': 'guide/pt/jpg-avif-converter-when.jsp',
+  '/guides/pt/jpg-avif-converter-step-by-step.html': 'guide/pt/jpg-avif-converter-step-by-step.jsp',
+  '/guides/pt/jpg-avif-converter-vs-alternatives.html': 'guide/pt/jpg-avif-converter-vs-alternatives.jsp',
+  '/guides/es/jpg-avif-converter-when.html': 'guide/es/jpg-avif-converter-when.jsp',
+  '/guides/es/jpg-avif-converter-step-by-step.html': 'guide/es/jpg-avif-converter-step-by-step.jsp',
+  '/guides/es/jpg-avif-converter-vs-alternatives.html': 'guide/es/jpg-avif-converter-vs-alternatives.jsp',
+  '/guides/vi/jpg-avif-converter-when.html': 'guide/vi/jpg-avif-converter-when.jsp',
+  '/guides/vi/jpg-avif-converter-step-by-step.html': 'guide/vi/jpg-avif-converter-step-by-step.jsp',
+  '/guides/vi/jpg-avif-converter-vs-alternatives.html': 'guide/vi/jpg-avif-converter-vs-alternatives.jsp',
+  '/guides/id/jpg-avif-converter-when.html': 'guide/id/jpg-avif-converter-when.jsp',
+  '/guides/id/jpg-avif-converter-step-by-step.html': 'guide/id/jpg-avif-converter-step-by-step.jsp',
+  '/guides/id/jpg-avif-converter-vs-alternatives.html': 'guide/id/jpg-avif-converter-vs-alternatives.jsp',
+  '/guides/de/jpg-avif-converter-when.html': 'guide/de/jpg-avif-converter-when.jsp',
+  '/guides/de/jpg-avif-converter-step-by-step.html': 'guide/de/jpg-avif-converter-step-by-step.jsp',
+  '/guides/de/jpg-avif-converter-vs-alternatives.html': 'guide/de/jpg-avif-converter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
