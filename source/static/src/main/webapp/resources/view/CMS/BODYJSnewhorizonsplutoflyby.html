@@ -1,0 +1,409 @@
+<script>
+    // 3D scene archetype skeleton (new-horizons-pluto-flyby) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton (see BODYJSsolarsystem.html) - this file
+    // implements ONE scene only (newhorizons), not the full accumulated scene set.
+    // All geometry is procedural - no model files, no textures fetched.
+    //
+    // This is an EDUCATIONAL APPROXIMATION, not a physics engine and not a
+    // precomputed ephemeris of the real New Horizons trajectory. The flight path
+    // is a parametric teaching curve tuned to show the real launch -> Jupiter
+    // gravity assist -> Pluto closest approach -> Arrokoth extended-flyby order
+    // of events. The info panel discloses this. Distances and body sizes are
+    // compressed.
+    //
+    // Published figures cited (NASA New Horizons mission page + JHU APL New
+    // Horizons site + Stern et al. 2015, Science; cross-checked 2026-07-26):
+    //   - Launch 2006-01-19; Earth-escape velocity ~16.26 km/s
+    //   - Jupiter gravity-assist flyby 2007-02-28
+    //   - Pluto closest approach 2015-07-14 11:49 UTC, ~12,500 km from surface,
+    //     relative flyby speed ~13.78 km/s (~49,600 km/h)
+    //   - Arrokoth (2014 MU69) closest approach 2019-01-01, ~3,538 km
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'new-horizons-pluto-flyby';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) {
+        return 'newhorizons';
+    }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        function size() {
+            var w = Math.max(260, host.clientWidth);
+            var h = Math.round(w * 0.62);
+            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fsEl && fsEl.contains(host)) { h = Math.max(240, (window.innerHeight || h) - 150); }
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        host.appendChild(renderer.domElement);
+        renderer.domElement.style.touchAction = 'none';
+        renderer.domElement.style.borderRadius = '6px';
+        var drag = null, pinch = null, moved = 0;
+        host.addEventListener('pointerdown', function (e) {
+            drag = { x: e.clientX, y: e.clientY }; moved = 0;
+            host.setPointerCapture && host.setPointerCapture(e.pointerId);
+        });
+        host.addEventListener('pointermove', function (e) {
+            if (!drag) return;
+            var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+            moved += Math.abs(dx) + Math.abs(dy);
+            drag = { x: e.clientX, y: e.clientY };
+            orbit.goalTheta -= dx * 0.006;
+            orbit.goalPhi = Math.min(Math.max(orbit.goalPhi - dy * 0.005, 0.15), Math.PI - 0.2);
+        });
+        host.addEventListener('pointerup', function (e) {
+            var wasClick = moved < 8;
+            drag = null;
+            if (wasClick && shell.onClick) { shell.onClick(e); }
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR);
+        }, { passive: false });
+        host.addEventListener('touchstart', function (e) {
+            if (e.touches.length === 2) {
+                pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            }
+        }, { passive: true });
+        host.addEventListener('touchmove', function (e) {
+            if (e.touches.length === 2 && pinch) {
+                var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                pinch = d;
+            }
+        }, { passive: true });
+        window.addEventListener('resize', size);
+        document.addEventListener('fullscreenchange', size);
+        document.addEventListener('webkitfullscreenchange', size);
+        size();
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, size: size, onClick: null,
+            ndc: function (e) {
+                var r = renderer.domElement.getBoundingClientRect();
+                return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            },
+        };
+        return shell;
+    }
+
+    var T3D_NH_JUP_X = 18;
+    var T3D_NH_PLUTO_X = 42;
+    var T3D_NH_ARROKOTH_X = 52;
+    var T3D_NH_LAUNCH_ISO = '2006-01-19';
+    var T3D_NH_ESCAPE_KMS = 16.26;
+    var T3D_NH_JUPITER_ISO = '2007-02-28';
+    var T3D_NH_PLUTO_ISO = '2015-07-14 11:49 UTC';
+    var T3D_NH_PLUTO_KM = 12500;
+    var T3D_NH_PLUTO_SPEED_KMS = 13.78;
+    var T3D_NH_ARROKOTH_ISO = '2019-01-01';
+    var T3D_NH_ARROKOTH_KM = 3538;
+
+    function t3dNewHorizons(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x02040c, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.32));
+        var sun = new THREE.DirectionalLight(0xfff3c4, 1.05);
+        sun.position.set(-30, 24, 18);
+        scene.add(sun);
+
+        var SCOUNT = shell.low ? 350 : 750;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(90 + Math.random() * 140);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.5, sizeAttenuation: false })));
+
+        var earth = new THREE.Mesh(
+            new THREE.SphereGeometry(1.6, 24, 16),
+            new THREE.MeshLambertMaterial({ color: 0x42a5f5, emissive: 0x0d1c30 })
+        );
+        scene.add(earth);
+        var jupiter = new THREE.Mesh(
+            new THREE.SphereGeometry(2.6, 28, 18),
+            new THREE.MeshLambertMaterial({ color: 0xd7a86e })
+        );
+        jupiter.position.set(T3D_NH_JUP_X, 0, 0);
+        scene.add(jupiter);
+        var pluto = new THREE.Mesh(
+            new THREE.SphereGeometry(1.1, 20, 14),
+            new THREE.MeshLambertMaterial({ color: 0xb59a7d })
+        );
+        pluto.position.set(T3D_NH_PLUTO_X, 0, 0);
+        scene.add(pluto);
+        var arrokoth = new THREE.Mesh(
+            new THREE.SphereGeometry(0.4, 12, 8),
+            new THREE.MeshLambertMaterial({ color: 0x8d6e63 })
+        );
+        arrokoth.position.set(T3D_NH_ARROKOTH_X, 0.6, 0);
+        scene.add(arrokoth);
+
+        var axis = new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(T3D_NH_ARROKOTH_X, 0, 0)
+            ]),
+            new THREE.LineBasicMaterial({ color: 0x37474f, transparent: true, opacity: 0.4 })
+        );
+        scene.add(axis);
+
+        // Piecewise teaching path: launch -> Jupiter gravity-assist bend -> Pluto
+        // closest approach -> (arrokoth mode only) continue to Arrokoth CA.
+        function nhPos(t, mode) {
+            t = Math.max(0, Math.min(1, t));
+            var jupFrac = mode === 'arrokoth' ? 0.22 : 0.30;
+            var plutoFrac = mode === 'arrokoth' ? 0.75 : 1.0;
+            if (t < jupFrac) {
+                var u = t / jupFrac;
+                return new THREE.Vector3(
+                    u * T3D_NH_JUP_X,
+                    0,
+                    5.5 * Math.sin(u * Math.PI)
+                );
+            }
+            if (t < plutoFrac) {
+                var u2 = (t - jupFrac) / (plutoFrac - jupFrac);
+                return new THREE.Vector3(
+                    T3D_NH_JUP_X + (T3D_NH_PLUTO_X - T3D_NH_JUP_X) * u2,
+                    0,
+                    0
+                );
+            }
+            var u3 = (t - plutoFrac) / (1 - plutoFrac);
+            return new THREE.Vector3(
+                T3D_NH_PLUTO_X + (T3D_NH_ARROKOTH_X - T3D_NH_PLUTO_X) * u3,
+                0.6 * u3,
+                0
+            );
+        }
+
+        function buildPath(mode, color, opacity) {
+            var pts = [];
+            var n = shell.low ? 90 : 160;
+            for (var i = 0; i <= n; i++) pts.push(nhPos(i / n, mode));
+            var line = new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints(pts),
+                new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: opacity })
+            );
+            scene.add(line);
+            return line;
+        }
+        var plutoPath = buildPath('pluto', 0x81c784, 0.9);
+        var arrokothPath = buildPath('arrokoth', 0xffb74d, 0.55);
+
+        var craft = new THREE.Mesh(
+            new THREE.SphereGeometry(0.32, 12, 10),
+            new THREE.MeshBasicMaterial({ color: 0xffee58 })
+        );
+        scene.add(craft);
+        var craftTrail = new THREE.Mesh(
+            new THREE.ConeGeometry(0.16, 0.6, 8),
+            new THREE.MeshBasicMaterial({ color: 0xfff59d })
+        );
+        craftTrail.rotation.z = Math.PI / 2;
+        scene.add(craftTrail);
+
+        var phase = 0.06;
+        var mode = 'pluto';
+        var playing = true;
+
+        function phaseLabel(p, m) {
+            var jupFrac = m === 'arrokoth' ? 0.22 : 0.30;
+            var plutoFrac = m === 'arrokoth' ? 0.75 : 1.0;
+            if (p < jupFrac) return 'Trans-Jovian cruise (outbound)';
+            if (p < jupFrac + 0.02) return 'Jupiter gravity assist';
+            if (p < plutoFrac - 0.02) return 'Cruise to Pluto';
+            if (p < plutoFrac + 0.001 || (m === 'pluto' && p >= 0.98)) return 'Pluto closest approach';
+            return 'Extended cruise to Arrokoth';
+        }
+        function panelHtml() {
+            return '<h3>' + (mode === 'pluto' ? 'Primary mission: Pluto flyby' : 'Extended mission: Plus Arrokoth') + '</h3>' +
+                '<p>' + (mode === 'pluto'
+                    ? 'The Jupiter gravity assist bends and speeds up the spacecraft toward Pluto with no extra fuel spent - the primary mission ends at Pluto closest approach.'
+                    : 'After Pluto, NASA extended the mission deeper into the Kuiper Belt to reach Arrokoth using leftover fuel from the same trajectory.') + '</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Phase</td><td>' + phaseLabel(phase, mode) + ' (' + Math.round(phase * 100) + '%)</td></tr>' +
+                '<tr><td>Launch</td><td>' + T3D_NH_LAUNCH_ISO + ' (Earth-escape ~' + T3D_NH_ESCAPE_KMS + ' km/s)</td></tr>' +
+                '<tr><td>Jupiter gravity-assist flyby</td><td>' + T3D_NH_JUPITER_ISO + '</td></tr>' +
+                '<tr><td>Pluto closest approach</td><td>' + T3D_NH_PLUTO_ISO + ', ~' + T3D_NH_PLUTO_KM.toLocaleString() + ' km from surface</td></tr>' +
+                '<tr><td>Pluto flyby relative speed</td><td>~' + T3D_NH_PLUTO_SPEED_KMS + ' km/s (~49,600 km/h)</td></tr>' +
+                (mode === 'arrokoth' ? '<tr><td>Arrokoth closest approach</td><td>' + T3D_NH_ARROKOTH_ISO + ', ~' + T3D_NH_ARROKOTH_KM.toLocaleString() + ' km</td></tr>' : '') +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation, not a precomputed ephemeris of the real trajectory. On-screen distances between Earth, Jupiter, Pluto, and Arrokoth are compressed for readability - the table holds the real published NASA dates and distances.</p>';
+        }
+
+        function applyPhase(p) {
+            phase = Math.max(0, Math.min(0.999, p));
+            var pos = nhPos(phase, mode);
+            craft.position.copy(pos);
+            var ahead = nhPos(Math.min(0.999, phase + 0.01), mode);
+            craftTrail.position.set((pos.x + ahead.x) / 2, (pos.y + ahead.y) / 2, (pos.z + ahead.z) / 2);
+            plutoPath.visible = true;
+            arrokothPath.visible = mode === 'arrokoth';
+            plutoPath.material.opacity = mode === 'pluto' ? 0.9 : 0.35;
+            var slider = document.getElementById('t3dNhPhase');
+            var label = document.getElementById('t3dNhPhaseLabel');
+            if (slider && Math.round(parseFloat(slider.value || '0')) !== Math.round(phase * 100)) {
+                slider.value = String(Math.round(phase * 100));
+            }
+            if (label) label.textContent = Math.round(phase * 100) + '%';
+            t3dInfo(panelHtml());
+        }
+
+        function setMode(next) {
+            mode = next;
+            var plutoBtn = document.getElementById('t3dNhModeBtn-pluto');
+            var arrBtn = document.getElementById('t3dNhModeBtn-arrokoth');
+            if (plutoBtn) plutoBtn.className = 'w3-button ' + (mode === 'pluto' ? 'w3-amber' : 'w3-light-grey');
+            if (arrBtn) arrBtn.className = 'w3-button ' + (mode === 'arrokoth' ? 'w3-amber' : 'w3-light-grey');
+            shell.orbit.target.set((mode === 'arrokoth' ? T3D_NH_ARROKOTH_X : T3D_NH_PLUTO_X) * 0.4, 0, 0);
+            applyPhase(Math.min(phase, mode === 'pluto' ? 0.999 : 0.999));
+            try { t3dSaveStore({ mode: mode, phase: phase }); } catch (e) {}
+        }
+
+        var ray = new THREE.Raycaster();
+        shell.onClick = function (e) {
+            ray.setFromCamera(shell.ndc(e), shell.camera);
+            var hits = ray.intersectObjects([earth, jupiter, pluto, arrokoth], false);
+            if (!hits.length) return;
+            t3dInfo(panelHtml());
+        };
+
+        var store = t3dLoadStore();
+        if (store && (store.mode === 'pluto' || store.mode === 'arrokoth')) mode = store.mode;
+        if (typeof store.phase === 'number') phase = store.phase;
+        setMode(mode);
+
+        var plutoBtn = document.getElementById('t3dNhModeBtn-pluto');
+        var arrBtn = document.getElementById('t3dNhModeBtn-arrokoth');
+        if (plutoBtn) plutoBtn.addEventListener('click', function () { setMode('pluto'); });
+        if (arrBtn) arrBtn.addEventListener('click', function () { setMode('arrokoth'); });
+        var playBtn = document.getElementById('t3dNhPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            playing = !playing;
+            playBtn.textContent = playing ? 'Pause' : 'Play';
+        });
+        var slider = document.getElementById('t3dNhPhase');
+        if (slider) slider.addEventListener('input', function () {
+            playing = false;
+            if (playBtn) playBtn.textContent = 'Play';
+            applyPhase(parseFloat(slider.value || '0') / 100);
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle Pluto flyby vs Plus Arrokoth, or scrub the phase slider.');
+        return function animate(dt) {
+            if (!playing) return;
+            var next = phase + (dt / 1000) * 0.035;
+            if (next >= 1) next = 0;
+            applyPhase(next);
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { newhorizons: 't3dNhControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = {
+                        newhorizons: { radius: 68, maxR: 220, minR: 18, phi: 1.12, theta: 0.55, targetY: 0 }
+                    };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dNewHorizons(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
