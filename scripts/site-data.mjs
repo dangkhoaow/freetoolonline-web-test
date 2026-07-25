@@ -5938,6 +5938,25 @@ export const INFO_ROUTES = new Set([
   '/guides/de/strong-lensing-multiple-images-step-by-step.html',
   '/guides/de/strong-lensing-multiple-images-when.html',
   '/guides/de/strong-lensing-multiple-images-vs-alternatives.html',
+  // interstellar-travel-timescales companion guides (space-3d-discovery-loop LEAN fire, 2026-07-26)
+  '/guides/interstellar-travel-timescales-step-by-step.html',
+  '/guides/interstellar-travel-timescales-when.html',
+  '/guides/interstellar-travel-timescales-vs-alternatives.html',
+  '/guides/pt/interstellar-travel-timescales-step-by-step.html',
+  '/guides/pt/interstellar-travel-timescales-when.html',
+  '/guides/pt/interstellar-travel-timescales-vs-alternatives.html',
+  '/guides/es/interstellar-travel-timescales-step-by-step.html',
+  '/guides/es/interstellar-travel-timescales-when.html',
+  '/guides/es/interstellar-travel-timescales-vs-alternatives.html',
+  '/guides/vi/interstellar-travel-timescales-step-by-step.html',
+  '/guides/vi/interstellar-travel-timescales-when.html',
+  '/guides/vi/interstellar-travel-timescales-vs-alternatives.html',
+  '/guides/id/interstellar-travel-timescales-step-by-step.html',
+  '/guides/id/interstellar-travel-timescales-when.html',
+  '/guides/id/interstellar-travel-timescales-vs-alternatives.html',
+  '/guides/de/interstellar-travel-timescales-step-by-step.html',
+  '/guides/de/interstellar-travel-timescales-when.html',
+  '/guides/de/interstellar-travel-timescales-vs-alternatives.html',
   '/guides/pt/borisov-interstellar-comet-step-by-step.html',
   '/guides/pt/borisov-interstellar-comet-when.html',
   '/guides/pt/borisov-interstellar-comet-vs-alternatives.html',
@@ -12342,6 +12361,25 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/strong-lensing-multiple-images-step-by-step.html',
   '/guides/de/strong-lensing-multiple-images-when.html',
   '/guides/de/strong-lensing-multiple-images-vs-alternatives.html',
+  // interstellar-travel-timescales companion guides (space-3d-discovery-loop LEAN fire, 2026-07-26)
+  '/guides/interstellar-travel-timescales-step-by-step.html',
+  '/guides/interstellar-travel-timescales-when.html',
+  '/guides/interstellar-travel-timescales-vs-alternatives.html',
+  '/guides/pt/interstellar-travel-timescales-step-by-step.html',
+  '/guides/pt/interstellar-travel-timescales-when.html',
+  '/guides/pt/interstellar-travel-timescales-vs-alternatives.html',
+  '/guides/es/interstellar-travel-timescales-step-by-step.html',
+  '/guides/es/interstellar-travel-timescales-when.html',
+  '/guides/es/interstellar-travel-timescales-vs-alternatives.html',
+  '/guides/vi/interstellar-travel-timescales-step-by-step.html',
+  '/guides/vi/interstellar-travel-timescales-when.html',
+  '/guides/vi/interstellar-travel-timescales-vs-alternatives.html',
+  '/guides/id/interstellar-travel-timescales-step-by-step.html',
+  '/guides/id/interstellar-travel-timescales-when.html',
+  '/guides/id/interstellar-travel-timescales-vs-alternatives.html',
+  '/guides/de/interstellar-travel-timescales-step-by-step.html',
+  '/guides/de/interstellar-travel-timescales-when.html',
+  '/guides/de/interstellar-travel-timescales-vs-alternatives.html',
   '/guides/pt/borisov-interstellar-comet-step-by-step.html',
   '/guides/pt/borisov-interstellar-comet-when.html',
   '/guides/pt/borisov-interstellar-comet-vs-alternatives.html',
@@ -13218,6 +13256,8 @@ export const ALIAS_ROUTES = {
   '/austroraptor.html': '/dinosaur-3d/austroraptor.html',
   // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-25): flat-slug alias for magyarosaurus.
   '/magyarosaurus.html': '/dinosaur-3d/magyarosaurus.html',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-26): flat-slug alias for dacentrurus.
+  '/dacentrurus.html': '/dinosaur-3d/dacentrurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
@@ -13607,6 +13647,7 @@ export const ALIAS_ROUTES = {
   '/neptune-supersonic-winds.html': '/space-3d/neptune-supersonic-winds.html',
   '/borisov-interstellar-comet.html': '/space-3d/borisov-interstellar-comet.html',
   '/strong-lensing-multiple-images.html': '/space-3d/strong-lensing-multiple-images.html',
+  '/interstellar-travel-timescales.html': '/space-3d/interstellar-travel-timescales.html',
   '/jpg-to-avif-converter.html': '/image-converter-tools/jpg-to-avif-converter.html',
 };
 
@@ -17461,6 +17502,15 @@ export const JSP_BY_ROUTE = {
   // orientation solved via a two-step baked rotation (Y+90 then X+90),
   // empirically verified via headless render before export.
   '/dinosaur-3d/magyarosaurus.html': 'dinosaur/magyarosaurus.jsp',
+  // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-26): Dacentrurus
+  // viewer - stegosaur archetype (plates + spikes, same branch as stegosaurus/
+  // kentrosaurus). Model-first via ftol-vm-assets dacentrurus.glb (CC-BY 4.0,
+  // Printables "Pan Wolodyjowski", non-remix GraphQL-confirmed), sourced +
+  // vendored the prior fire; rotation (0,0,0) verified correct on first render.
+  // Differentiator: first stegosaur described from a European skeleton;
+  // genuine size dispute (holotype ~7m vs commonly cited 8-9m/5-7.4t) cited
+  // as a range, not an invented single figure.
+  '/dinosaur-3d/dacentrurus.html': 'dinosaur/dacentrurus.jsp',
   // dinosaur-3d-discovery-loop-runbook fire67 (2026-07-17): Deinonychus viewer -
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
@@ -24763,6 +24813,7 @@ export const JSP_BY_ROUTE = {
   '/space-3d/neptune-supersonic-winds.html': 'space/neptune-supersonic-winds.jsp',
   '/space-3d/borisov-interstellar-comet.html': 'space/borisov-interstellar-comet.jsp',
   '/space-3d/strong-lensing-multiple-images.html': 'space/strong-lensing-multiple-images.jsp',
+  '/space-3d/interstellar-travel-timescales.html': 'space/interstellar-travel-timescales.jsp',
   '/guides/meteor-airburst-size-comparison-step-by-step.html': 'guide/meteor-airburst-size-comparison-step-by-step.jsp',
   '/guides/meteor-airburst-size-comparison-when.html': 'guide/meteor-airburst-size-comparison-when.jsp',
   '/guides/meteor-airburst-size-comparison-vs-alternatives.html': 'guide/meteor-airburst-size-comparison-vs-alternatives.jsp',
@@ -24846,6 +24897,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/strong-lensing-multiple-images-step-by-step.html': 'guide/de/strong-lensing-multiple-images-step-by-step.jsp',
   '/guides/de/strong-lensing-multiple-images-when.html': 'guide/de/strong-lensing-multiple-images-when.jsp',
   '/guides/de/strong-lensing-multiple-images-vs-alternatives.html': 'guide/de/strong-lensing-multiple-images-vs-alternatives.jsp',
+  // interstellar-travel-timescales companion guides (space-3d-discovery-loop LEAN fire, 2026-07-26)
+  '/guides/interstellar-travel-timescales-step-by-step.html': 'guide/interstellar-travel-timescales-step-by-step.jsp',
+  '/guides/interstellar-travel-timescales-when.html': 'guide/interstellar-travel-timescales-when.jsp',
+  '/guides/interstellar-travel-timescales-vs-alternatives.html': 'guide/interstellar-travel-timescales-vs-alternatives.jsp',
+  '/guides/pt/interstellar-travel-timescales-step-by-step.html': 'guide/pt/interstellar-travel-timescales-step-by-step.jsp',
+  '/guides/pt/interstellar-travel-timescales-when.html': 'guide/pt/interstellar-travel-timescales-when.jsp',
+  '/guides/pt/interstellar-travel-timescales-vs-alternatives.html': 'guide/pt/interstellar-travel-timescales-vs-alternatives.jsp',
+  '/guides/es/interstellar-travel-timescales-step-by-step.html': 'guide/es/interstellar-travel-timescales-step-by-step.jsp',
+  '/guides/es/interstellar-travel-timescales-when.html': 'guide/es/interstellar-travel-timescales-when.jsp',
+  '/guides/es/interstellar-travel-timescales-vs-alternatives.html': 'guide/es/interstellar-travel-timescales-vs-alternatives.jsp',
+  '/guides/vi/interstellar-travel-timescales-step-by-step.html': 'guide/vi/interstellar-travel-timescales-step-by-step.jsp',
+  '/guides/vi/interstellar-travel-timescales-when.html': 'guide/vi/interstellar-travel-timescales-when.jsp',
+  '/guides/vi/interstellar-travel-timescales-vs-alternatives.html': 'guide/vi/interstellar-travel-timescales-vs-alternatives.jsp',
+  '/guides/id/interstellar-travel-timescales-step-by-step.html': 'guide/id/interstellar-travel-timescales-step-by-step.jsp',
+  '/guides/id/interstellar-travel-timescales-when.html': 'guide/id/interstellar-travel-timescales-when.jsp',
+  '/guides/id/interstellar-travel-timescales-vs-alternatives.html': 'guide/id/interstellar-travel-timescales-vs-alternatives.jsp',
+  '/guides/de/interstellar-travel-timescales-step-by-step.html': 'guide/de/interstellar-travel-timescales-step-by-step.jsp',
+  '/guides/de/interstellar-travel-timescales-when.html': 'guide/de/interstellar-travel-timescales-when.jsp',
+  '/guides/de/interstellar-travel-timescales-vs-alternatives.html': 'guide/de/interstellar-travel-timescales-vs-alternatives.jsp',
   '/guides/pt/borisov-interstellar-comet-step-by-step.html': 'guide/pt/borisov-interstellar-comet-step-by-step.jsp',
   '/guides/pt/borisov-interstellar-comet-when.html': 'guide/pt/borisov-interstellar-comet-when.jsp',
   '/guides/pt/borisov-interstellar-comet-vs-alternatives.html': 'guide/pt/borisov-interstellar-comet-vs-alternatives.jsp',
