@@ -3750,6 +3750,13 @@ export const INFO_ROUTES = new Set([
   '/guides/id/jwst-l2-halo-orbit-when.html',
   '/guides/id/jwst-l2-halo-orbit-step-by-step.html',
   '/guides/id/jwst-l2-halo-orbit-vs-alternatives.html',
+  // cassini-grand-finale companion guide (space-3d-discovery-loop-runbook, 2026-07-26 ship-pending resume)
+  '/guides/cassini-grand-finale-step-by-step.html',
+  '/guides/pt/cassini-grand-finale-step-by-step.html',
+  '/guides/es/cassini-grand-finale-step-by-step.html',
+  '/guides/de/cassini-grand-finale-step-by-step.html',
+  '/guides/vi/cassini-grand-finale-step-by-step.html',
+  '/guides/id/cassini-grand-finale-step-by-step.html',
   // type-ia-supernova-standard-candle companion guides (space-3d-discovery-loop-runbook fire3, 2026-07-24)
   '/guides/type-ia-supernova-standard-candle-step-by-step.html',
   '/guides/type-ia-supernova-standard-candle-when.html',
@@ -12469,6 +12476,13 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/jpg-avif-converter-when.html',
   '/guides/de/jpg-avif-converter-step-by-step.html',
   '/guides/de/jpg-avif-converter-vs-alternatives.html',
+  // cassini-grand-finale companion guide (space-3d-discovery-loop-runbook, 2026-07-26 ship-pending resume)
+  '/guides/cassini-grand-finale-step-by-step.html',
+  '/guides/pt/cassini-grand-finale-step-by-step.html',
+  '/guides/es/cassini-grand-finale-step-by-step.html',
+  '/guides/de/cassini-grand-finale-step-by-step.html',
+  '/guides/vi/cassini-grand-finale-step-by-step.html',
+  '/guides/id/cassini-grand-finale-step-by-step.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -13443,6 +13457,7 @@ export const ALIAS_ROUTES = {
   '/moon-calendar-3d.html': '/space-3d/moon-calendar-3d.html',
   '/iss-orbit-tracker.html': '/space-3d/iss-orbit-tracker.html',
   '/jwst-l2-halo-orbit.html': '/space-3d/jwst-l2-halo-orbit.html',
+  '/cassini-grand-finale.html': '/space-3d/cassini-grand-finale.html',
   '/type-ia-supernova-standard-candle.html': '/space-3d/type-ia-supernova-standard-candle.html',
   '/lunar-eclipse.html': '/space-3d/lunar-eclipse.html',
   '/solar-eclipse.html': '/space-3d/solar-eclipse.html',
@@ -19961,6 +19976,14 @@ export const JSP_BY_ROUTE = {
   '/space-3d/moon-calendar-3d.html': 'space/moon-calendar-3d.jsp',
   '/space-3d/iss-orbit-tracker.html': 'space/iss-orbit-tracker.jsp',
   '/space-3d/jwst-l2-halo-orbit.html': 'space/jwst-l2-halo-orbit.jsp',
+  // space-3d-discovery-loop-runbook (2026-07-26): cassini-grand-finale ship-pending resume - NASA/ESA Cassini's 2016-2017 endgame at Saturn (ring-grazing orbits, Titan gravity-assist, proximal Grand Finale orbits, deliberate atmospheric entry).
+  '/space-3d/cassini-grand-finale.html': 'space/cassini-grand-finale.jsp',
+  '/guides/cassini-grand-finale-step-by-step.html': 'guide/cassini-grand-finale-step-by-step.jsp',
+  '/guides/pt/cassini-grand-finale-step-by-step.html': 'guide/pt/cassini-grand-finale-step-by-step.jsp',
+  '/guides/es/cassini-grand-finale-step-by-step.html': 'guide/es/cassini-grand-finale-step-by-step.jsp',
+  '/guides/de/cassini-grand-finale-step-by-step.html': 'guide/de/cassini-grand-finale-step-by-step.jsp',
+  '/guides/vi/cassini-grand-finale-step-by-step.html': 'guide/vi/cassini-grand-finale-step-by-step.jsp',
+  '/guides/id/cassini-grand-finale-step-by-step.html': 'guide/id/cassini-grand-finale-step-by-step.jsp',
   // space-3d-discovery-loop-runbook fire3 (2026-07-24): type-ia-supernova-standard-candle (accretion/explosion + distance-modulus standard-candle math).
   '/space-3d/type-ia-supernova-standard-candle.html': 'space/type-ia-supernova-standard-candle.jsp',
   '/space-3d/lunar-eclipse.html': 'space/lunar-eclipse.jsp',

@@ -576,6 +576,7 @@ try {
     { title: "Moon Calendar 3D Explorer", url: "https://freetoolonline.com/space-3d/moon-calendar-3d.html", include: !1, tags: "space-3d" },
     { title: "ISS Orbit Tracker 3D Explorer", url: "https://freetoolonline.com/space-3d/iss-orbit-tracker.html", include: !1, tags: "space-3d" },
     { title: "JWST L2 Halo Orbit 3D Explorer", url: "https://freetoolonline.com/space-3d/jwst-l2-halo-orbit.html", include: !1, tags: "space-3d" },
+    { title: "Cassini Grand Finale 3D Explorer", url: "https://freetoolonline.com/space-3d/cassini-grand-finale.html", include: !1, tags: "space-3d" },
     { title: "Type Ia Supernova Standard Candle 3D Explorer", url: "https://freetoolonline.com/space-3d/type-ia-supernova-standard-candle.html", include: !1, tags: "space-3d" },
     { title: "Lunar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/lunar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Planet Size Comparison 3D Explorer", url: "https://freetoolonline.com/space-3d/planet-size-comparison.html", include: !1, tags: "space-3d" },
