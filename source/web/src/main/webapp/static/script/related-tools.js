@@ -823,6 +823,7 @@ try {
     { title: "Time Zone Converter", url: "https://freetoolonline.com/utility-tools/time-zone-converter.html", include: !1, tags: "utility" },
     { title: "Meme Maker", url: "https://freetoolonline.com/image-tools/meme-maker.html", include: !1, tags: "image-editing" },
     { title: "White Noise & Ambient Sound Generator", url: "https://freetoolonline.com/utility-tools/white-noise-generator.html", include: !1, tags: "utility" },
+    { title: "JPG to AVIF Converter", url: "https://freetoolonline.com/image-converter-tools/jpg-to-avif-converter.html", include: !1, tags: "image-conversion" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

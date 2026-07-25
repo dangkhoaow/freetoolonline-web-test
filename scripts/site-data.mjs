@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/jpg-avif-converter-vs-alternatives.html',
+  '/guides/jpg-avif-converter-step-by-step.html',
+  '/guides/jpg-avif-converter-when.html',
   '/guides/white-noise-ambient-sound-generator-vs-alternatives.html',
   '/guides/de/white-noise-ambient-sound-generator-vs-alternatives.html',
   '/guides/id/white-noise-ambient-sound-generator-vs-alternatives.html',
@@ -13414,6 +13417,7 @@ export const ALIAS_ROUTES = {
   '/bortle-scale-light-pollution.html': '/space-3d/bortle-scale-light-pollution.html',
   '/meteor-airburst-size-comparison.html': '/space-3d/meteor-airburst-size-comparison.html',
   '/mercury-spin-orbit-resonance.html': '/space-3d/mercury-spin-orbit-resonance.html',
+  '/jpg-to-avif-converter.html': '/image-converter-tools/jpg-to-avif-converter.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -24584,6 +24588,10 @@ export const JSP_BY_ROUTE = {
   '/guides/de/meteor-airburst-size-comparison-step-by-step.html': 'guide/de/meteor-airburst-size-comparison-step-by-step.jsp',
   '/guides/de/meteor-airburst-size-comparison-when.html': 'guide/de/meteor-airburst-size-comparison-when.jsp',
   '/guides/de/meteor-airburst-size-comparison-vs-alternatives.html': 'guide/de/meteor-airburst-size-comparison-vs-alternatives.jsp',
+  '/image-converter-tools/jpg-to-avif-converter.html': 'convert/jpg-to-avif-converter.jsp',
+  '/guides/jpg-avif-converter-when.html': 'guide/jpg-avif-converter-when.jsp',
+  '/guides/jpg-avif-converter-step-by-step.html': 'guide/jpg-avif-converter-step-by-step.jsp',
+  '/guides/jpg-avif-converter-vs-alternatives.html': 'guide/jpg-avif-converter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
