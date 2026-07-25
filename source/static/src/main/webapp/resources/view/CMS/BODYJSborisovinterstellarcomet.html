@@ -1,0 +1,398 @@
+<script>
+    // 3D scene archetype skeleton (2I/Borisov Interstellar Comet Explorer) -
+    // vendored three.js (ESM, dynamic import from /vendor/three/, NO CDN),
+    // fully client-side. Built LEAN, forked from the neptune-supersonic-winds
+    // shape - ONE scene only (a side-by-side comet-composition explorer). All
+    // geometry is procedural (two scaled-sphere "potato" nuclei, two
+    // BufferGeometry+Points coma clouds, two static parametric path curves -
+    // a hyperbola and an ellipse - drawn as Line geometry).
+    //
+    // EDUCATIONAL APPROXIMATION, not a physics or orbital-mechanics
+    // simulation. The nucleus shapes are stylized scaled spheres, not a
+    // scanned or photographic shape. The coma is a radially-expanding
+    // particle cloud, not a directional tail shaped by solar wind and
+    // radiation pressure. The two path curves are schematic (open hyperbola
+    // vs closed ellipse) to show the SHAPE difference (unbound vs bound) -
+    // they are not drawn to true AU distance scale.
+    //
+    // Published figures (cross-checked via WebSearch 2026-07-25; sources:
+    // NASA/JPL Small-Body Database + Center for NEO Studies (cneos.jpl.nasa.gov)
+    // orbital-elements pages for 2I/Borisov; Bodewits et al. 2020, Nature
+    // Astronomy ("The carbon monoxide-rich interstellar comet 2I/Borisov");
+    // Cordiner et al. 2020, Nature Astronomy (ALMA CO measurement); NASA
+    // Hubble Space Telescope nucleus-size reporting; NASA Science 1P/Halley
+    // page (science.nasa.gov/solar-system/comets/1p-halley/) for the bound
+    // solar-system comet comparison figures):
+    //   - 2I/Borisov is the 2nd confirmed interstellar object, discovered
+    //     30 August 2019 by amateur astronomer Gennadiy Borisov (Crimea).
+    //   - Its orbit was confirmed hyperbolic (unbound) within about 2 weeks;
+    //     the refined orbital eccentricity is about 3.36 (values over 1 mean
+    //     the object is not gravitationally bound to the Sun and will leave
+    //     the solar system forever).
+    //   - Perihelion distance was about 2.01 AU, reached on 8 December 2019.
+    //   - Orbital speed reached about 43.9 km/s at perihelion, slowing to
+    //     about 32.3 km/s at infinity (its interstellar cruising speed).
+    //   - Hubble Space Telescope imaging found a small nucleus with an
+    //     effective radius of roughly 0.2-0.5 km.
+    //   - Hubble spectroscopy (Bodewits et al. 2020) measured a carbon
+    //     monoxide (CO) to water (H2O) production-rate ratio of about
+    //     35-155% for 2I/Borisov, compared with about 4% for a typical
+    //     solar-system comet average.
+    //   - An independent ALMA radio measurement (Cordiner et al. 2020, same
+    //     journal) found 2I/Borisov's CO abundance about 9-26 times higher
+    //     than typical inner-solar-system comets.
+    //   - Unlike the first interstellar object, 1I/'Oumuamua (no detected
+    //     outgassing or coma), 2I/Borisov actively outgassed and displayed a
+    //     visible coma like an ordinary comet - just with anomalous chemistry
+    //     pointing to a different protoplanetary-disk origin.
+    //   - For comparison, Halley's Comet (a well-studied, bound solar-system
+    //     comet) has an orbital eccentricity of about 0.967 (bound, since
+    //     less than 1), a perihelion distance of about 0.59 AU, and returns
+    //     on a period of about 76 years.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'borisovinterstellarcomet';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'borisovcomet'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Real published comparison figures (cross-checked via WebSearch
+    // 2026-07-25; sources in the header comment above). Index 0 = 2I/Borisov
+    // (unbound interstellar visitor), index 1 = a typical bound
+    // solar-system comet (Halley's Comet used as the concrete example).
+    var T3D_BC_COMETS = [
+        {
+            label: '2I/Borisov',
+            sub: 'unbound interstellar visitor (2019)',
+            bound: false,
+            eccentricity: '3.36 (hyperbolic - unbound)',
+            perihelion: 'about 2.01 AU (reached 8 Dec 2019)',
+            speed: 'about 43.9 km/s at perihelion, slowing to about 32.3 km/s at infinity',
+            coRatio: 'about 35-155% (Hubble spectroscopy, Bodewits et al. 2020)',
+            nucleus: 'effective radius about 0.2-0.5 km (Hubble)',
+            note: 'Discovered 30 August 2019 by amateur astronomer Gennadiy Borisov. Confirmed hyperbolic within about 2 weeks - it came from outside the solar system and will leave forever. Actively outgassed a visible coma like an ordinary comet, unlike the coma-less 1I/\'Oumuamua.'
+        },
+        {
+            label: "Halley's Comet",
+            sub: 'bound solar-system comet (comparison)',
+            bound: true,
+            eccentricity: '0.967 (elliptical - bound)',
+            perihelion: 'about 0.59 AU',
+            speed: 'varies with its ~76-year orbit (not the point of this comparison)',
+            coRatio: 'about 4% (typical solar-system comet average)',
+            nucleus: 'about 15 x 8 km, elongated (Giotto imaging, 1986)',
+            note: "Returns to the inner solar system on a roughly 76-year period - it is gravitationally bound to the Sun. Used here as a concrete, well-studied example of a typical solar-system comet's composition and orbit shape."
+        }
+    ];
+
+    function t3dBcBuildHyperbola(THREE, scale) {
+        // Schematic open path (asymptotic arms) - shape only, not to true AU
+        // distance scale. a/b chosen for a visually clear "open" curve.
+        var pts = [];
+        var a = 6 * scale, b = 9 * scale;
+        for (var i = -60; i <= 60; i++) {
+            var t = i / 20;
+            pts.push(new THREE.Vector3(a * Math.cosh(t) - a, 0, b * Math.sinh(t)));
+        }
+        return new THREE.BufferGeometry().setFromPoints(pts);
+    }
+    function t3dBcBuildEllipse(THREE, scale) {
+        // Schematic closed path - shape only, not to true AU distance scale.
+        var pts = [];
+        var a = 14 * scale, e = 0.72; // stylized eccentricity for a visibly elongated (but closed) loop
+        var b = a * Math.sqrt(1 - e * e);
+        var c = a * e;
+        for (var i = 0; i <= 96; i++) {
+            var t = (i / 96) * Math.PI * 2;
+            pts.push(new THREE.Vector3(a * Math.cos(t) - c, 0, b * Math.sin(t)));
+        }
+        return new THREE.BufferGeometry().setFromPoints(pts);
+    }
+
+    function t3dBcMakeComet(THREE, opts) {
+        var group = new THREE.Group();
+        var nucleusGeo = new THREE.SphereGeometry(opts.nucleusR, 16, 12);
+        var nucleus = new THREE.Mesh(nucleusGeo, new THREE.MeshStandardMaterial({ color: opts.nucleusColor, roughness: 0.95, metalness: 0.02 }));
+        nucleus.scale.set(1, 0.62, 0.8); // stylized irregular "potato" nucleus, not a scanned shape
+        group.add(nucleus);
+
+        var n = opts.particleCount;
+        var pos = new Float32Array(n * 3);
+        var seed = new Float32Array(n); // per-particle lifetime phase
+        for (var i = 0; i < n; i++) {
+            seed[i] = Math.random();
+            var r = seed[i] * opts.comaRadius;
+            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+            pos[i * 3] = r * Math.sin(ph) * Math.cos(th);
+            pos[i * 3 + 1] = r * Math.cos(ph) * 0.7;
+            pos[i * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+        }
+        var geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        var mat = new THREE.PointsMaterial({ color: opts.comaColor, size: opts.particleSize, sizeAttenuation: true, transparent: true, opacity: 0.75 });
+        var points = new THREE.Points(geo, mat);
+        group.add(points);
+
+        var glowRing = new THREE.Mesh(
+            new THREE.RingGeometry(opts.nucleusR * 2.4, opts.nucleusR * 2.9, 32),
+            new THREE.MeshBasicMaterial({ color: opts.comaColor, transparent: true, opacity: 0, side: THREE.DoubleSide })
+        );
+        glowRing.rotation.x = Math.PI / 2;
+        group.add(glowRing);
+
+        return {
+            group: group, nucleus: nucleus, points: points, seed: seed, comaRadius: opts.comaRadius,
+            glowRing: glowRing,
+            setHighlight: function (on) { glowRing.material.opacity = on ? 0.55 : 0; },
+            tick: function (dt) {
+                nucleus.rotation.y += dt * 0.0004;
+                var arr = points.geometry.attributes.position.array;
+                for (var i = 0; i < seed.length; i++) {
+                    seed[i] += dt * 0.00006;
+                    if (seed[i] > 1) seed[i] -= 1;
+                    var r = seed[i] * this.comaRadius;
+                    var idx = i * 3;
+                    var len = Math.hypot(arr[idx], arr[idx + 1] / 0.7, arr[idx + 2]) || 1;
+                    var scaleFactor = r / len;
+                    arr[idx] *= scaleFactor; arr[idx + 1] *= scaleFactor; arr[idx + 2] *= scaleFactor;
+                }
+                points.geometry.attributes.position.needsUpdate = true;
+                points.material.opacity = 0.75;
+            }
+        };
+    }
+
+    function t3dBorisovComet(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x05070d, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+
+        var starN = shell.low ? 220 : 460;
+        var starPos = new Float32Array(starN * 3);
+        for (var s = 0; s < starN; s++) {
+            var r = 90 + Math.random() * 70;
+            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+            starPos[s * 3] = r * Math.sin(ph) * Math.cos(th);
+            starPos[s * 3 + 1] = r * Math.cos(ph);
+            starPos[s * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+        }
+        var starGeo = new THREE.BufferGeometry();
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.28, sizeAttenuation: true, transparent: true, opacity: 0.55 })));
+
+        var sun = new THREE.Mesh(new THREE.SphereGeometry(1.6, 24, 18), new THREE.MeshBasicMaterial({ color: 0xffcc55 }));
+        scene.add(sun);
+        var sunLight = new THREE.PointLight(0xfff2cc, 2.2, 200);
+        scene.add(sunLight);
+
+        // Two schematic path curves - shape only (open hyperbola vs closed
+        // ellipse), not to true AU distance scale.
+        var hypLine = new THREE.Line(t3dBcBuildHyperbola(THREE, 1), new THREE.LineBasicMaterial({ color: 0x7fd0ff, transparent: true, opacity: 0.55 }));
+        hypLine.position.x = -2;
+        scene.add(hypLine);
+        var ellLine = new THREE.Line(t3dBcBuildEllipse(THREE, 1), new THREE.LineBasicMaterial({ color: 0xffb37a, transparent: true, opacity: 0.55 }));
+        scene.add(ellLine);
+
+        var borisov = t3dBcMakeComet(THREE, { nucleusR: 0.55, nucleusColor: 0x8fa5c0, comaColor: 0x7fd0ff, comaRadius: 4.2, particleCount: shell.low ? 220 : 480, particleSize: 0.16 });
+        borisov.group.position.set(-14, 0, 11);
+        scene.add(borisov.group);
+
+        var halley = t3dBcMakeComet(THREE, { nucleusR: 0.5, nucleusColor: 0x9a8a6f, comaColor: 0xffb37a, comaRadius: 1.6, particleCount: shell.low ? 100 : 220, particleSize: 0.14 });
+        halley.group.position.set(9, 0, 5);
+        scene.add(halley.group);
+
+        var active = 0; // 0 = Borisov, 1 = Halley
+        var idxEl = document.getElementById('t3dBcScrub');
+        var idxLab = document.getElementById('t3dBcLabel');
+
+        function comparisonTableHtml() {
+            var rows = '';
+            for (var i = 0; i < T3D_BC_COMETS.length; i++) {
+                var c = T3D_BC_COMETS[i];
+                rows += '<tr' + (i === active ? ' style="background:#e3f2fd;"' : '') + '>' +
+                    '<td>' + c.label + '</td>' +
+                    '<td>' + c.eccentricity + '</td>' +
+                    '<td>' + c.coRatio + '</td>' +
+                    '</tr>';
+            }
+            return '<div class="w3-responsive"><table class="w3-table w3-bordered w3-small">' +
+                '<tr><th>Object</th><th>Orbital eccentricity</th><th>CO/H2O ratio</th></tr>' + rows + '</table></div>';
+        }
+
+        function panelHtml() {
+            var c = T3D_BC_COMETS[active];
+            return '<h3>' + c.label + ' - ' + c.sub + '</h3>' +
+                '<p>' + c.note + '</p>' +
+                '<table class="w3-table w3-small" style="margin-bottom:8px;">' +
+                '<tr><td><b>Orbit</b></td><td>' + c.eccentricity + (c.bound ? ' - returns periodically' : ' - leaves the solar system forever') + '</td></tr>' +
+                '<tr><td><b>Perihelion</b></td><td>' + c.perihelion + '</td></tr>' +
+                '<tr><td><b>Speed</b></td><td>' + c.speed + '</td></tr>' +
+                '<tr><td><b>CO/H2O ratio</b></td><td>' + c.coRatio + '</td></tr>' +
+                '<tr><td><b>Nucleus</b></td><td>' + c.nucleus + '</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation - both nuclei are stylized scaled spheres, not scanned shapes; the coma is a radially-expanding particle cloud, not a directional tail shaped by solar wind; the two path curves show the open (unbound) vs closed (bound) SHAPE difference only, not true AU distances.</p>' +
+                comparisonTableHtml();
+        }
+
+        function apply() {
+            borisov.setHighlight(active === 0);
+            halley.setHighlight(active === 1);
+            var c = T3D_BC_COMETS[active];
+            if (idxLab) idxLab.textContent = c.label + ' (' + (c.bound ? 'bound orbit' : 'unbound - leaves forever') + ')';
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ active: active }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (store.active === 0 || store.active === 1) { active = store.active; }
+        if (idxEl) idxEl.value = String(active);
+        apply();
+
+        if (idxEl) idxEl.addEventListener('input', function () {
+            active = parseInt(idxEl.value || '0', 10) === 1 ? 1 : 0;
+            apply();
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the switch to compare 2I/Borisov against a typical bound solar-system comet.');
+        return function animate(dt) {
+            borisov.tick(dt);
+            halley.tick(dt);
+            sun.rotation.y += dt * 0.0003;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { borisovcomet: 't3dBcControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { borisovcomet: { radius: 34, maxR: 90, minR: 8, phi: 1.15, theta: 0.5, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dBorisovComet(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
