@@ -5877,6 +5877,25 @@ export const INFO_ROUTES = new Set([
   '/guides/de/bortle-scale-light-pollution-step-by-step.html',
   '/guides/de/bortle-scale-light-pollution-when.html',
   '/guides/de/bortle-scale-light-pollution-vs-alternatives.html',
+  // mercury-spin-orbit-resonance companion guides (space-3d-discovery-loop LEAN fire, 2026-07-25)
+  '/guides/mercury-spin-orbit-resonance-step-by-step.html',
+  '/guides/mercury-spin-orbit-resonance-when.html',
+  '/guides/mercury-spin-orbit-resonance-vs-alternatives.html',
+  '/guides/pt/mercury-spin-orbit-resonance-step-by-step.html',
+  '/guides/pt/mercury-spin-orbit-resonance-when.html',
+  '/guides/pt/mercury-spin-orbit-resonance-vs-alternatives.html',
+  '/guides/es/mercury-spin-orbit-resonance-step-by-step.html',
+  '/guides/es/mercury-spin-orbit-resonance-when.html',
+  '/guides/es/mercury-spin-orbit-resonance-vs-alternatives.html',
+  '/guides/vi/mercury-spin-orbit-resonance-step-by-step.html',
+  '/guides/vi/mercury-spin-orbit-resonance-when.html',
+  '/guides/vi/mercury-spin-orbit-resonance-vs-alternatives.html',
+  '/guides/id/mercury-spin-orbit-resonance-step-by-step.html',
+  '/guides/id/mercury-spin-orbit-resonance-when.html',
+  '/guides/id/mercury-spin-orbit-resonance-vs-alternatives.html',
+  '/guides/de/mercury-spin-orbit-resonance-step-by-step.html',
+  '/guides/de/mercury-spin-orbit-resonance-when.html',
+  '/guides/de/mercury-spin-orbit-resonance-vs-alternatives.html',
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -12189,6 +12208,25 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/bortle-scale-light-pollution-step-by-step.html',
   '/guides/de/bortle-scale-light-pollution-when.html',
   '/guides/de/bortle-scale-light-pollution-vs-alternatives.html',
+  // mercury-spin-orbit-resonance companion guides (space-3d-discovery-loop LEAN fire, 2026-07-25)
+  '/guides/mercury-spin-orbit-resonance-step-by-step.html',
+  '/guides/mercury-spin-orbit-resonance-when.html',
+  '/guides/mercury-spin-orbit-resonance-vs-alternatives.html',
+  '/guides/pt/mercury-spin-orbit-resonance-step-by-step.html',
+  '/guides/pt/mercury-spin-orbit-resonance-when.html',
+  '/guides/pt/mercury-spin-orbit-resonance-vs-alternatives.html',
+  '/guides/es/mercury-spin-orbit-resonance-step-by-step.html',
+  '/guides/es/mercury-spin-orbit-resonance-when.html',
+  '/guides/es/mercury-spin-orbit-resonance-vs-alternatives.html',
+  '/guides/vi/mercury-spin-orbit-resonance-step-by-step.html',
+  '/guides/vi/mercury-spin-orbit-resonance-when.html',
+  '/guides/vi/mercury-spin-orbit-resonance-vs-alternatives.html',
+  '/guides/id/mercury-spin-orbit-resonance-step-by-step.html',
+  '/guides/id/mercury-spin-orbit-resonance-when.html',
+  '/guides/id/mercury-spin-orbit-resonance-vs-alternatives.html',
+  '/guides/de/mercury-spin-orbit-resonance-step-by-step.html',
+  '/guides/de/mercury-spin-orbit-resonance-when.html',
+  '/guides/de/mercury-spin-orbit-resonance-vs-alternatives.html',
 ]);
 
 export function isGuideRoute(route) {
@@ -24592,6 +24630,25 @@ export const JSP_BY_ROUTE = {
   '/guides/jpg-avif-converter-when.html': 'guide/jpg-avif-converter-when.jsp',
   '/guides/jpg-avif-converter-step-by-step.html': 'guide/jpg-avif-converter-step-by-step.jsp',
   '/guides/jpg-avif-converter-vs-alternatives.html': 'guide/jpg-avif-converter-vs-alternatives.jsp',
+  // mercury-spin-orbit-resonance companion guides (space-3d-discovery-loop LEAN fire, 2026-07-25)
+  '/guides/mercury-spin-orbit-resonance-step-by-step.html': 'guide/mercury-spin-orbit-resonance-step-by-step.jsp',
+  '/guides/mercury-spin-orbit-resonance-when.html': 'guide/mercury-spin-orbit-resonance-when.jsp',
+  '/guides/mercury-spin-orbit-resonance-vs-alternatives.html': 'guide/mercury-spin-orbit-resonance-vs-alternatives.jsp',
+  '/guides/pt/mercury-spin-orbit-resonance-step-by-step.html': 'guide/pt/mercury-spin-orbit-resonance-step-by-step.jsp',
+  '/guides/pt/mercury-spin-orbit-resonance-when.html': 'guide/pt/mercury-spin-orbit-resonance-when.jsp',
+  '/guides/pt/mercury-spin-orbit-resonance-vs-alternatives.html': 'guide/pt/mercury-spin-orbit-resonance-vs-alternatives.jsp',
+  '/guides/es/mercury-spin-orbit-resonance-step-by-step.html': 'guide/es/mercury-spin-orbit-resonance-step-by-step.jsp',
+  '/guides/es/mercury-spin-orbit-resonance-when.html': 'guide/es/mercury-spin-orbit-resonance-when.jsp',
+  '/guides/es/mercury-spin-orbit-resonance-vs-alternatives.html': 'guide/es/mercury-spin-orbit-resonance-vs-alternatives.jsp',
+  '/guides/vi/mercury-spin-orbit-resonance-step-by-step.html': 'guide/vi/mercury-spin-orbit-resonance-step-by-step.jsp',
+  '/guides/vi/mercury-spin-orbit-resonance-when.html': 'guide/vi/mercury-spin-orbit-resonance-when.jsp',
+  '/guides/vi/mercury-spin-orbit-resonance-vs-alternatives.html': 'guide/vi/mercury-spin-orbit-resonance-vs-alternatives.jsp',
+  '/guides/id/mercury-spin-orbit-resonance-step-by-step.html': 'guide/id/mercury-spin-orbit-resonance-step-by-step.jsp',
+  '/guides/id/mercury-spin-orbit-resonance-when.html': 'guide/id/mercury-spin-orbit-resonance-when.jsp',
+  '/guides/id/mercury-spin-orbit-resonance-vs-alternatives.html': 'guide/id/mercury-spin-orbit-resonance-vs-alternatives.jsp',
+  '/guides/de/mercury-spin-orbit-resonance-step-by-step.html': 'guide/de/mercury-spin-orbit-resonance-step-by-step.jsp',
+  '/guides/de/mercury-spin-orbit-resonance-when.html': 'guide/de/mercury-spin-orbit-resonance-when.jsp',
+  '/guides/de/mercury-spin-orbit-resonance-vs-alternatives.html': 'guide/de/mercury-spin-orbit-resonance-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
