@@ -833,6 +833,7 @@ try {
     { title: "Sign PDF (Add Signature)", url: "https://freetoolonline.com/pdf-tools/sign-pdf.html", include: !1, tags: "pdf" },
     { title: "URL Slug Generator", url: "https://freetoolonline.com/developer-tools/slug-generator.html", include: !1, tags: "developer" },
     { title: "Whitespace Remover", url: "https://freetoolonline.com/developer-tools/whitespace-remover.html", include: !1, tags: "developer" },
+    { title: "HTML Tag Remover", url: "https://freetoolonline.com/developer-tools/html-tag-remover.html", include: !1, tags: "developer" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

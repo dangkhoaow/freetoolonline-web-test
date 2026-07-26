@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/html-tag-remover-vs-alternatives.html',
+  '/guides/de/html-tag-remover-vs-alternatives.html',
+  '/guides/id/html-tag-remover-vs-alternatives.html',
+  '/guides/vi/html-tag-remover-vs-alternatives.html',
+  '/guides/es/html-tag-remover-vs-alternatives.html',
+  '/guides/pt/html-tag-remover-vs-alternatives.html',
+  '/guides/html-tag-remover-step-by-step.html',
+  '/guides/de/html-tag-remover-step-by-step.html',
+  '/guides/id/html-tag-remover-step-by-step.html',
+  '/guides/vi/html-tag-remover-step-by-step.html',
+  '/guides/es/html-tag-remover-step-by-step.html',
+  '/guides/pt/html-tag-remover-step-by-step.html',
+  '/guides/html-tag-remover-when.html',
+  '/guides/de/html-tag-remover-when.html',
+  '/guides/id/html-tag-remover-when.html',
+  '/guides/vi/html-tag-remover-when.html',
+  '/guides/es/html-tag-remover-when.html',
+  '/guides/pt/html-tag-remover-when.html',
   '/guides/whitespace-remover-vs-alternatives.html',
   '/guides/de/whitespace-remover-vs-alternatives.html',
   '/guides/id/whitespace-remover-vs-alternatives.html',
@@ -13836,6 +13854,7 @@ export const ALIAS_ROUTES = {
   '/sign-pdf.html': '/pdf-tools/sign-pdf.html',
   '/slug-generator.html': '/developer-tools/slug-generator.html',
   '/whitespace-remover.html': '/developer-tools/whitespace-remover.html',
+  '/html-tag-remover.html': '/developer-tools/html-tag-remover.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -25257,6 +25276,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/whitespace-remover-vs-alternatives.html': 'guide/vi/whitespace-remover-vs-alternatives.jsp',
   '/guides/es/whitespace-remover-vs-alternatives.html': 'guide/es/whitespace-remover-vs-alternatives.jsp',
   '/guides/pt/whitespace-remover-vs-alternatives.html': 'guide/pt/whitespace-remover-vs-alternatives.jsp',
+  '/developer-tools/html-tag-remover.html': 'utility/html-tag-remover.jsp',
+  '/guides/html-tag-remover-when.html': 'guide/html-tag-remover-when.jsp',
+  '/guides/de/html-tag-remover-when.html': 'guide/de/html-tag-remover-when.jsp',
+  '/guides/id/html-tag-remover-when.html': 'guide/id/html-tag-remover-when.jsp',
+  '/guides/vi/html-tag-remover-when.html': 'guide/vi/html-tag-remover-when.jsp',
+  '/guides/es/html-tag-remover-when.html': 'guide/es/html-tag-remover-when.jsp',
+  '/guides/pt/html-tag-remover-when.html': 'guide/pt/html-tag-remover-when.jsp',
+  '/guides/html-tag-remover-step-by-step.html': 'guide/html-tag-remover-step-by-step.jsp',
+  '/guides/de/html-tag-remover-step-by-step.html': 'guide/de/html-tag-remover-step-by-step.jsp',
+  '/guides/id/html-tag-remover-step-by-step.html': 'guide/id/html-tag-remover-step-by-step.jsp',
+  '/guides/vi/html-tag-remover-step-by-step.html': 'guide/vi/html-tag-remover-step-by-step.jsp',
+  '/guides/es/html-tag-remover-step-by-step.html': 'guide/es/html-tag-remover-step-by-step.jsp',
+  '/guides/pt/html-tag-remover-step-by-step.html': 'guide/pt/html-tag-remover-step-by-step.jsp',
+  '/guides/html-tag-remover-vs-alternatives.html': 'guide/html-tag-remover-vs-alternatives.jsp',
+  '/guides/de/html-tag-remover-vs-alternatives.html': 'guide/de/html-tag-remover-vs-alternatives.jsp',
+  '/guides/id/html-tag-remover-vs-alternatives.html': 'guide/id/html-tag-remover-vs-alternatives.jsp',
+  '/guides/vi/html-tag-remover-vs-alternatives.html': 'guide/vi/html-tag-remover-vs-alternatives.jsp',
+  '/guides/es/html-tag-remover-vs-alternatives.html': 'guide/es/html-tag-remover-vs-alternatives.jsp',
+  '/guides/pt/html-tag-remover-vs-alternatives.html': 'guide/pt/html-tag-remover-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
