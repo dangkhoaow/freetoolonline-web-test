@@ -834,6 +834,7 @@ try {
     { title: "URL Slug Generator", url: "https://freetoolonline.com/developer-tools/slug-generator.html", include: !1, tags: "developer" },
     { title: "Whitespace Remover", url: "https://freetoolonline.com/developer-tools/whitespace-remover.html", include: !1, tags: "developer" },
     { title: "HTML Tag Remover", url: "https://freetoolonline.com/developer-tools/html-tag-remover.html", include: !1, tags: "developer" },
+    { title: "Binary Text Converter", url: "https://freetoolonline.com/developer-tools/binary-text-converter.html", include: !1, tags: "developer" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

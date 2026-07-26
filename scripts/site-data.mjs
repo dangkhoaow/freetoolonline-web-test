@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/binary-text-converter-vs-alternatives.html',
+  '/guides/de/binary-text-converter-vs-alternatives.html',
+  '/guides/id/binary-text-converter-vs-alternatives.html',
+  '/guides/vi/binary-text-converter-vs-alternatives.html',
+  '/guides/es/binary-text-converter-vs-alternatives.html',
+  '/guides/pt/binary-text-converter-vs-alternatives.html',
+  '/guides/binary-text-converter-step-by-step.html',
+  '/guides/de/binary-text-converter-step-by-step.html',
+  '/guides/id/binary-text-converter-step-by-step.html',
+  '/guides/vi/binary-text-converter-step-by-step.html',
+  '/guides/es/binary-text-converter-step-by-step.html',
+  '/guides/pt/binary-text-converter-step-by-step.html',
+  '/guides/binary-text-converter-when.html',
+  '/guides/de/binary-text-converter-when.html',
+  '/guides/id/binary-text-converter-when.html',
+  '/guides/vi/binary-text-converter-when.html',
+  '/guides/es/binary-text-converter-when.html',
+  '/guides/pt/binary-text-converter-when.html',
   '/guides/html-tag-remover-vs-alternatives.html',
   '/guides/de/html-tag-remover-vs-alternatives.html',
   '/guides/id/html-tag-remover-vs-alternatives.html',
@@ -13855,6 +13873,8 @@ export const ALIAS_ROUTES = {
   '/slug-generator.html': '/developer-tools/slug-generator.html',
   '/whitespace-remover.html': '/developer-tools/whitespace-remover.html',
   '/html-tag-remover.html': '/developer-tools/html-tag-remover.html',
+  '/binary-text-converter.html': '/developer-tools/binary-text-converter.html',
+  '/text-to-binary.html': '/developer-tools/binary-text-converter.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -25295,6 +25315,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/html-tag-remover-vs-alternatives.html': 'guide/vi/html-tag-remover-vs-alternatives.jsp',
   '/guides/es/html-tag-remover-vs-alternatives.html': 'guide/es/html-tag-remover-vs-alternatives.jsp',
   '/guides/pt/html-tag-remover-vs-alternatives.html': 'guide/pt/html-tag-remover-vs-alternatives.jsp',
+  '/developer-tools/binary-text-converter.html': 'utility/binary-text-converter.jsp',
+  '/guides/binary-text-converter-when.html': 'guide/binary-text-converter-when.jsp',
+  '/guides/de/binary-text-converter-when.html': 'guide/de/binary-text-converter-when.jsp',
+  '/guides/id/binary-text-converter-when.html': 'guide/id/binary-text-converter-when.jsp',
+  '/guides/vi/binary-text-converter-when.html': 'guide/vi/binary-text-converter-when.jsp',
+  '/guides/es/binary-text-converter-when.html': 'guide/es/binary-text-converter-when.jsp',
+  '/guides/pt/binary-text-converter-when.html': 'guide/pt/binary-text-converter-when.jsp',
+  '/guides/binary-text-converter-step-by-step.html': 'guide/binary-text-converter-step-by-step.jsp',
+  '/guides/de/binary-text-converter-step-by-step.html': 'guide/de/binary-text-converter-step-by-step.jsp',
+  '/guides/id/binary-text-converter-step-by-step.html': 'guide/id/binary-text-converter-step-by-step.jsp',
+  '/guides/vi/binary-text-converter-step-by-step.html': 'guide/vi/binary-text-converter-step-by-step.jsp',
+  '/guides/es/binary-text-converter-step-by-step.html': 'guide/es/binary-text-converter-step-by-step.jsp',
+  '/guides/pt/binary-text-converter-step-by-step.html': 'guide/pt/binary-text-converter-step-by-step.jsp',
+  '/guides/binary-text-converter-vs-alternatives.html': 'guide/binary-text-converter-vs-alternatives.jsp',
+  '/guides/de/binary-text-converter-vs-alternatives.html': 'guide/de/binary-text-converter-vs-alternatives.jsp',
+  '/guides/id/binary-text-converter-vs-alternatives.html': 'guide/id/binary-text-converter-vs-alternatives.jsp',
+  '/guides/vi/binary-text-converter-vs-alternatives.html': 'guide/vi/binary-text-converter-vs-alternatives.jsp',
+  '/guides/es/binary-text-converter-vs-alternatives.html': 'guide/es/binary-text-converter-vs-alternatives.jsp',
+  '/guides/pt/binary-text-converter-vs-alternatives.html': 'guide/pt/binary-text-converter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
