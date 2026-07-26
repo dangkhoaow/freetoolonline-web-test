@@ -743,6 +743,7 @@ try {
     { title: "Coronal Mass Ejection 3D Explorer", url: "https://freetoolonline.com/space-3d/coronal-mass-ejection.html", include: !1, tags: "space-3d" },
     { title: "Apollo Free-Return Trajectory 3D Explorer", url: "https://freetoolonline.com/space-3d/apollo-free-return-trajectory.html", include: !1, tags: "space-3d" },
     { title: "New Horizons Pluto Flyby 3D Explorer", url: "https://freetoolonline.com/space-3d/new-horizons-pluto-flyby.html", include: !1, tags: "space-3d" },
+    { title: "Galactic Year: Sun's Orbit 3D Explorer", url: "https://freetoolonline.com/space-3d/galactic-year-sun-orbit.html", include: !1, tags: "space-3d" },
     { title: "Io Volcanoes Explorer - Real-Time Juno Data", url: "https://freetoolonline.com/space-3d/io-volcanoes-realtime.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
