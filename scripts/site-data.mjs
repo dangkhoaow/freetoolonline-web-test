@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/url-slug-generator-vs-alternatives.html',
+  '/guides/de/url-slug-generator-vs-alternatives.html',
+  '/guides/id/url-slug-generator-vs-alternatives.html',
+  '/guides/vi/url-slug-generator-vs-alternatives.html',
+  '/guides/es/url-slug-generator-vs-alternatives.html',
+  '/guides/pt/url-slug-generator-vs-alternatives.html',
+  '/guides/url-slug-generator-step-by-step.html',
+  '/guides/de/url-slug-generator-step-by-step.html',
+  '/guides/id/url-slug-generator-step-by-step.html',
+  '/guides/vi/url-slug-generator-step-by-step.html',
+  '/guides/es/url-slug-generator-step-by-step.html',
+  '/guides/pt/url-slug-generator-step-by-step.html',
+  '/guides/url-slug-generator-when.html',
+  '/guides/de/url-slug-generator-when.html',
+  '/guides/id/url-slug-generator-when.html',
+  '/guides/vi/url-slug-generator-when.html',
+  '/guides/es/url-slug-generator-when.html',
+  '/guides/pt/url-slug-generator-when.html',
   '/guides/sign-pdf-add-signature-vs-alternatives.html',
   '/guides/de/sign-pdf-add-signature-vs-alternatives.html',
   '/guides/id/sign-pdf-add-signature-vs-alternatives.html',
@@ -13798,6 +13816,7 @@ export const ALIAS_ROUTES = {
   '/jpg-to-avif-converter.html': '/image-converter-tools/jpg-to-avif-converter.html',
   '/gpa-calculator.html': '/utility-tools/gpa-calculator.html',
   '/sign-pdf.html': '/pdf-tools/sign-pdf.html',
+  '/slug-generator.html': '/developer-tools/slug-generator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -25181,6 +25200,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/sign-pdf-add-signature-vs-alternatives.html': 'guide/vi/sign-pdf-add-signature-vs-alternatives.jsp',
   '/guides/es/sign-pdf-add-signature-vs-alternatives.html': 'guide/es/sign-pdf-add-signature-vs-alternatives.jsp',
   '/guides/pt/sign-pdf-add-signature-vs-alternatives.html': 'guide/pt/sign-pdf-add-signature-vs-alternatives.jsp',
+  '/developer-tools/slug-generator.html': 'utility/slug-generator.jsp',
+  '/guides/url-slug-generator-when.html': 'guide/url-slug-generator-when.jsp',
+  '/guides/de/url-slug-generator-when.html': 'guide/de/url-slug-generator-when.jsp',
+  '/guides/id/url-slug-generator-when.html': 'guide/id/url-slug-generator-when.jsp',
+  '/guides/vi/url-slug-generator-when.html': 'guide/vi/url-slug-generator-when.jsp',
+  '/guides/es/url-slug-generator-when.html': 'guide/es/url-slug-generator-when.jsp',
+  '/guides/pt/url-slug-generator-when.html': 'guide/pt/url-slug-generator-when.jsp',
+  '/guides/url-slug-generator-step-by-step.html': 'guide/url-slug-generator-step-by-step.jsp',
+  '/guides/de/url-slug-generator-step-by-step.html': 'guide/de/url-slug-generator-step-by-step.jsp',
+  '/guides/id/url-slug-generator-step-by-step.html': 'guide/id/url-slug-generator-step-by-step.jsp',
+  '/guides/vi/url-slug-generator-step-by-step.html': 'guide/vi/url-slug-generator-step-by-step.jsp',
+  '/guides/es/url-slug-generator-step-by-step.html': 'guide/es/url-slug-generator-step-by-step.jsp',
+  '/guides/pt/url-slug-generator-step-by-step.html': 'guide/pt/url-slug-generator-step-by-step.jsp',
+  '/guides/url-slug-generator-vs-alternatives.html': 'guide/url-slug-generator-vs-alternatives.jsp',
+  '/guides/de/url-slug-generator-vs-alternatives.html': 'guide/de/url-slug-generator-vs-alternatives.jsp',
+  '/guides/id/url-slug-generator-vs-alternatives.html': 'guide/id/url-slug-generator-vs-alternatives.jsp',
+  '/guides/vi/url-slug-generator-vs-alternatives.html': 'guide/vi/url-slug-generator-vs-alternatives.jsp',
+  '/guides/es/url-slug-generator-vs-alternatives.html': 'guide/es/url-slug-generator-vs-alternatives.jsp',
+  '/guides/pt/url-slug-generator-vs-alternatives.html': 'guide/pt/url-slug-generator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
