@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/rot13-encoder-vs-alternatives.html',
+  '/guides/de/rot13-encoder-vs-alternatives.html',
+  '/guides/id/rot13-encoder-vs-alternatives.html',
+  '/guides/vi/rot13-encoder-vs-alternatives.html',
+  '/guides/es/rot13-encoder-vs-alternatives.html',
+  '/guides/pt/rot13-encoder-vs-alternatives.html',
+  '/guides/rot13-encoder-step-by-step.html',
+  '/guides/de/rot13-encoder-step-by-step.html',
+  '/guides/id/rot13-encoder-step-by-step.html',
+  '/guides/vi/rot13-encoder-step-by-step.html',
+  '/guides/es/rot13-encoder-step-by-step.html',
+  '/guides/pt/rot13-encoder-step-by-step.html',
+  '/guides/rot13-encoder-when.html',
+  '/guides/de/rot13-encoder-when.html',
+  '/guides/id/rot13-encoder-when.html',
+  '/guides/vi/rot13-encoder-when.html',
+  '/guides/es/rot13-encoder-when.html',
+  '/guides/pt/rot13-encoder-when.html',
   '/guides/binary-text-converter-vs-alternatives.html',
   '/guides/de/binary-text-converter-vs-alternatives.html',
   '/guides/id/binary-text-converter-vs-alternatives.html',
@@ -13875,6 +13893,7 @@ export const ALIAS_ROUTES = {
   '/html-tag-remover.html': '/developer-tools/html-tag-remover.html',
   '/binary-text-converter.html': '/developer-tools/binary-text-converter.html',
   '/text-to-binary.html': '/developer-tools/binary-text-converter.html',
+  '/rot13-encoder.html': '/developer-tools/rot13-encoder.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -25334,6 +25353,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/binary-text-converter-vs-alternatives.html': 'guide/vi/binary-text-converter-vs-alternatives.jsp',
   '/guides/es/binary-text-converter-vs-alternatives.html': 'guide/es/binary-text-converter-vs-alternatives.jsp',
   '/guides/pt/binary-text-converter-vs-alternatives.html': 'guide/pt/binary-text-converter-vs-alternatives.jsp',
+  '/developer-tools/rot13-encoder.html': 'utility/rot13-encoder.jsp',
+  '/guides/rot13-encoder-when.html': 'guide/rot13-encoder-when.jsp',
+  '/guides/de/rot13-encoder-when.html': 'guide/de/rot13-encoder-when.jsp',
+  '/guides/id/rot13-encoder-when.html': 'guide/id/rot13-encoder-when.jsp',
+  '/guides/vi/rot13-encoder-when.html': 'guide/vi/rot13-encoder-when.jsp',
+  '/guides/es/rot13-encoder-when.html': 'guide/es/rot13-encoder-when.jsp',
+  '/guides/pt/rot13-encoder-when.html': 'guide/pt/rot13-encoder-when.jsp',
+  '/guides/rot13-encoder-step-by-step.html': 'guide/rot13-encoder-step-by-step.jsp',
+  '/guides/de/rot13-encoder-step-by-step.html': 'guide/de/rot13-encoder-step-by-step.jsp',
+  '/guides/id/rot13-encoder-step-by-step.html': 'guide/id/rot13-encoder-step-by-step.jsp',
+  '/guides/vi/rot13-encoder-step-by-step.html': 'guide/vi/rot13-encoder-step-by-step.jsp',
+  '/guides/es/rot13-encoder-step-by-step.html': 'guide/es/rot13-encoder-step-by-step.jsp',
+  '/guides/pt/rot13-encoder-step-by-step.html': 'guide/pt/rot13-encoder-step-by-step.jsp',
+  '/guides/rot13-encoder-vs-alternatives.html': 'guide/rot13-encoder-vs-alternatives.jsp',
+  '/guides/de/rot13-encoder-vs-alternatives.html': 'guide/de/rot13-encoder-vs-alternatives.jsp',
+  '/guides/id/rot13-encoder-vs-alternatives.html': 'guide/id/rot13-encoder-vs-alternatives.jsp',
+  '/guides/vi/rot13-encoder-vs-alternatives.html': 'guide/vi/rot13-encoder-vs-alternatives.jsp',
+  '/guides/es/rot13-encoder-vs-alternatives.html': 'guide/es/rot13-encoder-vs-alternatives.jsp',
+  '/guides/pt/rot13-encoder-vs-alternatives.html': 'guide/pt/rot13-encoder-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

@@ -835,6 +835,7 @@ try {
     { title: "Whitespace Remover", url: "https://freetoolonline.com/developer-tools/whitespace-remover.html", include: !1, tags: "developer" },
     { title: "HTML Tag Remover", url: "https://freetoolonline.com/developer-tools/html-tag-remover.html", include: !1, tags: "developer" },
     { title: "Binary Text Converter", url: "https://freetoolonline.com/developer-tools/binary-text-converter.html", include: !1, tags: "developer" },
+    { title: "ROT13 Encoder", url: "https://freetoolonline.com/developer-tools/rot13-encoder.html", include: !1, tags: "developer" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
