@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/whitespace-remover-vs-alternatives.html',
+  '/guides/de/whitespace-remover-vs-alternatives.html',
+  '/guides/id/whitespace-remover-vs-alternatives.html',
+  '/guides/vi/whitespace-remover-vs-alternatives.html',
+  '/guides/es/whitespace-remover-vs-alternatives.html',
+  '/guides/pt/whitespace-remover-vs-alternatives.html',
+  '/guides/whitespace-remover-step-by-step.html',
+  '/guides/de/whitespace-remover-step-by-step.html',
+  '/guides/id/whitespace-remover-step-by-step.html',
+  '/guides/vi/whitespace-remover-step-by-step.html',
+  '/guides/es/whitespace-remover-step-by-step.html',
+  '/guides/pt/whitespace-remover-step-by-step.html',
+  '/guides/whitespace-remover-when.html',
+  '/guides/de/whitespace-remover-when.html',
+  '/guides/id/whitespace-remover-when.html',
+  '/guides/vi/whitespace-remover-when.html',
+  '/guides/es/whitespace-remover-when.html',
+  '/guides/pt/whitespace-remover-when.html',
   '/guides/url-slug-generator-vs-alternatives.html',
   '/guides/de/url-slug-generator-vs-alternatives.html',
   '/guides/id/url-slug-generator-vs-alternatives.html',
@@ -13817,6 +13835,7 @@ export const ALIAS_ROUTES = {
   '/gpa-calculator.html': '/utility-tools/gpa-calculator.html',
   '/sign-pdf.html': '/pdf-tools/sign-pdf.html',
   '/slug-generator.html': '/developer-tools/slug-generator.html',
+  '/whitespace-remover.html': '/developer-tools/whitespace-remover.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -25219,6 +25238,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/url-slug-generator-vs-alternatives.html': 'guide/vi/url-slug-generator-vs-alternatives.jsp',
   '/guides/es/url-slug-generator-vs-alternatives.html': 'guide/es/url-slug-generator-vs-alternatives.jsp',
   '/guides/pt/url-slug-generator-vs-alternatives.html': 'guide/pt/url-slug-generator-vs-alternatives.jsp',
+  '/developer-tools/whitespace-remover.html': 'utility/whitespace-remover.jsp',
+  '/guides/whitespace-remover-when.html': 'guide/whitespace-remover-when.jsp',
+  '/guides/de/whitespace-remover-when.html': 'guide/de/whitespace-remover-when.jsp',
+  '/guides/id/whitespace-remover-when.html': 'guide/id/whitespace-remover-when.jsp',
+  '/guides/vi/whitespace-remover-when.html': 'guide/vi/whitespace-remover-when.jsp',
+  '/guides/es/whitespace-remover-when.html': 'guide/es/whitespace-remover-when.jsp',
+  '/guides/pt/whitespace-remover-when.html': 'guide/pt/whitespace-remover-when.jsp',
+  '/guides/whitespace-remover-step-by-step.html': 'guide/whitespace-remover-step-by-step.jsp',
+  '/guides/de/whitespace-remover-step-by-step.html': 'guide/de/whitespace-remover-step-by-step.jsp',
+  '/guides/id/whitespace-remover-step-by-step.html': 'guide/id/whitespace-remover-step-by-step.jsp',
+  '/guides/vi/whitespace-remover-step-by-step.html': 'guide/vi/whitespace-remover-step-by-step.jsp',
+  '/guides/es/whitespace-remover-step-by-step.html': 'guide/es/whitespace-remover-step-by-step.jsp',
+  '/guides/pt/whitespace-remover-step-by-step.html': 'guide/pt/whitespace-remover-step-by-step.jsp',
+  '/guides/whitespace-remover-vs-alternatives.html': 'guide/whitespace-remover-vs-alternatives.jsp',
+  '/guides/de/whitespace-remover-vs-alternatives.html': 'guide/de/whitespace-remover-vs-alternatives.jsp',
+  '/guides/id/whitespace-remover-vs-alternatives.html': 'guide/id/whitespace-remover-vs-alternatives.jsp',
+  '/guides/vi/whitespace-remover-vs-alternatives.html': 'guide/vi/whitespace-remover-vs-alternatives.jsp',
+  '/guides/es/whitespace-remover-vs-alternatives.html': 'guide/es/whitespace-remover-vs-alternatives.jsp',
+  '/guides/pt/whitespace-remover-vs-alternatives.html': 'guide/pt/whitespace-remover-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
