@@ -830,6 +830,7 @@ try {
     { title: "White Noise & Ambient Sound Generator", url: "https://freetoolonline.com/utility-tools/white-noise-generator.html", include: !1, tags: "utility" },
     { title: "JPG to AVIF Converter", url: "https://freetoolonline.com/image-converter-tools/jpg-to-avif-converter.html", include: !1, tags: "image-conversion" },
     { title: "GPA Calculator", url: "https://freetoolonline.com/utility-tools/gpa-calculator.html", include: !1, tags: "utility" },
+    { title: "Sign PDF (Add Signature)", url: "https://freetoolonline.com/pdf-tools/sign-pdf.html", include: !1, tags: "pdf" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

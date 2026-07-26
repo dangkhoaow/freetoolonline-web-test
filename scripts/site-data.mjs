@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/sign-pdf-add-signature-vs-alternatives.html',
+  '/guides/de/sign-pdf-add-signature-vs-alternatives.html',
+  '/guides/id/sign-pdf-add-signature-vs-alternatives.html',
+  '/guides/vi/sign-pdf-add-signature-vs-alternatives.html',
+  '/guides/es/sign-pdf-add-signature-vs-alternatives.html',
+  '/guides/pt/sign-pdf-add-signature-vs-alternatives.html',
+  '/guides/sign-pdf-add-signature-step-by-step.html',
+  '/guides/de/sign-pdf-add-signature-step-by-step.html',
+  '/guides/id/sign-pdf-add-signature-step-by-step.html',
+  '/guides/vi/sign-pdf-add-signature-step-by-step.html',
+  '/guides/es/sign-pdf-add-signature-step-by-step.html',
+  '/guides/pt/sign-pdf-add-signature-step-by-step.html',
+  '/guides/sign-pdf-add-signature-when.html',
+  '/guides/de/sign-pdf-add-signature-when.html',
+  '/guides/id/sign-pdf-add-signature-when.html',
+  '/guides/vi/sign-pdf-add-signature-when.html',
+  '/guides/es/sign-pdf-add-signature-when.html',
+  '/guides/pt/sign-pdf-add-signature-when.html',
   '/guides/gpa-calculator-vs-alternatives.html',
   // new-tool-discovery-loop-runbook fire475: gpa-calculator pt/es/vi/id/de guide locale fanout
   '/guides/pt/gpa-calculator-when.html',
@@ -13779,6 +13797,7 @@ export const ALIAS_ROUTES = {
   '/interstellar-travel-timescales.html': '/space-3d/interstellar-travel-timescales.html',
   '/jpg-to-avif-converter.html': '/image-converter-tools/jpg-to-avif-converter.html',
   '/gpa-calculator.html': '/utility-tools/gpa-calculator.html',
+  '/sign-pdf.html': '/pdf-tools/sign-pdf.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -25143,6 +25162,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/gpa-calculator-when.html': 'guide/de/gpa-calculator-when.jsp',
   '/guides/de/gpa-calculator-step-by-step.html': 'guide/de/gpa-calculator-step-by-step.jsp',
   '/guides/de/gpa-calculator-vs-alternatives.html': 'guide/de/gpa-calculator-vs-alternatives.jsp',
+  '/pdf-tools/sign-pdf.html': 'pdf/sign-pdf.jsp',
+  '/guides/sign-pdf-add-signature-when.html': 'guide/sign-pdf-add-signature-when.jsp',
+  '/guides/de/sign-pdf-add-signature-when.html': 'guide/de/sign-pdf-add-signature-when.jsp',
+  '/guides/id/sign-pdf-add-signature-when.html': 'guide/id/sign-pdf-add-signature-when.jsp',
+  '/guides/vi/sign-pdf-add-signature-when.html': 'guide/vi/sign-pdf-add-signature-when.jsp',
+  '/guides/es/sign-pdf-add-signature-when.html': 'guide/es/sign-pdf-add-signature-when.jsp',
+  '/guides/pt/sign-pdf-add-signature-when.html': 'guide/pt/sign-pdf-add-signature-when.jsp',
+  '/guides/sign-pdf-add-signature-step-by-step.html': 'guide/sign-pdf-add-signature-step-by-step.jsp',
+  '/guides/de/sign-pdf-add-signature-step-by-step.html': 'guide/de/sign-pdf-add-signature-step-by-step.jsp',
+  '/guides/id/sign-pdf-add-signature-step-by-step.html': 'guide/id/sign-pdf-add-signature-step-by-step.jsp',
+  '/guides/vi/sign-pdf-add-signature-step-by-step.html': 'guide/vi/sign-pdf-add-signature-step-by-step.jsp',
+  '/guides/es/sign-pdf-add-signature-step-by-step.html': 'guide/es/sign-pdf-add-signature-step-by-step.jsp',
+  '/guides/pt/sign-pdf-add-signature-step-by-step.html': 'guide/pt/sign-pdf-add-signature-step-by-step.jsp',
+  '/guides/sign-pdf-add-signature-vs-alternatives.html': 'guide/sign-pdf-add-signature-vs-alternatives.jsp',
+  '/guides/de/sign-pdf-add-signature-vs-alternatives.html': 'guide/de/sign-pdf-add-signature-vs-alternatives.jsp',
+  '/guides/id/sign-pdf-add-signature-vs-alternatives.html': 'guide/id/sign-pdf-add-signature-vs-alternatives.jsp',
+  '/guides/vi/sign-pdf-add-signature-vs-alternatives.html': 'guide/vi/sign-pdf-add-signature-vs-alternatives.jsp',
+  '/guides/es/sign-pdf-add-signature-vs-alternatives.html': 'guide/es/sign-pdf-add-signature-vs-alternatives.jsp',
+  '/guides/pt/sign-pdf-add-signature-vs-alternatives.html': 'guide/pt/sign-pdf-add-signature-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
