@@ -1,4 +1,4 @@
-import { canonicalForRoute, isInfoRoute, isGuideRoute, isRelatedGuidesEnabled, RELATED_GUIDES_CURATED, routeToSlug, ALIAS_ROUTES, JSP_BY_ROUTE } from './site-data.mjs';
+import { canonicalForRoute, isInfoRoute, isGuideRoute, isArticleFamilyRoute, isNewsFamilyRoute, isRelatedGuidesEnabled, RELATED_GUIDES_CURATED, routeToSlug, ALIAS_ROUTES, JSP_BY_ROUTE } from './site-data.mjs';
 import { getTestimonialsForTool, renderTestimonialsSection } from './testimonials.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -704,13 +704,13 @@ function buildSoftwareApplicationJsonLd({ browserTitle, canonicalUrl, descriptio
 // Article JSON-LD for /guides/* routes. Attributes the article to the
 // freetoolonline editorial team (Person schema added to Organization) and
 // records the publication/modified date for freshness signals.
-function buildArticleJsonLd({ canonicalUrl, canonicalOrigin, headline, description, datePublished, dateModified }) {
+function buildArticleJsonLd({ canonicalUrl, canonicalOrigin, headline, description, datePublished, dateModified, articleType = 'Article', includeSpeakable = true }) {
   const siteUrl = canonicalForRoute(canonicalOrigin, '/');
   const orgId = `${siteUrl}#organization`;
   const editorialTeamId = `${siteUrl}#editorial-team`;
   return buildJsonLdScript({
     '@context': 'https://schema.org',
-    '@type': 'Article',
+    '@type': articleType,
     headline,
     ...(description ? { description } : {}),
     mainEntityOfPage: {
@@ -722,14 +722,16 @@ function buildArticleJsonLd({ canonicalUrl, canonicalOrigin, headline, descripti
     ...(datePublished ? { datePublished } : {}),
     ...(dateModified ? { dateModified } : {}),
     image: 'https://dkbg1jftzfsd2.cloudfront.net/image/logo.200x200.png',
-    speakable: {
-      // P10.3.7 - `.answer` selector was a dead match on guides (0/19 guide
-      // pages emit that class; it's a tool-page idiom). Drop it and keep the
-      // two selectors that resolve reliably on every guide: the H1 and the
-      // pale-green answer/definition panel.
-      '@type': 'SpeakableSpecification',
-      cssSelector: ['h1', '.w3-pale-green'],
-    },
+    ...(includeSpeakable ? {
+      speakable: {
+        // P10.3.7 - `.answer` selector was a dead match on guides (0/19 guide
+        // pages emit that class; it's a tool-page idiom). Drop it and keep the
+        // two selectors that resolve reliably on every guide: the H1 and the
+        // pale-green answer/definition panel.
+        '@type': 'SpeakableSpecification',
+        cssSelector: ['h1', '.w3-pale-green'],
+      },
+    } : {}),
   });
 }
 
@@ -1431,6 +1433,13 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
     || /uploadContainer/.test(bodyHtml);
   const showAds = !isHome && !isInfoRoute(normalizedRoute) && normalizedRoute !== '/alternatead.html';
   const isGuide = isGuideRoute(normalizedRoute);
+  // Article-family (prefix-based, see site-data.mjs): guides emit Article,
+  // news emit NewsArticle; NEITHER may emit SoftwareApplication / $0 offer /
+  // rating widget - that combination misrepresents article content to the
+  // spam systems. Keyed on the route PREFIX so INFO_ROUTES enrollment gaps
+  // can never reintroduce the wrong schema on a guide/news route.
+  const isNewsPage = isNewsFamilyRoute(normalizedRoute);
+  const isArticlePage = isArticleFamilyRoute(normalizedRoute);
   // Ad slots load on tool pages AND guide pages. Guides remain Article-only
   // (no rating / related-tools / FAQ / SoftwareApplication JSON-LD) — those
   // stay gated on showAds. See INFO_ROUTES comment in site-data.mjs.
@@ -1441,7 +1450,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   // hub treatment without renaming it to /guide-tools.html).
   const isHubPage = normalizedRoute.endsWith('-tools.html')
     || SEO_CLUSTER_GROUPS.some((group) => group.hubRoute === normalizedRoute);
-  const showRating = showAds && !isHubPage;
+  const showRating = showAds && !isHubPage && !isArticlePage;
   // For guide pages with FAQ items embedded inline in BODYHTML (no separate FAQ*.html),
   // fall back to BODYHTML so FAQPage JSON-LD is still emitted. Tool/hub pages always use
   // the dedicated FAQ*.html fragment only.
@@ -1490,27 +1499,31 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
       ratingCount: aggregateRating.ratingCount,
     }
     : null;
-  const jsonLd = showAds
-    ? isHubPage
-      ? buildCollectionPageJsonLd({ canonicalOrigin, canonicalUrl, name: browserTitle, itemRoutes: hubItemRoutes, dateModified: lastUpdatedIso })
-      : buildSoftwareApplicationJsonLd({
-        browserTitle,
-        canonicalUrl,
-        description,
-        applicationCategory: resolveApplicationCategory(normalizedRoute),
-        aggregateRating: aggregateRatingPayload,
-        dateModified: lastUpdatedIso,
-      })
-    : isHome
-      ? buildWebSiteJsonLd({ canonicalUrl, name: 'Home Page - Free Tool Online', includeSearchAction: true, dateModified: lastUpdatedIso })
-      : buildWebSiteJsonLd({ canonicalUrl, name: `Free Tool Online - ${browserTitle}`, dateModified: lastUpdatedIso });
+  // Article-family pages (guides + news) get their Article/NewsArticle schema
+  // below - never SoftwareApplication (and no redundant WebSite node either).
+  const jsonLd = isArticlePage
+    ? ''
+    : showAds
+      ? isHubPage
+        ? buildCollectionPageJsonLd({ canonicalOrigin, canonicalUrl, name: browserTitle, itemRoutes: hubItemRoutes, dateModified: lastUpdatedIso })
+        : buildSoftwareApplicationJsonLd({
+          browserTitle,
+          canonicalUrl,
+          description,
+          applicationCategory: resolveApplicationCategory(normalizedRoute),
+          aggregateRating: aggregateRatingPayload,
+          dateModified: lastUpdatedIso,
+        })
+      : isHome
+        ? buildWebSiteJsonLd({ canonicalUrl, name: 'Home Page - Free Tool Online', includeSearchAction: true, dateModified: lastUpdatedIso })
+        : buildWebSiteJsonLd({ canonicalUrl, name: `Free Tool Online - ${browserTitle}`, dateModified: lastUpdatedIso });
   const faqJsonLd = faqItems.length > 0 ? buildFaqJsonLd(faqItems) : '';
   const breadcrumbJsonLd = breadcrumbItems.length > 0
     ? buildBreadcrumbJsonLd({ canonicalOrigin, items: breadcrumbItems })
     : '';
   // Organization JSON-LD: emit on home, hub pages, AND guide pages (guide Article
   // schema references the Organization and its editorial-team Person by @id).
-  const organizationJsonLd = (isHome || isHubPage || isGuide) ? buildOrganizationJsonLd({ canonicalOrigin }) : '';
+  const organizationJsonLd = (isHome || isHubPage || isArticlePage) ? buildOrganizationJsonLd({ canonicalOrigin }) : '';
   if (organizationJsonLd) {
     console.log(`[schema:org] Injected Organization JSON-LD on ${normalizedRoute}.`);
   }
@@ -1523,7 +1536,7 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
   // the most recent commit that touched the same files. The 2026-04-19
   // anchor survives only as the shallow-checkout fallback.
   const publishedIso = createdIso || '2026-04-19T08:00:00Z';
-  const articleJsonLd = isGuide
+  const articleJsonLd = isArticlePage
     ? buildArticleJsonLd({
         canonicalUrl,
         canonicalOrigin,
@@ -1531,10 +1544,13 @@ export function renderPageDocument({ route, siteOrigin, canonicalOrigin, basePat
         description,
         datePublished: publishedIso,
         dateModified: lastUpdatedIso || publishedIso,
+        // /news/* is NewsArticle + BreadcrumbList; Speakable stays a guide idiom.
+        articleType: isNewsPage ? 'NewsArticle' : 'Article',
+        includeSpeakable: !isNewsPage,
       })
     : '';
   if (articleJsonLd) {
-    console.log(`[schema:article] ${normalizedRoute} headline="${browserTitle}".`);
+    console.log(`[schema:article] ${normalizedRoute} type=${isNewsPage ? 'NewsArticle' : 'Article'} headline="${browserTitle}".`);
   }
   const shouldIncludeHowTo = showAds && !isHubPage && HOWTO_ROUTES.has(normalizedRoute);
   const howToSteps = shouldIncludeHowTo ? extractHowToSteps(pageData.bodyHtml, pageName, normalizedRoute) : [];

@@ -12525,6 +12525,26 @@ export function isGuideRoute(route) {
   return GUIDE_ROUTES.has(route && route.startsWith('/') ? route : `/${route ?? ''}`);
 }
 
+// Article-family classification is PREFIX-based, never set-membership-based:
+// every current AND future /guides/* or /news/* route is article-family
+// regardless of INFO_ROUTES / GUIDE_ROUTES enrollment. INFO_ROUTES is a
+// hand-enumerated set, so relying on it for page-type left 4,182 guide routes
+// + all /news/* routes emitting SoftwareApplication JSON-LD with a $0-price
+// offer + rating widget (structured data misrepresenting article content -
+// the June-2026 spam-policy pattern). The renderer keys its schema branch on
+// these classifiers so a newly registered guide/news route can never regress.
+export function isGuideFamilyRoute(route) {
+  return normalizeRoute(route).startsWith('/guides/');
+}
+
+export function isNewsFamilyRoute(route) {
+  return normalizeRoute(route).startsWith('/news/');
+}
+
+export function isArticleFamilyRoute(route) {
+  return isGuideFamilyRoute(route) || isNewsFamilyRoute(route);
+}
+
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
