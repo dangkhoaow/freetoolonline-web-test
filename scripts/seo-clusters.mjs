@@ -103,7 +103,7 @@ const SEO_CLUSTER_GROUPS = [
     cluster: 'places-3d',
     hubRoute: '/places-3d.html',
     hubLabel: 'Back to Places 3D',
-    routes: ['/places-3d/dead-sea.html', '/places-3d/mount-everest.html', '/places-3d/grand-canyon.html', '/places-3d/caspian-sea.html'],
+    routes: ['/places-3d/dead-sea.html', '/places-3d/mount-everest.html', '/places-3d/grand-canyon.html', '/places-3d/caspian-sea.html', '/places-3d/lake-baikal.html'],
   },
 
   // dinosaur-loop (2026-07-15) - third non-'-tools' reader category: procedural

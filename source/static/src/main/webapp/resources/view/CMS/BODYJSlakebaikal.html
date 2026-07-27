@@ -1,0 +1,342 @@
+<script>
+    // 3D scene archetype skeleton (lake-baikal) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN engine), fully client-side.
+    // Built LEAN from the shared t3d* skeleton - ONE scene only (lake-baikal).
+    // All geometry is procedural. places-3d cluster, authored 2026-07-27.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (encyclopedic consensus, cross-checked 2026-07-27):
+    //   - Deepest lake on Earth - maximum depth about 1,642 m (central basin)
+    //   - Average depth about 744 m
+    //   - Length about 636 km along the rift; average width about 48 km
+    //   - Water volume about 23,615 cu km - about 23% of world unfrozen fresh
+    //     surface water
+    //   - Age about 25-30 million years - the oldest lake on Earth
+    //   - Active continental rift valley, southern Siberia, Russia; flanked by
+    //     steep mountain ranges on both shores
+    //   - Freezes over most years from January into May or June, famous for
+    //     very clear ice
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'lake-baikal';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placeslakebaikal'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0a141f, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+        var key = new THREE.DirectionalLight(0xfff2d0, 0.95);
+        key.position.set(-10, 16, -6);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return { mesh: new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0 })), geo: geo, pos: pos };
+        }
+
+        // Narrow north-south rift trough with three basins along its length,
+        // 1 unit = 100 m vertical. z = north-south (north basin at z<0, south
+        // basin at z>0), x = east-west (across the narrow lake and its flanking
+        // mountain walls). LAKE_Y is the water surface.
+        var LAKE_Y = 0;
+        function halfWidth(z) {
+            // Real Baikal is narrow relative to its length - keep the basin
+            // tight (2.4-3.2 units) so the flanking mountains read clearly on
+            // both shores, unlike the broad Caspian basin.
+            var w = 2.7 + 0.4 * Math.sin((z + 6) * 0.3) + 0.2 * fbm(z * 0.4 + 3, 1, 3);
+            return Math.max(2.2, Math.min(3.3, w));
+        }
+        function basinDepth(z) {
+            // North basin shallower (~-8.9), central basin deepest (~-16.42,
+            // the deepest point on Earth for a lake), south basin deep but not
+            // as deep as central (~-14.61).
+            var north = -8.9, central = -16.42, south = -14.61;
+            var t1 = smooth(-8.5, -1.5, z);   // north -> central
+            var t2 = smooth(2.5, 8.0, z);      // central -> south
+            var d = north + (central - north) * t1;
+            d = d + (south - central) * t2;
+            return d;
+        }
+        function height(x, z) {
+            var hw = halfWidth(z);
+            var dist = Math.abs(x) / hw;
+            var depth = basinDepth(z);
+            if (dist < 1) {
+                // Basin floor: bowl-shaped, shallower near the shore.
+                var bowl = 1 - 0.2 * (1 - dist) * (1 - dist);
+                return depth * bowl + 0.08 * (fbm(x * 0.6 + 2, z * 0.6 + 5, 3) - 0.5);
+            }
+            // Steep flanking mountain ranges rise quickly beyond the shoreline
+            // (the Baikal Range on the west, the Barguzin Range on the east) -
+            // a fast rise to a rugged ridge, not a gentle coastal slope.
+            var t = Math.min(1, (dist - 1) * 1.4);
+            var ridge = t * t * (5.2 + 1.4 * fbm(x * 0.5 + 11, z * 0.5 + 6, 4));
+            return LAKE_Y + 0.05 + ridge;
+        }
+        var col = {
+            north: new THREE.Color(0x6fc4c9), central: new THREE.Color(0x123a5c),
+            south: new THREE.Color(0x1c5a86), land: new THREE.Color(0x8a9a6e), peak: new THREE.Color(0xd8dde2)
+        };
+        function zoneColor(c, z) {
+            var t1 = smooth(-8.5, -1.5, z), t2 = smooth(2.5, 8.0, z);
+            c.copy(col.north).lerp(col.central, t1).lerp(col.south, t2);
+        }
+        function color(c, h, x, z) {
+            var n = 0.92 + 0.16 * fbm(x * 1.3 + 4, z * 1.3 + 9, 3);
+            if (h > LAKE_Y + 0.03) {
+                c.copy(col.land).lerp(col.peak, smooth(1.5, 6.2, h - LAKE_Y)).multiplyScalar(n);
+            } else if (iceOn) {
+                c.set(0xdff3fb).multiplyScalar(0.94 + 0.1 * fbm(x * 2.2 + 7, z * 2.2 + 3, 3));
+            } else if (bandOn) {
+                zoneColor(c, z);
+                c.multiplyScalar(n);
+            } else {
+                var depthFrac = smooth(LAKE_Y, LAKE_Y - 16.42, h);
+                c.copy(col.north).lerp(col.central, depthFrac).multiplyScalar(n);
+            }
+        }
+        var bandOn = true, iceOn = false;
+        var terrainInfo = makeTerrain(14, 26, shell.low ? 100 : 160, shell.low ? 160 : 250, height, color);
+        scene.add(terrainInfo.mesh);
+
+        // Water surface: a gently translucent plane at lake level. When ice is
+        // toggled on, an opaque pale-cyan sheet with faint crack lines replaces
+        // the open-water look above the same basin.
+        var water = new THREE.Mesh(
+            new THREE.PlaneGeometry(14, 26),
+            new THREE.MeshStandardMaterial({ color: 0x123a52, transparent: true, opacity: 0.5, roughness: 0.15, metalness: 0.1 })
+        );
+        water.rotation.x = -Math.PI / 2;
+        water.position.y = LAKE_Y + 0.02;
+        scene.add(water);
+
+        var iceGroup = new THREE.Group();
+        var iceSheet = new THREE.Mesh(
+            new THREE.PlaneGeometry(14, 26),
+            new THREE.MeshStandardMaterial({ color: 0xe8fbff, transparent: true, opacity: 0.82, roughness: 0.25, metalness: 0.05 })
+        );
+        iceSheet.rotation.x = -Math.PI / 2;
+        iceSheet.position.y = LAKE_Y + 0.04;
+        iceGroup.add(iceSheet);
+        for (var ci = 0; ci < 7; ci++) {
+            var cz = -9 + ci * 2.8 + (hash2(ci, 3) - 0.5) * 1.2;
+            var crack = new THREE.Mesh(
+                new THREE.PlaneGeometry(4.2 + hash2(ci, 9) * 2.2, 0.035),
+                new THREE.MeshBasicMaterial({ color: 0x8fcfe0, transparent: true, opacity: 0.55 })
+            );
+            crack.rotation.x = -Math.PI / 2;
+            crack.rotation.z = (hash2(ci, 5) - 0.5) * 1.4;
+            crack.position.set((hash2(ci, 7) - 0.5) * 3.2, LAKE_Y + 0.05, cz);
+            iceGroup.add(crack);
+        }
+        iceGroup.visible = false;
+        scene.add(iceGroup);
+
+        function recolor() {
+            var pos = terrainInfo.pos, geo = terrainInfo.geo, colors = geo.attributes.color, col2 = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                color(col2, pos.getY(i), pos.getX(i), pos.getZ(i));
+                colors.setXYZ(i, col2.r, col2.g, col2.b);
+            }
+            colors.needsUpdate = true;
+        }
+
+        function panelHtml() {
+            return '<h3>Lake Baikal: three basins, one deep rift</h3>' +
+                '<p>A narrow trough between steep mountain ranges, split into a shallower north basin next to the far deeper central basin - the deepest point of any lake on Earth - and the south basin.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Maximum depth</td><td>about 1,642 m in the central basin - deepest lake on Earth</td></tr>' +
+                '<tr><td>Average depth</td><td>about 744 m</td></tr>' +
+                '<tr><td>Length</td><td>about 636 km along the rift</td></tr>' +
+                '<tr><td>Water volume</td><td>about 23,615 cu km - about 23% of world unfrozen fresh surface water</td></tr>' +
+                '<tr><td>Age</td><td>about 25-30 million years - the oldest lake on Earth</td></tr>' +
+                '<tr><td>Location</td><td>southern Siberia, Russia, in an active continental rift</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the basin profile, surrounding mountains, and vertical scale are schematic teaching cues, not survey data.</p>';
+        }
+
+        function apply() {
+            iceGroup.visible = iceOn;
+            water.visible = !iceOn;
+            var ib = document.getElementById('t3dPlbIceBtn');
+            if (ib) ib.textContent = 'Winter ice cover: ' + (iceOn ? 'On' : 'Off');
+            var bb = document.getElementById('t3dPlbBandBtn');
+            if (bb) bb.textContent = 'Depth bands: ' + (bandOn ? 'On' : 'Off');
+            recolor();
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ bandOn: bandOn, iceOn: iceOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.bandOn === 'boolean') bandOn = store.bandOn;
+        if (typeof store.iceOn === 'boolean') iceOn = store.iceOn;
+        apply();
+
+        var bandBtn = document.getElementById('t3dPlbBandBtn');
+        if (bandBtn) bandBtn.addEventListener('click', function () { bandOn = !bandOn; apply(); });
+        var iceBtn = document.getElementById('t3dPlbIceBtn');
+        if (iceBtn) iceBtn.addEventListener('click', function () { iceOn = !iceOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the depth bands or the winter ice cover.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placeslakebaikal: 't3dPlbControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placeslakebaikal: { radius: 30, maxR: 65, minR: 8, phi: 0.78, theta: 0.35, targetY: -3 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
