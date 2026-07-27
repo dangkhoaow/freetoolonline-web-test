@@ -1,0 +1,311 @@
+<script>
+    // 3D scene archetype skeleton (milford-sound) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (milford-sound).
+    // All geometry is procedural. places-3d cluster, 2026-07-28.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey geology.
+    // Published figures (Fiordland / NZ tourism + geographic consensus, cross-checked 2026-07-28):
+    //   - Fiordland National Park, South Island, New Zealand (Maori: Piopiotahi)
+    //   - Fjord length about 15 km, Tasman Sea to fjord head
+    //   - Mitre Peak rises about 1,692 m directly from the water
+    //   - Maximum depth about 291 m, shallowing toward a sill near the entrance
+    //   - Average annual rainfall about 6,400 mm - among the wettest inhabited places on Earth
+    //   - Permanent waterfalls: Stirling Falls (about 155 m), Bowen Falls (about 162 m)
+    //   - Formed by glacial carving during the last ice age, later flooded by the sea
+    //   - Part of Te Wahipounamu - South West New Zealand, UNESCO World Heritage Area since 1990
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'milford-sound';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesmilfordsound'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0d1a1c, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+        var key = new THREE.DirectionalLight(0xdff0ff, 1.0);
+        key.position.set(-10, 20, 8);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0 }));
+        }
+
+        // Fjord relief, 1 unit = ~200 m. Narrow U-shaped glacial trough running
+        // along Z (Tasman Sea at -Z, fjord head + Mitre Peak at +Z), steep
+        // near-vertical walls, water plane fills the flooded valley floor.
+        var WATER_Y = 0;
+        var RIM = 1.9;
+        function chan(z) { return 0.5 * Math.sin(z * 0.22); } // gentle meander
+        function uCarve(d, w, depth) {
+            // U-shaped (flat-bottomed, steep-sided) profile via a cosine well.
+            var t = Math.max(0, Math.min(1, d / w));
+            return depth * (0.5 + 0.5 * Math.cos(Math.PI * t));
+        }
+        // Mitre Peak: a single steep spire near the fjord head, right at the
+        // water's edge (small offset from the channel centerline).
+        var PEAK_X = 0.9, PEAK_Z = 5.6, PEAK_H = 5.4, PEAK_W = 1.3;
+        function peakBump(x, z) {
+            var d = Math.hypot(x - PEAK_X, z - PEAK_Z);
+            var t = Math.max(0, 1 - d / PEAK_W);
+            return PEAK_H * Math.pow(t, 2.4);
+        }
+        function height(x, z) {
+            var c = chan(z);
+            var h = RIM + 0.3 * (fbm(x * 0.3 + 4, z * 0.3 + 9, 4) - 0.5);
+            h -= uCarve(Math.abs(x - c), 3.2, RIM - WATER_Y + 1.1);
+            h -= 0.1 * fbm(x * 1.5 + 3, z * 1.5 + 6, 4) * Math.max(0, 1 - Math.abs(x - c) / 3.2);
+            h += peakBump(x, z);
+            return h;
+        }
+        var normColors = null, terrain;
+        function bandColor(c, h, x, z) {
+            var n = 0.92 + 0.16 * fbm(x * 1.3 + 15, z * 1.3 + 5, 3);
+            if (h < WATER_Y + 0.06) { c.setHex(0x1e3a3c); }        // wet rock at the waterline
+            else if (h < WATER_Y + 1.0) { c.setHex(0x35563b); }    // rainforest-clad lower cliffs
+            else if (h < WATER_Y + 2.1) { c.setHex(0x6d6f6a); }    // bare granite
+            else { c.setHex(0xdfe4e6); }                            // pale peak / Mitre Peak crest
+            c.multiplyScalar(n);
+        }
+        terrain = makeTerrain(16, 22, shell.low ? 110 : 170, shell.low ? 150 : 230, height, bandColor);
+        scene.add(terrain);
+        normColors = terrain.geometry.attributes.color.array.slice();
+
+        // Sea/fjord water plane, filling the flooded U-trough.
+        var water = new THREE.Mesh(
+            new THREE.PlaneGeometry(16, 22),
+            new THREE.MeshStandardMaterial({ color: 0x1f6f78, roughness: 0.15, transparent: true, opacity: 0.92 })
+        );
+        water.rotation.x = -Math.PI / 2;
+        water.position.y = WATER_Y;
+        scene.add(water);
+
+        // Freshwater lens: a thin tannin-tinted layer just above the seawater,
+        // toggled - Milford Sound's heavy rainfall floats fresh brown-tinted
+        // runoff on top of the denser saltwater below.
+        var lens = new THREE.Mesh(
+            new THREE.PlaneGeometry(16, 22),
+            new THREE.MeshStandardMaterial({ color: 0x5a4326, roughness: 0.3, transparent: true, opacity: 0.32 })
+        );
+        lens.rotation.x = -Math.PI / 2;
+        lens.position.y = WATER_Y + 0.05;
+        scene.add(lens);
+
+        // Two permanent waterfalls (Stirling Falls, Bowen Falls) as pale
+        // cascading ribbons down the cliff walls near the fjord head.
+        function makeFall(x0, z0, topY) {
+            var pts = [
+                new THREE.Vector3(x0, topY, z0),
+                new THREE.Vector3(x0 + 0.05, topY * 0.55, z0 + 0.1),
+                new THREE.Vector3(x0, WATER_Y + 0.05, z0)
+            ];
+            return new THREE.Mesh(
+                new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, 0.09, 6, false),
+                new THREE.MeshStandardMaterial({ color: 0xd8ecef, roughness: 0.2, transparent: true, opacity: 0.9 })
+            );
+        }
+        var fall1 = makeFall(-1.9, 5.4, 2.3);
+        var fall2 = makeFall(2.4, 3.2, 2.0);
+        scene.add(fall1); scene.add(fall2);
+
+        var lensOn = true, fallsOn = true;
+
+        function panelHtml() {
+            return '<h3>Milford Sound: a glacial fjord</h3>' +
+                '<p>A relief of the fjord: steep U-shaped glacial walls, Mitre Peak rising at the head, two permanent waterfalls, and a tannin-stained freshwater layer floating on the seawater.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Location</td><td>Fiordland National Park, South Island, New Zealand</td></tr>' +
+                '<tr><td>Length</td><td>about 15 km, Tasman Sea to fjord head</td></tr>' +
+                '<tr><td>Mitre Peak</td><td>about 1,692 m, rising directly from the water</td></tr>' +
+                '<tr><td>Maximum depth</td><td>about 291 m</td></tr>' +
+                '<tr><td>Average annual rainfall</td><td>about 6,400 mm</td></tr>' +
+                '<tr><td>Waterfalls</td><td>Stirling Falls (~155 m), Bowen Falls (~162 m)</td></tr>' +
+                '<tr><td>Protected</td><td>Te Wahipounamu - South West New Zealand, UNESCO World Heritage Area since 1990</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the wall shape, waterfall placement, and vertical scale are procedural teaching cues, not survey terrain.</p>';
+        }
+
+        function apply() {
+            lens.visible = lensOn;
+            fall1.visible = fallsOn; fall2.visible = fallsOn;
+            var lb = document.getElementById('t3dMsdLensBtn');
+            if (lb) lb.textContent = 'Freshwater lens: ' + (lensOn ? 'On' : 'Off');
+            var fb = document.getElementById('t3dMsdFallsBtn');
+            if (fb) fb.textContent = 'Waterfall highlight: ' + (fallsOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ lensOn: lensOn, fallsOn: fallsOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.lensOn === 'boolean') lensOn = store.lensOn;
+        if (typeof store.fallsOn === 'boolean') fallsOn = store.fallsOn;
+        apply();
+
+        var lensBtn = document.getElementById('t3dMsdLensBtn');
+        if (lensBtn) lensBtn.addEventListener('click', function () { lensOn = !lensOn; apply(); });
+        var fallsBtn = document.getElementById('t3dMsdFallsBtn');
+        if (fallsBtn) fallsBtn.addEventListener('click', function () { fallsOn = !fallsOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the freshwater lens or the waterfall highlight.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesmilfordsound: 't3dMsdControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesmilfordsound: { radius: 20, maxR: 46, minR: 6, phi: 0.98, theta: 0.55, targetY: 1.0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
