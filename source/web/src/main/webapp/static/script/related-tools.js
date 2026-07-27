@@ -739,6 +739,7 @@ try {
     { title: "Lake Victoria 3D Explorer", url: "https://freetoolonline.com/places-3d/lake-victoria.html", include: !1, tags: "places-3d" },
     { title: "Iguazu Falls 3D Explorer", url: "https://freetoolonline.com/places-3d/iguazu-falls.html", include: !1, tags: "places-3d" },
     { title: "Antelope Canyon 3D Explorer", url: "https://freetoolonline.com/places-3d/antelope-canyon.html", include: !1, tags: "places-3d" },
+    { title: "Lake Michigan-Huron 3D Explorer", url: "https://freetoolonline.com/places-3d/lake-michigan-huron.html", include: !1, tags: "places-3d" },
     { title: "Algol Eclipsing Binary 3D Explorer", url: "https://freetoolonline.com/space-3d/algol-eclipsing-binary.html", include: !1, tags: "space-3d" },
     { title: "Main-Sequence Lifetime 3D Explorer", url: "https://freetoolonline.com/space-3d/main-sequence-lifetime.html", include: !1, tags: "space-3d" },
     { title: "Earth Perihelion & Aphelion 3D Explorer", url: "https://freetoolonline.com/space-3d/earth-perihelion-aphelion.html", include: !1, tags: "space-3d" },
