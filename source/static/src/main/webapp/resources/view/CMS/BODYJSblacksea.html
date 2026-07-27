@@ -1,0 +1,328 @@
+<script>
+    // 3D scene archetype skeleton (black-sea) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (black-sea).
+    // All geometry is procedural. places-3d cluster, authored 2026-07-27.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (encyclopedic consensus, cross-checked 2026-07-27):
+    //   - Surface area about 436,400 sq km
+    //   - Maximum depth about 2,212 m, mean depth about 1,253 m
+    //   - Oxic (oxygen-rich) surface layer only about 150-200 m thick
+    //   - About 90 percent of total volume is anoxic - largest anoxic basin on Earth
+    //   - Salinity about 18 ppt, roughly half world ocean average
+    //   - Borders Turkey, Bulgaria, Romania, Ukraine, Russia, Georgia
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'black-sea';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesblacksea'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x08111a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+        var key = new THREE.DirectionalLight(0xfff2d0, 0.95);
+        key.position.set(-10, 16, -6);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return { mesh: new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0 })), geo: geo, pos: pos };
+        }
+
+        // Rounded single-basin sea, 1 unit = 100 m vertical. x = east-west,
+        // z = north-south (north at z<0). The Black Sea's real outline is a
+        // broad oval with ONE deep round bowl (max depth about 2,212 m -> 22.12
+        // units) plus a shallow northwest continental shelf wedge (near
+        // Ukraine/Crimea, upper-left of the plane). W=24 (east-west) x D=16
+        // (north-south) matches the sea's roughly 1,175 km x 600 km extent.
+        var MAX_DEPTH = -22.12, CHEMO_Y = -1.75; // chemocline ~175 m, mid of the 150-200 m band
+        var SHELF_DEPTH = -1.1; // shallow shelf, well within the oxic layer
+        function shelfMask(x, z) {
+            // Distance from the shelf anchor in the northwest quadrant.
+            var nx = (x + 9.5) / 6.4, nz = (z + 5.5) / 4.6;
+            var d = Math.sqrt(nx * nx + nz * nz);
+            return smooth(2.0, 0.5, d);
+        }
+        function bowlFactor(x, z) {
+            var rx = x / 11.2, rz = z / 7.4;
+            var dist = Math.sqrt(rx * rx + rz * rz);
+            return { dist: dist, bowl: Math.max(0, 1 - dist * dist) };
+        }
+        function height(x, z) {
+            var b = bowlFactor(x, z), n = 0.5 * (fbm(x * 0.5 + 3, z * 0.5 + 7, 3) - 0.5);
+            if (b.dist < 1) {
+                var deep = MAX_DEPTH * (0.08 + 0.92 * b.bowl) + n * 0.5;
+                var shallow = SHELF_DEPTH * (0.3 + 0.7 * b.bowl) + n * 0.3;
+                var s = shelfMask(x, z);
+                return deep * (1 - s) + shallow * s;
+            }
+            // Land beyond the shoreline - low coastal hills, not tall walls,
+            // so the round basin still reads clearly from an overhead camera.
+            var rise = Math.min(2.2, (b.dist - 1) * (0.5 + 0.5 * fbm(x * 0.3 + 8, z * 0.3 + 2, 3)));
+            return 0.05 + rise;
+        }
+        var col = {
+            oxic: new THREE.Color(0x4fb8c9), anoxic: new THREE.Color(0x1a0f2e),
+            shelf: new THREE.Color(0x7fd6c8), land: new THREE.Color(0xc7bd8f), hill: new THREE.Color(0x8a9a6e)
+        };
+        var bandOn = true, shelfOn = true;
+        function color(c, h, x, z) {
+            var n = 0.92 + 0.16 * fbm(x * 1.3 + 4, z * 1.3 + 9, 3);
+            if (h > 0.03) {
+                c.copy(col.land).lerp(col.hill, smooth(0, 2.5, h)).multiplyScalar(n);
+                return;
+            }
+            var s = shelfMask(x, z);
+            if (bandOn) {
+                // Oxic/anoxic vertical stratification, shown as a color band
+                // by depth: teal above the chemocline, near-black below it.
+                var t = smooth(CHEMO_Y - 0.15, CHEMO_Y + 0.15, h);
+                c.copy(col.oxic).lerp(col.anoxic, 1 - t); // t=1 (shallower than chemocline) -> oxic
+            } else {
+                var depthFrac = smooth(0, MAX_DEPTH, h);
+                c.copy(col.oxic).lerp(col.anoxic, depthFrac);
+            }
+            if (shelfOn && s > 0.35) {
+                c.lerp(col.shelf, s * 0.6);
+            }
+            c.multiplyScalar(n);
+        }
+        var terrainInfo = makeTerrain(24, 16, shell.low ? 130 : 190, shell.low ? 90 : 130, height, color);
+        scene.add(terrainInfo.mesh);
+
+        // Water surface: translucent plane at y=0 (sea level).
+        var water = new THREE.Mesh(
+            new THREE.PlaneGeometry(24, 16),
+            new THREE.MeshStandardMaterial({ color: 0x123a52, transparent: true, opacity: 0.5, roughness: 0.15, metalness: 0.1 })
+        );
+        water.rotation.x = -Math.PI / 2;
+        water.position.y = 0.02;
+        scene.add(water);
+
+        // Chemocline plane: the oxic/anoxic boundary, about 150-200 m down.
+        var chemo = new THREE.Mesh(
+            new THREE.PlaneGeometry(25, 17),
+            new THREE.MeshBasicMaterial({ color: 0xff9d5c, transparent: true, opacity: 0.16, depthWrite: false, side: THREE.DoubleSide })
+        );
+        chemo.rotation.x = -Math.PI / 2;
+        chemo.position.y = CHEMO_Y;
+        scene.add(chemo);
+        var chemoEdge = new THREE.Mesh(
+            new THREE.TorusGeometry(11.5, 0.05, 8, 48),
+            new THREE.MeshBasicMaterial({ color: 0xffbf8a })
+        );
+        chemoEdge.rotation.x = Math.PI / 2;
+        chemoEdge.position.y = CHEMO_Y;
+        scene.add(chemoEdge);
+
+        var chemoOn = true;
+
+        function recolor() {
+            var pos = terrainInfo.pos, geo = terrainInfo.geo, colors = geo.attributes.color, col2 = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                color(col2, pos.getY(i), pos.getX(i), pos.getZ(i));
+                colors.setXYZ(i, col2.r, col2.g, col2.b);
+            }
+            colors.needsUpdate = true;
+        }
+
+        function panelHtml() {
+            return '<h3>Black Sea: a thin oxic skin over an anoxic giant</h3>' +
+                '<p>About 90 percent of this sea by volume is anoxic (oxygen-free) below a chemocline only about 150-200 m down. The northwest shelf near Ukraine and Crimea stays shallow and mostly oxic.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Surface area</td><td>about 436,400 sq km</td></tr>' +
+                '<tr><td>Maximum depth</td><td>about 2,212 m</td></tr>' +
+                '<tr><td>Mean depth</td><td>about 1,253 m</td></tr>' +
+                '<tr><td>Oxic layer</td><td>about 150-200 m thick</td></tr>' +
+                '<tr><td>Anoxic volume share</td><td>about 90 percent of total volume</td></tr>' +
+                '<tr><td>Salinity</td><td>about 18 parts per thousand</td></tr>' +
+                '<tr><td>Borders</td><td>Turkey, Bulgaria, Romania, Ukraine, Russia, Georgia</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the basin profile, shelf boundary, and vertical scale are schematic teaching cues, not survey data.</p>';
+        }
+
+        function apply() {
+            chemo.visible = chemoOn; chemoEdge.visible = chemoOn;
+            var cb = document.getElementById('t3dPbsChemoBtn');
+            if (cb) cb.textContent = 'Chemocline plane: ' + (chemoOn ? 'On' : 'Off');
+            var bb = document.getElementById('t3dPbsBandBtn');
+            if (bb) bb.textContent = 'Oxic/anoxic bands: ' + (bandOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ chemoOn: chemoOn, bandOn: bandOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.chemoOn === 'boolean') chemoOn = store.chemoOn;
+        if (typeof store.bandOn === 'boolean') bandOn = store.bandOn;
+        recolor();
+        apply();
+
+        var chemoBtn = document.getElementById('t3dPbsChemoBtn');
+        if (chemoBtn) chemoBtn.addEventListener('click', function () { chemoOn = !chemoOn; apply(); });
+        var bandBtn = document.getElementById('t3dPbsBandBtn');
+        if (bandBtn) bandBtn.addEventListener('click', function () { bandOn = !bandOn; recolor(); apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the oxic/anoxic bands or the chemocline plane.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesblacksea: 't3dPbsControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesblacksea: { radius: 36, maxR: 75, minR: 9, phi: 0.78, theta: 0.35, targetY: -1.5 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
