@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/duplicate-word-remover-vs-alternatives.html',
+  '/guides/de/duplicate-word-remover-vs-alternatives.html',
+  '/guides/id/duplicate-word-remover-vs-alternatives.html',
+  '/guides/vi/duplicate-word-remover-vs-alternatives.html',
+  '/guides/es/duplicate-word-remover-vs-alternatives.html',
+  '/guides/pt/duplicate-word-remover-vs-alternatives.html',
+  '/guides/duplicate-word-remover-step-by-step.html',
+  '/guides/de/duplicate-word-remover-step-by-step.html',
+  '/guides/id/duplicate-word-remover-step-by-step.html',
+  '/guides/vi/duplicate-word-remover-step-by-step.html',
+  '/guides/es/duplicate-word-remover-step-by-step.html',
+  '/guides/pt/duplicate-word-remover-step-by-step.html',
+  '/guides/duplicate-word-remover-when.html',
+  '/guides/de/duplicate-word-remover-when.html',
+  '/guides/id/duplicate-word-remover-when.html',
+  '/guides/vi/duplicate-word-remover-when.html',
+  '/guides/es/duplicate-word-remover-when.html',
+  '/guides/pt/duplicate-word-remover-when.html',
   '/guides/rot13-encoder-vs-alternatives.html',
   '/guides/de/rot13-encoder-vs-alternatives.html',
   '/guides/id/rot13-encoder-vs-alternatives.html',
@@ -13900,6 +13918,7 @@ export const ALIAS_ROUTES = {
   '/binary-text-converter.html': '/developer-tools/binary-text-converter.html',
   '/text-to-binary.html': '/developer-tools/binary-text-converter.html',
   '/rot13-encoder.html': '/developer-tools/rot13-encoder.html',
+  '/duplicate-word-remover.html': '/utility-tools/duplicate-word-remover.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -25384,6 +25403,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/rot13-encoder-vs-alternatives.html': 'guide/vi/rot13-encoder-vs-alternatives.jsp',
   '/guides/es/rot13-encoder-vs-alternatives.html': 'guide/es/rot13-encoder-vs-alternatives.jsp',
   '/guides/pt/rot13-encoder-vs-alternatives.html': 'guide/pt/rot13-encoder-vs-alternatives.jsp',
+  '/utility-tools/duplicate-word-remover.html': 'utility/duplicate-word-remover.jsp',
+  '/guides/duplicate-word-remover-when.html': 'guide/duplicate-word-remover-when.jsp',
+  '/guides/de/duplicate-word-remover-when.html': 'guide/de/duplicate-word-remover-when.jsp',
+  '/guides/id/duplicate-word-remover-when.html': 'guide/id/duplicate-word-remover-when.jsp',
+  '/guides/vi/duplicate-word-remover-when.html': 'guide/vi/duplicate-word-remover-when.jsp',
+  '/guides/es/duplicate-word-remover-when.html': 'guide/es/duplicate-word-remover-when.jsp',
+  '/guides/pt/duplicate-word-remover-when.html': 'guide/pt/duplicate-word-remover-when.jsp',
+  '/guides/duplicate-word-remover-step-by-step.html': 'guide/duplicate-word-remover-step-by-step.jsp',
+  '/guides/de/duplicate-word-remover-step-by-step.html': 'guide/de/duplicate-word-remover-step-by-step.jsp',
+  '/guides/id/duplicate-word-remover-step-by-step.html': 'guide/id/duplicate-word-remover-step-by-step.jsp',
+  '/guides/vi/duplicate-word-remover-step-by-step.html': 'guide/vi/duplicate-word-remover-step-by-step.jsp',
+  '/guides/es/duplicate-word-remover-step-by-step.html': 'guide/es/duplicate-word-remover-step-by-step.jsp',
+  '/guides/pt/duplicate-word-remover-step-by-step.html': 'guide/pt/duplicate-word-remover-step-by-step.jsp',
+  '/guides/duplicate-word-remover-vs-alternatives.html': 'guide/duplicate-word-remover-vs-alternatives.jsp',
+  '/guides/de/duplicate-word-remover-vs-alternatives.html': 'guide/de/duplicate-word-remover-vs-alternatives.jsp',
+  '/guides/id/duplicate-word-remover-vs-alternatives.html': 'guide/id/duplicate-word-remover-vs-alternatives.jsp',
+  '/guides/vi/duplicate-word-remover-vs-alternatives.html': 'guide/vi/duplicate-word-remover-vs-alternatives.jsp',
+  '/guides/es/duplicate-word-remover-vs-alternatives.html': 'guide/es/duplicate-word-remover-vs-alternatives.jsp',
+  '/guides/pt/duplicate-word-remover-vs-alternatives.html': 'guide/pt/duplicate-word-remover-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
