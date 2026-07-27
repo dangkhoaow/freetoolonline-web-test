@@ -480,6 +480,7 @@ const LMENU_CLUSTER_ORDER = [
   'utility',
   'games',
   'space-3d',
+  'places-3d',
   'dinosaur-3d',
   'news',
 ];
