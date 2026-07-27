@@ -844,6 +844,7 @@ try {
     { title: "Binary Text Converter", url: "https://freetoolonline.com/developer-tools/binary-text-converter.html", include: !1, tags: "developer" },
     { title: "ROT13 Encoder", url: "https://freetoolonline.com/developer-tools/rot13-encoder.html", include: !1, tags: "developer" },
     { title: "Duplicate Word Remover Online", url: "https://freetoolonline.com/utility-tools/duplicate-word-remover.html", include: !1, tags: "utility" },
+    { title: "Reading List Tracker Online", url: "https://freetoolonline.com/utility-tools/reading-list-tracker.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

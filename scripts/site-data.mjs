@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/reading-list-tracker-vs-alternatives.html',
+  '/guides/reading-list-tracker-step-by-step.html',
+  '/guides/reading-list-tracker-when.html',
+  '/guides/pt/reading-list-tracker-when.html',
+  '/guides/es/reading-list-tracker-when.html',
+  '/guides/vi/reading-list-tracker-when.html',
+  '/guides/id/reading-list-tracker-when.html',
+  '/guides/de/reading-list-tracker-when.html',
+  '/guides/pt/reading-list-tracker-step-by-step.html',
+  '/guides/es/reading-list-tracker-step-by-step.html',
+  '/guides/vi/reading-list-tracker-step-by-step.html',
+  '/guides/id/reading-list-tracker-step-by-step.html',
+  '/guides/de/reading-list-tracker-step-by-step.html',
+  '/guides/pt/reading-list-tracker-vs-alternatives.html',
+  '/guides/es/reading-list-tracker-vs-alternatives.html',
+  '/guides/vi/reading-list-tracker-vs-alternatives.html',
+  '/guides/id/reading-list-tracker-vs-alternatives.html',
+  '/guides/de/reading-list-tracker-vs-alternatives.html',
   '/guides/duplicate-word-remover-vs-alternatives.html',
   '/guides/de/duplicate-word-remover-vs-alternatives.html',
   '/guides/id/duplicate-word-remover-vs-alternatives.html',
@@ -13921,6 +13939,7 @@ export const ALIAS_ROUTES = {
   '/text-to-binary.html': '/developer-tools/binary-text-converter.html',
   '/rot13-encoder.html': '/developer-tools/rot13-encoder.html',
   '/duplicate-word-remover.html': '/utility-tools/duplicate-word-remover.html',
+  '/reading-list-tracker.html': '/utility-tools/reading-list-tracker.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -25426,6 +25445,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/duplicate-word-remover-vs-alternatives.html': 'guide/vi/duplicate-word-remover-vs-alternatives.jsp',
   '/guides/es/duplicate-word-remover-vs-alternatives.html': 'guide/es/duplicate-word-remover-vs-alternatives.jsp',
   '/guides/pt/duplicate-word-remover-vs-alternatives.html': 'guide/pt/duplicate-word-remover-vs-alternatives.jsp',
+  '/utility-tools/reading-list-tracker.html': 'utility/reading-list-tracker.jsp',
+  '/guides/reading-list-tracker-when.html': 'guide/reading-list-tracker-when.jsp',
+  '/guides/reading-list-tracker-step-by-step.html': 'guide/reading-list-tracker-step-by-step.jsp',
+  '/guides/reading-list-tracker-vs-alternatives.html': 'guide/reading-list-tracker-vs-alternatives.jsp',
+  '/guides/pt/reading-list-tracker-when.html': 'guide/pt/reading-list-tracker-when.jsp',
+  '/guides/es/reading-list-tracker-when.html': 'guide/es/reading-list-tracker-when.jsp',
+  '/guides/vi/reading-list-tracker-when.html': 'guide/vi/reading-list-tracker-when.jsp',
+  '/guides/id/reading-list-tracker-when.html': 'guide/id/reading-list-tracker-when.jsp',
+  '/guides/de/reading-list-tracker-when.html': 'guide/de/reading-list-tracker-when.jsp',
+  '/guides/pt/reading-list-tracker-step-by-step.html': 'guide/pt/reading-list-tracker-step-by-step.jsp',
+  '/guides/es/reading-list-tracker-step-by-step.html': 'guide/es/reading-list-tracker-step-by-step.jsp',
+  '/guides/vi/reading-list-tracker-step-by-step.html': 'guide/vi/reading-list-tracker-step-by-step.jsp',
+  '/guides/id/reading-list-tracker-step-by-step.html': 'guide/id/reading-list-tracker-step-by-step.jsp',
+  '/guides/de/reading-list-tracker-step-by-step.html': 'guide/de/reading-list-tracker-step-by-step.jsp',
+  '/guides/pt/reading-list-tracker-vs-alternatives.html': 'guide/pt/reading-list-tracker-vs-alternatives.jsp',
+  '/guides/es/reading-list-tracker-vs-alternatives.html': 'guide/es/reading-list-tracker-vs-alternatives.jsp',
+  '/guides/vi/reading-list-tracker-vs-alternatives.html': 'guide/vi/reading-list-tracker-vs-alternatives.jsp',
+  '/guides/id/reading-list-tracker-vs-alternatives.html': 'guide/id/reading-list-tracker-vs-alternatives.jsp',
+  '/guides/de/reading-list-tracker-vs-alternatives.html': 'guide/de/reading-list-tracker-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
