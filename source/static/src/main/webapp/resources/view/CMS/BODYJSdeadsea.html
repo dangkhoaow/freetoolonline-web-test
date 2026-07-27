@@ -1,0 +1,273 @@
+<script>
+    // 3D scene archetype skeleton (dead-sea) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (dead-sea).
+    // All geometry is procedural. places-3d cluster seed 2026-07-27.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (encyclopedic consensus, cross-checked 2026-07-27):
+    //   - Surface about 430 m below sea level - lowest land elevation on Earth
+    //   - Salinity about 34% (roughly 9-10x ocean); density about 1.24 kg/L
+    //   - Maximum depth about 300 m; length about 50 km
+    //   - Terminal lake fed by the Jordan River, no outlet; level drops ~1 m/yr
+    //   - Between Jordan (east) and Israel / the West Bank (west)
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'dead-sea';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesdeadsea'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0a1220, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+        var key = new THREE.DirectionalLight(0xfff2d0, 0.9);
+        key.position.set(10, 14, 8);
+        scene.add(key);
+
+        // Basin cross-section. Vertical scale: 1 unit = 100 m. Sea-level datum
+        // sits at y=0; the lake surface sits at about -430 m => y=-4.3.
+        var LAKE_Y = -4.3, LAKE_DEPTH = 3.0; // ~300 m deep
+        function ridge(x, h, c) {
+            var geo = new THREE.CylinderGeometry(0.6, 2.6, h, 7, 3);
+            var pos = geo.attributes.position;
+            for (var i = 0; i < pos.count; i++) {
+                var vx = pos.getX(i), vy = pos.getY(i), vz = pos.getZ(i);
+                var n = Math.sin(vx * 3.1 + vz * 2.3) * 0.22 + Math.sin(vy * 1.7 + vx) * 0.14;
+                pos.setX(i, vx + n); pos.setZ(i, vz + n * 0.6);
+            }
+            geo.computeVertexNormals();
+            var m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: c, roughness: 0.95, flatShading: true }));
+            m.position.set(x, LAKE_Y - LAKE_DEPTH + h / 2, 0);
+            return m;
+        }
+        // Judean hills (west) and Moab plateau (east) rising ABOVE sea level.
+        scene.add(ridge(-7.5, 10.5, 0xa08a68));
+        scene.add(ridge(7.5, 11.5, 0x97805e));
+
+        // Basin floor
+        var floor = new THREE.Mesh(
+            new THREE.CylinderGeometry(6.4, 6.4, 0.3, 28),
+            new THREE.MeshStandardMaterial({ color: 0x6e5f49, roughness: 1 })
+        );
+        floor.position.y = LAKE_Y - LAKE_DEPTH;
+        scene.add(floor);
+
+        // Hypersaline water slab (dense, dark, calm)
+        var water = new THREE.Mesh(
+            new THREE.CylinderGeometry(5.6, 6.0, LAKE_DEPTH, 28),
+            new THREE.MeshStandardMaterial({ color: 0x134a63, roughness: 0.15, metalness: 0.1, transparent: true, opacity: 0.92 })
+        );
+        water.position.y = LAKE_Y - LAKE_DEPTH / 2;
+        scene.add(water);
+
+        // Salt crust ring at the shoreline (white terraces)
+        var salt = new THREE.Group();
+        for (var i = 0; i < 22; i++) {
+            var a = (i / 22) * Math.PI * 2;
+            var s = 0.35 + 0.3 * Math.abs(Math.sin(i * 2.7));
+            var rock = new THREE.Mesh(
+                new THREE.DodecahedronGeometry(s, 0),
+                new THREE.MeshStandardMaterial({ color: 0xf2f5f4, roughness: 0.6 })
+            );
+            rock.position.set(Math.cos(a) * 5.9, LAKE_Y + 0.08, Math.sin(a) * 5.9);
+            rock.scale.y = 0.45;
+            salt.add(rock);
+        }
+        scene.add(salt);
+
+        // Sea-level datum plane at y=0 (what "-430 m" is measured against)
+        var datum = new THREE.Mesh(
+            new THREE.CylinderGeometry(9.5, 9.5, 0.03, 36),
+            new THREE.MeshBasicMaterial({ color: 0x59c2ff, transparent: true, opacity: 0.28, depthWrite: false })
+        );
+        datum.position.y = 0;
+        scene.add(datum);
+        var datumEdge = new THREE.Mesh(
+            new THREE.TorusGeometry(9.5, 0.05, 8, 48),
+            new THREE.MeshBasicMaterial({ color: 0x8fd6ff })
+        );
+        datumEdge.rotation.x = Math.PI / 2;
+        scene.add(datumEdge);
+
+        var datumOn = true, saltOn = true, shimmer = 0;
+
+        function panelHtml() {
+            return '<h3>Dead Sea: the lowest place on Earth</h3>' +
+                '<p>The translucent plane marks sea level (0 m). The lake surface sits about 430 m BELOW it - toggle the datum plane to compare.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Surface elevation</td><td>about 430 m below sea level - the lowest land elevation on Earth</td></tr>' +
+                '<tr><td>Salinity</td><td>about 34% - roughly 9-10x typical ocean water</td></tr>' +
+                '<tr><td>Water density</td><td>about 1.24 kg/L - swimmers float without effort</td></tr>' +
+                '<tr><td>Maximum depth</td><td>about 300 m (deepest hypersaline lake on Earth)</td></tr>' +
+                '<tr><td>Length</td><td>about 50 km, between Jordan and Israel / the West Bank</td></tr>' +
+                '<tr><td>Water balance</td><td>terminal lake - fed by the Jordan River, no outlet; the level drops about 1 m per year</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation - the basin profile, salt terraces, and vertical scale are schematic teaching cues, not survey data.</p>';
+        }
+
+        function apply() {
+            datum.visible = datumOn; datumEdge.visible = datumOn;
+            salt.visible = saltOn;
+            var db = document.getElementById('t3dPdsDatumBtn');
+            if (db) db.textContent = 'Sea-level plane: ' + (datumOn ? 'On' : 'Off');
+            var sb = document.getElementById('t3dPdsSaltBtn');
+            if (sb) sb.textContent = 'Salt crust: ' + (saltOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ datumOn: datumOn, saltOn: saltOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.datumOn === 'boolean') datumOn = store.datumOn;
+        if (typeof store.saltOn === 'boolean') saltOn = store.saltOn;
+        apply();
+
+        var datumBtn = document.getElementById('t3dPdsDatumBtn');
+        if (datumBtn) datumBtn.addEventListener('click', function () { datumOn = !datumOn; apply(); });
+        var saltBtn = document.getElementById('t3dPdsSaltBtn');
+        if (saltBtn) saltBtn.addEventListener('click', function () { saltOn = !saltOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the sea-level plane or the salt crust.');
+        return function animate(dt) {
+            shimmer += dt * 0.001;
+            water.material.opacity = 0.9 + Math.sin(shimmer) * 0.03;
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesdeadsea: 't3dPdsControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesdeadsea: { radius: 26, maxR: 60, minR: 8, phi: 1.05, theta: 0.55, targetY: -2 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

@@ -1,0 +1,270 @@
+<script>
+    // 3D scene archetype skeleton (mount-everest) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (mount-everest).
+    // All geometry is procedural. places-3d cluster seed 2026-07-27.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (encyclopedic consensus, cross-checked 2026-07-27):
+    //   - Summit 8,848.86 m (2020 China-Nepal joint survey)
+    //   - Mahalangur Himal, Himalaya - Nepal / Tibet (China) border
+    //   - First ascent Edmund Hillary + Tenzing Norgay, 1953-05-29
+    //   - Death zone above ~8,000 m (about 1/3 sea-level oxygen)
+    //   - Neighbours: Lhotse 8,516 m, Nuptse 7,861 m
+    //   - Tectonic uplift a few mm per year
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'mount-everest';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesmounteverest'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0b1526, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+        var key = new THREE.DirectionalLight(0xfff6e0, 1.0);
+        key.position.set(12, 18, 10);
+        scene.add(key);
+
+        // Vertical scale: 1 unit = 1000 m. Base plane ~ 5,000 m (Tibetan plateau /
+        // Khumbu valley floor is schematic); summit at 8.849.
+        function peak(x, z, h, spread, color) {
+            var geo = new THREE.ConeGeometry(spread, h, 9, 4);
+            var pos = geo.attributes.position;
+            for (var i = 0; i < pos.count; i++) {
+                var vx = pos.getX(i), vy = pos.getY(i), vz = pos.getZ(i);
+                var n = Math.sin(vx * 2.4 + vz * 3.1) * 0.28 + Math.sin(vy * 1.3 + vz * 2.2) * 0.18;
+                pos.setX(i, vx + n * (1 - vy / h));
+                pos.setZ(i, vz + n * 0.8 * (1 - vy / h));
+            }
+            geo.computeVertexNormals();
+            var m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: color, roughness: 0.95, flatShading: true }));
+            m.position.set(x, h / 2, z);
+            return m;
+        }
+        var everest = peak(0, 0, 8.849, 5.2, 0x8b8078);
+        scene.add(everest);
+        var lhotse = peak(4.6, 2.2, 8.516, 3.6, 0x837970);   // Lhotse, 8,516 m
+        scene.add(lhotse);
+        var nuptse = peak(-4.2, 2.8, 7.861, 3.2, 0x7d746c);  // Nuptse, 7,861 m
+        scene.add(nuptse);
+
+        // Snow caps (simple white cones above the schematic snowline ~6,000 m)
+        function snowcap(base, h, spread) {
+            var frac = (h - 6.0) / h;
+            var cap = new THREE.Mesh(
+                new THREE.ConeGeometry(spread * frac * 1.02, h * frac, 9, 2),
+                new THREE.MeshStandardMaterial({ color: 0xf4f8fb, roughness: 0.55, flatShading: true })
+            );
+            cap.position.set(base.position.x, h - (h * frac) / 2 + 0.02, base.position.z);
+            return cap;
+        }
+        var caps = new THREE.Group();
+        caps.add(snowcap(everest, 8.849, 5.2));
+        caps.add(snowcap(lhotse, 8.516, 3.6));
+        caps.add(snowcap(nuptse, 7.861, 3.2));
+        scene.add(caps);
+
+        // Ground: high plateau
+        var ground = new THREE.Mesh(
+            new THREE.CylinderGeometry(14, 14, 0.3, 30),
+            new THREE.MeshStandardMaterial({ color: 0x5e5a52, roughness: 1 })
+        );
+        ground.position.y = -0.15;
+        scene.add(ground);
+
+        // Death zone band: translucent red shell above 8,000 m
+        var dz = new THREE.Mesh(
+            new THREE.CylinderGeometry(10.5, 10.5, 0.9, 36, 1, true),
+            new THREE.MeshBasicMaterial({ color: 0xff5a4d, transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false })
+        );
+        dz.position.y = 8.45; // 8,000-8,900 m band
+        scene.add(dz);
+        var dzEdge = new THREE.Mesh(
+            new THREE.TorusGeometry(10.5, 0.05, 8, 48),
+            new THREE.MeshBasicMaterial({ color: 0xff8a7a })
+        );
+        dzEdge.rotation.x = Math.PI / 2;
+        dzEdge.position.y = 8.0;
+        scene.add(dzEdge);
+
+        var dzOn = true, snowOn = true;
+
+        function panelHtml() {
+            return '<h3>Mount Everest: the highest point on Earth</h3>' +
+                '<p>The red band marks the death zone above 8,000 m, where oxygen falls to about a third of sea level. Everest stands with Lhotse and Nuptse beside it.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Summit elevation</td><td>8,848.86 m (2020 China-Nepal joint survey)</td></tr>' +
+                '<tr><td>Range</td><td>Mahalangur Himal, Himalaya - Nepal / Tibet (China) border</td></tr>' +
+                '<tr><td>Local names</td><td>Sagarmatha (Nepali), Chomolungma (Tibetan)</td></tr>' +
+                '<tr><td>First ascent</td><td>Edmund Hillary and Tenzing Norgay, 1953-05-29</td></tr>' +
+                '<tr><td>Death zone</td><td>above ~8,000 m - air holds about 1/3 of sea-level oxygen</td></tr>' +
+                '<tr><td>Neighbours</td><td>Lhotse 8,516 m; Nuptse 7,861 m</td></tr>' +
+                '<tr><td>Still rising</td><td>tectonic uplift of a few millimetres per year</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation - the ridge shapes, valley floor, and snowline are schematic teaching cues, not survey terrain.</p>';
+        }
+
+        function apply() {
+            dz.visible = dzOn; dzEdge.visible = dzOn;
+            caps.visible = snowOn;
+            var db = document.getElementById('t3dPevDzBtn');
+            if (db) db.textContent = 'Death zone: ' + (dzOn ? 'On' : 'Off');
+            var sb = document.getElementById('t3dPevSnowBtn');
+            if (sb) sb.textContent = 'Snow: ' + (snowOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ dzOn: dzOn, snowOn: snowOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.dzOn === 'boolean') dzOn = store.dzOn;
+        if (typeof store.snowOn === 'boolean') snowOn = store.snowOn;
+        apply();
+
+        var dzBtn = document.getElementById('t3dPevDzBtn');
+        if (dzBtn) dzBtn.addEventListener('click', function () { dzOn = !dzOn; apply(); });
+        var snowBtn = document.getElementById('t3dPevSnowBtn');
+        if (snowBtn) snowBtn.addEventListener('click', function () { snowOn = !snowOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the death zone or the snow.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00005;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesmounteverest: 't3dPevControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesmounteverest: { radius: 30, maxR: 70, minR: 10, phi: 1.15, theta: 0.5, targetY: 5 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

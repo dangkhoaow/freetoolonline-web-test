@@ -53,6 +53,7 @@ const TOOL_CLUSTER_ORDER = [
   'utility',
   'games',
   'space-3d',
+  'places-3d',
   'dinosaur-3d',
   'news',
 ];
@@ -68,6 +69,7 @@ const TOOL_CLUSTER_LABELS = {
   utility: 'Utility tools',
   games: 'Browser games',
   'space-3d': 'Space 3D',
+  'places-3d': 'Places 3D',
   'dinosaur-3d': 'Dinosaurs 3D',
   news: 'News and updates',
 };
@@ -83,6 +85,7 @@ const TOOL_CLUSTER_BLURBS = {
   utility: 'Timestamps, QR codes, and small utilities that do not fit the other categories.',
   games: 'Free browser games that run entirely on this page - no install, no account.',
   'space-3d': 'Interactive 3D space visualizations that render in the browser - explore and learn.',
+  'places-3d': 'Famous places on Earth as interactive 3D scenes - published figures beside each one.',
   'dinosaur-3d': 'Interactive 3D dinosaur viewers that render in the browser - rotate, scale against a human, and read real fossil figures.',
   news: 'Dated, source-cited updates on the file formats and browser features these tools work with.',
 };
@@ -419,7 +422,7 @@ export async function buildDynamicHomeSearchData({ cmsRoot } = {}) {
   const clusterPrefixOrder = [
     '/zip-tools/', '/image-tools/', '/image-converter-tools/',
     '/pdf-tools/', '/developer-tools/', '/video-tools/',
-    '/device-test-tools/', '/utility-tools/', '/games/', '/space-3d/', '/dinosaur-3d/', '/news/',
+    '/device-test-tools/', '/utility-tools/', '/games/', '/space-3d/', '/places-3d/', '/dinosaur-3d/', '/news/',
   ];
   const clusterIndexOf = (route) => {
     for (let i = 0; i < clusterPrefixOrder.length; i++) {
@@ -492,6 +495,7 @@ const LMENU_CLUSTER_LABELS = {
   utility: 'UTILITY',
   games: 'GAMES',
   'space-3d': 'SPACE 3D',
+  'places-3d': 'PLACES 3D',
   'dinosaur-3d': 'DINOSAURS 3D',
   news: 'NEWS',
 };
@@ -514,6 +518,7 @@ const LMENU_CLUSTER_ICONS = {
   // (gamepad f11b, globe f0ac, verified), only the CSS code was missing.
   games: 'fa-gamepad',
   'space-3d': 'fa-globe',
+  'places-3d': 'fa-map-marker',
   // dinosaur-loop (2026-07-15): fa-paw (f1b0) exists in the FA 4.7 webfont but
   // not in the CDN fa-load.css curated subset - content-code injected via
   // LMENU_ICON_CONTENT_FIX below, same as gamepad/globe/newspaper-o.
@@ -608,6 +613,7 @@ const HUB_GRID_ROLLOUT = new Set([
   '/pdf-tools.html',
   '/developer-tools.html',
   '/space-3d.html',
+  '/places-3d.html',
   '/utility-tools.html',
   '/games.html',
   '/dinosaur-3d.html',
@@ -838,6 +844,7 @@ const LMENU_GUIDE_TOPIC_LABELS = {
   utility: 'Other guides',
   games: 'Game guides',
   'space-3d': 'Space 3D guides',
+  'places-3d': 'Places 3D guides',
 };
 
 function renderLMenuGuidesSection(guidesByCluster) {
