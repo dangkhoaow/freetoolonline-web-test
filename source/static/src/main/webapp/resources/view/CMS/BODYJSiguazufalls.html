@@ -1,0 +1,370 @@
+<script>
+    // 3D scene archetype skeleton (iguazu-falls) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (iguazu-falls).
+    // All geometry is procedural. places-3d cluster fire 2026-07-27.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey hydrology. Vertical relief is
+    // exaggerated for visibility (the real drop is small relative to the
+    // 2.7 km crescent width).
+    // Published figures (UNESCO / Parques Nacionales Argentina / Cataratas do
+    // Iguacu consensus, cross-checked 2026-07-27):
+    //   - About 275 individual falls and cascades (roughly 150-300 with
+    //     water level) along a 2.7 km crescent
+    //   - Maximum height about 82 m, at the Devil's Throat
+    //   - Devil's Throat (Garganta do Diablo): U-shaped, about 150 m wide,
+    //     700 m long - the single largest cataract
+    //   - Average flow about 1,746 cubic meters per second; ranges from about
+    //     600 (dry season) to over 6,000 (flood peaks)
+    //   - Straddles the Iguazu River on the Argentina-Brazil border; Iguazu
+    //     National Park (Argentina) and Iguacu National Park (Brazil) are
+    //     both UNESCO World Heritage Sites (1984 / 1986); New7Wonders of
+    //     Nature (2011)
+    //   - Formed on a basalt plateau, since carved back by the river
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'iguazu-falls';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesiguazufalls'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0d1410, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        var key = new THREE.DirectionalLight(0xfff2d8, 1.0);
+        key.position.set(-10, 20, 6);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function segDist(px, pz, ax, az, bx, bz) {
+            var dx = bx - ax, dz = bz - az, L2 = dx * dx + dz * dz;
+            var t = Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / L2));
+            var qx = ax + t * dx, qz = az + t * dz;
+            return Math.hypot(px - qx, pz - qz);
+        }
+        function carve(d, w, depth) {
+            if (d >= w) return 0;
+            var t = 1 - d / w;
+            return depth * Math.pow(t, 1.4);
+        }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 }));
+        }
+
+        // Iguazu relief: a basalt table (upper plateau) ends abruptly at a
+        // curved horseshoe escarpment - a scalloped edge standing in for the
+        // ~275 individual falls - with one deep re-entrant notch (Devil's
+        // Throat) cut back into the plateau where several channels converge,
+        // dropping to a lower gorge/pool. 1 unit is an exaggerated visual
+        // scale, not 1:1 with the real (much shallower) drop.
+        var CX = 0, CZ = -9.2, R = 8.4;
+        var RIM = 1.55, DROP = 3.6;
+        var THROAT_THETA = -0.22;
+        function edgeR(theta) {
+            var scallop = 0.5 * Math.sin(theta * 15) + 0.28 * (fbm(theta * 2.4 + 4, 0.6, 3) - 0.5);
+            var throat = 1.5 * Math.exp(-Math.pow((theta - THROAT_THETA) / 0.11, 2));
+            return R + scallop - throat;
+        }
+        var throatX = CX + edgeR(THROAT_THETA) * Math.sin(THROAT_THETA);
+        var throatZ = CZ + edgeR(THROAT_THETA) * Math.cos(THROAT_THETA);
+        function height(x, z) {
+            var dx = x - CX, dz = z - CZ;
+            var r = Math.hypot(dx, dz);
+            var theta = Math.atan2(dx, dz);
+            var edge = edgeR(theta);
+            var band = 1.0;
+            var t = Math.max(0, Math.min(1, (r - (edge - band)) / (2 * band)));
+            t = t * t * (3 - 2 * t);
+            var h = RIM - t * DROP;
+            if (t < 0.55) {
+                h += 0.10 * (fbm(x * 0.35 + 6, z * 0.35 + 2, 4) - 0.5);
+                // feeder channel: a shallow river cut across the plateau,
+                // converging on Devil's Throat.
+                h -= carve(segDist(x, z, 0, -9.8, throatX * 0.7, throatZ * 0.55), 0.85, 0.16) * (1 - t);
+            } else {
+                h -= 0.10 * fbm(x * 1.1 + 9, z * 1.1 + 1, 3) * t;
+            }
+            return h;
+        }
+        var PLATEAU = 0x6f8a52, CLIFF_TOP = 0x8a6a4a, CLIFF_MID = 0x5c463a, CLIFF_BASE = 0x35302f, MIST = 0xeaf3f0;
+        function bandColor(c, h, x, z, throatHi) {
+            var dx = x - CX, dz = z - CZ;
+            var theta = Math.atan2(dx, dz);
+            var r = Math.hypot(dx, dz);
+            var edge = edgeR(theta);
+            var t = Math.max(0, Math.min(1, (r - (edge - 1.0)) / 2.0));
+            var n = 0.92 + 0.16 * fbm(x * 1.5 + 3, z * 1.5 + 8, 3);
+            var near = Math.abs(theta - THROAT_THETA) < 0.05;
+            if (t < 0.35) { c.setHex(PLATEAU).multiplyScalar(n); return; }
+            var mix = Math.min(1, (t - 0.35) / 0.35);
+            var top = new THREE.Color(CLIFF_TOP), mid = new THREE.Color(CLIFF_MID), base = new THREE.Color(CLIFF_BASE);
+            if (mix < 0.5) c.copy(top).lerp(mid, mix * 2);
+            else c.copy(mid).lerp(base, (mix - 0.5) * 2);
+            if (t > 0.58 && t < 0.82) {
+                var foam = 1 - Math.abs(t - 0.66) / 0.16;
+                c.lerp(new THREE.Color(0xcfe8df), Math.max(0, foam) * 0.32);
+            }
+            if (t >= 0.82) {
+                // river-valley floor: a muted teal-brown, never pure dark, so
+                // the gorge reads as ground rather than fading into the void.
+                c.lerp(new THREE.Color(0x3a4a42), Math.min(1, (t - 0.82) / 0.18) * 0.5);
+            }
+            if (near && t > 0.42 && t < 0.72 && (throatHi || false)) {
+                var mistT = 1 - Math.abs(t - 0.55) / 0.17;
+                c.lerp(new THREE.Color(MIST), Math.max(0, mistT) * 0.4);
+            }
+            c.multiplyScalar(n);
+        }
+
+        var terrain = makeTerrain(22, 20, shell.low ? 120 : 190, shell.low ? 110 : 175, height, function (c, h, x, z) { bandColor(c, h, x, z, false); });
+        scene.add(terrain);
+        var normColors = terrain.geometry.attributes.color.array.slice();
+        var throatColors = (function () {
+            var pos = terrain.geometry.attributes.position, col = new THREE.Color();
+            var arr = new Float32Array(pos.count * 3);
+            for (var i = 0; i < pos.count; i++) {
+                bandColor(col, pos.getY(i), pos.getX(i), pos.getZ(i), true);
+                arr[i * 3] = col.r; arr[i * 3 + 1] = col.g; arr[i * 3 + 2] = col.b;
+            }
+            return arr;
+        })();
+
+        // Plateau feeder river (teal ribbon converging on the Throat)
+        var riverPts = [];
+        for (var i2 = 0; i2 <= 40; i2++) {
+            var t3 = i2 / 40;
+            riverPts.push(new THREE.Vector3(throatX * 0.7 * t3, RIM + 0.05, -9.8 + (throatZ * 0.55 + 9.8) * t3));
+        }
+        var river = new THREE.Mesh(
+            new THREE.TubeGeometry(new THREE.CatmullRomCurve3(riverPts), 60, 0.12, 6, false),
+            new THREE.MeshStandardMaterial({ color: 0x2f8f7a, roughness: 0.3 })
+        );
+        scene.add(river);
+
+        // Gorge pool below the falls - two precomputed meshes swapped by
+        // visibility for average vs flood flow (no geometry rebuild per click).
+        var poolAvg = new THREE.Mesh(
+            new THREE.CircleGeometry(1.4, 32),
+            new THREE.MeshStandardMaterial({ color: 0x2c7f78, roughness: 0.35, transparent: true, opacity: 0.75 })
+        );
+        poolAvg.rotation.x = -Math.PI / 2;
+        poolAvg.position.set(throatX * 1.35, RIM - DROP + 0.04, throatZ * 1.15 + 2.4);
+        scene.add(poolAvg);
+        var poolFlood = new THREE.Mesh(
+            new THREE.CircleGeometry(1.9, 36),
+            new THREE.MeshStandardMaterial({ color: 0xa9d6cb, roughness: 0.25, transparent: true, opacity: 0.7 })
+        );
+        poolFlood.rotation.x = -Math.PI / 2;
+        poolFlood.position.set(throatX * 1.3, RIM - DROP + 0.10, throatZ * 1.1 + 2.2);
+        poolFlood.visible = false;
+        scene.add(poolFlood);
+
+        // Devil's Throat mist plume
+        var mist = new THREE.Mesh(
+            new THREE.ConeGeometry(0.6, 1.5, 16, 1, true),
+            new THREE.MeshStandardMaterial({ color: MIST, transparent: true, opacity: 0.5, roughness: 0.6, side: THREE.DoubleSide })
+        );
+        mist.position.set(throatX * 1.1, RIM - DROP * 0.55, throatZ * 1.05 + 1.6);
+        mist.visible = false;
+        scene.add(mist);
+
+        var throatOn = true, floodOn = true;
+        function panelHtml() {
+            return '<h3>Iguazu Falls: a crescent of about 275 cascades</h3>' +
+                '<p>A relief of the basalt plateau ending at a curved, scalloped escarpment - each notch stands in for a cluster of cascades - with the Devil\'s Throat cut back deepest where several channels converge, and the river pooling below.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Number of individual falls</td><td>about 275, varying from roughly 150 to 300 with water level</td></tr>' +
+                '<tr><td>Total width</td><td>about 2.7 km, in a crescent shape</td></tr>' +
+                '<tr><td>Maximum height</td><td>about 82 m, at the Devil\'s Throat</td></tr>' +
+                '<tr><td>Devil\'s Throat (Garganta do Diablo)</td><td>a U-shaped chasm about 150 m wide and 700 m long</td></tr>' +
+                '<tr><td>Average flow rate</td><td>about 1,746 cubic m per second</td></tr>' +
+                '<tr><td>Flow range</td><td>a few hundred cubic m per second (dry season) to over 12,000 (flood peaks)</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the cliff profile, crescent shape, and vertical scale are schematic teaching cues, not survey data.</p>';
+        }
+        function apply() {
+            terrain.geometry.attributes.color.array.set(throatOn ? throatColors : normColors);
+            terrain.geometry.attributes.color.needsUpdate = true;
+            mist.visible = throatOn;
+            poolAvg.visible = !floodOn;
+            poolFlood.visible = floodOn;
+            river.material.color.set(floodOn ? 0x7fd6c4 : 0x2f8f7a);
+            var tb = document.getElementById('t3dPifThroatBtn');
+            if (tb) tb.textContent = "Devil's Throat marker: " + (throatOn ? 'On' : 'Off');
+            var fb = document.getElementById('t3dPifFlowBtn');
+            if (fb) fb.textContent = 'Flow: ' + (floodOn ? 'Flood season' : 'Dry season');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ throatOn: throatOn, floodOn: floodOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.throatOn === 'boolean') throatOn = store.throatOn;
+        if (typeof store.floodOn === 'boolean') floodOn = store.floodOn;
+        apply();
+
+        var throatBtn = document.getElementById('t3dPifThroatBtn');
+        if (throatBtn) throatBtn.addEventListener('click', function () { throatOn = !throatOn; apply(); });
+        var flowBtn = document.getElementById('t3dPifFlowBtn');
+        if (flowBtn) flowBtn.addEventListener('click', function () { floodOn = !floodOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle Devil\'s Throat or the flow.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesiguazufalls: 't3dPifControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesiguazufalls: { radius: 24, maxR: 55, minR: 7, phi: 0.88, theta: 0.55, targetY: -0.4 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
