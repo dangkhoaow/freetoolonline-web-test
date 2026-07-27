@@ -746,6 +746,7 @@ try {
     { title: "Amazon Rainforest 3D Explorer", url: "https://freetoolonline.com/places-3d/amazon-rainforest.html", include: !1, tags: "places-3d" },
     { title: "Black Forest 3D Explorer", url: "https://freetoolonline.com/places-3d/black-forest.html", include: !1, tags: "places-3d" },
     { title: "Great Barrier Reef 3D Explorer", url: "https://freetoolonline.com/places-3d/great-barrier-reef.html", include: !1, tags: "places-3d" },
+    { title: "Caribbean Sea 3D Explorer", url: "https://freetoolonline.com/places-3d/caribbean-sea.html", include: !1, tags: "places-3d" },
     { title: "Algol Eclipsing Binary 3D Explorer", url: "https://freetoolonline.com/space-3d/algol-eclipsing-binary.html", include: !1, tags: "space-3d" },
     { title: "Main-Sequence Lifetime 3D Explorer", url: "https://freetoolonline.com/space-3d/main-sequence-lifetime.html", include: !1, tags: "space-3d" },
     { title: "Earth Perihelion & Aphelion 3D Explorer", url: "https://freetoolonline.com/space-3d/earth-perihelion-aphelion.html", include: !1, tags: "space-3d" },
