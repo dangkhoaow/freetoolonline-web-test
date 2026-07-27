@@ -1,0 +1,626 @@
+<script>
+    // Calculator archetype (subnet-calculator) - pure JS, no lib, no upload, no backend.
+    // Registry Gate-H entries: financial_calculator_purejs (loan / mortgage /
+    // compound-interest / investment / savings / retirement / tax / annuity) and
+    // general_calculator_purejs (percentage / bmi / tip / age / date-difference /
+    // tdee-calorie / scientific / aspect-ratio / subnet-cidr). ONE skeleton,
+    // slug-dispatched: loan/mortgage amortization, compound-interest growth,
+    // percentage math, BMI, tip splitting, age-from-birthdate, date-difference,
+    // TDEE/calorie estimation, a scientific expression evaluator, aspect-ratio
+    // simplification/scaling, and IPv4 CIDR subnet math.
+    // All math
+    // is standard closed-form arithmetic - no external library needed. Framework
+    // contract: doAfterPageRendered(); no top-level DOM; in-browser tool => no
+    // upload widget.
+
+    web.localUpload = false;
+
+    var CALC_SLUG = 'subnet-calculator';
+
+    function calcDetectMode(slug) {
+        var s = String(slug || '').toLowerCase();
+        if (/mortgage|loan|amortization/.test(s)) return 'loan';
+        if (/compound|invest|saving|retirement|annuity/.test(s)) return 'compound';
+        if (/bmi|body-mass/.test(s)) return 'bmi';
+        if (/\btip\b/.test(s)) return 'tip';
+        // TDEE/calorie mode (new-tool-discovery-loop fire388) must win before
+        // the generic `percent` check below: "tdee-calorie-calculator" has no
+        // "percent" token so order does not matter here, but kept adjacent to
+        // the bmi/tip health-domain checks for readability.
+        if (/tdee|calorie|calories|\bbmr\b/.test(s)) return 'tdee';
+        if (/percent/.test(s)) return 'percentage';
+        if (/\bage\b/.test(s)) return 'age';
+        if (/date|days/.test(s)) return 'datediff';
+        // Scientific calculator mode (new-tool-discovery-loop fire390).
+        if (/scientific|\bsci\b/.test(s)) return 'scientific';
+        // Aspect-ratio calculator mode (new-tool-discovery-loop fire391).
+        if (/aspect|ratio/.test(s)) return 'aspectratio';
+        // Subnet / CIDR calculator mode (new-tool-discovery-loop fire395).
+        if (/subnet|cidr/.test(s)) return 'subnet';
+        return 'percentage'; // generic fallback
+    }
+
+    function calcFmtMoney(n) {
+        if (!isFinite(n)) return '-';
+        try { return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(n); }
+        catch (e) { return '$' + n.toFixed(2); }
+    }
+    function calcFmtNum(n, d) {
+        if (!isFinite(n)) return '-';
+        try { return new Intl.NumberFormat(undefined, { maximumFractionDigits: (d == null ? 2 : d) }).format(n); }
+        catch (e) { return n.toFixed(d == null ? 2 : d); }
+    }
+    function calcNum(v, fallback) {
+        var n = parseFloat(v);
+        return isFinite(n) ? n : (fallback == null ? 0 : fallback);
+    }
+
+    // ---- Loan / mortgage amortization -----------------------------------------
+    function calcRenderLoan(root) {
+        root.innerHTML =
+            '<div class="w3-row calc-field">Loan amount <input id="clPrincipal" type="number" min="0" step="100" value="20000" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field">Annual interest rate (%) <input id="clRate" type="number" min="0" step="0.01" value="6.5" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field">Term (years) <input id="clYears" type="number" min="1" step="1" value="5" class="w3-input w3-border calc-input"></div>' +
+            '<div id="clOut" class="outputImgs" style="visibility:visible !important;margin-top:12px;font-size:1.05em;text-align:left;max-width:420px;margin-left:auto;margin-right:auto;"></div>' +
+            '<div style="margin-top:8px;"><button id="clSchedule" type="button" class="w3-button w3-light-grey w3-small">Show first 12 months</button></div>' +
+            '<div id="clScheduleOut" style="margin-top:8px;overflow-x:auto;"></div>';
+        var pEl = root.querySelector('#clPrincipal'), rEl = root.querySelector('#clRate'), yEl = root.querySelector('#clYears');
+        var outEl = root.querySelector('#clOut'), schedOut = root.querySelector('#clScheduleOut');
+        function amort() {
+            var P = Math.max(0, calcNum(pEl.value)), annualRate = Math.max(0, calcNum(rEl.value)), years = Math.max(1, calcNum(yEl.value, 1));
+            var n = Math.round(years * 12), r = (annualRate / 100) / 12;
+            var M = r > 0 ? P * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1) : P / n;
+            if (!isFinite(M)) M = 0;
+            var totalPaid = M * n, totalInterest = totalPaid - P;
+            outEl.innerHTML =
+                '<p>Monthly payment: <b>' + calcFmtMoney(M) + '</b></p>' +
+                '<p>Total paid over ' + n + ' months: <b>' + calcFmtMoney(totalPaid) + '</b></p>' +
+                '<p>Total interest: <b>' + calcFmtMoney(totalInterest) + '</b></p>';
+            return { P: P, r: r, n: n, M: M };
+        }
+        root.querySelector('#clSchedule').addEventListener('click', function () {
+            var a = amort(), rows = [], bal = a.P, show = Math.min(12, a.n);
+            for (var i = 1; i <= show; i++) {
+                var interest = bal * a.r, principal = a.M - interest;
+                bal = Math.max(0, bal - principal);
+                rows.push('<tr><td>' + i + '</td><td>' + calcFmtMoney(principal) + '</td><td>' + calcFmtMoney(interest) + '</td><td>' + calcFmtMoney(bal) + '</td></tr>');
+            }
+            schedOut.innerHTML = '<table class="w3-table w3-bordered w3-small" style="max-width:480px;margin:0 auto;">' +
+                '<tr><th>Month</th><th>Principal</th><th>Interest</th><th>Balance</th></tr>' + rows.join('') + '</table>' +
+                (a.n > show ? '<p class="w3-small">Showing the first ' + show + ' of ' + a.n + ' months.</p>' : '');
+        });
+        [pEl, rEl, yEl].forEach(function (el) { el.addEventListener('input', amort); });
+        amort();
+    }
+
+    // ---- Compound interest ------------------------------------------------------
+    function calcRenderCompound(root) {
+        root.innerHTML =
+            '<div class="w3-row calc-field">Starting principal <input id="ciPrincipal" type="number" min="0" step="100" value="5000" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field">Monthly contribution <input id="ciContribution" type="number" min="0" step="10" value="100" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field">Annual interest rate (%) <input id="ciRate" type="number" min="0" step="0.01" value="7" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field">Years <input id="ciYears" type="number" min="1" step="1" value="10" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field">Compounding <select id="ciFreq" class="w3-select w3-border calc-input">' +
+            '<option value="12">Monthly</option><option value="1">Annually</option><option value="365">Daily</option></select></div>' +
+            '<div id="ciOut" class="outputImgs" style="visibility:visible !important;margin-top:12px;font-size:1.05em;text-align:left;max-width:420px;margin-left:auto;margin-right:auto;"></div>';
+        var ids = ['ciPrincipal', 'ciContribution', 'ciRate', 'ciYears', 'ciFreq'].map(function (id) { return root.querySelector('#' + id); });
+        var outEl = root.querySelector('#ciOut');
+        function run() {
+            var P = Math.max(0, calcNum(ids[0].value)), contrib = Math.max(0, calcNum(ids[1].value));
+            var annualRate = Math.max(0, calcNum(ids[2].value)), years = Math.max(0, calcNum(ids[3].value));
+            var freq = Math.max(1, calcNum(ids[4].value, 12));
+            var periods = Math.round(years * freq), ratePerPeriod = (annualRate / 100) / freq;
+            var contribPerPeriod = contrib * (12 / freq);
+            var balance = P, totalContrib = P;
+            for (var i = 0; i < periods; i++) {
+                balance = balance * (1 + ratePerPeriod) + contribPerPeriod;
+                totalContrib += contribPerPeriod;
+            }
+            var interestEarned = balance - totalContrib;
+            outEl.innerHTML =
+                '<p>Final value: <b>' + calcFmtMoney(balance) + '</b></p>' +
+                '<p>Total contributed: <b>' + calcFmtMoney(totalContrib) + '</b></p>' +
+                '<p>Interest earned: <b>' + calcFmtMoney(Math.max(0, interestEarned)) + '</b></p>';
+        }
+        ids.forEach(function (el) { el.addEventListener('input', run); el.addEventListener('change', run); });
+        run();
+    }
+
+    // ---- Percentage calculator ---------------------------------------------------
+    function calcRenderPercentage(root) {
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;"><select id="pcMode" class="w3-select w3-border" style="max-width:360px;margin:0 auto;">' +
+            '<option value="of">What is X% of Y?</option>' +
+            '<option value="is">X is what percent of Y?</option>' +
+            '<option value="change">Percent change from X to Y</option>' +
+            '</select></div>' +
+            '<div class="w3-row calc-field"><span id="pcLabelX">X</span> <input id="pcX" type="number" step="any" value="20" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field"><span id="pcLabelY">Y</span> <input id="pcY" type="number" step="any" value="80" class="w3-input w3-border calc-input"></div>' +
+            '<div id="pcOut" class="outputImgs" style="visibility:visible !important;margin-top:12px;font-size:1.2em;font-weight:bold;"></div>';
+        var modeEl = root.querySelector('#pcMode'), xEl = root.querySelector('#pcX'), yEl = root.querySelector('#pcY'), outEl = root.querySelector('#pcOut');
+        var lblX = root.querySelector('#pcLabelX'), lblY = root.querySelector('#pcLabelY');
+        function labels() {
+            var m = modeEl.value;
+            if (m === 'of') { lblX.textContent = 'Percent (%)'; lblY.textContent = 'Of value'; }
+            else if (m === 'is') { lblX.textContent = 'Value'; lblY.textContent = 'Out of (total)'; }
+            else { lblX.textContent = 'From value'; lblY.textContent = 'To value'; }
+        }
+        function run() {
+            labels();
+            var m = modeEl.value, x = calcNum(xEl.value), y = calcNum(yEl.value);
+            if (m === 'of') outEl.textContent = calcFmtNum(x, 4) + '% of ' + calcFmtNum(y, 4) + ' = ' + calcFmtNum((x / 100) * y, 4);
+            else if (m === 'is') outEl.textContent = (y === 0 ? 'Enter a non-zero total.' : calcFmtNum(x, 4) + ' is ' + calcFmtNum((x / y) * 100, 4) + '% of ' + calcFmtNum(y, 4));
+            else outEl.textContent = (x === 0 ? 'Enter a non-zero starting value.' : 'Change: ' + calcFmtNum(((y - x) / x) * 100, 4) + '%');
+        }
+        modeEl.addEventListener('change', run);
+        xEl.addEventListener('input', run);
+        yEl.addEventListener('input', run);
+        run();
+    }
+
+    // ---- BMI calculator ----------------------------------------------------------
+    function calcRenderBmi(root) {
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;"><select id="bmUnit" class="w3-select w3-border" style="max-width:220px;margin:0 auto;">' +
+            '<option value="metric">Metric (kg / cm)</option><option value="imperial">Imperial (lb / in)</option></select></div>' +
+            '<div class="w3-row calc-field"><span id="bmWeightLabel">Weight (kg)</span> <input id="bmWeight" type="number" min="0" step="0.1" value="70" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field"><span id="bmHeightLabel">Height (cm)</span> <input id="bmHeight" type="number" min="0" step="0.1" value="175" class="w3-input w3-border calc-input"></div>' +
+            '<div id="bmOut" class="outputImgs" style="visibility:visible !important;margin-top:12px;font-size:1.1em;"></div>';
+        var unitEl = root.querySelector('#bmUnit'), wEl = root.querySelector('#bmWeight'), hEl = root.querySelector('#bmHeight'), outEl = root.querySelector('#bmOut');
+        var wLbl = root.querySelector('#bmWeightLabel'), hLbl = root.querySelector('#bmHeightLabel');
+        function category(bmi) {
+            if (bmi < 18.5) return 'Underweight';
+            if (bmi < 25) return 'Normal weight';
+            if (bmi < 30) return 'Overweight';
+            return 'Obesity';
+        }
+        function run() {
+            var metric = unitEl.value === 'metric';
+            wLbl.textContent = metric ? 'Weight (kg)' : 'Weight (lb)';
+            hLbl.textContent = metric ? 'Height (cm)' : 'Height (in)';
+            var w = Math.max(0, calcNum(wEl.value)), h = Math.max(0, calcNum(hEl.value));
+            var bmi;
+            if (metric) { var m = h / 100; bmi = m > 0 ? w / (m * m) : 0; }
+            else { bmi = h > 0 ? (703 * w) / (h * h) : 0; }
+            outEl.innerHTML = h <= 0 ? '<p>Enter a height greater than zero.</p>' :
+                '<p>BMI: <b>' + calcFmtNum(bmi, 1) + '</b></p><p>Category: <b>' + category(bmi) + '</b></p>';
+        }
+        unitEl.addEventListener('change', run);
+        wEl.addEventListener('input', run);
+        hEl.addEventListener('input', run);
+        run();
+    }
+
+    // ---- Tip calculator ------------------------------------------------------------
+    function calcRenderTip(root) {
+        root.innerHTML =
+            '<div class="w3-row calc-field">Bill amount <input id="tpBill" type="number" min="0" step="0.01" value="50" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field">Tip percent (%) <input id="tpPct" type="number" min="0" step="1" value="18" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field">Split between (people) <input id="tpPeople" type="number" min="1" step="1" value="1" class="w3-input w3-border calc-input"></div>' +
+            '<div id="tpOut" class="outputImgs" style="visibility:visible !important;margin-top:12px;font-size:1.05em;text-align:left;max-width:360px;margin-left:auto;margin-right:auto;"></div>';
+        var bEl = root.querySelector('#tpBill'), pEl = root.querySelector('#tpPct'), nEl = root.querySelector('#tpPeople'), outEl = root.querySelector('#tpOut');
+        function run() {
+            var bill = Math.max(0, calcNum(bEl.value)), pct = Math.max(0, calcNum(pEl.value)), people = Math.max(1, calcNum(nEl.value, 1));
+            var tip = bill * (pct / 100), total = bill + tip;
+            outEl.innerHTML =
+                '<p>Tip amount: <b>' + calcFmtMoney(tip) + '</b></p>' +
+                '<p>Total (bill + tip): <b>' + calcFmtMoney(total) + '</b></p>' +
+                '<p>Per person: <b>' + calcFmtMoney(total / people) + '</b></p>';
+        }
+        [bEl, pEl, nEl].forEach(function (el) { el.addEventListener('input', run); });
+        run();
+    }
+
+    // ---- Age calculator --------------------------------------------------------
+    function calcRenderAge(root) {
+        var today = new Date().toISOString().slice(0, 10);
+        root.innerHTML =
+            '<div class="w3-row calc-field">Date of birth <input id="agBirth" type="date" value="2000-01-01" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field">As of <input id="agAsOf" type="date" value="' + today + '" class="w3-input w3-border calc-input"></div>' +
+            '<div id="agOut" class="outputImgs" style="visibility:visible !important;margin-top:12px;font-size:1.05em;"></div>';
+        var bEl = root.querySelector('#agBirth'), aEl = root.querySelector('#agAsOf'), outEl = root.querySelector('#agOut');
+        function run() {
+            var b = new Date(bEl.value + 'T00:00:00'), a = new Date(aEl.value + 'T00:00:00');
+            if (isNaN(b.getTime()) || isNaN(a.getTime()) || a < b) { outEl.innerHTML = '<p>Enter a birth date on or before the "as of" date.</p>'; return; }
+            var years = a.getFullYear() - b.getFullYear(), months = a.getMonth() - b.getMonth(), days = a.getDate() - b.getDate();
+            if (days < 0) { months -= 1; days += new Date(a.getFullYear(), a.getMonth(), 0).getDate(); }
+            if (months < 0) { years -= 1; months += 12; }
+            var totalDays = Math.round((a - b) / 86400000);
+            outEl.innerHTML = '<p>Age: <b>' + years + ' years, ' + months + ' months, ' + days + ' days</b></p>' +
+                '<p>Total days lived: <b>' + calcFmtNum(totalDays, 0) + '</b></p>';
+        }
+        bEl.addEventListener('input', run);
+        aEl.addEventListener('input', run);
+        run();
+    }
+
+    // ---- Date difference calculator ---------------------------------------------
+    function calcRenderDateDiff(root) {
+        var today = new Date().toISOString().slice(0, 10);
+        root.innerHTML =
+            '<div class="w3-row calc-field">Start date <input id="ddStart" type="date" value="' + today + '" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field">End date <input id="ddEnd" type="date" value="' + today + '" class="w3-input w3-border calc-input"></div>' +
+            '<div id="ddOut" class="outputImgs" style="visibility:visible !important;margin-top:12px;font-size:1.05em;"></div>';
+        var sEl = root.querySelector('#ddStart'), eEl = root.querySelector('#ddEnd'), outEl = root.querySelector('#ddOut');
+        function run() {
+            var s = new Date(sEl.value + 'T00:00:00'), e = new Date(eEl.value + 'T00:00:00');
+            if (isNaN(s.getTime()) || isNaN(e.getTime())) { outEl.innerHTML = '<p>Enter two valid dates.</p>'; return; }
+            var ms = e - s, sign = ms < 0 ? -1 : 1, absDays = Math.round(Math.abs(ms) / 86400000);
+            var weeks = Math.floor(absDays / 7), rem = absDays % 7;
+            outEl.innerHTML = '<p>Difference: <b>' + calcFmtNum(absDays, 0) + ' days</b>' + (sign < 0 ? ' (end date is before start date)' : '') + '</p>' +
+                '<p>That is <b>' + weeks + ' weeks and ' + rem + ' days</b>.</p>';
+        }
+        sEl.addEventListener('input', run);
+        eEl.addEventListener('input', run);
+        run();
+    }
+
+    // ---- TDEE / calorie calculator (new-tool-discovery-loop fire388) -------------
+    // Mifflin-St Jeor BMR formula (the modern standard, more accurate than the
+    // older Harris-Benedict equation for most adults):
+    //   men:   BMR = 10*weight_kg + 6.25*height_cm - 5*age + 5
+    //   women: BMR = 10*weight_kg + 6.25*height_cm - 5*age - 161
+    // TDEE = BMR * activity multiplier. Cut/bulk targets are TDEE +/- 500 kcal/day
+    // (the standard ~1lb/week rate-of-change rule of thumb).
+    function calcRenderTdee(root) {
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;"><select id="tdUnit" class="w3-select w3-border" style="max-width:220px;margin:0 auto;">' +
+            '<option value="metric">Metric (kg / cm)</option><option value="imperial">Imperial (lb / in)</option></select></div>' +
+            '<div class="w3-row calc-field"><select id="tdSex" class="w3-select w3-border calc-input"><option value="male">Male</option><option value="female">Female</option></select></div>' +
+            '<div class="w3-row calc-field">Age (years) <input id="tdAge" type="number" min="15" max="100" step="1" value="30" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field"><span id="tdWeightLabel">Weight (kg)</span> <input id="tdWeight" type="number" min="0" step="0.1" value="70" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field"><span id="tdHeightLabel">Height (cm)</span> <input id="tdHeight" type="number" min="0" step="0.1" value="175" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field"><select id="tdActivity" class="w3-select w3-border calc-input">' +
+            '<option value="1.2">Sedentary (little or no exercise)</option>' +
+            '<option value="1.375">Light (exercise 1-3 days/week)</option>' +
+            '<option value="1.55" selected>Moderate (exercise 3-5 days/week)</option>' +
+            '<option value="1.725">Active (exercise 6-7 days/week)</option>' +
+            '<option value="1.9">Very active (hard exercise + physical job)</option>' +
+            '</select></div>' +
+            '<div id="tdOut" class="outputImgs" style="visibility:visible !important;margin-top:12px;font-size:1.05em;text-align:left;max-width:420px;margin-left:auto;margin-right:auto;"></div>';
+        var unitEl = root.querySelector('#tdUnit'), sexEl = root.querySelector('#tdSex'), ageEl = root.querySelector('#tdAge');
+        var wEl = root.querySelector('#tdWeight'), hEl = root.querySelector('#tdHeight'), actEl = root.querySelector('#tdActivity');
+        var outEl = root.querySelector('#tdOut'), wLbl = root.querySelector('#tdWeightLabel'), hLbl = root.querySelector('#tdHeightLabel');
+        function run() {
+            var metric = unitEl.value === 'metric';
+            wLbl.textContent = metric ? 'Weight (kg)' : 'Weight (lb)';
+            hLbl.textContent = metric ? 'Height (cm)' : 'Height (in)';
+            var age = Math.max(15, calcNum(ageEl.value, 30));
+            var wRaw = Math.max(0, calcNum(wEl.value)), hRaw = Math.max(0, calcNum(hEl.value));
+            var weightKg = metric ? wRaw : wRaw * 0.45359237;
+            var heightCm = metric ? hRaw : hRaw * 2.54;
+            if (heightCm <= 0 || weightKg <= 0) { outEl.innerHTML = '<p>Enter a weight and height greater than zero.</p>'; return; }
+            var bmr = 10 * weightKg + 6.25 * heightCm - 5 * age + (sexEl.value === 'male' ? 5 : -161);
+            var activity = Math.max(1.2, calcNum(actEl.value, 1.55));
+            var tdee = bmr * activity;
+            outEl.innerHTML =
+                '<p>BMR (calories at rest): <b>' + calcFmtNum(bmr, 0) + ' kcal/day</b></p>' +
+                '<p>TDEE (maintenance calories): <b>' + calcFmtNum(tdee, 0) + ' kcal/day</b></p>' +
+                '<p>Weight loss target: <b>' + calcFmtNum(tdee - 500, 0) + ' kcal/day</b></p>' +
+                '<p>Weight gain target: <b>' + calcFmtNum(tdee + 500, 0) + ' kcal/day</b></p>';
+        }
+        [sexEl, ageEl, wEl, hEl, actEl].forEach(function (el) { el.addEventListener('input', run); el.addEventListener('change', run); });
+        unitEl.addEventListener('change', run);
+        run();
+    }
+
+    // ---- Scientific calculator (new-tool-discovery-loop fire390) -----------------
+    // Safe recursive-descent expression evaluator - NO eval()/Function(). Grammar:
+    //   expr    := term (('+'|'-') term)*
+    //   term    := unary (('*'|'/'|'%') unary)*
+    //   unary   := '-' unary | power
+    //   power   := atom ('^' unary)?          (right-assoc)
+    //   atom    := number | const | func '(' expr ')' | '(' expr ')'
+    // Angle mode (deg/rad) only affects trig function argument/return conversion.
+    function calcSciTokenize(s) {
+        var toks = [], i = 0, n = s.length;
+        while (i < n) {
+            var c = s[i];
+            if (c === ' ') { i++; continue; }
+            if (/[0-9.]/.test(c)) {
+                var j = i;
+                while (j < n && /[0-9.]/.test(s[j])) j++;
+                toks.push({ t: 'num', v: parseFloat(s.slice(i, j)) });
+                i = j;
+                continue;
+            }
+            if (/[a-zA-Z]/.test(c)) {
+                var k = i;
+                while (k < n && /[a-zA-Z]/.test(s[k])) k++;
+                toks.push({ t: 'name', v: s.slice(i, k) });
+                i = k;
+                continue;
+            }
+            if ('+-*/%^()'.indexOf(c) !== -1) { toks.push({ t: c }); i++; continue; }
+            throw new Error('Unexpected character: ' + c);
+        }
+        return toks;
+    }
+    function calcSciParse(toks, angleIsDeg) {
+        var pos = 0;
+        function peek() { return toks[pos]; }
+        function next() { return toks[pos++]; }
+        function toRad(x) { return angleIsDeg ? (x * Math.PI / 180) : x; }
+        function fromRad(x) { return angleIsDeg ? (x * 180 / Math.PI) : x; }
+        var FUNCS = {
+            sin: function (x) { return Math.sin(toRad(x)); },
+            cos: function (x) { return Math.cos(toRad(x)); },
+            tan: function (x) { return Math.tan(toRad(x)); },
+            asin: function (x) { return fromRad(Math.asin(x)); },
+            acos: function (x) { return fromRad(Math.acos(x)); },
+            atan: function (x) { return fromRad(Math.atan(x)); },
+            sqrt: Math.sqrt, abs: Math.abs,
+            log: Math.log10 || function (x) { return Math.log(x) / Math.LN10; },
+            ln: Math.log
+        };
+        var CONSTS = { pi: Math.PI, e: Math.E };
+        function atom() {
+            var tk = peek();
+            if (!tk) throw new Error('Unexpected end of expression');
+            if (tk.t === 'num') { next(); return tk.v; }
+            if (tk.t === '(') { next(); var v = expr(); if (!peek() || peek().t !== ')') throw new Error('Missing )'); next(); return v; }
+            if (tk.t === 'name') {
+                next();
+                var nm = tk.v.toLowerCase();
+                if (peek() && peek().t === '(') {
+                    next(); var arg = expr();
+                    if (!peek() || peek().t !== ')') throw new Error('Missing )');
+                    next();
+                    if (!FUNCS[nm]) throw new Error('Unknown function: ' + nm);
+                    return FUNCS[nm](arg);
+                }
+                if (CONSTS.hasOwnProperty(nm)) return CONSTS[nm];
+                throw new Error('Unknown name: ' + nm);
+            }
+            throw new Error('Unexpected token');
+        }
+        function power() {
+            var base = atom();
+            if (peek() && peek().t === '^') { next(); return Math.pow(base, unary()); }
+            return base;
+        }
+        function unary() {
+            if (peek() && peek().t === '-') { next(); return -unary(); }
+            if (peek() && peek().t === '+') { next(); return unary(); }
+            return power();
+        }
+        function term() {
+            var v = unary();
+            while (peek() && (peek().t === '*' || peek().t === '/' || peek().t === '%')) {
+                var op = next().t, rhs = unary();
+                if (op === '*') v = v * rhs; else if (op === '/') v = v / rhs; else v = v % rhs;
+            }
+            return v;
+        }
+        function expr() {
+            var v = term();
+            while (peek() && (peek().t === '+' || peek().t === '-')) {
+                var op = next().t, rhs = term();
+                v = op === '+' ? v + rhs : v - rhs;
+            }
+            return v;
+        }
+        var result = expr();
+        if (pos !== toks.length) throw new Error('Unexpected trailing input');
+        return result;
+    }
+    function calcSciEval(str, angleIsDeg) {
+        if (!str || !String(str).trim()) return 0;
+        return calcSciParse(calcSciTokenize(String(str)), angleIsDeg);
+    }
+    function calcRenderScientific(root) {
+        var BTN = 'w3-button w3-light-grey w3-margin-small';
+        root.innerHTML =
+            '<div style="max-width:340px;margin:0 auto;">' +
+            '<div class="w3-row" style="margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">' +
+            '<label class="w3-small"><input id="scDeg" type="checkbox" checked> Degrees</label>' +
+            '<span id="scMem" class="w3-small" style="color:#888;">M: 0</span>' +
+            '</div>' +
+            '<input id="scDisplay" type="text" class="w3-input w3-border" style="font-size:1.3em;text-align:right;margin-bottom:4px;" value="" placeholder="0" autocomplete="off">' +
+            '<div id="scResult" class="outputImgs w3-small" style="visibility:visible !important;min-height:20px;text-align:right;color:#666;margin-bottom:8px;"></div>' +
+            '<div id="scGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;"></div>' +
+            '</div>';
+        var dispEl = root.querySelector('#scDisplay'), resEl = root.querySelector('#scResult');
+        var degEl = root.querySelector('#scDeg'), memEl = root.querySelector('#scMem'), grid = root.querySelector('#scGrid');
+        var memory = 0;
+        var KEYS = [
+            'sin(', 'cos(', 'tan(', 'sqrt(', 'AC',
+            '(', ')', '^', '%', 'DEL',
+            '7', '8', '9', '/', 'ln(',
+            '4', '5', '6', '*', 'log(',
+            '1', '2', '3', '-', 'M+',
+            '0', '.', 'pi', '+', 'M-',
+            'e', 'MR', 'MC', '=', ''
+        ];
+        function insert(v) { dispEl.value = (dispEl.value || '') + v; liveEval(); dispEl.focus(); }
+        function liveEval() {
+            try {
+                var v = calcSciEval(dispEl.value, degEl.checked);
+                resEl.textContent = isFinite(v) ? '= ' + calcFmtNum(v, 8) : '';
+            } catch (e) { resEl.textContent = ''; }
+        }
+        KEYS.forEach(function (k) {
+            if (k === '') { var spacer = document.createElement('div'); grid.appendChild(spacer); return; }
+            var b = document.createElement('button');
+            b.type = 'button'; b.className = BTN; b.style.padding = '8px 2px'; b.style.fontSize = '0.85em'; b.textContent = k;
+            b.addEventListener('click', function () {
+                if (k === 'AC') { dispEl.value = ''; resEl.textContent = ''; }
+                else if (k === 'DEL') { dispEl.value = dispEl.value.slice(0, -1); liveEval(); }
+                else if (k === '=') { try { dispEl.value = calcFmtNum(calcSciEval(dispEl.value, degEl.checked), 8); resEl.textContent = ''; } catch (e) { resEl.textContent = 'Error: check the expression.'; } }
+                else if (k === 'M+') { try { memory += calcSciEval(dispEl.value, degEl.checked); memEl.textContent = 'M: ' + calcFmtNum(memory, 4); } catch (e) { } }
+                else if (k === 'M-') { try { memory -= calcSciEval(dispEl.value, degEl.checked); memEl.textContent = 'M: ' + calcFmtNum(memory, 4); } catch (e) { } }
+                else if (k === 'MR') { insert(String(memory)); }
+                else if (k === 'MC') { memory = 0; memEl.textContent = 'M: 0'; }
+                else { insert(k); }
+            });
+            grid.appendChild(b);
+        });
+        dispEl.addEventListener('input', liveEval);
+        dispEl.addEventListener('keydown', function (ev) {
+            if (ev.key !== 'Enter') return;
+            ev.preventDefault();
+            var buttons = root.querySelectorAll('#scGrid button');
+            for (var bi = 0; bi < buttons.length; bi++) { if (buttons[bi].textContent === '=') { buttons[bi].click(); break; } }
+        });
+        degEl.addEventListener('change', liveEval);
+    }
+
+    // ---- Aspect ratio calculator (new-tool-discovery-loop fire391) ---------------
+    // Simplify a width:height pair to its lowest-terms ratio (Euclid's GCD) and
+    // scale a target width/height to a matching dimension along that ratio.
+    // Pure integer/float arithmetic - no library needed.
+    function calcGcd(a, b) {
+        a = Math.abs(Math.round(a)); b = Math.abs(Math.round(b));
+        while (b) { var t = b; b = a % b; a = t; }
+        return a || 1;
+    }
+    var ASPECT_COMMON = [
+        { w: 16, h: 9, label: '16:9 (widescreen video)' },
+        { w: 9, h: 16, label: '9:16 (vertical / mobile)' },
+        { w: 4, h: 3, label: '4:3 (classic monitor / photo)' },
+        { w: 3, h: 2, label: '3:2 (DSLR photo)' },
+        { w: 1, h: 1, label: '1:1 (square)' },
+        { w: 21, h: 9, label: '21:9 (ultrawide)' },
+        { w: 5, h: 4, label: '5:4' }
+    ];
+    function calcRenderAspectRatio(root) {
+        root.innerHTML =
+            '<div class="w3-row calc-field">Original width <input id="arW" type="number" min="1" step="1" value="1920" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field">Original height <input id="arH" type="number" min="1" step="1" value="1080" class="w3-input w3-border calc-input"></div>' +
+            '<div id="arRatioOut" class="outputImgs" style="visibility:visible !important;margin-top:12px;font-size:1.1em;text-align:center;"></div>' +
+            '<div class="w3-row" style="margin-top:14px;border-top:1px solid #e0e0e0;padding-top:10px;">' +
+            '<div class="w3-half"><div class="calc-field">New width <input id="arNewW" type="number" min="0" step="1" placeholder="e.g. 1280" class="w3-input w3-border calc-input"></div></div>' +
+            '<div class="w3-half"><div class="calc-field">New height <input id="arNewH" type="number" min="0" step="1" placeholder="e.g. 720" class="w3-input w3-border calc-input"></div></div>' +
+            '</div>' +
+            '<div id="arScaleOut" class="w3-small" style="margin-top:6px;text-align:center;color:#555;"></div>' +
+            '<div class="w3-row" style="margin-top:14px;"><p class="w3-small" style="text-align:center;color:#888;margin-bottom:4px;">Or pick a common ratio to scale to a target width:</p>' +
+            '<div id="arCommon" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;"></div></div>';
+        var wEl = root.querySelector('#arW'), hEl = root.querySelector('#arH');
+        var newWEl = root.querySelector('#arNewW'), newHEl = root.querySelector('#arNewH');
+        var ratioOut = root.querySelector('#arRatioOut'), scaleOut = root.querySelector('#arScaleOut');
+        var commonWrap = root.querySelector('#arCommon');
+        var lastEdited = 'w'; // which of arNewW/arNewH the reader last typed into
+
+        function simplifiedRatio() {
+            var w = Math.max(1, calcNum(wEl.value, 1)), h = Math.max(1, calcNum(hEl.value, 1));
+            var g = calcGcd(w, h);
+            return { w: w, h: h, sw: w / g, sh: h / g, decimal: w / h };
+        }
+        function renderRatio() {
+            var r = simplifiedRatio();
+            ratioOut.innerHTML = '<p>Ratio: <b>' + calcFmtNum(r.sw, 0) + ' : ' + calcFmtNum(r.sh, 0) + '</b></p>' +
+                '<p class="w3-small">Decimal: ' + calcFmtNum(r.decimal, 4) + '</p>';
+            scaleFromRatio();
+        }
+        function scaleFromRatio() {
+            var r = simplifiedRatio();
+            if (lastEdited === 'w' && newWEl.value !== '') {
+                var nw = Math.max(0, calcNum(newWEl.value));
+                var nh = nw / r.decimal;
+                newHEl.value = calcFmtNum(nh, 2);
+                scaleOut.textContent = nw > 0 ? ('At width ' + calcFmtNum(nw, 0) + ', height = ' + calcFmtNum(nh, 2) + ' (same ' + calcFmtNum(r.sw, 0) + ':' + calcFmtNum(r.sh, 0) + ' ratio)') : '';
+            } else if (lastEdited === 'h' && newHEl.value !== '') {
+                var nh2 = Math.max(0, calcNum(newHEl.value));
+                var nw2 = nh2 * r.decimal;
+                newWEl.value = calcFmtNum(nw2, 2);
+                scaleOut.textContent = nh2 > 0 ? ('At height ' + calcFmtNum(nh2, 0) + ', width = ' + calcFmtNum(nw2, 2) + ' (same ' + calcFmtNum(r.sw, 0) + ':' + calcFmtNum(r.sh, 0) + ' ratio)') : '';
+            }
+        }
+        wEl.addEventListener('input', renderRatio);
+        hEl.addEventListener('input', renderRatio);
+        newWEl.addEventListener('input', function () { lastEdited = 'w'; scaleFromRatio(); });
+        newHEl.addEventListener('input', function () { lastEdited = 'h'; scaleFromRatio(); });
+
+        ASPECT_COMMON.forEach(function (preset) {
+            var b = document.createElement('button');
+            b.type = 'button'; b.className = 'w3-button w3-light-grey w3-small';
+            b.textContent = preset.label;
+            b.addEventListener('click', function () {
+                wEl.value = preset.w; hEl.value = preset.h;
+                renderRatio();
+            });
+            commonWrap.appendChild(b);
+        });
+
+        renderRatio();
+    }
+
+    // ---- Subnet / CIDR calculator (new-tool-discovery-loop fire395) --------------
+    // Pure IPv4 CIDR arithmetic (32-bit unsigned int math via >>> 0) - no library
+    // needed. Computes network address, broadcast address, subnet mask, wildcard
+    // mask, usable host range and host count from an IPv4 address + prefix length.
+    function calcIpToInt(ip) {
+        var m = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(String(ip || '').trim());
+        if (!m) return null;
+        var parts = [m[1], m[2], m[3], m[4]].map(function (x) { return parseInt(x, 10); });
+        for (var i = 0; i < 4; i++) { if (parts[i] < 0 || parts[i] > 255) return null; }
+        return ((parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8) | parts[3]) >>> 0;
+    }
+    function calcIntToIp(n) {
+        n = n >>> 0;
+        return [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255].join('.');
+    }
+    function calcPrefixToMask(prefix) {
+        prefix = Math.max(0, Math.min(32, Math.round(prefix)));
+        return prefix === 0 ? 0 : (0xFFFFFFFF << (32 - prefix)) >>> 0;
+    }
+    function calcRenderSubnet(root) {
+        root.innerHTML =
+            '<div class="w3-row calc-field">IPv4 address <input id="snIp" type="text" value="192.168.1.0" class="w3-input w3-border calc-input" placeholder="e.g. 192.168.1.0"></div>' +
+            '<div class="w3-row calc-field">Prefix length (CIDR) <input id="snPrefix" type="number" min="0" max="32" step="1" value="24" class="w3-input w3-border calc-input"></div>' +
+            '<div id="snOut" class="outputImgs" style="visibility:visible !important;margin-top:12px;font-size:1.02em;text-align:left;max-width:440px;margin-left:auto;margin-right:auto;"></div>';
+        var ipEl = root.querySelector('#snIp'), pfEl = root.querySelector('#snPrefix'), outEl = root.querySelector('#snOut');
+        function run() {
+            var ipInt = calcIpToInt(ipEl.value);
+            var prefix = Math.max(0, Math.min(32, calcNum(pfEl.value, 24)));
+            if (ipInt === null) { outEl.innerHTML = '<p>Enter a valid IPv4 address, e.g. 192.168.1.0.</p>'; return; }
+            var mask = calcPrefixToMask(prefix);
+            var wildcard = (~mask) >>> 0;
+            var network = (ipInt & mask) >>> 0;
+            var broadcast = (network | wildcard) >>> 0;
+            var totalAddresses = Math.pow(2, 32 - prefix);
+            var firstUsable, lastUsable, usableCount;
+            if (prefix >= 31) {
+                // /31 point-to-point (RFC 3021) and /32 host route: no
+                // network/broadcast reservation, every address in range is usable.
+                firstUsable = network; lastUsable = broadcast;
+                usableCount = totalAddresses;
+            } else {
+                firstUsable = (network + 1) >>> 0; lastUsable = (broadcast - 1) >>> 0;
+                usableCount = Math.max(0, totalAddresses - 2);
+            }
+            outEl.innerHTML =
+                '<p>Network address: <b>' + calcIntToIp(network) + '</b></p>' +
+                '<p>Broadcast address: <b>' + calcIntToIp(broadcast) + '</b></p>' +
+                '<p>Subnet mask: <b>' + calcIntToIp(mask) + '</b> <span class="w3-small" style="color:#888;">(/' + prefix + ')</span></p>' +
+                '<p>Wildcard mask: <b>' + calcIntToIp(wildcard) + '</b></p>' +
+                '<p>Usable host range: <b>' + calcIntToIp(firstUsable) + ' - ' + calcIntToIp(lastUsable) + '</b></p>' +
+                '<p>Total addresses: <b>' + calcFmtNum(totalAddresses, 0) + '</b></p>' +
+                '<p>Usable hosts: <b>' + calcFmtNum(usableCount, 0) + '</b></p>';
+        }
+        ipEl.addEventListener('input', run);
+        pfEl.addEventListener('input', run);
+        run();
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('calculatorTool');
+        if (!root) return; // not a calculator page
+        var mode = calcDetectMode(CALC_SLUG);
+        try {
+            if (mode === 'loan') calcRenderLoan(root);
+            else if (mode === 'compound') calcRenderCompound(root);
+            else if (mode === 'bmi') calcRenderBmi(root);
+            else if (mode === 'tip') calcRenderTip(root);
+            else if (mode === 'tdee') calcRenderTdee(root);
+            else if (mode === 'age') calcRenderAge(root);
+            else if (mode === 'datediff') calcRenderDateDiff(root);
+            else if (mode === 'scientific') calcRenderScientific(root);
+            else if (mode === 'aspectratio') calcRenderAspectRatio(root);
+            else if (mode === 'subnet') calcRenderSubnet(root);
+            else calcRenderPercentage(root);
+        } catch (e) {
+            root.textContent = 'Could not start the tool: ' + (e && e.message ? e.message : String(e));
+        }
+    }
+</script>

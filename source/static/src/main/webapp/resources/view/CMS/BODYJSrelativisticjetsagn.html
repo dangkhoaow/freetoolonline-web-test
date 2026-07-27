@@ -1,0 +1,425 @@
+<script>
+    // 3D scene archetype skeleton (Relativistic Jets & Doppler Beaming Explorer) -
+    // vendored three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Built LEAN, forked from the photonsphereiscoexplorer single-
+    // scene shape. ONE scene only. All geometry is procedural.
+    //
+    // EDUCATIONAL, SCHEMATIC JET-BEAMING EXPLORER - not a general-relativistic
+    // magnetohydrodynamic (GRMHD) jet-launching simulation. The two particle-
+    // stream jets are a simplified schematic of a bipolar AGN jet; the physics
+    // that IS computed live and exact is special-relativistic Doppler beaming
+    // and the classic apparent-superluminal-motion formula, both standard
+    // textbook results applied to real published parameters for the M87 jet.
+    //
+    // Published figures / formulas (cross-checked via WebSearch 2026-07-24):
+    //   - Doppler factor for a relativistic emitting blob/jet:
+    //       delta = 1 / (Gamma * (1 - beta * cos(theta)))
+    //     where Gamma = bulk Lorentz factor, beta = v/c = sqrt(1 - 1/Gamma^2),
+    //     theta = angle between the jet velocity and the line of sight.
+    //     Receding jet uses theta' = 180deg - theta (cos flips sign).
+    //     Standard special-relativity result; AGN application per Urry &
+    //     Padovani (1995), PASP 107:803, "Unified Schemes for Radio-Loud
+    //     Active Galactic Nuclei".
+    //   - Apparent (projected) transverse speed of a moving knot (Rees 1966,
+    //     Nature 211:468):
+    //       beta_app = beta * sin(theta) / (1 - beta * cos(theta))
+    //     This is the exact special-relativity origin of "superluminal motion"
+    //     - a real geometric effect, not actual faster-than-light travel.
+    //   - Observed flux from a moving blob scales approximately as delta^(3+a);
+    //     for a steady continuous jet the exponent is (2+a); a is the radio
+    //     spectral index, commonly cited in the 0.5-1.0 range for AGN jets
+    //     (Urry & Padovani 1995). This scene uses a=0.75 as one illustrative
+    //     value inside that published range, disclosed in the facts panel -
+    //     not a per-knot measured value.
+    //   - M87 jet (VLBA 43 GHz, 50 epochs over 17 years - Asada, Nakamura &
+    //     Pu 2016/2018, ApJ 856:105 "The Structure and Dynamics of the
+    //     Subparsec Jet in M87 Based on 50 VLBA Observations over 17 Years at
+    //     43 GHz"): viewing angle theta ~= 17 deg; intrinsic bulk Lorentz
+    //     factors along the jet Gamma ~= 10.9 (inner, beta~=0.9958) and
+    //     Gamma ~= 4.6 (outer, beta~=0.9763). Independently, Mertens et al.
+    //     2016 (A&A 595:A54) and Walker et al. 2018 (ApJ 855:128) both find
+    //     theta ~= 17 deg via jet/counter-jet kinematics, with Walker et al.
+    //     citing a resulting Doppler factor delta ~= 1.9.
+    //   - Plugging Gamma=10.9, theta=17deg into the two formulas above gives
+    //     delta ~= 1.93 and beta_app ~= 6.1c - independently matching (a) the
+    //     delta~=1.9 cited by Walker et al. 2018 and (b) the 6.3 +/- 0.4c
+    //     apparent superluminal speed measured in the HST-1 X-ray knot by
+    //     Chandra (Snios et al. 2019, ApJ 879:8, "Detection of Superluminal
+    //     Motion in the X-Ray Jet of M87"). This is a real, cited numerical
+    //     agreement from the exact formulas, not a fitted coincidence.
+    //   - M87* (M87's supermassive black hole) mass ~= 6.5e9 solar masses,
+    //     M87 distance ~= 16.8 Mpc (~55 million light-years) in Virgo -
+    //     Event Horizon Telescope Collaboration 2019, ApJL 875:L1 "First M87
+    //     Event Horizon Telescope Results. I.".
+    //   - Visible jet length ~= 5,000 light-years (~1.6 kpc) at optical/radio
+    //     wavelengths, extending to a ~77 kpc radio lobe at the largest scale
+    //     (EHT Collaboration jet-context materials; NRAO/VLA lobe imaging).
+    //   - Blandford-Znajek mechanism (Blandford, R. D. & Znajek, R. L. 1977,
+    //     MNRAS 179:433): the leading accepted mechanism powering AGN jets -
+    //     magnetic field lines threading a spinning black hole's ergosphere
+    //     extract rotational energy and launch the outflow. This scene shows
+    //     the resulting bipolar jet and its beaming; it does NOT simulate the
+    //     magnetic-field-line launching process itself.
+    //   - AGN unification (Urry & Padovani 1995): a small viewing angle (jet
+    //     pointing close to Earth) produces the extreme one-sided beaming seen
+    //     in blazars; a larger angle (like M87's ~17deg) produces the more
+    //     moderate beaming of an FR I radio galaxy where both the core and a
+    //     one-sided jet remain visible.
+    //   - Distinct from photonsphereiscoexplorer.html (Kerr photon-orbit/ISCO
+    //     geodesic geometry, no jet, no Doppler beaming) and from
+    //     blackhole.html (non-spinning artistic accretion-disk glow, no jet,
+    //     no viewing-angle physics) - this is the only jet-beaming explorer in
+    //     the space-3d cluster.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'relativisticjetsagn';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'relativisticjetsagn'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // --- Exact special-relativity Doppler-beaming + superluminal-motion formulas ---
+    function t3dBeta(gamma) { return Math.sqrt(Math.max(0, 1 - 1 / (gamma * gamma))); }
+    function t3dDoppler(gamma, beta, thetaRad) { return 1 / (gamma * (1 - beta * Math.cos(thetaRad))); }
+    function t3dApparentBeta(beta, thetaRad) {
+        var denom = 1 - beta * Math.cos(thetaRad);
+        return (beta * Math.sin(thetaRad)) / denom;
+    }
+    var T3D_SPEC_INDEX = 0.75; // illustrative AGN radio spectral index, published range 0.5-1.0
+
+    function t3dRelativisticJets(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+
+        // Starfield backdrop
+        var starN = shell.low ? 240 : 460;
+        var starPos = new Float32Array(starN * 3);
+        for (var s = 0; s < starN; s++) {
+            var r = 45 + Math.random() * 70;
+            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+            starPos[s * 3] = r * Math.sin(ph) * Math.cos(th);
+            starPos[s * 3 + 1] = r * Math.cos(ph) * 0.6;
+            starPos[s * 3 + 2] = r * Math.sin(ph) * Math.sin(th) - 12;
+        }
+        var starGeo = new THREE.BufferGeometry();
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        var stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xaad4ff, size: 0.3, sizeAttenuation: true, transparent: true, opacity: 0.65 }));
+        scene.add(stars);
+
+        // Central black hole silhouette
+        var hole = new THREE.Mesh(new THREE.SphereGeometry(0.6, 28, 20), new THREE.MeshBasicMaterial({ color: 0x000000 }));
+        scene.add(hole);
+        var holeRim = new THREE.Mesh(new THREE.SphereGeometry(0.6, 28, 20), new THREE.MeshBasicMaterial({ color: 0x552200, wireframe: true, transparent: true, opacity: 0.2 }));
+        scene.add(holeRim);
+
+        // Decorative accretion disk (thin torus, not a modeled accretion flow)
+        var disk = new THREE.Mesh(new THREE.TorusGeometry(2.2, 0.18, 10, 64), new THREE.MeshBasicMaterial({ color: 0xffa726, transparent: true, opacity: 0.55 }));
+        disk.rotation.x = Math.PI / 2;
+        scene.add(disk);
+        var diskGlow = new THREE.Mesh(new THREE.TorusGeometry(2.2, 0.42, 10, 64), new THREE.MeshBasicMaterial({ color: 0xff7043, transparent: true, opacity: 0.16 }));
+        diskGlow.rotation.x = Math.PI / 2;
+        scene.add(diskGlow);
+
+        // Two bipolar jet streams (schematic particle streams along +Y / -Y)
+        var jetLen = 34, jetCountEach = shell.low ? 90 : 220;
+        function makeJet(sign) {
+            var geo = new THREE.BufferGeometry();
+            var pos = new Float32Array(jetCountEach * 3);
+            var prog = new Float32Array(jetCountEach);
+            for (var i = 0; i < jetCountEach; i++) {
+                var t = Math.random();
+                var spread = 0.15 + t * 0.9;
+                var ang = Math.random() * Math.PI * 2;
+                pos[i * 3] = Math.cos(ang) * spread * 0.5;
+                pos[i * 3 + 1] = sign * (0.8 + t * jetLen);
+                pos[i * 3 + 2] = Math.sin(ang) * spread * 0.5;
+                prog[i] = t;
+            }
+            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            var mat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.34, sizeAttenuation: true, transparent: true, opacity: 0.9 });
+            var pts = new THREE.Points(geo, mat);
+            pts.__prog = prog;
+            pts.__sign = sign;
+            scene.add(pts);
+            return pts;
+        }
+        var jetApproach = makeJet(1);   // +Y jet, treated as pointing toward the observer
+        var jetRecede = makeJet(-1);    // -Y jet, the counter-jet
+
+        // Spin/jet axis rod
+        var axis = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, jetLen * 2 + 2, 6), new THREE.MeshBasicMaterial({ color: 0x607d8b, transparent: true, opacity: 0.35 }));
+        scene.add(axis);
+
+        // A traveling "knot" on the approaching jet - a schematic teaching cue,
+        // NOT a literal projected sky-plane trajectory (real apparent motion
+        // unfolds over years of telescope observation, compressed here to
+        // seconds for visibility).
+        var knot = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 8), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.8 }));
+        scene.add(knot);
+
+        var gamma = 3, thetaDeg = 45;
+
+        function fmt(v, d) { return v.toFixed(d == null ? 3 : d); }
+
+        function compute() {
+            var beta = t3dBeta(gamma);
+            var thetaRad = thetaDeg * Math.PI / 180;
+            var thetaRecedeRad = Math.PI - thetaRad;
+            var dA = t3dDoppler(gamma, beta, thetaRad);
+            var dR = t3dDoppler(gamma, beta, thetaRecedeRad);
+            var fluxRatio = Math.pow(dA / dR, 3 + T3D_SPEC_INDEX);
+            var betaApp = t3dApparentBeta(beta, thetaRad);
+            return { beta: beta, thetaRad: thetaRad, dA: dA, dR: dR, fluxRatio: fluxRatio, betaApp: betaApp };
+        }
+
+        function colorForDelta(delta) {
+            // Doppler-motivated tint: boosted (delta>1) skews toward bright
+            // blue-white (relativistic blueshift); de-boosted (delta<1) skews
+            // toward dim deep red (relativistic redshift) - a direct three-stop
+            // RGB lerp (deep red -> orange -> blue-white) so the two jets read
+            // clearly apart at a glance. Illustrative color mapping, not a
+            // literal spectral/wavelength calculation.
+            var THREEc = THREE;
+            var t = Math.max(0, Math.min(1, delta / 2.2));
+            var stops = [
+                { r: 0.30, g: 0.03, b: 0.03 },  // deep dim red - strongly de-boosted
+                { r: 0.95, g: 0.45, b: 0.10 },  // orange - de-boosted
+                { r: 0.75, g: 0.85, b: 1.00 },  // blue-white - boosted
+            ];
+            var seg = t * (stops.length - 1);
+            var i0 = Math.min(stops.length - 2, Math.floor(seg));
+            var f = seg - i0;
+            var a = stops[i0], b = stops[i0 + 1];
+            return new THREEc.Color(
+                a.r + (b.r - a.r) * f,
+                a.g + (b.g - a.g) * f,
+                a.b + (b.b - a.b) * f
+            );
+        }
+
+        function panelHtml(c) {
+            return '<h3>Doppler beaming at &Gamma; = ' + fmt(gamma, 2) + ', &theta; = ' + fmt(thetaDeg, 1) + '&deg;</h3>' +
+                '<p>Computed live from exact special-relativity formulas (Rees 1966; Urry &amp; Padovani 1995).</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Bulk speed (&beta; = v/c)</td><td>' + fmt(c.beta, 4) + ' c</td></tr>' +
+                '<tr><td>Doppler factor, approaching jet</td><td>' + fmt(c.dA, 3) + '</td></tr>' +
+                '<tr><td>Doppler factor, receding (counter-)jet</td><td>' + fmt(c.dR, 4) + '</td></tr>' +
+                '<tr><td>Flux ratio, approaching / receding</td><td>' + (c.fluxRatio > 1e6 ? c.fluxRatio.toExponential(2) : fmt(c.fluxRatio, 1)) + '&times;</td></tr>' +
+                '<tr><td>Apparent transverse speed (approaching)</td><td>' + fmt(c.betaApp, 2) + ' c</td></tr>' +
+                '<tr><td>M87 HST-1 knot, measured (X-ray)</td><td>6.3 &plusmn; 0.4 c (Snios et al. 2019)</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Flux-ratio exponent uses an illustrative AGN radio spectral index of 0.75 (published range 0.5-1.0, Urry &amp; Padovani 1995) - not a per-object measured value. The apparent speed above is a real geometric illusion from special relativity, not literal faster-than-light travel; the on-screen knot is a schematic teaching cue, not a literal sky-plane trajectory.</p>';
+        }
+
+        var gammaEl = document.getElementById('t3dRjGamma');
+        var thetaEl = document.getElementById('t3dRjTheta');
+        var gammaLab = document.getElementById('t3dRjGammaLabel');
+        var thetaLab = document.getElementById('t3dRjThetaLabel');
+
+        function apply() {
+            if (gammaEl && parseFloat(gammaEl.value) !== gamma) gammaEl.value = String(gamma);
+            if (thetaEl && parseFloat(thetaEl.value) !== thetaDeg) thetaEl.value = String(thetaDeg);
+            if (gammaLab) gammaLab.textContent = 'Γ = ' + fmt(gamma, 2);
+            if (thetaLab) thetaLab.textContent = 'θ = ' + fmt(thetaDeg, 1) + 'deg';
+
+            var c = compute();
+            var colA = colorForDelta(c.dA), colR = colorForDelta(c.dR);
+            jetApproach.material.color.copy(colA);
+            jetApproach.material.opacity = Math.max(0.06, Math.min(1, 0.25 + c.dA * 0.28));
+            jetApproach.material.size = Math.max(0.16, Math.min(0.6, 0.2 + c.dA * 0.05));
+            jetRecede.material.color.copy(colR);
+            jetRecede.material.opacity = Math.max(0.03, Math.min(1, 0.25 + c.dR * 0.28));
+            jetRecede.material.size = Math.max(0.12, Math.min(0.6, 0.2 + c.dR * 0.05));
+
+            t3dInfo(panelHtml(c));
+            try { t3dSaveStore({ gamma: gamma, thetaDeg: thetaDeg }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.gamma === 'number' && store.gamma >= 1.01 && store.gamma <= 15) gamma = store.gamma;
+        if (typeof store.thetaDeg === 'number' && store.thetaDeg >= 1 && store.thetaDeg <= 90) thetaDeg = store.thetaDeg;
+        apply();
+
+        if (gammaEl) gammaEl.addEventListener('input', function () {
+            gamma = Math.max(1.01, Math.min(15, parseFloat(gammaEl.value || '3')));
+            apply();
+        });
+        if (thetaEl) thetaEl.addEventListener('input', function () {
+            thetaDeg = Math.max(1, Math.min(90, parseFloat(thetaEl.value || '45')));
+            apply();
+        });
+        var resetBtn = document.getElementById('t3dRjResetBtn');
+        if (resetBtn) resetBtn.addEventListener('click', function () { gamma = 1.01; thetaDeg = 45; apply(); });
+        var m87Btn = document.getElementById('t3dRjM87Btn');
+        if (m87Btn) m87Btn.addEventListener('click', function () { gamma = 10.9; thetaDeg = 17; apply(); });
+        var blazarBtn = document.getElementById('t3dRjBlazarBtn');
+        if (blazarBtn) blazarBtn.addEventListener('click', function () { gamma = 12; thetaDeg = 3; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Drag the two sliders to watch the jets brighten, fade, and change color live.');
+        var spin = 0, knotProg = 0;
+        return function animate(dt) {
+            stars.rotation.y += dt * 0.00002;
+            disk.rotation.z += dt * 0.00025;
+            diskGlow.rotation.z -= dt * 0.00015;
+            spin += dt * 0.00006;
+
+            var attrA = jetApproach.geometry.attributes.position;
+            var progA = jetApproach.__prog;
+            for (var i = 0; i < progA.length; i++) {
+                progA[i] += dt * 0.00025 * (1 + gamma * 0.06);
+                if (progA[i] > 1) progA[i] -= 1;
+                var y = attrA.getY(i);
+                attrA.setY(i, 0.8 + progA[i] * jetLen);
+            }
+            attrA.needsUpdate = true;
+
+            var attrR = jetRecede.geometry.attributes.position;
+            var progR = jetRecede.__prog;
+            for (var j = 0; j < progR.length; j++) {
+                progR[j] += dt * 0.00025 * (1 + gamma * 0.06);
+                if (progR[j] > 1) progR[j] -= 1;
+                attrR.setY(j, -(0.8 + progR[j] * jetLen));
+            }
+            attrR.needsUpdate = true;
+
+            knotProg += dt * 0.00018 * (1 + gamma * 0.1);
+            if (knotProg > 1) knotProg -= 1;
+            knot.position.set(0, 0.8 + knotProg * (jetLen * 0.6), 0);
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { relativisticjetsagn: 't3dRjControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { relativisticjetsagn: { radius: 30, maxR: 140, minR: 6, phi: 1.2, theta: 0.5, targetY: 4 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dRelativisticJets(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

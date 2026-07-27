@@ -1,0 +1,356 @@
+<script>
+    // Text utilities archetype (rot13-encoder) - pure JS, no lib, no upload, no backend.
+    // Registry Gate-H: text_utilities_purejs (+ slugify_purejs for slug/permalink
+    // modes + whitespace_trim_purejs for whitespace/space-trim modes +
+    // html_strip_purejs for HTML-tag-remover / strip-html modes). ONE
+    // skeleton, slug-dispatched (robust, no VERB_HINT dependency):
+    // word/character counter, case converter, sort lines, remove duplicate lines,
+    // reverse text, text repeater, base64 encode/decode, URL encode/decode,
+    // find-and-replace, slugify / URL-slug generator (fire538), whitespace
+    // remover / trim / collapse spaces (fire539), HTML tag remover / strip
+    // tags to plain text (fire540), text-to-binary / binary-to-text UTF-8
+    // byte groups (fire541), ROT13 encode/decode (fire542). Framework contract:
+    // doAfterPageRendered(); no top-level DOM.
+
+    web.localUpload = false;
+
+    var TU_SLUG = 'rot13-encoder';
+
+    function tuMode(s) {
+        s = String(s || '').toLowerCase();
+        if (/base64/.test(s)) return 'base64';
+        // Slugify BEFORE the broad \burl\b match so url-slug-generator is not
+        // stolen by the URL encode/decode mode (fire538).
+        if (/slugify|permalink|(^|-)slug($|-)/.test(s)) return 'slugify';
+        if (/url-enc|url-dec|urlencode|urldecode|percent-encod|\burl\b/.test(s)) return 'url';
+        if (/find.*replace|replace.*find|search.*replace/.test(s)) return 'findreplace';
+        // Whitespace / extra-spaces BEFORE generic remove/duplicate (fire539).
+        if (/whitespace|white-space|extra.?spaces?|collapse.?spaces?|trim.?spaces?|remove.?spaces?|spaces.?remover/.test(s)) return 'whitespace';
+        // HTML tag strip BEFORE generic remove / html-entity (fire540).
+        if (/html.?tag|strip.?html|remove.?html|html.?to.?text|html.?strip|tag.?remover/.test(s)) return 'htmlstrip';
+        // Text <-> binary (UTF-8 bytes) BEFORE counter default (fire541).
+        // Must NOT steal number-base-converter (no text/ascii/string token).
+        if (/binary/.test(s) && /(text|ascii|string)/.test(s)) return 'binary';
+        // ROT13 (self-inverse Caesar-13) BEFORE case/counter (fire542).
+        if (/rot.?13|rot13/.test(s)) return 'rot13';
+        if (/case/.test(s)) return 'case';
+        if (/duplicate|dedupe|dedup|unique/.test(s)) return 'dedupe';
+        if (/sort/.test(s)) return 'sort';
+        if (/reverse|reversal/.test(s)) return 'reverse';
+        if (/repeat/.test(s)) return 'repeat';
+        return 'counter'; // word-counter / character-counter default
+    }
+
+    function tuWhitespaceTransform(text, op) {
+        var t = String(text == null ? '' : text);
+        if (op === 'trim-lines') {
+            return t.split(/\r?\n/).map(function (ln) { return ln.replace(/^[ \t]+|[ \t]+$/g, ''); }).join('\n');
+        }
+        if (op === 'collapse') {
+            return t.split(/\r?\n/).map(function (ln) {
+                return ln.replace(/^[ \t]+|[ \t]+$/g, '').replace(/[ \t]{2,}/g, ' ');
+            }).join('\n');
+        }
+        if (op === 'remove-all') {
+            return t.replace(/[ \t\u00a0]+/g, '').replace(/\r?\n/g, '\n');
+        }
+        if (op === 'drop-blank') {
+            return t.split(/\r?\n/).filter(function (ln) { return ln.replace(/[ \t]/g, '').length > 0; }).join('\n');
+        }
+        // default: trim whole blob ends + collapse runs of spaces/tabs (keep newlines)
+        return t.replace(/^[ \t\r\n]+|[ \t\r\n]+$/g, '').split(/\r?\n/).map(function (ln) {
+            return ln.replace(/^[ \t]+|[ \t]+$/g, '').replace(/[ \t]{2,}/g, ' ');
+        }).join('\n');
+    }
+
+    function tuSlugifyLine(t, sep, maxLen) {
+        var s = String(t || '');
+        // Vietnamese d-stroke is a single codepoint (not NFD-decomposed) - map
+        // before the alnum strip so "đầu" -> "dau" (fire538 fixture).
+        s = s.replace(/\u0110/g, 'D').replace(/\u0111/g, 'd');
+        try { s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch (e) { /* older engines */ }
+        s = s.toLowerCase().replace(/[^a-z0-9]+/g, sep).replace(new RegExp('^' + sep + '|' + sep + '$', 'g'), '');
+        if (maxLen > 0 && s.length > maxLen) {
+            s = s.slice(0, maxLen).replace(new RegExp(sep + '+$'), '');
+        }
+        return s;
+    }
+
+    function tuEscapeRegExp(s) { return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+    function tuTitleCase(t) { return t.replace(/\w\S*/g, function (w) { return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase(); }); }
+
+    // Strip tags / scripts / styles; decode a small set of common entities.
+    // DOMParser preferred; regex fallback for odd host documents.
+    function tuStripHtml(html) {
+        var raw = String(html == null ? '' : html);
+        try {
+            var doc = new DOMParser().parseFromString('<!doctype html><body>' + raw, 'text/html');
+            doc.querySelectorAll('script,style,noscript').forEach(function (n) { n.remove(); });
+            var t = (doc.body && (doc.body.textContent || doc.body.innerText)) || '';
+            return t.replace(/\u00a0/g, ' ').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+        } catch (e) {
+            return raw
+                .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+                .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+                .replace(/<[^>]+>/g, ' ')
+                .replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&quot;/gi, '"').replace(/&#39;/gi, "'")
+                .replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').replace(/[ \t]{2,}/g, ' ').trim();
+        }
+    }
+
+    // UTF-8 text <-> space-separated 8-bit binary groups (fire541).
+    function tuPad8(bits) {
+        var s = String(bits || '');
+        while (s.length < 8) s = '0' + s;
+        return s;
+    }
+    function tuTextToBinary(text) {
+        var bytes;
+        try { bytes = new TextEncoder().encode(String(text == null ? '' : text)); }
+        catch (e) {
+            // Fallback: charCodeAt low bytes only (Latin-1).
+            var t = String(text == null ? '' : text);
+            bytes = [];
+            for (var i = 0; i < t.length; i++) bytes.push(t.charCodeAt(i) & 0xff);
+        }
+        var parts = [];
+        for (var j = 0; j < bytes.length; j++) parts.push(tuPad8(bytes[j].toString(2)));
+        return parts.join(' ');
+    }
+    function tuBinaryToText(bin) {
+        var bits = String(bin == null ? '' : bin).replace(/[^01]/g, '');
+        if (!bits.length) return '';
+        if (bits.length % 8 !== 0) throw new Error('Need complete 8-bit groups (got ' + bits.length + ' bits)');
+        var n = bits.length / 8;
+        var bytes = new Uint8Array(n);
+        for (var i = 0; i < n; i++) bytes[i] = parseInt(bits.slice(i * 8, i * 8 + 8), 2);
+        try { return new TextDecoder('utf-8', { fatal: false }).decode(bytes); }
+        catch (e) {
+            var out = '';
+            for (var k = 0; k < bytes.length; k++) out += String.fromCharCode(bytes[k]);
+            return out;
+        }
+    }
+
+    // ROT13: A-Z/a-z rotate by 13 (self-inverse). Non-letters unchanged (fire542).
+    function tuRot13(text) {
+        return String(text == null ? '' : text).replace(/[A-Za-z]/g, function (c) {
+            var base = c <= 'Z' ? 65 : 97;
+            return String.fromCharCode(((c.charCodeAt(0) - base + 13) % 26) + base);
+        });
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('textUtilitiesTool');
+        if (!root) return; // not a text-utilities page
+        var mode = tuMode(TU_SLUG);
+        var inHtml = '<textarea id="tuIn" class="w3-input w3-border" rows="6" placeholder="Type or paste text" style="max-width:560px;margin:0 auto;"></textarea>';
+        var outHtml = '<textarea id="tuOut" class="output w3-input w3-border outputImgs" readonly rows="6" placeholder="Result" style="visibility:visible !important;max-width:560px;margin:8px auto 0;"></textarea>';
+        var controls = '';
+        if (mode === 'counter') outHtml = '<div id="tuStats" class="outputImgs" style="visibility:visible !important;margin-top:10px;font-size:1.05em;"></div>';
+        else if (mode === 'case') controls = '<div class="w3-row" style="margin:8px 0;">' + ['UPPERCASE:upper', 'lowercase:lower', 'Title Case:title', 'Sentence case:sentence', 'camelCase:camel', 'snake_case:snake', 'kebab-case:kebab'].map(function (p) { var a = p.split(':'); return '<button type="button" class="w3-button w3-small w3-light-grey tu-case" data-case="' + a[1] + '" style="margin:2px;">' + a[0] + '</button>'; }).join('') + '</div>';
+        else if (mode === 'base64' || mode === 'url') controls = '<div class="w3-row" style="margin:8px 0;"><button id="tuEnc" type="button" class="w3-button w3-green">Encode</button> <button id="tuDec" type="button" class="w3-button w3-blue">Decode</button></div>';
+        else if (mode === 'binary') {
+            inHtml = '<textarea id="tuIn" class="w3-input w3-border" rows="6" placeholder="Type text or paste 8-bit binary groups" style="max-width:560px;margin:0 auto;">Hi</textarea>';
+            controls = '<div class="w3-row" style="margin:8px 0;">' +
+                '<button id="tuEnc" type="button" class="w3-button w3-green">Text to binary</button> ' +
+                '<button id="tuDec" type="button" class="w3-button w3-blue">Binary to text</button> ' +
+                '<button id="tuCopy" type="button" class="w3-button w3-light-grey">Copy</button>' +
+                '<span style="margin-left:10px;font-size:0.9em;color:#555;">UTF-8 bytes as 8-bit groups - runs in your browser.</span>' +
+                '</div>';
+            outHtml = '<textarea id="tuOut" class="output w3-input w3-border outputImgs" readonly rows="6" placeholder="Result" style="visibility:visible !important;max-width:560px;margin:8px auto 0;"></textarea>';
+        }
+        else if (mode === 'findreplace') controls = '<div class="w3-row" style="margin:8px 0;">' +
+            '<input id="tuFind" type="text" class="w3-input w3-border" placeholder="Find" style="max-width:220px;display:inline-block;margin:2px;">' +
+            '<input id="tuReplace" type="text" class="w3-input w3-border" placeholder="Replace with" style="max-width:220px;display:inline-block;margin:2px;">' +
+            '<label style="margin:0 8px;display:inline-block;"><input id="tuCase" type="checkbox"> Match case</label>' +
+            '<button id="tuRun" type="button" class="w3-button w3-green">Replace All</button>' +
+            '<div id="tuCount" style="margin-top:6px;font-size:0.9em;color:#555;"></div>' +
+            '</div>';
+        else if (mode === 'slugify') {
+            inHtml = '<textarea id="tuIn" class="w3-input w3-border" rows="6" placeholder="Type a title or paste one phrase per line" style="max-width:560px;margin:0 auto;">Hello World! Á trên đầu xe</textarea>';
+            controls = '<div class="w3-row" style="margin:8px 0;">' +
+                'Separator <select id="tuSep" class="w3-select w3-border" style="width:70px;display:inline-block;margin:0 6px;">' +
+                '<option value="-" selected>-</option><option value="_">_</option></select> ' +
+                'Max length <input id="tuMax" type="number" min="0" max="200" value="0" class="w3-input w3-border" style="width:70px;display:inline-block;margin:0 6px;" title="0 = no limit"> ' +
+                '<button id="tuCopy" type="button" class="w3-button w3-blue">Copy</button>' +
+                '</div>';
+            outHtml = '<textarea id="tuOut" class="output w3-input w3-border outputImgs" readonly rows="6" placeholder="Slug" style="visibility:visible !important;max-width:560px;margin:8px auto 0;"></textarea>';
+        }
+        else if (mode === 'whitespace') {
+            inHtml = '<textarea id="tuIn" class="w3-input w3-border" rows="6" placeholder="Paste text with messy spaces" style="max-width:560px;margin:0 auto;">  Hello   world  \n\n  Foo\t\tbar  \n</textarea>';
+            controls = '<div class="w3-row" style="margin:8px 0;">' +
+                '<label style="margin-right:10px;"><input type="radio" name="tuWs" value="collapse" checked> Collapse spaces</label>' +
+                '<label style="margin-right:10px;"><input type="radio" name="tuWs" value="trim-lines"> Trim each line</label>' +
+                '<label style="margin-right:10px;"><input type="radio" name="tuWs" value="drop-blank"> Drop blank lines</label>' +
+                '<label style="margin-right:10px;"><input type="radio" name="tuWs" value="remove-all"> Remove all spaces</label> ' +
+                '<button id="tuCopy" type="button" class="w3-button w3-blue">Copy</button>' +
+                '</div>';
+            outHtml = '<textarea id="tuOut" class="output w3-input w3-border outputImgs" readonly rows="6" placeholder="Cleaned text" style="visibility:visible !important;max-width:560px;margin:8px auto 0;"></textarea>';
+        }
+        else if (mode === 'htmlstrip') {
+            inHtml = '<textarea id="tuIn" class="w3-input w3-border" rows="8" placeholder="Paste HTML" style="max-width:560px;margin:0 auto;"><h1>Hello</h1><p>Strip <b>tags</b> &amp; keep text.</p><style>.x{color:red}</style></textarea>';
+            controls = '<div class="w3-row" style="margin:8px 0;">' +
+                '<button id="tuCopy" type="button" class="w3-button w3-blue">Copy plain text</button>' +
+                '<span style="margin-left:10px;font-size:0.9em;color:#555;">Tags, scripts, and styles are dropped in your browser - nothing is uploaded.</span>' +
+                '</div>';
+            outHtml = '<textarea id="tuOut" class="output w3-input w3-border outputImgs" readonly rows="8" placeholder="Plain text" style="visibility:visible !important;max-width:560px;margin:8px auto 0;"></textarea>';
+        }
+        else if (mode === 'rot13') {
+            inHtml = '<textarea id="tuIn" class="w3-input w3-border" rows="6" placeholder="Type or paste text" style="max-width:560px;margin:0 auto;">Hello</textarea>';
+            controls = '<div class="w3-row" style="margin:8px 0;">' +
+                '<button id="tuCopy" type="button" class="w3-button w3-blue">Copy</button>' +
+                '<span style="margin-left:10px;font-size:0.9em;color:#555;">ROT13 is its own inverse - run again to restore. Letters only; runs in your browser.</span>' +
+                '</div>';
+            outHtml = '<textarea id="tuOut" class="output w3-input w3-border outputImgs" readonly rows="6" placeholder="ROT13 result" style="visibility:visible !important;max-width:560px;margin:8px auto 0;"></textarea>';
+        }
+        else if (mode === 'sort') controls = '<div class="w3-row" style="margin:8px 0;"><button id="tuAsc" type="button" class="w3-button w3-green">Sort A-Z</button> <button id="tuDesc" type="button" class="w3-button w3-blue">Sort Z-A</button></div>';
+        else if (mode === 'repeat') controls = '<div class="w3-row" style="margin:8px 0;">Times <input id="tuN" type="number" min="1" max="10000" value="3" class="w3-input w3-border" style="width:90px;display:inline-block;"> <button id="tuRun" type="button" class="w3-button w3-green">Repeat</button></div>';
+        else controls = '<div class="w3-row" style="margin:8px 0;"><button id="tuRun" type="button" class="w3-button w3-green">Run</button></div>';
+        root.innerHTML = inHtml + controls + outHtml;
+        var inEl = root.querySelector('#tuIn'), outEl = root.querySelector('#tuOut'), stats = root.querySelector('#tuStats');
+
+        function lines(t) { return String(t || '').split('\n'); }
+        function setOut(v) { if (outEl) outEl.value = v; }
+
+        if (mode === 'counter') {
+            var run = function () {
+                var t = inEl.value || '';
+                var words = (t.trim().match(/\S+/g) || []).length;
+                var chars = t.length, noSpace = t.replace(/\s/g, '').length;
+                var sentences = (t.match(/[.!?]+(\s|$)/g) || []).length;
+                var ln = t ? lines(t).length : 0;
+                var mins = Math.max(1, Math.round(words / 200));
+                stats.innerHTML = '<b>' + words + '</b> words &nbsp; <b>' + chars + '</b> characters &nbsp; <b>' + noSpace + '</b> without spaces<br><b>' + sentences + '</b> sentences &nbsp; <b>' + ln + '</b> lines &nbsp; ~<b>' + mins + '</b> min read';
+            };
+            inEl.addEventListener('input', run); run();
+        } else if (mode === 'case') {
+            root.querySelectorAll('.tu-case').forEach(function (b) {
+                b.addEventListener('click', function () {
+                    var t = inEl.value || '', c = b.getAttribute('data-case'), o = t;
+                    if (c === 'upper') o = t.toUpperCase();
+                    else if (c === 'lower') o = t.toLowerCase();
+                    else if (c === 'title') o = tuTitleCase(t);
+                    else if (c === 'sentence') o = t.toLowerCase().replace(/(^\s*\w|[.!?]\s+\w)/g, function (m) { return m.toUpperCase(); });
+                    else if (c === 'camel') o = t.toLowerCase().replace(/[^a-z0-9]+(.)/g, function (_, ch) { return ch.toUpperCase(); });
+                    else if (c === 'snake') o = t.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+                    else if (c === 'kebab') o = t.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                    setOut(o);
+                });
+            });
+        } else if (mode === 'base64') {
+            root.querySelector('#tuEnc').addEventListener('click', function () { try { setOut(btoa(unescape(encodeURIComponent(inEl.value || '')))); } catch (e) { setOut('Encode error: ' + e.message); } });
+            root.querySelector('#tuDec').addEventListener('click', function () { try { setOut(decodeURIComponent(escape(atob((inEl.value || '').trim())))); } catch (e) { setOut('Invalid Base64: ' + e.message); } });
+        } else if (mode === 'url') {
+            root.querySelector('#tuEnc').addEventListener('click', function () { setOut(encodeURIComponent(inEl.value || '')); });
+            root.querySelector('#tuDec').addEventListener('click', function () { try { setOut(decodeURIComponent(inEl.value || '')); } catch (e) { setOut('Invalid URL encoding: ' + e.message); } });
+        } else if (mode === 'binary') {
+            var runBinEnc = function () { setOut(tuTextToBinary(inEl.value)); };
+            root.querySelector('#tuEnc').addEventListener('click', runBinEnc);
+            root.querySelector('#tuDec').addEventListener('click', function () {
+                try { setOut(tuBinaryToText(inEl.value)); }
+                catch (e) { setOut('Decode error: ' + e.message); }
+            });
+            root.querySelector('#tuCopy').addEventListener('click', function () {
+                var v = outEl.value || '';
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(v).catch(function () {});
+                } else {
+                    outEl.select();
+                    try { document.execCommand('copy'); } catch (e) {}
+                }
+            });
+            inEl.addEventListener('input', runBinEnc);
+            runBinEnc(); // seed sample so e2e G16 sees visible .outputImgs content on load
+        } else if (mode === 'findreplace') {
+            root.querySelector('#tuRun').addEventListener('click', function () {
+                var find = root.querySelector('#tuFind').value || '';
+                var replace = root.querySelector('#tuReplace').value || '';
+                var matchCase = root.querySelector('#tuCase').checked;
+                var countEl = root.querySelector('#tuCount');
+                if (!find) { setOut(inEl.value || ''); if (countEl) countEl.textContent = ''; return; }
+                var re = new RegExp(tuEscapeRegExp(find), matchCase ? 'g' : 'gi');
+                var count = 0;
+                var out = (inEl.value || '').replace(re, function () { count++; return replace; });
+                setOut(out);
+                if (countEl) countEl.textContent = count + (count === 1 ? ' replacement made' : ' replacements made');
+            });
+        } else if (mode === 'slugify') {
+            var runSlug = function () {
+                var sep = (root.querySelector('#tuSep') && root.querySelector('#tuSep').value) || '-';
+                var maxLen = Math.max(0, parseInt(root.querySelector('#tuMax').value, 10) || 0);
+                var out = lines(inEl.value).map(function (ln) { return tuSlugifyLine(ln, sep, maxLen); }).join('\n');
+                setOut(out);
+            };
+            inEl.addEventListener('input', runSlug);
+            root.querySelector('#tuSep').addEventListener('change', runSlug);
+            root.querySelector('#tuMax').addEventListener('input', runSlug);
+            root.querySelector('#tuCopy').addEventListener('click', function () {
+                var v = outEl.value || '';
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(v).catch(function () {});
+                } else {
+                    outEl.select();
+                    try { document.execCommand('copy'); } catch (e) {}
+                }
+            });
+            runSlug(); // seed sample so e2e G16 sees visible .outputImgs content on load
+        } else if (mode === 'whitespace') {
+            var runWs = function () {
+                var picked = root.querySelector('input[name="tuWs"]:checked');
+                var op = (picked && picked.value) || 'collapse';
+                setOut(tuWhitespaceTransform(inEl.value, op));
+            };
+            inEl.addEventListener('input', runWs);
+            root.querySelectorAll('input[name="tuWs"]').forEach(function (r) {
+                r.addEventListener('change', runWs);
+            });
+            root.querySelector('#tuCopy').addEventListener('click', function () {
+                var v = outEl.value || '';
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(v).catch(function () {});
+                } else {
+                    outEl.select();
+                    try { document.execCommand('copy'); } catch (e) {}
+                }
+            });
+            runWs(); // seed sample so e2e G16 sees visible .outputImgs content on load
+        } else if (mode === 'htmlstrip') {
+            var runStrip = function () { setOut(tuStripHtml(inEl.value)); };
+            inEl.addEventListener('input', runStrip);
+            root.querySelector('#tuCopy').addEventListener('click', function () {
+                var v = outEl.value || '';
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(v).catch(function () {});
+                } else {
+                    outEl.select();
+                    try { document.execCommand('copy'); } catch (e) {}
+                }
+            });
+            runStrip(); // seed sample so e2e G16 sees visible .outputImgs content on load
+        } else if (mode === 'rot13') {
+            var runRot = function () { setOut(tuRot13(inEl.value)); };
+            inEl.addEventListener('input', runRot);
+            root.querySelector('#tuCopy').addEventListener('click', function () {
+                var v = outEl.value || '';
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(v).catch(function () {});
+                } else {
+                    outEl.select();
+                    try { document.execCommand('copy'); } catch (e) {}
+                }
+            });
+            runRot(); // seed sample so e2e G16 sees visible .outputImgs content on load
+        } else if (mode === 'sort') {
+            root.querySelector('#tuAsc').addEventListener('click', function () { setOut(lines(inEl.value).sort(function (a, b) { return a.localeCompare(b); }).join('\n')); });
+            root.querySelector('#tuDesc').addEventListener('click', function () { setOut(lines(inEl.value).sort(function (a, b) { return b.localeCompare(a); }).join('\n')); });
+        } else if (mode === 'dedupe') {
+            root.querySelector('#tuRun').addEventListener('click', function () { var seen = {}, out = []; lines(inEl.value).forEach(function (l) { if (!Object.prototype.hasOwnProperty.call(seen, l)) { seen[l] = 1; out.push(l); } }); setOut(out.join('\n')); });
+        } else if (mode === 'reverse') {
+            root.querySelector('#tuRun').addEventListener('click', function () { setOut((inEl.value || '').split('').reverse().join('')); });
+        } else if (mode === 'repeat') {
+            root.querySelector('#tuRun').addEventListener('click', function () { var n = Math.min(10000, Math.max(1, parseInt(root.querySelector('#tuN').value, 10) || 1)); setOut(new Array(n).fill(inEl.value || '').join('\n')); });
+        }
+    }
+</script>

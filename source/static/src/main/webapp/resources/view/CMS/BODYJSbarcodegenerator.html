@@ -1,0 +1,140 @@
+<script>
+    // Barcode generator skeleton (barcode-generator) - JsBarcode (self-hosted at
+    // /vendor/jsbarcode/), no upload, no backend. Registry Gate-H entry:
+    // barcode_generator_jsbarcode. Renders a live SVG barcode as you type
+    // and offers PNG + SVG download. Lazy-loads the ~60 KB JsBarcode.all
+    // bundle on first paint so e2e G16 has visible output with zero
+    // interaction (mirrors the password-strength-checker "render on load"
+    // contract). Distinct from qr_qrcodejs (2D QR matrix, a different
+    // library that cannot draw linear barcodes) and barcode_scanner_zxing
+    // (camera decode) - this tool ENCODES a value into a 1D linear barcode
+    // image; it never reads/decodes a barcode and never uploads anything.
+
+    web.localUpload = false;
+
+    var BG_SAMPLE_BY_FORMAT = {
+        CODE128: 'FreeToolOnline123',
+        EAN13: '5901234123457',
+        EAN8: '96385074',
+        UPC: '036000291452',
+        CODE39: 'CODE39-SAMPLE',
+        ITF14: '00012345600012',
+        MSI: '1234567',
+        pharmacode: '1234',
+        codabar: 'A123456A'
+    };
+
+    // Idempotent lazy-loader for the self-hosted JsBarcode UMD bundle
+    // (window.JsBarcode), vendored at /vendor/jsbarcode/ (mirrors the
+    // /vendor/zxcvbn + /vendor/js-beautify loader convention).
+    function bgLoadJsBarcode() {
+        if (window.JsBarcode) { return Promise.resolve(); }
+        if (window.__ftoJsBarcodePromise) { return window.__ftoJsBarcodePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/jsbarcode';
+        window.__ftoJsBarcodePromise = new Promise(function (resolve, reject) {
+            var s = document.createElement('script');
+            s.src = base + '/JsBarcode.all.min.js';
+            s.async = true;
+            s.onload = function () { resolve(); };
+            s.onerror = function () { reject(new Error('failed to load JsBarcode.all.min.js')); };
+            document.head.appendChild(s);
+        });
+        return window.__ftoJsBarcodePromise;
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('barcodeGeneratorTool');
+        if (!root) return; // not a barcode-generator page
+
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;max-width:480px;">' +
+            '<select id="bgFormat" class="w3-select w3-border outputImgs" style="visibility:visible !important;">' +
+            '<option value="CODE128">CODE128 (any text - default)</option>' +
+            '<option value="EAN13">EAN-13</option>' +
+            '<option value="EAN8">EAN-8</option>' +
+            '<option value="UPC">UPC-A</option>' +
+            '<option value="CODE39">CODE39</option>' +
+            '<option value="ITF14">ITF-14</option>' +
+            '<option value="MSI">MSI</option>' +
+            '<option value="pharmacode">Pharmacode</option>' +
+            '<option value="codabar">Codabar</option>' +
+            '</select>' +
+            '</div>' +
+            '<div class="w3-row" style="margin-bottom:8px;max-width:480px;">' +
+            '<input id="bgValue" type="text" class="w3-input w3-border" value="' + BG_SAMPLE_BY_FORMAT.CODE128 + '" placeholder="Value to encode">' +
+            '</div>' +
+            '<div class="w3-row" style="margin-bottom:8px;overflow:auto;">' +
+            '<svg id="bgSvg" style="max-width:100%;"></svg>' +
+            '</div>' +
+            '<div class="w3-row" style="margin-bottom:8px;">' +
+            '<a id="bgDlPng" class="w3-button w3-light-grey" style="display:none;margin-right:6px;">Download PNG</a>' +
+            '<a id="bgDlSvg" class="w3-button w3-light-grey" style="display:none;">Download SVG</a>' +
+            '</div>' +
+            '<div id="bgStatus" style="min-height:1.2em;color:#555;">Loading the local barcode library...</div>';
+
+        var q = function (id) { return root.querySelector(id); };
+        var svg = q('#bgSvg');
+
+        function revokeUrl(a) {
+            if (a && a.dataset && a.dataset.url) {
+                try { URL.revokeObjectURL(a.dataset.url); } catch (e) {}
+                a.dataset.url = '';
+            }
+        }
+
+        function bindDownload(a, blob, name) {
+            if (!a || !blob) return;
+            revokeUrl(a);
+            var url = URL.createObjectURL(blob);
+            a.href = url;
+            a.download = name;
+            a.dataset.url = url;
+            a.style.display = 'inline-block';
+        }
+
+        function setStatus(msg) { q('#bgStatus').textContent = msg; }
+
+        function render() {
+            var fmt = q('#bgFormat').value;
+            var val = q('#bgValue').value || '';
+            q('#bgDlPng').style.display = 'none';
+            q('#bgDlSvg').style.display = 'none';
+            if (!val) { setStatus('Type a value to encode.'); return; }
+            if (!window.JsBarcode) { setStatus('Loading the local barcode library...'); return; }
+
+            var ok = true;
+            try {
+                JsBarcode(svg, val, { format: fmt, displayValue: true, valid: function (v) { ok = v; } });
+            } catch (e) {
+                ok = false;
+            }
+            if (!ok) {
+                setStatus('That value is not valid for ' + fmt + '. Example: ' + (BG_SAMPLE_BY_FORMAT[fmt] || '') + '.');
+                return;
+            }
+            setStatus('Rendered locally in your browser - nothing is uploaded.');
+
+            var svgMarkup = new XMLSerializer().serializeToString(svg);
+            bindDownload(q('#bgDlSvg'), new Blob([svgMarkup], { type: 'image/svg+xml' }), 'barcode-' + fmt.toLowerCase() + '.svg');
+
+            try {
+                var canvas = document.createElement('canvas');
+                JsBarcode(canvas, val, { format: fmt, displayValue: true, valid: function () {} });
+                canvas.toBlob(function (blob) {
+                    if (blob) bindDownload(q('#bgDlPng'), blob, 'barcode-' + fmt.toLowerCase() + '.png');
+                }, 'image/png');
+            } catch (e) { /* PNG export is best-effort; SVG download always works */ }
+        }
+
+        q('#bgFormat').addEventListener('change', function () {
+            var fmt = q('#bgFormat').value;
+            if (BG_SAMPLE_BY_FORMAT[fmt]) { q('#bgValue').value = BG_SAMPLE_BY_FORMAT[fmt]; }
+            render();
+        });
+        q('#bgValue').addEventListener('input', render);
+
+        bgLoadJsBarcode().then(render).catch(function () {
+            setStatus('Could not load the local barcode library. Try reloading the page.');
+        });
+    }
+</script>

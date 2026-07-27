@@ -1,0 +1,380 @@
+<script>
+    // 3D scene archetype skeleton (bortle-scale-light-pollution) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only.
+    // All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not a live sky-brightness simulator. A
+    // fixed field of 260 stars (each given a random "true" apparent
+    // magnitude) sits on a sky dome around an observer standing on a dark
+    // ground disc. Dragging the Bortle class slider (1-9) hides every star
+    // fainter than that class's published naked-eye limiting magnitude
+    // (NELM), fades a Milky Way band per the published visibility
+    // description for that class, and grows an artistic horizon "light
+    // dome" whose height and color scale with class number - the light-dome
+    // height/color is a qualitative, non-numeric teaching device, not a
+    // measured sky-brightness (mag/arcsec^2) reading. This is disclosed
+    // in-scene, in BODYWELCOME, and in the FAQ.
+    //
+    // Published figures (John Bortle, "Gauging Light Pollution: The Bortle
+    // Dark-Sky Scale", Sky & Telescope, Feb 2001; NELM ranges and Milky Way
+    // descriptions per the widely-republished 9-class table, cross-checked
+    // via web search 2026-07-25):
+    //   Class 1 Excellent dark-sky site: NELM 7.6-8.0. Milky Way casts
+    //     visible shadows and shows high structure.
+    //   Class 2 Typical truly dark site: NELM 7.1-7.5. Milky Way highly
+    //     structured with obvious dark dust lanes.
+    //   Class 3 Rural sky: NELM 6.6-7.0. Milky Way still shows complex
+    //     structure.
+    //   Class 4 Rural/suburban transition: NELM 6.3-6.5. Milky Way high
+    //     overhead is still impressive but lacks fine detail.
+    //   Class 5 Suburban sky: NELM 5.6-6.0. Milky Way is washed out
+    //     overhead and invisible near the horizon.
+    //   Class 6 Bright suburban sky: NELM 5.1-5.5. Milky Way is visible
+    //     only near the zenith, if at all.
+    //   Class 7 Suburban/urban transition: NELM 4.6-5.0. Milky Way is
+    //     almost or completely invisible.
+    //   Class 8 City sky: NELM 4.1-4.5. Milky Way is not visible.
+    //   Class 9 Inner-city sky: NELM 4.0 or fainter. Milky Way is not
+    //     visible; only the brightest stars and planets show.
+    //
+    // Distinct from stellar-magnitude (teaches the magnitude NUMBER SYSTEM
+    // itself - why brighter is a lower number) - this page applies that
+    // system to what a given light-pollution class erases from a real sky,
+    // class by class.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'bortle-scale-light-pollution';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'bortlescalelightpollution'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Published figures (see header comment for sources).
+    var T3D_BSL_CLASSES = [
+        { n: 1, name: 'Excellent dark-sky site', nelmLo: 7.6, nelmHi: 8.0, mw: 'casts visible shadows and shows high structure', mwOpacity: 1.0 },
+        { n: 2, name: 'Typical truly dark site', nelmLo: 7.1, nelmHi: 7.5, mw: 'highly structured with obvious dark dust lanes', mwOpacity: 0.95 },
+        { n: 3, name: 'Rural sky', nelmLo: 6.6, nelmHi: 7.0, mw: 'still shows complex structure', mwOpacity: 0.85 },
+        { n: 4, name: 'Rural/suburban transition', nelmLo: 6.3, nelmHi: 6.5, mw: 'high overhead is still impressive but lacks fine detail', mwOpacity: 0.62 },
+        { n: 5, name: 'Suburban sky', nelmLo: 5.6, nelmHi: 6.0, mw: 'washed out overhead and invisible near the horizon', mwOpacity: 0.38 },
+        { n: 6, name: 'Bright suburban sky', nelmLo: 5.1, nelmHi: 5.5, mw: 'visible only near the zenith, if at all', mwOpacity: 0.2 },
+        { n: 7, name: 'Suburban/urban transition', nelmLo: 4.6, nelmHi: 5.0, mw: 'almost or completely invisible', mwOpacity: 0.06 },
+        { n: 8, name: 'City sky', nelmLo: 4.1, nelmHi: 4.5, mw: 'not visible', mwOpacity: 0.0 },
+        { n: 9, name: 'Inner-city sky', nelmLo: 0, nelmHi: 4.0, mw: 'not visible; only the brightest stars and planets show', mwOpacity: 0.0 }
+    ];
+    var T3D_BSL_STAR_COUNT = 260;
+    var T3D_BSL_SKY_R = 30;
+
+    function t3dBsl_seedStars() {
+        // Deterministic pseudo-random seed so the field is stable across
+        // reloads (a real sky is fixed, not re-randomized every visit).
+        var seed = 918273;
+        function rnd() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
+        var stars = [];
+        for (var i = 0; i < T3D_BSL_STAR_COUNT; i++) {
+            // Power-law-ish bias: bright stars are rare, faint stars common -
+            // matches the real sky's luminosity function far better than a
+            // flat random distribution.
+            var mag = 1.0 + Math.pow(rnd(), 2.2) * 7.0; // ~1.0 (rare, bright) to ~8.0 (common, faint)
+            var theta = rnd() * Math.PI * 2;
+            var elevation = 0.05 + rnd() * 0.92; // 0..1, keep a hair above the horizon
+            var phi = elevation * (Math.PI / 2 - 0.03);
+            var r = T3D_BSL_SKY_R;
+            stars.push({
+                mag: mag,
+                x: r * Math.cos(phi) * Math.cos(theta),
+                y: r * Math.sin(phi),
+                z: r * Math.cos(phi) * Math.sin(theta)
+            });
+        }
+        return stars;
+    }
+
+    function t3dBsl_seedMilkyWay() {
+        var seed = 55411;
+        function rnd() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
+        var pts = [];
+        var N = 700;
+        for (var i = 0; i < N; i++) {
+            var t = rnd();
+            var bandTheta = -0.6 + t * 3.6; // sweeps a broad arc across the dome
+            var wobble = (rnd() - 0.5) * 0.55;
+            var elevation = 0.08 + Math.sin(t * Math.PI) * 0.75 + wobble * 0.3;
+            elevation = Math.max(0.04, Math.min(0.97, elevation));
+            var phi = elevation * (Math.PI / 2 - 0.03);
+            var r = T3D_BSL_SKY_R * 0.98;
+            pts.push({
+                x: r * Math.cos(phi) * Math.cos(bandTheta),
+                y: r * Math.sin(phi),
+                z: r * Math.cos(phi) * Math.sin(bandTheta)
+            });
+        }
+        return pts;
+    }
+
+    function t3dBortleScaleLightPollution(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+
+        // Sky-dome gradient backdrop (navy near the horizon fading to near-
+        // black at the zenith, like a real night sky) - purely decorative,
+        // sits behind the stars and Milky Way band.
+        var skyGeo = new THREE.SphereGeometry(T3D_BSL_SKY_R * 1.3, 24, 16);
+        var skyPos = skyGeo.attributes.position;
+        var skyColors = new Float32Array(skyPos.count * 3);
+        for (var sv = 0; sv < skyPos.count; sv++) {
+            var syNorm = Math.max(0, Math.min(1, skyPos.getY(sv) / (T3D_BSL_SKY_R * 1.3)));
+            var horizonBlend = 1 - syNorm;
+            skyColors[sv * 3] = 0.02 + horizonBlend * 0.05;
+            skyColors[sv * 3 + 1] = 0.03 + horizonBlend * 0.07;
+            skyColors[sv * 3 + 2] = 0.07 + horizonBlend * 0.15;
+        }
+        skyGeo.setAttribute('color', new THREE.BufferAttribute(skyColors, 3));
+        var sky = new THREE.Mesh(skyGeo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, depthWrite: false, fog: false }));
+        scene.add(sky);
+
+        // Ground disc + horizon ring (spatial anchor).
+        var ground = new THREE.Mesh(
+            new THREE.CircleGeometry(T3D_BSL_SKY_R * 1.05, 40),
+            new THREE.MeshBasicMaterial({ color: 0x0a0f14, side: THREE.DoubleSide })
+        );
+        ground.rotation.x = Math.PI / 2;
+        scene.add(ground);
+        var horizonRing = new THREE.Mesh(
+            new THREE.TorusGeometry(T3D_BSL_SKY_R, T3D_BSL_SKY_R * 0.004, 6, 72),
+            new THREE.MeshBasicMaterial({ color: 0x37474f })
+        );
+        horizonRing.rotation.x = Math.PI / 2;
+        scene.add(horizonRing);
+
+        // Horizon light dome (artistic skyglow indicator - NOT a measured
+        // mag/arcsec^2 skyglow reading; height/color scale qualitatively
+        // with Bortle class, disclosed in the facts panel and copy).
+        var domeGeo = new THREE.SphereGeometry(T3D_BSL_SKY_R * 0.99, 32, 12, 0, Math.PI * 2, 0, Math.PI / 2);
+        var domeMat = new THREE.MeshBasicMaterial({ color: 0xff8a3d, transparent: true, opacity: 0.0, side: THREE.DoubleSide, depthWrite: false });
+        var lightDome = new THREE.Mesh(domeGeo, domeMat);
+        lightDome.scale.y = 0.05;
+        scene.add(lightDome);
+
+        // Stars.
+        var starData = t3dBsl_seedStars();
+        var starGeo = new THREE.BufferGeometry();
+        var starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.9, sizeAttenuation: true });
+        var starPoints = new THREE.Points(starGeo, starMat);
+        scene.add(starPoints);
+
+        function rebuildStars(nelm) {
+            var visible = starData.filter(function (s) { return s.mag <= nelm; });
+            var arr = new Float32Array(visible.length * 3);
+            for (var i = 0; i < visible.length; i++) {
+                arr[i * 3] = visible[i].x; arr[i * 3 + 1] = visible[i].y; arr[i * 3 + 2] = visible[i].z;
+            }
+            starGeo.setAttribute('position', new THREE.BufferAttribute(arr, 3));
+            starGeo.computeBoundingSphere();
+            return visible.length;
+        }
+
+        // Milky Way band.
+        var mwData = t3dBsl_seedMilkyWay();
+        var mwGeo = new THREE.BufferGeometry();
+        var mwArr = new Float32Array(mwData.length * 3);
+        for (var m = 0; m < mwData.length; m++) { mwArr[m * 3] = mwData[m].x; mwArr[m * 3 + 1] = mwData[m].y; mwArr[m * 3 + 2] = mwData[m].z; }
+        mwGeo.setAttribute('position', new THREE.BufferAttribute(mwArr, 3));
+        var mwMat = new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.55, sizeAttenuation: true, transparent: true, opacity: 1 });
+        var mwPoints = new THREE.Points(mwGeo, mwMat);
+        scene.add(mwPoints);
+
+        function classForNumber(n) {
+            for (var i = 0; i < T3D_BSL_CLASSES.length; i++) { if (T3D_BSL_CLASSES[i].n === n) return T3D_BSL_CLASSES[i]; }
+            return T3D_BSL_CLASSES[0];
+        }
+
+        var visibleGroups = { milkyway: true, dome: true };
+        function facts(n, starCount) {
+            var c = classForNumber(n);
+            return '<h3>Bortle class ' + c.n + ' - ' + c.name + '</h3>' +
+                '<p>Naked-eye limiting magnitude (NELM): <b>' + c.nelmLo.toFixed(1) + (c.nelmHi !== c.nelmLo ? '-' + c.nelmHi.toFixed(1) : ' or fainter') + '</b>. About <b>' + starCount + '</b> of the ' + T3D_BSL_STAR_COUNT + ' seeded stars are bright enough to be naked-eye visible at this class.</p>' +
+                '<p>Milky Way: ' + c.mw + '.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><th>Class</th><th>NELM</th></tr>' +
+                '<tr><td>1 (darkest)</td><td>7.6-8.0</td></tr>' +
+                '<tr><td>5 (suburban)</td><td>5.6-6.0</td></tr>' +
+                '<tr><td>9 (inner-city)</td><td>4.0 or less</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation - the NELM ranges and Milky Way descriptions are John Bortle\'s published 2001 scale; the star field is a fixed illustrative sample (not a real star catalogue) and the horizon light dome\'s height and color are a qualitative teaching device, not a measured sky-brightness reading.</p>';
+        }
+
+        var currentClass = 1;
+        function setClass(n) {
+            currentClass = Math.max(1, Math.min(9, Math.round(n)));
+            var c = classForNumber(currentClass);
+            var starCount = rebuildStars(c.nelmHi);
+            mwMat.opacity = c.mwOpacity;
+            mwPoints.visible = visibleGroups.milkyway && c.mwOpacity > 0.001;
+            var domeOpacity = visibleGroups.dome ? Math.min(0.45, (currentClass - 1) / 8 * 0.45) : 0;
+            domeMat.opacity = domeOpacity;
+            lightDome.scale.y = 0.04 + (currentClass - 1) / 8 * 0.5;
+            var slider = document.getElementById('t3dBslClass');
+            var label = document.getElementById('t3dBslClassLabel');
+            if (slider) slider.value = String(currentClass);
+            if (label) label.textContent = 'Class ' + currentClass + ' - ' + c.name;
+            t3dInfo(facts(currentClass, starCount));
+            try { t3dSaveStore({ bortleClass: currentClass }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        setClass(typeof store.bortleClass === 'number' ? store.bortleClass : 1);
+
+        var slider = document.getElementById('t3dBslClass');
+        if (slider) slider.addEventListener('input', function () { setClass(parseFloat(slider.value || '1')); });
+
+        var jumpTargets = { t3dBslJumpDark: 1, t3dBslJumpRural: 3, t3dBslJumpSuburban: 5, t3dBslJumpCity: 8, t3dBslJumpInnerCity: 9 };
+        Object.keys(jumpTargets).forEach(function (id) {
+            var btn = document.getElementById(id);
+            if (btn) btn.addEventListener('click', function () { setClass(jumpTargets[id]); });
+        });
+
+        var mwToggle = document.getElementById('t3dBslToggleMilkyWay');
+        if (mwToggle) mwToggle.addEventListener('change', function () { visibleGroups.milkyway = mwToggle.checked; setClass(currentClass); });
+        var domeToggle = document.getElementById('t3dBslToggleDome');
+        if (domeToggle) domeToggle.addEventListener('change', function () { visibleGroups.dome = domeToggle.checked; setClass(currentClass); });
+
+        t3dStatus('Drag to look around the sky dome, scroll to zoom. Drag the Bortle class slider or jump to a named sky.');
+        return function animate(dt) {
+            starPoints.rotation.y += dt / 1000 * 0.004;
+            mwPoints.rotation.y = starPoints.rotation.y;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { bortlescalelightpollution: 't3dBslControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { bortlescalelightpollution: { radius: 22, maxR: 60, minR: 8, phi: 1.25, theta: 0.5, targetY: 4, fov: 62 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dBortleScaleLightPollution(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

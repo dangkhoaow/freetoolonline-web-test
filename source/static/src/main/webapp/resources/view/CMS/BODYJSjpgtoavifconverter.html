@@ -1,0 +1,79 @@
+<script>
+    // AVIF WASM-encoder archetype (jpg-to-avif-converter) - REAL AVIF encoding via the
+    // vendored @jsquash/avif WASM codec (single-threaded wrapper lazy-loaded
+    // from /vendor/jsquash-avif/avif-encode.mjs). Distinct from image_canvas:
+    // canvas.toBlob() cannot encode image/avif in any current browser (decode
+    // only), so a canvas-based "AVIF converter" would silently ship a broken
+    // download (truthful-claim violation). This skeleton is 100% client-side -
+    // the image never leaves the browser; the WASM module + its .wasm binary
+    // are same-origin static files. Registry Gate-H entry: jsquash_avif_wasm
+    // (new-tool-discovery-loop fire437, 2026-07-25 - unblocks the AVIF Gate-H
+    // starvation card raised fire427). Framework contract: doAfterPageRendered();
+    // no top-level DOM. Plain <input type=file>, no server upload widget.
+
+    web.localUpload = false;
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('imageCodecWasmTool');
+        if (!root) return; // not an image-codec-wasm page
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;"><input type="file" id="icwFile" accept="image/*" class="w3-input w3-border" style="max-width:420px;margin:0 auto;"></div>' +
+            '<div class="w3-row" style="margin-bottom:8px;">Quality <input id="icwQual" type="range" min="10" max="100" step="5" value="60" style="vertical-align:middle;width:200px;"> <span id="icwQualVal">60</span></div>' +
+            '<div style="margin-bottom:8px;"><button id="icwRun" type="button" class="w3-button w3-green" disabled>Convert to AVIF</button> ' +
+            '<a id="icwDl" class="w3-button w3-blue" style="display:none;">Download .avif</a></div>' +
+            '<div class="w3-row outputImgs" style="visibility:visible !important;"><img id="icwPreview" style="max-width:90vw;display:none;border:1px solid #ddd;"></div>' +
+            '<div id="icwStatus" style="min-height:1.2em;margin-top:6px;color:#555;">Choose an image. It is encoded locally in your browser - nothing is uploaded.</div>';
+
+        var fileEl = root.querySelector('#icwFile'), qualEl = root.querySelector('#icwQual'), qualVal = root.querySelector('#icwQualVal');
+        var runBtn = root.querySelector('#icwRun'), dl = root.querySelector('#icwDl'), preview = root.querySelector('#icwPreview'), statusEl = root.querySelector('#icwStatus');
+        var loadedImg = null, srcUrl = null, outUrl = null, encodeFn = null;
+
+        function setStatus(m) { statusEl.textContent = m; }
+        qualEl.addEventListener('input', function () { qualVal.textContent = qualEl.value; });
+
+        fileEl.addEventListener('change', function () {
+            dl.style.display = 'none'; preview.style.display = 'none';
+            var f = fileEl.files && fileEl.files[0]; if (!f) return;
+            if (srcUrl) URL.revokeObjectURL(srcUrl);
+            srcUrl = URL.createObjectURL(f);
+            var img = new Image();
+            img.onload = function () { loadedImg = img; runBtn.disabled = false; setStatus('Ready. Click Convert to AVIF.'); };
+            img.onerror = function () { setStatus('Could not read that image.'); };
+            img.src = srcUrl;
+        });
+
+        function loadEncoder() {
+            if (encodeFn) return Promise.resolve(encodeFn);
+            var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/jsquash-avif/avif-encode.mjs';
+            return import(/* webpackIgnore: true */ base).then(function (mod) { encodeFn = mod.encodeAvif; return encodeFn; });
+        }
+
+        runBtn.addEventListener('click', function () {
+            if (!loadedImg) { setStatus('Choose an image first.'); return; }
+            runBtn.disabled = true;
+            setStatus('Loading the in-browser AVIF encoder (first run only)...');
+            var canvas = document.createElement('canvas');
+            canvas.width = loadedImg.naturalWidth; canvas.height = loadedImg.naturalHeight;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(loadedImg, 0, 0);
+            var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            loadEncoder().then(function (encodeAvif) {
+                setStatus('Encoding to AVIF...');
+                var quality = parseFloat(qualEl.value) || 60;
+                return encodeAvif(imageData, { quality: quality });
+            }).then(function (buf) {
+                var blob = new Blob([buf], { type: 'image/avif' });
+                if (outUrl) URL.revokeObjectURL(outUrl);
+                outUrl = URL.createObjectURL(blob);
+                preview.src = outUrl; preview.style.display = '';
+                var base = ((fileEl.files[0] && fileEl.files[0].name) || 'image').replace(/\.[^.]+$/, '');
+                dl.href = outUrl; dl.download = base + '.avif'; dl.style.display = ''; dl.textContent = 'Download .avif';
+                setStatus('Converted to AVIF locally - no upload. ' + Math.round(blob.size / 1024) + ' KB.');
+                runBtn.disabled = false;
+            }).catch(function (e) {
+                setStatus('Could not encode this image to AVIF in this browser (' + (e && e.message ? e.message : e) + ').');
+                runBtn.disabled = false;
+            });
+        });
+    }
+</script>

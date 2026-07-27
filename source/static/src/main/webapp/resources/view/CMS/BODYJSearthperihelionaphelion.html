@@ -1,0 +1,375 @@
+<script>
+    // 3D scene archetype skeleton (earth-perihelion-aphelion) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (earth-perihelion-aphelion).
+    // All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not an ephemeris. The orbit ellipse is drawn to
+    // Earth's REAL eccentricity (0.0167) - it looks almost circular on screen,
+    // which is itself the teaching point. A 2D canvas plots a smooth Keplerian
+    // distance-vs-day-of-year curve calibrated to the published perihelion and
+    // aphelion distances, so the reader can see the ~5-million-km swing that the
+    // near-circular 3D view alone would hide.
+    //
+    // Published figures (NASA NSSDCA planetary fact sheet + Old Farmer's Almanac,
+    // cross-checked 2026-07-22):
+    //   - Mean Earth-Sun distance (1 AU): 149,597,870 km
+    //   - Orbital eccentricity: 0.0167 (nearly circular)
+    //   - Perihelion (closest to Sun): about 147.1 million km (91.4 million mi),
+    //     occurring in early January (the exact date drifts by up to 2 days
+    //     year to year)
+    //   - Aphelion (farthest from Sun): about 152.1 million km (94.5 million mi),
+    //     occurring in early July
+    //   - Distance swing: about 5 million km, about 3.3% of the mean distance
+    //   - Received solar flux varies with 1/r^2: about 7% more sunlight reaches
+    //     Earth at perihelion than at aphelion
+    //   - Perihelion (Northern Hemisphere winter) and aphelion (Northern
+    //     Hemisphere summer) are the OPPOSITE of what "closer = hotter" would
+    //     predict - axial tilt (23.44 deg), not distance, drives the seasons
+    //
+    // Distinct from seasons-earth (axial tilt + subsolar point driving seasons,
+    // no orbital-distance model) and kepler-orbits (generic ellipse mechanics
+    // with adjustable eccentricity, no calibrated real-Earth distance curve).
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'earth-perihelion-aphelion';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'earthperihelionaphelion'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Published figures (see header comment for sources).
+    var T3D_EPA_AU_KM = 149597870;
+    var T3D_EPA_ECC = 0.0167;
+    var T3D_EPA_PERI_KM = 147100000;
+    var T3D_EPA_APH_KM = 152100000;
+    var T3D_EPA_PERI_DAY = 2; // early January, day-of-year index (Jan 1 = day 0)
+    var T3D_EPA_YEAR_DAYS = 365.25;
+    var T3D_EPA_FLUX_RATIO_PCT = Math.round((Math.pow(T3D_EPA_APH_KM / T3D_EPA_PERI_KM, 2) - 1) * 100);
+
+    function t3dEpaSolveKepler(M, ecc) {
+        var E = M;
+        for (var i = 0; i < 8; i++) E = M + ecc * Math.sin(E);
+        return E;
+    }
+    // Real Sun-Earth distance (km) for a given day-of-year, using a Keplerian
+    // model with Earth's true eccentricity, phase-locked so E=0 lands on the
+    // published perihelion day. r = a(1 - e*cos E).
+    function t3dEpaDistanceKm(dayOfYear) {
+        var M = ((dayOfYear - T3D_EPA_PERI_DAY) / T3D_EPA_YEAR_DAYS) * Math.PI * 2;
+        var E = t3dEpaSolveKepler(M, T3D_EPA_ECC);
+        return T3D_EPA_AU_KM * (1 - T3D_EPA_ECC * Math.cos(E));
+    }
+    function t3dEpaEccentricAnomaly(dayOfYear) {
+        var M = ((dayOfYear - T3D_EPA_PERI_DAY) / T3D_EPA_YEAR_DAYS) * Math.PI * 2;
+        return t3dEpaSolveKepler(M, T3D_EPA_ECC);
+    }
+    function t3dEpaMonthLabel(dayOfYear) {
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var cum = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365.25];
+        var d = ((dayOfYear % T3D_EPA_YEAR_DAYS) + T3D_EPA_YEAR_DAYS) % T3D_EPA_YEAR_DAYS;
+        for (var m = 0; m < 12; m++) {
+            if (d < cum[m + 1]) return months[m] + ' ' + Math.max(1, Math.round(d - cum[m] + 1));
+        }
+        return 'Dec 31';
+    }
+
+    function t3dEpaDrawCurve(canvas, dayOfYear) {
+        if (!canvas || !canvas.getContext) return;
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        var cssW = canvas.clientWidth || 320, cssH = canvas.clientHeight || 120;
+        if (canvas.width !== Math.round(cssW * dpr) || canvas.height !== Math.round(cssH * dpr)) {
+            canvas.width = Math.round(cssW * dpr);
+            canvas.height = Math.round(cssH * dpr);
+        }
+        var ctx = canvas.getContext('2d');
+        var w = canvas.width, h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = '#0a0e14';
+        ctx.fillRect(0, 0, w, h);
+        var padTop = 10 * dpr, padBottom = 14 * dpr, plotH = h - padTop - padBottom;
+        var minKm = T3D_EPA_PERI_KM * 0.999, maxKm = T3D_EPA_APH_KM * 1.001;
+        function yFor(km) { return padTop + (1 - (km - minKm) / (maxKm - minKm)) * plotH; }
+        ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+        ctx.lineWidth = Math.max(1, 1.4 * dpr);
+        ctx.beginPath();
+        var N = 240;
+        for (var i = 0; i <= N; i++) {
+            var day = (i / N) * T3D_EPA_YEAR_DAYS;
+            var km = t3dEpaDistanceKm(day);
+            var x = (i / N) * w;
+            var y = yFor(km);
+            if (i === 0) { ctx.moveTo(x, y); } else { ctx.lineTo(x, y); }
+        }
+        ctx.stroke();
+        var curDay = ((dayOfYear % T3D_EPA_YEAR_DAYS) + T3D_EPA_YEAR_DAYS) % T3D_EPA_YEAR_DAYS;
+        var cx = (curDay / T3D_EPA_YEAR_DAYS) * w;
+        var cy = yFor(t3dEpaDistanceKm(curDay));
+        ctx.strokeStyle = 'rgba(255,193,7,0.55)';
+        ctx.lineWidth = Math.max(1, 1.2 * dpr);
+        ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, h); ctx.stroke();
+        ctx.fillStyle = '#ffc107';
+        ctx.beginPath(); ctx.arc(cx, cy, Math.max(2.5, 3.2 * dpr), 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.font = (11 * dpr) + 'px sans-serif';
+        ctx.fillText('Sun-Earth distance over one year (perihelion to aphelion, ~5 million km swing)', 6 * dpr, 12 * dpr);
+    }
+
+    function t3dEarthPerihelionAphelion(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.32));
+
+        var SCOUNT = shell.low ? 400 : 800;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(30 + Math.random() * 60);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.35, sizeAttenuation: false })));
+
+        // Scene-unit semi-major axis. The ellipse is drawn to Earth's REAL
+        // eccentricity (0.0167) - it looks almost circular, which is the point.
+        var SCENE_A = 9;
+        var ecc = T3D_EPA_ECC;
+        var sceneB = SCENE_A * Math.sqrt(1 - ecc * ecc);
+        var focusOffset = SCENE_A * ecc; // Sun sits at one focus, not the center
+
+        var sun = new THREE.Mesh(new THREE.SphereGeometry(1.4, 26, 16), new THREE.MeshBasicMaterial({ color: 0xffd54f }));
+        scene.add(sun);
+        var sunGlow = new THREE.Mesh(new THREE.SphereGeometry(1.9, 20, 12), new THREE.MeshBasicMaterial({ color: 0xffe08a, transparent: true, opacity: 0.18, depthWrite: false }));
+        sun.add(sunGlow);
+
+        function posFromE(E) {
+            return new THREE.Vector3(SCENE_A * Math.cos(E) - focusOffset, 0, sceneB * Math.sin(E));
+        }
+        var orbPts = [];
+        for (var i = 0; i <= 128; i++) {
+            var Ei = (i / 128) * Math.PI * 2;
+            var p = posFromE(Ei);
+            orbPts.push(p.x, p.y, p.z);
+        }
+        var og = new THREE.BufferGeometry();
+        og.setAttribute('position', new THREE.Float32BufferAttribute(orbPts, 3));
+        scene.add(new THREE.Line(og, new THREE.LineBasicMaterial({ color: 0x546e7a })));
+
+        var periPos = posFromE(0), aphPos = posFromE(Math.PI);
+        var periMark = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 8), new THREE.MeshBasicMaterial({ color: 0xff7043 }));
+        periMark.position.copy(periPos);
+        scene.add(periMark);
+        var aphMark = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 8), new THREE.MeshBasicMaterial({ color: 0x42a5f5 }));
+        aphMark.position.copy(aphPos);
+        scene.add(aphMark);
+
+        var earth = new THREE.Mesh(new THREE.SphereGeometry(0.55, 24, 16), new THREE.MeshLambertMaterial({ color: 0x3f88c5 }));
+        scene.add(earth);
+        var earthLight = new THREE.PointLight(0xffffff, 0.9, 40);
+        sun.add(earthLight);
+
+        var distLineGeo = new THREE.BufferGeometry();
+        distLineGeo.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(6), 3));
+        var distLine = new THREE.Line(distLineGeo, new THREE.LineBasicMaterial({ color: 0xffee58, transparent: true, opacity: 0.6 }));
+        scene.add(distLine);
+
+        var dayOfYear = T3D_EPA_PERI_DAY, playing = false;
+        var curveCanvas = document.getElementById('t3dEpaCurve');
+
+        function updateDistanceLine(earthPos) {
+            var arr = distLineGeo.attributes.position.array;
+            arr[0] = sun.position.x; arr[1] = sun.position.y; arr[2] = sun.position.z;
+            arr[3] = earthPos.x; arr[4] = earthPos.y; arr[5] = earthPos.z;
+            distLineGeo.attributes.position.needsUpdate = true;
+        }
+
+        function facts(km, monthLabel) {
+            var millionKm = (km / 1e6).toFixed(2);
+            var millionMi = (km / 1.60934e6).toFixed(2);
+            var pctOfMean = ((km / T3D_EPA_AU_KM - 1) * 100).toFixed(2);
+            return '<h3>' + monthLabel + ' - Sun-Earth distance</h3>' +
+                '<p><b>' + millionKm + ' million km</b> (' + millionMi + ' million mi), ' + (pctOfMean >= 0 ? '+' : '') + pctOfMean + '% vs the 149.6-million-km mean.</p>' +
+                '<table class="w3-table w3-bordered"><tr><td>Mean distance (1 AU)</td><td>149,597,870 km</td></tr>' +
+                '<tr><td>Perihelion (closest, early Jan)</td><td>about 147.1 million km</td></tr>' +
+                '<tr><td>Aphelion (farthest, early Jul)</td><td>about 152.1 million km</td></tr>' +
+                '<tr><td>Orbital eccentricity</td><td>0.0167 (nearly circular)</td></tr>' +
+                '<tr><td>Extra solar flux at perihelion</td><td>about ' + T3D_EPA_FLUX_RATIO_PCT + '% more than at aphelion</td></tr></table>' +
+                '<p><b>Perihelion is Northern Hemisphere winter; aphelion is Northern Hemisphere summer</b> - the opposite of what "closer means hotter" would predict. Axial tilt (23.44 deg), not distance, drives the seasons - see the <a href="/space-3d/seasons-earth.html">Seasons Explorer</a>.</p>' +
+                '<p class="t3d-note">Educational approximation - the orbit ellipse is drawn to Earth\'s real eccentricity, so it looks nearly circular on screen. The distance curve is a smooth Keplerian model calibrated to the published perihelion/aphelion figures, not a day-by-day ephemeris.</p>';
+        }
+
+        function setDay(d) {
+            dayOfYear = ((d % T3D_EPA_YEAR_DAYS) + T3D_EPA_YEAR_DAYS) % T3D_EPA_YEAR_DAYS;
+            var E = t3dEpaEccentricAnomaly(dayOfYear);
+            var pos = posFromE(E);
+            earth.position.copy(pos);
+            updateDistanceLine(pos);
+            var km = t3dEpaDistanceKm(dayOfYear);
+            var monthLabel = t3dEpaMonthLabel(dayOfYear);
+            var slider = document.getElementById('t3dEpaDay');
+            var label = document.getElementById('t3dEpaDayLabel');
+            if (slider) slider.value = String(Math.round(dayOfYear));
+            if (label) label.textContent = monthLabel + ' - ' + (km / 1e6).toFixed(2) + 'M km';
+            t3dInfo(facts(km, monthLabel));
+            t3dEpaDrawCurve(curveCanvas, dayOfYear);
+            try { t3dSaveStore({ dayOfYear: dayOfYear }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        setDay(typeof store.dayOfYear === 'number' ? store.dayOfYear : T3D_EPA_PERI_DAY);
+
+        var playBtn = document.getElementById('t3dEpaPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            playing = !playing;
+            playBtn.textContent = playing ? 'Pause year' : 'Play year';
+        });
+        var slider = document.getElementById('t3dEpaDay');
+        if (slider) slider.addEventListener('input', function () {
+            playing = false;
+            if (playBtn) playBtn.textContent = 'Play year';
+            setDay(parseFloat(slider.value || '0'));
+        });
+        var periBtn = document.getElementById('t3dEpaPeriBtn');
+        if (periBtn) periBtn.addEventListener('click', function () { playing = false; if (playBtn) playBtn.textContent = 'Play year'; setDay(T3D_EPA_PERI_DAY); });
+        var aphBtn = document.getElementById('t3dEpaAphBtn');
+        if (aphBtn) aphBtn.addEventListener('click', function () { playing = false; if (playBtn) playBtn.textContent = 'Play year'; setDay(T3D_EPA_PERI_DAY + T3D_EPA_YEAR_DAYS / 2); });
+        window.addEventListener('resize', function () { t3dEpaDrawCurve(curveCanvas, dayOfYear); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Scrub the day-of-year slider, press Play year, or jump to perihelion/aphelion.');
+        return function animate(dt) {
+            if (playing) { setDay(dayOfYear + (dt / 1000) * 22); }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { earthperihelionaphelion: 't3dEpaControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { earthperihelionaphelion: { radius: 14, maxR: 40, minR: 4, phi: 1.05, theta: 0.4, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dEarthPerihelionAphelion(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

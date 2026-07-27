@@ -1,0 +1,351 @@
+<script>
+    // 3D scene archetype skeleton (Curiosity Rover Traverse) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Built LEAN, forked from the gps-time-dilation shape - ONE
+    // scene only (a mission-milestone route explorer). All geometry is
+    // procedural (crater disc + a cone standing in for Aeolis Mons/Mount
+    // Sharp + a route line + waypoint markers + a rover marker).
+    //
+    // EDUCATIONAL APPROXIMATION, not a terrain-accurate reconstruction of
+    // Gale Crater. A teaching scene: a real rover's real mission-milestone
+    // sequence, replayed as discrete waypoints along a procedural route -
+    // not a continuous, real-time position feed.
+    //
+    // Published figures (cross-checked via WebSearch 2026-07-23; sources:
+    // NASA JPL Mars Science Laboratory mission pages, NASA Science "Mid-2017
+    // Map of NASA's Curiosity Mars Rover Mission", NASA "Curiosity's Progress
+    // on Route to Mount Sharp"):
+    //   - Landed 2012-08-06 (UTC) at Bradbury Landing inside Gale Crater,
+    //     which is about 155 km in diameter.
+    //   - Aeolis Mons ("Mount Sharp") rises about 5.5 km above the crater
+    //     floor.
+    //   - Top driving speed is about 4 cm/s (about 0.14 km/h).
+    //   - Sol 669 (2014-06-24): completed one full Mars year (687 Earth
+    //     days) of surface operations.
+    //   - Sol 753 (2014-09-19): reached Pahrump Hills, the base of Mount
+    //     Sharp, after driving nearly 9 km from the landing site.
+    //   - Sol 1,750 (2017-07-09): onboard spectrometers confirmed hematite,
+    //     an iron-oxide mineral first spotted from orbit, on Vera Rubin
+    //     Ridge.
+    //   - Sol 1,800 to Sol 2,300 (Sept 2017 - Jan 2019): climbed Vera Rubin
+    //     Ridge, a ridge about 6.5 km long on Mount Sharp's northwest flank.
+    //   - Most recently reported position (Nov 2025): on Mount Sharp's lower
+    //     slopes near Gediz Vallis Ridge, in "boxwork"-textured terrain,
+    //     about 4.6°S, 137.4°E.
+    //   - Total distance driven since landing (most recently reported): 36.1
+    //     km.
+    //   - Distinct from mars-terrain.html (a static global relief map of all
+    //     of Mars from NASA MOLA elevation data) - THIS page is one real
+    //     rover's real mission-milestone sequence inside one crater.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'curiosityrovertraverse';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'curiosityrovertraverse'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Real published Curiosity mission-milestone figures (NASA JPL / NASA
+    // Science, cross-checked via WebSearch 2026-07-23). Each waypoint is a
+    // discrete, citable milestone - never an interpolated "current position"
+    // claim. distanceKm is null where no official cumulative-odometry figure
+    // for that exact milestone was found (never fabricated).
+    var T3D_ROVER_WAYPOINTS = [
+        { sol: 0, date: '2012-08-06', name: 'Bradbury Landing', distanceKm: 0,
+          fact: 'Touched down inside Gale Crater (about 155 km in diameter) using the sky-crane landing system.' },
+        { sol: 669, date: '2014-06-24', name: 'One Mars Year Complete', distanceKm: null,
+          fact: 'Completed one full Mars year (687 Earth days) of surface operations.' },
+        { sol: 753, date: '2014-09-19', name: 'Pahrump Hills - Base of Mount Sharp', distanceKm: 9,
+          fact: 'Reached the base of Mount Sharp (Aeolis Mons) after driving nearly 9 km from the landing site.' },
+        { sol: 1750, date: '2017-07-09', name: 'Vera Rubin Ridge - Hematite Confirmed', distanceKm: null,
+          fact: 'Onboard spectrometers confirmed hematite, an iron-oxide mineral first spotted from orbit, on this ridge.' },
+        { sol: 1800, date: '2017-09 to 2019-01', name: 'Climbing Vera Rubin Ridge', distanceKm: null,
+          fact: 'Spent Sol 1,800 to Sol 2,300 (Sept 2017 - Jan 2019) climbing this roughly 6.5 km ridge on the northwest flank of Mount Sharp.' },
+        { sol: null, date: '2025-11 (most recent report)', name: 'Gediz Vallis Ridge area', distanceKm: 36.1,
+          fact: 'Most recently reported on the lower slopes of Mount Sharp, near Gediz Vallis Ridge, in "boxwork"-textured terrain, about 4.6°S, 137.4°E.' }
+    ];
+
+    function t3dRoverTraverse(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0a0704, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+        var sunLight = new THREE.DirectionalLight(0xffe3c2, 1.15);
+        sunLight.position.set(12, 10, 6);
+        scene.add(sunLight);
+
+        // Starfield backdrop (thin - this is a surface scene, sky is mostly dust-tan)
+        var starN = shell.low ? 160 : 320;
+        var starPos = new Float32Array(starN * 3);
+        for (var s = 0; s < starN; s++) {
+            var r = 60 + Math.random() * 50;
+            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1) * 0.5;
+            starPos[s * 3] = r * Math.sin(ph) * Math.cos(th);
+            starPos[s * 3 + 1] = 8 + r * Math.cos(ph) * 0.4;
+            starPos[s * 3 + 2] = r * Math.sin(ph) * Math.sin(th) - 20;
+        }
+        var starGeo = new THREE.BufferGeometry();
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xd9b48f, size: 0.35, sizeAttenuation: true, transparent: true, opacity: 0.35 })));
+
+        // Gale Crater floor - a broad, gently sloped disc (procedural, not a
+        // terrain-accurate reconstruction).
+        var craterRadius = 20;
+        var floor = new THREE.Mesh(
+            new THREE.CylinderGeometry(craterRadius, craterRadius * 1.08, 0.6, 64),
+            new THREE.MeshStandardMaterial({ color: 0x9c5a34, roughness: 0.95, metalness: 0.02 })
+        );
+        floor.position.y = -0.3;
+        scene.add(floor);
+        // Crater rim (a low ring standing up at the edge)
+        var rim = new THREE.Mesh(
+            new THREE.TorusGeometry(craterRadius * 1.02, 0.5, 8, 64),
+            new THREE.MeshStandardMaterial({ color: 0x7a4526, roughness: 0.95 })
+        );
+        rim.rotation.x = Math.PI / 2;
+        rim.position.y = 0.1;
+        scene.add(rim);
+
+        // Aeolis Mons / Mount Sharp - a cone rising from the crater's center.
+        // Real relief is about 5.5 km above the crater floor; on-screen
+        // height is compressed to about 11 units for readability while the
+        // crater-diameter-to-mountain-height RATIO is kept roughly true
+        // (155 km wide crater vs 5.5 km tall peak - about 28:1; this scene
+        // uses roughly a 20:11 -> steepened for visibility, disclosed below
+        // as compressed, never claimed to-scale).
+        var mountain = new THREE.Mesh(
+            new THREE.ConeGeometry(9, 11, 28),
+            new THREE.MeshStandardMaterial({ color: 0xb5714a, roughness: 0.92 })
+        );
+        mountain.position.set(1.5, 5.5, -1);
+        scene.add(mountain);
+
+        // Route: Bradbury Landing (crater edge) curving toward the base of
+        // Mount Sharp and partway up its lower flank - one continuous
+        // procedural path; waypoint markers sit at fixed points along it.
+        var routePoints = [
+            new THREE.Vector3(-15, 0.05, 10),   // Bradbury Landing
+            new THREE.Vector3(-9, 0.1, 6),       // en route
+            new THREE.Vector3(-3, 0.3, 2.5),     // one Mars year
+            new THREE.Vector3(1, 1.0, 1.2),      // Pahrump Hills / base of Mount Sharp
+            new THREE.Vector3(3.5, 2.6, 0.2),    // Vera Rubin Ridge (hematite)
+            new THREE.Vector3(5.5, 4.4, -0.6)    // climbing Vera Rubin Ridge -> Gediz Vallis area
+        ];
+        var routeCurve = new THREE.CatmullRomCurve3(routePoints);
+        var routeGeo = new THREE.BufferGeometry().setFromPoints(routeCurve.getPoints(120));
+        scene.add(new THREE.Line(routeGeo, new THREE.LineBasicMaterial({ color: 0xffd54f, transparent: true, opacity: 0.85 })));
+
+        var waypointMarkers = [];
+        for (var w = 0; w < routePoints.length; w++) {
+            var m = new THREE.Mesh(new THREE.SphereGeometry(0.32, 12, 10), new THREE.MeshBasicMaterial({ color: 0x546e7a }));
+            m.position.copy(routePoints[w]);
+            m.position.y += 0.3;
+            scene.add(m);
+            waypointMarkers.push(m);
+        }
+
+        // Rover marker (small procedural body: chassis + 6-wheel hint + mast)
+        var roverGroup = new THREE.Group();
+        var chassis = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.32, 1.0), new THREE.MeshStandardMaterial({ color: 0xd7ccc8, roughness: 0.5, metalness: 0.3 }));
+        roverGroup.add(chassis);
+        var mast = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.7, 8), new THREE.MeshStandardMaterial({ color: 0x8d6e63 }));
+        mast.position.y = 0.5;
+        roverGroup.add(mast);
+        var head = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.16, 0.3), new THREE.MeshStandardMaterial({ color: 0x455a64 }));
+        head.position.y = 0.86;
+        roverGroup.add(head);
+        scene.add(roverGroup);
+
+        var beacon = new THREE.Mesh(new THREE.SphereGeometry(0.65, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffab40, transparent: true, opacity: 0.25 }));
+        scene.add(beacon);
+
+        var waypointIndex = 0; // 0..T3D_ROVER_WAYPOINTS.length-1
+
+        function panelHtml() {
+            var wp = T3D_ROVER_WAYPOINTS[waypointIndex];
+            var rows = '';
+            for (var i = 0; i < T3D_ROVER_WAYPOINTS.length; i++) {
+                var w2 = T3D_ROVER_WAYPOINTS[i];
+                rows += '<tr' + (i === waypointIndex ? ' style="background:#fff3cd;"' : '') + '>' +
+                    '<td>' + (w2.sol !== null ? 'Sol ' + w2.sol : '&mdash;'.replace('&mdash;', '-')) + '</td>' +
+                    '<td>' + w2.date + '</td>' +
+                    '<td>' + w2.name + '</td>' +
+                    '<td>' + (w2.distanceKm !== null ? w2.distanceKm + ' km' : 'not officially reported') + '</td>' +
+                    '</tr>';
+            }
+            return '<h3>Mission milestone ' + (waypointIndex + 1) + ' of ' + T3D_ROVER_WAYPOINTS.length + '</h3>' +
+                '<p><b>' + wp.name + '</b> (' + (wp.sol !== null ? 'Sol ' + wp.sol + ', ' : '') + wp.date + ')</p>' +
+                '<p>' + wp.fact + '</p>' +
+                '<div class="w3-responsive"><table class="w3-table w3-bordered w3-small">' +
+                '<tr><th>Sol</th><th>Date</th><th>Milestone</th><th>Distance driven</th></tr>' + rows + '</table></div>' +
+                '<p class="t3d-note">Educational approximation - the crater, mountain, and route are procedural shapes, not a terrain-accurate reconstruction of Gale Crater. The sol number, date, and description for each milestone are real and independently published (NASA JPL / NASA Science); this scene does not interpolate a continuous position between milestones, and never claims a live or real-time rover position.</p>';
+        }
+
+        var idxEl = document.getElementById('t3dRoverScrub');
+        var idxLab = document.getElementById('t3dRoverLabel');
+
+        function apply() {
+            var wp = T3D_ROVER_WAYPOINTS[waypointIndex];
+            var pos = routePoints[waypointIndex];
+            roverGroup.position.set(pos.x, pos.y + 0.16, pos.z);
+            beacon.position.copy(roverGroup.position);
+            for (var i = 0; i < waypointMarkers.length; i++) {
+                waypointMarkers[i].material.color.setHex(i <= waypointIndex ? 0xffd54f : 0x546e7a);
+            }
+            if (idxLab) idxLab.textContent = wp.name + ' (' + wp.date + ')';
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ waypointIndex: waypointIndex }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.waypointIndex === 'number' && store.waypointIndex >= 0 && store.waypointIndex < T3D_ROVER_WAYPOINTS.length) {
+            waypointIndex = store.waypointIndex;
+        }
+        if (idxEl) idxEl.value = String(waypointIndex);
+        apply();
+
+        if (idxEl) idxEl.addEventListener('input', function () {
+            waypointIndex = Math.max(0, Math.min(T3D_ROVER_WAYPOINTS.length - 1, parseInt(idxEl.value || '0', 10)));
+            apply();
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Scrub the mission-milestone slider to move the rover along its real route.');
+        return function animate(dt) {
+            mountain.rotation.y += dt * 0.00003;
+            beacon.scale.setScalar(1 + 0.08 * Math.sin(performance.now() * 0.0025));
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { curiosityrovertraverse: 't3dRoverControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { curiosityrovertraverse: { radius: 32, maxR: 90, minR: 6, phi: 1.05, theta: 0.6, targetY: 3 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dRoverTraverse(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

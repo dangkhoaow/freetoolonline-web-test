@@ -1,0 +1,395 @@
+<script>
+    // 3D scene archetype skeleton (galactic-coordinate-transforms) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only.
+    // All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not an ephemeris or a star catalog. Three
+    // reference planes (galactic, ecliptic, equatorial) are drawn tilted to
+    // their REAL published mutual angles, and the equatorial plane's pole
+    // (the North Celestial Pole) is animated tracing the REAL precession
+    // cone half-angle (23.4393 deg) around the fixed North Ecliptic Pole at
+    // the REAL modern precession rate. The galactic plane's azimuthal
+    // (longitude-of-node) alignment on screen is illustrative - only the
+    // TILT ANGLES between planes are drawn to the published values, not the
+    // exact 3D compass alignment relative to background stars, and no real
+    // star catalog is embedded, so the pole-star markers sit at the correct
+    // TIME offset along the precession cycle but not at a catalog-verified
+    // sky position.
+    //
+    // Published figures (IAU / SOFA standards of fundamental astronomy +
+    // Swinburne University COSMOS astronomy glossary + EarthSky, cross-
+    // checked 2026-07-23):
+    //   - Obliquity of the ecliptic (equatorial-to-ecliptic plane angle),
+    //     J2000 epoch: 23.4393 deg (decreasing about 47 arcsec per century)
+    //   - North Galactic Pole (J2000/ICRS, IAU 1958 definition refined by
+    //     SOFA): RA 192.85948 deg, Dec +27.12825 deg
+    //   - Galactic-plane-to-celestial-equator angle: about 62.87 deg
+    //     (= 90 - 27.13, derived from the NGP declination above)
+    //   - Galactic-plane-to-ecliptic angle: about 60.2 deg (Swinburne COSMOS;
+    //     also stated as "about 60 degrees" in general references)
+    //   - Axial precession period (modern IAU 2006 precession-nutation
+    //     model): about 25,772 years. The classical "Platonic Year" round
+    //     figure of 25,920 years (360 x 72) is a traditional approximation
+    //     still often quoted in popular references - both are disclosed.
+    //   - Precession direction: retrograde - the celestial pole traces its
+    //     circle around the ecliptic pole clockwise as seen looking down
+    //     from the North Ecliptic Pole, opposite to Earth's own eastward
+    //     orbital motion.
+    //   - Historical/future pole stars along that circle (EarthSky, Britannica):
+    //     Thuban (Alpha Draconis) about 2700 BCE; Polaris (current, closest
+    //     alignment about 2100 CE); Errai (Gamma Cephei) about 4000 CE;
+    //     Alderamin (Alpha Cephei) about 7500 CE; Vega (Alpha Lyrae) about
+    //     14,000 CE.
+    //   - Sun's distance from the galactic center: commonly cited as about
+    //     26,000 light-years (about 8,000 parsecs); modern radio/Gaia-based
+    //     estimates range roughly 25,800-27,700 light-years. Stated as
+    //     context only - not rendered to scale in this scene.
+    //
+    // Distinct from coordinate-systems-sky (observer-based equatorial vs
+    // horizontal Alt/Az grids, no galactic frame, no precession animation),
+    // ecliptic-zodiac (Sun's path through zodiac constellations, precession
+    // LITERACY for signs-vs-dates but no 3D coordinate-frame overlay or
+    // pole-star path), apsidal-precession (orbital line-of-apsides rotation,
+    // a completely different precession phenomenon), and constellation-sphere
+    // (star patterns, no coordinate frames).
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'galactic-coordinate-transforms';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'galacticcoordinatetransforms'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Published figures (see header comment for sources).
+    var T3D_GCT_OBLIQUITY_DEG = 23.4393;
+    var T3D_GCT_GAL_ECL_DEG = 60.2;
+    var T3D_GCT_GAL_EQ_DEG = 62.87;
+    var T3D_GCT_PRECESSION_YEARS_MODERN = 25772;
+    var T3D_GCT_PRECESSION_YEARS_CLASSICAL = 25920;
+    var T3D_GCT_SUN_GALACTIC_RADIUS_LY = 26000;
+    var T3D_GCT_POLE_STARS = [
+        { name: 'Thuban', yearsFromNow: -(2026 + 2700), note: 'pole star for ancient Egypt, about 2700 BCE' },
+        { name: 'Polaris', yearsFromNow: 74, note: 'today\'s pole star; closest alignment about 2100 CE' },
+        { name: 'Errai', yearsFromNow: 4000 - 2026, note: 'next official pole star, about 4000 CE' },
+        { name: 'Alderamin', yearsFromNow: 7500 - 2026, note: 'pole star around 7500 CE' },
+        { name: 'Vega', yearsFromNow: 14000 - 2026, note: 'brilliant future pole star, about 14,000 CE' }
+    ];
+
+    function t3dGctDeg(d) { return d * Math.PI / 180; }
+
+    // A flat teaching plane: faint filled disk + grid rings + bright rim,
+    // grouped so the whole plane can be tilted as one rigid object.
+    function t3dGctBuildPlane(THREE, radius, colorHex, opacity) {
+        var g = new THREE.Group();
+        var disk = new THREE.Mesh(
+            new THREE.CircleGeometry(radius, 48),
+            new THREE.MeshBasicMaterial({ color: colorHex, transparent: true, opacity: opacity, side: THREE.DoubleSide, depthWrite: false })
+        );
+        disk.rotation.x = -Math.PI / 2;
+        g.add(disk);
+        for (var r = radius * 0.34; r < radius * 1.01; r += radius * 0.33) {
+            var ring = new THREE.Mesh(new THREE.RingGeometry(r - 0.01 * radius, r, 48), new THREE.MeshBasicMaterial({ color: colorHex, transparent: true, opacity: Math.min(0.5, opacity * 2.2), side: THREE.DoubleSide, depthWrite: false }));
+            ring.rotation.x = -Math.PI / 2;
+            g.add(ring);
+        }
+        var rim = new THREE.Mesh(new THREE.TorusGeometry(radius, radius * 0.008, 8, 64), new THREE.MeshBasicMaterial({ color: colorHex }));
+        rim.rotation.x = -Math.PI / 2;
+        g.add(rim);
+        // Pole marker + stub pointing along +Y (before the group's own tilt is applied).
+        var pole = new THREE.Mesh(new THREE.SphereGeometry(radius * 0.028, 12, 8), new THREE.MeshBasicMaterial({ color: colorHex }));
+        pole.position.set(0, radius * 0.42, 0);
+        g.add(pole);
+        var stub = new THREE.Mesh(new THREE.CylinderGeometry(radius * 0.004, radius * 0.004, radius * 0.42, 6), new THREE.MeshBasicMaterial({ color: colorHex, transparent: true, opacity: 0.55 }));
+        stub.position.set(0, radius * 0.21, 0);
+        g.add(stub);
+        return { group: g, pole: pole, disk: disk };
+    }
+
+    function t3dGalacticCoordinateTransforms(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+
+        var SCOUNT = shell.low ? 500 : 1000;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(20 + Math.random() * 55);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.32, sizeAttenuation: false })));
+
+        var R = 6;
+
+        // Ecliptic plane - the fixed reference frame for this scene (Earth's
+        // orbital plane). Its normal is the North Ecliptic Pole (NEP).
+        var ecl = t3dGctBuildPlane(THREE, R, 0xffca28, 0.09);
+        scene.add(ecl.group);
+
+        // Galactic plane - fixed relative to the ecliptic on human/astronomical
+        // timescales; tilted by the published galactic-to-ecliptic angle.
+        // Rotated about X only: this draws the TILT ANGLE to the published
+        // value; the azimuthal (node-longitude) alignment on screen is
+        // illustrative, disclosed in copy.
+        var gal = t3dGctBuildPlane(THREE, R, 0x42a5f5, 0.1);
+        gal.group.rotation.x = t3dGctDeg(T3D_GCT_GAL_ECL_DEG);
+        scene.add(gal.group);
+
+        // Equatorial plane - tilted by the real obliquity (23.4393 deg) from
+        // the ecliptic, then spun about the ecliptic-pole (Y) axis by the
+        // precession phase angle. This two-step rotation is exactly the real
+        // geometry of axial precession: the pole traces a cone of half-angle
+        // = obliquity around the ecliptic pole.
+        var eq = t3dGctBuildPlane(THREE, R * 0.86, 0xff5252, 0.1);
+        scene.add(eq.group);
+
+        // Precession circle: the real path the North Celestial Pole traces
+        // around the North Ecliptic Pole over one full cycle.
+        var circPts = [];
+        // Matches t3dGctBuildPlane's pole-marker offset for the equatorial
+        // plane's radius (R * 0.86 * 0.42).
+        var eqPoleDist = R * 0.86 * 0.42;
+        var circR = eqPoleDist * Math.sin(t3dGctDeg(T3D_GCT_OBLIQUITY_DEG));
+        var circY = eqPoleDist * Math.cos(t3dGctDeg(T3D_GCT_OBLIQUITY_DEG));
+        for (var i = 0; i <= 96; i++) {
+            var a = (i / 96) * Math.PI * 2;
+            circPts.push(circR * Math.sin(a), circY, circR * Math.cos(a));
+        }
+        var circGeo = new THREE.BufferGeometry();
+        circGeo.setAttribute('position', new THREE.Float32BufferAttribute(circPts, 3));
+        var precLine = new THREE.Line(circGeo, new THREE.LineDashedMaterial({ color: 0xffffff, transparent: true, opacity: 0.45, dashSize: 0.12, gapSize: 0.08 }));
+        precLine.computeLineDistances();
+        scene.add(precLine);
+
+        // Pole-star markers fixed on the precession circle at their real
+        // time offset from today (see T3D_GCT_POLE_STARS + header comment).
+        var starMeshes = [];
+        T3D_GCT_POLE_STARS.forEach(function (st) {
+            var phase = -(st.yearsFromNow / T3D_GCT_PRECESSION_YEARS_MODERN) * Math.PI * 2;
+            var m = new THREE.Mesh(new THREE.SphereGeometry(R * 0.02, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+            m.position.set(circR * Math.sin(phase), circY, circR * Math.cos(phase));
+            scene.add(m);
+            starMeshes.push(m);
+        });
+
+        var visible = { ecliptic: true, galactic: true, equatorial: true };
+        function applyVisibility() {
+            ecl.group.visible = visible.ecliptic;
+            gal.group.visible = visible.galactic;
+            eq.group.visible = visible.equatorial;
+            precLine.visible = visible.equatorial;
+            starMeshes.forEach(function (m) { m.visible = visible.equatorial; });
+        }
+
+        function nearestPoleStar(yearsFromNow) {
+            var best = T3D_GCT_POLE_STARS[0], bestD = Infinity;
+            T3D_GCT_POLE_STARS.forEach(function (st) {
+                var d = Math.abs(st.yearsFromNow - yearsFromNow);
+                if (d < bestD) { bestD = d; best = st; }
+            });
+            return best;
+        }
+
+        function facts(yearsFromNow) {
+            var yearLabel = yearsFromNow === 0 ? 'today (about 2026 CE)' :
+                (yearsFromNow < 0 ? Math.abs(Math.round(yearsFromNow)) + ' years before today' : Math.round(yearsFromNow) + ' years from today');
+            var near = nearestPoleStar(yearsFromNow);
+            return '<h3>Precession clock: ' + yearLabel + '</h3>' +
+                '<p>Nearest named pole star on this circle: <b>' + near.name + '</b> (' + near.note + ').</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Obliquity (equatorial-to-ecliptic tilt)</td><td>23.4393 deg</td></tr>' +
+                '<tr><td>Galactic plane to ecliptic</td><td>about 60.2 deg</td></tr>' +
+                '<tr><td>Galactic plane to celestial equator</td><td>about 62.87 deg</td></tr>' +
+                '<tr><td>North Galactic Pole (J2000)</td><td>RA 192.86 deg, Dec +27.13 deg</td></tr>' +
+                '<tr><td>Precession period (modern)</td><td>about 25,772 years</td></tr>' +
+                '<tr><td>Precession period (classical round figure)</td><td>25,920 years (360 x 72)</td></tr>' +
+                '<tr><td>Sun\'s distance from the galactic center</td><td>about 26,000 light-years (context only)</td></tr>' +
+                '</table>' +
+                '<p>The equatorial plane\'s pole (red) traces the dashed circle clockwise, as seen from above the ecliptic north pole, once per precession cycle - Earth\'s own orbital motion runs the opposite way.</p>' +
+                '<p class="t3d-note">Educational approximation - the three planes are tilted to their real published mutual angles and the precession cone is geometrically real, but this is not a live star catalog: the galactic plane\'s on-screen compass alignment and the pole-star markers\' positions are illustrative, tied only to the correct TIME offset from today, not to catalog right ascension.</p>';
+        }
+
+        var yearsFromNow = 0, playing = false;
+        function setYears(y) {
+            yearsFromNow = Math.max(-15000, Math.min(16000, y));
+            var phase = -(yearsFromNow / T3D_GCT_PRECESSION_YEARS_MODERN) * Math.PI * 2;
+            eq.group.rotation.set(0, 0, 0);
+            eq.group.rotateY(phase);
+            eq.group.rotateX(t3dGctDeg(T3D_GCT_OBLIQUITY_DEG));
+            var slider = document.getElementById('t3dGctYear');
+            var label = document.getElementById('t3dGctYearLabel');
+            if (slider) slider.value = String(Math.round(yearsFromNow));
+            if (label) label.textContent = (yearsFromNow === 0 ? 'Today' : (yearsFromNow < 0 ? Math.abs(Math.round(yearsFromNow)) + ' yr ago' : Math.round(yearsFromNow) + ' yr ahead'));
+            t3dInfo(facts(yearsFromNow));
+            try { t3dSaveStore({ yearsFromNow: yearsFromNow }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        setYears(typeof store.yearsFromNow === 'number' ? store.yearsFromNow : 0);
+        applyVisibility();
+
+        var playBtn = document.getElementById('t3dGctPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            playing = !playing;
+            playBtn.textContent = playing ? 'Pause precession' : 'Play precession';
+        });
+        var slider = document.getElementById('t3dGctYear');
+        if (slider) slider.addEventListener('input', function () {
+            playing = false;
+            if (playBtn) playBtn.textContent = 'Play precession';
+            setYears(parseFloat(slider.value || '0'));
+        });
+        T3D_GCT_POLE_STARS.forEach(function (st, idx) {
+            var btn = document.getElementById('t3dGctStarBtn' + idx);
+            if (btn) btn.addEventListener('click', function () {
+                playing = false; if (playBtn) playBtn.textContent = 'Play precession';
+                setYears(st.yearsFromNow);
+            });
+        });
+        var toggles = { ecliptic: 't3dGctToggleEcliptic', galactic: 't3dGctToggleGalactic', equatorial: 't3dGctToggleEquatorial' };
+        Object.keys(toggles).forEach(function (key) {
+            var cb = document.getElementById(toggles[key]);
+            if (cb) cb.addEventListener('change', function () { visible[key] = cb.checked; applyVisibility(); });
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Scrub the precession-year slider, press Play precession, or jump to a named pole star.');
+        return function animate(dt) {
+            dt = dt / 1000;
+            if (playing) { setYears(yearsFromNow + dt * 600); }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { galacticcoordinatetransforms: 't3dGctControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { galacticcoordinatetransforms: { radius: 15, maxR: 45, minR: 4, phi: 1.0, theta: 0.5, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dGalacticCoordinateTransforms(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

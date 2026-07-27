@@ -1,0 +1,352 @@
+<script>
+    // 3D scene archetype skeleton (Io Plasma Torus) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side.
+    // Built LEAN, forked from the olbersparadox shape - ONE scene only (a
+    // three-layer procedural particle torus around Jupiter, fed by Io, with
+    // a co-rotating density bulge that laps Io's own orbit). All geometry is
+    // procedural (BufferGeometry+Points rings + two orbit pivots) - no model
+    // files, no textures fetched.
+    //
+    // EDUCATIONAL APPROXIMATION, not a plasma-physics simulation. The point
+    // counts, colors, and the bulge's exact shape/width are an illustrative
+    // teaching device; they are NOT a calibrated emission-intensity map or an
+    // ion-transport model. The published density/temperature/radiated-power
+    // figures and the two rotation periods cited below and in the facts
+    // panel are real.
+    //
+    // Published figures (cross-checked via WebSearch 2026-07-24; sources:
+    // Cassini UVIS Io-torus papers arXiv:1301.3813 / arXiv:1301.3818, the
+    // Juno Io-torus results A&A 2025 aa53584-24, and standard NASA/JPL
+    // planetary fact sheets for Io's orbital period and Jupiter's System III
+    // rotation period):
+    //   - Io orbits Jupiter at 5.9 Jupiter radii (RJ), once every 42.5 hours
+    //     (1.769 Earth days).
+    //   - Io's volcanoes vent about 1 tonne of neutral gas per second, which
+    //     is ionized by Jupiter's co-rotating magnetic field to feed the
+    //     torus (sulfur and oxygen ions).
+    //   - Three radial regions (Voyager 1 / Cassini UVIS): a cold disk
+    //     inside about 5.5 RJ (electron temperature under 1 eV), a warm
+    //     ribbon from about 5.5-7.6 RJ containing Io's own orbit (electron
+    //     temperature 5-6 eV; Juno found peak electron density near 3,000
+    //     per cubic centimeter at 5.7 RJ), and an extended/hot torus beyond
+    //     about 7.6 RJ (electron temperature jumps to about 30 eV, climbing
+    //     past 100 eV beyond 12 RJ).
+    //   - Cassini's UVIS instrument measured the whole torus radiating about
+    //     1.7 terawatts of extreme-ultraviolet light (580-1181 angstroms),
+    //     varying by up to 25%.
+    //   - The torus is not azimuthally uniform: Cassini data show a denser,
+    //     brighter sector that rotates around with Jupiter's magnetic field
+    //     every 10.07 hours - about 1.5% longer than Jupiter's 9.925-hour
+    //     System III rotation period. Because Io orbits far slower (42.5
+    //     hours), that bright sector laps Io roughly four times per Io orbit.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'ioplasmatorus';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'ioplasmatorus'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Real published figures used in the facts panel and copy.
+    var T3D_RJ = 3.0; // scene units per Jupiter radius (compressed for legibility)
+    var T3D_IO_ORBIT_RJ = 5.9;
+    var T3D_IO_PERIOD_HR = 42.5; // 1.769 Earth days
+    var T3D_COROTATION_PERIOD_HR = 10.07;
+    var T3D_JUPITER_SYS3_PERIOD_HR = 9.925;
+    var T3D_IO_MASS_LOSS_TONNES_S = 1;
+    var T3D_RADIATED_POWER_TW = 1.7;
+    var T3D_COLD_MAX_RJ = 5.5;
+    var T3D_WARM_MAX_RJ = 7.6;
+    var T3D_EXTENDED_MAX_RJ = 16;
+    var T3D_PEAK_DENSITY_CM3 = 3000;
+
+    function t3dBuildTorusLayer(THREE, minRJ, maxRJ, thicknessY, count, color, size, opacity) {
+        var pos = new Float32Array(count * 3);
+        for (var i = 0; i < count; i++) {
+            var theta = Math.random() * Math.PI * 2;
+            var r = (minRJ + Math.random() * (maxRJ - minRJ)) * T3D_RJ;
+            var y = (Math.random() - 0.5) * thicknessY;
+            pos[i * 3] = r * Math.cos(theta);
+            pos[i * 3 + 1] = y;
+            pos[i * 3 + 2] = r * Math.sin(theta);
+        }
+        var geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        var mat = new THREE.PointsMaterial({ color: color, size: size, sizeAttenuation: true, transparent: true, opacity: opacity, depthWrite: false });
+        return new THREE.Points(geo, mat);
+    }
+
+    function t3dBuildBulge(THREE, minRJ, maxRJ, thicknessY, count, color, size) {
+        var pos = new Float32Array(count * 3);
+        var halfSpan = (Math.PI / 180) * 22; // illustrative ~44-degree bright sector
+        for (var i = 0; i < count; i++) {
+            var theta = (Math.random() * 2 - 1) * halfSpan;
+            var r = (minRJ + Math.random() * (maxRJ - minRJ)) * T3D_RJ;
+            var y = (Math.random() - 0.5) * thicknessY;
+            pos[i * 3] = r * Math.cos(theta);
+            pos[i * 3 + 1] = y;
+            pos[i * 3 + 2] = r * Math.sin(theta);
+        }
+        var geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        var mat = new THREE.PointsMaterial({ color: color, size: size, sizeAttenuation: true, transparent: true, opacity: 0.95, depthWrite: false });
+        return new THREE.Points(geo, mat);
+    }
+
+    function t3dIoPlasmaTorus(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x030308, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+        var sun = new THREE.DirectionalLight(0xffffff, 0.9);
+        sun.position.set(30, 40, 20);
+        scene.add(sun);
+
+        var jupiter = new THREE.Mesh(
+            new THREE.SphereGeometry(T3D_RJ * 1.35, 32, 24),
+            new THREE.MeshStandardMaterial({ color: 0xd8a468, roughness: 0.85, metalness: 0.05 })
+        );
+        scene.add(jupiter);
+
+        var ioPivot = new THREE.Object3D();
+        scene.add(ioPivot);
+        var io = new THREE.Mesh(
+            new THREE.SphereGeometry(0.7, 20, 16),
+            new THREE.MeshStandardMaterial({ color: 0xe0a04a, roughness: 0.7 })
+        );
+        io.position.set(T3D_IO_ORBIT_RJ * T3D_RJ, 0, 0);
+        ioPivot.add(io);
+        // faint orbit guide ring for Io's own path
+        var ioRingPts = [];
+        for (var gi = 0; gi <= 96; gi++) {
+            var a = (gi / 96) * Math.PI * 2;
+            ioRingPts.push(new THREE.Vector3(Math.cos(a) * T3D_IO_ORBIT_RJ * T3D_RJ, 0, Math.sin(a) * T3D_IO_ORBIT_RJ * T3D_RJ));
+        }
+        var ioRing = new THREE.LineLoop(
+            new THREE.BufferGeometry().setFromPoints(ioRingPts),
+            new THREE.LineBasicMaterial({ color: 0x555566, transparent: true, opacity: 0.4 })
+        );
+        scene.add(ioRing);
+
+        var densityScale = shell.low ? 0.5 : 1;
+        var coldLayer = t3dBuildTorusLayer(THREE, 3.0, T3D_COLD_MAX_RJ, 1.1, Math.round(900 * densityScale), 0xbfe3ff, 0.85, 0.55);
+        var warmLayer = t3dBuildTorusLayer(THREE, T3D_COLD_MAX_RJ, T3D_WARM_MAX_RJ, 2.3, Math.round(1400 * densityScale), 0xcdf27a, 0.95, 0.75);
+        var extendedLayer = t3dBuildTorusLayer(THREE, T3D_WARM_MAX_RJ, T3D_EXTENDED_MAX_RJ, 4.8, Math.round(1600 * densityScale), 0xf2965a, 0.85, 0.4);
+        scene.add(coldLayer, warmLayer, extendedLayer);
+        var layers = { cold: coldLayer, warm: warmLayer, extended: extendedLayer };
+
+        var bulgePivot = new THREE.Object3D();
+        scene.add(bulgePivot);
+        var bulge = t3dBuildBulge(THREE, T3D_COLD_MAX_RJ, T3D_WARM_MAX_RJ, 2.3, Math.round(260 * densityScale), 0xfff4c2, 1.5);
+        bulgePivot.add(bulge);
+
+        var layerMode = 'all'; // 'all' | 'cold' | 'warm' | 'extended'
+        var bulgeOn = true;
+        var layerBtn = document.getElementById('t3dIoTorusLayerBtn');
+        var bulgeBtn = document.getElementById('t3dIoTorusBulgeBtn');
+        var LAYER_LABEL = {
+            all: 'Layers: all three (click to isolate)',
+            cold: 'Layer: cold disk (under 5.5 RJ)',
+            warm: 'Layer: warm ribbon (5.5-7.6 RJ, Io\'s orbit)',
+            extended: 'Layer: extended hot torus (beyond 7.6 RJ)'
+        };
+        var LAYER_ORDER = ['all', 'cold', 'warm', 'extended'];
+
+        function applyLayerMode() {
+            coldLayer.visible = (layerMode === 'all' || layerMode === 'cold');
+            warmLayer.visible = (layerMode === 'all' || layerMode === 'warm');
+            extendedLayer.visible = (layerMode === 'all' || layerMode === 'extended');
+            if (layerBtn) layerBtn.textContent = LAYER_LABEL[layerMode];
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ layerMode: layerMode, bulgeOn: bulgeOn }); } catch (e) {}
+        }
+
+        function panelHtml() {
+            var base = '<h3>Io plasma torus</h3>' +
+                '<p>A doughnut of ionized sulfur and oxygen circles Jupiter along Io\'s orbit (' + T3D_IO_ORBIT_RJ + ' Jupiter radii), fed by about ' + T3D_IO_MASS_LOSS_TONNES_S + ' tonne of neutral volcanic gas that Io vents into space every second.</p>';
+            var layerText;
+            if (layerMode === 'cold') {
+                layerText = '<p><b>Cold disk</b> (under ' + T3D_COLD_MAX_RJ + ' RJ): electron temperature under 1 eV (Voyager 1) - the coolest, innermost part of the torus.</p>';
+            } else if (layerMode === 'warm') {
+                layerText = '<p><b>Warm ribbon</b> (' + T3D_COLD_MAX_RJ + '-' + T3D_WARM_MAX_RJ + ' RJ, contains Io\'s own orbit): electron temperature 5-6 eV; Juno measured peak electron density near ' + T3D_PEAK_DENSITY_CM3.toLocaleString() + ' per cubic centimeter here, with main ions around 100 eV and a hotter ~400 eV oxygen component.</p>';
+            } else if (layerMode === 'extended') {
+                layerText = '<p><b>Extended hot torus</b> (beyond ' + T3D_WARM_MAX_RJ + ' RJ): electron temperature jumps to about 30 eV just outside the ribbon and climbs past 100 eV beyond 12 RJ.</p>';
+            } else {
+                layerText = '<p>Three radial regions make up the torus: a cold disk, a dense warm ribbon at Io\'s orbit, and an extended hot outer torus. Click the layer button to isolate one.</p>';
+            }
+            var bulgeText = bulgeOn
+                ? '<p>The bright patch is a real documented asymmetry: a denser sector that rotates with Jupiter\'s magnetic field every ' + T3D_COROTATION_PERIOD_HR + ' hours - about 1.5% longer than Jupiter\'s ' + T3D_JUPITER_SYS3_PERIOD_HR + '-hour System III rotation. Io itself orbits far slower, once every ' + T3D_IO_PERIOD_HR + ' hours, so the patch laps Io roughly four times per Io orbit.</p>'
+                : '<p>The co-rotating density bulge is hidden. Toggle it back on to watch the real ' + T3D_COROTATION_PERIOD_HR + '-hour bright sector lap Io\'s slower ' + T3D_IO_PERIOD_HR + '-hour orbit.</p>';
+            var power = '<p class="t3d-note">Cassini\'s UVIS instrument measured the whole torus radiating about ' + T3D_RADIATED_POWER_TW + ' terawatts of extreme-ultraviolet light, varying by up to 25%. Point colors, counts, and the bulge\'s exact shape here are an illustrative teaching device, not a calibrated emission map or a plasma-transport simulation.</p>';
+            return base + layerText + bulgeText + power;
+        }
+
+        var store = t3dLoadStore();
+        if (LAYER_ORDER.indexOf(store.layerMode) !== -1) layerMode = store.layerMode;
+        if (typeof store.bulgeOn === 'boolean') bulgeOn = store.bulgeOn;
+        bulgePivot.visible = bulgeOn;
+        applyLayerMode();
+        if (bulgeBtn) bulgeBtn.textContent = bulgeOn ? 'Hide co-rotating bulge' : 'Show co-rotating bulge';
+
+        if (layerBtn) layerBtn.addEventListener('click', function () {
+            var idx = LAYER_ORDER.indexOf(layerMode);
+            layerMode = LAYER_ORDER[(idx + 1) % LAYER_ORDER.length];
+            applyLayerMode();
+        });
+        if (bulgeBtn) bulgeBtn.addEventListener('click', function () {
+            bulgeOn = !bulgeOn;
+            bulgePivot.visible = bulgeOn;
+            bulgeBtn.textContent = bulgeOn ? 'Hide co-rotating bulge' : 'Show co-rotating bulge';
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ layerMode: layerMode, bulgeOn: bulgeOn }); } catch (e) {}
+        });
+
+        // Simulated-hours-per-real-second: fast enough that the bulge visibly
+        // laps Io within a short viewing window. Both rates use the same
+        // published periods, so the ~4.22x lapping ratio itself is real.
+        var SIM_HOURS_PER_SEC = 2.4;
+        var ioAngularRate = (Math.PI * 2 / T3D_IO_PERIOD_HR) * SIM_HOURS_PER_SEC;
+        var bulgeAngularRate = (Math.PI * 2 / T3D_COROTATION_PERIOD_HR) * SIM_HOURS_PER_SEC;
+
+        t3dStatus('Drag to orbit, scroll to zoom. The bright sector co-rotates with Jupiter and laps Io\'s slower orbit - toggle the layer and bulge buttons for details.');
+        return function animate(dt) {
+            var dtSec = dt * 0.001;
+            ioPivot.rotation.y += ioAngularRate * dtSec;
+            bulgePivot.rotation.y += bulgeAngularRate * dtSec;
+            jupiter.rotation.y += dtSec * 0.35;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { ioplasmatorus: 't3dIoTorusControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { ioplasmatorus: { radius: 90, maxR: 220, minR: 20, phi: 1.05, theta: 0.6, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dIoPlasmaTorus(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

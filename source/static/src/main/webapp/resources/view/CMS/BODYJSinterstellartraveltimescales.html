@@ -1,0 +1,356 @@
+<script>
+    // 3D scene archetype skeleton (Interstellar Travel Timescales Explorer) -
+    // vendored three.js (ESM, dynamic import from /vendor/three/, NO CDN),
+    // fully client-side. Built LEAN, forked from the borisov-interstellar-comet
+    // shape - ONE scene only (a vehicle-picker + log-scale time-scrub explorer).
+    // All geometry is procedural (a starfield of Points, a Sun sphere, a
+    // Proxima Centauri marker sphere, a straight schematic distance line as
+    // Line geometry, and a traveling marker sphere).
+    //
+    // EDUCATIONAL APPROXIMATION, not a physics or orbital-mechanics
+    // simulation. The distance line is a schematic straight line, not drawn to
+    // true AU/ly scale (the real distance spans about 268,000 AU - no on-screen
+    // line can show that proportionally next to a visible Sun and Proxima
+    // marker). The traveling marker moves at a constant on-screen rate implied
+    // by the slider's elapsed-years value against each vehicle's real transit
+    // time - it is not a thrust, acceleration, or relativistic-time-dilation
+    // simulation.
+    //
+    // Published figures (cross-checked via WebSearch by an earlier fire this
+    // same day - 2026-07-24 - recorded in the space-3d-discovery-loop-runbook
+    // candidate_backlog entry "interstellar-travel-timescales", evidence
+    // field, cross-referencing NASA/JPL Voyager mission pages, NASA/ESO
+    // Proxima Centauri distance figures, and the Breakthrough Starshot
+    // published mission concept parameters):
+    //   - Proxima Centauri is about 4.246 light-years from the Sun (NASA/ESO
+    //     published distance figures; about 268,000 AU).
+    //   - Light itself takes about 4.25 years to cross that distance.
+    //   - Voyager 1, humanity's fastest and most distant spacecraft, travels
+    //     at roughly 17 km/s relative to the Sun. At that speed it would take
+    //     about 75,000 years to cover the distance to Proxima Centauri (it is
+    //     not headed there and was never designed to be).
+    //   - The Breakthrough Starshot mission concept proposes laser-driven
+    //     light sails accelerated to roughly 0.2c (about 20% of the speed of
+    //     light). At that speed the one-way transit to Proxima Centauri would
+    //     take about 20 years, and a radio signal sent back after arrival
+    //     would take a further ~4.25 years (one-way light-travel time) to
+    //     reach Earth.
+    //   - The speed of light, c, is exactly 299,792.458 km/s by definition (SI
+    //     unit definition of the metre).
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'interstellartraveltimescales';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'traveltimescales'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Real published vehicle figures (cross-checked via WebSearch, evidence
+    // recorded in the candidate_backlog entry "interstellar-travel-timescales";
+    // sources in the header comment above). travelYears is each vehicle's
+    // real (Voyager 1) or published-concept (Starshot) one-way transit time
+    // to Proxima Centauri; light's travelYears is the light-travel time itself.
+    var T3D_TT_DEST_LY = 4.246; // Proxima Centauri distance, light-years (NASA/ESO)
+    var T3D_TT_VEHICLES = [
+        {
+            key: 'voyager1',
+            label: 'Voyager 1',
+            sub: "humanity's fastest, most distant real spacecraft",
+            speed: 'about 17 km/s relative to the Sun',
+            travelYears: 75000,
+            color: 0x7fd0ff,
+            note: "Voyager 1 is not headed toward Proxima Centauri and was never designed to be - this is a what-if timescale, not a mission plan. At its real cruising speed of about 17 km/s, covering the 4.246 light-year distance would take roughly 75,000 years."
+        },
+        {
+            key: 'starshot',
+            label: 'Breakthrough Starshot concept',
+            sub: 'proposed laser-driven light sail, about 0.2c',
+            speed: 'about 0.2 x the speed of light (about 59,958 km/s)',
+            travelYears: 20,
+            signalLagYears: 4.25,
+            color: 0xffb37a,
+            note: 'A published mission CONCEPT, not a built or flown spacecraft. At its proposed cruising speed of about 0.2c, the one-way trip would take about 20 years - then a radio signal sent back after arrival needs a further ~4.25 years (light-travel time) to reach Earth.'
+        },
+        {
+            key: 'light',
+            label: 'Light itself',
+            sub: 'the universal speed limit, c',
+            speed: 'exactly 299,792.458 km/s (definition of the metre)',
+            travelYears: 4.25,
+            color: 0xffee88,
+            note: 'Light (and radio signals, which travel at the same speed) takes about 4.25 years to cross the 4.246 light-year distance to Proxima Centauri - this is the fastest any signal or object can make the trip.'
+        }
+    ];
+    var T3D_TT_GEN_YEARS = 25; // a common demographic convention for one human generation - stated as a convention, not a measured constant
+
+    function t3dTtBuildLine(THREE) {
+        var pts = [ new THREE.Vector3(-26, 0, 0), new THREE.Vector3(26, 0, 0) ];
+        return new THREE.BufferGeometry().setFromPoints(pts);
+    }
+
+    function t3dTravelTimescales(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x05070d, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+
+        var starN = shell.low ? 700 : 1300;
+        var starPos = new Float32Array(starN * 3);
+        var starCol = new Float32Array(starN * 3);
+        for (var s = 0; s < starN; s++) {
+            var r = 70 + Math.random() * 90;
+            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+            starPos[s * 3] = r * Math.sin(ph) * Math.cos(th);
+            starPos[s * 3 + 1] = r * Math.cos(ph);
+            starPos[s * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+            var tint = 0.75 + Math.random() * 0.25;
+            starCol[s * 3] = tint; starCol[s * 3 + 1] = tint; starCol[s * 3 + 2] = Math.min(1, tint + 0.08);
+        }
+        var starGeo = new THREE.BufferGeometry();
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        starGeo.setAttribute('color', new THREE.BufferAttribute(starCol, 3));
+        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ vertexColors: true, size: 0.55, sizeAttenuation: true, transparent: true, opacity: 0.9 })));
+
+        // Schematic straight distance line, Sun at x=-26 to Proxima marker at
+        // x=+26 - NOT to true AU/light-year scale (see header comment).
+        var line = new THREE.Line(t3dTtBuildLine(THREE), new THREE.LineBasicMaterial({ color: 0x7fa0c8, transparent: true, opacity: 0.85 }));
+        scene.add(line);
+
+        var sun = new THREE.Mesh(new THREE.SphereGeometry(2.4, 28, 20), new THREE.MeshBasicMaterial({ color: 0xffcc55 }));
+        sun.position.x = -26;
+        scene.add(sun);
+        var sunGlow = new THREE.Mesh(new THREE.SphereGeometry(4.2, 20, 16), new THREE.MeshBasicMaterial({ color: 0xffdd88, transparent: true, opacity: 0.28 }));
+        sunGlow.position.x = -26;
+        scene.add(sunGlow);
+        var sunLight = new THREE.PointLight(0xfff2cc, 2.2, 200);
+        sunLight.position.x = -26;
+        scene.add(sunLight);
+
+        var proxima = new THREE.Mesh(new THREE.SphereGeometry(1.8, 24, 18), new THREE.MeshBasicMaterial({ color: 0xff6b4a }));
+        proxima.position.x = 26;
+        scene.add(proxima);
+        var proximaGlow = new THREE.Mesh(new THREE.SphereGeometry(3.0, 18, 14), new THREE.MeshBasicMaterial({ color: 0xff8a66, transparent: true, opacity: 0.28 }));
+        proximaGlow.position.x = 26;
+        scene.add(proximaGlow);
+
+        var markerGeo = new THREE.SphereGeometry(0.9, 18, 14);
+        var markers = {};
+        for (var v = 0; v < T3D_TT_VEHICLES.length; v++) {
+            var veh = T3D_TT_VEHICLES[v];
+            var m = new THREE.Mesh(markerGeo, new THREE.MeshBasicMaterial({ color: veh.color, transparent: true, opacity: 0.55 }));
+            m.position.set(-26, (v - 1) * 2.4, 0);
+            scene.add(m);
+            markers[veh.key] = m;
+        }
+
+        var activeKey = 'voyager1';
+        var logYears = 0; // slider value = log10(elapsed years), range 0..5 => 1yr..100,000yr
+
+        var selEl = document.getElementById('t3dTtVehicleSelect');
+        var scrubEl = document.getElementById('t3dTtScrub');
+        var yearsLabel = document.getElementById('t3dTtYearsLabel');
+
+        function activeVehicle() {
+            for (var i = 0; i < T3D_TT_VEHICLES.length; i++) { if (T3D_TT_VEHICLES[i].key === activeKey) return T3D_TT_VEHICLES[i]; }
+            return T3D_TT_VEHICLES[0];
+        }
+
+        function fmtYears(y) {
+            if (y < 1000) return y.toFixed(y < 10 ? 1 : 0) + ' yr';
+            return Math.round(y).toLocaleString() + ' yr';
+        }
+
+        function comparisonTableHtml() {
+            var rows = '';
+            for (var i = 0; i < T3D_TT_VEHICLES.length; i++) {
+                var v = T3D_TT_VEHICLES[i];
+                rows += '<tr' + (v.key === activeKey ? ' style="background:#e3f2fd;"' : '') + '>' +
+                    '<td>' + v.label + '</td>' + '<td>' + v.speed + '</td>' + '<td>' + fmtYears(v.travelYears) + '</td></tr>';
+            }
+            return '<div class="w3-responsive"><table class="w3-table w3-bordered w3-small">' +
+                '<tr><th>Vehicle</th><th>Speed</th><th>One-way transit time</th></tr>' + rows + '</table></div>';
+        }
+
+        function apply() {
+            var elapsedYears = Math.pow(10, logYears) - 1; // 0 at slider min
+            var veh = activeVehicle();
+            var frac = Math.min(1, elapsedYears / veh.travelYears);
+            for (var k in markers) {
+                var isActive = (k === activeKey);
+                markers[k].material.opacity = isActive ? 1 : 0.45;
+                if (isActive) { markers[k].position.x = -26 + 52 * frac; }
+            }
+            var genCount = elapsedYears / T3D_TT_GEN_YEARS;
+            var remainingLy = (1 - frac) * T3D_TT_DEST_LY;
+            var arrived = frac >= 1;
+            var html = '<h3>' + veh.label + ' - ' + veh.sub + '</h3>' +
+                '<p>' + veh.note + '</p>' +
+                '<table class="w3-table w3-small" style="margin-bottom:8px;">' +
+                '<tr><td><b>Elapsed (slider)</b></td><td>' + fmtYears(elapsedYears) + ' (about ' + (genCount < 1 ? genCount.toFixed(2) : Math.round(genCount).toLocaleString()) + ' human generations at ' + T3D_TT_GEN_YEARS + ' yr/generation, a common convention)</td></tr>' +
+                '<tr><td><b>Progress toward Proxima Centauri</b></td><td>' + (frac * 100).toFixed(frac < 0.001 ? 4 : 1) + '% - ' + (arrived ? 'arrived' : remainingLy.toFixed(remainingLy < 1 ? 3 : 1) + ' light-years remaining') + '</td></tr>' +
+                '<tr><td><b>One-way transit time</b></td><td>' + fmtYears(veh.travelYears) + '</td></tr>' +
+                (veh.signalLagYears ? '<tr><td><b>Signal lag after arrival</b></td><td>a reply radio signal needs a further ~' + veh.signalLagYears + ' years (light-travel time) to reach Earth</td></tr>' : '') +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation - the distance line is schematic and NOT to true AU/light-year scale (the real distance is about 268,000 AU); the marker moves at a constant on-screen rate implied by the slider, not a thrust, acceleration, or relativistic-time-dilation simulation.</p>' +
+                comparisonTableHtml();
+            t3dInfo(html);
+            if (yearsLabel) yearsLabel.textContent = fmtYears(elapsedYears) + ' elapsed';
+            try { t3dSaveStore({ activeKey: activeKey, logYears: logYears }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.activeKey === 'string' && markers[store.activeKey]) { activeKey = store.activeKey; }
+        if (typeof store.logYears === 'number' && store.logYears >= 0 && store.logYears <= 5) { logYears = store.logYears; }
+        if (selEl) selEl.value = activeKey;
+        if (scrubEl) scrubEl.value = String(logYears);
+        apply();
+
+        if (selEl) selEl.addEventListener('change', function () {
+            activeKey = markers[selEl.value] ? selEl.value : 'voyager1';
+            apply();
+        });
+        if (scrubEl) scrubEl.addEventListener('input', function () {
+            logYears = Math.max(0, Math.min(5, parseFloat(scrubEl.value) || 0));
+            apply();
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Pick a vehicle and drag the time slider to see how far it has travelled toward Proxima Centauri.');
+        return function animate(dt) {
+            sun.rotation.y += dt * 0.0003;
+            proxima.rotation.y += dt * 0.0004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { traveltimescales: 't3dTtControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { traveltimescales: { radius: 46, maxR: 110, minR: 10, phi: 1.2, theta: 0.5, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dTravelTimescales(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

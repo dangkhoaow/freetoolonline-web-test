@@ -1,0 +1,352 @@
+<script>
+    // 3D scene archetype skeleton (saros-cycle) - vendored three.js (ESM, dynamic
+    // import from /vendor/three/, NO CDN), fully client-side. Built LEAN from the
+    // shared t3d* skeleton - ONE scene only. All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not an ephemeris. Each eclipse in a saros series
+    // is drawn with the SAME fixed ground-track shape, rotated westward by the
+    // real longitude shift caused by the saros period's 8-hour remainder. This
+    // teaches the real long-period pattern (which real eclipses genuinely
+    // follow); it is not a precise reproduction of any single historical path.
+    //
+    // Published figures (NASA GSFC eclipse catalog, F. Espenak; cross-checked
+    // 2026-07-22):
+    //   - Saros period: 6,585.32 days = 18 years 11 days 8 hours
+    //   - The 0.32-day (about 8-hour) remainder past whole days means each
+    //     successive eclipse's ground track is shifted about 120 degrees west
+    //     of the previous one in the same series
+    //   - Triple saros (exeligmos): 54 years 34 days = 3 saros periods; the
+    //     8-hour remainder cancels out after 3 steps (24 hours = about 1 day),
+    //     so the eclipse returns to a similar longitude
+    //   - A single saros series contains 69 to 87 eclipses and spans roughly
+    //     1,226 to 1,550 years before Earth's geometry drifts the series off
+    //     the planet's disk entirely
+    //
+    // Distinct from Solar Eclipse 3D Explorer (one eclipse's shadow-cone
+    // geometry and umbra path) and Lunar Nodes & Eclipse Seasons (why eclipses
+    // cluster twice a year) - THIS page is the multi-decade repetition pattern:
+    // stepping through a saros series and watching the ground track march
+    // westward, with every third step (an exeligmos) returning near home.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'saros-cycle';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'saroscycle'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Published figures (see header comment for sources).
+    var T3D_SAROS_PERIOD_DAYS = 6585.32;
+    var T3D_SAROS_YEARS = 18;
+    var T3D_SAROS_REMAINDER_DAYS = 11;
+    var T3D_SAROS_REMAINDER_HOURS = 8;
+    var T3D_SAROS_SHIFT_DEG = 120;
+    var T3D_EXELIGMOS_YEARS = 54;
+    var T3D_EXELIGMOS_DAYS = 34;
+    var T3D_SERIES_MIN_ECLIPSES = 69;
+    var T3D_SERIES_MAX_ECLIPSES = 87;
+    var T3D_SERIES_MIN_YEARS = 1226;
+    var T3D_SERIES_MAX_YEARS = 1550;
+    var T3D_MAX_INDEX = 11;
+
+    // Fixed ground-track SHAPE (a curved arc from pole to pole, matching the
+    // existing Solar Eclipse explorer's path style) - only its longitude
+    // origin rotates per eclipse index. This is the educational approximation:
+    // it teaches the real westward-stepping pattern, not a specific historic path.
+    function t3dSarosPathPoints(THREE, earthR, lonOffsetRad) {
+        var pts = [];
+        for (var i = 0; i <= 64; i++) {
+            var t = (i / 64) * Math.PI - Math.PI / 2;
+            var lat = Math.sin(t) * 0.5;
+            var lon = t * 1.3 + lonOffsetRad;
+            var cl = Math.cos(lat);
+            pts.push(new THREE.Vector3(
+                Math.cos(lon) * cl * earthR * 1.003,
+                Math.sin(lat) * earthR * 1.003,
+                Math.sin(lon) * cl * earthR * 1.003
+            ));
+        }
+        return pts;
+    }
+
+    function t3dSarosCycle(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x020308, 1);
+        scene.add(new THREE.AmbientLight(0x334455, 0.4));
+        var sunLight = new THREE.DirectionalLight(0xfff4e0, 1.2);
+        sunLight.position.set(60, 30, 40);
+        scene.add(sunLight);
+
+        var SCOUNT = shell.low ? 250 : 500;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(60 + Math.random() * 90);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xb0bec5, size: 0.35, sizeAttenuation: false })));
+
+        var earthR = 12;
+        var earth = new THREE.Mesh(
+            new THREE.SphereGeometry(earthR, 56, 36),
+            new THREE.MeshPhongMaterial({ color: 0x2e6f8a, emissive: 0x060c12, shininess: 8 })
+        );
+        scene.add(earth);
+        var atmos = new THREE.Mesh(
+            new THREE.SphereGeometry(earthR * 1.015, 40, 28),
+            new THREE.MeshBasicMaterial({ color: 0x66aaff, transparent: true, opacity: 0.09, depthWrite: false })
+        );
+        scene.add(atmos);
+
+        var pathGroup = new THREE.Group();
+        scene.add(pathGroup);
+        var highlightDot = new THREE.Mesh(
+            new THREE.SphereGeometry(0.5, 12, 8),
+            new THREE.MeshBasicMaterial({ color: 0xffeb3b })
+        );
+        scene.add(highlightDot);
+
+        var index = 0;
+        var showAll = true;
+        var playing = false;
+
+        function lonOffsetForIndex(n) {
+            // Each step shifts the track ~120 deg WEST (negative longitude).
+            return -(n * T3D_SAROS_SHIFT_DEG) * Math.PI / 180;
+        }
+
+        function colorForIndex(n) {
+            var isExeligmos = (n % 3 === 0);
+            return isExeligmos ? 0xffca28 : 0x4fc3f7;
+        }
+
+        function rebuildPaths() {
+            while (pathGroup.children.length) {
+                var c = pathGroup.children.pop();
+                c.geometry.dispose(); c.material.dispose();
+            }
+            var start = showAll ? 0 : index;
+            for (var n = start; n <= index; n++) {
+                var pts = t3dSarosPathPoints(THREE, earthR, lonOffsetForIndex(n));
+                var geo = new THREE.BufferGeometry().setFromPoints(pts);
+                var isCurrent = (n === index);
+                var mat = new THREE.LineBasicMaterial({
+                    color: colorForIndex(n),
+                    transparent: true,
+                    opacity: isCurrent ? 0.95 : 0.28
+                });
+                pathGroup.add(new THREE.Line(geo, mat));
+            }
+            var curPts = t3dSarosPathPoints(THREE, earthR, lonOffsetForIndex(index));
+            highlightDot.position.copy(curPts[Math.round(curPts.length / 2)]);
+        }
+
+        function elapsedLabel(n) {
+            var totalDays = n * T3D_SAROS_PERIOD_DAYS;
+            var years = Math.floor(totalDays / 365.2422);
+            var days = Math.round(totalDays - years * 365.2422);
+            return years + ' yr ' + days + ' d';
+        }
+
+        function updateFacts() {
+            var isExeligmos = (index % 3 === 0) && index > 0;
+            var lonShift = ((index * T3D_SAROS_SHIFT_DEG) % 360).toFixed(0);
+            var html = '<h3>Eclipse #' + index + ' in the series' + (isExeligmos ? ' - exeligmos return' : '') + '</h3>' +
+                '<p>Each step is one saros period later: ' + T3D_SAROS_YEARS + ' years ' + T3D_SAROS_REMAINDER_DAYS + ' days ' + T3D_SAROS_REMAINDER_HOURS + ' hours (' + T3D_SAROS_PERIOD_DAYS + ' days). The extra ' + T3D_SAROS_REMAINDER_HOURS + ' hours means Earth has turned about ' + T3D_SAROS_SHIFT_DEG + ' degrees further, so the next eclipse\'s ground track lands about ' + T3D_SAROS_SHIFT_DEG + ' degrees west of the last one.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Time since eclipse #0</td><td>' + elapsedLabel(index) + '</td></tr>' +
+                '<tr><td>Cumulative westward shift</td><td>' + lonShift + ' deg</td></tr>' +
+                '<tr><td>Saros period</td><td>' + T3D_SAROS_PERIOD_DAYS + ' days = ' + T3D_SAROS_YEARS + 'y ' + T3D_SAROS_REMAINDER_DAYS + 'd ' + T3D_SAROS_REMAINDER_HOURS + 'h</td></tr>' +
+                '<tr><td>Exeligmos (triple saros)</td><td>' + T3D_EXELIGMOS_YEARS + 'y ' + T3D_EXELIGMOS_DAYS + 'd - returns near the same longitude</td></tr>' +
+                '<tr><td>Full series length</td><td>' + T3D_SERIES_MIN_ECLIPSES + '-' + T3D_SERIES_MAX_ECLIPSES + ' eclipses over ' + T3D_SERIES_MIN_YEARS + '-' + T3D_SERIES_MAX_YEARS + ' years</td></tr>' +
+                '</table>' +
+                (isExeligmos ? '<p class="t3d-note">Every 3rd step (an exeligmos) cancels the 8-hour remainder (3 x 8h = 24h, about one day), so this track lands near the SAME longitude as eclipse #0 - the amber track.</p>' : '') +
+                '<p class="t3d-note">Educational approximation: every track uses the same illustrative arc shape, rotated by the real longitude shift. This is not a reproduction of any single historical eclipse path or a live ephemeris.</p>';
+            t3dInfo(html);
+            var slider = document.getElementById('t3dSarosIndex');
+            var label = document.getElementById('t3dSarosIndexLabel');
+            if (slider && parseFloat(slider.value) !== index) slider.value = String(index);
+            if (label) label.textContent = 'Eclipse #' + index + ' (' + elapsedLabel(index) + ')';
+        }
+
+        function setIndex(n) {
+            index = Math.max(0, Math.min(T3D_MAX_INDEX, Math.round(n)));
+            rebuildPaths();
+            updateFacts();
+            try { t3dSaveStore({ index: index }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        setIndex(typeof store.index === 'number' ? store.index : 0);
+
+        var playBtn = document.getElementById('t3dSarosPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            playing = !playing;
+            playBtn.textContent = playing ? 'Pause stepping' : 'Play stepping';
+        });
+        var slider = document.getElementById('t3dSarosIndex');
+        if (slider) slider.addEventListener('input', function () {
+            playing = false;
+            if (playBtn) playBtn.textContent = 'Play stepping';
+            setIndex(parseFloat(slider.value || '0'));
+        });
+        var allBtn = document.getElementById('t3dSarosAllBtn');
+        if (allBtn) allBtn.addEventListener('click', function () {
+            showAll = !showAll;
+            allBtn.textContent = showAll ? 'Show only current track' : 'Show all tracks so far';
+            rebuildPaths();
+        });
+        var exeligmosBtn = document.getElementById('t3dSarosExeligmosBtn');
+        if (exeligmosBtn) exeligmosBtn.addEventListener('click', function () {
+            var next = index + 3 <= T3D_MAX_INDEX ? index + 3 : 0;
+            playing = false;
+            if (playBtn) playBtn.textContent = 'Play stepping';
+            setIndex(next);
+        });
+
+        var acc = 0;
+        t3dStatus('Drag to orbit Earth, scroll to zoom. Step through the series or press Play stepping.');
+        return function animate(dt) {
+            if (!playing) return;
+            acc += dt;
+            if (acc > 900) {
+                acc = 0;
+                var next = index + 1 > T3D_MAX_INDEX ? 0 : index + 1;
+                setIndex(next);
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { saroscycle: 't3dSarosControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { saroscycle: { radius: 30, maxR: 90, minR: 16, phi: 1.1, theta: 0.5, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dSarosCycle(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

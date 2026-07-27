@@ -1,0 +1,366 @@
+<script>
+    // 3D scene archetype skeleton (meteor-airburst-size-comparison) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Registry Gate-H entry: three_3d_scene_vendored. Built LEAN
+    // from the shared t3d* skeleton (see BODYJSsolarsystem.html) - this file
+    // implements ONE scene only (meteorairburst), not the accumulated
+    // multi-scene skeleton, to avoid per-page payload bloat.
+    //
+    // All geometry is procedural - no model files, no textures fetched. This
+    // is an EDUCATIONAL APPROXIMATION, not a physical simulation. Airburst
+    // altitude is mapped directly to vertical position (1 three.js unit =
+    // 1.3 km); marker RADIUS is on a compressed log scale representing
+    // relative energy, NOT a physically-to-scale blast radius. The info
+    // panel discloses both compressions explicitly.
+    //
+    // A visible wrapper + "Loading 3D engine..." placeholder renders
+    // synchronously (G16 render-only pass); the ~0.7 MB engine lazy-loads
+    // post-paint via requestIdleCallback and is cached by the browser.
+    // Fullscreen targets the WRAPPER div (controls stay visible).
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'meteor-airburst-size-comparison';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) {
+        return 'meteorairburst';
+    }
+
+    // ---- vendored ESM loader (ftoLoadPdfLib shape, but a cached import()) ----
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - building still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- shared scene shell: renderer + camera + custom pointer-orbit --------
+    // OrbitControls is NOT vendored (jsm addons import the bare 'three'
+    // specifier); this ~40-line orbit covers drag-rotate + wheel/pinch zoom
+    // with damping and a clamped pitch.
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        function size() {
+            var w = Math.max(260, host.clientWidth);
+            var h = Math.round(w * 0.62);
+            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fsEl && fsEl.contains(host)) { h = Math.max(240, (window.innerHeight || h) - 150); }
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        host.appendChild(renderer.domElement);
+        renderer.domElement.style.touchAction = 'none';
+        renderer.domElement.style.borderRadius = '6px';
+        var drag = null, pinch = null, moved = 0;
+        host.addEventListener('pointerdown', function (e) {
+            drag = { x: e.clientX, y: e.clientY }; moved = 0;
+            host.setPointerCapture && host.setPointerCapture(e.pointerId);
+        });
+        host.addEventListener('pointermove', function (e) {
+            if (!drag) return;
+            var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+            moved += Math.abs(dx) + Math.abs(dy);
+            drag = { x: e.clientX, y: e.clientY };
+            orbit.goalTheta -= dx * 0.006;
+            orbit.goalPhi = Math.min(Math.max(orbit.goalPhi - dy * 0.005, 0.15), Math.PI - 0.2);
+        });
+        host.addEventListener('pointerup', function (e) {
+            var wasClick = moved < 8;
+            drag = null;
+            if (wasClick && shell.onClick) { shell.onClick(e); }
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR);
+        }, { passive: false });
+        host.addEventListener('touchstart', function (e) {
+            if (e.touches.length === 2) {
+                pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            }
+        }, { passive: true });
+        host.addEventListener('touchmove', function (e) {
+            if (e.touches.length === 2 && pinch) {
+                var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                pinch = d;
+            }
+        }, { passive: true });
+        window.addEventListener('resize', size);
+        document.addEventListener('fullscreenchange', size);
+        document.addEventListener('webkitfullscreenchange', size);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(size).observe(host); }
+        size();
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, size: size, onClick: null,
+            ndc: function (e) {
+                var r = renderer.domElement.getBoundingClientRect();
+                return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            },
+        };
+        return shell;
+    }
+
+    // ================= METEOR AIRBURST SIZE COMPARISON ========================
+    // Three real, named cases plotted on one shared altitude column: an
+    // airburst marker positioned at the case's real published altitude (1
+    // three.js unit = 1.3 km), sized on a COMPRESSED LOG scale representing
+    // relative released energy (NOT a physically-to-scale blast radius - the
+    // info panel discloses this). Selecting a case (button or click) replays
+    // a falling entry trail into that case's marker and highlights it while
+    // the other two stay visible, dimmed, for comparison.
+    var T3D_ALT_SCALE = 1.3; // three.js units per km of altitude
+    var T3D_CASES = [
+        {
+            id: 'tunguska', name: 'Tunguska (1908)',
+            altitudeKm: 7, altitudeLabel: 'an estimated 5-10 km (several studies converge on about 6-8 km)',
+            energyKt: 12000, energyLabel: 'an estimated 3-30 megatons TNT (commonly cited about 12 megatons)',
+            diameterLabel: 'an estimated 50-80 m stony asteroid',
+            color: 0xd9534f,
+            note: 'No crater was found; about 2,000 sq km of Siberian forest was flattened by the shock wave from an object that never reached the ground.'
+        },
+        {
+            id: 'chelyabinsk', name: 'Chelyabinsk (2013)',
+            altitudeKm: 23.3, altitudeLabel: 'an estimated 20-25 km (peak-brightness altitude commonly cited as 23.3 km)',
+            energyKt: 470, energyLabel: 'an estimated 440-500 kilotons TNT (NASA/JPL)',
+            diameterLabel: 'an estimated 17-20 m stony asteroid',
+            color: 0xf0ad4e,
+            note: 'The shock wave still reached the ground and injured about 1,500 people, mostly from shattered window glass, in Chelyabinsk, Russia.'
+        },
+        {
+            id: 'smallbolide', name: 'Typical small bolide',
+            altitudeKm: 30, altitudeLabel: 'commonly 20-45 km, varying with the object\'s size, speed, and entry angle',
+            energyKt: 1, energyLabel: 'typically well under 1 kiloton to a few kilotons TNT',
+            diameterLabel: 'around 1 m',
+            color: 0x5bc0de,
+            note: 'NASA/JPL\'s CNEOS Fireball and Bolide database (fed by U.S. government sensors) catalogues several dozen bright events like this every year; nearly all cause no ground damage.'
+        }
+    ];
+    var T3D_REF_ALTITUDES_KM = [10, 20, 30, 40, 50];
+
+    function t3dMarkerRadius(energyKt) {
+        // Compressed log scale so a 12-megaton case and a 1-kiloton case are
+        // both visible on screen at once. NOT a physically-to-scale radius.
+        return 1.4 + 1.7 * Math.log10(energyKt + 1);
+    }
+
+    function t3dMeteorAirburst(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+        var sun = new THREE.DirectionalLight(0xfff6e0, 1.0);
+        sun.position.set(40, 90, 60);
+        scene.add(sun);
+
+        // Ground disc (Earth's surface, seen from just above).
+        var ground = new THREE.Mesh(
+            new THREE.CircleGeometry(42, 40),
+            new THREE.MeshLambertMaterial({ color: 0x3d5a3d })
+        );
+        ground.rotation.x = -Math.PI / 2;
+        scene.add(ground);
+
+        // Faint reference altitude rings (10/20/30/40/50 km) for scale.
+        for (var r = 0; r < T3D_REF_ALTITUDES_KM.length; r++) {
+            var altKm = T3D_REF_ALTITUDES_KM[r];
+            var ring = new THREE.Mesh(
+                new THREE.TorusGeometry(14 + altKm * 0.22, 0.12, 8, 40),
+                new THREE.MeshBasicMaterial({ color: 0x8899aa, transparent: true, opacity: 0.28 })
+            );
+            ring.rotation.x = Math.PI / 2;
+            ring.position.y = altKm * T3D_ALT_SCALE;
+            scene.add(ring);
+        }
+
+        // One marker per case, at its real altitude, sized by the compressed
+        // energy scale. Dimmed by default; the selected case brightens.
+        var markers = [];
+        for (var i = 0; i < T3D_CASES.length; i++) {
+            var c = T3D_CASES[i];
+            var radius = t3dMarkerRadius(c.energyKt);
+            var mat = new THREE.MeshLambertMaterial({ color: c.color, transparent: true, opacity: 0.4 });
+            var mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 20, 16), mat);
+            mesh.position.set((i - 1) * 13, c.altitudeKm * T3D_ALT_SCALE, (i - 1) * 4);
+            mesh.userData = { idx: i };
+            scene.add(mesh);
+            markers.push({ mesh: mesh, mat: mat, baseRadius: radius, case: c });
+        }
+
+        // Falling entry-trail: a small bright particle drops from above down
+        // to the selected case's altitude, then the marker flashes.
+        var trail = new THREE.Mesh(
+            new THREE.SphereGeometry(0.9, 12, 10),
+            new THREE.MeshBasicMaterial({ color: 0xffffff })
+        );
+        trail.visible = false;
+        scene.add(trail);
+        var trailState = { active: false, idx: -1, t: 0, duration: 1400, pauseUntil: 0 };
+
+        function selectCase(idx) {
+            trailState.active = true;
+            trailState.idx = idx;
+            trailState.t = 0;
+            trailState.pauseUntil = 0;
+            for (var i = 0; i < markers.length; i++) {
+                markers[i].mat.opacity = (i === idx) ? 0.95 : 0.35;
+            }
+            facts(idx);
+        }
+
+        function facts(idx) {
+            var c = T3D_CASES[idx];
+            var rows = '';
+            for (var i = 0; i < T3D_CASES.length; i++) {
+                var row = T3D_CASES[i];
+                rows += '<tr' + (i === idx ? ' style="font-weight:600;"' : '') + '>' +
+                    '<td>' + row.name + '</td><td>' + row.diameterLabel + '</td><td>' + row.energyLabel + '</td><td>' + row.altitudeLabel + '</td></tr>';
+            }
+            t3dInfo('<h3>' + c.name + '</h3>' +
+                '<p>' + c.note + '</p>' +
+                '<div class="w3-responsive"><table class="w3-table w3-bordered w3-small"><thead><tr><th>Case</th><th>Impactor size</th><th>Released energy</th><th>Airburst altitude</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+                '<p class="t3d-note">Marker altitude in the scene is the real published figure (1 unit = 1.3 km). Marker SIZE is a compressed log scale of relative energy, not a to-scale blast radius.</p>');
+        }
+        facts(1); // Chelyabinsk by default - the best-instrumented case
+
+        var ray = new THREE.Raycaster();
+        shell.onClick = function (e) {
+            ray.setFromCamera(shell.ndc(e), shell.camera);
+            var hits = ray.intersectObjects(markers.map(function (m) { return m.mesh; }), false);
+            if (!hits.length) return;
+            selectCase(hits[0].object.userData.idx);
+        };
+
+        for (var b = 0; b < T3D_CASES.length; b++) {
+            (function (idx) {
+                var btn = document.getElementById('t3dMeteorAirburstBtn' + idx);
+                if (btn) { btn.addEventListener('click', function () { selectCase(idx); }); }
+            })(b);
+        }
+
+        return function animate(dt) {
+            for (var i = 0; i < markers.length; i++) {
+                markers[i].mesh.rotation.y += dt * 0.0004;
+            }
+            if (trailState.active) {
+                var m = markers[trailState.idx];
+                if (trailState.t === 0) {
+                    trail.visible = true;
+                    trail.position.set(m.mesh.position.x, 78, m.mesh.position.z);
+                }
+                trailState.t += dt;
+                var frac = Math.min(trailState.t / trailState.duration, 1);
+                trail.position.y = 78 + (m.mesh.position.y - 78) * frac;
+                if (frac >= 1) {
+                    trail.visible = false;
+                    m.mesh.scale.setScalar(1.35);
+                    trailState.active = false;
+                    trailState.pauseUntil = performance.now() + 900;
+                }
+            } else if (markers[trailState.idx] && markers[trailState.idx].mesh.scale.x > 1) {
+                var mm = markers[trailState.idx].mesh;
+                mm.scale.setScalar(Math.max(1, mm.scale.x - dt * 0.0009));
+                if (mm.scale.x <= 1.001 && trailState.pauseUntil && performance.now() > trailState.pauseUntil) {
+                    trailState.pauseUntil = 0;
+                    trailState.active = true;
+                    trailState.t = 0;
+                }
+            }
+        };
+    }
+
+    // ---- bootstrap ------------------------------------------------------------
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return; // not a 3D scene page
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { meteorairburst: 't3dMeteorAirburstControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = {
+                        meteorairburst: { radius: 150, maxR: 320, minR: 40, phi: 1.25, theta: 0.35, targetY: 30 }
+                    };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dMeteorAirburst(shell);
+                    t3dStatus('Drag to orbit, scroll or pinch to zoom, and click a marker (or a button below) to replay its entry.');
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

@@ -1,0 +1,410 @@
+<script>
+    // 3D scene archetype skeleton (cassini-grand-finale) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton (see BODYJSsolarsystem.html) - this file
+    // implements ONE scene only (cassinifinale), not the full accumulated scene set.
+    // All geometry is procedural - no model files, no textures fetched.
+    //
+    // This is an EDUCATIONAL APPROXIMATION, not a physics engine and not a
+    // precomputed ephemeris of the real Cassini trajectory. The flight path is a
+    // parametric teaching curve tuned to show the real ring-grazing -> Titan
+    // gravity-assist -> proximal "Grand Finale" orbits -> atmospheric-entry order
+    // of events. The info panel discloses this. Ring/planet sizes and the orbit
+    // gap are compressed for readability. The final-phase "signal to Earth"
+    // countdown is a stylized readout of the published one-way light time, not a
+    // live telemetry feed.
+    //
+    // Published figures cited (NASA/JPL Cassini End of Mission pages + ESA
+    // Cassini-Huygens Grand Finale pages; cross-checked 2026-07-26):
+    //   - 20 ring-grazing orbits begin 2016-11-30, skimming just outside the F ring
+    //   - Titan gravity-assist flyby 2017-04-22, ~800 m/s (~1,800 mph) velocity change
+    //   - 22 proximal "Grand Finale" orbits begin 2017-04-26, ~1,000-2,500 miles
+    //     (~1,600-4,000 km) above the cloud tops, through the ring-planet gap
+    //   - Atmospheric entry 2017-09-15; signal loss confirmed on Earth 7:55 a.m.
+    //     EDT / 4:55 a.m. PDT (11:55 UTC); one-way light time from Saturn to
+    //     Earth at the time ~83 minutes
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'cassini-grand-finale';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) {
+        return 'cassinifinale';
+    }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        function size() {
+            var w = Math.max(260, host.clientWidth);
+            var h = Math.round(w * 0.62);
+            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fsEl && fsEl.contains(host)) { h = Math.max(240, (window.innerHeight || h) - 150); }
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        host.appendChild(renderer.domElement);
+        renderer.domElement.style.touchAction = 'none';
+        renderer.domElement.style.borderRadius = '6px';
+        var drag = null, pinch = null, moved = 0;
+        host.addEventListener('pointerdown', function (e) {
+            drag = { x: e.clientX, y: e.clientY }; moved = 0;
+            host.setPointerCapture && host.setPointerCapture(e.pointerId);
+        });
+        host.addEventListener('pointermove', function (e) {
+            if (!drag) return;
+            var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+            moved += Math.abs(dx) + Math.abs(dy);
+            drag = { x: e.clientX, y: e.clientY };
+            orbit.goalTheta -= dx * 0.006;
+            orbit.goalPhi = Math.min(Math.max(orbit.goalPhi - dy * 0.005, 0.15), Math.PI - 0.2);
+        });
+        host.addEventListener('pointerup', function (e) {
+            var wasClick = moved < 8;
+            drag = null;
+            if (wasClick && shell.onClick) { shell.onClick(e); }
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR);
+        }, { passive: false });
+        host.addEventListener('touchstart', function (e) {
+            if (e.touches.length === 2) {
+                pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            }
+        }, { passive: true });
+        host.addEventListener('touchmove', function (e) {
+            if (e.touches.length === 2 && pinch) {
+                var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                pinch = d;
+            }
+        }, { passive: true });
+        window.addEventListener('resize', size);
+        document.addEventListener('fullscreenchange', size);
+        document.addEventListener('webkitfullscreenchange', size);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(size).observe(host); }
+        size();
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, size: size, onClick: null,
+            ndc: function (e) {
+                var r = renderer.domElement.getBoundingClientRect();
+                return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            },
+        };
+        return shell;
+    }
+
+    var T3D_CF_SATURN_R = 6;
+    var T3D_CF_RING_INNER = 8;
+    var T3D_CF_RING_OUTER = 14;
+    var T3D_CF_F_RING_R = 15.5;
+    var T3D_CF_TITAN_X = 30;
+    var T3D_CF_RING_GRAZE_START_ISO = '2016-11-30';
+    var T3D_CF_TITAN_FLYBY_ISO = '2017-04-22';
+    var T3D_CF_TITAN_DV_MS = 800;
+    var T3D_CF_PROXIMAL_START_ISO = '2017-04-26';
+    var T3D_CF_PROXIMAL_ORBITS = 22;
+    var T3D_CF_RING_GRAZE_ORBITS = 20;
+    var T3D_CF_GAP_ALT_MI = '1,000-2,500 miles (1,600-4,000 km)';
+    var T3D_CF_ENTRY_ISO = '2017-09-15';
+    var T3D_CF_SIGNAL_LOSS_TIME = '7:55 a.m. EDT / 4:55 a.m. PDT (11:55 UTC)';
+    var T3D_CF_LIGHT_TIME_MIN = 83;
+
+    function t3dCassiniFinale(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x02040c, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.34));
+        var sun = new THREE.DirectionalLight(0xfff3c4, 1.1);
+        sun.position.set(-24, 20, 16);
+        scene.add(sun);
+
+        var SCOUNT = shell.low ? 300 : 650;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(60 + Math.random() * 120);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.5, sizeAttenuation: false })));
+
+        var saturn = new THREE.Mesh(
+            new THREE.SphereGeometry(T3D_CF_SATURN_R, 32, 22),
+            new THREE.MeshLambertMaterial({ color: 0xd9c48a })
+        );
+        scene.add(saturn);
+
+        // Procedural main-ring disk (RingGeometry) plus a thin F-ring line just
+        // outside it - the ring-grazing orbits skim this outer edge.
+        var ringGeo = new THREE.RingGeometry(T3D_CF_RING_INNER, T3D_CF_RING_OUTER, 64);
+        var ringMat = new THREE.MeshBasicMaterial({ color: 0xcbb98f, side: THREE.DoubleSide, transparent: true, opacity: 0.75 });
+        var ring = new THREE.Mesh(ringGeo, ringMat);
+        ring.rotation.x = Math.PI / 2;
+        scene.add(ring);
+        var fRingPts = [];
+        var fN = 96;
+        for (var i = 0; i <= fN; i++) {
+            var a = (i / fN) * Math.PI * 2;
+            fRingPts.push(new THREE.Vector3(Math.cos(a) * T3D_CF_F_RING_R, 0, Math.sin(a) * T3D_CF_F_RING_R));
+        }
+        var fRing = new THREE.LineLoop(
+            new THREE.BufferGeometry().setFromPoints(fRingPts),
+            new THREE.LineBasicMaterial({ color: 0xffe0b2, transparent: true, opacity: 0.8 })
+        );
+        scene.add(fRing);
+
+        var titan = new THREE.Mesh(
+            new THREE.SphereGeometry(1.3, 20, 14),
+            new THREE.MeshLambertMaterial({ color: 0xe8a94a })
+        );
+        titan.position.set(T3D_CF_TITAN_X, 0, 0);
+        scene.add(titan);
+
+        // Piecewise teaching path: cruise approach -> ring-grazing loop just
+        // outside the F ring -> Titan gravity-assist bend -> proximal
+        // "Grand Finale" loop through the ring-planet gap -> final atmospheric
+        // entry spiral into Saturn.
+        var P_CRUISE = 0.15, P_GRAZE = 0.45, P_TITAN = 0.50, P_PROXIMAL = 0.95;
+        function cfPos(t) {
+            t = Math.max(0, Math.min(0.999, t));
+            if (t < P_CRUISE) {
+                var u = t / P_CRUISE;
+                return new THREE.Vector3(T3D_CF_TITAN_X * 1.4 * (1 - u) + T3D_CF_F_RING_R * 1.3 * u, 3 * (1 - u), 0);
+            }
+            if (t < P_GRAZE) {
+                var u2 = (t - P_CRUISE) / (P_GRAZE - P_CRUISE);
+                var loops = 3.5;
+                var a2 = u2 * Math.PI * 2 * loops;
+                return new THREE.Vector3(Math.cos(a2) * (T3D_CF_F_RING_R + 0.6), Math.sin(a2 * 0.5) * 0.4, Math.sin(a2) * (T3D_CF_F_RING_R + 0.6));
+            }
+            if (t < P_TITAN) {
+                var u3 = (t - P_GRAZE) / (P_TITAN - P_GRAZE);
+                return new THREE.Vector3(
+                    (T3D_CF_F_RING_R + 0.6) * (1 - u3) + T3D_CF_TITAN_X * u3,
+                    2.2 * Math.sin(u3 * Math.PI),
+                    0
+                );
+            }
+            if (t < P_PROXIMAL) {
+                var u4 = (t - P_TITAN) / (P_PROXIMAL - P_TITAN);
+                var loops2 = 7;
+                var a4 = u4 * Math.PI * 2 * loops2;
+                var gapR = T3D_CF_SATURN_R + 0.7 + Math.abs(Math.sin(a4 * 0.5)) * 0.15;
+                return new THREE.Vector3(Math.cos(a4) * gapR, Math.sin(a4 * 1.3) * 0.5, Math.sin(a4) * gapR);
+            }
+            var u5 = (t - P_PROXIMAL) / (1 - P_PROXIMAL);
+            var a5 = 6.2 + u5 * 3.2;
+            var rShrink = (T3D_CF_SATURN_R + 0.7) * (1 - u5 * 0.94);
+            return new THREE.Vector3(Math.cos(a5) * rShrink, -u5 * 1.4, Math.sin(a5) * rShrink);
+        }
+
+        function buildPath() {
+            var pts = [];
+            var n = shell.low ? 140 : 240;
+            for (var i = 0; i <= n; i++) pts.push(cfPos(i / n));
+            var line = new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints(pts),
+                new THREE.LineBasicMaterial({ color: 0x81c784, transparent: true, opacity: 0.85 })
+            );
+            scene.add(line);
+            return line;
+        }
+        var path = buildPath();
+
+        var craft = new THREE.Mesh(
+            new THREE.SphereGeometry(0.3, 12, 10),
+            new THREE.MeshBasicMaterial({ color: 0xffee58 })
+        );
+        scene.add(craft);
+        var craftTrail = new THREE.Mesh(
+            new THREE.ConeGeometry(0.15, 0.55, 8),
+            new THREE.MeshBasicMaterial({ color: 0xfff59d })
+        );
+        scene.add(craftTrail);
+
+        var phase = 0.02;
+        var playing = true;
+
+        function phaseLabel(p) {
+            if (p < P_CRUISE) return 'Extended-mission cruise (before the endgame)';
+            if (p < P_GRAZE) return 'Ring-grazing orbits (Nov 2016 - Apr 2017)';
+            if (p < P_TITAN) return 'Titan gravity-assist dive (Apr 22, 2017)';
+            if (p < P_PROXIMAL) return "Proximal Grand Finale orbits (Apr 26 - Sep 2017)";
+            return 'Final atmospheric entry (Sep 15, 2017)';
+        }
+        function signalCountdownHtml(p) {
+            if (p < P_PROXIMAL) return '';
+            var u = (p - P_PROXIMAL) / (1 - P_PROXIMAL);
+            var remainMin = Math.max(0, Math.round(T3D_CF_LIGHT_TIME_MIN * (1 - u)));
+            return '<p class="t3d-note"><b>Signal to Earth (stylized): ' + remainMin + ' min remaining.</b> ' +
+                'Saturn was about 1.5 billion km from Earth, so the real one-way light time was about ' + T3D_CF_LIGHT_TIME_MIN + ' minutes - this readout is a stylized illustration of that delay, not live telemetry.</p>';
+        }
+        function panelHtml() {
+            return '<h3>Cassini\'s endgame at Saturn</h3>' +
+                '<p>Ring-grazing orbits, a Titan gravity-assist dive, the proximal Grand Finale orbits through the ring-planet gap, then a deliberate, protective plunge into Saturn.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Phase</td><td>' + phaseLabel(phase) + ' (' + Math.round(phase * 100) + '%)</td></tr>' +
+                '<tr><td>Ring-grazing orbits begin</td><td>' + T3D_CF_RING_GRAZE_START_ISO + ' - ' + T3D_CF_RING_GRAZE_ORBITS + ' orbits just outside the F ring</td></tr>' +
+                '<tr><td>Titan gravity-assist flyby</td><td>' + T3D_CF_TITAN_FLYBY_ISO + ' - about ' + T3D_CF_TITAN_DV_MS + ' m/s (about 1,800 mph) velocity change</td></tr>' +
+                '<tr><td>Proximal "Grand Finale" orbits begin</td><td>' + T3D_CF_PROXIMAL_START_ISO + ' - ' + T3D_CF_PROXIMAL_ORBITS + ' dives through the ' + T3D_CF_GAP_ALT_MI + ' gap</td></tr>' +
+                '<tr><td>Atmospheric entry</td><td>' + T3D_CF_ENTRY_ISO + ', signal loss confirmed on Earth ' + T3D_CF_SIGNAL_LOSS_TIME + '</td></tr>' +
+                '<tr><td>One-way light time at entry</td><td>about ' + T3D_CF_LIGHT_TIME_MIN + ' minutes, Saturn to Earth</td></tr>' +
+                '</table>' +
+                signalCountdownHtml(phase) +
+                '<p class="t3d-note">Educational approximation, not a precomputed ephemeris of the real trajectory. Ring, planet, and orbit-gap sizes are compressed for readability - the table holds the real published NASA/JPL and ESA dates and figures.</p>';
+        }
+
+        function applyPhase(p) {
+            phase = Math.max(0, Math.min(0.999, p));
+            var pos = cfPos(phase);
+            craft.position.copy(pos);
+            craft.visible = phase < 0.995;
+            var ahead = cfPos(Math.min(0.999, phase + 0.004));
+            craftTrail.position.set((pos.x + ahead.x) / 2, (pos.y + ahead.y) / 2, (pos.z + ahead.z) / 2);
+            craftTrail.visible = craft.visible;
+            var slider = document.getElementById('t3dCfPhase');
+            var label = document.getElementById('t3dCfPhaseLabel');
+            if (slider && Math.round(parseFloat(slider.value || '0')) !== Math.round(phase * 100)) {
+                slider.value = String(Math.round(phase * 100));
+            }
+            if (label) label.textContent = Math.round(phase * 100) + '%';
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ phase: phase }); } catch (e) {}
+        }
+
+        var ray = new THREE.Raycaster();
+        shell.onClick = function (e) {
+            ray.setFromCamera(shell.ndc(e), shell.camera);
+            var hits = ray.intersectObjects([saturn, titan, ring], false);
+            if (!hits.length) return;
+            t3dInfo(panelHtml());
+        };
+
+        var store = t3dLoadStore();
+        if (typeof store.phase === 'number') phase = store.phase;
+        applyPhase(phase);
+
+        var playBtn = document.getElementById('t3dCfPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            playing = !playing;
+            playBtn.textContent = playing ? 'Pause' : 'Play';
+        });
+        var slider = document.getElementById('t3dCfPhase');
+        if (slider) slider.addEventListener('input', function () {
+            playing = false;
+            if (playBtn) playBtn.textContent = 'Play';
+            applyPhase(parseFloat(slider.value || '0') / 100);
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Press Play/Pause or scrub the phase slider through the real 2016-2017 endgame.');
+        return function animate(dt) {
+            if (!playing) return;
+            var next = phase + (dt / 1000) * 0.03;
+            if (next >= 1) next = 0;
+            applyPhase(next);
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { cassinifinale: 't3dCfControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = {
+                        cassinifinale: { radius: 34, maxR: 140, minR: 10, phi: 1.05, theta: 0.6, targetY: 0 }
+                    };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dCassiniFinale(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

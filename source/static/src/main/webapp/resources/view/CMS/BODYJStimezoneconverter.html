@@ -1,0 +1,188 @@
+<script>
+    // Timezone converter skeleton (time-zone-converter) - pure JS via the built-in Intl
+    // timezone database, no lib, no upload, no backend. Registry Gate-H
+    // entry: timezone_converter_intl. Converts a wall-clock date/time
+    // observed in one IANA timezone into the equivalent wall-clock date/time
+    // in another IANA timezone, and shows a "world clock" row of the
+    // current time in several major zones. Framework contract:
+    // doAfterPageRendered(); runs one conversion + renders the world clock
+    // on load so e2e G16 has visible output with zero interaction.
+    //
+    // Why no library is needed: every modern browser ships the full IANA
+    // timezone database behind Intl.DateTimeFormat({timeZone}) - it already
+    // knows every zone's current UTC offset AND every historical DST
+    // transition. The only missing primitive is "what UTC offset does zone Z
+    // have at instant D" (Intl gives wall-clock strings, not raw offsets),
+    // so tzcGetOffsetMinutes() derives it by formatting the same instant in
+    // that zone and diffing against the UTC reading. tzcConvert() then
+    // resolves an offset-aware round-trip (two passes to settle on the
+    // correct side of a DST transition).
+
+    web.localUpload = false;
+
+    var TZC_FALLBACK_ZONES = [
+        'UTC', 'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles',
+        'America/Sao_Paulo', 'Europe/London', 'Europe/Paris', 'Europe/Berlin', 'Europe/Moscow',
+        'Africa/Cairo', 'Asia/Dubai', 'Asia/Kolkata', 'Asia/Bangkok', 'Asia/Ho_Chi_Minh',
+        'Asia/Shanghai', 'Asia/Tokyo', 'Asia/Seoul', 'Australia/Sydney', 'Pacific/Auckland',
+    ];
+
+    function tzcZoneList() {
+        try {
+            if (typeof Intl.supportedValuesOf === 'function') {
+                var all = Intl.supportedValuesOf('timeZone');
+                if (all && all.length) return all;
+            }
+        } catch (e) { void e; }
+        return TZC_FALLBACK_ZONES;
+    }
+
+    function tzcLocalZone() {
+        try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; }
+        catch (e) { return 'UTC'; }
+    }
+
+    // Offset in minutes EAST of UTC that `zone` observes at instant `date`.
+    // Formats the exact same instant as wall-clock parts in `zone`, treats
+    // those parts as if they were UTC (Date.UTC), and diffs against the
+    // real instant - the difference IS the zone's offset at that moment
+    // (DST-aware because Intl resolves DST from the real instant).
+    function tzcGetOffsetMinutes(date, zone) {
+        var dtf = new Intl.DateTimeFormat('en-US', {
+            timeZone: zone, hourCycle: 'h23',
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+        });
+        var parts = {};
+        dtf.formatToParts(date).forEach(function (p) { parts[p.type] = p.value; });
+        var asUTC = Date.UTC(
+            parseInt(parts.year, 10), parseInt(parts.month, 10) - 1, parseInt(parts.day, 10),
+            parseInt(parts.hour, 10), parseInt(parts.minute, 10), parseInt(parts.second, 10)
+        );
+        return (asUTC - date.getTime()) / 60000;
+    }
+
+    // Convert a wall-clock reading (y,m,d,h,min) that is OBSERVED in
+    // `fromZone` into the real UTC instant it represents. Two passes settle
+    // the correct offset across a DST transition boundary.
+    function tzcWallClockToUtc(y, m, d, h, min, fromZone) {
+        var guess = new Date(Date.UTC(y, m - 1, d, h, min, 0));
+        var off1 = tzcGetOffsetMinutes(guess, fromZone);
+        var pass1 = new Date(guess.getTime() - off1 * 60000);
+        var off2 = tzcGetOffsetMinutes(pass1, fromZone);
+        if (off2 === off1) return pass1;
+        return new Date(guess.getTime() - off2 * 60000);
+    }
+
+    function tzcFormatInZone(utcDate, zone) {
+        try {
+            return new Intl.DateTimeFormat('en-US', {
+                timeZone: zone, weekday: 'short', year: 'numeric', month: 'short', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
+            }).format(utcDate);
+        } catch (e) { return 'Error: ' + (e && e.message ? e.message : String(e)); }
+    }
+
+    function tzcZoneLabel(zone) { return String(zone || '').replace(/_/g, ' '); }
+
+    function tzcOptionsHtml(zones, selected) {
+        var out = '';
+        for (var i = 0; i < zones.length; i++) {
+            var z = zones[i];
+            out += '<option value="' + z + '"' + (z === selected ? ' selected' : '') + '>' + tzcZoneLabel(z) + '</option>';
+        }
+        return out;
+    }
+
+    var TZC_WORLD_ZONES = ['UTC', 'America/New_York', 'Europe/London', 'Asia/Ho_Chi_Minh', 'Asia/Tokyo', 'Australia/Sydney'];
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('timezoneConverterTool');
+        if (!root) return; // not a timezone-converter page
+
+        var zones = tzcZoneList();
+        var localZone = tzcLocalZone();
+        var defaultTarget = zones.indexOf('America/New_York') >= 0 ? 'America/New_York' : (zones[0] || 'UTC');
+        var now = new Date();
+
+        function pad2(n) { return (n < 10 ? '0' : '') + n; }
+
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:10px;">' +
+            '<input id="tzcDate" type="date" class="w3-input w3-border" style="max-width:160px;display:inline-block;">' +
+            '<input id="tzcTime" type="time" step="1" class="w3-input w3-border" style="max-width:120px;display:inline-block;margin-left:6px;">' +
+            '</div>' +
+            '<div class="w3-row" style="margin-bottom:8px;">' +
+            '<label>From ' +
+            '<select id="tzcFrom" class="w3-select w3-border" style="width:auto;display:inline-block;max-width:260px;">' +
+            tzcOptionsHtml(zones, localZone) +
+            '</select></label>' +
+            '<span style="margin:0 10px;">&rarr;</span>' +
+            '<label>To ' +
+            '<select id="tzcTo" class="w3-select w3-border" style="width:auto;display:inline-block;max-width:260px;">' +
+            tzcOptionsHtml(zones, defaultTarget) +
+            '</select></label> ' +
+            '<button id="tzcSwap" type="button" class="w3-button w3-light-grey">Swap</button> ' +
+            '<button id="tzcNow" type="button" class="w3-button w3-light-grey">Now</button>' +
+            '</div>' +
+            '<div id="tzcOut" class="outputImgs" style="visibility:visible !important;font-family:monospace;font-size:1.15em;background:#f7f7f7;border:1px solid #ddd;border-radius:4px;padding:10px;min-height:2em;max-width:560px;margin:0 auto;text-align:left;"></div>' +
+            '<h3 style="margin-top:18px;">Current time around the world</h3>' +
+            '<div id="tzcWorld" class="w3-row" style="max-width:560px;margin:0 auto;text-align:left;font-family:monospace;"></div>';
+
+        var q = function (sel) { return root.querySelector(sel); };
+        var dateEl = q('#tzcDate'), timeEl = q('#tzcTime'), fromEl = q('#tzcFrom'), toEl = q('#tzcTo'), outEl = q('#tzcOut'), worldEl = q('#tzcWorld');
+
+        function setToNow() {
+            var n = new Date();
+            dateEl.value = n.getFullYear() + '-' + pad2(n.getMonth() + 1) + '-' + pad2(n.getDate());
+            timeEl.value = pad2(n.getHours()) + ':' + pad2(n.getMinutes()) + ':' + pad2(n.getSeconds());
+        }
+
+        function run() {
+            var dParts = (dateEl.value || '').split('-');
+            var tParts = (timeEl.value || '00:00:00').split(':');
+            if (dParts.length !== 3) { outEl.textContent = 'Pick a date.'; return; }
+            var y = parseInt(dParts[0], 10), m = parseInt(dParts[1], 10), d = parseInt(dParts[2], 10);
+            var h = parseInt(tParts[0], 10) || 0, min = parseInt(tParts[1], 10) || 0;
+            try {
+                var utc = tzcWallClockToUtc(y, m, d, h, min, fromEl.value);
+                var fromStr = tzcFormatInZone(utc, fromEl.value);
+                var toStr = tzcFormatInZone(utc, toEl.value);
+                var offFrom = tzcGetOffsetMinutes(utc, fromEl.value);
+                var offTo = tzcGetOffsetMinutes(utc, toEl.value);
+                var diffH = (offTo - offFrom) / 60;
+                var diffLabel = diffH === 0 ? 'same time' : (diffH > 0 ? '+' + diffH + 'h ahead' : diffH + 'h behind');
+                outEl.innerHTML =
+                    '<div><b>' + tzcZoneLabel(fromEl.value) + ':</b> ' + fromStr + '</div>' +
+                    '<div style="margin-top:6px;"><b>' + tzcZoneLabel(toEl.value) + ':</b> ' + toStr + '</div>' +
+                    '<div style="margin-top:6px;color:#555;">' + tzcZoneLabel(toEl.value) + ' is ' + diffLabel + ' of ' + tzcZoneLabel(fromEl.value) + '.</div>';
+            } catch (e) {
+                outEl.textContent = 'Error: ' + (e && e.message ? e.message : String(e));
+            }
+        }
+
+        function renderWorld() {
+            var n = new Date();
+            var rows = '';
+            for (var i = 0; i < TZC_WORLD_ZONES.length; i++) {
+                var z = TZC_WORLD_ZONES[i];
+                rows += '<div style="padding:2px 0;"><b>' + tzcZoneLabel(z) + ':</b> ' + tzcFormatInZone(n, z) + '</div>';
+            }
+            worldEl.innerHTML = rows;
+        }
+
+        q('#tzcSwap').addEventListener('click', function () {
+            var f = fromEl.value; fromEl.value = toEl.value; toEl.value = f; run();
+        });
+        q('#tzcNow').addEventListener('click', function () { setToNow(); run(); });
+        dateEl.addEventListener('input', run);
+        timeEl.addEventListener('input', run);
+        fromEl.addEventListener('change', run);
+        toEl.addEventListener('change', run);
+
+        // Worked example on load (visible output for e2e G16, zero interaction).
+        setToNow();
+        run();
+        renderWorld();
+    }
+</script>

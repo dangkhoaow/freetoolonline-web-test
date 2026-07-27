@@ -1,0 +1,369 @@
+<script>
+    // 3D scene archetype skeleton (karman-line-atmosphere-layers) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only.
+    // All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not a live atmospheric density model. Earth
+    // is drawn as a sphere with four nested translucent shells for the named
+    // atmosphere layers, plus three real-boundary rings and one real-
+    // phenomena band. The RADIAL THICKNESS of every shell is compressed with
+    // a square-root mapping so the thin lower layers are visible next to the
+    // much larger thermosphere - the real atmosphere (about 700 km) is only
+    // about 11 percent of Earth's 6,371 km radius, and the troposphere alone
+    // (about 12 km) is under 0.2 percent of that radius, both far too thin to
+    // see if drawn to true linear scale. This is disclosed in-scene, in the
+    // BODYWELCOME copy, and in the FAQ.
+    //
+    // Published figures (NASA "What Is Earth's Atmosphere?" + NOAA JetStream
+    // layers-of-atmosphere page + Britannica "Karman line" + WorldAtlas
+    // "Where Does Outer Space Begin?", cross-checked via web search
+    // 2026-07-23):
+    //   - Troposphere: surface to about 12 km (varies about 8-14.5 km by
+    //     latitude and season). Most weather happens here.
+    //   - Stratosphere: about 12 km to about 50 km. Contains the ozone layer.
+    //   - Mesosphere: about 50 km to about 85 km. Most meteors burn up here.
+    //   - Thermosphere: about 85 km to about 600 km (NASA). No sharp upper
+    //     edge - it gradually thins into the exosphere beyond this.
+    //   - Karman line (FAI - Federation Aeronautique Internationale, adopted
+    //     1960, a rounded figure): 100 km. The most widely cited
+    //     international boundary of space.
+    //   - US boundary (NASA / FAA / US Air Force convention since the 1960s
+    //     X-15 program): 80 km (about 50 miles). Closer to Theodore von
+    //     Karman's own original calculation of about 83.8 km.
+    //   - ISS orbital altitude: about 400 km (varies roughly 370-460 km as
+    //     it is periodically reboosted).
+    //   - Most meteors ablate (burn up from friction): about 75-100 km.
+    //   - Aurora: most visible light appears about 100-300 km, with rare
+    //     extremes reported as low as 80 km and as high as 500 km (NOAA
+    //     Space Weather Prediction Center, NASA Science).
+    //
+    // Distinct from planet-atmosphere-scale-heights (compares the pressure
+    // decay rate of several PLANETS' atmospheres against each other; this
+    // page names EARTH's specific named layers and pins real objects and
+    // phenomena - ISS, meteors, aurora, the two competing space-boundary
+    // definitions - to their real altitudes) and from earth-3d-globe (which
+    // explicitly disclaims modeling twilight bands or atmosphere layers).
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'karman-line-atmosphere-layers';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'karmanlineatmospherelayers'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Published figures (see header comment for sources).
+    var T3D_KLA_LAYERS = [
+        { key: 'troposphere', name: 'Troposphere', fromKm: 0, toKm: 12, color: 0x8d6e63, opacity: 0.30, note: 'Most weather happens here. Real thickness varies about 8-14.5 km by latitude and season.' },
+        { key: 'stratosphere', name: 'Stratosphere', fromKm: 12, toKm: 50, color: 0x42a5f5, opacity: 0.22, note: 'Contains the ozone layer that absorbs most of the Sun\'s ultraviolet light.' },
+        { key: 'mesosphere', name: 'Mesosphere', fromKm: 50, toKm: 85, color: 0x7e57c2, opacity: 0.20, note: 'Most meteors burn up (ablate) in this layer, roughly 75-100 km.' },
+        { key: 'thermosphere', name: 'Thermosphere', fromKm: 85, toKm: 650, color: 0xff7043, opacity: 0.14, note: 'Extends to about 600 km with no sharp upper edge. Aurora and most satellites, including the ISS, live here.' }
+    ];
+    var T3D_KLA_MAXALT_KM = 650;
+    var T3D_KLA_MARKERS = [
+        { key: 'karman', label: 'Karman line (FAI, 100 km)', altKm: 100, color: 0xffee58 },
+        { key: 'usBoundary', label: 'US boundary (NASA/FAA/USAF, 80 km)', altKm: 80, color: 0x66bb6a },
+        { key: 'iss', label: 'ISS orbit (about 400 km)', altKm: 400, color: 0xffffff }
+    ];
+    var T3D_KLA_PHENOMENA_BAND = { fromKm: 75, toKm: 300, color: 0x26c6da, opacity: 0.16, label: 'Meteor & aurora zone (75-300 km)' };
+
+    function t3dKlaDispR(R, maxVis, altKm) {
+        var a = Math.max(0, Math.min(altKm, T3D_KLA_MAXALT_KM));
+        return R + maxVis * Math.sqrt(a / T3D_KLA_MAXALT_KM);
+    }
+
+    function t3dKarmanLineAtmosphereLayers(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+        var sun = new THREE.DirectionalLight(0xffffff, 0.55);
+        sun.position.set(30, 20, 15);
+        scene.add(sun);
+
+        var R = 10;
+        var MAXVIS = R * 1.1;
+
+        // Starfield backdrop.
+        var SCOUNT = shell.low ? 400 : 800;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(30 + Math.random() * 60);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.3, sizeAttenuation: false })));
+
+        // Earth sphere.
+        var earth = new THREE.Mesh(
+            new THREE.SphereGeometry(R, 48, 32),
+            new THREE.MeshLambertMaterial({ color: 0x1f5c7a })
+        );
+        scene.add(earth);
+        var earthRim = new THREE.Mesh(new THREE.SphereGeometry(R * 1.003, 48, 32), new THREE.MeshBasicMaterial({ color: 0x2e7da3, wireframe: true, transparent: true, opacity: 0.12 }));
+        scene.add(earthRim);
+
+        // Layer shells (nested translucent spheres).
+        var layerMeshes = {};
+        T3D_KLA_LAYERS.forEach(function (L) {
+            var rOut = t3dKlaDispR(R, MAXVIS, L.toKm);
+            var mesh = new THREE.Mesh(
+                new THREE.SphereGeometry(rOut, 40, 28),
+                new THREE.MeshBasicMaterial({ color: L.color, transparent: true, opacity: L.opacity, side: THREE.DoubleSide, depthWrite: false })
+            );
+            scene.add(mesh);
+            layerMeshes[L.key] = mesh;
+        });
+
+        // Phenomena band (meteor & aurora zone) - a thin shell between two altitudes.
+        var bandOuter = t3dKlaDispR(R, MAXVIS, T3D_KLA_PHENOMENA_BAND.toKm);
+        var bandMesh = new THREE.Mesh(
+            new THREE.SphereGeometry(bandOuter, 40, 28),
+            new THREE.MeshBasicMaterial({ color: T3D_KLA_PHENOMENA_BAND.color, transparent: true, opacity: T3D_KLA_PHENOMENA_BAND.opacity, side: THREE.DoubleSide, depthWrite: false })
+        );
+        scene.add(bandMesh);
+
+        // Real-boundary marker rings (flat, equatorial, full circle - matches the
+        // orbit-ring convention used by other space-3d scenes).
+        var markerMeshes = {};
+        T3D_KLA_MARKERS.forEach(function (M) {
+            var rr = t3dKlaDispR(R, MAXVIS, M.altKm);
+            var ring = new THREE.Mesh(
+                new THREE.TorusGeometry(rr, rr * 0.006, 8, 72),
+                new THREE.MeshBasicMaterial({ color: M.color })
+            );
+            ring.rotation.x = Math.PI / 2;
+            scene.add(ring);
+            markerMeshes[M.key] = ring;
+        });
+
+        // Draggable altitude probe - a bright bead that sits directly above the
+        // north pole at the display radius for the current altitude.
+        var probe = new THREE.Mesh(new THREE.SphereGeometry(R * 0.05, 14, 10), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+        scene.add(probe);
+        var probeStem = new THREE.Mesh(new THREE.CylinderGeometry(R * 0.006, R * 0.006, 1, 6), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.4 }));
+        scene.add(probeStem);
+
+        function layerForAltitude(altKm) {
+            for (var i = 0; i < T3D_KLA_LAYERS.length; i++) {
+                if (altKm <= T3D_KLA_LAYERS[i].toKm) return T3D_KLA_LAYERS[i];
+            }
+            return T3D_KLA_LAYERS[T3D_KLA_LAYERS.length - 1];
+        }
+
+        function nearbyMarkers(altKm) {
+            return T3D_KLA_MARKERS
+                .map(function (M) { return { M: M, d: Math.abs(M.altKm - altKm) }; })
+                .sort(function (a, b) { return a.d - b.d; })
+                .slice(0, 2)
+                .map(function (x) { return x.M.label + ' (' + (x.M.altKm > altKm ? Math.round(x.M.altKm - altKm) + ' km above' : Math.round(altKm - x.M.altKm) + ' km below') + ')'; })
+                .join('; ');
+        }
+
+        function facts(altKm) {
+            var layer = layerForAltitude(altKm);
+            var inBand = altKm >= T3D_KLA_PHENOMENA_BAND.fromKm && altKm <= T3D_KLA_PHENOMENA_BAND.toKm;
+            return '<h3>Altitude: ' + Math.round(altKm) + ' km</h3>' +
+                '<p>You are in the <b>' + layer.name + '</b>. ' + layer.note + '</p>' +
+                (inBand ? '<p>This altitude sits inside the meteor &amp; aurora zone (75-300 km) - most meteors ablate 75-100 km and most aurora light appears 100-300 km.</p>' : '') +
+                '<p>Nearest real markers: ' + nearbyMarkers(altKm) + '.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Troposphere</td><td>0-12 km</td></tr>' +
+                '<tr><td>Stratosphere</td><td>12-50 km</td></tr>' +
+                '<tr><td>Mesosphere</td><td>50-85 km</td></tr>' +
+                '<tr><td>Thermosphere</td><td>85-about 600 km (no sharp top)</td></tr>' +
+                '<tr><td>Karman line (FAI)</td><td>100 km</td></tr>' +
+                '<tr><td>US boundary (NASA/FAA/USAF)</td><td>80 km</td></tr>' +
+                '<tr><td>ISS orbit</td><td>about 400 km</td></tr>' +
+                '<tr><td>Meteor ablation</td><td>about 75-100 km</td></tr>' +
+                '<tr><td>Aurora (typical)</td><td>about 100-300 km</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation - the layer boundaries and marker altitudes are the published figures, but every shell\'s radial thickness is stretched with a square-root scale so the thin lower layers stay visible next to the much larger thermosphere. This is not a live atmospheric density model.</p>';
+        }
+
+        var visible = { troposphere: true, stratosphere: true, mesosphere: true, thermosphere: true, karman: true, usBoundary: true, iss: true, phenomenaBand: false };
+        function applyVisibility() {
+            Object.keys(layerMeshes).forEach(function (k) { layerMeshes[k].visible = visible[k]; });
+            Object.keys(markerMeshes).forEach(function (k) { markerMeshes[k].visible = visible[k]; });
+            bandMesh.visible = visible.phenomenaBand;
+        }
+
+        var altitudeKm = 0;
+        function setAltitude(a) {
+            altitudeKm = Math.max(0, Math.min(T3D_KLA_MAXALT_KM, a));
+            var r = t3dKlaDispR(R, MAXVIS, altitudeKm);
+            probe.position.set(0, r, 0);
+            probeStem.scale.y = r;
+            probeStem.position.set(0, r / 2, 0);
+            var slider = document.getElementById('t3dKlaAlt');
+            var label = document.getElementById('t3dKlaAltLabel');
+            if (slider) slider.value = String(Math.round(altitudeKm));
+            if (label) label.textContent = Math.round(altitudeKm) + ' km';
+            t3dInfo(facts(altitudeKm));
+            try { t3dSaveStore({ altitudeKm: altitudeKm }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        setAltitude(typeof store.altitudeKm === 'number' ? store.altitudeKm : 0);
+        applyVisibility();
+
+        var slider = document.getElementById('t3dKlaAlt');
+        if (slider) slider.addEventListener('input', function () { setAltitude(parseFloat(slider.value || '0')); });
+
+        var jumpTargets = { t3dKlaJumpKarman: 100, t3dKlaJumpUs: 80, t3dKlaJumpIss: 400, t3dKlaJumpMeteor: 88, t3dKlaJumpGround: 0 };
+        Object.keys(jumpTargets).forEach(function (id) {
+            var btn = document.getElementById(id);
+            if (btn) btn.addEventListener('click', function () { setAltitude(jumpTargets[id]); });
+        });
+
+        var toggles = {
+            troposphere: 't3dKlaToggleTroposphere', stratosphere: 't3dKlaToggleStratosphere',
+            mesosphere: 't3dKlaToggleMesosphere', thermosphere: 't3dKlaToggleThermosphere',
+            karman: 't3dKlaToggleKarman', usBoundary: 't3dKlaToggleUs', iss: 't3dKlaToggleIss',
+            phenomenaBand: 't3dKlaTogglePhenomena'
+        };
+        Object.keys(toggles).forEach(function (key) {
+            var cb = document.getElementById(toggles[key]);
+            if (cb) cb.addEventListener('change', function () { visible[key] = cb.checked; applyVisibility(); });
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Drag the altitude slider or jump straight to a named boundary.');
+        return function animate(dt) {
+            earth.rotation.y += dt / 1000 * 0.03;
+            earthRim.rotation.y = earth.rotation.y;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { karmanlineatmospherelayers: 't3dKlaControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { karmanlineatmospherelayers: { radius: 34, maxR: 90, minR: 14, phi: 1.05, theta: 0.55, targetY: R_TARGET() } };
+                    function R_TARGET() { return 3; }
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dKarmanLineAtmosphereLayers(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

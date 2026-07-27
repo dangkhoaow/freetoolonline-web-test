@@ -18,6 +18,7 @@ import {
   JSP_BY_ROUTE,
   SPECIAL_ROUTES,
   isInfoRoute,
+  isArticleFamilyRoute,
   buildJspIndex,
   loadCmsPageData,
   loadSharedFragments,
@@ -483,7 +484,10 @@ async function renderRoute(route, { jspIndex, sharedFragments, relatedToolsData,
   // fire-23: hub detection via the shared helper so non-'-tools' hubs
   // (/games.html, /space-3d.html, /guides.html) are treated as hubs here too.
   const isHubPage = isHubRoute(normalizedRoute);
-  const showRating = !isHubPage && !isInfoRoute(normalizedRoute) && normalizedRoute !== '/' && normalizedRoute !== '/alternatead.html';
+  // Article-family (guides + news) never renders the rating widget nor emits
+  // aggregateRating - rating on article schema is the structured-data
+  // misrepresentation pattern (spam-exposure hardening, 2026-07-26).
+  const showRating = !isHubPage && !isInfoRoute(normalizedRoute) && !isArticleFamilyRoute(normalizedRoute) && normalizedRoute !== '/' && normalizedRoute !== '/alternatead.html';
   // P10.1.1 - AggregateRating emission gate (Path A). Until a visible rating UI
   // renders on the tool page, JSON-LD rating data violates Google's structured-data
   // visibility policy (March 2026 spam update exposure). Emission defaults OFF; flip

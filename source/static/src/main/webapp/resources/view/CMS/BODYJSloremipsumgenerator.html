@@ -1,0 +1,174 @@
+<script>
+    // Lorem Ipsum placeholder-text archetype skeleton (lorem-ipsum-generator) - pure JS, no
+    // upload, no backend, no external lib (crypto.getRandomValues, per the
+    // registry's own "without a library" note). Gate-H entry:
+    // lorem_ipsum_generator_purejs. Generates classic-Latin placeholder text
+    // by words / sentences / paragraphs, with an optional fixed classic
+    // opener ("Lorem ipsum dolor sit amet, consectetur adipiscing elit.").
+    // Renders a sample on load so qa-e2e-test G16 passes. Matches the
+    // registry's acceptance_criteria: unit selector (default paragraphs),
+    // quantity 1-50 (clamped), output in a readonly textarea, Copy button,
+    // Open-in-new-tab typography preview. No variant word-list (Cupcake /
+    // Bacon / Hipster Ipsum) - classic Latin only, per the anti-claims.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(); no top-level DOM.
+    // In-browser tool => no upload widget.
+
+    web.localUpload = false;
+
+    var LI_WORDS = [
+        'lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consectetur', 'adipiscing', 'elit',
+        'sed', 'do', 'eiusmod', 'tempor', 'incididunt', 'ut', 'labore', 'et', 'dolore',
+        'magna', 'aliqua', 'enim', 'ad', 'minim', 'veniam', 'quis', 'nostrud',
+        'exercitation', 'ullamco', 'laboris', 'nisi', 'aliquip', 'ex', 'ea', 'commodo',
+        'consequat', 'duis', 'aute', 'irure', 'in', 'reprehenderit', 'voluptate',
+        'velit', 'esse', 'cillum', 'eu', 'fugiat', 'nulla', 'pariatur', 'excepteur',
+        'sint', 'occaecat', 'cupidatat', 'non', 'proident', 'sunt', 'culpa', 'qui',
+        'officia', 'deserunt', 'mollit', 'anim', 'id', 'est', 'laborum', 'at', 'vero',
+        'eos', 'accusamus', 'iusto', 'odio', 'dignissimos', 'ducimus', 'blanditiis',
+        'praesentium', 'voluptatum', 'deleniti', 'atque', 'corrupti', 'quos', 'quas',
+        'molestias', 'excepturi', 'occaecati', 'cupiditate', 'similique'
+    ];
+    var LI_OPENER = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.';
+    var LI_MAX = 50;
+
+    // Fair random float in [0,1) via crypto (falls back to Math.random) -
+    // same helper shape as the random-picker archetype.
+    function liRand() {
+        try { var a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] / 4294967296; }
+        catch (e) { return Math.random(); }
+    }
+    function liInt(n) { return Math.floor(liRand() * n); }
+    function liWord() { return LI_WORDS[liInt(LI_WORDS.length)]; }
+    function liCap(w) { return w.charAt(0).toUpperCase() + w.slice(1); }
+
+    // Build one sentence of N words (min-max range), one comma inserted at a
+    // reasonable interior position about half the time, capitalized, period-
+    // terminated. Returns { text, wordCount }.
+    function liSentence(minWords, maxWords) {
+        var n = Math.max(3, minWords + liInt(Math.max(1, maxWords - minWords + 1)));
+        var words = [];
+        for (var i = 0; i < n; i++) words.push(liWord());
+        if (n > 5 && liRand() < 0.5) {
+            var commaAt = 2 + liInt(n - 3);
+            words[commaAt] = words[commaAt] + ',';
+        }
+        var text = liCap(words.join(' ')) + '.';
+        return { text: text, wordCount: n };
+    }
+
+    // Build one paragraph of 3-7 sentences. When useOpener is true, the FIRST
+    // sentence is the fixed classic opener instead of a random one.
+    function liParagraph(useOpener) {
+        var sentenceCount = 3 + liInt(5), sentences = [], wordsUsed = 0;
+        for (var i = 0; i < sentenceCount; i++) {
+            if (i === 0 && useOpener) {
+                sentences.push(LI_OPENER);
+                wordsUsed += LI_OPENER.split(/\s+/).length;
+            } else {
+                var s = liSentence(6, 14);
+                sentences.push(s.text);
+                wordsUsed += s.wordCount;
+            }
+        }
+        return { text: sentences.join(' '), wordCount: wordsUsed };
+    }
+
+    // Generate `count` units of `unit` ('words' | 'sentences' | 'paragraphs').
+    // Returns an array of paragraph strings (always paragraph-shaped output,
+    // even for a words/sentences request, so the caller has one render path).
+    function liGenerate(count, unit, useOpener) {
+        count = Math.max(1, Math.min(LI_MAX, parseInt(count, 10) || 1));
+        var paras = [];
+        if (unit === 'words') {
+            var words = [];
+            if (useOpener) {
+                var openerWords = LI_OPENER.replace(/[.,]/g, '').split(/\s+/);
+                for (var i = 0; i < openerWords.length && words.length < count; i++) words.push(openerWords[i]);
+            }
+            while (words.length < count) words.push(liWord());
+            paras.push(liCap(words.join(' ')) + '.');
+        } else if (unit === 'sentences') {
+            var sentences = [];
+            for (var j = 0; j < count; j++) {
+                if (j === 0 && useOpener) sentences.push(LI_OPENER);
+                else sentences.push(liSentence(6, 14).text);
+            }
+            paras.push(sentences.join(' '));
+        } else {
+            for (var k = 0; k < count; k++) {
+                paras.push(liParagraph(k === 0 && useOpener).text);
+            }
+        }
+        return paras;
+    }
+
+    function liOpenPreview(paras) {
+        try {
+            var win = window.open('', '_blank');
+            if (!win) return false;
+            var body = paras.map(function (p) { return '<p>' + p + '</p>'; }).join('');
+            win.document.open();
+            win.document.write('<!DOCTYPE html><html><head><title>Lorem Ipsum preview</title>' +
+                '<meta name="robots" content="noindex"><style>body{font:16px/1.6 Georgia,serif;max-width:640px;margin:40px auto;padding:0 16px;}</style>' +
+                '</head><body>' + body + '</body></html>');
+            win.document.close();
+            return true;
+        } catch (e) { return false; }
+    }
+
+    function liRender(root) {
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;">' +
+            '<span style="margin-right:6px;">Generate</span>' +
+            '<input id="liCount" type="number" min="1" max="50" value="3" class="w3-input w3-border" style="width:90px;display:inline-block;">' +
+            '<select id="liUnit" class="w3-select w3-border" style="width:150px;display:inline-block;margin-left:6px;">' +
+            '<option value="paragraphs" selected>paragraphs</option>' +
+            '<option value="sentences">sentences</option>' +
+            '<option value="words">words</option>' +
+            '</select></div>' +
+            '<div class="w3-row" style="margin-bottom:8px;">' +
+            '<label><input id="liOpener" type="checkbox" checked> Start with the classic opener</label></div>' +
+            '<button id="liGen" type="button" class="w3-button w3-green">Generate</button> ' +
+            '<button id="liCopy" type="button" class="w3-button w3-light-grey">Copy</button> ' +
+            '<button id="liPreview" type="button" class="w3-button w3-light-grey">Open in new tab</button>' +
+            '<textarea id="liOutput" class="w3-input w3-border" readonly rows="10" ' +
+            'style="margin-top:14px;text-align:left;max-width:640px;font:15px/1.5 Georgia,serif;"></textarea>' +
+            '<div id="liStatus" style="margin-top:8px;font-size:0.9em;color:#0a6;min-height:1.2em;"></div>';
+
+        var countEl = root.querySelector('#liCount'), unitEl = root.querySelector('#liUnit');
+        var openerEl = root.querySelector('#liOpener'), outEl = root.querySelector('#liOutput');
+        var statusEl = root.querySelector('#liStatus');
+        var lastParas = [];
+
+        function run() {
+            lastParas = liGenerate(countEl.value, unitEl.value, openerEl.checked);
+            outEl.value = lastParas.join('\n\n');
+            statusEl.textContent = '';
+        }
+        root.querySelector('#liGen').addEventListener('click', run);
+        root.querySelector('#liCopy').addEventListener('click', function () {
+            var text = outEl.value;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(function () {
+                    statusEl.textContent = 'Copied.';
+                }, function () { statusEl.textContent = 'Could not copy - select and copy manually.'; });
+            } else {
+                outEl.focus(); outEl.select();
+                statusEl.textContent = 'Clipboard API unavailable - text is selected, use Ctrl/Cmd+C.';
+            }
+        });
+        root.querySelector('#liPreview').addEventListener('click', function () {
+            if (!liOpenPreview(lastParas)) statusEl.textContent = 'Could not open a new tab - check your browser’s popup blocker.';
+        });
+
+        run(); // render a sample immediately so the tool is visibly working on load
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('loremIpsumTool');
+        if (!root) return; // not a lorem-ipsum-generator page
+        try { liRender(root); }
+        catch (e) { root.textContent = 'Could not start the tool: ' + (e && e.message ? e.message : String(e)); }
+    }
+</script>

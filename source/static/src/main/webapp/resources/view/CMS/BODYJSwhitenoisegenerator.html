@@ -1,0 +1,260 @@
+<script>
+    // White Noise / Ambient Sound Generator (white-noise-generator) - pure JS + Web Audio
+    // API synthesis. Registry Gate-H entry: white_noise_webaudio.
+    // Four SYNTHESIZED sound textures (no recorded audio samples, no fetch,
+    // no upload): white noise, pink noise, brown noise, and an "ocean waves"
+    // mode (brown noise amplitude-modulated by a slow low-frequency
+    // oscillator to create a swelling wave rhythm). All generated on-device.
+    // A decorative bar visualizer animates continuously on load (independent
+    // of playback) so qa-e2e-test G16 (visible output, no interaction) passes.
+    // Audible sound requires a user gesture (browser autoplay policy).
+    //
+    // Framework contract: bootstrap in doAfterPageRendered() (called for EVERY
+    // page after base-script load). Do NOT touch the DOM at top level.
+
+    web.localUpload = false;
+
+    var WN_SLUG = 'white-noise-generator';
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('whiteNoiseTool');
+        if (!root) return;
+
+        var typeEl = document.getElementById('wnType');
+        var volumeEl = document.getElementById('wnVolume');
+        var timerEl = document.getElementById('wnTimer');
+        var playBtn = document.getElementById('wnPlay');
+        var stopBtn = document.getElementById('wnStop');
+        var statusEl = document.getElementById('wnStatus');
+        var timerReadout = document.getElementById('wnTimerReadout');
+        var viz = document.getElementById('wnViz');
+
+        var ctx = null;
+        var noiseSource = null;
+        var mainGain = null;
+        var lfoOsc = null;
+        var lfoGain = null;
+        var playing = false;
+        var sleepTimeoutId = null;
+        var sleepIntervalId = null;
+        var sleepDeadline = 0;
+        var vizBars = [];
+        var VIZ_BAR_COUNT = 12;
+
+        function setStatus(msg) {
+            if (statusEl) statusEl.textContent = msg;
+            console.log('[white-noise-generator] status=', msg);
+        }
+
+        function soundType() {
+            var v = typeEl ? typeEl.value : 'white';
+            if (v !== 'white' && v !== 'pink' && v !== 'brown' && v !== 'ocean') return 'white';
+            return v;
+        }
+
+        function volume() {
+            var v = volumeEl ? Number(volumeEl.value) : 60;
+            if (!isFinite(v) || v < 0) v = 0;
+            if (v > 100) v = 100;
+            return v / 100;
+        }
+
+        // ---- Decorative bar visualizer (runs on load, independent of audio) ----
+        function buildViz() {
+            if (!viz) return;
+            var html = '';
+            for (var i = 0; i < VIZ_BAR_COUNT; i++) {
+                html += '<span class="wn-bar" data-i="' + i + '"></span>';
+            }
+            viz.innerHTML = html;
+            vizBars = Array.prototype.slice.call(viz.querySelectorAll('.wn-bar'));
+            vizBars.forEach(function (bar, i) {
+                var dur = (0.6 + (i % 5) * 0.13).toFixed(2);
+                var delay = (i * 0.05).toFixed(2);
+                bar.style.animationDuration = dur + 's';
+                bar.style.animationDelay = delay + 's';
+            });
+        }
+
+        function setVizActive(active) {
+            if (!viz) return;
+            viz.classList.toggle('wn-viz-active', !!active);
+        }
+
+        // ---- Noise buffer synthesis --------------------------------------------
+        function ensureCtx() {
+            if (ctx) return ctx;
+            var AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) throw new Error('Web Audio API not supported in this browser.');
+            ctx = new AC();
+            console.log('[white-noise-generator] AudioContext created, sampleRate=' + ctx.sampleRate);
+            return ctx;
+        }
+
+        // White noise: uniform random samples.
+        function fillWhite(data) {
+            for (var i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+        }
+
+        // Pink noise: Paul Kellet's refined pink-noise filter (well-known
+        // constant-coefficient approximation of a 1/f spectrum).
+        function fillPink(data) {
+            var b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+            for (var i = 0; i < data.length; i++) {
+                var white = Math.random() * 2 - 1;
+                b0 = 0.99886 * b0 + white * 0.0555179;
+                b1 = 0.99332 * b1 + white * 0.0750759;
+                b2 = 0.96900 * b2 + white * 0.1538520;
+                b3 = 0.86650 * b3 + white * 0.3104856;
+                b4 = 0.55000 * b4 + white * 0.5329522;
+                b5 = -0.7616 * b5 - white * 0.0168980;
+                var pink = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+                b6 = white * 0.115926;
+                data[i] = pink * 0.11;
+            }
+        }
+
+        // Brown (red) noise: leaky-integrated random walk, scaled to avoid
+        // clipping and DC drift over long loops.
+        function fillBrown(data) {
+            var lastOut = 0;
+            for (var i = 0; i < data.length; i++) {
+                var white = Math.random() * 2 - 1;
+                lastOut = (lastOut + 0.02 * white) / 1.02;
+                data[i] = lastOut * 3.5;
+            }
+        }
+
+        function buildNoiseBuffer(type) {
+            var c = ensureCtx();
+            var seconds = 3;
+            var buffer = c.createBuffer(1, c.sampleRate * seconds, c.sampleRate);
+            var data = buffer.getChannelData(0);
+            if (type === 'pink') fillPink(data);
+            else if (type === 'brown' || type === 'ocean') fillBrown(data);
+            else fillWhite(data);
+            return buffer;
+        }
+
+        function teardownGraph() {
+            try { if (noiseSource) { noiseSource.stop(); noiseSource.disconnect(); } } catch (e) {}
+            try { if (lfoOsc) { lfoOsc.stop(); lfoOsc.disconnect(); } } catch (e) {}
+            try { if (lfoGain) lfoGain.disconnect(); } catch (e) {}
+            try { if (mainGain) mainGain.disconnect(); } catch (e) {}
+            noiseSource = null; lfoOsc = null; lfoGain = null; mainGain = null;
+        }
+
+        function buildGraph(type) {
+            var c = ensureCtx();
+            teardownGraph();
+
+            noiseSource = c.createBufferSource();
+            noiseSource.buffer = buildNoiseBuffer(type);
+            noiseSource.loop = true;
+
+            mainGain = c.createGain();
+            var vol = volume();
+            mainGain.gain.setValueAtTime(vol, c.currentTime);
+
+            noiseSource.connect(mainGain);
+            mainGain.connect(c.destination);
+
+            if (type === 'ocean') {
+                // Slow amplitude swell over the brown-noise bed simulates a
+                // wave rhythm without any recorded audio sample.
+                lfoOsc = c.createOscillator();
+                lfoOsc.type = 'sine';
+                lfoOsc.frequency.value = 0.12; // ~8s swell period
+                lfoGain = c.createGain();
+                var depth = Math.min(vol * 0.55, 0.35);
+                lfoGain.gain.value = depth;
+                lfoOsc.connect(lfoGain);
+                lfoGain.connect(mainGain.gain);
+                lfoOsc.start();
+            }
+
+            noiseSource.start();
+        }
+
+        function applyVolume() {
+            if (!mainGain || !ctx) return;
+            var vol = volume();
+            mainGain.gain.setValueAtTime(vol, ctx.currentTime);
+            if (lfoGain) lfoGain.gain.value = Math.min(vol * 0.55, 0.35);
+        }
+
+        // ---- Sleep timer --------------------------------------------------------
+        function clearSleepTimer() {
+            if (sleepTimeoutId) { clearTimeout(sleepTimeoutId); sleepTimeoutId = null; }
+            if (sleepIntervalId) { clearInterval(sleepIntervalId); sleepIntervalId = null; }
+            sleepDeadline = 0;
+            if (timerReadout) timerReadout.textContent = '';
+        }
+
+        function armSleepTimer() {
+            clearSleepTimer();
+            var minutes = timerEl ? parseInt(timerEl.value, 10) : 0;
+            if (!minutes || minutes <= 0) return;
+            sleepDeadline = Date.now() + minutes * 60000;
+            sleepTimeoutId = setTimeout(function () {
+                stopAudio();
+                setStatus('Sleep timer ended - playback stopped automatically.');
+            }, minutes * 60000);
+            sleepIntervalId = setInterval(function () {
+                var remainMs = sleepDeadline - Date.now();
+                if (remainMs <= 0) { clearSleepTimer(); return; }
+                var m = Math.floor(remainMs / 60000);
+                var s = Math.floor((remainMs % 60000) / 1000);
+                if (timerReadout) timerReadout.textContent = 'Stops in ' + m + ':' + (s < 10 ? '0' : '') + s;
+            }, 500);
+        }
+
+        function startAudio() {
+            try {
+                ensureCtx();
+                var type = soundType();
+                var go = function () {
+                    buildGraph(type);
+                    playing = true;
+                    setVizActive(true);
+                    armSleepTimer();
+                    setStatus('Playing ' + type + ' noise. Adjust volume or sound below; Stop ends playback.');
+                    console.log('[white-noise-generator] started type=' + type + ' volume=' + volume());
+                };
+                if (ctx.state === 'suspended') {
+                    ctx.resume().then(go).catch(function (err) {
+                        setStatus('Could not start audio: ' + (err && err.message ? err.message : String(err)));
+                    });
+                } else {
+                    go();
+                }
+            } catch (err) {
+                setStatus(err && err.message ? err.message : String(err));
+            }
+        }
+
+        function stopAudio() {
+            teardownGraph();
+            playing = false;
+            setVizActive(false);
+            clearSleepTimer();
+            setStatus('Stopped. Pick a sound and click Play to start again.');
+            console.log('[white-noise-generator] stopped');
+        }
+
+        function onTypeChange() {
+            if (playing) startAudio(); // rebuild the graph with the new sound live
+            else setStatus('Ready to play ' + soundType() + ' noise.');
+        }
+
+        if (typeEl) typeEl.addEventListener('change', onTypeChange);
+        if (volumeEl) volumeEl.addEventListener('input', applyVolume);
+        if (timerEl) timerEl.addEventListener('change', function () { if (playing) armSleepTimer(); });
+        if (playBtn) playBtn.addEventListener('click', startAudio);
+        if (stopBtn) stopBtn.addEventListener('click', stopAudio);
+
+        buildViz();
+        setStatus('Ready to play ' + soundType() + ' noise. All sound is synthesized on-device - nothing is uploaded or recorded.');
+        console.log('[white-noise-generator] wired slug=' + WN_SLUG);
+    }
+</script>

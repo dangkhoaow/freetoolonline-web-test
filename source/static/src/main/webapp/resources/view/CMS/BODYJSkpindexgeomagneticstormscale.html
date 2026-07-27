@@ -1,0 +1,365 @@
+<script>
+    // 3D scene archetype skeleton (Kp-Index Geomagnetic Storm Scale) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Built LEAN, forked from the torino-impact-hazard-scale shape -
+    // ONE scene only (a severity-dial explorer). All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not a live space-weather feed or a computed
+    // dipole-field model. A teaching scene: Earth plus illustrative magnetic
+    // field arcs and an aurora belt whose latitude coverage widens as the
+    // Kp slider increases, plus a synthetic magnetometer-style trace and a
+    // 0-9 severity grid mapped to NOAA's real G1-G5 scale.
+    //
+    // Published figures (cross-checked via WebSearch 2026-07-24):
+    //   - The Kp index is a 3-hour planetary geomagnetic-activity index on an
+    //     integer 0-9 scale, introduced by Julius Bartels in 1949. The
+    //     official, finalized Kp is computed by GFZ Potsdam as the normalized
+    //     average of the local K-index from 13 ground magnetometer stations
+    //     at geomagnetic latitude 44-60 degrees north or south; NOAA's Space
+    //     Weather Prediction Center separately publishes a real-time
+    //     estimated Kp from a subset of ground magnetometers ahead of the
+    //     finalized GFZ value.
+    //   - NOAA's G-scale maps five Kp thresholds to five storm levels:
+    //     Kp=5 -> G1 (Minor), Kp=6 -> G2 (Moderate), Kp=7 -> G3 (Strong),
+    //     Kp=8 -> G4 (Severe), Kp=9 -> G5 (Extreme). Kp 0-4 sits below the
+    //     G-scale (no storm level assigned).
+    //   - Aurora visibility widens toward the equator as Kp rises: at low Kp
+    //     it is generally confined to the high-latitude auroral oval near the
+    //     poles; around Kp 7 it can reach mid-latitudes; at Kp 8-9 it can
+    //     become visible from low latitudes.
+    //   - The May 2024 "Gannon storm" reached Kp=9 (G5 Extreme), a minimum
+    //     Dst of -412 nT, and a maximum Ap of 271 - NOAA, USGS, and
+    //     SpaceWeatherLive all cite it as the strongest geomagnetic storm
+    //     since the October 2003 Halloween storms (by Dst/G-scale severity).
+    //     Aurora from that storm was reported as far south as Alabama and
+    //     Northern California in the continental United States.
+    //   - Distinct from aurora.html (the light-emission mechanism itself),
+    //     carrington-event.html (one specific 1859 historical event), and
+    //     earth-magnetosphere.html (the field's static structure) - this page
+    //     is the numeric SEVERITY SCALE, in the same classification-scale
+    //     shape as torino-impact-hazard-scale.html but for geomagnetic storms
+    //     rather than asteroid-impact risk.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'kpindexgeomagneticstormscale';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'kpindexgeomagneticstormscale'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Real NOAA G-scale bands (the only fixed part of the mapping - the May
+    // 2024 case is the only cited historical case at Kp=9).
+    var T3D_KP_BANDS = [
+        { min: 0, max: 4, g: null, name: 'Below G-scale', color: 0x66bb6a },
+        { min: 5, max: 5, g: 'G1', name: 'Minor', color: 0xffee58 },
+        { min: 6, max: 6, g: 'G2', name: 'Moderate', color: 0xffb74d },
+        { min: 7, max: 7, g: 'G3', name: 'Strong', color: 0xff8a65 },
+        { min: 8, max: 8, g: 'G4', name: 'Severe', color: 0xef5350 },
+        { min: 9, max: 9, g: 'G5', name: 'Extreme', color: 0xb71c1c }
+    ];
+    function t3dKpBandFor(kp) {
+        for (var i = 0; i < T3D_KP_BANDS.length; i++) {
+            if (kp >= T3D_KP_BANDS[i].min && kp <= T3D_KP_BANDS[i].max) return T3D_KP_BANDS[i];
+        }
+        return T3D_KP_BANDS[0];
+    }
+    function t3dKpAuroraNote(kp) {
+        if (kp <= 3) return 'Aurora is typically confined to the high-latitude auroral oval near the poles.';
+        if (kp <= 6) return 'Aurora can widen across high latitudes as the storm strengthens.';
+        if (kp === 7) return 'Aurora can become visible from mid-latitudes.';
+        return 'Aurora can become visible from low latitudes - as during the May 2024 G5 superstorm.';
+    }
+
+    function t3dKpIndexGeomagneticStormScale(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+        var sunLight = new THREE.DirectionalLight(0xfff3d6, 1.1);
+        sunLight.position.set(10, 6, 8);
+        scene.add(sunLight);
+
+        var starN = shell.low ? 260 : 520;
+        var starPos = new Float32Array(starN * 3);
+        for (var s = 0; s < starN; s++) {
+            var r = 40 + Math.random() * 60;
+            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+            starPos[s * 3] = r * Math.sin(ph) * Math.cos(th);
+            starPos[s * 3 + 1] = r * Math.cos(ph) * 0.55;
+            starPos[s * 3 + 2] = r * Math.sin(ph) * Math.sin(th) - 10;
+        }
+        var starGeo = new THREE.BufferGeometry();
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        var stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xaad4ff, size: 0.3, sizeAttenuation: true, transparent: true, opacity: 0.7 }));
+        scene.add(stars);
+
+        // Earth (procedural, simple lit sphere - not a textured globe)
+        var earth = new THREE.Mesh(
+            new THREE.SphereGeometry(3, 32, 22),
+            new THREE.MeshStandardMaterial({ color: 0x2f6fb0, roughness: 0.85, metalness: 0.05, emissive: 0x0a2540, emissiveIntensity: 0.15 })
+        );
+        scene.add(earth);
+        var atmosphere = new THREE.Mesh(
+            new THREE.SphereGeometry(3.16, 32, 22),
+            new THREE.MeshBasicMaterial({ color: 0x64b5f6, transparent: true, opacity: 0.14 })
+        );
+        scene.add(atmosphere);
+
+        // Illustrative magnetic field arcs (a stylized dipole shape, NOT a
+        // computed physical field solve) - a handful of meridian loops.
+        var fieldGroup = new THREE.Group();
+        var arcCount = shell.low ? 5 : 8;
+        for (var a = 0; a < arcCount; a++) {
+            var lon = (a / arcCount) * Math.PI * 2;
+            var pts = [];
+            for (var i2 = 0; i2 <= 40; i2++) {
+                var t2 = i2 / 40;
+                var lat = -Math.PI / 2 + t2 * Math.PI;
+                var reach = 3.35 + 1.65 * Math.sin(t2 * Math.PI);
+                var x = reach * Math.cos(lat) * Math.cos(lon);
+                var z = reach * Math.cos(lat) * Math.sin(lon);
+                var y = reach * Math.sin(lat);
+                pts.push(new THREE.Vector3(x, y, z));
+            }
+            var arcGeo = new THREE.BufferGeometry().setFromPoints(pts);
+            var arcLine = new THREE.Line(arcGeo, new THREE.LineBasicMaterial({ color: 0x5c7fb8, transparent: true, opacity: 0.35 }));
+            fieldGroup.add(arcLine);
+        }
+        scene.add(fieldGroup);
+
+        // Aurora belt (procedural torus ring) - its colatitude (distance from
+        // the pole) widens toward the equator as Kp increases. Illustrative
+        // only: real auroral-oval geometry is far more complex.
+        var auroraRing = new THREE.Mesh(
+            new THREE.TorusGeometry(1.6, 0.14, 10, 48),
+            new THREE.MeshBasicMaterial({ color: 0x66ff99, transparent: true, opacity: 0.55 })
+        );
+        auroraRing.rotation.x = Math.PI / 2;
+        auroraRing.position.y = 2.6;
+        scene.add(auroraRing);
+
+        var kp = 4;
+        var lastCanvasDraw = 0;
+        var magCanvas = document.getElementById('t3dKpMagCanvas');
+        var magCtx = magCanvas && magCanvas.getContext ? magCanvas.getContext('2d') : null;
+        var magPhase = 0;
+
+        function fmtG(band) { return band.g ? (band.g + ' (' + band.name + ')') : band.name; }
+
+        function panelHtml() {
+            var band = t3dKpBandFor(kp);
+            var isMay2024 = (kp === 9);
+            var rows = '<tr><td>Kp value</td><td>' + kp + ' / 9</td></tr>' +
+                '<tr><td>NOAA G-scale</td><td>' + fmtG(band) + '</td></tr>' +
+                '<tr><td>Aurora visibility</td><td>' + t3dKpAuroraNote(kp) + '</td></tr>';
+            if (isMay2024) {
+                rows += '<tr><td>May 2024 "Gannon storm" case</td><td>Kp=9 (G5 Extreme), Dst minimum -412 nT, Ap maximum 271 - the strongest geomagnetic storm since the October 2003 Halloween storms; aurora reported as far south as Alabama and Northern California.</td></tr>';
+            }
+            return '<h3>Kp-Index Geomagnetic Storm Scale</h3>' +
+                '<p>The Kp index (introduced by Julius Bartels, 1949) is a 3-hour 0-9 planetary geomagnetic-activity index. NOAA maps five Kp thresholds onto its G1-G5 storm-severity scale.</p>' +
+                '<table class="w3-table w3-bordered">' + rows + '</table>' +
+                '<p class="t3d-note">Educational approximation - the field arcs, aurora-ring size, and magnetometer trace are illustrative teaching cues, not a computed field model or a live data feed. The Kp thresholds, G-scale mapping, and May 2024 case figures are the real NOAA/USGS-published values.</p>';
+        }
+
+        var kpSlider = document.getElementById('t3dKpSlider');
+        var kpLabel = document.getElementById('t3dKpLabel');
+        var jumpBtn = document.getElementById('t3dKpJumpBtn');
+        var cells = {};
+        for (var ci = 0; ci <= 9; ci++) {
+            var cell = document.getElementById('t3dKpCell' + ci);
+            if (cell) cells[ci] = cell;
+        }
+
+        function apply() {
+            var band = t3dKpBandFor(kp);
+            if (kpSlider && parseInt(kpSlider.value, 10) !== kp) kpSlider.value = String(kp);
+            if (kpLabel) kpLabel.textContent = 'Kp ' + kp + ' - ' + fmtG(band);
+            auroraRing.material.color.setHex(kp >= 7 ? 0xff6f91 : 0x66ff99);
+            var widen = 1 + (kp / 9) * 2.1;
+            auroraRing.scale.set(widen, 1, widen);
+            auroraRing.position.y = 2.6 - (kp / 9) * 1.7;
+            for (var i3 = 0; i3 <= 9; i3++) {
+                if (cells[i3]) {
+                    cells[i3].style.outline = (i3 === kp) ? '3px solid #1a237e' : 'none';
+                    cells[i3].style.transform = (i3 === kp) ? 'scale(1.12)' : 'scale(1)';
+                }
+            }
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ kp: kp }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.kp === 'number' && store.kp >= 0 && store.kp <= 9) kp = store.kp;
+        apply();
+
+        if (kpSlider) kpSlider.addEventListener('input', function () {
+            kp = Math.max(0, Math.min(9, parseInt(kpSlider.value || '4', 10)));
+            apply();
+        });
+        if (jumpBtn) jumpBtn.addEventListener('click', function () {
+            kp = 9;
+            apply();
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Drag the Kp slider or jump to the May 2024 superstorm.');
+        return function animate(dt) {
+            stars.rotation.y += dt * 0.00002;
+            earth.rotation.y += dt * 0.00025;
+            fieldGroup.rotation.y += dt * 0.00025;
+            auroraRing.rotation.z += dt * 0.0004;
+
+            magPhase += dt * 0.0022;
+            if (magCtx && magCanvas) {
+                var now = performance.now();
+                if (now - lastCanvasDraw > 45) {
+                    lastCanvasDraw = now;
+                    var w = magCanvas.width, h = magCanvas.height;
+                    magCtx.fillStyle = '#0b1220';
+                    magCtx.fillRect(0, 0, w, h);
+                    magCtx.strokeStyle = '#39d98a';
+                    magCtx.lineWidth = 2;
+                    magCtx.beginPath();
+                    var amp = (kp / 9) * (h * 0.38);
+                    for (var xpix = 0; xpix <= w; xpix += 3) {
+                        var yv = h / 2 + Math.sin(xpix * 0.05 + magPhase) * amp * (0.6 + 0.4 * Math.sin(xpix * 0.011));
+                        if (xpix === 0) magCtx.moveTo(xpix, yv); else magCtx.lineTo(xpix, yv);
+                    }
+                    magCtx.stroke();
+                }
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { kpindexgeomagneticstormscale: 't3dKpControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { kpindexgeomagneticstormscale: { radius: 16, maxR: 60, minR: 4, phi: 1.1, theta: 0.5, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dKpIndexGeomagneticStormScale(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

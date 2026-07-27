@@ -1,0 +1,366 @@
+<script>
+    // 3D scene archetype skeleton (Great Red Spot Jupiter) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side.
+    // Built LEAN, forked from the curiosity-rover-traverse shape - ONE scene
+    // only (a historical-size-comparison storm explorer). All geometry is
+    // procedural (a sphere with a canvas-drawn band texture + a canvas-drawn
+    // oval storm redrawn per milestone + a small orbiting wind-ring marker).
+    //
+    // EDUCATIONAL APPROXIMATION, not a photographic or physics simulation.
+    // Jupiter's cloud bands are drawn as flat artistic color stripes, not a
+    // real photographic texture. The storm's oval SHAPE is an artistic
+    // approximation - but its WEST-TO-EAST WIDTH is drawn proportionally
+    // correct against Jupiter's real 142,984 km equatorial diameter for each
+    // milestone below, so the size comparison itself is honest.
+    //
+    // Published figures (cross-checked via WebSearch 2026-07-24; sources:
+    // NASA Jupiter Facts (science.nasa.gov/jupiter/jupiter-facts/), NASA
+    // Goddard "Jupiter's Great Red Spot: A Swirling Mystery", NASA JPL "Great
+    // Red Spot Is Smaller Than Ever Measured", ESA/Hubble heic1410 "The
+    // Shrinking of Jupiter's Great Red Spot", NASA Science "Hubble Shows
+    // Winds in Jupiter's Great Red Spot Are Speeding Up"):
+    //   - Jupiter's equatorial diameter is about 142,984 km.
+    //   - Late 1800s: earliest telescopic size estimates put the storm's
+    //     long axis at about 41,000 km (25,500 miles).
+    //   - 1979-1980 (Voyager 1 and Voyager 2 flybys): measured about 23,300
+    //     km (14,500 miles) long.
+    //   - 1995 (Hubble, WFPC2 camera): about 20,950 km (13,020 miles) long.
+    //   - 2009 (Hubble): about 17,900 km (11,130 miles) long.
+    //   - 2014 (Hubble): about 16,500 km (10,250 miles) long - the smallest
+    //     width measured up to that point.
+    //   - The storm has been continuously observed since at least 1831.
+    //   - It is an anticyclonic (high-pressure) storm rotating counter-
+    //     clockwise in Jupiter's southern hemisphere, centered around 22
+    //     degrees south latitude - unlike an Earth hurricane, it has no
+    //     ocean or solid surface underneath supplying its energy.
+    //   - Winds in its high-speed outer ring blow at roughly 430-680 km/h
+    //     (270-425 mph); Hubble data from 2009-2020 found those outer winds
+    //     speeding up by about 8%, while winds nearer the center move more
+    //     slowly.
+    //   - NASA's Juno mission found the storm's roots reach about 480 km
+    //     (300 miles) below the visible cloud tops.
+    //   - Jupiter completes one full rotation in about 9 hours 56 minutes -
+    //     the fastest rotation of any planet in the solar system.
+    //   - Earth's average diameter is about 12,742 km, used only for the
+    //     on-screen size comparison.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'greatredspotjupiter';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'greatredspotjupiter'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Jupiter's real equatorial diameter (km) - used only to compute the
+    // on-screen storm width proportionally for each milestone below.
+    var T3D_JUPITER_DIAMETER_KM = 142984;
+    var T3D_EARTH_DIAMETER_KM = 12742;
+    var T3D_JUPITER_CIRCUMFERENCE_KM = Math.PI * T3D_JUPITER_DIAMETER_KM;
+
+    // Real published Great Red Spot long-axis width measurements
+    // (cross-checked via WebSearch 2026-07-24; sources in the header comment
+    // above). Never interpolated between milestones - each is a discrete,
+    // independently published measurement.
+    var T3D_GRS_MILESTONES = [
+        { label: 'Late 1800s', sub: 'earliest telescopic size estimates', diameterKm: 41000 },
+        { label: '1979-1980', sub: 'Voyager 1 and Voyager 2 flybys', diameterKm: 23300 },
+        { label: '1995', sub: 'Hubble Space Telescope (WFPC2)', diameterKm: 20950 },
+        { label: '2009', sub: 'Hubble Space Telescope', diameterKm: 17900 },
+        { label: '2014', sub: 'Hubble Space Telescope - smallest width measured up to that point', diameterKm: 16500 }
+    ];
+
+    var T3D_BAND_PALETTE = ['#c98a4b', '#e8c79a', '#b06a3a', '#f0e0c0', '#9c5a30', '#dba86a', '#c2925f', '#efd9ad', '#a86e3f', '#e0b483'];
+
+    function t3dBuildJupiterTexture(THREE, milestoneIndex) {
+        var w = 1024, h = 512;
+        var canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        var ctx = canvas.getContext('2d');
+        var bandCount = 16;
+        var bandH = h / bandCount;
+        for (var i = 0; i < bandCount; i++) {
+            ctx.fillStyle = T3D_BAND_PALETTE[i % T3D_BAND_PALETTE.length];
+            ctx.fillRect(0, i * bandH, w, bandH + 1);
+        }
+        // The Great Red Spot - drawn in the South Tropical Zone (about 22
+        // degrees south). v = 0 is the north pole, v = 1 is the south pole
+        // on a standard equirectangular sphere map, so 22 deg south sits at
+        // v = (90 + 22) / 180.
+        var spotV = (90 + 22) / 180;
+        var spotY = spotV * h;
+        var m = T3D_GRS_MILESTONES[milestoneIndex];
+        var widthFrac = m.diameterKm / T3D_JUPITER_CIRCUMFERENCE_KM;
+        var spotWpx = Math.max(18, widthFrac * w);
+        var spotHpx = spotWpx / 1.3; // artistic oval proportion, not a published figure
+        var spotX = w * 0.5;
+        ctx.save();
+        ctx.translate(spotX, spotY);
+        var grad = ctx.createRadialGradient(0, 0, spotWpx * 0.1, 0, 0, spotWpx * 0.5);
+        grad.addColorStop(0, '#e8734a');
+        grad.addColorStop(0.6, '#c94f32');
+        grad.addColorStop(1, '#9c3a24');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, spotWpx * 0.5, spotHpx * 0.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        var tex = new THREE.CanvasTexture(canvas);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.needsUpdate = true;
+        return tex;
+    }
+
+    function t3dLatLonToLocal(radius, latDeg, lonDeg) {
+        var phi = (90 - latDeg) * Math.PI / 180;
+        var theta = lonDeg * Math.PI / 180;
+        return {
+            x: radius * Math.sin(phi) * Math.cos(theta),
+            y: radius * Math.cos(phi),
+            z: radius * Math.sin(phi) * Math.sin(theta)
+        };
+    }
+
+    function t3dGreatRedSpot(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x05070d, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+        var sunLight = new THREE.DirectionalLight(0xfff2df, 1.35);
+        sunLight.position.set(14, 6, 10);
+        scene.add(sunLight);
+
+        var starN = shell.low ? 220 : 460;
+        var starPos = new Float32Array(starN * 3);
+        for (var s = 0; s < starN; s++) {
+            var r = 70 + Math.random() * 60;
+            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+            starPos[s * 3] = r * Math.sin(ph) * Math.cos(th);
+            starPos[s * 3 + 1] = r * Math.cos(ph);
+            starPos[s * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+        }
+        var starGeo = new THREE.BufferGeometry();
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.28, sizeAttenuation: true, transparent: true, opacity: 0.55 })));
+
+        var jupiterRadius = 10;
+        var jupiterGeo = new THREE.SphereGeometry(jupiterRadius, 64, 48);
+        var jupiterMat = new THREE.MeshStandardMaterial({ roughness: 0.85, metalness: 0.02 });
+        var jupiter = new THREE.Mesh(jupiterGeo, jupiterMat);
+        scene.add(jupiter);
+
+        // Wind-ring marker: a small ring of particles orbiting the storm's
+        // fixed lat/lon position, parented to Jupiter so it rotates with the
+        // planet. Direction is illustrative (anticyclonic / counter-
+        // clockwise as described in the facts panel) - not a wind-field
+        // simulation.
+        var spotLocal = t3dLatLonToLocal(jupiterRadius * 1.03, -22, 0);
+        var windGroup = new THREE.Group();
+        windGroup.position.set(spotLocal.x, spotLocal.y, spotLocal.z);
+        windGroup.lookAt(0, 0, 0);
+        jupiter.add(windGroup);
+        var windDots = [];
+        var windN = 10;
+        for (var wd = 0; wd < windN; wd++) {
+            var dot = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 6), new THREE.MeshBasicMaterial({ color: 0xffe082 }));
+            windGroup.add(dot);
+            windDots.push(dot);
+        }
+
+        function applyMilestone(idx) {
+            jupiterMat.map = t3dBuildJupiterTexture(THREE, idx);
+            jupiterMat.needsUpdate = true;
+        }
+
+        var milestoneIndex = 4; // default: most recent (2014) measurement
+        var idxEl = document.getElementById('t3dGrsScrub');
+        var idxLab = document.getElementById('t3dGrsLabel');
+
+        function panelHtml() {
+            var m = T3D_GRS_MILESTONES[milestoneIndex];
+            var rows = '';
+            for (var i = 0; i < T3D_GRS_MILESTONES.length; i++) {
+                var mm = T3D_GRS_MILESTONES[i];
+                var earthRatio = (mm.diameterKm / T3D_EARTH_DIAMETER_KM).toFixed(1);
+                rows += '<tr' + (i === milestoneIndex ? ' style="background:#fff3cd;"' : '') + '>' +
+                    '<td>' + mm.label + '</td>' +
+                    '<td>' + mm.sub + '</td>' +
+                    '<td>' + mm.diameterKm.toLocaleString() + ' km</td>' +
+                    '<td>' + earthRatio + 'x Earth</td>' +
+                    '</tr>';
+            }
+            var m2 = T3D_GRS_MILESTONES[milestoneIndex];
+            var ratio = (m2.diameterKm / T3D_EARTH_DIAMETER_KM).toFixed(1);
+            return '<h3>Measurement ' + (milestoneIndex + 1) + ' of ' + T3D_GRS_MILESTONES.length + '</h3>' +
+                '<p><b>' + m2.label + '</b> - ' + m2.sub + '</p>' +
+                '<p>Long-axis width: about ' + m2.diameterKm.toLocaleString() + ' km - about ' + ratio + 'x Earth\'s diameter (' + T3D_EARTH_DIAMETER_KM.toLocaleString() + ' km).</p>' +
+                '<div class="w3-responsive"><table class="w3-table w3-bordered w3-small">' +
+                '<tr><th>Era</th><th>Source</th><th>Width</th><th>vs Earth</th></tr>' + rows + '</table></div>' +
+                '<p class="t3d-note">Educational approximation - Jupiter\'s cloud bands are artistic color stripes, not a photographic texture, and the storm\'s oval shape is stylized. Only the storm\'s WIDTH at each era is drawn proportionally correct against Jupiter\'s real 142,984 km diameter.</p>';
+        }
+
+        function apply() {
+            applyMilestone(milestoneIndex);
+            var m = T3D_GRS_MILESTONES[milestoneIndex];
+            if (idxLab) idxLab.textContent = m.label + ' (' + m.diameterKm.toLocaleString() + ' km)';
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ milestoneIndex: milestoneIndex }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.milestoneIndex === 'number' && store.milestoneIndex >= 0 && store.milestoneIndex < T3D_GRS_MILESTONES.length) {
+            milestoneIndex = store.milestoneIndex;
+        }
+        if (idxEl) idxEl.value = String(milestoneIndex);
+        apply();
+
+        if (idxEl) idxEl.addEventListener('input', function () {
+            milestoneIndex = Math.max(0, Math.min(T3D_GRS_MILESTONES.length - 1, parseInt(idxEl.value || '0', 10)));
+            apply();
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Scrub the era slider to compare the storm\'s real measured size across nearly 150 years of observation.');
+        return function animate(dt) {
+            // Jupiter's real rotation period is about 9h 56m - the fastest of
+            // any planet. On-screen speed is sped up for visibility, never
+            // claimed to be real-time.
+            jupiter.rotation.y += dt * 0.00018;
+            for (var i = 0; i < windDots.length; i++) {
+                var a = (performance.now() * 0.0016) + (i / windDots.length) * Math.PI * 2;
+                windDots[i].position.set(Math.cos(a) * 0.9, Math.sin(a) * 0.9, 0);
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { greatredspotjupiter: 't3dGrsControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { greatredspotjupiter: { radius: 22, maxR: 60, minR: 8, phi: 1.2, theta: 0.6, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dGreatRedSpot(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

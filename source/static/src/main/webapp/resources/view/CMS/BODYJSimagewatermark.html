@@ -1,0 +1,219 @@
+<script>
+    // Image Watermark tool (image-watermark) - Canvas text-watermark overlay, fully
+    // client-side. Seeded new-tool-discovery-loop fire352 to release the
+    // Gate-H registry-starvation card sustained across fires 345-351
+    // (image-watermark: confidence 0.78, cycles_seen 33+ - top of the
+    // sustained-demand cohort). Registry Gate-H entry: image_watermark_canvas.
+    // Empty preview canvas renders on load so qa-e2e-test G16 passes before a
+    // file is chosen (mirrors favicon-generator's renderEmptyGrid pattern).
+    // Plain <input type=file>; web.localUpload=false (no server upload widget).
+    // No external lib, no backend, no upload - drawImage + fillText + toBlob.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered().
+
+    web.localUpload = false;
+
+    var IWM_SLUG = 'image-watermark';
+    var IWM_MAX_DIM = 2400; // cap canvas size for very large source photos
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('imageWatermarkTool');
+        if (!root) return;
+
+        var fileEl = document.getElementById('iwmFile');
+        var textEl = document.getElementById('iwmText');
+        var sizeEl = document.getElementById('iwmSize');
+        var opacityEl = document.getElementById('iwmOpacity');
+        var colorEl = document.getElementById('iwmColor');
+        var posEl = document.getElementById('iwmPosition');
+        var tileEl = document.getElementById('iwmTile');
+        var canvas = document.getElementById('iwmCanvas');
+        var statusEl = document.getElementById('iwmStatus');
+        var dlBtn = document.getElementById('iwmDownload');
+
+        var sourceImg = null;
+        var sourceMime = 'image/png';
+        var sourceName = 'image';
+        var renderTimer = null;
+        var lastUrl = null;
+
+        function setStatus(msg) {
+            if (statusEl) statusEl.textContent = msg;
+            console.log('[image-watermark] status=', msg);
+        }
+
+        function renderPlaceholder() {
+            if (!canvas) return;
+            canvas.width = 480;
+            canvas.height = 270;
+            var ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#f2f2f2';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#ccc';
+            ctx.strokeRect(0.5, 0.5, canvas.width - 1, canvas.height - 1);
+            ctx.fillStyle = '#888';
+            ctx.font = '16px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('Choose an image to preview the watermark', canvas.width / 2, canvas.height / 2);
+        }
+
+        function positionXY(pos, cw, ch, tw, th, pad) {
+            switch (pos) {
+                case 'top-left': return [pad, pad + th];
+                case 'top-center': return [(cw - tw) / 2, pad + th];
+                case 'top-right': return [cw - tw - pad, pad + th];
+                case 'center-left': return [pad, (ch + th) / 2];
+                case 'center-right': return [cw - tw - pad, (ch + th) / 2];
+                case 'bottom-left': return [pad, ch - pad];
+                case 'bottom-right': return [cw - tw - pad, ch - pad];
+                case 'center': return [(cw - tw) / 2, (ch + th) / 2];
+                default: return [cw - tw - pad, ch - pad]; // bottom-right default
+            }
+        }
+
+        function drawWatermark() {
+            if (!canvas || !sourceImg) return;
+            var iw = sourceImg.naturalWidth || sourceImg.width;
+            var ih = sourceImg.naturalHeight || sourceImg.height;
+            var scale = Math.min(1, IWM_MAX_DIM / Math.max(iw, ih));
+            var cw = Math.max(1, Math.round(iw * scale));
+            var ch = Math.max(1, Math.round(ih * scale));
+            canvas.width = cw;
+            canvas.height = ch;
+            var ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, cw, ch);
+            ctx.drawImage(sourceImg, 0, 0, cw, ch);
+
+            var text = (textEl && textEl.value ? textEl.value : '').trim();
+            if (!text) {
+                setStatus('Ready. Type watermark text to overlay it on the preview.');
+                return;
+            }
+
+            var fontSize = Math.max(10, Math.min(300, parseInt(sizeEl && sizeEl.value, 10) || 36));
+            var opacityPct = Math.max(5, Math.min(100, parseInt(opacityEl && opacityEl.value, 10) || 50));
+            var color = (colorEl && colorEl.value) || '#ffffff';
+            var pos = (posEl && posEl.value) || 'bottom-right';
+            var tiled = !!(tileEl && tileEl.checked);
+
+            ctx.save();
+            ctx.globalAlpha = opacityPct / 100;
+            ctx.fillStyle = color;
+            ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+            ctx.lineWidth = Math.max(1, fontSize / 18);
+            ctx.font = '600 ' + fontSize + 'px sans-serif';
+            ctx.textBaseline = 'alphabetic';
+
+            var metrics = ctx.measureText(text);
+            var tw = metrics.width;
+            var th = fontSize;
+
+            if (tiled) {
+                ctx.textAlign = 'left';
+                ctx.rotate(-Math.PI / 8);
+                var diag = Math.sqrt(cw * cw + ch * ch);
+                var stepX = tw + fontSize * 2.5;
+                var stepY = th + fontSize * 2.5;
+                var startX = -diag;
+                var startY = -diag;
+                for (var y = startY; y < diag; y += stepY) {
+                    for (var x = startX; x < diag; x += stepX) {
+                        ctx.strokeText(text, x, y);
+                        ctx.fillText(text, x, y);
+                    }
+                }
+            } else {
+                ctx.textAlign = 'left';
+                var xy = positionXY(pos, cw, ch, tw, th, Math.max(8, fontSize * 0.4));
+                ctx.strokeText(text, xy[0], xy[1]);
+                ctx.fillText(text, xy[0], xy[1]);
+            }
+            ctx.restore();
+
+            setStatus('Watermark applied in this tab. Click Download to save the result.');
+        }
+
+        function scheduleRender() {
+            if (renderTimer) clearTimeout(renderTimer);
+            renderTimer = setTimeout(function () {
+                renderTimer = null;
+                try {
+                    drawWatermark();
+                } catch (e) {
+                    setStatus('Could not render the watermark: ' + (e && e.message ? e.message : String(e)));
+                }
+            }, 16);
+        }
+
+        function revokeLast() {
+            if (lastUrl) {
+                try { URL.revokeObjectURL(lastUrl); } catch (e) {}
+                lastUrl = null;
+            }
+        }
+
+        function onDownload() {
+            if (!canvas || !sourceImg) return;
+            var mime = sourceMime === 'image/jpeg' ? 'image/jpeg' : 'image/png';
+            var ext = mime === 'image/jpeg' ? 'jpg' : 'png';
+            canvas.toBlob(function (blob) {
+                if (!blob) {
+                    setStatus('Could not export the watermarked image.');
+                    return;
+                }
+                revokeLast();
+                lastUrl = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = lastUrl;
+                a.download = sourceName.replace(/\.[^.]+$/, '') + '-watermarked.' + ext;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setStatus('Downloaded ' + a.download + '.');
+            }, mime, 0.92);
+        }
+
+        function onFile(file) {
+            if (!file) return;
+            if (!/^image\//.test(file.type) && !/\.(png|jpe?g|webp|gif|bmp)$/i.test(file.name || '')) {
+                setStatus('Please choose an image file (PNG, JPEG, WebP, GIF, or BMP).');
+                return;
+            }
+            sourceMime = file.type === 'image/jpeg' ? 'image/jpeg' : 'image/png';
+            sourceName = file.name || 'image';
+            setStatus('Loading ' + sourceName + '...');
+            var url = URL.createObjectURL(file);
+            var img = new Image();
+            img.onload = function () {
+                URL.revokeObjectURL(url);
+                sourceImg = img;
+                if (dlBtn) dlBtn.style.display = 'inline-block';
+                scheduleRender();
+            };
+            img.onerror = function () {
+                URL.revokeObjectURL(url);
+                setStatus('Could not read that image. Try a different PNG or JPEG.');
+            };
+            img.src = url;
+        }
+
+        if (fileEl) {
+            fileEl.addEventListener('change', function () {
+                var f = fileEl.files && fileEl.files[0];
+                console.log('[image-watermark] file chosen', f && f.name, f && f.type);
+                onFile(f);
+            });
+        }
+        [textEl, sizeEl, opacityEl, colorEl, posEl].forEach(function (el) {
+            if (el) el.addEventListener('input', scheduleRender);
+        });
+        if (tileEl) tileEl.addEventListener('change', scheduleRender);
+        if (dlBtn) dlBtn.addEventListener('click', onDownload);
+
+        renderPlaceholder();
+        setStatus('Choose an image, then type your watermark text. Everything runs in this tab - nothing is uploaded.');
+        console.log('[image-watermark] wired slug=' + IWM_SLUG);
+    }
+</script>

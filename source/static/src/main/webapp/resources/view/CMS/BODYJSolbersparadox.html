@@ -1,0 +1,332 @@
+<script>
+    // 3D scene archetype skeleton (Olbers' Paradox) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side.
+    // Built LEAN, forked from the greatredspotjupiter shape - ONE scene only
+    // (an infinite-vs-real-universe starfield toggle). All geometry is
+    // procedural (concentric shells of BufferGeometry+Points stars + a
+    // canvas-free additive "sky glow" backdrop sphere whose opacity tracks
+    // an illustrative coverage indicator).
+    //
+    // EDUCATIONAL APPROXIMATION, not a radiative-transfer simulation. The
+    // "sky coverage" percentage and glow brightness are an illustrative
+    // pedagogical device demonstrating the LOGIC of the paradox (more
+    // distant shells contain proportionally more stars, so an infinite,
+    // static, ageless starfield would light up the whole sky) - they are
+    // NOT a real photometric calculation. The historical dates and the age
+    // of the universe cited below are real published figures.
+    //
+    // Published figures (cross-checked via WebSearch 2026-07-24; sources:
+    // Wikipedia "Olbers' paradox", Britannica "Olbers' paradox", NASA/Planck
+    // 2018 age-of-the-universe figure already used sitewide on
+    // expanding-universe.html and cmb-sky.html):
+    //   - Johannes Kepler raised a similar argument against an infinite
+    //     starfield in 1610.
+    //   - Heinrich Wilhelm Olbers described the paradox in 1823 (published
+    //     1826, "Ueber die Durchsichtigkeit des Weltraums").
+    //   - Edgar Allan Poe's essay Eureka (1848) anticipated some qualitative
+    //     aspects of the resolution - a finite light-travel time.
+    //   - Lord Kelvin published the first widely accepted resolution in a
+    //     little-known 1901 paper.
+    //   - The modern resolution: the universe has a finite age, about 13.8
+    //     billion years (Planck 2018), so light from the most distant stars
+    //     has not had time to reach us; cosmic expansion redshifts distant
+    //     starlight out of the visible band (that energy is observed today
+    //     as the cosmic microwave background); dust absorption alone cannot
+    //     resolve the paradox, because absorbing dust would heat up and
+    //     re-radiate as much energy as it absorbs.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'olbersparadox';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'olbersparadox'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Real published figures used in the facts panel and copy.
+    var T3D_UNIVERSE_AGE_GYR = 13.8; // Planck 2018, already used on expanding-universe.html / cmb-sky.html
+    var T3D_KEPLER_YEAR = 1610;
+    var T3D_OLBERS_YEAR = 1823;
+    var T3D_POE_YEAR = 1848;
+    var T3D_KELVIN_YEAR = 1901;
+
+    // Illustrative shell model (NOT a photometric calculation - see the
+    // header comment and the on-page honesty disclosure). 12 concentric
+    // shells going outward; star count per shell grows with shell index
+    // squared, approximating the real geometric fact that a shell's surface
+    // area (and so its star count, for a uniform density) grows with the
+    // square of its radius while each individual star's brightness falls
+    // with the square of its distance - the two effects cancel, so each
+    // shell alone contributes roughly EQUAL total light. That is the crux
+    // of the paradox: sum infinitely many equal-light shells and the total
+    // is infinite (the sky should glow like a star's surface everywhere).
+    var T3D_SHELL_COUNT = 12;
+    var T3D_HORIZON_SHELL = 6; // illustrative: "only these shells' light has had time to arrive"
+    var T3D_BASE_RADIUS = 5.2;
+    var T3D_STARS_PER_UNIT = 5;
+
+    function t3dBuildShell(THREE, scene, shellIdx, low) {
+        var r = T3D_BASE_RADIUS * (shellIdx + 1);
+        var count = Math.round(T3D_STARS_PER_UNIT * (shellIdx + 1) * (shellIdx + 1) * (low ? 0.55 : 1));
+        var pos = new Float32Array(count * 3);
+        for (var i = 0; i < count; i++) {
+            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+            pos[i * 3] = r * Math.sin(ph) * Math.cos(th);
+            pos[i * 3 + 1] = r * Math.cos(ph);
+            pos[i * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+        }
+        var geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        var mat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.9, sizeAttenuation: true, transparent: true, opacity: 1 });
+        var pts = new THREE.Points(geo, mat);
+        scene.add(pts);
+        return { points: pts, material: mat, radius: r, count: count };
+    }
+
+    function t3dOlbers(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.15));
+
+        var shells = [];
+        for (var i = 0; i < T3D_SHELL_COUNT; i++) {
+            shells.push(t3dBuildShell(THREE, scene, i, shell.low));
+        }
+
+        // "Sky glow" backdrop - an illustrative additive white shell that
+        // brightens as more of an infinite, static starfield is included.
+        // This is the pedagogical stand-in for "every line of sight
+        // eventually ends on a star's surface" - NOT a rendered light field.
+        var glowGeo = new THREE.SphereGeometry(T3D_BASE_RADIUS * (T3D_SHELL_COUNT + 2), 24, 16);
+        var glowMat = new THREE.MeshBasicMaterial({ color: 0xfff6e0, transparent: true, opacity: 0, side: THREE.BackSide, depthWrite: false });
+        var glow = new THREE.Mesh(glowGeo, glowMat);
+        scene.add(glow);
+
+        var mode = 'real'; // 'real' (finite age + expansion) | 'naive' (infinite static universe)
+        var shellsIncluded = T3D_HORIZON_SHELL;
+
+        var modeBtn = document.getElementById('t3dOlbersModeBtn');
+        var scrubEl = document.getElementById('t3dOlbersScrub');
+        var scrubLab = document.getElementById('t3dOlbersScrubLabel');
+
+        function coverageFraction(n) {
+            // Illustrative accumulation curve (NOT a real radiative-transfer
+            // integral) - each added shell contributes a shrinking remaining
+            // share, approaching but capped by 1 (100%) only in the limit of
+            // infinitely many shells. Used only to drive the sky-glow opacity
+            // and the "sky coverage" readout, both explicitly disclosed as
+            // illustrative.
+            return 1 - Math.exp(-0.32 * n);
+        }
+
+        function applyMode() {
+            var maxShell = (mode === 'real') ? T3D_HORIZON_SHELL : T3D_SHELL_COUNT;
+            if (scrubEl) scrubEl.max = String(maxShell);
+            if (shellsIncluded > maxShell) shellsIncluded = maxShell;
+            if (scrubEl) scrubEl.value = String(shellsIncluded);
+
+            for (var i = 0; i < shells.length; i++) {
+                var s = shells[i];
+                if (i >= shellsIncluded) {
+                    s.points.visible = false;
+                    continue;
+                }
+                s.points.visible = true;
+                if (mode === 'real' && i >= T3D_HORIZON_SHELL - 2) {
+                    // Shells near the illustrative horizon are tinted toward
+                    // red and dimmed - standing in for cosmological redshift
+                    // pushing their light out of the visible band (that
+                    // energy is observed today as the cosmic microwave
+                    // background, not as visible starlight).
+                    var t = Math.max(0, Math.min(1, (i - (T3D_HORIZON_SHELL - 2)) / 2));
+                    s.material.color.setRGB(1, 1 - t * 0.55, 1 - t * 0.85);
+                    s.material.opacity = 1 - t * 0.6;
+                } else {
+                    s.material.color.setRGB(1, 1, 1);
+                    s.material.opacity = 1;
+                }
+            }
+
+            var coverage = (mode === 'naive')
+                ? coverageFraction(shellsIncluded)
+                : Math.min(coverageFraction(shellsIncluded), coverageFraction(T3D_HORIZON_SHELL));
+            glowMat.opacity = (mode === 'naive') ? coverage * 0.85 : coverage * 0.18;
+
+            if (scrubLab) scrubLab.textContent = shellsIncluded + ' of ' + maxShell + ' shells';
+            if (modeBtn) modeBtn.textContent = (mode === 'naive')
+                ? 'Model: infinite & static (1823 naive assumption)'
+                : 'Model: real universe (finite age + expansion)';
+
+            t3dInfo(panelHtml(coverage, maxShell));
+            try { t3dSaveStore({ mode: mode, shellsIncluded: shellsIncluded }); } catch (e) {}
+        }
+
+        function panelHtml(coverage, maxShell) {
+            var pct = Math.round(coverage * 100);
+            if (mode === 'naive') {
+                return '<h3>Infinite &amp; static universe (the 1823 naive assumption)</h3>' +
+                    '<p>Shells included: ' + shellsIncluded + ' of ' + T3D_SHELL_COUNT + '. Illustrative sky-coverage indicator: about ' + pct + '%.</p>' +
+                    '<p>Each added shell is farther away, but contains proportionally more stars, so it contributes roughly as much total light as any closer shell. If the universe were truly infinite, static, and eternal, adding shells forever would make the indicator approach 100% - every line of sight would eventually end on a star\'s surface, and the whole night sky would glow as bright as a star.</p>' +
+                    '<p class="t3d-note">Illustrative pedagogical device, not a real photometric calculation - it demonstrates the LOGIC of the paradox, first posed by Johannes Kepler in ' + T3D_KEPLER_YEAR + ' and formally described by Heinrich Olbers in ' + T3D_OLBERS_YEAR + '.</p>';
+            }
+            return '<h3>The real universe (finite age + expansion)</h3>' +
+                '<p>Shells included: ' + shellsIncluded + ' of ' + maxShell + ' (the slider cannot go further in this mode). Illustrative sky-coverage indicator: about ' + pct + '%, capped well below 100%.</p>' +
+                '<p>The universe is about ' + T3D_UNIVERSE_AGE_GYR + ' billion years old (Planck 2018), so light from anything farther than this illustrative horizon has not had time to reach us yet - those shells stay dark, not lit. Shells near the horizon are tinted red because cosmic expansion redshifts their light out of the visible band - that missing visible light is observed today as the cosmic microwave background, not as starlight.</p>' +
+                '<p class="t3d-note">Dust absorption alone cannot resolve the paradox either: absorbing dust heats up and re-radiates as much energy as it absorbs (the argument Lord Kelvin formalized in ' + T3D_KELVIN_YEAR + '). Edgar Allan Poe\'s essay Eureka (' + T3D_POE_YEAR + ') anticipated some of this reasoning qualitatively, decades earlier.</p>';
+        }
+
+        var store = t3dLoadStore();
+        if (store.mode === 'naive' || store.mode === 'real') mode = store.mode;
+        if (typeof store.shellsIncluded === 'number' && store.shellsIncluded >= 1) shellsIncluded = store.shellsIncluded;
+        applyMode();
+
+        if (modeBtn) modeBtn.addEventListener('click', function () {
+            mode = (mode === 'naive') ? 'real' : 'naive';
+            applyMode();
+        });
+        if (scrubEl) scrubEl.addEventListener('input', function () {
+            shellsIncluded = Math.max(1, Math.min(parseInt(scrubEl.max, 10), parseInt(scrubEl.value || '1', 10)));
+            applyMode();
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the universe model, then scrub how many shells of stars are included.');
+        return function animate(dt) {
+            for (var i = 0; i < shells.length; i++) {
+                shells[i].points.rotation.y += dt * 0.00002 * (1 + i * 0.15);
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { olbersparadox: 't3dOlbersControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { olbersparadox: { radius: 46, maxR: 150, minR: 12, phi: 1.1, theta: 0.6, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dOlbers(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
