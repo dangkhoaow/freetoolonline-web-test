@@ -8799,6 +8799,10 @@ export const GUIDE_ROUTES = new Set([
   '/guides/audio-trimmer-when.html',
   '/guides/audio-trimmer-step-by-step.html',
   '/guides/audio-trimmer-vs-alternatives.html',
+  // new-tool-discovery-loop fire594 (2026-07-27) - audio-speed-changer companion guides.
+  '/guides/audio-speed-changer-when.html',
+  '/guides/audio-speed-changer-step-by-step.html',
+  '/guides/audio-speed-changer-vs-alternatives.html',
   // Cycle 20260524-10 create_new_guide_page - "i love zip" bare-query landing (companion to /zip-file.html).
   // Cycle 78 P78.A - "QR code error correction and scan failures" Lane-D guide (companion to /qr-code-generator.html).
   // Cycle 79 P79.B - "Image to Base64: embed in HTML/CSS vs link the image file" Lane-D guide.
@@ -12877,6 +12881,7 @@ export const ALIAS_ROUTES = {
   '/antelope-canyon.html': '/places-3d/antelope-canyon.html',
   '/lake-michigan-huron.html': '/places-3d/lake-michigan-huron.html',
   '/lake-titicaca.html': '/places-3d/lake-titicaca.html',
+  '/amazon-rainforest.html': '/places-3d/amazon-rainforest.html',
   // dinosaur-loop (2026-07-15): dir-index alias for the /dinosaur-3d cluster
   // hub. MUST also be mirrored into the CloudFront 301 function (two-layer
   // redirect rule) - republish is an operator step. (Restored 2026-07-16: a
@@ -14389,6 +14394,7 @@ export const JSP_BY_ROUTE = {
   '/places-3d/antelope-canyon.html': 'place/antelope-canyon.jsp',
   '/places-3d/lake-michigan-huron.html': 'place/lake-michigan-huron.jsp',
   '/places-3d/lake-titicaca.html': 'place/lake-titicaca.jsp',
+  '/places-3d/amazon-rainforest.html': 'place/amazon-rainforest.jsp',
   // dinosaur-loop (2026-07-15): the /dinosaur-3d cluster hub (non-'-tools'
   // hubRoute, registered in SEO_CLUSTER_GROUPS; hub detection via isHubRoute()).
   // Member routes live at /dinosaur-3d/<slug>.html (JSP folder: dinosaur/).
@@ -25552,6 +25558,10 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/webcam-recorder-vs-alternatives.html': 'guide/vi/webcam-recorder-vs-alternatives.jsp',
   '/guides/id/webcam-recorder-vs-alternatives.html': 'guide/id/webcam-recorder-vs-alternatives.jsp',
   '/guides/de/webcam-recorder-vs-alternatives.html': 'guide/de/webcam-recorder-vs-alternatives.jsp',
+  '/video-tools/audio-speed-changer.html': 'convert/audio-speed-changer.jsp',
+  '/guides/audio-speed-changer-when.html': 'guide/audio-speed-changer-when.jsp',
+  '/guides/audio-speed-changer-step-by-step.html': 'guide/audio-speed-changer-step-by-step.jsp',
+  '/guides/audio-speed-changer-vs-alternatives.html': 'guide/audio-speed-changer-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
