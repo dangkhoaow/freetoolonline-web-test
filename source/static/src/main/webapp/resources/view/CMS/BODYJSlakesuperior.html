@@ -1,0 +1,345 @@
+<script>
+    // 3D scene archetype skeleton (lake-superior) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (lake-superior).
+    // All geometry is procedural. places-3d cluster, authored 2026-07-27.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey bathymetry.
+    // Published figures (NOAA GLERL / EPA Great Lakes consensus, cross-checked
+    // 2026-07-27):
+    //   - Surface area about 82,100 sq km - largest freshwater lake on Earth
+    //     by surface area
+    //   - Maximum depth about 406 m, mean depth about 147 m
+    //   - Volume about 12,100 cubic km - about 10% of the world's surface
+    //     fresh water
+    //   - Elevation about 183 m above sea level
+    //   - Length about 563 km, width about 257 km
+    //   - Water retention time about 191 years
+    //   - Isle Royale is the largest island; over 350 known shipwrecks,
+    //     including the SS Edmund Fitzgerald (sank Nov 10 1975, Whitefish Bay)
+    //   - Borders Minnesota, Wisconsin, Michigan (USA) and Ontario (Canada)
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'lake-superior';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placeslakesuperior'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x081018, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.58));
+        var key = new THREE.DirectionalLight(0xfff0d8, 1.0);
+        key.position.set(-11, 17, -8);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return { mesh: new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 })), geo: geo, pos: pos };
+        }
+
+        // Elongated east-west basin (real outline about 563 km long x 257 km
+        // wide, aspect ratio about 2.2:1). x = east-west (east at x>0), z =
+        // north-south. 1 unit = 20 m vertical (406 m max / 20 = 20.3,
+        // 147 m mean / 20 = 7.35). Deepest zone biased east-central, near the
+        // real deepest sounding off the Ontonagon/Isle Royale area.
+        var MAX_DEPTH = -20.3, MEAN_Y = -7.35;
+        var WRECK_X = 8.6, WRECK_Z = -1.4; // Whitefish Bay, near the east end
+        var ISLE_X = -3.4, ISLE_Z = -3.2;   // Isle Royale, northwest quadrant
+        function bowlFactor(x, z) {
+            var rx = x / 15.5, rz = z / 6.6;
+            var dist = Math.sqrt(rx * rx + rz * rz);
+            return { dist: dist, bowl: Math.max(0, 1 - dist * dist) };
+        }
+        function islandMask(x, z) {
+            var dx = (x - ISLE_X) / 2.3, dz = (z - ISLE_Z) / 0.9;
+            var d = Math.sqrt(dx * dx + dz * dz);
+            return smooth(1.1, 0.2, d);
+        }
+        function height(x, z) {
+            var isl = islandMask(x, z);
+            if (isl > 0.02) {
+                var ridge = 0.9 + 0.5 * fbm(x * 1.2 + 4, z * 1.2 + 9, 3);
+                return Math.max(-0.05, isl * ridge);
+            }
+            var b = bowlFactor(x, z), n = 0.3 * (fbm(x * 0.5 + 6, z * 0.5 + 3, 3) - 0.5);
+            var taper = 1 - smooth(0.5, 1.0, b.dist);
+            if (taper > 0) {
+                // Deep east-central trough, tapering to shallower shelves west
+                // and toward both shorelines.
+                var eastBias = 0.5 + 0.5 * smooth(-6, 9, x);
+                var basinDepth = MEAN_Y * 0.7 - (MAX_DEPTH - MEAN_Y) * 0.62 * b.bowl * eastBias;
+                var depth = basinDepth * taper + n * taper;
+                return Math.max(MAX_DEPTH, Math.min(-0.05, depth));
+            }
+            var rise = Math.min(2.2, (b.dist - 1) * (0.6 + 0.5 * fbm(x * 0.3 + 8, z * 0.3 + 2, 3)));
+            return 0.05 + Math.max(0, rise);
+        }
+        var col = {
+            shallow: new THREE.Color(0x6cc9d8), deep: new THREE.Color(0x0a3a56),
+            land: new THREE.Color(0xc8c2a0), hill: new THREE.Color(0x7d8a5a), isle: new THREE.Color(0x5e7452)
+        };
+        var bandOn = true, wreckOn = true;
+        function color(c, h, x, z) {
+            var n = 0.9 + 0.18 * fbm(x * 1.3 + 2, z * 1.3 + 6, 3);
+            var isl = islandMask(x, z);
+            if (isl > 0.4 && h > -0.02) {
+                c.copy(col.land).lerp(col.isle, smooth(0, 1.4, h)).multiplyScalar(n);
+                return;
+            }
+            if (h > 0.03) {
+                c.copy(col.land).lerp(col.hill, smooth(0, 2.2, h)).multiplyScalar(n);
+                return;
+            }
+            if (bandOn) {
+                var t = smooth(MAX_DEPTH, MEAN_Y * 0.35, h);
+                c.copy(col.deep).lerp(col.shallow, t);
+            } else {
+                var depthFrac = smooth(MAX_DEPTH, -0.3, h);
+                c.copy(col.deep).lerp(col.shallow, depthFrac);
+            }
+            c.multiplyScalar(n);
+        }
+        var terrainInfo = makeTerrain(26, 15, shell.low ? 150 : 190, shell.low ? 88 : 112, height, color);
+        scene.add(terrainInfo.mesh);
+
+        // Water surface: translucent plane at y=0 (lake level).
+        var water = new THREE.Mesh(
+            new THREE.PlaneGeometry(26, 15),
+            new THREE.MeshStandardMaterial({ color: 0x123f52, transparent: true, opacity: 0.42, roughness: 0.15, metalness: 0.1 })
+        );
+        water.rotation.x = -Math.PI / 2;
+        water.position.y = 0.02;
+        scene.add(water);
+
+        // Mean-depth reference plane: about 147 m down, shown against the
+        // basin floor which reaches about 406 m at its deepest.
+        var meanPlane = new THREE.Mesh(
+            new THREE.PlaneGeometry(24, 13),
+            new THREE.MeshBasicMaterial({ color: 0xffce7a, transparent: true, opacity: 0.14, depthWrite: false, side: THREE.DoubleSide })
+        );
+        meanPlane.rotation.x = -Math.PI / 2;
+        meanPlane.position.y = MEAN_Y;
+        scene.add(meanPlane);
+
+        // Edmund Fitzgerald wreck marker near Whitefish Bay.
+        var wreckMarker = new THREE.Mesh(
+            new THREE.ConeGeometry(0.26, 0.85, 16),
+            new THREE.MeshStandardMaterial({ color: 0xff5f4a, emissive: 0x441100, roughness: 0.4 })
+        );
+        wreckMarker.position.set(WRECK_X, 1.0, WRECK_Z);
+        scene.add(wreckMarker);
+        var wreckRing = new THREE.Mesh(
+            new THREE.RingGeometry(0.45, 0.65, 32),
+            new THREE.MeshBasicMaterial({ color: 0xff8f6a, transparent: true, opacity: 0.6, side: THREE.DoubleSide })
+        );
+        wreckRing.rotation.x = -Math.PI / 2;
+        wreckRing.position.set(WRECK_X, 0.06, WRECK_Z);
+        scene.add(wreckRing);
+
+        function recolor() {
+            var pos = terrainInfo.pos, geo = terrainInfo.geo, colors = geo.attributes.color, col2 = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                color(col2, pos.getY(i), pos.getX(i), pos.getZ(i));
+                colors.setXYZ(i, col2.r, col2.g, col2.b);
+            }
+            colors.needsUpdate = true;
+        }
+
+        function panelHtml() {
+            return '<h3>Lake Superior: the largest by area</h3>' +
+                '<p>The floor tapers from shallow shoreline shelves down to a deep east-central trough - about 406 m at its maximum against a mean depth of about 147 m. Isle Royale rises above the surface near the northwest shore.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Surface area</td><td>about 82,100 sq km</td></tr>' +
+                '<tr><td>Maximum depth</td><td>about 406 m</td></tr>' +
+                '<tr><td>Mean depth</td><td>about 147 m</td></tr>' +
+                '<tr><td>Volume</td><td>about 12,100 cubic km</td></tr>' +
+                '<tr><td>Elevation</td><td>about 183 m above sea level</td></tr>' +
+                '<tr><td>Water retention time</td><td>about 191 years</td></tr>' +
+                '<tr><td>Notable wreck</td><td>SS Edmund Fitzgerald, Nov 10, 1975, near Whitefish Bay</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the basin profile, island shape, and vertical scale are schematic teaching cues, not survey bathymetry.</p>';
+        }
+
+        function apply() {
+            wreckMarker.visible = wreckOn; wreckRing.visible = wreckOn;
+            var bb = document.getElementById('t3dPlsBandBtn');
+            if (bb) bb.textContent = 'Depth bands: ' + (bandOn ? 'On' : 'Off');
+            var wb = document.getElementById('t3dPlsWreckBtn');
+            if (wb) wb.textContent = 'Edmund Fitzgerald marker: ' + (wreckOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ bandOn: bandOn, wreckOn: wreckOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.bandOn === 'boolean') bandOn = store.bandOn;
+        if (typeof store.wreckOn === 'boolean') wreckOn = store.wreckOn;
+        recolor();
+        apply();
+
+        var bandBtn = document.getElementById('t3dPlsBandBtn');
+        if (bandBtn) bandBtn.addEventListener('click', function () { bandOn = !bandOn; recolor(); apply(); });
+        var wreckBtn = document.getElementById('t3dPlsWreckBtn');
+        if (wreckBtn) wreckBtn.addEventListener('click', function () { wreckOn = !wreckOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the depth bands or the Edmund Fitzgerald marker.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placeslakesuperior: 't3dPlsControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placeslakesuperior: { radius: 38, maxR: 75, minR: 9, phi: 0.88, theta: 1.05, targetY: -3.0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
