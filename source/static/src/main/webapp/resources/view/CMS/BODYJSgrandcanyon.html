@@ -1,0 +1,282 @@
+<script>
+    // 3D scene archetype skeleton (grand-canyon) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (grand-canyon).
+    // All geometry is procedural. places-3d cluster seed 2026-07-27.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey geology.
+    // Published figures (NPS / USGS consensus, cross-checked 2026-07-27):
+    //   - Length 446 km (277 mi); width up to 29 km; depth about 1.86 km
+    //   - Carved by the Colorado River; main incision over the last 5-6 My
+    //   - Oldest rock: Vishnu Basement, about 1.7-1.8 billion years
+    //   - Grand Canyon National Park, Arizona, USA - established 1919
+    //   - Layer stack simplified to 7 major units for teaching
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'grand-canyon';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesgrandcanyon'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x110906, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+        var key = new THREE.DirectionalLight(0xffe9c9, 0.95);
+        key.position.set(-10, 16, 9);
+        scene.add(key);
+
+        // Rock layers, top to bottom (name, thickness units, natural color,
+        // accent color). Vertical scale: 1 unit = ~200 m; total ~1.86 km deep.
+        var LAYERS = [
+            ['Kaibab Limestone',   1.2, 0xd9cfae, 0xf5e9b8],
+            ['Coconino Sandstone', 1.1, 0xd8c193, 0xffd98f],
+            ['Hermit Shale',       1.0, 0xb0563c, 0xff7a52],
+            ['Supai Group',        1.6, 0xa64f38, 0xff6a45],
+            ['Redwall Limestone',  1.5, 0x99402e, 0xff5533],
+            ['Tonto Group',        1.6, 0x8a6a4c, 0xd9a05e],
+            ['Vishnu Basement',    1.3, 0x4a4048, 0x8a70a0]
+        ];
+        var totalH = 0;
+        LAYERS.forEach(function (l) { totalH += l[1]; });
+
+        function wall(side) {
+            var g = new THREE.Group();
+            var y = totalH;
+            LAYERS.forEach(function (l, i) {
+                var th = l[1];
+                var inset = i * 0.55;             // stepped canyon profile
+                var w = 7.5 - inset * 0.4;
+                var slab = new THREE.Mesh(
+                    new THREE.BoxGeometry(w, th, 16),
+                    new THREE.MeshStandardMaterial({ color: l[2], roughness: 0.95, flatShading: true })
+                );
+                var pos = slab.geometry.attributes.position;
+                for (var vi = 0; vi < pos.count; vi++) {
+                    var vx = pos.getX(vi), vy = pos.getY(vi), vz = pos.getZ(vi);
+                    if ((side < 0 && vx > 0) || (side > 0 && vx < 0)) {
+                        var n = Math.sin(vz * 1.7 + vy * 2.3 + i) * 0.25;
+                        pos.setX(vi, vx + n);
+                    }
+                }
+                slab.geometry.computeVertexNormals();
+                slab.position.set(side * (w / 2 + 1.6 + inset), y - th / 2, 0);
+                slab.userData.layer = i;
+                g.add(slab);
+                y -= th;
+            });
+            return g;
+        }
+        var west = wall(-1), east = wall(1);
+        scene.add(west); scene.add(east);
+
+        // Colorado River ribbon at the canyon floor
+        var riverPts = [];
+        for (var i = 0; i <= 24; i++) {
+            var z = -8 + (16 * i) / 24;
+            riverPts.push(new THREE.Vector3(Math.sin(z * 0.7) * 0.7, 0.12, z));
+        }
+        var river = new THREE.Mesh(
+            new THREE.TubeGeometry(new THREE.CatmullRomCurve3(riverPts), 40, 0.35, 6, false),
+            new THREE.MeshStandardMaterial({ color: 0x2f8f7a, roughness: 0.25 })
+        );
+        scene.add(river);
+        var floor = new THREE.Mesh(
+            new THREE.BoxGeometry(3.4, 0.2, 16),
+            new THREE.MeshStandardMaterial({ color: 0x5c4a3c, roughness: 1 })
+        );
+        floor.position.y = 0;
+        scene.add(floor);
+
+        var accentOn = false, riverOn = true;
+
+        function paint() {
+            [west, east].forEach(function (g) {
+                g.children.forEach(function (slab) {
+                    var l = LAYERS[slab.userData.layer];
+                    slab.material.color.setHex(accentOn ? l[3] : l[2]);
+                });
+            });
+        }
+
+        function panelHtml() {
+            var rows = LAYERS.map(function (l) {
+                return '<tr><td>' + l[0] + '</td></tr>';
+            }).join('');
+            return '<h3>Grand Canyon: a mile of rock layers</h3>' +
+                '<p>Each colored band is a real rock formation; the Colorado River still cuts the floor. Toggle Layers to accent the bands.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Length</td><td>446 km (277 miles)</td></tr>' +
+                '<tr><td>Width</td><td>up to 29 km (18 miles)</td></tr>' +
+                '<tr><td>Depth</td><td>about 1.86 km - over a mile</td></tr>' +
+                '<tr><td>Carved by</td><td>the Colorado River, main incision over the last 5-6 million years</td></tr>' +
+                '<tr><td>Oldest rock</td><td>Vishnu Basement, about 1.7-1.8 billion years old</td></tr>' +
+                '<tr><td>Protected</td><td>Grand Canyon National Park, Arizona, USA - established 1919</td></tr>' +
+                '</table>' +
+                '<p>Layer stack in this scene (top to bottom):</p>' +
+                '<table class="w3-table w3-bordered">' + rows + '</table>' +
+                '<p class="t3d-note">Educational approximation - layer thicknesses and the stepped profile are schematic teaching cues, not survey geology.</p>';
+        }
+
+        function apply() {
+            paint();
+            river.visible = riverOn;
+            var lb = document.getElementById('t3dPgcLayersBtn');
+            if (lb) lb.textContent = 'Layer accents: ' + (accentOn ? 'On' : 'Off');
+            var rb = document.getElementById('t3dPgcRiverBtn');
+            if (rb) rb.textContent = 'River: ' + (riverOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ accentOn: accentOn, riverOn: riverOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.accentOn === 'boolean') accentOn = store.accentOn;
+        if (typeof store.riverOn === 'boolean') riverOn = store.riverOn;
+        apply();
+
+        var layersBtn = document.getElementById('t3dPgcLayersBtn');
+        if (layersBtn) layersBtn.addEventListener('click', function () { accentOn = !accentOn; apply(); });
+        var riverBtn = document.getElementById('t3dPgcRiverBtn');
+        if (riverBtn) riverBtn.addEventListener('click', function () { riverOn = !riverOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle layer accents or the river.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesgrandcanyon: 't3dPgcControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesgrandcanyon: { radius: 24, maxR: 55, minR: 8, phi: 1.1, theta: 0.65, targetY: 4 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
