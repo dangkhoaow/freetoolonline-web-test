@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/webcam-recorder-vs-alternatives.html',
+  '/guides/webcam-recorder-step-by-step.html',
+  '/guides/webcam-recorder-when.html',
   '/guides/workout-tracker-vs-alternatives.html',
   '/guides/pt/workout-tracker-vs-alternatives.html',
   '/guides/es/workout-tracker-vs-alternatives.html',
@@ -13963,6 +13966,7 @@ export const ALIAS_ROUTES = {
   '/duplicate-word-remover.html': '/utility-tools/duplicate-word-remover.html',
   '/reading-list-tracker.html': '/utility-tools/reading-list-tracker.html',
   '/workout-tracker.html': '/utility-tools/workout-tracker.html',
+  '/webcam-recorder.html': '/utility-tools/webcam-recorder.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -25510,6 +25514,10 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/workout-tracker-vs-alternatives.html': 'guide/vi/workout-tracker-vs-alternatives.jsp',
   '/guides/id/workout-tracker-vs-alternatives.html': 'guide/id/workout-tracker-vs-alternatives.jsp',
   '/guides/de/workout-tracker-vs-alternatives.html': 'guide/de/workout-tracker-vs-alternatives.jsp',
+  '/utility-tools/webcam-recorder.html': 'utility/webcam-recorder.jsp',
+  '/guides/webcam-recorder-when.html': 'guide/webcam-recorder-when.jsp',
+  '/guides/webcam-recorder-step-by-step.html': 'guide/webcam-recorder-step-by-step.jsp',
+  '/guides/webcam-recorder-vs-alternatives.html': 'guide/webcam-recorder-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

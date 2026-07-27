@@ -850,6 +850,7 @@ try {
     { title: "Duplicate Word Remover Online", url: "https://freetoolonline.com/utility-tools/duplicate-word-remover.html", include: !1, tags: "utility" },
     { title: "Reading List Tracker Online", url: "https://freetoolonline.com/utility-tools/reading-list-tracker.html", include: !1, tags: "utility" },
     { title: "Workout Tracker Online", url: "https://freetoolonline.com/utility-tools/workout-tracker.html", include: !1, tags: "utility" },
+    { title: "Webcam Recorder Online", url: "https://freetoolonline.com/utility-tools/webcam-recorder.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
