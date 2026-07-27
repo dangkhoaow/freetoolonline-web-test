@@ -103,7 +103,7 @@ const SEO_CLUSTER_GROUPS = [
     cluster: 'places-3d',
     hubRoute: '/places-3d.html',
     hubLabel: 'Back to Places 3D',
-    routes: ['/places-3d/dead-sea.html', '/places-3d/mount-everest.html', '/places-3d/grand-canyon.html', '/places-3d/caspian-sea.html', '/places-3d/lake-baikal.html', '/places-3d/mariana-trench.html', '/places-3d/black-sea.html', '/places-3d/lake-victoria.html', '/places-3d/iguazu-falls.html', '/places-3d/antelope-canyon.html', '/places-3d/lake-michigan-huron.html', '/places-3d/lake-superior.html', '/places-3d/lake-titicaca.html', '/places-3d/amazon-rainforest.html', '/places-3d/black-forest.html'],
+    routes: ['/places-3d/dead-sea.html', '/places-3d/mount-everest.html', '/places-3d/grand-canyon.html', '/places-3d/caspian-sea.html', '/places-3d/lake-baikal.html', '/places-3d/mariana-trench.html', '/places-3d/black-sea.html', '/places-3d/lake-victoria.html', '/places-3d/iguazu-falls.html', '/places-3d/antelope-canyon.html', '/places-3d/lake-michigan-huron.html', '/places-3d/lake-superior.html', '/places-3d/lake-titicaca.html', '/places-3d/amazon-rainforest.html', '/places-3d/black-forest.html', '/places-3d/stone-forest-shilin.html'],
   },
 
   // dinosaur-loop (2026-07-15) - third non-'-tools' reader category: procedural

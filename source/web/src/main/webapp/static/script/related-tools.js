@@ -742,6 +742,7 @@ try {
     { title: "Lake Michigan-Huron 3D Explorer", url: "https://freetoolonline.com/places-3d/lake-michigan-huron.html", include: !1, tags: "places-3d" },
     { title: "Lake Superior 3D Explorer", url: "https://freetoolonline.com/places-3d/lake-superior.html", include: !1, tags: "places-3d" },
     { title: "Lake Titicaca 3D Explorer", url: "https://freetoolonline.com/places-3d/lake-titicaca.html", include: !1, tags: "places-3d" },
+    { title: "Stone Forest (Shilin) 3D Explorer", url: "https://freetoolonline.com/places-3d/stone-forest-shilin.html", include: !1, tags: "places-3d" },
     { title: "Amazon Rainforest 3D Explorer", url: "https://freetoolonline.com/places-3d/amazon-rainforest.html", include: !1, tags: "places-3d" },
     { title: "Black Forest 3D Explorer", url: "https://freetoolonline.com/places-3d/black-forest.html", include: !1, tags: "places-3d" },
     { title: "Algol Eclipsing Binary 3D Explorer", url: "https://freetoolonline.com/space-3d/algol-eclipsing-binary.html", include: !1, tags: "space-3d" },
