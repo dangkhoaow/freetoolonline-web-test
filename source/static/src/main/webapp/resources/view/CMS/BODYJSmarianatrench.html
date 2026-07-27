@@ -1,0 +1,342 @@
+<script>
+    // 3D scene archetype skeleton (mariana-trench) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side.
+    // All geometry is procedural. places-3d cluster, 2026-07-27.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey bathymetry.
+    // Published figures (encyclopedic / NOAA consensus, cross-checked 2026-07-27):
+    //   - Challenger Deep: about 10,935 m below sea level (surveys vary +/- ~100 m,
+    //     from about 10,924 m to about 10,994 m depending on the sonar campaign)
+    //   - Deepest known point of Earth's seafloor - located in the western
+    //     Pacific, east of the Mariana Islands
+    //   - Pressure at the bottom: about 1,086 bar - roughly 1,000x sea-level
+    //     atmospheric pressure
+    //   - Near-freezing bottom water: about 1-4 C
+    //   - First reached by Trieste (1960, Piccard and Walsh), then Kaiko
+    //     (1995, unmanned), Deepsea Challenger (2012, James Cameron, solo),
+    //     and the Five Deeps expedition (2019)
+    //   - If Mount Everest (about 8,849 m) were placed in the trench, its
+    //     peak would still sit roughly 2 km below the ocean surface
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'mariana-trench';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesmarianatrench'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x040814, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+        var key = new THREE.DirectionalLight(0xbfe3ff, 0.9);
+        key.position.set(-8, 14, 10);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 }));
+        }
+
+        // Ocean-floor cross-section relief, 1 unit = 1000 m vertical.
+        // Abyssal plain sits near -4 (about -4000 m, typical Pacific
+        // abyssal depth); a narrow V-shaped trench slot cuts down to about
+        // -10.9 (Challenger Deep, about -10,935 m). x = across the trench
+        // (west subducting Pacific plate to east Mariana plate wedge),
+        // z = along the trench axis (the trench runs roughly north-south
+        // here for a clean cross-section view).
+        var PLAIN = -4.0, DEEP = -10.9;
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        // Trench axis wanders gently along z; half-width narrows toward
+        // the Challenger Deep pocket near z=1.5 for a distinct deepest spot.
+        function axisX(z) { return 0.4 * Math.sin(z * 0.28 + 1.1); }
+        function trenchHalfWidth(z) {
+            var pocket = Math.exp(-Math.pow((z - 1.5) / 3.2, 2));
+            return 1.55 - 0.55 * pocket + 0.15 * (vnoise(z * 0.6 + 4, 9) - 0.5);
+        }
+        function trenchDepthAt(z) {
+            var pocket = Math.exp(-Math.pow((z - 1.5) / 3.0, 2));
+            return PLAIN + (DEEP - PLAIN) * (0.72 + 0.28 * pocket);
+        }
+        function height(x, z) {
+            var plainNoise = 0.35 * (fbm(x * 0.45 + 3, z * 0.4 + 6, 4) - 0.5);
+            var base = PLAIN + plainNoise;
+            var dx = Math.abs(x - axisX(z));
+            var half = trenchHalfWidth(z);
+            if (dx < half) {
+                var slotT = smooth(half, 0, dx); // 1 at center, 0 at wall
+                var floorY = trenchDepthAt(z);
+                var wallShape = Math.pow(slotT, 1.7); // sharper V near the bottom
+                return base + (floorY - base) * wallShape;
+            }
+            // subducting-plate wedge rising gently on the west (outer) side
+            var westWedge = smooth(half + 3.2, half + 0.3, dx) * 0.9 * (x < axisX(z) ? 1 : 0.15);
+            return base + westWedge + 0.3 * (fbm(x * 0.6 + 8, z * 0.5 + 2, 3) - 0.5);
+        }
+        // Ocean-zone depth bands (sunlight/twilight/midnight/abyssal/hadal),
+        // toggle A recolors by absolute depth rather than local slope.
+        var zoneCols = [
+            new THREE.Color(0x2aa6c9), // sunlight (near plain top, illustrative)
+            new THREE.Color(0x1c6f9e), // twilight
+            new THREE.Color(0x123a63), // midnight
+            new THREE.Color(0x2a2f52), // abyssal
+            new THREE.Color(0x120a24)  // hadal (trench floor)
+        ];
+        var plainCol = new THREE.Color(0x5c7a63), wedgeCol = new THREE.Color(0x8f8065);
+        var zonesOn = true;
+        function color(c, h, x, z) {
+            var n = 0.92 + 0.16 * fbm(x * 1.2 + 5, z * 1.2 + 3, 3);
+            if (zonesOn && h < PLAIN - 0.05) {
+                var t = smooth(PLAIN, DEEP, h); // 0 at plain, 1 at deepest
+                var idx = Math.min(zoneCols.length - 1, Math.floor(t * zoneCols.length));
+                var idxN = Math.min(zoneCols.length - 1, idx + 1);
+                var localT = t * zoneCols.length - idx;
+                c.copy(zoneCols[idx]).lerp(zoneCols[idxN], localT).multiplyScalar(n);
+            } else if (h > PLAIN + 0.15) {
+                c.copy(wedgeCol).multiplyScalar(n);
+            } else {
+                c.copy(plainCol).multiplyScalar(n);
+            }
+        }
+        var terrain = makeTerrain(14, 20, shell.low ? 100 : 160, shell.low ? 140 : 220, height, color);
+        scene.add(terrain);
+
+        // Sea-level datum plane at y=0 - the reference every depth figure
+        // is measured against.
+        var datum = new THREE.Mesh(
+            new THREE.PlaneGeometry(15, 21),
+            new THREE.MeshBasicMaterial({ color: 0x59c2ff, transparent: true, opacity: 0.14, depthWrite: false, side: THREE.DoubleSide })
+        );
+        datum.rotation.x = -Math.PI / 2;
+        datum.position.y = 0;
+        scene.add(datum);
+        var datumEdge = new THREE.Mesh(
+            new THREE.TorusGeometry(8.4, 0.05, 8, 48),
+            new THREE.MeshBasicMaterial({ color: 0x8fd6ff })
+        );
+        datumEdge.rotation.x = Math.PI / 2;
+        scene.add(datumEdge);
+
+        // Everest-comparison overlay (toggle B): a thin cone marker sized
+        // to Everest's height (about 8.85 units at this scale would be too
+        // tall for the frame, so shown scaled 1:1 with the trench depth
+        // units - about 8.85 tall) planted at the Challenger Deep floor and
+        // rising up; its tip still sits below the sea-level plane, the
+        // famous "Everest would still be covered by ~2 km of water" fact.
+        var everestGroup = new THREE.Group();
+        (function () {
+            var floorY = trenchDepthAt(1.5);
+            var everestHeight = 8.85; // Everest ~8,849 m at 1 unit = 1000 m
+            var cone = new THREE.Mesh(
+                new THREE.ConeGeometry(0.5, everestHeight, 24),
+                new THREE.MeshStandardMaterial({ color: 0xe7ecef, roughness: 0.7 })
+            );
+            cone.position.set(axisX(1.5), floorY + everestHeight / 2, 1.5);
+            everestGroup.add(cone);
+            var tipMarker = new THREE.Mesh(
+                new THREE.SphereGeometry(0.14, 16, 16),
+                new THREE.MeshBasicMaterial({ color: 0xff8a3d })
+            );
+            tipMarker.position.set(axisX(1.5), floorY + everestHeight, 1.5);
+            everestGroup.add(tipMarker);
+        })();
+        scene.add(everestGroup);
+        everestGroup.visible = false;
+
+        var datumOn = true, everestOn = false;
+
+        function panelHtml() {
+            return '<h3>Mariana Trench: the deepest point on Earth</h3>' +
+                '<p>A narrow V-shaped slot cut into the Pacific seafloor. The color bands mark ocean depth zones from sunlight to hadal; a translucent plane marks sea level.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Challenger Deep depth</td><td>about 10,935 m below sea level - surveys vary roughly +/- 100 m</td></tr>' +
+                '<tr><td>Location</td><td>western Pacific Ocean, east of the Mariana Islands</td></tr>' +
+                '<tr><td>Pressure at bottom</td><td>about 1,086 bar - roughly 1,000x sea-level atmospheric pressure</td></tr>' +
+                '<tr><td>Bottom temperature</td><td>near-freezing, about 1-4 C</td></tr>' +
+                '<tr><td>First crewed descent</td><td>1960, Trieste (Jacques Piccard and Don Walsh)</td></tr>' +
+                '<tr><td>Notable solo descent</td><td>2012, Deepsea Challenger (James Cameron)</td></tr>' +
+                '<tr><td>Everest comparison</td><td>if Everest (about 8,849 m) sat in the trench, its peak would still be under about 2 km of water</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the trench profile, plate wedge, and vertical scale are schematic teaching cues, not survey bathymetry.</p>';
+        }
+
+        function apply() {
+            datum.visible = datumOn; datumEdge.visible = datumOn;
+            everestGroup.visible = everestOn;
+            var db = document.getElementById('t3dPmtDatumBtn');
+            if (db) db.textContent = 'Sea-level plane: ' + (datumOn ? 'On' : 'Off');
+            var eb = document.getElementById('t3dPmtEverestBtn');
+            if (eb) eb.textContent = 'Everest comparison: ' + (everestOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ datumOn: datumOn, everestOn: everestOn, zonesOn: zonesOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.datumOn === 'boolean') datumOn = store.datumOn;
+        if (typeof store.everestOn === 'boolean') everestOn = store.everestOn;
+        apply();
+
+        var datumBtn = document.getElementById('t3dPmtDatumBtn');
+        if (datumBtn) datumBtn.addEventListener('click', function () { datumOn = !datumOn; apply(); });
+        var everestBtn = document.getElementById('t3dPmtEverestBtn');
+        if (everestBtn) everestBtn.addEventListener('click', function () { everestOn = !everestOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the sea-level plane or the Everest comparison.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesmarianatrench: 't3dPmtControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesmarianatrench: { radius: 24, maxR: 60, minR: 7, phi: 1.05, theta: 0.55, targetY: -5 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
