@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/workout-tracker-vs-alternatives.html',
+  '/guides/workout-tracker-step-by-step.html',
+  '/guides/workout-tracker-when.html',
   '/guides/reading-list-tracker-vs-alternatives.html',
   '/guides/reading-list-tracker-step-by-step.html',
   '/guides/reading-list-tracker-when.html',
@@ -12837,6 +12840,7 @@ export const ALIAS_ROUTES = {
   '/black-sea.html': '/places-3d/black-sea.html',
   '/lake-victoria.html': '/places-3d/lake-victoria.html',
   '/iguazu-falls.html': '/places-3d/iguazu-falls.html',
+  '/antelope-canyon.html': '/places-3d/antelope-canyon.html',
   // dinosaur-loop (2026-07-15): dir-index alias for the /dinosaur-3d cluster
   // hub. MUST also be mirrored into the CloudFront 301 function (two-layer
   // redirect rule) - republish is an operator step. (Restored 2026-07-16: a
@@ -13942,6 +13946,7 @@ export const ALIAS_ROUTES = {
   '/rot13-encoder.html': '/developer-tools/rot13-encoder.html',
   '/duplicate-word-remover.html': '/utility-tools/duplicate-word-remover.html',
   '/reading-list-tracker.html': '/utility-tools/reading-list-tracker.html',
+  '/workout-tracker.html': '/utility-tools/workout-tracker.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -14343,6 +14348,7 @@ export const JSP_BY_ROUTE = {
   '/places-3d/black-sea.html': 'place/black-sea.jsp',
   '/places-3d/lake-victoria.html': 'place/lake-victoria.jsp',
   '/places-3d/iguazu-falls.html': 'place/iguazu-falls.jsp',
+  '/places-3d/antelope-canyon.html': 'place/antelope-canyon.jsp',
   // dinosaur-loop (2026-07-15): the /dinosaur-3d cluster hub (non-'-tools'
   // hubRoute, registered in SEO_CLUSTER_GROUPS; hub detection via isHubRoute()).
   // Member routes live at /dinosaur-3d/<slug>.html (JSP folder: dinosaur/).
@@ -25468,6 +25474,10 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/reading-list-tracker-vs-alternatives.html': 'guide/vi/reading-list-tracker-vs-alternatives.jsp',
   '/guides/id/reading-list-tracker-vs-alternatives.html': 'guide/id/reading-list-tracker-vs-alternatives.jsp',
   '/guides/de/reading-list-tracker-vs-alternatives.html': 'guide/de/reading-list-tracker-vs-alternatives.jsp',
+  '/utility-tools/workout-tracker.html': 'utility/workout-tracker.jsp',
+  '/guides/workout-tracker-when.html': 'guide/workout-tracker-when.jsp',
+  '/guides/workout-tracker-step-by-step.html': 'guide/workout-tracker-step-by-step.jsp',
+  '/guides/workout-tracker-vs-alternatives.html': 'guide/workout-tracker-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
