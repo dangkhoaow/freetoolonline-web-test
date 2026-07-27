@@ -744,6 +744,7 @@ try {
     { title: "Lake Titicaca 3D Explorer", url: "https://freetoolonline.com/places-3d/lake-titicaca.html", include: !1, tags: "places-3d" },
     { title: "Stone Forest (Shilin) 3D Explorer", url: "https://freetoolonline.com/places-3d/stone-forest-shilin.html", include: !1, tags: "places-3d" },
     { title: "Amazon Rainforest 3D Explorer", url: "https://freetoolonline.com/places-3d/amazon-rainforest.html", include: !1, tags: "places-3d" },
+    { title: "Ha Long Bay 3D Explorer", url: "https://freetoolonline.com/places-3d/ha-long-bay.html", include: !1, tags: "places-3d" },
     { title: "Black Forest 3D Explorer", url: "https://freetoolonline.com/places-3d/black-forest.html", include: !1, tags: "places-3d" },
     { title: "Great Barrier Reef 3D Explorer", url: "https://freetoolonline.com/places-3d/great-barrier-reef.html", include: !1, tags: "places-3d" },
     { title: "Caribbean Sea 3D Explorer", url: "https://freetoolonline.com/places-3d/caribbean-sea.html", include: !1, tags: "places-3d" },
