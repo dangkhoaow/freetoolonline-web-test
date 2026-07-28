@@ -1,0 +1,191 @@
+<script type="module">
+import * as THREE from '/vendor/three/three.module.min.mjs';
+
+const canvas = document.getElementById('t3dCanvas');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setClearColor(0x87CEEB, 1);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+camera.position.set(80, 60, 80);
+camera.lookAt(0, 5, 0);
+
+// Lights
+const sunLight = new THREE.DirectionalLight(0xFFFFFF, 0.8);
+sunLight.position.set(100, 100, 100);
+scene.add(sunLight);
+const ambientLight = new THREE.AmbientLight(0xFFFFFF, 0.5);
+scene.add(ambientLight);
+
+// Salt flat (base plane, white/silver)
+const saltGeom = new THREE.PlaneGeometry(300, 250, 1, 1);
+const saltMat = new THREE.MeshStandardMaterial({ color: 0xF5F5DC, roughness: 0.3, metalness: 0.1 });
+const saltFlat = new THREE.Mesh(saltGeom, saltMat);
+saltFlat.rotation.x = -Math.PI / 2;
+saltFlat.position.y = 0;
+scene.add(saltFlat);
+
+// Dune field (simple low bumps on the perimeter using a procedural heightfield approach)
+const duneGeom = new THREE.PlaneGeometry(200, 200, 30, 30);
+const positions = duneGeom.getAttribute('position');
+const posArray = positions.array;
+for (let i = 0; i < posArray.length; i += 3) {
+  const x = posArray[i];
+  const z = posArray[i + 2];
+  const dist = Math.sqrt(x * x + z * z);
+  if (dist > 50) {
+    const noise = Math.sin(x * 0.3) * Math.cos(z * 0.3) + Math.sin(x * 0.7) * Math.cos(z * 0.7);
+    const height = (Math.max(0, dist - 50) / 100) * (3 + noise * 1.5);
+    posArray[i + 1] = height;
+  }
+}
+positions.needsUpdate = true;
+duneGeom.computeVertexNormals();
+
+const duneMat = new THREE.MeshStandardMaterial({ color: 0xD2B48C, roughness: 0.8 });
+const dunes = new THREE.Mesh(duneGeom, duneMat);
+dunes.rotation.x = -Math.PI / 2;
+dunes.position.y = 0;
+scene.add(dunes);
+
+// Volcanic cones (Licancabur + Juriques markers)
+const coneGeom = new THREE.ConeGeometry(8, 25, 32);
+const volcanicMat = new THREE.MeshStandardMaterial({ color: 0x8B4513, roughness: 0.7 });
+
+const licancabur = new THREE.Mesh(coneGeom, volcanicMat);
+licancabur.position.set(-70, 0, -80);
+licancabur.castShadow = true;
+scene.add(licancabur);
+
+const juriques = new THREE.Mesh(coneGeom.clone(), volcanicMat.clone());
+juriques.scale.set(0.9, 0.9, 0.9);
+juriques.position.set(60, 0, -90);
+juriques.castShadow = true;
+scene.add(juriques);
+
+// Volcano marker rings (for highlight toggle)
+const ringGeom = new THREE.BufferGeometry();
+const ringVertices = [];
+for (let i = 0; i <= 64; i++) {
+  const angle = (i / 64) * Math.PI * 2;
+  ringVertices.push(
+    Math.cos(angle) * 12,
+    0.1,
+    Math.sin(angle) * 12
+  );
+}
+ringGeom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(ringVertices), 3));
+const ringMat = new THREE.LineBasicMaterial({ color: 0xFF6347, linewidth: 2 });
+
+const licRing = new THREE.Line(ringGeom, ringMat);
+licRing.position.set(-70, 25, -80);
+scene.add(licRing);
+
+const jurRing = new THREE.Line(ringGeom.clone(), ringMat.clone());
+jurRing.position.set(60, 22, -90);
+scene.add(jurRing);
+
+window.t3dVolcanoLights = [licRing, jurRing];
+
+// Sky/atmosphere
+scene.background = new THREE.Color(0x87CEEB);
+
+// Stars (for night mode)
+const starsGeom = new THREE.BufferGeometry();
+const starVertices = [];
+for (let i = 0; i < 1000; i++) {
+  const x = (Math.random() - 0.5) * 2000;
+  const y = (Math.random() - 0.5) * 2000;
+  const z = (Math.random() - 0.5) * 2000;
+  starVertices.push(x, y, z);
+}
+starsGeom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(starVertices), 3));
+const starMat = new THREE.PointsMaterial({ color: 0xFFFFFF, size: 2, sizeAttenuation: true });
+const stars = new THREE.Points(starsGeom, starMat);
+stars.visible = false;
+scene.add(stars);
+window.t3dStars = stars;
+
+// Camera controls
+let theta = 1.2, phi = 0.8, radius = 150;
+const updateCamera = () => {
+  camera.position.set(
+    radius * Math.sin(theta) * Math.cos(phi),
+    radius * Math.sin(phi),
+    radius * Math.cos(theta) * Math.cos(phi)
+  );
+  camera.lookAt(0, 8, 0);
+};
+
+// Toggles
+const nightModeCheckbox = document.getElementById('t3dPAtacamaNightMode');
+const volcanoesCheckbox = document.getElementById('t3dPAtacamaVolcanoes');
+
+nightModeCheckbox?.addEventListener('change', (e) => {
+  const isNight = e.target.checked;
+  stars.visible = isNight;
+  scene.background = isNight ? new THREE.Color(0x001a33) : new THREE.Color(0x87CEEB);
+  sunLight.intensity = isNight ? 0.3 : 0.8;
+  ambientLight.intensity = isNight ? 0.2 : 0.5;
+  if (localStorage) localStorage.setItem('ftol-game-atacama', JSON.stringify({ nightMode: isNight, volcanos: volcanoesCheckbox?.checked || true }));
+});
+
+volcanoesCheckbox?.addEventListener('change', (e) => {
+  const show = e.target.checked;
+  window.t3dVolcanoLights?.forEach(ring => { ring.visible = show; });
+  if (localStorage) localStorage.setItem('ftol-game-atacama', JSON.stringify({ nightMode: nightModeCheckbox?.checked || false, volcanos: show }));
+});
+
+// Load saved preferences
+try {
+  if (localStorage) {
+    const saved = JSON.parse(localStorage.getItem('ftol-game-atacama') || '{}');
+    if (saved.nightMode !== undefined) {
+      stars.visible = saved.nightMode;
+      scene.background = saved.nightMode ? new THREE.Color(0x001a33) : new THREE.Color(0x87CEEB);
+      sunLight.intensity = saved.nightMode ? 0.3 : 0.8;
+      ambientLight.intensity = saved.nightMode ? 0.2 : 0.5;
+      if (nightModeCheckbox) nightModeCheckbox.checked = saved.nightMode;
+    }
+    if (saved.volcanos !== undefined) {
+      window.t3dVolcanoLights?.forEach(ring => { ring.visible = saved.volcanos; });
+      if (volcanoesCheckbox) volcanoesCheckbox.checked = saved.volcanos;
+    }
+  }
+} catch (e) {}
+
+// Resize handler
+const onWindowResize = () => {
+  const w = canvas?.parentElement?.clientWidth || window.innerWidth;
+  const h = canvas?.parentElement?.clientHeight || window.innerHeight;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+};
+window.addEventListener('resize', onWindowResize);
+onWindowResize();
+
+// ResizeObserver for dynamic sizing
+if (window.ResizeObserver && canvas?.parentElement) {
+  const observer = new ResizeObserver(() => {
+    const w = canvas.parentElement.clientWidth;
+    const h = canvas.parentElement.clientHeight;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  });
+  observer.observe(canvas.parentElement);
+}
+
+// Animation loop
+const animate = () => {
+  requestAnimationFrame(animate);
+  theta += 0.0003;
+  updateCamera();
+  renderer.render(scene, camera);
+};
+animate();
+
+document.getElementById('t3dStatus').style.display = 'none';
+</script>
