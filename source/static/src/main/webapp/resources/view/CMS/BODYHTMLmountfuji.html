@@ -1,40 +1,175 @@
-<div class="w3-container">
-    <p>Mount Fuji rises 3,776 m above sea level in a near-perfect symmetric cone, Japan's highest peak and one of the most recognizable mountain silhouettes on Earth. Orbit the volcano, toggle the summit snow cap, and mark the five lakes ringing its base.</p>
+<div id="t3dCanvasHost" style="position: relative; width: 100%; aspect-ratio: 1.6; background: #e8f0ff; margin-bottom: 16px;">
+  <canvas id="t3dCanvas"></canvas>
+  <div id="t3dStatus" style="position: absolute; top: 8px; left: 8px; font-size: 12px; background: rgba(0,0,0,0.6); color: white; padding: 6px 12px; border-radius: 4px; z-index: 10;">Loading scene...</div>
+  <button id="t3dFullscreenBtn" style="position: absolute; top: 8px; right: 8px; z-index: 10; padding: 6px 12px; font-size: 12px; background: white; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">Fullscreen</button>
 </div>
 
-<div id="t3dWrapper" class="w3-container" style="background:#fafafa; padding:12px 8px 16px 8px;">
-    <div id="threeSceneTool" class="outputImgs" style="visibility:visible !important; min-height:220px;">
-        <div class="w3-row">
-            <div class="w3-col l8 m12" style="padding-right:8px;">
-                <div id="t3dCanvasHost" style="width:100%; min-height:220px; background:#000; border-radius:6px; position:relative;"></div>
-                <div id="t3dStatus" style="font:400 14px sans-serif; color:#333; margin-top:8px; min-height:20px;">Preparing the 3D scene...</div>
-            </div>
-            <aside class="w3-col l4 m12">
-                <div id="t3dInfoPanel" class="w3-panel w3-pale-blue w3-leftbar w3-border-blue" style="margin-top:0; font-size:14px;">
-                    <h3>About this scene</h3>
-                    <p>The facts panel fills when the scene loads. Use the toggles below the scene.</p>
-                </div>
-            </aside>
-        </div>
-        <noscript>This 3D page runs in your browser and needs JavaScript enabled.</noscript>
-    </div>
-
-    <div style="text-align:center; margin-top:10px;">
-        <button id="t3dFullscreenBtn" type="button" class="w3-button w3-blue">Fullscreen</button>
-        <span id="t3dPfjControls" style="display:none;">
-            <button id="t3dPfjSnowBtn" type="button" class="w3-button w3-grey">Snow cap: On</button>
-            <button id="t3dPfjLakesBtn" type="button" class="w3-button w3-grey">Five Lakes: On</button>
-        </span>
-    </div>
-    <style>
-        #t3dWrapper:fullscreen { background: #111; }
-        #t3dWrapper:fullscreen #t3dStatus { color: #ddd; }
-        #t3dWrapper:fullscreen #t3dInfoPanel { background: #1c2331 !important; color: #dde; }
-        .t3d-note { font-size: 12.5px; color: #555; }
-    </style>
+<div id="t3dInfoPanel" style="background: #f5f5f5; padding: 12px; border-radius: 4px; margin-bottom: 16px; font-size: 14px; line-height: 1.6;">
+  <h3 style="margin: 0 0 8px 0; font-size: 16px;">Mount Fuji at a Glance</h3>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="border-bottom: 1px solid #ddd;">
+      <td style="padding: 6px; width: 40%; font-weight: 600;">Height</td>
+      <td style="padding: 6px;">3,776.24 m (12,388 ft)</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #ddd;">
+      <td style="padding: 6px; font-weight: 600;">Location</td>
+      <td style="padding: 6px;">Honshu, Japan (Yamanashi / Shizuoka)</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #ddd;">
+      <td style="padding: 6px; font-weight: 600;">Type</td>
+      <td style="padding: 6px;">Stratovolcano (dormant)</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #ddd;">
+      <td style="padding: 6px; font-weight: 600;">Last Eruption</td>
+      <td style="padding: 6px;">1707 - 1708</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #ddd;">
+      <td style="padding: 6px; font-weight: 600;">Annual Climbers</td>
+      <td style="padding: 6px;">~300,000+</td>
+    </tr>
+    <tr>
+      <td style="padding: 6px; font-weight: 600;">UNESCO Status</td>
+      <td style="padding: 6px;">World Heritage Site (2013)</td>
+    </tr>
+  </table>
 </div>
 
-<div class="w3-container">
-    <p>Published figures: summit 3,776.24 m at Kengamine on the crater rim; last eruption 1707-1708 (the Hoei eruption); UNESCO World Heritage cultural site since 2013.</p>
-    <p>Drag to orbit and scroll or pinch to zoom. Everything renders on your device with WebGL.</p>
+<div id="t3dP01Controls" style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+  <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px;">
+    <input type="checkbox" id="t3dToggleSnow" checked style="cursor: pointer;">
+    <span>Snow Cover</span>
+  </label>
+  <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px;">
+    <input type="checkbox" id="t3dToggleClouds" checked style="cursor: pointer;">
+    <span>Cloud Layer</span>
+  </label>
 </div>
+
+<div style="background: #fff9e6; padding: 12px; border-radius: 4px; border-left: 4px solid #ffc107; font-size: 13px; margin-bottom: 16px;">
+  <strong>Note:</strong> This is a schematic 3D explorer for educational purposes. Heights, angles, and colors are approximations based on published geographic data. The scene depicts Mount Fuji's iconic cone shape and seasonal snow patterns.
+</div>
+
+<script type="module">
+import * as THREE from '/vendor/three/three.module.js';
+
+(async () => {
+  const canvas = document.getElementById('t3dCanvas');
+  const statusEl = document.getElementById('t3dStatus');
+  const toggleSnow = document.getElementById('t3dToggleSnow');
+  const toggleClouds = document.getElementById('t3dToggleClouds');
+  const fullscreenBtn = document.getElementById('t3dFullscreenBtn');
+
+  if (!canvas) { statusEl.textContent = 'Canvas not found'; return; }
+
+  // Scene setup
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xe8f0ff);
+  
+  const w = canvas.clientWidth || 800;
+  const h = canvas.clientHeight || 500;
+  const camera = new THREE.PerspectiveCamera(55, w / h, 0.1, 10000);
+  camera.position.set(0, 2.5, 5);
+  camera.lookAt(0, 1.2, 0);
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setSize(w, h);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  // Lighting
+  const ambLight = new THREE.AmbientLight(0xffffff, 0.7);
+  scene.add(ambLight);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  dirLight.position.set(5, 8, 5);
+  dirLight.castShadow = true;
+  scene.add(dirLight);
+
+  // Mount Fuji cone (procedural, cone-based)
+  const peakGeom = new THREE.ConeGeometry(0.8, 3.5, 32, 8);
+  const baseDarkMaterial = new THREE.MeshPhongMaterial({ color: 0x3d2817 }); // dark brown
+  const peakSnowMaterial = new THREE.MeshPhongMaterial({ color: 0xf5f5f5 }); // bright white
+  const peakDarkMaterial = new THREE.MeshPhongMaterial({ color: 0x4a4a4a }); // dark gray
+  const midMaterial = new THREE.MeshPhongMaterial({ color: 0x2d5016 }); // forest green
+
+  // Base cylinder (dark volcanic rock)
+  const baseGeom = new THREE.CylinderGeometry(1.0, 1.2, 0.6, 32, 2);
+  const baseMesh = new THREE.Mesh(baseGeom, baseDarkMaterial);
+  baseMesh.position.y = -0.3;
+  baseMesh.castShadow = true;
+  scene.add(baseMesh);
+
+  // Mid-slope cone (green forested band)
+  const midGeom = new THREE.ConeGeometry(0.95, 1.5, 32, 4);
+  const midMesh = new THREE.Mesh(midGeom, midMaterial);
+  midMesh.position.y = 0.8;
+  midMesh.castShadow = true;
+  scene.add(midMesh);
+
+  // Upper peak cone (white or dark depending on snow toggle)
+  const peakMesh = new THREE.Mesh(peakGeom, peakSnowMaterial);
+  peakMesh.position.y = 2.0;
+  peakMesh.castShadow = true;
+  peakMesh.receiveShadow = true;
+  scene.add(peakMesh);
+
+  // Cloud layer (semi-transparent sphere around lower slopes)
+  const cloudGeom = new THREE.IcosahedronGeometry(1.4, 4);
+  const cloudMaterial = new THREE.MeshPhongMaterial({
+    color: 0xcccccc,
+    opacity: 0.3,
+    transparent: true,
+    side: THREE.DoubleSide,
+  });
+  const cloudMesh = new THREE.Mesh(cloudGeom, cloudMaterial);
+  cloudMesh.position.y = 0.5;
+  cloudMesh.scale.z = 0.7; // flatten vertically
+  scene.add(cloudMesh);
+
+  // Toggle handlers
+  toggleSnow.addEventListener('change', () => {
+    peakMesh.material = toggleSnow.checked ? peakSnowMaterial : peakDarkMaterial;
+  });
+
+  toggleClouds.addEventListener('change', () => {
+    cloudMesh.visible = toggleClouds.checked;
+  });
+
+  fullscreenBtn.addEventListener('click', () => {
+    if (canvas.requestFullscreen) {
+      canvas.requestFullscreen().catch(() => {});
+    }
+  });
+
+  // Camera controls (auto-orbit)
+  let angle = 0;
+  const autoOrbit = () => {
+    angle += 0.005;
+    const radius = 5;
+    camera.position.x = Math.cos(angle) * radius;
+    camera.position.z = Math.sin(angle) * radius;
+    camera.lookAt(0, 1.2, 0);
+  };
+
+  // Responsive resize
+  const onResize = () => {
+    const w2 = canvas.clientWidth || 800;
+    const h2 = canvas.clientHeight || 500;
+    camera.aspect = w2 / h2;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w2, h2);
+  };
+  window.addEventListener('resize', onResize);
+
+  const resizeObs = new ResizeObserver(() => onResize());
+  resizeObs.observe(canvas);
+
+  // Animation loop
+  const animate = () => {
+    requestAnimationFrame(animate);
+    autoOrbit();
+    renderer.render(scene, camera);
+  };
+
+  statusEl.textContent = 'Mount Fuji loaded';
+  animate();
+})();
+</script>
