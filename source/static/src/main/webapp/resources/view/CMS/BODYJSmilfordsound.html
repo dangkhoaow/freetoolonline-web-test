@@ -1,0 +1,269 @@
+<script>
+    // 3D scene archetype - Milford Sound (New Zealand fjord)
+    // procedural three.js, fully client-side
+    // EDUCATIONAL APPROXIMATION
+    // Published figures (NZ DOC / Geographic consensus, 2026-07-28):
+    //   - Length about 15 km, width 1-2 km, depth about 291 m
+    //   - Mitre Peak 1,695 m - iconic landmark, near the entrance
+    //   - Glacier-carved fjord; high annual rainfall (~200 rain days)
+    //   - Multiple waterfalls, especially after heavy rain
+
+    web.localUpload = false;
+    var T3D_SLUG = 'milford-sound';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesmilfordsound'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) { var el = document.getElementById('t3dStatus'); if (el) el.textContent = text; }
+    function t3dInfo(html) { var el = document.getElementById('t3dInfoPanel'); if (el) el.innerHTML = html; }
+    function t3dLoadStore() { try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; } catch (e) { return {}; } }
+    function t3dSaveStore(obj) { try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); } catch (e) {} }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
+        else if (el.msRequestFullscreen) el.msRequestFullscreen();
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x8ab4d8, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        var key = new THREE.DirectionalLight(0xfffae8, 1.0);
+        key.position.set(-8, 16, 10);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, metalness: 0 }));
+        }
+
+        var WATER_LEVEL = -0.3, WALL_HEIGHT = 1.5, PEAK_HEIGHT = 1.695;
+        function fjordWidth(z) {
+            var near = Math.sin(z * 0.8 + 1.2) * 0.4 + 0.35;
+            return near * Math.max(0, 1 - Math.abs(z) / 8.5);
+        }
+        function fjordWallDist(x) { return Math.abs(x) - (0.3 + 0.2 * Math.sin(x * 0.5)); }
+        function height(x, z) {
+            var w = fjordWallDist(x);
+            var maxW = fjordWidth(z);
+            if (w <= maxW) return WATER_LEVEL + 0.15 * fbm(x, z, 2);
+            var t = (w - maxW) / 1.2;
+            if (t > 1) t = 1;
+            var h = WATER_LEVEL + t * t * WALL_HEIGHT;
+            h += 0.08 * fbm(x * 1.5 + 3, z * 1.5 + 2, 3);
+            var peakX = -0.8, peakZ = 2.1;
+            var d2p = Math.hypot(x - peakX, z - peakZ);
+            if (d2p < 1.5) h += (1 - d2p / 1.5) * PEAK_HEIGHT;
+            return h;
+        }
+        var terrain;
+        var normColors = null, accentColors = null;
+        function wallColor(c, h, x, z, accent) {
+            var n = 0.85 + 0.2 * fbm(x * 1.8 + 5, z * 1.8 + 6, 3);
+            var w = fjordWallDist(x);
+            var maxW = fjordWidth(z);
+            if (w <= maxW) {
+                c.setHex(0x1a5f6f).multiplyScalar(n * 0.8);
+                return;
+            }
+            var rainLevel = WATER_LEVEL + 0.6;
+            if (h > rainLevel) c.setHex(0x6b8d4c);
+            else if (h > WATER_LEVEL) c.setHex(0x5a7a42);
+            else c.setHex(0x4a6b3a);
+            if (accent) c.offsetHSL(0.08, 0.15, 0.04);
+            c.multiplyScalar(n);
+        }
+        function build(accent) {
+            var pos = terrain.geometry.attributes.position, col = new THREE.Color();
+            var arr = new Float32Array(pos.count * 3);
+            for (var i = 0; i < pos.count; i++) {
+                wallColor(col, pos.getY(i), pos.getX(i), pos.getZ(i), accent);
+                arr[i * 3] = col.r; arr[i * 3 + 1] = col.g; arr[i * 3 + 2] = col.b;
+            }
+            return arr;
+        }
+        terrain = makeTerrain(10, 18, shell.low ? 100 : 140, shell.low ? 120 : 160, height, function (c, h, x, z) { wallColor(c, h, x, z, false); });
+        scene.add(terrain);
+        normColors = terrain.geometry.attributes.color.array.slice();
+        accentColors = build(true);
+
+        var waterfall = null;
+        function addWaterfalls() {
+            var falls = [];
+            for (var j = 0; j < 4; j++) {
+                var fx = 1.8 + j * 0.4, fz = -4 + j * 3;
+                for (var f = 0; f <= 20; f++) {
+                    var fh = WATER_LEVEL + (1 - f / 20) * 0.9;
+                    falls.push(new THREE.Vector3(fx, fh, fz));
+                }
+            }
+            var fallGeo = new THREE.BufferGeometry().setFromPoints(falls);
+            waterfall = new THREE.LineSegments(fallGeo, new THREE.LineBasicMaterial({ color: 0xb3e5e0, linewidth: 3 }));
+            scene.add(waterfall);
+        }
+        addWaterfalls();
+
+        var accentOn = false, waterfallOn = true;
+
+        function panelHtml() {
+            return '<h3>Milford Sound - a drowned fjord</h3>' +
+                '<p>A U-shaped valley carved by glaciers, now flooded by the sea. Steep cliff walls rise 1,200+ meters from water so deep it rivals inland lakes. Waterfalls cascade down the walls.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Length</td><td>about 15 km</td></tr>' +
+                '<tr><td>Width</td><td>1-2 km at entrance, narrower inland</td></tr>' +
+                '<tr><td>Depth</td><td>about 291 m - exceptionally deep for a fjord</td></tr>' +
+                '<tr><td>Mitre Peak</td><td>1,695 m - iconic landmark</td></tr>' +
+                '<tr><td>Rainfall</td><td>about 200 rainy days per year</td></tr>' +
+                '<tr><td>Location</td><td>Southwest coast, Fiordland, New Zealand</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation - the fjord shape, wall relief, and waterfall placement are procedural teaching cues, not survey geology.</p>';
+        }
+
+        function apply() {
+            terrain.geometry.attributes.color.array.set(accentOn ? accentColors : normColors);
+            terrain.geometry.attributes.color.needsUpdate = true;
+            if (waterfall) waterfall.visible = waterfallOn;
+            var wfBtn = document.getElementById('t3dPmsWaterfallBtn');
+            if (wfBtn) wfBtn.textContent = 'Waterfalls: ' + (waterfallOn ? 'On' : 'Off');
+            var acBtn = document.getElementById('t3dPmsAccentBtn');
+            if (acBtn) acBtn.textContent = 'Accent: ' + (accentOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ accentOn: accentOn, waterfallOn: waterfallOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.accentOn === 'boolean') accentOn = store.accentOn;
+        if (typeof store.waterfallOn === 'boolean') waterfallOn = store.waterfallOn;
+        apply();
+
+        var wfBtn = document.getElementById('t3dPmsWaterfallBtn');
+        if (wfBtn) wfBtn.addEventListener('click', function () { waterfallOn = !waterfallOn; apply(); });
+        var acBtn = document.getElementById('t3dPmsAccentBtn');
+        if (acBtn) acBtn.addEventListener('click', function () { accentOn = !accentOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Use the toggles below.');
+        return function animate(dt) { scene.rotation.y += dt * 0.00002; };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesmilfordsound: 't3dPmsControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading 3D engine (about 0.7 MB, cached after first load)...');
+        ftoLoadThree().then(function (THREE) {
+            try {
+                var presets = { placesmilfordsound: { radius: 18, maxR: 45, minR: 6, phi: 0.9, theta: 0.7, targetY: 0.4 } };
+                var shell = t3dShell(THREE, host, presets[kind]);
+                var animate = t3dScene(shell);
+                var last = performance.now();
+                shell.renderer.setAnimationLoop(function () {
+                    var now = performance.now();
+                    var dt = Math.min(now - last, 100);
+                    last = now;
+                    shell.applyCamera();
+                    if (animate) animate(dt);
+                    shell.renderer.render(shell.scene, shell.camera);
+                });
+            } catch (err) { t3dStatus('Error: ' + (err.message || 'unknown')); }
+        }).catch(function (err) { t3dStatus('Failed to load 3D engine: ' + (err.message || 'unknown')); });
+    }
+
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', doAfterPageRendered); }
+    else { doAfterPageRendered(); }
+</script>
