@@ -1,0 +1,263 @@
+<script type="module">
+// Tibetan Plateau 3D Explorer
+import * as THREE from '/vendor/three/three.module.min.js';
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x1a3d4d);
+scene.fog = new THREE.Fog(0x1a3d4d, 150, 200);
+
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFShadowShadowMap;
+
+const host = document.getElementById('t3dCanvasHost');
+if (!host) {
+  console.error('t3dCanvasHost not found');
+  process.exit(1);
+}
+host.appendChild(renderer.domElement);
+
+// Helpers for terrain generation
+function hash2(p) {
+  return Math.sin(p.x * 12.9898 + p.y * 78.233) * 43758.5453 % 1;
+}
+
+function vnoise(p) {
+  const i = { x: Math.floor(p.x), y: Math.floor(p.y) };
+  const f = { x: p.x - i.x, y: p.y - i.y };
+  const u = { x: f.x * f.x * (3 - 2 * f.x), y: f.y * f.y * (3 - 2 * f.y) };
+  const n00 = hash2({ x: i.x, y: i.y });
+  const n10 = hash2({ x: i.x + 1, y: i.y });
+  const n01 = hash2({ x: i.x, y: i.y + 1 });
+  const n11 = hash2({ x: i.x + 1, y: i.y + 1 });
+  const nx0 = n00 * (1 - u.x) + n10 * u.x;
+  const nx1 = n01 * (1 - u.x) + n11 * u.x;
+  return nx0 * (1 - u.y) + nx1 * u.y;
+}
+
+function fbm(p, octaves = 4) {
+  let value = 0, amplitude = 1, frequency = 1, maxValue = 0;
+  for (let i = 0; i < octaves; i++) {
+    value += amplitude * vnoise({ x: p.x * frequency, y: p.y * frequency });
+    maxValue += amplitude;
+    amplitude *= 0.5;
+    frequency *= 2;
+  }
+  return value / maxValue;
+}
+
+function makeTerrain(segments = 160) {
+  const geometry = new THREE.PlaneGeometry(100, 100, segments, segments);
+  const positionAttribute = geometry.getAttribute('position');
+  const positions = positionAttribute.array;
+  const colors = [];
+
+  // Elevation data for terrain + peak markers
+  const heightData = new Map();
+  const peakMarkers = [];
+
+  // Generate 6-8 peak markers at high elevations
+  for (let i = 0; i < 7; i++) {
+    const px = Math.random() * 100 - 50;
+    const py = Math.random() * 100 - 50;
+    const peakHeight = 3 + Math.random() * 3.5; // 3-6.5 units (tallest ~7km represented as ~6.5)
+    peakMarkers.push({ x: px, y: py, h: peakHeight });
+  }
+
+  // Displace vertices with fbm + peak influence
+  for (let i = 0; i < positions.length; i += 3) {
+    const x = (positions[i] + 50) / 100;
+    const z = (positions[i + 2] + 50) / 100;
+    const baseHeight = 1.5 + fbm({ x: x * 3, y: z * 3 }, 5) * 2.5; // Base terrain: 1.5-4m
+
+    // Peak influence: nearest peak within radius adds elevation
+    let finalHeight = baseHeight;
+    let closestDist = Infinity;
+    for (const peak of peakMarkers) {
+      const dx = (peak.x + 50) / 100 - x;
+      const dz = (peak.y + 50) / 100 - z;
+      const dist = Math.sqrt(dx * dx + dz * dz);
+      if (dist < 0.25) { // 25 unit radius
+        const influence = Math.max(0, 1 - dist / 0.25) * peak.h * 0.8;
+        finalHeight = Math.max(finalHeight, baseHeight + influence);
+      }
+      closestDist = Math.min(closestDist, dist);
+    }
+
+    positions[i + 1] = finalHeight;
+    heightData.set(`${i}`, finalHeight);
+  }
+
+  positionAttribute.needsUpdate = true;
+  geometry.computeVertexNormals();
+
+  // Color banding by elevation (brown/tan/light terrain)
+  const colorArray = [];
+  for (let i = 0; i < positions.length; i += 3) {
+    const h = heightData.get(`${i + 1}`) || positions[i + 1];
+    let color;
+    if (h < 2) {
+      color = new THREE.Color(0x8B7355); // Saddle brown - low valleys
+    } else if (h < 3.5) {
+      color = new THREE.Color(0xD2B48C); // Tan - mid elevations
+    } else if (h < 5) {
+      color = new THREE.Color(0xE6D2B0); // Light tan - high plateau
+    } else {
+      color = new THREE.Color(0xFFFFFF); // White - snow peaks
+    }
+    colorArray.push(color.r, color.g, color.b);
+  }
+  geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colorArray), 3));
+
+  const material = new THREE.MeshPhongMaterial({
+    vertexColors: true,
+    side: THREE.DoubleSide,
+    emissive: 0x000000
+  });
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  return { mesh, peakMarkers };
+}
+
+const { mesh: terrain, peakMarkers } = makeTerrain(160);
+scene.add(terrain);
+
+// Lighting
+const sunLight = new THREE.DirectionalLight(0xffffff, 1);
+sunLight.position.set(50, 80, 50);
+sunLight.castShadow = true;
+sunLight.shadow.camera.left = -100;
+sunLight.shadow.camera.right = 100;
+sunLight.shadow.camera.top = 100;
+sunLight.shadow.camera.bottom = -100;
+sunLight.shadow.mapSize.width = 2048;
+sunLight.shadow.mapSize.height = 2048;
+scene.add(sunLight);
+
+const ambientLight = new THREE.AmbientLight(0xaaaaaa);
+scene.add(ambientLight);
+
+// Peak marker cones
+const peakCones = [];
+for (const peak of peakMarkers) {
+  const coneGeo = new THREE.ConeGeometry(1.5, peak.h, 12);
+  const coneMat = new THREE.MeshStandardMaterial({ color: 0xff6b4a, emissive: 0xff6b4a });
+  const cone = new THREE.Mesh(coneGeo, coneMat);
+  cone.position.set(peak.x, peak.h / 2 + 0.5, peak.y);
+  cone.visible = false; // Hidden by default, toggled by control
+  scene.add(cone);
+  peakCones.push({ cone, peak });
+}
+
+// Camera setup with orbit control
+let theta = 0.8, phi = 0.8, radius = 65;
+function updateCameraPosition() {
+  camera.position.x = radius * Math.sin(phi) * Math.cos(theta);
+  camera.position.y = radius * Math.cos(phi);
+  camera.position.z = radius * Math.sin(phi) * Math.sin(theta);
+  camera.lookAt(0, 2, 0);
+}
+updateCameraPosition();
+
+// Window resize
+window.addEventListener('resize', () => {
+  const w = window.innerWidth, h = window.innerHeight;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+});
+
+// Controls for toggles
+const t3dStatus = document.getElementById('t3dStatus');
+const t3dP01Controls = document.getElementById('t3dP01Controls');
+
+if (t3dP01Controls) {
+  const toggles = t3dP01Controls.querySelectorAll('input[type="checkbox"]');
+  if (toggles[0]) { // Elevation banding toggle
+    toggles[0].addEventListener('change', (e) => {
+      // Re-render terrain with/without color banding effect (already per-vertex, so this affects post-processing)
+      if (e.target.checked) {
+        // Normal color mode (already rendering)
+      } else {
+        // Monochrome mode for clarity
+        terrain.material.color.set(0x8B8B7A);
+      }
+    });
+  }
+  if (toggles[1]) { // Peak markers toggle
+    toggles[1].addEventListener('change', (e) => {
+      peakCones.forEach(({ cone }) => {
+        cone.visible = e.target.checked;
+      });
+    });
+  }
+}
+
+// LocalStorage persistence
+const storageKey = 'ftol-game-tibetan-plateau';
+const savedState = localStorage.getItem(storageKey);
+if (savedState) {
+  const state = JSON.parse(savedState);
+  if (t3dP01Controls) {
+    const toggles = t3dP01Controls.querySelectorAll('input[type="checkbox"]');
+    if (toggles[0]) toggles[0].checked = state.elevationBanding ?? true;
+    if (toggles[1]) toggles[1].checked = state.peakMarkers ?? true;
+    // Trigger change events to update scene
+    if (toggles[0]) toggles[0].dispatchEvent(new Event('change'));
+    if (toggles[1]) toggles[1].dispatchEvent(new Event('change'));
+  }
+}
+
+// Save state on change
+if (t3dP01Controls) {
+  const toggles = t3dP01Controls.querySelectorAll('input[type="checkbox"]');
+  toggles.forEach((toggle, idx) => {
+    toggle.addEventListener('change', () => {
+      const state = {
+        elevationBanning: toggles[0]?.checked ?? true,
+        peakMarkers: toggles[1]?.checked ?? true
+      };
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(state));
+      } catch (e) {
+        // Quota exceeded - ignore
+      }
+    });
+  });
+}
+
+// ResizeObserver for canvas host
+if (window.ResizeObserver) {
+  const observer = new ResizeObserver(() => {
+    const rect = host.getBoundingClientRect();
+    camera.aspect = rect.width / rect.height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(rect.width, rect.height);
+  });
+  observer.observe(host);
+}
+
+// Fullscreen button
+const fullscreenBtn = document.getElementById('t3dFullscreenBtn');
+if (fullscreenBtn) {
+  fullscreenBtn.addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+      host.requestFullscreen().catch(err => console.log('Fullscreen error:', err));
+    } else {
+      document.exitFullscreen();
+    }
+  });
+}
+
+// Animation loop
+function animate() {
+  requestAnimationFrame(animate);
+  theta += 0.0002; // Slow orbit
+  updateCameraPosition();
+  renderer.render(scene, camera);
+}
+animate();
+</script>
