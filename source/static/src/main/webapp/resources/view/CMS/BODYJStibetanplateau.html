@@ -1,347 +1,204 @@
-<script>
-    // 3D scene archetype skeleton (tibetan-plateau) - vendored three.js
-    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
-    // LEAN from the shared t3d* skeleton - ONE scene only (tibetan-plateau).
-    // All geometry is procedural. places-3d cluster seed 2026-07-27.
-    //
-    // EDUCATIONAL APPROXIMATION, not survey terrain.
-    // Published figures (encyclopedic consensus, cross-checked 2026-07-29):
-    //   - Area about 2.5 million km2 - the largest plateau by area
-    //   - Average elevation about 4,000 m - the highest plateau on Earth
-    //   - Range 2,000-6,000+ m; interior peaks 5,000-6,000 m
-    //   - Sparse vegetation, semi-arid climate, cold
-    //   - Origin point for five major Asian rivers: Yangtze, Yellow, Mekong, Salween, Brahmaputra
-    //
-    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+<script type="module">
+import * as THREE from '/vendor/three/build/three.module.js';
 
-    web.localUpload = false;
+const PREFS_KEY = 'ftol-game-tibetan-plateau';
+const canvas = document.getElementById('t3dCanvas');
+if (!canvas) { console.error('Canvas not found'); process.exit(1); }
 
-    var T3D_SLUG = 'tibetan-plateau';
-    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0e27);
+scene.fog = new THREE.Fog(0x0a0e27, 200, 500);
 
-    function t3dDetectScene(slug) { return 'placestibetanplateau'; }
+const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+camera.position.set(40, 60, 50);
+camera.lookAt(0, 0, 0);
 
-    function ftoLoadThree() {
-        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
-        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
-        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
-            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
-            return mod;
-        });
-        return window.__ftoThreePromise;
-    }
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFShadowShadowMap;
 
-    function t3dStatus(text) {
-        var el = document.getElementById('t3dStatus');
-        if (el) el.textContent = text;
-    }
-    function t3dInfo(html) {
-        var el = document.getElementById('t3dInfoPanel');
-        if (el) el.innerHTML = html;
-    }
-    function t3dLoadStore() {
-        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
-        catch (e) { return {}; }
-    }
-    function t3dSaveStore(obj) {
-        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
-        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
-    }
-    function t3dFullscreen(el) {
-        if (el.requestFullscreen) { el.requestFullscreen(); }
-        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
-        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
-        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
-    }
+window.addEventListener('resize', () => {
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+});
 
-    function t3dShell(THREE, host, opts) {
-        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
-        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
-        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-        var scene = new THREE.Scene();
-        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
-        var orbit = {
-            target: new THREE.Vector3(0, opts.targetY || 0, 0),
-            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
-            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
-            minR: opts.minR || 4, maxR: opts.maxR || 400,
-        };
-        function applyCamera() {
-            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
-            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
-            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
-            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
-            camera.position.set(
-                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
-                orbit.target.y + orbit.radius * cp,
-                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
-            );
-            camera.lookAt(orbit.target);
-        }
-        host.innerHTML = '';
-        host.appendChild(renderer.domElement);
-        function resize() {
-            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
-            renderer.setSize(w, h, false);
-            camera.aspect = w / h;
-            camera.updateProjectionMatrix();
-        }
-        resize();
-        window.addEventListener('resize', resize);
-        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
-        var dragging = false, lastX = 0, lastY = 0;
-        host.addEventListener('pointerdown', function (e) {
-            dragging = true; lastX = e.clientX; lastY = e.clientY;
-            try { host.setPointerCapture(e.pointerId); } catch (err) {}
-        });
-        host.addEventListener('pointerup', function () { dragging = false; });
-        host.addEventListener('pointercancel', function () { dragging = false; });
-        host.addEventListener('pointermove', function (e) {
-            if (!dragging) return;
-            var dx = e.clientX - lastX, dy = e.clientY - lastY;
-            lastX = e.clientX; lastY = e.clientY;
-            orbit.goalTheta -= dx * 0.005;
-            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
-        });
-        host.addEventListener('wheel', function (e) {
-            e.preventDefault();
-            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
-        }, { passive: false });
-        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
-    }
+// Lights
+const ambLight = new THREE.AmbientLight(0xffffff, 0.4);
+scene.add(ambLight);
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+dirLight.position.set(100, 120, 80);
+dirLight.castShadow = true;
+dirLight.shadow.camera.left = -200;
+dirLight.shadow.camera.right = 200;
+dirLight.shadow.camera.top = 200;
+dirLight.shadow.camera.bottom = -200;
+dirLight.shadow.camera.far = 500;
+scene.add(dirLight);
 
-    function t3dScene(shell) {
-        var THREE = shell.THREE, scene = shell.scene;
-        shell.renderer.setClearColor(0x1a1f2e, 1);
-        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-        var key = new THREE.DirectionalLight(0xfff2d0, 0.95);
-        key.position.set(12, 18, -8);
-        scene.add(key);
+// Hash-based random + fbm helpers (from seed)
+function hash2(x, y) {
+  const h = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+  return h - Math.floor(h);
+}
+function vnoise(x, y) {
+  const i = Math.floor(x), j = Math.floor(y);
+  const f = x - i, g = y - j;
+  const u = f * f * (3.0 - 2.0 * f);
+  const v = g * g * (3.0 - 2.0 * g);
+  const p00 = hash2(i, j), p10 = hash2(i + 1, j), p01 = hash2(i, j + 1), p11 = hash2(i + 1, j + 1);
+  const p0 = p00 * (1.0 - u) + p10 * u;
+  const p1 = p01 * (1.0 - u) + p11 * u;
+  return p0 * (1.0 - v) + p1 * v;
+}
+function fbm(x, y, octaves = 5, persistence = 0.5, lacunarity = 2.0) {
+  let value = 0, amplitude = 1, frequency = 1, maxValue = 0;
+  for (let i = 0; i < octaves; i++) {
+    value += amplitude * vnoise(x * frequency, y * frequency);
+    maxValue += amplitude;
+    amplitude *= persistence;
+    frequency *= lacunarity;
+  }
+  return value / maxValue;
+}
 
-        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
-        function vnoise(x, z) {
-            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
-            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
-            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
-            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
-        }
-        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
-        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
-            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
-            geo.rotateX(-Math.PI / 2);
-            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
-            for (var i = 0; i < pos.count; i++) {
-                var x = pos.getX(i), z = pos.getZ(i);
-                var h = heightFn(x, z);
-                pos.setY(i, h);
-                colorFn(col, h, x, z);
-                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
-            }
-            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-            geo.computeVertexNormals();
-            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0.02 }));
-        }
+// Make terrain
+const geo = new THREE.PlaneGeometry(150, 150, 200, 200);
+const posAttr = geo.attributes.position;
+const elevData = [];
+const colorData = new Float32Array(posAttr.count * 3);
 
-        // Tibetan Plateau high-altitude terrain: sparse grassland/tundra with internal lakes
-        // Base elevation ~30-40 render units (4000m equivalent), sparse vegetation bumps
-        var PLATEAU_BASE = 30;
-        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
-        
-        // Sparse tundra vegetation: Worley-cell presence determines if a bump exists
-        function makeVegetationBump(x, z) {
-            var cx = Math.round(x * 4), cz = Math.round(z * 4);
-            var hval = hash2(cx + 0.5, cz + 0.5);
-            if (hval < 0.15) return (hval * 0.4) * (1.5 + 0.5 * Math.sin(cx * 1.7 + cz * 2.3));
-            return 0;
-        }
+for (let i = 0; i < posAttr.count; i++) {
+  const x = posAttr.getX(i), y = posAttr.getY(i);
+  // Plateau base: 45 units (representing 4,500m); fbm perturbation adds detail
+  let elev = 45 + fbm(x / 40, y / 40, 5, 0.55, 2.0) * 12;
+  // Gentle radial tapering at edges to avoid hard cliff
+  const dist = Math.sqrt(x*x + y*y);
+  if (dist > 65) {
+    const fade = Math.pow(Math.max(0, 1 - (dist - 65) / 20), 2);
+    elev = elev * fade + (fbm(x/50, y/50, 3, 0.6, 1.8) * 5) * (1 - fade);
+  }
+  posAttr.setZ(i, elev);
+  elevData.push(elev);
+  
+  // Elevation band color: altitude-driven
+  let color = new THREE.Color();
+  if (elev < 35) color.setHSL(0.55, 0.7, 0.35); // low: cyan-green
+  else if (elev < 45) color.setHSL(0.45, 0.6, 0.45); // mid-low: green
+  else if (elev < 55) color.setHSL(0.1, 0.8, 0.5); // mid: tan
+  else if (elev < 65) color.setHSL(0.05, 0.7, 0.6); // mid-high: light tan
+  else color.setHSL(0, 0, 0.85); // high: white
+  
+  colorData[i*3] = color.r;
+  colorData[i*3+1] = color.g;
+  colorData[i*3+2] = color.b;
+}
+posAttr.needsUpdate = true;
+geo.computeVertexNormals();
 
-        // Five river valleys: radial paths from center outward (Yangtze N, Yellow E, Mekong S, Salween SW, Brahmaputra SE)
-        function isInRiverValley(x, z) {
-            var dist = Math.sqrt(x * x + z * z);
-            if (dist < 0.5) return false; // exclude the very center
-            var angle = Math.atan2(z, x);
-            var rivers = [ // angle, angleWidth, maxDepth
-                { angle: Math.PI / 2, width: 0.35 },      // Yangtze (north)
-                { angle: 0, width: 0.3 },                 // Yellow (east)
-                { angle: -Math.PI / 2, width: 0.32 },     // Mekong (south)
-                { angle: -2.8, width: 0.28 },             // Salween (southwest)
-                { angle: -Math.PI / 3, width: 0.3 }       // Brahmaputra (southeast)
-            ];
-            for (var i = 0; i < rivers.length; i++) {
-                var r = rivers[i];
-                var angleDiff = Math.abs(angle - r.angle);
-                if (angleDiff > Math.PI) angleDiff = 2 * Math.PI - angleDiff;
-                if (angleDiff < r.width) {
-                    var riverDepth = 4 * Math.exp(-dist * 0.8);
-                    return riverDepth;
-                }
-            }
-            return 0;
-        }
+const colorAttr = new THREE.BufferAttribute(colorData, 3);
+geo.setAttribute('color', colorAttr);
 
-        function height(x, z) {
-            var dist = Math.sqrt(x * x + z * z);
-            // Gentle fbm plateau with sparse bumps
-            var h = PLATEAU_BASE + 2 * fbm(x * 0.6, z * 0.6, 4) + makeVegetationBump(x, z);
-            // River valleys cut into the terrain
-            var riverDepth = isInRiverValley(x, z);
-            if (riverDepth > 0) h -= riverDepth;
-            // Optional internal lakes (small basins)
-            if (Math.abs(x - 4) < 1.5 && Math.abs(z + 2) < 1) h = Math.min(h, 25);
-            if (Math.abs(x + 3.5) < 1.2 && Math.abs(z - 3) < 0.9) h = Math.min(h, 26);
-            return h;
-        }
+// Create material + mesh
+const mat = new THREE.MeshPhongMaterial({ vertexColors: true, shininess: 5 });
+const terrainMesh = new THREE.Mesh(geo, mat);
+terrainMesh.castShadow = true;
+terrainMesh.receiveShadow = true;
+scene.add(terrainMesh);
 
-        // Color by elevation: brown (low) → beige (mid) → grey (high) → white (peak)
-        var cols = {
-            low: new THREE.Color(0x8b7355),      // brown
-            mid: new THREE.Color(0xd4c5a9),      // beige
-            high: new THREE.Color(0xa9a9a9),     // grey
-            peak: new THREE.Color(0xf5f5f5),     // white
-            river: new THREE.Color(0x4a9eca)     // cyan/teal for river areas
-        };
-        
-        function colorByElevation(c, h, x, z) {
-            var n = 0.85 + 0.2 * fbm(x * 1.3 + 11, z * 1.3 + 7, 3);
-            var elev = (h - PLATEAU_BASE) / 20; // normalize 0-1 range
-            var riverDepth = isInRiverValley(x, z);
-            if (riverDepth > 0.1) {
-                c.copy(cols.river).multiplyScalar(0.8 + 0.2 * n);
-            } else if (elev < 0.3) {
-                c.copy(cols.low).lerp(cols.mid, elev / 0.3).multiplyScalar(n);
-            } else if (elev < 0.6) {
-                c.copy(cols.mid).lerp(cols.high, (elev - 0.3) / 0.3).multiplyScalar(n);
-            } else {
-                c.copy(cols.high).lerp(cols.peak, Math.min(1, (elev - 0.6) / 0.4)).multiplyScalar(n);
-            }
-        }
-        
-        // Single-color plateau (beige) when elevation toggle is off
-        function colorSingleTone(c, h, x, z) {
-            var n = 0.88 + 0.18 * fbm(x * 1.3 + 11, z * 1.3 + 7, 3);
-            var riverDepth = isInRiverValley(x, z);
-            if (riverDepth > 0.1) {
-                c.copy(cols.river).multiplyScalar(0.75 + 0.2 * n);
-            } else {
-                c.copy(cols.mid).multiplyScalar(n);
-            }
-        }
+// Peak markers (cones)
+const peakMarkers = [];
+const peaks = [
+  { pos: [-8, 50, 8], label: 'Everest\n8,848m', color: 0xff6b6b },  // Everest simulation (south edge)
+  { pos: [15, 45, -12], label: 'K2\n8,611m', color: 0xff8c42 },      // K2 simulation (west)
+  { pos: [-5, 48, -20], label: 'Kangchenjunga\n8,586m', color: 0xf542 }, // Other major peak
+];
 
-        var elevationOn = true;
-        var terrain = makeTerrain(26, 26, shell.low ? 100 : 160, shell.low ? 100 : 160, height, function (c, h, x, z) {
-            if (elevationOn) colorByElevation(c, h, x, z);
-            else colorSingleTone(c, h, x, z);
-        });
-        scene.add(terrain);
+peaks.forEach(peak => {
+  const coneGeo = new THREE.ConeGeometry(3, 12, 16);
+  const coneMat = new THREE.MeshPhongMaterial({ color: peak.color, emissive: peak.color, emissiveIntensity: 0.3 });
+  const cone = new THREE.Mesh(coneGeo, coneMat);
+  cone.position.copy(new THREE.Vector3(...peak.pos));
+  cone.castShadow = true;
+  scene.add(cone);
+  peakMarkers.push({ mesh: cone, label: peak.label, pos: peak.pos });
+});
 
-        // River ribbon visualization (optional overlay)
-        var riversOn = true;
-        var rivers = new THREE.Group();
-        var riverCols = [0x2196F3, 0x00BCD4, 0x00ACC1, 0x0097A7, 0x006064];
-        for (var r = 0; r < 5; r++) {
-            var angle = [Math.PI / 2, 0, -Math.PI / 2, -2.8, -Math.PI / 3][r];
-            var ribbon = new THREE.Mesh(
-                new THREE.BoxGeometry(0.8, 0.15, 18),
-                new THREE.MeshStandardMaterial({ color: riverCols[r], roughness: 0.3, metalness: 0.1 })
-            );
-            ribbon.rotation.y = angle - Math.PI / 2;
-            ribbon.position.y = PLATEAU_BASE - 1.5;
-            rivers.add(ribbon);
-        }
-        scene.add(rivers);
+// River source markers
+const riverMarkers = [];
+const rivers = [
+  { pos: [20, 48, 5], label: 'Yangtze\nSource', color: 0x4a90ff },
+  { pos: [-15, 46, 8], label: 'Brahmaputra\nSource', color: 0x7cb9ff },
+  { pos: [5, 47, 18], label: 'Mekong\nSource', color: 0x2d5aa0 },
+];
 
-        function panelHtml() {
-            return '<h3>Tibetan Plateau: the highest plateau in the world</h3>' +
-                '<p>A high-altitude sparse grassland and tundra landscape, averaging about 4,000 m elevation across about 2.5 million km2. The five major Asian rivers originate here: the Yangtze, Yellow, Mekong, Salween, and Brahmaputra. Internal lakes dot the plateau, and river valleys carve through the terrain. The color gradient (brown to white) represents elevation from low basins to high mountain peaks.</p>' +
-                '<table class="w3-table w3-bordered">' +
-                '<tr><td>Area</td><td>about 2.5 million km2 - the world\'s largest plateau</td></tr>' +
-                '<tr><td>Average elevation</td><td>about 4,000 m - the highest plateau on Earth</td></tr>' +
-                '<tr><td>Elevation range</td><td>2,000-6,000+ m; interior peaks 5,000-6,000 m</td></tr>' +
-                '<tr><td>Climate</td><td>semi-arid, high-altitude, cold (annual mean -5 to 0 degrees C)</td></tr>' +
-                '<tr><td>Population</td><td>about 2-3 million people, mostly Tibetan</td></tr>' +
-                '<tr><td>Major rivers</td><td>Yangtze, Yellow, Mekong, Salween, Brahmaputra originate here</td></tr>' +
-                '<tr><td>Unique feature</td><td>supplies water to nearly 2 billion people across Asia</td></tr>' +
-                '</table>' +
-                '<p class="t3d-note">Educational relief approximation - the terrain profile, elevation bands, river paths, and internal lakes are schematic teaching cues, not survey data.</p>';
-        }
+rivers.forEach(river => {
+  const ringGeo = new THREE.RingGeometry(2, 3, 8);
+  const ringMat = new THREE.MeshPhongMaterial({ color: river.color, side: THREE.DoubleSide, emissive: river.color, emissiveIntensity: 0.4 });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.position.copy(new THREE.Vector3(...river.pos));
+  ring.rotation.x = Math.PI / 2;
+  ring.castShadow = true;
+  scene.add(ring);
+  riverMarkers.push({ mesh: ring, label: river.label, pos: river.pos, visible: true });
+});
 
-        function apply() {
-            rivers.visible = riversOn;
-            var eb = document.getElementById('t3dPtpElevationBtn');
-            if (eb) eb.textContent = 'Elevation Bands: ' + (elevationOn ? 'On' : 'Off');
-            var rb = document.getElementById('t3dPtpRiversBtn');
-            if (rb) rb.textContent = 'River Headwaters: ' + (riversOn ? 'On' : 'Off');
-            t3dInfo(panelHtml());
-            // Recompute terrain colors when toggling elevation
-            if (terrain && terrain.geometry && terrain.geometry.attributes && terrain.geometry.attributes.color) {
-                var colors = terrain.geometry.attributes.color;
-                var pos = terrain.geometry.attributes.position;
-                var col = new THREE.Color();
-                var colorFn = elevationOn ? colorByElevation : colorSingleTone;
-                for (var i = 0; i < pos.count; i++) {
-                    var x = pos.getX(i), z = pos.getZ(i), h = pos.getY(i);
-                    colorFn(col, h, x, z);
-                    colors.setXYZ(i, col.r, col.g, col.b);
-                }
-                colors.needsUpdate = true;
-            }
-            try { t3dSaveStore({ elevationOn: elevationOn, riversOn: riversOn }); } catch (e) {}
-        }
+// Load prefs
+const prefs = JSON.parse(localStorage.getItem(PREFS_KEY) || '{"elevBands":true,"rivers":true}');
 
-        var store = t3dLoadStore();
-        if (typeof store.elevationOn === 'boolean') elevationOn = store.elevationOn;
-        if (typeof store.riversOn === 'boolean') riversOn = store.riversOn;
-        apply();
+// Toggles
+document.getElementById('t3dElevationBandsToggle').checked = prefs.elevBands;
+document.getElementById('t3dRiverSourcesToggle').checked = prefs.rivers;
 
-        var elevationBtn = document.getElementById('t3dPtpElevationBtn');
-        if (elevationBtn) elevationBtn.addEventListener('click', function () { elevationOn = !elevationOn; apply(); });
-        var riversBtn = document.getElementById('t3dPtpRiversBtn');
-        if (riversBtn) riversBtn.addEventListener('click', function () { riversOn = !riversOn; apply(); });
+document.getElementById('t3dElevationBandsToggle').addEventListener('change', e => {
+  prefs.elevBands = e.target.checked;
+  localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+  mat.color.set(e.target.checked ? 0xffffff : 0x888888);
+});
 
-        t3dStatus('Drag to orbit, scroll to zoom. Toggle elevation bands or river headwaters.');
-        return function animate(dt) {
-            scene.rotation.y += dt * 0.00003;
-        };
-    }
+document.getElementById('t3dRiverSourcesToggle').addEventListener('change', e => {
+  prefs.rivers = e.target.checked;
+  localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+  riverMarkers.forEach(r => r.mesh.visible = e.target.checked);
+});
 
-    function doAfterPageRendered() {
-        var host = document.getElementById('t3dCanvasHost');
-        var root = document.getElementById('threeSceneTool');
-        if (!host || !root) return;
-        var wrapper = document.getElementById('t3dWrapper') || root;
-        var kind = t3dDetectScene(T3D_SLUG);
-        var rows = { placestibetanplateau: 't3dPtpControls' };
-        for (var k in rows) {
-            var el = document.getElementById(rows[k]);
-            if (el) el.style.display = (k === kind) ? '' : 'none';
-        }
-        var fsBtn = document.getElementById('t3dFullscreenBtn');
-        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
-        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
-        function boot() {
-            ftoLoadThree().then(function (THREE) {
-                try {
-                    var presets = { placestibetanplateau: { radius: 48, maxR: 85, minR: 12, phi: 0.85, theta: 0.4, targetY: 32 } };
-                    var shell = t3dShell(THREE, host, presets[kind]);
-                    var animate = t3dScene(shell);
-                    var last = performance.now();
-                    shell.renderer.setAnimationLoop(function () {
-                        var now = performance.now();
-                        var dt = Math.min(now - last, 100);
-                        last = now;
-                        animate(dt);
-                        shell.applyCamera();
-                        shell.renderer.render(shell.scene, shell.camera);
-                    });
-                } catch (err) {
-                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
-                }
-            }).catch(function (err) {
-                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
-            });
-        }
-        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
-        else { setTimeout(boot, 300); }
-    }
+// Fullscreen
+document.getElementById('t3dFullscreenBtn').addEventListener('click', () => {
+  canvas.requestFullscreen().catch(err => console.log('Fullscreen error:', err));
+});
+
+// Info panel
+const infoPanel = document.getElementById('t3dInfoPanel');
+infoPanel.innerHTML = `
+<strong>Tibetan Plateau</strong><br>
+Avg Elevation: 4,500+ m<br>
+Area: 2.5M km²<br>
+<br>
+<strong>Major Peaks:</strong><br>
+- Everest: 8,848 m<br>
+- K2: 8,611 m<br>
+<br>
+<strong>River Sources:</strong><br>
+- Yangtze<br>
+- Brahmaputra<br>
+- Mekong
+`;
+
+// Orbit camera
+let theta = 1.1, phi = 0.75;
+function animate() {
+  requestAnimationFrame(animate);
+  
+  theta += 0.0003;
+  const radius = 46;
+  camera.position.x = Math.sin(theta) * Math.cos(phi) * radius;
+  camera.position.y = Math.sin(phi) * radius;
+  camera.position.z = Math.cos(theta) * Math.cos(phi) * radius;
+  camera.lookAt(0, 15, 0);
+  
+  renderer.render(scene, camera);
+}
+animate();
 </script>
