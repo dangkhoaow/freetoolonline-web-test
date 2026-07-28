@@ -1,13 +1,15 @@
-<%@ taglib tagdir='/WEB-INF/tags/' prefix='freetoolonline' %>
-<%@ taglib uri='http://java.sun.com/jsp/jstl/functions' prefix='fn' %>
-<freetoolonline:page
-	customStyle='${pageStyle}'
-	browserTitle='${pageBodyTitle}'
-	keyword='${pageBodyKeyword}'
-	description='${pageBodyDesc}'>
-	<freetoolonline:loading/>
-	${pageBodyHTML}
-	<freetoolonline:welcome welcomeTest='${pageBodyWelcome}'/>
-	<freetoolonline:share-btns></freetoolonline:share-btns>
-	${pageBodyJS}
-</freetoolonline:page>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ include file="/WEB-INF/jsp/common/header.jsp" %>
+<main>
+  <% request.setAttribute("slug", "mammothcave"); %>
+  <div class="w3-container w3-margin-top">
+    <%= renderPageTitle(request.getAttribute("slug").toString(), config.getServletContext().getRealPath("")) %>
+    <div class="w3-content" style="max-width: 1200px;">
+      <%= renderBodyHTML(request.getAttribute("slug").toString(), config.getServletContext().getRealPath("")) %>
+      <%= renderBodyWelcome(request.getAttribute("slug").toString(), config.getServletContext().getRealPath("")) %>
+      <%= renderFAQ(request.getAttribute("slug").toString(), config.getServletContext().getRealPath("")) %>
+    </div>
+  </div>
+  <%= renderBodyJS(request.getAttribute("slug").toString(), config.getServletContext().getRealPath("")) %>
+</main>
+<%@ include file="/WEB-INF/jsp/common/footer.jsp" %>
