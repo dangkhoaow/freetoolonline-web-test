@@ -1,55 +1,244 @@
-<div id="t3dCanvasHost" class="t3d-canvas-container" style="width: 100%; height: 500px; border: 1px solid #ddd; border-radius: 4px; margin: 16px 0;"></div>
+<div class="w3-container t3dPageContainer">
+  <div id="t3dCanvasHost" style="position:relative;width:100%;height:500px;background:#e8f4f8;">
+    <canvas id="t3dCanvas" style="width:100%;height:100%;"></canvas>
+    <div id="t3dStatus" style="position:absolute;top:10px;left:10px;color:#666;font-size:11px;">Loading scene...</div>
+    <button id="t3dFullscreenBtn" style="position:absolute;top:10px;right:10px;padding:4px 8px;font-size:10px;">⛶ Fullscreen</button>
+  </div>
+  <div id="t3dInfoPanel" style="margin-top:12px;padding:12px;background:#f9f9f9;border-radius:4px;font-size:13px;line-height:1.4;">
+    <strong>Mount Fuji - Key Facts</strong><br>
+    <strong>Elevation:</strong> 3,776 m (highest peak in Japan) | Base: ~50 km diameter | Crater: 500-600 m<br>
+    <strong>Geology:</strong> Composite stratovolcano formed ~100,000 years ago. Last eruption: 1707-1708 (Hoei). Currently dormant.<br>
+    <strong>Access:</strong> 4 main climbing routes - Yoshida (popular), Subashiri, Gotemba (long), Fujinomiya. Official season: July-September. ~300,000 climbers annually.
+  </div>
 
-<div id="t3dPlacemountfujiControls" class="t3d-controls" style="margin: 16px 0; display: flex; gap: 16px; flex-wrap: wrap;">
-  <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
-    <input type="checkbox" data-toggle="snow" checked>
-    <span>Snow cover</span>
-  </label>
-  <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
-    <input type="checkbox" data-toggle="clouds" checked>
-    <span>Cloud layer</span>
-  </label>
+  <div id="t3dP11Controls" style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;">
+    <label><input type="checkbox" id="t3dToggleElevBands" checked> Elevation Bands (Forest/Meadow/Snow)</label>
+    <label><input type="checkbox" id="t3dToggleRoutes"> Climbing Routes (4 Main Trails)</label>
+  </div>
 </div>
 
-<p><strong>About Mount Fuji:</strong> Japan's highest mountain at 3,776 m above sea level. The iconic symmetric cone volcano is visible from Tokyo on clear days (about 100-130 km away). Mount Fuji has not erupted since 1707-1708 and is a UNESCO World Heritage Site. The snow-capped peak is visible for about 6 months each year (November through May in the Northern Hemisphere).</p>
+<script type="module">
+import * as THREE from '/vendor/three/three.module.js';
 
-<table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
-  <tr style="background-color: #f5f5f5;">
-    <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Metric</th>
-    <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Value</th>
-  </tr>
-  <tr>
-    <td style="border: 1px solid #ccc; padding: 8px;">Peak elevation</td>
-    <td style="border: 1px solid #ccc; padding: 8px;">3,776 m (3,775.63 m, 2014 survey)</td>
-  </tr>
-  <tr>
-    <td style="border: 1px solid #ccc; padding: 8px;">Base elevation</td>
-    <td style="border: 1px solid #ccc; padding: 8px;">About 1,050 m (Tokyo area reference)</td>
-  </tr>
-  <tr>
-    <td style="border: 1px solid #ccc; padding: 8px;">Net cone height</td>
-    <td style="border: 1px solid #ccc; padding: 8px;">About 2,725 m</td>
-  </tr>
-  <tr>
-    <td style="border: 1px solid #ccc; padding: 8px;">Last eruption</td>
-    <td style="border: 1px solid #ccc; padding: 8px;">1707-1708 (Hoei era, 49 days)</td>
-  </tr>
-  <tr>
-    <td style="border: 1px solid #ccc; padding: 8px;">Base circumference</td>
-    <td style="border: 1px solid #ccc; padding: 8px;">About 125 km</td>
-  </tr>
-  <tr>
-    <td style="border: 1px solid #ccc; padding: 8px;">Volume</td>
-    <td style="border: 1px solid #ccc; padding: 8px;">Estimated 1,233 cubic km</td>
-  </tr>
-  <tr>
-    <td style="border: 1px solid #ccc; padding: 8px;">Visible from Tokyo</td>
-    <td style="border: 1px solid #ccc; padding: 8px;">100-130 km away on clear days</td>
-  </tr>
-  <tr>
-    <td style="border: 1px solid #ccc; padding: 8px;">UNESCO World Heritage</td>
-    <td style="border: 1px solid #ccc; padding: 8px;">Since 2013</td>
-  </tr>
-</table>
+const canvas = document.getElementById('t3dCanvas');
+const statusDiv = document.getElementById('t3dStatus');
+const infoPanelDiv = document.getElementById('t3dInfoPanel');
+const fullscreenBtn = document.getElementById('t3dFullscreenBtn');
+const toggleElevBands = document.getElementById('t3dToggleElevBands');
+const toggleRoutes = document.getElementById('t3dToggleRoutes');
 
-<p><strong>Educational note:</strong> This is a schematic 3D representation of Mount Fuji's shape and characteristics, not a precise geographic model. The scene uses procedural terrain generation to show the iconic symmetric cone profile, snow line, and perpetual cloud band that encircles the lower slopes.</p>
+let scene, camera, renderer, geometry, material;
+let elevBandsGroup, routesGroup;
+const storageKey = 'ftol-game-mount-fuji';
+const t3dCanvasHost = document.getElementById('t3dCanvasHost');
+
+// Load saved toggle states
+const savedState = localStorage.getItem(storageKey);
+if (savedState) {
+  const state = JSON.parse(savedState);
+  toggleElevBands.checked = state.elevBands !== false;
+  toggleRoutes.checked = state.routes === true;
+}
+
+function hash2(x, y) {
+  let h = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+  return h - Math.floor(h);
+}
+
+function vnoise(x, y) {
+  const i = Math.floor(x), j = Math.floor(y);
+  const f = x - i, g = y - j;
+  const u = f * f * (3 - 2 * f), v = g * g * (3 - 2 * g);
+  const v00 = hash2(i, j), v10 = hash2(i + 1, j), v01 = hash2(i, j + 1), v11 = hash2(i + 1, j + 1);
+  const nx0 = (v00 + (v10 - v00) * u), nx1 = (v01 + (v11 - v01) * u);
+  return (nx0 + (nx1 - nx0) * v);
+}
+
+function fbm(x, y, octaves = 4, persistence = 0.5) {
+  let value = 0, amplitude = 1, frequency = 1, maxValue = 0;
+  for (let i = 0; i < octaves; i++) {
+    value += vnoise(x * frequency, y * frequency) * amplitude;
+    maxValue += amplitude;
+    amplitude *= persistence;
+    frequency *= 2;
+  }
+  return value / maxValue;
+}
+
+function makeTerrainPlane(width, height, segments, scale) {
+  const plane = new THREE.PlaneGeometry(width, height, segments, segments);
+  const pos = plane.attributes.position;
+  const colors = [];
+
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), y = pos.getY(i);
+    const dist = Math.sqrt(x * x + y * y) / Math.sqrt(width * width + height * height);
+    
+    // Cone elevation: decreases from center outward
+    const coneHeight = Math.max(0, (1 - dist * dist) * 2);
+    const noiseVal = fbm(x * 0.3, y * 0.3, 4, 0.6) * 0.4;
+    const elevValue = (coneHeight + noiseVal) * scale;
+    
+    pos.setZ(i, elevValue);
+
+    // Elevation banding colors (forest → meadow → scree → snow)
+    const normalized = (elevValue / (scale * 2.2));
+    let color;
+    if (normalized < 0.15) {
+      // Forest: dark green
+      color = new THREE.Color(0x1a4d00);
+    } else if (normalized < 0.35) {
+      // Meadow: light green/tan
+      color = new THREE.Color(0x7a9933);
+    } else if (normalized < 0.65) {
+      // Volcanic scree: gray-brown
+      color = new THREE.Color(0x8b7765);
+    } else {
+      // Snow: white
+      color = new THREE.Color(0xffffff);
+    }
+    colors.push(color.r, color.g, color.b);
+  }
+
+  plane.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+  plane.computeVertexNormals();
+  return plane;
+}
+
+function buildClimbingRoutes() {
+  const group = new THREE.Group();
+  const routeColors = [0xff6600, 0x00cc99, 0xcc6600, 0x9966ff]; // 4 colors for 4 trails
+  const routeNames = ['Yoshida', 'Subashiri', 'Gotemba', 'Fujinomiya'];
+  const routeAngles = [0, Math.PI / 2, Math.PI, Math.PI * 1.5];
+
+  routeAngles.forEach((angle, idx) => {
+    const points = [];
+    for (let h = 0; h <= 1; h += 0.05) {
+      const radius = (1 - h * h) * 1.8;
+      const x = Math.cos(angle) * radius;
+      const y = Math.sin(angle) * radius;
+      const z = h * 2.2;
+      points.push(new THREE.Vector3(x, y, z));
+    }
+    const curve = new THREE.CatmullRomCurve3(points);
+    const geometry = new THREE.TubeGeometry(curve, 8, 0.08, 6);
+    const material = new THREE.MeshStandardMaterial({ color: routeColors[idx], emissive: routeColors[idx], emissiveIntensity: 0.3 });
+    const mesh = new THREE.Mesh(geometry, material);
+    group.add(mesh);
+  });
+
+  return group;
+}
+
+function buildScene() {
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x1a3a52);
+  scene.fog = new THREE.Fog(0x1a3a52, 20, 40);
+
+  // Lighting
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+  scene.add(ambientLight);
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  directionalLight.position.set(5, 5, 10);
+  directionalLight.shadow.mapSize.width = 2048;
+  directionalLight.shadow.mapSize.height = 2048;
+  directionalLight.castShadow = true;
+  scene.add(directionalLight);
+
+  // Terrain
+  geometry = makeTerrainPlane(4, 4, 140, 2.2);
+  material = new THREE.MeshStandardMaterial({
+    vertexColors: true,
+    roughness: 0.7,
+    metalness: 0.1,
+    side: THREE.DoubleSide
+  });
+  const terrainMesh = new THREE.Mesh(geometry, material);
+  terrainMesh.castShadow = true;
+  terrainMesh.receiveShadow = true;
+  terrainMesh.rotation.x = -Math.PI / 2.2;
+  scene.add(terrainMesh);
+  elevBandsGroup = terrainMesh;
+
+  // Crater depression (cone top marker)
+  const craterGeom = new THREE.ConeGeometry(0.3, 0.15, 16);
+  const craterMat = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.8 });
+  const craterMesh = new THREE.Mesh(craterGeom, craterMat);
+  craterMesh.position.set(0, 2.15, 0);
+  craterMesh.castShadow = true;
+  craterMesh.receiveShadow = true;
+  scene.add(craterMesh);
+
+  // Climbing routes (initially hidden)
+  routesGroup = buildClimbingRoutes();
+  routesGroup.visible = toggleRoutes.checked;
+  scene.add(routesGroup);
+
+  // Camera
+  camera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
+  camera.position.set(3, 2.5, 3.5);
+  camera.lookAt(0, 0.5, 0);
+
+  // Renderer
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+
+  statusDiv.textContent = 'Ready';
+  statusDiv.style.color = '#0a0';
+}
+
+function handleResize() {
+  const width = t3dCanvasHost.clientWidth;
+  const height = t3dCanvasHost.clientHeight;
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+  renderer.setSize(width, height);
+}
+
+let animationId;
+function animate() {
+  animationId = requestAnimationFrame(animate);
+  if (elevBandsGroup) elevBandsGroup.rotation.z += 0.001;
+  if (routesGroup) routesGroup.rotation.z += 0.001;
+  renderer.render(scene, camera);
+}
+
+buildScene();
+animate();
+handleResize();
+
+// Event listeners
+window.addEventListener('resize', handleResize);
+const resizeObserver = new ResizeObserver(handleResize);
+resizeObserver.observe(t3dCanvasHost);
+
+toggleElevBands.addEventListener('change', (e) => {
+  if (elevBandsGroup) elevBandsGroup.visible = e.target.checked;
+  const state = JSON.parse(localStorage.getItem(storageKey) || '{}');
+  state.elevBands = e.target.checked;
+  localStorage.setItem(storageKey, JSON.stringify(state));
+});
+
+toggleRoutes.addEventListener('change', (e) => {
+  if (routesGroup) routesGroup.visible = e.target.checked;
+  const state = JSON.parse(localStorage.getItem(storageKey) || '{}');
+  state.routes = e.target.checked;
+  localStorage.setItem(storageKey, JSON.stringify(state));
+});
+
+fullscreenBtn.addEventListener('click', () => {
+  if (canvas.requestFullscreen) canvas.requestFullscreen();
+  else if (canvas.webkitRequestFullscreen) canvas.webkitRequestFullscreen();
+});
+
+// Cleanup
+window.addEventListener('beforeunload', () => {
+  cancelAnimationFrame(animationId);
+  renderer.dispose();
+  geometry.dispose();
+  material.dispose();
+});
+</script>
