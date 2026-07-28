@@ -12883,6 +12883,8 @@ export const ALIAS_ROUTES = {
   '/sahara-desert.html': '/places-3d/sahara-desert.html',
   '/stone-forest-shilin.html': '/places-3d/stone-forest-shilin.html',
   '/ha-long-bay.html': '/places-3d/ha-long-bay.html',
+  '/mount-fuji.html': '/places-3d/mount-fuji.html',
+
   '/milford-sound.html': '/places-3d/milford-sound.html',
   '/huacachina-oasis.html': '/places-3d/huacachina-oasis.html',
   '/son-doong-cave.html': '/places-3d/son-doong-cave.html',
@@ -14411,6 +14413,8 @@ export const JSP_BY_ROUTE = {
   '/places-3d/sahara-desert.html': 'place/sahara-desert.jsp',
   '/places-3d/stone-forest-shilin.html': 'place/stone-forest-shilin.jsp',
   '/places-3d/ha-long-bay.html': 'place/ha-long-bay.jsp',
+  '/places-3d/mount-fuji.html': 'place/mount-fuji.jsp',
+
   '/places-3d/milford-sound.html': 'place/milford-sound.jsp',
   '/places-3d/huacachina-oasis.html': 'place/huacachina-oasis.jsp',
   '/places-3d/son-doong-cave.html': 'place/son-doong-cave.jsp',
