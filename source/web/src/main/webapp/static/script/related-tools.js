@@ -751,6 +751,7 @@ try {
     { title: "Mount Fuji 3D Explorer", url: "https://freetoolonline.com/places-3d/mount-fuji.html", include: !1, tags: "places-3d" },
     { title: "Mount Kilimanjaro 3D Explorer", url: "https://freetoolonline.com/places-3d/mount-kilimanjaro.html", include: !1, tags: "places-3d" },
     { title: "Mammoth Cave 3D Explorer", url: "https://freetoolonline.com/places-3d/mammoth-cave.html", include: !1, tags: "places-3d" },
+    { title: "Sahara Desert 3D Explorer", url: "https://freetoolonline.com/places-3d/sahara-desert.html", include: !1, tags: "places-3d" },
     { title: "Black Forest 3D Explorer", url: "https://freetoolonline.com/places-3d/black-forest.html", include: !1, tags: "places-3d" },
     { title: "Great Barrier Reef 3D Explorer", url: "https://freetoolonline.com/places-3d/great-barrier-reef.html", include: !1, tags: "places-3d" },
     { title: "Caribbean Sea 3D Explorer", url: "https://freetoolonline.com/places-3d/caribbean-sea.html", include: !1, tags: "places-3d" },
