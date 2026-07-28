@@ -1,0 +1,253 @@
+<script>
+    // Gravitational Microlensing 3D Visualizer
+    // Shows how a foreground star's gravity magnifies light from a background star,
+    // and how exoplanets cause brightening spikes.
+    // Educational approximation - not a physical simulation.
+
+    web.localUpload = false;
+    var T3D_SLUG = 'gravitational-microlensing';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) {
+        var s = String(slug || '').toLowerCase();
+        if (/gravitational|microlens/.test(s)) return 'microlensing';
+        return 'solar';
+    }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { }
+    }
+
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+
+        function size() {
+            var w = Math.max(260, host.clientWidth);
+            var h = Math.round(w * 0.62);
+            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fsEl && fsEl.contains(host)) { h = Math.max(240, (window.innerHeight || h) - 150); }
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+
+        host.appendChild(renderer.domElement);
+        renderer.domElement.style.display = 'block';
+        size();
+        applyCamera();
+
+        var resizeListener = function() { size(); };
+        window.addEventListener('resize', resizeListener);
+
+        var pointerStart = null, pointerDown = false;
+        function pointerMove(e) {
+            if (!pointerDown || !pointerStart) return;
+            var dx = e.clientX - pointerStart.x;
+            var dy = e.clientY - pointerStart.y;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi -= dy * 0.005;
+            orbit.goalPhi = Math.max(0.1, Math.min(Math.PI - 0.1, orbit.goalPhi));
+            pointerStart = { x: e.clientX, y: e.clientY };
+        }
+
+        renderer.domElement.addEventListener('pointerdown', function(e) {
+            pointerStart = { x: e.clientX, y: e.clientY };
+            pointerDown = true;
+        });
+        renderer.domElement.addEventListener('pointermove', pointerMove);
+        renderer.domElement.addEventListener('pointerup', function() { pointerDown = false; });
+        renderer.domElement.addEventListener('wheel', function(e) {
+            e.preventDefault();
+            var factor = 1 + (e.deltaY > 0 ? 0.1 : -0.1);
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * factor));
+        }, { passive: false });
+
+        return {
+            THREE: THREE, scene: scene, camera: camera, renderer: renderer,
+            orbit: orbit, low: low, applyCamera: applyCamera,
+            ndc: function(v) { var c = new THREE.Vector3(); c.copy(v); c.project(camera); return c; },
+            onClick: null
+        };
+    }
+
+    // Microlensing scene: foreground star (massive) bends light from background
+    function t3dMicrolensing(shell) {
+        var THREE = shell.THREE;
+        var scene = shell.scene;
+        var time = { elapsed: 0 };
+
+        // Foreground massive star (yellow)
+        var fgStarGeom = new THREE.SphereGeometry(2, 24, 16);
+        var fgStarMat = new THREE.MeshBasicMaterial({ color: 0xffdd44 });
+        var fgStar = new THREE.Mesh(fgStarGeom, fgStarMat);
+        fgStar.position.z = 0;
+        scene.add(fgStar);
+
+        // Background star (white, far away)
+        var bgStarGeom = new THREE.SphereGeometry(1, 16, 12);
+        var bgStarMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        var bgStar = new THREE.Mesh(bgStarGeom, bgStarMat);
+        bgStar.position.z = 30;
+        scene.add(bgStar);
+
+        // Exoplanet orbiting the foreground star
+        var exoPlanetGeom = new THREE.SphereGeometry(0.4, 12, 8);
+        var exoPlanetMat = new THREE.MeshBasicMaterial({ color: 0x6688ff });
+        var exoPlanet = new THREE.Mesh(exoPlanetGeom, exoPlanetMat);
+        scene.add(exoPlanet);
+
+        // Light rays showing bending (particles)
+        var rayCount = low ? 60 : 120;
+        var rays = [];
+        for (var i = 0; i < rayCount; i++) {
+            var angle = (i / rayCount) * Math.PI * 2;
+            var ray = new THREE.Vector3(Math.cos(angle) * 8, Math.sin(angle) * 8, 25);
+            rays.push(ray);
+        }
+
+        var rayGeom = new THREE.BufferGeometry();
+        var rayPos = [];
+        rays.forEach(function(r) { rayPos.push(r.x, r.y, r.z); });
+        rayGeom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(rayPos), 3));
+        var rayMat = new THREE.PointsMaterial({ color: 0xaaccff, size: 0.15 });
+        var rayPoints = new THREE.Points(rayGeom, rayMat);
+        scene.add(rayPoints);
+
+        shell.applyCamera();
+
+        return function animate(dt) {
+            time.elapsed += dt;
+
+            // Exoplanet orbits
+            var orbitRadius = 4;
+            var orbitSpeed = 0.0005;
+            exoPlanet.position.x = Math.cos(time.elapsed * orbitSpeed) * orbitRadius;
+            exoPlanet.position.y = Math.sin(time.elapsed * orbitSpeed * 0.7) * orbitRadius * 0.6;
+            exoPlanet.position.z = 0;
+
+            // Foreground star glows
+            fgStar.material.color.setHSL(0.08, 1, 0.5 + Math.sin(time.elapsed * 0.0008) * 0.1);
+
+            // Light rays bend toward foreground star
+            var rayPos = rayGeom.attributes.position.array;
+            rays.forEach(function(r, i) {
+                var clone = new THREE.Vector3(r.x, r.y, r.z + time.elapsed * 0.015);
+                var toFgStar = new THREE.Vector3().subVectors(fgStar.position, clone);
+                var dist = toFgStar.length();
+                if (dist > 0.5) {
+                    toFgStar.normalize().multiplyScalar(0.02 / (dist * dist));
+                    clone.add(toFgStar);
+                }
+                rayPos[i * 3] = clone.x;
+                rayPos[i * 3 + 1] = clone.y;
+                rayPos[i * 3 + 2] = clone.z;
+            });
+            rayGeom.attributes.position.needsUpdate = true;
+
+            shell.applyCamera();
+            shell.renderer.render(scene, shell.camera);
+        };
+    }
+
+    function boot() {
+        try {
+            ftoLoadThree().then(function(THREE) {
+                var host = document.getElementById('t3dCanvasHost');
+                if (!host) { t3dStatus('Scene container not found'); return; }
+
+                var presets = {
+                    microlensing: { radius: 45, minR: 15, maxR: 120, phi: 0.9, theta: 0.8, fov: 50 }
+                };
+
+                var kind = t3dDetectScene(T3D_SLUG);
+                var preset = presets[kind] || presets.microlensing;
+
+                var shell = t3dShell(THREE, host, preset);
+                var animate = t3dMicrolensing(shell);
+
+                t3dStatus('');
+
+                var lastFrame = Date.now();
+                function loop() {
+                    var now = Date.now();
+                    var dt = Math.min(100, Math.max(0, now - lastFrame));
+                    lastFrame = now;
+                    animate(dt);
+                    requestAnimationFrame(loop);
+                }
+                requestAnimationFrame(loop);
+
+                document.getElementById('t3dFullscreenBtn').addEventListener('click', function() {
+                    t3dFullscreen(document.getElementById('t3dWrapper'));
+                });
+
+                t3dSaveStore({ lastView: kind });
+            }).catch(function(err) {
+                t3dStatus('Error loading 3D engine: ' + (err && err.message || 'unknown'));
+                console.error(err);
+            });
+        } catch (e) {
+            t3dStatus('Scene error: ' + e.message);
+            console.error(e);
+        }
+    }
+
+    function doAfterPageRendered() { requestIdleCallback(boot, { timeout: 2500 }); }
+</script>
