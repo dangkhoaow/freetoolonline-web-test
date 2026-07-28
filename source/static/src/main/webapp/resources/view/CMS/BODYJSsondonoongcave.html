@@ -1,0 +1,262 @@
+<script>
+    // 3D scene - Son Doong Cave (sondonoong)
+    // World's largest cave by volume (~14.4M m³), Phong Nha-Ke Bang, Vietnam
+    // Cross-section elevation view through a main chamber
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (survey + tourist data, cross-checked 2026-07-29):
+    //   - Length about 5.5 km (Doline Hall main chamber ~240m long x 150m wide x 200m high)
+    //   - Underground river: Rao Thuong River flowing through cave floor
+    //   - Temperature constant ~20-25°C year-round
+    //   - Hanging jungle canopy ecosystem inside
+    //   - Discovered 1991, first international expedition 2009
+    //   - Located Phong Nha-Ke Bang National Park, Quang Binh, Vietnam
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'son-doong-cave';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placessondonoongcave'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) return window.__ftoThreePromise;
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function(mod) {
+            if (!mod || !mod.WebGLRenderer) throw new Error('three.js load failed');
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
+        else if (el.msRequestFullscreen) el.msRequestFullscreen();
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 50, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.5, phi: opts.phi || 1.1,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.5, goalPhi: opts.phi || 1.1,
+            minR: opts.minR || 6, maxR: opts.maxR || 250,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') new ResizeObserver(resize).observe(host);
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function(e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch(err) {}
+        });
+        host.addEventListener('pointerup', function() { dragging = false; });
+        host.addEventListener('pointercancel', function() { dragging = false; });
+        host.addEventListener('pointermove', function(e) {
+            if (!dragging) return;
+            orbit.goalTheta -= (e.clientX - lastX) * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + (e.clientY - lastY) * 0.005));
+            lastX = e.clientX; lastY = e.clientY;
+        });
+        host.addEventListener('wheel', function(e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0a0a10, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+        var key = new THREE.DirectionalLight(0xffd0a0, 0.8);
+        key.position.set(-15, 12, 8);
+        scene.add(key);
+
+        // Cave chamber cross-section: U-shaped valley floor with high walls, stalactite field
+        // Floor y = -8, walls reach y = 8, sunlight shafts above
+        function makeCaveFloor() {
+            var geo = new THREE.PlaneGeometry(18, 24, 80, 120);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position;
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                // U-shaped floor: low in center, rises toward walls
+                var distFromCenter = Math.abs(x);
+                var h = -8 + 0.2 * (distFromCenter * distFromCenter);
+                // Small ripples for interest
+                h += 0.15 * Math.sin(x * 0.8 + z * 0.3);
+                pos.setY(i, h);
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(pos.count * 3).fill(0), 3));
+            // Set browns/grays for the cave floor
+            var colors = new Float32Array(pos.count * 3);
+            for (var i = 0; i < pos.count; i++) {
+                var h = geo.attributes.position.getY(i);
+                var r = 0.25 + 0.1 * (h + 8) / 16, g = 0.2 + 0.08 * (h + 8) / 16, b = 0.18 + 0.1 * (h + 8) / 16;
+                colors[i * 3] = Math.max(0.1, r); colors[i * 3 + 1] = Math.max(0.08, g); colors[i * 3 + 2] = Math.max(0.06, b);
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0.05 }));
+        }
+
+        var floor = makeCaveFloor();
+        scene.add(floor);
+
+        // Stalactites: procedurally placed cones hanging from ceiling (y=8)
+        function addStalactites() {
+            var group = new THREE.Group();
+            for (var i = 0; i < 12; i++) {
+                var x = (Math.random() - 0.5) * 16, z = (Math.random() - 0.5) * 20;
+                var height = 1 + Math.random() * 2.5;
+                var cone = new THREE.Mesh(
+                    new THREE.ConeGeometry(0.15 + Math.random() * 0.1, height, 6),
+                    new THREE.MeshStandardMaterial({ color: 0x4a4035, roughness: 0.88 })
+                );
+                cone.position.set(x, 8 - height * 0.5, z);
+                group.add(cone);
+            }
+            return group;
+        }
+        scene.add(addStalactites());
+
+        // Cave walls as semi-transparent dark planes (sides)
+        var wallMat = new THREE.MeshStandardMaterial({ color: 0x1a1410, roughness: 0.95, metalness: 0 });
+        var westWall = new THREE.Mesh(new THREE.PlaneGeometry(24, 16, 20, 20), wallMat);
+        westWall.position.set(-9, 0, 0);
+        westWall.rotateY(Math.PI / 2);
+        scene.add(westWall);
+        var eastWall = new THREE.Mesh(new THREE.PlaneGeometry(24, 16, 20, 20), wallMat);
+        eastWall.position.set(9, 0, 0);
+        eastWall.rotateY(Math.PI / 2);
+        scene.add(eastWall);
+
+        // Underground river indicator: thin blue ribbon through the floor
+        var riverMesh = new THREE.Mesh(
+            new THREE.PlaneGeometry(0.8, 20, 10, 40),
+            new THREE.MeshStandardMaterial({ color: 0x2a4a7a, roughness: 0.5, emissive: 0x1a3a5a })
+        );
+        riverMesh.position.set(0, -7.95, 0);
+        riverMesh.rotateX(-Math.PI / 2);
+        scene.add(riverMesh);
+        riverMesh.userData.isRiver = true;
+
+        // Sunlight shaft: plane coming through roof hole
+        var sunlight = new THREE.Mesh(
+            new THREE.PlaneGeometry(3, 12),
+            new THREE.MeshStandardMaterial({
+                emissive: 0xf0d080,
+                emissiveIntensity: 0.6,
+                transparent: true,
+                opacity: 0.3,
+                side: THREE.DoubleSide
+            })
+        );
+        sunlight.position.set(2, 4, 5);
+        sunlight.rotateY(0.3);
+        scene.add(sunlight);
+        sunlight.userData.isSunlight = true;
+
+        return function renderFrame() {
+            shell.applyCamera();
+            shell.renderer.render(scene, shell.camera);
+
+            // Toggle visibility per store
+            var store = t3dLoadStore();
+            riverMesh.visible = (store.riverVisible !== false);
+            sunlight.visible = (store.sunlightVisible !== false);
+        };
+    }
+
+    function startScene() {
+        ftoLoadThree().then(function(THREE) {
+            var host = document.getElementById('t3dCanvasHost');
+            if (!host) { t3dStatus('Canvas host missing'); return; }
+
+            var store = t3dLoadStore();
+            var shell = t3dShell(THREE, host, {
+                radius: 26,
+                theta: 0.5,
+                phi: 1.1,
+                targetY: 0,
+                fov: 50
+            });
+
+            t3dInfo('<h4>Son Doong Cave</h4><p><strong>World\'s largest cave by volume.</strong> About 5.5 km long, Doline Hall (main chamber) reaches 200 m high and 150 m wide. Average temperature constant ~22-24°C.</p><p>Rao Thuong River flows through the cave floor. A unique hanging jungle canopy grows inside, sustained by sunlight through roof collapses.</p>');
+
+            var render = t3dScene(shell);
+            function frame() {
+                render();
+                requestAnimationFrame(frame);
+            }
+            frame();
+
+            // Buttons
+            document.getElementById('t3dFullscreenBtn').onclick = function() { t3dFullscreen(host.parentElement.parentElement.parentElement); };
+            document.getElementById('t3dSondonoongcaveSunlightBtn').onclick = function(e) {
+                store.sunlightVisible = !(store.sunlightVisible !== false);
+                e.target.textContent = 'Sunlight shafts: ' + (store.sunlightVisible ? 'On' : 'Off');
+                t3dSaveStore(store);
+            };
+            document.getElementById('t3dSondonoongcaveWaterBtn').onclick = function(e) {
+                store.riverVisible = !(store.riverVisible !== false);
+                e.target.textContent = 'River water level: ' + (store.riverVisible ? 'On' : 'Off');
+                t3dSaveStore(store);
+            };
+            document.getElementById('t3dSondonoongcaveControls').style.display = 'inline';
+        }).catch(function(err) {
+            t3dStatus('Scene error: ' + (err && err.message || err));
+        });
+    }
+
+    // Bootstrap when page is ready
+    if (typeof doAfterPageRendered === 'function') {
+        doAfterPageRendered(startScene);
+    } else {
+        window.addEventListener('load', startScene);
+    }
+</script>
