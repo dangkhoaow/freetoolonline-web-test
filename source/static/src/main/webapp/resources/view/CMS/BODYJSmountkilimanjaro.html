@@ -1,327 +1,209 @@
-<script>
-    // 3D scene archetype skeleton (mount-kilimanjaro) - vendored three.js
-    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
-    // LEAN from the shared t3d* skeleton - ONE scene only (mount-kilimanjaro).
-    // All geometry is procedural. places-3d-discovery-loop, 2026-07-28.
-    //
-    // EDUCATIONAL APPROXIMATION, not survey terrain.
-    // Published figures (encyclopedic consensus, cross-checked 2026-07-28):
-    //   - Uhuru Peak (Kibo cone) about 5,895 m - highest point in Africa and
-    //     the highest free-standing mountain (not part of a range) on Earth
-    //   - Three volcanic cones: Kibo (about 5,895 m, dormant, youngest),
-    //     Mawenzi (about 5,149 m, jagged and heavily eroded), Shira (about
-    //     3,962 m, oldest, collapsed into a broad plateau)
-    //   - Tanzania, near the Kenya border, about 330 km south of the equator
-    //   - Ice fields have shrunk by about 85% since the first detailed 1912
-    //     survey; commonly cited studies project further loss in the coming
-    //     decades
-    //   - UNESCO World Heritage natural site since 1987 (Kilimanjaro
-    //     National Park)
-    //
-    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+<script type="module">
+import * as THREE from "/vendor/three/build/three.module.js";
 
-    web.localUpload = false;
+const scene = new THREE.Scene();
+const canvas = document.getElementById("t3dCanvasHost");
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 10000);
+const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
+renderer.setClearColor(0x87ceeb);
 
-    var T3D_SLUG = 'mount-kilimanjaro';
-    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+const PEAK_HEIGHT = 5.895;
+const BASE_RADIUS = 30;
+const SNOWLINE = 4.0;
+const SEA_LEVEL = 0;
 
-    function t3dDetectScene(slug) { return 'placesmountkilimanjaro'; }
+let snowCapOn = true;
+let bandsOn = true;
 
-    function ftoLoadThree() {
-        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
-        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
-        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
-            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
-            return mod;
-        });
-        return window.__ftoThreePromise;
+// Fbm helper functions
+function hash2(x, y) { return fract(sin(dot(vec2(x, y), vec2(12.9898, 78.233))) * 43758.5453); }
+function vnoise(p) {
+  const i = floor(p);
+  const f = fract(p);
+  const u = f * f * (3.0 - 2.0 * f);
+  const v = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+  const a = Math.random() % 1;
+  const b = Math.random() % 1;
+  const c = Math.random() % 1;
+  const d = Math.random() % 1;
+  return a * (1.0 - u) + b * u + (c * (1.0 - u) + d * u) * v;
+}
+function fbm(p, oct) {
+  let v = 0, a = 0.5;
+  for (let i = 0; i < oct; i++) {
+    v += a * Math.sin(p[0] * 0.5 + p[1] * 0.3);
+    p = [p[0] * 2, p[1] * 2];
+    a *= 0.5;
+  }
+  return v;
+}
+function fract(x) { return x - Math.floor(x); }
+function dot(a, b) { return a[0] * b[0] + a[1] * b[1]; }
+function sin(x) { return Math.sin(x); }
+function floor(x) { return Math.floor(x); }
+function vec2(x, y) { return [x, y]; }
+
+// Terrain builder
+function makeTerrain() {
+  const segs = 140;
+  const geom = new THREE.PlaneGeometry(BASE_RADIUS * 2, BASE_RADIUS * 2, segs, segs);
+  geom.rotateX(-Math.PI / 2);
+
+  const pos = geom.getAttribute("position");
+  const colors = [];
+  
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i);
+    const y = pos.getY(i);
+    const z = pos.getZ(i);
+    
+    const dist = Math.sqrt(x * x + z * z);
+    if (dist > BASE_RADIUS) {
+      pos.setY(i, -0.3); // Ocean floor
+      colors.push(0.1, 0.3, 0.5); // Dark blue
+      continue;
     }
-
-    function t3dStatus(text) {
-        var el = document.getElementById('t3dStatus');
-        if (el) el.textContent = text;
+    
+    // Cone slope: steeper south, gentler north asymmetry
+    const angle = Math.atan2(z, x);
+    const asymmetry = 1 + 0.3 * Math.sin(angle);
+    const slopeFactor = 1 - (dist / BASE_RADIUS) * asymmetry;
+    
+    const fbmVal = fbm([x * 0.2, z * 0.2], 4) * 0.2;
+    const height = PEAK_HEIGHT * slopeFactor + fbmVal;
+    pos.setY(i, height);
+    
+    // Color by altitude + bands toggle
+    let r, g, b;
+    if (bandsOn) {
+      if (height < 1.5) { r = 0.65; g = 0.45; b = 0.2; } // Brown
+      else if (height < 3.5) { r = 0.2; g = 0.55; b = 0.2; } // Green
+      else if (height < SNOWLINE) { r = 0.5; g = 0.5; b = 0.5; } // Grey
+      else { r = 0.95; g = 0.95; b = 0.95; } // White
+    } else {
+      const t = Math.max(0, Math.min(1, height / PEAK_HEIGHT));
+      if (!snowCapOn && height > SNOWLINE) {
+        r = 0.6; g = 0.6; b = 0.6;
+      } else if (height > SNOWLINE) {
+        r = 0.9 + t * 0.05; g = 0.9 + t * 0.05; b = 0.95 + t * 0.05;
+      } else {
+        r = 0.4 + t * 0.3; g = 0.3 + t * 0.2; b = 0.2;
+      }
     }
-    function t3dInfo(html) {
-        var el = document.getElementById('t3dInfoPanel');
-        if (el) el.innerHTML = html;
+    colors.push(r, g, b);
+  }
+  
+  geom.setAttribute("color", new THREE.BufferAttribute(new Float32Array(colors), 3));
+  geom.computeVertexNormals();
+  
+  const mat = new THREE.MeshPhongMaterial({ 
+    vertexColors: true,
+    flatShading: false,
+    side: THREE.DoubleSide
+  });
+  return new THREE.Mesh(geom, mat);
+}
+
+// Scene setup
+const terrain = makeTerrain();
+scene.add(terrain);
+
+const light1 = new THREE.DirectionalLight(0xffffff, 1);
+light1.position.set(5, 5, 5);
+scene.add(light1);
+
+const light2 = new THREE.AmbientLight(0x888888);
+scene.add(light2);
+
+// Camera
+camera.position.set(40, 20, 40);
+camera.lookAt(0, 2, 0);
+
+// Handle resizes
+function updateSize() {
+  const rect = canvas.getBoundingClientRect();
+  const w = rect.width;
+  const h = Math.max(220, rect.height);
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+
+// Toggle handlers
+document.getElementById("t3dKmjSnowBtn").addEventListener("click", function() {
+  snowCapOn = !snowCapOn;
+  this.textContent = snowCapOn ? "Snow cap: On" : "Snow cap: Off";
+  const pos = terrain.geometry.getAttribute("position");
+  terrain.geometry.dispose();
+  terrain.geometry = makeTerrain().geometry;
+  renderer.render(scene, camera);
+});
+
+document.getElementById("t3dKmjBandsBtn").addEventListener("click", function() {
+  bandsOn = !bandsOn;
+  this.textContent = bandsOn ? "Altitude bands: On" : "Altitude bands: Off";
+  terrain.geometry.dispose();
+  terrain.geometry = makeTerrain().geometry;
+  renderer.render(scene, camera);
+});
+
+document.getElementById("t3dFullscreenBtn").addEventListener("click", () => {
+  canvas.requestFullscreen?.();
+});
+
+// Info panel
+const infoPanel = document.getElementById("t3dInfoPanel");
+infoPanel.innerHTML = `
+<h3>Mount Kilimanjaro</h3>
+<table style="width:100%; font-size:13px;">
+<tr><td><b>Height</b></td><td>5,895 m</td></tr>
+<tr><td><b>Summit</b></td><td>Uhuru Peak</td></tr>
+<tr><td><b>Status</b></td><td>Dormant volcano</td></tr>
+<tr><td><b>Snow cap</b></td><td>Permanent (85% less than 1912)</td></tr>
+<tr><td><b>Last erupted</b></td><td>~360 years ago</td></tr>
+<tr><td><b>Annual climbers</b></td><td>~50,000</td></tr>
+</table>
+`;
+
+const statusDiv = document.getElementById("t3dStatus");
+statusDiv.textContent = "3D terrain loaded - drag to orbit, scroll to zoom";
+
+// Animation loop
+let controls = null;
+function animate() {
+  requestAnimationFrame(animate);
+  
+  // Simple orbit: hold right-click drag to rotate (or touch swipe)
+  let isDragging = false;
+  let previousMousePosition = { x: 0, y: 0 };
+  
+  canvas.addEventListener("mousedown", (e) => {
+    if (e.button === 2 || e.buttons === 2) isDragging = true;
+    previousMousePosition = { x: e.clientX, y: e.clientY };
+  });
+  
+  canvas.addEventListener("mousemove", (e) => {
+    if (isDragging) {
+      const deltaX = e.clientX - previousMousePosition.x;
+      const deltaY = e.clientY - previousMousePosition.y;
+      camera.position.applyAxisAngle(new THREE.Vector3(0, 1, 0), -deltaX * 0.01);
+      camera.position.applyAxisAngle(camera.getWorldDirection(new THREE.Vector3()).normalize(), -deltaY * 0.01);
+      camera.lookAt(0, 2, 0);
     }
-    function t3dLoadStore() {
-        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
-        catch (e) { return {}; }
-    }
-    function t3dSaveStore(obj) {
-        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
-        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
-    }
-    function t3dFullscreen(el) {
-        if (el.requestFullscreen) { el.requestFullscreen(); }
-        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
-        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
-        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
-    }
+    previousMousePosition = { x: e.clientX, y: e.clientY };
+  });
+  
+  canvas.addEventListener("mouseup", () => { isDragging = false; });
+  canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+  canvas.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    const zoom = 1 - e.deltaY * 0.001;
+    camera.position.multiplyScalar(zoom);
+  });
 
-    function t3dShell(THREE, host, opts) {
-        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
-        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
-        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-        var scene = new THREE.Scene();
-        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
-        var orbit = {
-            target: new THREE.Vector3(0, opts.targetY || 0, 0),
-            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
-            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
-            minR: opts.minR || 4, maxR: opts.maxR || 400,
-        };
-        function applyCamera() {
-            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
-            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
-            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
-            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
-            camera.position.set(
-                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
-                orbit.target.y + orbit.radius * cp,
-                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
-            );
-            camera.lookAt(orbit.target);
-        }
-        host.innerHTML = '';
-        host.appendChild(renderer.domElement);
-        function resize() {
-            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
-            renderer.setSize(w, h, false);
-            camera.aspect = w / h;
-            camera.updateProjectionMatrix();
-        }
-        resize();
-        window.addEventListener('resize', resize);
-        // Render-quality contract (2026-07-22): window.resize alone misses late
-        // CSS/ad-rail layout shifts - observe the host itself.
-        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
-        var dragging = false, lastX = 0, lastY = 0;
-        host.addEventListener('pointerdown', function (e) {
-            dragging = true; lastX = e.clientX; lastY = e.clientY;
-            try { host.setPointerCapture(e.pointerId); } catch (err) {}
-        });
-        host.addEventListener('pointerup', function () { dragging = false; });
-        host.addEventListener('pointercancel', function () { dragging = false; });
-        host.addEventListener('pointermove', function (e) {
-            if (!dragging) return;
-            var dx = e.clientX - lastX, dy = e.clientY - lastY;
-            lastX = e.clientX; lastY = e.clientY;
-            orbit.goalTheta -= dx * 0.005;
-            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
-        });
-        host.addEventListener('wheel', function (e) {
-            e.preventDefault();
-            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
-        }, { passive: false });
-        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
-    }
+  updateSize();
+  renderer.render(scene, camera);
+}
 
-    function t3dScene(shell) {
-        var THREE = shell.THREE, scene = shell.scene;
-        shell.renderer.setClearColor(0x0b1526, 1);
-        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
-        var key = new THREE.DirectionalLight(0xfff6e0, 1.05);
-        key.position.set(14, 20, 10);
-        scene.add(key);
-
-        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
-        function vnoise(x, z) {
-            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
-            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
-            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
-            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
-        }
-        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
-        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
-            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
-            geo.rotateX(-Math.PI / 2);
-            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
-            for (var i = 0; i < pos.count; i++) {
-                var x = pos.getX(i), z = pos.getZ(i);
-                var h = heightFn(x, z);
-                pos.setY(i, h);
-                colorFn(col, h, x, z);
-                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
-            }
-            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-            geo.computeVertexNormals();
-            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 }));
-        }
-
-        // Three volcanic cones on one freestanding massif rising from a flat
-        // savanna plain, the reader's mental image of Kilimanjaro's skyline:
-        // Shira (broad, low, flat-topped plateau - the oldest, collapsed
-        // cone), Mawenzi (jagged, heavily eroded second peak), and Kibo (the
-        // tallest, smooth-sided with a shallow summit crater). 1 unit ~ 620 m
-        // vertical, x/z ~ km/1.1. Kibo summit ~5,895 m -> scaled to 9.5 units.
-        function smoothv(v, a, b) { var t = Math.max(0, Math.min(1, (v - a) / (b - a))); return t * t * (3 - 2 * t); }
-        var KIBO = { x: 3.2, z: 0.5, h: 9.5, r: 7.2, power: 1.3 };
-        var MAWENZI = { x: -3.4, z: -1.4, h: 8.3, r: 3.3, power: 1.15 };
-        var SHIRA = { x: -6.4, z: 3.0, h: 6.4, r: 5.2, power: 1.1 };
-        function coneAt(x, z, c) {
-            var d = Math.hypot(x - c.x, z - c.z);
-            var t = Math.max(0, 1 - d / c.r);
-            return c.h * Math.pow(t, c.power);
-        }
-        var KIBO_CRATER_R = 1.0, KIBO_CRATER_DEPTH = 0.5;
-        var SHIRA_PLATEAU_LEVEL = 5.0;
-        function height(x, z) {
-            var plain = 0.15 + (fbm(x * 0.2 + 2, z * 0.2 + 3, 3) - 0.5) * 0.12;
-            var dKibo = Math.hypot(x - KIBO.x, z - KIBO.z);
-            var hKibo = coneAt(x, z, KIBO);
-            if (dKibo < KIBO_CRATER_R) { hKibo -= KIBO_CRATER_DEPTH * (1 - smoothv(dKibo, 0, KIBO_CRATER_R)); }
-            var ridge = fbm(x * 0.7 + 11, z * 0.7 + 5, 4);
-            var dMaw = Math.hypot(x - MAWENZI.x, z - MAWENZI.z);
-            var hMaw = coneAt(x, z, MAWENZI) + (ridge - 0.5) * 1.1 * smoothv(dMaw, 0.3, MAWENZI.r);
-            var hShiraRaw = coneAt(x, z, SHIRA);
-            var hShira = hShiraRaw > SHIRA_PLATEAU_LEVEL
-                ? SHIRA_PLATEAU_LEVEL + (fbm(x * 0.5 + 20, z * 0.5 + 7, 3) - 0.5) * 0.3
-                : hShiraRaw;
-            var h = Math.max(plain, hKibo, hMaw, hShira);
-            if (h < 0.2) h = plain;
-            return h;
-        }
-
-        var cSavanna = new THREE.Color(0xb8a05a), cRainforest = new THREE.Color(0x2f5a3a),
-            cMoorland = new THREE.Color(0x8a8f4a), cAlpineDesert = new THREE.Color(0x8d7d68),
-            cRock = new THREE.Color(0x6f665e), cIce = new THREE.Color(0xf4f8fb);
-        function baseColor(c, h, x, z) {
-            var n = 0.9 + 0.2 * fbm(x * 1.1 + 4, z * 1.1 + 6, 3);
-            c.copy(cRock).lerp(cAlpineDesert, 0.4).multiplyScalar(n);
-        }
-        function colorZoned(c, h, x, z) {
-            var n = 0.9 + 0.2 * fbm(x * 1.1 + 4, z * 1.1 + 6, 3);
-            if (h < 1.0) c.copy(cSavanna);
-            else if (h < 3.0) c.copy(cSavanna).lerp(cRainforest, smoothv(h, 1.0, 1.6));
-            else if (h < 4.6) c.copy(cRainforest).lerp(cMoorland, smoothv(h, 3.0, 3.6));
-            else if (h < 6.4) c.copy(cMoorland).lerp(cAlpineDesert, smoothv(h, 4.6, 5.2));
-            else c.copy(cAlpineDesert).lerp(cRock, smoothv(h, 6.4, 7.4));
-            c.multiplyScalar(n);
-        }
-
-        var terrain = makeTerrain(24, 24, shell.low ? 130 : 190, shell.low ? 130 : 190, height, colorZoned);
-        scene.add(terrain);
-        var zonedColors = terrain.geometry.attributes.color.array.slice();
-        (function () {
-            var pos = terrain.geometry.attributes.position, col = new THREE.Color();
-            var arr = new Float32Array(pos.count * 3);
-            for (var i = 0; i < pos.count; i++) {
-                baseColor(col, pos.getY(i), pos.getX(i), pos.getZ(i));
-                arr[i * 3] = col.r; arr[i * 3 + 1] = col.g; arr[i * 3 + 2] = col.b;
-            }
-            baseColors = arr;
-        })();
-        var baseColors;
-
-        // Ice cap on Kibo's summit - historical (1912 survey) extent was a
-        // broad continuous cap; today only small residual patches remain
-        // (about 85% loss, commonly cited studies). Two groups of small ice
-        // discs at different radii/counts around the Kibo crater rim - swap
-        // visibility, never rebuild geometry.
-        var iceMat = new THREE.MeshStandardMaterial({ color: 0xf4f8fb, roughness: 0.25, metalness: 0.05 });
-        function buildIcePatches(count, radiusSpread, sizeScale) {
-            var g = new THREE.Group();
-            for (var i = 0; i < count; i++) {
-                var a = (i / count) * Math.PI * 2 + 0.3;
-                var r = radiusSpread * (0.3 + 0.7 * ((i % 3) / 3));
-                var px = KIBO.x + Math.cos(a) * r, pz = KIBO.z + Math.sin(a) * r;
-                var disc = new THREE.Mesh(new THREE.CircleGeometry(0.5 * sizeScale, 14), iceMat);
-                disc.rotation.x = -Math.PI / 2;
-                disc.position.set(px, height(px, pz) + 0.04, pz);
-                g.add(disc);
-            }
-            return g;
-        }
-        var iceHistoricalGroup = buildIcePatches(10, 1.4, 1.35);
-        var iceCurrentGroup = buildIcePatches(4, 0.7, 0.55);
-        scene.add(iceHistoricalGroup);
-        scene.add(iceCurrentGroup);
-
-        var glacierHistoric = false, zonesOn = true;
-
-        function panelHtml() {
-            return '<h3>Mount Kilimanjaro: Africa\'s three-coned giant</h3>' +
-                '<p>A relief of the freestanding massif: broad Shira plateau, jagged Mawenzi, and the tall Kibo cone with its shallow summit crater and shrinking ice cap.</p>' +
-                '<table class="w3-table w3-bordered">' +
-                '<tr><td>Summit elevation</td><td>about 5,895 m (Uhuru Peak, Kibo cone) - highest point in Africa</td></tr>' +
-                '<tr><td>Structure</td><td>Highest free-standing mountain in the world - not part of a range</td></tr>' +
-                '<tr><td>Three cones</td><td>Kibo (about 5,895 m, dormant), Mawenzi (about 5,149 m, jagged), Shira (about 3,962 m, oldest, collapsed plateau)</td></tr>' +
-                '<tr><td>Location</td><td>Tanzania, near the Kenya border, about 330 km south of the equator</td></tr>' +
-                '<tr><td>Ice loss</td><td>Ice fields shrunk by about 85% since the 1912 survey (commonly cited studies)</td></tr>' +
-                '<tr><td>Heritage status</td><td>UNESCO World Heritage natural site since 1987</td></tr>' +
-                '</table>' +
-                '<p class="t3d-note">Educational relief approximation - the cone shapes, zone bands, and ice-patch counts are procedural teaching cues, not survey terrain.</p>';
-        }
-
-        function apply() {
-            terrain.geometry.attributes.color.array.set(zonesOn ? zonedColors : baseColors);
-            terrain.geometry.attributes.color.needsUpdate = true;
-            iceHistoricalGroup.visible = glacierHistoric;
-            iceCurrentGroup.visible = !glacierHistoric;
-            var gb = document.getElementById('t3dPkjGlacierBtn');
-            if (gb) gb.textContent = 'Glacier: ' + (glacierHistoric ? '1912 extent' : 'Present extent');
-            var zb = document.getElementById('t3dPkjZonesBtn');
-            if (zb) zb.textContent = 'Vegetation zones: ' + (zonesOn ? 'On' : 'Off');
-            t3dInfo(panelHtml());
-            try { t3dSaveStore({ glacierHistoric: glacierHistoric, zonesOn: zonesOn }); } catch (e) {}
-        }
-
-        var store = t3dLoadStore();
-        if (typeof store.glacierHistoric === 'boolean') glacierHistoric = store.glacierHistoric;
-        if (typeof store.zonesOn === 'boolean') zonesOn = store.zonesOn;
-        apply();
-
-        var glacierBtn = document.getElementById('t3dPkjGlacierBtn');
-        if (glacierBtn) glacierBtn.addEventListener('click', function () { glacierHistoric = !glacierHistoric; apply(); });
-        var zonesBtn = document.getElementById('t3dPkjZonesBtn');
-        if (zonesBtn) zonesBtn.addEventListener('click', function () { zonesOn = !zonesOn; apply(); });
-
-        t3dStatus('Drag to orbit, scroll to zoom. Toggle the glacier extent or the vegetation zone bands.');
-        return function animate(dt) {
-            scene.rotation.y += dt * 0.00005;
-        };
-    }
-
-    function doAfterPageRendered() {
-        var host = document.getElementById('t3dCanvasHost');
-        var root = document.getElementById('threeSceneTool');
-        if (!host || !root) return;
-        var wrapper = document.getElementById('t3dWrapper') || root;
-        var kind = t3dDetectScene(T3D_SLUG);
-        var rows = { placesmountkilimanjaro: 't3dPkjControls' };
-        for (var k in rows) {
-            var el = document.getElementById(rows[k]);
-            if (el) el.style.display = (k === kind) ? '' : 'none';
-        }
-        var fsBtn = document.getElementById('t3dFullscreenBtn');
-        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
-        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
-        function boot() {
-            ftoLoadThree().then(function (THREE) {
-                try {
-                    var presets = { placesmountkilimanjaro: { radius: 26, maxR: 65, minR: 8, phi: 1.05, theta: 0.75, targetY: 3.0 } };
-                    var shell = t3dShell(THREE, host, presets[kind]);
-                    var animate = t3dScene(shell);
-                    var last = performance.now();
-                    shell.renderer.setAnimationLoop(function () {
-                        var now = performance.now();
-                        var dt = Math.min(now - last, 100);
-                        last = now;
-                        animate(dt);
-                        shell.applyCamera();
-                        shell.renderer.render(shell.scene, shell.camera);
-                    });
-                } catch (err) {
-                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
-                }
-            }).catch(function (err) {
-                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
-            });
-        }
-        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
-        else { setTimeout(boot, 300); }
-    }
+animate();
 </script>
