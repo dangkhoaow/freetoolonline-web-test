@@ -1,0 +1,370 @@
+<script>
+    // 3D scene archetype skeleton (caribbean-sea) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (caribbean-sea).
+    // All geometry is procedural. places-3d cluster, authored 2026-07-28.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (encyclopedic consensus, cross-checked 2026-07-28):
+    //   - Surface area about 2,754,000 sq km
+    //   - Average depth about 2,200 m
+    //   - Maximum depth about 7,686 m at the Cayman Trough - the deepest point
+    //     in the Caribbean Sea
+    //   - Ringed by the Greater Antilles (Cuba, Hispaniola, Jamaica, Puerto
+    //     Rico) to the north and the curving Lesser Antilles arc to the east
+    //   - 700+ islands, islets, reefs, and cays
+    //   - Home to the Belize Barrier Reef, part of the Mesoamerican Reef, the
+    //     second-largest barrier reef system in the world (about 300 km)
+    //   - Sits in the Atlantic hurricane belt (season roughly June-November)
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'caribbean-sea';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placescaribbeansea'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x08131c, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+        var key = new THREE.DirectionalLight(0xfff2d0, 0.95);
+        key.position.set(-10, 16, -6);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return { mesh: new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0 })), geo: geo, pos: pos };
+        }
+
+        // Broad semi-enclosed basin, 1 unit = 100 m vertical (schematic scale,
+        // compressed for the trough - see caveat below). x = east-west, z =
+        // north-south (north at z<0). W=26 (east-west) x D=15 (north-south)
+        // approximates the sea's roughly 2,700 km x 900 km extent.
+        var BASIN_DEPTH = -4;    // typical basin floor away from the trough - a
+                                 // broad, mostly gentle basin (the real
+                                 // Caribbean is NOT one uniform deep bowl)
+        var TROUGH_DEPTH = -18;  // Cayman Trough notch, dramatically deeper
+                                 // than the rest of the floor by design
+        // Trough segment: a narrow east-west slot in the northwest-central
+        // basin, between the Cayman Islands and Jamaica.
+        var TR_AX = -9.5, TR_AZ = -3.2, TR_BX = -1.0, TR_BZ = -4.0;
+        function distToSegment(px, pz, ax, az, bx, bz) {
+            var dx = bx - ax, dz = bz - az;
+            var len2 = dx * dx + dz * dz;
+            var t = len2 > 0 ? Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / len2)) : 0;
+            var cx = ax + t * dx, cz = az + t * dz;
+            return Math.sqrt((px - cx) * (px - cx) + (pz - cz) * (pz - cz));
+        }
+        function troughFactor(x, z) {
+            var d = distToSegment(x, z, TR_AX, TR_AZ, TR_BX, TR_BZ);
+            return smooth(1.6, 0.0, d); // 1 at the trough line, fading over ~1.6 units
+        }
+        function bowlFactor(x, z) {
+            var rx = x / 12.4, rz = z / 6.6;
+            var dist = Math.sqrt(rx * rx + rz * rz);
+            return { dist: dist, bowl: Math.max(0, 1 - dist * dist) };
+        }
+        // Antilles island-arc mask: a band near the basin edge sweeping from
+        // northwest (Greater Antilles) around to the southeast (Lesser
+        // Antilles), NOT the whole shoreline (west and south are continental
+        // mainland, not an island arc).
+        function arcAngleFactor(x, z) {
+            var ang = Math.atan2(x, -z); // 0 = north, +pi/2 = east, +pi = south
+            var lo = -0.9, hi = 2.35;    // radians: ~ -52deg (NW) to ~135deg (SE)
+            if (ang < lo || ang > hi) return 0;
+            var mid = (lo + hi) / 2, half = (hi - lo) / 2;
+            return 1 - Math.abs(ang - mid) / half; // 1 at mid-arc, 0 at the ends
+        }
+        function height(x, z) {
+            var b = bowlFactor(x, z), n = 0.5 * (fbm(x * 0.5 + 3, z * 0.5 + 7, 3) - 0.5);
+            // Basin floor value (valid everywhere, blended in below by seaFrac).
+            // Gentle dish, not a deep bowl - the trough term below supplies
+            // the ONE dramatic deep feature.
+            var floor = BASIN_DEPTH * (0.35 + 0.65 * b.bowl) + n * 0.3;
+            var tf = troughFactor(x, z);
+            var withTrough = floor + tf * (TROUGH_DEPTH - BASIN_DEPTH) * (0.3 + 0.7 * b.bowl);
+            // Land value (valid everywhere, blended in below by 1-seaFrac).
+            // Land beyond the basin edge - low coastal hills by default, with
+            // taller island-arc bumps along the Antilles band so the arc
+            // reads clearly from an overhead camera without a full ring of
+            // land (west and south stay low mainland coast).
+            var edge = Math.max(0, b.dist - 1);
+            var arc = arcAngleFactor(x, z);
+            var islandBump = arc > 0 ? arc * (2.2 + 1.2 * fbm(x * 0.7 + 11, z * 0.7 + 5, 3)) * smooth(0.5, 0.05, edge) : 0;
+            var rise = Math.min(1.8, edge * (0.5 + 0.5 * fbm(x * 0.3 + 8, z * 0.3 + 2, 3)));
+            var landHeight = 0.05 + rise + islandBump;
+            // Continuous shore taper (NEVER a hard basin/land cutoff - a hard
+            // cutoff renders as a steep-walled pit, rejected by the terrain-
+            // relief bar). Blend smoothly over a wide band around dist=1.
+            var seaFrac = smooth(1.18, 0.72, b.dist);
+            return withTrough * seaFrac + landHeight * (1 - seaFrac);
+        }
+        var col = {
+            shelf: new THREE.Color(0x7fd6c8), basin: new THREE.Color(0x2f6f86), trough: new THREE.Color(0x0c1c2a),
+            land: new THREE.Color(0xc7bd8f), hill: new THREE.Color(0x8a9a6e), island: new THREE.Color(0xf2e2b8)
+        };
+        var troughOn = true, arcOn = true;
+        function color(c, h, x, z) {
+            var n = 0.92 + 0.16 * fbm(x * 1.3 + 4, z * 1.3 + 9, 3);
+            if (h > 0.03) {
+                var arc = arcAngleFactor(x, z);
+                var edge = bowlFactor(x, z).dist - 1;
+                var isIsland = arcOn && arc > 0.12 && edge < 0.6 && h > 0.35;
+                if (isIsland) { c.copy(col.island).multiplyScalar(n); return; }
+                c.copy(col.land).lerp(col.hill, smooth(0, 2.0, h)).multiplyScalar(n);
+                return;
+            }
+            var b = bowlFactor(x, z);
+            var shallow = smooth(0.55, 0.9, b.bowl);
+            c.copy(col.shelf).lerp(col.basin, 1 - shallow);
+            var tf = troughOn ? troughFactor(x, z) : 0;
+            if (tf > 0.05) { c.lerp(col.trough, tf); }
+            c.multiplyScalar(n);
+        }
+        var terrainInfo = makeTerrain(26, 15, shell.low ? 130 : 190, shell.low ? 90 : 130, height, color);
+        scene.add(terrainInfo.mesh);
+
+        // Water surface: translucent plane at y=0 (sea level).
+        var water = new THREE.Mesh(
+            new THREE.PlaneGeometry(26, 15),
+            new THREE.MeshStandardMaterial({ color: 0x123a52, transparent: true, opacity: 0.45, roughness: 0.15, metalness: 0.1 })
+        );
+        water.rotation.x = -Math.PI / 2;
+        water.position.y = 0.02;
+        scene.add(water);
+
+        // Cayman Trough marker: a ring floating over the deepest point.
+        var troughMarker = new THREE.Mesh(
+            new THREE.TorusGeometry(0.7, 0.07, 8, 32),
+            new THREE.MeshBasicMaterial({ color: 0xff9d5c })
+        );
+        troughMarker.rotation.x = Math.PI / 2;
+        troughMarker.position.set((TR_AX + TR_BX) / 2, TROUGH_DEPTH * 0.55 + 1.2, (TR_AZ + TR_BZ) / 2);
+        scene.add(troughMarker);
+
+        // Antilles island-arc markers: discrete peaks along the arc so the
+        // island chain reads clearly even when the underlying terrain bump is
+        // subtle at this scale - Cuba/Hispaniola/Puerto Rico (Greater
+        // Antilles, north) curving down through the Lesser Antilles (east).
+        var islandMarkerSpots = [
+            { x: -9.2, z: -6.6 }, { x: -3.0, z: -7.2 }, { x: 3.4, z: -6.9 },
+            { x: 8.6, z: -4.6 }, { x: 11.4, z: -0.6 }, { x: 10.2, z: 3.0 }
+        ];
+        var islandMarkers = new THREE.Group();
+        islandMarkerSpots.forEach(function (spot) {
+            var cone = new THREE.Mesh(
+                new THREE.ConeGeometry(0.55, 1.3, 6),
+                new THREE.MeshStandardMaterial({ color: 0xf2e2b8, roughness: 0.7 })
+            );
+            var h = height(spot.x, spot.z);
+            cone.position.set(spot.x, h + 0.6, spot.z);
+            islandMarkers.add(cone);
+        });
+        scene.add(islandMarkers);
+
+        function recolor() {
+            var pos = terrainInfo.pos, geo = terrainInfo.geo, colors = geo.attributes.color, col2 = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                color(col2, pos.getY(i), pos.getX(i), pos.getZ(i));
+                colors.setXYZ(i, col2.r, col2.g, col2.b);
+            }
+            colors.needsUpdate = true;
+        }
+
+        function panelHtml() {
+            return '<h3>Caribbean Sea: an island-ringed basin with one deep notch</h3>' +
+                '<p>A broad, mostly-shallow-to-mid-depth basin, framed by the Greater Antilles to the north and the curving Lesser Antilles arc to the east. The Cayman Trough cuts a narrow, much deeper notch into the northwest basin floor.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Surface area</td><td>about 2,754,000 sq km</td></tr>' +
+                '<tr><td>Average depth</td><td>about 2,200 m</td></tr>' +
+                '<tr><td>Maximum depth</td><td>about 7,686 m (Cayman Trough)</td></tr>' +
+                '<tr><td>Islands, islets, cays</td><td>700+</td></tr>' +
+                '<tr><td>Borders</td><td>Central America, South America, Greater and Lesser Antilles</td></tr>' +
+                '<tr><td>Notable reef</td><td>Belize Barrier Reef, part of the Mesoamerican Reef</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the basin profile, island-arc footprint, and vertical scale (including the trough) are schematic teaching cues, not survey data.</p>';
+        }
+
+        function apply() {
+            var tb = document.getElementById('t3dPcsTroughBtn');
+            if (tb) tb.textContent = 'Cayman Trough highlight: ' + (troughOn ? 'On' : 'Off');
+            var ab = document.getElementById('t3dPcsArcBtn');
+            if (ab) ab.textContent = 'Antilles island arc highlight: ' + (arcOn ? 'On' : 'Off');
+            troughMarker.visible = troughOn;
+            islandMarkers.visible = arcOn;
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ troughOn: troughOn, arcOn: arcOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.troughOn === 'boolean') troughOn = store.troughOn;
+        if (typeof store.arcOn === 'boolean') arcOn = store.arcOn;
+        recolor();
+        apply();
+
+        var troughBtn = document.getElementById('t3dPcsTroughBtn');
+        if (troughBtn) troughBtn.addEventListener('click', function () { troughOn = !troughOn; recolor(); apply(); });
+        var arcBtn = document.getElementById('t3dPcsArcBtn');
+        if (arcBtn) arcBtn.addEventListener('click', function () { arcOn = !arcOn; recolor(); apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the Cayman Trough highlight or the Antilles island arc.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placescaribbeansea: 't3dPcsControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placescaribbeansea: { radius: 42, maxR: 85, minR: 10, phi: 1.08, theta: 0.55, targetY: -1.0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

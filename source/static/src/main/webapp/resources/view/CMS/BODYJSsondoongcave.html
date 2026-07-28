@@ -1,0 +1,336 @@
+<script>
+    // 3D scene archetype skeleton (son-doong-cave) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (son-doong-cave).
+    // All geometry is procedural. places-3d cluster, authored 2026-07-28.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey cave geology.
+    // Published figures (Phong Nha-Ke Bang National Park / BCRA-2009 survey
+    // consensus, cross-checked 2026-07-28):
+    //   - Son Doong Cave, Phong Nha-Ke Bang National Park, Quang Binh
+    //     Province, Vietnam - discovered locally in 1990, surveyed by the
+    //     British Cave Research Association in 2009
+    //   - The world's largest known cave passage by volume
+    //   - Main passage about 5 km long (about 9 km of connected system);
+    //     up to about 200 m high and about 150 m wide in its biggest chamber
+    //   - Two large dolines (collapsed skylight sinkholes) let sunlight and
+    //     jungle flora into the cave, forming a self-contained underground
+    //     jungle inside the passage
+    //   - The Rao Thuong river runs through part of the cave, seasonal
+    //   - Limestone estimated about 2-5 million years old
+    //   - Limited guided tourism since 2013, multi-day treks, capped permits
+    //   - Part of the Phong Nha-Ke Bang UNESCO World Heritage Site
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'son-doong-cave';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placessondoongcave'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x07070a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.42));
+        var key = new THREE.DirectionalLight(0xdce8ff, 0.55);
+        key.position.set(-6, 16, 8);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return { mesh: new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0, side: THREE.DoubleSide })), geo: geo, pos: pos };
+        }
+
+        // Signature figure: an enormous winding cave PASSAGE cut deep into
+        // the rock, viewed as an open cutaway (walls rising from a carved
+        // floor toward a shared rim) so the passage, its overhanging walls,
+        // and its two doline skylight openings all read clearly from one
+        // camera angle - the same open-cutaway convention already proven for
+        // Grand Canyon and Antelope Canyon in this cluster, applied to a
+        // (real, enclosed) cave passage as an educational simplification.
+        // 1 unit = about 15 m, so the ~200 m biggest-chamber depth is about
+        // 13.3 units and the ~150 m width about 10 units. The passage
+        // meanders along z (chan/halfWidth). Two dolines (skylight collapses)
+        // widen the passage and shallow its floor at fixed z positions,
+        // paired with a green jungle floor patch + light shaft overhead.
+        var RIM = 0, DEPTH = 13.3, HALF_W = 5.0;
+        var DOLINE_Z = [-2.6, 3.4];
+        function chan(z) { return 1.1 * Math.sin(z * 0.30 + 0.5) + 0.5 * Math.sin(z * 0.13 - 0.9); }
+        function halfWidth(z) { return Math.max(2.4, HALF_W + 1.1 * Math.sin(z * 0.5 + 0.4)); }
+        function dolineBoost(x, z) {
+            var boost = 0;
+            for (var i = 0; i < DOLINE_Z.length; i++) {
+                var dz = z - DOLINE_Z[i], dx = x - chan(DOLINE_Z[i]);
+                var r = Math.sqrt(dx * dx + dz * dz);
+                boost = Math.max(boost, smooth(3.2, 0.4, r));
+            }
+            return boost;
+        }
+        function carveWave(d, w, depth) {
+            if (d >= w) return 0;
+            var t = 1 - d / w; // 0 at wall, 1 at passage centre
+            var s = t * t * (3 - 2 * t); // smoothstep -> flowing wall, not terraced
+            return depth * Math.pow(s, 0.8);
+        }
+        function riverAmount(x, z) {
+            var cx = chan(z), rw = Math.max(0.5, halfWidth(z) * 0.22);
+            return smooth(rw, rw * 0.35, Math.abs(x - cx));
+        }
+        function floorHeight(x, z) {
+            var h = RIM + 0.12 * (fbm(x * 0.5 + 4, z * 0.5 + 9, 3) - 0.5);
+            var cx = chan(z), w = halfWidth(z) * (1 + 0.35 * dolineBoost(x, z)), d = Math.abs(x - cx);
+            var depth = DEPTH * (1 - 0.3 * dolineBoost(x, z)); // dolines shallow the floor toward the opening
+            h -= carveWave(d, w, depth + 0.4 * fbm(z * 0.6 + 2, x * 0.6 + 5, 3));
+            if (d < w * 1.3) {
+                var wallFrac = 1 - Math.min(1, d / w);
+                h -= 0.12 * wallFrac * fbm(x * 2.4 + 3, z * 1.1 + 7, 3);
+            }
+            return Math.max(h, RIM - DEPTH - 0.3);
+        }
+
+        var riverOn = true;
+        function floorColor(c, h, x, z) {
+            var u = smooth(RIM - DEPTH, RIM, h); // 0 at floor, 1 at rim
+            var shadow = new THREE.Color(0x14141c), rock = new THREE.Color(0x6a6258), rim = new THREE.Color(0x9a9080);
+            if (u < 0.6) { c.copy(shadow).lerp(rock, smooth(0, 0.6, u)); }
+            else { c.copy(rock).lerp(rim, smooth(0.6, 1.0, u)); }
+            var r = riverAmount(x, z);
+            if (u < 0.18) { c.lerp(new THREE.Color(0x2f4a4c), riverOn ? r : r * 0.15); }
+            var boost = dolineBoost(x, z);
+            if (boost > 0.02) { c.lerp(new THREE.Color(0x8fd67a), boost); } // sky/jungle glow at the openings
+            var n = 0.9 + 0.16 * fbm(x * 1.2 + 2, z * 1.2 + 5, 3);
+            c.multiplyScalar(n);
+        }
+
+        var floorInfo = makeTerrain(11, 15, shell.low ? 130 : 190, shell.low ? 150 : 220, floorHeight, floorColor);
+        scene.add(floorInfo.mesh);
+
+        // Doline sunlight shafts: a soft green-tinted light cone descending
+        // from high above each opening down to the jungle floor patch below.
+        var beamGroup = new THREE.Group();
+        for (var bi = 0; bi < DOLINE_Z.length; bi++) {
+            var bz = DOLINE_Z[bi], bx = chan(bz);
+            var cone = new THREE.Mesh(
+                new THREE.ConeGeometry(2.1, 10, 24, 1, true),
+                new THREE.MeshBasicMaterial({ color: 0xd7ffb0, transparent: true, opacity: 0.14, side: THREE.DoubleSide, depthWrite: false })
+            );
+            cone.position.set(bx, RIM + 2.4, bz);
+            beamGroup.add(cone);
+            var glow = new THREE.Mesh(
+                new THREE.CircleGeometry(1.9, 24),
+                new THREE.MeshBasicMaterial({ color: 0xbef08a, transparent: true, opacity: 0.5, depthWrite: false })
+            );
+            glow.rotation.x = -Math.PI / 2;
+            glow.position.set(bx, RIM - DEPTH * 0.72 + 0.3, bz);
+            beamGroup.add(glow);
+        }
+        scene.add(beamGroup);
+
+        function recolor() {
+            var c2 = new THREE.Color();
+            var fp = floorInfo.pos, fg = floorInfo.geo, fc = fg.attributes.color;
+            for (var i = 0; i < fp.count; i++) { floorColor(c2, fp.getY(i), fp.getX(i), fp.getZ(i)); fc.setXYZ(i, c2.r, c2.g, c2.b); }
+            fc.needsUpdate = true;
+        }
+
+        function panelHtml() {
+            return '<h3>Son Doong Cave: a giant passage with skylights</h3>' +
+                '<p>This scene shows the cave passage cut deep into the rock, winding along its length, with two doline openings where the floor widens and sunlight and jungle reach in.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Status</td><td>largest known cave passage by volume</td></tr>' +
+                '<tr><td>Main passage length</td><td>about 5 km (about 9 km connected system)</td></tr>' +
+                '<tr><td>Chamber height</td><td>up to about 200 m</td></tr>' +
+                '<tr><td>Chamber width</td><td>up to about 150 m</td></tr>' +
+                '<tr><td>Skylights</td><td>2 large dolines with their own jungle</td></tr>' +
+                '<tr><td>Location</td><td>Phong Nha-Ke Bang National Park, Vietnam</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the passage shape, doline openings, and vertical scale are schematic teaching cues, not survey cave geology.</p>';
+        }
+
+        function apply() {
+            beamGroup.visible = doOn;
+            var db = document.getElementById('t3dPsdDolineBtn');
+            if (db) db.textContent = 'Doline sunlight: ' + (doOn ? 'On' : 'Off');
+            var rb = document.getElementById('t3dPsdRiverBtn');
+            if (rb) rb.textContent = 'River highlight: ' + (riverOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ doOn: doOn, riverOn: riverOn }); } catch (e) {}
+        }
+
+        var doOn = true;
+        var store = t3dLoadStore();
+        if (typeof store.doOn === 'boolean') doOn = store.doOn;
+        if (typeof store.riverOn === 'boolean') riverOn = store.riverOn;
+        recolor();
+        apply();
+
+        var doBtn = document.getElementById('t3dPsdDolineBtn');
+        if (doBtn) doBtn.addEventListener('click', function () { doOn = !doOn; apply(); });
+        var riverBtn = document.getElementById('t3dPsdRiverBtn');
+        if (riverBtn) riverBtn.addEventListener('click', function () { riverOn = !riverOn; recolor(); apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the doline sunlight shafts or the river highlight.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+            if (doOn) {
+                for (var gi = 0; gi < beamGroup.children.length; gi += 2) {
+                    beamGroup.children[gi].material.opacity = 0.11 + 0.05 * Math.sin(performance.now() * 0.0005 + gi);
+                }
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placessondoongcave: 't3dPsdControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placessondoongcave: { radius: 17, maxR: 45, minR: 5, phi: 1.05, theta: 0.7, targetY: -6 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

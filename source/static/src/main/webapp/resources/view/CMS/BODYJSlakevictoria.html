@@ -1,0 +1,366 @@
+<script>
+    // 3D scene archetype skeleton (lake-victoria) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (lake-victoria).
+    // All geometry is procedural. places-3d cluster, authored 2026-07-27.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (encyclopedic consensus, cross-checked 2026-07-27):
+    //   - Surface area about 68,800 sq km (largest tropical lake, 2nd-largest
+    //     fresh water lake by area)
+    //   - Maximum depth about 84 m, mean depth about 40 m - unusually shallow
+    //     for a lake this large
+    //   - Volume about 2,750 cubic km
+    //   - Elevation about 1,133 m above sea level
+    //   - About 400,000 years old; dried up completely around 17,300 years ago
+    //   - Main outflow: the White Nile, at Jinja, Uganda
+    //   - Borders Kenya, Tanzania, Uganda
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'lake-victoria';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placeslakevictoria'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x08151a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        var key = new THREE.DirectionalLight(0xfff2d0, 0.95);
+        key.position.set(-10, 16, -6);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return { mesh: new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0 })), geo: geo, pos: pos };
+        }
+
+        // Wide, shallow saucer basin. 1 unit = 5 m vertical (much finer scale
+        // than a rift lake, since the whole lake is only about 84 m deep).
+        // x = east-west, z = north-south (north at z<0). Real outline is a
+        // broad, roughly oval basin about 400 km x 355 km, with the Winam
+        // Gulf notch (Kenya) toward the northeast and the Speke Gulf notch
+        // (Tanzania) toward the southeast; the outflow to the White Nile sits
+        // on the north shore near Jinja, Uganda (slightly east of center).
+        var MAX_DEPTH = -16.8, MEAN_Y = -8.0; // 84 m and 40 m at 1 unit = 5 m
+        var OUTFLOW_X = 2.3, OUTFLOW_Z = -8.6;
+        function bowlFactor(x, z) {
+            var rx = x / 10.6, rz = z / 9.2;
+            var dist = Math.sqrt(rx * rx + rz * rz);
+            return { dist: dist, bowl: Math.max(0, 1 - dist * dist) };
+        }
+        function gulfMask(x, z, ax, az, rr) {
+            var nx = (x - ax) / rr, nz = (z - az) / rr;
+            var d = Math.sqrt(nx * nx + nz * nz);
+            return smooth(1.6, 0.3, d);
+        }
+        function height(x, z) {
+            var b = bowlFactor(x, z), n = 0.35 * (fbm(x * 0.55 + 5, z * 0.55 + 2, 3) - 0.5);
+            // Continuous shore taper: the basin floor eases up to the
+            // shoreline over a WIDE band (dist 0.5 -> 1.0) instead of
+            // dropping at a cliff, so the lake reads as a gently sloping
+            // saucer - the defining feature that distinguishes it from a
+            // rift-valley trench. taper=1 deep in the interior, 0 at the
+            // shoreline (dist=1), matching the land rise which starts at 0
+            // there too, so there is no vertical wall anywhere.
+            var taper = 1 - smooth(0.5, 1.0, b.dist);
+            if (taper > 0) {
+                // Nearly flat-floored basin: depth barely varies from the mean
+                // (about 40 m) toward the maximum (about 84 m), unlike a rift
+                // trench where mean and max differ by kilometers. Deepest zone
+                // biased toward the south-central basin, matching the real
+                // lake's bathymetry.
+                var southBias = 0.55 + 0.45 * smooth(-3, 7, z);
+                var basinDepth = MEAN_Y * 0.85 - (MAX_DEPTH - MEAN_Y) * 0.55 * b.bowl * southBias;
+                // Winam Gulf (Kenya, northeast) and Speke Gulf (Tanzania,
+                // southeast) - both stay very shallow.
+                var winam = gulfMask(x, z, 8.5, -6.0, 4.2);
+                var speke = gulfMask(x, z, 8.0, 6.4, 3.6);
+                var gulf = Math.max(winam, speke);
+                basinDepth = basinDepth * (1 - gulf * 0.75) + (-1.4) * (gulf * 0.75);
+                var depth = basinDepth * taper + n * taper;
+                return Math.max(MAX_DEPTH, Math.min(-0.05, depth));
+            }
+            // Land beyond the shoreline - low coastal hills, not tall walls,
+            // so the wide flat basin still reads clearly from an overhead camera.
+            var rise = Math.min(2.0, (b.dist - 1) * (0.5 + 0.5 * fbm(x * 0.3 + 6, z * 0.3 + 4, 3)));
+            return 0.05 + Math.max(0, rise);
+        }
+        var col = {
+            shallow: new THREE.Color(0x6fd8c2), deepish: new THREE.Color(0x0f5f7a),
+            gulf: new THREE.Color(0x9fe6d0), land: new THREE.Color(0xcbbf86), hill: new THREE.Color(0x8a9a5e)
+        };
+        var bandOn = true, outflowOn = true;
+        function color(c, h, x, z) {
+            var n = 0.92 + 0.16 * fbm(x * 1.3 + 3, z * 1.3 + 8, 3);
+            if (h > 0.03) {
+                c.copy(col.land).lerp(col.hill, smooth(0, 2.0, h)).multiplyScalar(n);
+                return;
+            }
+            var winam = gulfMask(x, z, 8.5, -6.0, 4.2), speke = gulfMask(x, z, 8.0, 6.4, 3.6);
+            var gulf = Math.max(winam, speke);
+            if (bandOn) {
+                // Depth-band coloring shows how little the floor drops across
+                // the whole basin - shallow teal dominates almost everywhere.
+                var t = smooth(MAX_DEPTH, MEAN_Y * 0.4, h);
+                c.copy(col.deepish).lerp(col.shallow, t);
+            } else {
+                var depthFrac = smooth(MAX_DEPTH, -0.3, h);
+                c.copy(col.deepish).lerp(col.shallow, depthFrac);
+            }
+            if (gulf > 0.3) { c.lerp(col.gulf, gulf * 0.7); }
+            c.multiplyScalar(n);
+        }
+        var terrainInfo = makeTerrain(22, 19, shell.low ? 130 : 190, shell.low ? 112 : 164, height, color);
+        scene.add(terrainInfo.mesh);
+
+        // Water surface: translucent plane at y=0 (lake level).
+        var water = new THREE.Mesh(
+            new THREE.PlaneGeometry(22, 19),
+            new THREE.MeshStandardMaterial({ color: 0x1a5266, transparent: true, opacity: 0.45, roughness: 0.15, metalness: 0.1 })
+        );
+        water.rotation.x = -Math.PI / 2;
+        water.position.y = 0.02;
+        scene.add(water);
+
+        // Mean-depth reference plane: about 40 m down, shown against the
+        // basin floor which barely reaches 84 m at its deepest.
+        var meanPlane = new THREE.Mesh(
+            new THREE.PlaneGeometry(20, 17),
+            new THREE.MeshBasicMaterial({ color: 0xffce7a, transparent: true, opacity: 0.15, depthWrite: false, side: THREE.DoubleSide })
+        );
+        meanPlane.rotation.x = -Math.PI / 2;
+        meanPlane.position.y = MEAN_Y;
+        scene.add(meanPlane);
+        var meanEdge = new THREE.Mesh(
+            new THREE.TorusGeometry(9.5, 0.05, 8, 48),
+            new THREE.MeshBasicMaterial({ color: 0xffdb9a })
+        );
+        meanEdge.rotation.x = Math.PI / 2;
+        meanEdge.position.y = MEAN_Y;
+        scene.add(meanEdge);
+
+        // Nile outflow marker: a small beacon at Jinja, Uganda, on the north
+        // shore, where the White Nile leaves the lake.
+        var outflowMarker = new THREE.Mesh(
+            new THREE.ConeGeometry(0.28, 0.9, 16),
+            new THREE.MeshStandardMaterial({ color: 0xff5f4a, emissive: 0x441100, roughness: 0.4 })
+        );
+        outflowMarker.position.set(OUTFLOW_X, 1.1, OUTFLOW_Z);
+        scene.add(outflowMarker);
+        var outflowRing = new THREE.Mesh(
+            new THREE.RingGeometry(0.5, 0.7, 32),
+            new THREE.MeshBasicMaterial({ color: 0xff8f6a, transparent: true, opacity: 0.6, side: THREE.DoubleSide })
+        );
+        outflowRing.rotation.x = -Math.PI / 2;
+        outflowRing.position.set(OUTFLOW_X, 0.06, OUTFLOW_Z);
+        scene.add(outflowRing);
+
+        function recolor() {
+            var pos = terrainInfo.pos, geo = terrainInfo.geo, colors = geo.attributes.color, col2 = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                color(col2, pos.getY(i), pos.getX(i), pos.getZ(i));
+                colors.setXYZ(i, col2.r, col2.g, col2.b);
+            }
+            colors.needsUpdate = true;
+        }
+
+        function panelHtml() {
+            return '<h3>Lake Victoria: a vast, shallow saucer</h3>' +
+                '<p>The floor barely dips below the mean-depth plane shown here - about 40 m down - before reaching a maximum of only about 84 m across the entire 68,800 sq km lake. The Winam and Speke gulfs stay shallower still.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Surface area</td><td>about 68,800 sq km</td></tr>' +
+                '<tr><td>Maximum depth</td><td>about 84 m</td></tr>' +
+                '<tr><td>Mean depth</td><td>about 40 m</td></tr>' +
+                '<tr><td>Volume</td><td>about 2,750 cubic km</td></tr>' +
+                '<tr><td>Elevation</td><td>about 1,133 m above sea level</td></tr>' +
+                '<tr><td>Approximate age</td><td>about 400,000 years</td></tr>' +
+                '<tr><td>Main outflow</td><td>White Nile, at Jinja, Uganda</td></tr>' +
+                '<tr><td>Bordering countries</td><td>Kenya, Tanzania, Uganda</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the basin profile, gulf boundaries, and vertical scale are schematic teaching cues, not survey data.</p>';
+        }
+
+        function apply() {
+            meanPlane.visible = bandOn ? true : true; // reference plane always visible; kept simple
+            outflowMarker.visible = outflowOn; outflowRing.visible = outflowOn;
+            var bb = document.getElementById('t3dPlvBandBtn');
+            if (bb) bb.textContent = 'Depth bands: ' + (bandOn ? 'On' : 'Off');
+            var ob = document.getElementById('t3dPlvOutflowBtn');
+            if (ob) ob.textContent = 'Nile outflow marker: ' + (outflowOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ bandOn: bandOn, outflowOn: outflowOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.bandOn === 'boolean') bandOn = store.bandOn;
+        if (typeof store.outflowOn === 'boolean') outflowOn = store.outflowOn;
+        recolor();
+        apply();
+
+        var bandBtn = document.getElementById('t3dPlvBandBtn');
+        if (bandBtn) bandBtn.addEventListener('click', function () { bandOn = !bandOn; recolor(); apply(); });
+        var outflowBtn = document.getElementById('t3dPlvOutflowBtn');
+        if (outflowBtn) outflowBtn.addEventListener('click', function () { outflowOn = !outflowOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the depth bands or the Nile outflow marker.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placeslakevictoria: 't3dPlvControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placeslakevictoria: { radius: 34, maxR: 70, minR: 8, phi: 0.82, theta: 0.35, targetY: -1.5 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

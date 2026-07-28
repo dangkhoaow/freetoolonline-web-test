@@ -1,0 +1,311 @@
+<script>
+    // 3D scene archetype skeleton (black-forest) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (black-forest).
+    // All geometry is procedural. places-3d cluster, 2026-07-28.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (cross-checked 2026-07-28):
+    //   - Black Forest (Schwarzwald) covers about 6,009 sq km in
+    //     Baden-Wuerttemberg, southwest Germany
+    //   - Runs about 160 km north-south, 20-60 km wide
+    //   - Highest point: Feldberg, about 1,493 m
+    //   - Name origin: dense, near-continuous fir/spruce canopy that shades
+    //     the ground below
+    //   - Danube (Donau) conventional source at Donaueschingen (east flank);
+    //     Neckar rises near Schwenningen (west flank)
+    //   - Schwarzwaldhochstrasse ("Black Forest High Road"), about 60 km,
+    //     Baden-Baden to Freudenstadt
+    //   - The terrain relief, river-source markers, and route ribbon are
+    //     schematic teaching cues, not a survey map
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'black-forest';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesblackforest'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0c1410, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+        var key = new THREE.DirectionalLight(0xfff2d6, 1.1);
+        key.position.set(-10, 22, 9);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0 }));
+        }
+
+        // Rolling forested hills across the whole range, with ONE dominant
+        // localized summit standing in for the Feldberg (south-center). Valley
+        // farmland on the flanks climbs through dense dark fir to the peak;
+        // grey rock appears only at the summit tip, not across the foreground.
+        var FELD = [2.0, 5.0];   // Feldberg x/z, south-center
+        var SUMMIT = 2.15;       // broad summit-dome amplitude (about 1,493 m)
+        var HMAX = 3.55;         // color-band normaliser (peak tops out near here)
+        // A broad rounded Feldberg dome plus two lower shoulder bumps so the
+        // high point reads as a forested massif, not an isolated cone.
+        function peakBump(x, z) {
+            var h = 0;
+            var d0 = (x - FELD[0]) * (x - FELD[0]) + (z - FELD[1]) * (z - FELD[1]);
+            h += SUMMIT * Math.exp(-d0 / 16.0);
+            var d1 = (x + 2.6) * (x + 2.6) + (z - 3.2) * (z - 3.2);
+            h += 1.15 * Math.exp(-d1 / 11.0);
+            var d2 = (x - 5.8) * (x - 5.8) + (z - 6.6) * (z - 6.6);
+            h += 1.05 * Math.exp(-d2 / 10.0);
+            return h;
+        }
+        function ridge(x) { return 0.30 * Math.sin(x * 0.22) + 0.16 * Math.sin(x * 0.55 + 1.4); }
+        function height(x, z) {
+            var trend = 0.40 * Math.max(0, Math.min(1, (z + 9.5) / 19));      // gentle rise toward the south
+            var rolling = 1.10 * (fbm(x * 0.24 + 4, z * 0.24 + 11, 4) - 0.35); // rolling wooded ridges
+            var fine = 0.28 * (fbm(x * 0.7 + 2, z * 0.7 + 5, 4) - 0.45);       // secondary hill texture
+            var ridgeLine = ridge(x) * 0.5;
+            var h = 0.45 + trend + rolling + fine + ridgeLine + peakBump(x, z);
+            var dz = Math.abs(z - (-7 + 1.5 * Math.sin(x * 0.18)));
+            if (dz < 1.1 && z < -4) { h -= (1 - dz / 1.1) * 0.4; }             // valley river cut, north end
+            h -= 0.05 * fbm(x * 1.9 + 7, z * 1.9 + 3, 3);                      // canopy micro-texture
+            return Math.max(h, -0.05);
+        }
+        function bandColor(c, h, x, z) {
+            var n = 0.86 + 0.24 * fbm(x * 1.4 + 7, z * 1.4 + 2, 3);
+            var u = Math.max(0, Math.min(1, h / HMAX));
+            var hex;
+            if (u < 0.10) hex = 0x5a7a52;        // valley farmland - lighter green
+            else if (u < 0.26) hex = 0x3f6b3c;    // lower slope, mixed woodland
+            else if (u < 0.62) hex = 0x1f4423;    // dense fir/spruce canopy - the "black" forest
+            else if (u < 0.94) hex = 0x142e18;    // darkest ridge canopy near the tops
+            else hex = 0x8f9690;                  // bare rocky Feldberg summit (small area only)
+            c.setHex(hex).multiplyScalar(n);
+        }
+        var terrain = makeTerrain(22, 20, shell.low ? 120 : 190, shell.low ? 110 : 175, height, bandColor);
+        scene.add(terrain);
+
+        // River-source markers: Danube (east flank) and Neckar (west flank).
+        var riverGroup = new THREE.Group();
+        var danubePos = new THREE.Vector3(6.2, height(6.2, -6.5) + 0.12, -6.5);
+        var neckarPos = new THREE.Vector3(-6.8, height(-6.8, -5.5) + 0.12, -5.5);
+        var markerMat = new THREE.MeshStandardMaterial({ color: 0x6fb3d9, roughness: 0.35, metalness: 0.1 });
+        [danubePos, neckarPos].forEach(function (p) {
+            var m = new THREE.Mesh(new THREE.SphereGeometry(0.26, 12, 12), markerMat);
+            m.position.copy(p);
+            riverGroup.add(m);
+            var ring = new THREE.Mesh(new THREE.RingGeometry(0.35, 0.45, 24), new THREE.MeshBasicMaterial({ color: 0x6fb3d9, side: THREE.DoubleSide }));
+            ring.rotation.x = -Math.PI / 2;
+            ring.position.set(p.x, p.y + 0.01, p.z);
+            riverGroup.add(ring);
+        });
+        scene.add(riverGroup);
+
+        // Schwarzwaldhochstrasse scenic ridge route ribbon.
+        var routePts = [];
+        for (var i = 0; i <= 40; i++) {
+            var rx = -7.5 + (14.5 * i) / 40;                 // runs west-east along the northern crest
+            var rz = -6.0 + 2.2 * Math.sin(rx * 0.28 + 0.5);
+            routePts.push(new THREE.Vector3(rx, height(rx, rz) + 0.12, rz));
+        }
+        var route = new THREE.Mesh(
+            new THREE.TubeGeometry(new THREE.CatmullRomCurve3(routePts), 80, 0.11, 6, false),
+            new THREE.MeshStandardMaterial({ color: 0xd9c7a3, roughness: 0.5 })
+        );
+        scene.add(route);
+
+        var riverOn = true, routeOn = true;
+
+        function panelHtml() {
+            return '<h3>Black Forest: rolling conifer-ridge relief</h3>' +
+                '<p>A terrain relief from valley farmland up through mixed woodland to dense dark-fir canopy, climbing toward a Feldberg-standing ridge peak, with river-source markers and the scenic ridge route.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Area</td><td>about 6,009 sq km</td></tr>' +
+                '<tr><td>Length x width</td><td>about 160 km long, 20-60 km wide</td></tr>' +
+                '<tr><td>Highest point</td><td>Feldberg, about 1,493 m</td></tr>' +
+                '<tr><td>Location</td><td>Baden-Wuerttemberg, southwest Germany</td></tr>' +
+                '<tr><td>River sources</td><td>Danube (Donaueschingen) and Neckar (near Schwenningen)</td></tr>' +
+                '<tr><td>Scenic route</td><td>Schwarzwaldhochstrasse, about 60 km</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the terrain relief, river-source markers, and route ribbon are procedural teaching cues, not a survey map.</p>';
+        }
+
+        function apply() {
+            riverGroup.visible = riverOn;
+            route.visible = routeOn;
+            var rb = document.getElementById('t3dParRiverBtn');
+            if (rb) rb.textContent = 'River sources: ' + (riverOn ? 'On' : 'Off');
+            var ob = document.getElementById('t3dParRouteBtn');
+            if (ob) ob.textContent = 'Scenic route: ' + (routeOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ riverOn: riverOn, routeOn: routeOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.riverOn === 'boolean') riverOn = store.riverOn;
+        if (typeof store.routeOn === 'boolean') routeOn = store.routeOn;
+        apply();
+
+        var riverBtn = document.getElementById('t3dParRiverBtn');
+        if (riverBtn) riverBtn.addEventListener('click', function () { riverOn = !riverOn; apply(); });
+        var routeBtn = document.getElementById('t3dParRouteBtn');
+        if (routeBtn) routeBtn.addEventListener('click', function () { routeOn = !routeOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle river sources or the scenic route.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesblackforest: 't3dParControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesblackforest: { radius: 22, maxR: 50, minR: 7, phi: 1.02, theta: 0.75, targetY: 0.9 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

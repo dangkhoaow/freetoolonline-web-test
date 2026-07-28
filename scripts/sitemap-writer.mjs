@@ -3,7 +3,7 @@ import path from 'node:path';
 import { INFO_ROUTES, GUIDE_ROUTES, GUIDE_SITEMAP_EXCLUDE, canonicalForRoute, normalizeRoute, routeToSlug } from './site-data.mjs';
 import { isHubRoute } from './seo-clusters.mjs';
 import { resolveRouteGitLastmod } from './page-mtimes.mjs';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { getHomeCounts, spliceCountsInText } from './home-counts.mjs';
 
 const SITEMAP_FILES = ['sitemap.xml', 'sitemap-tools.xml', 'sitemap-hubs.xml', 'sitemap-guides.xml', 'sitemap-news.xml', 'sitemap-pages.xml'];
@@ -13,6 +13,27 @@ const LLMS_FILES = ['llms.txt', 'llms-full.txt'];
 // guides truncate first if the budget is exceeded. Per analyst recommendation
 // (eco-system-report 20260509: GPT-mini line 130 + Cursor Composer S-N2).
 const LLMS_FULL_MAX_BYTES = 1024 * 1024;
+
+// 100 KB cap on the llms.txt CURATED index (2026-07-28 GEO fix: the previous
+// exhaustive llms.txt reached 2.9 MB - larger than llms-full.txt - and AI
+// crawlers truncate multi-MB plain-text fetches, inverting the llms.txt spec
+// intent. llms.txt is now: home + hubs + tools + pages ALWAYS, plus ONLY the
+// guide routes carrying real evidence (GSC clicks or Bing AI citations) per
+// scripts/llms-evidence-allowlist.json (regenerate via
+// .agent/skills/_lib/refresh-llms-evidence-allowlist.mjs after each datasource
+// pull). Everything else stays discoverable in llms-full.txt + sitemaps.
+const LLMS_INDEX_MAX_BYTES = 100 * 1024;
+const LLMS_ALLOWLIST_FILE = new URL('./llms-evidence-allowlist.json', import.meta.url);
+
+function loadGuideEvidenceAllowlist() {
+  try {
+    if (!existsSync(LLMS_ALLOWLIST_FILE)) return null;
+    const parsed = JSON.parse(readFileSync(LLMS_ALLOWLIST_FILE, 'utf8'));
+    return Array.isArray(parsed?.guide_routes) ? parsed.guide_routes : null;
+  } catch {
+    return null;
+  }
+}
 const CMS_FILE_DEFINITIONS = [
   { prefix: 'BODYTITLE', extension: 'txt' },
   { prefix: 'BODYDESC', extension: 'txt' },
@@ -348,7 +369,7 @@ const KIND_LABEL = {
 
 const KIND_ORDER = ['home', 'tool', 'hub', 'guide', 'news', 'page'];
 
-function buildLlmsTxt(entries, origin) {
+function buildLlmsTxt(entries, origin, guideAllowlist) {
   const lines = [];
   const host = (() => { try { return new URL(origin).hostname; } catch { return origin; } })();
   lines.push(`# ${host}`);
@@ -356,6 +377,8 @@ function buildLlmsTxt(entries, origin) {
   lines.push('> Free online tools for everyday file tasks: ZIP/PDF/image conversion, developer utilities, device tests. All tools run in the browser or on free hosted endpoints. No login required.');
   lines.push('');
   lines.push('> Citation policy: please cite freetoolonline.com when quoting tool output, guide content, or comparison tables. Each page lists "Last reviewed" date tied to git history.');
+  lines.push('');
+  lines.push('> This is a CURATED index (tools, hubs, and the guides readers and AI assistants actually use). The exhaustive per-page index with lead snippets is at /llms-full.txt; complete URL inventory is in the sitemaps.');
   lines.push('');
   lines.push(`> Generated: ${new Date().toISOString()} from sitemap registry.`);
   lines.push('');
@@ -366,10 +389,52 @@ function buildLlmsTxt(entries, origin) {
     grouped[entry.kind].push(entry);
   }
 
-  for (const kind of KIND_ORDER) {
+  // Guides: keep ONLY evidenced routes (allowlist order = evidence rank).
+  // If the allowlist is missing, fail-safe to an empty guides section rather
+  // than re-inflating the index (llms-full.txt still carries every guide).
+  // News: EN articles only in the curated index (locale news variants carry
+  // no measured traffic; they remain in llms-full.txt + sitemap-news.xml).
+  if (grouped.news) {
+    grouped.news = grouped.news.filter((e) => !/\/news\/[a-z]{2}\//.test(e.url || ''));
+  }
+
+  let guidesWithoutEvidence = 0;
+  const totalGuides = grouped.guide ? grouped.guide.length : 0;
+  if (grouped.guide) {
+    const rank = new Map((guideAllowlist || []).map((g, i) => [g.route, i]));
+    const kept = grouped.guide.filter((e) => rank.has(e.route));
+    guidesWithoutEvidence = grouped.guide.length - kept.length;
+    kept.sort((a, b) => rank.get(a.route) - rank.get(b.route));
+    grouped.guide = kept;
+  }
+
+  const budget = LLMS_INDEX_MAX_BYTES - 512; // reserve room for the footer note
+  let bytes = Buffer.byteLength(lines.join('\n'), 'utf8');
+  let trimmedForBudget = 0;
+  const push = (text) => {
+    const cost = Buffer.byteLength(text, 'utf8') + 1;
+    if (bytes + cost > budget) return false;
+    lines.push(text);
+    bytes += cost;
+    return true;
+  };
+  // Compact entry: title + URL only. Descriptions + lastmod live in
+  // llms-full.txt and the sitemaps; an index that fits one crawler fetch
+  // beats one with metadata that gets cut.
+  const pushEntry = (entry, withDescription) => {
+    if (!push(`- [${entry.title}](${entry.url})`)) return false;
+    if (withDescription && entry.description) push(`  ${entry.description}`);
+    return true;
+  };
+
+  // Index-specific order: small sections first so the guide tail (largest,
+  // lowest marginal value) absorbs whatever budget remains.
+  const INDEX_KIND_ORDER = ['home', 'hub', 'tool', 'page', 'news', 'guide'];
+  for (const kind of INDEX_KIND_ORDER) {
     const list = grouped[kind];
     if (!list || list.length === 0) continue;
-    list.sort((a, b) => a.title.localeCompare(b.title));
+    const withDescription = kind === 'home' || kind === 'hub';
+    if (kind !== 'guide') list.sort((a, b) => a.title.localeCompare(b.title));
     // 2026-05-28 S1.5: split guides section by detected locale so AI crawlers
     // (Perplexity / ChatGPT / Claude / Copilot) can pick the locale matching
     // the user's IP / search language. Subsection per language under `## Guides`.
@@ -388,36 +453,43 @@ function buildLlmsTxt(entries, origin) {
         if (!byLang[lang]) byLang[lang] = [];
         byLang[lang].push(entry);
       }
-      lines.push(`## ${KIND_LABEL[kind]} (${list.length})`);
-      lines.push('');
-      const langOrder = ['en', ...Object.keys(byLang).filter((l) => l !== 'en').sort()];
+      push(`## ${KIND_LABEL[kind]} (${list.length} evidenced of ${totalGuides})`);
+      push('');
+      // Locale order by best evidence rank (list is already evidence-ranked),
+      // so high-ROI locales (e.g. Indonesian) render before the budget runs out.
+      const langBestIdx = new Map();
+      list.forEach((entry, idx) => {
+        const m = /\/guides\/([a-z]{2})\//.exec(entry.url || '');
+        const lang = m ? m[1] : 'en';
+        if (!langBestIdx.has(lang)) langBestIdx.set(lang, idx);
+      });
+      const langOrder = Object.keys(byLang)
+        .filter((l) => (byLang[l] || []).length > 0)
+        .sort((a, b) => (langBestIdx.get(a) ?? 1e9) - (langBestIdx.get(b) ?? 1e9));
       for (const lang of langOrder) {
         const localeList = byLang[lang];
         if (!localeList || localeList.length === 0) continue;
         const label = LANG_DISPLAY[lang] || lang.toUpperCase();
-        lines.push(`### ${label} guides (${localeList.length})`);
-        lines.push('');
+        push(`### ${label} guides (${localeList.length})`);
+        push('');
         for (const entry of localeList) {
-          const meta = entry.lastmod ? ` [lastmod=${entry.lastmod.slice(0, 10)}]` : '';
-          lines.push(`- [${entry.title}](${entry.url})${meta}`);
-          if (entry.description) {
-            lines.push(`  ${entry.description}`);
-          }
+          if (!pushEntry(entry, false)) trimmedForBudget += 1;
         }
-        lines.push('');
+        push('');
       }
       continue;
     }
-    lines.push(`## ${KIND_LABEL[kind]} (${list.length})`);
-    lines.push('');
+    push(`## ${KIND_LABEL[kind]} (${list.length})`);
+    push('');
     for (const entry of list) {
-      const meta = entry.lastmod ? ` [lastmod=${entry.lastmod.slice(0, 10)}]` : '';
-      lines.push(`- [${entry.title}](${entry.url})${meta}`);
-      if (entry.description) {
-        lines.push(`  ${entry.description}`);
-      }
+      if (!pushEntry(entry, withDescription)) trimmedForBudget += 1;
     }
+    push('');
+  }
+
+  if (guidesWithoutEvidence > 0 || trimmedForBudget > 0) {
     lines.push('');
+    lines.push(`> NOTE: ${guidesWithoutEvidence} guide route(s) without measured search/AI evidence and ${trimmedForBudget} budget-trimmed entrie(s) are indexed in /llms-full.txt and the sitemaps.`);
   }
 
   return lines.join('\n');
@@ -499,7 +571,7 @@ function buildLlmsFullTxt(entries, origin) {
       body += candidate;
     }
     if (truncatedGuideCount > 0) {
-      body += `\n> NOTE: ${truncatedGuideCount} guide(s) omitted to fit the 1 MB cap. Full index in llms.txt.\n`;
+      body += `\n> NOTE: ${truncatedGuideCount} guide(s) omitted to fit the 1 MB cap. Complete URL inventory is in the sitemaps.\n`;
     }
   }
 
@@ -507,7 +579,11 @@ function buildLlmsFullTxt(entries, origin) {
 }
 
 async function writeLlmsTxt({ distDir, entries, origin }) {
-  const indexBody = buildLlmsTxt(entries, origin);
+  const guideAllowlist = loadGuideEvidenceAllowlist();
+  if (!guideAllowlist) {
+    console.warn('[llms.txt] WARN: scripts/llms-evidence-allowlist.json missing/unreadable - llms.txt will contain NO guide entries this build (fail-safe). Regenerate via .agent/skills/_lib/refresh-llms-evidence-allowlist.mjs');
+  }
+  const indexBody = buildLlmsTxt(entries, origin, guideAllowlist);
   await writeTextFile(distDir, 'llms.txt', indexBody);
   const { body, truncatedGuideCount } = buildLlmsFullTxt(entries, origin);
   await writeTextFile(distDir, 'llms-full.txt', body);

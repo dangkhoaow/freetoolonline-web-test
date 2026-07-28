@@ -1,0 +1,363 @@
+<script>
+    // 3D scene archetype skeleton (great-barrier-reef) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN engine), fully client-side.
+    // Built LEAN from the shared t3d* skeleton - ONE scene only (great-barrier-reef).
+    // All geometry is procedural. places-3d cluster, authored 2026-07-27.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (encyclopedic consensus, cross-checked 2026-07-27):
+    //   - World's largest coral reef system, off the coast of Queensland,
+    //     Australia
+    //   - Length about 2,300 km along the coast
+    //   - Area about 344,400 sq km
+    //   - Composed of over 2,900 individual reefs and 900+ islands/cays
+    //   - UNESCO World Heritage Site since 1981; the only living structure
+    //     visible from space
+    //   - Lagoon between the coast and the reef is commonly 35-40 m deep;
+    //     beyond the reef the continental shelf drops steeply into the
+    //     Coral Sea
+    //   - Repeated mass coral bleaching events (documented 2016, 2017, 2020,
+    //     2022) tied to ocean warming
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'great-barrier-reef';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesgreatbarrierreef'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x072436, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        var key = new THREE.DirectionalLight(0xfff2d0, 1.05);
+        key.position.set(-8, 18, -6);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return { mesh: new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, metalness: 0 })), geo: geo, pos: pos };
+        }
+
+        // Continental-shelf cross-section: x = across-shelf (coast at x<0,
+        // open Coral Sea at x>0), z = along-coast (length). 1 unit = about
+        // 300 m horizontal, 1 unit = about 25 m vertical.
+        // The barrier itself is not a straight wall - it meanders along the
+        // coast, and it is a dense field of separate reef patches with open
+        // channels between them, not a solid ridge (over 2,900 individual
+        // reefs, per the published figure).
+        function barrierCenterX(z) { return 1.1 + 1.1 * Math.sin(z * 0.24) + 0.5 * (fbm(z * 0.3 + 4, 1, 3) - 0.5); }
+        var BAND_HALF = 1.7;
+
+        function shelfBase(x, z) {
+            var bc = barrierCenterX(z);
+            var d = -0.32; // shallow water right off the coast
+            d += (-1.55 - (-0.32)) * smooth(-7, -3.2, x); // coast -> lagoon floor
+            d += (-0.85 - (-1.55)) * smooth(-3, bc - BAND_HALF - 0.3, x); // lagoon -> near-barrier base
+            d += (-9.2 - (-0.85)) * smooth(bc + BAND_HALF + 0.6, 7, x); // outer slope -> Coral Sea depth
+            return d;
+        }
+
+        // Worley-cell reef-patch field, reused for both the dense barrier
+        // band and the sparser lagoon patch reefs at a different scale.
+        function reefField(x, z, cellSize, presence, footMin, footRange, peakMin, peakRange, seed) {
+            var cellX = Math.floor(x / cellSize), cellZ = Math.floor(z / cellSize);
+            var maxH = 0;
+            for (var dx = -1; dx <= 1; dx++) {
+                for (var dz = -1; dz <= 1; dz++) {
+                    var gx = cellX + dx, gz = cellZ + dz;
+                    var pr = hash2(gx * 3.7 + seed, gz * 5.3 + seed * 1.7);
+                    if (pr < presence) continue;
+                    var jx = hash2(gx + 0.21 + seed, gz + 7.61) - 0.5;
+                    var jz = hash2(gx + 9.11, gz + 2.42 + seed) - 0.5;
+                    var cx = (gx + 0.5 + jx * 0.6) * cellSize;
+                    var cz = (gz + 0.5 + jz * 0.6) * cellSize;
+                    var dist = Math.sqrt((x - cx) * (x - cx) + (z - cz) * (z - cz));
+                    var footprint = footMin + footRange * hash2(gx + 21.3 + seed, gz + 13.4);
+                    var peak = peakMin + peakRange * hash2(gx + 51.9, gz + 31.2 + seed);
+                    var reach = footprint * 2.4;
+                    if (dist < reach) {
+                        var t = 1 - dist / reach;
+                        var h = peak * Math.pow(Math.max(0, t), 1.3);
+                        if (h > maxH) maxH = h;
+                    }
+                }
+            }
+            return maxH;
+        }
+
+        function height(x, z) {
+            var base = shelfBase(x, z);
+            var bc = barrierCenterX(z);
+            var bandWeight = 1 - smooth(0, BAND_HALF, Math.abs(x - bc));
+            var barrierBump = reefField(x, z, 0.95, 0.52, 0.14, 0.12, 0.55, 0.55, 1.0) * bandWeight;
+            var lagoonWeight = smooth(-6.2, -3.6, x) * (1 - smooth(-3.0, -1.0, x));
+            var patchBump = reefField(x, z, 1.7, 0.24, 0.09, 0.08, 0.16, 0.16, 7.0) * lagoonWeight;
+            var h = base + barrierBump + patchBump;
+            return Math.min(h, 0.055);
+        }
+
+        var col = {
+            deep: new THREE.Color(0x0b3552), shallow: new THREE.Color(0x33a3c4),
+            coralA: new THREE.Color(0xd98b3f), coralB: new THREE.Color(0xd2607a),
+            bleached: new THREE.Color(0xefe9dc), sand: new THREE.Color(0xe8dcb0)
+        };
+        var bleachOn = false, heartOn = true;
+        function color(c, h, x, z) {
+            var n = 0.92 + 0.14 * fbm(x * 1.4 + 3, z * 1.4 + 6, 3);
+            if (h > 0.015) { c.copy(col.sand).multiplyScalar(n); return; }
+            if (h > -0.30) {
+                if (bleachOn) { c.copy(col.bleached).multiplyScalar(0.96 + 0.08 * fbm(x * 2 + 2, z * 2 + 5, 3)); }
+                else { c.copy(col.coralA).lerp(col.coralB, fbm(x * 2.1 + 3, z * 2.1 + 8, 3)); }
+                c.multiplyScalar(n);
+                return;
+            }
+            var depthT = smooth(-0.3, -9.2, h);
+            c.copy(col.shallow).lerp(col.deep, depthT).multiplyScalar(n);
+        }
+        var terrainInfo = makeTerrain(16, 26, shell.low ? 110 : 170, shell.low ? 170 : 260, height, color);
+        scene.add(terrainInfo.mesh);
+
+        // Water surface: gently translucent plane over the whole shelf.
+        var water = new THREE.Mesh(
+            new THREE.PlaneGeometry(16, 26),
+            new THREE.MeshStandardMaterial({ color: 0x0d5a78, transparent: true, opacity: 0.32, roughness: 0.1, metalness: 0.15 })
+        );
+        water.rotation.x = -Math.PI / 2;
+        water.position.y = 0.02;
+        scene.add(water);
+
+        // Heart Reef marker: found by sampling the barrier band for a tall
+        // reef patch near the scene center, so the marker always lands on a
+        // real reef regardless of parameter tuning.
+        var markerX = 0, markerZ = 0, markerY = 0;
+        (function findHeartReef() {
+            var best = -1;
+            for (var sz = -3; sz <= 3; sz += 0.4) {
+                var bc = barrierCenterX(sz);
+                for (var sx = bc - 1.2; sx <= bc + 1.2; sx += 0.3) {
+                    var hh = height(sx, sz);
+                    if (hh > best) { best = hh; markerX = sx; markerZ = sz; }
+                }
+            }
+            markerY = best;
+        })();
+
+        var heartMarker = new THREE.Mesh(
+            new THREE.ConeGeometry(0.2, 0.65, 14),
+            new THREE.MeshStandardMaterial({ color: 0xe0507a, emissive: 0x330018, roughness: 0.3 })
+        );
+        heartMarker.position.set(markerX, markerY + 0.5, markerZ);
+        scene.add(heartMarker);
+        var heartRing = new THREE.Mesh(
+            new THREE.RingGeometry(0.34, 0.5, 32),
+            new THREE.MeshBasicMaterial({ color: 0xf28ba8, transparent: true, opacity: 0.65, side: THREE.DoubleSide })
+        );
+        heartRing.rotation.x = -Math.PI / 2;
+        heartRing.position.set(markerX, markerY + 0.03, markerZ);
+        scene.add(heartRing);
+
+        function recolor() {
+            var pos = terrainInfo.pos, geo = terrainInfo.geo, colors = geo.attributes.color, col2 = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                color(col2, pos.getY(i), pos.getX(i), pos.getZ(i));
+                colors.setXYZ(i, col2.r, col2.g, col2.b);
+            }
+            colors.needsUpdate = true;
+        }
+
+        function panelHtml() {
+            return '<h3>Great Barrier Reef: thousands of reefs, one shelf</h3>' +
+                '<p>Not one solid wall - a dense field of separate reef patches and channels running along the edge of the Queensland continental shelf, with a shallow lagoon toward the coast and a steep drop into the Coral Sea beyond.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Length</td><td>about 2,300 km along the Queensland coast</td></tr>' +
+                '<tr><td>Area</td><td>about 344,400 sq km</td></tr>' +
+                '<tr><td>Reefs and islands</td><td>over 2,900 individual reefs, 900+ islands/cays</td></tr>' +
+                '<tr><td>Lagoon depth</td><td>commonly about 35-40 m</td></tr>' +
+                '<tr><td>UNESCO status</td><td>World Heritage since 1981; only living structure visible from space</td></tr>' +
+                '<tr><td>Bleaching events</td><td>documented mass bleaching in 2016, 2017, 2020, 2022</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the reef pattern, lagoon, and vertical scale are schematic teaching cues, not survey data.</p>';
+        }
+
+        function apply() {
+            heartMarker.visible = heartOn; heartRing.visible = heartOn;
+            var bb = document.getElementById('t3dPgbrBleachBtn');
+            if (bb) bb.textContent = 'Coral bleaching view: ' + (bleachOn ? 'On' : 'Off');
+            var hb = document.getElementById('t3dPgbrHeartBtn');
+            if (hb) hb.textContent = 'Heart Reef marker: ' + (heartOn ? 'On' : 'Off');
+            recolor();
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ bleachOn: bleachOn, heartOn: heartOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.bleachOn === 'boolean') bleachOn = store.bleachOn;
+        if (typeof store.heartOn === 'boolean') heartOn = store.heartOn;
+        apply();
+
+        var bleachBtn = document.getElementById('t3dPgbrBleachBtn');
+        if (bleachBtn) bleachBtn.addEventListener('click', function () { bleachOn = !bleachOn; apply(); });
+        var heartBtn = document.getElementById('t3dPgbrHeartBtn');
+        if (heartBtn) heartBtn.addEventListener('click', function () { heartOn = !heartOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the coral bleaching view or the Heart Reef marker.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesgreatbarrierreef: 't3dPgbrControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesgreatbarrierreef: { radius: 26, maxR: 55, minR: 7, phi: 0.85, theta: 0.5, targetY: -1.2 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

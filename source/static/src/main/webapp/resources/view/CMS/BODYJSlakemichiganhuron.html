@@ -1,0 +1,331 @@
+<script>
+    // 3D scene archetype skeleton (lake-michigan-huron) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN engine), fully client-side.
+    // Built LEAN from the shared t3d* skeleton - ONE scene only (lake-michigan-huron).
+    // All geometry is procedural. places-3d cluster, authored 2026-07-27.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (encyclopedic / NOAA Great Lakes consensus, cross-checked 2026-07-27):
+    //   - Lake Michigan and Lake Huron sit at the SAME surface elevation, about
+    //     176 m (577 ft) above sea level, connected through the Straits of
+    //     Mackinac - hydrologically they are ONE lake, even though they carry
+    //     two separate names
+    //   - Combined surface area about 117,340 sq km (about 45,300 sq mi) - the
+    //     largest connected body of fresh water on Earth by surface area
+    //   - Lake Michigan: surface area about 57,750 sq km; maximum depth about
+    //     281 m; mean depth about 85 m; length about 494 km
+    //   - Lake Huron: surface area about 59,590 sq km (slightly larger than
+    //     Michigan); maximum depth about 229 m; mean depth about 59 m
+    //   - The Straits of Mackinac connector is about 5.6 km wide at the
+    //     narrowest and only about 50 m deep - far shallower than either basin
+    //   - Michigan's Lower Peninsula sits between the two lakes as dry land,
+    //     narrowing to nothing at the Straits
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'lake-michigan-huron';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placeslakemichiganhuron'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0d1620, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.58));
+        var key = new THREE.DirectionalLight(0xfff2d0, 0.95);
+        key.position.set(-10, 16, -6);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return { mesh: new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0 })), geo: geo, pos: pos };
+        }
+
+        // Two basins side by side (Michigan west, Huron east), separated the
+        // whole way south by Michigan's Lower Peninsula, connected only at the
+        // far north through the shallow Straits of Mackinac. x = east-west,
+        // z = north-south (straits at z<0/north, open water south at z>0).
+        // 1 unit = 40 m vertical (gentler than the Baikal/Everest rift scale -
+        // these are wide shallow-shelving basins, not narrow deep trenches).
+        // LAKE_Y is the shared water surface - BOTH lakes sit at the exact
+        // same elevation because they are one hydrologic body.
+        var LAKE_Y = 0;
+        var MI_X = -9.0, MI_W = 5.6, MI_FLOOR = -7.0;    // Michigan: about 281 m
+        var HU_X = 9.0, HU_W = 7.2, HU_FLOOR = -5.7;     // Huron: about 229 m
+
+        function landBaseline(x, z) {
+            return 0.35 + 0.22 * (fbm(x * 0.35 + 80, z * 0.35 + 44, 4) - 0.5);
+        }
+        // Wide, gentle shore taper (not a cliff) - real Great Lakes bathymetry
+        // slopes gradually from shore into the basin. Blend zone spans a wide
+        // band of normalized distance so the drop from land into the deepest
+        // part of the basin happens over several units of real horizontal
+        // distance, matching the saucer-shaped-basin fix used for Lake
+        // Victoria rather than the steep rift walls used for Baikal/Everest.
+        function basinField(x, z, cx, w, floor, seed, landH) {
+            var d = Math.abs(x - cx) / w;
+            var dd = Math.min(d, 1.6);
+            var bowl = 1 - 0.22 * (1 - Math.min(dd, 1)) * (1 - Math.min(dd, 1));
+            var floorH = floor * bowl + 0.06 * (fbm(x * 0.55 + seed, z * 0.55 + seed * 2, 3) - 0.5);
+            var t = smooth(0.1, 1.55, d);
+            return floorH * (1 - t) + landH * t;
+        }
+        function straitWindow(x, z) {
+            var northWeight = 1 - smooth(-17, -11.5, z);
+            var xWeight = 1 - smooth(4.5, 7.5, Math.abs(x));
+            return northWeight * xWeight;
+        }
+        function straitField(x, z, landH) {
+            var iw = straitWindow(x, z);
+            var floorH = -0.9 + 0.1 * (fbm(z * 0.7 + 40, 5, 3) - 0.5);
+            return floorH * iw + landH * (1 - iw);
+        }
+        function height(x, z) {
+            var land = landBaseline(x, z);
+            var hMI = basinField(x, z, MI_X, MI_W, MI_FLOOR, 5, land);
+            var hHU = basinField(x, z, HU_X, HU_W, HU_FLOOR, 21, land);
+            var hST = straitField(x, z, land);
+            return Math.min(land, hMI, hHU, hST);
+        }
+
+        var col = {
+            landLow: new THREE.Color(0x8a9a6e), landHigh: new THREE.Color(0xc3cf9e),
+            miShallow: new THREE.Color(0x6fc4c9), miDeep: new THREE.Color(0x123a5c),
+            huShallow: new THREE.Color(0x7dd0c0), huDeep: new THREE.Color(0x2a4a78),
+            uniShallow: new THREE.Color(0x74c6cc), uniDeep: new THREE.Color(0x18406a),
+            strait: new THREE.Color(0xf0c34d)
+        };
+        function color(c, h, x, z) {
+            var n = 0.92 + 0.16 * fbm(x * 1.3 + 4, z * 1.3 + 9, 3);
+            if (h > LAKE_Y + 0.03) {
+                c.copy(col.landLow).lerp(col.landHigh, smooth(0.3, 1.4, h)).multiplyScalar(n);
+                return;
+            }
+            var dMI = Math.abs(x - MI_X) / MI_W, dHU = Math.abs(x - HU_X) / HU_W;
+            var isMI = dMI <= dHU;
+            if (namesOn) {
+                var depthFrac = isMI ? smooth(LAKE_Y, MI_FLOOR, h) : smooth(LAKE_Y, HU_FLOOR, h);
+                c.copy(isMI ? col.miShallow : col.huShallow).lerp(isMI ? col.miDeep : col.huDeep, depthFrac);
+            } else {
+                c.copy(col.uniShallow).lerp(col.uniDeep, smooth(LAKE_Y, MI_FLOOR, h));
+            }
+            if (straitOn) {
+                var hi = Math.min(1, straitWindow(x, z));
+                if (hi > 0.12) c.lerp(col.strait, hi * 0.85);
+            }
+            c.multiplyScalar(n);
+        }
+        var namesOn = true, straitOn = false;
+        var terrainInfo = makeTerrain(34, 38, shell.low ? 100 : 170, shell.low ? 110 : 190, height, color);
+        scene.add(terrainInfo.mesh);
+
+        var water = new THREE.Mesh(
+            new THREE.PlaneGeometry(34, 38),
+            new THREE.MeshStandardMaterial({ color: 0x16405f, transparent: true, opacity: 0.42, roughness: 0.15, metalness: 0.1 })
+        );
+        water.rotation.x = -Math.PI / 2;
+        water.position.y = LAKE_Y + 0.02;
+        scene.add(water);
+
+        function recolor() {
+            var pos = terrainInfo.pos, geo = terrainInfo.geo, colors = geo.attributes.color, col2 = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                color(col2, pos.getY(i), pos.getX(i), pos.getZ(i));
+                colors.setXYZ(i, col2.r, col2.g, col2.b);
+            }
+            colors.needsUpdate = true;
+        }
+
+        function panelHtml() {
+            return '<h3>Michigan and Huron: two names, one lake</h3>' +
+                '<p>Both basins share the exact same water-surface elevation because they are connected through the Straits of Mackinac - hydrologically one lake, split into two names by convention.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Shared surface elevation</td><td>about 176 m (577 ft) above sea level - identical on both sides</td></tr>' +
+                '<tr><td>Combined surface area</td><td>about 117,340 sq km - largest connected fresh water body on Earth by area</td></tr>' +
+                '<tr><td>Michigan max depth</td><td>about 281 m</td></tr>' +
+                '<tr><td>Huron max depth</td><td>about 229 m</td></tr>' +
+                '<tr><td>Straits of Mackinac</td><td>about 5.6 km wide, only about 50 m deep - far shallower than either basin</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the basin profile, connecting strait, and vertical scale are schematic teaching cues, not survey data.</p>';
+        }
+
+        function apply() {
+            var nb = document.getElementById('t3dPmhNamesBtn');
+            if (nb) nb.textContent = 'Show as two named lakes: ' + (namesOn ? 'On' : 'Off');
+            var sb = document.getElementById('t3dPmhStraitBtn');
+            if (sb) sb.textContent = 'Highlight Straits of Mackinac: ' + (straitOn ? 'On' : 'Off');
+            recolor();
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ namesOn: namesOn, straitOn: straitOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.namesOn === 'boolean') namesOn = store.namesOn;
+        if (typeof store.straitOn === 'boolean') straitOn = store.straitOn;
+        apply();
+
+        var namesBtn = document.getElementById('t3dPmhNamesBtn');
+        if (namesBtn) namesBtn.addEventListener('click', function () { namesOn = !namesOn; apply(); });
+        var straitBtn = document.getElementById('t3dPmhStraitBtn');
+        if (straitBtn) straitBtn.addEventListener('click', function () { straitOn = !straitOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the lake colors or highlight the connecting straits.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placeslakemichiganhuron: 't3dPmhControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placeslakemichiganhuron: { radius: 60, maxR: 120, minR: 18, phi: 0.42, theta: 1.0, targetY: -3 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
