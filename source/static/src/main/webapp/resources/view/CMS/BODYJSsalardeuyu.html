@@ -1,0 +1,152 @@
+<script>
+window.t3dScenesCache = window.t3dScenesCache || {};
+window.t3dScenesCache['salar-de-uyuni'] = async () => {
+  const THREE = await import('/vendor/three/three.module.js');
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 10000);
+  camera.position.set(30, 22, 28);
+  camera.lookAt(0, 0, 0);
+
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+  scene.add(ambientLight);
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  directionalLight.position.set(10, 15, 10);
+  directionalLight.castShadow = true;
+  scene.add(directionalLight);
+
+  // Salt flat: hexagon tile pattern on a nearly-flat plane with minimal relief
+  const geometry = new THREE.PlaneGeometry(80, 80, 160, 160);
+  const positionAttribute = geometry.getAttribute('position');
+  const colors = [];
+  const initialColors = [];
+
+  // Deterministic noise for hexagon pattern
+  const hash2 = (p) => {
+    let x = Math.sin(p.x * 12.9898 + p.y * 78.233) * 43758.5453;
+    return x - Math.floor(x);
+  };
+  const fnoise = (p, scale) => {
+    const i = Math.floor(p / scale);
+    const f = (p % scale) / scale;
+    const u = f * f * (3 - 2 * f);
+    const h0 = hash2({x: i, y: 0});
+    const h1 = hash2({x: i + 1, y: 0});
+    return h0 * (1 - u) + h1 * u;
+  };
+
+  for (let i = 0; i < positionAttribute.count; i++) {
+    const x = positionAttribute.getX(i);
+    const y = positionAttribute.getY(i);
+    const z = positionAttribute.getZ(i);
+
+    // Minimal elevation variation (< 0.5m on a 10km scale)
+    const cellSize = 0.15;
+    const height = (fnoise(x * 5, cellSize) - 0.5) * 0.02;
+    const wxCoord = fnoise(x * 3, cellSize + 0.1);
+    const hexPattern = Math.abs(Math.sin(wxCoord * 12.566)) > 0.7 ? 1 : 0;
+
+    positionAttribute.setZ(i, z + height);
+
+    // Dry season: bright white with hexagon shadows
+    const whiteBase = new THREE.Color(0xf5f5dc);
+    const shadowTone = new THREE.Color(0xe8e8dc);
+    const col = hexPattern > 0.5 ? shadowTone : whiteBase;
+    colors.push(col.r, col.g, col.b);
+    initialColors.push(col.r, col.g, col.b);
+  }
+
+  positionAttribute.needsUpdate = true;
+  geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+  geometry.computeVertexNormals();
+
+  const material = new THREE.MeshPhongMaterial({
+    vertexColors: true,
+    shininess: 100,
+    side: THREE.DoubleSide,
+  });
+
+  const saltFlat = new THREE.Mesh(geometry, material);
+  saltFlat.rotation.x = -Math.PI / 2;
+  saltFlat.receiveShadow = true;
+  scene.add(saltFlat);
+
+  // Distant Andes horizon line (simplified)
+  const horizonGeometry = new THREE.PlaneGeometry(200, 80, 4, 4);
+  const horizonMaterial = new THREE.MeshBasicMaterial({ color: 0x8b7355 });
+  const horizon = new THREE.Mesh(horizonGeometry, horizonMaterial);
+  horizon.position.z = -40;
+  horizon.position.y = 15;
+  scene.add(horizon);
+
+  // Rainy season mirror reflection layer (overlay, initially invisible)
+  const mirrorGeometry = new THREE.PlaneGeometry(80, 80, 1, 1);
+  const mirrorMaterial = new THREE.MeshPhongMaterial({
+    color: 0x87ceeb,
+    transparent: true,
+    opacity: 0,
+    wireframe: false,
+    shininess: 200,
+  });
+  const mirrorLayer = new THREE.Mesh(mirrorGeometry, mirrorMaterial);
+  mirrorLayer.rotation.x = -Math.PI / 2;
+  mirrorLayer.position.z = 0.05;
+  scene.add(mirrorLayer);
+
+  // Renderer setup
+  const canvas = document.getElementById('t3dCanvasHost');
+  if (!canvas) return { scene, camera };
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+  renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+  renderer.setClearColor(0x87ceeb, 1);
+  renderer.shadowMap.enabled = true;
+  canvas.appendChild(renderer.domElement);
+
+  // Animation loop
+  const state = { rainMode: false };
+  const animate = () => {
+    requestAnimationFrame(animate);
+
+    // Camera orbit
+    const time = Date.now() * 0.0001;
+    const radius = 45;
+    const theta = time * 0.3;
+    camera.position.x = radius * Math.cos(theta);
+    camera.position.z = radius * Math.sin(theta);
+    camera.lookAt(0, 0, 0);
+
+    // Mirror layer opacity toggles based on state
+    mirrorLayer.material.opacity = state.rainMode ? 0.15 : 0;
+
+    renderer.render(scene, camera);
+  };
+  animate();
+
+  // Handle window resize
+  const onWindowResize = () => {
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height);
+  };
+  window.addEventListener('resize', onWindowResize);
+
+  return {
+    scene, camera, renderer,
+    toggles: {
+      rainSeason: () => { state.rainMode = !state.rainMode; },
+      hexPattern: () => {
+        // Already baked into vertex colors; this would swap color buffers
+        const temp = [...colors];
+        for (let i = 0; i < colors.length; i += 3) {
+          colors[i] = initialColors[i];
+          colors[i+1] = initialColors[i+1];
+          colors[i+2] = initialColors[i+2];
+        }
+        geometry.getAttribute('color').needsUpdate = true;
+      }
+    }
+  };
+};
+</script>
