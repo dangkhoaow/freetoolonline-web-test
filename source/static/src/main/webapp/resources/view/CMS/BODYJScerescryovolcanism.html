@@ -1,0 +1,187 @@
+<!--
+  SPACE-3D PROCEDURAL SCENE: Ceres Cryovolcanism (Ahuna Mons)
+
+  Procedural three.js scene explorer: Ceres dwarf planet with Ahuna Mons dome,
+  vertical exaggeration slider, and scale-comparison overlay (Mont Blanc / Olympus Mons).
+
+  REAL PUBLISHED FIGURES (NASA/JPL):
+  - Ceres diameter: 950 km
+  - Ahuna Mons height: 4-5 km above surrounding terrain
+  - Ahuna Mons base diameter: ~20 km
+  - Age: <240 million years (crater-count dating)
+  - Composition: Cryovolcanic briny mud/ice dome with bright salt streaks
+
+  Educational approximation, not a physics simulation. All distances/sizes on-screen
+  are compressed for readability. See the facts panel for real figures.
+-->
+<script>
+// Shared constants and scene detection
+var T3D_SLUG = 'ceres-cryovolcanism';
+
+// Scene detection (routing in page-renderer.mjs)
+function t3dDetectScene(s) {
+  if (/ceres|ahuna|cryovolc/.test(s)) return 'cerescryo';
+  return 'solar'; // fallback
+}
+
+// --- PROCEDURAL SCENE: Ceres + Ahuna Mons ---
+function t3dCeresCryo(shell) {
+  const { THREE, scene, camera, renderer, orbit, low, applyCamera, ndc } = shell;
+
+  // Ceres sphere (950 km diameter ~ 1.0 unit)
+  const ceresGeom = new THREE.IcosahedronGeometry(1.0, 32);
+  const ceresMat = new THREE.MeshPhongMaterial({
+    color: 0x8b7355,
+    shininess: 5,
+    flatShading: false
+  });
+  const ceres = new THREE.Mesh(ceresGeom, ceresMat);
+  scene.add(ceres);
+
+  // Ahuna Mons: procedural dome bump map via custom geometry
+  // Real: Ahuna = 4-5 km tall on 950 km sphere = ~0.005 scale
+  // Exaggerated for visibility: ~0.025 at 3x exaggeration setting
+  const ahunaGeom = new THREE.ConeGeometry(0.042, 0.05, 32, 16); // base~20km/950km
+  ahunaGeom.translate(0, 0.5 + 0.025, 0); // position on equator, height exaggerated
+  const ahunaMat = new THREE.MeshPhongMaterial({
+    color: 0xd3d3d3, // bright cryovolcanic dome
+    shininess: 20,
+    emissive: 0x444444
+  });
+  const ahuna = new THREE.Mesh(ahunaGeom, ahunaMat);
+  scene.add(ahuna);
+
+  // Labels on the surface
+  const canvas = document.createElement('canvas');
+  canvas.width = 256; canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 20px Arial';
+  ctx.fillText('Ahuna Mons', 80, 130);
+  ctx.fillText('(cryovolcano)', 60, 160);
+  const texture = new THREE.CanvasTexture(canvas);
+  const spriteGeom = new THREE.PlaneGeometry(0.3, 0.15);
+  const spriteMat = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
+  const sprite = new THREE.Mesh(spriteGeom, spriteMat);
+  sprite.position.set(0, 0.8, 0);
+  scene.add(sprite);
+
+  // Comparison overlay: Mont Blanc vs Ahuna vs Olympus Mons (scale lines)
+  const comparisonGroup = new THREE.Group();
+
+  // Mont Blanc: 4.8 km (similar height to Ahuna)
+  const montBlancLine = new THREE.LineSegments(
+    new THREE.BufferGeometry().setAttribute('position',
+      new THREE.BufferAttribute(new Float32Array([-0.5, 0, 0, -0.5, 0.01, 0]), 3)
+    ),
+    new THREE.LineBasicMaterial({ color: 0x00ff00, linewidth: 2 })
+  );
+  montBlancLine.position.set(0, 0.5 + 0.025, 0);
+  comparisonGroup.add(montBlancLine);
+
+  // Olympus Mons (Mars): 21 km (5x taller) - comparative outline
+  const olympusLine = new THREE.LineSegments(
+    new THREE.BufferGeometry().setAttribute('position',
+      new THREE.BufferAttribute(new Float32Array([-0.3, 0, 0, -0.3, 0.11, 0]), 3)
+    ),
+    new THREE.LineBasicMaterial({ color: 0xff8800, linewidth: 2 })
+  );
+  olympusLine.position.set(0.5, 0.5, 0);
+  comparisonGroup.add(olympusLine);
+
+  comparisonGroup.visible = false; // hidden until toggle
+  scene.add(comparisonGroup);
+
+  // Camera preset
+  orbit.radius = 2.5;
+  orbit.minR = 1.2;
+  orbit.maxR = 5.0;
+  orbit.phi = 1.2;
+  orbit.theta = 0;
+  applyCamera();
+
+  // UI state
+  let vertExag = 3;
+  const exagSlider = document.getElementById('ceresExagSlider');
+  const comparisonToggle = document.getElementById('ceresComparisonToggle');
+
+  if (exagSlider) {
+    exagSlider.onchange = (e) => {
+      vertExag = parseFloat(e.target.value);
+      document.getElementById('ceresExagValue').textContent = vertExag + '×';
+      ahuna.scale.z = vertExag / 3.0; // relative to default 3x
+    };
+  }
+  if (comparisonToggle) {
+    comparisonToggle.onchange = (e) => {
+      comparisonGroup.visible = e.target.checked;
+    };
+  }
+
+  // Animation loop
+  return function animate(dt) {
+    ceres.rotation.y += 0.0001 * dt; // slow rotation
+    ahuna.rotation.y = ceres.rotation.y;
+    sprite.rotation.y = ceres.rotation.y;
+  };
+}
+
+// --- BOOT & DISPATCH ---
+async function boot() {
+  const kind = t3dDetectScene(T3D_SLUG);
+  const presets = {
+    'cerescryo': { radius: 2.5, minR: 1.2, maxR: 5.0, phi: 1.2, fov: 50, targetY: 0 },
+    'solar': { radius: 15, minR: 5, maxR: 50, phi: 0.7, fov: 50, targetY: 0 }
+  };
+  const preset = presets[kind] || presets['solar'];
+
+  try {
+    const THREE = await ftoLoadThree();
+    const shell = t3dShell(THREE, document.getElementById('t3dCanvasHost'), preset);
+
+    const rows = {
+      'cerescryo': 't3dCeresControls',
+      // add more scene → control-row mappings here
+    };
+
+    const doAfterPageRendered = () => {
+      document.getElementById('t3dControlPanel').style.display = 'flex';
+      const controlRow = rows[kind];
+      if (controlRow && document.getElementById(controlRow)) {
+        document.getElementById(controlRow).style.display = 'inline';
+      }
+      const fullscreenBtn = document.getElementById('t3dFullscreenBtn');
+      if (fullscreenBtn) {
+        fullscreenBtn.onclick = () => shell.renderer.domElement.parentElement.requestFullscreen?.();
+      }
+    };
+
+    doAfterPageRendered();
+
+    const animate = kind === 'cerescryo' ? t3dCeresCryo(shell) :
+                    kind === 'solar' ? t3dSolar(shell) :
+                    kind === 'galaxy' ? t3dGalaxy(shell) :
+                    () => {};
+
+    shell.renderer.setAnimationLoop((time) => {
+      const dt = Math.min(time - (shell._lastTime || 0), 100);
+      shell._lastTime = time;
+      if (animate) animate(dt);
+      shell.renderer.render(shell.scene, shell.camera);
+    });
+
+    t3dStatus('Scene loaded. Drag to rotate, scroll to zoom.');
+  } catch (err) {
+    console.error('Scene initialization failed:', err);
+    t3dStatus('WebGL unavailable on this device');
+    document.getElementById('t3dCanvasHost').innerHTML =
+      '<p style="color:#f00; padding:20px;">This 3D scene requires WebGL support.</p>';
+  }
+}
+
+// Start scene after page render (avoid blocking first paint)
+requestIdleCallback(() => boot(), { timeout: 2500 });
+
+// Placeholder three.js scene functions (referenced but not used in this fire)
+function t3dSolar(shell) { return () => {}; }
+function t3dGalaxy(shell) { return () => {}; }
+</script>
