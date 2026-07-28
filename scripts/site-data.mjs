@@ -13346,6 +13346,7 @@ export const ALIAS_ROUTES = {
   '/voxel-world-builder.html': '/games/voxel-world-builder.html',
   '/solar-system.html': '/space-3d/solar-system.html',
   '/gravitational-microlensing.html': '/space-3d/gravitational-microlensing.html',
+  '/ceres-cryovolcanism.html': '/space-3d/ceres-cryovolcanism.html',
   '/black-hole.html': '/space-3d/black-hole.html',
   '/galaxy.html': '/space-3d/galaxy.html',
   // '/io-volcanoes.html': '/space-3d/io-volcanoes.html', // ORPHANED - no JSP/CMS backing; use io-volcanoes-realtime instead
@@ -19939,6 +19940,7 @@ export const JSP_BY_ROUTE = {
   '/guides/id/solar-system-3d-explorer-when.html': 'guide/id/solar-system-3d-explorer-when.jsp',
   '/guides/id/solar-system-3d-explorer-step-by-step.html': 'guide/id/solar-system-3d-explorer-step-by-step.jsp',
   '/guides/id/solar-system-3d-explorer-vs-alternatives.html': 'guide/id/solar-system-3d-explorer-vs-alternatives.jsp',
+  '/space-3d/ceres-cryovolcanism.html': 'space/ceres-cryovolcanism.jsp',
   '/space-3d/black-hole.html': 'space/black-hole.jsp',
   '/guides/black-hole-3d-visualizer-when.html': 'guide/black-hole-3d-visualizer-when.jsp',
   '/guides/black-hole-3d-visualizer-step-by-step.html': 'guide/black-hole-3d-visualizer-step-by-step.jsp',
