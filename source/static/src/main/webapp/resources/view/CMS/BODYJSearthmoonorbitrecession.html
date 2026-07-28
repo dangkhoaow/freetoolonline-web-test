@@ -1,0 +1,312 @@
+<script>
+    // 3D scene archetype skeleton (earth-moon-orbit-recession) - vendored three.js (ESM, dynamic
+    // import from /vendor/three/, NO CDN), fully client-side. Registry Gate-H
+    // entry: three_3d_scene_vendored. ONE skeleton serves the 3D family; the
+    // scene is dispatched from the slug. All geometry is procedural - no model files, no
+    // textures fetched. EDUCATIONAL APPROXIMATION, not a physical simulation.
+    //
+    // A visible wrapper + "Loading 3D engine..." placeholder renders
+    // synchronously (G16 render-only pass); the ~0.7 MB engine lazy-loads
+    // post-paint via requestIdleCallback and is cached by the browser.
+    // Fullscreen targets the WRAPPER div (controls stay visible).
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'earth-moon-orbit-recession';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) {
+        var s = String(slug || '').toLowerCase();
+        if (/voxel|builder|block/.test(s)) return 'voxel';
+        if (/earth.*moon|moon.*recession|orbit.*recession/.test(s)) return 'moonrecession';
+        if (/solar|planet/.test(s)) return 'solar';
+        if (/black/.test(s)) return 'blackhole';
+        if (/galaxy/.test(s)) return 'galaxy';
+        return 'solar';
+    }
+
+    // ---- vendored ESM loader (ftoLoadPdfLib shape, but a cached import()) ----
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - building still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- shared scene shell: renderer + camera + custom pointer-orbit --------
+    // OrbitControls is NOT vendored (jsm addons import the bare 'three'
+    // specifier); this ~40-line orbit covers drag-rotate + wheel/pinch zoom
+    // with damping and a clamped pitch.
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            // critically-damped-ish lerp toward the goal orbit
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        function size() {
+            var w = Math.max(260, host.clientWidth);
+            var h = Math.round(w * 0.62);
+            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fsEl && fsEl.contains(host)) { h = Math.max(240, (window.innerHeight || h) - 150); }
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        host.appendChild(renderer.domElement);
+        renderer.domElement.style.touchAction = 'none';
+        renderer.domElement.style.borderRadius = '6px';
+        // pointer-orbit input
+        var drag = null, pinch = null, moved = 0;
+        host.addEventListener('pointerdown', function (e) {
+            drag = { x: e.clientX, y: e.clientY }; moved = 0;
+            host.setPointerCapture && host.setPointerCapture(e.pointerId);
+        });
+        host.addEventListener('pointermove', function (e) {
+            if (!drag) return;
+            var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+            moved += Math.abs(dx) + Math.abs(dy);
+            drag = { x: e.clientX, y: e.clientY };
+            orbit.goalTheta -= dx * 0.006;
+            orbit.goalPhi = Math.min(Math.max(orbit.goalPhi - dy * 0.005, 0.15), Math.PI - 0.2);
+        });
+        host.addEventListener('pointerup', function (e) {
+            var wasClick = moved < 8;
+            drag = null;
+            if (wasClick && shell.onClick) { shell.onClick(e); }
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR);
+        }, { passive: false });
+        host.addEventListener('touchstart', function (e) {
+            if (e.touches.length === 2) {
+                pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            }
+        }, { passive: true });
+        host.addEventListener('touchmove', function (e) {
+            if (e.touches.length === 2 && pinch) {
+                var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                pinch = d;
+            }
+        }, { passive: true });
+        window.addEventListener('resize', size);
+        document.addEventListener('fullscreenchange', size);
+        document.addEventListener('webkitfullscreenchange', size);
+        size();
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, size: size, onClick: null,
+            ndc: function (e) {
+                var r = renderer.domElement.getBoundingClientRect();
+                return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            },
+        };
+        return shell;
+    }
+
+    // ================= EARTH-MOON ORBIT RECESSION ==============================
+    // The Moon recedes from Earth at ~3.8 cm/year due to tidal friction.
+    // Time-scrub over 1 billion years shows the Moon's orbit expanding and
+    // Earth's rotation slowing. Real figures from Apollo laser retroreflectors
+    // and tidal-dissipation models.
+    function t3dEarthMoonRecession(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+        var sunLight = new THREE.PointLight(0xfff3d0, 800, 0, 1.8);
+        sunLight.position.set(100, 50, 100);
+        scene.add(sunLight);
+
+        // Earth: rotate on its axis, the rotation slows over time
+        var earth = new THREE.Mesh(
+            new THREE.SphereGeometry(6.4, 32, 16),
+            new THREE.MeshLambertMaterial({ color: 0x4a90e2 })
+        );
+        earth.userData = { kind: 'earth', rotationRadPerSec: (2 * Math.PI) / (24 * 3600) };  // one Earth day in seconds
+        scene.add(earth);
+
+        // Moon: orbits Earth at a semi-major axis that increases over time
+        var moon = new THREE.Mesh(
+            new THREE.SphereGeometry(1.7, 24, 12),
+            new THREE.MeshLambertMaterial({ color: 0xcccccc })
+        );
+        moon.userData = { kind: 'moon', semiMajorAxis: 384400, orbitalAngle: 0 };  // 384,400 km initially
+        scene.add(moon);
+
+        // Orbital path visualization (torus)
+        var orbitRing = new THREE.Mesh(
+            new THREE.TorusGeometry(384400 / 15000, 0.1, 6, 96),  // scaled for visualization
+            new THREE.MeshBasicMaterial({ color: 0x666666, transparent: true, opacity: 0.3 })
+        );
+        orbitRing.rotation.x = 0.05;  // slight tilt
+        scene.add(orbitRing);
+
+        // Facts panel
+        function updateFacts(yearsBefore) {
+            // Calculate figures at the given time
+            // Current: Moon at 384,400 km, day length ~24 hours
+            // At 1 billion years in future:
+            // - Moon recession ~3.8 cm/year -> 1 Ga * 0.038 m/year = 38,000,000 m = 38,000 km
+            // - New distance: 384,400 + 38,000 = 422,400 km
+            // - Day length increases ~1.7 ms/century -> 1 Ga * 1.7e-3 s / 100 years = 17,000 seconds ~ 4.7 hours
+            var moonDistKm = 384400 + (yearsBefore * 0.000038 * 1000);  // 0.038 m/year -> km
+            var dayLengthHours = 24 + (yearsBefore * 1.7e-3 / 100 / 3600);  // 1.7 ms/century in hours
+            var timeLabel = yearsBefore === 0 ? 'Today' :
+                           yearsBefore < 1e6 ? (yearsBefore / 1e3).toFixed(1) + ' thousand years' :
+                           (yearsBefore / 1e6).toFixed(2) + ' billion years';
+
+            var html = '<h3>Earth-Moon System - Tidal Evolution</h3>' +
+                       '<p>Time: ' + timeLabel + '</p>' +
+                       '<table class="w3-table w3-bordered">' +
+                       '<tr><td>Moon distance from Earth</td><td>' + moonDistKm.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' km</td></tr>' +
+                       '<tr><td>Earth rotation period (day length)</td><td>' + dayLengthHours.toFixed(2) + ' hours</td></tr>' +
+                       '</table>' +
+                       '<p class="t3d-note">Scale note: sizes and distances on screen are compressed so the Moon and Earth fit one view; the numbers here are the real ones.</p>' +
+                       '<p class="t3d-note">This is an educational approximation - it does not solve the full three-body problem or account for tidal complexities. The figures in the table are from Apollo laser retroreflectors and tidal-dissipation measurements.</p>';
+            t3dInfo(html);
+        }
+
+        updateFacts(0);  // initial state
+
+        // Time-scrub slider
+        var timeSlider = document.getElementById('t3dTimeSlider');
+        if (timeSlider) {
+            timeSlider.min = 0;
+            timeSlider.max = 1000;  // 1 billion years in millions
+            timeSlider.value = 0;
+            timeSlider.addEventListener('input', function () {
+                var yearsBefore = parseFloat(timeSlider.value) * 1e6;  // convert back to years
+                updateFacts(yearsBefore);
+            });
+        }
+
+        return function animate(dt) {
+            var yearsBefore = timeSlider ? parseFloat(timeSlider.value) * 1e6 : 0;
+
+            // Update Moon's orbital distance
+            moon.userData.semiMajorAxis = 384400 + (yearsBefore * 0.000038 * 1000);  // in km
+
+            // Update Earth's rotation (slower over time)
+            var baseDayLengthSec = 24 * 3600;
+            var newDayLengthSec = baseDayLengthSec + (yearsBefore * 1.7e-3 / 100);
+            var rotationRadPerSec = (2 * Math.PI) / newDayLengthSec;
+            earth.rotation.y += rotationRadPerSec * (dt / 1000);
+
+            // Update Moon's orbit
+            var scaledOrbitalDist = moon.userData.semiMajorAxis / 15000;  // scale for visualization
+            moon.userData.orbitalAngle += (dt / 1000) * (365.25 / (27.3 * 24 * 3600)) * (2 * Math.PI);
+            moon.position.set(
+                Math.cos(moon.userData.orbitalAngle) * scaledOrbitalDist,
+                0,
+                Math.sin(moon.userData.orbitalAngle) * scaledOrbitalDist
+            );
+
+            // Update orbit ring
+            var newOrbitalRadius = moon.userData.semiMajorAxis / 15000;
+            orbitRing.geometry.dispose();
+            orbitRing.geometry = new THREE.TorusGeometry(newOrbitalRadius, 0.1, 6, 96);
+        };
+    }
+
+    // ---- bootstrap ------------------------------------------------------------
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return; // not a 3D scene page
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        // Show only this scene's control row.
+        var rows = { solar: 't3dSolarControls', galaxy: 't3dGalaxyControls', voxel: 't3dVoxelControls', moonrecession: 't3dMoonRecessionControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = {
+                        solar: { radius: 120, maxR: 260, minR: 20, phi: 1.05 },
+                        blackhole: { radius: 60, maxR: 200, minR: 14, phi: 1.25 },
+                        galaxy: { radius: 70, maxR: 220, minR: 10, phi: 0.9 },
+                        voxel: { radius: 46, maxR: 120, minR: 8, phi: 1.0, targetY: 3 },
+                        moonrecession: { radius: 100, maxR: 180, minR: 15, phi: 1.1 },
+                    };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = kind === 'voxel' ? t3dVoxel(shell)
+                        : kind === 'blackhole' ? t3dBlackHole(shell)
+                            : kind === 'galaxy' ? t3dGalaxy(shell)
+                                : kind === 'moonrecession' ? t3dEarthMoonRecession(shell)
+                                    : t3dSolar(shell);
+                    if (kind !== 'galaxy' && kind !== 'voxel') t3dStatus('Drag to orbit, scroll or pinch to zoom. Use the time slider to scrub through 1 billion years of tidal evolution.');
+                    if (kind === 'voxel') { /* status set by rebuild() */ }
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
