@@ -749,6 +749,7 @@ try {
     { title: "Huacachina Oasis 3D Explorer", url: "https://freetoolonline.com/places-3d/huacachina-oasis.html", include: !1, tags: "places-3d" },
     { title: "Son Doong Cave 3D Explorer", url: "https://freetoolonline.com/places-3d/son-doong-cave.html", include: !1, tags: "places-3d" },
     { title: "Mount Fuji 3D Explorer", url: "https://freetoolonline.com/places-3d/mount-fuji.html", include: !1, tags: "places-3d" },
+    { title: "Mammoth Cave 3D Explorer", url: "https://freetoolonline.com/places-3d/mammoth-cave.html", include: !1, tags: "places-3d" },
     { title: "Black Forest 3D Explorer", url: "https://freetoolonline.com/places-3d/black-forest.html", include: !1, tags: "places-3d" },
     { title: "Great Barrier Reef 3D Explorer", url: "https://freetoolonline.com/places-3d/great-barrier-reef.html", include: !1, tags: "places-3d" },
     { title: "Caribbean Sea 3D Explorer", url: "https://freetoolonline.com/places-3d/caribbean-sea.html", include: !1, tags: "places-3d" },

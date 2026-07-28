@@ -1,0 +1,330 @@
+<script>
+    // 3D scene archetype skeleton (mammoth-cave) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN engine), fully
+    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only
+    // (mammoth-cave). All geometry is procedural. places-3d cluster,
+    // authored 2026-07-28.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey cave geology.
+    // Published figures (Mammoth Cave National Park / NPS + Cave Research
+    // Foundation consensus, cross-checked 2026-07-28):
+    //   - Mammoth Cave, Mammoth Cave National Park, Kentucky, USA
+    //   - The longest known cave system on Earth - more than 400 miles
+    //     (about 650 km) of surveyed passages, more than twice the length
+    //     of the next-longest known system
+    //   - At least 5 mapped levels of passages stacked vertically, linked by
+    //     vertical shafts and pits - a true three-dimensional maze
+    //   - Carved in limestone protected by a caprock of sandstone, which is
+    //     why the passages have survived largely uncollapsed for millions
+    //     of years while forming
+    //   - The Echo River and Roaring River run through the lower levels
+    //   - US National Park since 1941, UNESCO World Heritage Site since
+    //     1981, International Biosphere Reserve since 1990
+    //   - Home to more than 130 species, including the endangered Kentucky
+    //     cave shrimp
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'mammoth-cave';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesmammothcave'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0a0a0d, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.46));
+        var key = new THREE.DirectionalLight(0xe7ecff, 0.6);
+        key.position.set(-6, 18, 9);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeSlab(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return { mesh: new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0, side: THREE.DoubleSide })), geo: geo, pos: pos };
+        }
+
+        // Signature figure: Mammoth Cave is famous not for one giant chamber
+        // but for being the LONGEST known cave system on Earth (400+ miles
+        // surveyed) because it is a true multi-level MAZE - at least 5
+        // stacked levels of winding passages linked by vertical shafts. The
+        // scene shows that directly as a LAYER STACK: three slabs of rock
+        // (upper / middle / lower "Echo River" level), each carved with its
+        // own winding passage groove, connected by a few vertical shafts
+        // where the levels line up - the "layer stack" archetype named for
+        // this cluster, applied to a real (educational, schematic) cave
+        // system instead of a single passage.
+        var LEVELS = [
+            { y: 0.0, half: 3.1, colorRock: 0xd9c7a3, colorVoid: 0x2a241c, freq: 0.34, phase: 0.4 },   // upper level
+            { y: -2.7, half: 2.6, colorRock: 0xb3c5b0, colorVoid: 0x1f2a22, freq: 0.42, phase: 2.1 },  // middle level
+            { y: -5.4, half: 2.2, colorRock: 0x7daea6, colorVoid: 0x123334, freq: 0.30, phase: -1.2 }, // lower / Echo River level
+        ];
+        function chan(level, z) {
+            return 1.3 * Math.sin(z * level.freq + level.phase) + 0.5 * Math.sin(z * (level.freq * 2.3) - level.phase);
+        }
+        function carveGroove(d, half, depth) {
+            if (d >= half) return 0;
+            var t = 1 - d / half;
+            var s = t * t * (3 - 2 * t);
+            return depth * Math.pow(s, 0.85);
+        }
+        function riverAmount(level, x, z) {
+            var cx = chan(level, z), rw = level.half * 0.22;
+            return smooth(rw, rw * 0.35, Math.abs(x - cx));
+        }
+
+        var levelColorsOn = true;
+        var riverOn = true;
+
+        function makeLevelColorFn(level) {
+            var rock = new THREE.Color(level.colorRock), voidCol = new THREE.Color(level.colorVoid);
+            var monoRock = new THREE.Color(0x8a8478), monoVoid = new THREE.Color(0x232323);
+            return function (c, h, x, z) {
+                var cx = chan(level, z);
+                var d = Math.abs(x - cx);
+                var u = smooth(level.half, 0, d); // 1 at passage centre, 0 at rock
+                var r = levelColorsOn ? rock : monoRock, v = levelColorsOn ? voidCol : monoVoid;
+                c.copy(r).lerp(v, u);
+                if (level.colorVoid === 0x123334 && riverOn) {
+                    c.lerp(new THREE.Color(0x2f6f78), riverAmount(level, x, z) * u);
+                }
+                var n = 0.9 + 0.14 * fbm(x * 1.1 + level.y, z * 1.1 + level.y, 3);
+                c.multiplyScalar(n);
+            };
+        }
+
+        var slabs = [];
+        for (var li = 0; li < LEVELS.length; li++) {
+            var level = LEVELS[li];
+            (function (lvl) {
+                function heightFn(x, z) {
+                    var cx = chan(lvl, z), d = Math.abs(x - cx);
+                    var base = 0.1 * (fbm(x * 0.5 + lvl.y, z * 0.5 - lvl.y, 3) - 0.5);
+                    base -= carveGroove(d, lvl.half, 0.62 + 0.15 * fbm(z * 0.6 + lvl.y, x * 0.6, 2));
+                    return base;
+                }
+                var info = makeSlab(11, 15, shell.low ? 90 : 130, shell.low ? 120 : 170, heightFn, makeLevelColorFn(lvl));
+                info.mesh.position.y = lvl.y;
+                info.level = lvl;
+                scene.add(info.mesh);
+                slabs.push(info);
+            })(level);
+        }
+
+        // Connecting shafts: thin vertical cylinders where the passages of
+        // adjacent levels pass close to the same x, linking the maze levels
+        // visually top to bottom.
+        var shaftGroup = new THREE.Group();
+        var SHAFT_Z = [-3.4, 0.6, 4.2];
+        var shaftMat = new THREE.MeshStandardMaterial({ color: 0x1c1c1e, roughness: 1, metalness: 0 });
+        for (var si = 0; si < SHAFT_Z.length; si++) {
+            var sz = SHAFT_Z[si];
+            var sx = chan(LEVELS[0], sz);
+            var shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 5.8, 12), shaftMat);
+            shaft.position.set(sx, -2.7, sz);
+            shaftGroup.add(shaft);
+        }
+        scene.add(shaftGroup);
+
+        function recolor() {
+            for (var i = 0; i < slabs.length; i++) {
+                var s = slabs[i], colorFn = makeLevelColorFn(s.level);
+                var pos = s.pos, geo = s.geo, colAttr = geo.attributes.color, c2 = new THREE.Color();
+                for (var j = 0; j < pos.count; j++) { colorFn(c2, pos.getY(j), pos.getX(j), pos.getZ(j)); colAttr.setXYZ(j, c2.r, c2.g, c2.b); }
+                colAttr.needsUpdate = true;
+            }
+        }
+
+        function panelHtml() {
+            return '<h3>Mammoth Cave: the longest known cave system</h3>' +
+                '<p>This scene stacks three rock levels, each carved with its own winding passage, and links them with vertical shafts - the same three-dimensional maze structure that makes Mammoth Cave the longest known cave system on Earth.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Surveyed length</td><td>more than 400 miles (about 650 km) - the longest known cave system on Earth</td></tr>' +
+                '<tr><td>Mapped levels</td><td>at least 5 stacked levels of passages</td></tr>' +
+                '<tr><td>Protection</td><td>a sandstone caprock over limestone bedrock has kept passages open for millions of years</td></tr>' +
+                '<tr><td>Underground rivers</td><td>Echo River and Roaring River run through the lower levels</td></tr>' +
+                '<tr><td>Location</td><td>Mammoth Cave National Park, Kentucky, USA</td></tr>' +
+                '<tr><td>Status</td><td>US National Park (1941), UNESCO World Heritage Site (1981)</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the passage shapes, level spacing, and vertical scale are schematic teaching cues, not survey cave geology.</p>';
+        }
+
+        function apply() {
+            var lb = document.getElementById('t3dPmcLevelsBtn');
+            if (lb) lb.textContent = 'Level colors: ' + (levelColorsOn ? 'On' : 'Off');
+            var rb = document.getElementById('t3dPmcRiverBtn');
+            if (rb) rb.textContent = 'Echo River highlight: ' + (riverOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ levelColorsOn: levelColorsOn, riverOn: riverOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.levelColorsOn === 'boolean') levelColorsOn = store.levelColorsOn;
+        if (typeof store.riverOn === 'boolean') riverOn = store.riverOn;
+        recolor();
+        apply();
+
+        var levelsBtn = document.getElementById('t3dPmcLevelsBtn');
+        if (levelsBtn) levelsBtn.addEventListener('click', function () { levelColorsOn = !levelColorsOn; recolor(); apply(); });
+        var riverBtn = document.getElementById('t3dPmcRiverBtn');
+        if (riverBtn) riverBtn.addEventListener('click', function () { riverOn = !riverOn; recolor(); apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle level colors or the Echo River highlight.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00003;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesmammothcave: 't3dPmcControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesmammothcave: { radius: 22, maxR: 55, minR: 6, phi: 1.0, theta: 0.7, targetY: -2.7 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
