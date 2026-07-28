@@ -1,0 +1,364 @@
+// Son Doong Cave - Cavern chamber with stalactites, stalagmites, underground river, primeval jungle
+// Signature figure: 5.5-9km main passage, 200-240m width, 80-200m height, world's largest cave
+// Primeval forest inside the cave fed by a sinkhole light shaft
+
+const SOL_DATA_SONDOONG = {
+  cave: {
+    // Chamber proportions: a 3/4 oblique view of the cavern cross-section
+    length: 6500,      // meters (main chamber average)
+    width: 220,        // meters (at widest, scaled for 3D view)
+    height: 140,       // meters (mid-range)
+    riverMeanderScale: 1.2,
+  },
+  terrain: {
+    // Heightfield for the cave floor: sandy/rocky base with scattered stalagmites
+    segments: 64,
+    seed: 0x5D0090D7, // "sondoong" hash
+    noiseScale: 12,
+    fbmOctaves: 4,
+    fbmPersistence: 0.65,
+    fbmLacunarity: 1.9,
+  },
+  stalactites: {
+    // Procedural hanging formations
+    gridDim: 18,      // density (taller ceiling allows denser pack)
+    minHeight: 8,
+    maxHeight: 24,
+    baseRadius: 0.8,
+    taper: 0.15,      // conical taper factor
+    seed: 0x7A66FF42,
+  },
+  river: {
+    // Underground river flowing through the cave floor
+    width: 18,        // meters
+    depth: 4,         // meters below floor
+    color: 0x1A8FB8,  // teal-cyan
+    meanderWaves: 4,  // oscillation count along length
+  },
+  jungle: {
+    // Primeval forest cluster in a side chamber (accent feature)
+    position: { x: -95, y: 8, z: 25 }, // right side, slightly elevated
+    scale: 1.1,
+    density: 0.6,
+    colors: [ 0x2D5016, 0x3A6B1A, 0x4A8C2A ], // dark green to bright green
+  },
+  ceiling: {
+    color: 0xA89968, // tan limestone
+    roughness: 0.7,
+  },
+  walls: {
+    color: 0x8B7355, // dark tan/brown
+    roughness: 0.8,
+  },
+  floor: {
+    color: 0x9A8B6B, // sandy tan
+    roughness: 0.6,
+  },
+  light: {
+    ambientIntensity: 0.5,
+    directionalIntensity: 0.6,
+    directionalPos: { x: 100, y: 200, z: -50 }, // from upper left, outside the cave (sinkhole effect)
+  },
+  toggles: {
+    // UI state
+    formation: true,      // stalactite/stalagmite on/off
+    bioluminescence: false, // glow mode on/off
+  }
+};
+
+// ============================================================================
+
+function buildSonDoongScene(parent, opts = {}) {
+  const D = SOL_DATA_SONDOONG;
+  const { lowQuality } = opts;
+  
+  // Scene setup
+  const group = new THREE.Group();
+  parent.add(group);
+  
+  // ---- CEILING ----
+  const ceilingGeo = new THREE.CylinderGeometry(
+    D.cave.width / 2 + 10, // slightly wider than walls for overhang effect
+    D.cave.width / 2 - 5,
+    2,
+    48,
+    6
+  );
+  const ceilingMat = new THREE.MeshPhongMaterial({
+    color: D.ceiling.color,
+    side: THREE.BackSide, // render inside
+    shininess: 30,
+  });
+  const ceiling = new THREE.Mesh(ceilingGeo, ceilingMat);
+  ceiling.position.y = D.cave.height / 2 - 1;
+  group.add(ceiling);
+  
+  // ---- FLOOR TERRAIN (heightfield) ----
+  const floorGeo = makeTerrainGeometry(
+    D.terrain.segments,
+    D.cave.width,
+    D.cave.length,
+    D.terrain.seed,
+    D.terrain.fbmOctaves,
+    D.terrain.noiseScale
+  );
+  const floorMat = new THREE.MeshPhongMaterial({
+    color: D.floor.color,
+    shininess: 20,
+  });
+  const floor = new THREE.Mesh(floorGeo, floorMat);
+  floor.position.y = -D.cave.height / 2;
+  floor.rotation.x = Math.PI * 0.15; // slight tilt for drama
+  group.add(floor);
+  
+  // ---- WALLS (cylinder) ----
+  const wallGeo = new THREE.CylinderGeometry(
+    D.cave.width / 2,
+    D.cave.width / 2,
+    D.cave.height,
+    48,
+    8,
+    true // open top/bottom
+  );
+  const wallMat = new THREE.MeshPhongMaterial({
+    color: D.walls.color,
+    side: THREE.DoubleSide,
+    shininess: 25,
+  });
+  const walls = new THREE.Mesh(wallGeo, wallMat);
+  group.add(walls);
+  
+  // ---- STALACTITES (hanging formations) ----
+  const stalactiteGroup = new THREE.Group();
+  group.add(stalactiteGroup);
+  stalactiteGroup.name = 'stalactites';
+  
+  const stalactites = [];
+  for (let i = 0; i < D.stalactites.gridDim; i++) {
+    const theta = (i / D.stalactites.gridDim) * Math.PI * 2;
+    const radius = D.cave.width / 2 - 3;
+    const x = Math.cos(theta) * radius;
+    const z = Math.sin(theta) * radius;
+    
+    // Random height per formation
+    const hash = hashRand(D.stalactites.seed, i);
+    const height = D.stalactites.minHeight + hash * (D.stalactites.maxHeight - D.stalactites.minHeight);
+    
+    // Cone geometry (downward)
+    const coneGeo = new THREE.ConeGeometry(
+      D.stalactites.baseRadius,
+      height,
+      6, // segments (hexagonal cross-section, natural look)
+      1,
+      false // not open-ended
+    );
+    const coneMat = new THREE.MeshPhongMaterial({
+      color: D.ceiling.color,
+      shininess: 35,
+    });
+    const cone = new THREE.Mesh(coneGeo, coneMat);
+    cone.position.set(x, D.cave.height / 2 - height / 2, z);
+    cone.userData = { type: 'stalactite', index: i, height };
+    stalactiteGroup.add(cone);
+    stalactites.push(cone);
+  }
+  
+  // ---- STALAGMITES (rising formations) ----
+  const stalagmiteGroup = new THREE.Group();
+  group.add(stalagmiteGroup);
+  stalagmiteGroup.name = 'stalagmites';
+  
+  // Place on the terrain, not uniformly around the circle
+  const stalagmites = [];
+  for (let i = 0; i < D.stalactites.gridDim * 0.7; i++) {
+    // Random positions on the floor
+    const u = Math.random();
+    const v = Math.random();
+    const x = (u - 0.5) * D.cave.width;
+    const z = (v - 0.5) * D.cave.length;
+    
+    const hash = hashRand(D.stalactites.seed + 1000, i);
+    const height = D.stalactites.minHeight * 0.7 + hash * (D.stalactites.maxHeight * 0.6);
+    
+    const coneGeo = new THREE.ConeGeometry(
+      D.stalactites.baseRadius * 0.9,
+      height,
+      6,
+      1,
+      false
+    );
+    const coneMat = new THREE.MeshPhongMaterial({
+      color: mix2Colors(D.ceiling.color, D.walls.color, 0.4),
+      shininess: 30,
+    });
+    const cone = new THREE.Mesh(coneGeo, coneMat);
+    cone.position.set(x, -D.cave.height / 2 + height / 2, z);
+    cone.userData = { type: 'stalagmite', index: i, height };
+    stalagmiteGroup.add(cone);
+    stalagmites.push(cone);
+  }
+  
+  // ---- UNDERGROUND RIVER ----
+  const riverGroup = new THREE.Group();
+  group.add(riverGroup);
+  riverGroup.name = 'river';
+  
+  // River ribbon meandering through the cave floor
+  const riverPath = makeRiverPath(D.cave.length, D.cave.width, D.river.meanderWaves);
+  const riverGeo = new THREE.BufferGeometry();
+  const riverPositions = [];
+  const riverIndices = [];
+  
+  for (let i = 0; i < riverPath.length; i++) {
+    const pt = riverPath[i];
+    const z = (i / riverPath.length) * D.cave.length - D.cave.length / 2;
+    
+    // Two banks
+    riverPositions.push(pt.x - D.river.width / 2, -D.cave.height / 2 + D.river.depth * 0.8, z);
+    riverPositions.push(pt.x + D.river.width / 2, -D.cave.height / 2 + D.river.depth * 0.8, z);
+    
+    if (i > 0) {
+      const a = (i - 1) * 2;
+      const b = i * 2;
+      riverIndices.push(a, a + 1, b);
+      riverIndices.push(a + 1, b + 1, b);
+    }
+  }
+  riverGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(riverPositions), 3));
+  riverGeo.setIndex(new THREE.BufferAttribute(new Uint32Array(riverIndices), 1));
+  riverGeo.computeVertexNormals();
+  
+  const riverMat = new THREE.MeshPhongMaterial({
+    color: D.river.color,
+    transparent: true,
+    opacity: 0.6,
+    shininess: 100,
+    side: THREE.DoubleSide,
+  });
+  const river = new THREE.Mesh(riverGeo, riverMat);
+  riverGroup.add(river);
+  
+  // ---- JUNGLE (side chamber accent) ----
+  const jungleGroup = new THREE.Group();
+  group.add(jungleGroup);
+  jungleGroup.name = 'jungle';
+  
+  for (let i = 0; i < 40; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 3 + Math.random() * 8;
+    const x = D.jungle.position.x + Math.cos(angle) * dist;
+    const y = D.jungle.position.y + (Math.random() - 0.5) * 6;
+    const z = D.jungle.position.z + Math.sin(angle) * dist;
+    
+    const h = 2 + Math.random() * 6;
+    const r = 0.3 + Math.random() * 0.8;
+    const colorIdx = Math.floor(Math.random() * D.jungle.colors.length);
+    
+    const treeGeo = new THREE.ConeGeometry(r, h, 4);
+    const treeMat = new THREE.MeshPhongMaterial({
+      color: D.jungle.colors[colorIdx],
+      shininess: 20,
+    });
+    const tree = new THREE.Mesh(treeGeo, treeMat);
+    tree.position.set(x, y, z);
+    jungleGroup.add(tree);
+  }
+  
+  // ---- LIGHTING ----
+  const ambLight = new THREE.AmbientLight(0xFFFFFF, D.light.ambientIntensity);
+  group.add(ambLight);
+  
+  const dirLight = new THREE.DirectionalLight(0xFFFFFF, D.light.directionalIntensity);
+  dirLight.position.set(D.light.directionalPos.x, D.light.directionalPos.y, D.light.directionalPos.z);
+  group.add(dirLight);
+  
+  // ---- TOGGLE HANDLERS ----
+  group.userData = {
+    stalactiteGroup,
+    stalagmiteGroup,
+    jungleGroup,
+    riverGroup,
+    toggleFormation(on) {
+      stalactiteGroup.visible = on;
+      stalagmiteGroup.visible = on;
+    },
+    toggleBioluminescence(on) {
+      if (on) {
+        // Add glow to formations + jungle
+        stalactiteGroup.children.forEach(c => {
+          c.material.emissive.setHex(0x00FF88);
+          c.material.emissiveIntensity = 0.4;
+        });
+        stalagmiteGroup.children.forEach(c => {
+          c.material.emissive.setHex(0x00FF88);
+          c.material.emissiveIntensity = 0.3;
+        });
+        jungleGroup.children.forEach(c => {
+          c.material.emissive.setHex(0x88FF00);
+          c.material.emissiveIntensity = 0.5;
+        });
+      } else {
+        stalactiteGroup.children.forEach(c => { c.material.emissive.setHex(0x000000); });
+        stalagmiteGroup.children.forEach(c => { c.material.emissive.setHex(0x000000); });
+        jungleGroup.children.forEach(c => { c.material.emissive.setHex(0x000000); });
+      }
+    }
+  };
+  
+  return group;
+}
+
+// Helpers
+function makeTerrainGeometry(segments, width, length, seed, octaves, noiseScale) {
+  const geo = new THREE.PlaneGeometry(width, length, segments, segments);
+  const pos = geo.attributes.position;
+  const arr = pos.array;
+  
+  for (let i = 0; i < arr.length; i += 3) {
+    const x = arr[i];
+    const z = arr[i + 2];
+    const n = fbmNoise2d((x + seed) / noiseScale, (z + seed) / noiseScale, octaves, 1.9, 0.65);
+    arr[i + 1] = n * 3; // z displacement (height)
+  }
+  pos.needsUpdate = true;
+  geo.computeVertexNormals();
+  return geo;
+}
+
+function makeRiverPath(length, width, waves) {
+  const path = [];
+  for (let i = 0; i < 100; i++) {
+    const t = i / 99;
+    const x = Math.sin(t * Math.PI * waves) * width * 0.25;
+    path.push({ x });
+  }
+  return path;
+}
+
+function hashRand(seed, i) {
+  let x = Math.sin(seed + i * 43758.5453) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+function fbmNoise2d(x, y, octaves, lacunarity, persistence) {
+  let amp = 1, freq = 1, sum = 0, maxAmp = 0;
+  for (let i = 0; i < octaves; i++) {
+    const n = Math.sin(x * freq + y * freq) * 0.5 + 0.5;
+    sum += n * amp;
+    maxAmp += amp;
+    amp *= persistence;
+    freq *= lacunarity;
+  }
+  return sum / maxAmp;
+}
+
+function mix2Colors(c1, c2, t) {
+  const r1 = (c1 >> 16) & 255, g1 = (c1 >> 8) & 255, b1 = c1 & 255;
+  const r2 = (c2 >> 16) & 255, g2 = (c2 >> 8) & 255, b2 = c2 & 255;
+  const r = Math.round(r1 + (r2 - r1) * t);
+  const g = Math.round(g1 + (g2 - g1) * t);
+  const b = Math.round(b1 + (b2 - b1) * t);
+  return (r << 16) | (g << 8) | b;
+}
+
+export { buildSonDoongScene, SOL_DATA_SONDOONG };
