@@ -1,0 +1,219 @@
+<script>
+    // Huacachina Oasis 3D scene - vendored three.js, procedural Worley-dune field
+    // around a central lagoon. Educational approximation.
+    //
+    // Published figures (encyclopedic consensus, cross-checked 2026-07-28):
+    //   - Altitude about 384 m above sea level
+    //   - Natural freshwater lagoon about 40 m in diameter
+    //   - Surrounded by towering sand dunes (up to 100+ m in height)
+    //   - Located in Ica Region, southern Peru
+    //   - Lagoon water tinted green from algae growth
+    //   - Famous for sandboarding and dune buggy tours
+
+    web.localUpload = false;
+    var T3D_SLUG = 'huacachina-oasis';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placeshuacachinoasis'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) { var el = document.getElementById('t3dStatus'); if (el) el.textContent = text; }
+    function t3dInfo(html) { var el = document.getElementById('t3dInfoPanel'); if (el) el.querySelector('#t3dInfoDetails').innerHTML = html || ''; }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.7, phi: opts.phi || 1.2,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.7, goalPhi: opts.phi || 1.2,
+            minR: opts.minR || 3, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    var g_shell = null, g_animationRunning = false, g_state = {};
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x87ceeb, 1); // sky blue
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        var key = new THREE.DirectionalLight(0xfff9e6, 0.8);
+        key.position.set(15, 20, 10);
+        scene.add(key);
+
+        // Lagoon water plane
+        var waterGeo = new THREE.CircleGeometry(2, 32);
+        var waterMat = new THREE.MeshBasicMaterial({ color: 0x4da6a6 }); // greenish-blue
+        var water = new THREE.Mesh(waterGeo, waterMat);
+        water.position.y = 0;
+        scene.add(water);
+
+        // Sand dunes using Worley cells
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function makeWorleyDunes(numCells) {
+            var cells = [];
+            for (var i = 0; i < numCells; i++) {
+                var cx = (Math.random() - 0.5) * 12;
+                var cz = (Math.random() - 0.5) * 12;
+                var dist = Math.sqrt(cx * cx + cz * cz);
+                if (dist < 2.2) continue; // exclude center (lagoon)
+                cells.push({x: cx, z: cz, h: 0.8 + Math.random() * 0.7, r: 0.6 + Math.random() * 0.5});
+            }
+            return cells;
+        }
+        var duneCells = makeWorleyDunes(shell.low ? 12 : 20);
+
+        duneCells.forEach(function(cell) {
+            var geo = new THREE.ConeGeometry(cell.r, cell.h * 3, shell.low ? 12 : 24, 6);
+            var sandCol = new THREE.Color(0xdaa520).lerp(new THREE.Color(0xcd853f), Math.random() * 0.3);
+            var mat = new THREE.MeshStandardMaterial({ color: sandCol, roughness: 0.9, metalness: 0 });
+            var dune = new THREE.Mesh(geo, mat);
+            dune.position.x = cell.x;
+            dune.position.z = cell.z;
+            dune.position.y = cell.h * 1.5;
+            scene.add(dune);
+        });
+
+        // Info panel
+        t3dInfo('Altitude: about 384 m above sea level<br/>Lagoon diameter: about 40 m<br/>Dune height: up to 100+ m');
+
+        return { water: water, waterMat: waterMat, duneCells: duneCells };
+    }
+
+    var g_toggles = {};
+
+    function t3dToggleWaterColor() {
+        g_toggles.waterColor = !g_toggles.waterColor;
+        var store = t3dLoadStore();
+        store.waterColor = g_toggles.waterColor;
+        t3dSaveStore(store);
+        if (g_shell && g_shell.scene) {
+            var water = g_shell.scene.getObjectByProperty('geometry', g_shell.scene.children.find(function(c) { return c.geometry && c.geometry.type === 'CircleGeometry'; })?.geometry);
+            if (water && water.material) {
+                water.material.color.setHex(g_toggles.waterColor ? 0x2d8b2d : 0x4da6a6);
+            }
+        }
+    }
+
+    function t3dToggleDuneShadow() {
+        g_toggles.duneShadow = !g_toggles.duneShadow;
+        var store = t3dLoadStore();
+        store.duneShadow = g_toggles.duneShadow;
+        t3dSaveStore(store);
+        if (g_shell && g_shell.scene) {
+            g_shell.scene.traverse(function(obj) {
+                if (obj.material && obj.material.isMeshStandardMaterial && obj.geometry && obj.geometry.type === 'ConeGeometry') {
+                    obj.material.roughness = g_toggles.duneShadow ? 0.7 : 0.9;
+                }
+            });
+        }
+    }
+
+    function t3dAnimate() {
+        if (!g_animationRunning) return;
+        g_shell.applyCamera();
+        g_shell.renderer.render(g_shell.scene, g_shell.camera);
+        requestAnimationFrame(t3dAnimate);
+    }
+
+    function t3dInit() {
+        var host = document.getElementById('t3dCanvasHost');
+        if (!host) { t3dStatus('Canvas host not found'); return; }
+
+        ftoLoadThree().then(function(THREE) {
+            try {
+                g_shell = t3dShell(THREE, host, { radius: 15, theta: 0.7, phi: 1.2, fov: 55 });
+                g_state = t3dScene(g_shell);
+
+                var store = t3dLoadStore();
+                g_toggles.waterColor = store.waterColor || false;
+                g_toggles.duneShadow = store.duneShadow || false;
+                if (g_toggles.waterColor) document.getElementById('t3dToggleWaterColor').checked = true;
+                if (g_toggles.duneShadow) document.getElementById('t3dToggleDuneShadow').checked = true;
+
+                g_animationRunning = true;
+                t3dStatus('');
+                t3dAnimate();
+            } catch (e) {
+                t3dStatus('Scene init error: ' + e.message);
+                console.error(e);
+            }
+        }).catch(function(err) {
+            t3dStatus('Failed to load three.js');
+            console.error(err);
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', t3dInit);
+    } else {
+        t3dInit();
+    }
+</script>
