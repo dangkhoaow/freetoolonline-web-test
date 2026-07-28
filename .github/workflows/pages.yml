@@ -37,6 +37,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Fails in seconds listing EVERY route whose JSP bundle is missing, instead
+      # of letting export-site.mjs abort mid-render on the first one (2026-07-28
+      # subnet-calculator break). The equivalent pre-push hook lives in the
+      # wrapper tree, so it only guards machines where it was installed - this
+      # step guards every push regardless of origin.
+      - name: Check route-bundle completeness
+        run: npm run check:routes
+
       - name: Export static site
         env:
           SOURCE_REPO_ROOT: ${{ github.workspace }}/source
