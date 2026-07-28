@@ -736,6 +736,7 @@ try {
     { title: "Caspian Sea 3D Explorer", url: "https://freetoolonline.com/places-3d/caspian-sea.html", include: !1, tags: "places-3d" },
     { title: "Lake Baikal 3D Explorer", url: "https://freetoolonline.com/places-3d/lake-baikal.html", include: !1, tags: "places-3d" },
     { title: "Milford Sound 3D Explorer", url: "https://freetoolonline.com/places-3d/milford-sound.html", include: !1, tags: "places-3d" },
+    { title: "Mount Kilimanjaro 3D Explorer", url: "https://freetoolonline.com/places-3d/mount-kilimanjaro.html", include: !1, tags: "places-3d" },
     { title: "Algol Eclipsing Binary 3D Explorer", url: "https://freetoolonline.com/space-3d/algol-eclipsing-binary.html", include: !1, tags: "space-3d" },
     { title: "Main-Sequence Lifetime 3D Explorer", url: "https://freetoolonline.com/space-3d/main-sequence-lifetime.html", include: !1, tags: "space-3d" },
     { title: "Earth Perihelion & Aphelion 3D Explorer", url: "https://freetoolonline.com/space-3d/earth-perihelion-aphelion.html", include: !1, tags: "space-3d" },
