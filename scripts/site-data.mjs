@@ -348,8 +348,23 @@ export const INFO_ROUTES = new Set([
   '/guides/es/user-agent-parser-when.html',
   '/guides/pt/user-agent-parser-when.html',
   '/guides/subnet-calculator-ipv4-cidr-vs-alternatives.html',
+  '/guides/pt/subnet-calculator-ipv4-cidr-vs-alternatives.html',
+  '/guides/es/subnet-calculator-ipv4-cidr-vs-alternatives.html',
+  '/guides/vi/subnet-calculator-ipv4-cidr-vs-alternatives.html',
+  '/guides/id/subnet-calculator-ipv4-cidr-vs-alternatives.html',
+  '/guides/de/subnet-calculator-ipv4-cidr-vs-alternatives.html',
   '/guides/subnet-calculator-ipv4-cidr-step-by-step.html',
+  '/guides/pt/subnet-calculator-ipv4-cidr-step-by-step.html',
+  '/guides/es/subnet-calculator-ipv4-cidr-step-by-step.html',
+  '/guides/vi/subnet-calculator-ipv4-cidr-step-by-step.html',
+  '/guides/id/subnet-calculator-ipv4-cidr-step-by-step.html',
+  '/guides/de/subnet-calculator-ipv4-cidr-step-by-step.html',
   '/guides/subnet-calculator-ipv4-cidr-when.html',
+  '/guides/pt/subnet-calculator-ipv4-cidr-when.html',
+  '/guides/es/subnet-calculator-ipv4-cidr-when.html',
+  '/guides/vi/subnet-calculator-ipv4-cidr-when.html',
+  '/guides/id/subnet-calculator-ipv4-cidr-when.html',
+  '/guides/de/subnet-calculator-ipv4-cidr-when.html',
   '/guides/aspect-ratio-calculator-vs-alternatives.html',
   '/guides/de/aspect-ratio-calculator-vs-alternatives.html',
   '/guides/id/aspect-ratio-calculator-vs-alternatives.html',
@@ -2359,7 +2374,6 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/hd-video-converter-step-by-step.html', '/guides/es/hd-video-converter-step-by-step.html', '/guides/vi/hd-video-converter-step-by-step.html', '/guides/id/hd-video-converter-step-by-step.html', '/guides/de/hd-video-converter-step-by-step.html',
   '/guides/pt/hd-video-converter-vs-alternatives.html', '/guides/es/hd-video-converter-vs-alternatives.html', '/guides/vi/hd-video-converter-vs-alternatives.html', '/guides/id/hd-video-converter-vs-alternatives.html', '/guides/de/hd-video-converter-vs-alternatives.html',
   // plan-warm-pascal-v3 S2 batch 6 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/gif-into-frames.html', '/guides/es/gif-into-frames.html', '/guides/vi/gif-into-frames.html', '/guides/id/gif-into-frames.html', '/guides/de/gif-into-frames.html',
   // plan-warm-pascal-v3 S2 batch 7 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/json-formatter-step-by-step.html', '/guides/es/json-formatter-step-by-step.html', '/guides/vi/json-formatter-step-by-step.html', '/guides/id/json-formatter-step-by-step.html', '/guides/de/json-formatter-step-by-step.html',
   '/guides/pt/json-formatter-vs-alternatives.html', '/guides/es/json-formatter-vs-alternatives.html', '/guides/vi/json-formatter-vs-alternatives.html', '/guides/id/json-formatter-vs-alternatives.html', '/guides/de/json-formatter-vs-alternatives.html',
@@ -2406,24 +2420,19 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/before-a-video-call-which-tools-to-run.html', '/guides/es/before-a-video-call-which-tools-to-run.html', '/guides/vi/before-a-video-call-which-tools-to-run.html', '/guides/id/before-a-video-call-which-tools-to-run.html', '/guides/de/before-a-video-call-which-tools-to-run.html',
   // plan-warm-pascal-v3 S2 batch 18 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/extract-gif-frames-png-vs-jpg-which-format.html', '/guides/es/extract-gif-frames-png-vs-jpg-which-format.html', '/guides/vi/extract-gif-frames-png-vs-jpg-which-format.html', '/guides/id/extract-gif-frames-png-vs-jpg-which-format.html', '/guides/de/extract-gif-frames-png-vs-jpg-which-format.html',
-  '/guides/pt/how-to-compress-a-file-online.html', '/guides/es/how-to-compress-a-file-online.html', '/guides/vi/how-to-compress-a-file-online.html', '/guides/id/how-to-compress-a-file-online.html', '/guides/de/how-to-compress-a-file-online.html',
   '/guides/pt/ffmpeg-online-conversion-stalled-three-fixes.html', '/guides/es/ffmpeg-online-conversion-stalled-three-fixes.html', '/guides/vi/ffmpeg-online-conversion-stalled-three-fixes.html', '/guides/id/ffmpeg-online-conversion-stalled-three-fixes.html', '/guides/de/ffmpeg-online-conversion-stalled-three-fixes.html',
   // plan-warm-pascal-v3 S2 batch 19 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/camera-test-shows-black-screen-four-fixes.html', '/guides/es/camera-test-shows-black-screen-four-fixes.html', '/guides/vi/camera-test-shows-black-screen-four-fixes.html', '/guides/id/camera-test-shows-black-screen-four-fixes.html', '/guides/de/camera-test-shows-black-screen-four-fixes.html',
   '/guides/pt/file-compressor.html', '/guides/es/file-compressor.html', '/guides/vi/file-compressor.html', '/guides/id/file-compressor.html', '/guides/de/file-compressor.html',
-  '/guides/pt/gif-frame-extractor.html', '/guides/es/gif-frame-extractor.html', '/guides/vi/gif-frame-extractor.html', '/guides/id/gif-frame-extractor.html', '/guides/de/gif-frame-extractor.html',
   // Cycle 20260610-12 P12.D - 5 locale variants for gif-to-frames-converter
-  '/guides/pt/gif-to-frames-converter.html', '/guides/es/gif-to-frames-converter.html', '/guides/vi/gif-to-frames-converter.html', '/guides/id/gif-to-frames-converter.html', '/guides/de/gif-to-frames-converter.html',
   // Cycle 20260610-14 - 5 locale variants for gif-to-frame
   '/guides/pt/gif-to-frame.html', '/guides/es/gif-to-frame.html', '/guides/vi/gif-to-frame.html', '/guides/id/gif-to-frame.html', '/guides/de/gif-to-frame.html',
   // plan-warm-pascal-v3 S2 batch 20 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-choose-a-compression-level.html', '/guides/es/how-to-choose-a-compression-level.html', '/guides/vi/how-to-choose-a-compression-level.html', '/guides/id/how-to-choose-a-compression-level.html', '/guides/de/how-to-choose-a-compression-level.html',
   '/guides/pt/heic-vs-jpg-vs-webp.html', '/guides/es/heic-vs-jpg-vs-webp.html', '/guides/vi/heic-vs-jpg-vs-webp.html', '/guides/id/heic-vs-jpg-vs-webp.html', '/guides/de/heic-vs-jpg-vs-webp.html',
   '/guides/pt/ffmpeg-online-vs-video-converter-which-to-pick.html', '/guides/es/ffmpeg-online-vs-video-converter-which-to-pick.html', '/guides/vi/ffmpeg-online-vs-video-converter-which-to-pick.html', '/guides/id/ffmpeg-online-vs-video-converter-which-to-pick.html', '/guides/de/ffmpeg-online-vs-video-converter-which-to-pick.html',
   // plan-warm-pascal-v3 S2 batch 21 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/base64-when-to-use-and-when-not-to.html', '/guides/es/base64-when-to-use-and-when-not-to.html', '/guides/vi/base64-when-to-use-and-when-not-to.html', '/guides/id/base64-when-to-use-and-when-not-to.html', '/guides/de/base64-when-to-use-and-when-not-to.html',
   '/guides/pt/how-to-check-webcam-and-microphone-before-an-interview.html', '/guides/es/how-to-check-webcam-and-microphone-before-an-interview.html', '/guides/vi/how-to-check-webcam-and-microphone-before-an-interview.html', '/guides/id/how-to-check-webcam-and-microphone-before-an-interview.html', '/guides/de/how-to-check-webcam-and-microphone-before-an-interview.html',
-  '/guides/pt/how-to-compress-a-folder.html', '/guides/es/how-to-compress-a-folder.html', '/guides/vi/how-to-compress-a-folder.html', '/guides/id/how-to-compress-a-folder.html', '/guides/de/how-to-compress-a-folder.html',
   // plan-warm-pascal-v3 S2 batch 22 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/compress-zip-file-to-100kb.html', '/guides/es/compress-zip-file-to-100kb.html', '/guides/vi/compress-zip-file-to-100kb.html', '/guides/id/compress-zip-file-to-100kb.html', '/guides/de/compress-zip-file-to-100kb.html',
   '/guides/pt/gif-frames-extract-vs-frame-rate-fps-explained.html', '/guides/es/gif-frames-extract-vs-frame-rate-fps-explained.html', '/guides/vi/gif-frames-extract-vs-frame-rate-fps-explained.html', '/guides/id/gif-frames-extract-vs-frame-rate-fps-explained.html', '/guides/de/gif-frames-extract-vs-frame-rate-fps-explained.html',
@@ -2444,17 +2453,14 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/free-online-tools-that-work-without-uploading-files.html', '/guides/es/free-online-tools-that-work-without-uploading-files.html', '/guides/vi/free-online-tools-that-work-without-uploading-files.html', '/guides/id/free-online-tools-that-work-without-uploading-files.html', '/guides/de/free-online-tools-that-work-without-uploading-files.html',
   '/guides/pt/jpg-vs-png-for-web.html', '/guides/es/jpg-vs-png-for-web.html', '/guides/vi/jpg-vs-png-for-web.html', '/guides/id/jpg-vs-png-for-web.html', '/guides/de/jpg-vs-png-for-web.html',
   // plan-warm-pascal-v3 S2 batch 27 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-extract-a-file-online-zip-rar-7z.html', '/guides/es/how-to-extract-a-file-online-zip-rar-7z.html', '/guides/vi/how-to-extract-a-file-online-zip-rar-7z.html', '/guides/id/how-to-extract-a-file-online-zip-rar-7z.html', '/guides/de/how-to-extract-a-file-online-zip-rar-7z.html',
   '/guides/pt/how-to-test-a-keyboard-online-step-by-step.html', '/guides/es/how-to-test-a-keyboard-online-step-by-step.html', '/guides/vi/how-to-test-a-keyboard-online-step-by-step.html', '/guides/id/how-to-test-a-keyboard-online-step-by-step.html', '/guides/de/how-to-test-a-keyboard-online-step-by-step.html',
   '/guides/pt/how-to-tell-if-a-jpg-was-compressed-too-much.html', '/guides/es/how-to-tell-if-a-jpg-was-compressed-too-much.html', '/guides/vi/how-to-tell-if-a-jpg-was-compressed-too-much.html', '/guides/id/how-to-tell-if-a-jpg-was-compressed-too-much.html', '/guides/de/how-to-tell-if-a-jpg-was-compressed-too-much.html',
   // plan-warm-pascal-v3 S2 batch 28 (2026-05-30) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-convert-heic-to-jpg-step-by-step.html', '/guides/es/how-to-convert-heic-to-jpg-step-by-step.html', '/guides/vi/how-to-convert-heic-to-jpg-step-by-step.html', '/guides/id/how-to-convert-heic-to-jpg-step-by-step.html', '/guides/de/how-to-convert-heic-to-jpg-step-by-step.html',
   '/guides/pt/how-to-test-a-touchscreen-for-bad-spots.html', '/guides/es/how-to-test-a-touchscreen-for-bad-spots.html', '/guides/vi/how-to-test-a-touchscreen-for-bad-spots.html', '/guides/id/how-to-test-a-touchscreen-for-bad-spots.html', '/guides/de/how-to-test-a-touchscreen-for-bad-spots.html',
   '/guides/pt/how-to-minify-css-js-for-cloud-run-cold-start.html', '/guides/es/how-to-minify-css-js-for-cloud-run-cold-start.html', '/guides/vi/how-to-minify-css-js-for-cloud-run-cold-start.html', '/guides/id/how-to-minify-css-js-for-cloud-run-cold-start.html', '/guides/de/how-to-minify-css-js-for-cloud-run-cold-start.html',
   // plan-warm-pascal-v3 S2 batch 29 (2026-05-30) - 5 locale variants × 3 guides; CROSSES 50% MILESTONE
   '/guides/pt/how-to-flatten-a-pdf-and-when-to-do-it.html', '/guides/es/how-to-flatten-a-pdf-and-when-to-do-it.html', '/guides/vi/how-to-flatten-a-pdf-and-when-to-do-it.html', '/guides/id/how-to-flatten-a-pdf-and-when-to-do-it.html', '/guides/de/how-to-flatten-a-pdf-and-when-to-do-it.html',
   '/guides/pt/how-to-crop-and-rotate-an-image.html', '/guides/es/how-to-crop-and-rotate-an-image.html', '/guides/vi/how-to-crop-and-rotate-an-image.html', '/guides/id/how-to-crop-and-rotate-an-image.html', '/guides/de/how-to-crop-and-rotate-an-image.html',
-  '/guides/pt/how-to-compress-a-zip-file-to-a-specific-size.html', '/guides/es/how-to-compress-a-zip-file-to-a-specific-size.html', '/guides/vi/how-to-compress-a-zip-file-to-a-specific-size.html', '/guides/id/how-to-compress-a-zip-file-to-a-specific-size.html', '/guides/de/how-to-compress-a-zip-file-to-a-specific-size.html',
   // plan-warm-pascal-v3 S2 batch 30 (2026-05-30) - 5 locale variants × 3 guides; PAST 50% R14 threshold
   '/guides/pt/how-to-sign-pdf-after-removing-a-password.html', '/guides/es/how-to-sign-pdf-after-removing-a-password.html', '/guides/vi/how-to-sign-pdf-after-removing-a-password.html', '/guides/id/how-to-sign-pdf-after-removing-a-password.html', '/guides/de/how-to-sign-pdf-after-removing-a-password.html',
   '/guides/pt/how-to-test-for-dead-pixels-before-returning-a-monitor.html', '/guides/es/how-to-test-for-dead-pixels-before-returning-a-monitor.html', '/guides/vi/how-to-test-for-dead-pixels-before-returning-a-monitor.html', '/guides/id/how-to-test-for-dead-pixels-before-returning-a-monitor.html', '/guides/de/how-to-test-for-dead-pixels-before-returning-a-monitor.html',
@@ -2490,7 +2496,6 @@ export const INFO_ROUTES = new Set([
   // plan-warm-pascal-v3 S2 batch 38 (2026-05-30) - 5 locale variants × 3 guides
   '/guides/pt/zip-password-types-strong-vs-weak-explained.html', '/guides/es/zip-password-types-strong-vs-weak-explained.html', '/guides/vi/zip-password-types-strong-vs-weak-explained.html', '/guides/id/zip-password-types-strong-vs-weak-explained.html', '/guides/de/zip-password-types-strong-vs-weak-explained.html',
   '/guides/pt/md5-vs-sha256-when-to-hash.html', '/guides/es/md5-vs-sha256-when-to-hash.html', '/guides/vi/md5-vs-sha256-when-to-hash.html', '/guides/id/md5-vs-sha256-when-to-hash.html', '/guides/de/md5-vs-sha256-when-to-hash.html',
-  '/guides/pt/how-to-convert-iphone-photo-to-jpg.html', '/guides/es/how-to-convert-iphone-photo-to-jpg.html', '/guides/vi/how-to-convert-iphone-photo-to-jpg.html', '/guides/id/how-to-convert-iphone-photo-to-jpg.html', '/guides/de/how-to-convert-iphone-photo-to-jpg.html',
   // plan-warm-pascal-v3 S2 batch 39 (2026-05-30) - 5 locale variants × 3 guides
   '/guides/pt/microphone-test-permission-blocked-how-to-allow-it.html', '/guides/es/microphone-test-permission-blocked-how-to-allow-it.html', '/guides/vi/microphone-test-permission-blocked-how-to-allow-it.html', '/guides/id/microphone-test-permission-blocked-how-to-allow-it.html', '/guides/de/microphone-test-permission-blocked-how-to-allow-it.html',
   '/guides/pt/qr-code-error-correction-and-scan-failures.html', '/guides/es/qr-code-error-correction-and-scan-failures.html', '/guides/vi/qr-code-error-correction-and-scan-failures.html', '/guides/id/qr-code-error-correction-and-scan-failures.html', '/guides/de/qr-code-error-correction-and-scan-failures.html',
@@ -8801,8 +8806,23 @@ export const GUIDE_ROUTES = new Set([
   '/guides/audio-trimmer-vs-alternatives.html',
   // new-tool-discovery-loop fire594 (2026-07-27) - audio-speed-changer companion guides.
   '/guides/audio-speed-changer-when.html',
+  '/guides/pt/audio-speed-changer-when.html',
+  '/guides/es/audio-speed-changer-when.html',
+  '/guides/vi/audio-speed-changer-when.html',
+  '/guides/id/audio-speed-changer-when.html',
+  '/guides/de/audio-speed-changer-when.html',
   '/guides/audio-speed-changer-step-by-step.html',
+  '/guides/pt/audio-speed-changer-step-by-step.html',
+  '/guides/es/audio-speed-changer-step-by-step.html',
+  '/guides/vi/audio-speed-changer-step-by-step.html',
+  '/guides/id/audio-speed-changer-step-by-step.html',
+  '/guides/de/audio-speed-changer-step-by-step.html',
   '/guides/audio-speed-changer-vs-alternatives.html',
+  '/guides/pt/audio-speed-changer-vs-alternatives.html',
+  '/guides/es/audio-speed-changer-vs-alternatives.html',
+  '/guides/vi/audio-speed-changer-vs-alternatives.html',
+  '/guides/id/audio-speed-changer-vs-alternatives.html',
+  '/guides/de/audio-speed-changer-vs-alternatives.html',
   // Cycle 20260524-10 create_new_guide_page - "i love zip" bare-query landing (companion to /zip-file.html).
   // Cycle 78 P78.A - "QR code error correction and scan failures" Lane-D guide (companion to /qr-code-generator.html).
   // Cycle 79 P79.B - "Image to Base64: embed in HTML/CSS vs link the image file" Lane-D guide.
@@ -10909,7 +10929,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/how-to-play-neon-tower-rush.html',
   '/guides/es/how-to-play-neon-tower-rush.html',
   '/guides/vi/how-to-play-neon-tower-rush.html',
-  '/guides/id/how-to-play-neon-tower-rush.html',
   '/guides/de/how-to-play-neon-tower-rush.html',
   '/guides/neon-tower-rush-when.html',
   '/guides/pt/neon-tower-rush-when.html',
@@ -14650,7 +14669,6 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/hd-video-converter-step-by-step.html': 'guide/pt/hd-video-converter-step-by-step.jsp', '/guides/es/hd-video-converter-step-by-step.html': 'guide/es/hd-video-converter-step-by-step.jsp', '/guides/vi/hd-video-converter-step-by-step.html': 'guide/vi/hd-video-converter-step-by-step.jsp', '/guides/id/hd-video-converter-step-by-step.html': 'guide/id/hd-video-converter-step-by-step.jsp', '/guides/de/hd-video-converter-step-by-step.html': 'guide/de/hd-video-converter-step-by-step.jsp',
   '/guides/pt/hd-video-converter-vs-alternatives.html': 'guide/pt/hd-video-converter-vs-alternatives.jsp', '/guides/es/hd-video-converter-vs-alternatives.html': 'guide/es/hd-video-converter-vs-alternatives.jsp', '/guides/vi/hd-video-converter-vs-alternatives.html': 'guide/vi/hd-video-converter-vs-alternatives.jsp', '/guides/id/hd-video-converter-vs-alternatives.html': 'guide/id/hd-video-converter-vs-alternatives.jsp', '/guides/de/hd-video-converter-vs-alternatives.html': 'guide/de/hd-video-converter-vs-alternatives.jsp',
   // plan-warm-pascal-v3 S2 batch 6 (2026-05-29) - 5 locale variants × 3 guides (compress-zip + gif-into-frames + reduce-zip-file-size-online)
-  '/guides/pt/gif-into-frames.html': 'guide/pt/gif-into-frames.jsp', '/guides/es/gif-into-frames.html': 'guide/es/gif-into-frames.jsp', '/guides/vi/gif-into-frames.html': 'guide/vi/gif-into-frames.jsp', '/guides/id/gif-into-frames.html': 'guide/id/gif-into-frames.jsp', '/guides/de/gif-into-frames.html': 'guide/de/gif-into-frames.jsp',
   // plan-warm-pascal-v3 S2 batch 7 (2026-05-29) - 5 locale variants × 3 guides (json-formatter-step-by-step + zip-compress + json-formatter-vs-alternatives)
   '/guides/pt/json-formatter-step-by-step.html': 'guide/pt/json-formatter-step-by-step.jsp', '/guides/es/json-formatter-step-by-step.html': 'guide/es/json-formatter-step-by-step.jsp', '/guides/vi/json-formatter-step-by-step.html': 'guide/vi/json-formatter-step-by-step.jsp', '/guides/id/json-formatter-step-by-step.html': 'guide/id/json-formatter-step-by-step.jsp', '/guides/de/json-formatter-step-by-step.html': 'guide/de/json-formatter-step-by-step.jsp',
   '/guides/pt/json-formatter-vs-alternatives.html': 'guide/pt/json-formatter-vs-alternatives.jsp', '/guides/es/json-formatter-vs-alternatives.html': 'guide/es/json-formatter-vs-alternatives.jsp', '/guides/vi/json-formatter-vs-alternatives.html': 'guide/vi/json-formatter-vs-alternatives.jsp', '/guides/id/json-formatter-vs-alternatives.html': 'guide/id/json-formatter-vs-alternatives.jsp', '/guides/de/json-formatter-vs-alternatives.html': 'guide/de/json-formatter-vs-alternatives.jsp',
@@ -14696,24 +14714,19 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/before-a-video-call-which-tools-to-run.html': 'guide/pt/before-a-video-call-which-tools-to-run.jsp', '/guides/es/before-a-video-call-which-tools-to-run.html': 'guide/es/before-a-video-call-which-tools-to-run.jsp', '/guides/vi/before-a-video-call-which-tools-to-run.html': 'guide/vi/before-a-video-call-which-tools-to-run.jsp', '/guides/id/before-a-video-call-which-tools-to-run.html': 'guide/id/before-a-video-call-which-tools-to-run.jsp', '/guides/de/before-a-video-call-which-tools-to-run.html': 'guide/de/before-a-video-call-which-tools-to-run.jsp',
   // plan-warm-pascal-v3 S2 batch 18 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/extract-gif-frames-png-vs-jpg-which-format.html': 'guide/pt/extract-gif-frames-png-vs-jpg-which-format.jsp', '/guides/es/extract-gif-frames-png-vs-jpg-which-format.html': 'guide/es/extract-gif-frames-png-vs-jpg-which-format.jsp', '/guides/vi/extract-gif-frames-png-vs-jpg-which-format.html': 'guide/vi/extract-gif-frames-png-vs-jpg-which-format.jsp', '/guides/id/extract-gif-frames-png-vs-jpg-which-format.html': 'guide/id/extract-gif-frames-png-vs-jpg-which-format.jsp', '/guides/de/extract-gif-frames-png-vs-jpg-which-format.html': 'guide/de/extract-gif-frames-png-vs-jpg-which-format.jsp',
-  '/guides/pt/how-to-compress-a-file-online.html': 'guide/pt/how-to-compress-a-file-online.jsp', '/guides/es/how-to-compress-a-file-online.html': 'guide/es/how-to-compress-a-file-online.jsp', '/guides/vi/how-to-compress-a-file-online.html': 'guide/vi/how-to-compress-a-file-online.jsp', '/guides/id/how-to-compress-a-file-online.html': 'guide/id/how-to-compress-a-file-online.jsp', '/guides/de/how-to-compress-a-file-online.html': 'guide/de/how-to-compress-a-file-online.jsp',
   '/guides/pt/ffmpeg-online-conversion-stalled-three-fixes.html': 'guide/pt/ffmpeg-online-conversion-stalled-three-fixes.jsp', '/guides/es/ffmpeg-online-conversion-stalled-three-fixes.html': 'guide/es/ffmpeg-online-conversion-stalled-three-fixes.jsp', '/guides/vi/ffmpeg-online-conversion-stalled-three-fixes.html': 'guide/vi/ffmpeg-online-conversion-stalled-three-fixes.jsp', '/guides/id/ffmpeg-online-conversion-stalled-three-fixes.html': 'guide/id/ffmpeg-online-conversion-stalled-three-fixes.jsp', '/guides/de/ffmpeg-online-conversion-stalled-three-fixes.html': 'guide/de/ffmpeg-online-conversion-stalled-three-fixes.jsp',
   // plan-warm-pascal-v3 S2 batch 19 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/camera-test-shows-black-screen-four-fixes.html': 'guide/pt/camera-test-shows-black-screen-four-fixes.jsp', '/guides/es/camera-test-shows-black-screen-four-fixes.html': 'guide/es/camera-test-shows-black-screen-four-fixes.jsp', '/guides/vi/camera-test-shows-black-screen-four-fixes.html': 'guide/vi/camera-test-shows-black-screen-four-fixes.jsp', '/guides/id/camera-test-shows-black-screen-four-fixes.html': 'guide/id/camera-test-shows-black-screen-four-fixes.jsp', '/guides/de/camera-test-shows-black-screen-four-fixes.html': 'guide/de/camera-test-shows-black-screen-four-fixes.jsp',
   '/guides/pt/file-compressor.html': 'guide/pt/file-compressor.jsp', '/guides/es/file-compressor.html': 'guide/es/file-compressor.jsp', '/guides/vi/file-compressor.html': 'guide/vi/file-compressor.jsp', '/guides/id/file-compressor.html': 'guide/id/file-compressor.jsp', '/guides/de/file-compressor.html': 'guide/de/file-compressor.jsp',
-  '/guides/pt/gif-frame-extractor.html': 'guide/pt/gif-frame-extractor.jsp', '/guides/es/gif-frame-extractor.html': 'guide/es/gif-frame-extractor.jsp', '/guides/vi/gif-frame-extractor.html': 'guide/vi/gif-frame-extractor.jsp', '/guides/id/gif-frame-extractor.html': 'guide/id/gif-frame-extractor.jsp', '/guides/de/gif-frame-extractor.html': 'guide/de/gif-frame-extractor.jsp',
   // Cycle 20260610-12 P12.D - 5 locale JSP routes for gif-to-frames-converter
-  '/guides/pt/gif-to-frames-converter.html': 'guide/pt/gif-to-frames-converter.jsp', '/guides/es/gif-to-frames-converter.html': 'guide/es/gif-to-frames-converter.jsp', '/guides/vi/gif-to-frames-converter.html': 'guide/vi/gif-to-frames-converter.jsp', '/guides/id/gif-to-frames-converter.html': 'guide/id/gif-to-frames-converter.jsp', '/guides/de/gif-to-frames-converter.html': 'guide/de/gif-to-frames-converter.jsp',
   // Cycle 20260610-14 - 5 locale JSP routes for gif-to-frame
   '/guides/pt/gif-to-frame.html': 'guide/pt/gif-to-frame.jsp', '/guides/es/gif-to-frame.html': 'guide/es/gif-to-frame.jsp', '/guides/vi/gif-to-frame.html': 'guide/vi/gif-to-frame.jsp', '/guides/id/gif-to-frame.html': 'guide/id/gif-to-frame.jsp', '/guides/de/gif-to-frame.html': 'guide/de/gif-to-frame.jsp',
   // plan-warm-pascal-v3 S2 batch 20 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-choose-a-compression-level.html': 'guide/pt/how-to-choose-a-compression-level.jsp', '/guides/es/how-to-choose-a-compression-level.html': 'guide/es/how-to-choose-a-compression-level.jsp', '/guides/vi/how-to-choose-a-compression-level.html': 'guide/vi/how-to-choose-a-compression-level.jsp', '/guides/id/how-to-choose-a-compression-level.html': 'guide/id/how-to-choose-a-compression-level.jsp', '/guides/de/how-to-choose-a-compression-level.html': 'guide/de/how-to-choose-a-compression-level.jsp',
   '/guides/pt/heic-vs-jpg-vs-webp.html': 'guide/pt/heic-vs-jpg-vs-webp.jsp', '/guides/es/heic-vs-jpg-vs-webp.html': 'guide/es/heic-vs-jpg-vs-webp.jsp', '/guides/vi/heic-vs-jpg-vs-webp.html': 'guide/vi/heic-vs-jpg-vs-webp.jsp', '/guides/id/heic-vs-jpg-vs-webp.html': 'guide/id/heic-vs-jpg-vs-webp.jsp', '/guides/de/heic-vs-jpg-vs-webp.html': 'guide/de/heic-vs-jpg-vs-webp.jsp',
   '/guides/pt/ffmpeg-online-vs-video-converter-which-to-pick.html': 'guide/pt/ffmpeg-online-vs-video-converter-which-to-pick.jsp', '/guides/es/ffmpeg-online-vs-video-converter-which-to-pick.html': 'guide/es/ffmpeg-online-vs-video-converter-which-to-pick.jsp', '/guides/vi/ffmpeg-online-vs-video-converter-which-to-pick.html': 'guide/vi/ffmpeg-online-vs-video-converter-which-to-pick.jsp', '/guides/id/ffmpeg-online-vs-video-converter-which-to-pick.html': 'guide/id/ffmpeg-online-vs-video-converter-which-to-pick.jsp', '/guides/de/ffmpeg-online-vs-video-converter-which-to-pick.html': 'guide/de/ffmpeg-online-vs-video-converter-which-to-pick.jsp',
   // plan-warm-pascal-v3 S2 batch 21 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/base64-when-to-use-and-when-not-to.html': 'guide/pt/base64-when-to-use-and-when-not-to.jsp', '/guides/es/base64-when-to-use-and-when-not-to.html': 'guide/es/base64-when-to-use-and-when-not-to.jsp', '/guides/vi/base64-when-to-use-and-when-not-to.html': 'guide/vi/base64-when-to-use-and-when-not-to.jsp', '/guides/id/base64-when-to-use-and-when-not-to.html': 'guide/id/base64-when-to-use-and-when-not-to.jsp', '/guides/de/base64-when-to-use-and-when-not-to.html': 'guide/de/base64-when-to-use-and-when-not-to.jsp',
   '/guides/pt/how-to-check-webcam-and-microphone-before-an-interview.html': 'guide/pt/how-to-check-webcam-and-microphone-before-an-interview.jsp', '/guides/es/how-to-check-webcam-and-microphone-before-an-interview.html': 'guide/es/how-to-check-webcam-and-microphone-before-an-interview.jsp', '/guides/vi/how-to-check-webcam-and-microphone-before-an-interview.html': 'guide/vi/how-to-check-webcam-and-microphone-before-an-interview.jsp', '/guides/id/how-to-check-webcam-and-microphone-before-an-interview.html': 'guide/id/how-to-check-webcam-and-microphone-before-an-interview.jsp', '/guides/de/how-to-check-webcam-and-microphone-before-an-interview.html': 'guide/de/how-to-check-webcam-and-microphone-before-an-interview.jsp',
-  '/guides/pt/how-to-compress-a-folder.html': 'guide/pt/how-to-compress-a-folder.jsp', '/guides/es/how-to-compress-a-folder.html': 'guide/es/how-to-compress-a-folder.jsp', '/guides/vi/how-to-compress-a-folder.html': 'guide/vi/how-to-compress-a-folder.jsp', '/guides/id/how-to-compress-a-folder.html': 'guide/id/how-to-compress-a-folder.jsp', '/guides/de/how-to-compress-a-folder.html': 'guide/de/how-to-compress-a-folder.jsp',
   // plan-warm-pascal-v3 S2 batch 22 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/compress-zip-file-to-100kb.html': 'guide/pt/compress-zip-file-to-100kb.jsp', '/guides/es/compress-zip-file-to-100kb.html': 'guide/es/compress-zip-file-to-100kb.jsp', '/guides/vi/compress-zip-file-to-100kb.html': 'guide/vi/compress-zip-file-to-100kb.jsp', '/guides/id/compress-zip-file-to-100kb.html': 'guide/id/compress-zip-file-to-100kb.jsp', '/guides/de/compress-zip-file-to-100kb.html': 'guide/de/compress-zip-file-to-100kb.jsp',
   '/guides/pt/gif-frames-extract-vs-frame-rate-fps-explained.html': 'guide/pt/gif-frames-extract-vs-frame-rate-fps-explained.jsp', '/guides/es/gif-frames-extract-vs-frame-rate-fps-explained.html': 'guide/es/gif-frames-extract-vs-frame-rate-fps-explained.jsp', '/guides/vi/gif-frames-extract-vs-frame-rate-fps-explained.html': 'guide/vi/gif-frames-extract-vs-frame-rate-fps-explained.jsp', '/guides/id/gif-frames-extract-vs-frame-rate-fps-explained.html': 'guide/id/gif-frames-extract-vs-frame-rate-fps-explained.jsp', '/guides/de/gif-frames-extract-vs-frame-rate-fps-explained.html': 'guide/de/gif-frames-extract-vs-frame-rate-fps-explained.jsp',
@@ -14734,17 +14747,14 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/free-online-tools-that-work-without-uploading-files.html': 'guide/pt/free-online-tools-that-work-without-uploading-files.jsp', '/guides/es/free-online-tools-that-work-without-uploading-files.html': 'guide/es/free-online-tools-that-work-without-uploading-files.jsp', '/guides/vi/free-online-tools-that-work-without-uploading-files.html': 'guide/vi/free-online-tools-that-work-without-uploading-files.jsp', '/guides/id/free-online-tools-that-work-without-uploading-files.html': 'guide/id/free-online-tools-that-work-without-uploading-files.jsp', '/guides/de/free-online-tools-that-work-without-uploading-files.html': 'guide/de/free-online-tools-that-work-without-uploading-files.jsp',
   '/guides/pt/jpg-vs-png-for-web.html': 'guide/pt/jpg-vs-png-for-web.jsp', '/guides/es/jpg-vs-png-for-web.html': 'guide/es/jpg-vs-png-for-web.jsp', '/guides/vi/jpg-vs-png-for-web.html': 'guide/vi/jpg-vs-png-for-web.jsp', '/guides/id/jpg-vs-png-for-web.html': 'guide/id/jpg-vs-png-for-web.jsp', '/guides/de/jpg-vs-png-for-web.html': 'guide/de/jpg-vs-png-for-web.jsp',
   // plan-warm-pascal-v3 S2 batch 27 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-extract-a-file-online-zip-rar-7z.html': 'guide/pt/how-to-extract-a-file-online-zip-rar-7z.jsp', '/guides/es/how-to-extract-a-file-online-zip-rar-7z.html': 'guide/es/how-to-extract-a-file-online-zip-rar-7z.jsp', '/guides/vi/how-to-extract-a-file-online-zip-rar-7z.html': 'guide/vi/how-to-extract-a-file-online-zip-rar-7z.jsp', '/guides/id/how-to-extract-a-file-online-zip-rar-7z.html': 'guide/id/how-to-extract-a-file-online-zip-rar-7z.jsp', '/guides/de/how-to-extract-a-file-online-zip-rar-7z.html': 'guide/de/how-to-extract-a-file-online-zip-rar-7z.jsp',
   '/guides/pt/how-to-test-a-keyboard-online-step-by-step.html': 'guide/pt/how-to-test-a-keyboard-online-step-by-step.jsp', '/guides/es/how-to-test-a-keyboard-online-step-by-step.html': 'guide/es/how-to-test-a-keyboard-online-step-by-step.jsp', '/guides/vi/how-to-test-a-keyboard-online-step-by-step.html': 'guide/vi/how-to-test-a-keyboard-online-step-by-step.jsp', '/guides/id/how-to-test-a-keyboard-online-step-by-step.html': 'guide/id/how-to-test-a-keyboard-online-step-by-step.jsp', '/guides/de/how-to-test-a-keyboard-online-step-by-step.html': 'guide/de/how-to-test-a-keyboard-online-step-by-step.jsp',
   '/guides/pt/how-to-tell-if-a-jpg-was-compressed-too-much.html': 'guide/pt/how-to-tell-if-a-jpg-was-compressed-too-much.jsp', '/guides/es/how-to-tell-if-a-jpg-was-compressed-too-much.html': 'guide/es/how-to-tell-if-a-jpg-was-compressed-too-much.jsp', '/guides/vi/how-to-tell-if-a-jpg-was-compressed-too-much.html': 'guide/vi/how-to-tell-if-a-jpg-was-compressed-too-much.jsp', '/guides/id/how-to-tell-if-a-jpg-was-compressed-too-much.html': 'guide/id/how-to-tell-if-a-jpg-was-compressed-too-much.jsp', '/guides/de/how-to-tell-if-a-jpg-was-compressed-too-much.html': 'guide/de/how-to-tell-if-a-jpg-was-compressed-too-much.jsp',
   // plan-warm-pascal-v3 S2 batch 28 (2026-05-30) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-convert-heic-to-jpg-step-by-step.html': 'guide/pt/how-to-convert-heic-to-jpg-step-by-step.jsp', '/guides/es/how-to-convert-heic-to-jpg-step-by-step.html': 'guide/es/how-to-convert-heic-to-jpg-step-by-step.jsp', '/guides/vi/how-to-convert-heic-to-jpg-step-by-step.html': 'guide/vi/how-to-convert-heic-to-jpg-step-by-step.jsp', '/guides/id/how-to-convert-heic-to-jpg-step-by-step.html': 'guide/id/how-to-convert-heic-to-jpg-step-by-step.jsp', '/guides/de/how-to-convert-heic-to-jpg-step-by-step.html': 'guide/de/how-to-convert-heic-to-jpg-step-by-step.jsp',
   '/guides/pt/how-to-test-a-touchscreen-for-bad-spots.html': 'guide/pt/how-to-test-a-touchscreen-for-bad-spots.jsp', '/guides/es/how-to-test-a-touchscreen-for-bad-spots.html': 'guide/es/how-to-test-a-touchscreen-for-bad-spots.jsp', '/guides/vi/how-to-test-a-touchscreen-for-bad-spots.html': 'guide/vi/how-to-test-a-touchscreen-for-bad-spots.jsp', '/guides/id/how-to-test-a-touchscreen-for-bad-spots.html': 'guide/id/how-to-test-a-touchscreen-for-bad-spots.jsp', '/guides/de/how-to-test-a-touchscreen-for-bad-spots.html': 'guide/de/how-to-test-a-touchscreen-for-bad-spots.jsp',
   '/guides/pt/how-to-minify-css-js-for-cloud-run-cold-start.html': 'guide/pt/how-to-minify-css-js-for-cloud-run-cold-start.jsp', '/guides/es/how-to-minify-css-js-for-cloud-run-cold-start.html': 'guide/es/how-to-minify-css-js-for-cloud-run-cold-start.jsp', '/guides/vi/how-to-minify-css-js-for-cloud-run-cold-start.html': 'guide/vi/how-to-minify-css-js-for-cloud-run-cold-start.jsp', '/guides/id/how-to-minify-css-js-for-cloud-run-cold-start.html': 'guide/id/how-to-minify-css-js-for-cloud-run-cold-start.jsp', '/guides/de/how-to-minify-css-js-for-cloud-run-cold-start.html': 'guide/de/how-to-minify-css-js-for-cloud-run-cold-start.jsp',
   // plan-warm-pascal-v3 S2 batch 29 (2026-05-30) - 5 locale variants × 3 guides; CROSSES 50% MILESTONE
   '/guides/pt/how-to-flatten-a-pdf-and-when-to-do-it.html': 'guide/pt/how-to-flatten-a-pdf-and-when-to-do-it.jsp', '/guides/es/how-to-flatten-a-pdf-and-when-to-do-it.html': 'guide/es/how-to-flatten-a-pdf-and-when-to-do-it.jsp', '/guides/vi/how-to-flatten-a-pdf-and-when-to-do-it.html': 'guide/vi/how-to-flatten-a-pdf-and-when-to-do-it.jsp', '/guides/id/how-to-flatten-a-pdf-and-when-to-do-it.html': 'guide/id/how-to-flatten-a-pdf-and-when-to-do-it.jsp', '/guides/de/how-to-flatten-a-pdf-and-when-to-do-it.html': 'guide/de/how-to-flatten-a-pdf-and-when-to-do-it.jsp',
   '/guides/pt/how-to-crop-and-rotate-an-image.html': 'guide/pt/how-to-crop-and-rotate-an-image.jsp', '/guides/es/how-to-crop-and-rotate-an-image.html': 'guide/es/how-to-crop-and-rotate-an-image.jsp', '/guides/vi/how-to-crop-and-rotate-an-image.html': 'guide/vi/how-to-crop-and-rotate-an-image.jsp', '/guides/id/how-to-crop-and-rotate-an-image.html': 'guide/id/how-to-crop-and-rotate-an-image.jsp', '/guides/de/how-to-crop-and-rotate-an-image.html': 'guide/de/how-to-crop-and-rotate-an-image.jsp',
-  '/guides/pt/how-to-compress-a-zip-file-to-a-specific-size.html': 'guide/pt/how-to-compress-a-zip-file-to-a-specific-size.jsp', '/guides/es/how-to-compress-a-zip-file-to-a-specific-size.html': 'guide/es/how-to-compress-a-zip-file-to-a-specific-size.jsp', '/guides/vi/how-to-compress-a-zip-file-to-a-specific-size.html': 'guide/vi/how-to-compress-a-zip-file-to-a-specific-size.jsp', '/guides/id/how-to-compress-a-zip-file-to-a-specific-size.html': 'guide/id/how-to-compress-a-zip-file-to-a-specific-size.jsp', '/guides/de/how-to-compress-a-zip-file-to-a-specific-size.html': 'guide/de/how-to-compress-a-zip-file-to-a-specific-size.jsp',
   // plan-warm-pascal-v3 S2 batch 30 (2026-05-30) - 5 locale variants × 3 guides; PAST 50% R14 threshold
   '/guides/pt/how-to-sign-pdf-after-removing-a-password.html': 'guide/pt/how-to-sign-pdf-after-removing-a-password.jsp', '/guides/es/how-to-sign-pdf-after-removing-a-password.html': 'guide/es/how-to-sign-pdf-after-removing-a-password.jsp', '/guides/vi/how-to-sign-pdf-after-removing-a-password.html': 'guide/vi/how-to-sign-pdf-after-removing-a-password.jsp', '/guides/id/how-to-sign-pdf-after-removing-a-password.html': 'guide/id/how-to-sign-pdf-after-removing-a-password.jsp', '/guides/de/how-to-sign-pdf-after-removing-a-password.html': 'guide/de/how-to-sign-pdf-after-removing-a-password.jsp',
   '/guides/pt/how-to-test-for-dead-pixels-before-returning-a-monitor.html': 'guide/pt/how-to-test-for-dead-pixels-before-returning-a-monitor.jsp', '/guides/es/how-to-test-for-dead-pixels-before-returning-a-monitor.html': 'guide/es/how-to-test-for-dead-pixels-before-returning-a-monitor.jsp', '/guides/vi/how-to-test-for-dead-pixels-before-returning-a-monitor.html': 'guide/vi/how-to-test-for-dead-pixels-before-returning-a-monitor.jsp', '/guides/id/how-to-test-for-dead-pixels-before-returning-a-monitor.html': 'guide/id/how-to-test-for-dead-pixels-before-returning-a-monitor.jsp', '/guides/de/how-to-test-for-dead-pixels-before-returning-a-monitor.html': 'guide/de/how-to-test-for-dead-pixels-before-returning-a-monitor.jsp',
@@ -14780,7 +14790,6 @@ export const JSP_BY_ROUTE = {
   // plan-warm-pascal-v3 S2 batch 38 (2026-05-30) - 5 locale variants × 3 guides
   '/guides/pt/zip-password-types-strong-vs-weak-explained.html': 'guide/pt/zip-password-types-strong-vs-weak-explained.jsp', '/guides/es/zip-password-types-strong-vs-weak-explained.html': 'guide/es/zip-password-types-strong-vs-weak-explained.jsp', '/guides/vi/zip-password-types-strong-vs-weak-explained.html': 'guide/vi/zip-password-types-strong-vs-weak-explained.jsp', '/guides/id/zip-password-types-strong-vs-weak-explained.html': 'guide/id/zip-password-types-strong-vs-weak-explained.jsp', '/guides/de/zip-password-types-strong-vs-weak-explained.html': 'guide/de/zip-password-types-strong-vs-weak-explained.jsp',
   '/guides/pt/md5-vs-sha256-when-to-hash.html': 'guide/pt/md5-vs-sha256-when-to-hash.jsp', '/guides/es/md5-vs-sha256-when-to-hash.html': 'guide/es/md5-vs-sha256-when-to-hash.jsp', '/guides/vi/md5-vs-sha256-when-to-hash.html': 'guide/vi/md5-vs-sha256-when-to-hash.jsp', '/guides/id/md5-vs-sha256-when-to-hash.html': 'guide/id/md5-vs-sha256-when-to-hash.jsp', '/guides/de/md5-vs-sha256-when-to-hash.html': 'guide/de/md5-vs-sha256-when-to-hash.jsp',
-  '/guides/pt/how-to-convert-iphone-photo-to-jpg.html': 'guide/pt/how-to-convert-iphone-photo-to-jpg.jsp', '/guides/es/how-to-convert-iphone-photo-to-jpg.html': 'guide/es/how-to-convert-iphone-photo-to-jpg.jsp', '/guides/vi/how-to-convert-iphone-photo-to-jpg.html': 'guide/vi/how-to-convert-iphone-photo-to-jpg.jsp', '/guides/id/how-to-convert-iphone-photo-to-jpg.html': 'guide/id/how-to-convert-iphone-photo-to-jpg.jsp', '/guides/de/how-to-convert-iphone-photo-to-jpg.html': 'guide/de/how-to-convert-iphone-photo-to-jpg.jsp',
   // plan-warm-pascal-v3 S2 batch 39 (2026-05-30) - 5 locale variants × 3 guides
   '/guides/pt/microphone-test-permission-blocked-how-to-allow-it.html': 'guide/pt/microphone-test-permission-blocked-how-to-allow-it.jsp', '/guides/es/microphone-test-permission-blocked-how-to-allow-it.html': 'guide/es/microphone-test-permission-blocked-how-to-allow-it.jsp', '/guides/vi/microphone-test-permission-blocked-how-to-allow-it.html': 'guide/vi/microphone-test-permission-blocked-how-to-allow-it.jsp', '/guides/id/microphone-test-permission-blocked-how-to-allow-it.html': 'guide/id/microphone-test-permission-blocked-how-to-allow-it.jsp', '/guides/de/microphone-test-permission-blocked-how-to-allow-it.html': 'guide/de/microphone-test-permission-blocked-how-to-allow-it.jsp',
   '/guides/pt/qr-code-error-correction-and-scan-failures.html': 'guide/pt/qr-code-error-correction-and-scan-failures.jsp', '/guides/es/qr-code-error-correction-and-scan-failures.html': 'guide/es/qr-code-error-correction-and-scan-failures.jsp', '/guides/vi/qr-code-error-correction-and-scan-failures.html': 'guide/vi/qr-code-error-correction-and-scan-failures.jsp', '/guides/id/qr-code-error-correction-and-scan-failures.html': 'guide/id/qr-code-error-correction-and-scan-failures.jsp', '/guides/de/qr-code-error-correction-and-scan-failures.html': 'guide/de/qr-code-error-correction-and-scan-failures.jsp',
@@ -14926,13 +14935,11 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/how-to-hide-a-message-in-an-image.html': 'guide/pt/how-to-hide-a-message-in-an-image.jsp',
   '/guides/es/how-to-hide-a-message-in-an-image.html': 'guide/es/how-to-hide-a-message-in-an-image.jsp',
   '/guides/vi/how-to-hide-a-message-in-an-image.html': 'guide/vi/how-to-hide-a-message-in-an-image.jsp',
-  '/guides/id/how-to-hide-a-message-in-an-image.html': 'guide/id/how-to-hide-a-message-in-an-image.jsp',
   '/guides/de/how-to-hide-a-message-in-an-image.html': 'guide/de/how-to-hide-a-message-in-an-image.jsp',
   '/guides/how-to-edit-code-online.html': 'guide/how-to-edit-code-online.jsp',
   '/guides/pt/how-to-edit-code-online.html': 'guide/pt/how-to-edit-code-online.jsp',
   '/guides/es/how-to-edit-code-online.html': 'guide/es/how-to-edit-code-online.jsp',
   '/guides/vi/how-to-edit-code-online.html': 'guide/vi/how-to-edit-code-online.jsp',
-  '/guides/id/how-to-edit-code-online.html': 'guide/id/how-to-edit-code-online.jsp',
   '/guides/de/how-to-edit-code-online.html': 'guide/de/how-to-edit-code-online.jsp',
   '/guides/how-to-run-a-private-ai-chat-in-your-browser.html': 'guide/how-to-run-a-private-ai-chat-in-your-browser.jsp',
   '/guides/pt/how-to-run-a-private-ai-chat-in-your-browser.html': 'guide/pt/how-to-run-a-private-ai-chat-in-your-browser.jsp',
@@ -16783,7 +16790,6 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/how-to-play-neon-tower-rush.html': 'guide/pt/how-to-play-neon-tower-rush.jsp',
   '/guides/es/how-to-play-neon-tower-rush.html': 'guide/es/how-to-play-neon-tower-rush.jsp',
   '/guides/vi/how-to-play-neon-tower-rush.html': 'guide/vi/how-to-play-neon-tower-rush.jsp',
-  '/guides/id/how-to-play-neon-tower-rush.html': 'guide/id/how-to-play-neon-tower-rush.jsp',
   '/guides/de/how-to-play-neon-tower-rush.html': 'guide/de/how-to-play-neon-tower-rush.jsp',
   '/guides/neon-tower-rush-when.html': 'guide/neon-tower-rush-when.jsp',
   '/guides/pt/neon-tower-rush-when.html': 'guide/pt/neon-tower-rush-when.jsp',
@@ -25024,8 +25030,23 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/aspect-ratio-calculator-vs-alternatives.html': 'guide/pt/aspect-ratio-calculator-vs-alternatives.jsp',
   '/utility-tools/subnet-calculator.html': 'utility/subnet-calculator.jsp',
   '/guides/subnet-calculator-ipv4-cidr-when.html': 'guide/subnet-calculator-ipv4-cidr-when.jsp',
+  '/guides/pt/subnet-calculator-ipv4-cidr-when.html': 'guide/pt/subnet-calculator-ipv4-cidr-when.jsp',
+  '/guides/es/subnet-calculator-ipv4-cidr-when.html': 'guide/es/subnet-calculator-ipv4-cidr-when.jsp',
+  '/guides/vi/subnet-calculator-ipv4-cidr-when.html': 'guide/vi/subnet-calculator-ipv4-cidr-when.jsp',
+  '/guides/id/subnet-calculator-ipv4-cidr-when.html': 'guide/id/subnet-calculator-ipv4-cidr-when.jsp',
+  '/guides/de/subnet-calculator-ipv4-cidr-when.html': 'guide/de/subnet-calculator-ipv4-cidr-when.jsp',
   '/guides/subnet-calculator-ipv4-cidr-step-by-step.html': 'guide/subnet-calculator-ipv4-cidr-step-by-step.jsp',
+  '/guides/pt/subnet-calculator-ipv4-cidr-step-by-step.html': 'guide/pt/subnet-calculator-ipv4-cidr-step-by-step.jsp',
+  '/guides/es/subnet-calculator-ipv4-cidr-step-by-step.html': 'guide/es/subnet-calculator-ipv4-cidr-step-by-step.jsp',
+  '/guides/vi/subnet-calculator-ipv4-cidr-step-by-step.html': 'guide/vi/subnet-calculator-ipv4-cidr-step-by-step.jsp',
+  '/guides/id/subnet-calculator-ipv4-cidr-step-by-step.html': 'guide/id/subnet-calculator-ipv4-cidr-step-by-step.jsp',
+  '/guides/de/subnet-calculator-ipv4-cidr-step-by-step.html': 'guide/de/subnet-calculator-ipv4-cidr-step-by-step.jsp',
   '/guides/subnet-calculator-ipv4-cidr-vs-alternatives.html': 'guide/subnet-calculator-ipv4-cidr-vs-alternatives.jsp',
+  '/guides/pt/subnet-calculator-ipv4-cidr-vs-alternatives.html': 'guide/pt/subnet-calculator-ipv4-cidr-vs-alternatives.jsp',
+  '/guides/es/subnet-calculator-ipv4-cidr-vs-alternatives.html': 'guide/es/subnet-calculator-ipv4-cidr-vs-alternatives.jsp',
+  '/guides/vi/subnet-calculator-ipv4-cidr-vs-alternatives.html': 'guide/vi/subnet-calculator-ipv4-cidr-vs-alternatives.jsp',
+  '/guides/id/subnet-calculator-ipv4-cidr-vs-alternatives.html': 'guide/id/subnet-calculator-ipv4-cidr-vs-alternatives.jsp',
+  '/guides/de/subnet-calculator-ipv4-cidr-vs-alternatives.html': 'guide/de/subnet-calculator-ipv4-cidr-vs-alternatives.jsp',
   '/developer-tools/user-agent-parser.html': 'utility/user-agent-parser.jsp',
   '/guides/user-agent-parser-when.html': 'guide/user-agent-parser-when.jsp',
   '/guides/de/user-agent-parser-when.html': 'guide/de/user-agent-parser-when.jsp',
@@ -25601,8 +25622,23 @@ export const JSP_BY_ROUTE = {
   '/guides/de/webcam-recorder-vs-alternatives.html': 'guide/de/webcam-recorder-vs-alternatives.jsp',
   '/video-tools/audio-speed-changer.html': 'convert/audio-speed-changer.jsp',
   '/guides/audio-speed-changer-when.html': 'guide/audio-speed-changer-when.jsp',
+  '/guides/pt/audio-speed-changer-when.html': 'guide/pt/audio-speed-changer-when.jsp',
+  '/guides/es/audio-speed-changer-when.html': 'guide/es/audio-speed-changer-when.jsp',
+  '/guides/vi/audio-speed-changer-when.html': 'guide/vi/audio-speed-changer-when.jsp',
+  '/guides/id/audio-speed-changer-when.html': 'guide/id/audio-speed-changer-when.jsp',
+  '/guides/de/audio-speed-changer-when.html': 'guide/de/audio-speed-changer-when.jsp',
   '/guides/audio-speed-changer-step-by-step.html': 'guide/audio-speed-changer-step-by-step.jsp',
+  '/guides/pt/audio-speed-changer-step-by-step.html': 'guide/pt/audio-speed-changer-step-by-step.jsp',
+  '/guides/es/audio-speed-changer-step-by-step.html': 'guide/es/audio-speed-changer-step-by-step.jsp',
+  '/guides/vi/audio-speed-changer-step-by-step.html': 'guide/vi/audio-speed-changer-step-by-step.jsp',
+  '/guides/id/audio-speed-changer-step-by-step.html': 'guide/id/audio-speed-changer-step-by-step.jsp',
+  '/guides/de/audio-speed-changer-step-by-step.html': 'guide/de/audio-speed-changer-step-by-step.jsp',
   '/guides/audio-speed-changer-vs-alternatives.html': 'guide/audio-speed-changer-vs-alternatives.jsp',
+  '/guides/pt/audio-speed-changer-vs-alternatives.html': 'guide/pt/audio-speed-changer-vs-alternatives.jsp',
+  '/guides/es/audio-speed-changer-vs-alternatives.html': 'guide/es/audio-speed-changer-vs-alternatives.jsp',
+  '/guides/vi/audio-speed-changer-vs-alternatives.html': 'guide/vi/audio-speed-changer-vs-alternatives.jsp',
+  '/guides/id/audio-speed-changer-vs-alternatives.html': 'guide/id/audio-speed-changer-vs-alternatives.jsp',
+  '/guides/de/audio-speed-changer-vs-alternatives.html': 'guide/de/audio-speed-changer-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
@@ -32187,11 +32223,8 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/id/gas-giant-atmosphere-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/gas-giant-atmosphere-when.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/gif-frame-extractor-output-looks-wrong-three-causes.html', // pruned 2026-07-29 zero-evidence id
-  '/guides/id/gif-frame-extractor.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/gif-frames-extract-vs-frame-rate-fps-explained.html', // pruned 2026-07-29 zero-evidence id
-  '/guides/id/gif-into-frames.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/gif-to-frame.html', // pruned 2026-07-29 zero-evidence id
-  '/guides/id/gif-to-frames-converter.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/giganotosaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/giganotosaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/gigantoraptor-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
@@ -32277,22 +32310,13 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/id/hover-racing-when.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-check-camera-quality-on-your-phone.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-check-webcam-and-microphone-before-an-interview.html', // pruned 2026-07-29 zero-evidence id
-  '/guides/id/how-to-choose-a-compression-level.html', // pruned 2026-07-29 zero-evidence id
-  '/guides/id/how-to-compress-a-file-online.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-compress-a-folder-for-email.html', // pruned 2026-07-29 zero-evidence id
-  '/guides/id/how-to-compress-a-folder.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-compress-a-jpg-for-email-attachment-limits.html', // pruned 2026-07-29 zero-evidence id
-  '/guides/id/how-to-compress-a-zip-file-to-a-specific-size.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-convert-100-heic-photos-to-jpg.html', // pruned 2026-07-29 zero-evidence id
-  '/guides/id/how-to-convert-heic-to-jpg-step-by-step.html', // pruned 2026-07-29 zero-evidence id
-  '/guides/id/how-to-convert-iphone-photo-to-jpg.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-convert-units-online.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-crop-and-rotate-an-image.html', // pruned 2026-07-29 zero-evidence id
-  '/guides/id/how-to-edit-code-online.html', // pruned 2026-07-29 zero-evidence id
-  '/guides/id/how-to-extract-a-file-online-zip-rar-7z.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-extract-frames-from-a-gif-for-a-social-post.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-flatten-a-pdf-and-when-to-do-it.html', // pruned 2026-07-29 zero-evidence id
-  '/guides/id/how-to-hide-a-message-in-an-image.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-make-a-to-do-list-online.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-minify-css-js-for-cloud-run-cold-start.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-pick-a-color-online.html', // pruned 2026-07-29 zero-evidence id
@@ -32351,7 +32375,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/id/how-to-play-neon-deep-space.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-play-neon-energy-arena.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-play-neon-surge-loop.html', // pruned 2026-07-29 zero-evidence id
-  '/guides/id/how-to-play-neon-tower-rush.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-play-neural-particle-life.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-play-neuro-aim-arena.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-play-night-swarm-survivor.html', // pruned 2026-07-29 zero-evidence id
@@ -32769,6 +32792,208 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/id/how-to-view-dimetrodon-in-3d.html',
   '/guides/id/how-to-view-diplodocus-in-3d.html',
   '/guides/id/how-to-view-doliosauriscus-in-3d.html',
+
+  // pruned 2026-07-29 zero-evidence id (id-batch-5)
+  '/guides/id/how-to-view-dracovenator-in-3d.html',
+  '/guides/id/how-to-view-edmontosaurus-in-3d.html',
+  '/guides/id/how-to-view-gallimimus-in-3d.html',
+  '/guides/id/how-to-view-giganotosaurus-in-3d.html',
+  '/guides/id/how-to-view-gigantoraptor-in-3d.html',
+  '/guides/id/how-to-view-gorgosaurus-in-3d.html',
+  '/guides/id/how-to-view-ground-sloth-in-3d.html',
+  '/guides/id/how-to-view-gryponyx-in-3d.html',
+  '/guides/id/how-to-view-hybodus-in-3d.html',
+  '/guides/id/how-to-view-ichthyosaurus-in-3d.html',
+  '/guides/id/how-to-view-ichthyovenator-in-3d.html',
+  '/guides/id/how-to-view-iguanodon-in-3d.html',
+  '/guides/id/how-to-view-kentrosaurus-in-3d.html',
+  '/guides/id/how-to-view-lambeosaurus-in-3d.html',
+  '/guides/id/how-to-view-majungasaurus-in-3d.html',
+  '/guides/id/how-to-view-mamenchisaurus-in-3d.html',
+  '/guides/id/how-to-view-megalosaurus-in-3d.html',
+  '/guides/id/how-to-view-microraptor-in-3d.html',
+  '/guides/id/how-to-view-moropus-in-3d.html',
+  '/guides/id/how-to-view-mosasaurus-in-3d.html',
+  '/guides/id/how-to-view-ornithomimus-in-3d.html',
+  '/guides/id/how-to-view-ostafrikasaurus-in-3d.html',
+  '/guides/id/how-to-view-oviraptor-in-3d.html',
+  '/guides/id/how-to-view-pachycephalosaurus-in-3d.html',
+  '/guides/id/how-to-view-pachyrhinosaurus-in-3d.html',
+  '/guides/id/how-to-view-parasaurolophus-in-3d.html',
+  '/guides/id/how-to-view-pentaceratops-in-3d.html',
+  '/guides/id/how-to-view-pinacosaurus-in-3d.html',
+  '/guides/id/how-to-view-plesiosaurus-in-3d.html',
+  '/guides/id/how-to-view-postosuchus-in-3d.html',
+  '/guides/id/how-to-view-protoceratops-in-3d.html',
+  '/guides/id/how-to-view-psittacosaurus-in-3d.html',
+  '/guides/id/how-to-view-pteranodon-in-3d.html',
+  '/guides/id/how-to-view-quetzalcoatlus-in-3d.html',
+  '/guides/id/how-to-view-sarcosuchus-in-3d.html',
+  '/guides/id/how-to-view-sauropelta-in-3d.html',
+  '/guides/id/how-to-view-seismosaurus-in-3d.html',
+  '/guides/id/how-to-view-shuangmiaosaurus-in-3d.html',
+  '/guides/id/how-to-view-spinosaurus-in-3d.html',
+  '/guides/id/how-to-view-stegosaurus-in-3d.html',
+  '/guides/id/how-to-view-stygimoloch-in-3d.html',
+  '/guides/id/how-to-view-tarbosaurus-in-3d.html',
+  '/guides/id/how-to-view-therizinosaurus-in-3d.html',
+  '/guides/id/how-to-view-titanoboa-in-3d.html',
+  '/guides/id/how-to-view-titanosaurus-in-3d.html',
+  '/guides/id/how-to-view-torvosaurus-in-3d.html',
+  '/guides/id/how-to-view-triceratops-in-3d.html',
+  '/guides/id/how-to-view-troodon-in-3d.html',
+  '/guides/id/how-to-view-tsintaosaurus-in-3d.html',
+  '/guides/id/how-to-view-tylosaurus-in-3d.html',
+  '/guides/id/how-to-view-tyrannosaurus-rex-in-3d.html',
+  '/guides/id/how-to-view-utahraptor-in-3d.html',
+  '/guides/id/how-to-view-velociraptor-in-3d.html',
+  '/guides/id/how-to-visualize-data-online.html',
+  '/guides/id/html-entity-encoder-decoder-step-by-step.html',
+  '/guides/id/html-entity-encoder-decoder-vs-alternatives.html',
+  '/guides/id/html-entity-encoder-decoder-when.html',
+  '/guides/id/html-markdown-converter-step-by-step.html',
+  '/guides/id/html-markdown-converter-vs-alternatives.html',
+  '/guides/id/html-markdown-converter-when.html',
+  '/guides/id/html-tag-remover-step-by-step.html',
+  '/guides/id/html-tag-remover-vs-alternatives.html',
+  '/guides/id/html-tag-remover-when.html',
+  '/guides/id/hybodus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/hybodus-size-comparison.html',
+  '/guides/id/hyperion-sponge-step-by-step.html',
+  '/guides/id/i-love-zip.html',
+  '/guides/id/iapetus-equatorial-ridge-step-by-step.html',
+  '/guides/id/ichthyosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/ichthyosaurus-size-comparison.html',
+  '/guides/id/ichthyovenator-3d-viewer-vs-ar-apps.html',
+  '/guides/id/ichthyovenator-size-comparison.html',
+  '/guides/id/idle-capitalist-loop-vs-alternatives.html',
+  '/guides/id/idle-capitalist-loop-when.html',
+  '/guides/id/iguanodon-3d-viewer-vs-ar-apps.html',
+  '/guides/id/iguanodon-size-comparison.html',
+  '/guides/id/image-color-palette-extractor-step-by-step.html',
+  '/guides/id/image-color-palette-extractor-vs-alternatives.html',
+  '/guides/id/image-color-palette-extractor-when.html',
+  '/guides/id/image-exif-metadata-viewer-step-by-step.html',
+  '/guides/id/image-exif-metadata-viewer-vs-alternatives.html',
+  '/guides/id/image-exif-metadata-viewer-when.html',
+  '/guides/id/image-format-converter-step-by-step.html',
+  '/guides/id/image-format-converter-vs-alternatives.html',
+  '/guides/id/image-format-converter-when.html',
+  '/guides/id/image-metadata-exif-remover-step-by-step.html',
+  '/guides/id/image-metadata-exif-remover-vs-alternatives.html',
+  '/guides/id/image-metadata-exif-remover-when.html',
+  '/guides/id/image-text-ocr-step-by-step.html',
+  '/guides/id/image-text-ocr-vs-alternatives.html',
+  '/guides/id/image-text-ocr-when.html',
+  '/guides/id/image-to-base64-embed-in-html-vs-link.html',
+  '/guides/id/image-webp-converter-step-by-step.html',
+  '/guides/id/image-webp-converter-vs-alternatives.html',
+  '/guides/id/image-webp-converter-when.html',
+  '/guides/id/imagemagick-online-vs-task-specific-tools-which-to-pick.html',
+  '/guides/id/impact-crater-formation-step-by-step.html',
+  '/guides/id/impact-crater-formation-vs-alternatives.html',
+  '/guides/id/impact-crater-formation-when.html',
+  '/guides/id/inferno-soul-walker-vs-alternatives.html',
+  '/guides/id/inferno-soul-walker-when.html',
+  '/guides/id/interstellar-travel-timescales-step-by-step.html',
+  '/guides/id/interstellar-travel-timescales-vs-alternatives.html',
+  '/guides/id/interstellar-travel-timescales-when.html',
+  '/guides/id/io-plasma-torus-step-by-step.html',
+  '/guides/id/io-plasma-torus-vs-alternatives.html',
+  '/guides/id/io-plasma-torus-when.html',
+  '/guides/id/iphone-photo-format-explained-heic-jpg-png-raw.html',
+  '/guides/id/iso-city-sandbox-vs-alternatives.html',
+  '/guides/id/iso-city-sandbox-when.html',
+  '/guides/id/iss-orbit-tracker-step-by-step.html',
+  '/guides/id/iss-orbit-tracker-vs-alternatives.html',
+  '/guides/id/iss-orbit-tracker-when.html',
+  '/guides/id/jpg-avif-converter-step-by-step.html',
+  '/guides/id/jpg-avif-converter-vs-alternatives.html',
+  '/guides/id/jpg-avif-converter-when.html',
+  '/guides/id/jpg-vs-jpeg-are-they-the-same.html',
+  '/guides/id/jpg-vs-png-for-web.html',
+  '/guides/id/jpg-webp-converter-step-by-step.html',
+  '/guides/id/jpg-webp-converter-vs-alternatives.html',
+  '/guides/id/jpg-webp-converter-when.html',
+  '/guides/id/json-formatter-step-by-step.html',
+  '/guides/id/json-formatter-vs-alternatives.html',
+  '/guides/id/json-formatter-when.html',
+  '/guides/id/json-typescript-interface-generator-step-by-step.html',
+  '/guides/id/json-typescript-interface-generator-vs-alternatives.html',
+  '/guides/id/json-typescript-interface-generator-when.html',
+  '/guides/id/json-vs-yaml-vs-toml-config-formats-explained.html',
+  '/guides/id/jwt-decoder-step-by-step.html',
+  '/guides/id/jwt-decoder-vs-alternatives.html',
+  '/guides/id/jwt-decoder-when.html',
+  '/guides/id/karman-line-atmosphere-layers-step-by-step.html',
+  '/guides/id/karman-line-atmosphere-layers-vs-alternatives.html',
+  '/guides/id/karman-line-atmosphere-layers-when.html',
+  '/guides/id/kentrosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/kentrosaurus-size-comparison.html',
+  '/guides/id/kepler-orbits-step-by-step.html',
+  '/guides/id/kepler-orbits-vs-alternatives.html',
+  '/guides/id/kepler-orbits-when.html',
+  '/guides/id/kilonova-step-by-step.html',
+  '/guides/id/kirkwood-gaps-step-by-step.html',
+  '/guides/id/kp-index-geomagnetic-storm-scale-step-by-step.html',
+  '/guides/id/kp-index-geomagnetic-storm-scale-vs-alternatives.html',
+  '/guides/id/kp-index-geomagnetic-storm-scale-when.html',
+  '/guides/id/lagrange-points-step-by-step.html',
+  '/guides/id/lagrange-points-vs-alternatives.html',
+  '/guides/id/lagrange-points-when.html',
+  '/guides/id/lambeosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/lambeosaurus-size-comparison.html',
+  '/guides/id/layer-flip-platformer-vs-alternatives.html',
+  '/guides/id/layer-flip-platformer-when.html',
+  '/guides/id/lcd-screen-test.html',
+  '/guides/id/lcd-test-vs-display-test-which-do-you-need.html',
+  '/guides/id/led-test-vs-lcd-test-which-applies-to-your-screen.html',
+  '/guides/id/lightning-math-battle-vs-alternatives.html',
+  '/guides/id/lightning-math-battle-when.html',
+  '/guides/id/loan-calculator-step-by-step.html',
+  '/guides/id/loan-calculator-vs-alternatives.html',
+  '/guides/id/loan-calculator-when.html',
+  '/guides/id/lorem-ipsum-placeholder-text-generator-step-by-step.html',
+  '/guides/id/lorem-ipsum-placeholder-text-generator-vs-alternatives.html',
+  '/guides/id/lorem-ipsum-placeholder-text-generator-when.html',
+  '/guides/id/lunar-eclipse-step-by-step.html',
+  '/guides/id/lunar-eclipse-vs-alternatives.html',
+  '/guides/id/lunar-eclipse-when.html',
+  '/guides/id/lunar-nodes-eclipse-seasons-step-by-step.html',
+  '/guides/id/machine-guard-corps-vs-alternatives.html',
+  '/guides/id/machine-guard-corps-when.html',
+  '/guides/id/magnetar-step-by-step.html',
+  '/guides/id/magnetar-vs-alternatives.html',
+  '/guides/id/magnetar-when.html',
+  '/guides/id/magnetic-reconnection-step-by-step.html',
+  '/guides/id/main-sequence-lifetime-step-by-step.html',
+  '/guides/id/main-sequence-lifetime-vs-alternatives.html',
+  '/guides/id/main-sequence-lifetime-when.html',
+  '/guides/id/majungasaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/majungasaurus-size-comparison.html',
+  '/guides/id/make-zip-file-online.html',
+  '/guides/id/mamenchisaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/mamenchisaurus-size-comparison.html',
+  '/guides/id/marble-maze-vs-alternatives.html',
+  '/guides/id/marble-maze-when.html',
+  '/guides/id/markdown-html-previewer-step-by-step.html',
+  '/guides/id/markdown-html-previewer-vs-alternatives.html',
+  '/guides/id/markdown-html-previewer-when.html',
+  '/guides/id/mars-terrain-step-by-step.html',
+  '/guides/id/mars-terrain-vs-alternatives.html',
+  '/guides/id/mars-terrain-when.html',
+  '/guides/id/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html',
+  '/guides/id/md5-decrypt-online.html',
+  '/guides/id/md5-decrypter.html',
+  '/guides/id/md5-to-text-why-you-cannot-convert-back.html',
+  '/guides/id/md5-vs-sha256-when-to-hash.html',
+  '/guides/id/medieval-wall-defense-vs-alternatives.html',
+  '/guides/id/medieval-wall-defense-when.html',
+  '/guides/id/megalosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/megalosaurus-size-comparison.html',
+  '/guides/id/meme-maker-step-by-step.html',
+  '/guides/id/meme-maker-vs-alternatives.html',
+  '/guides/id/meme-maker-when.html',
 ]);
 for (const route of Object.keys(JSP_BY_ROUTE)) {
   if (!route.startsWith('/guides/')) continue;
