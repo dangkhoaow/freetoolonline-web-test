@@ -1,0 +1,277 @@
+<script>
+    // Mercury 3:2 spin-orbit resonance explorer
+    // Vendored three.js (ESM), fully client-side, educational approximation
+    // Real figures: solar day 176 Earth days, sidereal day 59 Earth days
+    // Spin-orbit: 3 rotations per 2 orbits around the Sun
+    //
+    // This visualization shows why Mercury appears to rotate 3x for every 2 orbits:
+    // a fixed observer on Earth sees the same face twice per Mercurian year due to
+    // the resonance. The info panel discloses this is a geometric + orbital reality,
+    // not a simulation of differential forces.
+    //
+    // Synchronous display: the wrapper + facts panel render immediately (G16 pass);
+    // the engine lazy-loads post-paint via requestIdleCallback.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'mercury-day-night-cycle';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) {
+        var s = String(slug || '').toLowerCase();
+        if (/mercury|day-night|diurnal/.test(s)) return 'mercury';
+        if (/voxel|builder|block/.test(s)) return 'voxel';
+        if (/solar|planet/.test(s)) return 'solar';
+        if (/black/.test(s)) return 'blackhole';
+        if (/galaxy/.test(s)) return 'galaxy';
+        return 'solar';
+    }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // Shared scene shell (same as solar-system)
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        function size() {
+            var w = Math.max(260, host.clientWidth);
+            var h = Math.round(w * 0.62);
+            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fsEl && fsEl.contains(host)) { h = Math.max(240, (window.innerHeight || h) - 150); }
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        host.appendChild(renderer.domElement);
+        renderer.domElement.style.touchAction = 'none';
+        renderer.domElement.style.borderRadius = '6px';
+        var drag = null, pinch = null, moved = 0;
+        host.addEventListener('pointerdown', function (e) {
+            drag = { x: e.clientX, y: e.clientY }; moved = 0;
+            host.setPointerCapture && host.setPointerCapture(e.pointerId);
+        });
+        host.addEventListener('pointermove', function (e) {
+            if (!drag) return;
+            var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+            moved += Math.abs(dx) + Math.abs(dy);
+            drag = { x: e.clientX, y: e.clientY };
+            orbit.goalTheta -= dx * 0.006;
+            orbit.goalPhi = Math.min(Math.max(orbit.goalPhi - dy * 0.005, 0.15), Math.PI - 0.2);
+        });
+        host.addEventListener('pointerup', function (e) {
+            var wasClick = moved < 8;
+            drag = null;
+            if (wasClick && shell.onClick) { shell.onClick(e); }
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR);
+        }, { passive: false });
+        host.addEventListener('touchstart', function (e) {
+            if (e.touches.length === 2) {
+                pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            }
+        }, { passive: true });
+        host.addEventListener('touchmove', function (e) {
+            if (e.touches.length === 2 && pinch) {
+                var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                pinch = d;
+            }
+        }, { passive: true });
+        window.addEventListener('resize', size);
+        document.addEventListener('fullscreenchange', size);
+        document.addEventListener('webkitfullscreenchange', size);
+        size();
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, size: size, onClick: null,
+            ndc: function (e) {
+                var r = renderer.domElement.getBoundingClientRect();
+                return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            },
+        };
+        return shell;
+    }
+
+    // ================= MERCURY 3:2 RESONANCE ==========================================
+    function t3dMercury(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+        var sunLight = new THREE.PointLight(0xfff3d0, 2000, 0, 1.8);
+        scene.add(sunLight);
+
+        // Sun
+        var sun = new THREE.Mesh(new THREE.SphereGeometry(8, 32, 16), new THREE.MeshBasicMaterial({ color: 0xffd54f }));
+        scene.add(sun);
+
+        // Orbit ring (Mercury orbits ~57.9 million km from Sun; displayed compressed)
+        var orbitRing = new THREE.Mesh(
+            new THREE.TorusGeometry(40, 0.08, 6, 128),
+            new THREE.MeshBasicMaterial({ color: 0x424242 })
+        );
+        orbitRing.rotation.x = Math.PI / 2;
+        scene.add(orbitRing);
+
+        // Mercury - gray, small, cratered surface appearance via color
+        var mercury = new THREE.Mesh(
+            new THREE.SphereGeometry(2.5, 24, 12),
+            new THREE.MeshLambertMaterial({ color: 0x8d8d8d })
+        );
+        mercury.userData = { kind: 'mercury' };
+        scene.add(mercury);
+
+        // Day-night terminator line (visual indicator on the day-lit hemisphere)
+        var terminatorGeometry = new THREE.BufferGeometry();
+        var positions = [];
+        for (var i = 0; i <= 32; i++) {
+            var angle = (i / 32) * Math.PI * 2;
+            positions.push(Math.sin(angle) * 2.5, Math.cos(angle) * 2.5 * 0.5, Math.cos(angle) * 2.5 * 0.866);
+        }
+        terminatorGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+        var terminator = new THREE.Line(terminatorGeometry, new THREE.LineBasicMaterial({ color: 0xffeb3b, linewidth: 2 }));
+        mercury.add(terminator);
+
+        var store = t3dLoadStore();
+        var tScrub = (store.mercuryTime !== undefined) ? store.mercuryTime : 0;
+
+        // Update function: called per frame
+        return function animate(dt) {
+            // Solar day = 176 Earth days in the scene (we'll cycle 0-1 in the time-scrub)
+            // 3:2 resonance: Mercury rotates 3x for every 2 orbits, so sidereal day = 59 days
+            // Rotation rate = (360 deg) / (59 days) = 6.1 deg per Earth day
+            // Display: time-scrub 0-1 = one full 176-day Mercurian year
+
+            var solarDayDegPerDay = 360 / 59; // Real: 6.1 deg/day rotation
+            var mercuryRotation = tScrub * 360 * 3; // 3 full rotations per Mercurian year (2-orbit cycle)
+            var mercuryOrbit = tScrub * Math.PI * 2;
+
+            mercury.rotation.z = mercuryRotation * Math.PI / 180;
+            mercury.position.x = Math.cos(mercuryOrbit) * 40;
+            mercury.position.z = Math.sin(mercuryOrbit) * 40;
+
+            terminator.rotation.z = mercury.rotation.z;
+
+            shell.applyCamera();
+            shell.renderer.render(scene, shell.camera);
+        };
+    }
+
+    // Boot the scene
+    function boot() {
+        var presets = {
+            mercury: { radius: 90, minR: 20, maxR: 220, phi: 0.9, fov: 50 },
+        };
+        var host = document.getElementById('t3dCanvasHost');
+        if (!host) return;
+        t3dStatus('Preparing the 3D scene...');
+        ftoLoadThree().then(function (THREE) {
+            try {
+                var preset = presets['mercury'] || presets.mercury;
+                var shell = t3dShell(THREE, host, preset);
+                var kind = t3dDetectScene(T3D_SLUG);
+                var animate = kind === 'mercury' ? t3dMercury(shell) : null;
+                if (!animate) { t3dStatus('Scene not found'); return; }
+
+                t3dInfo('<strong>Mercury\'s 3:2 Spin-Orbit Resonance</strong><br>' +
+                    'Solar day: 176 Earth days (sunrise to sunrise)<br>' +
+                    'Sidereal day: 59 Earth days (rotation period)<br>' +
+                    'Orbital period: 88 Earth days<br>' +
+                    '<em>Mercury rotates exactly 3 times for every 2 orbits around the Sun.</em><br>' +
+                    'This is an educational visualization, not a physics simulation. Scales and speeds are adjusted for visibility. Use the time-scrub slider to advance through one full Mercurian year.');
+
+                // Time-scrub control
+                var timeSlider = document.getElementById('t3dTimeSlider');
+                if (timeSlider) {
+                    timeSlider.min = 0;
+                    timeSlider.max = 100;
+                    timeSlider.value = tScrub * 100;
+                    timeSlider.style.display = 'block';
+                    timeSlider.addEventListener('input', function () {
+                        tScrub = parseFloat(this.value) / 100;
+                        var store = t3dLoadStore();
+                        store.mercuryTime = tScrub;
+                        t3dSaveStore(store);
+                    });
+                }
+
+                t3dStatus('');
+                var lastTime = Date.now();
+                var setAnimationLoop = shell.renderer.setAnimationLoop || function (fn) {
+                    var raf = function () { fn(); requestAnimationFrame(raf); };
+                    raf();
+                };
+                setAnimationLoop.call(shell.renderer, function () {
+                    var now = Date.now();
+                    var dt = Math.min(now - lastTime, 100);
+                    lastTime = now;
+                    animate(dt);
+                });
+            } catch (e) {
+                console.error('3D scene error:', e);
+                t3dStatus('Unable to render (WebGL unavailable). The 3D scene requires hardware acceleration.');
+            }
+        }).catch(function (err) {
+            console.error('three.js load error:', err);
+            t3dStatus('Failed to load 3D engine');
+        });
+    }
+
+    function doAfterPageRendered() {
+        var delay = window.requestIdleCallback ? 2500 : 500;
+        window.requestIdleCallback ? requestIdleCallback(boot, { timeout: delay }) : setTimeout(boot, delay);
+    }
+</script>

@@ -348,8 +348,23 @@ export const INFO_ROUTES = new Set([
   '/guides/es/user-agent-parser-when.html',
   '/guides/pt/user-agent-parser-when.html',
   '/guides/subnet-calculator-ipv4-cidr-vs-alternatives.html',
+  '/guides/pt/subnet-calculator-ipv4-cidr-vs-alternatives.html',
+  '/guides/es/subnet-calculator-ipv4-cidr-vs-alternatives.html',
+  '/guides/vi/subnet-calculator-ipv4-cidr-vs-alternatives.html',
+  '/guides/id/subnet-calculator-ipv4-cidr-vs-alternatives.html',
+  '/guides/de/subnet-calculator-ipv4-cidr-vs-alternatives.html',
   '/guides/subnet-calculator-ipv4-cidr-step-by-step.html',
+  '/guides/pt/subnet-calculator-ipv4-cidr-step-by-step.html',
+  '/guides/es/subnet-calculator-ipv4-cidr-step-by-step.html',
+  '/guides/vi/subnet-calculator-ipv4-cidr-step-by-step.html',
+  '/guides/id/subnet-calculator-ipv4-cidr-step-by-step.html',
+  '/guides/de/subnet-calculator-ipv4-cidr-step-by-step.html',
   '/guides/subnet-calculator-ipv4-cidr-when.html',
+  '/guides/pt/subnet-calculator-ipv4-cidr-when.html',
+  '/guides/es/subnet-calculator-ipv4-cidr-when.html',
+  '/guides/vi/subnet-calculator-ipv4-cidr-when.html',
+  '/guides/id/subnet-calculator-ipv4-cidr-when.html',
+  '/guides/de/subnet-calculator-ipv4-cidr-when.html',
   '/guides/aspect-ratio-calculator-vs-alternatives.html',
   '/guides/de/aspect-ratio-calculator-vs-alternatives.html',
   '/guides/id/aspect-ratio-calculator-vs-alternatives.html',
@@ -2359,7 +2374,6 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/hd-video-converter-step-by-step.html', '/guides/es/hd-video-converter-step-by-step.html', '/guides/vi/hd-video-converter-step-by-step.html', '/guides/id/hd-video-converter-step-by-step.html', '/guides/de/hd-video-converter-step-by-step.html',
   '/guides/pt/hd-video-converter-vs-alternatives.html', '/guides/es/hd-video-converter-vs-alternatives.html', '/guides/vi/hd-video-converter-vs-alternatives.html', '/guides/id/hd-video-converter-vs-alternatives.html', '/guides/de/hd-video-converter-vs-alternatives.html',
   // plan-warm-pascal-v3 S2 batch 6 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/gif-into-frames.html', '/guides/es/gif-into-frames.html', '/guides/vi/gif-into-frames.html', '/guides/id/gif-into-frames.html', '/guides/de/gif-into-frames.html',
   // plan-warm-pascal-v3 S2 batch 7 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/json-formatter-step-by-step.html', '/guides/es/json-formatter-step-by-step.html', '/guides/vi/json-formatter-step-by-step.html', '/guides/id/json-formatter-step-by-step.html', '/guides/de/json-formatter-step-by-step.html',
   '/guides/pt/json-formatter-vs-alternatives.html', '/guides/es/json-formatter-vs-alternatives.html', '/guides/vi/json-formatter-vs-alternatives.html', '/guides/id/json-formatter-vs-alternatives.html', '/guides/de/json-formatter-vs-alternatives.html',
@@ -2406,24 +2420,19 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/before-a-video-call-which-tools-to-run.html', '/guides/es/before-a-video-call-which-tools-to-run.html', '/guides/vi/before-a-video-call-which-tools-to-run.html', '/guides/id/before-a-video-call-which-tools-to-run.html', '/guides/de/before-a-video-call-which-tools-to-run.html',
   // plan-warm-pascal-v3 S2 batch 18 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/extract-gif-frames-png-vs-jpg-which-format.html', '/guides/es/extract-gif-frames-png-vs-jpg-which-format.html', '/guides/vi/extract-gif-frames-png-vs-jpg-which-format.html', '/guides/id/extract-gif-frames-png-vs-jpg-which-format.html', '/guides/de/extract-gif-frames-png-vs-jpg-which-format.html',
-  '/guides/pt/how-to-compress-a-file-online.html', '/guides/es/how-to-compress-a-file-online.html', '/guides/vi/how-to-compress-a-file-online.html', '/guides/id/how-to-compress-a-file-online.html', '/guides/de/how-to-compress-a-file-online.html',
   '/guides/pt/ffmpeg-online-conversion-stalled-three-fixes.html', '/guides/es/ffmpeg-online-conversion-stalled-three-fixes.html', '/guides/vi/ffmpeg-online-conversion-stalled-three-fixes.html', '/guides/id/ffmpeg-online-conversion-stalled-three-fixes.html', '/guides/de/ffmpeg-online-conversion-stalled-three-fixes.html',
   // plan-warm-pascal-v3 S2 batch 19 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/camera-test-shows-black-screen-four-fixes.html', '/guides/es/camera-test-shows-black-screen-four-fixes.html', '/guides/vi/camera-test-shows-black-screen-four-fixes.html', '/guides/id/camera-test-shows-black-screen-four-fixes.html', '/guides/de/camera-test-shows-black-screen-four-fixes.html',
   '/guides/pt/file-compressor.html', '/guides/es/file-compressor.html', '/guides/vi/file-compressor.html', '/guides/id/file-compressor.html', '/guides/de/file-compressor.html',
-  '/guides/pt/gif-frame-extractor.html', '/guides/es/gif-frame-extractor.html', '/guides/vi/gif-frame-extractor.html', '/guides/id/gif-frame-extractor.html', '/guides/de/gif-frame-extractor.html',
   // Cycle 20260610-12 P12.D - 5 locale variants for gif-to-frames-converter
-  '/guides/pt/gif-to-frames-converter.html', '/guides/es/gif-to-frames-converter.html', '/guides/vi/gif-to-frames-converter.html', '/guides/id/gif-to-frames-converter.html', '/guides/de/gif-to-frames-converter.html',
   // Cycle 20260610-14 - 5 locale variants for gif-to-frame
   '/guides/pt/gif-to-frame.html', '/guides/es/gif-to-frame.html', '/guides/vi/gif-to-frame.html', '/guides/id/gif-to-frame.html', '/guides/de/gif-to-frame.html',
   // plan-warm-pascal-v3 S2 batch 20 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-choose-a-compression-level.html', '/guides/es/how-to-choose-a-compression-level.html', '/guides/vi/how-to-choose-a-compression-level.html', '/guides/id/how-to-choose-a-compression-level.html', '/guides/de/how-to-choose-a-compression-level.html',
   '/guides/pt/heic-vs-jpg-vs-webp.html', '/guides/es/heic-vs-jpg-vs-webp.html', '/guides/vi/heic-vs-jpg-vs-webp.html', '/guides/id/heic-vs-jpg-vs-webp.html', '/guides/de/heic-vs-jpg-vs-webp.html',
   '/guides/pt/ffmpeg-online-vs-video-converter-which-to-pick.html', '/guides/es/ffmpeg-online-vs-video-converter-which-to-pick.html', '/guides/vi/ffmpeg-online-vs-video-converter-which-to-pick.html', '/guides/id/ffmpeg-online-vs-video-converter-which-to-pick.html', '/guides/de/ffmpeg-online-vs-video-converter-which-to-pick.html',
   // plan-warm-pascal-v3 S2 batch 21 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/base64-when-to-use-and-when-not-to.html', '/guides/es/base64-when-to-use-and-when-not-to.html', '/guides/vi/base64-when-to-use-and-when-not-to.html', '/guides/id/base64-when-to-use-and-when-not-to.html', '/guides/de/base64-when-to-use-and-when-not-to.html',
   '/guides/pt/how-to-check-webcam-and-microphone-before-an-interview.html', '/guides/es/how-to-check-webcam-and-microphone-before-an-interview.html', '/guides/vi/how-to-check-webcam-and-microphone-before-an-interview.html', '/guides/id/how-to-check-webcam-and-microphone-before-an-interview.html', '/guides/de/how-to-check-webcam-and-microphone-before-an-interview.html',
-  '/guides/pt/how-to-compress-a-folder.html', '/guides/es/how-to-compress-a-folder.html', '/guides/vi/how-to-compress-a-folder.html', '/guides/id/how-to-compress-a-folder.html', '/guides/de/how-to-compress-a-folder.html',
   // plan-warm-pascal-v3 S2 batch 22 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/compress-zip-file-to-100kb.html', '/guides/es/compress-zip-file-to-100kb.html', '/guides/vi/compress-zip-file-to-100kb.html', '/guides/id/compress-zip-file-to-100kb.html', '/guides/de/compress-zip-file-to-100kb.html',
   '/guides/pt/gif-frames-extract-vs-frame-rate-fps-explained.html', '/guides/es/gif-frames-extract-vs-frame-rate-fps-explained.html', '/guides/vi/gif-frames-extract-vs-frame-rate-fps-explained.html', '/guides/id/gif-frames-extract-vs-frame-rate-fps-explained.html', '/guides/de/gif-frames-extract-vs-frame-rate-fps-explained.html',
@@ -2444,17 +2453,14 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/free-online-tools-that-work-without-uploading-files.html', '/guides/es/free-online-tools-that-work-without-uploading-files.html', '/guides/vi/free-online-tools-that-work-without-uploading-files.html', '/guides/id/free-online-tools-that-work-without-uploading-files.html', '/guides/de/free-online-tools-that-work-without-uploading-files.html',
   '/guides/pt/jpg-vs-png-for-web.html', '/guides/es/jpg-vs-png-for-web.html', '/guides/vi/jpg-vs-png-for-web.html', '/guides/id/jpg-vs-png-for-web.html', '/guides/de/jpg-vs-png-for-web.html',
   // plan-warm-pascal-v3 S2 batch 27 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-extract-a-file-online-zip-rar-7z.html', '/guides/es/how-to-extract-a-file-online-zip-rar-7z.html', '/guides/vi/how-to-extract-a-file-online-zip-rar-7z.html', '/guides/id/how-to-extract-a-file-online-zip-rar-7z.html', '/guides/de/how-to-extract-a-file-online-zip-rar-7z.html',
   '/guides/pt/how-to-test-a-keyboard-online-step-by-step.html', '/guides/es/how-to-test-a-keyboard-online-step-by-step.html', '/guides/vi/how-to-test-a-keyboard-online-step-by-step.html', '/guides/id/how-to-test-a-keyboard-online-step-by-step.html', '/guides/de/how-to-test-a-keyboard-online-step-by-step.html',
   '/guides/pt/how-to-tell-if-a-jpg-was-compressed-too-much.html', '/guides/es/how-to-tell-if-a-jpg-was-compressed-too-much.html', '/guides/vi/how-to-tell-if-a-jpg-was-compressed-too-much.html', '/guides/id/how-to-tell-if-a-jpg-was-compressed-too-much.html', '/guides/de/how-to-tell-if-a-jpg-was-compressed-too-much.html',
   // plan-warm-pascal-v3 S2 batch 28 (2026-05-30) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-convert-heic-to-jpg-step-by-step.html', '/guides/es/how-to-convert-heic-to-jpg-step-by-step.html', '/guides/vi/how-to-convert-heic-to-jpg-step-by-step.html', '/guides/id/how-to-convert-heic-to-jpg-step-by-step.html', '/guides/de/how-to-convert-heic-to-jpg-step-by-step.html',
   '/guides/pt/how-to-test-a-touchscreen-for-bad-spots.html', '/guides/es/how-to-test-a-touchscreen-for-bad-spots.html', '/guides/vi/how-to-test-a-touchscreen-for-bad-spots.html', '/guides/id/how-to-test-a-touchscreen-for-bad-spots.html', '/guides/de/how-to-test-a-touchscreen-for-bad-spots.html',
   '/guides/pt/how-to-minify-css-js-for-cloud-run-cold-start.html', '/guides/es/how-to-minify-css-js-for-cloud-run-cold-start.html', '/guides/vi/how-to-minify-css-js-for-cloud-run-cold-start.html', '/guides/id/how-to-minify-css-js-for-cloud-run-cold-start.html', '/guides/de/how-to-minify-css-js-for-cloud-run-cold-start.html',
   // plan-warm-pascal-v3 S2 batch 29 (2026-05-30) - 5 locale variants × 3 guides; CROSSES 50% MILESTONE
   '/guides/pt/how-to-flatten-a-pdf-and-when-to-do-it.html', '/guides/es/how-to-flatten-a-pdf-and-when-to-do-it.html', '/guides/vi/how-to-flatten-a-pdf-and-when-to-do-it.html', '/guides/id/how-to-flatten-a-pdf-and-when-to-do-it.html', '/guides/de/how-to-flatten-a-pdf-and-when-to-do-it.html',
   '/guides/pt/how-to-crop-and-rotate-an-image.html', '/guides/es/how-to-crop-and-rotate-an-image.html', '/guides/vi/how-to-crop-and-rotate-an-image.html', '/guides/id/how-to-crop-and-rotate-an-image.html', '/guides/de/how-to-crop-and-rotate-an-image.html',
-  '/guides/pt/how-to-compress-a-zip-file-to-a-specific-size.html', '/guides/es/how-to-compress-a-zip-file-to-a-specific-size.html', '/guides/vi/how-to-compress-a-zip-file-to-a-specific-size.html', '/guides/id/how-to-compress-a-zip-file-to-a-specific-size.html', '/guides/de/how-to-compress-a-zip-file-to-a-specific-size.html',
   // plan-warm-pascal-v3 S2 batch 30 (2026-05-30) - 5 locale variants × 3 guides; PAST 50% R14 threshold
   '/guides/pt/how-to-sign-pdf-after-removing-a-password.html', '/guides/es/how-to-sign-pdf-after-removing-a-password.html', '/guides/vi/how-to-sign-pdf-after-removing-a-password.html', '/guides/id/how-to-sign-pdf-after-removing-a-password.html', '/guides/de/how-to-sign-pdf-after-removing-a-password.html',
   '/guides/pt/how-to-test-for-dead-pixels-before-returning-a-monitor.html', '/guides/es/how-to-test-for-dead-pixels-before-returning-a-monitor.html', '/guides/vi/how-to-test-for-dead-pixels-before-returning-a-monitor.html', '/guides/id/how-to-test-for-dead-pixels-before-returning-a-monitor.html', '/guides/de/how-to-test-for-dead-pixels-before-returning-a-monitor.html',
@@ -2490,7 +2496,6 @@ export const INFO_ROUTES = new Set([
   // plan-warm-pascal-v3 S2 batch 38 (2026-05-30) - 5 locale variants × 3 guides
   '/guides/pt/zip-password-types-strong-vs-weak-explained.html', '/guides/es/zip-password-types-strong-vs-weak-explained.html', '/guides/vi/zip-password-types-strong-vs-weak-explained.html', '/guides/id/zip-password-types-strong-vs-weak-explained.html', '/guides/de/zip-password-types-strong-vs-weak-explained.html',
   '/guides/pt/md5-vs-sha256-when-to-hash.html', '/guides/es/md5-vs-sha256-when-to-hash.html', '/guides/vi/md5-vs-sha256-when-to-hash.html', '/guides/id/md5-vs-sha256-when-to-hash.html', '/guides/de/md5-vs-sha256-when-to-hash.html',
-  '/guides/pt/how-to-convert-iphone-photo-to-jpg.html', '/guides/es/how-to-convert-iphone-photo-to-jpg.html', '/guides/vi/how-to-convert-iphone-photo-to-jpg.html', '/guides/id/how-to-convert-iphone-photo-to-jpg.html', '/guides/de/how-to-convert-iphone-photo-to-jpg.html',
   // plan-warm-pascal-v3 S2 batch 39 (2026-05-30) - 5 locale variants × 3 guides
   '/guides/pt/microphone-test-permission-blocked-how-to-allow-it.html', '/guides/es/microphone-test-permission-blocked-how-to-allow-it.html', '/guides/vi/microphone-test-permission-blocked-how-to-allow-it.html', '/guides/id/microphone-test-permission-blocked-how-to-allow-it.html', '/guides/de/microphone-test-permission-blocked-how-to-allow-it.html',
   '/guides/pt/qr-code-error-correction-and-scan-failures.html', '/guides/es/qr-code-error-correction-and-scan-failures.html', '/guides/vi/qr-code-error-correction-and-scan-failures.html', '/guides/id/qr-code-error-correction-and-scan-failures.html', '/guides/de/qr-code-error-correction-and-scan-failures.html',
@@ -8801,8 +8806,23 @@ export const GUIDE_ROUTES = new Set([
   '/guides/audio-trimmer-vs-alternatives.html',
   // new-tool-discovery-loop fire594 (2026-07-27) - audio-speed-changer companion guides.
   '/guides/audio-speed-changer-when.html',
+  '/guides/pt/audio-speed-changer-when.html',
+  '/guides/es/audio-speed-changer-when.html',
+  '/guides/vi/audio-speed-changer-when.html',
+  '/guides/id/audio-speed-changer-when.html',
+  '/guides/de/audio-speed-changer-when.html',
   '/guides/audio-speed-changer-step-by-step.html',
+  '/guides/pt/audio-speed-changer-step-by-step.html',
+  '/guides/es/audio-speed-changer-step-by-step.html',
+  '/guides/vi/audio-speed-changer-step-by-step.html',
+  '/guides/id/audio-speed-changer-step-by-step.html',
+  '/guides/de/audio-speed-changer-step-by-step.html',
   '/guides/audio-speed-changer-vs-alternatives.html',
+  '/guides/pt/audio-speed-changer-vs-alternatives.html',
+  '/guides/es/audio-speed-changer-vs-alternatives.html',
+  '/guides/vi/audio-speed-changer-vs-alternatives.html',
+  '/guides/id/audio-speed-changer-vs-alternatives.html',
+  '/guides/de/audio-speed-changer-vs-alternatives.html',
   // Cycle 20260524-10 create_new_guide_page - "i love zip" bare-query landing (companion to /zip-file.html).
   // Cycle 78 P78.A - "QR code error correction and scan failures" Lane-D guide (companion to /qr-code-generator.html).
   // Cycle 79 P79.B - "Image to Base64: embed in HTML/CSS vs link the image file" Lane-D guide.
@@ -10909,7 +10929,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/pt/how-to-play-neon-tower-rush.html',
   '/guides/es/how-to-play-neon-tower-rush.html',
   '/guides/vi/how-to-play-neon-tower-rush.html',
-  '/guides/id/how-to-play-neon-tower-rush.html',
   '/guides/de/how-to-play-neon-tower-rush.html',
   '/guides/neon-tower-rush-when.html',
   '/guides/pt/neon-tower-rush-when.html',
@@ -13992,6 +14011,7 @@ export const ALIAS_ROUTES = {
   '/bortle-scale-light-pollution.html': '/space-3d/bortle-scale-light-pollution.html',
   '/meteor-airburst-size-comparison.html': '/space-3d/meteor-airburst-size-comparison.html',
   '/mercury-spin-orbit-resonance.html': '/space-3d/mercury-spin-orbit-resonance.html',
+  '/mercury-day-night-cycle.html': '/space-3d/mercury-day-night-cycle.html',
   '/neptune-supersonic-winds.html': '/space-3d/neptune-supersonic-winds.html',
   '/borisov-interstellar-comet.html': '/space-3d/borisov-interstellar-comet.html',
   '/strong-lensing-multiple-images.html': '/space-3d/strong-lensing-multiple-images.html',
@@ -14650,7 +14670,6 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/hd-video-converter-step-by-step.html': 'guide/pt/hd-video-converter-step-by-step.jsp', '/guides/es/hd-video-converter-step-by-step.html': 'guide/es/hd-video-converter-step-by-step.jsp', '/guides/vi/hd-video-converter-step-by-step.html': 'guide/vi/hd-video-converter-step-by-step.jsp', '/guides/id/hd-video-converter-step-by-step.html': 'guide/id/hd-video-converter-step-by-step.jsp', '/guides/de/hd-video-converter-step-by-step.html': 'guide/de/hd-video-converter-step-by-step.jsp',
   '/guides/pt/hd-video-converter-vs-alternatives.html': 'guide/pt/hd-video-converter-vs-alternatives.jsp', '/guides/es/hd-video-converter-vs-alternatives.html': 'guide/es/hd-video-converter-vs-alternatives.jsp', '/guides/vi/hd-video-converter-vs-alternatives.html': 'guide/vi/hd-video-converter-vs-alternatives.jsp', '/guides/id/hd-video-converter-vs-alternatives.html': 'guide/id/hd-video-converter-vs-alternatives.jsp', '/guides/de/hd-video-converter-vs-alternatives.html': 'guide/de/hd-video-converter-vs-alternatives.jsp',
   // plan-warm-pascal-v3 S2 batch 6 (2026-05-29) - 5 locale variants × 3 guides (compress-zip + gif-into-frames + reduce-zip-file-size-online)
-  '/guides/pt/gif-into-frames.html': 'guide/pt/gif-into-frames.jsp', '/guides/es/gif-into-frames.html': 'guide/es/gif-into-frames.jsp', '/guides/vi/gif-into-frames.html': 'guide/vi/gif-into-frames.jsp', '/guides/id/gif-into-frames.html': 'guide/id/gif-into-frames.jsp', '/guides/de/gif-into-frames.html': 'guide/de/gif-into-frames.jsp',
   // plan-warm-pascal-v3 S2 batch 7 (2026-05-29) - 5 locale variants × 3 guides (json-formatter-step-by-step + zip-compress + json-formatter-vs-alternatives)
   '/guides/pt/json-formatter-step-by-step.html': 'guide/pt/json-formatter-step-by-step.jsp', '/guides/es/json-formatter-step-by-step.html': 'guide/es/json-formatter-step-by-step.jsp', '/guides/vi/json-formatter-step-by-step.html': 'guide/vi/json-formatter-step-by-step.jsp', '/guides/id/json-formatter-step-by-step.html': 'guide/id/json-formatter-step-by-step.jsp', '/guides/de/json-formatter-step-by-step.html': 'guide/de/json-formatter-step-by-step.jsp',
   '/guides/pt/json-formatter-vs-alternatives.html': 'guide/pt/json-formatter-vs-alternatives.jsp', '/guides/es/json-formatter-vs-alternatives.html': 'guide/es/json-formatter-vs-alternatives.jsp', '/guides/vi/json-formatter-vs-alternatives.html': 'guide/vi/json-formatter-vs-alternatives.jsp', '/guides/id/json-formatter-vs-alternatives.html': 'guide/id/json-formatter-vs-alternatives.jsp', '/guides/de/json-formatter-vs-alternatives.html': 'guide/de/json-formatter-vs-alternatives.jsp',
@@ -14696,24 +14715,19 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/before-a-video-call-which-tools-to-run.html': 'guide/pt/before-a-video-call-which-tools-to-run.jsp', '/guides/es/before-a-video-call-which-tools-to-run.html': 'guide/es/before-a-video-call-which-tools-to-run.jsp', '/guides/vi/before-a-video-call-which-tools-to-run.html': 'guide/vi/before-a-video-call-which-tools-to-run.jsp', '/guides/id/before-a-video-call-which-tools-to-run.html': 'guide/id/before-a-video-call-which-tools-to-run.jsp', '/guides/de/before-a-video-call-which-tools-to-run.html': 'guide/de/before-a-video-call-which-tools-to-run.jsp',
   // plan-warm-pascal-v3 S2 batch 18 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/extract-gif-frames-png-vs-jpg-which-format.html': 'guide/pt/extract-gif-frames-png-vs-jpg-which-format.jsp', '/guides/es/extract-gif-frames-png-vs-jpg-which-format.html': 'guide/es/extract-gif-frames-png-vs-jpg-which-format.jsp', '/guides/vi/extract-gif-frames-png-vs-jpg-which-format.html': 'guide/vi/extract-gif-frames-png-vs-jpg-which-format.jsp', '/guides/id/extract-gif-frames-png-vs-jpg-which-format.html': 'guide/id/extract-gif-frames-png-vs-jpg-which-format.jsp', '/guides/de/extract-gif-frames-png-vs-jpg-which-format.html': 'guide/de/extract-gif-frames-png-vs-jpg-which-format.jsp',
-  '/guides/pt/how-to-compress-a-file-online.html': 'guide/pt/how-to-compress-a-file-online.jsp', '/guides/es/how-to-compress-a-file-online.html': 'guide/es/how-to-compress-a-file-online.jsp', '/guides/vi/how-to-compress-a-file-online.html': 'guide/vi/how-to-compress-a-file-online.jsp', '/guides/id/how-to-compress-a-file-online.html': 'guide/id/how-to-compress-a-file-online.jsp', '/guides/de/how-to-compress-a-file-online.html': 'guide/de/how-to-compress-a-file-online.jsp',
   '/guides/pt/ffmpeg-online-conversion-stalled-three-fixes.html': 'guide/pt/ffmpeg-online-conversion-stalled-three-fixes.jsp', '/guides/es/ffmpeg-online-conversion-stalled-three-fixes.html': 'guide/es/ffmpeg-online-conversion-stalled-three-fixes.jsp', '/guides/vi/ffmpeg-online-conversion-stalled-three-fixes.html': 'guide/vi/ffmpeg-online-conversion-stalled-three-fixes.jsp', '/guides/id/ffmpeg-online-conversion-stalled-three-fixes.html': 'guide/id/ffmpeg-online-conversion-stalled-three-fixes.jsp', '/guides/de/ffmpeg-online-conversion-stalled-three-fixes.html': 'guide/de/ffmpeg-online-conversion-stalled-three-fixes.jsp',
   // plan-warm-pascal-v3 S2 batch 19 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/camera-test-shows-black-screen-four-fixes.html': 'guide/pt/camera-test-shows-black-screen-four-fixes.jsp', '/guides/es/camera-test-shows-black-screen-four-fixes.html': 'guide/es/camera-test-shows-black-screen-four-fixes.jsp', '/guides/vi/camera-test-shows-black-screen-four-fixes.html': 'guide/vi/camera-test-shows-black-screen-four-fixes.jsp', '/guides/id/camera-test-shows-black-screen-four-fixes.html': 'guide/id/camera-test-shows-black-screen-four-fixes.jsp', '/guides/de/camera-test-shows-black-screen-four-fixes.html': 'guide/de/camera-test-shows-black-screen-four-fixes.jsp',
   '/guides/pt/file-compressor.html': 'guide/pt/file-compressor.jsp', '/guides/es/file-compressor.html': 'guide/es/file-compressor.jsp', '/guides/vi/file-compressor.html': 'guide/vi/file-compressor.jsp', '/guides/id/file-compressor.html': 'guide/id/file-compressor.jsp', '/guides/de/file-compressor.html': 'guide/de/file-compressor.jsp',
-  '/guides/pt/gif-frame-extractor.html': 'guide/pt/gif-frame-extractor.jsp', '/guides/es/gif-frame-extractor.html': 'guide/es/gif-frame-extractor.jsp', '/guides/vi/gif-frame-extractor.html': 'guide/vi/gif-frame-extractor.jsp', '/guides/id/gif-frame-extractor.html': 'guide/id/gif-frame-extractor.jsp', '/guides/de/gif-frame-extractor.html': 'guide/de/gif-frame-extractor.jsp',
   // Cycle 20260610-12 P12.D - 5 locale JSP routes for gif-to-frames-converter
-  '/guides/pt/gif-to-frames-converter.html': 'guide/pt/gif-to-frames-converter.jsp', '/guides/es/gif-to-frames-converter.html': 'guide/es/gif-to-frames-converter.jsp', '/guides/vi/gif-to-frames-converter.html': 'guide/vi/gif-to-frames-converter.jsp', '/guides/id/gif-to-frames-converter.html': 'guide/id/gif-to-frames-converter.jsp', '/guides/de/gif-to-frames-converter.html': 'guide/de/gif-to-frames-converter.jsp',
   // Cycle 20260610-14 - 5 locale JSP routes for gif-to-frame
   '/guides/pt/gif-to-frame.html': 'guide/pt/gif-to-frame.jsp', '/guides/es/gif-to-frame.html': 'guide/es/gif-to-frame.jsp', '/guides/vi/gif-to-frame.html': 'guide/vi/gif-to-frame.jsp', '/guides/id/gif-to-frame.html': 'guide/id/gif-to-frame.jsp', '/guides/de/gif-to-frame.html': 'guide/de/gif-to-frame.jsp',
   // plan-warm-pascal-v3 S2 batch 20 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-choose-a-compression-level.html': 'guide/pt/how-to-choose-a-compression-level.jsp', '/guides/es/how-to-choose-a-compression-level.html': 'guide/es/how-to-choose-a-compression-level.jsp', '/guides/vi/how-to-choose-a-compression-level.html': 'guide/vi/how-to-choose-a-compression-level.jsp', '/guides/id/how-to-choose-a-compression-level.html': 'guide/id/how-to-choose-a-compression-level.jsp', '/guides/de/how-to-choose-a-compression-level.html': 'guide/de/how-to-choose-a-compression-level.jsp',
   '/guides/pt/heic-vs-jpg-vs-webp.html': 'guide/pt/heic-vs-jpg-vs-webp.jsp', '/guides/es/heic-vs-jpg-vs-webp.html': 'guide/es/heic-vs-jpg-vs-webp.jsp', '/guides/vi/heic-vs-jpg-vs-webp.html': 'guide/vi/heic-vs-jpg-vs-webp.jsp', '/guides/id/heic-vs-jpg-vs-webp.html': 'guide/id/heic-vs-jpg-vs-webp.jsp', '/guides/de/heic-vs-jpg-vs-webp.html': 'guide/de/heic-vs-jpg-vs-webp.jsp',
   '/guides/pt/ffmpeg-online-vs-video-converter-which-to-pick.html': 'guide/pt/ffmpeg-online-vs-video-converter-which-to-pick.jsp', '/guides/es/ffmpeg-online-vs-video-converter-which-to-pick.html': 'guide/es/ffmpeg-online-vs-video-converter-which-to-pick.jsp', '/guides/vi/ffmpeg-online-vs-video-converter-which-to-pick.html': 'guide/vi/ffmpeg-online-vs-video-converter-which-to-pick.jsp', '/guides/id/ffmpeg-online-vs-video-converter-which-to-pick.html': 'guide/id/ffmpeg-online-vs-video-converter-which-to-pick.jsp', '/guides/de/ffmpeg-online-vs-video-converter-which-to-pick.html': 'guide/de/ffmpeg-online-vs-video-converter-which-to-pick.jsp',
   // plan-warm-pascal-v3 S2 batch 21 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/base64-when-to-use-and-when-not-to.html': 'guide/pt/base64-when-to-use-and-when-not-to.jsp', '/guides/es/base64-when-to-use-and-when-not-to.html': 'guide/es/base64-when-to-use-and-when-not-to.jsp', '/guides/vi/base64-when-to-use-and-when-not-to.html': 'guide/vi/base64-when-to-use-and-when-not-to.jsp', '/guides/id/base64-when-to-use-and-when-not-to.html': 'guide/id/base64-when-to-use-and-when-not-to.jsp', '/guides/de/base64-when-to-use-and-when-not-to.html': 'guide/de/base64-when-to-use-and-when-not-to.jsp',
   '/guides/pt/how-to-check-webcam-and-microphone-before-an-interview.html': 'guide/pt/how-to-check-webcam-and-microphone-before-an-interview.jsp', '/guides/es/how-to-check-webcam-and-microphone-before-an-interview.html': 'guide/es/how-to-check-webcam-and-microphone-before-an-interview.jsp', '/guides/vi/how-to-check-webcam-and-microphone-before-an-interview.html': 'guide/vi/how-to-check-webcam-and-microphone-before-an-interview.jsp', '/guides/id/how-to-check-webcam-and-microphone-before-an-interview.html': 'guide/id/how-to-check-webcam-and-microphone-before-an-interview.jsp', '/guides/de/how-to-check-webcam-and-microphone-before-an-interview.html': 'guide/de/how-to-check-webcam-and-microphone-before-an-interview.jsp',
-  '/guides/pt/how-to-compress-a-folder.html': 'guide/pt/how-to-compress-a-folder.jsp', '/guides/es/how-to-compress-a-folder.html': 'guide/es/how-to-compress-a-folder.jsp', '/guides/vi/how-to-compress-a-folder.html': 'guide/vi/how-to-compress-a-folder.jsp', '/guides/id/how-to-compress-a-folder.html': 'guide/id/how-to-compress-a-folder.jsp', '/guides/de/how-to-compress-a-folder.html': 'guide/de/how-to-compress-a-folder.jsp',
   // plan-warm-pascal-v3 S2 batch 22 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/compress-zip-file-to-100kb.html': 'guide/pt/compress-zip-file-to-100kb.jsp', '/guides/es/compress-zip-file-to-100kb.html': 'guide/es/compress-zip-file-to-100kb.jsp', '/guides/vi/compress-zip-file-to-100kb.html': 'guide/vi/compress-zip-file-to-100kb.jsp', '/guides/id/compress-zip-file-to-100kb.html': 'guide/id/compress-zip-file-to-100kb.jsp', '/guides/de/compress-zip-file-to-100kb.html': 'guide/de/compress-zip-file-to-100kb.jsp',
   '/guides/pt/gif-frames-extract-vs-frame-rate-fps-explained.html': 'guide/pt/gif-frames-extract-vs-frame-rate-fps-explained.jsp', '/guides/es/gif-frames-extract-vs-frame-rate-fps-explained.html': 'guide/es/gif-frames-extract-vs-frame-rate-fps-explained.jsp', '/guides/vi/gif-frames-extract-vs-frame-rate-fps-explained.html': 'guide/vi/gif-frames-extract-vs-frame-rate-fps-explained.jsp', '/guides/id/gif-frames-extract-vs-frame-rate-fps-explained.html': 'guide/id/gif-frames-extract-vs-frame-rate-fps-explained.jsp', '/guides/de/gif-frames-extract-vs-frame-rate-fps-explained.html': 'guide/de/gif-frames-extract-vs-frame-rate-fps-explained.jsp',
@@ -14734,17 +14748,14 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/free-online-tools-that-work-without-uploading-files.html': 'guide/pt/free-online-tools-that-work-without-uploading-files.jsp', '/guides/es/free-online-tools-that-work-without-uploading-files.html': 'guide/es/free-online-tools-that-work-without-uploading-files.jsp', '/guides/vi/free-online-tools-that-work-without-uploading-files.html': 'guide/vi/free-online-tools-that-work-without-uploading-files.jsp', '/guides/id/free-online-tools-that-work-without-uploading-files.html': 'guide/id/free-online-tools-that-work-without-uploading-files.jsp', '/guides/de/free-online-tools-that-work-without-uploading-files.html': 'guide/de/free-online-tools-that-work-without-uploading-files.jsp',
   '/guides/pt/jpg-vs-png-for-web.html': 'guide/pt/jpg-vs-png-for-web.jsp', '/guides/es/jpg-vs-png-for-web.html': 'guide/es/jpg-vs-png-for-web.jsp', '/guides/vi/jpg-vs-png-for-web.html': 'guide/vi/jpg-vs-png-for-web.jsp', '/guides/id/jpg-vs-png-for-web.html': 'guide/id/jpg-vs-png-for-web.jsp', '/guides/de/jpg-vs-png-for-web.html': 'guide/de/jpg-vs-png-for-web.jsp',
   // plan-warm-pascal-v3 S2 batch 27 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-extract-a-file-online-zip-rar-7z.html': 'guide/pt/how-to-extract-a-file-online-zip-rar-7z.jsp', '/guides/es/how-to-extract-a-file-online-zip-rar-7z.html': 'guide/es/how-to-extract-a-file-online-zip-rar-7z.jsp', '/guides/vi/how-to-extract-a-file-online-zip-rar-7z.html': 'guide/vi/how-to-extract-a-file-online-zip-rar-7z.jsp', '/guides/id/how-to-extract-a-file-online-zip-rar-7z.html': 'guide/id/how-to-extract-a-file-online-zip-rar-7z.jsp', '/guides/de/how-to-extract-a-file-online-zip-rar-7z.html': 'guide/de/how-to-extract-a-file-online-zip-rar-7z.jsp',
   '/guides/pt/how-to-test-a-keyboard-online-step-by-step.html': 'guide/pt/how-to-test-a-keyboard-online-step-by-step.jsp', '/guides/es/how-to-test-a-keyboard-online-step-by-step.html': 'guide/es/how-to-test-a-keyboard-online-step-by-step.jsp', '/guides/vi/how-to-test-a-keyboard-online-step-by-step.html': 'guide/vi/how-to-test-a-keyboard-online-step-by-step.jsp', '/guides/id/how-to-test-a-keyboard-online-step-by-step.html': 'guide/id/how-to-test-a-keyboard-online-step-by-step.jsp', '/guides/de/how-to-test-a-keyboard-online-step-by-step.html': 'guide/de/how-to-test-a-keyboard-online-step-by-step.jsp',
   '/guides/pt/how-to-tell-if-a-jpg-was-compressed-too-much.html': 'guide/pt/how-to-tell-if-a-jpg-was-compressed-too-much.jsp', '/guides/es/how-to-tell-if-a-jpg-was-compressed-too-much.html': 'guide/es/how-to-tell-if-a-jpg-was-compressed-too-much.jsp', '/guides/vi/how-to-tell-if-a-jpg-was-compressed-too-much.html': 'guide/vi/how-to-tell-if-a-jpg-was-compressed-too-much.jsp', '/guides/id/how-to-tell-if-a-jpg-was-compressed-too-much.html': 'guide/id/how-to-tell-if-a-jpg-was-compressed-too-much.jsp', '/guides/de/how-to-tell-if-a-jpg-was-compressed-too-much.html': 'guide/de/how-to-tell-if-a-jpg-was-compressed-too-much.jsp',
   // plan-warm-pascal-v3 S2 batch 28 (2026-05-30) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-convert-heic-to-jpg-step-by-step.html': 'guide/pt/how-to-convert-heic-to-jpg-step-by-step.jsp', '/guides/es/how-to-convert-heic-to-jpg-step-by-step.html': 'guide/es/how-to-convert-heic-to-jpg-step-by-step.jsp', '/guides/vi/how-to-convert-heic-to-jpg-step-by-step.html': 'guide/vi/how-to-convert-heic-to-jpg-step-by-step.jsp', '/guides/id/how-to-convert-heic-to-jpg-step-by-step.html': 'guide/id/how-to-convert-heic-to-jpg-step-by-step.jsp', '/guides/de/how-to-convert-heic-to-jpg-step-by-step.html': 'guide/de/how-to-convert-heic-to-jpg-step-by-step.jsp',
   '/guides/pt/how-to-test-a-touchscreen-for-bad-spots.html': 'guide/pt/how-to-test-a-touchscreen-for-bad-spots.jsp', '/guides/es/how-to-test-a-touchscreen-for-bad-spots.html': 'guide/es/how-to-test-a-touchscreen-for-bad-spots.jsp', '/guides/vi/how-to-test-a-touchscreen-for-bad-spots.html': 'guide/vi/how-to-test-a-touchscreen-for-bad-spots.jsp', '/guides/id/how-to-test-a-touchscreen-for-bad-spots.html': 'guide/id/how-to-test-a-touchscreen-for-bad-spots.jsp', '/guides/de/how-to-test-a-touchscreen-for-bad-spots.html': 'guide/de/how-to-test-a-touchscreen-for-bad-spots.jsp',
   '/guides/pt/how-to-minify-css-js-for-cloud-run-cold-start.html': 'guide/pt/how-to-minify-css-js-for-cloud-run-cold-start.jsp', '/guides/es/how-to-minify-css-js-for-cloud-run-cold-start.html': 'guide/es/how-to-minify-css-js-for-cloud-run-cold-start.jsp', '/guides/vi/how-to-minify-css-js-for-cloud-run-cold-start.html': 'guide/vi/how-to-minify-css-js-for-cloud-run-cold-start.jsp', '/guides/id/how-to-minify-css-js-for-cloud-run-cold-start.html': 'guide/id/how-to-minify-css-js-for-cloud-run-cold-start.jsp', '/guides/de/how-to-minify-css-js-for-cloud-run-cold-start.html': 'guide/de/how-to-minify-css-js-for-cloud-run-cold-start.jsp',
   // plan-warm-pascal-v3 S2 batch 29 (2026-05-30) - 5 locale variants × 3 guides; CROSSES 50% MILESTONE
   '/guides/pt/how-to-flatten-a-pdf-and-when-to-do-it.html': 'guide/pt/how-to-flatten-a-pdf-and-when-to-do-it.jsp', '/guides/es/how-to-flatten-a-pdf-and-when-to-do-it.html': 'guide/es/how-to-flatten-a-pdf-and-when-to-do-it.jsp', '/guides/vi/how-to-flatten-a-pdf-and-when-to-do-it.html': 'guide/vi/how-to-flatten-a-pdf-and-when-to-do-it.jsp', '/guides/id/how-to-flatten-a-pdf-and-when-to-do-it.html': 'guide/id/how-to-flatten-a-pdf-and-when-to-do-it.jsp', '/guides/de/how-to-flatten-a-pdf-and-when-to-do-it.html': 'guide/de/how-to-flatten-a-pdf-and-when-to-do-it.jsp',
   '/guides/pt/how-to-crop-and-rotate-an-image.html': 'guide/pt/how-to-crop-and-rotate-an-image.jsp', '/guides/es/how-to-crop-and-rotate-an-image.html': 'guide/es/how-to-crop-and-rotate-an-image.jsp', '/guides/vi/how-to-crop-and-rotate-an-image.html': 'guide/vi/how-to-crop-and-rotate-an-image.jsp', '/guides/id/how-to-crop-and-rotate-an-image.html': 'guide/id/how-to-crop-and-rotate-an-image.jsp', '/guides/de/how-to-crop-and-rotate-an-image.html': 'guide/de/how-to-crop-and-rotate-an-image.jsp',
-  '/guides/pt/how-to-compress-a-zip-file-to-a-specific-size.html': 'guide/pt/how-to-compress-a-zip-file-to-a-specific-size.jsp', '/guides/es/how-to-compress-a-zip-file-to-a-specific-size.html': 'guide/es/how-to-compress-a-zip-file-to-a-specific-size.jsp', '/guides/vi/how-to-compress-a-zip-file-to-a-specific-size.html': 'guide/vi/how-to-compress-a-zip-file-to-a-specific-size.jsp', '/guides/id/how-to-compress-a-zip-file-to-a-specific-size.html': 'guide/id/how-to-compress-a-zip-file-to-a-specific-size.jsp', '/guides/de/how-to-compress-a-zip-file-to-a-specific-size.html': 'guide/de/how-to-compress-a-zip-file-to-a-specific-size.jsp',
   // plan-warm-pascal-v3 S2 batch 30 (2026-05-30) - 5 locale variants × 3 guides; PAST 50% R14 threshold
   '/guides/pt/how-to-sign-pdf-after-removing-a-password.html': 'guide/pt/how-to-sign-pdf-after-removing-a-password.jsp', '/guides/es/how-to-sign-pdf-after-removing-a-password.html': 'guide/es/how-to-sign-pdf-after-removing-a-password.jsp', '/guides/vi/how-to-sign-pdf-after-removing-a-password.html': 'guide/vi/how-to-sign-pdf-after-removing-a-password.jsp', '/guides/id/how-to-sign-pdf-after-removing-a-password.html': 'guide/id/how-to-sign-pdf-after-removing-a-password.jsp', '/guides/de/how-to-sign-pdf-after-removing-a-password.html': 'guide/de/how-to-sign-pdf-after-removing-a-password.jsp',
   '/guides/pt/how-to-test-for-dead-pixels-before-returning-a-monitor.html': 'guide/pt/how-to-test-for-dead-pixels-before-returning-a-monitor.jsp', '/guides/es/how-to-test-for-dead-pixels-before-returning-a-monitor.html': 'guide/es/how-to-test-for-dead-pixels-before-returning-a-monitor.jsp', '/guides/vi/how-to-test-for-dead-pixels-before-returning-a-monitor.html': 'guide/vi/how-to-test-for-dead-pixels-before-returning-a-monitor.jsp', '/guides/id/how-to-test-for-dead-pixels-before-returning-a-monitor.html': 'guide/id/how-to-test-for-dead-pixels-before-returning-a-monitor.jsp', '/guides/de/how-to-test-for-dead-pixels-before-returning-a-monitor.html': 'guide/de/how-to-test-for-dead-pixels-before-returning-a-monitor.jsp',
@@ -14780,7 +14791,6 @@ export const JSP_BY_ROUTE = {
   // plan-warm-pascal-v3 S2 batch 38 (2026-05-30) - 5 locale variants × 3 guides
   '/guides/pt/zip-password-types-strong-vs-weak-explained.html': 'guide/pt/zip-password-types-strong-vs-weak-explained.jsp', '/guides/es/zip-password-types-strong-vs-weak-explained.html': 'guide/es/zip-password-types-strong-vs-weak-explained.jsp', '/guides/vi/zip-password-types-strong-vs-weak-explained.html': 'guide/vi/zip-password-types-strong-vs-weak-explained.jsp', '/guides/id/zip-password-types-strong-vs-weak-explained.html': 'guide/id/zip-password-types-strong-vs-weak-explained.jsp', '/guides/de/zip-password-types-strong-vs-weak-explained.html': 'guide/de/zip-password-types-strong-vs-weak-explained.jsp',
   '/guides/pt/md5-vs-sha256-when-to-hash.html': 'guide/pt/md5-vs-sha256-when-to-hash.jsp', '/guides/es/md5-vs-sha256-when-to-hash.html': 'guide/es/md5-vs-sha256-when-to-hash.jsp', '/guides/vi/md5-vs-sha256-when-to-hash.html': 'guide/vi/md5-vs-sha256-when-to-hash.jsp', '/guides/id/md5-vs-sha256-when-to-hash.html': 'guide/id/md5-vs-sha256-when-to-hash.jsp', '/guides/de/md5-vs-sha256-when-to-hash.html': 'guide/de/md5-vs-sha256-when-to-hash.jsp',
-  '/guides/pt/how-to-convert-iphone-photo-to-jpg.html': 'guide/pt/how-to-convert-iphone-photo-to-jpg.jsp', '/guides/es/how-to-convert-iphone-photo-to-jpg.html': 'guide/es/how-to-convert-iphone-photo-to-jpg.jsp', '/guides/vi/how-to-convert-iphone-photo-to-jpg.html': 'guide/vi/how-to-convert-iphone-photo-to-jpg.jsp', '/guides/id/how-to-convert-iphone-photo-to-jpg.html': 'guide/id/how-to-convert-iphone-photo-to-jpg.jsp', '/guides/de/how-to-convert-iphone-photo-to-jpg.html': 'guide/de/how-to-convert-iphone-photo-to-jpg.jsp',
   // plan-warm-pascal-v3 S2 batch 39 (2026-05-30) - 5 locale variants × 3 guides
   '/guides/pt/microphone-test-permission-blocked-how-to-allow-it.html': 'guide/pt/microphone-test-permission-blocked-how-to-allow-it.jsp', '/guides/es/microphone-test-permission-blocked-how-to-allow-it.html': 'guide/es/microphone-test-permission-blocked-how-to-allow-it.jsp', '/guides/vi/microphone-test-permission-blocked-how-to-allow-it.html': 'guide/vi/microphone-test-permission-blocked-how-to-allow-it.jsp', '/guides/id/microphone-test-permission-blocked-how-to-allow-it.html': 'guide/id/microphone-test-permission-blocked-how-to-allow-it.jsp', '/guides/de/microphone-test-permission-blocked-how-to-allow-it.html': 'guide/de/microphone-test-permission-blocked-how-to-allow-it.jsp',
   '/guides/pt/qr-code-error-correction-and-scan-failures.html': 'guide/pt/qr-code-error-correction-and-scan-failures.jsp', '/guides/es/qr-code-error-correction-and-scan-failures.html': 'guide/es/qr-code-error-correction-and-scan-failures.jsp', '/guides/vi/qr-code-error-correction-and-scan-failures.html': 'guide/vi/qr-code-error-correction-and-scan-failures.jsp', '/guides/id/qr-code-error-correction-and-scan-failures.html': 'guide/id/qr-code-error-correction-and-scan-failures.jsp', '/guides/de/qr-code-error-correction-and-scan-failures.html': 'guide/de/qr-code-error-correction-and-scan-failures.jsp',
@@ -14926,13 +14936,11 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/how-to-hide-a-message-in-an-image.html': 'guide/pt/how-to-hide-a-message-in-an-image.jsp',
   '/guides/es/how-to-hide-a-message-in-an-image.html': 'guide/es/how-to-hide-a-message-in-an-image.jsp',
   '/guides/vi/how-to-hide-a-message-in-an-image.html': 'guide/vi/how-to-hide-a-message-in-an-image.jsp',
-  '/guides/id/how-to-hide-a-message-in-an-image.html': 'guide/id/how-to-hide-a-message-in-an-image.jsp',
   '/guides/de/how-to-hide-a-message-in-an-image.html': 'guide/de/how-to-hide-a-message-in-an-image.jsp',
   '/guides/how-to-edit-code-online.html': 'guide/how-to-edit-code-online.jsp',
   '/guides/pt/how-to-edit-code-online.html': 'guide/pt/how-to-edit-code-online.jsp',
   '/guides/es/how-to-edit-code-online.html': 'guide/es/how-to-edit-code-online.jsp',
   '/guides/vi/how-to-edit-code-online.html': 'guide/vi/how-to-edit-code-online.jsp',
-  '/guides/id/how-to-edit-code-online.html': 'guide/id/how-to-edit-code-online.jsp',
   '/guides/de/how-to-edit-code-online.html': 'guide/de/how-to-edit-code-online.jsp',
   '/guides/how-to-run-a-private-ai-chat-in-your-browser.html': 'guide/how-to-run-a-private-ai-chat-in-your-browser.jsp',
   '/guides/pt/how-to-run-a-private-ai-chat-in-your-browser.html': 'guide/pt/how-to-run-a-private-ai-chat-in-your-browser.jsp',
@@ -16783,7 +16791,6 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/how-to-play-neon-tower-rush.html': 'guide/pt/how-to-play-neon-tower-rush.jsp',
   '/guides/es/how-to-play-neon-tower-rush.html': 'guide/es/how-to-play-neon-tower-rush.jsp',
   '/guides/vi/how-to-play-neon-tower-rush.html': 'guide/vi/how-to-play-neon-tower-rush.jsp',
-  '/guides/id/how-to-play-neon-tower-rush.html': 'guide/id/how-to-play-neon-tower-rush.jsp',
   '/guides/de/how-to-play-neon-tower-rush.html': 'guide/de/how-to-play-neon-tower-rush.jsp',
   '/guides/neon-tower-rush-when.html': 'guide/neon-tower-rush-when.jsp',
   '/guides/pt/neon-tower-rush-when.html': 'guide/pt/neon-tower-rush-when.jsp',
@@ -25024,8 +25031,23 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/aspect-ratio-calculator-vs-alternatives.html': 'guide/pt/aspect-ratio-calculator-vs-alternatives.jsp',
   '/utility-tools/subnet-calculator.html': 'utility/subnet-calculator.jsp',
   '/guides/subnet-calculator-ipv4-cidr-when.html': 'guide/subnet-calculator-ipv4-cidr-when.jsp',
+  '/guides/pt/subnet-calculator-ipv4-cidr-when.html': 'guide/pt/subnet-calculator-ipv4-cidr-when.jsp',
+  '/guides/es/subnet-calculator-ipv4-cidr-when.html': 'guide/es/subnet-calculator-ipv4-cidr-when.jsp',
+  '/guides/vi/subnet-calculator-ipv4-cidr-when.html': 'guide/vi/subnet-calculator-ipv4-cidr-when.jsp',
+  '/guides/id/subnet-calculator-ipv4-cidr-when.html': 'guide/id/subnet-calculator-ipv4-cidr-when.jsp',
+  '/guides/de/subnet-calculator-ipv4-cidr-when.html': 'guide/de/subnet-calculator-ipv4-cidr-when.jsp',
   '/guides/subnet-calculator-ipv4-cidr-step-by-step.html': 'guide/subnet-calculator-ipv4-cidr-step-by-step.jsp',
+  '/guides/pt/subnet-calculator-ipv4-cidr-step-by-step.html': 'guide/pt/subnet-calculator-ipv4-cidr-step-by-step.jsp',
+  '/guides/es/subnet-calculator-ipv4-cidr-step-by-step.html': 'guide/es/subnet-calculator-ipv4-cidr-step-by-step.jsp',
+  '/guides/vi/subnet-calculator-ipv4-cidr-step-by-step.html': 'guide/vi/subnet-calculator-ipv4-cidr-step-by-step.jsp',
+  '/guides/id/subnet-calculator-ipv4-cidr-step-by-step.html': 'guide/id/subnet-calculator-ipv4-cidr-step-by-step.jsp',
+  '/guides/de/subnet-calculator-ipv4-cidr-step-by-step.html': 'guide/de/subnet-calculator-ipv4-cidr-step-by-step.jsp',
   '/guides/subnet-calculator-ipv4-cidr-vs-alternatives.html': 'guide/subnet-calculator-ipv4-cidr-vs-alternatives.jsp',
+  '/guides/pt/subnet-calculator-ipv4-cidr-vs-alternatives.html': 'guide/pt/subnet-calculator-ipv4-cidr-vs-alternatives.jsp',
+  '/guides/es/subnet-calculator-ipv4-cidr-vs-alternatives.html': 'guide/es/subnet-calculator-ipv4-cidr-vs-alternatives.jsp',
+  '/guides/vi/subnet-calculator-ipv4-cidr-vs-alternatives.html': 'guide/vi/subnet-calculator-ipv4-cidr-vs-alternatives.jsp',
+  '/guides/id/subnet-calculator-ipv4-cidr-vs-alternatives.html': 'guide/id/subnet-calculator-ipv4-cidr-vs-alternatives.jsp',
+  '/guides/de/subnet-calculator-ipv4-cidr-vs-alternatives.html': 'guide/de/subnet-calculator-ipv4-cidr-vs-alternatives.jsp',
   '/developer-tools/user-agent-parser.html': 'utility/user-agent-parser.jsp',
   '/guides/user-agent-parser-when.html': 'guide/user-agent-parser-when.jsp',
   '/guides/de/user-agent-parser-when.html': 'guide/de/user-agent-parser-when.jsp',
@@ -25253,6 +25275,7 @@ export const JSP_BY_ROUTE = {
   '/guides/de/bortle-scale-light-pollution-vs-alternatives.html': 'guide/de/bortle-scale-light-pollution-vs-alternatives.jsp',
   '/space-3d/meteor-airburst-size-comparison.html': 'space/meteor-airburst-size-comparison.jsp',
   '/space-3d/mercury-spin-orbit-resonance.html': 'space/mercury-spin-orbit-resonance.jsp',
+  '/space-3d/mercury-day-night-cycle.html': 'space/mercury-day-night-cycle.jsp',
   '/space-3d/neptune-supersonic-winds.html': 'space/neptune-supersonic-winds.jsp',
   '/space-3d/borisov-interstellar-comet.html': 'space/borisov-interstellar-comet.jsp',
   '/space-3d/strong-lensing-multiple-images.html': 'space/strong-lensing-multiple-images.jsp',
@@ -25601,8 +25624,23 @@ export const JSP_BY_ROUTE = {
   '/guides/de/webcam-recorder-vs-alternatives.html': 'guide/de/webcam-recorder-vs-alternatives.jsp',
   '/video-tools/audio-speed-changer.html': 'convert/audio-speed-changer.jsp',
   '/guides/audio-speed-changer-when.html': 'guide/audio-speed-changer-when.jsp',
+  '/guides/pt/audio-speed-changer-when.html': 'guide/pt/audio-speed-changer-when.jsp',
+  '/guides/es/audio-speed-changer-when.html': 'guide/es/audio-speed-changer-when.jsp',
+  '/guides/vi/audio-speed-changer-when.html': 'guide/vi/audio-speed-changer-when.jsp',
+  '/guides/id/audio-speed-changer-when.html': 'guide/id/audio-speed-changer-when.jsp',
+  '/guides/de/audio-speed-changer-when.html': 'guide/de/audio-speed-changer-when.jsp',
   '/guides/audio-speed-changer-step-by-step.html': 'guide/audio-speed-changer-step-by-step.jsp',
+  '/guides/pt/audio-speed-changer-step-by-step.html': 'guide/pt/audio-speed-changer-step-by-step.jsp',
+  '/guides/es/audio-speed-changer-step-by-step.html': 'guide/es/audio-speed-changer-step-by-step.jsp',
+  '/guides/vi/audio-speed-changer-step-by-step.html': 'guide/vi/audio-speed-changer-step-by-step.jsp',
+  '/guides/id/audio-speed-changer-step-by-step.html': 'guide/id/audio-speed-changer-step-by-step.jsp',
+  '/guides/de/audio-speed-changer-step-by-step.html': 'guide/de/audio-speed-changer-step-by-step.jsp',
   '/guides/audio-speed-changer-vs-alternatives.html': 'guide/audio-speed-changer-vs-alternatives.jsp',
+  '/guides/pt/audio-speed-changer-vs-alternatives.html': 'guide/pt/audio-speed-changer-vs-alternatives.jsp',
+  '/guides/es/audio-speed-changer-vs-alternatives.html': 'guide/es/audio-speed-changer-vs-alternatives.jsp',
+  '/guides/vi/audio-speed-changer-vs-alternatives.html': 'guide/vi/audio-speed-changer-vs-alternatives.jsp',
+  '/guides/id/audio-speed-changer-vs-alternatives.html': 'guide/id/audio-speed-changer-vs-alternatives.jsp',
+  '/guides/de/audio-speed-changer-vs-alternatives.html': 'guide/de/audio-speed-changer-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
@@ -31764,6 +31802,1532 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/es/trojan-asteroids-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/kirkwood-gaps-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
 
+
+  // pruned 2026-07-29 zero-evidence es - batch es-batch-7 (196 routes, FINAL ES batch)
+  '/guides/es/html-entity-encoder-decoder-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/html-entity-encoder-decoder-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/html-entity-encoder-decoder-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/html-markdown-converter-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/html-markdown-converter-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/html-markdown-converter-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/html-tag-remover-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/html-tag-remover-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/html-tag-remover-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/hyperion-sponge-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/hyperion-sponge-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/hyperion-sponge-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/iapetus-equatorial-ridge-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/iapetus-equatorial-ridge-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/iapetus-equatorial-ridge-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/image-exif-metadata-viewer-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/image-exif-metadata-viewer-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/image-exif-metadata-viewer-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/image-text-ocr-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/image-text-ocr-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/image-text-ocr-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/iss-orbit-tracker-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/iss-orbit-tracker-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/iss-orbit-tracker-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/json-typescript-interface-generator-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/json-typescript-interface-generator-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/json-typescript-interface-generator-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/jupiter-magnetosphere-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/jupiter-magnetosphere-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/jwst-l2-halo-orbit-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/jwst-l2-halo-orbit-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/jwst-l2-halo-orbit-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/kepler-orbits-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/kepler-orbits-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/kepler-orbits-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/kilonova-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/kilonova-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/kilonova-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/kirkwood-gaps-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/kirkwood-gaps-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/kuiper-belt-oort-cloud-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/kuiper-belt-oort-cloud-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/lagrange-points-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/lagrange-points-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/lagrange-points-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/light-cone-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/light-cone-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/loan-calculator-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/loan-calculator-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/loan-calculator-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/lunar-eclipse-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/lunar-eclipse-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/lunar-eclipse-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/lunar-nodes-eclipse-seasons-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/lunar-nodes-eclipse-seasons-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/lunar-nodes-eclipse-seasons-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/magnetic-reconnection-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/magnetic-reconnection-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/magnetic-reconnection-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/markdown-html-previewer-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/markdown-html-previewer-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/markdown-html-previewer-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/mars-terrain-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/mars-terrain-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/mars-terrain-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/meme-maker-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/meme-maker-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/meme-maker-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/meteor-airburst-size-comparison-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/meteor-airburst-size-comparison-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/meteor-airburst-size-comparison-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/meteor-shower-radiant-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/meteor-shower-radiant-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/metronome-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/metronome-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/metronome-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/milky-way-map-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/milky-way-map-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/milky-way-map-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/mimas-herschel-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/mimas-herschel-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/mimas-herschel-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/miranda-verona-rupes-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/miranda-verona-rupes-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/miranda-verona-rupes-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/sql-formatter-beautifier-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/sql-formatter-beautifier-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/sql-formatter-beautifier-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/star-lifecycle-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/star-lifecycle-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/star-lifecycle-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/star-trails-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/star-trails-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/stellar-magnitude-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/stellar-magnitude-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/stellar-magnitude-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/stellar-nucleosynthesis-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/stellar-nucleosynthesis-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/stellar-parallax-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/stellar-parallax-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/stellar-proper-motion-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/stellar-proper-motion-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/stellar-proper-motion-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/sunspot-cycle-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/sunspot-cycle-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/sunspot-magnetic-loops-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/sunspot-magnetic-loops-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/supernova-remnant-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/supernova-remnant-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/svg-optimizer-minifier-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/svg-optimizer-minifier-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/svg-optimizer-minifier-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/synodic-lunar-month-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/synodic-lunar-month-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/synodic-lunar-month-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/tabbys-star-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/tabbys-star-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/tabbys-star-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/text-case-converter-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/text-case-converter-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/text-case-converter-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/three-body-problem-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/three-body-problem-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/tidal-disruption-event-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/tidal-disruption-event-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/tidal-heating-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/tidal-heating-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/tidal-locking-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/tidal-locking-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/tidal-locking-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/tidal-tails-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/tidal-tails-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/time-zone-converter-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/time-zone-converter-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/time-zone-converter-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/tip-calculator-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/tip-calculator-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/tip-calculator-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/trappist-1-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/trappist-1-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/trappist-1-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/triton-cantaloupe-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/trojan-asteroids-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/trojan-asteroids-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/type-ia-supernova-standard-candle-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/type-ia-supernova-standard-candle-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/type-ia-supernova-standard-candle-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/uranus-tilt-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/uranus-tilt-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/url-slug-generator-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/url-slug-generator-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/url-slug-generator-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/user-agent-parser-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/user-agent-parser-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/user-agent-parser-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/van-allen-belts-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/van-allen-belts-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/van-allen-belts-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/venus-phases-galileo-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/venus-phases-galileo-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/venus-phases-galileo-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/venus-retrograde-rotation-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/venus-retrograde-rotation-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/vesta-rheasilvia-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/vesta-rheasilvia-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/vesta-rheasilvia-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/video-merger-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/video-merger-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/video-merger-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/video-speed-changer-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/video-speed-changer-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/video-speed-changer-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/video-splitter-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/video-splitter-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/video-splitter-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/webcam-recorder-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/webcam-recorder-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/webcam-recorder-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/white-noise-ambient-sound-generator-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/white-noise-ambient-sound-generator-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/white-noise-ambient-sound-generator-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/whitespace-remover-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/whitespace-remover-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/whitespace-remover-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/workout-tracker-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/workout-tracker-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/workout-tracker-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/wormhole-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/wormhole-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/wormhole-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/wow-signal-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/wow-signal-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/wow-signal-when.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/zodiacal-light-step-by-step.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/zodiacal-light-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
+  '/guides/es/zodiacal-light-when.html', // pruned 2026-07-29 zero-evidence es
+
+  // pruned 2026-07-29 zero-evidence id - batch id-batch-1 (200 routes)
+  '/guides/id/abelisaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/abelisaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/abyss-signal-diver-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/abyss-signal-diver-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/acrocanthosaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/acrocanthosaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/add-watermark-pdf-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/add-watermark-pdf-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/add-watermark-pdf-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/age-calculator-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/age-calculator-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/age-calculator-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/albertaceratops-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/albertaceratops-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/albertosaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/albertosaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/algol-eclipsing-binary-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/algol-eclipsing-binary-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/algol-eclipsing-binary-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/alioramus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/alioramus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/allosaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/allosaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/amargasaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/amargasaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/ampelosaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/ampelosaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/andromeda-collision-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/andromeda-collision-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/andromeda-collision-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/andromeda-star-shooter-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/andromeda-star-shooter-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/ankylosaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/ankylosaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/apatosaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/apatosaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/apollo-free-return-trajectory-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/apollo-free-return-trajectory-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/apollo-free-return-trajectory-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/apophis-2029-flyby-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/apophis-2029-flyby-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/apophis-2029-flyby-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/arrow-dodge-arena-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/arrow-dodge-arena-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/asteroid-blaster-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/asteroid-blaster-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/avaceratops-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/avaceratops-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/axial-tilt-comparison-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/axial-tilt-comparison-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/axial-tilt-comparison-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/bangbang-artillery-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/bangbang-artillery-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/barosaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/barosaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/baryonyx-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/baryonyx-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/becklespinax-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/becklespinax-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/black-cat-hot-tin-roof-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/black-cat-hot-tin-roof-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/black-hole-square-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/black-hole-square-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/boing-cat-platformer-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/boing-cat-platformer-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/borisov-interstellar-comet-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/borisov-interstellar-comet-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/borisov-interstellar-comet-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/bortle-scale-light-pollution-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/bortle-scale-light-pollution-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/bortle-scale-light-pollution-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/bounce-back-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/bounce-back-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/brachiosaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/brachiosaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/brachylophosaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/brachylophosaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/brontosaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/brontosaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/brontotherium-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/brontotherium-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/carnotaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/carnotaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/cassini-grand-finale-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/cat-hop-cloud-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/cat-hop-cloud-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/cat-typing-race-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/cat-typing-race-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/ceratosaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/ceratosaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/character-counter-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/character-counter-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/character-counter-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/chariklo-rings-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/chariklo-rings-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/chariklo-rings-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/chasmosaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/chasmosaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/chili-blast-shooter-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/chili-blast-shooter-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/city-drive-open-world-3d-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/city-drive-open-world-3d-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/city-drive-open-world-3d-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/classic-pong-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/classic-pong-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/claudicus-quest-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/claudicus-quest-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/coelophysis-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/coelophysis-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/compsognathus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/compsognathus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/concavenator-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/concavenator-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/connect-four-ai-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/connect-four-ai-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/coronal-mass-ejection-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/coronal-mass-ejection-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/coronal-mass-ejection-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/cryolophosaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/cryolophosaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/css-box-shadow-generator-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/css-box-shadow-generator-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/css-box-shadow-generator-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/css-grid-layout-generator-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/css-grid-layout-generator-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/css-grid-layout-generator-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/csv-json-converter-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/csv-json-converter-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/csv-json-converter-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/curiosity-rover-traverse-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/curiosity-rover-traverse-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/curiosity-rover-traverse-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/cyber-neon-maze-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/cyber-neon-maze-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/cyber-slide-puzzle-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/cyber-slide-puzzle-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/dark-matter-rotation-curves-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/dark-matter-rotation-curves-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/dark-matter-rotation-curves-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/darkline-paws-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/darkline-paws-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/dart-asteroid-deflection-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/dart-asteroid-deflection-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/dart-asteroid-deflection-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/date-difference-calculator-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/date-difference-calculator-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/date-difference-calculator-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/deinocheirus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/deinocheirus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/deinonychus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/deinonychus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/delete-pdf-pages-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/delete-pdf-pages-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/delete-pdf-pages-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/desk-cat-coder-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/desk-cat-coder-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/dilophosaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/dilophosaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/dimetrodon-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/dimetrodon-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/diplodocus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/diplodocus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/doliosauriscus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/doliosauriscus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/dracovenator-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/dracovenator-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/dwarf-planet-comparison-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/dwarf-planet-comparison-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/dwarf-planet-comparison-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/earth-perihelion-aphelion-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/earth-perihelion-aphelion-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/earth-perihelion-aphelion-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/edmontosaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/edmontosaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/egg-time-rewind-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/egg-time-rewind-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/eight-ball-pool-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/eight-ball-pool-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/elm-street-delivery-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/elm-street-delivery-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/emoji-slot-machine-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/emoji-slot-machine-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/exoplanet-atmosphere-spectroscopy-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/exoplanet-atmosphere-spectroscopy-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/exoplanet-atmosphere-spectroscopy-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/expense-tracker-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/expense-tracker-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/expense-tracker-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/fast-radio-bursts-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/fast-radio-bursts-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/fast-radio-bursts-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/feast-night-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/feast-night-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/find-replace-text-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/find-replace-text-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/flexbox-froggy-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/flexbox-froggy-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/floor-thirteen-horror-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/floor-thirteen-horror-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/galactic-coordinate-transforms-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/galactic-coordinate-transforms-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/galactic-coordinate-transforms-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/galactic-year-sun-orbit-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/galactic-year-sun-orbit-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/galactic-year-sun-orbit-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/galaxy-3d-simulator-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/galaxy-3d-simulator-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/galaxy-3d-simulator-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/galilean-moons-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/galilean-moons-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/galilean-moons-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gallimimus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gallimimus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gamepad-controller-test-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gamepad-controller-test-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gamepad-controller-test-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/garden-defense-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/garden-defense-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/garden-defense-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gas-giant-atmosphere-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gas-giant-atmosphere-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gas-giant-atmosphere-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gif-frame-extractor-output-looks-wrong-three-causes.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gif-frames-extract-vs-frame-rate-fps-explained.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gif-to-frame.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/giganotosaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/giganotosaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gigantoraptor-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gigantoraptor-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/globe-siege-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/globe-siege-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/globular-cluster-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/globular-cluster-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/globular-cluster-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/glow-firefly-cat-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/glow-firefly-cat-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/googol-stopping-game-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/googol-stopping-game-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gorgosaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gorgosaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gpa-calculator-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gpa-calculator-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gpa-calculator-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gps-time-dilation-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gps-time-dilation-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gps-time-dilation-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gravitational-redshift-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gravitational-redshift-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gravitational-redshift-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gravitational-slingshot-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gravitational-slingshot-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gravitational-slingshot-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gravitational-waves-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gravitational-waves-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gravitational-waves-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gravity-orbit-golf-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gravity-orbit-golf-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gravity-well-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gravity-well-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gravity-well-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/great-red-spot-jupiter-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/great-red-spot-jupiter-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/great-red-spot-jupiter-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/grid-garden-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/grid-garden-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/grocery-list-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/grocery-list-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/grocery-list-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/ground-sloth-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/ground-sloth-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gryponyx-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/gryponyx-size-comparison.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/habit-tracker-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/habit-tracker-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/habit-tracker-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/habitable-zone-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/habitable-zone-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/habitable-zone-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/hash-generator-sha-256-512-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/hash-generator-sha-256-512-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/hash-generator-sha-256-512-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/haumea-elongated-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/haumea-elongated-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/haumea-elongated-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/hd-video-converter-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/hd-video-converter-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/hd-video-converter-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/head-soccer-arena-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/head-soccer-arena-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/heic-to-jpg-claims-what-actually-works.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/heic-vs-jpg-converter-when-each-wins.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/heic-vs-jpg-vs-webp.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/helioseismology-sun-oscillation-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/helioseismology-sun-oscillation-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/helioseismology-sun-oscillation-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/herd-cats-home-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/herd-cats-home-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/hex-puzzle-blocks-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/hex-puzzle-blocks-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/hex-puzzle-blocks-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/hill-sphere-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/hill-sphere-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/hill-sphere-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/hohmann-transfer-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/hohmann-transfer-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/hohmann-transfer-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/hover-racing-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/hover-racing-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-check-camera-quality-on-your-phone.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-check-webcam-and-microphone-before-an-interview.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-compress-a-folder-for-email.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-compress-a-jpg-for-email-attachment-limits.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-convert-100-heic-photos-to-jpg.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-convert-units-online.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-crop-and-rotate-an-image.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-extract-frames-from-a-gif-for-a-social-post.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-flatten-a-pdf-and-when-to-do-it.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-make-a-to-do-list-online.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-minify-css-js-for-cloud-run-cold-start.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-pick-a-color-online.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-abyss-signal-diver.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-andromeda-star-shooter.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-arrow-dodge-arena.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-asteroid-blaster.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-bangbang-artillery.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-black-cat-hot-tin-roof.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-black-hole-square.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-boing-cat-platformer.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-bounce-back.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-cat-hop-cloud.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-cat-typing-race.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-chili-blast-shooter.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-classic-pong.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-claudicus-quest.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-connect-four-ai.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-cyber-neon-maze.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-cyber-slide-puzzle.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-darkline-paws.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-desk-cat-coder.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-egg-time-rewind.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-eight-ball-pool.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-elm-street-delivery.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-emoji-slot-machine.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-feast-night.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-flexbox-froggy.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-floor-thirteen-horror.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-globe-siege.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-glow-firefly-cat.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-googol-stopping-game.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-gravity-orbit-golf.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-grid-garden.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-head-soccer-arena.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-herd-cats-home.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-hover-racing.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-idle-capitalist-loop.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-inferno-soul-walker.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-iso-city-sandbox.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-layer-flip-platformer.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-lightning-math-battle.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-machine-guard-corps.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-marble-maze.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-medieval-wall-defense.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-miami-mice.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-mochi-midnight-escape.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-mono-grid-duel.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-mono-minefield-grid.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-mono-paddle-duel.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-mono-stack-blocks.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-mor-chess-2.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-mystic-card-paw.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-neon-cat-chase.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-neon-circuit-racer.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-neon-deep-space.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-neon-energy-arena.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-neon-surge-loop.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-neural-particle-life.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-neuro-aim-arena.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-night-swarm-survivor.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-nova-star-barrage.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-one-tap-platformer.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-orbital-order.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-orbital-radius-shooter.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-particle-clicker.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-pipe-rotate-puzzle.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-pixel-necromancer.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-pixel-park-puzzle.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/how-to-play-pixel-pipeline-reflex.html', // pruned 2026-07-29 zero-evidence id
+
+
+  // pruned 2026-07-29 zero-evidence id - batch id-batch-3 (200 routes)
+  '/guides/id/2048-game-merge-numbers-puzzle-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/2048-game-merge-numbers-puzzle-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/tides-earth-moon-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/tides-earth-moon-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/tides-earth-moon-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/solar-wind-heliosphere-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/solar-wind-heliosphere-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/solar-wind-heliosphere-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/proxima-centauri-system-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/proxima-centauri-system-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/proxima-centauri-system-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/escape-velocity-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/escape-velocity-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/escape-velocity-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/cosmic-distance-ladder-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/cosmic-distance-ladder-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/cosmic-distance-ladder-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/precession-equinoxes-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/precession-equinoxes-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/precession-equinoxes-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/hr-diagram-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/hr-diagram-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/hr-diagram-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/sun-structure-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/sun-structure-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/sun-structure-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/orbital-velocity-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/orbital-velocity-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/orbital-velocity-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/earth-magnetosphere-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/sunspot-cycle-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/uranus-tilt-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/roche-limit-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/solar-analemma-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/saturn-hexagon-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/supernova-remnant-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/planetary-nebula-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/venus-retrograde-rotation-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/three-body-problem-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/meteor-shower-radiant-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/kuiper-belt-oort-cloud-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/jupiter-magnetosphere-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/light-cone-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/spacetime-curvature-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/cepheid-variable-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/expanding-universe-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/doppler-radial-velocity-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/star-trails-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/tidal-heating-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/planetary-rings-comparison-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/n-body-sandbox-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/coordinate-systems-sky-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/cmb-sky-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/stellar-nucleosynthesis-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/moon-libration-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/tidal-disruption-event-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/sunspot-magnetic-loops-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/cosmic-ray-shower-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/stellar-parallax-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/einstein-ring-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/tidal-tails-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/trojan-asteroids-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/solar-granulation-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/kirkwood-gaps-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/equation-of-time-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/zodiacal-light-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/stellar-proper-motion-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/aberration-of-starlight-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/planetary-conjunction-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/planetary-oblateness-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/coriolis-effect-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/earthshine-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/roche-lobe-binary-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/foucault-pendulum-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/magnetic-reconnection-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/apsidal-precession-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/synodic-lunar-month-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/earth-moon-barycenter-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/lunar-nodes-eclipse-seasons-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/venus-phases-galileo-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/shepherd-moons-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/comet-tail-types-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/protoplanetary-disk-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/occultation-lunar-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/van-allen-belts-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/circumbinary-planet-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/debris-disk-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/brown-dwarf-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/kilonova-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/carrington-event-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/trappist-1-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/tabbys-star-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/oumuamua-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/betelgeuse-dimming-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/pillars-of-creation-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/pale-blue-dot-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/wow-signal-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/chelyabinsk-meteor-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/enceladus-geysers-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/phobos-stickney-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/vesta-rheasilvia-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/miranda-verona-rupes-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/charon-serenity-chasma-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/iapetus-equatorial-ridge-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/mimas-herschel-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/hyperion-sponge-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/triton-cantaloupe-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/wormhole-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/wormhole-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/wormhole-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/jwst-l2-halo-orbit-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/jwst-l2-halo-orbit-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/jwst-l2-halo-orbit-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/type-ia-supernova-standard-candle-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/type-ia-supernova-standard-candle-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/type-ia-supernova-standard-candle-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/kuiper-belt-oort-cloud-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/jupiter-magnetosphere-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/light-cone-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/spacetime-curvature-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/cepheid-variable-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/expanding-universe-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/doppler-radial-velocity-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/star-trails-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/tidal-heating-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/planetary-rings-comparison-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/n-body-sandbox-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/coordinate-systems-sky-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/cmb-sky-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/stellar-nucleosynthesis-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/moon-libration-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/tidal-disruption-event-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/sunspot-magnetic-loops-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/cosmic-ray-shower-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/stellar-parallax-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/einstein-ring-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/tidal-tails-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/trojan-asteroids-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/solar-granulation-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/kirkwood-gaps-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/equation-of-time-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/zodiacal-light-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/stellar-proper-motion-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/aberration-of-starlight-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/planetary-conjunction-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/planetary-oblateness-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/coriolis-effect-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/earthshine-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/roche-lobe-binary-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/foucault-pendulum-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/magnetic-reconnection-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/apsidal-precession-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/synodic-lunar-month-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/earth-moon-barycenter-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/lunar-nodes-eclipse-seasons-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/venus-phases-galileo-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/shepherd-moons-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/comet-tail-types-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/protoplanetary-disk-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/occultation-lunar-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/van-allen-belts-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/circumbinary-planet-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/debris-disk-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/brown-dwarf-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/kilonova-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/carrington-event-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/trappist-1-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/tabbys-star-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/oumuamua-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/betelgeuse-dimming-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/pillars-of-creation-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/pale-blue-dot-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/wow-signal-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/chelyabinsk-meteor-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/enceladus-geysers-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/phobos-stickney-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/vesta-rheasilvia-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/miranda-verona-rupes-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/charon-serenity-chasma-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/iapetus-equatorial-ridge-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/mimas-herschel-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/hyperion-sponge-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/triton-cantaloupe-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/kuiper-belt-oort-cloud-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/jupiter-magnetosphere-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/light-cone-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/spacetime-curvature-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/cepheid-variable-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/expanding-universe-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/doppler-radial-velocity-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/star-trails-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/tidal-heating-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/planetary-rings-comparison-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/n-body-sandbox-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/coordinate-systems-sky-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/cmb-sky-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/stellar-nucleosynthesis-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/moon-libration-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/tidal-disruption-event-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/sunspot-magnetic-loops-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+
+  // pruned 2026-07-29 zero-evidence id (id-batch-4)
+  '/guides/id/2048-game-merge-numbers-puzzle-when.html',
+  '/guides/id/aberration-of-starlight-step-by-step.html',
+  '/guides/id/add-page-numbers-pdf-step-by-step.html',
+  '/guides/id/add-page-numbers-pdf-vs-alternatives.html',
+  '/guides/id/add-page-numbers-pdf-when.html',
+  '/guides/id/add-watermark-image-step-by-step.html',
+  '/guides/id/add-watermark-image-vs-alternatives.html',
+  '/guides/id/add-watermark-image-when.html',
+  '/guides/id/ai-background-remover-step-by-step.html',
+  '/guides/id/ai-background-remover-vs-alternatives.html',
+  '/guides/id/ai-background-remover-when.html',
+  '/guides/id/ai-photo-restoration-step-by-step.html',
+  '/guides/id/ai-photo-restoration-vs-alternatives.html',
+  '/guides/id/ai-photo-restoration-when.html',
+  '/guides/id/apsidal-precession-step-by-step.html',
+  '/guides/id/aspect-ratio-calculator-step-by-step.html',
+  '/guides/id/aspect-ratio-calculator-vs-alternatives.html',
+  '/guides/id/aspect-ratio-calculator-when.html',
+  '/guides/id/asteroid-belt-step-by-step.html',
+  '/guides/id/asteroid-belt-vs-alternatives.html',
+  '/guides/id/asteroid-belt-when.html',
+  '/guides/id/aurora-step-by-step.html',
+  '/guides/id/aurora-vs-alternatives.html',
+  '/guides/id/aurora-when.html',
+  '/guides/id/barcode-generator-ean-upc-code128-step-by-step.html',
+  '/guides/id/barcode-generator-ean-upc-code128-vs-alternatives.html',
+  '/guides/id/barcode-generator-ean-upc-code128-when.html',
+  '/guides/id/base64-when-to-use-and-when-not-to.html',
+  '/guides/id/before-a-video-call-which-tools-to-run.html',
+  '/guides/id/betelgeuse-dimming-step-by-step.html',
+  '/guides/id/binary-star-system-step-by-step.html',
+  '/guides/id/binary-star-system-vs-alternatives.html',
+  '/guides/id/binary-star-system-when.html',
+  '/guides/id/binary-text-converter-step-by-step.html',
+  '/guides/id/binary-text-converter-vs-alternatives.html',
+  '/guides/id/binary-text-converter-when.html',
+  '/guides/id/black-body-radiation-step-by-step.html',
+  '/guides/id/black-body-radiation-vs-alternatives.html',
+  '/guides/id/black-body-radiation-when.html',
+  '/guides/id/black-hole-3d-visualizer-step-by-step.html',
+  '/guides/id/black-hole-3d-visualizer-vs-alternatives.html',
+  '/guides/id/black-hole-3d-visualizer-when.html',
+  '/guides/id/bmi-calculator-step-by-step.html',
+  '/guides/id/bmi-calculator-vs-alternatives.html',
+  '/guides/id/bmi-calculator-when.html',
+  '/guides/id/brown-dwarf-step-by-step.html',
+  '/guides/id/carrington-event-step-by-step.html',
+  '/guides/id/charon-serenity-chasma-step-by-step.html',
+  '/guides/id/chelyabinsk-meteor-step-by-step.html',
+  '/guides/id/circumbinary-planet-step-by-step.html',
+  '/guides/id/city-time-machine-3d-step-by-step.html',
+  '/guides/id/city-time-machine-3d-vs-alternatives.html',
+  '/guides/id/city-time-machine-3d-when.html',
+  '/guides/id/color-contrast-checker-wcag-step-by-step.html',
+  '/guides/id/color-contrast-checker-wcag-vs-alternatives.html',
+  '/guides/id/color-contrast-checker-wcag-when.html',
+  '/guides/id/comet-orbit-step-by-step.html',
+  '/guides/id/comet-orbit-vs-alternatives.html',
+  '/guides/id/comet-orbit-when.html',
+  '/guides/id/comet-tail-types-step-by-step.html',
+  '/guides/id/common-md5-gethash64string.html',
+  '/guides/id/compound-interest-calculator-step-by-step.html',
+  '/guides/id/compound-interest-calculator-vs-alternatives.html',
+  '/guides/id/compound-interest-calculator-when.html',
+  '/guides/id/compress-folder-online.html',
+  '/guides/id/compress-pdf-online-free.html',
+  '/guides/id/constellation-sphere-step-by-step.html',
+  '/guides/id/constellation-sphere-vs-alternatives.html',
+  '/guides/id/constellation-sphere-when.html',
+  '/guides/id/coriolis-effect-step-by-step.html',
+  '/guides/id/cosmic-ray-shower-step-by-step.html',
+  '/guides/id/cron-expression-parser-step-by-step.html',
+  '/guides/id/cron-expression-parser-vs-alternatives.html',
+  '/guides/id/cron-expression-parser-when.html',
+  '/guides/id/css-minifier-vs-compressor.html',
+  '/guides/id/css-minifier-vs-uglifier-vs-tree-shaking.html',
+  '/guides/id/css-unminifier-vs-prettier-when-to-use-each.html',
+  '/guides/id/dead-pixel-testing-guide.html',
+  '/guides/id/debris-disk-step-by-step.html',
+  '/guides/id/device-test-checklist-for-remote-work.html',
+  '/guides/id/dice-roller-step-by-step.html',
+  '/guides/id/digital-clock-step-by-step.html',
+  '/guides/id/document-scanner-pdf-step-by-step.html',
+  '/guides/id/document-scanner-pdf-vs-alternatives.html',
+  '/guides/id/document-scanner-pdf-when.html',
+  '/guides/id/download-link-not-appearing-after-conversion-five-fixes.html',
+  '/guides/id/duplicate-word-remover-step-by-step.html',
+  '/guides/id/duplicate-word-remover-vs-alternatives.html',
+  '/guides/id/duplicate-word-remover-when.html',
+  '/guides/id/earth-3d-globe-live-day-night-map-step-by-step.html',
+  '/guides/id/earth-3d-globe-live-day-night-map-vs-alternatives.html',
+  '/guides/id/earth-magnetosphere-step-by-step.html',
+  '/guides/id/earth-magnetosphere-when.html',
+  '/guides/id/earth-moon-barycenter-step-by-step.html',
+  '/guides/id/earthshine-step-by-step.html',
+  '/guides/id/ecliptic-zodiac-step-by-step.html',
+  '/guides/id/ecliptic-zodiac-vs-alternatives.html',
+  '/guides/id/ecliptic-zodiac-when.html',
+  '/guides/id/einstein-ring-step-by-step.html',
+  '/guides/id/enceladus-geysers-step-by-step.html',
+  '/guides/id/equation-of-time-step-by-step.html',
+  '/guides/id/europa-subsurface-ocean-step-by-step.html',
+  '/guides/id/europa-subsurface-ocean-when.html',
+  '/guides/id/exoplanet-transit-step-by-step.html',
+  '/guides/id/exoplanet-transit-vs-alternatives.html',
+  '/guides/id/exoplanet-transit-when.html',
+  '/guides/id/extract-gif-frames-png-vs-jpg-which-format.html',
+  '/guides/id/favicon-generator-step-by-step.html',
+  '/guides/id/favicon-generator-vs-alternatives.html',
+  '/guides/id/favicon-generator-when.html',
+  '/guides/id/ffmpeg-online-conversion-stalled-three-fixes.html',
+  '/guides/id/ffmpeg-online-vs-video-converter-which-to-pick.html',
+  '/guides/id/file-compressor-vs-zip-what-to-pick.html',
+  '/guides/id/file-compressor.html',
+  '/guides/id/file-encryption-step-by-step.html',
+  '/guides/id/file-encryption-vs-alternatives.html',
+  '/guides/id/file-encryption-when.html',
+  '/guides/id/flashcards-spaced-repetition-step-by-step.html',
+  '/guides/id/flashcards-spaced-repetition-vs-alternatives.html',
+  '/guides/id/flashcards-spaced-repetition-when.html',
+  '/guides/id/foucault-pendulum-step-by-step.html',
+  '/guides/id/free-online-tools-that-work-without-uploading-files.html',
+  '/guides/id/how-to-compress-a-zip-file.html',
+  '/guides/id/how-to-play-pixel-realm-rpg.html',
+  '/guides/id/how-to-play-pixel-spike-run.html',
+  '/guides/id/how-to-play-potion-brew-shop.html',
+  '/guides/id/how-to-play-precision-bounce-loop.html',
+  '/guides/id/how-to-play-procedural-horde-game.html',
+  '/guides/id/how-to-play-progress-knight.html',
+  '/guides/id/how-to-play-quantum-optics-puzzle.html',
+  '/guides/id/how-to-play-quantum-shift.html',
+  '/guides/id/how-to-play-retro-arcade-shooter.html',
+  '/guides/id/how-to-play-retro-fps-online.html',
+  '/guides/id/how-to-play-retro-highway-racer.html',
+  '/guides/id/how-to-play-ritual-catacombs.html',
+  '/guides/id/how-to-play-rock-paper-neural.html',
+  '/guides/id/how-to-play-roller-maze-escape.html',
+  '/guides/id/how-to-play-rune-keeper.html',
+  '/guides/id/how-to-play-schematic-factory-game.html',
+  '/guides/id/how-to-play-seasonal-witchcat.html',
+  '/guides/id/how-to-play-serpentine-3d.html',
+  '/guides/id/how-to-play-server-survival-td.html',
+  '/guides/id/how-to-play-sketch-turf-battle.html',
+  '/guides/id/how-to-play-solo-battlefield.html',
+  '/guides/id/how-to-play-space-grid-puzzle.html',
+  '/guides/id/how-to-play-space-pi-defense.html',
+  '/guides/id/how-to-play-species-life-battle.html',
+  '/guides/id/how-to-play-spike-sprint.html',
+  '/guides/id/how-to-play-star-fuel-battle.html',
+  '/guides/id/how-to-play-starlight-breaker.html',
+  '/guides/id/how-to-play-swing-block-tower.html',
+  '/guides/id/how-to-play-the-house-pointclick.html',
+  '/guides/id/how-to-play-thirteen-card-duel.html',
+  '/guides/id/how-to-play-thirteen-case-files.html',
+  '/guides/id/how-to-play-thirteen-hours.html',
+  '/guides/id/how-to-play-thirteen-step-escape.html',
+  '/guides/id/how-to-play-unlucky-crossing.html',
+  '/guides/id/how-to-play-vim-master.html',
+  '/guides/id/how-to-play-vim-motion-academy.html',
+  '/guides/id/how-to-play-violence-town.html',
+  '/guides/id/how-to-play-void-trader.html',
+  '/guides/id/how-to-play-voxel-fps-arena.html',
+  '/guides/id/how-to-play-wash-the-cat.html',
+  '/guides/id/how-to-record-your-screen-online.html',
+  '/guides/id/how-to-run-a-private-ai-chat-in-your-browser.html',
+  '/guides/id/how-to-sign-pdf-after-removing-a-password.html',
+  '/guides/id/how-to-split-a-gif-into-frames-for-editing.html',
+  '/guides/id/how-to-test-a-touchscreen-for-bad-spots.html',
+  '/guides/id/how-to-test-for-dead-pixels-before-returning-a-monitor.html',
+  '/guides/id/how-to-view-abelisaurus-in-3d.html',
+  '/guides/id/how-to-view-acrocanthosaurus-in-3d.html',
+  '/guides/id/how-to-view-albertaceratops-in-3d.html',
+  '/guides/id/how-to-view-albertosaurus-in-3d.html',
+  '/guides/id/how-to-view-alioramus-in-3d.html',
+  '/guides/id/how-to-view-allosaurus-in-3d.html',
+  '/guides/id/how-to-view-amargasaurus-in-3d.html',
+  '/guides/id/how-to-view-ampelosaurus-in-3d.html',
+  '/guides/id/how-to-view-ankylosaurus-in-3d.html',
+  '/guides/id/how-to-view-apatosaurus-in-3d.html',
+  '/guides/id/how-to-view-avaceratops-in-3d.html',
+  '/guides/id/how-to-view-barosaurus-in-3d.html',
+  '/guides/id/how-to-view-baryonyx-in-3d.html',
+  '/guides/id/how-to-view-becklespinax-in-3d.html',
+  '/guides/id/how-to-view-brachiosaurus-in-3d.html',
+  '/guides/id/how-to-view-brachylophosaurus-in-3d.html',
+  '/guides/id/how-to-view-brontosaurus-in-3d.html',
+  '/guides/id/how-to-view-brontotherium-in-3d.html',
+  '/guides/id/how-to-view-carnotaurus-in-3d.html',
+  '/guides/id/how-to-view-ceratosaurus-in-3d.html',
+  '/guides/id/how-to-view-chasmosaurus-in-3d.html',
+  '/guides/id/how-to-view-coelophysis-in-3d.html',
+  '/guides/id/how-to-view-compsognathus-in-3d.html',
+  '/guides/id/how-to-view-concavenator-in-3d.html',
+  '/guides/id/how-to-view-cryolophosaurus-in-3d.html',
+  '/guides/id/how-to-view-deinocheirus-in-3d.html',
+  '/guides/id/how-to-view-deinonychus-in-3d.html',
+  '/guides/id/how-to-view-dilophosaurus-in-3d.html',
+  '/guides/id/how-to-view-dimetrodon-in-3d.html',
+  '/guides/id/how-to-view-diplodocus-in-3d.html',
+  '/guides/id/how-to-view-doliosauriscus-in-3d.html',
+
+  // pruned 2026-07-29 zero-evidence id (id-batch-5)
+  '/guides/id/how-to-view-dracovenator-in-3d.html',
+  '/guides/id/how-to-view-edmontosaurus-in-3d.html',
+  '/guides/id/how-to-view-gallimimus-in-3d.html',
+  '/guides/id/how-to-view-giganotosaurus-in-3d.html',
+  '/guides/id/how-to-view-gigantoraptor-in-3d.html',
+  '/guides/id/how-to-view-gorgosaurus-in-3d.html',
+  '/guides/id/how-to-view-ground-sloth-in-3d.html',
+  '/guides/id/how-to-view-gryponyx-in-3d.html',
+  '/guides/id/how-to-view-hybodus-in-3d.html',
+  '/guides/id/how-to-view-ichthyosaurus-in-3d.html',
+  '/guides/id/how-to-view-ichthyovenator-in-3d.html',
+  '/guides/id/how-to-view-iguanodon-in-3d.html',
+  '/guides/id/how-to-view-kentrosaurus-in-3d.html',
+  '/guides/id/how-to-view-lambeosaurus-in-3d.html',
+  '/guides/id/how-to-view-majungasaurus-in-3d.html',
+  '/guides/id/how-to-view-mamenchisaurus-in-3d.html',
+  '/guides/id/how-to-view-megalosaurus-in-3d.html',
+  '/guides/id/how-to-view-microraptor-in-3d.html',
+  '/guides/id/how-to-view-moropus-in-3d.html',
+  '/guides/id/how-to-view-mosasaurus-in-3d.html',
+  '/guides/id/how-to-view-ornithomimus-in-3d.html',
+  '/guides/id/how-to-view-ostafrikasaurus-in-3d.html',
+  '/guides/id/how-to-view-oviraptor-in-3d.html',
+  '/guides/id/how-to-view-pachycephalosaurus-in-3d.html',
+  '/guides/id/how-to-view-pachyrhinosaurus-in-3d.html',
+  '/guides/id/how-to-view-parasaurolophus-in-3d.html',
+  '/guides/id/how-to-view-pentaceratops-in-3d.html',
+  '/guides/id/how-to-view-pinacosaurus-in-3d.html',
+  '/guides/id/how-to-view-plesiosaurus-in-3d.html',
+  '/guides/id/how-to-view-postosuchus-in-3d.html',
+  '/guides/id/how-to-view-protoceratops-in-3d.html',
+  '/guides/id/how-to-view-psittacosaurus-in-3d.html',
+  '/guides/id/how-to-view-pteranodon-in-3d.html',
+  '/guides/id/how-to-view-quetzalcoatlus-in-3d.html',
+  '/guides/id/how-to-view-sarcosuchus-in-3d.html',
+  '/guides/id/how-to-view-sauropelta-in-3d.html',
+  '/guides/id/how-to-view-seismosaurus-in-3d.html',
+  '/guides/id/how-to-view-shuangmiaosaurus-in-3d.html',
+  '/guides/id/how-to-view-spinosaurus-in-3d.html',
+  '/guides/id/how-to-view-stegosaurus-in-3d.html',
+  '/guides/id/how-to-view-stygimoloch-in-3d.html',
+  '/guides/id/how-to-view-tarbosaurus-in-3d.html',
+  '/guides/id/how-to-view-therizinosaurus-in-3d.html',
+  '/guides/id/how-to-view-titanoboa-in-3d.html',
+  '/guides/id/how-to-view-titanosaurus-in-3d.html',
+  '/guides/id/how-to-view-torvosaurus-in-3d.html',
+  '/guides/id/how-to-view-triceratops-in-3d.html',
+  '/guides/id/how-to-view-troodon-in-3d.html',
+  '/guides/id/how-to-view-tsintaosaurus-in-3d.html',
+  '/guides/id/how-to-view-tylosaurus-in-3d.html',
+  '/guides/id/how-to-view-tyrannosaurus-rex-in-3d.html',
+  '/guides/id/how-to-view-utahraptor-in-3d.html',
+  '/guides/id/how-to-view-velociraptor-in-3d.html',
+  '/guides/id/how-to-visualize-data-online.html',
+  '/guides/id/html-entity-encoder-decoder-step-by-step.html',
+  '/guides/id/html-entity-encoder-decoder-vs-alternatives.html',
+  '/guides/id/html-entity-encoder-decoder-when.html',
+  '/guides/id/html-markdown-converter-step-by-step.html',
+  '/guides/id/html-markdown-converter-vs-alternatives.html',
+  '/guides/id/html-markdown-converter-when.html',
+  '/guides/id/html-tag-remover-step-by-step.html',
+  '/guides/id/html-tag-remover-vs-alternatives.html',
+  '/guides/id/html-tag-remover-when.html',
+  '/guides/id/hybodus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/hybodus-size-comparison.html',
+  '/guides/id/hyperion-sponge-step-by-step.html',
+  '/guides/id/i-love-zip.html',
+  '/guides/id/iapetus-equatorial-ridge-step-by-step.html',
+  '/guides/id/ichthyosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/ichthyosaurus-size-comparison.html',
+  '/guides/id/ichthyovenator-3d-viewer-vs-ar-apps.html',
+  '/guides/id/ichthyovenator-size-comparison.html',
+  '/guides/id/idle-capitalist-loop-vs-alternatives.html',
+  '/guides/id/idle-capitalist-loop-when.html',
+  '/guides/id/iguanodon-3d-viewer-vs-ar-apps.html',
+  '/guides/id/iguanodon-size-comparison.html',
+  '/guides/id/image-color-palette-extractor-step-by-step.html',
+  '/guides/id/image-color-palette-extractor-vs-alternatives.html',
+  '/guides/id/image-color-palette-extractor-when.html',
+  '/guides/id/image-exif-metadata-viewer-step-by-step.html',
+  '/guides/id/image-exif-metadata-viewer-vs-alternatives.html',
+  '/guides/id/image-exif-metadata-viewer-when.html',
+  '/guides/id/image-format-converter-step-by-step.html',
+  '/guides/id/image-format-converter-vs-alternatives.html',
+  '/guides/id/image-format-converter-when.html',
+  '/guides/id/image-metadata-exif-remover-step-by-step.html',
+  '/guides/id/image-metadata-exif-remover-vs-alternatives.html',
+  '/guides/id/image-metadata-exif-remover-when.html',
+  '/guides/id/image-text-ocr-step-by-step.html',
+  '/guides/id/image-text-ocr-vs-alternatives.html',
+  '/guides/id/image-text-ocr-when.html',
+  '/guides/id/image-to-base64-embed-in-html-vs-link.html',
+  '/guides/id/image-webp-converter-step-by-step.html',
+  '/guides/id/image-webp-converter-vs-alternatives.html',
+  '/guides/id/image-webp-converter-when.html',
+  '/guides/id/imagemagick-online-vs-task-specific-tools-which-to-pick.html',
+  '/guides/id/impact-crater-formation-step-by-step.html',
+  '/guides/id/impact-crater-formation-vs-alternatives.html',
+  '/guides/id/impact-crater-formation-when.html',
+  '/guides/id/inferno-soul-walker-vs-alternatives.html',
+  '/guides/id/inferno-soul-walker-when.html',
+  '/guides/id/interstellar-travel-timescales-step-by-step.html',
+  '/guides/id/interstellar-travel-timescales-vs-alternatives.html',
+  '/guides/id/interstellar-travel-timescales-when.html',
+  '/guides/id/io-plasma-torus-step-by-step.html',
+  '/guides/id/io-plasma-torus-vs-alternatives.html',
+  '/guides/id/io-plasma-torus-when.html',
+  '/guides/id/iphone-photo-format-explained-heic-jpg-png-raw.html',
+  '/guides/id/iso-city-sandbox-vs-alternatives.html',
+  '/guides/id/iso-city-sandbox-when.html',
+  '/guides/id/iss-orbit-tracker-step-by-step.html',
+  '/guides/id/iss-orbit-tracker-vs-alternatives.html',
+  '/guides/id/iss-orbit-tracker-when.html',
+  '/guides/id/jpg-avif-converter-step-by-step.html',
+  '/guides/id/jpg-avif-converter-vs-alternatives.html',
+  '/guides/id/jpg-avif-converter-when.html',
+  '/guides/id/jpg-vs-jpeg-are-they-the-same.html',
+  '/guides/id/jpg-vs-png-for-web.html',
+  '/guides/id/jpg-webp-converter-step-by-step.html',
+  '/guides/id/jpg-webp-converter-vs-alternatives.html',
+  '/guides/id/jpg-webp-converter-when.html',
+  '/guides/id/json-formatter-step-by-step.html',
+  '/guides/id/json-formatter-vs-alternatives.html',
+  '/guides/id/json-formatter-when.html',
+  '/guides/id/json-typescript-interface-generator-step-by-step.html',
+  '/guides/id/json-typescript-interface-generator-vs-alternatives.html',
+  '/guides/id/json-typescript-interface-generator-when.html',
+  '/guides/id/json-vs-yaml-vs-toml-config-formats-explained.html',
+  '/guides/id/jwt-decoder-step-by-step.html',
+  '/guides/id/jwt-decoder-vs-alternatives.html',
+  '/guides/id/jwt-decoder-when.html',
+  '/guides/id/karman-line-atmosphere-layers-step-by-step.html',
+  '/guides/id/karman-line-atmosphere-layers-vs-alternatives.html',
+  '/guides/id/karman-line-atmosphere-layers-when.html',
+  '/guides/id/kentrosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/kentrosaurus-size-comparison.html',
+  '/guides/id/kepler-orbits-step-by-step.html',
+  '/guides/id/kepler-orbits-vs-alternatives.html',
+  '/guides/id/kepler-orbits-when.html',
+  '/guides/id/kilonova-step-by-step.html',
+  '/guides/id/kirkwood-gaps-step-by-step.html',
+  '/guides/id/kp-index-geomagnetic-storm-scale-step-by-step.html',
+  '/guides/id/kp-index-geomagnetic-storm-scale-vs-alternatives.html',
+  '/guides/id/kp-index-geomagnetic-storm-scale-when.html',
+  '/guides/id/lagrange-points-step-by-step.html',
+  '/guides/id/lagrange-points-vs-alternatives.html',
+  '/guides/id/lagrange-points-when.html',
+  '/guides/id/lambeosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/lambeosaurus-size-comparison.html',
+  '/guides/id/layer-flip-platformer-vs-alternatives.html',
+  '/guides/id/layer-flip-platformer-when.html',
+  '/guides/id/lcd-screen-test.html',
+  '/guides/id/lcd-test-vs-display-test-which-do-you-need.html',
+  '/guides/id/led-test-vs-lcd-test-which-applies-to-your-screen.html',
+  '/guides/id/lightning-math-battle-vs-alternatives.html',
+  '/guides/id/lightning-math-battle-when.html',
+  '/guides/id/loan-calculator-step-by-step.html',
+  '/guides/id/loan-calculator-vs-alternatives.html',
+  '/guides/id/loan-calculator-when.html',
+  '/guides/id/lorem-ipsum-placeholder-text-generator-step-by-step.html',
+  '/guides/id/lorem-ipsum-placeholder-text-generator-vs-alternatives.html',
+  '/guides/id/lorem-ipsum-placeholder-text-generator-when.html',
+  '/guides/id/lunar-eclipse-step-by-step.html',
+  '/guides/id/lunar-eclipse-vs-alternatives.html',
+  '/guides/id/lunar-eclipse-when.html',
+  '/guides/id/lunar-nodes-eclipse-seasons-step-by-step.html',
+  '/guides/id/machine-guard-corps-vs-alternatives.html',
+  '/guides/id/machine-guard-corps-when.html',
+  '/guides/id/magnetar-step-by-step.html',
+  '/guides/id/magnetar-vs-alternatives.html',
+  '/guides/id/magnetar-when.html',
+  '/guides/id/magnetic-reconnection-step-by-step.html',
+  '/guides/id/main-sequence-lifetime-step-by-step.html',
+  '/guides/id/main-sequence-lifetime-vs-alternatives.html',
+  '/guides/id/main-sequence-lifetime-when.html',
+  '/guides/id/majungasaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/majungasaurus-size-comparison.html',
+  '/guides/id/make-zip-file-online.html',
+  '/guides/id/mamenchisaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/mamenchisaurus-size-comparison.html',
+  '/guides/id/marble-maze-vs-alternatives.html',
+  '/guides/id/marble-maze-when.html',
+  '/guides/id/markdown-html-previewer-step-by-step.html',
+  '/guides/id/markdown-html-previewer-vs-alternatives.html',
+  '/guides/id/markdown-html-previewer-when.html',
+  '/guides/id/mars-terrain-step-by-step.html',
+  '/guides/id/mars-terrain-vs-alternatives.html',
+  '/guides/id/mars-terrain-when.html',
+  '/guides/id/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html',
+  '/guides/id/md5-decrypt-online.html',
+  '/guides/id/md5-decrypter.html',
+  '/guides/id/md5-to-text-why-you-cannot-convert-back.html',
+  '/guides/id/md5-vs-sha256-when-to-hash.html',
+  '/guides/id/medieval-wall-defense-vs-alternatives.html',
+  '/guides/id/medieval-wall-defense-when.html',
+  '/guides/id/megalosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/megalosaurus-size-comparison.html',
+  '/guides/id/meme-maker-step-by-step.html',
+  '/guides/id/meme-maker-vs-alternatives.html',
+  '/guides/id/meme-maker-when.html',
+
+  // pruned 2026-07-29 zero-evidence id (id-batch-6: scientific-calculator-when to particle-clicker-when)
+  '/guides/id/scientific-calculator-when.html',
+  '/guides/id/scientific-calculator-step-by-step.html',
+  '/guides/id/scientific-calculator-vs-alternatives.html',
+  '/guides/id/tdee-calorie-calculator-when.html',
+  '/guides/id/tdee-calorie-calculator-step-by-step.html',
+  '/guides/id/tdee-calorie-calculator-vs-alternatives.html',
+  '/guides/id/number-base-converter-binary-hex-octal-decimal-when.html',
+  '/guides/id/number-base-converter-binary-hex-octal-decimal-step-by-step.html',
+  '/guides/id/number-base-converter-vs-alternatives.html',
+  '/guides/id/password-strength-checker-when.html',
+  '/guides/id/password-strength-checker-step-by-step.html',
+  '/guides/id/password-strength-checker-vs-alternatives.html',
+  '/guides/id/monitor-refresh-rate-test-hz-when.html',
+  '/guides/id/monitor-refresh-rate-test-hz-step-by-step.html',
+  '/guides/id/monitor-refresh-rate-test-hz-vs-alternatives.html',
+  '/guides/id/touchscreen-test-when.html',
+  '/guides/id/touchscreen-test-step-by-step.html',
+  '/guides/id/touchscreen-test-vs-alternatives.html',
+  '/guides/id/mouse-test-buttons-scroll-when.html',
+  '/guides/id/mouse-test-buttons-scroll-step-by-step.html',
+  '/guides/id/mouse-test-buttons-scroll-vs-alternatives.html',
+  '/guides/id/tyrannosaurus-rex-size-comparison.html',
+  '/guides/id/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html',
+  '/guides/id/mosasaurus-size-comparison.html',
+  '/guides/id/mosasaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/velociraptor-size-comparison.html',
+  '/guides/id/velociraptor-3d-viewer-vs-ar-apps.html',
+  '/guides/id/triceratops-size-comparison.html',
+  '/guides/id/triceratops-3d-viewer-vs-ar-apps.html',
+  '/guides/id/spinosaurus-size-comparison.html',
+  '/guides/id/spinosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/stegosaurus-size-comparison.html',
+  '/guides/id/stegosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/parasaurolophus-size-comparison.html',
+  '/guides/id/parasaurolophus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/pteranodon-size-comparison.html',
+  '/guides/id/pteranodon-3d-viewer-vs-ar-apps.html',
+  '/guides/id/pachycephalosaurus-size-comparison.html',
+  '/guides/id/pachycephalosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/therizinosaurus-size-comparison.html',
+  '/guides/id/therizinosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/utahraptor-size-comparison.html',
+  '/guides/id/utahraptor-3d-viewer-vs-ar-apps.html',
+  '/guides/id/plesiosaurus-size-comparison.html',
+  '/guides/id/plesiosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/pachyrhinosaurus-size-comparison.html',
+  '/guides/id/pachyrhinosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/protoceratops-size-comparison.html',
+  '/guides/id/protoceratops-3d-viewer-vs-ar-apps.html',
+  '/guides/id/microraptor-size-comparison.html',
+  '/guides/id/microraptor-3d-viewer-vs-ar-apps.html',
+  '/guides/id/tsintaosaurus-size-comparison.html',
+  '/guides/id/tsintaosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/ornithomimus-size-comparison.html',
+  '/guides/id/ornithomimus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/tylosaurus-size-comparison.html',
+  '/guides/id/tylosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/seismosaurus-size-comparison.html',
+  '/guides/id/seismosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/stygimoloch-size-comparison.html',
+  '/guides/id/stygimoloch-3d-viewer-vs-ar-apps.html',
+  '/guides/id/titanoboa-size-comparison.html',
+  '/guides/id/titanoboa-3d-viewer-vs-ar-apps.html',
+  '/guides/id/moropus-size-comparison.html',
+  '/guides/id/moropus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/titanosaurus-size-comparison.html',
+  '/guides/id/titanosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/sauropelta-size-comparison.html',
+  '/guides/id/sauropelta-3d-viewer-vs-ar-apps.html',
+  '/guides/id/shuangmiaosaurus-size-comparison.html',
+  '/guides/id/shuangmiaosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/quetzalcoatlus-size-comparison.html',
+  '/guides/id/quetzalcoatlus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/tarbosaurus-size-comparison.html',
+  '/guides/id/tarbosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/troodon-size-comparison.html',
+  '/guides/id/troodon-3d-viewer-vs-ar-apps.html',
+  '/guides/id/pentaceratops-size-comparison.html',
+  '/guides/id/pentaceratops-3d-viewer-vs-ar-apps.html',
+  '/guides/id/torvosaurus-size-comparison.html',
+  '/guides/id/torvosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/sarcosuchus-size-comparison.html',
+  '/guides/id/sarcosuchus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/postosuchus-size-comparison.html',
+  '/guides/id/postosuchus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/psittacosaurus-size-comparison.html',
+  '/guides/id/psittacosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/ostafrikasaurus-size-comparison.html',
+  '/guides/id/ostafrikasaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/oviraptor-size-comparison.html',
+  '/guides/id/oviraptor-3d-viewer-vs-ar-apps.html',
+  '/guides/id/pinacosaurus-size-comparison.html',
+  '/guides/id/pinacosaurus-3d-viewer-vs-ar-apps.html',
+  '/guides/id/video-compressor-when.html',
+  '/guides/id/video-compressor-step-by-step.html',
+  '/guides/id/video-compressor-vs-alternatives.html',
+  '/guides/id/notepad-notes-when.html',
+  '/guides/id/notepad-notes-step-by-step.html',
+  '/guides/id/notepad-notes-vs-alternatives.html',
+  '/guides/id/rotate-pdf-when.html',
+  '/guides/id/rotate-pdf-step-by-step.html',
+  '/guides/id/rotate-pdf-vs-alternatives.html',
+  '/guides/id/audio-speed-changer-when.html',
+  '/guides/id/audio-speed-changer-step-by-step.html',
+  '/guides/id/audio-speed-changer-vs-alternatives.html',
+  '/guides/id/percentage-calculator-step-by-step.html',
+  '/guides/id/percentage-calculator-when.html',
+  '/guides/id/percentage-calculator-vs-alternatives.html',
+  '/guides/id/password-generator-step-by-step.html',
+  '/guides/id/password-generator-when.html',
+  '/guides/id/password-generator-vs-alternatives.html',
+  '/guides/id/png-webp-converter-step-by-step.html',
+  '/guides/id/png-webp-converter-when.html',
+  '/guides/id/png-webp-converter-vs-alternatives.html',
+  '/guides/id/webp-png-converter-step-by-step.html',
+  '/guides/id/webp-png-converter-when.html',
+  '/guides/id/webp-png-converter-vs-alternatives.html',
+  '/guides/id/webp-jpg-converter-step-by-step.html',
+  '/guides/id/webp-jpg-converter-when.html',
+  '/guides/id/webp-jpg-converter-vs-alternatives.html',
+  '/guides/id/png-jpg-converter-step-by-step.html',
+  '/guides/id/png-jpg-converter-when.html',
+  '/guides/id/png-jpg-converter-vs-alternatives.html',
+  '/guides/id/procedural-horde-game-when.html',
+  '/guides/id/procedural-horde-game-vs-alternatives.html',
+  '/guides/id/pixel-pipeline-reflex-when.html',
+  '/guides/id/pixel-pipeline-reflex-vs-alternatives.html',
+  '/guides/id/void-trader-when.html',
+  '/guides/id/void-trader-vs-alternatives.html',
+  '/guides/id/violence-town-when.html',
+  '/guides/id/violence-town-vs-alternatives.html',
+  '/guides/id/neon-energy-arena-when.html',
+  '/guides/id/neon-energy-arena-vs-alternatives.html',
+  '/guides/id/mono-minefield-grid-when.html',
+  '/guides/id/mono-minefield-grid-vs-alternatives.html',
+  '/guides/id/space-pi-defense-when.html',
+  '/guides/id/space-pi-defense-vs-alternatives.html',
+  '/guides/id/mono-paddle-duel-when.html',
+  '/guides/id/mono-paddle-duel-vs-alternatives.html',
+  '/guides/id/mono-stack-blocks-when.html',
+  '/guides/id/mono-stack-blocks-vs-alternatives.html',
+  '/guides/id/mono-grid-duel-when.html',
+  '/guides/id/mono-grid-duel-vs-alternatives.html',
+  '/guides/id/pipe-rotate-puzzle-when.html',
+  '/guides/id/pipe-rotate-puzzle-vs-alternatives.html',
+  '/guides/id/pixel-park-puzzle-when.html',
+  '/guides/id/pixel-park-puzzle-vs-alternatives.html',
+  '/guides/id/wash-the-cat-when.html',
+  '/guides/id/wash-the-cat-vs-alternatives.html',
+  '/guides/id/retro-highway-racer-when.html',
+  '/guides/id/retro-highway-racer-vs-alternatives.html',
+  '/guides/id/retro-arcade-shooter-when.html',
+  '/guides/id/retro-arcade-shooter-vs-alternatives.html',
+  '/guides/id/retro-fps-online-when.html',
+  '/guides/id/retro-fps-online-vs-alternatives.html',
+  '/guides/id/ritual-catacombs-when.html',
+  '/guides/id/ritual-catacombs-vs-alternatives.html',
+  '/guides/id/potion-brew-shop-when.html',
+  '/guides/id/potion-brew-shop-vs-alternatives.html',
+  '/guides/id/unlucky-crossing-when.html',
+  '/guides/id/unlucky-crossing-vs-alternatives.html',
+  '/guides/id/mystic-card-paw-when.html',
+  '/guides/id/mystic-card-paw-vs-alternatives.html',
+  '/guides/id/solo-battlefield-when.html',
+  '/guides/id/solo-battlefield-vs-alternatives.html',
+  '/guides/id/rune-keeper-when.html',
+  '/guides/id/rune-keeper-vs-alternatives.html',
+  '/guides/id/thirteen-hours-when.html',
+  '/guides/id/thirteen-hours-vs-alternatives.html',
+  '/guides/id/quantum-shift-when.html',
+  '/guides/id/quantum-shift-vs-alternatives.html',
+  '/guides/id/roller-maze-escape-when.html',
+  '/guides/id/roller-maze-escape-vs-alternatives.html',
+  '/guides/id/thirteen-case-files-when.html',
+  '/guides/id/thirteen-case-files-vs-alternatives.html',
+  '/guides/id/rock-paper-neural-when.html',
+  '/guides/id/rock-paper-neural-vs-alternatives.html',
+  '/guides/id/neuro-aim-arena-when.html',
+  '/guides/id/neuro-aim-arena-vs-alternatives.html',
+  '/guides/id/mochi-midnight-escape-when.html',
+  '/guides/id/mochi-midnight-escape-vs-alternatives.html',
+  '/guides/id/swing-block-tower-when.html',
+  '/guides/id/swing-block-tower-vs-alternatives.html',
+  '/guides/id/star-fuel-battle-when.html',
+  '/guides/id/star-fuel-battle-vs-alternatives.html',
+  '/guides/id/progress-knight-when.html',
+  '/guides/id/progress-knight-vs-alternatives.html',
+  '/guides/id/miami-mice-when.html',
+  '/guides/id/miami-mice-vs-alternatives.html',
+  '/guides/id/orbital-order-when.html',
+  '/guides/id/orbital-order-vs-alternatives.html',
+  '/guides/id/spike-sprint-when.html',
+  '/guides/id/spike-sprint-vs-alternatives.html',
+  '/guides/id/neon-deep-space-when.html',
+  '/guides/id/neon-deep-space-vs-alternatives.html',
+  '/guides/id/vim-master-when.html',
+  '/guides/id/vim-master-vs-alternatives.html',
+  '/guides/id/quantum-optics-puzzle-when.html',
+  '/guides/id/quantum-optics-puzzle-vs-alternatives.html',
+  '/guides/id/particle-clicker-when.html',
+
+  // pruned 2026-07-29 zero-evidence id (id-batch-7 FINAL: mercury-spin-orbit-resonance to yarkovsky-effect)
+  '/guides/id/mercury-spin-orbit-resonance-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/mercury-spin-orbit-resonance-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/mercury-spin-orbit-resonance-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/moon-formation-giant-impact-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/moon-formation-giant-impact-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/moon-formation-giant-impact-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/mor-chess-2-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/mor-chess-2-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/neon-cat-chase-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/neon-cat-chase-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/neon-circuit-racer-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/neon-circuit-racer-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/neon-surge-loop-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/neon-surge-loop-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/neon-tower-rush-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/neon-tower-rush-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/neptune-supersonic-winds-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/neptune-supersonic-winds-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/neptune-supersonic-winds-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/neural-particle-life-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/neural-particle-life-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/new-horizons-pluto-flyby-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/new-horizons-pluto-flyby-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/new-horizons-pluto-flyby-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/night-swarm-survivor-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/night-swarm-survivor-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/nova-star-barrage-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/nova-star-barrage-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/olympus-mons-mars-volcano-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/olympus-mons-mars-volcano-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/olympus-mons-mars-volcano-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/one-tap-platformer-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/one-tap-platformer-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/orbital-radius-shooter-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/orbital-radius-shooter-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/particle-clicker-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/photon-sphere-isco-explorer-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/photon-sphere-isco-explorer-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/photon-sphere-isco-explorer-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/pixel-necromancer-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/pixel-necromancer-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/pixel-realm-rpg-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/pixel-realm-rpg-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/pixel-spike-run-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/pixel-spike-run-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/pluto-charon-double-planet-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/pluto-charon-double-planet-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/pluto-charon-double-planet-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/precision-bounce-loop-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/precision-bounce-loop-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/proton-proton-chain-fusion-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/proton-proton-chain-fusion-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/proton-proton-chain-fusion-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/relativistic-jets-agn-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/relativistic-jets-agn-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/relativistic-jets-agn-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/roman-numeral-converter-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/roman-numeral-converter-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/roman-numeral-converter-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/saros-cycle-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/saros-cycle-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/saros-cycle-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/schematic-factory-game-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/schematic-factory-game-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/seasonal-witchcat-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/seasonal-witchcat-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/server-survival-td-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/server-survival-td-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/sketch-turf-battle-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/sketch-turf-battle-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/sky-gates-flight-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/sky-gates-flight-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/sky-gates-flight-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/solar-flare-classification-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/solar-flare-classification-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/solar-flare-classification-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/space-debris-kessler-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/space-debris-kessler-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/space-debris-kessler-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/space-grid-puzzle-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/space-grid-puzzle-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/species-life-battle-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/species-life-battle-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/starlight-breaker-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/starlight-breaker-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/starlink-constellation-shells-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/starlink-constellation-shells-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/starlink-constellation-shells-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/strong-lensing-multiple-images-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/strong-lensing-multiple-images-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/strong-lensing-multiple-images-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/sun-red-giant-future-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/sun-red-giant-future-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/sun-red-giant-future-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/the-house-pointclick-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/the-house-pointclick-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/thirteen-card-duel-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/thirteen-card-duel-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/thirteen-step-escape-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/thirteen-step-escape-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/titan-methane-lakes-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/titan-methane-lakes-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/titan-methane-lakes-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/torino-impact-hazard-scale-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/torino-impact-hazard-scale-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/torino-impact-hazard-scale-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/twilight-types-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/twilight-types-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/twilight-types-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/venus-runaway-greenhouse-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/venus-runaway-greenhouse-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/venus-runaway-greenhouse-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/vim-motion-academy-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/vim-motion-academy-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/voxel-fps-arena-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/voxel-fps-arena-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/voyager-interstellar-position-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/voyager-interstellar-position-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/voyager-interstellar-position-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/white-dwarf-chandrasekhar-limit-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/white-dwarf-chandrasekhar-limit-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/white-dwarf-chandrasekhar-limit-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/yaml-json-converter-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/yaml-json-converter-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/yaml-json-converter-when.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/yarkovsky-effect-step-by-step.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/yarkovsky-effect-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
+  '/guides/id/yarkovsky-effect-when.html', // pruned 2026-07-29 zero-evidence id
 ]);
 for (const route of Object.keys(JSP_BY_ROUTE)) {
   if (!route.startsWith('/guides/')) continue;
