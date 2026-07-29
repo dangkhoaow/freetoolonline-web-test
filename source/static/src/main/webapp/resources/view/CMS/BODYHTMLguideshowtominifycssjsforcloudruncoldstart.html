@@ -36,6 +36,7 @@
   --platform=node \
   --outfile=dist/index.js</code></pre>
 <p>esbuild's <code>--minify</code> flag does identifier renaming, dead-code elimination, and whitespace removal. Add <code>--tree-shaking=true</code> (default when bundling) to drop unreferenced exports. Minify-only (no bundle) via <code>npx esbuild in.js --minify &gt; out.js</code>.</p>
+<p>If your application uses error tracking (Sentry, Datadog, or OpenTelemetry) and groups errors by function name, add <code>--keep-names</code> to the esbuild command. Without it, identifier shortening renames all functions - stack traces collapse to single-letter names, making error reports unreadable in your monitoring dashboard.</p>
 
 <p><b>Terser (mature; produces the smallest JS output).</b></p>
 <pre style="background:#0b1220;color:#dbe3f5;padding:12px;border-radius:var(--radius-sm, 4px);overflow:auto"><code>npx terser dist/index.js \
@@ -75,13 +76,14 @@
 <p>Minification helps cold-start disproportionately - warm requests don't re-parse the bundle, so the savings concentrate on cold invocations. For a service that sees steady traffic, the cold-start gain is subtle; for a spiky or low-traffic service, the gain is meaningful.</p>
 
 <br/><h2 class="text-uppercase"><b>What NOT to do</b></h2>
-<p>Four build practices actively undermine cold-start performance and should NOT appear in a minification pipeline.</p>
+<p>Any build step that adds parse work, adds bytes, or runs at request time instead of build time undoes the cold-start gain from minification. Four patterns to eliminate from your Cloud Run, Lambda, or Workers pipeline:</p>
 <p><b>Don't ship unminified and rely on gzip.</b> Gzip helps but doesn't touch parse time. Minify first, then compress.</p>
 <p><b>Don't minify inline scripts in HTML at runtime.</b> Minify at build. Runtime minification burns CPU on every request.</p>
 <p><b>Don't strip source maps in development.</b> Error stack traces become unreadable. Ship maps as separate <code>.map</code> files, excluded from the bundle, served with the <code>SourceMap</code> HTTP header only when requested.</p>
 <p><b>Don't use <code>unsafe</code> minifier flags on third-party SDK code.</b> Some SDKs (Sentry, Stripe.js) rely on specific function-name introspection; aggressive mangling breaks them. Keep vendor bundles unmangled.</p>
 
 <br/><h2 class="text-uppercase"><b>Related tools</b></h2>
+<p>These in-browser tools let you measure a specific file's savings without a build setup:</p>
 <ul>
     <li><a href="/developer-tools/css-minifier.html">CSS Minifier</a> - paste-and-go CSS minification.</li>
     <li><a href="/developer-tools/js-minifier.html">JavaScript Minifier</a> - paste-and-go JS minification.</li>
