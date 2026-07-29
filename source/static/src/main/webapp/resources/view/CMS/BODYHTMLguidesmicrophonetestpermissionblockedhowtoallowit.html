@@ -13,8 +13,8 @@
     <table class="w3-table w3-bordered w3-small" style="margin:1em 0">
         <tr><th>Permission state</th><th>Meter behaviour</th><th>Address-bar icon</th><th>Fix</th></tr>
         <tr><td>Allowed</td><td>Responds within ~1-2 s of page load</td><td>Microphone icon (no slash)</td><td>None needed</td></tr>
-        <tr><td>Blocked (denied)</td><td>Flat - no movement when speaking</td><td>Microphone with slash</td><td>Click icon - Allow - Reload</td></tr>
-        <tr><td>Ignored (no decision)</td><td>Flat - prompt pending</td><td>No icon or lock icon</td><td>Reload page - re-answer prompt</td></tr>
+        <tr><td>Blocked (denied)</td><td>Flat for &gt; 30 s - browser silently denied access</td><td>Microphone with slash</td><td>Click icon - Allow - Reload (3 steps)</td></tr>
+        <tr><td>Ignored (no decision)</td><td>Flat for ~5 s then prompt reappears on reload</td><td>No icon or lock icon</td><td>Reload page - re-answer prompt (1 step)</td></tr>
     </table>
     <ul>
         <li><b>Allowed.</b> The permission prompt either appears once and you click <b>Allow</b>, or the browser remembers an earlier <b>Allow</b> from this site and skips the prompt entirely. In both cases, the level meter starts responding to your voice within a second or two of the page finishing its initial paint.</li>
@@ -72,6 +72,12 @@
     <h2 class="text-uppercase"><b>Privacy and what the microphone test actually does</b></h2>
     <p>The browser microphone test on this site reads the live audio stream entirely in your browser. The page calls <code>navigator.mediaDevices.getUserMedia({ audio: true })</code> to ask for an audio stream, attaches the stream to a <code>Web Audio</code> analyser node, and renders the level meter from the analyser's frequency-domain output - all on your device. No sample is uploaded, no recording is saved, and stopping the test releases the stream and the microphone indicator goes off. If the indicator stays on after you leave the page, that is almost always another tab or another application holding the device, not this page; closing the offending tab releases the microphone within a second.</p>
     <p>Granting permission to <code>freetoolonline.com</code> only authorises this origin's pages to call <code>getUserMedia</code> while you are on a tab from this origin. Permission does not persist across origins, does not extend to sub-pages of other domains, and the browser will revoke it automatically if you change the per-site setting back to "Ask" or "Block". The <a href="/privacy-policy.html">Privacy Policy</a> documents this in plain language.</p>
+
+    <h2 class="text-uppercase"><b>Frequently Asked Questions</b></h2>
+    <details class="faq-item"><summary>Why does the microphone test show a flat meter even though my mic works elsewhere?</summary><p>A working mic in Zoom or Discord does not mean the browser has permission for this origin. Each site asks for its own microphone permission, and the browser remembers a past "Block" answer for <code>freetoolonline.com</code> separately from every other app. Re-grant the per-site permission in the address-bar icon and reload; the meter responds within 1-2 seconds once the browser stops silently denying the request.</p></details>
+    <details class="faq-item"><summary>How do I tell "blocked" apart from "no prompt appeared"?</summary><p>Look at the address bar. A microphone icon with a red slash means blocked (denied) - use the 3-step icon-Allow-Reload fix. No icon at all usually means the prompt is still pending or was ignored - a single page reload re-surfaces the prompt. If the meter stays flat for more than 30 seconds with no icon, treat it as blocked and open the per-site permission setting directly.</p></details>
+    <details class="faq-item"><summary>Does allowing microphone access let this page record me?</summary><p>No. The page reads the live audio stream entirely in your browser via <code>getUserMedia</code> and a Web Audio analyser node to draw the level meter. No sample is uploaded and no recording is saved; stopping the test releases the stream and the microphone indicator turns off within a second.</p></details>
+    <details class="faq-item"><summary>Permission is allowed but the meter is still flat - what now?</summary><p>The cause is downstream of the browser. Check three things in order: the OS-level microphone master toggle, another app holding the device (Zoom, Teams, Discord, OBS), and hardware mute or the wrong input device. The dedicated four-fix walkthrough at <a href="/guides/microphone-test-no-sound-four-fixes.html">Microphone Test No Sound: 4 Fixes That Work</a> covers each in detail.</p></details>
 
     <h2 class="text-uppercase"><b>Related reading</b></h2>
     <ul>
