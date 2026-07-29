@@ -35,6 +35,7 @@
   --platform=node \
   --outfile=dist/index.js</code></pre>
 <p>Flag <code>--minify</code> esbuild melakukan renaming identifier, eliminasi dead-code, dan penghapusan whitespace. Tambahkan <code>--tree-shaking=true</code> (default saat bundling) untuk menjatuhkan export yang tidak dirujuk. Hanya minify (tanpa bundle) via <code>npx esbuild in.js --minify &gt; out.js</code>.</p>
+<p>Jika aplikasi Anda menggunakan pelacakan error (Sentry, Datadog, atau OpenTelemetry) dan mengelompokkan error berdasarkan nama fungsi, tambahkan <code>--keep-names</code> ke perintah esbuild. Tanpa ini, penggantian nama identifier meringkas semua nama fungsi menjadi huruf tunggal - stack trace menjadi tidak terbaca di dashboard monitoring Anda.</p>
 
 <p><b>Terser (matang; menghasilkan output JS terkecil).</b></p>
 <pre style="background:#0b1220;color:#dbe3f5;padding:12px;border-radius:var(--radius-sm, 4px);overflow:auto"><code>npx terser dist/index.js \
@@ -73,13 +74,14 @@
 <p>Minifikasi membantu cold-start secara tidak proporsional - request hangat tidak melakukan re-parse bundle, jadi penghematan terkonsentrasi pada invokasi dingin. Untuk layanan yang melihat trafik stabil, keuntungan cold-start halus; untuk layanan spiky atau trafik rendah, keuntungannya berarti.</p>
 
 <br/><h2 class="text-uppercase"><b>Apa yang TIDAK boleh dilakukan</b></h2>
-<p>Empat praktik build secara aktif merusak performa cold-start dan TIDAK boleh ada dalam pipeline minifikasi.</p>
+<p>Setiap langkah build yang menambah pekerjaan parse, menambah byte, atau berjalan saat request bukan build time menghapus keuntungan cold-start dari minifikasi. Empat pola yang harus dihilangkan dari pipeline Cloud Run, Lambda, atau Workers Anda:</p>
 <p><b>Jangan kirim unminified dan mengandalkan gzip.</b> Gzip membantu tetapi tidak menyentuh waktu parse. Minify dulu, lalu kompres.</p>
 <p><b>Jangan minify script inline dalam HTML saat runtime.</b> Minify saat build. Minifikasi saat runtime membakar CPU pada setiap request.</p>
 <p><b>Jangan strip source map di development.</b> Stack trace error menjadi tidak terbaca. Kirim peta sebagai file <code>.map</code> terpisah, dikecualikan dari bundle, dilayani dengan header HTTP <code>SourceMap</code> hanya ketika diminta.</p>
 <p><b>Jangan gunakan flag <code>unsafe</code> minifier pada kode SDK pihak ketiga.</b> Beberapa SDK (Sentry, Stripe.js) bergantung pada introspeksi nama fungsi spesifik; mangling agresif memecahkan mereka. Pertahankan bundle vendor tanpa mangling.</p>
 
 <br/><h2 class="text-uppercase"><b>Alat terkait</b></h2>
+<p>Alat browser ini memungkinkan Anda mengukur penghematan file tertentu tanpa setup build:</p>
 <ul>
     <li><a href="/developer-tools/css-minifier.html">CSS Minifier</a> - minifikasi CSS tempel-dan-jalan.</li>
     <li><a href="/developer-tools/js-minifier.html">JavaScript Minifier</a> - minifikasi JS tempel-dan-jalan.</li>

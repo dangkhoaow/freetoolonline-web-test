@@ -35,6 +35,7 @@
   --platform=node \
   --outfile=dist/index.js</code></pre>
 <p>esbuilds <code>--minify</code>-Flag macht Identifier-Renaming, Dead-Code-Eliminierung und Whitespace-Entfernung. Fuegen Sie <code>--tree-shaking=true</code> hinzu (Default beim Bundling), um nicht referenzierte Exporte zu droppen. Nur minifizieren (kein Bundle) ueber <code>npx esbuild in.js --minify &gt; out.js</code>.</p>
+<p>Wenn Ihre Anwendung Error-Tracking (Sentry, Datadog oder OpenTelemetry) verwendet und Fehler nach Funktionsnamen gruppiert, fügen Sie <code>--keep-names</code> zum esbuild-Befehl hinzu. Ohne dieses Flag kürzt die Identifier-Umbenennung alle Funktionsnamen auf Einzelbuchstaben - Stack-Traces werden im Monitoring-Dashboard unleserlich.</p>
 
 <p><b>Terser (ausgereift; erzeugt die kleinste JS-Ausgabe).</b></p>
 <pre style="background:#0b1220;color:#dbe3f5;padding:12px;border-radius:var(--radius-sm, 4px);overflow:auto"><code>npx terser dist/index.js \
@@ -73,13 +74,14 @@
 <p>Minifizierung hilft Cold-Start unverhaeltnismaessig - Warm-Anfragen parsen das Bundle nicht erneut, sodass die Einsparungen sich auf Kalt-Invokationen konzentrieren. Fuer einen Dienst, der stetigen Traffic sieht, ist der Cold-Start-Gewinn subtil; fuer einen spikey oder Niedrig-Traffic-Dienst ist der Gewinn bedeutsam.</p>
 
 <br/><h2 class="text-uppercase"><b>Was NICHT zu tun ist</b></h2>
-<p>Vier Build-Praktiken untergraben aktiv die Cold-Start-Leistung und sollten NICHT in einer Minifizierungspipeline erscheinen.</p>
+<p>Jeder Build-Schritt, der Parse-Arbeit hinzufügt, Bytes hinzufügt oder zur Anforderungszeit statt zur Build-Zeit läuft, macht den Cold-Start-Gewinn zunichte. Vier Muster, die aus Ihrer Cloud-Run-, Lambda- oder Workers-Pipeline eliminiert werden sollten:</p>
 <p><b>Liefern Sie nicht unminified und verlassen Sie sich auf gzip.</b> Gzip hilft, beruehrt aber nicht die Parse-Zeit. Minifizieren Sie zuerst, dann komprimieren.</p>
 <p><b>Minifizieren Sie keine Inline-Skripte in HTML zur Laufzeit.</b> Minifizieren beim Build. Laufzeit-Minifizierung verbrennt CPU bei jeder Anfrage.</p>
 <p><b>Strippen Sie keine Source-Maps in der Entwicklung.</b> Error-Stack-Traces werden unleserlich. Liefern Sie Maps als separate <code>.map</code>-Dateien aus, vom Bundle ausgeschlossen, nur mit dem <code>SourceMap</code>-HTTP-Header bedient, wenn angefordert.</p>
 <p><b>Verwenden Sie keine <code>unsafe</code>-Minifier-Flags fuer Drittanbieter-SDK-Code.</b> Einige SDKs (Sentry, Stripe.js) verlassen sich auf spezifische Funktionsnamen-Introspektion; aggressives Mangling bricht sie. Halten Sie Vendor-Bundles ungmangelt.</p>
 
 <br/><h2 class="text-uppercase"><b>Verwandte Tools</b></h2>
+<p>Diese Browser-Tools ermöglichen es Ihnen, die Einsparungen einer einzelnen Datei ohne Build-Setup zu messen:</p>
 <ul>
     <li><a href="/developer-tools/css-minifier.html">CSS Minifier</a> - Einfuegen-und-los-CSS-Minifizierung.</li>
     <li><a href="/developer-tools/js-minifier.html">JavaScript Minifier</a> - Einfuegen-und-los-JS-Minifizierung.</li>

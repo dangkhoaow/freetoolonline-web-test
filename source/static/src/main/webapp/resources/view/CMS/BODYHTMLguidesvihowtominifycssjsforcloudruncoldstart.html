@@ -35,6 +35,7 @@
   --platform=node \
   --outfile=dist/index.js</code></pre>
 <p>Flag <code>--minify</code> của esbuild thực hiện đổi ten identifier, loại bỏ dead-code, và xoa khoang trang. Thêm <code>--tree-shaking=true</code> (mặc định khi bundle) để drop các export không được tham chieu. Chỉ minify (không bundle) quả <code>npx esbuild in.js --minify &gt; out.js</code>.</p>
+<p>Nếu ứng dụng của bạn dùng theo dõi lỗi (Sentry, Datadog hoặc OpenTelemetry) và nhóm lỗi theo tên hàm, thêm <code>--keep-names</code> vào lệnh esbuild. Nếu không, việc đổi tên identifier sẽ rút ngắn tất cả tên hàm thành một chữ cái - stack trace trở nên không đọc được trên dashboard giám sát của bạn.</p>
 
 <p><b>Terser (trường thành; tao ra đầu ra JS nhỏ nhất).</b></p>
 <pre style="background:#0b1220;color:#dbe3f5;padding:12px;border-radius:var(--radius-sm, 4px);overflow:auto"><code>npx terser dist/index.js \
@@ -73,13 +74,14 @@
 <p>Minify giúp cold-start không cần xung - request am không re-parse bundle, nên tiet kiểm tập trung vao các lần goi lanh. Với dich vụ thãy lưu luồng on định, lỗi cold-start tính te; với dich vụ dot biến hoặc lưu luồng thap, lỗi có y nghia.</p>
 
 <br/><h2 class="text-uppercase"><b>Những gì KHÔNG nên làm</b></h2>
-<p>Bốn thực hanh build chữ đồng làm suy yếu hiệu suat cold-start và không nên xuat hiện trọng pipeline minify.</p>
+<p>Bất kỳ bước build nào thêm công việc parse, thêm byte, hoặc chạy vào thời điểm request thay vì build time đều làm mất lợi ích cold-start từ minify. Bốn mẫu cần loại bỏ khỏi pipeline Cloud Run, Lambda hoặc Workers của bạn:</p>
 <p><b>Không gửi unminified và dua vao gzip.</b> Gzip giúp những không chậm vao thời gian parse. Minify trước, sau độ nên.</p>
 <p><b>Không minify script inline trọng HTML khi runtime.</b> Minify khi build. Minify khi runtime dot CPU trên mới request.</p>
 <p><b>Không xoa source map trọng development.</b> Stack trace lỗi trở nên kho đọc. Gửi map như các tệp <code>.map</code> riêng, loại khôi bundle, phục vụ với header HTTP <code>SourceMap</code> chỉ khi được yếu cấu.</p>
 <p><b>Không dùng flag <code>unsafe</code> minifier trên mà SDK ben thư ba.</b> Một số SDK (Sentry, Stripe.js) dua vao introspection ten hàm cụ thể; mangling mạnh tay làm vo chung. Giu bundle vendor không mangle.</p>
 
 <br/><h2 class="text-uppercase"><b>Công cụ liên quan</b></h2>
+<p>Các công cụ trình duyệt này cho phép bạn đo lường mức tiết kiệm của một tệp cụ thể mà không cần thiết lập build:</p>
 <ul>
     <li><a href="/developer-tools/css-minifier.html">CSS Minifier</a> - minify CSS dẫn-và-chãy.</li>
     <li><a href="/developer-tools/js-minifier.html">JavaScript Minifier</a> - minify JS dẫn-và-chãy.</li>

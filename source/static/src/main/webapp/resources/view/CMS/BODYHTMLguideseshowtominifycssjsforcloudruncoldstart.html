@@ -35,6 +35,7 @@
   --platform=node \
   --outfile=dist/index.js</code></pre>
 <p>El flag <code>--minify</code> de esbuild hace renombramiento de identificadores, eliminacion de dead-code, y remocion de espacios en blanco. Agrega <code>--tree-shaking=true</code> (default cuando empaqueta) para soltar exports no referenciados. Solo minificar (sin bundle) via <code>npx esbuild in.js --minify &gt; out.js</code>.</p>
+<p>Si tu aplicacion usa seguimiento de errores (Sentry, Datadog u OpenTelemetry) y agrupa errores por nombre de funcion, agrega <code>--keep-names</code> al comando esbuild. Sin esta opcion, el renombramiento de identificadores colapsa todos los nombres de funcion a letras simples - los stack traces se vuelven ilegibles en tu dashboard de monitoreo.</p>
 
 <p><b>Terser (maduro; produce la salida JS mas pequena).</b></p>
 <pre style="background:#0b1220;color:#dbe3f5;padding:12px;border-radius:var(--radius-sm, 4px);overflow:auto"><code>npx terser dist/index.js \
@@ -73,13 +74,14 @@
 <p>Minificacion ayuda cold-start desproporcionadamente - peticiones calientes no re-hacen parse del bundle, asi que los ahorros se concentran en invocaciones frias. Para un servicio que ve trafico estable, la ganancia de cold-start es sutil; para un servicio esporadico o de bajo trafico, la ganancia es significativa.</p>
 
 <br/><h2 class="text-uppercase"><b>Lo que NO hacer</b></h2>
-<p>Cuatro practicas de build socavan activamente el rendimiento de cold-start y NO deben aparecer en un pipeline de minificacion.</p>
+<p>Cualquier paso de build que agrega trabajo de parse, agrega bytes, o corre en tiempo de peticion en lugar de build time anula las ganancias de cold-start de la minificacion. Cuatro patrones a eliminar de tu pipeline de Cloud Run, Lambda o Workers:</p>
 <p><b>No envies unminified y dependas del gzip.</b> Gzip ayuda pero no toca el tiempo de parse. Minifica primero, luego comprime.</p>
 <p><b>No minifiques scripts inline en HTML en runtime.</b> Minifica en build. Minificacion en runtime quema CPU en cada peticion.</p>
 <p><b>No quites source maps en desarrollo.</b> Stack traces de error se vuelven ilegibles. Envia mapas como archivos <code>.map</code> separados, excluidos del bundle, servidos con el header HTTP <code>SourceMap</code> solo cuando se soliciten.</p>
 <p><b>No uses flags <code>unsafe</code> de minifier en codigo de SDK de terceros.</b> Algunos SDKs (Sentry, Stripe.js) dependen de introspeccion de nombre de funcion especifica; mangling agresivo los rompe. Manten bundles de vendors sin mangling.</p>
 
 <br/><h2 class="text-uppercase"><b>Herramientas relacionadas</b></h2>
+<p>Estas herramientas en el navegador te permiten medir los ahorros de un archivo especifico sin necesidad de un setup de build:</p>
 <ul>
     <li><a href="/developer-tools/css-minifier.html">CSS Minifier</a> - minificacion CSS pega-y-listo.</li>
     <li><a href="/developer-tools/js-minifier.html">JavaScript Minifier</a> - minificacion JS pega-y-listo.</li>
