@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/xml-formatter-vs-alternatives.html',
+  '/guides/xml-formatter-step-by-step.html',
+  '/guides/xml-formatter-when.html',
+  '/guides/pt/xml-formatter-when.html',
+  '/guides/pt/xml-formatter-step-by-step.html',
+  '/guides/pt/xml-formatter-vs-alternatives.html',
+  '/guides/es/xml-formatter-when.html',
+  '/guides/es/xml-formatter-step-by-step.html',
+  '/guides/es/xml-formatter-vs-alternatives.html',
+  '/guides/vi/xml-formatter-when.html',
+  '/guides/vi/xml-formatter-step-by-step.html',
+  '/guides/vi/xml-formatter-vs-alternatives.html',
+  '/guides/id/xml-formatter-when.html',
+  '/guides/id/xml-formatter-step-by-step.html',
+  '/guides/id/xml-formatter-vs-alternatives.html',
+  '/guides/de/xml-formatter-when.html',
+  '/guides/de/xml-formatter-step-by-step.html',
+  '/guides/de/xml-formatter-vs-alternatives.html',
   '/guides/lottery-number-generator-vs-alternatives.html',
   '/guides/lottery-number-generator-step-by-step.html',
   '/guides/lottery-number-generator-when.html',
@@ -14049,6 +14067,7 @@ export const ALIAS_ROUTES = {
   '/webcam-recorder.html': '/utility-tools/webcam-recorder.html',
   '/audio-speed-changer.html': '/video-tools/audio-speed-changer.html',
   '/lottery-number-generator.html': '/utility-tools/lottery-number-generator.html',
+  '/xml-formatter.html': '/developer-tools/xml-formatter.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -25679,6 +25698,26 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/lottery-number-generator-vs-alternatives.html': 'guide/vi/lottery-number-generator-vs-alternatives.jsp',
   '/guides/id/lottery-number-generator-vs-alternatives.html': 'guide/id/lottery-number-generator-vs-alternatives.jsp',
   '/guides/de/lottery-number-generator-vs-alternatives.html': 'guide/de/lottery-number-generator-vs-alternatives.jsp',
+  '/developer-tools/xml-formatter.html': 'utility/xml-formatter.jsp',
+  '/guides/xml-formatter-when.html': 'guide/xml-formatter-when.jsp',
+  '/guides/xml-formatter-step-by-step.html': 'guide/xml-formatter-step-by-step.jsp',
+  '/guides/xml-formatter-vs-alternatives.html': 'guide/xml-formatter-vs-alternatives.jsp',
+  // new-tool-discovery-loop fire656 - xml-formatter locale guide fanout
+  '/guides/pt/xml-formatter-when.html': 'guide/pt/xml-formatter-when.jsp',
+  '/guides/pt/xml-formatter-step-by-step.html': 'guide/pt/xml-formatter-step-by-step.jsp',
+  '/guides/pt/xml-formatter-vs-alternatives.html': 'guide/pt/xml-formatter-vs-alternatives.jsp',
+  '/guides/es/xml-formatter-when.html': 'guide/es/xml-formatter-when.jsp',
+  '/guides/es/xml-formatter-step-by-step.html': 'guide/es/xml-formatter-step-by-step.jsp',
+  '/guides/es/xml-formatter-vs-alternatives.html': 'guide/es/xml-formatter-vs-alternatives.jsp',
+  '/guides/vi/xml-formatter-when.html': 'guide/vi/xml-formatter-when.jsp',
+  '/guides/vi/xml-formatter-step-by-step.html': 'guide/vi/xml-formatter-step-by-step.jsp',
+  '/guides/vi/xml-formatter-vs-alternatives.html': 'guide/vi/xml-formatter-vs-alternatives.jsp',
+  '/guides/id/xml-formatter-when.html': 'guide/id/xml-formatter-when.jsp',
+  '/guides/id/xml-formatter-step-by-step.html': 'guide/id/xml-formatter-step-by-step.jsp',
+  '/guides/id/xml-formatter-vs-alternatives.html': 'guide/id/xml-formatter-vs-alternatives.jsp',
+  '/guides/de/xml-formatter-when.html': 'guide/de/xml-formatter-when.jsp',
+  '/guides/de/xml-formatter-step-by-step.html': 'guide/de/xml-formatter-step-by-step.jsp',
+  '/guides/de/xml-formatter-vs-alternatives.html': 'guide/de/xml-formatter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

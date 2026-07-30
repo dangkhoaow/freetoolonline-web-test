@@ -847,6 +847,7 @@ try {
     { title: "Binary Text Converter", url: "https://freetoolonline.com/developer-tools/binary-text-converter.html", include: !1, tags: "developer" },
     { title: "ROT13 Encoder", url: "https://freetoolonline.com/developer-tools/rot13-encoder.html", include: !1, tags: "developer" },
     { title: "Lottery Number Generator Online", url: "https://freetoolonline.com/utility-tools/lottery-number-generator.html", include: !1, tags: "utility" },
+    { title: "XML Formatter Online", url: "https://freetoolonline.com/developer-tools/xml-formatter.html", include: !1, tags: "developer" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
