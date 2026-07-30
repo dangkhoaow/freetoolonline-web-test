@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/lottery-number-generator-vs-alternatives.html',
+  '/guides/lottery-number-generator-step-by-step.html',
+  '/guides/lottery-number-generator-when.html',
+  '/guides/pt/lottery-number-generator-when.html',
+  '/guides/es/lottery-number-generator-when.html',
+  '/guides/vi/lottery-number-generator-when.html',
+  '/guides/id/lottery-number-generator-when.html',
+  '/guides/de/lottery-number-generator-when.html',
+  '/guides/pt/lottery-number-generator-step-by-step.html',
+  '/guides/es/lottery-number-generator-step-by-step.html',
+  '/guides/vi/lottery-number-generator-step-by-step.html',
+  '/guides/id/lottery-number-generator-step-by-step.html',
+  '/guides/de/lottery-number-generator-step-by-step.html',
+  '/guides/pt/lottery-number-generator-vs-alternatives.html',
+  '/guides/es/lottery-number-generator-vs-alternatives.html',
+  '/guides/vi/lottery-number-generator-vs-alternatives.html',
+  '/guides/id/lottery-number-generator-vs-alternatives.html',
+  '/guides/de/lottery-number-generator-vs-alternatives.html',
   '/guides/webcam-recorder-vs-alternatives.html',
   '/guides/pt/webcam-recorder-vs-alternatives.html',
   '/guides/es/webcam-recorder-vs-alternatives.html',
@@ -14030,6 +14048,7 @@ export const ALIAS_ROUTES = {
   '/workout-tracker.html': '/utility-tools/workout-tracker.html',
   '/webcam-recorder.html': '/utility-tools/webcam-recorder.html',
   '/audio-speed-changer.html': '/video-tools/audio-speed-changer.html',
+  '/lottery-number-generator.html': '/utility-tools/lottery-number-generator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -25641,6 +25660,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/audio-speed-changer-vs-alternatives.html': 'guide/vi/audio-speed-changer-vs-alternatives.jsp',
   '/guides/id/audio-speed-changer-vs-alternatives.html': 'guide/id/audio-speed-changer-vs-alternatives.jsp',
   '/guides/de/audio-speed-changer-vs-alternatives.html': 'guide/de/audio-speed-changer-vs-alternatives.jsp',
+  '/utility-tools/lottery-number-generator.html': 'utility/lottery-number-generator.jsp',
+  '/guides/lottery-number-generator-when.html': 'guide/lottery-number-generator-when.jsp',
+  '/guides/lottery-number-generator-step-by-step.html': 'guide/lottery-number-generator-step-by-step.jsp',
+  '/guides/lottery-number-generator-vs-alternatives.html': 'guide/lottery-number-generator-vs-alternatives.jsp',
+  '/guides/pt/lottery-number-generator-when.html': 'guide/pt/lottery-number-generator-when.jsp',
+  '/guides/es/lottery-number-generator-when.html': 'guide/es/lottery-number-generator-when.jsp',
+  '/guides/vi/lottery-number-generator-when.html': 'guide/vi/lottery-number-generator-when.jsp',
+  '/guides/id/lottery-number-generator-when.html': 'guide/id/lottery-number-generator-when.jsp',
+  '/guides/de/lottery-number-generator-when.html': 'guide/de/lottery-number-generator-when.jsp',
+  '/guides/pt/lottery-number-generator-step-by-step.html': 'guide/pt/lottery-number-generator-step-by-step.jsp',
+  '/guides/es/lottery-number-generator-step-by-step.html': 'guide/es/lottery-number-generator-step-by-step.jsp',
+  '/guides/vi/lottery-number-generator-step-by-step.html': 'guide/vi/lottery-number-generator-step-by-step.jsp',
+  '/guides/id/lottery-number-generator-step-by-step.html': 'guide/id/lottery-number-generator-step-by-step.jsp',
+  '/guides/de/lottery-number-generator-step-by-step.html': 'guide/de/lottery-number-generator-step-by-step.jsp',
+  '/guides/pt/lottery-number-generator-vs-alternatives.html': 'guide/pt/lottery-number-generator-vs-alternatives.jsp',
+  '/guides/es/lottery-number-generator-vs-alternatives.html': 'guide/es/lottery-number-generator-vs-alternatives.jsp',
+  '/guides/vi/lottery-number-generator-vs-alternatives.html': 'guide/vi/lottery-number-generator-vs-alternatives.jsp',
+  '/guides/id/lottery-number-generator-vs-alternatives.html': 'guide/id/lottery-number-generator-vs-alternatives.jsp',
+  '/guides/de/lottery-number-generator-vs-alternatives.html': 'guide/de/lottery-number-generator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

@@ -1,0 +1,121 @@
+<script>
+    // Lottery Number Generator - fully client-side, crypto.getRandomValues, no upload.
+    // Supports Powerball, Mega Millions, EuroMillions, and custom ranges.
+
+    web.localUpload = false;
+
+    const LOTTERY_TYPES = {
+        powerball:     { label: 'Powerball (US)',          main: [1, 69, 5], bonus: [1, 26, 1] },
+        megamillions:  { label: 'Mega Millions (US)',      main: [1, 70, 5], bonus: [1, 25, 1] },
+        euromillions:  { label: 'EuroMillions',            main: [1, 50, 5], bonus: [1, 12, 2] },
+        uk49s:         { label: 'UK 49s (pick 6)',         main: [1, 49, 6], bonus: null },
+        canada649:     { label: 'Lotto 6/49 (Canada)',     main: [1, 49, 6], bonus: [1, 49, 1] },
+        ozlotto:       { label: 'Oz Lotto (Australia)',    main: [1, 47, 7], bonus: null },
+        custom:        { label: 'Custom range',            main: null,       bonus: null },
+    };
+
+    // Cryptographically random integer in [min, max] (inclusive) using rejection sampling.
+    function secureRandInt(min, max) {
+        const range = max - min + 1;
+        const limit = Math.floor(0xFFFFFFFF / range) * range;
+        const buf = new Uint32Array(1);
+        do { crypto.getRandomValues(buf); } while (buf[0] >= limit);
+        return min + (buf[0] % range);
+    }
+
+    // Pick `count` distinct numbers from [min, max] in sorted order.
+    function pickUnique(min, max, count) {
+        if (count > max - min + 1) throw new Error('Count exceeds range size.');
+        const chosen = new Set();
+        while (chosen.size < count) chosen.add(secureRandInt(min, max));
+        return [...chosen].sort((a, b) => a - b);
+    }
+
+    function renderBall(n, cls) {
+        return '<span class="lotto-ball ' + cls + '">' + n + '</span>';
+    }
+
+    function buildTicketHTML(mainNums, bonusNums) {
+        let html = '<span class="lotto-ticket">';
+        mainNums.forEach(n => { html += renderBall(String(n).padStart(2, '0'), 'main'); });
+        if (bonusNums && bonusNums.length) {
+            html += '<span class="lotto-sep">+</span>';
+            bonusNums.forEach(n => { html += renderBall(String(n).padStart(2, '0'), 'bonus'); });
+        }
+        html += '</span>';
+        return html;
+    }
+
+    async function generateForSlug(formValues) {
+        const type = formValues['lotteryType'] || 'powerball';
+        const qty  = Math.min(10, Math.max(1, parseInt(formValues['ticketCount'] || '1', 10)));
+        const cfg  = LOTTERY_TYPES[type];
+
+        let mainMin, mainMax, mainCount, bonusMin, bonusMax, bonusCount;
+
+        if (type === 'custom') {
+            mainMin   = parseInt(formValues['customMin']   || '1',  10);
+            mainMax   = parseInt(formValues['customMax']   || '49', 10);
+            mainCount = parseInt(formValues['customCount'] || '6',  10);
+            if (isNaN(mainMin) || isNaN(mainMax) || mainMin < 1 || mainMax > 999 || mainMin > mainMax)
+                throw new Error('Invalid custom range. Min must be ≥ 1 and ≤ Max (≤ 999).');
+            if (isNaN(mainCount) || mainCount < 1 || mainCount > mainMax - mainMin + 1)
+                throw new Error('Count must be between 1 and the size of the range.');
+            bonusMin = bonusMax = bonusCount = 0;
+        } else {
+            [mainMin, mainMax, mainCount] = cfg.main;
+            if (cfg.bonus) [bonusMin, bonusMax, bonusCount] = cfg.bonus;
+            else bonusMin = bonusMax = bonusCount = 0;
+        }
+
+        const tickets = [];
+        for (let i = 0; i < qty; i++) {
+            const main  = pickUnique(mainMin, mainMax, mainCount);
+            const bonus = bonusCount > 0 ? pickUnique(bonusMin, bonusMax, bonusCount) : [];
+            tickets.push(buildTicketHTML(main, bonus));
+        }
+
+        const label = type === 'custom' ? 'Custom Lottery' : (cfg.label || type);
+        const header = '<p class="lotto-label"><strong>' + label + '</strong></p>';
+        const body   = tickets.map((t, i) => '<div class="lotto-row">Ticket ' + (i + 1) + ': ' + t + '</div>').join('');
+        return { output_text: header + body, _is_mock: false };
+    }
+
+    function toggleCustom() {
+        const show = document.getElementById('lotteryType').value === 'custom';
+        document.getElementById('customGroup').style.display = show ? '' : 'none';
+    }
+
+    function doAfterPageRendered() {
+        toggleCustom();
+        document.getElementById('lotteryType').addEventListener('change', toggleCustom);
+
+        var style = document.createElement('style');
+        style.textContent = [
+            '.lotto-ball{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;font-weight:700;font-size:13px;margin:2px;color:#fff}',
+            '.lotto-ball.main{background:#d32f2f}',
+            '.lotto-ball.bonus{background:#1565c0}',
+            '.lotto-sep{margin:0 4px;font-size:18px;font-weight:700;vertical-align:middle}',
+            '.lotto-ticket{display:inline-flex;align-items:center;flex-wrap:wrap}',
+            '.lotto-row{margin:6px 0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}',
+            '.lotto-label{font-size:15px;margin-bottom:4px}',
+        ].join('');
+        document.head.appendChild(style);
+
+        $('#generateBtn').off('click').on('click', async function () {
+            var $out = $('.outputImgs').empty();
+            var formValues = {};
+            $('.step1 :input').each(function () {
+                var $el = $(this);
+                if ($el.attr('id')) formValues[$el.attr('id')] = $el.val();
+            });
+            try {
+                var result = await generateForSlug(formValues);
+                $out.html('<div class="w3-panel w3-light-grey w3-padding">' + result.output_text + '</div>');
+            } catch (err) {
+                console.error('lottery-number-generator:', err);
+                $out.html('<div class="w3-panel w3-pale-red"><b>Error:</b> ' + $('<div>').text(err.message || String(err)).html() + '</div>');
+            }
+        });
+    }
+</script>
