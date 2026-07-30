@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/savings-goal-calculator-vs-alternatives.html',
+  '/guides/savings-goal-calculator-step-by-step.html',
+  '/guides/savings-goal-calculator-when.html',
   '/guides/json-diff-checker-vs-alternatives.html',
   '/guides/json-diff-checker-step-by-step.html',
   '/guides/json-diff-checker-when.html',
@@ -14087,6 +14090,7 @@ export const ALIAS_ROUTES = {
   '/lottery-number-generator.html': '/utility-tools/lottery-number-generator.html',
   '/xml-formatter.html': '/developer-tools/xml-formatter.html',
   '/json-diff-checker.html': '/developer-tools/json-diff-checker.html',
+  '/savings-goal-calculator.html': '/utility-tools/savings-goal-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -25756,6 +25760,10 @@ export const JSP_BY_ROUTE = {
   '/guides/de/json-diff-checker-when.html': 'guide/de/json-diff-checker-when.jsp',
   '/guides/de/json-diff-checker-vs-alternatives.html': 'guide/de/json-diff-checker-vs-alternatives.jsp',
   '/guides/json-diff-checker-vs-alternatives.html': 'guide/json-diff-checker-vs-alternatives.jsp',
+  '/utility-tools/savings-goal-calculator.html': 'utility/savings-goal-calculator.jsp',
+  '/guides/savings-goal-calculator-when.html': 'guide/savings-goal-calculator-when.jsp',
+  '/guides/savings-goal-calculator-step-by-step.html': 'guide/savings-goal-calculator-step-by-step.jsp',
+  '/guides/savings-goal-calculator-vs-alternatives.html': 'guide/savings-goal-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
