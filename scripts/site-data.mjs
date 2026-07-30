@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/av1-webm-converter-vs-alternatives.html',
+  '/guides/av1-webm-converter-step-by-step.html',
+  '/guides/av1-webm-converter-when.html',
+  '/guides/pt/av1-webm-converter-when.html',
+  '/guides/pt/av1-webm-converter-step-by-step.html',
+  '/guides/pt/av1-webm-converter-vs-alternatives.html',
+  '/guides/es/av1-webm-converter-when.html',
+  '/guides/es/av1-webm-converter-step-by-step.html',
+  '/guides/es/av1-webm-converter-vs-alternatives.html',
+  '/guides/vi/av1-webm-converter-when.html',
+  '/guides/vi/av1-webm-converter-step-by-step.html',
+  '/guides/vi/av1-webm-converter-vs-alternatives.html',
+  '/guides/id/av1-webm-converter-when.html',
+  '/guides/id/av1-webm-converter-step-by-step.html',
+  '/guides/id/av1-webm-converter-vs-alternatives.html',
+  '/guides/de/av1-webm-converter-when.html',
+  '/guides/de/av1-webm-converter-step-by-step.html',
+  '/guides/de/av1-webm-converter-vs-alternatives.html',
   '/guides/av1-mp4-converter-vs-alternatives.html',
   '/guides/pt/av1-mp4-converter-when.html',
   '/guides/pt/av1-mp4-converter-step-by-step.html',
@@ -14239,6 +14257,7 @@ export const ALIAS_ROUTES = {
   '/pregnancy-due-date-calculator.html': '/utility-tools/pregnancy-due-date-calculator.html',
   '/chart-maker.html': '/utility-tools/chart-maker.html',
   '/av1-to-mp4-converter.html': '/video-tools/av1-to-mp4-converter.html',
+  '/av1-to-webm-converter.html': '/video-tools/av1-to-webm-converter.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -26041,6 +26060,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/av1-mp4-converter-when.html': 'guide/de/av1-mp4-converter-when.jsp',
   '/guides/de/av1-mp4-converter-step-by-step.html': 'guide/de/av1-mp4-converter-step-by-step.jsp',
   '/guides/de/av1-mp4-converter-vs-alternatives.html': 'guide/de/av1-mp4-converter-vs-alternatives.jsp',
+  '/video-tools/av1-to-webm-converter.html': 'convert/av1-to-webm-converter.jsp',
+  '/guides/av1-webm-converter-when.html': 'guide/av1-webm-converter-when.jsp',
+  '/guides/av1-webm-converter-step-by-step.html': 'guide/av1-webm-converter-step-by-step.jsp',
+  '/guides/av1-webm-converter-vs-alternatives.html': 'guide/av1-webm-converter-vs-alternatives.jsp',
+  '/guides/pt/av1-webm-converter-when.html': 'guide/pt/av1-webm-converter-when.jsp',
+  '/guides/pt/av1-webm-converter-step-by-step.html': 'guide/pt/av1-webm-converter-step-by-step.jsp',
+  '/guides/pt/av1-webm-converter-vs-alternatives.html': 'guide/pt/av1-webm-converter-vs-alternatives.jsp',
+  '/guides/es/av1-webm-converter-when.html': 'guide/es/av1-webm-converter-when.jsp',
+  '/guides/es/av1-webm-converter-step-by-step.html': 'guide/es/av1-webm-converter-step-by-step.jsp',
+  '/guides/es/av1-webm-converter-vs-alternatives.html': 'guide/es/av1-webm-converter-vs-alternatives.jsp',
+  '/guides/vi/av1-webm-converter-when.html': 'guide/vi/av1-webm-converter-when.jsp',
+  '/guides/vi/av1-webm-converter-step-by-step.html': 'guide/vi/av1-webm-converter-step-by-step.jsp',
+  '/guides/vi/av1-webm-converter-vs-alternatives.html': 'guide/vi/av1-webm-converter-vs-alternatives.jsp',
+  '/guides/id/av1-webm-converter-when.html': 'guide/id/av1-webm-converter-when.jsp',
+  '/guides/id/av1-webm-converter-step-by-step.html': 'guide/id/av1-webm-converter-step-by-step.jsp',
+  '/guides/id/av1-webm-converter-vs-alternatives.html': 'guide/id/av1-webm-converter-vs-alternatives.jsp',
+  '/guides/de/av1-webm-converter-when.html': 'guide/de/av1-webm-converter-when.jsp',
+  '/guides/de/av1-webm-converter-step-by-step.html': 'guide/de/av1-webm-converter-step-by-step.jsp',
+  '/guides/de/av1-webm-converter-vs-alternatives.html': 'guide/de/av1-webm-converter-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
