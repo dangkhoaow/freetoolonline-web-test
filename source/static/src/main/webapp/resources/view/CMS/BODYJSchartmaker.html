@@ -1,0 +1,99 @@
+<script>
+    // Data-visualizer skeleton - fully in-browser. Reference:
+    // verified-browser-impl-registry.mjs entry `chart_generator_chartjs`. Page: /chart-maker.html
+    //
+    // What it does on the client (scaffold baseline):
+    //   - Paste rows of "Label, Value" (or one number per line) into the textarea.
+    //   - Click Visualize; the page draws an inline-SVG bar chart from the parsed
+    //     rows. No external library, no upload, no backend.
+    //
+    // The framework calls doAfterPageRendered() during page startup (it fires for
+    // EVERY page once jQuery + base-script load). Do NOT call $(...) at the top
+    // level: `$` is only defined inside the hook.
+    //
+    // NOTE (freetool-migration T4): this is the SCAFFOLD baseline - a pure-SVG bar
+    // chart, self-contained so build-tool-page Gate I (not-a-stub) passes on first
+    // ship. The full source logic (Chart.js bar/line/pie/doughnut, PapaParse CSV
+    // import, and the WebGPU-gated AI insight) is ported into this file at the
+    // port_logic sub-step; lazy-load Chart.js + PapaParse via loadScript() there.
+
+    web.localUpload = false;
+
+    function dvParseRows(text) {
+        var rows = [];
+        var lines = String(text || '').split(/\r?\n/);
+        for (var i = 0; i < lines.length; i++) {
+            var line = lines[i].trim();
+            if (!line) continue;
+            var parts = line.split(/[,\t]/);
+            var label, value;
+            if (parts.length >= 2) {
+                label = parts[0].trim();
+                value = parseFloat(parts[1]);
+            } else {
+                label = 'Item ' + (rows.length + 1);
+                value = parseFloat(parts[0]);
+            }
+            if (isFinite(value)) rows.push({ label: label, value: value });
+        }
+        return rows;
+    }
+
+    function dvEscape(s) {
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function dvRenderBarChart(rows) {
+        if (!rows.length) return '';
+        var W = 600, H = 320, pad = 40, gap = 8;
+        var max = 0;
+        for (var i = 0; i < rows.length; i++) max = Math.max(max, rows[i].value);
+        if (max <= 0) max = 1;
+        var n = rows.length;
+        var barW = (W - pad * 2 - gap * (n - 1)) / n;
+        var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" '
+                + 'aria-label="Bar chart of your data" style="max-width:600px;">';
+        svg += '<line x1="' + pad + '" y1="' + (H - pad) + '" x2="' + (W - pad)
+             + '" y2="' + (H - pad) + '" stroke="#999999" />';
+        for (var j = 0; j < n; j++) {
+            var bh = (rows[j].value / max) * (H - pad * 2);
+            var x = pad + j * (barW + gap);
+            var y = (H - pad) - bh;
+            svg += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="'
+                 + barW.toFixed(1) + '" height="' + Math.max(0, bh).toFixed(1)
+                 + '" fill="#2196F3"><title>' + dvEscape(rows[j].label) + ': '
+                 + rows[j].value + '</title></rect>';
+            svg += '<text x="' + (x + barW / 2).toFixed(1) + '" y="' + (H - pad + 14)
+                 + '" font-size="10" text-anchor="middle" fill="#555555">'
+                 + dvEscape(rows[j].label) + '</text>';
+            svg += '<text x="' + (x + barW / 2).toFixed(1) + '" y="' + (y - 4).toFixed(1)
+                 + '" font-size="10" text-anchor="middle" fill="#333333">'
+                 + rows[j].value + '</text>';
+        }
+        svg += '</svg>';
+        return svg;
+    }
+
+    function dvVisualize() {
+        var rows = dvParseRows($('#dvData').val());
+        if (!rows.length) {
+            $('#dvError').text('Enter at least one row of Label, Value - or one number per line.').show();
+            $('#dvChart').empty();
+            return;
+        }
+        $('#dvError').hide().text('');
+        $('#dvChart').html(dvRenderBarChart(rows));
+    }
+
+    function initDataVisualizer() {
+        if ($('#dvData').length === 0) return; // not the data-visualizer page
+        $('#dvRender').off('click.dv').on('click.dv', dvVisualize);
+        dvVisualize(); // render the seed sample so the page shows a chart on load
+    }
+
+    function doAfterPageRendered() {
+        initDataVisualizer();
+    }
+</script>
