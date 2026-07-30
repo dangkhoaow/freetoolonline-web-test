@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/sales-tax-calculator-vs-alternatives.html',
+  '/guides/sales-tax-calculator-step-by-step.html',
+  '/guides/sales-tax-calculator-when.html',
+  '/guides/pt/sales-tax-calculator-step-by-step.html',
+  '/guides/pt/sales-tax-calculator-when.html',
+  '/guides/pt/sales-tax-calculator-vs-alternatives.html',
+  '/guides/es/sales-tax-calculator-step-by-step.html',
+  '/guides/es/sales-tax-calculator-when.html',
+  '/guides/es/sales-tax-calculator-vs-alternatives.html',
+  '/guides/vi/sales-tax-calculator-step-by-step.html',
+  '/guides/vi/sales-tax-calculator-when.html',
+  '/guides/vi/sales-tax-calculator-vs-alternatives.html',
+  '/guides/id/sales-tax-calculator-step-by-step.html',
+  '/guides/id/sales-tax-calculator-when.html',
+  '/guides/id/sales-tax-calculator-vs-alternatives.html',
+  '/guides/de/sales-tax-calculator-step-by-step.html',
+  '/guides/de/sales-tax-calculator-when.html',
+  '/guides/de/sales-tax-calculator-vs-alternatives.html',
   '/guides/roi-calculator-vs-alternatives.html',
   '/guides/roi-calculator-step-by-step.html',
   '/guides/roi-calculator-when.html',
@@ -14163,6 +14181,7 @@ export const ALIAS_ROUTES = {
   '/savings-goal-calculator.html': '/utility-tools/savings-goal-calculator.html',
   '/retirement-calculator.html': '/utility-tools/retirement-calculator.html',
   '/roi-calculator.html': '/utility-tools/roi-calculator.html',
+  '/sales-tax-calculator.html': '/utility-tools/sales-tax-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -25889,6 +25908,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/roi-calculator-step-by-step.html': 'guide/de/roi-calculator-step-by-step.jsp',
   '/guides/de/roi-calculator-when.html': 'guide/de/roi-calculator-when.jsp',
   '/guides/de/roi-calculator-vs-alternatives.html': 'guide/de/roi-calculator-vs-alternatives.jsp',
+  '/utility-tools/sales-tax-calculator.html': 'utility/sales-tax-calculator.jsp',
+  '/guides/sales-tax-calculator-when.html': 'guide/sales-tax-calculator-when.jsp',
+  '/guides/sales-tax-calculator-step-by-step.html': 'guide/sales-tax-calculator-step-by-step.jsp',
+  '/guides/sales-tax-calculator-vs-alternatives.html': 'guide/sales-tax-calculator-vs-alternatives.jsp',
+  '/guides/pt/sales-tax-calculator-step-by-step.html': 'guide/pt/sales-tax-calculator-step-by-step.jsp',
+  '/guides/pt/sales-tax-calculator-when.html': 'guide/pt/sales-tax-calculator-when.jsp',
+  '/guides/pt/sales-tax-calculator-vs-alternatives.html': 'guide/pt/sales-tax-calculator-vs-alternatives.jsp',
+  '/guides/es/sales-tax-calculator-step-by-step.html': 'guide/es/sales-tax-calculator-step-by-step.jsp',
+  '/guides/es/sales-tax-calculator-when.html': 'guide/es/sales-tax-calculator-when.jsp',
+  '/guides/es/sales-tax-calculator-vs-alternatives.html': 'guide/es/sales-tax-calculator-vs-alternatives.jsp',
+  '/guides/vi/sales-tax-calculator-step-by-step.html': 'guide/vi/sales-tax-calculator-step-by-step.jsp',
+  '/guides/vi/sales-tax-calculator-when.html': 'guide/vi/sales-tax-calculator-when.jsp',
+  '/guides/vi/sales-tax-calculator-vs-alternatives.html': 'guide/vi/sales-tax-calculator-vs-alternatives.jsp',
+  '/guides/id/sales-tax-calculator-step-by-step.html': 'guide/id/sales-tax-calculator-step-by-step.jsp',
+  '/guides/id/sales-tax-calculator-when.html': 'guide/id/sales-tax-calculator-when.jsp',
+  '/guides/id/sales-tax-calculator-vs-alternatives.html': 'guide/id/sales-tax-calculator-vs-alternatives.jsp',
+  '/guides/de/sales-tax-calculator-step-by-step.html': 'guide/de/sales-tax-calculator-step-by-step.jsp',
+  '/guides/de/sales-tax-calculator-when.html': 'guide/de/sales-tax-calculator-when.jsp',
+  '/guides/de/sales-tax-calculator-vs-alternatives.html': 'guide/de/sales-tax-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

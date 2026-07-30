@@ -852,6 +852,7 @@ try {
     { title: "Savings Goal Calculator Online", url: "https://freetoolonline.com/utility-tools/savings-goal-calculator.html", include: !1, tags: "utility" },
     { title: "Retirement Calculator Online", url: "https://freetoolonline.com/utility-tools/retirement-calculator.html", include: !1, tags: "utility" },
     { title: "ROI Calculator Online", url: "https://freetoolonline.com/utility-tools/roi-calculator.html", include: !1, tags: "utility" },
+    { title: "Sales Tax Calculator Online", url: "https://freetoolonline.com/utility-tools/sales-tax-calculator.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
