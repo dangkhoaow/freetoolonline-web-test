@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/roi-calculator-vs-alternatives.html',
+  '/guides/roi-calculator-step-by-step.html',
+  '/guides/roi-calculator-when.html',
+  '/guides/pt/roi-calculator-step-by-step.html',
+  '/guides/pt/roi-calculator-when.html',
+  '/guides/pt/roi-calculator-vs-alternatives.html',
+  '/guides/es/roi-calculator-step-by-step.html',
+  '/guides/es/roi-calculator-when.html',
+  '/guides/es/roi-calculator-vs-alternatives.html',
+  '/guides/vi/roi-calculator-step-by-step.html',
+  '/guides/vi/roi-calculator-when.html',
+  '/guides/vi/roi-calculator-vs-alternatives.html',
+  '/guides/id/roi-calculator-step-by-step.html',
+  '/guides/id/roi-calculator-when.html',
+  '/guides/id/roi-calculator-vs-alternatives.html',
+  '/guides/de/roi-calculator-step-by-step.html',
+  '/guides/de/roi-calculator-when.html',
+  '/guides/de/roi-calculator-vs-alternatives.html',
   '/guides/retirement-calculator-vs-alternatives.html',
   '/guides/retirement-calculator-step-by-step.html',
   '/guides/retirement-calculator-when.html',
@@ -14144,6 +14162,7 @@ export const ALIAS_ROUTES = {
   '/json-diff-checker.html': '/developer-tools/json-diff-checker.html',
   '/savings-goal-calculator.html': '/utility-tools/savings-goal-calculator.html',
   '/retirement-calculator.html': '/utility-tools/retirement-calculator.html',
+  '/roi-calculator.html': '/utility-tools/roi-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -25851,6 +25870,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/retirement-calculator-step-by-step.html': 'guide/de/retirement-calculator-step-by-step.jsp',
   '/guides/de/retirement-calculator-when.html': 'guide/de/retirement-calculator-when.jsp',
   '/guides/de/retirement-calculator-vs-alternatives.html': 'guide/de/retirement-calculator-vs-alternatives.jsp',
+  '/utility-tools/roi-calculator.html': 'utility/roi-calculator.jsp',
+  '/guides/roi-calculator-when.html': 'guide/roi-calculator-when.jsp',
+  '/guides/roi-calculator-step-by-step.html': 'guide/roi-calculator-step-by-step.jsp',
+  '/guides/roi-calculator-vs-alternatives.html': 'guide/roi-calculator-vs-alternatives.jsp',
+  '/guides/pt/roi-calculator-step-by-step.html': 'guide/pt/roi-calculator-step-by-step.jsp',
+  '/guides/pt/roi-calculator-when.html': 'guide/pt/roi-calculator-when.jsp',
+  '/guides/pt/roi-calculator-vs-alternatives.html': 'guide/pt/roi-calculator-vs-alternatives.jsp',
+  '/guides/es/roi-calculator-step-by-step.html': 'guide/es/roi-calculator-step-by-step.jsp',
+  '/guides/es/roi-calculator-when.html': 'guide/es/roi-calculator-when.jsp',
+  '/guides/es/roi-calculator-vs-alternatives.html': 'guide/es/roi-calculator-vs-alternatives.jsp',
+  '/guides/vi/roi-calculator-step-by-step.html': 'guide/vi/roi-calculator-step-by-step.jsp',
+  '/guides/vi/roi-calculator-when.html': 'guide/vi/roi-calculator-when.jsp',
+  '/guides/vi/roi-calculator-vs-alternatives.html': 'guide/vi/roi-calculator-vs-alternatives.jsp',
+  '/guides/id/roi-calculator-step-by-step.html': 'guide/id/roi-calculator-step-by-step.jsp',
+  '/guides/id/roi-calculator-when.html': 'guide/id/roi-calculator-when.jsp',
+  '/guides/id/roi-calculator-vs-alternatives.html': 'guide/id/roi-calculator-vs-alternatives.jsp',
+  '/guides/de/roi-calculator-step-by-step.html': 'guide/de/roi-calculator-step-by-step.jsp',
+  '/guides/de/roi-calculator-when.html': 'guide/de/roi-calculator-when.jsp',
+  '/guides/de/roi-calculator-vs-alternatives.html': 'guide/de/roi-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
