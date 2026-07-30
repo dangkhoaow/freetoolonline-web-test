@@ -858,6 +858,7 @@ try {
     { title: "AV1 to MP4 Converter Online", url: "https://freetoolonline.com/video-tools/av1-to-mp4-converter.html", include: !1, tags: "video" },
     { title: "AV1 to WebM Converter Online", url: "https://freetoolonline.com/video-tools/av1-to-webm-converter.html", include: !1, tags: "video" },
     { title: "Annuity Calculator Online", url: "https://freetoolonline.com/utility-tools/annuity-calculator.html", include: !1, tags: "utility" },
+    { title: "Days From Today Calculator Online", url: "https://freetoolonline.com/utility-tools/days-from-today-calculator.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

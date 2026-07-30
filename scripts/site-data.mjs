@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/days-from-today-calculator-vs-alternatives.html',
+  '/guides/days-from-today-calculator-step-by-step.html',
+  '/guides/days-from-today-calculator-when.html',
   '/guides/annuity-calculator-vs-alternatives.html',
   '/guides/annuity-calculator-step-by-step.html',
   '/guides/annuity-calculator-when.html',
@@ -14277,6 +14280,7 @@ export const ALIAS_ROUTES = {
   '/av1-to-mp4-converter.html': '/video-tools/av1-to-mp4-converter.html',
   '/av1-to-webm-converter.html': '/video-tools/av1-to-webm-converter.html',
   '/annuity-calculator.html': '/utility-tools/annuity-calculator.html',
+  '/days-from-today-calculator.html': '/utility-tools/days-from-today-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -26117,6 +26121,10 @@ export const JSP_BY_ROUTE = {
   '/guides/de/annuity-calculator-when.html': 'guide/de/annuity-calculator-when.jsp',
   '/guides/de/annuity-calculator-step-by-step.html': 'guide/de/annuity-calculator-step-by-step.jsp',
   '/guides/de/annuity-calculator-vs-alternatives.html': 'guide/de/annuity-calculator-vs-alternatives.jsp',
+  '/utility-tools/days-from-today-calculator.html': 'utility/days-from-today-calculator.jsp',
+  '/guides/days-from-today-calculator-when.html': 'guide/days-from-today-calculator-when.jsp',
+  '/guides/days-from-today-calculator-step-by-step.html': 'guide/days-from-today-calculator-step-by-step.jsp',
+  '/guides/days-from-today-calculator-vs-alternatives.html': 'guide/days-from-today-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
