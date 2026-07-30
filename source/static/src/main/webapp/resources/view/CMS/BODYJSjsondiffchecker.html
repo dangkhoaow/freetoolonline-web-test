@@ -1,0 +1,173 @@
+<script>
+(function () {
+    'use strict';
+
+    // Pure-JS recursive JSON diff.
+    // Returns an array of {path, type:'added'|'removed'|'changed', origVal, modVal}.
+    function jsonDeepDiff(orig, mod, path) {
+        var results = [];
+        path = path || '';
+        if (orig === mod) return results;
+        var origType = getType(orig);
+        var modType  = getType(mod);
+        if (origType !== modType) {
+            results.push({ path: path || '(root)', type: 'changed', origVal: orig, modVal: mod });
+            return results;
+        }
+        if (origType === 'object') {
+            var allKeys = new Set(Object.keys(orig).concat(Object.keys(mod)));
+            allKeys.forEach(function (k) {
+                var childPath = path ? path + '.' + k : k;
+                if (!Object.prototype.hasOwnProperty.call(orig, k)) {
+                    results.push({ path: childPath, type: 'added', origVal: undefined, modVal: mod[k] });
+                } else if (!Object.prototype.hasOwnProperty.call(mod, k)) {
+                    results.push({ path: childPath, type: 'removed', origVal: orig[k], modVal: undefined });
+                } else {
+                    jsonDeepDiff(orig[k], mod[k], childPath).forEach(function (s) { results.push(s); });
+                }
+            });
+        } else if (origType === 'array') {
+            var len = Math.max(orig.length, mod.length);
+            for (var i = 0; i < len; i++) {
+                var aPath = path + '[' + i + ']';
+                if (i >= orig.length) {
+                    results.push({ path: aPath, type: 'added', origVal: undefined, modVal: mod[i] });
+                } else if (i >= mod.length) {
+                    results.push({ path: aPath, type: 'removed', origVal: orig[i], modVal: undefined });
+                } else {
+                    jsonDeepDiff(orig[i], mod[i], aPath).forEach(function (s) { results.push(s); });
+                }
+            }
+        } else {
+            results.push({ path: path || '(root)', type: 'changed', origVal: orig, modVal: mod });
+        }
+        return results;
+    }
+
+    function getType(val) {
+        if (val === null) return 'null';
+        if (Array.isArray(val)) return 'array';
+        return typeof val;
+    }
+
+    function formatVal(v) {
+        if (v === undefined) return '-';
+        if (v === null) return 'null';
+        if (typeof v === 'object') return JSON.stringify(v);
+        return String(v);
+    }
+
+    function escHtml(s) {
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function showError(msg) {
+        var err = document.getElementById('jdError');
+        var sum = document.getElementById('jdSummary');
+        var tbl = document.getElementById('jdTable');
+        var out = document.getElementById('jdOutput');
+        var btn = document.getElementById('jdCopyBtn');
+        if (sum) sum.style.display = 'none';
+        if (tbl) tbl.innerHTML = '';
+        if (err) { err.textContent = msg; err.style.display = 'block'; }
+        if (out) out.style.display = 'block';
+        if (btn) btn.style.display = 'none';
+    }
+
+    function runDiff() {
+        var leftRaw  = (document.getElementById('jdLeftInput')  || {}).value || '';
+        var rightRaw = (document.getElementById('jdRightInput') || {}).value || '';
+        var err = document.getElementById('jdError');
+        var sum = document.getElementById('jdSummary');
+        var tbl = document.getElementById('jdTable');
+        var out = document.getElementById('jdOutput');
+        if (err) err.style.display = 'none';
+        if (sum) sum.style.display = 'none';
+        if (tbl) tbl.innerHTML = '';
+        if (out) out.style.display = 'block';
+        var origObj, modObj;
+        try { origObj = JSON.parse(leftRaw  || '{}'); } catch (e) { showError('Original JSON parse error: ' + e.message); return; }
+        try { modObj  = JSON.parse(rightRaw || '{}'); } catch (e) { showError('Modified JSON parse error: ' + e.message);  return; }
+        var diffs = jsonDeepDiff(origObj, modObj, '');
+        var added   = diffs.filter(function (d) { return d.type === 'added';   }).length;
+        var removed = diffs.filter(function (d) { return d.type === 'removed'; }).length;
+        var changed = diffs.filter(function (d) { return d.type === 'changed'; }).length;
+        if (diffs.length === 0) {
+            if (sum) { sum.textContent = 'No differences found - the two JSON values are identical.'; sum.style.display = 'block'; }
+            var copyBtn = document.getElementById('jdCopyBtn');
+            if (copyBtn) copyBtn.style.display = 'none';
+            return;
+        }
+        if (sum) {
+            sum.innerHTML = '<strong>' + diffs.length + ' difference' + (diffs.length !== 1 ? 's' : '') + '</strong>: '
+                + added + ' added, ' + removed + ' removed, ' + changed + ' changed.';
+            sum.style.display = 'block';
+        }
+        var html = '<table class="w3-table w3-bordered w3-small" style="min-width:100%;border-collapse:collapse">'
+            + '<thead><tr>'
+            + '<th style="background:#f1f1f1;padding:6px 10px;text-align:left;white-space:nowrap">Path</th>'
+            + '<th style="background:#f1f1f1;padding:6px 10px;text-align:left;white-space:nowrap">Change</th>'
+            + '<th style="background:#f1f1f1;padding:6px 10px;text-align:left">Original</th>'
+            + '<th style="background:#f1f1f1;padding:6px 10px;text-align:left">Modified</th>'
+            + '</tr></thead><tbody>';
+        diffs.forEach(function (d) {
+            var bg = d.type === 'added' ? '#e8f5e9' : d.type === 'removed' ? '#ffebee' : '#fff8e1';
+            var badge = d.type === 'added'
+                ? '<span style="background:#388e3c;color:#fff;border-radius:3px;padding:1px 6px;font-size:0.82em">added</span>'
+                : d.type === 'removed'
+                ? '<span style="background:#c62828;color:#fff;border-radius:3px;padding:1px 6px;font-size:0.82em">removed</span>'
+                : '<span style="background:#f57c00;color:#fff;border-radius:3px;padding:1px 6px;font-size:0.82em">changed</span>';
+            html += '<tr style="background:' + bg + '">'
+                + '<td style="padding:5px 10px;font-family:monospace;word-break:break-all">' + escHtml(d.path) + '</td>'
+                + '<td style="padding:5px 10px;white-space:nowrap">' + badge + '</td>'
+                + '<td style="padding:5px 10px;font-family:monospace;word-break:break-all">' + escHtml(formatVal(d.origVal)) + '</td>'
+                + '<td style="padding:5px 10px;font-family:monospace;word-break:break-all">' + escHtml(formatVal(d.modVal)) + '</td>'
+                + '</tr>';
+        });
+        html += '</tbody></table>';
+        if (tbl) tbl.innerHTML = html;
+        var copyBtn2 = document.getElementById('jdCopyBtn');
+        if (copyBtn2) copyBtn2.style.display = 'inline-block';
+    }
+
+    function copyDiff() {
+        var tbl = document.getElementById('jdTable');
+        if (!tbl) return;
+        var rows = tbl.querySelectorAll('tbody tr');
+        var lines = ['Path\tChange\tOriginal\tModified'];
+        rows.forEach(function (tr) {
+            var cells = tr.querySelectorAll('td');
+            if (cells.length >= 4) {
+                lines.push([cells[0].textContent, cells[1].textContent.trim(), cells[2].textContent, cells[3].textContent].join('\t'));
+            }
+        });
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(lines.join('\n')).then(function () {
+                var btn = document.getElementById('jdCopyBtn');
+                if (btn) { btn.textContent = 'Copied!'; setTimeout(function () { btn.textContent = 'Copy Diff'; }, 2000); }
+            });
+        }
+    }
+
+    function doAfterPageRendered() {
+        var cmp = document.getElementById('jdCompareBtn');
+        var clr = document.getElementById('jdClearBtn');
+        var cpy = document.getElementById('jdCopyBtn');
+        if (cmp) cmp.addEventListener('click', runDiff);
+        if (clr) clr.addEventListener('click', function () {
+            ['jdLeftInput','jdRightInput'].forEach(function (id) {
+                var el = document.getElementById(id); if (el) el.value = '';
+            });
+            var out = document.getElementById('jdOutput');
+            if (out) out.style.display = 'none';
+        });
+        if (cpy) cpy.addEventListener('click', copyDiff);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', doAfterPageRendered);
+    } else {
+        doAfterPageRendered();
+    }
+}());
+</script>

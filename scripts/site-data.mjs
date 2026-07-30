@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/json-diff-checker-vs-alternatives.html',
+  '/guides/json-diff-checker-step-by-step.html',
+  '/guides/json-diff-checker-when.html',
+  '/guides/pt/json-diff-checker-step-by-step.html',
+  '/guides/pt/json-diff-checker-when.html',
+  '/guides/pt/json-diff-checker-vs-alternatives.html',
+  '/guides/es/json-diff-checker-step-by-step.html',
+  '/guides/es/json-diff-checker-when.html',
+  '/guides/es/json-diff-checker-vs-alternatives.html',
+  '/guides/vi/json-diff-checker-step-by-step.html',
+  '/guides/vi/json-diff-checker-when.html',
+  '/guides/vi/json-diff-checker-vs-alternatives.html',
+  '/guides/id/json-diff-checker-step-by-step.html',
+  '/guides/id/json-diff-checker-when.html',
+  '/guides/id/json-diff-checker-vs-alternatives.html',
+  '/guides/de/json-diff-checker-step-by-step.html',
+  '/guides/de/json-diff-checker-when.html',
+  '/guides/de/json-diff-checker-vs-alternatives.html',
   '/guides/xml-formatter-vs-alternatives.html',
   '/guides/xml-formatter-step-by-step.html',
   '/guides/xml-formatter-when.html',
@@ -14068,6 +14086,7 @@ export const ALIAS_ROUTES = {
   '/audio-speed-changer.html': '/video-tools/audio-speed-changer.html',
   '/lottery-number-generator.html': '/utility-tools/lottery-number-generator.html',
   '/xml-formatter.html': '/developer-tools/xml-formatter.html',
+  '/json-diff-checker.html': '/developer-tools/json-diff-checker.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -25718,6 +25737,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/xml-formatter-when.html': 'guide/de/xml-formatter-when.jsp',
   '/guides/de/xml-formatter-step-by-step.html': 'guide/de/xml-formatter-step-by-step.jsp',
   '/guides/de/xml-formatter-vs-alternatives.html': 'guide/de/xml-formatter-vs-alternatives.jsp',
+  '/developer-tools/json-diff-checker.html': 'utility/json-diff-checker.jsp',
+  '/guides/json-diff-checker-when.html': 'guide/json-diff-checker-when.jsp',
+  '/guides/json-diff-checker-step-by-step.html': 'guide/json-diff-checker-step-by-step.jsp',
+  '/guides/pt/json-diff-checker-step-by-step.html': 'guide/pt/json-diff-checker-step-by-step.jsp',
+  '/guides/pt/json-diff-checker-when.html': 'guide/pt/json-diff-checker-when.jsp',
+  '/guides/pt/json-diff-checker-vs-alternatives.html': 'guide/pt/json-diff-checker-vs-alternatives.jsp',
+  '/guides/es/json-diff-checker-step-by-step.html': 'guide/es/json-diff-checker-step-by-step.jsp',
+  '/guides/es/json-diff-checker-when.html': 'guide/es/json-diff-checker-when.jsp',
+  '/guides/es/json-diff-checker-vs-alternatives.html': 'guide/es/json-diff-checker-vs-alternatives.jsp',
+  '/guides/vi/json-diff-checker-step-by-step.html': 'guide/vi/json-diff-checker-step-by-step.jsp',
+  '/guides/vi/json-diff-checker-when.html': 'guide/vi/json-diff-checker-when.jsp',
+  '/guides/vi/json-diff-checker-vs-alternatives.html': 'guide/vi/json-diff-checker-vs-alternatives.jsp',
+  '/guides/id/json-diff-checker-step-by-step.html': 'guide/id/json-diff-checker-step-by-step.jsp',
+  '/guides/id/json-diff-checker-when.html': 'guide/id/json-diff-checker-when.jsp',
+  '/guides/id/json-diff-checker-vs-alternatives.html': 'guide/id/json-diff-checker-vs-alternatives.jsp',
+  '/guides/de/json-diff-checker-step-by-step.html': 'guide/de/json-diff-checker-step-by-step.jsp',
+  '/guides/de/json-diff-checker-when.html': 'guide/de/json-diff-checker-when.jsp',
+  '/guides/de/json-diff-checker-vs-alternatives.html': 'guide/de/json-diff-checker-vs-alternatives.jsp',
+  '/guides/json-diff-checker-vs-alternatives.html': 'guide/json-diff-checker-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
