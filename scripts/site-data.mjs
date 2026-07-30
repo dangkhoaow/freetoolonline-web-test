@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/retirement-calculator-vs-alternatives.html',
+  '/guides/retirement-calculator-step-by-step.html',
+  '/guides/retirement-calculator-when.html',
+  '/guides/pt/retirement-calculator-step-by-step.html',
+  '/guides/pt/retirement-calculator-when.html',
+  '/guides/pt/retirement-calculator-vs-alternatives.html',
+  '/guides/es/retirement-calculator-step-by-step.html',
+  '/guides/es/retirement-calculator-when.html',
+  '/guides/es/retirement-calculator-vs-alternatives.html',
+  '/guides/vi/retirement-calculator-step-by-step.html',
+  '/guides/vi/retirement-calculator-when.html',
+  '/guides/vi/retirement-calculator-vs-alternatives.html',
+  '/guides/id/retirement-calculator-step-by-step.html',
+  '/guides/id/retirement-calculator-when.html',
+  '/guides/id/retirement-calculator-vs-alternatives.html',
+  '/guides/de/retirement-calculator-step-by-step.html',
+  '/guides/de/retirement-calculator-when.html',
+  '/guides/de/retirement-calculator-vs-alternatives.html',
   '/guides/savings-goal-calculator-vs-alternatives.html',
   '/guides/savings-goal-calculator-step-by-step.html',
   '/guides/savings-goal-calculator-when.html',
@@ -14125,6 +14143,7 @@ export const ALIAS_ROUTES = {
   '/xml-formatter.html': '/developer-tools/xml-formatter.html',
   '/json-diff-checker.html': '/developer-tools/json-diff-checker.html',
   '/savings-goal-calculator.html': '/utility-tools/savings-goal-calculator.html',
+  '/retirement-calculator.html': '/utility-tools/retirement-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -25813,6 +25832,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/savings-goal-calculator-step-by-step.html': 'guide/de/savings-goal-calculator-step-by-step.jsp',
   '/guides/de/savings-goal-calculator-when.html': 'guide/de/savings-goal-calculator-when.jsp',
   '/guides/de/savings-goal-calculator-vs-alternatives.html': 'guide/de/savings-goal-calculator-vs-alternatives.jsp',
+  '/utility-tools/retirement-calculator.html': 'utility/retirement-calculator.jsp',
+  '/guides/retirement-calculator-when.html': 'guide/retirement-calculator-when.jsp',
+  '/guides/retirement-calculator-step-by-step.html': 'guide/retirement-calculator-step-by-step.jsp',
+  '/guides/retirement-calculator-vs-alternatives.html': 'guide/retirement-calculator-vs-alternatives.jsp',
+  '/guides/pt/retirement-calculator-step-by-step.html': 'guide/pt/retirement-calculator-step-by-step.jsp',
+  '/guides/pt/retirement-calculator-when.html': 'guide/pt/retirement-calculator-when.jsp',
+  '/guides/pt/retirement-calculator-vs-alternatives.html': 'guide/pt/retirement-calculator-vs-alternatives.jsp',
+  '/guides/es/retirement-calculator-step-by-step.html': 'guide/es/retirement-calculator-step-by-step.jsp',
+  '/guides/es/retirement-calculator-when.html': 'guide/es/retirement-calculator-when.jsp',
+  '/guides/es/retirement-calculator-vs-alternatives.html': 'guide/es/retirement-calculator-vs-alternatives.jsp',
+  '/guides/vi/retirement-calculator-step-by-step.html': 'guide/vi/retirement-calculator-step-by-step.jsp',
+  '/guides/vi/retirement-calculator-when.html': 'guide/vi/retirement-calculator-when.jsp',
+  '/guides/vi/retirement-calculator-vs-alternatives.html': 'guide/vi/retirement-calculator-vs-alternatives.jsp',
+  '/guides/id/retirement-calculator-step-by-step.html': 'guide/id/retirement-calculator-step-by-step.jsp',
+  '/guides/id/retirement-calculator-when.html': 'guide/id/retirement-calculator-when.jsp',
+  '/guides/id/retirement-calculator-vs-alternatives.html': 'guide/id/retirement-calculator-vs-alternatives.jsp',
+  '/guides/de/retirement-calculator-step-by-step.html': 'guide/de/retirement-calculator-step-by-step.jsp',
+  '/guides/de/retirement-calculator-when.html': 'guide/de/retirement-calculator-when.jsp',
+  '/guides/de/retirement-calculator-vs-alternatives.html': 'guide/de/retirement-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
