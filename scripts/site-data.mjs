@@ -14,9 +14,6 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
-  '/guides/simple-interest-calculator-vs-alternatives.html',
-  '/guides/simple-interest-calculator-step-by-step.html',
-  '/guides/simple-interest-calculator-when.html',
   '/guides/annuity-calculator-vs-alternatives.html',
   '/guides/annuity-calculator-step-by-step.html',
   '/guides/annuity-calculator-when.html',
@@ -14280,7 +14277,6 @@ export const ALIAS_ROUTES = {
   '/av1-to-mp4-converter.html': '/video-tools/av1-to-mp4-converter.html',
   '/av1-to-webm-converter.html': '/video-tools/av1-to-webm-converter.html',
   '/annuity-calculator.html': '/utility-tools/annuity-calculator.html',
-  '/simple-interest-calculator.html': '/utility-tools/simple-interest-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -26121,10 +26117,6 @@ export const JSP_BY_ROUTE = {
   '/guides/de/annuity-calculator-when.html': 'guide/de/annuity-calculator-when.jsp',
   '/guides/de/annuity-calculator-step-by-step.html': 'guide/de/annuity-calculator-step-by-step.jsp',
   '/guides/de/annuity-calculator-vs-alternatives.html': 'guide/de/annuity-calculator-vs-alternatives.jsp',
-  '/utility-tools/simple-interest-calculator.html': 'utility/simple-interest-calculator.jsp',
-  '/guides/simple-interest-calculator-when.html': 'guide/simple-interest-calculator-when.jsp',
-  '/guides/simple-interest-calculator-step-by-step.html': 'guide/simple-interest-calculator-step-by-step.jsp',
-  '/guides/simple-interest-calculator-vs-alternatives.html': 'guide/simple-interest-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
