@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/annuity-calculator-vs-alternatives.html',
+  '/guides/annuity-calculator-step-by-step.html',
+  '/guides/annuity-calculator-when.html',
+  '/guides/pt/annuity-calculator-when.html',
+  '/guides/pt/annuity-calculator-step-by-step.html',
+  '/guides/pt/annuity-calculator-vs-alternatives.html',
+  '/guides/es/annuity-calculator-when.html',
+  '/guides/es/annuity-calculator-step-by-step.html',
+  '/guides/es/annuity-calculator-vs-alternatives.html',
+  '/guides/vi/annuity-calculator-when.html',
+  '/guides/vi/annuity-calculator-step-by-step.html',
+  '/guides/vi/annuity-calculator-vs-alternatives.html',
+  '/guides/id/annuity-calculator-when.html',
+  '/guides/id/annuity-calculator-step-by-step.html',
+  '/guides/id/annuity-calculator-vs-alternatives.html',
+  '/guides/de/annuity-calculator-when.html',
+  '/guides/de/annuity-calculator-step-by-step.html',
+  '/guides/de/annuity-calculator-vs-alternatives.html',
   '/guides/av1-webm-converter-vs-alternatives.html',
   '/guides/av1-webm-converter-step-by-step.html',
   '/guides/av1-webm-converter-when.html',
@@ -14258,6 +14276,7 @@ export const ALIAS_ROUTES = {
   '/chart-maker.html': '/utility-tools/chart-maker.html',
   '/av1-to-mp4-converter.html': '/video-tools/av1-to-mp4-converter.html',
   '/av1-to-webm-converter.html': '/video-tools/av1-to-webm-converter.html',
+  '/annuity-calculator.html': '/utility-tools/annuity-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -26079,6 +26098,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/av1-webm-converter-when.html': 'guide/de/av1-webm-converter-when.jsp',
   '/guides/de/av1-webm-converter-step-by-step.html': 'guide/de/av1-webm-converter-step-by-step.jsp',
   '/guides/de/av1-webm-converter-vs-alternatives.html': 'guide/de/av1-webm-converter-vs-alternatives.jsp',
+  '/utility-tools/annuity-calculator.html': 'utility/annuity-calculator.jsp',
+  '/guides/annuity-calculator-when.html': 'guide/annuity-calculator-when.jsp',
+  '/guides/annuity-calculator-step-by-step.html': 'guide/annuity-calculator-step-by-step.jsp',
+  '/guides/annuity-calculator-vs-alternatives.html': 'guide/annuity-calculator-vs-alternatives.jsp',
+  '/guides/pt/annuity-calculator-when.html': 'guide/pt/annuity-calculator-when.jsp',
+  '/guides/pt/annuity-calculator-step-by-step.html': 'guide/pt/annuity-calculator-step-by-step.jsp',
+  '/guides/pt/annuity-calculator-vs-alternatives.html': 'guide/pt/annuity-calculator-vs-alternatives.jsp',
+  '/guides/es/annuity-calculator-when.html': 'guide/es/annuity-calculator-when.jsp',
+  '/guides/es/annuity-calculator-step-by-step.html': 'guide/es/annuity-calculator-step-by-step.jsp',
+  '/guides/es/annuity-calculator-vs-alternatives.html': 'guide/es/annuity-calculator-vs-alternatives.jsp',
+  '/guides/vi/annuity-calculator-when.html': 'guide/vi/annuity-calculator-when.jsp',
+  '/guides/vi/annuity-calculator-step-by-step.html': 'guide/vi/annuity-calculator-step-by-step.jsp',
+  '/guides/vi/annuity-calculator-vs-alternatives.html': 'guide/vi/annuity-calculator-vs-alternatives.jsp',
+  '/guides/id/annuity-calculator-when.html': 'guide/id/annuity-calculator-when.jsp',
+  '/guides/id/annuity-calculator-step-by-step.html': 'guide/id/annuity-calculator-step-by-step.jsp',
+  '/guides/id/annuity-calculator-vs-alternatives.html': 'guide/id/annuity-calculator-vs-alternatives.jsp',
+  '/guides/de/annuity-calculator-when.html': 'guide/de/annuity-calculator-when.jsp',
+  '/guides/de/annuity-calculator-step-by-step.html': 'guide/de/annuity-calculator-step-by-step.jsp',
+  '/guides/de/annuity-calculator-vs-alternatives.html': 'guide/de/annuity-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
