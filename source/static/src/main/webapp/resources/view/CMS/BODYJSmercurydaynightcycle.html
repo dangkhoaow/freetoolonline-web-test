@@ -148,6 +148,10 @@
     }
 
     // ================= MERCURY 3:2 RESONANCE ==========================================
+    // Shared time-scrub state: read by both the scene closure (t3dMercury) and
+    // the slider wiring in boot() - MUST live at script scope (ReferenceError fix).
+    var tScrub = 0;
+
     function t3dMercury(shell) {
         var THREE = shell.THREE, scene = shell.scene;
         scene.add(new THREE.AmbientLight(0xffffff, 0.3));
@@ -186,7 +190,7 @@
         mercury.add(terminator);
 
         var store = t3dLoadStore();
-        var tScrub = (store.mercuryTime !== undefined) ? store.mercuryTime : 0;
+        tScrub = (store.mercuryTime !== undefined) ? store.mercuryTime : 0;
 
         // Update function: called per frame
         return function animate(dt) {

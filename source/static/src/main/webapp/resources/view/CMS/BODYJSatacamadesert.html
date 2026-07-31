@@ -1,285 +1,83 @@
-<script>
-    // 3D scene archetype - Atacama Desert (atacama)
-    // Salt flat basin surrounded by rust-red dunes. Procedural three.js.
-    // Published figures (2026-07-31):
-    //   - Total area ~1,000,000 km² (Chile, Peru, Bolivia, Argentina)
-    //   - Annual rainfall <1 mm (driest place on Earth)
-    //   - Salar de Atacama ~3,000 km²
-    //   - Elevation 2,000-3,000 m
-    //   - Key minerals: copper, lithium, sodium chloride
+<script id="t3d-place-atacama-desert">
+'use strict';
+const STATE = {
+  scene: null, camera: null, renderer: null, terrain: null,
+  camTheta: 1.2, camPhi: 0.85, camRadius: 32, saltVisible: true, tempVisible: true,
+};
 
-    web.localUpload = false;
-    var T3D_SLUG = 'atacama';
-    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
-    function t3dDetectScene(slug) { return 'placesatacama'; }
+function fbm(x, y, octaves = 4, persistence = 0.5, scale = 1.0) {
+  let value = 0, amplitude = 1, frequency = 1, maxValue = 0;
+  for (let i = 0; i < octaves; i++) {
+    value += amplitude * Math.sin((x * frequency) * 0.1) * Math.cos((y * frequency) * 0.1);
+    maxValue += amplitude; amplitude *= persistence; frequency *= 2;
+  }
+  return (value / maxValue) * scale;
+}
 
-    function ftoLoadThree() {
-        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
-        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
-        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
-            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
-            return mod;
-        });
-        return window.__ftoThreePromise;
-    }
+function makeTerrain() {
+  const geom = new THREE.PlaneGeometry(140, 140, 160, 160);
+  geom.rotateX(-Math.PI / 2);
+  const positions = geom.attributes.position.array;
+  const colors = new Float32Array(positions.length);
 
-    function t3dStatus(text) {
-        var el = document.getElementById('t3dStatus');
-        if (el) el.textContent = text;
-    }
-    function t3dInfo(html) {
-        var el = document.getElementById('t3dInfoPanel');
-        if (el) el.innerHTML = html;
-    }
-    function t3dLoadStore() {
-        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
-        catch (e) { return {}; }
-    }
-    function t3dSaveStore(obj) {
-        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
-        catch (e) { t3dStatus('Could not save to browser storage - explorer still works.'); }
-    }
-    function t3dFullscreen(el) {
-        if (el.requestFullscreen) { el.requestFullscreen(); }
-        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
-        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
-        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
-    }
+  for (let i = 0; i < positions.length; i += 3) {
+    const x = positions[i], z = positions[i + 2];
+    let h = fbm(x, z, 5, 0.55, 8);
+    const riverDist = Math.abs(z * 0.3 - 5);
+    if (riverDist < 8) h -= 2 * Math.exp(-riverDist * riverDist / 20);
+    const isSalt = h < -1.5 && Math.random() < 0.15;
+    positions[i + 1] = Math.max(-0.5, h * 0.35);
+    const temp = (h + 8) / 16;
+    const r = isSalt ? 1.0 : (0.7 + temp * 0.2);
+    const g = isSalt ? 0.9 : (0.4 - temp * 0.1);
+    const b = isSalt ? 0.8 : (0.2 - temp * 0.15);
+    colors[i] = r; colors[i + 1] = g; colors[i + 2] = b;
+  }
 
-    function t3dShell(THREE, host, opts) {
-        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
-        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
-        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-        var scene = new THREE.Scene();
-        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
-        var orbit = {
-            target: new THREE.Vector3(0, opts.targetY || 0, 0),
-            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
-            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
-            minR: opts.minR || 4, maxR: opts.maxR || 400,
-        };
-        function applyCamera() {
-            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
-            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
-            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
-            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
-            camera.position.set(
-                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
-                orbit.target.y + orbit.radius * cp,
-                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
-            );
-            camera.lookAt(orbit.target);
-        }
-        host.innerHTML = '';
-        host.appendChild(renderer.domElement);
-        function resize() {
-            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
-            renderer.setSize(w, h, false);
-            camera.aspect = w / h;
-            camera.updateProjectionMatrix();
-        }
-        resize();
-        window.addEventListener('resize', resize);
-        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
-        var dragging = false, lastX = 0, lastY = 0;
-        host.addEventListener('pointerdown', function (e) {
-            dragging = true; lastX = e.clientX; lastY = e.clientY;
-            try { host.setPointerCapture(e.pointerId); } catch (err) {}
-        });
-        host.addEventListener('pointerup', function () { dragging = false; });
-        host.addEventListener('pointercancel', function () { dragging = false; });
-        host.addEventListener('pointermove', function (e) {
-            if (!dragging) return;
-            var dx = e.clientX - lastX, dy = e.clientY - lastY;
-            lastX = e.clientX; lastY = e.clientY;
-            orbit.goalTheta -= dx * 0.005;
-            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
-        });
-        host.addEventListener('wheel', function (e) {
-            e.preventDefault();
-            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
-        }, { passive: false });
-        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
-    }
+  geom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  const material = new THREE.MeshStandardMaterial({ vertexColors: true, metalness: 0.6, roughness: 0.8 });
+  const mesh = new THREE.Mesh(geom, material);
+  STATE.scene.add(mesh);
+  return mesh;
+}
 
-    function t3dScene(shell) {
-        var THREE = shell.THREE, scene = shell.scene;
-        shell.renderer.setClearColor(0x0a1220, 1);
-        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-        var key = new THREE.DirectionalLight(0xfff2d0, 0.95);
-        key.position.set(-10, 16, 8);
-        scene.add(key);
+function initScene() {
+  STATE.scene = new THREE.Scene();
+  STATE.scene.background = new THREE.Color(0x191919);
+  STATE.camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+  STATE.renderer = new THREE.WebGLRenderer({ antialias: true, canvas: document.getElementById('t3dCanvasHost') });
+  STATE.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  STATE.renderer.setSize(window.innerWidth, window.innerHeight);
+  const light = new THREE.DirectionalLight(0xffd89b, 1.2);
+  light.position.set(40, 60, 30);
+  STATE.scene.add(light);
+  STATE.scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+  STATE.terrain = makeTerrain();
+  renderFrame();
+}
 
-        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
-        function vnoise(x, z) {
-            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
-            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
-            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
-            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
-        }
-        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
-        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
-            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
-            geo.rotateX(-Math.PI / 2);
-            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
-            for (var i = 0; i < pos.count; i++) {
-                var x = pos.getX(i), z = pos.getZ(i);
-                var h = heightFn(x, z);
-                pos.setY(i, h);
-                colorFn(col, h, x, z);
-                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
-            }
-            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-            geo.computeVertexNormals();
-            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 }));
-        }
+function updateCamera() {
+  const x = STATE.camRadius * Math.sin(STATE.camTheta) * Math.cos(STATE.camPhi);
+  const y = STATE.camRadius * Math.sin(STATE.camPhi);
+  const z = STATE.camRadius * Math.cos(STATE.camTheta) * Math.cos(STATE.camPhi);
+  STATE.camera.position.set(x, y + 8, z);
+  STATE.camera.lookAt(0, 0, 0);
+}
 
-        var store = t3dLoadStore();
-        var reflectionOn = store.reflectionOn !== false;
-        var duneIntensity = store.duneIntensity || 1;
+function renderFrame() {
+  updateCamera();
+  STATE.renderer.render(STATE.scene, STATE.camera);
+  requestAnimationFrame(renderFrame);
+}
 
-        // Atacama Desert: salt flat basin + dune field
-        // Salt flat is a smooth white central depression, dunes rise around edges
-        var saltMesh = makeTerrain(24, 24, 120, 120, function(x, z) {
-            var dist = Math.sqrt(x * x + z * z);
-            // Central smooth basin (salt flat) ~8 units radius, smooth shore taper
-            if (dist < 8) { return -1.5 * (1 - (dist / 8)); }
-            // Gradual slope to rim
-            if (dist < 10) { return -1.5 * Math.pow(1 - (dist / 10), 0.8); }
-            return 0;
-        }, function(col, h) {
-            if (h < -0.5) { col.setHex(0xf5f5f0); } // Salt white
-            else if (h < 0) { col.setHex(0xe8e8e0); } // Salt edge
-            else { col.setHex(0xd9a574); } // Tan transition
-        });
-        scene.add(saltMesh);
-
-        // Dune field: fbm-based height with angle-keyed ridges
-        var duneColor = store.duneColor || 0xc44535; // Rust-red
-        var duneMesh = makeTerrain(24, 24, 140, 140, function(x, z) {
-            var dist = Math.sqrt(x * x + z * z);
-            if (dist < 10) return 0; // Inside salt flat, dunes flatten
-            // Outside salt flat, dunes rise with fbm + angle-based ridges
-            var angle = Math.atan2(z, x);
-            var ridge = Math.abs(Math.sin(angle * 8)) * 0.3; // Crescent ridge pattern
-            var noise = fbm((x + 100) * 0.7, (z + 100) * 0.7, 5) * 1.2;
-            var height = (ridge + noise * 0.6) * (dist - 10) / 5;
-            return Math.max(0, Math.min(2.5, height));
-        }, function(col) {
-            var baseRust = 0xc44535;
-            var lighter = 0xd96644;
-            var blend = 0.3 + Math.random() * 0.4;
-            var r = ((baseRust >> 16) & 0xff) * (1 - blend) + ((lighter >> 16) & 0xff) * blend;
-            var g = ((baseRust >> 8) & 0xff) * (1 - blend) + ((lighter >> 8) & 0xff) * blend;
-            var b = (baseRust & 0xff) * (1 - blend) + (lighter & 0xff) * blend;
-            col.setRGB(r / 255, g / 255, b / 255);
-            // Apply dune intensity multiplier
-            if (duneIntensity > 1) {
-                col.multiplyScalar(Math.min(1.3, 1 + (duneIntensity - 1) * 0.3));
-            }
-        });
-        scene.add(duneMesh);
-
-        // Optional reflection plane
-        var reflectionMesh = null;
-        function updateReflection() {
-            if (reflectionOn && !reflectionMesh) {
-                var reflGeo = new THREE.PlaneGeometry(16, 16);
-                reflGeo.rotateX(-Math.PI / 2);
-                reflGeo.translate(0, -0.1, 0);
-                var reflMat = new THREE.MeshStandardMaterial({
-                    color: 0xffffff, roughness: 0.1, metalness: 0.2, emissive: 0x888888
-                });
-                reflectionMesh = new THREE.Mesh(reflGeo, reflMat);
-                scene.add(reflectionMesh);
-            } else if (!reflectionOn && reflectionMesh) {
-                scene.remove(reflectionMesh);
-                reflectionMesh = null;
-            }
-        }
-        updateReflection();
-
-        t3dInfo('<h3>Atacama Desert</h3><p>Driest place on Earth. Salt flats and sand dunes.</p>');
-
-        var controls = document.getElementById('t3dAtcControls');
-        if (controls) controls.style.display = '';
-
-        var reflectionBtn = document.getElementById('t3dAtcReflectionBtn');
-        if (reflectionBtn) {
-            reflectionBtn.onclick = function() {
-                reflectionOn = !reflectionOn;
-                reflectionBtn.textContent = 'Salt reflection: ' + (reflectionOn ? 'On' : 'Off');
-                store.reflectionOn = reflectionOn;
-                t3dSaveStore(store);
-                updateReflection();
-            };
-        }
-
-        var duneBtn = document.getElementById('t3dAtcDuneBtn');
-        if (duneBtn) {
-            duneBtn.onclick = function() {
-                duneIntensity = duneIntensity < 1.5 ? 2 : 1;
-                duneBtn.textContent = 'Dune intensity: ' + (duneIntensity === 2 ? 'Sunset' : 'Normal');
-                store.duneIntensity = duneIntensity;
-                t3dSaveStore(store);
-                // Rebuild dune mesh with new color intensity
-                scene.remove(duneMesh);
-                duneMesh = makeTerrain(24, 24, 140, 140, function(x, z) {
-                    var dist = Math.sqrt(x * x + z * z);
-                    if (dist < 10) return 0;
-                    var angle = Math.atan2(z, x);
-                    var ridge = Math.abs(Math.sin(angle * 8)) * 0.3;
-                    var noise = fbm((x + 100) * 0.7, (z + 100) * 0.7, 5) * 1.2;
-                    var height = (ridge + noise * 0.6) * (dist - 10) / 5;
-                    return Math.max(0, Math.min(2.5, height));
-                }, function(col) {
-                    var baseRust = 0xc44535;
-                    var lighter = 0xd96644;
-                    var blend = 0.3 + Math.random() * 0.4;
-                    var r = ((baseRust >> 16) & 0xff) * (1 - blend) + ((lighter >> 16) & 0xff) * blend;
-                    var g = ((baseRust >> 8) & 0xff) * (1 - blend) + ((lighter >> 8) & 0xff) * blend;
-                    var b = (baseRust & 0xff) * (1 - blend) + (lighter & 0xff) * blend;
-                    col.setRGB(r / 255, g / 255, b / 255);
-                    if (duneIntensity > 1) {
-                        col.multiplyScalar(Math.min(1.3, 1 + (duneIntensity - 1) * 0.3));
-                    }
-                });
-                scene.add(duneMesh);
-            };
-        }
-
-        var fullscreenBtn = document.getElementById('t3dFullscreenBtn');
-        if (fullscreenBtn) {
-            fullscreenBtn.onclick = function() { t3dFullscreen(document.getElementById('t3dWrapper')); };
-        }
-
-        return { scene: scene, dispose: function() {} };
-    }
-
-    function t3dRun(THREE, host) {
-        var shell = t3dShell(THREE, host, { radius: 32, theta: 0.8, phi: 1.0, targetY: 0 });
-        var sceneObj = t3dScene(shell);
-        var lastTime = Date.now();
-        function frame() {
-            requestAnimationFrame(frame);
-            var now = Date.now();
-            shell.applyCamera();
-            shell.renderer.render(shell.scene, shell.camera);
-            lastTime = now;
-        }
-        frame();
-    }
-
-    function doAfterPageRendered() {
-        var host = document.getElementById('t3dCanvasHost');
-        if (!host) { t3dStatus('Canvas host not found'); return; }
-        ftoLoadThree().then(function(THREE) {
-            t3dRun(THREE, host);
-            t3dStatus('');
-        }).catch(function(err) {
-            t3dStatus('Error: ' + (err && err.message ? err.message : 'Three.js failed to load'));
-            console.error(err);
-        });
-    }
+document.addEventListener('DOMContentLoaded', () => {
+  initScene();
+  new ResizeObserver(() => {
+    const w = document.getElementById('t3dCanvasHost').parentElement.clientWidth;
+    const h = window.innerHeight;
+    STATE.renderer.setSize(w, h);
+    STATE.camera.aspect = w / h;
+    STATE.camera.updateProjectionMatrix();
+  }).observe(document.getElementById('t3dCanvasHost'));
+});
 </script>
