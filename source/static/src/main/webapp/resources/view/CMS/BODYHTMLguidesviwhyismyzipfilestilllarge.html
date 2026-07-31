@@ -1,0 +1,94 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Vì sao file ZIP của tôi vẫn nặng sau khi nén?</b></h1>
+    <p>Bạn nén một thư mục và mong nó nhỏ lại, nhưng file ZIP xuất ra gần như bằng nguyên bản. Đây không phải lỗi của công cụ - nó có nghĩa là các byte bạn đưa vào đã được nén sẵn từ trước. Hãy kiểm tra loại file trước, rồi xử lý đúng vài file thực sự có thể nén nhỏ hơn bằng <a href="/zip-tools/zip-file.html">ZIP File</a>.</p>
+    <p><time itemprop="dateReviewed" datetime="2026-07-31">Cập nhật lần cuối: 2026-07-31</time></p>
+    <address class="author"><a rel="author" href="/about-us.html">Ban biên tập freetoolonline.com</a></address>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Trả lời trong 30 giây.</b> ZIP dùng <code>deflate</code>, một thuật toán nén dùng chung. Nó chỉ nén được các byte còn dư thừa dữ liệu - văn bản thuần, CSV, ảnh chưa nén, mã nguồn. Nó không thể nén đáng kể các file JPG, PNG, MP4, HEIC, MP3, PDF hiện đại hay DOCX/XLSX/ODT, vì những định dạng này đã lưu dữ liệu ở dạng nén sẵn bên trong. Nếu file ZIP của bạn chứa toàn ảnh hoặc video, kích thước gần như không đổi là kết quả ĐÚNG và được mong đợi, không phải lỗi. Cách khắc phục là nén nội dung gốc trước - dùng <a href="/image-tools/compress-image.html">Compress Image</a> cho JPG/PNG, <a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> cho ảnh iPhone - rồi mới nén các file đã nhỏ hơn.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Trước tiên, kiểm tra thực sự có gì trong file nén</b></h2>
+    <p>Trước khi cho rằng công cụ bị lỗi, hãy sắp xếp thư mục gốc theo dung lượng và xem đuôi file của các file lớn nhất. Chỉ một bước kiểm tra này giải thích gần hết các trường hợp "ZIP không nhỏ lại":</p>
+    <table class="w3-table w3-bordered w3-small" style="margin:1em 0">
+        <tr><th>Loại file</th><th>Đã nén sẵn?</th><th>Mức giảm ZIP thường thấy</th></tr>
+        <tr><td>JPG, PNG (ảnh), HEIC, WebP</td><td>Có</td><td>0-3% (gần như không đổi)</td></tr>
+        <tr><td>MP4, MOV, WebM, MP3, AAC</td><td>Có</td><td>0-2%</td></tr>
+        <tr><td>PDF hiện đại, DOCX, XLSX, PPTX, ODT</td><td>Có (XML bên trong đã được nén)</td><td>2-8%</td></tr>
+        <tr><td>Văn bản thuần, CSV, JSON, file log, mã nguồn</td><td>Không</td><td>Nhỏ hơn 60-90%</td></tr>
+        <tr><td>BMP, TIFF chưa nén, WAV</td><td>Không</td><td>Nhỏ hơn 40-70%</td></tr>
+        <tr><td>Một file ZIP khác hoặc file đã nén sẵn</td><td>Có</td><td>0% (chỉ thêm phần header)</td></tr>
+    </table>
+    <p>Nếu các file lớn nhất trong thư mục của bạn là ảnh hoặc video, một file ZIP ra kích thước bằng 98% bản gốc chính là deflate đang hoạt động đúng như thiết kế - không có cài đặt ẩn nào thay đổi được điều này.</p>
+
+    <h2 class="text-uppercase"><b>Bốn nguyên nhân thực sự, theo thứ tự cần kiểm tra</b></h2>
+
+    <details class="faq-item">
+        <summary><b>Nguyên nhân 1: thư mục chủ yếu là ảnh, video hoặc PDF</b></summary>
+        <p>Đây là nguyên nhân của phần lớn các trường hợp báo "ZIP của tôi không nhỏ lại". JPG và HEIC đã loại bỏ dữ liệu hình ảnh dư thừa ngay khi chụp; MP4 và MOV đã dùng codec bù chuyển động; một file PDF hay DOCX hiện đại thực chất là một container giống ZIP với XML bên trong đã được nén sẵn. Nén thêm một lần deflate nữa lên những file này thì gần như không còn gì để loại bỏ. Cách khắc phục: nén nhỏ file gốc trước. Dùng <a href="/image-tools/compress-image.html">Compress Image</a> cho JPG/PNG ở mức chất lượng 70-80 (hầu như không nhìn thấy khác biệt), hoặc <a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> nếu nguồn là thư viện ảnh iPhone. Với video, hãy mã hóa lại qua <a href="/video-tools/video-converter.html">Video Converter</a> ở bitrate thấp hơn - nén ZIP không làm giảm dung lượng video.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary><b>Nguyên nhân 2: bạn nén một thư mục đã sẵn chứa file ZIP hoặc RAR</b></summary>
+        <p>File nén lồng nhau rất phổ biến khi một thư mục được tải về, giải nén rồi đóng gói lại mà không kiểm tra xem còn sót file .zip, .rar hay .7z bên trong không. Nén lại một file đã được nén sẵn không tiết kiệm được gì và chỉ thêm khoảng 30 byte phần đầu ZIP cho mỗi file. Hãy mở cấu trúc thư mục và tìm file nén còn sót lại trước khi nén lại; xóa hoặc giải nén nó trước.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary><b>Nguyên nhân 3: mức nén đã ở tối đa và gần như không đổi</b></summary>
+        <p>Đây là điều bình thường, không phải lỗi. Mức deflate 9 (tối đa) chỉ hơn mức mặc định 6 khoảng 1-5% trên nội dung thực sự có thể nén, và khoảng 0% trên nội dung đã nén sẵn. Nếu bạn nâng mức nén mà dung lượng gần như không đổi, điều đó xác nhận chính nội dung là yếu tố giới hạn, không phải cài đặt. Đọc <a href="/guides/how-to-choose-a-compression-level.html">How to choose a compression level</a> để hiểu mỗi mức nén thực sự mang lại gì.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary><b>Nguyên nhân 4: đặt mật khẩu khiến bạn nghĩ file sẽ nhỏ hơn</b></summary>
+        <p>Mã hóa file ZIP bằng mật khẩu không thay đổi dung lượng của nó - chỉ thêm một khoản chi phí cố định nhỏ cho mỗi file, không nén thêm gì cả. Nếu bạn thêm mật khẩu và mong file cũng nhỏ hơn, thì kỳ vọng đó mới là điều sai, không phải công cụ.</p>
+    </details>
+
+    <h2 class="text-uppercase"><b>Điều gì thực sự làm nhỏ một file ZIP chứa toàn ảnh hoặc video</b></h2>
+    <p>Nén lại, tăng mức nén hay đổi định dạng container đều không giúp được gì khi chính nội dung là yếu tố giới hạn. Cách duy nhất giảm được dung lượng cuối cùng một cách đáng tin cậy là: nén nhỏ từng file trước, sau đó mới đóng gói các phiên bản đã nhỏ hơn.</p>
+    <ol>
+        <li><b>Ảnh (JPG/PNG):</b> dùng <a href="/image-tools/compress-image.html">Compress Image</a> ở chất lượng 70-80. Một file JPG 4 MB thường giảm xuống 500-900 KB mà không thấy giảm chất lượng.</li>
+        <li><b>Ảnh HEIC từ iPhone:</b> dùng <a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> trước, vì nhiều người nhận và phần mềm nén cũ không mở được .heic; việc chuyển đổi cũng cho bạn thêm một cơ hội để chọn lại chất lượng JPG.</li>
+        <li><b>Video:</b> mã hóa lại qua <a href="/video-tools/video-converter.html">Video Converter</a> ở bitrate hoặc độ phân giải thấp hơn trước khi nén - ZIP không làm thay đổi dung lượng video.</li>
+        <li><b>PDF quét hoặc nhiều ảnh:</b> làm phẳng và nén lại ảnh bên trong thay vì chỉ dựa vào lớp nén ZIP; xem <a href="/guides/pdf-editing-ladder.html">PDF editing ladder</a> để biết thứ tự công cụ phù hợp.</li>
+        <li><b>Sau đó nén các file đã nhỏ hơn</b> bằng <a href="/zip-tools/zip-file.html">ZIP File</a> ở mức mặc định - mức 9 không mang lại thêm gì đáng kể khi đầu vào đã được nén nhỏ trước.</li>
+    </ol>
+    <p>Nếu bạn cần đạt đúng một giới hạn dung lượng cụ thể (giới hạn email 25 MB, form 100 KB), thứ tự nén trước vẫn áp dụng - xem <a href="/guides/en/how-to-compress-a-zip-file-to-a-specific-size.html">How to compress a ZIP file to a specific size</a> để có công thức theo từng giới hạn.</p>
+
+    <h2 class="text-uppercase"><b>Câu hỏi thường gặp</b></h2>
+    <details class="faq-item">
+        <summary><b>File ZIP của tôi ra kích thước LỚN HƠN thư mục gốc một chút. Có thể xảy ra không?</b></summary>
+        <p>Có, và điều này là bình thường với các file nén nhỏ chứa nội dung đã nén sẵn. Mỗi file trong một ZIP đều mang một phần header cố định nhỏ (khoảng 30-80 byte tùy độ dài tên file và metadata). Nếu các file gốc đã không thể nén thêm, phần chi phí này chỉ cộng thêm mà không có gì bị loại bỏ để bù lại - vì vậy một thư mục chứa vài ảnh JPG nhỏ có thể ra một file ZIP lớn hơn tổng dung lượng gốc vài byte.</p>
+    </details>
+    <details class="faq-item">
+        <summary><b>7z hay RAR có luôn nhỏ hơn ZIP với cùng file không?</b></summary>
+        <p>Chỉ khi nội dung có thể nén được. Thuật toán LZMA2 của 7z thường vượt deflate của ZIP tới 30-50% trên văn bản thuần, nhưng với ảnh, video hay tài liệu đã nén sẵn thì khoảng cách này gần như biến mất, vì không còn gì trong dữ liệu để cả hai thuật toán tận dụng. Đọc <a href="/guides/online-zip-vs-7z-vs-rar-which-to-pick.html">Online ZIP vs 7z vs RAR - which to pick</a> để biết khi nào nên đổi định dạng.</p>
+    </details>
+    <details class="faq-item">
+        <summary><b>Vì sao tính năng "nén" tích hợp trên máy tính lại cho kết quả giống công cụ ZIP trực tuyến?</b></summary>
+        <p>Vì cả hai đều dùng cùng thuật toán deflate ở mức mặc định tương tự. Công cụ không phải là biến số ở đây - nội dung file mới là biến số. Chuyển đổi giữa Finder, Windows Explorer, 7-Zip và một công cụ ZIP trực tuyến sẽ không cho kết quả khác biệt đáng kể trên cùng những file đã nén sẵn.</p>
+    </details>
+    <details class="faq-item">
+        <summary><b>Tôi cần file này nằm dưới một giới hạn dung lượng để gửi email hoặc lên form. Cách nhanh nhất là gì?</b></summary>
+        <p>Bỏ qua việc nén lại và nén trực tiếp bản thân file đó. Với một ảnh quá lớn, <a href="/image-tools/compress-image.html">Compress Image</a> ở chất lượng 60-70 thường đưa file xuống dưới hầu hết các giới hạn email hay form chỉ trong một bước; nén thêm một file đã nhỏ chỉ thêm lớp vỏ mà không có lợi ích thật.</p>
+    </details>
+
+    <h2 class="text-uppercase"><b>Liên quan</b></h2>
+    <ul>
+        <li><a href="/zip-tools/zip-file.html">ZIP File (nén / tạo file)</a> - tạo file nén sau khi nội dung đã được nén nhỏ.</li>
+        <li><a href="/image-tools/compress-image.html">Compress Image</a> - nén ảnh JPG / PNG trước khi đóng gói ZIP.</li>
+        <li><a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> - chuyển ảnh iPhone sang định dạng nhỏ hơn và mở được ở mọi nơi.</li>
+        <li><a href="/guides/en/how-to-compress-a-zip-file-to-a-specific-size.html">How to compress a ZIP file to a specific size</a> - công thức để đạt đúng một giới hạn (2 MB / 25 MB / 100 KB).</li>
+        <li><a href="/guides/how-to-compress-a-folder-for-email.html">How to compress a folder for email</a> - tham khảo giới hạn dung lượng theo từng nhà cung cấp email.</li>
+        <li><a href="/guides/how-to-choose-a-compression-level.html">How to choose a compression level</a> - mức 1, 6 và 9 thực sự khác nhau ra sao.</li>
+        <li><a href="/guides/online-zip-vs-7z-vs-rar-which-to-pick.html">Online ZIP vs 7z vs RAR - which to pick</a> - đánh đổi định dạng cho nội dung nén được và không nén được.</li>
+    </ul>
+</div>

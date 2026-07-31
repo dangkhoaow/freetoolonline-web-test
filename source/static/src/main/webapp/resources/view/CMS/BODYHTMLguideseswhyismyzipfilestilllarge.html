@@ -1,0 +1,94 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>¿Por qué mi archivo ZIP sigue siendo grande después de comprimirlo?</b></h1>
+    <p>Comprimiste una carpeta esperando que se redujera y el archivo salió casi del mismo tamaño que el original. Eso no es un fallo de la herramienta - significa que los bytes que introdujiste ya estaban comprimidos. Revisa primero los tipos de archivo y luego actúa sobre los dos o tres archivos que realmente se pueden reducir con <a href="/zip-tools/zip-file.html">ZIP File</a>.</p>
+    <p><time itemprop="dateReviewed" datetime="2026-07-31">Última revisión: 2026-07-31</time></p>
+    <address class="author"><a rel="author" href="/about-us.html">Equipo editorial de freetoolonline.com</a></address>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Respuesta en 30 segundos.</b> ZIP usa <code>deflate</code>, un compresor de uso general. Solo reduce bytes que todavía tienen redundancia - texto plano, CSV, imágenes sin comprimir, código fuente. No puede reducir de forma significativa archivos JPG, PNG, MP4, HEIC, MP3, PDF moderno o DOCX/XLSX/ODT, porque esos formatos ya guardan sus datos en una forma comprimida internamente. Si tu ZIP está lleno de fotos o videos, un tamaño casi idéntico al original es el resultado CORRECTO y esperado, no un fallo. La solución es reducir el contenido en sí primero - <a href="/image-tools/compress-image.html">Compress Image</a> para JPG/PNG, <a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> para fotos de iPhone - y después comprimir los archivos más pequeños.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Primero, revisa qué hay realmente dentro del archivo</b></h2>
+    <p>Antes de suponer que la herramienta falló, ordena la carpeta de origen por tamaño y observa las extensiones de los archivos más grandes. Esta única revisión explica casi todos los casos de "el ZIP no se redujo":</p>
+    <table class="w3-table w3-bordered w3-small" style="margin:1em 0">
+        <tr><th>Tipo de archivo</th><th>¿Ya comprimido?</th><th>Reducción tipica en ZIP</th></tr>
+        <tr><td>JPG, PNG (fotos), HEIC, WebP</td><td>Sí</td><td>0-3% (practicamente sin cambio)</td></tr>
+        <tr><td>MP4, MOV, WebM, MP3, AAC</td><td>Sí</td><td>0-2%</td></tr>
+        <tr><td>PDF moderno, DOCX, XLSX, PPTX, ODT</td><td>Sí (el XML interno ya está comprimido)</td><td>2-8%</td></tr>
+        <tr><td>Texto plano, CSV, JSON, logs, código fuente</td><td>No</td><td>60-90% más pequeño</td></tr>
+        <tr><td>BMP, TIFF sin comprimir, WAV</td><td>No</td><td>40-70% más pequeño</td></tr>
+        <tr><td>Otro ZIP o archivo ya comprimido</td><td>Sí</td><td>0% (solo añade una cabecera)</td></tr>
+    </table>
+    <p>Si los archivos más grandes de tu carpeta son fotos o videos, un ZIP que sale con el 98% del tamaño original es el deflate funcionando exactamente como debe - no existe una opción oculta que cambie esto.</p>
+
+    <h2 class="text-uppercase"><b>Las cuatro causas reales, en el orden en que hay que revisarlas</b></h2>
+
+    <details class="faq-item">
+        <summary><b>Causa 1: la carpeta es principalmente fotos, videos o PDFs</b></summary>
+        <p>Esta es la causa detrás de la gran mayoría de los reportes de "mi ZIP no se hizo más pequeño". JPG y HEIC ya descartan datos de imagen redundantes al capturar; MP4 y MOV ya usan codecs con compensación de movimiento; un PDF o DOCX moderno es en sí mismo un contenedor parecido a ZIP con XML ya comprimido dentro. Aplicar otra pasada de deflate a esto encuentra casi nada que eliminar. Solución: reduce los archivos de origen primero. Usa <a href="/image-tools/compress-image.html">Compress Image</a> en JPG/PNG con calidad 70-80 (visualmente sin pérdida en la mayoría de los usos), o <a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> si el origen es la biblioteca de fotos de un iPhone. Para video, vuelve a codificar con <a href="/video-tools/video-converter.html">Video Converter</a> a una tasa de bits menor - comprimir en ZIP no hace nada por el tamaño del video.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary><b>Causa 2: comprimiste una carpeta que ya contiene un ZIP o RAR</b></summary>
+        <p>Los archivos anidados son comunes cuando una carpeta fue descargada, extraída y vuelta a empaquetar sin verificar si quedaba un .zip, .rar o .7z adentro. Deflatear un archivo ya deflateado no genera ningún ahorro y solo añade unos 30 bytes de cabecera ZIP por archivo. Abre el árbol de carpetas y busca algún archivo comprimido olvidado antes de volver a comprimir; bórralo o extráelo primero.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary><b>Causa 3: el nivel de compresión ya estaba al máximo y apenas cambió</b></summary>
+        <p>Esto es esperado, no un problema. El nivel 9 de deflate (máximo) gana 1-5% sobre el nivel predeterminado 6 en contenido genuinamente comprimible, y aproximadamente 0% en contenido ya comprimido. Si subiste el nivel y el tamaño apenas cambió, eso confirma que el contenido mismo es el limitante, no la configuración. Lee <a href="/guides/how-to-choose-a-compression-level.html">How to choose a compression level</a> para entender qué te da realmente cada nivel.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary><b>Causa 4: la protección con contraseña te hizo esperar un archivo más pequeño</b></summary>
+        <p>Cifrar un ZIP con contraseña no cambia nada su tamaño - añade una pequeña sobrecarga fija por archivo, no comprime nada adicional. Si añadiste una contraseña y esperabas que el archivo también se hiciera más pequeño, esa expectativa era el error, no la herramienta.</p>
+    </details>
+
+    <h2 class="text-uppercase"><b>Qué reduce realmente un ZIP lleno de fotos o videos</b></h2>
+    <p>Volver a comprimir, subir el nivel o cambiar el formato del contenedor no ayuda cuando el contenido es el limitante. El único flujo de trabajo que reduce el tamaño final de forma confiable es: reducir los archivos individuales primero y después archivar las versiones más pequeñas.</p>
+    <ol>
+        <li><b>Fotos (JPG/PNG):</b> usa <a href="/image-tools/compress-image.html">Compress Image</a> con calidad 70-80. Un JPG de 4 MB suele quedar en 500-900 KB sin pérdida visible.</li>
+        <li><b>Fotos HEIC de iPhone:</b> usa <a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> primero, ya que muchos destinatarios y archivadores antiguos ni siquiera pueden abrir .heic; convertir también da una segunda oportunidad para ajustar la calidad del JPG.</li>
+        <li><b>Video:</b> vuelve a codificar con <a href="/video-tools/video-converter.html">Video Converter</a> a una tasa de bits o resolución menor antes de comprimir - ZIP no cambia el tamaño del video.</li>
+        <li><b>PDFs escaneados o con muchas imágenes:</b> aplana y recomprime las imágenes internas en lugar de confiar en el envoltorio ZIP; consulta <a href="/guides/pdf-editing-ladder.html">PDF editing ladder</a> para el orden correcto de herramientas.</li>
+        <li><b>Luego comprime los archivos más pequeños</b> con <a href="/zip-tools/zip-file.html">ZIP File</a> en el nivel predeterminado - el nivel 9 no aporta nada significativo una vez que las entradas ya se redujeron.</li>
+    </ol>
+    <p>Si necesitas llegar a un límite exacto de tamaño (un límite de 25 MB en el correo, un formulario de 100 KB), aplica el mismo orden de reducir primero - consulta <a href="/guides/en/how-to-compress-a-zip-file-to-a-specific-size.html">How to compress a ZIP file to a specific size</a> para recetas por límite.</p>
+
+    <h2 class="text-uppercase"><b>Preguntas frecuentes</b></h2>
+    <details class="faq-item">
+        <summary><b>Mi ZIP salió un poco MÁS GRANDE que la carpeta original. ¿Es posible?</b></summary>
+        <p>Sí, y es normal en archivos pequeños de contenido ya comprimido. Cada archivo dentro de un ZIP lleva una pequeña cabecera fija (unos 30-80 bytes según el largo del nombre y los metadatos). Si los archivos ya eran incompresibles, esa sobrecarga por archivo es pura suma sin nada eliminado que la compense - así que una carpeta con unas pocas fotos JPG pequeñas puede generar un ZIP unos cuantos bytes más grande que la suma de los originales.</p>
+    </details>
+    <details class="faq-item">
+        <summary><b>¿El 7z o RAR siempre es más pequeño que el ZIP para los mismos archivos?</b></summary>
+        <p>Solo en contenido comprimible. El algoritmo LZMA2 de 7z suele superar al deflate de ZIP en un 30-50% en texto plano, pero en fotos, videos o documentos ya comprimidos la diferencia prácticamente desaparece, porque no queda nada en los bytes que ninguno de los dos algoritmos pueda aprovechar. Lee <a href="/guides/online-zip-vs-7z-vs-rar-which-to-pick.html">Online ZIP vs 7z vs RAR - which to pick</a> para saber cuándo vale la pena cambiar de formato.</p>
+    </details>
+    <details class="faq-item">
+        <summary><b>¿Por qué la función de "comprimir" de mi computadora da el mismo resultado que una herramienta ZIP en línea?</b></summary>
+        <p>Porque ambas usan el mismo algoritmo deflate en un nivel predeterminado similar. La herramienta no es la variable aquí - el contenido del archivo lo es. Alternar entre Finder, Windows Explorer, 7-Zip y una herramienta ZIP en línea no producirá un resultado muy diferente en los mismos archivos ya comprimidos.</p>
+    </details>
+    <details class="faq-item">
+        <summary><b>Necesito que este archivo específico quede bajo un límite de tamaño para correo o un formulario. ¿Cuál es la corrección más rápida?</b></summary>
+        <p>Salta la recompresión y reduce el archivo mismo. Para una sola foto demasiado grande, <a href="/image-tools/compress-image.html">Compress Image</a> con calidad 60-70 suele dejarla muy por debajo de la mayoría de los límites de correo o formulario en un solo paso; comprimir después un archivo ya pequeño solo añade un envoltorio, sin ganancia real.</p>
+    </details>
+
+    <h2 class="text-uppercase"><b>Relacionados</b></h2>
+    <ul>
+        <li><a href="/zip-tools/zip-file.html">ZIP File (comprimir / crear)</a> - crea el archivo una vez que el contenido ya está reducido.</li>
+        <li><a href="/image-tools/compress-image.html">Compress Image</a> - reduce fotos JPG / PNG antes de comprimir.</li>
+        <li><a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> - convierte fotos de iPhone a un formato más pequeño y universalmente abrible.</li>
+        <li><a href="/guides/en/how-to-compress-a-zip-file-to-a-specific-size.html">How to compress a ZIP file to a specific size</a> - recetas para llegar a un límite exacto (2 MB / 25 MB / 100 KB).</li>
+        <li><a href="/guides/how-to-compress-a-folder-for-email.html">How to compress a folder for email</a> - referencia de límites por proveedor de correo.</li>
+        <li><a href="/guides/how-to-choose-a-compression-level.html">How to choose a compression level</a> - qué cambian realmente los niveles 1, 6 y 9.</li>
+        <li><a href="/guides/online-zip-vs-7z-vs-rar-which-to-pick.html">Online ZIP vs 7z vs RAR - which to pick</a> - compensaciones de formato para contenido comprimible e incompresible.</li>
+    </ul>
+</div>

@@ -1904,6 +1904,13 @@ export const INFO_ROUTES = new Set([
   // Upper-funnel routing to the frozen ZIP cluster without modifying any
   // zip satellite.
   '/guides/en/how-to-compress-a-folder-for-email.html',
+  // evidence-led-expansion-runbook fire 3, Stream D - "zip file not smaller" /
+  // "why is my zip file still large" troubleshooting guide (0.21% CTR intent
+  // gap on how-to-compress-a-folder per seo-reports/20260731-669 keyword pull).
+  // Cannibalization pre-check cleared: no existing route covers the
+  // "compression barely moved the size" diagnostic angle (distinct from the
+  // "how to compress" / "specific size" / "zip vs 7z" siblings).
+  '/guides/en/why-is-my-zip-file-still-large.html',
   // Phase 11 Cycle 5 P11.2.1 - device-test-checklist guide (Phase 10 P10.3.5
   // carryover; upper-funnel routing for device-test cluster).
   '/guides/en/device-test-checklist-for-remote-work.html',
@@ -2664,6 +2671,8 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html', '/guides/es/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html', '/guides/vi/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html', '/guides/id/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html', '/guides/de/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html',
   '/guides/pt/file-compressor-vs-zip-what-to-pick.html', '/guides/es/file-compressor-vs-zip-what-to-pick.html', '/guides/vi/file-compressor-vs-zip-what-to-pick.html', '/guides/id/file-compressor-vs-zip-what-to-pick.html', '/guides/de/file-compressor-vs-zip-what-to-pick.html',
   '/guides/pt/how-to-compress-a-folder-for-email.html', '/guides/es/how-to-compress-a-folder-for-email.html', '/guides/vi/how-to-compress-a-folder-for-email.html', '/guides/id/how-to-compress-a-folder-for-email.html', '/guides/de/how-to-compress-a-folder-for-email.html',
+  // evidence-led-expansion-runbook fire 3, Stream D - locale fanout for why-is-my-zip-file-still-large
+  '/guides/pt/why-is-my-zip-file-still-large.html', '/guides/es/why-is-my-zip-file-still-large.html', '/guides/vi/why-is-my-zip-file-still-large.html', '/guides/id/why-is-my-zip-file-still-large.html', '/guides/de/why-is-my-zip-file-still-large.html',
   // plan-warm-pascal-v3 S2 batch 25 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/gif-frame-extractor-output-looks-wrong-three-causes.html', '/guides/es/gif-frame-extractor-output-looks-wrong-three-causes.html', '/guides/vi/gif-frame-extractor-output-looks-wrong-three-causes.html', '/guides/id/gif-frame-extractor-output-looks-wrong-three-causes.html', '/guides/de/gif-frame-extractor-output-looks-wrong-three-causes.html',
   '/guides/pt/heic-to-jpg-claims-what-actually-works.html', '/guides/es/heic-to-jpg-claims-what-actually-works.html', '/guides/vi/heic-to-jpg-claims-what-actually-works.html', '/guides/id/heic-to-jpg-claims-what-actually-works.html', '/guides/de/heic-to-jpg-claims-what-actually-works.html',
@@ -13454,6 +13463,7 @@ export const ALIAS_ROUTES = {
   '/guides/how-to-compress-a-file-online.html': '/guides/en/how-to-compress-a-file-online.html',
   '/guides/how-to-compress-a-folder-for-email.html': '/guides/en/how-to-compress-a-folder-for-email.html',
   '/guides/how-to-compress-a-folder.html': '/guides/en/how-to-compress-a-folder.html',
+  '/guides/why-is-my-zip-file-still-large.html': '/guides/en/why-is-my-zip-file-still-large.html',
   '/guides/how-to-compress-a-jpg-for-email-attachment-limits.html': '/guides/en/how-to-compress-a-jpg-for-email-attachment-limits.html',
   '/guides/how-to-compress-a-zip-file-to-a-specific-size.html': '/guides/en/how-to-compress-a-zip-file-to-a-specific-size.html',
   '/guides/how-to-compress-a-zip-file.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
@@ -14520,6 +14530,8 @@ export const JSP_BY_ROUTE = {
   '/guides/en/when-to-compress-vs-convert-an-image.html': 'guide/en/when-to-compress-vs-convert-an-image.jsp',
   // Phase 11 Cycle 4 P11.3.3.
   '/guides/en/how-to-compress-a-folder-for-email.html': 'guide/en/how-to-compress-a-folder-for-email.jsp',
+  // evidence-led-expansion-runbook fire 3.
+  '/guides/en/why-is-my-zip-file-still-large.html': 'guide/en/why-is-my-zip-file-still-large.jsp',
   // Phase 11 Cycle 5 P11.2.1 + P11.3.5.
   '/guides/en/device-test-checklist-for-remote-work.html': 'guide/en/device-test-checklist-for-remote-work.jsp',
   '/guides/en/pdf-editing-ladder.html': 'guide/en/pdf-editing-ladder.jsp',
@@ -15005,6 +15017,7 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html': 'guide/pt/ffmpeg-online-vs-local-ffmpeg-when-each-wins.jsp', '/guides/es/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html': 'guide/es/ffmpeg-online-vs-local-ffmpeg-when-each-wins.jsp', '/guides/vi/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html': 'guide/vi/ffmpeg-online-vs-local-ffmpeg-when-each-wins.jsp', '/guides/id/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html': 'guide/id/ffmpeg-online-vs-local-ffmpeg-when-each-wins.jsp', '/guides/de/ffmpeg-online-vs-local-ffmpeg-when-each-wins.html': 'guide/de/ffmpeg-online-vs-local-ffmpeg-when-each-wins.jsp',
   '/guides/pt/file-compressor-vs-zip-what-to-pick.html': 'guide/pt/file-compressor-vs-zip-what-to-pick.jsp', '/guides/es/file-compressor-vs-zip-what-to-pick.html': 'guide/es/file-compressor-vs-zip-what-to-pick.jsp', '/guides/vi/file-compressor-vs-zip-what-to-pick.html': 'guide/vi/file-compressor-vs-zip-what-to-pick.jsp', '/guides/id/file-compressor-vs-zip-what-to-pick.html': 'guide/id/file-compressor-vs-zip-what-to-pick.jsp', '/guides/de/file-compressor-vs-zip-what-to-pick.html': 'guide/de/file-compressor-vs-zip-what-to-pick.jsp',
   '/guides/pt/how-to-compress-a-folder-for-email.html': 'guide/pt/how-to-compress-a-folder-for-email.jsp', '/guides/es/how-to-compress-a-folder-for-email.html': 'guide/es/how-to-compress-a-folder-for-email.jsp', '/guides/vi/how-to-compress-a-folder-for-email.html': 'guide/vi/how-to-compress-a-folder-for-email.jsp', '/guides/id/how-to-compress-a-folder-for-email.html': 'guide/id/how-to-compress-a-folder-for-email.jsp', '/guides/de/how-to-compress-a-folder-for-email.html': 'guide/de/how-to-compress-a-folder-for-email.jsp',
+  '/guides/pt/why-is-my-zip-file-still-large.html': 'guide/pt/why-is-my-zip-file-still-large.jsp', '/guides/es/why-is-my-zip-file-still-large.html': 'guide/es/why-is-my-zip-file-still-large.jsp', '/guides/vi/why-is-my-zip-file-still-large.html': 'guide/vi/why-is-my-zip-file-still-large.jsp', '/guides/id/why-is-my-zip-file-still-large.html': 'guide/id/why-is-my-zip-file-still-large.jsp', '/guides/de/why-is-my-zip-file-still-large.html': 'guide/de/why-is-my-zip-file-still-large.jsp',
   // plan-warm-pascal-v3 S2 batch 25 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/pt/gif-frame-extractor-output-looks-wrong-three-causes.jsp', '/guides/es/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/es/gif-frame-extractor-output-looks-wrong-three-causes.jsp', '/guides/vi/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/vi/gif-frame-extractor-output-looks-wrong-three-causes.jsp', '/guides/id/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/id/gif-frame-extractor-output-looks-wrong-three-causes.jsp', '/guides/de/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/de/gif-frame-extractor-output-looks-wrong-three-causes.jsp',
   '/guides/pt/heic-to-jpg-claims-what-actually-works.html': 'guide/pt/heic-to-jpg-claims-what-actually-works.jsp', '/guides/es/heic-to-jpg-claims-what-actually-works.html': 'guide/es/heic-to-jpg-claims-what-actually-works.jsp', '/guides/vi/heic-to-jpg-claims-what-actually-works.html': 'guide/vi/heic-to-jpg-claims-what-actually-works.jsp', '/guides/id/heic-to-jpg-claims-what-actually-works.html': 'guide/id/heic-to-jpg-claims-what-actually-works.jsp', '/guides/de/heic-to-jpg-claims-what-actually-works.html': 'guide/de/heic-to-jpg-claims-what-actually-works.jsp',

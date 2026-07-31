@@ -1,0 +1,95 @@
+<style>
+    /* collapsible FAQ disclosure widget. Default-collapsed; chevron-left indicator. */
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Why is my ZIP file still large after compressing it?</b></h1>
+    <p>You zipped a folder expecting it to shrink and the archive came out almost the same size as the original. That is not a broken tool - it means the bytes you fed in were already compressed. Check the file types first, then act on the two or three files that are actually shrinkable with <a href="/zip-tools/zip-file.html">ZIP File</a>.</p>
+    <p><time itemprop="dateReviewed" datetime="2026-07-31">Last reviewed: 2026-07-31</time></p>
+    <address class="author"><a rel="author" href="/about-us.html">freetoolonline.com Editorial Team</a></address>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>30-second answer.</b> ZIP uses <code>deflate</code>, a general-purpose compressor. It only shrinks bytes that still have redundancy in them - plain text, CSV, uncompressed images, source code. It cannot meaningfully shrink JPG, PNG, MP4, HEIC, MP3, modern PDF, or DOCX/XLSX/ODT, because those formats already store their data in a compressed inner form. If your ZIP is full of photos or video, a near-1:1 size is the CORRECT and expected result, not a failure. The fix is to shrink the actual content first - <a href="/image-tools/compress-image.html">Compress Image</a> for JPG/PNG, <a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> for iPhone photos - then zip the smaller files.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>First, check what is actually inside the archive</b></h2>
+    <p>Before assuming the tool failed, sort the source folder by file size and look at the extensions of the largest few files. This single check explains almost every "ZIP did not shrink" report:</p>
+    <table class="w3-table w3-bordered w3-small" style="margin:1em 0">
+        <tr><th>File type</th><th>Already compressed?</th><th>Typical ZIP shrink</th></tr>
+        <tr><td>JPG, PNG (photos), HEIC, WebP</td><td>Yes</td><td>0-3% (essentially no change)</td></tr>
+        <tr><td>MP4, MOV, WebM, MP3, AAC</td><td>Yes</td><td>0-2%</td></tr>
+        <tr><td>Modern PDF, DOCX, XLSX, PPTX, ODT</td><td>Yes (inner XML is deflated already)</td><td>2-8%</td></tr>
+        <tr><td>Plain text, CSV, JSON, log files, source code</td><td>No</td><td>60-90% smaller</td></tr>
+        <tr><td>BMP, uncompressed TIFF, WAV</td><td>No</td><td>40-70% smaller</td></tr>
+        <tr><td>Another ZIP or already-compressed archive</td><td>Yes</td><td>0% (adds a header, nothing removed)</td></tr>
+    </table>
+    <p>If the largest files in your folder are photos or video, a ZIP that comes out at 98% of the original size is deflate working exactly as designed - there is no hidden setting that changes this.</p>
+
+    <h2 class="text-uppercase"><b>The four real causes, in the order to check them</b></h2>
+
+    <details class="faq-item">
+        <summary><b>Cause 1: the folder is mostly photos, video, or PDFs</b></summary>
+        <p>This is the cause behind the large majority of "my ZIP is not smaller" reports. JPG and HEIC already discard redundant image data during capture; MP4 and MOV already use motion-compensated codecs; a modern PDF or DOCX is itself a ZIP-like container with deflated XML inside. Feeding these into another deflate pass finds almost nothing left to remove. Fix: shrink the source files first. Run <a href="/image-tools/compress-image.html">Compress Image</a> on JPG/PNG at quality 70-80 (visually lossless for most uses), or <a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> if the source is an iPhone photo library. For video, re-encode through <a href="/video-tools/video-converter.html">Video Converter</a> at a lower bitrate - zipping does nothing for video size.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary><b>Cause 2: you zipped a folder that already contains a ZIP or RAR</b></summary>
+        <p>Nested archives are common when a folder was downloaded, extracted, and re-packed without checking for a leftover .zip, .rar, or .7z inside. Deflating an already-deflated archive produces zero savings and just adds ~30 bytes of ZIP header per file. Open the folder tree and look for a stray archive file before re-zipping; delete or extract it first.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary><b>Cause 3: the compression level was already at maximum and it still barely moved</b></summary>
+        <p>This is expected, not a bug. Deflate level 9 (maximum) gains 1-5% over the default level 6 on genuinely compressible content, and roughly 0% on already-compressed content. If you raised the level and the size barely changed, that confirms the content itself is the limiter, not the setting. Read <a href="/guides/how-to-choose-a-compression-level.html">How to choose a compression level</a> for what each level actually buys you.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary><b>Cause 4: password protection made you expect a smaller file</b></summary>
+        <p>Encrypting a ZIP with a password changes nothing about its size - it adds a small fixed overhead per file, it does not compress anything further. If you added a password and expected the archive to also get smaller, that expectation was the mismatch, not the tool.</p>
+    </details>
+
+    <h2 class="text-uppercase"><b>What actually shrinks a ZIP full of photos or video</b></h2>
+    <p>Re-zipping, raising the level, or switching container format will not help when the content is the limiter. The only workflow that reliably reduces the final size is: shrink the individual files first, then archive the smaller versions.</p>
+    <ol>
+        <li><b>Photos (JPG/PNG):</b> run <a href="/image-tools/compress-image.html">Compress Image</a> at quality 70-80. A 4 MB JPG typically lands at 500-900 KB with no visible loss.</li>
+        <li><b>iPhone HEIC photos:</b> run <a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> first, since most recipients and older archivers cannot even open .heic; converting also gives you a second chance to set JPG quality.</li>
+        <li><b>Video:</b> re-encode through <a href="/video-tools/video-converter.html">Video Converter</a> at a lower bitrate or resolution before zipping - ZIP will not touch video size.</li>
+        <li><b>Scanned or image-heavy PDFs:</b> flatten and recompress the embedded images rather than relying on the ZIP wrapper; see the <a href="/guides/pdf-editing-ladder.html">PDF editing ladder</a> for the right tool order.</li>
+        <li><b>Then zip the smaller files</b> with <a href="/zip-tools/zip-file.html">ZIP File</a> at the default level - level 9 will not add anything meaningful once the inputs are already shrunk.</li>
+    </ol>
+    <p>If you need to hit an exact size cap (a 25 MB email limit, a 100 KB upload form), the same shrink-first order applies - see <a href="/guides/en/how-to-compress-a-zip-file-to-a-specific-size.html">How to compress a ZIP file to a specific size</a> for per-cap recipes.</p>
+
+    <h2 class="text-uppercase"><b>FAQ</b></h2>
+    <details class="faq-item">
+        <summary><b>My ZIP came out slightly BIGGER than the original folder. Is that possible?</b></summary>
+        <p>Yes, and it is normal for small archives of already-compressed files. Every file inside a ZIP carries a small fixed header (roughly 30-80 bytes depending on filename length and metadata). If the files were already incompressible, that per-file overhead is pure addition with nothing removed to offset it - so a folder of a few small JPGs can zip to a file a few dozen bytes larger than the sum of the originals.</p>
+    </details>
+    <details class="faq-item">
+        <summary><b>Is 7z or RAR always smaller than ZIP for the same files?</b></summary>
+        <p>Only on compressible content. 7z's LZMA2 algorithm often beats ZIP's deflate by 30-50% on plain text, but on photos, video, or already-compressed documents the gap disappears to near zero, because there is nothing left in the bytes for either algorithm to exploit. Read <a href="/guides/online-zip-vs-7z-vs-rar-which-to-pick.html">Online ZIP vs 7z vs RAR - which to pick</a> for when the format swap is worth it.</p>
+    </details>
+    <details class="faq-item">
+        <summary><b>Why does my computer's built-in "compress" feature give the same result as an online ZIP tool?</b></summary>
+        <p>Because both use the same deflate algorithm at a similar default level. The tool is not the variable here - the file content is. Switching between Finder, Windows Explorer, 7-Zip, and an online ZIP tool will not produce a meaningfully different result on the same already-compressed files.</p>
+    </details>
+    <details class="faq-item">
+        <summary><b>I need this specific file under a size limit for email or a portal. What is the fastest fix?</b></summary>
+        <p>Skip re-zipping entirely and shrink the file itself. For a single oversized photo, <a href="/image-tools/compress-image.html">Compress Image</a> at quality 60-70 usually gets you well under most email or portal caps in one step; zipping a single already-small file afterward adds nothing but a wrapper.</p>
+    </details>
+
+    <h2 class="text-uppercase"><b>Related</b></h2>
+    <ul>
+        <li><a href="/zip-tools/zip-file.html">ZIP File (compress / create)</a> - build the archive once the contents are already shrunk.</li>
+        <li><a href="/image-tools/compress-image.html">Compress Image</a> - shrink JPG / PNG photos before zipping.</li>
+        <li><a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> - convert iPhone photos to a smaller, universally-openable format.</li>
+        <li><a href="/guides/en/how-to-compress-a-zip-file-to-a-specific-size.html">How to compress a ZIP file to a specific size</a> - recipes for hitting an exact cap (2 MB / 25 MB / 100 KB).</li>
+        <li><a href="/guides/how-to-compress-a-folder-for-email.html">How to compress a folder for email</a> - per-mailbox size-cap reference.</li>
+        <li><a href="/guides/how-to-choose-a-compression-level.html">How to choose a compression level</a> - what level 1 vs 6 vs 9 actually changes.</li>
+        <li><a href="/guides/online-zip-vs-7z-vs-rar-which-to-pick.html">Online ZIP vs 7z vs RAR - which to pick</a> - format trade-offs for compressible vs incompressible content.</li>
+    </ul>
+</div>

@@ -1,0 +1,94 @@
+<style>
+    details.faq-item { margin: 8px 0; border-bottom: 1px solid #e0e0e0; padding: 6px 0; }
+    details.faq-item > summary { list-style: none; cursor: pointer; padding: 8px 0 8px 28px; position: relative; font-weight: 600; }
+    details.faq-item > summary::-webkit-details-marker { display: none; }
+    details.faq-item > summary::before { content: '▸'; position: absolute; left: 8px; top: 8px; transition: transform 0.15s ease; color: #555; font-size: 0.9em; }
+    details.faq-item[open] > summary::before { transform: rotate(90deg); }
+    details.faq-item > summary:hover { color: #1a73e8; }
+    details.faq-item > p, details.faq-item > div { padding: 0 8px 8px 28px; margin: 0; }
+</style>
+<div class="w3-container w3-margin-top">
+    <h1 class="text-uppercase"><b>Kenapa file ZIP saya masih besar setelah dikompres?</b></h1>
+    <p>Anda mengompres sebuah folder dan berharap ukurannya mengecil, tetapi hasil ZIP-nya hampir sama besar dengan aslinya. Ini bukan bug pada alatnya - artinya byte yang Anda masukkan memang sudah terkompresi sejak awal. Periksa dulu jenis filenya, lalu tangani dua atau tiga file yang benar-benar bisa diperkecil dengan <a href="/zip-tools/zip-file.html">ZIP File</a>.</p>
+    <p><time itemprop="dateReviewed" datetime="2026-07-31">Terakhir ditinjau: 2026-07-31</time></p>
+    <address class="author"><a rel="author" href="/about-us.html">Tim editorial freetoolonline.com</a></address>
+
+    <div class="w3-panel w3-pale-green w3-leftbar w3-border-green">
+        <p style="margin-bottom: 0;"><b>Jawaban dalam 30 detik.</b> ZIP menggunakan <code>deflate</code>, kompresor serba guna. Ia hanya bisa memperkecil byte yang masih memiliki redundansi - teks biasa, CSV, gambar tanpa kompresi, kode sumber. Ia tidak bisa memperkecil secara berarti file JPG, PNG, MP4, HEIC, MP3, PDF modern, atau DOCX/XLSX/ODT, karena format-format ini sudah menyimpan datanya dalam bentuk terkompresi di dalamnya. Jika ZIP Anda penuh foto atau video, ukuran yang hampir sama dengan aslinya adalah hasil yang BENAR dan diharapkan, bukan kegagalan. Solusinya adalah memperkecil kontennya sendiri dulu - <a href="/image-tools/compress-image.html">Compress Image</a> untuk JPG/PNG, <a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> untuk foto iPhone - lalu baru zip file-file yang sudah lebih kecil itu.</p>
+    </div>
+
+    <h2 class="text-uppercase"><b>Pertama, cek apa yang sebenarnya ada di dalam arsip</b></h2>
+    <p>Sebelum menganggap alatnya gagal, urutkan folder sumber berdasarkan ukuran dan lihat ekstensi file-file terbesarnya. Satu pengecekan ini menjelaskan hampir semua kasus "ZIP tidak mengecil":</p>
+    <table class="w3-table w3-bordered w3-small" style="margin:1em 0">
+        <tr><th>Jenis file</th><th>Sudah terkompresi?</th><th>Pengecilan ZIP yang umum</th></tr>
+        <tr><td>JPG, PNG (foto), HEIC, WebP</td><td>Ya</td><td>0-3% (hampir tidak berubah)</td></tr>
+        <tr><td>MP4, MOV, WebM, MP3, AAC</td><td>Ya</td><td>0-2%</td></tr>
+        <tr><td>PDF modern, DOCX, XLSX, PPTX, ODT</td><td>Ya (XML di dalamnya sudah terkompresi)</td><td>2-8%</td></tr>
+        <tr><td>Teks biasa, CSV, JSON, file log, kode sumber</td><td>Tidak</td><td>60-90% lebih kecil</td></tr>
+        <tr><td>BMP, TIFF tanpa kompresi, WAV</td><td>Tidak</td><td>40-70% lebih kecil</td></tr>
+        <tr><td>ZIP lain atau arsip yang sudah terkompresi</td><td>Ya</td><td>0% (hanya menambah header)</td></tr>
+    </table>
+    <p>Jika file terbesar di folder Anda adalah foto atau video, ZIP yang keluar dengan ukuran 98% dari aslinya adalah deflate yang bekerja persis seperti seharusnya - tidak ada pengaturan tersembunyi yang mengubah ini.</p>
+
+    <h2 class="text-uppercase"><b>Empat penyebab sebenarnya, sesuai urutan pengecekannya</b></h2>
+
+    <details class="faq-item">
+        <summary><b>Penyebab 1: folder berisi terutama foto, video, atau PDF</b></summary>
+        <p>Ini adalah penyebab di balik sebagian besar keluhan "ZIP saya tidak mengecil". JPG dan HEIC sudah membuang data gambar yang redundan sejak proses pengambilan; MP4 dan MOV sudah menggunakan codec dengan kompensasi gerak; PDF atau DOCX modern itu sendiri sebenarnya adalah container mirip ZIP dengan XML di dalamnya yang sudah terkompresi. Menerapkan deflate sekali lagi pada file-file ini hampir tidak menemukan apa pun lagi untuk dihilangkan. Solusi: perkecil dulu file sumbernya. Gunakan <a href="/image-tools/compress-image.html">Compress Image</a> untuk JPG/PNG dengan kualitas 70-80 (secara visual tanpa kehilangan kualitas untuk kebanyakan kebutuhan), atau <a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> jika sumbernya adalah pustaka foto iPhone. Untuk video, encode ulang lewat <a href="/video-tools/video-converter.html">Video Converter</a> dengan bitrate lebih rendah - mengompres ke ZIP tidak berpengaruh apa pun pada ukuran video.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary><b>Penyebab 2: Anda mengompres folder yang sudah berisi ZIP atau RAR</b></summary>
+        <p>Arsip bersarang sering terjadi ketika sebuah folder diunduh, diekstrak, lalu dikemas ulang tanpa memeriksa apakah masih ada file .zip, .rar, atau .7z tersisa di dalamnya. Men-deflate arsip yang sudah pernah di-deflate tidak menghasilkan penghematan apa pun dan hanya menambah sekitar 30 byte header ZIP per file. Buka struktur foldernya dan cari file arsip yang tertinggal sebelum mengompres ulang; hapus atau ekstrak dulu file itu.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary><b>Penyebab 3: level kompresi sudah maksimum dan hampir tidak berubah</b></summary>
+        <p>Ini hal yang wajar, bukan masalah. Level deflate 9 (maksimum) hanya menambah 1-5% dibanding level standar 6 pada konten yang benar-benar bisa dikompres, dan sekitar 0% pada konten yang sudah terkompresi. Jika Anda menaikkan level dan ukurannya hampir tidak berubah, itu mengonfirmasi bahwa kontennya sendiri yang menjadi pembatas, bukan pengaturannya. Baca <a href="/guides/how-to-choose-a-compression-level.html">How to choose a compression level</a> untuk memahami apa sebenarnya yang didapat dari setiap level.</p>
+    </details>
+
+    <details class="faq-item">
+        <summary><b>Penyebab 4: proteksi kata sandi membuat Anda mengharapkan file lebih kecil</b></summary>
+        <p>Mengenkripsi ZIP dengan kata sandi tidak mengubah ukurannya sama sekali - hanya menambah sedikit overhead tetap per file, tidak mengompres apa pun lagi. Jika Anda menambahkan kata sandi dan berharap file juga jadi lebih kecil, ekspektasi itulah yang salah, bukan alatnya.</p>
+    </details>
+
+    <h2 class="text-uppercase"><b>Apa yang benar-benar memperkecil ZIP berisi foto atau video</b></h2>
+    <p>Mengompres ulang, menaikkan level, atau mengganti format container tidak membantu ketika kontennya sendiri yang menjadi pembatas. Satu-satunya cara yang benar-benar bisa memperkecil ukuran akhir adalah: perkecil dulu file satu per satu, baru arsipkan versi yang sudah lebih kecil itu.</p>
+    <ol>
+        <li><b>Foto (JPG/PNG):</b> gunakan <a href="/image-tools/compress-image.html">Compress Image</a> dengan kualitas 70-80. File JPG 4 MB biasanya turun jadi 500-900 KB tanpa kehilangan kualitas yang terlihat.</li>
+        <li><b>Foto HEIC dari iPhone:</b> gunakan <a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> dulu, karena banyak penerima dan aplikasi arsip lama tidak bisa membuka .heic; konversi ini juga memberi Anda kesempatan kedua untuk mengatur kualitas JPG.</li>
+        <li><b>Video:</b> encode ulang lewat <a href="/video-tools/video-converter.html">Video Converter</a> dengan bitrate atau resolusi lebih rendah sebelum dikompres - ZIP tidak mengubah ukuran video.</li>
+        <li><b>PDF hasil scan atau banyak gambar:</b> ratakan dan kompres ulang gambar di dalamnya alih-alih mengandalkan wrapper ZIP; lihat <a href="/guides/pdf-editing-ladder.html">PDF editing ladder</a> untuk urutan alat yang tepat.</li>
+        <li><b>Lalu kompres file yang sudah lebih kecil</b> dengan <a href="/zip-tools/zip-file.html">ZIP File</a> pada level standar - level 9 tidak menambah apa pun yang berarti setelah input sudah diperkecil.</li>
+    </ol>
+    <p>Jika Anda perlu mencapai batas ukuran tertentu (limit email 25 MB, formulir 100 KB), urutan perkecil-dulu yang sama tetap berlaku - lihat <a href="/guides/en/how-to-compress-a-zip-file-to-a-specific-size.html">How to compress a ZIP file to a specific size</a> untuk resep per batas ukuran.</p>
+
+    <h2 class="text-uppercase"><b>Pertanyaan yang sering diajukan</b></h2>
+    <details class="faq-item">
+        <summary><b>ZIP saya keluar sedikit LEBIH BESAR dari folder aslinya. Apakah itu mungkin?</b></summary>
+        <p>Ya, dan itu wajar terjadi pada arsip kecil berisi konten yang sudah terkompresi. Setiap file dalam ZIP membawa header tetap yang kecil (sekitar 30-80 byte tergantung panjang nama file dan metadata). Jika file-filenya memang sudah tidak bisa dikompres lagi, overhead per file ini hanya penambahan murni tanpa ada yang dihilangkan sebagai kompensasi - jadi folder berisi beberapa foto JPG kecil bisa menghasilkan ZIP yang beberapa byte lebih besar dari total ukuran aslinya.</p>
+    </details>
+    <details class="faq-item">
+        <summary><b>Apakah 7z atau RAR selalu lebih kecil dari ZIP untuk file yang sama?</b></summary>
+        <p>Hanya pada konten yang bisa dikompres. Algoritma LZMA2 milik 7z sering mengungguli deflate ZIP hingga 30-50% pada teks biasa, tetapi pada foto, video, atau dokumen yang sudah terkompresi, selisihnya hampir hilang, karena tidak ada lagi yang bisa dimanfaatkan kedua algoritma dari byte-byte tersebut. Baca <a href="/guides/online-zip-vs-7z-vs-rar-which-to-pick.html">Online ZIP vs 7z vs RAR - which to pick</a> untuk tahu kapan mengganti format itu sepadan.</p>
+    </details>
+    <details class="faq-item">
+        <summary><b>Kenapa fitur "kompres" bawaan komputer saya memberi hasil yang sama dengan alat ZIP online?</b></summary>
+        <p>Karena keduanya menggunakan algoritma deflate yang sama pada level standar yang serupa. Alatnya bukan variabel di sini - konten filenya yang menjadi variabel. Beralih antara Finder, Windows Explorer, 7-Zip, dan alat ZIP online tidak akan memberi hasil yang jauh berbeda pada file yang sudah terkompresi sama.</p>
+    </details>
+    <details class="faq-item">
+        <summary><b>Saya perlu file tertentu ini berada di bawah batas ukuran untuk email atau formulir. Apa perbaikan tercepatnya?</b></summary>
+        <p>Lewati proses kompres ulang dan perkecil langsung file itu sendiri. Untuk satu foto yang terlalu besar, <a href="/image-tools/compress-image.html">Compress Image</a> dengan kualitas 60-70 biasanya sudah membuatnya jauh di bawah kebanyakan batas email atau formulir dalam satu langkah; mengompres file yang sudah kecil sesudahnya hanya menambah pembungkus tanpa manfaat nyata.</p>
+    </details>
+
+    <h2 class="text-uppercase"><b>Terkait</b></h2>
+    <ul>
+        <li><a href="/zip-tools/zip-file.html">ZIP File (kompres / buat)</a> - buat arsipnya setelah kontennya sudah diperkecil.</li>
+        <li><a href="/image-tools/compress-image.html">Compress Image</a> - perkecil foto JPG / PNG sebelum dikompres.</li>
+        <li><a href="/image-converter-tools/heic-to-jpg.html">HEIC to JPG</a> - konversi foto iPhone ke format yang lebih kecil dan bisa dibuka di mana saja.</li>
+        <li><a href="/guides/en/how-to-compress-a-zip-file-to-a-specific-size.html">How to compress a ZIP file to a specific size</a> - resep untuk mencapai batas ukuran tertentu (2 MB / 25 MB / 100 KB).</li>
+        <li><a href="/guides/how-to-compress-a-folder-for-email.html">How to compress a folder for email</a> - referensi batas ukuran per penyedia email.</li>
+        <li><a href="/guides/how-to-choose-a-compression-level.html">How to choose a compression level</a> - apa yang sebenarnya berbeda antara level 1, 6, dan 9.</li>
+        <li><a href="/guides/online-zip-vs-7z-vs-rar-which-to-pick.html">Online ZIP vs 7z vs RAR - which to pick</a> - trade-off format untuk konten yang bisa dan tidak bisa dikompres.</li>
+    </ul>
+</div>
