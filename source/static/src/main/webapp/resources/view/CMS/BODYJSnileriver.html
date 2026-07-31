@@ -1,0 +1,270 @@
+<script>
+    // 3D scene: Nile River - the world's longest river flowing 6,650 km from south to north
+    // (places-3d cluster, ESM three.js from /vendor/three/, procedural geometry only)
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (encyclopedic consensus, cross-checked 2026-07-31):
+    //   - Length about 6,650 km (longest river on Earth)
+    //   - Basin area about 2.8 million sq km across 11 countries
+    //   - Source: Lake Victoria (Uganda/Tanzania/Kenya), primary outlet Mediterranean Sea
+    //   - Flows through Sudan and Egypt
+    //   - Average discharge about 2,800 m³/s (pre-Aswan High Dam)
+    //   - Aswan High Dam completed 1970, created Lake Nasser
+    //   - Ancient Egypt civilization (~3100 BCE - 30 BCE) developed along the Nile valley
+    //   - Historical annual flood (June-September) inundated the floodplain; modern dam-controlled
+    //   - Key cities: Khartoum (Sudan), Cairo, Alexandria (Egypt)
+    //
+    // Framework contract: bootstrap via doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'nile-river';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesnileriver'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta += dx * 0.01;
+            orbit.goalPhi -= dy * 0.01;
+            orbit.goalPhi = Math.max(0.1, Math.min(Math.PI - 0.1, orbit.goalPhi));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius *= (1 + e.deltaY * 0.001);
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius));
+        }, { passive: false });
+        var renderLoop = opts.renderFn;
+        var active = true;
+        function frame(t) {
+            if (!active) return;
+            applyCamera();
+            renderLoop(scene, camera, t, orbit);
+            renderer.render(scene, camera);
+            requestAnimationFrame(frame);
+        }
+        requestAnimationFrame(frame);
+        return {
+            scene: scene, camera: camera, renderer: renderer, orbit: orbit,
+            stop: function () { active = false; },
+            fullscreen: function () { t3dFullscreen(host); }
+        };
+    }
+
+    function makeNileScene(THREE) {
+        var scene = new THREE.Scene();
+        scene.fog = new THREE.Fog(0x87ceeb, 80, 200);
+        scene.background = new THREE.Color(0xb8956a);
+
+        // Desert terrain base: flat tan plane
+        var desertGeo = new THREE.PlaneGeometry(100, 140);
+        var desertMat = new THREE.MeshPhongMaterial({ color: 0xd4a574, emissive: 0x664d33 });
+        var desert = new THREE.Mesh(desertGeo, desertMat);
+        desert.position.z = -0.1;
+        desert.receiveShadow = true;
+        scene.add(desert);
+
+        // Nile river: meandering ribbon from south (z=-60) to north (z=60)
+        var riverPoints = [];
+        var width = 0.8;
+        for (var i = 0; i <= 40; i++) {
+            var t = i / 40; // 0 to 1
+            var z = -60 + t * 120;
+            var x = 8 * Math.sin(t * Math.PI * 3); // 3 meander wavelengths
+            riverPoints.push(new THREE.Vector3(x, 0.1, z));
+        }
+        var riverTubeGeo = new THREE.TubeGeometry(
+            new THREE.LineCurve3(riverPoints[0], riverPoints[riverPoints.length - 1]),
+            16, width, 6, false
+        );
+        var riverMat = new THREE.MeshPhongMaterial({ color: 0x2e5090, emissive: 0x1a2f4a });
+        var river = new THREE.Mesh(riverTubeGeo, riverMat);
+        river.position.y = 0.15;
+        river.receiveShadow = true;
+        scene.add(river);
+
+        // Flood zone (initially invisible): wider band of lighter teal
+        var floodGeo = new THREE.PlaneGeometry(8, 120);
+        var floodMat = new THREE.MeshPhongMaterial({ color: 0x4a9ebb, emissive: 0x2e5f7a, transparent: true, opacity: 0.4 });
+        var flood = new THREE.Mesh(floodGeo, floodMat);
+        flood.position.set(0, 0.12, 0);
+        flood.receiveShadow = true;
+        scene.add(flood);
+
+        // Ancient Egypt cities markers (red cone + ring for each)
+        var cityMarkers = [
+            { name: 'Khartoum', z: -20, x: -2 },
+            { name: 'Cairo', z: 15, x: 6 },
+            { name: 'Alexandria', z: 58, x: 7 }
+        ];
+        var cityMarkerGroup = new THREE.Group();
+        cityMarkers.forEach(function (city) {
+            var coneGeo = new THREE.ConeGeometry(0.8, 2, 8);
+            var coneMat = new THREE.MeshPhongMaterial({ color: 0xcc0000, emissive: 0x660000 });
+            var cone = new THREE.Mesh(coneGeo, coneMat);
+            cone.position.set(city.x, 1, city.z);
+            cone.castShadow = true;
+            cityMarkerGroup.add(cone);
+
+            var ringGeo = new THREE.TorusGeometry(2, 0.15, 8, 16);
+            var ringMat = new THREE.MeshPhongMaterial({ color: 0xff6666, emissive: 0xcc0000 });
+            var ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.rotation.x = Math.PI / 2;
+            ring.position.set(city.x, 2.2, city.z);
+            cityMarkerGroup.add(ring);
+        });
+        scene.add(cityMarkerGroup);
+
+        // Store references for toggle control
+        var store = t3dLoadStore();
+        flood.visible = store.floodZoneOn;
+        cityMarkerGroup.visible = store.citiesOn;
+
+        // Lights
+        var ambLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambLight);
+        var dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(30, 40, -20);
+        dirLight.castShadow = true;
+        dirLight.shadow.camera.left = -60;
+        dirLight.shadow.camera.right = 60;
+        dirLight.shadow.camera.top = 80;
+        dirLight.shadow.camera.bottom = -80;
+        scene.add(dirLight);
+
+        return {
+            scene: scene,
+            flood: flood,
+            cityMarkerGroup: cityMarkerGroup,
+            store: store
+        };
+    }
+
+    function doNileRiver() {
+        t3dStatus('Loading three.js...');
+        ftoLoadThree().then(function (THREE) {
+            t3dStatus('Rendering Nile River...');
+            var sceneData = makeNileScene(THREE);
+            var shell = t3dShell(THREE, document.getElementById('t3dCanvasHost'), {
+                fov: 55, radius: 45, theta: 0.5, phi: 0.9, targetY: 0.5, minR: 12, maxR: 200,
+                renderFn: function (scene, camera, t, orbit) {
+                    sceneData.scene.rotation.order = 'YXZ';
+                    sceneData.scene.rotation.z = 0;
+                }
+            });
+            Object.assign(sceneData.scene, shell.scene);
+            shell.scene = sceneData.scene;
+
+            // UI: Flood zone toggle
+            var floodToggle = document.getElementById('t3dPfloodToggle');
+            if (floodToggle) {
+                floodToggle.addEventListener('change', function (e) {
+                    sceneData.flood.visible = e.target.checked;
+                    sceneData.store.floodZoneOn = e.target.checked;
+                    t3dSaveStore(sceneData.store);
+                });
+                floodToggle.checked = sceneData.store.floodZoneOn;
+            }
+
+            // UI: Ancient Egypt cities toggle
+            var citiesToggle = document.getElementById('t3dPcitiesToggle');
+            if (citiesToggle) {
+                citiesToggle.addEventListener('change', function (e) {
+                    sceneData.cityMarkerGroup.visible = e.target.checked;
+                    sceneData.store.citiesOn = e.target.checked;
+                    t3dSaveStore(sceneData.store);
+                });
+                citiesToggle.checked = sceneData.store.citiesOn;
+            }
+
+            t3dStatus('');
+            t3dInfo('<strong>Nile River Explorer</strong><br>Drag to rotate, scroll to zoom. Toggle historic cities and seasonal flood zones.');
+        }).catch(function (e) {
+            t3dStatus('Error: ' + (e.message || 'Could not load scene'));
+            console.error(e);
+        });
+    }
+
+    if (typeof doAfterPageRendered === 'function') {
+        doAfterPageRendered(doNileRiver);
+    } else {
+        window.addEventListener('load', doNileRiver);
+    }
+</script>
