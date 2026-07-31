@@ -44,6 +44,20 @@
         <li><b>Fn key (most laptops).</b> The Fn key on laptop keyboards typically does not emit a keydown event the browser can detect; it modifies other keys at the firmware level instead. A Fn key that stays dark in the tester is expected, not a fault.</li>
     </ul>
 
+    <section class="ai-overview-recapture">
+    <h2 class="text-uppercase"><b>What actually happens to your keystrokes during the test</b></h2>
+    <p>The test works entirely through the browser's own keydown and keyup events - the same low-level signal your operating system already generates for every application, not a separate capture mechanism. No network request fires when you press a key: the on-screen highlight is a local update inside the page, and nothing leaves the tab. Closing the tab or reloading the page clears the test state completely - there is no saved record between visits, so returning later always starts from a blank layout with every key unlit.</p>
+    <table class="quick-facts">
+        <thead><tr><th>What happens</th><th>Where it happens</th></tr></thead>
+        <tbody>
+            <tr><td>Key pressed</td><td>Browser fires a keydown event; the page reads it and lights the matching on-screen key</td></tr>
+            <tr><td>Key released</td><td>Browser fires a keyup event; the highlight clears in the same tab, no round trip to a server</td></tr>
+            <tr><td>Tab closed or reloaded</td><td>All highlight state is discarded; nothing is written to disk or sent over the network</td></tr>
+        </tbody>
+    </table>
+    <p>This is a different guarantee from a downloaded key-tester utility, which runs with operating-system-level permissions and can, in principle, write logs to disk after the window closes. A browser tab is sandboxed to its own page by design - it cannot read keystrokes typed into other applications, and it has no mechanism to save files anywhere outside the download folder you explicitly choose.</p>
+    </section>
+
     <h2 class="text-uppercase"><b>Related reads</b></h2>
     <p>These guides cover the theory and the hardware repair path behind the test results above:</p>
     <ul>
