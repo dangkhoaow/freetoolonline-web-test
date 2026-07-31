@@ -14,9 +14,6 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
-  '/guides/percent-error-calculator-vs-alternatives.html',
-  '/guides/percent-error-calculator-step-by-step.html',
-  '/guides/percent-error-calculator-when.html',
   '/guides/days-from-today-calculator-vs-alternatives.html',
   '/guides/days-from-today-calculator-step-by-step.html',
   '/guides/days-from-today-calculator-when.html',
@@ -14284,7 +14281,6 @@ export const ALIAS_ROUTES = {
   '/av1-to-webm-converter.html': '/video-tools/av1-to-webm-converter.html',
   '/annuity-calculator.html': '/utility-tools/annuity-calculator.html',
   '/days-from-today-calculator.html': '/utility-tools/days-from-today-calculator.html',
-  '/percent-error-calculator.html': '/utility-tools/percent-error-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -26129,10 +26125,6 @@ export const JSP_BY_ROUTE = {
   '/guides/days-from-today-calculator-when.html': 'guide/days-from-today-calculator-when.jsp',
   '/guides/days-from-today-calculator-step-by-step.html': 'guide/days-from-today-calculator-step-by-step.jsp',
   '/guides/days-from-today-calculator-vs-alternatives.html': 'guide/days-from-today-calculator-vs-alternatives.jsp',
-  '/utility-tools/percent-error-calculator.html': 'utility/percent-error-calculator.jsp',
-  '/guides/percent-error-calculator-when.html': 'guide/percent-error-calculator-when.jsp',
-  '/guides/percent-error-calculator-step-by-step.html': 'guide/percent-error-calculator-step-by-step.jsp',
-  '/guides/percent-error-calculator-vs-alternatives.html': 'guide/percent-error-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
