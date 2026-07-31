@@ -1,225 +1,237 @@
 <script type="module">
-import * as THREE from '/vendor/three/three.module.min.js';
+import * as THREE from '../../../vendor/three/build/three.module.js';
 
 const canvas = document.getElementById('t3dCanvas');
-const container = document.getElementById('t3dCanvasHost');
 const statusEl = document.getElementById('t3dStatus');
-const infoPanelEl = document.getElementById('t3dInfoPanel');
-const fullscreenBtn = document.getElementById('t3dFullscreenBtn');
+let scene, camera, renderer, terrain, rangeMarkers, peakLabels;
 
-let scene, camera, renderer, controls, heightFieldMesh;
-let toggle1State = localStorage.getItem('ftol-game-pamir-plateau-toggle1') === 'true';
-let toggle2State = localStorage.getItem('ftol-game-pamir-plateau-toggle2') === 'true';
+const STATE = {
+  showRangeMarkers: localStorage.getItem('ftol-game-pamir-plateau-range-markers') !== 'false',
+  showPeakLabels: localStorage.getItem('ftol-game-pamir-plateau-peak-labels') !== 'false',
+};
 
-// Helper functions for procedural terrain
-function hash2(p) { return Math.sin(p.x * 12.9898 + p.y * 78.233) * 43758.5453; }
+// Noise helpers (from space-3d examples)
+function hash2(p) {
+  const x = Math.sin(p.x * 43758.5453) * 0.5 + 0.5;
+  const y = Math.sin(p.y * 43758.5453) * 0.5 + 0.5;
+  return new THREE.Vector2(x, y);
+}
+
 function vnoise(p) {
-  const i = new THREE.Vector2(Math.floor(p.x), Math.floor(p.y));
-  const f = new THREE.Vector2(p.x - i.x, p.y - i.y);
-  const u = new THREE.Vector2(f.x * f.x * (3.0 - 2.0 * f.x), f.y * f.y * (3.0 - 2.0 * f.y));
-  const n00 = hash2(i);
-  const n10 = hash2(new THREE.Vector2(i.x + 1.0, i.y));
-  const n01 = hash2(new THREE.Vector2(i.x, i.y + 1.0));
-  const n11 = hash2(new THREE.Vector2(i.x + 1.0, i.y + 1.0));
-  const nx0 = n00 + u.x * (n10 - n00);
-  const nx1 = n01 + u.x * (n11 - n01);
-  return nx0 + u.y * (nx1 - nx0);
+  const pi = new THREE.Vector2(Math.floor(p.x), Math.floor(p.y));
+  const pf = new THREE.Vector2(p.x - pi.x, p.y - pi.y);
+  const u = new THREE.Vector2(pf.x * pf.x * (3.0 - 2.0 * pf.x), pf.y * pf.y * (3.0 - 2.0 * pf.y));
+  
+  const h00 = hash2(new THREE.Vector2(pi.x, pi.y));
+  const h10 = hash2(new THREE.Vector2(pi.x + 1, pi.y));
+  const h01 = hash2(new THREE.Vector2(pi.x, pi.y + 1));
+  const h11 = hash2(new THREE.Vector2(pi.x + 1, pi.y + 1));
+  
+  const n00 = Math.cos(h00.x * 6.283) * (pf.x - 0) + Math.sin(h00.y * 6.283) * (pf.y - 0);
+  const n10 = Math.cos(h10.x * 6.283) * (pf.x - 1) + Math.sin(h10.y * 6.283) * (pf.y - 0);
+  const n01 = Math.cos(h01.x * 6.283) * (pf.x - 0) + Math.sin(h01.y * 6.283) * (pf.y - 1);
+  const n11 = Math.cos(h11.x * 6.283) * (pf.x - 1) + Math.sin(h11.y * 6.283) * (pf.y - 1);
+  
+  const nx0 = n00 * (1 - u.x) + n10 * u.x;
+  const nx1 = n01 * (1 - u.x) + n11 * u.x;
+  return nx0 * (1 - u.y) + nx1 * u.y;
 }
-function fbm(p, octaves = 4, persistence = 0.5, lacunarity = 2.0) {
-  let value = 0, amplitude = 1, frequency = 1;
+
+function fbm(p, octaves = 4, freq = 2.5) {
+  let val = 0, amp = 1, maxVal = 0, f = 1;
   for (let i = 0; i < octaves; i++) {
-    value += amplitude * vnoise(new THREE.Vector2(p.x * frequency, p.y * frequency));
-    amplitude *= persistence;
-    frequency *= lacunarity;
+    val += amp * vnoise(new THREE.Vector2(p.x * f, p.y * f));
+    maxVal += amp;
+    amp *= 0.5;
+    f *= freq;
   }
-  return value;
-}
-
-function makePamirTerrain(width = 256, height = 256) {
-  const geometry = new THREE.PlaneGeometry(60, 60, width, height);
-  const positions = geometry.attributes.position.array;
-
-  // Multi-peak terrain with converging ranges
-  for (let i = 0; i < positions.length; i += 3) {
-    const x = (positions[i] / 60 + 0.5) * 2;
-    const y = (positions[i + 1] / 60 + 0.5) * 2;
-
-    // Multiple fbm layers for converging peaks
-    let h = 0.3; // base plateau height
-    h += 0.4 * fbm(new THREE.Vector2(x * 0.8, y * 0.8), 3);
-    h += 0.3 * fbm(new THREE.Vector2(x * 1.5 - 2, y * 0.7), 3); // Pik Communism cluster
-    h += 0.25 * fbm(new THREE.Vector2(x * 0.9 + 1.5, y * 1.1), 2); // Pik Lenin cluster
-    h += 0.2 * Math.sin(x * 0.5) * Math.cos(y * 0.6); // ridge patterns
-
-    // Valley convergence
-    const distToCenter = Math.sqrt((x - 1) ** 2 + (y - 1) ** 2);
-    if (distToCenter > 1.5) h -= 0.15 * Math.max(0, distToCenter - 1.5);
-
-    positions[i + 2] = Math.max(0.2, Math.min(1.2, h)); // Clamp between 0.2 and 1.2
-  }
-
-  geometry.attributes.position.needsUpdate = true;
-  geometry.computeVertexNormals();
-
-  // Color banding for elevation
-  const colors = [];
-  for (let i = 0; i < positions.length; i += 3) {
-    const elevation = positions[i + 2];
-    let color = new THREE.Color();
-
-    if (toggle2State) {
-      // Peak range highlights
-      if (elevation > 0.95) color.setHex(0xff6b6b); // Red for Communism range
-      else if (elevation > 0.75) color.setHex(0xffa500); // Orange for Lenin range
-      else if (elevation > 0.55) color.setHex(0x8b7355); // Brown for middle ridges
-      else color.setHex(0x4a6fa5); // Blue for valleys
-    } else {
-      // Valley elevation bands
-      if (elevation > 1.0) color.setHex(0xffffff); // White peak
-      else if (elevation > 0.85) color.setHex(0xc0c0c0); // Silver upper
-      else if (elevation > 0.7) color.setHex(0x8b8b8b); // Gray mid
-      else if (elevation > 0.5) color.setHex(0x6b8e23); // Olive green
-      else color.setHex(0x4a6fa5); // Blue valley
-    }
-
-    colors.push(color.r, color.g, color.b);
-  }
-  geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
-
-  const material = new THREE.MeshPhongMaterial({
-    map: null,
-    vertexColors: true,
-    side: THREE.DoubleSide,
-    flatShading: false
-  });
-
-  return new THREE.Mesh(geometry, material);
+  return val / maxVal;
 }
 
 function initScene() {
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x1a1a2e);
-  scene.fog = new THREE.Fog(0x1a1a2e, 150, 200);
-
-  camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 10000);
-  camera.position.set(20, 25, 30);
+  scene.background = new THREE.Color(0x87ceeb);
+  
+  camera = new THREE.PerspectiveCamera(60, canvas.clientWidth / canvas.clientHeight, 0.1, 10000);
+  camera.position.set(35, 45, 50);
   camera.lookAt(0, 0, 0);
-
-  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
-  renderer.setPixelRatio(window.devicePixelRatio);
+  
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setSize(canvas.clientWidth, canvas.clientHeight);
   renderer.shadowMap.enabled = true;
-
-  // Lighting
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-  scene.add(ambientLight);
-
-  const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-  dirLight.position.set(50, 50, 50);
-  dirLight.castShadow = true;
-  dirLight.shadow.camera.left = -100;
-  dirLight.shadow.camera.right = 100;
-  dirLight.shadow.camera.top = 100;
-  dirLight.shadow.camera.bottom = -100;
-  scene.add(dirLight);
-
-  // Create terrain
-  heightFieldMesh = makePamirTerrain(200, 200);
-  heightFieldMesh.rotation.x = Math.PI / 2.3;
-  heightFieldMesh.castShadow = true;
-  heightFieldMesh.receiveShadow = true;
-  scene.add(heightFieldMesh);
-
-  // Peak markers
-  const peakGeom = new THREE.ConeGeometry(0.5, 1.5, 8);
-  const peakMat = new THREE.MeshStandardMaterial({ color: 0xff6b6b, emissive: 0xff6b6b, emissiveIntensity: 0.3 });
-  const pik_communism = new THREE.Mesh(peakGeom, peakMat);
-  pik_communism.position.set(-8, 6, 2);
-  pik_communism.castShadow = true;
-  scene.add(pik_communism);
-
-  const peakMat2 = new THREE.MeshStandardMaterial({ color: 0xffa500, emissive: 0xffa500, emissiveIntensity: 0.2 });
-  const pik_lenin = new THREE.Mesh(peakGeom, peakMat2);
-  pik_lenin.position.set(5, 4.5, -3);
-  pik_lenin.castShadow = true;
-  scene.add(pik_lenin);
-
-  statusEl.textContent = 'Pamir Plateau 3D loaded. Use mouse to rotate.';
-  infoPanelEl.innerHTML = '<strong>Pamir Plateau</strong><br/>Height: 7,495 m (Pik Communism)<br/>Area: 386,400 sq km<br/>Location: Central Asia';
-
-  // Setup controls
-  setupControls();
+  
+  const light = new THREE.DirectionalLight(0xffffff, 0.9);
+  light.position.set(50, 80, 40);
+  light.castShadow = true;
+  light.shadow.mapSize.width = 2048;
+  light.shadow.mapSize.height = 2048;
+  scene.add(light);
+  
+  scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+  
+  // Create Pamir terrain: multi-peak knot using Worley-style cell grid
+  const geom = new THREE.PlaneGeometry(200, 200, 120, 120);
+  const positions = geom.attributes.position;
+  const colors = new Float32Array(positions.count * 3);
+  
+  const peaks = [
+    { x: 0, y: 0, h: 74.95, color: [1.0, 0.95, 0.85] }, // Ismail Samani (center)
+    { x: -25, y: 30, h: 71.05, color: [0.9, 0.85, 0.8] }, // Korzhenevskaya
+    { x: 40, y: 25, h: 65.95, color: [0.85, 0.8, 0.75] }, // Garmo
+    { x: -35, y: -20, h: 62.5, color: [0.8, 0.75, 0.7] }, // Peak 4
+    { x: 30, y: -35, h: 58.0, color: [0.75, 0.7, 0.65] }, // Peak 5
+    { x: 0, y: -50, h: 50.0, color: [0.7, 0.65, 0.6] }, // Peak 6
+  ];
+  
+  for (let i = 0; i < positions.count; i++) {
+    const x = positions.getX(i);
+    const y = positions.getY(i);
+    let z = 15.0; // Base plateau elevation
+    
+    // Add height from each peak (Gaussian falloff)
+    for (const peak of peaks) {
+      const dx = x - peak.x;
+      const dy = y - peak.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const drop = Math.exp(-dist * dist / (2 * 20 * 20));
+      z += peak.h * drop;
+    }
+    
+    // Add noise for irregularity
+    z += fbm(new THREE.Vector2(x * 0.1, y * 0.1), 3, 2.0) * 5;
+    
+    // Shore taper (smooth transition at edges)
+    const edgeDist = 100 - Math.max(Math.abs(x), Math.abs(y));
+    if (edgeDist < 20) {
+      z *= Math.max(0, edgeDist / 20);
+    }
+    
+    positions.setZ(i, z);
+    
+    // Color banding based on altitude
+    let r, g, b;
+    if (z > 60) {
+      r = 0.95; g = 0.95; b = 0.95; // Snow
+    } else if (z > 45) {
+      r = 0.8; g = 0.75; b = 0.85; // Alpine
+    } else if (z > 25) {
+      r = 0.6; g = 0.5; b = 0.4; // High plateau
+    } else {
+      r = 0.5; g = 0.4; b = 0.3; // Base plateau
+    }
+    
+    colors[i * 3] = r;
+    colors[i * 3 + 1] = g;
+    colors[i * 3 + 2] = b;
+  }
+  
+  positions.needsUpdate = true;
+  geom.computeVertexNormals();
+  geom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  
+  const mat = new THREE.MeshStandardMaterial({
+    vertexColors: true,
+    roughness: 0.8,
+    metalness: 0.1,
+  });
+  
+  terrain = new THREE.Mesh(geom, mat);
+  terrain.castShadow = true;
+  terrain.receiveShadow = true;
+  scene.add(terrain);
+  
+  // Range confluence markers
+  rangeMarkers = new THREE.Group();
+  const markers = [
+    { pos: [-50, 50, 25], label: 'Tian Shan', color: 0x4da8da },
+    { pos: [-60, -40, 25], label: 'Hindu Kush', color: 0xffa500 },
+    { pos: [60, -30, 25], label: 'Karakoram', color: 0xff6b6b },
+  ];
+  
+  markers.forEach(m => {
+    const cone = new THREE.Mesh(
+      new THREE.ConeGeometry(2, 8, 8),
+      new THREE.MeshStandardMaterial({ color: m.color })
+    );
+    cone.position.set(m.pos[0], m.pos[1], m.pos[2]);
+    rangeMarkers.add(cone);
+    
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(3, 0.3, 8, 12),
+      new THREE.MeshStandardMaterial({ color: m.color, emissive: m.color, emissiveIntensity: 0.4 })
+    );
+    ring.position.copy(cone.position);
+    ring.position.z += 1;
+    rangeMarkers.add(ring);
+  });
+  
+  rangeMarkers.visible = STATE.showRangeMarkers;
+  scene.add(rangeMarkers);
+  
+  // Peak labels (simple)
+  peakLabels = new THREE.Group();
+  peaks.slice(0, 4).forEach((peak, i) => {
+    const cone = new THREE.Mesh(
+      new THREE.ConeGeometry(1.5, 3, 6),
+      new THREE.MeshStandardMaterial({ color: 0xffd700, emissive: 0xffd700, emissiveIntensity: 0.3 })
+    );
+    cone.position.set(peak.x, peak.y, peak.h + 5);
+    peakLabels.add(cone);
+  });
+  
+  peakLabels.visible = STATE.showPeakLabels;
+  scene.add(peakLabels);
+  
+  statusEl.textContent = 'Pamir Plateau loaded';
 }
 
-function setupControls() {
-  let isDragging = false, previousMousePosition = { x: 0, y: 0 };
-  let rotationX = 0.4, rotationY = 1.2;
-  let radius = 45;
+function setupToggleHandlers() {
+  document.getElementById('toggleRangeMarkers').checked = STATE.showRangeMarkers;
+  document.getElementById('togglePeakLabels').checked = STATE.showPeakLabels;
+  
+  document.getElementById('toggleRangeMarkers').addEventListener('change', (e) => {
+    STATE.showRangeMarkers = e.target.checked;
+    localStorage.setItem('ftol-game-pamir-plateau-range-markers', STATE.showRangeMarkers);
+    rangeMarkers.visible = STATE.showRangeMarkers;
+  });
+  
+  document.getElementById('togglePeakLabels').addEventListener('change', (e) => {
+    STATE.showPeakLabels = e.target.checked;
+    localStorage.setItem('ftol-game-pamir-plateau-peak-labels', STATE.showPeakLabels);
+    peakLabels.visible = STATE.showPeakLabels;
+  });
+}
 
-  canvas.addEventListener('mousedown', (e) => { isDragging = true; previousMousePosition = { x: e.clientX, y: e.clientY }; });
-  canvas.addEventListener('mousemove', (e) => {
-    if (isDragging) {
-      const deltaX = e.clientX - previousMousePosition.x;
-      const deltaY = e.clientY - previousMousePosition.y;
-      rotationY += deltaX * 0.005;
-      rotationX += deltaY * 0.005;
-      rotationX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, rotationX));
-      previousMousePosition = { x: e.clientX, y: e.clientY };
+let theta = 1.2, phi = 0.9, radius = 120;
+
+function animate() {
+  requestAnimationFrame(animate);
+  
+  theta += 0.0005;
+  const x = radius * Math.sin(phi) * Math.cos(theta);
+  const y = radius * Math.cos(phi);
+  const z = radius * Math.sin(phi) * Math.sin(theta);
+  camera.position.set(x, y, z);
+  camera.lookAt(0, 0, 0);
+  
+  renderer.render(scene, camera);
+}
+
+function setupResizeObserver() {
+  const observer = new ResizeObserver(() => {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    if (w > 0 && h > 0) {
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
     }
   });
-  canvas.addEventListener('mouseup', () => { isDragging = false; });
-  canvas.addEventListener('wheel', (e) => { e.preventDefault(); radius *= (1 + e.deltaY * 0.001); radius = Math.max(15, Math.min(80, radius)); });
-
-  document.getElementById('t3dToggle1Pamp').checked = toggle1State;
-  document.getElementById('t3dToggle2Pamp').checked = toggle2State;
-
-  document.getElementById('t3dToggle1Pamp').addEventListener('change', (e) => {
-    toggle1State = e.target.checked;
-    localStorage.setItem('ftol-game-pamir-plateau-toggle1', toggle1State);
-    updateScene();
-  });
-
-  document.getElementById('t3dToggle2Pamp').addEventListener('change', (e) => {
-    toggle2State = e.target.checked;
-    localStorage.setItem('ftol-game-pamir-plateau-toggle2', toggle2State);
-    updateScene();
-  });
-
-  fullscreenBtn.addEventListener('click', () => {
-    if (!document.fullscreenElement) {
-      container.requestFullscreen().catch(err => console.error(err));
-    } else {
-      document.exitFullscreen();
-    }
-  });
-
-  function updateScene() {
-    scene.remove(heightFieldMesh);
-    heightFieldMesh = makePamirTerrain(200, 200);
-    heightFieldMesh.rotation.x = Math.PI / 2.3;
-    heightFieldMesh.castShadow = true;
-    heightFieldMesh.receiveShadow = true;
-    scene.add(heightFieldMesh);
-  }
-
-  const resizeObserver = new ResizeObserver(() => {
-    const w = canvas.clientWidth, h = canvas.clientHeight;
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
-    renderer.setSize(w, h);
-  });
-  resizeObserver.observe(container);
-
-  function animate() {
-    requestAnimationFrame(animate);
-    camera.position.x = radius * Math.sin(rotationY);
-    camera.position.y = radius * Math.sin(rotationX) + 8;
-    camera.position.z = radius * Math.cos(rotationY);
-    camera.lookAt(0, 5, 0);
-    renderer.render(scene, camera);
-  }
-  animate();
+  observer.observe(canvas);
 }
 
 initScene();
+setupToggleHandlers();
+setupResizeObserver();
+animate();
 </script>
