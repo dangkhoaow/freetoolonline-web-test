@@ -1,152 +1,272 @@
 <script>
-window.t3dScenesCache = window.t3dScenesCache || {};
-window.t3dScenesCache['salar-de-uyuni'] = async () => {
-  const THREE = await import('/vendor/three/three.module.min.js');
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 10000);
-  camera.position.set(30, 22, 28);
-  camera.lookAt(0, 0, 0);
+    // 3D scene archetype skeleton (salar-de-uyuni) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN engine), fully
+    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only
+    // (salar-de-uyuni). All geometry is procedural. places-3d cluster.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (encyclopedic / travel consensus):
+    //   - Salar de Uyuni, Potosi, Bolivia - the world's largest salt flat
+    //   - Area about 10,582 sq km on the Andean Altiplano
+    //   - Elevation about 3,656 m; the surface is nearly level, with less
+    //     than 1 m of elevation variation across the whole flat
+    //   - The dry-season crust cracks into polygonal (roughly hexagonal)
+    //     salt tiles
+    //   - During the rainy season (December-February) a thin sheet of
+    //     standing water (about 5 cm deep) turns the flat into a giant
+    //     natural mirror
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
 
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-  scene.add(ambientLight);
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-  directionalLight.position.set(10, 15, 10);
-  directionalLight.castShadow = true;
-  scene.add(directionalLight);
+    web.localUpload = false;
 
-  // Salt flat: hexagon tile pattern on a nearly-flat plane with minimal relief
-  const geometry = new THREE.PlaneGeometry(80, 80, 160, 160);
-  const positionAttribute = geometry.getAttribute('position');
-  const colors = [];
-  const initialColors = [];
+    var T3D_SLUG = 'salar-de-uyuni';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
 
-  // Deterministic noise for hexagon pattern
-  const hash2 = (p) => {
-    let x = Math.sin(p.x * 12.9898 + p.y * 78.233) * 43758.5453;
-    return x - Math.floor(x);
-  };
-  const fnoise = (p, scale) => {
-    const i = Math.floor(p / scale);
-    const f = (p % scale) / scale;
-    const u = f * f * (3 - 2 * f);
-    const h0 = hash2({x: i, y: 0});
-    const h1 = hash2({x: i + 1, y: 0});
-    return h0 * (1 - u) + h1 * u;
-  };
-
-  for (let i = 0; i < positionAttribute.count; i++) {
-    const x = positionAttribute.getX(i);
-    const y = positionAttribute.getY(i);
-    const z = positionAttribute.getZ(i);
-
-    // Minimal elevation variation (< 0.5m on a 10km scale)
-    const cellSize = 0.15;
-    const height = (fnoise(x * 5, cellSize) - 0.5) * 0.02;
-    const wxCoord = fnoise(x * 3, cellSize + 0.1);
-    const hexPattern = Math.abs(Math.sin(wxCoord * 12.566)) > 0.7 ? 1 : 0;
-
-    positionAttribute.setZ(i, z + height);
-
-    // Dry season: bright white with hexagon shadows
-    const whiteBase = new THREE.Color(0xf5f5dc);
-    const shadowTone = new THREE.Color(0xe8e8dc);
-    const col = hexPattern > 0.5 ? shadowTone : whiteBase;
-    colors.push(col.r, col.g, col.b);
-    initialColors.push(col.r, col.g, col.b);
-  }
-
-  positionAttribute.needsUpdate = true;
-  geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
-  geometry.computeVertexNormals();
-
-  const material = new THREE.MeshPhongMaterial({
-    vertexColors: true,
-    shininess: 100,
-    side: THREE.DoubleSide,
-  });
-
-  const saltFlat = new THREE.Mesh(geometry, material);
-  saltFlat.rotation.x = -Math.PI / 2;
-  saltFlat.receiveShadow = true;
-  scene.add(saltFlat);
-
-  // Distant Andes horizon line (simplified)
-  const horizonGeometry = new THREE.PlaneGeometry(200, 80, 4, 4);
-  const horizonMaterial = new THREE.MeshBasicMaterial({ color: 0x8b7355 });
-  const horizon = new THREE.Mesh(horizonGeometry, horizonMaterial);
-  horizon.position.z = -40;
-  horizon.position.y = 15;
-  scene.add(horizon);
-
-  // Rainy season mirror reflection layer (overlay, initially invisible)
-  const mirrorGeometry = new THREE.PlaneGeometry(80, 80, 1, 1);
-  const mirrorMaterial = new THREE.MeshPhongMaterial({
-    color: 0x87ceeb,
-    transparent: true,
-    opacity: 0,
-    wireframe: false,
-    shininess: 200,
-  });
-  const mirrorLayer = new THREE.Mesh(mirrorGeometry, mirrorMaterial);
-  mirrorLayer.rotation.x = -Math.PI / 2;
-  mirrorLayer.position.z = 0.05;
-  scene.add(mirrorLayer);
-
-  // Renderer setup
-  const canvas = document.getElementById('t3dCanvasHost');
-  if (!canvas) return { scene, camera };
-
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-  renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-  renderer.setClearColor(0x87ceeb, 1);
-  renderer.shadowMap.enabled = true;
-  canvas.appendChild(renderer.domElement);
-
-  // Animation loop
-  const state = { rainMode: false };
-  const animate = () => {
-    requestAnimationFrame(animate);
-
-    // Camera orbit
-    const time = Date.now() * 0.0001;
-    const radius = 45;
-    const theta = time * 0.3;
-    camera.position.x = radius * Math.cos(theta);
-    camera.position.z = radius * Math.sin(theta);
-    camera.lookAt(0, 0, 0);
-
-    // Mirror layer opacity toggles based on state
-    mirrorLayer.material.opacity = state.rainMode ? 0.15 : 0;
-
-    renderer.render(scene, camera);
-  };
-  animate();
-
-  // Handle window resize
-  const onWindowResize = () => {
-    const width = canvas.clientWidth;
-    const height = canvas.clientHeight;
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-    renderer.setSize(width, height);
-  };
-  window.addEventListener('resize', onWindowResize);
-
-  return {
-    scene, camera, renderer,
-    toggles: {
-      rainSeason: () => { state.rainMode = !state.rainMode; },
-      hexPattern: () => {
-        // Already baked into vertex colors; this would swap color buffers
-        const temp = [...colors];
-        for (let i = 0; i < colors.length; i += 3) {
-          colors[i] = initialColors[i];
-          colors[i+1] = initialColors[i+1];
-          colors[i+2] = initialColors[i+2];
-        }
-        geometry.getAttribute('color').needsUpdate = true;
-      }
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
     }
-  };
-};
+
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) {}
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320;
+            var h = host.clientHeight || Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x87ceeb, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.62));
+        var key = new THREE.DirectionalLight(0xfff3d6, 1.0);
+        key.position.set(-14, 22, -10);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+
+        // Hexagonal salt-tile field: axial hex distance to the nearest hex
+        // cell centre; a thin raised ridge marks each polygon edge, mirroring
+        // the dry-season crack pattern. Tile size exaggerated for visibility
+        // (real tiles are 1-3 m across; the flat itself varies < 1 m in
+        // elevation over 10,582 sq km, so the height field is nearly flat).
+        var HEX_R = 1.15;
+        function hexEdge(x, z) {
+            // Convert to axial hex coordinates and measure distance to the
+            // nearest cell centre relative to the cell radius (0..1).
+            var q = (0.57735 * x - z / 3) / HEX_R * 3;
+            var r = (2 / 3 * z) / HEX_R * 3 / 2;
+            // cube-round
+            var cx = q, cz = r, cy = -cx - cz;
+            var rx = Math.round(cx), ry = Math.round(cy), rz = Math.round(cz);
+            var dx = Math.abs(rx - cx), dy = Math.abs(ry - cy), dz = Math.abs(rz - cz);
+            if (dx > dy && dx > dz) { rx = -ry - rz; }
+            else if (dy > dz) { ry = -rx - rz; }
+            else { rz = -rx - ry; }
+            // fractional distance from the rounded cell coordinates
+            var fd = Math.max(Math.abs(cx - rx), Math.abs(cy - ry), Math.abs(cz - rz));
+            return fd; // ~0 at cell centre, ~0.5 at edges
+        }
+        function height(x, z) {
+            // Nearly level: tiny basin undulation + raised polygon ridges.
+            var base = (fbm(x * 0.18 + 5, z * 0.18 + 9, 3) - 0.5) * 0.06;
+            var e = hexEdge(x, z);
+            var ridge = e > 0.42 ? (e - 0.42) * 0.9 : 0;
+            return base + ridge * 0.12;
+        }
+
+        var col = {
+            saltBright: new THREE.Color(0xf7f5e8),
+            saltShade: new THREE.Color(0xe4e2d2),
+            ridge: new THREE.Color(0xcfccb8)
+        };
+        var hexOn = true, rainOn = false;
+        function color(c, h, x, z) {
+            var n = 0.94 + 0.1 * fbm(x * 1.1 + 3, z * 1.1 + 7, 3);
+            var e = hexEdge(x, z);
+            if (hexOn && e > 0.42) { c.copy(col.ridge); }
+            else if (hexOn && e > 0.34) { c.copy(col.saltShade); }
+            else { c.copy(col.saltBright); }
+            c.multiplyScalar(n);
+        }
+
+        var seg = shell.low ? 150 : 200;
+        var geo = new THREE.PlaneGeometry(46, 46, seg, seg);
+        geo.rotateX(-Math.PI / 2);
+        var pos = geo.attributes.position;
+        var colors = new Float32Array(pos.count * 3), cc = new THREE.Color();
+        for (var i = 0; i < pos.count; i++) {
+            var x = pos.getX(i), z = pos.getZ(i);
+            var h = height(x, z);
+            pos.setY(i, h);
+            color(cc, h, x, z);
+            colors[i * 3] = cc.r; colors[i * 3 + 1] = cc.g; colors[i * 3 + 2] = cc.b;
+        }
+        geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geo.computeVertexNormals();
+        var salt = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, metalness: 0 }));
+        scene.add(salt);
+
+        // Distant Andes rim: a low ring of brown peaks on the horizon.
+        var rim = new THREE.Group();
+        for (var k = 0; k < 26; k++) {
+            var ang = (k / 26) * Math.PI * 2;
+            var pr = 30 + hash2(k, 3) * 4;
+            var ph = 1.2 + hash2(k, 7) * 2.2;
+            var peak = new THREE.Mesh(
+                new THREE.ConeGeometry(2.6 + hash2(k, 11) * 2, ph, 5),
+                new THREE.MeshStandardMaterial({ color: 0x8b7355, roughness: 0.95, flatShading: true })
+            );
+            peak.position.set(Math.cos(ang) * pr, ph * 0.5 - 0.15, Math.sin(ang) * pr);
+            rim.add(peak);
+        }
+        scene.add(rim);
+
+        // Rainy-season mirror: a thin reflective sky-toned sheet just above
+        // the crust (the real water layer is about 5 cm deep).
+        var mirror = new THREE.Mesh(
+            new THREE.PlaneGeometry(46, 46, 1, 1),
+            new THREE.MeshStandardMaterial({
+                color: 0x9fd4ee, transparent: true, opacity: 0.55,
+                roughness: 0.08, metalness: 0.6
+            })
+        );
+        mirror.rotation.x = -Math.PI / 2;
+        mirror.position.y = 0.09;
+        scene.add(mirror);
+
+        function recolor() {
+            for (var i = 0; i < pos.count; i++) {
+                color(cc, pos.getY(i), pos.getX(i), pos.getZ(i));
+                colors[i * 3] = cc.r; colors[i * 3 + 1] = cc.g; colors[i * 3 + 2] = cc.b;
+            }
+            geo.attributes.color.needsUpdate = true;
+        }
+
+        function apply() {
+            mirror.visible = rainOn;
+            var rc = document.getElementById('rainSeasonToggle');
+            if (rc) rc.checked = rainOn;
+            var hc = document.getElementById('hexPatternToggle');
+            if (hc) hc.checked = hexOn;
+            t3dSaveStore({ rainOn: rainOn, hexOn: hexOn });
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.rainOn === 'boolean') rainOn = store.rainOn;
+        if (typeof store.hexOn === 'boolean') hexOn = store.hexOn;
+        recolor();
+        apply();
+
+        var rainToggle = document.getElementById('rainSeasonToggle');
+        if (rainToggle) rainToggle.addEventListener('change', function () { rainOn = !!rainToggle.checked; apply(); });
+        var hexToggle = document.getElementById('hexPatternToggle');
+        if (hexToggle) hexToggle.addEventListener('change', function () { hexOn = !!hexToggle.checked; recolor(); apply(); });
+
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00003;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        if (!host) return;
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var shell = t3dShell(THREE, host, { radius: 34, maxR: 70, minR: 8, phi: 1.05, theta: 0.7, targetY: 0.1, fov: 55 });
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    host.innerHTML = '<p style="padding:16px;">This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')</p>';
+                }
+            }).catch(function (err) {
+                host.innerHTML = '<p style="padding:16px;">Could not load the 3D engine: ' + (err && err.message ? err.message : err) + '</p>';
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
 </script>

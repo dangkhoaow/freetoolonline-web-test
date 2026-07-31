@@ -1,237 +1,315 @@
-<script type="module">
-import * as THREE from '../../../vendor/three/build/three.module.js';
+<script>
+    // 3D scene archetype skeleton (pamir-plateau) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN engine), fully
+    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only
+    // (pamir-plateau). All geometry is procedural. places-3d cluster.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (encyclopedic consensus, cross-checked at authoring):
+    //   - The Pamir is a high-altitude mountain knot mostly within
+    //     Tajikistan's Gorno-Badakhshan region, often called the
+    //     "Roof of the World"
+    //   - Highest summit: Ismail Samani Peak, commonly cited at 7,495 m
+    //   - Ibn Sina (Lenin) Peak commonly cited at 7,134 m;
+    //     Korzhenevskaya Peak at 7,105 m
+    //   - The knot is where several great ranges converge: Tian Shan,
+    //     Hindu Kush, Karakoram, and Kunlun
+    //   - Much of the plateau floor sits above 3,000-4,000 m
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
 
-const canvas = document.getElementById('t3dCanvas');
-const statusEl = document.getElementById('t3dStatus');
-let scene, camera, renderer, terrain, rangeMarkers, peakLabels;
+    web.localUpload = false;
 
-const STATE = {
-  showRangeMarkers: localStorage.getItem('ftol-game-pamir-plateau-range-markers') !== 'false',
-  showPeakLabels: localStorage.getItem('ftol-game-pamir-plateau-peak-labels') !== 'false',
-};
+    var T3D_SLUG = 'pamir-plateau';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
 
-// Noise helpers (from space-3d examples)
-function hash2(p) {
-  const x = Math.sin(p.x * 43758.5453) * 0.5 + 0.5;
-  const y = Math.sin(p.y * 43758.5453) * 0.5 + 0.5;
-  return new THREE.Vector2(x, y);
-}
+    function t3dDetectScene(slug) { return 'placespamirplateau'; }
 
-function vnoise(p) {
-  const pi = new THREE.Vector2(Math.floor(p.x), Math.floor(p.y));
-  const pf = new THREE.Vector2(p.x - pi.x, p.y - pi.y);
-  const u = new THREE.Vector2(pf.x * pf.x * (3.0 - 2.0 * pf.x), pf.y * pf.y * (3.0 - 2.0 * pf.y));
-  
-  const h00 = hash2(new THREE.Vector2(pi.x, pi.y));
-  const h10 = hash2(new THREE.Vector2(pi.x + 1, pi.y));
-  const h01 = hash2(new THREE.Vector2(pi.x, pi.y + 1));
-  const h11 = hash2(new THREE.Vector2(pi.x + 1, pi.y + 1));
-  
-  const n00 = Math.cos(h00.x * 6.283) * (pf.x - 0) + Math.sin(h00.y * 6.283) * (pf.y - 0);
-  const n10 = Math.cos(h10.x * 6.283) * (pf.x - 1) + Math.sin(h10.y * 6.283) * (pf.y - 0);
-  const n01 = Math.cos(h01.x * 6.283) * (pf.x - 0) + Math.sin(h01.y * 6.283) * (pf.y - 1);
-  const n11 = Math.cos(h11.x * 6.283) * (pf.x - 1) + Math.sin(h11.y * 6.283) * (pf.y - 1);
-  
-  const nx0 = n00 * (1 - u.x) + n10 * u.x;
-  const nx1 = n01 * (1 - u.x) + n11 * u.x;
-  return nx0 * (1 - u.y) + nx1 * u.y;
-}
-
-function fbm(p, octaves = 4, freq = 2.5) {
-  let val = 0, amp = 1, maxVal = 0, f = 1;
-  for (let i = 0; i < octaves; i++) {
-    val += amp * vnoise(new THREE.Vector2(p.x * f, p.y * f));
-    maxVal += amp;
-    amp *= 0.5;
-    f *= freq;
-  }
-  return val / maxVal;
-}
-
-function initScene() {
-  scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x87ceeb);
-  
-  camera = new THREE.PerspectiveCamera(60, canvas.clientWidth / canvas.clientHeight, 0.1, 10000);
-  camera.position.set(35, 45, 50);
-  camera.lookAt(0, 0, 0);
-  
-  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-  renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-  renderer.shadowMap.enabled = true;
-  
-  const light = new THREE.DirectionalLight(0xffffff, 0.9);
-  light.position.set(50, 80, 40);
-  light.castShadow = true;
-  light.shadow.mapSize.width = 2048;
-  light.shadow.mapSize.height = 2048;
-  scene.add(light);
-  
-  scene.add(new THREE.AmbientLight(0xffffff, 0.4));
-  
-  // Create Pamir terrain: multi-peak knot using Worley-style cell grid
-  const geom = new THREE.PlaneGeometry(200, 200, 120, 120);
-  const positions = geom.attributes.position;
-  const colors = new Float32Array(positions.count * 3);
-  
-  const peaks = [
-    { x: 0, y: 0, h: 74.95, color: [1.0, 0.95, 0.85] }, // Ismail Samani (center)
-    { x: -25, y: 30, h: 71.05, color: [0.9, 0.85, 0.8] }, // Korzhenevskaya
-    { x: 40, y: 25, h: 65.95, color: [0.85, 0.8, 0.75] }, // Garmo
-    { x: -35, y: -20, h: 62.5, color: [0.8, 0.75, 0.7] }, // Peak 4
-    { x: 30, y: -35, h: 58.0, color: [0.75, 0.7, 0.65] }, // Peak 5
-    { x: 0, y: -50, h: 50.0, color: [0.7, 0.65, 0.6] }, // Peak 6
-  ];
-  
-  for (let i = 0; i < positions.count; i++) {
-    const x = positions.getX(i);
-    const y = positions.getY(i);
-    let z = 15.0; // Base plateau elevation
-    
-    // Add height from each peak (Gaussian falloff)
-    for (const peak of peaks) {
-      const dx = x - peak.x;
-      const dy = y - peak.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const drop = Math.exp(-dist * dist / (2 * 20 * 20));
-      z += peak.h * drop;
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
     }
-    
-    // Add noise for irregularity
-    z += fbm(new THREE.Vector2(x * 0.1, y * 0.1), 3, 2.0) * 5;
-    
-    // Shore taper (smooth transition at edges)
-    const edgeDist = 100 - Math.max(Math.abs(x), Math.abs(y));
-    if (edgeDist < 20) {
-      z *= Math.max(0, edgeDist / 20);
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
     }
-    
-    positions.setZ(i, z);
-    
-    // Color banding based on altitude
-    let r, g, b;
-    if (z > 60) {
-      r = 0.95; g = 0.95; b = 0.95; // Snow
-    } else if (z > 45) {
-      r = 0.8; g = 0.75; b = 0.85; // Alpine
-    } else if (z > 25) {
-      r = 0.6; g = 0.5; b = 0.4; // High plateau
-    } else {
-      r = 0.5; g = 0.4; b = 0.3; // Base plateau
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
     }
-    
-    colors[i * 3] = r;
-    colors[i * 3 + 1] = g;
-    colors[i * 3 + 2] = b;
-  }
-  
-  positions.needsUpdate = true;
-  geom.computeVertexNormals();
-  geom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  
-  const mat = new THREE.MeshStandardMaterial({
-    vertexColors: true,
-    roughness: 0.8,
-    metalness: 0.1,
-  });
-  
-  terrain = new THREE.Mesh(geom, mat);
-  terrain.castShadow = true;
-  terrain.receiveShadow = true;
-  scene.add(terrain);
-  
-  // Range confluence markers
-  rangeMarkers = new THREE.Group();
-  const markers = [
-    { pos: [-50, 50, 25], label: 'Tian Shan', color: 0x4da8da },
-    { pos: [-60, -40, 25], label: 'Hindu Kush', color: 0xffa500 },
-    { pos: [60, -30, 25], label: 'Karakoram', color: 0xff6b6b },
-  ];
-  
-  markers.forEach(m => {
-    const cone = new THREE.Mesh(
-      new THREE.ConeGeometry(2, 8, 8),
-      new THREE.MeshStandardMaterial({ color: m.color })
-    );
-    cone.position.set(m.pos[0], m.pos[1], m.pos[2]);
-    rangeMarkers.add(cone);
-    
-    const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(3, 0.3, 8, 12),
-      new THREE.MeshStandardMaterial({ color: m.color, emissive: m.color, emissiveIntensity: 0.4 })
-    );
-    ring.position.copy(cone.position);
-    ring.position.z += 1;
-    rangeMarkers.add(ring);
-  });
-  
-  rangeMarkers.visible = STATE.showRangeMarkers;
-  scene.add(rangeMarkers);
-  
-  // Peak labels (simple)
-  peakLabels = new THREE.Group();
-  peaks.slice(0, 4).forEach((peak, i) => {
-    const cone = new THREE.Mesh(
-      new THREE.ConeGeometry(1.5, 3, 6),
-      new THREE.MeshStandardMaterial({ color: 0xffd700, emissive: 0xffd700, emissiveIntensity: 0.3 })
-    );
-    cone.position.set(peak.x, peak.y, peak.h + 5);
-    peakLabels.add(cone);
-  });
-  
-  peakLabels.visible = STATE.showPeakLabels;
-  scene.add(peakLabels);
-  
-  statusEl.textContent = 'Pamir Plateau loaded';
-}
-
-function setupToggleHandlers() {
-  document.getElementById('toggleRangeMarkers').checked = STATE.showRangeMarkers;
-  document.getElementById('togglePeakLabels').checked = STATE.showPeakLabels;
-  
-  document.getElementById('toggleRangeMarkers').addEventListener('change', (e) => {
-    STATE.showRangeMarkers = e.target.checked;
-    localStorage.setItem('ftol-game-pamir-plateau-range-markers', STATE.showRangeMarkers);
-    rangeMarkers.visible = STATE.showRangeMarkers;
-  });
-  
-  document.getElementById('togglePeakLabels').addEventListener('change', (e) => {
-    STATE.showPeakLabels = e.target.checked;
-    localStorage.setItem('ftol-game-pamir-plateau-peak-labels', STATE.showPeakLabels);
-    peakLabels.visible = STATE.showPeakLabels;
-  });
-}
-
-let theta = 1.2, phi = 0.9, radius = 120;
-
-function animate() {
-  requestAnimationFrame(animate);
-  
-  theta += 0.0005;
-  const x = radius * Math.sin(phi) * Math.cos(theta);
-  const y = radius * Math.cos(phi);
-  const z = radius * Math.sin(phi) * Math.sin(theta);
-  camera.position.set(x, y, z);
-  camera.lookAt(0, 0, 0);
-  
-  renderer.render(scene, camera);
-}
-
-function setupResizeObserver() {
-  const observer = new ResizeObserver(() => {
-    const w = canvas.clientWidth;
-    const h = canvas.clientHeight;
-    if (w > 0 && h > 0) {
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
     }
-  });
-  observer.observe(canvas);
-}
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
 
-initScene();
-setupToggleHandlers();
-setupResizeObserver();
-animate();
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x87ceeb, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+        var key = new THREE.DirectionalLight(0xffffff, 0.95);
+        key.position.set(50, 80, 40);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return { mesh: new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0.05 })), geo: geo, pos: pos };
+        }
+
+        // Multi-peak mountain knot: a raised plateau floor with clustered
+        // Gaussian summits (the high Pamir peaks) plus fbm roughness, and a
+        // smooth edge taper so the block reads as a knot rising from the
+        // surrounding lowlands. 1 unit = about 100 m vertical, so the
+        // ~7,500 m Ismail Samani summit reads at ~75 units above sea level
+        // on a ~15-unit (about 1,500 m rendered, schematic) plateau base.
+        var peaks = [
+            { x: 0, z: 0, h: 60.0, name: 'Ismail Samani Peak', height_m: '7,495 m' },
+            { x: -25, z: 30, h: 56.1, name: 'Korzhenevskaya Peak', height_m: '7,105 m' },
+            { x: 40, z: 25, h: 51.0, name: 'Ibn Sina (Lenin) Peak', height_m: '7,134 m' },
+            { x: -35, z: -20, h: 47.5, name: null },
+            { x: 30, z: -35, h: 43.0, name: null },
+            { x: 0, z: -50, h: 35.0, name: null }
+        ];
+        function height(x, z) {
+            var h = 15.0; // base plateau elevation
+            for (var i = 0; i < peaks.length; i++) {
+                var dx = x - peaks[i].x, dz = z - peaks[i].z;
+                h += peaks[i].h * Math.exp(-(dx * dx + dz * dz) / (2 * 20 * 20));
+            }
+            h += fbm(x * 0.1 + 3, z * 0.1 + 7, 3) * 6;
+            var edgeDist = 100 - Math.max(Math.abs(x), Math.abs(z));
+            if (edgeDist < 20) { h *= smooth(0, 20, edgeDist); }
+            return h;
+        }
+
+        var col = {
+            valley: new THREE.Color(0x7a6247), plateau: new THREE.Color(0x99795a),
+            alpine: new THREE.Color(0xb0a293), snow: new THREE.Color(0xf4f6f8)
+        };
+        function color(c, h, x, z) {
+            var n = 0.92 + 0.14 * fbm(x * 0.6 + 6, z * 0.6 + 3, 3);
+            if (h > 60) { c.copy(col.snow); }
+            else if (h > 45) { c.copy(col.alpine).lerp(col.snow, smooth(45, 60, h)); }
+            else if (h > 25) { c.copy(col.plateau).lerp(col.alpine, smooth(25, 45, h)); }
+            else { c.copy(col.valley).lerp(col.plateau, smooth(0, 25, h)); }
+            c.multiplyScalar(n);
+        }
+        var terrainInfo = makeTerrain(200, 200, shell.low ? 110 : 150, shell.low ? 110 : 150, height, color);
+        scene.add(terrainInfo.mesh);
+
+        // Range confluence markers: where the neighbouring great ranges
+        // meet the knot (schematic directions, not survey positions).
+        var rangeOn = true, peakOn = true;
+        var rangeDefs = [
+            { x: -50, z: 50, label: 'Tian Shan', color: 0x4da8da },
+            { x: -60, z: -40, label: 'Hindu Kush', color: 0xffa500 },
+            { x: 60, z: -30, label: 'Karakoram', color: 0xff6b6b },
+            { x: 65, z: 45, label: 'Kunlun', color: 0x9b7ede }
+        ];
+        var rangeGroup = new THREE.Group();
+        rangeDefs.forEach(function (m) {
+            var y = height(m.x, m.z);
+            var cone = new THREE.Mesh(
+                new THREE.ConeGeometry(2.4, 9, 8),
+                new THREE.MeshStandardMaterial({ color: m.color })
+            );
+            cone.position.set(m.x, y + 6, m.z);
+            rangeGroup.add(cone);
+            var ring = new THREE.Mesh(
+                new THREE.TorusGeometry(3.4, 0.35, 8, 14),
+                new THREE.MeshStandardMaterial({ color: m.color, emissive: m.color, emissiveIntensity: 0.4 })
+            );
+            ring.rotation.x = -Math.PI / 2;
+            ring.position.set(m.x, y + 1.2, m.z);
+            rangeGroup.add(ring);
+        });
+        scene.add(rangeGroup);
+
+        // Peak markers: small gold cones above the named summits.
+        var peakGroup = new THREE.Group();
+        peaks.forEach(function (p) {
+            if (!p.name) return;
+            var y = height(p.x, p.z);
+            var cone = new THREE.Mesh(
+                new THREE.ConeGeometry(1.6, 4, 6),
+                new THREE.MeshStandardMaterial({ color: 0xffd700, emissive: 0xffd700, emissiveIntensity: 0.3 })
+            );
+            cone.position.set(p.x, y + 5, p.z);
+            peakGroup.add(cone);
+        });
+        scene.add(peakGroup);
+
+        function panelHtml() {
+            return '<h3>The Pamir: the Roof of the World</h3>' +
+                '<p>A high-altitude mountain knot in Central Asia where several of the continent\'s greatest ranges converge - the Tian Shan, Hindu Kush, Karakoram, and Kunlun. Most of it lies within Tajikistan\'s Gorno-Badakhshan region.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Location</td><td>Central Asia - mostly Tajikistan (Gorno-Badakhshan)</td></tr>' +
+                '<tr><td>Highest summit</td><td>Ismail Samani Peak - commonly cited at 7,495 m</td></tr>' +
+                '<tr><td>Other major peaks</td><td>Ibn Sina (Lenin) Peak, 7,134 m; Korzhenevskaya Peak, 7,105 m</td></tr>' +
+                '<tr><td>Converging ranges</td><td>Tian Shan, Hindu Kush, Karakoram, Kunlun</td></tr>' +
+                '<tr><td>Plateau floor</td><td>much of it above 3,000-4,000 m</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - peak positions, terrain, and vertical scale are schematic teaching cues, not survey terrain.</p>';
+        }
+
+        function apply() {
+            rangeGroup.visible = rangeOn;
+            peakGroup.visible = peakOn;
+            var rb = document.getElementById('t3dPamRangeBtn');
+            if (rb) rb.textContent = 'Range confluence markers: ' + (rangeOn ? 'On' : 'Off');
+            var pb = document.getElementById('t3dPamPeakBtn');
+            if (pb) pb.textContent = 'Peak markers: ' + (peakOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ rangeOn: rangeOn, peakOn: peakOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.rangeOn === 'boolean') rangeOn = store.rangeOn;
+        if (typeof store.peakOn === 'boolean') peakOn = store.peakOn;
+        apply();
+
+        var rangeBtn = document.getElementById('t3dPamRangeBtn');
+        if (rangeBtn) rangeBtn.addEventListener('click', function () { rangeOn = !rangeOn; apply(); });
+        var peakBtn = document.getElementById('t3dPamPeakBtn');
+        if (peakBtn) peakBtn.addEventListener('click', function () { peakOn = !peakOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the range confluence markers or the peak markers.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placespamirplateau: 't3dPamControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placespamirplateau: { radius: 210, maxR: 380, minR: 40, phi: 0.95, theta: 0.7, targetY: 25 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
 </script>

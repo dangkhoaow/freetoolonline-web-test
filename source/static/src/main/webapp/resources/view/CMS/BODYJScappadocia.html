@@ -1,175 +1,294 @@
-<script type="module">
-import * as THREE from '/vendor/three/three.module.min.js';
+<script>
+    // 3D scene archetype skeleton (cappadocia) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN engine), fully
+    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only
+    // (cappadocia). All geometry is procedural. places-3d cluster.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (encyclopedic / travel consensus, kept from the
+    // page's original authoring):
+    //   - Cappadocia core area about 300 sq km, central Turkiye
+    //   - Fairy chimneys typically 40-60 m tall, up to 100+ m
+    //   - Rock formed in the Neogene era (Miocene/Pliocene volcanic tuff)
+    //   - Over 3,000 hand-carved cave rooms
+    //   - Ihlara Valley about 14 km long, about 100 m deep
+    //   - UNESCO World Heritage Site since 1985
+    //   - 100+ hot air balloons flying daily
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
 
-const canvas = document.getElementById('t3dCanvas');
-const { camera, controls, scene, renderer } = window.t3dShell({canvas});
+    web.localUpload = false;
 
-// Color palette: warm earth tones (4-color max)
-const PALETTE = {
-  bg: 0x87CEEB,      // sky
-  base: 0xD4A574,    // beige base terrain
-  stripe1: 0xB85C38, // rust-orange stripe
-  stripe2: 0x8B5A3C, // brown stripe
-  valley: 0x5D4037,  // dark brown valley
-  accent: 0xFF6B6B   // red accent (Ihlara)
-};
+    var T3D_SLUG = 'cappadocia';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
 
-// Worley noise & helpers (from stone-forest-shilin precedent)
-function hash2(p) {
-  let x = Math.sin(p.x * 12.9898) * 43758.5453;
-  return x - Math.floor(x);
-}
+    function t3dDetectScene(slug) { return 'placescappadocia'; }
 
-function vnoise(p) {
-  let id = new THREE.Vector2(Math.floor(p.x), Math.floor(p.y));
-  let f = new THREE.Vector2(p.x - id.x, p.y - id.y);
-  let u = f.multiplyScalar(f.x * (3.0 - 2.0 * f.x)).clone();
-  let n0 = hash2(id);
-  let n1 = hash2(id.clone().add(new THREE.Vector2(1, 0)));
-  let ix0 = THREE.MathUtils.lerp(n0, n1, u.x);
-  let n2 = hash2(id.clone().add(new THREE.Vector2(0, 1)));
-  let n3 = hash2(id.clone().add(new THREE.Vector2(1, 1)));
-  let ix1 = THREE.MathUtils.lerp(n2, n3, u.x);
-  return THREE.MathUtils.lerp(ix0, ix1, u.y);
-}
-
-function fbm(p, octaves = 4) {
-  let value = 0, amplitude = 1, frequency = 1, maxval = 0;
-  for (let i = 0; i < octaves; i++) {
-    value += amplitude * vnoise(p.clone().multiplyScalar(frequency));
-    maxval += amplitude;
-    amplitude *= 0.5;
-    frequency *= 2;
-  }
-  return value / maxval;
-}
-
-// Worley pillar field (adapted for fairy chimneys)
-function makeTerrain(WIDTH = 128, HEIGHT = 128) {
-  const geo = new THREE.PlaneGeometry(40, 40, WIDTH - 1, HEIGHT - 1);
-  geo.rotateX(-Math.PI / 2);
-
-  const pos = geo.getAttribute('position');
-  const colors = new THREE.BufferAttribute(new Float32Array(WIDTH * HEIGHT * 3), 3);
-
-  // Worley-based pillar placement (fairy chimneys)
-  const CELL = 1.8;
-  const PRESENCE = 0.68;  // sparse placement
-  const FOOTPRINT_SCALE = 0.4;
-
-  for (let i = 0; i < WIDTH; i++) {
-    for (let j = 0; j < HEIGHT; j++) {
-      const idx = i + j * WIDTH;
-      const p = pos.array;
-      const px = p[idx * 3];
-      const pz = p[idx * 3 + 2];
-
-      // Base height (gentle slope west to east)
-      let h = 2.5 + pz * 0.1;
-
-      // Worley cell for fairy chimneys
-      const cellPos = new THREE.Vector2(px / CELL, pz / CELL);
-      const cellId = new THREE.Vector2(Math.floor(cellPos.x), Math.floor(cellPos.y));
-      const presence = hash2(cellId);
-
-      if (presence < PRESENCE) {
-        const f = new THREE.Vector2(cellPos.x - cellId.x, cellPos.y - cellId.y);
-        const footprint = hash2(cellId.clone().add(new THREE.Vector2(0.123, 0.456)));
-        const cellR = footprint * FOOTPRINT_SCALE + 0.15;
-        const dist = Math.sqrt((f.x - 0.5) * (f.x - 0.5) + (f.y - 0.5) * (f.y - 0.5));
-
-        if (dist < cellR) {
-          // Fairy chimney cone profile (cone taper at top, flared base)
-          const peak = hash2(cellId.clone().add(new THREE.Vector2(0.789, 0.321))) * 2.5 + 2.0;
-          const distNorm = dist / cellR;
-          const profile = (1.0 - distNorm * distNorm) * peak * 0.85;  // cone shape
-          h += profile;
-
-          // Color: stripe bands based on height
-          let colorVal;
-          if (profile < 1.0) colorVal = PALETTE.base;
-          else if (profile < 2.0) colorVal = PALETTE.stripe1;
-          else colorVal = PALETTE.stripe2;
-
-          const r = (colorVal >> 16 & 255) / 255;
-          const g = (colorVal >> 8 & 255) / 255;
-          const b = (colorVal & 255) / 255;
-          colors.setXYZ(idx, r, g, b);
-        } else {
-          const baseR = (PALETTE.base >> 16 & 255) / 255;
-          const baseG = (PALETTE.base >> 8 & 255) / 255;
-          const baseB = (PALETTE.base & 255) / 255;
-          colors.setXYZ(idx, baseR, baseG, baseB);
-        }
-      } else {
-        const baseR = (PALETTE.base >> 16 & 255) / 255;
-        const baseG = (PALETTE.base >> 8 & 255) / 255;
-        const baseB = (PALETTE.base & 255) / 255;
-        colors.setXYZ(idx, baseR, baseG, baseB);
-      }
-
-      // Ihlara Valley: carved gorge along x=-5 line
-      if (Math.abs(px + 5) < 2.5 && Math.abs(pz - 5) < 8) {
-        h -= fbm(new THREE.Vector2(px, pz), 3) * 3 + 1.5;
-      }
-
-      p[idx * 3 + 1] = h;
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
     }
-  }
 
-  geo.setAttribute('color', colors);
-  geo.computeVertexNormals();
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
 
-  return geo;
-}
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        // Reuse the fragment's existing <canvas id="t3dCanvas"> when present -
+        // the host div also carries the status line, fullscreen button, info
+        // panel and toggle row, so we must NOT clear host.innerHTML here.
+        var canvas = document.getElementById('t3dCanvas');
+        var renderer = new THREE.WebGLRenderer({ canvas: canvas || undefined, antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        if (!canvas) { host.appendChild(renderer.domElement); }
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
 
-// Scene setup
-const terrainGeo = makeTerrain(160, 160);
-const terrainMat = new THREE.MeshStandardMaterial({
-  vertexColors: true,
-  metalness: 0.1,
-  roughness: 0.8
-});
-const terrain = new THREE.Mesh(terrainGeo, terrainMat);
-scene.add(terrain);
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
 
-// Ihlara Valley accent ring (orange highlight band)
-const valleyRing = new THREE.Mesh(
-  new THREE.TorusGeometry(8.2, 0.4, 32, 128),
-  new THREE.MeshBasicMaterial({color: PALETTE.accent})
-);
-valleyRing.position.set(-5, 0.5, 5);
-scene.add(valleyRing);
+        // Color palette: warm earth tones (preserved from the original scene)
+        var PALETTE = {
+            bg: 0x87CEEB,      // sky
+            base: 0xD4A574,    // beige base terrain
+            stripe1: 0xB85C38, // rust-orange stripe
+            stripe2: 0x8B5A3C, // brown stripe
+            valley: 0x5D4037,  // dark brown valley
+            accent: 0xFF6B6B   // red accent (Ihlara)
+        };
+        shell.renderer.setClearColor(PALETTE.bg, 1);
 
-// Toggles (per runbook precedent)
-const fairyChimneysGroup = scene.children.filter(obj => obj === terrain)[0];
-const valleyRingGroup = valleyRing;
+        function hash2(x, y) {
+            var s = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+            return s - Math.floor(s);
+        }
+        function lerp(a, b, t) { return a + (b - a) * t; }
+        function vnoise(x, y) {
+            var xi = Math.floor(x), yi = Math.floor(y);
+            var xf = x - xi, yf = y - yi;
+            var u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+            var n0 = hash2(xi, yi), n1 = hash2(xi + 1, yi);
+            var n2 = hash2(xi, yi + 1), n3 = hash2(xi + 1, yi + 1);
+            return lerp(lerp(n0, n1, u), lerp(n2, n3, u), v);
+        }
+        function fbm(x, y, octaves) {
+            var value = 0, amplitude = 1, frequency = 1, maxval = 0;
+            for (var i = 0; i < octaves; i++) {
+                value += amplitude * vnoise(x * frequency, y * frequency);
+                maxval += amplitude;
+                amplitude *= 0.5;
+                frequency *= 2;
+            }
+            return value / maxval;
+        }
+        function setColorHex(colors, idx, hex) {
+            colors.setXYZ(idx, (hex >> 16 & 255) / 255, (hex >> 8 & 255) / 255, (hex & 255) / 255);
+        }
 
-document.getElementById('t3dToggleFairyChimneys').addEventListener('change', (e) => {
-  fairyChimneysGroup.visible = e.target.checked;
-});
+        // Worley-style pillar field (fairy chimneys): sparse cells, each with a
+        // cone-profile spike. Stripe bands by profile height read as the tuff
+        // rock's colored layers. Ihlara Valley carved as a gorge along x=-5.
+        function makeTerrain(WIDTH, HEIGHT) {
+            var geo = new THREE.PlaneGeometry(40, 40, WIDTH - 1, HEIGHT - 1);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.getAttribute('position');
+            var colors = new THREE.BufferAttribute(new Float32Array(WIDTH * HEIGHT * 3), 3);
+            var CELL = 1.8;
+            var PRESENCE = 0.68;
+            var FOOTPRINT_SCALE = 0.4;
+            var p = pos.array;
+            for (var i = 0; i < WIDTH; i++) {
+                for (var j = 0; j < HEIGHT; j++) {
+                    var idx = i + j * WIDTH;
+                    var px = p[idx * 3];
+                    var pz = p[idx * 3 + 2];
+                    // Base height (gentle slope)
+                    var h = 2.5 + pz * 0.1;
+                    setColorHex(colors, idx, PALETTE.base);
+                    // Worley cell for fairy chimneys
+                    var cx = Math.floor(px / CELL), cz = Math.floor(pz / CELL);
+                    var presence = hash2(cx, cz);
+                    if (presence < PRESENCE) {
+                        var fx = px / CELL - cx, fz = pz / CELL - cz;
+                        var footprint = hash2(cx + 0.123, cz + 0.456);
+                        var cellR = footprint * FOOTPRINT_SCALE + 0.15;
+                        var dist = Math.sqrt((fx - 0.5) * (fx - 0.5) + (fz - 0.5) * (fz - 0.5));
+                        if (dist < cellR) {
+                            // Fairy chimney cone profile (taper at top, flared base)
+                            var peak = hash2(cx + 0.789, cz + 0.321) * 2.5 + 2.0;
+                            var distNorm = dist / cellR;
+                            var profile = (1.0 - distNorm * distNorm) * peak * 0.85;
+                            h += profile;
+                            // Color: stripe bands based on height
+                            var colorVal;
+                            if (profile < 1.0) colorVal = PALETTE.base;
+                            else if (profile < 2.0) colorVal = PALETTE.stripe1;
+                            else colorVal = PALETTE.stripe2;
+                            setColorHex(colors, idx, colorVal);
+                        }
+                    }
+                    // Ihlara Valley: carved gorge along x=-5 line
+                    if (Math.abs(px + 5) < 2.5 && Math.abs(pz - 5) < 8) {
+                        h -= fbm(px, pz, 3) * 3 + 1.5;
+                    }
+                    p[idx * 3 + 1] = h;
+                }
+            }
+            geo.setAttribute('color', colors);
+            geo.computeVertexNormals();
+            return geo;
+        }
 
-document.getElementById('t3dToggleIhlaraValley').addEventListener('change', (e) => {
-  valleyRingGroup.visible = e.target.checked;
-});
+        var terrainGeo = makeTerrain(shell.low ? 128 : 160, shell.low ? 128 : 160);
+        var terrain = new THREE.Mesh(terrainGeo, new THREE.MeshStandardMaterial({
+            vertexColors: true, metalness: 0.1, roughness: 0.8
+        }));
+        scene.add(terrain);
 
-// Lighting
-const light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(15, 20, 10);
-scene.add(light);
-scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+        // Ihlara Valley accent ring (orange highlight band)
+        var valleyRing = new THREE.Mesh(
+            new THREE.TorusGeometry(8.2, 0.4, shell.low ? 16 : 32, shell.low ? 64 : 128),
+            new THREE.MeshBasicMaterial({ color: PALETTE.accent })
+        );
+        valleyRing.rotation.x = -Math.PI / 2;
+        valleyRing.position.set(-5, 0.5, 5);
+        scene.add(valleyRing);
 
-// Camera (oblique 3/4 view, similar to grand-canyon)
-camera.position.set(-8, 12, 15);
-camera.lookAt(0, 0, 0);
+        // Lighting
+        var light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(15, 20, 10);
+        scene.add(light);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
-// Render loop
-function animate() {
-  requestAnimationFrame(animate);
-  renderer.render(scene, camera);
-}
-animate();
+        // Toggles (checkbox UI in BODYHTML controls row)
+        var chimneysOn = true, valleyOn = true;
+        var store = t3dLoadStore();
+        if (typeof store.chimneysOn === 'boolean') chimneysOn = store.chimneysOn;
+        if (typeof store.valleyOn === 'boolean') valleyOn = store.valleyOn;
 
-// Save state for future use
-window.t3dSceneState = {terrain, terrainGeo, valleyRingGroup};
+        function apply() {
+            terrain.visible = chimneysOn;
+            valleyRing.visible = valleyOn;
+            var cb1 = document.getElementById('t3dToggleFairyChimneys');
+            if (cb1) cb1.checked = chimneysOn;
+            var cb2 = document.getElementById('t3dToggleIhlaraValley');
+            if (cb2) cb2.checked = valleyOn;
+            try { t3dSaveStore({ chimneysOn: chimneysOn, valleyOn: valleyOn }); } catch (e) {}
+        }
+        apply();
+
+        var chimneyToggle = document.getElementById('t3dToggleFairyChimneys');
+        if (chimneyToggle) chimneyToggle.addEventListener('change', function (e) { chimneysOn = !!e.target.checked; apply(); });
+        var valleyToggle = document.getElementById('t3dToggleIhlaraValley');
+        if (valleyToggle) valleyToggle.addEventListener('change', function (e) { valleyOn = !!e.target.checked; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the fairy chimneys or the Ihlara Valley ring.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        if (!host) return;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(host); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placescappadocia: { radius: 22, maxR: 60, minR: 6, phi: 0.95, theta: -0.5, targetY: 1.5 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
 </script>

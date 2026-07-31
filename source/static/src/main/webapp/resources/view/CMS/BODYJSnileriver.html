@@ -128,8 +128,7 @@
         };
     }
 
-    function makeNileScene(THREE) {
-        var scene = new THREE.Scene();
+    function makeNileScene(THREE, scene) {
         scene.fog = new THREE.Fog(0x87ceeb, 80, 200);
         scene.background = new THREE.Color(0xb8956a);
 
@@ -137,7 +136,8 @@
         var desertGeo = new THREE.PlaneGeometry(100, 140);
         var desertMat = new THREE.MeshPhongMaterial({ color: 0xd4a574, emissive: 0x664d33 });
         var desert = new THREE.Mesh(desertGeo, desertMat);
-        desert.position.z = -0.1;
+        desert.rotation.x = -Math.PI / 2;
+        desert.position.y = -0.1;
         desert.receiveShadow = true;
         scene.add(desert);
 
@@ -151,8 +151,8 @@
             riverPoints.push(new THREE.Vector3(x, 0.1, z));
         }
         var riverTubeGeo = new THREE.TubeGeometry(
-            new THREE.LineCurve3(riverPoints[0], riverPoints[riverPoints.length - 1]),
-            16, width, 6, false
+            new THREE.CatmullRomCurve3(riverPoints),
+            120, width, 6, false
         );
         var riverMat = new THREE.MeshPhongMaterial({ color: 0x2e5090, emissive: 0x1a2f4a });
         var river = new THREE.Mesh(riverTubeGeo, riverMat);
@@ -164,6 +164,7 @@
         var floodGeo = new THREE.PlaneGeometry(8, 120);
         var floodMat = new THREE.MeshPhongMaterial({ color: 0x4a9ebb, emissive: 0x2e5f7a, transparent: true, opacity: 0.4 });
         var flood = new THREE.Mesh(floodGeo, floodMat);
+        flood.rotation.x = -Math.PI / 2;
         flood.position.set(0, 0.12, 0);
         flood.receiveShadow = true;
         scene.add(flood);
@@ -221,16 +222,11 @@
         t3dStatus('Loading three.js...');
         ftoLoadThree().then(function (THREE) {
             t3dStatus('Rendering Nile River...');
-            var sceneData = makeNileScene(THREE);
             var shell = t3dShell(THREE, document.getElementById('t3dCanvasHost'), {
                 fov: 55, radius: 45, theta: 0.5, phi: 0.9, targetY: 0.5, minR: 12, maxR: 200,
-                renderFn: function (scene, camera, t, orbit) {
-                    sceneData.scene.rotation.order = 'YXZ';
-                    sceneData.scene.rotation.z = 0;
-                }
+                renderFn: function (scene, camera, t, orbit) {}
             });
-            Object.assign(sceneData.scene, shell.scene);
-            shell.scene = sceneData.scene;
+            var sceneData = makeNileScene(THREE, shell.scene);
 
             // UI: Flood zone toggle
             var floodToggle = document.getElementById('t3dPfloodToggle');
@@ -253,6 +249,9 @@
                 });
                 citiesToggle.checked = sceneData.store.citiesOn;
             }
+
+            var fsBtn = document.getElementById('t3dFullscreenBtn');
+            if (fsBtn) { fsBtn.addEventListener('click', function () { shell.fullscreen(); }); }
 
             t3dStatus('');
             t3dInfo('<strong>Nile River Explorer</strong><br>Drag to rotate, scroll to zoom. Toggle historic cities and seasonal flood zones.');

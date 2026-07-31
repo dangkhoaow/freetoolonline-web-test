@@ -1,209 +1,291 @@
-<script type="module">
-import * as THREE from "/vendor/three/three.module.min.js";
+<script>
+    // 3D scene archetype skeleton (mount-kilimanjaro) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN engine), fully
+    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only
+    // (mount-kilimanjaro). All geometry is procedural. places-3d cluster.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (encyclopedic consensus):
+    //   - Mount Kilimanjaro, Tanzania - Africa's highest peak at 5,895 m
+    //   - Summit: Uhuru Peak; the world's highest free-standing mountain
+    //   - Dormant stratovolcano; last erupted about 360 years ago
+    //   - Base diameter about 60 km
+    //   - Permanent snow and ice cap despite equatorial latitude
+    //   - Ice coverage has shrunk about 85% since 1912
+    //   - About 50,000 climbers attempt the summit each year
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
 
-const scene = new THREE.Scene();
-const canvas = document.getElementById("t3dCanvasHost");
-const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 10000);
-const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
-renderer.setClearColor(0x87ceeb);
+    web.localUpload = false;
 
-const PEAK_HEIGHT = 5.895;
-const BASE_RADIUS = 30;
-const SNOWLINE = 4.0;
-const SEA_LEVEL = 0;
+    var T3D_SLUG = 'mount-kilimanjaro';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
 
-let snowCapOn = true;
-let bandsOn = true;
+    function t3dDetectScene(slug) { return 'placesmountkilimanjaro'; }
 
-// Fbm helper functions
-function hash2(x, y) { return fract(sin(dot(vec2(x, y), vec2(12.9898, 78.233))) * 43758.5453); }
-function vnoise(p) {
-  const i = floor(p);
-  const f = fract(p);
-  const u = f * f * (3.0 - 2.0 * f);
-  const v = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
-  const a = Math.random() % 1;
-  const b = Math.random() % 1;
-  const c = Math.random() % 1;
-  const d = Math.random() % 1;
-  return a * (1.0 - u) + b * u + (c * (1.0 - u) + d * u) * v;
-}
-function fbm(p, oct) {
-  let v = 0, a = 0.5;
-  for (let i = 0; i < oct; i++) {
-    v += a * Math.sin(p[0] * 0.5 + p[1] * 0.3);
-    p = [p[0] * 2, p[1] * 2];
-    a *= 0.5;
-  }
-  return v;
-}
-function fract(x) { return x - Math.floor(x); }
-function dot(a, b) { return a[0] * b[0] + a[1] * b[1]; }
-function sin(x) { return Math.sin(x); }
-function floor(x) { return Math.floor(x); }
-function vec2(x, y) { return [x, y]; }
-
-// Terrain builder
-function makeTerrain() {
-  const segs = 140;
-  const geom = new THREE.PlaneGeometry(BASE_RADIUS * 2, BASE_RADIUS * 2, segs, segs);
-  geom.rotateX(-Math.PI / 2);
-
-  const pos = geom.getAttribute("position");
-  const colors = [];
-  
-  for (let i = 0; i < pos.count; i++) {
-    const x = pos.getX(i);
-    const y = pos.getY(i);
-    const z = pos.getZ(i);
-    
-    const dist = Math.sqrt(x * x + z * z);
-    if (dist > BASE_RADIUS) {
-      pos.setY(i, -0.3); // Ocean floor
-      colors.push(0.1, 0.3, 0.5); // Dark blue
-      continue;
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
     }
-    
-    // Cone slope: steeper south, gentler north asymmetry
-    const angle = Math.atan2(z, x);
-    const asymmetry = 1 + 0.3 * Math.sin(angle);
-    const slopeFactor = 1 - (dist / BASE_RADIUS) * asymmetry;
-    
-    const fbmVal = fbm([x * 0.2, z * 0.2], 4) * 0.2;
-    const height = PEAK_HEIGHT * slopeFactor + fbmVal;
-    pos.setY(i, height);
-    
-    // Color by altitude + bands toggle
-    let r, g, b;
-    if (bandsOn) {
-      if (height < 1.5) { r = 0.65; g = 0.45; b = 0.2; } // Brown
-      else if (height < 3.5) { r = 0.2; g = 0.55; b = 0.2; } // Green
-      else if (height < SNOWLINE) { r = 0.5; g = 0.5; b = 0.5; } // Grey
-      else { r = 0.95; g = 0.95; b = 0.95; } // White
-    } else {
-      const t = Math.max(0, Math.min(1, height / PEAK_HEIGHT));
-      if (!snowCapOn && height > SNOWLINE) {
-        r = 0.6; g = 0.6; b = 0.6;
-      } else if (height > SNOWLINE) {
-        r = 0.9 + t * 0.05; g = 0.9 + t * 0.05; b = 0.95 + t * 0.05;
-      } else {
-        r = 0.4 + t * 0.3; g = 0.3 + t * 0.2; b = 0.2;
-      }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
     }
-    colors.push(r, g, b);
-  }
-  
-  geom.setAttribute("color", new THREE.BufferAttribute(new Float32Array(colors), 3));
-  geom.computeVertexNormals();
-  
-  const mat = new THREE.MeshPhongMaterial({ 
-    vertexColors: true,
-    flatShading: false,
-    side: THREE.DoubleSide
-  });
-  return new THREE.Mesh(geom, mat);
-}
-
-// Scene setup
-const terrain = makeTerrain();
-scene.add(terrain);
-
-const light1 = new THREE.DirectionalLight(0xffffff, 1);
-light1.position.set(5, 5, 5);
-scene.add(light1);
-
-const light2 = new THREE.AmbientLight(0x888888);
-scene.add(light2);
-
-// Camera
-camera.position.set(40, 20, 40);
-camera.lookAt(0, 2, 0);
-
-// Handle resizes
-function updateSize() {
-  const rect = canvas.getBoundingClientRect();
-  const w = rect.width;
-  const h = Math.max(220, rect.height);
-  renderer.setSize(w, h);
-  camera.aspect = w / h;
-  camera.updateProjectionMatrix();
-}
-
-// Toggle handlers
-document.getElementById("t3dKmjSnowBtn").addEventListener("click", function() {
-  snowCapOn = !snowCapOn;
-  this.textContent = snowCapOn ? "Snow cap: On" : "Snow cap: Off";
-  const pos = terrain.geometry.getAttribute("position");
-  terrain.geometry.dispose();
-  terrain.geometry = makeTerrain().geometry;
-  renderer.render(scene, camera);
-});
-
-document.getElementById("t3dKmjBandsBtn").addEventListener("click", function() {
-  bandsOn = !bandsOn;
-  this.textContent = bandsOn ? "Altitude bands: On" : "Altitude bands: Off";
-  terrain.geometry.dispose();
-  terrain.geometry = makeTerrain().geometry;
-  renderer.render(scene, camera);
-});
-
-document.getElementById("t3dFullscreenBtn").addEventListener("click", () => {
-  canvas.requestFullscreen?.();
-});
-
-// Info panel
-const infoPanel = document.getElementById("t3dInfoPanel");
-infoPanel.innerHTML = `
-<h3>Mount Kilimanjaro</h3>
-<table style="width:100%; font-size:13px;">
-<tr><td><b>Height</b></td><td>5,895 m</td></tr>
-<tr><td><b>Summit</b></td><td>Uhuru Peak</td></tr>
-<tr><td><b>Status</b></td><td>Dormant volcano</td></tr>
-<tr><td><b>Snow cap</b></td><td>Permanent (85% less than 1912)</td></tr>
-<tr><td><b>Last erupted</b></td><td>~360 years ago</td></tr>
-<tr><td><b>Annual climbers</b></td><td>~50,000</td></tr>
-</table>
-`;
-
-const statusDiv = document.getElementById("t3dStatus");
-statusDiv.textContent = "3D terrain loaded - drag to orbit, scroll to zoom";
-
-// Animation loop
-let controls = null;
-function animate() {
-  requestAnimationFrame(animate);
-  
-  // Simple orbit: hold right-click drag to rotate (or touch swipe)
-  let isDragging = false;
-  let previousMousePosition = { x: 0, y: 0 };
-  
-  canvas.addEventListener("mousedown", (e) => {
-    if (e.button === 2 || e.buttons === 2) isDragging = true;
-    previousMousePosition = { x: e.clientX, y: e.clientY };
-  });
-  
-  canvas.addEventListener("mousemove", (e) => {
-    if (isDragging) {
-      const deltaX = e.clientX - previousMousePosition.x;
-      const deltaY = e.clientY - previousMousePosition.y;
-      camera.position.applyAxisAngle(new THREE.Vector3(0, 1, 0), -deltaX * 0.01);
-      camera.position.applyAxisAngle(camera.getWorldDirection(new THREE.Vector3()).normalize(), -deltaY * 0.01);
-      camera.lookAt(0, 2, 0);
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
     }
-    previousMousePosition = { x: e.clientX, y: e.clientY };
-  });
-  
-  canvas.addEventListener("mouseup", () => { isDragging = false; });
-  canvas.addEventListener("contextmenu", (e) => e.preventDefault());
-  canvas.addEventListener("wheel", (e) => {
-    e.preventDefault();
-    const zoom = 1 - e.deltaY * 0.001;
-    camera.position.multiplyScalar(zoom);
-  });
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
 
-  updateSize();
-  renderer.render(scene, camera);
-}
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract: window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
 
-animate();
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x87ceeb, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+        var key = new THREE.DirectionalLight(0xfff3d6, 1.1);
+        key.position.set(14, 22, 10);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+
+        // Vertical scale: 1 unit = 1 km. Peak 5.895 (published 5,895 m).
+        // Snowline about 4.0 km on the model - the permanent cap zone.
+        var PEAK_HEIGHT = 5.895;
+        var BASE_RADIUS = 30;
+        var SNOWLINE = 4.0;
+
+        var snowCapOn = true, bandsOn = true;
+
+        // Asymmetric volcanic cone rising alone off the plateau: the slope
+        // factor is modulated by angle (steeper on one flank, gentler on the
+        // other - the free-standing cone's asymmetry) with fbm relief so the
+        // flanks read as eroded volcanic ridges, not a plain geometric cone.
+        function height(x, z) {
+            var dist = Math.sqrt(x * x + z * z);
+            if (dist >= BASE_RADIUS) { return 0.05 * fbm(x * 0.15 + 9, z * 0.15 + 5, 3); }
+            var angle = Math.atan2(z, x);
+            var asymmetry = 1 + 0.3 * Math.sin(angle);
+            var slopeFactor = Math.max(0, 1 - (dist / BASE_RADIUS) * asymmetry);
+            var relief = fbm(x * 0.2 + 3, z * 0.2 + 7, 4) * 0.35 * (0.3 + slopeFactor);
+            return Math.max(0, PEAK_HEIGHT * Math.pow(slopeFactor, 1.35) + relief);
+        }
+
+        // Altitude-band coloring: arid scrubland at the base, montane green
+        // belt, alpine rock, permanent snow cap above the snowline. The
+        // "bands" toggle switches between crisp published-style zones and a
+        // smooth blended gradient; the "snow cap" toggle previews the peak
+        // as bare rock (the shrinking-ice scenario, about 85% lost since 1912).
+        var col = {
+            scrub: new THREE.Color(0xa68a4f), forest: new THREE.Color(0x33804f),
+            moor: new THREE.Color(0x6f7d55), rock: new THREE.Color(0x7d7a76),
+            snow: new THREE.Color(0xf4f7fa)
+        };
+        function color(c, h, x, z) {
+            var n = 0.9 + 0.18 * fbm(x * 1.1 + 6, z * 1.1 + 3, 3);
+            var snowy = snowCapOn && h >= SNOWLINE;
+            if (bandsOn) {
+                if (snowy) { c.copy(col.snow); }
+                else if (h >= SNOWLINE) { c.copy(col.rock).multiplyScalar(0.9); }
+                else if (h >= 3.0) { c.copy(col.rock); }
+                else if (h >= 1.8) { c.copy(col.moor); }
+                else if (h >= 0.9) { c.copy(col.forest); }
+                else { c.copy(col.scrub); }
+            } else {
+                var t = Math.max(0, Math.min(1, h / PEAK_HEIGHT));
+                if (snowy) { c.copy(col.snow); }
+                else if (h >= SNOWLINE) { c.copy(col.rock).lerp(col.snow, 0.15); }
+                else if (t < 0.35) { c.copy(col.scrub).lerp(col.forest, smooth(0.12, 0.35, t)); }
+                else { c.copy(col.forest).lerp(col.rock, smooth(0.35, 0.72, t)); }
+            }
+            c.multiplyScalar(n);
+        }
+
+        var segs = shell.low ? 120 : 150;
+        var geo = new THREE.PlaneGeometry(BASE_RADIUS * 2.4, BASE_RADIUS * 2.4, segs, segs);
+        geo.rotateX(-Math.PI / 2);
+        var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), cTmp = new THREE.Color();
+        for (var i = 0; i < pos.count; i++) {
+            var x = pos.getX(i), z = pos.getZ(i);
+            var h = height(x, z);
+            pos.setY(i, h);
+            color(cTmp, h, x, z);
+            colors[i * 3] = cTmp.r; colors[i * 3 + 1] = cTmp.g; colors[i * 3 + 2] = cTmp.b;
+        }
+        geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geo.computeVertexNormals();
+        var terrain = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.94, metalness: 0 }));
+        scene.add(terrain);
+
+        function recolor() {
+            var cols = geo.attributes.color, c2 = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                color(c2, pos.getY(i), pos.getX(i), pos.getZ(i));
+                cols.setXYZ(i, c2.r, c2.g, c2.b);
+            }
+            cols.needsUpdate = true;
+        }
+
+        function panelHtml() {
+            return '<h3>Mount Kilimanjaro: Africa\'s rooftop</h3>' +
+                '<p>A dormant volcano rising alone off the Tanzanian plateau - the world\'s highest free-standing mountain, snow-capped despite sitting near the equator.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Height</td><td>5,895 m (Uhuru Peak)</td></tr>' +
+                '<tr><td>Status</td><td>dormant volcano - last erupted about 360 years ago</td></tr>' +
+                '<tr><td>Base diameter</td><td>about 60 km</td></tr>' +
+                '<tr><td>Snow cap</td><td>permanent, but about 85% smaller than in 1912</td></tr>' +
+                '<tr><td>Annual climbers</td><td>about 50,000</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the asymmetric cone, altitude bands, and snowline are schematic teaching cues, not survey terrain.</p>';
+        }
+
+        function apply() {
+            var sb = document.getElementById('t3dKmjSnowBtn');
+            if (sb) sb.textContent = 'Snow cap: ' + (snowCapOn ? 'On' : 'Off');
+            var bb = document.getElementById('t3dKmjBandsBtn');
+            if (bb) bb.textContent = 'Altitude bands: ' + (bandsOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ snowCapOn: snowCapOn, bandsOn: bandsOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.snowCapOn === 'boolean') snowCapOn = store.snowCapOn;
+        if (typeof store.bandsOn === 'boolean') bandsOn = store.bandsOn;
+        recolor();
+        apply();
+
+        var snowBtn = document.getElementById('t3dKmjSnowBtn');
+        if (snowBtn) snowBtn.addEventListener('click', function () { snowCapOn = !snowCapOn; recolor(); apply(); });
+        var bandsBtn = document.getElementById('t3dKmjBandsBtn');
+        if (bandsBtn) bandsBtn.addEventListener('click', function () { bandsOn = !bandsOn; recolor(); apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the snow cap or the altitude bands.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesmountkilimanjaro: 't3dKmjControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesmountkilimanjaro: { radius: 62, maxR: 130, minR: 10, phi: 1.05, theta: 0.7, targetY: 2.0, fov: 50 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
 </script>
