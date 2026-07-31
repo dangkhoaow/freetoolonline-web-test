@@ -739,6 +739,7 @@ try {
     { title: "Mount Kilimanjaro 3D Explorer", url: "https://freetoolonline.com/places-3d/mount-kilimanjaro.html", include: !1, tags: "places-3d" },
     { title: "Salar de Uyuni 3D Explorer", url: "https://freetoolonline.com/places-3d/salar-de-uyuni.html", include: !1, tags: "places-3d" },
     { title: "Tibetan Plateau 3D Explorer", url: "https://freetoolonline.com/places-3d/tibetan-plateau.html", include: !1, tags: "places-3d" },
+    { title: "Atacama Desert 3D Explorer", url: "https://freetoolonline.com/places-3d/atacama-desert.html", include: !1, tags: "places-3d" },
     { title: "Algol Eclipsing Binary 3D Explorer", url: "https://freetoolonline.com/space-3d/algol-eclipsing-binary.html", include: !1, tags: "space-3d" },
     { title: "Main-Sequence Lifetime 3D Explorer", url: "https://freetoolonline.com/space-3d/main-sequence-lifetime.html", include: !1, tags: "space-3d" },
     { title: "Earth Perihelion & Aphelion 3D Explorer", url: "https://freetoolonline.com/space-3d/earth-perihelion-aphelion.html", include: !1, tags: "space-3d" },
