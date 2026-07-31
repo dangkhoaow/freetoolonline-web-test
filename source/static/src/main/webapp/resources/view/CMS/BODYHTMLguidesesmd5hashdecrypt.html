@@ -38,6 +38,20 @@
 
   <p>El cifrado es de dos vias por diseno - el mismo algoritmo corre hacia adelante (cifrar) y hacia atras (descifrar) con una llave que el usuario legitimo tiene. El hashing es de una via por diseno - el algoritmo solo corre hacia adelante, y no hay funcion inversa en la spec. Lo que los servicios publicos de busqueda llaman "descifrar MD5" es busqueda inversa precomputada: hashearon miles de millones de entradas comunes de antemano y guardaron ambos lados, asi que el paso "descifrar" es solo una consulta a la base de datos contra ese indice pre-construido. La matematica detras de MD5 no hace nada durante la busqueda; la base de datos hace el trabajo. <a href="/guides/es/why-md5-cannot-be-decrypted.html">Por que MD5 no puede ser descifrado</a> recorre el detalle criptografico para el lector curioso de matematica; <a href="/guides/es/md5-decrypt-online.html">Herramientas online de descifrar MD5</a> explica por que los sitios que afirman "descifrar" cualquier hash estan dando un nombre equivocado a la operacion.</p>
 
+  <section class="ai-overview-recapture">
+  <h2>Búsqueda en caché vs. ataque de colisión - dos operaciones distintas que involucran MD5</h2>
+  <p>Todo lo anterior trata sobre una búsqueda en caché: el panel de búsqueda inversa solo devuelve un resultado cuando la cadena exacta se hasheó y guardó antes, así que recupera SU entrada original. Un ataque de colisión es una operación completamente distinta: encuentra dos entradas DIFERENTES que producen el mismo digest MD5, sin recuperar ninguna de las dos entradas a partir del hash. Los investigadores demostraron esto contra MD5 en la práctica desde 2008, con un ataque mediante una autoridad certificadora falsa; desde entonces se considera que la resistencia a colisiones de MD5 está rota para fines de seguridad. Esa es la base real de la advertencia "MD5 tiene ataques de colisión conocidos", distinta de la pregunta cotidiana de búsqueda en caché que responde esta página.</p>
+  <table class="quick-facts">
+    <thead><tr><th>Operación</th><th>Qué produce</th><th>¿La herramienta de este sitio lo hace?</th></tr></thead>
+    <tbody>
+      <tr><td>Búsqueda en caché (esta página)</td><td>La entrada original exacta, solo si se hasheó y guardó antes</td><td>Sí - el panel de búsqueda inversa en /md5-converter.html</td></tr>
+      <tr><td>Ataque de colisión</td><td>Dos entradas distintas con un mismo hash; ninguna se "recupera"</td><td>No - no implementado por esta herramienta</td></tr>
+      <tr><td>Fuerza bruta (Caso 2/3 arriba)</td><td>La entrada original, encontrada probando candidatos hasta que un hash coincide</td><td>No - la herramienta solo busca en su propio caché, no calcula hashes nuevos para probar</td></tr>
+    </tbody>
+  </table>
+  <p>La conclusión práctica: un ataque de colisión es la razón por la que MD5 no es apto para firmas digitales y certificados, no una razón para que la búsqueda en caché de esta página devuelva más resultados. El caché solo crece cuando alguien pega una cadena nueva en el panel "Texto a MD5"; no crece porque alguien encuentre una colisión.</p>
+  </section>
+
   <h2>Lectura relacionada en este sitio</h2>
 
   <p>La lectura relacionada en este sitio continua la misma pregunta del hash de una via desde cuatro angulos diferentes:</p>

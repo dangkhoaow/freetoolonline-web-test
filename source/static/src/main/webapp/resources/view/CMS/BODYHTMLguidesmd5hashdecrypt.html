@@ -38,6 +38,20 @@
 
   <p>Encryption is two-way by design - the same algorithm runs forward (encrypt) and backward (decrypt) with a key that the legitimate user holds. Hashing is one-way by design - the algorithm only runs forward, and there is no inverse function in the spec at all. What public lookup services call "MD5 decrypt" is precomputed reverse lookup: they hashed billions of common inputs in advance and stored both sides, so the "decrypt" step is just a database query against that pre-built index. The math behind MD5 is doing nothing during the lookup; the database is doing the work. <a href="/guides/why-md5-cannot-be-decrypted.html">Why MD5 cannot be decrypted</a> walks the cryptographic detail for the math-curious reader; <a href="/guides/md5-decrypt-online.html">MD5 decrypt online tools</a> explains why the websites that claim to "decrypt" any hash are misnaming the operation.</p>
 
+  <section class="ai-overview-recapture">
+  <h2>Cache lookup vs a collision attack - two different things that both involve MD5</h2>
+  <p>Everything above is about a cache lookup: the reverse-lookup panel only returns a hit when the exact original string was hashed and stored before, so it recovers YOUR original input. A collision attack is a different operation entirely - it finds two DIFFERENT inputs that happen to produce the identical MD5 digest, without recovering either input from the hash. Researchers demonstrated this against MD5 in practice starting in 2008 with a rogue certificate authority attack, and MD5's collision resistance has been considered broken for security purposes ever since; that is the real-world basis for the "MD5 has known collision attacks" warning, distinct from the everyday cache-lookup question this page answers.</p>
+  <table class="quick-facts">
+    <thead><tr><th>Operation</th><th>What it produces</th><th>Does this site's tool do it?</th></tr></thead>
+    <tbody>
+      <tr><td>Cache lookup (this page)</td><td>The exact original input, only if previously hashed and cached</td><td>Yes - the reverse-lookup panel on /md5-converter.html</td></tr>
+      <tr><td>Collision attack</td><td>Two different inputs sharing one hash; neither input is "recovered"</td><td>No - not implemented by this tool</td></tr>
+      <tr><td>Brute force (Case 2/3 above)</td><td>The original input, found by trying candidates until one hash matches</td><td>No - the tool only searches its own cache, it does not compute new hashes to test</td></tr>
+    </tbody>
+  </table>
+  <p>The practical takeaway: a collision attack is why MD5 is unsuitable for digital signatures and certificates, not a reason the cache lookup on this page would ever return more hits. The cache only grows when someone pastes a new string into the "Text to MD5" panel; it does not grow from anyone finding a collision.</p>
+  </section>
+
   <h2>Related reading on this site</h2>
 
   <p>Related reading on this site continues the same one-way-hash question from four different angles:</p>

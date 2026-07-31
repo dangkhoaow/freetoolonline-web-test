@@ -38,6 +38,20 @@
 
   <p>Verschluesselung ist per Design zweiseitig - derselbe Algorithmus laeuft vorwaerts (verschluesseln) und rueckwaerts (entschluesseln) mit einem Schluessel, den der legitime Nutzer haelt. Hashing ist per Design einseitig - der Algorithmus laeuft nur vorwaerts, und es gibt ueberhaupt keine Umkehrfunktion in der Spec. Was oeffentliche Lookup-Dienste "MD5 entschluesseln" nennen, ist vorberechnetes Reverse-Lookup: sie haben Milliarden haeufiger Eingaben im Voraus gehasht und beide Seiten gespeichert, also ist der "Entschluesseln"-Schritt nur eine Datenbankabfrage gegen diesen vorgebauten Index. Die Mathematik hinter MD5 macht waehrend des Lookups nichts; die Datenbank macht die Arbeit. <a href="/guides/de/why-md5-cannot-be-decrypted.html">Warum MD5 nicht entschluesselt werden kann</a> geht das kryptographische Detail fuer den mathematisch neugierigen Leser durch; <a href="/guides/de/md5-decrypt-online.html">MD5-Online-Entschluesselungswerkzeuge</a> erklaert, warum die Webseiten, die behaupten, jeden Hash zu "entschluesseln", die Operation falsch benennen.</p>
 
+  <section class="ai-overview-recapture">
+  <h2>Cache-Lookup vs. Kollisionsangriff - zwei verschiedene Dinge, die beide MD5 betreffen</h2>
+  <p>Alles oben ist ein Cache-Lookup: Das Reverse-Lookup-Panel liefert nur einen Treffer, wenn genau diese Zeichenfolge zuvor gehasht und gespeichert wurde - es liefert also IHRE ursprüngliche Eingabe zurück. Ein Kollisionsangriff ist etwas ganz anderes: Er findet zwei VERSCHIEDENE Eingaben, die denselben MD5-Digest ergeben, ohne dabei irgendeine der beiden Eingaben aus dem Hash zurückzugewinnen. Forscher haben das ab 2008 praktisch gegen MD5 demonstriert, mit einem Angriff über eine betrügerische Zertifizierungsstelle - seitdem gilt die Kollisionsresistenz von MD5 für sicherheitsrelevante Zwecke als gebrochen. Das ist die reale Grundlage für die Warnung "MD5 hat bekannte Kollisionsangriffe", getrennt von der alltäglichen Cache-Lookup-Frage, die diese Seite beantwortet.</p>
+  <table class="quick-facts">
+    <thead><tr><th>Operation</th><th>Was sie liefert</th><th>Macht das Tool dieser Seite das?</th></tr></thead>
+    <tbody>
+      <tr><td>Cache-Lookup (diese Seite)</td><td>Die exakte ursprüngliche Eingabe, nur wenn zuvor gehasht und zwischengespeichert</td><td>Ja - das Reverse-Lookup-Panel auf /md5-converter.html</td></tr>
+      <tr><td>Kollisionsangriff</td><td>Zwei verschiedene Eingaben mit demselben Hash; keine der beiden wird "zurückgewonnen"</td><td>Nein - von diesem Tool nicht implementiert</td></tr>
+      <tr><td>Brute Force (Fall 2/3 oben)</td><td>Die ursprüngliche Eingabe, gefunden durch Ausprobieren, bis ein Hash passt</td><td>Nein - das Tool durchsucht nur seinen eigenen Cache und berechnet keine neuen Hashes zum Testen</td></tr>
+    </tbody>
+  </table>
+  <p>Die praktische Konsequenz: Ein Kollisionsangriff ist der Grund, warum MD5 für digitale Signaturen und Zertifikate ungeeignet ist - nicht ein Grund, warum der Cache-Lookup auf dieser Seite mehr Treffer liefern würde. Der Cache wächst nur, wenn jemand eine neue Zeichenfolge in das "Text zu MD5"-Panel einfügt; er wächst nicht dadurch, dass jemand eine Kollision findet.</p>
+  </section>
+
   <h2>Verwandte Lektuere auf dieser Seite</h2>
 
   <p>Verwandte Lektuere auf dieser Seite setzt dieselbe Frage zum Einweg-Hash aus vier verschiedenen Blickwinkeln fort:</p>

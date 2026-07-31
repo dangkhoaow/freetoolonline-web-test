@@ -38,6 +38,20 @@
 
   <p>Enkripsi adalah dua arah berdasarkan desain - algoritma yang sama berjalan ke depan (enkripsi) dan ke belakang (dekripsi) dengan kunci yang dipegang pengguna sah. Hashing adalah satu arah berdasarkan desain - algoritma hanya berjalan ke depan, dan tidak ada fungsi invers dalam spec sama sekali. Apa yang layanan lookup publik sebut "dekripsi MD5" adalah lookup balik yang dihitung sebelumnya: mereka hash miliaran input umum sebelumnya dan menyimpan kedua sisi, sehingga langkah "dekripsi" hanyalah query database terhadap indeks yang dibangun sebelumnya itu. Matematika di balik MD5 tidak melakukan apa pun selama lookup; databaselah yang melakukan pekerjaan. <a href="/guides/id/why-md5-cannot-be-decrypted.html">Mengapa MD5 tidak bisa didekripsi</a> menelusuri detail kriptografis untuk pembaca yang penasaran matematika; <a href="/guides/id/md5-decrypt-online.html">Alat dekripsi MD5 online</a> menjelaskan mengapa situs yang mengklaim "mendekripsi" hash apa pun salah menamai operasi.</p>
 
+  <section class="ai-overview-recapture">
+  <h2>Lookup cache vs serangan collision - dua hal berbeda yang melibatkan MD5</h2>
+  <p>Semua yang dijelaskan di atas adalah lookup cache: panel reverse-lookup hanya mengembalikan hasil jika string yang sama persis pernah di-hash dan disimpan sebelumnya, jadi ia mengembalikan input asli ANDA. Serangan collision adalah operasi yang sama sekali berbeda - serangan ini menemukan dua input BERBEDA yang menghasilkan digest MD5 yang identik, tanpa mengembalikan input mana pun dari hash tersebut. Peneliti mendemonstrasikan hal ini terhadap MD5 secara nyata mulai 2008 lewat serangan certificate authority palsu, dan sejak itu ketahanan collision MD5 dianggap sudah patah untuk keperluan keamanan. Itulah dasar nyata dari peringatan "MD5 memiliki serangan collision yang dikenal", berbeda dari pertanyaan lookup cache sehari-hari yang dijawab halaman ini.</p>
+  <table class="quick-facts">
+    <thead><tr><th>Operasi</th><th>Apa yang dihasilkan</th><th>Apakah alat di situs ini melakukannya?</th></tr></thead>
+    <tbody>
+      <tr><td>Lookup cache (halaman ini)</td><td>Input asli yang tepat, hanya jika sebelumnya di-hash dan disimpan di cache</td><td>Ya - panel reverse-lookup di /md5-converter.html</td></tr>
+      <tr><td>Serangan collision</td><td>Dua input berbeda dengan hash yang sama; tidak ada input yang "dikembalikan"</td><td>Tidak - tidak diimplementasikan oleh alat ini</td></tr>
+      <tr><td>Brute force (Kasus 2/3 di atas)</td><td>Input asli, ditemukan dengan mencoba kandidat sampai satu hash cocok</td><td>Tidak - alat ini hanya mencari di cache-nya sendiri, tidak menghitung hash baru untuk diuji</td></tr>
+    </tbody>
+  </table>
+  <p>Kesimpulan praktisnya: serangan collision adalah alasan mengapa MD5 tidak layak untuk tanda tangan digital dan sertifikat, bukan alasan lookup cache di halaman ini akan mengembalikan lebih banyak hasil. Cache hanya bertambah ketika seseorang menempelkan string baru ke panel "Text to MD5"; cache tidak bertambah karena seseorang menemukan collision.</p>
+  </section>
+
   <h2>Bacaan terkait di situs ini</h2>
 
   <p>Bacaan terkait di situs ini melanjutkan pertanyaan hash satu arah yang sama dari empat sudut berbeda:</p>

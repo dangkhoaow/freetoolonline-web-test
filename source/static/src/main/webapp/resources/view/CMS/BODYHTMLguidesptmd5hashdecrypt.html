@@ -38,6 +38,20 @@
 
   <p>Criptografia e de mao dupla por design - o mesmo algoritmo roda para frente (criptografar) e para tras (descriptografar) com uma chave que o usuario legitimo possui. Hashing e de mao unica por design - o algoritmo so roda para frente, e nao ha funcao inversa na spec. O que servicos publicos de lookup chamam de "descriptografar MD5" e lookup reverso precomputado: eles hashearam bilhoes de entradas comuns de antemao e armazenaram os dois lados, entao o passo de "descriptografar" e apenas uma consulta de banco contra esse indice pre-construido. A matematica por tras de MD5 nao esta fazendo nada durante o lookup; o banco e que esta fazendo o trabalho. <a href="/guides/pt/why-md5-cannot-be-decrypted.html">Por que MD5 nao pode ser descriptografado</a> percorre o detalhe criptografico para o leitor curioso por matematica; <a href="/guides/pt/md5-decrypt-online.html">Ferramentas online de descriptografar MD5</a> explica por que os sites que afirmam "descriptografar" qualquer hash estao usando nome errado para a operacao.</p>
 
+  <section class="ai-overview-recapture">
+  <h2>Busca em cache vs. ataque de colisão - duas operações diferentes que envolvem MD5</h2>
+  <p>Tudo acima é sobre uma busca em cache: o painel de busca inversa só retorna um resultado quando a string exata foi hasheada e armazenada antes, então ele recupera a SUA entrada original. Um ataque de colisão é uma operação completamente diferente - ele encontra duas entradas DIFERENTES que produzem o mesmo digest MD5, sem recuperar nenhuma das duas entradas a partir do hash. Pesquisadores demonstraram isso contra o MD5 na prática a partir de 2008, com um ataque via autoridade certificadora falsa; desde então a resistência a colisões do MD5 é considerada quebrada para fins de segurança. Essa é a base real do alerta "MD5 tem ataques de colisão conhecidos", diferente da pergunta cotidiana de busca em cache que esta página responde.</p>
+  <table class="quick-facts">
+    <thead><tr><th>Operação</th><th>O que produz</th><th>A ferramenta deste site faz isso?</th></tr></thead>
+    <tbody>
+      <tr><td>Busca em cache (esta página)</td><td>A entrada original exata, somente se hasheada e armazenada antes</td><td>Sim - o painel de busca inversa em /md5-converter.html</td></tr>
+      <tr><td>Ataque de colisão</td><td>Duas entradas diferentes com o mesmo hash; nenhuma delas é "recuperada"</td><td>Não - não implementado por esta ferramenta</td></tr>
+      <tr><td>Força bruta (Caso 2/3 acima)</td><td>A entrada original, encontrada testando candidatos até um hash coincidir</td><td>Não - a ferramenta só busca no próprio cache, não calcula novos hashes para testar</td></tr>
+    </tbody>
+  </table>
+  <p>A conclusão prática: um ataque de colisão é o motivo pelo qual o MD5 é inadequado para assinaturas digitais e certificados, não um motivo para a busca em cache desta página retornar mais resultados. O cache só cresce quando alguém cola uma string nova no painel "Text to MD5"; ele não cresce por alguém encontrar uma colisão.</p>
+  </section>
+
   <h2>Leitura relacionada neste site</h2>
 
   <p>Leitura relacionada neste site continua a mesma pergunta do hash de mao unica sob quatro angulos diferentes:</p>

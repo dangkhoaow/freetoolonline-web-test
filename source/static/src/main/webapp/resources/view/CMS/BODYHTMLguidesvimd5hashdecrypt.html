@@ -38,6 +38,20 @@
 
   <p>Mã hóa là hai chiều theo thiết kế - cùng một thuật toán chạy tiến (mã hóa) và ngược (giải mã) với một khóa mà người dùng hợp lệ giữ. Hashing là một chiều theo thiết kế - thuật toán chỉ chạy tiến, và không có hàm nghịch trong spec. Cái mà dịch vụ tra cứu công khai gọi là "giải mã MD5" là tra cứu ngược đặt trước: họ hash hàng tỷ đầu vào phổ biến trước và lưu cả hai phía, nên bước "giải mã" chỉ là một query database chống lại chỉ mục đặt trước đó. Toán học đằng sau MD5 không làm gì trong tra cứu; database làm việc. <a href="/guides/vi/why-md5-cannot-be-decrypted.html">Tại sao MD5 không thể giải mã</a> đi qua chi tiết mật mã cho độc giả tò mò về toán; <a href="/guides/vi/md5-decrypt-online.html">Công cụ online giải mã MD5</a> giải thích tại sao các trang tuyên bố "giải mã" bất kỳ hash nào đang đặt tên sai cho thao tác.</p>
 
+  <section class="ai-overview-recapture">
+  <h2>Tra cứu bộ nhớ đệm và tấn công va chạm (collision) - hai việc khác nhau đều liên quan đến MD5</h2>
+  <p>Mọi thứ ở trên đều là tra cứu bộ nhớ đệm: bảng tra cứu ngược chỉ trả về kết quả khi đúng chuỗi đó đã được hash và lưu trước đó, nên nó trả lại đầu vào gốc của BẠN. Tấn công va chạm là một thao tác hoàn toàn khác - nó tìm ra hai đầu vào KHÁC NHAU nhưng lại tạo ra cùng một digest MD5, mà không khôi phục được đầu vào nào từ hash. Các nhà nghiên cứu đã chứng minh điều này trên MD5 trong thực tế từ năm 2008, bằng một cuộc tấn công thông qua một tổ chức chứng thực giả mạo; từ đó khả năng chống va chạm của MD5 được coi là đã bị phá vỡ cho mục đích an toàn. Đó là cơ sở thực tế cho cảnh báo "MD5 có các cuộc tấn công va chạm đã biết", khác với câu hỏi tra cứu bộ nhớ đệm hàng ngày mà trang này trả lời.</p>
+  <table class="quick-facts">
+    <thead><tr><th>Thao tác</th><th>Kết quả tạo ra</th><th>Công cụ của trang này có làm việc này không?</th></tr></thead>
+    <tbody>
+      <tr><td>Tra cứu bộ nhớ đệm (trang này)</td><td>Đúng đầu vào gốc, chỉ khi đã được hash và lưu trước đó</td><td>Có - bảng tra cứu ngược trên /md5-converter.html</td></tr>
+      <tr><td>Tấn công va chạm</td><td>Hai đầu vào khác nhau chung một hash; không đầu vào nào được "khôi phục"</td><td>Không - công cụ này không triển khai</td></tr>
+      <tr><td>Vét cạn (Trường hợp 2/3 ở trên)</td><td>Đầu vào gốc, tìm được bằng cách thử các khả năng cho đến khi một hash khớp</td><td>Không - công cụ chỉ tìm trong bộ nhớ đệm của riêng nó, không tính hash mới để thử</td></tr>
+    </tbody>
+  </table>
+  <p>Điểm thực tế: tấn công va chạm là lý do MD5 không phù hợp cho chữ ký số và chứng chỉ, không phải lý do khiến tra cứu bộ nhớ đệm trên trang này trả về nhiều kết quả hơn. Bộ nhớ đệm chỉ lớn lên khi ai đó dán một chuỗi mới vào bảng "Text to MD5"; nó không lớn lên vì ai đó tìm ra một va chạm.</p>
+  </section>
+
   <h2>Bài đọc liên quan trên site này</h2>
 
   <p>Bài đọc liên quan trên site này tiếp tục cùng câu hỏi về hash một chiều từ bốn góc nhìn khác nhau:</p>
