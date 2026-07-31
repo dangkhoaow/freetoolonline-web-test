@@ -1,13 +1,5 @@
-<%@ taglib tagdir='/WEB-INF/tags/' prefix='freetoolonline' %>
-<%@ taglib uri='http://java.sun.com/jsp/jstl/functions' prefix='fn' %>
-<freetoolonline:page
-	customStyle='${pageStyle}'
-	browserTitle='${pageBodyTitle}'
-	keyword='${pageBodyKeyword}'
-	description='${pageBodyDesc}'>
-	<freetoolonline:loading/>
-	${pageBodyHTML}
-	<freetoolonline:welcome welcomeTest='${pageBodyWelcome}'/>
-	<freetoolonline:share-btns></freetoolonline:share-btns>
-	${pageBodyJS}
-</freetoolonline:page>
+<% pageContext.setAttribute("bodyJSFile", "BODYJSsaharadesert"); %>
+<%@ include file="/WEB-INF/jsp/_page-header.jsp" %>
+<%@ page import="com.freetoolonline.*" %>
+<% String slug = "saharadesert"; %>
+<%@ include file="/WEB-INF/jsp/_page-renderer.jsp" %>
