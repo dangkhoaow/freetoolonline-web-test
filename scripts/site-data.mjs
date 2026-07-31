@@ -2821,6 +2821,10 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/front-camera-test.html',
   '/guides/id/front-camera-test.html',
   '/guides/de/front-camera-test.html',
+  // prompts/evidence-led-expansion-runbook.md Stream A (fire 1, 2026-07-31) - id-locale satellites, evidence seo-reports/20260731-669/datasources/bing_ai_grounding_queries.json + gsc_keyword_opportunities_28d.json
+  '/guides/id/kompres-zip-ke-25mb.html',
+  '/guides/id/heic-ke-jpg-online.html',
+  '/guides/id/cara-membuka-file-zip-online.html',
   // cycle 20260610-16 - compress-pdf-online-free guide locale variants (pt/es/vi/id/de)
   '/guides/pt/compress-pdf-online-free.html',
   '/guides/es/compress-pdf-online-free.html',
@@ -15133,6 +15137,10 @@ export const JSP_BY_ROUTE = {
   // cycle 20260610-15 Phase 3 — front-camera-test new guide (EN + 5 locale variants); implementing tool /camera-test.html (cluster device-test)
   '/guides/front-camera-test.html': 'guides/front-camera-test.jsp',
   '/guides/pt/front-camera-test.html': 'guides/pt/front-camera-test.jsp', '/guides/es/front-camera-test.html': 'guides/es/front-camera-test.jsp', '/guides/vi/front-camera-test.html': 'guides/vi/front-camera-test.jsp', '/guides/id/front-camera-test.html': 'guides/id/front-camera-test.jsp', '/guides/de/front-camera-test.html': 'guides/de/front-camera-test.jsp',
+  // prompts/evidence-led-expansion-runbook.md Stream A (fire 1, 2026-07-31)
+  '/guides/id/kompres-zip-ke-25mb.html': 'guide/id/kompres-zip-ke-25mb.jsp',
+  '/guides/id/heic-ke-jpg-online.html': 'guide/id/heic-ke-jpg-online.jsp',
+  '/guides/id/cara-membuka-file-zip-online.html': 'guide/id/cara-membuka-file-zip-online.jsp',
   // cycle 20260610-16 Phase 3 — compress-pdf-online-free new guide (EN + 5 locale variants); implementing tools /flatten-pdf.html + /pdf-to-images.html + /compress-image.html + /images-to-pdf.html + /preflight-pdf.html (cluster pdf)
   '/guides/compress-pdf-online-free.html': 'guides/compress-pdf-online-free.jsp',
   '/guides/pt/compress-pdf-online-free.html': 'guides/pt/compress-pdf-online-free.jsp', '/guides/es/compress-pdf-online-free.html': 'guides/es/compress-pdf-online-free.jsp', '/guides/vi/compress-pdf-online-free.html': 'guides/vi/compress-pdf-online-free.jsp', '/guides/id/compress-pdf-online-free.html': 'guides/id/compress-pdf-online-free.jsp', '/guides/de/compress-pdf-online-free.html': 'guides/de/compress-pdf-online-free.jsp',
