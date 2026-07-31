@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/mortgage-calculator-vs-alternatives.html',
+  '/guides/mortgage-calculator-step-by-step.html',
+  '/guides/mortgage-calculator-when.html',
   '/guides/days-from-today-calculator-vs-alternatives.html',
   '/guides/days-from-today-calculator-step-by-step.html',
   '/guides/days-from-today-calculator-when.html',
@@ -14339,6 +14342,7 @@ export const ALIAS_ROUTES = {
   '/av1-to-webm-converter.html': '/video-tools/av1-to-webm-converter.html',
   '/annuity-calculator.html': '/utility-tools/annuity-calculator.html',
   '/days-from-today-calculator.html': '/utility-tools/days-from-today-calculator.html',
+  '/mortgage-calculator.html': '/utility-tools/mortgage-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -26208,6 +26212,10 @@ export const JSP_BY_ROUTE = {
   '/guides/days-from-today-calculator-when.html': 'guide/days-from-today-calculator-when.jsp',
   '/guides/days-from-today-calculator-step-by-step.html': 'guide/days-from-today-calculator-step-by-step.jsp',
   '/guides/days-from-today-calculator-vs-alternatives.html': 'guide/days-from-today-calculator-vs-alternatives.jsp',
+  '/utility-tools/mortgage-calculator.html': 'utility/mortgage-calculator.jsp',
+  '/guides/mortgage-calculator-when.html': 'guide/mortgage-calculator-when.jsp',
+  '/guides/mortgage-calculator-step-by-step.html': 'guide/mortgage-calculator-step-by-step.jsp',
+  '/guides/mortgage-calculator-vs-alternatives.html': 'guide/mortgage-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
