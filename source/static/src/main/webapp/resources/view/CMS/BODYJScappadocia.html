@@ -1,0 +1,175 @@
+<script type="module">
+import * as THREE from '/vendor/three/three.module.js';
+
+const canvas = document.getElementById('t3dCanvas');
+const { camera, controls, scene, renderer } = window.t3dShell({canvas});
+
+// Color palette: warm earth tones (4-color max)
+const PALETTE = {
+  bg: 0x87CEEB,      // sky
+  base: 0xD4A574,    // beige base terrain
+  stripe1: 0xB85C38, // rust-orange stripe
+  stripe2: 0x8B5A3C, // brown stripe
+  valley: 0x5D4037,  // dark brown valley
+  accent: 0xFF6B6B   // red accent (Ihlara)
+};
+
+// Worley noise & helpers (from stone-forest-shilin precedent)
+function hash2(p) {
+  let x = Math.sin(p.x * 12.9898) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+function vnoise(p) {
+  let id = new THREE.Vector2(Math.floor(p.x), Math.floor(p.y));
+  let f = new THREE.Vector2(p.x - id.x, p.y - id.y);
+  let u = f.multiplyScalar(f.x * (3.0 - 2.0 * f.x)).clone();
+  let n0 = hash2(id);
+  let n1 = hash2(id.clone().add(new THREE.Vector2(1, 0)));
+  let ix0 = THREE.MathUtils.lerp(n0, n1, u.x);
+  let n2 = hash2(id.clone().add(new THREE.Vector2(0, 1)));
+  let n3 = hash2(id.clone().add(new THREE.Vector2(1, 1)));
+  let ix1 = THREE.MathUtils.lerp(n2, n3, u.x);
+  return THREE.MathUtils.lerp(ix0, ix1, u.y);
+}
+
+function fbm(p, octaves = 4) {
+  let value = 0, amplitude = 1, frequency = 1, maxval = 0;
+  for (let i = 0; i < octaves; i++) {
+    value += amplitude * vnoise(p.clone().multiplyScalar(frequency));
+    maxval += amplitude;
+    amplitude *= 0.5;
+    frequency *= 2;
+  }
+  return value / maxval;
+}
+
+// Worley pillar field (adapted for fairy chimneys)
+function makeTerrain(WIDTH = 128, HEIGHT = 128) {
+  const geo = new THREE.PlaneGeometry(40, 40, WIDTH - 1, HEIGHT - 1);
+  geo.rotateX(-Math.PI / 2);
+
+  const pos = geo.getAttribute('position');
+  const colors = new THREE.BufferAttribute(new Float32Array(WIDTH * HEIGHT * 3), 3);
+
+  // Worley-based pillar placement (fairy chimneys)
+  const CELL = 1.8;
+  const PRESENCE = 0.68;  // sparse placement
+  const FOOTPRINT_SCALE = 0.4;
+
+  for (let i = 0; i < WIDTH; i++) {
+    for (let j = 0; j < HEIGHT; j++) {
+      const idx = i + j * WIDTH;
+      const p = pos.array;
+      const px = p[idx * 3];
+      const pz = p[idx * 3 + 2];
+
+      // Base height (gentle slope west to east)
+      let h = 2.5 + pz * 0.1;
+
+      // Worley cell for fairy chimneys
+      const cellPos = new THREE.Vector2(px / CELL, pz / CELL);
+      const cellId = new THREE.Vector2(Math.floor(cellPos.x), Math.floor(cellPos.y));
+      const presence = hash2(cellId);
+
+      if (presence < PRESENCE) {
+        const f = new THREE.Vector2(cellPos.x - cellId.x, cellPos.y - cellId.y);
+        const footprint = hash2(cellId.clone().add(new THREE.Vector2(0.123, 0.456)));
+        const cellR = footprint * FOOTPRINT_SCALE + 0.15;
+        const dist = Math.sqrt((f.x - 0.5) * (f.x - 0.5) + (f.y - 0.5) * (f.y - 0.5));
+
+        if (dist < cellR) {
+          // Fairy chimney cone profile (cone taper at top, flared base)
+          const peak = hash2(cellId.clone().add(new THREE.Vector2(0.789, 0.321))) * 2.5 + 2.0;
+          const distNorm = dist / cellR;
+          const profile = (1.0 - distNorm * distNorm) * peak * 0.85;  // cone shape
+          h += profile;
+
+          // Color: stripe bands based on height
+          let colorVal;
+          if (profile < 1.0) colorVal = PALETTE.base;
+          else if (profile < 2.0) colorVal = PALETTE.stripe1;
+          else colorVal = PALETTE.stripe2;
+
+          const r = (colorVal >> 16 & 255) / 255;
+          const g = (colorVal >> 8 & 255) / 255;
+          const b = (colorVal & 255) / 255;
+          colors.setXYZ(idx, r, g, b);
+        } else {
+          const baseR = (PALETTE.base >> 16 & 255) / 255;
+          const baseG = (PALETTE.base >> 8 & 255) / 255;
+          const baseB = (PALETTE.base & 255) / 255;
+          colors.setXYZ(idx, baseR, baseG, baseB);
+        }
+      } else {
+        const baseR = (PALETTE.base >> 16 & 255) / 255;
+        const baseG = (PALETTE.base >> 8 & 255) / 255;
+        const baseB = (PALETTE.base & 255) / 255;
+        colors.setXYZ(idx, baseR, baseG, baseB);
+      }
+
+      // Ihlara Valley: carved gorge along x=-5 line
+      if (Math.abs(px + 5) < 2.5 && Math.abs(pz - 5) < 8) {
+        h -= fbm(new THREE.Vector2(px, pz), 3) * 3 + 1.5;
+      }
+
+      p[idx * 3 + 1] = h;
+    }
+  }
+
+  geo.setAttribute('color', colors);
+  geo.computeVertexNormals();
+
+  return geo;
+}
+
+// Scene setup
+const terrainGeo = makeTerrain(160, 160);
+const terrainMat = new THREE.MeshStandardMaterial({
+  vertexColors: true,
+  metalness: 0.1,
+  roughness: 0.8
+});
+const terrain = new THREE.Mesh(terrainGeo, terrainMat);
+scene.add(terrain);
+
+// Ihlara Valley accent ring (orange highlight band)
+const valleyRing = new THREE.Mesh(
+  new THREE.TorusGeometry(8.2, 0.4, 32, 128),
+  new THREE.MeshBasicMaterial({color: PALETTE.accent})
+);
+valleyRing.position.set(-5, 0.5, 5);
+scene.add(valleyRing);
+
+// Toggles (per runbook precedent)
+const fairyChimneysGroup = scene.children.filter(obj => obj === terrain)[0];
+const valleyRingGroup = valleyRing;
+
+document.getElementById('t3dToggleFairyChimneys').addEventListener('change', (e) => {
+  fairyChimneysGroup.visible = e.target.checked;
+});
+
+document.getElementById('t3dToggleIhlaraValley').addEventListener('change', (e) => {
+  valleyRingGroup.visible = e.target.checked;
+});
+
+// Lighting
+const light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(15, 20, 10);
+scene.add(light);
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+// Camera (oblique 3/4 view, similar to grand-canyon)
+camera.position.set(-8, 12, 15);
+camera.lookAt(0, 0, 0);
+
+// Render loop
+function animate() {
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+}
+animate();
+
+// Save state for future use
+window.t3dSceneState = {terrain, terrainGeo, valleyRingGroup};
+</script>

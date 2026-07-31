@@ -740,6 +740,7 @@ try {
     { title: "Salar de Uyuni 3D Explorer", url: "https://freetoolonline.com/places-3d/salar-de-uyuni.html", include: !1, tags: "places-3d" },
   { url: '/places-3d/dong-van-plateau.html', tags: 'places-3d' },
     { title: "Tibetan Plateau 3D Explorer", url: "https://freetoolonline.com/places-3d/tibetan-plateau.html", include: !1, tags: "places-3d" },
+    { title: "Cappadocia 3D Explorer - Fairy Chimneys & Ihlara Valley", url: "https://freetoolonline.com/places-3d/cappadocia.html", include: !1, tags: "places-3d" },
     { title: "Pamir Plateau 3D Explorer", url: "https://freetoolonline.com/places-3d/pamir-plateau.html", include: !1, tags: "places-3d" },
     { title: "Atacama Desert 3D Explorer", url: "https://freetoolonline.com/places-3d/atacama-desert.html", include: !1, tags: "places-3d" },
     { title: "Algol Eclipsing Binary 3D Explorer", url: "https://freetoolonline.com/space-3d/algol-eclipsing-binary.html", include: !1, tags: "space-3d" },
