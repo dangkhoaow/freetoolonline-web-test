@@ -1,0 +1,140 @@
+<script type="module">
+import * as THREE from '/vendor/three/build/three.esm.js';
+
+const canvas = document.getElementById('t3dCanvas');
+const statusEl = document.getElementById('t3dStatus');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x1a1a1e);
+const camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 10000);
+camera.position.set(35, 32, 45);
+camera.lookAt(0, 0, 0);
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+renderer.shadowMap.enabled = true;
+
+// Lighting
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+directionalLight.position.set(30, 50, 20);
+directionalLight.castShadow = true;
+directionalLight.shadow.camera.far = 200;
+scene.add(directionalLight);
+
+// Terrain - Worley-based karst pillars (similar to Stone Forest)
+const CELL = 2.0, PRESENCE = 0.68, REACH = 2.8;
+const terrainGeom = new THREE.BufferGeometry();
+const gridSize = 60, segSize = gridSize / 12;
+const vertices = [], indices = [];
+for (let z = 0; z <= gridSize; z += segSize) {
+  for (let x = 0; x <= gridSize; x += segSize) {
+    const cx = Math.floor(x / CELL), cz = Math.floor(z / CELL);
+    let height = 0;
+    for (let dz = -2; dz <= 2; dz++) {
+      for (let dx = -2; dx <= 2; dx++) {
+        const hash = Math.sin((cx+dx)*73.1 + (cz+dz)*157.3)*43758.5453;
+        if (hash - Math.floor(hash) < PRESENCE) {
+          const px = (cx+dx)*CELL + Math.sin(hash*7.3)*0.3*CELL;
+          const pz = (cz+dz)*CELL + Math.cos(hash*11.2)*0.3*CELL;
+          const dist = Math.sqrt((x-px)*(x-px) + (z-pz)*(z-pz));
+          if (dist < REACH) {
+            const rnd = Math.sin((cx+dx)*97 + (cz+dz)*193)*43758.5453;
+            const h = 18 * (1 - dist/REACH) * (0.7 + 0.3*rnd);
+            height = Math.max(height, h);
+          }
+        }
+      }
+    }
+    vertices.push(x - gridSize/2, height, z - gridSize/2);
+  }
+}
+for (let zi = 0; zi < gridSize / segSize; zi++) {
+  for (let xi = 0; xi < gridSize / segSize; xi++) {
+    const a = zi * (gridSize/segSize + 1) + xi;
+    const b = a + 1, c = a + (gridSize/segSize + 1), d = c + 1;
+    indices.push(a, c, b, b, c, d);
+  }
+}
+terrainGeom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+terrainGeom.setIndex(new THREE.BufferAttribute(new Uint32Array(indices), 1));
+terrainGeom.computeVertexNormals();
+
+// Color buffers for toggles
+const vertexCount = vertices.length / 3;
+const colorArray1 = new Float32Array(vertexCount * 3);
+const colorArray2 = new Float32Array(vertexCount * 3);
+for (let i = 0; i < vertexCount; i++) {
+  const h = vertices[i*3 + 1];
+  const hNorm = Math.min(h / 18, 1);
+  // Time bands (Ordovician/Silurian/Devonian approximation)
+  if (hNorm < 0.3) {
+    colorArray1[i*3] = 0.8; colorArray1[i*3+1] = 0.6; colorArray1[i*3+2] = 0.3;
+  } else if (hNorm < 0.7) {
+    colorArray1[i*3] = 0.6; colorArray1[i*3+1] = 0.7; colorArray1[i*3+2] = 0.5;
+  } else {
+    colorArray1[i*3] = 0.4; colorArray1[i*3+1] = 0.8; colorArray1[i*3+2] = 0.7;
+  }
+  // Rock types (limestone/dolomite approximation)
+  if (hNorm < 0.4) {
+    colorArray2[i*3] = 0.7; colorArray2[i*3+1] = 0.7; colorArray2[i*3+2] = 0.6;
+  } else if (hNorm < 0.7) {
+    colorArray2[i*3] = 0.85; colorArray2[i*3+1] = 0.8; colorArray2[i*3+2] = 0.6;
+  } else {
+    colorArray2[i*3] = 0.9; colorArray2[i*3+1] = 0.85; colorArray2[i*3+2] = 0.7;
+  }
+}
+terrainGeom.setAttribute('colorTime', new THREE.BufferAttribute(colorArray1, 3));
+terrainGeom.setAttribute('colorRock', new THREE.BufferAttribute(colorArray2, 3));
+const terrainMat = new THREE.MeshPhongMaterial({ color: 0x8a9a7a, flatShading: false, shininess: 10 });
+const terrain = new THREE.Mesh(terrainGeom, terrainMat);
+terrain.castShadow = true;
+terrain.receiveShadow = true;
+scene.add(terrain);
+
+// Toggles
+let showTime = true, showRock = false;
+document.getElementById('t3dP01Toggle_TimeShow').addEventListener('change', (e) => {
+  showTime = e.target.checked;
+  updateTerrain();
+});
+document.getElementById('t3dP01Toggle_RockTypes').addEventListener('change', (e) => {
+  showRock = e.target.checked;
+  updateTerrain();
+});
+
+function updateTerrain() {
+  if (showTime && !showRock) {
+    terrainGeom.setAttribute('color', terrainGeom.getAttribute('colorTime'));
+  } else if (showRock && !showTime) {
+    terrainGeom.setAttribute('color', terrainGeom.getAttribute('colorRock'));
+  } else if (showTime && showRock) {
+    const mixed = new Float32Array(vertexCount * 3);
+    for (let i = 0; i < vertexCount; i++) {
+      mixed[i*3] = (colorArray1[i*3] + colorArray2[i*3]) / 2;
+      mixed[i*3+1] = (colorArray1[i*3+1] + colorArray2[i*3+1]) / 2;
+      mixed[i*3+2] = (colorArray1[i*3+2] + colorArray2[i*3+2]) / 2;
+    }
+    terrainGeom.setAttribute('color', new THREE.BufferAttribute(mixed, 3));
+  }
+  terrainMat.flatShading = false;
+}
+terrainGeom.setAttribute('color', terrainGeom.getAttribute('colorTime'));
+
+function animate() {
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+}
+animate();
+
+// Handle canvas resize
+window.addEventListener('resize', () => {
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+});
+
+statusEl.textContent = 'Dong Van Plateau | Karst plateau: 2,432 sq km | Elevation: 800–1,600 m';
+</script>
