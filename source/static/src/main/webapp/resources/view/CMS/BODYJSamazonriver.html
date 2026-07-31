@@ -1,216 +1,177 @@
-<!-- Amazon River 3D Scene -->
-<script>
-  window.t3dSceneInit = async function() {
-    const canvas = document.getElementById('t3dCanvasHost');
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 10000);
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-    renderer.setClearColor(0x1a1a2e, 1);
+<script type="module">
+import * as THREE from '/vendor/three/build/three.module.js';
 
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-    scene.add(ambientLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(5, 8, 3);
-    scene.add(directionalLight);
+const MOBILE = window.innerWidth < 768;
+const canvasHost = document.getElementById('t3dCanvasHost');
+const statusDiv = document.getElementById('t3dStatus');
+const infoPanel = document.getElementById('t3dInfoPanel');
+const controlsSpan = document.getElementById('t3dAmazonControls');
+const fullscreenBtn = document.getElementById('t3dFullscreenBtn');
+const seasonBtn = document.getElementById('t3dAmazonSeasonBtn');
+const plumeBtn = document.getElementById('t3dAmazonPlumeBtn');
 
-    // Terrain base (continent)
-    const baseGeo = new THREE.PlaneGeometry(100, 100, 160, 160);
-    const baseVerts = baseGeo.attributes.position.array;
-    for (let i = 0; i < baseVerts.length; i += 3) {
-      const x = baseVerts[i];
-      const y = baseVerts[i + 1];
-      const d = Math.sqrt(x*x + y*y);
-      baseVerts[i + 2] = 0.1 * Math.sin(d * 0.15) * Math.cos(x * 0.08);
-    }
-    baseGeo.attributes.position.needsUpdate = true;
-    baseGeo.computeVertexNormals();
+let scene, camera, renderer, controls;
+let riverMesh, floodplainMesh, plumeMesh, atlanticMesh;
+let isDryMode = true;
+let showPlume = true;
 
-    // Vertex color banding for land
-    const colors = new Float32Array(baseVerts.length);
-    for (let i = 0; i < baseVerts.length; i += 3) {
-      const h = baseVerts[i + 2];
-      const hNorm = (h + 1) / 2;
-      colors[i] = 0.4 + hNorm * 0.2;     // R
-      colors[i + 1] = 0.5 + hNorm * 0.15; // G
-      colors[i + 2] = 0.3;                // B
-    }
-    baseGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    const baseMat = new THREE.MeshPhongMaterial({ map: null, vertexColors: true, shininess: 30 });
-    const baseMesh = new THREE.Mesh(baseGeo, baseMat);
-    scene.add(baseMesh);
+function initScene() {
+  const width = canvasHost.clientWidth;
+  const height = canvasHost.clientHeight;
 
-    // River main stem (meandering curve)
-    const riverGroup = new THREE.Group();
-    scene.add(riverGroup);
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x1a1a2e);
 
-    function riverPath(t) {
-      // Parametric meandering river path: starts north, meanders southward, deltas southeast
-      const amplitude = 15 + 5 * Math.sin(t * Math.PI * 2);
-      const phase = t * 4 * Math.PI;
-      const x = amplitude * Math.sin(phase);
-      const y = 40 - t * 80; // runs from north (40) to south (-40)
-      return new THREE.Vector3(x, y, 0.1);
-    }
+  camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 10000);
+  camera.position.set(0, 80, 60);
+  camera.lookAt(0, 0, 0);
 
-    const riverSteps = 80;
-    const riverPoints = [];
-    for (let i = 0; i <= riverSteps; i++) {
-      riverPoints.push(riverPath(i / riverSteps));
-    }
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(width, height);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  canvasHost.appendChild(renderer.domElement);
 
-    const riverCurve = new THREE.CatmullRomCurve3(riverPoints);
-    const riverGeo = new THREE.LatheGeometry(
-      [new THREE.Vector2(0, 0), new THREE.Vector2(3, 0)],
-      16
-    );
+  initLights();
+  buildTerrain();
+  buildRiver();
+  buildPlume();
 
-    // Tube-like river using TubeGeometry
-    const tubeGeo = new THREE.TubeGeometry(riverCurve, riverSteps, 3, 8, false);
+  controlsSpan.style.display = 'inline';
+  statusDiv.textContent = '';
 
-    // Precompute two color buffers for the river (normal + discharge high)
-    const riverColors1 = new Float32Array(tubeGeo.attributes.position.count * 3);
-    const riverColors2 = new Float32Array(tubeGeo.attributes.position.count * 3);
-    const posArray = tubeGeo.attributes.position.array;
+  animate();
+}
 
-    for (let i = 0; i < tubeGeo.attributes.position.count; i++) {
-      const z = posArray[i * 3 + 2];
-      const tPos = z / 80;
+function initLights() {
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+  scene.add(ambientLight);
 
-      // Normal water: sediment tan to blue gradient
-      const blend1 = Math.max(0, Math.min(1, (40 + posArray[i * 3 + 1]) / 80));
-      riverColors1[i * 3] = 0.6 + blend1 * 0.15;     // R: tan to darker
-      riverColors1[i * 3 + 1] = 0.5 + blend1 * 0.2;  // G: toward blue
-      riverColors1[i * 3 + 2] = 0.3 + blend1 * 0.4;  // B: toward blue
+  const sunLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  sunLight.position.set(50, 100, 50);
+  sunLight.castShadow = true;
+  scene.add(sunLight);
+}
 
-      // High discharge: more sediment brown
-      riverColors2[i * 3] = 0.7 + blend1 * 0.1;
-      riverColors2[i * 3 + 1] = 0.5;
-      riverColors2[i * 3 + 2] = 0.2;
-    }
-
-    tubeGeo.setAttribute('color', new THREE.BufferAttribute(riverColors1, 3));
-    const riverMat = new THREE.MeshPhongMaterial({ vertexColors: true, shininess: 50 });
-    const riverMesh = new THREE.Mesh(tubeGeo, riverMat);
-    riverGroup.add(riverMesh);
-
-    // Tributaries (Rio Negro, Rio Madeira, Rio Xingu, etc.)
-    const tributaryData = [
-      { angle: -0.3, dist: 25, label: 'Negro' },
-      { angle: 0.5, dist: 5, label: 'Madeira' },
-      { angle: -0.8, dist: 15, label: 'Xingu' },
-      { angle: 0.2, dist: 35, label: 'Solimões' }
-    ];
-
-    tributaryData.forEach(trib => {
-      const tY = 35 - trib.dist * 2;
-      const tX = trib.angle * 30;
-      const triPoints = [
-        riverPath(0.5),
-        new THREE.Vector3(tX * 0.7, tY + 10, 0.05),
-        new THREE.Vector3(tX, tY, 0.08)
-      ];
-      const triCurve = new THREE.CatmullRomCurve3(triPoints);
-      const triGeo = new THREE.TubeGeometry(triCurve, 12, 1.2, 6, false);
-
-      // Precompute tributary colors (darker blue)
-      const triColors = new Float32Array(triGeo.attributes.position.count * 3);
-      for (let i = 0; i < triGeo.attributes.position.count; i++) {
-        triColors[i * 3] = 0.35;
-        triColors[i * 3 + 1] = 0.45;
-        triColors[i * 3 + 2] = 0.6;
-      }
-      triGeo.setAttribute('color', new THREE.BufferAttribute(triColors, 3));
-
-      const triMat = new THREE.MeshPhongMaterial({ vertexColors: true, shininess: 40 });
-      const triMesh = new THREE.Mesh(triGeo, triMat);
-      triMesh.userData.isTimedToggle = true;
-      triMesh.userData.toggleId = 'tributaries';
-      riverGroup.add(triMesh);
-    });
-
-    // Sediment plume delta (at mouth, ~30S, ~60W toward ocean)
-    const plumeGeo = new THREE.SphereGeometry(5, 32, 32);
-    const plumeColors = new Float32Array(plumeGeo.attributes.position.count * 3);
-    for (let i = 0; i < plumeGeo.attributes.position.count; i++) {
-      plumeColors[i * 3] = 0.65;
-      plumeColors[i * 3 + 1] = 0.50;
-      plumeColors[i * 3 + 2] = 0.35;
-    }
-    plumeGeo.setAttribute('color', new THREE.BufferAttribute(plumeColors, 3));
-    const plumeMat = new THREE.MeshPhongMaterial({ vertexColors: true, transparent: true, opacity: 0.7 });
-    const plumeMesh = new THREE.Mesh(plumeGeo, plumeMat);
-    plumeMesh.position.set(-10, -40, -0.5);
-    scene.add(plumeMesh);
-
-    // Marker for Amazon source (Andes)
-    const sourceGeo = new THREE.ConeGeometry(1, 3, 8);
-    const sourceMat = new THREE.MeshPhongMaterial({ color: 0xffaa00 });
-    const sourceMesh = new THREE.Mesh(sourceGeo, sourceMat);
-    sourceMesh.position.set(-50, 35, 0.2);
-    scene.add(sourceMesh);
-
-    // Ocean base (southeast corner)
-    const oceanGeo = new THREE.PlaneGeometry(80, 80, 40, 40);
-    const oceanMat = new THREE.MeshPhongMaterial({ color: 0x1e5a7a });
-    const oceanMesh = new THREE.Mesh(oceanGeo, oceanMat);
-    oceanMesh.position.z = -0.2;
-    oceanMesh.position.x = 20;
-    oceanMesh.position.y = -50;
-    scene.add(oceanMesh);
-
-    // Camera setup (plan view of the river from above-ish)
-    camera.position.set(0, 0, 50);
-    camera.lookAt(0, -10, 0);
-
-    // Toggles: discharge level (colors) + tributary visibility
-    window.t3dToggles = {
-      discharge: { label: 'Discharge Levels', current: 1 },
-      tributaries: { label: 'Tributaries', current: 1 }
-    };
-
-    window.t3dToggleHandler = (toggle, state) => {
-      if (toggle === 'discharge') {
-        // Swap river mesh colors
-        if (state === 1) {
-          tubeGeo.setAttribute('color', new THREE.BufferAttribute(riverColors1, 3));
-        } else {
-          tubeGeo.setAttribute('color', new THREE.BufferAttribute(riverColors2, 3));
-        }
-        tubeGeo.attributes.color.needsUpdate = true;
-      } else if (toggle === 'tributaries') {
-        riverGroup.children.forEach(child => {
-          if (child.userData.toggleId === 'tributaries') {
-            child.visible = state === 1;
-          }
-        });
-      }
-    };
-
-    // Animation loop
-    const animate = () => {
-      requestAnimationFrame(animate);
-      renderer.render(scene, camera);
-    };
-    animate();
-
-    // Window resize observer
-    const resizeObserver = new ResizeObserver(() => {
-      const w = canvas.clientWidth;
-      const h = canvas.clientHeight;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
-    });
-    resizeObserver.observe(canvas.parentElement);
-
-    window.t3dReady = true;
-  };
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', window.t3dSceneInit);
-  } else {
-    window.t3dSceneInit();
+function buildTerrain() {
+  const geometry = new THREE.PlaneGeometry(200, 200, 40, 40);
+  const positions = geometry.attributes.position;
+  
+  for (let i = 0; i < positions.count; i++) {
+    const x = positions.getX(i);
+    const y = positions.getY(i);
+    const baseZ = Math.sin(x / 40) * 2 + Math.cos(y / 50) * 1.5;
+    const floodZ = isDryMode ? baseZ : baseZ + 8;
+    positions.setZ(i, floodZ);
   }
+  positions.needsUpdate = true;
+  geometry.computeVertexNormals();
+
+  const material = new THREE.MeshStandardMaterial({ color: 0x8b7355 });
+  floodplainMesh = new THREE.Mesh(geometry, material);
+  scene.add(floodplainMesh);
+
+  atlanticMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(300, 200),
+    new THREE.MeshStandardMaterial({ color: 0x1a5f7a })
+  );
+  atlanticMesh.position.z = -0.5;
+  atlanticMesh.position.y = -120;
+  scene.add(atlanticMesh);
+}
+
+function buildRiver() {
+  const curve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(-60, -40, 1), new THREE.Vector3(-50, -20, 1),
+    new THREE.Vector3(-40, 0, 1), new THREE.Vector3(-20, 20, 1),
+    new THREE.Vector3(0, 40, 1), new THREE.Vector3(20, 50, 1),
+    new THREE.Vector3(40, 55, 1), new THREE.Vector3(60, 50, 1),
+    new THREE.Vector3(70, 30, 1), new THREE.Vector3(75, -10, 1),
+    new THREE.Vector3(70, -40, 1), new THREE.Vector3(50, -60, 1),
+    new THREE.Vector3(20, -80, 1), new THREE.Vector3(-10, -110, 1)
+  ]);
+
+  const points = curve.getPoints(80);
+  const geometry = new THREE.BufferGeometry();
+  const widths = [];
+  for (let i = 0; i < points.length; i++) {
+    const t = i / points.length;
+    widths.push(3 + Math.sin(t * Math.PI * 4) * 1.5);
+  }
+
+  const tubeGeo = new THREE.TubeGeometry(curve, 60, 2, 4);
+  const riverMat = new THREE.MeshStandardMaterial({ color: 0x5a8f7b, roughness: 0.4 });
+  riverMesh = new THREE.Mesh(tubeGeo, riverMat);
+  scene.add(riverMesh);
+}
+
+function buildPlume() {
+  const plumeGeo = new THREE.ConeGeometry(50, 30, 32);
+  const plumeMat = new THREE.MeshStandardMaterial({
+    color: 0xd4a574, transparent: true, opacity: 0.3, side: THREE.DoubleSide
+  });
+  plumeMesh = new THREE.Mesh(plumeGeo, plumeMat);
+  plumeMesh.position.set(10, -130, 0.5);
+  plumeMesh.rotation.x = Math.PI / 2;
+  if (showPlume) scene.add(plumeMesh);
+}
+
+function updateFloodplain() {
+  if (floodplainMesh) scene.remove(floodplainMesh);
+  buildTerrain();
+}
+
+seasonBtn.addEventListener('click', () => {
+  isDryMode = !isDryMode;
+  seasonBtn.textContent = isDryMode ? 'Season: Dry' : 'Season: Wet';
+  updateFloodplain();
+});
+
+plumeBtn.addEventListener('click', () => {
+  showPlume = !showPlume;
+  plumeBtn.textContent = showPlume ? 'Plume: On' : 'Plume: Off';
+  if (showPlume && plumeMesh && !scene.children.includes(plumeMesh)) {
+    scene.add(plumeMesh);
+  } else if (!showPlume && plumeMesh && scene.children.includes(plumeMesh)) {
+    scene.remove(plumeMesh);
+  }
+});
+
+fullscreenBtn.addEventListener('click', () => {
+  document.getElementById('t3dWrapper').requestFullscreen();
+});
+
+let rafId;
+function animate() {
+  rafId = requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+}
+
+window.addEventListener('resize', () => {
+  const width = canvasHost.clientWidth;
+  const height = canvasHost.clientHeight;
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+  renderer.setSize(width, height);
+});
+
+window.addEventListener('beforeunload', () => {
+  cancelAnimationFrame(rafId);
+  if (renderer) renderer.dispose();
+});
+
+infoPanel.innerHTML = `
+<h3>Amazon River</h3>
+<p><b>Length:</b> about 6,400 km</p>
+<p><b>Discharge:</b> about 209,000 m3/s (1/5 of world discharge)</p>
+<p><b>Basin area:</b> about 7,050,000 km2</p>
+<p><b>Flood inundation:</b> up to 40 m (wet season)</p>
+<p><b>Plume extent:</b> 100+ km into Atlantic</p>
+`;
+
+try {
+  initScene();
+} catch (e) {
+  statusDiv.textContent = 'Error: ' + e.message;
+  console.error(e);
+}
 </script>
