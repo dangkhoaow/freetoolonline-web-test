@@ -1920,6 +1920,11 @@ export const INFO_ROUTES = new Set([
   // software to install" angle via the client-side Video to GIF tool,
   // versus GIF Maker's server-based trim/resize/export flow).
   '/guides/en/mp4-to-gif-no-download.html',
+  // evidence-led-expansion-runbook fire 8, Stream B - gif/frames gap family
+  // (topical_map_state.json video.gap.gif-limit-mp4-no; distinct "no sign-up,
+  // no fixed trim cap" angle for GIF Maker's start-point/duration sliders,
+  // which are bound only by the uploaded clip's own length).
+  '/guides/en/mp4-to-gif-no-limit.html',
   // Phase 11 Cycle 5 P11.2.1 - device-test-checklist guide (Phase 10 P10.3.5
   // carryover; upper-funnel routing for device-test cluster).
   '/guides/en/device-test-checklist-for-remote-work.html',
@@ -2686,6 +2691,8 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/mp4-to-gif-high-quality.html', '/guides/es/mp4-to-gif-high-quality.html', '/guides/vi/mp4-to-gif-high-quality.html', '/guides/id/mp4-to-gif-high-quality.html', '/guides/de/mp4-to-gif-high-quality.html',
   // evidence-led-expansion-runbook fire 5, Stream B - locale fanout for mp4-to-gif-no-download
   '/guides/pt/mp4-to-gif-no-download.html', '/guides/es/mp4-to-gif-no-download.html', '/guides/vi/mp4-to-gif-no-download.html', '/guides/id/mp4-to-gif-no-download.html', '/guides/de/mp4-to-gif-no-download.html',
+  // evidence-led-expansion-runbook fire 8, Stream B - locale fanout for mp4-to-gif-no-limit
+  '/guides/pt/mp4-to-gif-no-limit.html', '/guides/es/mp4-to-gif-no-limit.html', '/guides/vi/mp4-to-gif-no-limit.html', '/guides/id/mp4-to-gif-no-limit.html', '/guides/de/mp4-to-gif-no-limit.html',
   // plan-warm-pascal-v3 S2 batch 25 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/gif-frame-extractor-output-looks-wrong-three-causes.html', '/guides/es/gif-frame-extractor-output-looks-wrong-three-causes.html', '/guides/vi/gif-frame-extractor-output-looks-wrong-three-causes.html', '/guides/id/gif-frame-extractor-output-looks-wrong-three-causes.html', '/guides/de/gif-frame-extractor-output-looks-wrong-three-causes.html',
   '/guides/pt/heic-to-jpg-claims-what-actually-works.html', '/guides/es/heic-to-jpg-claims-what-actually-works.html', '/guides/vi/heic-to-jpg-claims-what-actually-works.html', '/guides/id/heic-to-jpg-claims-what-actually-works.html', '/guides/de/heic-to-jpg-claims-what-actually-works.html',
@@ -13479,6 +13486,7 @@ export const ALIAS_ROUTES = {
   '/guides/why-is-my-zip-file-still-large.html': '/guides/en/why-is-my-zip-file-still-large.html',
   '/guides/mp4-to-gif-high-quality.html': '/guides/en/mp4-to-gif-high-quality.html',
   '/guides/mp4-to-gif-no-download.html': '/guides/en/mp4-to-gif-no-download.html',
+  '/guides/mp4-to-gif-no-limit.html': '/guides/en/mp4-to-gif-no-limit.html',
   '/guides/how-to-compress-a-jpg-for-email-attachment-limits.html': '/guides/en/how-to-compress-a-jpg-for-email-attachment-limits.html',
   '/guides/how-to-compress-a-zip-file-to-a-specific-size.html': '/guides/en/how-to-compress-a-zip-file-to-a-specific-size.html',
   '/guides/how-to-compress-a-zip-file.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
@@ -14550,6 +14558,7 @@ export const JSP_BY_ROUTE = {
   // evidence-led-expansion-runbook fire 4, Stream B.
   '/guides/en/mp4-to-gif-high-quality.html': 'guide/en/mp4-to-gif-high-quality.jsp',
   '/guides/en/mp4-to-gif-no-download.html': 'guide/en/mp4-to-gif-no-download.jsp',
+  '/guides/en/mp4-to-gif-no-limit.html': 'guide/en/mp4-to-gif-no-limit.jsp',
   // Phase 11 Cycle 5 P11.2.1 + P11.3.5.
   '/guides/en/device-test-checklist-for-remote-work.html': 'guide/en/device-test-checklist-for-remote-work.jsp',
   '/guides/en/pdf-editing-ladder.html': 'guide/en/pdf-editing-ladder.jsp',
@@ -15038,6 +15047,7 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/why-is-my-zip-file-still-large.html': 'guide/pt/why-is-my-zip-file-still-large.jsp', '/guides/es/why-is-my-zip-file-still-large.html': 'guide/es/why-is-my-zip-file-still-large.jsp', '/guides/vi/why-is-my-zip-file-still-large.html': 'guide/vi/why-is-my-zip-file-still-large.jsp', '/guides/id/why-is-my-zip-file-still-large.html': 'guide/id/why-is-my-zip-file-still-large.jsp', '/guides/de/why-is-my-zip-file-still-large.html': 'guide/de/why-is-my-zip-file-still-large.jsp',
   '/guides/pt/mp4-to-gif-high-quality.html': 'guide/pt/mp4-to-gif-high-quality.jsp', '/guides/es/mp4-to-gif-high-quality.html': 'guide/es/mp4-to-gif-high-quality.jsp', '/guides/vi/mp4-to-gif-high-quality.html': 'guide/vi/mp4-to-gif-high-quality.jsp', '/guides/id/mp4-to-gif-high-quality.html': 'guide/id/mp4-to-gif-high-quality.jsp', '/guides/de/mp4-to-gif-high-quality.html': 'guide/de/mp4-to-gif-high-quality.jsp',
   '/guides/pt/mp4-to-gif-no-download.html': 'guide/pt/mp4-to-gif-no-download.jsp', '/guides/es/mp4-to-gif-no-download.html': 'guide/es/mp4-to-gif-no-download.jsp', '/guides/vi/mp4-to-gif-no-download.html': 'guide/vi/mp4-to-gif-no-download.jsp', '/guides/id/mp4-to-gif-no-download.html': 'guide/id/mp4-to-gif-no-download.jsp', '/guides/de/mp4-to-gif-no-download.html': 'guide/de/mp4-to-gif-no-download.jsp',
+  '/guides/pt/mp4-to-gif-no-limit.html': 'guide/pt/mp4-to-gif-no-limit.jsp', '/guides/es/mp4-to-gif-no-limit.html': 'guide/es/mp4-to-gif-no-limit.jsp', '/guides/vi/mp4-to-gif-no-limit.html': 'guide/vi/mp4-to-gif-no-limit.jsp', '/guides/id/mp4-to-gif-no-limit.html': 'guide/id/mp4-to-gif-no-limit.jsp', '/guides/de/mp4-to-gif-no-limit.html': 'guide/de/mp4-to-gif-no-limit.jsp',
   // plan-warm-pascal-v3 S2 batch 25 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/pt/gif-frame-extractor-output-looks-wrong-three-causes.jsp', '/guides/es/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/es/gif-frame-extractor-output-looks-wrong-three-causes.jsp', '/guides/vi/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/vi/gif-frame-extractor-output-looks-wrong-three-causes.jsp', '/guides/id/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/id/gif-frame-extractor-output-looks-wrong-three-causes.jsp', '/guides/de/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/de/gif-frame-extractor-output-looks-wrong-three-causes.jsp',
   '/guides/pt/heic-to-jpg-claims-what-actually-works.html': 'guide/pt/heic-to-jpg-claims-what-actually-works.jsp', '/guides/es/heic-to-jpg-claims-what-actually-works.html': 'guide/es/heic-to-jpg-claims-what-actually-works.jsp', '/guides/vi/heic-to-jpg-claims-what-actually-works.html': 'guide/vi/heic-to-jpg-claims-what-actually-works.jsp', '/guides/id/heic-to-jpg-claims-what-actually-works.html': 'guide/id/heic-to-jpg-claims-what-actually-works.jsp', '/guides/de/heic-to-jpg-claims-what-actually-works.html': 'guide/de/heic-to-jpg-claims-what-actually-works.jsp',
