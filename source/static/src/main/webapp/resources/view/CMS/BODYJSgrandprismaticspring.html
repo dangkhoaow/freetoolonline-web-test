@@ -1,0 +1,350 @@
+<script>
+    // 3D scene archetype (grand-prismatic-spring) - vendored three.js (ESM,
+    // dynamic import from /vendor/three/, NO CDN engine), fully client-side.
+    // places-3d cluster, places-3d-discovery-loop-runbook, 2026-08-01.
+    //
+    // EDUCATIONAL APPROXIMATION, not a survey-grade thermal map.
+    // Published figures (cross-checked 2026-08-01):
+    //   - Diameter about 110 m (370 ft)
+    //   - Depth about 50 m (160 ft) at its deepest point
+    //   - Third-largest hot spring in the world, after Boiling Lake
+    //     (Dominica) and Frying Pan Lake (New Zealand)
+    //   - Water temperature near the center about 70 C (160 F)
+    //   - Color rings from pigmented thermophilic microbial mats, banded by
+    //     temperature zone; NPS notes the mix shifts with the season (more
+    //     orange in summer, greener in winter)
+    //   - Midway Geyser Basin, Yellowstone National Park, Wyoming, USA
+    //   - Named and first documented by the 1871 Hayden Geological Survey
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'grand-prismatic-spring';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesgrandprismaticspring'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x1c2331, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+        var key = new THREE.DirectionalLight(0xffffff, 1.0);
+        key.position.set(-8, 20, 10);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, x) { var t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.62, metalness: 0 }));
+        }
+
+        // Radial hot-spring relief. R (radial distance from center) drives
+        // everything: a near-flat pool inside R_SPRING with a small mineral
+        // rim lip, then a terrace sloping DOWN and outward (the pool sits on
+        // its own raised sinter mound), with one directional runoff-channel
+        // groove cut into the terrace - the opposite relief direction from a
+        // sinkhole (mound sloping away, not a pit dropping down).
+        var R_SPRING = 5.0, RIM_BAND = 0.5, R_OUTER = 11;
+        var WATER_Y = 0.05, RIM_Y = 0.6, BASE_Y = -1.7;
+        var CHANNEL_ANGLE = -0.7, CHANNEL_WIDTH = 0.7;
+        function radialR(x, z) {
+            var r = Math.sqrt(x * x + z * z);
+            var ang = Math.atan2(z, x);
+            // Angular-domain fbm warp (sampled around a fixed-radius circle in
+            // noise space) gives an organic, blotchy ring edge - a periodic
+            // sin(ang*k) term instead produces a clean k-sided polygon, which
+            // reads as artificial/geometric rather than a real eroded pool edge.
+            var wobble = fbm(Math.cos(ang) * 2.3 + 30, Math.sin(ang) * 2.3 + 30, 3) - 0.5;
+            r *= 1 + 0.16 * wobble;
+            return r;
+        }
+        function angDiff(a, b) {
+            var d = a - b;
+            while (d > Math.PI) d -= Math.PI * 2;
+            while (d < -Math.PI) d += Math.PI * 2;
+            return d;
+        }
+        function height(x, z) {
+            var r = radialR(x, z);
+            var poolH = WATER_Y + 0.02 * (fbm(x * 1.3 + 5, z * 1.3 + 5, 2) - 0.5);
+            var tRim = smooth(R_SPRING - RIM_BAND, R_SPRING, r);
+            var withRim = poolH + tRim * 0.18;
+            var tOut = smooth(R_SPRING + RIM_BAND * 0.3, R_OUTER, r);
+            var terraceH = RIM_Y * (1 - tOut) + BASE_Y * tOut + 0.12 * (fbm(x * 0.7 + 20, z * 0.7 + 20, 3) - 0.5);
+            var tBlend = smooth(R_SPRING - RIM_BAND, R_SPRING + RIM_BAND, r);
+            var h = withRim * (1 - tBlend) + terraceH * tBlend;
+            if (r > R_SPRING) {
+                var ang = Math.atan2(z, x);
+                var ad = Math.abs(angDiff(ang, CHANNEL_ANGLE));
+                var channelMask = Math.max(0, 1 - ad / CHANNEL_WIDTH) * smooth(R_SPRING, R_SPRING + 1.2, r) * (1 - smooth(R_OUTER * 0.92, R_OUTER, r));
+                h -= channelMask * channelMask * 0.45;
+            }
+            return h;
+        }
+
+        // Concentric microbial-mat color rings, center to rim: too-hot deep
+        // blue eye, teal transition, green mat, yellow-gold mat, orange mat,
+        // rust-red rim mat - matches the real published color sequence.
+        var RING_STOPS = [
+            { t: 0.00, hex: 0x0b2d55 },
+            { t: 0.18, hex: 0x137a8c },
+            { t: 0.40, hex: 0x2f9e5c },
+            { t: 0.60, hex: 0xd8b23a },
+            { t: 0.80, hex: 0xe07a2a },
+            { t: 1.00, hex: 0x9c3a1e }
+        ];
+        function ringColor(c, rr) {
+            rr = Math.max(0, Math.min(1, rr));
+            var i = 0;
+            while (i < RING_STOPS.length - 2 && rr > RING_STOPS[i + 1].t) i++;
+            var s0 = RING_STOPS[i], s1 = RING_STOPS[i + 1];
+            var span = s1.t - s0.t || 1;
+            var frac = (rr - s0.t) / span;
+            var c0 = new THREE.Color(s0.hex), c1 = new THREE.Color(s1.hex);
+            c.copy(c0).lerp(c1, frac);
+        }
+        function sceneColor(c, x, z, ringsOn) {
+            var r = radialR(x, z);
+            if (r < R_SPRING + RIM_BAND * 0.25) {
+                var rr = Math.max(0, Math.min(1, r / R_SPRING));
+                if (ringsOn) { ringColor(c, rr); }
+                else { c.setHex(0x1560a0); c.multiplyScalar(0.92 + 0.08 * (1 - rr)); }
+                return;
+            }
+            var g = fbm(x * 1.2 + 9, z * 1.2 + 9, 3);
+            c.setHex(0xcfc2a0);
+            c.multiplyScalar(0.88 + 0.16 * g);
+            var ang = Math.atan2(z, x);
+            var ad = Math.abs(angDiff(ang, CHANNEL_ANGLE));
+            var channelMask = Math.max(0, 1 - ad / CHANNEL_WIDTH) * smooth(R_SPRING, R_SPRING + 1.2, r) * (1 - smooth(R_OUTER * 0.92, R_OUTER, r));
+            if (channelMask > 0.04) { c.lerp(new THREE.Color(0xb5601f), Math.min(0.95, channelMask * 1.7)); }
+        }
+
+        var ringsColors = null, plainColors = null, terrain;
+        function build(ringsOn) {
+            var pos = terrain.geometry.attributes.position, col = new THREE.Color();
+            var arr = new Float32Array(pos.count * 3);
+            for (var i = 0; i < pos.count; i++) {
+                sceneColor(col, pos.getX(i), pos.getZ(i), ringsOn);
+                arr[i * 3] = col.r; arr[i * 3 + 1] = col.g; arr[i * 3 + 2] = col.b;
+            }
+            return arr;
+        }
+        terrain = makeTerrain(24, 24, shell.low ? 130 : 190, shell.low ? 130 : 190, height, function (c, h, x, z) { sceneColor(c, x, z, true); });
+        scene.add(terrain);
+        ringsColors = terrain.geometry.attributes.color.array.slice();
+        plainColors = build(false);
+
+        // Runoff-channel marker: small mineral terrace steps laid along the
+        // real overflow direction, where hot water and more microbial mat
+        // cascade from the rim down across the sinter terrace.
+        var channelGroup = new THREE.Group();
+        var NSTEPS = 8;
+        for (var ci = 0; ci < NSTEPS; ci++) {
+            var frac = (ci + 1) / (NSTEPS + 1);
+            var rc = R_SPRING + 0.8 + frac * (R_OUTER * 0.95 - (R_SPRING + 0.8));
+            var xc = Math.cos(CHANNEL_ANGLE) * rc, zc = Math.sin(CHANNEL_ANGLE) * rc;
+            var yc = height(xc, zc);
+            var step = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.14, 0.6), new THREE.MeshStandardMaterial({ color: 0xd97a2a }));
+            step.position.set(xc, yc + 0.09, zc);
+            step.rotation.y = CHANNEL_ANGLE;
+            channelGroup.add(step);
+        }
+        scene.add(channelGroup);
+
+        var ringsOn = true, channelOn = true;
+
+        function panelHtml() {
+            return '<h3>Grand Prismatic Spring: the rainbow pool</h3>' +
+                '<p>A top-down color map: a too-hot deep-blue center ringed by green, yellow and orange microbial mat, on a mineral terrace with a runoff channel.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Diameter</td><td>about 110 m (370 ft)</td></tr>' +
+                '<tr><td>Depth</td><td>about 50 m (160 ft) at its deepest point</td></tr>' +
+                '<tr><td>World ranking</td><td>3rd-largest hot spring on Earth</td></tr>' +
+                '<tr><td>Center temperature</td><td>about 70 C (160 F)</td></tr>' +
+                '<tr><td>Colors</td><td>pigmented thermophilic microbial mats, banded by temperature</td></tr>' +
+                '<tr><td>Location</td><td>Midway Geyser Basin, Yellowstone, Wyoming, USA</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the terrace slope, channel placement, and color-ring proportions are procedural teaching cues, not a survey-grade thermal map.</p>';
+        }
+
+        function apply() {
+            terrain.geometry.attributes.color.array.set(ringsOn ? ringsColors : plainColors);
+            terrain.geometry.attributes.color.needsUpdate = true;
+            channelGroup.visible = channelOn;
+            var rb = document.getElementById('t3dGpsRingsBtn');
+            if (rb) rb.textContent = 'Color rings: ' + (ringsOn ? 'On' : 'Off');
+            var cb = document.getElementById('t3dGpsChannelBtn');
+            if (cb) cb.textContent = 'Runoff channel: ' + (channelOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ ringsOn: ringsOn, channelOn: channelOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.ringsOn === 'boolean') ringsOn = store.ringsOn;
+        if (typeof store.channelOn === 'boolean') channelOn = store.channelOn;
+        apply();
+
+        var ringsBtn = document.getElementById('t3dGpsRingsBtn');
+        if (ringsBtn) ringsBtn.addEventListener('click', function () { ringsOn = !ringsOn; apply(); });
+        var channelBtn = document.getElementById('t3dGpsChannelBtn');
+        if (channelBtn) channelBtn.addEventListener('click', function () { channelOn = !channelOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the color rings or the runoff channel.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesgrandprismaticspring: 't3dGpsControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesgrandprismaticspring: { radius: 17, maxR: 42, minR: 6, phi: 0.68, theta: 0.5, targetY: -0.4 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
