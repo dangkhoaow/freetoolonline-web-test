@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/body-fat-percentage-calculator-vs-alternatives.html',
+  '/guides/body-fat-percentage-calculator-step-by-step.html',
+  '/guides/body-fat-percentage-calculator-when.html',
   '/guides/mortgage-calculator-vs-alternatives.html',
   '/guides/mortgage-calculator-step-by-step.html',
   '/guides/mortgage-calculator-when.html',
@@ -14344,6 +14347,7 @@ export const ALIAS_ROUTES = {
   '/annuity-calculator.html': '/utility-tools/annuity-calculator.html',
   '/days-from-today-calculator.html': '/utility-tools/days-from-today-calculator.html',
   '/mortgage-calculator.html': '/utility-tools/mortgage-calculator.html',
+  '/body-fat-percentage-calculator.html': '/utility-tools/body-fat-percentage-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -26219,6 +26223,10 @@ export const JSP_BY_ROUTE = {
   '/guides/mortgage-calculator-when.html': 'guide/mortgage-calculator-when.jsp',
   '/guides/mortgage-calculator-step-by-step.html': 'guide/mortgage-calculator-step-by-step.jsp',
   '/guides/mortgage-calculator-vs-alternatives.html': 'guide/mortgage-calculator-vs-alternatives.jsp',
+  '/utility-tools/body-fat-percentage-calculator.html': 'utility/body-fat-percentage-calculator.jsp',
+  '/guides/body-fat-percentage-calculator-when.html': 'guide/body-fat-percentage-calculator-when.jsp',
+  '/guides/body-fat-percentage-calculator-step-by-step.html': 'guide/body-fat-percentage-calculator-step-by-step.jsp',
+  '/guides/body-fat-percentage-calculator-vs-alternatives.html': 'guide/body-fat-percentage-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
