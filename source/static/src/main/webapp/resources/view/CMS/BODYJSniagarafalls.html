@@ -1,0 +1,331 @@
+<script>
+    // 3D scene archetype (niagara-falls) - vendored three.js (ESM,
+    // dynamic import from /vendor/three/, NO CDN engine), fully client-side.
+    // places-3d cluster, places-3d-discovery-loop-runbook, 2026-08-01.
+    //
+    // EDUCATIONAL APPROXIMATION, not a survey-grade hydrological model.
+    // Published figures (cross-checked 2026-08-01):
+    //   - Combined average flow about 2,832 cubic meters per second
+    //     (about 168,000 cubic meters per minute)
+    //   - Horseshoe Falls carries about 90% of that flow, American Falls
+    //     about 10% (Horseshoe has a longer curved crestline)
+    //   - Horseshoe Falls height about 57 m (188 ft), crestline about 670 m
+    //     (2,200 ft)
+    //   - American Falls height about 21-34 m (70-110 ft, varies with the
+    //     talus rock pile at its base), width about 320 m (1,060 ft)
+    //   - Niagara Gorge runs about 11 km (7 mi) downstream to the Niagara
+    //     Whirlpool, about 4.5 km (2.8 mi) below the falls, at a sharp bend
+    //     in the river
+    //   - Border of Ontario, Canada, and New York, USA
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'niagara-falls';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesniagarafalls'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x9fc6d8, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+        var key = new THREE.DirectionalLight(0xffffff, 1.0);
+        key.position.set(-8, 18, 10);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, x) { var t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6, metalness: 0 }));
+        }
+
+        // Lateral (x) zones across the crestline: Canadian bank, the curved
+        // Horseshoe Falls (bows downstream in the middle - the signature
+        // crescent shape), Goat Island (no drop), the straight American
+        // Falls, then the US bank. Depth (z<0 upstream plateau, z>0
+        // downstream gorge) drives the drop at each zone's own crest line.
+        var X_HS0 = -11, X_HS1 = -3, X_GI1 = -0.6, X_AF1 = 3.6;
+        var Y_TOP = 1.6, Y_BANK = 2.6, Y_GORGE = -3.0, WALL_BAND = 1.0;
+
+        function zoneOf(x) {
+            if (x < X_HS0) return 'bankL';
+            if (x < X_HS1) return 'horseshoe';
+            if (x < X_GI1) return 'island';
+            if (x < X_AF1) return 'american';
+            return 'bankR';
+        }
+        function crestZ(zone, x) {
+            if (zone === 'horseshoe') {
+                var u = Math.max(0, Math.min(1, (x - X_HS0) / (X_HS1 - X_HS0)));
+                return 0.4 + 1.6 * Math.sin(Math.PI * u); // bows downstream mid-curve
+            }
+            return 0.4; // American Falls: straight crestline
+        }
+        function height(x, z) {
+            var zone = zoneOf(x);
+            var n = fbm(x * 0.3 + 5, z * 0.3 + 5, 3) - 0.5;
+            if (zone === 'bankL' || zone === 'bankR') { return Y_BANK + n * 0.3; }
+            if (zone === 'island') { return Y_TOP + 0.15 + n * 0.2; }
+            var cz = crestZ(zone, x);
+            var t = smooth(cz - WALL_BAND, cz + WALL_BAND, z); // 0 upstream, 1 in the gorge
+            var upstreamH = Y_TOP + n * 0.15;
+            var gorgeBase = Y_GORGE + Math.max(0, z - cz - WALL_BAND) * 0.12;
+            var downstreamH = gorgeBase + n * 0.25;
+            var h = upstreamH + (downstreamH - upstreamH) * t;
+            if (t > 0.85 && t < 0.98) { h += (1 - Math.abs(t - 0.915) / 0.065) * 0.2; } // mist/foam lip at the brink
+            return h;
+        }
+
+        var normColors = null, flowColors = null, terrain;
+        function baseColor(c, zone, t) {
+            if (zone === 'bankL' || zone === 'bankR') { c.setHex(0x6b8e5a); return; }
+            if (zone === 'island') { c.setHex(0x7fae63); return; }
+            if (t < 0.3) { c.setHex(0x3a6ea5); return; } // upstream river
+            if (t < 0.75) { c.setHex(0xe8f0f5); return; } // whitewater/mist at the brink
+            c.setHex(0x1c3d52); // gorge below
+        }
+        function colorAt(c, x, z, flowMode) {
+            var zone = zoneOf(x);
+            if (zone === 'bankL' || zone === 'bankR' || zone === 'island') { baseColor(c, zone, 0); return; }
+            var cz = crestZ(zone, x);
+            var t = smooth(cz - WALL_BAND, cz + WALL_BAND, z);
+            baseColor(c, zone, t);
+            if (flowMode && t > 0.75) {
+                // Flow-split emphasis in the gorge only (keeps the upstream
+                // river blue and the whitewater/mist band at the brink
+                // visible): Horseshoe (about 90% of flow) tints toward a
+                // deep saturated blue; American (about 10%) toward cyan.
+                var tint = new THREE.Color(zone === 'horseshoe' ? 0x0d3f7a : 0x4fa8c9);
+                c.lerp(tint, 0.65);
+            }
+        }
+        function build(flowMode) {
+            var pos = terrain.geometry.attributes.position, col = new THREE.Color();
+            var arr = new Float32Array(pos.count * 3);
+            for (var i = 0; i < pos.count; i++) {
+                colorAt(col, pos.getX(i), pos.getZ(i), flowMode);
+                arr[i * 3] = col.r; arr[i * 3 + 1] = col.g; arr[i * 3 + 2] = col.b;
+            }
+            return arr;
+        }
+        terrain = makeTerrain(26, 26, shell.low ? 140 : 190, shell.low ? 140 : 190, height, function (c, h, x, z) { colorAt(c, x, z, false); });
+        scene.add(terrain);
+        normColors = terrain.geometry.attributes.color.array.slice();
+        flowColors = build(true);
+
+        // Whirlpool marker: about 4.5 km downstream in the real gorge, a
+        // sharp bend where the river doubles back on itself - shown here as
+        // a spiral ring in the gorge channel, compressed to scene scale.
+        var whirlZ = 8.6, whirlY = height(0, whirlZ) + 0.25;
+        var whirlGroup = new THREE.Group();
+        var spiralPts = [];
+        for (var si = 0; si <= 60; si++) {
+            var a = si * 0.55, r = 0.15 + si * 0.028;
+            spiralPts.push(new THREE.Vector3(Math.cos(a) * r, 0, Math.sin(a) * r));
+        }
+        var spiralGeo = new THREE.BufferGeometry().setFromPoints(spiralPts);
+        var spiral = new THREE.Line(spiralGeo, new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 }));
+        whirlGroup.add(spiral);
+        var whirlRing = new THREE.Mesh(new THREE.TorusGeometry(1.9, 0.06, 8, 40), new THREE.MeshStandardMaterial({ color: 0xffe08a }));
+        whirlRing.rotation.x = Math.PI / 2;
+        whirlGroup.add(whirlRing);
+        whirlGroup.position.set(0, whirlY, whirlZ);
+        scene.add(whirlGroup);
+
+        var flowOn = true, whirlOn = true;
+
+        function panelHtml() {
+            return '<h3>Niagara Falls: two falls, one crestline</h3>' +
+                '<p>A view of the shared crestline: the curved Horseshoe Falls, Goat Island splitting the flow, and the straighter American Falls, dropping into the gorge below.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Combined flow</td><td>about 2,832 m3/s (168,000 m3/min)</td></tr>' +
+                '<tr><td>Flow split</td><td>Horseshoe about 90%, American about 10%</td></tr>' +
+                '<tr><td>Horseshoe height</td><td>about 57 m (188 ft)</td></tr>' +
+                '<tr><td>American height</td><td>about 21-34 m (70-110 ft)</td></tr>' +
+                '<tr><td>Whirlpool</td><td>about 4.5 km (2.8 mi) downstream</td></tr>' +
+                '<tr><td>Location</td><td>Ontario, Canada / New York, USA border</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the crestline curve, gorge profile, and whirlpool placement are procedural teaching cues, not a survey-grade hydrological model.</p>';
+        }
+
+        function apply() {
+            terrain.geometry.attributes.color.array.set(flowOn ? flowColors : normColors);
+            terrain.geometry.attributes.color.needsUpdate = true;
+            whirlGroup.visible = whirlOn;
+            var fb = document.getElementById('t3dNiaFlowBtn');
+            if (fb) fb.textContent = 'Flow split: ' + (flowOn ? 'On' : 'Off');
+            var wb = document.getElementById('t3dNiaWhirlBtn');
+            if (wb) wb.textContent = 'Whirlpool marker: ' + (whirlOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ flowOn: flowOn, whirlOn: whirlOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.flowOn === 'boolean') flowOn = store.flowOn;
+        if (typeof store.whirlOn === 'boolean') whirlOn = store.whirlOn;
+        apply();
+
+        var flowBtn = document.getElementById('t3dNiaFlowBtn');
+        if (flowBtn) flowBtn.addEventListener('click', function () { flowOn = !flowOn; apply(); });
+        var whirlBtn = document.getElementById('t3dNiaWhirlBtn');
+        if (whirlBtn) whirlBtn.addEventListener('click', function () { whirlOn = !whirlOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the flow split or the whirlpool marker.');
+        return function animate(dt) {
+            whirlGroup.rotation.y += dt * 0.0006;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesniagarafalls: 't3dNiaControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesniagarafalls: { radius: 32, maxR: 60, minR: 8, phi: 0.78, theta: 0.35, targetY: -0.8 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
