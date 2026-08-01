@@ -10154,6 +10154,26 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/hover-racing-when.html',
   '/guides/de/hover-racing-vs-alternatives.html',
 
+  // game-discovery-loop-runbook fire207 (2026-08-01): space-huggers-platformer companion guides
+  '/guides/how-to-play-space-huggers-platformer.html',
+  '/guides/space-huggers-platformer-when.html',
+  '/guides/space-huggers-platformer-vs-alternatives.html',
+  '/guides/pt/how-to-play-space-huggers-platformer.html',
+  '/guides/pt/space-huggers-platformer-when.html',
+  '/guides/pt/space-huggers-platformer-vs-alternatives.html',
+  '/guides/es/how-to-play-space-huggers-platformer.html',
+  '/guides/es/space-huggers-platformer-when.html',
+  '/guides/es/space-huggers-platformer-vs-alternatives.html',
+  '/guides/vi/how-to-play-space-huggers-platformer.html',
+  '/guides/vi/space-huggers-platformer-when.html',
+  '/guides/vi/space-huggers-platformer-vs-alternatives.html',
+  '/guides/id/how-to-play-space-huggers-platformer.html',
+  '/guides/id/space-huggers-platformer-when.html',
+  '/guides/id/space-huggers-platformer-vs-alternatives.html',
+  '/guides/de/how-to-play-space-huggers-platformer.html',
+  '/guides/de/space-huggers-platformer-when.html',
+  '/guides/de/space-huggers-platformer-vs-alternatives.html',
+
   // new-tool-discovery-loop-runbook fire306 (2026-07-18): retro-arcade-shooter companion guides
   '/guides/how-to-play-retro-arcade-shooter.html',
   '/guides/retro-arcade-shooter-when.html',
@@ -16095,6 +16115,26 @@ export const JSP_BY_ROUTE = {
   '/guides/de/how-to-play-hover-racing.html': 'guide/de/how-to-play-hover-racing.jsp',
   '/guides/de/hover-racing-when.html': 'guide/de/hover-racing-when.jsp',
   '/guides/de/hover-racing-vs-alternatives.html': 'guide/de/hover-racing-vs-alternatives.jsp',
+
+  // game-discovery-loop-runbook fire207 (2026-08-01): space-huggers-platformer companion guides
+  '/guides/how-to-play-space-huggers-platformer.html': 'guide/how-to-play-space-huggers-platformer.jsp',
+  '/guides/space-huggers-platformer-when.html': 'guide/space-huggers-platformer-when.jsp',
+  '/guides/space-huggers-platformer-vs-alternatives.html': 'guide/space-huggers-platformer-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-space-huggers-platformer.html': 'guide/pt/how-to-play-space-huggers-platformer.jsp',
+  '/guides/pt/space-huggers-platformer-when.html': 'guide/pt/space-huggers-platformer-when.jsp',
+  '/guides/pt/space-huggers-platformer-vs-alternatives.html': 'guide/pt/space-huggers-platformer-vs-alternatives.jsp',
+  '/guides/es/how-to-play-space-huggers-platformer.html': 'guide/es/how-to-play-space-huggers-platformer.jsp',
+  '/guides/es/space-huggers-platformer-when.html': 'guide/es/space-huggers-platformer-when.jsp',
+  '/guides/es/space-huggers-platformer-vs-alternatives.html': 'guide/es/space-huggers-platformer-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-space-huggers-platformer.html': 'guide/vi/how-to-play-space-huggers-platformer.jsp',
+  '/guides/vi/space-huggers-platformer-when.html': 'guide/vi/space-huggers-platformer-when.jsp',
+  '/guides/vi/space-huggers-platformer-vs-alternatives.html': 'guide/vi/space-huggers-platformer-vs-alternatives.jsp',
+  '/guides/id/how-to-play-space-huggers-platformer.html': 'guide/id/how-to-play-space-huggers-platformer.jsp',
+  '/guides/id/space-huggers-platformer-when.html': 'guide/id/space-huggers-platformer-when.jsp',
+  '/guides/id/space-huggers-platformer-vs-alternatives.html': 'guide/id/space-huggers-platformer-vs-alternatives.jsp',
+  '/guides/de/how-to-play-space-huggers-platformer.html': 'guide/de/how-to-play-space-huggers-platformer.jsp',
+  '/guides/de/space-huggers-platformer-when.html': 'guide/de/space-huggers-platformer-when.jsp',
+  '/guides/de/space-huggers-platformer-vs-alternatives.html': 'guide/de/space-huggers-platformer-vs-alternatives.jsp',
 
   // new-tool-discovery-loop-runbook fire306 (2026-07-18): retro-arcade-shooter companion guides
   '/guides/how-to-play-retro-arcade-shooter.html': 'guide/how-to-play-retro-arcade-shooter.jsp',
