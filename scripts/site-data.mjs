@@ -20572,6 +20572,7 @@ export const JSP_BY_ROUTE = {
   '/games/retro-highway-racer.html': 'games/retro-highway-racer.jsp',
   '/games/hover-racing.html': 'games/hover-racing.jsp',
   '/games/space-huggers-platformer.html': 'games/space-huggers-platformer.jsp',
+  '/games/level-13-incremental.html': 'games/level-13-incremental.jsp',
   '/games/retro-arcade-shooter.html': 'games/retro-arcade-shooter.jsp',
   '/games/marble-maze.html': 'games/marble-maze.jsp',
   '/games/globe-siege.html': 'games/globe-siege.jsp',

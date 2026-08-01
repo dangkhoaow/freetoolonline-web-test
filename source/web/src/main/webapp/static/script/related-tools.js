@@ -770,6 +770,7 @@ try {
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },
     { title: "Space Huggers - Roguelike Run-and-Gun Platformer", url: "https://freetoolonline.com/games/space-huggers-platformer.html", include: !1, tags: "games" },
+    { title: "Level 13 - Text-Based Sci-Fi Survival Incremental", url: "https://freetoolonline.com/games/level-13-incremental.html", include: !1, tags: "games" },
     // news-loop (2026-07-08): dated, source-cited updates. tags include the
     // affected star swarm(s) so the article surfaces via tag-match on related
     // tool/guide pages, plus a bare "news" tag for future cross-links.
