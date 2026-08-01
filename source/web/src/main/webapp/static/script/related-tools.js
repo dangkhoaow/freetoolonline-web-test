@@ -737,6 +737,7 @@ try {
     { title: "Lake Baikal 3D Explorer", url: "https://freetoolonline.com/places-3d/lake-baikal.html", include: !1, tags: "places-3d" },
     { title: "Milford Sound 3D Explorer", url: "https://freetoolonline.com/places-3d/milford-sound.html", include: !1, tags: "places-3d" },
     { title: "Mount Kilimanjaro 3D Explorer", url: "https://freetoolonline.com/places-3d/mount-kilimanjaro.html", include: !1, tags: "places-3d" },
+    { title: "Mount Vesuvius 3D Explorer", url: "https://freetoolonline.com/places-3d/mount-vesuvius.html", include: !1, tags: "places-3d" },
     { title: "Salar de Uyuni 3D Explorer", url: "https://freetoolonline.com/places-3d/salar-de-uyuni.html", include: !1, tags: "places-3d" },
   { url: '/places-3d/dong-van-plateau.html', tags: 'places-3d' },
     { title: "Nile River 3D Explorer - World's Longest River", url: "https://freetoolonline.com/places-3d/nile-river.html", include: !1, tags: "places-3d" },
