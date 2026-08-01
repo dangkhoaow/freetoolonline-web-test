@@ -17,6 +17,23 @@ export const INFO_ROUTES = new Set([
   '/guides/body-fat-percentage-calculator-vs-alternatives.html',
   '/guides/body-fat-percentage-calculator-step-by-step.html',
   '/guides/body-fat-percentage-calculator-when.html',
+  // new-tool-discovery-loop-runbook fire673 (2026-08-01): guide-support drain
+  // locale fanout for body-fat-percentage-calculator (pt/es/vi/id/de x 3 angles).
+  '/guides/pt/body-fat-percentage-calculator-when.html',
+  '/guides/pt/body-fat-percentage-calculator-step-by-step.html',
+  '/guides/pt/body-fat-percentage-calculator-vs-alternatives.html',
+  '/guides/es/body-fat-percentage-calculator-when.html',
+  '/guides/es/body-fat-percentage-calculator-step-by-step.html',
+  '/guides/es/body-fat-percentage-calculator-vs-alternatives.html',
+  '/guides/vi/body-fat-percentage-calculator-when.html',
+  '/guides/vi/body-fat-percentage-calculator-step-by-step.html',
+  '/guides/vi/body-fat-percentage-calculator-vs-alternatives.html',
+  '/guides/id/body-fat-percentage-calculator-when.html',
+  '/guides/id/body-fat-percentage-calculator-step-by-step.html',
+  '/guides/id/body-fat-percentage-calculator-vs-alternatives.html',
+  '/guides/de/body-fat-percentage-calculator-when.html',
+  '/guides/de/body-fat-percentage-calculator-step-by-step.html',
+  '/guides/de/body-fat-percentage-calculator-vs-alternatives.html',
   '/guides/mortgage-calculator-vs-alternatives.html',
   '/guides/mortgage-calculator-step-by-step.html',
   '/guides/mortgage-calculator-when.html',
@@ -26317,6 +26334,24 @@ export const JSP_BY_ROUTE = {
   '/guides/body-fat-percentage-calculator-when.html': 'guide/body-fat-percentage-calculator-when.jsp',
   '/guides/body-fat-percentage-calculator-step-by-step.html': 'guide/body-fat-percentage-calculator-step-by-step.jsp',
   '/guides/body-fat-percentage-calculator-vs-alternatives.html': 'guide/body-fat-percentage-calculator-vs-alternatives.jsp',
+
+  // new-tool-discovery-loop-runbook fire673 (2026-08-01): guide-support drain
+  // locale fanout for body-fat-percentage-calculator (pt/es/vi/id/de x 3 angles).
+  '/guides/pt/body-fat-percentage-calculator-when.html': 'guide/pt/body-fat-percentage-calculator-when.jsp',
+  '/guides/pt/body-fat-percentage-calculator-step-by-step.html': 'guide/pt/body-fat-percentage-calculator-step-by-step.jsp',
+  '/guides/pt/body-fat-percentage-calculator-vs-alternatives.html': 'guide/pt/body-fat-percentage-calculator-vs-alternatives.jsp',
+  '/guides/es/body-fat-percentage-calculator-when.html': 'guide/es/body-fat-percentage-calculator-when.jsp',
+  '/guides/es/body-fat-percentage-calculator-step-by-step.html': 'guide/es/body-fat-percentage-calculator-step-by-step.jsp',
+  '/guides/es/body-fat-percentage-calculator-vs-alternatives.html': 'guide/es/body-fat-percentage-calculator-vs-alternatives.jsp',
+  '/guides/vi/body-fat-percentage-calculator-when.html': 'guide/vi/body-fat-percentage-calculator-when.jsp',
+  '/guides/vi/body-fat-percentage-calculator-step-by-step.html': 'guide/vi/body-fat-percentage-calculator-step-by-step.jsp',
+  '/guides/vi/body-fat-percentage-calculator-vs-alternatives.html': 'guide/vi/body-fat-percentage-calculator-vs-alternatives.jsp',
+  '/guides/id/body-fat-percentage-calculator-when.html': 'guide/id/body-fat-percentage-calculator-when.jsp',
+  '/guides/id/body-fat-percentage-calculator-step-by-step.html': 'guide/id/body-fat-percentage-calculator-step-by-step.jsp',
+  '/guides/id/body-fat-percentage-calculator-vs-alternatives.html': 'guide/id/body-fat-percentage-calculator-vs-alternatives.jsp',
+  '/guides/de/body-fat-percentage-calculator-when.html': 'guide/de/body-fat-percentage-calculator-when.jsp',
+  '/guides/de/body-fat-percentage-calculator-step-by-step.html': 'guide/de/body-fat-percentage-calculator-step-by-step.jsp',
+  '/guides/de/body-fat-percentage-calculator-vs-alternatives.html': 'guide/de/body-fat-percentage-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
