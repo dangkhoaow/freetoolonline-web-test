@@ -1,0 +1,316 @@
+<script>
+    // 3D scene archetype (perito-moreno-glacier) - vendored three.js (ESM,
+    // dynamic import from /vendor/three/, NO CDN engine), fully client-side.
+    // places-3d cluster, places-3d-discovery-loop-runbook, 2026-08-01.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey glaciology.
+    // Published figures (cross-checked 2026-08-01):
+    //   - Length about 30 km, part of the Southern Patagonian Ice Field
+    //   - Area about 250 sq km
+    //   - Terminus (ice-face) width about 5 km at Lago Argentino
+    //   - Ice-face height above water about 60-70 m
+    //   - One of the few glaciers on Earth considered relatively stable
+    //     rather than retreating (commonly cited)
+    //   - Los Glaciares National Park, Santa Cruz, Argentina - UNESCO 1981
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'perito-moreno-glacier';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesperitomorenoglacier'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0xbfd8e8, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+        var key = new THREE.DirectionalLight(0xffffff, 1.0);
+        key.position.set(-10, 16, 8);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, x) { var t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, metalness: 0 }));
+        }
+
+        // Valley-glacier relief. Z: -11 (upstream icefield) .. ZTERM (6, the
+        // calving front) .. +11 (Lago Argentino, flat lake). X: across-valley
+        // width, with dark rock walls rising beyond the ice/valley half-width.
+        var ZTERM = 6, VALLEY_HALF = 7.2, WALL_WIDTH = 2.6, WALL_HEIGHT = 4.4;
+        var ICE_UP = 2.1, ICE_TERM = 0.35, WATER_Y = -1.05, CLIFF_BAND = 1.0;
+        function crevAmp(z) { return 0.05 + 0.16 * smooth(-3, 5.5, z); }
+        function iceSurface(x, z) {
+            var t = smooth(-11, ZTERM, z);
+            var h = ICE_UP + (ICE_TERM - ICE_UP) * t;
+            var ridge = Math.sin(z * 2.6 + 0.5 * Math.sin(x * 0.5)) * crevAmp(z);
+            h += ridge;
+            h += 0.05 * (fbm(x * 0.9 + 4, z * 0.9 + 9, 3) - 0.5);
+            return h;
+        }
+        function height(x, z) {
+            var ax = Math.abs(x);
+            var inValley = smooth(VALLEY_HALF + WALL_WIDTH, VALLEY_HALF, ax); // 1 inside, 0 at wall crest
+            var base;
+            if (z <= ZTERM) {
+                base = iceSurface(x, z);
+            } else {
+                var cliff = 1 - smooth(ZTERM, ZTERM + CLIFF_BAND, z); // 1 right at front, 0 past band
+                var iceEdge = iceSurface(x, ZTERM);
+                var lake = WATER_Y + 0.03 * fbm(x * 1.3 + 20, z * 1.3 + 5, 2);
+                base = lake + (iceEdge - lake) * Math.max(0, cliff);
+            }
+            var wallRise = Math.pow(Math.max(0, ax - VALLEY_HALF) / WALL_WIDTH, 1.25) * WALL_HEIGHT;
+            wallRise += 0.4 * (1 - inValley) * fbm(x * 1.6 + 2, z * 0.8 + 6, 4);
+            var h = base * inValley + (base + wallRise) * (1 - inValley);
+            if (z > ZTERM + CLIFF_BAND * 0.4 && inValley > 0.98) { h = Math.min(h, base); }
+            return h;
+        }
+        var normColors = null, accentColors = null, terrain;
+        function bandColor(c, h, x, z, accent) {
+            var ax = Math.abs(x);
+            var inValley = smooth(VALLEY_HALF + WALL_WIDTH, VALLEY_HALF, ax);
+            if (inValley < 0.5) {
+                var g = fbm(x * 0.7 + 30, z * 0.7 + 12, 3);
+                c.setHex(g > 0.55 ? 0x6b5a44 : 0x8f8378);
+                c.multiplyScalar(0.75 + 0.25 * g);
+                return;
+            }
+            if (z > ZTERM + CLIFF_BAND * 0.6) {
+                c.setHex(0x2e7f9c); // lake water, teal-blue
+                if (accent) c.offsetHSL(0, 0, 0.05);
+                return;
+            }
+            var n = 0.92 + 0.16 * fbm(x * 1.5 + 6, z * 1.5 + 3, 3);
+            var amp = crevAmp(z);
+            var ridge = Math.sin(z * 2.6 + 0.5 * Math.sin(x * 0.5));
+            var crevU = Math.max(0, Math.min(1, 0.5 - ridge * 0.5)); // 1 = trough (crevasse), 0 = crest
+            var base = new THREE.Color(0xeaf3f7).lerp(new THREE.Color(0x3a6f8f), crevU * Math.min(1, amp / 0.2));
+            if (accent) { base.lerp(new THREE.Color(0x1e6fb0), crevU * 0.9); }
+            c.copy(base).multiplyScalar(n);
+        }
+        function build(accent) {
+            var pos = terrain.geometry.attributes.position, col = new THREE.Color();
+            var arr = new Float32Array(pos.count * 3);
+            for (var i = 0; i < pos.count; i++) {
+                bandColor(col, pos.getY(i), pos.getX(i), pos.getZ(i), accent);
+                arr[i * 3] = col.r; arr[i * 3 + 1] = col.g; arr[i * 3 + 2] = col.b;
+            }
+            return arr;
+        }
+        terrain = makeTerrain(22, 24, shell.low ? 120 : 180, shell.low ? 130 : 195, height, function (c, h, x, z) { bandColor(c, h, x, z, false); });
+        scene.add(terrain);
+        normColors = terrain.geometry.attributes.color.array.slice();
+        accentColors = build(true);
+
+        // Ice-dam contact marker: where the advancing snout can touch the far
+        // shore (Peninsula de Magallanes) and block the Brazo Rico channel.
+        var damX = VALLEY_HALF - 0.4, damZ = ZTERM - 0.6;
+        var damY = iceSurface(damX, damZ) + 0.12;
+        var damGroup = new THREE.Group();
+        var damCone = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.55, 10), new THREE.MeshStandardMaterial({ color: 0xd94f3a }));
+        damCone.position.set(damX, damY + 0.28, damZ);
+        damGroup.add(damCone);
+        var damRing = new THREE.Mesh(new THREE.RingGeometry(0.45, 0.6, 24), new THREE.MeshBasicMaterial({ color: 0xd94f3a, side: THREE.DoubleSide, transparent: true, opacity: 0.85 }));
+        damRing.rotation.x = -Math.PI / 2;
+        damRing.position.set(damX, damY + 0.02, damZ);
+        damGroup.add(damRing);
+        scene.add(damGroup);
+
+        var crevasseOn = true, damOn = true;
+
+        function panelHtml() {
+            return '<h3>Perito Moreno: the advancing ice wall</h3>' +
+                '<p>A cross-section of the glacier flowing off the Southern Patagonian Ice Field, the fractured crevasse band near the front, and the calving wall meeting Lago Argentino.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Length</td><td>about 30 km</td></tr>' +
+                '<tr><td>Area</td><td>about 250 sq km</td></tr>' +
+                '<tr><td>Terminus width</td><td>about 5 km at Lago Argentino</td></tr>' +
+                '<tr><td>Ice-face height</td><td>about 60-70 m above the water</td></tr>' +
+                '<tr><td>Behavior</td><td>relatively stable rather than retreating (commonly cited)</td></tr>' +
+                '<tr><td>Location</td><td>Los Glaciares National Park, Santa Cruz, Argentina - UNESCO 1981</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the ice surface, crevasse pattern, and vertical scale are procedural teaching cues, not survey glaciology.</p>';
+        }
+
+        function apply() {
+            terrain.geometry.attributes.color.array.set(crevasseOn ? accentColors : normColors);
+            terrain.geometry.attributes.color.needsUpdate = true;
+            damGroup.visible = damOn;
+            var cb = document.getElementById('t3dPpmCrevasseBtn');
+            if (cb) cb.textContent = 'Crevasse bands: ' + (crevasseOn ? 'On' : 'Off');
+            var db = document.getElementById('t3dPpmDamBtn');
+            if (db) db.textContent = 'Ice-dam marker: ' + (damOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ crevasseOn: crevasseOn, damOn: damOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.crevasseOn === 'boolean') crevasseOn = store.crevasseOn;
+        if (typeof store.damOn === 'boolean') damOn = store.damOn;
+        apply();
+
+        var crevasseBtn = document.getElementById('t3dPpmCrevasseBtn');
+        if (crevasseBtn) crevasseBtn.addEventListener('click', function () { crevasseOn = !crevasseOn; apply(); });
+        var damBtn = document.getElementById('t3dPpmDamBtn');
+        if (damBtn) damBtn.addEventListener('click', function () { damOn = !damOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle crevasse bands or the ice-dam marker.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesperitomorenoglacier: 't3dPpmControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesperitomorenoglacier: { radius: 20, maxR: 46, minR: 6, phi: 1.05, theta: 0.55, targetY: 0.4 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
