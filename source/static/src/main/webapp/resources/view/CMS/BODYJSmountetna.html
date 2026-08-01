@@ -1,0 +1,359 @@
+<script>
+    // 3D scene archetype skeleton (mount-etna) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN engine), fully
+    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only
+    // (mount-etna). All geometry is procedural. places-3d cluster.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (encyclopedic consensus):
+    //   - Mount Etna, Sicily, Italy - Europe's tallest active volcano
+    //   - Summit height about 3,357 m (shifts after major eruptions)
+    //   - Base covers about 1,190 sq km
+    //   - Four active summit craters: Voragine, Bocca Nuova,
+    //     Northeast Crater, Southeast Crater
+    //   - Continuously active for at least 2,700 years
+    //   - UNESCO World Heritage Site since 2013
+    //   - About 29 km north-northwest of Catania, Sicily
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'mount-etna';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesmountetna'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract: window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x87ceeb, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.58));
+        var key = new THREE.DirectionalLight(0xfff3d6, 1.08);
+        key.position.set(-12, 20, 12);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+
+        // Vertical scale: 1 unit is about 300 m. Summit 3,357 m -> about
+        // 11.2 units, spread over a much wider base radius than a single
+        // steep cone (Etna's shield-to-strato profile is broad and
+        // gently sloped, unlike Vesuvius's steep narrow cone or Fuji's
+        // symmetric slope). Four small offset summit bumps stand in for
+        // the four named craters (Voragine, Bocca Nuova, Northeast
+        // Crater, Southeast Crater) clustered near the top. Radial
+        // ridges fanning mostly toward the southeast (toward Catania)
+        // represent historic lava-flow paths down the flanks.
+        // Much broader, gentler shield-to-strato silhouette than a single
+        // steep cone (Vesuvius/Fuji): a wide base rising to a near-flat
+        // summit plateau, with FOUR separate bumps standing above that
+        // plateau for the four named craters clustered near the top
+        // (Voragine, Bocca Nuova, Northeast Crater, Southeast Crater),
+        // each with its own small vent hole - not one single apex.
+        var BASE_R = 17.5, SUMMIT_H = 9.4, PEAK_BUMP = 2.7;
+        var CRATER_OFFSETS = [
+            { x: 1.7, z: -1.0, bumpR: 1.35, holeR: 0.5, holeD: 0.7 },
+            { x: -1.6, z: -0.6, bumpR: 1.15, holeR: 0.42, holeD: 0.55 },
+            { x: -0.5, z: 1.7, bumpR: 1.05, holeR: 0.4, holeD: 0.5 },
+            { x: 1.1, z: 1.6, bumpR: 1.0, holeR: 0.38, holeD: 0.48 }
+        ];
+        var LAVA_ANGLES = [0.35, 0.85, 1.35, -0.55];
+
+        var cratersOn = true, lavaOn = false;
+
+        function height(x, z) {
+            var r = Math.sqrt(x * x + z * z);
+            var t = Math.max(0, 1 - r / BASE_R);
+            var shield = SUMMIT_H * Math.pow(t, 0.6);
+
+            var summitMask = smooth(BASE_R * 0.4, 0, r);
+            var bump = 0, hole = 0;
+            for (var i = 0; i < CRATER_OFFSETS.length; i++) {
+                var c = CRATER_OFFSETS[i];
+                var dx = x - c.x, dz = z - c.z;
+                var rc = Math.sqrt(dx * dx + dz * dz);
+                bump = Math.max(bump, PEAK_BUMP * smooth(c.bumpR, 0, rc));
+                hole = Math.max(hole, c.holeD * (1 - smooth(0, c.holeR, rc)));
+            }
+
+            var angle = Math.atan2(x, -z);
+            var lavaRidge = 0;
+            for (var j = 0; j < LAVA_ANGLES.length; j++) {
+                var da = Math.atan2(Math.sin(angle - LAVA_ANGLES[j]), Math.cos(angle - LAVA_ANGLES[j]));
+                lavaRidge = Math.max(lavaRidge, 0.55 * Math.max(0, 1 - Math.abs(da) / 0.18));
+            }
+            var lavaContribution = lavaOn ? lavaRidge * smooth(BASE_R * 0.95, BASE_R * 0.15, r) : 0;
+
+            var relief = (fbm(x * 0.18 + 3, z * 0.18 + 7, 4) - 0.5) * 0.6;
+            var base = shield + (bump - hole) * summitMask + lavaContribution;
+            return Math.max(0, base + relief * smooth(0.3, 2.0, base));
+        }
+
+        // Colour bands: Mediterranean scrub/vineyard at the base, dark
+        // basaltic rock climbing the flanks, near-black summit rock near
+        // the craters, and an optional dark grey-brown tint tracing the
+        // lava-flow ridges when highlighted.
+        var col = {
+            plain: new THREE.Color(0x7a9b52), scrub: new THREE.Color(0x9a8b56),
+            rockLower: new THREE.Color(0x7d6f60), rockUpper: new THREE.Color(0x54473e),
+            summitRock: new THREE.Color(0x332a26), lava: new THREE.Color(0x2c2320)
+        };
+        function color(c, h, x, z, lavaAmt) {
+            var n = 0.9 + 0.16 * fbm(x * 1.1 + 6, z * 1.1 + 3, 3);
+            if (h >= 8.5) {
+                c.copy(col.summitRock);
+            } else if (h >= 4.5) {
+                c.copy(col.rockUpper).lerp(col.summitRock, smooth(4.5, 8.5, h));
+            } else if (h >= 1.6) {
+                c.copy(col.rockLower).lerp(col.rockUpper, smooth(1.6, 4.5, h));
+            } else if (h >= 0.4) {
+                c.copy(col.scrub).lerp(col.rockLower, smooth(0.4, 1.6, h));
+            } else {
+                c.copy(col.plain);
+            }
+            if (lavaOn && lavaAmt > 0.04) {
+                c.lerp(col.lava, Math.max(0, Math.min(0.75, lavaAmt)));
+            }
+            c.multiplyScalar(n);
+        }
+
+        var segs = shell.low ? 130 : 170;
+        var SPAN = BASE_R * 2.3;
+        var geo = new THREE.PlaneGeometry(SPAN, SPAN, segs, segs);
+        geo.rotateX(-Math.PI / 2);
+        var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), cTmp = new THREE.Color();
+        function lavaAmtAt(x, z, r) {
+            var angle = Math.atan2(x, -z);
+            var amt = 0;
+            for (var j = 0; j < LAVA_ANGLES.length; j++) {
+                var da = Math.atan2(Math.sin(angle - LAVA_ANGLES[j]), Math.cos(angle - LAVA_ANGLES[j]));
+                amt = Math.max(amt, Math.max(0, 1 - Math.abs(da) / 0.18));
+            }
+            return amt * smooth(BASE_R * 0.95, BASE_R * 0.15, r);
+        }
+        for (var i = 0; i < pos.count; i++) {
+            var x = pos.getX(i), z = pos.getZ(i);
+            var h = height(x, z);
+            pos.setY(i, h);
+            var r0 = Math.sqrt(x * x + z * z);
+            color(cTmp, h, x, z, lavaAmtAt(x, z, r0));
+            colors[i * 3] = cTmp.r; colors[i * 3 + 1] = cTmp.g; colors[i * 3 + 2] = cTmp.b;
+        }
+        geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geo.computeVertexNormals();
+        var terrain = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.94, metalness: 0 }));
+        scene.add(terrain);
+
+        var craterMarkers = [];
+        (function buildCraterMarkers() {
+            var mat = new THREE.MeshStandardMaterial({ color: 0xd9432a, emissive: 0x5a1a10, roughness: 0.6 });
+            for (var i = 0; i < CRATER_OFFSETS.length; i++) {
+                var c = CRATER_OFFSETS[i];
+                var mx = c.x, mz = c.z;
+                var my = height(mx, mz) + 0.55;
+                var marker = new THREE.Mesh(new THREE.ConeGeometry(0.42, 0.95, 10), mat);
+                marker.position.set(mx, my, mz);
+                marker.visible = cratersOn;
+                scene.add(marker);
+                craterMarkers.push(marker);
+            }
+        })();
+
+        function recolor() {
+            var cols = geo.attributes.color, c2 = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h2 = height(x, z);
+                pos.setY(i, h2);
+                var r0 = Math.sqrt(x * x + z * z);
+                color(c2, h2, x, z, lavaAmtAt(x, z, r0));
+                cols.setXYZ(i, c2.r, c2.g, c2.b);
+            }
+            cols.needsUpdate = true;
+            pos.needsUpdate = true;
+            geo.computeVertexNormals();
+            for (var j = 0; j < craterMarkers.length; j++) {
+                var c = CRATER_OFFSETS[j];
+                craterMarkers[j].position.y = height(c.x, c.z) + 0.55;
+                craterMarkers[j].visible = cratersOn;
+            }
+        }
+
+        function panelHtml() {
+            return '<h3>Mount Etna: Europe\'s tallest active volcano</h3>' +
+                '<p>A broad shield-to-strato volcano on Sicily\'s east coast, with four summit craters instead of one and flanks scarred by centuries of lava flows.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Height</td><td>about 3,357 m</td></tr>' +
+                '<tr><td>Base area</td><td>about 1,190 sq km</td></tr>' +
+                '<tr><td>Summit craters</td><td>4 (Voragine, Bocca Nuova, NE Crater, SE Crater)</td></tr>' +
+                '<tr><td>Activity record</td><td>continuously active for 2,700+ years</td></tr>' +
+                '<tr><td>Heritage status</td><td>UNESCO World Heritage Site since 2013</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the terrain, crater markers, and lava-flow fans are schematic teaching cues, not survey data.</p>';
+        }
+
+        function apply() {
+            var cb = document.getElementById('t3dEtnCratersBtn');
+            if (cb) cb.textContent = 'Summit craters: ' + (cratersOn ? 'On' : 'Off');
+            var lb = document.getElementById('t3dEtnLavaBtn');
+            if (lb) lb.textContent = 'Lava-flow fans: ' + (lavaOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ cratersOn: cratersOn, lavaOn: lavaOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.cratersOn === 'boolean') cratersOn = store.cratersOn;
+        if (typeof store.lavaOn === 'boolean') lavaOn = store.lavaOn;
+        recolor();
+        apply();
+
+        var cratersBtn = document.getElementById('t3dEtnCratersBtn');
+        if (cratersBtn) cratersBtn.addEventListener('click', function () { cratersOn = !cratersOn; recolor(); apply(); });
+        var lavaBtn = document.getElementById('t3dEtnLavaBtn');
+        if (lavaBtn) lavaBtn.addEventListener('click', function () { lavaOn = !lavaOn; recolor(); apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the summit craters or the lava-flow fans.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesmountetna: 't3dEtnControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesmountetna: { radius: 44, maxR: 100, minR: 8, phi: 1.05, theta: 0.75, targetY: 3.4, fov: 50 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
