@@ -14869,6 +14869,7 @@ export const JSP_BY_ROUTE = {
   '/news/pt/7-zip-cve-2026-14266-xz.html': 'news/pt/7-zip-cve-2026-14266-xz.jsp',
   '/news/es/7-zip-cve-2026-14266-xz.html': 'news/es/7-zip-cve-2026-14266-xz.jsp',
   '/news/vi/7-zip-cve-2026-14266-xz.html': 'news/vi/7-zip-cve-2026-14266-xz.jsp',
+  '/news/id/7-zip-cve-2026-14266-xz.html': 'news/id/7-zip-cve-2026-14266-xz.jsp',
   '/news/adobe-acrobat-apsb26-63.html': 'news/adobe-acrobat-apsb26-63.jsp',
   '/news/libheif-cve-2026-32740.html': 'news/libheif-cve-2026-32740.jsp',
   '/news/pt/libheif-cve-2026-32740.html': 'news/pt/libheif-cve-2026-32740.jsp',
