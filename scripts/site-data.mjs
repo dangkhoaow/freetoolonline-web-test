@@ -14936,6 +14936,7 @@ export const JSP_BY_ROUTE = {
   '/news/id/windows-11-fat32-format-2tb.html': 'news/id/windows-11-fat32-format-2tb.jsp',
   '/news/de/fat32-four-gib-file-limit.html': 'news/de/fat32-four-gib-file-limit.jsp',
   '/news/de/windows-11-fat32-format-2tb.html': 'news/de/windows-11-fat32-format-2tb.jsp',
+  '/news/exif-orientation-rotation-trap.html': 'news/exif-orientation-rotation-trap.jsp',
   '/image-tools/resize-image.html': 'image/resize-image.jsp',
   '/image-tools/crop-image.html': 'image/crop-image.jsp',
   '/image-tools/compress-image.html': 'image/compress-image.jsp',
