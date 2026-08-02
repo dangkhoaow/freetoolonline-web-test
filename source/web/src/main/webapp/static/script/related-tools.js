@@ -727,6 +727,7 @@ try {
     { title: "Solar Sail Propulsion 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-sail-propulsion.html", include: !1, tags: "space-3d" },
     { title: "Planet Atmosphere Scale-Height 3D Explorer", url: "https://freetoolonline.com/space-3d/planet-atmosphere-scale-heights.html", include: !1, tags: "space-3d" },
     { title: "Lunar South Pole Ice 3D Explorer", url: "https://freetoolonline.com/space-3d/lunar-south-pole-ice.html", include: !1, tags: "space-3d" },
+    { title: "Exoplanet Direct Imaging 3D Explorer", url: "https://freetoolonline.com/space-3d/exoplanet-direct-imaging.html", include: !1, tags: "space-3d" },
     { title: "Great Red Spot Jupiter 3D Explorer", url: "https://freetoolonline.com/space-3d/great-red-spot-jupiter.html", include: !1, tags: "space-3d" },
     { title: "Photon Sphere & ISCO 3D Explorer", url: "https://freetoolonline.com/space-3d/photon-sphere-isco-explorer.html", include: !1, tags: "space-3d" },
     { title: "Relativistic Jets & Doppler Beaming 3D Explorer", url: "https://freetoolonline.com/space-3d/relativistic-jets-agn.html", include: !1, tags: "space-3d" },

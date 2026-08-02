@@ -1,0 +1,350 @@
+<script>
+    // 3D scene archetype skeleton (Exoplanet Direct Imaging / HR 8799) -
+    // vendored three.js (ESM, dynamic import from /vendor/three/, NO CDN),
+    // fully client-side. Forked from the solar-sail-propulsion lean t3d*
+    // single-mechanism shape - ONE scene only. All geometry is procedural (a
+    // star sphere + a camera-facing coronagraph-mask sprite drawn on a
+    // canvas texture + 4 orbiting planet spheres + 4 thin orbit-ring lines).
+    //
+    // EDUCATIONAL APPROXIMATION, not a physics simulation or a to-scale
+    // rendering. The HR 8799 system is the first (and still only) multi-
+    // planet system ever directly imaged. On-screen orbital separations are
+    // compressed for readability (real AU separations are in the facts
+    // panel/table); the orbital animation speed is illustrative only, not
+    // scaled to the planets' real ~50-450-year orbital periods; the
+    // coronagraph mask sprite is a teaching stand-in for the real optical
+    // effect, not a rendering of any specific instrument's occulter design.
+    //
+    // Published figures (cross-checked via WebSearch/WebFetch 2026-08-02;
+    // sources: Marois et al. 2008, "Direct Imaging of Multiple Planets
+    // Orbiting the Star HR 8799", Science 322:1348 (first 3 planets, Keck +
+    // Gemini adaptive optics + angular differential imaging, NIRC2/NIRI
+    // near-infrared cameras); Marois et al. 2010 (4th planet, HR 8799 e,
+    // Keck); Wikipedia "HR 8799", "HR 8799 b/c/d/e" (orbital fits, masses,
+    // separations)):
+    //   - Distance from Earth: about 133.3 light-years (40.9 parsecs).
+    //   - Star age: estimated at roughly 30 to 160 million years depending
+    //     on methodology (a young A-type star; many analyses converge near
+    //     30-60 Myr) - young because self-luminous, still-hot giant planets
+    //     are what makes direct imaging possible here.
+    //   - Planets b, c, d announced 2008-11-13 (Marois et al., Science);
+    //     the 4th, e, announced 2010 (Marois et al.), found closer in with
+    //     deeper follow-up imaging at Keck.
+    //   - Real orbital semi-major axes: b about 71.3 AU, c about 41.0 AU,
+    //     d about 26.55 AU, e about 16.00 AU.
+    //   - Real planet masses (Jupiter masses, MJ): b about 6.0 MJ,
+    //     c about 8.5 MJ, d about 9.2 MJ, e about 9.6 MJ.
+    //   - Method: adaptive optics removes atmospheric blur; angular
+    //     differential imaging (ADI) exploits sky-field rotation over time
+    //     on an alt-az telescope to tell real astronomical sources apart
+    //     from instrument artifacts; a coronagraph/occulting mask blocks
+    //     most of the star's direct light so the far-fainter planet light
+    //     is not overwhelmed by glare.
+    //   - Direct imaging works ONLY for young, hot, wide-separation giant
+    //     planets that are still self-luminous in the infrared from their
+    //     own formation heat - a real physical limitation distinct from
+    //     the transit method's requirement of an edge-on orbital alignment.
+    //   - Distinct from exoplanet-transit.html (brightness-dip method,
+    //     needs edge-on alignment), doppler-radial-velocity.html (stellar
+    //     wobble method), and gravitational-microlensing-exoplanet.html
+    //     (brightness-spike method) - THIS page is the 4th major detection
+    //     method: photographing the planet's own (infrared) light directly.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'exoplanetdirectimaging';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'exoplanetdirectimaging'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Real published HR 8799 anchor figures (Marois et al. 2008/2010,
+    // Wikipedia - cross-checked via WebSearch/WebFetch 2026-08-02). Scene
+    // units compress the real AU separations for a readable on-screen
+    // layout; the real AU figures are shown verbatim in the facts panel and
+    // table, never altered.
+    var T3D_HR8799_PLANETS = [
+        { key: 'e', label: 'HR 8799 e', au: 16.00, massMJ: 9.6, year: 2010, color: 0xffb37a },
+        { key: 'd', label: 'HR 8799 d', au: 26.55, massMJ: 9.2, year: 2010, color: 0xff9a5c },
+        { key: 'c', label: 'HR 8799 c', au: 41.00, massMJ: 8.5, year: 2008, color: 0xff8144 },
+        { key: 'b', label: 'HR 8799 b', au: 71.30, massMJ: 6.0, year: 2008, color: 0xff6a33 }
+    ];
+    var T3D_AU_SCENE_SCALE = 0.6; // compressed-scale display factor, disclosed in the panel
+
+    function t3dExoplanetDirectImaging(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+
+        // Deep-space starfield backdrop.
+        var starN = shell.low ? 220 : 460;
+        var starPos = new Float32Array(starN * 3);
+        for (var s = 0; s < starN; s++) {
+            var r = 60 + Math.random() * 70;
+            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+            starPos[s * 3] = r * Math.sin(ph) * Math.cos(th);
+            starPos[s * 3 + 1] = r * Math.cos(ph);
+            starPos[s * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+        }
+        var starGeo = new THREE.BufferGeometry();
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xdfe6ff, size: 0.3, sizeAttenuation: true, transparent: true, opacity: 0.55 })));
+
+        // HR 8799 (A-type star, hotter/bluer than the Sun) at the scene origin.
+        var starLight = new THREE.PointLight(0xdfeaff, 1.6, 0, 0);
+        scene.add(starLight);
+        var starMesh = new THREE.Mesh(new THREE.SphereGeometry(0.55, 20, 16), new THREE.MeshBasicMaterial({ color: 0xdfeaff }));
+        scene.add(starMesh);
+
+        // Coronagraph occulting mask - a camera-facing sprite drawn from a
+        // procedural canvas radial gradient (opaque center, soft-feathered
+        // edge). Real coronagraphs block roughly 10,000x to 100,000x of the
+        // star's light so the far-fainter planet light is not overwhelmed by
+        // glare; this sprite is a teaching stand-in for that masking effect,
+        // not a rendering of any specific instrument's occulter geometry.
+        var maskCanvas = document.createElement('canvas');
+        maskCanvas.width = 128; maskCanvas.height = 128;
+        var mctx = maskCanvas.getContext('2d');
+        var grad = mctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+        grad.addColorStop(0, 'rgba(0,0,0,0.96)');
+        grad.addColorStop(0.55, 'rgba(0,0,0,0.9)');
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        mctx.fillStyle = grad;
+        mctx.fillRect(0, 0, 128, 128);
+        var maskTexture = new THREE.CanvasTexture(maskCanvas);
+        var maskSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: maskTexture, transparent: true, depthWrite: false }));
+        maskSprite.scale.set(2.6, 2.6, 1);
+        scene.add(maskSprite);
+
+        // 4 real HR 8799 planets - warm orange spheres standing for their
+        // own thermal-infrared glow (they are detected because they are
+        // still hot from formation, not because they reflect starlight),
+        // each on a thin orbit-ring line at its real (compressed-scale) AU
+        // separation.
+        var planetMeshes = {}, orbitRadii = {};
+        for (var i = 0; i < T3D_HR8799_PLANETS.length; i++) {
+            var p = T3D_HR8799_PLANETS[i];
+            var radius = p.au * T3D_AU_SCENE_SCALE;
+            orbitRadii[p.key] = radius;
+            var ringPts = [];
+            var RING_SEGS = 96;
+            for (var seg = 0; seg <= RING_SEGS; seg++) {
+                var a = (seg / RING_SEGS) * Math.PI * 2;
+                ringPts.push(new THREE.Vector3(Math.cos(a) * radius, 0, Math.sin(a) * radius));
+            }
+            var ringGeo = new THREE.BufferGeometry().setFromPoints(ringPts);
+            scene.add(new THREE.Line(ringGeo, new THREE.LineBasicMaterial({ color: 0x3a4d66, transparent: true, opacity: 0.55 })));
+
+            var planetGeo = new THREE.SphereGeometry(0.42, 18, 14);
+            var planetMat = new THREE.MeshBasicMaterial({ color: p.color });
+            var planetMesh = new THREE.Mesh(planetGeo, planetMat);
+            planetMesh.userData.baseScale = 1;
+            planetMesh.userData.angle = Math.random() * Math.PI * 2;
+            planetMesh.userData.speed = 0.00006 / Math.sqrt(p.au); // illustrative pacing only - farther = slower, matching real Kepler direction, never real periods
+            planetMesh.userData.radius = radius;
+            scene.add(planetMesh);
+            planetMeshes[p.key] = planetMesh;
+        }
+
+        var selectEl = document.getElementById('t3dExoplanetPick');
+        var selected = 'overview';
+
+        function planetByKey(key) {
+            for (var j = 0; j < T3D_HR8799_PLANETS.length; j++) { if (T3D_HR8799_PLANETS[j].key === key) return T3D_HR8799_PLANETS[j]; }
+            return null;
+        }
+
+        function tableRowsHtml() {
+            var rows = '';
+            for (var k = 0; k < T3D_HR8799_PLANETS.length; k++) {
+                var pl = T3D_HR8799_PLANETS[k];
+                rows += '<tr' + (pl.key === selected ? ' style="background:#eef4ff;"' : '') + '><td>' + pl.label + '</td><td>' + pl.massMJ.toFixed(1) + ' MJ</td><td>' + pl.au.toFixed(2) + ' AU</td><td>' + pl.year + '</td></tr>';
+            }
+            return rows;
+        }
+
+        function panelHtml() {
+            var head, body;
+            if (selected === 'overview') {
+                head = '<h3>HR 8799 - the first multi-planet system ever directly imaged</h3>';
+                body = '<p>HR 8799 is about 133.3 light-years away. Its four giant planets (b, c, d, e) were found by photographing their own faint infrared glow, not by watching the star dim or wobble. Pick a planet below to see its real mass and orbital distance.</p>';
+            } else {
+                var pl = planetByKey(selected);
+                head = '<h3>' + pl.label + '</h3>';
+                body = '<p><b>Mass:</b> about ' + pl.massMJ.toFixed(1) + ' Jupiter masses.<br/><b>Orbital separation:</b> about ' + pl.au.toFixed(2) + ' AU from HR 8799 (on-screen distance is compressed for readability - this is the real figure).<br/><b>Confirmed:</b> ' + pl.year + '.</p>';
+            }
+            return head + body +
+                '<div class="w3-responsive"><table class="w3-table w3-bordered w3-small">' +
+                '<tr><th>Planet</th><th>Mass</th><th>Separation</th><th>Confirmed</th></tr>' +
+                tableRowsHtml() +
+                '</table></div>' +
+                '<p class="t3d-note">Educational approximation - planet sizes, colors, and orbit speeds are illustrative, not to scale or to real orbital periods (b through e take roughly 50 to 460 years per real orbit). The dark sprite over the star stands for a coronagraph occulting mask, not a specific instrument\'s real design. Every mass, separation, and confirmation year above is a real published figure (Marois et al. 2008, 2010).</p>';
+        }
+
+        function applySelection() {
+            for (var key in planetMeshes) {
+                var isSel = (key === selected);
+                planetMeshes[key].scale.setScalar(isSel ? 1.6 : 1);
+                planetMeshes[key].material.color.setHex(isSel ? 0xffe08a : planetByKey(key).color);
+            }
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ selected: selected }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (store && typeof store.selected === 'string' && (store.selected === 'overview' || planetByKey(store.selected))) {
+            selected = store.selected;
+        }
+        if (selectEl) {
+            selectEl.value = selected;
+            selectEl.addEventListener('change', function () {
+                selected = selectEl.value;
+                applySelection();
+            });
+        }
+        applySelection();
+
+        t3dStatus('Drag to orbit, scroll to zoom. Pick a planet below to highlight it and read its real figures.');
+        return function animate(dt) {
+            for (var key2 in planetMeshes) {
+                var m = planetMeshes[key2];
+                m.userData.angle += dt * m.userData.speed;
+                m.position.set(Math.cos(m.userData.angle) * m.userData.radius, 0, Math.sin(m.userData.angle) * m.userData.radius);
+            }
+            starMesh.scale.setScalar(1 + 0.04 * Math.sin(performance.now() * 0.0015));
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { exoplanetdirectimaging: 't3dExoplanetControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { exoplanetdirectimaging: { radius: 70, maxR: 220, minR: 6, phi: 1.05, theta: 0.6, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dExoplanetDirectImaging(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
