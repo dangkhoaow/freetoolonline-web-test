@@ -1,0 +1,441 @@
+<script>
+    // 3D scene archetype skeleton (Lunar South Pole Ice Explorer) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Forked from the lean single-scene shape used by
+    // planet-atmosphere-scale-heights / solar-sail-propulsion - ONE scene
+    // only. All geometry is procedural (a torus rim + a frustum wall + a
+    // floor disk + a central-peak cone for Shackleton crater, plus a
+    // smaller secondary bowl for nearby Cabeus crater) lit by a real
+    // THREE.DirectionalLight with WebGL shadow-mapping enabled, so the
+    // crater-floor shadow you see is genuinely computed from the light
+    // angle and the rim geometry, not a painted-on darkening.
+    //
+    // EDUCATIONAL APPROXIMATION, not a physics simulation. The Moon's real
+    // polar sun elevation is simplified here as a constant ~1.54 degrees
+    // across the whole azimuth sweep (in reality it varies slightly through
+    // the month because the Moon's orbit is not a perfect circle, but the
+    // near-grazing angle - never more than a few degrees - holds
+    // throughout). The 3 gold "peaks of eternal light" markers are
+    // illustrative rim positions representing the real phenomenon, not
+    // GPS-precise NASA-surveyed coordinates. The faint fill light used to
+    // keep the shadowed floor visible on screen is a rendering aid, not a
+    // claim that the real permanently-shadowed floor receives ambient
+    // light. Crater depth-to-width ratio (about 1:5) matches the real
+    // measurements; the surrounding terrain is flattened for a readable
+    // scene and is not the Moon's true curvature.
+    //
+    // Published figures (cross-checked via WebSearch 2026-08-02; sources:
+    // Wikipedia "Shackleton (crater)" citing NASA LOLA (Lunar Orbiter Laser
+    // Altimeter) measurements; Colaprete et al., "Detection of Water in the
+    // LCROSS Ejecta Plume", Science 330 (2010) for the LCROSS result; NASA
+    // "NASA Identifies Candidate Regions for Landing Next Americans on
+    // Moon" (Aug 2022) and "NASA Provides Update on Artemis III Moon
+    // Landing Regions" (Oct 2024) for the Artemis site context):
+    //   - Shackleton crater: rim diameter about 21 km; depth about 4.2 km
+    //     (LOLA-measured 4.1 +/- 0.05 km rim-to-floor); floor temperature
+    //     about 90 K (-183 C) on average, among the coldest measured spots
+    //     in the solar system - permanently shadowed lunar polar craters
+    //     generally never warm above about 100 K (-173 C).
+    //   - Moon's axial tilt: only about 1.54 degrees (compare Earth's 23.5
+    //     degrees) - this is WHY sunlight grazes in nearly parallel to the
+    //     ground at the pole and never climbs high enough to clear a
+    //     crater's own rim and reach the floor.
+    //   - A few points right on Shackleton's rim are illuminated more than
+    //     90% of the lunar year - the "peaks of eternal light" effect.
+    //   - LCROSS (2009-10-09): NASA deliberately crashed a spent rocket
+    //     stage into the permanently shadowed floor of nearby Cabeus
+    //     crater; spectrometer analysis of the ejecta plume found about
+    //     5.6% +/- 2.9% water ice by mass (Colaprete et al., Science,
+    //     2010) - the first direct confirmation of water ice at the lunar
+    //     south pole. Cabeus is a separate crater from Shackleton; both are
+    //     permanently-shadowed south-pole craters.
+    //   - Context: Shackleton sits on the rim of the ancient, roughly
+    //     2500-km-wide South Pole-Aitken impact basin. NASA's Artemis III
+    //     candidate landing regions (narrowed to 9 in October 2024) are in
+    //     this same polar area, including "Peak near Cabeus B" and de
+    //     Gerlache Rim 2 - not Shackleton itself in the narrowed list, but
+    //     the same permanently-shadowed-region science that makes this
+    //     crater notable.
+    //   - Distinct from moon-phases-3d.html / moon-calendar-3d.html (visible-
+    //     face phase and libration geometry) and moon-formation-giant-impact.html
+    //     (how the Moon formed) - THIS page is specifically the south-pole
+    //     illumination geometry (why crater floors there never see light)
+    //     and the real water-ice evidence found there.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'lunarsouthpoleice';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'lunarsouthpoleice'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 50, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Real published figures (Wikipedia "Shackleton (crater)" citing NASA
+    // LOLA measurements; Colaprete et al., Science 2010; NASA Artemis III
+    // candidate-region announcements, cross-checked via WebSearch 2026-08-02).
+    var T3D_SHACKLETON_DIAM_KM = 21;
+    var T3D_SHACKLETON_DEPTH_KM = 4.2;
+    var T3D_MOON_TILT_DEG = 1.54;
+    var T3D_EARTH_TILT_DEG = 23.5;
+    var T3D_RIM_RADIUS = 8;
+    var T3D_RIM_TUBE = 0.55;
+    var T3D_FLOOR_RADIUS = 6.8;
+    var T3D_FLOOR_DEPTH = T3D_RIM_RADIUS * 2 * (T3D_SHACKLETON_DEPTH_KM / T3D_SHACKLETON_DIAM_KM); // preserves the real 1:5 depth-to-width ratio
+    var T3D_PEAK_ANGLES_DEG = [42, 158, 262]; // illustrative "peaks of eternal light" marker positions
+
+    function t3dLunarSouthPoleIce(shell) {
+        var THREE = shell.THREE, scene = shell.scene, renderer = shell.renderer;
+        renderer.setClearColor(0x03040a, 1);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = shell.low ? THREE.BasicShadowMap : THREE.PCFSoftShadowMap;
+
+        // Fill light so the whole crater's shape (floor, walls, central
+        // peak, surrounding terrain) reads clearly on screen even though
+        // the real grazing sun angle would leave a horizontal surface here
+        // almost unlit - a rendering aid for legibility, not a claim of
+        // real ambient light.
+        scene.add(new THREE.AmbientLight(0xaabbdd, 1.15));
+        var fillHemi = new THREE.HemisphereLight(0x99aacc, 0x2a2a34, 0.6);
+        scene.add(fillHemi);
+
+        var starN = shell.low ? 140 : 300;
+        var starPos = new Float32Array(starN * 3);
+        for (var s = 0; s < starN; s++) {
+            var r = 60 + Math.random() * 55;
+            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+            starPos[s * 3] = r * Math.sin(ph) * Math.cos(th);
+            starPos[s * 3 + 1] = Math.abs(r * Math.cos(ph)) * 0.5 + 8;
+            starPos[s * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+        }
+        var starGeo = new THREE.BufferGeometry();
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xdfe6ff, size: 0.28, sizeAttenuation: true, transparent: true, opacity: 0.5 })));
+
+        // Surrounding polar terrain (flattened for readability - not the
+        // Moon's true curvature). Punched with two holes so it does not
+        // form an opaque lid over either crater's own cavity - a solid
+        // unbroken disk here would sit at the rim's own height and hide
+        // the shadowed floor/wall/peak underneath from every angle above.
+        var groundShape = new THREE.Shape();
+        groundShape.absarc(0, 0, 34, 0, Math.PI * 2, false);
+        var shackletonHole = new THREE.Path();
+        shackletonHole.absarc(0, 0, T3D_RIM_RADIUS + T3D_RIM_TUBE + 0.4, 0, Math.PI * 2, true);
+        groundShape.holes.push(shackletonHole);
+        var cabeusHole = new THREE.Path();
+        cabeusHole.absarc(15.5, -5.5, (T3D_RIM_RADIUS + T3D_RIM_TUBE) * 0.42 + 0.4, 0, Math.PI * 2, true);
+        groundShape.holes.push(cabeusHole);
+        var ground = new THREE.Mesh(
+            new THREE.ShapeGeometry(groundShape, 48),
+            new THREE.MeshLambertMaterial({ color: 0x4a4a4d, side: THREE.DoubleSide })
+        );
+        ground.rotation.x = -Math.PI / 2;
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        // Shackleton crater group: raised rim torus + sloped frustum wall +
+        // sunken floor disk + a small central-peak cone.
+        var craterGroup = new THREE.Group();
+        scene.add(craterGroup);
+
+        var rim = new THREE.Mesh(
+            new THREE.TorusGeometry(T3D_RIM_RADIUS, T3D_RIM_TUBE, 14, 40),
+            new THREE.MeshLambertMaterial({ color: 0x9a9a9e })
+        );
+        rim.rotation.x = Math.PI / 2;
+        rim.position.y = 0.22;
+        rim.castShadow = true;
+        rim.receiveShadow = true;
+        craterGroup.add(rim);
+
+        var wall = new THREE.Mesh(
+            new THREE.CylinderGeometry(T3D_RIM_RADIUS - T3D_RIM_TUBE, T3D_FLOOR_RADIUS, T3D_FLOOR_DEPTH, 40, 1, true),
+            new THREE.MeshLambertMaterial({ color: 0x53535e, side: THREE.DoubleSide })
+        );
+        wall.position.y = -T3D_FLOOR_DEPTH / 2;
+        wall.castShadow = true;
+        wall.receiveShadow = true;
+        craterGroup.add(wall);
+
+        var floor = new THREE.Mesh(
+            new THREE.CircleGeometry(T3D_FLOOR_RADIUS, 40),
+            new THREE.MeshLambertMaterial({ color: 0x3a3a44 })
+        );
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.y = -T3D_FLOOR_DEPTH;
+        floor.receiveShadow = true;
+        craterGroup.add(floor);
+
+        var centralPeak = new THREE.Mesh(
+            new THREE.ConeGeometry(0.7, 0.55, 16),
+            new THREE.MeshLambertMaterial({ color: 0x55555e })
+        );
+        centralPeak.position.y = -T3D_FLOOR_DEPTH + 0.28;
+        centralPeak.castShadow = true;
+        centralPeak.receiveShadow = true;
+        craterGroup.add(centralPeak);
+
+        // "Peaks of eternal light" - illustrative rim markers.
+        var peakMarkers = [];
+        for (var pIdx = 0; pIdx < T3D_PEAK_ANGLES_DEG.length; pIdx++) {
+            var pAng = T3D_PEAK_ANGLES_DEG[pIdx] * Math.PI / 180;
+            var pm = new THREE.Mesh(
+                new THREE.SphereGeometry(0.28, 10, 10),
+                new THREE.MeshBasicMaterial({ color: 0xffd479 })
+            );
+            pm.position.set(Math.cos(pAng) * T3D_RIM_RADIUS, 0.55, Math.sin(pAng) * T3D_RIM_RADIUS);
+            craterGroup.add(pm);
+            peakMarkers.push(pm);
+        }
+
+        // Secondary, smaller bowl representing nearby Cabeus crater (the
+        // real LCROSS-2009 impact site) - visual context only, not
+        // interactive.
+        var cabeusGroup = new THREE.Group();
+        cabeusGroup.position.set(15.5, 0, 5.5);
+        cabeusGroup.scale.setScalar(0.42);
+        scene.add(cabeusGroup);
+        var cabeusRim = new THREE.Mesh(
+            new THREE.TorusGeometry(T3D_RIM_RADIUS, T3D_RIM_TUBE, 12, 30),
+            new THREE.MeshLambertMaterial({ color: 0x8d8d92 })
+        );
+        cabeusRim.rotation.x = Math.PI / 2;
+        cabeusRim.position.y = 0.22;
+        cabeusRim.castShadow = true;
+        cabeusRim.receiveShadow = true;
+        cabeusGroup.add(cabeusRim);
+        var cabeusFloor = new THREE.Mesh(
+            new THREE.CircleGeometry(T3D_FLOOR_RADIUS, 30),
+            new THREE.MeshLambertMaterial({ color: 0x304c4c })
+        );
+        cabeusFloor.rotation.x = -Math.PI / 2;
+        cabeusFloor.position.y = -T3D_FLOOR_DEPTH * 0.7;
+        cabeusFloor.receiveShadow = true;
+        cabeusGroup.add(cabeusFloor);
+
+        // Sun: a real DirectionalLight (shadow-casting) + a small visible
+        // marker sphere along the same direction.
+        var sunLight = new THREE.DirectionalLight(0xfff3d6, 1.35);
+        sunLight.castShadow = true;
+        sunLight.shadow.mapSize.set(shell.low ? 512 : 1024, shell.low ? 512 : 1024);
+        sunLight.shadow.camera.near = 1;
+        sunLight.shadow.camera.far = 90;
+        sunLight.shadow.camera.left = -16;
+        sunLight.shadow.camera.right = 16;
+        sunLight.shadow.camera.top = 16;
+        sunLight.shadow.camera.bottom = -16;
+        sunLight.shadow.bias = -0.0015;
+        var sunTarget = new THREE.Object3D();
+        sunTarget.position.set(0, 0, 0);
+        scene.add(sunTarget);
+        sunLight.target = sunTarget;
+        scene.add(sunLight);
+
+        var sunMarker = new THREE.Mesh(
+            new THREE.SphereGeometry(1.1, 14, 14),
+            new THREE.MeshBasicMaterial({ color: 0xfff0c2 })
+        );
+        scene.add(sunMarker);
+
+        var sliderEl = document.getElementById('t3dAzimuthScrub');
+        var labelEl = document.getElementById('t3dAzimuthLabel');
+        var toggleBtn = document.getElementById('t3dTiltToggleBtn');
+        var azimuthDeg = 0;
+        var earthTiltMode = false;
+
+        function legendDot(hex) {
+            return '<span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:' + hex + ';margin-right:5px;vertical-align:middle;"></span>';
+        }
+
+        function panelHtml() {
+            var tiltDeg = earthTiltMode ? T3D_EARTH_TILT_DEG : T3D_MOON_TILT_DEG;
+            var dayOfMonth = (azimuthDeg / 360 * 29.5).toFixed(1);
+            var tiltNote = earthTiltMode
+                ? '<p class="t3d-note">Comparison mode: this raises the sun elevation to Earth\'s 23.5 degree axial tilt. At this steeper angle, sunlight clears the rim and reaches parts of the floor at some sun positions - which is exactly why Earth\'s own polar regions do not have permanently sunless crater floors the way the Moon\'s poles do. Switch back to see the real Moon angle.</p>'
+                : '<p class="t3d-note">This is the Moon\'s real polar sun angle: about ' + T3D_MOON_TILT_DEG + ' degrees, simplified here as constant through the lunar day (it varies slightly through the month in reality). At this grazing angle the floor stays in shadow at every sun position - drag the slider all the way around to check.</p>';
+            return '<h3>Sun position: ' + azimuthDeg + ' degrees around the pole</h3>' +
+                '<p>About day ' + dayOfMonth + ' of the roughly 29.5-day lunar day/night cycle, at a sun elevation of ' + tiltDeg + ' degrees.</p>' +
+                tiltNote +
+                '<p>' + legendDot('#9a9a9e') + '<b>Shackleton crater:</b> 21 km wide, about 4.2 km deep (LOLA-measured 4.1 &plusmn; 0.05 km) - the shadow you see on the floor is a real WebGL shadow cast by this rim geometry from the current sun direction, not a painted-on darkening.</p>' +
+                '<p><b>Floor temperature:</b> about 90 K (-183 C) on average - among the coldest measured spots in the solar system. Permanently shadowed lunar polar craters generally never warm above about 100 K (-173 C).</p>' +
+                '<p>' + legendDot('#ffd479') + '<b>Peaks of eternal light:</b> the 3 gold markers on the rim represent real points near Shackleton\'s rim that stay illuminated more than 90% of the lunar year - illustrative positions, not exact NASA-surveyed coordinates.</p>' +
+                '<p><b>Water ice evidence:</b> on 2009-10-09, NASA\'s LCROSS mission crashed into the permanently shadowed floor of nearby Cabeus crater (the smaller bowl to the right); spectrometers on the plume found about 5.6% &plusmn; 2.9% water ice by mass (Colaprete et al., Science, 2010) - the first direct confirmation of water ice at the lunar south pole.</p>' +
+                '<p class="t3d-note">Shackleton sits on the rim of the ancient South Pole-Aitken impact basin. NASA\'s Artemis III candidate landing regions (narrowed to 9 in October 2024) are in this same polar area, including "Peak near Cabeus B" and de Gerlache Rim 2.</p>';
+        }
+
+        function apply() {
+            var az = azimuthDeg * Math.PI / 180;
+            var elevDeg = earthTiltMode ? T3D_EARTH_TILT_DEG : T3D_MOON_TILT_DEG;
+            var elev = elevDeg * Math.PI / 180;
+            var dist = 40;
+            var dx = Math.cos(elev) * Math.cos(az) * dist;
+            var dy = Math.sin(elev) * dist;
+            var dz = Math.cos(elev) * Math.sin(az) * dist;
+            sunLight.position.set(dx, dy, dz);
+            sunMarker.position.set(dx * 0.62, dy * 0.62, dz * 0.62);
+            if (labelEl) labelEl.textContent = 'Sun position: ' + azimuthDeg + ' deg';
+            if (toggleBtn) toggleBtn.textContent = earthTiltMode ? 'Showing: Earth-tilt comparison (23.5 deg) - click to reset' : 'Compare to Earth tilt (23.5 deg)';
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ azimuthDeg: azimuthDeg, earthTiltMode: earthTiltMode }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.azimuthDeg === 'number' && store.azimuthDeg >= 0 && store.azimuthDeg <= 360) {
+            azimuthDeg = store.azimuthDeg;
+        }
+        if (typeof store.earthTiltMode === 'boolean') { earthTiltMode = store.earthTiltMode; }
+        if (sliderEl) sliderEl.value = String(azimuthDeg);
+        apply();
+
+        if (sliderEl) sliderEl.addEventListener('input', function () {
+            azimuthDeg = Math.max(0, Math.min(360, parseFloat(sliderEl.value || '0')));
+            apply();
+        });
+        if (toggleBtn) toggleBtn.addEventListener('click', function () {
+            earthTiltMode = !earthTiltMode;
+            apply();
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Slide to move the sun around the pole; the crater floor stays in shadow at every position because the real angle is so low.');
+        return function animate(dt) {
+            var t = performance.now() * 0.002;
+            for (var i = 0; i < peakMarkers.length; i++) {
+                peakMarkers[i].material.opacity = 1;
+                var pulse = 0.75 + 0.25 * Math.sin(t + i * 1.7);
+                peakMarkers[i].scale.setScalar(pulse);
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { lunarsouthpoleice: 't3dAzimuthControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { lunarsouthpoleice: { radius: 24, maxR: 70, minR: 6, phi: 0.62, theta: 0.55, targetY: -1.8, fov: 48 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dLunarSouthPoleIce(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
