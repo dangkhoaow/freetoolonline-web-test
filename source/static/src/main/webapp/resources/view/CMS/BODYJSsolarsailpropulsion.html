@@ -1,0 +1,365 @@
+<script>
+    // 3D scene archetype skeleton (Solar Sail Propulsion / IKAROS) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Forked from the psyche-metal-asteroid / hayabusa2-ryugu
+    // lean mission shape - ONE scene only. All geometry is procedural (a flat
+    // square sail plane + a small cylindrical spacecraft hub + tether lines to
+    // 4 corner tip-mass spheres + a Sun marker + a thrust-vector arrow).
+    //
+    // EDUCATIONAL APPROXIMATION, not a physics simulation. A teaching scene:
+    // JAXA's real IKAROS solar sail, spin-stabilized and always facing the
+    // Sun in this scene (IKAROS itself actively controlled its attitude via
+    // 8 liquid-crystal reflectivity-control panels). The sail-area slider
+    // scales the visual sail size AND the displayed thrust value in direct
+    // proportion to area (a genuine physics relationship - radiation-pressure
+    // force scales with reflective area at a fixed distance from the Sun);
+    // only the 1.00x setting shows JAXA's actual measured figure - other
+    // settings are disclosed as a proportional illustration, never claimed as
+    // separately published measurements.
+    //
+    // Published figures (cross-checked via WebSearch/WebFetch 2026-08-02;
+    // sources: JAXA press release 2010-07-09 (jaxa.jp/press/2010/07/20100709_ikaros_e.html),
+    // JAXA IKAROS mission overview (global.jaxa.jp/countdown/f17/overview/ikaros_e.html),
+    // JAXA press release 2010-07-23 on liquid-crystal attitude control
+    // (global.jaxa.jp/press/2010/07/20100723_ikaros_e.html), eoPortal IKAROS
+    // satellite mission page, Wikipedia "IKAROS" citing the above + the
+    // peer-reviewed mission summary (Achievement of IKAROS, Acta Astronautica
+    // 2013 via ScienceDirect), and an arXiv GAP-instrument paper (1010.5305)
+    // giving spacecraft body dimensions:
+    //   - Launched 2010-05-21 (JST) on an H-IIA rocket from Tanegashima Space
+    //     Center, alongside the AKATSUKI Venus Climate Orbiter.
+    //   - Square sail membrane about 14 m x 14 m (about 20 m corner-to-corner
+    //     diagonal), about 196 sq m of polyimide film only 7.5 micrometers
+    //     (0.0075 mm) thick, with an aluminum-vapor-deposited reflective
+    //     coating. Thin-film solar cells are attached to the membrane, so the
+    //     same sail both catches sunlight for propulsion and generates
+    //     electricity - JAXA describes this dual role as a "hybrid" solar
+    //     power sail, the first of its kind flown in deep space.
+    //   - Sail membrane mass about 2 kg (excluding 4 corner tip masses of
+    //     about 0.5 kg each, used with spin - about 1-2 rpm - to deploy and
+    //     tension the membrane by centrifugal force, with no rigid booms).
+    //   - Spacecraft body: a cylinder about 1.58 m in diameter and 0.95 m
+    //     tall; total spacecraft wet mass about 307 kg at launch.
+    //   - Eight reflectivity-control liquid-crystal panels (two per sail
+    //     edge) let IKAROS change attitude using sunlight pressure alone, no
+    //     propellant; a JAXA test on 2010-07-23 achieved about 90-94% of the
+    //     expected attitude-control performance.
+    //   - On 2010-07-09, JAXA confirmed via Doppler radar tracking that solar
+    //     radiation pressure was producing about 1.12 millinewtons (mN) of
+    //     thrust on the sail - "the expected value." JAXA stated this proved
+    //     IKAROS achieved the largest acceleration produced by photon
+    //     pressure in the history of interplanetary flight (at the time).
+    //     1.12 mN is about the same as the weight of a 0.114-gram object
+    //     under Earth gravity (F = mg) - a way to grasp how small the force
+    //     is, even though it acts continuously with no propellant spent.
+    //   - IKAROS was the world's first spacecraft to successfully demonstrate
+    //     solar-sail propulsion in interplanetary space.
+    //   - Distinct from tsiolkovsky-rocket-equation.html (chemical/ion
+    //     rocket propellant-based delta-v) and psyche-metal-asteroid.html
+    //     (ion-thruster cruise mission) - THIS page is specifically
+    //     propellant-free propulsion from sunlight pressure alone.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'solarsailpropulsion';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'solarsailpropulsion'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Real published IKAROS anchor figures (JAXA / eoPortal / Wikipedia /
+    // ScienceDirect / arXiv - cross-checked via WebSearch/WebFetch
+    // 2026-08-02). The slider multiplies these by a 0.25x-2.00x scale factor;
+    // only 1.00x is the real measured figure - other settings are a
+    // proportional illustration (radiation-pressure thrust scales directly
+    // with reflective sail area at a fixed distance from the Sun), never a
+    // separately published measurement.
+    var T3D_SAIL_REAL_AREA_M2 = 196;
+    var T3D_SAIL_REAL_THRUST_MN = 1.12;
+    var T3D_SAIL_BASE_HALF_SCENE = 4.2; // scene units at 1.00x (visual only)
+
+    function t3dSolarSail(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x05060a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+
+        // Deep-space starfield backdrop.
+        var starN = shell.low ? 200 : 420;
+        var starPos = new Float32Array(starN * 3);
+        for (var s = 0; s < starN; s++) {
+            var r = 70 + Math.random() * 60;
+            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+            starPos[s * 3] = r * Math.sin(ph) * Math.cos(th);
+            starPos[s * 3 + 1] = r * Math.cos(ph);
+            starPos[s * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+        }
+        var starGeo = new THREE.BufferGeometry();
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xdfe6ff, size: 0.3, sizeAttenuation: true, transparent: true, opacity: 0.55 })));
+
+        // Sun direction + marker (not to scale - a stand-in light source, not
+        // a real Sun size/distance model).
+        var sunDir = new THREE.Vector3(1, 0.35, 0.55).normalize();
+        var sunLight = new THREE.DirectionalLight(0xfff2df, 1.3);
+        sunLight.position.copy(sunDir.clone().multiplyScalar(40));
+        scene.add(sunLight);
+        var sunMarker = new THREE.Mesh(new THREE.SphereGeometry(2.4, 20, 16), new THREE.MeshBasicMaterial({ color: 0xffdd66 }));
+        sunMarker.position.copy(sunDir.clone().multiplyScalar(34));
+        scene.add(sunMarker);
+        var sunGlow = new THREE.Mesh(new THREE.SphereGeometry(3.4, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffdd66, transparent: true, opacity: 0.18 }));
+        sunGlow.position.copy(sunMarker.position);
+        scene.add(sunGlow);
+
+        // Sail group - local +Z axis aligned to face the Sun; spinning the
+        // group about its own local Z axis (spin-stabilization) never
+        // changes which way it faces, matching the real deployment method.
+        var sailGroup = new THREE.Group();
+        sailGroup.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), sunDir);
+        scene.add(sailGroup);
+
+        var sailMesh = null, tetherLines = null, tipMasses = [], cellPatches = [];
+        var CELL_FRACS = [[-0.55, -0.55], [0.55, -0.55], [-0.55, 0.55], [0.55, 0.55], [0, 0], [0, -0.72]];
+
+        function rebuildSail(half) {
+            if (sailMesh) { sailGroup.remove(sailMesh); sailMesh.geometry.dispose(); sailMesh.material.dispose(); }
+            if (tetherLines) { sailGroup.remove(tetherLines); tetherLines.geometry.dispose(); tetherLines.material.dispose(); }
+            for (var t = 0; t < tipMasses.length; t++) sailGroup.remove(tipMasses[t]);
+            tipMasses = [];
+            for (var c = 0; c < cellPatches.length; c++) sailGroup.remove(cellPatches[c]);
+            cellPatches = [];
+
+            sailMesh = new THREE.Mesh(
+                new THREE.PlaneGeometry(half * 2, half * 2),
+                new THREE.MeshStandardMaterial({ color: 0xd8dadf, roughness: 0.28, metalness: 0.55, side: THREE.DoubleSide })
+            );
+            sailGroup.add(sailMesh);
+
+            var corners = [[-half, -half], [half, -half], [-half, half], [half, half]];
+            var tetherPts = [];
+            for (var i = 0; i < corners.length; i++) {
+                var cx = corners[i][0], cy = corners[i][1];
+                var tip = new THREE.Mesh(new THREE.SphereGeometry(half * 0.045, 10, 8), new THREE.MeshStandardMaterial({ color: 0x9aa0a6, roughness: 0.6, metalness: 0.3 }));
+                tip.position.set(cx, cy, 0.02);
+                sailGroup.add(tip);
+                tipMasses.push(tip);
+                tetherPts.push(new THREE.Vector3(0, 0, 0.08), new THREE.Vector3(cx, cy, 0.02));
+            }
+            var tetherGeo = new THREE.BufferGeometry().setFromPoints(tetherPts);
+            tetherLines = new THREE.LineSegments(tetherGeo, new THREE.LineBasicMaterial({ color: 0x8fa3b0, transparent: true, opacity: 0.6 }));
+            sailGroup.add(tetherLines);
+
+            // Thin-film solar-cell patches - a visual stand-in for the real
+            // "hybrid" sail-integrated power-generation cells, not a
+            // to-scale layout of the actual cell grid.
+            for (var p = 0; p < CELL_FRACS.length; p++) {
+                var patch = new THREE.Mesh(
+                    new THREE.PlaneGeometry(half * 0.32, half * 0.32),
+                    new THREE.MeshBasicMaterial({ color: 0x2a4d8f, side: THREE.DoubleSide })
+                );
+                patch.position.set(CELL_FRACS[p][0] * half, CELL_FRACS[p][1] * half, 0.025);
+                sailGroup.add(patch);
+                cellPatches.push(patch);
+            }
+        }
+
+        // Spacecraft hub (small cylinder proud of the sail's Sun-facing side).
+        var hub = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.5, 16), new THREE.MeshStandardMaterial({ color: 0xcfd8dc, roughness: 0.45, metalness: 0.3 }));
+        hub.rotation.x = Math.PI / 2;
+        hub.position.set(0, 0, 0.3);
+        sailGroup.add(hub);
+
+        // Thrust-vector arrow (pushes AWAY from the Sun - radiation
+        // pressure). Length is a proportional visual indicator, NOT to
+        // scale; disclosed in the facts panel.
+        var arrowOrigin = new THREE.Vector3();
+        var thrustArrow = new THREE.ArrowHelper(sunDir.clone().negate(), arrowOrigin, 6, 0x64b5f6, 1.2, 0.7);
+        scene.add(thrustArrow);
+
+        var multiplier = 1.0;
+        var sliderEl = document.getElementById('t3dSailScrub');
+        var labelEl = document.getElementById('t3dSailLabel');
+
+        function panelHtml() {
+            var area = Math.round(T3D_SAIL_REAL_AREA_M2 * multiplier);
+            var thrust = (T3D_SAIL_REAL_THRUST_MN * multiplier).toFixed(2);
+            var isReal = Math.abs(multiplier - 1) < 0.001;
+            var scaleNote = isReal
+                ? '<p><b>This is the real IKAROS size.</b> JAXA confirmed a measured thrust of about 1.12 mN via Doppler radar tracking on 2010-07-09 - the largest acceleration produced by photon pressure in interplanetary flight history at the time.</p>'
+                : '<p>At ' + multiplier.toFixed(2) + 'x the real sail area, the shown thrust (' + thrust + ' mN) is a proportional illustration - radiation-pressure thrust scales directly with reflective sail area at a fixed distance from the Sun - not a separately published measurement. Only 1.00x is JAXA\'s real measured figure.</p>';
+            return '<h3>Sail area: ' + area + ' sq m (' + multiplier.toFixed(2) + 'x real size)</h3>' +
+                '<p><b>Estimated thrust: ' + thrust + ' mN</b></p>' +
+                scaleNote +
+                '<div class="w3-responsive"><table class="w3-table w3-bordered w3-small">' +
+                '<tr><th>Real IKAROS figure</th><th>Value</th></tr>' +
+                '<tr><td>Sail size</td><td>about 14 m x 14 m (196 sq m), 7.5-micrometer polyimide film</td></tr>' +
+                '<tr><td>Sail membrane mass</td><td>about 2 kg (plus 4 tip masses, about 0.5 kg each)</td></tr>' +
+                '<tr><td>Spacecraft mass</td><td>about 307 kg at launch (body about 1.58 m dia x 0.95 m tall)</td></tr>' +
+                '<tr><td>Measured thrust (2010-07-09)</td><td>about 1.12 mN - JAXA\'s expected value</td></tr>' +
+                '<tr><td>Attitude control</td><td>8 liquid-crystal reflectivity panels, no propellant</td></tr>' +
+                '</table></div>' +
+                '<p class="t3d-note">Educational approximation - the sail, tether, and thrust-arrow geometry are procedural, not a shape-accurate model or a solved radiation-pressure simulation. Every figure above 1.00x is real and independently published by JAXA; this scene never claims a live spacecraft feed.</p>';
+        }
+
+        function apply() {
+            rebuildSail(T3D_SAIL_BASE_HALF_SCENE * Math.sqrt(multiplier));
+            var arrowLen = 3 + 7 * multiplier;
+            thrustArrow.setLength(arrowLen, arrowLen * 0.14, arrowLen * 0.08);
+            if (labelEl) labelEl.textContent = 'Sail area: ' + multiplier.toFixed(2) + 'x real size';
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ multiplier: multiplier }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.multiplier === 'number' && store.multiplier >= 0.25 && store.multiplier <= 2.0) {
+            multiplier = store.multiplier;
+        }
+        if (sliderEl) sliderEl.value = String(multiplier);
+        apply();
+
+        if (sliderEl) sliderEl.addEventListener('input', function () {
+            multiplier = Math.max(0.25, Math.min(2.0, parseFloat(sliderEl.value || '1')));
+            apply();
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Slide the sail-area control to see the thrust scale with sail size.');
+        var spinAngle = 0;
+        return function animate(dt) {
+            spinAngle += dt * 0.00035; // stands in for IKAROS's real 1-2 rpm spin, sped up for a visible spin
+            sailGroup.rotateZ(dt * 0.00035);
+            sunGlow.scale.setScalar(1 + 0.06 * Math.sin(performance.now() * 0.0018));
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { solarsailpropulsion: 't3dSailControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { solarsailpropulsion: { radius: 26, maxR: 110, minR: 6, phi: 1.05, theta: 0.6, targetY: 1 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dSolarSail(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
