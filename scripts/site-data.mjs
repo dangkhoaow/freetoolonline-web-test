@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/simple-interest-calculator-vs-alternatives.html',
+  '/guides/simple-interest-calculator-step-by-step.html',
+  '/guides/simple-interest-calculator-when.html',
+  '/guides/pt/simple-interest-calculator-when.html',
+  '/guides/pt/simple-interest-calculator-step-by-step.html',
+  '/guides/pt/simple-interest-calculator-vs-alternatives.html',
+  '/guides/es/simple-interest-calculator-when.html',
+  '/guides/es/simple-interest-calculator-step-by-step.html',
+  '/guides/es/simple-interest-calculator-vs-alternatives.html',
+  '/guides/vi/simple-interest-calculator-when.html',
+  '/guides/vi/simple-interest-calculator-step-by-step.html',
+  '/guides/vi/simple-interest-calculator-vs-alternatives.html',
+  '/guides/id/simple-interest-calculator-when.html',
+  '/guides/id/simple-interest-calculator-step-by-step.html',
+  '/guides/id/simple-interest-calculator-vs-alternatives.html',
+  '/guides/de/simple-interest-calculator-when.html',
+  '/guides/de/simple-interest-calculator-step-by-step.html',
+  '/guides/de/simple-interest-calculator-vs-alternatives.html',
   '/guides/body-fat-percentage-calculator-vs-alternatives.html',
   '/guides/body-fat-percentage-calculator-step-by-step.html',
   '/guides/body-fat-percentage-calculator-when.html',
@@ -14493,6 +14511,7 @@ export const ALIAS_ROUTES = {
   '/days-from-today-calculator.html': '/utility-tools/days-from-today-calculator.html',
   '/mortgage-calculator.html': '/utility-tools/mortgage-calculator.html',
   '/body-fat-percentage-calculator.html': '/utility-tools/body-fat-percentage-calculator.html',
+  '/simple-interest-calculator.html': '/utility-tools/simple-interest-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -26474,6 +26493,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/body-fat-percentage-calculator-when.html': 'guide/de/body-fat-percentage-calculator-when.jsp',
   '/guides/de/body-fat-percentage-calculator-step-by-step.html': 'guide/de/body-fat-percentage-calculator-step-by-step.jsp',
   '/guides/de/body-fat-percentage-calculator-vs-alternatives.html': 'guide/de/body-fat-percentage-calculator-vs-alternatives.jsp',
+  '/utility-tools/simple-interest-calculator.html': 'utility/simple-interest-calculator.jsp',
+  '/guides/simple-interest-calculator-when.html': 'guide/simple-interest-calculator-when.jsp',
+  '/guides/simple-interest-calculator-step-by-step.html': 'guide/simple-interest-calculator-step-by-step.jsp',
+  '/guides/simple-interest-calculator-vs-alternatives.html': 'guide/simple-interest-calculator-vs-alternatives.jsp',
+  '/guides/pt/simple-interest-calculator-when.html': 'guide/pt/simple-interest-calculator-when.jsp',
+  '/guides/pt/simple-interest-calculator-step-by-step.html': 'guide/pt/simple-interest-calculator-step-by-step.jsp',
+  '/guides/pt/simple-interest-calculator-vs-alternatives.html': 'guide/pt/simple-interest-calculator-vs-alternatives.jsp',
+  '/guides/es/simple-interest-calculator-when.html': 'guide/es/simple-interest-calculator-when.jsp',
+  '/guides/es/simple-interest-calculator-step-by-step.html': 'guide/es/simple-interest-calculator-step-by-step.jsp',
+  '/guides/es/simple-interest-calculator-vs-alternatives.html': 'guide/es/simple-interest-calculator-vs-alternatives.jsp',
+  '/guides/vi/simple-interest-calculator-when.html': 'guide/vi/simple-interest-calculator-when.jsp',
+  '/guides/vi/simple-interest-calculator-step-by-step.html': 'guide/vi/simple-interest-calculator-step-by-step.jsp',
+  '/guides/vi/simple-interest-calculator-vs-alternatives.html': 'guide/vi/simple-interest-calculator-vs-alternatives.jsp',
+  '/guides/id/simple-interest-calculator-when.html': 'guide/id/simple-interest-calculator-when.jsp',
+  '/guides/id/simple-interest-calculator-step-by-step.html': 'guide/id/simple-interest-calculator-step-by-step.jsp',
+  '/guides/id/simple-interest-calculator-vs-alternatives.html': 'guide/id/simple-interest-calculator-vs-alternatives.jsp',
+  '/guides/de/simple-interest-calculator-when.html': 'guide/de/simple-interest-calculator-when.jsp',
+  '/guides/de/simple-interest-calculator-step-by-step.html': 'guide/de/simple-interest-calculator-step-by-step.jsp',
+  '/guides/de/simple-interest-calculator-vs-alternatives.html': 'guide/de/simple-interest-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
