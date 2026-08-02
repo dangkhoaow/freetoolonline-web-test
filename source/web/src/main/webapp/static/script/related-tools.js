@@ -725,6 +725,7 @@ try {
     { title: "Hayabusa2 Ryugu Sample Return 3D Explorer", url: "https://freetoolonline.com/space-3d/hayabusa2-ryugu-sample-return.html", include: !1, tags: "space-3d" },
     { title: "Psyche Metal Asteroid 3D Explorer", url: "https://freetoolonline.com/space-3d/psyche-metal-asteroid.html", include: !1, tags: "space-3d" },
     { title: "Solar Sail Propulsion 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-sail-propulsion.html", include: !1, tags: "space-3d" },
+    { title: "Planet Atmosphere Scale-Height 3D Explorer", url: "https://freetoolonline.com/space-3d/planet-atmosphere-scale-heights.html", include: !1, tags: "space-3d" },
     { title: "Great Red Spot Jupiter 3D Explorer", url: "https://freetoolonline.com/space-3d/great-red-spot-jupiter.html", include: !1, tags: "space-3d" },
     { title: "Photon Sphere & ISCO 3D Explorer", url: "https://freetoolonline.com/space-3d/photon-sphere-isco-explorer.html", include: !1, tags: "space-3d" },
     { title: "Relativistic Jets & Doppler Beaming 3D Explorer", url: "https://freetoolonline.com/space-3d/relativistic-jets-agn.html", include: !1, tags: "space-3d" },

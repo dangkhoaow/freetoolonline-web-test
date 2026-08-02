@@ -1,0 +1,342 @@
+<script>
+    // 3D scene archetype skeleton (Planet Atmosphere Scale-Height Explorer) -
+    // vendored three.js (ESM, dynamic import from /vendor/three/, NO CDN),
+    // fully client-side. Forked from the solar-sail-propulsion lean single-
+    // scene shape - ONE scene only. All geometry is procedural (5 vertical
+    // columns, each built from stacked thin CylinderGeometry bands whose
+    // per-band opacity follows the real barometric exponential-decay formula
+    // P/P0 = e^(-z/H), plus a draggable altitude-probe plane).
+    //
+    // EDUCATIONAL APPROXIMATION, not a physics simulation. Each world's real
+    // atmosphere does not decay as a single perfect exponential all the way
+    // up (temperature and composition change with altitude, especially on
+    // Titan); this scene uses ONE fixed near-surface scale height per world
+    // (the widely-published NASA/NSSDCA figure) as a teaching simplification,
+    // and the facts panel discloses that explicitly. Jupiter has no solid
+    // surface - "0 km" for Jupiter is the standard 1-bar reference level, not
+    // a ground.
+    //
+    // Published figures (cross-checked via WebSearch 2026-08-02; sources:
+    // NASA NSSDCA Planetary Fact Sheets - nssdc.gsfc.nasa.gov/planetary/factsheet/
+    // {earthfact,venusfact,marsfact,jupiterfact}.html - and Wikipedia
+    // "Atmosphere of Titan" for the one figure NASA's fact-sheet series does
+    // not cover, cross-referenced against the physics relationship
+    // H = kT / (M g)):
+    //   - Earth: scale height 8.5 km; surface temperature 288 K; surface
+    //     gravity 9.8 m/s^2; surface pressure 1013 mb (1 bar, the reference
+    //     unit for every other world here); atmosphere about 78% N2, 21% O2.
+    //   - Venus: scale height 15.9 km; surface temperature about 735 K;
+    //     surface gravity 8.87 m/s^2; surface pressure about 92 bar;
+    //     atmosphere about 96.5% CO2.
+    //   - Mars: scale height 11.1 km; average surface temperature about
+    //     210 K; surface gravity 3.71 m/s^2; surface pressure 6.36 mb (about
+    //     0.6% of Earth's); atmosphere about 95% CO2.
+    //   - Jupiter: scale height 27 km at the 1-bar reference level;
+    //     temperature at 1 bar about 165 K; gravity at the 1-bar level about
+    //     24.79 m/s^2; no solid surface - 1 bar is the conventional "0 km"
+    //     reference; atmosphere about 89.8% H2, 10.2% He.
+    //   - Titan: surface temperature 94 K; surface gravity 1.35 m/s^2;
+    //     surface pressure about 1.5 bar; atmosphere about 94-98% N2 with a
+    //     few percent methane. Titan's scale height is NOT a single settled
+    //     number the way the four fact-sheet planets are - published sources
+    //     (Wikipedia "Atmosphere of Titan", citing Cassini/Huygens-era
+    //     atmospheric-structure papers) give a range of roughly 15-50 km
+    //     depending on altitude, because Titan's stratosphere is warmed by
+    //     haze absorption far more than the other four worlds' near-surface
+    //     layers are. This scene uses 20 km, the commonly-cited near-surface
+    //     estimate (and the value the H = kT/(Mg) relationship gives using
+    //     Titan's surface temperature, gravity, and a mostly-N2 atmosphere),
+    //     and the facts panel discloses the wider range and why it varies
+    //     more than the other four.
+    //   - Relationship: H = kT / (M g) - a hot, light-molecule, low-gravity
+    //     atmosphere has a large scale height (puffs up); a cold, heavy-
+    //     molecule, high-gravity atmosphere has a small one. This is why
+    //     Jupiter's cold-but-light-gas atmosphere and Titan's cold-but-very-
+    //     low-gravity atmosphere both have LARGER scale heights than Earth's,
+    //     while Venus's much hotter atmosphere partly offsets its heavier
+    //     CO2 molecules and Earth-like gravity.
+    //   - Distinct from karman-line-atmosphere-layers.html (Earth's own named
+    //     layers and the Karman-line space-boundary convention, one world
+    //     only), exoplanet-atmosphere-spectroscopy.html (detecting molecules
+    //     in a transiting exoplanet's atmosphere via absorption spectroscopy),
+    //     and gas-giant-atmosphere.html (Jupiter's cloud bands and the Great
+    //     Red Spot) - THIS page is specifically the quantitative pressure-
+    //     vs-altitude comparison across five worlds using one shared physics
+    //     relationship.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'planetatmospherescaleheights';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'planetatmospherescaleheights'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 50, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Real published figures (NASA NSSDCA fact sheets + Wikipedia "Atmosphere
+    // of Titan", cross-checked via WebSearch 2026-08-02). scaleHeightKm is
+    // the value this scene renders with; titanRangeKm discloses the wider
+    // published range for Titan specifically.
+    var T3D_WORLDS = [
+        { key: 'venus', label: 'Venus', color: 0xe8a33d, scaleHeightKm: 15.9, tempK: 735, gravity: 8.87, pressureLabel: 'about 92 bar', composition: 'about 96.5% CO2' },
+        { key: 'earth', label: 'Earth', color: 0x3d7ee8, scaleHeightKm: 8.5, tempK: 288, gravity: 9.8, pressureLabel: '1013 mb (1 bar)', composition: 'about 78% N2, 21% O2' },
+        { key: 'mars', label: 'Mars', color: 0xc1440e, scaleHeightKm: 11.1, tempK: 210, gravity: 3.71, pressureLabel: '6.36 mb (about 0.6% of Earth)', composition: 'about 95% CO2' },
+        { key: 'jupiter', label: 'Jupiter', color: 0xd8b98e, scaleHeightKm: 27, tempK: 165, gravity: 24.79, pressureLabel: '1 bar (reference level - no solid surface)', composition: 'about 89.8% H2, 10.2% He' },
+        { key: 'titan', label: 'Titan', color: 0xe8c86a, scaleHeightKm: 20, tempK: 94, gravity: 1.35, pressureLabel: 'about 1.5 bar', composition: 'about 94-98% N2 + methane' }
+    ];
+    var T3D_MAX_ALT_KM = 90;
+    var T3D_BAND_KM = 3;
+    var T3D_KM_TO_SCENE = 0.11; // scene units per km (visual scale only)
+
+    function t3dAtmosphereScaleHeights(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x05060a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+        scene.add(new THREE.HemisphereLight(0xbfd6ff, 0x1a1a1a, 0.5));
+
+        var starN = shell.low ? 160 : 340;
+        var starPos = new Float32Array(starN * 3);
+        for (var s = 0; s < starN; s++) {
+            var r = 60 + Math.random() * 50;
+            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+            starPos[s * 3] = r * Math.sin(ph) * Math.cos(th);
+            starPos[s * 3 + 1] = r * Math.cos(ph) * 0.6 + 10;
+            starPos[s * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+        }
+        var starGeo = new THREE.BufferGeometry();
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xdfe6ff, size: 0.28, sizeAttenuation: true, transparent: true, opacity: 0.45 })));
+
+        // Ground grid so "0 km" reads as a shared baseline across worlds.
+        var grid = new THREE.GridHelper(14, 14, 0x334455, 0x1c2733);
+        grid.position.y = 0;
+        scene.add(grid);
+
+        var COL_RADIUS = 0.85, COL_GAP = 2.3;
+        var startX = -COL_GAP * (T3D_WORLDS.length - 1) / 2;
+        var columnGroups = [];
+        var bandCount = Math.round(T3D_MAX_ALT_KM / T3D_BAND_KM);
+
+        for (var w = 0; w < T3D_WORLDS.length; w++) {
+            var world = T3D_WORLDS[w];
+            var group = new THREE.Group();
+            group.position.x = startX + w * COL_GAP;
+            scene.add(group);
+
+            // Ground marker disk identifies the column's world by color.
+            var groundDisk = new THREE.Mesh(
+                new THREE.CylinderGeometry(COL_RADIUS * 1.15, COL_RADIUS * 1.15, 0.12, 20),
+                new THREE.MeshBasicMaterial({ color: world.color })
+            );
+            groundDisk.position.y = 0.06;
+            group.add(groundDisk);
+
+            var bandMeshes = [];
+            for (var b = 0; b < bandCount; b++) {
+                var zLo = b * T3D_BAND_KM, zMid = zLo + T3D_BAND_KM * 0.5;
+                var frac = Math.exp(-zMid / world.scaleHeightKm);
+                var opacity = Math.max(0.02, Math.min(0.92, frac));
+                var bandGeo = new THREE.CylinderGeometry(COL_RADIUS, COL_RADIUS, T3D_BAND_KM * T3D_KM_TO_SCENE * 0.94, 16);
+                var bandMat = new THREE.MeshBasicMaterial({ color: world.color, transparent: true, opacity: opacity, depthWrite: false });
+                var band = new THREE.Mesh(bandGeo, bandMat);
+                band.position.y = (zMid) * T3D_KM_TO_SCENE;
+                band.renderOrder = bandCount - b;
+                group.add(band);
+                bandMeshes.push({ mesh: band, zMid: zMid });
+            }
+            columnGroups.push({ world: world, group: group, bandMeshes: bandMeshes });
+        }
+
+        // Draggable altitude-probe plane spans all five columns.
+        var probeWidth = COL_GAP * T3D_WORLDS.length + 1.4;
+        var probe = new THREE.Mesh(
+            new THREE.BoxGeometry(probeWidth, 0.03, COL_RADIUS * 2.6),
+            new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85 })
+        );
+        scene.add(probe);
+
+        var sliderEl = document.getElementById('t3dAltitudeScrub');
+        var labelEl = document.getElementById('t3dAltitudeLabel');
+        var altitudeKm = 0;
+
+        function legendSwatch(color) {
+            var hex = '#' + color.toString(16).padStart(6, '0');
+            return '<span style="display:inline-block;width:11px;height:11px;border-radius:2px;background:' + hex + ';margin-right:5px;vertical-align:middle;"></span>';
+        }
+
+        function panelHtml() {
+            var rows = '';
+            for (var i = 0; i < T3D_WORLDS.length; i++) {
+                var wd = T3D_WORLDS[i];
+                var pct = (100 * Math.exp(-altitudeKm / wd.scaleHeightKm));
+                var pctStr = pct >= 1 ? pct.toFixed(1) : pct.toFixed(3);
+                rows += '<tr><td>' + legendSwatch(wd.color) + wd.label + '</td><td>' + wd.scaleHeightKm + ' km</td><td>' + pctStr + '%</td></tr>';
+            }
+            var titanNote = '<p class="t3d-note">Titan\'s scale height is not one settled number the way the other four worlds\' fact-sheet figures are - published sources give a range of roughly 15-50 km depending on altitude, because its stratosphere is warmed by haze far more than the other worlds\' near-surface layers. This scene uses 20 km, the commonly-cited near-surface estimate.</p>';
+            return '<h3>Altitude: ' + altitudeKm + ' km' + (altitudeKm === 0 ? ' (ground / 1-bar level)' : '') + '</h3>' +
+                '<p>At this altitude, the fraction of each world\'s own surface (or 1-bar) pressure still remaining:</p>' +
+                '<div class="w3-responsive"><table class="w3-table w3-bordered w3-small">' +
+                '<tr><th>World</th><th>Scale height</th><th>Pressure remaining</th></tr>' +
+                rows +
+                '</table></div>' +
+                titanNote +
+                '<p class="t3d-note">H = kT / (M g): a hot, light-molecule, low-gravity atmosphere puffs up (large H); a cold, heavy-molecule, high-gravity one stays thin (small H). Jupiter\'s light H2/He gas and Titan\'s very low gravity both give a larger scale height than Earth\'s despite being colder.</p>';
+        }
+
+        function apply() {
+            probe.position.y = altitudeKm * T3D_KM_TO_SCENE;
+            if (labelEl) labelEl.textContent = 'Altitude: ' + altitudeKm + ' km';
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ altitudeKm: altitudeKm }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.altitudeKm === 'number' && store.altitudeKm >= 0 && store.altitudeKm <= T3D_MAX_ALT_KM) {
+            altitudeKm = store.altitudeKm;
+        }
+        if (sliderEl) sliderEl.value = String(altitudeKm);
+        apply();
+
+        if (sliderEl) sliderEl.addEventListener('input', function () {
+            altitudeKm = Math.max(0, Math.min(T3D_MAX_ALT_KM, parseFloat(sliderEl.value || '0')));
+            apply();
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Slide the altitude control to see each world\'s air thin out at a different rate.');
+        return function animate(dt) {
+            probe.material.opacity = 0.6 + 0.25 * Math.sin(performance.now() * 0.0015);
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { planetatmospherescaleheights: 't3dAltitudeControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { planetatmospherescaleheights: { radius: 16, maxR: 60, minR: 5, phi: 1.2, theta: 0.5, targetY: 4, fov: 48 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dAtmosphereScaleHeights(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
