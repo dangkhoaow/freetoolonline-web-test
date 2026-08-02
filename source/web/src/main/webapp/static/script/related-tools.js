@@ -879,6 +879,7 @@ try {
     { title: "Mortgage Calculator Online", url: "https://freetoolonline.com/utility-tools/mortgage-calculator.html", include: !1, tags: "utility" },
     { title: "Body Fat Percentage Calculator Online", url: "https://freetoolonline.com/utility-tools/body-fat-percentage-calculator.html", include: !1, tags: "utility" },
     { title: "Simple Interest Calculator Online", url: "https://freetoolonline.com/utility-tools/simple-interest-calculator.html", include: !1, tags: "utility" },
+    { title: "Percent Error Calculator Online", url: "https://freetoolonline.com/utility-tools/percent-error-calculator.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

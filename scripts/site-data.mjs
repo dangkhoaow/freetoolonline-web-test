@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/percent-error-calculator-vs-alternatives.html',
+  '/guides/percent-error-calculator-step-by-step.html',
+  '/guides/percent-error-calculator-when.html',
+  '/guides/pt/percent-error-calculator-when.html',
+  '/guides/pt/percent-error-calculator-step-by-step.html',
+  '/guides/pt/percent-error-calculator-vs-alternatives.html',
+  '/guides/es/percent-error-calculator-when.html',
+  '/guides/es/percent-error-calculator-step-by-step.html',
+  '/guides/es/percent-error-calculator-vs-alternatives.html',
+  '/guides/vi/percent-error-calculator-when.html',
+  '/guides/vi/percent-error-calculator-step-by-step.html',
+  '/guides/vi/percent-error-calculator-vs-alternatives.html',
+  '/guides/id/percent-error-calculator-when.html',
+  '/guides/id/percent-error-calculator-step-by-step.html',
+  '/guides/id/percent-error-calculator-vs-alternatives.html',
+  '/guides/de/percent-error-calculator-when.html',
+  '/guides/de/percent-error-calculator-step-by-step.html',
+  '/guides/de/percent-error-calculator-vs-alternatives.html',
   '/guides/simple-interest-calculator-vs-alternatives.html',
   '/guides/simple-interest-calculator-step-by-step.html',
   '/guides/simple-interest-calculator-when.html',
@@ -14513,6 +14531,7 @@ export const ALIAS_ROUTES = {
   '/mortgage-calculator.html': '/utility-tools/mortgage-calculator.html',
   '/body-fat-percentage-calculator.html': '/utility-tools/body-fat-percentage-calculator.html',
   '/simple-interest-calculator.html': '/utility-tools/simple-interest-calculator.html',
+  '/percent-error-calculator.html': '/utility-tools/percent-error-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -26514,6 +26533,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/simple-interest-calculator-when.html': 'guide/de/simple-interest-calculator-when.jsp',
   '/guides/de/simple-interest-calculator-step-by-step.html': 'guide/de/simple-interest-calculator-step-by-step.jsp',
   '/guides/de/simple-interest-calculator-vs-alternatives.html': 'guide/de/simple-interest-calculator-vs-alternatives.jsp',
+  '/utility-tools/percent-error-calculator.html': 'utility/percent-error-calculator.jsp',
+  '/guides/percent-error-calculator-when.html': 'guide/percent-error-calculator-when.jsp',
+  '/guides/percent-error-calculator-step-by-step.html': 'guide/percent-error-calculator-step-by-step.jsp',
+  '/guides/percent-error-calculator-vs-alternatives.html': 'guide/percent-error-calculator-vs-alternatives.jsp',
+  '/guides/pt/percent-error-calculator-when.html': 'guide/pt/percent-error-calculator-when.jsp',
+  '/guides/pt/percent-error-calculator-step-by-step.html': 'guide/pt/percent-error-calculator-step-by-step.jsp',
+  '/guides/pt/percent-error-calculator-vs-alternatives.html': 'guide/pt/percent-error-calculator-vs-alternatives.jsp',
+  '/guides/es/percent-error-calculator-when.html': 'guide/es/percent-error-calculator-when.jsp',
+  '/guides/es/percent-error-calculator-step-by-step.html': 'guide/es/percent-error-calculator-step-by-step.jsp',
+  '/guides/es/percent-error-calculator-vs-alternatives.html': 'guide/es/percent-error-calculator-vs-alternatives.jsp',
+  '/guides/vi/percent-error-calculator-when.html': 'guide/vi/percent-error-calculator-when.jsp',
+  '/guides/vi/percent-error-calculator-step-by-step.html': 'guide/vi/percent-error-calculator-step-by-step.jsp',
+  '/guides/vi/percent-error-calculator-vs-alternatives.html': 'guide/vi/percent-error-calculator-vs-alternatives.jsp',
+  '/guides/id/percent-error-calculator-when.html': 'guide/id/percent-error-calculator-when.jsp',
+  '/guides/id/percent-error-calculator-step-by-step.html': 'guide/id/percent-error-calculator-step-by-step.jsp',
+  '/guides/id/percent-error-calculator-vs-alternatives.html': 'guide/id/percent-error-calculator-vs-alternatives.jsp',
+  '/guides/de/percent-error-calculator-when.html': 'guide/de/percent-error-calculator-when.jsp',
+  '/guides/de/percent-error-calculator-step-by-step.html': 'guide/de/percent-error-calculator-step-by-step.jsp',
+  '/guides/de/percent-error-calculator-vs-alternatives.html': 'guide/de/percent-error-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
