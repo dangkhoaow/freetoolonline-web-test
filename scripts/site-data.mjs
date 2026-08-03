@@ -6667,6 +6667,25 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/exoplanet-direct-imaging-vs-alternatives.html',
   '/guides/id/exoplanet-direct-imaging-vs-alternatives.html',
   '/guides/de/exoplanet-direct-imaging-vs-alternatives.html',
+  // venus-atmospheric-superrotation companion guides (space-3d-discovery-loop LEAN fire, 2026-08-03)
+  '/guides/how-to-use-venus-atmospheric-superrotation.html',
+  '/guides/pt/how-to-use-venus-atmospheric-superrotation.html',
+  '/guides/es/how-to-use-venus-atmospheric-superrotation.html',
+  '/guides/vi/how-to-use-venus-atmospheric-superrotation.html',
+  '/guides/id/how-to-use-venus-atmospheric-superrotation.html',
+  '/guides/de/how-to-use-venus-atmospheric-superrotation.html',
+  '/guides/venus-atmospheric-superrotation-when.html',
+  '/guides/pt/venus-atmospheric-superrotation-when.html',
+  '/guides/es/venus-atmospheric-superrotation-when.html',
+  '/guides/vi/venus-atmospheric-superrotation-when.html',
+  '/guides/id/venus-atmospheric-superrotation-when.html',
+  '/guides/de/venus-atmospheric-superrotation-when.html',
+  '/guides/venus-atmospheric-superrotation-vs-alternatives.html',
+  '/guides/pt/venus-atmospheric-superrotation-vs-alternatives.html',
+  '/guides/es/venus-atmospheric-superrotation-vs-alternatives.html',
+  '/guides/vi/venus-atmospheric-superrotation-vs-alternatives.html',
+  '/guides/id/venus-atmospheric-superrotation-vs-alternatives.html',
+  '/guides/de/venus-atmospheric-superrotation-vs-alternatives.html',
 
 ]);
 
@@ -13301,6 +13320,25 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/exoplanet-direct-imaging-vs-alternatives.html',
   '/guides/id/exoplanet-direct-imaging-vs-alternatives.html',
   '/guides/de/exoplanet-direct-imaging-vs-alternatives.html',
+  // venus-atmospheric-superrotation companion guides (space-3d-discovery-loop LEAN fire, 2026-08-03)
+  '/guides/how-to-use-venus-atmospheric-superrotation.html',
+  '/guides/pt/how-to-use-venus-atmospheric-superrotation.html',
+  '/guides/es/how-to-use-venus-atmospheric-superrotation.html',
+  '/guides/vi/how-to-use-venus-atmospheric-superrotation.html',
+  '/guides/id/how-to-use-venus-atmospheric-superrotation.html',
+  '/guides/de/how-to-use-venus-atmospheric-superrotation.html',
+  '/guides/venus-atmospheric-superrotation-when.html',
+  '/guides/pt/venus-atmospheric-superrotation-when.html',
+  '/guides/es/venus-atmospheric-superrotation-when.html',
+  '/guides/vi/venus-atmospheric-superrotation-when.html',
+  '/guides/id/venus-atmospheric-superrotation-when.html',
+  '/guides/de/venus-atmospheric-superrotation-when.html',
+  '/guides/venus-atmospheric-superrotation-vs-alternatives.html',
+  '/guides/pt/venus-atmospheric-superrotation-vs-alternatives.html',
+  '/guides/es/venus-atmospheric-superrotation-vs-alternatives.html',
+  '/guides/vi/venus-atmospheric-superrotation-vs-alternatives.html',
+  '/guides/id/venus-atmospheric-superrotation-vs-alternatives.html',
+  '/guides/de/venus-atmospheric-superrotation-vs-alternatives.html',
 
 ]);
 
@@ -26733,6 +26771,25 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/exoplanet-direct-imaging-vs-alternatives.html': 'guide/vi/exoplanet-direct-imaging-vs-alternatives.jsp',
   '/guides/id/exoplanet-direct-imaging-vs-alternatives.html': 'guide/id/exoplanet-direct-imaging-vs-alternatives.jsp',
   '/guides/de/exoplanet-direct-imaging-vs-alternatives.html': 'guide/de/exoplanet-direct-imaging-vs-alternatives.jsp',
+  // venus-atmospheric-superrotation companion guides (space-3d-discovery-loop LEAN fire, 2026-08-03)
+  '/guides/how-to-use-venus-atmospheric-superrotation.html': 'guide/how-to-use-venus-atmospheric-superrotation.jsp',
+  '/guides/pt/how-to-use-venus-atmospheric-superrotation.html': 'guide/pt/how-to-use-venus-atmospheric-superrotation.jsp',
+  '/guides/es/how-to-use-venus-atmospheric-superrotation.html': 'guide/es/how-to-use-venus-atmospheric-superrotation.jsp',
+  '/guides/vi/how-to-use-venus-atmospheric-superrotation.html': 'guide/vi/how-to-use-venus-atmospheric-superrotation.jsp',
+  '/guides/id/how-to-use-venus-atmospheric-superrotation.html': 'guide/id/how-to-use-venus-atmospheric-superrotation.jsp',
+  '/guides/de/how-to-use-venus-atmospheric-superrotation.html': 'guide/de/how-to-use-venus-atmospheric-superrotation.jsp',
+  '/guides/venus-atmospheric-superrotation-when.html': 'guide/venus-atmospheric-superrotation-when.jsp',
+  '/guides/pt/venus-atmospheric-superrotation-when.html': 'guide/pt/venus-atmospheric-superrotation-when.jsp',
+  '/guides/es/venus-atmospheric-superrotation-when.html': 'guide/es/venus-atmospheric-superrotation-when.jsp',
+  '/guides/vi/venus-atmospheric-superrotation-when.html': 'guide/vi/venus-atmospheric-superrotation-when.jsp',
+  '/guides/id/venus-atmospheric-superrotation-when.html': 'guide/id/venus-atmospheric-superrotation-when.jsp',
+  '/guides/de/venus-atmospheric-superrotation-when.html': 'guide/de/venus-atmospheric-superrotation-when.jsp',
+  '/guides/venus-atmospheric-superrotation-vs-alternatives.html': 'guide/venus-atmospheric-superrotation-vs-alternatives.jsp',
+  '/guides/pt/venus-atmospheric-superrotation-vs-alternatives.html': 'guide/pt/venus-atmospheric-superrotation-vs-alternatives.jsp',
+  '/guides/es/venus-atmospheric-superrotation-vs-alternatives.html': 'guide/es/venus-atmospheric-superrotation-vs-alternatives.jsp',
+  '/guides/vi/venus-atmospheric-superrotation-vs-alternatives.html': 'guide/vi/venus-atmospheric-superrotation-vs-alternatives.jsp',
+  '/guides/id/venus-atmospheric-superrotation-vs-alternatives.html': 'guide/id/venus-atmospheric-superrotation-vs-alternatives.jsp',
+  '/guides/de/venus-atmospheric-superrotation-vs-alternatives.html': 'guide/de/venus-atmospheric-superrotation-vs-alternatives.jsp',
 
 };
 
