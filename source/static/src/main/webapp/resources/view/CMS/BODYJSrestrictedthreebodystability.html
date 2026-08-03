@@ -1,0 +1,465 @@
+<script>
+    // 3D scene archetype skeleton (restricted-three-body-stability) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only.
+    // All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION - this is the CIRCULAR restricted three-body
+    // problem (CR3BP): the two primaries are assumed on exactly circular
+    // orbits (real orbits have small eccentricity, e.g. Earth-Sun e=0.0167,
+    // ignored here) and the moving test object is assumed massless (does not
+    // pull back on the primaries). Within that standard, named approximation,
+    // the equations of motion integrated below ARE the real CR3BP dynamics in
+    // the normalized rotating frame (G(m1+m2)=1, separation=1, frame angular
+    // rate=1) - this is a real numerical integration of a test particle, not
+    // a canned/faked animation. The Lagrange point positions are found by
+    // bisection root-finding of the real equilibrium condition on the x-axis
+    // (L1/L2/L3) and the closed-form equilateral-triangle formula (L4/L5,
+    // exact for ANY mass ratio - this is a real, citable mathematical fact,
+    // not an approximation).
+    //
+    // Published figures / facts (cross-checked via web search 2026-08-03):
+    //   - L1, L2, L3 (the three points on the line joining the two bodies) are
+    //     SADDLE POINTS of the effective (gravity + centrifugal) potential in
+    //     the rotating frame - always unstable for ANY mass ratio (NOAA
+    //     NESDIS "Points of Lagrange": compared to "a ball balanced on top of
+    //     a hill").
+    //   - L4 and L5 (the equilateral-triangle points, 60 degrees ahead/behind
+    //     the smaller body) are, counterintuitively, LOCAL MAXIMA of that same
+    //     effective potential - not valleys. They are dynamically stable only
+    //     because of the Coriolis force acting on any velocity a displaced
+    //     object picks up, which curves it back around the point instead of
+    //     letting it fall away (standard CR3BP result; see e.g. Szebehely
+    //     1967, "Theory of Orbits", and NASA/NOAA mission-design summaries).
+    //   - That Coriolis stabilization only works below a critical mass ratio
+    //     (Routh's criterion): mu_crit = (1/2)(1 - sqrt(23/27)) = about
+    //     0.03852, i.e. the larger body must be more than about 24.96 times
+    //     the smaller body's mass. Above that ratio, L4/L5 become unstable
+    //     too.
+    //   - Real mass ratios (mu = smaller-mass / total-mass): Sun-Earth about
+    //     3.0e-6; Sun-Jupiter about 9.5e-4 (both far below the critical ratio
+    //     - this is why thousands of Trojan asteroids have persisted at
+    //     Jupiter's L4/L5 since at least 1906, when 588 Achilles was found);
+    //     Earth-Moon about 0.0121 (below critical); Pluto-Charon about 0.105
+    //     to 0.117 depending on the measurement (NASA/HST astrometry) - ABOVE
+    //     the critical ratio, so Pluto-Charon's own L4/L5 points are not
+    //     expected to hold long-term companions the way Jupiter's do.
+    //   - Sun-Earth L1/L2 sit about 1.5 million km from Earth (matches this
+    //     cluster's existing Lagrange Points page); real station-keeping
+    //     spacecraft: SOHO and DSCOVR near L1, JWST (and formerly Planck) near
+    //     L2.
+    //
+    // Distinct from lagrange-points (shows WHERE the five points are and
+    // which real spacecraft sit near them - no stability treatment at all)
+    // and three-body-problem (a general equal-mass figure-8 choreography
+    // sandbox - no Lagrange points, no mass-ratio stability threshold). THIS
+    // page's story: WHY three of the five points always fail and two of them
+    // hold - and exactly when even those two let go.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'restricted-three-body-stability';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'lagrangestability'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // ---- Real physics constants (see header comment for sources) ----
+    var T3D_LPS_MU_CRIT = 0.5 * (1 - Math.sqrt(23 / 27)); // Routh's criterion, about 0.03852
+    var T3D_LPS_PRESETS = [
+        { key: 'sunearth', label: 'Sun-Earth', mu: 5.972e24 / (1.989e30 + 5.972e24) },
+        { key: 'sunjupiter', label: 'Sun-Jupiter', mu: 1.898e27 / (1.989e30 + 1.898e27) },
+        { key: 'earthmoon', label: 'Earth-Moon', mu: 7.342e22 / (5.972e24 + 7.342e22) },
+        { key: 'plutocharon', label: 'Pluto-Charon', mu: 0.1165 / (1 + 0.1165) }
+    ];
+    var T3D_LPS_AU_KM = 149597871; // 1 AU in km (IAU)
+    var T3D_LPS_R = 15; // world-unit separation between the two bodies (illustrative, not to scale)
+
+    // Effective-potential x-axis equilibrium condition (y=0): root of this
+    // function is a collinear Lagrange point. Same expression as the
+    // rotating-frame x-acceleration with y=0, ydot=0, xdot=0.
+    function t3dLpsAxisF(x, mu) {
+        var d1 = x + mu, d2 = x - 1 + mu;
+        var r1 = Math.abs(d1), r2 = Math.abs(d2);
+        if (r1 < 1e-9) r1 = 1e-9;
+        if (r2 < 1e-9) r2 = 1e-9;
+        return x - (1 - mu) * d1 / (r1 * r1 * r1) - mu * d2 / (r2 * r2 * r2);
+    }
+    function t3dLpsBisect(lo, hi, mu) {
+        var flo = t3dLpsAxisF(lo, mu), fhi = t3dLpsAxisF(hi, mu);
+        if (!(isFinite(flo) && isFinite(fhi)) || flo * fhi > 0) return null;
+        for (var i = 0; i < 60; i++) {
+            var mid = (lo + hi) / 2, fm = t3dLpsAxisF(mid, mu);
+            if (flo * fm <= 0) { hi = mid; fhi = fm; } else { lo = mid; flo = fm; }
+        }
+        return (lo + hi) / 2;
+    }
+    // Returns { L1x, L2x, L3x, L4:[x,y], L5:[x,y] } in normalized units
+    // (primary 1 mass 1-mu at x=-mu; primary 2 mass mu at x=1-mu; separation=1).
+    function t3dLpsSolve(mu) {
+        var eps = 1e-6;
+        var l1 = t3dLpsBisect(-mu + eps, 1 - mu - eps, mu);
+        var l2 = t3dLpsBisect(1 - mu + eps, 4, mu);
+        var l3 = t3dLpsBisect(-4, -mu - eps, mu);
+        return {
+            L1: l1, L2: l2, L3: l3,
+            L4: [0.5 - mu, Math.sqrt(3) / 2],
+            L5: [0.5 - mu, -Math.sqrt(3) / 2]
+        };
+    }
+    // CR3BP rotating-frame acceleration for a massless test particle.
+    function t3dLpsAccel(x, y, mu) {
+        var d1x = x + mu, d2x = x - 1 + mu;
+        var r1 = Math.sqrt(d1x * d1x + y * y), r2 = Math.sqrt(d2x * d2x + y * y);
+        if (r1 < 0.02) r1 = 0.02;
+        if (r2 < 0.02) r2 = 0.02;
+        var r13 = r1 * r1 * r1, r23 = r2 * r2 * r2;
+        var ax = x - (1 - mu) * d1x / r13 - mu * d2x / r23;
+        var ay = y - (1 - mu) * y / r13 - mu * y / r23;
+        return [ax, ay];
+    }
+    // One RK4 step of the full rotating-frame equations (x,y,vx,vy).
+    function t3dLpsRk4(state, dt, mu) {
+        function deriv(s) {
+            var a = t3dLpsAccel(s[0], s[1], mu);
+            return [s[2], s[3], a[0] + 2 * s[3], a[1] - 2 * s[2]];
+        }
+        var k1 = deriv(state);
+        var s2 = [state[0] + k1[0] * dt / 2, state[1] + k1[1] * dt / 2, state[2] + k1[2] * dt / 2, state[3] + k1[3] * dt / 2];
+        var k2 = deriv(s2);
+        var s3 = [state[0] + k2[0] * dt / 2, state[1] + k2[1] * dt / 2, state[2] + k2[2] * dt / 2, state[3] + k2[3] * dt / 2];
+        var k3 = deriv(s3);
+        var s4 = [state[0] + k3[0] * dt, state[1] + k3[1] * dt, state[2] + k3[2] * dt, state[3] + k3[3] * dt];
+        var k4 = deriv(s4);
+        return [
+            state[0] + (dt / 6) * (k1[0] + 2 * k2[0] + 2 * k3[0] + k4[0]),
+            state[1] + (dt / 6) * (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1]),
+            state[2] + (dt / 6) * (k1[2] + 2 * k2[2] + 2 * k3[2] + k4[2]),
+            state[3] + (dt / 6) * (k1[3] + 2 * k2[3] + 2 * k3[3] + k4[3])
+        ];
+    }
+
+    function t3dLagrangeStability(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.85));
+        var sun = new THREE.DirectionalLight(0xffffff, 0.55);
+        sun.position.set(30, 30, 20);
+        scene.add(sun);
+
+        var SCOUNT = shell.low ? 350 : 700;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(30 + Math.random() * 55);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.28, sizeAttenuation: false })));
+
+        var R = T3D_LPS_R;
+        var body1 = new THREE.Mesh(new THREE.SphereGeometry(1.7, 28, 20), new THREE.MeshBasicMaterial({ color: 0xffcc33 }));
+        var body2 = new THREE.Mesh(new THREE.SphereGeometry(0.8, 24, 18), new THREE.MeshLambertMaterial({ color: 0x4fa3ff }));
+        scene.add(body1); scene.add(body2);
+
+        var lineMat = new THREE.LineBasicMaterial({ color: 0x445566 });
+        var lineGeo = new THREE.BufferGeometry();
+        var linePts = new Float32Array(6);
+        lineGeo.setAttribute('position', new THREE.BufferAttribute(linePts, 3));
+        var axisLine = new THREE.Line(lineGeo, lineMat);
+        scene.add(axisLine);
+
+        // Five Lagrange-point markers (recolored live by stability verdict).
+        var markerGeo = new THREE.SphereGeometry(0.55, 16, 12);
+        var markers = {};
+        ['L1', 'L2', 'L3', 'L4', 'L5'].forEach(function (name) {
+            var mesh = new THREE.Mesh(markerGeo, new THREE.MeshBasicMaterial({ color: 0xff5252 }));
+            scene.add(mesh);
+            markers[name] = mesh;
+        });
+
+        var mu = T3D_LPS_MU_CRIT * 0.08; // default: comfortably-stable regime (~ Sun-Earth order)
+        var store = t3dLoadStore();
+        if (typeof store.mu === 'number' && store.mu > 1e-7 && store.mu < 0.5) mu = store.mu;
+
+        var solved = null;
+        function layoutBodiesAndPoints() {
+            body1.position.set(-mu * R, 0, 0);
+            body2.position.set((1 - mu) * R, 0, 0);
+            var p0 = body1.position, p1 = body2.position;
+            linePts[0] = p0.x; linePts[1] = 0; linePts[2] = 0;
+            linePts[3] = p1.x; linePts[4] = 0; linePts[5] = 0;
+            lineGeo.attributes.position.needsUpdate = true;
+
+            solved = t3dLpsSolve(mu);
+            var stable45 = mu < T3D_LPS_MU_CRIT;
+            function place(name, nx, ny) {
+                markers[name].position.set(nx * R, 0, ny * R);
+            }
+            if (solved.L1 !== null) place('L1', solved.L1, 0);
+            if (solved.L2 !== null) place('L2', solved.L2, 0);
+            if (solved.L3 !== null) place('L3', solved.L3, 0);
+            place('L4', solved.L4[0], solved.L4[1]);
+            place('L5', solved.L5[0], solved.L5[1]);
+            markers.L1.material.color.setHex(0xff5252);
+            markers.L2.material.color.setHex(0xff5252);
+            markers.L3.material.color.setHex(0xff5252);
+            var stableColor = stable45 ? 0x4caf50 : 0xff5252;
+            markers.L4.material.color.setHex(stableColor);
+            markers.L5.material.color.setHex(stableColor);
+        }
+        layoutBodiesAndPoints();
+
+        // ---- Test-particle perturbation demo (real RK4 integration) ----
+        var MAXTRAIL = shell.low ? 90 : 160;
+        var particles = []; // { name, state:[x,y,vx,vy], dot, trailGeo, trailPositions, trailCount, dead }
+        var particleGroup = new THREE.Group();
+        scene.add(particleGroup);
+
+        function spawnParticle(name, nx, ny) {
+            var ang = Math.random() * Math.PI * 2;
+            var nudge = 0.01;
+            var state = [nx + Math.cos(ang) * nudge, ny + Math.sin(ang) * nudge, 0, 0];
+            var color = (name === 'L4' || name === 'L5') ? 0x69f0ae : 0xffab91;
+            var dot = new THREE.Mesh(new THREE.SphereGeometry(0.32, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+            particleGroup.add(dot);
+            var trailPositions = new Float32Array(MAXTRAIL * 3);
+            var trailGeo = new THREE.BufferGeometry();
+            trailGeo.setAttribute('position', new THREE.BufferAttribute(trailPositions, 3));
+            trailGeo.setDrawRange(0, 0);
+            var trail = new THREE.Line(trailGeo, new THREE.LineBasicMaterial({ color: color }));
+            particleGroup.add(trail);
+            particles.push({ name: name, state: state, dot: dot, trail: trail, trailGeo: trailGeo, trailPositions: trailPositions, trailCount: 0, age: 0 });
+        }
+        function clearParticles() {
+            particles.forEach(function (p) {
+                particleGroup.remove(p.dot); particleGroup.remove(p.trail);
+                p.dot.geometry.dispose(); p.dot.material.dispose();
+                p.trailGeo.dispose(); p.trail.material.dispose();
+            });
+            particles = [];
+        }
+        function perturbAll() {
+            clearParticles();
+            if (solved.L1 !== null) spawnParticle('L1', solved.L1, 0);
+            if (solved.L2 !== null) spawnParticle('L2', solved.L2, 0);
+            if (solved.L3 !== null) spawnParticle('L3', solved.L3, 0);
+            spawnParticle('L4', solved.L4[0], solved.L4[1]);
+            spawnParticle('L5', solved.L5[0], solved.L5[1]);
+        }
+
+        function factsHtml() {
+            var ratio = (1 - mu) / mu;
+            var stable = mu < T3D_LPS_MU_CRIT;
+            var closest = T3D_LPS_PRESETS[0], bestDiff = Infinity;
+            T3D_LPS_PRESETS.forEach(function (p) {
+                var diff = Math.abs(Math.log(p.mu) - Math.log(mu));
+                if (diff < bestDiff) { bestDiff = diff; closest = p; }
+            });
+            var l1km = solved.L1 !== null ? Math.abs((1 - mu) - solved.L1) * T3D_LPS_AU_KM : null;
+            return '<h3>Lagrange point stability</h3>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Mass ratio (mu)</td><td>' + mu.toExponential(3) + ' (bigger body is ' + ratio.toFixed(1) + 'x the smaller)</td></tr>' +
+                '<tr><td>Closest real system</td><td>' + closest.label + '</td></tr>' +
+                '<tr><td>L1, L2, L3</td><td>always unstable (saddle points) - any mass ratio</td></tr>' +
+                '<tr><td>L4, L5 this ratio</td><td>' + (stable ? 'stable (Coriolis-stabilized hilltop)' : 'UNSTABLE - past Routh\'s critical ratio') + '</td></tr>' +
+                '<tr><td>Routh critical ratio</td><td>mu = ' + T3D_LPS_MU_CRIT.toFixed(5) + ' (about 24.96x mass difference)</td></tr>' +
+                (l1km !== null ? '<tr><td>If scaled to Sun-Earth (1 AU)</td><td>L1 distance from body 2 = about ' + Math.round(l1km).toLocaleString() + ' km</td></tr>' : '') +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation of the circular restricted three-body problem: both bodies are assumed on exactly circular orbits and the perturbed test object is assumed massless. Within that standard approximation, the perturbation trails are a real numerical integration (RK4) of the rotating-frame equations of motion - not a canned animation. L4/L5 are local MAXIMA of the effective potential, not valleys; they hold only because of the Coriolis force, and only below the critical mass ratio shown above.</p>';
+        }
+
+        var muSlider = document.getElementById('t3dLpsMuSlider');
+        var muLabel = document.getElementById('t3dLpsMuLabel');
+        function syncMuUi() {
+            if (muSlider) muSlider.value = String(Math.log10(mu));
+            if (muLabel) muLabel.textContent = 'mu = ' + mu.toExponential(2) + (mu < T3D_LPS_MU_CRIT ? ' (L4/L5 stable)' : ' (L4/L5 UNSTABLE)');
+        }
+        function applyMuChange(newMu) {
+            mu = Math.max(1e-7, Math.min(0.49, newMu));
+            layoutBodiesAndPoints();
+            clearParticles();
+            syncMuUi();
+            t3dInfo(factsHtml());
+            try { t3dSaveStore({ mu: mu }); } catch (e) {}
+        }
+        syncMuUi();
+        t3dInfo(factsHtml());
+
+        if (muSlider) muSlider.addEventListener('input', function () {
+            applyMuChange(Math.pow(10, parseFloat(muSlider.value || '-5.5')));
+        });
+
+        var presetWrap = document.getElementById('t3dLpsPresets');
+        if (presetWrap) {
+            T3D_LPS_PRESETS.forEach(function (p) {
+                var btn = document.getElementById('t3dLpsPreset_' + p.key);
+                if (btn) btn.addEventListener('click', function () { applyMuChange(p.mu); });
+            });
+        }
+
+        var perturbBtn = document.getElementById('t3dLpsPerturbBtn');
+        if (perturbBtn) perturbBtn.addEventListener('click', perturbAll);
+        var resetBtn = document.getElementById('t3dLpsResetBtn');
+        if (resetBtn) resetBtn.addEventListener('click', clearParticles);
+
+        t3dStatus('Drag to orbit, scroll to zoom. Drag the mass-ratio slider, then press "Perturb all 5 points" to watch which orbits hold.');
+
+        var BOUND = R * 2.2;
+        return function animate(dt) {
+            var subDt = 0.012; // normalized time units per RK4 sub-step
+            var subs = Math.min(8, Math.max(1, Math.round((dt / 1000) * 40)));
+            for (var i = particles.length - 1; i >= 0; i--) {
+                var p = particles[i];
+                for (var k = 0; k < subs; k++) {
+                    p.state = t3dLpsRk4(p.state, subDt, mu);
+                }
+                p.age += dt;
+                var wx = p.state[0] * R, wz = p.state[1] * R;
+                p.dot.position.set(wx, 0, wz);
+                if (p.trailCount < MAXTRAIL) {
+                    p.trailPositions[p.trailCount * 3] = wx;
+                    p.trailPositions[p.trailCount * 3 + 1] = 0;
+                    p.trailPositions[p.trailCount * 3 + 2] = wz;
+                    p.trailCount++;
+                    p.trailGeo.setDrawRange(0, p.trailCount);
+                    p.trailGeo.attributes.position.needsUpdate = true;
+                }
+                if (Math.abs(p.state[0]) > BOUND / R || Math.abs(p.state[1]) > BOUND / R || p.trailCount >= MAXTRAIL) {
+                    // Escaped view or trail buffer full - freeze in place (still visible as the outcome).
+                }
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { lagrangestability: 't3dLpsControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { lagrangestability: { radius: 34, maxR: 100, minR: 8, phi: 1.1, theta: 0.5, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dLagrangeStability(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
