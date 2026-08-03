@@ -31821,7 +31821,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/es/flashcards-spaced-repetition-step-by-step.html',
   '/guides/es/flashcards-spaced-repetition-vs-alternatives.html',
   '/guides/es/flashcards-spaced-repetition-when.html',
-  '/guides/es/folder-to-zip.html',
   '/guides/es/foucault-pendulum-step-by-step.html',
   '/guides/es/foucault-pendulum-vs-alternatives.html',
   '/guides/es/foucault-pendulum-when.html',
