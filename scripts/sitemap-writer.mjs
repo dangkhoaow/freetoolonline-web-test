@@ -320,6 +320,20 @@ function classifyKind(route, hubRouteSet, guideRouteSet, pageRouteSet) {
   if (route === '/') return 'home';
   if (hubRouteSet.has(route)) return 'hub';
   if (guideRouteSet.has(route)) return 'guide';
+  // 2026-08-03 GEO fix: GUIDE_SITEMAP_EXCLUDE has grown to 7000+ zero-evidence
+  // guide routes (the guide-farm-prune loop's inventory) - the sitemap-writer
+  // comment above this function once said the exclude set was "currently
+  // empty" (stale). Those routes are still /guides/*-prefixed but fall out of
+  // guideRouteSet, and some are ALSO registered in INFO_ROUTES for
+  // page-renderer's Article-schema wiring - so without this branch they fell
+  // through to 'tool' (or 'page'), inflating that bucket by 3000-7000 entries
+  // and exhausting the 100KB llms.txt budget before the real Tools/Pages/News
+  // sections (and the evidenced Guides tail) ever got a byte. Mirrors the
+  // existing `/guides/` prefix safety net already used in the toolRoutes
+  // computation above - excluded guides are correctly absent from the
+  // sitemap, so they stay absent from the citation index too (never rendered:
+  // 'guide_excluded' has no KIND_LABEL/KIND_ORDER/INDEX_KIND_ORDER entry).
+  if (route.startsWith('/guides/')) return 'guide_excluded';
   // news-loop (2026-07-08): membership by URL prefix, symmetric with the
   // guides derivation in writeSplitSitemaps (the /news.html hub classifies
   // as 'hub' above; only the /news/<slug>.html articles land here).
@@ -559,6 +573,17 @@ function buildLlmsFullTxt(entries, origin) {
     for (const entry of grouped.page) body += renderEntry(entry);
   }
 
+  // News third-priority (small, ~70 articles) - 2026-08-03 GEO fix: this
+  // section never rendered at all (the news-loop 2026-07-08 commit added
+  // 'news' as a classifyKind() output but never added a render step here),
+  // so every /news/* article had llms_index=0 in llms-full.txt regardless of
+  // page content. Always-include like Pages; the corpus is too small to need
+  // budget guarding.
+  if (grouped.news) {
+    body += `\n# ${KIND_LABEL.news}\n\n`;
+    for (const entry of grouped.news) body += renderEntry(entry);
+  }
+
   // Guides last - truncate to fit budget.
   if (grouped.guide) {
     body += `\n# ${KIND_LABEL.guide}\n\n`;
@@ -620,7 +645,10 @@ export async function writeSplitSitemaps({ distDir, routes, origin, isStaging, c
   // toolRoutes filter below (also dynamic, by exclusion). GUIDE_ROUTES Set
   // is kept for isGuideRoute() consumers + cycle-history git-blame but is
   // no longer load-bearing for sitemap generation. Opt-out via
-  // GUIDE_SITEMAP_EXCLUDE in site-data.mjs (currently empty).
+  // GUIDE_SITEMAP_EXCLUDE in site-data.mjs (grown to 7000+ zero-evidence
+  // entries via the guide-farm-prune loop as of 2026-08-03 - see the
+  // classifyKind() '/guides/' branch above for why excluded routes must
+  // never fall through to 'tool'/'page').
   const guideRoutes = normalizedRoutes.filter((route) => route.startsWith('/guides/')
     && !GUIDE_SITEMAP_EXCLUDE.has(route));
   const guideRouteSet = new Set(guideRoutes);
