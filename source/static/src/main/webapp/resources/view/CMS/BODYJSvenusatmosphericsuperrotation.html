@@ -1,0 +1,361 @@
+<script>
+    // 3D scene archetype skeleton (venus-atmospheric-superrotation) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only.
+    // All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION - not a general circulation model and not a
+    // live atmospheric-dynamics model. The scene plays back the SAME two real
+    // measured rotation periods (solid body: 243 Earth days retrograde; cloud
+    // top: about 4 Earth days retrograde) at the SAME uniform timelapse speed,
+    // so the roughly 60x visible speed difference between the cloud-top
+    // streaks and the solid-body marker IS the real published superrotation
+    // ratio, not an exaggeration added for effect. Wind-streak geometry and
+    // cloud-shell color are illustrative (no real satellite imagery), and the
+    // "solid body" marker is a teaching aid - in reality the rocky surface is
+    // permanently hidden beneath the clouds. Sizes are compressed for
+    // readability (the ~45-70 km cloud deck sits far closer to Venus's real
+    // 6,052 km radius than shown).
+    //
+    // Published figures (NASA Venus Facts (science.nasa.gov/venus/venus-facts)
+    // + NASA Science Data Portal "Venus Winds" blog + JAXA/ISAS Akatsuki
+    // mission pages, cross-checked via web search 2026-08-03):
+    //   - Venus solid-body rotation: retrograde, about 243 Earth days per spin
+    //     (NASA: "your day would be 243 Earth days long").
+    //   - Cloud-top layer circles the planet in about 4 Earth days (JAXA/ISAS
+    //     Akatsuki project scientist Takehiko Satoh: "the atmosphere circles
+    //     the planet in 4 Earth days at the cloud-top level" - other sources
+    //     report a slightly wider "about 4 to 4.5 Earth days" range depending
+    //     on latitude and measurement method; this scene uses 4 Earth days,
+    //     the mission-scientist figure, since it matches the commonly cited
+    //     "about 60 times" ratio below almost exactly (243 / 4 = 60.75)).
+    //   - Superrotation ratio: cloud-top winds move about 60 times faster
+    //     than the solid body (JAXA/ISAS: "60 times faster than the solid
+    //     body"; multiple independent secondary sources agree on ~60x).
+    //   - Cloud-top wind speed: measured as high as 224 mph (360 km/h) (NASA
+    //     Venus Facts). NASA's Science Data Portal separately describes the
+    //     clouds moving "at over 200 miles per hour" against a solid body
+    //     equator moving at "a very slow 4 mph" (about 6.5 km/h) - both
+    //     figures are shown in the facts panel.
+    //   - Cloud deck altitude: roughly 45 to 70 km, per JAXA/ISAS Akatsuki
+    //     mission material (a nearby NASA figure cites 48-70 km - the small
+    //     spread across sources is disclosed as a range, not resolved into an
+    //     invented single number).
+    //   - Discovery: ground-based UV cloud-tracking since the 1960s; Mariner
+    //     10's 1974 flyby returned early confirming imagery; JAXA's Akatsuki
+    //     orbiter (2015-2025) produced the detailed IR2/UVI equatorial-jet
+    //     mapping this page's figures draw on (Akatsuki mission ended
+    //     September 2025 after producing data behind 178+ published papers).
+    //   - Mechanism (why superrotation persists against surface friction):
+    //     Horinouchi et al., published in Science (Hokkaido University / JAXA
+    //     Akatsuki team), found that thermal tides transport angular
+    //     momentum toward the cloud-top jet, offsetting the drag that would
+    //     otherwise slow it down. This scene does not model that mechanism -
+    //     it only plays back the two measured rotation rates.
+    //
+    // Distinct from venus-retrograde-rotation (covers the SOLID planet's own
+    // backwards spin direction and resulting day length - one number, no
+    // atmosphere) and venus-phases-galileo (covers the telescope-visible
+    // phases of Venus as seen from Earth - an optical/historical story) and
+    // venus-runaway-greenhouse (covers the atmosphere's ENERGY BALANCE - why
+    // it is hot - not its CIRCULATION speed). THIS page covers a third, fully
+    // distinct physical story: the atmosphere physically moving around the
+    // planet dozens of times faster than the ground beneath it.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'venus-atmospheric-superrotation';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'venussuperrotation'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Published figures (see header comment for sources).
+    var T3D_VSR_BODY_ROTATION_DAYS = 243;
+    var T3D_VSR_CLOUD_CIRCUIT_DAYS = 4;
+    var T3D_VSR_RATIO = Math.round((T3D_VSR_BODY_ROTATION_DAYS / T3D_VSR_CLOUD_CIRCUIT_DAYS) * 10) / 10; // ~60.8
+    var T3D_VSR_WIND_KMH = 360;
+    var T3D_VSR_WIND_MPH = 224;
+    var T3D_VSR_SURFACE_KMH = 6.5;
+    var T3D_VSR_SURFACE_MPH = 4;
+    var T3D_VSR_CLOUD_FROM_KM = 45;
+    var T3D_VSR_CLOUD_TO_KM = 70;
+    var T3D_VSR_DEFAULT_SPEED = 5; // simulated Earth-days per real second
+
+    function t3dVenusSuperrotation(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+        var sun = new THREE.DirectionalLight(0xffffff, 0.6);
+        sun.position.set(40, 25, 20);
+        scene.add(sun);
+
+        var R = 9;
+
+        // Starfield backdrop.
+        var SCOUNT = shell.low ? 400 : 800;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(35 + Math.random() * 60);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.3, sizeAttenuation: false })));
+
+        // Solid rocky body (teaching aid - in reality permanently hidden
+        // beneath the clouds). A bright longitude marker shows how little it
+        // turns in one 243-day rotation.
+        var bodyGroup = new THREE.Group();
+        var body = new THREE.Mesh(
+            new THREE.SphereGeometry(R, 40, 28),
+            new THREE.MeshLambertMaterial({ color: 0x6d5533 })
+        );
+        bodyGroup.add(body);
+        var marker = new THREE.Mesh(
+            new THREE.BoxGeometry(R * 0.14, R * 2.02, R * 0.14),
+            new THREE.MeshBasicMaterial({ color: 0xffee58 })
+        );
+        marker.position.set(R * 1.0, 0, 0);
+        bodyGroup.add(marker);
+        scene.add(bodyGroup);
+
+        // Sulfuric-acid cloud deck shell (45-70 km compressed to a thin
+        // visible band above the surface - not to scale; the real cloud
+        // deck is a small fraction of Venus's 6,052 km radius).
+        var cloudDeck = new THREE.Mesh(
+            new THREE.SphereGeometry(R * 1.1, 40, 28),
+            new THREE.MeshBasicMaterial({ color: 0xf5e6a8, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false })
+        );
+        scene.add(cloudDeck);
+
+        // Wind-streak markers: a ring of small tangential boxes riding on
+        // the cloud deck. They rotate together at the cloud-top rate, giving
+        // a visible "racing streaks" read on the equatorial jet. Illustrative
+        // geometry, not real satellite imagery.
+        var streakGroup = new THREE.Group();
+        var STREAK_N = shell.low ? 10 : 16;
+        for (var i = 0; i < STREAK_N; i++) {
+            var ang = (i / STREAK_N) * Math.PI * 2;
+            var streak = new THREE.Mesh(
+                new THREE.BoxGeometry(R * 0.5, R * 0.10, R * 0.03),
+                new THREE.MeshBasicMaterial({ color: i % 2 === 0 ? 0xffffff : 0xfff3c4 })
+            );
+            var rad = R * 1.12;
+            streak.position.set(Math.cos(ang) * rad, 0, Math.sin(ang) * rad);
+            streak.rotation.y = -ang + Math.PI / 2;
+            streakGroup.add(streak);
+        }
+        scene.add(streakGroup);
+
+        function factsHtml() {
+            return '<h3>Venus atmospheric super-rotation</h3>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Solid body rotation</td><td>retrograde, about 243 Earth days</td></tr>' +
+                '<tr><td>Cloud-top layer circuit</td><td>about 4 Earth days (published range: about 4-4.5 days)</td></tr>' +
+                '<tr><td>Superrotation ratio</td><td>about ' + T3D_VSR_RATIO + 'x faster than the solid body</td></tr>' +
+                '<tr><td>Cloud-top wind speed</td><td>up to about ' + T3D_VSR_WIND_KMH + ' km/h (' + T3D_VSR_WIND_MPH + ' mph)</td></tr>' +
+                '<tr><td>Solid-body equatorial speed</td><td>about ' + T3D_VSR_SURFACE_KMH + ' km/h (' + T3D_VSR_SURFACE_MPH + ' mph)</td></tr>' +
+                '<tr><td>Cloud deck altitude</td><td>about ' + T3D_VSR_CLOUD_FROM_KM + '-' + T3D_VSR_CLOUD_TO_KM + ' km</td></tr>' +
+                '<tr><td>Discovered</td><td>ground-based UV tracking, 1960s; detailed jet mapping by JAXA\'s Akatsuki orbiter (2015-2025)</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation. Both rotations shown here use the SAME two measured periods (243 days / 4 days) played at the SAME timelapse speed, so the roughly 60x speed difference you see is the real published ratio, not exaggerated for effect. The solid-body marker is a teaching aid - the real rocky surface is permanently hidden beneath the clouds. Wind-streak shapes and cloud color are illustrative, not real satellite imagery.</p>';
+        }
+
+        var simDays = 0, playing = true, speed = T3D_VSR_DEFAULT_SPEED;
+        var readoutEl = document.getElementById('t3dVsrReadout');
+        function updateReadout() {
+            if (!readoutEl) return;
+            var laps = simDays / T3D_VSR_CLOUD_CIRCUIT_DAYS;
+            var bodyDeg = ((simDays / T3D_VSR_BODY_ROTATION_DAYS) * 360) % 360;
+            readoutEl.textContent = 'Simulated Earth-days elapsed: ' + simDays.toFixed(1) +
+                ' | Cloud-top layer has circled the planet ' + laps.toFixed(1) + ' times' +
+                ' | Solid body has turned ' + bodyDeg.toFixed(1) + ' degrees of one rotation';
+        }
+
+        function applyRotation() {
+            var cloudAngle = -(simDays / T3D_VSR_CLOUD_CIRCUIT_DAYS) * Math.PI * 2;
+            var bodyAngle = -(simDays / T3D_VSR_BODY_ROTATION_DAYS) * Math.PI * 2;
+            cloudDeck.rotation.y = cloudAngle;
+            streakGroup.rotation.y = cloudAngle;
+            bodyGroup.rotation.y = bodyAngle;
+        }
+
+        var store = t3dLoadStore();
+        speed = typeof store.speed === 'number' ? Math.max(0.5, Math.min(20, store.speed)) : T3D_VSR_DEFAULT_SPEED;
+        applyRotation();
+        updateReadout();
+        t3dInfo(factsHtml());
+
+        var speedSlider = document.getElementById('t3dVsrSpeed');
+        var speedLabel = document.getElementById('t3dVsrSpeedLabel');
+        function syncSpeedUi() {
+            if (speedSlider) speedSlider.value = String(speed);
+            if (speedLabel) speedLabel.textContent = speed.toFixed(1) + ' sim-days/sec';
+        }
+        syncSpeedUi();
+        if (speedSlider) speedSlider.addEventListener('input', function () {
+            speed = Math.max(0.5, Math.min(20, parseFloat(speedSlider.value || '5')));
+            syncSpeedUi();
+            try { t3dSaveStore({ speed: speed }); } catch (e) {}
+        });
+
+        var playBtn = document.getElementById('t3dVsrPlayPause');
+        function syncPlayUi() { if (playBtn) playBtn.textContent = playing ? 'Pause' : 'Play'; }
+        syncPlayUi();
+        if (playBtn) playBtn.addEventListener('click', function () { playing = !playing; syncPlayUi(); });
+
+        var resetBtn = document.getElementById('t3dVsrReset');
+        if (resetBtn) resetBtn.addEventListener('click', function () {
+            simDays = 0; applyRotation(); updateReadout();
+        });
+
+        var streakToggle = document.getElementById('t3dVsrToggleStreaks');
+        if (streakToggle) streakToggle.addEventListener('change', function () { streakGroup.visible = streakToggle.checked; cloudDeck.visible = streakToggle.checked; });
+
+        var markerToggle = document.getElementById('t3dVsrToggleMarker');
+        if (markerToggle) markerToggle.addEventListener('change', function () { marker.visible = markerToggle.checked; });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Watch the cloud streaks lap the planet while the yellow body marker barely moves.');
+        var readoutTimer = 0;
+        return function animate(dt) {
+            if (playing) {
+                simDays += (dt / 1000) * speed;
+                applyRotation();
+                readoutTimer += dt;
+                if (readoutTimer > 150) { updateReadout(); readoutTimer = 0; }
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { venussuperrotation: 't3dVsrControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { venussuperrotation: { radius: 32, maxR: 90, minR: 12, phi: 1.05, theta: 0.55, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dVenusSuperrotation(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
