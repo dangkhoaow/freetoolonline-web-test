@@ -6648,6 +6648,26 @@ export const INFO_ROUTES = new Set([
   '/guides/de/jpg-avif-converter-when.html',
   '/guides/de/jpg-avif-converter-step-by-step.html',
   '/guides/de/jpg-avif-converter-vs-alternatives.html',
+  // exoplanet-direct-imaging companion guides (space-3d-discovery-loop LEAN fire, 2026-08-03)
+  '/guides/how-to-use-exoplanet-direct-imaging.html',
+  '/guides/pt/how-to-use-exoplanet-direct-imaging.html',
+  '/guides/es/how-to-use-exoplanet-direct-imaging.html',
+  '/guides/vi/how-to-use-exoplanet-direct-imaging.html',
+  '/guides/id/how-to-use-exoplanet-direct-imaging.html',
+  '/guides/de/how-to-use-exoplanet-direct-imaging.html',
+  '/guides/exoplanet-direct-imaging-when.html',
+  '/guides/pt/exoplanet-direct-imaging-when.html',
+  '/guides/es/exoplanet-direct-imaging-when.html',
+  '/guides/vi/exoplanet-direct-imaging-when.html',
+  '/guides/id/exoplanet-direct-imaging-when.html',
+  '/guides/de/exoplanet-direct-imaging-when.html',
+  '/guides/exoplanet-direct-imaging-vs-alternatives.html',
+  '/guides/pt/exoplanet-direct-imaging-vs-alternatives.html',
+  '/guides/es/exoplanet-direct-imaging-vs-alternatives.html',
+  '/guides/vi/exoplanet-direct-imaging-vs-alternatives.html',
+  '/guides/id/exoplanet-direct-imaging-vs-alternatives.html',
+  '/guides/de/exoplanet-direct-imaging-vs-alternatives.html',
+
 ]);
 
 // Guide routes subset of INFO_ROUTES - used by page-renderer.mjs to emit Article
@@ -13262,6 +13282,26 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/cassini-grand-finale-step-by-step.html',
   '/guides/vi/cassini-grand-finale-step-by-step.html',
   '/guides/id/cassini-grand-finale-step-by-step.html',
+  // exoplanet-direct-imaging companion guides (space-3d-discovery-loop LEAN fire, 2026-08-03)
+  '/guides/how-to-use-exoplanet-direct-imaging.html',
+  '/guides/pt/how-to-use-exoplanet-direct-imaging.html',
+  '/guides/es/how-to-use-exoplanet-direct-imaging.html',
+  '/guides/vi/how-to-use-exoplanet-direct-imaging.html',
+  '/guides/id/how-to-use-exoplanet-direct-imaging.html',
+  '/guides/de/how-to-use-exoplanet-direct-imaging.html',
+  '/guides/exoplanet-direct-imaging-when.html',
+  '/guides/pt/exoplanet-direct-imaging-when.html',
+  '/guides/es/exoplanet-direct-imaging-when.html',
+  '/guides/vi/exoplanet-direct-imaging-when.html',
+  '/guides/id/exoplanet-direct-imaging-when.html',
+  '/guides/de/exoplanet-direct-imaging-when.html',
+  '/guides/exoplanet-direct-imaging-vs-alternatives.html',
+  '/guides/pt/exoplanet-direct-imaging-vs-alternatives.html',
+  '/guides/es/exoplanet-direct-imaging-vs-alternatives.html',
+  '/guides/vi/exoplanet-direct-imaging-vs-alternatives.html',
+  '/guides/id/exoplanet-direct-imaging-vs-alternatives.html',
+  '/guides/de/exoplanet-direct-imaging-vs-alternatives.html',
+
 ]);
 
 export function isGuideRoute(route) {
@@ -26672,6 +26712,26 @@ export const JSP_BY_ROUTE = {
   '/guides/de/percent-error-calculator-when.html': 'guide/de/percent-error-calculator-when.jsp',
   '/guides/de/percent-error-calculator-step-by-step.html': 'guide/de/percent-error-calculator-step-by-step.jsp',
   '/guides/de/percent-error-calculator-vs-alternatives.html': 'guide/de/percent-error-calculator-vs-alternatives.jsp',
+  // exoplanet-direct-imaging companion guides (space-3d-discovery-loop LEAN fire, 2026-08-03)
+  '/guides/how-to-use-exoplanet-direct-imaging.html': 'guide/how-to-use-exoplanet-direct-imaging.jsp',
+  '/guides/pt/how-to-use-exoplanet-direct-imaging.html': 'guide/pt/how-to-use-exoplanet-direct-imaging.jsp',
+  '/guides/es/how-to-use-exoplanet-direct-imaging.html': 'guide/es/how-to-use-exoplanet-direct-imaging.jsp',
+  '/guides/vi/how-to-use-exoplanet-direct-imaging.html': 'guide/vi/how-to-use-exoplanet-direct-imaging.jsp',
+  '/guides/id/how-to-use-exoplanet-direct-imaging.html': 'guide/id/how-to-use-exoplanet-direct-imaging.jsp',
+  '/guides/de/how-to-use-exoplanet-direct-imaging.html': 'guide/de/how-to-use-exoplanet-direct-imaging.jsp',
+  '/guides/exoplanet-direct-imaging-when.html': 'guide/exoplanet-direct-imaging-when.jsp',
+  '/guides/pt/exoplanet-direct-imaging-when.html': 'guide/pt/exoplanet-direct-imaging-when.jsp',
+  '/guides/es/exoplanet-direct-imaging-when.html': 'guide/es/exoplanet-direct-imaging-when.jsp',
+  '/guides/vi/exoplanet-direct-imaging-when.html': 'guide/vi/exoplanet-direct-imaging-when.jsp',
+  '/guides/id/exoplanet-direct-imaging-when.html': 'guide/id/exoplanet-direct-imaging-when.jsp',
+  '/guides/de/exoplanet-direct-imaging-when.html': 'guide/de/exoplanet-direct-imaging-when.jsp',
+  '/guides/exoplanet-direct-imaging-vs-alternatives.html': 'guide/exoplanet-direct-imaging-vs-alternatives.jsp',
+  '/guides/pt/exoplanet-direct-imaging-vs-alternatives.html': 'guide/pt/exoplanet-direct-imaging-vs-alternatives.jsp',
+  '/guides/es/exoplanet-direct-imaging-vs-alternatives.html': 'guide/es/exoplanet-direct-imaging-vs-alternatives.jsp',
+  '/guides/vi/exoplanet-direct-imaging-vs-alternatives.html': 'guide/vi/exoplanet-direct-imaging-vs-alternatives.jsp',
+  '/guides/id/exoplanet-direct-imaging-vs-alternatives.html': 'guide/id/exoplanet-direct-imaging-vs-alternatives.jsp',
+  '/guides/de/exoplanet-direct-imaging-vs-alternatives.html': 'guide/de/exoplanet-direct-imaging-vs-alternatives.jsp',
+
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
