@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/sunrise-sunset-calculator-vs-alternatives.html',
+  '/guides/sunrise-sunset-calculator-step-by-step.html',
+  '/guides/sunrise-sunset-calculator-when.html',
+  '/guides/pt/sunrise-sunset-calculator-when.html',
+  '/guides/pt/sunrise-sunset-calculator-step-by-step.html',
+  '/guides/pt/sunrise-sunset-calculator-vs-alternatives.html',
+  '/guides/es/sunrise-sunset-calculator-when.html',
+  '/guides/es/sunrise-sunset-calculator-step-by-step.html',
+  '/guides/es/sunrise-sunset-calculator-vs-alternatives.html',
+  '/guides/de/sunrise-sunset-calculator-when.html',
+  '/guides/de/sunrise-sunset-calculator-step-by-step.html',
+  '/guides/de/sunrise-sunset-calculator-vs-alternatives.html',
+  '/guides/vi/sunrise-sunset-calculator-when.html',
+  '/guides/vi/sunrise-sunset-calculator-step-by-step.html',
+  '/guides/vi/sunrise-sunset-calculator-vs-alternatives.html',
+  '/guides/id/sunrise-sunset-calculator-when.html',
+  '/guides/id/sunrise-sunset-calculator-step-by-step.html',
+  '/guides/id/sunrise-sunset-calculator-vs-alternatives.html',
   '/guides/heat-index-calculator-vs-alternatives.html',
   '/guides/heat-index-calculator-step-by-step.html',
   '/guides/heat-index-calculator-when.html',
@@ -14899,6 +14917,7 @@ export const ALIAS_ROUTES = {
   '/storm-tracker.html': '/utility-tools/storm-tracker.html',
   '/earthquake-tracker.html': '/utility-tools/earthquake-tracker.html',
   '/heat-index-calculator.html': '/utility-tools/heat-index-calculator.html',
+  '/sunrise-sunset-calculator.html': '/utility-tools/sunrise-sunset-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -27152,6 +27171,25 @@ export const JSP_BY_ROUTE = {
   '/guides/id/heat-index-calculator-when.html': 'guide/id/heat-index-calculator-when.jsp',
   '/guides/id/heat-index-calculator-step-by-step.html': 'guide/id/heat-index-calculator-step-by-step.jsp',
   '/guides/id/heat-index-calculator-vs-alternatives.html': 'guide/id/heat-index-calculator-vs-alternatives.jsp',
+  '/utility-tools/sunrise-sunset-calculator.html': 'utility/sunrise-sunset-calculator.jsp',
+  '/guides/sunrise-sunset-calculator-when.html': 'guide/sunrise-sunset-calculator-when.jsp',
+  '/guides/sunrise-sunset-calculator-step-by-step.html': 'guide/sunrise-sunset-calculator-step-by-step.jsp',
+  '/guides/sunrise-sunset-calculator-vs-alternatives.html': 'guide/sunrise-sunset-calculator-vs-alternatives.jsp',
+  '/guides/pt/sunrise-sunset-calculator-when.html': 'guide/pt/sunrise-sunset-calculator-when.jsp',
+  '/guides/pt/sunrise-sunset-calculator-step-by-step.html': 'guide/pt/sunrise-sunset-calculator-step-by-step.jsp',
+  '/guides/pt/sunrise-sunset-calculator-vs-alternatives.html': 'guide/pt/sunrise-sunset-calculator-vs-alternatives.jsp',
+  '/guides/es/sunrise-sunset-calculator-when.html': 'guide/es/sunrise-sunset-calculator-when.jsp',
+  '/guides/es/sunrise-sunset-calculator-step-by-step.html': 'guide/es/sunrise-sunset-calculator-step-by-step.jsp',
+  '/guides/es/sunrise-sunset-calculator-vs-alternatives.html': 'guide/es/sunrise-sunset-calculator-vs-alternatives.jsp',
+  '/guides/de/sunrise-sunset-calculator-when.html': 'guide/de/sunrise-sunset-calculator-when.jsp',
+  '/guides/de/sunrise-sunset-calculator-step-by-step.html': 'guide/de/sunrise-sunset-calculator-step-by-step.jsp',
+  '/guides/de/sunrise-sunset-calculator-vs-alternatives.html': 'guide/de/sunrise-sunset-calculator-vs-alternatives.jsp',
+  '/guides/vi/sunrise-sunset-calculator-when.html': 'guide/vi/sunrise-sunset-calculator-when.jsp',
+  '/guides/vi/sunrise-sunset-calculator-step-by-step.html': 'guide/vi/sunrise-sunset-calculator-step-by-step.jsp',
+  '/guides/vi/sunrise-sunset-calculator-vs-alternatives.html': 'guide/vi/sunrise-sunset-calculator-vs-alternatives.jsp',
+  '/guides/id/sunrise-sunset-calculator-when.html': 'guide/id/sunrise-sunset-calculator-when.jsp',
+  '/guides/id/sunrise-sunset-calculator-step-by-step.html': 'guide/id/sunrise-sunset-calculator-step-by-step.jsp',
+  '/guides/id/sunrise-sunset-calculator-vs-alternatives.html': 'guide/id/sunrise-sunset-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
