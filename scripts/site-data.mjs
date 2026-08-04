@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/live-aqi-checker-by-city-vs-alternatives.html',
+  '/guides/live-aqi-checker-by-city-step-by-step.html',
+  '/guides/live-aqi-checker-by-city-when.html',
+  '/guides/pt/live-aqi-checker-by-city-step-by-step.html',
+  '/guides/pt/live-aqi-checker-by-city-when.html',
+  '/guides/pt/live-aqi-checker-by-city-vs-alternatives.html',
+  '/guides/es/live-aqi-checker-by-city-step-by-step.html',
+  '/guides/es/live-aqi-checker-by-city-when.html',
+  '/guides/es/live-aqi-checker-by-city-vs-alternatives.html',
+  '/guides/de/live-aqi-checker-by-city-step-by-step.html',
+  '/guides/de/live-aqi-checker-by-city-when.html',
+  '/guides/de/live-aqi-checker-by-city-vs-alternatives.html',
+  '/guides/vi/live-aqi-checker-by-city-step-by-step.html',
+  '/guides/vi/live-aqi-checker-by-city-when.html',
+  '/guides/vi/live-aqi-checker-by-city-vs-alternatives.html',
+  '/guides/id/live-aqi-checker-by-city-step-by-step.html',
+  '/guides/id/live-aqi-checker-by-city-when.html',
+  '/guides/id/live-aqi-checker-by-city-vs-alternatives.html',
   '/guides/percent-error-calculator-vs-alternatives.html',
   '/guides/percent-error-calculator-step-by-step.html',
   '/guides/percent-error-calculator-when.html',
@@ -14768,6 +14786,7 @@ export const ALIAS_ROUTES = {
   '/body-fat-percentage-calculator.html': '/utility-tools/body-fat-percentage-calculator.html',
   '/simple-interest-calculator.html': '/utility-tools/simple-interest-calculator.html',
   '/percent-error-calculator.html': '/utility-tools/percent-error-calculator.html',
+  '/aqi-checker.html': '/utility-tools/aqi-checker.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -26908,6 +26927,25 @@ export const JSP_BY_ROUTE = {
   '/guides/id/venus-atmospheric-superrotation-vs-alternatives.html': 'guide/id/venus-atmospheric-superrotation-vs-alternatives.jsp',
   '/guides/de/venus-atmospheric-superrotation-vs-alternatives.html': 'guide/de/venus-atmospheric-superrotation-vs-alternatives.jsp',
 
+  '/utility-tools/aqi-checker.html': 'utility/aqi-checker.jsp',
+  '/guides/live-aqi-checker-by-city-when.html': 'guide/live-aqi-checker-by-city-when.jsp',
+  '/guides/live-aqi-checker-by-city-step-by-step.html': 'guide/live-aqi-checker-by-city-step-by-step.jsp',
+  '/guides/live-aqi-checker-by-city-vs-alternatives.html': 'guide/live-aqi-checker-by-city-vs-alternatives.jsp',
+  '/guides/pt/live-aqi-checker-by-city-step-by-step.html': 'guide/pt/live-aqi-checker-by-city-step-by-step.jsp',
+  '/guides/pt/live-aqi-checker-by-city-when.html': 'guide/pt/live-aqi-checker-by-city-when.jsp',
+  '/guides/pt/live-aqi-checker-by-city-vs-alternatives.html': 'guide/pt/live-aqi-checker-by-city-vs-alternatives.jsp',
+  '/guides/es/live-aqi-checker-by-city-step-by-step.html': 'guide/es/live-aqi-checker-by-city-step-by-step.jsp',
+  '/guides/es/live-aqi-checker-by-city-when.html': 'guide/es/live-aqi-checker-by-city-when.jsp',
+  '/guides/es/live-aqi-checker-by-city-vs-alternatives.html': 'guide/es/live-aqi-checker-by-city-vs-alternatives.jsp',
+  '/guides/de/live-aqi-checker-by-city-step-by-step.html': 'guide/de/live-aqi-checker-by-city-step-by-step.jsp',
+  '/guides/de/live-aqi-checker-by-city-when.html': 'guide/de/live-aqi-checker-by-city-when.jsp',
+  '/guides/de/live-aqi-checker-by-city-vs-alternatives.html': 'guide/de/live-aqi-checker-by-city-vs-alternatives.jsp',
+  '/guides/vi/live-aqi-checker-by-city-step-by-step.html': 'guide/vi/live-aqi-checker-by-city-step-by-step.jsp',
+  '/guides/vi/live-aqi-checker-by-city-when.html': 'guide/vi/live-aqi-checker-by-city-when.jsp',
+  '/guides/vi/live-aqi-checker-by-city-vs-alternatives.html': 'guide/vi/live-aqi-checker-by-city-vs-alternatives.jsp',
+  '/guides/id/live-aqi-checker-by-city-step-by-step.html': 'guide/id/live-aqi-checker-by-city-step-by-step.jsp',
+  '/guides/id/live-aqi-checker-by-city-when.html': 'guide/id/live-aqi-checker-by-city-when.jsp',
+  '/guides/id/live-aqi-checker-by-city-vs-alternatives.html': 'guide/id/live-aqi-checker-by-city-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

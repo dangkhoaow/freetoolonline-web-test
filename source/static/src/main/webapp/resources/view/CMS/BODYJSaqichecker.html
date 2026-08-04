@@ -1,0 +1,191 @@
+<script>
+    // Air-quality checker archetype skeleton (aqi-checker) - live-data class,
+    // no upload, no backend, no vendored lib. Registry Gate-H entry:
+    // live_air_quality_openmeteo. Two keyless, CORS-enabled, free public
+    // APIs: Open-Meteo geocoding (city -> lat/lon) and Open-Meteo Air
+    // Quality (US AQI + pollutants + 3-day hourly forecast). Optional
+    // browser geolocation feeds the same lat/lon path; city search is
+    // ALWAYS the no-permission fallback.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered() (called for
+    // EVERY page after base-script load). Do NOT touch the DOM at top
+    // level. In-browser tool => no upload widget.
+
+    web.localUpload = false;
+
+    var AQ_GEOCODE_URL = 'https://geocoding-api.open-meteo.com/v1/search';
+    var AQ_AIR_URL = 'https://air-quality-api.open-meteo.com/v1/air-quality';
+
+    // EPA US AQI category bands - static, citable table (rendered even
+    // before any lookup, so the page has real content on first load).
+    var AQ_BANDS = [
+        { lo: 0,   hi: 50,  name: 'Good',                              color: '#00e400' },
+        { lo: 51,  hi: 100, name: 'Moderate',                          color: '#ffff00' },
+        { lo: 101, hi: 150, name: 'Unhealthy for Sensitive Groups',     color: '#ff7e00' },
+        { lo: 151, hi: 200, name: 'Unhealthy',                         color: '#ff0000' },
+        { lo: 201, hi: 300, name: 'Very Unhealthy',                    color: '#8f3f97' },
+        { lo: 301, hi: 500, name: 'Hazardous',                         color: '#7e0023' }
+    ];
+
+    function aqBandFor(aqi) {
+        for (var i = 0; i < AQ_BANDS.length; i++) {
+            if (aqi >= AQ_BANDS[i].lo && aqi <= AQ_BANDS[i].hi) return AQ_BANDS[i];
+        }
+        return AQ_BANDS[AQ_BANDS.length - 1];
+    }
+
+    function aqEsc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+        });
+    }
+
+    function aqRenderBandsTable() {
+        var rows = '';
+        for (var i = 0; i < AQ_BANDS.length; i++) {
+            var b = AQ_BANDS[i];
+            rows += '<tr><td style="padding:4px 8px;"><span style="display:inline-block;width:14px;height:14px;background:' + b.color + ';border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>' + b.lo + '-' + b.hi + '</td><td style="padding:4px 8px;">' + aqEsc(b.name) + '</td></tr>';
+        }
+        return '<table style="border-collapse:collapse;margin-top:10px;font-size:0.92em;"><thead><tr><th style="text-align:left;padding:4px 8px;">US AQI</th><th style="text-align:left;padding:4px 8px;">Category</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    }
+
+    function aqFetchJson(url) {
+        return fetch(url).then(function (r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        });
+    }
+
+    function aqGeocode(city) {
+        var url = AQ_GEOCODE_URL + '?name=' + encodeURIComponent(city) + '&count=1&language=en&format=json';
+        return aqFetchJson(url).then(function (data) {
+            if (!data || !data.results || !data.results.length) throw new Error('City not found');
+            var r = data.results[0];
+            return { lat: r.latitude, lon: r.longitude, label: r.name + (r.admin1 ? ', ' + r.admin1 : '') + (r.country ? ', ' + r.country : '') };
+        });
+    }
+
+    function aqFetchAir(lat, lon) {
+        var url = AQ_AIR_URL + '?latitude=' + lat + '&longitude=' + lon +
+            '&hourly=us_aqi,pm2_5,pm10,ozone&forecast_days=3&timezone=auto';
+        return aqFetchJson(url);
+    }
+
+    function aqRenderResult(root, label, data) {
+        var h = data.hourly || {};
+        var times = h.time || [];
+        var aqiSeries = h.us_aqi || [];
+        var now = new Date();
+        var idx = 0;
+        for (var i = 0; i < times.length; i++) {
+            if (new Date(times[i]) <= now) idx = i; else break;
+        }
+        var currentAqi = aqiSeries[idx];
+        var band = (currentAqi != null) ? aqBandFor(currentAqi) : null;
+        var pm25 = (h.pm2_5 || [])[idx];
+        var pm10 = (h.pm10 || [])[idx];
+        var ozone = (h.ozone || [])[idx];
+
+        var out = '<div id="aqResultBox" style="border:1px solid #ddd;border-radius:6px;padding:14px;max-width:480px;">';
+        out += '<div style="font-weight:bold;font-size:1.05em;">' + aqEsc(label) + '</div>';
+        if (band) {
+            out += '<div style="margin-top:8px;"><span style="display:inline-block;width:16px;height:16px;background:' + band.color + ';border:1px solid #999;vertical-align:middle;margin-right:8px;"></span><span style="font-size:1.6em;font-weight:700;">' + currentAqi + '</span> <span style="font-weight:600;">' + aqEsc(band.name) + '</span></div>';
+        } else {
+            out += '<div style="margin-top:8px;color:#b00020;">AQI data unavailable for this location.</div>';
+        }
+        out += '<div style="margin-top:8px;font-size:0.92em;color:#555;">PM2.5: ' + (pm25 != null ? pm25 + ' &micro;g/m&sup3;' : 'n/a') + ' &middot; PM10: ' + (pm10 != null ? pm10 + ' &micro;g/m&sup3;' : 'n/a') + ' &middot; Ozone: ' + (ozone != null ? ozone + ' &micro;g/m&sup3;' : 'n/a') + '</div>';
+        out += '</div>';
+
+        // 3-day hourly forecast (dominant AQI per day - the "will it improve
+        // tomorrow" answer) - a small daily-max table under the current reading.
+        var byDay = {};
+        for (var j = 0; j < times.length; j++) {
+            var day = String(times[j]).slice(0, 10);
+            var v = aqiSeries[j];
+            if (v == null) continue;
+            if (!byDay[day] || v > byDay[day]) byDay[day] = v;
+        }
+        var days = Object.keys(byDay).sort();
+        var fRows = '';
+        for (var d = 0; d < days.length; d++) {
+            var dayAqi = byDay[days[d]];
+            var dayBand = aqBandFor(dayAqi);
+            fRows += '<tr><td style="padding:4px 8px;">' + days[d] + '</td><td style="padding:4px 8px;"><span style="display:inline-block;width:12px;height:12px;background:' + dayBand.color + ';border:1px solid #999;vertical-align:middle;margin-right:6px;"></span>' + dayAqi + ' (' + aqEsc(dayBand.name) + ')</td></tr>';
+        }
+        var forecast = '<table style="border-collapse:collapse;margin-top:12px;font-size:0.92em;"><thead><tr><th style="text-align:left;padding:4px 8px;">Day</th><th style="text-align:left;padding:4px 8px;">Peak US AQI</th></tr></thead><tbody>' + fRows + '</tbody></table>';
+
+        root.innerHTML = out + forecast;
+    }
+
+    function aqLookupCity(root, city) {
+        var statusEl = root.querySelector('#aqStatus');
+        var resultEl = root.querySelector('#aqResult');
+        statusEl.textContent = 'Looking up ' + city + '...';
+        resultEl.innerHTML = '';
+        aqGeocode(city).then(function (loc) {
+            return aqFetchAir(loc.lat, loc.lon).then(function (data) {
+                statusEl.textContent = '';
+                aqRenderResult(resultEl, loc.label, data);
+            });
+        }).catch(function (e) {
+            statusEl.textContent = 'Could not check air quality: ' + (e && e.message ? e.message : String(e));
+        });
+    }
+
+    function aqLookupCoords(root, lat, lon, label) {
+        var statusEl = root.querySelector('#aqStatus');
+        var resultEl = root.querySelector('#aqResult');
+        statusEl.textContent = 'Checking air quality for your location...';
+        resultEl.innerHTML = '';
+        aqFetchAir(lat, lon).then(function (data) {
+            statusEl.textContent = '';
+            aqRenderResult(resultEl, label, data);
+        }).catch(function (e) {
+            statusEl.textContent = 'Could not check air quality: ' + (e && e.message ? e.message : String(e));
+        });
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('airQualityTool');
+        if (!root) return; // not an air-quality page
+        try {
+            var input = root.querySelector('#aqCityInput');
+            var searchBtn = root.querySelector('#aqSearchBtn');
+            var locBtn = root.querySelector('#aqLocBtn');
+            var bandsBox = root.querySelector('#aqBandsTable');
+            if (bandsBox) bandsBox.innerHTML = aqRenderBandsTable();
+
+            if (searchBtn && input) {
+                searchBtn.addEventListener('click', function () {
+                    var city = (input.value || '').trim();
+                    if (!city) { root.querySelector('#aqStatus').textContent = 'Enter a city name.'; return; }
+                    aqLookupCity(root, city);
+                });
+                input.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter') searchBtn.click();
+                });
+            }
+            if (locBtn) {
+                locBtn.addEventListener('click', function () {
+                    if (!navigator.geolocation) {
+                        root.querySelector('#aqStatus').textContent = 'Location is not available in this browser; use city search instead.';
+                        return;
+                    }
+                    root.querySelector('#aqStatus').textContent = 'Requesting your location...';
+                    navigator.geolocation.getCurrentPosition(function (pos) {
+                        aqLookupCoords(root, pos.coords.latitude, pos.coords.longitude, 'Your location');
+                    }, function () {
+                        root.querySelector('#aqStatus').textContent = 'Location permission denied; use city search instead.';
+                    }, { timeout: 8000 });
+                });
+            }
+
+            // Always render SOMETHING visible on load (G16) - a default lookup
+            // for a major city, so the page never shows a blank panel before
+            // the reader interacts.
+            aqLookupCity(root, 'New York');
+        } catch (e) {
+            root.innerHTML = '<p style="color:#b00020;">Could not start the tool: ' + aqEsc(e && e.message ? e.message : String(e)) + '</p>';
+        }
+    }
+</script>
