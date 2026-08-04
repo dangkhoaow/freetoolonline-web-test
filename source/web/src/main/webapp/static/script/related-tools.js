@@ -890,6 +890,7 @@ try {
     { title: "Live AQI Checker by City", url: "https://freetoolonline.com/utility-tools/aqi-checker.html", include: !1, tags: "utility" },
     { title: "Live Tornado & Storm Tracker", url: "https://freetoolonline.com/utility-tools/storm-tracker.html", include: !1, tags: "utility" },
     { title: "Recent Earthquakes Near Me (USGS Live Feed)", url: "https://freetoolonline.com/utility-tools/earthquake-tracker.html", include: !1, tags: "utility" },
+    { title: "Heat Index Calculator", url: "https://freetoolonline.com/utility-tools/heat-index-calculator.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

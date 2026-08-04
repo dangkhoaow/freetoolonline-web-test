@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/heat-index-calculator-vs-alternatives.html',
+  '/guides/heat-index-calculator-step-by-step.html',
+  '/guides/heat-index-calculator-when.html',
   '/guides/live-earthquake-tracker-step-by-step.html',
   '/guides/live-earthquake-tracker-when.html',
   '/guides/live-earthquake-tracker-vs-alternatives.html',
@@ -14880,6 +14883,7 @@ export const ALIAS_ROUTES = {
   '/aqi-checker.html': '/utility-tools/aqi-checker.html',
   '/storm-tracker.html': '/utility-tools/storm-tracker.html',
   '/earthquake-tracker.html': '/utility-tools/earthquake-tracker.html',
+  '/heat-index-calculator.html': '/utility-tools/heat-index-calculator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -27114,6 +27118,10 @@ export const JSP_BY_ROUTE = {
   '/guides/id/live-earthquake-tracker-step-by-step.html': 'guide/id/live-earthquake-tracker-step-by-step.jsp',
   '/guides/id/live-earthquake-tracker-when.html': 'guide/id/live-earthquake-tracker-when.jsp',
   '/guides/id/live-earthquake-tracker-vs-alternatives.html': 'guide/id/live-earthquake-tracker-vs-alternatives.jsp',
+  '/utility-tools/heat-index-calculator.html': 'utility/heat-index-calculator.jsp',
+  '/guides/heat-index-calculator-when.html': 'guide/heat-index-calculator-when.jsp',
+  '/guides/heat-index-calculator-step-by-step.html': 'guide/heat-index-calculator-step-by-step.jsp',
+  '/guides/heat-index-calculator-vs-alternatives.html': 'guide/heat-index-calculator-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
