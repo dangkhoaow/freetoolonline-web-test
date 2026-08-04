@@ -620,12 +620,7 @@
         scene.add(group);
         var meshes = [];
         var activeId = 'earth';
-        var maxDisplayR = 9;
-        function radiusScale(world) {
-            var maxKm = 0;
-            for (var i = 0; i < T3D_INTERIOR_WORLDS.length; i++) { maxKm = Math.max(maxKm, T3D_INTERIOR_WORLDS[i].radiusKm); }
-            return (maxDisplayR / maxKm) * Math.pow(world.radiusKm / maxKm, -0.001) * (world.radiusKm / maxKm > 0 ? 1 : 1);
-        }
+        var maxDisplayR = 16; // Jupiter's on-screen radius when selected - the shared-scale reference
         function buildWorld(id) {
             while (group.children.length) { var c = group.children.pop(); if (c.geometry) c.geometry.dispose(); if (c.material) c.material.dispose(); }
             meshes = [];
@@ -633,11 +628,11 @@
             for (var i = 0; i < T3D_INTERIOR_WORLDS.length; i++) { if (T3D_INTERIOR_WORLDS[i].id === id) world = T3D_INTERIOR_WORLDS[i]; }
             if (!world) return;
             activeId = id;
-            var kmToUnit = maxDisplayR / 69911; // Jupiter reference keeps every planet on one visible scale
-            var dispR = Math.max(0.7, world.radiusKm * kmToUnit * 2.1);
+            var kmToUnit = maxDisplayR / 69911; // Jupiter reference keeps every planet on one shared visible scale
+            var dispR = Math.max(1.4, world.radiusKm * kmToUnit);
             for (var L = 0; L < world.layers.length; L++) {
                 var layer = world.layers[L];
-                var r = Math.max(0.12, dispR * layer.outerFrac);
+                var r = Math.max(0.25, dispR * layer.outerFrac);
                 var geo = new THREE.SphereGeometry(r, 40, 28, 0, Math.PI);
                 var mat = new THREE.MeshLambertMaterial({ color: layer.color, side: THREE.DoubleSide });
                 var mesh = new THREE.Mesh(geo, mat);
@@ -646,6 +641,9 @@
                 meshes.push(mesh);
             }
             group.rotation.set(0, -Math.PI / 2.3, 0);
+            // Reframe the camera so every planet fills the view well, regardless of
+            // its absolute size on the shared scale (small worlds get a closer camera).
+            shell.orbit.goalRadius = Math.min(shell.orbit.maxR, Math.max(shell.orbit.minR, dispR * 3.4));
             var btns = document.querySelectorAll('[id^="t3dInteriorBtn-"]');
             for (var b = 0; b < btns.length; b++) {
                 var on = btns[b].id === 't3dInteriorBtn-' + id;
@@ -1493,7 +1491,7 @@
                         lunareclipse: { radius: 55, maxR: 150, minR: 16, phi: 1.1 },
                         solareclipse: { radius: 48, maxR: 140, minR: 14, phi: 1.12 },
                         planetsizecomparison: { radius: 75, maxR: 200, minR: 20, phi: 1.05 },
-                        planetinteriors: { radius: 26, maxR: 80, minR: 6, phi: 1.05 },
+                        planetinteriors: { radius: 30, maxR: 80, minR: 4, phi: 1.05 },
                         issorbittracker: { radius: 42, maxR: 120, minR: 14, phi: 1.15 },
                         mooncalendar3d: { radius: 28, maxR: 90, minR: 10, phi: 1.1 },
                         keplerorbits: { radius: 55, maxR: 160, minR: 12, phi: 1.2 },
