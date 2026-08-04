@@ -30935,7 +30935,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/pt/how-to-play-star-fuel-battle.html',
   '/guides/pt/how-to-play-starlight-breaker.html',
   '/guides/pt/how-to-play-swing-block-tower.html',
-  '/guides/pt/how-to-play-the-house-pointclick.html',
   '/guides/pt/how-to-play-thirteen-card-duel.html',
   '/guides/pt/how-to-play-thirteen-case-files.html',
   '/guides/pt/how-to-play-thirteen-hours.html',
@@ -33085,7 +33084,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/es/zip-file-converter-what-it-actually-does.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/lcd-test-vs-display-test-which-do-you-need.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/what-is-a-file-compressor-and-which-to-use.html', // pruned 2026-07-29 zero-evidence es
-  '/guides/es/what-an-lcd-test-does-and-when-to-run-one.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/what-we-learned-running-free-in-browser-image-tools-for-100k-monthly-users.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/millisecond-to-date.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/md5-password.html', // pruned 2026-07-29 zero-evidence es
