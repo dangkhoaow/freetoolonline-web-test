@@ -581,6 +581,7 @@ try {
     { title: "Type Ia Supernova Standard Candle 3D Explorer", url: "https://freetoolonline.com/space-3d/type-ia-supernova-standard-candle.html", include: !1, tags: "space-3d" },
     { title: "Lunar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/lunar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Planet Size Comparison 3D Explorer", url: "https://freetoolonline.com/space-3d/planet-size-comparison.html", include: !1, tags: "space-3d" },
+    { title: "Planet Interior Cutaways 3D Explorer", url: "https://freetoolonline.com/space-3d/planet-interior-cutaways.html", include: !1, tags: "space-3d" },
     { title: "Star Lifecycle 3D Explorer", url: "https://freetoolonline.com/space-3d/star-lifecycle.html", include: !1, tags: "space-3d" },
     { title: "Exoplanet Transit 3D Explorer", url: "https://freetoolonline.com/space-3d/exoplanet-transit.html", include: !1, tags: "space-3d" },
     { title: "Gravitational Microlensing Exoplanet 3D Explorer", url: "https://freetoolonline.com/space-3d/gravitational-microlensing-exoplanet.html", include: !1, tags: "space-3d" },
