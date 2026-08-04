@@ -893,6 +893,7 @@ try {
     { title: "Recent Earthquakes Near Me (USGS Live Feed)", url: "https://freetoolonline.com/utility-tools/earthquake-tracker.html", include: !1, tags: "utility" },
     { title: "Heat Index Calculator", url: "https://freetoolonline.com/utility-tools/heat-index-calculator.html", include: !1, tags: "utility" },
     { title: "Sunrise & Sunset Calculator", url: "https://freetoolonline.com/utility-tools/sunrise-sunset-calculator.html", include: !1, tags: "utility" },
+    { title: "Are Flags at Half-Mast Today? (US Federal Status)", url: "https://freetoolonline.com/utility-tools/half-mast-today.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

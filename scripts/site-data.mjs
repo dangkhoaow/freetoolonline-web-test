@@ -14,6 +14,8 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/are-flags-at-half-mast-today-us-federal-status-step-by-step.html',
+  '/guides/are-flags-at-half-mast-today-us-federal-status-when.html',
   '/guides/sunrise-sunset-calculator-vs-alternatives.html',
   '/guides/sunrise-sunset-calculator-step-by-step.html',
   '/guides/sunrise-sunset-calculator-when.html',
@@ -14919,6 +14921,7 @@ export const ALIAS_ROUTES = {
   '/earthquake-tracker.html': '/utility-tools/earthquake-tracker.html',
   '/heat-index-calculator.html': '/utility-tools/heat-index-calculator.html',
   '/sunrise-sunset-calculator.html': '/utility-tools/sunrise-sunset-calculator.html',
+  '/half-mast-today.html': '/utility-tools/half-mast-today.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -27192,6 +27195,9 @@ export const JSP_BY_ROUTE = {
   '/guides/id/sunrise-sunset-calculator-when.html': 'guide/id/sunrise-sunset-calculator-when.jsp',
   '/guides/id/sunrise-sunset-calculator-step-by-step.html': 'guide/id/sunrise-sunset-calculator-step-by-step.jsp',
   '/guides/id/sunrise-sunset-calculator-vs-alternatives.html': 'guide/id/sunrise-sunset-calculator-vs-alternatives.jsp',
+  '/utility-tools/half-mast-today.html': 'utility/half-mast-today.jsp',
+  '/guides/are-flags-at-half-mast-today-us-federal-status-when.html': 'guide/are-flags-at-half-mast-today-us-federal-status-when.jsp',
+  '/guides/are-flags-at-half-mast-today-us-federal-status-step-by-step.html': 'guide/are-flags-at-half-mast-today-us-federal-status-step-by-step.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
