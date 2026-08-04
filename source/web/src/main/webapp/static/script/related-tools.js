@@ -763,6 +763,7 @@ try {
     { title: "Earth Perihelion & Aphelion 3D Explorer", url: "https://freetoolonline.com/space-3d/earth-perihelion-aphelion.html", include: !1, tags: "space-3d" },
     { title: "Galactic Coordinate Transforms 3D Explorer", url: "https://freetoolonline.com/space-3d/galactic-coordinate-transforms.html", include: !1, tags: "space-3d" },
     { title: "Pulsar Timing Array 3D Explorer", url: "https://freetoolonline.com/space-3d/pulsar-timing-array.html", include: !1, tags: "space-3d" },
+    { title: "2026 Total Solar Eclipse Path 3D Explorer", url: "https://freetoolonline.com/space-3d/eclipse-path-2026.html", include: !1, tags: "space-3d" },
     { title: "Karman Line & Atmosphere Layers 3D Explorer", url: "https://freetoolonline.com/space-3d/karman-line-atmosphere-layers.html", include: !1, tags: "space-3d" },
     { title: "Venus Runaway Greenhouse 3D Explorer", url: "https://freetoolonline.com/space-3d/venus-runaway-greenhouse.html", include: !1, tags: "space-3d" },
     { title: "Venus Atmospheric Super-Rotation 3D Explorer", url: "https://freetoolonline.com/space-3d/venus-atmospheric-superrotation.html", include: !1, tags: "space-3d" },

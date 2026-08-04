@@ -1,0 +1,347 @@
+<script>
+    // 3D scene archetype skeleton (eclipse-path-2026) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side.
+    // Built LEAN from the shared t3d* skeleton - ONE scene only. All geometry
+    // is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not a precise eclipse-prediction map. The
+    // path line drawn on the globe connects 8 NASA/ESA-published WAYPOINT
+    // REGIONS (Taymyr Peninsula Russia, near the North Pole, east Greenland,
+    // west Iceland near Reykjavik, the North Atlantic, the north Spanish
+    // coast, Leon Spain, and the Mediterranean/Portugal exit) with straight
+    // spherical interpolation between them - it is NOT NASA's precise
+    // eclipse-prediction center line (which is published as GIS data this
+    // scene does not have access to). The scene never claims otherwise; the
+    // info panel and FAQ disclose the approximation explicitly.
+    //
+    // Published figures (NASA Science "Total Solar Eclipse on August 12,
+    // 2026", science.nasa.gov/eclipses/future-eclipses/total-solar-eclipse-
+    // on-august-12-2026/; ESA "Total solar eclipse 12 August 2026 - Global
+    // map"; cross-checked via web search + direct fetch 2026-08-05):
+    //   - Path of totality crosses Greenland, Iceland, northern Russia, the
+    //     Atlantic Ocean, Spain, and a small corner of Portugal.
+    //   - For most of the path totality lasts under 2 minutes; near the
+    //     center of the path (Greenland, Russia, or the North Atlantic) it
+    //     lasts a little longer but still under 2 minutes 30 seconds.
+    //   - Reykjavik, Iceland: totality about 5:48-5:49 p.m. local time.
+    //   - Leon, Spain: totality about 8:28-8:30 p.m. local time.
+    //   - First total solar eclipse to cross mainland Europe since 1999
+    //     (ESA); the next to cross a large part of Europe is not until 2075.
+    //
+    // Distinct from solar-eclipse (a generic, undated Sun-Earth-Moon umbra/
+    // penumbra mechanism explainer with an illustrative, non-geographic
+    // totality track) - this page shows the real geography and published
+    // local times for ONE specific, real, dated event.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'eclipse-path-2026';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'eclipsepath2026'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Published waypoint regions (lat, lon in degrees) the real path of
+    // totality crosses, in chronological (west-to-east-of-shadow-motion)
+    // order per NASA/ESA maps. These are real geographic coordinates of
+    // named places; the STRAIGHT-LINE spherical path CONNECTING them is an
+    // illustrative approximation of the true center line, disclosed as such.
+    var T3D_EP_WAYPOINTS = [
+        { lat: 76.0, lon: 100.0, name: 'Taymyr Peninsula, Russia', note: 'Eclipse begins here around local midday - a remote, largely uninhabited Arctic tundra.' },
+        { lat: 88.0, lon: 40.0, name: 'Near the North Pole', note: 'The shadow curves directly over the pole before descending toward Greenland.' },
+        { lat: 70.5, lon: -25.0, name: 'East Greenland', note: 'Path crosses the Greenland ice sheet in late afternoon local time.' },
+        { lat: 64.9, lon: -21.9, name: 'Reykjavik, Iceland', note: 'Totality about 5:48 to 5:49 p.m. local time (NASA).' },
+        { lat: 52.0, lon: -18.0, name: 'North Atlantic', note: 'Near the point of longest totality on this eclipse, over open ocean.' },
+        { lat: 43.6, lon: -3.5, name: 'Northern Spain coast', note: 'Shadow makes landfall on the Bay of Biscay coast in the early evening.' },
+        { lat: 42.6, lon: -5.6, name: 'Leon, Spain', note: 'Totality about 8:28 to 8:30 p.m. local time (NASA); nearby Burgos, Valladolid, and Soria see roughly 1 min 42-45 sec of totality.' },
+        { lat: 39.8, lon: -1.0, name: 'Mediterranean coast / Portugal corner', note: 'Eclipse ends just before sunset - the last landfall before the path leaves Earth over the Mediterranean.' }
+    ];
+
+    function t3dEpLatLonToVec3(THREE, lat, lon, r) {
+        var phi = (90 - lat) * Math.PI / 180;
+        var theta = (lon + 180) * Math.PI / 180;
+        return new THREE.Vector3(
+            -r * Math.sin(phi) * Math.cos(theta),
+            r * Math.cos(phi),
+            r * Math.sin(phi) * Math.sin(theta)
+        );
+    }
+
+    function t3dEpSlerp(a, b, t) {
+        var dot = Math.max(-1, Math.min(1, a.dot(b)));
+        var theta = Math.acos(dot);
+        if (theta < 1e-6) return a.clone();
+        var s = Math.sin(theta);
+        var wa = Math.sin((1 - t) * theta) / s, wb = Math.sin(t * theta) / s;
+        return a.clone().multiplyScalar(wa).add(b.clone().multiplyScalar(wb));
+    }
+
+    function t3dEclipsePath2026(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+        var sunLight = new THREE.DirectionalLight(0xfff4e0, 1.1);
+        sunLight.position.set(30, 20, 25);
+        scene.add(sunLight);
+
+        var R = 10;
+        var earth = new THREE.Mesh(
+            new THREE.SphereGeometry(R, 48, 32),
+            new THREE.MeshPhongMaterial({ color: 0x2e6f95, emissive: 0x081018, shininess: 8 })
+        );
+        scene.add(earth);
+        var atmos = new THREE.Mesh(
+            new THREE.SphereGeometry(R * 1.015, 32, 24),
+            new THREE.MeshBasicMaterial({ color: 0x66aaff, transparent: true, opacity: 0.1, depthWrite: false })
+        );
+        scene.add(atmos);
+
+        // Decorative starfield (context only).
+        var SCOUNT = shell.low ? 400 : 800;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(35 + Math.random() * 60);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0x9aa7b0, size: 0.4, sizeAttenuation: false })));
+
+        // Waypoint vectors on the globe surface + the connecting path.
+        var wpVecs = [];
+        for (var w = 0; w < T3D_EP_WAYPOINTS.length; w++) {
+            wpVecs.push(t3dEpLatLonToVec3(THREE, T3D_EP_WAYPOINTS[w].lat, T3D_EP_WAYPOINTS[w].lon, R * 1.01));
+        }
+        var SEG_PER_LEG = 16;
+        var pathPts = [];
+        var legStartFrac = [];
+        for (var leg = 0; leg < wpVecs.length - 1; leg++) {
+            legStartFrac.push(leg / (wpVecs.length - 1));
+            for (var i = 0; i < SEG_PER_LEG; i++) {
+                pathPts.push(t3dEpSlerp(wpVecs[leg], wpVecs[leg + 1], i / SEG_PER_LEG));
+            }
+        }
+        pathPts.push(wpVecs[wpVecs.length - 1]);
+        var pathGeo = new THREE.BufferGeometry().setFromPoints(pathPts);
+        var pathLine = new THREE.Line(pathGeo, new THREE.LineBasicMaterial({ color: 0xffeb3b, transparent: true, opacity: 0.9 }));
+        scene.add(pathLine);
+
+        // Waypoint markers - small lit dots along the path.
+        var markerMeshes = [];
+        for (var m = 0; m < wpVecs.length; m++) {
+            var marker = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 8), new THREE.MeshBasicMaterial({ color: 0xff7043 }));
+            marker.position.copy(wpVecs[m]);
+            scene.add(marker);
+            markerMeshes.push(marker);
+        }
+
+        // Moving shadow dot along the path.
+        var shadowDot = new THREE.Mesh(new THREE.SphereGeometry(0.34, 14, 10), new THREE.MeshBasicMaterial({ color: 0x111111 }));
+        scene.add(shadowDot);
+        var shadowRing = new THREE.Mesh(
+            new THREE.RingGeometry(0.5, 0.85, 24),
+            new THREE.MeshBasicMaterial({ color: 0xffca28, transparent: true, opacity: 0.55, side: THREE.DoubleSide })
+        );
+        scene.add(shadowRing);
+
+        function pointAt(t) {
+            t = Math.max(0, Math.min(1, t));
+            var idx = t * (pathPts.length - 1);
+            var i0 = Math.floor(idx), i1 = Math.min(pathPts.length - 1, i0 + 1);
+            var f = idx - i0;
+            return pathPts[i0].clone().lerp(pathPts[i1], f).normalize().multiplyScalar(R * 1.015);
+        }
+        function nearestWaypointIdx(t) {
+            var best = 0, bestD = Infinity;
+            for (var k = 0; k < legStartFrac.length; k++) {
+                var d = Math.abs(t - legStartFrac[k]);
+                if (d < bestD) { bestD = d; best = k; }
+            }
+            var lastFrac = 1;
+            if (Math.abs(t - lastFrac) < bestD) best = T3D_EP_WAYPOINTS.length - 1;
+            return best;
+        }
+
+        var progress = 0, playing = false;
+        function setProgress(t) {
+            progress = Math.max(0, Math.min(1, t));
+            var pos = pointAt(progress);
+            shadowDot.position.copy(pos);
+            var normal = pos.clone().normalize();
+            shadowRing.position.copy(pos.clone().add(normal.clone().multiplyScalar(0.03)));
+            shadowRing.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), normal);
+            var wp = T3D_EP_WAYPOINTS[nearestWaypointIdx(progress)];
+            var pct = Math.round(progress * 100);
+            var slider = document.getElementById('t3dEpProgress');
+            if (slider && parseFloat(slider.value) !== pct) slider.value = String(pct);
+            t3dInfo('<h3>' + wp.name + '</h3>' +
+                '<p>' + wp.note + '</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Event date</td><td>August 12, 2026</td></tr>' +
+                '<tr><td>Path (in order)</td><td>Siberia (Russia), Greenland, Iceland, North Atlantic, Spain, Portugal corner</td></tr>' +
+                '<tr><td>Maximum totality</td><td>up to about 2 min 30 sec near path center (Greenland / Russia / North Atlantic); under 2 min elsewhere</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Illustrative path: the yellow line connects 8 NASA/ESA-published waypoint regions with straight spherical segments - it is not NASA\'s precise eclipse-prediction center line. See NASA\'s official eclipse maps for exact local circumstances at any one location.</p>');
+            try { t3dSaveStore({ progress: progress }); } catch (e) {}
+        }
+
+        setProgress(0);
+
+        var playBtn = document.getElementById('t3dEpPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            playing = !playing;
+            playBtn.textContent = playing ? 'Pause sweep' : 'Play sweep';
+        });
+        var slider = document.getElementById('t3dEpProgress');
+        if (slider) slider.addEventListener('input', function () {
+            playing = false; if (playBtn) playBtn.textContent = 'Play sweep';
+            setProgress(parseFloat(slider.value || '0') / 100);
+        });
+        var jumpIceland = document.getElementById('t3dEpJumpReykjavik');
+        if (jumpIceland) jumpIceland.addEventListener('click', function () { playing = false; if (playBtn) playBtn.textContent = 'Play sweep'; setProgress(legStartFrac[2]); });
+        var jumpSpain = document.getElementById('t3dEpJumpLeon');
+        if (jumpSpain) jumpSpain.addEventListener('click', function () { playing = false; if (playBtn) playBtn.textContent = 'Play sweep'; setProgress(legStartFrac[5]); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Scrub the path slider or press Play sweep; jump straight to Iceland or Spain.');
+        return function animate(dt) {
+            for (var m = 0; m < markerMeshes.length; m++) {
+                markerMeshes[m].scale.setScalar(1 + 0.15 * Math.sin(dt * 0 + m));
+            }
+            if (!playing) return;
+            var next = progress + (dt / 1000) * 0.05;
+            if (next >= 1) { next = 1; playing = false; if (playBtn) playBtn.textContent = 'Play sweep'; }
+            setProgress(next);
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { eclipsepath2026: 't3dEclipsePathControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { eclipsepath2026: { radius: 26, maxR: 90, minR: 12, phi: 1.05, theta: 0.5, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dEclipsePath2026(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
