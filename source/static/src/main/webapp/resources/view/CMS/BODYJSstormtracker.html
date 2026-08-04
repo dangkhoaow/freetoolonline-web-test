@@ -1,0 +1,194 @@
+<script>
+    // Weather-alerts tracker archetype skeleton (storm-tracker) - live-data class,
+    // no upload, no backend, no vendored lib. Registry Gate-H entry:
+    // live_us_weather_alerts_nws. One keyless, CORS-enabled, US-official API:
+    // api.weather.gov/alerts/active (National Weather Service). State dropdown
+    // is the no-permission default path; optional browser geolocation resolves
+    // a lat/lon point query for a more local result.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered() (called for
+    // EVERY page after base-script load). Do NOT touch the DOM at top
+    // level. In-browser tool => no upload widget.
+
+    web.localUpload = false;
+
+    var WA_ALERTS_URL = 'https://api.weather.gov/alerts/active';
+    // NWS asks API consumers for a descriptive User-Agent; browsers send their
+    // own UA automatically (custom headers on a simple cross-origin GET are
+    // restricted), so this is documentation, not a header we set.
+    var WA_STATES = [
+        ['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],['CA','California'],
+        ['CO','Colorado'],['CT','Connecticut'],['DE','Delaware'],['FL','Florida'],['GA','Georgia'],
+        ['HI','Hawaii'],['ID','Idaho'],['IL','Illinois'],['IN','Indiana'],['IA','Iowa'],
+        ['KS','Kansas'],['KY','Kentucky'],['LA','Louisiana'],['ME','Maine'],['MD','Maryland'],
+        ['MA','Massachusetts'],['MI','Michigan'],['MN','Minnesota'],['MS','Mississippi'],['MO','Missouri'],
+        ['MT','Montana'],['NE','Nebraska'],['NV','Nevada'],['NH','New Hampshire'],['NJ','New Jersey'],
+        ['NM','New Mexico'],['NY','New York'],['NC','North Carolina'],['ND','North Dakota'],['OH','Ohio'],
+        ['OK','Oklahoma'],['OR','Oregon'],['PA','Pennsylvania'],['RI','Rhode Island'],['SC','South Carolina'],
+        ['SD','South Dakota'],['TN','Tennessee'],['TX','Texas'],['UT','Utah'],['VT','Vermont'],
+        ['VA','Virginia'],['WA','Washington'],['WV','West Virginia'],['WI','Wisconsin'],['WY','Wyoming'],
+        ['DC','District of Columbia'],['PR','Puerto Rico']
+    ];
+
+    // Severity sort order - Extreme/Severe first (the acceptance-criteria
+    // grouping). Anything unrecognized sorts last.
+    var WA_SEVERITY_RANK = { 'Extreme': 0, 'Severe': 1, 'Moderate': 2, 'Minor': 3, 'Unknown': 4 };
+
+    function waEsc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+        });
+    }
+
+    function waSeverityColor(sev) {
+        if (sev === 'Extreme') return '#7e0023';
+        if (sev === 'Severe') return '#ff0000';
+        if (sev === 'Moderate') return '#ff7e00';
+        if (sev === 'Minor') return '#ffff00';
+        return '#999999';
+    }
+
+    function waFetchJson(url) {
+        return fetch(url, { headers: { 'Accept': 'application/geo+json' } }).then(function (r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        });
+    }
+
+    function waFormatExpiry(iso) {
+        try {
+            var exp = new Date(iso);
+            var now = new Date();
+            var mins = Math.round((exp.getTime() - now.getTime()) / 60000);
+            if (mins <= 0) return 'expiring now';
+            if (mins < 60) return 'expires in ' + mins + ' min';
+            var hrs = Math.round(mins / 60);
+            if (hrs < 48) return 'expires in ' + hrs + ' hr';
+            var days = Math.round(hrs / 24);
+            return 'expires in ' + days + ' day' + (days === 1 ? '' : 's');
+        } catch (e) {
+            return '';
+        }
+    }
+
+    function waRenderAlerts(root, features, label) {
+        var statusEl = root.querySelector('#waStatus');
+        var listEl = root.querySelector('#waList');
+        var stamp = 'Last checked: ' + new Date().toLocaleString();
+
+        if (!features || !features.length) {
+            statusEl.innerHTML = '<div style="color:#0a7d2c;font-weight:600;">No active NWS alerts for ' + waEsc(label) + ' right now.</div><div style="color:#777;font-size:0.9em;">' + stamp + '</div>';
+            listEl.innerHTML = '';
+            return;
+        }
+
+        var sorted = features.slice().sort(function (a, b) {
+            var ra = WA_SEVERITY_RANK[(a.properties || {}).severity] != null ? WA_SEVERITY_RANK[(a.properties || {}).severity] : 4;
+            var rb = WA_SEVERITY_RANK[(b.properties || {}).severity] != null ? WA_SEVERITY_RANK[(b.properties || {}).severity] : 4;
+            return ra - rb;
+        });
+
+        statusEl.innerHTML = '<div style="font-weight:600;">' + sorted.length + ' active alert' + (sorted.length === 1 ? '' : 's') + ' for ' + waEsc(label) + '</div><div style="color:#777;font-size:0.9em;">' + stamp + '</div>';
+
+        var html = '';
+        for (var i = 0; i < sorted.length; i++) {
+            var p = sorted[i].properties || {};
+            var color = waSeverityColor(p.severity);
+            html += '<div style="border-left:4px solid ' + color + ';border-radius:4px;background:#fafafa;padding:10px 12px;margin-bottom:10px;">';
+            html += '<div style="font-weight:700;">' + waEsc(p.event || 'Alert') + ' <span style="font-weight:400;color:' + color + ';">(' + waEsc(p.severity || 'Unknown') + ')</span></div>';
+            html += '<div style="font-size:0.9em;color:#555;margin-top:2px;">' + waEsc(p.headline || '') + '</div>';
+            html += '<div style="font-size:0.85em;color:#777;margin-top:4px;">' + waEsc(p.areaDesc || '') + ' &middot; ' + waEsc(waFormatExpiry(p.expires)) + '</div>';
+            if (p.instruction) {
+                html += '<div style="font-size:0.88em;margin-top:6px;white-space:pre-wrap;">' + waEsc(p.instruction) + '</div>';
+            }
+            html += '</div>';
+        }
+        listEl.innerHTML = html;
+    }
+
+    function waLookupState(root, code, label) {
+        var statusEl = root.querySelector('#waStatus');
+        statusEl.textContent = 'Checking alerts for ' + label + '...';
+        root.querySelector('#waList').innerHTML = '';
+        waFetchJson(WA_ALERTS_URL + '?area=' + encodeURIComponent(code)).then(function (data) {
+            waRenderAlerts(root, data.features, label);
+        }).catch(function (e) {
+            statusEl.textContent = 'Could not load alerts: ' + (e && e.message ? e.message : String(e));
+        });
+    }
+
+    function waLookupPoint(root, lat, lon, label) {
+        var statusEl = root.querySelector('#waStatus');
+        statusEl.textContent = 'Checking alerts for ' + label + '...';
+        root.querySelector('#waList').innerHTML = '';
+        waFetchJson(WA_ALERTS_URL + '?point=' + lat + ',' + lon).then(function (data) {
+            waRenderAlerts(root, data.features, label);
+        }).catch(function (e) {
+            statusEl.textContent = 'Could not load alerts: ' + (e && e.message ? e.message : String(e));
+        });
+    }
+
+    function waRenderDefinitionsTable() {
+        var rows = [
+            ['Warning', 'The hazardous weather event is occurring, imminent, or has a very high probability of occurring. Take protective action now.'],
+            ['Watch', 'Conditions are favorable for the hazardous weather event to develop. Stay alert and be ready to act.'],
+            ['Advisory', 'Less serious than a warning; the weather may cause significant inconvenience and, if caution is not exercised, could lead to a situation threatening life or property.']
+        ];
+        var out = '<table style="border-collapse:collapse;margin-top:8px;font-size:0.92em;"><thead><tr><th style="text-align:left;padding:4px 8px;">Term</th><th style="text-align:left;padding:4px 8px;">What it means</th></tr></thead><tbody>';
+        for (var i = 0; i < rows.length; i++) {
+            out += '<tr><td style="padding:4px 8px;font-weight:600;vertical-align:top;">' + rows[i][0] + '</td><td style="padding:4px 8px;">' + rows[i][1] + '</td></tr>';
+        }
+        out += '</tbody></table>';
+        return out;
+    }
+
+    function waPopulateStates(select) {
+        var html = '';
+        for (var i = 0; i < WA_STATES.length; i++) {
+            html += '<option value="' + WA_STATES[i][0] + '"' + (WA_STATES[i][0] === 'CA' ? ' selected' : '') + '>' + WA_STATES[i][1] + '</option>';
+        }
+        select.innerHTML = html;
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('weatherAlertsTool');
+        if (!root) return; // not a weather-alerts page
+        try {
+            var stateSelect = root.querySelector('#waStateSelect');
+            var checkBtn = root.querySelector('#waCheckBtn');
+            var locBtn = root.querySelector('#waLocBtn');
+            var defsBox = root.querySelector('#waDefsTable');
+            if (defsBox) defsBox.innerHTML = waRenderDefinitionsTable();
+            if (stateSelect) waPopulateStates(stateSelect);
+
+            if (checkBtn && stateSelect) {
+                checkBtn.addEventListener('click', function () {
+                    var code = stateSelect.value;
+                    var label = stateSelect.options[stateSelect.selectedIndex].text;
+                    waLookupState(root, code, label);
+                });
+            }
+            if (locBtn) {
+                locBtn.addEventListener('click', function () {
+                    if (!navigator.geolocation) {
+                        root.querySelector('#waStatus').textContent = 'Location is not available in this browser; use the state list instead.';
+                        return;
+                    }
+                    root.querySelector('#waStatus').textContent = 'Requesting your location...';
+                    navigator.geolocation.getCurrentPosition(function (pos) {
+                        waLookupPoint(root, pos.coords.latitude, pos.coords.longitude, 'your location');
+                    }, function () {
+                        root.querySelector('#waStatus').textContent = 'Location permission denied; use the state list instead.';
+                    }, { timeout: 8000 });
+                });
+            }
+
+            // Always render SOMETHING visible on load (G16) - a default
+            // lookup for the pre-selected state, so the page never shows a
+            // blank panel before the reader interacts.
+            waLookupState(root, 'CA', 'California');
+        } catch (e) {
+            root.innerHTML = '<p style="color:#b00020;">Could not start the tool: ' + waEsc(e && e.message ? e.message : String(e)) + '</p>';
+        }
+    }
+</script>

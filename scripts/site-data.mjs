@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/live-tornado-storm-tracker-vs-alternatives.html',
+  '/guides/live-tornado-storm-tracker-step-by-step.html',
+  '/guides/live-tornado-storm-tracker-when.html',
   '/guides/live-aqi-checker-by-city-vs-alternatives.html',
   '/guides/live-aqi-checker-by-city-step-by-step.html',
   '/guides/live-aqi-checker-by-city-when.html',
@@ -14805,6 +14808,7 @@ export const ALIAS_ROUTES = {
   '/simple-interest-calculator.html': '/utility-tools/simple-interest-calculator.html',
   '/percent-error-calculator.html': '/utility-tools/percent-error-calculator.html',
   '/aqi-checker.html': '/utility-tools/aqi-checker.html',
+  '/storm-tracker.html': '/utility-tools/storm-tracker.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -26982,6 +26986,10 @@ export const JSP_BY_ROUTE = {
   '/guides/id/live-aqi-checker-by-city-step-by-step.html': 'guide/id/live-aqi-checker-by-city-step-by-step.jsp',
   '/guides/id/live-aqi-checker-by-city-when.html': 'guide/id/live-aqi-checker-by-city-when.jsp',
   '/guides/id/live-aqi-checker-by-city-vs-alternatives.html': 'guide/id/live-aqi-checker-by-city-vs-alternatives.jsp',
+  '/utility-tools/storm-tracker.html': 'utility/storm-tracker.jsp',
+  '/guides/live-tornado-storm-tracker-when.html': 'guide/live-tornado-storm-tracker-when.jsp',
+  '/guides/live-tornado-storm-tracker-step-by-step.html': 'guide/live-tornado-storm-tracker-step-by-step.jsp',
+  '/guides/live-tornado-storm-tracker-vs-alternatives.html': 'guide/live-tornado-storm-tracker-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
