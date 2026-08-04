@@ -1,0 +1,362 @@
+<script>
+    // 3D scene archetype skeleton (pulsar-timing-array) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side.
+    // Built LEAN from the shared t3d* skeleton - ONE scene only. All geometry
+    // is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not a real pulsar catalog or a gravitational-
+    // wave detection. A decorative shell of 20 illustrative pulsar markers
+    // scatters around Earth (NOT the real NANOGrav sky pattern); two of them
+    // are individually highlighted (a fixed gold "reference" pulsar and a
+    // magenta "probe" pulsar whose angular separation from the reference is
+    // set EXACTLY by the slider - a rotation of the reference direction about
+    // the Y axis by the slider's angle, so the dot-product-derived separation
+    // always equals the slider value). The scene computes and displays the
+    // real, published Hellings-Downs expected-correlation curve for that
+    // exact separation - it does not simulate a detection or add noise.
+    //
+    // Published figures (NANOGrav 15-year data set, arXiv:2306.16217; NANOGrav
+    // "Evidence for a Gravitational-Wave Background", nanograv.org/15yr/Summary/
+    // Background; Hellings-Downs curve formula per Wikipedia "Hellings-Downs
+    // curve" + Reardon et al. 2023 Parkes PTA normalization, cross-checked via
+    // web search + direct fetch 2026-08-04):
+    //   - 68 millisecond pulsars timed for 15+ years by NANOGrav.
+    //   - Pulse arrival times measured to microsecond precision; gravitational-
+    //     wave-induced timing deviations of tens to a few hundred nanoseconds.
+    //   - Stochastic gravitational-wave background strain amplitude reported as
+    //     about 2.4 (+0.7/-0.6) x 10^-15 at a reference frequency of 1/year.
+    //   - Likely source: a population of inspiraling supermassive black-hole
+    //     binaries (roughly 10^8-10^10 solar masses); alternative cosmological
+    //     sources are not excluded. Announced jointly 2023 by NANOGrav, EPTA,
+    //     PPTA, and CPTA.
+    //   - Hellings-Downs curve: for two DIFFERENT pulsars separated by angle
+    //     zeta, Gamma(zeta) = 1/2 - x/4 + (3/2) x ln(x), where
+    //     x = (1 - cos(zeta)) / 2. Exact analytic boundary values (verified by
+    //     direct evaluation of this formula): Gamma(0deg) = 0.5,
+    //     Gamma(180deg) = 0.25. This scene COMPUTES Gamma live from the formula
+    //     for whatever angle the slider is at - it never hardcodes a memorized
+    //     minimum-angle figure as a fact panel claim.
+    //
+    // Distinct from neutron-star-pulsar (a single pulsar's spin/lighthouse-beam
+    // mechanism, no array, no correlation curve) and gravitational-waves
+    // (LIGO's kilohertz chirp from an inspiraling stellar-mass black-hole
+    // binary - a different frequency band, instrument, and source population).
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'pulsar-timing-array';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'pulsartimingarray'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Published Hellings-Downs formula (see header comment for sources).
+    // zetaDeg in degrees. Returns the exact Gamma(zeta) for two DIFFERENT
+    // pulsars (no Kronecker-delta self-correlation term).
+    function t3dPtaGamma(zetaDeg) {
+        var zeta = zetaDeg * Math.PI / 180;
+        var x = (1 - Math.cos(zeta)) / 2;
+        if (x <= 0) return 0.5;
+        return 0.5 - x / 4 + 1.5 * x * Math.log(x);
+    }
+
+    function t3dPtaSlerp(a, b, t) {
+        var dot = Math.max(-1, Math.min(1, a.dot(b)));
+        var theta = Math.acos(dot);
+        if (theta < 1e-6) return a.clone();
+        var s = Math.sin(theta);
+        var wa = Math.sin((1 - t) * theta) / s, wb = Math.sin(t * theta) / s;
+        return a.clone().multiplyScalar(wa).add(b.clone().multiplyScalar(wb));
+    }
+
+    // Builds an inline SVG string plotting Gamma(zeta) over 0-180 degrees with
+    // a marker dot at the current angle. Rendered inside the HTML facts panel -
+    // not a second canvas element.
+    function t3dPtaCurveSvg(currentZeta) {
+        var w = 280, h = 130, padL = 34, padR = 8, padT = 10, padB = 22;
+        var plotW = w - padL - padR, plotH = h - padT - padB;
+        var yMin = -0.2, yMax = 0.55;
+        function xOf(zeta) { return padL + (zeta / 180) * plotW; }
+        function yOf(g) { return padT + (1 - (g - yMin) / (yMax - yMin)) * plotH; }
+        var pts = [];
+        for (var z = 0; z <= 180; z += 3) { pts.push(xOf(z).toFixed(1) + ',' + yOf(t3dPtaGamma(z)).toFixed(1)); }
+        var zeroY = yOf(0).toFixed(1);
+        var curX = xOf(currentZeta).toFixed(1), curY = yOf(t3dPtaGamma(currentZeta)).toFixed(1);
+        return '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" style="max-width:280px; display:block; margin:6px auto;">' +
+            '<line x1="' + padL + '" y1="' + zeroY + '" x2="' + (w - padR) + '" y2="' + zeroY + '" stroke="#999" stroke-width="1" stroke-dasharray="2,2"/>' +
+            '<polyline points="' + pts.join(' ') + '" fill="none" stroke="#1976d2" stroke-width="2"/>' +
+            '<circle cx="' + curX + '" cy="' + curY + '" r="4" fill="#e65100"/>' +
+            '<text x="' + padL + '" y="' + (h - 6) + '" font-size="10" fill="#555">0deg</text>' +
+            '<text x="' + (w - padR - 34) + '" y="' + (h - 6) + '" font-size="10" fill="#555">180deg</text>' +
+            '<text x="2" y="' + (padT + 6) + '" font-size="10" fill="#555">0.5</text>' +
+            '<text x="2" y="' + (h - padB) + '" font-size="10" fill="#555">-0.2</text>' +
+            '</svg>';
+    }
+
+    function t3dPulsarTimingArray(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+
+        var R = 9;
+
+        // Earth at the origin.
+        var earth = new THREE.Mesh(new THREE.SphereGeometry(0.9, 24, 16), new THREE.MeshBasicMaterial({ color: 0x2e6f95 }));
+        scene.add(earth);
+
+        // Decorative background starfield (context only).
+        var SCOUNT = shell.low ? 400 : 800;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(20 + Math.random() * 40);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0x9aa7b0, size: 0.45, sizeAttenuation: false })));
+
+        // Decorative illustrative pulsar-array shell (NOT a real catalog).
+        var PCOUNT = 20;
+        var ppos = new Float32Array(PCOUNT * 3);
+        for (var p = 0; p < PCOUNT; p++) {
+            var pv = new THREE.Vector3().randomDirection().multiplyScalar(R);
+            ppos[p * 3] = pv.x; ppos[p * 3 + 1] = pv.y; ppos[p * 3 + 2] = pv.z;
+        }
+        var pgeo = new THREE.BufferGeometry();
+        pgeo.setAttribute('position', new THREE.BufferAttribute(ppos, 3));
+        scene.add(new THREE.Points(pgeo, new THREE.PointsMaterial({ color: 0x4dd0e1, size: 1.1, sizeAttenuation: false })));
+
+        // Reference pulsar A - fixed along +X.
+        var dirA = new THREE.Vector3(1, 0, 0);
+        var meshA = new THREE.Mesh(new THREE.SphereGeometry(0.34, 14, 10), new THREE.MeshBasicMaterial({ color: 0xffca28 }));
+        scene.add(meshA);
+
+        // Probe pulsar B - rotation of A by zeta about the Y axis (x-z plane),
+        // so the exact angular separation from A always equals zeta.
+        var meshB = new THREE.Mesh(new THREE.SphereGeometry(0.34, 14, 10), new THREE.MeshBasicMaterial({ color: 0xe040fb }));
+        scene.add(meshB);
+
+        var lineAMat = new THREE.LineBasicMaterial({ color: 0xffca28, transparent: true, opacity: 0.5 });
+        var lineBMat = new THREE.LineBasicMaterial({ color: 0xe040fb, transparent: true, opacity: 0.5 });
+        var lineAGeo = new THREE.BufferGeometry();
+        lineAGeo.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, dirA.x * R, dirA.y * R, dirA.z * R], 3));
+        var lineA = new THREE.Line(lineAGeo, lineAMat);
+        scene.add(lineA);
+        var lineBGeo = new THREE.BufferGeometry();
+        lineBGeo.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, 0, 0, 0], 3));
+        var lineB = new THREE.Line(lineBGeo, lineBMat);
+        scene.add(lineB);
+
+        // Dashed geodesic arc between A and B (32 segments, spherical slerp).
+        var ARC_N = 32;
+        var arcGeo = new THREE.BufferGeometry();
+        var arcPos = new Float32Array((ARC_N + 1) * 3);
+        arcGeo.setAttribute('position', new THREE.BufferAttribute(arcPos, 3));
+        var arcLine = new THREE.Line(arcGeo, new THREE.LineDashedMaterial({ color: 0xffffff, transparent: true, opacity: 0.7, dashSize: 0.22, gapSize: 0.14 }));
+        scene.add(arcLine);
+
+        function facts(zetaDeg) {
+            var gamma = t3dPtaGamma(zetaDeg);
+            var sign = gamma > 0.01 ? 'positively correlated (residuals tend to rise and fall together)'
+                : (gamma < -0.01 ? 'anti-correlated (residuals tend to move opposite each other)' : 'near zero correlation');
+            return '<h3>Separation: ' + Math.round(zetaDeg) + ' deg</h3>' +
+                '<p>Expected Hellings-Downs correlation: <b>' + gamma.toFixed(3) + '</b> - ' + sign + '.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Gamma at 0 deg (nearly coincident pulsars)</td><td>0.500</td></tr>' +
+                '<tr><td>Gamma at 180 deg (opposite sides of the sky)</td><td>0.250</td></tr>' +
+                '<tr><td>NANOGrav 15-year data set</td><td>68 millisecond pulsars, 15+ years</td></tr>' +
+                '<tr><td>Timing precision / GW-induced deviation</td><td>microsecond arrival times; tens-hundreds of ns residuals</td></tr>' +
+                '<tr><td>2023 stochastic background amplitude</td><td>about 2.4e-15 at 1/year reference frequency</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation - the gold/magenta pulsar pair\'s separation is exact and the correlation number is computed live from the real Hellings-Downs formula, but the other 20 pulsars are an illustrative scatter, not a real sky catalog, and no gravitational-wave signal is simulated.</p>';
+        }
+
+        var zetaDeg = 60, playing = false, showCurve = false, beaconT = 0;
+        function setZeta(z) {
+            zetaDeg = Math.max(0, Math.min(180, z));
+            var zeta = zetaDeg * Math.PI / 180;
+            var b = new THREE.Vector3(Math.cos(zeta) * R, 0, -Math.sin(zeta) * R);
+            meshB.position.copy(b);
+            var lp = lineBGeo.attributes.position;
+            lp.setXYZ(0, 0, 0, 0); lp.setXYZ(1, b.x, b.y, b.z); lp.needsUpdate = true;
+            var unitA = dirA.clone().normalize(), unitB = b.clone().normalize();
+            var arr = arcGeo.attributes.position.array;
+            for (var i = 0; i <= ARC_N; i++) {
+                var pt = t3dPtaSlerp(unitA, unitB, i / ARC_N).multiplyScalar(R * 1.01);
+                arr[i * 3] = pt.x; arr[i * 3 + 1] = pt.y; arr[i * 3 + 2] = pt.z;
+            }
+            arcGeo.attributes.position.needsUpdate = true;
+            arcLine.computeLineDistances();
+            var slider = document.getElementById('t3dPtaZeta');
+            if (slider) slider.value = String(Math.round(zetaDeg));
+            var html = facts(zetaDeg);
+            if (showCurve) { html += t3dPtaCurveSvg(zetaDeg); }
+            t3dInfo(html);
+            try { t3dSaveStore({ zetaDeg: zetaDeg, showCurve: showCurve }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        showCurve = !!store.showCurve;
+        var curveCb = document.getElementById('t3dPtaShowCurve');
+        if (curveCb) curveCb.checked = showCurve;
+        setZeta(typeof store.zetaDeg === 'number' ? store.zetaDeg : 60);
+
+        var playBtn = document.getElementById('t3dPtaPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            playing = !playing;
+            playBtn.textContent = playing ? 'Pause sweep' : 'Play sweep';
+        });
+        var slider = document.getElementById('t3dPtaZeta');
+        if (slider) slider.addEventListener('input', function () {
+            playing = false; if (playBtn) playBtn.textContent = 'Play sweep';
+            setZeta(parseFloat(slider.value || '0'));
+        });
+        if (curveCb) curveCb.addEventListener('change', function () { showCurve = curveCb.checked; setZeta(zetaDeg); });
+
+        var sweepDir = 1;
+        t3dStatus('Drag to orbit, scroll to zoom. Scrub the separation slider or press Play sweep; toggle the correlation-curve chart.');
+        return function animate(dt) {
+            dt = dt / 1000;
+            beaconT += dt;
+            meshA.scale.setScalar(1 + 0.22 * Math.sin(beaconT * 6));
+            meshB.scale.setScalar(1 + 0.22 * Math.sin(beaconT * 6 + Math.PI * 0.6));
+            if (playing) {
+                var next = zetaDeg + sweepDir * dt * 18;
+                if (next >= 180) { next = 180; sweepDir = -1; }
+                if (next <= 0) { next = 0; sweepDir = 1; }
+                setZeta(next);
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { pulsartimingarray: 't3dPtaControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { pulsartimingarray: { radius: 13, maxR: 45, minR: 4, phi: 1.05, theta: 0.6, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dPulsarTimingArray(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
