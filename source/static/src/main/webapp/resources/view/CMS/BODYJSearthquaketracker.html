@@ -1,0 +1,220 @@
+<script>
+    // Earthquake-tracker archetype skeleton (earthquake-tracker) - live-data class, no
+    // upload, no backend, no vendored lib. Registry Gate-H entry:
+    // live_earthquake_usgs_feed. One keyless, CORS-enabled, US-official API:
+    // earthquake.usgs.gov/earthquakes/feed/v1.0/summary/<period>.geojson (USGS).
+    // Mirrors the weather-alerts.template.html shape (fire701/702) - period
+    // dropdown + magnitude-floor dropdown as the no-permission default path,
+    // optional browser geolocation adds a distance-from-me column via
+    // client-side haversine (no geocoding lib needed).
+    //
+    // Framework contract: bootstrap in doAfterPageRendered() (called for
+    // EVERY page after base-script load). Do NOT touch the DOM at top
+    // level. In-browser tool => no upload widget.
+
+    web.localUpload = false;
+
+    var EQ_FEED_BASE = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/';
+    var EQ_PERIODS = [
+        ['all_hour', 'Past hour'],
+        ['all_day', 'Past day'],
+        ['all_week', 'Past week']
+    ];
+    var EQ_MAG_FLOORS = [
+        [0, 'All magnitudes'],
+        [1.0, 'M1.0+'],
+        [2.5, 'M2.5+'],
+        [4.5, 'M4.5+']
+    ];
+
+    function eqEsc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+        });
+    }
+
+    function eqMagColor(mag) {
+        if (mag >= 6.0) return '#7e0023';
+        if (mag >= 4.5) return '#ff0000';
+        if (mag >= 2.5) return '#ff7e00';
+        if (mag >= 1.0) return '#e0b400';
+        return '#999999';
+    }
+
+    function eqFetchJson(url) {
+        return fetch(url, { headers: { 'Accept': 'application/geo+json' } }).then(function (r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        });
+    }
+
+    function eqFormatAgo(ms) {
+        try {
+            var mins = Math.round((Date.now() - ms) / 60000);
+            if (mins < 1) return 'just now';
+            if (mins < 60) return mins + ' min ago';
+            var hrs = Math.round(mins / 60);
+            if (hrs < 48) return hrs + ' hr ago';
+            var days = Math.round(hrs / 24);
+            return days + ' day' + (days === 1 ? '' : 's') + ' ago';
+        } catch (e) {
+            return '';
+        }
+    }
+
+    // Haversine great-circle distance in km/mi between two lat/lon points.
+    function eqDistanceKm(lat1, lon1, lat2, lon2) {
+        var R = 6371;
+        var dLat = (lat2 - lat1) * Math.PI / 180;
+        var dLon = (lon2 - lon1) * Math.PI / 180;
+        var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function eqRenderQuakes(root, features, magFloor, userPos) {
+        var statusEl = root.querySelector('#eqStatus');
+        var listEl = root.querySelector('#eqList');
+        var stamp = 'Last checked: ' + new Date().toLocaleString();
+
+        var filtered = (features || []).filter(function (f) {
+            var mag = (f.properties || {}).mag;
+            return typeof mag === 'number' && mag >= magFloor;
+        });
+
+        if (!filtered.length) {
+            statusEl.innerHTML = '<div style="color:#0a7d2c;font-weight:600;">No earthquakes at or above that magnitude in this window.</div><div style="color:#777;font-size:0.9em;">' + stamp + '</div>';
+            listEl.innerHTML = '';
+            return;
+        }
+
+        var sorted = filtered.slice();
+        if (userPos) {
+            sorted.sort(function (a, b) {
+                var ca = a.geometry.coordinates, cb = b.geometry.coordinates;
+                var da = eqDistanceKm(userPos.lat, userPos.lon, ca[1], ca[0]);
+                var db = eqDistanceKm(userPos.lat, userPos.lon, cb[1], cb[0]);
+                return da - db;
+            });
+        } else {
+            sorted.sort(function (a, b) { return (b.properties.time || 0) - (a.properties.time || 0); });
+        }
+
+        statusEl.innerHTML = '<div style="font-weight:600;">' + sorted.length + ' earthquake' + (sorted.length === 1 ? '' : 's') + ' found' + (userPos ? ' - sorted nearest first' : ' - sorted most recent first') + '</div><div style="color:#777;font-size:0.9em;">' + stamp + '</div>';
+
+        var html = '<table style="border-collapse:collapse;width:100%;font-size:0.92em;margin-top:8px;">' +
+            '<thead><tr>' +
+            '<th style="text-align:left;padding:4px 8px;">Mag</th>' +
+            '<th style="text-align:left;padding:4px 8px;">Place</th>' +
+            '<th style="text-align:left;padding:4px 8px;">When</th>' +
+            '<th style="text-align:left;padding:4px 8px;">Depth</th>' +
+            (userPos ? '<th style="text-align:left;padding:4px 8px;">Distance</th>' : '') +
+            '</tr></thead><tbody>';
+        for (var i = 0; i < sorted.length; i++) {
+            var p = sorted[i].properties || {};
+            var coords = sorted[i].geometry ? sorted[i].geometry.coordinates : [null, null, null];
+            var color = eqMagColor(p.mag);
+            var depthKm = typeof coords[2] === 'number' ? coords[2].toFixed(1) + ' km' : '-';
+            html += '<tr style="border-left:4px solid ' + color + ';">';
+            html += '<td style="padding:4px 8px;font-weight:700;color:' + color + ';">' + (typeof p.mag === 'number' ? p.mag.toFixed(1) : '-') + '</td>';
+            html += '<td style="padding:4px 8px;"><a href="' + eqEsc(p.url || '#') + '" target="_blank" rel="noopener noreferrer">' + eqEsc(p.place || 'Unknown location') + '</a></td>';
+            html += '<td style="padding:4px 8px;color:#555;">' + eqEsc(eqFormatAgo(p.time)) + '</td>';
+            html += '<td style="padding:4px 8px;color:#555;">' + depthKm + '</td>';
+            if (userPos) {
+                var dKm = eqDistanceKm(userPos.lat, userPos.lon, coords[1], coords[0]);
+                var dMi = dKm * 0.621371;
+                html += '<td style="padding:4px 8px;color:#555;">' + Math.round(dKm) + ' km (' + Math.round(dMi) + ' mi)</td>';
+            }
+            html += '</tr>';
+        }
+        html += '</tbody></table>';
+        listEl.innerHTML = html;
+    }
+
+    function eqRunLookup(root, period, magFloor, userPos) {
+        var statusEl = root.querySelector('#eqStatus');
+        statusEl.textContent = 'Loading earthquakes...';
+        root.querySelector('#eqList').innerHTML = '';
+        eqFetchJson(EQ_FEED_BASE + period + '.geojson').then(function (data) {
+            eqRenderQuakes(root, data.features, magFloor, userPos);
+        }).catch(function (e) {
+            statusEl.textContent = 'Could not load earthquake data: ' + (e && e.message ? e.message : String(e));
+        });
+    }
+
+    function eqRenderScaleTable() {
+        var rows = [
+            ['1.0-2.9', 'Micro / minor', 'Usually not felt, recorded only by instruments.'],
+            ['3.0-3.9', 'Minor', 'Often felt, rarely causes damage.'],
+            ['4.0-4.9', 'Light', 'Noticeable shaking of indoor objects; minor damage possible.'],
+            ['5.0-5.9', 'Moderate', 'Can cause damage to poorly built structures over small areas.'],
+            ['6.0-6.9', 'Strong', 'Can be destructive in areas up to about 160 km across.'],
+            ['7.0+', 'Major / Great', 'Can cause serious damage across larger regions.']
+        ];
+        var out = '<table style="border-collapse:collapse;margin-top:8px;font-size:0.92em;"><thead><tr><th style="text-align:left;padding:4px 8px;">Magnitude</th><th style="text-align:left;padding:4px 8px;">Class</th><th style="text-align:left;padding:4px 8px;">Typical effect</th></tr></thead><tbody>';
+        for (var i = 0; i < rows.length; i++) {
+            out += '<tr><td style="padding:4px 8px;font-weight:600;vertical-align:top;">' + rows[i][0] + '</td><td style="padding:4px 8px;vertical-align:top;">' + rows[i][1] + '</td><td style="padding:4px 8px;">' + rows[i][2] + '</td></tr>';
+        }
+        out += '</tbody></table>';
+        return out;
+    }
+
+    function eqPopulateSelect(select, options, defaultIndex) {
+        var html = '';
+        for (var i = 0; i < options.length; i++) {
+            html += '<option value="' + options[i][0] + '"' + (i === defaultIndex ? ' selected' : '') + '>' + options[i][1] + '</option>';
+        }
+        select.innerHTML = html;
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('earthquakeTrackerTool');
+        if (!root) return; // not an earthquake-tracker page
+        try {
+            var periodSelect = root.querySelector('#eqPeriodSelect');
+            var magSelect = root.querySelector('#eqMagSelect');
+            var checkBtn = root.querySelector('#eqCheckBtn');
+            var locBtn = root.querySelector('#eqLocBtn');
+            var scaleBox = root.querySelector('#eqScaleTable');
+            var userPos = null;
+
+            if (scaleBox) scaleBox.innerHTML = eqRenderScaleTable();
+            if (periodSelect) eqPopulateSelect(periodSelect, EQ_PERIODS, 1);
+            if (magSelect) eqPopulateSelect(magSelect, EQ_MAG_FLOORS, 0);
+
+            function runCurrent() {
+                var period = periodSelect ? periodSelect.value : 'all_day';
+                var magFloor = magSelect ? parseFloat(magSelect.value) : 0;
+                eqRunLookup(root, period, magFloor, userPos);
+            }
+
+            if (checkBtn) checkBtn.addEventListener('click', runCurrent);
+            if (periodSelect) periodSelect.addEventListener('change', runCurrent);
+            if (magSelect) magSelect.addEventListener('change', runCurrent);
+
+            if (locBtn) {
+                locBtn.addEventListener('click', function () {
+                    if (!navigator.geolocation) {
+                        root.querySelector('#eqStatus').textContent = 'Location is not available in this browser; results stay sorted by time.';
+                        return;
+                    }
+                    root.querySelector('#eqStatus').textContent = 'Requesting your location...';
+                    navigator.geolocation.getCurrentPosition(function (pos) {
+                        userPos = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+                        runCurrent();
+                    }, function () {
+                        root.querySelector('#eqStatus').textContent = 'Location permission denied; results stay sorted by time.';
+                    }, { timeout: 8000 });
+                });
+            }
+
+            // Always render SOMETHING visible on load (G16) - a default
+            // "past day, all magnitudes" lookup, so the page never shows a
+            // blank panel before the reader interacts.
+            runCurrent();
+        } catch (e) {
+            root.innerHTML = '<p style="color:#b00020;">Could not start the tool: ' + eqEsc(e && e.message ? e.message : String(e)) + '</p>';
+        }
+    }
+</script>
