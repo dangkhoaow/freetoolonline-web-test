@@ -453,26 +453,61 @@ function buildLlmsTxt(entries, origin, guideAllowlist) {
     // (Perplexity / ChatGPT / Claude / Copilot) can pick the locale matching
     // the user's IP / search language. Subsection per language under `## Guides`.
     if (kind === 'guide') {
-      const byLang = { en: [] };
       const LANG_DISPLAY = {
         en: 'English', pt: 'Portuguese', es: 'Spanish', de: 'German',
         fr: 'French', vi: 'Vietnamese', it: 'Italian', ja: 'Japanese',
         ko: 'Korean', zh: 'Chinese', ru: 'Russian', tr: 'Turkish',
         id: 'Indonesian', nl: 'Dutch', pl: 'Polish', ar: 'Arabic',
       };
+      // Root-cause fix (2026-08-04, geo-sitewide-audit-runbook fire162).
+      // `list` is already sorted by GLOBAL evidence rank (best first). The
+      // previous code grouped ALL of language A's entries, THEN ALL of
+      // language B's, ordered by each language's OWN best rank - so
+      // whichever language held the single top-ranked route absorbed the
+      // ENTIRE remaining ~100KB budget rendering its own full list (however
+      // far down that list ranked) before any other language got a single
+      // entry. Forcing example: /guides/de/how-to-zip-multiple-files-into-one.html
+      // (36 AI citations - the single highest-citation guide audited this
+      // fire) never appeared in llms.txt: German's own best-ranked route sat
+      // far down the global list, so by the time German's turn came up in
+      // language order, Indonesian/English/Spanish/Portuguese had already
+      // exhausted the budget on their OWN tails, most of which individually
+      // ranked below the German route. Fix: pre-select the top-N routes by
+      // GLOBAL rank that fit the byte budget FIRST (a simple greedy
+      // knapsack, cheap and deterministic), THEN group only the selected
+      // set by language for the reader-facing subsection display below -
+      // so the limited budget always goes to the highest-evidence routes
+      // regardless of which language happens to rank #1 overall.
+      const HEADER_OVERHEAD_BYTES = 48; // "### <Language> guides (NNN)\n\n" + blank-line footer, conservative
+      const selected = [];
+      let simulatedBytes = bytes;
+      const seenLangs = new Set();
       for (const entry of list) {
+        const m = /\/guides\/([a-z]{2})\//.exec(entry.url || '');
+        const lang = m ? m[1] : 'en';
+        const headerCost = seenLangs.has(lang) ? 0 : HEADER_OVERHEAD_BYTES;
+        const entryCost = Buffer.byteLength(`- [${entry.title}](${entry.url})`, 'utf8') + 1;
+        if (simulatedBytes + headerCost + entryCost > budget) continue;
+        simulatedBytes += headerCost + entryCost;
+        seenLangs.add(lang);
+        selected.push(entry);
+      }
+      const skippedForBudget = list.length - selected.length;
+      const byLang = { en: [] };
+      for (const entry of selected) {
         const u = entry.url || '';
         const localeMatch = /\/guides\/([a-z]{2})\//.exec(u);
         const lang = localeMatch ? localeMatch[1] : 'en';
         if (!byLang[lang]) byLang[lang] = [];
         byLang[lang].push(entry);
       }
-      push(`## ${KIND_LABEL[kind]} (${list.length} evidenced of ${totalGuides})`);
+      push(`## ${KIND_LABEL[kind]} (${selected.length} evidenced of ${totalGuides})`);
       push('');
-      // Locale order by best evidence rank (list is already evidence-ranked),
-      // so high-ROI locales (e.g. Indonesian) render before the budget runs out.
+      // Locale order by best evidence rank among the SELECTED set (already
+      // evidence-ranked), so high-ROI locales render first within the
+      // display - purely cosmetic now that selection itself is rank-fair.
       const langBestIdx = new Map();
-      list.forEach((entry, idx) => {
+      selected.forEach((entry, idx) => {
         const m = /\/guides\/([a-z]{2})\//.exec(entry.url || '');
         const lang = m ? m[1] : 'en';
         if (!langBestIdx.has(lang)) langBestIdx.set(lang, idx);
@@ -491,6 +526,7 @@ function buildLlmsTxt(entries, origin, guideAllowlist) {
         }
         push('');
       }
+      trimmedForBudget += skippedForBudget;
       continue;
     }
     push(`## ${KIND_LABEL[kind]} (${list.length})`);
