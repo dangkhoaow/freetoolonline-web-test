@@ -2732,4 +2732,49 @@ figure.illustration figcaption {
 html.main-html.dark figure.illustration figcaption {
     color: var(--text-secondary, #94a3b8);
 }
+
+/* ============================================================
+ * W3 COLOR CLASS FALLBACK - 2026-08-05 (operator screenshot catch).
+ * The CDN common.css is a TRIMMED w3.css subset that defines ONLY
+ * w3-red (remapped to the blue CTA) + w3-white. Meanwhile 8,700+
+ * usages of the other w3 color classes exist across CMS fragments
+ * (w3-light-grey 2,556 / w3-amber 2,154 / w3-pale-green 1,844 /
+ * w3-blue 904 / ...), so buttons and panels on newer tool pages
+ * rendered with NO background/border at all. This block restores
+ * the standard w3.css color definitions for every class the CMS
+ * corpus actually uses. Values match official w3.css v4 so any
+ * fragment authored against w3.css docs renders as intended.
+ * Dark-mode: pale panel backgrounds are dimmed under
+ * html.main-html.dark so they don't glare on #0d1117.
+ * ============================================================ */
+.w3-amber,.w3-hover-amber:hover{color:#000!important;background-color:#ffc107!important}
+.w3-black,.w3-hover-black:hover{color:#fff!important;background-color:#000!important}
+.w3-blue,.w3-hover-blue:hover{color:#fff!important;background-color:#2196F3!important}
+.w3-brown,.w3-hover-brown:hover{color:#fff!important;background-color:#795548!important}
+.w3-deep-orange,.w3-hover-deep-orange:hover{color:#fff!important;background-color:#ff5722!important}
+.w3-dark-grey,.w3-hover-dark-grey:hover,.w3-dark-gray,.w3-hover-dark-gray:hover{color:#fff!important;background-color:#616161!important}
+.w3-green,.w3-hover-green:hover{color:#fff!important;background-color:#4CAF50!important}
+.w3-grey,.w3-hover-grey:hover,.w3-gray,.w3-hover-gray:hover{color:#000!important;background-color:#9e9e9e!important}
+.w3-indigo,.w3-hover-indigo:hover{color:#fff!important;background-color:#3f51b5!important}
+.w3-khaki,.w3-hover-khaki:hover{color:#000!important;background-color:#f0e68c!important}
+.w3-light-blue,.w3-hover-light-blue:hover{color:#000!important;background-color:#87CEEB!important}
+.w3-light-grey,.w3-hover-light-grey:hover,.w3-light-gray,.w3-hover-light-gray:hover{color:#000!important;background-color:#f1f1f1!important}
+.w3-lime,.w3-hover-lime:hover{color:#000!important;background-color:#cddc39!important}
+.w3-orange,.w3-hover-orange:hover{color:#000!important;background-color:#ff9800!important}
+.w3-pale-blue,.w3-hover-pale-blue:hover{color:#000!important;background-color:#ddffff!important}
+.w3-pale-green,.w3-hover-pale-green:hover{color:#000!important;background-color:#ddffdd!important}
+.w3-pale-red,.w3-hover-pale-red:hover{color:#000!important;background-color:#ffdddd!important}
+.w3-pale-yellow,.w3-hover-pale-yellow:hover{color:#000!important;background-color:#ffffcc!important}
+.w3-sand,.w3-hover-sand:hover{color:#000!important;background-color:#fdf5e6!important}
+.w3-teal,.w3-hover-teal:hover{color:#fff!important;background-color:#009688!important}
+.w3-yellow,.w3-hover-yellow:hover{color:#000!important;background-color:#ffeb3b!important}
+
+/* Dark-mode parity: pale/light panel backgrounds dimmed; text flips light.
+ * (w3-red keeps its common.css blue-CTA remap; solid colors read fine on dark.) */
+html.main-html.dark .w3-pale-blue{background-color:#12343a!important;color:#d5f2f2!important}
+html.main-html.dark .w3-pale-green{background-color:#15351b!important;color:#d9f2dc!important}
+html.main-html.dark .w3-pale-red{background-color:#3a1a1a!important;color:#f2d9d9!important}
+html.main-html.dark .w3-pale-yellow{background-color:#38351a!important;color:#f2efd0!important}
+html.main-html.dark .w3-light-grey,html.main-html.dark .w3-light-gray{background-color:#21262d!important;color:#e6edf3!important}
+html.main-html.dark .w3-sand,html.main-html.dark .w3-khaki{background-color:#2d2a1f!important;color:#efe9d5!important}
 </style>
