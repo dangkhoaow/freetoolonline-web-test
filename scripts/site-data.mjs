@@ -10635,6 +10635,26 @@ export const GUIDE_ROUTES = new Set([
   '/guides/de/space-huggers-platformer-when.html',
   '/guides/de/space-huggers-platformer-vs-alternatives.html',
 
+  // game-discovery-loop-runbook fire208 (2026-08-05): level-13-incremental companion guides
+  '/guides/how-to-play-level-13-incremental.html',
+  '/guides/level-13-incremental-when.html',
+  '/guides/level-13-incremental-vs-alternatives.html',
+  '/guides/pt/how-to-play-level-13-incremental.html',
+  '/guides/pt/level-13-incremental-when.html',
+  '/guides/pt/level-13-incremental-vs-alternatives.html',
+  '/guides/es/how-to-play-level-13-incremental.html',
+  '/guides/es/level-13-incremental-when.html',
+  '/guides/es/level-13-incremental-vs-alternatives.html',
+  '/guides/vi/how-to-play-level-13-incremental.html',
+  '/guides/vi/level-13-incremental-when.html',
+  '/guides/vi/level-13-incremental-vs-alternatives.html',
+  '/guides/id/how-to-play-level-13-incremental.html',
+  '/guides/id/level-13-incremental-when.html',
+  '/guides/id/level-13-incremental-vs-alternatives.html',
+  '/guides/de/how-to-play-level-13-incremental.html',
+  '/guides/de/level-13-incremental-when.html',
+  '/guides/de/level-13-incremental-vs-alternatives.html',
+
   // new-tool-discovery-loop-runbook fire306 (2026-07-18): retro-arcade-shooter companion guides
   '/guides/how-to-play-retro-arcade-shooter.html',
   '/guides/retro-arcade-shooter-when.html',
@@ -16814,6 +16834,26 @@ export const JSP_BY_ROUTE = {
   '/guides/de/how-to-play-space-huggers-platformer.html': 'guide/de/how-to-play-space-huggers-platformer.jsp',
   '/guides/de/space-huggers-platformer-when.html': 'guide/de/space-huggers-platformer-when.jsp',
   '/guides/de/space-huggers-platformer-vs-alternatives.html': 'guide/de/space-huggers-platformer-vs-alternatives.jsp',
+
+  // game-discovery-loop-runbook fire208 (2026-08-05): level-13-incremental companion guides
+  '/guides/how-to-play-level-13-incremental.html': 'guide/how-to-play-level-13-incremental.jsp',
+  '/guides/level-13-incremental-when.html': 'guide/level-13-incremental-when.jsp',
+  '/guides/level-13-incremental-vs-alternatives.html': 'guide/level-13-incremental-vs-alternatives.jsp',
+  '/guides/pt/how-to-play-level-13-incremental.html': 'guide/pt/how-to-play-level-13-incremental.jsp',
+  '/guides/pt/level-13-incremental-when.html': 'guide/pt/level-13-incremental-when.jsp',
+  '/guides/pt/level-13-incremental-vs-alternatives.html': 'guide/pt/level-13-incremental-vs-alternatives.jsp',
+  '/guides/es/how-to-play-level-13-incremental.html': 'guide/es/how-to-play-level-13-incremental.jsp',
+  '/guides/es/level-13-incremental-when.html': 'guide/es/level-13-incremental-when.jsp',
+  '/guides/es/level-13-incremental-vs-alternatives.html': 'guide/es/level-13-incremental-vs-alternatives.jsp',
+  '/guides/vi/how-to-play-level-13-incremental.html': 'guide/vi/how-to-play-level-13-incremental.jsp',
+  '/guides/vi/level-13-incremental-when.html': 'guide/vi/level-13-incremental-when.jsp',
+  '/guides/vi/level-13-incremental-vs-alternatives.html': 'guide/vi/level-13-incremental-vs-alternatives.jsp',
+  '/guides/id/how-to-play-level-13-incremental.html': 'guide/id/how-to-play-level-13-incremental.jsp',
+  '/guides/id/level-13-incremental-when.html': 'guide/id/level-13-incremental-when.jsp',
+  '/guides/id/level-13-incremental-vs-alternatives.html': 'guide/id/level-13-incremental-vs-alternatives.jsp',
+  '/guides/de/how-to-play-level-13-incremental.html': 'guide/de/how-to-play-level-13-incremental.jsp',
+  '/guides/de/level-13-incremental-when.html': 'guide/de/level-13-incremental-when.jsp',
+  '/guides/de/level-13-incremental-vs-alternatives.html': 'guide/de/level-13-incremental-vs-alternatives.jsp',
 
   // new-tool-discovery-loop-runbook fire306 (2026-07-18): retro-arcade-shooter companion guides
   '/guides/how-to-play-retro-arcade-shooter.html': 'guide/how-to-play-retro-arcade-shooter.jsp',
