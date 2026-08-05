@@ -261,6 +261,56 @@
         run();
     }
 
+    // ---- Pregnancy due date calculator (2026-08-05 operator fix) ----------------
+    // Fire 110 shipped the 'duedate' dispatcher branch WITHOUT this function -
+    // the page booted into the catch-all "Could not start the tool" banner.
+    // Naegele's rule: EDD = LMP + 280 days, adjusted by (cycle length - 28)
+    // when the user's cycle differs; conception-date method: EDD = conception
+    // + 266 days. Gestational age counts from LMP. Estimate only, not medical
+    // advice - the page copy states that plainly.
+    function calcRenderDueDate(root) {
+        var today = new Date().toISOString().slice(0, 10);
+        root.innerHTML =
+            '<div class="w3-row calc-field">Method <select id="pdMethod" class="w3-select w3-border calc-input">' +
+            '<option value="lmp" selected>First day of last period (LMP)</option>' +
+            '<option value="conception">Conception date</option></select></div>' +
+            '<div class="w3-row calc-field"><span id="pdDateLabel">First day of last period</span> <input id="pdDate" type="date" value="' + today + '" class="w3-input w3-border calc-input"></div>' +
+            '<div class="w3-row calc-field" id="pdCycleRow">Average cycle length (days) <input id="pdCycle" type="number" min="20" max="45" step="1" value="28" class="w3-input w3-border calc-input"></div>' +
+            '<div id="pdOut" class="outputImgs" style="visibility:visible !important;margin-top:12px;font-size:1.05em;"></div>';
+        var mEl = root.querySelector('#pdMethod'), dEl = root.querySelector('#pdDate'),
+            cEl = root.querySelector('#pdCycle'), cRow = root.querySelector('#pdCycleRow'),
+            lbl = root.querySelector('#pdDateLabel'), outEl = root.querySelector('#pdOut');
+        function run() {
+            var d = new Date(dEl.value + 'T00:00:00');
+            if (isNaN(d.getTime())) { outEl.innerHTML = '<p>Enter a valid date.</p>'; return; }
+            var method = mEl.value, addDays, cycle = parseInt(cEl.value, 10);
+            if (!(cycle >= 20 && cycle <= 45)) cycle = 28;
+            if (method === 'conception') { addDays = 266; } else { addDays = 280 + (cycle - 28); }
+            var edd = new Date(d.getTime() + addDays * 86400000);
+            var now = new Date(); now.setHours(0, 0, 0, 0);
+            var gaStart = method === 'conception' ? new Date(d.getTime() - 14 * 86400000) : d;
+            var gaDays = Math.floor((now - gaStart) / 86400000);
+            var fmt = function (dt) { return dt.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }); };
+            var html = '<p>Estimated due date: <b>' + fmt(edd) + '</b></p>';
+            if (gaDays >= 0 && gaDays <= 310) {
+                var w = Math.floor(gaDays / 7), r = gaDays % 7;
+                var tri = gaDays < 98 ? 'first' : (gaDays < 196 ? 'second' : 'third');
+                html += '<p>Gestational age today: <b>' + w + ' weeks ' + r + ' days</b> (' + tri + ' trimester)</p>';
+            }
+            html += '<p style="font-size:0.85em;">Estimate based on the Naegele rule; about 1 in 20 babies arrive on the exact date. Not medical advice - confirm with your care provider.</p>';
+            outEl.innerHTML = html;
+        }
+        mEl.addEventListener('change', function () {
+            var conc = mEl.value === 'conception';
+            cRow.style.display = conc ? 'none' : '';
+            lbl.textContent = conc ? 'Conception date' : 'First day of last period';
+            run();
+        });
+        dEl.addEventListener('input', run);
+        cEl.addEventListener('input', run);
+        run();
+    }
+
     // ---- TDEE / calorie calculator (new-tool-discovery-loop fire388) -------------
     // Mifflin-St Jeor BMR formula (the modern standard, more accurate than the
     // older Harris-Benedict equation for most adults):
