@@ -614,6 +614,7 @@ try {
     { title: "Solar Wind Heliosphere 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-wind-heliosphere.html", include: !1, tags: "space-3d" },
     { title: "Cosmic Distance Ladder 3D Explorer", url: "https://freetoolonline.com/space-3d/cosmic-distance-ladder.html", include: !1, tags: "space-3d" },
     { title: "Precession of the Equinoxes 3D Explorer", url: "https://freetoolonline.com/space-3d/precession-equinoxes.html", include: !1, tags: "space-3d" },
+    { title: "Milankovitch Cycles 3D Explorer", url: "https://freetoolonline.com/space-3d/milankovitch-cycles.html", include: !1, tags: "space-3d" },
     { title: "HR Diagram 3D Explorer", url: "https://freetoolonline.com/space-3d/hr-diagram.html", include: !1, tags: "space-3d" },
     { title: "Sun Structure 3D Explorer", url: "https://freetoolonline.com/space-3d/sun-structure.html", include: !1, tags: "space-3d" },
     { title: "Sun Red Giant Future 3D Explorer", url: "https://freetoolonline.com/space-3d/sun-red-giant-future.html", include: !1, tags: "space-3d" },

@@ -1,0 +1,357 @@
+<script>
+    // 3D scene archetype skeleton (milankovitch-cycles) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side.
+    // Built LEAN from the shared t3d* skeleton - ONE scene only. All geometry
+    // is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not a paleoclimate reconstruction. The three
+    // orbital curves below are each a SINGLE idealized sine wave at the real
+    // published dominant period and real published amplitude range - not the
+    // true multi-harmonic Berger/Laskar orbital solutions (which superimpose
+    // several periods per cycle, e.g. eccentricity also has a ~413,000-year
+    // modulation this scene does not model). The scene never claims to
+    // reproduce the actual ice-core or benthic isotope record; it teaches the
+    // three real mechanisms and their real periods/ranges. Disclosed in the
+    // info panel, BODYWELCOME, and FAQ.
+    //
+    // Published figures (NASA Earth Observatory "Milutin Milankovitch",
+    // science.nasa.gov/earth/earth-observatory/milutin-milankovitch, direct
+    // fetch 2026-08-05; periods for precession cross-checked via web search
+    // against standard published geoscience figures, e.g. USGS-style
+    // summaries and Wikipedia's "Milankovitch cycles" citing Berger 1988):
+    //   - Eccentricity: orbit shape cycles from more elliptical to nearly
+    //     circular; NASA: cycle length "between 90,000 and 100,000 years",
+    //     maximum value "0.07". Today's Earth eccentricity is about 0.0167.
+    //   - Obliquity (axial tilt): "varies between 22.1 and 24.5 degrees";
+    //     current value "23.5 degrees"; NASA: cycle "averages about 40,000
+    //     years" (commonly cited as ~41,000 years).
+    //   - Axial precession: the spin-axis direction traces a slow circle
+    //     (NASA describes it as a "spinning top... winding down"); the
+    //     commonly published axial precession period is about 26,000 years,
+    //     which combines with the ellipse's own apsidal precession to give
+    //     the ~19,000/23,000-year "climatic precession" cycle widely cited
+    //     in the geoscience literature.
+    //   - Mid-Pleistocene Transition: glacial cycles were paced by the
+    //     ~41,000-year obliquity cycle from about 1 to 3 million years ago,
+    //     then shifted to a ~100,000-year pace (matching the eccentricity
+    //     cycle) starting around 800,000 years ago - a real, widely cited
+    //     paleoclimate finding, shown here only as a labeled fact, not as a
+    //     plotted proxy curve (this scene does not embed ice-core data).
+    //
+    // Distinct from precession-equinoxes (teaches axial precession ALONE,
+    // with the celestial-pole star path), axial-tilt-comparison (a static
+    // side-by-side of the 8 planets' current tilt angles, no time axis), and
+    // seasons-earth (the one-year subsolar-point cycle). THIS page composes
+    // all three multi-thousand-year cycles on one 800,000-year timeline and
+    // names the climate consequence, cross-linking to each sibling for its
+    // single-mechanism deep dive.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'milankovitch-cycles';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'milankovitchcycles'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Real published dominant periods (kyr) + real published amplitude
+    // ranges for the single-sine illustrative approximation of each cycle.
+    var T3D_MK_ECC_PERIOD_KYR = 100;   // NASA: "between 90,000 and 100,000 years"
+    var T3D_MK_ECC_MIN = 0.0, T3D_MK_ECC_MAX = 0.07; // NASA: max value 0.07
+    var T3D_MK_OBL_PERIOD_KYR = 41;    // NASA: "averages about 40,000 years" (commonly cited ~41,000)
+    var T3D_MK_OBL_MIN_DEG = 22.1, T3D_MK_OBL_MAX_DEG = 24.5; // NASA published range
+    var T3D_MK_PREC_PERIOD_KYR = 26;   // commonly published axial precession period
+
+    function t3dMkEccentricity(kyrAgo) {
+        var mid = (T3D_MK_ECC_MIN + T3D_MK_ECC_MAX) / 2, amp = (T3D_MK_ECC_MAX - T3D_MK_ECC_MIN) / 2;
+        return mid + amp * Math.sin(2 * Math.PI * kyrAgo / T3D_MK_ECC_PERIOD_KYR);
+    }
+    function t3dMkObliquityDeg(kyrAgo) {
+        var mid = (T3D_MK_OBL_MIN_DEG + T3D_MK_OBL_MAX_DEG) / 2, amp = (T3D_MK_OBL_MAX_DEG - T3D_MK_OBL_MIN_DEG) / 2;
+        return mid + amp * Math.sin(2 * Math.PI * kyrAgo / T3D_MK_OBL_PERIOD_KYR);
+    }
+    function t3dMkPrecessionFrac(kyrAgo) {
+        var f = (kyrAgo % T3D_MK_PREC_PERIOD_KYR) / T3D_MK_PREC_PERIOD_KYR;
+        return f < 0 ? f + 1 : f;
+    }
+
+    function t3dMilankovitch(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+        var sun = new THREE.Mesh(
+            new THREE.SphereGeometry(1.1, 20, 16),
+            new THREE.MeshBasicMaterial({ color: 0xffcc55 })
+        );
+        scene.add(sun);
+        var sunLight = new THREE.PointLight(0xfff3d6, 2.2, 0, 0);
+        scene.add(sunLight);
+
+        // Decorative starfield (context only).
+        var SCOUNT = shell.low ? 350 : 700;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(30 + Math.random() * 55);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0x9aa7b0, size: 0.35, sizeAttenuation: false })));
+
+        var R = 9; // orbit semi-major axis (compressed, not-to-scale)
+        var ORBIT_SEGS = 96;
+        var orbitGeo = new THREE.BufferGeometry();
+        orbitGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array((ORBIT_SEGS + 1) * 3), 3));
+        var orbitLine = new THREE.LineLoop(orbitGeo, new THREE.LineBasicMaterial({ color: 0x5fb0ff, transparent: true, opacity: 0.7 }));
+        scene.add(orbitLine);
+
+        var earthGroup = new THREE.Group();
+        scene.add(earthGroup);
+        var earth = new THREE.Mesh(
+            new THREE.SphereGeometry(0.62, 28, 20),
+            new THREE.MeshPhongMaterial({ color: 0x2e6f95, emissive: 0x081018, shininess: 10 })
+        );
+        earthGroup.add(earth);
+        // Axial tilt indicator (a thin line through the poles).
+        var axisGeo = new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(0, -1.3, 0), new THREE.Vector3(0, 1.3, 0)
+        ]);
+        var axisLine = new THREE.Line(axisGeo, new THREE.LineBasicMaterial({ color: 0xffeb3b }));
+        earthGroup.add(axisLine);
+
+        // Precession clock gizmo (off to one side): a thin ring + a marker
+        // dot that goes fully around once per T3D_MK_PREC_PERIOD_KYR - an
+        // abstract "position within the 26,000-year wobble", not a star map.
+        var clockCenter = new THREE.Vector3(0, 5.2, -6.5);
+        var clockRadius = 1.5;
+        var clockRing = new THREE.Mesh(
+            new THREE.TorusGeometry(clockRadius, 0.03, 8, 40),
+            new THREE.MeshBasicMaterial({ color: 0x7a8899 })
+        );
+        clockRing.position.copy(clockCenter);
+        scene.add(clockRing);
+        var clockDot = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 8), new THREE.MeshBasicMaterial({ color: 0xff7043 }));
+        scene.add(clockDot);
+
+        var kyrAgo = 0, playing = false, orbitAngle = 0.9;
+        var curShape = { e: 0.035, a: R, b: R, c: 0 };
+
+        function updateOrbitGeometry() {
+            var e = t3dMkEccentricity(kyrAgo);
+            var a = R, b = R * Math.sqrt(Math.max(0, 1 - e * e));
+            var c = Math.sqrt(Math.max(0, a * a - b * b)); // focus offset - Sun sits at a focus
+            var pos = orbitGeo.attributes.position;
+            for (var i = 0; i <= ORBIT_SEGS; i++) {
+                var ang = (i / ORBIT_SEGS) * Math.PI * 2;
+                pos.setXYZ(i, a * Math.cos(ang) - c, 0, b * Math.sin(ang));
+            }
+            pos.needsUpdate = true;
+            curShape = { e: e, a: a, b: b, c: c };
+            return curShape;
+        }
+
+        function positionEarth() {
+            earthGroup.position.set(
+                curShape.a * Math.cos(orbitAngle) - curShape.c,
+                0,
+                curShape.b * Math.sin(orbitAngle)
+            );
+        }
+
+        function setTime(newKyrAgo) {
+            kyrAgo = Math.max(0, Math.min(800, newKyrAgo));
+            var shape = updateOrbitGeometry();
+            positionEarth();
+            var oblDeg = t3dMkObliquityDeg(kyrAgo);
+            var precFrac = t3dMkPrecessionFrac(kyrAgo);
+
+            earthGroup.rotation.z = oblDeg * Math.PI / 180 * 0.6; // visual tilt cue (compressed, not a literal rotation matrix)
+            earthGroup.rotation.y = precFrac * Math.PI * 2; // precession slowly re-aims the tilt azimuth
+
+            var precAngle = precFrac * Math.PI * 2;
+            clockDot.position.set(
+                clockCenter.x + clockRadius * Math.cos(precAngle),
+                clockCenter.y + clockRadius * Math.sin(precAngle) * 0.35,
+                clockCenter.z + clockRadius * Math.sin(precAngle)
+            );
+
+            var slider = document.getElementById('t3dMkTime');
+            if (slider && parseFloat(slider.value) !== kyrAgo) slider.value = String(kyrAgo);
+
+            var transitionNote = kyrAgo >= 800
+                ? ' At this point on the timeline (roughly 800,000 years ago) ice-age pacing shifted from the ~41,000-year obliquity beat to the ~100,000-year eccentricity beat - the Mid-Pleistocene Transition.'
+                : '';
+            t3dInfo('<h3>' + Math.round(kyrAgo).toLocaleString() + ',000 years before present</h3>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Orbital eccentricity</td><td>' + shape.e.toFixed(4) + ' (real range 0 to 0.07, ~100,000-yr cycle)</td></tr>' +
+                '<tr><td>Axial tilt (obliquity)</td><td>' + oblDeg.toFixed(2) + '&deg; (real range 22.1&deg; to 24.5&deg;, ~41,000-yr cycle)</td></tr>' +
+                '<tr><td>Precession wobble position</td><td>' + Math.round(precFrac * 100) + '% around the ~26,000-yr cycle</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Each curve is a single idealized wave at the real published period and range - not the true multi-harmonic orbital solution and not a plotted ice-core record.' + transitionNote + '</p>');
+            try { t3dSaveStore({ kyrAgo: kyrAgo }); } catch (e) {}
+        }
+
+        setTime(0);
+
+        var playBtn = document.getElementById('t3dMkPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            playing = !playing;
+            playBtn.textContent = playing ? 'Pause time-scrub' : 'Play time-scrub (0 to 800 kyr)';
+        });
+        var slider = document.getElementById('t3dMkTime');
+        if (slider) slider.addEventListener('input', function () {
+            playing = false; if (playBtn) playBtn.textContent = 'Play time-scrub (0 to 800 kyr)';
+            setTime(parseFloat(slider.value || '0'));
+        });
+        var jumpNow = document.getElementById('t3dMkJumpNow');
+        if (jumpNow) jumpNow.addEventListener('click', function () { playing = false; if (playBtn) playBtn.textContent = 'Play time-scrub (0 to 800 kyr)'; setTime(0); });
+        var jumpMPT = document.getElementById('t3dMkJumpMPT');
+        if (jumpMPT) jumpMPT.addEventListener('click', function () { playing = false; if (playBtn) playBtn.textContent = 'Play time-scrub (0 to 800 kyr)'; setTime(800); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Scrub the time slider or press Play; jump to today or 800,000 years ago.');
+        return function animate(dt) {
+            earth.rotation.y += dt * 0.0006;
+            clockRing.rotation.x += dt * 0.00005;
+            // Continuous visual orbit motion (a toy real-time loop, independent
+            // of the kyr timeline) so Earth is never hidden behind the Sun.
+            orbitAngle += dt * 0.00035;
+            positionEarth();
+            if (!playing) return;
+            var next = kyrAgo + (dt / 1000) * 40;
+            if (next >= 800) { next = 800; playing = false; if (playBtn) playBtn.textContent = 'Play time-scrub (0 to 800 kyr)'; }
+            setTime(next);
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { milankovitchcycles: 't3dMilankovitchControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { milankovitchcycles: { radius: 24, maxR: 90, minR: 8, phi: 1.05, theta: 0.6, targetY: 1 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dMilankovitch(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
