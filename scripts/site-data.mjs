@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/holiday-countdown-date-lookup-vs-alternatives.html',
+  '/guides/holiday-countdown-date-lookup-step-by-step.html',
+  '/guides/holiday-countdown-date-lookup-when.html',
   '/guides/what-national-day-is-today-step-by-step.html',
   '/guides/what-national-day-is-today-when.html',
   '/guides/what-national-day-is-today-vs-alternatives.html',
@@ -14880,6 +14883,7 @@ export const ALIAS_ROUTES = {
   '/planet-atmosphere-scale-heights.html': '/space-3d/planet-atmosphere-scale-heights.html',
   '/lunar-south-pole-ice.html': '/space-3d/lunar-south-pole-ice.html',
   '/exoplanet-direct-imaging.html': '/space-3d/exoplanet-direct-imaging.html',
+  '/earth-moon-orbit-recession.html': '/space-3d/earth-moon-orbit-recession.html',
   '/great-red-spot-jupiter.html': '/space-3d/great-red-spot-jupiter.html',
   '/photon-sphere-isco-explorer.html': '/space-3d/photon-sphere-isco-explorer.html',
   '/relativistic-jets-agn.html': '/space-3d/relativistic-jets-agn.html',
@@ -15034,6 +15038,7 @@ export const ALIAS_ROUTES = {
   '/half-mast-today.html': '/utility-tools/half-mast-today.html',
   '/pdf-editor-online.html': '/pdf-tools/pdf-editor-online.html',
   '/national-day-today.html': '/utility-tools/national-day-today.html',
+  '/holiday-countdown.html': '/utility-tools/holiday-countdown.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -21612,6 +21617,7 @@ export const JSP_BY_ROUTE = {
   '/space-3d/planet-atmosphere-scale-heights.html': 'space/planet-atmosphere-scale-heights.jsp',
   '/space-3d/lunar-south-pole-ice.html': 'space/lunar-south-pole-ice.jsp',
   '/space-3d/exoplanet-direct-imaging.html': 'space/exoplanet-direct-imaging.jsp',
+  '/space-3d/earth-moon-orbit-recession.html': 'space/earth-moon-orbit-recession.jsp',
   '/space-3d/great-red-spot-jupiter.html': 'space/great-red-spot-jupiter.jsp',
   '/space-3d/photon-sphere-isco-explorer.html': 'space/photon-sphere-isco-explorer.jsp',
   '/space-3d/relativistic-jets-agn.html': 'space/relativistic-jets-agn.jsp',
@@ -27383,6 +27389,10 @@ export const JSP_BY_ROUTE = {
   '/guides/id/pdf-editor-vs-alternatives.html': 'guide/id/pdf-editor-vs-alternatives.jsp',
   '/guides/id/pdf-editor-when.html': 'guide/id/pdf-editor-when.jsp',
   '/utility-tools/national-day-today.html': 'utility/national-day-today.jsp',
+  '/utility-tools/holiday-countdown.html': 'utility/holiday-countdown.jsp',
+  '/guides/holiday-countdown-date-lookup-when.html': 'guide/holiday-countdown-date-lookup-when.jsp',
+  '/guides/holiday-countdown-date-lookup-step-by-step.html': 'guide/holiday-countdown-date-lookup-step-by-step.jsp',
+  '/guides/holiday-countdown-date-lookup-vs-alternatives.html': 'guide/holiday-countdown-date-lookup-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
