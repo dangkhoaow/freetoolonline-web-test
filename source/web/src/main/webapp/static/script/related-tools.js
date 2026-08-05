@@ -896,6 +896,7 @@ try {
     { title: "Sunrise & Sunset Calculator", url: "https://freetoolonline.com/utility-tools/sunrise-sunset-calculator.html", include: !1, tags: "utility" },
     { title: "Are Flags at Half-Mast Today? (US Federal Status)", url: "https://freetoolonline.com/utility-tools/half-mast-today.html", include: !1, tags: "utility" },
     { title: "Pdf Editor Online", url: "https://freetoolonline.com/pdf-tools/pdf-editor-online.html", include: !1, tags: "pdf" },
+    { title: "What National Day Is Today?", url: "https://freetoolonline.com/utility-tools/national-day-today.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

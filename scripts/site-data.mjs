@@ -14996,6 +14996,7 @@ export const ALIAS_ROUTES = {
   '/sunrise-sunset-calculator.html': '/utility-tools/sunrise-sunset-calculator.html',
   '/half-mast-today.html': '/utility-tools/half-mast-today.html',
   '/pdf-editor-online.html': '/pdf-tools/pdf-editor-online.html',
+  '/national-day-today.html': '/utility-tools/national-day-today.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -27326,6 +27327,7 @@ export const JSP_BY_ROUTE = {
   '/guides/id/pdf-editor-step-by-step.html': 'guide/id/pdf-editor-step-by-step.jsp',
   '/guides/id/pdf-editor-vs-alternatives.html': 'guide/id/pdf-editor-vs-alternatives.jsp',
   '/guides/id/pdf-editor-when.html': 'guide/id/pdf-editor-when.jsp',
+  '/utility-tools/national-day-today.html': 'utility/national-day-today.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

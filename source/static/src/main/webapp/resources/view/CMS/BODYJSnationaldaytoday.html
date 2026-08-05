@@ -1,0 +1,468 @@
+<script>
+    // Date-lookup archetype skeleton (national-day-today) - live-data class, but with a
+    // ZERO-network implementation: no upload, no backend, no vendored lib, no
+    // fetch() at all. Registry Gate-H entry: date_day_lookup_static_dataset.
+    // Slug-dispatched (mirrors calculator.template.html's calcDetectMode
+    // pattern), THREE modes sharing one archetype:
+    //   - 'holiday'     (holiday-countdown): country-selectable (US/CA/GB/AU)
+    //                    public-holiday calendar computed from DURABLE RULES
+    //                    (fixed dates + nth-weekday-of-month + the Meeus/Jones/
+    //                    Butcher Gregorian Easter algorithm), not a dataset that
+    //                    goes stale after one year. Today-view + a per-holiday
+    //                    live countdown with shareable URL state
+    //                    (?country=CA&holiday=<key>) + a full-year table.
+    //   - 'nationalday' (national-day-today): a curated static month/day lookup
+    //                    of ~35 widely-recognized US "National Day" calendar
+    //                    observances (NOT government holidays - informal
+    //                    calendar-tradition days). Today-view + full list table.
+    //   - 'halfmast'    (half-mast-today): the small, well-documented set of
+    //                    RECURRING US federal half-staff observances (36
+    //                    U.S.C./4 U.S.C. Sec 7 + long-standing annual
+    //                    proclamations that recur on the same calendar rule
+    //                    every year: Peace Officers Memorial Day, Memorial Day
+    //                    half-day, Patriot Day, POW/MIA Recognition Day,
+    //                    Pearl Harbor Remembrance Day). Today-view + REQUIRED
+    //                    anti-claim disclaimer (this tool does NOT know about
+    //                    proclamation-driven half-staff orders following a
+    //                    tragedy - only the fixed recurring observances) +
+    //                    full list table.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered() (called for
+    // EVERY page after base-script load). Do NOT touch the DOM at top level.
+    // In-browser tool => no upload widget.
+
+    web.localUpload = false;
+
+    var DL_SLUG = 'national-day-today';
+
+    function dlDetectMode(slug) {
+        var s = String(slug || '').toLowerCase();
+        if (/half.?mast|flag.?status/.test(s)) return 'halfmast';
+        if (/national.?day|day.?today/.test(s)) return 'nationalday';
+        return 'holiday';
+    }
+
+    function dlEsc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+        });
+    }
+
+    function dlPad2(n) { return (n < 10 ? '0' : '') + n; }
+
+    // Local-date-only key (avoids UTC-shift bugs when comparing "today").
+    function dlDateKey(d) { return d.getFullYear() + '-' + dlPad2(d.getMonth() + 1) + '-' + dlPad2(d.getDate()); }
+
+    function dlToday() {
+        var n = new Date();
+        return new Date(n.getFullYear(), n.getMonth(), n.getDate());
+    }
+
+    function dlFormatDate(d) {
+        var DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return DOW[d.getDay()] + ', ' + MON[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+    }
+
+    function dlDaysBetween(a, b) {
+        var MS = 24 * 60 * 60 * 1000;
+        var da = new Date(a.getFullYear(), a.getMonth(), a.getDate());
+        var db = new Date(b.getFullYear(), b.getMonth(), b.getDate());
+        return Math.round((db.getTime() - da.getTime()) / MS);
+    }
+
+    // nth weekday of a given month (1=Jan..12=Dec), weekday 0=Sun..6=Sat,
+    // n=1..5 for the nth occurrence, n=-1 for the LAST occurrence in the month.
+    function dlNthWeekday(year, month1, weekday, n) {
+        var m = month1 - 1;
+        if (n === -1) {
+            var last = new Date(year, m + 1, 0); // last day of month
+            var diff = (last.getDay() - weekday + 7) % 7;
+            return new Date(year, m, last.getDate() - diff);
+        }
+        var first = new Date(year, m, 1);
+        var diff2 = (weekday - first.getDay() + 7) % 7;
+        return new Date(year, m, 1 + diff2 + (n - 1) * 7);
+    }
+
+    // The weekday on/most-recently-before a fixed month/day (used for
+    // "Victoria Day = the Monday on or before May 24" style rules).
+    function dlWeekdayOnOrBefore(year, month1, day, weekday) {
+        var d = new Date(year, month1 - 1, day);
+        var diff = (d.getDay() - weekday + 7) % 7;
+        return new Date(year, month1 - 1, day - diff);
+    }
+
+    // Anonymous Gregorian algorithm (Meeus/Jones/Butcher) - Easter Sunday,
+    // valid for any Gregorian year. Public-domain, well-documented formula.
+    function dlEasterSunday(year) {
+        var a = year % 19;
+        var b = Math.floor(year / 100);
+        var c = year % 100;
+        var d = Math.floor(b / 4);
+        var e = b % 4;
+        var f = Math.floor((b + 8) / 25);
+        var g = Math.floor((b - f + 1) / 3);
+        var h = (19 * a + b - d - g + 15) % 30;
+        var i = Math.floor(c / 4);
+        var k = c % 4;
+        var l = (32 + 2 * e + 2 * i - h - k) % 7;
+        var m = Math.floor((a + 11 * h + 22 * l) / 451);
+        var month = Math.floor((h + l - 7 * m + 114) / 31); // 3=March, 4=April
+        var day = ((h + l - 7 * m + 114) % 31) + 1;
+        return new Date(year, month - 1, day);
+    }
+
+    function dlAddDays(d, days) {
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate() + days);
+    }
+
+    // Fixed-date federal/bank/national holidays observe a weekend-shift
+    // convention in the US/CA/GB/AU: falls on Saturday -> also mark "observed
+    // Friday"; falls on Sunday -> also mark "observed Monday". Purely
+    // informational annotation; the underlying date stays the true calendar date.
+    function dlObservedNote(d) {
+        var dow = d.getDay();
+        if (dow === 6) return ' (observed Fri ' + dlFormatDate(dlAddDays(d, -1)) + ')';
+        if (dow === 0) return ' (observed Mon ' + dlFormatDate(dlAddDays(d, 1)) + ')';
+        return '';
+    }
+
+    // ---- Holiday rule tables (durable - computed fresh for ANY year, never
+    // goes stale like a hard-coded per-year date list would). National-level
+    // only (some countries add state/province-specific holidays not listed here).
+    var DL_HOLIDAY_RULES = {
+        US: [
+            { key: 'new-years-day', name: "New Year's Day", fn: function (y) { return new Date(y, 0, 1); } },
+            { key: 'mlk-day', name: 'Martin Luther King Jr. Day', fn: function (y) { return dlNthWeekday(y, 1, 1, 3); } },
+            { key: 'presidents-day', name: "Washington's Birthday (Presidents Day)", fn: function (y) { return dlNthWeekday(y, 2, 1, 3); } },
+            { key: 'memorial-day', name: 'Memorial Day', fn: function (y) { return dlNthWeekday(y, 5, 1, -1); } },
+            { key: 'juneteenth', name: 'Juneteenth', fn: function (y) { return new Date(y, 5, 19); } },
+            { key: 'independence-day', name: 'Independence Day', fn: function (y) { return new Date(y, 6, 4); } },
+            { key: 'labor-day', name: 'Labor Day', fn: function (y) { return dlNthWeekday(y, 9, 1, 1); } },
+            { key: 'columbus-day', name: 'Columbus Day', fn: function (y) { return dlNthWeekday(y, 10, 1, 2); } },
+            { key: 'veterans-day', name: 'Veterans Day', fn: function (y) { return new Date(y, 10, 11); } },
+            { key: 'thanksgiving', name: 'Thanksgiving Day', fn: function (y) { return dlNthWeekday(y, 11, 4, 4); } },
+            { key: 'christmas-day', name: 'Christmas Day', fn: function (y) { return new Date(y, 11, 25); } }
+        ],
+        CA: [
+            { key: 'new-years-day', name: "New Year's Day", fn: function (y) { return new Date(y, 0, 1); } },
+            { key: 'good-friday', name: 'Good Friday', fn: function (y) { return dlAddDays(dlEasterSunday(y), -2); } },
+            { key: 'victoria-day', name: 'Victoria Day', fn: function (y) { return dlWeekdayOnOrBefore(y, 5, 24, 1); } },
+            { key: 'canada-day', name: 'Canada Day', fn: function (y) { return new Date(y, 6, 1); } },
+            { key: 'labour-day', name: 'Labour Day', fn: function (y) { return dlNthWeekday(y, 9, 1, 1); } },
+            { key: 'truth-reconciliation-day', name: 'National Day for Truth and Reconciliation', fn: function (y) { return new Date(y, 8, 30); } },
+            { key: 'thanksgiving', name: 'Thanksgiving Day', fn: function (y) { return dlNthWeekday(y, 10, 1, 2); } },
+            { key: 'remembrance-day', name: 'Remembrance Day', fn: function (y) { return new Date(y, 10, 11); } },
+            { key: 'christmas-day', name: 'Christmas Day', fn: function (y) { return new Date(y, 11, 25); } },
+            { key: 'boxing-day', name: 'Boxing Day', fn: function (y) { return new Date(y, 11, 26); } }
+        ],
+        GB: [
+            { key: 'new-years-day', name: "New Year's Day", fn: function (y) { return new Date(y, 0, 1); } },
+            { key: 'good-friday', name: 'Good Friday', fn: function (y) { return dlAddDays(dlEasterSunday(y), -2); } },
+            { key: 'easter-monday', name: 'Easter Monday', fn: function (y) { return dlAddDays(dlEasterSunday(y), 1); } },
+            { key: 'early-may-bank-holiday', name: 'Early May Bank Holiday', fn: function (y) { return dlNthWeekday(y, 5, 1, 1); } },
+            { key: 'spring-bank-holiday', name: 'Spring Bank Holiday', fn: function (y) { return dlNthWeekday(y, 5, 1, -1); } },
+            { key: 'summer-bank-holiday', name: 'Summer Bank Holiday', fn: function (y) { return dlNthWeekday(y, 8, 1, -1); } },
+            { key: 'christmas-day', name: 'Christmas Day', fn: function (y) { return new Date(y, 11, 25); } },
+            { key: 'boxing-day', name: 'Boxing Day', fn: function (y) { return new Date(y, 11, 26); } }
+        ],
+        AU: [
+            { key: 'new-years-day', name: "New Year's Day", fn: function (y) { return new Date(y, 0, 1); } },
+            { key: 'australia-day', name: 'Australia Day', fn: function (y) { return new Date(y, 0, 26); } },
+            { key: 'good-friday', name: 'Good Friday', fn: function (y) { return dlAddDays(dlEasterSunday(y), -2); } },
+            { key: 'easter-monday', name: 'Easter Monday', fn: function (y) { return dlAddDays(dlEasterSunday(y), 1); } },
+            { key: 'anzac-day', name: 'Anzac Day', fn: function (y) { return new Date(y, 3, 25); } },
+            { key: 'christmas-day', name: 'Christmas Day', fn: function (y) { return new Date(y, 11, 25); } },
+            { key: 'boxing-day', name: 'Boxing Day', fn: function (y) { return new Date(y, 11, 26); } }
+        ]
+    };
+    var DL_COUNTRIES = [['US', 'United States'], ['CA', 'Canada'], ['GB', 'United Kingdom'], ['AU', 'Australia']];
+
+    function dlHolidaysForYear(countryCode, year) {
+        var rules = DL_HOLIDAY_RULES[countryCode] || DL_HOLIDAY_RULES.US;
+        var out = [];
+        for (var i = 0; i < rules.length; i++) {
+            out.push({ key: rules[i].key, name: rules[i].name, date: rules[i].fn(year) });
+        }
+        out.sort(function (a, b) { return a.date.getTime() - b.date.getTime(); });
+        return out;
+    }
+
+    // ---- Curated national-day dataset (informal calendar-tradition days,
+    // NOT government holidays). month is 1-12.
+    var DL_NATIONAL_DAYS = [
+        { month: 1, day: 21, name: 'National Hugging Day' },
+        { month: 2, day: 2, name: 'Groundhog Day' },
+        { month: 2, day: 9, name: 'National Pizza Day' },
+        { month: 2, day: 11, name: "National Inventors' Day" },
+        { month: 2, day: 14, name: "Valentine's Day" },
+        { month: 3, day: 1, name: 'National Pig Day' },
+        { month: 3, day: 14, name: 'National Pi Day' },
+        { month: 3, day: 17, name: "St. Patrick's Day" },
+        { month: 3, day: 20, name: 'International Day of Happiness' },
+        { month: 4, day: 1, name: "April Fools' Day" },
+        { month: 4, day: 7, name: 'World Health Day' },
+        { month: 4, day: 22, name: 'Earth Day' },
+        { month: 5, day: 4, name: "Star Wars Day (\"May the Fourth\")" },
+        { month: 5, day: 5, name: 'Cinco de Mayo' },
+        { month: 5, day: 8, name: 'National Teacher Appreciation Day' },
+        { month: 5, day: 20, name: 'National Bike to Work Day' },
+        { month: 6, day: 8, name: 'World Oceans Day' },
+        { month: 6, day: 19, name: 'Juneteenth' },
+        { month: 6, day: 21, name: 'International Yoga Day' },
+        { month: 7, day: 4, name: 'Independence Day (US)' },
+        { month: 7, day: 17, name: 'World Emoji Day' },
+        { month: 7, day: 30, name: 'International Day of Friendship' },
+        { month: 8, day: 8, name: 'International Cat Day' },
+        { month: 8, day: 19, name: 'World Humanitarian Day' },
+        { month: 8, day: 26, name: 'National Dog Day' },
+        { month: 9, day: 19, name: 'International Talk Like a Pirate Day' },
+        { month: 9, day: 21, name: 'International Day of Peace' },
+        { month: 9, day: 29, name: 'National Coffee Day' },
+        { month: 10, day: 4, name: 'World Animal Day' },
+        { month: 10, day: 16, name: 'World Food Day' },
+        { month: 10, day: 31, name: 'Halloween' },
+        { month: 11, day: 13, name: 'World Kindness Day' },
+        { month: 11, day: 19, name: 'International Men\'s Day' },
+        { month: 12, day: 4, name: 'National Cookie Day' },
+        { month: 12, day: 10, name: 'Human Rights Day' },
+        { month: 12, day: 31, name: "New Year's Eve" }
+    ];
+
+    // ---- Recurring US half-staff observances (36 U.S.C./4 U.S.C. Sec 7 +
+    // long-standing annual proclamations that recur on the SAME calendar rule
+    // every year). NOT proclamation-driven orders following a death/tragedy -
+    // those are NOT computable from any fixed rule and are deliberately NOT
+    // claimed here (see the disclaimer rendered with this mode).
+    var DL_HALF_MAST_RULES = [
+        { key: 'peace-officers-memorial-day', name: 'Peace Officers Memorial Day', fn: function (y) { return new Date(y, 4, 15); } },
+        { key: 'memorial-day', name: 'Memorial Day (half-staff until noon local time, then full-staff)', fn: function (y) { return dlNthWeekday(y, 5, 1, -1); } },
+        { key: 'patriot-day', name: 'Patriot Day (September 11 National Day of Remembrance)', fn: function (y) { return new Date(y, 8, 11); } },
+        { key: 'pow-mia-day', name: 'National POW/MIA Recognition Day', fn: function (y) { return dlNthWeekday(y, 9, 5, 3); } },
+        { key: 'pearl-harbor-day', name: 'Pearl Harbor Remembrance Day', fn: function (y) { return new Date(y, 11, 7); } }
+    ];
+
+    function dlHalfMastForYear(year) {
+        var out = [];
+        for (var i = 0; i < DL_HALF_MAST_RULES.length; i++) {
+            out.push({ key: DL_HALF_MAST_RULES[i].key, name: DL_HALF_MAST_RULES[i].name, date: DL_HALF_MAST_RULES[i].fn(year) });
+        }
+        out.sort(function (a, b) { return a.date.getTime() - b.date.getTime(); });
+        return out;
+    }
+
+    function dlBuildTable(rows, extraCols) {
+        var html = '<table style="border-collapse:collapse;width:100%;font-size:0.92em;margin-top:8px;">' +
+            '<thead><tr><th style="text-align:left;padding:4px 8px;">Date</th><th style="text-align:left;padding:4px 8px;">Observance</th></tr></thead><tbody>';
+        for (var i = 0; i < rows.length; i++) {
+            html += '<tr><td style="padding:4px 8px;white-space:nowrap;">' + dlEsc(dlFormatDate(rows[i].date)) + '</td><td style="padding:4px 8px;">' + dlEsc(rows[i].name) + dlEsc(dlObservedNote(rows[i].date) || '') + '</td></tr>';
+        }
+        html += '</tbody></table>';
+        return html;
+    }
+
+    function dlQueryParam(name) {
+        try {
+            var m = new RegExp('[?&]' + name + '=([^&]+)').exec(location.search);
+            return m ? decodeURIComponent(m[1]) : null;
+        } catch (e) { return null; }
+    }
+
+    function dlPopulateSelect(select, options, defaultValue) {
+        var html = '';
+        for (var i = 0; i < options.length; i++) {
+            var val = options[i][0], label = options[i][1];
+            html += '<option value="' + dlEsc(val) + '"' + (val === defaultValue ? ' selected' : '') + '>' + dlEsc(label) + '</option>';
+        }
+        select.innerHTML = html;
+    }
+
+    var DL_COUNTDOWN_TIMER = null;
+
+    function dlStartCountdown(el, targetDate) {
+        if (DL_COUNTDOWN_TIMER) { clearInterval(DL_COUNTDOWN_TIMER); DL_COUNTDOWN_TIMER = null; }
+        function tick() {
+            var now = new Date();
+            var diffMs = targetDate.getTime() - now.getTime();
+            if (diffMs <= 0) {
+                el.textContent = "It's today!";
+                if (DL_COUNTDOWN_TIMER) { clearInterval(DL_COUNTDOWN_TIMER); DL_COUNTDOWN_TIMER = null; }
+                return;
+            }
+            var totalSec = Math.floor(diffMs / 1000);
+            var days = Math.floor(totalSec / 86400);
+            var hrs = Math.floor((totalSec % 86400) / 3600);
+            var mins = Math.floor((totalSec % 3600) / 60);
+            var secs = totalSec % 60;
+            el.textContent = days + 'd ' + dlPad2(hrs) + 'h ' + dlPad2(mins) + 'm ' + dlPad2(secs) + 's';
+        }
+        tick();
+        DL_COUNTDOWN_TIMER = setInterval(tick, 1000);
+    }
+
+    function dlRenderHolidayMode(root) {
+        var countrySelect = root.querySelector('#dlCountrySelect');
+        var holidaySelect = root.querySelector('#dlHolidaySelect');
+        var todayEl = root.querySelector('#dlTodayView');
+        var countdownEl = root.querySelector('#dlCountdown');
+        var tableEl = root.querySelector('#dlTable');
+        var linkEl = root.querySelector('#dlShareLink');
+        var linkBtn = root.querySelector('#dlShareBtn');
+
+        var initialCountry = (dlQueryParam('country') || 'US').toUpperCase();
+        if (!DL_HOLIDAY_RULES[initialCountry]) initialCountry = 'US';
+        dlPopulateSelect(countrySelect, DL_COUNTRIES, initialCountry);
+
+        function renderForCountry(countryCode) {
+            var today = dlToday();
+            var thisYear = dlHolidaysForYear(countryCode, today.getFullYear());
+            var nextYear = dlHolidaysForYear(countryCode, today.getFullYear() + 1);
+            var all = thisYear.concat(nextYear);
+
+            var todaysHoliday = null;
+            for (var i = 0; i < thisYear.length; i++) {
+                if (dlDateKey(thisYear[i].date) === dlDateKey(today)) { todaysHoliday = thisYear[i]; break; }
+            }
+            var upcoming = null;
+            for (var j = 0; j < all.length; j++) {
+                if (all[j].date.getTime() >= today.getTime()) { upcoming = all[j]; break; }
+            }
+
+            if (todaysHoliday) {
+                todayEl.innerHTML = '<div style="font-weight:600;color:#0a7d2c;">Today is ' + dlEsc(todaysHoliday.name) + '.</div>';
+            } else if (upcoming) {
+                var daysAway = dlDaysBetween(today, upcoming.date);
+                todayEl.innerHTML = '<div style="font-weight:600;">Next public holiday: ' + dlEsc(upcoming.name) + ' in ' + daysAway + ' day' + (daysAway === 1 ? '' : 's') + ' (' + dlEsc(dlFormatDate(upcoming.date)) + ').</div>';
+            } else {
+                todayEl.innerHTML = '<div>No upcoming holiday found.</div>';
+            }
+
+            var options = [];
+            for (var k = 0; k < all.length; k++) {
+                if (all[k].date.getTime() >= today.getTime() || all[k].date.getFullYear() === today.getFullYear()) {
+                    options.push([all[k].key + '__' + all[k].date.getFullYear(), all[k].name + ' (' + dlFormatDate(all[k].date) + ')']);
+                }
+            }
+            var wantedHoliday = dlQueryParam('holiday');
+            var defaultVal = upcoming ? (upcoming.key + '__' + upcoming.date.getFullYear()) : (options[0] ? options[0][0] : null);
+            if (wantedHoliday) {
+                for (var m = 0; m < options.length; m++) { if (options[m][0].indexOf(wantedHoliday + '__') === 0) { defaultVal = options[m][0]; break; } }
+            }
+            dlPopulateSelect(holidaySelect, options, defaultVal);
+
+            function runCountdownFor(val) {
+                var parts = String(val || '').split('__');
+                var key = parts[0], yr = parseInt(parts[1], 10);
+                var pool = (yr === today.getFullYear()) ? thisYear : nextYear;
+                var found = null;
+                for (var n = 0; n < pool.length; n++) { if (pool[n].key === key) { found = pool[n]; break; } }
+                if (!found) return;
+                dlStartCountdown(countdownEl, found.date);
+                var url = location.pathname + '?country=' + countryCode + '&holiday=' + key;
+                linkEl.value = location.origin + url;
+            }
+            if (defaultVal) runCountdownFor(defaultVal);
+            holidaySelect.onchange = function () { runCountdownFor(holidaySelect.value); };
+
+            tableEl.innerHTML = '<div style="font-weight:bold;margin-top:12px;">Full ' + today.getFullYear() + ' holiday calendar</div>' + dlBuildTable(thisYear);
+        }
+
+        countrySelect.onchange = function () { renderForCountry(countrySelect.value); };
+        if (linkBtn) {
+            linkBtn.addEventListener('click', function () {
+                try {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(linkEl.value);
+                    } else {
+                        linkEl.select();
+                        document.execCommand('copy');
+                    }
+                    linkBtn.textContent = 'Copied!';
+                    setTimeout(function () { linkBtn.textContent = 'Copy link'; }, 1500);
+                } catch (e) { /* clipboard permission denied - link is still visible/selectable */ }
+            });
+        }
+        renderForCountry(initialCountry);
+    }
+
+    function dlRenderNationalDayMode(root) {
+        var todayEl = root.querySelector('#dlTodayView');
+        var tableEl = root.querySelector('#dlTable');
+        var today = dlToday();
+        var todays = [];
+        for (var i = 0; i < DL_NATIONAL_DAYS.length; i++) {
+            if (DL_NATIONAL_DAYS[i].month === today.getMonth() + 1 && DL_NATIONAL_DAYS[i].day === today.getDate()) todays.push(DL_NATIONAL_DAYS[i].name);
+        }
+        if (todays.length) {
+            todayEl.innerHTML = '<div style="font-weight:600;color:#0a7d2c;">Today (' + dlEsc(dlFormatDate(today)) + ') is ' + dlEsc(todays.join(' and ')) + '.</div>';
+        } else {
+            todayEl.innerHTML = '<div>No listed national day for today (' + dlEsc(dlFormatDate(today)) + ') in this curated list.</div>';
+        }
+        var sorted = DL_NATIONAL_DAYS.slice().sort(function (a, b) { return (a.month - b.month) || (a.day - b.day); });
+        var html = '<div style="color:#777;font-size:0.85em;margin-top:6px;">Curated list of commonly observed US "National Day" calendar traditions - informal calendar-tradition days, not government holidays.</div>' +
+            '<table style="border-collapse:collapse;width:100%;font-size:0.92em;margin-top:8px;"><thead><tr><th style="text-align:left;padding:4px 8px;">Date</th><th style="text-align:left;padding:4px 8px;">National Day</th></tr></thead><tbody>';
+        var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        for (var j = 0; j < sorted.length; j++) {
+            html += '<tr><td style="padding:4px 8px;white-space:nowrap;">' + MON[sorted[j].month - 1] + ' ' + sorted[j].day + '</td><td style="padding:4px 8px;">' + dlEsc(sorted[j].name) + '</td></tr>';
+        }
+        html += '</tbody></table>';
+        tableEl.innerHTML = html;
+    }
+
+    function dlRenderHalfMastMode(root) {
+        var todayEl = root.querySelector('#dlTodayView');
+        var tableEl = root.querySelector('#dlTable');
+        var disclaimerEl = root.querySelector('#dlDisclaimer');
+        var today = dlToday();
+        var thisYear = dlHalfMastForYear(today.getFullYear());
+        var nextYear = dlHalfMastForYear(today.getFullYear() + 1);
+        var all = thisYear.concat(nextYear);
+
+        var todaysObs = null;
+        for (var i = 0; i < thisYear.length; i++) { if (dlDateKey(thisYear[i].date) === dlDateKey(today)) { todaysObs = thisYear[i]; break; } }
+        var upcoming = null;
+        for (var j = 0; j < all.length; j++) { if (all[j].date.getTime() >= today.getTime()) { upcoming = all[j]; break; } }
+
+        if (todaysObs) {
+            todayEl.innerHTML = '<div style="font-weight:600;color:#b00020;">Today (' + dlEsc(dlFormatDate(today)) + ') is a scheduled US half-staff flag observance: ' + dlEsc(todaysObs.name) + '.</div>';
+        } else if (upcoming) {
+            var daysAway = dlDaysBetween(today, upcoming.date);
+            todayEl.innerHTML = '<div style="font-weight:600;color:#0a7d2c;">No scheduled half-staff observance today. Next one: ' + dlEsc(upcoming.name) + ' in ' + daysAway + ' day' + (daysAway === 1 ? '' : 's') + ' (' + dlEsc(dlFormatDate(upcoming.date)) + ').</div>';
+        } else {
+            todayEl.innerHTML = '<div>No upcoming scheduled observance found.</div>';
+        }
+
+        if (disclaimerEl) {
+            disclaimerEl.innerHTML = '<div style="background:#fff8e1;border:1px solid #ffe0a3;border-radius:4px;padding:8px 10px;margin-top:10px;font-size:0.9em;">' +
+                '<b>What this does NOT track:</b> a presidential or gubernatorial PROCLAMATION ordering flags to half-staff after a death or tragedy (these are announced case-by-case and cannot be predicted from a fixed calendar rule). ' +
+                'This list only covers the small set of RECURRING, statute/tradition-based observances that fall on the same calendar rule every year. ' +
+                'For the live, official, real-time flag status, check the U.S. General Services Administration half-staff notice page.</div>';
+        }
+
+        tableEl.innerHTML = '<div style="font-weight:bold;margin-top:12px;">Recurring US half-staff observances, ' + today.getFullYear() + '</div>' + dlBuildTable(thisYear);
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('dateLookupTool');
+        if (!root) return; // not a date-lookup page
+        try {
+            var mode = dlDetectMode(DL_SLUG);
+            var holidayControls = root.querySelector('#dlHolidayControls');
+            var disclaimerBox = root.querySelector('#dlDisclaimer');
+            if (mode === 'holiday') {
+                if (holidayControls) holidayControls.style.display = '';
+                dlRenderHolidayMode(root);
+            } else if (mode === 'halfmast') {
+                if (holidayControls) holidayControls.style.display = 'none';
+                dlRenderHalfMastMode(root);
+            } else {
+                if (holidayControls) holidayControls.style.display = 'none';
+                if (disclaimerBox) disclaimerBox.innerHTML = '';
+                dlRenderNationalDayMode(root);
+            }
+        } catch (e) {
+            root.innerHTML = '<p style="color:#b00020;">Could not start the tool: ' + dlEsc(e && e.message ? e.message : String(e)) + '</p>';
+        }
+    }
+</script>
