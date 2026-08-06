@@ -24,6 +24,100 @@ function t3dDetectScene(s) {
   return 'solar'; // fallback
 }
 
+// --- Shared t3d* runtime skeleton (vendored three.js, ESM, client-side only) ---
+function ftoLoadThree() {
+  if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+  var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+  window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+    if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+    return mod;
+  });
+  return window.__ftoThreePromise;
+}
+
+function t3dStatus(text) {
+  var el = document.getElementById('t3dStatus');
+  if (el) el.textContent = text;
+}
+function t3dInfo(html) {
+  var el = document.getElementById('t3dInfoPanel');
+  if (el) el.innerHTML = html;
+}
+var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+function t3dLoadStore() {
+  try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+  catch (e) { return {}; }
+}
+function t3dSaveStore(obj) {
+  try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+  catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+}
+function t3dFullscreen(el) {
+  if (el.requestFullscreen) { el.requestFullscreen(); }
+  else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+  else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+  else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+}
+
+function t3dShell(THREE, host, opts) {
+  var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+  var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+  var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+  var orbit = {
+    target: new THREE.Vector3(0, opts.targetY || 0, 0),
+    radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+    goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+    minR: opts.minR || 4, maxR: opts.maxR || 400,
+  };
+  function applyCamera() {
+    orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+    orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+    orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+    var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+    camera.position.set(
+      orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+      orbit.target.y + orbit.radius * cp,
+      orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+    );
+    camera.lookAt(orbit.target);
+  }
+  host.innerHTML = '';
+  host.appendChild(renderer.domElement);
+  function resize() {
+    var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  resize();
+  window.addEventListener('resize', resize);
+  // Render-quality contract (2026-07-22): window.resize alone misses late
+  // CSS/ad-rail layout shifts - observe the host itself.
+  if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+  var dragging = false, lastX = 0, lastY = 0;
+  host.addEventListener('pointerdown', function (e) {
+    dragging = true; lastX = e.clientX; lastY = e.clientY;
+    try { host.setPointerCapture(e.pointerId); } catch (err) {}
+  });
+  host.addEventListener('pointerup', function () { dragging = false; });
+  host.addEventListener('pointercancel', function () { dragging = false; });
+  host.addEventListener('pointermove', function (e) {
+    if (!dragging) return;
+    var dx = e.clientX - lastX, dy = e.clientY - lastY;
+    lastX = e.clientX; lastY = e.clientY;
+    orbit.goalTheta -= dx * 0.005;
+    orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+  });
+  host.addEventListener('wheel', function (e) {
+    e.preventDefault();
+    orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+  }, { passive: false });
+  return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+}
+
 // --- PROCEDURAL SCENE: Ceres + Ahuna Mons ---
 function t3dCeresCryo(shell) {
   const { THREE, scene, camera, renderer, orbit, low, applyCamera, ndc } = shell;
