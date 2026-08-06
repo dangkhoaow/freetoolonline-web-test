@@ -1,0 +1,324 @@
+<script>
+    // 3D scene archetype skeleton (uluru) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (uluru).
+    // All geometry is procedural. places-3d cluster member, 2026-08-06.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey geology.
+    // Published figures (Parks Australia / Geoscience Australia consensus,
+    // cross-checked 2026-08-06):
+    //   - Uluru-Kata Tjuta National Park, Northern Territory, Australia
+    //   - Height about 348 m (1,142 ft) above the surrounding plain
+    //   - Summit elevation about 863 m above sea level
+    //   - Base circumference about 9.4 km
+    //   - Arkose sandstone, deposited about 550 million years ago, later
+    //     tilted to near-vertical - the rock grain runs steeply up the face
+    //     instead of lying in flat horizontal layers
+    //   - Famous for a red-orange color shift at sunrise/sunset (iron oxide
+    //     scattering low-angle light)
+    //   - Kata Tjuta (36 domed rock formations) lies about 25 km to the west
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'uluru';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesuluru'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x2a1f16, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.62));
+        var key = new THREE.DirectionalLight(0xffdcb0, 1.05);
+        key.position.set(-10, 18, 8);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0 }));
+        }
+
+        // Single monolith relief, 1 unit = ~180 m vertical. An elongated
+        // ellipse footprint rising abruptly from a flat plain into a rounded
+        // ridge-line summit (not a single sharp peak), with fine near-vertical
+        // grain grooves running up the flanks (the rock's tilted-bedding
+        // texture). Angular groove uses an fbm-warped phase (not a plain
+        // periodic sine) so the flank reads as organic rock grain, not a
+        // mathematically regular corrugation.
+        var UX = 0, UZ = 0, RX = 3.5, RZ = 1.7, SUMMIT = 1.9;
+        function ellR(x, z) { return Math.hypot((x - UX) / RX, (z - UZ) / RZ); }
+        function domeShape(r) {
+            var t = Math.max(0, 1 - r / 1.05);
+            return Math.pow(t, 0.55);
+        }
+        function flankFactor(r) {
+            var t = Math.max(0, Math.min(1, 1 - r / 1.05));
+            return 4 * t * (1 - t); // 0 at rim and at summit, peaks mid-flank
+        }
+        function grainGroove(x, z, r) {
+            var ang = Math.atan2(z - UZ, x - UX);
+            var warp = fbm(Math.cos(ang) * 2.1 + 40, Math.sin(ang) * 2.1 + 40, 3);
+            var ridge = Math.sin(ang * 34 + warp * 9);
+            return ridge * flankFactor(r) * 0.16;
+        }
+        function height(x, z) {
+            var r = ellR(x, z);
+            var body = SUMMIT * domeShape(r);
+            var groove = body > 0.02 ? grainGroove(x, z, r) * SUMMIT : 0;
+            var plain = 0.045 * (fbm(x * 0.35 + 5, z * 0.35 + 2, 3) - 0.5);
+            return Math.max(plain, body + groove);
+        }
+        // Ochre/red-brown rock: base grey-brown at plain level rising through
+        // rust and ochre to a warm ridge-top. Sunset mode shifts the whole
+        // rock toward deep red-orange and brightens the west-facing flank
+        // (the side that catches the low sun), matching the real color shift.
+        var DAY_BANDS = [
+            [0.00, 0x6a5c47], // plain / base
+            [0.10, 0x8a5a3c], // lower flank rust
+            [0.35, 0xa8632f], // mid ochre
+            [0.65, 0xc07a34], // upper ochre
+            [0.90, 0xd6944a]  // ridge top
+        ];
+        var SUNSET_BANDS = [
+            [0.00, 0x5a4030],
+            [0.10, 0x8a2f1e],
+            [0.35, 0xb8401f],
+            [0.65, 0xe0581f],
+            [0.90, 0xf58a3a]
+        ];
+        var normColors = null, glowColors = null, terrain;
+        function bandColor(c, h, x, z, bands, glow) {
+            var n = 0.92 + 0.16 * fbm(x * 1.6 + 8, z * 1.6 + 3, 3);
+            var u = Math.max(0, Math.min(1, h / SUMMIT));
+            var hex = bands[bands.length - 1][1];
+            for (var i = bands.length - 1; i >= 0; i--) { if (u >= bands[i][0]) { hex = bands[i][1]; break; } }
+            c.setHex(hex);
+            if (glow) {
+                var ang = Math.atan2(z - UZ, x - UX);
+                if (Math.cos(ang) < -0.25) { c.multiplyScalar(1.22); c.offsetHSL(0.01, 0.06, 0.02); }
+            }
+            c.multiplyScalar(n);
+        }
+        function build(bands, glow) {
+            var pos = terrain.geometry.attributes.position, col = new THREE.Color();
+            var arr = new Float32Array(pos.count * 3);
+            for (var i = 0; i < pos.count; i++) {
+                bandColor(col, pos.getY(i), pos.getX(i), pos.getZ(i), bands, glow);
+                arr[i * 3] = col.r; arr[i * 3 + 1] = col.g; arr[i * 3 + 2] = col.b;
+            }
+            return arr;
+        }
+        terrain = makeTerrain(18, 16, shell.low ? 140 : 200, shell.low ? 124 : 178, height, function (c, h, x, z) { bandColor(c, h, x, z, DAY_BANDS, false); });
+        scene.add(terrain);
+        normColors = terrain.geometry.attributes.color.array.slice();
+        glowColors = build(SUNSET_BANDS, true);
+
+        // Kata Tjuta marker: a small cluster of rounded domes about 25 km
+        // (scaled) to the west, the real neighboring rock-formation group.
+        var kata = new THREE.Group();
+        var kataPositions = [[-8.6, 0, -0.6], [-9.4, 0, 0.5], [-8.1, 0, 1.1], [-9.7, 0, -0.4], [-8.8, 0, 1.8]];
+        for (var kp = 0; kp < kataPositions.length; kp++) {
+            var s = 0.42 + 0.18 * hash2(kp * 3.1, kp * 7.7);
+            var dome = new THREE.Mesh(new THREE.SphereGeometry(s, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x9a6a3f, roughness: 0.88 }));
+            dome.position.set(kataPositions[kp][0], 0.02, kataPositions[kp][2]);
+            kata.add(dome);
+        }
+        scene.add(kata);
+
+        var glowOn = false, kataOn = true;
+
+        function panelHtml() {
+            return '<h3>Uluru: a single desert monolith</h3>' +
+                '<p>A relief of Uluru: one sandstone rock rising abruptly from a flat central-Australian plain, its flanks textured with near-vertical grain grooves rather than horizontal layers.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Height above plain</td><td>about 348 m (1,142 ft)</td></tr>' +
+                '<tr><td>Summit elevation</td><td>about 863 m above sea level</td></tr>' +
+                '<tr><td>Base circumference</td><td>about 9.4 km</td></tr>' +
+                '<tr><td>Rock</td><td>Arkose sandstone, about 550 million years old, tilted near-vertical</td></tr>' +
+                '<tr><td>Color shift</td><td>Deep red-orange glow at sunrise/sunset from iron oxide</td></tr>' +
+                '<tr><td>Nearby formation</td><td>Kata Tjuta domes, about 25 km west</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - rock grain, weathering, and sunset lighting are procedural teaching cues, not a survey of the actual rock face.</p>';
+        }
+
+        function apply() {
+            terrain.geometry.attributes.color.array.set(glowOn ? glowColors : normColors);
+            terrain.geometry.attributes.color.needsUpdate = true;
+            kata.visible = kataOn;
+            var gb = document.getElementById('t3dPulGlowBtn');
+            if (gb) gb.textContent = 'Sunset glow: ' + (glowOn ? 'On' : 'Off');
+            var kb = document.getElementById('t3dPulKataBtn');
+            if (kb) kb.textContent = 'Kata Tjuta marker: ' + (kataOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ glowOn: glowOn, kataOn: kataOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.glowOn === 'boolean') glowOn = store.glowOn;
+        if (typeof store.kataOn === 'boolean') kataOn = store.kataOn;
+        apply();
+
+        var glowBtn = document.getElementById('t3dPulGlowBtn');
+        if (glowBtn) glowBtn.addEventListener('click', function () { glowOn = !glowOn; apply(); });
+        var kataBtn = document.getElementById('t3dPulKataBtn');
+        if (kataBtn) kataBtn.addEventListener('click', function () { kataOn = !kataOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the sunset glow or the Kata Tjuta marker.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesuluru: 't3dPulControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesuluru: { radius: 13, maxR: 38, minR: 5, phi: 0.86, theta: 0.55, targetY: 0.6 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
