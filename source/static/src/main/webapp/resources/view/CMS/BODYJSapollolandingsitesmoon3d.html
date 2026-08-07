@@ -1,0 +1,300 @@
+<script>
+    // 3D scene archetype skeleton (apollo-landing-sites-moon-3d) - vendored three.js (ESM, dynamic
+    // import from /vendor/three/, NO CDN), fully client-side. Registry Gate-H
+    // entry: three_3d_scene_vendored. All geometry is procedural - no model files, no
+    // textures fetched. EDUCATIONAL APPROXIMATION, not a physical simulation.
+    //
+    // A visible wrapper + "Loading 3D engine..." placeholder renders
+    // synchronously (G16 render-only pass); the ~0.7 MB engine lazy-loads
+    // post-paint via requestIdleCallback and is cached by the browser.
+    // Fullscreen targets the WRAPPER div (controls stay visible).
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'apollo-landing-sites-moon-3d';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) {
+        var s = String(slug || '').toLowerCase();
+        if (/apollo.?landing|landing.?site.*moon|apollo.*landing.*site/.test(s)) return 'apollolanding';
+        return 'apollolanding';
+    }
+
+    // ---- vendored ESM loader (ftoLoadPdfLib shape, but a cached import()) ----
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - building still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- shared scene shell: renderer + camera + custom pointer-orbit --------
+    // OrbitControls is NOT vendored (jsm addons import the bare 'three'
+    // specifier); this ~40-line orbit covers drag-rotate + wheel/pinch zoom
+    // with damping and a clamped pitch.
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            // critically-damped-ish lerp toward the goal orbit
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        function size() {
+            var w = Math.max(260, host.clientWidth);
+            var h = Math.round(w * 0.62);
+            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fsEl && fsEl.contains(host)) { h = Math.max(240, (window.innerHeight || h) - 150); }
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        host.appendChild(renderer.domElement);
+        renderer.domElement.style.touchAction = 'none';
+        renderer.domElement.style.borderRadius = '6px';
+        // pointer-orbit input
+        var drag = null, pinch = null, moved = 0;
+        host.addEventListener('pointerdown', function (e) {
+            drag = { x: e.clientX, y: e.clientY }; moved = 0;
+            host.setPointerCapture && host.setPointerCapture(e.pointerId);
+        });
+        host.addEventListener('pointermove', function (e) {
+            if (!drag) return;
+            var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+            moved += Math.abs(dx) + Math.abs(dy);
+            drag = { x: e.clientX, y: e.clientY };
+            orbit.goalTheta -= dx * 0.006;
+            orbit.goalPhi = Math.min(Math.max(orbit.goalPhi - dy * 0.005, 0.15), Math.PI - 0.2);
+        });
+        host.addEventListener('pointerup', function (e) {
+            var wasClick = moved < 8;
+            drag = null;
+            if (wasClick && shell.onClick) { shell.onClick(e); }
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR);
+        }, { passive: false });
+        host.addEventListener('touchstart', function (e) {
+            if (e.touches.length === 2) {
+                pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            }
+        }, { passive: true });
+        host.addEventListener('touchmove', function (e) {
+            if (e.touches.length === 2 && pinch) {
+                var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                pinch = d;
+            }
+        }, { passive: true });
+        window.addEventListener('resize', size);
+        document.addEventListener('fullscreenchange', size);
+        document.addEventListener('webkitfullscreenchange', size);
+        size();
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, size: size, onClick: null,
+            ndc: function (e) {
+                var r = renderer.domElement.getBoundingClientRect();
+                return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            },
+        };
+        return shell;
+    }
+
+    // ================= APOLLO LANDING SITES ON THE MOON ========================
+    // Six crewed Apollo landing sites plotted at their real selenographic
+    // coordinates (NASA LRO-based Mean Earth/Polar Axis frame) on a smooth
+    // procedural Moon sphere. Click a marker (or use the dropdown) for the
+    // mission, crew, and coordinates.
+    var T3D_APOLLO_SITES = [
+        { mission: 'Apollo 11', site: 'Mare Tranquillitatis (Sea of Tranquility)', latDeg: 0.674, lonDeg: 23.473, date: '1969-07-20', crew: 'Neil Armstrong, Buzz Aldrin' },
+        { mission: 'Apollo 12', site: 'Oceanus Procellarum (Ocean of Storms)', latDeg: -3.013, lonDeg: -23.422, date: '1969-11-19', crew: 'Pete Conrad, Alan Bean' },
+        { mission: 'Apollo 14', site: 'Fra Mauro', latDeg: -3.646, lonDeg: -17.472, date: '1971-02-05', crew: 'Alan Shepard, Edgar Mitchell' },
+        { mission: 'Apollo 15', site: 'Hadley-Apennine', latDeg: 26.132, lonDeg: 3.633, date: '1971-07-30', crew: 'David Scott, James Irwin' },
+        { mission: 'Apollo 16', site: 'Descartes', latDeg: -8.973, lonDeg: 15.501, date: '1972-04-20', crew: 'John Young, Charles Duke' },
+        { mission: 'Apollo 17', site: 'Taurus-Littrow', latDeg: 20.191, lonDeg: 30.772, date: '1972-12-11', crew: 'Gene Cernan, Harrison Schmitt' }
+    ];
+    function t3dApolloLandingSites(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+        var sunLight = new THREE.DirectionalLight(0xfff6e0, 1.1);
+        sunLight.position.set(60, 40, 30);
+        scene.add(sunLight);
+
+        var moonR = 12;
+        var moon = new THREE.Mesh(
+            new THREE.SphereGeometry(moonR, 48, 32),
+            new THREE.MeshLambertMaterial({ color: 0xb9b6ae })
+        );
+        scene.add(moon);
+
+        function toXYZ(latDeg, lonDeg, radius) {
+            var lat = latDeg * Math.PI / 180, lon = lonDeg * Math.PI / 180;
+            return new THREE.Vector3(
+                radius * Math.cos(lat) * Math.cos(lon),
+                radius * Math.sin(lat),
+                radius * Math.cos(lat) * Math.sin(lon)
+            );
+        }
+
+        var markers = [];
+        for (var i = 0; i < T3D_APOLLO_SITES.length; i++) {
+            var site = T3D_APOLLO_SITES[i];
+            var pos = toXYZ(site.latDeg, site.lonDeg, moonR + 0.6);
+            var pin = new THREE.Mesh(
+                new THREE.ConeGeometry(0.55, 1.8, 10),
+                new THREE.MeshBasicMaterial({ color: 0xffca28 })
+            );
+            pin.position.copy(pos);
+            var outward = pos.clone().normalize();
+            pin.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), outward);
+            pin.userData = { kind: 'site', idx: i };
+            scene.add(pin);
+            markers.push(pin);
+        }
+
+        function overviewFacts() {
+            var rows = '';
+            for (var i = 0; i < T3D_APOLLO_SITES.length; i++) {
+                var s = T3D_APOLLO_SITES[i];
+                rows += '<tr><td>' + s.mission + '</td><td>' + s.site + '</td><td>' + s.date + '</td></tr>';
+            }
+            t3dInfo('<h3>Six Apollo Moon Landing Sites</h3>' +
+                '<p>Click a yellow marker on the Moon, or use the dropdown below the scene, to see the mission, crew, and coordinates for that site.</p>' +
+                '<table class="w3-table w3-bordered w3-small"><tr><th>Mission</th><th>Site</th><th>Landing date</th></tr>' + rows + '</table>' +
+                '<p class="t3d-note">Coordinates are from NASA LRO-based lunar site tables (Mean Earth/Polar Axis frame) - the markers are enlarged so they stay visible; they are not to scale with the Moon.</p>' +
+                '<p class="t3d-note">This is an educational approximation, not a physical simulation - the Moon model here is a smooth procedural sphere, not a rendered terrain map.</p>');
+        }
+
+        function siteFacts(idx) {
+            var s = T3D_APOLLO_SITES[idx];
+            var latLabel = (s.latDeg >= 0 ? s.latDeg.toFixed(3) + 'N' : Math.abs(s.latDeg).toFixed(3) + 'S');
+            var lonLabel = (s.lonDeg >= 0 ? s.lonDeg.toFixed(3) + 'E' : Math.abs(s.lonDeg).toFixed(3) + 'W');
+            t3dInfo('<h3>' + s.mission + ' - ' + s.site + '</h3>' +
+                '<table class="w3-table w3-bordered w3-small">' +
+                '<tr><td>Landing date</td><td>' + s.date + '</td></tr>' +
+                '<tr><td>Crew on the surface</td><td>' + s.crew + '</td></tr>' +
+                '<tr><td>Selenographic coordinates</td><td>' + latLabel + ' ' + lonLabel + '</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Coordinates are from NASA LRO-based lunar site tables (Mean Earth/Polar Axis frame).</p>' +
+                '<p class="t3d-note">This is an educational approximation - marker size and the Moon\'s surface are simplified, not a rendered terrain map.</p>');
+            var sel = document.getElementById('t3dApolloSiteSelect');
+            if (sel) sel.value = String(idx);
+        }
+
+        overviewFacts();
+
+        var ray = new THREE.Raycaster();
+        shell.onClick = function (e) {
+            ray.setFromCamera(shell.ndc(e), shell.camera);
+            var hits = ray.intersectObjects(markers, false);
+            if (!hits.length) return;
+            siteFacts(hits[0].object.userData.idx);
+        };
+
+        var sel = document.getElementById('t3dApolloSiteSelect');
+        if (sel) {
+            sel.addEventListener('change', function () {
+                var idx = parseInt(sel.value, 10);
+                if (idx >= 0 && idx < T3D_APOLLO_SITES.length) { siteFacts(idx); }
+                else { overviewFacts(); }
+            });
+        }
+
+        return function animate(dt) {
+            moon.rotation.y += dt * 0.00004;
+        };
+    }
+
+    // ---- bootstrap ------------------------------------------------------------
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return; // not a 3D scene page
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        // Show only this scene's control row.
+        var rows = { apollolanding: 't3dApolloControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = {
+                        apollolanding: { radius: 42, maxR: 90, minR: 18, phi: 1.1 },
+                    };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dApolloLandingSites(shell);
+                    t3dStatus('Drag to orbit, scroll or pinch to zoom. Click a yellow marker or use the dropdown to see mission details.');
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
