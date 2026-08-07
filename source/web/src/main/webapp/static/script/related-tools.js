@@ -901,6 +901,7 @@ try {
     { title: "Pdf Editor Online", url: "https://freetoolonline.com/pdf-tools/pdf-editor-online.html", include: !1, tags: "pdf" },
     { title: "What National Day Is Today?", url: "https://freetoolonline.com/utility-tools/national-day-today.html", include: !1, tags: "utility" },
     { title: "Holiday Countdown & Date Lookup", url: "https://freetoolonline.com/utility-tools/holiday-countdown.html", include: !1, tags: "utility" },
+    { title: "Tennis Grand Slam Prize Money Lookup", url: "https://freetoolonline.com/utility-tools/tournament-prize-money-lookup.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

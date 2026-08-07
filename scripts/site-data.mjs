@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/tennis-grand-slam-prize-money-lookup-vs-alternatives.html',
+  '/guides/pt/tennis-grand-slam-prize-money-lookup-step-by-step.html',
+  '/guides/pt/tennis-grand-slam-prize-money-lookup-when.html',
+  '/guides/pt/tennis-grand-slam-prize-money-lookup-vs-alternatives.html',
+  '/guides/es/tennis-grand-slam-prize-money-lookup-step-by-step.html',
+  '/guides/es/tennis-grand-slam-prize-money-lookup-when.html',
+  '/guides/es/tennis-grand-slam-prize-money-lookup-vs-alternatives.html',
+  '/guides/vi/tennis-grand-slam-prize-money-lookup-step-by-step.html',
+  '/guides/vi/tennis-grand-slam-prize-money-lookup-when.html',
+  '/guides/vi/tennis-grand-slam-prize-money-lookup-vs-alternatives.html',
+  '/guides/id/tennis-grand-slam-prize-money-lookup-step-by-step.html',
+  '/guides/id/tennis-grand-slam-prize-money-lookup-when.html',
+  '/guides/id/tennis-grand-slam-prize-money-lookup-vs-alternatives.html',
+  '/guides/de/tennis-grand-slam-prize-money-lookup-step-by-step.html',
+  '/guides/de/tennis-grand-slam-prize-money-lookup-when.html',
+  '/guides/de/tennis-grand-slam-prize-money-lookup-vs-alternatives.html',
+  '/guides/tennis-grand-slam-prize-money-lookup-step-by-step.html',
+  '/guides/tennis-grand-slam-prize-money-lookup-when.html',
   '/guides/holiday-countdown-date-lookup-vs-alternatives.html',
   '/guides/holiday-countdown-date-lookup-step-by-step.html',
   '/guides/holiday-countdown-date-lookup-when.html',
@@ -15076,6 +15094,7 @@ export const ALIAS_ROUTES = {
   '/pdf-editor-online.html': '/pdf-tools/pdf-editor-online.html',
   '/national-day-today.html': '/utility-tools/national-day-today.html',
   '/holiday-countdown.html': '/utility-tools/holiday-countdown.html',
+  '/tournament-prize-money-lookup.html': '/utility-tools/tournament-prize-money-lookup.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -27469,6 +27488,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/holiday-countdown-date-lookup-when.html': 'guide/de/holiday-countdown-date-lookup-when.jsp',
   '/guides/de/holiday-countdown-date-lookup-step-by-step.html': 'guide/de/holiday-countdown-date-lookup-step-by-step.jsp',
   '/guides/de/holiday-countdown-date-lookup-vs-alternatives.html': 'guide/de/holiday-countdown-date-lookup-vs-alternatives.jsp',
+  '/utility-tools/tournament-prize-money-lookup.html': 'utility/tournament-prize-money-lookup.jsp',
+  '/guides/tennis-grand-slam-prize-money-lookup-when.html': 'guide/tennis-grand-slam-prize-money-lookup-when.jsp',
+  '/guides/tennis-grand-slam-prize-money-lookup-step-by-step.html': 'guide/tennis-grand-slam-prize-money-lookup-step-by-step.jsp',
+  '/guides/tennis-grand-slam-prize-money-lookup-vs-alternatives.html': 'guide/tennis-grand-slam-prize-money-lookup-vs-alternatives.jsp',
+  '/guides/pt/tennis-grand-slam-prize-money-lookup-step-by-step.html': 'guide/pt/tennis-grand-slam-prize-money-lookup-step-by-step.jsp',
+  '/guides/pt/tennis-grand-slam-prize-money-lookup-when.html': 'guide/pt/tennis-grand-slam-prize-money-lookup-when.jsp',
+  '/guides/pt/tennis-grand-slam-prize-money-lookup-vs-alternatives.html': 'guide/pt/tennis-grand-slam-prize-money-lookup-vs-alternatives.jsp',
+  '/guides/es/tennis-grand-slam-prize-money-lookup-step-by-step.html': 'guide/es/tennis-grand-slam-prize-money-lookup-step-by-step.jsp',
+  '/guides/es/tennis-grand-slam-prize-money-lookup-when.html': 'guide/es/tennis-grand-slam-prize-money-lookup-when.jsp',
+  '/guides/es/tennis-grand-slam-prize-money-lookup-vs-alternatives.html': 'guide/es/tennis-grand-slam-prize-money-lookup-vs-alternatives.jsp',
+  '/guides/vi/tennis-grand-slam-prize-money-lookup-step-by-step.html': 'guide/vi/tennis-grand-slam-prize-money-lookup-step-by-step.jsp',
+  '/guides/vi/tennis-grand-slam-prize-money-lookup-when.html': 'guide/vi/tennis-grand-slam-prize-money-lookup-when.jsp',
+  '/guides/vi/tennis-grand-slam-prize-money-lookup-vs-alternatives.html': 'guide/vi/tennis-grand-slam-prize-money-lookup-vs-alternatives.jsp',
+  '/guides/id/tennis-grand-slam-prize-money-lookup-step-by-step.html': 'guide/id/tennis-grand-slam-prize-money-lookup-step-by-step.jsp',
+  '/guides/id/tennis-grand-slam-prize-money-lookup-when.html': 'guide/id/tennis-grand-slam-prize-money-lookup-when.jsp',
+  '/guides/id/tennis-grand-slam-prize-money-lookup-vs-alternatives.html': 'guide/id/tennis-grand-slam-prize-money-lookup-vs-alternatives.jsp',
+  '/guides/de/tennis-grand-slam-prize-money-lookup-step-by-step.html': 'guide/de/tennis-grand-slam-prize-money-lookup-step-by-step.jsp',
+  '/guides/de/tennis-grand-slam-prize-money-lookup-when.html': 'guide/de/tennis-grand-slam-prize-money-lookup-when.jsp',
+  '/guides/de/tennis-grand-slam-prize-money-lookup-vs-alternatives.html': 'guide/de/tennis-grand-slam-prize-money-lookup-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

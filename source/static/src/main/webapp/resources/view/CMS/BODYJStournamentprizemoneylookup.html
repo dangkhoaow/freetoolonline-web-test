@@ -1,0 +1,208 @@
+<script>
+    // Prize-money-lookup archetype skeleton (tournament-prize-money-lookup) - static-dataset class
+    // (same ZERO-network doctrine as date-lookup.template.html): no upload,
+    // no backend, no vendored lib, no fetch(). Registry Gate-H entry:
+    // tournament_prize_money_static_dataset.
+    //
+    // Dataset: the four tennis Grand Slam singles prize-money breakdowns for
+    // the 2025 editions, as published by each tournament (figures are per
+    // player, singles main draw, equal for men and women at all four majors).
+    // The edition YEAR is rendered next to every figure and in the
+    // disclaimer - the dataset is a snapshot of published numbers, refreshed
+    // annually in an engineering session, never a live feed.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered() (called for
+    // EVERY page after base-script load). Do NOT touch the DOM at top level.
+    // In-browser tool => no upload widget.
+
+    web.localUpload = false;
+
+    var PM_SLUG = 'tournament-prize-money-lookup';
+
+    function pmEsc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+        });
+    }
+
+    // Published singles prize money, per player, by round reached.
+    // amounts are in the tournament's own payout currency (cur).
+    var PM_EVENTS = [
+        {
+            key: 'australian-open',
+            name: 'Australian Open',
+            edition: 2025,
+            cur: 'A$',
+            currencyNote: 'Australian dollars (AUD)',
+            totalPool: 96500000,
+            rounds: [
+                ['Champion', 3500000],
+                ['Runner-up', 1900000],
+                ['Semi-finalist', 1100000],
+                ['Quarter-finalist', 665000],
+                ['Round of 16', 420000],
+                ['Round of 32', 290000],
+                ['Round of 64', 200000],
+                ['Round of 128 (first round)', 132000]
+            ]
+        },
+        {
+            key: 'french-open',
+            name: 'French Open (Roland-Garros)',
+            edition: 2025,
+            cur: '€',
+            currencyNote: 'euros (EUR)',
+            totalPool: 56352000,
+            rounds: [
+                ['Champion', 2550000],
+                ['Runner-up', 1275000],
+                ['Semi-finalist', 690000],
+                ['Quarter-finalist', 440000],
+                ['Round of 16', 265000],
+                ['Round of 32', 168000],
+                ['Round of 64', 117000],
+                ['Round of 128 (first round)', 78000]
+            ]
+        },
+        {
+            key: 'wimbledon',
+            name: 'Wimbledon',
+            edition: 2025,
+            cur: '£',
+            currencyNote: 'pounds sterling (GBP)',
+            totalPool: 53550000,
+            rounds: [
+                ['Champion', 3000000],
+                ['Runner-up', 1520000],
+                ['Semi-finalist', 775000],
+                ['Quarter-finalist', 400000],
+                ['Round of 16', 240000],
+                ['Round of 32', 152000],
+                ['Round of 64', 99000],
+                ['Round of 128 (first round)', 66000]
+            ]
+        },
+        {
+            key: 'us-open',
+            name: 'US Open',
+            edition: 2025,
+            cur: '$',
+            currencyNote: 'US dollars (USD)',
+            totalPool: 90000000,
+            rounds: [
+                ['Champion', 5000000],
+                ['Runner-up', 2500000],
+                ['Semi-finalist', 1260000],
+                ['Quarter-finalist', 660000],
+                ['Round of 16', 400000],
+                ['Round of 32', 237000],
+                ['Round of 64', 154000],
+                ['Round of 128 (first round)', 110000]
+            ]
+        }
+    ];
+
+    function pmFmt(cur, n) {
+        var s = String(Math.round(n));
+        var out = '';
+        while (s.length > 3) { out = ',' + s.slice(-3) + out; s = s.slice(0, -3); }
+        return cur + s + out;
+    }
+
+    function pmFindEvent(key) {
+        for (var i = 0; i < PM_EVENTS.length; i++) {
+            if (PM_EVENTS[i].key === key) return PM_EVENTS[i];
+        }
+        return PM_EVENTS[0];
+    }
+
+    function pmRenderEventTable(ev) {
+        var h = '<h3 style="margin:14px 0 6px;">' + pmEsc(ev.name) + ' ' + ev.edition +
+            ' singles prize money by round (per player, ' + pmEsc(ev.currencyNote) + ')</h3>';
+        h += '<table class="w3-table w3-bordered w3-striped" style="max-width:560px;">';
+        h += '<tr><th>Round reached</th><th style="text-align:right;">Prize (' + pmEsc(ev.cur) + ')</th></tr>';
+        for (var i = 0; i < ev.rounds.length; i++) {
+            h += '<tr><td>' + pmEsc(ev.rounds[i][0]) + '</td><td style="text-align:right;font-family:monospace;">' +
+                pmEsc(pmFmt(ev.cur, ev.rounds[i][1])) + '</td></tr>';
+        }
+        h += '<tr><td><b>Total tournament pool (all events)</b></td><td style="text-align:right;font-family:monospace;"><b>' +
+            pmEsc(pmFmt(ev.cur, ev.totalPool)) + '</b></td></tr>';
+        h += '</table>';
+        return h;
+    }
+
+    function pmRenderComparisonTable() {
+        var h = '<h3 style="margin:18px 0 6px;">All four majors compared (singles, per player, each in its own payout currency)</h3>';
+        h += '<table class="w3-table w3-bordered w3-striped" style="max-width:760px;">';
+        h += '<tr><th>Tournament</th><th>Edition</th><th style="text-align:right;">Champion</th><th style="text-align:right;">First round</th><th style="text-align:right;">Total pool</th></tr>';
+        for (var i = 0; i < PM_EVENTS.length; i++) {
+            var ev = PM_EVENTS[i];
+            h += '<tr><td>' + pmEsc(ev.name) + '</td><td>' + ev.edition + '</td>' +
+                '<td style="text-align:right;font-family:monospace;">' + pmEsc(pmFmt(ev.cur, ev.rounds[0][1])) + '</td>' +
+                '<td style="text-align:right;font-family:monospace;">' + pmEsc(pmFmt(ev.cur, ev.rounds[ev.rounds.length - 1][1])) + '</td>' +
+                '<td style="text-align:right;font-family:monospace;">' + pmEsc(pmFmt(ev.cur, ev.totalPool)) + '</td></tr>';
+        }
+        h += '</table>';
+        return h;
+    }
+
+    function pmShareUrl(key) {
+        var base = location.origin + location.pathname;
+        return base + '?event=' + encodeURIComponent(key);
+    }
+
+    function pmParseQueryEvent() {
+        var m = /[?&]event=([a-z0-9-]+)/.exec(location.search || '');
+        return m ? m[1] : null;
+    }
+
+    function pmRender(key) {
+        var ev = pmFindEvent(key);
+        var answer = document.getElementById('pmAnswerView');
+        if (answer) {
+            answer.innerHTML = 'The <b>' + pmEsc(ev.name) + ' ' + ev.edition +
+                '</b> singles champion earned <b>' + pmEsc(pmFmt(ev.cur, ev.rounds[0][1])) +
+                '</b>; losing in the first round paid <b>' + pmEsc(pmFmt(ev.cur, ev.rounds[ev.rounds.length - 1][1])) +
+                '</b>. Prize money is equal for men and women.';
+        }
+        var tbl = document.getElementById('pmTable');
+        if (tbl) tbl.innerHTML = pmRenderEventTable(ev) + pmRenderComparisonTable();
+        var share = document.getElementById('pmShareLink');
+        if (share) share.value = pmShareUrl(ev.key);
+        var disc = document.getElementById('pmDisclaimer');
+        if (disc) {
+            disc.innerHTML = '<p style="color:#555;font-size:0.9em;margin-top:12px;">Figures are the officially published ' +
+                'prize-money breakdowns for the named edition of each tournament, shown in the tournament\'s own payout currency. ' +
+                'They are a static snapshot refreshed when a new edition publishes its breakdown - this page does not fetch live data.</p>';
+        }
+    }
+
+    function pmInit() {
+        var root = document.getElementById('prizeMoneyTool');
+        if (!root) return;
+        var sel = document.getElementById('pmEventSelect');
+        if (sel && !sel.options.length) {
+            for (var i = 0; i < PM_EVENTS.length; i++) {
+                var o = document.createElement('option');
+                o.value = PM_EVENTS[i].key;
+                o.textContent = PM_EVENTS[i].name + ' ' + PM_EVENTS[i].edition;
+                sel.appendChild(o);
+            }
+            sel.onchange = function () { pmRender(sel.value); };
+        }
+        var fromUrl = pmParseQueryEvent();
+        if (fromUrl && sel) sel.value = pmFindEvent(fromUrl).key;
+        var btn = document.getElementById('pmShareBtn');
+        if (btn) btn.onclick = function () {
+            var share = document.getElementById('pmShareLink');
+            if (!share) return;
+            share.select();
+            try { document.execCommand('copy'); } catch (e) { /* clipboard best-effort */ }
+        };
+        pmRender(sel ? sel.value : PM_EVENTS[0].key);
+    }
+
+    function doAfterPageRendered() {
+        pmInit();
+    }
+</script>
