@@ -1,0 +1,315 @@
+<script>
+    // 3D scene archetype skeleton (waitomo-caves) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (waitomo-caves).
+    // All geometry is procedural. places-3d cluster member, 2026-08-07.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey cave geology.
+    // Published figures (commonly cited discovery + geology consensus,
+    // cross-checked 2026-08-07):
+    //   - Waitomo Caves, near Otorohanga, Waikato region, North Island,
+    //     New Zealand
+    //   - Explored in 1887 by local Maori chief Tane Tinorau and English
+    //     surveyor Fred Mace, rafting the underground Waitomo Stream
+    //   - Opened to the public in 1889; Tane Tinorau's descendants still
+    //     co-manage tours
+    //   - Carved in limestone laid down under an ancient sea about 30
+    //     million years ago
+    //   - Home to Arachnocampa luminosa, the glowworm found only in New
+    //     Zealand - larvae glow via a chemical reaction to lure insects
+    //     into sticky silk threads
+    //   - Visitors glide by boat through the dark Glowworm Grotto
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'waitomo-caves';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placeswaitomocaves'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x05060a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.30));
+        var key = new THREE.DirectionalLight(0xbcd0ff, 0.4);
+        key.position.set(-6, 14, 8);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smooth(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return { mesh: new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0, side: THREE.DoubleSide })), geo: geo, pos: pos };
+        }
+
+        // Signature figure: a single winding limestone passage carved by an
+        // underground stream, viewed as an open cutaway (the carved-gorge
+        // convention already proven for Grand Canyon / Antelope Canyon /
+        // Son Doong Cave in this cluster). No doline skylights here (this is
+        // a fully-enclosed grotto, unlike Son Doong) - the passage stays dim
+        // throughout, and its ceiling carries a scattered point-cloud of
+        // small glowing dots (the Arachnocampa luminosa glowworms), the
+        // feature that makes this cave archetype distinct from every other
+        // cave/gorge already in the cluster. 1 unit = about 1.2 m of the
+        // passage's real scale.
+        var RIM = 0, DEPTH = 3.2, HALF_W = 2.1;
+        function chan(z) { return 1.3 * Math.sin(z * 0.34 + 0.6) + 0.55 * Math.sin(z * 0.15 - 1.1); }
+        function halfWidth(z) { return Math.max(1.1, HALF_W + 0.6 * Math.sin(z * 0.46 + 0.3)); }
+        function carveWave(d, w, depth) {
+            if (d >= w) return 0;
+            var t = 1 - d / w; // 0 at wall, 1 at passage centre
+            var s = t * t * (3 - 2 * t); // smoothstep -> flowing wall, not terraced
+            return depth * Math.pow(s, 0.8);
+        }
+        function riverAmount(x, z) {
+            var cx = chan(z), rw = Math.max(0.28, halfWidth(z) * 0.24);
+            return smooth(rw, rw * 0.35, Math.abs(x - cx));
+        }
+        function floorHeight(x, z) {
+            var h = RIM + 0.08 * (fbm(x * 0.6 + 4, z * 0.6 + 9, 3) - 0.5);
+            var cx = chan(z), w = halfWidth(z), d = Math.abs(x - cx);
+            h -= carveWave(d, w, DEPTH + 0.3 * fbm(z * 0.7 + 2, x * 0.7 + 5, 3));
+            if (d < w * 1.3) {
+                var wallFrac = 1 - Math.min(1, d / w);
+                h -= 0.08 * wallFrac * fbm(x * 2.6 + 3, z * 1.2 + 7, 3);
+            }
+            return Math.max(h, RIM - DEPTH - 0.25);
+        }
+
+        var riverOn = true;
+        function floorColor(c, h, x, z) {
+            var u = smooth(RIM - DEPTH, RIM, h); // 0 at floor, 1 at rim
+            var shadow = new THREE.Color(0x0c0e14), rock = new THREE.Color(0x4a4a48), rim = new THREE.Color(0x6d6b60);
+            if (u < 0.6) { c.copy(shadow).lerp(rock, smooth(0, 0.6, u)); }
+            else { c.copy(rock).lerp(rim, smooth(0.6, 1.0, u)); }
+            var r = riverAmount(x, z);
+            if (u < 0.16) { c.lerp(new THREE.Color(0x1f4a52), riverOn ? r : r * 0.15); }
+            var n = 0.88 + 0.18 * fbm(x * 1.3 + 2, z * 1.3 + 5, 3);
+            c.multiplyScalar(n);
+        }
+
+        var floorInfo = makeTerrain(8.5, 15, shell.low ? 110 : 170, shell.low ? 150 : 220, floorHeight, floorColor);
+        scene.add(floorInfo.mesh);
+
+        // Glowworm ceiling: a scattered point-cloud of small blue-green dots
+        // hovering just below a fixed ceiling plane above the passage floor,
+        // denser near the passage centre where the stream (and its insect
+        // prey) concentrate. Additive-blended sprites read as a soft glow
+        // without any custom shader.
+        var GLOW_COUNT = 420, glowPositions = new Float32Array(GLOW_COUNT * 3);
+        for (var gi = 0; gi < GLOW_COUNT; gi++) {
+            var gz = -7.4 + hash2(gi * 1.7, 3.1) * 14.8;
+            var w = halfWidth(gz);
+            var gx = chan(gz) + (hash2(gi * 3.3, gi * 0.9) - 0.5) * w * 1.05;
+            var ceil = RIM + 0.75 + 0.14 * fbm(gx * 0.8 + 11, gz * 0.8 + 6, 2);
+            glowPositions[gi * 3] = gx;
+            glowPositions[gi * 3 + 1] = ceil;
+            glowPositions[gi * 3 + 2] = gz;
+        }
+        var glowGeo = new THREE.BufferGeometry();
+        glowGeo.setAttribute('position', new THREE.BufferAttribute(glowPositions, 3));
+        var glowMat = new THREE.PointsMaterial({ color: 0x9ef0c8, size: 0.055, transparent: true, opacity: 0.92, depthWrite: false, blending: THREE.AdditiveBlending });
+        var glowCloud = new THREE.Points(glowGeo, glowMat);
+        scene.add(glowCloud);
+
+        function panelHtml() {
+            return '<h3>Waitomo Caves: a glowworm-lit passage</h3>' +
+                '<p>This scene shows the cave passage carved by the Waitomo Stream, with a scattered point-cloud of glowworm lights hovering just below the ceiling above the water.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Discovered</td><td>1887, Tane Tinorau and Fred Mace</td></tr>' +
+                '<tr><td>Opened to visitors</td><td>1889</td></tr>' +
+                '<tr><td>Rock</td><td>Limestone, about 30 million years old</td></tr>' +
+                '<tr><td>Glowworm species</td><td>Arachnocampa luminosa (New Zealand only)</td></tr>' +
+                '<tr><td>Location</td><td>Waitomo, Waikato region, New Zealand</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - passage shape, glowworm density, and lighting are procedural teaching cues, not survey cave geology.</p>';
+        }
+
+        function apply() {
+            glowCloud.visible = glowOn;
+            var gb = document.getElementById('t3dPwcGlowBtn');
+            if (gb) gb.textContent = 'Glowworm glow: ' + (glowOn ? 'On' : 'Off');
+            var rb = document.getElementById('t3dPwcRiverBtn');
+            if (rb) rb.textContent = 'River highlight: ' + (riverOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ glowOn: glowOn, riverOn: riverOn }); } catch (e) {}
+        }
+
+        function recolor() {
+            var c2 = new THREE.Color();
+            var fp = floorInfo.pos, fg = floorInfo.geo, fc = fg.attributes.color;
+            for (var i = 0; i < fp.count; i++) { floorColor(c2, fp.getY(i), fp.getX(i), fp.getZ(i)); fc.setXYZ(i, c2.r, c2.g, c2.b); }
+            fc.needsUpdate = true;
+        }
+
+        var glowOn = true;
+        var store = t3dLoadStore();
+        if (typeof store.glowOn === 'boolean') glowOn = store.glowOn;
+        if (typeof store.riverOn === 'boolean') riverOn = store.riverOn;
+        recolor();
+        apply();
+
+        var glowBtn = document.getElementById('t3dPwcGlowBtn');
+        if (glowBtn) glowBtn.addEventListener('click', function () { glowOn = !glowOn; apply(); });
+        var riverBtn = document.getElementById('t3dPwcRiverBtn');
+        if (riverBtn) riverBtn.addEventListener('click', function () { riverOn = !riverOn; recolor(); apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the glowworm glow or the river highlight.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+            if (glowOn) { glowMat.opacity = 0.78 + 0.14 * Math.sin(performance.now() * 0.0007); }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placeswaitomocaves: 't3dPwcControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placeswaitomocaves: { radius: 11, maxR: 28, minR: 3, phi: 0.95, theta: 0.6, targetY: -0.8 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>

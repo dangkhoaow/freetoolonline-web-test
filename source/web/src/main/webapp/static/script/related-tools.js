@@ -744,6 +744,7 @@ try {
     { title: "Grand Canyon 3D Explorer", url: "https://freetoolonline.com/places-3d/grand-canyon.html", include: !1, tags: "places-3d" },
     { title: "Bryce Canyon 3D Explorer", url: "https://freetoolonline.com/places-3d/bryce-canyon.html", include: !1, tags: "places-3d" },
     { title: "Uluru 3D Explorer", url: "https://freetoolonline.com/places-3d/uluru.html", include: !1, tags: "places-3d" },
+    { title: "Waitomo Caves 3D Explorer", url: "https://freetoolonline.com/places-3d/waitomo-caves.html", include: !1, tags: "places-3d" },
     { title: "Caspian Sea 3D Explorer", url: "https://freetoolonline.com/places-3d/caspian-sea.html", include: !1, tags: "places-3d" },
     { title: "Lake Baikal 3D Explorer", url: "https://freetoolonline.com/places-3d/lake-baikal.html", include: !1, tags: "places-3d" },
     { title: "Milford Sound 3D Explorer", url: "https://freetoolonline.com/places-3d/milford-sound.html", include: !1, tags: "places-3d" },
