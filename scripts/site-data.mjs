@@ -2805,7 +2805,6 @@ export const INFO_ROUTES = new Set([
   // CTR 2.09% / opportunity_score 75.94). Companion to /zip-tools/zip-file.html.
   // Kebab URL passes URL convention regex; smashed form "onlinezipfile" does
   // not shadow any existing primary route.
-  '/guides/en/online-zip-file.html',
   // Cycle 20260518-31 create_new_guide_page - "Create Zip File Online" Lane-D
   // guide (zip cluster, GSC "create zip file online" 702 imp / 8 clicks /
   // pos 10.08 / CTR 1.14% / opportunity_score 68.87). Companion to
@@ -3069,7 +3068,6 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/ms-to-date.html', '/guides/es/ms-to-date.html', '/guides/vi/ms-to-date.html', '/guides/id/ms-to-date.html', '/guides/de/ms-to-date.html',
   // plan-warm-pascal-v3 S2 batch 53 (2026-05-31) - 5 locale variants × 3 guides
   '/guides/pt/lcd-checker.html', '/guides/es/lcd-checker.html', '/guides/vi/lcd-checker.html', '/guides/id/lcd-checker.html', '/guides/de/lcd-checker.html',
-  '/guides/pt/online-zip-file.html', '/guides/es/online-zip-file.html', '/guides/vi/online-zip-file.html', '/guides/id/online-zip-file.html', '/guides/de/online-zip-file.html',
   // plan-warm-pascal-v3 S2 batch 54 (2026-05-31) - 5 locale variants × 3 guides
   '/guides/pt/test-lcd.html', '/guides/es/test-lcd.html', '/guides/vi/test-lcd.html', '/guides/id/test-lcd.html', '/guides/de/test-lcd.html',
   '/guides/pt/i-love-zip.html', '/guides/es/i-love-zip.html', '/guides/vi/i-love-zip.html', '/guides/id/i-love-zip.html', '/guides/de/i-love-zip.html',
@@ -14352,7 +14350,16 @@ export const ALIAS_ROUTES = {
   '/guides/ms-to-date.html': '/guides/en/ms-to-date.html',
   '/guides/oled-test-vs-lcd-test-what-changes-on-oled.html': '/guides/en/oled-test-vs-lcd-test-what-changes-on-oled.html',
   '/guides/online-zip-file-compressor.html': '/zip-tools/zip-file.html',
-  '/guides/online-zip-file.html': '/guides/en/online-zip-file.html',
+  // Consolidated 2026-08-08 (content-consolidation loop, backlog topical-map-zip.zip-file):
+  // the online-zip-file guide family duplicated the zip.zip-file intent; its unique claims were
+  // merged into make-zip-file-online (survivor: most AI citations + most inbound internal links).
+  '/guides/online-zip-file.html': '/guides/en/make-zip-file-online.html',
+  '/guides/en/online-zip-file.html': '/guides/en/make-zip-file-online.html',
+  '/guides/de/online-zip-file.html': '/guides/de/make-zip-file-online.html',
+  '/guides/es/online-zip-file.html': '/guides/es/make-zip-file-online.html',
+  '/guides/id/online-zip-file.html': '/guides/id/make-zip-file-online.html',
+  '/guides/pt/online-zip-file.html': '/guides/pt/make-zip-file-online.html',
+  '/guides/vi/online-zip-file.html': '/guides/vi/make-zip-file-online.html',
   '/guides/online-zip-vs-7z-vs-rar-which-to-pick.html': '/guides/en/online-zip-vs-7z-vs-rar-which-to-pick.html',
   '/guides/pdf-editing-ladder.html': '/guides/en/pdf-editing-ladder.html',
   '/guides/pdf-password-types-owner-vs-user.html': '/guides/en/pdf-password-types-owner-vs-user.html',
@@ -15320,7 +15327,6 @@ export const JSP_BY_ROUTE = {
   // covers the broader BUNDLE/PRIVACY workflow - the two pages mirror /guides/compress-zip.html
   // (size) vs the bigger English compress-zip guide family.
   // Cycle 20260518-25 create_new_guide_page - "Online Zip File" Lane-D guide. Companion to /zip-tools/zip-file.html. Sourced from tool-zipfile/SKILL.md M1-M7 + tool-ziptools/SKILL.md M1.
-  '/guides/en/online-zip-file.html': 'guide/en/online-zip-file.jsp',
   // Cycle 20260518-31 create_new_guide_page - "Create Zip File Online" Lane-D guide. Companion to /zip-tools/zip-file.html. Sourced from tool-zipfile/SKILL.md implemented features + BODYHTMLzipfile reader-task copy.
   '/guides/en/create-zip-file-online.html': 'guide/en/create-zip-file-online.jsp',
   // Cycle 20260518-32 create_new_guide_page - "compactar pasta" Lane-D guide (zip cluster, Portuguese folder compression intent). Companion to /zip-tools/zip-file.html. Sourced from tool-zipfile BODYHTML/BODYDESC + cluster-sibling Portuguese guide /guides/comprimir-zip-online.html.
@@ -16023,7 +16029,6 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/ms-to-date.html': 'guide/pt/ms-to-date.jsp', '/guides/es/ms-to-date.html': 'guide/es/ms-to-date.jsp', '/guides/vi/ms-to-date.html': 'guide/vi/ms-to-date.jsp', '/guides/id/ms-to-date.html': 'guide/id/ms-to-date.jsp', '/guides/de/ms-to-date.html': 'guide/de/ms-to-date.jsp',
   // plan-warm-pascal-v3 S2 batch 53 (2026-05-31) - 5 locale variants × 3 guides
   '/guides/pt/lcd-checker.html': 'guide/pt/lcd-checker.jsp', '/guides/es/lcd-checker.html': 'guide/es/lcd-checker.jsp', '/guides/vi/lcd-checker.html': 'guide/vi/lcd-checker.jsp', '/guides/id/lcd-checker.html': 'guide/id/lcd-checker.jsp', '/guides/de/lcd-checker.html': 'guide/de/lcd-checker.jsp',
-  '/guides/pt/online-zip-file.html': 'guide/pt/online-zip-file.jsp', '/guides/es/online-zip-file.html': 'guide/es/online-zip-file.jsp', '/guides/vi/online-zip-file.html': 'guide/vi/online-zip-file.jsp', '/guides/id/online-zip-file.html': 'guide/id/online-zip-file.jsp', '/guides/de/online-zip-file.html': 'guide/de/online-zip-file.jsp',
   // plan-warm-pascal-v3 S2 batch 54 (2026-05-31) - 5 locale variants × 3 guides
   '/guides/pt/test-lcd.html': 'guide/pt/test-lcd.jsp', '/guides/es/test-lcd.html': 'guide/es/test-lcd.jsp', '/guides/vi/test-lcd.html': 'guide/vi/test-lcd.jsp', '/guides/id/test-lcd.html': 'guide/id/test-lcd.jsp', '/guides/de/test-lcd.html': 'guide/de/test-lcd.jsp',
   '/guides/pt/i-love-zip.html': 'guide/pt/i-love-zip.jsp', '/guides/es/i-love-zip.html': 'guide/es/i-love-zip.jsp', '/guides/vi/i-love-zip.html': 'guide/vi/i-love-zip.jsp', '/guides/id/i-love-zip.html': 'guide/id/i-love-zip.jsp', '/guides/de/i-love-zip.html': 'guide/de/i-love-zip.jsp',
@@ -35376,7 +35381,7 @@ export const RELATED_GUIDES_CURATED = {
   ],
   // Batch 3 (2026-06-28) curated overrides.
   'guidescreatezipfileonline': [
-    '/guides/en/online-zip-file.html',
+    '/guides/en/make-zip-file-online.html',
   ],
   'guidesgiftoframe': [
     '/guides/en/extract-gif-frames-png-vs-jpg-which-format.html',
