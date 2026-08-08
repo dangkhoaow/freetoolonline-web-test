@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/event-time-countdown-vs-alternatives.html',
+  '/guides/event-time-countdown-step-by-step.html',
+  '/guides/event-time-countdown-when.html',
+  '/guides/pt/event-time-countdown-when.html',
+  '/guides/pt/event-time-countdown-step-by-step.html',
+  '/guides/pt/event-time-countdown-vs-alternatives.html',
+  '/guides/es/event-time-countdown-when.html',
+  '/guides/es/event-time-countdown-step-by-step.html',
+  '/guides/es/event-time-countdown-vs-alternatives.html',
+  '/guides/vi/event-time-countdown-when.html',
+  '/guides/vi/event-time-countdown-step-by-step.html',
+  '/guides/vi/event-time-countdown-vs-alternatives.html',
+  '/guides/id/event-time-countdown-when.html',
+  '/guides/id/event-time-countdown-step-by-step.html',
+  '/guides/id/event-time-countdown-vs-alternatives.html',
+  '/guides/de/event-time-countdown-when.html',
+  '/guides/de/event-time-countdown-step-by-step.html',
+  '/guides/de/event-time-countdown-vs-alternatives.html',
   '/guides/tennis-grand-slam-prize-money-lookup-vs-alternatives.html',
   '/guides/pt/tennis-grand-slam-prize-money-lookup-step-by-step.html',
   '/guides/pt/tennis-grand-slam-prize-money-lookup-when.html',
@@ -15134,6 +15152,7 @@ export const ALIAS_ROUTES = {
   '/national-day-today.html': '/utility-tools/national-day-today.html',
   '/holiday-countdown.html': '/utility-tools/holiday-countdown.html',
   '/tournament-prize-money-lookup.html': '/utility-tools/tournament-prize-money-lookup.html',
+  '/event-time-countdown.html': '/utility-tools/event-time-countdown.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -27567,6 +27586,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/tennis-grand-slam-prize-money-lookup-step-by-step.html': 'guide/de/tennis-grand-slam-prize-money-lookup-step-by-step.jsp',
   '/guides/de/tennis-grand-slam-prize-money-lookup-when.html': 'guide/de/tennis-grand-slam-prize-money-lookup-when.jsp',
   '/guides/de/tennis-grand-slam-prize-money-lookup-vs-alternatives.html': 'guide/de/tennis-grand-slam-prize-money-lookup-vs-alternatives.jsp',
+  '/utility-tools/event-time-countdown.html': 'utility/event-time-countdown.jsp',
+  '/guides/event-time-countdown-when.html': 'guide/event-time-countdown-when.jsp',
+  '/guides/event-time-countdown-step-by-step.html': 'guide/event-time-countdown-step-by-step.jsp',
+  '/guides/event-time-countdown-vs-alternatives.html': 'guide/event-time-countdown-vs-alternatives.jsp',
+  '/guides/pt/event-time-countdown-when.html': 'guide/pt/event-time-countdown-when.jsp',
+  '/guides/pt/event-time-countdown-step-by-step.html': 'guide/pt/event-time-countdown-step-by-step.jsp',
+  '/guides/pt/event-time-countdown-vs-alternatives.html': 'guide/pt/event-time-countdown-vs-alternatives.jsp',
+  '/guides/es/event-time-countdown-when.html': 'guide/es/event-time-countdown-when.jsp',
+  '/guides/es/event-time-countdown-step-by-step.html': 'guide/es/event-time-countdown-step-by-step.jsp',
+  '/guides/es/event-time-countdown-vs-alternatives.html': 'guide/es/event-time-countdown-vs-alternatives.jsp',
+  '/guides/vi/event-time-countdown-when.html': 'guide/vi/event-time-countdown-when.jsp',
+  '/guides/vi/event-time-countdown-step-by-step.html': 'guide/vi/event-time-countdown-step-by-step.jsp',
+  '/guides/vi/event-time-countdown-vs-alternatives.html': 'guide/vi/event-time-countdown-vs-alternatives.jsp',
+  '/guides/id/event-time-countdown-when.html': 'guide/id/event-time-countdown-when.jsp',
+  '/guides/id/event-time-countdown-step-by-step.html': 'guide/id/event-time-countdown-step-by-step.jsp',
+  '/guides/id/event-time-countdown-vs-alternatives.html': 'guide/id/event-time-countdown-vs-alternatives.jsp',
+  '/guides/de/event-time-countdown-when.html': 'guide/de/event-time-countdown-when.jsp',
+  '/guides/de/event-time-countdown-step-by-step.html': 'guide/de/event-time-countdown-step-by-step.jsp',
+  '/guides/de/event-time-countdown-vs-alternatives.html': 'guide/de/event-time-countdown-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.

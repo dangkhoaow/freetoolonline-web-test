@@ -1,0 +1,296 @@
+<script>
+    // Event-time countdown skeleton (event-time-countdown) - pure JS via the built-in Intl
+    // timezone database, no lib, no upload, no backend, zero network. Registry
+    // Gate-H entry: event_time_countdown_intl. One EVENT (a name plus a
+    // wall-clock date/time observed in a source IANA timezone) becomes a
+    // shareable page: a live 1-second countdown, the event moment in the
+    // visitor's own auto-detected zone, and a multi-zone table for the common
+    // coordination zones. G51 differentiation vs the live generic two-zone
+    // /utility-tools/time-zone-converter.html: that page converts an arbitrary
+    // wall-clock reading between two zones; THIS page pins one event as an
+    // epoch instant, ticks a live countdown against it (flipping to a
+    // count-up "started ... ago" state after the moment passes), and carries
+    // the whole event in the URL (?t=<epoch-millis>&tz=<IANA zone>&n=<name>)
+    // via history.replaceState so the link IS the invitation. Framework
+    // contract: doAfterPageRendered(); with no URL params it seeds a default
+    // event ("New Year 2027" at Jan 1 2027 00:00 in the visitor's zone) so
+    // e2e G16 has visible output with zero interaction.
+    //
+    // Zone math reuses the timezone-converter skeleton's Intl idiom:
+    // Intl.DateTimeFormat({timeZone}) already knows every IANA zone's offset
+    // AND every DST transition; etcGetOffsetMinutes() derives the offset a
+    // zone observes at an instant by formatting that instant in the zone and
+    // diffing against the UTC reading, and etcWallClockToUtc() resolves
+    // wall-clock -> epoch with a two-pass settle across DST boundaries. The
+    // countdown itself is pure epoch-millis arithmetic (DST-safe by
+    // construction - never naive date math on wall-clock fields). The
+    // timezone field is an <input list> bound to a <datalist> built from
+    // Intl.supportedValuesOf('timeZone') - a searchable select with zero
+    // extra script.
+
+    web.localUpload = false;
+
+    var ETC_FALLBACK_ZONES = [
+        'UTC', 'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles',
+        'America/Sao_Paulo', 'Europe/London', 'Europe/Paris', 'Europe/Berlin', 'Europe/Moscow',
+        'Africa/Cairo', 'Asia/Dubai', 'Asia/Kolkata', 'Asia/Bangkok', 'Asia/Ho_Chi_Minh',
+        'Asia/Shanghai', 'Asia/Tokyo', 'Asia/Seoul', 'Australia/Sydney', 'Pacific/Auckland',
+    ];
+
+    // Coordination zones rendered under the countdown (the source zone is
+    // prepended at render time and duplicates are collapsed).
+    var ETC_TABLE_ZONES = [
+        'America/New_York', 'America/Los_Angeles', 'Europe/London',
+        'Europe/Paris', 'Asia/Tokyo', 'Australia/Sydney',
+    ];
+
+    function etcZoneList() {
+        try {
+            if (typeof Intl.supportedValuesOf === 'function') {
+                var all = Intl.supportedValuesOf('timeZone');
+                if (all && all.length) return all;
+            }
+        } catch (e) { void e; }
+        return ETC_FALLBACK_ZONES;
+    }
+
+    function etcLocalZone() {
+        try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; }
+        catch (e) { return 'UTC'; }
+    }
+
+    function etcIsZone(zone) {
+        if (!zone) return false;
+        try { new Intl.DateTimeFormat('en-US', { timeZone: zone }); return true; }
+        catch (e) { return false; }
+    }
+
+    // Wall-clock parts the given zone observes at `date` (all 2-digit strings
+    // except year), via the same formatToParts idiom as the timezone-converter
+    // skeleton.
+    function etcZoneParts(date, zone) {
+        var dtf = new Intl.DateTimeFormat('en-US', {
+            timeZone: zone, hourCycle: 'h23',
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+        });
+        var parts = {};
+        dtf.formatToParts(date).forEach(function (p) { parts[p.type] = p.value; });
+        return parts;
+    }
+
+    // Offset in minutes EAST of UTC that `zone` observes at instant `date`:
+    // treat the zone's wall-clock reading as if it were UTC (Date.UTC) and
+    // diff against the real instant - DST-aware because Intl resolves DST
+    // from the real instant.
+    function etcGetOffsetMinutes(date, zone) {
+        var parts = etcZoneParts(date, zone);
+        var asUTC = Date.UTC(
+            parseInt(parts.year, 10), parseInt(parts.month, 10) - 1, parseInt(parts.day, 10),
+            parseInt(parts.hour, 10), parseInt(parts.minute, 10), parseInt(parts.second, 10)
+        );
+        return (asUTC - date.getTime()) / 60000;
+    }
+
+    // Convert a wall-clock reading (y,m,d,h,min) OBSERVED in `fromZone` into
+    // the real UTC instant it represents. Two passes settle the correct
+    // offset across a DST transition boundary.
+    function etcWallClockToUtc(y, m, d, h, min, fromZone) {
+        var guess = new Date(Date.UTC(y, m - 1, d, h, min, 0));
+        var off1 = etcGetOffsetMinutes(guess, fromZone);
+        var pass1 = new Date(guess.getTime() - off1 * 60000);
+        var off2 = etcGetOffsetMinutes(pass1, fromZone);
+        if (off2 === off1) return pass1;
+        return new Date(guess.getTime() - off2 * 60000);
+    }
+
+    // Epoch millis -> the datetime-local input value ("YYYY-MM-DDTHH:mm")
+    // that same instant reads as in `zone`.
+    function etcEpochToInputValue(epochMs, zone) {
+        var p = etcZoneParts(new Date(epochMs), zone);
+        return p.year + '-' + p.month + '-' + p.day + 'T' + p.hour + ':' + p.minute;
+    }
+
+    function etcFormatInZone(utcDate, zone) {
+        try {
+            return new Intl.DateTimeFormat('en-US', {
+                timeZone: zone, weekday: 'short', year: 'numeric', month: 'short', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
+            }).format(utcDate);
+        } catch (e) { return 'Error: ' + (e && e.message ? e.message : String(e)); }
+    }
+
+    function etcZoneLabel(zone) { return String(zone || '').replace(/_/g, ' '); }
+
+    function etcPad2(n) { return (n < 10 ? '0' : '') + n; }
+
+    function etcEsc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+        });
+    }
+
+    function etcDatalistHtml(zones) {
+        var out = '';
+        for (var i = 0; i < zones.length; i++) {
+            out += '<option value="' + zones[i] + '"></option>';
+        }
+        return out;
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('eventTimeCountdownTool');
+        if (!root) return; // not an event-time-countdown page
+
+        var zones = etcZoneList();
+        var localZone = etcLocalZone();
+
+        // --- Shareable URL state: ?t=<epoch-millis>&tz=<IANA zone>&n=<name>.
+        // Read on load (a shared link renders the shared event directly);
+        // written back on every input change via history.replaceState.
+        var qT = null, qTz = null, qN = null;
+        try {
+            var params = new URLSearchParams(window.location.search || '');
+            qT = params.get('t'); qTz = params.get('tz'); qN = params.get('n');
+        } catch (e) { void e; }
+
+        var state = {
+            name: (qN && qN.trim()) ? qN.trim() : 'New Year 2027',
+            zone: etcIsZone(qTz) ? qTz : localZone,
+            epochMs: 0,
+        };
+        var qEpoch = qT != null ? parseInt(qT, 10) : NaN;
+        state.epochMs = isFinite(qEpoch)
+            ? qEpoch
+            : etcWallClockToUtc(2027, 1, 1, 0, 0, state.zone).getTime();
+
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:10px;">' +
+            '<label for="etcName">Event </label>' +
+            '<input id="etcName" type="text" maxlength="80" class="w3-input w3-border" style="max-width:240px;display:inline-block;" placeholder="Event name">' +
+            '</div>' +
+            '<div class="w3-row" style="margin-bottom:8px;">' +
+            '<label for="etcWhen">Starts at </label>' +
+            '<input id="etcWhen" type="datetime-local" class="w3-input w3-border" style="max-width:220px;display:inline-block;">' +
+            '<label for="etcZone" style="margin-left:10px;">Timezone </label>' +
+            '<input id="etcZone" list="etcZoneOptions" class="w3-input w3-border" style="max-width:240px;display:inline-block;" placeholder="Type to search zones">' +
+            '<datalist id="etcZoneOptions">' + etcDatalistHtml(zones) + '</datalist> ' +
+            '<button id="etcCopy" type="button" class="w3-button w3-light-grey">Copy link</button>' +
+            '<span id="etcCopied" role="status" style="margin-left:8px;color:#2e7d32;font-size:0.9em;"></span>' +
+            '</div>' +
+            '<div id="etcCountdown" class="outputImgs" style="visibility:visible !important;background:#f7f7f7;border:1px solid #ddd;border-radius:4px;padding:14px;min-height:2em;max-width:560px;margin:0 auto;"></div>' +
+            '<div id="etcLocalLine" style="margin-top:10px;font-family:monospace;"></div>' +
+            '<div id="etcHint" style="margin-top:4px;color:#b00020;font-size:0.9em;"></div>' +
+            '<h3 style="margin-top:18px;">The event moment around the world</h3>' +
+            '<div id="etcTable" class="w3-row" style="max-width:560px;margin:0 auto;text-align:left;font-family:monospace;"></div>';
+
+        var q = function (sel) { return root.querySelector(sel); };
+        var nameEl = q('#etcName'), whenEl = q('#etcWhen'), zoneEl = q('#etcZone');
+        var countdownEl = q('#etcCountdown'), localEl = q('#etcLocalLine'), tableEl = q('#etcTable');
+        var hintEl = q('#etcHint'), copiedEl = q('#etcCopied');
+
+        nameEl.value = state.name;
+        whenEl.value = etcEpochToInputValue(state.epochMs, state.zone);
+        zoneEl.value = state.zone;
+
+        function etcQuery() {
+            return '?t=' + state.epochMs +
+                '&tz=' + encodeURIComponent(state.zone) +
+                '&n=' + encodeURIComponent(state.name);
+        }
+
+        function etcWriteUrl() {
+            try { history.replaceState(null, '', window.location.pathname + etcQuery()); }
+            catch (e) { void e; }
+        }
+
+        // Live countdown from epoch millis - DST-safe by construction. After
+        // the moment passes it flips to "started ... ago" and counts up.
+        function etcRenderCountdown() {
+            var diff = state.epochMs - Date.now();
+            var started = diff < 0;
+            var abs = started ? -diff : diff;
+            var days = Math.floor(abs / 86400000);
+            var hours = Math.floor(abs / 3600000) % 24;
+            var mins = Math.floor(abs / 60000) % 60;
+            var secs = Math.floor(abs / 1000) % 60;
+            function block(n, unit) {
+                return '<div style="display:inline-block;margin:0 8px;min-width:52px;">' +
+                    '<div style="font-size:1.9em;font-weight:700;font-family:monospace;">' + (unit === 'days' ? n : etcPad2(n)) + '</div>' +
+                    '<div style="font-size:0.75em;color:#555;">' + unit + '</div></div>';
+            }
+            countdownEl.innerHTML =
+                '<div style="margin-bottom:6px;">' + etcEsc(state.name) + (started ? ' <b>started</b>' : ' <b>starts in</b>') + '</div>' +
+                block(days, 'days') + block(hours, 'hours') + block(mins, 'minutes') + block(secs, 'seconds') +
+                (started ? '<div style="margin-top:4px;color:#555;">ago</div>' : '');
+        }
+
+        function etcRenderMoment() {
+            var when = new Date(state.epochMs);
+            localEl.innerHTML = '<b>In your timezone (' + etcZoneLabel(localZone) + '):</b> ' + etcFormatInZone(when, localZone);
+            var rows = '';
+            var seen = {};
+            var tableZones = [state.zone].concat(ETC_TABLE_ZONES);
+            for (var i = 0; i < tableZones.length; i++) {
+                var z = tableZones[i];
+                if (seen[z]) continue;
+                seen[z] = true;
+                rows += '<div style="padding:2px 0;"><b>' + etcZoneLabel(z) + (z === state.zone ? ' (event zone)' : '') + ':</b> ' + etcFormatInZone(when, z) + '</div>';
+            }
+            tableEl.innerHTML = rows;
+        }
+
+        function etcApplyInputs() {
+            state.name = (nameEl.value || '').trim() || 'Untitled event';
+            var z = (zoneEl.value || '').trim();
+            if (etcIsZone(z)) { state.zone = z; hintEl.textContent = ''; }
+            else { hintEl.textContent = 'Pick a timezone from the list to update the event zone.'; }
+            var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(whenEl.value || '');
+            if (m) {
+                state.epochMs = etcWallClockToUtc(
+                    parseInt(m[1], 10), parseInt(m[2], 10), parseInt(m[3], 10),
+                    parseInt(m[4], 10), parseInt(m[5], 10), state.zone
+                ).getTime();
+            }
+            etcWriteUrl();
+            etcRenderCountdown();
+            etcRenderMoment();
+        }
+
+        nameEl.addEventListener('input', etcApplyInputs);
+        whenEl.addEventListener('input', etcApplyInputs);
+        zoneEl.addEventListener('change', etcApplyInputs);
+
+        q('#etcCopy').addEventListener('click', function () {
+            var url = window.location.origin + window.location.pathname + etcQuery();
+            function ok() {
+                copiedEl.textContent = 'Copied!';
+                setTimeout(function () { copiedEl.textContent = ''; }, 1600);
+            }
+            function fallback() {
+                var ta = document.createElement('textarea');
+                ta.value = url;
+                ta.setAttribute('readonly', '');
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                var copied = false;
+                try { copied = document.execCommand('copy'); } catch (e) { copied = false; }
+                document.body.removeChild(ta);
+                if (copied) ok();
+                else copiedEl.textContent = 'Copy failed - the address bar already holds this link.';
+            }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(ok, fallback);
+            } else { fallback(); }
+        });
+
+        // Visible default output on load (e2e G16, zero interaction): the
+        // seeded or URL-shared event renders immediately, then ticks.
+        etcWriteUrl();
+        etcRenderCountdown();
+        etcRenderMoment();
+        setInterval(etcRenderCountdown, 1000);
+    }
+</script>

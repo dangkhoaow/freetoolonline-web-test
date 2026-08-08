@@ -905,6 +905,7 @@ try {
     { title: "What National Day Is Today?", url: "https://freetoolonline.com/utility-tools/national-day-today.html", include: !1, tags: "utility" },
     { title: "Holiday Countdown & Date Lookup", url: "https://freetoolonline.com/utility-tools/holiday-countdown.html", include: !1, tags: "utility" },
     { title: "Tennis Grand Slam Prize Money Lookup", url: "https://freetoolonline.com/utility-tools/tournament-prize-money-lookup.html", include: !1, tags: "utility" },
+    { title: "Event Time Countdown - What Time Is It For Me", url: "https://freetoolonline.com/utility-tools/event-time-countdown.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
