@@ -14,6 +14,24 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/wildfire-map-vs-alternatives.html',
+  '/guides/wildfire-map-step-by-step.html',
+  '/guides/wildfire-map-when.html',
+  '/guides/pt/wildfire-map-step-by-step.html',
+  '/guides/pt/wildfire-map-when.html',
+  '/guides/pt/wildfire-map-vs-alternatives.html',
+  '/guides/es/wildfire-map-step-by-step.html',
+  '/guides/es/wildfire-map-when.html',
+  '/guides/es/wildfire-map-vs-alternatives.html',
+  '/guides/vi/wildfire-map-step-by-step.html',
+  '/guides/vi/wildfire-map-when.html',
+  '/guides/vi/wildfire-map-vs-alternatives.html',
+  '/guides/id/wildfire-map-step-by-step.html',
+  '/guides/id/wildfire-map-when.html',
+  '/guides/id/wildfire-map-vs-alternatives.html',
+  '/guides/de/wildfire-map-step-by-step.html',
+  '/guides/de/wildfire-map-when.html',
+  '/guides/de/wildfire-map-vs-alternatives.html',
   '/guides/event-time-countdown-vs-alternatives.html',
   '/guides/event-time-countdown-step-by-step.html',
   '/guides/event-time-countdown-when.html',
@@ -15160,6 +15178,7 @@ export const ALIAS_ROUTES = {
   '/holiday-countdown.html': '/utility-tools/holiday-countdown.html',
   '/tournament-prize-money-lookup.html': '/utility-tools/tournament-prize-money-lookup.html',
   '/event-time-countdown.html': '/utility-tools/event-time-countdown.html',
+  '/wildfire-map.html': '/utility-tools/wildfire-map.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -27610,6 +27629,25 @@ export const JSP_BY_ROUTE = {
   '/guides/de/event-time-countdown-when.html': 'guide/de/event-time-countdown-when.jsp',
   '/guides/de/event-time-countdown-step-by-step.html': 'guide/de/event-time-countdown-step-by-step.jsp',
   '/guides/de/event-time-countdown-vs-alternatives.html': 'guide/de/event-time-countdown-vs-alternatives.jsp',
+  '/utility-tools/wildfire-map.html': 'utility/wildfire-map.jsp',
+  '/guides/wildfire-map-when.html': 'guide/wildfire-map-when.jsp',
+  '/guides/wildfire-map-step-by-step.html': 'guide/wildfire-map-step-by-step.jsp',
+  '/guides/wildfire-map-vs-alternatives.html': 'guide/wildfire-map-vs-alternatives.jsp',
+  '/guides/pt/wildfire-map-step-by-step.html': 'guide/pt/wildfire-map-step-by-step.jsp',
+  '/guides/pt/wildfire-map-when.html': 'guide/pt/wildfire-map-when.jsp',
+  '/guides/pt/wildfire-map-vs-alternatives.html': 'guide/pt/wildfire-map-vs-alternatives.jsp',
+  '/guides/es/wildfire-map-step-by-step.html': 'guide/es/wildfire-map-step-by-step.jsp',
+  '/guides/es/wildfire-map-when.html': 'guide/es/wildfire-map-when.jsp',
+  '/guides/es/wildfire-map-vs-alternatives.html': 'guide/es/wildfire-map-vs-alternatives.jsp',
+  '/guides/vi/wildfire-map-step-by-step.html': 'guide/vi/wildfire-map-step-by-step.jsp',
+  '/guides/vi/wildfire-map-when.html': 'guide/vi/wildfire-map-when.jsp',
+  '/guides/vi/wildfire-map-vs-alternatives.html': 'guide/vi/wildfire-map-vs-alternatives.jsp',
+  '/guides/id/wildfire-map-step-by-step.html': 'guide/id/wildfire-map-step-by-step.jsp',
+  '/guides/id/wildfire-map-when.html': 'guide/id/wildfire-map-when.jsp',
+  '/guides/id/wildfire-map-vs-alternatives.html': 'guide/id/wildfire-map-vs-alternatives.jsp',
+  '/guides/de/wildfire-map-step-by-step.html': 'guide/de/wildfire-map-step-by-step.jsp',
+  '/guides/de/wildfire-map-when.html': 'guide/de/wildfire-map-when.jsp',
+  '/guides/de/wildfire-map-vs-alternatives.html': 'guide/de/wildfire-map-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
