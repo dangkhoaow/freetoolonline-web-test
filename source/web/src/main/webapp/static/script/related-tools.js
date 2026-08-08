@@ -732,6 +732,7 @@ try {
     { title: "Exoplanet Direct Imaging 3D Explorer", url: "https://freetoolonline.com/space-3d/exoplanet-direct-imaging.html", include: !1, tags: "space-3d" },
     { title: "Earth-Moon Orbit Recession 3D Explorer", url: "https://freetoolonline.com/space-3d/earth-moon-orbit-recession.html", include: !1, tags: "space-3d" },
     { title: "Apollo Landing Sites on the Moon 3D Explorer", url: "https://freetoolonline.com/space-3d/apollo-landing-sites-moon-3d.html", include: !1, tags: "space-3d" },
+    { title: "Supermoon Lunar Apsides 3D Explorer", url: "https://freetoolonline.com/space-3d/supermoon-lunar-apsides.html", include: !1, tags: "space-3d" },
     { title: "Great Red Spot Jupiter 3D Explorer", url: "https://freetoolonline.com/space-3d/great-red-spot-jupiter.html", include: !1, tags: "space-3d" },
     { title: "Photon Sphere & ISCO 3D Explorer", url: "https://freetoolonline.com/space-3d/photon-sphere-isco-explorer.html", include: !1, tags: "space-3d" },
     { title: "Relativistic Jets & Doppler Beaming 3D Explorer", url: "https://freetoolonline.com/space-3d/relativistic-jets-agn.html", include: !1, tags: "space-3d" },

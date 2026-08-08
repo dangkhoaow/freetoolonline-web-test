@@ -1,0 +1,334 @@
+<script>
+    // 3D scene archetype skeleton (supermoon-lunar-apsides) - vendored three.js (ESM, dynamic
+    // import from /vendor/three/, NO CDN), fully client-side. Registry Gate-H
+    // entry: three_3d_scene_vendored. All geometry is procedural - no model files, no
+    // textures fetched. EDUCATIONAL APPROXIMATION, not a physical simulation.
+    //
+    // A visible wrapper + "Loading 3D engine..." placeholder renders
+    // synchronously (G16 render-only pass); the ~0.7 MB engine lazy-loads
+    // post-paint via requestIdleCallback and is cached by the browser.
+    // Fullscreen targets the WRAPPER div (controls stay visible).
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'supermoon-lunar-apsides';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) {
+        var s = String(slug || '').toLowerCase();
+        if (/supermoon|apsides|perigee|apogee/.test(s)) return 'supermoonapsides';
+        return 'supermoonapsides';
+    }
+
+    // ---- vendored ESM loader (ftoLoadPdfLib shape, but a cached import()) ----
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - building still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    // ---- shared scene shell: renderer + camera + custom pointer-orbit --------
+    // OrbitControls is NOT vendored (jsm addons import the bare 'three'
+    // specifier); this ~40-line orbit covers drag-rotate + wheel/pinch zoom
+    // with damping and a clamped pitch.
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            // critically-damped-ish lerp toward the goal orbit
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        function size() {
+            var w = Math.max(260, host.clientWidth);
+            var h = Math.round(w * 0.62);
+            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fsEl && fsEl.contains(host)) { h = Math.max(240, (window.innerHeight || h) - 150); }
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        host.appendChild(renderer.domElement);
+        renderer.domElement.style.touchAction = 'none';
+        renderer.domElement.style.borderRadius = '6px';
+        // pointer-orbit input
+        var drag = null, pinch = null, moved = 0;
+        host.addEventListener('pointerdown', function (e) {
+            drag = { x: e.clientX, y: e.clientY }; moved = 0;
+            host.setPointerCapture && host.setPointerCapture(e.pointerId);
+        });
+        host.addEventListener('pointermove', function (e) {
+            if (!drag) return;
+            var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+            moved += Math.abs(dx) + Math.abs(dy);
+            drag = { x: e.clientX, y: e.clientY };
+            orbit.goalTheta -= dx * 0.006;
+            orbit.goalPhi = Math.min(Math.max(orbit.goalPhi - dy * 0.005, 0.15), Math.PI - 0.2);
+        });
+        host.addEventListener('pointerup', function (e) {
+            var wasClick = moved < 8;
+            drag = null;
+            if (wasClick && shell.onClick) { shell.onClick(e); }
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR);
+        }, { passive: false });
+        host.addEventListener('touchstart', function (e) {
+            if (e.touches.length === 2) {
+                pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            }
+        }, { passive: true });
+        host.addEventListener('touchmove', function (e) {
+            if (e.touches.length === 2 && pinch) {
+                var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                pinch = d;
+            }
+        }, { passive: true });
+        window.addEventListener('resize', size);
+        document.addEventListener('fullscreenchange', size);
+        document.addEventListener('webkitfullscreenchange', size);
+        size();
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, size: size, onClick: null,
+            ndc: function (e) {
+                var r = renderer.domElement.getBoundingClientRect();
+                return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            },
+        };
+        return shell;
+    }
+
+    // ================= SUPERMOON LUNAR APSIDES ================================
+    // Earth (static) + Moon orbiting a true Kepler ellipse driven by the mean
+    // apsidal distances (perigee ~363,300 km, apogee ~405,500 km, e=0.0549,
+    // a~384,400 km, scaled 1 unit = 12,000 km). Kepler's equation is solved by
+    // Newton-Raphson each frame so the Moon speeds up near perigee and slows
+    // near apogee, matching Kepler's second law - not a distance lerp.
+    var T3D_APS_A_KM = 384400;      // mean semi-major axis
+    var T3D_APS_E = 0.0549;         // mean eccentricity
+    var T3D_APS_PERIOD_D = 27.55;   // anomalistic month (perigee to perigee)
+    var T3D_APS_KM_PER_UNIT = 12000;
+    var T3D_APS_MEAN_PERIGEE_KM = Math.round(T3D_APS_A_KM * (1 - T3D_APS_E)); // ~363,300
+    var T3D_APS_MEAN_APOGEE_KM = Math.round(T3D_APS_A_KM * (1 + T3D_APS_E));  // ~405,500
+    var T3D_APS_EXTREME_PERIGEE_KM = 356500; // record-cited closest perigee
+    var T3D_APS_EXTREME_APOGEE_KM = 406700;  // record-cited farthest apogee
+
+    function t3dSolveKepler(M, e) {
+        var E = M;
+        for (var i = 0; i < 8; i++) {
+            E = E - (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+        }
+        return E;
+    }
+
+    function t3dSupermoonApsides(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0a1020, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+        var sunLight = new THREE.DirectionalLight(0xfff3d0, 1.3);
+        sunLight.position.set(60, 30, 40);
+        scene.add(sunLight);
+
+        // Background stars so the canvas always paints pixels.
+        var SCOUNT = shell.low ? 400 : 900;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(120 + Math.random() * 180);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.55, sizeAttenuation: false })));
+
+        var earth = new THREE.Mesh(new THREE.SphereGeometry(3.2, 32, 16), new THREE.MeshLambertMaterial({ color: 0x42a5f5 }));
+        scene.add(earth);
+        var moon = new THREE.Mesh(new THREE.SphereGeometry(1.15, 32, 16), new THREE.MeshLambertMaterial({ color: 0xb0bec5 }));
+        scene.add(moon);
+
+        // scaled orbit params
+        var aUnits = T3D_APS_A_KM / T3D_APS_KM_PER_UNIT;
+        var e = T3D_APS_E;
+
+        // dashed ellipse path (perigee toward +X)
+        var ELLIPSE_SEGMENTS = 128;
+        var epos = new Float32Array((ELLIPSE_SEGMENTS + 1) * 3);
+        for (var i = 0; i <= ELLIPSE_SEGMENTS; i++) {
+            var Ei = (i / ELLIPSE_SEGMENTS) * Math.PI * 2;
+            var r = aUnits * (1 - e * Math.cos(Ei));
+            var nu = Math.atan2(Math.sqrt(1 - e * e) * Math.sin(Ei), Math.cos(Ei) - e);
+            epos[i * 3] = Math.cos(nu) * r;
+            epos[i * 3 + 1] = 0;
+            epos[i * 3 + 2] = Math.sin(nu) * r;
+        }
+        var egeo = new THREE.BufferGeometry();
+        egeo.setAttribute('position', new THREE.BufferAttribute(epos, 3));
+        var eline = new THREE.LineLoop(egeo, new THREE.LineDashedMaterial({ color: 0x546e7a, dashSize: 0.8, gapSize: 0.5 }));
+        eline.computeLineDistances();
+        scene.add(eline);
+
+        // apsis markers
+        var periMark = new THREE.Mesh(new THREE.SphereGeometry(0.35, 12, 8), new THREE.MeshBasicMaterial({ color: 0xffca28 }));
+        periMark.position.set(aUnits * (1 - e), 0, 0);
+        scene.add(periMark);
+        var apoMark = new THREE.Mesh(new THREE.SphereGeometry(0.35, 12, 8), new THREE.MeshBasicMaterial({ color: 0x64b5f6 }));
+        apoMark.position.set(-aUnits * (1 + e), 0, 0);
+        scene.add(apoMark);
+
+        function distanceKm(day) {
+            var M = (day / T3D_APS_PERIOD_D) * Math.PI * 2;
+            var E = t3dSolveKepler(M, e);
+            var rUnits = aUnits * (1 - e * Math.cos(E));
+            var nu = Math.atan2(Math.sqrt(1 - e * e) * Math.sin(E), Math.cos(E) - e);
+            return { rUnits: rUnits, nu: nu, km: rUnits * T3D_APS_KM_PER_UNIT };
+        }
+
+        function updateFacts(day, km) {
+            var sizeRatio = T3D_APS_A_KM / km;
+            var brightRatio = sizeRatio * sizeRatio;
+            var extremeSizeRatio = T3D_APS_EXTREME_APOGEE_KM / T3D_APS_EXTREME_PERIGEE_KM;
+            var extremeBrightRatio = extremeSizeRatio * extremeSizeRatio;
+            t3dInfo(
+                '<h3>Day ' + day.toFixed(1) + ' of ' + T3D_APS_PERIOD_D + ' (anomalistic month)</h3>' +
+                '<table class="w3-table w3-bordered w3-small">' +
+                '<tr><td>Current distance</td><td>' + Math.round(km).toLocaleString('en-US') + ' km</td></tr>' +
+                '<tr><td>Vs mean distance (' + T3D_APS_A_KM.toLocaleString('en-US') + ' km)</td><td>' + (sizeRatio >= 1 ? '+' : '') + ((sizeRatio - 1) * 100).toFixed(1) + '% apparent size, ' + (brightRatio >= 1 ? '+' : '') + ((brightRatio - 1) * 100).toFixed(1) + '% brightness</td></tr>' +
+                '<tr><td>Mean apsides used for this ellipse</td><td>perigee ' + T3D_APS_MEAN_PERIGEE_KM.toLocaleString('en-US') + ' km, apogee ' + T3D_APS_MEAN_APOGEE_KM.toLocaleString('en-US') + ' km</td></tr>' +
+                '<tr><td>Record "supermoon" comparison</td><td>perigee ' + T3D_APS_EXTREME_PERIGEE_KM.toLocaleString('en-US') + ' km vs apogee ' + T3D_APS_EXTREME_APOGEE_KM.toLocaleString('en-US') + ' km - about ' + ((extremeSizeRatio - 1) * 100).toFixed(0) + '% larger, ' + ((extremeBrightRatio - 1) * 100).toFixed(0) + '% brighter</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation: the Moon\'s distance here follows a fixed mean ellipse, solved with Kepler\'s equation so it speeds up near perigee and slows near apogee (Kepler\'s second law). The Sun\'s gravity actually perturbs each real cycle\'s exact perigee/apogee distance slightly, which is why the record "supermoon" figures differ from the mean figures used to draw this ellipse. Sizes on screen are not to scale with distance.</p>'
+            );
+        }
+
+        var day = 0, playing = false;
+        function setDay(d) {
+            day = Math.max(0, Math.min(T3D_APS_PERIOD_D, d));
+            var res = distanceKm(day);
+            moon.position.set(Math.cos(res.nu) * res.rUnits, 0, Math.sin(res.nu) * res.rUnits);
+            updateFacts(day, res.km);
+            var label = document.getElementById('t3dApsidesDayLabel');
+            if (label) label.textContent = day.toFixed(1) + ' d';
+            var slider = document.getElementById('t3dApsidesDay');
+            if (slider && Math.abs(parseFloat(slider.value) - day) > 0.01) slider.value = String(day);
+        }
+        setDay(0);
+
+        var slider = document.getElementById('t3dApsidesDay');
+        if (slider) slider.addEventListener('input', function () {
+            playing = false;
+            var pb = document.getElementById('t3dApsidesPlayBtn');
+            if (pb) pb.textContent = 'Play cycle';
+            setDay(parseFloat(slider.value || '0'));
+        });
+        var playBtn = document.getElementById('t3dApsidesPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            playing = !playing;
+            playBtn.textContent = playing ? 'Pause cycle' : 'Play cycle';
+        });
+        var periBtn = document.getElementById('t3dApsidesPerigeeBtn');
+        if (periBtn) periBtn.addEventListener('click', function () { playing = false; if (playBtn) playBtn.textContent = 'Play cycle'; setDay(0); });
+        var apoBtn = document.getElementById('t3dApsidesApogeeBtn');
+        if (apoBtn) apoBtn.addEventListener('click', function () { playing = false; if (playBtn) playBtn.textContent = 'Play cycle'; setDay(T3D_APS_PERIOD_D / 2); });
+
+        t3dStatus('Drag to orbit, scroll or pinch to zoom. Scrub the day slider or press Play cycle to watch perigee-to-apogee.');
+        return function animate(dt) {
+            if (!playing) return;
+            // 1x: full 27.55-day cycle in ~28 on-screen seconds
+            setDay(day + (dt / 1000) * (T3D_APS_PERIOD_D / 28));
+            if (day >= T3D_APS_PERIOD_D) setDay(0);
+        };
+    }
+
+    // ---- bootstrap ------------------------------------------------------------
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return; // not a 3D scene page
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        // Show only this scene's control row.
+        var rows = { supermoonapsides: 't3dApsidesControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? 'flex' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = {
+                        supermoonapsides: { radius: 50, maxR: 130, minR: 12, phi: 1.1 },
+                    };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dSupermoonApsides(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
