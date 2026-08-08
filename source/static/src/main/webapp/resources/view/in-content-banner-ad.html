@@ -1,5 +1,39 @@
 <style>
-  @media(max-width: 970px) {
+	/* RPM-sprint experiment RPM1 (2026-08-08): reclaim the dormant in-content
+	 * desktop banner slot.
+	 *
+	 * SYMPTOM: ad unit 2306818547 earned $0 sitewide. The container shipped with
+	 * an unconditional inline display-none-important attribute in the
+	 * 2026-03-25 vendor snapshot (021c59cba6) and was never edited since, so the
+	 * slot was hard-hidden at EVERY viewport on EVERY page - while still being
+	 * emitted into every page's HTML (page-renderer.mjs:1747). Live prod
+	 * /device-test-tools/lcd-test.html serves all 5 provisioned units but only 3
+	 * can ever render. An inline `!important` cannot be overridden by any
+	 * external stylesheet, so the un-hide has to happen here.
+	 *
+	 * FIX: drop the inline hide and size the slot explicitly, mirroring the
+	 * proven `.adslot_0` top-ad rules (same `<main class="page-main-content">`
+	 * container, so the same 970/728/320 responsive widths apply). The 90px
+	 * height is RESERVED before fill, so a filled slot causes no layout shift.
+	 *
+	 * SCOPE: desktop only (>= 1001px), preserving the original fragment's
+	 * `max-width: 1000px` hide. Mobile density and the mobile-390 CLS/CWV
+	 * budget are deliberately untouched.
+	 *
+	 * SAFETY (vs the 2026-05-15 commit 43599cc incident, which hid a WORKING
+	 * top-ad sitewide for 3d17h): every selector below is either exclusive to
+	 * this fragment (`.adslot_2`) or new (`.in-content-ad`). No shared selector
+	 * (`.ad-section`, `.top-ad`, `.ad-panel`) is redefined, so this change
+	 * cannot affect an already-earning slot. Worst case it stays hidden = the
+	 * current status quo.
+	 */
+	.adslot_2 {
+	    max-width: 100%;
+	    width: 970px;
+	    height: 90px;
+	}
+
+	@media(max-width: 970px) {
 	    .adslot_2 {
 			width: 728px;
 	    }
@@ -17,9 +51,32 @@
 		    display: none;
 		}
 	}
+
+	/* Clear separation from the surrounding content (AdSense placement policy). */
+	.ad-section.in-content-ad {
+		display: block;
+		margin: 18px 0 6px;
+	}
+
+	/* Desktop-only: never render and never reserve space below 1001px. */
+	@media(max-width: 1000px) {
+		.ad-section.in-content-ad {
+			display: none !important;
+		}
+	}
+
+	/* Collapse when ads are disabled (staging, ad blocker, `disableAd` cookie or
+	 * `?noads=1`) so no empty band is reserved - mirrors the top-ad rule. The
+	 * server emits `html.ads-disabled` initially and
+	 * extended-body-content.html:71 removes it for opted-in visitors before the
+	 * `.adsbygoogle:visible` gate at :132 runs. */
+	html.ads-disabled .ad-section.in-content-ad,
+	.qa-noads .ad-section.in-content-ad {
+		display: none !important;
+	}
 </style>
-<div class='w3-row ad-section' align="center" style="display: none!important;">
-	<!-- Responsive-ad-unit-mobile -->
+<div class='w3-row ad-section in-content-ad' align="center">
+	<!-- Responsive-ad-unit-in-content (desktop >= 1001px) -->
 	<ins class="adsbygoogle adslot_2"
 	     data-ad-client="ca-pub-2317460280557760"
 	     data-ad-slot="2306818547"></ins>
