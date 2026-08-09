@@ -15328,6 +15328,7 @@ export const ALIAS_ROUTES = {
   '/guides/de/grocery-list-when.html': '/utility-tools/grocery-list.html',
   '/text-summarizer.html': '/utility-tools/text-summarizer.html',
   '/subtitle-generator.html': '/video-tools/subtitle-generator.html',
+  '/ai-translator.html': '/utility-tools/ai-translator.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -27780,6 +27781,7 @@ export const JSP_BY_ROUTE = {
   '/guides/de/subtitle-generator-srt-vtt-when.html': 'guide/de/subtitle-generator-srt-vtt-when.jsp',
   '/guides/de/subtitle-generator-srt-vtt-step-by-step.html': 'guide/de/subtitle-generator-srt-vtt-step-by-step.jsp',
   '/guides/de/subtitle-generator-srt-vtt-vs-alternatives.html': 'guide/de/subtitle-generator-srt-vtt-vs-alternatives.jsp',
+  '/utility-tools/ai-translator.html': 'utility/ai-translator.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
