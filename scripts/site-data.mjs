@@ -2286,7 +2286,6 @@ export const INFO_ROUTES = new Set([
   // Cycle 20260517-10 create_new_guide_page - exact-match "zip size reducer" landing (GSC 605 imp / 56 clicks / pos 5.67 / CTR 9.26%; opportunity_score 96.84).
   // Cycle 20260519-12 create_new_guide_page - exact-match "zip file size compressor" landing (GSC 354 imp / 44 clicks / pos 5.43 / CTR 12.43%; opportunity_score 57.07). Implementing tool /zip-file.html. Append-only; non-cannibalizing vs /guides/how-to-make-a-zip-file-smaller.html, /guides/zip-size-reducer.html, /guides/compress-zip-file-to-smaller-size.html (each targets a distinct head-tail intent).
   // Cycle 20260519-15 create_new_guide_page — "resize zip file" routing/disambiguation Lane-D guide (GSC 406 imp / 19 clicks / pos 6.83 / CTR 4.68%; opportunity_score 56.6). Distinguishing role: addresses the three-way wording ambiguity (shrink vs split vs shrink-photo-inputs-first), routes to the existing shrink / split / image-resize guides — not a 10th compress-zip duplicate.
-  '/guides/en/resize-zip-file.html',
   // Cycle 20260520-16 create_new_guide_page — Indonesian-language guide "kompres file zip" (GSC 338 imp / 13 clicks / pos 6.36 / CTR 3.85%; opportunity_score 51.12). Implementing tool /zip-file.html. Companion sibling to /guides/comprimir-zip-online.html (Spanish) and /guides/compactar-pasta.html (Portuguese).
   // Cycle 20260523-5 P52.I create_new_guide_page — Indonesian-language size-question guide "kompres zip" (GSC 248 imp / 18 clicks / pos 7.42 / CTR 7.26%; opportunity_score 30.98). Implementing tool /zip-file.html. SIZE-focused sibling to /guides/kompres-file-zip.html (broader Indonesian bundle/privacy guide).
   '/guides/en/online-zip-vs-7z-vs-rar-which-to-pick.html',
@@ -3073,7 +3072,6 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/md5-hash-decrypt.html', '/guides/es/md5-hash-decrypt.html', '/guides/vi/md5-hash-decrypt.html', '/guides/id/md5-hash-decrypt.html', '/guides/de/md5-hash-decrypt.html',
   '/guides/pt/led-test-vs-lcd-test-which-applies-to-your-screen.html', '/guides/es/led-test-vs-lcd-test-which-applies-to-your-screen.html', '/guides/vi/led-test-vs-lcd-test-which-applies-to-your-screen.html', '/guides/id/led-test-vs-lcd-test-which-applies-to-your-screen.html', '/guides/de/led-test-vs-lcd-test-which-applies-to-your-screen.html',
   // plan-warm-pascal-v3 S2 batch 52 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/resize-zip-file.html', '/guides/es/resize-zip-file.html', '/guides/vi/resize-zip-file.html', '/guides/id/resize-zip-file.html', '/guides/de/resize-zip-file.html',
   '/guides/pt/md5-decrypt-online.html', '/guides/es/md5-decrypt-online.html', '/guides/vi/md5-decrypt-online.html', '/guides/id/md5-decrypt-online.html', '/guides/de/md5-decrypt-online.html',
   '/guides/pt/ms-to-date.html', '/guides/es/ms-to-date.html', '/guides/vi/ms-to-date.html', '/guides/id/ms-to-date.html', '/guides/de/ms-to-date.html',
   // plan-warm-pascal-v3 S2 batch 53 (2026-05-31) - 5 locale variants × 3 guides
@@ -3142,17 +3140,7 @@ export const INFO_ROUTES = new Set([
   '/guides/id/split-pdf-online-free.html',
   // cycle 20260615-5 - split-pdf-online-free DE locale variant (EN-first locale drain COMPLETE)
   '/guides/de/split-pdf-online-free.html',
-  // cycle 20260623-54 - mengecilkan-ukuran-zip EN + PT locale variant (create_new_guide_page locale completion)
-  '/guides/mengecilkan-ukuran-zip.html',
-  '/guides/pt/mengecilkan-ukuran-zip.html',
-  // cycle 20260624 - mengecilkan-ukuran-zip ES locale variant (EN-first locale drain; vi/id/de remain)
-  '/guides/es/mengecilkan-ukuran-zip.html',
-  // cycle 20260624-2 - mengecilkan-ukuran-zip VI locale variant (EN-first locale drain; id/de remain)
-  '/guides/vi/mengecilkan-ukuran-zip.html',
-  // cycle 20260624-3 - mengecilkan-ukuran-zip ID locale variant (EN-first locale drain; de remains)
-  '/guides/id/mengecilkan-ukuran-zip.html',
-  // cycle 20260624-4 - mengecilkan-ukuran-zip DE locale variant (EN-first locale drain; locale-complete)
-  '/guides/de/mengecilkan-ukuran-zip.html',
+  // mengecilkan-ukuran-zip retired 2026-08-10 (consolidation fire42) -> see ALIAS_ROUTES.
   // cycle 20260630-4 - merge-pdf-online-free-unlimited VI locale variant (EN-first locale drain; id/de remain)
   '/guides/vi/merge-pdf-online-free-unlimited.html',
   // cycle 20260630-5 - merge-pdf-online-free-unlimited ID locale variant (EN-first locale drain; de remains)
@@ -14507,7 +14495,33 @@ export const ALIAS_ROUTES = {
   '/guides/recover-corrupt-zip-file-options.html': '/guides/en/recover-corrupt-zip-file-options.html',
   '/guides/reduce-zip-file-size-online.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
   '/guides/resize-image-online-free.html': '/guides/en/resize-image-online-free.html',
-  '/guides/resize-zip-file.html': '/guides/en/resize-zip-file.html',
+  '/guides/resize-zip-file.html': '/guides/en/how-to-reduce-zip-file-size-online.html', // de-chained 2026-08-10 (fire42): pointed into the retired resize-zip-file family
+  // 2026-08-10 content-consolidation fire42 step-1a: the zip.reduce-zip-file-size
+  // intent node carried 3 live guide families. The 2 doorway families were retired
+  // into the canonical how-to-reduce-zip-file-size-online family (116 clicks /
+  // 8535 impr / 68 AI citations), locale-matched: resize-zip-file (675-878w,
+  // 2 clicks / 174 impr / 0 AI citations, 1 editorial inbound link, pt+es already
+  // sitemap-pruned) and mengecilkan-ukuran-zip (142-237w, 4 clicks / 18 impr /
+  // 0 AI citations, inbound almost entirely FROM the canonical itself, vi+de
+  // already sitemap-pruned). Their unique facts - pixel-downscaling as a lever
+  // separate from format conversion, the corporate-Outlook 10-20 MB and
+  // share-link 100 MB caps, the zip-is-rebuilt-never-edited-in-place mechanic,
+  // the strip-password-then-repack path with the packer's optional AES-128 /
+  // AES-256, and the extract-one-file spot-check - were folded into all six
+  // canonical locales first. Edge layer mirrored in seo-reports/static-plan/
+  // 20260510/cloudfront-function/url-migration-301.js per the two-layer rule.
+  '/guides/en/resize-zip-file.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
+  '/guides/pt/resize-zip-file.html': '/guides/pt/how-to-reduce-zip-file-size-online.html',
+  '/guides/es/resize-zip-file.html': '/guides/es/how-to-reduce-zip-file-size-online.html',
+  '/guides/vi/resize-zip-file.html': '/guides/vi/how-to-reduce-zip-file-size-online.html',
+  '/guides/id/resize-zip-file.html': '/guides/id/how-to-reduce-zip-file-size-online.html',
+  '/guides/de/resize-zip-file.html': '/guides/de/how-to-reduce-zip-file-size-online.html',
+  '/guides/mengecilkan-ukuran-zip.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
+  '/guides/pt/mengecilkan-ukuran-zip.html': '/guides/pt/how-to-reduce-zip-file-size-online.html',
+  '/guides/es/mengecilkan-ukuran-zip.html': '/guides/es/how-to-reduce-zip-file-size-online.html',
+  '/guides/vi/mengecilkan-ukuran-zip.html': '/guides/vi/how-to-reduce-zip-file-size-online.html',
+  '/guides/id/mengecilkan-ukuran-zip.html': '/guides/id/how-to-reduce-zip-file-size-online.html',
+  '/guides/de/mengecilkan-ukuran-zip.html': '/guides/de/how-to-reduce-zip-file-size-online.html',
   '/guides/screen-display-test-synonyms.html': '/guides/en/screen-display-test-synonyms.html',
   '/guides/screen-test-for-laptop-5-minute-checklist.html': '/guides/en/screen-test-for-laptop-5-minute-checklist.html',
   '/guides/screen-test-online-vs-app-which-is-more-accurate.html': '/guides/en/screen-test-online-vs-app-which-is-more-accurate.html',
@@ -15711,7 +15725,6 @@ export const JSP_BY_ROUTE = {
   // Kebab URL + guide/ singular subdir per granted-card convention.
   // Cycle 20260515-16 — "Compress ZIP Size" Lane-D guide.
   // Cycle 20260519-15 create_new_guide_page — "resize zip file" wording-disambiguation Lane-D guide (GSC 406 imp / 19 clicks / pos 6.83 / CTR 4.68%; opportunity_score 56.6). Implementing tool /zip-tools/zip-file.html. Append-only routing/disambiguation guide (NOT a 10th compress-zip duplicate); distinguishes from /guides/how-to-make-a-zip-file-smaller.html, /guides/zip-size-reducer.html, /guides/compress-zip-size.html (which all assume "shrink"), by addressing the three-way reader intent ambiguity (shrink vs split vs shrink-inputs-first).
-  '/guides/en/resize-zip-file.html': 'guide/en/resize-zip-file.jsp',
 
   '/pdf-tools/compose-pdf.html': 'pdf/compose-pdf.jsp',
   '/pdf-tools/split-pdf-by-range.html': 'pdf/split-by-range.jsp',
@@ -16179,7 +16192,6 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/md5-hash-decrypt.html': 'guide/pt/md5-hash-decrypt.jsp', '/guides/es/md5-hash-decrypt.html': 'guide/es/md5-hash-decrypt.jsp', '/guides/vi/md5-hash-decrypt.html': 'guide/vi/md5-hash-decrypt.jsp', '/guides/id/md5-hash-decrypt.html': 'guide/id/md5-hash-decrypt.jsp', '/guides/de/md5-hash-decrypt.html': 'guide/de/md5-hash-decrypt.jsp',
   '/guides/pt/led-test-vs-lcd-test-which-applies-to-your-screen.html': 'guide/pt/led-test-vs-lcd-test-which-applies-to-your-screen.jsp', '/guides/es/led-test-vs-lcd-test-which-applies-to-your-screen.html': 'guide/es/led-test-vs-lcd-test-which-applies-to-your-screen.jsp', '/guides/vi/led-test-vs-lcd-test-which-applies-to-your-screen.html': 'guide/vi/led-test-vs-lcd-test-which-applies-to-your-screen.jsp', '/guides/id/led-test-vs-lcd-test-which-applies-to-your-screen.html': 'guide/id/led-test-vs-lcd-test-which-applies-to-your-screen.jsp', '/guides/de/led-test-vs-lcd-test-which-applies-to-your-screen.html': 'guide/de/led-test-vs-lcd-test-which-applies-to-your-screen.jsp',
   // plan-warm-pascal-v3 S2 batch 52 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/resize-zip-file.html': 'guide/pt/resize-zip-file.jsp', '/guides/es/resize-zip-file.html': 'guide/es/resize-zip-file.jsp', '/guides/vi/resize-zip-file.html': 'guide/vi/resize-zip-file.jsp', '/guides/id/resize-zip-file.html': 'guide/id/resize-zip-file.jsp', '/guides/de/resize-zip-file.html': 'guide/de/resize-zip-file.jsp',
   '/guides/pt/md5-decrypt-online.html': 'guide/pt/md5-decrypt-online.jsp', '/guides/es/md5-decrypt-online.html': 'guide/es/md5-decrypt-online.jsp', '/guides/vi/md5-decrypt-online.html': 'guide/vi/md5-decrypt-online.jsp', '/guides/id/md5-decrypt-online.html': 'guide/id/md5-decrypt-online.jsp', '/guides/de/md5-decrypt-online.html': 'guide/de/md5-decrypt-online.jsp',
   '/guides/pt/ms-to-date.html': 'guide/pt/ms-to-date.jsp', '/guides/es/ms-to-date.html': 'guide/es/ms-to-date.jsp', '/guides/vi/ms-to-date.html': 'guide/vi/ms-to-date.jsp', '/guides/id/ms-to-date.html': 'guide/id/ms-to-date.jsp', '/guides/de/ms-to-date.html': 'guide/de/ms-to-date.jsp',
   // plan-warm-pascal-v3 S2 batch 53 (2026-05-31) - 5 locale variants × 3 guides
@@ -16290,13 +16302,6 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/how-to-run-a-private-ai-chat-in-your-browser.html': 'guide/vi/how-to-run-a-private-ai-chat-in-your-browser.jsp',
   '/guides/id/how-to-run-a-private-ai-chat-in-your-browser.html': 'guide/id/how-to-run-a-private-ai-chat-in-your-browser.jsp',
   '/guides/de/how-to-run-a-private-ai-chat-in-your-browser.html': 'guide/de/how-to-run-a-private-ai-chat-in-your-browser.jsp',
-  '/guides/mengecilkan-ukuran-zip.html': 'guide/mengecilkan-ukuran-zip.jsp',
-  '/guides/pt/mengecilkan-ukuran-zip.html': 'guide/pt/mengecilkan-ukuran-zip.jsp',
-  '/guides/es/mengecilkan-ukuran-zip.html': 'guide/es/mengecilkan-ukuran-zip.jsp',
-  '/guides/vi/mengecilkan-ukuran-zip.html': 'guide/vi/mengecilkan-ukuran-zip.jsp',
-  '/guides/id/mengecilkan-ukuran-zip.html': 'guide/id/mengecilkan-ukuran-zip.jsp',
-  // cycle 20260624-4 - mengecilkan-ukuran-zip DE locale variant (EN-first locale drain; locale-complete)
-  '/guides/de/mengecilkan-ukuran-zip.html': 'guide/de/mengecilkan-ukuran-zip.jsp',
   '/guides/video-converter-online-free.html': 'guide/video-converter-online-free.jsp',
   // cycle 20260625-6 create_new_guide_page (locale completion) - pt variant (staging-only until es/vi/id/de complete).
   '/guides/pt/video-converter-online-free.html': 'guide/pt/video-converter-online-free.jsp',
@@ -35458,7 +35463,6 @@ export const RELATED_GUIDES_CURATED = {
     '/guides/en/how-to-compress-a-folder.html',
     '/guides/en/zip-folder-online-free.html',
     '/guides/en/compress-folder-online.html',
-    '/guides/en/resize-zip-file.html',
     '/guides/es/compress-folder-to-zip-online-free.html',
     '/guides/es/reduce-zip-size-online.html',
     '/guides/pt/compress-zip-file.html',
