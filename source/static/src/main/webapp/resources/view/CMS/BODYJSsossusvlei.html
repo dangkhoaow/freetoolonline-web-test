@@ -1,0 +1,339 @@
+<script>
+    // 3D scene archetype skeleton (sossusvlei) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (sossusvlei).
+    // All geometry is procedural. places-3d cluster member, 2026-08-09.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey geology.
+    // Published figures (cross-checked 2026-08-09):
+    //   - Sossusvlei, Namib-Naukluft National Park, Namibia
+    //   - Big Daddy dune: about 325 m above Deadvlei - one of the tallest
+    //     dunes on Earth; a star dune (multi-armed ridge from shifting wind)
+    //   - Dune 45: about 170 m tall, built from about 5-million-year-old sand,
+    //     45 km along the road from Sesriem gate
+    //   - Deadvlei: a white clay pan with dead camel thorn trees estimated
+    //     600-900 years old, preserved by extreme dryness (too dry to decay)
+    //   - Namib Desert: widely cited as the world's oldest desert, hyper-arid
+    //     for roughly 55-80 million years; parts receive well under 10 mm of
+    //     rain per year
+    //   - Dune color from iron oxide coating - older, more oxidized sand
+    //     reads deeper red
+    //   - Namib Sand Sea - UNESCO World Heritage Site (inscribed 2013)
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'sossusvlei';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placessossusvlei'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x1c130a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.58));
+        var key = new THREE.DirectionalLight(0xffdcae, 1.05);
+        key.position.set(-11, 17, 8);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.96, metalness: 0 }));
+        }
+
+        // Star-dune field, 1 unit = ~60 m vertical. Several radiating-arm
+        // mounds (star dunes: multiple ridges from shifting wind direction)
+        // rise from a rolling sand apron; a smoothstepped flat disc near the
+        // tallest dune's base carves out Deadvlei, the white clay pan.
+        var MAXH = 5.6; // Big Daddy (~325 m) as the tallest mound in scene units
+        var DUNES = [
+            [ 0.6, -0.6, 5.6, 6.4, 5, 0.4],  // Big Daddy - tallest star dune, dominates the massif
+            [-4.4,  0.6, 3.4, 5.0, 4, 1.1],  // interlocking ridge, overlaps Big Daddy's flank
+            [ 4.6, -0.4, 3.1, 4.8, 5, 2.4],  // interlocking ridge on the other side
+            [-1.0, -4.6, 2.6, 4.2, 4, 0.2],  // ridge chain continuing behind
+            [ 2.6, -5.2, 2.3, 4.0, 4, 3.0]
+        ];
+        function duneBump(x, z, cx, cz, h, r, arms, phase) {
+            var dx = x - cx, dz = z - cz;
+            var dist = Math.hypot(dx, dz);
+            if (dist >= r) return 0;
+            var t = 1 - dist / r;
+            var ang = Math.atan2(dz, dx);
+            // Sharper arm contrast (star-dune ridges/valleys) plus a finer
+            // ripple frequency riding the same angle, so flanks read as
+            // corrugated ridge lines rather than a smooth dome.
+            var armMod = 0.5 + 0.5 * Math.cos(arms * ang + phase);
+            var ripple = 1 + 0.08 * Math.sin(dist * 2.4 + ang * (arms * 2)) * (1 - t);
+            var micro = 0.9 + 0.14 * fbm(x * 0.55 + cx * 2, z * 0.55 + cz * 2, 3);
+            return h * Math.pow(t, 1.2) * armMod * ripple * micro;
+        }
+        var PAN_CX = 0.4, PAN_CZ = 3.2, PAN_R = 2.9;
+        function panFactor(x, z) {
+            var d = Math.hypot(x - PAN_CX, z - PAN_CZ) / PAN_R;
+            var m = Math.max(0, Math.min(1, d));
+            return m * m * (3 - 2 * m); // 0 inside the pan .. 1 outside it
+        }
+        function height(x, z) {
+            var base = 0.16 * (fbm(x * 0.3 + 6, z * 0.3 + 9, 4) - 0.5);
+            var h = base;
+            for (var i = 0; i < DUNES.length; i++) {
+                var d = DUNES[i];
+                h += duneBump(x, z, d[0], d[1], d[2], d[3], d[4], d[5]);
+            }
+            return Math.max(h, 0) * panFactor(x, z);
+        }
+        var COLOR_BANDS = [
+            [0.00, 0xd9b98a],
+            [0.20, 0xc98f5a],
+            [0.45, 0xb06a3c],
+            [0.70, 0x8f4326],
+            [0.90, 0x6e2c1c]
+        ];
+        var OXIDE_BANDS = [
+            [0.00, 0xe0c194],
+            [0.20, 0xd07a3e],
+            [0.45, 0xaa4a22],
+            [0.70, 0x8a2c16],
+            [0.90, 0x5c1a10]
+        ];
+        var normColors = null, oxideColors = null, terrain;
+        function bandColor(c, h, x, z, bands) {
+            var pf = panFactor(x, z);
+            if (pf < 0.35) {
+                var g = 0.88 + 0.10 * fbm(x * 2.2 + 30, z * 2.2 + 12, 3);
+                c.setHex(0xe9e2ca).multiplyScalar(g);
+                return;
+            }
+            var n = 0.92 + 0.16 * fbm(x * 1.5 + 10, z * 1.5 + 4, 3);
+            var u = Math.max(0, Math.min(1, h / MAXH));
+            var hex = bands[bands.length - 1][1];
+            for (var i = bands.length - 1; i >= 0; i--) { if (u >= bands[i][0]) { hex = bands[i][1]; break; } }
+            c.setHex(hex);
+            c.multiplyScalar(n);
+        }
+        function build(bands) {
+            var pos = terrain.geometry.attributes.position, col = new THREE.Color();
+            var arr = new Float32Array(pos.count * 3);
+            for (var i = 0; i < pos.count; i++) {
+                bandColor(col, pos.getY(i), pos.getX(i), pos.getZ(i), bands);
+                arr[i * 3] = col.r; arr[i * 3 + 1] = col.g; arr[i * 3 + 2] = col.b;
+            }
+            return arr;
+        }
+        terrain = makeTerrain(24, 21, shell.low ? 130 : 190, shell.low ? 112 : 165, height, function (c, h, x, z) { bandColor(c, h, x, z, COLOR_BANDS); });
+        scene.add(terrain);
+        normColors = terrain.geometry.attributes.color.array.slice();
+        oxideColors = build(OXIDE_BANDS);
+
+        // Deadvlei dead-tree markers: thin dark camel-thorn trunk skeletons
+        // scattered across the clay pan - deterministic hash-seeded placement.
+        var trees = new THREE.Group();
+        var treeMat = new THREE.MeshStandardMaterial({ color: 0x2a2018, roughness: 0.85 });
+        for (var ti = 0; ti < 9; ti++) {
+            var ta = hash2(ti * 3.1, 7.7) * Math.PI * 2;
+            var tr = 0.4 + hash2(ti * 5.3, 2.1) * (PAN_R * 0.72);
+            var tx = PAN_CX + Math.cos(ta) * tr, tz = PAN_CZ + Math.sin(ta) * tr;
+            var th = 0.22 + hash2(ti * 9.7, 4.4) * 0.24;
+            var trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.045, th, 5), treeMat);
+            trunk.position.set(tx, th / 2, tz);
+            trunk.rotation.z = (hash2(ti, 11.2) - 0.5) * 0.4;
+            trees.add(trunk);
+        }
+        scene.add(trees);
+
+        var oxideOn = false, treesOn = true;
+
+        function panelHtml() {
+            return '<h3>Sossusvlei: star dunes over a dead clay pan</h3>' +
+                '<p>A relief of Sossusvlei: several star-shaped dunes built by wind from more than one direction, ringing the flat white Deadvlei clay pan at the foot of the tallest dune.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Big Daddy dune</td><td>about 325 m above Deadvlei - one of the tallest dunes on Earth</td></tr>' +
+                '<tr><td>Dune 45</td><td>about 170 m tall, about 5-million-year-old sand</td></tr>' +
+                '<tr><td>Dune type</td><td>star dunes - multiple ridges from shifting wind direction</td></tr>' +
+                '<tr><td>Deadvlei trees</td><td>dead camel thorn trees, about 600-900 years old</td></tr>' +
+                '<tr><td>Namib Desert age</td><td>about 55-80 million years - widely cited as the world\'s oldest desert</td></tr>' +
+                '<tr><td>Location</td><td>Namib-Naukluft National Park, Namibia</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the dune field, tree placement, and color bands are procedural teaching cues, not survey geology.</p>';
+        }
+
+        function apply() {
+            terrain.geometry.attributes.color.array.set(oxideOn ? oxideColors : normColors);
+            terrain.geometry.attributes.color.needsUpdate = true;
+            trees.visible = treesOn;
+            var ob = document.getElementById('t3dPsvOxideBtn');
+            if (ob) ob.textContent = 'Iron-oxide color bands: ' + (oxideOn ? 'On' : 'Off');
+            var tb = document.getElementById('t3dPsvTreesBtn');
+            if (tb) tb.textContent = 'Deadvlei tree markers: ' + (treesOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ oxideOn: oxideOn, treesOn: treesOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.oxideOn === 'boolean') oxideOn = store.oxideOn;
+        if (typeof store.treesOn === 'boolean') treesOn = store.treesOn;
+        apply();
+
+        var oxideBtn = document.getElementById('t3dPsvOxideBtn');
+        if (oxideBtn) oxideBtn.addEventListener('click', function () { oxideOn = !oxideOn; apply(); });
+        var treesBtn = document.getElementById('t3dPsvTreesBtn');
+        if (treesBtn) treesBtn.addEventListener('click', function () { treesOn = !treesOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle iron-oxide color bands or the Deadvlei tree markers.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placessossusvlei: 't3dPsvControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placessossusvlei: { radius: 21, maxR: 55, minR: 8, phi: 0.92, theta: 0.65, targetY: 1.4 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
