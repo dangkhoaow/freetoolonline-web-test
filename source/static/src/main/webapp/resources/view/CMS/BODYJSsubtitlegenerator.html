@@ -1,0 +1,505 @@
+<script>
+    // Subtitle generator skeleton (subtitle-generator) - timed caption FILE (SRT/VTT) from a
+    // video or audio file, 100% in the browser. Registry Gate-H entry:
+    // subtitle_generator_whisper_transformersjs.
+    //
+    // WHY THIS IS NOT the speech-to-text page (G51, load-bearing): that page turns
+    // audio into PROSE. This page turns a VIDEO into a TIMED CUE FILE - numbered
+    // cues with hh:mm:ss,mmm timecodes that a player or editor loads. Different
+    // input, different artifact, different job.
+    //
+    // ENGINE LADDER - two panels, both always visible, NO mode toggle. (Reader copy
+    // must never describe a switch that does not exist: that exact false claim was
+    // a confirmed defect in this lane's ship #2 post-audit.)
+    //   (1) AI panel: on-device Whisper (Transformers.js v4, Xenova/whisper-tiny
+    //       q8, ~40MB) with return_timestamps for real cue boundaries. Weights load
+    //       ONLY on an explicit click; WebGPU preferred, WASM CPU fallback. The
+    //       browser cache is SHARED with /utility-tools/speech-to-text.html, so a
+    //       repeat visitor pays 0 MB.
+    //   (2) Manual panel: deterministic, zero-model, zero-network. Paste a script;
+    //       cues are timed against the loaded media duration, or against a stated
+    //       reading rate when no file is loaded. Every browser gets a real result -
+    //       including ones that cannot demux the chosen container.
+    // There is deliberately NO Chrome Built-in AI tier: no built-in captioning API
+    // exists (2026-08). Faking one would be a dishonest claim, so tier 1 is absent.
+    //
+    // Audio is pulled from the video locally with decodeAudioData +
+    // OfflineAudioContext (idiom proven in BODYJSspeechtotext.html) - no
+    // ffmpeg.wasm, so first paint stays cheap. Nothing is ever uploaded.
+    //
+    // Long media: this page does its OWN 30s windowing rather than the library's
+    // chunk_length_s. Reason: @huggingface/transformers v3/v4 exposes NO per-chunk
+    // callback (`chunk_callback` does not exist - verified in the ship #2 audit),
+    // so library-internal chunking would leave the progress bar and the
+    // "window X of N" line with nothing truthful to report.
+
+    web.localUpload = false;
+
+    var SG_SLUG = 'subtitle-generator';
+
+    // --- engine constants -------------------------------------------------
+    var SG_TF_CDN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4';
+    var SG_WHISPER_MODEL = 'Xenova/whisper-tiny'; // multilingual tiny; ~40MB at q8
+    var SG_MAX_SECONDS = 900;   // ~15 min cap keeps the browser responsive
+    var SG_SR = 16000;          // Whisper input sample rate
+    var SG_WINDOW_S = 30;       // one pipeline call per window (Whisper's native length)
+    var SG_OVERLAP_S = 2;       // windows overlap so a word is not sliced at a seam
+    var SG_WPM = 160;           // manual-timing reading rate when no media is loaded
+    var SG_MIN_CUE_S = 1.2;     // a cue shorter than this is hard to read
+
+    // Sample cues: rendered on load so the page shows a real, timecoded result
+    // with ZERO interaction and ZERO download (this is what satisfies e2e G16).
+    var SG_SAMPLE_CUES = [
+        { start: 0.0, end: 2.4, text: 'Welcome back to the workshop.' },
+        { start: 2.4, end: 5.8, text: 'Today we are wiring the motor controller.' },
+        { start: 5.8, end: 9.0, text: 'Grab the four millimetre hex key to start.' }
+    ];
+
+    var sgCues = [];        // the ONE cue array both downloads render from
+    var sgIsSample = true;  // sample cues until real ones replace them
+    var sgMediaDuration = 0;
+
+    function sgEsc(t) {
+        return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) {
+            return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c];
+        });
+    }
+
+    // --- timecode formatting ----------------------------------------------
+    // SRT and VTT differ in exactly two ways: SRT has a 1-based index line, and a
+    // COMMA before the milliseconds. Both render from sgCues so they cannot drift.
+    function sgPad(n, w) { var s = String(Math.floor(n)); while (s.length < w) s = '0' + s; return s; }
+
+    // Round to whole milliseconds FIRST, then decompose. Decomposing first and
+    // carrying the millisecond overflow afterwards emitted '00:00:60,000' for
+    // 59.9996 - a timecode players reject outright (caught by unit test 2026-08-09).
+    function sgTimecode(seconds, comma) {
+        var totalMs = Math.round(Math.max(0, Number(seconds) || 0) * 1000);
+        var ms = totalMs % 1000;
+        var totalSec = (totalMs - ms) / 1000;
+        var s = totalSec % 60;
+        var totalMin = (totalSec - s) / 60;
+        var m = totalMin % 60;
+        var h = (totalMin - m) / 60;
+        return sgPad(h, 2) + ':' + sgPad(m, 2) + ':' + sgPad(s, 2) + (comma ? ',' : '.') + sgPad(ms, 3);
+    }
+
+    function sgToSrt(cues) {
+        return cues.map(function (c, i) {
+            return (i + 1) + '\n' + sgTimecode(c.start, true) + ' --> ' + sgTimecode(c.end, true) + '\n' + c.text;
+        }).join('\n\n') + '\n';
+    }
+
+    function sgToVtt(cues) {
+        return 'WEBVTT\n\n' + cues.map(function (c) {
+            return sgTimecode(c.start, false) + ' --> ' + sgTimecode(c.end, false) + '\n' + c.text;
+        }).join('\n\n') + '\n';
+    }
+
+    // --- cue hygiene ------------------------------------------------------
+    // Whisper occasionally returns a null end timestamp or two cues that overlap
+    // at a window seam. A player renders overlapping cues on top of each other, so
+    // repair the sequence rather than shipping it raw.
+    function sgNormalizeCues(cues, hardEnd) {
+        var out = [];
+        for (var i = 0; i < cues.length; i++) {
+            var c = cues[i];
+            var text = String(c.text == null ? '' : c.text).replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+            if (!text) continue;
+            var start = Number(c.start);
+            if (!isFinite(start) || start < 0) start = out.length ? out[out.length - 1].end : 0;
+            var end = Number(c.end);
+            if (!isFinite(end) || end <= start) end = start + Math.max(SG_MIN_CUE_S, text.length / 14);
+            if (out.length && start < out[out.length - 1].end) start = out[out.length - 1].end;
+            if (end <= start) end = start + SG_MIN_CUE_S;
+            if (isFinite(hardEnd) && hardEnd > 0 && end > hardEnd) end = hardEnd;
+            if (end <= start) continue;
+            out.push({ start: start, end: end, text: text });
+        }
+        return out;
+    }
+
+    // --- Whisper loading (lazy, explicit click only) -----------------------
+    var sgWhisperPromise = null;
+    function sgWhisperLoad(onProgress) {
+        if (sgWhisperPromise) return sgWhisperPromise;
+        sgWhisperPromise = (async function () {
+            var tf = await import(/* webpackIgnore: true */ SG_TF_CDN);
+            if ('gpu' in navigator) {
+                try {
+                    return await tf.pipeline('automatic-speech-recognition', SG_WHISPER_MODEL, { device: 'webgpu', dtype: 'q8', progress_callback: onProgress });
+                } catch (e) {}
+            }
+            return await tf.pipeline('automatic-speech-recognition', SG_WHISPER_MODEL, { device: 'wasm', dtype: 'q8', progress_callback: onProgress });
+        })();
+        sgWhisperPromise.catch(function () { sgWhisperPromise = null; }); // allow retry
+        return sgWhisperPromise;
+    }
+
+    // Pull the audio track out of the chosen file and resample to 16kHz mono
+    // Float32. decodeAudioData uses the browser's own demuxer, so an MP4/WebM
+    // VIDEO works without ffmpeg. All local - the file never leaves the browser.
+    function sgDecodeTo16k(buf) {
+        return new Promise(function (resolve, reject) {
+            var AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) { reject(new Error('This browser does not support Web Audio decoding.')); return; }
+            var ac = new AC();
+            var settled = false;
+            function done(err, pcm, seconds) {
+                if (settled) return;
+                settled = true;
+                if (ac.close) { try { ac.close(); } catch (e) {} }
+                if (err) reject(err); else resolve({ pcm: pcm, seconds: seconds });
+            }
+            ac.decodeAudioData(buf, function (decoded) {
+                var seconds = decoded.duration;
+                if (seconds > SG_MAX_SECONDS) {
+                    var capErr = new Error('media longer than the on-device cap');
+                    capErr.sgCapSeconds = Math.round(seconds);
+                    done(capErr);
+                    return;
+                }
+                try {
+                    var OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+                    var offline = new OAC(1, Math.max(1, Math.ceil(seconds * SG_SR)), SG_SR);
+                    var src = offline.createBufferSource();
+                    src.buffer = decoded;
+                    src.connect(offline.destination);
+                    src.start(0);
+                    offline.startRendering().then(function (rendered) {
+                        done(null, rendered.getChannelData(0), seconds);
+                    }, function () { done(new Error('Could not resample that audio in this browser.')); });
+                } catch (e) { done(e); }
+            }, function () {
+                done(new Error('This browser could not read the audio track in that file. MP4, M4V, WEBM, MOV, MP3, WAV, M4A and OGG work; MKV usually does not.'));
+            });
+        });
+    }
+
+    function sgPlanWindows(totalSamples) {
+        var w = SG_WINDOW_S * SG_SR, ov = SG_OVERLAP_S * SG_SR;
+        var plan = [], start = 0, end;
+        do {
+            end = Math.min(start + w, totalSamples);
+            plan.push([start, end]);
+            start = end - ov;
+        } while (end < totalSamples);
+        return plan;
+    }
+
+    // Turn one window's pipeline result into cues on the FULL-media timeline.
+    // res.chunks[].timestamp is [start,end] RELATIVE to the window, so add the
+    // window offset. When a chunk carries no usable timestamp we fall back to the
+    // window bounds and the caller tells the reader the timing is approximate.
+    function sgCuesFromResult(res, offsetSec, windowEndSec) {
+        var cues = [], approx = false;
+        var chunks = res && res.chunks && res.chunks.length ? res.chunks : null;
+        if (chunks) {
+            for (var i = 0; i < chunks.length; i++) {
+                var ch = chunks[i];
+                var text = String(ch.text == null ? '' : ch.text).replace(/^\s+|\s+$/g, '');
+                if (!text) continue;
+                // Whisper returns `timestamp: [start, null]` when it never closed the
+                // final segment. Number(null) is 0 - NOT NaN - so an isFinite() check
+                // alone accepted that as "0 seconds" and produced a BACKWARDS cue
+                // (end before start) while reporting the timing as exact. Test the
+                // raw value for null/undefined first (caught by unit test 2026-08-09).
+                var ts = ch.timestamp || [];
+                var rawS = ts[0], rawE = ts[1];
+                var s, e;
+                if (rawS == null || !isFinite(Number(rawS))) { s = offsetSec; approx = true; }
+                else s = offsetSec + Number(rawS);
+                if (rawE == null || !isFinite(Number(rawE))) { e = Math.min(windowEndSec, s + Math.max(SG_MIN_CUE_S, text.length / 14)); approx = true; }
+                else e = offsetSec + Number(rawE);
+                cues.push({ start: s, end: e, text: text });
+            }
+        }
+        if (!cues.length) {
+            var whole = String(res && res.text ? res.text : '').replace(/^\s+|\s+$/g, '');
+            if (whole) { cues.push({ start: offsetSec, end: windowEndSec, text: whole }); approx = true; }
+        }
+        return { cues: cues, approx: approx };
+    }
+
+    // --- manual (deterministic) timing ------------------------------------
+    // No model, no network. Split the script into caption-sized lines, then spread
+    // them across the media duration when a file is loaded, or at a stated reading
+    // rate when none is. Length-weighted so a long line gets more screen time.
+    function sgSplitScript(text) {
+        var raw = String(text || '').split(/\n+/);
+        var lines = [];
+        for (var i = 0; i < raw.length; i++) {
+            var line = raw[i].replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+            if (!line) continue;
+            // A caption line over ~84 chars is split at sentence ends, then at commas.
+            if (line.length <= 84) { lines.push(line); continue; }
+            // Sentence split WITHOUT a lookbehind: a lookbehind regex is a
+            // parse-time SyntaxError on older Safari, which would kill this whole
+            // script and leave a dead page - exactly what the ladder exists to
+            // prevent. Mark each sentence end with a sentinel, then split on that.
+            var parts = line.replace(/([.!?])\s+/g, '$1\u0000').split('\u0000');
+            for (var j = 0; j < parts.length; j++) {
+                var p = parts[j].replace(/^\s+|\s+$/g, '');
+                if (!p) continue;
+                while (p.length > 84) {
+                    var cut = p.lastIndexOf(', ', 84);
+                    if (cut < 30) cut = p.lastIndexOf(' ', 84);
+                    if (cut < 30) cut = 84;
+                    lines.push(p.slice(0, cut + 1).replace(/^\s+|\s+$/g, ''));
+                    p = p.slice(cut + 1).replace(/^\s+|\s+$/g, '');
+                }
+                if (p) lines.push(p);
+            }
+        }
+        return lines;
+    }
+
+    function sgTimeScript(lines, totalSeconds) {
+        var weights = lines.map(function (l) { return Math.max(1, l.length); });
+        var sum = weights.reduce(function (a, b) { return a + b; }, 0);
+        var words = lines.join(' ').split(/\s+/).filter(Boolean).length;
+        var span = (isFinite(totalSeconds) && totalSeconds > 1)
+            ? totalSeconds
+            : Math.max(lines.length * SG_MIN_CUE_S, words / SG_WPM * 60);
+        var cues = [], t = 0;
+        for (var i = 0; i < lines.length; i++) {
+            var dur = Math.max(SG_MIN_CUE_S, span * (weights[i] / sum));
+            cues.push({ start: t, end: t + dur, text: lines[i] });
+            t += dur;
+        }
+        return cues;
+    }
+
+    function sgBuild(root) {
+        var wrap = document.createElement('div');
+        wrap.className = 'w3-container';
+        wrap.innerHTML =
+            '<h3 class="w3-text-blue-grey">Generate captions from a video (on-device AI)</h3>' +
+            '<div style="color:#555;margin-bottom:8px;">Speech is recognised by a model that runs on your device, so your file is never uploaded. If you already wrote the captions, the script panel further down times them for you with no download at all.</div>' +
+            '<div style="margin-bottom:8px;"><button id="sgLoad" type="button" class="w3-button w3-blue">Load caption model (~40 MB)</button> ' +
+            'Language <select id="sgLang" class="w3-select w3-border" style="width:auto;display:inline-block;">' +
+            '<option value="">Auto-detect</option><option value="english">English</option><option value="vietnamese">Vietnamese</option><option value="spanish">Spanish</option><option value="portuguese">Portuguese</option><option value="german">German</option><option value="french">French</option><option value="italian">Italian</option><option value="indonesian">Indonesian</option><option value="hindi">Hindi</option><option value="chinese">Chinese</option><option value="japanese">Japanese</option><option value="korean">Korean</option>' +
+            '</select></div>' +
+            '<div class="w3-row" style="margin-bottom:8px;"><input type="file" id="sgFile" accept=".mp4,.m4v,.webm,.mov,.mp3,.wav,.m4a,.ogg,video/*,audio/*" class="w3-input w3-border" style="max-width:440px;"></div>' +
+            '<div style="margin-bottom:8px;"><button id="sgRun" type="button" class="w3-button w3-green" disabled>Generate captions</button></div>' +
+            '<progress id="sgProg" max="100" value="0" style="width:100%;max-width:440px;display:none;"></progress>' +
+            '<div id="sgStatus" style="min-height:1.2em;color:#555;margin-top:6px;">Click Load caption model for a one-time download that your browser keeps, then choose a video or audio file up to about 15 minutes.</div>' +
+            '<div id="sgErr" style="color:#b00020;margin-top:4px;min-height:1em;"></div>' +
+
+            // Cue table + export sit DIRECTLY under the action button, not below the
+            // fallback panel. The user presses "Generate captions" and the result is
+            // the next thing on screen (G17_post_action_output_position); burying the
+            // output under a second input panel pushed it a full screen below the
+            // fold at 390px. The manual script panel is the FALLBACK, so it goes last.
+            '<h3 class="w3-text-blue-grey" style="margin-top:22px;">Cue table</h3>' +
+            '<div style="color:#555;margin-bottom:8px;">Edit any wording before you export - the downloads always match what is in this table.</div>' +
+            '<div id="sgTableWrap" style="overflow-x:auto;"></div>' +
+            '<div style="margin:10px 0;"><a id="sgDlSrt" class="w3-button w3-blue">Download .srt</a> ' +
+            '<a id="sgDlVtt" class="w3-button w3-blue">Download .vtt</a> ' +
+            '<button id="sgCopy" type="button" class="w3-button w3-light-grey">Copy SRT</button></div>' +
+            '<div id="sgPreviewLabel" style="color:#555;margin-bottom:4px;">Sample subtitle file (replaced as soon as you generate or time your own):</div>' +
+            '<pre id="sgPreview" class="outputImgs" style="visibility:visible !important;background:#f6f6f6;border:1px solid #ddd;padding:10px;white-space:pre-wrap;word-break:break-word;max-height:280px;overflow:auto;margin:0;"></pre>' +
+
+            '<h3 class="w3-text-blue-grey" style="margin-top:22px;">Or time a script you already have</h3>' +
+            '<div style="color:#555;margin-bottom:8px;">No model and no download needed. Put one caption per line; if you picked a file above, the lines are spread across its exact length.</div>' +
+            '<textarea id="sgScript" class="w3-input w3-border" rows="4" style="width:100%;" placeholder="One caption per line..."></textarea>' +
+            '<div style="margin:8px 0;"><button id="sgTime" type="button" class="w3-button w3-green">Time these lines</button></div>';
+        root.appendChild(wrap);
+
+        var loadBtn = wrap.querySelector('#sgLoad'), fileEl = wrap.querySelector('#sgFile'), runBtn = wrap.querySelector('#sgRun');
+        var langSel = wrap.querySelector('#sgLang'), prog = wrap.querySelector('#sgProg');
+        var statusEl = wrap.querySelector('#sgStatus'), errEl = wrap.querySelector('#sgErr');
+        var scriptEl = wrap.querySelector('#sgScript'), timeBtn = wrap.querySelector('#sgTime');
+        var tableWrap = wrap.querySelector('#sgTableWrap'), preview = wrap.querySelector('#sgPreview');
+        var previewLabel = wrap.querySelector('#sgPreviewLabel');
+        var dlSrt = wrap.querySelector('#sgDlSrt'), dlVtt = wrap.querySelector('#sgDlVtt'), copyBtn = wrap.querySelector('#sgCopy');
+        var modelReady = false, busy = false;
+
+        function setStatus(m) { statusEl.textContent = m; }
+        function setErr(m) { errEl.textContent = m || ''; }
+        function syncRun() { runBtn.disabled = !(modelReady && fileEl.files && fileEl.files.length && !busy); }
+
+        function baseName() {
+            var f = fileEl.files && fileEl.files[0];
+            var n = f ? String(f.name).replace(/\.[^.]+$/, '') : 'subtitles';
+            return n.replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '') || 'subtitles';
+        }
+
+        function renderTable() {
+            if (!sgCues.length) {
+                tableWrap.innerHTML = '<div style="color:#555;">No cues yet. Generate captions from a file, or time a script above.</div>';
+                return;
+            }
+            var rows = sgCues.map(function (c, i) {
+                return '<tr>' +
+                    '<td style="white-space:nowrap;vertical-align:top;padding:4px 8px;color:#555;">' + (i + 1) + '</td>' +
+                    '<td style="white-space:nowrap;vertical-align:top;padding:4px 8px;font-family:monospace;font-size:0.9em;">' + sgTimecode(c.start, true) + '<br>' + sgTimecode(c.end, true) + '</td>' +
+                    '<td style="padding:4px 8px;"><input type="text" class="w3-input w3-border sgCueText" data-idx="' + i + '" value="' + sgEsc(c.text) + '" style="width:100%;min-width:220px;"></td>' +
+                    '</tr>';
+            }).join('');
+            tableWrap.innerHTML = '<table class="w3-table w3-bordered" style="width:100%;"><thead><tr>' +
+                '<th style="padding:4px 8px;">#</th><th style="padding:4px 8px;">Start / end</th><th style="padding:4px 8px;">Caption text</th>' +
+                '</tr></thead><tbody>' + rows + '</tbody></table>';
+            var inputs = tableWrap.querySelectorAll('.sgCueText');
+            for (var i = 0; i < inputs.length; i++) {
+                inputs[i].addEventListener('input', function () {
+                    var idx = parseInt(this.getAttribute('data-idx'), 10);
+                    if (sgCues[idx]) {
+                        sgCues[idx].text = this.value;
+                        refreshOutputs(); // downloads follow the table, always
+                    }
+                });
+            }
+        }
+
+        function refreshOutputs() {
+            var srt = sgCues.length ? sgToSrt(sgCues) : '';
+            var vtt = sgCues.length ? sgToVtt(sgCues) : '';
+            preview.textContent = srt || '(No cues yet.)';
+            previewLabel.textContent = sgIsSample
+                ? 'Sample subtitle file (replaced as soon as you generate or time your own):'
+                : 'Your subtitle file (' + sgCues.length + (sgCues.length === 1 ? ' cue' : ' cues') + '):';
+            if (srt) {
+                dlSrt.href = URL.createObjectURL(new Blob([srt], { type: 'text/plain' }));
+                dlSrt.download = baseName() + '.srt';
+                dlVtt.href = URL.createObjectURL(new Blob([vtt], { type: 'text/vtt' }));
+                dlVtt.download = baseName() + '.vtt';
+            }
+        }
+
+        function setCues(cues, isSample, hardEnd) {
+            sgCues = sgNormalizeCues(cues, hardEnd);
+            sgIsSample = !!isSample;
+            renderTable();
+            refreshOutputs();
+        }
+
+        function onDownloadProgress(p) {
+            if (!p || p.status !== 'progress' || !p.total) return;
+            var pct = Math.max(0, Math.min(100, Math.round(p.progress || (p.loaded / p.total * 100))));
+            prog.style.display = ''; prog.value = pct;
+            setStatus('Downloading the caption model (one-time, kept by your browser afterwards) ... ' + pct + '%');
+        }
+
+        loadBtn.addEventListener('click', async function () {
+            setErr(''); loadBtn.disabled = true;
+            setStatus('Fetching the on-device caption engine ...');
+            try {
+                await sgWhisperLoad(onDownloadProgress);
+                modelReady = true;
+                prog.style.display = 'none';
+                loadBtn.textContent = 'Model ready (on-device)';
+                setStatus('Model loaded and kept by your browser. Choose a video or audio file, then click Generate captions.');
+            } catch (e) {
+                loadBtn.disabled = false;
+                setErr('Could not load the model: ' + (e && e.message ? e.message : String(e)) + '. Check the connection and try again - your file is never uploaded either way.');
+                setStatus('Model not loaded.');
+            }
+            syncRun();
+        });
+
+        fileEl.addEventListener('change', function () {
+            setErr('');
+            var f = fileEl.files && fileEl.files[0];
+            sgMediaDuration = 0;
+            if (f) {
+                setStatus('Selected ' + f.name + ' (' + (Math.round(f.size / 1024 / 1024 * 10) / 10) + ' MB). ' +
+                    (modelReady ? 'Click Generate captions.' : 'Load the caption model to recognise speech, or time your own script below.'));
+            }
+            syncRun();
+        });
+
+        runBtn.addEventListener('click', async function () {
+            var f = fileEl.files && fileEl.files[0];
+            if (!f || !modelReady || busy) return;
+            setErr(''); busy = true; syncRun();
+            prog.style.display = ''; prog.value = 0;
+            try {
+                var asr = await sgWhisperLoad(onDownloadProgress);
+                setStatus('Reading the audio track in your browser ...');
+                var buf = await new Promise(function (resolve, reject) {
+                    var r = new FileReader();
+                    r.onload = function () { resolve(r.result); };
+                    r.onerror = function () { reject(new Error('Could not read that file.')); };
+                    r.readAsArrayBuffer(f);
+                });
+                var audio = await sgDecodeTo16k(buf);
+                buf = null;
+                sgMediaDuration = audio.seconds;
+                var plan = sgPlanWindows(audio.pcm.length);
+                var total = plan.length;
+                var genOpts = { task: 'transcribe', return_timestamps: true };
+                if (langSel.value) genOpts.language = langSel.value;
+                var collected = [], anyApprox = false;
+                for (var i = 0; i < total; i++) {
+                    setStatus('Recognising speech on your device ... window ' + (i + 1) + ' of ' + total +
+                        (total > 1 ? ' (' + SG_WINDOW_S + '-second windows)' : ''));
+                    // Yield so the status line and progress bar repaint before the
+                    // next window blocks the thread.
+                    await new Promise(function (r) { setTimeout(r, 0); });
+                    var win = audio.pcm.slice(plan[i][0], plan[i][1]);
+                    var offsetSec = plan[i][0] / SG_SR, winEndSec = plan[i][1] / SG_SR;
+                    var res = await asr(win, genOpts);
+                    win = null;
+                    var got = sgCuesFromResult(res, offsetSec, winEndSec);
+                    res = null;
+                    if (got.approx) anyApprox = true;
+                    for (var k = 0; k < got.cues.length; k++) collected.push(got.cues[k]);
+                    // Show cues as they land so a long file is not a blank wait.
+                    setCues(collected.slice(), false, sgMediaDuration);
+                    prog.value = Math.round((i + 1) / total * 100);
+                }
+                audio = null;
+                prog.value = 100;
+                if (!sgCues.length) {
+                    setCues(SG_SAMPLE_CUES.slice(), true, 0);
+                    setStatus('No speech was recognised in that file. The sample cues are shown again - you can still write captions by hand below.');
+                } else {
+                    setStatus('Done - ' + sgCues.length + (sgCues.length === 1 ? ' cue' : ' cues') + ' from ' +
+                        total + (total === 1 ? ' window' : ' windows') + ', recognised on your device. Nothing was uploaded.' +
+                        (anyApprox ? ' Some cue timings are approximate because the model returned no boundary for them - check them before publishing.' : ''));
+                }
+            } catch (e) {
+                if (e && e.sgCapSeconds) {
+                    setErr('That file is about ' + Math.round(e.sgCapSeconds / 60) + ' minutes long. On-device captioning caps media at about 15 minutes so the browser stays responsive - split it and try again.');
+                    setStatus('File too long for on-device captioning.');
+                } else {
+                    setErr('Could not caption that file: ' + (e && e.message ? e.message : String(e)));
+                    setStatus('Captioning failed. You can still write captions by hand below.');
+                }
+            } finally { busy = false; prog.style.display = 'none'; syncRun(); }
+        });
+
+        timeBtn.addEventListener('click', function () {
+            setErr('');
+            var lines = sgSplitScript(scriptEl.value);
+            if (!lines.length) { setStatus('Put at least one caption line in the box above, then click Time these lines.'); return; }
+            setCues(sgTimeScript(lines, sgMediaDuration), false, sgMediaDuration || 0);
+            setStatus(sgMediaDuration
+                ? 'Timed ' + sgCues.length + (sgCues.length === 1 ? ' cue' : ' cues') + ' across the ' + Math.round(sgMediaDuration) + ' seconds of the file you picked. Adjust the wording, then export.'
+                : 'Timed ' + sgCues.length + (sgCues.length === 1 ? ' cue' : ' cues') + ' at about ' + SG_WPM + ' words a minute. Pick a media file first if you want the cues stretched to its exact length.');
+        });
+
+        copyBtn.addEventListener('click', function () {
+            var t = sgCues.length ? sgToSrt(sgCues) : '';
+            if (!t) return;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(t).then(function () { setStatus('Subtitle text copied to the clipboard.'); },
+                    function () { setStatus('Copy failed - select the text in the preview and copy manually.'); });
+            } else {
+                setStatus('Select the text in the preview below and copy it manually.');
+            }
+        });
+
+        // Sample cues render immediately: a real timecoded result with zero
+        // interaction and zero download (e2e G16).
+        setCues(SG_SAMPLE_CUES.slice(), true, 0);
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('subtitleGeneratorTool');
+        if (!root) return; // not a subtitle page
+        root.innerHTML = '';
+        sgBuild(root);
+    }
+</script>

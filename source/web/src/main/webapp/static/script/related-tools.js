@@ -909,6 +909,7 @@ try {
     { title: "Event Time Countdown - What Time Is It For Me", url: "https://freetoolonline.com/utility-tools/event-time-countdown.html", include: !1, tags: "utility" },
     { title: "Live Wildfire Map - Active US Fire Incidents", url: "https://freetoolonline.com/utility-tools/wildfire-map.html", include: !1, tags: "utility" },
     { title: "Text Summarizer - Private, In Your Browser", url: "https://freetoolonline.com/utility-tools/text-summarizer.html", include: !1, tags: "utility" },
+    { title: "Subtitle Generator - SRT and VTT, On Your Device", url: "https://freetoolonline.com/video-tools/subtitle-generator.html", include: !1, tags: "video" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",
