@@ -19,6 +19,16 @@
     // once, then cached by the browser), WebGPU preferred with WASM CPU fallback.
     // The audio file is decoded + resampled to 16kHz mono locally via the Web
     // Audio API - nothing is uploaded to any server in either mode.
+    //
+    // Long files: this page does its OWN windowing (spPlanWindows -> one asr() call
+    // per window of at most 30s) instead of the library's chunk_length_s /
+    // stride_length_s. Reason: @huggingface/transformers v3/v4 exposes NO per-chunk
+    // callback (the earlier `chunk_callback` option here did not exist and never
+    // fired), so library-internal chunking gives this page zero progress signal.
+    // One pipeline call per window is what makes the determinate progress bar and
+    // the "window X of N" status line truthful. Windows overlap by SP_OVERLAP_S so
+    // no word is sliced at a seam; the overlap is NOT de-duplicated, so a word or
+    // two can repeat where two windows meet (disclosed in the reader copy + FAQ).
 
     web.localUpload = false;
 
@@ -79,7 +89,7 @@
         var wrap = document.createElement('div');
         wrap.className = 'w3-container';
         wrap.innerHTML =
-            '<h3 class="w3-text-blue-grey">Speech to text</h3>' +
+            '<h3 class="w3-text-blue-grey">Dictate with your microphone</h3>' +
             '<div style="margin-bottom:8px;"><button id="spRec" type="button" class="w3-button w3-green">Start listening</button> ' +
             '<button id="spStopStt" type="button" class="w3-button w3-red" disabled>Stop</button> ' +
             '<a id="spDl" class="w3-button w3-blue" style="display:none;">Download .txt</a></div>' +
@@ -114,7 +124,9 @@
     var SP_TF_CDN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4';
     var SP_WHISPER_MODEL = 'Xenova/whisper-tiny'; // multilingual tiny; ~40MB quantized (q8)
     var SP_MAX_SECONDS = 900; // ~15 minute cap keeps in-browser transcription responsive
-    var SP_CHUNK_S = 30, SP_STRIDE_S = 5; // long files: 30s chunks with 5s stride
+    var SP_SR = 16000;      // Whisper input sample rate
+    var SP_WINDOW_S = 30;   // one pipeline call per window; 30s is Whisper's native input length
+    var SP_OVERLAP_S = 2;   // windows overlap so a word is not sliced at a seam
 
     var spWhisperPromise = null;
     function spWhisperLoad(onProgress) {
@@ -170,12 +182,29 @@
         });
     }
 
+    // Plan the fixed windows the transcription loop will walk: [[startSample, endSample], ...].
+    // Each window is at most SP_WINDOW_S long (never more - a longer buffer would be
+    // silently truncated to 30s by the feature extractor and its tail lost) and starts
+    // SP_OVERLAP_S before the previous window ended. The plan always reaches the last
+    // sample, so no audio is skipped; the cost is that the overlap can be transcribed
+    // twice. The returned length IS the N in "window X of N".
+    function spPlanWindows(totalSamples) {
+        var w = SP_WINDOW_S * SP_SR, ov = SP_OVERLAP_S * SP_SR;
+        var plan = [], start = 0, end;
+        do {
+            end = Math.min(start + w, totalSamples);
+            plan.push([start, end]);
+            start = end - ov;
+        } while (end < totalSamples);
+        return plan;
+    }
+
     function spBuildWhisper(root) {
         var wrap = document.createElement('div');
         wrap.className = 'w3-container';
         wrap.innerHTML =
             '<h3 class="w3-text-blue-grey">Transcribe an audio file (on-device AI)</h3>' +
-            '<div style="color:#555;margin-bottom:8px;">Engine status: the mic mode above uses the speech service built into your browser; this file mode runs the Whisper AI model on your device - the audio file is never uploaded.</div>' +
+            '<div style="color:#555;margin-bottom:8px;">Engine status: the dictation panel above uses the speech service built into your browser; this panel runs the Whisper AI model on your device - the audio file is never uploaded.</div>' +
             '<div style="margin-bottom:8px;"><button id="spWLoad" type="button" class="w3-button w3-blue">Load transcription model (~40 MB)</button> ' +
             'Language <select id="spWLang" class="w3-select w3-border" style="width:auto;display:inline-block;">' +
             '<option value="">Auto-detect</option><option value="english">English</option><option value="vietnamese">Vietnamese</option><option value="spanish">Spanish</option><option value="french">French</option><option value="german">German</option><option value="portuguese">Portuguese</option><option value="italian">Italian</option><option value="indonesian">Indonesian</option><option value="hindi">Hindi</option><option value="chinese">Chinese</option><option value="japanese">Japanese</option><option value="korean">Korean</option>' +
@@ -244,23 +273,29 @@
                     r.readAsArrayBuffer(f);
                 });
                 var audio = await spDecodeAudioTo16k(buf);
-                var totalChunks = Math.max(1, Math.ceil(audio.seconds / (SP_CHUNK_S - SP_STRIDE_S)));
-                var doneChunks = 0;
-                setWStatus('Transcribing on your device ... 0 of ' + totalChunks + ' chunks');
-                var genOpts = {
-                    chunk_length_s: SP_CHUNK_S,
-                    stride_length_s: SP_STRIDE_S,
-                    task: 'transcribe',
-                    chunk_callback: function () {
-                        doneChunks++;
-                        var c = Math.min(doneChunks, totalChunks);
-                        prog.value = Math.round(c / totalChunks * 100);
-                        setWStatus('Transcribing on your device ... ' + c + ' of ' + totalChunks + ' chunks');
-                    }
-                };
+                buf = null; // decoded already; let the raw file bytes go
+                var plan = spPlanWindows(audio.pcm.length);
+                var total = plan.length;
+                var genOpts = { task: 'transcribe' };
                 if (langSel.value) genOpts.language = langSel.value;
-                var res = await asr(audio.pcm, genOpts);
-                var text = (res && res.text ? res.text : '').replace(/^\s+|\s+$/g, '');
+                var parts = [];
+                out.value = '';
+                for (var i = 0; i < total; i++) {
+                    setWStatus('Transcribing on your device ... window ' + (i + 1) + ' of ' + total +
+                        (total > 1 ? ' (' + SP_WINDOW_S + '-second windows)' : ''));
+                    // Yield once so the status line + progress bar actually repaint
+                    // before the next window blocks the thread.
+                    await new Promise(function (r) { setTimeout(r, 0); });
+                    var win = audio.pcm.slice(plan[i][0], plan[i][1]); // own buffer; freed each pass
+                    var res = await asr(win, genOpts);
+                    win = null;
+                    var part = (res && res.text ? res.text : '').replace(/^\s+|\s+$/g, '');
+                    res = null;
+                    if (part) { parts.push(part); out.value = parts.join(' '); }
+                    prog.value = Math.round((i + 1) / total * 100);
+                }
+                audio = null; // release the decoded PCM before building the download blob
+                var text = parts.join(' ').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
                 out.value = text || '(No speech detected in that file.)';
                 prog.value = 100;
                 if (text) {
@@ -269,10 +304,11 @@
                     dl.style.display = '';
                     copyBtn.style.display = '';
                 }
-                setWStatus('Done - transcribed on your device with Whisper. Nothing was uploaded.');
+                setWStatus('Done - ' + total + (total === 1 ? ' window' : ' windows') +
+                    ' transcribed on your device with Whisper. Nothing was uploaded.');
             } catch (e) {
                 if (e && e.spCapSeconds) {
-                    setWErr('That recording is about ' + Math.round(e.spCapSeconds / 60) + ' minutes long. This on-device mode caps files at about 15 minutes so the browser stays responsive - trim the audio and try again.');
+                    setWErr('That recording is about ' + Math.round(e.spCapSeconds / 60) + ' minutes long. On-device transcription caps files at about 15 minutes so the browser stays responsive - trim the audio and try again.');
                     setWStatus('File too long for on-device transcription.');
                 } else {
                     setWErr('Could not transcribe that file: ' + (e && e.message ? e.message : String(e)) + '. (If the model failed to load, the site may need Transformers.js self-hosted under /vendor/transformers/.)');
@@ -301,6 +337,9 @@
         root.innerHTML = '';
         var mode = spMode(SP_SLUG);
         if (mode === 'tts' || mode === 'both') spBuildTts(root);
+        // The two STT panels are STACKED and both stay visible - there is no mode
+        // toggle to press. Reader copy must describe this layout (dictation panel on
+        // top, file-transcription panel below it), never a switch.
         if (mode === 'stt' || mode === 'both') spBuildStt(root);
         if (mode === 'stt' || mode === 'both') spBuildWhisper(root);
     }
