@@ -30764,7 +30764,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   "/guides/de/mor-chess-2-vs-alternatives.html",
   "/guides/de/mor-chess-2-when.html",
   "/guides/de/moropus-3d-viewer-vs-ar-apps.html",
-  "/guides/de/moropus-size-comparison.html",
   "/guides/de/morse-code-translator-step-by-step.html",
   "/guides/de/morse-code-translator-vs-alternatives.html",
   "/guides/de/morse-code-translator-when.html",
@@ -31263,7 +31262,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/pt/black-body-radiation-when.html',
   '/guides/pt/black-cat-hot-tin-roof-vs-alternatives.html',
   '/guides/pt/black-cat-hot-tin-roof-when.html',
-  '/guides/pt/black-hole-3d-visualizer-step-by-step.html',
   '/guides/pt/black-hole-3d-visualizer-vs-alternatives.html',
   '/guides/pt/black-hole-3d-visualizer-when.html',
   '/guides/pt/black-hole-square-vs-alternatives.html',
@@ -33100,7 +33098,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/es/how-to-view-stygimoloch-in-3d.html',
   '/guides/es/how-to-view-tarbosaurus-in-3d.html',
   '/guides/es/how-to-view-therizinosaurus-in-3d.html',
-  '/guides/es/how-to-view-titanoboa-in-3d.html',
   '/guides/es/how-to-view-titanosaurus-in-3d.html',
   '/guides/es/how-to-view-torvosaurus-in-3d.html',
   '/guides/es/how-to-view-triceratops-in-3d.html',
@@ -33731,7 +33728,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/es/when-to-compress-vs-convert-an-image.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/how-to-zip-folder-online-step-by-step.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/md5-alternatives-bcrypt-argon2id-sha256-when-each-fits.html', // pruned 2026-07-29 zero-evidence es
-  '/guides/es/lcd-test-what-it-checks.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/zip-file-converter-what-it-actually-does.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/lcd-test-vs-display-test-which-do-you-need.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/what-is-a-file-compressor-and-which-to-use.html', // pruned 2026-07-29 zero-evidence es
@@ -34741,7 +34737,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/id/how-to-record-your-screen-online.html',
   '/guides/id/how-to-run-a-private-ai-chat-in-your-browser.html',
   '/guides/id/how-to-sign-pdf-after-removing-a-password.html',
-  '/guides/id/how-to-split-a-gif-into-frames-for-editing.html',
   '/guides/id/how-to-test-a-touchscreen-for-bad-spots.html',
   '/guides/id/how-to-test-for-dead-pixels-before-returning-a-monitor.html',
   '/guides/id/how-to-view-abelisaurus-in-3d.html',
@@ -34857,7 +34852,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/id/image-color-palette-extractor-when.html',
   '/guides/id/image-exif-metadata-viewer-step-by-step.html',
   '/guides/id/image-exif-metadata-viewer-vs-alternatives.html',
-  '/guides/id/image-exif-metadata-viewer-when.html',
   '/guides/id/image-format-converter-step-by-step.html',
   '/guides/id/image-format-converter-vs-alternatives.html',
   '/guides/id/image-format-converter-when.html',
