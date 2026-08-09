@@ -1,0 +1,78 @@
+/* RPM-sprint experiment RPM3 (2026-08-09): reclaim MOBILE ad density on this
+ * page only - the site's single biggest earner.
+ *
+ * SYMPTOM (measured this fire on live prod AND staging at 390x844): this page
+ * emits 5 provisioned AdSense units and renders exactly ONE visible slot on
+ * mobile - the 320x100 top banner at y=50 - inside a page that is 8,270px tall.
+ * So roughly 8,200px of content, on a page taking 11,170 pageviews per 28 days,
+ * carries zero ads. Desktop is unaffected and already serves 3 of 5 (top,
+ * right panel, and the in-content unit that experiment RPM1 un-hid sitewide but
+ * deliberately only above 1000px). The remaining two units cannot be reached
+ * from here: the right panel is desktop-layout-only by design, and the bottom
+ * banner 8829154851 is still hard-hidden sitewide by an unconditional inline
+ * display-none-important whose container carries no distinguishing class, so
+ * only the shared fragment could ever un-hide it - not page CSS.
+ *
+ * FIX: un-hide the in-content slot below 1001px for THIS page only. The unit is
+ * already provisioned, already emitted into the HTML, and already sized for
+ * mobile by the shared fragment (.adslot_2 -> 320x100 at <= 728px), so the
+ * 100px band is RESERVED by CSS in the head before first paint and a filled
+ * slot causes no layout shift. Measured landing position (candidate CSS injected
+ * on the live staging page before shipping anything): y=4020, which is 47.9% of
+ * page depth - mid-page, comfortably clear of the top banner, and by the render
+ * order at page-renderer.mjs:1747 it sits after the tool UI, the prose and the
+ * editorial byline and before the related-tools block. It is therefore at a
+ * content boundary and never adjacent to the upload controls, which matters both
+ * for the reader and for AdSense placement policy on an interactive tool page.
+ *
+ * WHY DENSITY IS THE LEVER HERE: at $0.085/click this page's audience prices
+ * materially better than RPM2's ($0.050), but its RPM is $2.76 against a $3.00
+ * benchmark while serving one impression per mobile pageview. A reader who
+ * scrolls past y=150 currently sees no further ad at all, so an added mid-page
+ * slot is incremental rather than cannibalising: a deep-scrolling reader has
+ * already passed the only slot that exists today.
+ *
+ * SCOPE: page-scoped by construction. PAGESTYLE<slug>.css is read only for this
+ * slug (site-data.mjs:35699 `read('PAGESTYLE','css')`) and injected into this
+ * page's head <style> (page-renderer.mjs:586). No shared ad fragment is edited,
+ * so this cannot touch any other page. That is also what keeps the readouts
+ * separable: RPM1 is sitewide but desktop-only, RPM2 is mobile-only on
+ * remove-zip-password, and RPM3 is mobile-only on this page, so no two live
+ * experiments share both a page and a form factor.
+ *
+ * REPLICATION, STATED HONESTLY: this is the same intervention as RPM2, shipped
+ * before RPM2's Day+7 verdict is in. That is deliberate, not an oversight. The
+ * two pages have very different audiences ($0.085 vs $0.050 CPC), so running the
+ * same change on both yields a two-audience read on whether mobile in-content
+ * density is a real lever or noise, which a single page could not settle. The
+ * risk is bounded by construction: the change only ADDS a slot and never moves,
+ * resizes or removes an earning one, so the realistic downside is "no gain"
+ * rather than a loss, and the Day+7 auto-revert rule catches a genuine loss.
+ *
+ * SPECIFICITY (deliberate, not incidental). The shared fragment's rules live in
+ * a body <style> that comes AFTER this head <style>, so ties in source order go
+ * to the fragment. The two rules below are (0,3,0) and (0,2,0) so that they:
+ *   - BEAT  .ad-section.in-content-ad          (0,2,0 !important) -> un-hide, and
+ *           .adslot_2                          (0,1,0)            -> reserve size;
+ *   - LOSE  html.ads-disabled .ad-section...   (0,3,1 !important) -> still collapse
+ *           when ads are disabled (staging / ad blocker / disableAd / ?noads=1), and
+ *   - TIE   .qa-noads .ad-section.in-content-ad (0,3,0 !important) -> fragment wins
+ *           on source order, so QA screenshots still collapse the band.
+ * Do not add an element selector here (e.g. `main.page-main-content`): that
+ * raises this to (0,3,1) and would defeat the .qa-noads collapse.
+ *
+ * SAFETY (vs the 2026-05-15 commit 43599cc incident, which hid a WORKING top ad
+ * sitewide for 3d17h): this file adds no rule for any already-earning slot -
+ * `.ad-section.top-ad`, `.ad-panel` and `.adslot_0/_1/_3` are untouched - and it
+ * can only ever make a currently-dormant slot visible. Worst case it stays
+ * hidden, which is today's status quo.
+ */
+@media (max-width: 1000px) {
+    .page-main-content .ad-section.in-content-ad {
+        display: block !important;
+    }
+
+    .page-main-content .adslot_2 {
+        display: inline-block !important;
+    }
+}
