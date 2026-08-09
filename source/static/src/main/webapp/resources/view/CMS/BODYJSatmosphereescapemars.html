@@ -1,0 +1,428 @@
+<script>
+    // 3D scene archetype skeleton (Atmosphere Escape: Mars Explorer) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Lean single-scene fork of the lunar-south-pole-ice /
+    // planet-atmosphere-scale-heights shape - ONE scene only. All geometry is
+    // procedural: a Mars sphere, a translucent atmosphere shell whose density
+    // ties to the time slider, a fading "shield" arc representing the old
+    // global magnetic field, and two THREE.Points escape systems (thermal/
+    // Jeans isotropic drift + directional solar-wind stripping tail/polar
+    // plume) driven by real MAVEN mission figures.
+    //
+    // EDUCATIONAL APPROXIMATION, not a physics simulation. This scene does
+    // not solve particle transport, magnetohydrodynamics, or ion-tracking
+    // physics - it is a visualization tuned to teach the real published
+    // figures honestly. The "shield" arc is a simplified schematic indicator
+    // of when Mars had a global magnetic field, not a field-line
+    // reconstruction (contrast earth-magnetosphere.html, which renders the
+    // dipole field itself - this page deliberately omits that level of
+    // detail since its point is what happens WITHOUT the shield). The
+    // thermal/Jeans escape particle rate is shown as a constant illustrative
+    // rate (real thermal escape is a smaller, steadier contributor than
+    // solar-wind stripping); the solar-wind stripping tail/polar-plume
+    // particle counts and speeds are a visual approximation of the real
+    // ~75%/~25% tail/polar split, not a literal per-particle ion count. The
+    // ancient (pre-3.7-4.2-Gya) atmosphere thickness shown is illustrative -
+    // MAVEN's measured 100 g/s rate and 75/25/small-cloud split are
+    // present-day measurements only; the "100 to 1,000 times higher" figure
+    // describes the AVERAGE historical rate needed, not a measured curve
+    // through time.
+    //
+    // Published figures (cross-checked via WebSearch 2026-08-09; primary
+    // source: NASA Mars Exploration Program, "NASA Mission Reveals Speed of
+    // Solar Wind Stripping Martian Atmosphere," mars.nasa.gov, 2015-11-05,
+    // reporting MAVEN mission results published in Science and Geophysical
+    // Research Letters, 2015-11-05):
+    //   - Present-day atmospheric loss rate: about 100 grams per second
+    //     (Bruce Jakosky, MAVEN principal investigator, University of
+    //     Colorado Boulder).
+    //   - Three loss regions identified by MAVEN: a "tail" region where the
+    //     solar wind flows past behind Mars (about 75% of escaping ions), a
+    //     "polar plume" above Mars's poles (about 25%), and a small
+    //     remaining fraction from an extended cloud of gas around the
+    //     planet.
+    //   - During solar storms, the escape rate increases 10 to 20 times
+    //     (David Brain, MAVEN co-investigator, University of Colorado
+    //     Boulder Laboratory for Atmospheric and Space Physics).
+    //   - To transform Mars from a world that could once support liquid
+    //     water on its surface to the dry planet seen today, the atmosphere
+    //     must have been stripped away at a rate 100 to 1,000 times higher
+    //     than today's rate.
+    //   - Mars's global magnetic field (dynamo) is understood to have
+    //     stopped operating roughly 3.7 to 4.2 billion years ago, after
+    //     which the atmosphere was directly exposed to solar-wind stripping
+    //     (versus Earth, which still has an active global field today).
+    //   - Mars's average surface pressure today is about 0.6% of Earth's
+    //     sea-level pressure (standard published planetary comparison
+    //     figure).
+    //   - Mars's age is about 4.5 billion years (standard solar-system
+    //     figure), used here only to size the time-scrub range.
+    //   - Distinct from earth-magnetosphere.html (which renders EARTH's
+    //     active dipole shield working) and mars-terrain.html (a real NASA
+    //     MOLA elevation heightmap of Mars's surface relief, unrelated to
+    //     atmosphere) and planet-atmosphere-scale-heights.html (a single-
+    //     moment altitude-vs-pressure structure comparison across 5 worlds,
+    //     not a loss-mechanism-over-time page). THIS page is specifically
+    //     the causal mechanism and timeline of Mars's atmosphere loss.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'atmosphereescapemars';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'atmosphereescapemars'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 50, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Real published figures (NASA Mars Exploration Program / MAVEN mission,
+    // "NASA Mission Reveals Speed of Solar Wind Stripping Martian
+    // Atmosphere," mars.nasa.gov, 2015-11-05; cross-checked via WebSearch
+    // 2026-08-09).
+    var T3D_MARS_AGE_GYA = 4.5;
+    var T3D_DYNAMO_OFF_GYA = 3.9; // midpoint of the published 3.7-4.2 Gya range
+    var T3D_LOSS_RATE_GPS = 100; // present-day, grams/second
+    var T3D_CME_MULT_LOW = 10;
+    var T3D_CME_MULT_HIGH = 20;
+    var T3D_ANCIENT_MULT_LOW = 100;
+    var T3D_ANCIENT_MULT_HIGH = 1000;
+    var T3D_TAIL_SHARE_PCT = 75;
+    var T3D_POLAR_SHARE_PCT = 25;
+    var T3D_MARS_PRESSURE_PCT_OF_EARTH = 0.6;
+    var T3D_MARS_R = 6;
+
+    function t3dAtmosphereEscapeMars(shell) {
+        var THREE = shell.THREE, scene = shell.scene, renderer = shell.renderer;
+        renderer.setClearColor(0x03040a, 1);
+
+        scene.add(new THREE.AmbientLight(0x404050, 0.55));
+
+        var starN = shell.low ? 160 : 340;
+        var starPos = new Float32Array(starN * 3);
+        for (var s = 0; s < starN; s++) {
+            var r = 90 + Math.random() * 70;
+            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+            starPos[s * 3] = r * Math.sin(ph) * Math.cos(th);
+            starPos[s * 3 + 1] = r * Math.cos(ph);
+            starPos[s * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+        }
+        var starGeo = new THREE.BufferGeometry();
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xdfe6ff, size: 0.26, sizeAttenuation: true, transparent: true, opacity: 0.55 })));
+
+        // Sun: fixed sunward direction +X. Directional light + a small
+        // marker sphere far along the same axis.
+        var sunDir = new THREE.Vector3(1, 0.12, 0.05).normalize();
+        var sunLight = new THREE.DirectionalLight(0xfff2d8, 1.5);
+        sunLight.position.copy(sunDir).multiplyScalar(40);
+        scene.add(sunLight);
+        var sunMarker = new THREE.Mesh(
+            new THREE.SphereGeometry(2.1, 16, 16),
+            new THREE.MeshBasicMaterial({ color: 0xfff0c2 })
+        );
+        sunMarker.position.copy(sunDir).multiplyScalar(46);
+        scene.add(sunMarker);
+
+        // Mars: procedural sphere, rust-orange, mottled via a low-frequency
+        // per-vertex color tint (not a photographic texture).
+        var marsGeo = new THREE.SphereGeometry(T3D_MARS_R, 48, 32);
+        var posAttr = marsGeo.getAttribute('position');
+        var colors = new Float32Array(posAttr.count * 3);
+        for (var vi = 0; vi < posAttr.count; vi++) {
+            var vx = posAttr.getX(vi), vy = posAttr.getY(vi), vz = posAttr.getZ(vi);
+            var n = 0.5 + 0.5 * Math.sin(vx * 1.3 + vy * 0.7) * Math.cos(vz * 1.1 - vy * 0.5);
+            var shade = 0.72 + 0.28 * n;
+            colors[vi * 3] = 0.70 * shade;
+            colors[vi * 3 + 1] = 0.33 * shade;
+            colors[vi * 3 + 2] = 0.18 * shade;
+        }
+        marsGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        var mars = new THREE.Mesh(marsGeo, new THREE.MeshLambertMaterial({ vertexColors: true }));
+        scene.add(mars);
+
+        // Atmosphere shell - opacity driven by the time slider (thick =
+        // ancient, thin = today's real ~0.6%-of-Earth pressure).
+        var atmo = new THREE.Mesh(
+            new THREE.SphereGeometry(T3D_MARS_R * 1.14, 40, 28),
+            new THREE.MeshBasicMaterial({ color: 0xe8b98a, transparent: true, opacity: 0.2, depthWrite: false })
+        );
+        scene.add(atmo);
+
+        // Magnetic-field "shield" - a simplified schematic arc on the
+        // sunward side, NOT a field-line reconstruction. Fades to invisible
+        // once the slider crosses the dynamo-shutdown point.
+        var shieldGeo = new THREE.TorusGeometry(T3D_MARS_R * 1.55, 0.9, 10, 40, Math.PI * 1.1);
+        var shield = new THREE.Mesh(shieldGeo, new THREE.MeshBasicMaterial({ color: 0x6fb6ff, transparent: true, opacity: 0.3, side: THREE.DoubleSide }));
+        shield.rotation.y = Math.PI / 2;
+        shield.rotation.z = -Math.PI * 0.55;
+        scene.add(shield);
+
+        // Escape particle systems. Each particle recycles from a start
+        // point once it drifts past a max distance.
+        function makePointSystem(count, size, color, opacity) {
+            var pos = new Float32Array(count * 3);
+            var seed = new Float32Array(count * 4); // ox, oy, oz, phase
+            var geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            var mat = new THREE.PointsMaterial({ color: color, size: size, sizeAttenuation: true, transparent: true, opacity: opacity, depthWrite: false });
+            var pts = new THREE.Points(geo, mat);
+            scene.add(pts);
+            return { pts: pts, pos: pos, seed: seed, count: count, geo: geo, mat: mat };
+        }
+
+        var thermalN = shell.low ? 90 : 200;
+        var thermal = makePointSystem(thermalN, 0.34, 0xf3f1ec, 0.55);
+        for (var ti = 0; ti < thermalN; ti++) {
+            var tth = Math.random() * Math.PI * 2, tph = Math.acos(2 * Math.random() - 1);
+            thermal.seed[ti * 4] = Math.sin(tph) * Math.cos(tth);
+            thermal.seed[ti * 4 + 1] = Math.cos(tph);
+            thermal.seed[ti * 4 + 2] = Math.sin(tph) * Math.sin(tth);
+            thermal.seed[ti * 4 + 3] = Math.random();
+        }
+
+        var tailN = shell.low ? 130 : 300;
+        var tail = makePointSystem(tailN, 0.4, 0x74d8ff, 0.7);
+        for (var wi = 0; wi < tailN; wi++) {
+            // Anti-sunward hemisphere bias (tail plume region).
+            var wth = Math.random() * Math.PI * 2, wph = Math.acos(2 * Math.random() - 1) * 0.72 + Math.PI * 0.35;
+            var lx = Math.sin(wph) * Math.cos(wth), ly = Math.cos(wph), lz = Math.sin(wph) * Math.sin(wth);
+            tail.seed[wi * 4] = -lx; tail.seed[wi * 4 + 1] = ly * 0.5; tail.seed[wi * 4 + 2] = lz;
+            tail.seed[wi * 4 + 3] = Math.random();
+        }
+
+        var polarN = shell.low ? 44 : 100;
+        var polar = makePointSystem(polarN, 0.4, 0xb388ff, 0.7);
+        for (var pi2 = 0; pi2 < polarN; pi2++) {
+            var pole = pi2 % 2 === 0 ? 1 : -1;
+            var pang = Math.random() * Math.PI * 2, prad = Math.random() * 0.35;
+            polar.seed[pi2 * 4] = Math.cos(pang) * prad;
+            polar.seed[pi2 * 4 + 1] = pole * (0.85 + Math.random() * 0.15);
+            polar.seed[pi2 * 4 + 2] = Math.sin(pang) * prad;
+            polar.seed[pi2 * 4 + 3] = Math.random();
+        }
+
+        function driftSystem(sys, speed, maxR, startR, antiSun) {
+            for (var i = 0; i < sys.count; i++) {
+                var ph = (sys.seed[i * 4 + 3] + speed) % 1;
+                sys.seed[i * 4 + 3] = ph;
+                var dist = startR + ph * (maxR - startR);
+                var ox = sys.seed[i * 4], oy = sys.seed[i * 4 + 1], oz = sys.seed[i * 4 + 2];
+                var drift = antiSun ? 1 + ph * 1.4 : 1;
+                sys.pos[i * 3] = ox * dist * drift;
+                sys.pos[i * 3 + 1] = oy * dist * drift;
+                sys.pos[i * 3 + 2] = oz * dist * drift;
+            }
+            sys.geo.attributes.position.needsUpdate = true;
+        }
+
+        var sliderEl = document.getElementById('t3dTimeScrub');
+        var labelEl = document.getElementById('t3dTimeLabel');
+        var cmeBtn = document.getElementById('t3dCmeToggleBtn');
+        var sliderVal = 0;
+        var cmeActive = false;
+
+        function fmtRate(g) {
+            if (g >= 1000) return (Math.round(g / 10) * 10).toLocaleString() + ' g/s';
+            return Math.round(g) + ' g/s';
+        }
+
+        function panelHtml(gya, fieldActive, windActivity) {
+            var eraLine = gya < 0.05
+                ? '<h3>Today</h3>'
+                : '<h3>About ' + gya.toFixed(1) + ' billion years ago</h3>';
+            var fieldLine = fieldActive
+                ? '<p><b>Global magnetic field:</b> still active - Mars\'s early dynamo partially shields the atmosphere from the solar wind.</p>'
+                : '<p><b>Global magnetic field:</b> gone - Mars\'s dynamo shut off roughly ' + T3D_DYNAMO_OFF_GYA.toFixed(1) + ' billion years ago (published range: 3.7 to 4.2 Gya), leaving the atmosphere directly exposed to solar-wind stripping. Compare with Earth, which still has an active shield today.</p>';
+            var rateLine = gya < 0.05
+                ? (cmeActive
+                    ? '<p><b>Escape rate right now:</b> a solar storm (CME) is in progress - real MAVEN data shows the rate climbs 10 to 20 times higher during these events, to roughly ' + fmtRate(T3D_LOSS_RATE_GPS * T3D_CME_MULT_LOW) + ' - ' + fmtRate(T3D_LOSS_RATE_GPS * T3D_CME_MULT_HIGH) + '.</p>'
+                    : '<p><b>Escape rate right now:</b> about ' + fmtRate(T3D_LOSS_RATE_GPS) + ' (MAVEN measurement) - roughly a quarter pound per second.</p>')
+                : '<p><b>Illustrative loss rate:</b> to go from a wetter, thicker-atmosphere Mars to today\'s thin one, the average historical rate needed to be ' + T3D_ANCIENT_MULT_LOW + ' to ' + T3D_ANCIENT_MULT_HIGH + ' times today\'s rate - this scene does not have a measured rate curve for this era, only today\'s MAVEN measurement and the historical range needed overall.</p>';
+            var splitLine = gya < 0.05
+                ? '<p><b>Where today\'s escaping ions go (MAVEN):</b> about ' + T3D_TAIL_SHARE_PCT + '% through the tail region behind Mars (cyan), about ' + T3D_POLAR_SHARE_PCT + '% through a polar plume above the poles (violet), and a small remaining fraction from an extended surrounding cloud.</p>'
+                : '';
+            return eraLine + fieldLine + rateLine + splitLine +
+                '<p class="t3d-note">Mars\'s surface pressure today is about ' + T3D_MARS_PRESSURE_PCT_OF_EARTH + '% of Earth\'s sea-level pressure. This scene is an educational approximation, not a particle-transport simulation - the ancient atmosphere thickness shown is illustrative; only today\'s 100 g/s rate and 75/25 split are direct MAVEN measurements.</p>';
+        }
+
+        function apply() {
+            var gya = T3D_MARS_AGE_GYA * (1 - sliderVal / 100);
+            var fieldActive = gya > T3D_DYNAMO_OFF_GYA;
+            var goneFrac = fieldActive ? 0 : Math.min(1, 1 - gya / T3D_DYNAMO_OFF_GYA);
+            var atmoOpacity = fieldActive ? 0.40 : (0.08 + (0.40 - 0.08) * (gya / T3D_DYNAMO_OFF_GYA));
+            atmo.material.opacity = atmoOpacity;
+            shield.material.opacity = fieldActive ? 0.30 : Math.max(0, 0.30 * (1 - goneFrac * 3));
+
+            var cmeBoost = cmeActive ? 2.4 : 1;
+            var windActivity = (fieldActive ? 0.04 : goneFrac) * cmeBoost;
+            tail.mat.opacity = Math.min(0.85, 0.15 + 0.55 * windActivity);
+            polar.mat.opacity = Math.min(0.85, 0.15 + 0.55 * windActivity);
+
+            if (labelEl) labelEl.textContent = gya < 0.05 ? 'Today' : ('About ' + gya.toFixed(1) + ' billion years ago');
+            if (cmeBtn) cmeBtn.textContent = cmeActive ? 'Solar storm (CME) in progress - click to end it' : 'Trigger a solar-storm (CME) event';
+            t3dInfo(panelHtml(gya, fieldActive, windActivity));
+            try { t3dSaveStore({ sliderVal: sliderVal, cmeActive: cmeActive }); } catch (e) {}
+            return { windActivity: windActivity };
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.sliderVal === 'number' && store.sliderVal >= 0 && store.sliderVal <= 100) { sliderVal = store.sliderVal; }
+        if (typeof store.cmeActive === 'boolean') { cmeActive = store.cmeActive; }
+        if (sliderEl) sliderEl.value = String(sliderVal);
+        var state = apply();
+
+        if (sliderEl) sliderEl.addEventListener('input', function () {
+            sliderVal = Math.max(0, Math.min(100, parseFloat(sliderEl.value || '0')));
+            state = apply();
+        });
+        if (cmeBtn) cmeBtn.addEventListener('click', function () {
+            cmeActive = !cmeActive;
+            state = apply();
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Slide through time to watch the shield disappear and the atmosphere thin out.');
+        return function animate(dt) {
+            var t = performance.now() * 0.001;
+            mars.rotation.y += 0.0007 * dt;
+            atmo.rotation.y += 0.0005 * dt;
+            var thermalSpeed = 0.0016 * dt;
+            var windSpeed = (0.0018 + state.windActivity * 0.0035) * dt;
+            driftSystem(thermal, thermalSpeed, T3D_MARS_R * 3.4, T3D_MARS_R * 1.2, false);
+            driftSystem(tail, windSpeed, T3D_MARS_R * 6.5, T3D_MARS_R * 1.3, true);
+            driftSystem(polar, windSpeed, T3D_MARS_R * 5.2, T3D_MARS_R * 1.25, true);
+            sunMarker.material.opacity = 1;
+            void t;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { atmosphereescapemars: 't3dAtmoEscapeControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { atmosphereescapemars: { radius: 22, maxR: 65, minR: 6, phi: 1.1, theta: 0.5, targetY: 0, fov: 50 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dAtmosphereEscapeMars(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
