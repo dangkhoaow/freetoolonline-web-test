@@ -2777,4 +2777,21 @@ html.main-html.dark .w3-pale-red{background-color:#3a1a1a!important;color:#f2d9d
 html.main-html.dark .w3-pale-yellow{background-color:#38351a!important;color:#f2efd0!important}
 html.main-html.dark .w3-light-grey,html.main-html.dark .w3-light-gray{background-color:#21262d!important;color:#e6edf3!important}
 html.main-html.dark .w3-sand,html.main-html.dark .w3-khaki{background-color:#2d2a1f!important;color:#efe9d5!important}
+
+/* ============================================================
+ * W3 TEXT-COLOR CLASS FALLBACK - 2026-08-09 (new-page-verify fire376,
+ * C11 sweep). Same root cause as the W3 COLOR CLASS FALLBACK block
+ * above, but for the w3.css `w3-text-*` (color-only, no background)
+ * variants: never defined in the CDN common.css or this tag, so
+ * headings using them rendered in inherited/default text color.
+ * Sitewide usage at time of fix: w3-text-grey 80x, w3-text-blue-grey 8x
+ * (shared speech-to-text/text-to-speech/subtitle-generator skeleton),
+ * w3-text-gray 5x, w3-text-red 4x, w3-text-green 2x, w3-text-blue 1x.
+ * Values match official w3.css v4 text-color definitions.
+ * ============================================================ */
+.w3-text-grey,.w3-text-gray{color:#9e9e9e!important}
+.w3-text-blue-grey{color:#607d8b!important}
+.w3-text-red{color:#f44336!important}
+.w3-text-green{color:#4CAF50!important}
+.w3-text-blue{color:#2196F3!important}
 </style>
