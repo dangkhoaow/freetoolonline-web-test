@@ -1,0 +1,428 @@
+<script>
+    // 3D scene archetype skeleton (bennu-osiris-rex) - vendored three.js (ESM,
+    // dynamic import from /vendor/three/, NO CDN), fully client-side. Built from
+    // the shared t3d* skeleton (see BODYJSdartasteroiddeflection.html) - ONE scene
+    // only. All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not a physics or contact-dynamics simulation.
+    // This page draws asteroid Bennu as a procedurally bumped, boulder-scattered
+    // "spinning-top" shape and NASA OSIRIS-REx's real 20 October 2020 Touch-And-Go
+    // (TAG) sample-collection maneuver as a simplified state machine (idle /
+    // inbound / contact / backaway / done), not a numerically integrated
+    // descent-and-contact solver. The spacecraft is sized for visibility next to
+    // the asteroid and the whole sequence plays out in a few seconds rather than
+    // the real multi-minute approach. Bennu's on-screen rotation is COMPRESSED for
+    // visibility - the real rotation period is 4.3 hours.
+    //
+    // Published figures (NASA; verified 2026-08-09):
+    //   - Bennu: near-Earth carbonaceous asteroid, mean diameter about 490 m,
+    //     top-shaped rubble pile, density about 1.19 g/cm3, >200 boulders >10 m,
+    //     sidereal rotation period 4.296 h (about 4.3 h), orbital period about
+    //     1.2 years. Discovered 1999 (1999 RQ36), renamed Bennu 2013.
+    //   - OSIRIS-REx: launched 2016-09-08; arrived at Bennu 2018-12-03; TAG sample
+    //     collection 2020-10-20 at the "Nightingale" site (nitrogen-gas TAGSAM
+    //     burst); returned 121.6 g sample to Earth 2023-09-24 (far exceeding the
+    //     60 g minimum); spacecraft renamed OSIRIS-APEx, now en route to asteroid
+    //     Apophis (see apophis-2029-flyby.html).
+    //   - Post-TAG analysis found the TAGSAM head sank about 48-50 cm into the
+    //     surface - deeper than expected - confirming the near-surface material
+    //     behaves like a loosely packed "plastic ball pit" rather than solid rock
+    //     (Lauretta/Walsh, Science + Science Advances; publicized by NASA).
+    //   - Impact-risk (Yarkovsky-refined, NASA JPL CNEOS, Farnocchia et al. 2021):
+    //     cumulative probability through 2300 about 1-in-1,750; single highest-
+    //     risk date 24 September 2182 at about 1-in-2,700 (about 0.037%); Torino 0;
+    //     Palermo -1.40 - both well below levels of public concern.
+    //
+    // Distinct from Hayabusa2-Ryugu Sample Return (a different mission, a
+    // tantalum-projectile + artificial-impactor-crater technique, a 6-stop
+    // milestone slider - no "ball pit" finding), DART Asteroid Deflection (a
+    // completed kinetic-impact deflection TEST, not a sample return), Apophis
+    // 2029 Flyby (a predicted natural close approach, no spacecraft interaction),
+    // and Asteroid Belt (the general population, not one named object) - THIS
+    // page is Bennu's own rubble-pile surface mechanics, the nitrogen-gas TAGSAM
+    // technique, the record 121.6 g returned sample, and Bennu's monitored-hazard
+    // impact-risk figures.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'bennu-osiris-rex';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'bennutag'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Published figures (see header comment for sources).
+    var SPIN_LOOP_SECONDS = 9;        // visualization speed-up only (not real time; real period 4.3 h)
+    var AST_R = 3.2;                  // scene units, asteroid mean radius
+    var PARK_POS = { x: 9, y: 5, z: 7 };      // scene units, spacecraft idle/parked stand-off
+    var DONE_POS = { x: 11, y: 6.5, z: 8.5 }; // scene units, spacecraft final parked-away position
+    var INBOUND_SECONDS = 1.5;
+    var CONTACT_SECONDS = 0.9;
+    var BACKAWAY_SECONDS = 1.1;
+
+    function t3dFactsHtml(state) {
+        var missionRows = state === 'done'
+            ? '<tr><td>TAG (Touch-And-Go) date</td><td>20 October 2020, site "Nightingale"</td></tr>' +
+              '<tr><td>TAGSAM sink depth on contact</td><td>about 48-50 cm - deeper than expected</td></tr>' +
+              '<tr><td>Sample mass returned</td><td>121.6 g (4.3 oz) - exceeded the 60 g minimum</td></tr>' +
+              '<tr><td>Sample landed on Earth</td><td>24 September 2023, Utah desert</td></tr>'
+            : '<tr><td>Status</td><td>Idle - click "Simulate TAG" to replay the 2020 sample grab</td></tr>';
+        return '<h3>Bennu + OSIRIS-REx</h3>' +
+            '<table class="w3-table w3-bordered w3-small">' +
+            '<tr><td>Diameter (equator)</td><td>about 490 m, top-shaped rubble pile</td></tr>' +
+            '<tr><td>Rotation period (real)</td><td>4.3 hours (shown compressed here)</td></tr>' +
+            '<tr><td>Bulk density</td><td>about 1.19 g/cm3 (about half empty space)</td></tr>' +
+            missionRows +
+            '<tr><td>Impact risk through 2300</td><td>about 1-in-1,750 cumulative; single riskiest date 24 Sep 2182 at about 1-in-2,700</td></tr>' +
+            '</table>' +
+            '<p class="t3d-note">Source: NASA OSIRIS-REx mission + Bennu Facts pages; Lauretta &amp; Walsh, Science / Science Advances (TAGSAM sink-depth finding); NASA JPL Center for Near-Earth Object Studies (impact-risk figures, Farnocchia et al. 2021).</p>';
+    }
+
+    // Deterministic pseudo-random helper (build-time only, never called per frame).
+    function t3dHash(i) {
+        var x = Math.sin(i * 12.9898) * 43758.5453;
+        return x - Math.floor(x);
+    }
+
+    function t3dBennuTag(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0x445566, 0.55));
+        var sunLight = new THREE.DirectionalLight(0xfff4e0, 1.15);
+        sunLight.position.set(30, 40, 20);
+        scene.add(sunLight);
+
+        var starCount = shell.low ? 200 : 420;
+        var spos = new Float32Array(starCount * 3);
+        for (var s = 0; s < starCount; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(70 + Math.random() * 110);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xb0bec5, size: 0.35, sizeAttenuation: false })));
+
+        // Asteroid: bumped, top-shaped (bulged equator / flattened poles) rubble pile.
+        var astGroup = new THREE.Group();
+        scene.add(astGroup);
+        var astGeo = new THREE.IcosahedronGeometry(AST_R, 2);
+        var posAttr = astGeo.getAttribute('position');
+        for (var i = 0; i < posAttr.count; i++) {
+            var px = posAttr.getX(i), py = posAttr.getY(i), pz = posAttr.getZ(i);
+            var len = Math.sqrt(px * px + py * py + pz * pz) || 1;
+            var ny = py / len;
+            var bump = 1 + (t3dHash(i * 3.1) - 0.5) * 0.22;
+            var topShape = 1 - Math.abs(ny) * 0.28 + (1 - Math.abs(ny)) * 0.10; // bulge equator, taper poles
+            var scale = bump * topShape;
+            posAttr.setXYZ(i, px * scale, py * scale * 0.86, pz * scale);
+        }
+        astGeo.computeVertexNormals();
+        var asteroid = new THREE.Mesh(
+            astGeo,
+            new THREE.MeshPhongMaterial({ color: 0x3a332c, emissive: 0x050403, shininess: 4, flatShading: true })
+        );
+        astGroup.add(asteroid);
+
+        // Boulders scattered on the surface (represents the real >200 boulders >10 m).
+        var boulderCount = shell.low ? 22 : 42;
+        var boulderGeo = new THREE.IcosahedronGeometry(1, 0);
+        var boulderMat = new THREE.MeshPhongMaterial({ color: 0x2c2721, flatShading: true, shininess: 2 });
+        var boulders = new THREE.InstancedMesh(boulderGeo, boulderMat, boulderCount);
+        var dummy = new THREE.Object3D();
+        for (var b = 0; b < boulderCount; b++) {
+            var theta = t3dHash(b * 7.7) * Math.PI * 2;
+            var phi = Math.acos(1 - 2 * t3dHash(b * 5.3 + 1));
+            var r = AST_R * (0.94 + t3dHash(b * 2.2) * 0.12);
+            var bx = r * Math.sin(phi) * Math.cos(theta);
+            var by = r * Math.cos(phi) * 0.86;
+            var bz = r * Math.sin(phi) * Math.sin(theta);
+            dummy.position.set(bx, by, bz);
+            dummy.scale.setScalar(0.14 + t3dHash(b * 9.9) * 0.22);
+            dummy.lookAt(0, 0, 0);
+            dummy.updateMatrix();
+            boulders.setMatrixAt(b, dummy.matrix);
+        }
+        astGroup.add(boulders);
+
+        // OSIRIS-REx spacecraft: hex bus + solar panel wings + TAGSAM arm.
+        var craft = new THREE.Group();
+        var bus = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.55, 0.55, 0.65, 6),
+            new THREE.MeshPhongMaterial({ color: 0x9aa7b8, shininess: 40 })
+        );
+        craft.add(bus);
+        var wingGeo = new THREE.BoxGeometry(2.3, 0.05, 0.9);
+        var wingMat = new THREE.MeshPhongMaterial({ color: 0x17335c, shininess: 20 });
+        var wingL = new THREE.Mesh(wingGeo, wingMat); wingL.position.x = -1.5; craft.add(wingL);
+        var wingR = new THREE.Mesh(wingGeo, wingMat); wingR.position.x = 1.5; craft.add(wingR);
+        var arm = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.05, 0.05, 1.2, 6),
+            new THREE.MeshPhongMaterial({ color: 0x707070 })
+        );
+        arm.position.y = -0.9;
+        arm.visible = false;
+        craft.add(arm);
+        craft.position.set(PARK_POS.x, PARK_POS.y, PARK_POS.z);
+        scene.add(craft);
+
+        var puffGeo = new THREE.BufferGeometry();
+        var puffCount = shell.low ? 40 : 90;
+        var puffPos = new Float32Array(puffCount * 3);
+        var puffVel = [];
+        for (var p = 0; p < puffCount; p++) {
+            puffPos[p * 3] = 0; puffPos[p * 3 + 1] = 0; puffPos[p * 3 + 2] = 0;
+            puffVel.push(new THREE.Vector3().randomDirection().multiplyScalar(0.015 + Math.random() * 0.04));
+        }
+        puffGeo.setAttribute('position', new THREE.BufferAttribute(puffPos, 3));
+        var puffMat = new THREE.PointsMaterial({ color: 0xe8e2d0, size: 0.14, transparent: true, opacity: 0 });
+        var puff = new THREE.Points(puffGeo, puffMat);
+        scene.add(puff);
+
+        var st = { phase: 'idle', t: 0, spinAngle: 0, puffActive: false, puffT: 0 };
+
+        function updateLabelAndFacts() {
+            var label = document.getElementById('t3dBennuStateLabel');
+            var text = 'Idle - click "Simulate TAG" to replay the 2020 sample grab';
+            if (st.phase === 'inbound') text = 'OSIRIS-REx descending toward the surface...';
+            else if (st.phase === 'contact') text = 'Contact - TAGSAM arm touching down, nitrogen puff firing...';
+            else if (st.phase === 'backaway') text = 'Backing away with the sample...';
+            else if (st.phase === 'done') text = 'TAG complete - sample collected (121.6 g, returned 24 Sep 2023)';
+            if (label) label.textContent = text;
+            t3dInfo(t3dFactsHtml(st.phase === 'done' ? 'done' : 'idle'));
+        }
+
+        var store = t3dLoadStore();
+        if (store.tag_complete) {
+            st.phase = 'done';
+            craft.position.set(DONE_POS.x, DONE_POS.y, DONE_POS.z);
+        }
+        updateLabelAndFacts();
+
+        var tagBtn = document.getElementById('t3dBennuTagBtn');
+        if (tagBtn) {
+            tagBtn.addEventListener('click', function () {
+                if (st.phase !== 'idle') return;
+                st.phase = 'inbound';
+                st.t = 0;
+                t3dStatus('OSIRIS-REx inbound for the TAG maneuver...');
+                updateLabelAndFacts();
+            });
+        }
+        var resetBtn = document.getElementById('t3dBennuResetBtn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function () {
+                st.phase = 'idle';
+                st.t = 0;
+                arm.visible = false;
+                arm.position.y = -0.9;
+                puffMat.opacity = 0;
+                st.puffActive = false;
+                craft.position.set(PARK_POS.x, PARK_POS.y, PARK_POS.z);
+                try { t3dSaveStore({ tag_complete: false }); } catch (e) {}
+                t3dStatus('Reset. Click "Simulate TAG" to replay the sample grab.');
+                updateLabelAndFacts();
+            });
+        }
+
+        t3dStatus('Drag to orbit, scroll or pinch to zoom. Click "Simulate TAG" to replay the 2020 sample grab.');
+        return function animate(dt) {
+            var dtSec = dt / 1000;
+            st.spinAngle += (Math.PI * 2 / SPIN_LOOP_SECONDS) * dtSec;
+            astGroup.rotation.y = st.spinAngle;
+
+            var surfacePoint = new THREE.Vector3(1.2, AST_R * 0.86 + 0.3, 1.2);
+
+            if (st.phase === 'inbound') {
+                st.t += dtSec;
+                var tt = Math.min(1, st.t / INBOUND_SECONDS);
+                craft.position.set(
+                    PARK_POS.x + (surfacePoint.x - PARK_POS.x) * tt,
+                    PARK_POS.y + (surfacePoint.y - PARK_POS.y) * tt,
+                    PARK_POS.z + (surfacePoint.z - PARK_POS.z) * tt
+                );
+                if (tt >= 1) {
+                    st.phase = 'contact'; st.t = 0;
+                    arm.visible = true;
+                    t3dStatus('Contact - TAGSAM arm extending and firing its nitrogen-gas burst...');
+                    updateLabelAndFacts();
+                }
+            } else if (st.phase === 'contact') {
+                st.t += dtSec;
+                var ct = Math.min(1, st.t / CONTACT_SECONDS);
+                arm.position.y = -0.9 - ct * 0.45; // arm sinks further, per the real TAGSAM finding
+                if (!st.puffActive && ct > 0.35) {
+                    st.puffActive = true; st.puffT = 0;
+                    puff.position.copy(surfacePoint);
+                    var pa = puffGeo.getAttribute('position');
+                    for (var pi = 0; pi < puffCount; pi++) { pa.array[pi * 3] = 0; pa.array[pi * 3 + 1] = 0; pa.array[pi * 3 + 2] = 0; }
+                    pa.needsUpdate = true;
+                    puffMat.opacity = 1;
+                }
+                if (ct >= 1) {
+                    st.phase = 'backaway'; st.t = 0;
+                    t3dStatus('Backing away with the collected sample...');
+                    updateLabelAndFacts();
+                }
+            } else if (st.phase === 'backaway') {
+                st.t += dtSec;
+                var bt = Math.min(1, st.t / BACKAWAY_SECONDS);
+                craft.position.set(
+                    surfacePoint.x + (DONE_POS.x - surfacePoint.x) * bt,
+                    surfacePoint.y + (DONE_POS.y - surfacePoint.y) * bt,
+                    surfacePoint.z + (DONE_POS.z - surfacePoint.z) * bt
+                );
+                if (bt >= 1) {
+                    st.phase = 'done';
+                    arm.visible = false;
+                    try { t3dSaveStore({ tag_complete: true }); } catch (e) {}
+                    t3dStatus('TAG complete - 121.6 g sample collected, returned to Earth 24 September 2023.');
+                    updateLabelAndFacts();
+                }
+            }
+
+            if (st.puffActive) {
+                st.puffT += dtSec;
+                var pa2 = puffGeo.getAttribute('position');
+                for (var pj = 0; pj < puffCount; pj++) {
+                    pa2.array[pj * 3] += puffVel[pj].x;
+                    pa2.array[pj * 3 + 1] += puffVel[pj].y;
+                    pa2.array[pj * 3 + 2] += puffVel[pj].z;
+                }
+                pa2.needsUpdate = true;
+                puffMat.opacity = Math.max(0, 1 - st.puffT / 2.2);
+                if (st.puffT > 2.2) { st.puffActive = false; }
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { bennutag: 't3dBennuControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { bennutag: { radius: 16, maxR: 90, minR: 6, phi: 1.05, theta: 0.6, targetY: 0 } };
+                    var shellCtx = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dBennuTag(shellCtx);
+                    var last = performance.now();
+                    shellCtx.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shellCtx.applyCamera();
+                        shellCtx.renderer.render(shellCtx.scene, shellCtx.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
