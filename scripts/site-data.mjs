@@ -2852,13 +2852,11 @@ export const INFO_ROUTES = new Set([
   '/guides/de/convert-milliseconds-to-date.html',
   // plan-warm-pascal-v3 S2 batch 3 (2026-05-29) - 5 locale variants × 3 guides (lcd-screen-test + hd-video-converter-when + json-formatter-when)
   '/guides/pt/lcd-screen-test.html', '/guides/es/lcd-screen-test.html', '/guides/vi/lcd-screen-test.html', '/guides/id/lcd-screen-test.html', '/guides/de/lcd-screen-test.html',
-  '/guides/pt/hd-video-converter-when.html', '/guides/es/hd-video-converter-when.html', '/guides/vi/hd-video-converter-when.html', '/guides/id/hd-video-converter-when.html', '/guides/de/hd-video-converter-when.html',
   '/guides/pt/json-formatter-when.html', '/guides/es/json-formatter-when.html', '/guides/vi/json-formatter-when.html', '/guides/id/json-formatter-when.html', '/guides/de/json-formatter-when.html',
   // plan-warm-pascal-v3 S2 batch 4 (2026-05-29) - 5 locale variants × 3 guides (zip-file-converter + online-zip-file-compressor + led-test)
   '/guides/pt/zip-file-converter.html', '/guides/es/zip-file-converter.html', '/guides/vi/zip-file-converter.html', '/guides/id/zip-file-converter.html', '/guides/de/zip-file-converter.html',
   '/guides/pt/led-test.html', '/guides/es/led-test.html', '/guides/vi/led-test.html', '/guides/id/led-test.html', '/guides/de/led-test.html',
   // plan-warm-pascal-v3 S2 batch 5 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/hd-video-converter-step-by-step.html', '/guides/es/hd-video-converter-step-by-step.html', '/guides/vi/hd-video-converter-step-by-step.html', '/guides/id/hd-video-converter-step-by-step.html', '/guides/de/hd-video-converter-step-by-step.html',
   '/guides/pt/hd-video-converter-vs-alternatives.html', '/guides/es/hd-video-converter-vs-alternatives.html', '/guides/vi/hd-video-converter-vs-alternatives.html', '/guides/id/hd-video-converter-vs-alternatives.html', '/guides/de/hd-video-converter-vs-alternatives.html',
   // plan-warm-pascal-v3 S2 batch 6 (2026-05-29) - 5 locale variants × 3 guides
   // plan-warm-pascal-v3 S2 batch 7 (2026-05-29) - 5 locale variants × 3 guides
@@ -10161,23 +10159,11 @@ export const GUIDE_ROUTES = new Set([
   // JSP_BY_ROUTE only, same gap class as password-generator/habit-tracker
   // above) + full pt/es/vi/id/de locale fanout (guide_locale_fanout drain
   // unit grocery-list-guides, runbook SS4b).
-  '/guides/grocery-list-step-by-step.html',
-  '/guides/grocery-list-when.html',
   '/guides/grocery-list-vs-alternatives.html',
-  '/guides/pt/grocery-list-step-by-step.html',
-  '/guides/pt/grocery-list-when.html',
   '/guides/pt/grocery-list-vs-alternatives.html',
-  '/guides/es/grocery-list-step-by-step.html',
-  '/guides/es/grocery-list-when.html',
   '/guides/es/grocery-list-vs-alternatives.html',
-  '/guides/vi/grocery-list-step-by-step.html',
-  '/guides/vi/grocery-list-when.html',
   '/guides/vi/grocery-list-vs-alternatives.html',
-  '/guides/id/grocery-list-step-by-step.html',
-  '/guides/id/grocery-list-when.html',
   '/guides/id/grocery-list-vs-alternatives.html',
-  '/guides/de/grocery-list-step-by-step.html',
-  '/guides/de/grocery-list-when.html',
   '/guides/de/grocery-list-vs-alternatives.html',
 
   // game-discovery-loop-runbook fire6 (2026-07-09): procedural-horde-game
@@ -14325,9 +14311,9 @@ export const ALIAS_ROUTES = {
   '/guides/gif-to-frame.html': '/guides/en/gif-to-frame.html',
   '/guides/gif-frames-extract-vs-frame-rate-fps-explained.html': '/guides/en/gif-frames-extract-vs-frame-rate-fps-explained.html',
   '/guides/gif-into-frames.html': '/image-converter-tools/extract-gif-to-image-frames.html',
-  '/guides/hd-video-converter-step-by-step.html': '/guides/en/hd-video-converter-step-by-step.html',
+  '/guides/hd-video-converter-step-by-step.html': '/video-tools/hd-video-converter.html',
   '/guides/hd-video-converter-vs-alternatives.html': '/guides/en/hd-video-converter-vs-alternatives.html',
-  '/guides/hd-video-converter-when.html': '/guides/en/hd-video-converter-when.html',
+  '/guides/hd-video-converter-when.html': '/video-tools/hd-video-converter.html',
   '/guides/heic-to-jpg-claims-what-actually-works.html': '/guides/en/heic-to-jpg-claims-what-actually-works.html',
   '/guides/heic-vs-jpg-converter-when-each-wins.html': '/guides/en/heic-vs-jpg-converter-when-each-wins.html',
   '/guides/heic-vs-jpg-vs-webp.html': '/guides/en/heic-vs-jpg-vs-webp.html',
@@ -15221,6 +15207,37 @@ export const ALIAS_ROUTES = {
   '/tournament-prize-money-lookup.html': '/utility-tools/tournament-prize-money-lookup.html',
   '/event-time-countdown.html': '/utility-tools/event-time-countdown.html',
   '/wildfire-map.html': '/utility-tools/wildfire-map.html',
+  // content-consolidation-loop fire39 (2026-08-09) - step-1a cannibalized-backlog drain.
+  // topical-map nodes video.hd-video-converter + utility.grocery-list each carried 3 guide
+  // families for ONE reader intent. The two weakest TEMPLATE families per node are retired
+  // here (0-1 click / <45 impr per 28d, 0 AI citations); the strongest editorial family per
+  // node stays live (video-converter-online-free: 13 clicks; how-to-make-a-to-do-list-online:
+  // 522 impr). Unique surviving facts folded into the canonical tool page first.
+  // Two-layer 301: mirrored into cloudfront-function/url-migration-301.js in the same push.
+  '/guides/en/hd-video-converter-step-by-step.html': '/video-tools/hd-video-converter.html',
+  '/guides/pt/hd-video-converter-step-by-step.html': '/video-tools/hd-video-converter.html',
+  '/guides/es/hd-video-converter-step-by-step.html': '/video-tools/hd-video-converter.html',
+  '/guides/vi/hd-video-converter-step-by-step.html': '/video-tools/hd-video-converter.html',
+  '/guides/id/hd-video-converter-step-by-step.html': '/video-tools/hd-video-converter.html',
+  '/guides/de/hd-video-converter-step-by-step.html': '/video-tools/hd-video-converter.html',
+  '/guides/en/hd-video-converter-when.html': '/video-tools/hd-video-converter.html',
+  '/guides/pt/hd-video-converter-when.html': '/video-tools/hd-video-converter.html',
+  '/guides/es/hd-video-converter-when.html': '/video-tools/hd-video-converter.html',
+  '/guides/vi/hd-video-converter-when.html': '/video-tools/hd-video-converter.html',
+  '/guides/id/hd-video-converter-when.html': '/video-tools/hd-video-converter.html',
+  '/guides/de/hd-video-converter-when.html': '/video-tools/hd-video-converter.html',
+  '/guides/grocery-list-step-by-step.html': '/utility-tools/grocery-list.html',
+  '/guides/pt/grocery-list-step-by-step.html': '/utility-tools/grocery-list.html',
+  '/guides/es/grocery-list-step-by-step.html': '/utility-tools/grocery-list.html',
+  '/guides/vi/grocery-list-step-by-step.html': '/utility-tools/grocery-list.html',
+  '/guides/id/grocery-list-step-by-step.html': '/utility-tools/grocery-list.html',
+  '/guides/de/grocery-list-step-by-step.html': '/utility-tools/grocery-list.html',
+  '/guides/grocery-list-when.html': '/utility-tools/grocery-list.html',
+  '/guides/pt/grocery-list-when.html': '/utility-tools/grocery-list.html',
+  '/guides/es/grocery-list-when.html': '/utility-tools/grocery-list.html',
+  '/guides/vi/grocery-list-when.html': '/utility-tools/grocery-list.html',
+  '/guides/id/grocery-list-when.html': '/utility-tools/grocery-list.html',
+  '/guides/de/grocery-list-when.html': '/utility-tools/grocery-list.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -15813,8 +15830,6 @@ export const JSP_BY_ROUTE = {
   // Pre-cycle-20260520 builder bug: ctx.url hardcoded as /{slug}.html ignoring
   // cluster; fixed in build-tool-page.mjs::deriveUrlsForCluster().
   '/video-tools/hd-video-converter.html': 'convert/hd-video-converter.jsp',
-  '/guides/en/hd-video-converter-when.html': 'guide/en/hd-video-converter-when.jsp',
-  '/guides/en/hd-video-converter-step-by-step.html': 'guide/en/hd-video-converter-step-by-step.jsp',
   '/guides/en/hd-video-converter-vs-alternatives.html': 'guide/en/hd-video-converter-vs-alternatives.jsp',
   // Cycle 20260520 SEO-synonym-mill cleanup. The 5 dupe variants of
   // /json-formatter.html (-extension, -editor, -viewer, -compare, -validator)
@@ -15890,11 +15905,6 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/lcd-screen-test.html': 'guide/vi/lcd-screen-test.jsp',
   '/guides/id/lcd-screen-test.html': 'guide/id/lcd-screen-test.jsp',
   '/guides/de/lcd-screen-test.html': 'guide/de/lcd-screen-test.jsp',
-  '/guides/pt/hd-video-converter-when.html': 'guide/pt/hd-video-converter-when.jsp',
-  '/guides/es/hd-video-converter-when.html': 'guide/es/hd-video-converter-when.jsp',
-  '/guides/vi/hd-video-converter-when.html': 'guide/vi/hd-video-converter-when.jsp',
-  '/guides/id/hd-video-converter-when.html': 'guide/id/hd-video-converter-when.jsp',
-  '/guides/de/hd-video-converter-when.html': 'guide/de/hd-video-converter-when.jsp',
   '/guides/pt/json-formatter-when.html': 'guide/pt/json-formatter-when.jsp',
   '/guides/es/json-formatter-when.html': 'guide/es/json-formatter-when.jsp',
   '/guides/vi/json-formatter-when.html': 'guide/vi/json-formatter-when.jsp',
@@ -15904,7 +15914,6 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/zip-file-converter.html': 'guide/pt/zip-file-converter.jsp', '/guides/es/zip-file-converter.html': 'guide/es/zip-file-converter.jsp', '/guides/vi/zip-file-converter.html': 'guide/vi/zip-file-converter.jsp', '/guides/id/zip-file-converter.html': 'guide/id/zip-file-converter.jsp', '/guides/de/zip-file-converter.html': 'guide/de/zip-file-converter.jsp',
   '/guides/pt/led-test.html': 'guide/pt/led-test.jsp', '/guides/es/led-test.html': 'guide/es/led-test.jsp', '/guides/vi/led-test.html': 'guide/vi/led-test.jsp', '/guides/id/led-test.html': 'guide/id/led-test.jsp', '/guides/de/led-test.html': 'guide/de/led-test.jsp',
   // plan-warm-pascal-v3 S2 batch 5 (2026-05-29) - 5 locale variants × 3 guides (hd-video-converter-step-by-step + compress-zip-file-to-smaller-size + hd-video-converter-vs-alternatives)
-  '/guides/pt/hd-video-converter-step-by-step.html': 'guide/pt/hd-video-converter-step-by-step.jsp', '/guides/es/hd-video-converter-step-by-step.html': 'guide/es/hd-video-converter-step-by-step.jsp', '/guides/vi/hd-video-converter-step-by-step.html': 'guide/vi/hd-video-converter-step-by-step.jsp', '/guides/id/hd-video-converter-step-by-step.html': 'guide/id/hd-video-converter-step-by-step.jsp', '/guides/de/hd-video-converter-step-by-step.html': 'guide/de/hd-video-converter-step-by-step.jsp',
   '/guides/pt/hd-video-converter-vs-alternatives.html': 'guide/pt/hd-video-converter-vs-alternatives.jsp', '/guides/es/hd-video-converter-vs-alternatives.html': 'guide/es/hd-video-converter-vs-alternatives.jsp', '/guides/vi/hd-video-converter-vs-alternatives.html': 'guide/vi/hd-video-converter-vs-alternatives.jsp', '/guides/id/hd-video-converter-vs-alternatives.html': 'guide/id/hd-video-converter-vs-alternatives.jsp', '/guides/de/hd-video-converter-vs-alternatives.html': 'guide/de/hd-video-converter-vs-alternatives.jsp',
   // plan-warm-pascal-v3 S2 batch 6 (2026-05-29) - 5 locale variants × 3 guides (compress-zip + gif-into-frames + reduce-zip-file-size-online)
   // plan-warm-pascal-v3 S2 batch 7 (2026-05-29) - 5 locale variants × 3 guides (json-formatter-step-by-step + zip-compress + json-formatter-vs-alternatives)
@@ -16503,23 +16512,11 @@ export const JSP_BY_ROUTE = {
   '/guides/de/habit-tracker-when.html': 'guide/de/habit-tracker-when.jsp',
   '/guides/de/habit-tracker-vs-alternatives.html': 'guide/de/habit-tracker-vs-alternatives.jsp',
   '/utility-tools/grocery-list.html': 'utility/grocery-list.jsp',
-  '/guides/grocery-list-when.html': 'guide/grocery-list-when.jsp',
-  '/guides/grocery-list-step-by-step.html': 'guide/grocery-list-step-by-step.jsp',
   '/guides/grocery-list-vs-alternatives.html': 'guide/grocery-list-vs-alternatives.jsp',
-  '/guides/pt/grocery-list-step-by-step.html': 'guide/pt/grocery-list-step-by-step.jsp',
-  '/guides/pt/grocery-list-when.html': 'guide/pt/grocery-list-when.jsp',
   '/guides/pt/grocery-list-vs-alternatives.html': 'guide/pt/grocery-list-vs-alternatives.jsp',
-  '/guides/es/grocery-list-step-by-step.html': 'guide/es/grocery-list-step-by-step.jsp',
-  '/guides/es/grocery-list-when.html': 'guide/es/grocery-list-when.jsp',
   '/guides/es/grocery-list-vs-alternatives.html': 'guide/es/grocery-list-vs-alternatives.jsp',
-  '/guides/vi/grocery-list-step-by-step.html': 'guide/vi/grocery-list-step-by-step.jsp',
-  '/guides/vi/grocery-list-when.html': 'guide/vi/grocery-list-when.jsp',
   '/guides/vi/grocery-list-vs-alternatives.html': 'guide/vi/grocery-list-vs-alternatives.jsp',
-  '/guides/id/grocery-list-step-by-step.html': 'guide/id/grocery-list-step-by-step.jsp',
-  '/guides/id/grocery-list-when.html': 'guide/id/grocery-list-when.jsp',
   '/guides/id/grocery-list-vs-alternatives.html': 'guide/id/grocery-list-vs-alternatives.jsp',
-  '/guides/de/grocery-list-step-by-step.html': 'guide/de/grocery-list-step-by-step.jsp',
-  '/guides/de/grocery-list-when.html': 'guide/de/grocery-list-when.jsp',
   '/guides/de/grocery-list-vs-alternatives.html': 'guide/de/grocery-list-vs-alternatives.jsp',
   // game-discovery-loop-runbook fire6 (2026-07-09): procedural-horde-game guides
   '/guides/how-to-play-procedural-horde-game.html': 'guide/how-to-play-procedural-horde-game.jsp',
