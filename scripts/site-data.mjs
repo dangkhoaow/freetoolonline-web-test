@@ -1827,23 +1827,11 @@ export const INFO_ROUTES = new Set([
   '/guides/vi/tip-calculator-when.html',
   '/guides/id/tip-calculator-when.html',
   '/guides/de/tip-calculator-when.html',
-  '/guides/bmi-calculator-vs-alternatives.html',
   '/guides/pt/bmi-calculator-when.html',
-  '/guides/pt/bmi-calculator-step-by-step.html',
-  '/guides/pt/bmi-calculator-vs-alternatives.html',
   '/guides/es/bmi-calculator-when.html',
-  '/guides/es/bmi-calculator-step-by-step.html',
-  '/guides/es/bmi-calculator-vs-alternatives.html',
   '/guides/vi/bmi-calculator-when.html',
-  '/guides/vi/bmi-calculator-step-by-step.html',
-  '/guides/vi/bmi-calculator-vs-alternatives.html',
   '/guides/id/bmi-calculator-when.html',
-  '/guides/id/bmi-calculator-step-by-step.html',
-  '/guides/id/bmi-calculator-vs-alternatives.html',
   '/guides/de/bmi-calculator-when.html',
-  '/guides/de/bmi-calculator-step-by-step.html',
-  '/guides/de/bmi-calculator-vs-alternatives.html',
-  '/guides/bmi-calculator-step-by-step.html',
   '/guides/bmi-calculator-when.html',
   '/guides/add-watermark-pdf-when.html',
   // new-tool-discovery-loop-runbook fire115 (LEAN one-off, 2026-07-12):
@@ -2465,7 +2453,6 @@ export const INFO_ROUTES = new Set([
   // Lane-D guide (1,022 imp / 28d, pos 7.77, CTR 1.08%; opportunity score 130).
   // Implementing tool: /extract-gif-to-image-frames.html. Single-cycle complete
   // ship per cycle 20260514-5 contract.
-  '/guides/en/gif-frame-extractor.html',
   // Cycle 20260610-12 P12.D create_new_guide_page - "gif to frames converter" head-term
   // (triangulated demand: "gif to frames" query cluster). Implementing tool:
   // /extract-gif-to-image-frames.html. Cluster: utility. Locale-complete (5 variants).
@@ -9645,7 +9632,6 @@ export const GUIDE_ROUTES = new Set([
   // wording routing). Outbound link to /md5-converter.html.
   // Cycle 20260520-17 — "md5 hash decrypt" dictionary-attack-feasibility guide.
   // Cycle 20260520-10 - "gif into frames" head-query guide; companion to /extract-gif-to-image-frames.html
-  '/guides/en/gif-into-frames.html',
   // Workstream B sample batch - 2026-04-30
   // /guides/lcdtest.html ALIAS → /guides/lcd-test-online.html (cycle 20260514-6-followup)
   // — see ALIAS_ROUTES. The kebab URL below is the canonical one in sitemap-guides.xml.
@@ -13766,6 +13752,26 @@ export function isArticleFamilyRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  // 2026-08-09 content-consolidation fire38 step-1a: 2 cannibalized topical-map
+  // nodes drained. gif-into-frames + gif-frame-extractor (EN-only stubs, 0 clicks)
+  // retired into the canonical extractor; bmi-calculator-step-by-step +
+  // -vs-alternatives (12 routes, 0 clicks, 0 AI citations) retired into the
+  // canonical tool page. Unique comparison table folded into the canonical
+  // BODYWELCOME; kept guide family per node stays live.
+  '/guides/en/gif-into-frames.html': '/image-converter-tools/extract-gif-to-image-frames.html',
+  '/guides/en/gif-frame-extractor.html': '/image-converter-tools/extract-gif-to-image-frames.html',
+  '/guides/bmi-calculator-step-by-step.html': '/utility-tools/bmi-calculator.html',
+  '/guides/pt/bmi-calculator-step-by-step.html': '/utility-tools/bmi-calculator.html',
+  '/guides/es/bmi-calculator-step-by-step.html': '/utility-tools/bmi-calculator.html',
+  '/guides/vi/bmi-calculator-step-by-step.html': '/utility-tools/bmi-calculator.html',
+  '/guides/id/bmi-calculator-step-by-step.html': '/utility-tools/bmi-calculator.html',
+  '/guides/de/bmi-calculator-step-by-step.html': '/utility-tools/bmi-calculator.html',
+  '/guides/bmi-calculator-vs-alternatives.html': '/utility-tools/bmi-calculator.html',
+  '/guides/pt/bmi-calculator-vs-alternatives.html': '/utility-tools/bmi-calculator.html',
+  '/guides/es/bmi-calculator-vs-alternatives.html': '/utility-tools/bmi-calculator.html',
+  '/guides/vi/bmi-calculator-vs-alternatives.html': '/utility-tools/bmi-calculator.html',
+  '/guides/id/bmi-calculator-vs-alternatives.html': '/utility-tools/bmi-calculator.html',
+  '/guides/de/bmi-calculator-vs-alternatives.html': '/utility-tools/bmi-calculator.html',
   // 2026-08-09 content-consolidation step-1a: 2 magnetosphere intent nodes
   // (earth + jupiter) had 4 doorway guide families - 24 routes, 0 clicks,
   // 0 impressions, 0 AI citations, 18 already sitemap-pruned. Retired into
@@ -14275,11 +14281,11 @@ export const ALIAS_ROUTES = {
   '/guides/common-md5-gethash64string.html': '/guides/en/common-md5-gethash64string.html',
   '/guides/free-online-tools-that-work-without-uploading-files.html': '/guides/en/free-online-tools-that-work-without-uploading-files.html',
   '/guides/gif-frame-extractor-output-looks-wrong-three-causes.html': '/guides/en/gif-frame-extractor-output-looks-wrong-three-causes.html',
-  '/guides/gif-frame-extractor.html': '/guides/en/gif-frame-extractor.html',
+  '/guides/gif-frame-extractor.html': '/image-converter-tools/extract-gif-to-image-frames.html',
   '/guides/gif-to-frames-converter.html': '/guides/en/gif-to-frames-converter.html',
   '/guides/gif-to-frame.html': '/guides/en/gif-to-frame.html',
   '/guides/gif-frames-extract-vs-frame-rate-fps-explained.html': '/guides/en/gif-frames-extract-vs-frame-rate-fps-explained.html',
-  '/guides/gif-into-frames.html': '/guides/en/gif-into-frames.html',
+  '/guides/gif-into-frames.html': '/image-converter-tools/extract-gif-to-image-frames.html',
   '/guides/hd-video-converter-step-by-step.html': '/guides/en/hd-video-converter-step-by-step.html',
   '/guides/hd-video-converter-vs-alternatives.html': '/guides/en/hd-video-converter-vs-alternatives.html',
   '/guides/hd-video-converter-when.html': '/guides/en/hd-video-converter-when.html',
@@ -15391,7 +15397,6 @@ export const JSP_BY_ROUTE = {
   // those pages at cycle authoring SHA.
   '/guides/en/unlock-zip-file-online.html': 'guide/en/unlock-zip-file-online.jsp',
   // Cycle 20260520-10 create_new_guide_page - "GIF into frames" Lane-D guide (image-editing cluster, companion to /extract-gif-to-image-frames.html). Sourced from tool-extractgiftoimageframes BODYTITLE/BODYDESC + Implemented features. Single-cycle ship per cycle 20260514-5 contract. Cannibalization chain from -6 expired (4-cycle window closed).
-  '/guides/en/gif-into-frames.html': 'guide/en/gif-into-frames.jsp',
   // Cycle 84 P84.A - "How to compress a JPG for email attachment size limits" Lane-D guide (image-conversion / compression sub-cluster, companion to /compress-image.html).
   '/guides/en/how-to-compress-a-jpg-for-email-attachment-limits.html': 'guide/en/how-to-compress-a-jpg-for-email-attachment-limits.jsp',
   // Cycle 85 P85.A - "Microphone test levels: what quiet, normal, and peak mean" Lane-D guide (device-test / microphone-test sub-cluster, companion to /microphone-test.html).
@@ -15491,7 +15496,6 @@ export const JSP_BY_ROUTE = {
   '/guides/en/compressed-jpg-looks-blurry-three-causes.html': 'guide/en/compressed-jpg-looks-blurry-three-causes.jsp',
   '/guides/en/ffmpeg-online-conversion-stalled-three-fixes.html': 'guide/en/ffmpeg-online-conversion-stalled-three-fixes.jsp',
   '/guides/en/gif-frame-extractor-output-looks-wrong-three-causes.html': 'guide/en/gif-frame-extractor-output-looks-wrong-three-causes.jsp',
-  '/guides/en/gif-frame-extractor.html': 'guide/en/gif-frame-extractor.jsp',
   '/guides/en/gif-to-frames-converter.html': 'guide/en/gif-to-frames-converter.jsp',
   // Cycle 20260610-14 - gif-to-frame (image-conversion cluster)
   '/guides/en/gif-to-frame.html': 'guide/en/gif-to-frame.jsp',
@@ -24829,23 +24833,11 @@ export const JSP_BY_ROUTE = {
   '/guides/de/add-watermark-pdf-when.html': 'guide/de/add-watermark-pdf-when.jsp',
   '/utility-tools/bmi-calculator.html': 'utility/bmi-calculator.jsp',
   '/guides/bmi-calculator-when.html': 'guide/bmi-calculator-when.jsp',
-  '/guides/bmi-calculator-step-by-step.html': 'guide/bmi-calculator-step-by-step.jsp',
-  '/guides/bmi-calculator-vs-alternatives.html': 'guide/bmi-calculator-vs-alternatives.jsp',
   '/guides/pt/bmi-calculator-when.html': 'guide/pt/bmi-calculator-when.jsp',
-  '/guides/pt/bmi-calculator-step-by-step.html': 'guide/pt/bmi-calculator-step-by-step.jsp',
-  '/guides/pt/bmi-calculator-vs-alternatives.html': 'guide/pt/bmi-calculator-vs-alternatives.jsp',
   '/guides/es/bmi-calculator-when.html': 'guide/es/bmi-calculator-when.jsp',
-  '/guides/es/bmi-calculator-step-by-step.html': 'guide/es/bmi-calculator-step-by-step.jsp',
-  '/guides/es/bmi-calculator-vs-alternatives.html': 'guide/es/bmi-calculator-vs-alternatives.jsp',
   '/guides/vi/bmi-calculator-when.html': 'guide/vi/bmi-calculator-when.jsp',
-  '/guides/vi/bmi-calculator-step-by-step.html': 'guide/vi/bmi-calculator-step-by-step.jsp',
-  '/guides/vi/bmi-calculator-vs-alternatives.html': 'guide/vi/bmi-calculator-vs-alternatives.jsp',
   '/guides/id/bmi-calculator-when.html': 'guide/id/bmi-calculator-when.jsp',
-  '/guides/id/bmi-calculator-step-by-step.html': 'guide/id/bmi-calculator-step-by-step.jsp',
-  '/guides/id/bmi-calculator-vs-alternatives.html': 'guide/id/bmi-calculator-vs-alternatives.jsp',
   '/guides/de/bmi-calculator-when.html': 'guide/de/bmi-calculator-when.jsp',
-  '/guides/de/bmi-calculator-step-by-step.html': 'guide/de/bmi-calculator-step-by-step.jsp',
-  '/guides/de/bmi-calculator-vs-alternatives.html': 'guide/de/bmi-calculator-vs-alternatives.jsp',
   '/utility-tools/tip-calculator.html': 'utility/tip-calculator.jsp',
   '/guides/tip-calculator-when.html': 'guide/tip-calculator-when.jsp',
   '/guides/pt/tip-calculator-when.html': 'guide/pt/tip-calculator-when.jsp',
@@ -27932,8 +27924,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/vi/black-hole-3d-visualizer-when.html',
   '/guides/vi/black-hole-square-vs-alternatives.html',
   '/guides/vi/black-hole-square-when.html',
-  '/guides/vi/bmi-calculator-step-by-step.html',
-  '/guides/vi/bmi-calculator-vs-alternatives.html',
   '/guides/vi/bmi-calculator-when.html',
   '/guides/vi/boing-cat-platformer-vs-alternatives.html',
   '/guides/vi/boing-cat-platformer-when.html',
@@ -31077,8 +31067,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/pt/black-hole-3d-visualizer-when.html',
   '/guides/pt/black-hole-square-vs-alternatives.html',
   '/guides/pt/black-hole-square-when.html',
-  '/guides/pt/bmi-calculator-step-by-step.html',
-  '/guides/pt/bmi-calculator-vs-alternatives.html',
   '/guides/pt/bmi-calculator-when.html',
   '/guides/pt/boing-cat-platformer-vs-alternatives.html',
   '/guides/pt/boing-cat-platformer-when.html',
@@ -32478,8 +32466,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/es/black-hole-3d-visualizer-step-by-step.html',
   '/guides/es/black-hole-3d-visualizer-vs-alternatives.html',
   '/guides/es/black-hole-3d-visualizer-when.html',
-  '/guides/es/bmi-calculator-step-by-step.html',
-  '/guides/es/bmi-calculator-vs-alternatives.html',
   '/guides/es/bmi-calculator-when.html',
   '/guides/es/brown-dwarf-step-by-step.html',
   '/guides/es/brown-dwarf-vs-alternatives.html',
@@ -34434,8 +34420,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/id/black-hole-3d-visualizer-step-by-step.html',
   '/guides/id/black-hole-3d-visualizer-vs-alternatives.html',
   '/guides/id/black-hole-3d-visualizer-when.html',
-  '/guides/id/bmi-calculator-step-by-step.html',
-  '/guides/id/bmi-calculator-vs-alternatives.html',
   '/guides/id/bmi-calculator-when.html',
   '/guides/id/brown-dwarf-step-by-step.html',
   '/guides/id/carrington-event-step-by-step.html',
