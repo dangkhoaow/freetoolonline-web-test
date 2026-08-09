@@ -2794,4 +2794,24 @@ html.main-html.dark .w3-sand,html.main-html.dark .w3-khaki{background-color:#2d2
 .w3-text-red{color:#f44336!important}
 .w3-text-green{color:#4CAF50!important}
 .w3-text-blue{color:#2196F3!important}
+
+/* ============================================================
+ * W3 BORDER-COLOR CLASS FALLBACK - 2026-08-10 (new-page-verify
+ * fire, C11 sweep on atmosphere-escape-mars). Third parallel family
+ * of the same root cause as the two blocks above: the CDN common.css
+ * never defined the w3.css `w3-border-*` (border-color-only) variants
+ * either, so panels combining `w3-leftbar w3-border-<color>` (the
+ * documented w3.css colored-accent-bar pattern) rendered with the
+ * leftbar's plain grey border instead of the intended accent color.
+ * Placed after `.w3-leftbar`/`.w3-rightbar`/`.w3-bottombar` in this
+ * file so the color override wins the cascade on shared sides.
+ * Sitewide usage at time of fix: w3-border-green 1826x, w3-border-blue
+ * 264x, w3-border-yellow 6x, w3-border-teal 1x, w3-border-red 1x.
+ * Values match official w3.css v4 border-color definitions.
+ * ============================================================ */
+.w3-border-green{border-color:#4CAF50!important}
+.w3-border-blue{border-color:#2196F3!important}
+.w3-border-yellow{border-color:#ffeb3b!important}
+.w3-border-teal{border-color:#009688!important}
+.w3-border-red{border-color:#f44336!important}
 </style>
