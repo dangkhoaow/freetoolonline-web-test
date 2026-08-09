@@ -2857,11 +2857,6 @@ export const INFO_ROUTES = new Set([
 
   // 2026-05-28 plan-warm-pascal-v2 S1 multilingual migration (locale-prefixed guide URLs).
   // plan-warm-pascal-v3 S2 batch 1 (2026-05-29) - 5 locale variants of /guides/lcd-test-online.html
-  '/guides/pt/lcd-test-online.html',
-  '/guides/es/lcd-test-online.html',
-  '/guides/vi/lcd-test-online.html',
-  '/guides/id/lcd-test-online.html',
-  '/guides/de/lcd-test-online.html',
   // plan-warm-pascal-v3 S2 batch 2 (2026-05-29) - 5 locale variants of /guides/convert-milliseconds-to-date.html
   '/guides/pt/convert-milliseconds-to-date.html',
   '/guides/es/convert-milliseconds-to-date.html',
@@ -3093,9 +3088,8 @@ export const INFO_ROUTES = new Set([
   '/guides/id/compress-image-online-to-50kb.html',
   '/guides/de/compress-image-online-to-50kb.html',
   // cycle 20260702 create_new_guide_page (locale completion) - pt variant of cek-layar-laptop (staging-only until es/vi/id/de complete).
-  '/guides/pt/cek-layar-laptop.html',
   // cycle 20260702-3 create_new_guide_page (locale completion) - es/vi/id/de variants of cek-layar-laptop (bundle now locale-complete).
-  '/guides/es/cek-layar-laptop.html', '/guides/vi/cek-layar-laptop.html', '/guides/id/cek-layar-laptop.html', '/guides/de/cek-layar-laptop.html',
+  
   // cycle 20260702 create_new_guide_page - photo-editor-online-pixlr (EN + pt/es/vi/id/de; locale-complete). Serves "photo editor online pixlr" searchers via our /photo-editor.html.
   '/guides/photo-editor-online-pixlr.html',
   '/guides/pt/photo-editor-online-pixlr.html', '/guides/es/photo-editor-online-pixlr.html', '/guides/vi/photo-editor-online-pixlr.html', '/guides/id/photo-editor-online-pixlr.html', '/guides/de/photo-editor-online-pixlr.html',
@@ -9688,7 +9682,6 @@ export const GUIDE_ROUTES = new Set([
   // Workstream B sample batch - 2026-04-30
   // /guides/lcdtest.html ALIAS → /guides/lcd-test-online.html (cycle 20260514-6-followup)
   // — see ALIAS_ROUTES. The kebab URL below is the canonical one in sitemap-guides.xml.
-  '/guides/en/lcd-test-online.html',
   // Cycle 20260514-2 Phase A scaffold for "folder to zip converter" was
   // aborted-in-place per granted card
   // create-guide-foldertozipconverter-cannibalisation-1778696200000
@@ -14288,7 +14281,7 @@ export const ALIAS_ROUTES = {
   // cycles, and are now redirected via alias to the kebab-canonical
   // page (preserves any inbound link 200s while pointing search engines
   // + readers to the canonical URL).
-  '/guides/lcdtest.html': '/guides/en/lcd-test-online.html',         // smashed "lcd test"; canonical = lcd-test-online (new guide created cycle 20260514-5)
+  '/guides/lcdtest.html': '/guides/en/test-lcd.html',                 // smashed "lcd test"; canonical = test-lcd (2026-08-09 consolidation; lcd-test-online retired)
   '/guides/foldertozipconverter.html': '/zip-tools/zip-file.html', // smashed "folder to zip converter"; redirect to working tool (no dedicated guide)
   // Cycle 20260518 create_new_guide_page synth picked "lcd tes" (GSC query
   // 635 imp / 3 clicks / pos 6.6 — typo of "lcd test"). Authoring a full
@@ -14300,7 +14293,7 @@ export const ALIAS_ROUTES = {
   // page" contract: cluster is saturated (7+ existing lcd-* guides) and the
   // typo'd intent is best served by re-using the canonical lcd-test-online
   // guide rather than authoring an 8th near-duplicate.
-  '/guides/lcd-tes.html': '/guides/en/lcd-test-online.html',         // typo of "lcd test"; canonical = lcd-test-online (cluster anti-cannibalization)
+  '/guides/lcd-tes.html': '/guides/en/test-lcd.html',                 // typo of "lcd test"; canonical = test-lcd (2026-08-09 consolidation; lcd-test-online retired)
   // Multilingual guide migration (2026-05-28 plan-warm-pascal-v2 S1).
   // Per [⛔ Two-layer redirect rule]: CloudFront 301 (~100% equity) is
   // primary; this origin meta-refresh fallback (~95% equity) catches
@@ -14424,7 +14417,29 @@ export const ALIAS_ROUTES = {
   '/guides/kompres-zip.html': '/guides/id/kompres-zip.html',
   '/guides/lcd-checker.html': '/guides/en/lcd-checker.html',
   '/guides/lcd-screen-test.html': '/guides/en/lcd-screen-test.html',
-  '/guides/lcd-test-online.html': '/guides/en/lcd-test-online.html',
+  '/guides/lcd-test-online.html': '/guides/en/test-lcd.html',
+  // 2026-08-09 content-consolidation fire41 step-1a: the device-test.lcd-test
+  // intent node carried 5 live guide families. Two thin doorway families were
+  // retired into the canonical test-lcd family (locale-matched 301s):
+  // lcd-test-online (177-289w, 3 clicks / 0 AI citations, 2 locales already
+  // sitemap-pruned) and cek-layar-laptop (470-655w, 3 clicks, 4 of 6 locales
+  // already sitemap-pruned). Their unique facts - the sixth (yellow) color
+  // frame, the per-frame fault-isolation mapping, the hot-pixel term and the
+  // three live resolution readouts - were folded into all six test-lcd locales
+  // first. Edge layer mirrored in seo-reports/static-plan/20260510/
+  // cloudfront-function/url-migration-301.js per the two-layer redirect rule.
+  '/guides/en/lcd-test-online.html': '/guides/en/test-lcd.html',
+  '/guides/pt/lcd-test-online.html': '/guides/pt/test-lcd.html',
+  '/guides/es/lcd-test-online.html': '/guides/es/test-lcd.html',
+  '/guides/vi/lcd-test-online.html': '/guides/vi/test-lcd.html',
+  '/guides/id/lcd-test-online.html': '/guides/id/test-lcd.html',
+  '/guides/de/lcd-test-online.html': '/guides/de/test-lcd.html',
+  '/guides/cek-layar-laptop.html': '/guides/en/test-lcd.html',
+  '/guides/pt/cek-layar-laptop.html': '/guides/pt/test-lcd.html',
+  '/guides/es/cek-layar-laptop.html': '/guides/es/test-lcd.html',
+  '/guides/vi/cek-layar-laptop.html': '/guides/vi/test-lcd.html',
+  '/guides/id/cek-layar-laptop.html': '/guides/id/test-lcd.html',
+  '/guides/de/cek-layar-laptop.html': '/guides/de/test-lcd.html',
   '/guides/lcd-test-vs-display-test-which-do-you-need.html': '/guides/en/lcd-test-vs-display-test-which-do-you-need.html',
   '/guides/lcd-test-what-it-checks.html': '/guides/en/lcd-test-what-it-checks.html',
   '/guides/led-test-vs-lcd-test-which-applies-to-your-screen.html': '/guides/en/led-test-vs-lcd-test-which-applies-to-your-screen.html',
@@ -15418,7 +15433,6 @@ export const JSP_BY_ROUTE = {
   // Cycle 20260517-7 P7.A - "LED test" Lane-D create_new_guide_page guide (device-test / lcd-test sub-cluster, companion to /lcd-test.html).
   '/guides/en/led-test.html': 'guide/en/led-test.jsp',
   // Cycle1/20260514-5 P1.A - "LCD test online" Lane-D guide (device-test / lcd-test sub-cluster, companion to /lcd-test.html). Multi-cycle Phase A skeleton (route scaffolding only).
-  '/guides/en/lcd-test-online.html': 'guide/en/lcd-test-online.jsp',
   // Cycle1/20260514-5 create_new_guide_page - "Split GIF into frames" Lane-D guide (image-editing / gif-maker sub-cluster, companion to /gif-maker.html). Multi-cycle Phase A skeleton (route scaffolding only).
   '/guides/en/split-gif-into-frames.html': 'guide/en/split-gif-into-frames.jsp',
   // Cycle 20260515-12 create_new_guide_page - "Make Zip File Online" Lane-D guide (zip cluster, companion to /zip-tools/zip-file.html). Complete single-cycle ship per cycle 20260514-5 contract (no skeleton wait).
@@ -15945,11 +15959,6 @@ export const JSP_BY_ROUTE = {
   // plan-warm-pascal-v3 S2 batch 1 (2026-05-29) — first 5 locale variants
   // of /guides/lcd-test-online.html. 5 new BODY* CMS bundles per locale.
   // Translations: machine-quality, locale_pending_review until human edit.
-  '/guides/pt/lcd-test-online.html': 'guide/pt/lcd-test-online.jsp',
-  '/guides/es/lcd-test-online.html': 'guide/es/lcd-test-online.jsp',
-  '/guides/vi/lcd-test-online.html': 'guide/vi/lcd-test-online.jsp',
-  '/guides/id/lcd-test-online.html': 'guide/id/lcd-test-online.jsp',
-  '/guides/de/lcd-test-online.html': 'guide/de/lcd-test-online.jsp',
   // plan-warm-pascal-v3 S2 batch 2 (2026-05-29) - 5 locale variants of convert-milliseconds-to-date
   '/guides/pt/convert-milliseconds-to-date.html': 'guide/pt/convert-milliseconds-to-date.jsp',
   '/guides/es/convert-milliseconds-to-date.html': 'guide/es/convert-milliseconds-to-date.jsp',
@@ -16299,13 +16308,7 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/compress-image-online-to-50kb.html': 'guide/vi/compress-image-online-to-50kb.jsp',
   '/guides/id/compress-image-online-to-50kb.html': 'guide/id/compress-image-online-to-50kb.jsp',
   '/guides/de/compress-image-online-to-50kb.html': 'guide/de/compress-image-online-to-50kb.jsp',
-  '/guides/cek-layar-laptop.html': 'guide/cek-layar-laptop.jsp',
   // cycle 20260702 create_new_guide_page (locale completion) - pt variant of cek-layar-laptop (staging-only until es/vi/id/de complete).
-  '/guides/pt/cek-layar-laptop.html': 'guide/pt/cek-layar-laptop.jsp',
-  '/guides/es/cek-layar-laptop.html': 'guide/es/cek-layar-laptop.jsp',
-  '/guides/vi/cek-layar-laptop.html': 'guide/vi/cek-layar-laptop.jsp',
-  '/guides/id/cek-layar-laptop.html': 'guide/id/cek-layar-laptop.jsp',
-  '/guides/de/cek-layar-laptop.html': 'guide/de/cek-layar-laptop.jsp',
   // cycle 20260702 create_new_guide_page - photo-editor-online-pixlr (EN + pt/es/vi/id/de; locale-complete).
   '/guides/photo-editor-online-pixlr.html': 'guide/photo-editor-online-pixlr.jsp',
   '/guides/pt/photo-editor-online-pixlr.html': 'guide/pt/photo-editor-online-pixlr.jsp',
