@@ -1,0 +1,391 @@
+<script>
+    // 3D scene archetype skeleton (titan-hydrocarbon-weather-cycle) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only.
+    // All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not an atmospheric general-circulation model.
+    // A teaching Titan sphere with a seasonal cloud band that migrates in
+    // latitude as the reader drags a compressed-year slider, spawning rain
+    // particles that dim a schematic "wet" patch which then fades (evaporates).
+    // Distinct from titan-methane-lakes (that page reveals WHERE the seas and
+    // subsurface ocean/ice shell sit via Haze/Cutaway toggles - a static
+    // structure page). This page shows HOW the methane moves - evaporation,
+    // cloud formation, rain, accumulation - over Titan's seasons.
+    //
+    // Published figures (NASA Cassini/Huygens Titan pages + Hayes et al. 2018
+    // Nature Geoscience, cross-checked 2026-08-09):
+    //   - Atmosphere ~95% nitrogen / ~5% methane; surface pressure ~1.5x Earth
+    //     sea level (about 50% higher)
+    //   - Surface temperature about -179 C (94 K) - below methane's ~112 K
+    //     boiling point at that pressure, so methane stays liquid on the ground
+    //   - One Titan year = one Saturn year = about 29.5 Earth years, so a full
+    //     evaporation-to-rain seasonal swing plays out over decades
+    //   - Cassini observed a large methane storm system darken part of Titan's
+    //     equatorial dune belt during northern-hemisphere spring (2010) -
+    //     evidence that rain reaches the equator, not just the poles
+    //   - Nested methane cycles operate on geologic, orbital (Milankovitch),
+    //     seasonal, and single-storm timescales (Hayes, Lorenz & Aharonson 2018,
+    //     Nature Geoscience "A post-Cassini view of Titan's methane-based
+    //     hydrologic cycle")
+    //   - Distinct from titan-methane-lakes (static polar-sea + subsurface
+    //     ocean/ice-shell structure, no seasonal animation)
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'titan-hydrocarbon-weather-cycle';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'titanweathercycle'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Schematic north-polar sea patches (Kraken/Ligeia/Punga Mare, approximate
+    // positions) plus one south-polar patch (Ontario Lacus) - sizes exaggerated
+    // for visibility, not a precise radar map. Shared shape with
+    // titan-methane-lakes but this page never toggles or explains them - they
+    // exist only as the "where rain has already pooled" backdrop for the cycle.
+    var T3D_TWC_SEAS = [
+        { lat: 80, lon: 10, rx: 0.30, ry: 0.18 },
+        { lat: 78, lon: -50, rx: 0.18, ry: 0.12 },
+        { lat: -80, lon: 60, rx: 0.10, ry: 0.07 }
+    ];
+
+    function t3dTitanWeatherCycle(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+        var key = new THREE.DirectionalLight(0xfff3d6, 0.85);
+        key.position.set(8, 10, 6);
+        scene.add(key);
+
+        var body = new THREE.Mesh(
+            new THREE.SphereGeometry(0.9, shell.low ? 20 : 30, shell.low ? 16 : 22),
+            new THREE.MeshStandardMaterial({ color: 0xcf9c5c, roughness: 0.88 })
+        );
+        scene.add(body);
+
+        var seaGroup = new THREE.Group();
+        T3D_TWC_SEAS.forEach(function (l) {
+            var geo = new THREE.CircleGeometry(1, 20);
+            geo.scale(l.rx, l.ry, 1);
+            var mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x0c1a2b, side: THREE.DoubleSide }));
+            var phi = THREE.MathUtils.degToRad(90 - l.lat);
+            var theta = THREE.MathUtils.degToRad(l.lon);
+            mesh.position.setFromSphericalCoords(0.905, phi, theta);
+            mesh.lookAt(0, 0, 0);
+            seaGroup.add(mesh);
+        });
+        scene.add(seaGroup);
+
+        // Equatorial dune belt - a thin darker ring standing in for the
+        // radar-observed longitudinal dune fields that girdle Titan's equator.
+        var duneBelt = new THREE.Mesh(
+            new THREE.TorusGeometry(0.9, 0.05, 8, shell.low ? 32 : 48),
+            new THREE.MeshBasicMaterial({ color: 0x6b4a2a, transparent: true, opacity: 0.55 })
+        );
+        duneBelt.rotation.x = Math.PI / 2;
+        scene.add(duneBelt);
+
+        // Seasonal cloud band - a latitude ring of cloud puffs that migrates
+        // from one pole toward the equator and back as the season slider
+        // moves, echoing Cassini's observed shift of cloud activity between
+        // hemispheres across Titan's seasons.
+        var cloudGroup = new THREE.Group();
+        var CLOUD_COUNT = shell.low ? 14 : 22;
+        var cloudMats = [];
+        for (var i = 0; i < CLOUD_COUNT; i++) {
+            var mat = new THREE.MeshBasicMaterial({ color: 0xf3e6c8, transparent: true, opacity: 0.75, depthWrite: false });
+            cloudMats.push(mat);
+            var puff = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 6), mat);
+            cloudGroup.add(puff);
+        }
+        scene.add(cloudGroup);
+
+        // Rain particles - spawn near the current cloud latitude, fall toward
+        // the surface, fade out. A schematic visualization of methane rain,
+        // not a resolved microphysics model.
+        var RAIN_MAX = shell.low ? 90 : 160;
+        var rainGeo = new THREE.BufferGeometry();
+        var rainPos = new Float32Array(RAIN_MAX * 3);
+        var rainAge = new Float32Array(RAIN_MAX);
+        var rainLive = new Uint8Array(RAIN_MAX);
+        for (var r = 0; r < RAIN_MAX; r++) { rainAge[r] = 1; rainLive[r] = 0; }
+        rainGeo.setAttribute('position', new THREE.BufferAttribute(rainPos, 3));
+        var rainMat = new THREE.PointsMaterial({ color: 0x8fd6ff, size: 0.03, transparent: true, opacity: 0.85, depthWrite: false });
+        var rainPoints = new THREE.Points(rainGeo, rainMat);
+        scene.add(rainPoints);
+        var rainCursor = 0;
+
+        var haze = new THREE.Mesh(
+            new THREE.SphereGeometry(1.2, shell.low ? 18 : 24, shell.low ? 14 : 18),
+            new THREE.MeshBasicMaterial({ color: 0xe08a3c, transparent: true, opacity: 0.4, depthWrite: false })
+        );
+        scene.add(haze);
+
+        var seasonPct = 0, playing = true, spin = 0;
+
+        function stormIntensityAt(pct) {
+            // Two mild storm peaks per compressed year (spring + autumn
+            // equinox-adjacent transitions), matching the real pattern of
+            // Titan storm activity clustering near seasonal transitions rather
+            // than being uniform year-round.
+            var ang = pct * Math.PI * 2;
+            var a = Math.max(0, Math.sin(ang * 2 - Math.PI / 2));
+            return Math.pow(a, 3);
+        }
+        function cloudLatDeg(pct) {
+            // North-polar hood in "northern winter" (pct=0) drifting to the
+            // equator near "spring equinox" (pct=0.25), then to a south-biased
+            // position, and back - one full lap per compressed year.
+            return 65 * Math.cos(pct * Math.PI * 2);
+        }
+
+        function layoutClouds(latDeg) {
+            var phi = THREE.MathUtils.degToRad(90 - latDeg);
+            for (var i = 0; i < CLOUD_COUNT; i++) {
+                var theta = (i / CLOUD_COUNT) * Math.PI * 2;
+                var puff = cloudGroup.children[i];
+                puff.position.setFromSphericalCoords(1.02, phi, theta);
+            }
+        }
+
+        function spawnRainAt(latDeg, count) {
+            var phi = THREE.MathUtils.degToRad(90 - latDeg);
+            for (var n = 0; n < count; n++) {
+                var idx = rainCursor;
+                rainCursor = (rainCursor + 1) % RAIN_MAX;
+                var theta = Math.random() * Math.PI * 2;
+                var p = new THREE.Vector3().setFromSphericalCoords(1.0, phi + (Math.random() - 0.5) * 0.12, theta);
+                rainPos[idx * 3] = p.x; rainPos[idx * 3 + 1] = p.y; rainPos[idx * 3 + 2] = p.z;
+                rainAge[idx] = 0; rainLive[idx] = 1;
+            }
+        }
+
+        function panelHtml() {
+            var storm = stormIntensityAt(seasonPct);
+            var stormLabel = storm > 0.5 ? 'active methane rain near the cloud band' : (storm > 0.08 ? 'light, scattered showers' : 'dry - clouds forming, no rain yet');
+            return '<h3>Titan: the methane weather cycle</h3>' +
+                '<p>Drag the season slider (or press Play) to move through a compressed Titan year. The cloud band migrates in latitude and rains when a storm peak passes; the drops fall toward the surface and fade, standing in for evaporation starting the cycle over.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Current state</td><td>' + stormLabel + '</td></tr>' +
+                '<tr><td>Titan year</td><td>about 29.5 Earth years (= one Saturn year)</td></tr>' +
+                '<tr><td>Atmosphere</td><td>~95% nitrogen, ~5% methane</td></tr>' +
+                '<tr><td>Surface pressure</td><td>~1.5x Earth sea level</td></tr>' +
+                '<tr><td>Surface temperature</td><td>about -179 C (94 K)</td></tr>' +
+                '<tr><td>Methane stays liquid</td><td>94 K sits below methane\'s ~112 K boiling point at Titan pressure</td></tr>' +
+                '<tr><td>Largest sea (Kraken Mare)</td><td>roughly 400,000 sq km</td></tr>' +
+                '<tr><td>2010 Cassini storm</td><td>a large methane storm darkened part of the equatorial dune belt during northern spring</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation, not an atmospheric general-circulation model - cloud position, storm timing, and rain amounts are schematic and compressed into a short on-screen cycle; the real cycle plays out over Titan\'s 29.5-Earth-year seasons and varies year to year. Distinct from the Titan Methane Lakes explorer, which shows where the seas and subsurface ocean sit rather than how the cycle moves.</p>';
+        }
+
+        function updateSlider() {
+            var s = document.getElementById('t3dTwcSeasonSlider');
+            if (s) { var v = Math.round(seasonPct * 100); if (String(v) !== s.value) s.value = String(v); }
+            var pb = document.getElementById('t3dTwcPlayBtn');
+            if (pb) pb.textContent = 'Auto-play: ' + (playing ? 'On' : 'Off');
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.seasonPct === 'number') seasonPct = store.seasonPct;
+        if (typeof store.playing === 'boolean') playing = store.playing;
+        layoutClouds(cloudLatDeg(seasonPct));
+        t3dInfo(panelHtml());
+        updateSlider();
+
+        var slider = document.getElementById('t3dTwcSeasonSlider');
+        if (slider) {
+            slider.addEventListener('input', function () {
+                playing = false;
+                seasonPct = Math.max(0, Math.min(1, parseInt(slider.value, 10) / 100));
+                updateSlider();
+            });
+        }
+        var playBtn = document.getElementById('t3dTwcPlayBtn');
+        if (playBtn) {
+            playBtn.addEventListener('click', function () {
+                playing = !playing;
+                updateSlider();
+                try { t3dSaveStore({ seasonPct: seasonPct, playing: playing }); } catch (e) {}
+            });
+        }
+
+        t3dStatus('Drag to orbit, scroll to zoom. Drag the season slider or press Play.');
+        var lastPanelPct = -1, lastStormFlag = false, rainAccum = 0;
+        return function animate(dt) {
+            spin += dt * 0.00012;
+            body.rotation.y = spin;
+            seaGroup.rotation.y = spin;
+            duneBelt.rotation.z = spin * 0.4;
+            haze.rotation.y = spin * 0.5;
+
+            if (playing) {
+                seasonPct += dt * 0.00002;
+                if (seasonPct > 1) seasonPct -= 1;
+                updateSlider();
+            }
+
+            var latDeg = cloudLatDeg(seasonPct);
+            layoutClouds(latDeg);
+            var storm = stormIntensityAt(seasonPct);
+            for (var i = 0; i < cloudMats.length; i++) { cloudMats[i].opacity = 0.4 + storm * 0.4; }
+
+            rainAccum += storm * dt * 0.01;
+            if (rainAccum > 1) {
+                spawnRainAt(latDeg, Math.min(6, Math.floor(rainAccum)));
+                rainAccum = 0;
+            }
+
+            var needsUpdate = false;
+            for (var r = 0; r < RAIN_MAX; r++) {
+                if (!rainLive[r]) continue;
+                rainAge[r] += dt * 0.00035;
+                if (rainAge[r] >= 1) { rainLive[r] = 0; rainPos[r * 3 + 1] = 9999; needsUpdate = true; continue; }
+                rainPos[r * 3 + 1] -= dt * 0.0006;
+                needsUpdate = true;
+            }
+            if (needsUpdate) { rainGeo.attributes.position.needsUpdate = true; }
+            rainMat.opacity = 0.5 + storm * 0.35;
+
+            var roundedPct = Math.round(seasonPct * 20);
+            var stormFlag = storm > 0.5;
+            if (roundedPct !== lastPanelPct || stormFlag !== lastStormFlag) {
+                lastPanelPct = roundedPct; lastStormFlag = stormFlag;
+                t3dInfo(panelHtml());
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { titanweathercycle: ['t3dTwcControls', 't3dTwcSliderRow'] };
+        for (var k in rows) {
+            rows[k].forEach(function (id) {
+                var el = document.getElementById(id);
+                if (el) el.style.display = (k === kind) ? '' : 'none';
+            });
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { titanweathercycle: { radius: 8, maxR: 30, minR: 3, phi: 1.05, theta: 0.5, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dTitanWeatherCycle(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
