@@ -11,6 +11,14 @@
     // controls + status + transcript satisfy e2e G16. STT needs a mic + a
     // SpeechRecognition-capable browser (Chromium/Safari) so a headless fire may not
     // exercise the live transcript - it re-escalates rather than shipping broken.
+    //
+    // Second STT mode (added 2026-08): FILE transcription via on-device Whisper
+    // (Transformers.js v4, Xenova/whisper-tiny multilingual). Mirrors the
+    // BODYJSbackgroundremover.html loading idiom: ESM dynamic import from the CDN,
+    // model fetched ONLY on an explicit "Load transcription model" click (~40MB
+    // once, then cached by the browser), WebGPU preferred with WASM CPU fallback.
+    // The audio file is decoded + resampled to 16kHz mono locally via the Web
+    // Audio API - nothing is uploaded to any server in either mode.
 
     web.localUpload = false;
 
@@ -99,6 +107,194 @@
         wrap.querySelector('#spStopStt').addEventListener('click', function () { rec.stop(); });
     }
 
+    // --- FILE mode: on-device Whisper transcription (Transformers.js v4) ---
+    // Same loading pattern as BODYJSbackgroundremover.html: ESM entry for
+    // Transformers.js v4. Self-host + repoint here to remove the CDN dependency:
+    // '/vendor/transformers/transformers.min.js'.
+    var SP_TF_CDN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4';
+    var SP_WHISPER_MODEL = 'Xenova/whisper-tiny'; // multilingual tiny; ~40MB quantized (q8)
+    var SP_MAX_SECONDS = 900; // ~15 minute cap keeps in-browser transcription responsive
+    var SP_CHUNK_S = 30, SP_STRIDE_S = 5; // long files: 30s chunks with 5s stride
+
+    var spWhisperPromise = null;
+    function spWhisperLoad(onProgress) {
+        if (spWhisperPromise) return spWhisperPromise;
+        spWhisperPromise = (async function () {
+            var tf = await import(/* webpackIgnore: true */ SP_TF_CDN);
+            // Prefer WebGPU; retry on the WASM CPU backend if WebGPU init fails.
+            if ('gpu' in navigator) {
+                try {
+                    return await tf.pipeline('automatic-speech-recognition', SP_WHISPER_MODEL, { device: 'webgpu', dtype: 'q8', progress_callback: onProgress });
+                } catch (e) {}
+            }
+            return await tf.pipeline('automatic-speech-recognition', SP_WHISPER_MODEL, { device: 'wasm', dtype: 'q8', progress_callback: onProgress });
+        })();
+        spWhisperPromise.catch(function () { spWhisperPromise = null; }); // failed load -> allow retry
+        return spWhisperPromise;
+    }
+
+    // Decode any browser-supported audio file, then resample to 16kHz mono
+    // Float32 (Whisper's expected input) via OfflineAudioContext. All local.
+    function spDecodeAudioTo16k(buf) {
+        return new Promise(function (resolve, reject) {
+            var AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) { reject(new Error('This browser does not support Web Audio decoding.')); return; }
+            var ac = new AC();
+            var settled = false;
+            function done(err, pcm, seconds) {
+                if (settled) return;
+                settled = true;
+                if (ac.close) { try { ac.close(); } catch (e) {} }
+                if (err) reject(err); else resolve({ pcm: pcm, seconds: seconds });
+            }
+            ac.decodeAudioData(buf, function (decoded) {
+                var seconds = decoded.duration;
+                if (seconds > SP_MAX_SECONDS) {
+                    var capErr = new Error('audio longer than the on-device cap');
+                    capErr.spCapSeconds = Math.round(seconds);
+                    done(capErr);
+                    return;
+                }
+                try {
+                    var OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+                    var offline = new OAC(1, Math.max(1, Math.ceil(seconds * 16000)), 16000);
+                    var src = offline.createBufferSource();
+                    src.buffer = decoded;
+                    src.connect(offline.destination);
+                    src.start(0);
+                    offline.startRendering().then(function (rendered) {
+                        done(null, rendered.getChannelData(0), seconds);
+                    }, function () { done(new Error('Could not resample that audio in this browser.')); });
+                } catch (e) { done(e); }
+            }, function () { done(new Error('Could not decode that file. Use .mp3, .wav, .m4a, .ogg, or .webm.')); });
+        });
+    }
+
+    function spBuildWhisper(root) {
+        var wrap = document.createElement('div');
+        wrap.className = 'w3-container';
+        wrap.innerHTML =
+            '<h3 class="w3-text-blue-grey">Transcribe an audio file (on-device AI)</h3>' +
+            '<div style="color:#555;margin-bottom:8px;">Engine status: the mic mode above uses the speech service built into your browser; this file mode runs the Whisper AI model on your device - the audio file is never uploaded.</div>' +
+            '<div style="margin-bottom:8px;"><button id="spWLoad" type="button" class="w3-button w3-blue">Load transcription model (~40 MB)</button> ' +
+            'Language <select id="spWLang" class="w3-select w3-border" style="width:auto;display:inline-block;">' +
+            '<option value="">Auto-detect</option><option value="english">English</option><option value="vietnamese">Vietnamese</option><option value="spanish">Spanish</option><option value="french">French</option><option value="german">German</option><option value="portuguese">Portuguese</option><option value="italian">Italian</option><option value="indonesian">Indonesian</option><option value="hindi">Hindi</option><option value="chinese">Chinese</option><option value="japanese">Japanese</option><option value="korean">Korean</option>' +
+            '</select></div>' +
+            '<div class="w3-row" style="margin-bottom:8px;"><input type="file" id="spWFile" accept=".mp3,.wav,.m4a,.ogg,.webm" class="w3-input w3-border" style="max-width:420px;"></div>' +
+            '<div style="margin-bottom:8px;"><button id="spWRun" type="button" class="w3-button w3-green" disabled>Transcribe file</button> ' +
+            '<button id="spWCopy" type="button" class="w3-button w3-light-grey" style="display:none;">Copy transcript</button> ' +
+            '<a id="spWDl" class="w3-button w3-blue" style="display:none;">Download .txt</a></div>' +
+            '<progress id="spWProg" max="100" value="0" style="width:100%;max-width:420px;display:none;"></progress>' +
+            '<textarea id="spWOut" class="w3-input w3-border" rows="6" style="width:100%;" placeholder="The transcript of your audio file appears here. Transcription runs on your device - the file is never uploaded." readonly></textarea>' +
+            '<div id="spWStatus" style="min-height:1.2em;color:#555;margin-top:6px;">Click Load transcription model (one-time ~40 MB download, cached by your browser afterwards), then choose an audio file up to about 15 minutes.</div>' +
+            '<div id="spWErr" style="color:#b00020;margin-top:4px;min-height:1em;"></div>';
+        root.appendChild(wrap);
+        var loadBtn = wrap.querySelector('#spWLoad'), fileEl = wrap.querySelector('#spWFile'), runBtn = wrap.querySelector('#spWRun');
+        var copyBtn = wrap.querySelector('#spWCopy'), dl = wrap.querySelector('#spWDl'), langSel = wrap.querySelector('#spWLang');
+        var prog = wrap.querySelector('#spWProg'), out = wrap.querySelector('#spWOut');
+        var statusEl = wrap.querySelector('#spWStatus'), errEl = wrap.querySelector('#spWErr');
+        var modelReady = false, busy = false;
+        function setWStatus(m) { statusEl.textContent = m; }
+        function setWErr(m) { errEl.textContent = m || ''; }
+        function syncRun() { runBtn.disabled = !(modelReady && fileEl.files && fileEl.files.length && !busy); }
+        function onDownloadProgress(p) {
+            if (!p || p.status !== 'progress' || !p.total) return;
+            var pct = Math.max(0, Math.min(100, Math.round(p.progress || (p.loaded / p.total * 100))));
+            prog.style.display = ''; prog.value = pct;
+            setWStatus('Downloading the Whisper model (one-time, cached by your browser afterwards) ... ' + pct + '%');
+        }
+
+        loadBtn.addEventListener('click', async function () {
+            setWErr(''); loadBtn.disabled = true;
+            setWStatus('Fetching the on-device transcription engine ...');
+            try {
+                await spWhisperLoad(onDownloadProgress);
+                modelReady = true;
+                prog.style.display = 'none';
+                loadBtn.textContent = 'Model ready (on-device)';
+                setWStatus('Model loaded and cached. Choose an audio file, then click Transcribe file.');
+            } catch (e) {
+                loadBtn.disabled = false;
+                setWErr('Could not load the model: ' + (e && e.message ? e.message : String(e)) + '. Check the connection and try again - your audio is never uploaded either way.');
+                setWStatus('Model not loaded.');
+            }
+            syncRun();
+        });
+
+        fileEl.addEventListener('change', function () {
+            setWErr('');
+            var f = fileEl.files && fileEl.files[0];
+            if (f) setWStatus('Selected ' + f.name + ' (' + (Math.round(f.size / 1024 / 1024 * 10) / 10) + ' MB). ' + (modelReady ? 'Click Transcribe file.' : 'Load the transcription model to continue.'));
+            syncRun();
+        });
+
+        runBtn.addEventListener('click', async function () {
+            var f = fileEl.files && fileEl.files[0];
+            if (!f || !modelReady || busy) return;
+            setWErr(''); busy = true; syncRun();
+            copyBtn.style.display = 'none'; dl.style.display = 'none';
+            prog.style.display = ''; prog.value = 0;
+            try {
+                var asr = await spWhisperLoad(onDownloadProgress);
+                setWStatus('Decoding the audio in your browser ...');
+                var buf = await new Promise(function (resolve, reject) {
+                    var r = new FileReader();
+                    r.onload = function () { resolve(r.result); };
+                    r.onerror = function () { reject(new Error('Could not read that file.')); };
+                    r.readAsArrayBuffer(f);
+                });
+                var audio = await spDecodeAudioTo16k(buf);
+                var totalChunks = Math.max(1, Math.ceil(audio.seconds / (SP_CHUNK_S - SP_STRIDE_S)));
+                var doneChunks = 0;
+                setWStatus('Transcribing on your device ... 0 of ' + totalChunks + ' chunks');
+                var genOpts = {
+                    chunk_length_s: SP_CHUNK_S,
+                    stride_length_s: SP_STRIDE_S,
+                    task: 'transcribe',
+                    chunk_callback: function () {
+                        doneChunks++;
+                        var c = Math.min(doneChunks, totalChunks);
+                        prog.value = Math.round(c / totalChunks * 100);
+                        setWStatus('Transcribing on your device ... ' + c + ' of ' + totalChunks + ' chunks');
+                    }
+                };
+                if (langSel.value) genOpts.language = langSel.value;
+                var res = await asr(audio.pcm, genOpts);
+                var text = (res && res.text ? res.text : '').replace(/^\s+|\s+$/g, '');
+                out.value = text || '(No speech detected in that file.)';
+                prog.value = 100;
+                if (text) {
+                    dl.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
+                    dl.download = 'transcript.txt';
+                    dl.style.display = '';
+                    copyBtn.style.display = '';
+                }
+                setWStatus('Done - transcribed on your device with Whisper. Nothing was uploaded.');
+            } catch (e) {
+                if (e && e.spCapSeconds) {
+                    setWErr('That recording is about ' + Math.round(e.spCapSeconds / 60) + ' minutes long. This on-device mode caps files at about 15 minutes so the browser stays responsive - trim the audio and try again.');
+                    setWStatus('File too long for on-device transcription.');
+                } else {
+                    setWErr('Could not transcribe that file: ' + (e && e.message ? e.message : String(e)) + '. (If the model failed to load, the site may need Transformers.js self-hosted under /vendor/transformers/.)');
+                    setWStatus('Transcription failed.');
+                }
+            } finally { busy = false; prog.style.display = 'none'; syncRun(); }
+        });
+
+        copyBtn.addEventListener('click', function () {
+            var t = out.value || '';
+            if (!t) return;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(t).then(function () { setWStatus('Transcript copied to the clipboard.'); }, function () { setWStatus('Copy failed - select the text and copy manually.'); });
+            } else {
+                out.removeAttribute('readonly');
+                out.select();
+                try { document.execCommand('copy'); setWStatus('Transcript copied to the clipboard.'); } catch (e2) { setWStatus('Copy failed - select the text and copy manually.'); }
+                out.setAttribute('readonly', 'readonly');
+            }
+        });
+    }
+
     function doAfterPageRendered() {
         var root = document.getElementById('speechTool');
         if (!root) return; // not a speech page
@@ -106,5 +302,6 @@
         var mode = spMode(SP_SLUG);
         if (mode === 'tts' || mode === 'both') spBuildTts(root);
         if (mode === 'stt' || mode === 'both') spBuildStt(root);
+        if (mode === 'stt' || mode === 'both') spBuildWhisper(root);
     }
 </script>
