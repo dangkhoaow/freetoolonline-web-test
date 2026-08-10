@@ -1992,7 +1992,6 @@ export const INFO_ROUTES = new Set([
   // Cycle 20260519-11 create_new_guide_page - "zip folder online free" bare-query step-by-step guide.
   // GSC evidence (28d): "zip folder online free" 488 imp / 16 clicks / pos 7.81 / CTR 3.28% / opportunity_score 60.41.
   // Implementing tool: /zip-file.html. Cluster: zip. Append-only (new URL).
-  '/guides/en/zip-folder-online-free.html',
   // Cycle 20260629-2 create_new_guide_page - "resize image online free" bare-query step-by-step guide.
   // Implementing tool: /resize-image.html (client-side in-browser resizer). Cluster: image-editing. Append-only (new URL).
   // EN-first ship; non-EN locales drain over future cycles, so the guide is held back from prod until all locales complete.
@@ -2290,7 +2289,6 @@ export const INFO_ROUTES = new Set([
   // Cycle 20260523-5 P52.I create_new_guide_page — Indonesian-language size-question guide "kompres zip" (GSC 248 imp / 18 clicks / pos 7.42 / CTR 7.26%; opportunity_score 30.98). Implementing tool /zip-file.html. SIZE-focused sibling to /guides/kompres-file-zip.html (broader Indonesian bundle/privacy guide).
   '/guides/en/online-zip-vs-7z-vs-rar-which-to-pick.html',
   '/guides/en/how-to-zip-multiple-files-into-one.html',
-  '/guides/en/how-to-zip-folder-online-step-by-step.html',
   '/guides/en/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html',
   '/guides/en/recover-corrupt-zip-file-options.html',
   '/guides/en/iphone-photo-format-explained-heic-jpg-png-raw.html',
@@ -2904,7 +2902,6 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/jpg-vs-jpeg-are-they-the-same.html', '/guides/es/jpg-vs-jpeg-are-they-the-same.html', '/guides/vi/jpg-vs-jpeg-are-they-the-same.html', '/guides/id/jpg-vs-jpeg-are-they-the-same.html', '/guides/de/jpg-vs-jpeg-are-they-the-same.html',
   '/guides/pt/iphone-photo-format-explained-heic-jpg-png-raw.html', '/guides/es/iphone-photo-format-explained-heic-jpg-png-raw.html', '/guides/vi/iphone-photo-format-explained-heic-jpg-png-raw.html', '/guides/id/iphone-photo-format-explained-heic-jpg-png-raw.html', '/guides/de/iphone-photo-format-explained-heic-jpg-png-raw.html',
   // plan-warm-pascal-v3 S2 batch 11 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/zip-folder-online-free.html', '/guides/es/zip-folder-online-free.html', '/guides/vi/zip-folder-online-free.html', '/guides/id/zip-folder-online-free.html', '/guides/de/zip-folder-online-free.html',
   '/guides/pt/svg-to-png-when-to-rasterize-an-svg.html', '/guides/es/svg-to-png-when-to-rasterize-an-svg.html', '/guides/vi/svg-to-png-when-to-rasterize-an-svg.html', '/guides/id/svg-to-png-when-to-rasterize-an-svg.html', '/guides/de/svg-to-png-when-to-rasterize-an-svg.html',
   // plan-warm-pascal-v3 S2 batch 12 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/create-zip-file-online.html', '/guides/es/create-zip-file-online.html', '/guides/vi/create-zip-file-online.html', '/guides/id/create-zip-file-online.html', '/guides/de/create-zip-file-online.html',
@@ -3036,7 +3033,6 @@ export const INFO_ROUTES = new Set([
   '/guides/pt/qr-code-generator-best-practices.html', '/guides/es/qr-code-generator-best-practices.html', '/guides/vi/qr-code-generator-best-practices.html', '/guides/id/qr-code-generator-best-practices.html', '/guides/de/qr-code-generator-best-practices.html',
   '/guides/pt/when-to-compress-vs-convert-an-image.html', '/guides/es/when-to-compress-vs-convert-an-image.html', '/guides/vi/when-to-compress-vs-convert-an-image.html', '/guides/id/when-to-compress-vs-convert-an-image.html', '/guides/de/when-to-compress-vs-convert-an-image.html',
   // plan-warm-pascal-v3 S2 batch 42 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-zip-folder-online-step-by-step.html', '/guides/es/how-to-zip-folder-online-step-by-step.html', '/guides/vi/how-to-zip-folder-online-step-by-step.html', '/guides/id/how-to-zip-folder-online-step-by-step.html', '/guides/de/how-to-zip-folder-online-step-by-step.html',
   '/guides/pt/oled-test-vs-lcd-test-what-changes-on-oled.html', '/guides/es/oled-test-vs-lcd-test-what-changes-on-oled.html', '/guides/vi/oled-test-vs-lcd-test-what-changes-on-oled.html', '/guides/id/oled-test-vs-lcd-test-what-changes-on-oled.html', '/guides/de/oled-test-vs-lcd-test-what-changes-on-oled.html',
   '/guides/pt/milliseconds-to-date-utc-vs-local-time.html', '/guides/es/milliseconds-to-date-utc-vs-local-time.html', '/guides/vi/milliseconds-to-date-utc-vs-local-time.html', '/guides/id/milliseconds-to-date-utc-vs-local-time.html', '/guides/de/milliseconds-to-date-utc-vs-local-time.html',
   // plan-warm-pascal-v3 S2 batch 43 (2026-05-31) - 5 locale variants × 3 guides
@@ -14439,7 +14435,7 @@ export const ALIAS_ROUTES = {
   '/guides/how-to-test-a-keyboard-online-step-by-step.html': '/guides/en/how-to-test-a-keyboard-online-step-by-step.html',
   '/guides/how-to-test-a-touchscreen-for-bad-spots.html': '/guides/en/how-to-test-a-touchscreen-for-bad-spots.html',
   '/guides/how-to-test-for-dead-pixels-before-returning-a-monitor.html': '/guides/en/how-to-test-for-dead-pixels-before-returning-a-monitor.html',
-  '/guides/how-to-zip-folder-online-step-by-step.html': '/guides/en/how-to-zip-folder-online-step-by-step.html',
+  '/guides/how-to-zip-folder-online-step-by-step.html': '/guides/en/folder-to-zip.html', // de-chained 2026-08-10 (consolidation fire43): pointed into the retired family
   '/guides/how-to-zip-multiple-files-into-one.html': '/guides/en/how-to-zip-multiple-files-into-one.html',
   '/guides/i-love-zip.html': '/guides/en/i-love-zip.html',
   '/guides/image-compression-and-exif-metadata-what-gets-stripped.html': '/guides/en/image-compression-and-exif-metadata-what-gets-stripped.html',
@@ -14584,7 +14580,28 @@ export const ALIAS_ROUTES = {
   '/guides/zip-file-converter-what-it-actually-does.html': '/guides/en/zip-file-converter-what-it-actually-does.html',
   '/guides/zip-file-converter.html': '/guides/en/zip-file-converter.html',
   '/guides/zip-file-size-compressor.html': '/guides/en/how-to-reduce-zip-file-size-online.html',
-  '/guides/zip-folder-online-free.html': '/guides/en/zip-folder-online-free.html',
+  '/guides/zip-folder-online-free.html': '/guides/en/folder-to-zip.html',
+  // consolidation fire43 (2026-08-10) - backlog topical-map-zip.zip-file.folder: the
+  // zip.zip-file.folder intent node carried 3 live guide families. Retired the two
+  // weaker ones into the canonical folder-to-zip family (5 clicks / 331 impr) after
+  // folding their unique facts into all 6 canonical locales: zip-folder-online-free
+  // (152-592w/locale, 0 clicks / 10 impr / 0 AI citations) and
+  // how-to-zip-folder-online-step-by-step (473-962w/locale, 2 clicks / 551 impr /
+  // 0 AI citations). Neither had a single editorial inbound link. Locale-matched so
+  // a de reader lands on the de canonical. Edge 301 mirrored in the CloudFront
+  // function per CLAUDE.md two-layer redirect rule.
+  '/guides/en/zip-folder-online-free.html': '/guides/en/folder-to-zip.html',
+  '/guides/pt/zip-folder-online-free.html': '/guides/pt/folder-to-zip.html',
+  '/guides/es/zip-folder-online-free.html': '/guides/es/folder-to-zip.html',
+  '/guides/vi/zip-folder-online-free.html': '/guides/vi/folder-to-zip.html',
+  '/guides/id/zip-folder-online-free.html': '/guides/id/folder-to-zip.html',
+  '/guides/de/zip-folder-online-free.html': '/guides/de/folder-to-zip.html',
+  '/guides/en/how-to-zip-folder-online-step-by-step.html': '/guides/en/folder-to-zip.html',
+  '/guides/pt/how-to-zip-folder-online-step-by-step.html': '/guides/pt/folder-to-zip.html',
+  '/guides/es/how-to-zip-folder-online-step-by-step.html': '/guides/es/folder-to-zip.html',
+  '/guides/vi/how-to-zip-folder-online-step-by-step.html': '/guides/vi/folder-to-zip.html',
+  '/guides/id/how-to-zip-folder-online-step-by-step.html': '/guides/id/folder-to-zip.html',
+  '/guides/de/how-to-zip-folder-online-step-by-step.html': '/guides/de/folder-to-zip.html', // de-chained 2026-08-10 (consolidation fire43): pointed into the retired family
   '/guides/zip-password-recovery-online.html': '/guides/en/zip-password-recovery-online.html',
   '/guides/zip-password-types-strong-vs-weak-explained.html': '/guides/en/zip-password-types-strong-vs-weak-explained.html',
   '/guides/zip-password-unlocker.html': '/guides/en/zip-password-unlocker.html',
@@ -15473,7 +15490,6 @@ export const JSP_BY_ROUTE = {
   '/guides/en/how-to-compress-a-zip-file-to-a-specific-size.html': 'guide/en/how-to-compress-a-zip-file-to-a-specific-size.jsp',
   // Cycle 20260519-10 create_new_guide_page - "how to compress a zip file" bare-query step-by-step guide (companion to /zip-file.html).
   // Cycle 20260519-11 create_new_guide_page - "zip folder online free" bare-query step-by-step guide (companion to /zip-file.html).
-  '/guides/en/zip-folder-online-free.html': 'guide/en/zip-folder-online-free.jsp',
   // Cycle 20260629-2 create_new_guide_page - "resize image online free" bare-query step-by-step guide (companion to /resize-image.html).
   '/guides/en/resize-image-online-free.html': 'guide/en/resize-image-online-free.jsp',
   // Cycle 20260629-3 create_new_guide_page - PT locale variant of "resize image online free" (locale-drain).
@@ -15672,7 +15688,6 @@ export const JSP_BY_ROUTE = {
   // Cycle 20260519-12 create_new_guide_page — /guides/zip-file-size-compressor.html (implementing tool /zip-file.html).
   '/guides/en/online-zip-vs-7z-vs-rar-which-to-pick.html': 'guide/en/online-zip-vs-7z-vs-rar-which-to-pick.jsp',
   '/guides/en/how-to-zip-multiple-files-into-one.html': 'guide/en/how-to-zip-multiple-files-into-one.jsp',
-  '/guides/en/how-to-zip-folder-online-step-by-step.html': 'guide/en/how-to-zip-folder-online-step-by-step.jsp',
   '/guides/en/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.html': 'guide/en/zip-vs-zipx-vs-rar-vs-7z-archive-formats-explained.jsp',
   '/guides/en/recover-corrupt-zip-file-options.html': 'guide/en/recover-corrupt-zip-file-options.jsp',
   '/guides/en/iphone-photo-format-explained-heic-jpg-png-raw.html': 'guide/en/iphone-photo-format-explained-heic-jpg-png-raw.jsp',
@@ -16066,7 +16081,6 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/jpg-vs-jpeg-are-they-the-same.html': 'guide/pt/jpg-vs-jpeg-are-they-the-same.jsp', '/guides/es/jpg-vs-jpeg-are-they-the-same.html': 'guide/es/jpg-vs-jpeg-are-they-the-same.jsp', '/guides/vi/jpg-vs-jpeg-are-they-the-same.html': 'guide/vi/jpg-vs-jpeg-are-they-the-same.jsp', '/guides/id/jpg-vs-jpeg-are-they-the-same.html': 'guide/id/jpg-vs-jpeg-are-they-the-same.jsp', '/guides/de/jpg-vs-jpeg-are-they-the-same.html': 'guide/de/jpg-vs-jpeg-are-they-the-same.jsp',
   '/guides/pt/iphone-photo-format-explained-heic-jpg-png-raw.html': 'guide/pt/iphone-photo-format-explained-heic-jpg-png-raw.jsp', '/guides/es/iphone-photo-format-explained-heic-jpg-png-raw.html': 'guide/es/iphone-photo-format-explained-heic-jpg-png-raw.jsp', '/guides/vi/iphone-photo-format-explained-heic-jpg-png-raw.html': 'guide/vi/iphone-photo-format-explained-heic-jpg-png-raw.jsp', '/guides/id/iphone-photo-format-explained-heic-jpg-png-raw.html': 'guide/id/iphone-photo-format-explained-heic-jpg-png-raw.jsp', '/guides/de/iphone-photo-format-explained-heic-jpg-png-raw.html': 'guide/de/iphone-photo-format-explained-heic-jpg-png-raw.jsp',
   // plan-warm-pascal-v3 S2 batch 11 (2026-05-29) - 5 locale variants × 3 guides
-  '/guides/pt/zip-folder-online-free.html': 'guide/pt/zip-folder-online-free.jsp', '/guides/es/zip-folder-online-free.html': 'guide/es/zip-folder-online-free.jsp', '/guides/vi/zip-folder-online-free.html': 'guide/vi/zip-folder-online-free.jsp', '/guides/id/zip-folder-online-free.html': 'guide/id/zip-folder-online-free.jsp', '/guides/de/zip-folder-online-free.html': 'guide/de/zip-folder-online-free.jsp',
   '/guides/pt/svg-to-png-when-to-rasterize-an-svg.html': 'guide/pt/svg-to-png-when-to-rasterize-an-svg.jsp', '/guides/es/svg-to-png-when-to-rasterize-an-svg.html': 'guide/es/svg-to-png-when-to-rasterize-an-svg.jsp', '/guides/vi/svg-to-png-when-to-rasterize-an-svg.html': 'guide/vi/svg-to-png-when-to-rasterize-an-svg.jsp', '/guides/id/svg-to-png-when-to-rasterize-an-svg.html': 'guide/id/svg-to-png-when-to-rasterize-an-svg.jsp', '/guides/de/svg-to-png-when-to-rasterize-an-svg.html': 'guide/de/svg-to-png-when-to-rasterize-an-svg.jsp',
   // plan-warm-pascal-v3 S2 batch 12 (2026-05-29) - 5 locale variants × 3 guides
   '/guides/pt/create-zip-file-online.html': 'guide/pt/create-zip-file-online.jsp', '/guides/es/create-zip-file-online.html': 'guide/es/create-zip-file-online.jsp', '/guides/vi/create-zip-file-online.html': 'guide/vi/create-zip-file-online.jsp', '/guides/id/create-zip-file-online.html': 'guide/id/create-zip-file-online.jsp', '/guides/de/create-zip-file-online.html': 'guide/de/create-zip-file-online.jsp',
@@ -16192,7 +16206,6 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/qr-code-generator-best-practices.html': 'guide/pt/qr-code-generator-best-practices.jsp', '/guides/es/qr-code-generator-best-practices.html': 'guide/es/qr-code-generator-best-practices.jsp', '/guides/vi/qr-code-generator-best-practices.html': 'guide/vi/qr-code-generator-best-practices.jsp', '/guides/id/qr-code-generator-best-practices.html': 'guide/id/qr-code-generator-best-practices.jsp', '/guides/de/qr-code-generator-best-practices.html': 'guide/de/qr-code-generator-best-practices.jsp',
   '/guides/pt/when-to-compress-vs-convert-an-image.html': 'guide/pt/when-to-compress-vs-convert-an-image.jsp', '/guides/es/when-to-compress-vs-convert-an-image.html': 'guide/es/when-to-compress-vs-convert-an-image.jsp', '/guides/vi/when-to-compress-vs-convert-an-image.html': 'guide/vi/when-to-compress-vs-convert-an-image.jsp', '/guides/id/when-to-compress-vs-convert-an-image.html': 'guide/id/when-to-compress-vs-convert-an-image.jsp', '/guides/de/when-to-compress-vs-convert-an-image.html': 'guide/de/when-to-compress-vs-convert-an-image.jsp',
   // plan-warm-pascal-v3 S2 batch 42 (2026-05-31) - 5 locale variants × 3 guides
-  '/guides/pt/how-to-zip-folder-online-step-by-step.html': 'guide/pt/how-to-zip-folder-online-step-by-step.jsp', '/guides/es/how-to-zip-folder-online-step-by-step.html': 'guide/es/how-to-zip-folder-online-step-by-step.jsp', '/guides/vi/how-to-zip-folder-online-step-by-step.html': 'guide/vi/how-to-zip-folder-online-step-by-step.jsp', '/guides/id/how-to-zip-folder-online-step-by-step.html': 'guide/id/how-to-zip-folder-online-step-by-step.jsp', '/guides/de/how-to-zip-folder-online-step-by-step.html': 'guide/de/how-to-zip-folder-online-step-by-step.jsp',
   '/guides/pt/oled-test-vs-lcd-test-what-changes-on-oled.html': 'guide/pt/oled-test-vs-lcd-test-what-changes-on-oled.jsp', '/guides/es/oled-test-vs-lcd-test-what-changes-on-oled.html': 'guide/es/oled-test-vs-lcd-test-what-changes-on-oled.jsp', '/guides/vi/oled-test-vs-lcd-test-what-changes-on-oled.html': 'guide/vi/oled-test-vs-lcd-test-what-changes-on-oled.jsp', '/guides/id/oled-test-vs-lcd-test-what-changes-on-oled.html': 'guide/id/oled-test-vs-lcd-test-what-changes-on-oled.jsp', '/guides/de/oled-test-vs-lcd-test-what-changes-on-oled.html': 'guide/de/oled-test-vs-lcd-test-what-changes-on-oled.jsp',
   '/guides/pt/milliseconds-to-date-utc-vs-local-time.html': 'guide/pt/milliseconds-to-date-utc-vs-local-time.jsp', '/guides/es/milliseconds-to-date-utc-vs-local-time.html': 'guide/es/milliseconds-to-date-utc-vs-local-time.jsp', '/guides/vi/milliseconds-to-date-utc-vs-local-time.html': 'guide/vi/milliseconds-to-date-utc-vs-local-time.jsp', '/guides/id/milliseconds-to-date-utc-vs-local-time.html': 'guide/id/milliseconds-to-date-utc-vs-local-time.jsp', '/guides/de/milliseconds-to-date-utc-vs-local-time.html': 'guide/de/milliseconds-to-date-utc-vs-local-time.jsp',
   // plan-warm-pascal-v3 S2 batch 43 (2026-05-31) - 5 locale variants × 3 guides
@@ -35509,7 +35522,7 @@ export const RELATED_GUIDES_CURATED = {
   'zipfile': [
     '/guides/en/file-compressor.html',
     '/guides/en/how-to-compress-a-folder.html',
-    '/guides/en/zip-folder-online-free.html',
+    '/guides/en/folder-to-zip.html',
     '/guides/en/compress-folder-online.html',
     '/guides/es/compress-folder-to-zip-online-free.html',
     '/guides/es/reduce-zip-size-online.html',
