@@ -1,0 +1,446 @@
+<script>
+    // 3D scene archetype skeleton (parker-solar-probe) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side.
+    // Built LEAN from the shared t3d* skeleton - ONE scene only. All geometry
+    // is procedural - no model files, no textures fetched.
+    //
+    // EDUCATIONAL APPROXIMATION - this is a compressed teaching curve of NASA's
+    // real Parker Solar Probe mission arc, not a precomputed ephemeris and not
+    // a physics simulation. Aphelion is pinned near a compressed Venus-orbit
+    // ring throughout (matching the real "V7GA" trajectory design, where each
+    // Venus gravity assist only lowers the PERIHELION); the perihelion radius
+    // steps down at each real Venus-flyby milestone below. Orbit shapes,
+    // loop counts, and all radii are compressed/simplified for legibility -
+    // the facts panel table holds the real published dates, distances, and
+    // speeds, not the on-screen geometry.
+    //
+    // Published figures (NASA Science / JHUAPL Parker Solar Probe mission
+    // pages + news releases, cross-checked via WebFetch+WebSearch 2026-08-10):
+    //   - Launch: 2018-08-12 (7:31 UTC)
+    //   - Venus flyby #1: 2018-10-03 (52 days after launch); Perihelion #1:
+    //     2018-11-05 at 0.166 AU (about 15.4 million mi / 24.8 million km)
+    //     from the Sun, speed 95.3 km/s. The first three perihelia were all
+    //     at this same 0.166 AU distance.
+    //   - Venus flyby #2: 2019-12-26 (about 1,870 mi from Venus' surface);
+    //     the following perihelion, 2020-01-29, broke the probe's own
+    //     record at about 11.6 million mi from the Sun's surface - about
+    //     20% closer than the first three perihelia.
+    //   - Venus flyby #3: 2020-07-11 (WISPR imaged Venus' cloud deck).
+    //   - Venus flyby #6: 2023-08-21 (course correction 2023-08-03); set up
+    //     a perihelion by 2023-09-27 at about 4.5 million mi (7.2 million
+    //     km) from the Sun's surface - the 6th of 7 planned Venus flybys,
+    //     applying a slowdown of about 5,932 mph (9,547 km/h) to configure
+    //     the final five close approaches.
+    //   - Venus flyby #7 (final): 2024-11-06, passing about 240 mi (387 km)
+    //     from Venus' surface - set up the mission's closest-ever approach.
+    //   - Record perihelion: 2024-12-24, about 3.8 million mi (6.1 million
+    //     km) from the Sun's surface (about 9.86 solar radii), at a record
+    //     speed of about 430,000 mph (about 692,000 km/h) - the fastest
+    //     human-made object ever. Two further perihelia at this same
+    //     record distance and speed followed in March and June 2025.
+    //   - Heat shield (Thermal Protection System): 4.5 in (11.43 cm) thick
+    //     carbon-composite, rated to withstand about 2,500 F (1,377 C) -
+    //     the spacecraft body stays near room temperature behind it.
+    //   - 7 Venus gravity-assist flybys total (2018-2024); nominal mission
+    //     totals 24 solar orbits over about 7 years; orbital period shrinks
+    //     from 174 days (first heliocentric orbit) to 88 days (final,
+    //     innermost solar orbit).
+    //
+    // Distinct from solar-wind-heliosphere and sun-structure (phenomenon
+    // pages, not a mission-trajectory page) and from every other named-
+    // mission page on this site (cassini-grand-finale, new-horizons-pluto-
+    // flyby, dart-asteroid-deflection, bennu-osiris-rex, voyager-
+    // interstellar-position, hayabusa2-ryugu-sample-return, jwst-l2-halo-
+    // orbit) - this is the only page where the approached body is the SUN
+    // ITSELF, taught through the heat-shield/speed-record survival story.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'parker-solar-probe';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'parkerprobe'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 50, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0, moved = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY; moved = 0;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function (e) {
+            var wasClick = moved < 8;
+            dragging = false;
+            if (wasClick && shell.onClick) { shell.onClick(e); }
+        });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            moved += Math.abs(dx) + Math.abs(dy);
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR);
+        }, { passive: false });
+        var pinch = null;
+        host.addEventListener('touchstart', function (e) {
+            if (e.touches.length === 2) {
+                pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            }
+        }, { passive: true });
+        host.addEventListener('touchmove', function (e) {
+            if (e.touches.length === 2 && pinch) {
+                var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                pinch = d;
+            }
+        }, { passive: true });
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, onClick: null,
+            ndc: function (e) {
+                var r = renderer.domElement.getBoundingClientRect();
+                return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            },
+        };
+        return shell;
+    }
+
+    // Timeline milestones (percent of the 0-100 mission-progress slider).
+    var T3D_PSP_MILESTONES = [
+        { p: 0, iso: '2018-08-12', label: 'Launch', peri: 10.0 },
+        { p: 8, iso: '2018-10-03', label: 'Venus flyby #1', peri: 10.0 },
+        { p: 15, iso: '2018-11-05', label: 'Perihelion #1 (0.166 AU)', peri: 7.0 },
+        { p: 30, iso: '2019-12-26', label: 'Venus flyby #2', peri: 7.0 },
+        { p: 36, iso: '2020-01-29', label: 'Perihelion - new record (11.6M mi)', peri: 5.0 },
+        { p: 46, iso: '2020-07-11', label: 'Venus flyby #3', peri: 5.0 },
+        { p: 66, iso: '2023-08-21', label: 'Venus flyby #6', peri: 3.4 },
+        { p: 72, iso: '2023-09-27', label: 'Perihelion (4.5M mi / 7.2M km)', peri: 3.4 },
+        { p: 90, iso: '2024-11-06', label: 'Venus flyby #7 (final)', peri: 1.8 },
+        { p: 100, iso: '2024-12-24', label: 'Record perihelion (3.8M mi / 9.86 solar radii)', peri: 1.8 }
+    ];
+    var T3D_PSP_APH = 12.5;
+    var T3D_PSP_SUN_R = 1.0;
+    var T3D_PSP_VENUS_R = 13.2;
+
+    function pspPeriAt(pct) {
+        var pts = T3D_PSP_MILESTONES;
+        for (var i = pts.length - 1; i >= 0; i--) {
+            if (pct >= pts[i].p) return pts[i].peri;
+        }
+        return pts[0].peri;
+    }
+    function pspMilestoneIndexAt(pct) {
+        var pts = T3D_PSP_MILESTONES;
+        var idx = 0;
+        for (var i = 0; i < pts.length; i++) { if (pct >= pts[i].p) idx = i; }
+        return idx;
+    }
+
+    // Piecewise elliptical teaching path: within each milestone segment the
+    // orbit is a fixed compressed ellipse (aphelion pinned near the Venus
+    // ring, perihelion at that segment's tier) executing loops; a short
+    // ease window around each milestone smooths the perihelion step-down so
+    // the "Venus flyby just tightened the orbit" reads clearly on scrub.
+    // (Position math lives in computePos() inside t3dParkerSolarProbe below,
+    // where THREE is already loaded.)
+
+    function t3dParkerSolarProbe(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x02040c, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.32));
+        var fill = new THREE.DirectionalLight(0xffffff, 0.5);
+        fill.position.set(-20, 24, 14);
+        scene.add(fill);
+
+        var SCOUNT = shell.low ? 300 : 650;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(60 + Math.random() * 140);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.5, sizeAttenuation: false })));
+
+        var sun = new THREE.Mesh(
+            new THREE.SphereGeometry(T3D_PSP_SUN_R, 28, 20),
+            new THREE.MeshBasicMaterial({ color: 0xffcc33 })
+        );
+        scene.add(sun);
+        var sunGlow = new THREE.Mesh(
+            new THREE.SphereGeometry(T3D_PSP_SUN_R * 1.9, 20, 14),
+            new THREE.MeshBasicMaterial({ color: 0xffa000, transparent: true, opacity: 0.22, side: THREE.BackSide })
+        );
+        scene.add(sunGlow);
+        var sunLight = new THREE.PointLight(0xfff3c4, 1.1, 0, 0);
+        scene.add(sunLight);
+
+        var venusRingPts = [];
+        var vN = 96;
+        for (var i = 0; i <= vN; i++) {
+            var av = (i / vN) * Math.PI * 2;
+            venusRingPts.push(new THREE.Vector3(Math.cos(av) * T3D_PSP_VENUS_R, 0, Math.sin(av) * T3D_PSP_VENUS_R));
+        }
+        scene.add(new THREE.LineLoop(
+            new THREE.BufferGeometry().setFromPoints(venusRingPts),
+            new THREE.LineBasicMaterial({ color: 0x5c6b7a, transparent: true, opacity: 0.55 })
+        ));
+        var venus = new THREE.Mesh(
+            new THREE.SphereGeometry(0.55, 18, 12),
+            new THREE.MeshLambertMaterial({ color: 0xe6c78a })
+        );
+        venus.position.set(T3D_PSP_VENUS_R, 0, 0);
+        scene.add(venus);
+
+        function buildEllipsePoints(peri, n) {
+            var aph = T3D_PSP_APH;
+            var rx = (aph + peri) / 2, rz = rx, cx = (aph - peri) / 2;
+            var pts = [];
+            for (var i2 = 0; i2 <= n; i2++) {
+                var a2 = (i2 / n) * Math.PI * 2;
+                pts.push(new THREE.Vector3(Math.cos(a2) * rx - cx, 0, Math.sin(a2) * rz));
+            }
+            return pts;
+        }
+        var pathLines = [];
+        var pathGroup = new THREE.Group();
+        scene.add(pathGroup);
+        function rebuildPathForTier(peri) {
+            while (pathGroup.children.length) pathGroup.remove(pathGroup.children[0]);
+            var pts = buildEllipsePoints(peri, shell.low ? 90 : 160);
+            var line = new THREE.LineLoop(
+                new THREE.BufferGeometry().setFromPoints(pts),
+                new THREE.LineBasicMaterial({ color: 0x81c784, transparent: true, opacity: 0.75 })
+            );
+            pathGroup.add(line);
+        }
+        var lastTierPeri = null;
+
+        var craft = new THREE.Mesh(
+            new THREE.ConeGeometry(0.28, 0.7, 10),
+            new THREE.MeshBasicMaterial({ color: 0xffee58 })
+        );
+        scene.add(craft);
+        var shield = new THREE.Mesh(
+            new THREE.CircleGeometry(0.32, 16),
+            new THREE.MeshBasicMaterial({ color: 0x37474f, side: THREE.DoubleSide })
+        );
+        scene.add(shield);
+
+        var progress = 0.3;
+        var playing = true;
+
+        function computePos(pct) {
+            var clamped = Math.max(0, Math.min(99.999, pct));
+            var peri = pspPeriAt(clamped);
+            var idx = pspMilestoneIndexAt(clamped);
+            var nextIdx = Math.min(idx + 1, T3D_PSP_MILESTONES.length - 1);
+            var seg0 = T3D_PSP_MILESTONES[idx].p, seg1 = T3D_PSP_MILESTONES[nextIdx].p;
+            if (seg1 <= seg0) seg1 = seg0 + 1;
+            var u = (clamped - seg0) / (seg1 - seg0);
+            var loops = 1.6;
+            var a = u * Math.PI * 2 * loops;
+            var aph = T3D_PSP_APH;
+            var rx = (aph + peri) / 2, rz = rx, cx = (aph - peri) / 2;
+            var x = Math.cos(a) * rx - cx;
+            var z = Math.sin(a) * rz;
+            var y = Math.sin(a * 0.7) * 0.3;
+            return { pos: new THREE.Vector3(x, y, z), peri: peri };
+        }
+
+        function activeMilestone(pct) {
+            return T3D_PSP_MILESTONES[pspMilestoneIndexAt(pct)];
+        }
+
+        function panelHtml() {
+            var m = activeMilestone(progress);
+            var rows = '';
+            for (var i3 = 0; i3 < T3D_PSP_MILESTONES.length; i3++) {
+                var row = T3D_PSP_MILESTONES[i3];
+                var active = (row === m);
+                rows += '<tr' + (active ? ' style="background:#fff3cd;font-weight:600;"' : '') + '>' +
+                    '<td>' + row.iso + '</td><td>' + row.label + '</td></tr>';
+            }
+            var nearRecord = progress >= 88;
+            var heatNote = nearRecord
+                ? '<p class="t3d-note"><b>Heat shield facing the Sun:</b> the 4.5 in (11.43 cm) carbon-composite shield takes about 2,500 F (1,377 C) here, while the spacecraft body just behind it stays near room temperature.</p>'
+                : '';
+            return '<h3>Parker Solar Probe\'s real mission arc</h3>' +
+                '<p>Repeated Venus gravity assists lower the orbit\'s closest point to the Sun step by step. Scrub the slider through the real 2018-2024+ timeline.</p>' +
+                '<table class="w3-table w3-bordered w3-small">' +
+                '<tr><td colspan="2"><b>Progress: ' + Math.round(progress) + '% - ' + m.label + '</b></td></tr>' +
+                rows +
+                '</table>' +
+                heatNote +
+                '<p class="t3d-note">Record speed at closest approach: about 430,000 mph (about 692,000 km/h) - the fastest human-made object ever. 7 Venus gravity-assist flybys total; nominal mission totals 24 solar orbits over about 7 years.</p>' +
+                '<p class="t3d-note">Educational approximation: orbit shape, loop counts, and radii on screen are compressed for legibility - this is not a precomputed ephemeris of the real trajectory. The dates, distances, and speeds above are the real published NASA/JHUAPL figures.</p>';
+        }
+
+        function applyProgress(pct) {
+            progress = Math.max(0, Math.min(100, pct));
+            var r = computePos(progress);
+            if (lastTierPeri !== r.peri) { rebuildPathForTier(r.peri); lastTierPeri = r.peri; }
+            craft.position.copy(r.pos);
+            var toSun = sun.position.clone().sub(r.pos).normalize();
+            shield.position.copy(r.pos).add(toSun.clone().multiplyScalar(0.22));
+            shield.lookAt(sun.position);
+            craft.lookAt(sun.position);
+            var slider = document.getElementById('t3dPspProgress');
+            var label = document.getElementById('t3dPspProgressLabel');
+            if (slider && Math.round(parseFloat(slider.value || '0')) !== Math.round(progress)) {
+                slider.value = String(Math.round(progress));
+            }
+            if (label) label.textContent = Math.round(progress) + '%';
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ progress: progress }); } catch (e) {}
+        }
+
+        var ray = new THREE.Raycaster();
+        shell.onClick = function (e) {
+            ray.setFromCamera(shell.ndc(e), shell.camera);
+            var hits = ray.intersectObjects([sun, venus, craft], false);
+            if (!hits.length) return;
+            t3dInfo(panelHtml());
+        };
+
+        var store = t3dLoadStore();
+        if (typeof store.progress === 'number') progress = store.progress;
+        applyProgress(progress);
+
+        var playBtn = document.getElementById('t3dPspPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            playing = !playing;
+            playBtn.textContent = playing ? 'Pause' : 'Play';
+        });
+        var slider = document.getElementById('t3dPspProgress');
+        if (slider) slider.addEventListener('input', function () {
+            playing = false;
+            if (playBtn) playBtn.textContent = 'Play';
+            applyProgress(parseFloat(slider.value || '0'));
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Press Play/Pause or scrub the progress slider through the real 2018-2024+ mission timeline.');
+        return function animate(dt) {
+            if (!playing) return;
+            var next = progress + (dt / 1000) * 3.2;
+            if (next >= 100) next = 0;
+            applyProgress(next);
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { parkerprobe: 't3dPspControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = {
+                        parkerprobe: { radius: 30, maxR: 140, minR: 8, phi: 1.05, theta: 0.6, targetY: 0 }
+                    };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dParkerSolarProbe(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
