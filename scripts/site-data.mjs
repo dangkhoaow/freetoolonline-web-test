@@ -1772,23 +1772,13 @@ export const INFO_ROUTES = new Set([
   // INFO_ROUTES locale fanout for file-encryption-tool's 3 EN companion guide
   // angles (built fire127, tool-skill verified fire127) - pt/es/vi/id/de.
   '/guides/pt/file-encryption-when.html',
-  '/guides/pt/file-encryption-step-by-step.html',
-  '/guides/pt/file-encryption-vs-alternatives.html',
   '/guides/es/file-encryption-when.html',
-  '/guides/es/file-encryption-step-by-step.html',
-  '/guides/es/file-encryption-vs-alternatives.html',
   '/guides/vi/file-encryption-when.html',
-  '/guides/vi/file-encryption-step-by-step.html',
-  '/guides/vi/file-encryption-vs-alternatives.html',
   '/guides/id/file-encryption-when.html',
-  '/guides/id/file-encryption-step-by-step.html',
-  '/guides/id/file-encryption-vs-alternatives.html',
   '/guides/de/file-encryption-when.html',
-  '/guides/de/file-encryption-step-by-step.html',
-  '/guides/de/file-encryption-vs-alternatives.html',
-  '/guides/file-encryption-vs-alternatives.html',
-  '/guides/file-encryption-step-by-step.html',
   '/guides/file-encryption-when.html',
+  // file-encryption step-by-step + vs-alternatives retired 2026-08-10
+  // (consolidation fire45 step-1a) into file-encryption-when -> ALIAS_ROUTES.
   '/guides/notepad-notes-vs-alternatives.html',
   '/guides/notepad-notes-step-by-step.html',
   '/guides/notepad-notes-when.html',
@@ -15326,6 +15316,34 @@ export const ALIAS_ROUTES = {
   '/video-compressor.html': '/video-tools/video-compressor.html',
   '/note-taking-app.html': '/utility-tools/note-taking-app.html',
   '/file-encryption-tool.html': '/developer-tools/file-encryption-tool.html',
+  // 2026-08-10 content-consolidation fire45 step-1a: the
+  // developer.file-encryption-tool intent node carried 3 live guide families
+  // of ~200w each x 6 locales (18 routes) on ONE intent. The
+  // AES-256/PBKDF2-250k/fresh-salt-and-IV paragraph and the
+  // wrong-password-refusal paragraph were VERBATIM in all three families in
+  // every locale; the no-password-recovery paragraph was verbatim in two.
+  // Unique content per doorway was one 3-step sequence and one 3-way
+  // comparison table. Both retiring families: 0-1 clicks / 0-84 impressions /
+  // 0 AI citations / 0 revenue and ZERO editorial inbound links sitewide
+  // (content-graph 2026-08-10), with an outbound set that is a SUBSET of the
+  // keeper's. They were retired into file-encryption-when after folding the
+  // 3-step sequence (re-derived from BODYJSfileencryptiontool.html, not
+  // paraphrased from the retired copy) and the full comparison table into all
+  // 6 canonical locales. Edge layer mirrored in
+  // seo-reports/static-plan/20260510/cloudfront-function/url-migration-301.js
+  // per the two-layer redirect rule.
+  '/guides/file-encryption-step-by-step.html': '/guides/file-encryption-when.html',
+  '/guides/pt/file-encryption-step-by-step.html': '/guides/pt/file-encryption-when.html',
+  '/guides/es/file-encryption-step-by-step.html': '/guides/es/file-encryption-when.html',
+  '/guides/vi/file-encryption-step-by-step.html': '/guides/vi/file-encryption-when.html',
+  '/guides/id/file-encryption-step-by-step.html': '/guides/id/file-encryption-when.html',
+  '/guides/de/file-encryption-step-by-step.html': '/guides/de/file-encryption-when.html',
+  '/guides/file-encryption-vs-alternatives.html': '/guides/file-encryption-when.html',
+  '/guides/pt/file-encryption-vs-alternatives.html': '/guides/pt/file-encryption-when.html',
+  '/guides/es/file-encryption-vs-alternatives.html': '/guides/es/file-encryption-when.html',
+  '/guides/vi/file-encryption-vs-alternatives.html': '/guides/vi/file-encryption-when.html',
+  '/guides/id/file-encryption-vs-alternatives.html': '/guides/id/file-encryption-when.html',
+  '/guides/de/file-encryption-vs-alternatives.html': '/guides/de/file-encryption-when.html',
   '/flashcards-maker.html': '/utility-tools/flashcards-maker.html',
   '/document-scanner.html': '/image-tools/document-scanner.html',
   '/jwt-decoder.html': '/developer-tools/jwt-decoder.html',
@@ -25212,26 +25230,14 @@ export const JSP_BY_ROUTE = {
   '/guides/de/notepad-notes-vs-alternatives.html': 'guide/de/notepad-notes-vs-alternatives.jsp',
   '/developer-tools/file-encryption-tool.html': 'utility/file-encryption-tool.jsp',
   '/guides/file-encryption-when.html': 'guide/file-encryption-when.jsp',
-  '/guides/file-encryption-step-by-step.html': 'guide/file-encryption-step-by-step.jsp',
-  '/guides/file-encryption-vs-alternatives.html': 'guide/file-encryption-vs-alternatives.jsp',
   // new-tool-discovery-loop-runbook fire129 (LEAN one-off, 2026-07-13):
   // JSP_BY_ROUTE locale fanout for file-encryption-tool's 3 EN companion
   // guide angles.
   '/guides/pt/file-encryption-when.html': 'guide/pt/file-encryption-when.jsp',
-  '/guides/pt/file-encryption-step-by-step.html': 'guide/pt/file-encryption-step-by-step.jsp',
-  '/guides/pt/file-encryption-vs-alternatives.html': 'guide/pt/file-encryption-vs-alternatives.jsp',
   '/guides/es/file-encryption-when.html': 'guide/es/file-encryption-when.jsp',
-  '/guides/es/file-encryption-step-by-step.html': 'guide/es/file-encryption-step-by-step.jsp',
-  '/guides/es/file-encryption-vs-alternatives.html': 'guide/es/file-encryption-vs-alternatives.jsp',
   '/guides/vi/file-encryption-when.html': 'guide/vi/file-encryption-when.jsp',
-  '/guides/vi/file-encryption-step-by-step.html': 'guide/vi/file-encryption-step-by-step.jsp',
-  '/guides/vi/file-encryption-vs-alternatives.html': 'guide/vi/file-encryption-vs-alternatives.jsp',
   '/guides/id/file-encryption-when.html': 'guide/id/file-encryption-when.jsp',
-  '/guides/id/file-encryption-step-by-step.html': 'guide/id/file-encryption-step-by-step.jsp',
-  '/guides/id/file-encryption-vs-alternatives.html': 'guide/id/file-encryption-vs-alternatives.jsp',
   '/guides/de/file-encryption-when.html': 'guide/de/file-encryption-when.jsp',
-  '/guides/de/file-encryption-step-by-step.html': 'guide/de/file-encryption-step-by-step.jsp',
-  '/guides/de/file-encryption-vs-alternatives.html': 'guide/de/file-encryption-vs-alternatives.jsp',
   '/utility-tools/flashcards-maker.html': 'utility/flashcards-maker.jsp',
   '/guides/flashcards-spaced-repetition-when.html': 'guide/flashcards-spaced-repetition-when.jsp',
   '/guides/flashcards-spaced-repetition-step-by-step.html': 'guide/flashcards-spaced-repetition-step-by-step.jsp',
