@@ -1,0 +1,370 @@
+<script>
+    // 3D scene archetype skeleton (annual-meteor-shower-calendar) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only.
+    // All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION - this positions 12 major annual meteor
+    // showers around a single compressed, not-to-scale ring standing in for
+    // Earth's yearly trip around the Sun, using each shower's REAL published
+    // peak date. It is NOT a simulation of meteoroid streams, orbital debris,
+    // or Earth's actual elliptical orbit (drawn here as a perfect circle for
+    // legibility) - the ring is a calendar dial, not a physics model.
+    //
+    // Published figures / facts (cross-checked via web search 2026-08-10,
+    // IMO "Meteor Shower Calendar" imo.net/resources/calendar/, IMO 2026
+    // calendar PDF imo.net/files/meteor-shower/cal2026.pdf, Wikipedia
+    // Quadrantids/Lyrids/Eta Aquariids/Draconids/Orionids/Leonids/Geminids
+    // pages cross-checked against IMO where an activity window is listed):
+    //   - Peak dates + ZHR (zenith hourly rate, meteors/hour under a dark
+    //     sky with the radiant overhead): Quadrantids Jan 3-4 (ZHR 120),
+    //     Lyrids Apr 22-23 (ZHR 18), Eta Aquariids May 5-6 (ZHR 50),
+    //     Southern delta Aquariids Jul 30-31 (ZHR 25), Perseids Aug 12-13
+    //     (ZHR 100), Draconids Oct 8-9 (ZHR about 5 in a typical year),
+    //     Orionids Oct 21-22 (ZHR 20), Southern Taurids Nov 4-5 (ZHR 5),
+    //     Northern Taurids Nov 11-12 (ZHR 5), Leonids Nov 16-17 (ZHR 15),
+    //     Geminids Dec 13-14 (ZHR 150, the strongest annual shower),
+    //     Ursids Dec 21-22 (ZHR 10).
+    //   - Activity periods (IMO calendar, month/day - Dec 28-Jan 12 wraps
+    //     the year boundary): Quadrantids Dec 28-Jan 12; Lyrids Apr 14-30;
+    //     Eta Aquariids Apr 19-May 28; Southern delta Aquariids Jul 12-Aug
+    //     23; Perseids Jul 17-Aug 24; Orionids Oct 2-Nov 7; Southern Taurids
+    //     Sep 20-Nov 20; Northern Taurids Oct 20-Dec 10; Leonids Nov 6-30;
+    //     Geminids Dec 4-17; Ursids Dec 17-26. IMO's public calendar does
+    //     not publish a Draconids activity window (it is a narrow, highly
+    //     variable stream), so this page shows only its peak date and
+    //     ZHR - no invented window.
+    //   - Parent bodies: comets 1P/Halley (Eta Aquariids AND Orionids - the
+    //     same comet feeds both showers six months apart), C/1861 G1
+    //     Thatcher (Lyrids), 109P/Swift-Tuttle (Perseids), 21P/Giacobini-
+    //     Zinner (Draconids), 2P/Encke (both Taurid showers, one debris
+    //     complex), 55P/Tempel-Tuttle (Leonids), 8P/Tuttle (Ursids), and
+    //     suspected 96P/Machholz (Southern delta Aquariids - listed as
+    //     "suspected" because the link is not settled the way Halley's is).
+    //     Two showers trace to an ASTEROID rather than a comet: 2003 EH1
+    //     (Quadrantids) and 3200 Phaethon (Geminids) - the two exceptions
+    //     to "showers come from comets", a real and citable fact.
+    //   - Notable historical outbursts (all real, dated events): the
+    //     Leonids produced meteor storms of several thousand per hour in
+    //     1833, 1966, and 2001; the Draconids produced storms in 1933 and
+    //     1946 and a ZHR-over-100 outburst on 2018-10-08/09.
+    //
+    // Distinct from meteor-shower-radiant (a single-shower SKY-VIEW radiant-
+    // point explainer for the Perseids/Leonids - no calendar, no other
+    // showers) and chelyabinsk-meteor / meteor-airburst-size-comparison
+    // (one-off atmospheric-entry impact events, not annual showers). THIS
+    // page's story: WHEN each of the 12 major annual showers happens and
+    // how strong it is, on one orbit-calendar dial - not where a radiant
+    // sits in the sky for one shower.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'annual-meteor-shower-calendar';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'meteorcalendar'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 50, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // ---- Real published shower data (see header comment for sources) ----
+    var T3D_AMC_YEAR_DAYS = 365; // calendar-dial approximation; leap days not modeled
+    var T3D_AMC_SHOWERS = [
+        { id: 'quadrantids', name: 'Quadrantids', peakDay: 4, peakLabel: 'Jan 3-4', zhr: 120, windowStart: 362, windowEnd: 12, radiant: 'Bootes', parent: 'Asteroid 2003 EH1', parentType: 'asteroid', fact: 'One of only two major showers traced to an asteroid rather than a comet - the other is the Geminids.' },
+        { id: 'lyrids', name: 'Lyrids', peakDay: 113, peakLabel: 'Apr 22-23', zhr: 18, windowStart: 104, windowEnd: 120, radiant: 'Lyra, near Vega', parent: 'Comet C/1861 G1 (Thatcher)', parentType: 'comet', fact: 'Recorded for over 2,700 years - one of the oldest meteor showers with a continuous observation history.' },
+        { id: 'etaaquariids', name: 'Eta Aquariids', peakDay: 126, peakLabel: 'May 5-6', zhr: 50, windowStart: 109, windowEnd: 148, radiant: 'Aquarius', parent: "Comet 1P/Halley", parentType: 'comet', fact: "Debris from Halley's Comet - the same parent body that feeds the Orionids six months later." },
+        { id: 'sdeltaaquariids', name: 'Southern delta Aquariids', peakDay: 212, peakLabel: 'Jul 30-31', zhr: 25, windowStart: 193, windowEnd: 235, radiant: 'Aquarius', parent: 'suspected Comet 96P/Machholz', parentType: 'comet', fact: 'Its active window overlaps the Perseids, so both showers can produce meteors the same night in late July.' },
+        { id: 'perseids', name: 'Perseids', peakDay: 225, peakLabel: 'Aug 12-13', zhr: 100, windowStart: 198, windowEnd: 236, radiant: 'Perseus, near Cassiopeia', parent: 'Comet 109P/Swift-Tuttle', parentType: 'comet', fact: 'The most-watched shower of the year for northern-hemisphere skywatchers.' },
+        { id: 'draconids', name: 'Draconids', peakDay: 282, peakLabel: 'Oct 8-9', zhr: 5, windowStart: null, windowEnd: null, radiant: 'Draco', parent: 'Comet 21P/Giacobini-Zinner', parentType: 'comet', fact: 'Usually quiet at ZHR about 5, but produced storms in 1933 and 1946, and an outburst above ZHR 100 on 2018-10-08/09.' },
+        { id: 'orionids', name: 'Orionids', peakDay: 295, peakLabel: 'Oct 21-22', zhr: 20, windowStart: 275, windowEnd: 311, radiant: 'Orion', parent: 'Comet 1P/Halley', parentType: 'comet', fact: "The second shower fed by Halley's Comet, six months after the Eta Aquariids." },
+        { id: 'staurids', name: 'Southern Taurids', peakDay: 309, peakLabel: 'Nov 4-5', zhr: 5, windowStart: 263, windowEnd: 324, radiant: 'Taurus', parent: 'Comet 2P/Encke', parentType: 'comet', fact: 'Part of a broad debris complex blamed for occasional bright, slow-moving fireballs.' },
+        { id: 'ntaurids', name: 'Northern Taurids', peakDay: 316, peakLabel: 'Nov 11-12', zhr: 5, windowStart: 293, windowEnd: 344, radiant: 'Taurus', parent: 'Comet 2P/Encke complex', parentType: 'comet', fact: 'Overlaps the Southern Taurids - both trace back to the same Encke debris stream.' },
+        { id: 'leonids', name: 'Leonids', peakDay: 321, peakLabel: 'Nov 16-17', zhr: 15, windowStart: 310, windowEnd: 334, radiant: 'Leo', parent: 'Comet 55P/Tempel-Tuttle', parentType: 'comet', fact: 'Produced meteor storms of several thousand per hour in 1833, 1966, and 2001.' },
+        { id: 'geminids', name: 'Geminids', peakDay: 348, peakLabel: 'Dec 13-14', zhr: 150, windowStart: 338, windowEnd: 351, radiant: 'Gemini, near Castor', parent: 'Asteroid 3200 Phaethon', parentType: 'asteroid', fact: 'The strongest annual shower - and, like the Quadrantids, its parent is a rocky asteroid rather than a comet.' },
+        { id: 'ursids', name: 'Ursids', peakDay: 356, peakLabel: 'Dec 21-22', zhr: 10, windowStart: 351, windowEnd: 360, radiant: 'Ursa Minor', parent: 'Comet 8P/Tuttle', parentType: 'comet', fact: 'Peaks right around the December solstice and is often overlooked three weeks after the Geminids.' }
+    ];
+
+    function t3dAmcDayOfYear(date) {
+        var start = new Date(date.getFullYear(), 0, 0);
+        var diff = date - start;
+        return Math.floor(diff / 86400000);
+    }
+    function t3dAmcIsActive(sh, day) {
+        if (sh.windowStart === null || sh.windowEnd === null) return Math.abs(day - sh.peakDay) < 1.5;
+        if (sh.windowStart <= sh.windowEnd) return day >= sh.windowStart && day <= sh.windowEnd;
+        return day >= sh.windowStart || day <= sh.windowEnd; // wraps the year boundary (Quadrantids)
+    }
+    function t3dAmcDayAngle(day) { return (day / T3D_AMC_YEAR_DAYS) * Math.PI * 2 - Math.PI / 2; }
+
+    function t3dAnnualMeteorCalendar(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+
+        var SCOUNT = shell.low ? 300 : 600;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(35 + Math.random() * 60);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.26, sizeAttenuation: false })));
+
+        var sun = new THREE.Mesh(new THREE.SphereGeometry(2.2, 24, 18), new THREE.MeshBasicMaterial({ color: 0xffcc33 }));
+        scene.add(sun);
+        var sunLight = new THREE.PointLight(0xffffff, 1.3, 0, 0);
+        scene.add(sunLight);
+
+        var R = 20; // orbit-dial radius, world units, not to scale
+        var ringPts = [];
+        for (var i = 0; i <= 128; i++) { var a = (i / 128) * Math.PI * 2; ringPts.push(new THREE.Vector3(Math.cos(a) * R, 0, Math.sin(a) * R)); }
+        var ringGeo = new THREE.BufferGeometry().setFromPoints(ringPts);
+        scene.add(new THREE.LineLoop(ringGeo, new THREE.LineBasicMaterial({ color: 0x3a4656 })));
+
+        // 12 month ticks around the dial.
+        for (var mi = 0; mi < 12; mi++) {
+            var mday = mi * (T3D_AMC_YEAR_DAYS / 12);
+            var ma = t3dAmcDayAngle(mday);
+            var tickGeo = new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(Math.cos(ma) * (R - 0.9), 0, Math.sin(ma) * (R - 0.9)),
+                new THREE.Vector3(Math.cos(ma) * (R + 0.9), 0, Math.sin(ma) * (R + 0.9))
+            ]);
+            scene.add(new THREE.Line(tickGeo, new THREE.LineBasicMaterial({ color: 0x2c3644 })));
+        }
+
+        var earth = new THREE.Mesh(new THREE.SphereGeometry(0.85, 20, 16), new THREE.MeshLambertMaterial({ color: 0x4fa3ff }));
+        scene.add(earth);
+
+        var markerGeoCache = {};
+        function markerGeoFor(radius) {
+            var key = radius.toFixed(2);
+            if (!markerGeoCache[key]) markerGeoCache[key] = new THREE.SphereGeometry(radius, 14, 10);
+            return markerGeoCache[key];
+        }
+        var COMET_COLOR = 0x69d2ff, ASTEROID_COLOR = 0xff9142, ACTIVE_COLOR = 0xffe066;
+        var markers = T3D_AMC_SHOWERS.map(function (sh) {
+            var size = 0.42 + Math.sqrt(sh.zhr) * 0.075;
+            var baseColor = sh.parentType === 'asteroid' ? ASTEROID_COLOR : COMET_COLOR;
+            var mesh = new THREE.Mesh(markerGeoFor(size), new THREE.MeshBasicMaterial({ color: baseColor }));
+            var ang = t3dAmcDayAngle(sh.peakDay);
+            mesh.position.set(Math.cos(ang) * R * 1.16, 0, Math.sin(ang) * R * 1.16);
+            scene.add(mesh);
+            return { sh: sh, mesh: mesh, baseColor: baseColor, size: size };
+        });
+
+        var store = t3dLoadStore();
+        var day = (typeof store.day === 'number' && store.day >= 0 && store.day <= 365) ? store.day : t3dAmcDayOfYear(new Date());
+        var selectedIdx = 0;
+        for (var si = 0; si < T3D_AMC_SHOWERS.length; si++) { if (T3D_AMC_SHOWERS[si].peakDay >= day) { selectedIdx = si; break; } }
+        var playing = true;
+
+        function activeList() {
+            return T3D_AMC_SHOWERS.filter(function (sh) { return t3dAmcIsActive(sh, Math.round(day)); });
+        }
+
+        function factsHtml() {
+            var active = activeList();
+            var sel = T3D_AMC_SHOWERS[selectedIdx];
+            var activeHtml = active.length
+                ? active.map(function (sh) { return sh.name + ' (ZHR ' + sh.zhr + ')'; }).join(', ')
+                : 'none of the 12 major showers today';
+            return '<h3>' + sel.name + '</h3>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Peak date</td><td>' + sel.peakLabel + '</td></tr>' +
+                '<tr><td>Zenith hourly rate (ZHR)</td><td>about ' + sel.zhr + ' meteors/hour under a dark sky</td></tr>' +
+                '<tr><td>Radiant</td><td>' + sel.radiant + '</td></tr>' +
+                '<tr><td>Parent body</td><td>' + sel.parent + ' (' + sel.parentType + ')</td></tr>' +
+                '<tr><td>Active window</td><td>' + (sel.windowStart === null ? 'not published by IMO - narrow, variable stream' : 'IMO calendar range around the peak') + '</td></tr>' +
+                '</table>' +
+                '<p>' + sel.fact + '</p>' +
+                '<p class="t3d-note">Active right now on the dial: ' + activeHtml + '. Dates use the reader\'s current calendar day; the ring is a compressed, not-to-scale calendar dial standing in for Earth\'s yearly orbit, not a model of meteoroid streams.</p>';
+        }
+
+        function applyDay(newDay) {
+            day = ((newDay % 365) + 365) % 365;
+            var ang = t3dAmcDayAngle(day);
+            earth.position.set(Math.cos(ang) * R, 0, Math.sin(ang) * R);
+            var active = activeList();
+            markers.forEach(function (m) {
+                var isActive = active.indexOf(m.sh) !== -1;
+                m.mesh.material.color.setHex(isActive ? ACTIVE_COLOR : m.baseColor);
+                var scale = isActive ? 1.35 : 1;
+                m.mesh.scale.setScalar(scale);
+            });
+            var slider = document.getElementById('t3dAmcDaySlider');
+            if (slider) slider.value = String(Math.round(day));
+            t3dInfo(factsHtml());
+            try { t3dSaveStore({ day: day }); } catch (e) {}
+        }
+        applyDay(day);
+
+        var slider = document.getElementById('t3dAmcDaySlider');
+        if (slider) slider.addEventListener('input', function () {
+            playing = false;
+            var btn = document.getElementById('t3dAmcPlayBtn'); if (btn) btn.textContent = 'Play through the year';
+            applyDay(parseFloat(slider.value || '0'));
+        });
+
+        var select = document.getElementById('t3dAmcShowerSelect');
+        if (select) {
+            select.innerHTML = T3D_AMC_SHOWERS.map(function (sh, idx) { return '<option value="' + idx + '">' + sh.name + ' - ' + sh.peakLabel + '</option>'; }).join('');
+            select.value = String(selectedIdx);
+            select.addEventListener('change', function () {
+                selectedIdx = parseInt(select.value, 10) || 0;
+                playing = false;
+                var btn = document.getElementById('t3dAmcPlayBtn'); if (btn) btn.textContent = 'Play through the year';
+                applyDay(T3D_AMC_SHOWERS[selectedIdx].peakDay);
+            });
+        }
+
+        var todayBtn = document.getElementById('t3dAmcTodayBtn');
+        if (todayBtn) todayBtn.addEventListener('click', function () { applyDay(t3dAmcDayOfYear(new Date())); });
+
+        var playBtn = document.getElementById('t3dAmcPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            playing = !playing;
+            playBtn.textContent = playing ? 'Pause' : 'Play through the year';
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Drag the day slider or pick a shower from the list to jump the calendar dial to its peak.');
+
+        var accum = 0;
+        return function animate(dt) {
+            sun.rotation.y += dt * 0.00015;
+            if (playing) {
+                accum += dt;
+                if (accum > 60) { accum = 0; applyDay(day + 0.4); }
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { meteorcalendar: 't3dAmcControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { meteorcalendar: { radius: 42, maxR: 140, minR: 10, phi: 1.05, theta: 0.5, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dAnnualMeteorCalendar(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
