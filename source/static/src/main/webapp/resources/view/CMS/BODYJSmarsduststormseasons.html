@@ -1,0 +1,478 @@
+<script>
+    // 3D scene archetype skeleton (Mars Dust Storm Seasons Explorer) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Built LEAN from the shared t3d* skeleton (forked from the
+    // earth-perihelion-aphelion Keplerian-orbit shape) - ONE scene only. All
+    // geometry is procedural: a heliocentric orbit ellipse drawn to Mars's REAL
+    // eccentricity, a Mars sphere with a translucent dust-shroud overlay and a
+    // handful of illustrative regional dust-patch blobs, and an illustrative
+    // solar-panel-power bar.
+    //
+    // EDUCATIONAL APPROXIMATION, not a climate simulation. Mars's position on
+    // the ellipse is a smooth Keplerian model (real eccentricity + real
+    // perihelion/aphelion distances) - not a day-by-day ephemeris. The dust
+    // opacity (tau) curve within the recognized dust-storm season is an
+    // illustrative bump shaped to land within Curiosity's documented seasonal
+    // range; only the triggered "global dust storm" value (tau ~10.8) and the
+    // season window (Ls 180-340) are direct published figures. The regional
+    // dust-patch blob positions are illustrative, not tied to specific named
+    // historical storm-origin regions. The solar-panel-power bar is an
+    // illustrative decreasing function of tau, not NASA's measured power curve
+    // for Opportunity's specific solar array.
+    //
+    // Published figures (NASA NSSDCA Mars fact sheet + NASA/JPL mission news,
+    // cross-checked via WebSearch 2026-08-11):
+    //   - Mars sidereal orbital period: 686.98 Earth days (~687 days)
+    //   - Orbital eccentricity: 0.0935 (about 5.6x more eccentric than Earth's
+    //     0.0167 - see earth-perihelion-aphelion.html for that ellipse)
+    //   - Perihelion (closest to Sun): about 206.62 million km
+    //   - Aphelion (farthest from Sun): about 249.23 million km
+    //   - Perihelion occurs at areocentric solar longitude Ls = 251 deg;
+    //     southern-hemisphere summer solstice at Ls = 270 deg (about 20 deg of
+    //     Ls after perihelion) - published planetary-science convention
+    //   - The dust-storm season (when regional storms sometimes grow into a
+    //     global, planet-encircling storm) runs roughly Ls 180 to 340 -
+    //     spanning southern-hemisphere spring through summer, bracketing
+    //     perihelion and the southern summer solstice
+    //   - Global, planet-encircling dust storms recur roughly every 3 Mars
+    //     years (about 5.5 Earth years) on average - NASA has not identified
+    //     why the interval is roughly that length
+    //   - The 2018 global dust storm: detected by Mars Reconnaissance Orbiter
+    //     on 2018-05-30; grew to cover over 18 million square km (bigger than
+    //     North America) within days; declared a planet-encircling event on
+    //     2018-06-19; local atmospheric opacity (tau) near Opportunity reached
+    //     about 10.8, blocking sunlight enough that Opportunity's solar panels
+    //     could not recharge its batteries - NASA declared the 15-year mission
+    //     over in February 2019
+    //   - The 2007 global dust storm reached a milder tau of about 5.5 near
+    //     Opportunity; the rover survived that event on reduced power
+    //   - During the same 2018 storm, Curiosity (on the opposite side of Mars,
+    //     powered by a radioisotope generator rather than solar panels and so
+    //     unaffected by the power loss) recorded a typical seasonal dust
+    //     opacity of about 1.0 to 2.0 in Gale Crater
+    //   - Source: NASA NSSDCA Mars fact sheet (orbital elements); NASA/JPL "NASA
+    //     Encounters the Perfect Storm for Science" and 2018 mission-update
+    //     press materials (mars.nasa.gov, jpl.nasa.gov); Wikipedia "2018 Mars
+    //     global dust storm" (tau figures cross-referenced against the JPL
+    //     press materials)
+    //
+    // Distinct from seasons-earth.html (Earth's axial-tilt seasons, a different
+    // planet and a different mechanism) and mars-terrain.html (a real NASA MOLA
+    // elevation heightmap of Mars's surface relief - static, no weather) and
+    // atmosphere-escape-mars.html (the billion-year mechanism and timeline of
+    // WHY Mars's atmosphere is thin today - not the year-to-year dust-storm
+    // weather cycle within that thin atmosphere) and earth-perihelion-aphelion
+    // (the same Keplerian orbit-ellipse shape, but for Earth's much rounder,
+    // 0.0167-eccentricity orbit with no dust-storm season).
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'mars-dust-storm-seasons';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'marsduststormseasons'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Real published figures (see header comment for sources).
+    var T3D_MDS_PERIOD_DAYS = 686.98;
+    var T3D_MDS_ECC = 0.0935;
+    var T3D_MDS_PERI_KM = 206620000;
+    var T3D_MDS_APH_KM = 249230000;
+    var T3D_MDS_A_KM = (T3D_MDS_PERI_KM + T3D_MDS_APH_KM) / 2;
+    var T3D_MDS_LS_AT_PERI = 251; // areocentric solar longitude at perihelion
+    var T3D_MDS_LS_SOLSTICE = 270; // southern-hemisphere summer solstice
+    var T3D_MDS_SEASON_LS_START = 180;
+    var T3D_MDS_SEASON_LS_END = 340;
+    var T3D_MDS_RECUR_MARS_YEARS = 3;
+    var T3D_MDS_RECUR_EARTH_YEARS = 5.5;
+    var T3D_MDS_STORM2018_TAU = 10.8;
+    var T3D_MDS_STORM2007_TAU = 5.5;
+    var T3D_MDS_CURIOSITY_TAU_LOW = 1.0;
+    var T3D_MDS_CURIOSITY_TAU_HIGH = 2.0;
+    var T3D_MDS_MARS_R = 0.62;
+    var T3D_MDS_SEASON_START_DAY = 571; // Kepler-solved day where Ls first reaches ~180 deg
+
+    function t3dMdsSolveKepler(M, ecc) {
+        var E = M;
+        for (var i = 0; i < 10; i++) E = M + ecc * Math.sin(E);
+        return E;
+    }
+    // day (0..PERIOD, day 0 = perihelion) -> { E, trueAnomalyDeg, lsDeg, km }
+    function t3dMdsStateForDay(day) {
+        var d = ((day % T3D_MDS_PERIOD_DAYS) + T3D_MDS_PERIOD_DAYS) % T3D_MDS_PERIOD_DAYS;
+        var M = (d / T3D_MDS_PERIOD_DAYS) * Math.PI * 2;
+        var E = t3dMdsSolveKepler(M, T3D_MDS_ECC);
+        var nu = 2 * Math.atan2(Math.sqrt(1 + T3D_MDS_ECC) * Math.sin(E / 2), Math.sqrt(1 - T3D_MDS_ECC) * Math.cos(E / 2));
+        var nuDeg = nu * 180 / Math.PI;
+        var lsDeg = ((nuDeg + T3D_MDS_LS_AT_PERI) % 360 + 360) % 360;
+        var km = T3D_MDS_A_KM * (1 - T3D_MDS_ECC * Math.cos(E));
+        return { day: d, E: E, lsDeg: lsDeg, km: km };
+    }
+    function t3dMdsInSeason(lsDeg) { return lsDeg >= T3D_MDS_SEASON_LS_START && lsDeg <= T3D_MDS_SEASON_LS_END; }
+    function t3dMdsSeasonBump(lsDeg) {
+        var center = (T3D_MDS_LS_AT_PERI + T3D_MDS_LS_SOLSTICE) / 2;
+        var width = 90;
+        return Math.exp(-Math.pow((lsDeg - center) / width, 2));
+    }
+    function t3dMdsTauFor(lsDeg, inSeason, stormActive) {
+        if (stormActive) return T3D_MDS_STORM2018_TAU;
+        if (!inSeason) return 0.4;
+        var bump = t3dMdsSeasonBump(lsDeg);
+        return T3D_MDS_CURIOSITY_TAU_LOW * 0.6 + bump * (T3D_MDS_CURIOSITY_TAU_HIGH * 0.85);
+    }
+    function t3dMdsPowerFrac(tau) { return Math.max(0.05, Math.min(1, 1 - tau / 12)); }
+
+    function t3dMarsDustStormSeasons(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.34));
+
+        var SCOUNT = shell.low ? 400 : 800;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(30 + Math.random() * 60);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.35, sizeAttenuation: false })));
+
+        // Orbit ellipse - drawn to Mars's REAL eccentricity (0.0935), visibly
+        // egg-shaped (contrast Earth's near-circular 0.0167 ellipse).
+        var SCENE_A = 9;
+        var ecc = T3D_MDS_ECC;
+        var sceneB = SCENE_A * Math.sqrt(1 - ecc * ecc);
+        var focusOffset = SCENE_A * ecc;
+
+        var sun = new THREE.Mesh(new THREE.SphereGeometry(1.3, 26, 16), new THREE.MeshBasicMaterial({ color: 0xffd54f }));
+        scene.add(sun);
+        var sunGlow = new THREE.Mesh(new THREE.SphereGeometry(1.8, 20, 12), new THREE.MeshBasicMaterial({ color: 0xffe08a, transparent: true, opacity: 0.18, depthWrite: false }));
+        sun.add(sunGlow);
+
+        function posFromE(E) {
+            return new THREE.Vector3(SCENE_A * Math.cos(E) - focusOffset, 0, sceneB * Math.sin(E));
+        }
+        function eFromNuDeg(nuDeg) {
+            var nu = nuDeg * Math.PI / 180;
+            var E = 2 * Math.atan2(Math.sqrt(1 - ecc) * Math.sin(nu / 2), Math.sqrt(1 + ecc) * Math.cos(nu / 2));
+            return E;
+        }
+        var orbPts = [];
+        for (var i = 0; i <= 160; i++) {
+            var Ei = (i / 160) * Math.PI * 2;
+            var p = posFromE(Ei);
+            orbPts.push(p.x, p.y, p.z);
+        }
+        var og = new THREE.BufferGeometry();
+        og.setAttribute('position', new THREE.Float32BufferAttribute(orbPts, 3));
+        scene.add(new THREE.Line(og, new THREE.LineBasicMaterial({ color: 0x546e7a })));
+
+        // Dust-storm-season arc (Ls 180-340 -> true anomaly -71 to +89 deg,
+        // since Ls = trueAnomaly + 251) highlighted in a dusty tan color.
+        var seasonNuStart = T3D_MDS_SEASON_LS_START - T3D_MDS_LS_AT_PERI;
+        var seasonNuEnd = T3D_MDS_SEASON_LS_END - T3D_MDS_LS_AT_PERI;
+        var seasonPts = [];
+        var SEASON_SEG = 48;
+        for (var j = 0; j <= SEASON_SEG; j++) {
+            var nuj = seasonNuStart + (j / SEASON_SEG) * (seasonNuEnd - seasonNuStart);
+            var pj = posFromE(eFromNuDeg(nuj));
+            seasonPts.push(pj.x, pj.y + 0.02, pj.z);
+        }
+        var seasonGeo = new THREE.BufferGeometry();
+        seasonGeo.setAttribute('position', new THREE.Float32BufferAttribute(seasonPts, 3));
+        scene.add(new THREE.Line(seasonGeo, new THREE.LineBasicMaterial({ color: 0xd08a4a, linewidth: 2 })));
+
+        var periPos = posFromE(0), aphPos = posFromE(Math.PI);
+        var periMark = new THREE.Mesh(new THREE.SphereGeometry(0.15, 12, 8), new THREE.MeshBasicMaterial({ color: 0xff7043 }));
+        periMark.position.copy(periPos);
+        scene.add(periMark);
+        var aphMark = new THREE.Mesh(new THREE.SphereGeometry(0.15, 12, 8), new THREE.MeshBasicMaterial({ color: 0x42a5f5 }));
+        aphMark.position.copy(aphPos);
+        scene.add(aphMark);
+        var solsticePos = posFromE(eFromNuDeg(T3D_MDS_LS_SOLSTICE - T3D_MDS_LS_AT_PERI));
+        var solsticeMark = new THREE.Mesh(new THREE.SphereGeometry(0.11, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffee58 }));
+        solsticeMark.position.copy(solsticePos);
+        scene.add(solsticeMark);
+
+        // Mars: procedural mottled sphere.
+        var marsGeo = new THREE.SphereGeometry(T3D_MDS_MARS_R, 40, 28);
+        var posAttr = marsGeo.getAttribute('position');
+        var colors = new Float32Array(posAttr.count * 3);
+        for (var vi = 0; vi < posAttr.count; vi++) {
+            var vx = posAttr.getX(vi), vy = posAttr.getY(vi), vz = posAttr.getZ(vi);
+            var n = 0.5 + 0.5 * Math.sin(vx * 6 + vy * 3.2) * Math.cos(vz * 5.1 - vy * 2.4);
+            var shade = 0.72 + 0.28 * n;
+            colors[vi * 3] = 0.70 * shade; colors[vi * 3 + 1] = 0.33 * shade; colors[vi * 3 + 2] = 0.18 * shade;
+        }
+        marsGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        var mars = new THREE.Mesh(marsGeo, new THREE.MeshLambertMaterial({ vertexColors: true }));
+        scene.add(mars);
+        var marsLight = new THREE.PointLight(0xffffff, 1.0, 40);
+        sun.add(marsLight);
+
+        // Dust shroud - opacity driven by tau.
+        var shroud = new THREE.Mesh(
+            new THREE.SphereGeometry(T3D_MDS_MARS_R * 1.16, 32, 22),
+            new THREE.MeshBasicMaterial({ color: 0xd7a15f, transparent: true, opacity: 0.05, depthWrite: false })
+        );
+        mars.add(shroud);
+
+        // Regional dust-patch blobs - illustrative fixed surface positions
+        // (not tied to specific named historical storm regions), visible only
+        // when regional dust activity (season bump) is non-zero.
+        var PATCH_N = 6;
+        var patches = [];
+        for (var pIdx = 0; pIdx < PATCH_N; pIdx++) {
+            var pth = (pIdx / PATCH_N) * Math.PI * 2 + 0.4;
+            var pph = 0.9 + 0.55 * Math.sin(pIdx * 1.7);
+            var pr = T3D_MDS_MARS_R * 1.03;
+            var blob = new THREE.Mesh(
+                new THREE.SphereGeometry(T3D_MDS_MARS_R * 0.22, 12, 10),
+                new THREE.MeshBasicMaterial({ color: 0xe8c088, transparent: true, opacity: 0, depthWrite: false })
+            );
+            blob.position.set(pr * Math.sin(pph) * Math.cos(pth), pr * Math.cos(pph), pr * Math.sin(pph) * Math.sin(pth));
+            mars.add(blob);
+            patches.push(blob);
+        }
+
+        var dayVal = 0, stormActive = false;
+
+        function fmtTau(t) { return t.toFixed(1); }
+        function powerBar(frac) {
+            var pct = Math.round(frac * 100);
+            var color = pct >= 60 ? '#43a047' : (pct >= 25 ? '#fb8c00' : '#e53935');
+            return '<div style="background:#333;border-radius:4px;overflow:hidden;height:14px;margin:4px 0;">' +
+                '<div style="height:14px;width:' + pct + '%;background:' + color + ';"></div></div>' +
+                '<p class="t3d-note">Illustrative solar-panel power (' + pct + '% of clear-sky output) - not NASA\'s measured curve for Opportunity\'s panels, only shaped so it lands low during the triggered storm.</p>';
+        }
+
+        function panelHtml(st, inSeason, tau) {
+            var kmM = (st.km / 1e6).toFixed(1);
+            var lsLine = '<h3>Ls ' + Math.round(st.lsDeg) + ' deg - day ' + Math.round(st.day) + ' of ' + Math.round(T3D_MDS_PERIOD_DAYS) + '</h3>';
+            var distLine = '<p><b>Distance from the Sun:</b> ' + kmM + ' million km.</p>';
+            var seasonLine = inSeason
+                ? '<p><b>Dust-storm season (Ls 180-340):</b> yes - this stretch of Mars\'s orbit (highlighted tan on the ellipse) is when regional dust storms sometimes grow into a planet-encircling storm.</p>'
+                : '<p><b>Dust-storm season (Ls 180-340):</b> no - outside this window, global dust storms have not been observed.</p>';
+            var tauLine = stormActive
+                ? '<p><b>Atmospheric opacity (tau):</b> about ' + fmtTau(tau) + ' - the real value NASA/JPL recorded near Opportunity during the 2018 global dust storm.</p>'
+                : '<p><b>Atmospheric opacity (tau):</b> about ' + fmtTau(tau) + (inSeason ? ' (typical seasonal range, comparable to Curiosity\'s documented ' + T3D_MDS_CURIOSITY_TAU_LOW.toFixed(1) + ' to ' + T3D_MDS_CURIOSITY_TAU_HIGH.toFixed(1) + ' in Gale Crater)' : '') + '.</p>';
+            var eventLine = '';
+            if (Math.round(st.lsDeg) === T3D_MDS_LS_AT_PERI) eventLine += '<p class="t3d-note">Perihelion - Mars is at its closest to the Sun this year, about ' + (T3D_MDS_PERI_KM / 1e6).toFixed(2) + ' million km.</p>';
+            if (Math.round(st.lsDeg) === T3D_MDS_LS_SOLSTICE) eventLine += '<p class="t3d-note">Southern-hemisphere summer solstice - peak solar heating drives the strongest atmospheric circulation of the year.</p>';
+            return lsLine + distLine + seasonLine + tauLine + eventLine + powerBar(t3dMdsPowerFrac(tau)) +
+                '<table class="w3-table w3-bordered"><tr><td>Orbital eccentricity</td><td>0.0935</td></tr>' +
+                '<tr><td>Perihelion / Aphelion</td><td>' + (T3D_MDS_PERI_KM / 1e6).toFixed(2) + 'M / ' + (T3D_MDS_APH_KM / 1e6).toFixed(2) + 'M km</td></tr>' +
+                '<tr><td>Global-storm recurrence</td><td>about every ' + T3D_MDS_RECUR_MARS_YEARS + ' Mars years (~' + T3D_MDS_RECUR_EARTH_YEARS + ' Earth yr)</td></tr>' +
+                '<tr><td>2018 storm tau near Opportunity</td><td>about ' + T3D_MDS_STORM2018_TAU + '</td></tr>' +
+                '<tr><td>2007 storm tau (survived)</td><td>about ' + T3D_MDS_STORM2007_TAU + '</td></tr></table>' +
+                '<p class="t3d-note">Educational approximation - Mars\'s orbital position is a smooth Keplerian model using the real eccentricity and perihelion/aphelion distances, not a day-by-day ephemeris. The in-season tau curve is shaped to land within Curiosity\'s documented range; only the 2018/2007 storm tau values and the Ls 180-340 season window are direct published figures. Regional dust-patch positions are illustrative.</p>';
+        }
+
+        function apply() {
+            var st = t3dMdsStateForDay(dayVal);
+            var inSeason = t3dMdsInSeason(st.lsDeg);
+            if (!inSeason) stormActive = false;
+            var tau = t3dMdsTauFor(st.lsDeg, inSeason, stormActive);
+            var bump = inSeason ? t3dMdsSeasonBump(st.lsDeg) : 0;
+
+            mars.position.copy(posFromE(st.E));
+            shroud.material.opacity = stormActive ? 0.62 : (0.05 + bump * 0.18);
+            for (var pI = 0; pI < patches.length; pI++) {
+                var thisOn = inSeason && !stormActive && (bump > (pI / patches.length) * 0.85);
+                patches[pI].material.opacity = thisOn ? 0.45 * bump : 0;
+            }
+
+            var slider = document.getElementById('t3dMdsDay');
+            var label = document.getElementById('t3dMdsDayLabel');
+            if (slider) slider.value = String(Math.round(st.day));
+            if (label) label.textContent = 'Ls ' + Math.round(st.lsDeg) + ' deg (' + (inSeason ? 'dust season' : 'quiet season') + ')';
+            var stormBtn = document.getElementById('t3dMdsStormBtn');
+            if (stormBtn) {
+                stormBtn.textContent = stormActive ? 'End the global dust storm' : 'Trigger a global dust storm';
+                stormBtn.disabled = !inSeason && !stormActive;
+            }
+            t3dInfo(panelHtml(st, inSeason, tau));
+            try { t3dSaveStore({ dayVal: dayVal, stormActive: stormActive }); } catch (e) {}
+            return { inSeason: inSeason };
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.dayVal === 'number') dayVal = store.dayVal;
+        if (typeof store.stormActive === 'boolean') stormActive = store.stormActive;
+        var playing = false;
+        apply();
+
+        var playBtn = document.getElementById('t3dMdsPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            playing = !playing;
+            playBtn.textContent = playing ? 'Pause year' : 'Play year';
+        });
+        var slider = document.getElementById('t3dMdsDay');
+        if (slider) slider.addEventListener('input', function () {
+            playing = false;
+            if (playBtn) playBtn.textContent = 'Play year';
+            dayVal = parseFloat(slider.value || '0');
+            apply();
+        });
+        var seasonBtn = document.getElementById('t3dMdsSeasonBtn');
+        if (seasonBtn) seasonBtn.addEventListener('click', function () {
+            playing = false;
+            if (playBtn) playBtn.textContent = 'Play year';
+            dayVal = T3D_MDS_SEASON_START_DAY;
+            apply();
+        });
+        var stormBtn = document.getElementById('t3dMdsStormBtn');
+        if (stormBtn) stormBtn.addEventListener('click', function () {
+            var st = t3dMdsStateForDay(dayVal);
+            var inSeason = t3dMdsInSeason(st.lsDeg);
+            if (!inSeason && !stormActive) {
+                t3dStatus('Global dust storms have only been observed within the dust-storm season (Ls 180 to 340) - scrub the slider into the tan-highlighted stretch of the orbit first.');
+                return;
+            }
+            stormActive = !stormActive;
+            apply();
+        });
+
+        if (slider) slider.max = String(Math.round(T3D_MDS_PERIOD_DAYS));
+
+        t3dStatus('Drag to orbit, scroll to zoom. Scrub the day slider, press Play year, jump to the dust season, or trigger a global storm once inside it.');
+        return function animate(dt) {
+            mars.rotation.y += 0.001 * dt;
+            for (var pI2 = 0; pI2 < patches.length; pI2++) { patches[pI2].rotation.y -= 0.001 * dt; }
+            if (playing) { dayVal = dayVal + (dt / 1000) * 22; apply(); }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { marsduststormseasons: 't3dMdsControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { marsduststormseasons: { radius: 14, maxR: 40, minR: 4, phi: 1.05, theta: 0.4, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dMarsDustStormSeasons(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
