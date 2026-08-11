@@ -780,6 +780,7 @@ try {
     { title: "Annual Meteor Shower Calendar 3D Explorer", url: "https://freetoolonline.com/space-3d/annual-meteor-shower-calendar.html", include: !1, tags: "space-3d" },
     { title: "Parker Solar Probe 3D Explorer", url: "https://freetoolonline.com/space-3d/parker-solar-probe.html", include: !1, tags: "space-3d" },
     { title: "Rosetta + Philae 67P 3D Explorer", url: "https://freetoolonline.com/space-3d/rosetta-philae-67p.html", include: !1, tags: "space-3d" },
+    { title: "Space Elevator Physics 3D Explorer", url: "https://freetoolonline.com/space-3d/space-elevator-physics.html", include: !1, tags: "space-3d" },
     { title: "Exoplanet Atmosphere Spectroscopy 3D Explorer", url: "https://freetoolonline.com/space-3d/exoplanet-atmosphere-spectroscopy.html", include: !1, tags: "space-3d" },
     { title: "Saros Cycle Eclipse Explorer 3D", url: "https://freetoolonline.com/space-3d/saros-cycle.html", include: !1, tags: "space-3d" },
     { title: "Starlink Constellation Shells 3D Explorer", url: "https://freetoolonline.com/space-3d/starlink-constellation-shells.html", include: !1, tags: "space-3d" },
