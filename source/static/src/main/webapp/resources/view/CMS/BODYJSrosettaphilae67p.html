@@ -1,0 +1,505 @@
+<script>
+    // 3D scene archetype skeleton (rosetta-philae-67p) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side.
+    // Built LEAN from the shared t3d* skeleton - ONE scene only. All geometry
+    // is procedural - no model files, no textures fetched.
+    //
+    // EDUCATIONAL APPROXIMATION - this is a compressed teaching curve of ESA's
+    // real Rosetta/Philae mission arc at comet 67P/Churyumov-Gerasimenko, not a
+    // precomputed ephemeris and not a physics simulation. The comet nucleus is
+    // a procedurally bumped two-lobed "contact binary" shape (two overlapping
+    // deformed spheres); its on-screen rotation is compressed for visibility
+    // (the real period is about 12.4 hours). Rosetta's orbit path, Philae's
+    // descent/bounce arc, and the perihelion outgassing jets are simplified
+    // teaching curves, not a numerically integrated trajectory or a
+    // contact-dynamics solver. The three landing-site markers (Agilkia,
+    // Abydos, Deir el-Medina) are placed at approximate positions on the
+    // small lobe to teach the real story, not surveyed coordinates.
+    //
+    // Published figures (ESA Rosetta mission pages + JPL + cross-checked via
+    // WebFetch+WebSearch 2026-08-11):
+    //   - Launch: 2004-03-02.
+    //   - Orbit insertion at comet 67P: 2014-08-06.
+    //   - Philae separates from Rosetta and begins its descent: 2014-11-12.
+    //     First touchdown at the site "Agilkia": 2014-11-12, 17:32 GMT - the
+    //     anchoring harpoons failed to fire, so the lander bounced off the
+    //     surface and made a total of about four surface contacts over
+    //     roughly two hours before coming to rest at a different site, later
+    //     named "Abydos", on the comet's small lobe.
+    //   - Comet perihelion (closest approach to the Sun) during the mission:
+    //     2015-08-13. Comets become most active near perihelion as solar
+    //     heating drives stronger gas/dust jets from the nucleus.
+    //   - Mission end: 2016-09-30 - Rosetta's own controlled descent onto a
+    //     target pit in the Ma'at region of the small lobe, nicknamed
+    //     "Deir el-Medina"; loss of signal (confirming impact) at 11:19 UTC.
+    //   - Comet 67P nucleus: two-lobed "contact binary" - large lobe about
+    //     4.1 x 3.3 x 1.8 km, small lobe about 2.6 x 2.3 x 1.8 km (longest
+    //     axis about 4.1 km).
+    //   - Mission totals at the comet: 786 days in space, 7.9 billion km
+    //     traveled, 100k+ images returned, 220 GB of science data.
+    //   - Rosetta orbiter: about 2,900 kg; twin solar-array wings spanning
+    //     32 m tip-to-tip (64 sq m total) - the largest solar arrays flown on
+    //     an interplanetary mission at the time, letting Rosetta operate on
+    //     solar power alone far from the Sun. Philae lander: about 100 kg
+    //     (21 kg of science instruments), roughly 1 x 1 x 0.8 m.
+    //
+    // Distinct from every other named-mission page on this site
+    // (bennu-osiris-rex, dart-asteroid-deflection, hayabusa2-ryugu-sample-
+    // return, new-horizons-pluto-flyby, cassini-grand-finale, voyager-
+    // interstellar-position, parker-solar-probe, jwst-l2-halo-orbit) and from
+    // comet-orbit / comet-tail-types (general orbital-mechanics / tail-
+    // physics explainers, not one named mission) - this is the only page
+    // telling the first-ever landing on a comet nucleus, its bounce-and-
+    // recovery story, and Rosetta's own controlled-descent ending.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'rosetta-philae-67p';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'rosettaphilae'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 52, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0, moved = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY; moved = 0;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function (e) {
+            var wasClick = moved < 8;
+            dragging = false;
+            if (wasClick && shell.onClick) { shell.onClick(e); }
+        });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            moved += Math.abs(dx) + Math.abs(dy);
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR);
+        }, { passive: false });
+        var pinch = null;
+        host.addEventListener('touchstart', function (e) {
+            if (e.touches.length === 2) {
+                pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            }
+        }, { passive: true });
+        host.addEventListener('touchmove', function (e) {
+            if (e.touches.length === 2 && pinch) {
+                var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                pinch = d;
+            }
+        }, { passive: true });
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, onClick: null,
+            ndc: function (e) {
+                var r = renderer.domElement.getBoundingClientRect();
+                return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            },
+        };
+        return shell;
+    }
+
+    // Deterministic pseudo-random helper (build-time only, never called per frame).
+    function t3dHash(i) {
+        var x = Math.sin(i * 12.9898) * 43758.5453;
+        return x - Math.floor(x);
+    }
+
+    // Timeline milestones (percent of the 0-100 mission-progress slider).
+    var T3D_RP_MILESTONES = [
+        { p: 0, iso: '2004-03-02', label: 'Launch from Earth' },
+        { p: 20, iso: '2014-08-06', label: 'Orbit insertion at comet 67P' },
+        { p: 40, iso: '2014-11-12', label: 'Philae separates, begins its 7-hour descent' },
+        { p: 48, iso: '2014-11-12 17:32 GMT', label: 'First touchdown at Agilkia - harpoons fail, lander bounces' },
+        { p: 55, iso: '2014-11-13', label: 'Philae comes to rest at Abydos' },
+        { p: 75, iso: '2015-08-13', label: 'Perihelion - closest to the Sun, nucleus most active' },
+        { p: 100, iso: '2016-09-30', label: 'Mission end - Rosetta descends onto "Deir el-Medina"' }
+    ];
+    var T3D_RP_ORBIT_RADIUS = 7.2;
+    var T3D_RP_ORBIT_LOOPS = 2.4;
+    var T3D_RP_ORBIT_PHASE = 0.4;
+
+    function rpMilestoneIndexAt(pct) {
+        var pts = T3D_RP_MILESTONES;
+        var idx = 0;
+        for (var i = 0; i < pts.length; i++) { if (pct >= pts[i].p) idx = i; }
+        return idx;
+    }
+
+    function t3dRosettaPhilae(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0x445566, 0.5));
+        var sunLight = new THREE.DirectionalLight(0xfff4e0, 1.1);
+        sunLight.position.set(24, 30, 16);
+        scene.add(sunLight);
+
+        var starCount = shell.low ? 220 : 480;
+        var spos = new Float32Array(starCount * 3);
+        for (var s = 0; s < starCount; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(80 + Math.random() * 130);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xb0bec5, size: 0.35, sizeAttenuation: false })));
+
+        // Comet 67P nucleus: two overlapping bumped lobes ("contact binary").
+        var BIG_CENTER = new THREE.Vector3(-1.4, 0, 0);
+        var BIG_R = 2.5;
+        var SMALL_CENTER = new THREE.Vector3(1.9, 0.3, 0.1);
+        var SMALL_R = 1.55;
+
+        function buildLobe(center, radius, seedBase, color) {
+            var geo = new THREE.IcosahedronGeometry(radius, 2);
+            var pos = geo.getAttribute('position');
+            for (var i = 0; i < pos.count; i++) {
+                var px = pos.getX(i), py = pos.getY(i), pz = pos.getZ(i);
+                var len = Math.sqrt(px * px + py * py + pz * pz) || 1;
+                var bump = 1 + (t3dHash(i * 3.1 + seedBase) - 0.5) * 0.22;
+                pos.setXYZ(i, px * bump, py * bump, pz * bump);
+            }
+            geo.computeVertexNormals();
+            var mesh = new THREE.Mesh(geo, new THREE.MeshPhongMaterial({ color: color, emissive: 0x040302, shininess: 3, flatShading: true }));
+            mesh.position.copy(center);
+            return mesh;
+        }
+
+        var nucleusGroup = new THREE.Group();
+        var bigLobe = buildLobe(BIG_CENTER, BIG_R, 1.7, 0x352d24);
+        var smallLobe = buildLobe(SMALL_CENTER, SMALL_R, 9.3, 0x3a3126);
+        nucleusGroup.add(bigLobe);
+        nucleusGroup.add(smallLobe);
+        scene.add(nucleusGroup);
+
+        function sitePos(dx, dy, dz) {
+            var d = new THREE.Vector3(dx, dy, dz).normalize();
+            return SMALL_CENTER.clone().add(d.multiplyScalar(SMALL_R * 1.03));
+        }
+        var AGILKIA_POS = sitePos(0.3, 0.9, 0.35);
+        var ABYDOS_POS = sitePos(0.75, 0.55, -0.45);
+        var DEIR_POS = sitePos(-0.2, 0.95, 0.15);
+
+        function siteMarker(pos, color) {
+            var m = new THREE.Mesh(
+                new THREE.SphereGeometry(0.08, 10, 8),
+                new THREE.MeshBasicMaterial({ color: color })
+            );
+            m.position.copy(pos);
+            nucleusGroup.add(m);
+            return m;
+        }
+        siteMarker(AGILKIA_POS, 0xffee58);
+        siteMarker(ABYDOS_POS, 0xff5252);
+        siteMarker(DEIR_POS, 0x40c4ff);
+
+        // Rosetta orbiter: hex bus + twin solar-array wings (real 32 m span).
+        var orbiter = new THREE.Group();
+        var bus = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.34, 0.34, 0.4, 6),
+            new THREE.MeshPhongMaterial({ color: 0xb0bec5, shininess: 40 })
+        );
+        orbiter.add(bus);
+        var wingGeo = new THREE.BoxGeometry(2.0, 0.04, 0.55);
+        var wingMat = new THREE.MeshPhongMaterial({ color: 0x1a3a6b, shininess: 20 });
+        var wingL = new THREE.Mesh(wingGeo, wingMat); wingL.position.x = -1.25; orbiter.add(wingL);
+        var wingR = new THREE.Mesh(wingGeo, wingMat); wingR.position.x = 1.25; orbiter.add(wingR);
+        var dish = new THREE.Mesh(
+            new THREE.CircleGeometry(0.22, 14),
+            new THREE.MeshPhongMaterial({ color: 0xe0e0e0, side: THREE.DoubleSide })
+        );
+        dish.position.y = 0.28;
+        orbiter.add(dish);
+        scene.add(orbiter);
+
+        // Philae lander: small box on tripod legs.
+        var philae = new THREE.Group();
+        var philaeBody = new THREE.Mesh(
+            new THREE.BoxGeometry(0.26, 0.22, 0.26),
+            new THREE.MeshPhongMaterial({ color: 0xffd54f, shininess: 10 })
+        );
+        philae.add(philaeBody);
+        var legMat = new THREE.MeshPhongMaterial({ color: 0x8d8d8d });
+        [[-0.14, -0.18, -0.14], [0.14, -0.18, -0.14], [0, -0.18, 0.16]].forEach(function (p) {
+            var leg = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.22, 4), legMat);
+            leg.position.set(p[0], p[1], p[2]);
+            philae.add(leg);
+        });
+        scene.add(philae);
+
+        // Perihelion outgassing jets: small particle bursts from the nucleus.
+        var jetCount = shell.low ? 60 : 130;
+        var jetGeo = new THREE.BufferGeometry();
+        var jetPos = new Float32Array(jetCount * 3);
+        var jetVel = [];
+        var jetOrigins = [BIG_CENTER.clone().add(new THREE.Vector3(0, BIG_R * 0.9, 0.4)), SMALL_CENTER.clone().add(new THREE.Vector3(0.3, SMALL_R * 0.9, -0.3))];
+        for (var j = 0; j < jetCount; j++) {
+            var origin = jetOrigins[j % jetOrigins.length];
+            jetPos[j * 3] = origin.x; jetPos[j * 3 + 1] = origin.y; jetPos[j * 3 + 2] = origin.z;
+            jetVel.push(new THREE.Vector3((Math.random() - 0.5) * 0.02, 0.05 + Math.random() * 0.05, (Math.random() - 0.5) * 0.02));
+        }
+        jetGeo.setAttribute('position', new THREE.BufferAttribute(jetPos, 3));
+        var jetMat = new THREE.PointsMaterial({ color: 0xcfe8ff, size: 0.09, transparent: true, opacity: 0 });
+        var jets = new THREE.Points(jetGeo, jetMat);
+        scene.add(jets);
+
+        function orbitPointAtAngle(angle) {
+            return new THREE.Vector3(
+                Math.cos(angle) * T3D_RP_ORBIT_RADIUS,
+                Math.sin(angle * 0.5) * 1.6,
+                Math.sin(angle) * T3D_RP_ORBIT_RADIUS
+            );
+        }
+        var LAUNCH_FAR_POS = new THREE.Vector3(30, 9, 14);
+
+        function orbiterPosAt(pctRaw) {
+            var p = Math.max(0, Math.min(100, pctRaw));
+            if (p <= 20) {
+                var t = p / 20;
+                return LAUNCH_FAR_POS.clone().lerp(orbitPointAtAngle(T3D_RP_ORBIT_PHASE), t);
+            }
+            if (p >= 90) {
+                var t2 = (p - 90) / 10;
+                var angleAt90 = T3D_RP_ORBIT_PHASE + ((90 - 20) / 70) * Math.PI * 2 * T3D_RP_ORBIT_LOOPS;
+                return orbitPointAtAngle(angleAt90).lerp(DEIR_POS, t2);
+            }
+            var angle = T3D_RP_ORBIT_PHASE + ((p - 20) / 70) * Math.PI * 2 * T3D_RP_ORBIT_LOOPS;
+            return orbitPointAtAngle(angle);
+        }
+
+        var ATTACH_OFFSET = new THREE.Vector3(0, -0.45, 0);
+
+        function philaePosAt(pctRaw, orbiterAtPct) {
+            var p = Math.max(0, Math.min(100, pctRaw));
+            if (p < 40) { return orbiterAtPct.clone().add(ATTACH_OFFSET); }
+            if (p < 48) {
+                var t = (p - 40) / 8;
+                var sepStart = orbiterPosAt(40).add(ATTACH_OFFSET);
+                return sepStart.lerp(AGILKIA_POS, t);
+            }
+            if (p < 55) {
+                var t2 = (p - 48) / 7;
+                var base = AGILKIA_POS.clone().lerp(ABYDOS_POS, t2);
+                var up = base.clone().sub(SMALL_CENTER).normalize();
+                var bounceHeight = Math.sin(t2 * Math.PI) * 0.55;
+                return base.add(up.multiplyScalar(bounceHeight));
+            }
+            return ABYDOS_POS.clone();
+        }
+
+        function activeMilestone(pct) { return T3D_RP_MILESTONES[rpMilestoneIndexAt(pct)]; }
+
+        function panelHtml(progress) {
+            var m = activeMilestone(progress);
+            var rows = '';
+            for (var i = 0; i < T3D_RP_MILESTONES.length; i++) {
+                var row = T3D_RP_MILESTONES[i];
+                var active = (row === m);
+                rows += '<tr' + (active ? ' style="background:#fff3cd;font-weight:600;"' : '') + '>' +
+                    '<td>' + row.iso + '</td><td>' + row.label + '</td></tr>';
+            }
+            var jetNote = (progress >= 70 && progress <= 82)
+                ? '<p class="t3d-note"><b>Perihelion activity:</b> as the comet nears the Sun, solar heating drives stronger gas and dust jets from the nucleus - shown here as particle bursts.</p>'
+                : '';
+            return '<h3>Rosetta and Philae at comet 67P</h3>' +
+                '<table class="w3-table w3-bordered w3-small">' +
+                '<tr><td colspan="2"><b>Progress: ' + Math.round(progress) + '% - ' + m.label + '</b></td></tr>' +
+                rows +
+                '</table>' +
+                jetNote +
+                '<p class="t3d-note">Nucleus: two-lobed "contact binary" - large lobe about 4.1 x 3.3 x 1.8 km, small lobe about 2.6 x 2.3 x 1.8 km. Rosetta orbiter: about 2,900 kg with twin solar wings spanning 32 m (largest interplanetary solar arrays at the time). Philae lander: about 100 kg (21 kg of science instruments). Mission totals: 786 days at the comet, 7.9 billion km traveled, 100k+ images, 220 GB of data.</p>' +
+                '<p class="t3d-note">Educational approximation: nucleus shape, orbit path, descent arc, and landing-site positions are simplified for legibility - this is not a precomputed ephemeris or a contact-dynamics solver. The dates and figures above are the real published ESA figures.</p>';
+        }
+
+        var progress = 8;
+        var playing = true;
+
+        function applyProgress(pct) {
+            progress = Math.max(0, Math.min(100, pct));
+            var orbPos = orbiterPosAt(progress);
+            orbiter.position.copy(orbPos);
+            orbiter.lookAt(nucleusGroup.position);
+            var phPos = philaePosAt(progress, orbPos.clone());
+            philae.position.copy(phPos);
+            philae.visible = true;
+            var jetActive = (progress >= 70 && progress <= 82);
+            jetMat.opacity = jetActive ? 0.85 : 0;
+            if (jetActive) {
+                var pa = jetGeo.getAttribute('position');
+                for (var k = 0; k < jetCount; k++) {
+                    pa.array[k * 3] += jetVel[k].x;
+                    pa.array[k * 3 + 1] += jetVel[k].y;
+                    pa.array[k * 3 + 2] += jetVel[k].z;
+                    if (pa.array[k * 3 + 1] > jetOrigins[k % jetOrigins.length].y + 2.4) {
+                        var origin = jetOrigins[k % jetOrigins.length];
+                        pa.array[k * 3] = origin.x; pa.array[k * 3 + 1] = origin.y; pa.array[k * 3 + 2] = origin.z;
+                    }
+                }
+                pa.needsUpdate = true;
+            }
+            var slider = document.getElementById('t3dRpProgress');
+            var label = document.getElementById('t3dRpProgressLabel');
+            if (slider && Math.round(parseFloat(slider.value || '0')) !== Math.round(progress)) {
+                slider.value = String(Math.round(progress));
+            }
+            if (label) label.textContent = Math.round(progress) + '%';
+            t3dInfo(panelHtml(progress));
+            try { t3dSaveStore({ progress: progress }); } catch (e) {}
+        }
+
+        var ray = new THREE.Raycaster();
+        shell.onClick = function (e) {
+            ray.setFromCamera(shell.ndc(e), shell.camera);
+            var hits = ray.intersectObjects([bigLobe, smallLobe, orbiter, philae], true);
+            if (!hits.length) return;
+            t3dInfo(panelHtml(progress));
+        };
+
+        var store = t3dLoadStore();
+        if (typeof store.progress === 'number') progress = store.progress;
+        applyProgress(progress);
+
+        var playBtn = document.getElementById('t3dRpPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            playing = !playing;
+            playBtn.textContent = playing ? 'Pause' : 'Play';
+        });
+        var slider = document.getElementById('t3dRpProgress');
+        if (slider) slider.addEventListener('input', function () {
+            playing = false;
+            if (playBtn) playBtn.textContent = 'Play';
+            applyProgress(parseFloat(slider.value || '0'));
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Press Play/Pause or scrub the progress slider through the real 2004-2016 mission timeline.');
+        var spinAngle = 0;
+        return function animate(dt) {
+            spinAngle += (Math.PI * 2 / 22) * (dt / 1000);
+            nucleusGroup.rotation.y = spinAngle;
+            if (!playing) return;
+            var next = progress + (dt / 1000) * 2.6;
+            if (next >= 100) next = 0;
+            applyProgress(next);
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { rosettaphilae: 't3dRpControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = {
+                        rosettaphilae: { radius: 16, maxR: 60, minR: 5, phi: 1.05, theta: 0.6, targetY: 0 }
+                    };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dRosettaPhilae(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
