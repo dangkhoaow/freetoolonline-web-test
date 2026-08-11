@@ -17,6 +17,8 @@ export const INFO_ROUTES = new Set([
   '/guides/vehicle-recall-lookup-vs-alternatives.html',
   '/guides/vehicle-recall-lookup-step-by-step.html',
   '/guides/vehicle-recall-lookup-when.html',
+  // locale fanout (cycle 20260811-10): pt drain of vehicle-recall-lookup-step-by-step
+  '/guides/pt/vehicle-recall-lookup-step-by-step.html',
   '/guides/ai-translator-offline-when.html',
   '/guides/ai-translator-offline-step-by-step.html',
   '/guides/ai-translator-offline-vs-alternatives.html',
@@ -28065,6 +28067,7 @@ export const JSP_BY_ROUTE = {
   '/utility-tools/vehicle-recall-lookup.html': 'utility/vehicle-recall-lookup.jsp',
   '/guides/vehicle-recall-lookup-when.html': 'guide/vehicle-recall-lookup-when.jsp',
   '/guides/vehicle-recall-lookup-step-by-step.html': 'guide/vehicle-recall-lookup-step-by-step.jsp',
+  '/guides/pt/vehicle-recall-lookup-step-by-step.html': 'guide/pt/vehicle-recall-lookup-step-by-step.jsp',
   '/guides/vehicle-recall-lookup-vs-alternatives.html': 'guide/vehicle-recall-lookup-vs-alternatives.jsp',
   '/utility-tools/grammar-checker.html': 'utility/grammar-checker.jsp',
 };
