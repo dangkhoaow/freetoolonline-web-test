@@ -7410,30 +7410,17 @@ export const GUIDE_ROUTES = new Set([
   // this commit.
   // new-tool-discovery-loop-runbook fire182 (2026-07-16): image-to-text-ocr companion
   // guides (3 angles x EN + pt/es/vi/id/de) - locale bundle complete this commit.
-  // dinosaur-3d-guides-loop-runbook fire1 (2026-07-15): how-to-view-tyrannosaurus-rex-in-3d
-  // (EN + pt/es/vi/id/de) - first guide angle for the T. rex viewer.
-  '/guides/how-to-view-tyrannosaurus-rex-in-3d.html',
-  '/guides/pt/how-to-view-tyrannosaurus-rex-in-3d.html',
-  '/guides/es/how-to-view-tyrannosaurus-rex-in-3d.html',
-  '/guides/vi/how-to-view-tyrannosaurus-rex-in-3d.html',
-  '/guides/id/how-to-view-tyrannosaurus-rex-in-3d.html',
-  '/guides/de/how-to-view-tyrannosaurus-rex-in-3d.html',
   // dinosaur-3d-guides-loop-runbook fire2 (2026-07-15): tyrannosaurus-rex-size-comparison
-  // (EN + pt/es/vi/id/de) - size angle for the T. rex viewer.
+  // (EN + pt/es/vi/id/de) - size angle for the T. rex viewer. consolidation fire50
+  // (2026-08-12): this is now the SOLE guide family for the
+  // dinosaur-3d.tyrannosaurus-rex.viewer intent node - the fire1 how-to-view and
+  // fire3 vs-ar-apps families were folded into it and 301d (see ALIAS_ROUTES).
   '/guides/tyrannosaurus-rex-size-comparison.html',
   '/guides/pt/tyrannosaurus-rex-size-comparison.html',
   '/guides/es/tyrannosaurus-rex-size-comparison.html',
   '/guides/vi/tyrannosaurus-rex-size-comparison.html',
   '/guides/id/tyrannosaurus-rex-size-comparison.html',
   '/guides/de/tyrannosaurus-rex-size-comparison.html',
-  // dinosaur-3d-guides-loop-runbook fire3 (2026-07-15): tyrannosaurus-rex-3d-viewer-vs-ar-apps
-  // (EN + pt/es/vi/id/de) - vs-alternatives angle for the T. rex viewer.
-  '/guides/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html',
-  '/guides/pt/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html',
-  '/guides/es/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html',
-  '/guides/id/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html',
-  '/guides/de/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html',
   // dinosaur-3d-guides-loop-runbook fire4 (2026-07-15): how-to-view-mosasaurus-in-3d
   // (EN + pt/es/vi/id/de) - step-by-step angle for the Mosasaurus viewer.
   '/guides/how-to-view-mosasaurus-in-3d.html',
@@ -15266,6 +15253,27 @@ export const ALIAS_ROUTES = {
   '/guides/de/n-body-sandbox-vs-alternatives.html': '/guides/de/n-body-sandbox-when.html',
   '/guides/vi/n-body-sandbox-vs-alternatives.html': '/guides/vi/n-body-sandbox-when.html',
   '/guides/id/n-body-sandbox-vs-alternatives.html': '/guides/id/n-body-sandbox-when.html',
+  // consolidation fire50 (2026-08-12): retire the how-to-view-tyrannosaurus-rex-in-3d
+  // + tyrannosaurus-rex-3d-viewer-vs-ar-apps doorway families into the
+  // tyrannosaurus-rex-size-comparison keeper, locale-matched. Backlog item
+  // topical-map-dinosaur-3d.tyrannosaurus-rex.viewer (2 live excess families).
+  // Every unique fact folded into the keeper BEFORE the 301 - the four canvas
+  // controls with their label flips, the facts-panel diet + 1902 Montana/Barnum
+  // Brown naming history, the short-click part inspection, the 0.7 MB three.js
+  // cached / no-account / no-room-AR install profile, and the 6-row viewer vs
+  // phone-AR vs museum trade-off table.
+  '/guides/how-to-view-tyrannosaurus-rex-in-3d.html': '/guides/tyrannosaurus-rex-size-comparison.html',
+  '/guides/pt/how-to-view-tyrannosaurus-rex-in-3d.html': '/guides/pt/tyrannosaurus-rex-size-comparison.html',
+  '/guides/es/how-to-view-tyrannosaurus-rex-in-3d.html': '/guides/es/tyrannosaurus-rex-size-comparison.html',
+  '/guides/de/how-to-view-tyrannosaurus-rex-in-3d.html': '/guides/de/tyrannosaurus-rex-size-comparison.html',
+  '/guides/vi/how-to-view-tyrannosaurus-rex-in-3d.html': '/guides/vi/tyrannosaurus-rex-size-comparison.html',
+  '/guides/id/how-to-view-tyrannosaurus-rex-in-3d.html': '/guides/id/tyrannosaurus-rex-size-comparison.html',
+  '/guides/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html': '/guides/tyrannosaurus-rex-size-comparison.html',
+  '/guides/pt/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html': '/guides/pt/tyrannosaurus-rex-size-comparison.html',
+  '/guides/es/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html': '/guides/es/tyrannosaurus-rex-size-comparison.html',
+  '/guides/de/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html': '/guides/de/tyrannosaurus-rex-size-comparison.html',
+  '/guides/vi/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html': '/guides/vi/tyrannosaurus-rex-size-comparison.html',
+  '/guides/id/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html': '/guides/id/tyrannosaurus-rex-size-comparison.html',
   '/guides/planet-size-comparison-step-by-step.html': '/guides/planet-size-comparison-when.html',
   '/guides/pt/planet-size-comparison-step-by-step.html': '/guides/pt/planet-size-comparison-when.html',
   '/guides/es/planet-size-comparison-step-by-step.html': '/guides/es/planet-size-comparison-when.html',
@@ -19636,30 +19644,16 @@ export const JSP_BY_ROUTE = {
   // raptor archetype (same code path already shipped for velociraptor) - no new
   // archetype branch or feature flag required; the real, larger dromaeosaurid
   // that Jurassic Park's on-screen "Velociraptor" was actually sized on.
-  // dinosaur-3d-guides-loop-runbook fire1 (2026-07-15): how-to-view-tyrannosaurus-rex-in-3d
-  // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
-  '/guides/how-to-view-tyrannosaurus-rex-in-3d.html': 'guide/how-to-view-tyrannosaurus-rex-in-3d.jsp',
-  '/guides/pt/how-to-view-tyrannosaurus-rex-in-3d.html': 'guide/pt/how-to-view-tyrannosaurus-rex-in-3d.jsp',
-  '/guides/es/how-to-view-tyrannosaurus-rex-in-3d.html': 'guide/es/how-to-view-tyrannosaurus-rex-in-3d.jsp',
-  '/guides/vi/how-to-view-tyrannosaurus-rex-in-3d.html': 'guide/vi/how-to-view-tyrannosaurus-rex-in-3d.jsp',
-  '/guides/id/how-to-view-tyrannosaurus-rex-in-3d.html': 'guide/id/how-to-view-tyrannosaurus-rex-in-3d.jsp',
-  '/guides/de/how-to-view-tyrannosaurus-rex-in-3d.html': 'guide/de/how-to-view-tyrannosaurus-rex-in-3d.jsp',
   // dinosaur-3d-guides-loop-runbook fire2 (2026-07-15): tyrannosaurus-rex-size-comparison
-  // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
+  // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate). consolidation
+  // fire50 (2026-08-12): sole surviving guide family for this intent node - the
+  // fire1 how-to-view + fire3 vs-ar-apps families folded in here and 301d.
   '/guides/tyrannosaurus-rex-size-comparison.html': 'guide/tyrannosaurus-rex-size-comparison.jsp',
   '/guides/pt/tyrannosaurus-rex-size-comparison.html': 'guide/pt/tyrannosaurus-rex-size-comparison.jsp',
   '/guides/es/tyrannosaurus-rex-size-comparison.html': 'guide/es/tyrannosaurus-rex-size-comparison.jsp',
   '/guides/vi/tyrannosaurus-rex-size-comparison.html': 'guide/vi/tyrannosaurus-rex-size-comparison.jsp',
   '/guides/id/tyrannosaurus-rex-size-comparison.html': 'guide/id/tyrannosaurus-rex-size-comparison.jsp',
   '/guides/de/tyrannosaurus-rex-size-comparison.html': 'guide/de/tyrannosaurus-rex-size-comparison.jsp',
-  // dinosaur-3d-guides-loop-runbook fire3 (2026-07-15): tyrannosaurus-rex-3d-viewer-vs-ar-apps
-  // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
-  '/guides/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html': 'guide/tyrannosaurus-rex-3d-viewer-vs-ar-apps.jsp',
-  '/guides/pt/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html': 'guide/pt/tyrannosaurus-rex-3d-viewer-vs-ar-apps.jsp',
-  '/guides/es/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html': 'guide/es/tyrannosaurus-rex-3d-viewer-vs-ar-apps.jsp',
-  '/guides/vi/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html': 'guide/vi/tyrannosaurus-rex-3d-viewer-vs-ar-apps.jsp',
-  '/guides/id/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html': 'guide/id/tyrannosaurus-rex-3d-viewer-vs-ar-apps.jsp',
-  '/guides/de/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html': 'guide/de/tyrannosaurus-rex-3d-viewer-vs-ar-apps.jsp',
   // dinosaur-3d-guides-loop-runbook fire4 (2026-07-15): how-to-view-mosasaurus-in-3d
   // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
   '/guides/how-to-view-mosasaurus-in-3d.html': 'guide/how-to-view-mosasaurus-in-3d.jsp',
@@ -30172,7 +30166,7 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   "/guides/vi/type-ia-supernova-standard-candle-vs-alternatives.html",
   "/guides/vi/type-ia-supernova-standard-candle-when.html",
   "/guides/vi/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html",
-  "/guides/vi/tyrannosaurus-rex-size-comparison.html",
+  // consolidation fire50 (2026-08-12): vi tyrannosaurus-rex-size-comparison un-excluded (301 target).
   "/guides/vi/unix-timestamps-explained.html",
   "/guides/vi/unlock-zip-file-online.html",
   "/guides/vi/unlucky-crossing-vs-alternatives.html",
@@ -32813,7 +32807,9 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/pt/tylosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/pt/tylosaurus-size-comparison.html',
   '/guides/pt/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html',
-  '/guides/pt/tyrannosaurus-rex-size-comparison.html',
+  // consolidation fire50 (2026-08-12): pt/es/vi/id tyrannosaurus-rex-size-comparison
+  // un-excluded - they are no longer thin doorways but the 301 targets that absorb
+  // two retired guide families each, so they must be crawlable.
   '/guides/pt/unlucky-crossing-vs-alternatives.html',
   '/guides/pt/unlucky-crossing-when.html',
   '/guides/pt/utahraptor-3d-viewer-vs-ar-apps.html',
@@ -34039,7 +34035,11 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/es/touchscreen-test-when.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/touchscreen-test-step-by-step.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/touchscreen-test-vs-alternatives.html', // pruned 2026-07-29 zero-evidence es
-  '/guides/es/tyrannosaurus-rex-size-comparison.html', // pruned 2026-07-29 zero-evidence es
+  // consolidation fire50 (2026-08-12): es tyrannosaurus-rex-size-comparison un-excluded
+  // (was pruned 2026-07-29 as zero-evidence) - it is now the 301 target for
+  // /guides/es/how-to-view-tyrannosaurus-rex-in-3d.html, which carries the whole
+  // family's best measured demand (4 clicks / 158 impr 28d), so the target must
+  // be crawlable for that equity to land.
   '/guides/es/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/velociraptor-size-comparison.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/velociraptor-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence es
@@ -35428,7 +35428,7 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/id/mouse-test-buttons-scroll-when.html',
   '/guides/id/mouse-test-buttons-scroll-step-by-step.html',
   '/guides/id/mouse-test-buttons-scroll-vs-alternatives.html',
-  '/guides/id/tyrannosaurus-rex-size-comparison.html',
+  // consolidation fire50 (2026-08-12): id tyrannosaurus-rex-size-comparison un-excluded (301 target).
   '/guides/id/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html',
   '/guides/id/mosasaurus-size-comparison.html',
   '/guides/id/mosasaurus-3d-viewer-vs-ar-apps.html',
