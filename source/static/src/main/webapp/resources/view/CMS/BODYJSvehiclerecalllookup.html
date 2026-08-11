@@ -1,0 +1,287 @@
+<script>
+    // Vehicle-recall-lookup archetype skeleton (vehicle-recall-lookup) - live-data class,
+    // no upload, no backend, no vendored lib. Registry Gate-H entry:
+    // vehicle_recall_lookup_nhtsa. Keyless, CORS-enabled, US-official
+    // government APIs only: api.nhtsa.gov recalls-by-vehicle + the vPIC VIN
+    // decoder (vpic.nhtsa.dot.gov). Mirrors the wildfire-map / earthquake
+    // live-data shape (fire703/fire723): on-load default example lookup as
+    // the zero-interaction G16 path, then reader-driven lookups by VIN or by
+    // year/make/model. HONESTY NOTE: the query IS sent to the official US
+    // government NHTSA API (never to this site's servers) - the page states
+    // that plainly and never claims "never leaves your browser".
+    //
+    // Framework contract: bootstrap in doAfterPageRendered() (called for
+    // EVERY page after base-script load). Do NOT touch the DOM at top
+    // level. In-browser tool => no upload widget.
+
+    web.localUpload = false;
+
+    var VR_RECALLS_URL = 'https://api.nhtsa.gov/recalls/recallsByVehicle';
+    var VR_VPIC_DECODE_URL = 'https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues/';
+    var VR_VPIC_MODELS_URL = 'https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/';
+
+    // On-load example (clearly labeled on-page): a common vehicle with
+    // known open campaigns so the reader sees the real output shape
+    // before typing anything (G16 zero-interaction render).
+    var VR_EXAMPLE = { year: '2020', make: 'Toyota', model: 'Camry' };
+
+    var VR_COMMON_MAKES = [
+        'Acura', 'Audi', 'BMW', 'Buick', 'Cadillac', 'Chevrolet', 'Chrysler',
+        'Dodge', 'Ford', 'GMC', 'Honda', 'Hyundai', 'Infiniti', 'Jeep', 'Kia',
+        'Lexus', 'Lincoln', 'Mazda', 'Mercedes-Benz', 'Mitsubishi', 'Nissan',
+        'Ram', 'Subaru', 'Tesla', 'Toyota', 'Volkswagen', 'Volvo'
+    ];
+
+    function vrEsc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+        });
+    }
+
+    function vrStatus(root, msg, isError) {
+        var el = root.querySelector('#vrStatus');
+        if (!el) return;
+        el.style.color = isError ? '#b00020' : '#555';
+        el.textContent = msg;
+    }
+
+    function vrFetchJson(url) {
+        return fetch(url, { headers: { 'Accept': 'application/json' } }).then(function (r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        });
+    }
+
+    function vrFlagBadges(rec) {
+        var out = '';
+        if (rec.parkIt) {
+            out += '<span style="display:inline-block;background:#b00020;color:#fff;border-radius:3px;padding:1px 8px;margin:2px 6px 2px 0;font-size:0.85em;font-weight:600;">Do not drive (park it)</span>';
+        }
+        if (rec.parkOutSide) {
+            out += '<span style="display:inline-block;background:#ef6c00;color:#fff;border-radius:3px;padding:1px 8px;margin:2px 6px 2px 0;font-size:0.85em;font-weight:600;">Park outside (fire risk)</span>';
+        }
+        if (rec.overTheAirUpdate) {
+            out += '<span style="display:inline-block;background:#2e7d32;color:#fff;border-radius:3px;padding:1px 8px;margin:2px 6px 2px 0;font-size:0.85em;font-weight:600;">Over-the-air update</span>';
+        }
+        return out;
+    }
+
+    function vrRenderResults(root, data, queryLabel, isExample) {
+        var listEl = root.querySelector('#vrResults');
+        if (!listEl) return;
+        var recs = (data && data.results) ? data.results : [];
+        var head = '';
+        if (isExample) {
+            head += '<p style="color:#777;font-size:0.9em;margin:8px 0 2px;">Example lookup so you can see what results look like - run your own vehicle above.</p>';
+        }
+        if (!recs.length) {
+            listEl.innerHTML = head +
+                '<div style="border:1px solid #c8e6c9;background:#f1f8e9;border-radius:4px;padding:10px 14px;margin-top:8px;">' +
+                '<b>No open recall campaigns found for ' + vrEsc(queryLabel) + '.</b> ' +
+                'NHTSA lists no active safety campaign matching that query. Double-check the spelling of the make and model, and confirm on <a href="https://www.nhtsa.gov/recalls" target="_blank" rel="noopener">nhtsa.gov/recalls</a> - new campaigns are added continuously.' +
+                '</div>';
+            return;
+        }
+        var html = head + '<p style="margin:10px 0 4px;"><b>' + recs.length + ' recall campaign' + (recs.length === 1 ? '' : 's') + '</b> on file for ' + vrEsc(queryLabel) + ', newest first:</p>';
+        var sorted = recs.slice().sort(function (a, b) {
+            function ts(r) {
+                var m = String(r.ReportReceivedDate || '').match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+                return m ? new Date(+m[3], +m[1] - 1, +m[2]).getTime() : 0;
+            }
+            return ts(b) - ts(a);
+        });
+        for (var i = 0; i < sorted.length; i++) {
+            var r = sorted[i];
+            html += '<div style="border:1px solid #e0e0e0;border-left:4px solid ' + (r.parkIt ? '#b00020' : (r.parkOutSide ? '#ef6c00' : '#1a73e8')) + ';border-radius:4px;padding:10px 14px;margin-top:10px;">';
+            html += '<div style="font-weight:600;">' + vrEsc(r.Component || 'Component not stated') + '</div>';
+            html += '<div style="color:#777;font-size:0.88em;margin:2px 0 4px;">Campaign ' + vrEsc(r.NHTSACampaignNumber || '-') + (r.ReportReceivedDate ? ' - reported ' + vrEsc(r.ReportReceivedDate) : '') + (r.Manufacturer ? ' - ' + vrEsc(r.Manufacturer) : '') + '</div>';
+            var badges = vrFlagBadges(r);
+            if (badges) html += '<div>' + badges + '</div>';
+            if (r.Summary) html += '<p style="margin:6px 0 0;"><b>Problem:</b> ' + vrEsc(r.Summary) + '</p>';
+            if (r.Consequence) html += '<p style="margin:6px 0 0;"><b>Risk:</b> ' + vrEsc(r.Consequence) + '</p>';
+            if (r.Remedy) html += '<p style="margin:6px 0 0;"><b>Fix:</b> ' + vrEsc(r.Remedy) + '</p>';
+            html += '</div>';
+        }
+        html += '<p style="color:#777;font-size:0.9em;margin-top:8px;">Recall repairs are performed free of charge by the manufacturer\'s authorized dealers. Data source: NHTSA (US market vehicles).</p>';
+        listEl.innerHTML = html;
+    }
+
+    function vrLookupByVehicle(root, year, make, model, isExample) {
+        var y = String(year || '').trim(), mk = String(make || '').trim(), md = String(model || '').trim();
+        if (!y || !mk || !md) {
+            vrStatus(root, 'Pick a year and type the make and model, then press Look up recalls.', true);
+            return;
+        }
+        vrStatus(root, 'Checking NHTSA recall campaigns for ' + y + ' ' + mk + ' ' + md + '...');
+        root.querySelector('#vrResults').innerHTML = '';
+        var url = VR_RECALLS_URL + '?make=' + encodeURIComponent(mk) + '&model=' + encodeURIComponent(md) + '&modelYear=' + encodeURIComponent(y);
+        vrFetchJson(url).then(function (data) {
+            if (data && data.error) throw new Error('API error');
+            vrStatus(root, 'Last checked: ' + new Date().toLocaleString() + ' (source: api.nhtsa.gov)');
+            vrRenderResults(root, data, y + ' ' + mk + ' ' + md, !!isExample);
+        }).catch(function (e) {
+            vrStatus(root, 'Could not reach the NHTSA recall service: ' + (e && e.message ? e.message : String(e)) + '. Try again in a moment.', true);
+        });
+    }
+
+    function vrLookupByVin(root) {
+        var vinInput = root.querySelector('#vrVinInput');
+        var vin = vinInput ? String(vinInput.value || '').trim().toUpperCase() : '';
+        if (!/^[A-HJ-NPR-Z0-9]{17}$/.test(vin)) {
+            vrStatus(root, 'A VIN is exactly 17 letters and digits (letters I, O and Q are never used). Check the plate at the base of the windshield or the driver-door jamb.', true);
+            return;
+        }
+        vrStatus(root, 'Decoding the VIN with the official NHTSA vPIC service...');
+        root.querySelector('#vrResults').innerHTML = '';
+        vrFetchJson(VR_VPIC_DECODE_URL + encodeURIComponent(vin) + '?format=json').then(function (data) {
+            var res = (data && data.Results && data.Results[0]) ? data.Results[0] : {};
+            var mk = String(res.Make || '').trim();
+            var md = String(res.Model || '').trim();
+            var y = String(res.ModelYear || '').trim();
+            if (!mk || !md || !y) {
+                throw new Error('The VIN decoded without a usable make/model/year - re-check the 17 characters');
+            }
+            var decEl = root.querySelector('#vrVinDecoded');
+            if (decEl) {
+                decEl.innerHTML = 'Decoded: <b>' + vrEsc(y) + ' ' + vrEsc(mk) + ' ' + vrEsc(md) + '</b>';
+            }
+            vrLookupByVehicle(root, y, mk, md, false);
+        }).catch(function (e) {
+            vrStatus(root, 'VIN decode failed: ' + (e && e.message ? e.message : String(e)), true);
+        });
+    }
+
+    function vrPopulateYears(root) {
+        var sel = root.querySelector('#vrYearSelect');
+        if (!sel) return;
+        var maxYear = new Date().getFullYear() + 1;
+        var html = '';
+        for (var y = maxYear; y >= 1980; y--) {
+            html += '<option value="' + y + '"' + (String(y) === VR_EXAMPLE.year ? ' selected' : '') + '>' + y + '</option>';
+        }
+        sel.innerHTML = html;
+    }
+
+    function vrPopulateMakeDatalist(root) {
+        var dl = root.querySelector('#vrMakeList');
+        if (!dl) return;
+        var html = '';
+        for (var i = 0; i < VR_COMMON_MAKES.length; i++) {
+            html += '<option value="' + vrEsc(VR_COMMON_MAKES[i]) + '"></option>';
+        }
+        dl.innerHTML = html;
+    }
+
+    function vrRefreshModelDatalist(root) {
+        var makeInput = root.querySelector('#vrMakeInput');
+        var yearSel = root.querySelector('#vrYearSelect');
+        var dl = root.querySelector('#vrModelList');
+        if (!makeInput || !yearSel || !dl) return;
+        var mk = String(makeInput.value || '').trim();
+        var y = String(yearSel.value || '').trim();
+        if (!mk || !y) return;
+        vrFetchJson(VR_VPIC_MODELS_URL + encodeURIComponent(mk) + '/modelyear/' + encodeURIComponent(y) + '?format=json').then(function (data) {
+            var rows = (data && data.Results) ? data.Results : [];
+            var html = '';
+            for (var i = 0; i < rows.length && i < 200; i++) {
+                if (rows[i] && rows[i].Model_Name) html += '<option value="' + vrEsc(rows[i].Model_Name) + '"></option>';
+            }
+            dl.innerHTML = html;
+        }).catch(function () {
+            // Model suggestions are a convenience only - free text still works.
+        });
+    }
+
+    function vrRenderExplainer() {
+        var flags = [
+            ['Do not drive (park it)', 'NHTSA and the manufacturer say the vehicle is unsafe to drive until the recall repair is done. Arrange the fix immediately; dealers can often tow it in.'],
+            ['Park outside (fire risk)', 'The defect can cause a fire even while parked and off. Park away from buildings and other vehicles until repaired.'],
+            ['Over-the-air update', 'The fix arrives as a software update the vehicle installs itself - no dealer visit needed for that campaign.']
+        ];
+        var out = '<table style="border-collapse:collapse;margin-top:8px;font-size:0.92em;"><thead><tr><th style="text-align:left;padding:4px 8px;">Flag</th><th style="text-align:left;padding:4px 8px;">What it means for you</th></tr></thead><tbody>';
+        for (var i = 0; i < flags.length; i++) {
+            out += '<tr><td style="padding:4px 8px;font-weight:600;vertical-align:top;white-space:nowrap;">' + flags[i][0] + '</td><td style="padding:4px 8px;">' + flags[i][1] + '</td></tr>';
+        }
+        out += '</tbody></table>';
+        out += '<div style="font-weight:bold;margin-top:12px;">If your vehicle has an open recall</div>' +
+            '<ol style="margin:6px 0 0 18px;padding:0;">' +
+            '<li>Call a dealer authorized for your brand and mention the campaign number shown above.</li>' +
+            '<li>Book the repair - the remedy is free of charge by US federal law, including parts and labor.</li>' +
+            '<li>If the flag says do-not-drive or park-outside, follow it before the appointment, not after.</li>' +
+            '<li>Keep the paperwork; it matters at resale and for any related damage claims.</li>' +
+            '</ol>' +
+            '<p style="font-size:0.92em;color:#555;margin-top:8px;">This page checks United States market vehicles against NHTSA campaigns. It does not cover manufacturer service bulletins (TSBs) or other countries\' recall systems, and it is not a substitute for the official letters manufacturers mail to registered owners - confirm anything important at <a href="https://www.nhtsa.gov/recalls" target="_blank" rel="noopener">nhtsa.gov/recalls</a>. Your VIN or vehicle query goes only to the official US government NHTSA API, never to this site\'s servers, and this page does not store it.</p>';
+        return out;
+    }
+
+    function vrSetMode(root, mode) {
+        var vinPanel = root.querySelector('#vrVinPanel');
+        var vehPanel = root.querySelector('#vrVehiclePanel');
+        var vinTab = root.querySelector('#vrModeVin');
+        var vehTab = root.querySelector('#vrModeVehicle');
+        var isVin = mode === 'vin';
+        if (vinPanel) vinPanel.style.display = isVin ? '' : 'none';
+        if (vehPanel) vehPanel.style.display = isVin ? 'none' : '';
+        if (vinTab) vinTab.className = isVin ? 'w3-button w3-blue' : 'w3-button w3-light-grey';
+        if (vehTab) vehTab.className = isVin ? 'w3-button w3-light-grey' : 'w3-button w3-blue';
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('vehicleRecallTool');
+        if (!root) return; // not a vehicle-recall page
+        try {
+            vrPopulateYears(root);
+            vrPopulateMakeDatalist(root);
+
+            var explainBox = root.querySelector('#vrExplainer');
+            if (explainBox) explainBox.innerHTML = vrRenderExplainer();
+
+            var makeInput = root.querySelector('#vrMakeInput');
+            var yearSel = root.querySelector('#vrYearSelect');
+            var lookupBtn = root.querySelector('#vrLookupBtn');
+            var vinBtn = root.querySelector('#vrVinBtn');
+            var vinInput = root.querySelector('#vrVinInput');
+            var modelInput = root.querySelector('#vrModelInput');
+            var vehTab = root.querySelector('#vrModeVehicle');
+            var vinTab = root.querySelector('#vrModeVin');
+
+            if (makeInput) {
+                makeInput.value = VR_EXAMPLE.make;
+                makeInput.addEventListener('change', function () { vrRefreshModelDatalist(root); });
+            }
+            if (modelInput) modelInput.value = VR_EXAMPLE.model;
+            if (yearSel) yearSel.addEventListener('change', function () { vrRefreshModelDatalist(root); });
+
+            if (vehTab) vehTab.addEventListener('click', function () { vrSetMode(root, 'vehicle'); });
+            if (vinTab) vinTab.addEventListener('click', function () { vrSetMode(root, 'vin'); });
+
+            if (lookupBtn) {
+                lookupBtn.addEventListener('click', function () {
+                    var dec = root.querySelector('#vrVinDecoded');
+                    if (dec) dec.innerHTML = '';
+                    vrLookupByVehicle(root,
+                        yearSel ? yearSel.value : '',
+                        makeInput ? makeInput.value : '',
+                        modelInput ? modelInput.value : '',
+                        false);
+                });
+            }
+            if (vinBtn) vinBtn.addEventListener('click', function () { vrLookupByVin(root); });
+            if (vinInput) {
+                vinInput.addEventListener('keydown', function (ev) {
+                    if (ev.key === 'Enter') { ev.preventDefault(); vrLookupByVin(root); }
+                });
+            }
+
+            vrSetMode(root, 'vehicle');
+            vrRefreshModelDatalist(root);
+
+            // Always render SOMETHING visible on load (G16) - the labeled
+            // example lookup, so the page never shows a blank panel before
+            // the reader interacts.
+            vrLookupByVehicle(root, VR_EXAMPLE.year, VR_EXAMPLE.make, VR_EXAMPLE.model, true);
+        } catch (e) {
+            root.innerHTML = '<p style="color:#b00020;">Could not start the tool: ' + vrEsc(e && e.message ? e.message : String(e)) + '</p>';
+        }
+    }
+</script>

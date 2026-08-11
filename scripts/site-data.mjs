@@ -14,6 +14,9 @@ export const DEFAULT_BGS_COLLECTION = '[]';
 export const DEFAULT_IO_INFOS = '[]';
 
 export const INFO_ROUTES = new Set([
+  '/guides/vehicle-recall-lookup-vs-alternatives.html',
+  '/guides/vehicle-recall-lookup-step-by-step.html',
+  '/guides/vehicle-recall-lookup-when.html',
   '/guides/ai-translator-offline-when.html',
   '/guides/ai-translator-offline-step-by-step.html',
   '/guides/ai-translator-offline-vs-alternatives.html',
@@ -15527,6 +15530,7 @@ export const ALIAS_ROUTES = {
   '/text-summarizer.html': '/utility-tools/text-summarizer.html',
   '/subtitle-generator.html': '/video-tools/subtitle-generator.html',
   '/ai-translator.html': '/utility-tools/ai-translator.html',
+  '/vehicle-recall-lookup.html': '/utility-tools/vehicle-recall-lookup.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -28020,6 +28024,10 @@ export const JSP_BY_ROUTE = {
   '/guides/de/ai-translator-offline-when.html': 'guide/de/ai-translator-offline-when.jsp',
   '/guides/de/ai-translator-offline-step-by-step.html': 'guide/de/ai-translator-offline-step-by-step.jsp',
   '/guides/de/ai-translator-offline-vs-alternatives.html': 'guide/de/ai-translator-offline-vs-alternatives.jsp',
+  '/utility-tools/vehicle-recall-lookup.html': 'utility/vehicle-recall-lookup.jsp',
+  '/guides/vehicle-recall-lookup-when.html': 'guide/vehicle-recall-lookup-when.jsp',
+  '/guides/vehicle-recall-lookup-step-by-step.html': 'guide/vehicle-recall-lookup-step-by-step.jsp',
+  '/guides/vehicle-recall-lookup-vs-alternatives.html': 'guide/vehicle-recall-lookup-vs-alternatives.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
