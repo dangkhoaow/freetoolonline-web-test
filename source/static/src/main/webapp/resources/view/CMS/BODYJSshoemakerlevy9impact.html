@@ -1,0 +1,522 @@
+<script>
+    // 3D scene archetype skeleton (shoemaker-levy-9-impact) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side.
+    // Built LEAN from the shared t3d* skeleton - ONE scene only. All geometry
+    // is procedural - no model files, no textures fetched.
+    //
+    // EDUCATIONAL APPROXIMATION - this replays the real 1992-1994 Comet
+    // Shoemaker-Levy 9 / Jupiter impact story as a compressed teaching
+    // timeline, not a physics simulation and not an ephemeris. The fragment
+    // train's incoming path, its "string of pearls" spacing, and the
+    // impact-scar longitude spread on Jupiter are schematic/compressed for
+    // legibility. ONLY Fragment G's scar is rendered to real relative scale
+    // against Jupiter's true equatorial radius (the one fragment with a
+    // specific, well-published multi-ring scar size); the other 10 named
+    // fragment scars are schematic markers, not claimed to be scaled to
+    // their real (largely unpublished per-fragment) sizes.
+    //
+    // Published figures (NASA/JPL + Hubble Space Telescope observations,
+    // cross-checked via WebSearch 2026-08-11):
+    //   - Discovery: night of 1993-03-24, by Carolyn Shoemaker, Eugene
+    //     Shoemaker, and David Levy, using the 0.4 m Schmidt telescope at
+    //     Palomar Observatory. First comet ever found orbiting a planet
+    //     rather than the Sun - likely captured by Jupiter's gravity
+    //     20-30 years earlier.
+    //   - Tidal breakup: 1992-07-07 close approach to Jupiter, passing
+    //     about 40,000 km above the cloud tops - inside Jupiter's Roche
+    //     limit (well within Jupiter's ~71,492 km equatorial radius).
+    //     Tidal forces tore the nucleus into at least 21 discrete
+    //     fragments, named A through W (I and O skipped).
+    //   - Fragment sizes: the largest fragments (G, K, L) are estimated
+    //     over 1 km across; low bulk density (about 0.25 g/cm^3), a
+    //     loosely-bound rubble pile.
+    //   - Impact week: 1994-07-16 through 1994-07-22, all on Jupiter's
+    //     southern hemisphere (about 44 deg S, far side from Earth),
+    //     entering at about 60 km/s (216,000 km/h). 11 of the ~21 named
+    //     fragments have individually published predicted impact times
+    //     (JPL "Predicted Impact Parameters for Comet Shoemaker-Levy 9"):
+    //     A 07-16 ~20:11 UTC, D 07-17 ~11:54 UTC, G 07-18 ~07:30 UTC,
+    //     H 07-18 ~19:32 UTC, K 07-19 ~10:21 UTC, L 07-19 ~22:17 UTC,
+    //     Q1 07-20 ~20:12 UTC, R 07-21 ~05:33 UTC, S 07-21 ~15:15 UTC,
+    //     V 07-22 ~04:22 UTC, W 07-22 ~08:05 UTC (final impact, imaged
+    //     directly by the Galileo spacecraft, then en route to Jupiter).
+    //   - Fragment G (1994-07-18): the most energetic single impact,
+    //     released energy estimated at about 6 million megatons of TNT
+    //     (about 600x the world's nuclear arsenals), a fireball near
+    //     24,000 K, and a three-part scar: a central dark spot 2,500 km
+    //     across, surrounded by a thin ring 7,500 km across, with a
+    //     thick outer ring whose inner edge spans about 12,000 km -
+    //     comparable to Earth's diameter (about 12,742 km).
+    //   - The dark scars remained visible for months, briefly more
+    //     prominent than Jupiter's Great Red Spot, and this was the
+    //     first collision between two Solar System bodies ever directly
+    //     predicted and observed.
+    //
+    // Distinct from every other named-event/mission page on this site
+    // (dart-asteroid-deflection, chelyabinsk-meteor, torino-impact-hazard-
+    // scale, meteor-airburst-size-comparison, roche-limit, comet-orbit) -
+    // this is the only page teaching the one directly-observed planetary-
+    // scale cometary impact train.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'shoemaker-levy-9-impact';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'sl9impact'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 50, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0, moved = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY; moved = 0;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function (e) {
+            var wasClick = moved < 8;
+            dragging = false;
+            if (wasClick && shell.onClick) { shell.onClick(e); }
+        });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            moved += Math.abs(dx) + Math.abs(dy);
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR);
+        }, { passive: false });
+        var pinch = null;
+        host.addEventListener('touchstart', function (e) {
+            if (e.touches.length === 2) {
+                pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            }
+        }, { passive: true });
+        host.addEventListener('touchmove', function (e) {
+            if (e.touches.length === 2 && pinch) {
+                var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                pinch = d;
+            }
+        }, { passive: true });
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, onClick: null,
+            ndc: function (e) {
+                var r = renderer.domElement.getBoundingClientRect();
+                return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            },
+        };
+        return shell;
+    }
+
+    // Real published figures (see header comment). Jupiter's real
+    // equatorial radius is 71,492 km; the scene draws Jupiter at radius
+    // T3D_SL9_JUP_R = 8 world units, so T3D_SL9_KM_PER_UNIT converts real
+    // kilometers to scene units for anything drawn genuinely to-scale
+    // (Fragment G's scar rings and the Earth-size overlay).
+    var T3D_SL9_JUP_R = 8;
+    var T3D_SL9_KM_PER_UNIT = T3D_SL9_JUP_R / 71492;
+    var T3D_SL9_EARTH_RADIUS_KM = 6371;
+
+    // Timeline milestones (percent of the 0-100 scrub). The 11 impact
+    // entries are the fragments with individually published predicted
+    // impact times (JPL "Predicted Impact Parameters for Comet Shoemaker-
+    // Levy 9") - real dates/times, out of the >=21 total named fragments.
+    var T3D_SL9_MILESTONES = [
+        { p: 0, iso: '1992-07-07', label: 'Tidal breakup inside Jupiter\'s Roche limit', kind: 'breakup' },
+        { p: 10, iso: '1993-03-24', label: 'Comet discovered at Palomar Observatory', kind: 'discovery' },
+        { p: 25, iso: '1994-07-16 ~20:11 UTC', label: 'Fragment A - first impact', kind: 'impact', letter: 'A' },
+        { p: 32, iso: '1994-07-17 ~11:54 UTC', label: 'Fragment D impact', kind: 'impact', letter: 'D' },
+        { p: 40, iso: '1994-07-18 ~07:30 UTC', label: 'Fragment G - largest impact (record scar)', kind: 'impact', letter: 'G' },
+        { p: 46, iso: '1994-07-18 ~19:32 UTC', label: 'Fragment H impact', kind: 'impact', letter: 'H' },
+        { p: 53, iso: '1994-07-19 ~10:21 UTC', label: 'Fragment K impact', kind: 'impact', letter: 'K' },
+        { p: 60, iso: '1994-07-19 ~22:17 UTC', label: 'Fragment L impact', kind: 'impact', letter: 'L' },
+        { p: 68, iso: '1994-07-20 ~20:12 UTC', label: 'Fragment Q1 impact', kind: 'impact', letter: 'Q1' },
+        { p: 75, iso: '1994-07-21 ~05:33 UTC', label: 'Fragment R impact', kind: 'impact', letter: 'R' },
+        { p: 82, iso: '1994-07-21 ~15:15 UTC', label: 'Fragment S impact', kind: 'impact', letter: 'S' },
+        { p: 90, iso: '1994-07-22 ~04:22 UTC', label: 'Fragment V impact', kind: 'impact', letter: 'V' },
+        { p: 100, iso: '1994-07-22 ~08:05 UTC', label: 'Fragment W - final impact (Galileo imaged it directly)', kind: 'impact', letter: 'W' }
+    ];
+    var T3D_SL9_IMPACTS = T3D_SL9_MILESTONES.filter(function (m) { return m.kind === 'impact'; });
+
+    function sl9MilestoneIndexAt(pct) {
+        var pts = T3D_SL9_MILESTONES, idx = 0;
+        for (var i = 0; i < pts.length; i++) { if (pct >= pts[i].p) idx = i; }
+        return idx;
+    }
+    function sl9ActiveMilestone(pct) { return T3D_SL9_MILESTONES[sl9MilestoneIndexAt(pct)]; }
+
+    function t3dShoemakerLevy9(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x02040c, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.34));
+        var fill = new THREE.DirectionalLight(0xfff3d0, 1.1);
+        fill.position.set(30, 22, 18);
+        scene.add(fill);
+
+        var SCOUNT = shell.low ? 260 : 600;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(50 + Math.random() * 120);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.5, sizeAttenuation: false })));
+
+        // Jupiter: procedural banded shader sphere (core three ShaderMaterial,
+        // no textures fetched, no addon needed).
+        var jupUniforms = { uTime: { value: 0 } };
+        var jupMat = new THREE.ShaderMaterial({
+            uniforms: jupUniforms,
+            vertexShader: [
+                'varying vec2 vUv;',
+                'varying vec3 vN;',
+                'void main(){',
+                '  vUv = uv;',
+                '  vN = normalize(normalMatrix * normal);',
+                '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);',
+                '}'
+            ].join('\n'),
+            fragmentShader: [
+                'uniform float uTime;',
+                'varying vec2 vUv;',
+                'varying vec3 vN;',
+                'void main(){',
+                '  float lat = vUv.y;',
+                '  float bands = 0.55 + 0.45 * sin((lat * 24.0) * 3.14159);',
+                '  vec3 dark = vec3(0.52, 0.35, 0.22);',
+                '  vec3 lite = vec3(0.90, 0.80, 0.62);',
+                '  vec3 col = mix(dark, lite, bands);',
+                '  float light = clamp(dot(vN, normalize(vec3(0.5,0.55,0.4))) * 0.55 + 0.45, 0.22, 1.0);',
+                '  gl_FragColor = vec4(col * light, 1.0);',
+                '}'
+            ].join('\n')
+        });
+        var jupiter = new THREE.Mesh(new THREE.SphereGeometry(T3D_SL9_JUP_R, 56, 40), jupMat);
+        scene.add(jupiter);
+
+        // Scar markers on Jupiter's southern hemisphere - real fact: all 1994
+        // impacts landed near 44 deg S; the longitude spacing below (a
+        // "string of pearls" chain, in real impact order) is compressed for
+        // legibility, not the real drift-with-rotation spacing.
+        var SCAR_LAT = -44;
+        var SCAR_LON_START = -35;
+        var SCAR_LON_STEP = 7;
+        var scarGroup = new THREE.Group();
+        scene.add(scarGroup);
+        function sphPos(radius, latDeg, lonDeg) {
+            var lat = latDeg * Math.PI / 180, lon = lonDeg * Math.PI / 180;
+            return new THREE.Vector3(
+                radius * Math.cos(lat) * Math.sin(lon),
+                radius * Math.sin(lat),
+                radius * Math.cos(lat) * Math.cos(lon)
+            );
+        }
+        var scarMeshes = [];
+        for (var si = 0; si < T3D_SL9_IMPACTS.length; si++) {
+            var im = T3D_SL9_IMPACTS[si];
+            var lon = SCAR_LON_START + si * SCAR_LON_STEP;
+            var pos = sphPos(T3D_SL9_JUP_R * 1.005, SCAR_LAT, lon);
+            var isG = im.letter === 'G';
+            // Fragment G rendered to real relative scale: a solid central
+            // spot (2,500 km diameter -> 1,250 km radius), a thin ring out
+            // to the published 7,500 km diameter (3,750 km radius), and a
+            // second ring starting at the published 12,000 km diameter
+            // inner edge (6,000 km radius) - comparable to Earth's diameter.
+            // The thick outer ring's own outer boundary has no published
+            // figure, so it is drawn with an arbitrary schematic width
+            // (never claimed as a specific number). Every other fragment is
+            // a schematic marker, not claimed to be scaled to its own
+            // (largely unpublished) individual scar size.
+            var rOuter = isG ? (6000 * T3D_SL9_KM_PER_UNIT) : 0.16;
+            var scarMat = new THREE.MeshBasicMaterial({ color: isG ? 0x1a1a1a : 0x33261a, transparent: true, opacity: 0 });
+            var scarRadius = isG ? (1250 * T3D_SL9_KM_PER_UNIT) : 0.16;
+            var scar = new THREE.Mesh(new THREE.CircleGeometry(scarRadius, 20), scarMat);
+            scar.position.copy(pos);
+            scar.lookAt(pos.clone().multiplyScalar(2));
+            scar.userData = { kind: 'scar', letter: im.letter, milestone: im };
+            scarGroup.add(scar);
+            var entry = { mesh: scar, milestone: im, rOuter: rOuter, isG: isG };
+            if (isG) {
+                var ringThin = new THREE.Mesh(
+                    new THREE.RingGeometry(1250 * T3D_SL9_KM_PER_UNIT, 3750 * T3D_SL9_KM_PER_UNIT, 24),
+                    new THREE.MeshBasicMaterial({ color: 0x4a3a28, transparent: true, opacity: 0 })
+                );
+                ringThin.position.copy(pos);
+                ringThin.lookAt(pos.clone().multiplyScalar(2));
+                scarGroup.add(ringThin);
+                var ringOuter = new THREE.Mesh(
+                    new THREE.RingGeometry(6000 * T3D_SL9_KM_PER_UNIT, 6600 * T3D_SL9_KM_PER_UNIT, 24),
+                    new THREE.MeshBasicMaterial({ color: 0x352a1e, transparent: true, opacity: 0 })
+                );
+                ringOuter.position.copy(pos);
+                ringOuter.lookAt(pos.clone().multiplyScalar(2));
+                scarGroup.add(ringOuter);
+                entry.ringMid = ringThin;
+                entry.ringOuter = ringOuter;
+            }
+            scarMeshes.push(entry);
+        }
+
+        // Incoming fragment train ("string of pearls") - each fragment
+        // travels from a shared far approach direction to its own scar spot,
+        // then vanishes on impact. Spacing along the train is compressed for
+        // legibility (the real chain stretched across roughly 1.1 million km
+        // by the time of impact).
+        var trainDir = new THREE.Vector3(0.62, 0.30, 0.72).normalize();
+        var FAR = 32;
+        var fragGroup = new THREE.Group();
+        scene.add(fragGroup);
+        var frags = [];
+        for (var fi = 0; fi < T3D_SL9_IMPACTS.length; fi++) {
+            var fim = T3D_SL9_IMPACTS[fi];
+            var farPos = trainDir.clone().multiplyScalar(FAR + fi * 1.1);
+            var scarEntry = scarMeshes[fi];
+            var mesh = new THREE.Mesh(
+                new THREE.SphereGeometry(0.22, 10, 8),
+                new THREE.MeshBasicMaterial({ color: 0x9e8f7a })
+            );
+            mesh.position.copy(farPos);
+            mesh.userData = { kind: 'fragment', letter: fim.letter, milestone: fim };
+            fragGroup.add(mesh);
+            frags.push({ mesh: mesh, milestone: fim, farPos: farPos, scarPos: scarEntry.mesh.position.clone() });
+        }
+
+        var earthOverlay = false;
+        var earthAnchor = new THREE.Vector3(T3D_SL9_JUP_R * 1.9, T3D_SL9_JUP_R * 0.55, 0);
+        var earthRing = new THREE.Mesh(
+            new THREE.RingGeometry(
+                (T3D_SL9_EARTH_RADIUS_KM * T3D_SL9_KM_PER_UNIT) - 0.05,
+                T3D_SL9_EARTH_RADIUS_KM * T3D_SL9_KM_PER_UNIT,
+                28
+            ),
+            new THREE.MeshBasicMaterial({ color: 0x4fa8e0, transparent: true, opacity: 0.85, side: THREE.DoubleSide })
+        );
+        earthRing.position.copy(earthAnchor);
+        earthRing.visible = false;
+        scene.add(earthRing);
+        var earthFill = new THREE.Mesh(
+            new THREE.CircleGeometry(T3D_SL9_EARTH_RADIUS_KM * T3D_SL9_KM_PER_UNIT, 28),
+            new THREE.MeshBasicMaterial({ color: 0x1d3a52, transparent: true, opacity: 0.35, side: THREE.DoubleSide })
+        );
+        earthFill.position.copy(earthAnchor);
+        earthFill.visible = false;
+        scene.add(earthFill);
+
+        var progress = 18;
+        var playing = true;
+
+        function panelHtml() {
+            var m = sl9ActiveMilestone(progress);
+            var rows = '';
+            for (var i2 = 0; i2 < T3D_SL9_MILESTONES.length; i2++) {
+                var row = T3D_SL9_MILESTONES[i2];
+                var active = (row === m);
+                rows += '<tr' + (active ? ' style="background:#fff3cd;font-weight:600;"' : '') + '>' +
+                    '<td>' + row.iso + '</td><td>' + row.label + '</td></tr>';
+            }
+            var gNote = progress >= 40
+                ? '<p class="t3d-note"><b>Fragment G\'s scar:</b> a central dark spot 2,500 km across inside a thin ring 7,500 km across, inside a thick outer ring whose inner edge spans about 12,000 km - comparable to Earth\'s diameter (about 12,742 km). Press "Earth-size overlay" to compare it directly.</p>'
+                : '';
+            return '<h3>Comet Shoemaker-Levy 9 hits Jupiter</h3>' +
+                '<p>Scrub the slider through the real 1992-1994 timeline: a comet torn apart by Jupiter\'s own gravity, then 11 of its named fragments striking the planet one by one in July 1994.</p>' +
+                '<table class="w3-table w3-bordered w3-small">' +
+                '<tr><td colspan="2"><b>Progress: ' + Math.round(progress) + '% - ' + m.label + '</b></td></tr>' +
+                rows +
+                '</table>' +
+                gNote +
+                '<p class="t3d-note">Impact speed was about 60 km/s (216,000 km/h); all impacts struck near 44 degrees south, the far side of Jupiter from Earth at the time. Fragment G alone released energy estimated at about 6 million megatons of TNT - about 600 times the world\'s nuclear arsenals.</p>' +
+                '<p class="t3d-note">Educational approximation: the fragment train\'s incoming path, spacing, and scar longitude spread are compressed for legibility - not a physics simulation or ephemeris. Only Fragment G\'s scar is drawn to Jupiter\'s real relative scale; the dates, times, and figures above are the real published values.</p>';
+        }
+
+        function applyProgress(pct) {
+            progress = Math.max(0, Math.min(100, pct));
+            for (var i3 = 0; i3 < frags.length; i3++) {
+                var fr = frags[i3];
+                var already = progress >= fr.milestone.p;
+                fr.mesh.visible = !already;
+                if (!already) {
+                    var u = Math.max(0, Math.min(1, (progress - 10) / Math.max(1, fr.milestone.p - 10)));
+                    var pos = fr.farPos.clone().lerp(fr.scarPos, u);
+                    pos.y += Math.sin(u * Math.PI) * 1.6;
+                    fr.mesh.position.copy(pos);
+                }
+            }
+            for (var i4 = 0; i4 < scarMeshes.length; i4++) {
+                var sc = scarMeshes[i4];
+                var revealed = progress >= sc.milestone.p;
+                sc.mesh.material.opacity = revealed ? (sc.isG ? 0.92 : 0.8) : 0;
+                if (sc.ringMid) { sc.ringMid.material.opacity = revealed ? 0.55 : 0; }
+                if (sc.ringOuter) { sc.ringOuter.material.opacity = revealed ? 0.4 : 0; }
+            }
+            earthRing.visible = earthOverlay;
+            earthFill.visible = earthOverlay;
+            var slider = document.getElementById('t3dSl9Progress');
+            var label = document.getElementById('t3dSl9ProgressLabel');
+            if (slider && Math.round(parseFloat(slider.value || '0')) !== Math.round(progress)) {
+                slider.value = String(Math.round(progress));
+            }
+            if (label) label.textContent = Math.round(progress) + '%';
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ progress: progress, earthOverlay: earthOverlay }); } catch (e) {}
+        }
+
+        var ray = new THREE.Raycaster();
+        shell.onClick = function (e) {
+            ray.setFromCamera(shell.ndc(e), shell.camera);
+            var targets = [jupiter].concat(scarMeshes.map(function (s) { return s.mesh; })).concat(frags.map(function (f) { return f.mesh; }));
+            var hits = ray.intersectObjects(targets, false);
+            if (!hits.length) return;
+            t3dInfo(panelHtml());
+        };
+
+        var store = t3dLoadStore();
+        if (typeof store.progress === 'number') progress = store.progress;
+        if (typeof store.earthOverlay === 'boolean') earthOverlay = store.earthOverlay;
+        applyProgress(progress);
+
+        var playBtn = document.getElementById('t3dSl9PlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            playing = !playing;
+            playBtn.textContent = playing ? 'Pause' : 'Play';
+        });
+        var slider = document.getElementById('t3dSl9Progress');
+        if (slider) slider.addEventListener('input', function () {
+            playing = false;
+            if (playBtn) playBtn.textContent = 'Play';
+            applyProgress(parseFloat(slider.value || '0'));
+        });
+        var earthBtn = document.getElementById('t3dSl9EarthBtn');
+        if (earthBtn) earthBtn.addEventListener('click', function () {
+            earthOverlay = !earthOverlay;
+            earthBtn.textContent = earthOverlay ? 'Hide Earth-size overlay' : 'Show Earth-size overlay';
+            applyProgress(progress);
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Press Play/Pause or scrub the progress slider through the real 1992-1994 impact timeline.');
+        return function animate(dt) {
+            jupUniforms.uTime.value += dt / 1000;
+            if (!playing) return;
+            var next = progress + (dt / 1000) * 2.6;
+            if (next >= 100) next = 0;
+            applyProgress(next);
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { sl9impact: 't3dSl9Controls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = {
+                        sl9impact: { radius: 30, maxR: 130, minR: 8, phi: 1.05, theta: 0.55, targetY: 0 }
+                    };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dShoemakerLevy9(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
