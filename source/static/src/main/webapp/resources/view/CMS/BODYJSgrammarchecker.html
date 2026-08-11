@@ -1,0 +1,717 @@
+<script>
+    // AI text-task archetype skeleton (grammar-checker) - browser-local summarize /
+    // paraphrase / grammar-fix. ONE skeleton serves the whole text-task family;
+    // the mode is dispatched from the slug (precedent: clock-timer skeleton):
+    //   'summar' -> summarize (length: bullets / short / detailed);
+    //   'paraphras'/'rewrit' -> paraphrase (tone: neutral/formal/casual/simpler);
+    //   'grammar'/'proofread' -> grammar-fix (corrected text + list of changes).
+    // First ship: text-summarizer; paraphrasing-tool / grammar-checker reuse it.
+    //
+    // THREE-TIER ENGINE LADDER (in order, each honestly labeled):
+    //   1. Chrome built-in AI when ALREADY on-device (no download): Summarizer /
+    //      Rewriter / Proofreader globals (2025+ spec) + legacy ai.summarizer
+    //      probe. Feature-detected + try/catch everywhere, presence NEVER
+    //      assumed; only availability 'available' activates the tier (a
+    //      'downloadable' state would trigger a silent model download).
+    //   2. WebLLM via https://esm.run/@mlc-ai/web-llm - engine idioms ported
+    //      from BODYJSprivateaichat.html / registry entry llm_webgpu_mlcai:
+    //      lazy import + model load ONLY on the explicit "Load model" click,
+    //      new webllm.MLCEngine() + engine.reload(modelId), determinate
+    //      progress via setInitProgressCallback, streaming chat.completions,
+    //      WebGPU preflight (navigator.gpu + requestAdapter), last model in
+    //      localStorage 'webllm-last-model' (SAME key as private-ai-chat, so
+    //      the browser weight cache is shared), 'Clear cached models' via
+    //      engine.clearCache(true). Model ids validated at runtime against
+    //      webllm.prebuiltAppConfig.model_list (fall back small-first), and
+    //      EVERY option's download size is derived from that same list
+    //      (vram_required_MB) - never hardcoded - so a restored id from the
+    //      shared cache key can never be pre-selected with no size shown.
+    //   3. No-AI fallback so the page is NEVER dead: plain-JS extractive
+    //      summarizer (frequency-scored sentence ranking, top-N sentences)
+    //      labeled "Basic extractive summary (no AI model)"; in paraphrase /
+    //      grammar modes tier 3 explains honestly that a model is required.
+    //
+    // STATUS LINE CONTRACT: the line has two clauses. "Output above: <engine>"
+    // names the engine that produced the output CURRENTLY on screen (tracked in
+    // lttLastOutputEngine, set wherever output is written); "ready: <engine>" is
+    // availability only. They are kept separate because the tier-1 probe is
+    // async - on Chrome it can resolve to "built-in browser AI" while the
+    // visible output is still the tier-3 sample demo.
+    //
+    // G16: on load with zero interaction the input is pre-filled with a
+    // ~110-word sample text containing deliberate common errors, and its
+    // PRECOMPUTED corrected version + change list renders immediately
+    // (labeled honestly as "corrected ahead of time") - real visible output
+    // with no model download. The precomputed pair only ever renders for the
+    // untouched built-in sample; any user text goes through the live tiers.
+    // 100% in-browser: no upload, no backend. Framework
+    // contract: bootstrap in doAfterPageRendered() (called for EVERY page
+    // after base-script load); do NOT touch the DOM at top level.
+
+    web.localUpload = false;
+
+    var LTT_SLUG = 'grammar-checker';
+    var LTT_LS_MODEL = 'webllm-last-model'; // shared with private-ai-chat (shared cache)
+    var LTT_MAX_CHARS = 8000;               // WebLLM-path input cap (small-model context)
+    var LTT_SYSTEM_PROMPT = 'You are a precise text-processing assistant running privately in the user browser. Follow the instruction exactly and output only the requested result.';
+
+    // Curated small-first models (ids from webllm prebuiltAppConfig; validated
+    // against the live model_list at runtime before any load). Only the id and a
+    // short human name live here - the DOWNLOAD SIZE is never hardcoded. Every
+    // option label (curated, restored from the SHARED localStorage key, or
+    // substituted by lttValidateModelId) gets its size derived at runtime from
+    // webllm.prebuiltAppConfig.model_list, so no option can offer a multi-GB
+    // download with no size on screen.
+    var LTT_WEBLLM_MODELS = [
+        { id: 'Llama-3.2-1B-Instruct-q4f16_1-MLC', label: 'Llama 3.2 1B (default)' },
+        { id: 'Llama-3.2-3B-Instruct-q4f16_1-MLC', label: 'Llama 3.2 3B' },
+        { id: 'Phi-3.5-mini-instruct-q4f16_1-MLC', label: 'Phi 3.5 mini' }
+    ];
+    var LTT_SIZE_UNKNOWN = 'size unknown - may be large';
+    var LTT_SIZE_PENDING = 'download size shown before the download starts';
+
+    var LTT_MODES = {
+        summarize: {
+            action: 'Summarize', optionLabel: 'Summary length',
+            options: [{ value: 'bullets', label: 'Key bullet points' }, { value: 'short', label: 'Short paragraph' }, { value: 'detailed', label: 'Detailed summary' }]
+        },
+        paraphrase: {
+            action: 'Paraphrase', optionLabel: 'Tone',
+            options: [{ value: 'neutral', label: 'Neutral' }, { value: 'formal', label: 'Formal' }, { value: 'casual', label: 'Casual' }, { value: 'simpler', label: 'Simpler wording' }]
+        },
+        grammar: { action: 'Check grammar', optionLabel: '', options: [] }
+    };
+
+    // ~110-word built-in sample with DELIBERATE common errors so the page
+    // shows a real, mode-appropriate output on load (G16). The corrected
+    // version below was authored ahead of time by fixing these known errors
+    // deterministically - the demo label says exactly that, so no engine is
+    // ever falsely credited with producing it.
+    var LTT_SAMPLE_TEXT = 'Me and my colleague was late to the meeting on monday because the train were delayed by nearly a hour. We should of checked the schedule more careful before leaving the office. When we arrived, the presentation had already began, and their was no seats left near the front. Each of the reports were missing it\'s summary page, to. The manager asked that we sends the corrected files by friday morning. Its important that everyone review they\'re own section before the deadline, however nobody have time this week. If the team would of planned better, this problems could of been avoid.';
+    var LTT_SAMPLE_CORRECTED = 'My colleague and I were late to the meeting on Monday because the train was delayed by nearly an hour. We should have checked the schedule more carefully before leaving the office. When we arrived, the presentation had already begun, and there were no seats left near the front. Each of the reports was missing its summary page, too. The manager asked that we send the corrected files by Friday morning. It\'s important that everyone review their own section before the deadline; however, nobody has time this week. If the team had planned better, these problems could have been avoided.\n\nChanges:\n- "Me and my colleague was" -> "My colleague and I were" (subject pronoun and verb agreement)\n- "monday" -> "Monday" (day names are capitalized)\n- "the train were" -> "the train was" (singular subject)\n- "a hour" -> "an hour" ("an" before a vowel sound)\n- "should of" -> "should have" ("of" is not a verb)\n- "more careful" -> "more carefully" (adverb modifies the verb)\n- "had already began" -> "had already begun" (past participle after "had")\n- "their was no seats" -> "there were no seats" ("there" introduces the clause; plural verb)\n- "it\'s summary page, to" -> "its summary page, too" (possessive "its"; "too" means "also")\n- "asked that we sends" -> "asked that we send" (base verb after "asked that")\n- "friday" -> "Friday" (day names are capitalized)\n- "Its important" -> "It\'s important" (contraction of "it is")\n- "they\'re own section" -> "their own section" (possessive "their")\n- "however nobody have" -> "; however, nobody has" (semicolon before "however"; singular verb)\n- "would of planned" -> "had planned" (past perfect in the if-clause)\n- "this problems could of been avoid" -> "these problems could have been avoided" (plural "these"; "could have"; past participle)';
+
+    var LTT_STOPWORDS = (function () {
+        var list = ('a an the and or but if of to in on at by for with from into as is are was were be been being it its ' +
+            'this that these those they them their he she his her we our you your i not no so do does did done have has ' +
+            'had will would can could than then there here when where which who whom what how why all each some most ' +
+            'more very up down out over under again back through between because while about also just only').split(' ');
+        var map = {};
+        for (var i = 0; i < list.length; i++) { map[list[i]] = 1; }
+        return map;
+    })();
+
+    // Engine state.
+    var lttEngine = null;         // webllm MLCEngine (created once)
+    var lttEngineHooked = false;  // init-progress callback attached
+    var lttLoadedModel = null;    // model id currently reloaded into the engine
+    var lttGenerating = false;
+    var lttProgressCb = null;     // rebound on every lttLoadModel call
+    var lttBuiltinOk = false;     // tier-1 availability (probed async on wire)
+    var lttBuiltinKind = null;    // 'new' | 'legacy'
+    var lttModelSizes = null;     // { model_id: '2.2 GB' } from prebuiltAppConfig; null = not read yet
+    var lttSizesPromise = null;   // in-flight prebuiltAppConfig read (once per page)
+    var lttLastOutputEngine = null; // engine that produced the output CURRENTLY on screen
+
+    // ---- Mode dispatch from slug ----------------------------------------------
+    function lttDetectMode(slug) {
+        var s = String(slug || '').toLowerCase();
+        if (/grammar|proofread/.test(s)) return 'grammar';
+        if (/paraphras|rewrit/.test(s)) return 'paraphrase';
+        return 'summarize'; // 'summar' + default
+    }
+
+    // ---- Pure text helpers (tier 3, no AI) --------------------------------------
+    function lttCountWords(s) { var t = String(s || '').trim(); return t ? t.split(/\s+/).length : 0; }
+
+    function lttSentences(text) {
+        var m = String(text || '').replace(/\s+/g, ' ').match(/[^.!?]+[.!?]+["')\]]*|[^.!?]+$/g) || [];
+        var out = [];
+        for (var i = 0; i < m.length; i++) { var s = m[i].replace(/^\s+|\s+$/g, ''); if (s) out.push(s); }
+        return out;
+    }
+
+    function lttWordList(s) {
+        var raw = String(s || '').toLowerCase().replace(/[^a-z0-9' ]+/g, ' ').split(' ');
+        var out = [];
+        for (var i = 0; i < raw.length; i++) {
+            var w = raw[i].replace(/^'+|'+$/g, '');
+            if (w.length >= 3 && !LTT_STOPWORDS[w]) out.push(w);
+        }
+        return out;
+    }
+
+    // Frequency-scored sentence ranking: score = sum of word frequencies,
+    // normalized by sqrt(sentence length); top-N re-ordered to document order.
+    function lttExtractiveSummary(text, maxSentences) {
+        var sents = lttSentences(text);
+        if (!sents.length) return [];
+        if (sents.length <= maxSentences) return sents.slice();
+        var freq = {}, i, j, ws;
+        for (i = 0; i < sents.length; i++) {
+            ws = lttWordList(sents[i]);
+            for (j = 0; j < ws.length; j++) { freq[ws[j]] = (freq[ws[j]] || 0) + 1; }
+        }
+        var scored = [];
+        for (i = 0; i < sents.length; i++) {
+            ws = lttWordList(sents[i]);
+            var total = 0;
+            for (j = 0; j < ws.length; j++) { total += freq[ws[j]] || 0; }
+            scored.push({ index: i, score: ws.length ? total / Math.sqrt(ws.length) : 0 });
+        }
+        scored.sort(function (a, b) { return b.score - a.score; });
+        var picked = scored.slice(0, maxSentences);
+        picked.sort(function (a, b) { return a.index - b.index; });
+        var out = [];
+        for (i = 0; i < picked.length; i++) { out.push(sents[picked[i].index]); }
+        return out;
+    }
+
+    // ---- Tier 1: Chrome built-in AI (Summarizer / Rewriter / Proofreader) -------
+    function lttBuiltinApi(mode) {
+        try {
+            if (mode === 'summarize' && typeof Summarizer !== 'undefined' && Summarizer && typeof Summarizer.availability === 'function') return Summarizer;
+            if (mode === 'paraphrase' && typeof Rewriter !== 'undefined' && Rewriter && typeof Rewriter.availability === 'function') return Rewriter;
+            if (mode === 'grammar' && typeof Proofreader !== 'undefined' && Proofreader && typeof Proofreader.availability === 'function') return Proofreader;
+        } catch (e) { void e; }
+        return null;
+    }
+
+    // cb(available:boolean, kind:'new'|'legacy'|null). Only 'available' (already
+    // on-device, nothing to download) activates tier 1.
+    function lttProbeBuiltin(mode, cb) {
+        var done = false;
+        function finish(ok, kind) { if (!done) { done = true; cb(!!ok, kind || null); } }
+        function legacyProbe() {
+            try {
+                if (mode === 'summarize' && typeof window !== 'undefined' && window.ai && window.ai.summarizer &&
+                    typeof window.ai.summarizer.capabilities === 'function') {
+                    window.ai.summarizer.capabilities()
+                        .then(function (c) { finish(c && c.available === 'readily', 'legacy'); })
+                        .catch(function () { finish(false, null); });
+                    return;
+                }
+            } catch (e) { void e; }
+            finish(false, null);
+        }
+        var api = lttBuiltinApi(mode);
+        if (!api) { legacyProbe(); return; }
+        try {
+            Promise.resolve(api.availability())
+                .then(function (a) { if (a === 'available') { finish(true, 'new'); } else { legacyProbe(); } })
+                .catch(legacyProbe);
+        } catch (e) { legacyProbe(); }
+    }
+
+    function lttFormatProofread(original, res) {
+        var corrected = (res && (res.correctedInput || res.corrected || res.correctedText)) || original;
+        var lines = ['' + corrected, '', 'Changes:'];
+        var corr = (res && res.corrections) || [];
+        if (!corr.length) { lines.push('- No changes found.'); }
+        for (var i = 0; i < corr.length; i++) {
+            var c = corr[i] || {};
+            var from = (typeof c.startIndex === 'number' && typeof c.endIndex === 'number') ? original.slice(c.startIndex, c.endIndex) : '';
+            var to = c.correction != null ? String(c.correction) : '';
+            lines.push('- "' + from + '" -> "' + to + '"' + (c.explanation ? ' (' + c.explanation + ')' : ''));
+        }
+        return lines.join('\n');
+    }
+
+    function lttRunBuiltin(mode, opt, text, onDone, onError) {
+        try {
+            if (lttBuiltinKind === 'legacy' && mode === 'summarize') {
+                window.ai.summarizer.create().then(function (s) { return s.summarize(text); })
+                    .then(function (out) { onDone(String(out == null ? '' : out)); }).catch(onError);
+                return;
+            }
+            var api = lttBuiltinApi(mode);
+            if (!api) { onError(new Error('Built-in AI unavailable')); return; }
+            var createOpts = {};
+            if (mode === 'summarize') {
+                createOpts = opt === 'bullets' ? { type: 'key-points', format: 'plain-text', length: 'medium' }
+                    : opt === 'detailed' ? { type: 'tldr', format: 'plain-text', length: 'long' }
+                        : { type: 'tldr', format: 'plain-text', length: 'short' };
+            } else if (mode === 'paraphrase') {
+                createOpts = { tone: opt === 'formal' ? 'more-formal' : (opt === 'casual' ? 'more-casual' : 'as-is'), format: 'plain-text' };
+            }
+            Promise.resolve(api.create(createOpts)).then(function (inst) {
+                if (mode === 'summarize') return inst.summarize(text);
+                if (mode === 'paraphrase') {
+                    return opt === 'simpler' ? inst.rewrite(text, { context: 'Use simpler, plainer wording.' }) : inst.rewrite(text);
+                }
+                return inst.proofread(text);
+            }).then(function (res) { onDone(mode === 'grammar' ? lttFormatProofread(text, res) : String(res == null ? '' : res)); })
+                .catch(onError);
+        } catch (e) { onError(e); }
+    }
+
+    // ---- Tier 2: WebLLM (lazy, click-gated) --------------------------------------
+    function lttWebGpuSupported() { return typeof navigator !== 'undefined' && 'gpu' in navigator; }
+    function lttWebGpuAdapter() {
+        if (!lttWebGpuSupported()) { return Promise.resolve(false); }
+        try { return navigator.gpu.requestAdapter().then(function (a) { return !!a; }).catch(function () { return false; }); }
+        catch (e) { return Promise.resolve(false); }
+    }
+
+    // Idempotent lazy loader for the web-llm ESM (window cached). Called ONLY
+    // from explicit user clicks (Load model / Clear cached models).
+    function lttLoadWebLLM() {
+        if (window.__lttWebLLM) { return Promise.resolve(window.__lttWebLLM); }
+        if (window.__lttWebLLMPromise) { return window.__lttWebLLMPromise; }
+        window.__lttWebLLMPromise = import('https://esm.run/@mlc-ai/web-llm')
+            .then(function (mod) { window.__lttWebLLM = mod; return mod; });
+        return window.__lttWebLLMPromise;
+    }
+
+    // Validate the requested id against the live prebuilt list; fall back to the
+    // first curated id that exists, then to the first small instruct model.
+    function lttValidateModelId(webllm, wanted) {
+        try {
+            var list = (webllm && webllm.prebuiltAppConfig && webllm.prebuiltAppConfig.model_list) || [];
+            var ids = {}, i;
+            for (i = 0; i < list.length; i++) { if (list[i] && list[i].model_id) ids[list[i].model_id] = true; }
+            if (ids[wanted]) return wanted;
+            for (i = 0; i < LTT_WEBLLM_MODELS.length; i++) { if (ids[LTT_WEBLLM_MODELS[i].id]) return LTT_WEBLLM_MODELS[i].id; }
+            for (i = 0; i < list.length; i++) {
+                var id = list[i] && list[i].model_id;
+                if (id && /instruct|chat/i.test(id) && (/-(0\.5B|1B|1\.5B)-/i.test(id) || /TinyLlama/i.test(id))) return id;
+            }
+            return (list.length && list[0].model_id) ? list[0].model_id : wanted;
+        } catch (e) { return wanted; }
+    }
+
+    // ---- Derived model sizes (never hardcoded) -----------------------------------
+    function lttFormatSizeMb(mb) {
+        var n = typeof mb === 'number' ? mb : parseFloat(mb);
+        if (!isFinite(n) || n <= 0) { return null; }
+        if (n >= 1024) { return (Math.round((n / 1024) * 10) / 10) + ' GB'; }
+        return Math.round(n) + ' MB';
+    }
+
+    // Build { model_id: '2.2 GB' } from the live prebuilt list (vram_required_MB).
+    // An id the build does not list gets NO entry, so callers render
+    // LTT_SIZE_UNKNOWN instead of inventing a number.
+    function lttSizeMapFrom(webllm) {
+        var map = {};
+        try {
+            var list = (webllm && webllm.prebuiltAppConfig && webllm.prebuiltAppConfig.model_list) || [];
+            for (var i = 0; i < list.length; i++) {
+                var e = list[i];
+                if (!e || !e.model_id) { continue; }
+                var s = lttFormatSizeMb(e.vram_required_MB);
+                if (s) { map[e.model_id] = s; }
+            }
+        } catch (e) { void e; }
+        return map;
+    }
+
+    // Read the prebuilt model list once. This imports the web-llm ESM (script
+    // only - NO model weights) so a real size can be on screen before any
+    // download starts. Import failure resolves to an empty map, which renders as
+    // LTT_SIZE_UNKNOWN rather than a guess.
+    function lttEnsureModelSizes() {
+        if (lttModelSizes) { return Promise.resolve(lttModelSizes); }
+        if (lttSizesPromise) { return lttSizesPromise; }
+        lttSizesPromise = lttLoadWebLLM()
+            .then(function (webllm) { lttModelSizes = lttSizeMapFrom(webllm); return lttModelSizes; })
+            .catch(function () { lttModelSizes = {}; return lttModelSizes; });
+        return lttSizesPromise;
+    }
+
+    function lttBaseLabelFor(id) {
+        for (var i = 0; i < LTT_WEBLLM_MODELS.length; i++) {
+            if (LTT_WEBLLM_MODELS[i].id === id) { return LTT_WEBLLM_MODELS[i].label; }
+        }
+        return id;
+    }
+
+    // Option text for ANY id - curated, restored from the shared localStorage
+    // key, or substituted by lttValidateModelId. Honest in all three states:
+    // pending read, known size, unknown id.
+    function lttOptionText(id) {
+        var base = lttBaseLabelFor(id);
+        if (!lttModelSizes) { return base + ' - ' + LTT_SIZE_PENDING; }
+        var size = lttModelSizes[id];
+        return base + ' - ' + (size ? 'about ' + size : LTT_SIZE_UNKNOWN);
+    }
+
+    function lttGetEngine(webllm) {
+        if (!lttEngine) { lttEngine = new webllm.MLCEngine(); }
+        if (!lttEngineHooked) {
+            lttEngineHooked = true;
+            try {
+                lttEngine.setInitProgressCallback(function (report) {
+                    if (lttProgressCb) { lttProgressCb(typeof report.progress === 'number' ? report.progress : 0, report.text || ''); }
+                });
+            } catch (e) { void e; }
+        }
+        return lttEngine;
+    }
+
+    // Create the engine once + (re)load the requested model. progressCb(frac, text).
+    function lttLoadModel(modelId, progressCb) {
+        lttProgressCb = progressCb || null;
+        return lttLoadWebLLM().then(function (webllm) {
+            var id = lttValidateModelId(webllm, modelId || LTT_WEBLLM_MODELS[0].id);
+            var engine = lttGetEngine(webllm);
+            if (lttLoadedModel === id) { return engine; }
+            return Promise.resolve(engine.reload(id)).then(function () {
+                lttLoadedModel = id;
+                try { localStorage.setItem(LTT_LS_MODEL, id); } catch (e) { void e; }
+                return engine;
+            });
+        });
+    }
+
+    function lttClearModelCache(onDone, onError) {
+        lttLoadWebLLM().then(function (webllm) {
+            var engine = lttGetEngine(webllm);
+            if (typeof engine.clearCache !== 'function') { throw new Error('clearCache is unavailable in this WebLLM build'); }
+            return Promise.resolve(engine.clearCache(true));
+        }).then(function () { lttLoadedModel = null; if (onDone) onDone(); })
+            .catch(function (err) { if (onError) onError(err); });
+    }
+
+    function lttBuildPrompt(mode, opt, text) {
+        var instr;
+        if (mode === 'summarize') {
+            instr = opt === 'bullets' ? 'Summarize the text below as 3 to 6 short bullet points. Output only the bullet points.'
+                : opt === 'detailed' ? 'Write a detailed summary of the text below in 5 to 8 sentences. Output only the summary.'
+                    : 'Summarize the text below in one short paragraph of 2 to 3 sentences. Output only the summary.';
+        } else if (mode === 'paraphrase') {
+            var tone = opt === 'formal' ? 'a formal' : (opt === 'casual' ? 'a casual, conversational' : (opt === 'simpler' ? 'a simpler, plainer' : 'a neutral'));
+            instr = 'Rewrite the text below in ' + tone + ' tone. Keep the meaning the same. Output only the rewritten text.';
+        } else {
+            instr = 'Fix the grammar, spelling, and punctuation of the text below. First output the corrected text. Then output a line containing only ---. Then list each change you made as a short bullet point.';
+        }
+        return instr + '\n\nTEXT:\n' + text;
+    }
+
+    // Stream a completion. onToken(fullSoFar); onDone(fullText, truncated); onError(err).
+    function lttRunWebLLM(mode, opt, text, onToken, onDone, onError) {
+        if (!lttEngine || !lttLoadedModel) { if (onError) onError(new Error('Load a model first.')); return; }
+        if (lttGenerating) { return; }
+        lttGenerating = true;
+        var truncated = false;
+        if (text.length > LTT_MAX_CHARS) { text = text.slice(0, LTT_MAX_CHARS); truncated = true; }
+        var messages = [{ role: 'system', content: LTT_SYSTEM_PROMPT }, { role: 'user', content: lttBuildPrompt(mode, opt, text) }];
+        var full = '';
+        lttEngine.chat.completions.create({ messages: messages, stream: true, temperature: 0.3 })
+            .then(function (stream) {
+                (async function () {
+                    try {
+                        for await (const chunk of stream) {
+                            var d = (chunk && chunk.choices && chunk.choices[0] && chunk.choices[0].delta && chunk.choices[0].delta.content) || '';
+                            if (d) { full += d; if (onToken) { onToken(full); } }
+                        }
+                        lttGenerating = false;
+                        if (onDone) { onDone(full, truncated); }
+                    } catch (err) { lttGenerating = false; if (onError) { onError(err); } }
+                })();
+            })
+            .catch(function (err) { lttGenerating = false; if (onError) { onError(err); } });
+    }
+
+    // ---- UI wiring ----------------------------------------------------------------
+    function lttOptionsHtml(options) {
+        var out = '';
+        for (var i = 0; i < options.length; i++) { out += '<option value="' + options[i].value + '">' + options[i].label + '</option>'; }
+        return out;
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('llmTextTaskTool');
+        if (!root) return; // not an llm-text-task page
+
+        var mode = lttDetectMode(LTT_SLUG);
+        var cfg = LTT_MODES[mode];
+        var modelOpts = [];
+        for (var mi = 0; mi < LTT_WEBLLM_MODELS.length; mi++) { modelOpts.push({ value: LTT_WEBLLM_MODELS[mi].id, label: lttOptionText(LTT_WEBLLM_MODELS[mi].id) }); }
+
+        root.innerHTML =
+            '<div style="max-width:720px;margin:0 auto;text-align:left;">' +
+            '<label for="lttInput"><b>Your text</b></label>' +
+            '<textarea id="lttInput" rows="8" class="w3-input w3-border" style="width:100%;box-sizing:border-box;margin-top:4px;" placeholder="Paste or type the text to process - nothing leaves your browser."></textarea>' +
+            '<div id="lttCount" class="w3-small w3-text-grey" style="text-align:right;">0 words - 0 chars</div>' +
+            '<div class="w3-row" style="margin:8px 0;">' +
+            (cfg.options.length
+                ? '<label for="lttOption">' + cfg.optionLabel + ' </label>' +
+                  '<select id="lttOption" class="w3-select w3-border" style="width:auto;display:inline-block;padding:4px;margin-right:10px;">' + lttOptionsHtml(cfg.options) + '</select>'
+                : '') +
+            '<button id="lttRunBtn" type="button" class="w3-button w3-blue">' + cfg.action + '</button>' +
+            '</div>' +
+            '<div id="lttStatus" class="w3-small" role="status" style="color:#555;margin-bottom:6px;"></div>' +
+            '<div class="outputImgs" style="visibility:visible !important;background:#f7f7f7;border:1px solid #ddd;border-radius:4px;padding:12px;">' +
+            '<div id="lttOutputLabel" class="w3-small w3-text-grey" style="margin-bottom:6px;"></div>' +
+            '<div id="lttOutput" style="white-space:pre-wrap;min-height:2em;"></div>' +
+            '<div style="margin-top:8px;"><button id="lttCopyBtn" type="button" class="w3-button w3-light-grey w3-small">Copy result</button>' +
+            '<span id="lttCopied" role="status" style="margin-left:8px;color:#2e7d32;font-size:0.9em;"></span></div>' +
+            '</div>' +
+            '<div class="w3-panel w3-light-grey w3-round" style="margin-top:16px;padding:10px;">' +
+            '<b>Optional: on-device AI model</b>' +
+            '<div class="w3-small" style="margin:4px 0;">Loads a small open model into your browser with WebLLM. One-time download, cached for later visits, runs fully on your device.</div>' +
+            '<div id="lttGpuNote" class="w3-small" style="display:none;color:#b00020;margin:4px 0;">This browser has no WebGPU (needed by WebLLM). Try the latest Chrome or Edge, or Safari 18+. The rest of this page still works without it.</div>' +
+            '<label for="lttModelSel">Model </label>' +
+            '<select id="lttModelSel" class="w3-select w3-border" style="width:auto;display:inline-block;padding:4px;">' + lttOptionsHtml(modelOpts) + '</select> ' +
+            '<button id="lttLoadBtn" type="button" class="w3-button w3-green">Load model</button> ' +
+            '<button id="lttClearCacheBtn" type="button" class="w3-button w3-light-grey w3-small">Clear cached models</button>' +
+            '<div><progress id="lttProgress" max="1" value="0" style="width:100%;max-width:420px;margin-top:8px;display:none;"></progress></div>' +
+            '<div id="lttLoadStatus" class="w3-small w3-text-grey" role="status"></div>' +
+            '</div>' +
+            // Honest-notes block: keep in sync with tool-<slug>/SKILL.md ## NOT implemented anti-claims.
+            '<div id="lttNotes" class="w3-small w3-text-grey" style="margin-top:14px;"><b>Honest notes</b><ul style="margin:4px 0 0 0;">' +
+            '<li>Everything runs in your browser - your text never leaves this device.</li>' +
+            '<li>On-device output quality is bounded by small 1-3B parameter models - useful drafts, not GPT-4-class results.</li>' +
+            '<li>On the on-device model path, input longer than ' + LTT_MAX_CHARS + ' characters is truncated to fit the model context.</li>' +
+            '<li>The first model load downloads hundreds of MB to a few GB; later loads come from the browser cache.</li>' +
+            '<li>Each size in the model picker is read from the WebLLM model list (approximate, from the model memory requirement) and is shown again before the download starts. A cached id this build does not list is labelled ' + LTT_SIZE_UNKNOWN + '.</li>' +
+            '</ul></div>' +
+            '</div>';
+
+        var q = function (sel) { return root.querySelector(sel); };
+        var input = q('#lttInput'), count = q('#lttCount'), optionSel = q('#lttOption');
+        var runBtn = q('#lttRunBtn'), status = q('#lttStatus');
+        var output = q('#lttOutput'), outputLabel = q('#lttOutputLabel');
+        var copyBtn = q('#lttCopyBtn'), copied = q('#lttCopied');
+        var modelSel = q('#lttModelSel'), loadBtn = q('#lttLoadBtn'), clearBtn = q('#lttClearCacheBtn');
+        var progress = q('#lttProgress'), loadStatus = q('#lttLoadStatus'), gpuNote = q('#lttGpuNote');
+
+        function lttUpdateCount() { count.textContent = lttCountWords(input.value) + ' words - ' + (input.value || '').length + ' chars'; }
+        function lttShowResult(label, text) { outputLabel.textContent = label; output.textContent = text; }
+        function lttActiveTier() { return lttBuiltinOk ? 1 : (lttEngine && lttLoadedModel ? 2 : 3); }
+
+        // AVAILABILITY only - what would run on the next press. The tier-1
+        // built-in-AI probe resolves asynchronously, so availability and the
+        // engine that produced the output on screen can legitimately disagree;
+        // they are rendered as two separate clauses and never conflated.
+        function lttReadyDescription() {
+            var t = lttActiveTier();
+            if (t === 1) { return 'built-in browser AI (no download)'; }
+            if (t === 2) { return 'on-device model ' + lttLoadedModel + ' via WebLLM'; }
+            if (mode === 'summarize') { return 'basic extractive summary (no AI model) - load a model below for better results'; }
+            return 'no AI model yet - load the on-device model below to run this tool';
+        }
+
+        // The status line names the engine that produced the output CURRENTLY
+        // displayed, then reports availability separately as "ready: ...".
+        function lttRenderStatusLine() {
+            status.textContent = (lttLastOutputEngine
+                ? 'Output above: ' + lttLastOutputEngine
+                : 'Output above: none yet') + ' - ready: ' + lttReadyDescription() + '.';
+        }
+
+        // Record which engine produced the visible output, then re-render.
+        function lttSetOutputEngine(name) { lttLastOutputEngine = name || null; lttRenderStatusLine(); }
+
+        function lttEnsureOption(sel, id) {
+            for (var i = 0; i < sel.options.length; i++) {
+                if (sel.options[i].value === id) { sel.options[i].textContent = lttOptionText(id); return; }
+            }
+            var o = document.createElement('option');
+            o.value = id; o.textContent = lttOptionText(id); sel.appendChild(o);
+        }
+
+        // Re-label every option from the derived size map.
+        function lttRefreshModelLabels() {
+            for (var i = 0; i < modelSel.options.length; i++) {
+                modelSel.options[i].textContent = lttOptionText(modelSel.options[i].value);
+            }
+        }
+
+        function lttHydrateModelSizes() { return lttEnsureModelSizes().then(lttRefreshModelLabels); }
+
+        // Tier 3: honest no-AI fallback (extractive summary / explanation).
+        function lttRunBasic(opt, text, isDemo) {
+            var demoTag = isDemo ? 'Sample demo - ' : '';
+            // Grammar-mode demo: the untouched built-in sample renders its
+            // PRECOMPUTED correction + change list (authored ahead of time by
+            // fixing the sample's deliberate errors). Only fires for the exact
+            // sample text - user input never gets a canned answer.
+            if (mode === 'grammar' && isDemo && text === LTT_SAMPLE_TEXT) {
+                lttShowResult('Sample demo - the example above contains deliberate mistakes; this corrected version and change list were prepared ahead of time so you can see the output shape with no download',
+                    LTT_SAMPLE_CORRECTED);
+                lttSetOutputEngine('precomputed sample correction (no AI model)');
+                return;
+            }
+            if (mode === 'summarize' || isDemo) {
+                var sents = lttExtractiveSummary(text, opt === 'short' ? 2 : 5);
+                var body = sents.join(' ');
+                if (mode === 'summarize' && opt === 'bullets') {
+                    var lines = [];
+                    for (var i = 0; i < sents.length; i++) { lines.push('- ' + sents[i]); }
+                    body = lines.join('\n');
+                }
+                var label = mode === 'summarize'
+                    ? demoTag + 'Basic extractive summary (no AI model) - the highest-scoring sentences from the text'
+                    : demoTag + 'Key sentences from the sample text (basic extraction, no AI model)';
+                lttShowResult(label, body || 'Could not find sentences to rank in this text.');
+                lttSetOutputEngine('basic extractive summary, no AI model' + (isDemo ? ' (sample demo)' : ''));
+                return;
+            }
+            lttShowResult('No AI model loaded',
+                (mode === 'grammar' ? 'Grammar checking' : 'Paraphrasing') +
+                ' needs an AI engine. Load the on-device model below (one-time download, cached for later), or use a browser with built-in AI. Your text stays on this device either way.');
+            lttSetOutputEngine('no AI model loaded - nothing was generated');
+        }
+
+        function lttRunNow() {
+            var text = (input.value || '').replace(/^\s+|\s+$/g, '');
+            if (!text) {
+                lttShowResult('No input', 'Paste or type some text above, then press ' + cfg.action + '.');
+                lttSetOutputEngine(null);
+                return;
+            }
+            var opt = optionSel ? optionSel.value : '';
+            runBtn.disabled = true;
+            function finish() { runBtn.disabled = false; }
+            function tier2or3() {
+                if (lttEngine && lttLoadedModel) {
+                    var label = 'On-device AI model (' + lttLoadedModel + ') via WebLLM';
+                    var engineName = 'on-device model ' + lttLoadedModel + ' via WebLLM';
+                    lttShowResult(label, '');
+                    lttSetOutputEngine(engineName + ', working ...');
+                    lttRunWebLLM(mode, opt, text,
+                        function (partial) { output.textContent = partial; },
+                        function (full, truncated) {
+                            lttShowResult(label + (truncated ? ' - input truncated to ' + LTT_MAX_CHARS + ' chars to fit the model context' : ''), full);
+                            lttSetOutputEngine(engineName + (truncated ? ' (input truncated to ' + LTT_MAX_CHARS + ' chars)' : ''));
+                            finish();
+                        },
+                        function (err) {
+                            lttShowResult('Error', 'Generation failed: ' + (err && err.message ? err.message : 'unknown error') + '.');
+                            lttSetOutputEngine(engineName + ' - generation failed');
+                            finish();
+                        });
+                    return;
+                }
+                lttRunBasic(opt, text, false);
+                finish();
+            }
+            if (lttBuiltinOk) {
+                lttShowResult('Built-in browser AI (no download)', 'Working ...');
+                lttSetOutputEngine('built-in browser AI (no download), working ...');
+                lttRunBuiltin(mode, opt, text,
+                    function (out) {
+                        lttShowResult('Built-in browser AI (no download)', out);
+                        lttSetOutputEngine('built-in browser AI (no download)');
+                        finish();
+                    },
+                    // Honest downgrade: the probe said yes but the live call failed.
+                    // tier2or3() re-labels the produced-engine clause when it writes output.
+                    function () { lttBuiltinOk = false; lttRenderStatusLine(); tier2or3(); });
+                return;
+            }
+            tier2or3();
+        }
+
+        input.addEventListener('input', lttUpdateCount);
+        runBtn.addEventListener('click', lttRunNow);
+
+        copyBtn.addEventListener('click', function () {
+            var text = output.textContent || '';
+            function ok() {
+                copied.textContent = 'Copied!';
+                setTimeout(function () { copied.textContent = ''; }, 1600);
+            }
+            function fallback() {
+                var ta = document.createElement('textarea');
+                ta.value = text;
+                ta.setAttribute('readonly', '');
+                ta.style.position = 'fixed'; ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                var done = false;
+                try { done = document.execCommand('copy'); } catch (e) { done = false; }
+                document.body.removeChild(ta);
+                if (done) ok(); else copied.textContent = 'Copy failed - select the text and copy it manually.';
+            }
+            if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(ok, fallback); }
+            else { fallback(); }
+        });
+
+        // Pre-select the last-used model (SHARED key with private-ai-chat, so the
+        // id here may be one this page never curated). lttEnsureOption labels it
+        // through lttOptionText, so it can never sit in the picker size-less.
+        try {
+            var last = localStorage.getItem(LTT_LS_MODEL);
+            if (last) { lttEnsureOption(modelSel, last); modelSel.value = last; }
+        } catch (e) { void e; }
+
+        // WebGPU preflight: honest unsupported message, model load disabled.
+        lttWebGpuAdapter().then(function (ok) {
+            if (!ok) { gpuNote.style.display = 'block'; loadBtn.disabled = true; }
+        });
+
+        // Read the real sizes on first contact with the model controls (imports
+        // the web-llm script only - no weights), so the picker shows a derived
+        // size well before the reader can commit to a download.
+        var lttSizeHydrateOnce = function () {
+            modelSel.removeEventListener('pointerdown', lttSizeHydrateOnce);
+            modelSel.removeEventListener('focus', lttSizeHydrateOnce);
+            loadBtn.removeEventListener('pointerenter', lttSizeHydrateOnce);
+            loadBtn.removeEventListener('focus', lttSizeHydrateOnce);
+            lttHydrateModelSizes();
+        };
+        modelSel.addEventListener('pointerdown', lttSizeHydrateOnce);
+        modelSel.addEventListener('focus', lttSizeHydrateOnce);
+        loadBtn.addEventListener('pointerenter', lttSizeHydrateOnce);
+        loadBtn.addEventListener('focus', lttSizeHydrateOnce);
+
+        loadBtn.addEventListener('click', function () {
+            var wanted = modelSel.value || LTT_WEBLLM_MODELS[0].id;
+            loadBtn.disabled = true; modelSel.disabled = true;
+            loadStatus.textContent = 'Checking the download size for ' + wanted + ' ...';
+            // Read prebuiltAppConfig FIRST so a real size (or an explicit
+            // "unknown") is on screen before any weights are fetched.
+            lttHydrateModelSizes().then(function () {
+                var size = lttModelSizes[wanted];
+                progress.style.display = 'block';
+                loadStatus.textContent = 'Downloading ' + wanted + ' - ' +
+                    (size ? 'about ' + size : LTT_SIZE_UNKNOWN) +
+                    ' - one-time download, then cached in this browser ...';
+                return lttLoadModel(wanted, function (frac, msg) {
+                    progress.value = Math.max(0, Math.min(1, frac || 0));
+                    loadStatus.textContent = msg || ('Loading ... ' + Math.round((frac || 0) * 100) + '%');
+                });
+            }).then(function () {
+                progress.value = 1;
+                lttEnsureOption(modelSel, lttLoadedModel);
+                modelSel.value = lttLoadedModel;
+                lttRefreshModelLabels();
+                loadStatus.textContent = 'Model ready' +
+                    (lttLoadedModel === wanted ? '' : ' (requested id not in this WebLLM build; loaded ' + lttLoadedModel + ' instead)') +
+                    ' - processing happens on your device.';
+                loadBtn.disabled = false; modelSel.disabled = false;
+                lttRenderStatusLine();
+            }).catch(function (err) {
+                loadBtn.disabled = false; modelSel.disabled = false;
+                loadStatus.textContent = 'Could not load the model: ' + (err && err.message ? err.message : 'unknown error') + '.';
+            });
+        });
+
+        clearBtn.addEventListener('click', function () {
+            clearBtn.disabled = true;
+            loadStatus.textContent = 'Clearing cached model files ...';
+            lttClearModelCache(function () {
+                clearBtn.disabled = false;
+                loadStatus.textContent = 'Cached model files cleared - the next load downloads again.';
+                lttRenderStatusLine();
+            }, function (err) {
+                clearBtn.disabled = false;
+                loadStatus.textContent = 'Could not clear the cache: ' + (err && err.message ? err.message : 'unknown error') + '.';
+            });
+        });
+
+        // Probe tier 1 (built-in browser AI) without ever downloading anything.
+        // This resolves AFTER the sample demo renders, so it only refreshes the
+        // "ready:" clause - the produced-engine clause keeps naming the engine
+        // that actually made the visible output.
+        lttProbeBuiltin(mode, function (ok, kind) { lttBuiltinOk = ok; lttBuiltinKind = kind; lttRenderStatusLine(); });
+
+        // Visible default output on load (e2e G16, zero interaction): the sample
+        // text and its tier-3 extractive summary render immediately, labeled demo.
+        input.value = LTT_SAMPLE_TEXT;
+        lttUpdateCount();
+        lttRunBasic(optionSel ? optionSel.value : '', LTT_SAMPLE_TEXT, true);
+        lttRenderStatusLine();
+    }
+</script>
