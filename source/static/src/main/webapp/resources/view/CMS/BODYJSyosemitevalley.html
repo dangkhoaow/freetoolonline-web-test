@@ -1,0 +1,351 @@
+<script>
+    // 3D scene archetype skeleton (yosemite-valley) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side. Built
+    // LEAN from the shared t3d* skeleton - ONE scene only (yosemite-valley).
+    // All geometry is procedural. places-3d cluster, 2026-08-11.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (NPS / Wikipedia consensus, cross-checked 2026-08-11):
+    //   - Yosemite Valley floor about 1,200 m (4,000 ft); about 12 km (7.5 mi)
+    //     long, about 1.6 km (1 mi) wide; walls rise about 900-1,200 m
+    //     (3,000-4,000 ft) above the floor
+    //   - El Capitan: summit about 2,307 m (7,569 ft); rises about 1,100 m
+    //     (3,600 ft) above the valley floor, near the valley's west entrance
+    //   - Half Dome: summit about 2,695 m (8,846 ft); rises about 1,444 m
+    //     (4,737 ft) above the valley floor at Tenaya Canyon, sheer
+    //     near-vertical northwest face
+    //   - Yosemite Falls: total drop about 739 m (2,425 ft) in three tiers -
+    //     the tallest waterfall in Yosemite National Park
+    //   - Carved by repeated Ice Age glaciations widening an older V-shaped
+    //     river canyon into today's U-shaped trough; Merced River still runs
+    //     along the flat floor
+    //   - Yosemite Grant signed by Lincoln, June 30, 1864; Yosemite National
+    //     Park established October 1, 1890; UNESCO World Heritage Site 1984
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'yosemite-valley';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesyosemitevalley'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x0d1418, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+        var key = new THREE.DirectionalLight(0xfff2d0, 1.0);
+        key.position.set(-10, 18, 6);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 }));
+        }
+
+        // Glacial U-valley relief, 1 unit = ~300 m vertical. x = across-valley
+        // (south wall x<0, north wall x>0); z = along-valley (west entrance
+        // z<0 where El Capitan stands on the north wall, east head z>0 where
+        // Half Dome rises). Flat meadow floor at FLOOR, steep-but-rounded
+        // glacial-U walls, El Capitan as a localized boost on the continuous
+        // north wall, Half Dome as an isolated dome standing at the valley
+        // head with a sheared face toward the valley (west/-z) and a
+        // rounded back (east/+z).
+        var FLOOR = 0, HALF_FLOOR = 1.3, WALL_RUN = 2.0, WALL_H = 3.1;
+        var ELCAP_Z = -7.5, ELCAP_BOOST = 1.15, ELCAP_SPAN = 1.3;
+        var X_HD = -1.4, Z_HD = 6.6, HALFDOME_PEAK = 4.0, RX_HD = 2.4, RZ_HD_FRONT = 1.3, RZ_HD_BACK = 3.6;
+        var TRIMLINE = 0.6; // glacial-polish boundary, fraction of wall height
+
+        function wallShape(d) {
+            var t = Math.max(0, Math.min(1, d / WALL_RUN));
+            var s = t * t * (3 - 2 * t);
+            return Math.pow(s, 0.72);
+        }
+        function elcapBoost(x, z) {
+            if (x <= 0) return 0;
+            var dz = z - ELCAP_Z;
+            return ELCAP_BOOST * Math.exp(-(dz * dz) / (2 * ELCAP_SPAN * ELCAP_SPAN));
+        }
+        function domeFrac(x, z) {
+            var dx = x - X_HD, dz = z - Z_HD;
+            var rz = dz < 0 ? RZ_HD_FRONT : RZ_HD_BACK;
+            var r = Math.sqrt((dx / RX_HD) * (dx / RX_HD) + (dz / rz) * (dz / rz));
+            return Math.max(0, 1 - r);
+        }
+        function wallFracAt(x, z) {
+            var d = Math.max(0, Math.abs(x) - HALF_FLOOR);
+            return wallShape(d);
+        }
+        function height(x, z) {
+            var d = Math.max(0, Math.abs(x) - HALF_FLOOR);
+            var wf = wallShape(d);
+            var wallH = FLOOR + (WALL_H + elcapBoost(x, z)) * wf + 0.14 * fbm(x * 0.9 + 4, z * 0.5 + 2, 4) * wf;
+            var domeH = FLOOR + HALFDOME_PEAK * Math.pow(domeFrac(x, z), 0.55);
+            var h = Math.max(wallH, domeH);
+            h += 0.05 * (fbm(x * 1.1 + 9, z * 0.6 + 3, 3) - 0.5);
+            return h;
+        }
+        var col = {
+            meadow: new THREE.Color(0x7c8f5a), granite: new THREE.Color(0xb9ac98),
+            graniteShadow: new THREE.Color(0x8f8270), polish: new THREE.Color(0xc9c2b0),
+            trim: new THREE.Color(0x4a4640), peak: new THREE.Color(0xede6d6)
+        };
+        function bandColor(c, x, z, polishOn) {
+            var n = 0.92 + 0.16 * fbm(x * 1.3 + 11, z * 1.3 + 7, 3);
+            var d = Math.max(0, Math.abs(x) - HALF_FLOOR);
+            var wf = wallShape(d);
+            var domeF = Math.pow(domeFrac(x, z), 0.55);
+            var isWallSurface = Math.max(wf, domeF) > 0.04;
+            if (!isWallSurface) { c.copy(col.meadow).multiplyScalar(n); return; }
+            var frac = Math.max(wf, domeF);
+            c.copy(col.graniteShadow).lerp(col.granite, Math.min(1, frac * 1.3));
+            if (polishOn && frac < TRIMLINE) {
+                c.lerp(col.polish, 0.62);
+                if (Math.abs(frac - TRIMLINE) < 0.035) c.copy(col.trim);
+            }
+            if (frac > 0.86) c.lerp(col.peak, Math.min(0.55, (frac - 0.86) / 0.14 * 0.55));
+            c.multiplyScalar(n);
+        }
+        var normColors = null, polishColors = null, terrain;
+        function build(polishOn) {
+            var pos = terrain.geometry.attributes.position, col2 = new THREE.Color();
+            var arr = new Float32Array(pos.count * 3);
+            for (var i = 0; i < pos.count; i++) {
+                bandColor(col2, pos.getX(i), pos.getZ(i), polishOn);
+                arr[i * 3] = col2.r; arr[i * 3 + 1] = col2.g; arr[i * 3 + 2] = col2.b;
+            }
+            return arr;
+        }
+        terrain = makeTerrain(18, 26, shell.low ? 130 : 190, shell.low ? 150 : 210, height, function (c, h, x, z) { bandColor(c, x, z, false); });
+        scene.add(terrain);
+        normColors = terrain.geometry.attributes.color.array.slice();
+        polishColors = build(true);
+
+        // Merced River: a meandering teal ribbon along the flat valley floor.
+        var riverPts = [];
+        for (var i2 = 0; i2 <= 60; i2++) {
+            var z3 = -12.4 + (24.8 * i2) / 60;
+            riverPts.push(new THREE.Vector3(0.5 * Math.sin(z3 * 0.4), FLOOR + 0.05, z3));
+        }
+        var river = new THREE.Mesh(
+            new THREE.TubeGeometry(new THREE.CatmullRomCurve3(riverPts), 90, 0.11, 6, false),
+            new THREE.MeshStandardMaterial({ color: 0x2f8f7a, roughness: 0.25 })
+        );
+        scene.add(river);
+
+        // Yosemite Falls: a pale cascading ribbon on the north wall, roughly
+        // midway along the valley, plus a small plunge-pool ring at its base.
+        var fallsGroup = new THREE.Group();
+        var FALLS_Z = -2.5, FALLS_TOP_H = height(1.9, -2.5);
+        var fallsRibbon = new THREE.Mesh(
+            new THREE.PlaneGeometry(0.22, Math.max(0.4, FALLS_TOP_H - FLOOR - 0.15)),
+            new THREE.MeshBasicMaterial({ color: 0xf0f4f2, transparent: true, opacity: 0.85, side: THREE.DoubleSide })
+        );
+        fallsRibbon.position.set(1.95, FLOOR + (FALLS_TOP_H - FLOOR) / 2, FALLS_Z);
+        fallsGroup.add(fallsRibbon);
+        var plungePool = new THREE.Mesh(
+            new THREE.TorusGeometry(0.32, 0.045, 8, 24),
+            new THREE.MeshBasicMaterial({ color: 0x9fd8ea })
+        );
+        plungePool.rotation.x = Math.PI / 2;
+        plungePool.position.set(1.95, FLOOR + 0.05, FALLS_Z);
+        fallsGroup.add(plungePool);
+        scene.add(fallsGroup);
+
+        var polishOn = false, fallsOn = true;
+
+        function panelHtml() {
+            return '<h3>Yosemite Valley: a glacier-carved granite trench</h3>' +
+                '<p>A U-shaped valley floor with the Merced River, El Capitan\'s sheer face on the north wall near the west entrance, and Half Dome\'s domed, sheared profile standing at the valley head to the east.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Valley floor</td><td>about 1,200 m (4,000 ft) elevation; about 12 km (7.5 mi) long, about 1.6 km (1 mi) wide</td></tr>' +
+                '<tr><td>Valley walls</td><td>rise about 900-1,200 m (3,000-4,000 ft) above the floor</td></tr>' +
+                '<tr><td>El Capitan</td><td>summit about 2,307 m (7,569 ft); rises about 1,100 m (3,600 ft) above the floor</td></tr>' +
+                '<tr><td>Half Dome</td><td>summit about 2,695 m (8,846 ft); rises about 1,444 m (4,737 ft) above the floor at Tenaya Canyon</td></tr>' +
+                '<tr><td>Yosemite Falls</td><td>total drop about 739 m (2,425 ft) in three tiers - the tallest waterfall in the park</td></tr>' +
+                '<tr><td>Carved by</td><td>repeated Ice Age glaciers widening an older V-shaped river canyon into today\'s U-shaped trough</td></tr>' +
+                '<tr><td>Protected since</td><td>1864 Yosemite Grant (Lincoln); Yosemite National Park established 1890; UNESCO World Heritage Site 1984</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the valley profile, cliff placement, and river path are schematic teaching cues, not survey terrain.</p>';
+        }
+
+        function apply() {
+            terrain.geometry.attributes.color.array.set(polishOn ? polishColors : normColors);
+            terrain.geometry.attributes.color.needsUpdate = true;
+            fallsGroup.visible = fallsOn;
+            var pb = document.getElementById('t3dPyvPolishBtn');
+            if (pb) pb.textContent = 'Glacial polish bands: ' + (polishOn ? 'On' : 'Off');
+            var fb = document.getElementById('t3dPyvFallsBtn');
+            if (fb) fb.textContent = 'Yosemite Falls marker: ' + (fallsOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ polishOn: polishOn, fallsOn: fallsOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.polishOn === 'boolean') polishOn = store.polishOn;
+        if (typeof store.fallsOn === 'boolean') fallsOn = store.fallsOn;
+        apply();
+
+        var polishBtn = document.getElementById('t3dPyvPolishBtn');
+        if (polishBtn) polishBtn.addEventListener('click', function () { polishOn = !polishOn; apply(); });
+        var fallsBtn = document.getElementById('t3dPyvFallsBtn');
+        if (fallsBtn) fallsBtn.addEventListener('click', function () { fallsOn = !fallsOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the glacial polish bands or the Yosemite Falls marker.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesyosemitevalley: 't3dPyvControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesyosemitevalley: { radius: 26, maxR: 55, minR: 8, phi: 0.92, theta: 0.55, targetY: 0.6 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
