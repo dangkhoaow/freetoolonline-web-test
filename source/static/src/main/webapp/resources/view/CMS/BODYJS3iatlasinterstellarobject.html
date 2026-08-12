@@ -1,0 +1,475 @@
+<script>
+    // 3D scene archetype skeleton (3I/ATLAS + the Interstellar-Object Trilogy
+    // Explorer) - vendored three.js (ESM, dynamic import from /vendor/three/,
+    // NO CDN), fully client-side. Built LEAN, forked from the
+    // borisov-interstellar-comet shape - ONE scene only (a 3-way selector
+    // comparing all three confirmed interstellar objects). All geometry is
+    // procedural (a CapsuleGeometry for 'Oumuamua's elongated no-coma body,
+    // scaled-sphere "potato" nuclei for Borisov and 3I/ATLAS,
+    // BufferGeometry+Points coma clouds for the two active comets, three
+    // static parametric hyperbola curves drawn as Line geometry with
+    // curvature scaled to each object's real orbital eccentricity).
+    //
+    // EDUCATIONAL APPROXIMATION, not a physics or orbital-mechanics
+    // simulation. The three hyperbola curves are schematic - curvature is
+    // mapped from each object's real eccentricity for a visual sense of
+    // "how extreme," but none are drawn to true AU distance/time-accurate
+    // scale. Nucleus shapes are stylized (capsule or scaled sphere), not
+    // scanned or photographic models. Comas are radially-expanding particle
+    // clouds, not directional tails shaped by solar wind and radiation
+    // pressure.
+    //
+    // Published figures (cross-checked via WebSearch + WebFetch 2026-08-12;
+    // sources: NASA Science "3I/ATLAS Facts and FAQs"
+    // (science.nasa.gov/solar-system/comets/3i-atlas/3i-atlas-facts-and-faqs/);
+    // Chandler et al. 2025, "Discovery and Preliminary Characterization of a
+    // Third Interstellar Object: 3I/ATLAS," Monthly Notices of the Royal
+    // Astronomical Society: Letters 542(1):L139 (arXiv:2507.02757); Hopkins
+    // et al. 2026 preprint "3I/ATLAS (C/2025 N1): Direct Spacecraft
+    // Exploration of a Possible Relic of Planetary Formation at 'Cosmic
+    // Noon'" (arXiv:2508.15768); a 2026 preprint on the perihelion asymmetry
+    // of 3I/ATLAS's water production rate (arXiv:2601.15443); this site's own
+    // verified tool-oumuamua and tool-borisovinterstellarcomet truth sources
+    // for the 1I/'Oumuamua and 2I/Borisov comparison figures, themselves
+    // cited to NASA Science, Wikipedia, Micheli et al. 2018 (Nature), Bialy &
+    // Loeb 2019 (ApJL), Bodewits et al. 2020 (Nature Astronomy), and Cordiner
+    // et al. 2020 (Nature Astronomy)):
+    //   - 3I/ATLAS is the 3rd confirmed interstellar object, discovered 1
+    //     July 2025 by the NASA-funded ATLAS survey telescope in Rio
+    //     Hurtado, Chile. Official designation 3I/ATLAS (also catalogued
+    //     C/2025 N1).
+    //   - Its orbital eccentricity is about 6.1 - the most extreme
+    //     (most hyperbolic / least bound) of the three known interstellar
+    //     objects, versus about 1.2 for 1I/'Oumuamua and about 3.36 for
+    //     2I/Borisov. Its orbital inclination is about 175 degrees (a
+    //     near-polar, retrograde path).
+    //   - Perihelion distance was about 1.36 AU (NASA rounds this to about
+    //     1.4 AU / 210 million km / 130 million miles), reached on 30
+    //     October 2025.
+    //   - Speed was about 221,000 km/h (137,000 mph) at discovery (near
+    //     Jupiter's orbital distance from the Sun), increasing to about
+    //     246,000 km/h (153,000 mph) at perihelion.
+    //   - NASA's official nucleus-size range is a diameter "not less than
+    //     1,400 feet (440 meters) and not greater than 3.5 miles (5.6
+    //     kilometers)" - a wide uncertainty band. One modeling study
+    //     (Chandler et al. 2025) separately estimates an effective nucleus
+    //     radius of roughly 10 km assuming an asteroid-like albedo of 0.05 -
+    //     presented here as one study's model-based estimate, not a settled
+    //     figure, since the two approaches disagree.
+    //   - 3I/ATLAS is confirmed active: a 2026 preprint measured a peak
+    //     post-perihelion water production rate of about 4x10^28 molecules
+    //     per second, "remarkable stability in the activity with no signs of
+    //     outbursts or rapid depletion," and a minimum active fraction of
+    //     about 30% (assuming a maximum nucleus radius of 2.8 km).
+    //   - NASA confirms 3I/ATLAS never comes closer to Earth than about 1.8
+    //     AU (270 million km / 170 million miles) - no impact risk.
+    //   - A 2026 preprint (Hopkins et al., not yet a settled consensus
+    //     figure) suggests, from its kinematics, that 3I/ATLAS is "likely to
+    //     be an object from the galactic thick disk" - possibly "a remnant
+    //     of the Galaxy's 'cosmic noon' period of intense star formation
+    //     ~9-13 gigayears ago," which would make it far older than the
+    //     4.6-billion-year-old solar system. This is explicitly one
+    //     research team's analysis, not a proven fact.
+    //   - For comparison: 1I/'Oumuamua (discovered 2017, eccentricity ~1.2)
+    //     showed no detected coma or outgassing at all ("completely inert,"
+    //     NASA). 2I/Borisov (discovered 2019, eccentricity ~3.36) actively
+    //     outgassed a CO-rich coma. 3I/ATLAS (2025, eccentricity ~6.1) is
+    //     also confirmed active with stable water-driven outgassing.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = '3iatlasinterstellarobject';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'iotrilogy'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Real published figures for all three confirmed interstellar objects
+    // (cross-checked via WebSearch/WebFetch 2026-08-12; sources in the header
+    // comment above). Index 0 = 1I/'Oumuamua, index 1 = 2I/Borisov, index 2 =
+    // 3I/ATLAS (this page's titular, default-active object). "openness" is a
+    // schematic 0-1 curvature knob (NOT a physical unit) mapped from each
+    // object's real eccentricity so the three hyperbola curves visibly widen
+    // as eccentricity rises - illustrative only, not to true AU scale.
+    var T3D_IO_OBJECTS = [
+        {
+            label: "1I/'Oumuamua",
+            sub: '1st interstellar object (2017)',
+            discovered: '19 October 2017 (Pan-STARRS telescope, Haleakala, Hawaii)',
+            eccentricity: 'about 1.2 (least extreme of the three)',
+            inclination: 'about 122 degrees',
+            perihelion: 'about 0.25 AU (9 September 2017)',
+            speed: 'about 87.3 km/s (196,000 mph) closest-approach speed',
+            nucleus: 'about 100-400 m long, roughly 10:1 elongated (NASA/Wikipedia)',
+            coma: 'none detected - "completely inert" (NASA)',
+            hasComa: false,
+            openness: 0.12,
+            nucleusColor: 0xb5a898,
+            comaColor: 0x000000,
+            note: "Discovered 19 October 2017. No coma or outgassing was ever detected, despite a real, statistically significant (30-sigma) trajectory anomaly that remains only partly explained. See the dedicated 'Oumuamua 3D Explorer for its tumbling motion and the leading (unconfirmed) outgassing hypothesis."
+        },
+        {
+            label: '2I/Borisov',
+            sub: '2nd interstellar object (2019)',
+            discovered: '30 August 2019 (amateur astronomer Gennadiy Borisov, Crimea)',
+            eccentricity: 'about 3.36',
+            inclination: 'about 44 degrees',
+            perihelion: 'about 2.01 AU (8 December 2019)',
+            speed: 'about 43.9 km/s at perihelion, slowing to about 32.3 km/s at infinity',
+            nucleus: 'effective radius about 0.2-0.5 km (Hubble)',
+            coma: 'yes - CO-rich (CO/H2O ratio about 35-155%, Hubble/ALMA)',
+            hasComa: true,
+            openness: 0.45,
+            nucleusColor: 0x8fa5c0,
+            comaColor: 0x7fd0ff,
+            note: 'Discovered 30 August 2019. Actively outgassed a visible CO-rich coma, unlike the coma-less 1I. See the dedicated 2I/Borisov Interstellar Comet 3D Explorer for its composition contrast against a typical bound solar-system comet.'
+        },
+        {
+            label: '3I/ATLAS',
+            sub: '3rd interstellar object (2025) - this page',
+            discovered: '1 July 2025 (NASA-funded ATLAS survey telescope, Rio Hurtado, Chile)',
+            eccentricity: 'about 6.1 (the most extreme of the three - the least gravitationally bound path ever recorded)',
+            inclination: 'about 175 degrees (near-polar, retrograde)',
+            perihelion: 'about 1.36 AU / ~1.4 AU (30 October 2025)',
+            speed: 'about 221,000 km/h at discovery, increasing to about 246,000 km/h at perihelion',
+            nucleus: 'NASA range: diameter 440 m to 5.6 km (wide uncertainty); one modeling study estimates an effective radius around 10 km assuming an asteroid-like albedo',
+            coma: 'yes - confirmed stable water outgassing (peak ~4x10^28 molecules/s, no outbursts)',
+            hasComa: true,
+            openness: 0.92,
+            nucleusColor: 0xcbb08a,
+            comaColor: 0xffcf7f,
+            note: "Discovered 1 July 2025. Has the most extreme (most hyperbolic) orbit of any known interstellar object. Confirmed active with stable water-driven outgassing. Never comes closer than about 1.8 AU to Earth - no impact risk. One 2026 research team's kinematic analysis suggests it may be a relic from the galaxy's 'cosmic noon' star-forming era 9-13 billion years ago - not yet a settled consensus figure."
+        }
+    ];
+
+    function t3dIoBuildHyperbola(THREE, openness) {
+        // Schematic open path - shape only, NOT to true AU distance/time
+        // scale. Higher `openness` (mapped from real eccentricity) widens the
+        // asymptotic arms so a reader can visually compare "how extreme"
+        // across the three real objects.
+        var pts = [];
+        var a = (4 + openness * 3) * 1, b = (5 + openness * 11) * 1;
+        for (var i = -55; i <= 55; i++) {
+            var t = i / 22;
+            pts.push(new THREE.Vector3(a * Math.cosh(t) - a, 0, b * Math.sinh(t)));
+        }
+        return new THREE.BufferGeometry().setFromPoints(pts);
+    }
+
+    function t3dIoMakeBody(THREE, opts) {
+        var group = new THREE.Group();
+        var nucleus;
+        if (opts.elongated) {
+            // 'Oumuamua's real cited shape: about 10:1 elongated, no coma.
+            nucleus = new THREE.Mesh(
+                new THREE.CapsuleGeometry(opts.nucleusR * 0.32, opts.nucleusR * 2.6, 6, 10),
+                new THREE.MeshStandardMaterial({ color: opts.nucleusColor, roughness: 0.92, metalness: 0.03 })
+            );
+            nucleus.rotation.z = Math.PI / 2;
+        } else {
+            nucleus = new THREE.Mesh(
+                new THREE.SphereGeometry(opts.nucleusR, 16, 12),
+                new THREE.MeshStandardMaterial({ color: opts.nucleusColor, roughness: 0.95, metalness: 0.02 })
+            );
+            nucleus.scale.set(1, 0.6, 0.82); // stylized irregular "potato" nucleus, not a scanned shape
+        }
+        group.add(nucleus);
+
+        var points = null, seed = null;
+        if (opts.hasComa) {
+            var n = opts.particleCount;
+            var pos = new Float32Array(n * 3);
+            seed = new Float32Array(n);
+            for (var i = 0; i < n; i++) {
+                seed[i] = Math.random();
+                var r = seed[i] * opts.comaRadius;
+                var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+                pos[i * 3] = r * Math.sin(ph) * Math.cos(th);
+                pos[i * 3 + 1] = r * Math.cos(ph) * 0.7;
+                pos[i * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+            }
+            var geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            var mat = new THREE.PointsMaterial({ color: opts.comaColor, size: opts.particleSize, sizeAttenuation: true, transparent: true, opacity: 0.72 });
+            points = new THREE.Points(geo, mat);
+            group.add(points);
+        }
+
+        var glowRing = new THREE.Mesh(
+            new THREE.RingGeometry(opts.nucleusR * 2.4, opts.nucleusR * 2.9, 32),
+            new THREE.MeshBasicMaterial({ color: opts.hasComa ? opts.comaColor : opts.nucleusColor, transparent: true, opacity: 0, side: THREE.DoubleSide })
+        );
+        glowRing.rotation.x = Math.PI / 2;
+        group.add(glowRing);
+
+        return {
+            group: group, nucleus: nucleus, points: points, seed: seed, comaRadius: opts.comaRadius, elongated: !!opts.elongated,
+            glowRing: glowRing,
+            setHighlight: function (on) { glowRing.material.opacity = on ? 0.55 : 0; },
+            tick: function (dt) {
+                if (this.elongated) {
+                    nucleus.rotation.x += dt * 0.00055;
+                    nucleus.rotation.y += dt * 0.00037;
+                } else {
+                    nucleus.rotation.y += dt * 0.0004;
+                }
+                if (points && this.seed) {
+                    var arr = points.geometry.attributes.position.array;
+                    for (var i = 0; i < this.seed.length; i++) {
+                        this.seed[i] += dt * 0.00006;
+                        if (this.seed[i] > 1) this.seed[i] -= 1;
+                        var r = this.seed[i] * this.comaRadius;
+                        var idx = i * 3;
+                        var len = Math.hypot(arr[idx], arr[idx + 1] / 0.7, arr[idx + 2]) || 1;
+                        var scaleFactor = r / len;
+                        arr[idx] *= scaleFactor; arr[idx + 1] *= scaleFactor; arr[idx + 2] *= scaleFactor;
+                    }
+                    points.geometry.attributes.position.needsUpdate = true;
+                }
+            }
+        };
+    }
+
+    function t3dIoTrilogy(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x05070d, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+
+        var starN = shell.low ? 240 : 480;
+        var starPos = new Float32Array(starN * 3);
+        for (var s = 0; s < starN; s++) {
+            var r = 95 + Math.random() * 75;
+            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+            starPos[s * 3] = r * Math.sin(ph) * Math.cos(th);
+            starPos[s * 3 + 1] = r * Math.cos(ph);
+            starPos[s * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+        }
+        var starGeo = new THREE.BufferGeometry();
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.28, sizeAttenuation: true, transparent: true, opacity: 0.55 })));
+
+        var sun = new THREE.Mesh(new THREE.SphereGeometry(1.6, 24, 18), new THREE.MeshBasicMaterial({ color: 0xffcc55 }));
+        scene.add(sun);
+        scene.add(new THREE.PointLight(0xfff2cc, 2.2, 220));
+
+        var lineColors = [0xd8cdbf, 0x7fd0ff, 0xffcf7f];
+        var lines = [];
+        var positions = [[-16, 0, 6], [10, 0, -9], [0, 0, 15]];
+        var bodies = [];
+        for (var oi = 0; oi < T3D_IO_OBJECTS.length; oi++) {
+            var o = T3D_IO_OBJECTS[oi];
+            var line = new THREE.Line(t3dIoBuildHyperbola(THREE, o.openness), new THREE.LineBasicMaterial({ color: lineColors[oi], transparent: true, opacity: 0.55 }));
+            line.position.x = positions[oi][0] * 0.15;
+            line.position.z = positions[oi][2] * 0.05;
+            scene.add(line);
+            lines.push(line);
+
+            var body = t3dIoMakeBody(THREE, {
+                elongated: oi === 0,
+                nucleusR: oi === 0 ? 0.5 : (oi === 1 ? 0.55 : 0.7),
+                nucleusColor: o.nucleusColor,
+                hasComa: o.hasComa,
+                comaColor: o.comaColor,
+                comaRadius: oi === 2 ? 4.8 : 4.2,
+                particleCount: shell.low ? (oi === 0 ? 0 : 200) : (oi === 0 ? 0 : 440),
+                particleSize: 0.16
+            });
+            body.group.position.set(positions[oi][0], positions[oi][1], positions[oi][2]);
+            scene.add(body.group);
+            bodies.push(body);
+        }
+
+        var active = 2; // default: 3I/ATLAS, this page's titular object
+        var idxEl = document.getElementById('t3dIoScrub');
+        var idxLab = document.getElementById('t3dIoLabel');
+
+        function comparisonTableHtml() {
+            var rows = '';
+            for (var i = 0; i < T3D_IO_OBJECTS.length; i++) {
+                var c = T3D_IO_OBJECTS[i];
+                rows += '<tr' + (i === active ? ' style="background:#e3f2fd;"' : '') + '>' +
+                    '<td>' + c.label + '</td>' +
+                    '<td>' + c.discovered.split(' (')[0] + '</td>' +
+                    '<td>' + c.eccentricity.split(' (')[0] + '</td>' +
+                    '<td>' + (c.hasComa ? 'Yes' : 'None detected') + '</td>' +
+                    '</tr>';
+            }
+            return '<div class="w3-responsive"><table class="w3-table w3-bordered w3-small">' +
+                '<tr><th>Object</th><th>Discovered</th><th>Eccentricity</th><th>Coma</th></tr>' + rows + '</table></div>';
+        }
+
+        function panelHtml() {
+            var c = T3D_IO_OBJECTS[active];
+            return '<h3>' + c.label + ' - ' + c.sub + '</h3>' +
+                '<p>' + c.note + '</p>' +
+                '<table class="w3-table w3-small" style="margin-bottom:8px;">' +
+                '<tr><td><b>Discovered</b></td><td>' + c.discovered + '</td></tr>' +
+                '<tr><td><b>Orbit</b></td><td>eccentricity ' + c.eccentricity + ', inclination ' + c.inclination + '</td></tr>' +
+                '<tr><td><b>Perihelion</b></td><td>' + c.perihelion + '</td></tr>' +
+                '<tr><td><b>Speed</b></td><td>' + c.speed + '</td></tr>' +
+                '<tr><td><b>Nucleus</b></td><td>' + c.nucleus + '</td></tr>' +
+                '<tr><td><b>Coma / outgassing</b></td><td>' + c.coma + '</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation - the three curves are schematic, with curvature mapped from each object\'s real eccentricity (not true AU distance or time scale); nuclei are stylized shapes (an elongated capsule for \'Oumuamua, scaled "potato" spheres for the two comets), not scanned models; comas are radially-expanding particle clouds, not directional solar-wind tails.</p>' +
+                comparisonTableHtml();
+        }
+
+        function apply() {
+            for (var i = 0; i < bodies.length; i++) { bodies[i].setHighlight(i === active); }
+            var c = T3D_IO_OBJECTS[active];
+            if (idxLab) idxLab.textContent = c.label + ' (' + c.sub + ')';
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ active: active }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (store.active === 0 || store.active === 1 || store.active === 2) { active = store.active; }
+        if (idxEl) idxEl.value = String(active);
+        apply();
+
+        if (idxEl) idxEl.addEventListener('input', function () {
+            var v = parseInt(idxEl.value || '2', 10);
+            active = (v === 0 || v === 1) ? v : 2;
+            apply();
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Slide the selector to compare all three known interstellar objects.');
+        return function animate(dt) {
+            for (var i = 0; i < bodies.length; i++) { bodies[i].tick(dt); }
+            sun.rotation.y += dt * 0.0003;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { iotrilogy: 't3dIoControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { iotrilogy: { radius: 36, maxR: 100, minR: 8, phi: 1.15, theta: 0.5, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dIoTrilogy(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
