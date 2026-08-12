@@ -1,0 +1,376 @@
+<script>
+    // 3D scene archetype skeleton (matterhorn) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN engine), fully
+    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only
+    // (matterhorn). All geometry is procedural. places-3d cluster, 2026-08-12.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey terrain.
+    // Published figures (Pennine Alps sources, cross-checked 2026-08-12):
+    //   - Summit elevation 4,478 m (14,692 ft); Pennine Alps, on the border
+    //     between Zermatt, Switzerland (to the northeast) and
+    //     Breuil-Cervinia, Italy (to the south)
+    //   - A classic glacial "horn" peak: four steep triangular faces
+    //     separated by four ridges - Hoernli (northeast), Zmutt (northwest),
+    //     Lion/Italian (southwest), Furggen (southeast)
+    //   - First ascent July 14, 1865 via the Hoernli ridge, led by Edward
+    //     Whymper with guides Michel Croz and Peter Taugwalder (father and
+    //     son); on the descent four of the seven climbers (Croz, Charles
+    //     Hudson, Lord Francis Douglas, Douglas Hadow) fell to their deaths
+    //     when the rope parted - the three survivors completed the descent
+    //     in shock and the tragedy made global headlines
+    //   - The Lion (Italian) ridge was first climbed just three days later,
+    //     July 17 1865, led by guide Jean-Antoine Carrel
+    //   - The sheer North Face was not climbed until 1931, by brothers Toni
+    //     and Franz Schmid - one of the six classic great north faces of
+    //     the Alps
+    //   - More than 500 climbers are estimated to have died on the
+    //     Matterhorn since 1865, a widely cited average of roughly a dozen
+    //     a year - among the highest tolls of any single peak
+    //   - The steep faces are too sheer to hold much permanent snow - bare
+    //     rock stays exposed on much of the mountain even in winter, unlike
+    //     gentler peaks blanketed in white
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'matterhorn';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesmatterhorn'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x8fb3d9, 1); // clear alpine sky
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+        var key = new THREE.DirectionalLight(0xfff2d8, 1.1);
+        key.position.set(-9, 20, 12);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smoothv(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0 }));
+        }
+
+        // Glacial "horn" relief, 1 unit = about 700 m vertical. A single
+        // free-standing peak built from FOUR RADIAL RIDGES (aretes) spaced
+        // 90 degrees apart, each with its own prominence and footprint
+        // length - Hoernli (northeast, tallest/proudest - the standard
+        // route), Zmutt (northwest), Lion (southwest, the Italian route),
+        // Furggen (southeast). Between adjacent ridges the face profile is
+        // steeper/more concave (glacier-scooped); along a ridge the profile
+        // is fuller, so the ridge stands proud of its two flanking faces -
+        // a genuinely new places-3d archetype (a single 4-armed horn),
+        // distinct from Fuji's smooth radial cone, Everest's 3-summit
+        // ridged massif, and Uluru's single rounded monolith.
+        var BASE_R = 5.6, PEAK_H = 7.4, EXP_FACE = 1.65, RIDGE_HALFW = Math.PI / 6;
+        var RIDGES = [
+            { name: 'hoernli', angle: Math.PI / 4, exp: 0.42, len: 1.14 },
+            { name: 'zmutt', angle: 3 * Math.PI / 4, exp: 0.85, len: 0.95 },
+            { name: 'lion', angle: 5 * Math.PI / 4, exp: 0.62, len: 1.05 },
+            { name: 'furggen', angle: 7 * Math.PI / 4, exp: 0.95, len: 0.92 }
+        ];
+        function angWrap(a) { a = a % (Math.PI * 2); if (a > Math.PI) a -= Math.PI * 2; if (a < -Math.PI) a += Math.PI * 2; return a; }
+        function ridgeLobe(theta, ridgeAngle) {
+            var d = Math.abs(angWrap(theta - ridgeAngle));
+            var t = Math.max(0, 1 - d / RIDGE_HALFW);
+            return t * t * (3 - 2 * t);
+        }
+        function ridgeFactors(theta) {
+            var lenScale = 1, localExp = EXP_FACE, prom = 0;
+            for (var i = 0; i < RIDGES.length; i++) {
+                var lobe = ridgeLobe(theta, RIDGES[i].angle);
+                lenScale += lobe * (RIDGES[i].len - 1);
+                localExp -= lobe * (EXP_FACE - RIDGES[i].exp);
+                if (lobe > prom) prom = lobe;
+            }
+            return { lenScale: lenScale, exp: localExp, prom: prom };
+        }
+        function height(x, z) {
+            var R = Math.hypot(x, z), theta = Math.atan2(z, x);
+            var f = ridgeFactors(theta);
+            var rn = R / (BASE_R * f.lenScale);
+            var peak = PEAK_H * Math.pow(Math.max(0, 1 - rn), f.exp);
+            var h;
+            if (rn < 1) {
+                var texture = 0.16 * Math.max(0, rn) * (fbm(x * 1.4 + 5, z * 1.4 + 9, 4) - 0.5);
+                h = Math.max(0, peak) + texture;
+            } else {
+                var talusT = smoothv(1, 1.35, rn);
+                var talus = 0.55 * (1 - talusT) * (0.5 + 0.5 * fbm(x * 0.6 + 2, z * 0.6 + 6, 3));
+                var meadow = 0.22 * (fbm(x * 0.3 + 11, z * 0.3 + 3, 3) - 0.5);
+                h = talus + meadow * talusT;
+            }
+            return h;
+        }
+
+        var col = {
+            meadow: new THREE.Color(0x6f9b52), talus: new THREE.Color(0x8a8272),
+            rock: new THREE.Color(0x6a5f56), rockLight: new THREE.Color(0x8c8078),
+            snowFull: new THREE.Color(0xf4f8fb), snowBare: new THREE.Color(0xe9edf0)
+        };
+        var SNOW_LINE = PEAK_H * 0.62, TIP_SNOW = PEAK_H * 0.9;
+        function bandColor(c, x, z, snowOn) {
+            var R = Math.hypot(x, z), theta = Math.atan2(z, x);
+            var f = ridgeFactors(theta);
+            var rn = R / (BASE_R * f.lenScale);
+            var n = 0.9 + 0.18 * fbm(x * 1.3 + 4, z * 1.3 + 6, 3);
+            if (rn >= 1) {
+                var talusT = smoothv(1, 1.35, rn);
+                c.copy(col.talus).lerp(col.meadow, talusT);
+                c.multiplyScalar(n);
+                return;
+            }
+            var h = PEAK_H * Math.pow(Math.max(0, 1 - rn), f.exp);
+            c.copy(col.rock).lerp(col.rockLight, Math.min(1, f.prom * 1.2));
+            if (snowOn) {
+                var edge = SNOW_LINE + (fbm(x * 1.1 + 21, z * 1.1 + 13, 3) - 0.5) * 0.7;
+                if (h > edge) {
+                    var st = smoothv(edge, edge + 0.4, h);
+                    c.lerp(col.snowFull, st);
+                }
+            } else {
+                if (h > TIP_SNOW) {
+                    c.lerp(col.snowBare, smoothv(TIP_SNOW, PEAK_H * 0.99, h));
+                } else if (f.prom < 0.22 && h > SNOW_LINE * 0.55) {
+                    // thin couloir streaks in the shaded concave faces only
+                    var streak = fbm(x * 2.4 + 31, z * 2.4 + 17, 2);
+                    if (streak > 0.62) c.lerp(col.snowBare, 0.5);
+                }
+            }
+            c.multiplyScalar(n);
+        }
+        var normColors = null, bareColors = null, terrain;
+        function build(snowOn) {
+            var pos = terrain.geometry.attributes.position, col2 = new THREE.Color();
+            var arr = new Float32Array(pos.count * 3);
+            for (var i = 0; i < pos.count; i++) {
+                bandColor(col2, pos.getX(i), pos.getZ(i), snowOn);
+                arr[i * 3] = col2.r; arr[i * 3 + 1] = col2.g; arr[i * 3 + 2] = col2.b;
+            }
+            return arr;
+        }
+        terrain = makeTerrain(18, 18, shell.low ? 140 : 190, shell.low ? 140 : 190, height, function (c, h, x, z) { bandColor(c, x, z, true); });
+        scene.add(terrain);
+        normColors = terrain.geometry.attributes.color.array.slice();
+        bareColors = build(false);
+
+        // Hoernli ridge marker: a thin tube traced up the real ridge surface
+        // (runtime-sampled from height()), plus a small hut marker near its
+        // base representing the Hoernli Hut on the standard route.
+        var hRidge = RIDGES[0];
+        var ridgePts = [];
+        for (var ri = 0; ri <= 26; ri++) {
+            var rr = BASE_R * hRidge.len * (0.22 + 0.74 * (ri / 26));
+            var rx = rr * Math.cos(hRidge.angle), rz = rr * Math.sin(hRidge.angle);
+            ridgePts.push(new THREE.Vector3(rx, height(rx, rz) + 0.06, rz));
+        }
+        var ridgeGroup = new THREE.Group();
+        var ridgeTube = new THREE.Mesh(
+            new THREE.TubeGeometry(new THREE.CatmullRomCurve3(ridgePts), 40, 0.055, 6, false),
+            new THREE.MeshBasicMaterial({ color: 0xff8a3d })
+        );
+        ridgeGroup.add(ridgeTube);
+        var hutPt = ridgePts[6];
+        var hut = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.22, 6), new THREE.MeshStandardMaterial({ color: 0xd9432f }));
+        hut.position.set(hutPt.x, hutPt.y + 0.14, hutPt.z);
+        ridgeGroup.add(hut);
+        scene.add(ridgeGroup);
+
+        var snowOn = true, ridgeOn = true;
+
+        function panelHtml() {
+            return '<h3>Matterhorn: a classic glacial horn</h3>' +
+                '<p>Four steep triangular faces meeting at a sharp point, separated by four ridges. The orange marker traces the Hoernli ridge - the standard climbing route - with a small hut marker near its base.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Summit elevation</td><td>4,478 m (14,692 ft)</td></tr>' +
+                '<tr><td>Location</td><td>Pennine Alps, on the Swiss (Zermatt, northeast) / Italian (Breuil-Cervinia, south) border</td></tr>' +
+                '<tr><td>Four ridges</td><td>Hoernli (NE), Zmutt (NW), Lion/Italian (SW), Furggen (SE)</td></tr>' +
+                '<tr><td>First ascent</td><td>July 14, 1865, via the Hoernli ridge (Whymper party) - 4 of 7 climbers died in a fall on the descent</td></tr>' +
+                '<tr><td>Lion ridge first ascent</td><td>3 days later, July 17, 1865, led by Jean-Antoine Carrel</td></tr>' +
+                '<tr><td>North Face</td><td>not climbed until 1931 (Schmid brothers) - one of the 6 great north faces of the Alps</td></tr>' +
+                '<tr><td>Deaths since 1865</td><td>more than 500 (widely cited estimate) - among the highest tolls of any single peak</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the ridge geometry, snow pattern, and marker position are schematic teaching cues, not survey terrain.</p>';
+        }
+
+        function apply() {
+            terrain.geometry.attributes.color.array.set(snowOn ? normColors : bareColors);
+            terrain.geometry.attributes.color.needsUpdate = true;
+            ridgeGroup.visible = ridgeOn;
+            var sb = document.getElementById('t3dPmhSnowBtn');
+            if (sb) sb.textContent = 'Snow cover: ' + (snowOn ? 'Full' : 'Steep faces bare');
+            var rb = document.getElementById('t3dPmhRidgeBtn');
+            if (rb) rb.textContent = 'Hoernli ridge marker: ' + (ridgeOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ snowOn: snowOn, ridgeOn: ridgeOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.snowOn === 'boolean') snowOn = store.snowOn;
+        if (typeof store.ridgeOn === 'boolean') ridgeOn = store.ridgeOn;
+        apply();
+
+        var snowBtn = document.getElementById('t3dPmhSnowBtn');
+        if (snowBtn) snowBtn.addEventListener('click', function () { snowOn = !snowOn; apply(); });
+        var ridgeBtn = document.getElementById('t3dPmhRidgeBtn');
+        if (ridgeBtn) ridgeBtn.addEventListener('click', function () { ridgeOn = !ridgeOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the snow cover or the Hoernli ridge marker.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesmatterhorn: 't3dPmhControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesmatterhorn: { radius: 19, maxR: 48, minR: 7, phi: 1.22, theta: 1.05, targetY: 2.5 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
