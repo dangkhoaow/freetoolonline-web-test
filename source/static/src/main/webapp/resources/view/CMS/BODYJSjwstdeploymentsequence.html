@@ -1,0 +1,485 @@
+<script>
+    // 3D scene archetype skeleton (jwst-deployment-sequence) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side.
+    // Built LEAN from the shared t3d* skeleton - ONE scene only. All geometry
+    // is procedural - no model files, no textures fetched.
+    //
+    // EDUCATIONAL APPROXIMATION - this replays the real December 2021 to
+    // January 2022 James Webb Space Telescope (JWST) deployment sequence as a
+    // compressed teaching timeline, not a physics or mechanical simulation.
+    // The tower/sunshield/mirror motions are simplified scale-and-rotate
+    // animations that show the ORDER and SHAPE of each real deployment step,
+    // not the true multi-day motor speeds, structural loads, or the exact
+    // hinge kinematics of the real hardware.
+    //
+    // Published figures (NASA/ESA/STScI, cross-checked via WebSearch
+    // 2026-08-12):
+    //   - Launch: 2021-12-25, 12:20 UTC, on an Ariane 5 rocket from Kourou,
+    //     French Guiana. Solar array deployed automatically about 29 minutes
+    //     after launch.
+    //   - Forward and aft Unitized Pallet Structures (UPS) deployed
+    //     2021-12-28 (forward pallet took about 4 hours).
+    //   - Deployable Tower Assembly extended 2021-12-29, separating the
+    //     telescope and instruments from the sunshield and spacecraft bus to
+    //     make room for the sunshield to fully unfold.
+    //   - Sunshield membrane covers released 2021-12-30; the five-layer
+    //     membrane unfolded into its diamond shape 2021-12-31 as the mid-booms
+    //     extended.
+    //   - Sunshield fully tensioned and locked 2022-01-04: five layers, final
+    //     size about 70 x 47 feet (about 21 x 14 meters) - NASA describes it
+    //     as "about the size of a tennis court".
+    //   - Secondary mirror deployed on its tripod support struts 2022-01-05.
+    //   - Primary mirror's two wings (each holding 3 of the 18 hexagonal
+    //     segments) unfolded and locked into place 2022-01-07 through
+    //     2022-01-08.
+    //   - Final primary-mirror wing (starboard) locked 2022-01-08 at about
+    //     18:17 UTC, completing the deployment sequence. NASA Goddard Mission
+    //     Systems Engineer Mike Menzel: "The Webb Observatory has 50 major
+    //     deployments... and 178 release mechanisms to deploy those 50 items.
+    //     Every one of those mechanisms had to work."
+    //   - Primary mirror: 6.5 m diameter, 18 hexagonal beryllium segments
+    //     (1.32 m each, about 20 kg each) coated with about 100 nanometers
+    //     (1,000 angstroms) of gold - about 48.25 grams of gold across the
+    //     whole primary mirror. Secondary mirror: 0.74 m diameter. Segment
+    //     alignment precision: about 1/10,000 the width of a human hair.
+    //
+    // Distinct from the already-shipped /space-3d/jwst-l2-halo-orbit.html,
+    // whose reader task is JWST's ORBITAL MOTION around the Sun-Earth L2
+    // point (halo-day slider, station-keeping burns) - a completely different
+    // real phenomenon from this page's MECHANICAL UNFOLDING sequence during
+    // the two weeks after launch, before JWST ever reached its final orbit.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'jwst-deployment-sequence';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'jwstdeploy'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 50, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0, moved = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY; moved = 0;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function (e) {
+            var wasClick = moved < 8;
+            dragging = false;
+            if (wasClick && shell.onClick) { shell.onClick(e); }
+        });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            moved += Math.abs(dx) + Math.abs(dy);
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (e.deltaY > 0 ? 1.12 : 0.9), orbit.minR), orbit.maxR);
+        }, { passive: false });
+        var pinch = null;
+        host.addEventListener('touchstart', function (e) {
+            if (e.touches.length === 2) {
+                pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            }
+        }, { passive: true });
+        host.addEventListener('touchmove', function (e) {
+            if (e.touches.length === 2 && pinch) {
+                var d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                orbit.goalRadius = Math.min(Math.max(orbit.goalRadius * (pinch / d), orbit.minR), orbit.maxR);
+                pinch = d;
+            }
+        }, { passive: true });
+        var shell = {
+            THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+            orbit: orbit, low: low, applyCamera: applyCamera, onClick: null,
+            ndc: function (e) {
+                var r = renderer.domElement.getBoundingClientRect();
+                return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+            },
+        };
+        return shell;
+    }
+
+    // Timeline milestones (percent of the 0-100 scrub). Real dates/times per
+    // the header comment (NASA/ESA/STScI, cross-checked 2026-08-12).
+    var T3D_JWST_MILESTONES = [
+        { p: 0, iso: '2021-12-25 ~12:20 UTC', label: 'Launch - Ariane 5 from Kourou, French Guiana', kind: 'launch' },
+        { p: 10, iso: '2021-12-25 (T+29 min)', label: 'Solar array deploys automatically', kind: 'solar' },
+        { p: 20, iso: '2021-12-28', label: 'Forward and aft pallet structures (UPS) unfold', kind: 'pallet' },
+        { p: 30, iso: '2021-12-29', label: 'Deployable Tower Assembly extends', kind: 'tower' },
+        { p: 40, iso: '2021-12-30', label: 'Sunshield membrane covers released', kind: 'covers' },
+        { p: 50, iso: '2021-12-31', label: 'Sunshield unfolds into its diamond shape', kind: 'unfold' },
+        { p: 62, iso: '2022-01-04', label: 'Sunshield fully tensioned - all 5 layers locked (70x47 ft / 21x14 m)', kind: 'tensioned' },
+        { p: 74, iso: '2022-01-05', label: 'Secondary mirror deploys on its tripod struts', kind: 'secondary' },
+        { p: 88, iso: '2022-01-07 to 2022-01-08', label: 'Primary mirror\'s two wings unfold toward locking', kind: 'wings' },
+        { p: 100, iso: '2022-01-08 ~18:17 UTC', label: 'Final wing locks - deployment complete (50 major deployments, 178 release mechanisms)', kind: 'complete' }
+    ];
+
+    function jwstMilestoneIndexAt(pct) {
+        var pts = T3D_JWST_MILESTONES, idx = 0;
+        for (var i = 0; i < pts.length; i++) { if (pct >= pts[i].p) idx = i; }
+        return idx;
+    }
+    function jwstActiveMilestone(pct) { return T3D_JWST_MILESTONES[jwstMilestoneIndexAt(pct)]; }
+    function jwstLerpStage(pct, fromP, toP) {
+        if (pct <= fromP) return 0;
+        if (pct >= toP) return 1;
+        return (pct - fromP) / (toP - fromP);
+    }
+
+    function t3dJwstDeployment(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x02040c, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+        var fill = new THREE.DirectionalLight(0xfff3d0, 1.15);
+        fill.position.set(14, 10, 12);
+        scene.add(fill);
+
+        var SCOUNT = shell.low ? 220 : 500;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(30 + Math.random() * 90);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.5, sizeAttenuation: false })));
+
+        // Spacecraft bus (schematic box) - the launch/solar-array stage.
+        var bus = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.0, 1.0), new THREE.MeshLambertMaterial({ color: 0xaab0b8 }));
+        bus.position.set(0, -3.2, 0);
+        scene.add(bus);
+        var panelGeo = new THREE.BoxGeometry(2.6, 0.06, 1.0);
+        var panelMat = new THREE.MeshLambertMaterial({ color: 0x1c3a5e });
+        var panelL = new THREE.Mesh(panelGeo, panelMat); panelL.position.set(-2.2, -3.2, 0);
+        var panelR = new THREE.Mesh(panelGeo, panelMat); panelR.position.set(2.2, -3.2, 0);
+        scene.add(panelL); scene.add(panelR);
+
+        // Deployable Tower Assembly - a thin telescoping mast that separates
+        // the telescope/mirror structure (above) from the sunshield/bus
+        // (below). Scale.y grows from 0 (retracted) to 1 (extended).
+        var towerGroup = new THREE.Group();
+        towerGroup.position.set(0, -2.6, 0);
+        var towerMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 3.2, 8), new THREE.MeshLambertMaterial({ color: 0x8d9096 }));
+        towerMesh.position.set(0, 1.6, 0);
+        towerGroup.add(towerMesh);
+        towerGroup.scale.y = 0.02;
+        scene.add(towerGroup);
+
+        // Sunshield - 5 stacked kite-shaped membrane layers. Real deployed
+        // size about 70x47 ft (21x14 m); drawn here at a schematic aspect
+        // ratio (not claimed to be exact), scaling from nearly-folded to
+        // fully deployed as the timeline advances.
+        function kiteShape(len, wid) {
+            var sh = new THREE.Shape();
+            sh.moveTo(0, len * 0.55);
+            sh.lineTo(wid * 0.5, 0);
+            sh.lineTo(0, -len * 0.45);
+            sh.lineTo(-wid * 0.5, 0);
+            sh.closePath();
+            return sh;
+        }
+        var shieldGroup = new THREE.Group();
+        shieldGroup.position.set(0, -1.0, 0);
+        shieldGroup.rotation.x = -Math.PI / 2.15;
+        scene.add(shieldGroup);
+        var SHIELD_LAYER_COLORS = [0xcbb7a3, 0xd6c2ab, 0xc2a894, 0xd9c7a3, 0xbfa88f];
+        var shieldLayers = [];
+        for (var li = 0; li < 5; li++) {
+            var shape = kiteShape(6.2, 4.4);
+            var geo = new THREE.ShapeGeometry(shape);
+            var mat = new THREE.MeshBasicMaterial({ color: SHIELD_LAYER_COLORS[li], side: THREE.DoubleSide, transparent: true, opacity: 0.82 });
+            var mesh = new THREE.Mesh(geo, mat);
+            mesh.position.z = li * 0.05 - 0.1;
+            shieldGroup.add(mesh);
+            shieldLayers.push(mesh);
+        }
+        var shieldFoldScale = 0.04;
+        shieldGroup.scale.set(shieldFoldScale, shieldFoldScale, 1);
+
+        // Primary mirror: a fixed centre hexagon (of the 18 real segments)
+        // plus two wing groups (each schematically representing 3 of the
+        // real segments) that fold back ~100 degrees for launch and rotate
+        // out to coplanar as the real hinge mechanism does.
+        function hexMesh(color) {
+            return new THREE.Mesh(new THREE.CircleGeometry(0.62, 6), new THREE.MeshStandardMaterial({ color: color, metalness: 0.55, roughness: 0.35 }));
+        }
+        var mirrorGroup = new THREE.Group();
+        mirrorGroup.position.set(0, 1.6, 0);
+        scene.add(mirrorGroup);
+        var GOLD = 0xd9c7a3;
+        var centreHex = hexMesh(GOLD);
+        mirrorGroup.add(centreHex);
+
+        var portWing = new THREE.Group();
+        var starWing = new THREE.Group();
+        function buildWing(group, sign) {
+            var positions = [[0, 1.08], [0.94, 0.54], [0.94, -0.54]];
+            for (var wi = 0; wi < positions.length; wi++) {
+                var hx = hexMesh(GOLD);
+                hx.position.set(sign * (1.08 + positions[wi][0]), positions[wi][1], 0);
+                group.add(hx);
+            }
+        }
+        buildWing(portWing, -1);
+        buildWing(starWing, 1);
+        portWing.rotation.y = Math.PI * 0.56;
+        starWing.rotation.y = -Math.PI * 0.56;
+        mirrorGroup.add(portWing);
+        mirrorGroup.add(starWing);
+
+        // Secondary mirror on a tripod of struts, forward of the primary.
+        var secondaryGroup = new THREE.Group();
+        secondaryGroup.position.set(0, 1.6, 0.2);
+        scene.add(secondaryGroup);
+        var strutMat = new THREE.MeshLambertMaterial({ color: 0x9aa0a6 });
+        var struts = [];
+        for (var ti = 0; ti < 3; ti++) {
+            var strut = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1, 6), strutMat);
+            var ang = ti * (Math.PI * 2 / 3);
+            strut.position.set(Math.cos(ang) * 0.5, Math.sin(ang) * 0.5, 0.5);
+            strut.rotation.x = Math.PI / 2.1;
+            secondaryGroup.add(strut);
+            struts.push(strut);
+        }
+        var secondaryMirror = new THREE.Mesh(new THREE.CircleGeometry(0.16, 12), new THREE.MeshStandardMaterial({ color: GOLD, metalness: 0.55, roughness: 0.35 }));
+        secondaryGroup.add(secondaryMirror);
+        secondaryGroup.scale.z = 0.02;
+
+        // Dimension-reference overlay - a wireframe rectangle at the shield's
+        // real published aspect ratio (70x47 ft / 21x14 m), toggled on beside
+        // the deployed shield for a direct size comparison. Real figure
+        // shown in the facts panel note; this outline is a schematic
+        // proportion reference, not a to-scale distance from the shield.
+        var dimOverlayOn = false;
+        var dimRefGeo = new THREE.EdgesGeometry(new THREE.PlaneGeometry(7.0, 4.7));
+        var dimRef = new THREE.LineSegments(dimRefGeo, new THREE.LineBasicMaterial({ color: 0xfff3cd }));
+        dimRef.position.set(9, -1, 0);
+        dimRef.visible = false;
+        scene.add(dimRef);
+
+        var progress = 6;
+        var playing = true;
+
+        function panelHtml() {
+            var m = jwstActiveMilestone(progress);
+            var rows = '';
+            for (var i2 = 0; i2 < T3D_JWST_MILESTONES.length; i2++) {
+                var row = T3D_JWST_MILESTONES[i2];
+                var active = (row === m);
+                rows += '<tr' + (active ? ' style="background:#fff3cd;font-weight:600;"' : '') + '>' +
+                    '<td>' + row.iso + '</td><td>' + row.label + '</td></tr>';
+            }
+            var tensionedNote = progress >= 62
+                ? '<p class="t3d-note"><b>Sunshield fully tensioned:</b> five layers, final size about 70x47 ft (about 21x14 m) - NASA describes it as "about the size of a tennis court". Press "Show dimensions" to see the label beside the shield.</p>'
+                : '';
+            var completeNote = progress >= 100
+                ? '<p class="t3d-note"><b>Deployment complete:</b> NASA Goddard Mission Systems Engineer Mike Menzel: the observatory has 50 major deployments and 178 release mechanisms to deploy those 50 items - every one had to work.</p>'
+                : '';
+            return '<h3>JWST unfolds in space</h3>' +
+                '<p>Scrub the slider through the real December 2021 to January 2022 deployment: the tower, the five-layer sunshield, and the primary mirror\'s folding wings, in the real order they happened.</p>' +
+                '<table class="w3-table w3-bordered w3-small">' +
+                '<tr><td colspan="2"><b>Progress: ' + Math.round(progress) + '% - ' + m.label + '</b></td></tr>' +
+                rows +
+                '</table>' +
+                tensionedNote + completeNote +
+                '<p class="t3d-note">Educational approximation: the tower, sunshield, and mirror-wing motions are simplified scale-and-rotate animations showing the order and shape of each real step, not the true multi-day motor speeds or exact hinge kinematics. Dates, times, and figures above are the real published values.</p>';
+        }
+
+        function applyProgress(pct) {
+            progress = Math.max(0, Math.min(100, pct));
+
+            var solarOn = progress >= 10;
+            panelL.visible = solarOn; panelR.visible = solarOn;
+
+            var towerU = jwstLerpStage(progress, 20, 30);
+            towerGroup.scale.y = 0.02 + towerU * 0.98;
+
+            var coverU = jwstLerpStage(progress, 30, 40);
+            var unfoldU = jwstLerpStage(progress, 40, 50);
+            var tensionU = jwstLerpStage(progress, 50, 62);
+            var shieldU = Math.max(coverU * 0.15, unfoldU * 0.6, tensionU >= 0 && progress >= 50 ? (0.6 + tensionU * 0.4) : 0);
+            if (progress < 30) shieldU = 0;
+            var s = shieldFoldScale + shieldU * (1 - shieldFoldScale);
+            shieldGroup.scale.set(s, s, 1);
+            for (var lj = 0; lj < shieldLayers.length; lj++) {
+                shieldLayers[lj].material.opacity = 0.3 + shieldU * 0.55;
+            }
+
+            var secondaryU = jwstLerpStage(progress, 64, 74);
+            secondaryGroup.scale.z = 0.02 + secondaryU * 0.98;
+            for (var tj = 0; tj < struts.length; tj++) { struts[tj].visible = secondaryU > 0.05; }
+            secondaryMirror.visible = secondaryU > 0.4;
+
+            var wingU = jwstLerpStage(progress, 78, 100);
+            portWing.rotation.y = Math.PI * 0.56 * (1 - wingU);
+            starWing.rotation.y = -Math.PI * 0.56 * (1 - wingU);
+
+            var slider = document.getElementById('t3dJwstProgress');
+            var label = document.getElementById('t3dJwstProgressLabel');
+            if (slider && Math.round(parseFloat(slider.value || '0')) !== Math.round(progress)) {
+                slider.value = String(Math.round(progress));
+            }
+            if (label) label.textContent = Math.round(progress) + '%';
+            t3dInfo(panelHtml());
+            dimRef.visible = dimOverlayOn && progress >= 62;
+            try { t3dSaveStore({ progress: progress, dimOverlayOn: dimOverlayOn }); } catch (e) {}
+        }
+
+        var ray = new THREE.Raycaster();
+        shell.onClick = function (e) {
+            ray.setFromCamera(shell.ndc(e), shell.camera);
+            var targets = [bus, towerMesh, centreHex, secondaryMirror].concat(shieldLayers);
+            var hits = ray.intersectObjects(targets, false);
+            if (!hits.length) return;
+            t3dInfo(panelHtml());
+        };
+
+        var store = t3dLoadStore();
+        if (typeof store.progress === 'number') progress = store.progress;
+        if (typeof store.dimOverlayOn === 'boolean') dimOverlayOn = store.dimOverlayOn;
+        applyProgress(progress);
+
+        var playBtn = document.getElementById('t3dJwstPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            playing = !playing;
+            playBtn.textContent = playing ? 'Pause' : 'Play';
+        });
+        var slider = document.getElementById('t3dJwstProgress');
+        if (slider) slider.addEventListener('input', function () {
+            playing = false;
+            if (playBtn) playBtn.textContent = 'Play';
+            applyProgress(parseFloat(slider.value || '0'));
+        });
+        var dimBtn = document.getElementById('t3dJwstDimBtn');
+        if (dimBtn) dimBtn.addEventListener('click', function () {
+            dimOverlayOn = !dimOverlayOn;
+            dimBtn.textContent = dimOverlayOn ? 'Hide dimensions' : 'Show dimensions';
+            applyProgress(progress);
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Press Play/Pause or scrub the progress slider through the real December 2021 to January 2022 deployment sequence.');
+        return function animate(dt) {
+            if (!playing) return;
+            var next = progress + (dt / 1000) * 2.2;
+            if (next >= 100) next = 0;
+            applyProgress(next);
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { jwstdeploy: 't3dJwstControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = {
+                        jwstdeploy: { radius: 16, maxR: 90, minR: 4, phi: 1.1, theta: 0.6, targetY: -0.4 }
+                    };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dJwstDeployment(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
