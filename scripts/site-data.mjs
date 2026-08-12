@@ -7519,30 +7519,17 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/velociraptor-3d-viewer-vs-ar-apps.html',
   '/guides/id/velociraptor-3d-viewer-vs-ar-apps.html',
   '/guides/de/velociraptor-3d-viewer-vs-ar-apps.html',
-  // dinosaur-3d-guides-loop-runbook fire10 (2026-07-16): how-to-view-triceratops-in-3d
-  // (EN + pt/es/vi/id/de) - how-to angle for the Triceratops viewer.
-  '/guides/how-to-view-triceratops-in-3d.html',
-  '/guides/pt/how-to-view-triceratops-in-3d.html',
-  '/guides/es/how-to-view-triceratops-in-3d.html',
-  '/guides/vi/how-to-view-triceratops-in-3d.html',
-  '/guides/id/how-to-view-triceratops-in-3d.html',
-  '/guides/de/how-to-view-triceratops-in-3d.html',
   // dinosaur-3d-guides-loop-runbook fire11 (2026-07-16): triceratops-size-comparison
-  // (EN + pt/es/vi/id/de) - size angle for the Triceratops viewer.
+  // (EN + pt/es/vi/id/de) - size angle for the Triceratops viewer. consolidation
+  // fire53 (2026-08-12): this is now the SOLE guide family for the
+  // dinosaur-3d.triceratops.viewer intent node - the fire10 how-to-view and fire12
+  // vs-ar-apps families were folded into it and 301d (see ALIAS_ROUTES).
   '/guides/triceratops-size-comparison.html',
   '/guides/pt/triceratops-size-comparison.html',
   '/guides/es/triceratops-size-comparison.html',
   '/guides/vi/triceratops-size-comparison.html',
   '/guides/id/triceratops-size-comparison.html',
   '/guides/de/triceratops-size-comparison.html',
-  // dinosaur-3d-guides-loop-runbook fire12 (2026-07-16): triceratops-3d-viewer-vs-ar-apps
-  // (EN + pt/es/vi/id/de) - vs-alternatives angle for the Triceratops viewer.
-  '/guides/triceratops-3d-viewer-vs-ar-apps.html',
-  '/guides/pt/triceratops-3d-viewer-vs-ar-apps.html',
-  '/guides/es/triceratops-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/triceratops-3d-viewer-vs-ar-apps.html',
-  '/guides/id/triceratops-3d-viewer-vs-ar-apps.html',
-  '/guides/de/triceratops-3d-viewer-vs-ar-apps.html',
   // dinosaur-3d-guides-loop-runbook fire13 (2026-07-16): how-to-view-spinosaurus-in-3d
   // (EN + pt/es/vi/id/de) - how-to angle for the Spinosaurus viewer.
   '/guides/how-to-view-spinosaurus-in-3d.html',
@@ -15382,6 +15369,24 @@ export const ALIAS_ROUTES = {
   '/guides/de/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html': '/guides/de/tyrannosaurus-rex-size-comparison.html',
   '/guides/vi/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html': '/guides/vi/tyrannosaurus-rex-size-comparison.html',
   '/guides/id/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html': '/guides/id/tyrannosaurus-rex-size-comparison.html',
+  // consolidation fire53 (2026-08-12): retire the how-to-view-triceratops-in-3d
+  // + triceratops-3d-viewer-vs-ar-apps doorway families into the
+  // triceratops-size-comparison keeper, locale-matched. Backlog item
+  // topical-map-dinosaur-3d.triceratops.viewer (2 live excess families; 0 clicks,
+  // 0 AI citations, 72 impr 28d across all 12 routes). Unique facts were folded
+  // into the keeper BEFORE the 301; the edge layer is patched in the same push.
+  '/guides/how-to-view-triceratops-in-3d.html': '/guides/triceratops-size-comparison.html',
+  '/guides/pt/how-to-view-triceratops-in-3d.html': '/guides/pt/triceratops-size-comparison.html',
+  '/guides/es/how-to-view-triceratops-in-3d.html': '/guides/es/triceratops-size-comparison.html',
+  '/guides/vi/how-to-view-triceratops-in-3d.html': '/guides/vi/triceratops-size-comparison.html',
+  '/guides/id/how-to-view-triceratops-in-3d.html': '/guides/id/triceratops-size-comparison.html',
+  '/guides/de/how-to-view-triceratops-in-3d.html': '/guides/de/triceratops-size-comparison.html',
+  '/guides/triceratops-3d-viewer-vs-ar-apps.html': '/guides/triceratops-size-comparison.html',
+  '/guides/pt/triceratops-3d-viewer-vs-ar-apps.html': '/guides/pt/triceratops-size-comparison.html',
+  '/guides/es/triceratops-3d-viewer-vs-ar-apps.html': '/guides/es/triceratops-size-comparison.html',
+  '/guides/vi/triceratops-3d-viewer-vs-ar-apps.html': '/guides/vi/triceratops-size-comparison.html',
+  '/guides/id/triceratops-3d-viewer-vs-ar-apps.html': '/guides/id/triceratops-size-comparison.html',
+  '/guides/de/triceratops-3d-viewer-vs-ar-apps.html': '/guides/de/triceratops-size-comparison.html',
   // consolidation fire51 (2026-08-12): retire the roche-limit-step-by-step +
   // roche-limit-vs-alternatives doorway families into the roche-limit-when
   // keeper, locale-matched. Backlog item topical-map-space-3d.roche-limit.3d-explorer
@@ -19835,14 +19840,6 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/velociraptor-3d-viewer-vs-ar-apps.html': 'guide/vi/velociraptor-3d-viewer-vs-ar-apps.jsp',
   '/guides/id/velociraptor-3d-viewer-vs-ar-apps.html': 'guide/id/velociraptor-3d-viewer-vs-ar-apps.jsp',
   '/guides/de/velociraptor-3d-viewer-vs-ar-apps.html': 'guide/de/velociraptor-3d-viewer-vs-ar-apps.jsp',
-  // dinosaur-3d-guides-loop-runbook fire10 (2026-07-16): how-to-view-triceratops-in-3d
-  // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
-  '/guides/how-to-view-triceratops-in-3d.html': 'guide/how-to-view-triceratops-in-3d.jsp',
-  '/guides/pt/how-to-view-triceratops-in-3d.html': 'guide/pt/how-to-view-triceratops-in-3d.jsp',
-  '/guides/es/how-to-view-triceratops-in-3d.html': 'guide/es/how-to-view-triceratops-in-3d.jsp',
-  '/guides/vi/how-to-view-triceratops-in-3d.html': 'guide/vi/how-to-view-triceratops-in-3d.jsp',
-  '/guides/id/how-to-view-triceratops-in-3d.html': 'guide/id/how-to-view-triceratops-in-3d.jsp',
-  '/guides/de/how-to-view-triceratops-in-3d.html': 'guide/de/how-to-view-triceratops-in-3d.jsp',
   // dinosaur-3d-guides-loop-runbook fire11 (2026-07-16): triceratops-size-comparison
   // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
   '/guides/triceratops-size-comparison.html': 'guide/triceratops-size-comparison.jsp',
@@ -19851,14 +19848,6 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/triceratops-size-comparison.html': 'guide/vi/triceratops-size-comparison.jsp',
   '/guides/id/triceratops-size-comparison.html': 'guide/id/triceratops-size-comparison.jsp',
   '/guides/de/triceratops-size-comparison.html': 'guide/de/triceratops-size-comparison.jsp',
-  // dinosaur-3d-guides-loop-runbook fire12 (2026-07-16): triceratops-3d-viewer-vs-ar-apps
-  // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
-  '/guides/triceratops-3d-viewer-vs-ar-apps.html': 'guide/triceratops-3d-viewer-vs-ar-apps.jsp',
-  '/guides/pt/triceratops-3d-viewer-vs-ar-apps.html': 'guide/pt/triceratops-3d-viewer-vs-ar-apps.jsp',
-  '/guides/es/triceratops-3d-viewer-vs-ar-apps.html': 'guide/es/triceratops-3d-viewer-vs-ar-apps.jsp',
-  '/guides/vi/triceratops-3d-viewer-vs-ar-apps.html': 'guide/vi/triceratops-3d-viewer-vs-ar-apps.jsp',
-  '/guides/id/triceratops-3d-viewer-vs-ar-apps.html': 'guide/id/triceratops-3d-viewer-vs-ar-apps.jsp',
-  '/guides/de/triceratops-3d-viewer-vs-ar-apps.html': 'guide/de/triceratops-3d-viewer-vs-ar-apps.jsp',
   // dinosaur-3d-guides-loop-runbook fire13 (2026-07-16): how-to-view-spinosaurus-in-3d
   // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
   '/guides/how-to-view-spinosaurus-in-3d.html': 'guide/how-to-view-spinosaurus-in-3d.jsp',
@@ -29559,7 +29548,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/vi/how-to-view-titanoboa-in-3d.html',
   '/guides/vi/how-to-view-titanosaurus-in-3d.html',
   '/guides/vi/how-to-view-torvosaurus-in-3d.html',
-  '/guides/vi/how-to-view-triceratops-in-3d.html',
   '/guides/vi/how-to-view-troodon-in-3d.html',
   '/guides/vi/how-to-view-tsintaosaurus-in-3d.html',
   '/guides/vi/how-to-view-tylosaurus-in-3d.html',
@@ -30329,8 +30317,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   "/guides/vi/trappist-1-step-by-step.html",
   "/guides/vi/trappist-1-vs-alternatives.html",
   "/guides/vi/trappist-1-when.html",
-  "/guides/vi/triceratops-3d-viewer-vs-ar-apps.html",
-  "/guides/vi/triceratops-size-comparison.html",
   "/guides/vi/triton-cantaloupe-step-by-step.html",
   "/guides/vi/triton-cantaloupe-vs-alternatives.html",
   "/guides/vi/triton-cantaloupe-when.html",
@@ -31148,7 +31134,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   "/guides/de/how-to-view-titanoboa-in-3d.html",
   "/guides/de/how-to-view-titanosaurus-in-3d.html",
   "/guides/de/how-to-view-torvosaurus-in-3d.html",
-  "/guides/de/how-to-view-triceratops-in-3d.html",
   "/guides/de/how-to-view-troodon-in-3d.html",
   "/guides/de/how-to-view-tsintaosaurus-in-3d.html",
   "/guides/de/how-to-view-tylosaurus-in-3d.html",
@@ -31619,8 +31604,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   "/guides/de/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html",
   "/guides/de/velociraptor-size-comparison.html",
   "/guides/de/velociraptor-3d-viewer-vs-ar-apps.html",
-  "/guides/de/triceratops-size-comparison.html",
-  "/guides/de/triceratops-3d-viewer-vs-ar-apps.html",
   "/guides/de/spinosaurus-size-comparison.html",
   "/guides/de/spinosaurus-3d-viewer-vs-ar-apps.html",
   "/guides/de/stegosaurus-size-comparison.html",
@@ -32313,7 +32296,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/pt/how-to-view-titanoboa-in-3d.html',
   '/guides/pt/how-to-view-titanosaurus-in-3d.html',
   '/guides/pt/how-to-view-torvosaurus-in-3d.html',
-  '/guides/pt/how-to-view-triceratops-in-3d.html',
   '/guides/pt/how-to-view-troodon-in-3d.html',
   '/guides/pt/how-to-view-tsintaosaurus-in-3d.html',
   '/guides/pt/how-to-view-tylosaurus-in-3d.html',
@@ -32980,7 +32962,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/pt/touchscreen-test-step-by-step.html',
   '/guides/pt/touchscreen-test-vs-alternatives.html',
   '/guides/pt/touchscreen-test-when.html',
-  '/guides/pt/triceratops-3d-viewer-vs-ar-apps.html',
   '/guides/pt/triton-cantaloupe-vs-alternatives.html',
   '/guides/pt/triton-cantaloupe-when.html',
   '/guides/pt/troodon-3d-viewer-vs-ar-apps.html',
@@ -33723,7 +33704,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/es/how-to-view-therizinosaurus-in-3d.html',
   '/guides/es/how-to-view-titanosaurus-in-3d.html',
   '/guides/es/how-to-view-torvosaurus-in-3d.html',
-  '/guides/es/how-to-view-triceratops-in-3d.html',
   '/guides/es/how-to-view-troodon-in-3d.html',
   '/guides/es/how-to-view-tsintaosaurus-in-3d.html',
   '/guides/es/how-to-view-tylosaurus-in-3d.html',
@@ -34229,8 +34209,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/es/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/velociraptor-size-comparison.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/velociraptor-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence es
-  '/guides/es/triceratops-size-comparison.html', // pruned 2026-07-29 zero-evidence es
-  '/guides/es/triceratops-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/stegosaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/stegosaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/therizinosaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence es
@@ -35442,7 +35420,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/id/how-to-view-titanoboa-in-3d.html',
   '/guides/id/how-to-view-titanosaurus-in-3d.html',
   '/guides/id/how-to-view-torvosaurus-in-3d.html',
-  '/guides/id/how-to-view-triceratops-in-3d.html',
   '/guides/id/how-to-view-troodon-in-3d.html',
   '/guides/id/how-to-view-tsintaosaurus-in-3d.html',
   '/guides/id/how-to-view-tylosaurus-in-3d.html',
@@ -35620,8 +35597,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/id/mosasaurus-3d-viewer-vs-ar-apps.html',
   '/guides/id/velociraptor-size-comparison.html',
   '/guides/id/velociraptor-3d-viewer-vs-ar-apps.html',
-  '/guides/id/triceratops-size-comparison.html',
-  '/guides/id/triceratops-3d-viewer-vs-ar-apps.html',
   '/guides/id/spinosaurus-size-comparison.html',
   '/guides/id/spinosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/id/stegosaurus-size-comparison.html',
