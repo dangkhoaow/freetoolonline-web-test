@@ -799,6 +799,7 @@ try {
     { title: "Ingenuity Mars Helicopter 3D Explorer", url: "https://freetoolonline.com/space-3d/ingenuity-mars-helicopter.html", include: !1, tags: "space-3d" },
     { title: "3I/ATLAS Interstellar Object 3D Explorer", url: "https://freetoolonline.com/space-3d/3i-atlas-interstellar-object.html", include: !1, tags: "space-3d" },
     { title: "JWST Deployment Sequence 3D Explorer", url: "https://freetoolonline.com/space-3d/jwst-deployment-sequence.html", include: !1, tags: "space-3d" },
+    { title: "Sputnik Planitia 3D Explorer", url: "https://freetoolonline.com/space-3d/sputnik-planitia-nitrogen-convection.html", include: !1, tags: "space-3d" },
     { title: "Solar Eclipse 3D Explorer", url: "https://freetoolonline.com/space-3d/solar-eclipse.html", include: !1, tags: "space-3d" },
     { title: "Linux Online - Run Linux in Your Browser (Terminal & Desktop)", url: "https://freetoolonline.com/utility-tools/linux-online.html", include: !1, tags: "utility" },
     { title: "Retro FPS Online - Play a Classic Shooter in Your Browser (Freedoom)", url: "https://freetoolonline.com/games/retro-fps-online.html", include: !1, tags: "games" },

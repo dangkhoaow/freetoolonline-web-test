@@ -1,0 +1,361 @@
+<script>
+    // 3D scene archetype skeleton (Sputnik Planitia nitrogen convection) -
+    // vendored three.js (ESM, dynamic import from /vendor/three/, NO CDN),
+    // fully client-side. Built LEAN, forked from the yarkovsky-effect shape -
+    // ONE scene only. All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not a fluid-dynamics simulation. A teaching
+    // scene: a flat-top hexagonal-cell patch representing Pluto's Sputnik
+    // Planitia nitrogen-ice plain. Each cell's height and brightness scrub
+    // through a convective overturn cycle - bright, raised centers ("cell
+    // interior upwelling") and darker, sunken edges ("cell-boundary troughs").
+    // Cell phases are staggered across the patch purely for teaching clarity
+    // (so a scrub always shows a mix of rising/sinking cells at once) - this
+    // is NOT a fluid-dynamics solve of the real convection process, and the
+    // patch is shown flat because, at this scale, the plain's real curvature
+    // would be imperceptible.
+    //
+    // Published figures (cross-checked via WebSearch 2026-08-12, carried
+    // forward from the space-3d-discovery-loop-runbook backlog evidence
+    // block fire20260812d gate-1 fact-check):
+    //   - Sputnik Planitia extent: about 1,400 x 1,200 km (larger than Texas
+    //     plus Oklahoma combined).
+    //   - Polygonal convection-cell width: 20-40 km, average about 33 km
+    //     (McKinnon, W.B. et al. 2016, "Convection in a volatile nitrogen-
+    //     ice-rich layer drives Pluto's geological vigour", Nature 534,
+    //     82-85).
+    //   - Cell overturn / resurfacing timescale: about 500,000 years.
+    //   - Surface temperature: about -230C (about 44K).
+    //   - Convecting nitrogen-ice layer thickness: a few kilometers.
+    //   - Surface creep rate: a few centimeters per year.
+    //   - Source: McKinnon et al. 2016, Nature; NASA New Horizons mission
+    //     pages corroborate cell dimensions and surface temperature.
+    //   - Distinct from new-horizons-pluto-flyby (mission trajectory and
+    //     timeline) and pluto-charon-double-planet (orbital and barycenter
+    //     mechanics) - this page is Pluto's OWN surface geology, a reader
+    //     task neither existing Pluto page covers.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'sputnikplanitianitrogenconvection';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'sputnikplanitia'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 50, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Real published figures (McKinnon et al. 2016, Nature 534, 82-85; NASA
+    // New Horizons mission pages).
+    var T3D_SP_CELL_WIDTH_KM = '20-40 km (average about 33 km)';
+    var T3D_SP_OVERTURN_YEARS = 500000;
+    var T3D_SP_EXTENT_KM = 'about 1,400 x 1,200 km';
+    var T3D_SP_TEMP_C = 'about -230C (about 44K)';
+    var T3D_SP_LAYER_THICKNESS = 'a few km';
+    var T3D_SP_CREEP_RATE = 'a few cm/year';
+
+    function t3dSputnikPlanitia(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+        var fillLight = new THREE.DirectionalLight(0xdcecff, 0.55);
+        fillLight.position.set(6, 12, 8);
+        scene.add(fillLight);
+
+        // Starfield backdrop
+        var starN = shell.low ? 220 : 460;
+        var starPos = new Float32Array(starN * 3);
+        for (var s = 0; s < starN; s++) {
+            var r = 50 + Math.random() * 70;
+            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+            starPos[s * 3] = r * Math.sin(ph) * Math.cos(th);
+            starPos[s * 3 + 1] = r * Math.cos(ph) * 0.5 + 6;
+            starPos[s * 3 + 2] = r * Math.sin(ph) * Math.sin(th) - 14;
+        }
+        var starGeo = new THREE.BufferGeometry();
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        var stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xaad4ff, size: 0.28, sizeAttenuation: true, transparent: true, opacity: 0.65 }));
+        scene.add(stars);
+
+        // Distant Sun marker (Pluto orbits far from the Sun - kept small and dim)
+        var sun = new THREE.Mesh(new THREE.SphereGeometry(0.55, 16, 12), new THREE.MeshBasicMaterial({ color: 0xfff3c4 }));
+        sun.position.set(-16, 9, -10);
+        scene.add(sun);
+
+        // Dark base plate under the ice patch (bedrock context, subtle)
+        var baseGeo = new THREE.CylinderGeometry(11.5, 12.2, 0.6, 24);
+        var base = new THREE.Mesh(baseGeo, new THREE.MeshStandardMaterial({ color: 0x151a20, roughness: 1, metalness: 0 }));
+        base.position.y = -0.9;
+        scene.add(base);
+
+        // Flat-top hexagonal-cell patch, standard axial hex-grid layout.
+        var CELL_SIZE = 1.0;
+        var COLS = 6, ROWS = 5;
+        var cells = [];
+        var group = new THREE.Group();
+        scene.add(group);
+
+        function hexCenter(col, row) {
+            var x = CELL_SIZE * 1.5 * col;
+            var z = Math.sqrt(3) * CELL_SIZE * row + (col % 2 ? Math.sqrt(3) * CELL_SIZE / 2 : 0);
+            return { x: x, z: z };
+        }
+
+        var centers = [];
+        for (var c = 0; c < COLS; c++) {
+            for (var rr = 0; rr < ROWS; rr++) {
+                centers.push(hexCenter(c, rr));
+            }
+        }
+        // Recenter the grid on the origin.
+        var avgX = 0, avgZ = 0;
+        for (var i0 = 0; i0 < centers.length; i0++) { avgX += centers[i0].x; avgZ += centers[i0].z; }
+        avgX /= centers.length; avgZ /= centers.length;
+
+        var BASE_HEIGHT = 0.7, AMPLITUDE = 0.55;
+        for (var i = 0; i < centers.length; i++) {
+            var cx = centers[i].x - avgX, cz = centers[i].z - avgZ;
+            // Staggered phase per cell (teaching device, not a fluid solve) -
+            // derived from grid position so neighbouring cells read as
+            // slightly out of step, like a real still-active convecting plain.
+            var phase = (cx * 0.7 + cz * 1.3) % (Math.PI * 2);
+            var geo = new THREE.CylinderGeometry(CELL_SIZE * 0.93, CELL_SIZE * 0.93, BASE_HEIGHT, 6, 1);
+            var mat = new THREE.MeshStandardMaterial({ color: 0xd7e6ea, roughness: 0.85, metalness: 0.02 });
+            var mesh = new THREE.Mesh(geo, mat);
+            mesh.position.set(cx, 0, cz);
+            group.add(mesh);
+
+            // Trough-boundary outline (dark hexagon ring at the cell base),
+            // toggled brighter by the "Highlight troughs" control.
+            var edgeGeo = new THREE.EdgesGeometry(new THREE.CylinderGeometry(CELL_SIZE * 0.98, CELL_SIZE * 0.98, 0.05, 6, 1));
+            var edgeMat = new THREE.LineBasicMaterial({ color: 0x0a2a3a, transparent: true, opacity: 0.35 });
+            var edge = new THREE.LineSegments(edgeGeo, edgeMat);
+            edge.position.set(cx, -BASE_HEIGHT / 2 - 0.02, cz);
+            group.add(edge);
+
+            cells.push({ mesh: mesh, edge: edge, phase: phase });
+        }
+
+        var cyclePercent = 0; // 0-100, one full lap = T3D_SP_OVERTURN_YEARS
+        var playing = false;
+        var troughsHighlighted = false;
+
+        function fmtYears(pct) {
+            var y = Math.round((pct / 100) * T3D_SP_OVERTURN_YEARS);
+            return y.toLocaleString ? y.toLocaleString('en-US') : String(y);
+        }
+
+        function applyCells() {
+            var t = (cyclePercent / 100) * Math.PI * 2;
+            for (var i = 0; i < cells.length; i++) {
+                var cell = cells[i];
+                var wave = Math.sin(t + cell.phase); // -1 (sunken trough phase) .. +1 (risen upwelling phase)
+                var h = BASE_HEIGHT + AMPLITUDE * wave;
+                cell.mesh.scale.y = Math.max(0.15, h / BASE_HEIGHT);
+                cell.mesh.position.y = (h - BASE_HEIGHT) / 2;
+                // Brightness follows height: risen centers read bright/fresh,
+                // sunken edges read darker/older - matching real New Horizons
+                // imagery of bright polygon interiors and darker troughs.
+                var lightness = 0.62 + 0.22 * wave;
+                cell.mesh.material.color.setHSL(0.53, 0.18, Math.max(0.3, Math.min(0.92, lightness)));
+                cell.edge.position.y = cell.mesh.position.y - (h / 2) - 0.02;
+                cell.edge.material.opacity = troughsHighlighted ? 0.95 : 0.3;
+                cell.edge.material.color.set(troughsHighlighted ? 0xff8a3d : 0x0a2a3a);
+            }
+        }
+
+        function panelHtml() {
+            return '<h3>Sputnik Planitia convection</h3>' +
+                '<p>Each hexagon is one convection cell: bright, risen centers are fresh nitrogen ice pushing up; darker, sunken edges are the narrow troughs where older ice sinks back down.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Cycle position</td><td>' + cyclePercent.toFixed(0) + '% of one overturn</td></tr>' +
+                '<tr><td>Elapsed (this scrub)</td><td>about ' + fmtYears(cyclePercent) + ' years into a ' + T3D_SP_OVERTURN_YEARS.toLocaleString('en-US') + '-year cycle</td></tr>' +
+                '<tr><td>Sputnik Planitia extent</td><td>' + T3D_SP_EXTENT_KM + '</td></tr>' +
+                '<tr><td>Cell width</td><td>' + T3D_SP_CELL_WIDTH_KM + ' (McKinnon et al. 2016, Nature)</td></tr>' +
+                '<tr><td>Overturn timescale</td><td>' + T3D_SP_OVERTURN_YEARS.toLocaleString('en-US') + ' years</td></tr>' +
+                '<tr><td>Surface temperature</td><td>' + T3D_SP_TEMP_C + '</td></tr>' +
+                '<tr><td>Convecting layer thickness</td><td>' + T3D_SP_LAYER_THICKNESS + '</td></tr>' +
+                '<tr><td>Surface creep rate</td><td>' + T3D_SP_CREEP_RATE + '</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation - cell layout, the staggered phase per cell, and the height/color changes are simplified and exaggerated for teaching, not a fluid-dynamics simulation of the real convection process. The patch is shown flat because, at this scale, the plain\'s real curvature would be imperceptible.</p>';
+        }
+
+        var cycleEl = document.getElementById('t3dSPCycle');
+        var cycleLab = document.getElementById('t3dSPCycleLabel');
+        var troughBtn = document.getElementById('t3dSPTroughBtn');
+        function apply() {
+            if (cycleEl && parseInt(cycleEl.value, 10) !== Math.round(cyclePercent)) cycleEl.value = String(Math.round(cyclePercent));
+            if (cycleLab) cycleLab.textContent = cyclePercent.toFixed(0) + '% (~' + fmtYears(cyclePercent) + ' yr)';
+            applyCells();
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ cyclePercent: cyclePercent, troughsHighlighted: troughsHighlighted }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.cyclePercent === 'number') cyclePercent = Math.max(0, Math.min(100, store.cyclePercent));
+        if (typeof store.troughsHighlighted === 'boolean') troughsHighlighted = store.troughsHighlighted;
+        apply();
+
+        if (cycleEl) cycleEl.addEventListener('input', function () {
+            cyclePercent = parseFloat(cycleEl.value || '0');
+            playing = false;
+            apply();
+        });
+        var playBtn = document.getElementById('t3dSPPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () { playing = !playing; });
+        var resetBtn = document.getElementById('t3dSPResetBtn');
+        if (resetBtn) resetBtn.addEventListener('click', function () {
+            cyclePercent = 0; playing = false; apply();
+        });
+        if (troughBtn) troughBtn.addEventListener('click', function () {
+            troughsHighlighted = !troughsHighlighted;
+            troughBtn.textContent = troughsHighlighted ? 'Hide trough highlight' : 'Highlight troughs';
+            apply();
+        });
+        if (troughBtn) troughBtn.textContent = troughsHighlighted ? 'Hide trough highlight' : 'Highlight troughs';
+
+        t3dStatus('Drag to orbit, scroll to zoom. Scrub or play the convective cycle; toggle trough highlighting.');
+        return function animate(dt) {
+            stars.rotation.y += dt * 0.00002;
+            sun.material && (sun.scale.setScalar(1 + 0.03 * Math.sin(performance.now() * 0.002)));
+            group.rotation.y += dt * 0.00004;
+
+            if (playing) {
+                cyclePercent += dt * 0.0016; // full lap in about 60s
+                if (cyclePercent >= 100) { cyclePercent -= 100; }
+                apply();
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { sputnikplanitia: 't3dSPControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { sputnikplanitia: { radius: 22, maxR: 80, minR: 6, phi: 0.95, theta: 0.5, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dSputnikPlanitia(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
