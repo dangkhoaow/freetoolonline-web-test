@@ -4333,12 +4333,8 @@ export const INFO_ROUTES = new Set([
   '/guides/es/uranus-tilt-vs-alternatives.html',
   '/guides/pt/uranus-tilt-vs-alternatives.html',
   '/guides/uranus-tilt-vs-alternatives.html',
-  '/guides/de/roche-limit-vs-alternatives.html',
-  '/guides/id/roche-limit-vs-alternatives.html',
-  '/guides/vi/roche-limit-vs-alternatives.html',
-  '/guides/es/roche-limit-vs-alternatives.html',
-  '/guides/pt/roche-limit-vs-alternatives.html',
-  '/guides/roche-limit-vs-alternatives.html',
+  // consolidation fire51 (2026-08-12): the roche-limit-vs-alternatives family
+  // (all 6 locales) was folded into roche-limit-when and 301d - see ALIAS_ROUTES.
   '/guides/de/solar-analemma-vs-alternatives.html',
   '/guides/id/solar-analemma-vs-alternatives.html',
   '/guides/vi/solar-analemma-vs-alternatives.html',
@@ -5989,18 +5985,15 @@ export const INFO_ROUTES = new Set([
   '/guides/es/solar-analemma-step-by-step.html',
   '/guides/pt/solar-analemma-step-by-step.html',
   '/guides/solar-analemma-step-by-step.html',
+  // consolidation fire51 (2026-08-12): roche-limit-when is now the SOLE guide
+  // family for the space-3d.roche-limit.3d-explorer intent node - the
+  // step-by-step and vs-alternatives families were folded in here and 301d.
   '/guides/de/roche-limit-when.html',
   '/guides/id/roche-limit-when.html',
   '/guides/vi/roche-limit-when.html',
   '/guides/es/roche-limit-when.html',
   '/guides/pt/roche-limit-when.html',
   '/guides/roche-limit-when.html',
-  '/guides/de/roche-limit-step-by-step.html',
-  '/guides/id/roche-limit-step-by-step.html',
-  '/guides/vi/roche-limit-step-by-step.html',
-  '/guides/es/roche-limit-step-by-step.html',
-  '/guides/pt/roche-limit-step-by-step.html',
-  '/guides/roche-limit-step-by-step.html',
   '/guides/de/uranus-tilt-when.html',
   '/guides/id/uranus-tilt-when.html',
   '/guides/vi/uranus-tilt-when.html',
@@ -15312,6 +15305,26 @@ export const ALIAS_ROUTES = {
   '/guides/de/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html': '/guides/de/tyrannosaurus-rex-size-comparison.html',
   '/guides/vi/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html': '/guides/vi/tyrannosaurus-rex-size-comparison.html',
   '/guides/id/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html': '/guides/id/tyrannosaurus-rex-size-comparison.html',
+  // consolidation fire51 (2026-08-12): retire the roche-limit-step-by-step +
+  // roche-limit-vs-alternatives doorway families into the roche-limit-when
+  // keeper, locale-matched. Backlog item topical-map-space-3d.roche-limit.3d-explorer
+  // (2 live excess families). Every unique fact folded into the keeper BEFORE the
+  // 301 - the five-step control walkthrough with its real label flips
+  // ("Mode: fluid 2.44 R" / "Mode: rigid 1.26 R", "Play approach" / "Pause
+  // approach"), the key-figures table plus the full 1.05-5.5 R slider range, and
+  // the 3-row Roche vs tidal-locking vs saturn-rings trade-off table.
+  '/guides/roche-limit-step-by-step.html': '/guides/roche-limit-when.html',
+  '/guides/pt/roche-limit-step-by-step.html': '/guides/pt/roche-limit-when.html',
+  '/guides/es/roche-limit-step-by-step.html': '/guides/es/roche-limit-when.html',
+  '/guides/de/roche-limit-step-by-step.html': '/guides/de/roche-limit-when.html',
+  '/guides/vi/roche-limit-step-by-step.html': '/guides/vi/roche-limit-when.html',
+  '/guides/id/roche-limit-step-by-step.html': '/guides/id/roche-limit-when.html',
+  '/guides/roche-limit-vs-alternatives.html': '/guides/roche-limit-when.html',
+  '/guides/pt/roche-limit-vs-alternatives.html': '/guides/pt/roche-limit-when.html',
+  '/guides/es/roche-limit-vs-alternatives.html': '/guides/es/roche-limit-when.html',
+  '/guides/de/roche-limit-vs-alternatives.html': '/guides/de/roche-limit-when.html',
+  '/guides/vi/roche-limit-vs-alternatives.html': '/guides/vi/roche-limit-when.html',
+  '/guides/id/roche-limit-vs-alternatives.html': '/guides/id/roche-limit-when.html',
   '/guides/planet-size-comparison-step-by-step.html': '/guides/planet-size-comparison-when.html',
   '/guides/pt/planet-size-comparison-step-by-step.html': '/guides/pt/planet-size-comparison-when.html',
   '/guides/es/planet-size-comparison-step-by-step.html': '/guides/es/planet-size-comparison-when.html',
@@ -22445,7 +22458,6 @@ export const JSP_BY_ROUTE = {
   '/guides/orbital-velocity-vs-alternatives.html': 'guide/orbital-velocity-vs-alternatives.jsp',
   '/guides/sunspot-cycle-vs-alternatives.html': 'guide/sunspot-cycle-vs-alternatives.jsp',
   '/guides/uranus-tilt-vs-alternatives.html': 'guide/uranus-tilt-vs-alternatives.jsp',
-  '/guides/roche-limit-vs-alternatives.html': 'guide/roche-limit-vs-alternatives.jsp',
   '/guides/solar-analemma-vs-alternatives.html': 'guide/solar-analemma-vs-alternatives.jsp',
   '/guides/saturn-hexagon-vs-alternatives.html': 'guide/saturn-hexagon-vs-alternatives.jsp',
   '/guides/supernova-remnant-vs-alternatives.html': 'guide/supernova-remnant-vs-alternatives.jsp',
@@ -22683,7 +22695,6 @@ export const JSP_BY_ROUTE = {
   '/guides/solar-analemma-when.html': 'guide/solar-analemma-when.jsp',
   '/guides/solar-analemma-step-by-step.html': 'guide/solar-analemma-step-by-step.jsp',
   '/guides/roche-limit-when.html': 'guide/roche-limit-when.jsp',
-  '/guides/roche-limit-step-by-step.html': 'guide/roche-limit-step-by-step.jsp',
   '/guides/uranus-tilt-when.html': 'guide/uranus-tilt-when.jsp',
   '/guides/uranus-tilt-step-by-step.html': 'guide/uranus-tilt-step-by-step.jsp',
   '/guides/sunspot-cycle-when.html': 'guide/sunspot-cycle-when.jsp',
@@ -22692,7 +22703,6 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/orbital-velocity-vs-alternatives.html': 'guide/pt/orbital-velocity-vs-alternatives.jsp',
   '/guides/pt/sunspot-cycle-vs-alternatives.html': 'guide/pt/sunspot-cycle-vs-alternatives.jsp',
   '/guides/pt/uranus-tilt-vs-alternatives.html': 'guide/pt/uranus-tilt-vs-alternatives.jsp',
-  '/guides/pt/roche-limit-vs-alternatives.html': 'guide/pt/roche-limit-vs-alternatives.jsp',
   '/guides/pt/solar-analemma-vs-alternatives.html': 'guide/pt/solar-analemma-vs-alternatives.jsp',
   '/guides/pt/saturn-hexagon-vs-alternatives.html': 'guide/pt/saturn-hexagon-vs-alternatives.jsp',
   '/guides/pt/supernova-remnant-vs-alternatives.html': 'guide/pt/supernova-remnant-vs-alternatives.jsp',
@@ -22930,7 +22940,6 @@ export const JSP_BY_ROUTE = {
   '/guides/pt/solar-analemma-when.html': 'guide/pt/solar-analemma-when.jsp',
   '/guides/pt/solar-analemma-step-by-step.html': 'guide/pt/solar-analemma-step-by-step.jsp',
   '/guides/pt/roche-limit-when.html': 'guide/pt/roche-limit-when.jsp',
-  '/guides/pt/roche-limit-step-by-step.html': 'guide/pt/roche-limit-step-by-step.jsp',
   '/guides/pt/uranus-tilt-when.html': 'guide/pt/uranus-tilt-when.jsp',
   '/guides/pt/uranus-tilt-step-by-step.html': 'guide/pt/uranus-tilt-step-by-step.jsp',
   '/guides/pt/sunspot-cycle-when.html': 'guide/pt/sunspot-cycle-when.jsp',
@@ -22939,7 +22948,6 @@ export const JSP_BY_ROUTE = {
   '/guides/es/orbital-velocity-vs-alternatives.html': 'guide/es/orbital-velocity-vs-alternatives.jsp',
   '/guides/es/sunspot-cycle-vs-alternatives.html': 'guide/es/sunspot-cycle-vs-alternatives.jsp',
   '/guides/es/uranus-tilt-vs-alternatives.html': 'guide/es/uranus-tilt-vs-alternatives.jsp',
-  '/guides/es/roche-limit-vs-alternatives.html': 'guide/es/roche-limit-vs-alternatives.jsp',
   '/guides/es/solar-analemma-vs-alternatives.html': 'guide/es/solar-analemma-vs-alternatives.jsp',
   '/guides/es/saturn-hexagon-vs-alternatives.html': 'guide/es/saturn-hexagon-vs-alternatives.jsp',
   '/guides/es/supernova-remnant-vs-alternatives.html': 'guide/es/supernova-remnant-vs-alternatives.jsp',
@@ -23177,7 +23185,6 @@ export const JSP_BY_ROUTE = {
   '/guides/es/solar-analemma-when.html': 'guide/es/solar-analemma-when.jsp',
   '/guides/es/solar-analemma-step-by-step.html': 'guide/es/solar-analemma-step-by-step.jsp',
   '/guides/es/roche-limit-when.html': 'guide/es/roche-limit-when.jsp',
-  '/guides/es/roche-limit-step-by-step.html': 'guide/es/roche-limit-step-by-step.jsp',
   '/guides/es/uranus-tilt-when.html': 'guide/es/uranus-tilt-when.jsp',
   '/guides/es/uranus-tilt-step-by-step.html': 'guide/es/uranus-tilt-step-by-step.jsp',
   '/guides/es/sunspot-cycle-when.html': 'guide/es/sunspot-cycle-when.jsp',
@@ -23186,7 +23193,6 @@ export const JSP_BY_ROUTE = {
   '/guides/de/orbital-velocity-vs-alternatives.html': 'guide/de/orbital-velocity-vs-alternatives.jsp',
   '/guides/de/sunspot-cycle-vs-alternatives.html': 'guide/de/sunspot-cycle-vs-alternatives.jsp',
   '/guides/de/uranus-tilt-vs-alternatives.html': 'guide/de/uranus-tilt-vs-alternatives.jsp',
-  '/guides/de/roche-limit-vs-alternatives.html': 'guide/de/roche-limit-vs-alternatives.jsp',
   '/guides/de/solar-analemma-vs-alternatives.html': 'guide/de/solar-analemma-vs-alternatives.jsp',
   '/guides/de/saturn-hexagon-vs-alternatives.html': 'guide/de/saturn-hexagon-vs-alternatives.jsp',
   '/guides/de/supernova-remnant-vs-alternatives.html': 'guide/de/supernova-remnant-vs-alternatives.jsp',
@@ -23424,7 +23430,6 @@ export const JSP_BY_ROUTE = {
   '/guides/de/solar-analemma-when.html': 'guide/de/solar-analemma-when.jsp',
   '/guides/de/solar-analemma-step-by-step.html': 'guide/de/solar-analemma-step-by-step.jsp',
   '/guides/de/roche-limit-when.html': 'guide/de/roche-limit-when.jsp',
-  '/guides/de/roche-limit-step-by-step.html': 'guide/de/roche-limit-step-by-step.jsp',
   '/guides/de/uranus-tilt-when.html': 'guide/de/uranus-tilt-when.jsp',
   '/guides/de/uranus-tilt-step-by-step.html': 'guide/de/uranus-tilt-step-by-step.jsp',
   '/guides/de/sunspot-cycle-when.html': 'guide/de/sunspot-cycle-when.jsp',
@@ -23433,7 +23438,6 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/orbital-velocity-vs-alternatives.html': 'guide/vi/orbital-velocity-vs-alternatives.jsp',
   '/guides/vi/sunspot-cycle-vs-alternatives.html': 'guide/vi/sunspot-cycle-vs-alternatives.jsp',
   '/guides/vi/uranus-tilt-vs-alternatives.html': 'guide/vi/uranus-tilt-vs-alternatives.jsp',
-  '/guides/vi/roche-limit-vs-alternatives.html': 'guide/vi/roche-limit-vs-alternatives.jsp',
   '/guides/vi/solar-analemma-vs-alternatives.html': 'guide/vi/solar-analemma-vs-alternatives.jsp',
   '/guides/vi/saturn-hexagon-vs-alternatives.html': 'guide/vi/saturn-hexagon-vs-alternatives.jsp',
   '/guides/vi/supernova-remnant-vs-alternatives.html': 'guide/vi/supernova-remnant-vs-alternatives.jsp',
@@ -23671,7 +23675,6 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/solar-analemma-when.html': 'guide/vi/solar-analemma-when.jsp',
   '/guides/vi/solar-analemma-step-by-step.html': 'guide/vi/solar-analemma-step-by-step.jsp',
   '/guides/vi/roche-limit-when.html': 'guide/vi/roche-limit-when.jsp',
-  '/guides/vi/roche-limit-step-by-step.html': 'guide/vi/roche-limit-step-by-step.jsp',
   '/guides/vi/uranus-tilt-when.html': 'guide/vi/uranus-tilt-when.jsp',
   '/guides/vi/uranus-tilt-step-by-step.html': 'guide/vi/uranus-tilt-step-by-step.jsp',
   '/guides/vi/sunspot-cycle-when.html': 'guide/vi/sunspot-cycle-when.jsp',
@@ -23680,7 +23683,6 @@ export const JSP_BY_ROUTE = {
   '/guides/id/orbital-velocity-vs-alternatives.html': 'guide/id/orbital-velocity-vs-alternatives.jsp',
   '/guides/id/sunspot-cycle-vs-alternatives.html': 'guide/id/sunspot-cycle-vs-alternatives.jsp',
   '/guides/id/uranus-tilt-vs-alternatives.html': 'guide/id/uranus-tilt-vs-alternatives.jsp',
-  '/guides/id/roche-limit-vs-alternatives.html': 'guide/id/roche-limit-vs-alternatives.jsp',
   '/guides/id/solar-analemma-vs-alternatives.html': 'guide/id/solar-analemma-vs-alternatives.jsp',
   '/guides/id/saturn-hexagon-vs-alternatives.html': 'guide/id/saturn-hexagon-vs-alternatives.jsp',
   '/guides/id/supernova-remnant-vs-alternatives.html': 'guide/id/supernova-remnant-vs-alternatives.jsp',
@@ -23972,7 +23974,6 @@ export const JSP_BY_ROUTE = {
   '/guides/id/solar-analemma-when.html': 'guide/id/solar-analemma-when.jsp',
   '/guides/id/solar-analemma-step-by-step.html': 'guide/id/solar-analemma-step-by-step.jsp',
   '/guides/id/roche-limit-when.html': 'guide/id/roche-limit-when.jsp',
-  '/guides/id/roche-limit-step-by-step.html': 'guide/id/roche-limit-step-by-step.jsp',
   '/guides/id/uranus-tilt-when.html': 'guide/id/uranus-tilt-when.jsp',
   '/guides/id/uranus-tilt-step-by-step.html': 'guide/id/uranus-tilt-step-by-step.jsp',
   '/guides/id/sunspot-cycle-when.html': 'guide/id/sunspot-cycle-when.jsp',
@@ -29949,7 +29950,9 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/vi/ritual-catacombs-when.html',
   '/guides/vi/roche-limit-step-by-step.html',
   '/guides/vi/roche-limit-vs-alternatives.html',
-  '/guides/vi/roche-limit-when.html',
+  // consolidation fire51 (2026-08-12): vi roche-limit-when un-excluded - it is no
+  // longer a thin doorway but the 301 target absorbing two retired families, so it
+  // must be crawlable for their equity to land.
   '/guides/vi/roche-lobe-binary-step-by-step.html',
   '/guides/vi/roche-lobe-binary-vs-alternatives.html',
   '/guides/vi/roche-lobe-binary-when.html',
@@ -32505,7 +32508,9 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/pt/ritual-catacombs-when.html',
   '/guides/pt/roche-limit-step-by-step.html',
   '/guides/pt/roche-limit-vs-alternatives.html',
-  '/guides/pt/roche-limit-when.html',
+  // consolidation fire51 (2026-08-12): pt roche-limit-when un-excluded - it is the
+  // 301 target for pt/roche-limit-vs-alternatives (7 impr) and
+  // pt/roche-limit-step-by-step (4 impr), the family's measured demand outside EN.
   '/guides/pt/roche-lobe-binary-step-by-step.html',
   '/guides/pt/roche-lobe-binary-vs-alternatives.html',
   '/guides/pt/roche-lobe-binary-when.html',
@@ -33962,7 +33967,7 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   "/guides/es/ritual-catacombs-when.html",
   "/guides/es/roche-limit-step-by-step.html",
   "/guides/es/roche-limit-vs-alternatives.html",
-  "/guides/es/roche-limit-when.html",
+  // consolidation fire51 (2026-08-12): es roche-limit-when un-excluded (301 target).
   "/guides/es/roche-lobe-binary-step-by-step.html",
   "/guides/es/roche-lobe-binary-vs-alternatives.html",
   "/guides/es/roche-lobe-binary-when.html",
