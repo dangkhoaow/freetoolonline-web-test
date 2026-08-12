@@ -1,0 +1,862 @@
+<script>
+    // Chat-with-PDF archetype skeleton (chat-with-pdf) - browser-local retrieval-
+    // augmented Q&A over a PDF the reader opens. 2026-08-13 browser-local AI
+    // class ship (registry entry pdf_chat_rag_webllm). The document NEVER
+    // leaves the browser on ANY tier: pdf.js (self-hosted /vendor/pdfjs)
+    // extracts the text locally, retrieval runs locally, and answer
+    // generation is on-device (Chrome built-in Prompt API or WebLLM).
+    //
+    // THREE-TIER ENGINE LADDER (in order, each honestly labeled):
+    //   1. Chrome built-in AI (Prompt API / LanguageModel global, 2025+ spec)
+    //      when the model is ALREADY on-device - zero download. Feature-
+    //      detected + try/catch everywhere; only availability 'available'
+    //      activates the tier (a 'downloadable' state would trigger a silent
+    //      multi-GB download). Legacy window.ai.languageModel probed too.
+    //   2. WebLLM via https://esm.run/@mlc-ai/web-llm - engine idioms ported
+    //      from the llm-text-task skeleton / registry llm_webgpu_mlcai:
+    //      lazy import + model load ONLY on the explicit "Load model" click,
+    //      determinate progress via setInitProgressCallback, streaming
+    //      chat.completions, WebGPU preflight, last model persisted to
+    //      localStorage 'webllm-last-model' (SAME key as private-ai-chat so
+    //      the browser weight cache is shared), sizes derived at runtime from
+    //      webllm.prebuiltAppConfig.model_list (vram_required_MB) - never
+    //      hardcoded. OPTIONAL retrieval upgrade on its own click: MiniLM
+    //      embeddings (Transformers.js, Xenova/all-MiniLM-L6-v2 quantized,
+    //      about 25 MB) re-rank passages by meaning instead of keywords.
+    //   3. No-AI fallback so the page is NEVER dead: deterministic keyword
+    //      retrieval (IDF-weighted token overlap) returns the most relevant
+    //      passages WITH PAGE NUMBERS, labeled "matching passages (no AI
+    //      model)". Finding WHERE the answer lives in a long PDF is real
+    //      output on its own - and it is exactly what the LLM tiers cite.
+    //
+    // G16: on load with zero interaction a built-in SAMPLE document (a short
+    // fictional kettle manual) + a pre-filled sample question render the
+    // tier-3 retrieval result immediately - real deterministic output, no
+    // model download, labeled as the sample demo. 100% in-browser: no upload,
+    // no backend. Framework contract: bootstrap in doAfterPageRendered();
+    // no top-level DOM access.
+
+    web.localUpload = false;
+
+    var CWP_SLUG = 'chat-with-pdf';
+    var CWP_LS_MODEL = 'webllm-last-model'; // shared with private-ai-chat (shared weight cache)
+    var CWP_TF_CDN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4';
+    var CWP_EMBED_MODEL = 'Xenova/all-MiniLM-L6-v2';
+    var CWP_EMBED_SIZE_LABEL = 'about 25 MB';
+    var CWP_MAX_PAGES = 300;        // pages read per PDF (stated in UI copy)
+    var CWP_MAX_PASSAGES = 1500;    // passage cap across the document
+    var CWP_TOP_K = 4;              // excerpts handed to the answer engine
+    var CWP_PASSAGE_CHARS = 480;    // target passage length (sentence-grouped)
+    var CWP_SYSTEM_PROMPT = 'You answer questions about a document the user opened in their browser. Use ONLY the numbered excerpts provided. If the excerpts do not contain the answer, say you could not find it in the document. Name the page numbers you used. Keep answers short and factual.';
+
+    // Curated small-first models (ids from webllm prebuiltAppConfig; validated
+    // against the live model_list at runtime before any load). Only id + label
+    // live here - the download size is derived, never hardcoded.
+    var CWP_WEBLLM_MODELS = [
+        { id: 'Llama-3.2-1B-Instruct-q4f16_1-MLC', label: 'Llama 3.2 1B (default)' },
+        { id: 'Llama-3.2-3B-Instruct-q4f16_1-MLC', label: 'Llama 3.2 3B' },
+        { id: 'Phi-3.5-mini-instruct-q4f16_1-MLC', label: 'Phi 3.5 mini' }
+    ];
+    var CWP_SIZE_UNKNOWN = 'size unknown - may be large';
+    var CWP_SIZE_PENDING = 'download size shown before the download starts';
+
+    // Built-in sample document (G16 demo): short fictional owner's manual.
+    var CWP_SAMPLE_QUESTION = 'How long is the warranty and what does it cover?';
+    var CWP_SAMPLE_DOC = {
+        name: 'Built-in sample: kettle owner\'s manual',
+        isSample: true,
+        pages: [
+            { page: 1, text: 'Aurora S2 Electric Kettle - Owner\'s Manual. Thank you for choosing the Aurora S2. Read these instructions before first use and keep them for later reference. Safety basics: place the kettle on a flat, dry surface and keep the cord away from the counter edge. Never fill the kettle above the MAX line; steam from an overfilled kettle can scald. Do not open the lid while the water is boiling. The kettle switches off automatically when the water reaches a full boil, and a boil-dry guard cuts the power if it is switched on while empty. Unplug the kettle before cleaning and let it cool completely.' },
+            { page: 2, text: 'Daily use. Fill between the MIN and MAX marks, seat the kettle on its base, and press the switch down. The blue ring lights while heating. First use: boil a full kettle twice and discard the water. Descaling: limescale builds up in hard-water areas and slows heating. Every four to six weeks, fill the kettle halfway with equal parts water and white vinegar, let it stand for one hour without boiling, then rinse three times with fresh water. Do not use abrasive cleaners on the glass body. Wipe the outside with a soft damp cloth only.' },
+            { page: 3, text: 'Warranty. The Aurora S2 is covered by a 24-month limited warranty from the date of purchase. The warranty covers manufacturing defects in materials and workmanship, including the heating element and the automatic shut-off switch. It does not cover damage from limescale left untreated, drops, misuse, or normal wear of the exterior finish. To make a claim, contact the retailer with your receipt; repaired or replaced units carry the remainder of the original warranty period. Specifications: capacity 1.7 litres, power 2200 watts, cord length 0.75 metres, weight 1.1 kg.' }
+        ]
+    };
+
+    var CWP_STOPWORDS = (function () {
+        var list = ('a an the and or but if of to in on at by for with from into as is are was were be been being it its ' +
+            'this that these those they them their he she his her we our you your i not no so do does did done have has ' +
+            'had will would can could than then there here when where which who whom what how why all each some most ' +
+            'more very up down out over under again back through between because while about also just only').split(' ');
+        var map = {};
+        for (var i = 0; i < list.length; i++) { map[list[i]] = 1; }
+        return map;
+    })();
+
+    // ---- Document state ---------------------------------------------------------
+    var cwpDoc = null;            // { name, isSample, pages: [{page, text}] }
+    var cwpPassages = [];         // [{ page, text, tokens, tf }]
+    var cwpDf = {};               // document frequency per token (over passages)
+    var cwpVectors = null;        // Float32Array[] per passage when embeddings indexed
+    var cwpEmbedder = null;       // transformers.js feature-extraction pipeline
+    var cwpEmbedLoading = false;
+    var cwpTruncatedNote = '';    // honest note when page/passage caps hit
+
+    // ---- Engine state (mirrors llm-text-task idioms) ----------------------------
+    var cwpEngine = null;         // webllm MLCEngine (created once)
+    var cwpEngineHooked = false;
+    var cwpLoadedModel = null;
+    var cwpGenerating = false;
+    var cwpProgressCb = null;
+    var cwpBuiltinOk = false;     // tier-1 Prompt API availability
+    var cwpBuiltinKind = null;    // 'new' | 'legacy'
+    var cwpModelSizes = null;
+    var cwpSizesPromise = null;
+    var cwpLastOutputEngine = null;
+
+    // ---- Pure text helpers ------------------------------------------------------
+    function cwpSentences(text) {
+        var m = String(text || '').replace(/\s+/g, ' ').match(/[^.!?]+[.!?]+["')\]]*|[^.!?]+$/g) || [];
+        var out = [];
+        for (var i = 0; i < m.length; i++) { var s = m[i].replace(/^\s+|\s+$/g, ''); if (s) out.push(s); }
+        return out;
+    }
+
+    function cwpTokens(s) {
+        var raw = String(s || '').toLowerCase().replace(/[^a-z0-9' ]+/g, ' ').split(' ');
+        var out = [];
+        for (var i = 0; i < raw.length; i++) {
+            var w = raw[i].replace(/^'+|'+$/g, '');
+            if (w.length >= 3 && !CWP_STOPWORDS[w]) out.push(w);
+        }
+        return out;
+    }
+
+    // Split one page's text into sentence-grouped passages of ~CWP_PASSAGE_CHARS.
+    function cwpSplitPage(pageNo, text) {
+        var sents = cwpSentences(text);
+        var out = [], buf = '';
+        for (var i = 0; i < sents.length; i++) {
+            if (buf && (buf.length + sents[i].length + 1) > CWP_PASSAGE_CHARS) {
+                out.push({ page: pageNo, text: buf });
+                buf = sents[i];
+            } else {
+                buf = buf ? buf + ' ' + sents[i] : sents[i];
+            }
+        }
+        if (buf) out.push({ page: pageNo, text: buf });
+        return out;
+    }
+
+    // Build passages + keyword index (df/tf) for the loaded document.
+    function cwpIndexDoc(doc) {
+        cwpPassages = [];
+        cwpDf = {};
+        cwpVectors = null; // embeddings must be re-indexed per document
+        cwpTruncatedNote = '';
+        var pages = doc.pages || [];
+        for (var p = 0; p < pages.length && cwpPassages.length < CWP_MAX_PASSAGES; p++) {
+            var parts = cwpSplitPage(pages[p].page, pages[p].text);
+            for (var i = 0; i < parts.length && cwpPassages.length < CWP_MAX_PASSAGES; i++) {
+                var toks = cwpTokens(parts[i].text);
+                var tf = {};
+                for (var j = 0; j < toks.length; j++) { tf[toks[j]] = (tf[toks[j]] || 0) + 1; }
+                var seen = {};
+                for (var k = 0; k < toks.length; k++) {
+                    if (!seen[toks[k]]) { seen[toks[k]] = 1; cwpDf[toks[k]] = (cwpDf[toks[k]] || 0) + 1; }
+                }
+                cwpPassages.push({ page: parts[i].page, text: parts[i].text, tf: tf, tokenCount: toks.length });
+            }
+        }
+        if (cwpPassages.length >= CWP_MAX_PASSAGES) {
+            cwpTruncatedNote = 'Only the first ' + CWP_MAX_PASSAGES + ' passages are searched (long document).';
+        }
+    }
+
+    // Tier-3 scoring: IDF-weighted token overlap, length-normalized (BM25-lite).
+    function cwpKeywordScores(question) {
+        var qToks = cwpTokens(question);
+        var n = Math.max(1, cwpPassages.length);
+        var scores = [];
+        for (var i = 0; i < cwpPassages.length; i++) {
+            var ps = cwpPassages[i];
+            var total = 0;
+            for (var j = 0; j < qToks.length; j++) {
+                var t = qToks[j];
+                var tf = ps.tf[t] || 0;
+                if (!tf) continue;
+                var idf = Math.log(1 + n / (1 + (cwpDf[t] || 0)));
+                total += idf * (1 + Math.log(1 + tf));
+            }
+            scores.push({ index: i, score: ps.tokenCount ? total / Math.sqrt(ps.tokenCount) : 0 });
+        }
+        return scores;
+    }
+
+    function cwpCosine(a, b) {
+        var dot = 0, na = 0, nb = 0;
+        for (var i = 0; i < a.length; i++) { dot += a[i] * b[i]; na += a[i] * a[i]; nb += b[i] * b[i]; }
+        var d = Math.sqrt(na) * Math.sqrt(nb);
+        return d ? dot / d : 0;
+    }
+
+    // Rank passages for a question. cb(topList, methodLabel). Uses embeddings
+    // when indexed (semantic), else the deterministic keyword scores.
+    function cwpRankPassages(question, cb) {
+        if (cwpVectors && cwpEmbedder) {
+            cwpEmbedQuery(question).then(function (qv) {
+                var scored = [];
+                for (var i = 0; i < cwpPassages.length; i++) {
+                    scored.push({ index: i, score: cwpCosine(qv, cwpVectors[i]) });
+                }
+                scored.sort(function (a, b) { return b.score - a.score; });
+                cb(scored.slice(0, CWP_TOP_K), 'semantic matching (on-device embeddings)');
+            }).catch(function () {
+                var kw = cwpKeywordScores(question);
+                kw.sort(function (a, b) { return b.score - a.score; });
+                cb(kw.slice(0, CWP_TOP_K), 'keyword matching');
+            });
+            return;
+        }
+        var kw2 = cwpKeywordScores(question);
+        kw2.sort(function (a, b) { return b.score - a.score; });
+        cb(kw2.slice(0, CWP_TOP_K), 'keyword matching');
+    }
+
+    // ---- pdf.js (self-hosted /vendor/pdfjs, idiom from BODYJSpdftoimages) --------
+    function cwpLoadPdfJs() {
+        if (window.pdfjsLib && window.pdfjsLib.getDocument) { return Promise.resolve(); }
+        if (window.__cwpPdfJsPromise) { return window.__cwpPdfJsPromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/pdfjs';
+        window.__cwpPdfJsPromise = new Promise(function (resolve, reject) {
+            var s = document.createElement('script');
+            s.src = base + '/pdf.min.js'; s.async = true;
+            s.onload = function () {
+                if (window.pdfjsLib && window.pdfjsLib.getDocument) {
+                    try { window.pdfjsLib.GlobalWorkerOptions.workerSrc = base + '/pdf.worker.min.js'; } catch (e) { void e; }
+                    resolve();
+                } else { reject(new Error('pdf.js loaded but the pdfjsLib global is missing')); }
+            };
+            s.onerror = function () { reject(new Error('Could not load the local pdf.js library')); };
+            document.head.appendChild(s);
+        });
+        return window.__cwpPdfJsPromise;
+    }
+
+    // Extract text per page. progress(done, total). Resolves {pages, pageCount, truncated}.
+    function cwpExtractPdf(arrayBuffer, progress) {
+        return cwpLoadPdfJs().then(function () {
+            return window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        }).then(function (pdf) {
+            var total = pdf.numPages;
+            var readPages = Math.min(total, CWP_MAX_PAGES);
+            var pages = [];
+            var chain = Promise.resolve();
+            var pi;
+            var makeStep = function (pageNo) {
+                return function () {
+                    return pdf.getPage(pageNo).then(function (page) {
+                        return page.getTextContent();
+                    }).then(function (tc) {
+                        var parts = [];
+                        for (var i = 0; i < tc.items.length; i++) {
+                            var it = tc.items[i];
+                            if (it && typeof it.str === 'string' && it.str) parts.push(it.str);
+                        }
+                        pages.push({ page: pageNo, text: parts.join(' ').replace(/\s+/g, ' ') });
+                        if (progress) progress(pageNo, readPages);
+                    });
+                };
+            };
+            for (pi = 1; pi <= readPages; pi++) { chain = chain.then(makeStep(pi)); }
+            return chain.then(function () {
+                return { pages: pages, pageCount: total, truncated: total > readPages };
+            });
+        });
+    }
+
+    // ---- Tier 1: Chrome built-in Prompt API --------------------------------------
+    function cwpBuiltinApi() {
+        try {
+            if (typeof LanguageModel !== 'undefined' && LanguageModel && typeof LanguageModel.availability === 'function') { return LanguageModel; }
+        } catch (e) { void e; }
+        return null;
+    }
+
+    function cwpProbeBuiltin(cb) {
+        var done = false;
+        function finish(ok, kind) { if (!done) { done = true; cb(!!ok, kind || null); } }
+        function legacyProbe() {
+            try {
+                if (typeof window !== 'undefined' && window.ai && window.ai.languageModel &&
+                    typeof window.ai.languageModel.capabilities === 'function') {
+                    window.ai.languageModel.capabilities()
+                        .then(function (c) { finish(c && c.available === 'readily', 'legacy'); })
+                        .catch(function () { finish(false, null); });
+                    return;
+                }
+            } catch (e) { void e; }
+            finish(false, null);
+        }
+        var api = cwpBuiltinApi();
+        if (!api) { legacyProbe(); return; }
+        try {
+            Promise.resolve(api.availability())
+                .then(function (a) { if (a === 'available') { finish(true, 'new'); } else { legacyProbe(); } })
+                .catch(legacyProbe);
+        } catch (e) { legacyProbe(); }
+    }
+
+    function cwpRunBuiltin(prompt, onDone, onError) {
+        try {
+            if (cwpBuiltinKind === 'legacy') {
+                window.ai.languageModel.create({ systemPrompt: CWP_SYSTEM_PROMPT })
+                    .then(function (s) { return s.prompt(prompt); })
+                    .then(function (out) { onDone(String(out == null ? '' : out)); })
+                    .catch(onError);
+                return;
+            }
+            var api = cwpBuiltinApi();
+            if (!api) { onError(new Error('Built-in AI unavailable')); return; }
+            Promise.resolve(api.create({ initialPrompts: [{ role: 'system', content: CWP_SYSTEM_PROMPT }] }))
+                .then(function (session) { return session.prompt(prompt); })
+                .then(function (out) { onDone(String(out == null ? '' : out)); })
+                .catch(onError);
+        } catch (e) { onError(e); }
+    }
+
+    // ---- Tier 2a: MiniLM embeddings via Transformers.js (click-gated) ------------
+    function cwpLoadTransformers() {
+        if (window.__cwpTF) { return Promise.resolve(window.__cwpTF); }
+        if (window.__cwpTFPromise) { return window.__cwpTFPromise; }
+        window.__cwpTFPromise = import(/* webpackIgnore: true */ CWP_TF_CDN)
+            .then(function (mod) { window.__cwpTF = mod; return mod; });
+        return window.__cwpTFPromise;
+    }
+
+    function cwpLoadEmbedder(progress) {
+        if (cwpEmbedder) { return Promise.resolve(cwpEmbedder); }
+        return cwpLoadTransformers().then(function (tf) {
+            return tf.pipeline('feature-extraction', CWP_EMBED_MODEL, {
+                progress_callback: function (info) {
+                    if (progress && info && typeof info.progress === 'number') {
+                        progress(Math.max(0, Math.min(1, info.progress / 100)), info.file || '');
+                    }
+                }
+            });
+        }).then(function (pipe) { cwpEmbedder = pipe; return pipe; });
+    }
+
+    function cwpEmbedText(text) {
+        return Promise.resolve(cwpEmbedder(text, { pooling: 'mean', normalize: true }))
+            .then(function (out) { return out && out.data ? out.data : out; });
+    }
+
+    function cwpEmbedQuery(q) { return cwpEmbedText(q); }
+
+    // Sequential passage indexing with progress (keeps the UI responsive).
+    function cwpIndexEmbeddings(progress) {
+        var vecs = new Array(cwpPassages.length);
+        var chain = Promise.resolve();
+        var makeStep = function (i) {
+            return function () {
+                return cwpEmbedText(cwpPassages[i].text).then(function (v) {
+                    vecs[i] = v;
+                    if (progress) progress(i + 1, cwpPassages.length);
+                });
+            };
+        };
+        for (var i = 0; i < cwpPassages.length; i++) { chain = chain.then(makeStep(i)); }
+        return chain.then(function () { cwpVectors = vecs; });
+    }
+
+    // ---- Tier 2b: WebLLM (lazy, click-gated; idioms shared with llm-text-task) ---
+    function cwpWebGpuSupported() { return typeof navigator !== 'undefined' && 'gpu' in navigator; }
+    function cwpWebGpuAdapter() {
+        if (!cwpWebGpuSupported()) { return Promise.resolve(false); }
+        try { return navigator.gpu.requestAdapter().then(function (a) { return !!a; }).catch(function () { return false; }); }
+        catch (e) { return Promise.resolve(false); }
+    }
+
+    function cwpLoadWebLLM() {
+        if (window.__cwpWebLLM) { return Promise.resolve(window.__cwpWebLLM); }
+        if (window.__cwpWebLLMPromise) { return window.__cwpWebLLMPromise; }
+        window.__cwpWebLLMPromise = import('https://esm.run/@mlc-ai/web-llm')
+            .then(function (mod) { window.__cwpWebLLM = mod; return mod; });
+        return window.__cwpWebLLMPromise;
+    }
+
+    function cwpValidateModelId(webllm, wanted) {
+        try {
+            var list = (webllm && webllm.prebuiltAppConfig && webllm.prebuiltAppConfig.model_list) || [];
+            var ids = {}, i;
+            for (i = 0; i < list.length; i++) { if (list[i] && list[i].model_id) ids[list[i].model_id] = true; }
+            if (ids[wanted]) return wanted;
+            for (i = 0; i < CWP_WEBLLM_MODELS.length; i++) { if (ids[CWP_WEBLLM_MODELS[i].id]) return CWP_WEBLLM_MODELS[i].id; }
+            for (i = 0; i < list.length; i++) {
+                var id = list[i] && list[i].model_id;
+                if (id && /instruct|chat/i.test(id) && (/-(0\.5B|1B|1\.5B)-/i.test(id) || /TinyLlama/i.test(id))) return id;
+            }
+            return (list.length && list[0].model_id) ? list[0].model_id : wanted;
+        } catch (e) { return wanted; }
+    }
+
+    function cwpFormatSizeMb(mb) {
+        var n = typeof mb === 'number' ? mb : parseFloat(mb);
+        if (!isFinite(n) || n <= 0) { return null; }
+        if (n >= 1024) { return (Math.round((n / 1024) * 10) / 10) + ' GB'; }
+        return Math.round(n) + ' MB';
+    }
+
+    function cwpSizeMapFrom(webllm) {
+        var map = {};
+        try {
+            var list = (webllm && webllm.prebuiltAppConfig && webllm.prebuiltAppConfig.model_list) || [];
+            for (var i = 0; i < list.length; i++) {
+                var e = list[i];
+                if (!e || !e.model_id) { continue; }
+                var s = cwpFormatSizeMb(e.vram_required_MB);
+                if (s) { map[e.model_id] = s; }
+            }
+        } catch (e) { void e; }
+        return map;
+    }
+
+    function cwpEnsureModelSizes() {
+        if (cwpModelSizes) { return Promise.resolve(cwpModelSizes); }
+        if (cwpSizesPromise) { return cwpSizesPromise; }
+        cwpSizesPromise = cwpLoadWebLLM()
+            .then(function (webllm) { cwpModelSizes = cwpSizeMapFrom(webllm); return cwpModelSizes; })
+            .catch(function () { cwpModelSizes = {}; return cwpModelSizes; });
+        return cwpSizesPromise;
+    }
+
+    function cwpBaseLabelFor(id) {
+        for (var i = 0; i < CWP_WEBLLM_MODELS.length; i++) {
+            if (CWP_WEBLLM_MODELS[i].id === id) { return CWP_WEBLLM_MODELS[i].label; }
+        }
+        return id;
+    }
+
+    function cwpOptionText(id) {
+        var base = cwpBaseLabelFor(id);
+        if (!cwpModelSizes) { return base + ' - ' + CWP_SIZE_PENDING; }
+        var size = cwpModelSizes[id];
+        return base + ' - ' + (size ? 'about ' + size : CWP_SIZE_UNKNOWN);
+    }
+
+    function cwpGetEngine(webllm) {
+        if (!cwpEngine) { cwpEngine = new webllm.MLCEngine(); }
+        if (!cwpEngineHooked) {
+            cwpEngineHooked = true;
+            try {
+                cwpEngine.setInitProgressCallback(function (report) {
+                    if (cwpProgressCb) { cwpProgressCb(typeof report.progress === 'number' ? report.progress : 0, report.text || ''); }
+                });
+            } catch (e) { void e; }
+        }
+        return cwpEngine;
+    }
+
+    function cwpLoadModel(modelId, progressCb) {
+        cwpProgressCb = progressCb || null;
+        return cwpLoadWebLLM().then(function (webllm) {
+            var id = cwpValidateModelId(webllm, modelId || CWP_WEBLLM_MODELS[0].id);
+            var engine = cwpGetEngine(webllm);
+            if (cwpLoadedModel === id) { return engine; }
+            return Promise.resolve(engine.reload(id)).then(function () {
+                cwpLoadedModel = id;
+                try { localStorage.setItem(CWP_LS_MODEL, id); } catch (e) { void e; }
+                return engine;
+            });
+        });
+    }
+
+    function cwpClearModelCache(onDone, onError) {
+        cwpLoadWebLLM().then(function (webllm) {
+            var engine = cwpGetEngine(webllm);
+            if (typeof engine.clearCache !== 'function') { throw new Error('clearCache is unavailable in this WebLLM build'); }
+            return Promise.resolve(engine.clearCache(true));
+        }).then(function () { cwpLoadedModel = null; if (onDone) onDone(); })
+            .catch(function (err) { if (onError) onError(err); });
+    }
+
+    function cwpRunWebLLM(prompt, onToken, onDone, onError) {
+        if (!cwpEngine || !cwpLoadedModel) { if (onError) onError(new Error('Load a model first.')); return; }
+        if (cwpGenerating) { return; }
+        cwpGenerating = true;
+        var messages = [{ role: 'system', content: CWP_SYSTEM_PROMPT }, { role: 'user', content: prompt }];
+        var full = '';
+        cwpEngine.chat.completions.create({ messages: messages, stream: true, temperature: 0.2 })
+            .then(function (stream) {
+                (async function () {
+                    try {
+                        for await (const chunk of stream) {
+                            var d = (chunk && chunk.choices && chunk.choices[0] && chunk.choices[0].delta && chunk.choices[0].delta.content) || '';
+                            if (d) { full += d; if (onToken) { onToken(full); } }
+                        }
+                        cwpGenerating = false;
+                        if (onDone) { onDone(full); }
+                    } catch (err) { cwpGenerating = false; if (onError) { onError(err); } }
+                })();
+            })
+            .catch(function (err) { cwpGenerating = false; if (onError) { onError(err); } });
+    }
+
+    // Prompt assembly: numbered excerpts with page refs + the question.
+    function cwpBuildPrompt(question, top) {
+        var lines = ['EXCERPTS FROM THE DOCUMENT:'];
+        for (var i = 0; i < top.length; i++) {
+            var ps = cwpPassages[top[i].index];
+            lines.push('[' + (i + 1) + '] (page ' + ps.page + ') ' + ps.text);
+        }
+        lines.push('');
+        lines.push('QUESTION: ' + question);
+        return lines.join('\n');
+    }
+
+    // ---- UI ----------------------------------------------------------------------
+    function cwpEsc(s) {
+        return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('chatWithPdfTool');
+        if (!root) return; // not a chat-with-pdf page
+
+        var modelOpts = '';
+        for (var mi = 0; mi < CWP_WEBLLM_MODELS.length; mi++) {
+            modelOpts += '<option value="' + cwpEsc(CWP_WEBLLM_MODELS[mi].id) + '">' + cwpEsc(cwpOptionText(CWP_WEBLLM_MODELS[mi].id)) + '</option>';
+        }
+
+        root.innerHTML =
+            '<div style="max-width:760px;margin:0 auto;text-align:left;">' +
+            '<div class="w3-row" style="margin-bottom:8px;">' +
+            '<label for="cwpFile"><b>Your PDF</b></label><br>' +
+            '<input id="cwpFile" type="file" accept=".pdf,application/pdf" class="w3-input w3-border" style="padding:6px;">' +
+            '<div id="cwpDocStatus" class="w3-small w3-text-grey" role="status" style="margin-top:4px;"></div>' +
+            '</div>' +
+            '<label for="cwpQuestion"><b>Your question</b></label>' +
+            '<div class="w3-row" style="margin:4px 0 8px 0;">' +
+            '<input id="cwpQuestion" type="text" class="w3-input w3-border" style="width:100%;box-sizing:border-box;" placeholder="Ask about the open document - nothing leaves your browser.">' +
+            '<button id="cwpAsk" type="button" class="w3-button w3-blue" style="margin-top:6px;">Ask the document</button>' +
+            '</div>' +
+            '<div id="cwpStatus" class="w3-small" role="status" style="color:#555;margin-bottom:6px;"></div>' +
+            '<div class="outputImgs" style="visibility:visible !important;background:#f7f7f7;border:1px solid #ddd;border-radius:4px;padding:12px;">' +
+            '<div id="cwpChat" style="min-height:2em;"></div>' +
+            '</div>' +
+            '<div class="w3-panel w3-light-grey w3-round" style="margin-top:16px;padding:10px;">' +
+            '<b>Optional: on-device AI upgrades</b>' +
+            '<div class="w3-small" style="margin:4px 0;">Both upgrades run entirely on your device. Nothing is uploaded at any point.</div>' +
+            '<div style="margin:8px 0;padding:8px;border:1px solid #ddd;border-radius:4px;">' +
+            '<b class="w3-small">1. Better passage matching (embeddings)</b>' +
+            '<div class="w3-small" style="margin:2px 0;">Finds passages by meaning instead of shared keywords. One-time download, ' + CWP_EMBED_SIZE_LABEL + ', cached for later visits.</div>' +
+            '<button id="cwpEmbedBtn" type="button" class="w3-button w3-green w3-small">Load matching model (' + CWP_EMBED_SIZE_LABEL + ')</button>' +
+            '<div><progress id="cwpEmbedProgress" max="1" value="0" style="width:100%;max-width:420px;margin-top:6px;display:none;"></progress></div>' +
+            '<div id="cwpEmbedStatus" class="w3-small w3-text-grey" role="status"></div>' +
+            '</div>' +
+            '<div style="margin:8px 0;padding:8px;border:1px solid #ddd;border-radius:4px;">' +
+            '<b class="w3-small">2. Written answers (language model)</b>' +
+            '<div class="w3-small" style="margin:2px 0;">Generates a plain-language answer from the matching passages. Loads a small open model with WebLLM - one-time download, cached, runs on your device.</div>' +
+            '<div id="cwpGpuNote" class="w3-small" style="display:none;color:#b00020;margin:4px 0;">This browser has no WebGPU (needed by WebLLM). Try the latest Chrome or Edge, or Safari 18+. Passage matching above still works without it.</div>' +
+            '<label for="cwpModelSel" class="w3-small">Model </label>' +
+            '<select id="cwpModelSel" class="w3-select w3-border" style="width:auto;display:inline-block;padding:4px;">' + modelOpts + '</select> ' +
+            '<button id="cwpLoadBtn" type="button" class="w3-button w3-green w3-small">Load model</button> ' +
+            '<button id="cwpClearCacheBtn" type="button" class="w3-button w3-light-grey w3-small">Clear cached models</button>' +
+            '<div><progress id="cwpProgress" max="1" value="0" style="width:100%;max-width:420px;margin-top:6px;display:none;"></progress></div>' +
+            '<div id="cwpLoadStatus" class="w3-small w3-text-grey" role="status"></div>' +
+            '</div>' +
+            '</div>' +
+            // Honest-notes block: keep in sync with tool-<slug>/SKILL.md ## NOT implemented anti-claims.
+            '<div id="cwpNotes" class="w3-small w3-text-grey" style="margin-top:14px;"><b>Honest notes</b><ul style="margin:4px 0 0 0;">' +
+            '<li>Everything runs in your browser - the PDF and your questions never leave this device.</li>' +
+            '<li>Answers come from the text layer of your PDF. Scanned or photographed PDFs have no text layer, so they return nothing here - run OCR first (see the linked OCR tool below the page).</li>' +
+            '<li>Written answers are drafted by a small on-device model (1-3B) from the matching passages - check the cited pages before relying on one. Without a model, you get the matching passages themselves.</li>' +
+            '<li>Long documents: the first ' + CWP_MAX_PAGES + ' pages are read and the ' + CWP_TOP_K + ' most relevant passages are used per question.</li>' +
+            '<li>Model sizes in the picker are read from the WebLLM model list and shown again before the download starts.</li>' +
+            '</ul></div>' +
+            '</div>';
+
+        var q = function (sel) { return root.querySelector(sel); };
+        var fileInput = q('#cwpFile'), docStatus = q('#cwpDocStatus');
+        var questionInput = q('#cwpQuestion'), askBtn = q('#cwpAsk');
+        var status = q('#cwpStatus'), chat = q('#cwpChat');
+        var embedBtn = q('#cwpEmbedBtn'), embedProgress = q('#cwpEmbedProgress'), embedStatus = q('#cwpEmbedStatus');
+        var modelSel = q('#cwpModelSel'), loadBtn = q('#cwpLoadBtn'), clearBtn = q('#cwpClearCacheBtn');
+        var progress = q('#cwpProgress'), loadStatus = q('#cwpLoadStatus'), gpuNote = q('#cwpGpuNote');
+
+        function cwpActiveTier() { return cwpBuiltinOk ? 1 : (cwpEngine && cwpLoadedModel ? 2 : 3); }
+
+        function cwpReadyDescription() {
+            var t = cwpActiveTier();
+            var retr = (cwpVectors ? 'semantic matching' : 'keyword matching');
+            if (t === 1) { return 'built-in browser AI (no download) + ' + retr; }
+            if (t === 2) { return 'on-device model ' + cwpLoadedModel + ' via WebLLM + ' + retr; }
+            return retr + ', no answer model yet - answers show as matching passages';
+        }
+
+        function cwpRenderStatusLine() {
+            status.textContent = (cwpLastOutputEngine
+                ? 'Latest answer: ' + cwpLastOutputEngine
+                : 'Latest answer: none yet') + ' - ready: ' + cwpReadyDescription() + '.';
+        }
+
+        function cwpSetOutputEngine(name) { cwpLastOutputEngine = name || null; cwpRenderStatusLine(); }
+
+        function cwpRenderDocStatus() {
+            if (!cwpDoc) { docStatus.textContent = 'No document open yet.'; return; }
+            var pageCount = cwpDoc.pages.length;
+            docStatus.textContent = cwpDoc.name + ' - ' + pageCount + ' page' + (pageCount === 1 ? '' : 's') + ', ' +
+                cwpPassages.length + ' searchable passage' + (cwpPassages.length === 1 ? '' : 's') +
+                (cwpVectors ? ' (semantic index ready)' : '') +
+                (cwpTruncatedNote ? ' - ' + cwpTruncatedNote : '');
+        }
+
+        // Append one Q/A turn to the transcript. sources = ranked list.
+        function cwpAppendTurn(question, answerHtml, engineLabel, top, methodLabel) {
+            var srcHtml = '';
+            if (top && top.length) {
+                var items = '';
+                for (var i = 0; i < top.length; i++) {
+                    var ps = cwpPassages[top[i].index];
+                    if (!ps) continue;
+                    items += '<li style="margin-bottom:4px;"><b>Page ' + ps.page + ':</b> ' + cwpEsc(ps.text) + '</li>';
+                }
+                srcHtml = '<div class="w3-small" style="margin-top:6px;"><b>Matching passages (' + cwpEsc(methodLabel) + '):</b><ul style="margin:4px 0 0 0;">' + items + '</ul></div>';
+            }
+            var turn = document.createElement('div');
+            turn.style.marginBottom = '14px';
+            turn.innerHTML =
+                '<div><b>Q:</b> ' + cwpEsc(question) + '</div>' +
+                '<div class="w3-small w3-text-grey">' + cwpEsc(engineLabel) + '</div>' +
+                '<div class="cwpAnswer" style="white-space:pre-wrap;margin-top:4px;">' + answerHtml + '</div>' +
+                srcHtml;
+            chat.appendChild(turn);
+            return turn;
+        }
+
+        // Answer a question through the ladder. isDemo labels the G16 sample run.
+        function cwpAnswer(question, isDemo) {
+            if (!cwpDoc || !cwpPassages.length) {
+                cwpAppendTurn(question, 'Open a PDF above first (or ask against the built-in sample document).', 'no document open', null, '');
+                cwpSetOutputEngine('no document open - nothing was searched');
+                return;
+            }
+            askBtn.disabled = true;
+            cwpRankPassages(question, function (top, methodLabel) {
+                var nonEmpty = [];
+                for (var i = 0; i < top.length; i++) { if (top[i].score > 0) nonEmpty.push(top[i]); }
+                if (!nonEmpty.length) {
+                    cwpAppendTurn(question, 'No passage in this document matches the question. Try different wording, or check that the PDF has selectable text (scanned PDFs need OCR first).', 'no match found', null, methodLabel);
+                    cwpSetOutputEngine('no matching passage found');
+                    askBtn.disabled = false;
+                    return;
+                }
+                var demoTag = isDemo ? 'Sample demo - ' : '';
+                function passagesOnly() {
+                    cwpAppendTurn(question, 'The passages below are where the document covers this. Load a model in the panel underneath to turn them into a written answer.',
+                        demoTag + 'matching passages, no AI model (' + methodLabel + ')', nonEmpty, methodLabel);
+                    cwpSetOutputEngine(demoTag.toLowerCase() + 'matching passages via ' + methodLabel + ' (no AI model)');
+                    askBtn.disabled = false;
+                }
+                function viaWebLLM() {
+                    var engineName = 'on-device model ' + cwpLoadedModel + ' via WebLLM';
+                    var turn = cwpAppendTurn(question, 'Working ...', engineName + ' + ' + methodLabel, nonEmpty, methodLabel);
+                    var answerEl = turn.querySelector('.cwpAnswer');
+                    cwpSetOutputEngine(engineName + ', working ...');
+                    cwpRunWebLLM(cwpBuildPrompt(question, nonEmpty),
+                        function (partial) { answerEl.textContent = partial; },
+                        function (full) { answerEl.textContent = full || '(empty reply)'; cwpSetOutputEngine(engineName); askBtn.disabled = false; },
+                        function (err) {
+                            answerEl.textContent = 'Generation failed: ' + (err && err.message ? err.message : 'unknown error') + '. The matching passages above the fold still stand.';
+                            cwpSetOutputEngine(engineName + ' - generation failed');
+                            askBtn.disabled = false;
+                        });
+                }
+                if (cwpBuiltinOk) {
+                    var turn = cwpAppendTurn(question, 'Working ...', 'built-in browser AI (no download) + ' + methodLabel, nonEmpty, methodLabel);
+                    var answerEl = turn.querySelector('.cwpAnswer');
+                    cwpSetOutputEngine('built-in browser AI (no download), working ...');
+                    cwpRunBuiltin(cwpBuildPrompt(question, nonEmpty),
+                        function (out) { answerEl.textContent = out || '(empty reply)'; cwpSetOutputEngine('built-in browser AI (no download)'); askBtn.disabled = false; },
+                        function () {
+                            // Honest downgrade: probe said yes, live call failed.
+                            cwpBuiltinOk = false;
+                            answerEl.textContent = 'The built-in browser AI call failed; showing the matching passages instead. Load an on-device model below for written answers.';
+                            cwpSetOutputEngine('built-in browser AI failed - matching passages shown');
+                            cwpRenderStatusLine();
+                            askBtn.disabled = false;
+                        });
+                    return;
+                }
+                if (cwpEngine && cwpLoadedModel) { viaWebLLM(); return; }
+                passagesOnly();
+            });
+        }
+
+        // ---- File open ----------------------------------------------------------
+        fileInput.addEventListener('change', function () {
+            var f = fileInput.files && fileInput.files[0];
+            if (!f) return;
+            docStatus.textContent = 'Reading ' + f.name + ' locally ...';
+            var reader = new FileReader();
+            reader.onerror = function () { docStatus.textContent = 'Could not read that file.'; };
+            reader.onload = function () {
+                cwpExtractPdf(reader.result, function (done, total) {
+                    docStatus.textContent = 'Extracting text: page ' + done + ' of ' + total + ' (in your browser) ...';
+                }).then(function (res) {
+                    var totalChars = 0;
+                    for (var i = 0; i < res.pages.length; i++) { totalChars += res.pages[i].text.length; }
+                    cwpDoc = { name: f.name, isSample: false, pages: res.pages };
+                    cwpIndexDoc(cwpDoc);
+                    if (res.truncated) {
+                        cwpTruncatedNote = 'Only the first ' + CWP_MAX_PAGES + ' of ' + res.pageCount + ' pages are read.';
+                    }
+                    chat.innerHTML = '';
+                    cwpSetOutputEngine(null);
+                    cwpRenderDocStatus();
+                    if (totalChars < res.pages.length * 40) {
+                        docStatus.textContent += ' - Warning: almost no selectable text found. This looks like a scanned PDF; run OCR on it first, then come back.';
+                    }
+                    if (cwpVectors === null && cwpEmbedder) {
+                        // Embedding model already loaded: re-index the new document.
+                        embedStatus.textContent = 'Re-indexing the new document for semantic matching ...';
+                        cwpIndexEmbeddings(function (done2, total2) {
+                            embedStatus.textContent = 'Indexing passage ' + done2 + ' of ' + total2 + ' ...';
+                        }).then(function () {
+                            embedStatus.textContent = 'Semantic matching ready for this document.';
+                            cwpRenderDocStatus(); cwpRenderStatusLine();
+                        });
+                    }
+                }).catch(function (err) {
+                    docStatus.textContent = 'Could not open that PDF: ' + (err && err.message ? err.message : 'unknown error') + '.';
+                });
+            };
+            reader.readAsArrayBuffer(f);
+        });
+
+        // ---- Ask ------------------------------------------------------------------
+        askBtn.addEventListener('click', function () {
+            var question = (questionInput.value || '').replace(/^\s+|\s+$/g, '');
+            if (!question) {
+                status.textContent = 'Type a question first.';
+                return;
+            }
+            cwpAnswer(question, false);
+        });
+        questionInput.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Enter') { ev.preventDefault(); askBtn.click(); }
+        });
+
+        // ---- Embeddings load (click-gated) ---------------------------------------
+        embedBtn.addEventListener('click', function () {
+            if (cwpEmbedLoading) return;
+            cwpEmbedLoading = true;
+            embedBtn.disabled = true;
+            embedProgress.style.display = 'block';
+            embedStatus.textContent = 'Downloading the matching model (' + CWP_EMBED_SIZE_LABEL + ', one-time, cached) ...';
+            cwpLoadEmbedder(function (frac, file) {
+                embedProgress.value = frac;
+                embedStatus.textContent = 'Downloading ' + (file || 'model files') + ' ... ' + Math.round(frac * 100) + '%';
+            }).then(function () {
+                embedStatus.textContent = 'Indexing ' + cwpPassages.length + ' passages on your device ...';
+                return cwpIndexEmbeddings(function (done, total) {
+                    embedProgress.value = total ? done / total : 0;
+                    embedStatus.textContent = 'Indexing passage ' + done + ' of ' + total + ' ...';
+                });
+            }).then(function () {
+                cwpEmbedLoading = false;
+                embedProgress.value = 1;
+                embedStatus.textContent = 'Semantic matching ready - questions now match by meaning.';
+                embedBtn.textContent = 'Matching model loaded';
+                cwpRenderDocStatus(); cwpRenderStatusLine();
+            }).catch(function (err) {
+                cwpEmbedLoading = false;
+                embedBtn.disabled = false;
+                embedStatus.textContent = 'Could not load the matching model: ' + (err && err.message ? err.message : 'unknown error') + '. Keyword matching keeps working.';
+            });
+        });
+
+        // ---- WebLLM model controls (idioms shared with llm-text-task) -------------
+        function cwpEnsureOption(sel, id) {
+            for (var i = 0; i < sel.options.length; i++) {
+                if (sel.options[i].value === id) { sel.options[i].textContent = cwpOptionText(id); return; }
+            }
+            var o = document.createElement('option');
+            o.value = id; o.textContent = cwpOptionText(id); sel.appendChild(o);
+        }
+        function cwpRefreshModelLabels() {
+            for (var i = 0; i < modelSel.options.length; i++) {
+                modelSel.options[i].textContent = cwpOptionText(modelSel.options[i].value);
+            }
+        }
+        function cwpHydrateModelSizes() { return cwpEnsureModelSizes().then(cwpRefreshModelLabels); }
+
+        try {
+            var last = localStorage.getItem(CWP_LS_MODEL);
+            if (last) { cwpEnsureOption(modelSel, last); modelSel.value = last; }
+        } catch (e) { void e; }
+
+        cwpWebGpuAdapter().then(function (ok) {
+            if (!ok) { gpuNote.style.display = 'block'; loadBtn.disabled = true; }
+        });
+
+        var cwpSizeHydrateOnce = function () {
+            modelSel.removeEventListener('pointerdown', cwpSizeHydrateOnce);
+            modelSel.removeEventListener('focus', cwpSizeHydrateOnce);
+            loadBtn.removeEventListener('pointerenter', cwpSizeHydrateOnce);
+            loadBtn.removeEventListener('focus', cwpSizeHydrateOnce);
+            cwpHydrateModelSizes();
+        };
+        modelSel.addEventListener('pointerdown', cwpSizeHydrateOnce);
+        modelSel.addEventListener('focus', cwpSizeHydrateOnce);
+        loadBtn.addEventListener('pointerenter', cwpSizeHydrateOnce);
+        loadBtn.addEventListener('focus', cwpSizeHydrateOnce);
+
+        loadBtn.addEventListener('click', function () {
+            var wanted = modelSel.value || CWP_WEBLLM_MODELS[0].id;
+            loadBtn.disabled = true; modelSel.disabled = true;
+            loadStatus.textContent = 'Checking the download size for ' + wanted + ' ...';
+            cwpHydrateModelSizes().then(function () {
+                var size = cwpModelSizes[wanted];
+                progress.style.display = 'block';
+                loadStatus.textContent = 'Downloading ' + wanted + ' - ' +
+                    (size ? 'about ' + size : CWP_SIZE_UNKNOWN) +
+                    ' - one-time download, then cached in this browser ...';
+                return cwpLoadModel(wanted, function (frac, msg) {
+                    progress.value = Math.max(0, Math.min(1, frac || 0));
+                    loadStatus.textContent = msg || ('Loading ... ' + Math.round((frac || 0) * 100) + '%');
+                });
+            }).then(function () {
+                progress.value = 1;
+                cwpEnsureOption(modelSel, cwpLoadedModel);
+                modelSel.value = cwpLoadedModel;
+                cwpRefreshModelLabels();
+                loadStatus.textContent = 'Model ready' +
+                    (cwpLoadedModel === wanted ? '' : ' (requested id not in this WebLLM build; loaded ' + cwpLoadedModel + ' instead)') +
+                    ' - answers are generated on your device.';
+                loadBtn.disabled = false; modelSel.disabled = false;
+                cwpRenderStatusLine();
+            }).catch(function (err) {
+                loadBtn.disabled = false; modelSel.disabled = false;
+                loadStatus.textContent = 'Could not load the model: ' + (err && err.message ? err.message : 'unknown error') + '.';
+            });
+        });
+
+        clearBtn.addEventListener('click', function () {
+            clearBtn.disabled = true;
+            loadStatus.textContent = 'Clearing cached model files ...';
+            cwpClearModelCache(function () {
+                clearBtn.disabled = false;
+                loadStatus.textContent = 'Cached model files cleared - the next load downloads again.';
+                cwpRenderStatusLine();
+            }, function (err) {
+                clearBtn.disabled = false;
+                loadStatus.textContent = 'Could not clear the cache: ' + (err && err.message ? err.message : 'unknown error') + '.';
+            });
+        });
+
+        // Probe tier 1 (built-in Prompt API) without downloading anything. Resolves
+        // after the sample demo renders, so it only refreshes the "ready:" clause.
+        cwpProbeBuiltin(function (ok, kind) { cwpBuiltinOk = ok; cwpBuiltinKind = kind; cwpRenderStatusLine(); });
+
+        // Visible default output on load (e2e G16, zero interaction): the built-in
+        // sample document is indexed and the sample question answered with the
+        // tier-3 deterministic retrieval - real output, no download, labeled demo.
+        cwpDoc = CWP_SAMPLE_DOC;
+        cwpIndexDoc(cwpDoc);
+        cwpRenderDocStatus();
+        questionInput.value = CWP_SAMPLE_QUESTION;
+        cwpAnswer(CWP_SAMPLE_QUESTION, true);
+        cwpRenderStatusLine();
+    }
+</script>
