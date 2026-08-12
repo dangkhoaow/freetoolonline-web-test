@@ -922,6 +922,7 @@ try {
     { title: "AI Translator - Private, In Your Browser", url: "https://freetoolonline.com/utility-tools/ai-translator.html", include: !1, tags: "utility" },
     { title: "Vehicle Recall Lookup", url: "https://freetoolonline.com/utility-tools/vehicle-recall-lookup.html", include: !1, tags: "utility" },
     { title: "AI Grammar Checker - Private, In Your Browser", url: "https://freetoolonline.com/utility-tools/grammar-checker.html", include: !1, tags: "utility" },
+    { title: "AI Paraphrasing Tool - Private, In Your Browser", url: "https://freetoolonline.com/utility-tools/paraphrasing-tool.html", include: !1, tags: "utility" },
   ],
     currentTitle = $.trim($(".navPageName").text()),
     allCurrentTags = "",

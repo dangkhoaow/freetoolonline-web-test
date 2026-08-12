@@ -15757,6 +15757,7 @@ export const ALIAS_ROUTES = {
   '/ai-translator.html': '/utility-tools/ai-translator.html',
   '/vehicle-recall-lookup.html': '/utility-tools/vehicle-recall-lookup.html',
   '/grammar-checker.html': '/utility-tools/grammar-checker.html',
+  '/paraphrasing-tool.html': '/utility-tools/paraphrasing-tool.html',
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -28295,6 +28296,7 @@ export const JSP_BY_ROUTE = {
   '/guides/de/vehicle-recall-lookup-when.html': 'guide/de/vehicle-recall-lookup-when.jsp',
   '/guides/de/vehicle-recall-lookup-vs-alternatives.html': 'guide/de/vehicle-recall-lookup-vs-alternatives.jsp',
   '/utility-tools/grammar-checker.html': 'utility/grammar-checker.jsp',
+  '/utility-tools/paraphrasing-tool.html': 'utility/paraphrasing-tool.jsp',
 };
 
 // Cycle 50 follow-up #2 - GUIDE_ROUTES auto-merge from JSP_BY_ROUTE.
