@@ -1,0 +1,428 @@
+<script>
+    // 3D scene archetype skeleton (Ingenuity Mars Helicopter) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Built LEAN, forked from the curiosity-rover-traverse shape -
+    // ONE scene only (a named-mission-vehicle physics explorer). All geometry
+    // is procedural (Mars terrain patch + rover marker + helicopter model +
+    // rotor bars + an optional side-by-side Earth-helicopter comparison rig).
+    //
+    // EDUCATIONAL APPROXIMATION, not a physics simulation and not a terrain-
+    // accurate reconstruction of Jezero Crater. A teaching scene: real,
+    // independently published flight-milestone figures and rotor-speed
+    // figures, replayed as discrete waypoints and a scaled visual rotor-speed
+    // ratio - never a continuous telemetry feed and never a claim that the
+    // on-screen spin rate matches the real rpm.
+    //
+    // Published figures (cross-checked via WebSearch + WebFetch 2026-08-12;
+    // sources: NASA JPL "Ingenuity Landing Press Kit - Quick Facts", NASA "6
+    // Things to Know About NASA's Ingenuity Mars Helicopter", NASA/JPL "After
+    // Three Years on Mars, NASA's Ingenuity Helicopter Mission Ends"; the
+    // Earth-helicopter rotor-rpm comparison is corroborated by TechCrunch's
+    // 2021-04-19 report of NASA's own figures):
+    //   - Mars atmosphere at the surface is about 1% as dense as Earth's.
+    //   - Ingenuity's rotor system: four specially made carbon-fiber blades
+    //     arranged into two 4-foot-long (1.2 m) counter-rotating rotors,
+    //     spinning at roughly 2,400 rpm by design.
+    //   - Actual operating speed ranged higher over the mission: about 2,537
+    //     rpm across its first 13 flights, rising to about 2,700 rpm later as
+    //     the Martian atmosphere seasonally thinned; ground-tested (not
+    //     flown) to 2,800 rpm on 2021-09-15.
+    //   - A similar-mass Earth helicopter's main rotor typically spins around
+    //     400-500 rpm - roughly five times slower than Ingenuity's rotors.
+    //   - Mass: 4.0 lb (1.8 kg) on Earth; about 1.5 lb (0.68 kg) on Mars.
+    //     Height: 1.6 ft (0.49 m). Program cost: about $85 million.
+    //   - Landed with the Perseverance rover 2021-02-18 in Jezero Crater.
+    //   - First flight 2021-04-19: climbed about 3 m (10 ft), hovered about
+    //     30 seconds - the first powered, controlled flight by an aircraft on
+    //     another planet.
+    //   - Originally planned as a 5-flight, 30-Martian-day technology
+    //     demonstration.
+    //   - Actual: 72 total flights, more than 2 hours of cumulative flight
+    //     time, flew more than 14 times farther than planned, over roughly
+    //     1,000 Martian days (about 33 times longer than the 30-day plan).
+    //   - Final flight (Flight 72), 2024-01-18: reached about 12 m (40 ft),
+    //     hovered about 4.5 seconds, then lost contact with Perseverance
+    //     (its communications relay) about 1 m above the ground while
+    //     descending. Images downlinked afterward showed rotor-blade damage
+    //     that ended flight capability. NASA declared the mission over on
+    //     2024-01-25.
+    //   - Distinct from curiosity-rover-traverse.html (a ground rover's
+    //     mission-milestone route) and mars-terrain.html / olympus-mons-mars-
+    //     volcano.html / atmosphere-escape-mars.html (Mars geography and
+    //     atmosphere science, not a mission-vehicle physics story). THIS page
+    //     is a flight-physics-on-another-world explainer told through one
+    //     specific, real flying vehicle.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'ingenuitymarshelicopter';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'ingenuitymarshelicopter'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Real published Ingenuity flight-milestone figures (NASA JPL / NASA
+    // Science, cross-checked via WebSearch + WebFetch 2026-08-12). Each
+    // waypoint is a discrete, citable milestone - never an interpolated
+    // "current position" claim. altitudeM is null where the milestone is an
+    // engineering/mission-status event rather than a specific flight with a
+    // published altitude (never fabricated).
+    var T3D_FLIGHT_WAYPOINTS = [
+        { flight: 0, date: '2021-02-18', name: 'Landed with Perseverance', altitudeM: 0,
+          fact: 'Touched down attached to the belly of the Perseverance rover inside Jezero Crater.' },
+        { flight: 1, date: '2021-04-19', name: 'First Flight - History Made', altitudeM: 3,
+          fact: 'Climbed about 3 m (10 ft), hovered about 30 seconds, and landed - the first powered, controlled flight by an aircraft on another planet.' },
+        { flight: 13, date: 'later in 2021', name: 'Rotor Speed Raised to ~2,700 rpm', altitudeM: null,
+          fact: 'As the Martian atmosphere thinned with the season, engineers raised rotor speed from about 2,537 rpm (its first 13 flights) to about 2,700 rpm to keep enough lift. Not a specific flight - an engineering change, so no altitude applies.' },
+        { flight: 50, date: '2022 (approx.)', name: 'Extended Mission - Past 50 Flights', altitudeM: null,
+          fact: 'Passed 50 flights, far beyond the original 5-flight, 30-Martian-day technology-demonstration plan. A mission-status milestone, so no single-flight altitude applies.' },
+        { flight: 72, date: '2024-01-18', name: 'Final Flight - Rotor Damage', altitudeM: 12,
+          fact: 'Reached about 12 m (40 ft), hovered about 4.5 seconds, then lost contact with Perseverance about 1 m above the ground while descending. Images downlinked afterward showed rotor-blade damage that ended flight capability; NASA declared the mission over on 2024-01-25.' }
+    ];
+
+    // rpm figures shown in the comparison readout (never animated at the real
+    // rate - the on-screen spin is slowed for visibility while keeping the
+    // roughly 5x Mars-to-Earth ratio).
+    var T3D_MARS_RPM_LABEL = 'about 2,400-2,700 rpm (Ingenuity)';
+    var T3D_EARTH_RPM_LABEL = 'about 400-500 rpm (a typical Earth helicopter of similar mass)';
+
+    function t3dBuildHelicopter(THREE, scale, bodyColor) {
+        var group = new THREE.Group();
+        var fuselage = new THREE.Mesh(new THREE.BoxGeometry(0.55 * scale, 0.32 * scale, 0.85 * scale),
+            new THREE.MeshStandardMaterial({ color: bodyColor, roughness: 0.5, metalness: 0.25 }));
+        group.add(fuselage);
+        var mastLower = new THREE.Mesh(new THREE.CylinderGeometry(0.03 * scale, 0.03 * scale, 0.28 * scale, 8),
+            new THREE.MeshStandardMaterial({ color: 0x8d6e63 }));
+        mastLower.position.y = 0.3 * scale;
+        group.add(mastLower);
+        // Two counter-rotating coaxial rotor bars (2 blades each = 4 blades total)
+        var rotorTop = new THREE.Mesh(new THREE.BoxGeometry(1.1 * scale, 0.02 * scale, 0.06 * scale),
+            new THREE.MeshBasicMaterial({ color: 0xffab40 }));
+        rotorTop.position.y = 0.48 * scale;
+        var rotorBottom = new THREE.Mesh(new THREE.BoxGeometry(1.1 * scale, 0.02 * scale, 0.06 * scale),
+            new THREE.MeshBasicMaterial({ color: 0xffd54f }));
+        rotorBottom.position.y = 0.4 * scale;
+        group.add(rotorTop, rotorBottom);
+        // Legs (4 thin struts)
+        var legMat = new THREE.MeshStandardMaterial({ color: 0x546e7a });
+        var legOffsets = [[0.22, -0.32], [-0.22, -0.32], [0.22, 0.32], [-0.22, 0.32]];
+        for (var l = 0; l < legOffsets.length; l++) {
+            var leg = new THREE.Mesh(new THREE.CylinderGeometry(0.015 * scale, 0.015 * scale, 0.26 * scale, 6), legMat);
+            leg.position.set(legOffsets[l][0] * scale, -0.28 * scale, legOffsets[l][1] * scale);
+            leg.rotation.x = Math.PI / 10;
+            group.add(leg);
+        }
+        // Solar panel hint on top of fuselage
+        var panel = new THREE.Mesh(new THREE.BoxGeometry(0.5 * scale, 0.03 * scale, 0.5 * scale),
+            new THREE.MeshStandardMaterial({ color: 0x1a237e, roughness: 0.35, metalness: 0.4 }));
+        panel.position.y = 0.19 * scale;
+        group.add(panel);
+        return { group: group, rotorTop: rotorTop, rotorBottom: rotorBottom };
+    }
+
+    function t3dIngenuityHelicopter(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x120a06, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+        var sunLight = new THREE.DirectionalLight(0xffe3c2, 1.2);
+        sunLight.position.set(10, 12, 6);
+        scene.add(sunLight);
+
+        // Thin starfield backdrop (surface scene - sky is mostly dust-tan)
+        var starN = shell.low ? 140 : 280;
+        var starPos = new Float32Array(starN * 3);
+        for (var s = 0; s < starN; s++) {
+            var r = 55 + Math.random() * 45;
+            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1) * 0.5;
+            starPos[s * 3] = r * Math.sin(ph) * Math.cos(th);
+            starPos[s * 3 + 1] = 6 + r * Math.cos(ph) * 0.4;
+            starPos[s * 3 + 2] = r * Math.sin(ph) * Math.sin(th) - 18;
+        }
+        var starGeo = new THREE.BufferGeometry();
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xd9b48f, size: 0.32, sizeAttenuation: true, transparent: true, opacity: 0.32 })));
+
+        // Jezero Crater floor patch - a broad, gently sloped disc (procedural,
+        // not a terrain-accurate reconstruction).
+        var floor = new THREE.Mesh(
+            new THREE.CylinderGeometry(16, 17.5, 0.6, 56),
+            new THREE.MeshStandardMaterial({ color: 0x9c5a34, roughness: 0.95, metalness: 0.02 })
+        );
+        floor.position.y = -0.3;
+        scene.add(floor);
+        // Scattered procedural rocks for terrain character (not sourced from
+        // any real Jezero rock-position catalogue).
+        var rockMat = new THREE.MeshStandardMaterial({ color: 0x6d4a34, roughness: 0.9 });
+        for (var rk = 0; rk < (shell.low ? 12 : 24); rk++) {
+            var rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.12 + Math.random() * 0.22, 0), rockMat);
+            var ra = Math.random() * Math.PI * 2, rr = 3 + Math.random() * 12;
+            rock.position.set(Math.cos(ra) * rr, -0.05, Math.sin(ra) * rr);
+            rock.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+            scene.add(rock);
+        }
+
+        // Perseverance rover marker (parked - Ingenuity's communications
+        // relay and original ride to Mars). Simple procedural box + mast.
+        var roverGroup = new THREE.Group();
+        var chassis = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.4, 1.4), new THREE.MeshStandardMaterial({ color: 0xd7ccc8, roughness: 0.5, metalness: 0.3 }));
+        roverGroup.add(chassis);
+        var roverMast = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.9, 8), new THREE.MeshStandardMaterial({ color: 0x8d6e63 }));
+        roverMast.position.y = 0.65;
+        roverGroup.add(roverMast);
+        roverGroup.position.set(-6, 0.2, 4);
+        scene.add(roverGroup);
+
+        // Flight route: a low arc from the rover/landing area toward the
+        // final-flight area, used only to place waypoint ground markers - not
+        // a claimed real flight path.
+        var groundPoints = [
+            new THREE.Vector3(-6, 0.05, 4),   // Landed with Perseverance
+            new THREE.Vector3(-2, 0.05, 2),   // First flight
+            new THREE.Vector3(1.5, 0.05, 0.5),// Rotor speed raised
+            new THREE.Vector3(4, 0.05, -1.5), // Extended mission
+            new THREE.Vector3(7, 0.05, -3)    // Final flight
+        ];
+        var waypointMarkers = [];
+        for (var w = 0; w < groundPoints.length; w++) {
+            var m = new THREE.Mesh(new THREE.SphereGeometry(0.3, 12, 10), new THREE.MeshBasicMaterial({ color: 0x546e7a }));
+            m.position.copy(groundPoints[w]);
+            m.position.y += 0.25;
+            scene.add(m);
+            waypointMarkers.push(m);
+        }
+        var routeGeo = new THREE.BufferGeometry().setFromPoints(groundPoints);
+        scene.add(new THREE.Line(routeGeo, new THREE.LineBasicMaterial({ color: 0xffd54f, transparent: true, opacity: 0.7 })));
+
+        // Ingenuity helicopter model (Mars scale)
+        var heli = t3dBuildHelicopter(THREE, 3.2, 0xeceff1);
+        scene.add(heli.group);
+
+        // Earth-comparison helicopter (smaller, sits on a labeled platform to
+        // the side; visible only when the toggle is on). Same procedural
+        // model, different rotor spin rate (about 1/5th visual speed).
+        var earthPlatform = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, 0.3, 32),
+            new THREE.MeshStandardMaterial({ color: 0x37474f, roughness: 0.8 }));
+        earthPlatform.position.set(13, -0.15, 6);
+        earthPlatform.visible = false;
+        scene.add(earthPlatform);
+        var earthHeli = t3dBuildHelicopter(THREE, 3.2, 0xb0bec5);
+        earthHeli.group.position.set(13, 1.4, 6);
+        earthHeli.group.visible = false;
+        scene.add(earthHeli.group);
+
+        var flightIndex = 0; // 0..T3D_FLIGHT_WAYPOINTS.length-1
+        var compareToEarth = false;
+
+        function panelHtml() {
+            var wp = T3D_FLIGHT_WAYPOINTS[flightIndex];
+            var rows = '';
+            for (var i = 0; i < T3D_FLIGHT_WAYPOINTS.length; i++) {
+                var w2 = T3D_FLIGHT_WAYPOINTS[i];
+                rows += '<tr' + (i === flightIndex ? ' style="background:#fff3cd;"' : '') + '>' +
+                    '<td>' + (w2.flight !== null ? 'Flight ' + w2.flight : '-') + '</td>' +
+                    '<td>' + w2.date + '</td>' +
+                    '<td>' + w2.name + '</td>' +
+                    '<td>' + (w2.altitudeM !== null ? w2.altitudeM + ' m' : 'not applicable') + '</td>' +
+                    '</tr>';
+            }
+            var compareHtml = compareToEarth
+                ? '<p><b>Rotor speed comparison:</b> Mars (Ingenuity) spins ' + T3D_MARS_RPM_LABEL + '; Earth spins ' + T3D_EARTH_RPM_LABEL + ' - roughly five times slower. The two rotor rigs on screen spin at a slowed, side-by-side visual rate that keeps this ratio; neither matches the real rpm.</p>'
+                : '';
+            return '<h3>Flight milestone ' + (flightIndex + 1) + ' of ' + T3D_FLIGHT_WAYPOINTS.length + '</h3>' +
+                '<p><b>' + wp.name + '</b> (' + (wp.flight !== null ? 'Flight ' + wp.flight + ', ' : '') + wp.date + ')</p>' +
+                '<p>' + wp.fact + '</p>' +
+                compareHtml +
+                '<div class="w3-responsive"><table class="w3-table w3-bordered w3-small">' +
+                '<tr><th>Flight</th><th>Date</th><th>Milestone</th><th>Altitude</th></tr>' + rows + '</table></div>' +
+                '<p class="t3d-note">Educational approximation - the terrain, rover, and helicopter models are procedural shapes, not a terrain-accurate reconstruction of Jezero Crater and not a real-time telemetry feed. Rotor spin on screen is slowed for visibility. Every flight number, date, altitude, and rpm figure is a real, independently published NASA JPL figure.</p>';
+        }
+
+        var idxEl = document.getElementById('t3dFlightScrub');
+        var idxLab = document.getElementById('t3dFlightLabel');
+        var compareEl = document.getElementById('t3dEarthCompareToggle');
+
+        function apply() {
+            var wp = T3D_FLIGHT_WAYPOINTS[flightIndex];
+            var pos = groundPoints[flightIndex];
+            var altVis = (wp.altitudeM !== null ? Math.min(wp.altitudeM, 12) * 0.28 : 1.1);
+            heli.group.position.set(pos.x, pos.y + altVis, pos.z);
+            for (var i = 0; i < waypointMarkers.length; i++) {
+                waypointMarkers[i].material.color.setHex(i <= flightIndex ? 0xffd54f : 0x546e7a);
+            }
+            if (idxLab) idxLab.textContent = wp.name + ' (' + wp.date + ')';
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ flightIndex: flightIndex, compareToEarth: compareToEarth }); } catch (e) {}
+        }
+
+        function applyCompare() {
+            earthPlatform.visible = compareToEarth;
+            earthHeli.group.visible = compareToEarth;
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ flightIndex: flightIndex, compareToEarth: compareToEarth }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.flightIndex === 'number' && store.flightIndex >= 0 && store.flightIndex < T3D_FLIGHT_WAYPOINTS.length) {
+            flightIndex = store.flightIndex;
+        }
+        if (typeof store.compareToEarth === 'boolean') { compareToEarth = store.compareToEarth; }
+        if (idxEl) idxEl.value = String(flightIndex);
+        if (compareEl) compareEl.checked = compareToEarth;
+        apply();
+        applyCompare();
+
+        if (idxEl) idxEl.addEventListener('input', function () {
+            flightIndex = Math.max(0, Math.min(T3D_FLIGHT_WAYPOINTS.length - 1, parseInt(idxEl.value || '0', 10)));
+            apply();
+        });
+        if (compareEl) compareEl.addEventListener('change', function () {
+            compareToEarth = !!compareEl.checked;
+            applyCompare();
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Scrub the flight-milestone slider, or toggle the Earth rotor-speed comparison.');
+        return function animate(dt) {
+            var marsSpin = dt * 0.018;
+            heli.rotorTop.rotation.y += marsSpin;
+            heli.rotorBottom.rotation.y -= marsSpin * 0.94;
+            if (compareToEarth) {
+                var earthSpin = marsSpin / 5.2;
+                earthHeli.rotorTop.rotation.y += earthSpin;
+                earthHeli.rotorBottom.rotation.y -= earthSpin * 0.94;
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { ingenuitymarshelicopter: 't3dIngenuityControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { ingenuitymarshelicopter: { radius: 30, maxR: 90, minR: 6, phi: 1.1, theta: 0.55, targetY: 1.5 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dIngenuityHelicopter(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
