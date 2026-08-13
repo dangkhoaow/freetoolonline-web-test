@@ -1,0 +1,308 @@
+<script>
+    // In-browser AI OBJECT REMOVER (object-remover) - MI-GAN inpainting via ONNX Runtime
+    // Web. 100% client-side: the IMAGE never leaves the browser; only the model
+    // weights download once from the Hugging Face hub on an explicit click.
+    // Registry Gate-H entry: inpainting_migan_onnx (verified 2026-08-13 in a real
+    // headless-Chromium probe - I/O signature, dynamic size, mask polarity, and a
+    // visual before/after all confirmed before this skeleton was authored).
+    //
+    // ENGINE (raw onnxruntime-web, NOT transformers.js - inpainting is not a
+    // transformers.js pipeline task): model andraniksargsyan/migan
+    // `migan_pipeline_v2.onnx` (~27MB, CORS-clean). I/O: input `image` uint8
+    // [1,3,H,W] planar RGB, input `mask` uint8 [1,1,H,W]; output `result` uint8
+    // [1,3,H,W]. MASK POLARITY IS LOAD-BEARING: painted (object) pixels -> 0
+    // (inpaint), everything else -> 255 (keep). The inverse removes the wrong
+    // region. Kept pixels are composited back at FULL resolution so the rest of
+    // the photo stays pixel-perfect; only the painted region is model output.
+    //
+    // THREE-TIER LADDER (ai-local class rule 1): (1) no Chrome Built-in tier - no
+    // browser inpainting API exists; (2) on-device MI-GAN (this); (3) a
+    // deterministic no-download "Quick patch" fallback (edge-diffusion blur fill)
+    // so no browser gets a dead page. The G16 zero-interaction/zero-download demo
+    // (a real before/after pair) is baked into the paired BODYHTML and renders on
+    // load without touching this script.
+    //
+    // Framework contract: doAfterPageRendered(); no top-level DOM. web.localUpload
+    // = false (plain <input type=file>, no server upload widget).
+
+    web.localUpload = false;
+
+    var OR_SLUG = 'object-remover';
+    var OR_ORT_CDN = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js';
+    var OR_ORT_WASM_DIR = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/';
+    var OR_MODEL_URL = 'https://huggingface.co/andraniksargsyan/migan/resolve/main/migan_pipeline_v2.onnx';
+    var OR_MAX_EDGE = 1024;   // cap the inference long edge so WASM stays bounded
+
+    var orOrtPromise = null;
+    function orLoadOrt() {
+        if (window.ort) return Promise.resolve(window.ort);
+        if (orOrtPromise) return orOrtPromise;
+        orOrtPromise = new Promise(function (res, rej) {
+            var s = document.createElement('script');
+            s.src = OR_ORT_CDN;
+            s.onload = function () {
+                try {
+                    window.ort.env.wasm.numThreads = 1;   // avoid COOP/COEP requirement
+                    window.ort.env.wasm.simd = true;
+                    window.ort.env.wasm.proxy = false;
+                    window.ort.env.wasm.wasmPaths = OR_ORT_WASM_DIR;
+                    res(window.ort);
+                } catch (e) { rej(e); }
+            };
+            s.onerror = function () { rej(new Error('Could not load the ONNX runtime from the CDN.')); };
+            document.head.appendChild(s);
+        });
+        return orOrtPromise;
+    }
+
+    var orSessionPromise = null;
+    function orLoadModel(setStatus) {
+        if (orSessionPromise) return orSessionPromise;
+        orSessionPromise = (async function () {
+            var ort = await orLoadOrt();
+            setStatus('Downloading the AI model (~27 MB, one time - then cached by your browser) ...');
+            var resp = await fetch(OR_MODEL_URL);
+            if (!resp.ok) throw new Error('model download failed (HTTP ' + resp.status + ')');
+            var buf = new Uint8Array(await resp.arrayBuffer());
+            setStatus('Starting the AI model in your browser ...');
+            var session = await ort.InferenceSession.create(buf, { executionProviders: ['wasm'] });
+            return { ort: ort, session: session };
+        })();
+        return orSessionPromise;
+    }
+
+    function doAfterPageRendered() {
+        var root = document.getElementById('objectRemoverTool');
+        if (!root) return; // not an object-remover page
+
+        root.innerHTML =
+            '<div class="w3-row" style="margin-bottom:8px;"><input type="file" id="orFile" accept="image/*" class="w3-input w3-border" style="max-width:420px;margin:0 auto;"></div>' +
+            '<div id="orStatus" style="min-height:1.2em;margin:6px 0;color:#555;">Choose a photo. It never leaves your browser - everything runs on your device.</div>' +
+            '<div class="w3-row" style="margin:6px 0;">' +
+              '<label style="font-size:.9em;color:#555;">Brush size <input type="range" id="orBrush" min="8" max="80" value="34" style="vertical-align:middle;"></label> ' +
+              '<button id="orClear" type="button" class="w3-button w3-white w3-border w3-small" disabled>Clear mask</button>' +
+            '</div>' +
+            '<div class="w3-row" style="position:relative;display:inline-block;max-width:100%;"><canvas id="orCanvas" class="outputImgs" style="visibility:visible !important;max-width:90vw;touch-action:none;border:1px solid #ddd;cursor:crosshair;background:#f4f4f4;"></canvas></div>' +
+            '<div style="margin-top:8px;">' +
+              '<button id="orRun" type="button" class="w3-button w3-green w3-large" disabled>Remove object (AI)</button> ' +
+              '<button id="orQuick" type="button" class="w3-button w3-amber" disabled>Quick patch (no download)</button> ' +
+              '<a id="orDownload" class="w3-button w3-blue" style="display:none;">Download PNG</a>' +
+            '</div>' +
+            '<div id="orErr" style="color:#b00020;margin-top:6px;min-height:1em;"></div>';
+
+        var fileEl = root.querySelector('#orFile');
+        var canvas = root.querySelector('#orCanvas');
+        var ctx = canvas.getContext('2d', { willReadFrequently: true });
+        var brushEl = root.querySelector('#orBrush');
+        var clearBtn = root.querySelector('#orClear');
+        var runBtn = root.querySelector('#orRun');
+        var quickBtn = root.querySelector('#orQuick');
+        var dl = root.querySelector('#orDownload');
+        var statusEl = root.querySelector('#orStatus');
+        var errEl = root.querySelector('#orErr');
+
+        function setStatus(m) { statusEl.textContent = m; }
+        function setErr(m) { errEl.textContent = m || ''; }
+
+        var natW = 0, natH = 0;      // native image size
+        var baseImage = null;        // original ImageData (native res)
+        var maskArr = null;          // Uint8Array natW*natH: 1 = painted (remove), 0 = keep
+        var painting = false, hasMask = false, currentURL = null;
+
+        function redraw() {
+            if (!baseImage) return;
+            ctx.putImageData(baseImage, 0, 0);
+            if (hasMask) {
+                var overlay = ctx.getImageData(0, 0, natW, natH);
+                var d = overlay.data;
+                for (var i = 0; i < maskArr.length; i++) {
+                    if (maskArr[i]) { // tint painted pixels red at ~45%
+                        d[i * 4] = Math.round(d[i * 4] * 0.55 + 220 * 0.45);
+                        d[i * 4 + 1] = Math.round(d[i * 4 + 1] * 0.55 + 30 * 0.45);
+                        d[i * 4 + 2] = Math.round(d[i * 4 + 2] * 0.55 + 30 * 0.45);
+                    }
+                }
+                ctx.putImageData(overlay, 0, 0);
+            }
+        }
+
+        function loadFile(f) {
+            if (!f) return;
+            setErr(''); if (dl) dl.style.display = 'none';
+            if (currentURL) URL.revokeObjectURL(currentURL);
+            currentURL = URL.createObjectURL(f);
+            var img = new Image();
+            img.onload = function () {
+                natW = img.naturalWidth; natH = img.naturalHeight;
+                canvas.width = natW; canvas.height = natH;
+                ctx.clearRect(0, 0, natW, natH); ctx.drawImage(img, 0, 0);
+                baseImage = ctx.getImageData(0, 0, natW, natH);
+                maskArr = new Uint8Array(natW * natH);
+                hasMask = false;
+                runBtn.disabled = false; quickBtn.disabled = false; clearBtn.disabled = false;
+                setStatus('Paint over the object you want to remove, then click "Remove object (AI)".');
+            };
+            img.onerror = function () { setErr('Could not read that image.'); };
+            img.src = currentURL;
+        }
+
+        fileEl.addEventListener('change', function () { loadFile(fileEl.files && fileEl.files[0]); });
+
+        // Brush painting: client coords -> image coords, stamp a filled disc into maskArr.
+        function paintAt(clientX, clientY) {
+            if (!baseImage) return;
+            var rect = canvas.getBoundingClientRect();
+            var sx = natW / rect.width, sy = natH / rect.height;
+            var cx = Math.round((clientX - rect.left) * sx);
+            var cy = Math.round((clientY - rect.top) * sy);
+            var r = Math.max(4, Math.round(parseInt(brushEl.value, 10) * sx));
+            var r2 = r * r;
+            for (var y = Math.max(0, cy - r); y < Math.min(natH, cy + r); y++) {
+                for (var x = Math.max(0, cx - r); x < Math.min(natW, cx + r); x++) {
+                    var dx = x - cx, dy = y - cy;
+                    if (dx * dx + dy * dy <= r2) maskArr[y * natW + x] = 1;
+                }
+            }
+            hasMask = true;
+            redraw();
+        }
+        function evtDown(e) { painting = true; e.preventDefault(); var t = e.touches ? e.touches[0] : e; paintAt(t.clientX, t.clientY); }
+        function evtMove(e) { if (!painting) return; e.preventDefault(); var t = e.touches ? e.touches[0] : e; paintAt(t.clientX, t.clientY); }
+        function evtUp() { painting = false; }
+        canvas.addEventListener('mousedown', evtDown);
+        canvas.addEventListener('mousemove', evtMove);
+        window.addEventListener('mouseup', evtUp);
+        canvas.addEventListener('touchstart', evtDown, { passive: false });
+        canvas.addEventListener('touchmove', evtMove, { passive: false });
+        canvas.addEventListener('touchend', evtUp);
+
+        clearBtn.addEventListener('click', function () {
+            if (!maskArr) return;
+            maskArr.fill(0); hasMask = false; redraw(); setErr(''); if (dl) dl.style.display = 'none';
+            setStatus('Mask cleared. Paint over the object you want to remove.');
+        });
+
+        // Working-resolution box: cap the long edge so WASM inference stays bounded.
+        function workSize() {
+            var scale = Math.min(1, OR_MAX_EDGE / Math.max(natW, natH));
+            return { w: Math.max(1, Math.round(natW * scale)), h: Math.max(1, Math.round(natH * scale)), scale: scale };
+        }
+
+        // Nearest-neighbour resample of the mask to (w,h).
+        function resampleMask(w, h) {
+            var out = new Uint8Array(w * h);
+            for (var y = 0; y < h; y++) {
+                var syi = Math.min(natH - 1, Math.floor(y * natH / h));
+                for (var x = 0; x < w; x++) {
+                    var sxi = Math.min(natW - 1, Math.floor(x * natW / w));
+                    out[y * w + x] = maskArr[syi * natW + sxi];
+                }
+            }
+            return out;
+        }
+
+        function finish(canvasEl, name) {
+            canvasEl.toBlob(function (blob) {
+                var u = URL.createObjectURL(blob);
+                dl.href = u; dl.download = name; dl.style.display = '';
+            }, 'image/png');
+        }
+
+        runBtn.addEventListener('click', async function () {
+            if (!baseImage) { setErr('Choose a photo first.'); return; }
+            if (!hasMask) { setErr('Paint over the object you want to remove first.'); return; }
+            setErr(''); runBtn.disabled = true; quickBtn.disabled = true;
+            try {
+                var m = await orLoadModel(setStatus);
+                var ws = workSize();
+                var w = ws.w, h = ws.h;
+                // downscale the base image to (w,h) for inference input
+                var tmp = document.createElement('canvas'); tmp.width = w; tmp.height = h;
+                var tctx = tmp.getContext('2d'); tctx.putImageData(baseImage, 0, 0); // will be clipped; instead draw scaled
+                tctx.clearRect(0, 0, w, h);
+                var src = document.createElement('canvas'); src.width = natW; src.height = natH;
+                src.getContext('2d').putImageData(baseImage, 0, 0);
+                tctx.drawImage(src, 0, 0, w, h);
+                var small = tctx.getImageData(0, 0, w, h).data;
+                var maskSmall = resampleMask(w, h);
+                // build tensors: image uint8 [1,3,h,w] planar RGB; mask uint8 [1,1,h,w] (0=inpaint,255=keep)
+                var imgT = new Uint8Array(3 * h * w), mskT = new Uint8Array(h * w);
+                for (var p = 0; p < w * h; p++) {
+                    imgT[p] = small[p * 4]; imgT[h * w + p] = small[p * 4 + 1]; imgT[2 * h * w + p] = small[p * 4 + 2];
+                    mskT[p] = maskSmall[p] ? 0 : 255;
+                }
+                setStatus('Removing the object in your browser (this runs on your device) ...');
+                var out = await m.session.run({
+                    image: new m.ort.Tensor('uint8', imgT, [1, 3, h, w]),
+                    mask: new m.ort.Tensor('uint8', mskT, [1, 1, h, w])
+                });
+                var od = out[m.session.outputNames[0]].data; // uint8 CHW
+                // model output canvas at working res
+                var mc = document.createElement('canvas'); mc.width = w; mc.height = h;
+                var mid = mc.getContext('2d').createImageData(w, h);
+                for (var q = 0; q < w * h; q++) {
+                    mid.data[q * 4] = od[q]; mid.data[q * 4 + 1] = od[h * w + q]; mid.data[q * 4 + 2] = od[2 * h * w + q]; mid.data[q * 4 + 3] = 255;
+                }
+                mc.getContext('2d').putImageData(mid, 0, 0);
+                // upscale model output to native res
+                var up = document.createElement('canvas'); up.width = natW; up.height = natH;
+                up.getContext('2d').drawImage(mc, 0, 0, natW, natH);
+                var upData = up.getContext('2d').getImageData(0, 0, natW, natH).data;
+                // composite: painted pixels -> model output (upscaled); else keep original at full res
+                var result = ctx.createImageData(natW, natH);
+                var bd = baseImage.data;
+                for (var i = 0; i < natW * natH; i++) {
+                    if (maskArr[i]) {
+                        result.data[i * 4] = upData[i * 4]; result.data[i * 4 + 1] = upData[i * 4 + 1]; result.data[i * 4 + 2] = upData[i * 4 + 2];
+                    } else {
+                        result.data[i * 4] = bd[i * 4]; result.data[i * 4 + 1] = bd[i * 4 + 1]; result.data[i * 4 + 2] = bd[i * 4 + 2];
+                    }
+                    result.data[i * 4 + 3] = 255;
+                }
+                canvas.width = natW; canvas.height = natH; ctx.putImageData(result, 0, 0);
+                baseImage = result; hasMask = false; maskArr.fill(0);
+                finish(canvas, 'object-removed.png');
+                setStatus('Done - object removed locally, no upload. Paint again to remove more, or download the PNG.');
+            } catch (e) {
+                setErr('Could not run the AI model: ' + (e && e.message ? e.message : String(e)) + '. Try "Quick patch (no download)" for an instant fill instead.');
+            } finally { runBtn.disabled = false; quickBtn.disabled = false; }
+        });
+
+        // Deterministic no-download fallback: iterative edge-diffusion blur fill of
+        // the painted region from surrounding known pixels. Instant, honest lower quality.
+        quickBtn.addEventListener('click', function () {
+            if (!baseImage) { setErr('Choose a photo first.'); return; }
+            if (!hasMask) { setErr('Paint over the object you want to remove first.'); return; }
+            setErr('');
+            var src = new Uint8ClampedArray(baseImage.data);
+            var known = new Uint8Array(natW * natH);
+            for (var i = 0; i < natW * natH; i++) known[i] = maskArr[i] ? 0 : 1;
+            // seed painted pixels with 0; diffuse from neighbours over N passes
+            for (var pass = 0; pass < 48; pass++) {
+                var changed = 0;
+                for (var y = 0; y < natH; y++) {
+                    for (var x = 0; x < natW; x++) {
+                        var idx = y * natW + x;
+                        if (known[idx]) continue;
+                        var r = 0, g = 0, b = 0, n = 0;
+                        for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) {
+                            if (!dx && !dy) continue;
+                            var ny = y + dy, nx = x + dx;
+                            if (ny < 0 || ny >= natH || nx < 0 || nx >= natW) continue;
+                            var nidx = ny * natW + nx;
+                            if (!known[nidx]) continue;
+                            r += src[nidx * 4]; g += src[nidx * 4 + 1]; b += src[nidx * 4 + 2]; n++;
+                        }
+                        if (n > 0) { src[idx * 4] = r / n; src[idx * 4 + 1] = g / n; src[idx * 4 + 2] = b / n; src[idx * 4 + 3] = 255; known[idx] = 1; changed++; }
+                    }
+                }
+                if (!changed) break;
+            }
+            var result = new ImageData(src, natW, natH);
+            canvas.width = natW; canvas.height = natH; ctx.putImageData(result, 0, 0);
+            baseImage = result; hasMask = false; maskArr.fill(0);
+            finish(canvas, 'object-patched.png');
+            setStatus('Quick patch done (no download). This is a fast blur fill - use "Remove object (AI)" for a cleaner result.');
+        });
+    }
+</script>

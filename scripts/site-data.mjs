@@ -15355,6 +15355,7 @@ export const ALIAS_ROUTES = {
   // dinosaur-3d-discovery-loop-runbook LEAN fire (2026-07-26): flat-slug alias for dacentrurus.
   '/dacentrurus.html': '/dinosaur-3d/dacentrurus.html',
   '/background-remover.html': '/image-tools/background-remover.html',
+  '/object-remover.html': '/image-tools/object-remover.html',
   '/video-to-gif.html': '/video-tools/video-to-gif.html',
   '/audio-trimmer.html': '/video-tools/audio-trimmer.html',
   '/gpu-test.html': '/device-test-tools/gpu-test.html',
@@ -22011,6 +22012,7 @@ export const JSP_BY_ROUTE = {
   '/guides/id/galaxy-3d-simulator-step-by-step.html': 'guide/id/galaxy-3d-simulator-step-by-step.jsp',
   '/guides/id/galaxy-3d-simulator-vs-alternatives.html': 'guide/id/galaxy-3d-simulator-vs-alternatives.jsp',
   '/image-tools/background-remover.html': 'convert/background-remover.jsp',
+  '/image-tools/object-remover.html': 'convert/object-remover.jsp',
   '/guides/ai-background-remover-when.html': 'guide/ai-background-remover-when.jsp',
   '/guides/ai-background-remover-step-by-step.html': 'guide/ai-background-remover-step-by-step.jsp',
   '/guides/ai-background-remover-vs-alternatives.html': 'guide/ai-background-remover-vs-alternatives.jsp',
