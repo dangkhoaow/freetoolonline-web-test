@@ -7632,21 +7632,16 @@ export const GUIDE_ROUTES = new Set([
   '/guides/id/how-to-view-stegosaurus-in-3d.html',
   '/guides/de/how-to-view-stegosaurus-in-3d.html',
   // dinosaur-3d-guides-loop-runbook fire17 (2026-07-16): stegosaurus-size-comparison
-  // (EN + pt/es/vi/id/de) - size angle for the Stegosaurus viewer.
+  // (EN + pt/es/vi/id/de) - size angle for the Stegosaurus viewer. consolidation
+  // fire57 (2026-08-13): the fire18 vs-ar-apps family was folded into this one and
+  // 301d (see ALIAS_ROUTES). The fire16 how-to-view family SURVIVES deliberately -
+  // it carries a measured click (de) and owns the distinct controls-walkthrough job.
   '/guides/stegosaurus-size-comparison.html',
   '/guides/pt/stegosaurus-size-comparison.html',
   '/guides/es/stegosaurus-size-comparison.html',
   '/guides/vi/stegosaurus-size-comparison.html',
   '/guides/id/stegosaurus-size-comparison.html',
   '/guides/de/stegosaurus-size-comparison.html',
-  // dinosaur-3d-guides-loop-runbook fire18 (2026-07-16): stegosaurus-3d-viewer-vs-ar-apps
-  // (EN + pt/es/vi/id/de) - vs-alternatives angle for the Stegosaurus viewer.
-  '/guides/stegosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/pt/stegosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/es/stegosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/stegosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/id/stegosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/de/stegosaurus-3d-viewer-vs-ar-apps.html',
   // dinosaur-3d-guides-loop-runbook fire20 (2026-07-17): brachiosaurus-size-comparison
   // (EN + pt/es/vi/id/de) - size angle for the Brachiosaurus viewer. consolidation
   // fire55 (2026-08-13): this is now the SOLE guide family for the
@@ -14256,6 +14251,23 @@ export const ALIAS_ROUTES = {
   '/guides/vi/spinosaurus-3d-viewer-vs-ar-apps.html': '/guides/vi/spinosaurus-size-comparison.html',
   '/guides/id/spinosaurus-3d-viewer-vs-ar-apps.html': '/guides/id/spinosaurus-size-comparison.html',
   '/guides/de/spinosaurus-3d-viewer-vs-ar-apps.html': '/guides/de/spinosaurus-size-comparison.html',
+  // consolidation fire57 (2026-08-13): retire the stegosaurus-3d-viewer-vs-ar-apps
+  // doorway family into the stegosaurus-size-comparison keeper, locale-matched.
+  // Backlog item topical-map-dinosaur-3d.stegosaurus.viewer. Evidence at pick time:
+  // 0 clicks / 0 AI citations / 4 impr 28d across all 6 routes, 5 of 6 already
+  // sitemap-excluded, and the only links_to edges into them came from inside the
+  // trio itself. The family's unique value was folded into the keeper FIRST - the
+  // 6-row viewer vs phone-AR vs museum table, the 0 MB / 50-500 MB install contrast,
+  // time-to-first-view, the no-room-AR limit, and the no-upload privacy note.
+  // The SIBLING how-to-view-stegosaurus-in-3d family is deliberately NOT retired:
+  // its de locale carries a measured click (1 click / 11 impr, not deindexed) so the
+  // fire52 traffic floor applies, and it owns the distinct controls-walkthrough job.
+  '/guides/stegosaurus-3d-viewer-vs-ar-apps.html': '/guides/stegosaurus-size-comparison.html',
+  '/guides/pt/stegosaurus-3d-viewer-vs-ar-apps.html': '/guides/pt/stegosaurus-size-comparison.html',
+  '/guides/es/stegosaurus-3d-viewer-vs-ar-apps.html': '/guides/es/stegosaurus-size-comparison.html',
+  '/guides/vi/stegosaurus-3d-viewer-vs-ar-apps.html': '/guides/vi/stegosaurus-size-comparison.html',
+  '/guides/id/stegosaurus-3d-viewer-vs-ar-apps.html': '/guides/id/stegosaurus-size-comparison.html',
+  '/guides/de/stegosaurus-3d-viewer-vs-ar-apps.html': '/guides/de/stegosaurus-size-comparison.html',
   // 2026-08-09 content-consolidation fire38 step-1a: 2 cannibalized topical-map
   // nodes drained. gif-into-frames + gif-frame-extractor (EN-only stubs, 0 clicks)
   // retired into the canonical extractor; bmi-calculator-step-by-step +
@@ -20031,21 +20043,14 @@ export const JSP_BY_ROUTE = {
   '/guides/id/how-to-view-stegosaurus-in-3d.html': 'guide/id/how-to-view-stegosaurus-in-3d.jsp',
   '/guides/de/how-to-view-stegosaurus-in-3d.html': 'guide/de/how-to-view-stegosaurus-in-3d.jsp',
   // dinosaur-3d-guides-loop-runbook fire17 (2026-07-16): stegosaurus-size-comparison
-  // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
+  // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate). consolidation fire57
+  // (2026-08-13): absorbed the fire18 vs-ar-apps family (301d in ALIAS_ROUTES).
   '/guides/stegosaurus-size-comparison.html': 'guide/stegosaurus-size-comparison.jsp',
   '/guides/pt/stegosaurus-size-comparison.html': 'guide/pt/stegosaurus-size-comparison.jsp',
   '/guides/es/stegosaurus-size-comparison.html': 'guide/es/stegosaurus-size-comparison.jsp',
   '/guides/vi/stegosaurus-size-comparison.html': 'guide/vi/stegosaurus-size-comparison.jsp',
   '/guides/id/stegosaurus-size-comparison.html': 'guide/id/stegosaurus-size-comparison.jsp',
   '/guides/de/stegosaurus-size-comparison.html': 'guide/de/stegosaurus-size-comparison.jsp',
-  // dinosaur-3d-guides-loop-runbook fire18 (2026-07-16): stegosaurus-3d-viewer-vs-ar-apps
-  // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
-  '/guides/stegosaurus-3d-viewer-vs-ar-apps.html': 'guide/stegosaurus-3d-viewer-vs-ar-apps.jsp',
-  '/guides/pt/stegosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/stegosaurus-3d-viewer-vs-ar-apps.jsp',
-  '/guides/es/stegosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/stegosaurus-3d-viewer-vs-ar-apps.jsp',
-  '/guides/vi/stegosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/stegosaurus-3d-viewer-vs-ar-apps.jsp',
-  '/guides/id/stegosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/stegosaurus-3d-viewer-vs-ar-apps.jsp',
-  '/guides/de/stegosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/stegosaurus-3d-viewer-vs-ar-apps.jsp',
   // dinosaur-3d-guides-loop-runbook fire20 (2026-07-17): brachiosaurus-size-comparison
   // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate). consolidation fire55
   // (2026-08-13): sole surviving guide family for this intent node.
@@ -30427,8 +30432,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/vi/starlink-constellation-shells-step-by-step.html',
   '/guides/vi/starlink-constellation-shells-vs-alternatives.html',
   '/guides/vi/starlink-constellation-shells-when.html',
-  '/guides/vi/stegosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/stegosaurus-size-comparison.html',
   '/guides/vi/stellar-magnitude-step-by-step.html',
   '/guides/vi/stellar-magnitude-vs-alternatives.html',
   '/guides/vi/stellar-magnitude-when.html',
@@ -31818,8 +31821,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   "/guides/de/touchscreen-test-step-by-step.html",
   "/guides/de/touchscreen-test-vs-alternatives.html",
   "/guides/de/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html",
-  "/guides/de/stegosaurus-size-comparison.html",
-  "/guides/de/stegosaurus-3d-viewer-vs-ar-apps.html",
   "/guides/de/therizinosaurus-size-comparison.html",
   "/guides/de/therizinosaurus-3d-viewer-vs-ar-apps.html",
   "/guides/de/utahraptor-size-comparison.html",
@@ -32960,7 +32961,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/pt/starlink-constellation-shells-step-by-step.html',
   '/guides/pt/starlink-constellation-shells-vs-alternatives.html',
   '/guides/pt/starlink-constellation-shells-when.html',
-  '/guides/pt/stegosaurus-3d-viewer-vs-ar-apps.html',
   // pruned 2026-07-29 zero-evidence pt - batch pt-batch-6 (200 routes)
   '/guides/pt/compress-zip-file-to-100kb.html',
   '/guides/pt/compress-zip-online.html',
@@ -33123,7 +33123,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/pt/how-to-convert-units-online.html',
   '/guides/pt/how-to-crop-and-rotate-an-image.html',
   // pruned 2026-07-29 zero-evidence pt - batch pt-batch-7 (98 routes, FINAL PT batch)
-  '/guides/pt/stegosaurus-size-comparison.html',
   '/guides/pt/strong-lensing-multiple-images-step-by-step.html',
   '/guides/pt/strong-lensing-multiple-images-vs-alternatives.html',
   '/guides/pt/strong-lensing-multiple-images-when.html',
@@ -34402,8 +34401,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   // family's best measured demand (4 clicks / 158 impr 28d), so the target must
   // be crawlable for that equity to land.
   '/guides/es/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence es
-  '/guides/es/stegosaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence es
-  '/guides/es/stegosaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/therizinosaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/therizinosaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/utahraptor-size-comparison.html', // pruned 2026-07-29 zero-evidence es
@@ -35782,8 +35779,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/id/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html',
   '/guides/id/mosasaurus-size-comparison.html',
   '/guides/id/mosasaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/id/stegosaurus-size-comparison.html',
-  '/guides/id/stegosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/id/parasaurolophus-size-comparison.html',
   '/guides/id/parasaurolophus-3d-viewer-vs-ar-apps.html',
   '/guides/id/pteranodon-size-comparison.html',
