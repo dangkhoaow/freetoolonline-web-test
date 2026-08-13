@@ -1,0 +1,358 @@
+<script>
+    // 3D scene archetype skeleton (plitvice-lakes) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN engine), fully
+    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only
+    // (plitvice-lakes). All geometry is procedural. places-3d cluster,
+    // 2026-08-13.
+    //
+    // EDUCATIONAL APPROXIMATION, not survey hydrology.
+    // Published figures (Plitvice Lakes National Park / UNESCO sources,
+    // cross-checked 2026-08-13):
+    //   - 16 named lakes: 12 Upper Lakes (larger, on dolomite, forested) and
+    //     4 Lower Lakes (smaller, in a limestone canyon)
+    //   - Total elevation drop about 133 m from the highest lake
+    //     (Prosacansko Lake) to the lowest (Novakovica Brod)
+    //   - Kozjak Lake is the largest and deepest, separates the Upper and
+    //     Lower groups, crossed by the park's own ferry
+    //   - Veliki Slap ("Great Falls"), 78 m, is the tallest waterfall in the
+    //     park and in Croatia, at the south end near the Lower Lakes
+    //   - Galovacki buk, 25 m, is the second-tallest waterfall, in the
+    //     Upper Lakes area
+    //   - The terraces are travertine (tufa) barriers: dissolved calcium
+    //     carbonate precipitates onto moss, algae, and fallen wood, slowly
+    //     building dams that pond the water into steps - growth is about
+    //     1-3 cm a year, so the barriers (and the waterfalls) keep changing
+    //   - About 90 waterfalls total across the park
+    //   - Established 1949, Croatia's first national park; UNESCO World
+    //     Heritage since 1979
+    //   - Total protected area about 297 sq km; the lakes themselves cover
+    //     about 2 sq km
+    //
+    // Signature figure: a STAIRCASE of flat turquoise terraces stepping down
+    // a forested valley, each terrace held by a dam, ending in one much
+    // taller final drop - a genuinely new places-3d archetype (a stepped
+    // terrace profile), distinct from the fbm-bowl basins (Baikal, Superior),
+    // the carved gorges (Grand Canyon, Antelope Canyon), and the U-shaped
+    // trough (Yosemite Valley). Sixteen real lakes are shown here as 8
+    // schematic terraces (grouped roughly two lakes per step) for teaching
+    // clarity, the same simplification the Grand Canyon scene uses for its
+    // seven rock layers.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'plitvice-lakes';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'placesplitvicelakes'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        // Render-quality contract (2026-07-22): window.resize alone misses late
+        // CSS/ad-rail layout shifts - observe the host itself.
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    function t3dScene(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0xcfe3d6, 1); // soft misty forest-lake sky
+        scene.add(new THREE.AmbientLight(0xffffff, 0.58));
+        var key = new THREE.DirectionalLight(0xfff2d8, 1.05);
+        key.position.set(-10, 20, 10);
+        scene.add(key);
+
+        function hash2(x, z) { var s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
+        function vnoise(x, z) {
+            var xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi;
+            var u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+            var a = hash2(xi, zi), b = hash2(xi + 1, zi), c = hash2(xi, zi + 1), d = hash2(xi + 1, zi + 1);
+            return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+        function fbm(x, z, oct) { var s = 0, amp = 0.5, f = 1; for (var i = 0; i < oct; i++) { s += amp * vnoise(x * f, z * f); amp *= 0.5; f *= 2.03; } return s; }
+        function smoothv(a, b, t) { t = Math.max(0, Math.min(1, (t - a) / (b - a))); return t * t * (3 - 2 * t); }
+        function makeTerrain(W, D, segW, segD, heightFn, colorFn) {
+            var geo = new THREE.PlaneGeometry(W, D, segW, segD);
+            geo.rotateX(-Math.PI / 2);
+            var pos = geo.attributes.position, colors = new Float32Array(pos.count * 3), col = new THREE.Color();
+            for (var i = 0; i < pos.count; i++) {
+                var x = pos.getX(i), z = pos.getZ(i);
+                var h = heightFn(x, z);
+                pos.setY(i, h);
+                colorFn(col, h, x, z);
+                colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+            }
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 }));
+        }
+
+        // Terraced staircase relief. Eight flat schematic terraces (grouped
+        // from the 16 real lakes: 5 Upper-lake steps + Kozjak + 2 Lower-lake
+        // steps) stepping down a forested valley, each terrace held flat by
+        // a dam at its upstream edge, ending in one much taller final drop -
+        // Veliki Slap, the tallest waterfall in the park.
+        var Z_START = -8, TLEN = 2.0, N = 8;
+        var H = [3.00, 2.74, 2.24, 2.00, 1.74, 1.44, 1.22, 0.98];
+        var HW = [1.5, 1.5, 1.6, 1.5, 1.7, 3.2, 1.3, 1.1];
+        var DAM_HALF = 0.30;
+        var Z_END = Z_START + N * TLEN;      // 8
+        var FALLS_END = Z_END + 2.6;         // 10.6 - Veliki Slap's final drop
+        var BASELINE = -0.57;
+
+        function clampi(i) { return Math.max(0, Math.min(N - 1, i)); }
+
+        // Returns the local terrace height + half-width (with smooth blends
+        // across each dam boundary and the final falls), plus a fractional
+        // terrace index used to pick a color group.
+        function terraceAt(z) {
+            if (z <= Z_START) return { h: H[0], hw: HW[0], i: 0 };
+            if (z >= FALLS_END) return { h: BASELINE, hw: HW[N - 1] + 1.2, i: N };
+            if (z >= Z_END) {
+                var tf = smoothv(Z_END, FALLS_END, z);
+                return { h: H[N - 1] + (BASELINE - H[N - 1]) * tf, hw: HW[N - 1] + 1.2 * tf, i: N - 1 + tf };
+            }
+            var idxF = (z - Z_START) / TLEN;
+            var i = clampi(Math.floor(idxF));
+            if (i === 0) return { h: H[0], hw: HW[0], i: 0 };
+            var boundaryZ = Z_START + i * TLEN;
+            var t = smoothv(boundaryZ - DAM_HALF, boundaryZ + DAM_HALF, z);
+            var hPrev = H[i - 1], hCur = H[i], hwPrev = HW[i - 1], hwCur = HW[i];
+            return { h: hPrev + (hCur - hPrev) * t, hw: hwPrev + (hwCur - hwPrev) * t, i: (i - 1) + t };
+        }
+
+        var HILL_SPAN = 5.0, HILL_RISE = 2.6;
+        function height(x, z) {
+            var terr = terraceAt(z), ax = Math.abs(x);
+            if (ax <= terr.hw) {
+                return terr.h + 0.015 * (fbm(x * 3 + 4, z * 3 + 1, 2) - 0.5); // near-flat pool surface
+            }
+            var side = ax - terr.hw;
+            var rise = HILL_RISE * smoothv(0, HILL_SPAN, side);
+            var rough = 0.55 * fbm(x * 0.55 + 7, z * 0.55 + 3, 4) * smoothv(0, 1.5, side);
+            return terr.h + rise + rough;
+        }
+
+        var GROUP_ON = { upper: 0x2fa89f, kozjak: 0x155e6e, lower: 0x57b8ae };
+        var UNIFORM_POOL = 0x2fa89f, FOAM = 0xeef7f4, FOREST_LOW = 0x4c7a3f, ROCK_HIGH = 0x9b9686, CANYON_TINT = 0x8b8a7e;
+        function groupOf(i) { var gi = clampi(Math.round(i)); return gi <= 4 ? 'upper' : (gi === 5 ? 'kozjak' : 'lower'); }
+
+        var normColors = null, uniformColors = null, terrain;
+        function bandColor(c, x, z, groupOn) {
+            var terr = terraceAt(z), ax = Math.abs(x);
+            var n = 0.92 + 0.16 * fbm(x * 1.3 + 3, z * 1.3 + 9, 3);
+            if (ax <= terr.hw) {
+                c.setHex(groupOn ? GROUP_ON[groupOf(terr.i)] : UNIFORM_POOL);
+                var hHere = terr.h, hNear = terraceAt(z + 0.14).h;
+                if (Math.abs(hHere - hNear) > 0.02) c.lerp(new THREE.Color(FOAM), 0.55);
+                c.multiplyScalar(n);
+                return;
+            }
+            var side = ax - terr.hw, t = smoothv(2.0, 9.0, side);
+            c.setHex(FOREST_LOW).lerp(new THREE.Color(ROCK_HIGH), t);
+            if (groupOf(terr.i) === 'lower') c.lerp(new THREE.Color(CANYON_TINT), 0.35);
+            c.multiplyScalar(n);
+        }
+        function build(groupOn) {
+            var pos = terrain.geometry.attributes.position, col2 = new THREE.Color();
+            var arr = new Float32Array(pos.count * 3);
+            for (var i = 0; i < pos.count; i++) {
+                bandColor(col2, pos.getX(i), pos.getZ(i), groupOn);
+                arr[i * 3] = col2.r; arr[i * 3 + 1] = col2.g; arr[i * 3 + 2] = col2.b;
+            }
+            return arr;
+        }
+        terrain = makeTerrain(20, 24, shell.low ? 100 : 160, shell.low ? 130 : 200, height, function (c, h, x, z) { bandColor(c, x, z, true); });
+        scene.add(terrain);
+        normColors = terrain.geometry.attributes.color.array.slice();
+        uniformColors = build(false);
+
+        // Veliki Slap marker: the final, much taller drop rendered as a
+        // bright cascade ribbon, plus a small marker at its lip.
+        var fallsPts = [];
+        for (var fi = 0; fi <= 16; fi++) {
+            var fz = Z_END + (FALLS_END - Z_END) * (fi / 16);
+            var fh = H[N - 1] + (BASELINE - H[N - 1]) * smoothv(Z_END, FALLS_END, fz);
+            fallsPts.push(new THREE.Vector3(0, fh + 0.05, fz));
+        }
+        var fallsGroup = new THREE.Group();
+        var fallsTube = new THREE.Mesh(
+            new THREE.TubeGeometry(new THREE.CatmullRomCurve3(fallsPts), 40, 0.16, 6, false),
+            new THREE.MeshBasicMaterial({ color: 0xf2fbff })
+        );
+        fallsGroup.add(fallsTube);
+        var fallsMarker = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.32, 6), new THREE.MeshStandardMaterial({ color: 0xff6a3d }));
+        fallsMarker.position.set(0, H[N - 1] + 0.24, Z_END - 0.1);
+        fallsGroup.add(fallsMarker);
+        scene.add(fallsGroup);
+
+        var groupOn = true, fallsOn = true;
+
+        function panelHtml() {
+            return '<h3>Plitvice Lakes: a staircase of pools</h3>' +
+                '<p>Eight schematic terraces (grouped from the sixteen real lakes) step down a forested valley. The orange marker sits at the lip of Veliki Slap, the park\'s tallest and final drop.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Named lakes</td><td>16 - 12 Upper Lakes plus 4 Lower Lakes</td></tr>' +
+                '<tr><td>Elevation drop</td><td>about 133 m, Prosacansko Lake to Novakovica Brod</td></tr>' +
+                '<tr><td>Largest / deepest lake</td><td>Kozjak Lake - separates the Upper and Lower groups</td></tr>' +
+                '<tr><td>Tallest waterfall</td><td>Veliki Slap, 78 m - the tallest in the park and in Croatia</td></tr>' +
+                '<tr><td>2nd-tallest waterfall</td><td>Galovacki buk, 25 m, in the Upper Lakes area</td></tr>' +
+                '<tr><td>What forms the dams</td><td>travertine (tufa) - calcium carbonate building up on moss and fallen wood, about 1-3 cm a year</td></tr>' +
+                '<tr><td>Protected since</td><td>1949 (Croatia\'s first national park); UNESCO World Heritage since 1979</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational relief approximation - the terrace count, widths, and drop sizes are schematic teaching cues, not survey hydrology.</p>';
+        }
+
+        function apply() {
+            terrain.geometry.attributes.color.array.set(groupOn ? normColors : uniformColors);
+            terrain.geometry.attributes.color.needsUpdate = true;
+            fallsGroup.visible = fallsOn;
+            var gb = document.getElementById('t3dPplGroupBtn');
+            if (gb) gb.textContent = 'Upper/Lower lake colors: ' + (groupOn ? 'On' : 'Off');
+            var fb = document.getElementById('t3dPplFallsBtn');
+            if (fb) fb.textContent = 'Veliki Slap marker: ' + (fallsOn ? 'On' : 'Off');
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ groupOn: groupOn, fallsOn: fallsOn }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (typeof store.groupOn === 'boolean') groupOn = store.groupOn;
+        if (typeof store.fallsOn === 'boolean') fallsOn = store.fallsOn;
+        apply();
+
+        var groupBtn = document.getElementById('t3dPplGroupBtn');
+        if (groupBtn) groupBtn.addEventListener('click', function () { groupOn = !groupOn; apply(); });
+        var fallsBtn = document.getElementById('t3dPplFallsBtn');
+        if (fallsBtn) fallsBtn.addEventListener('click', function () { fallsOn = !fallsOn; apply(); });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Toggle the lake-group colors or the Veliki Slap marker.');
+        return function animate(dt) {
+            scene.rotation.y += dt * 0.00004;
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { placesplitvicelakes: 't3dPplControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { placesplitvicelakes: { radius: 27, maxR: 60, minR: 8, phi: 0.92, theta: 0.42, targetY: 1.0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dScene(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
