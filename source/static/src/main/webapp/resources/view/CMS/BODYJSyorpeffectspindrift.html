@@ -1,0 +1,393 @@
+<script>
+    // 3D scene archetype skeleton (YORP effect) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side.
+    // Built LEAN, forked from the yarkovsky-effect shape - ONE scene only
+    // (YORP spin-rate drift explorer). All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION, not an orbital-dynamics or radiative-transfer
+    // simulation. A teaching scene: an irregular rocky asteroid with two
+    // asymmetric surface "wedge" bumps at opposite ends. Sunlight reflected
+    // and thermally re-emitted off those asymmetric facets creates a net
+    // TORQUE about the spin axis (a torque COUPLE - two opposite-pointing
+    // teaching-cue arrows at the two bumps) - this changes the body's SPIN
+    // RATE, unlike the Yarkovsky effect (sibling page), whose thermal-lag hot
+    // spot creates a net FORCE that shifts the ORBIT instead. A spin-sense
+    // toggle and an elapsed-years slider scrub forward using a straight-line
+    // extrapolation of the one real measured rate below - never an invented
+    // number.
+    //
+    // Published figures (cross-checked via WebSearch 2026-08-13):
+    //   - Asteroid (54509) YORP, formerly (54509) 2000 PH5, a near-Earth
+    //     asteroid discovered 2000-08-03 by the LINEAR survey. Radar-derived
+    //     shape model: about 150 x 128 x 93 meters. Current sidereal rotation
+    //     period: 12.174 minutes (730.4 seconds).
+    //   - Four years of precise optical photometry (2001-2005) plus a
+    //     radar shape model found the spin rate steadily increasing:
+    //     domega/dt = (2.0 +/- 0.2) x 10^-4 deg/day^2 (Taylor et al. 2007,
+    //     Science 316, 274-277). An independent photometric study reached the
+    //     same conclusion the same year (Lowry et al. 2007, Science 316,
+    //     272-274) - together the first direct observational confirmation
+    //     that sunlight measurably changes an asteroid's spin. The IAU later
+    //     named the asteroid "YORP" for the significance of this detection.
+    //     Gravitational perturbations from the asteroid's close Earth
+    //     approaches during 2001-2005 were modeled and shown unable to
+    //     explain the spin-up, confirming a non-gravitational (YORP) cause.
+    //   - That measured rate corresponds to the rotation period shortening by
+    //     roughly 1.25 milliseconds per year (derived here from the cited
+    //     domega/dt; commonly rounded to "about 1 millisecond per year" in
+    //     secondary accounts of this result).
+    //   - Dynamical simulations in the same study project (54509) YORP could
+    //     reach a rotation period around 20 seconds by the end of its
+    //     predicted dynamical lifetime (Taylor et al. 2007) - a separately
+    //     cited long-term result, not a linear extrapolation performed by
+    //     this page.
+    //   - Every other asteroid with a directly-measured YORP rotation-rate
+    //     change to date - 1862 Apollo, 1620 Geographos, 3103 Eger,
+    //     25143 Itokawa, 1685 Toro, 161989 Cacus, 1992 SK - has also measured
+    //     as spinning UP, not down: a documented observational asymmetry
+    //     (Durech et al. 2022, Astronomy & Astrophysics, arXiv:2110.06548).
+    //     There is currently no directly-measured real spin-DOWN case to
+    //     cite, so the "Spin-down" option below MIRRORS the one measured
+    //     magnitude with the sign flipped, to teach the general rule -
+    //     explicitly disclosed as a teaching mirror, not a second measured
+    //     asteroid (the same honesty pattern the Yarkovsky-effect sibling
+    //     page uses for its Prograde option).
+    //   - General mechanism: YORP is a net TORQUE from sunlight reflected and
+    //     thermally re-emitted off an irregularly-shaped body's asymmetric
+    //     facets. Theory shows its sign depends on the body's shape and
+    //     obliquity and can in principle drive spin-up OR spin-down
+    //     (Rubincam 2000, Icarus). Over much longer timescales YORP also
+    //     drives a body's spin-axis obliquity toward 0, 90, or 180 degrees
+    //     (Capek & Vokrouhlicky 2004, Icarus) - disclosed here as an
+    //     established mechanism, not animated or simulated on this page.
+    //   - YORP-driven spin-up is implicated in the formation of small
+    //     asteroid binary/pair systems once a rubble-pile body reaches its
+    //     structural breakup spin limit (Walsh, Richardson & Michel 2008,
+    //     Nature, "Rotational breakup as the origin of small binary
+    //     asteroids").
+    //   - Distinct from yarkovsky-effect.html: Yarkovsky is a net FORCE from
+    //     thermal-lag re-emission on a spinning body that shifts its ORBIT
+    //     (semimajor axis); YORP is a net TORQUE from reflected/re-emitted
+    //     sunlight off an irregular shape's asymmetric facets that changes
+    //     the body's SPIN RATE (and, over far longer timescales, its spin-
+    //     axis orientation) - the orbit itself is not directly altered by
+    //     YORP.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'yorpeffectspindrift';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'yorpeffectspindrift'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 55, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') {
+            try { new ResizeObserver(resize).observe(host); } catch (e) {}
+        }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // Real published figures (only one direct measurement exists - 54509 YORP,
+    // spin-up). Spin-down is a sign-flipped teaching mirror (see header note).
+    var T3D_YORP_MS_PER_YEAR = 1.25; // derived from the measured domega/dt below
+    var T3D_YORP_PERIOD_S = 730.4;   // current sidereal rotation period, seconds
+    var T3D_YORP_MAX_YEARS = 100;
+
+    function t3dYorpEffect(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.42));
+        var fillLight = new THREE.DirectionalLight(0x9fc8ff, 0.35);
+        fillLight.position.set(6, 8, 10);
+        scene.add(fillLight);
+
+        // Starfield backdrop
+        var starN = shell.low ? 260 : 520;
+        var starPos = new Float32Array(starN * 3);
+        for (var s = 0; s < starN; s++) {
+            var r = 40 + Math.random() * 60;
+            var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+            starPos[s * 3] = r * Math.sin(ph) * Math.cos(th);
+            starPos[s * 3 + 1] = r * Math.cos(ph) * 0.55;
+            starPos[s * 3 + 2] = r * Math.sin(ph) * Math.sin(th) - 10;
+        }
+        var starGeo = new THREE.BufferGeometry();
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        var stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xaad4ff, size: 0.3, sizeAttenuation: true, transparent: true, opacity: 0.7 }));
+        scene.add(stars);
+
+        // Sun marker (off to one side), providing directional "sunlight"
+        var sunPos = new THREE.Vector3(-14, 3, -6);
+        var sun = new THREE.Mesh(new THREE.SphereGeometry(1.4, 20, 14), new THREE.MeshBasicMaterial({ color: 0xffd54f }));
+        sun.position.copy(sunPos);
+        scene.add(sun);
+        var sunLight = new THREE.PointLight(0xfff3c4, 2.2, 0, 1.4);
+        sunLight.position.copy(sunPos);
+        scene.add(sunLight);
+
+        // Irregular rocky asteroid (deformed icosahedron, procedural) with two
+        // pronounced asymmetric "wedge" bumps at opposite longitudes - the
+        // shape asymmetry that gives YORP its net torque (distinct from
+        // Yarkovsky's single thermal-lag hot spot).
+        var bumpTheta = 0.55; // radians, longitude of bump A (bump B is +PI)
+        var astGeo = new THREE.IcosahedronGeometry(1.6, 1);
+        var posAttr = astGeo.attributes.position;
+        for (var v = 0; v < posAttr.count; v++) {
+            var px = posAttr.getX(v), py = posAttr.getY(v), pz = posAttr.getZ(v);
+            var lon = Math.atan2(pz, px);
+            var n = 1 + (Math.sin(px * 3.1 + py * 1.7) * 0.11) + (Math.cos(pz * 2.3 + px * 0.9) * 0.08);
+            // Wedge bumps: localized outward push near bumpTheta and bumpTheta+PI,
+            // narrow angular width so they read as distinct asymmetric facets.
+            var dA = Math.cos(lon - bumpTheta);
+            var dB = Math.cos(lon - bumpTheta - Math.PI);
+            n += Math.max(0, dA - 0.55) * 0.85;
+            n += Math.max(0, dB - 0.55) * 0.85;
+            posAttr.setXYZ(v, px * n, py * n, pz * n);
+        }
+        astGeo.computeVertexNormals();
+        var asteroid = new THREE.Mesh(astGeo, new THREE.MeshStandardMaterial({ color: 0x6d5a4a, roughness: 0.95, metalness: 0.05 }));
+        scene.add(asteroid);
+
+        // Torque-couple arrows at the two wedge bumps - tangential to the spin
+        // direction, anchored on the body (children of the asteroid mesh so
+        // they rotate with it). Teaching cue for the net torque, not a
+        // measured vector.
+        var bumpR = 2.15;
+        function bumpPos(theta) { return new THREE.Vector3(bumpR * Math.cos(theta), 0.15, bumpR * Math.sin(theta)); }
+        function tangentAt(theta) { return new THREE.Vector3(-Math.sin(theta), 0, Math.cos(theta)).normalize(); }
+        var posA = bumpPos(bumpTheta), posB = bumpPos(bumpTheta + Math.PI);
+        var tanA = tangentAt(bumpTheta), tanB = tangentAt(bumpTheta + Math.PI);
+        var arrowA = new THREE.ArrowHelper(tanA, posA, 1.3, 0xffab40, 0.36, 0.2);
+        var arrowB = new THREE.ArrowHelper(tanB, posB, 1.3, 0xffab40, 0.36, 0.2);
+        asteroid.add(arrowA);
+        asteroid.add(arrowB);
+
+        // Spin axis (thin rod through the body)
+        var axisGeo = new THREE.CylinderGeometry(0.03, 0.03, 4.4, 6);
+        var axis = new THREE.Mesh(axisGeo, new THREE.MeshBasicMaterial({ color: 0x90a4ae, transparent: true, opacity: 0.55 }));
+        asteroid.add(axis);
+
+        var direction = 'spinup'; // 'spinup' (54509 YORP, measured) | 'spindown' (teaching mirror)
+        var years = 0;
+        var playing = false;
+
+        function periodChangeMs() {
+            // Spin-up shortens the period (negative); spin-down lengthens it
+            // (positive) - a linear extrapolation of the one measured rate.
+            return (direction === 'spinup' ? -1 : 1) * T3D_YORP_MS_PER_YEAR * years;
+        }
+        function currentPeriodS() { return T3D_YORP_PERIOD_S + periodChangeMs() / 1000; }
+
+        // Visual-only exaggeration: the asteroid's on-screen spin speed scales
+        // with elapsed years so the direction is visible within 100 years.
+        // The numeric readout above uses the real, unscaled rate.
+        function visualSpinFactor() {
+            var t = years / T3D_YORP_MAX_YEARS;
+            return direction === 'spinup' ? (1 + t * 2.4) : Math.max(0.12, 1 - t * 0.85);
+        }
+
+        function panelHtml() {
+            var chgMs = periodChangeMs();
+            var label = direction === 'spinup' ? 'Spin-up (54509 YORP, measured)' : 'Spin-down (teaching mirror)';
+            var senseWord = chgMs < 0 ? 'shortening' : 'lengthening';
+            return '<h3>YORP spin-rate drift</h3>' +
+                '<p>Sunlight torque on two asymmetric surface facets nudges the spin rate; the arrows show the teaching-cue torque couple, not a measured vector.</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Selection</td><td>' + label + '</td></tr>' +
+                '<tr><td>Measured rate (54509 YORP)</td><td>domega/dt = (2.0 +/- 0.2) x 10^-4 deg/day^2 (Taylor et al. 2007, Science)</td></tr>' +
+                '<tr><td>Current rotation period</td><td>' + T3D_YORP_PERIOD_S.toFixed(1) + ' s (12.174 min)</td></tr>' +
+                '<tr><td>Elapsed time</td><td>' + years + ' years</td></tr>' +
+                '<tr><td>Period change</td><td>' + (chgMs > 0 ? '+' : '') + chgMs.toFixed(1) + ' ms (period ' + senseWord + ', linear extrapolation)</td></tr>' +
+                '<tr><td>Period after N years</td><td>' + currentPeriodS().toFixed(3) + ' s</td></tr>' +
+                '<tr><td>Long-term projection</td><td>dynamical simulations project ~20 s by the end of its dynamical lifetime (Taylor et al. 2007)</td></tr>' +
+                '<tr><td>Discovery</td><td>2000-08-03, LINEAR survey; size ~150 x 128 x 93 m (radar shape model)</td></tr>' +
+                '</table>' +
+                '<p class="t3d-note">Educational approximation - the on-screen spin speed and the wedge-bump/arrow geometry are exaggerated for teaching, not a to-scale simulation. Every directly-measured YORP rotation change to date (including 54509 YORP) has been spin-up; Spin-down mirrors that same measured magnitude with the sign flipped to teach the general rule - it is not a second measured asteroid.</p>';
+        }
+
+        var dirEl = document.getElementById('t3dYorpDirection');
+        var yearsEl = document.getElementById('t3dYorpYears');
+        var yearsLab = document.getElementById('t3dYorpYearsLabel');
+        function apply() {
+            if (dirEl && dirEl.value !== direction) dirEl.value = direction;
+            if (yearsEl && parseInt(yearsEl.value, 10) !== years) yearsEl.value = String(years);
+            if (yearsLab) yearsLab.textContent = years + ' yr';
+            var col = direction === 'spinup' ? 0xffab40 : 0x40c4ff;
+            arrowA.setColor(new THREE.Color(col));
+            arrowB.setColor(new THREE.Color(col));
+            arrowA.setDirection(direction === 'spinup' ? tanA : tanA.clone().negate());
+            arrowB.setDirection(direction === 'spinup' ? tanB : tanB.clone().negate());
+            t3dInfo(panelHtml());
+            try { t3dSaveStore({ direction: direction, years: years }); } catch (e) {}
+        }
+
+        var store = t3dLoadStore();
+        if (store.direction === 'spinup' || store.direction === 'spindown') direction = store.direction;
+        if (typeof store.years === 'number') years = Math.max(0, Math.min(T3D_YORP_MAX_YEARS, Math.round(store.years)));
+        apply();
+
+        if (dirEl) dirEl.addEventListener('change', function () {
+            direction = dirEl.value === 'spindown' ? 'spindown' : 'spinup';
+            apply();
+        });
+        if (yearsEl) yearsEl.addEventListener('input', function () {
+            years = parseInt(yearsEl.value || '0', 10);
+            playing = false;
+            apply();
+        });
+        var playBtn = document.getElementById('t3dYorpPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () { playing = !playing; });
+        var resetBtn = document.getElementById('t3dYorpResetBtn');
+        if (resetBtn) resetBtn.addEventListener('click', function () {
+            years = 0; playing = false; apply();
+        });
+
+        t3dStatus('Drag to orbit, scroll to zoom. Pick spin-up or spin-down, then scrub or play elapsed years.');
+        var yearsAccum = 0;
+        var spinAngle = 0;
+        return function animate(dt) {
+            stars.rotation.y += dt * 0.00002;
+            spinAngle += dt * 0.0013 * visualSpinFactor();
+            asteroid.rotation.y = spinAngle;
+            sun.material && (sun.scale.setScalar(1 + 0.03 * Math.sin(performance.now() * 0.002)));
+
+            if (playing) {
+                yearsAccum += dt * 0.02; // ~5s to scrub the full 100-year range
+                if (yearsAccum >= 1) {
+                    var add = Math.floor(yearsAccum);
+                    yearsAccum -= add;
+                    years = Math.min(T3D_YORP_MAX_YEARS, years + add);
+                    if (years >= T3D_YORP_MAX_YEARS) { playing = false; }
+                    apply();
+                }
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { yorpeffectspindrift: 't3dYorpControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { yorpeffectspindrift: { radius: 18, maxR: 60, minR: 5, phi: 1.1, theta: 0.4, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dYorpEffect(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
