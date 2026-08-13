@@ -29883,7 +29883,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/vi/miami-mice-vs-alternatives.html',
   '/guides/vi/miami-mice-when.html',
   '/guides/vi/microphone-test-no-sound-four-fixes.html',
-  '/guides/vi/microphone-test-online-what-it-actually-checks.html',
   '/guides/vi/microphone-test-permission-blocked-how-to-allow-it.html',
   '/guides/vi/microraptor-3d-viewer-vs-ar-apps.html',
   '/guides/vi/microraptor-size-comparison.html',
@@ -30386,7 +30385,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   "/guides/vi/tdee-calorie-calculator-when.html",
   "/guides/vi/text-case-converter-step-by-step.html",
   "/guides/vi/text-case-converter-vs-alternatives.html",
-  "/guides/vi/text-case-converter-when.html",
   "/guides/vi/text-diff-vs-line-diff-vs-word-diff-vs-git-diff.html",
   "/guides/vi/text-speech-step-by-step.html",
   "/guides/vi/text-speech-vs-alternatives.html",
@@ -31146,7 +31144,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   "/guides/de/code-formatter-beautifier-step-by-step.html",
   "/guides/de/coin-flip-step-by-step.html",
   "/guides/de/dice-roller-step-by-step.html",
-  "/guides/de/digital-clock-step-by-step.html",
   "/guides/de/galilean-moons-vs-alternatives.html",
   "/guides/de/galilean-moons-when.html",
   "/guides/de/garden-defense-step-by-step.html",
@@ -32412,7 +32409,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/pt/how-to-view-troodon-in-3d.html',
   '/guides/pt/how-to-view-tsintaosaurus-in-3d.html',
   '/guides/pt/how-to-view-tylosaurus-in-3d.html',
-  '/guides/pt/how-to-view-tyrannosaurus-rex-in-3d.html',
   '/guides/pt/how-to-view-utahraptor-in-3d.html',
   '/guides/pt/how-to-visualize-data-online.html',
   '/guides/pt/how-to-zip-folder-online-step-by-step.html',
@@ -34727,7 +34723,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/id/ankylosaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/ankylosaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/apatosaurus-3d-viewer-vs-ar-apps.html', // pruned 2026-07-29 zero-evidence id
-  '/guides/id/apatosaurus-size-comparison.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/apollo-free-return-trajectory-step-by-step.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/apollo-free-return-trajectory-vs-alternatives.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/apollo-free-return-trajectory-when.html', // pruned 2026-07-29 zero-evidence id
