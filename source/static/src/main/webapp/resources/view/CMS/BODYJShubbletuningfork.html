@@ -1,0 +1,486 @@
+<script>
+    // 3D scene archetype skeleton (hubble-tuning-fork) - vendored three.js
+    // (ESM, dynamic import from /vendor/three/, NO CDN), fully client-side.
+    // Built LEAN from the shared t3d* skeleton - ONE scene only. All geometry
+    // is procedural (Points/BufferGeometry/SphereGeometry/BoxGeometry) - no
+    // model files, no textures fetched.
+    //
+    // EDUCATIONAL APPROXIMATION - this teaches Edwin Hubble's 1920s-30s
+    // "tuning fork" galaxy-morphology classification: ellipticals (E0-E7),
+    // lenticulars (S0/SB0), normal spirals (Sa/Sb/Sc), and barred spirals
+    // (SBa/SBb/SBc). It is NOT a galaxy-formation or light-profile simulator -
+    // the specimen mesh is a stylized teaching shape driven by the real
+    // ellipticity formula and the real bulge/arm-tightness trend, not a fit
+    // to any one galaxy's measured surface photometry.
+    //
+    // Published figures / facts (cross-checked via WebSearch + WebFetch
+    // 2026-08-13 against ESA/Hubble "The Hubble tuning fork - classification
+    // of galaxies" (sci.esa.int/esahubble.org), Penn State ASTRO 801 "Hubble's
+    // Tuning Fork and Galaxy Classification", Las Cumbres Observatory
+    // "Galaxy Classification", and NASA Science "Types" (science.nasa.gov/
+    // universe/galaxies/types/)):
+    //   - Elliptical numbering E0-E7: ellipticity e = 1 - (b/a) where a/b are
+    //     the apparent major/minor axis; classification number = round(10*e).
+    //     E0 = nearly circular (e=0); E7 = the most flattened commonly
+    //     observed (e=0.7, long axis about 3x the short axis) - real
+    //     ellipticals flatter than about E7 are not observed (dynamically
+    //     they would not hold together as a simple oblate/prolate shape).
+    //   - S0/SB0 (lenticular): a disk + a central bulge like a spiral, but NO
+    //     visible spiral arms and little to no gas/dust - added to Hubble's
+    //     original scheme in 1936 as the transitional class between
+    //     ellipticals and spirals.
+    //   - Sa/Sb/Sc (normal spiral) and SBa/SBb/SBc (barred spiral): "a" means
+    //     a large central bulge with tightly-wound arms; "c" means a small
+    //     bulge with loosely-wound, clumpier arms; "b" is in between. The
+    //     letter "B" means a bar of stars/gas/dust cuts through the bulge and
+    //     the arms spring from the bar's ends rather than the bulge itself.
+    //   - Per NASA Science: "Both the Milky Way and the Andromeda galaxies
+    //     belong to a subtype known as barred spirals, which make up
+    //     two-thirds of the group [of spiral galaxies]." Our own galaxy and
+    //     our nearest large neighbor are both barred spirals.
+    //   - Real named examples cited (see T3D_HTF_EXAMPLES below for the
+    //     per-galaxy source): M87 (giant elliptical, Virgo Cluster, often
+    //     cited around E0-E1, home to the black hole in the 2019 Event
+    //     Horizon Telescope image); NGC 2865 (NASA's own featured example of
+    //     an elliptical galaxy); NGC 4886 (NASA's own featured example of a
+    //     lenticular galaxy); M104 "Sombrero Galaxy" (Sa - tightly-wound arms,
+    //     large bulge, famous edge-on dust lane); M101 "Pinwheel Galaxy"
+    //     (NASA's own featured spiral example, commonly classified Sc);
+    //     Andromeda/M31 (barred spiral, commonly cited SBb); the Milky Way
+    //     (barred spiral, commonly cited SBbc/SBc - see /space-3d/milky-
+    //     way-map.html for its internal structure figures, not restated
+    //     here); NGC 5264 (NASA's own featured irregular-galaxy example,
+    //     "unusual shapes, like toothpicks, rings, or little groupings of
+    //     stars" - Hubble excluded irregulars from the fork entirely, shown
+    //     here only via the optional "beyond the fork" toggle).
+    //
+    // Distinct from Galaxy 3D Simulator (one spiral galaxy's structure/scale,
+    // no classification system) and Stellar Spectral Classification 3D
+    // Explorer (one STAR's line-fingerprint classification, unrelated system
+    // for a completely different kind of object).
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'hubble-tuning-fork';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'hubbletuningfork'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 50, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { try { new ResizeObserver(resize).observe(host); } catch (e) {} }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // ---- Real published tuning-fork facts (see header comment for sources) ----
+    var T3D_HTF_E_LABELS = ['E0', 'E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7'];
+    function t3dHtfLabel(idx, barred) {
+        if (idx <= 7) return T3D_HTF_E_LABELS[idx];
+        if (idx === 8) return barred ? 'SB0' : 'S0';
+        if (idx === 9) return barred ? 'SBa' : 'Sa';
+        if (idx === 10) return barred ? 'SBb' : 'Sb';
+        return barred ? 'SBc' : 'Sc';
+    }
+    function t3dHtfBranchName(idx, barred) {
+        if (idx <= 7) return 'Elliptical';
+        if (idx === 8) return 'Lenticular (transition)';
+        return barred ? 'Barred spiral' : 'Normal spiral';
+    }
+    // Real, sourced facts shown per rung of the fork (idx 0-11, see labels above).
+    var T3D_HTF_RUNG_FACTS = [
+        'e = 1 - (b/a) = 0.0 - a circle in projection. No gas, no dust, no young blue stars.',
+        'e = 0.1. Often cited around E0-E1: M87, the giant elliptical at the heart of the Virgo Cluster and home to the black hole in the famous 2019 Event Horizon Telescope image.',
+        'e = 0.2. Old, red stellar population throughout - ellipticals have no ongoing star formation to speak of.',
+        'e = 0.3. Still featureless: a smooth ball of stars with no arms, no bar, no disk.',
+        'e = 0.4. NASA features NGC 2865 as its own example elliptical galaxy (exact numbered subtype not specified by NASA).',
+        'e = 0.5. Getting visibly elongated - about twice as long as it is wide in projection.',
+        'e = 0.6. Close to the most flattened ellipticals actually observed.',
+        'e = 0.7 (long axis about 3x the short axis) - real ellipticals flatter than roughly this are not observed; dynamically they could not hold this simple shape.',
+        'The transition class, added to Hubble\'s scheme in 1936: a disk plus a central bulge like a spiral, but no visible spiral arms and little to no gas or dust. NASA features NGC 4886 as its own example lenticular galaxy.',
+        'Large central bulge, tightly-wound arms. M104, the "Sombrero Galaxy", is a real Sa spiral famous for its unusually large bulge and a dark dust lane seen almost edge-on.',
+        'Medium bulge, medium-wound arms - the "b" step between Sa/SBa and Sc/SBc.',
+        'Small bulge, loosely-wound, clumpier arms. NASA features M101, the "Pinwheel Galaxy", as its own example spiral - commonly classified Sc.'
+    ];
+    // Real examples attachable to a specific (idx, barred) rung - "classify a
+    // real galaxy" mode below cycles through these.
+    var T3D_HTF_EXAMPLES = [
+        { idx: 1, barred: false, name: 'M87', clue: 'A giant, perfectly smooth galaxy at the heart of the Virgo Cluster, home to the black hole in the famous 2019 Event Horizon Telescope image. It has no spiral arms at all.', fact: 'Often cited around E0-E1 - a giant elliptical in the Virgo Cluster. Its supermassive black hole was the subject of the first-ever black-hole image, released by the Event Horizon Telescope collaboration in 2019.' },
+        { idx: 4, barred: false, name: 'NGC 2865', clue: 'NASA\'s own textbook example of this whole branch - round-to-oval, no gas or dust, an old red stellar population throughout.', fact: 'NASA Science features NGC 2865 as its own example of an elliptical galaxy (NASA does not publish a specific numbered subtype for it).' },
+        { idx: 8, barred: false, name: 'NGC 4886', clue: 'NASA\'s own textbook example of this whole branch - has a disk and a bulge like a spiral, but no visible arms and almost no gas or dust.', fact: 'NASA Science features NGC 4886 as its own example of a lenticular galaxy - the transitional class between ellipticals and spirals.' },
+        { idx: 9, barred: false, name: 'M104 (Sombrero Galaxy)', clue: 'Famous for a dark ring of dust circling an unusually large central bulge, seen almost edge-on from Earth.', fact: 'A real Sa spiral - large central bulge, tightly-wound arms, and a striking edge-on dust lane that gives it its "sombrero" nickname.' },
+        { idx: 11, barred: false, name: 'M101 (Pinwheel Galaxy)', clue: 'A big, brilliant, face-on spiral bursting with star formation - one of the best-known galaxies in the night sky.', fact: 'NASA Science features M101, the "Pinwheel Galaxy", as its own example of a spiral galaxy - commonly classified Sc: small bulge, loosely-wound arms.' },
+        { idx: 10, barred: true, name: 'Andromeda (M31)', clue: 'Our nearest large galactic neighbor, on a slow collision course with our own galaxy billions of years from now.', fact: 'Per NASA Science, Andromeda is a barred spiral - commonly cited around SBb - one of the two-thirds of spiral galaxies that carry a central bar.' },
+        { idx: 11, barred: true, name: 'Milky Way (our galaxy)', clue: 'The galaxy you are standing in right now.', fact: 'Per NASA Science, our own Milky Way is also a barred spiral (commonly cited around SBbc/SBc) - one of the two-thirds of spiral galaxies with a bar. See the Milky Way Map 3D Explorer for its internal structure figures.' }
+    ];
+    var T3D_HTF_IRREGULAR_FACT = 'Hubble\'s original scheme deliberately excludes irregulars - galaxies with no clean elliptical or spiral shape. NASA Science features NGC 5264 as its own example: "unusual shapes, like toothpicks, rings, or little groupings of stars."';
+
+    function t3dHtfFindExample(idx, barred) {
+        for (var i = 0; i < T3D_HTF_EXAMPLES.length; i++) {
+            var ex = T3D_HTF_EXAMPLES[i];
+            var barredMatters = ex.idx >= 8;
+            if (ex.idx === idx && (!barredMatters || ex.barred === barred)) return ex;
+        }
+        return null;
+    }
+
+    function t3dHubbleTuningFork(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+        var key = new THREE.PointLight(0xffffff, 1.0, 0, 0);
+        key.position.set(16, 12, 18);
+        scene.add(key);
+
+        // Faint background starfield for atmosphere.
+        var SCOUNT = shell.low ? 220 : 440;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(26 + Math.random() * 60);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.22, sizeAttenuation: false })));
+
+        // ---- Ellipticals (idx 0-7): a squashed sphere of old, warm-colored stars.
+        var ECOUNT = shell.low ? 900 : 1800;
+        var epos = new Float32Array(ECOUNT * 3);
+        var ecol = new Float32Array(ECOUNT * 3);
+        var warm = new THREE.Color(0xffcc80);
+        for (var e = 0; e < ECOUNT; e++) {
+            var ev = new THREE.Vector3().randomDirection().multiplyScalar(Math.pow(Math.random(), 0.5) * 3.4);
+            epos[e * 3] = ev.x; epos[e * 3 + 1] = ev.y; epos[e * 3 + 2] = ev.z;
+            var shade = 0.75 + Math.random() * 0.35;
+            ecol[e * 3] = warm.r * shade; ecol[e * 3 + 1] = warm.g * shade; ecol[e * 3 + 2] = warm.b * shade;
+        }
+        var egeo = new THREE.BufferGeometry();
+        egeo.setAttribute('position', new THREE.BufferAttribute(epos, 3));
+        egeo.setAttribute('color', new THREE.BufferAttribute(ecol, 3));
+        var ellipsoidPoints = new THREE.Points(egeo, new THREE.PointsMaterial({ size: shell.low ? 0.16 : 0.13, vertexColors: true, sizeAttenuation: true }));
+        scene.add(ellipsoidPoints);
+
+        // ---- Lenticular/spiral/barred-spiral (idx 8-11): bulge + disk/arms + optional bar.
+        var bulge = new THREE.Mesh(new THREE.SphereGeometry(1, shell.low ? 20 : 30, shell.low ? 14 : 22), new THREE.MeshBasicMaterial({ color: 0xffe0a3 }));
+        scene.add(bulge);
+        var DCOUNT = shell.low ? 1100 : 2200;
+        var dgeo = new THREE.BufferGeometry();
+        dgeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(DCOUNT * 3), 3));
+        dgeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(DCOUNT * 3), 3));
+        var diskPoints = new THREE.Points(dgeo, new THREE.PointsMaterial({ size: shell.low ? 0.15 : 0.12, vertexColors: true, sizeAttenuation: true }));
+        scene.add(diskPoints);
+        var bar = new THREE.Mesh(new THREE.BoxGeometry(1, 0.2, 0.46), new THREE.MeshBasicMaterial({ color: 0xfff8e1 }));
+        scene.add(bar);
+
+        var youngBlue = new THREE.Color(0x9fd8ff);
+
+        // Rebuild the disk/arm point cloud for the given spine index (8-11) and
+        // barred flag. idx 8 = plain disk, no arms. idx 9/10/11 = a/b/c: bulge
+        // shrinks, arm pitch angle opens up (tighter->looser winding).
+        function buildDisk(idx, barred) {
+            var pos = dgeo.attributes.position.array;
+            var col = dgeo.attributes.color.array;
+            var bulgeScale, pitchDeg, diskR;
+            if (idx === 8) { bulgeScale = 1.35; pitchDeg = null; diskR = 3.0; }
+            else if (idx === 9) { bulgeScale = 1.25; pitchDeg = 9; diskR = 4.0; }
+            else if (idx === 10) { bulgeScale = 0.95; pitchDeg = 16; diskR = 4.3; }
+            else { bulgeScale = 0.62; pitchDeg = 25; diskR = 4.6; }
+            var barLen = barred ? bulgeScale * 3.6 : 0;
+            var innerR = barred ? barLen * 0.5 : bulgeScale * 0.55;
+            var n = pos.length / 3;
+            if (pitchDeg === null) {
+                // Plain lenticular disk - uniform, no spiral structure.
+                for (var i = 0; i < n; i++) {
+                    var ang = Math.random() * Math.PI * 2;
+                    var r = innerR + Math.pow(Math.random(), 0.6) * (diskR - innerR);
+                    var h = (Math.random() - 0.5) * 0.14 * diskR;
+                    pos[i * 3] = Math.cos(ang) * r;
+                    pos[i * 3 + 1] = h;
+                    pos[i * 3 + 2] = Math.sin(ang) * r;
+                    var sh = 0.7 + Math.random() * 0.3;
+                    col[i * 3] = 0.95 * sh; col[i * 3 + 1] = 0.85 * sh; col[i * 3 + 2] = 0.68 * sh;
+                }
+            } else {
+                var pitch = pitchDeg * Math.PI / 180;
+                var thetaMax = Math.log(diskR / innerR) / Math.tan(pitch);
+                for (var j = 0; j < n; j++) {
+                    var arm = (j % 2) * Math.PI;
+                    var t = Math.pow(Math.random(), 0.85) * thetaMax;
+                    var rr = innerR * Math.exp(t * Math.tan(pitch));
+                    var jitterAng = (Math.random() - 0.5) * 0.32;
+                    var jitterR = (Math.random() - 0.5) * 0.22 * (0.4 + t / thetaMax);
+                    var ang2 = t + arm + jitterAng;
+                    var r2 = Math.max(innerR * 0.9, rr + jitterR);
+                    var h2 = (Math.random() - 0.5) * 0.10 * (1 - r2 / (diskR * 1.4));
+                    pos[j * 3] = Math.cos(ang2) * r2;
+                    pos[j * 3 + 1] = h2;
+                    pos[j * 3 + 2] = Math.sin(ang2) * r2;
+                    var sh2 = 0.65 + Math.random() * 0.35;
+                    col[j * 3] = youngBlue.r * sh2; col[j * 3 + 1] = youngBlue.g * sh2; col[j * 3 + 2] = youngBlue.b * sh2;
+                }
+            }
+            dgeo.attributes.position.needsUpdate = true;
+            dgeo.attributes.color.needsUpdate = true;
+            bulge.scale.setScalar(bulgeScale);
+            bar.visible = barred;
+            if (barred) { bar.scale.set(barLen, 1, 1); }
+        }
+
+        var state = { idx: 9, barred: true, showIrregular: false, quiz: null, quizCursor: 0, playing: false, dir: 1 };
+        var irregular = new THREE.Mesh(new THREE.IcosahedronGeometry(0.9, 1), new THREE.MeshBasicMaterial({ color: 0xb0bec5, wireframe: false }));
+        (function lumpify() {
+            var pa = irregular.geometry.getAttribute('position');
+            for (var i = 0; i < pa.count; i++) {
+                var lx = pa.getX(i), ly = pa.getY(i), lz = pa.getZ(i);
+                var wob = 1 + 0.28 * Math.sin(4 * lx + 2 * ly) + 0.2 * Math.cos(3 * lz - ly);
+                pa.setXYZ(i, lx * wob, ly * wob, lz * wob);
+            }
+            irregular.geometry.computeVertexNormals();
+        })();
+        irregular.position.set(7.2, 1.4, 0);
+        irregular.visible = false;
+        scene.add(irregular);
+
+        function idxButtons() {
+            for (var i = 0; i <= 11; i++) {
+                var btn = document.getElementById('t3dHtfBtn-' + i);
+                if (btn) btn.className = 'w3-button w3-tiny ' + (i === state.idx ? 'w3-amber' : 'w3-light-grey');
+            }
+        }
+        function barredButtons() {
+            var nb = document.getElementById('t3dHtfNormalBtn');
+            var bb = document.getElementById('t3dHtfBarredBtn');
+            if (nb) nb.className = 'w3-button w3-small ' + (!state.barred ? 'w3-blue' : 'w3-light-grey');
+            if (bb) bb.className = 'w3-button w3-small ' + (state.barred ? 'w3-purple' : 'w3-light-grey');
+        }
+
+        function panelHtml() {
+            var label = t3dHtfLabel(state.idx, state.barred);
+            var branch = t3dHtfBranchName(state.idx, state.barred);
+            var rungFact = T3D_HTF_RUNG_FACTS[state.idx];
+            var html = '<h3>' + label + ' - ' + branch + '</h3><p>' + rungFact + '</p>';
+            if (state.quiz) {
+                var correct = state.quiz.idx === state.idx && (state.quiz.idx < 8 || state.quiz.barred === state.barred);
+                html += '<div class="w3-panel w3-pale-yellow w3-leftbar w3-border-amber" style="margin:6px 0;">' +
+                    '<p><b>Real-galaxy challenge:</b> ' + (state.quizRevealed ? state.quiz.name : 'a real galaxy') + ' - "' + state.quiz.clue + '"</p>' +
+                    (state.quizRevealed
+                        ? '<p><b>' + (correct ? 'Your setting matches: ' : 'Its real type is ') + t3dHtfLabel(state.quiz.idx, state.quiz.barred) + '.</b> ' + state.quiz.fact + '</p>'
+                        : '<p>Use the buttons to set your guess, then press "Reveal".</p>') +
+                    '</div>';
+            }
+            html += '<table class="w3-table w3-bordered">' +
+                '<tr><td>E0-E7 (ellipticals)</td><td>ellipticity e = 1-(b/a), number = round(10e). E0 nearly round, E7 the most flattened commonly observed.</td></tr>' +
+                '<tr><td>S0 / SB0 (lenticular)</td><td>disk + bulge, no visible arms - the transition class between ellipticals and spirals.</td></tr>' +
+                '<tr><td>a / b / c (spiral tightness)</td><td>"a" = large bulge, tightly-wound arms. "c" = small bulge, loosely-wound arms.</td></tr>' +
+                '<tr><td>Barred (SB) vs normal (S)</td><td>about two-thirds of spiral galaxies - including the Milky Way and Andromeda - carry a central bar (NASA Science).</td></tr>' +
+                '</table>';
+            if (state.showIrregular) { html += '<p class="t3d-note"><b>Beyond the fork:</b> ' + T3D_HTF_IRREGULAR_FACT + '</p>'; }
+            html += '<p class="t3d-note">Educational approximation, not a galaxy-formation or light-profile simulator. The elliptical shapes follow the real ellipticity formula above; the spiral/barred-spiral arm tightness and bulge size follow the real "a tight/large bulge to c loose/small bulge" trend - neither is fit to any one galaxy\'s actual measured surface photometry. Named real-galaxy classifications above are commonly-cited values (M87 is often cited around E0-E1; sources vary slightly on exact numbered subtypes).</p>';
+            return html;
+        }
+
+        function apply() {
+            var showE = state.idx <= 7;
+            ellipsoidPoints.visible = showE;
+            bulge.visible = !showE;
+            diskPoints.visible = !showE;
+            if (!showE) { buildDisk(state.idx, state.barred); } else { bar.visible = false; }
+            if (showE) { ellipsoidPoints.scale.set(1, Math.max(0.28, 1 - state.idx / 10), 1); }
+            irregular.visible = state.showIrregular;
+            idxButtons();
+            barredButtons();
+            var irrBtn = document.getElementById('t3dHtfIrrBtn');
+            if (irrBtn) irrBtn.textContent = state.showIrregular ? 'Hide irregulars (beyond the fork)' : 'Show irregulars (beyond the fork)';
+            t3dInfo(panelHtml());
+            t3dStatus(t3dHtfLabel(state.idx, state.barred) + ' - drag to orbit, scroll to zoom.');
+            try { t3dSaveStore({ idx: state.idx, barred: state.barred }); } catch (e) {}
+        }
+
+        function setIdx(i) { state.idx = Math.max(0, Math.min(11, i)); apply(); }
+        function setBarred(b) { state.barred = !!b; apply(); }
+
+        for (var bi = 0; bi <= 11; bi++) {
+            (function (i) {
+                var btn = document.getElementById('t3dHtfBtn-' + i);
+                if (btn) btn.addEventListener('click', function () { state.playing = false; setIdx(i); });
+            })(bi);
+        }
+        var normalBtn = document.getElementById('t3dHtfNormalBtn');
+        if (normalBtn) normalBtn.addEventListener('click', function () { setBarred(false); });
+        var barredBtn = document.getElementById('t3dHtfBarredBtn');
+        if (barredBtn) barredBtn.addEventListener('click', function () { setBarred(true); });
+        var irrToggle = document.getElementById('t3dHtfIrrBtn');
+        if (irrToggle) irrToggle.addEventListener('click', function () { state.showIrregular = !state.showIrregular; apply(); });
+
+        var quizBtn = document.getElementById('t3dHtfQuizBtn');
+        var revealBtn = document.getElementById('t3dHtfRevealBtn');
+        function newQuiz() {
+            state.quiz = T3D_HTF_EXAMPLES[state.quizCursor % T3D_HTF_EXAMPLES.length];
+            state.quizCursor++;
+            state.quizRevealed = false;
+            if (revealBtn) revealBtn.style.display = '';
+            t3dInfo(panelHtml());
+        }
+        if (quizBtn) quizBtn.addEventListener('click', newQuiz);
+        if (revealBtn) revealBtn.addEventListener('click', function () {
+            state.quizRevealed = true;
+            setIdx(state.quiz.idx);
+            if (state.quiz.idx >= 8) setBarred(state.quiz.barred); else apply();
+        });
+
+        var playBtn = document.getElementById('t3dHtfPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            state.playing = !state.playing;
+            playBtn.textContent = state.playing ? 'Pause' : 'Walk the fork';
+        });
+
+        var stored = t3dLoadStore();
+        if (typeof stored.idx === 'number') state.idx = Math.max(0, Math.min(11, stored.idx));
+        if (typeof stored.barred === 'boolean') state.barred = stored.barred;
+        apply();
+
+        var accum = 0;
+        return function animate(dt) {
+            ellipsoidPoints.rotation.y += dt * 0.00012;
+            diskPoints.rotation.y += dt * 0.00012;
+            bulge.rotation.y += dt * 0.00012;
+            bar.rotation.y += dt * 0.00012;
+            irregular.rotation.y += dt * 0.00018;
+            if (state.playing) {
+                accum += dt;
+                if (accum > 900) {
+                    accum = 0;
+                    var next = state.idx + state.dir;
+                    if (next > 11) { next = 11; state.dir = -1; }
+                    if (next < 0) { next = 0; state.dir = 1; }
+                    setIdx(next);
+                }
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { hubbletuningfork: 't3dHtfControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { hubbletuningfork: { radius: 13, maxR: 46, minR: 5, phi: 1.05, theta: 0.55, targetY: 0 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dHubbleTuningFork(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
