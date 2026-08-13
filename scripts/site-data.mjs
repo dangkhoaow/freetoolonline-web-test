@@ -12417,12 +12417,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/id/thirteen-step-escape-vs-alternatives.html',
   '/guides/de/thirteen-step-escape-vs-alternatives.html',
   // fire103 floor-thirteen-horror
-  '/guides/how-to-play-floor-thirteen-horror.html',
-  '/guides/pt/how-to-play-floor-thirteen-horror.html',
-  '/guides/es/how-to-play-floor-thirteen-horror.html',
-  '/guides/vi/how-to-play-floor-thirteen-horror.html',
-  '/guides/id/how-to-play-floor-thirteen-horror.html',
-  '/guides/de/how-to-play-floor-thirteen-horror.html',
   '/guides/floor-thirteen-horror-when.html',
   '/guides/pt/floor-thirteen-horror-when.html',
   '/guides/es/floor-thirteen-horror-when.html',
@@ -12455,12 +12449,6 @@ export const GUIDE_ROUTES = new Set([
   '/guides/id/voxel-fps-arena-vs-alternatives.html',
   '/guides/de/voxel-fps-arena-vs-alternatives.html',
   // fire105 lightning-math-battle
-  '/guides/how-to-play-lightning-math-battle.html',
-  '/guides/pt/how-to-play-lightning-math-battle.html',
-  '/guides/es/how-to-play-lightning-math-battle.html',
-  '/guides/vi/how-to-play-lightning-math-battle.html',
-  '/guides/id/how-to-play-lightning-math-battle.html',
-  '/guides/de/how-to-play-lightning-math-battle.html',
   '/guides/lightning-math-battle-when.html',
   '/guides/pt/lightning-math-battle-when.html',
   '/guides/es/lightning-math-battle-when.html',
@@ -14267,6 +14255,33 @@ export function isArticleFamilyRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  // consolidation fire59 (2026-08-13): retire the how-to-play-floor-thirteen-horror
+  // + how-to-play-lightning-math-battle doorway families into their canonical GAME
+  // pages. Backlog items topical-map-games.floor-thirteen-horror and
+  // topical-map-games.lightning-math-battle (1 live excess family each; across all
+  // 12 routes 0 clicks / 0 AI citations / 8 impr 28d, 10 of 12 already
+  // sitemap-excluded, and zero links_to edges into the floor-thirteen family from
+  // anywhere on the site). Unique facts were folded into the keepers BEFORE the
+  // 301: the key-to-numbered-room chain and the light It carries as an approach
+  // warning (floor-thirteen), and the full control walkthrough that the retired
+  // guide was linked for, plus the touch/desktop answer-grid parity, the mute
+  // button, and the ~1.29 MB payload (lightning). The lightning keeper's own
+  // pointer link to the retired route was removed and both keepers gained a
+  // /games.html hub link, so no internal link is lost. Edge layer patched in the
+  // same push. Locale mirrors 301 to the EN canonical because game pages have no
+  // locale variants.
+  '/guides/how-to-play-floor-thirteen-horror.html': '/games/floor-thirteen-horror.html',
+  '/guides/pt/how-to-play-floor-thirteen-horror.html': '/games/floor-thirteen-horror.html',
+  '/guides/es/how-to-play-floor-thirteen-horror.html': '/games/floor-thirteen-horror.html',
+  '/guides/vi/how-to-play-floor-thirteen-horror.html': '/games/floor-thirteen-horror.html',
+  '/guides/id/how-to-play-floor-thirteen-horror.html': '/games/floor-thirteen-horror.html',
+  '/guides/de/how-to-play-floor-thirteen-horror.html': '/games/floor-thirteen-horror.html',
+  '/guides/how-to-play-lightning-math-battle.html': '/games/lightning-math-battle.html',
+  '/guides/pt/how-to-play-lightning-math-battle.html': '/games/lightning-math-battle.html',
+  '/guides/es/how-to-play-lightning-math-battle.html': '/games/lightning-math-battle.html',
+  '/guides/vi/how-to-play-lightning-math-battle.html': '/games/lightning-math-battle.html',
+  '/guides/id/how-to-play-lightning-math-battle.html': '/games/lightning-math-battle.html',
+  '/guides/de/how-to-play-lightning-math-battle.html': '/games/lightning-math-battle.html',
   // consolidation fire56 (2026-08-13): retire the how-to-view-spinosaurus-in-3d
   // + spinosaurus-3d-viewer-vs-ar-apps doorway families into the
   // spinosaurus-size-comparison keeper, locale-matched. Backlog item
@@ -19374,12 +19389,6 @@ export const JSP_BY_ROUTE = {
   '/guides/de/thirteen-step-escape-vs-alternatives.html': 'guide/de/thirteen-step-escape-vs-alternatives.jsp',
   '/games/thirteen-step-escape.html': 'games/thirteen-step-escape.jsp',
   // fire103 floor-thirteen-horror guides
-  '/guides/how-to-play-floor-thirteen-horror.html': 'guide/how-to-play-floor-thirteen-horror.jsp',
-  '/guides/pt/how-to-play-floor-thirteen-horror.html': 'guide/pt/how-to-play-floor-thirteen-horror.jsp',
-  '/guides/es/how-to-play-floor-thirteen-horror.html': 'guide/es/how-to-play-floor-thirteen-horror.jsp',
-  '/guides/vi/how-to-play-floor-thirteen-horror.html': 'guide/vi/how-to-play-floor-thirteen-horror.jsp',
-  '/guides/id/how-to-play-floor-thirteen-horror.html': 'guide/id/how-to-play-floor-thirteen-horror.jsp',
-  '/guides/de/how-to-play-floor-thirteen-horror.html': 'guide/de/how-to-play-floor-thirteen-horror.jsp',
   '/guides/floor-thirteen-horror-when.html': 'guide/floor-thirteen-horror-when.jsp',
   '/guides/pt/floor-thirteen-horror-when.html': 'guide/pt/floor-thirteen-horror-when.jsp',
   '/guides/es/floor-thirteen-horror-when.html': 'guide/es/floor-thirteen-horror-when.jsp',
@@ -19414,12 +19423,6 @@ export const JSP_BY_ROUTE = {
   '/guides/de/voxel-fps-arena-vs-alternatives.html': 'guide/de/voxel-fps-arena-vs-alternatives.jsp',
   '/games/voxel-fps-arena.html': 'games/voxel-fps-arena.jsp',
   // fire105 lightning-math-battle guides
-  '/guides/how-to-play-lightning-math-battle.html': 'guide/how-to-play-lightning-math-battle.jsp',
-  '/guides/pt/how-to-play-lightning-math-battle.html': 'guide/pt/how-to-play-lightning-math-battle.jsp',
-  '/guides/es/how-to-play-lightning-math-battle.html': 'guide/es/how-to-play-lightning-math-battle.jsp',
-  '/guides/vi/how-to-play-lightning-math-battle.html': 'guide/vi/how-to-play-lightning-math-battle.jsp',
-  '/guides/id/how-to-play-lightning-math-battle.html': 'guide/id/how-to-play-lightning-math-battle.jsp',
-  '/guides/de/how-to-play-lightning-math-battle.html': 'guide/de/how-to-play-lightning-math-battle.jsp',
   '/guides/lightning-math-battle-when.html': 'guide/lightning-math-battle-when.jsp',
   '/guides/pt/lightning-math-battle-when.html': 'guide/pt/lightning-math-battle-when.jsp',
   '/guides/es/lightning-math-battle-when.html': 'guide/es/lightning-math-battle-when.jsp',
@@ -29676,7 +29679,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/vi/how-to-play-emoji-slot-machine.html',
   '/guides/vi/how-to-play-feast-night.html',
   '/guides/vi/how-to-play-flexbox-froggy.html',
-  '/guides/vi/how-to-play-floor-thirteen-horror.html',
   '/guides/vi/how-to-play-globe-siege.html',
   '/guides/vi/how-to-play-glow-firefly-cat.html',
   '/guides/vi/how-to-play-googol-stopping-game.html',
@@ -29689,7 +29691,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/vi/how-to-play-inferno-soul-walker.html',
   '/guides/vi/how-to-play-iso-city-sandbox.html',
   '/guides/vi/how-to-play-layer-flip-platformer.html',
-  '/guides/vi/how-to-play-lightning-math-battle.html',
   '/guides/vi/how-to-play-machine-guard-corps.html',
   '/guides/vi/how-to-play-marble-maze.html',
   '/guides/vi/how-to-play-medieval-wall-defense.html',
@@ -30992,7 +30993,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   "/guides/de/how-to-play-emoji-slot-machine.html",
   "/guides/de/how-to-play-feast-night.html",
   "/guides/de/how-to-play-flexbox-froggy.html",
-  "/guides/de/how-to-play-floor-thirteen-horror.html",
   "/guides/de/how-to-play-globe-siege.html",
   "/guides/de/how-to-play-glow-firefly-cat.html",
   "/guides/de/how-to-play-googol-stopping-game.html",
@@ -31005,7 +31005,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   "/guides/de/how-to-play-inferno-soul-walker.html",
   "/guides/de/how-to-play-iso-city-sandbox.html",
   "/guides/de/how-to-play-layer-flip-platformer.html",
-  "/guides/de/how-to-play-lightning-math-battle.html",
   "/guides/de/how-to-play-machine-guard-corps.html",
   "/guides/de/how-to-play-marble-maze.html",
   "/guides/de/how-to-play-medieval-wall-defense.html",
@@ -32403,7 +32402,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/pt/how-to-play-emoji-slot-machine.html',
   '/guides/pt/how-to-play-feast-night.html',
   '/guides/pt/how-to-play-flexbox-froggy.html',
-  '/guides/pt/how-to-play-floor-thirteen-horror.html',
   '/guides/pt/how-to-play-globe-siege.html',
   '/guides/pt/how-to-play-glow-firefly-cat.html',
   '/guides/pt/how-to-play-googol-stopping-game.html',
@@ -32416,7 +32414,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/pt/how-to-play-inferno-soul-walker.html',
   '/guides/pt/how-to-play-iso-city-sandbox.html',
   '/guides/pt/how-to-play-layer-flip-platformer.html',
-  '/guides/pt/how-to-play-lightning-math-battle.html',
   '/guides/pt/how-to-play-machine-guard-corps.html',
   '/guides/pt/how-to-play-marble-maze.html',
   '/guides/pt/how-to-play-medieval-wall-defense.html',
@@ -33809,7 +33806,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/es/how-to-play-emoji-slot-machine.html',
   '/guides/es/how-to-play-feast-night.html',
   '/guides/es/how-to-play-flexbox-froggy.html',
-  '/guides/es/how-to-play-floor-thirteen-horror.html',
   '/guides/es/how-to-play-globe-siege.html',
   '/guides/es/how-to-play-glow-firefly-cat.html',
   '/guides/es/how-to-play-googol-stopping-game.html',
@@ -33822,7 +33818,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/es/how-to-play-inferno-soul-walker.html',
   '/guides/es/how-to-play-iso-city-sandbox.html',
   '/guides/es/how-to-play-layer-flip-platformer.html',
-  '/guides/es/how-to-play-lightning-math-battle.html',
   '/guides/es/how-to-play-machine-guard-corps.html',
   '/guides/es/how-to-play-marble-maze.html',
   '/guides/es/how-to-play-medieval-wall-defense.html',
@@ -35181,7 +35176,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/id/how-to-play-emoji-slot-machine.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-play-feast-night.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-play-flexbox-froggy.html', // pruned 2026-07-29 zero-evidence id
-  '/guides/id/how-to-play-floor-thirteen-horror.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-play-globe-siege.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-play-glow-firefly-cat.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-play-googol-stopping-game.html', // pruned 2026-07-29 zero-evidence id
@@ -35194,7 +35188,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/id/how-to-play-inferno-soul-walker.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-play-iso-city-sandbox.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-play-layer-flip-platformer.html', // pruned 2026-07-29 zero-evidence id
-  '/guides/id/how-to-play-lightning-math-battle.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-play-machine-guard-corps.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-play-marble-maze.html', // pruned 2026-07-29 zero-evidence id
   '/guides/id/how-to-play-medieval-wall-defense.html', // pruned 2026-07-29 zero-evidence id
