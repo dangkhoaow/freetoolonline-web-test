@@ -779,6 +779,7 @@ try {
     { title: "Venus Atmospheric Super-Rotation 3D Explorer", url: "https://freetoolonline.com/space-3d/venus-atmospheric-superrotation.html", include: !1, tags: "space-3d" },
     { title: "Lagrange Point Stability (L1-L5) 3D Explorer", url: "https://freetoolonline.com/space-3d/restricted-three-body-stability.html", include: !1, tags: "space-3d" },
     { title: "Annual Meteor Shower Calendar 3D Explorer", url: "https://freetoolonline.com/space-3d/annual-meteor-shower-calendar.html", include: !1, tags: "space-3d" },
+    { title: "Stellar Spectral Classification 3D Explorer", url: "https://freetoolonline.com/space-3d/stellar-spectral-classification.html", include: !1, tags: "space-3d" },
     { title: "Parker Solar Probe 3D Explorer", url: "https://freetoolonline.com/space-3d/parker-solar-probe.html", include: !1, tags: "space-3d" },
     { title: "Rosetta + Philae 67P 3D Explorer", url: "https://freetoolonline.com/space-3d/rosetta-philae-67p.html", include: !1, tags: "space-3d" },
     { title: "Space Elevator Physics 3D Explorer", url: "https://freetoolonline.com/space-3d/space-elevator-physics.html", include: !1, tags: "space-3d" },

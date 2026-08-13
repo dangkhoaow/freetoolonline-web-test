@@ -1,0 +1,437 @@
+<script>
+    // 3D scene archetype skeleton (stellar-spectral-classification) - vendored
+    // three.js (ESM, dynamic import from /vendor/three/, NO CDN), fully
+    // client-side. Built LEAN from the shared t3d* skeleton - ONE scene only.
+    // All geometry is procedural.
+    //
+    // EDUCATIONAL APPROXIMATION - this teaches the Morgan-Keenan (Yerkes)
+    // OBAFGKM spectral classification system: a single star sphere changes
+    // color and size as the reader scrubs a temperature slider or picks a
+    // letter class, while three bar markers show which absorption-line
+    // group (He II / Balmer hydrogen / Ca II + metals) dominates at that
+    // temperature. It is NOT a stellar-atmosphere radiative-transfer solver
+    // and does NOT render real line spectra pixel-for-pixel - the three bars
+    // are a teaching proxy for real, well-documented line-strength trends.
+    //
+    // Published figures / facts (cross-checked via web search 2026-08-12
+    // against Wikipedia "Stellar classification" / "G-type main-sequence
+    // star" / "A-type main-sequence star", the IAU 2015 Resolution B3 on
+    // nominal solar constants, and standard textbook OBAFGKM boundaries -
+    // RIT spiff.rit.edu spectral-class notes, TCNJ AST161 Chapter 9):
+    //   - OBAFGKM is a temperature sequence: O >= ~30,000 K (blue-white,
+    //     hottest), B ~10,000-30,000 K, A ~7,500-10,000 K, F ~6,000-7,500 K,
+    //     G ~5,300-6,000 K, K ~3,900-5,300 K, M < ~3,900 K (red, coolest).
+    //   - The Sun is G2V at Teff = 5,772 K - the IAU 2015 Resolution B3
+    //     nominal effective solar temperature.
+    //   - Hydrogen Balmer absorption lines are strongest near ~10,000 K
+    //     (A-type stars), NOT at the hottest temperatures - the neutral
+    //     hydrogen n=2 level population that produces visible Balmer
+    //     absorption peaks there and falls off on both sides (ionized at
+    //     hotter O/B temperatures, too few excited atoms at cooler F-M
+    //     temperatures).
+    //   - Ionized helium (He II) absorption appears only in the hottest
+    //     O-type photospheres (roughly above 25,000-30,000 K), where the
+    //     temperature is high enough to ionize helium.
+    //   - Ionized calcium (Ca II H and K lines) and neutral-metal lines
+    //     strengthen toward cooler G-K-M photospheres; molecular bands
+    //     (e.g. titanium oxide, TiO) dominate the coolest M-type spectra.
+    //   - Morgan-Keenan luminosity classes range I (supergiant) through V
+    //     (main-sequence dwarf); the Sun is class V. This page teaches 3 of
+    //     the 5 classes (I, III, V) as an explicit simplification, disclosed
+    //     in the facts panel.
+    //   - Real luminosity-class radius examples: Aldebaran (K5 III giant)
+    //     is about 44 solar radii; Betelgeuse (M1-2 Ia supergiant) is about
+    //     640-764 solar radii (commonly cited ~764) - both real, published,
+    //     citable figures, not this page's own render multiplier.
+    //
+    // Distinct from Black-Body Radiation 3D Explorer (the continuous Wien-
+    // peak / Planck-curve color-temperature relationship, no line spectrum,
+    // no luminosity classes) and HR Diagram 3D Explorer (plots POPULATIONS
+    // of stars by temperature and luminosity, not the line-fingerprint
+    // classification system of ONE star) and Stellar Parallax 3D Explorer
+    // (distance measurement via parallax angle, unrelated to spectral
+    // classification). THIS page's story: which absorption-line family
+    // dominates a star's spectrum at a given temperature, and how far a
+    // star's radius departs from the main sequence at each luminosity class.
+    //
+    // Framework contract: bootstrap in doAfterPageRendered(). No top-level DOM.
+
+    web.localUpload = false;
+
+    var T3D_SLUG = 'stellar-spectral-classification';
+    var T3D_STORE_KEY = 'ftol-game-' + T3D_SLUG;
+
+    function t3dDetectScene(slug) { return 'stellarspec'; }
+
+    function ftoLoadThree() {
+        if (window.__ftoThreePromise) { return window.__ftoThreePromise; }
+        var base = (typeof BASE_PATH === 'string' ? BASE_PATH : '') + '/vendor/three';
+        window.__ftoThreePromise = import(base + '/three.module.min.js').then(function (mod) {
+            if (!mod || !mod.WebGLRenderer) { throw new Error('three.js loaded but WebGLRenderer is missing'); }
+            return mod;
+        });
+        return window.__ftoThreePromise;
+    }
+
+    function t3dStatus(text) {
+        var el = document.getElementById('t3dStatus');
+        if (el) el.textContent = text;
+    }
+    function t3dInfo(html) {
+        var el = document.getElementById('t3dInfoPanel');
+        if (el) el.innerHTML = html;
+    }
+    function t3dLoadStore() {
+        try { return JSON.parse(localStorage.getItem(T3D_STORE_KEY) || '{}') || {}; }
+        catch (e) { return {}; }
+    }
+    function t3dSaveStore(obj) {
+        try { localStorage.setItem(T3D_STORE_KEY, JSON.stringify(obj)); }
+        catch (e) { t3dStatus('Could not save to browser storage (quota or private mode) - explorer still works.'); }
+    }
+    function t3dFullscreen(el) {
+        if (el.requestFullscreen) { el.requestFullscreen(); }
+        else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+        else if (el.mozRequestFullScreen) { el.mozRequestFullScreen(); }
+        else if (el.msRequestFullscreen) { el.msRequestFullscreen(); }
+    }
+
+    function t3dShell(THREE, host, opts) {
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        var low = coarse || ((navigator.hardwareConcurrency || 4) <= 4);
+        var renderer = new THREE.WebGLRenderer({ antialias: !low, powerPreference: 'default' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(opts.fov || 50, 1, 0.1, 4000);
+        var orbit = {
+            target: new THREE.Vector3(0, opts.targetY || 0, 0),
+            radius: opts.radius, theta: opts.theta || 0.6, phi: opts.phi || 1.15,
+            goalRadius: opts.radius, goalTheta: opts.theta || 0.6, goalPhi: opts.phi || 1.15,
+            minR: opts.minR || 4, maxR: opts.maxR || 400,
+        };
+        function applyCamera() {
+            orbit.theta += (orbit.goalTheta - orbit.theta) * 0.14;
+            orbit.phi += (orbit.goalPhi - orbit.phi) * 0.14;
+            orbit.radius += (orbit.goalRadius - orbit.radius) * 0.14;
+            var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+            camera.position.set(
+                orbit.target.x + orbit.radius * sp * Math.sin(orbit.theta),
+                orbit.target.y + orbit.radius * cp,
+                orbit.target.z + orbit.radius * sp * Math.cos(orbit.theta)
+            );
+            camera.lookAt(orbit.target);
+        }
+        host.innerHTML = '';
+        host.appendChild(renderer.domElement);
+        function resize() {
+            var w = host.clientWidth || 320, h = Math.max(220, Math.round(w * 0.62));
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        if (typeof ResizeObserver === 'function') { new ResizeObserver(resize).observe(host); }
+        var dragging = false, lastX = 0, lastY = 0;
+        host.addEventListener('pointerdown', function (e) {
+            dragging = true; lastX = e.clientX; lastY = e.clientY;
+            try { host.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        host.addEventListener('pointerup', function () { dragging = false; });
+        host.addEventListener('pointercancel', function () { dragging = false; });
+        host.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            orbit.goalTheta -= dx * 0.005;
+            orbit.goalPhi = Math.max(0.2, Math.min(Math.PI - 0.2, orbit.goalPhi + dy * 0.005));
+        });
+        host.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            orbit.goalRadius = Math.max(orbit.minR, Math.min(orbit.maxR, orbit.goalRadius * (e.deltaY > 0 ? 1.08 : 0.92)));
+        }, { passive: false });
+        return { THREE: THREE, scene: scene, camera: camera, renderer: renderer, orbit: orbit, applyCamera: applyCamera, low: low, resize: resize };
+    }
+
+    // ---- Real published OBAFGKM figures (see header comment for sources) ----
+    var T3D_SSC_SUN_K = 5772;
+    var T3D_SSC_CLASSES = [
+        { id: 'O', label: 'O', T: 32000, radiusRsun: 10, colorHint: 'blue-white', note: 'O-type, roughly 30,000-50,000 K. Hot enough to ionize helium - He II absorption lines appear only here.' },
+        { id: 'B', label: 'B', T: 18000, radiusRsun: 5, colorHint: 'blue-white', note: 'B-type, roughly 10,000-30,000 K. Neutral helium lines are strong; hydrogen Balmer lines are still building toward their peak.' },
+        { id: 'A', label: 'A', T: 8700, radiusRsun: 1.7, colorHint: 'white', note: 'A-type, roughly 7,500-10,000 K. Hydrogen Balmer absorption lines are at their strongest here - the classic fingerprint of an A-type spectrum.' },
+        { id: 'F', label: 'F', T: 6750, radiusRsun: 1.3, colorHint: 'yellow-white', note: 'F-type, roughly 6,000-7,500 K. Balmer lines are fading while ionized calcium and metal lines start to strengthen.' },
+        { id: 'G', label: 'G', T: 5772, radiusRsun: 1.0, colorHint: 'yellow', note: 'G-type, roughly 5,300-6,000 K. The Sun is a G2V star at 5,772 K (IAU nominal). Ca II H and K lines are prominent.' },
+        { id: 'K', label: 'K', T: 4600, radiusRsun: 0.8, colorHint: 'orange', note: 'K-type, roughly 3,900-5,300 K. Metal lines and early molecular bands strengthen further as the photosphere cools.' },
+        { id: 'M', label: 'M', T: 3300, radiusRsun: 0.35, colorHint: 'red', note: 'M-type, below about 3,900 K. Molecular bands (e.g. titanium oxide) dominate. M dwarfs are the most common star type in the galaxy.' }
+    ];
+    var T3D_SSC_LUM = [
+        { id: 'V', name: 'V - main sequence (dwarf)', mult: 1, example: 'The Sun is a G2V main-sequence dwarf.' },
+        { id: 'III', name: 'III - giant', mult: 12, example: 'Aldebaran (K5 III) is a real giant about 44 times the Sun\'s radius.' },
+        { id: 'I', name: 'I - supergiant', mult: 55, example: 'Betelgeuse (M1-2 Ia) is a real supergiant about 640-764 times the Sun\'s radius (commonly cited ~764).' }
+    ];
+    var T3D_SSC_T_MIN = 3000, T3D_SSC_T_MAX = 42000;
+
+    function t3dSscClassify(T) {
+        if (T >= 30000) return 'O';
+        if (T >= 10000) return 'B';
+        if (T >= 7500) return 'A';
+        if (T >= 6000) return 'F';
+        if (T >= 5300) return 'G';
+        if (T >= 3900) return 'K';
+        return 'M';
+    }
+    function t3dSscClassById(id) {
+        for (var i = 0; i < T3D_SSC_CLASSES.length; i++) { if (T3D_SSC_CLASSES[i].id === id) return T3D_SSC_CLASSES[i]; }
+        return T3D_SSC_CLASSES[4];
+    }
+    function t3dSscLumById(id) {
+        for (var i = 0; i < T3D_SSC_LUM.length; i++) { if (T3D_SSC_LUM[i].id === id) return T3D_SSC_LUM[i]; }
+        return T3D_SSC_LUM[0];
+    }
+    // Teaching proxy for real, documented line-strength trends (see header).
+    function t3dSscLineStrength(T) {
+        var heII = Math.max(0, Math.min(1, (T - 25000) / 20000));
+        var bd = (T - 9700) / 3200;
+        var balmer = Math.exp(-bd * bd);
+        var metals = Math.max(0, Math.min(1, (6300 - T) / 4200));
+        return { heII: heII, balmer: balmer, metals: metals };
+    }
+    // Standard blackbody-teaching RGB approximation (Tanner Helland formula).
+    function t3dSscTempToRgb(T) {
+        var t = Math.max(1000, Math.min(40000, T)) / 100;
+        var r, g, b;
+        if (t <= 66) {
+            r = 255;
+            g = 99.4708025861 * Math.log(t) - 161.1195681661;
+            b = t <= 19 ? 0 : 138.5177312231 * Math.log(t - 10) - 305.0447927307;
+        } else {
+            r = 329.698727446 * Math.pow(t - 60, -0.1332047592);
+            g = 288.1221695283 * Math.pow(t - 60, -0.0755148492);
+            b = 255;
+        }
+        function clip(v) { return Math.max(0, Math.min(255, v)) / 255; }
+        return { r: clip(r), g: clip(g), b: clip(b) };
+    }
+    function t3dSscSliderToTemp(v) {
+        var u = Math.max(0, Math.min(100, v)) / 100;
+        return T3D_SSC_T_MIN * Math.pow(T3D_SSC_T_MAX / T3D_SSC_T_MIN, u);
+    }
+    function t3dSscTempToSlider(T) {
+        var u = Math.log(T / T3D_SSC_T_MIN) / Math.log(T3D_SSC_T_MAX / T3D_SSC_T_MIN);
+        return Math.round(Math.max(0, Math.min(1, u)) * 100);
+    }
+    // Linear-interpolate a representative main-sequence radius (R_sun) for any
+    // continuous temperature between the seven class anchors - a teaching
+    // interpolation, not a stellar-structure model.
+    function t3dSscRadiusForTemp(T) {
+        var list = T3D_SSC_CLASSES;
+        if (T >= list[0].T) return list[0].radiusRsun;
+        if (T <= list[list.length - 1].T) return list[list.length - 1].radiusRsun;
+        for (var i = 0; i < list.length - 1; i++) {
+            var hi = list[i], lo = list[i + 1];
+            if (T <= hi.T && T >= lo.T) {
+                var u = (hi.T - T) / (hi.T - lo.T);
+                return hi.radiusRsun + (lo.radiusRsun - hi.radiusRsun) * u;
+            }
+        }
+        return 1.0;
+    }
+
+    function t3dStellarSpectralClassification(shell) {
+        var THREE = shell.THREE, scene = shell.scene;
+        shell.renderer.setClearColor(0x03040a, 1);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+        var key = new THREE.PointLight(0xffffff, 1.1, 0, 0);
+        key.position.set(18, 14, 20);
+        scene.add(key);
+
+        // Faint background starfield for atmosphere.
+        var SCOUNT = shell.low ? 240 : 480;
+        var spos = new Float32Array(SCOUNT * 3);
+        for (var s = 0; s < SCOUNT; s++) {
+            var v = new THREE.Vector3().randomDirection().multiplyScalar(30 + Math.random() * 60);
+            spos[s * 3] = v.x; spos[s * 3 + 1] = v.y; spos[s * 3 + 2] = v.z;
+        }
+        var sgeo = new THREE.BufferGeometry();
+        sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+        scene.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ color: 0xcfd8dc, size: 0.22, sizeAttenuation: false })));
+
+        var star = new THREE.Mesh(
+            new THREE.SphereGeometry(2, shell.low ? 26 : 42, shell.low ? 18 : 30),
+            new THREE.MeshBasicMaterial({ color: 0xfff176 })
+        );
+        scene.add(star);
+        var glow = new THREE.Mesh(
+            new THREE.SphereGeometry(2.6, 20, 16),
+            new THREE.MeshBasicMaterial({ color: 0xffe082, transparent: true, opacity: 0.28, depthWrite: false })
+        );
+        star.add(glow);
+
+        // Three absorption-line-family bars: He II / Balmer H / Ca II+metals.
+        var barGroup = new THREE.Group();
+        barGroup.position.set(0, -6.2, 0);
+        scene.add(barGroup);
+        var barDefs = [
+            { key: 'heII', x: -3.4, color: 0x9c6bff, label: 'He II' },
+            { key: 'balmer', x: 0, color: 0xe0f7ff, label: 'Balmer H' },
+            { key: 'metals', x: 3.4, color: 0xffb066, label: 'Ca II + metals' }
+        ];
+        var bars = barDefs.map(function (d) {
+            var mesh = new THREE.Mesh(
+                new THREE.BoxGeometry(1.5, 0.4, 0.6),
+                new THREE.MeshBasicMaterial({ color: d.color })
+            );
+            mesh.position.set(d.x, 0, 0);
+            barGroup.add(mesh);
+            return { mesh: mesh, def: d };
+        });
+        var barBase = new THREE.Mesh(
+            new THREE.BoxGeometry(9.6, 0.12, 0.8),
+            new THREE.MeshBasicMaterial({ color: 0x37474f })
+        );
+        barBase.position.set(0, -0.3, 0);
+        barGroup.add(barBase);
+
+        var state = { T: T3D_SSC_SUN_K, lum: 'V', playing: false, dir: -1 };
+
+        function applyBars(T) {
+            var s = t3dSscLineStrength(T);
+            var vals = { heII: s.heII, balmer: s.balmer, metals: s.metals };
+            bars.forEach(function (b) {
+                var v = Math.max(0.06, vals[b.def.key]);
+                b.mesh.scale.y = 0.3 + v * 3.2;
+                b.mesh.position.y = (b.mesh.scale.y * 0.4) / 2;
+            });
+            return s;
+        }
+
+        function classButtons(activeId) {
+            T3D_SSC_CLASSES.forEach(function (c) {
+                var btn = document.getElementById('t3dSscClassBtn-' + c.id);
+                if (btn) btn.className = 'w3-button w3-small ' + (c.id === activeId ? 'w3-amber' : 'w3-light-grey');
+            });
+        }
+        function lumButtons(activeId) {
+            T3D_SSC_LUM.forEach(function (l) {
+                var btn = document.getElementById('t3dSscLumBtn-' + l.id);
+                if (btn) btn.className = 'w3-button w3-small ' + (l.id === activeId ? 'w3-blue' : 'w3-light-grey');
+            });
+        }
+
+        function panelHtml(T, classObj, lumObj, lines) {
+            var dominant = lines.heII > lines.balmer && lines.heII > lines.metals ? 'He II (ionized helium)'
+                : (lines.balmer >= lines.heII && lines.balmer >= lines.metals ? 'Balmer hydrogen' : 'Ca II + metal lines');
+            return '<h3>Class ' + classObj.id + ' star, luminosity ' + lumObj.id + '</h3>' +
+                '<p>' + classObj.note + '</p>' +
+                '<table class="w3-table w3-bordered">' +
+                '<tr><td>Effective temperature</td><td>' + Math.round(T).toLocaleString('en-US') + ' K</td></tr>' +
+                '<tr><td>Spectral class</td><td>' + classObj.id + ' (' + classObj.colorHint + ')</td></tr>' +
+                '<tr><td>Luminosity class</td><td>' + lumObj.name + '</td></tr>' +
+                '<tr><td>Radius shown</td><td>~' + (t3dSscRadiusForTemp(T) * lumObj.mult).toFixed(1) + ' solar radii (teaching scale)</td></tr>' +
+                '<tr><td>Dominant line family</td><td>' + dominant + '</td></tr>' +
+                '</table>' +
+                '<p>' + lumObj.example + '</p>' +
+                '<p class="t3d-note">Educational approximation: the three bars are a teaching proxy for real, documented line-strength trends, not a rendered line spectrum. Luminosity here shows 3 of the 5 Morgan-Keenan classes (I, III, V). This is not a stellar-atmosphere simulation. Distinct from Black-Body Radiation 3D Explorer (continuous color-temperature curve only) and HR Diagram 3D Explorer (populations of stars, not one star\'s line fingerprint).</p>';
+        }
+
+        function apply(T, lumId, opts) {
+            opts = opts || {};
+            state.T = Math.max(T3D_SSC_T_MIN, Math.min(T3D_SSC_T_MAX, T));
+            state.lum = lumId;
+            var classId = t3dSscClassify(state.T);
+            var classObj = t3dSscClassById(classId);
+            var lumObj = t3dSscLumById(state.lum);
+            var rgb = t3dSscTempToRgb(state.T);
+            star.material.color.setRGB(rgb.r, rgb.g, rgb.b);
+            glow.material.color.setRGB(rgb.r, rgb.g, rgb.b);
+            var r = t3dSscRadiusForTemp(state.T) * lumObj.mult;
+            var scale = Math.max(0.5, Math.min(9, Math.pow(r, 0.32) * 1.05));
+            star.scale.setScalar(scale);
+            var lines = applyBars(state.T);
+            classButtons(classId);
+            lumButtons(state.lum);
+            var slider = document.getElementById('t3dSscTempSlider');
+            if (!opts.fromSlider && slider) slider.value = String(t3dSscTempToSlider(state.T));
+            t3dInfo(panelHtml(state.T, classObj, lumObj, lines));
+            t3dStatus('T = ' + Math.round(state.T) + ' K, class ' + classId + lumId + ' - drag to orbit, scroll to zoom.');
+            try { t3dSaveStore({ T: Math.round(state.T), lum: state.lum }); } catch (e) {}
+        }
+
+        var stored = t3dLoadStore();
+        var startT = (typeof stored.T === 'number' && stored.T >= T3D_SSC_T_MIN && stored.T <= T3D_SSC_T_MAX) ? stored.T : T3D_SSC_SUN_K;
+        var startLum = (stored.lum === 'III' || stored.lum === 'I') ? stored.lum : 'V';
+        apply(startT, startLum);
+
+        T3D_SSC_CLASSES.forEach(function (c) {
+            var btn = document.getElementById('t3dSscClassBtn-' + c.id);
+            if (btn) btn.addEventListener('click', function () { state.playing = false; apply(c.T, state.lum); });
+        });
+        T3D_SSC_LUM.forEach(function (l) {
+            var btn = document.getElementById('t3dSscLumBtn-' + l.id);
+            if (btn) btn.addEventListener('click', function () { apply(state.T, l.id); });
+        });
+        var sunBtn = document.getElementById('t3dSscSunBtn');
+        if (sunBtn) sunBtn.addEventListener('click', function () { state.playing = false; apply(T3D_SSC_SUN_K, 'V'); });
+        var slider = document.getElementById('t3dSscTempSlider');
+        if (slider) slider.addEventListener('input', function () {
+            state.playing = false;
+            var pb = document.getElementById('t3dSscPlayBtn'); if (pb) pb.textContent = 'Play through OBAFGKM';
+            apply(t3dSscSliderToTemp(parseFloat(slider.value || '50')), state.lum, { fromSlider: true });
+        });
+        var playBtn = document.getElementById('t3dSscPlayBtn');
+        if (playBtn) playBtn.addEventListener('click', function () {
+            state.playing = !state.playing;
+            playBtn.textContent = state.playing ? 'Pause' : 'Play through OBAFGKM';
+        });
+
+        return function animate(dt) {
+            star.rotation.y += dt * 0.00025;
+            if (state.playing) {
+                var v = t3dSscTempToSlider(state.T) + state.dir * (dt / 1000) * 6;
+                if (v <= 0) { v = 0; state.dir = 1; }
+                if (v >= 100) { v = 100; state.dir = -1; }
+                apply(t3dSscSliderToTemp(v), state.lum);
+            }
+        };
+    }
+
+    function doAfterPageRendered() {
+        var host = document.getElementById('t3dCanvasHost');
+        var root = document.getElementById('threeSceneTool');
+        if (!host || !root) return;
+        var wrapper = document.getElementById('t3dWrapper') || root;
+        var kind = t3dDetectScene(T3D_SLUG);
+        var rows = { stellarspec: 't3dSscControls' };
+        for (var k in rows) {
+            var el = document.getElementById(rows[k]);
+            if (el) el.style.display = (k === kind) ? '' : 'none';
+        }
+        var fsBtn = document.getElementById('t3dFullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', function () { t3dFullscreen(wrapper); });
+        t3dStatus('Loading the 3D engine (about 0.7 MB, one time - then cached)...');
+        function boot() {
+            ftoLoadThree().then(function (THREE) {
+                try {
+                    var presets = { stellarspec: { radius: 16, maxR: 60, minR: 6, phi: 1.1, theta: 0.5, targetY: -2.5 } };
+                    var shell = t3dShell(THREE, host, presets[kind]);
+                    var animate = t3dStellarSpectralClassification(shell);
+                    var last = performance.now();
+                    shell.renderer.setAnimationLoop(function () {
+                        var now = performance.now();
+                        var dt = Math.min(now - last, 100);
+                        last = now;
+                        animate(dt);
+                        shell.applyCamera();
+                        shell.renderer.render(shell.scene, shell.camera);
+                    });
+                } catch (err) {
+                    t3dStatus('This page needs WebGL to render the 3D scene. Your browser or device has it disabled - the facts panel below still works. (' + (err && err.message ? err.message : err) + ')');
+                }
+            }).catch(function (err) {
+                t3dStatus('Could not load the 3D engine: ' + (err && err.message ? err.message : err));
+            });
+        }
+        if ('requestIdleCallback' in window) { requestIdleCallback(boot, { timeout: 2500 }); }
+        else { setTimeout(boot, 300); }
+    }
+</script>
