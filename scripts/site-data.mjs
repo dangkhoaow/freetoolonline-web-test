@@ -7574,30 +7574,17 @@ export const GUIDE_ROUTES = new Set([
   '/guides/vi/triceratops-size-comparison.html',
   '/guides/id/triceratops-size-comparison.html',
   '/guides/de/triceratops-size-comparison.html',
-  // dinosaur-3d-guides-loop-runbook fire13 (2026-07-16): how-to-view-spinosaurus-in-3d
-  // (EN + pt/es/vi/id/de) - how-to angle for the Spinosaurus viewer.
-  '/guides/how-to-view-spinosaurus-in-3d.html',
-  '/guides/pt/how-to-view-spinosaurus-in-3d.html',
-  '/guides/es/how-to-view-spinosaurus-in-3d.html',
-  '/guides/vi/how-to-view-spinosaurus-in-3d.html',
-  '/guides/id/how-to-view-spinosaurus-in-3d.html',
-  '/guides/de/how-to-view-spinosaurus-in-3d.html',
   // dinosaur-3d-guides-loop-runbook fire14 (2026-07-16): spinosaurus-size-comparison
-  // (EN + pt/es/vi/id/de) - size angle for the Spinosaurus viewer.
+  // (EN + pt/es/vi/id/de) - size angle for the Spinosaurus viewer. consolidation
+  // fire56 (2026-08-13): this is now the SOLE guide family for the
+  // dinosaur-3d.spinosaurus.viewer intent node - the fire13 how-to-view and fire15
+  // vs-ar-apps families were folded into it and 301d (see ALIAS_ROUTES).
   '/guides/spinosaurus-size-comparison.html',
   '/guides/pt/spinosaurus-size-comparison.html',
   '/guides/es/spinosaurus-size-comparison.html',
   '/guides/vi/spinosaurus-size-comparison.html',
   '/guides/id/spinosaurus-size-comparison.html',
   '/guides/de/spinosaurus-size-comparison.html',
-  // dinosaur-3d-guides-loop-runbook fire15 (2026-07-16): spinosaurus-3d-viewer-vs-ar-apps
-  // (EN + pt/es/vi/id/de) - vs-alternatives angle for the Spinosaurus viewer.
-  '/guides/spinosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/pt/spinosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/es/spinosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/spinosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/id/spinosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/de/spinosaurus-3d-viewer-vs-ar-apps.html',
   // dinosaur-3d-guides-loop-runbook fire16 (2026-07-16): how-to-view-stegosaurus-in-3d
   // (EN + pt/es/vi/id/de) - how-to angle for the Stegosaurus viewer.
   '/guides/how-to-view-stegosaurus-in-3d.html',
@@ -14190,6 +14177,28 @@ export function isArticleFamilyRoute(route) {
 export const SPECIAL_ROUTES = new Set(['/alternatead.html']);
 
 export const ALIAS_ROUTES = {
+  // consolidation fire56 (2026-08-13): retire the how-to-view-spinosaurus-in-3d
+  // + spinosaurus-3d-viewer-vs-ar-apps doorway families into the
+  // spinosaurus-size-comparison keeper, locale-matched. Backlog item
+  // topical-map-dinosaur-3d.spinosaurus.viewer (2 live excess families; 0 clicks,
+  // 0 AI citations, 36 impr 28d across all 12 routes, 10 of 12 already
+  // sitemap-excluded). Unique facts were folded into the keeper BEFORE the 301 -
+  // the four canvas controls with their label flips, the five-row facts panel
+  // (no hip-height row), the 8-pixel short-click threshold with its part list,
+  // the real-glTF swap disclosure, and the 6-row viewer vs phone-AR vs museum
+  // table. The edge layer is patched in the same push.
+  '/guides/how-to-view-spinosaurus-in-3d.html': '/guides/spinosaurus-size-comparison.html',
+  '/guides/pt/how-to-view-spinosaurus-in-3d.html': '/guides/pt/spinosaurus-size-comparison.html',
+  '/guides/es/how-to-view-spinosaurus-in-3d.html': '/guides/es/spinosaurus-size-comparison.html',
+  '/guides/vi/how-to-view-spinosaurus-in-3d.html': '/guides/vi/spinosaurus-size-comparison.html',
+  '/guides/id/how-to-view-spinosaurus-in-3d.html': '/guides/id/spinosaurus-size-comparison.html',
+  '/guides/de/how-to-view-spinosaurus-in-3d.html': '/guides/de/spinosaurus-size-comparison.html',
+  '/guides/spinosaurus-3d-viewer-vs-ar-apps.html': '/guides/spinosaurus-size-comparison.html',
+  '/guides/pt/spinosaurus-3d-viewer-vs-ar-apps.html': '/guides/pt/spinosaurus-size-comparison.html',
+  '/guides/es/spinosaurus-3d-viewer-vs-ar-apps.html': '/guides/es/spinosaurus-size-comparison.html',
+  '/guides/vi/spinosaurus-3d-viewer-vs-ar-apps.html': '/guides/vi/spinosaurus-size-comparison.html',
+  '/guides/id/spinosaurus-3d-viewer-vs-ar-apps.html': '/guides/id/spinosaurus-size-comparison.html',
+  '/guides/de/spinosaurus-3d-viewer-vs-ar-apps.html': '/guides/de/spinosaurus-size-comparison.html',
   // 2026-08-09 content-consolidation fire38 step-1a: 2 cannibalized topical-map
   // nodes drained. gif-into-frames + gif-frame-extractor (EN-only stubs, 0 clicks)
   // retired into the canonical extractor; bmi-calculator-step-by-step +
@@ -19944,30 +19953,15 @@ export const JSP_BY_ROUTE = {
   '/guides/vi/triceratops-size-comparison.html': 'guide/vi/triceratops-size-comparison.jsp',
   '/guides/id/triceratops-size-comparison.html': 'guide/id/triceratops-size-comparison.jsp',
   '/guides/de/triceratops-size-comparison.html': 'guide/de/triceratops-size-comparison.jsp',
-  // dinosaur-3d-guides-loop-runbook fire13 (2026-07-16): how-to-view-spinosaurus-in-3d
-  // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
-  '/guides/how-to-view-spinosaurus-in-3d.html': 'guide/how-to-view-spinosaurus-in-3d.jsp',
-  '/guides/pt/how-to-view-spinosaurus-in-3d.html': 'guide/pt/how-to-view-spinosaurus-in-3d.jsp',
-  '/guides/es/how-to-view-spinosaurus-in-3d.html': 'guide/es/how-to-view-spinosaurus-in-3d.jsp',
-  '/guides/vi/how-to-view-spinosaurus-in-3d.html': 'guide/vi/how-to-view-spinosaurus-in-3d.jsp',
-  '/guides/id/how-to-view-spinosaurus-in-3d.html': 'guide/id/how-to-view-spinosaurus-in-3d.jsp',
-  '/guides/de/how-to-view-spinosaurus-in-3d.html': 'guide/de/how-to-view-spinosaurus-in-3d.jsp',
   // dinosaur-3d-guides-loop-runbook fire14 (2026-07-16): spinosaurus-size-comparison
   // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
+  // consolidation fire56 (2026-08-13): sole surviving guide family for this intent node.
   '/guides/spinosaurus-size-comparison.html': 'guide/spinosaurus-size-comparison.jsp',
   '/guides/pt/spinosaurus-size-comparison.html': 'guide/pt/spinosaurus-size-comparison.jsp',
   '/guides/es/spinosaurus-size-comparison.html': 'guide/es/spinosaurus-size-comparison.jsp',
   '/guides/vi/spinosaurus-size-comparison.html': 'guide/vi/spinosaurus-size-comparison.jsp',
   '/guides/id/spinosaurus-size-comparison.html': 'guide/id/spinosaurus-size-comparison.jsp',
   '/guides/de/spinosaurus-size-comparison.html': 'guide/de/spinosaurus-size-comparison.jsp',
-  // dinosaur-3d-guides-loop-runbook fire15 (2026-07-16): spinosaurus-3d-viewer-vs-ar-apps
-  // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
-  '/guides/spinosaurus-3d-viewer-vs-ar-apps.html': 'guide/spinosaurus-3d-viewer-vs-ar-apps.jsp',
-  '/guides/pt/spinosaurus-3d-viewer-vs-ar-apps.html': 'guide/pt/spinosaurus-3d-viewer-vs-ar-apps.jsp',
-  '/guides/es/spinosaurus-3d-viewer-vs-ar-apps.html': 'guide/es/spinosaurus-3d-viewer-vs-ar-apps.jsp',
-  '/guides/vi/spinosaurus-3d-viewer-vs-ar-apps.html': 'guide/vi/spinosaurus-3d-viewer-vs-ar-apps.jsp',
-  '/guides/id/spinosaurus-3d-viewer-vs-ar-apps.html': 'guide/id/spinosaurus-3d-viewer-vs-ar-apps.jsp',
-  '/guides/de/spinosaurus-3d-viewer-vs-ar-apps.html': 'guide/de/spinosaurus-3d-viewer-vs-ar-apps.jsp',
   // dinosaur-3d-guides-loop-runbook fire16 (2026-07-16): how-to-view-stegosaurus-in-3d
   // EN + pt/es/vi/id/de (locale-complete bundle; exit-12 gate).
   '/guides/how-to-view-stegosaurus-in-3d.html': 'guide/how-to-view-stegosaurus-in-3d.jsp',
@@ -29677,7 +29671,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/vi/how-to-view-sauropelta-in-3d.html',
   '/guides/vi/how-to-view-seismosaurus-in-3d.html',
   '/guides/vi/how-to-view-shuangmiaosaurus-in-3d.html',
-  '/guides/vi/how-to-view-spinosaurus-in-3d.html',
   '/guides/vi/how-to-view-stegosaurus-in-3d.html',
   '/guides/vi/how-to-view-stygimoloch-in-3d.html',
   '/guides/vi/how-to-view-tarbosaurus-in-3d.html',
@@ -30320,8 +30313,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/vi/speech-text-when.html',
   '/guides/vi/spike-sprint-vs-alternatives.html',
   '/guides/vi/spike-sprint-when.html',
-  '/guides/vi/spinosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/vi/spinosaurus-size-comparison.html',
   '/guides/vi/split-pdf-online-free.html',
   '/guides/vi/sql-formatter-beautifier-step-by-step.html',
   '/guides/vi/sql-formatter-beautifier-vs-alternatives.html',
@@ -31259,7 +31250,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   "/guides/de/how-to-view-sauropelta-in-3d.html",
   "/guides/de/how-to-view-seismosaurus-in-3d.html",
   "/guides/de/how-to-view-shuangmiaosaurus-in-3d.html",
-  "/guides/de/how-to-view-spinosaurus-in-3d.html",
   "/guides/de/how-to-view-stygimoloch-in-3d.html",
   "/guides/de/how-to-view-tarbosaurus-in-3d.html",
   "/guides/de/how-to-view-therizinosaurus-in-3d.html",
@@ -31733,8 +31723,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   "/guides/de/touchscreen-test-step-by-step.html",
   "/guides/de/touchscreen-test-vs-alternatives.html",
   "/guides/de/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html",
-  "/guides/de/spinosaurus-size-comparison.html",
-  "/guides/de/spinosaurus-3d-viewer-vs-ar-apps.html",
   "/guides/de/stegosaurus-size-comparison.html",
   "/guides/de/stegosaurus-3d-viewer-vs-ar-apps.html",
   "/guides/de/therizinosaurus-size-comparison.html",
@@ -32414,7 +32402,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/pt/how-to-view-sauropelta-in-3d.html',
   '/guides/pt/how-to-view-seismosaurus-in-3d.html',
   '/guides/pt/how-to-view-shuangmiaosaurus-in-3d.html',
-  '/guides/pt/how-to-view-spinosaurus-in-3d.html',
   '/guides/pt/how-to-view-stegosaurus-in-3d.html',
   '/guides/pt/how-to-view-stygimoloch-in-3d.html',
   '/guides/pt/how-to-view-tarbosaurus-in-3d.html',
@@ -32861,8 +32848,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/pt/speech-text-when.html',
   '/guides/pt/spike-sprint-vs-alternatives.html',
   '/guides/pt/spike-sprint-when.html',
-  '/guides/pt/spinosaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/pt/spinosaurus-size-comparison.html',
   '/guides/pt/split-gif-into-frames.html',
   '/guides/pt/split-pdf-online-free.html',
   '/guides/pt/sql-formatter-beautifier-step-by-step.html',
@@ -33817,7 +33802,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/es/how-to-view-sauropelta-in-3d.html',
   '/guides/es/how-to-view-seismosaurus-in-3d.html',
   '/guides/es/how-to-view-shuangmiaosaurus-in-3d.html',
-  '/guides/es/how-to-view-spinosaurus-in-3d.html',
   '/guides/es/how-to-view-stegosaurus-in-3d.html',
   '/guides/es/how-to-view-stygimoloch-in-3d.html',
   '/guides/es/how-to-view-tarbosaurus-in-3d.html',
@@ -34311,8 +34295,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   "/guides/es/speech-text-when.html",
   "/guides/es/spike-sprint-vs-alternatives.html",
   "/guides/es/spike-sprint-when.html",
-  "/guides/es/spinosaurus-3d-viewer-vs-ar-apps.html",
-  "/guides/es/spinosaurus-size-comparison.html",
   // pruned 2026-07-29 zero-evidence es (es-batch-7)
   '/guides/es/tdee-calorie-calculator-when.html', // pruned 2026-07-29 zero-evidence es
   '/guides/es/tdee-calorie-calculator-step-by-step.html', // pruned 2026-07-29 zero-evidence es
@@ -35526,7 +35508,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/id/how-to-view-sauropelta-in-3d.html',
   '/guides/id/how-to-view-seismosaurus-in-3d.html',
   '/guides/id/how-to-view-shuangmiaosaurus-in-3d.html',
-  '/guides/id/how-to-view-spinosaurus-in-3d.html',
   '/guides/id/how-to-view-stegosaurus-in-3d.html',
   '/guides/id/how-to-view-stygimoloch-in-3d.html',
   '/guides/id/how-to-view-tarbosaurus-in-3d.html',
@@ -35708,8 +35689,6 @@ export const GUIDE_SITEMAP_EXCLUDE = new Set([
   '/guides/id/tyrannosaurus-rex-3d-viewer-vs-ar-apps.html',
   '/guides/id/mosasaurus-size-comparison.html',
   '/guides/id/mosasaurus-3d-viewer-vs-ar-apps.html',
-  '/guides/id/spinosaurus-size-comparison.html',
-  '/guides/id/spinosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/id/stegosaurus-size-comparison.html',
   '/guides/id/stegosaurus-3d-viewer-vs-ar-apps.html',
   '/guides/id/parasaurolophus-size-comparison.html',
